@@ -585,9 +585,13 @@ export const orphanedValueRoots = (
       changes.set(root, change);
       continue;
     }
-    const diff = RootChange.between(beforeDocument, afterDocument, {
-      root: root === 'main' ? null : root,
-    });
+    const diff = RootChange.betweenChangedBlocks(
+      beforeDocument,
+      afterDocument,
+      {
+        root: root === 'main' ? null : root,
+      }
+    );
 
     if (diff.empty) same.add(root);
     else changes.set(root, diff);

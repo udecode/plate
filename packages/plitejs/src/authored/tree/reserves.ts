@@ -215,6 +215,11 @@ const generatingOf = (schema: CompiledEditorSchema) => {
   return facts;
 };
 
+export const completionBuilds = (
+  schema: CompiledEditorSchema,
+  content: CompiledSchemaContentProgram | null
+) => !!content && !!generatingOf(schema)?.builds(content);
+
 /** Whether a write under `schema` can store a spare, so the recorder looks for sites. */
 export const storesSpares = (schema: CompiledEditorSchema) =>
   generatingOf(schema) !== null;

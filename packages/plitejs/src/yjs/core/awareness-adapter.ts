@@ -35,6 +35,7 @@ type YjsAwarenessAdapterOptions<TCursorData extends YjsRemoteCursorData> = {
   readonly canSyncSelection: () => boolean;
   readonly editor: YjsEditor;
   readonly childrenFor?: (root: string) => NodeList<Descendant>;
+  readonly withRootIndex?: <T>(root: string, read: () => T) => T;
   readonly rootFor: (root: string) => Y.XmlElement | null;
   readonly validateCursorData: (value: unknown) => value is TCursorData;
 };
@@ -171,6 +172,7 @@ export const createYjsAwarenessAdapter = <
     root === 'main'
       ? editor.read.children()
       : (editor.read.value().roots?.[root] ?? []),
+  withRootIndex = (_root, read) => read(),
   validateCursorData,
 }: YjsAwarenessAdapterOptions<TCursorData>): YjsAwarenessAdapter<TCursorData> => {
   const cursorListeners = new Map<number, Set<() => void>>();
@@ -247,10 +249,8 @@ export const createYjsAwarenessAdapter = <
     position: Y.RelativePosition
   ): Point | null => {
     metrics.endpointConversionCount += 1;
-    const point = yjsRelativePositionToPoint(
-      root,
-      position,
-      childrenFor(rootKey)
+    const point = withRootIndex(rootKey, () =>
+      yjsRelativePositionToPoint(root, position, childrenFor(rootKey))
     );
 
     return point ? withRoot(point, rootKey) : null;
@@ -604,11 +604,13 @@ export const createYjsAwarenessAdapter = <
     const nextSelection =
       nextRange === null || root === null
         ? null
-        : createYjsAwarenessSelection(
-            root,
-            rootKey,
-            nextRange,
-            childrenFor(rootKey)
+        : withRootIndex(rootKey, () =>
+            createYjsAwarenessSelection(
+              root,
+              rootKey,
+              nextRange,
+              childrenFor(rootKey)
+            )
           );
     const currentAwarenessSelection = awareness.getLocalState()?.selection;
 

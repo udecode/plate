@@ -257,15 +257,15 @@ const runSplitNodes = (
         (LocationApi.isPoint(at) || LocationApi.isRange(at))
       ) {
         const point = LocationApi.isRange(at) ? RangeApi.start(at) : at;
-        const [object] = getNodes(editor, {
+        const [block] = getNodes(editor, {
           at: point,
           match: (node) =>
-            NodeApi.isElement(node) && getEditorSchema(editor).isObject(node),
-          mode: 'highest',
+            NodeApi.isElement(node) && editorIsBlock(editor, node),
+          mode: 'lowest',
           voids: true,
         });
 
-        if (object) return;
+        if (block && getEditorSchema(editor).isObject(block[0])) return;
       }
       if (!hasExplicitSelector && dividesTextCell(editor, at, options)) return;
 

@@ -22,7 +22,7 @@ import type { PropertyModification } from '../../core/change/transform';
 import type { Element } from '../../index';
 import { getDefined } from '../../internal/get-defined';
 import type { YjsNode } from './attributes';
-import { readYjsChildren } from './document';
+import { readYjsChildrenNotingPlainList } from './document';
 import type { LinesByLetters } from './joins';
 import { areJsonLikeValuesEqual } from './json-equality';
 import {
@@ -365,7 +365,7 @@ export type BatchSplit = FoundSplit &
   Readonly<{ copied: YjsNode; spine: Y.XmlElement }>;
 
 const rawChildrenOf = (node: Y.XmlElement): YjsNode[] =>
-  readYjsChildren(node).filter(
+  readYjsChildrenNotingPlainList(node).filter(
     (child): child is YjsNode =>
       child instanceof Y.XmlElement || child instanceof Y.XmlText
   );

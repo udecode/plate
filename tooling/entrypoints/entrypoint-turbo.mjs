@@ -63,8 +63,8 @@ const partitionTestEnv = (packageName) => [
   'CI',
   'FAST_CHECK_SEED',
   ...({
-    platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
-    plitejs: ['FILL_LAW_*', 'PLITE_*'],
+    platejs: ['NODE_ENV', 'PLATE_*', 'PLITE_*', 'TZ'],
+    plitejs: ['FILL_LAW_*', 'NODE_ENV', 'PLITE_*'],
   }[packageName] ?? []),
 ];
 const packagesWithTypecheckedTests = new Set(['platejs', 'plitejs']);

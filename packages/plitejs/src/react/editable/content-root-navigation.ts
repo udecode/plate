@@ -71,6 +71,7 @@ import {
   hasContentRootOwner,
   isKnownContentRootOwner,
   isSameContentRootOwner,
+  readRootNodes,
 } from './content-root-owners';
 import {
   clamp,
@@ -334,7 +335,7 @@ const getVerticalNavigationTarget = ({
     });
     const rootEdge = editor.read((state) =>
       getPliteRootBoundaryPoint(
-        readRootChildren(state, currentRoot),
+        readRootNodes(editor, state, currentRoot),
         direction === 'forward' ? 'end' : 'start'
       )
     );
@@ -490,7 +491,7 @@ const getHorizontalNavigationTarget = ({
   if (ownerForCurrentRoot) {
     const rootEdge = editor.read((state) =>
       getPliteRootBoundaryPoint(
-        readRootChildren(state, currentRoot),
+        readRootNodes(editor, state, currentRoot),
         direction === 'forward' ? 'end' : 'start'
       )
     );

@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react';
 
+import { countCoreWork } from '../../core/work';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /**
@@ -83,6 +84,7 @@ const createGenericSelectorStore = <T,>(
       }
 
       try {
+        countCoreWork('selectorVisits');
         const newSelectedState = committed.selector();
 
         if (committed.equalityFn(committed.selectedState, newSelectedState)) {

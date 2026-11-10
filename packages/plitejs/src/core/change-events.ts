@@ -5,7 +5,6 @@ import type {
   EditorNodeChangeContext,
   EditorNodeChangeKind,
   EditorTextChangeContext,
-  RootKey,
   NodeKey,
   SnapshotIndex,
   ValueOf,
@@ -13,36 +12,18 @@ import type {
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
-import { getInternalDocumentChangeEntries } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import {
+  getInternalDocumentChangeEntries,
+  valueRootIndex,
+} from './change/document-change';
+import type { DocumentIndex } from './change/document-index';
 import type { RootChange } from './change/root-change';
-import { getEditorRuntimeOwner } from './editor-runtime';
+import { getEditorCommitSnapshot } from './commit';
 import { getPluginRegistry } from './plugin-registry';
 import { toPublicRoot } from './public-root';
-import { buildSnapshotIndex } from './snapshot-index';
 
-const rootChildren = (
-  value: EditorDocumentValue,
-  root: RootKey
-): readonly Descendant[] =>
-  root === 'main' ? value.children : (value.roots?.[root] ?? []);
-
-const nodeAt = (
-  children: readonly Descendant[],
-  path: readonly number[]
-): Descendant | null => {
-  let descendants = children;
-  let node: Descendant | undefined;
-
-  for (const index of path) {
-    node = descendants[index];
-    if (!node) return null;
-    descendants =
-      'children' in node && Array.isArray(node.children) ? node.children : [];
-  }
-
-  return node ?? null;
-};
+const nodeAt = (document: DocumentIndex, path: readonly number[]) =>
+  (document.find(path) as Descendant | undefined) ?? null;
 
 const jsonEqual = (left: unknown, right: unknown): boolean => {
   if (Object.is(left, right)) return true;
@@ -334,24 +315,20 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
   afterValue: EditorDocumentValue<ValueOf<TEditor>>,
   listener: (context: EditorNodeChangeContext<TEditor>) => void
 ) => {
-  const owner = getEditorRuntimeOwner(editor);
-
   for (const [root, change] of getInternalDocumentChangeEntries(
     commit.changes
   )) {
-    const beforeChildren = rootChildren(beforeValue, root);
-    const afterChildren = rootChildren(afterValue, root);
+    const beforeDocument = valueRootIndex(beforeValue, root);
+    const afterDocument = valueRootIndex(afterValue, root);
     const publicRoot = toPublicRoot(root);
     const beforeIndex =
       root === 'main'
         ? commit.before.index
-        : buildSnapshotIndex(owner, beforeChildren);
+        : getEditorCommitSnapshot(commit, root, 'before').index;
     const afterIndex =
       root === 'main'
         ? commit.after.index
-        : buildSnapshotIndex(owner, afterChildren);
-    const beforeDocument = DocumentIndex.fromValue(beforeChildren);
-    const afterDocument = DocumentIndex.fromValue(afterChildren);
+        : getEditorCommitSnapshot(commit, root, 'after').index;
     const { candidates, relocated } = getSparseNodeCandidates(
       change,
       beforeDocument,
@@ -401,8 +378,8 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
         continue;
       }
 
-      const beforeNode = beforePath ? nodeAt(beforeChildren, beforePath) : null;
-      const afterNode = afterPath ? nodeAt(afterChildren, afterPath) : null;
+      const beforeNode = beforePath ? nodeAt(beforeDocument, beforePath) : null;
+      const afterNode = afterPath ? nodeAt(afterDocument, afterPath) : null;
       const kind = getNodeChangeKind(
         beforePath,
         afterPath,
@@ -434,26 +411,24 @@ export const forEachEditorTextChange = <TEditor extends Editor>(
   afterValue: EditorDocumentValue<ValueOf<TEditor>>,
   listener: (context: EditorTextChangeContext<TEditor>) => void
 ) => {
-  const owner = getEditorRuntimeOwner(editor);
-
   for (const [root, change] of getInternalDocumentChangeEntries(
     commit.changes
   )) {
-    const beforeChildren = rootChildren(beforeValue, root);
-    const afterChildren = rootChildren(afterValue, root);
+    const beforeDocument = valueRootIndex(beforeValue, root);
+    const afterDocument = valueRootIndex(afterValue, root);
     const publicRoot = toPublicRoot(root);
     const beforeIndex =
       root === 'main'
         ? commit.before.index
-        : buildSnapshotIndex(owner, beforeChildren);
+        : getEditorCommitSnapshot(commit, root, 'before').index;
     const afterIndex =
       root === 'main'
         ? commit.after.index
-        : buildSnapshotIndex(owner, afterChildren);
+        : getEditorCommitSnapshot(commit, root, 'after').index;
     const { candidates } = getSparseNodeCandidates(
       change,
-      DocumentIndex.fromValue(beforeChildren),
-      DocumentIndex.fromValue(afterChildren),
+      beforeDocument,
+      afterDocument,
       beforeIndex,
       afterIndex
     );
@@ -461,8 +436,8 @@ export const forEachEditorTextChange = <TEditor extends Editor>(
     for (const { afterPath, beforePath } of candidates.values()) {
       if (!beforePath || !afterPath) continue;
 
-      const beforeNode = nodeAt(beforeChildren, beforePath);
-      const afterNode = nodeAt(afterChildren, afterPath);
+      const beforeNode = nodeAt(beforeDocument, beforePath);
+      const afterNode = nodeAt(afterDocument, afterPath);
 
       if (
         !beforeNode ||
@@ -478,8 +453,8 @@ export const forEachEditorTextChange = <TEditor extends Editor>(
         commit,
         editor,
         node:
-          nodeAt(afterChildren, afterPath.slice(0, -1)) ??
-          nodeAt(beforeChildren, beforePath.slice(0, -1)),
+          nodeAt(afterDocument, afterPath.slice(0, -1)) ??
+          nodeAt(beforeDocument, beforePath.slice(0, -1)),
         path: [...afterPath],
         previousPath: [...beforePath],
         previousText: beforeNode.text,

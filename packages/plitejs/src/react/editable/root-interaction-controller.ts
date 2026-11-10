@@ -42,7 +42,7 @@ import {
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
-import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
+import { MAIN_ROOT_KEY } from '../root-key';
 import {
   getPliteRootBoundaryPoint,
   PliteViewBoundaryGraph,
@@ -66,6 +66,7 @@ import {
   isSameOwner,
   mouseEventTargetToElement,
 } from './content-root-owner-target';
+import { readRootNodes } from './content-root-owners';
 import {
   findMountedEditableDOMRuntime,
   focusPressedView,
@@ -566,7 +567,10 @@ const resolveContentRootOwnerChromeEndpoint = ({
 
   const edge = resolveContentRootOwnerChromeEdge({ event, owner });
   const childPoint = editor.read((state) =>
-    getPliteRootBoundaryPoint(readRootChildren(state, owner.childRoot), edge)
+    getPliteRootBoundaryPoint(
+      readRootNodes(editor, state, owner.childRoot),
+      edge
+    )
   );
 
   return childPoint

@@ -914,11 +914,12 @@ export const applyEditableKeyDown = ({
       return keyDownHandled(repair);
     }
 
-    const children = editor.read((state) => state.nodes.children());
     const selectedTopLevelIndex = SelectionApi.isNode(selection)
       ? selection.paths[0]?.[0]
       : selectionRange?.focus.path[0];
-    const element = children[selectedTopLevelIndex ?? 0];
+    const element = editor.read(
+      (state) => state.nodes.get([selectedTopLevelIndex ?? 0])?.[0]
+    );
     const isRTL = element
       ? getTextDirection(NodeApi.string(element)) === 'rtl'
       : false;

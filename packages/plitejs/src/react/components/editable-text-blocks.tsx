@@ -101,7 +101,10 @@ import {
   subscribePliteViewSelection,
 } from '../view-selection';
 import { EditableViewportBoundary } from '../viewport-boundary';
-import type { EditableViewportPlan } from '../viewport-plan';
+import {
+  createEditableViewportPlan,
+  type EditableViewportPlan,
+} from '../viewport-plan';
 import {
   type DOMCoverageBoundaryMaterializePayload,
   DOMCoverageBoundaryRange,
@@ -173,6 +176,21 @@ export type EditableDOMCoverageBoundaryProps = {
   selectionPolicy?: DOMCoverageSelectionPolicy;
 };
 
+type EditableContentRootViewport = {
+  /**
+   * The root's top-level blocks in view, such as the shapes a camera shows.
+   * The slot also mounts the blocks the selection's ends are in, and hides
+   * each run of the others behind a boundary whose copy reads the model.
+   */
+  mountedKeys: ReadonlySet<NodeKey>;
+  /**
+   * Brings `path` into view, such as when the selection moves into a block
+   * outside `mountedKeys`. It adds the block at `path[0]` to `mountedKeys`
+   * before or on the next render, and returns false when it cannot.
+   */
+  reveal: (path: Path, align?: 'auto' | 'center' | 'end' | 'start') => boolean;
+};
+
 export type EditableContentRootSlotOptions = {
   ariaLabel?: string;
   className?: string;
@@ -183,6 +201,8 @@ export type EditableContentRootSlotOptions = {
   spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
   style?: CSSProperties;
   tabIndex?: number;
+  /** Mount only some of the root's top-level blocks, such as a board's shapes in view. */
+  viewport?: EditableContentRootViewport;
 };
 
 type EditableContentRootSlotRenderers<
@@ -450,6 +470,7 @@ function EditableContentRootView({
     spellCheck,
     style,
     tabIndex,
+    viewport,
   } = options;
   const {
     renderElement,
@@ -526,6 +547,22 @@ function EditableContentRootView({
   >(() => {
     activateRootView();
   }, [activateRootView]);
+  const editableProps: EditableProps = {
+    'aria-label': ariaLabel,
+    className,
+    disableDefaultStyles,
+    id,
+    placeholder,
+    readOnly,
+    renderElement,
+    renderLeaf,
+    renderPlaceholder,
+    renderText,
+    renderVoid,
+    spellCheck,
+    style,
+    tabIndex: tabIndex ?? (readOnly ? undefined : 0),
+  };
 
   return (
     <div
@@ -539,24 +576,43 @@ function EditableContentRootView({
       onMouseUpCapture={onMouseUpCapture}
       suppressContentEditableWarning
     >
-      <EditableInner
-        aria-label={ariaLabel}
-        className={className}
-        disableDefaultStyles={disableDefaultStyles}
-        id={id}
-        placeholder={placeholder}
-        readOnly={readOnly}
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        renderPlaceholder={renderPlaceholder}
-        renderText={renderText}
-        renderVoid={renderVoid}
-        spellCheck={spellCheck}
-        style={style}
-        tabIndex={tabIndex ?? (readOnly ? undefined : 0)}
-      />
+      {viewport ? (
+        <EditableContentRootWindow {...editableProps} viewport={viewport} />
+      ) : (
+        <EditableInner {...editableProps} />
+      )}
     </div>
   );
+}
+
+function EditableContentRootWindow({
+  viewport: { mountedKeys, reveal },
+  ...props
+}: EditableProps & { viewport: EditableContentRootViewport }) {
+  const topLevelNodeKeys = useRootNodeKeys();
+  const selectionPaths = useSelectionPaths(true);
+  const viewportPlan = React.useMemo(
+    () => ({
+      ...createEditableViewportPlan({
+        coordinateSpace: 'canvas',
+        indexes: [
+          ...topLevelNodeKeys.flatMap((key, index) =>
+            mountedKeys.has(key) ? [index] : []
+          ),
+          ...(selectionPaths?.flatMap((path) => path.slice(0, 1)) ?? []),
+        ],
+        scrollToPath: reveal,
+        sizeAtIndex: () => 0,
+        startAtIndex: () => 0,
+        topLevelNodeKeys,
+        totalSize: 0,
+      }),
+      shownTopLevelNodeKeys: mountedKeys,
+    }),
+    [mountedKeys, reveal, selectionPaths, topLevelNodeKeys]
+  );
+
+  return <EditableInner {...props} viewportPlan={viewportPlan} />;
 }
 
 export type RenderElementProps<TElement extends ElementNode = ElementNode> =
@@ -1252,8 +1308,13 @@ const EditableInner = <TElement extends ElementNode>({
     if (lastCommit?.changed.hasAny('text')) return;
 
     const node = editor.read((state) => state.nodes.get(anchorPath)?.[0]);
+    const shownKeys = viewportPlan.shownTopLevelNodeKeys;
+    const anchorBlockKey = topLevelNodeKeys[anchorPath[0] ?? -1];
+    const shown = shownKeys
+      ? anchorBlockKey !== undefined && shownKeys.has(anchorBlockKey)
+      : node && editor.api.dom.resolveDOMNode(node);
 
-    if (node && editor.api.dom.resolveDOMNode(node)) {
+    if (shown) {
       lastViewportScrollPathKeyRef.current = anchorPathKey;
       return;
     }
@@ -1263,7 +1324,7 @@ const EditableInner = <TElement extends ElementNode>({
     if (viewportPlan.scrollToPath(anchorPath, 'center')) {
       lastViewportScrollPathKeyRef.current = anchorPathKey;
     }
-  }, [editor, selectedViewportPaths, viewportPlan]);
+  }, [editor, selectedViewportPaths, topLevelNodeKeys, viewportPlan]);
 
   const placeholderValue = usePlaceholderValue(placeholder);
   const placeholderRef = React.useCallback(

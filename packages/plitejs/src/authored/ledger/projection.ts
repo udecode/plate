@@ -207,7 +207,7 @@ export class RootProjection extends Level {
       this.schema = context.schema;
       this.cache = new WeakMap();
       this.build(stored, context);
-      change = RootChange.between(from, this.projected);
+      change = RootChange.betweenChangedBlocks(from, this.projected);
     }
     return this.publish(from, change);
   }
@@ -250,7 +250,7 @@ export class RootProjection extends Level {
         }
       }
 
-      return RootChange.between(from, this.projected);
+      return RootChange.betweenChangedBlocks(from, this.projected);
     }
 
     const pended = this.pend(ranges, stored, context);

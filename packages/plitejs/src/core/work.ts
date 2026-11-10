@@ -15,6 +15,7 @@ export type CoreWork = {
   /** Projected documents adopted as the schema's validated baseline. */
   baselines: number;
   bookCopies: number;
+  changeValueReads: number;
   /** Change builders started on a projected document. */
   builders: number;
   /** Nodes the canonical pass opened past its check that a node is unchanged. */
@@ -37,6 +38,7 @@ export type CoreWork = {
   coverageQueries: number;
   /** Sequence slots copied, each node at its width. */
   copiedSlots: number;
+  encodedTokens: number;
   /** Incremental paths a collaboration binding refused for a fallback. */
   fallbacks: number;
   /** Former-place lookups for a value a node carried into a new place. */
@@ -95,6 +97,7 @@ export type CoreWork = {
   letterMarks: number;
   /** Root snapshots built from a root's current children. */
   rootSnapshots: number;
+  rootVisits: number;
   /** Elements and root records a room's read examined for unbuilt spares. */
   spareReads: number;
   /** Change sections read to map a position or compose a change. */
@@ -105,8 +108,15 @@ export type CoreWork = {
   spareIdChecks: number;
   /** Snapshot indexes built over a root's children. */
   snapshotIndexes: number;
-  /** Whole-root walks a snapshot index made to find a key it lacked. */
-  snapshotIndexWalks: number;
+  identityClaimsExamined: number;
+  identityPagesExamined: number;
+  identityLocationsRepaired: number;
+  identityDirectoryNodesCopied: number;
+  identityMembershipsTouched: number;
+  identityTransitions: number;
+  identityMembersExamined: number;
+  /** Passes over a whole root, or over a run of changed children wider than a page both before and after the change. */
+  wholeListPasses: number;
   /** Projected roots a frame installs as its snapshot's roots. */
   snapshotRoots: number;
   /** Sequence items a walk visited in order. */
@@ -117,6 +127,7 @@ export type CoreWork = {
   rootOwnerChecks: number;
   /** Yjs children a collaboration binding enumerated. */
   yjsChildrenRead: number;
+  yjsItemSteps: number;
   /** Lines the Yjs import's join search read beside a line the batch hid. */
   yjsJoinSiblingsRead: number;
   /** Changed lines a Yjs import built from the letters each text kept. */
@@ -133,6 +144,8 @@ export type CoreWork = {
   valueGroupReads: number;
   /** Elements read for the generated values they hold or show. */
   valueHolderReads: number;
+  subscriberVisits: number;
+  selectorVisits: number;
 };
 
 /**
@@ -147,6 +160,7 @@ export const coreWork: CoreWork = {
   anchorScopes: 0,
   baselines: 0,
   bookCopies: 0,
+  changeValueReads: 0,
   builders: 0,
   canonicalNodes: 0,
   carriedFallbacks: 0,
@@ -159,6 +173,7 @@ export const coreWork: CoreWork = {
   contentRootOwnerScans: 0,
   coverageQueries: 0,
   copiedSlots: 0,
+  encodedTokens: 0,
   fallbacks: 0,
   formerPlaceCalls: 0,
   formerPlaceVisits: 0,
@@ -188,17 +203,26 @@ export const coreWork: CoreWork = {
   landedNodeBinds: 0,
   letterMarks: 0,
   rootSnapshots: 0,
+  rootVisits: 0,
   spareReads: 0,
   spareIdChecks: 0,
   sectionsWalked: 0,
   replayWalkVisits: 0,
   snapshotIndexes: 0,
-  snapshotIndexWalks: 0,
+  identityClaimsExamined: 0,
+  identityPagesExamined: 0,
+  identityLocationsRepaired: 0,
+  identityDirectoryNodesCopied: 0,
+  identityMembershipsTouched: 0,
+  identityTransitions: 0,
+  identityMembersExamined: 0,
+  wholeListPasses: 0,
   snapshotRoots: 0,
   walkedSlots: 0,
   wholeReadNodes: 0,
   rootOwnerChecks: 0,
   yjsChildrenRead: 0,
+  yjsItemSteps: 0,
   yjsJoinSiblingsRead: 0,
   yjsLetterLines: 0,
   yjsMarkRecordsVisited: 0,
@@ -207,6 +231,8 @@ export const coreWork: CoreWork = {
   uniqueIndexedNodes: 0,
   valueGroupReads: 0,
   valueHolderReads: 0,
+  subscriberVisits: 0,
+  selectorVisits: 0,
 };
 
 /** @internal */

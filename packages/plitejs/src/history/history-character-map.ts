@@ -232,7 +232,7 @@ export const createCharacterCorrespondence = (
       if (!isTextNode(previous) && next && !isTextNode(next)) {
         const from = DocumentIndex.fromValue(project(previous.children));
         const to = DocumentIndex.fromValue(project(next.children));
-        const kept = RootChange.between(from, to);
+        const kept = RootChange.betweenChangedBlocks(from, to);
 
         if (kept.empty) {
           return {
@@ -328,7 +328,7 @@ export const createCharacterCorrespondence = (
       children: next.children,
       before: from,
       after: to,
-      change: RootChange.between(from, to),
+      change: RootChange.betweenChangedBlocks(from, to),
     };
     parents.set(key, pair);
     return pair;

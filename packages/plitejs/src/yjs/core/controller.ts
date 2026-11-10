@@ -13,12 +13,16 @@ import {
   withInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
+import { visitRootNames } from '../../core/change/lazy-root';
 import { letterOriginsOfChange } from '../../core/change/new-letters';
 import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
 import { getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { holdsImportedRoot, readEmptyText } from '../../core/editor-schema';
-import { notifyObservers } from '../../core/lifecycle-error';
+import {
+  notifyObservers,
+  reportEditorLifecycleError,
+} from '../../core/lifecycle-error';
 import { isMissingReference } from '../../core/missing-reference';
 import {
   getCompiledEditorSchema,
@@ -43,7 +47,10 @@ import {
   type RecordOps,
   recordOpsFromJson,
 } from '../../core/record-store';
-import { fitImportedBlock } from '../../core/representation';
+import {
+  completeChildrenAt,
+  fitImportedBlock,
+} from '../../core/representation';
 import {
   areEditorSchemaIdentitiesEqual,
   getCompiledPropertyMergeStrategy,
@@ -58,9 +65,10 @@ import type {
   EditorEffect,
   EditorSchemaIdentity,
   EditorSnapshot,
+  Element,
   JsonEditorValue,
 } from '../../index';
-import { DocumentChange, RangeApi, SelectionApi } from '../../index';
+import { DocumentChange, NodeApi, RangeApi, SelectionApi } from '../../index';
 import { getDefined } from '../../internal/get-defined';
 import {
   createYjsAwarenessAdapter,
@@ -73,6 +81,7 @@ import {
   reconcileYjsRoot,
 } from './change-bridge';
 import {
+  hideYjsNode,
   readPliteValueFromYjs,
   removeRedundantEmptyYjsTextNodes,
   replaceYjsChildren,
@@ -97,10 +106,12 @@ import {
   type YjsEventImportFallback,
   type YjsJoinRecovery,
 } from './event-change-bridge';
+import { areJsonLikeValuesEqual } from './json-equality';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import { yjsLettersOf } from './new-letters';
 import { isRecord } from './record';
 import { retractYjsRoot } from './retraction';
+import { findSecondYjsRootOwners, mayAddYjsRootOwner } from './root-owners';
 import {
   assertYjsDocumentSchemaFormats,
   assertYjsSchemaIdentity,
@@ -176,6 +187,25 @@ const copyTraceEntries = (
   }
 
   return copy;
+};
+
+/**
+ * A Yjs event's `path` counts every item before each ancestor in its parent,
+ * so reading it for a key in a large root walks that root's children.
+ */
+const namedRootOf = (
+  roots: Y.Map<Y.XmlElement>,
+  type: Y.AbstractType<unknown>
+): string | null => {
+  for (let item = type._item; item;) {
+    const { parent } = item;
+
+    if (parent === roots) return item.parentSub;
+    if (!(parent instanceof Y.AbstractType)) return null;
+    item = parent._item;
+  }
+
+  return null;
 };
 
 const childrenOf = (value: JsonEditorValue, root: string) =>
@@ -301,6 +331,8 @@ export class YjsController<
   private readonly editorOnlyRoots = new EditorOnlyRoots();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
+  private pendingOwnerCheck = false;
+  private readonly replacedRoots = new Map<string, readonly Descendant[]>();
   private published = false;
   private readinessUnsubscribe: (() => void) | undefined;
   private readonly openRemoteTransactions = new Set<Y.Transaction>();
@@ -417,6 +449,13 @@ export class YjsController<
           rootFor: (root) => this.rootFor(root),
           childrenFor: (root) =>
             this.bindings.get(root)?.bridge.synchronized ?? [],
+          withRootIndex: (root, read) => {
+            const bridge = this.bindings.get(root)?.bridge;
+
+            return bridge
+              ? bridge.withRootIndex(this.pendingRemoteEvents, read)
+              : read();
+          },
           validateCursorData: (value): value is TCursorData =>
             options.cursorData?.validate(value) ?? isRecord(value),
         })
@@ -429,6 +468,7 @@ export class YjsController<
         captureYjsEventBatch(events, transaction)
       );
       this.pendingRemoteRootChange = true;
+      this.pendingOwnerCheck ||= mayAddYjsRootOwner(this.editor, events);
     };
     this.rootsObserver = (events, transaction) => {
       if (this.shouldIgnoreRemoteTransaction(transaction)) return;
@@ -437,20 +477,29 @@ export class YjsController<
         this.pendingRemoteEvents,
         captureYjsEventBatch(events, transaction)
       );
+      this.pendingOwnerCheck ||= mayAddYjsRootOwner(this.editor, events);
 
       for (const event of events) {
         if (event.target === this.roots && event instanceof Y.YMapEvent) {
           for (const root of event.keysChanged) {
             this.pendingRemoteNamedRoots.add(root);
+
+            const mine = this.bindings.get(root)?.bridge.synchronized;
+
+            if (
+              mine &&
+              event.changes.keys.get(root)?.action === 'update' &&
+              !this.replacedRoots.has(root)
+            ) {
+              this.replacedRoots.set(root, mine.slice());
+            }
           }
           continue;
         }
 
-        const root = event.path[0];
+        const root = namedRootOf(this.roots, event.target);
 
-        if (typeof root === 'string') {
-          this.pendingRemoteNamedRoots.add(root);
-        }
+        if (root !== null) this.pendingRemoteNamedRoots.add(root);
       }
     };
     this.sharedEffectsObserver = (event, transaction) => {
@@ -522,6 +571,25 @@ export class YjsController<
     );
   }
 
+  private fitsInBlock(
+    node: Element,
+    ancestors: readonly Element[],
+    root: string
+  ): boolean {
+    const site = [node, ...ancestors];
+
+    return (
+      areJsonLikeValuesEqual(
+        completeChildrenAt(this.editor, site, node.children, root).children,
+        node.children
+      ) &&
+      node.children.every(
+        (child) =>
+          !NodeApi.isElement(child) || this.fitsInBlock(child, site, root)
+      )
+    );
+  }
+
   private createRootBinding(root: string, yRoot: Y.XmlElement): YjsRootBinding {
     const bridge = new YjsEventChangeBridge(
       yRoot,
@@ -531,6 +599,7 @@ export class YjsController<
       {
         admitsText: this.admitsText,
         block: (node) => this.storedBlock(node, root),
+        fits: (node, ancestors) => this.fitsInBlock(node, ancestors, root),
         holds: (after, windows) =>
           holdsImportedRoot(getEditorSchema(this.editor), root, after, windows),
       }
@@ -923,8 +992,8 @@ export class YjsController<
         changedRoots.add(root);
       }
       for (const root of new Set([
-        ...Object.keys(before.roots ?? {}),
-        ...Object.keys(after.roots ?? {}),
+        ...visitRootNames(before.roots),
+        ...visitRootNames(after.roots),
       ])) {
         if (
           Object.hasOwn(before.roots ?? {}, root) !==
@@ -1244,6 +1313,8 @@ export class YjsController<
   private clearPendingInput(): void {
     this.pendingRemoteEvents = null;
     this.pendingRemoteRootChange = false;
+    this.pendingOwnerCheck = false;
+    this.replacedRoots.clear();
     this.pendingRemoteNamedRoots.clear();
     this.pendingRemoteRecords.clear();
     this.pendingRemoteEffects = false;
@@ -1274,6 +1345,7 @@ export class YjsController<
         const pending = this.sharedEffectLog.pending();
 
         if (claimed) {
+          this.repairRootOwners();
           this.markAllRecordsPending();
           this.importDocumentFromYjs('seed', {
             effects: pending.effects,
@@ -1546,9 +1618,20 @@ export class YjsController<
       return;
     }
 
-    const rootChanged = this.pendingRemoteRootChange;
+    let rootChanged = this.pendingRemoteRootChange;
     const namedRoots = new Set(this.pendingRemoteNamedRoots);
-    const events = this.pendingRemoteEvents;
+    let events = this.pendingRemoteEvents;
+    const replaced = new Map(this.replacedRoots);
+
+    if (this.pendingOwnerCheck) {
+      const repaired = this.repairRootOwners();
+
+      if (repaired.size > 0) events = null;
+      for (const root of repaired) {
+        if (root === MAIN_ROOT_KEY) rootChanged = true;
+        else namedRoots.add(root);
+      }
+    }
     const pending = this.sharedEffectLog.pending();
     // Records apply before content in one commit, so a run and the context
     // it names in one Yjs transaction never wait for each other.
@@ -1577,6 +1660,33 @@ export class YjsController<
     }
     this.sharedEffectLog.acknowledge(pending.eventIds);
     this.clearPendingInput();
+    for (const [root, lost] of replaced) {
+      const kept = this.bindings.get(root)?.bridge.synchronized.slice() ?? [];
+
+      if (areJsonLikeValuesEqual(lost, kept)) continue;
+      reportEditorLifecycleError({
+        cause: new Error(
+          `A teammate's concurrent write replaced this peer's copy of root "${root}".`
+        ),
+        editor: this.editor,
+        lost,
+        phase: 'merge',
+        root,
+        source: 'yjs',
+      });
+    }
+  }
+
+  private repairRootOwners(): ReadonlySet<string> {
+    const seconds = findSecondYjsRootOwners(this.editor, this.root, this.roots);
+
+    if (seconds.length > 0) {
+      this.transact((writeOf) => {
+        for (const { slot, tree } of seconds) hideYjsNode(writeOf(tree), slot);
+      }, this.canonicalizeOrigin);
+    }
+
+    return new Set(seconds.map(({ root }) => root));
   }
 
   private shouldSkipCommit(
@@ -2237,7 +2347,10 @@ export class YjsController<
       throw new Error(`Yjs root binding "${root}" is unavailable.`);
     }
     const result = this.transact(
-      (writeOf) => binding.bridge.prepareRemote(writeOf(binding.root), events),
+      (writeOf) =>
+        binding.bridge.prepareRemote(writeOf(binding.root), events, () =>
+          valueRootIndex(this.editorAdapter.readValue(), root)
+        ),
       this.canonicalizeOrigin
     );
 

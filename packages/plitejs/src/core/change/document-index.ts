@@ -719,6 +719,17 @@ export class DocumentIndex {
       : nodeAtPath(isElementNode(top) ? top.children : [], path.slice(1));
   }
 
+  find(path: readonly number[]) {
+    const [top, ...rest] = path;
+    let node = top === undefined ? undefined : this.child(top);
+
+    for (const index of rest) {
+      node = node && isElementNode(node) ? node.children[index] : undefined;
+    }
+
+    return node;
+  }
+
   nodeRange(path: readonly number[]) {
     const { from, to } = this.entry(path);
 

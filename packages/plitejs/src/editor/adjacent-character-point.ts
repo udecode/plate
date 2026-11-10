@@ -1,9 +1,10 @@
+import type { NodeList } from '../core/change/document-index';
 import { isEditorNodeSelectable } from '../core/editor-read-execution';
+import { getEditorRuntime } from '../core/editor-runtime';
 import { getLiveNode, getLiveText } from '../core/public-state';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   above as editorAbove,
-  getChildren as editorGetChildren,
   isEditor as editorIsEditor,
   isElementReadOnly as editorIsElementReadOnly,
   isInline as editorIsInline,
@@ -24,9 +25,9 @@ type ChildContainer = {
 const getChildren = (
   editor: Editor,
   node: unknown
-): readonly Descendant[] | null => {
+): NodeList<Descendant> | null => {
   if (editorIsEditor(node)) {
-    return editorGetChildren(editor);
+    return getEditorRuntime(editor).getChildList();
   }
 
   return node &&
@@ -54,7 +55,6 @@ export const canUseAdjacentCharacterFastPath = (
 
   const parentPath = point.path.slice(0, -1);
   const parent = getLiveNode(editor, parentPath);
-  const parentChildren = getChildren(editor, parent);
 
   if (
     !parent ||
@@ -62,7 +62,7 @@ export const canUseAdjacentCharacterFastPath = (
     editorIsInline(editor, parent) ||
     editorIsVoid(editor, parent) ||
     editorIsElementReadOnly(editor, parent) ||
-    parentChildren?.some((child) => !NodeApi.isText(child))
+    parent.children.some((child) => !NodeApi.isText(child))
   ) {
     return false;
   }
@@ -95,7 +95,7 @@ const getFirstTextPoint = (editor: Editor, path: Path): Point | null => {
       return null;
     }
 
-    node = children[0];
+    node = children.at(0);
     currentPath.push(0);
   }
 
@@ -114,7 +114,7 @@ const getLastTextPoint = (editor: Editor, path: Path): Point | null => {
     }
 
     const lastIndex = children.length - 1;
-    node = children[lastIndex];
+    node = children.at(lastIndex);
     currentPath.push(lastIndex);
   }
 

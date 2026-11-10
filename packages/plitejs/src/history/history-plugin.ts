@@ -39,6 +39,7 @@ import {
 import {
   collapseDocumentElementPropertyWrites,
   filterDocumentChangeRecordSets,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   isInternalDocumentChangeNoop,
   valueRootIndex,
@@ -122,7 +123,7 @@ import {
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
   peekHistoryReplayEntry,
-  peekSurvivingHistoryEntry,
+  peekJoinableUndoEntry,
   takeDroppedHistoryCauses,
   queuePendingHistoryReplayMapping,
   queueHistoryMapping,
@@ -979,7 +980,10 @@ const createHistoryPlugin = <
       : carried
         ? { ...partedBatch, ...carried }
         : partedBatch;
-    const lastEntry = peekSurvivingHistoryEntry(editor, 'undos');
+    const takesBackCommit =
+      preparedBatch.change === inverse &&
+      getInternalDocumentChangeRecords(commit.inverseChanges).size === 0;
+    const lastEntry = peekJoinableUndoEntry(editor);
 
     for (const cause of takeDroppedHistoryCauses(editor)) {
       reportFailedHistoryReplay(editor, 'undo', cause);
@@ -1116,6 +1120,9 @@ const createHistoryPlugin = <
         clearRedos: true,
         group: mergedGroup,
         recovery: mergedRecovery,
+        ...(takesBackCommit && lastEntry.restores
+          ? { restores: lastEntry.restores }
+          : {}),
       });
     } else {
       writeHistory(editor, 'undos', preparedBatch, after, {
@@ -1127,6 +1134,7 @@ const createHistoryPlugin = <
             ? Object.freeze({ ...prepared.group, closed: true })
             : prepared.group,
         recovery: anchorCapture?.recovery ?? null,
+        ...(takesBackCommit ? { restores: before } : {}),
       });
     }
     if (explicitPush || preparedBatch.effects.length > 0) {

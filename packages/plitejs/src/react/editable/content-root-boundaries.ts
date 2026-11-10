@@ -17,6 +17,7 @@ import {
   type ContentRootOwner,
   getContentRootViewBoundaryPoint,
   getContentRootViewEdgeNode,
+  readRootNodes,
 } from './content-root-owners';
 
 export type ContentRootAdjacentBoundary = {
@@ -194,7 +195,7 @@ export const getRootBoundaryNavigationTarget = ({
 }): ContentRootBoundaryNavigationTarget | null => {
   const point = editor.read((state) =>
     getPliteRootBoundaryPoint(
-      readRootChildren(state, owner.childRoot),
+      readRootNodes(editor, state, owner.childRoot),
       direction === 'forward' ? 'start' : 'end'
     )
   );

@@ -9,7 +9,7 @@ import {
   SelectionApi,
 } from '..';
 import { getEditorCommitSnapshot, getEditorCommitValue } from '../core/commit';
-import { toInternalRoot } from '../core/public-root';
+import { toInternalRoot, toPublicRoot } from '../core/public-root';
 import { mapSelectionThroughChange } from '../core/selection-protocol';
 import {
   type AnyEditor,
@@ -432,7 +432,9 @@ const readInsertedCaret = (
   const after = getEditorCommitSnapshot(commit, root, 'after').index;
   const key = after.keyAt(point.path);
 
-  if (!key || !commit.changed.hasNodeKey(key, 'text')) return null;
+  if (!key || !commit.changed.hasNodeKey(key, 'text', toPublicRoot(root))) {
+    return null;
+  }
   return previousStartMapsTo(editor, commit, root, point)
     ? null
     : { point, root };

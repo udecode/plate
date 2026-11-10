@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-09-pass-view-root-to-key-questions",
+      "href": "/registry/changelog/2026-11-09-pass-view-root-to-key-questions.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Pass the view's root to commit key questions in the caption and diagram components",
+      "change": {
+        "type": "source",
+        "date": "2026-11-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["caption", "code-block-diagram"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-07-docx-fewer-install-dependencies",
       "href": "/registry/changelog/2026-11-07-docx-fewer-install-dependencies.json",
       "status": "draft",

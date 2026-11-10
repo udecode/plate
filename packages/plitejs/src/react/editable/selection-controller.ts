@@ -9,6 +9,7 @@ import {
   SelectionApi,
   type TargetFreshnessRequest,
 } from '../..';
+import { getChildList } from '../../core/public-state';
 import {
   clearCaretUnlessHeldElsewhere,
   placedSince,
@@ -41,7 +42,7 @@ import {
 } from '../../dom/utils/selection-writes';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
+import { MAIN_ROOT_KEY } from '../root-key';
 import {
   getPliteRootBoundaryPoint,
   rootPlitePoint,
@@ -58,6 +59,7 @@ import {
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
   isRangeAcrossContentRootOwners,
+  readRootNodes,
 } from './content-root-owners';
 import {
   applyDOMCoverageSelectionPolicy,
@@ -135,7 +137,7 @@ const getContentRootBoundaryPoint = (
 ) =>
   editor.read((state) => {
     const point = getPliteRootBoundaryPoint(
-      readRootChildren(state, owner.childRoot),
+      readRootNodes(editor, state, owner.childRoot),
       edge
     );
 
@@ -289,16 +291,12 @@ const shouldKeepFullDocumentSelectionModelBacked = ({
   editor: ReactRuntimeEditor;
   editorElement: HTMLElement;
   selection: Range;
-}) => {
-  const rootChildCount = editor.read((state) => state.nodes.children().length);
-
-  return (
-    (rootChildCount > MODEL_BACKED_FULL_DOCUMENT_CHILD_THRESHOLD ||
-      editorElement.childNodes.length >
-        MODEL_BACKED_FULL_DOCUMENT_CHILD_THRESHOLD) &&
-    isFullDocumentSelection(editor, selection)
-  );
-};
+}) =>
+  isFullDocumentSelection(editor, selection) &&
+  (editorElement.childNodes.length >
+    MODEL_BACKED_FULL_DOCUMENT_CHILD_THRESHOLD ||
+    editor.read(() => getChildList(editor).length) >
+      MODEL_BACKED_FULL_DOCUMENT_CHILD_THRESHOLD);
 
 export const shouldUseModelBackedSelectAllSelection = ({
   editor,

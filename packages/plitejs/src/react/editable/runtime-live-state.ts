@@ -64,19 +64,19 @@ export const readNodeByKey = (
     return { node: null, path: null, nodeKey: null };
   }
 
-  const snapshot = editorGetSnapshot(editor);
   const path = readPathByNodeKey(editor, nodeKey);
 
   if (!path) {
     return { node: null, path: null, nodeKey };
   }
 
-  const editorRoot = editor as unknown as Node;
-  const snapshotRoot = { children: snapshot.children } as unknown as Node;
   const node =
     readRuntimeNode(editor, path) ??
-    PliteNode.getIf(editorRoot, path) ??
-    PliteNode.getIf(snapshotRoot, path) ??
+    PliteNode.getIf(editor, path) ??
+    PliteNode.getIf(
+      { children: editorGetSnapshot(editor).children } as unknown as Node,
+      path
+    ) ??
     null;
 
   return { node, path, nodeKey };

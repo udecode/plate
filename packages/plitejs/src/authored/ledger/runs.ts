@@ -70,6 +70,7 @@ export type BlockFacts = Readonly<{
   settles: boolean;
   /** A join or split can land on its first line, so it decides with the blocks before it. */
   opensWithStructure: boolean;
+  ownsFirstLine: boolean;
   /**
    * Whether the mode keeps one of its lines. A join reaches back over lines
    * the mode drops, so it passes over a block that keeps none.
@@ -96,12 +97,6 @@ export type ChildFacts = Readonly<{
   kept: Readonly<Record<AuthoredFormatProjection, number>>;
   /** The children with a review member. */
   marked: number;
-  /**
-   * Whether the first child that opens with structure or holds no member
-   * opens with structure. A line with review marks can vanish in one mode,
-   * and an unwrap lifts the lines after it, so a join behind marked lines can
-   * still open the block.
-   */
   opens: boolean;
   /** The children that do not settle. */
   unsettled: number;
@@ -170,7 +165,7 @@ const childFactsOf = (node: JsonNode): ChildFacts => {
     deletes.push(...facts.deletes);
     follows.push(...facts.follows);
     joins.push(...facts.joins);
-    if (opens === null && (facts.opensWithStructure || facts.unmarked)) {
+    if (opens === null && facts.ownsFirstLine) {
       opens = facts.opensWithStructure;
     }
   }
@@ -222,6 +217,17 @@ export const combineFacts = (
     return [...keys];
   };
   const follows = fold(followKey, children.follows);
+  const keepsLine = textBlock
+    ? {
+        accepted: SURVIVAL.accepted.survives(node),
+        proposed: SURVIVAL.proposed.survives(node),
+      }
+    : {
+        accepted: children.kept.accepted > 0,
+        proposed: children.kept.proposed > 0,
+      };
+  const opensWithStructure = boundary || children.opens;
+  const settles = follows.length === 0 && children.unsettled === 0;
 
   return {
     unmarked: false,
@@ -229,18 +235,16 @@ export const combineFacts = (
     follows,
     joins: fold(joinKey, children.joins),
     inserted: marks.some((mark) => mark.kind === 'insert'),
-    keepsLine: textBlock
-      ? {
-          accepted: SURVIVAL.accepted.survives(node),
-          proposed: SURVIVAL.proposed.survives(node),
-        }
-      : {
-          accepted: children.kept.accepted > 0,
-          proposed: children.kept.proposed > 0,
-        },
-    opensWithStructure: boundary || children.opens,
+    keepsLine,
+    opensWithStructure,
     removedProposed: !proposedSurvival.survives(node) && !boundary,
-    settles: follows.length === 0 && children.unsettled === 0,
+    settles,
+    ownsFirstLine:
+      opensWithStructure ||
+      (members.length === 0 &&
+        keepsLine.accepted &&
+        keepsLine.proposed &&
+        settles),
   };
 };
 
@@ -277,6 +281,7 @@ const UNMARKED: BlockFacts = Object.freeze({
   opensWithStructure: false,
   removedProposed: false,
   settles: true,
+  ownsFirstLine: true,
 });
 
 export const removesBlock = (

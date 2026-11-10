@@ -9,6 +9,7 @@ type JoinedLines = {
   readonly clocks: Map<number, number>;
   readonly lines: Map<string, Set<Y.XmlElement>>;
   readonly ends: Map<string, Set<Y.XmlElement>>;
+  readonly named: string[];
   /** Whether a transaction ended since the structs were last read. */
   stale: boolean;
 };
@@ -30,8 +31,10 @@ const noteLine = (
   const byId = linesBy(known, key);
   const lines = byId.get(id);
 
+  if (lines?.has(line)) return;
   if (lines) lines.add(line);
   else byId.set(id, new Set([line]));
+  known.named.push(id);
 };
 
 const readNewStructs = (doc: Y.Doc, known: JoinedLines): void => {
@@ -70,6 +73,7 @@ const joinedLinesOf = (doc: Y.Doc): JoinedLines => {
       clocks: new Map(),
       ends: new Map(),
       lines: new Map(),
+      named: [],
       stale: true,
     };
 
@@ -115,6 +119,14 @@ export const hasJoinedYjsLines = (doc: Y.Doc | null): boolean => {
 
   return known.lines.size > 0 || known.ends.size > 0;
 };
+
+type AppendOnlyIds = Readonly<{
+  length: number;
+  [index: number]: string;
+}>;
+
+export const joinedYjsIds = (doc: Y.Doc): AppendOnlyIds =>
+  readJoinedYjsLines(doc).named;
 
 const liveJoinedYjsLines = (
   doc: Y.Doc | null,

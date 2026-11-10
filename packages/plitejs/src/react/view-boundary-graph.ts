@@ -6,6 +6,7 @@ import {
   type Range,
   type RootKey,
 } from '..';
+import { childAtPathIndex, type NodeList } from '../core/change/document-index';
 import { getPointRoot, MAIN_ROOT_KEY } from './root-key';
 import {
   createPliteViewBoundaryGraph,
@@ -109,14 +110,14 @@ export const samePliteRootPoint = (
   left.path.every((value, index) => value === right.path[index]);
 
 export const getPliteDescendantAtPath = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   path: Path
 ): Descendant | null => {
   if (path.length === 0) {
     return null;
   }
 
-  let node: Descendant | null = children[path[0]] ?? null;
+  let node: Descendant | null = childAtPathIndex(children, path[0]) ?? null;
 
   for (const index of path.slice(1)) {
     if (!node || !NodeApi.isElement(node)) {
@@ -160,14 +161,17 @@ export const getPliteBoundaryPoint = (
 };
 
 export const getPliteRootBoundaryPoint = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   edge: 'end' | 'start'
 ): Point | null => {
-  const indexes =
-    edge === 'start' ? children.keys() : [...children.keys()].reverse();
+  const step = edge === 'start' ? 1 : -1;
 
-  for (const index of indexes) {
-    const child = children[index];
+  for (
+    let index = edge === 'start' ? 0 : children.length - 1;
+    index >= 0 && index < children.length;
+    index += step
+  ) {
+    const child = children.at(index);
     const point = child && getPliteBoundaryPoint(child, [index], edge);
 
     if (point) {

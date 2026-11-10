@@ -91,7 +91,9 @@ export function Caption({
       NodeApi.string(current.read.nodes.get(path)?.[0] ?? element).length === 0,
     {
       shouldUpdate: (change) =>
-        !change || !nodeKey || change.changed.hasNodeKey(nodeKey, 'node'),
+        !change ||
+        !nodeKey ||
+        change.changed.hasNodeKey(nodeKey, 'node', editor.read.view.root()),
     }
   );
   const focused = useCaptionFocused(path);

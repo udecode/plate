@@ -2,6 +2,7 @@ import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
+  getSelectionRoot,
   runEditorTransaction,
   withTransactionSpecDraftRead,
 } from '../core/public-state';
@@ -24,10 +25,9 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
 
     if (!selection) return;
     const schema = getEditorSchema(editor);
-    const root = SelectionApi.isNode(selection)
-      ? (selection.root ?? 'main')
-      : RangeApi.isRange(selection)
-        ? (selection.anchor.root ?? selection.focus.root ?? 'main')
+    const root =
+      SelectionApi.isNode(selection) || RangeApi.isRange(selection)
+        ? getSelectionRoot(editor, selection)
         : 'main';
 
     const match = (innerNode: Node, path: Path) => {

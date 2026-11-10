@@ -35,6 +35,7 @@ import {
   wrapChildrenChange,
 } from './enclosure';
 import type { JsonRecord } from './json';
+import { visitRootNames } from './lazy-root';
 import type { CarriedDrop, Relocation } from './lineage';
 import {
   landMarks,
@@ -1848,9 +1849,11 @@ export class ChangeDraft {
       (rootNodesOf(after, 'children') !==
         rootNodesOf(this.source, 'children') &&
         !indexedAfter.has('main')) ||
-      Object.entries(after.roots ?? {}).some(
-        ([root, children]) =>
-          children !== this.source.roots?.[root] && !indexedAfter.has(root)
+      visitRootNames(after.roots).some(
+        (root) =>
+          rootNodesOf(after.roots ?? {}, root) !==
+            rootNodesOf(this.source.roots ?? {}, root) &&
+          !indexedAfter.has(root)
       )
     );
   }

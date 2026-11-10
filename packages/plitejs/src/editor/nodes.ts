@@ -1,10 +1,11 @@
+import type { NodeList } from '../core/change/document-index';
+import { getEditorRuntime } from '../core/editor-runtime';
 import type {
   AnyEditor as Editor,
   EditorNodesOptions,
   NodeForTypeSelector,
 } from '../interfaces/editor';
 import {
-  getChildren as editorGetChildren,
   getSnapshot as editorGetSnapshot,
   isElementReadOnly as editorIsElementReadOnly,
   isVoid as editorIsVoid,
@@ -20,6 +21,7 @@ import {
 } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { SelectionApi } from '../interfaces/selection';
+import { getDefined } from '../internal/get-defined';
 import { normalizeNodeMatch } from '../utils/node-match';
 
 export function nodes<T extends Node>(
@@ -113,7 +115,7 @@ export function* nodes<T extends Node>(
   if (reverse && !universal) {
     yield* matchBackward<T>(
       [editor, []],
-      editorGetChildren(editor),
+      getEditorRuntime(editor).getChildList(),
       { from, match, mode, to },
       descend
     );
@@ -189,7 +191,7 @@ export function* nodes<T extends Node>(
 // match from the document start.
 function* matchBackward<T extends Node>(
   [node, path]: NodeEntry,
-  children: readonly Descendant[] | null,
+  children: NodeList<Descendant> | null,
   search: Readonly<{
     from: Path;
     match: (node: Node, path: Path) => boolean;
@@ -215,7 +217,7 @@ function* matchBackward<T extends Node>(
       : children.length - 1;
 
     for (let index = last; index >= first; index--) {
-      const child = children[index];
+      const child = getDefined(children.at(index));
       const matched = yield* matchBackward<T>(
         [child, path.concat(index)],
         NodeApi.isText(child) ? null : child.children,

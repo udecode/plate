@@ -5,6 +5,7 @@ import {
   getInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import type { DocumentIndex } from '../../core/change/document-index';
+import { visitRootNames } from '../../core/change/lazy-root';
 import type { JsonNode } from '../../core/change/tokens';
 import { canonicalJsonKey } from '../../core/change/transform';
 import { ownedRootsOf } from '../../core/element-owned-root-index';
@@ -86,11 +87,11 @@ export const quietCommit = (
     if (ops.size > 0) return false;
   }
 
-  const roots = Object.keys(before.roots ?? {});
+  const roots = visitRootNames(before.roots);
   const after = value.roots ?? {};
 
   if (
-    roots.length !== Object.keys(after).length ||
+    roots.length !== visitRootNames(after).length ||
     roots.some((root) => !Object.hasOwn(after, root))
   ) {
     return false;

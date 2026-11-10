@@ -34,6 +34,7 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   type DocumentChange,
+  valueRootIndex,
   valueRootNodes,
 } from './change/document-change';
 import {
@@ -42,6 +43,7 @@ import {
   rootIndexOf,
 } from './change/document-index';
 import { jsonEqual } from './change/json';
+import { isFrozenWithRoots, visitRootNames } from './change/lazy-root';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { normalizeSetValues } from './change/transform';
@@ -55,8 +57,10 @@ import {
   type EditorDocumentShapeIssue,
 } from './document-shape';
 import {
+  countElementOwnedRootBuilds,
   ensureElementOwnedRootIndex,
   findElementOwnedRootOwnerPath,
+  forgetElementOwnedRootBuilds,
   getElementOwnedRootGrammarBindings,
   getChangedElementOwnedRootKeys,
   getElementOwnedRootIssues,
@@ -240,12 +244,6 @@ const generatePropertyValue = (
   }
 };
 
-/** Per root, an earlier root and the change from it to the root it derives. */
-type DerivedRoots = ReadonlyMap<
-  RootKey,
-  Readonly<{ change: RootChange; from: DocumentIndex }>
->;
-
 type TextLandingPlace = Readonly<{
   path: Path;
   root: RootKey;
@@ -325,10 +323,8 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       options?: Readonly<{ removing?: readonly number[]; root?: RootKey }>
     ) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
-    adoptDocumentBaseline: (
-      value: EditorDocumentValue,
-      derived?: DerivedRoots
-    ) => void;
+    adoptDocumentBaseline: (value: EditorDocumentValue) => void;
+    cachedRootCounts: () => Readonly<{ frozen: number; ownership: number }>;
     /** Fit an external document and preserve one explicit selection through it. */
     fitDocumentWithSelection: <TValue extends Value>(
       value: EditorDocumentValue<TValue>,
@@ -1321,6 +1317,15 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey
   ) => (root === 'main' ? schema.primaryRoot : schema.roots.get(root))?.content;
 
+  const documentOwnershipIndexes = new WeakMap<
+    object,
+    Readonly<{
+      indexes: ReadonlyArray<
+        Readonly<{ index: ElementOwnedRootIndex; root: RootKey }>
+      >;
+      schema: CompiledEditorSchema;
+    }>
+  >();
   const getDocumentOwnershipIndexes = (
     schema: CompiledEditorSchema,
     value: EditorDocumentValue
@@ -1329,20 +1334,30 @@ export const createEditorSchema = <V extends Value = Value>(
       index: ElementOwnedRootIndex;
       root: RootKey;
     }>
-  > =>
-    Object.freeze(
-      Object.entries({
-        main: value.children,
-        ...value.roots,
-      }).map(([root, children]) => ({
+  > => {
+    const known = documentOwnershipIndexes.get(value);
+
+    if (known?.schema === schema) return known.indexes;
+
+    forgetElementOwnedRootBuilds(schema, value.roots ?? {});
+
+    const indexes = Object.freeze(
+      ['main', ...visitRootNames(value.roots)].map((root) => ({
         index: ensureElementOwnedRootIndex(
           schema,
           root,
-          DocumentIndex.fromValue(children as readonly JsonNode[])
+          valueRootIndex(value, root)
         ),
         root,
       }))
     );
+
+    if (isFrozenWithRoots(value)) {
+      documentOwnershipIndexes.set(value, { indexes, schema });
+    }
+
+    return indexes;
+  };
 
   const getLiveDocumentOwnershipIndexes = (
     schema: CompiledEditorSchema,
@@ -4458,54 +4473,51 @@ export const createEditorSchema = <V extends Value = Value>(
       main: rootIndexOf(value, 'children'),
     };
 
-    for (const [root, children] of Object.entries(value.roots ?? {})) {
-      roots[root] = DocumentIndex.fromValue(children);
+    for (const root of visitRootNames(value.roots)) {
+      roots[root] = valueRootIndex(value, root);
     }
 
     return roots;
   };
-  const rememberValidatedDocumentRoots = (
-    value: EditorDocumentValue,
-    derived?: DerivedRoots
-  ) => {
+  const frozenRoots = new Map<string, DocumentIndex>();
+  const rememberValidatedDocumentRoots = (value: EditorDocumentValue) => {
     const authority = getValidationAuthority();
-    // A root derived from a validated root shares its other top-level nodes,
-    // so only the ones its change touched can be unfrozen.
     const holdsFrozenNodes = (root: string, document: DocumentIndex) => {
-      const derivation = derived?.get(root);
+      const checked = frozenRoots.get(root);
+      const frozen = checked
+        ? checked.changedChildren(document).every((range) => {
+            for (let at = range[2]; at < range[3]; at += 1) {
+              if (!isDeepFrozenNode(document.child(at) as Descendant)) {
+                return false;
+              }
+            }
 
-      if (!derivation || !isRootValidatedBy(derivation.from, authority)) {
-        return (
-          isImmutable(document.value) &&
+            return true;
+          })
+        : isImmutable(document.value) &&
           (document.value as readonly Descendant[]).every((node) =>
             isDeepFrozenNode(node)
-          )
-        );
-      }
+          );
 
-      let frozen = true;
-
-      derivation.change.iterChangedRanges((_fromA, _toA, from, to) => {
-        for (const entry of document.nodeRangesTouching(from, to)) {
-          if (
-            entry.path.length === 1 &&
-            !isDeepFrozenNode(getDefined(rootNodes(document).at(entry.path[0])))
-          ) {
-            frozen = false;
-          }
-        }
-      });
+      if (frozen) frozenRoots.set(root, document);
 
       return frozen;
     };
 
-    for (const [root, document] of Object.entries(documentRoots(value))) {
+    const roots = documentRoots(value);
+
+    for (const root of visitRootNames(roots)) {
+      const document = roots[root];
+
       if (
         isRootValidatedBy(document, authority) ||
         holdsFrozenNodes(root, document)
       ) {
         markRootValidatedBy(document, authority);
       }
+    }
+    for (const root of frozenRoots.keys()) {
+      if (!Object.hasOwn(roots, root)) frozenRoots.delete(root);
     }
   };
 
@@ -4561,14 +4573,16 @@ export const createEditorSchema = <V extends Value = Value>(
     });
   };
 
-  const checkDocumentChange = ({
-    after,
-    before,
-    change,
-    indexedAfter,
-    indexedBefore,
-  }: DocumentChangeValidationInput) => {
-    const beforeRoots = documentRoots(before);
+  const checkDocumentChange = (
+    {
+      after,
+      before,
+      change,
+      indexedAfter,
+      indexedBefore,
+    }: DocumentChangeValidationInput,
+    beforeRoots: Readonly<Record<string, DocumentIndex>>
+  ) => {
     const checked: DocumentIndex[] = [];
 
     if (after.roots && Object.hasOwn(after.roots, 'main')) {
@@ -4624,8 +4638,8 @@ export const createEditorSchema = <V extends Value = Value>(
         introduced ??= getIntroducedElementOwnedRootIssues(previous, index)[0];
       };
 
-      for (const [root, document] of Object.entries(afterRoots)) {
-        const afterDocument = indexedAfter.get(root) ?? document;
+      for (const root of visitRootNames(afterRoots)) {
+        const afterDocument = indexedAfter.get(root) ?? afterRoots[root];
         const beforeDocument =
           indexedBefore.get(root) ??
           beforeRoots[root] ??
@@ -5102,9 +5116,10 @@ export const createEditorSchema = <V extends Value = Value>(
   const validateDocumentChange: InternalEditorSchemaApi['validateDocumentChange'] =
     (input) => {
       const authority = getValidationAuthority();
-      const unvalidatedRoot = Object.entries(documentRoots(input.before)).find(
-        ([, document]) => !isRootValidatedBy(document, authority)
-      )?.[0];
+      const beforeRoots = documentRoots(input.before);
+      const unvalidatedRoot = visitRootNames(beforeRoots).find(
+        (root) => !isRootValidatedBy(beforeRoots[root], authority)
+      );
 
       if (unvalidatedRoot) {
         throw new Error(
@@ -5114,12 +5129,15 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
 
-      const { afterRoots, checked, touchedRoots } = checkDocumentChange(input);
+      const { afterRoots, checked, touchedRoots } = checkDocumentChange(
+        input,
+        beforeRoots
+      );
 
       for (const document of checked) markRootValidatedBy(document, authority);
-      for (const [root, document] of Object.entries(afterRoots)) {
+      for (const root of visitRootNames(afterRoots)) {
         if (
-          !isRootValidatedBy(document, authority) &&
+          !isRootValidatedBy(afterRoots[root], authority) &&
           !touchedRoots.has(root)
         ) {
           throw new EditorSchemaValidationError(
@@ -5130,8 +5148,14 @@ export const createEditorSchema = <V extends Value = Value>(
     };
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
-    adoptDocumentBaseline: (value, derived) => {
-      rememberValidatedDocumentRoots(value, derived);
+    adoptDocumentBaseline: rememberValidatedDocumentRoots,
+    cachedRootCounts: () => {
+      const compiled = getDeclarativeSchema();
+
+      return Object.freeze({
+        frozen: frozenRoots.size,
+        ownership: compiled ? countElementOwnedRootBuilds(compiled) : 0,
+      });
     },
     allowsElementType,
     canContain,
@@ -5217,7 +5241,8 @@ export const createEditorSchema = <V extends Value = Value>(
     textPropertiesForSplitAt,
     tryCreateDefaultChild,
     validateDocumentChange,
-    checkDocumentChange,
+    checkDocumentChange: (input) =>
+      checkDocumentChange(input, documentRoots(input.before)),
     validateTextPropertiesAtValue,
   });
 

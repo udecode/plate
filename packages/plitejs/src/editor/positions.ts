@@ -1,4 +1,5 @@
-import { getEditorSchema } from '../core/editor-runtime';
+import type { NodeList } from '../core/change/document-index';
+import { getEditorRuntime, getEditorSchema } from '../core/editor-runtime';
 import {
   getCurrentSelection,
   getLiveNode,
@@ -10,7 +11,6 @@ import type {
 } from '../interfaces/editor';
 import {
   above as editorAbove,
-  getChildren as editorGetChildren,
   hasInlines as editorHasInlines,
   isInline as editorIsInline,
   point as editorPoint,
@@ -22,6 +22,7 @@ import { NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
+import { getDefined } from '../internal/get-defined';
 import { getCharacterDistance, getWordDistances } from '../utils/string';
 
 type PositionSegment = {
@@ -95,7 +96,7 @@ const assertValidPoint = (entry: LiveTextEntry, point: Point) => {
 };
 
 function* walkTextEntries(
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   parentPath: Path,
   start: Path,
   end: Path,
@@ -112,7 +113,7 @@ function* walkTextEntries(
     reverse ? index >= first : index <= last;
     index += reverse ? -1 : 1
   ) {
-    const node = children[index];
+    const node = getDefined(children.at(index));
     const path = [...parentPath, index] as Path;
 
     if (NodeApi.isText(node)) {
@@ -218,7 +219,7 @@ function* getPositionSegments(
   assertValidPoint(endEntry, end);
 
   for (const entry of walkTextEntries(
-    editorGetChildren(editor),
+    getEditorRuntime(editor).getChildList(),
     [],
     start.path,
     end.path,

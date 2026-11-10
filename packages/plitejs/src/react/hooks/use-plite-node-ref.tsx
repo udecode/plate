@@ -4,12 +4,14 @@ import type {
   Descendant,
   EditorCommitChanged,
   Element as ElementNode,
+  NamedRootKey,
   NodeKey,
   Path,
   Text as TextNode,
   Value,
 } from '../..';
 import { NodeApi } from '../..';
+import { keyMovedAt } from '../../core/commit';
 import { isDOMElement } from '../../dom';
 import {
   EDITOR_TO_KEY_TO_ELEMENT,
@@ -205,7 +207,8 @@ const syncPliteElementPath = ({
 
 export const syncPliteNodePathBindingsToDOM = <V extends Value>(
   editor: Editor<V>,
-  changed?: EditorCommitChanged
+  changed?: EditorCommitChanged,
+  root?: NamedRootKey
 ) => {
   const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(
     getEditorRuntime(editor)
@@ -227,9 +230,7 @@ export const syncPliteNodePathBindingsToDOM = <V extends Value>(
     if (allElements.size === 0) runtimeElementMap.delete(nodeKey);
     if (
       elements.length === 0 ||
-      (changed &&
-        !changed.hasNodeKey(nodeKey, 'path') &&
-        !changed.hasNodeKey(nodeKey, 'presence'))
+      (changed && !keyMovedAt(changed, nodeKey, root))
     ) {
       continue;
     }

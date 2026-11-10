@@ -179,7 +179,7 @@ const sectionsBetween = (
   before: readonly JsonNode[],
   after: readonly JsonNode[]
 ): RootChangeJson =>
-  RootChange.between(
+  RootChange.betweenWhole(
     DocumentIndex.fromValue(before),
     DocumentIndex.fromValue(after)
   ).toJSON();

@@ -1,6 +1,7 @@
 import { type KeyboardEvent, useCallback, useContext } from 'react';
 
 import { type NodeKey, type Point, type Selection, SelectionApi } from '../..';
+import { rootNodesOf } from '../../core/change/document-index';
 import {
   createDOMGeometryKernel,
   type DOMPhaseScheduler,
@@ -215,7 +216,10 @@ export const isNativeVerticalKeyFastPathFullyMounted = ({
     return false;
   }
 
-  const topLevelCount = editorGetSnapshot(editor).children.length;
+  const topLevelCount = rootNodesOf(
+    editorGetSnapshot(editor),
+    'children'
+  ).length;
 
   if (topLevelCount === 0) {
     return true;
@@ -403,12 +407,12 @@ export const useRuntimeKeyboardEvents = ({
         !modelOwnsContentRootVerticalShift &&
         !modelOwnsContentRootVerticalMove &&
         !modelOwnsPlainVerticalDocumentBoundary &&
+        isVerticalArrowKey &&
         (nativeMountedVerticalShift ||
           isNativeVerticalKeyFastPathFullyMounted({
             viewportRuntime,
             editor,
-          })) &&
-        isVerticalArrowKey
+          }))
       ) {
         flushPendingNativeTextInput?.();
         const repair = moveByViewLines({

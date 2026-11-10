@@ -1097,14 +1097,18 @@ const resolveDOMNodeKey = (editor: DOMEditor<any>, node: Descendant) => {
   return nodeKey ? getOrCreateDOMNodeKey(editor, nodeKey, node) : null;
 };
 
-const findCachedDOMNode = (editor: DOMEditor<any>, node: Descendant) => {
+const findCachedDOMNode = (
+  editor: DOMEditor<any>,
+  node: Descendant,
+  readNodeKey = () => resolveEditorNodeKeyForNode(editor, node)
+) => {
   const mappedNode = NODE_TO_ELEMENT.get(node);
 
   if (mappedNode && isMountedEditorDOMNode(editor, mappedNode)) {
     return mappedNode;
   }
 
-  const nodeKey = resolveEditorNodeKeyForNode(editor, node);
+  const nodeKey = readNodeKey();
   const key = nodeKey
     ? EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor)?.get(nodeKey)
     : undefined;
@@ -1141,7 +1145,9 @@ export const findDOMPointElementInRoot = (
   const [node] = entry;
   const nodeElement =
     DOMEditor.editable(editor)?.isConnected === true
-      ? (findCachedDOMNode(editor, node) ?? findUncachedDOMNode(editor, node))
+      ? (findCachedDOMNode(editor, node, () =>
+          editorGetNodeKey(editor, point.path)
+        ) ?? findUncachedDOMNode(editor, node))
       : null;
   const bounds = nodeElement ? getPliteTextHostBounds(nodeElement) : null;
   const partialText =
@@ -1189,8 +1195,8 @@ export const resolveDOMPointInRoot = (
   }
 
   const { node, point: resolvedPoint } = found;
-  const el = cachePliteDOMNode(editor, node, found.element);
   const nodeKey = editorGetNodeKey(editor, resolvedPoint.path) ?? undefined;
+  const el = cachePliteDOMNode(editor, node, found.element, nodeKey);
 
   if (
     checkPageText &&

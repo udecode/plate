@@ -3,7 +3,12 @@ import * as Y from 'yjs';
 import type { NodeList } from '../../core/change/document-index';
 import { type Descendant, NodeApi } from '../../index';
 import { getYjsElementType, type YjsNode } from './attributes';
-import { getYjsVisibleChild, getYjsVisibleChildren } from './document';
+import {
+  getYjsVisibleChild,
+  getYjsVisibleChildren,
+  type PlainYjsChildren,
+  plainYjsChildren,
+} from './document';
 import {
   alignYjsChildren,
   type PliteSegment,
@@ -38,6 +43,7 @@ export const yjsAddressesOf = (
 ) => {
   const children = new Map<Y.XmlElement, readonly Descendant[]>();
   const lines = new Map<Y.XmlElement, YjsLine | null>();
+  const plainLists = new Map<Y.XmlElement, PlainYjsChildren | null>();
   const lineOf = (element: Y.XmlElement) => {
     if (!lines.has(element)) {
       const shown = children.get(element);
@@ -67,6 +73,28 @@ export const yjsAddressesOf = (
             target: { from: index, kind: 'element', node: shown },
           }
         : null;
+    }
+
+    if (!lines.has(element) && !plainLists.has(element)) {
+      plainLists.set(element, plainYjsChildren(element));
+    }
+
+    const plain = plainLists.get(element);
+    const shown = children.get(element);
+    const node = shown?.[index];
+    const target = plain?.shownNodeAt(index);
+
+    if (
+      plain &&
+      target &&
+      node &&
+      NodeApi.isElement(node) &&
+      plain.length === shown?.length
+    ) {
+      return {
+        segment: { from: index, kind: 'element', node },
+        target: { from: index, kind: 'element', node: target },
+      };
     }
 
     const line = lineOf(element);

@@ -1,6 +1,7 @@
 import {
   type Descendant,
   type Editor,
+  type EditorStateView,
   NodeApi,
   type Path,
   PathApi,
@@ -8,6 +9,7 @@ import {
   type RootKey,
   type Value,
 } from '../..';
+import { type NodeList, rootNodesOf } from '../../core/change/document-index';
 import { countCoreWork } from '../../core/work';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
 import { matchesPresentationOf } from '../../editor-runtime-view';
@@ -16,7 +18,6 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
   createPliteViewBoundaryGraph,
-  createPliteViewBoundaryRootMap,
   getPliteDescendantAtPath,
   getPliteBoundaryPoint,
   rootPlitePoint,
@@ -94,6 +95,21 @@ const getRuntimeEditor = (editor: object): Editor | null => {
   return null;
 };
 
+export const readRootNodes = (
+  editor: object,
+  state: Pick<EditorStateView, 'children' | 'root' | 'value' | 'view'>,
+  root: RootKey
+): NodeList<Descendant> => {
+  const runtimeEditor =
+    (state.view.root() ?? MAIN_ROOT_KEY) === root
+      ? getRuntimeEditor(editor)
+      : null;
+
+  return runtimeEditor
+    ? getEditorRuntime(runtimeEditor).getChildList()
+    : readRootChildren(state, root);
+};
+
 const hasCompiledContentRoots = (editor: ContentRootNavigationEditor) => {
   const runtimeEditor = getRuntimeEditor(editor);
 
@@ -144,7 +160,11 @@ export const findContentRootOwners = <V extends Value>(
 
   return editor.read((state) => {
     const owners: ContentRootOwner[] = [];
-    const roots = createPliteViewBoundaryRootMap(state.value());
+    const value: Readonly<{
+      children: readonly Descendant[];
+      roots?: Readonly<Record<string, readonly Descendant[]>>;
+    }> = state.value();
+    const roots = value.roots ?? {};
     const ownerTypes = state.schema
       .getVocabulary()
       .elementTypes.filter(
@@ -152,7 +172,12 @@ export const findContentRootOwners = <V extends Value>(
           Object.keys(state.schema.element(type)?.contentRoots ?? {}).length > 0
       );
 
-    for (const [ownerRoot, children] of Object.entries(roots)) {
+    for (const ownerRoot of [MAIN_ROOT_KEY, ...Object.keys(roots)]) {
+      const children =
+        ownerRoot === MAIN_ROOT_KEY
+          ? rootNodesOf(value, 'children')
+          : rootNodesOf(roots, ownerRoot);
+
       for (const { path } of getEditorRuntimeElementEntries(
         runtimeOwner,
         ownerTypes,

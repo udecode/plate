@@ -32,7 +32,7 @@ export const freezeOwnedJsonValue = <T extends object>(value: T): T => {
 export const cloneValue = <T>(value: T): T =>
   value === null || typeof value !== 'object' ? value : structuredClone(value);
 
-export const deepFreeze = <T>(value: T): T => {
+export const freezeFresh = <T>(value: T): T => {
   if (value == null || typeof value !== 'object' || isImmutable(value)) {
     return value;
   }
@@ -40,11 +40,11 @@ export const deepFreeze = <T>(value: T): T => {
   Object.freeze(value);
 
   for (const key of Object.keys(value)) {
-    deepFreeze((value as Record<string, unknown>)[key]);
+    freezeFresh((value as Record<string, unknown>)[key]);
   }
 
   return value;
 };
 
 export const cloneFrozen = <T>(value: T): T =>
-  isOwnedJsonValue(value) ? value : deepFreeze(cloneValue(value));
+  isOwnedJsonValue(value) ? value : freezeFresh(cloneValue(value));

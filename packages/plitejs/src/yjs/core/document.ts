@@ -21,11 +21,13 @@ import {
   getJoinedYjsLines,
   getYjsLinesJoinedAtEnd,
   hasJoinedYjsLines,
+  joinedYjsIds,
   noteJoinedYjsLine,
 } from './joined-lines';
 import {
   isReservedYjsKey,
   isYjsMarkRecordKey,
+  YJS_CHILD_VISIBILITY_KEYS,
   YJS_CUT_SOURCE_KEY,
   YJS_ELEMENT_NODE_NAME,
   YJS_HIDDEN_KEY,
@@ -198,7 +200,11 @@ export const createYjsPropertyLocationAt = (
 export const indexYjsPropertyContexts = (
   children: NodeList<Descendant>,
   root: string | null,
-  ranges?: ReadonlyArray<Readonly<{ from: number; to: number }>>
+  ranges?: ReadonlyArray<Readonly<{ from: number; to: number }>>,
+  parent: Readonly<{ ancestors: readonly string[]; path: Path }> = {
+    ancestors: [],
+    path: [],
+  }
 ): WeakMap<JsonNode, YjsPropertyContext> => {
   const contexts = new WeakMap<JsonNode, YjsPropertyContext>();
 
@@ -229,9 +235,11 @@ export const indexYjsPropertyContexts = (
   };
 
   if (ranges) {
-    for (const range of ranges) visit(children, [], [], range.from, range.to);
+    for (const range of ranges) {
+      visit(children, parent.path, parent.ancestors, range.from, range.to);
+    }
   } else {
-    visit(children, [], []);
+    visit(children, parent.path, parent.ancestors);
   }
 
   return contexts;
@@ -286,21 +294,20 @@ export const noteYjsCutView = (
 const isYjsContentNode = (value: unknown): value is YjsNode =>
   value instanceof Y.XmlElement || value instanceof Y.XmlText;
 
-/**
- * A Yjs element's raw children, counted toward `yjsChildrenRead`.
- *
- * @internal
- */
-export const readYjsChildren = (node: Y.XmlElement): unknown[] => {
+/** @internal */
+export const readYjsChildrenNotingPlainList = (
+  node: Y.XmlElement
+): unknown[] => {
   const children = node.toArray();
 
   countCoreWork('yjsChildrenRead', children.length);
+  notePlainYjsChildren(node, children, null);
 
   return children;
 };
 
 const getRawYjsChildren = (node: Y.XmlElement): YjsNode[] => {
-  const rawChildren = readYjsChildren(node);
+  const rawChildren = readYjsChildrenNotingPlainList(node);
   const children = new Array<YjsNode>(rawChildren.length);
   let writeIndex = 0;
   let index = 0;
@@ -320,6 +327,266 @@ const getRawYjsChildren = (node: Y.XmlElement): YjsNode[] => {
   return children;
 };
 
+export type PlainYjsChildren = Readonly<{
+  shownNodeAt: (index: number) => Y.XmlElement | undefined;
+  indexOfRawChild: (child: YjsNode) => number;
+  length: number;
+}>;
+
+type PlainYjsList = PlainYjsChildren & {
+  readonly ids: ReadonlySet<string>;
+  joinsChecked: number;
+  readonly placeholders: ReadonlyArray<
+    readonly [placeholder: Y.XmlElement, node: YjsNode | null]
+  >;
+  placeholdersCheckedAt: number | null;
+};
+
+type PlainYjsLists = {
+  readonly lists: WeakMap<Y.XmlElement, PlainYjsList | null>;
+  reshapes: number;
+  readonly shownBy: WeakMap<YjsNode, Y.XmlElement>;
+};
+
+const plainYjsListsByDoc = new WeakMap<Y.Doc, PlainYjsLists>();
+
+const forEachReshapedYjsList = (
+  transaction: Y.Transaction,
+  visit: (element: Y.XmlElement) => void
+): void => {
+  for (const [type, keys] of transaction.changed) {
+    if (!(type instanceof Y.XmlElement)) continue;
+    for (const key of keys) {
+      if (key === null) {
+        visit(type);
+      } else if (
+        YJS_CHILD_VISIBILITY_KEYS.has(key) ||
+        key === YJS_NODE_ID_KEY
+      ) {
+        visit(type);
+        if (type.parent instanceof Y.XmlElement) visit(type.parent);
+      }
+    }
+  }
+};
+
+const reshapingTransactions = new WeakSet<Y.Transaction>();
+
+const reshapesYjsLists = (transaction: Y.Transaction): boolean => {
+  if (reshapingTransactions.has(transaction)) return true;
+
+  let reshapes = false;
+
+  forEachReshapedYjsList(transaction, () => {
+    reshapes = true;
+  });
+  if (reshapes) reshapingTransactions.add(transaction);
+
+  return reshapes;
+};
+
+/**
+ * The lists kept for `doc`, or null while an open transaction reshapes one:
+ * an element that transaction creates records no change of its own, so no
+ * list read before it ends can be kept.
+ */
+const plainYjsListsOf = (doc: Y.Doc | null): PlainYjsLists | null => {
+  if (doc === null || doc._transactionCleanups.some(reshapesYjsLists)) {
+    return null;
+  }
+
+  let room = plainYjsListsByDoc.get(doc);
+
+  if (room === undefined) {
+    const created: PlainYjsLists = {
+      lists: new WeakMap(),
+      reshapes: 0,
+      shownBy: new WeakMap(),
+    };
+
+    // A peer's update, an undo or a load can reshape a list, and each runs in
+    // a transaction whose observers read only after this event.
+    doc.on('beforeObserverCalls', (transaction: Y.Transaction) => {
+      let reshaped = false;
+
+      forEachReshapedYjsList(transaction, (element) => {
+        created.lists.delete(element);
+        reshaped = true;
+      });
+      if (reshaped) created.reshapes += 1;
+    });
+    plainYjsListsByDoc.set(doc, created);
+    room = created;
+  }
+
+  return room;
+};
+
+const isJoinedYjsId = (doc: Y.Doc, id: string): boolean =>
+  getJoinedYjsLines(doc, id).length > 0 ||
+  getYjsLinesJoinedAtEnd(doc, id).length > 0;
+
+const takesJoinedYjsLines = (list: PlainYjsList, doc: Y.Doc): boolean => {
+  const named = joinedYjsIds(doc);
+
+  for (; list.joinsChecked < named.length; list.joinsChecked += 1) {
+    const id = named[list.joinsChecked];
+
+    if (list.ids.has(id) && isJoinedYjsId(doc, id)) return true;
+  }
+
+  return false;
+};
+
+const notePlainYjsChildren = (
+  element: Y.XmlElement,
+  rawChildren: readonly unknown[],
+  projection: YjsProjection | null
+): void => {
+  const { doc } = element;
+  const room = plainYjsListsOf(doc);
+
+  if (doc === null || room === null || room.lists.has(element)) return;
+
+  const { lists } = room;
+
+  if (typeof element.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) === 'string') {
+    lists.set(element, null);
+
+    return;
+  }
+
+  const joined = hasJoinedYjsLines(doc);
+  const children: Y.XmlElement[] = [];
+  const indexes = new Map<YjsNode, number>();
+  const shown = new Set<YjsNode>();
+  const ids = new Set<string>();
+  const placeholders: Array<readonly [Y.XmlElement, YjsNode | null]> = [];
+  const noteId = (node: Y.XmlElement): boolean => {
+    const id = node.getAttribute(YJS_NODE_ID_KEY);
+
+    if (typeof id !== 'string') return true;
+    ids.add(id);
+
+    return !joined || !isJoinedYjsId(doc, id);
+  };
+
+  if (!noteId(element)) {
+    lists.set(element, null);
+
+    return;
+  }
+  for (const child of rawChildren) {
+    if (!(child instanceof Y.XmlElement)) {
+      lists.set(element, null);
+
+      return;
+    }
+    if (child.getAttribute(YJS_HIDDEN_KEY) === true) continue;
+    if (child.getAttribute(YJS_VIRTUAL_PLACEHOLDER_KEY) === true) {
+      if (projection === null) return;
+
+      const node = projection.slotNodeOf(child);
+
+      placeholders.push([child, node]);
+      if (node === null || shown.has(node)) continue;
+      if (!(node instanceof Y.XmlElement) || !noteId(node)) {
+        lists.set(element, null);
+
+        return;
+      }
+      shown.add(node);
+      room.shownBy.set(node, child);
+      indexes.set(child, children.length);
+      children.push(node);
+      continue;
+    }
+    if (!noteId(child)) {
+      lists.set(element, null);
+
+      return;
+    }
+    shown.add(child);
+    indexes.set(child, children.length);
+    children.push(child);
+  }
+  countCoreWork('yjsChildrenRead', children.length);
+  lists.set(element, {
+    ids,
+    indexOfRawChild: (child) => indexes.get(child) ?? -1,
+    joinsChecked: joinedYjsIds(doc).length,
+    length: children.length,
+    placeholders,
+    placeholdersCheckedAt: placeholders.length > 0 ? room.reshapes : null,
+    shownNodeAt: (index) => children[index],
+  });
+};
+
+/** @internal */
+export const plainYjsChildren = (
+  element: Y.XmlElement
+): PlainYjsChildren | null => {
+  const { doc } = element;
+  const room = plainYjsListsOf(doc);
+
+  if (doc === null || room === null) return null;
+
+  const { lists } = room;
+  const kept = lists.get(element);
+
+  const projection = projectYjsRoot(rootOfYjsNode(element));
+
+  if (
+    kept &&
+    kept.placeholdersCheckedAt !== null &&
+    kept.placeholdersCheckedAt !== room.reshapes
+  ) {
+    if (
+      kept.placeholders.every(
+        ([placeholder, node]) => projection.slotNodeOf(placeholder) === node
+      )
+    ) {
+      kept.placeholdersCheckedAt = room.reshapes;
+    } else {
+      lists.delete(element);
+    }
+  }
+  if (!lists.has(element)) {
+    notePlainYjsChildren(
+      element,
+      readYjsChildrenNotingPlainList(element),
+      projection
+    );
+  }
+
+  const list = lists.get(element);
+
+  if (!list) return null;
+  if (takesJoinedYjsLines(list, doc)) {
+    lists.set(element, null);
+
+    return null;
+  }
+
+  return list;
+};
+
+/** @internal */
+export const keptYjsPlaceholderOf = (node: YjsNode): Y.XmlElement | null => {
+  const room = plainYjsListsOf(node.doc);
+  const placeholder = room?.shownBy.get(node);
+  const parent = placeholder?.parent;
+  const list =
+    parent instanceof Y.XmlElement ? room?.lists.get(parent) : undefined;
+
+  return placeholder &&
+    list &&
+    list.placeholdersCheckedAt === room?.reshapes &&
+    list.shownNodeAt(list.indexOfRawChild(placeholder)) === node
+    ? placeholder
+    : null;
+};
+
 declare const yjsWriteBrand: unique symbol;
 
 /**
@@ -334,11 +601,20 @@ export type YjsWrite = Readonly<{
   root: Y.XmlElement;
 }>;
 
+declare const yjsSynchronizedIndexBrand: unique symbol;
+
+/** @internal */
+export type YjsSynchronizedIndex = RootProjectionIndex & {
+  readonly [yjsSynchronizedIndexBrand]: true;
+};
+
+type YjsIndexReach = 'children' | 'ids';
+
 type YjsLentIndex = Readonly<{
   /** The element this lowering made to show each id. */
   chosen: Map<string, Y.XmlElement>;
-  answersChildren: boolean;
   index: RootProjectionIndex;
+  reach: YjsIndexReach;
 }>;
 
 type YjsNotes = Readonly<{
@@ -390,14 +666,14 @@ const noteWrite = (write: YjsWrite): YjsLentIndex | null => {
 const lend = <T>(
   scope: YjsScope,
   index: RootProjectionIndex,
-  answersChildren: boolean,
+  reach: YjsIndexReach,
   run: () => T
 ): T => {
   const previous = scope.loan;
   const loan = {
-    answersChildren,
     chosen: new Map<string, Y.XmlElement>(),
     index,
+    reach,
   };
 
   scope.loan = loan;
@@ -570,33 +846,41 @@ export const withYjsRootIndex = <T>(
   write: YjsWrite,
   index: RootProjectionIndex,
   lower: () => T
-): T => lend(scopeOf(write), index, true, lower);
+): T => lend(scopeOf(write), index, 'children', lower);
 
-/**
- * Runs `read` with `index` resolving the virtual references of `root`'s tree.
- * Child reads skip the index, whose slots still hold the root before a remote
- * batch.
- *
- * @internal
- */
-export const withYjsRootIds = <T>(
+const lendToRead = <T>(
   root: Y.XmlElement,
   index: RootProjectionIndex,
+  reach: YjsIndexReach,
   read: () => T
 ): T => {
   const open = scopes.get(root);
 
-  if (open) return lend(open, index, false, read);
+  if (open) return lend(open, index, reach, read);
 
   const scope = openYjsScope(null);
 
   scopes.set(root, scope);
   try {
-    return lend(scope, index, false, read);
+    return lend(scope, index, reach, read);
   } finally {
     scopes.delete(root);
   }
 };
+
+/** @internal */
+export const withYjsRootIds = <T>(
+  root: Y.XmlElement,
+  index: RootProjectionIndex,
+  read: () => T
+): T => lendToRead(root, index, 'ids', read);
+
+/** @internal */
+export const withYjsSynchronizedIndex = <T>(
+  root: Y.XmlElement,
+  index: YjsSynchronizedIndex,
+  read: () => T
+): T => lendToRead(root, index, 'children', read);
 
 const loanOf = (root: Y.XmlElement): YjsLentIndex | null =>
   scopes.get(root)?.loan ?? null;
@@ -604,8 +888,14 @@ const loanOf = (root: Y.XmlElement): YjsLentIndex | null =>
 const lentIndexOf = (parent: Y.XmlElement): RootProjectionIndex | null => {
   const loan = loanOf(parent);
 
-  return loan?.answersChildren ? loan.index : null;
+  return loan?.reach === 'children' ? loan.index : null;
 };
+
+/** @internal */
+export const indexedYjsRootChild = (
+  root: Y.XmlElement,
+  node: YjsNode
+): number | null => lentIndexOf(root)?.indexOf(node) ?? null;
 
 /**
  * What a root index is built from, or null for a root that shows a virtual
@@ -733,6 +1023,7 @@ const insertRawYjsChildren = (
   rawIndex: number,
   children: YjsNode[]
 ): void => {
+  countCoreWork('yjsItemSteps', rawIndex);
   parent.insert(rawIndex, children);
 
   const loan = noteWrite(write);
@@ -740,7 +1031,7 @@ const insertRawYjsChildren = (
   if (loan === null) return;
   for (const child of children) noteInsertedIds(loan.index, child);
   if (
-    loan.answersChildren &&
+    loan.reach === 'children' &&
     parent === write.root &&
     !loan.index.insert(
       rawIndex,
@@ -860,9 +1151,10 @@ const deleteRawYjsChildren = (
 
   const loan = noteWrite(write);
 
-  if (loan?.answersChildren && parent === write.root) {
+  if (loan?.reach === 'children' && parent === write.root) {
     loan.index.delete(rawIndex, count);
   }
+  countCoreWork('yjsItemSteps', rawIndex);
   parent.delete(rawIndex, count);
 };
 
@@ -874,7 +1166,7 @@ const deleteRawYjsChildren = (
 const localLending = (write: YjsWrite): YjsLentIndex | null => {
   const { loan } = scopeOf(write);
 
-  return loan?.answersChildren ? loan : null;
+  return loan?.reach === 'children' ? loan : null;
 };
 
 /**
@@ -976,13 +1268,13 @@ const writeYjsVisibility = (
     loan?.index.noteReferrer(value, node);
     // A local write shows the node where the user put it, so removing the
     // move's source keeps this element and drops the node's other ones.
-    if (loan?.answersChildren) loan.chosen.set(value, node);
+    if (loan?.reach === 'children') loan.chosen.set(value, node);
   }
 
   const { parent } = node;
 
   if (
-    loan?.answersChildren &&
+    loan?.reach === 'children' &&
     parent === write.root &&
     !loan.index.show(readYjsRootSlot(write.root, node))
   ) {
@@ -991,7 +1283,7 @@ const writeYjsVisibility = (
 };
 
 const pushRawYjsChildren = (target: YjsNode[], node: Y.XmlElement): void => {
-  const rawChildren = readYjsChildren(node);
+  const rawChildren = readYjsChildrenNotingPlainList(node);
   let index = 0;
 
   while (index < rawChildren.length) {
@@ -1111,6 +1403,7 @@ const rawIndexIn = (parent: Y.XmlElement, child: YjsNode): number => {
   let index = 0;
 
   for (let item = parent._start; item !== null; item = item.right) {
+    countCoreWork('yjsItemSteps');
     if (item.deleted || !item.countable) continue;
     if (item.content instanceof Y.ContentType && item.content.type === child) {
       return index;
@@ -1121,12 +1414,59 @@ const rawIndexIn = (parent: Y.XmlElement, child: YjsNode): number => {
   return -1;
 };
 
+type YjsPlaceStep = Readonly<{ child: YjsNode; parent: Y.XmlElement }> | number;
+
+const positionOfStep = (step: YjsPlaceStep): number =>
+  typeof step === 'number' ? step : rawIndexIn(step.parent, step.child);
+
+const compareSiblings = (left: YjsNode, right: YjsNode): number => {
+  for (
+    let after = left._item?.right ?? null, before = left._item?.left ?? null;
+    after !== null || before !== null;
+  ) {
+    if (after !== null) {
+      countCoreWork('yjsItemSteps');
+      if (
+        after.content instanceof Y.ContentType &&
+        after.content.type === right
+      ) {
+        return -1;
+      }
+      after = after.right;
+    }
+    if (before !== null) {
+      countCoreWork('yjsItemSteps');
+      if (
+        before.content instanceof Y.ContentType &&
+        before.content.type === right
+      ) {
+        return 1;
+      }
+      before = before.left;
+    }
+  }
+
+  return 0;
+};
+
 const compareDocumentPositions = (
-  left: readonly number[],
-  right: readonly number[]
+  left: readonly YjsPlaceStep[],
+  right: readonly YjsPlaceStep[]
 ): number => {
   for (let depth = 0; depth < Math.min(left.length, right.length); depth++) {
-    const order = left[depth] - right[depth];
+    const a = left[depth];
+    const b = right[depth];
+
+    if (
+      typeof a !== 'number' &&
+      typeof b !== 'number' &&
+      a.parent === b.parent
+    ) {
+      if (a.child !== b.child) return compareSiblings(a.child, b.child);
+      continue;
+    }
+
+    const order = positionOfStep(a) - positionOfStep(b);
 
     if (order !== 0) return order;
   }
@@ -1430,8 +1770,11 @@ export class YjsProjection {
     return { kind: 'child', parent };
   }
 
-  private positionOf(node: YjsNode, reads: YjsReferenceReads): number[] | null {
-    const position: number[] = [];
+  private positionOf(
+    node: YjsNode,
+    reads: YjsReferenceReads
+  ): YjsPlaceStep[] | null {
+    const position: YjsPlaceStep[] = [];
     const read = new Set<YjsNode>();
 
     for (let current = node; ;) {
@@ -1444,7 +1787,7 @@ export class YjsProjection {
 
       if (step === null) return null;
       if (step.kind === 'child') {
-        position.push(rawIndexIn(step.parent, current));
+        position.push({ child: current, parent: step.parent });
       } else if (step.kind === 'virtual') {
         position.push(VIRTUAL_YJS_CHILD_RAW_INDEX);
       } else if (step.kind === 'strand') {
@@ -1486,7 +1829,7 @@ export class YjsProjection {
 
     const reads = this.readsWhileResolving(resolving);
     let shown: Y.XmlElement | null = null;
-    let shownAt: number[] | null = null;
+    let shownAt: YjsPlaceStep[] | null = null;
 
     for (const element of elements) {
       const at = this.positionOf(element, reads);

@@ -4,7 +4,7 @@ import type {
   SnapshotIndex,
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
-import { type Path, PathApi } from '../interfaces/path';
+import type { Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
 import {
   assignFreshNodeKey,
@@ -16,8 +16,15 @@ import {
   wasNodeKeyMintedSince,
 } from '../utils/node-keys';
 import type { DocumentChangeRuntimeCandidate } from './change/classification';
-import type { DocumentIndex } from './change/document-index';
-import { getRootChangeRelocations } from './change/mapping';
+import { DocumentIndex, type NodeList } from './change/document-index';
+import { jsonEqual } from './change/json';
+import {
+  compareRelocationPaths,
+  groupRelocationCandidates,
+  hasIndexedPathAncestor,
+  type RelocationCandidate,
+  type StructuralFingerprint,
+} from './change/mapping';
 import {
   isRootChangePositionReplaced,
   mapRootChangePositionBackward,
@@ -29,9 +36,21 @@ import {
   getDocumentSliceNodeKeys,
   getPreparedDocumentSlice,
   getPreparedDocumentNodeKey,
-  getPreparedDocumentRuntimePath,
   isDeferredPreparedDocumentSlice,
+  type JsonNode,
 } from './change/tokens';
+import {
+  admitRoot,
+  type KeyOf,
+  ROOT_LIST,
+  type Topology,
+  TopologyBuilder,
+  topologyElements,
+  topologyEntries,
+  topologyKeyAt,
+  topologyPathOf,
+  topologyRetained,
+} from './identity-owner';
 import { profileCoreDuration } from './profiling';
 import { countCoreWork } from './work';
 
@@ -55,26 +74,23 @@ const SNAPSHOT_ELEMENT_ENTRIES = new WeakMap<
 >();
 const SNAPSHOT_INDEX_CACHED_PATHS = new WeakMap<
   SnapshotIndex,
-  (nodeKey: NodeKey) => Path | null | undefined
+  ReadonlyMap<NodeKey, Path | null>
 >();
 const NODE_KEY_MARKS = new WeakMap<SnapshotIndex, number>();
-
-const predatesIndex = (
-  editor: Editor,
-  index: SnapshotIndex,
-  nodeKey: NodeKey
-) => {
-  const mark = NODE_KEY_MARKS.get(index);
-
-  return mark !== undefined && !wasNodeKeyMintedSince(editor, nodeKey, mark);
-};
+const KNOWN_LOOKUPS = new WeakMap<
+  SnapshotIndex,
+  Readonly<{
+    keyAt: (path: Path) => NodeKey | null | undefined;
+    pathOf: (nodeKey: NodeKey) => Path | null | undefined;
+  }>
+>();
 
 export const indexSurelyHoldsNodeKey = (
   editor: Editor,
   index: SnapshotIndex,
   nodeKey: NodeKey
 ) => {
-  const cached = SNAPSHOT_INDEX_CACHED_PATHS.get(index)?.(nodeKey);
+  const cached = SNAPSHOT_INDEX_CACHED_PATHS.get(index)?.get(nodeKey);
 
   if (cached !== undefined) return cached !== null;
   const mark = NODE_KEY_MARKS.get(index);
@@ -92,6 +108,10 @@ export const EMPTY_RUNTIME_INDEX: SnapshotIndex = Object.freeze({
 });
 
 SNAPSHOT_ELEMENT_ENTRIES.set(EMPTY_RUNTIME_INDEX, () => EMPTY_ELEMENT_ENTRIES);
+KNOWN_LOOKUPS.set(EMPTY_RUNTIME_INDEX, {
+  keyAt: () => null,
+  pathOf: () => null,
+});
 
 /**
  * Query element types through the snapshot index lifecycle.
@@ -239,7 +259,6 @@ export const buildSnapshotIndex = (
     if (materializedEntries) return materializedEntries;
 
     return profileCoreDuration('runtime-index-full-build', () => {
-      countCoreWork('snapshotIndexWalks');
       ensureElementPaths();
       const entries: Array<readonly [NodeKey, Path]> = [];
 
@@ -303,10 +322,20 @@ export const buildSnapshotIndex = (
     },
   });
 
-  SNAPSHOT_INDEX_CACHED_PATHS.set(index, (nodeKey) =>
-    idToPathCache.get(nodeKey)
-  );
+  SNAPSHOT_INDEX_CACHED_PATHS.set(index, idToPathCache);
   NODE_KEY_MARKS.set(index, nodeKeyMark);
+  KNOWN_LOOKUPS.set(index, {
+    keyAt: (path) => {
+      const cached = pathToIdCache.get(pathKey(path));
+
+      if (cached !== undefined || materializedEntries) return cached ?? null;
+      const node = nodeAt(path);
+
+      return node ? (getNodeKeyForNode(node, editor) ?? undefined) : null;
+    },
+    pathOf: (nodeKey) =>
+      idToPathCache.get(nodeKey) ?? (materializedEntries ? null : undefined),
+  });
 
   const queryElements = createElementEntryQuery(elementEntriesByType, keyAt);
 
@@ -317,126 +346,208 @@ export const buildSnapshotIndex = (
   return index;
 };
 
-type StructuralSnapshotIndexMappingSegment = Readonly<{
+type MappingSegment = Readonly<{
   after: DocumentIndex;
   before: DocumentIndex;
   change: RootChange;
-  span: number;
 }>;
 
-type PathStableSnapshotIndexMappingSegment = Readonly<{
-  after: DocumentIndex;
-  before: DocumentIndex;
-  change: null;
-  span: number;
-}>;
+const TOPOLOGIES = new WeakMap<SnapshotIndex, Topology>();
+const VERSION_ENTRIES = new WeakMap<
+  Topology,
+  ReadonlyArray<readonly [NodeKey, Path]>
+>();
+const REGISTERED = new WeakMap<Editor, WeakMap<object, SnapshotIndex>>();
 
-type SnapshotIndexMappingSegment =
-  | PathStableSnapshotIndexMappingSegment
-  | StructuralSnapshotIndexMappingSegment;
-
-type MappedSnapshotIndexDescriptor = Readonly<{
-  base: SnapshotIndex;
-  /** Chain identities whose nodes left the document. */
-  deletedNodeKeys: ReadonlySet<NodeKey>;
-  discardedNodeKeys: ReadonlySet<NodeKey>;
-  preparedRuntimePlacements: readonly PreparedRuntimePlacement[];
-  runtimeAssignments: ReadonlyArray<readonly [NodeKey, Path]>;
-  segments: readonly SnapshotIndexMappingSegment[];
-}>;
-
-type PreparedRuntimePlacement = Readonly<{
-  bounds: readonly [Path, Path] | null;
-  fromDeferredView: boolean;
-  index: number;
-  offset: number;
-  parentPath: Path;
-  rootCount: number;
-  segments: readonly SnapshotIndexMappingSegment[];
-  slice: PreparedTokenSlice;
-}>;
-
-const MAPPED_SNAPSHOT_INDEXES = new WeakMap<
+const VERSION_DOCUMENTS = new WeakMap<
   SnapshotIndex,
-  MappedSnapshotIndexDescriptor
+  Readonly<{
+    document: DocumentIndex;
+    movedFrom: WeakSet<DocumentIndex> | null;
+  }>
 >();
 
-type MappedElementIndexDescriptor = Readonly<{
-  additions: readonly ElementPathEntry[];
-  after: DocumentIndex;
-  base: SnapshotIndex;
-  segments: readonly SnapshotIndexMappingSegment[];
-}>;
+const sequenceOf = (index: SnapshotIndex, before: DocumentIndex) => {
+  const known = VERSION_DOCUMENTS.get(index);
 
-const MAPPED_ELEMENT_INDEXES = new WeakMap<
-  SnapshotIndex,
-  MappedElementIndexDescriptor
->();
-
-// Each mapping copies its source's overlay forward entry by entry. Past this
-// size, resolving every identity once is cheaper than copying the overlay
-// through every later update: a whole-document replacement would otherwise
-// make each following edit O(document). Deletion memory is only a cache under
-// the same bound.
-const MAX_CARRIED_OVERLAY = 256;
-
-const rebaseLargeSnapshotIndexOverlay = (index: SnapshotIndex) => {
-  const descriptor = MAPPED_SNAPSHOT_INDEXES.get(index);
-  const elementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
-  const overlay =
-    (descriptor
-      ? descriptor.runtimeAssignments.length +
-        descriptor.discardedNodeKeys.size +
-        descriptor.preparedRuntimePlacements.length
-      : 0) + (elementDescriptor?.additions.length ?? 0);
-
-  if (overlay <= MAX_CARRIED_OVERLAY) return;
-
-  index.entries();
-  // A rollback may restore provenance on an index that already materialized.
-  MAPPED_SNAPSHOT_INDEXES.delete(index);
-  MAPPED_ELEMENT_INDEXES.delete(index);
+  if (
+    !known ||
+    known.document === before ||
+    (known.document.length === 0 && before.length === 0)
+  ) {
+    return 'next';
+  }
+  if (known.movedFrom?.has(before)) return 'fork';
+  throw new Error(
+    `Snapshot index mappings are not sequential: previous target length ${known.document.length}, next source length ${before.length}.`
+  );
 };
 
-/**
- * Capture lazy provenance so an aborted editor draft can restore it.
- *
- * @internal
- */
-export const captureSnapshotIndexMapping = (index: SnapshotIndex) => {
-  const descriptor = MAPPED_SNAPSHOT_INDEXES.get(index);
-  const elementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
+const versionOf = (
+  topology: Topology,
+  editor: Editor,
+  document?: DocumentIndex
+): SnapshotIndex => {
+  const keyAt = (path: Path) => topologyKeyAt(topology, path);
+  const pathOf = (nodeKey: NodeKey) => topologyPathOf(topology, nodeKey);
+  const index: SnapshotIndex = Object.freeze({
+    entries: () => {
+      let entries = VERSION_ENTRIES.get(topology);
 
-  return () => {
-    if (descriptor) MAPPED_SNAPSHOT_INDEXES.set(index, descriptor);
-    else MAPPED_SNAPSHOT_INDEXES.delete(index);
-    if (elementDescriptor) {
-      MAPPED_ELEMENT_INDEXES.set(index, elementDescriptor);
-    } else {
-      MAPPED_ELEMENT_INDEXES.delete(index);
-    }
-  };
+      if (!entries) {
+        entries = topologyEntries(topology);
+        VERSION_ENTRIES.set(topology, entries);
+      }
+
+      return entries;
+    },
+    keyAt,
+    pathOf,
+  });
+
+  TOPOLOGIES.set(index, topology);
+  if (document) {
+    VERSION_DOCUMENTS.set(index, { document, movedFrom: null });
+  }
+  NODE_KEY_MARKS.set(index, getNodeKeyMark(editor));
+  KNOWN_LOOKUPS.set(index, { keyAt, pathOf });
+  SNAPSHOT_ELEMENT_ENTRIES.set(index, (types) =>
+    Object.freeze(
+      topologyElements(topology, types).map((entry) => Object.freeze(entry))
+    )
+  );
+
+  return index;
 };
-const SEGMENT_MOVES = new WeakMap<
-  SnapshotIndexMappingSegment,
-  ReturnType<RootChange['movedNode']>
->();
-const SEGMENT_RELOCATIONS = new WeakMap<
-  SnapshotIndexMappingSegment,
-  ReturnType<typeof getRootChangeRelocations>
->();
-const SEGMENT_MAY_RELOCATE = new WeakMap<
-  SnapshotIndexMappingSegment,
-  boolean
->();
-let nextDraftNodeKeyOrdinal = 0;
 
-const allocateDraftNodeKey = (): NodeKey => {
-  const ordinal = nextDraftNodeKeyOrdinal;
+/** @internal */
+export const readIdentityRetained = (index: SnapshotIndex) => {
+  const topology = TOPOLOGIES.get(index);
 
-  nextDraftNodeKeyOrdinal += 1;
+  return topology ? topologyRetained(topology) : null;
+};
 
-  return `d${ordinal.toString(36)}` as NodeKey;
+const registryOf = (editor: Editor) => {
+  let registry = REGISTERED.get(editor);
+
+  if (!registry) {
+    registry = new WeakMap();
+    REGISTERED.set(editor, registry);
+  }
+
+  return registry;
+};
+
+type ChildrenList =
+  | DocumentIndex
+  | NodeList<unknown>
+  | readonly Descendant[]
+  | readonly unknown[];
+
+const registryKeysOf = (children: ChildrenList): object[] => {
+  if (children instanceof DocumentIndex) {
+    return [
+      children.nodes,
+      ...(children.builtValue ? [children.builtValue] : []),
+    ];
+  }
+
+  const nodes = DocumentIndex.nodesOf(children);
+
+  return nodes === children ? [children] : [children, nodes];
+};
+
+const registeredVersion = (editor: Editor, children: ChildrenList) => {
+  const registry = registryOf(editor);
+
+  for (const key of registryKeysOf(children)) {
+    const known = registry.get(key);
+
+    if (known) return known;
+  }
+
+  return undefined;
+};
+
+const register = (
+  editor: Editor,
+  children: ChildrenList,
+  index: SnapshotIndex
+) => {
+  const registry = registryOf(editor);
+
+  for (const key of registryKeysOf(children)) registry.set(key, index);
+};
+
+/** @internal */
+export const hasRegisteredSnapshotIndex = (
+  editor: Editor,
+  children: ChildrenList
+) => !!registeredVersion(editor, children);
+
+const forEachChild = (
+  children: ChildrenList,
+  visit: (node: Descendant, index: number) => void
+) => {
+  if (children instanceof DocumentIndex) {
+    children.nodes.forEach((node, index) =>
+      visit(node as unknown as Descendant, index)
+    );
+  } else {
+    (children as NodeList<unknown>).forEach((node, index) =>
+      visit(node as Descendant, index)
+    );
+  }
+};
+
+const admitList = (editor: Editor, children: ChildrenList, keyOf: KeyOf) =>
+  admitRoot({ forEach: (visit) => forEachChild(children, visit) }, keyOf);
+
+/** @internal */
+export const snapshotIndexOf = (
+  editor: Editor,
+  children: ChildrenList
+): SnapshotIndex => {
+  const known = registeredVersion(editor, children);
+
+  if (known) return known;
+  countCoreWork('snapshotIndexes');
+  const index = versionOf(
+    admitList(editor, children, (node) => getOrCreateNodeKey(node, editor)),
+    editor
+  );
+
+  register(editor, children, index);
+  return index;
+};
+
+/** @internal */
+export const seedSnapshotIndex = (
+  editor: Editor,
+  children: readonly Descendant[]
+) => {
+  const index = versionOf(
+    admitList(editor, children, (node) => getOrCreateNodeKey(node, editor)),
+    editor
+  );
+
+  register(editor, children, index);
+  return index;
+};
+
+const topologyOf = (
+  index: SnapshotIndex,
+  document: DocumentIndex,
+  editor: Editor
+) => {
+  const known = TOPOLOGIES.get(index);
+
+  if (known) return known;
+  if (index === EMPTY_RUNTIME_INDEX) {
+    return admitList(editor, document, () => null);
+  }
+
+  return admitList(editor, document, (_node, path) => index.keyAt(path));
 };
 
 const assertMappingLengths = (
@@ -456,83 +567,25 @@ const assertMappingLengths = (
   }
 };
 
-const createMappingSegment = (
-  before: DocumentIndex,
-  after: DocumentIndex,
-  change: RootChange,
-  span = 1
-): StructuralSnapshotIndexMappingSegment => {
-  assertMappingLengths(before, after, change);
+const SEGMENT_MOVES = new WeakMap<
+  MappingSegment,
+  ReturnType<RootChange['movedNode']>
+>();
+const SEGMENT_RELOCATIONS = new WeakMap<
+  MappingSegment,
+  ReadonlyArray<Readonly<{ path: Path; targetPath: Path }>>
+>();
+let nextDraftNodeKeyOrdinal = 0;
 
-  return Object.freeze({ after, before, change, span });
+const allocateDraftNodeKey = (): NodeKey => {
+  const ordinal = nextDraftNodeKeyOrdinal;
+
+  nextDraftNodeKeyOrdinal += 1;
+
+  return `d${ordinal.toString(36)}` as NodeKey;
 };
 
-const createPathStableMappingSegment = (
-  before: DocumentIndex,
-  after: DocumentIndex,
-  span = 1
-): PathStableSnapshotIndexMappingSegment =>
-  Object.freeze({ after, before, change: null, span });
-
-const compactMappingSegments = (
-  previous: readonly SnapshotIndexMappingSegment[],
-  next: SnapshotIndexMappingSegment
-) => {
-  const segments = [...previous, next];
-
-  if (
-    segments.length > 1 &&
-    getDefined(segments.at(-1)).change === null &&
-    getDefined(segments.at(-2)).change === null
-  ) {
-    const right = getDefined(segments.pop());
-    const left = getDefined(segments.pop());
-
-    segments.push(
-      createPathStableMappingSegment(
-        left.before,
-        right.after,
-        left.span + right.span
-      )
-    );
-  }
-
-  // Consecutive path-stable changes share one identity-path segment: composing
-  // their document-wide token changes would create periodic O(document) carry
-  // costs even though every runtime path stays identical. Structural
-  // equal-span carries still form a binary counter, so each structural edit
-  // participates in at most O(log edits) compositions. Path-stable segments
-  // are barriers because token positions can change across them.
-  while (
-    segments.length > 1 &&
-    getDefined(segments.at(-1)).span === getDefined(segments.at(-2)).span &&
-    getDefined(segments.at(-1)).change !== null &&
-    getDefined(segments.at(-2)).change !== null
-  ) {
-    const right = segments.pop() as StructuralSnapshotIndexMappingSegment;
-    const left = segments.pop() as StructuralSnapshotIndexMappingSegment;
-
-    if (left.after !== right.before) {
-      throw new Error(
-        `Snapshot index mappings are not sequential: previous target length ${left.after.length}, next source length ${right.before.length}.`
-      );
-    }
-
-    segments.push(
-      createMappingSegment(
-        left.before,
-        right.after,
-        left.change.compose(right.change),
-        left.span + right.span
-      )
-    );
-  }
-
-  return Object.freeze(segments);
-};
-
-const getSegmentMove = (segment: SnapshotIndexMappingSegment) => {
-  if (!segment.change) return null;
+const getSegmentMove = (segment: MappingSegment) => {
   if (SEGMENT_MOVES.has(segment)) return SEGMENT_MOVES.get(segment) ?? null;
 
   const move = segment.change.movedNode(segment.before);
@@ -542,45 +595,188 @@ const getSegmentMove = (segment: SnapshotIndexMappingSegment) => {
   return move;
 };
 
-const getSegmentRelocations = (segment: SnapshotIndexMappingSegment) => {
-  if (!segment.change) return Object.freeze([]);
+const segmentMayRelocate = (segment: MappingSegment) =>
+  segment.change.data.some(
+    (data) =>
+      data instanceof PreparedTokenSlice &&
+      !getPreparedDocumentSlice(data) &&
+      !isDeferredPreparedDocumentSlice(data) &&
+      data.tokens.some((token) => token.kind === 'open')
+  );
+
+const keepsNodeInPlace = (
+  before: DocumentIndex,
+  after: DocumentIndex,
+  path: readonly number[]
+) => {
+  const shares = (left: JsonNode, right: JsonNode): boolean => {
+    if (left === right) return true;
+    if (!left.children || !right.children) return false;
+    const rightChildren = right.children;
+
+    return left.children.some(
+      (child, index) =>
+        index < rightChildren.length && shares(child, rightChildren[index])
+    );
+  };
+  const left = before.find(path);
+  const right = after.find(path);
+
+  return !!left && !!right && shares(left, right);
+};
+
+const getSegmentRelocations = (segment: MappingSegment) => {
   let relocations = SEGMENT_RELOCATIONS.get(segment);
 
-  if (!relocations) {
-    relocations = getRootChangeRelocations(
-      segment.change,
-      segment.before,
-      segment.after
-    );
+  if (relocations) return relocations;
+  const moved = getSegmentMove(segment);
+
+  if (moved) {
+    relocations = Object.freeze([
+      Object.freeze({
+        path: [...moved.path] as Path,
+        targetPath: [...moved.targetPath] as Path,
+      }),
+    ]);
     SEGMENT_RELOCATIONS.set(segment, relocations);
+    return relocations;
   }
+  const beforeRanges: Array<readonly [number, number]> = [];
+  const afterRanges: Array<readonly [number, number]> = [];
+
+  segment.change.iterChangedRanges((fromA, toA, fromB, toB) => {
+    beforeRanges.push([fromA, toA]);
+    afterRanges.push([fromB, toB]);
+  });
+  type Straddler = { length: number; path: readonly number[] };
+  const touching = (
+    document: DocumentIndex,
+    ranges: ReadonlyArray<readonly [number, number]>
+  ) => {
+    const inside = new Map<string, RelocationCandidate & { length: number }>();
+    const straddling = new Map<string, Straddler>();
+
+    for (const [from, to] of ranges) {
+      for (const range of document.nodeRangesTouching(from, to)) {
+        const key = pathKey(range.path);
+
+        if (range.from >= from && range.to <= to) {
+          if (!inside.has(key)) {
+            countCoreWork('identityClaimsExamined');
+            inside.set(key, {
+              length: range.to - range.from,
+              node: document.node(range.path),
+              path: range.path,
+            });
+          }
+        } else if (!straddling.has(key)) {
+          straddling.set(key, {
+            length: range.to - range.from,
+            path: range.path,
+          });
+        }
+      }
+    }
+
+    return { inside, straddling };
+  };
+  const beforeTouching = touching(segment.before, beforeRanges);
+  const afterTouching = touching(segment.after, afterRanges);
+  const lengthsOf = (found: ReturnType<typeof touching>) =>
+    new Set(
+      [...found.inside.values(), ...found.straddling.values()].map(
+        ({ length }) => length
+      )
+    );
+  const contained = (
+    document: DocumentIndex,
+    found: ReturnType<typeof touching>,
+    otherLengths: ReadonlySet<number>
+  ) => {
+    const candidates: RelocationCandidate[] = [...found.inside.values()];
+
+    for (const straddler of found.straddling.values()) {
+      if (!otherLengths.has(straddler.length)) continue;
+      countCoreWork('identityClaimsExamined');
+      candidates.push({
+        node: document.node(straddler.path),
+        path: straddler.path,
+      });
+    }
+
+    return candidates;
+  };
+  const fingerprints = new WeakMap<object, StructuralFingerprint>();
+  const beforeBuckets = groupRelocationCandidates(
+    contained(segment.before, beforeTouching, lengthsOf(afterTouching)),
+    fingerprints
+  );
+  const afterBuckets = groupRelocationCandidates(
+    contained(segment.after, afterTouching, lengthsOf(beforeTouching)),
+    fingerprints
+  );
+  const candidates: Array<{ path: Path; targetPath: Path }> = [];
+
+  for (const [key, sourceGroups] of beforeBuckets) {
+    const targetGroups = afterBuckets.get(key);
+
+    if (!targetGroups) continue;
+    for (const sourceGroup of sourceGroups) {
+      if (sourceGroup.candidates.length !== 1) continue;
+      const targetGroup = targetGroups.find((group) =>
+        jsonEqual(sourceGroup.node, group.node)
+      );
+
+      if (!targetGroup || targetGroup.candidates.length !== 1) continue;
+      const source = sourceGroup.candidates[0];
+      const target = targetGroup.candidates[0];
+
+      if (pathKey(source.path) === pathKey(target.path)) {
+        continue;
+      }
+      if (
+        keepsNodeInPlace(segment.before, segment.after, source.path) ||
+        keepsNodeInPlace(segment.before, segment.after, target.path)
+      ) {
+        continue;
+      }
+      candidates.push({
+        path: [...source.path] as Path,
+        targetPath: [...target.path] as Path,
+      });
+    }
+  }
+  candidates.sort(
+    (left, right) =>
+      left.path.length - right.path.length ||
+      compareRelocationPaths(left.path, right.path)
+  );
+  const selected: Array<Readonly<{ path: Path; targetPath: Path }>> = [];
+  const selectedSources = new Set<string>();
+  const selectedTargets = new Set<string>();
+
+  for (const candidate of candidates) {
+    if (
+      hasIndexedPathAncestor(selectedSources, candidate.path) ||
+      hasIndexedPathAncestor(selectedTargets, candidate.targetPath)
+    ) {
+      continue;
+    }
+    selected.push(Object.freeze(candidate));
+    selectedSources.add(pathKey(candidate.path));
+    selectedTargets.add(pathKey(candidate.targetPath));
+  }
+  relocations = Object.freeze(selected);
+  SEGMENT_RELOCATIONS.set(segment, relocations);
 
   return relocations;
 };
 
-const segmentMayRelocate = (segment: StructuralSnapshotIndexMappingSegment) => {
-  let mayRelocate = SEGMENT_MAY_RELOCATE.get(segment);
-
-  if (mayRelocate === undefined) {
-    mayRelocate = segment.change.data.some(
-      (data) =>
-        data instanceof PreparedTokenSlice &&
-        !getPreparedDocumentSlice(data) &&
-        !isDeferredPreparedDocumentSlice(data) &&
-        data.tokens.some((token) => token.kind === 'open')
-    );
-    SEGMENT_MAY_RELOCATE.set(segment, mayRelocate);
-  }
-
-  return mayRelocate;
-};
-
 const mapRelocatedPath = (
-  segment: SnapshotIndexMappingSegment,
+  segment: MappingSegment,
   path: Path,
   direction: 'backward' | 'forward'
 ): Path | null => {
-  if (!segment.change) return null;
   if (!segmentMayRelocate(segment)) return null;
 
   for (const relocation of getSegmentRelocations(segment)) {
@@ -600,25 +796,7 @@ const mapRelocatedPath = (
   return null;
 };
 
-const positionWasReplaced = (
-  change: RootChange,
-  position: number,
-  side: 'after' | 'before'
-) => isRootChangePositionReplaced(change, position, side);
-
-const mapPathForward = (
-  segment: SnapshotIndexMappingSegment,
-  path: Path
-): Path | null => {
-  if (!segment.change) {
-    try {
-      segment.after.node(path);
-
-      return [...path] as Path;
-    } catch {
-      return null;
-    }
-  }
+const mapPathForward = (segment: MappingSegment, path: Path): Path | null => {
   const moved = getSegmentMove(segment);
 
   if (
@@ -637,7 +815,7 @@ const mapPathForward = (
     return null;
   }
 
-  if (positionWasReplaced(segment.change, position, 'before')) {
+  if (isRootChangePositionReplaced(segment.change, position, 'before')) {
     return mapRelocatedPath(segment, path, 'forward');
   }
 
@@ -653,19 +831,7 @@ const mapPathForward = (
 
 // The inverse's move and relocations are this segment's, read the other way,
 // so a path maps back through the sections without inverting the change.
-const mapPathBackward = (
-  segment: SnapshotIndexMappingSegment,
-  path: Path
-): Path | null => {
-  if (!segment.change) {
-    try {
-      segment.before.node(path);
-
-      return [...path] as Path;
-    } catch {
-      return null;
-    }
-  }
+const mapPathBackward = (segment: MappingSegment, path: Path): Path | null => {
   const moved = getSegmentMove(segment);
 
   if (
@@ -684,7 +850,7 @@ const mapPathBackward = (
     return null;
   }
 
-  if (positionWasReplaced(segment.change, position, 'after')) {
+  if (isRootChangePositionReplaced(segment.change, position, 'after')) {
     return mapRelocatedPath(segment, path, 'backward');
   }
 
@@ -702,6 +868,15 @@ const mapPathBackward = (
     ? ([...entry.path] as Path)
     : mapRelocatedPath(segment, path, 'backward');
 };
+
+type PreparedRuntimePlacement = Readonly<{
+  fromDeferredView: boolean;
+  index: number;
+  offset: number;
+  parentPath: Path;
+  rootCount: number;
+  slice: PreparedTokenSlice;
+}>;
 
 const placementKeysAdopted = (
   placement: PreparedRuntimePlacement,
@@ -723,7 +898,7 @@ const placementKeysAdopted = (
 };
 
 const preparedRuntimePlacementsFromSegment = (
-  segment: StructuralSnapshotIndexMappingSegment
+  segment: MappingSegment
 ): readonly PreparedRuntimePlacement[] => {
   const placements: PreparedRuntimePlacement[] = [];
   let position = 0;
@@ -741,7 +916,6 @@ const preparedRuntimePlacementsFromSegment = (
     sectionIndex += 1;
     const data = segment.change.data[dataIndex];
     const outputLength = inserted < 0 ? length : inserted;
-
     const slice =
       inserted >= 0 && data instanceof PreparedTokenSlice ? data : null;
     const view = slice && DOCUMENT_SLICE_DEFERRED_VIEWS.get(slice);
@@ -764,7 +938,6 @@ const preparedRuntimePlacementsFromSegment = (
           count += 1;
         }
       }
-
       const entry =
         count > 0
           ? segment.after.nodeStartingAt(
@@ -784,16 +957,11 @@ const preparedRuntimePlacementsFromSegment = (
         ) {
           placements.push(
             Object.freeze({
-              bounds: Object.freeze([
-                Object.freeze(firstPath),
-                Object.freeze([...parentPath, index + count - 1] as Path),
-              ] as const),
               fromDeferredView: true,
               index,
               offset: first,
               parentPath: Object.freeze(parentPath),
               rootCount: count,
-              segments: Object.freeze([]),
               slice: view.source,
             })
           );
@@ -821,16 +989,11 @@ const preparedRuntimePlacementsFromSegment = (
         ) {
           placements.push(
             Object.freeze({
-              bounds: Object.freeze([
-                Object.freeze(firstPath),
-                Object.freeze(lastPath),
-              ] as const),
               fromDeferredView: false,
               index: boundary.index,
               offset: 0,
               parentPath: Object.freeze([...boundary.parentPath]),
               rootCount: prepared.nodes.length,
-              segments: Object.freeze([]),
               slice: data,
             })
           );
@@ -842,71 +1005,6 @@ const preparedRuntimePlacementsFromSegment = (
   }
 
   return Object.freeze(placements);
-};
-
-const advancePlacementBounds = (
-  placement: PreparedRuntimePlacement,
-  segment: SnapshotIndexMappingSegment
-): PreparedRuntimePlacement['bounds'] | 'removed' => {
-  if (!placement.bounds || !segment.change) return placement.bounds;
-  const { after, before, change } = segment;
-  const from = getDefined(
-    change.mapPos(before.nodeRange(placement.bounds[0]).from, 1)
-  );
-  const to = getDefined(
-    change.mapPos(before.nodeRange(placement.bounds[1]).to, -1)
-  );
-
-  if (to <= from) return 'removed';
-
-  const start = after.childBoundaryAt(from);
-  const end = after.childBoundaryAt(to);
-
-  return start && end && PathApi.equals(start.parentPath, end.parentPath)
-    ? Object.freeze([
-        Object.freeze([...start.parentPath, start.index] as Path),
-        Object.freeze([...end.parentPath, end.index - 1] as Path),
-      ] as const)
-    : null;
-};
-
-const advancePreparedRuntimePlacements = (
-  placements: readonly PreparedRuntimePlacement[],
-  segment: SnapshotIndexMappingSegment
-) =>
-  placements.flatMap((placement) => {
-    const bounds = advancePlacementBounds(placement, segment);
-
-    if (bounds === 'removed') return [];
-
-    return [
-      Object.freeze({
-        ...placement,
-        bounds,
-        segments: compactMappingSegments(placement.segments, segment),
-      }),
-    ];
-  });
-
-const preparedOriginPath = (
-  placement: PreparedRuntimePlacement,
-  localPath: readonly number[]
-): Path | null => {
-  const rootIndex = localPath[0];
-
-  if (
-    rootIndex === undefined ||
-    rootIndex < placement.offset ||
-    rootIndex >= placement.offset + placement.rootCount
-  ) {
-    return null;
-  }
-
-  return [
-    ...placement.parentPath,
-    placement.index + rootIndex - placement.offset,
-    ...localPath.slice(1),
-  ] as Path;
 };
 
 const preparedLocalPath = (
@@ -927,34 +1025,6 @@ const preparedLocalPath = (
     rootIndex + placement.offset,
     ...originPath.slice(placement.parentPath.length + 1),
   ];
-};
-
-const mapPreparedPathForward = (
-  placement: PreparedRuntimePlacement,
-  path: Path
-) => {
-  let current: Path | null = path;
-
-  for (const segment of placement.segments) {
-    current = mapPathForward(segment, current);
-    if (!current) return null;
-  }
-
-  return current;
-};
-
-const mapPreparedPathBackward = (
-  placement: PreparedRuntimePlacement,
-  path: Path
-) => {
-  let current: Path | null = path;
-
-  for (let index = placement.segments.length - 1; index >= 0; index--) {
-    current = mapPathBackward(placement.segments[index], current);
-    if (!current) return null;
-  }
-
-  return current;
 };
 
 const comparePaths = (left: Path, right: Path) => {
@@ -979,57 +1049,19 @@ const orderPaths = (paths: Iterable<Path>) => {
   return ordered;
 };
 
-const collectChangedElementPaths = (
-  segment: StructuralSnapshotIndexMappingSegment
-) => {
-  const paths = new Map<string, ElementPathEntry>();
-  const addRange = (from: number, to: number) => {
-    for (const { path } of segment.after.nodeRangesTouching(from, to)) {
-      try {
-        const node = segment.after.node(path);
-
-        if (
-          'children' in node &&
-          Array.isArray(node.children) &&
-          typeof node.type === 'string'
-        ) {
-          const frozenPath = Object.freeze([...path]);
-
-          paths.set(
-            pathKey(frozenPath),
-            Object.freeze({ path: frozenPath, type: node.type })
-          );
-        }
-      } catch {
-        // A touching boundary may no longer address a node after replacement.
-      }
-    }
-  };
-
-  segment.change.iterChangedRanges(
-    (_fromBefore, _toBefore, fromAfter, toAfter) => {
-      addRange(fromAfter, toAfter);
-      addRange(fromAfter, fromAfter);
-      addRange(toAfter, toAfter);
-    }
-  );
-
-  return [...paths.values()];
-};
+type KeyAvailability = (nodeKey: NodeKey, targetPath: Path) => boolean;
 
 const mapChangedNodeKeys = (
-  segment: StructuralSnapshotIndexMappingSegment,
+  segment: MappingSegment,
   index: SnapshotIndex,
   editor: Editor,
   discarded: ReadonlySet<NodeKey>,
   preparedRuntimePlacements: readonly PreparedRuntimePlacement[],
   binding: NodeKeyBinding,
+  available: KeyAvailability,
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[]
 ) => {
   const publishNodeKeys = binding === 'publish';
-  const sourceHasPreparedRuntimePlacements =
-    (MAPPED_SNAPSHOT_INDEXES.get(index)?.preparedRuntimePlacements.length ??
-      0) > 0;
   const sourcePaths = new Map<string, Path>();
   const targetPaths = new Map<string, Path>();
   const addTouching = (
@@ -1103,9 +1135,7 @@ const mapChangedNodeKeys = (
 
   segment.change.iterChangedRanges(
     (_fromBefore, _toBefore, fromAfter, toAfter) => {
-      if (sourceHasPreparedRuntimePlacements) {
-        addTouching(segment.after, targetPaths, fromAfter, toAfter);
-      } else if (!runtimeCandidates || runtimeCandidates.length === 0) {
+      if (!runtimeCandidates || runtimeCandidates.length === 0) {
         addUnplacedTargets(fromAfter, toAfter);
       }
     }
@@ -1126,14 +1156,7 @@ const mapChangedNodeKeys = (
     preparedRuntimePlacements.some((placement) =>
       preparedLocalPath(placement, path)
     );
-
-  const relocations = segment.change.data.some(
-    (data) =>
-      data instanceof PreparedTokenSlice &&
-      !getPreparedDocumentSlice(data) &&
-      !isDeferredPreparedDocumentSlice(data) &&
-      data.tokens.some((token) => token.kind === 'open')
-  )
+  const relocations = segmentMayRelocate(segment)
     ? getSegmentRelocations(segment)
     : [];
 
@@ -1146,14 +1169,16 @@ const mapChangedNodeKeys = (
   const orderedTargets = orderPaths(targetPaths.values());
   const usedNodeKeys = new Set<NodeKey>();
   const usedTargetPaths = new Set<string>();
-  const assignments: Array<readonly [NodeKey, Path]> = [];
+  const assignments = new Map<string, NodeKey>();
   const claim = (nodeKey: NodeKey, targetPath: Path) => {
+    countCoreWork('identityClaimsExamined');
     const targetKey = pathKey(targetPath);
 
     if (
       discarded.has(nodeKey) ||
       usedNodeKeys.has(nodeKey) ||
-      usedTargetPaths.has(targetKey)
+      usedTargetPaths.has(targetKey) ||
+      !available(nodeKey, targetPath)
     ) {
       return false;
     }
@@ -1163,7 +1188,7 @@ const mapChangedNodeKeys = (
     }
     usedNodeKeys.add(nodeKey);
     usedTargetPaths.add(targetKey);
-    assignments.push(Object.freeze([nodeKey, targetPath] as const));
+    assignments.set(targetKey, nodeKey);
 
     return true;
   };
@@ -1193,7 +1218,7 @@ const mapChangedNodeKeys = (
 
         if (entry?.from === position) {
           const targetPath = [...entry.path] as Path;
-          const sourcePath = SNAPSHOT_INDEX_CACHED_PATHS.get(index)?.(nodeKey);
+          const sourcePath = index.pathOf(nodeKey);
           const survivingPath = sourcePath
             ? mapPathForward(segment, sourcePath)
             : null;
@@ -1277,9 +1302,9 @@ const mapChangedNodeKeys = (
     if (
       currentNodeKey &&
       !discarded.has(currentNodeKey) &&
-      !usedNodeKeys.has(currentNodeKey)
+      !usedNodeKeys.has(currentNodeKey) &&
+      claim(currentNodeKey, targetPath)
     ) {
-      claim(currentNodeKey, targetPath);
       continue;
     }
 
@@ -1291,143 +1316,289 @@ const mapChangedNodeKeys = (
     );
   }
 
-  return Object.freeze(assignments);
-};
-
-/**
- * Test-only visibility into retained lazy mapping state.
- *
- * @internal
- */
-export const getSnapshotIndexMappingStats = (index: SnapshotIndex) => {
-  const descriptor = MAPPED_SNAPSHOT_INDEXES.get(index);
-
-  if (!descriptor) {
-    return Object.freeze({
-      mappedChanges: 0,
-      retainedDocuments: 0,
-      retainedTokenUnits: 0,
-      retainedTopLevelReferenceBytes: 0,
-      segments: 0,
-    });
-  }
-
-  const documents = new Set<DocumentIndex>();
-
-  for (const segment of descriptor.segments) {
-    documents.add(segment.before);
-    documents.add(segment.after);
-  }
-
-  return Object.freeze({
-    mappedChanges: descriptor.segments.reduce(
-      (count, segment) => count + segment.span,
-      0
-    ),
-    retainedDocuments: documents.size,
-    retainedTokenUnits: [...documents].reduce(
-      (count, document) => count + document.length,
-      0
-    ),
-    retainedTopLevelReferenceBytes: [...documents].reduce(
-      (bytes, document) => bytes + document.value.length * 8,
-      0
-    ),
-    segments: descriptor.segments.length,
-  });
-};
-
-const queryMappedElementEntries = (
-  index: SnapshotIndex,
-  types: readonly string[]
-): readonly InternalEditorRuntimeElementEntry[] => {
-  const descriptor = MAPPED_ELEMENT_INDEXES.get(index);
-
-  if (!descriptor) return EMPTY_ELEMENT_ENTRIES;
-  const requested = new Set(types);
-
-  if (requested.size === 0) return EMPTY_ELEMENT_ENTRIES;
-  const paths = new Map<string, ElementPathEntry>();
-  const addCurrent = (path: Path) => {
-    try {
-      const node = descriptor.after.node(path);
-
-      if (
-        'children' in node &&
-        Array.isArray(node.children) &&
-        typeof node.type === 'string' &&
-        requested.has(node.type)
-      ) {
-        const frozenPath = Object.freeze([...path]);
-
-        paths.set(
-          pathKey(frozenPath),
-          Object.freeze({ path: frozenPath, type: node.type })
-        );
-      }
-    } catch {
-      // Replaced source entries do not survive in this snapshot.
-    }
-  };
-
-  for (const entry of getSnapshotIndexElementEntries(descriptor.base, [
-    ...requested,
-  ])) {
-    let path: Path | null = entry.path;
-
-    for (const segment of descriptor.segments) {
-      path = mapPathForward(segment, path);
-      if (!path) break;
-    }
-    if (path) addCurrent(path);
-  }
-  for (const entry of descriptor.additions) {
-    if (requested.has(entry.type)) addCurrent(entry.path);
-  }
-
-  return Object.freeze(
-    [...paths.values()]
-      .flatMap(({ path, type }) => {
-        const nodeKey = index.keyAt(path);
-
-        return nodeKey
-          ? [Object.freeze({ path, nodeKey, type })]
-          : EMPTY_ELEMENT_ENTRIES;
-      })
-      .sort((left, right) => comparePaths(left.path, right.path))
-  );
+  return { assignments, usedNodeKeys };
 };
 
 export type NodeKeyBinding = 'inherited' | 'publish';
 
-const describeMapping = (
-  previous: MappedSnapshotIndexDescriptor | undefined,
-  index: SnapshotIndex,
-  segment: SnapshotIndexMappingSegment,
-  deletedNodeKeys: ReadonlySet<NodeKey>,
-  discardedNodeKeys: ReadonlySet<NodeKey>,
-  newPreparedRuntimePlacements: MappedSnapshotIndexDescriptor['preparedRuntimePlacements'],
-  runtimeAssignments: MappedSnapshotIndexDescriptor['runtimeAssignments']
-): MappedSnapshotIndexDescriptor =>
-  Object.freeze({
-    base: previous?.base ?? index,
-    deletedNodeKeys,
-    discardedNodeKeys: new Set([
-      ...(previous?.discardedNodeKeys ?? []),
-      ...discardedNodeKeys,
-    ]),
-    preparedRuntimePlacements: Object.freeze([
-      ...advancePreparedRuntimePlacements(
-        previous?.preparedRuntimePlacements ?? [],
-        segment
-      ),
-      ...newPreparedRuntimePlacements,
-    ]),
-    runtimeAssignments,
-    segments: compactMappingSegments(previous?.segments ?? [], segment),
-  });
+type Window = Readonly<{
+  hiAfter: number;
+  hiBefore: number;
+  loAfter: number;
+  loBefore: number;
+  parentAfter: Path;
+  parentBefore: Path;
+}>;
 
-/** Map stable node identities through one canonical root change. */
+type Retyped = Readonly<{ after: Path; before: Path }>;
+
+const WINDOW_PAGE = 32;
+
+const startsWith = (path: readonly number[], prefix: readonly number[]) =>
+  path.length >= prefix.length &&
+  prefix.every((part, depth) => path[depth] === part);
+
+const containerOf = (document: DocumentIndex, from: number, to: number) => {
+  let deepest: readonly number[] = [];
+
+  for (const range of document.nodeRangesTouching(from, to)) {
+    if (
+      range.kind === 'element' &&
+      range.contentFrom <= from &&
+      to <= range.contentTo &&
+      range.path.length > deepest.length
+    ) {
+      deepest = range.path;
+    }
+  }
+
+  return deepest;
+};
+
+const tokenOwnerOf = (document: DocumentIndex, from: number, to: number) => {
+  if (from >= to) return null;
+  for (const range of document.nodeRangesTouching(from, to)) {
+    if (range.from <= from && to <= range.contentFrom) {
+      return [...range.path] as Path;
+    }
+  }
+
+  return null;
+};
+
+const childWindowOf = (
+  document: DocumentIndex,
+  from: number,
+  to: number,
+  parent: readonly number[],
+  container: readonly number[]
+): readonly [number, number] => {
+  if (container.length > parent.length) {
+    const index = container[parent.length];
+
+    return [index, index];
+  }
+  let lo = Number.POSITIVE_INFINITY;
+  let hi = Number.NEGATIVE_INFINITY;
+  let boundary: number | null = null;
+
+  for (const range of document.nodeRangesTouching(from, to)) {
+    if (
+      range.path.length !== parent.length + 1 ||
+      !startsWith(range.path, parent)
+    ) {
+      continue;
+    }
+    const index = range.path[parent.length];
+    const overlaps =
+      from === to
+        ? range.from < from && from < range.to
+        : range.from < to && range.to > from;
+
+    if (overlaps) {
+      lo = Math.min(lo, index);
+      hi = Math.max(hi, index);
+    } else if (range.to <= from) {
+      boundary = Math.max(boundary ?? 0, index + 1);
+    } else if (range.from >= to && boundary === null) {
+      boundary = index;
+    }
+  }
+  if (lo <= hi) return [lo, hi];
+  const at = boundary ?? 0;
+
+  return [at, at - 1];
+};
+
+const childCountAt = (document: DocumentIndex, parent: Path) => {
+  if (parent.length === 0) return document.nodes.length;
+  const node = document.node(parent);
+
+  return 'children' in node && Array.isArray(node.children)
+    ? node.children.length
+    : 0;
+};
+
+const holdsSlotOf = (
+  window: Window,
+  path: readonly number[],
+  side: 'after' | 'before'
+) => {
+  const parent = side === 'before' ? window.parentBefore : window.parentAfter;
+  const lo = side === 'before' ? window.loBefore : window.loAfter;
+  const hi = side === 'before' ? window.hiBefore : window.hiAfter;
+
+  return (
+    path.length > parent.length &&
+    startsWith(path, parent) &&
+    path[parent.length] >= lo &&
+    path[parent.length] <= hi
+  );
+};
+
+const changedWindowsOf = (
+  segment: MappingSegment,
+  countBefore: (parent: Path) => number
+) => {
+  const raw: Window[] = [];
+  const retyped: Retyped[] = [];
+
+  segment.change.iterChangedRanges(
+    (fromBefore, toBefore, fromAfter, toAfter) => {
+      const ownerBefore = tokenOwnerOf(segment.before, fromBefore, toBefore);
+      const ownerAfter =
+        ownerBefore && tokenOwnerOf(segment.after, fromAfter, toAfter);
+
+      if (ownerBefore && ownerAfter?.length === ownerBefore.length) {
+        retyped.push({ after: ownerAfter, before: ownerBefore });
+        return;
+      }
+      const containerBefore = containerOf(segment.before, fromBefore, toBefore);
+      const containerAfter = containerOf(segment.after, fromAfter, toAfter);
+      let parentBefore: Path = [];
+      let parentAfter: Path = [];
+
+      for (let length = 1; length <= containerBefore.length; length++) {
+        const prefix = containerBefore.slice(0, length) as Path;
+        const mapped = mapPathForward(segment, prefix);
+
+        if (
+          !mapped ||
+          mapped.length !== length ||
+          !startsWith(containerAfter, mapped)
+        ) {
+          break;
+        }
+        parentBefore = prefix;
+        parentAfter = mapped;
+      }
+      const [loBefore, hiBefore] = childWindowOf(
+        segment.before,
+        fromBefore,
+        toBefore,
+        parentBefore,
+        containerBefore
+      );
+      const [loAfter, hiAfter] = childWindowOf(
+        segment.after,
+        fromAfter,
+        toAfter,
+        parentAfter,
+        containerAfter
+      );
+
+      raw.push({
+        hiAfter,
+        hiBefore,
+        loAfter,
+        loBefore,
+        parentAfter,
+        parentBefore,
+      });
+    }
+  );
+
+  const groups = new Map<string, Window[]>();
+
+  for (const window of raw) {
+    const key = pathKey(window.parentBefore);
+    const group = groups.get(key) ?? [];
+
+    group.push(window);
+    groups.set(key, group);
+  }
+  const merged: Window[] = [];
+
+  for (const group of groups.values()) {
+    group.sort((left, right) => left.loBefore - right.loBefore);
+    const joined: Window[] = [];
+
+    for (const window of group) {
+      const last = joined.at(-1);
+
+      if (
+        last &&
+        (window.loBefore <= last.hiBefore + 1 ||
+          window.loAfter <= last.hiAfter + 1)
+      ) {
+        joined[joined.length - 1] = {
+          ...last,
+          hiAfter: Math.max(last.hiAfter, window.hiAfter),
+          hiBefore: Math.max(last.hiBefore, window.hiBefore),
+          loAfter: Math.min(last.loAfter, window.loAfter),
+          loBefore: Math.min(last.loBefore, window.loBefore),
+        };
+      } else {
+        joined.push(window);
+      }
+    }
+    const { parentAfter, parentBefore } = joined[0];
+    const oldCount = countBefore(parentBefore);
+    const newCount = childCountAt(segment.after, parentAfter);
+    let shift = 0;
+    let aligned = true;
+
+    for (const window of joined) {
+      if (window.loAfter !== window.loBefore + shift) aligned = false;
+      shift +=
+        window.hiAfter - window.loAfter - (window.hiBefore - window.loBefore);
+    }
+    if (aligned && oldCount + shift === newCount) {
+      merged.push(...joined);
+      continue;
+    }
+    const first = joined[0];
+    const last = getDefined(joined.at(-1));
+    const lo = Math.min(first.loBefore, first.loAfter);
+    const suffix = Math.min(
+      oldCount - 1 - last.hiBefore,
+      newCount - 1 - last.hiAfter
+    );
+
+    merged.push({
+      hiAfter: newCount - 1 - suffix,
+      hiBefore: oldCount - 1 - suffix,
+      loAfter: lo,
+      loBefore: lo,
+      parentAfter,
+      parentBefore,
+    });
+  }
+  const covered = (path: readonly number[], except?: Window) =>
+    merged.some(
+      (window) => window !== except && holdsSlotOf(window, path, 'before')
+    );
+  const windows = merged
+    .filter((window) => !covered(window.parentBefore, window))
+    .map((window) => ({
+      position: segment.before.childPosition(
+        window.parentBefore,
+        window.loBefore
+      ),
+      window,
+    }))
+    .sort((left, right) => right.position - left.position)
+    .map(({ window }) => window);
+
+  return {
+    retyped: retyped.filter(({ before }) => !covered(before)),
+    windows,
+  };
+};
+
+const MAPPED = new WeakMap<
+  SnapshotIndex,
+  WeakMap<
+    RootChange,
+    Readonly<{
+      after: DocumentIndex;
+      before: DocumentIndex;
+      binding: NodeKeyBinding;
+      result: SnapshotIndex;
+    }>
+  >
+>();
+
 export const mapSnapshotIndexThroughChange = (
   before: DocumentIndex,
   after: DocumentIndex,
@@ -1438,508 +1609,348 @@ export const mapSnapshotIndexThroughChange = (
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[],
   binding: NodeKeyBinding = 'publish'
 ): SnapshotIndex => {
-  const nodeKeyMark = getNodeKeyMark(editor);
+  assertMappingLengths(before, after, change);
+  const repeatable =
+    discardedNodeKeys.size === 0 && (runtimeCandidates?.length ?? 0) === 0;
+  const known = repeatable ? MAPPED.get(index)?.get(change) : undefined;
+
+  if (
+    known &&
+    known.before === before &&
+    known.after === after &&
+    known.binding === binding
+  ) {
+    return known.result;
+  }
+  sequenceOf(index, before);
+  countCoreWork('identityTransitions');
   const publishNodeKeys = binding === 'publish';
   const bindNodeKey = publishNodeKeys ? setNodeKey : bindNodeKeyOnce;
+  const sourceTopology = topologyOf(index, before, editor);
+  const source = TOPOLOGIES.has(index)
+    ? index
+    : versionOf(sourceTopology, editor);
+  const segment: MappingSegment = Object.freeze({ after, before, change });
+  const builder = new TopologyBuilder(sourceTopology);
+  const treeAt = (parent: Path) => {
+    if (parent.length === 0) return builder.top;
+    const cell = builder.cellAt(parent);
 
-  assertMappingLengths(before, after, change);
-  if (publishNodeKeys) rebaseLargeSnapshotIndexOverlay(index);
+    if (cell === undefined) {
+      throw new Error(`Identity owner holds no node at [${parent}].`);
+    }
+    return builder.treeOf(cell);
+  };
+  const ancestors = new Map<string, Path>();
+  const retyped = new Map<string, Path>();
+  const keepAbove = (path: readonly number[]) => {
+    for (let length = 1; length < path.length; length++) {
+      const prefix = path.slice(0, length) as Path;
 
-  const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
-  const previousAfter = previous?.segments.at(-1)?.after;
+      ancestors.set(pathKey(prefix), prefix);
+    }
+  };
+  const moved = getSegmentMove(segment);
+  const movedCell = moved && builder.cellAt(moved.path);
+  const movesWhole =
+    !!moved &&
+    movedCell !== undefined &&
+    discardedNodeKeys.size === 0 &&
+    (runtimeCandidates?.length ?? 0) === 0 &&
+    after.node(moved.targetPath) === before.node(moved.path) &&
+    preparedRuntimePlacementsFromSegment(segment).length === 0;
+  let windows: readonly Window[] = [];
+  const assignments = new Map<string, NodeKey>();
 
-  if (previousAfter && previousAfter !== before) {
-    throw new Error(
-      `Snapshot index mappings are not sequential: previous target length ${previousAfter.length}, next source length ${before.length}.`
+  if (moved && movesWhole) {
+    const sourceParent = moved.path.slice(0, -1) as Path;
+    const targetParent = moved.targetPath.slice(0, -1) as Path;
+    const mappedSourceParent =
+      sourceParent.length === 0 ? [] : mapPathForward(segment, sourceParent);
+
+    builder.deleteAt(treeAt(sourceParent), getDefined(moved.path.at(-1)));
+    builder.insertAt(
+      treeAt(targetParent),
+      getDefined(moved.targetPath.at(-1)),
+      getDefined(movedCell)
     );
-  }
+    if (mappedSourceParent) keepAbove([...mappedSourceParent, 0]);
+    keepAbove(moved.targetPath);
+  } else {
+    const found = changedWindowsOf(segment, (parent) =>
+      builder.count(treeAt(parent))
+    );
 
-  const segment = createMappingSegment(before, after, change);
-  const newPreparedRuntimePlacements =
-    preparedRuntimePlacementsFromSegment(segment);
-  const retainedPreparedRuntimePlacements = publishNodeKeys
-    ? newPreparedRuntimePlacements.filter(
-        (placement) =>
-          !placement.fromDeferredView || placementKeysAdopted(placement, editor)
-      )
-    : newPreparedRuntimePlacements;
-
-  // The profiled work runs as bound calls, not arrows: an arrow would share
-  // this scope with the mapped index's lookups, so each index would keep the
-  // one it maps from, and every earlier one, alive.
-  const runtimeAssignments = profileCoreDuration(
-    publishNodeKeys
-      ? 'runtime-index-publish-changed'
-      : 'runtime-index-map-changed',
-    mapChangedNodeKeys.bind(
-      undefined,
-      segment,
-      index,
-      editor,
-      discardedNodeKeys,
-      newPreparedRuntimePlacements,
-      binding,
-      runtimeCandidates
-    )
-  );
-  const deleted = [...(previous?.deletedNodeKeys ?? [])];
-  const retainedRuntimeAssignments = (
-    previous?.runtimeAssignments ?? []
-  ).flatMap(([nodeKey, path]) => {
-    if (discardedNodeKeys.has(nodeKey)) return [];
-    const targetPath = mapPathForward(segment, path);
-
-    if (!targetPath) {
-      deleted.push(nodeKey);
-      return [];
+    ({ windows } = found);
+    for (const window of windows) keepAbove([...window.parentAfter, 0]);
+    for (const { after: path } of found.retyped) {
+      keepAbove(path);
+      retyped.set(pathKey(path), path);
     }
+  }
+  const inBefore = (path: readonly number[]) =>
+    windows.some((window) => holdsSlotOf(window, path, 'before'));
+  const inAfter = (path: readonly number[]) =>
+    windows.some((window) => holdsSlotOf(window, path, 'after'));
+  const available: KeyAvailability = (nodeKey, targetPath) => {
+    const held = source.pathOf(nodeKey);
 
-    return [Object.freeze([nodeKey, targetPath] as const)];
-  });
-  const assignedNodeKeys = new Set(
-    runtimeAssignments.map(([nodeKey]) => nodeKey)
-  );
-  const deletedNodeKeys = new Set(
-    deleted
-      .filter((nodeKey) => !assignedNodeKeys.has(nodeKey))
-      .slice(-MAX_CARRIED_OVERLAY)
-  );
-  const assignedPaths = new Set(
-    runtimeAssignments.map(([, path]) => pathKey(path))
-  );
-  const allRuntimeAssignments = Object.freeze([
-    ...retainedRuntimeAssignments.filter(
-      ([nodeKey, path]) =>
-        !assignedNodeKeys.has(nodeKey) && !assignedPaths.has(pathKey(path))
-    ),
-    ...runtimeAssignments,
-  ]);
-  const descriptor = profileCoreDuration(
-    'runtime-index-map-descriptor',
-    describeMapping.bind(
-      undefined,
-      previous,
-      index,
-      segment,
-      deletedNodeKeys,
-      discardedNodeKeys,
-      retainedPreparedRuntimePlacements,
-      allRuntimeAssignments
-    )
-  );
-  const { segments } = descriptor;
-  const previousElementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
-  const elementSegments = compactMappingSegments(
-    previousElementDescriptor?.segments ?? [],
-    segment
-  );
-  const additions = new Map<string, ElementPathEntry>();
-  const retainAddition = (entry: ElementPathEntry) => {
-    const path = mapPathForward(segment, entry.path);
+    if (!held || inBefore(held)) return true;
+    if (inAfter(targetPath)) return false;
+    const target = mapPathForward(segment, held);
 
-    if (!path) return;
-    try {
-      const node = after.node(path);
+    return !target || pathKey(target) === pathKey(targetPath);
+  };
 
-      if (
-        'children' in node &&
-        Array.isArray(node.children) &&
-        typeof node.type === 'string'
-      ) {
-        const frozenPath = Object.freeze([...path]);
+  if (!movesWhole) {
+    const placements = preparedRuntimePlacementsFromSegment(segment);
+    const retainedPlacements = publishNodeKeys
+      ? placements.filter(
+          (placement) =>
+            !placement.fromDeferredView ||
+            placementKeysAdopted(placement, editor)
+        )
+      : placements;
+    const claimed = profileCoreDuration(
+      publishNodeKeys
+        ? 'runtime-index-publish-changed'
+        : 'runtime-index-map-changed',
+      () =>
+        mapChangedNodeKeys(
+          segment,
+          source,
+          editor,
+          discardedNodeKeys,
+          placements,
+          binding,
+          available,
+          runtimeCandidates
+        )
+    );
+    const { usedNodeKeys } = claimed;
 
-        additions.set(
-          pathKey(frozenPath),
-          Object.freeze({ path: frozenPath, type: node.type })
-        );
+    for (const [path, nodeKey] of claimed.assignments) {
+      assignments.set(path, nodeKey);
+    }
+    const claimedInside = new Set<string>();
+
+    for (const targetKey of assignments.keys()) {
+      const path = targetKey === '' ? [] : targetKey.split('.');
+
+      for (let length = 1; length < path.length; length++) {
+        claimedInside.add(path.slice(0, length).join('.'));
       }
-    } catch {
-      // Removed additions have no target entry.
     }
-  };
+    const usable = (nodeKey: NodeKey | null | undefined): nodeKey is NodeKey =>
+      !!nodeKey &&
+      !discardedNodeKeys.has(nodeKey) &&
+      builder.cellOfKey(nodeKey) === undefined;
+    const keyOf: KeyOf = (node, path) => {
+      countCoreWork('identityClaimsExamined');
+      const claim = assignments.get(pathKey(path));
+      let nodeKey: NodeKey | null = null;
 
-  for (const entry of previousElementDescriptor?.additions ?? []) {
-    retainAddition(entry);
-  }
-  for (const entry of collectChangedElementPaths(segment)) {
-    additions.set(pathKey(entry.path), entry);
-  }
-  const elementDescriptor: MappedElementIndexDescriptor = Object.freeze({
-    additions: Object.freeze([...additions.values()]),
-    after,
-    base: previousElementDescriptor?.base ?? index,
-    segments: elementSegments,
-  });
-  const discarded = descriptor.discardedNodeKeys;
-  const idToPathCache = new Map<NodeKey, Path | null>();
-  const pathToIdCache = new Map<string, NodeKey | null>();
-  const materializedElementPathsByType = new Map<string, ElementPathEntry[]>();
-  let activeDescriptor: MappedSnapshotIndexDescriptor | null = descriptor;
-  let activeSegments: readonly SnapshotIndexMappingSegment[] | null = segments;
-  let currentDocument: DocumentIndex | null = getDefined(segments.at(-1)).after;
-  let materializedEntries: ReadonlyArray<readonly [NodeKey, Path]> | undefined;
-  let mappedIndex: SnapshotIndex;
+      if (claim && builder.cellOfKey(claim) === undefined) {
+        nodeKey = claim;
+      } else {
+        const own = getNodeKeyForNode(node, editor);
 
-  const nodeAt = (path: Path) => {
-    try {
-      return currentDocument?.node(path) ?? null;
-    } catch {
-      return null;
-    }
-  };
-  const cache = (nodeKey: NodeKey, path: Path) => {
-    const frozenPath = Object.freeze([...path]);
-    const existingPath = idToPathCache.get(nodeKey);
-    const existingNodeKey = pathToIdCache.get(pathKey(frozenPath));
+        if (usable(own) && !(usedNodeKeys.has(own) && own !== claim)) {
+          nodeKey = own;
+        }
+        if (!nodeKey) {
+          for (const placement of retainedPlacements) {
+            const local = preparedLocalPath(placement, path);
+            const prepared = local
+              ? getPreparedDocumentNodeKey(placement.slice, local)
+              : null;
 
-    if (
-      (existingPath && pathKey(existingPath) !== pathKey(frozenPath)) ||
-      (existingNodeKey && existingNodeKey !== nodeKey)
-    ) {
-      throw new Error(
-        `Snapshot index node keys must be injective: ${nodeKey} at [${frozenPath}] conflicts with ${
-          existingPath
-            ? `[${existingPath}]${
-                nodeAt(existingPath) === nodeAt(frozenPath)
-                  ? ' (same node)'
-                  : ''
-              }`
-            : existingNodeKey
-        }.`
-      );
-    }
+            if (prepared && usable(prepared) && !usedNodeKeys.has(prepared)) {
+              nodeKey = prepared;
+              break;
+            }
+          }
+        }
+        if (!nodeKey) {
+          const sourcePath = mapPathBackward(segment, path);
+          const inherited = sourcePath ? source.keyAt(sourcePath) : null;
 
-    idToPathCache.set(nodeKey, frozenPath);
-    pathToIdCache.set(pathKey(frozenPath), nodeKey);
-
-    return frozenPath;
-  };
-
-  for (const [nodeKey, path] of descriptor.runtimeAssignments) {
-    cache(nodeKey, path);
-  }
-  const targetPathFor = (path: Path) => {
-    let targetPath: Path | null = path;
-
-    for (const innerSegment of getDefined(activeSegments)) {
-      targetPath = mapPathForward(innerSegment, targetPath);
-
-      if (!targetPath) return null;
-    }
-
-    return targetPath;
-  };
-  const sourcePathFor = (path: Path) => {
-    let sourcePath: Path | null = path;
-
-    for (
-      let innerIndex = getDefined(activeSegments).length - 1;
-      innerIndex >= 0;
-      innerIndex--
-    ) {
-      sourcePath = mapPathBackward(
-        getDefined(activeSegments)[innerIndex],
-        sourcePath
-      );
-
-      if (!sourcePath) return null;
-    }
-
-    return sourcePath;
-  };
-  const preparedNodeKeyAtPath = (path: Path, node: Descendant) => {
-    for (const placement of getDefined(activeDescriptor)
-      .preparedRuntimePlacements) {
-      const originPath = mapPreparedPathBackward(placement, path);
-      const localPath = originPath
-        ? preparedLocalPath(placement, originPath)
-        : null;
-      const nodeKey = localPath
-        ? getPreparedDocumentNodeKey(placement.slice, localPath)
-        : null;
-
-      if (!nodeKey) continue;
-      if (discarded.has(nodeKey)) return null;
-
-      bindNodeKey(node, editor, nodeKey);
+          if (usable(inherited) && !usedNodeKeys.has(inherited)) {
+            nodeKey = inherited;
+          }
+        }
+        nodeKey ??= publishNodeKeys
+          ? assignFreshNodeKey(node, editor)
+          : allocateDraftNodeKey();
+      }
+      if (getNodeKeyForNode(node, editor) !== nodeKey) {
+        bindNodeKey(node, editor, nodeKey);
+      }
 
       return nodeKey;
-    }
-
-    return null;
-  };
-  const preparedPathForNodeKey = (nodeKey: NodeKey) => {
-    if (!nodeKey.startsWith('p')) return null;
-
-    for (const placement of getDefined(activeDescriptor)
-      .preparedRuntimePlacements) {
-      const localPath = getPreparedDocumentRuntimePath(
-        placement.slice,
-        nodeKey
-      );
-      const originPath = localPath
-        ? preparedOriginPath(placement, localPath)
-        : null;
-      const targetPath = originPath
-        ? mapPreparedPathForward(placement, originPath)
-        : null;
-
-      if (!targetPath) continue;
-      const node = nodeAt(targetPath);
-
-      if (!node) return null;
-      const claimedNodeKey = pathToIdCache.get(pathKey(targetPath));
-
-      if (claimedNodeKey && claimedNodeKey !== nodeKey) return null;
-      const existing = getNodeKeyForNode(node, editor);
-
-      if (existing && existing !== nodeKey) return null;
-      bindNodeKey(node, editor, nodeKey);
-
-      return targetPath;
-    }
-
-    return null;
-  };
-  const keyAt = (path: Path): NodeKey | null => {
-    const key = pathKey(path);
-    const cached = pathToIdCache.get(key);
-
-    if (cached !== undefined) return cached;
-    const node = nodeAt(path);
-
-    if (!node) {
-      pathToIdCache.set(key, null);
-      return null;
-    }
-
-    const availableAtPath = (nodeKey: NodeKey | null) => {
-      if (!nodeKey) return null;
-
-      const claimedPath = idToPathCache.get(nodeKey);
-
-      return claimedPath === undefined ||
-        (claimedPath !== null && pathKey(claimedPath) === key)
-        ? nodeKey
-        : null;
-    };
-    const existingNodeKey = getNodeKeyForNode(node, editor);
-    const existing = availableAtPath(
-      existingNodeKey && !discarded.has(existingNodeKey)
-        ? existingNodeKey
-        : null
-    );
-    const preparedNodeKey = existing
-      ? null
-      : availableAtPath(preparedNodeKeyAtPath(path, node as Descendant));
-    const sourcePath = existing || preparedNodeKey ? null : sourcePathFor(path);
-    const inheritedNodeKey = availableAtPath(
-      sourcePath ? getDefined(activeDescriptor).base.keyAt(sourcePath) : null
-    );
-    const nodeKey =
-      existing ??
-      preparedNodeKey ??
-      inheritedNodeKey ??
-      (publishNodeKeys ? assignFreshNodeKey(node, editor) : null);
-
-    if (!nodeKey) {
-      pathToIdCache.set(key, null);
-      return null;
-    }
-    if (!existing && !preparedNodeKey) bindNodeKey(node, editor, nodeKey);
-    cache(nodeKey, path);
-
-    return nodeKey;
-  };
-  const materialize = () => {
-    if (materializedEntries) return materializedEntries;
-    countCoreWork('snapshotIndexWalks');
-    const entries: Array<readonly [NodeKey, Path]> = [];
-
-    const visit = (nodes: readonly Descendant[], parentPath: Path) => {
-      nodes.forEach((node, childIndex) => {
-        const path = [...parentPath, childIndex] as Path;
-        const nodeKey = keyAt(path);
-
-        if (!nodeKey && publishNodeKeys) {
-          throw new Error(
-            `Snapshot index cannot materialize a node key at [${path}].`
-          );
-        }
-        const frozenPath = nodeKey ? idToPathCache.get(nodeKey) : undefined;
-
-        if (nodeKey && !frozenPath) {
-          throw new Error(
-            `Snapshot index lost the cached path for node key ${nodeKey}.`
-          );
-        }
-
-        if (nodeKey && frozenPath) {
-          entries.push(Object.freeze([nodeKey, frozenPath] as const));
-        }
-
-        if ('children' in node && Array.isArray(node.children)) {
-          if (frozenPath && typeof node.type === 'string') {
-            const elementEntries =
-              materializedElementPathsByType.get(node.type) ?? [];
-
-            elementEntries.push(
-              Object.freeze({ path: frozenPath, type: node.type })
-            );
-            materializedElementPathsByType.set(node.type, elementEntries);
-          }
-          visit(node.children, path);
-        }
-      });
     };
 
-    visit(getDefined(currentDocument).value as readonly Descendant[], []);
-    materializedEntries = Object.freeze(entries);
-    SNAPSHOT_ELEMENT_ENTRIES.set(
-      mappedIndex,
-      createElementEntryQuery(materializedElementPathsByType, keyAt)
+    const parents = windows.map((window) =>
+      window.parentBefore.length === 0
+        ? ROOT_LIST
+        : getDefined(builder.cellAt(window.parentBefore))
     );
-    MAPPED_SNAPSHOT_INDEXES.delete(mappedIndex);
-    MAPPED_ELEMENT_INDEXES.delete(mappedIndex);
-    activeDescriptor = null;
-    activeSegments = null;
-    currentDocument = null;
+    const listOf = (parent: number) =>
+      parent === ROOT_LIST ? builder.top : builder.treeOf(parent);
+    const removed: Array<readonly [number, Descendant]> = [];
 
-    return materializedEntries;
-  };
-  const pathOf = (nodeKey: NodeKey): Path | null => {
-    const cached = idToPathCache.get(nodeKey);
+    windows.forEach((window, at) => {
+      const oldSpan = window.hiBefore - window.loBefore + 1;
+      const newSpan = window.hiAfter - window.loAfter + 1;
+      const shared = Math.min(oldSpan, newSpan);
 
-    if (cached !== undefined) return cached;
-    if (discarded.has(nodeKey)) {
-      idToPathCache.set(nodeKey, null);
-      return null;
-    }
-    if (!activeDescriptor) return null;
-    // A known deleted identity resolves without materializing the index; a
-    // node that re-entered the document was claimed again by its mapping.
-    if (activeDescriptor.deletedNodeKeys.has(nodeKey)) {
-      idToPathCache.set(nodeKey, null);
-      return null;
-    }
-
-    const preparedPath = preparedPathForNodeKey(nodeKey);
-
-    if (preparedPath) return cache(nodeKey, preparedPath);
-
-    const sourcePath = activeDescriptor.base.pathOf(nodeKey);
-
-    if (!sourcePath && predatesIndex(editor, activeDescriptor.base, nodeKey)) {
-      idToPathCache.set(nodeKey, null);
-      return null;
-    }
-    if (sourcePath) {
-      const targetPath = targetPathFor(sourcePath);
-
-      if (!targetPath) {
-        // Explicit assignments and prepared placements were checked above.
-        // A deleted canonical path cannot reappear during materialization.
-        idToPathCache.set(nodeKey, null);
-        return null;
+      if (oldSpan > WINDOW_PAGE && newSpan > WINDOW_PAGE) {
+        countCoreWork('wholeListPasses');
       }
-      const node = nodeAt(targetPath);
+      const oldNode = (offset: number) =>
+        before.node([
+          ...window.parentBefore,
+          window.loBefore + offset,
+        ]) as unknown as Descendant;
 
-      if (
-        node &&
-        getNodeKeyForNode(node, editor) === nodeKey &&
-        !discarded.has(nodeKey)
-      ) {
-        return cache(nodeKey, getDefined(targetPath));
+      for (let offset = oldSpan - 1; offset >= shared; offset--) {
+        removed.push([
+          builder.deleteAt(listOf(parents[at]), window.loBefore + offset),
+          oldNode(offset),
+        ]);
       }
+      for (let offset = 0; offset < shared; offset++) {
+        removed.push([
+          getDefined(builder.at(listOf(parents[at]), window.loBefore + offset)),
+          oldNode(offset),
+        ]);
+      }
+    });
+    const survivors = new Map<object, number>();
+
+    for (const [cell, node] of removed) survivors.set(node, cell);
+    const reused = windows.map(() => new Map<number, number>());
+    const reusedCells = new Set<number>();
+
+    windows.forEach((window, at) => {
+      const newSpan = window.hiAfter - window.loAfter + 1;
+
+      for (let offset = 0; offset < newSpan; offset++) {
+        const path = [...window.parentAfter, window.loAfter + offset] as Path;
+        const node = after.node(path) as unknown as Descendant;
+        const cell = survivors.get(node);
+
+        if (cell === undefined) continue;
+        const nodeKey = builder.cell(cell).key;
+        const claim = assignments.get(pathKey(path));
+
+        if (
+          nodeKey &&
+          !discardedNodeKeys.has(nodeKey) &&
+          getNodeKeyForNode(node, editor) === nodeKey &&
+          (claim === undefined
+            ? !usedNodeKeys.has(nodeKey)
+            : claim === nodeKey) &&
+          !claimedInside.has(pathKey(path))
+        ) {
+          reused[at].set(offset, cell);
+          reusedCells.add(cell);
+          survivors.delete(node);
+        }
+      }
+    });
+    for (const [cell] of removed) {
+      if (!reusedCells.has(cell)) builder.release(cell, reusedCells);
     }
+    for (let at = windows.length - 1; at >= 0; at--) {
+      const window = windows[at];
+      const oldSpan = window.hiBefore - window.loBefore + 1;
+      const newSpan = window.hiAfter - window.loAfter + 1;
+      const shared = Math.min(oldSpan, newSpan);
 
-    materialize();
+      for (let offset = 0; offset < newSpan; offset++) {
+        const path = [...window.parentAfter, window.loAfter + offset] as Path;
+        const cell =
+          reused[at].get(offset) ??
+          builder.admit(after.node(path) as unknown as Descendant, path, keyOf);
+        const list = listOf(parents[at]);
 
-    return idToPathCache.get(nodeKey) ?? null;
-  };
-
-  mappedIndex = Object.freeze({
-    entries: materialize,
-    keyAt,
-    pathOf,
-  });
-  SNAPSHOT_INDEX_CACHED_PATHS.set(mappedIndex, (nodeKey) =>
-    idToPathCache.get(nodeKey)
-  );
-  NODE_KEY_MARKS.set(mappedIndex, nodeKeyMark);
-  MAPPED_SNAPSHOT_INDEXES.set(mappedIndex, descriptor);
-  MAPPED_ELEMENT_INDEXES.set(mappedIndex, elementDescriptor);
-  const elementQueryCache = new Map<
-    string,
-    readonly InternalEditorRuntimeElementEntry[]
-  >();
-
-  SNAPSHOT_ELEMENT_ENTRIES.set(mappedIndex, (types) => {
-    const key = [...new Set(types)].sort().join('\u0000');
-    const known = elementQueryCache.get(key);
-
-    if (known) return known;
-    const entries = queryMappedElementEntries(mappedIndex, types);
-
-    elementQueryCache.set(key, entries);
-    return entries;
-  });
-  segment.change.iterChangedRanges(
-    (_fromBefore, _toBefore, fromAfter, toAfter) => {
-      for (const { path } of after.nodeRangesTouching(fromAfter, toAfter)) {
-        countCoreWork('landedNodeBinds');
-        keyAt([...path] as Path);
+        if (offset < shared) {
+          builder.replaceAt(list, window.loAfter + offset, cell);
+        } else {
+          builder.insertAt(list, window.loAfter + offset, cell);
+        }
       }
     }
-  );
-  // A detached mapping cannot rebase, so a large overlay left on a published
-  // index would be mapped again by every later frame; rebase it here, while
-  // publication may still bind node keys.
-  if (publishNodeKeys) rebaseLargeSnapshotIndexOverlay(mappedIndex);
-
-  return mappedIndex;
-};
-
-export const snapshotIndexFrom = (
-  document: DocumentIndex,
-  index: SnapshotIndex,
-  editor: Editor
-): SnapshotIndex => {
-  const last = MAPPED_SNAPSHOT_INDEXES.get(index)?.segments.at(-1);
-
-  if (!last || last.after === document) return index;
-  if (last.change) {
-    throw new Error(
-      `Snapshot index mappings are not sequential: previous target length ${last.after.length}, next source length ${document.length}.`
-    );
   }
 
-  return buildSnapshotIndex(
-    editor,
-    document.value as unknown as readonly Descendant[]
-  );
+  for (const [targetKey, nodeKey] of assignments) {
+    if (targetKey === '' || ancestors.has(targetKey)) continue;
+    const path = targetKey.split('.').map(Number);
+
+    if (inAfter(path)) continue;
+    const cell = builder.cellAt(path);
+
+    if (
+      cell !== undefined &&
+      builder.cell(cell).key !== nodeKey &&
+      builder.cellOfKey(nodeKey) === undefined
+    ) {
+      builder.rekey(cell, nodeKey);
+    }
+  }
+  for (const path of [...ancestors.values(), ...retyped.values()]) {
+    const cell = getDefined(builder.cellAt(path));
+    const node = after.node(path) as unknown as Descendant;
+
+    builder.retype(cell, node);
+    const nodeKey = builder.cell(cell).key;
+
+    if (nodeKey && getNodeKeyForNode(node, editor) !== nodeKey) {
+      bindNodeKey(node, editor, nodeKey);
+    }
+  }
+
+  const mapped = versionOf(builder.finish(), editor, after);
+
+  if (repeatable) {
+    let byChange = MAPPED.get(index);
+
+    if (!byChange) {
+      byChange = new WeakMap();
+      MAPPED.set(index, byChange);
+    }
+    byChange.set(change, { after, before, binding, result: mapped });
+  }
+
+  return mapped;
 };
 
-/**
- * Advance lazy mapping provenance for a change that cannot move node paths.
- * The public index remains path-identical, while a later structural mapping
- * still starts from the exact current token document. Linear edits retain the
- * same index identity. A branch from an older shared snapshot gets a fresh
- * lazy index from its exact source before the active branch advances again.
- */
+/** @internal */
+export const publishSnapshotIndex = (
+  editor: Editor,
+  children: ChildrenList,
+  index: SnapshotIndex
+) => {
+  if (registeredVersion(editor, children) !== index) {
+    register(editor, children, index);
+  }
+};
+
 export const advancePathStableSnapshotIndex = (
   before: DocumentIndex,
   after: DocumentIndex,
   change: RootChange,
   index: SnapshotIndex,
   editor: Editor,
-  runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[]
+  runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[],
+  binding: NodeKeyBinding = 'publish'
 ): SnapshotIndex => {
   assertMappingLengths(before, after, change);
-
-  const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
-  const sourceIndex = snapshotIndexFrom(before, index, editor);
-
+  const forks = sequenceOf(index, before) === 'fork';
+  const topology = topologyOf(index, before, editor);
+  const source =
+    TOPOLOGIES.has(index) && !forks ? index : versionOf(topology, editor);
   const keyed = (runtimeCandidates ?? []).map((candidate) => {
     const path = [...candidate.path] as Path;
 
@@ -1949,62 +1960,59 @@ export const advancePathStableSnapshotIndex = (
       );
     }
 
-    return { node: candidate.node, nodeKey: sourceIndex.keyAt(path) };
+    return { node: candidate.node, nodeKey: source.keyAt(path) };
   });
 
-  const republishesNodeKeyedElsewhere = keyed.some(({ node, nodeKey }) => {
-    const currentNodeKey = getNodeKeyForNode(node, editor);
+  if (
+    keyed.some(({ node, nodeKey }) => {
+      const currentNodeKey = getNodeKeyForNode(node, editor);
 
-    return currentNodeKey !== null && currentNodeKey !== nodeKey;
-  });
-
-  if (republishesNodeKeyedElsewhere) {
+      return currentNodeKey !== null && currentNodeKey !== nodeKey;
+    })
+  ) {
     return mapSnapshotIndexThroughChange(
       before,
       after,
       change,
-      sourceIndex,
+      source,
       editor,
       new Set(),
-      runtimeCandidates
+      runtimeCandidates,
+      binding
     );
   }
+  const bindNodeKey = binding === 'publish' ? setNodeKey : bindNodeKeyOnce;
+
   for (const { node, nodeKey } of keyed) {
-    if (nodeKey) setNodeKey(node, editor, nodeKey);
+    if (nodeKey) bindNodeKey(node, editor, nodeKey);
   }
+  const sealed = new Set<string>();
 
-  if (sourceIndex !== index) return sourceIndex;
+  change.iterChangedRanges((_fromBefore, _toBefore, fromAfter, toAfter) => {
+    for (const { path } of after.nodeRangesTouching(fromAfter, toAfter)) {
+      for (let length = 1; length <= path.length; length++) {
+        const prefix = path.slice(0, length) as Path;
+        const key = pathKey(prefix);
 
-  if (!previous) return index;
+        if (sealed.has(key)) continue;
+        sealed.add(key);
+        countCoreWork('identityClaimsExamined');
+        const node = after.node(prefix) as unknown as Descendant;
+        const nodeKey = source.keyAt(prefix);
 
-  const segment = createPathStableMappingSegment(before, after);
-  const segments = compactMappingSegments(previous.segments, segment);
+        if (nodeKey && getNodeKeyForNode(node, editor) !== nodeKey) {
+          bindNodeKey(node, editor, nodeKey);
+        }
+      }
+    }
+  });
 
-  MAPPED_SNAPSHOT_INDEXES.set(
-    index,
-    Object.freeze({
-      ...previous,
-      preparedRuntimePlacements: Object.freeze(
-        advancePreparedRuntimePlacements(
-          previous.preparedRuntimePlacements,
-          segment
-        )
-      ),
-      segments,
-    })
-  );
-  const previousElement = MAPPED_ELEMENT_INDEXES.get(index);
+  const advanced = binding === 'publish' ? source : versionOf(topology, editor);
+  const movedFrom =
+    (advanced === index ? VERSION_DOCUMENTS.get(index)?.movedFrom : null) ??
+    new WeakSet<DocumentIndex>();
 
-  if (previousElement) {
-    MAPPED_ELEMENT_INDEXES.set(
-      index,
-      Object.freeze({
-        ...previousElement,
-        after,
-        segments: compactMappingSegments(previousElement.segments, segment),
-      })
-    );
-  }
-
-  return index;
+  movedFrom.add(before);
+  VERSION_DOCUMENTS.set(advanced, { document: after, movedFrom });
+  return advanced;
 };

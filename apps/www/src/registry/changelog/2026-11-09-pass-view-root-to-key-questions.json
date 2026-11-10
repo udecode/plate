@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-09-pass-view-root-to-key-questions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-09-pass-view-root-to-key-questions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-09",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Pass the view's root to commit key questions in the caption and diagram components",
+  "targets": [
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-diagram",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-diagram.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-09-caption-pass-view-s-root-5b8a891f",
+      "kind": "wiring",
+      "summary": "Ask `commit.changed.hasNodeKey` about the editor view's own root, so the component reruns only for changes in the document it renders.",
+      "details": [],
+      "migrationNotes": [
+        "A copied caption or code-block diagram passes `editor.read.view.root()` as the third argument of `commit.changed.hasNodeKey`, which plitejs requires."
+      ],
+      "targets": ["caption", "code-block-diagram"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-09",
+          "entry": "2026-11-09-pass-view-root-to-key-questions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

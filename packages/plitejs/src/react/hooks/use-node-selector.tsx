@@ -8,6 +8,7 @@ import {
   type Text,
   TextApi,
 } from '../..';
+import { keyMovedAt } from '../../core/commit';
 import { ElementContext } from '../context';
 import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
 import { readNodeByKey } from '../editable/runtime-live-state';
@@ -65,7 +66,8 @@ const shouldUpdateEmptyTextForParentStructure = (
   const parentNodeKey = editorGetNodeKey(editor, path.slice(0, -1));
 
   return Boolean(
-    parentNodeKey && change.changed.hasNodeKey(parentNodeKey, 'node')
+    parentNodeKey &&
+    change.changed.hasNodeKey(parentNodeKey, 'node', editor.read.view.root())
   );
 };
 
@@ -92,9 +94,11 @@ const shouldUpdateRuntimeNode = (
     return true;
   }
 
+  const root = editor.read.view.root();
+
   if (
-    change.changed.hasNodeKey(nodeKey, 'node') ||
-    change.changed.hasNodeKey(nodeKey, 'path')
+    change.changed.hasNodeKey(nodeKey, 'node', root) ||
+    keyMovedAt(change.changed, nodeKey, root)
   ) {
     return true;
   }

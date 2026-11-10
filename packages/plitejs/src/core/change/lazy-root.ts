@@ -1,4 +1,34 @@
+import { countCoreWork } from '../work';
 import type { DocumentIndex } from './document-index';
+
+/** @internal */
+export const visitRootNames = (
+  roots: Readonly<Record<string, unknown>> | undefined
+): string[] => {
+  if (!roots) return [];
+
+  const names = Object.keys(roots);
+
+  countCoreWork('rootVisits', names.length);
+
+  return names;
+};
+
+/** @internal */
+export const isFrozenWithRoots = (value: Readonly<{ roots?: object }>) =>
+  Object.isFrozen(value) &&
+  (value.roots === undefined || Object.isFrozen(value.roots));
+
+/** @internal */
+export const hasRootNames = (
+  roots: Readonly<Record<string, unknown>> | undefined
+) => {
+  for (const name in roots) {
+    if (Object.hasOwn(roots, name)) return true;
+  }
+
+  return false;
+};
 
 export type Roots<K extends string> = Readonly<
   Partial<Record<K, readonly unknown[]>>
@@ -37,8 +67,10 @@ export const setLazyRoot = (
 };
 
 /** @internal */
-export const lazyRootOf = (source: object, key: string) =>
-  LAZY_ROOTS.get(source)?.get(key);
+export const lazyRootOf = (source: object | undefined, key: string) =>
+  source && Object.hasOwn(source, key)
+    ? LAZY_ROOTS.get(source)?.get(key)
+    : undefined;
 
 /**
  * Copy the own enumerable keys of `source` but `omit` onto `target`, keeping
@@ -56,6 +88,23 @@ export const copyFields = (
   for (const key of Object.keys(source)) {
     if (omit.includes(key)) continue;
 
+    const index = lazy?.get(key);
+
+    if (index) setLazyRoot(target, key, index);
+    else target[key] = source[key];
+  }
+
+  return target;
+};
+
+/** @internal */
+export const copyRoots = (
+  target: Record<string, unknown>,
+  source: Readonly<Record<string, unknown>>
+) => {
+  const lazy = LAZY_ROOTS.get(source);
+
+  for (const key of visitRootNames(source)) {
     const index = lazy?.get(key);
 
     if (index) setLazyRoot(target, key, index);

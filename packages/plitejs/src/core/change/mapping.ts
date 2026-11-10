@@ -370,6 +370,13 @@ export const getRootChangeRelocations = (
     )
   );
 
+const fitsAfterTeammateDelete = (
+  rootChange: RootChange,
+  before: DocumentIndex,
+  after: DocumentIndex
+) =>
+  rootChange.length === before.length && rootChange.newLength === after.length;
+
 /**
  * Derive maximal unique unchanged-subtree relocations.
  *
@@ -384,6 +391,8 @@ export const getDocumentChangeRelocations = (
   const rootChange = getInternalDocumentRootChange(change, root);
 
   return Object.freeze(
-    rootChange ? deriveRootRelocations(root, rootChange, before, after) : []
+    rootChange && fitsAfterTeammateDelete(rootChange, before, after)
+      ? deriveRootRelocations(root, rootChange, before, after)
+      : []
   );
 };

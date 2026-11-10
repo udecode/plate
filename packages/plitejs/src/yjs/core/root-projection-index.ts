@@ -400,6 +400,10 @@ export class RootProjectionIndex {
     }
   }
 
+  hasContestChanges(): boolean {
+    return this.dirty.size > 0;
+  }
+
   /**
    * The elements that show each id several elements refer to, for each such
    * id whose elements changed since the last call. Only one of them shows the

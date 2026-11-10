@@ -1,4 +1,4 @@
-import { isImmutable } from '../clone';
+import { freezeFresh, isImmutable } from '../clone';
 
 export type JsonRecord = Record<string, unknown>;
 
@@ -63,4 +63,4 @@ export const deepFreeze = <T>(value: T): T => {
   return value;
 };
 
-export const cloneFrozen = <T>(value: T): T => deepFreeze(cloneJson(value));
+export const cloneFrozen = <T>(value: T): T => freezeFresh(cloneJson(value));

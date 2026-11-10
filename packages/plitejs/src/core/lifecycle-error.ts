@@ -43,6 +43,8 @@ const describeSource: {
   history: (error) => `history ${error.phase} failed on ${error.direction}`,
   pagination: (error) => `pagination ${error.phase} failed`,
   'render-element': (error) => `render-element ${error.phase} check failed`,
+  yjs: (error) =>
+    `yjs ${error.phase} lost this peer's copy of root "${error.root}"`,
 };
 
 const describeCause = (cause: unknown) => {

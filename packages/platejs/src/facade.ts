@@ -187,6 +187,7 @@ export type {
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
 export { getTextSearchScope, normalizeSetValues } from 'plitejs/internal';
+export { type CoreWork, readCoreWork } from 'plitejs/internal';
 export type {
   EditorDirectUpdate,
   EditorGenericMethod,

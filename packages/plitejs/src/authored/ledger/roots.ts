@@ -2,6 +2,7 @@ import {
   type DocumentIndex,
   rootIndexOf,
 } from '../../core/change/document-index';
+import { visitRootNames } from '../../core/change/lazy-root';
 import type { JsonEditorValue } from '../../core/change/tokens';
 
 /** A stored value's content roots, main first, each as its index. */
@@ -19,7 +20,7 @@ export const rootOf = (value: JsonEditorValue, root: string) =>
 /** @internal */
 export const contentRootsOf = (value: JsonEditorValue): Roots =>
   new Map(
-    ['main', ...Object.keys(value.roots ?? {})].map(
+    ['main', ...visitRootNames(value.roots)].map(
       (root) => [root, rootOf(value, root)] as const
     )
   );

@@ -224,6 +224,9 @@ export default defineConfig({
         'apps/plite/src/app/dev/view-focus-chain/page.tsx',
         // These routes measure raw Plite against Plate on the same fixture.
         'apps/www/src/app/dev/combobox-typing/page.tsx',
+        'apps/plite/src/board-scale/stub-board.ts',
+        'apps/plite/src/board-scale/board-probe.ts',
+        'apps/plite/src/board-scale/model-lane.ts',
         'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
         'apps/www/src/app/dev/editor-perf/page.tsx',
         // This spec proves Plate's kit compiles to a schema that tracks no

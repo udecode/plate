@@ -99,8 +99,8 @@ details > summary {
   background: #2563eb;
 }
 
-[data-editor] > * + *,
-[data-editor-chunk] > * + * {
+[data-editor] > :where(:not(:first-child)),
+[data-editor-chunk] > :where(:not(:first-child)) {
   margin-top: 1em;
 }
 

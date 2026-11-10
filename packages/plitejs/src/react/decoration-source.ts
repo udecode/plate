@@ -1,7 +1,6 @@
 import type {
   Descendant,
   Editor as EditorType,
-  EditorCommit,
   EditorSnapshot,
   NodeKey,
   Path,
@@ -12,7 +11,10 @@ import type {
   Range,
 } from '..';
 import { NodeApi } from '..';
+import { childAtPathIndex, rootNodesOf } from '../core/change/document-index';
+import { getEditorCommitSnapshot } from '../core/commit';
 import { getEditorRuntimeRoot } from '../core/editor-runtime';
+import { toPublicRoot } from '../core/public-root';
 import { getReaderRange } from '../internal/root-location';
 import { createViewSourceFaultBoundary } from '../internal/view/mapped-view-store';
 import type { ViewSourceErrorSink } from '../internal/view/view-source';
@@ -154,12 +156,13 @@ const createEmptyCompiledSourceSnapshot = (
 });
 
 const getDescendantAtPath = (
-  children: readonly Descendant[],
+  snapshot: Readonly<{ children: readonly Descendant[] }>,
   path: Path
 ): Descendant | null => {
   if (path.length === 0) return null;
 
-  let node = children[path[0]] ?? null;
+  let node =
+    childAtPathIndex(rootNodesOf(snapshot, 'children'), path[0]) ?? null;
 
   for (const index of path.slice(1)) {
     if (!node || !NodeApi.isElement(node)) return null;
@@ -488,19 +491,16 @@ const mapDecorationSlicesThroughInsertion = (
 };
 
 const getNativeTextInsertions = (
-  commit: EditorCommit,
+  before: EditorSnapshot,
   snapshot: EditorSnapshot,
   inputKeys: readonly NodeKey[]
 ) => {
   const insertions = new Map<NodeKey, NativeTextInsertion>();
 
   for (const nodeKey of inputKeys) {
-    const beforePath = commit.before.index.pathOf(nodeKey);
-    const afterPath = snapshot.index.pathOf(nodeKey);
-    const beforeNode =
-      beforePath && getDescendantAtPath(commit.before.children, beforePath);
-    const afterNode =
-      afterPath && getDescendantAtPath(snapshot.children, afterPath);
+    const path = snapshot.index.pathOf(nodeKey);
+    const beforeNode = path && getDescendantAtPath(before, path);
+    const afterNode = path && getDescendantAtPath(snapshot, path);
 
     if (!beforeNode || !afterNode) return null;
     if (!NodeApi.isText(beforeNode) || !NodeApi.isText(afterNode)) return null;
@@ -535,7 +535,7 @@ const validateDecorationSources = <E>(
 
 const getInputEntries = (snapshot: EditorSnapshot) =>
   snapshot.index.entries().flatMap(([nodeKey, path]) => {
-    const node = getDescendantAtPath(snapshot.children, path);
+    const node = getDescendantAtPath(snapshot, path);
 
     return node ? [{ node, nodeKey, path }] : [];
   });
@@ -574,9 +574,8 @@ export const createPliteDecorationManager = <E>(
   type ExactSource = DecorationSource<E>;
 
   const runtimeEditor = editor as unknown as EditorType;
-  // Paths in this view's snapshot address its root; output for another root
-  // would paint the same paths here.
   const readerRoot = getEditorRuntimeRoot(runtimeEditor);
+  const readerPublicRoot = toPublicRoot(readerRoot);
 
   const listenersByNodeKey = new Map<NodeKey, Set<() => void>>();
   const listeners = new Set<(changedNodeKeys: readonly NodeKey[]) => void>();
@@ -630,9 +629,7 @@ export const createPliteDecorationManager = <E>(
     const getTargetText = (path: Path) => {
       if (targetPath && arePathsEqual(targetPath, path)) return targetText;
       const onInput = arePathsEqual(path, input.path);
-      const node = onInput
-        ? input.node
-        : getDescendantAtPath(snapshot.children, path);
+      const node = onInput ? input.node : getDescendantAtPath(snapshot, path);
 
       targetPath = [...path];
       targetText = null;
@@ -921,7 +918,7 @@ export const createPliteDecorationManager = <E>(
       for (let inputIndex = 0; inputIndex < inputKeys.length; inputIndex++) {
         const inputKey = inputKeys[inputIndex];
         const path = snapshot.index.pathOf(inputKey);
-        const node = path && getDescendantAtPath(snapshot.children, path);
+        const node = path && getDescendantAtPath(snapshot, path);
 
         if (!path || !node) {
           nextInputs[inputIndex] = null;
@@ -1418,7 +1415,7 @@ export const createPliteDecorationManager = <E>(
     )
   );
   let lastEditorVersion = initialSnapshot.version;
-  let lastEditorChildren = initialSnapshot.children;
+  let lastEditorChildren = rootNodesOf(initialSnapshot, 'children');
   const initialMergedBuckets = new Map<NodeKey, DecorationSlice[]>();
 
   for (const state of sourceStates) {
@@ -1704,7 +1701,7 @@ export const createPliteDecorationManager = <E>(
           'commit',
           (snapshot, change) => {
             lastEditorVersion = snapshot.version;
-            lastEditorChildren = snapshot.children;
+            lastEditorChildren = rootNodesOf(snapshot, 'children');
             if (pendingRefresh) pendingRefresh.snapshot = snapshot;
             if (
               sourceStates.length === 0 ||
@@ -1713,7 +1710,10 @@ export const createPliteDecorationManager = <E>(
               return;
             }
 
-            let inputKeys = change.changed.nodeKeysAll('decoration');
+            let inputKeys = change.changed.nodeKeys(
+              'decoration',
+              readerPublicRoot
+            );
 
             if (
               inputKeys &&
@@ -1732,10 +1732,12 @@ export const createPliteDecorationManager = <E>(
                 }
               };
 
-              for (const key of change.changed.nodeKeysAll('node')) {
+              for (const key of change.changed.nodeKeys(
+                'node',
+                readerPublicRoot
+              )) {
                 const path = snapshot.index.pathOf(key);
-                const node =
-                  path && getDescendantAtPath(snapshot.children, path);
+                const node = path && getDescendantAtPath(snapshot, path);
 
                 if (node && path) visit(node, path);
               }
@@ -1750,10 +1752,17 @@ export const createPliteDecorationManager = <E>(
               !change.changed.hasAny('properties') &&
               !change.changed.hasAny('replace')
             ) {
-              const textKeys = change.changed.nodeKeysAll('text');
+              const textKeys = change.changed.nodeKeys(
+                'text',
+                readerPublicRoot
+              );
               const insertions =
                 textKeys.length > 0
-                  ? getNativeTextInsertions(change, snapshot, textKeys)
+                  ? getNativeTextInsertions(
+                      getEditorCommitSnapshot(change, readerRoot, 'before'),
+                      snapshot,
+                      textKeys
+                    )
                   : null;
 
               if (insertions) {
@@ -1769,7 +1778,7 @@ export const createPliteDecorationManager = <E>(
           if (change !== 'authored') return;
           const snapshot = editorGetSnapshot(runtimeEditor);
 
-          lastEditorChildren = snapshot.children;
+          lastEditorChildren = rootNodesOf(snapshot, 'children');
           queueSourceRefresh(snapshot, sourceStates, undefined);
           flushPendingRefresh();
         });
@@ -1778,7 +1787,7 @@ export const createPliteDecorationManager = <E>(
         const editorChangedBeforeObservation =
           refreshOnMount ||
           snapshot.version !== lastEditorVersion ||
-          snapshot.children !== lastEditorChildren;
+          rootNodesOf(snapshot, 'children') !== lastEditorChildren;
         refreshOnMount = false;
         let inputs: ReturnType<typeof getInputEntries> | undefined;
         const getInputs = () => (inputs ??= getInputEntries(snapshot));
@@ -1795,7 +1804,7 @@ export const createPliteDecorationManager = <E>(
           });
         });
         lastEditorVersion = snapshot.version;
-        lastEditorChildren = snapshot.children;
+        lastEditorChildren = rootNodesOf(snapshot, 'children');
         publishMergedBuckets(affected);
       }
 

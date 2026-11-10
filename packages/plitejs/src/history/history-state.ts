@@ -35,6 +35,7 @@ import { type HistoryCarets, mapHistoryCarets } from './history-carets';
 import type { HistoryBatchGroup } from './history-merge-policy';
 import {
   historyReplaySchemaOf,
+  keepsUndoThrough,
   projectedHistoryReplay,
   recordHistoryReplay,
   mapHistoryReplay,
@@ -1598,6 +1599,7 @@ const peekResolvedEntry = <V extends Value>(
         group: resolved.group,
         identity: resolved.identity,
         recovery: resolved.recovery,
+        restores: resolved.replay.after,
       })
     : undefined;
 };
@@ -1608,14 +1610,29 @@ export const peekHistoryEntry = <V extends Value>(
   request?: number
 ) => peekResolvedEntry(editor, stack, resolveTop, request);
 
-/**
- * The top entry, past every step history can no longer map, which it drops
- * and leaves for `takeDroppedHistoryCauses`, so the read never throws.
- */
-export const peekSurvivingHistoryEntry = <V extends Value>(
-  editor: Editor<V>,
-  stack: HistoryStack
-) => peekResolvedEntry(editor, stack, resolveSurvivingTop);
+const topJoinsNothingOnceMapped = <V extends Value>(editor: Editor<V>) => {
+  const head = getStore(editor).undos;
+  const mapping = head?.mappings;
+
+  return (
+    !!head &&
+    !!mapping &&
+    !mapping.previous &&
+    !head.kept &&
+    !retainMappedCompositionGroup(head.group) &&
+    keepsUndoThrough(
+      historyReplaySchemaOf(editor),
+      head.replay,
+      head.base,
+      mapping.entry
+    )
+  );
+};
+
+export const peekJoinableUndoEntry = <V extends Value>(editor: Editor<V>) =>
+  topJoinsNothingOnceMapped(editor)
+    ? undefined
+    : peekResolvedEntry(editor, 'undos', resolveSurvivingTop);
 
 export const peekHistoryReplayEntry = <V extends Value>(
   editor: Editor<V>,
@@ -1771,6 +1788,7 @@ export const writeHistory = <V extends Value>(
     clearRedos?: boolean;
     group?: HistoryBatchGroup | null;
     recovery?: AnchorHistoryRecovery | null;
+    restores?: EditorDocumentValue<V>;
   }> = {}
 ) => {
   const store = getStore(editor);
@@ -1785,7 +1803,7 @@ export const writeHistory = <V extends Value>(
         current,
         batchValue.change,
         stack === 'undos' ? 'undo' : 'redo',
-        replayedOf(batchValue)
+        { ...replayedOf(batchValue), after: options.restores }
       ),
       store.maxDepth,
       options.group ?? null,
@@ -1809,6 +1827,7 @@ export const replaceHistoryHead = <V extends Value>(
     clearRedos?: boolean;
     group?: HistoryBatchGroup | null;
     recovery?: AnchorHistoryRecovery | null;
+    restores?: EditorDocumentValue<V>;
   }> = {}
 ) => {
   const store = getStore(editor);
@@ -1825,7 +1844,7 @@ export const replaceHistoryHead = <V extends Value>(
         current,
         batchValue.change,
         stack === 'undos' ? 'undo' : 'redo',
-        replayedOf(batchValue)
+        { ...replayedOf(batchValue), after: options.restores }
       ),
       resolved.next,
       null,

@@ -2910,6 +2910,19 @@ export type EditorLifecycleError<TEditor = Editor> =
        */
       phase: 'commit' | 'selection-export';
       source: 'render-element';
+    }>
+  | Readonly<{
+      cause: Error;
+      editor: TEditor;
+      /** This peer's copy of the root, which the merge replaced. */
+      lost: readonly Descendant[];
+      /**
+       * `merge` when a teammate's concurrent write of a root replaced this
+       * peer's copy, such as when both restored one deleted board apart.
+       */
+      phase: 'merge';
+      root: NamedRootKey;
+      source: 'yjs';
     }>;
 
 export type EditorLifecycleErrorSink<TEditor = Editor> = (
@@ -3830,9 +3843,17 @@ export type EditorCommitChanged = {
    * a `document` and `snapshot` change too, since records hold no root.
    */
   hasAny: (kind: EditorCommitChangeKind) => boolean;
-  hasNodeKey: (
+  /**
+   * Whether this key has this change kind in `root`, where `undefined` means
+   * the primary document. A key that left the root, or whose root the commit
+   * deleted, reports `'presence'` there, not `'path'`. For `'path'` and
+   * `'presence'`, a root whose children the commit did not change answers
+   * `false` without reading any index.
+   */
+  hasNodeKey: <TRoot extends RootKey>(
     nodeKey: NodeKey,
-    kind: EditorCommitRuntimeChangeKind
+    kind: EditorCommitRuntimeChangeKind,
+    root: NamedRootKey<TRoot> | undefined
   ) => boolean;
   /** Final-coordinate paths touching changed ranges in one document root. */
   paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];

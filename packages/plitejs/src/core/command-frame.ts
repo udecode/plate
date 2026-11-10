@@ -20,12 +20,11 @@ import {
   DocumentChange,
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
-  valueRoot,
   valueRootIndex,
   valueRootNodes,
 } from './change/document-change';
-import { DocumentIndex, type NodeList } from './change/document-index';
-import { copyRoot } from './change/lazy-root';
+import type { DocumentIndex, NodeList } from './change/document-index';
+import { copyRoot, copyRoots, visitRootNames } from './change/lazy-root';
 import type { NewLetters } from './change/new-letters';
 import { mapRootChangePositionBackward } from './change/root-change';
 import type { JsonPoint, JsonToken } from './change/tokens';
@@ -81,7 +80,10 @@ import {
 } from './public-state';
 import { changedRootsOf } from './root-ownership';
 import { mapSelectionThroughChange } from './selection-protocol';
-import { mapSnapshotIndexThroughChange } from './snapshot-index';
+import {
+  mapSnapshotIndexThroughChange,
+  snapshotIndexOf,
+} from './snapshot-index';
 import { mapEffect } from './transaction-values';
 import {
   type CarriedCarets,
@@ -234,7 +236,11 @@ export const probeInEditorCommandFrame = <T>(
       (rootName) =>
         parent
           ? retainTransactionSnapshotIndex(editor, parent, rootName)
-          : getDefined(published.get(rootName)).index,
+          : (published.get(rootName)?.index ??
+            snapshotIndexOf(
+              getEditorRuntimeOwner(editor),
+              valueRootNodes(stored, rootName)
+            )),
       storedSelection,
       selectionRoot,
       selection,
@@ -331,7 +337,7 @@ const frameIndexOf = (
             { binding: 'inherited' }
           )
         : mapSnapshotIndexThroughChange(
-            DocumentIndex.fromValue(valueRoot(stored, rootName)),
+            valueRootIndex(stored, rootName),
             projectedIndex(projected, rootName),
             getDefined(
               getInternalDocumentRootChange(projected.map.change(), rootName)
@@ -373,7 +379,7 @@ const projectedIndex = (projected: CommandProjection, root: string) => {
     countCoreWork('projectedIndexes');
   }
 
-  return DocumentIndex.fromValue(valueRoot(projected.value, root));
+  return valueRootIndex(projected.value, root);
 };
 
 const enterFrameDraft = (
@@ -392,9 +398,10 @@ const enterFrameDraft = (
   const roots: Record<string, readonly Descendant[]> = {};
 
   copyRoot(roots, MAIN_ROOT_KEY, projected.value, 'children');
-  snapshot.roots = Object.assign(roots, projected.value.roots);
-  snapshot.reservedRoots = new Set(Object.keys(stored.roots ?? {}));
-  countCoreWork('snapshotRoots', Object.keys(snapshot.roots).length);
+  copyRoots(roots, projected.value.roots ?? {});
+  snapshot.roots = roots;
+  snapshot.reservedRoots = new Set(visitRootNames(stored.roots));
+  countCoreWork('snapshotRoots', visitRootNames(snapshot.roots).length);
   snapshot.rootIndexes = {};
   snapshot.baseRuntimeIndexes = {};
   snapshot.baseSnapshots = {};
@@ -408,12 +415,12 @@ const enterFrameDraft = (
     snapshot.baseRuntimeIndexes[root] = settle;
     deferNodeKeys(getEditorRuntimeOwner(editor), frame.id, root, settle);
   }
+  for (const root of visitRootNames(roots)) {
+    snapshot.baseRuntimeIndexes[root] ??= () => storedIndex(root);
+  }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.
-  getEditorSchema(editor).adoptDocumentBaseline(
-    projected.value,
-    projected.carried
-  );
+  getEditorSchema(editor).adoptDocumentBaseline(projected.value);
   countCoreWork('baselines');
   snapshot.builder = createEditorDocumentChangeBuilder(
     editor,
@@ -492,7 +499,7 @@ const createFramePlace = (
 
     if (!projected.map.reorders(root)) return null;
 
-    const document = valueRoot(stored, root);
+    const document = valueRootNodes(stored, root) as NodeList<Descendant>;
     const place = (at: Path) =>
       nodeAt(document, at) ? projected.map.nodePath(root, at) : null;
     const paths = selection.paths.map(place);
@@ -719,9 +726,33 @@ const createFramePlace = (
     };
   };
 
+  const showsEveryLetter = (root: string, at: Path, text: string) => {
+    const index = valueRootIndex(stored, root);
+    const from = index.positionAt({ offset: 0, path: at });
+    const to = index.positionAt({ offset: text.length, path: at });
+    const start = projected.map.toProjected(root, from, 'forward');
+    const end = projected.map.toProjected(root, to, 'backward');
+
+    return start !== null && end !== null && end - start === to - from;
+  };
+  const hidesPartOf = (root: string, at: Path, text: string) =>
+    text.length === 0 || !showsEveryLetter(root, at, text);
   const path = (at: Path): Path | null => {
     if (at.length === 0) return at;
 
+    const root = getEditorUpdateRoot(editor);
+    const node = nodeAt(
+      valueRootNodes(stored, root) as NodeList<Descendant>,
+      at
+    );
+    const shown =
+      node && !(NodeApi.isText(node) && hidesPartOf(root, at, node.text))
+        ? projected.map.nodePath(root, at)
+        : null;
+
+    return shown ?? mappedPath(at);
+  };
+  const mappedPath = (at: Path): Path | null => {
     const mapped = map(
       SelectionApi.nodes([at], { mode: 'block' }),
       getEditorUpdateRoot(editor)
@@ -731,11 +762,14 @@ const createFramePlace = (
 
     const parentPath = at.slice(0, -1);
     const childCount = (value: EditorDocumentValue, parent: Path) => {
-      const children = valueRoot(value, getEditorUpdateRoot(editor));
+      const rootNodes = valueRootNodes(
+        value,
+        getEditorUpdateRoot(editor)
+      ) as NodeList<Descendant>;
 
-      if (parent.length === 0) return children.length;
+      if (parent.length === 0) return rootNodes.length;
 
-      const node = nodeAt(children, parent);
+      const node = nodeAt(rootNodes, parent);
 
       return node && !NodeApi.isText(node) ? node.children.length : null;
     };

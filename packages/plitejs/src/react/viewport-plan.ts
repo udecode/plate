@@ -29,6 +29,7 @@ export type EditableViewportPlan = {
   items: readonly EditableViewportItem[];
   measureElement?: (element: HTMLElement | null) => void;
   requestMount?: (index: number, path?: Path) => void;
+  shownTopLevelNodeKeys?: ReadonlySet<NodeKey>;
 };
 
 const coalesceIndexes = (

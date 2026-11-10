@@ -16,6 +16,7 @@ import {
   getInternalDocumentRootChange,
   valueRoot,
   valueRootIndex,
+  valueRootNodes,
   withDocumentChangeRecords,
 } from '../core/change/document-change';
 import {
@@ -24,7 +25,13 @@ import {
   rootIndexOf,
 } from '../core/change/document-index';
 import { jsonEqual } from '../core/change/json';
-import { copyFields, setLazyRoot } from '../core/change/lazy-root';
+import {
+  copyFields,
+  copyRoots,
+  lazyRootOf,
+  visitRootNames,
+  setLazyRoot,
+} from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import {
@@ -130,6 +137,7 @@ import {
   type Occurrence,
   readAuthoredDetails,
 } from './changes';
+import { decisionWindowsOf, type SpareGuard } from './decision-window';
 import {
   authoredAdmission,
   createDocumentMarksValidator,
@@ -156,6 +164,7 @@ import {
   putContexts,
   putLanded,
   putVerdicts,
+  reserveNodesIn,
   type VerdictRecord,
   withStore,
 } from './facts/records';
@@ -208,6 +217,7 @@ import {
   NO_SPARE_WRITES,
   type SpareBlocks,
   spareWritesChange,
+  completionBuilds,
   sparesFor,
   storesSpares,
 } from './tree/reserves';
@@ -220,6 +230,7 @@ import {
   pastFollowers,
   resolveAuthoredChildren,
   resolveAuthoredValue,
+  resolveAuthoredWindows,
 } from './tree/resolve';
 import { spareBlock, spareRoot } from './tree/spare-lines';
 import type {
@@ -375,11 +386,11 @@ const isStruck = (editor: Editor, node: unknown) => {
   );
 };
 
-const claimOf = (
-  value: EditorDocumentValue | JsonEditorValue,
+const claimIn = (
+  blocks: readonly unknown[],
+  facts: ReviewFacts,
   change: string
 ) => {
-  const facts = factsOf(value);
   const find = (nodes: readonly unknown[]): AuthoredMark | null => {
     for (const node of nodes) {
       const mark = marksOf(node, facts).find((item) => item.change === change);
@@ -396,8 +407,18 @@ const claimOf = (
     return null;
   };
 
-  return find([...value.children, ...Object.values(value.roots ?? {}).flat()]);
+  return find(blocks);
 };
+
+const claimOf = (
+  value: EditorDocumentValue | JsonEditorValue,
+  change: string
+) =>
+  claimIn(
+    [...value.children, ...Object.values(value.roots ?? {}).flat()],
+    factsOf(value),
+    change
+  );
 
 const positionOf = (value: JsonEditorValue, root: string, point: Point) =>
   valueRootIndex(value, root).positionAt(point);
@@ -763,6 +784,83 @@ const decidedChange = (
     recordOpsBetween(getValueRecords(value), getValueRecords(decided))
   );
 
+const windowedValue = (
+  value: JsonEditorValue,
+  { records, windows }: NonNullable<ReturnType<typeof resolveAuthoredWindows>>,
+  actions: ReadonlyMap<string, Outcome>
+) => {
+  const facts = factsOf(value);
+  const changes = new Map<string, RootChange>();
+
+  for (const { after, before, from, root } of windows) {
+    const index = valueRootIndex(value, root);
+    const local = getInternalDocumentRootChange(
+      decidedContentChange(
+        { children: before },
+        { children: after },
+        { facts, outcomes: actions }
+      ),
+      'main'
+    );
+
+    if (local && !local.empty) {
+      changes.set(
+        root,
+        local.embed(index.length, index.childPosition([], from))
+      );
+    }
+  }
+
+  const roots = value.roots && copyRoots({}, value.roots);
+  const decided = deriveValue(
+    value,
+    roots ? { roots: roots as JsonEditorValue['roots'] } : {},
+    records
+  );
+
+  const indexedAfter = new Map<string, DocumentIndex>();
+  const indexedBefore = new Map<string, DocumentIndex>();
+
+  for (const [root, change] of changes) {
+    const before = valueRootIndex(value, root);
+    const after = change.apply(before);
+
+    indexedBefore.set(root, before);
+    indexedAfter.set(root, after);
+    if (root === MAIN_ROOT_KEY) setLazyRoot(decided, 'children', after);
+    else setLazyRoot(getDefined(roots), root, after);
+  }
+
+  return {
+    change: createInternalDocumentChange(changes),
+    indexedAfter,
+    indexedBefore,
+    value: decided,
+  };
+};
+
+const spareGuardOf = (
+  editor: Editor,
+  value: JsonEditorValue
+): SpareGuard | null => {
+  const compiled = getCompiledEditorSchema(editor);
+
+  if (!storesSpares(compiled)) return null;
+
+  const schema = getEditorSchema(editor);
+
+  return {
+    builds: (type, root) =>
+      completionBuilds(
+        compiled,
+        type === null
+          ? schema.getRootContent(root, value as EditorDocumentValue)
+          : schema.getElementContent(type)
+      ),
+    stored: reserveNodesIn(getValueRecords(value)).length > 0,
+  };
+};
+
 /** `value` without its records, which a decision only adds to. */
 const contentOf = (value: JsonEditorValue): JsonEditorValue => {
   const { records: _records, ...plain } = value;
@@ -801,7 +899,7 @@ const settlesTextAlone = (
 ) => {
   if (withdraws) return false;
 
-  const removed = new Map<readonly JsonNode[], number>();
+  const removed = new Map<NodeList, number>();
 
   for (const id of decided) {
     if (actions.get(id) !== 'accept') return false;
@@ -810,11 +908,10 @@ const settlesTextAlone = (
         return false;
       }
 
-      let children: readonly JsonNode[] | undefined =
-        root === MAIN_ROOT_KEY ? value.children : value.roots?.[root];
+      let children: NodeList | undefined = valueRootNodes(value, root);
 
       for (const index of path.slice(0, -1)) {
-        children = children?.[index]?.children;
+        children = children?.at(index)?.children;
       }
 
       if (!children) return false;
@@ -1309,36 +1406,67 @@ const replacedRanges = (
   return ranges;
 };
 
+type DecidedRun = Readonly<{
+  after: readonly JsonNode[];
+  before: readonly JsonNode[];
+  from: number;
+  root: string;
+}>;
+
+const decidedRunsOf = (value: JsonEditorValue, decided: JsonEditorValue) => {
+  const runs: DecidedRun[] = [];
+  const dropped: string[] = [];
+
+  for (const root of ['main', ...Object.keys(value.roots ?? {})]) {
+    if (root !== 'main' && !Object.hasOwn(decided.roots ?? {}, root)) {
+      dropped.push(root);
+    } else {
+      runs.push({
+        after: valueRoot(decided, root),
+        before: valueRoot(value, root),
+        from: 0,
+        root,
+      });
+    }
+  }
+
+  return { dropped, runs };
+};
+
 const remainsAfter = (
   value: JsonEditorValue,
   decided: JsonEditorValue,
+  {
+    dropped,
+    runs,
+  }: Readonly<{ dropped: readonly string[]; runs: readonly DecidedRun[] }>,
   book: BookView,
   resolvedIn: (root: string) => ((original: JsonNode) => JsonNode | null) | null
 ) => {
   const facts = factsOf(decided);
-  const replaced = new Map<string, readonly ReplacedRange[]>();
+  const replaced = new Map<string, ReplacedRange[]>();
   const kept = new Set<string>();
   const candidates = new Set<string>();
 
-  for (const root of ['main', ...Object.keys(value.roots ?? {})]) {
-    if (root !== 'main' && !Object.hasOwn(decided.roots ?? {}, root)) {
-      for (const id of book.idsIn(root, 0, rootOf(value, root).size)) {
-        candidates.add(id);
-      }
-      continue;
+  for (const root of dropped) {
+    for (const id of book.idsIn(root, 0, rootOf(value, root).size)) {
+      candidates.add(id);
     }
-
-    const after = valueRoot(decided, root);
+  }
+  for (const { after, before, from: offset, root } of runs) {
     const ranges = replacedRanges(
-      valueRoot(value, root),
+      before,
       after,
       resolvedIn(root) ?? (() => null)
     );
+    const shifted = replaced.get(root) ?? [];
 
-    replaced.set(root, ranges);
+    replaced.set(root, shifted);
     for (const [from, to, afterFrom, afterTo] of ranges) {
       countLedgerWork('strandedBlocks', to - from + afterTo - afterFrom);
-      for (const id of book.idsIn(root, from, to)) candidates.add(id);
+      for (const id of book.idsIn(root, from + offset, to + offset)) {
+        candidates.add(id);
+      }
       for (const block of after.slice(afterFrom, afterTo)) {
         for (const id of blockOccurrencesOf(block, (node) =>
           marksOf(node, facts)
@@ -1346,13 +1474,15 @@ const remainsAfter = (
           kept.add(id);
         }
       }
+      shifted.push([from + offset, to + offset, afterFrom, afterTo]);
     }
   }
 
   const remains = (id: string) =>
     kept.has(id) ||
     book.occurrences(id).some(({ node, path, root }) => {
-      const ranges = replaced.get(root);
+      const ranges =
+        replaced.get(root) ?? (dropped.includes(root) ? undefined : []);
 
       return (
         ranges !== undefined &&
@@ -1482,11 +1612,11 @@ export const createAuthoredPlugin = (
         )
       : null;
   };
-  const decideOn = (
+  const decisionOn = (
     editor: Editor,
     value: JsonEditorValue,
     decisions: AuthoredDecision | readonly AuthoredDecision[],
-    withdraws = false
+    withdraws: boolean
   ):
     | Readonly<{ result: AuthoredResult }>
     | Readonly<{
@@ -1536,19 +1666,46 @@ export const createAuthoredPlugin = (
     if (conflicting) return { result: { ids, status: 'invalid' } };
     if (ids.length === 0) return { result: { ids, status: 'unchanged' } };
 
-    let resolution: ReturnType<typeof resolveAuthoredValue>;
+    const outcome = (change: string) => actions.get(change) ?? 'keep';
+    const resolveSchema = authoredResolveSchemaOf(editor);
+    const resolveOptions = { stores: true, withdraws };
+    const windows = decisionWindowsOf(
+      value,
+      ids,
+      (id) => book.occurrences(id),
+      spareGuardOf(editor, value)
+    );
+    let windowed: ReturnType<typeof resolveAuthoredWindows> = null;
+    let whole: ReturnType<typeof resolveAuthoredValue> | null = null;
 
     try {
-      resolution = resolveAuthoredValue(
-        value,
-        (change) => actions.get(change) ?? 'keep',
-        authoredResolveSchemaOf(editor),
-        { stores: true, withdraws }
-      );
+      windowed =
+        windows &&
+        resolveAuthoredWindows(
+          value,
+          windows,
+          outcome,
+          resolveSchema,
+          resolveOptions
+        );
+      if (!windowed) {
+        coverStoredValues(getCompiledEditorSchema(editor), [
+          ...value.children,
+          ...Object.values(value.roots ?? {}).flat(),
+        ]);
+        whole = resolveAuthoredValue(
+          value,
+          outcome,
+          resolveSchema,
+          resolveOptions
+        );
+      }
     } catch (error) {
       if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
       throw error;
     }
+
+    const resolution = windowed ?? getDefined(whole);
 
     const blockers = resolution.blockers.filter(
       (change) => !actions.has(change)
@@ -1564,8 +1721,15 @@ export const createAuthoredPlugin = (
     const decision = createIncarnationId();
     // A withdrawal leaves no record unless a mark of the change stays stored,
     // which every later read must see as rejected.
+    const facts = windowed && factsOf(value);
+    const stays = (id: string) =>
+      windowed
+        ? windowed.windows.some(
+            ({ after }) => claimIn(after, getDefined(facts), id) !== null
+          )
+        : !!claimOf(getDefined(whole).value, id);
     const verdicts = [...actions]
-      .filter(([id]) => !withdraws || claimOf(resolution.value, id))
+      .filter(([id]) => !withdraws || stays(id))
       .flatMap(([id, verdict]) =>
         [...incarnationsOf(book.occurrences(id))].map(
           ({ at, change, inc }): VerdictRecord => ({
@@ -1581,8 +1745,9 @@ export const createAuthoredPlugin = (
       ),
       resolution.resolvedOf
     );
+    const decided = windowed && windowedValue(value, windowed, actions);
     const decidedValue = withVerdicts(
-      resolution.value,
+      decided ? decided.value : getDefined(whole).value,
       verdicts.map((record) =>
         record.verdict === 'accept'
           ? {
@@ -1598,10 +1763,15 @@ export const createAuthoredPlugin = (
     const { candidates, remains } = remainsAfter(
       value,
       decidedValue,
+      windowed
+        ? { dropped: [], runs: windowed.windows }
+        : decidedRunsOf(value, decidedValue),
       book,
       resolution.resolvedIn
     );
-    const inDroppedRoots = insertionsInDroppedRoots(value, decidedValue);
+    const inDroppedRoots = windowed
+      ? new Set<string>()
+      : insertionsInDroppedRoots(value, decidedValue);
     const taken = book
       .pendingInOrder(new Set([...candidates, ...inDroppedRoots]))
       .filter(
@@ -1623,15 +1793,35 @@ export const createAuthoredPlugin = (
       return { result: { ids, status: 'blocked', with: taken } };
     }
     const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+    const windowedChange = decided
+      ? withDocumentChangeRecords(
+          decided.change,
+          recordOpsBetween(
+            getValueRecords(value),
+            getValueRecords(decidedValue)
+          )
+        )
+      : null;
 
     try {
-      schema.assertDocument(decidedValue);
+      if (decided && windowedChange) {
+        schema.checkDocumentChange({
+          after: decidedValue as EditorDocumentValue,
+          before: value as EditorDocumentValue,
+          change: windowedChange,
+          indexedAfter: decided.indexedAfter,
+          indexedBefore: decided.indexedBefore,
+        });
+      } else {
+        schema.assertDocument(decidedValue);
+      }
     } catch (error) {
       if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
       throw error;
     }
 
-    const change = decidedChange(value, decidedValue, actions);
+    const change =
+      windowedChange ?? decidedChange(value, decidedValue, actions);
 
     if (change.empty) return { result: { ids: [], status: 'unchanged' } };
 
@@ -1652,6 +1842,17 @@ export const createAuthoredPlugin = (
       ),
     };
   };
+  const decideOn = (
+    editor: Editor,
+    value: JsonEditorValue,
+    decisions: AuthoredDecision | readonly AuthoredDecision[],
+    withdraws: boolean,
+    apply: (decided: ReturnType<typeof decisionOn>) => AuthoredResult
+  ) =>
+    readingCovered({
+      cover: () => undefined,
+      read: () => apply(decisionOn(editor, value, decisions, withdraws)),
+    });
 
   return definePlugin('authored', {
     dependencies: [authoredRecords],
@@ -1904,7 +2105,9 @@ export const createAuthoredPlugin = (
       },
     }),
     update: ({ editor, tx }) => {
-      const apply = (decided: ReturnType<typeof decideOn>): AuthoredResult => {
+      const apply = (
+        decided: ReturnType<typeof decisionOn>
+      ): AuthoredResult => {
         if (!('change' in decided)) return decided.result;
 
         const update = getActiveEditorUpdateId(editor);
@@ -1933,18 +2136,7 @@ export const createAuthoredPlugin = (
       const decideCovered = (
         decisions: AuthoredDecision | readonly AuthoredDecision[],
         withdraws = false
-      ) => {
-        const value = tx.value();
-
-        return readingCovered({
-          cover: () =>
-            coverStoredValues(getCompiledEditorSchema(editor), [
-              ...value.children,
-              ...Object.values(value.roots ?? {}).flat(),
-            ]),
-          read: () => apply(decideOn(editor, value, decisions, withdraws)),
-        });
-      };
+      ) => decideOn(editor, tx.value(), decisions, withdraws, apply);
 
       return {
         decide: txStored(
@@ -1979,7 +2171,10 @@ export const createAuthoredPlugin = (
 
           const changeId = input.changeId ?? createChangeId();
           const value = tx.value();
-          const claim = claimOf(value, changeId);
+          const claim =
+            state.marks.authorOf(changeId) === null
+              ? null
+              : claimOf(value, changeId);
           const decided =
             !claim &&
             (state.marks.authorOf(changeId) !== null ||
@@ -2043,9 +2238,12 @@ export const createAuthoredPlugin = (
       };
 
       onCleanup(
-        getEditorRuntime(owner).subscribeCommit((commit) =>
-          ledger.carry(commit)
-        )
+        getEditorRuntime(owner).subscribeCommit((commit) => {
+          ledger.carry(commit);
+          if (commit.changes.createRoots.size > 0) {
+            ledger.buildProjectionAccepted(storedValue(editor));
+          }
+        })
       );
 
       const builtPlacements = new Map<number, AuthoredFormatProjection>();
@@ -2491,7 +2689,7 @@ export const createAuthoredPlugin = (
 
           const kept = [
             ...new Set([
-              ...Object.keys(before.roots ?? {}),
+              ...visitRootNames(before.roots),
               ...recorded.indexedAfter.keys(),
             ]),
           ].filter((root) => root !== 'main' && !byName.has(root));
@@ -2508,12 +2706,16 @@ export const createAuthoredPlugin = (
               indexes.get('main') ?? rootIndexOf(before, 'children')
             );
             if (roots.length > 0) {
-              next.roots = Object.fromEntries(
-                roots.map((root) => [
-                  root,
-                  indexes.get(root)?.value ?? valueRoot(before, root),
-                ])
-              );
+              const named: Record<string, unknown> = {};
+
+              for (const root of roots) {
+                const index =
+                  indexes.get(root) ?? lazyRootOf(before.roots, root);
+
+                if (index) setLazyRoot(named, root, index);
+                else named[root] = valueRoot(before, root);
+              }
+              next.roots = named;
             }
 
             return withValueRecords(next, beforeRecords) as typeof before;

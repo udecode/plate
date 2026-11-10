@@ -428,12 +428,61 @@ const countChangedOwners = (
   }
 };
 
+const lastBuilt = new WeakMap<
+  CompiledEditorSchema,
+  Map<RootKey, DocumentIndex>
+>();
+
+const builtFor = (schema: CompiledEditorSchema) => {
+  let built = lastBuilt.get(schema);
+
+  if (!built) {
+    built = new Map();
+    lastBuilt.set(schema, built);
+  }
+
+  return built;
+};
+
+export const forgetElementOwnedRootBuilds = (
+  schema: CompiledEditorSchema,
+  roots: Readonly<Record<string, unknown>>
+) => {
+  const built = lastBuilt.get(schema);
+
+  if (!built) return;
+  for (const root of built.keys()) {
+    if (root !== 'main' && !Object.hasOwn(roots, root)) built.delete(root);
+  }
+};
+
+/** @internal */
+export const countElementOwnedRootBuilds = (schema: CompiledEditorSchema) =>
+  lastBuilt.get(schema)?.size ?? 0;
+
+const rebasingCostsLess = (last: DocumentIndex, document: DocumentIndex) =>
+  Math.abs(last.size - document.size) < document.size;
+
 const buildIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
   document: DocumentIndex
-) =>
+): ElementOwnedRootIndex =>
   profileCoreDuration('schema-root-ownership-index-build', () => {
+    const builtBySchema = builtFor(schema);
+    const last = builtBySchema.get(root);
+
+    if (
+      last &&
+      last !== document &&
+      rebasingCostsLess(last, document) &&
+      getElementOwnedRootIndex(schema, root, last)
+    ) {
+      builtBySchema.set(root, document);
+
+      return advanceElementOwnedRootIndex(schema, root, last, document);
+    }
+    if (!last) builtBySchema.set(root, document);
     countCoreWork('ownershipBuilds');
     const index: MutableIndex = { childRoots: null, issues: null };
 
@@ -451,6 +500,44 @@ export const ensureElementOwnedRootIndex = (
 ) =>
   getElementOwnedRootIndex(schema, root, document) ??
   buildIndex(schema, root, document);
+
+export const advanceElementOwnedRootIndex = (
+  schema: CompiledEditorSchema,
+  root: RootKey,
+  before: DocumentIndex,
+  after: DocumentIndex
+) => {
+  const cached = getElementOwnedRootIndex(schema, root, after);
+
+  if (cached) return cached;
+  const previous = getElementOwnedRootIndex(schema, root, before);
+
+  if (!previous) return buildIndex(schema, root, after);
+  const index: MutableIndex = { ...previous };
+
+  for (const [from, to, afterFrom, afterTo] of before.changedChildren(after)) {
+    countChangedOwners(
+      schema,
+      root,
+      before,
+      before.childPosition([], from),
+      before.childPosition([], to),
+      index,
+      -1
+    );
+    countChangedOwners(
+      schema,
+      root,
+      after,
+      after.childPosition([], afterFrom),
+      after.childPosition([], afterTo),
+      index,
+      1
+    );
+  }
+
+  return cacheIndex(schema, root, after, freezeIndex(index));
+};
 
 export const rebaseElementOwnedRootIndex = (
   schema: CompiledEditorSchema,
@@ -481,6 +568,7 @@ export const rebaseElementOwnedRootIndex = (
       countChangedOwners(schema, root, before, fromBefore, toBefore, index, -1);
       countChangedOwners(schema, root, after, fromAfter, toAfter, index, 1);
     });
+    builtFor(schema).set(root, after);
 
     return cacheIndex(schema, root, after, freezeIndex(index));
   });

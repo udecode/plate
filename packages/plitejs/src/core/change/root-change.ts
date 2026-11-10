@@ -90,6 +90,13 @@ export type DocumentSetPropertyResolver = (
   context: DocumentPropertyContext
 ) => boolean;
 
+type BetweenOptions = Readonly<{
+  emptySetsAsValues?: boolean;
+  isSetValued?: DocumentSetPropertyResolver;
+  offset?: number;
+  root?: string | null;
+}>;
+
 export type RootChangeSection = {
   from: number;
   insert?: PreparedTokenSlice;
@@ -873,7 +880,7 @@ const keptIn = (
 ) => {
   const written = editedRanges(change, 'to');
 
-  return editedRanges(RootChange.between(result, later), 'from').every(
+  return editedRanges(RootChange.betweenWhole(result, later), 'from').every(
     ([from, to]) => written.every(([start, end]) => to < start || end < from)
   );
 };
@@ -1654,10 +1661,14 @@ export const transformChange = (
   }
 };
 
+export const ancestorType = (type: unknown) =>
+  typeof type === 'string' ? type : 'element';
+
 export const getDocumentPropertyContext = (
   document: DocumentIndex,
   path: readonly number[],
-  root: string | null
+  root: string | null,
+  offset = 0
 ): DocumentPropertyContext => {
   const node = document.node(path);
   const ancestorTypes: string[] = [];
@@ -1666,9 +1677,7 @@ export const getDocumentPropertyContext = (
     const ancestor = document.node(path.slice(0, depth));
 
     if (!isTextNode(ancestor)) {
-      ancestorTypes.push(
-        typeof ancestor.type === 'string' ? ancestor.type : 'element'
-      );
+      ancestorTypes.push(ancestorType(ancestor.type));
     }
   }
 
@@ -1678,7 +1687,11 @@ export const getDocumentPropertyContext = (
   return Object.freeze({
     ancestors: placement === 'text' ? ancestorTypes.slice(1) : ancestorTypes,
     parent,
-    path: Object.freeze([...path]),
+    path: Object.freeze(
+      offset === 0 || path.length === 0
+        ? [...path]
+        : [getDefined(path[0]) + offset, ...path.slice(1)]
+    ),
     placement,
     root,
     type:
@@ -1825,11 +1838,7 @@ export const commonTextSuffixLength = (
 export const createStructurallyAlignedChanges = (
   before: DocumentIndex,
   after: DocumentIndex,
-  options: Readonly<{
-    emptySetsAsValues?: boolean;
-    isSetValued?: DocumentSetPropertyResolver;
-    root?: string | null;
-  }>
+  options: BetweenOptions
 ) => {
   const changes: RootChangeSection[] = [];
   const boundaries = new WeakMap<JsonNode, NodeTextBoundary>();
@@ -1962,7 +1971,8 @@ export const createStructurallyAlignedChanges = (
     const context = getDocumentPropertyContext(
       before,
       path,
-      options.root ?? null
+      options.root ?? null,
+      options.offset
     );
     const modifications = betweenPropertyModifications(
       sourceProperties,
@@ -2408,9 +2418,10 @@ const convergesOn = (
   afterB: DocumentIndex
 ) => {
   try {
-    return jsonEqual(
-      transformed.b.apply(afterA).value,
-      transformed.a.apply(afterB).value
+    return sameChangedChildren(
+      transformed.b.apply(afterA),
+      transformed.a.apply(afterB),
+      jsonEqual
     );
   } catch {
     return false;
@@ -2753,6 +2764,28 @@ const sameDocumentStructure = (
   left.length === right.length &&
   left.every((node, index) => sameNodeStructure(node, right[index]));
 
+const sameChangedChildren = (
+  left: DocumentIndex,
+  right: DocumentIndex,
+  same: (left: JsonNode, right: JsonNode) => boolean
+) =>
+  left.size === right.size &&
+  left.changedChildren(right).every(([from, to, otherFrom, otherTo]) => {
+    if (to - from !== otherTo - otherFrom) return false;
+    for (let at = 0; at < to - from; at += 1) {
+      if (
+        !same(
+          getDefined(left.child(from + at)),
+          getDefined(right.child(otherFrom + at))
+        )
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
 const mergeStructuralRunByPosition = (
   structural: RootChange,
   concurrent: RootChange,
@@ -2979,7 +3012,7 @@ const mergeStructuralRunByPosition = (
         .within(runFrom, runTo)
         ?.embed(afterConcurrent.length, copyFrom) ??
       (twin
-        ? RootChange.between(
+        ? RootChange.betweenWhole(
             DocumentIndex.fromValue(
               concurrentNodes.slice(match, match + source.length)
             ),
@@ -3014,7 +3047,7 @@ const mergeStructuralRunByPosition = (
   };
   const [rebasedChange] = [
     rebased,
-    twin ? null : RootChange.between(afterConcurrent, document),
+    twin ? null : RootChange.betweenWhole(afterConcurrent, document),
   ]
     .filter(
       (change): change is RootChange =>
@@ -3029,7 +3062,8 @@ const mergeStructuralRunByPosition = (
     RootChange.transform(structural, concurrent).b,
   ].find((change) => lands(change, afterStructural));
   const other =
-    concurrentPastStructural ?? RootChange.between(afterStructural, document);
+    concurrentPastStructural ??
+    RootChange.betweenWhole(afterStructural, document);
 
   return { merged: document, other, rebased: rebasedChange };
 };
@@ -3100,8 +3134,8 @@ const mergeStructuralChangeAtStableSiblingRange = (
 
   return {
     merged: document,
-    other: RootChange.between(afterStructural, document),
-    rebased: RootChange.between(afterConcurrent, document),
+    other: RootChange.betweenWhole(afterStructural, document),
+    rebased: RootChange.betweenWhole(afterConcurrent, document),
   };
 };
 
@@ -3515,7 +3549,7 @@ const transformMixedEditOverSiblingRemoval = (
     const merged = kept.apply(afterRemoval);
     const removalAfterEdit = RootChange.create(afterEdit, { from, to });
     const removedAfterEdit = removalAfterEdit.compose(
-      RootChange.between(removalAfterEdit.apply(afterEdit), merged)
+      RootChange.betweenWhole(removalAfterEdit.apply(afterEdit), merged)
     );
 
     return side === 'b'
@@ -3932,6 +3966,9 @@ export const mapRootChangePositionBackward = (
   return positionA;
 };
 
+const childStart = (document: DocumentIndex, child: number) =>
+  child < document.size ? document.nodeRange([child]).from : document.length;
+
 export class RootChange {
   readonly data: readonly SectionData[];
   readonly length: number;
@@ -4031,14 +4068,31 @@ export class RootChange {
     return new RootChange(sections, data);
   }
 
-  static between(
+  static betweenChangedBlocks(
     before: DocumentIndex,
     after: DocumentIndex,
-    options: Readonly<{
-      emptySetsAsValues?: boolean;
-      isSetValued?: DocumentSetPropertyResolver;
-      root?: string | null;
-    }> = {}
+    options: BetweenOptions = {}
+  ) {
+    const ranges = before.changedChildren(after);
+    const first = ranges[0];
+    const last = ranges.at(-1);
+
+    if (!first || !last) return RootChange.empty(before.length);
+    if (first[0] === 0 && last[1] === before.size && last[3] === after.size) {
+      return RootChange.betweenWhole(before, after, options);
+    }
+
+    return RootChange.betweenWhole(
+      DocumentIndex.fromIndexedNodes(before.nodes.slice(first[0], last[1])),
+      DocumentIndex.fromIndexedNodes(after.nodes.slice(first[2], last[3])),
+      { ...options, offset: first[0] }
+    ).embed(before.length, childStart(before, first[0]));
+  }
+
+  static betweenWhole(
+    before: DocumentIndex,
+    after: DocumentIndex,
+    options: BetweenOptions = {}
   ) {
     if (jsonEqual(before.value, after.value)) {
       return RootChange.empty(before.length);
@@ -4089,7 +4143,8 @@ export class RootChange {
         const context = getDocumentPropertyContext(
           before,
           entry.path,
-          options.root ?? null
+          options.root ?? null,
+          options.offset
         );
         const modifications = betweenPropertyModifications(
           token.props,
@@ -4142,15 +4197,11 @@ export class RootChange {
 
     if (!first || !last) return RootChange.empty(before.length);
 
-    const startOf = (document: DocumentIndex, child: number) =>
-      child < document.size
-        ? document.nodeRange([child]).from
-        : document.length;
-    const from = startOf(before, first[0]);
-    const to = startOf(before, last[1]);
+    const from = childStart(before, first[0]);
+    const to = childStart(before, last[1]);
     const window = alignLetters(
       before.slice(from, to),
-      after.slice(startOf(after, first[2]), startOf(after, last[3]))
+      after.slice(childStart(after, first[2]), childStart(after, last[3]))
     );
 
     if (!window) return null;
@@ -4766,7 +4817,10 @@ export class RootChange {
 
       return {
         edit: editAfterMove,
-        move: RootChange.between(afterEdit, editAfterMove.apply(afterMove)),
+        move: RootChange.betweenWhole(
+          afterEdit,
+          editAfterMove.apply(afterMove)
+        ),
       };
     };
 
@@ -4798,14 +4852,14 @@ export class RootChange {
     // shared lines would type that letter twice.
     if (shared && keptIn(b, afterB, afterA)) {
       return {
-        a: RootChange.between(afterB, afterA),
+        a: RootChange.betweenWhole(afterB, afterA),
         b: RootChange.empty(afterA.length),
       };
     }
     if (shared && keptIn(a, afterA, afterB)) {
       return {
         a: RootChange.empty(afterB.length),
-        b: RootChange.between(afterA, afterB),
+        b: RootChange.betweenWhole(afterA, afterB),
       };
     }
     const rebaseAfterShared = (edits: ReadonlyMap<string, SharedEdit>) => {
@@ -4900,7 +4954,7 @@ export class RootChange {
         : wrapperMove;
 
       return {
-        edit: RootChange.between(
+        edit: RootChange.betweenWhole(
           moveChange.apply(document),
           moved.apply(afterEdit)
         ),
@@ -4935,13 +4989,15 @@ export class RootChange {
     }
 
     const transformed = RootChange.transform(a, b, replayBase, readBack);
-    const aChangesStructure = !sameDocumentStructure(
-      document.value,
-      afterA.value
+    const aChangesStructure = !sameChangedChildren(
+      document,
+      afterA,
+      sameNodeStructure
     );
-    const bChangesStructure = !sameDocumentStructure(
-      document.value,
-      afterB.value
+    const bChangesStructure = !sameChangedChildren(
+      document,
+      afterB,
+      sameNodeStructure
     );
     const sharesStructuralStart = aReplacements.some(({ from }) =>
       bReplacements.some((replacement) => replacement.from === from)
@@ -4978,7 +5034,7 @@ export class RootChange {
       }
 
       return {
-        a: RootChange.between(afterB, afterA),
+        a: RootChange.betweenWhole(afterB, afterA),
         b: RootChange.empty(afterA.length),
       };
     }
@@ -5051,8 +5107,8 @@ export class RootChange {
 
     if (aThroughB !== null) {
       return {
-        a: RootChange.between(afterB, aThroughB),
-        b: RootChange.between(afterA, aThroughB),
+        a: RootChange.betweenWhole(afterB, aThroughB),
+        b: RootChange.betweenWhole(afterA, aThroughB),
       };
     }
 
@@ -5068,8 +5124,8 @@ export class RootChange {
 
     if (bThroughA !== null) {
       return {
-        a: RootChange.between(afterB, bThroughA),
-        b: RootChange.between(afterA, bThroughA),
+        a: RootChange.betweenWhole(afterB, bThroughA),
+        b: RootChange.betweenWhole(afterA, bThroughA),
       };
     }
 
@@ -5085,7 +5141,7 @@ export class RootChange {
       const merged = moveAfterA.apply(afterA);
 
       return {
-        a: RootChange.between(afterB, merged),
+        a: RootChange.betweenWhole(afterB, merged),
         b: moveAfterA,
       };
     }
@@ -5101,7 +5157,7 @@ export class RootChange {
 
       return {
         a: moveAfterB,
-        b: RootChange.between(afterA, merged),
+        b: RootChange.betweenWhole(afterA, merged),
       };
     }
 
@@ -5168,9 +5224,9 @@ export class RootChange {
           deletion.edit.length,
       });
       const deleted = deletionAfterEdit.compose(
-        RootChange.between(deletionAfterEdit.apply(afterEdit), merged)
+        RootChange.betweenWhole(deletionAfterEdit.apply(afterEdit), merged)
       );
-      const edited = RootChange.between(afterDeletion, merged);
+      const edited = RootChange.betweenWhole(afterDeletion, merged);
 
       return deletion.side === 'b'
         ? { a: edited, b: deleted }
@@ -5237,7 +5293,7 @@ export class RootChange {
 
     return {
       a: RootChange.empty(afterB.length),
-      b: RootChange.between(afterA, afterB),
+      b: RootChange.betweenWhole(afterA, afterB),
     };
   }
 
@@ -5270,6 +5326,31 @@ export class RootChange {
     return (
       this.sections.length === 0 ||
       (this.sections.length === 2 && this.sections[1] === -1)
+    );
+  }
+
+  sameAs(other: RootChange) {
+    return (
+      this === other ||
+      (this.sections.length === other.sections.length &&
+        this.sections.every(
+          (value, index) => value === other.sections[index]
+        ) &&
+        this.data.every((data, index) => {
+          const theirs = other.data[index];
+
+          if (data instanceof PreparedTokenSlice) {
+            return (
+              theirs instanceof PreparedTokenSlice &&
+              data.tokens.length === theirs.tokens.length &&
+              data.tokens.every((token, at) =>
+                tokensEqual(token, theirs.tokens[at])
+              )
+            );
+          }
+
+          return jsonEqual(data, theirs);
+        }))
     );
   }
 
@@ -6351,15 +6432,16 @@ export class RootChange {
           pathKey(from.parentPath) === pathKey(to.parentPath) &&
           from.index < to.index
         ) {
-          const children =
+          const nodes =
             from.parentPath.length === 0
-              ? after.value
+              ? after.nodes.slice(from.index, to.index)
               : (() => {
                   const parent = after.node(from.parentPath);
 
-                  return isElementNode(parent) ? parent.children : [];
+                  return isElementNode(parent)
+                    ? parent.children.slice(from.index, to.index)
+                    : [];
                 })();
-          const nodes = children.slice(from.index, to.index);
           const prepared = PreparedTokenSlice.fromPreparedNodes(nodes, (path) =>
             nodeKeyAt([
               ...from.parentPath,
@@ -6933,9 +7015,9 @@ export const replaceChildrenChange = (
   removeCount: number,
   newChildren: readonly JsonNode[]
 ) => {
-  const currentChildren =
+  const removed =
     path.length === 0
-      ? document.value
+      ? document.nodes.slice(index, index + removeCount)
       : (() => {
           const parent = document.node(path);
 
@@ -6943,9 +7025,8 @@ export const replaceChildrenChange = (
             throw new Error(`Node at [${path}] is not an element.`);
           }
 
-          return parent.children;
+          return parent.children.slice(index, index + removeCount);
         })();
-  const removed = currentChildren.slice(index, index + removeCount);
 
   if (
     removed.length === newChildren.length &&
@@ -7041,7 +7122,7 @@ export const reconcileChildrenStep = (
 
   const beforeWindow = DocumentIndex.fromValue(removed);
   const afterWindow = DocumentIndex.fromValue(newChildren);
-  const localChange = RootChange.between(beforeWindow, afterWindow);
+  const localChange = RootChange.betweenWhole(beforeWindow, afterWindow);
   const offset = document.childPosition(path, index);
 
   return Object.freeze({

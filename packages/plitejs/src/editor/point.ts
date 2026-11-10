@@ -1,23 +1,22 @@
+import type { NodeList } from '../core/change/document-index';
+import { getEditorRuntime } from '../core/editor-runtime';
 import { LocationApi } from '../interfaces';
-import {
-  type AnyEditor,
-  type EditorStaticApi,
-  getChildren as editorGetChildren,
-} from '../interfaces/editor';
+import type { AnyEditor, EditorStaticApi } from '../interfaces/editor';
 import { type Descendant, type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import type { Text } from '../interfaces/text';
+import { getDefined } from '../internal/get-defined';
 
 const findEdgeText = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   edge: 'end' | 'start',
   trail: number[]
 ): Text | null => {
   for (let step = 0; step < children.length; step += 1) {
     const index = edge === 'end' ? children.length - 1 - step : step;
-    const child = children[index];
+    const child = getDefined(children.at(index));
     const found = NodeApi.isText(child)
       ? child
       : findEdgeText(child.children, edge, trail);
@@ -45,7 +44,9 @@ export const readTextEdge = (
 
   const trail: number[] = [];
   const text = findEdgeText(
-    NodeApi.isElement(node) ? node.children : editorGetChildren(editor),
+    NodeApi.isElement(node)
+      ? node.children
+      : getEditorRuntime(editor).getChildList(),
     edge,
     trail
   );

@@ -153,7 +153,7 @@ const measuresOf = (
   ordered ? 1 : 0,
   facts.unmarked ? 0 : 1,
   facts.settles ? 0 : 1,
-  facts.unmarked || facts.opensWithStructure ? 1 : 0,
+  facts.ownsFirstLine ? 1 : 0,
   built ? 1 : 0,
 ];
 
@@ -543,8 +543,11 @@ export class Level {
   private held: RootChange | null = null;
   private depth = 0;
   protected projected!: DocumentIndex;
-  /** The container as the list it sits in shows it. */
-  private shown: JsonNode | null = null;
+  private parentListPlace: Readonly<{
+    at: number;
+    index: DocumentIndex;
+  }> | null = null;
+  private shownNode: JsonNode | null = null;
   protected slots!: SlotTree<BlockSlot>;
   protected stored!: DocumentIndex;
 
@@ -658,7 +661,8 @@ export class Level {
     };
 
     this.held = null;
-    this.shown = null;
+    this.parentListPlace = null;
+    this.shownNode = null;
 
     return this.runOf(container, { head: false, min }, context, step);
   }
@@ -704,16 +708,19 @@ export class Level {
   }
 
   private shownAs(container: JsonNode) {
-    this.shown ??= Object.freeze({
-      ...container,
-      children: Object.freeze(this.projected.nodes.slice()),
-    }) as JsonNode;
+    this.shownNode ??= this.parentListPlace
+      ? getDefined(this.parentListPlace.index.child(this.parentListPlace.at))
+      : (Object.freeze({
+          ...container,
+          children: Object.freeze(this.projected.nodes.slice()),
+        }) as JsonNode);
 
-    return this.shown;
+    return this.shownNode;
   }
 
-  private showAt(shown: JsonNode) {
-    this.shown = shown;
+  private showAt(index: DocumentIndex, at: number) {
+    this.parentListPlace = { at, index };
+    this.shownNode = null;
   }
 
   protected pend(
@@ -938,9 +945,8 @@ export class Level {
             this.splice(from, to, slots);
             this.projected = written.index;
             only.level.showAt(
-              getDefined(
-                written.index.child(this.slots.sumBefore(from, OUTPUT_BLOCKS))
-              )
+              written.index,
+              this.slots.sumBefore(from, OUTPUT_BLOCKS)
             );
 
             return { adopted: true, change: written.change, windows };
@@ -1242,7 +1248,7 @@ export class Level {
         ) ?? RootChange.empty(this.projected.length);
 
       this.projected = step.apply(this.projected);
-      run.level.showAt(getDefined(this.projected.child(first)));
+      run.level.showAt(this.projected, first);
 
       return step;
     }
@@ -1254,7 +1260,7 @@ export class Level {
 
       countLedgerWork('diffedNodes', nodesIn(shown) + nodesIn(output));
 
-      return RootChange.between(
+      return RootChange.betweenChangedBlocks(
         DocumentIndex.fromIndexedNodes(shown),
         DocumentIndex.fromIndexedNodes(output),
         { isSetValued: context.isSetValued }
@@ -1278,7 +1284,7 @@ export class Level {
 
     for (const slot of slots) {
       if (isLevelRun(slot.run)) {
-        slot.run.level.showAt(getDefined(this.projected.child(at)));
+        slot.run.level.showAt(this.projected, at);
       }
       at += getDefined(slot.measures[OUTPUT_BLOCKS]);
     }
@@ -1834,7 +1840,8 @@ export class Level {
     this.followers.clear();
     this.joiners.clear();
     this.held = null;
-    this.shown = null;
+    this.parentListPlace = null;
+    this.shownNode = null;
     this.stored = stored;
     this.slots = new SlotTree<BlockSlot>(MEASURES);
     this.wait(0, 0, stored, 0, stored.size, context, false);

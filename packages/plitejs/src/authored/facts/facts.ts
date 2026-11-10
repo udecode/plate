@@ -8,6 +8,7 @@ import {
   type NodeList,
   rootNodesOf,
 } from '../../core/change/document-index';
+import { isFrozenWithRoots, visitRootNames } from '../../core/change/lazy-root';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
 import {
@@ -410,7 +411,9 @@ export const contentRootsOf = <T>(
 ) =>
   new Map<string, NodeList<T>>([
     ['main', rootNodesOf(value, 'children')],
-    ...Object.entries(value.roots ?? {}),
+    ...visitRootNames(value.roots).map(
+      (root) => [root, rootNodesOf(value.roots ?? {}, root)] as const
+    ),
   ]);
 
 const contentOf = (value: Value) => [...contentRootsOf(value).values()];
@@ -447,8 +450,17 @@ const DOCUMENT_FACTS = new WeakMap<
   }>
 >();
 
+const FROZEN_FACTS = new WeakMap<
+  object,
+  Readonly<{ facts: ReviewFacts; records: RecordFacts }>
+>();
+
 export const factsOf = (value: Value): ReviewFacts => {
   const records = recordFactsOf(getValueRecords(value));
+  const known = FROZEN_FACTS.get(value);
+
+  if (known?.records === records) return known.facts;
+
   const content = contentOf(value);
   const main = getDefined(content[0]);
   const cached = DOCUMENT_FACTS.get(main);
@@ -459,6 +471,10 @@ export const factsOf = (value: Value): ReviewFacts => {
     cached.content.every((children, index) => children === content[index]) &&
     cached.records === records
   ) {
+    if (isFrozenWithRoots(value)) {
+      FROZEN_FACTS.set(value, { facts: cached.facts, records });
+    }
+
     return cached.facts;
   }
 
@@ -473,6 +489,7 @@ export const factsOf = (value: Value): ReviewFacts => {
   });
 
   DOCUMENT_FACTS.set(main, { content, facts, records });
+  if (isFrozenWithRoots(value)) FROZEN_FACTS.set(value, { facts, records });
 
   return facts;
 };
@@ -614,15 +631,26 @@ export const insertionsIn = (
   return summary;
 };
 
+const FROZEN_INSERTIONS = new WeakMap<object, Insertions>();
+
 const rememberedInsertions = (value: Value) => {
+  const known = FROZEN_INSERTIONS.get(value);
+
+  if (known) return known;
+
   const roots = contentRootsOf(value);
   const cached = INSERTIONS.get(getDefined(roots.get('main')));
 
-  return cached &&
-    cached.roots.size === roots.size &&
-    [...roots].every(([root, nodes]) => cached.roots.get(root) === nodes)
-    ? cached
-    : null;
+  if (
+    !cached ||
+    cached.roots.size !== roots.size ||
+    [...roots].some(([root, nodes]) => cached.roots.get(root) !== nodes)
+  ) {
+    return null;
+  }
+  if (isFrozenWithRoots(value)) FROZEN_INSERTIONS.set(value, cached);
+
+  return cached;
 };
 
 export const insertionsOf = (value: Value): Insertions => {
@@ -650,6 +678,7 @@ export const rememberInsertions = (
   const insertions = { counts, roots: contentRootsOf(value) };
 
   INSERTIONS.set(getDefined(insertions.roots.get('main')), insertions);
+  if (isFrozenWithRoots(value)) FROZEN_INSERTIONS.set(value, insertions);
 
   return insertions;
 };

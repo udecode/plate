@@ -181,25 +181,21 @@ export const createYjsEditorAdapter = (
     { replacement, change, effects, records, selection },
     beforeListeners
   ) => {
-    let nextSelection: EditorSelection | null = null;
+    const currentValue = readValue();
     // Two peers can each remove one owner of a shared root, so neither update
     // deletes it; the merge orphans it, and a closed schema refuses that
     // change unless the import drops the root with it.
     const imported =
       change && !change.empty && editor.read.schema.hasContentRoots()
-        ? withoutRepairOrphans(getCompiledEditorSchema(editor), readValue(), {
+        ? withoutRepairOrphans(getCompiledEditorSchema(editor), currentValue, {
             change,
-            value: change.apply(readValue()),
+            value: change.apply(currentValue),
           })
         : null;
     const publishable = imported?.change ?? change;
+    const selectionAfter = (nextValue: EditorDocumentValue) => {
+      if (selection === undefined || selection === null) return null;
 
-    if (selection !== undefined && selection !== null) {
-      const currentValue = readValue();
-      const nextValue =
-        replacement ??
-        imported?.value ??
-        (change ? change.apply(currentValue) : currentValue);
       const editorRoot =
         !SelectionApi.isNode(selection) && !RangeApi.isRange(selection)
           ? normalizeRootKey(editor.read.view.root())
@@ -222,11 +218,11 @@ export const createYjsEditorAdapter = (
             ) ?? selection)
           : selection;
 
-      nextSelection = sanitizeImportSelection(
+      return sanitizeImportSelection(
         valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
         mapped
       );
-    }
+    };
 
     const deletedRoots = imported ? [...imported.change.deleteRoots] : NO_ROOTS;
     let settled = false;
@@ -253,6 +249,8 @@ export const createYjsEditorAdapter = (
             tx.changes.apply(publishable);
           }
           if (selection !== undefined) {
+            const nextSelection = selectionAfter(tx.value());
+
             withoutPlacement(editor, () => tx.selection.set(nextSelection));
           }
 

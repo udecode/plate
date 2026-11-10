@@ -163,13 +163,14 @@ export const useElementSelected = ({
       if (!watchedNodeKey || !change) {
         return true;
       }
+      const root = editor.read.view.root();
 
       return (
-        change.changed.hasNodeKey(watchedNodeKey, 'selection') ||
-        change.changed.hasNodeKey(watchedNodeKey, 'path')
+        change.changed.hasNodeKey(watchedNodeKey, 'selection', root) ||
+        change.changed.hasNodeKey(watchedNodeKey, 'path', root)
       );
     },
-    [explicitPath, watchedNodeKey]
+    [editor, explicitPath, watchedNodeKey]
   );
 
   const selected = useEditorSelector(selector, {

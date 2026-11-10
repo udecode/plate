@@ -91,9 +91,11 @@ Presence queries inspect changed ranges without enumerating shifted paths.
 Whole-value replacement compares the replaced roots.
 
 Aggregate key lists are immutable and reused within a commit.
-`hasNodeKey(key, "path")` caches each key's answer without collecting every
-changed path. When a consumer requests the complete path list, membership
-queries reuse that result. Other change kinds share cached aggregate membership.
+`hasNodeKey(key, kind, root)` asks about one document root; pass `undefined`
+for the primary document. A root whose children the commit did not change
+answers `false` without reading any index. A key that left the root, or whose
+root the commit deleted, reports `"presence"` there, not `"path"`, so a view
+that rereads a moved key checks both kinds.
 
 ## Fit external content
 

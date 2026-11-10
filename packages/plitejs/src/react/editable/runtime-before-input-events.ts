@@ -1,7 +1,9 @@
 import { type FormEvent, type RefObject, useCallback } from 'react';
 
 import { PathApi, type Range, RangeApi, SelectionApi } from '../..';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { toPublicRoot } from '../../core/public-root';
+import { getMutationVersion } from '../../core/public-state';
 import { getSelection } from '../../dom';
 import { findEditorDOMRootRuntime } from '../../dom/internal';
 import { projectEditorView } from '../../editor-runtime-view';
@@ -699,6 +701,33 @@ export const useRuntimeBeforeInputEvents = ({
             );
           }
 
+          let lastInsertTextProbe: Readonly<{
+            probe: ReturnType<typeof probeBeforeInputInsertTextCommand>;
+            selection: Range | null;
+            text: string;
+            version: number;
+          }> | null = null;
+          const probeInsertText = (range: Range | null, text: string) => {
+            const version = getMutationVersion(getEditorRuntimeOwner(editor));
+
+            if (
+              lastInsertTextProbe?.version === version &&
+              lastInsertTextProbe.text === text &&
+              RangeApi.equals(lastInsertTextProbe.selection, range)
+            ) {
+              return lastInsertTextProbe.probe;
+            }
+
+            const probe = probeBeforeInputInsertTextCommand({
+              editor,
+              selection: range,
+              text,
+            });
+
+            lastInsertTextProbe = { probe, selection: range, text, version };
+
+            return probe;
+          };
           const beforeInputDecision = profilePliteReactDuration(
             'beforeinput-native-decision',
             () =>
@@ -710,11 +739,10 @@ export const useRuntimeBeforeInputEvents = ({
                 event,
                 hasAppDOMInputPolicy,
                 isCommandNativeEquivalent: () => {
-                  const evaluation = probeBeforeInputInsertTextCommand({
-                    editor,
-                    selection: currentSelection,
-                    text: event.data ?? '',
-                  });
+                  const evaluation = probeInsertText(
+                    currentSelection,
+                    event.data ?? ''
+                  );
 
                   if (!evaluation.nativeEquivalent) {
                     recordPliteReactRender({
@@ -1016,12 +1044,7 @@ export const useRuntimeBeforeInputEvents = ({
             if (currentSelection && RangeApi.isCollapsed(currentSelection)) {
               const commandProbe = profilePliteReactDuration(
                 'beforeinput-dom-repair-command-probe',
-                () =>
-                  probeBeforeInputInsertTextCommand({
-                    editor,
-                    selection: currentSelection,
-                    text: data,
-                  })
+                () => probeInsertText(currentSelection, data)
               );
 
               if (commandProbe.nativeEquivalent) {

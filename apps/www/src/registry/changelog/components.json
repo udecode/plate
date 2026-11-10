@@ -1,6 +1,19 @@
 {
   "schemaVersion": 1,
   "components": {
+    "caption": [
+      "2026-11-09-pass-view-root-to-key-questions",
+      "2026-10-18-layout-style-values",
+      "2026-10-13-media-caption-preview",
+      "2026-08-31-stabilize-hidden-media-captions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "code-block-diagram": [
+      "2026-11-09-pass-view-root-to-key-questions",
+      "2026-10-16-code-block-diagrams"
+    ],
     "docx": [
       "2026-11-07-docx-fewer-install-dependencies",
       "2026-10-08-registry-install-dependencies",
@@ -539,14 +552,6 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "caption": [
-      "2026-10-18-layout-style-values",
-      "2026-10-13-media-caption-preview",
-      "2026-08-31-stabilize-hidden-media-captions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-23-rich-media-caption-children"
-    ],
     "caption-static": [
       "2026-10-18-layout-style-values",
       "2026-08-17-flat-editor-registry"
@@ -685,7 +690,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "code-block-diagram": ["2026-10-16-code-block-diagrams"],
     "code-block-codemirror": [
       "2026-10-16-code-block-diagrams",
       "2026-10-08-registry-install-dependencies",

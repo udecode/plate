@@ -7,6 +7,7 @@ import {
   createInternalDocumentChange,
   type DocumentChange,
   getInternalDocumentChangeEntries,
+  getInternalDocumentRootChange,
   valueRootIndex,
 } from '../../core/change/document-change';
 import {
@@ -1350,6 +1351,21 @@ type RootFold = {
   touched: boolean;
 };
 
+const applyReusingStep = (
+  step: DraftStep,
+  root: string,
+  index: DocumentIndex,
+  change: RootChange
+) => {
+  const written = getInternalDocumentRootChange(step.change, root);
+
+  return index === step.indexedBefore.get(root) &&
+    written &&
+    change.sameAs(written)
+    ? getDefined(step.indexedAfter.get(root))
+    : change.apply(index);
+};
+
 /**
  * Record a transaction's steps as the review tree's change. Each step folds
  * through a review draft: it is rebased from the plain draft into the review
@@ -1468,9 +1484,15 @@ export const recordAuthoredSteps = (
     });
   const composeFrame = (fold: RootFold, change: RootChange) =>
     fold.frameChange ? fold.frameChange.compose(change) : change;
-  const foldIn = (fold: RootFold, change: RootChange | null) => {
+  const foldIn = (
+    fold: RootFold,
+    change: RootChange | null,
+    reusing?: Readonly<{ root: string; step: DraftStep }>
+  ) => {
     if (!change) return;
-    fold.index = change.apply(fold.index);
+    fold.index = reusing
+      ? applyReusingStep(reusing.step, reusing.root, fold.index, change)
+      : change.apply(fold.index);
     fold.composed = fold.composed ? fold.composed.compose(change) : change;
   };
 
@@ -1671,7 +1693,9 @@ export const recordAuthoredSteps = (
             exclusiveRootsIn(node, ownedRootsOf, doubledIn(root));
           }
         }
-        const frameAfter = fold.frameIndex && sub.change.apply(fold.frameIndex);
+        const frameAfter =
+          fold.frameIndex &&
+          applyReusingStep(step, root, fold.frameIndex, sub.change);
         const landing = step.composition
           ? compositionLanding(input, fold, root, sub.change, frameAfter)
           : null;
@@ -1744,7 +1768,7 @@ export const recordAuthoredSteps = (
         }
         const composedBefore = fold.composed;
 
-        foldIn(fold, recorded.empty ? null : recorded);
+        foldIn(fold, recorded.empty ? null : recorded, { root, step });
         if (carried && copies.length > 0) {
           foldIn(
             fold,
@@ -2749,12 +2773,13 @@ class RootRecorder {
     if (!boundary) return null;
 
     let { index, parentPath } = boundary;
-    let siblings = this.childrenAt(parentPath);
     const before =
       previous ??
-      (index > 0 ? propsOf(getDefined(siblings[index - 1])) : undefined);
+      (index > 0
+        ? propsOf(getDefined(this.childAt(parentPath, index - 1)))
+        : undefined);
     const carried = before && this.followedBy(before);
-    const after = siblings[index];
+    const after = this.childAt(parentPath, index);
 
     if (
       carried &&
@@ -2774,13 +2799,12 @@ class RootRecorder {
     ) {
       return carried;
     }
-    while (index === siblings.length && parentPath.length > 0) {
+    while (index === this.childCountAt(parentPath) && parentPath.length > 0) {
       index = getDefined(parentPath.at(-1)) + 1;
       parentPath = parentPath.slice(0, -1);
-      siblings = this.childrenAt(parentPath);
     }
 
-    const next = siblings[index];
+    const next = this.childAt(parentPath, index);
     const join =
       next && isTextBlock(next)
         ? this.marks(propsOf(next)).find(this.isLiveJoin)
@@ -2789,10 +2813,16 @@ class RootRecorder {
     return join ? linkOf(join) : null;
   }
 
-  private childrenAt(path: readonly number[]) {
+  private childCountAt(path: readonly number[]) {
     return path.length === 0
-      ? this.index.value
-      : (this.index.node(path).children ?? []);
+      ? this.index.size
+      : (this.index.node(path).children?.length ?? 0);
+  }
+
+  private childAt(path: readonly number[], index: number) {
+    return path.length === 0
+      ? this.index.child(index)
+      : this.index.node(path).children?.[index];
   }
 
   /**
@@ -5056,14 +5086,15 @@ class RootRecorder {
   }
 
   private onlyLeafBoundaries(from: number, to: number) {
-    return (
-      from <= to &&
-      this.index
-        .slice(from, to)
-        .tokens.every(
-          (token) => token.kind !== 'text' && token.nodeKind === 'text'
-        )
-    );
+    if (from > to) return false;
+
+    for (let at = from; at < to; at += 1) {
+      for (const token of this.index.slice(at, at + 1).tokens) {
+        if (token.kind === 'text' || token.nodeKind !== 'text') return false;
+      }
+    }
+
+    return true;
   }
 
   private intoLeaf(position: number, right: boolean) {

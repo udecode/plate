@@ -28,7 +28,10 @@ const MAIN = 'main';
 
 type Place = Readonly<{ path: readonly number[]; root: string }>;
 
-type RootPlace = Readonly<{ children: unknown; path: readonly number[] }>;
+type RootPlace = Readonly<{
+  path: readonly number[];
+  top: (at: number) => JsonNode | undefined;
+}>;
 
 /**
  * Each unique value the stored document holds, by property key and canonical
@@ -229,14 +232,10 @@ export const advanceUniqueIndex = (
     if (!landing) continue;
 
     const [root, place] = landing;
-    let node: JsonNode | undefined;
+    let node: JsonNode | undefined = place.top(getDefined(place.path[0]));
 
-    for (const at of place.path) {
-      node = (
-        (node ? node.children : place.children) as
-          | readonly JsonNode[]
-          | undefined
-      )?.[at];
+    for (const at of place.path.slice(1)) {
+      node = node?.children?.[at];
     }
     if (!node || !isElementNode(node)) continue;
     for (const [key, value] of uniqueValuesOf(properties, node)) {

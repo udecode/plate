@@ -4,11 +4,11 @@ import {
   carryPluginFactoryType,
   queueAfterPluginAcquisition,
 } from '../../core/plugin';
+import { setRootCopyScope } from '../../core/public-state';
 import {
   definePlugin,
   type Descendant,
   getEditorRuntimeOwner,
-  readEditorSelection,
 } from '../../index';
 import type {
   PluginDefinitionInput,
@@ -161,6 +161,10 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
           return Object.freeze(children);
         };
 
+        setRootCopyScope(owner, {
+          counter: options.doc,
+          name: () => String(options.doc.clientID),
+        });
         const controller = new YjsController(owner, options, {
           canonicalize: (root, merged) =>
             owner.read((state) => {
@@ -185,7 +189,7 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
                 tx.value.replace({
                   ...content,
                   roots: { ...content.roots, [root]: children },
-                  selection: readEditorSelection(owner),
+                  selection: null,
                 });
               });
               const value = transaction.changes.apply(before);

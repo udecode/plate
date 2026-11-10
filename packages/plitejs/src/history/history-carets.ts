@@ -1,7 +1,7 @@
 import type { DocumentChange, EditorDocumentValue } from '..';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
-import { buildSnapshotIndex } from '../core/snapshot-index';
+import { snapshotIndexOf } from '../core/snapshot-index';
 import {
   type Carets,
   changedBookmarks,
@@ -70,7 +70,7 @@ export const historyCaretViews = (
     let found = lenses.get(key);
 
     if (!found) {
-      found = buildSnapshotIndex(
+      found = snapshotIndexOf(
         owner,
         rootChildrenOf(() => carets[side].value, root)()
       );

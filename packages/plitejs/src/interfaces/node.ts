@@ -1,4 +1,4 @@
-import { childAtPathIndex } from '../core/change/document-index';
+import { childAtPathIndex, type NodeList } from '../core/change/document-index';
 import { isEditorContent } from '../core/content';
 import {
   getEditorRuntime,
@@ -428,7 +428,7 @@ const getWholeTopLevelChildFragment = (
   root: Ancestor,
   range: Range
 ): Descendant[] | null => {
-  const children = getAncestorChildren(root);
+  const children = childListOf(root);
   const [start, end] = RangeApi.edges(range);
   const startIndex = start.path[0];
   const endIndex = end.path[0];
@@ -461,7 +461,7 @@ const getWholeTopLevelChildFragment = (
 };
 
 const getRangeFragmentChildren = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   startPath: readonly number[] | null,
   endPath: readonly number[] | null,
   startOffset: number,
@@ -812,7 +812,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
     const [start, end] = RangeApi.edges(range);
 
     return getRangeFragmentChildren(
-      getAncestorChildren(root),
+      childListOf(root),
       start.path,
       end.path,
       start.offset,

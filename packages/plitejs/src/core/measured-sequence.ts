@@ -267,8 +267,18 @@ const itemsOf = <T>(node: SequenceNode<T>, into: T[]) => {
   return into;
 };
 
-const countBefore = <T>(node: Branch<T>, child: number) =>
-  child === 0 ? 0 : getDefined(node.counts[child - 1]);
+const childrenOf = <T>(nodes: ReadonlyArray<SequenceNode<T>>) => {
+  const children: Array<SequenceNode<T>> = [];
+
+  for (const node of nodes) {
+    if (!isBranch(node)) continue;
+    for (let child = 0; child < node.size; child += 1) {
+      children.push(getDefined(node.children[child]));
+    }
+  }
+
+  return children;
+};
 
 const differ = <T>(same: (left: T, right: T) => boolean) => {
   const ranges: ChangedRange[] = [];
@@ -319,45 +329,74 @@ const differ = <T>(same: (left: T, right: T) => boolean) => {
       atB + right.length - tail
     );
   };
-  const gap = (
-    left: Branch<T>,
-    right: Branch<T>,
-    [fromA, toA, fromB, toB]: ChangedRange,
+  const startsOf = (nodes: ReadonlyArray<SequenceNode<T>>, at: number) => {
+    const starts = [at];
+
+    for (const node of nodes) {
+      starts.push(getDefined(starts.at(-1)) + countOf(node));
+    }
+
+    return starts;
+  };
+  const siblings = (
+    left: ReadonlyArray<SequenceNode<T>>,
+    right: ReadonlyArray<SequenceNode<T>>,
     atA: number,
     atB: number
   ) => {
-    if (toA - fromA === toB - fromB) {
-      for (let offset = 0; offset < toA - fromA; offset += 1) {
-        node(
-          getDefined(left.children[fromA + offset]),
-          getDefined(right.children[fromB + offset]),
-          atA + countBefore(left, fromA + offset),
-          atB + countBefore(right, fromB + offset)
-        );
+    const startsA = startsOf(left, atA);
+    const startsB = startsOf(right, atB);
+    const positions = new Map<SequenceNode<T>, number>();
+
+    right.forEach((child, index) => positions.set(child, index));
+
+    let fromA = 0;
+    let fromB = 0;
+    const gap = (toA: number, toB: number) => {
+      if (toA - fromA === toB - fromB) {
+        for (let offset = 0; offset < toA - fromA; offset += 1) {
+          node(
+            getDefined(left[fromA + offset]),
+            getDefined(right[fromB + offset]),
+            getDefined(startsA[fromA + offset]),
+            getDefined(startsB[fromB + offset])
+          );
+        }
+
+        return;
       }
 
-      return;
-    }
+      const lefts = left.slice(fromA, toA);
+      const rights = right.slice(fromB, toB);
+      const atLeft = getDefined(startsA[fromA]);
+      const atRight = getDefined(startsB[fromB]);
 
-    const collect = (parent: Branch<T>, from: number, to: number) => {
-      const items: T[] = [];
-
-      for (let child = from; child < to; child += 1) {
-        itemsOf(getDefined(parent.children[child]), items);
+      if (
+        lefts.length > 0 &&
+        rights.length > 0 &&
+        isBranch(getDefined(lefts[0]))
+      ) {
+        siblings(childrenOf(lefts), childrenOf(rights), atLeft, atRight);
+        return;
       }
-
-      return items;
+      flat(
+        lefts.flatMap((child) => itemsOf(child, [])),
+        rights.flatMap((child) => itemsOf(child, [])),
+        atLeft,
+        atRight
+      );
     };
 
-    flat(
-      collect(left, fromA, toA),
-      collect(right, fromB, toB),
-      atA + countBefore(left, fromA),
-      atB + countBefore(right, fromB)
-    );
+    for (let child = 0; child < left.length; child += 1) {
+      const match = positions.get(getDefined(left[child]));
+
+      if (match === undefined || match < fromB) continue;
+      gap(child, match);
+      fromA = child + 1;
+      fromB = match + 1;
+    }
+    gap(left.length, right.length);
   };
-  // Children both branches share anchor the walk; each gap between anchors
-  // pairs its children when both sides hold as many, else compares items.
   const node = (
     left: SequenceNode<T>,
     right: SequenceNode<T>,
@@ -369,25 +408,7 @@ const differ = <T>(same: (left: T, right: T) => boolean) => {
       flat(itemsOf(left, []), itemsOf(right, []), atA, atB);
       return;
     }
-
-    const positions = new Map<SequenceNode<T>, number>();
-
-    for (let child = 0; child < right.size; child += 1) {
-      positions.set(getDefined(right.children[child]), child);
-    }
-
-    let fromA = 0;
-    let fromB = 0;
-
-    for (let child = 0; child < left.size; child += 1) {
-      const match = positions.get(getDefined(left.children[child]));
-
-      if (match === undefined || match < fromB) continue;
-      gap(left, right, [fromA, child, fromB, match], atA, atB);
-      fromA = child + 1;
-      fromB = match + 1;
-    }
-    gap(left, right, [fromA, left.size, fromB, right.size], atA, atB);
+    siblings(childrenOf([left]), childrenOf([right]), atA, atB);
   };
 
   return { flat, node, ranges };

@@ -1,4 +1,5 @@
 import type { NamedRootKey, NodeKey } from '../../interfaces/editor';
+import { isImmutable } from '../clone';
 import {
   applyRecordOps,
   composeRecordOps,
@@ -23,13 +24,18 @@ import {
 } from './classification';
 import {
   DocumentIndex,
-  NO_NODES,
   type NodeList,
   rootIndexOf,
   rootNodesOf,
 } from './document-index';
 import { deepFreeze, isRecord, jsonEqual, type JsonRecord } from './json';
-import { lazyRootOf, setLazyRoot } from './lazy-root';
+import {
+  copyRoots,
+  hasRootNames,
+  lazyRootOf,
+  visitRootNames,
+  setLazyRoot,
+} from './lazy-root';
 import type { ReadBack } from './read-back';
 import {
   collapseElementPropertyWrites,
@@ -344,7 +350,7 @@ export const valueRoot = <T>(
 export const valueRootIndex = (value: JsonEditorValue, root: string) =>
   root === 'main'
     ? rootIndexOf(value, 'children')
-    : DocumentIndex.fromValue(value.roots?.[root] ?? []);
+    : rootIndexOf(value.roots ?? {}, root);
 
 /** @internal */
 export const valueRootNodes = (
@@ -353,7 +359,34 @@ export const valueRootNodes = (
 ): NodeList =>
   root === 'main'
     ? rootNodesOf(value, 'children')
-    : (value.roots?.[root] ?? NO_NODES);
+    : rootNodesOf(value.roots ?? {}, root);
+
+const freezeAppliedRoot = (
+  holder: Readonly<Record<string, unknown>>,
+  key: string,
+  source: Readonly<Record<string, unknown>> | undefined,
+  beforeOf: () => DocumentIndex
+) => {
+  const index = lazyRootOf(holder, key);
+
+  if (!index) {
+    deepFreeze(holder[key]);
+
+    return;
+  }
+  const input = source && !lazyRootOf(source, key) ? source[key] : undefined;
+
+  if (Array.isArray(input) && isImmutable(input)) {
+    index.nodes.forEach((node) => deepFreeze(node));
+
+    return;
+  }
+  for (const range of index.changedChildren(beforeOf())) {
+    for (let at = range[2]; at < range[3]; at += 1) {
+      deepFreeze(index.child(at));
+    }
+  }
+};
 
 const setChildren = (
   target: Record<string, unknown>,
@@ -981,7 +1014,7 @@ export const createInternalRootChangeFromSections = (
 
     const local =
       section.local ??
-      RootChange.between(
+      RootChange.betweenChangedBlocks(
         DocumentIndex.fromValue(section.before),
         DocumentIndex.fromValue(section.after),
         {
@@ -1478,21 +1511,20 @@ export class DocumentChange {
     );
 
     for (const key of Object.keys(applied)) {
-      const index = lazyRootOf(applied, key);
-
-      if (!index) {
-        deepFreeze(applied[key]);
+      if (key !== 'roots' || !isRecord(applied.roots)) {
+        freezeAppliedRoot(applied, key, value, () =>
+          rootIndexOf(value, key as 'children')
+        );
         continue;
       }
-      // Only the blocks a change wrote can hold unfrozen nodes, and freezing
-      // the whole root would build its array.
-      for (const range of index.changedChildren(
-        rootIndexOf(value, key as 'children')
-      )) {
-        for (let at = range[2]; at < range[3]; at += 1) {
-          deepFreeze(index.child(at));
-        }
+      const named = applied.roots;
+
+      for (const root of visitRootNames(named)) {
+        freezeAppliedRoot(named, root, value.roots, () =>
+          valueRootIndex(value, root)
+        );
       }
+      Object.freeze(named);
     }
     // A value that showed its records, or plain JSON that gains some, shows
     // them; a value whose store core carries keeps carrying it.
@@ -1536,7 +1568,7 @@ export class DocumentChange {
     for (const root of createRoots) {
       const before = DocumentIndex.fromValue([]);
       const restored = DocumentIndex.fromValue(valueRoot(value, root));
-      const restore = RootChange.between(before, restored);
+      const restore = RootChange.betweenChangedBlocks(before, restored);
 
       if (restore.empty) changes.delete(root);
       else changes.set(root, restore);
@@ -1598,8 +1630,8 @@ export const documentChangeBetween = (
 ) => {
   const roots = new Set([
     'main',
-    ...Object.keys(before.roots ?? {}),
-    ...Object.keys(after.roots ?? {}),
+    ...visitRootNames(before.roots),
+    ...visitRootNames(after.roots),
   ]);
   const changes = new Map<string, RootChange>();
   const classifications = new Map<string, DocumentChangeRootClassification>();
@@ -1607,12 +1639,16 @@ export const documentChangeBetween = (
   const deleteRoots = new Set<string>();
 
   for (const root of roots) {
-    const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
-    const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
-    const change = RootChange.between(beforeDocument, afterDocument, {
-      ...options,
-      root: root === 'main' ? null : root,
-    });
+    const beforeDocument = valueRootIndex(before, root);
+    const afterDocument = valueRootIndex(after, root);
+    const change = RootChange.betweenChangedBlocks(
+      beforeDocument,
+      afterDocument,
+      {
+        ...options,
+        root: root === 'main' ? null : root,
+      }
+    );
 
     if (!change.empty) {
       changes.set(root, change);
@@ -1827,7 +1863,7 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
 ) => {
   let children: DocumentIndex | readonly JsonNode[] =
     lazyRootOf(value, 'children') ?? value.children;
-  let roots = value.roots ? { ...value.roots } : undefined;
+  let roots = value.roots ? copyRoots({}, value.roots) : undefined;
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
     const next =
@@ -1837,20 +1873,20 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
       children = next;
     } else {
       roots ??= {};
-      roots[root] = next.value;
+      setLazyRoot(roots, root, next);
     }
   }
 
   for (const root of change.createRoots) {
     roots ??= {};
-    roots[root] ??= Object.freeze([]);
+    if (!Object.hasOwn(roots, root)) roots[root] = Object.freeze([]);
   }
 
   for (const root of change.deleteRoots) {
     if (roots) delete roots[root];
   }
 
-  if (roots && Object.keys(roots).length === 0) {
+  if (roots && !hasRootNames(roots)) {
     roots = undefined;
   }
 
@@ -1907,8 +1943,8 @@ export const alignedDocumentChange = (
 ) => {
   const roots = new Set([
     'main',
-    ...Object.keys(before.roots ?? {}),
-    ...Object.keys(after.roots ?? {}),
+    ...visitRootNames(before.roots),
+    ...visitRootNames(after.roots),
   ]);
   const changes = new Map<string, RootChange>();
   const classifications = new Map<string, DocumentChangeRootClassification>();

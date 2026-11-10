@@ -24,6 +24,7 @@ import {
   readAuthoredView,
   requestAuthoredView,
 } from '../../core/authored-runtime';
+import { rootNodesOf } from '../../core/change/document-index';
 import {
   createEditorCommitPublicationQueue,
   resetEditorCommitPublicationQueue,
@@ -487,23 +488,29 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
       commit: EditorCommit,
       snapshot: EditorSnapshot<ValueOf<E>>
     ) => {
+      const publicRoot = toPublicRootOption(root);
       const textSync = profilePliteReactDuration('dom-text-sync', () =>
         syncChangedTextToDOM(
           editor,
-          commit.changed.nodeKeys('text', toPublicRootOption(root))
+          commit.changed.nodeKeys('text', publicRoot)
         )
       );
-      if (commit.changed.has('structure', toPublicRootOption(root))) {
-        syncPliteNodePathBindingsToDOM(editor, commit.changed);
+      if (commit.changed.has('structure', publicRoot)) {
+        syncPliteNodePathBindingsToDOM(editor, commit.changed, publicRoot);
       }
-      onChange(textSync.requiresGlobalRender ? undefined : commit, [
-        ...getSchemaInvalidatedNodeKeys(editor, commit),
-        ...textSync.invalidatedNodeKeys,
-      ]);
+      onChange(
+        textSync.requiresGlobalRender ? undefined : commit,
+        [
+          ...getSchemaInvalidatedNodeKeys(editor, commit),
+          ...textSync.invalidatedNodeKeys,
+        ],
+        publicRoot
+      );
       const previousSnapshot = lastSnapshotRef.current;
       const valueChanged =
         isRootValueChanged(root, commit) &&
-        previousSnapshot.children !== snapshot.children;
+        rootNodesOf(previousSnapshot, 'children') !==
+          rootNodesOf(snapshot, 'children');
       const selectionChanged =
         isRootSelectionChanged(root, commit) &&
         !SelectionApi.equals(previousSnapshot.selection, snapshot.selection);

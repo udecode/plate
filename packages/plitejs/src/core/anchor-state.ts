@@ -12,7 +12,12 @@ import {
   valueRootIndex,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
-import { copyFields, setLazyRoot } from './change/lazy-root';
+import {
+  copyFields,
+  copyRoots,
+  hasRootNames,
+  setLazyRoot,
+} from './change/lazy-root';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonNode } from './change/tokens';
 import { reportEditorLifecycleError } from './lifecycle-error';
@@ -949,7 +954,12 @@ const applyAnchorChange = (
   const beforeIndexes = new Map(state.indexes);
   const afterIndexes = new Map(beforeIndexes);
   let main: DocumentIndex | undefined;
-  let roots = before.roots ? { ...before.roots } : undefined;
+  let roots = before.roots
+    ? (copyRoots({}, before.roots) as Record<
+        string,
+        EditorDocumentValue['children']
+      >)
+    : undefined;
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
     const next =
@@ -962,7 +972,7 @@ const applyAnchorChange = (
       main = next;
     } else {
       roots ??= {};
-      roots[root] = next.value as EditorDocumentValue['children'];
+      setLazyRoot(roots, root, next);
     }
   }
 
@@ -980,7 +990,7 @@ const applyAnchorChange = (
     afterIndexes.delete(root);
   }
 
-  if (roots && Object.keys(roots).length === 0) {
+  if (roots && !hasRootNames(roots)) {
     roots = undefined;
   }
 

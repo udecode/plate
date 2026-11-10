@@ -1,0 +1,14 @@
+---
+id: 2026-11-09-pass-view-root-to-key-questions
+date: 2026-11-09
+status: draft
+kind: wiring
+summary: "Pass the view's root to commit key questions in the caption and diagram components"
+change: { 'type': 'source', 'date': '2026-11-09', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-09-caption-pass-view-s-root-5b8a891f","kind":"wiring","migrationNotes":["A copied caption or code-block diagram passes `editor.read.view.root()` as the third argument of `commit.changed.hasNodeKey`, which plitejs requires."]} -->
+
+- **`caption`**, **`code-block-diagram`**: Ask `commit.changed.hasNodeKey` about the editor view's own root, so the component reruns only for changes in the document it renders.

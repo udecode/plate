@@ -10,7 +10,7 @@ import {
   type SparseNodes,
 } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
-import { copyRoot, setLazyRoot } from '../../core/change/lazy-root';
+import { copyFields, copyRoot, setLazyRoot } from '../../core/change/lazy-root';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import type {
@@ -23,6 +23,7 @@ import { getEditorSchema } from '../../core/editor-runtime';
 import { ElementGenerationMaskedError } from '../../core/editor-schema';
 import {
   ensureElementOwnedRootIndex,
+  advanceElementOwnedRootIndex,
   rebaseElementOwnedRootIndex,
 } from '../../core/element-owned-root-index';
 import { toInternalRoot } from '../../core/public-root';
@@ -137,7 +138,7 @@ const projectedValueOf = (
   dropped: ReadonlySet<string>
 ) => {
   const value = deriveValue(stored, {}) as Record<string, unknown>;
-  const named: Record<string, unknown> = { ...stored.roots };
+  const named = copyFields({}, stored.roots ?? {});
   let renamed = dropped.size > 0;
 
   for (const [root, { index }] of roots) {
@@ -149,7 +150,7 @@ const projectedValueOf = (
     if (root === 'main') {
       setLazyRoot(value, 'children', index);
     } else {
-      named[root] = index.value;
+      setLazyRoot(named, root, index);
       renamed = true;
     }
   }
@@ -239,9 +240,14 @@ const droppedRoots = (
       return rebaseElementOwnedRootIndex(ownership, root, change, from, to);
     }),
     projectedOf: (root) => indexOf(root, previews.get(root) ?? null),
-    stored: sidesOf(last.stored, stored, (root) =>
-      indexOf(root, stored.get(root) ?? null)
-    ),
+    stored: sidesOf(last.stored, stored, (root, from) => {
+      const to = stored.get(root) ?? null;
+
+      if (!to || !from) return indexOf(root, to);
+      countCoreWork('ownerIndexReads');
+
+      return advanceElementOwnedRootIndex(ownership, root, from, to);
+    }),
   });
 };
 
@@ -1371,9 +1377,14 @@ export class ReviewLedger {
     this.check(value);
     primeInsertions(value);
     this.book.sync(value);
+
+    return { framed: this.buildProjectionAccepted(value) };
+  }
+
+  buildProjectionAccepted(value: JsonEditorValue): boolean {
     try {
       this.frame(value);
-      return { framed: true };
+      return true;
     } catch (error) {
       // A document whose accepted form the schema refuses, or needs a spare
       // it lacks, still loads; the command or decision that reads that form
@@ -1384,7 +1395,7 @@ export class ReviewLedger {
       ) {
         throw error;
       }
-      return { framed: false };
+      return false;
     }
   }
 

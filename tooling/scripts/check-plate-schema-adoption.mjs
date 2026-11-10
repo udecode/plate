@@ -238,6 +238,7 @@ const privatePliteModulePattern = /^plitejs\/internal(?:\/|$)/;
 const internalPliteBridgeConsumerPattern =
   /^packages\/(?:platejs|plitejs)\/(?:src|test|type-tests)(?:\/|$)/;
 const internalPliteBridgeConsumerFiles = new Set([
+  'apps/plite/src/board-scale/board-probe.ts',
   'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',
 ]);
 const publicCoreModulePattern =

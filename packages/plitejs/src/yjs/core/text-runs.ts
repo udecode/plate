@@ -26,11 +26,15 @@ import {
   ensureYjsNodeId,
   getYjsVisibleChildren,
   getYjsVisiblePath,
+  indexedYjsRootChild,
   insertYjsChild,
   isEmptyAttributeFreeShownYjsText,
   isEmptyAttributeFreeYjsText,
+  keptYjsPlaceholderOf,
   noteYjsCutView,
-  readYjsChildren,
+  plainYjsChildren,
+  projectYjsRoot,
+  readYjsChildrenNotingPlainList,
   removeYjsChild,
   type YjsPropertyLocation,
   type YjsSetPropertyResolver,
@@ -43,7 +47,9 @@ import {
   YJS_CUT_AT_KEY,
   YJS_CUT_KEY,
   YJS_CUT_SOURCE_KEY,
+  YJS_HIDDEN_KEY,
   YJS_MARK_KEY_PREFIX,
+  YJS_NODE_ID_KEY,
 } from './keys';
 import {
   encodeYjsSetValueAttributes,
@@ -950,7 +956,7 @@ const findCutViews = (
   const stack: unknown[] = unread.size > 0 ? [root] : [];
   for (let node = stack.pop(); node; node = stack.pop()) {
     if (node instanceof Y.XmlElement) {
-      stack.push(...readYjsChildren(node));
+      stack.push(...readYjsChildrenNotingPlainList(node));
       continue;
     }
     if (!(node instanceof Y.XmlText)) continue;
@@ -2203,6 +2209,98 @@ export const pliteToYjsTextPosition = (
  * children, and that element's Plite path.
  */
 const alignedParentOf = (
+  root: Y.XmlElement,
+  children: NodeList<Descendant>,
+  node: YjsNode
+) =>
+  plainParentOf(root, children, node) ?? searchedParentOf(root, children, node);
+
+const alignedPliteIndexOf = (
+  root: Y.XmlElement,
+  parent: Y.XmlElement,
+  projected: readonly Descendant[],
+  child: Y.XmlElement
+): number => {
+  const aligned = alignedChildrenOf(root, parent, projected);
+  const at =
+    aligned?.targets.findIndex(
+      (target) => target?.kind === 'element' && target.node === child
+    ) ?? -1;
+  const shown = aligned?.segments[at];
+
+  return shown?.kind === 'element' ? shown.from : -1;
+};
+
+const plainParentOf = (
+  root: Y.XmlElement,
+  children: NodeList<Descendant>,
+  node: YjsNode
+) => {
+  const chain: Array<Readonly<{ node: Y.XmlElement; slot: Y.XmlElement }>> = [];
+  const id = node.getAttribute(YJS_NODE_ID_KEY);
+  const shownBy =
+    node.getAttribute(YJS_HIDDEN_KEY) !== true
+      ? node
+      : typeof id === 'string'
+        ? projectYjsRoot(root).referrerOf(id)
+        : null;
+
+  if (!shownBy) return null;
+
+  let { parent: above } = shownBy;
+
+  while (above !== root) {
+    if (!(above instanceof Y.XmlElement)) return null;
+
+    const slot = keptYjsPlaceholderOf(above) ?? above;
+
+    chain.unshift({ node: above, slot });
+    ({ parent: above } = slot);
+  }
+
+  const [top, ...below] = chain;
+
+  if (!top || below.length === 0) return null;
+
+  const topIndex =
+    indexedYjsRootChild(root, top.node) ??
+    alignedPliteIndexOf(root, root, children.slice(), top.node);
+  const shown = children.at(topIndex);
+
+  if (topIndex === -1 || !shown || !NodeApi.isElement(shown)) return null;
+
+  const path = [topIndex];
+  let parent = top.node;
+  let projected: readonly Descendant[] = shown.children;
+
+  for (const { node: child, slot } of below) {
+    const plain = plainYjsChildren(parent);
+    const index =
+      plain === null
+        ? alignedPliteIndexOf(root, parent, projected, child)
+        : plain.length === projected.length
+          ? plain.indexOfRawChild(slot)
+          : -1;
+    const next = projected[index];
+
+    if (!next || !NodeApi.isElement(next)) return null;
+    path.push(index);
+    parent = child;
+    projected = next.children;
+  }
+
+  const line = alignedChildrenOf(root, parent, projected);
+
+  return line?.targets.some((target) =>
+    target?.kind === 'text'
+      ? node instanceof Y.XmlText && target.chain.includes(node)
+      : target?.node === node
+  )
+    ? { line, path }
+    : null;
+};
+
+const searchedParentOf = (
   root: Y.XmlElement,
   children: NodeList<Descendant>,
   node: YjsNode

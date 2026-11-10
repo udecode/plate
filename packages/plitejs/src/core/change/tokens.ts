@@ -13,6 +13,7 @@ import {
   type TreeIndexChildren,
 } from '../resolved-token-cursor';
 import { assertEditorJsonValue } from '../value-codec';
+import { countCoreWork } from '../work';
 import {
   cloneFrozen,
   cloneJson,
@@ -842,6 +843,7 @@ export const encodeTrustedNodes = (
   };
 
   nodes.forEach(encode);
+  countCoreWork('encodedTokens', tokens.length);
 
   return tokens;
 };
@@ -913,6 +915,7 @@ export const encodeNodes = (nodes: readonly JsonNode[]) => {
   };
 
   nodes.forEach(encode);
+  countCoreWork('encodedTokens', tokens.length);
 
   return {
     slice: PreparedTokenSlice.fromTokens(tokens),

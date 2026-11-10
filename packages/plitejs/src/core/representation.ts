@@ -577,15 +577,16 @@ const carryProtectedInlineNodes = (
   return result;
 };
 
+const nodeOfIndex = (document: DocumentIndex, path: readonly number[]) =>
+  document.find(path) as Descendant | undefined;
+
 const getTextOffsetWithin = (
   editor: Editor,
-  children: readonly Descendant[],
+  ancestor: Descendant | undefined,
   ancestorPath: readonly number[],
   point: Point,
   edgeWidth: 0 | 1
 ): number | null => {
-  const ancestor = getDescendant(children, ancestorPath);
-
   if (!ancestor || !ElementApi.isElement(ancestor)) return null;
 
   let offset = 0;
@@ -629,14 +630,12 @@ const getTextOffsetWithin = (
 
 const getPointAtTextOffset = (
   editor: Editor,
-  children: readonly Descendant[],
+  ancestor: Descendant | undefined,
   ancestorPath: readonly number[],
   targetOffset: number,
   association: -1 | 1,
   edgeWidth: 0 | 1
 ): Point | null => {
-  const ancestor = getDescendant(children, ancestorPath);
-
   if (!ancestor || !ElementApi.isElement(ancestor)) return null;
 
   let offset = 0;
@@ -708,16 +707,14 @@ export const mapCanonicalRepresentationPoint = (
   options: Readonly<{ countInlineEdges?: true }> = {}
 ): Point | null => {
   const edgeWidth = options.countInlineEdges ? 1 : 0;
-  const beforeChildren = beforeDocument.value as readonly Descendant[];
-  const afterChildren = afterDocument.value as readonly Descendant[];
-  const node = getDescendant(beforeChildren, point.path);
+  const node = nodeOfIndex(beforeDocument, point.path);
   const startsLetteredText =
     point.offset === 0 && node && TextApi.isText(node) && node.text !== '';
   const side = startsLetteredText ? 1 : association;
 
   for (let depth = point.path.length - 1; depth > 0; depth--) {
     const ancestorPath = point.path.slice(0, depth);
-    const ancestor = getDescendant(beforeChildren, ancestorPath);
+    const ancestor = nodeOfIndex(beforeDocument, ancestorPath);
 
     if (
       !ancestor ||
@@ -729,7 +726,7 @@ export const mapCanonicalRepresentationPoint = (
 
     const textOffset = getTextOffsetWithin(
       editor,
-      beforeChildren,
+      ancestor,
       ancestorPath,
       point,
       edgeWidth
@@ -751,7 +748,7 @@ export const mapCanonicalRepresentationPoint = (
 
     const mapped = getPointAtTextOffset(
       editor,
-      afterChildren,
+      nodeOfIndex(afterDocument, mappedAncestor.path),
       mappedAncestor.path,
       textOffset,
       side,

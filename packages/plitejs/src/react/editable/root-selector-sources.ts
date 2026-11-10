@@ -73,6 +73,9 @@ const sameNodeKeys = (left: readonly NodeKey[], right: readonly NodeKey[]) =>
   left.length === right.length &&
   left.every((nodeKey, index) => nodeKey === right[index]);
 
+const sameRootNodeKeys = (left: readonly NodeKey[] | null, right: NodeKey[]) =>
+  left != null && sameNodeKeys(left, right);
+
 const selectRootNodeKeys = (editor: ReactRuntimeEditor) =>
   editor.read(
     (state) =>
@@ -99,7 +102,7 @@ export const useRootNodeKeys = () => {
   );
 
   return useEditorSelector(selector, {
-    equalityFn: (left, right) => left != null && sameNodeKeys(left, right),
+    equalityFn: sameRootNodeKeys,
     profileId: 'root-node-keys',
     shouldUpdate,
   });

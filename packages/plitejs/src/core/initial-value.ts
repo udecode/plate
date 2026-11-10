@@ -1,6 +1,6 @@
 import type { Descendant } from '../interfaces/node';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
-import { isOwnedJsonValue } from './clone';
+import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
 import {
   type EditorDocumentShapeIssue,
   readEditorDocument,
@@ -11,6 +11,7 @@ import {
   recordStoreFromJson,
 } from './record-store';
 import {
+  cloneEditorJsonValue,
   getEditorJsonRecordEntries,
   snapshotEditorJsonValue,
 } from './value-codec';
@@ -64,6 +65,57 @@ const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
   }
 };
 
+// A node's key belongs to its object, and an owned value comes in by
+// reference, so one node object can stand at two places in it. Each place
+// after the first gets a copy of its own.
+const copyRepeatedNodes = (
+  children: Descendant[],
+  named: Record<string, Descendant[]> = {}
+) => {
+  const placed = new Set<Descendant>();
+  const place = (node: Descendant): Descendant => {
+    if (placed.has(node)) {
+      return snapshotEditorJsonValue(
+        cloneEditorJsonValue(node),
+        'initialValue'
+      );
+    }
+    placed.add(node);
+    if (!('children' in node) || !Array.isArray(node.children)) return node;
+
+    const nodes = placeList(node.children);
+
+    return nodes === node.children
+      ? node
+      : freezeOwnedJsonValue({ ...node, children: nodes });
+  };
+  const placeList = (nodes: Descendant[]) => {
+    let copied: Descendant[] | undefined;
+    let index = 0;
+
+    for (const item of nodes) {
+      const node = place(item);
+
+      if (copied) copied.push(node);
+      else if (node !== item) copied = [...nodes.slice(0, index), node];
+      index += 1;
+    }
+
+    return copied ? freezeOwnedJsonValue(copied) : nodes;
+  };
+  const main = placeList(children);
+
+  return {
+    children: main,
+    roots: Object.freeze({
+      [MAIN_ROOT_KEY]: main,
+      ...Object.fromEntries(
+        Object.entries(named).map(([key, nodes]) => [key, placeList(nodes)])
+      ),
+    }),
+  };
+};
+
 export const normalizeEditorValue = (
   input: unknown
 ): NormalizedInitialValue => {
@@ -80,17 +132,13 @@ export const normalizeEditorValue = (
   }
 
   if (Array.isArray(input)) {
-    const children = snapshotEditorJsonValue(
-      input,
-      'initialValue'
-    ) as Descendant[];
-
     return {
-      children,
+      ...copyRepeatedNodes(
+        snapshotEditorJsonValue(input, 'initialValue') as Descendant[]
+      ),
       explicit: true,
       meta: undefined,
       records: EMPTY_RECORD_STORE,
-      roots: Object.freeze({ [MAIN_ROOT_KEY]: children }),
     };
   }
 
@@ -122,13 +170,9 @@ export const normalizeEditorValue = (
   );
 
   return {
-    children,
+    ...copyRepeatedNodes(children, roots),
     explicit: true,
     meta,
     records: recordStoreFromJson(value.records),
-    roots: Object.freeze({
-      [MAIN_ROOT_KEY]: children,
-      ...roots,
-    }),
   };
 };

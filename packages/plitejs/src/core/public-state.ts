@@ -151,7 +151,6 @@ import {
   getOrCreateNodeKey,
   inheritNodeKey,
   inheritNodeKeys,
-  seedNodeKeys,
   setNodeKey,
 } from '../utils/node-keys';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -193,7 +192,6 @@ import {
   getInternalDocumentRootChange,
   DocumentChange,
   transformInternalDocumentChange,
-  valueRoot,
   valueRootIndex,
   valueRootNodes,
   withDocumentChangeRecords,
@@ -205,9 +203,11 @@ import {
   rootNodesOf,
 } from './change/document-index';
 import {
-  copyFields,
   copyRoot,
+  copyRoots,
+  isFrozenWithRoots,
   lazyRootOf,
+  visitRootNames,
   setLazyRoot,
 } from './change/lazy-root';
 import {
@@ -289,6 +289,7 @@ import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
   getEditorSchema,
+  hasEditorRuntime,
   type InternalPluginPublicationEntry,
   type InternalEditorRuntime,
 } from './editor-runtime';
@@ -400,13 +401,14 @@ import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
-  buildSnapshotIndex,
-  captureSnapshotIndexMapping,
   getSnapshotIndexElementEntries,
+  hasRegisteredSnapshotIndex,
   indexSurelyHoldsNodeKey,
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
-  snapshotIndexFrom,
+  publishSnapshotIndex,
+  seedSnapshotIndex,
+  snapshotIndexOf,
 } from './snapshot-index';
 import {
   getInstalledStateField,
@@ -644,47 +646,38 @@ const PROJECTION_SNAPSHOTS = new WeakMap<
   Editor,
   WeakMap<EditorDocumentValue, Map<string, EditorSnapshot>>
 >();
-// Keyed by a root's node list, which a lazy root and the array it builds
-// share, so a commit carries an index without building either root.
-const PROJECTION_INDEXES = new WeakMap<
+const PREVIEW_LISTS_TO_CARRY = new WeakMap<
   Editor,
-  WeakMap<NodeList<unknown>, SnapshotIndex>
+  WeakSet<NodeList<unknown>>
 >();
 
-const projectionIndexes = (editor: Editor) => {
-  const owner = getEditorRuntimeOwner(editor);
-  let indexes = PROJECTION_INDEXES.get(owner);
-  if (!indexes) {
-    indexes = new WeakMap();
-    PROJECTION_INDEXES.set(owner, indexes);
+const projectedLists = (owner: Editor) => {
+  let lists = PREVIEW_LISTS_TO_CARRY.get(owner);
+  if (!lists) {
+    lists = new WeakSet();
+    PREVIEW_LISTS_TO_CARRY.set(owner, lists);
   }
-  return indexes;
+  return lists;
 };
 
 export const getEditorProjectionSnapshotIndex = (
   editor: Editor,
   children: ChildrenSource
 ): SnapshotIndex => {
-  const indexes = projectionIndexes(editor);
-  const nodes =
+  const owner = getEditorRuntimeOwner(editor);
+
+  projectedLists(owner).add(
     children instanceof DocumentIndex
       ? children.nodes
-      : DocumentIndex.nodesOf(children);
-  let index = indexes.get(nodes);
-  if (!index) {
-    index = buildSnapshotIndex(
-      getEditorRuntimeOwner(editor),
-      childrenOf(children)
-    );
-    indexes.set(nodes, index);
-  }
-  return index;
+      : DocumentIndex.nodesOf(children)
+  );
+  return snapshotIndexOf(owner, children);
 };
 
 export const hasEditorProjectionSnapshotIndex = (
   editor: Editor,
   nodes: NodeList<unknown>
-) => projectionIndexes(editor).has(nodes);
+) => projectedLists(getEditorRuntimeOwner(editor)).has(nodes);
 
 export const advanceSnapshotIndex = (
   owner: Editor,
@@ -730,7 +723,8 @@ export const advanceSnapshotIndex = (
         rootChange,
         index,
         owner,
-        classified.runtimeCandidates
+        classified.runtimeCandidates,
+        options.binding
       )
     : mapSnapshotIndexThroughChange(
         beforeDocument,
@@ -751,23 +745,26 @@ export const inheritEditorProjectionIndexes = (
   change: DocumentChange,
   discardedNodeKeys: ReadonlySet<NodeKey> = new Set()
 ) => {
-  const indexes = projectionIndexes(editor);
   const owner = getEditorRuntimeOwner(editor);
+  const projected = projectedLists(owner);
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
     const previous = valueRootNodes(before, root);
     const next = valueRootNodes(after, root);
-    const index = indexes.get(previous);
-    if (!index || previous === next || indexes.has(next)) continue;
+    if (previous === next || !projected.has(previous)) continue;
+    projected.add(next);
+    if (hasRegisteredSnapshotIndex(owner, next)) continue;
     const beforeIndex = valueRootIndex(before, root);
+    const afterIndex = valueRootIndex(after, root);
 
-    indexes.set(
-      next,
+    publishSnapshotIndex(
+      owner,
+      afterIndex,
       advanceSnapshotIndex(
         owner,
         beforeIndex,
-        valueRootIndex(after, root),
+        afterIndex,
         rootChange,
-        snapshotIndexFrom(beforeIndex, index, owner),
+        snapshotIndexOf(owner, previous),
         {
           binding: 'publish',
           classification: getInternalDocumentChangeClassification(change, root),
@@ -1595,7 +1592,7 @@ const carryDraftNodeKeys = (
   const stored = new Set<NodeKey>();
 
   for (const { from, root, to } of removed) {
-    const before = DocumentIndex.fromValue(valueRoot(plain.before, root));
+    const before = valueRootIndex(plain.before, root);
 
     for (const entry of before.nodeRangesTouching(from, to)) {
       const key =
@@ -1964,8 +1961,8 @@ const advanceUniqueIndexOnCommit = (owner: Editor) => {
     const before = getEditorCommitValue(commit, 'before');
     const roots = new Set([
       MAIN_ROOT_KEY,
-      ...Object.keys(after.roots ?? {}),
-      ...Object.keys(before.roots ?? {}),
+      ...visitRootNames(after.roots),
+      ...visitRootNames(before.roots),
     ]);
     const changed = new Map<string, Set<NodeKey>>();
 
@@ -2002,10 +1999,15 @@ const advanceUniqueIndexOnCommit = (owner: Editor) => {
           const rootSnapshot = getEditorCommitSnapshot(commit, root);
           const path = rootSnapshot.index.pathOf(nodeKey);
 
-          return path && { children: rootSnapshot.children, path };
+          return (
+            path && {
+              path,
+              top: (at: number) => valueRootIndex(after, root).child(at),
+            }
+          );
         },
         commit.version,
-        Object.keys(before.roots ?? {}).filter(
+        visitRootNames(before.roots).filter(
           (root) => !Object.hasOwn(after.roots ?? {}, root)
         )
       );
@@ -2177,7 +2179,7 @@ const admitTransactionDraft = (editor: Editor) => {
           snapshot.previousVersion,
           (root) =>
             snapshot.baseSnapshots[root]?.index ??
-            buildSnapshotIndex(
+            snapshotIndexOf(
               getEditorRuntimeOwner(editor),
               getDocumentRootChildren(stored, root)
             )
@@ -2377,26 +2379,64 @@ const setRoot = (
   else target[root] = source;
 };
 
+const ROOT_SWAPS = new WeakMap<
+  object,
+  Readonly<{
+    next: Readonly<Record<string, readonly Descendant[]>>;
+    root: string;
+    source: ChildrenSource;
+  }>
+>();
+
 const withRoot = (
   roots: Readonly<Record<string, readonly Descendant[]>>,
   root: string,
   source: ChildrenSource
 ): Readonly<Record<string, readonly Descendant[]>> => {
-  const next = copyFields({}, roots);
+  const known = ROOT_SWAPS.get(roots);
+
+  if (known?.root === root && known.source === source) return known.next;
+
+  const next = copyRoots({}, roots) as Record<string, readonly Descendant[]>;
 
   setRoot(next, root, source);
+  Object.freeze(next);
+  if (Object.isFrozen(roots)) ROOT_SWAPS.set(roots, { next, root, source });
 
-  return next as Record<string, readonly Descendant[]>;
+  return next;
 };
+
+const VALUE_ROOTS = new WeakMap<
+  object,
+  Readonly<Record<string, readonly Descendant[]>>
+>();
+const DOCUMENT_VALUES = new WeakMap<
+  object,
+  Readonly<{
+    editor: Editor;
+    fields: ReadonlyMap<string, unknown>;
+    meta: Record<string, unknown> | undefined;
+    records: RecordStore;
+    value: EditorDocumentValue;
+  }>
+>();
 
 const rootsOfValue = (
   value: JsonEditorValue
 ): Readonly<Record<string, readonly Descendant[]>> => {
+  const known = VALUE_ROOTS.get(value);
+
+  if (known) return known;
+
   const roots: Record<string, readonly Descendant[]> = {};
 
   copyRoot(roots, MAIN_ROOT_KEY, value, 'children');
 
-  return Object.assign(roots, value.roots);
+  copyRoots(roots, value.roots ?? {});
+
+  if (isFrozenWithRoots(value)) VALUE_ROOTS.set(value, Object.freeze(roots));
+
+  return roots;
 };
 
 const createEditorDocumentValue = <V extends Value>({
@@ -2412,17 +2452,31 @@ const createEditorDocumentValue = <V extends Value>({
   records: RecordStore;
   roots: Readonly<Record<string, readonly Descendant[]>>;
 }): EditorDocumentValue<V> => {
-  const extraRoots: Record<string, readonly Descendant[]> = {};
+  const known = DOCUMENT_VALUES.get(roots);
 
-  for (const root of Object.keys(roots)) {
-    if (root !== MAIN_ROOT_KEY) extraRoots[root] = roots[root];
+  if (
+    known?.editor === editor &&
+    known.meta === meta &&
+    known.records === records &&
+    known.fields.size === fields.size &&
+    [...fields].every(([key, field]) => known.fields.get(key) === field)
+  ) {
+    return known.value as EditorDocumentValue<V>;
+  }
+
+  const extraRoots: Record<string, readonly Descendant[]> = {};
+  let hasExtraRoots = false;
+
+  for (const root of visitRootNames(roots)) {
+    if (root === MAIN_ROOT_KEY) continue;
+    copyRoot(extraRoots, root, roots, root);
+    hasExtraRoots = true;
   }
   const persistentMetaKeys = Object.keys(meta ?? {}).filter((key) => {
     const field = fields.get(key);
 
     return !field || field.persist;
   });
-  const hasExtraRoots = Object.keys(extraRoots).length > 0;
   const hasPersistentMeta = persistentMetaKeys.length > 0;
   const persistentMeta = hasPersistentMeta
     ? (() => {
@@ -2466,7 +2520,19 @@ const createEditorDocumentValue = <V extends Value>({
   );
   if (hasExtraRoots) value.roots = Object.freeze(extraRoots);
 
-  return Object.freeze(value) as EditorDocumentValue<V>;
+  const documentValue = Object.freeze(value) as EditorDocumentValue<V>;
+
+  if (Object.isFrozen(roots)) {
+    DOCUMENT_VALUES.set(roots, {
+      editor,
+      fields,
+      meta,
+      records,
+      value: documentValue,
+    });
+  }
+
+  return documentValue;
 };
 
 /**
@@ -2735,36 +2801,18 @@ const getOptionsNodeTarget = (options: object | undefined) =>
   options && 'at' in options ? (options as NodeTargetOptions).at : undefined;
 
 const LAST_TARGET_ROOTS = new WeakMap<Editor, string>();
-const LOOKUP_INDEXES = new WeakMap<
-  Editor,
-  WeakMap<readonly Descendant[], SnapshotIndex>
->();
-
 const getLookupIndex = (
   owner: Editor,
   transactionSnapshot: TransactionSnapshot,
   root: string
 ) => {
   const known = getKnownTransactionIndex(transactionSnapshot, root);
+
+  if (known) return known;
+
   const children = transactionSnapshot.roots[root];
 
-  if (known || !children) return known;
-
-  let indexes = LOOKUP_INDEXES.get(owner);
-
-  if (!indexes) {
-    indexes = new WeakMap();
-    LOOKUP_INDEXES.set(owner, indexes);
-  }
-
-  let index = indexes.get(children);
-
-  if (!index) {
-    index = buildSnapshotIndex(owner, children);
-    indexes.set(children, index);
-  }
-
-  return index;
+  return children ? snapshotIndexOf(owner, children) : null;
 };
 
 const getRuntimeTargetRoot = (
@@ -3628,7 +3676,9 @@ const getChildrenSource = (editor: Editor): ChildrenSource => {
     const root = getCurrentChildrenRoot(editor);
     return root === MAIN_ROOT_KEY
       ? (lazyRootOf(projection, 'children') ?? projection.children)
-      : (projection.roots?.[root] ?? EMPTY_CHILDREN);
+      : (lazyRootOf(projection.roots, root) ??
+          projection.roots?.[root] ??
+          EMPTY_CHILDREN);
   }
   const context = getTransactionSpecContext(editor);
 
@@ -3638,9 +3688,11 @@ const getChildrenSource = (editor: Editor): ChildrenSource => {
     return context.currentChildrenRoot === MAIN_ROOT_KEY
       ? (lazyRootOf(value, 'children') ??
           (value.children as readonly Descendant[]))
-      : ((value.roots?.[context.currentChildrenRoot] as
-          | readonly Descendant[]
-          | undefined) ?? EMPTY_CHILDREN);
+      : (lazyRootOf(value.roots, context.currentChildrenRoot) ??
+          (value.roots?.[context.currentChildrenRoot] as
+            | readonly Descendant[]
+            | undefined) ??
+          EMPTY_CHILDREN);
   }
 
   return getStoredChildrenSource(editor);
@@ -3658,8 +3710,30 @@ export const getChildList = (editor: Editor): NodeList<Descendant> => {
     : source;
 };
 
+const VIEW_CHILDREN_SOURCES = new WeakMap<
+  InternalEditorRuntime,
+  () => ChildrenSource
+>();
+
+/** @internal */
+export const setViewChildrenSource = (
+  view: Editor,
+  owner: Editor,
+  read: <T>(fn: () => T) => T
+) => {
+  VIEW_CHILDREN_SOURCES.set(getEditorRuntime(view), () =>
+    read(() => getChildrenSource(owner))
+  );
+};
+
+const readViewChildrenSource = (editor: Editor) =>
+  hasEditorRuntime(editor)
+    ? VIEW_CHILDREN_SOURCES.get(getEditorRuntime(editor))?.()
+    : undefined;
+
 const getStoredChildrenSource = (editor: Editor): ChildrenSource =>
   CHILDREN.get(editor) ??
+  readViewChildrenSource(editor) ??
   ((editor.read?.children?.() ?? []) as readonly Descendant[]);
 
 export const getEditorDocumentRoots = (
@@ -3776,6 +3850,16 @@ export const getEditorRuntimeElementEntries = (
 export const getEditorRuntimeRootKeys = (editor: Editor): readonly RootKey[] =>
   Object.freeze(Object.keys(getEditorDocumentRoots(editor)));
 
+const currentRootIndex = (owner: Editor, root: string): SnapshotIndex => {
+  const cached = SNAPSHOT_CACHE.get(owner)?.get(root);
+
+  return cached &&
+    rootNodesOf(cached, 'children') ===
+      rootNodesOf(getEditorDocumentRoots(owner), root)
+    ? cached.index
+    : getCurrentRootSnapshot(owner, root).index;
+};
+
 /** @internal */
 export const resolveEditorNodeKeyForNode = (
   editor: Editor,
@@ -3803,7 +3887,7 @@ export const resolveEditorNodeKeyForNode = (
     if (root === currentRoot) continue;
     const rootIndex = transactionSnapshot
       ? retainTransactionSnapshotIndex(owner, transactionSnapshot, root)
-      : getCurrentRootSnapshot(owner, root).index;
+      : currentRootIndex(owner, root);
 
     if (resolvesIn(rootIndex)) return getDefined(nodeKey);
   }
@@ -4318,6 +4402,38 @@ export const doesSelectionContain = (
 
 const NO_RESERVED_ROOTS: ReadonlySet<string> = new Set();
 
+type RootCopyScope = Readonly<{ counter: object; name: () => string }>;
+
+const rootCopyScopes = new WeakMap<object, RootCopyScope>();
+const rootCopyCounts = new WeakMap<object, number>();
+
+/** @internal */
+export const setRootCopyScope = (editor: Editor, scope: RootCopyScope) => {
+  rootCopyScopes.set(getEditorRuntimeOwner(editor), scope);
+};
+
+const nextCopiedRootName = (
+  editor: Editor,
+  root: string,
+  taken: Set<string>
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const scope = rootCopyScopes.get(owner);
+  const counter = scope?.counter ?? owner;
+  const prefix = scope?.name();
+  let count = rootCopyCounts.get(counter) ?? 0;
+  let name: string;
+
+  do {
+    count += 1;
+    name = prefix ? `${root}:copy:${prefix}:${count}` : `${root}:copy:${count}`;
+  } while (taken.has(name));
+  rootCopyCounts.set(counter, count);
+  taken.add(name);
+
+  return name;
+};
+
 const takenRootNames = (editor: Editor) =>
   new Set([
     ...Object.keys(
@@ -4338,16 +4454,7 @@ const remapContentSliceRoots = <V extends Value>(
   const remapped = new Map<string, string>();
 
   for (const root of Object.keys(slice.roots).sort()) {
-    const base = `${root}:copy`;
-    let candidate = base;
-    let suffix = 2;
-
-    while (existingRoots.has(candidate)) {
-      candidate = `${base}:${suffix}`;
-      suffix += 1;
-    }
-    existingRoots.add(candidate);
-    remapped.set(root, candidate);
+    remapped.set(root, nextCopiedRootName(editor, root, existingRoots));
   }
 
   const rewrite = (children: readonly Descendant[]) =>
@@ -5447,7 +5554,6 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   const root = getCurrentChildrenRoot(editor);
   const source = ContentSlice.fromJSON<V>(sourceTile);
   const usedRoots = takenRootNames(editor);
-  const nextRootSuffix = new Map<string, number>();
   const ownership = new Map<string, 'exclusive' | 'shared'>();
   const sharedRoots = new Map<string, string>();
   const copiedRoots = new Map<string, readonly Descendant[]>();
@@ -5480,15 +5586,8 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
               : undefined;
 
           if (!content) return false;
-          let suffix = nextRootSuffix.get(owned.root) ?? 1;
-          let name: string;
+          const name = nextCopiedRootName(editor, owned.root, usedRoots);
 
-          do {
-            name = `${owned.root}:copy${suffix === 1 ? '' : `:${suffix}`}`;
-            suffix += 1;
-          } while (usedRoots.has(name));
-          nextRootSuffix.set(owned.root, suffix);
-          usedRoots.add(name);
           remapped.set(owned.root, name);
 
           const prepared = prepareChildren(content, owned.root, exclusiveRoots);
@@ -7787,7 +7886,9 @@ export const getUpdateView = <
 
       if (index === undefined || index > count) {
         throw new Error(
-          `Cannot insert blocks at [${slot.join(', ')}]: its parent has no such slot.`
+          `Cannot insert blocks at [${slot.join(
+            ', '
+          )}]: its parent has no such slot.`
         );
       }
 
@@ -10054,6 +10155,15 @@ export const getCurrentSelectionRoot = (editor: Editor): string => {
   );
 };
 
+export const getSelectionRoot = (
+  editor: Editor,
+  selection: NonNullable<Selection> | Range
+): string =>
+  (SelectionApi.isNode(selection)
+    ? selection.root
+    : (selection.anchor.root ?? selection.focus.root)) ??
+  getCurrentSelectionRoot(editor);
+
 export const getBaseCallRoot = (editor: Editor): string =>
   readCurrentSelection(editor) ||
   getTransactionSnapshot(editor)?.selectionInDroppedRoot
@@ -10467,7 +10577,7 @@ export const getSnapshot = (editor: Editor): EditorSnapshot => {
   snapshot.version = getVersion(editor);
   Object.defineProperty(snapshot, 'index', {
     enumerable: true,
-    get: () => (index ??= buildSnapshotIndex(owner, childrenOf(children))),
+    get: () => (index ??= snapshotIndexOf(owner, children)),
   });
 
   const frozen = Object.freeze(snapshot) as unknown as EditorSnapshot;
@@ -10585,16 +10695,6 @@ const getRootScopedSelection = (
 ): Selection =>
   selectionRoot === root ? cloneFrozenEditorJsonValue(selection) : null;
 
-const snapshotIndexesEqual = (left: SnapshotIndex, right: SnapshotIndex) => {
-  const leftEntries = left.entries();
-  const rightEntries = right.entries();
-
-  return (
-    leftEntries.length === rightEntries.length &&
-    leftEntries.every(([nodeKey, path]) => right.keyAt(path) === nodeKey)
-  );
-};
-
 const getKnownTransactionIndex = (
   transactionSnapshot: TransactionSnapshot,
   root: string
@@ -10616,7 +10716,7 @@ export function retainTransactionSnapshotIndex(
     return existingIndex;
   }
 
-  const index = buildSnapshotIndex(
+  const index = snapshotIndexOf(
     getEditorRuntimeOwner(editor),
     transactionSnapshot.roots[root] ?? []
   );
@@ -10678,14 +10778,10 @@ const getCurrentRootSnapshot = (
   );
   snapshot.version = version;
   if (!(children instanceof DocumentIndex)) DocumentIndex.fromValue(children);
+  if (knownIndex) publishSnapshotIndex(owner, children, knownIndex);
   Object.defineProperty(snapshot, 'index', {
     enumerable: true,
-    get: snapshotIndexReader(
-      owner,
-      () => childrenOf(children),
-      knownIndex,
-      knownIndex ? undefined : previousSnapshot
-    ),
+    get: snapshotIndexReader(owner, () => children, knownIndex),
   });
 
   return Object.freeze(snapshot) as unknown as EditorSnapshot;
@@ -10693,22 +10789,13 @@ const getCurrentRootSnapshot = (
 
 const snapshotIndexReader = (
   owner: Editor,
-  children: () => readonly Descendant[],
-  known: SnapshotIndex | undefined,
-  previousSnapshot: EditorSnapshot | undefined
+  children: () => ChildrenSource,
+  known: SnapshotIndex | undefined
 ) => {
   let index = known;
-  let previous = previousSnapshot;
 
   return () => {
-    index ??= profileCoreDuration('snapshot-build-index', () => {
-      const builtIndex = buildSnapshotIndex(owner, children());
-
-      return previous && snapshotIndexesEqual(previous.index, builtIndex)
-        ? previous.index
-        : builtIndex;
-    });
-    previous = undefined;
+    index ??= snapshotIndexOf(owner, children());
 
     return index;
   };
@@ -10720,27 +10807,41 @@ const getListenerSnapshot = (
 ): EditorSnapshot =>
   withEditorRootChildren(editor, MAIN_ROOT_KEY, () => getSnapshot(editor));
 
+type RootEntries = ReadonlyArray<readonly [string, NodeList<Descendant>]>;
+
 const CHANGE_VALUES = new WeakMap<
   ChildrenSource,
   Array<
     Readonly<{
       records: RecordStore;
-      roots: ReadonlyArray<readonly [string, readonly Descendant[]]>;
+      roots: RootEntries;
       value: JsonEditorValue;
     }>
   >
 >();
+
+const CHANGE_VALUES_PER_MAIN = 8;
+
+const ROOT_ENTRIES = new WeakMap<object, RootEntries>();
 
 const getChangeValue = (
   roots: Readonly<Record<string, readonly Descendant[]>>,
   records: RecordStore
 ): JsonEditorValue => {
   const main = rootSourceOf(roots, MAIN_ROOT_KEY);
-  const rootEntries = Object.keys(roots)
-    .filter((root) => root !== MAIN_ROOT_KEY)
-    .sort((left, right) => left.localeCompare(right))
-    .map((root) => [root, roots[root]] as const);
-  const cached = CHANGE_VALUES.get(main)?.find(
+  let rootEntries = ROOT_ENTRIES.get(roots);
+
+  if (!rootEntries) {
+    rootEntries = visitRootNames(roots)
+      .filter((root) => root !== MAIN_ROOT_KEY)
+      .sort((left, right) => left.localeCompare(right))
+      .map((root) => [root, rootNodesOf(roots, root)] as const);
+    ROOT_ENTRIES.set(roots, rootEntries);
+  }
+  const entries = CHANGE_VALUES.get(main) ?? [];
+
+  countCoreWork('changeValueReads', entries.length);
+  const cached = entries.findLast(
     (entry) =>
       entry.records === records &&
       entry.roots.length === rootEntries.length &&
@@ -10759,14 +10860,16 @@ const getChangeValue = (
     fields.children = EMPTY_CHILDREN;
   }
   if (rootEntries.length > 0) {
-    fields.roots = Object.freeze(Object.fromEntries(rootEntries));
+    const named: Record<string, unknown> = {};
+
+    for (const [root] of rootEntries) copyRoot(named, root, roots, root);
+    fields.roots = Object.freeze(named);
   }
   const value = withValueRecords(
     Object.freeze(fields) as JsonEditorValue,
     records
   );
-  const entries = CHANGE_VALUES.get(main) ?? [];
-
+  if (entries.length >= CHANGE_VALUES_PER_MAIN) entries.shift();
   entries.push(
     Object.freeze({
       records,
@@ -10951,7 +11054,9 @@ const rebindTransactionBuilderToCurrentSchema = (
   );
 
   if (!accumulated.empty) {
-    builder.apply(accumulated);
+    builder.apply(accumulated, {
+      indexedAfter: snapshot.builder.indexedAfter(accumulated),
+    });
     builder.keepSteps(snapshot.builder);
   }
 
@@ -11269,7 +11374,7 @@ const inheritDocumentChangeStepNodeKeys = (
           currentIndex ??
           baseIndex?.() ??
           previousIndex ??
-          buildSnapshotIndex(owner, getDocumentRootChildren(step.before, root))
+          snapshotIndexOf(owner, getDocumentRootChildren(step.before, root))
       ));
     const mapIndex = () => {
       const source = getSourceIndex();
@@ -11299,13 +11404,6 @@ const inheritDocumentChangeStepNodeKeys = (
         !changesElementType &&
         snapshot.discardedNodeKeys.size === 0;
 
-      if (pathStable && !snapshot.runtimeIndexRollbacks.has(source)) {
-        snapshot.runtimeIndexRollbacks.set(
-          source,
-          captureSnapshotIndexMapping(source)
-        );
-      }
-
       return profileCoreDuration('transaction-runtime-map-index', () =>
         pathStable
           ? advancePathStableSnapshotIndex(
@@ -11314,7 +11412,8 @@ const inheritDocumentChangeStepNodeKeys = (
               rootChange,
               source,
               owner,
-              step.runtimeCandidates.get(root)
+              step.runtimeCandidates.get(root),
+              'publish'
             )
           : mapSnapshotIndexThroughChange(
               before,
@@ -11767,6 +11866,7 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
 
     profileCoreDuration('notify-plugin-commit-listeners', () => {
       for (const listener of pluginCommitListeners) {
+        countCoreWork('subscriberVisits');
         if (listener.length >= 2) {
           listener(change, getSnapshotForListeners());
         } else {
@@ -11780,7 +11880,10 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
         editor,
         getCommitListeners(editor),
         'commit-listener',
-        (listener) => listener(change, getSnapshotForListeners())
+        (listener) => {
+          countCoreWork('subscriberVisits');
+          listener(change, getSnapshotForListeners());
+        }
       );
     });
 
@@ -11790,9 +11893,10 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
       }
 
       profileCoreDuration('notify-snapshot-listeners', () => {
-        notifyObservers(editor, listeners, 'snapshot-listener', (listener) =>
-          listener(getSnapshotForListeners(), change)
-        );
+        notifyObservers(editor, listeners, 'snapshot-listener', (listener) => {
+          countCoreWork('subscriberVisits');
+          listener(getSnapshotForListeners(), change);
+        });
       });
 
       if (sourceListeners) {
@@ -11809,7 +11913,10 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
                 editor,
                 listenersForSource,
                 'source-listener',
-                (listener) => listener(getSnapshotForListeners(), change)
+                (listener) => {
+                  countCoreWork('subscriberVisits');
+                  listener(getSnapshotForListeners(), change);
+                }
               );
             });
           }
@@ -12009,7 +12116,11 @@ const publishTransactionDraft = (
   RECORDS.set(editor, getValueRecords(context.snapshot.builder.value));
   CURRENT_CHILDREN_ROOT.set(editor, currentRoot);
   CHILDREN.set(editor, rootSourceOf(roots, currentRoot));
-  setSelectionStateSelection(editor, selection, context.caret.root);
+  setSelectionStateSelection(
+    editor,
+    selection,
+    selection === null ? MAIN_ROOT_KEY : context.caret.root
+  );
   commitCarets(editor, context.caret);
   if (documentState === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, documentState);
@@ -12361,6 +12472,11 @@ export const runEditorTransaction = <R>(
                     ])
                   ),
                   before: beforeSnapshot,
+                  afterIndexAt: (root) =>
+                    Object.hasOwn(afterValue.roots ?? {}, root)
+                      ? (snapshot.rootIndexes[root] ??
+                        snapshot.baseRuntimeIndexes[root]?.())
+                      : undefined,
                   beforeIndexAt,
                   beforeValue,
                   carried:
@@ -12482,8 +12598,8 @@ export const runEditorTransaction = <R>(
           profileCoreDuration('transaction-commit-snapshot', () => {
             setCachedSnapshot(editor, afterSnapshot, MAIN_ROOT_KEY);
             const retainedRoots = new Set([
-              ...Object.keys(snapshot.baseSnapshots),
-              ...Object.keys(snapshot.rootIndexes),
+              ...visitRootNames(snapshot.baseSnapshots),
+              ...visitRootNames(snapshot.rootIndexes),
             ]);
 
             for (const root of retainedRoots) {
@@ -13191,7 +13307,7 @@ export const initializePublicState = <
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
   for (const children of Object.values(initialRoots)) {
-    seedNodeKeys(children, editor);
+    seedSnapshotIndex(getEditorRuntimeOwner(editor), children);
   }
   const initialSelectionRoot = options.initialSelection
     ? (SelectionApi.root(options.initialSelection) ?? MAIN_ROOT_KEY)
@@ -13245,7 +13361,9 @@ const adoptEditorSchemaDocument = (
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, document.meta);
-  for (const children of Object.values(roots)) seedNodeKeys(children, editor);
+  for (const children of Object.values(roots)) {
+    seedSnapshotIndex(getEditorRuntimeOwner(editor), children);
+  }
   clearSnapshotCache(editor);
 };
 

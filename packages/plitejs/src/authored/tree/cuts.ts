@@ -1,9 +1,9 @@
 import {
   createInternalDocumentChange,
   type DocumentChange,
-  valueRoot,
+  valueRootIndex,
 } from '../../core/change/document-change';
-import { DocumentIndex } from '../../core/change/document-index';
+import type { DocumentIndex } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
@@ -467,7 +467,7 @@ export const relinkCuts = (
   after: JsonEditorValue,
   afterIndexOf: (root: string) => DocumentIndex,
   beforeIndexOf: (root: string) => DocumentIndex = (root) =>
-    DocumentIndex.fromValue(valueRoot(before, root))
+    valueRootIndex(before, root)
 ): Readonly<{
   change: DocumentChange;
   indexes: ReadonlyMap<string, DocumentIndex>;

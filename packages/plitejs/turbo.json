@@ -610,6 +610,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ]
     },
@@ -645,6 +646,7 @@
         "test/support/content-shapes.ts",
         "test/support/law-check.ts",
         "test/support/recording-laws.ts",
+        "test/support/work-budget.ts",
         "test/yjs/support/collaboration.ts",
         "test/yjs/support/provider.ts",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
@@ -666,6 +668,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -791,6 +794,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -837,6 +841,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -893,6 +898,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -927,6 +933,7 @@
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
         "$TURBO_ROOT$/tsconfig.json",
         "test/support/schema.ts",
+        "test/support/work-budget.ts",
         "test/yjs/support/collaboration.ts",
         "test/yjs/support/provider.ts",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
@@ -948,6 +955,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -1007,6 +1015,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -1075,6 +1084,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -1128,6 +1138,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -1180,6 +1191,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",
@@ -1225,6 +1237,7 @@
         "test/support/authored.ts",
         "test/support/law-check.ts",
         "test/support/record-work.ts",
+        "test/support/work-budget.ts",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/config/test-suites.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
@@ -1244,6 +1257,7 @@
         "CI",
         "FAST_CHECK_SEED",
         "FILL_LAW_*",
+        "NODE_ENV",
         "PLITE_*"
       ],
       "outputLogs": "errors-only",

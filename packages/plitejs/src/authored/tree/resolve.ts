@@ -1,4 +1,5 @@
 import type { AuthoredProjectionDiagnostic } from '../../core/authored-document-capability';
+import { valueRootNodes } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
@@ -3712,6 +3713,115 @@ const resolveValueIn = (
     ),
   };
 };
+
+export type AuthoredWindow = Readonly<{
+  from: number;
+  root: string;
+  to: number;
+}>;
+
+export const resolveAuthoredWindows = (
+  value: JsonEditorValue,
+  windows: readonly AuthoredWindow[],
+  outcome: AuthoredOutcome,
+  schema: AuthoredResolveSchema | null,
+  options: ValueResolveOptions
+) =>
+  readingCovered({
+    cover: () =>
+      schema &&
+      coverStoredValues(
+        schema.ownership,
+        reserveNodesIn(getValueRecords(value))
+      ),
+    read: () => {
+      const facts = factsOf(value);
+      const dependencies = createDependencies(facts);
+      const cuts = cutIndexIn(value, dependencies, schema);
+      let crossed = false;
+      const cutIndex: CutIndex = {
+        copiedFrom: (key) => {
+          crossed = true;
+
+          return cuts.copiedFrom(key);
+        },
+        ...(cuts.leftOf
+          ? {
+              leftOf: (cut: string) => {
+                crossed = true;
+
+                return cuts.leftOf?.(cut);
+              },
+            }
+          : {}),
+      };
+      const resolved = windows.map((window) => {
+        const before = valueRootNodes(value, window.root).slice(
+          window.from,
+          window.to
+        );
+
+        return {
+          ...window,
+          before,
+          resolution: resolveAuthoredChildren(
+            before,
+            outcome,
+            schema,
+            window.root,
+            {
+              ...options,
+              cutIndex,
+              dependencies,
+              facts,
+              part: { head: window.from === 0, min: 0 },
+            }
+          ),
+        };
+      });
+
+      if (
+        crossed ||
+        resolved.some(
+          ({ before, resolution }) =>
+            resolution.children.length !== before.length
+        )
+      ) {
+        return null;
+      }
+
+      const all = resolved.map(({ resolution }) => resolution);
+      const landed = all.flatMap((resolution) => resolution.landed);
+
+      return {
+        blockers: [
+          ...new Set(all.flatMap((resolution) => resolution.blockers)),
+        ],
+        decided: [...new Set(all.flatMap((resolution) => resolution.decided))],
+        records: composeRecordOps(
+          composeRecordOps(
+            putContexts(dependencies.minted()),
+            putLanded(landed)
+          ),
+          spareOpsOf(all)
+        ),
+        resolvedIn: (root: string) =>
+          resolved.find((window) => window.root === root)?.resolution
+            .resolvedOf ?? null,
+        resolvedOf: (original: unknown) =>
+          all.reduce<JsonNode | null>(
+            (found, resolution) => found ?? resolution.resolvedOf(original),
+            null
+          ),
+        unplaceable: all.some((resolution) => resolution.unplaceable),
+        windows: resolved.map(({ before, resolution, ...window }) => ({
+          ...window,
+          after: resolution.children,
+          before,
+        })),
+      };
+    },
+  });
 
 /**
  * `proposed` reads the document with every pending change accepted;

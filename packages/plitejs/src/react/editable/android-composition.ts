@@ -2,6 +2,7 @@ import {
   type Anchor,
   type EditorCommit,
   ElementApi,
+  type NamedRootKey,
   NodeApi,
   type NodeKey,
   type Point,
@@ -518,7 +519,10 @@ export const openAndroidComposition = ({
   const end = (reason: AndroidCompositionEndReason) =>
     finishAndroidComposition({ editor, inputController, reason, setComposing });
   const releaseCommits = editor.subscribeCommit((commit) => {
-    if (RUNS.get(inputController) === run && touchesLine(commit, base)) {
+    if (
+      RUNS.get(inputController) === run &&
+      touchesLine(commit, base, editor.read.view.root())
+    ) {
       endOnLineEdit(editor, inputController, run, commit);
     }
   });
@@ -582,7 +586,11 @@ export const scheduleAndroidCompositionEnd = ({
   );
 };
 
-const touchesLine = (commit: EditorCommit, base: AndroidCompositionBase) =>
+const touchesLine = (
+  commit: EditorCommit,
+  base: AndroidCompositionBase,
+  root: NamedRootKey | undefined
+) =>
   commit.changed.hasAny('replace') ||
   [
     ...base.lines.map(({ key }) => key),
@@ -590,7 +598,7 @@ const touchesLine = (commit: EditorCommit, base: AndroidCompositionBase) =>
     base.start.key,
     base.end.key,
   ].some((key) =>
-    LINE_CHANGE_KINDS.some((kind) => commit.changed.hasNodeKey(key, kind))
+    LINE_CHANGE_KINDS.some((kind) => commit.changed.hasNodeKey(key, kind, root))
   );
 
 const closeRun = (

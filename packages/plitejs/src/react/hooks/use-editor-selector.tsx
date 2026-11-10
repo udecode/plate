@@ -3,10 +3,12 @@ import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import type {
   EditorCommit,
   EditorStateView,
+  NamedRootKey,
   PluginsOf,
   NodeKey,
   ValueOf,
 } from '../..';
+import { keyMovedAt } from '../../core/commit';
 import { runEditorObserver } from '../../core/lifecycle-error';
 import type { BaseEditor } from '../../interfaces/editor';
 import type { EditorContextValue } from '../plugin/with-react';
@@ -272,7 +274,11 @@ export function useEditorSelectorContext() {
   );
 
   const onChange = useCallback(
-    (change?: EditorCommit, invalidatedNodeKeys: readonly NodeKey[] = []) => {
+    (
+      change?: EditorCommit,
+      invalidatedNodeKeys: readonly NodeKey[] = [],
+      root?: NamedRootKey
+    ) => {
       eventListeners.current.forEach((listener) => {
         listener(change);
       });
@@ -328,10 +334,13 @@ export function useEditorSelectorContext() {
           collect(nodes, keys);
           collect(selections, keys);
         }
-        if ((nodes.size || paths.size) && change.changed.hasAny('structure')) {
+        if (
+          (nodes.size || paths.size) &&
+          change.changed.has('structure', root)
+        ) {
           for (const map of [nodes, paths]) {
             for (const [key, listeners] of map) {
-              if (change.changed.hasNodeKey(key, 'path')) {
+              if (keyMovedAt(change.changed, key, root)) {
                 listeners.forEach((listener) => runtimeCallbacks.add(listener));
               }
             }

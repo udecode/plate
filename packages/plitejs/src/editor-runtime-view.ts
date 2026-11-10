@@ -6,6 +6,7 @@ import {
   withAuthoredUpdateView,
   withAuthoredViewRead,
 } from './core/authored-runtime';
+import { copyFields } from './core/change/lazy-root';
 import { isOwnedJsonValue } from './core/clone';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
@@ -66,6 +67,7 @@ import {
   isSelectionAtBlockStart,
   isSelectionWithinBlock,
   replaceTransformedSnapshot,
+  setViewChildrenSource,
   transformEditorSnapshotInput,
   withEditorDocumentProjection,
   withEditorRootChildren,
@@ -362,10 +364,9 @@ const withViewSnapshot = <V extends Value>(
 
   if (selection === snapshot.selection) return snapshot;
 
-  return Object.freeze({
-    ...snapshot,
-    selection,
-  });
+  return Object.freeze(
+    Object.assign(copyFields({}, snapshot, ['selection']), { selection })
+  ) as EditorSnapshot<V>;
 };
 
 const withRootChildren = <
@@ -1475,8 +1476,10 @@ export const createEditorViewRuntime = <
   }
   viewEditor = view;
   viewState.editor = viewEditor;
-
   setEditorRuntime(viewEditor, viewRuntime, runtimeEditor, viewState.root);
+  setViewChildrenSource(viewEditor, runtimeEditor, (fn) =>
+    viewRuntime.read(() => withRootRead(runtimeEditor, viewState, fn))
+  );
   inheritPluginRegistry(viewEditor, sourceEditor);
   if (document) registerDocumentView(viewEditor);
   else {
