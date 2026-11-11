@@ -457,18 +457,18 @@ function SelectEditorField({
               role: 'combobox',
             })}
         aria-multiline={undefined}
-        onBlur={(event) => {
+        onBlur={(event, context) => {
           setOpen(false);
           editor
             .plugin(SelectTagPlugin)
             .update({ history: 'skip' })
             .clearSearch();
-          onBlur?.(event);
+          onBlur?.(event, context);
         }}
-        onFocus={(event) => {
+        onFocus={(event, context) => {
           setOpen(true);
           setActive(FIRST_OPTION);
-          onFocus?.(event);
+          onFocus?.(event, context);
         }}
         onKeyDown={(event, context) => {
           if (

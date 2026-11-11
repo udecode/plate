@@ -1704,7 +1704,10 @@ export type DocumentRebase =
   | (RebasedPair & Readonly<{ kind: 'pair' }>);
 
 type RebaseOptions = Readonly<{
+  crossedMoves?: 'first-wins';
   keepEqualEdits?: boolean;
+  keepEqualInserts?: boolean;
+  keepEqualMoves?: boolean;
   replay?: Readonly<{
     anchor?: boolean;
     carriesLift?: boolean;
@@ -1751,7 +1754,13 @@ const rebasedPair = (
   a: DocumentChange,
   b: DocumentChange,
   value: JsonEditorValue,
-  { keepEqualEdits = false, replay }: RebaseOptions,
+  {
+    crossedMoves,
+    keepEqualEdits = false,
+    keepEqualInserts,
+    keepEqualMoves,
+    replay,
+  }: RebaseOptions,
   records: Readonly<{ first: RecordOps; second: RecordOps }>
 ): RebasedPair => {
   const roots = new Set([
@@ -1773,7 +1782,10 @@ const rebasedPair = (
         bChange,
         document,
         {
+          crossedMoves,
           keepEqualEdits,
+          keepEqualInserts,
+          keepEqualMoves,
           replay: replay && {
             anchor: replay.anchor,
             carriesLift: replay.carriesLift,
