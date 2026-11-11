@@ -860,10 +860,11 @@ export type EditorUniqueHolder = Readonly<{
 
 export type EditorStateUniqueApi = Readonly<{
   /**
-   * Find the node that holds `value` of the `unique` property `property`,
-   * without a scan. It reads the index of the last published commit and
-   * places the node in the current state, so inside an update a node that got
-   * the value earlier in the same update reads `null`.
+   * Find the node that holds `value` of the `unique` property `property` in
+   * the current state, without a scan. Inside an update it also finds a node
+   * that got the value earlier in the same update, reading only the content
+   * the update wrote. When the update gave the value to a second node, it reads
+   * the node that held it before the update.
    */
   holder: (property: string, value: unknown) => EditorUniqueHolder | null;
 }>;

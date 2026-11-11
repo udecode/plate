@@ -185,9 +185,45 @@ export const buildUniqueIndex = (
   return index;
 };
 
-export const uniqueHolderOf = (
+export const indexedHoldersOf = (
   index: UniqueIndex,
   key: string,
+  value: unknown
+): Iterable<readonly [NodeKey, string]> =>
+  index.holders.get(key)?.get(canonicalJsonKey(value)) ?? [];
+
+export const writtenHoldersOf = (
+  change: DocumentChange,
+  afterIndexOf: (root: string) => DocumentIndex,
+  key: string,
+  value: unknown
+) => {
+  const canonical = canonicalJsonKey(value);
+  const written: Place[] = [];
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+    if (rootChange.empty || change.deleteRoots.has(root)) continue;
+    const after = afterIndexOf(root);
+
+    rootChange.iterChangedRanges((_fromA, _toA, fromB, toB) => {
+      for (const range of after.nodeRangesTouching(fromB, toB)) {
+        if (range.kind === 'text' || range.from < fromB || range.from >= toB) {
+          continue;
+        }
+        const held = after.node(range.path)[key];
+
+        if (held !== undefined && canonicalJsonKey(held) === canonical) {
+          written.push({ path: range.path, root });
+        }
+      }
+    });
+  }
+
+  return written;
+};
+
+export const uniqueHolderOf = (
+  holders: Iterable<readonly [NodeKey, string]>,
   value: unknown,
   locate: (
     root: string,
@@ -196,7 +232,7 @@ export const uniqueHolderOf = (
 ): EditorUniqueHolder | null => {
   const canonical = canonicalJsonKey(value);
 
-  for (const [nodeKey, root] of index.holders.get(key)?.get(canonical) ?? []) {
+  for (const [nodeKey, root] of holders) {
     const found = locate(root, nodeKey);
 
     if (

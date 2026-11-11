@@ -28,18 +28,34 @@ import {
 import { withEditorUpdateRootScope } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getResolvedPluginTargetBinding } from '../../../internal/plugin/compilePlateModel';
+import { BaseBoardArrowPlugin } from './BaseBoardArrowPlugin';
 import { BaseBoardGeoPlugin } from './BaseBoardGeoPlugin';
 import { BaseBoardNotePlugin } from './BaseBoardNotePlugin';
 import {
+  ARROW_SIDES,
+  arrowEndsOf,
+  BOARD_ARROW_TYPE,
+  type BoardArrowEnd,
+  type BoardArrowEnds,
+  boardTargetsOn,
+  isBoundArrowEnd,
+  resolveBoardArrow,
+} from './boardArrow.internal';
+import {
+  type DrawnEndsOf,
   moveShapesTo,
   placeShapeCopies,
   shapeIdOf,
+  withCarriedRootSlots,
   withFreshRootShapeIds,
   withSourcePaintOrder,
 } from './boardCopy.internal';
 import {
+  BOARD_ARROW_ATTRIBUTES,
   BOARD_SHAPE_ATTRIBUTES,
+  decodeBoardArrowAttributes,
   decodeBoardShapeAttributes,
+  encodeBoardArrowAttributes,
   encodeBoardShapeAttributes,
 } from './boardHtml.internal';
 import {
@@ -56,15 +72,30 @@ import {
 export type { BoardPlace, BoardSize } from './boardShape.internal';
 export { defineBoardShape } from './boardShape.internal';
 
-/** A board shape as the board reads it. */
+/** A board member with a place and a size, as the board reads it. */
 export type BoardShapeEntry = EditorUniqueHolder &
   Readonly<{
     id: string;
+    kind: 'shape';
     node: Element;
     place: BoardPlace;
     size: BoardSize;
     zIndex: string;
   }>;
+
+/** A board arrow, with its stored ends, as the board reads it. */
+export type BoardArrowEntry = EditorUniqueHolder &
+  Readonly<{
+    end: BoardArrowEnd;
+    id: string;
+    kind: 'arrow';
+    node: Element;
+    start: BoardArrowEnd;
+    zIndex: string;
+  }>;
+
+/** Any member of a board, as the board reads it. */
+export type BoardMemberEntry = BoardArrowEntry | BoardShapeEntry;
 
 /** Where `restack` moves shapes in paint order. */
 export type BoardRestackDirection = 'back' | 'backward' | 'forward' | 'front';
@@ -98,7 +129,9 @@ export const BaseBoardPlugin = definePlugin('board', {
           validationVersion: 1,
         }),
         {
-          target: target.types(targetElementTypes),
+          target: target.types(
+            targetElementTypes.filter((type) => type !== BOARD_ARROW_TYPE)
+          ),
           typeChange: 'preserve-if-allowed',
         }
       ),
@@ -116,7 +149,9 @@ export const BaseBoardPlugin = definePlugin('board', {
           validationVersion: 1,
         }),
         {
-          target: target.types(targetElementTypes),
+          target: target.types(
+            targetElementTypes.filter((type) => type !== BOARD_ARROW_TYPE)
+          ),
           typeChange: 'preserve-if-allowed',
         }
       ),
@@ -182,9 +217,13 @@ export const BaseBoardPlugin = definePlugin('board', {
           }),
       },
     }),
-  targetPlugins: [BaseBoardNotePlugin, BaseBoardGeoPlugin],
+  targetPlugins: [
+    BaseBoardNotePlugin,
+    BaseBoardGeoPlugin,
+    BaseBoardArrowPlugin,
+  ],
 })
-  .extend(({ editor, plugin, schema: { properties, type } }) => {
+  .extend(({ defineFormats, editor, plugin, schema: { properties, type } }) => {
     const isShape = (node: Node) =>
       ElementApi.isElement(node) &&
       getResolvedPluginTargetBinding(editor, plugin).types.includes(node.type);
@@ -209,6 +248,33 @@ export const BaseBoardPlugin = definePlugin('board', {
         ));
 
     return {
+      formats: defineFormats(BaseBoardNotePlugin, {
+        html: {
+          decode: ({ element, preserve }) => {
+            const shape = decodeBoardShapeAttributes(element);
+
+            if (!shape) return undefined;
+            preserve(...BOARD_SHAPE_ATTRIBUTES, 'data-board-color');
+
+            const color = element.getAttribute('data-board-color');
+
+            return { ...shape, ...(color === null ? {} : { color }) };
+          },
+          encode: ({ node, preserve }) => {
+            preserve('color', 'place', 'size', 'zIndex');
+
+            return {
+              attributes: {
+                ...encodeBoardShapeAttributes(node),
+                'data-board-color': node.color,
+                'data-board': 'note',
+              },
+              tag: 'div',
+            };
+          },
+          match: [{ attributes: { 'data-board': 'note' }, tag: 'div' }],
+        },
+      }),
       contributions: [
         transferVeto.of(moveTouchesShape),
         nodeWriteVeto.of(
@@ -223,33 +289,46 @@ export const BaseBoardPlugin = definePlugin('board', {
         const entryOf = (
           holder: EditorUniqueHolder,
           node: Element
-        ): BoardShapeEntry | null => {
+        ): BoardMemberEntry | null => {
+          const id = state.schema.getProperty(node, properties.shapeId) ?? '';
+          const zIndex = state.schema.getProperty(node, properties.zIndex);
+          const arrow = arrowEndsOf(node);
+
+          if (!zIndex) return null;
+          if (arrow) {
+            return { ...holder, ...arrow, id, kind: 'arrow', node, zIndex };
+          }
+
           const place = state.schema.getProperty(node, properties.place);
           const size = state.schema.getProperty(node, properties.size);
-          const zIndex = state.schema.getProperty(node, properties.zIndex);
 
-          return place && size && zIndex
-            ? {
-                ...holder,
-                id: state.schema.getProperty(node, properties.shapeId) ?? '',
-                node,
-                place,
-                size,
-                zIndex,
-              }
+          return place && size
+            ? { ...holder, id, kind: 'shape', node, place, size, zIndex }
+            : null;
+        };
+        const memberOf = (id: string) => {
+          const holder = state.unique.holder('shapeId', id);
+          const node = holder && state.nodes.get(holder.key)?.[0];
+
+          return holder && node && ElementApi.isElement(node)
+            ? entryOf(holder, node)
             : null;
         };
 
         return {
-          /** The shape whose `shapeId` is `id`, in any board. */
-          shape: (id: string): BoardShapeEntry | null => {
-            const holder = state.unique.holder('shapeId', id);
-            const node = holder && state.nodes.get(holder.key)?.[0];
+          /**
+           * Where the arrow `id` draws its two ends, or null when `id` names
+           * no arrow.
+           */
+          arrowEnds: (id: string): BoardArrowEnds | null => {
+            const arrow = memberOf(id);
 
-            return holder && node && ElementApi.isElement(node)
-              ? entryOf(holder, node)
+            return arrow?.kind === 'arrow'
+              ? resolveBoardArrow(arrow, boardTargetsOn(state, arrow.root))
               : null;
           },
+          /** The member whose `shapeId` is `id`, in any board. */
+          shape: memberOf,
           /**
            * The slice a copy of shapes `ids` carries, as the clipboard exports
            * it, or null when no id names a shape or they sit in two boards.
@@ -278,8 +357,8 @@ export const BaseBoardPlugin = definePlugin('board', {
               }),
             });
           },
-          /** The shapes of the board block `board`, in stored order. */
-          shapes: (board: NodeKey): BoardShapeEntry[] => {
+          /** The members of the board block `board`, in stored order. */
+          shapes: (board: NodeKey): BoardMemberEntry[] => {
             const owner = state.nodes.get(board)?.[0];
             const root =
               owner && ElementApi.isElement(owner)
@@ -301,7 +380,7 @@ export const BaseBoardPlugin = definePlugin('board', {
       },
     };
   })
-  .extend(({ editor, plugin, schema: { properties, type } }) => {
+  .extend(({ defineFormats, editor, plugin, schema: { properties, type } }) => {
     const isShape = (node: Node | undefined): node is Element =>
       !!node &&
       ElementApi.isElement(node) &&
@@ -318,6 +397,48 @@ export const BaseBoardPlugin = definePlugin('board', {
         : null;
 
     return {
+      formats: defineFormats(BaseBoardGeoPlugin, {
+        html: {
+          decode: ({ element, preserve }) => {
+            const shape = decodeBoardShapeAttributes(element);
+
+            if (!shape) return undefined;
+            preserve(
+              ...BOARD_SHAPE_ATTRIBUTES,
+              'data-board-fill',
+              'data-board-geo'
+            );
+
+            const fill = element.getAttribute('data-board-fill');
+            const geo = element.getAttribute('data-board-geo');
+
+            return {
+              ...shape,
+              ...(fill === null ? {} : { fill }),
+              ...(geo === 'diamond' ||
+              geo === 'ellipse' ||
+              geo === 'rectangle' ||
+              geo === 'triangle'
+                ? { geo }
+                : {}),
+            };
+          },
+          encode: ({ node, preserve }) => {
+            preserve('fill', 'geo', 'place', 'size', 'zIndex');
+
+            return {
+              attributes: {
+                ...encodeBoardShapeAttributes(node),
+                'data-board-fill': node.fill,
+                'data-board-geo': node.geo,
+                'data-board': 'geo',
+              },
+              tag: 'div',
+            };
+          },
+          match: [{ attributes: { 'data-board': 'geo' }, tag: 'div' }],
+        },
+      }),
       commands: ({ around }) => [
         around(editorCommands.replaceSlice, ({ input, next, state }) => {
           const shapesRootOf = (board: Element) =>
@@ -378,7 +499,21 @@ export const BaseBoardPlugin = definePlugin('board', {
       ],
       readMiddleware: ({ around }) => [
         around(editorReads.slice.export, ({ input, next, state }) => {
-          const slice = next();
+          const drawnOf: DrawnEndsOf = (source) => {
+            const arrow = arrowEndsOf(source);
+            const holder =
+              arrow && state.unique.holder('shapeId', shapeIdOf(source));
+
+            return holder
+              ? resolveBoardArrow(arrow, boardTargetsOn(state, holder.root))
+              : undefined;
+          };
+          const slice = withCarriedRootSlots(
+            next(),
+            isShape,
+            (root) => state.root(root),
+            drawnOf
+          );
           const sourcesOf = (): Array<Node | undefined> => {
             const { at } = input.options;
 
@@ -398,16 +533,17 @@ export const BaseBoardPlugin = definePlugin('board', {
               : [];
           };
           const sources = sourcesOf();
+          const shapes = shapesOf(slice);
 
           if (
-            !shapesOf(slice) ||
-            sources.length !== slice.content.length ||
+            !shapes ||
+            sources.length !== shapes.length ||
             !sources.every(isShape)
           ) {
             return slice;
           }
 
-          return withSourcePaintOrder(slice, sources);
+          return withSourcePaintOrder(slice, shapes, sources, drawnOf);
         }),
         around(editorReads.slice.landing, ({ input, next, state }) => {
           const landed = next();
@@ -417,7 +553,13 @@ export const BaseBoardPlugin = definePlugin('board', {
             root !== undefined && shapes
               ? ContentSlice.withContent(
                   landed.slice,
-                  placeShapeCopies(shapes, state.root(root)),
+                  placeShapeCopies(shapes, state.root(root), (node) => {
+                    const arrow = arrowEndsOf(node);
+
+                    return arrow
+                      ? resolveBoardArrow(arrow, boardTargetsOn(state, root))
+                      : undefined;
+                  }),
                   { open: 'preserve' }
                 )
               : withFreshRootShapeIds(landed.slice, isShape);
@@ -532,21 +674,74 @@ export const BaseBoardPlugin = definePlugin('board', {
               return board;
             }
           ),
-          /** Move shapes by `delta`. */
+          /**
+           * Move shapes by `delta`. An arrow moves each end that draws free,
+           * one whose shape is gone included, and leaves its other ends to
+           * their shapes.
+           */
           move: txLocate(false, (ids: readonly string[], delta: BoardPlace) => {
-            for (const { key, node } of entriesOf(ids)) {
-              const place = tx.schema.getProperty(node, properties.place);
+            const shift = ({ x, y }: BoardPlace) => ({
+              x: x + delta.x,
+              y: y + delta.y,
+            });
 
-              if (!place) continue;
+            for (const entry of entriesOf(ids)) {
+              const targetOnBoard = boardTargetsOn(tx, entry.root);
+              const moved =
+                entry.kind === 'shape'
+                  ? { place: shift(entry.place) }
+                  : Object.fromEntries(
+                      ARROW_SIDES.flatMap((side) => {
+                        const end = entry[side];
 
-              tx.nodes.set(
-                { place: { x: place.x + delta.x, y: place.y + delta.y } },
-                { at: key }
-              );
+                        return isBoundArrowEnd(end) && targetOnBoard(end.shape)
+                          ? []
+                          : [[side, { ...end, ...shift(end) }]];
+                      })
+                    );
+
+              if (Object.keys(moved).length > 0) {
+                tx.nodes.set(moved, { at: entry.key });
+              }
             }
           }),
+          /**
+           * Remove shapes. Each arrow left on the board first saves, for each
+           * end bound to a removed shape, the point it draws at, keeping the
+           * binding so that undo binds it again.
+           */
           remove: txLocate(false, (ids: readonly string[]) => {
-            for (const { key } of entriesOf(ids)) tx.nodes.remove({ at: key });
+            const removed = entriesOf(ids);
+            const gone = new Set(removed.map(({ id }) => id));
+
+            for (const root of new Set(removed.map((entry) => entry.root))) {
+              for (const node of tx.root(root)) {
+                const arrow = arrowEndsOf(node);
+                const id = shapeIdOf(node);
+                const loose = ARROW_SIDES.filter((side) => {
+                  const end = arrow?.[side];
+
+                  return end && isBoundArrowEnd(end) && gone.has(end.shape);
+                });
+                const drawn =
+                  arrow && !gone.has(id) && loose.length > 0
+                    ? tx.plugin(plugin.name).arrowEnds(id)
+                    : null;
+
+                if (!arrow || !drawn) continue;
+
+                tx.nodes.set(
+                  Object.fromEntries(
+                    loose.map((side) => [
+                      side,
+                      { ...arrow[side], ...drawn[side] },
+                    ])
+                  ),
+                  { at: tx.key(node) }
+                );
+              }
+            }
+            for (const { key } of removed) tx.nodes.remove({ at: key });
           }),
           /** Set a shape's place and size together, as a resize from any edge. */
           resize: txLocate(
@@ -554,7 +749,7 @@ export const BaseBoardPlugin = definePlugin('board', {
             (id: string, rect: BoardPlace & BoardSize) => {
               const [shape] = entriesOf([id]);
 
-              if (!shape) return;
+              if (shape?.kind !== 'shape') return;
 
               tx.nodes.set(
                 {
@@ -649,75 +844,28 @@ export const BaseBoardPlugin = definePlugin('board', {
     };
   })
   .extend(({ defineFormats }) => ({
-    formats: defineFormats(BaseBoardNotePlugin, {
+    formats: defineFormats(BaseBoardArrowPlugin, {
       html: {
         decode: ({ element, preserve }) => {
-          const shape = decodeBoardShapeAttributes(element);
+          const arrow = decodeBoardArrowAttributes(element);
 
-          if (!shape) return undefined;
-          preserve(...BOARD_SHAPE_ATTRIBUTES, 'data-board-color');
+          if (!arrow) return undefined;
+          preserve(...BOARD_ARROW_ATTRIBUTES);
 
-          const color = element.getAttribute('data-board-color');
-
-          return { ...shape, ...(color === null ? {} : { color }) };
+          return arrow;
         },
         encode: ({ node, preserve }) => {
-          preserve('color', 'place', 'size', 'zIndex');
+          preserve('end', 'start', 'zIndex');
 
           return {
             attributes: {
-              ...encodeBoardShapeAttributes(node),
-              'data-board-color': node.color,
-              'data-board': 'note',
+              ...encodeBoardArrowAttributes(node),
+              'data-board': 'arrow',
             },
             tag: 'div',
           };
         },
-        match: [{ attributes: { 'data-board': 'note' }, tag: 'div' }],
-      },
-    }),
-  }))
-  .extend(({ defineFormats }) => ({
-    formats: defineFormats(BaseBoardGeoPlugin, {
-      html: {
-        decode: ({ element, preserve }) => {
-          const shape = decodeBoardShapeAttributes(element);
-
-          if (!shape) return undefined;
-          preserve(
-            ...BOARD_SHAPE_ATTRIBUTES,
-            'data-board-fill',
-            'data-board-geo'
-          );
-
-          const fill = element.getAttribute('data-board-fill');
-          const geo = element.getAttribute('data-board-geo');
-
-          return {
-            ...shape,
-            ...(fill === null ? {} : { fill }),
-            ...(geo === 'diamond' ||
-            geo === 'ellipse' ||
-            geo === 'rectangle' ||
-            geo === 'triangle'
-              ? { geo }
-              : {}),
-          };
-        },
-        encode: ({ node, preserve }) => {
-          preserve('fill', 'geo', 'place', 'size', 'zIndex');
-
-          return {
-            attributes: {
-              ...encodeBoardShapeAttributes(node),
-              'data-board-fill': node.fill,
-              'data-board-geo': node.geo,
-              'data-board': 'geo',
-            },
-            tag: 'div',
-          };
-        },
-        match: [{ attributes: { 'data-board': 'geo' }, tag: 'div' }],
+        match: [{ attributes: { 'data-board': 'arrow' }, tag: 'div' }],
       },
     }),
   }));

@@ -1,3 +1,4 @@
+import { type BoardArrowEnd, isBoardArrowEnd } from './boardArrow.internal';
 import {
   type BoardPlace,
   type BoardSize,
@@ -64,5 +65,55 @@ export const BOARD_SHAPE_ATTRIBUTES = [
   'data-board',
   'data-board-shape-id',
   'data-board-size',
+  'data-board-z-index',
+] as const;
+
+export const encodeBoardArrowAttributes = (
+  node: Readonly<{
+    end?: unknown;
+    shapeId?: unknown;
+    start?: unknown;
+    zIndex?: unknown;
+  }>
+) => ({
+  'data-board-end': JSON.stringify(node.end),
+  'data-board-shape-id':
+    typeof node.shapeId === 'string' ? node.shapeId : undefined,
+  'data-board-start': JSON.stringify(node.start),
+  'data-board-z-index':
+    typeof node.zIndex === 'string' ? node.zIndex : undefined,
+});
+
+export const decodeBoardArrowAttributes = (
+  element: Readonly<HTMLElement>
+):
+  | Readonly<{
+      end: BoardArrowEnd;
+      shapeId?: string;
+      start: BoardArrowEnd;
+      zIndex: string;
+    }>
+  | undefined => {
+  const end = readJson(element, 'data-board-end');
+  const start = readJson(element, 'data-board-start');
+  const zIndex = element.getAttribute('data-board-z-index');
+  const shapeId = element.getAttribute('data-board-shape-id');
+
+  if (
+    !isBoardArrowEnd(start) ||
+    !isBoardArrowEnd(end) ||
+    !isStackingKey(zIndex)
+  ) {
+    return undefined;
+  }
+
+  return { end, ...(shapeId ? { shapeId } : {}), start, zIndex };
+};
+
+export const BOARD_ARROW_ATTRIBUTES = [
+  'data-board',
+  'data-board-end',
+  'data-board-shape-id',
+  'data-board-start',
   'data-board-z-index',
 ] as const;

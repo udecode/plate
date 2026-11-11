@@ -413,12 +413,15 @@ const intentionalProductionExtendStageChains = new Map([
     'packages/platejs/src/features/board/lib/BaseBoardPlugin.ts',
     [
       [
-        ['contributions', 'read'],
-        ['commands', 'readMiddleware', 'update'],
-        ['formats'],
+        ['contributions', 'formats', 'read'],
+        ['commands', 'formats', 'readMiddleware', 'update'],
         ['formats'],
       ],
     ],
+  ],
+  [
+    'packages/platejs/src/features/board/lib/BaseBoardArrowPlugin.ts',
+    [[['update']]],
   ],
   [
     'packages/platejs/src/features/board/lib/boardShape.internal.ts',
@@ -452,7 +455,6 @@ const intentionalRawSchemaQueryCounts = new Map([
   ],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
   ['packages/platejs/src/features/list/lib/listConversion.internal.ts', 1],
-  ['packages/platejs/src/features/board/lib/boardShape.internal.ts', 1],
   ['packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 5],

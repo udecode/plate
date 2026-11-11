@@ -442,10 +442,12 @@ import { copyTxMethodMarkers, isTxOnlyMethod } from './tx-only';
 import {
   advanceUniqueIndex,
   buildUniqueIndex,
+  indexedHoldersOf,
   repairCommittedUniqueValues,
   sameUniqueIndex,
   type UniqueIndex,
   uniqueHolderOf,
+  writtenHoldersOf,
 } from './unique-values';
 import {
   getCurrentUpdateTags,
@@ -2118,24 +2120,38 @@ const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
   }
 
   const roots = getEditorDocumentRoots(editor);
+  function* publishedThenDraftHolders() {
+    yield* indexedHoldersOf(publishedUniqueIndex(editor), property, value);
+    for (const { snapshot } of TRANSACTION_SPEC_CONTEXTS.get(editor) ?? []) {
+      for (const { path, root } of writtenHoldersOf(
+        snapshot.builder.change,
+        (name) => snapshot.builder.getIndex(name),
+        property,
+        value
+      )) {
+        const nodeKey = retainTransactionSnapshotIndex(
+          editor,
+          snapshot,
+          root
+        ).keyAt([...path]);
 
-  return uniqueHolderOf(
-    publishedUniqueIndex(editor),
-    property,
-    value,
-    (root, nodeKey) => {
-      if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
-
-      return withEditorRootChildren(editor, root, () => {
-        const path = getSnapshot(editor).index.pathOf(nodeKey);
-        const node = path && getLiveNode(editor, path);
-
-        return path && node && NodeApi.isElement(node)
-          ? { held: node[property], path }
-          : null;
-      });
+        if (nodeKey) yield [nodeKey, root] as const;
+      }
     }
-  );
+  }
+
+  return uniqueHolderOf(publishedThenDraftHolders(), value, (root, nodeKey) => {
+    if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
+
+    return withEditorRootChildren(editor, root, () => {
+      const path = getPathByNodeKey(editor, nodeKey);
+      const node = path && getLiveNode(editor, path);
+
+      return path && node && NodeApi.isElement(node)
+        ? { held: node[property], path }
+        : null;
+    });
+  });
 };
 
 const admitTransactionDraft = (editor: Editor) => {

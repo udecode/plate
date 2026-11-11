@@ -127,6 +127,18 @@ export const stackingKeyBetween = (
   upper: string | null
 ) => distinctPeerKey(generateKeyBetween(lower, upper), upper);
 
+export const stackingKeyAbove = (members: readonly Descendant[]) => {
+  let top: string | null = null;
+
+  for (const { zIndex } of members) {
+    if (typeof zIndex === 'string' && (top === null || zIndex > top)) {
+      top = zIndex;
+    }
+  }
+
+  return stackingKeyBetween(top, null);
+};
+
 export type BoardShapeInsertProps<TOwn> = Readonly<{
   children?: readonly Descendant[];
   height?: number;
@@ -192,23 +204,13 @@ function boardShapeStage(size: BoardSize): unknown {
           if (!root) return undefined;
 
           const shapes = tx.root(root);
-          let top: string | null = null;
-
-          for (const shape of shapes) {
-            const zIndex = tx.schema.getProperty(shape, 'zIndex');
-
-            if (typeof zIndex === 'string' && (top === null || zIndex > top)) {
-              top = zIndex;
-            }
-          }
-
           const shapeId = nanoid();
           const shape = tx.schema.create(type, {
             ...own,
             place: { x, y },
             shapeId,
             size: { height, width },
-            zIndex: stackingKeyBetween(top, null),
+            zIndex: stackingKeyAbove(shapes),
           });
 
           tx.nodes.replaceChildren(

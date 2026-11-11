@@ -202,6 +202,20 @@
         "3653"
       ],
       "port": 3653
+    },
+    {
+      "name": "plite-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "plite",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3298"
+      ],
+      "port": 3298
     }
   ]
 }

@@ -102,6 +102,7 @@ export function BoardSurface({
             })}
           </div>
         </div>
+        <BoardFocusTarget />
         {toolbar && (
           <div contentEditable={false} data-board-toolbar="">
             {toolbar}
@@ -110,6 +111,17 @@ export function BoardSurface({
         {props.children}
       </EditorElement>
     </BoardViewContext.Provider>
+  );
+}
+
+function BoardFocusTarget() {
+  return (
+    <div
+      contentEditable={false}
+      data-board-focus=""
+      tabIndex={-1}
+      style={{ height: 0, outline: 'none', position: 'absolute', width: 0 }}
+    />
   );
 }
 

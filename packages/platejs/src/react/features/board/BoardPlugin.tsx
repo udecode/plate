@@ -1,4 +1,5 @@
 import {
+  BaseBoardArrowPlugin,
   BaseBoardGeoPlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
@@ -10,3 +11,5 @@ export const BoardPlugin = toReactPlugin(BaseBoardPlugin);
 export const BoardNotePlugin = toReactPlugin(BaseBoardNotePlugin);
 
 export const BoardGeoPlugin = toReactPlugin(BaseBoardGeoPlugin);
+
+export const BoardArrowPlugin = toReactPlugin(BaseBoardArrowPlugin);

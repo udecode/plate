@@ -6,19 +6,31 @@ import {
   createEditorView,
   type Element,
   type Descendant,
+  Hotkeys,
   type NodeKey,
 } from '../../../core';
 import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
+  BaseBoardArrowPlugin,
   BaseBoardGeoPlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
+  type BoardArrowEndInput,
   type BoardGeo,
+  type BoardMemberEntry,
   type BoardPlace,
   type BoardRestackDirection,
-  type BoardShapeEntry,
   type BoardSize,
 } from '../../../features/board/lib';
+import {
+  ARROW_SIDES,
+  type BoardArrowEnd,
+  type BoardArrowEnds,
+  type BoardArrowTarget,
+  boardArrowTargetOf,
+  isBoundArrowEnd,
+  resolveBoardArrow,
+} from '../../../features/board/lib/boardArrow.internal';
 import { paintOrder } from '../../../features/board/lib/boardCopy.internal';
 import {
   BOARD_SHAPES_SLOT,
@@ -29,8 +41,11 @@ import type { Editor } from '../../core';
 /** Where a board view looks: the board point at its top left corner, and its zoom. */
 export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
 
-/** What a click on an empty part of the board does. */
-export type BoardTool = 'geo' | 'note' | 'select';
+/**
+ * What a press on the board does: `arrow` draws an arrow from the press to
+ * the release, and the other tools act on an empty part of the board.
+ */
+export type BoardTool = 'arrow' | 'geo' | 'note' | 'select';
 
 /** The style the next shape a board view adds gets. */
 export type BoardStyle = Readonly<{
@@ -63,12 +78,28 @@ export type BoardShapeLayout = Readonly<{
   box: BoardBox;
   id: string;
   key: NodeKey;
+  kind: BoardMemberEntry['kind'];
   rank: number;
 }>;
+
+/** Where an arrow draws: its two ends in board coordinates and the path between them. */
+export type BoardArrowPath = BoardArrowEnds & Readonly<{ path: string }>;
+
+type ArrowEnds = Readonly<{ end: BoardArrowEnd; start: BoardArrowEnd }>;
+
+type ArrowRecord = ArrowEnds &
+  Readonly<{ bound: readonly string[]; drawn: BoardArrowPath }>;
 
 type Corner = 'ne' | 'nw' | 'se' | 'sw';
 
 type Gesture =
+  | {
+      kind: 'arrow';
+      from: BoardPlace;
+      line: SVGLineElement;
+      pointer: BoardPlace;
+      start: BoardArrowEndInput;
+    }
   | {
       kind: 'move';
       copy: boolean;
@@ -109,6 +140,7 @@ type BoardWrite =
     }>;
 
 const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
+  a: 'arrow',
   n: 'note',
   r: 'geo',
   v: 'select',
@@ -150,6 +182,41 @@ const sameBox = (a: BoardBox, b: BoardBox) =>
 
 const sameKeys = (a: ReadonlySet<NodeKey>, b: ReadonlySet<NodeKey>) =>
   a.size === b.size && [...a].every((key) => b.has(key));
+
+const sameEnd = (a: BoardArrowEnd, b: BoardArrowEnd) =>
+  a.x === b.x &&
+  a.y === b.y &&
+  (isBoundArrowEnd(a)
+    ? isBoundArrowEnd(b) &&
+      a.shape === b.shape &&
+      a.anchor[0] === b.anchor[0] &&
+      a.anchor[1] === b.anchor[1]
+    : !isBoundArrowEnd(b));
+
+const sameTarget = (a: BoardArrowTarget, b: BoardArrowTarget) =>
+  a.outline === b.outline &&
+  sameBox({ ...a.place, ...a.size }, { ...b.place, ...b.size });
+
+const drawArrow = (
+  ends: ArrowEnds,
+  targetOf: (id: string) => BoardArrowTarget | undefined
+): BoardArrowPath => {
+  const { end, start } = resolveBoardArrow(ends, targetOf);
+
+  return { end, path: `M${start.x} ${start.y}L${end.x} ${end.y}`, start };
+};
+
+const spanOf = ({ end, start }: BoardArrowEnds): BoardBox => ({
+  height: Math.abs(end.y - start.y),
+  width: Math.abs(end.x - start.x),
+  x: Math.min(start.x, end.x),
+  y: Math.min(start.y, end.y),
+});
+
+const fractionOf = (offset: number, length: number) =>
+  length > 0 ? Math.min(1, Math.max(0, offset / length)) : 0.5;
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const resized = (start: BoardBox, corner: Corner, dx: number, dy: number) => {
   const west = corner === 'nw' || corner === 'sw';
@@ -208,14 +275,46 @@ export const createBoardView = (
 
   const tree = new RBush<CullBox>();
   let children: readonly unknown[] | null = null;
-  let entries: readonly BoardShapeEntry[] = [];
+  let entries: readonly BoardMemberEntry[] = [];
   let layouts = new Map<NodeKey, BoardShapeLayout>();
   let byId = new Map<string, BoardShapeLayout>();
+  let targets = new Map<string, BoardArrowTarget>();
+  let arrows = new Map<NodeKey, ArrowRecord>();
+  let arrowsTo = new Map<string, ReadonlySet<NodeKey>>();
+  let previewed = new Map<NodeKey, BoardArrowPath>();
+  const arrowListeners = new Map<NodeKey, Set<() => void>>();
   let version = 0;
   let shownVersion = 0;
   let mountedKeys: ReadonlySet<NodeKey> = new Set();
   let viewport = { mountedKeys, reveal };
   let size: BoardSize = { height: 0, width: 0 };
+
+  const sameMember = (entry: BoardMemberEntry, previous: BoardMemberEntry) => {
+    if (
+      entry.key !== previous.key ||
+      entry.id !== previous.id ||
+      entry.zIndex !== previous.zIndex
+    ) {
+      return false;
+    }
+    if (entry.kind === 'arrow') {
+      return (
+        previous.kind === 'arrow' &&
+        sameEnd(entry.start, previous.start) &&
+        sameEnd(entry.end, previous.end)
+      );
+    }
+
+    const target = boardArrowTargetOf(entry.node);
+    const shown = targets.get(entry.id);
+
+    return (
+      previous.kind === 'shape' &&
+      !!target &&
+      !!shown &&
+      sameTarget(target, shown)
+    );
+  };
 
   const index = () => {
     const next = rootView.read.children();
@@ -226,19 +325,74 @@ export const createBoardView = (
     const read = boards.read.shapes(board);
     const same =
       read.length === entries.length &&
-      read.every(
-        (entry, at) =>
-          entry.key === entries[at].key &&
-          entry.zIndex === entries[at].zIndex &&
-          sameBox(
-            { ...entry.place, ...entry.size },
-            { ...entries[at].place, ...entries[at].size }
-          )
-      );
+      read.every((entry, at) => sameMember(entry, entries[at]));
 
     entries = read;
     if (same) return;
     version += 1;
+
+    const nextTargets = new Map<string, BoardArrowTarget>();
+    const changed = new Set<string>();
+
+    for (const entry of read) {
+      const target = entry.kind === 'shape' && boardArrowTargetOf(entry.node);
+
+      if (!target) continue;
+
+      const previous = targets.get(entry.id);
+
+      if (previous && sameTarget(previous, target)) {
+        nextTargets.set(entry.id, previous);
+      } else {
+        nextTargets.set(entry.id, target);
+        changed.add(entry.id);
+      }
+    }
+    for (const id of targets.keys()) {
+      if (!nextTargets.has(id)) changed.add(id);
+    }
+    targets = nextTargets;
+
+    const redraw = new Set<NodeKey>();
+
+    for (const id of changed) {
+      for (const key of arrowsTo.get(id) ?? []) redraw.add(key);
+    }
+
+    const nextArrows = new Map<NodeKey, ArrowRecord>();
+    const nextArrowsTo = new Map<string, Set<NodeKey>>();
+
+    for (const entry of read) {
+      if (entry.kind !== 'arrow') continue;
+
+      const previous = arrows.get(entry.key);
+      const record =
+        previous &&
+        !redraw.has(entry.key) &&
+        sameEnd(previous.start, entry.start) &&
+        sameEnd(previous.end, entry.end)
+          ? previous
+          : {
+              bound: ARROW_SIDES.flatMap((side) => {
+                const end = entry[side];
+
+                return isBoundArrowEnd(end) ? [end.shape] : [];
+              }),
+              drawn: drawArrow(entry, (id) => targets.get(id)),
+              end: entry.end,
+              start: entry.start,
+            };
+
+      nextArrows.set(entry.key, record);
+      for (const id of record.bound) {
+        const keys = nextArrowsTo.get(id) ?? new Set();
+
+        keys.add(entry.key);
+        nextArrowsTo.set(id, keys);
+      }
+    }
+    arrows = nextArrows;
+    arrowsTo = nextArrowsTo;
 
     const ranks = new Map(
       [...read].sort(paintOrder).map((entry, at) => [entry.key, at + 1])
@@ -246,15 +400,24 @@ export const createBoardView = (
     const nextLayouts = new Map<NodeKey, BoardShapeLayout>();
 
     for (const entry of read) {
-      const box = { ...entry.place, ...entry.size };
+      const arrow = arrows.get(entry.key);
+      const box = arrow
+        ? spanOf(arrow.drawn)
+        : entry.kind === 'shape'
+          ? { ...entry.place, ...entry.size }
+          : null;
       const rank = ranks.get(entry.key) ?? 0;
       const previous = layouts.get(entry.key);
 
+      if (!box) continue;
       nextLayouts.set(
         entry.key,
-        previous && previous.rank === rank && sameBox(previous.box, box)
+        previous &&
+          previous.rank === rank &&
+          previous.id === entry.id &&
+          sameBox(previous.box, box)
           ? previous
-          : { box, id: entry.id, key: entry.key, rank }
+          : { box, id: entry.id, key: entry.key, kind: entry.kind, rank }
       );
     }
     layouts = nextLayouts;
@@ -262,14 +425,85 @@ export const createBoardView = (
       [...nextLayouts.values()].map((layout) => [layout.id, layout])
     );
     tree.clear().load(
-      read.map((entry) => ({
-        key: entry.key,
-        maxX: entry.place.x + entry.size.width,
-        maxY: entry.place.y + entry.size.height,
-        minX: entry.place.x,
-        minY: entry.place.y,
+      [...nextLayouts.values()].map(({ box, key }) => ({
+        key,
+        maxX: box.x + box.width,
+        maxY: box.y + box.height,
+        minX: box.x,
+        minY: box.y,
       }))
     );
+  };
+
+  const notifyArrows = (keys: Iterable<NodeKey>) => {
+    for (const key of keys) {
+      for (const listener of arrowListeners.get(key) ?? []) listener();
+    }
+  };
+
+  const previewArrows = (
+    ids: readonly string[],
+    boxOf: (id: string) => BoardBox | undefined,
+    delta: BoardPlace
+  ) => {
+    const moving = new Set<NodeKey>();
+    const reached = new Set<NodeKey>();
+
+    for (const id of ids) {
+      const layout = byId.get(id);
+
+      if (layout?.kind === 'arrow') {
+        moving.add(layout.key);
+        reached.add(layout.key);
+      }
+      for (const key of arrowsTo.get(id) ?? []) reached.add(key);
+    }
+
+    const shift = (end: BoardArrowEnd) =>
+      isBoundArrowEnd(end) && targets.has(end.shape)
+        ? end
+        : { x: end.x + delta.x, y: end.y + delta.y };
+    const next = new Map<NodeKey, BoardArrowPath>();
+
+    for (const key of reached) {
+      const arrow = arrows.get(key);
+
+      if (!arrow) continue;
+      next.set(
+        key,
+        drawArrow(
+          moving.has(key)
+            ? { end: shift(arrow.end), start: shift(arrow.start) }
+            : arrow,
+          (id) => {
+            const target = targets.get(id);
+            const box = target && boxOf(id);
+
+            return box
+              ? {
+                  ...target,
+                  place: { x: box.x, y: box.y },
+                  size: { height: box.height, width: box.width },
+                }
+              : target;
+          }
+        )
+      );
+    }
+
+    const left = [...previewed.keys()].filter((key) => !next.has(key));
+
+    previewed = next;
+    notifyArrows([...next.keys(), ...left]);
+  };
+
+  const clearPreview = () => {
+    if (previewed.size === 0) return;
+
+    const keys = [...previewed.keys()];
+
+    previewed = new Map();
+    notifyArrows(keys);
   };
 
   let frame = 0;
@@ -278,6 +512,7 @@ export const createBoardView = (
   let drawnZoom = state.camera.zoom;
   let layer: HTMLElement | null = null;
   let zoomLayer: HTMLElement | null = null;
+  let focusTarget: HTMLElement | null = null;
 
   const refresh = () => {
     const { x, y, zoom } = state.camera;
@@ -305,6 +540,7 @@ export const createBoardView = (
     shownVersion = version;
     for (const listener of shapeListeners) listener();
     refresh();
+    followPointer();
   };
 
   // The promoted layer translates in screen pixels, and a child of it scales
@@ -361,15 +597,16 @@ export const createBoardView = (
   };
 
   function reveal(path: readonly number[]) {
-    const entry = entries[path[0] ?? -1];
+    const layout = layouts.get(entries[path[0] ?? -1]?.key ?? '');
 
-    if (!entry) return false;
+    if (!layout) return false;
 
+    const { box } = layout;
     const { zoom } = state.camera;
 
     setCamera({
-      x: entry.place.x + entry.size.width / 2 - size.width / 2 / zoom,
-      y: entry.place.y + entry.size.height / 2 - size.height / 2 / zoom,
+      x: box.x + box.width / 2 - size.width / 2 / zoom,
+      y: box.y + box.height / 2 - size.height / 2 / zoom,
       zoom,
     });
     refresh();
@@ -390,17 +627,46 @@ export const createBoardView = (
     if (!gesture || gesture.kind === 'pan') return;
 
     const at = boardPointAt(gesture.pointer);
+
+    if (gesture.kind === 'arrow') {
+      gesture.line.setAttribute('x2', String(at.x));
+      gesture.line.setAttribute('y2', String(at.y));
+
+      return;
+    }
+
     const dx = at.x - gesture.grab.x;
     const dy = at.y - gesture.grab.y;
 
     if (gesture.kind === 'move') {
-      gesture.delta = { x: dx, y: dy };
+      const { copy, ids } = gesture;
+      const delta = { x: dx, y: dy };
+
+      gesture.delta = delta;
       for (const shape of gesture.elements) {
         shape.style.translate = `${dx}px ${dy}px`;
       }
+      if (!copy) {
+        previewArrows(
+          ids,
+          (id) => {
+            const box = ids.includes(id) ? byId.get(id)?.box : undefined;
+
+            return box && { ...box, x: box.x + dx, y: box.y + dy };
+          },
+          delta
+        );
+      }
     } else {
-      gesture.rect = resized(gesture.start, gesture.corner, dx, dy);
-      placeElement(gesture.element, gesture.rect);
+      const { id } = gesture;
+      const rect = resized(gesture.start, gesture.corner, dx, dy);
+
+      gesture.rect = rect;
+      placeElement(gesture.element, rect);
+      previewArrows([id], (target) => (target === id ? rect : undefined), {
+        x: 0,
+        y: 0,
+      });
     }
   }
 
@@ -480,6 +746,13 @@ export const createBoardView = (
     editor.update((tx) => tx.selection.setNodes([board], { mode: 'block' }));
   };
 
+  const keepKeysOnBoard = () => {
+    if (!focusTarget) return;
+    focusTarget.focus({ preventScroll: true });
+    // Firefox keeps the selection when a non-editable element takes focus.
+    editor.api.dom.deselect();
+  };
+
   const commit = (write: BoardWrite) => {
     if (!writable()) return;
     mounted.update((tx) => {
@@ -487,10 +760,14 @@ export const createBoardView = (
 
       tx.history.newBatch();
       if (write.kind === 'move') commands.move(write.ids, write.delta);
-      else if (write.kind === 'remove') commands.remove(write.ids);
-      else if (write.kind === 'resize') commands.resize(write.id, write.rect);
-      else commands.restack(write.ids, write.direction);
+      else if (write.kind === 'remove') {
+        commands.remove(write.ids);
+        tx.selection.set(null);
+      } else if (write.kind === 'resize') {
+        commands.resize(write.id, write.rect);
+      } else commands.restack(write.ids, write.direction);
     });
+    if (write.kind === 'remove') keepKeysOnBoard();
   };
 
   const inView = ({ box }: BoardShapeLayout) => {
@@ -570,7 +847,72 @@ export const createBoardView = (
       }
     } else if (done?.kind === 'resize') {
       done.element.style.cssText = done.restore;
+    } else if (done?.kind === 'arrow') {
+      done.line.ownerSVGElement?.remove();
     }
+    clearPreview();
+  };
+
+  const previewArrowLine = (from: BoardPlace) => {
+    const ownerDocument = zoomLayer?.ownerDocument ?? document;
+    const svg = ownerDocument.createElementNS(SVG_NS, 'svg');
+    const line = ownerDocument.createElementNS(SVG_NS, 'line');
+
+    for (const [name, value] of [
+      ['stroke', 'currentColor'],
+      ['stroke-width', '2'],
+      ['x1', from.x],
+      ['x2', from.x],
+      ['y1', from.y],
+      ['y2', from.y],
+    ] as const) {
+      line.setAttribute(name, String(value));
+    }
+    svg.append(line);
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('data-board-arrow-preview', '');
+    svg.setAttribute('data-editor-root-chrome-ignore', 'true');
+    svg.setAttribute('height', '1');
+    svg.setAttribute('width', '1');
+    Object.assign(svg.style, {
+      left: '0',
+      overflow: 'visible',
+      pointerEvents: 'none',
+      position: 'absolute',
+      top: '0',
+      zIndex: String(entries.length + 1),
+    });
+    zoomLayer?.append(svg);
+
+    return line;
+  };
+
+  const arrowEndAt = (at: BoardPlace): BoardArrowEndInput => {
+    let top: BoardShapeLayout | undefined;
+
+    for (const { key } of tree.search({
+      maxX: at.x,
+      maxY: at.y,
+      minX: at.x,
+      minY: at.y,
+    })) {
+      const layout = layouts.get(key);
+
+      if (layout?.kind === 'shape' && (!top || layout.rank > top.rank)) {
+        top = layout;
+      }
+    }
+    if (!top) return at;
+
+    const { box } = top;
+
+    return {
+      anchor: [
+        fractionOf(at.x - box.x, box.width),
+        fractionOf(at.y - box.y, box.height),
+      ],
+      shape: top.id,
+    };
   };
 
   const edit = (key: NodeKey) => {
@@ -613,6 +955,20 @@ export const createBoardView = (
     if (shape) select([shape.key]);
   };
 
+  const insertArrow = (start: BoardArrowEndInput, end: BoardArrowEndInput) => {
+    if (!writable()) return;
+
+    const id = mounted.update((tx) => {
+      tx.history.newBatch();
+
+      return tx.plugin(BaseBoardArrowPlugin).insert({ end, start }, { board });
+    });
+    const arrow = id && boards.read.shape(id);
+
+    setState({ tool: 'select' });
+    if (arrow) select([arrow.key]);
+  };
+
   const land = (slice: ContentSlice, place: BoardPlace) => {
     if (!writable()) return false;
 
@@ -643,7 +999,15 @@ export const createBoardView = (
       return;
     }
     cancel();
-    if (done.kind === 'move') {
+    if (done.kind === 'arrow') {
+      const to = boardPointAt(done.pointer);
+
+      if (
+        Math.hypot(to.x - done.from.x, to.y - done.from.y) >= MIN_SHAPE_SIZE
+      ) {
+        insertArrow(done.start, arrowEndAt(to));
+      }
+    } else if (done.kind === 'move') {
       const { copy, delta, ids } = done;
 
       if (delta.x === 0 && delta.y === 0) return;
@@ -717,6 +1081,29 @@ export const createBoardView = (
     return true;
   };
 
+  const focusKey = (event: KeyboardEvent) => {
+    if (Hotkeys.isUndo(event)) {
+      if (writable()) mounted.api.history.undo();
+    } else if (Hotkeys.isRedo(event)) {
+      if (writable()) mounted.api.history.redo();
+    } else if (event.altKey || event.ctrlKey || event.metaKey) {
+      return false;
+    } else if (event.key === 'Escape') {
+      selectBoard();
+    } else if (TOOL_KEYS[event.key]) {
+      setState({ tool: TOOL_KEYS[event.key] });
+    } else if (
+      // WebKit navigates back on Backspace outside an editable element.
+      event.key !== 'Backspace' &&
+      event.key !== 'Delete' &&
+      event.key.length !== 1
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
   const boardKey = (event: KeyboardEvent) => {
     const [first] = entries;
 
@@ -735,13 +1122,16 @@ export const createBoardView = (
       node.firstElementChild instanceof HTMLElement
         ? node.firstElementChild
         : null;
+    focusTarget = host.querySelector<HTMLElement>(
+      ':scope > [data-board-focus]'
+    );
     surface = host;
     paintCamera();
 
     const measure = () => {
       const rect = host.getBoundingClientRect();
 
-      corner = { x: rect.left, y: rect.top };
+      corner = { x: rect.left + host.clientLeft, y: rect.top + host.clientTop };
       if (rect.width === size.width && rect.height === size.height) return;
       size = { height: rect.height, width: rect.width };
       refresh();
@@ -779,7 +1169,16 @@ export const createBoardView = (
             .boardHandle ?? ''
         ];
 
-      if (shapeElement && shape && handle) {
+      if (state.tool === 'arrow') {
+        if (!writable()) return;
+        gesture = {
+          from: at,
+          kind: 'arrow',
+          line: previewArrowLine(at),
+          pointer,
+          start: arrowEndAt(at),
+        };
+      } else if (shapeElement && shape && handle) {
         if (!writable()) return;
         gesture = {
           corner: handle,
@@ -817,11 +1216,15 @@ export const createBoardView = (
           const elements = [
             ...host.querySelectorAll<HTMLElement>('[data-board-shape]'),
           ].filter((candidate) => ids.has(candidate.dataset.boardShape ?? ''));
+          const boxesOnly = (candidate: HTMLElement) =>
+            byId.get(candidate.dataset.boardShape ?? '')?.kind === 'shape';
 
           gesture = {
             copy: event.altKey,
             delta: { x: 0, y: 0 },
-            elements: event.altKey ? elements.map(previewCopy) : elements,
+            elements: event.altKey
+              ? elements.map(previewCopy)
+              : elements.filter(boxesOnly),
             grab: at,
             ids: [...ids],
             kind: 'move',
@@ -924,7 +1327,9 @@ export const createBoardView = (
 
         if (edited) {
           select([edited.key]);
-        } else if (selected.length === 0 || !shapeKey(event, selected)) {
+        } else if (selected.length > 0) {
+          if (!shapeKey(event, selected)) return;
+        } else if (event.target !== focusTarget || !focusKey(event)) {
           return;
         }
       } else if (!event.target.contains(host) || !boardKey(event)) {
@@ -1003,6 +1408,7 @@ export const createBoardView = (
       identityAnimation = null;
       layer = null;
       zoomLayer = null;
+      focusTarget = null;
       surface = null;
       hover = null;
       resizeObserver.disconnect();
@@ -1026,16 +1432,14 @@ export const createBoardView = (
 
   const actions: BoardViewActions = {
     fit: () => {
-      if (entries.length === 0 || size.width === 0) return;
+      const boxes = [...layouts.values()].map(({ box }) => box);
 
-      const minX = Math.min(...entries.map((entry) => entry.place.x));
-      const minY = Math.min(...entries.map((entry) => entry.place.y));
-      const maxX = Math.max(
-        ...entries.map((entry) => entry.place.x + entry.size.width)
-      );
-      const maxY = Math.max(
-        ...entries.map((entry) => entry.place.y + entry.size.height)
-      );
+      if (boxes.length === 0 || size.width === 0) return;
+
+      const minX = Math.min(...boxes.map(({ x }) => x));
+      const minY = Math.min(...boxes.map(({ y }) => y));
+      const maxX = Math.max(...boxes.map(({ width, x }) => x + width));
+      const maxY = Math.max(...boxes.map(({ height, y }) => y + height));
       const zoom = clampZoom(
         Math.min(
           1,
@@ -1057,6 +1461,11 @@ export const createBoardView = (
 
   return {
     actions,
+    arrowPathOf: (key: NodeKey) => {
+      if (!arrows.has(key)) index();
+
+      return previewed.get(key) ?? arrows.get(key)?.drawn;
+    },
     attach,
     connect: () => {
       const unsubscribe = editor.subscribeCommit(({ changed }) => {
@@ -1089,6 +1498,19 @@ export const createBoardView = (
     root,
     state: () => state,
     subscribe: subscribeTo(stateListeners),
+    subscribeArrow: (key: NodeKey, listener: () => void) => {
+      const listeners = arrowListeners.get(key) ?? new Set();
+
+      listeners.add(listener);
+      arrowListeners.set(key, listeners);
+      shapeListeners.add(listener);
+
+      return () => {
+        listeners.delete(listener);
+        if (listeners.size === 0) arrowListeners.delete(key);
+        shapeListeners.delete(listener);
+      };
+    },
     subscribeShapes: subscribeTo(shapeListeners),
     subscribeViewport: subscribeTo(viewportListeners),
     viewport: () => viewport,

@@ -1,12 +1,19 @@
 import * as React from 'react';
 
+import type { Element } from '../../../core';
 import {
   EditorElement,
   type EditorElementProps,
   useElementSelected,
 } from '../../core';
-import type { BoardGeoPlugin, BoardNotePlugin } from './BoardPlugin';
-import { useBoardViewContext } from './boardView.internal';
+import type {
+  BoardArrowPlugin,
+  BoardGeoPlugin,
+  BoardNotePlugin,
+} from './BoardPlugin';
+import { type BoardArrowPath, useBoardViewContext } from './boardView.internal';
+
+export type { BoardArrowPath } from './boardView.internal';
 
 const CORNERS = [
   ['nw', { cursor: 'nwse-resize', left: -4, top: -4 }],
@@ -16,16 +23,20 @@ const CORNERS = [
 ] as const;
 
 /**
- * One shape on a board, placed at its box and painted at its stacking rank,
- * while the DOM keeps the board's stored order. A selected shape shows
- * `data-selected`, and a shape selected alone also shows four resize handles,
- * `[data-board-handle]`.
+ * One member of a board, painted at its stacking rank while the DOM keeps the
+ * board's stored order. A shape sits at its box, and a shape selected alone
+ * shows four resize handles, `[data-board-handle]`. An arrow sits at the
+ * board's origin with no size, so its component draws in board coordinates
+ * from `useArrowPath`, and it has no handles. A selected member shows
+ * `data-selected`.
  */
 export function BoardShape({
   className,
   style,
   ...props
-}: EditorElementProps<typeof BoardGeoPlugin | typeof BoardNotePlugin> & {
+}: EditorElementProps<
+  typeof BoardArrowPlugin | typeof BoardGeoPlugin | typeof BoardNotePlugin
+> & {
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -38,6 +49,7 @@ export function BoardShape({
   );
   const selected = useElementSelected({ mode: 'node' });
   const alone = useElementSelected({ mode: 'object' });
+  const arrow = layout?.kind === 'arrow';
 
   return (
     <EditorElement
@@ -50,17 +62,18 @@ export function BoardShape({
       className={className}
       style={{
         ...style,
-        height: layout?.box.height,
-        left: layout?.box.x,
+        height: arrow ? 0 : layout?.box.height,
+        left: arrow ? 0 : layout?.box.x,
         margin: 0,
         position: 'absolute',
-        top: layout?.box.y,
-        width: layout?.box.width,
+        top: arrow ? 0 : layout?.box.y,
+        width: arrow ? 0 : layout?.box.width,
         zIndex: layout?.rank,
       }}
     >
       {props.children}
       {alone &&
+        !arrow &&
         CORNERS.map(([corner, place]) => (
           <div
             contentEditable={false}
@@ -79,3 +92,22 @@ export function BoardShape({
     </EditorElement>
   );
 }
+
+/**
+ * Where the board arrow `element` draws: its two ends in board coordinates,
+ * each bound end stopped at its shape's outline, and the path between them.
+ * It follows a drag or resize of a bound shape, and a drag of the arrow
+ * itself, from the view's preview, with no write, and changes only when the
+ * arrow's stored ends or a bound shape's box change.
+ */
+export const useArrowPath = (element: Element): BoardArrowPath | undefined => {
+  const view = useBoardViewContext();
+  const key = view.keyOf(element);
+  const subscribe = React.useCallback(
+    (listener: () => void) => view.subscribeArrow(key, listener),
+    [key, view]
+  );
+  const read = () => view.arrowPathOf(key);
+
+  return React.useSyncExternalStore(subscribe, read, read);
+};
