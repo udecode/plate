@@ -209,7 +209,7 @@
       ".agents/pstack/lead.mjs": "5c44a3bc349170cfd5c11ccfbeb9c626eb1d009719fe727f467292da72d8f8a9",
       ".agents/pstack/proof.mjs": "a064230db772c1537e820a10b0272aa7f0878542a74267b65e5d96fb92df3f3d",
       ".agents/pstack/replay.mjs": "9846917f3955eed59ff025e6a42eb1d748942e05a768c5fe74d671e31269e7c5",
-      ".agents/pstack/reread.mjs": "398a9f0f0d300ee59e37618308f6ff9801f562167d18051d38edd15c6f866276",
+      ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
       ".agents/pstack/seats.mjs": "dfb969ef37ea689cf6538974172994050012dabc8cfad0012d3d5c839caa3b40",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
       ".agents/pstack/decisions-check.mjs": "ec3fe978b301ca3e4343f71ec3401ed48d006145c9a09224be1c6741eaecd918",
@@ -230,7 +230,7 @@
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
       ".agents/pstack/rules/land.md": "45a46809bf6ec2a169d9717e9b75558b973a52add250d0461652f51c5536f714",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
-      ".agents/pstack/rules/long-runs.md": "016f52f99e14003ccc3e43248c94df6dd3d8ec3a9463db0ef3f4f45429c50a5c",
+      ".agents/pstack/rules/long-runs.md": "994c054a22bb612419abda8220b8cafb1cc257b6a25a560893a0e4074ee6678d",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "191c4a0cb993837137a0dfe4e40e80cfc00300248912865a14048e5f0ccf2a0e",
       ".agents/pstack/rules/panel.md": "e17ced99acd051f0f453f0d60ed30212a6f410d51bb92d528648ead00054506b",
@@ -240,7 +240,7 @@
       ".agents/pstack/rules/title.md": "044486fcd78150d5ea61451478e04c6b71004024efd6af2e4e722a1ad4089080",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "c75297371502cd89d114ab72c78ded0d569ac640"
+    "source": "b80630f0501365ba63ed19b88d702d4f79f41fc4"
   },
   "pageTopic": {
     "field": "review_scopes",

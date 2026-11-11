@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/reread.mjs --dir <snapshot-dir> <file> [...]
-//        node .agents/pstack/reread.mjs --hook <file> [...]
+// Usage: node .agents/pstack/reread.mjs --dir <snapshot-dir> <file or folder> [...]
+//        node .agents/pstack/reread.mjs --hook <file or folder> [...]
 // Prints each sentence that changed in each instruction file since this
 // helper's last snapshot of it, then stores the new snapshot. A file with no
-// snapshot yet is reported as a first read to take in full. --hook reads a
+// snapshot yet is reported as a first read to take in full. A folder stands
+// for every Markdown file under it. --hook reads a
 // Claude Code SessionStart payload from stdin, reads the files in the
 // session's own checkout, keeps the session's snapshots under the main
 // checkout's <plans>/artifacts/reread/<session_id> and prints that
@@ -14,8 +15,8 @@
 // naming each loaded skill that Claude Code's compaction restore cut short;
 // it restores shorter skills in full.
 
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { join, relative, resolve, sep } from 'node:path';
 import { hookPayload, sessionCheckout } from './checkout.mjs';
 
 const BLOCK_START = /^\s*(?:[-*+]\s|\d+\.\s|#|\||>|```|~~~)/u;
@@ -96,24 +97,62 @@ function plansDir() {
   return (existsSync(config) && JSON.parse(readFileSync(config, 'utf8')).plans) || 'docs/plans';
 }
 
+function compare(dir, file) {
+  const path = resolve(file);
+  const snapshot = join(dir, encodeURIComponent(path));
+  const text = readFileSync(path, 'utf8');
+  const first = !existsSync(snapshot);
+  const since = first ? null : statSync(snapshot).mtime.toISOString();
+  const { added, removed } = first ? { added: [], removed: [] } : changes(readFileSync(snapshot, 'utf8'), text);
+  writeFileSync(snapshot, text);
+  if (first) return { first: true };
+  if (added.length + removed.length === 0) return { since };
+  return {
+    lines: [
+      `${file}: ${removed.length} sentence(s) removed and ${added.length} added since ${since}; each changed rule is its own todo`,
+      ...removed.map((sentence) => `- ${sentence}`),
+      ...added.map((sentence) => `+ ${sentence}`),
+    ],
+  };
+}
+
+function rereadFolder(dir, folder, quiet) {
+  const root = resolve(folder);
+  const files = readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+    .map((entry) => join(folder, relative(root, join(entry.parentPath, entry.name))))
+    .sort();
+  const kept = new Set(files.map((file) => encodeURIComponent(resolve(file))));
+  const gone = readdirSync(dir)
+    .filter((name) => !kept.has(name) && decodeURIComponent(name).startsWith(root + sep) && name.endsWith('.md'))
+    .map((name) => {
+      rmSync(join(dir, name));
+      return join(folder, relative(root, decodeURIComponent(name)));
+    });
+  const firsts = [];
+  let unchanged = 0;
+  const lines = files.flatMap((file) => {
+    const result = compare(dir, file);
+    if (result.first) firsts.push(file);
+    else if (result.since) unchanged += 1;
+    return result.lines ?? [];
+  });
+  if (quiet && firsts.length === files.length && gone.length === 0) return [];
+  const summary = [`${unchanged} file(s) unchanged`];
+  if (firsts.length > 0 && !quiet) summary.push(`first snapshot of ${firsts.join(', ')}; read in full each one the run follows`);
+  if (gone.length > 0) summary.push(`removed since their last snapshot: ${gone.sort().join(', ')}`);
+  return [`${folder}: ${summary.join('; ')}`, ...lines];
+}
+
 function reread(dir, files, { quiet = false } = {}) {
   mkdirSync(dir, { recursive: true });
   return files.flatMap((file) => {
     const path = resolve(file);
     if (!existsSync(path)) return quiet ? [] : [`${file}: missing`];
-    const snapshot = join(dir, encodeURIComponent(path));
-    const text = readFileSync(path, 'utf8');
-    const first = !existsSync(snapshot);
-    const since = first ? null : statSync(snapshot).mtime.toISOString();
-    const { added, removed } = first ? { added: [], removed: [] } : changes(readFileSync(snapshot, 'utf8'), text);
-    writeFileSync(snapshot, text);
-    if (first) return quiet ? [] : [`${file}: first snapshot; read it in full`];
-    if (added.length + removed.length === 0) return [`${file}: unchanged since ${since}`];
-    return [
-      `${file}: ${removed.length} sentence(s) removed and ${added.length} added since ${since}; each changed rule is its own todo`,
-      ...removed.map((sentence) => `- ${sentence}`),
-      ...added.map((sentence) => `+ ${sentence}`),
-    ];
+    if (statSync(path).isDirectory()) return rereadFolder(dir, file, quiet);
+    const result = compare(dir, file);
+    if (result.first) return quiet ? [] : [`${file}: first snapshot; read it in full`];
+    return result.lines ?? [`${file}: unchanged since ${result.since}`];
   });
 }
 
@@ -136,6 +175,6 @@ if (args[0] === '--hook') {
 } else if (args[0] === '--dir' && args[1] && args.length > 2) {
   console.log(reread(args[1], args.slice(2)).join('\n'));
 } else {
-  console.error('Usage: node .agents/pstack/reread.mjs --dir <snapshot-dir> <file> [...] | --hook <file> [...]');
+  console.error('Usage: node .agents/pstack/reread.mjs --dir <snapshot-dir> <file or folder> [...] | --hook <file or folder> [...]');
   process.exit(2);
 }
