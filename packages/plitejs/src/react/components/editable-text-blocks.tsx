@@ -48,6 +48,10 @@ import type {
   EditablePasteResult,
 } from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
+import {
+  createViewHandlerBinder,
+  isDOMHandler,
+} from '../editable/interaction-owner';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
   usePlaceholderValue,
@@ -113,6 +117,7 @@ import {
 import {
   type EditableDOMBeforeInputHandler,
   EditableDOMRoot,
+  type EditableHandlerContext,
   type EditableKeyDownHandler,
 } from './editable';
 import {
@@ -144,6 +149,25 @@ import { EditorSpacer } from './plite-spacer';
 import { InlineVoidShell, VoidShell } from './plite-void-shell';
 
 export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
+
+const OwnerHandlersContext = React.createContext<Partial<EditableProps>>({});
+
+const useStableOwnerHandlers = (props: object) => {
+  const handlers: Partial<EditableProps> = Object.fromEntries(
+    Object.entries(props).filter(([name, value]) => isDOMHandler(name, value))
+  );
+  const [kept, setKept] = React.useState(handlers);
+  const keptHandlers: Partial<Record<string, unknown>> = kept;
+  const changed =
+    Object.keys(keptHandlers).length !== Object.keys(handlers).length ||
+    Object.entries(handlers).some(
+      ([name, handler]) => keptHandlers[name] !== handler
+    );
+
+  if (changed) setKept(handlers);
+
+  return changed ? handlers : kept;
+};
 
 export type EditableDOMCoverageBoundaryScope =
   | {
@@ -480,6 +504,7 @@ function EditableContentRootView({
     renderVoid,
   } = renderers;
   const editor = useEditorContext();
+  const ownerHandlers = React.useContext(OwnerHandlersContext);
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
   const {
@@ -548,6 +573,7 @@ function EditableContentRootView({
     activateRootView();
   }, [activateRootView]);
   const editableProps: EditableProps = {
+    ...ownerHandlers,
     'aria-label': ariaLabel,
     className,
     disableDefaultStyles,
@@ -709,6 +735,20 @@ const resolveTextZeroWidth = ({
   return { isLineBreak: false };
 };
 
+type EditableDOMHandlers<TAttributes> = {
+  [K in keyof TAttributes]: K extends `on${string}`
+    ? NonNullable<TAttributes[K]> extends (event: infer E) => void
+      ? (event: E, context: EditableHandlerContext) => void
+      : TAttributes[K]
+    : TAttributes[K];
+};
+
+/**
+ * Each DOM handler gets an `EditableHandlerContext` after its event, whose
+ * `editor` is the view whose editable runs it. An editable skips an event
+ * inside a content root's editable, which runs the same handlers on the
+ * content root's view.
+ */
 export type EditableProps<
   TElement extends ElementNode = ElementNode,
   TRoot extends RootKey = RootKey,
@@ -718,11 +758,9 @@ export type EditableProps<
   disableDefaultStyles?: boolean;
   id?: string;
   ignoreBlankEditableRootClicks?: boolean;
-  onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onKeyDown?: EditableKeyDownHandler;
-  onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
   /**
    * Called once for each paste this editable handles through its built-in
    * formats: after the paste commits (`inserted: true`), or when no format
@@ -754,18 +792,19 @@ export type EditableProps<
   ) => void;
   spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
   style?: CSSProperties;
-} & Omit<
-  TextareaHTMLAttributes<HTMLDivElement>,
-  | 'autoFocus'
-  | 'children'
-  | 'className'
-  | 'id'
-  | 'onKeyDown'
-  | 'onPaste'
-  | 'placeholder'
-  | 'readOnly'
-  | 'spellCheck'
-  | 'style'
+} & EditableDOMHandlers<
+  Omit<
+    TextareaHTMLAttributes<HTMLDivElement>,
+    | 'autoFocus'
+    | 'children'
+    | 'className'
+    | 'id'
+    | 'onKeyDown'
+    | 'placeholder'
+    | 'readOnly'
+    | 'spellCheck'
+    | 'style'
+  >
 >;
 
 const EditableDescendantNodeInner = <TElement extends ElementNode>({
@@ -1193,13 +1232,7 @@ const EditableInner = <TElement extends ElementNode>({
   disableDefaultStyles = false,
   id,
   ignoreBlankEditableRootClicks = false,
-  onBeforeInput,
-  onBlurCapture,
-  onDOMBeforeInput,
-  onFocusCapture,
   onHistoryReplay,
-  onKeyDown,
-  onPaste,
   onDropResult,
   onPasteResult,
   readOnly = false,
@@ -1216,7 +1249,7 @@ const EditableInner = <TElement extends ElementNode>({
   elementLayouts,
   viewLines = null,
   viewportPlan = null,
-  ...attributes
+  ...callerProps
 }: EditableProps<TElement> & {
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   viewLines?: ViewLines | null;
@@ -1246,6 +1279,20 @@ const EditableInner = <TElement extends ElementNode>({
   const inactiveSelectionEditableRef = React.useRef<HTMLDivElement | null>(
     null
   );
+  const ownerHandlers = useStableOwnerHandlers(callerProps);
+  const bindViewHandlers = React.useMemo(
+    () => createViewHandlerBinder({ editor }),
+    [editor]
+  );
+  const {
+    onBeforeInput,
+    onBlurCapture,
+    onDOMBeforeInput,
+    onFocusCapture,
+    onKeyDown,
+    onPaste,
+    ...attributes
+  } = bindViewHandlers(callerProps);
   const [placeholderHeight, setPlaceholderHeight] = React.useState<
     number | null
   >(null);
@@ -1468,60 +1515,64 @@ const EditableInner = <TElement extends ElementNode>({
   );
 
   return (
-    <EditableElementLayoutsProvider layouts={elementLayouts ?? null}>
-      <PliteEditableRootContext value={editableRoot}>
-        <ViewLinesContext value={viewLines}>
-          <EditableDOMRoot
-            autoFocus={autoFocus}
-            {...attributes}
-            className={className}
-            deferNativeTextInputRepair={viewportPlan != null}
-            disableDefaultStyles={disableDefaultStyles}
-            viewportRuntime={
-              viewportPlan
-                ? {
-                    mountedTopLevelNodeKeys:
-                      viewportPlan.mountedTopLevelNodeKeys,
-                    mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
-                    scrollToPath: scrollViewportPathIntoView,
-                    type: 'virtualized',
-                  }
-                : null
-            }
-            id={id}
-            ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-            onBeforeInput={onBeforeInput}
-            onBlurCapture={handleBlurCapture}
-            onDOMBeforeInput={onDOMBeforeInput}
-            onFocusCapture={handleFocusCapture}
-            onHistoryReplay={onHistoryReplay}
-            onKeyDown={onKeyDown}
-            onPaste={onPaste}
-            onDropResult={onDropResult}
-            onPasteResult={onPasteResult}
-            readOnly={effectiveReadOnly}
-            ref={editableRootRef}
-            scrollSelectionIntoView={scrollSelectionIntoView}
-            spellCheck={spellCheck}
-            style={rootStyle}
-          >
-            {viewportPlan && (
-              <EditableCoverageMaterializer
-                materialize={materializeViewportBoundary}
+    <OwnerHandlersContext value={ownerHandlers}>
+      <EditableElementLayoutsProvider layouts={elementLayouts ?? null}>
+        <PliteEditableRootContext value={editableRoot}>
+          <ViewLinesContext value={viewLines}>
+            <EditableDOMRoot
+              autoFocus={autoFocus}
+              {...attributes}
+              className={className}
+              deferNativeTextInputRepair={viewportPlan != null}
+              disableDefaultStyles={disableDefaultStyles}
+              viewportRuntime={
+                viewportPlan
+                  ? {
+                      mountedTopLevelNodeKeys:
+                        viewportPlan.mountedTopLevelNodeKeys,
+                      mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
+                      scrollToPath: scrollViewportPathIntoView,
+                      type: 'virtualized',
+                    }
+                  : null
+              }
+              id={id}
+              ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+              onBeforeInput={onBeforeInput}
+              onBlurCapture={handleBlurCapture}
+              onDOMBeforeInput={onDOMBeforeInput}
+              onFocusCapture={handleFocusCapture}
+              onHistoryReplay={onHistoryReplay}
+              onKeyDown={onKeyDown}
+              onPaste={onPaste}
+              onDropResult={onDropResult}
+              onPasteResult={onPasteResult}
+              readOnly={effectiveReadOnly}
+              ref={editableRootRef}
+              scrollSelectionIntoView={scrollSelectionIntoView}
+              spellCheck={spellCheck}
+              style={rootStyle}
+            >
+              {viewportPlan && (
+                <EditableCoverageMaterializer
+                  materialize={materializeViewportBoundary}
+                />
+              )}
+              {renderedNodes}
+              <InactiveSelectionCaret
+                editableRef={inactiveSelectionEditableRef}
+                store={inactiveSelectionStore}
               />
-            )}
-            {renderedNodes}
-            <InactiveSelectionCaret
-              editableRef={inactiveSelectionEditableRef}
-              store={inactiveSelectionStore}
-            />
-            {!effectiveReadOnly && (
-              <ViewSelectionCaret editableRef={inactiveSelectionEditableRef} />
-            )}
-          </EditableDOMRoot>
-        </ViewLinesContext>
-      </PliteEditableRootContext>
-    </EditableElementLayoutsProvider>
+              {!effectiveReadOnly && (
+                <ViewSelectionCaret
+                  editableRef={inactiveSelectionEditableRef}
+                />
+              )}
+            </EditableDOMRoot>
+          </ViewLinesContext>
+        </PliteEditableRootContext>
+      </EditableElementLayoutsProvider>
+    </OwnerHandlersContext>
   );
 };
 

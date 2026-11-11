@@ -2,11 +2,13 @@ import RBush, { type BBox } from 'rbush';
 import * as React from 'react';
 
 import {
+  type ContentSlice,
   createEditorView,
   type Element,
   type Descendant,
   type NodeKey,
 } from '../../../core';
+import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
   BaseBoardGeoPlugin,
   BaseBoardNotePlugin,
@@ -17,7 +19,11 @@ import {
   type BoardShapeEntry,
   type BoardSize,
 } from '../../../features/board/lib';
-import { BOARD_SHAPES_SLOT } from '../../../features/board/lib/boardShape.internal';
+import { paintOrder } from '../../../features/board/lib/boardCopy.internal';
+import {
+  BOARD_SHAPES_SLOT,
+  shapeSelectionMode,
+} from '../../../features/board/lib/boardShape.internal';
 import type { Editor } from '../../core';
 
 /** Where a board view looks: the board point at its top left corner, and its zoom. */
@@ -65,10 +71,11 @@ type Corner = 'ne' | 'nw' | 'se' | 'sw';
 type Gesture =
   | {
       kind: 'move';
+      copy: boolean;
       delta: BoardPlace;
-      element: HTMLElement;
+      elements: readonly HTMLElement[];
       grab: BoardPlace;
-      id: string;
+      ids: readonly string[];
       pointer: BoardPlace;
     }
   | {
@@ -91,11 +98,31 @@ type Gesture =
 
 type CullBox = BBox & { key: NodeKey };
 
+type BoardWrite =
+  | Readonly<{ kind: 'move'; delta: BoardPlace; ids: readonly string[] }>
+  | Readonly<{ kind: 'remove'; ids: readonly string[] }>
+  | Readonly<{ kind: 'resize'; id: string; rect: BoardBox }>
+  | Readonly<{
+      kind: 'restack';
+      direction: BoardRestackDirection;
+      ids: readonly string[];
+    }>;
+
 const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
   n: 'note',
   r: 'geo',
   v: 'select',
 };
+
+const ARROWS: Readonly<Record<string, BoardPlace>> = {
+  ArrowDown: { x: 0, y: 1 },
+  ArrowLeft: { x: -1, y: 0 },
+  ArrowRight: { x: 1, y: 0 },
+  ArrowUp: { x: 0, y: -1 },
+};
+
+const NUDGE = 1;
+const SHIFT_NUDGE = 10;
 
 const CORNERS: Readonly<Record<string, Corner>> = {
   ne: 'ne',
@@ -117,9 +144,6 @@ const FIT_PADDING = 32;
 
 const clampZoom = (zoom: number) =>
   Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
-
-const byStack = (a: BoardShapeEntry, b: BoardShapeEntry) =>
-  a.zIndex === b.zIndex ? (a.id < b.id ? -1 : 1) : a.zIndex < b.zIndex ? -1 : 1;
 
 const sameBox = (a: BoardBox, b: BoardBox) =>
   a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
@@ -156,7 +180,11 @@ const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
   };
 };
 
-export const createBoardView = (editor: Editor, element: Element) => {
+export const createBoardView = (
+  editor: Editor,
+  mounted: Editor,
+  element: Element
+) => {
   const keyOf = (node: Descendant) => editor.read((state) => state.key(node));
   const board = keyOf(element);
   const root =
@@ -213,7 +241,7 @@ export const createBoardView = (editor: Editor, element: Element) => {
     version += 1;
 
     const ranks = new Map(
-      [...read].sort(byStack).map((entry, at) => [entry.key, at + 1])
+      [...read].sort(paintOrder).map((entry, at) => [entry.key, at + 1])
     );
     const nextLayouts = new Map<NodeKey, BoardShapeLayout>();
 
@@ -351,6 +379,7 @@ export const createBoardView = (editor: Editor, element: Element) => {
 
   let corner: BoardPlace = { x: 0, y: 0 };
   let gesture: Gesture | null = null;
+  let hover: BoardPlace | null = null;
 
   const boardPointAt = (client: BoardPlace) => ({
     x: state.camera.x + (client.x - corner.x) / state.camera.zoom,
@@ -366,21 +395,41 @@ export const createBoardView = (editor: Editor, element: Element) => {
 
     if (gesture.kind === 'move') {
       gesture.delta = { x: dx, y: dy };
-      gesture.element.style.translate = `${dx}px ${dy}px`;
+      for (const shape of gesture.elements) {
+        shape.style.translate = `${dx}px ${dy}px`;
+      }
     } else {
       gesture.rect = resized(gesture.start, gesture.corner, dx, dy);
       placeElement(gesture.element, gesture.rect);
     }
   }
 
-  const selectedShape = () => {
-    if (editor.read.selection.nodeMode() !== 'object') return null;
+  const selectedShapes = (): BoardShapeLayout[] => {
+    if (!editor.read.selection.nodeMode()) return [];
 
-    const [entry] = editor.read.selection.nodes();
+    const keys = new Set(
+      editor.read.selection.nodes().map(([node]) => keyOf(node))
+    );
 
-    if (!entry) return null;
+    return entries.flatMap((entry) => {
+      const layout = keys.has(entry.key) && layouts.get(entry.key);
 
-    return layouts.get(keyOf(entry[0])) ?? null;
+      return layout ? [layout] : [];
+    });
+  };
+
+  const boardSelected = () => {
+    const nodes = editor.read.selection.nodes();
+
+    return nodes.length === 1 && keyOf(nodes[0][0]) === board;
+  };
+
+  const writable = () => {
+    const authored = readAuthoredView(mounted);
+
+    return (
+      !mounted.read.view.isReadOnly() && !(authored && 'preview' in authored)
+    );
   };
 
   const editedShape = () => {
@@ -408,9 +457,120 @@ export const createBoardView = (editor: Editor, element: Element) => {
       ?.focus({ preventScroll: true });
   };
 
-  const select = (key: NodeKey) => {
+  const focusDocument = () => {
+    surface?.parentElement
+      ?.closest<HTMLElement>('[contenteditable="true"]')
+      ?.focus({ preventScroll: true });
+  };
+
+  const select = (keys: readonly NodeKey[]) => {
+    const order = new Map(entries.map((entry, at) => [entry.key, at]));
+    const sorted = keys.toSorted(
+      (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)
+    );
+
     focusRoot();
-    editor.update((tx) => tx.selection.setNodes([key], { mode: 'object' }));
+    editor.update((tx) =>
+      tx.selection.setNodes(sorted, { mode: shapeSelectionMode(sorted.length) })
+    );
+  };
+
+  const selectBoard = () => {
+    focusDocument();
+    editor.update((tx) => tx.selection.setNodes([board], { mode: 'block' }));
+  };
+
+  const commit = (write: BoardWrite) => {
+    if (!writable()) return;
+    mounted.update((tx) => {
+      const commands = tx.plugin(BaseBoardPlugin);
+
+      tx.history.newBatch();
+      if (write.kind === 'move') commands.move(write.ids, write.delta);
+      else if (write.kind === 'remove') commands.remove(write.ids);
+      else if (write.kind === 'resize') commands.resize(write.id, write.rect);
+      else commands.restack(write.ids, write.direction);
+    });
+  };
+
+  const inView = ({ box }: BoardShapeLayout) => {
+    const { x, y, zoom } = state.camera;
+
+    return (
+      box.x >= x &&
+      box.y >= y &&
+      box.x + box.width <= x + size.width / zoom &&
+      box.y + box.height <= y + size.height / zoom
+    );
+  };
+
+  const tab = (shapes: readonly BoardShapeLayout[], backward: boolean) => {
+    const at = entries.findIndex(
+      (entry) => entry.key === (backward ? shapes[0] : shapes.at(-1))?.key
+    );
+    const next = layouts.get(entries[at + (backward ? -1 : 1)]?.key ?? '');
+
+    if (next) {
+      if (!inView(next)) reveal([at + (backward ? -1 : 1)]);
+      select([next.key]);
+
+      return true;
+    }
+
+    const path = editor.read.nodes.path(board);
+    const point =
+      path &&
+      (backward
+        ? editor.read.points.before(path)
+        : editor.read.points.after(path));
+
+    if (!point) return false;
+    focusDocument();
+    editor.update((tx) => tx.selection.set(point));
+
+    return true;
+  };
+
+  const previewCopy = (shape: HTMLElement) => {
+    const preview = shape.cloneNode(true) as HTMLElement;
+
+    for (const handle of preview.querySelectorAll('[data-board-handle]')) {
+      handle.remove();
+    }
+    for (const node of [preview, ...preview.querySelectorAll('*')]) {
+      for (const { name } of [...node.attributes]) {
+        if (
+          name === 'contenteditable' ||
+          name === 'data-board-shape' ||
+          name.startsWith('data-editor')
+        ) {
+          node.removeAttribute(name);
+        }
+      }
+    }
+    preview.inert = true;
+    preview.setAttribute('aria-hidden', 'true');
+    preview.setAttribute('data-board-copy-preview', '');
+    preview.setAttribute('data-editor-root-chrome-ignore', 'true');
+    preview.style.pointerEvents = 'none';
+    preview.style.zIndex = String(entries.length + 1);
+    zoomLayer?.append(preview);
+
+    return preview;
+  };
+
+  const cancel = () => {
+    const done = gesture;
+
+    gesture = null;
+    if (done?.kind === 'move') {
+      for (const shape of done.elements) {
+        if (done.copy) shape.remove();
+        else shape.style.translate = '';
+      }
+    } else if (done?.kind === 'resize') {
+      done.element.style.cssText = done.restore;
+    }
   };
 
   const edit = (key: NodeKey) => {
@@ -425,7 +585,10 @@ export const createBoardView = (editor: Editor, element: Element) => {
   const insert = (at: BoardPlace) => {
     const { color, fill, geo } = state.nextStyle;
     const { tool } = state;
-    const id = editor.update((tx) => {
+
+    if (!writable()) return;
+
+    const id = mounted.update((tx) => {
       tx.history.newBatch();
 
       return tool === 'note'
@@ -447,63 +610,118 @@ export const createBoardView = (editor: Editor, element: Element) => {
     const shape = id && boards.read.shape(id);
 
     setState({ tool: 'select' });
-    if (shape) select(shape.key);
+    if (shape) select([shape.key]);
+  };
+
+  const land = (slice: ContentSlice, place: BoardPlace) => {
+    if (!writable()) return false;
+
+    const ids = mounted.update((tx) => {
+      tx.history.newBatch();
+
+      return tx.plugin(BaseBoardPlugin).insertCopy(slice, { board, place });
+    });
+
+    if (!ids) return false;
+    select(
+      ids.flatMap((id) => {
+        const shape = boards.read.shape(id);
+
+        return shape ? [shape.key] : [];
+      })
+    );
+
+    return true;
   };
 
   const release = () => {
     const done = gesture;
 
-    gesture = null;
-    if (!done || done.kind === 'pan') return;
-    if (done.kind === 'move') {
-      const { delta, id } = done;
-
-      if (delta.x !== 0 || delta.y !== 0) {
-        editor.update((tx) => {
-          tx.history.newBatch();
-          tx.plugin(BaseBoardPlugin).move([id], delta);
-        });
-      }
-      done.element.style.translate = '';
+    if (!done || done.kind === 'pan') {
+      gesture = null;
 
       return;
     }
+    cancel();
+    if (done.kind === 'move') {
+      const { copy, delta, ids } = done;
 
-    const { id, rect, start } = done;
+      if (delta.x === 0 && delta.y === 0) return;
+      if (!copy) {
+        commit({ delta, ids, kind: 'move' });
 
-    if (sameBox(rect, start)) {
-      done.element.style.cssText = done.restore;
-    } else {
-      editor.update((tx) => {
-        tx.history.newBatch();
-        tx.plugin(BaseBoardPlugin).resize(id, rect);
+        return;
+      }
+
+      const boxes = ids.flatMap((id) => {
+        const layout = byId.get(id);
+
+        return layout ? [layout.box] : [];
       });
+      const slice = boards.read.slice(ids);
+
+      if (slice && boxes.length > 0) {
+        land(slice, {
+          x: Math.min(...boxes.map(({ x }) => x)) + delta.x,
+          y: Math.min(...boxes.map(({ y }) => y)) + delta.y,
+        });
+      }
+    } else if (!sameBox(done.rect, done.start)) {
+      commit({ id: done.id, kind: 'resize', rect: done.rect });
     }
   };
 
-  const shapeKey = (event: KeyboardEvent, shape: BoardShapeLayout) => {
-    if (event.altKey || event.ctrlKey || event.metaKey) return false;
+  const shapeKey = (
+    event: KeyboardEvent,
+    shapes: readonly BoardShapeLayout[]
+  ) => {
+    const ids = shapes.map((shape) => shape.id);
+    const mod = event.ctrlKey || event.metaKey;
+    const arrow = ARROWS[event.key];
 
-    const tool = TOOL_KEYS[event.key];
-    const restack = RESTACK_KEYS[event.key];
-
-    if (tool) {
-      setState({ tool });
-    } else if (restack) {
-      editor.update((tx) => {
-        tx.history.newBatch();
-        tx.plugin(BaseBoardPlugin).restack([shape.id], restack);
+    if (event.altKey) return false;
+    if (mod && !event.shiftKey && event.key.toLowerCase() === 'a') {
+      select(entries.map((entry) => entry.key));
+    } else if (mod && event.shiftKey && arrow?.y) {
+      commit({
+        direction: arrow.y < 0 ? 'front' : 'back',
+        ids,
+        kind: 'restack',
       });
+    } else if (mod) {
+      return false;
+    } else if (event.key === 'Tab') {
+      return tab(shapes, event.shiftKey);
+    } else if (event.key === 'Escape') {
+      selectBoard();
+    } else if (arrow) {
+      const step = event.shiftKey ? SHIFT_NUDGE : NUDGE;
+
+      commit({
+        delta: { x: arrow.x * step, y: arrow.y * step },
+        ids,
+        kind: 'move',
+      });
+    } else if (TOOL_KEYS[event.key]) {
+      setState({ tool: TOOL_KEYS[event.key] });
+    } else if (RESTACK_KEYS[event.key]) {
+      commit({ direction: RESTACK_KEYS[event.key], ids, kind: 'restack' });
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
-      editor.update((tx) => {
-        tx.history.newBatch();
-        tx.plugin(BaseBoardPlugin).remove([shape.id]);
-      });
+      commit({ ids, kind: 'remove' });
     } else if (event.key === 'Enter') {
-      edit(shape.key);
+      if (shapes.length === 1) edit(shapes[0].key);
     } else if (event.key.length !== 1) {
       return false;
     }
+
+    return true;
+  };
+
+  const boardKey = (event: KeyboardEvent) => {
+    const [first] = entries;
+
+    if (event.key !== 'Enter' || !first || !boardSelected()) return false;
+    select([first.key]);
 
     return true;
   };
@@ -562,6 +780,7 @@ export const createBoardView = (editor: Editor, element: Element) => {
         ];
 
       if (shapeElement && shape && handle) {
+        if (!writable()) return;
         gesture = {
           corner: handle,
           element: shapeElement,
@@ -575,15 +794,40 @@ export const createBoardView = (editor: Editor, element: Element) => {
         };
       } else if (shapeElement && shape) {
         if (editedShape()?.key === shape.key) return;
-        select(shape.key);
-        gesture = {
-          delta: { x: 0, y: 0 },
-          element: shapeElement,
-          grab: at,
-          id: shape.id,
-          kind: 'move',
-          pointer,
-        };
+
+        const selected = selectedShapes();
+        const held = selected.some(({ key }) => key === shape.key);
+        let moving = held ? selected : [shape];
+
+        if (event.shiftKey) {
+          moving = held ? [] : [...selected, shape];
+          select(
+            (held
+              ? selected.filter(({ key }) => key !== shape.key)
+              : moving
+            ).map(({ key }) => key)
+          );
+        } else if (!held) {
+          select([shape.key]);
+        }
+
+        const ids = new Set(moving.map(({ id }) => id));
+
+        if (ids.size > 0 && writable()) {
+          const elements = [
+            ...host.querySelectorAll<HTMLElement>('[data-board-shape]'),
+          ].filter((candidate) => ids.has(candidate.dataset.boardShape ?? ''));
+
+          gesture = {
+            copy: event.altKey,
+            delta: { x: 0, y: 0 },
+            elements: event.altKey ? elements.map(previewCopy) : elements,
+            grab: at,
+            ids: [...ids],
+            kind: 'move',
+            pointer,
+          };
+        }
       } else if (state.tool === 'select') {
         gesture = {
           camera: state.camera,
@@ -601,6 +845,7 @@ export const createBoardView = (editor: Editor, element: Element) => {
       swallowClick = true;
     };
     const onPointerMove = (event: PointerEvent) => {
+      hover = { x: event.clientX, y: event.clientY };
       if (!gesture) return;
       gesture.pointer = { x: event.clientX, y: event.clientY };
       if (gesture.kind === 'pan') {
@@ -669,34 +914,89 @@ export const createBoardView = (editor: Editor, element: Element) => {
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!(event.target instanceof Node) || !host.contains(event.target)) {
-        return;
-      }
+      if (!(event.target instanceof Node)) return;
+      if (host.contains(event.target)) {
+        const selected = selectedShapes();
+        const edited =
+          event.key === 'Escape' && selected.length === 0
+            ? editedShape()
+            : null;
 
-      const selected = selectedShape();
-      const edited = event.key === 'Escape' && !selected ? editedShape() : null;
-
-      if (edited) {
-        select(edited.key);
-      } else if (!selected || !shapeKey(event, selected)) {
+        if (edited) {
+          select([edited.key]);
+        } else if (selected.length === 0 || !shapeKey(event, selected)) {
+          return;
+        }
+      } else if (!event.target.contains(host) || !boardKey(event)) {
         return;
       }
       event.preventDefault();
       event.stopPropagation();
     };
+    // A shape selection has no DOM range, so Firefox fires its clipboard
+    // events at the body; the focused element names the view they are for.
+    const clipboardTarget = (event: ClipboardEvent) =>
+      editor.api.dom.hasEditableTarget(event.target)
+        ? event.target
+        : host.ownerDocument.activeElement;
+    const onCut = (event: ClipboardEvent) => {
+      const shapes = selectedShapes();
+      const target = clipboardTarget(event);
+
+      if (
+        !editor.api.dom.hasEditableTarget(target) ||
+        !host.contains(target) ||
+        !event.clipboardData ||
+        shapes.length === 0 ||
+        !writable()
+      ) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      editor.api.dom.clipboard.writeSelection(event.clipboardData);
+      commit({ ids: shapes.map(({ id }) => id), kind: 'remove' });
+    };
+    const onPaste = (event: ClipboardEvent) => {
+      const target = clipboardTarget(event);
+
+      if (
+        !hover ||
+        !event.clipboardData ||
+        !editor.api.dom.hasEditableTarget(target) ||
+        !(host.contains(target) || target.contains(host))
+      ) {
+        return;
+      }
+
+      const read = editor.api.dom.clipboard.readSlice(event.clipboardData);
+
+      measure();
+      if (read.kind !== 'slice' || !land(read.slice, boardPointAt(hover))) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const onPointerLeave = () => {
+      hover = null;
+    };
     const view = host.ownerDocument.defaultView;
 
     host.addEventListener('pointerdown', onPointerDown, true);
     host.addEventListener('pointermove', onPointerMove);
+    host.addEventListener('pointerleave', onPointerLeave);
     host.addEventListener('pointerup', release);
-    host.addEventListener('pointercancel', release);
+    host.addEventListener('pointercancel', cancel);
     host.addEventListener('wheel', onWheel, { passive: false });
     view?.addEventListener('click', onClick, true);
+    view?.addEventListener('cut', onCut, true);
     view?.addEventListener('dblclick', onDoubleClick, true);
     view?.addEventListener('keydown', onKeyDown, true);
+    view?.addEventListener('paste', onPaste, true);
 
     return () => {
-      gesture = null;
+      cancel();
       cancelAnimationFrame(frame);
       frame = 0;
       identityAnimation?.cancel();
@@ -704,15 +1004,19 @@ export const createBoardView = (editor: Editor, element: Element) => {
       layer = null;
       zoomLayer = null;
       surface = null;
+      hover = null;
       resizeObserver.disconnect();
       host.removeEventListener('pointerdown', onPointerDown, true);
       host.removeEventListener('pointermove', onPointerMove);
+      host.removeEventListener('pointerleave', onPointerLeave);
       host.removeEventListener('pointerup', release);
-      host.removeEventListener('pointercancel', release);
+      host.removeEventListener('pointercancel', cancel);
       host.removeEventListener('wheel', onWheel);
       view?.removeEventListener('click', onClick, true);
+      view?.removeEventListener('cut', onCut, true);
       view?.removeEventListener('dblclick', onDoubleClick, true);
       view?.removeEventListener('keydown', onKeyDown, true);
+      view?.removeEventListener('paste', onPaste, true);
     };
   };
 
@@ -765,9 +1069,16 @@ export const createBoardView = (editor: Editor, element: Element) => {
         }
       });
 
+      const unsubscribeViewState = subscribeEditorViewState(mounted, () => {
+        if (gesture && gesture.kind !== 'pan' && !writable()) cancel();
+      });
+
       follow();
 
-      return unsubscribe;
+      return () => {
+        unsubscribe();
+        unsubscribeViewState();
+      };
     },
     keyOf,
     layoutOf: (key: NodeKey) => {

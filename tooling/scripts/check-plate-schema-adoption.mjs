@@ -411,11 +411,26 @@ const intentionalProductionExtendStageChains = new Map([
   ['packages/platejs/src/yjs/react/YjsPlugin.tsx', [[['$factory:yjs']]]],
   [
     'packages/platejs/src/features/board/lib/BaseBoardPlugin.ts',
-    [[['contributions', 'read'], ['update']]],
+    [
+      [
+        ['contributions', 'read'],
+        ['commands', 'readMiddleware', 'update'],
+        ['formats'],
+        ['formats'],
+      ],
+    ],
   ],
   [
     'packages/platejs/src/features/board/lib/boardShape.internal.ts',
     [[['$factory:boardShapeStage']]],
+  ],
+  [
+    'packages/platejs/src/features/board/lib/BaseBoardGeoPlugin.ts',
+    [[['formats']]],
+  ],
+  [
+    'packages/platejs/src/features/board/lib/BaseBoardNotePlugin.ts',
+    [[['formats']]],
   ],
 ]);
 const allowedSchemaFactoryBindings = new Set([
@@ -2446,7 +2461,7 @@ const getStaticFunctionResults = (callback) => {
   return results;
 };
 
-const defaultPluginCreatorNames = new Set(['definePlugin']);
+const defaultPluginCreatorNames = new Set(['defineBoardShape', 'definePlugin']);
 const defaultPlitePluginCreatorNames = new Set();
 const pliteModulePattern = /^plitejs(?:\/|$)/;
 const isCallExpressionNode = (node) =>

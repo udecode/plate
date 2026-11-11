@@ -1,6 +1,8 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { refuseVetoedWrite } from '../core/node-write-veto';
 import {
   applyBuiltDocumentChange,
+  getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
 import { withoutPlacement } from '../core/view-carets';
@@ -33,7 +35,7 @@ import type {
   NodeWrapNodesOptions,
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
-import { stripLocationRoots } from '../internal/root-location';
+import { MAIN_ROOT_KEY, stripLocationRoots } from '../internal/root-location';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -103,6 +105,18 @@ export const wrapNodes = ((
     let match = normalizeNodeMatch(options.type, options.match);
     const { children: _children, ...shell } = element;
     const wrapper = { ...shell, children: [] };
+    const vetoWrap = (parentPath: Path, index: number, count: number) => {
+      const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
+
+      for (let offset = 0; offset < count; offset++) {
+        const path = [...parentPath, index + offset];
+        const [node] = getNode(editor, path);
+
+        if (NodeApi.isElement(node)) {
+          refuseVetoedWrite(editor, { kind: 'wrap', node, path, root });
+        }
+      }
+    };
 
     if (!target) {
       return;
@@ -243,6 +257,7 @@ export const wrapNodes = ((
       const parentPath = PathApi.parent(target);
       const index = getDefined(target.at(-1));
 
+      vetoWrap(parentPath, index, 1);
       applyBuiltDocumentChange(editor, (builder, root) =>
         builder.wrapChildren(root, parentPath, index, 1, shell)
       );
@@ -373,6 +388,7 @@ export const wrapNodes = ((
         };
       }
 
+      vetoWrap(commonPath, firstChildIndex, count);
       applyBuiltDocumentChange(editor, (builder, root) =>
         builder.wrapChildren(root, commonPath, firstChildIndex, count, shell)
       );

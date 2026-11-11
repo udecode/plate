@@ -17,9 +17,9 @@ export type {
 export type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
+  EditableHandlerContext,
   EditableHandlerResult,
   EditableInputEventContext,
-  EditableKeyDownContext,
   EditableKeyDownHandler,
 } from './components/editable';
 export type {

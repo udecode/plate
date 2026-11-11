@@ -163,6 +163,34 @@ element-owned annotation surface. Moving an owner preserves its root key.
 Removing, retargeting, or changing the type of an exclusive owner removes the
 root only when it becomes orphaned.
 
+A plugin can refuse a type change, wrap, or unwrap of its own owner before the
+write applies. Contribute a `nodeWriteVeto` that returns `true` for the writes
+it refuses:
+
+```tsx
+import { definePlugin, nodeWriteVeto } from "plitejs";
+
+const keepPanels = definePlugin("keep-panels", {
+  contributions: [nodeWriteVeto.of(({ node }) => node.type === "panel")],
+});
+```
+
+The veto receives `{ kind, node, path, root }`. `kind` is `"retype"`,
+`"wrap"`, or `"unwrap"`, and a `"retype"` input also carries the new `type`.
+`tx.nodes.set`, `tx.blocks.set`, `tx.blocks.reset` and `tx.blocks.toggle`
+retype. `tx.nodes.wrap` and a wrapping toggle wrap. `tx.nodes.unwrap` unwraps.
+`tx.nodes.lift` counts as an unwrap of the lifted node's parent, except when it
+lifts the last of several children, which leaves the parent whole.
+`tx.nodes.merge` counts as an unwrap of the node it merges into the node
+before, unless that node before is empty and the merge removes it instead. A
+merge also counts as an unwrap of each ancestor it empties and removes, such as
+a holder whose only child merges into a block outside it, and a delete that
+joins two blocks merges them the same way.
+One refusal from any contributed veto rolls back the whole update, as a
+[refused update](../api/nodes/editor#updating-state) does. Remote imports and
+history replays never consult a veto. Removing the owner is not one of these
+writes, so the orphan rule above still applies to it.
+
 Duplicate and copy/paste clone detached roots. Keys remap deterministically to
 `:copy`, then `:copy:2`, while shared aliases in the copied group continue to
 share one remapped root. Owner-first and root-first creation are both valid

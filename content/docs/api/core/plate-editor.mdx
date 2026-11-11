@@ -202,7 +202,8 @@ uses the mounted editor returned by `useEditor()`.
       name="editor.api.html.parseSlice"
       type="(source: string, options?: HtmlEditorParseOptions) => HtmlSliceParseResult"
     >
-      Parse one closed, rootless HTML insertion slice with the installed target.
+      Parse one closed HTML insertion slice with the installed target. The
+      slice carries `roots` only for content roots a mapping decodes.
     </APIItem>
     <APIItem
       name="editor.api.html.serialize"

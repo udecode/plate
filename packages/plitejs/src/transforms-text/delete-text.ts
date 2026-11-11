@@ -678,7 +678,7 @@ const reconcileDeleteStructure = (
   return keptIncompatibleBlockBoundary;
 };
 
-const resolveDeletePoint = (
+const releaseCollapsePoint = (
   editor: Editor,
   plan: DeleteRangePlan,
   removal: ReturnType<typeof removeDeleteContents>,
@@ -711,11 +711,19 @@ const resolveDeletePoint = (
       : forwardStartInInlineVoid
         ? (endPoint ?? startPoint)
         : (startPoint ?? endPoint);
-  const collapseTarget = startBlockDropped
+
+  return startBlockDropped
     ? (endPoint ?? startPoint)
     : !plan.isCollapsed && editorHasPath(editor, plan.start.path)
       ? { path: [...plan.start.path], offset: plan.start.offset }
       : reverseMergePoint;
+};
+
+const resolveDeletePoint = (
+  editor: Editor,
+  plan: DeleteRangePlan,
+  collapseTarget: Point | null
+) => {
   let point = normalizeFinalDeletePoint(editor, collapseTarget, {
     reverse: plan.reverse,
     allowForwardBoundaryJump:
@@ -791,16 +799,10 @@ const resolveDeletePoint = (
 const resolveDeleteSelection = (
   editor: Editor,
   plan: DeleteRangePlan,
-  removal: ReturnType<typeof removeDeleteContents>,
-  tx: TransactionWriter,
-  keptIncompatibleBlockBoundary: boolean
+  collapseTarget: Point | null,
+  tx: TransactionWriter
 ) => {
-  const point = resolveDeletePoint(
-    editor,
-    plan,
-    removal,
-    keptIncompatibleBlockBoundary
-  );
+  const point = resolveDeletePoint(editor, plan, collapseTarget);
 
   if ((!plan.initialAt || !LocationApi.isPath(plan.initialAt)) && point) {
     tx.setSelection(
@@ -1338,25 +1340,31 @@ const removePlainRange = (editor: Editor, range: Range, voids: boolean) => {
     resolveDeletePoint(
       editor,
       target,
-      removal,
-      keptIncompatibleBlockBoundary
+      releaseCollapsePoint(
+        editor,
+        target,
+        removal,
+        keptIncompatibleBlockBoundary
+      )
     ) ?? null
   );
 };
 
-export type PreparedRemoval = Readonly<{ options: DeleteOptions }> &
+export type PreparedRemoval = Readonly<{
+  options: DeleteOptions;
+  wholeBlocks: WholeTopLevelBlockRange | null;
+}> &
   (
     | Readonly<{ kind: 'ordinary'; target: DeletePathTarget | DeleteRangePlan }>
     | Readonly<{
         kind: 'grid';
         plan: GridRemovalPlan;
         target: DeleteRangePlan;
-        wholeBlocks: WholeTopLevelBlockRange | null;
       }>
   );
 
 export type RemovalOutcome =
-  | Readonly<{ kind: 'ordinary' }>
+  | Readonly<{ kind: 'ordinary'; landing: Point | null }>
   | Readonly<{ keepsGrid: boolean; kind: 'grid'; landing: Point | null }>;
 
 type RemovalSite = Readonly<{
@@ -1451,15 +1459,14 @@ const prepareAt = (
   if (target.kind === 'range') {
     refuseMemberCrossing(editor, target.effectiveRange);
   }
-  if (!spansTexts(target)) return { kind: 'ordinary', options, target };
+  if (!spansTexts(target)) {
+    return { kind: 'ordinary', options, target, wholeBlocks: null };
+  }
 
   const plan = profileCoreDuration('delete-grid-plan', () =>
     planGridRemoval(editor, target.effectiveRange)
   );
-
-  if (!plan) return { kind: 'ordinary', options, target };
-
-  const shortcut = plan.keepsGrid
+  const shortcut = plan?.keepsGrid
     ? null
     : profileCoreDuration('delete-whole-range-plan', () =>
         getWholeTopLevelBlockRange(editor, target)
@@ -1469,6 +1476,7 @@ const prepareAt = (
       ? null
       : shortcut;
 
+  if (!plan) return { kind: 'ordinary', options, target, wholeBlocks };
   if (writes && !wholeBlocks && !plan.landing) return null;
 
   return { kind: 'grid', options, plan, target, wholeBlocks };
@@ -1487,7 +1495,7 @@ const applyAt = (
   if (target.kind === 'path') {
     deletePathTarget(editor, target, tx, writesSelection);
 
-    return { kind: 'ordinary' };
+    return { kind: 'ordinary', landing: null };
   }
 
   const deletedMarks = profileCoreDuration('delete-range-text-marks', () =>
@@ -1513,21 +1521,18 @@ const applyAt = (
   };
   const withRoot = (point: Point) =>
     site.root ? { ...point, root: site.root } : point;
-  const wholeBlocks =
-    prepared.kind === 'grid'
-      ? prepared.wholeBlocks
-      : profileCoreDuration('delete-whole-range-plan', () =>
-          getWholeTopLevelBlockRange(editor, target)
-        );
+  const { wholeBlocks } = prepared;
 
   if (wholeBlocks) {
     const caret = deleteWholeTopLevelBlockRange(editor, wholeBlocks);
 
     setDeletedMarks();
 
+    const landing = withRoot(caret);
+
     return prepared.kind === 'grid'
-      ? { keepsGrid: false, kind: 'grid', landing: withRoot(caret) }
-      : { kind: 'ordinary' };
+      ? { keepsGrid: false, kind: 'grid', landing }
+      : { kind: 'ordinary', landing };
   }
   if (prepared.kind === 'grid') {
     const { plan } = prepared;
@@ -1561,22 +1566,19 @@ const applyAt = (
     removal
   );
 
+  const landing = releaseCollapsePoint(
+    editor,
+    target,
+    removal,
+    keptIncompatibleBlockBoundary
+  );
+
   if (writesSelection) {
-    resolveDeleteSelection(
-      editor,
-      target,
-      removal,
-      tx,
-      keptIncompatibleBlockBoundary
-    );
-  } else {
-    removal.startAnchor.release();
-    removal.endAnchor.release();
-    removal.startBlockAnchor?.release();
+    resolveDeleteSelection(editor, target, landing, tx);
   }
   setDeletedMarks();
 
-  return { kind: 'ordinary' };
+  return { kind: 'ordinary', landing: landing && withRoot(landing) };
 };
 
 export const prepareRemoval = (
@@ -1627,19 +1629,13 @@ export const readRemovalLanding = <T>(
     const prepared = prepareAt(editor, { at: local }, local, true);
 
     if (!prepared) return null;
-    if (prepared.kind === 'ordinary') {
-      if (slice) return [read(RangeApi.start(local).path)];
-
-      const wholeBlocks =
-        prepared.target.kind === 'range'
-          ? getWholeTopLevelBlockRange(editor, prepared.target)
-          : null;
-
-      return wholeBlocks
-        ? [read(wholeBlocks.landing.path)]
-        : RangeApi.edges(local).map((edge) => read(edge.path));
+    if (prepared.kind === 'ordinary' && slice) {
+      return [read(RangeApi.start(local).path)];
     }
     if (prepared.wholeBlocks) return [read(prepared.wholeBlocks.landing.path)];
+    if (prepared.kind === 'ordinary') {
+      return RangeApi.edges(local).map((edge) => read(edge.path));
+    }
 
     const { landing } = prepared.plan;
 

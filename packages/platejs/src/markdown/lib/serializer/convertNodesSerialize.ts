@@ -80,11 +80,7 @@ export const convertNodesSerialize = (
           listBlock.length = 0;
         }
       } else {
-        const mdastNode = buildMdastNode(node, options);
-
-        if (mdastNode) {
-          mdastNodes.push(mdastNode);
-        }
+        mdastNodes.push(...buildMdastNodes(node, options));
       }
     }
   }
@@ -122,7 +118,7 @@ export const encodeMdastNode = (
   ) {
     return {
       claimed: NO_CLAIMS,
-      node: encodeMarkdownParagraph(node, options),
+      nodes: [encodeMarkdownParagraph(node, options)],
       owner: 'markdown',
     };
   }
@@ -142,16 +138,16 @@ export const encodeMdastNode = (
   return undefined;
 };
 
-export const buildMdastNode = (
+export const buildMdastNodes = (
   node: Element,
   options: SerializeMdContext
-): MdRootContent | undefined => {
+): readonly MdRootContent[] => {
   const encoded = encodeMdastNode(node, options);
 
-  if (!encoded) return undefined;
+  if (!encoded) return [];
   reportOmittedProperties(node, encoded.claimed, options, encoded.owner);
 
-  return encoded.node;
+  return encoded.nodes;
 };
 
 // Markdown list parsing gives an item's later blocks its indent + 1 and no

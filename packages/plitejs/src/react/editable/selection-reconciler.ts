@@ -347,11 +347,11 @@ export const applyEditableClick = ({
     return;
   }
 
-  // A mouseup handler can replace a native drag range with a structural
-  // selection before the browser emits its trailing click.
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+  const domHasNoRange = !!root && getSelection(root)?.rangeCount === 0;
   const modelSelectionOwnsClick =
-    SelectionApi.isNode(readRuntimeSelection(editor)) &&
-    isEditableModelSelectionPreferred(inputController);
+    isEditableModelSelectionPreferred(inputController) &&
+    (SelectionApi.isNode(readRuntimeSelection(editor)) || domHasNoRange);
   const modelTargetOwnsSelection =
     modelSelectionOwnsClick ||
     preferModelSelectionForSelectableOwnerTarget({
@@ -409,8 +409,6 @@ export const applyEditableClick = ({
 
     // Firefox ends a drag selection with a click whose detail is 1, so only a
     // collapsed native selection is a caret click.
-    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
-
     if (
       isGeckoDOMHost(event) &&
       event.detail === 1 &&
@@ -1363,8 +1361,8 @@ export const useEditableSelectionReconciler = ({
           editorElement,
           coverage: runtime.domCoverage,
           editor,
-          exportSelection: (points, parked) => {
-            if (parked) {
+          exportSelection: (points, modelOwned) => {
+            if (modelOwned) {
               setEditableModelSelectionPreference({
                 inputController: runtime.inputController,
                 preferModelSelection: true,

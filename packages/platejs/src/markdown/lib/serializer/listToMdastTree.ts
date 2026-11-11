@@ -7,7 +7,7 @@ import { failInvariant } from '../../../internal/failInvariant';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import { setMarkdownStructureKeys } from '../internal/markdownMappings';
-import type { MdList, MdListItem } from '../mdast';
+import type { MdList, MdListItem, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
 import { encodeMdastNode } from './convertNodesSerialize';
 import { isMdFlowContent, isMdPhrasingContent } from './mdastContent';
@@ -213,12 +213,15 @@ const encodeContinuation = (
     encoded.owner
   );
 
-  return isMdFlowContent(encoded.node)
-    ? [encoded.node]
-    : isMdPhrasingContent(encoded.node)
-      ? [{ children: [encoded.node], type: 'paragraph' as const }]
-      : [];
+  return encoded.nodes.flatMap(toListItemContent);
 };
+
+const toListItemContent = (node: MdRootContent): MdListItem['children'] =>
+  isMdFlowContent(node)
+    ? [node]
+    : isMdPhrasingContent(node)
+      ? [{ children: [node], type: 'paragraph' }]
+      : [];
 
 export const getSerializableListStyle = (
   node: Pick<SerializableListElement, 'listStyle' | 'listType'>
@@ -436,13 +439,7 @@ export const listToMdastTree = (
       setMarkdownStructureKeys(options, node, LIST_KEYS);
       const encoded = encodeMdastNode(node, options);
 
-      content = !encoded
-        ? []
-        : isMdFlowContent(encoded.node)
-          ? [encoded.node]
-          : isMdPhrasingContent(encoded.node)
-            ? [{ children: [encoded.node], type: 'paragraph' }]
-            : [];
+      content = encoded ? encoded.nodes.flatMap(toListItemContent) : [];
       if (encoded) {
         reportOmittedProperties(
           node,

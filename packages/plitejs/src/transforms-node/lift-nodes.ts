@@ -1,4 +1,5 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { refuseVetoedWrite } from '../core/node-write-veto';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
@@ -70,6 +71,16 @@ export const liftNodes = ((
       })
     ) {
       return;
+    }
+    const splitsOrRemovesParent = index === 0 || index < childCount - 1;
+
+    if (splitsOrRemovesParent && NodeApi.isElement(parent)) {
+      refuseVetoedWrite(editor, {
+        kind: 'unwrap',
+        node: parent,
+        path: parentPath,
+        root: getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY,
+      });
     }
 
     // The lifted node keeps its tokens: the parent splits around it and the

@@ -7,6 +7,12 @@ export const BaseBoardNotePlugin = defineBoardShape('boardNote', {
     color: property.string({ default: 'yellow' }),
   },
   size: { height: 200, width: 200 },
-});
+}).extend(({ defineFormats }) => ({
+  formats: defineFormats({
+    markdown: {
+      encode: ({ encodeFlow, node }) => encodeFlow(node.children),
+    },
+  }),
+}));
 
 export type BoardNoteElement = ElementOf<typeof BaseBoardNotePlugin>;

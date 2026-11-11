@@ -14,7 +14,11 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
 import { usePlateModel } from '../internal/plate-context';
-import type { EditableProps as RuntimeEditableProps } from '../internal/plite-components';
+import {
+  type EditableHandlerContext,
+  getHandlerView,
+  type EditableProps as RuntimeEditableProps,
+} from '../internal/plite-components';
 import { useComposedRef } from '../internal/react-helpers';
 import { PlateRenderedAttributeProvider } from '../internal/rendered-attributes';
 import { useDeepCompareMemo } from '../internal/useDeepCompareMemo';
@@ -205,16 +209,17 @@ function EditorContentBranch<TExtra extends object>({
 
       if (hasShortcut) {
         nextProps[handlerKey] = ((
-          event: React.KeyboardEvent<HTMLDivElement>
+          event: React.KeyboardEvent<HTMLDivElement>,
+          context: EditableHandlerContext
         ) => {
           const shortcutHandled = dispatchPlateShortcut(
-            editor,
+            getHandlerView(context),
             event.nativeEvent,
             shortcutPhase,
             shortcutTable
           );
 
-          if (!shortcutHandled) return handler?.(event);
+          if (!shortcutHandled) return handler?.(event, context);
 
           if (
             event.nativeEvent.defaultPrevented &&
@@ -230,7 +235,7 @@ function EditorContentBranch<TExtra extends object>({
             return true;
           }
 
-          return handler?.(event);
+          return handler?.(event, context);
         }) as any;
       } else if (handler) {
         nextProps[handlerKey] = handler;

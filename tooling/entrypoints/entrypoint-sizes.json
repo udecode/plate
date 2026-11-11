@@ -73,16 +73,16 @@
       "gzip": 209141
     },
     "platejs/callout/react": {
-      "bytes": 118348,
-      "gzip": 32327
+      "bytes": 118344,
+      "gzip": 32314
     },
     "platejs/comments/react": {
       "bytes": 706516,
       "gzip": 219599
     },
     "platejs/date/react": {
-      "bytes": 120122,
-      "gzip": 33099
+      "bytes": 120118,
+      "gzip": 33086
     },
     "platejs/details/react": {
       "bytes": 684064,
@@ -105,8 +105,8 @@
       "gzip": 219719
     },
     "platejs/mention/react": {
-      "bytes": 123043,
-      "gzip": 33846
+      "bytes": 123040,
+      "gzip": 33831
     },
     "platejs/suggestion/react": {
       "bytes": 1089094,

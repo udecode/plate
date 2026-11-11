@@ -35,8 +35,10 @@ editor.update((tx) => tx.value.replace(result.document));
 `[data-editor="true"]` element, its children are the document body. Without a
 marker, Plate reads the HTML `body`. More than one marker is an error.
 
-Use `parseSlice` for insertion. It returns a closed, rootless `ContentSlice` and
-does not treat an editor marker as complete-document authority.
+Use `parseSlice` for insertion. It returns a closed `ContentSlice` and does not
+treat an editor marker as complete-document authority. The slice carries
+`roots` only for elements whose mapping decodes a
+[content root](#content-roots).
 
 ```ts
 const result = editor.api.html.parseSlice('<p>Paste me</p>');
@@ -48,7 +50,7 @@ if (result.ok) {
 ```
 
 The insertion owner fits the slice after a destination exists. Direct HTML
-parsing does not invent open edges or detached roots.
+parsing does not invent open edges.
 
 ### Detached browser conversion
 
@@ -227,8 +229,9 @@ nothing is lost, so a mapping that forgets a claim leaves copied content as
 plain text.
 
 Use `defineFormats(map)` for mappings owned by the current plugin and
-`defineFormats(TargetPlugin, map)` for a foreign target. The semantic key is
-`html`; MIME negotiation does not belong in this map.
+`defineFormats(TargetPlugin, map)` for a foreign target. A foreign mapping
+whose target plugin is missing or disabled maps nothing and is skipped. The
+semantic key is `html`; MIME negotiation does not belong in this map.
 
 If a browser transfer format owns a complete `text/html` payload, register a
 `DataTransferFormat` through `dataTransferFormats`. That owner can inspect the
@@ -238,6 +241,59 @@ reports as the built-in HTML format does. It returns an empty slice when
 nothing in the prepared payload is insertable. Return that slice to claim the
 paste, or return `null` to let the next format try. See
 [Clipboard](/docs/clipboard#custom-datatransfer-formats).
+
+### Content roots
+
+An element that owns a [content root](/docs/roots#content-roots) places that
+root's blocks with `contentRoot(slot)` and reads them back through the
+`decode` result's `contentRoots`.
+
+```ts
+import { definePlugin, schema } from 'platejs';
+
+const AsidePlugin = definePlugin('aside', {
+  schema: {
+    element: {
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        match: [{ tag: 'aside' }],
+        decode: ({ element }) => ({ contentRoots: { body: element } }),
+        encode: ({ content, contentRoot }) => ({
+          children: [content, contentRoot('body')],
+          tag: 'aside',
+        }),
+      },
+    }),
+});
+```
+
+This mapping writes `<aside><p>One</p></aside>` for an aside whose `body` root
+holds one paragraph.
+
+- `contentRoot(slot)` returns a token that renders the blocks of the root
+  `slot` names on the node. Place each token exactly once. `content` is
+  still placed once, even on a void element, whose children render empty.
+- `contentRoots` maps each slot to the HTML element whose child nodes hold that
+  root's blocks. A container is not decoded as the element's own children, and
+  a slot left out decodes as an empty root.
+- Each decoded root gets a fresh name. `parse` returns its blocks in the
+  document's `roots`, and `parseSlice` in the slice's `roots`.
+- Serialization reports each named root that no mapping places as
+  `html-unsupported-root`, a warning. Reading a slot the node does not own
+  throws.
 
 ## Results and diagnostics
 

@@ -17,6 +17,7 @@ export {
   locateAt,
   NodeApi,
   PathApi,
+  nodeWriteVeto,
   PointApi,
   property,
   RangeApi,

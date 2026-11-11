@@ -53,7 +53,7 @@ import {
   runTrackedEditableCompositionMutation,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
-import { textSealedElsewhere } from './input-target';
+import { openInputTarget, textSealedElsewhere } from './input-target';
 import {
   applyModelOwnedBeforeInputMutation,
   applyModelOwnedNativeHistoryEvent,
@@ -580,6 +580,26 @@ export const useRuntimeBeforeInputEvents = ({
             event.preventDefault();
             event.stopImmediatePropagation();
             handledDOMBeforeInputRef.current = true;
+            return;
+          }
+
+          // With no DOM selection, the browser places its own caret before it
+          // asks, so the DOM follows the model again.
+          if (
+            event.inputType.startsWith('insert') &&
+            openInputTarget(editor) === 'sealed'
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            repair.requestEditableRepair({
+              kind: 'sync-selection',
+              selectionSourceTransition: {
+                preferModelSelection: true,
+                reason: 'model-command',
+                selectionSource: 'model-owned',
+              },
+            });
             return;
           }
 

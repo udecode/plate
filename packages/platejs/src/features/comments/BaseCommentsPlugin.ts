@@ -579,6 +579,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         .map((thread) => thread.id)
     ),
   });
+  const isInNamedRoot = (range: Range) =>
+    range.anchor.root !== undefined || range.focus.root !== undefined;
   const validateRange = (range: Range, children = editor.read.children()) => {
     for (const point of [range.anchor, range.focus]) {
       if (point.root !== undefined) {
@@ -1064,6 +1066,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           return null;
         }
         if (input.target.type === 'range') {
+          if (isInNamedRoot(input.target.range)) return null;
           validateRange(input.target.range, commandEditor.read.children());
           if (RangeApi.isCollapsed(input.target.range)) return null;
         } else if (!input.target.id) return null;
@@ -1134,10 +1137,13 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         }
       };
       return {
-        /** Start a comment at a range, or expand a caret to its text block. */
+        /**
+         * Start a comment at a range, or expand a caret to its text block.
+         * Returns false for a range in a named root, such as a board note.
+         */
         begin: (at: Range | null = commandEditor.read.selection()) => {
           let range = at;
-          if (!range || destroyed) return false;
+          if (!range || destroyed || isInNamedRoot(range)) return false;
           if (RangeApi.isCollapsed(range)) {
             const block = commandEditor.read.nodes.block({ at: range });
             range = block
@@ -1179,9 +1185,15 @@ export const BaseCommentsPlugin = definePlugin('comments', {
               )
             : { status: 'invalid' };
         },
-        /** Persist and publish at an explicit primary range or authored change ID. */
+        /**
+         * Persist and publish at an explicit primary range or authored change
+         * ID. A range in a named root resolves `invalid`.
+         */
         createThread: (input: CreateCommentThreadInput) => submit(input),
-        /** Allocate a local draft; only publishDraft invokes durable storage. */
+        /**
+         * Allocate a local draft; only publishDraft invokes durable storage.
+         * Returns null for a range in a named root.
+         */
         createDraft: (input: CreateCommentThreadInput) => {
           const prepared = prepareCreation(input, 'draft');
           if (!prepared || queues.has(prepared.thread.id)) {

@@ -431,7 +431,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               ? removal.landing
               : options.at == null
                 ? (selectionPointAfterDelete ?? startPoint ?? endPoint)
-                : (startPoint ?? endPoint);
+                : (removal.landing ?? startPoint ?? endPoint);
 
           if (!nextAt) {
             return;

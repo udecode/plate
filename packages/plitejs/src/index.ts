@@ -8,6 +8,11 @@ export { editorCommands } from './core/editor-commands';
 export { editorReads } from './core/editor-reads';
 export { transfer, transferVeto } from './core/transfer';
 export { authoredVeto, type AuthoredVeto } from './core/authored-veto';
+export {
+  nodeWriteVeto,
+  type NodeWriteVeto,
+  type NodeWriteVetoInput,
+} from './core/node-write-veto';
 export type {
   AuthoredDocumentProjection,
   AuthoredProjectionDiagnostic,

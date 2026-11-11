@@ -42,13 +42,11 @@ type EditableProps = {
   disableDefaultStyles?: boolean;
   id?: string;
   ignoreBlankEditableRootClicks?: boolean;
-  onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: (
     event: InputEvent,
     context: EditableDOMBeforeInputContext
   ) => EditableHandlerResult;
   onKeyDown?: EditableKeyDownHandler;
-  onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
   placeholder?: React.ReactNode;
   readOnly?: boolean;
   ref?: React.Ref<HTMLDivElement>;
@@ -67,7 +65,7 @@ type EditableProps = {
 };
 ```
 
-`Editable` also accepts safe `div` attributes such as `aria-*`, `data-*`, and event handlers that are not owned by Plite.
+`Editable` also accepts safe `div` attributes such as `aria-*` and `data-*`, and the `div` event handlers, such as `onClick` and `onPaste`. Every event handler gets an `EditableHandlerContext` after its event, whose `editor` is the view whose editable runs it, such as a content root's.
 
 `scrollSelectionIntoView` scrolls the caret or selection focus into view by
 default. Supply a callback to own scrolling in a custom viewport.
@@ -323,7 +321,10 @@ color, opacity, and text decoration.
 
 ## Event props
 
-Use `onKeyDown` for UI hotkeys on one `Editable` instance.
+Use `onKeyDown` for UI hotkeys on one `Editable` instance. In a content root's
+editable, the undo and redo keys never reach it, and neither does Shift with an
+arrow key outside a set root, as
+[Event Handling](./event-handling#editor-aware-handlers) says.
 
 ```tsx
 <Editable
@@ -373,7 +374,7 @@ const markdown = definePlugin("markdown", {
 });
 ```
 
-`onBeforeInput` is the React form-event hook on the editable root. Use
+`onBeforeInput` is React's synthetic `beforeinput` handler on the editable root. Use
 `onDOMBeforeInput` only when you need the raw native `InputEvent`. Returning
 `true` or calling `event.preventDefault()` marks the event handled.
 

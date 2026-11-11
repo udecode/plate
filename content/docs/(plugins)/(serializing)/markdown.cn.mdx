@@ -428,6 +428,45 @@ markdown: {
 Plugin 的 `formats` 只接受 `html`、`markdown` 和 `plainText` key；MIME payload
 属于 `dataTransferFormats`。
 
+### Content root
+
+拥有 [content root](/cn/docs/roots#content-roots) 的 element 通过
+`contentRoot(slot)` 写出该 root 的 block。它按存储顺序返回 node 上 `slot` 所指
+root 的 block。`encode` 可以返回 Markdown node 数组，这些 node 会作为兄弟节点
+写在该 element 的位置。
+
+```ts
+import { definePlugin, schema } from 'platejs';
+
+const AsidePlugin = definePlugin('aside', {
+  schema: {
+    element: {
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      markdown: {
+        encode: ({ contentRoot, encode }) => encode(contentRoot('body')),
+      },
+    }),
+});
+```
+
+Markdown 没有表示独立 root 的语法，因此解析这段输出时，这些 block 会被读取为
+document 的普通 block。序列化会把没有任何 mapping 通过 `contentRoot` 读取的
+named root 报告为 `markdown-unsupported-root`。读取 node 不拥有的 slot 会抛出
+异常。
+
 ## Remark plugin
 
 在 `MarkdownPlugin` 上配置一次 remark plugin。该 editor 的每次 parse 与 serialize
@@ -476,7 +515,7 @@ reportWarnings(result.diagnostics);
 | `markdown-inline-blocks` | Error | `parseInline` 输入产生了 block。 |
 | `markdown-schema-repair` | Warning；`'reject'` 下有损时为 error | 对解析结果应用的 schema repair。 |
 | `markdown-schema-invalid` | Error | Schema 拒绝的解析内容。 |
-| `markdown-unsupported-root`、`markdown-unsupported-metadata` | Warning | 导出时省略的 named root 或 document metadata。 |
+| `markdown-unsupported-root`、`markdown-unsupported-metadata` | Warning | 导出时省略的、没有任何 mapping 通过 [`contentRoot`](#content-root) 读取的 named root，或 document metadata。 |
 
 Authored projection diagnostics 使用同一种 result。配置错误与 mapping contract
 violation 会抛出。

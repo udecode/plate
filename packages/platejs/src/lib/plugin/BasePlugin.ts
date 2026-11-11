@@ -51,6 +51,7 @@ import type {
   InputRulesDefinition,
 } from '../plugins/input-rules/types';
 import type {
+  ElementContentRootSlot,
   HotkeysEvent,
   RenderElementProps,
   StaticRenderLeafProps,
@@ -455,6 +456,12 @@ type HtmlDecodeContext<C extends AnyBasePluginDefinition> =
 type HtmlElementDecodeResult<TProperties extends object> = Readonly<
   Partial<TProperties> & {
     children?: readonly Descendant[];
+    /**
+     * The HTML element whose child nodes hold each content root's blocks, by
+     * slot. A slot left out decodes as an empty root. A container is not
+     * decoded as the element's own children.
+     */
+    contentRoots?: Readonly<Record<string, HTMLElement>>;
   }
 >;
 
@@ -481,7 +488,15 @@ type HtmlElementEncodeContext<
   TNode extends Element,
 > = HtmlModelContext<C, TNode> &
   HtmlPreserve<C> &
-  Readonly<{ content: HtmlContentToken }>;
+  Readonly<{
+    content: HtmlContentToken;
+    /**
+     * A token the output places where the blocks of the content root that
+     * `slot` names on `node` render. Serializing reports each document root
+     * no mapping read.
+     */
+    contentRoot: (slot: ElementContentRootSlot<TNode>) => HtmlContentToken;
+  }>;
 
 /**
  * A returned wrapper, or a patch that writes an attribute or style, represents
@@ -778,6 +793,12 @@ type ForeignHtmlMappingTarget<
   TTarget extends PluginReference,
 > = TTarget['name'] extends C['name'] ? never : TTarget;
 
+type ResolvedFormatSchema<TSchema> = TSchema extends (
+  ...args: never[]
+) => infer TDeclaration
+  ? TDeclaration
+  : TSchema;
+
 type ForeignFormatDefinition<
   C extends AnyBasePluginDefinition,
   TTarget extends AnyBasePlugin & PluginReference,
@@ -791,7 +812,8 @@ type ForeignFormatDefinition<
   ('schema' extends keyof C
     ? 'schema' extends keyof TTargetDefinition
       ? Readonly<{
-          schema: C['schema'] & TTargetDefinition['schema'];
+          schema: Omit<ResolvedFormatSchema<C['schema']>, 'element'> &
+            ResolvedFormatSchema<TTargetDefinition['schema']>;
         }>
       : Pick<C, 'schema'>
     : 'schema' extends keyof TTargetDefinition

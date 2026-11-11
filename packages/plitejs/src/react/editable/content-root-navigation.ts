@@ -152,6 +152,13 @@ const ANSWERED_KEYS = new WeakSet<Event>();
 export const isContentRootKeyAnswered = (event: { nativeEvent: Event }) =>
   ANSWERED_KEYS.has(event.nativeEvent);
 
+export const isSetRootOfOtherView = (
+  editor: ReactRuntimeEditor,
+  root: RootKey
+) =>
+  isSetRootOf(editor, root) &&
+  root !== toInternalRoot(editor.read((state) => state.view.root()));
+
 const isPointInPath = (point: Point, path: Path) =>
   PathApi.equals(point.path, path) || PathApi.isDescendant(point.path, path);
 
@@ -1308,10 +1315,15 @@ export const shouldModelOwnContentRootVerticalSelection = ({
     return false;
   }
 
-  const owners = findCrossingContentRootOwners(editor);
   const currentRoot =
     selection.focus.root ??
     toInternalRoot(editor.read((state) => state.view.root()));
+
+  if (isSetRootOfOtherView(editor, selection.anchor.root ?? currentRoot)) {
+    return false;
+  }
+
+  const owners = findCrossingContentRootOwners(editor);
   const graph = createContentRootViewBoundaryGraph(editor, owners);
   const anchor = getInitialProjectedSelectionAnchor({
     currentOwner: null,
@@ -1393,6 +1405,17 @@ const applyContentRootViewSelectionAction = ({
   }
 
   if (!viewSelection && selectionAnchorRoot !== selectionFocusRoot) {
+    return { handled: false };
+  }
+
+  if (
+    isSetRootOfOtherView(
+      editor,
+      viewSelection
+        ? getPliteViewBoundaryPointRoot(viewSelection.anchor)
+        : selectionAnchorRoot
+    )
+  ) {
     return { handled: false };
   }
 

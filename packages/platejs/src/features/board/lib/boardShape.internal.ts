@@ -15,6 +15,7 @@ import {
   ElementApi,
   locateAt,
   type NodeKey,
+  PLUGINS,
   type PluginTransaction,
   type PropertyValueOf,
   schema,
@@ -31,6 +32,9 @@ export type BoardPlace = Readonly<{ x: number; y: number }>;
 export type BoardSize = Readonly<{ height: number; width: number }>;
 
 export const BOARD_SHAPES_SLOT = 'shapes';
+
+export const shapeSelectionMode = (count: number) =>
+  count === 1 ? ('object' as const) : ('block' as const);
 
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
@@ -240,7 +244,7 @@ export const defineBoardShape = <
         ...(properties ? { properties } : {}),
       },
     }),
-    targetPlugins: [BaseParagraphPlugin],
+    targetPlugins: [BaseParagraphPlugin, PLUGINS.heading],
   }).extend(
     boardShapeStage<{
       [K in keyof TProperties]: PropertyValueOf<TProperties[K]>;

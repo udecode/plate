@@ -1839,8 +1839,17 @@ export const syncEditableDOMSelectionToEditor = ({
       const clearUpdate = clearAfter(`clear-${label}-update`);
 
       exportEditableDOMSelection(state, root, null, clearUpdate);
+      const isSuperseded = () =>
+        !SelectionApi.equals(
+          resolveNextKeyCaret(
+            editor,
+            explicitEditorElement ?? runtime.rootElement
+          ),
+          selection
+        );
       const clearNativeSelection = () => {
         if (!claimPageSelection()) return;
+        if (isSuperseded()) return;
         const current = readPliteViewSelection(editor);
         if (current && canUseNativeViewSelection(editor, current)) return;
         if (
@@ -1883,8 +1892,8 @@ export const syncEditableDOMSelectionToEditor = ({
         editorElement,
         coverage: runtime.domCoverage,
         editor,
-        exportSelection: (points, parked) => {
-          if (parked) {
+        exportSelection: (points, modelOwned) => {
+          if (modelOwned) {
             setEditableModelSelectionPreference({
               inputController: runtime.inputController,
               preferModelSelection: true,

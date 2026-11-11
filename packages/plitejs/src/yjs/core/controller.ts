@@ -33,6 +33,7 @@ import { MAIN_ROOT_KEY } from '../../core/public-root';
 import {
   assertEditorExternalMutationAllowed,
   getCollabEffects,
+  getCurrentSelection,
   getEditorDocumentRecords,
   isNotifyingNestedCommit,
   registerEditorTransactionGuard,
@@ -1868,9 +1869,12 @@ export class YjsController<
   }
 
   private currentSelection() {
-    return (
-      this.awarenessAdapter?.currentSelection() ?? this.editor.read.selection()
-    );
+    const selection = getCurrentSelection(this.editor);
+
+    return SelectionApi.isNode(selection)
+      ? selection
+      : (this.awarenessAdapter?.currentSelection() ??
+          this.editor.read.selection());
   }
 
   private transact<T>(

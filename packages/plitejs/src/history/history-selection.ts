@@ -92,16 +92,6 @@ export const shouldPreserveHistoricDOMSelection = <V extends Value>(
   batch: Batch<V>
 ) => !batch.change.empty && !batchHasRoot(batch, root);
 
-const replayDeletesCaretRootAndKeepsHistoricRoot = <V extends Value>(
-  batch: Batch<V>,
-  caretRoot: string | undefined,
-  historicRoot: string | undefined
-) =>
-  historicRoot !== undefined &&
-  caretRoot !== undefined &&
-  batch.change.deleteRoots.has(caretRoot) &&
-  !batch.change.deleteRoots.has(historicRoot);
-
 export const shouldRestoreHistoricSelection = <V extends Value>(
   root: string,
   caretRoot: string | undefined,
@@ -113,12 +103,18 @@ export const shouldRestoreHistoricSelection = <V extends Value>(
   const historicRoot = getHistoricSelectionRoot(batch, target);
 
   if (historicRoot === root && batchHasRoot(batch, root)) return true;
+  if (
+    historicRoot === undefined ||
+    caretRoot === undefined ||
+    batch.change.deleteRoots.has(historicRoot)
+  ) {
+    return false;
+  }
 
-  return replayDeletesCaretRootAndKeepsHistoricRoot(
-    batch,
-    caretRoot,
-    historicRoot
-  );
+  const caretRootGoes = batch.change.deleteRoots.has(caretRoot);
+  const stepPlacedCaret = caretRoot !== root && batchHasRoot(batch, caretRoot);
+
+  return caretRootGoes || stepPlacedCaret;
 };
 
 export const restoreHistoricSelection = <V extends Value>(

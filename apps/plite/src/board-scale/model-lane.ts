@@ -21,12 +21,6 @@
  * names it, production by default, so a later cohort never reads against a
  * base the earlier ones warmed. The parent prints the merged line.
  *
- * The runner reads a planted arm's ratio over base, so every plant types into
- * the base arm's workload. A realistic plant reads a separate copy of the
- * claimed cohort's root each key, so it costs what that bug would cost at the
- * claimed size whatever the candidate does. The candidate and the same-code
- * copy type into the claimed cohort.
- *
  * Each key records its wall time and its main-thread CPU time. The gate's
  * model lines judge `medianCpuMs` and `p95CpuMs`, and a synthetic plant sizes
  * and burns its slowdown on that CPU clock.
@@ -35,7 +29,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import * as nodeModule from 'node:module';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import type { Element } from 'plitejs';
 
@@ -50,12 +44,53 @@ import type {
 
 const loadedUrls = new Set<string>();
 
+const platejsRoot = fileURLToPath(
+  new URL('../../../../packages/platejs/', import.meta.url)
+);
+const boardSource = path.join(platejsRoot, 'src/features/board/');
+
+const boardSourceUrl = (specifier: string, parentURL: string | undefined) => {
+  if (!specifier.startsWith('.') || !parentURL?.startsWith('file:')) {
+    return null;
+  }
+
+  const target = path.resolve(
+    path.dirname(fileURLToPath(parentURL)),
+    specifier
+  );
+  const firstOf = (candidates: readonly string[]) =>
+    candidates.find((candidate) => existsSync(candidate));
+  const found = `${target}/`.startsWith(boardSource)
+    ? firstOf([`${target}.ts`, path.join(target, 'index.ts')])
+    : parentURL.includes('/packages/platejs/src/features/board/') &&
+        target.startsWith(path.join(platejsRoot, 'src/'))
+      ? firstOf(
+          [
+            `${path.relative(path.join(platejsRoot, 'src'), target)}.js`,
+            path.join(
+              path.relative(path.join(platejsRoot, 'src'), target),
+              'index.js'
+            ),
+          ].map((file) => path.join(platejsRoot, 'dist', file))
+        )
+      : undefined;
+
+  return found ? pathToFileURL(found).href : null;
+};
+
 // Node's ESM loader keeps no module cache to list, so a resolve hook records
 // each file the run loads; it must be in place before the stub board imports.
 if (!process.versions.bun) {
   nodeModule.registerHooks({
     resolve: (specifier, context, nextResolve) => {
-      const result = nextResolve(specifier, context);
+      const board = boardSourceUrl(specifier, context.parentURL);
+      const result = board
+        ? {
+            format: board.endsWith('.ts') ? 'module-typescript' : 'module',
+            shortCircuit: true,
+            url: board,
+          }
+        : nextResolve(specifier, context);
       loadedUrls.add(result.url);
 
       return result;
@@ -157,7 +192,6 @@ if (
     'model lane: --keys must be an integer of at least 10 and --warmup a whole number'
   );
 }
-// A cohort's own process gets the packet's state from its parent instead.
 if (arm === 'plant-bimodal' && !child && !args.has('state')) {
   throw new Error(
     'model lane: plant-bimodal needs --state, the file that counts its packets'
@@ -169,7 +203,6 @@ if (fault && onBase) {
   );
 }
 
-/** What the peer did just before the timed key, H. */
 type Hear =
   | 'none'
   | 'elsewhere'
@@ -184,9 +217,7 @@ type Hear =
 
 type Cohort = Readonly<{
   workload: BoardWorkload;
-  /** H1: the peer's change heard before each timed key. */
   hear?: Hear;
-  /** K1: keys typed into the root before the timed keys. */
   keysBefore?: number;
 }>;
 
@@ -277,7 +308,6 @@ const attemptPath = (stem: string) => {
 
 const runStem = `${line}-${arm}-${layer}-${process.versions.bun ? 'bun' : 'node'}${mode === 'unset' ? '-unset' : ''}${fault ? `-bad-${fault}` : ''}`;
 
-/** The packet this run is, for the plant that slows three of six packets. */
 const bimodalSlow = () => {
   const state = path.resolve(required('state'));
   const count = existsSync(state) ? Number(readFileSync(state, 'utf-8')) : 0;
@@ -296,8 +326,6 @@ type LaneResult = Readonly<{
 const label = `${line} ${arm} ${layer} ${runtime}${mode === 'unset' ? ' NODE_ENV unset' : ''}${fault ? ` known-bad ${fault}` : ''}`;
 
 if (!child) {
-  // One process per cohort. The packet's bimodal state is read once here, so
-  // every cohort of one packet is slow or fast together.
   const bimodal = arm === 'plant-bimodal' ? bimodalSlow() : undefined;
   const logPath = attemptPath(runStem);
   const runs: LaneResult[] = [];
@@ -405,17 +433,12 @@ const bimodal = args.has('bimodal-packet')
     }
   : undefined;
 
-/**
- * The main thread's CPU time in ms. On a loaded host the wall clock also
- * counts the time the thread waits for a core, so the gate judges this clock.
- */
 const cpuNow = () => {
   const { system, user } = process.threadCpuUsage();
 
   return (user + system) / 1000;
 };
 
-/** A plant's slowdown burns CPU on the clock the gate judges, as real work would. */
 const burnCpu = (ms: number) => {
   const end = cpuNow() + ms;
 
@@ -441,7 +464,6 @@ type Workload =
       value: { children: Array<Record<string, unknown>> };
     };
 
-/** The 50-shape control a cohort reads against, framed when the cohort has pending shapes. */
 const controlOf = (claim: BoardWorkload): BoardWorkload => ({
   ...COHORTS.N50.workload,
   intent: claim.intent,
@@ -459,7 +481,6 @@ const claimOf = (name: string): Cohort => {
   return claimed;
 };
 
-/** The workload this arm types into, and the keys it types before timing. */
 const workloadOf = (
   name: string
 ): { keysBefore: number; workload: Workload } => {
@@ -502,7 +523,6 @@ const workloadOf = (
   return { keysBefore: 0, workload: board(onBase ? controlOf(claim) : claim) };
 };
 
-/** The claimed cohort's typed root, which a realistic plant reads each key. */
 const plantTarget = (name: string) => {
   if (arm !== 'plant-string' && arm !== 'plant-freeze') return undefined;
 
@@ -514,7 +534,6 @@ const plantTarget = (name: string) => {
   return { children, type: 'board' } as Element;
 };
 
-/** Asserts that the live document holds the workload its name claims. */
 const checkReadback = (workload: Workload, driver: BoardDriver) => {
   const stored = driver.stored();
 
@@ -564,13 +583,11 @@ const nodeAt = (stored: StoredValue, target: TextTarget) => {
   return node;
 };
 
-/** The typed paragraph's text, across the runs a suggestion splits it into. */
 const textAt = (stored: StoredValue, target: TextTarget) =>
   (nodeAt(stored, target)?.children ?? [])
     .map((leaf) => leaf.text ?? '')
     .join('');
 
-/** Occurrences of `letter` in the text of `nodes`. */
 const lettersIn = (
   nodes: readonly StoredNode[] | undefined,
   letter: string
@@ -584,7 +601,6 @@ const lettersIn = (
     0
   );
 
-/** The plant's own per-key work, done inside the timed key. */
 const plantWork = (
   target: ReturnType<typeof plantTarget>,
   work: { frozenEntries: number; stringChars: number }
@@ -607,11 +623,6 @@ type PeerTx = {
   text: { insert: (text: string) => void };
 };
 
-/**
- * H1's teammate: a second editor on the same fixture, joined through Yjs.
- * `hear` makes the teammate's change of one key and delivers it, and the
- * read-back checks that the typing peer holds it before its timed key.
- */
 const createTeammate = (
   driver: BoardDriver,
   fixture: BoardFixture,
@@ -665,13 +676,9 @@ const createTeammate = (
 
   if (placed) peer.select(placed, placed.offset);
   let heard = 0;
-  // Changes the typing peer read back before a timed key, so a cohort whose
-  // teammate sends nothing cannot pass for one that hears each key.
   let observed = 0;
-  const expectPeerLetters = { count: 0 };
+  let peerLetters = 0;
   const shapeCount = shapes.length;
-  // Reads the live root, not `driver.stored()`: a whole-document copy before
-  // each timed key left garbage that the key then paid to collect.
   const heardLetters = (indexes: readonly number[]) => {
     const children = driver.rootChildren(root);
 
@@ -683,7 +690,6 @@ const createTeammate = (
 
   return {
     toB: () => send(docA, docB),
-    /** The typing peer's target for the timed key of round `key`. */
     hear: (key: number): TextTarget | null => {
       heard += 1;
       if (hear === 'none') return null;
@@ -697,13 +703,13 @@ const createTeammate = (
         const count = hear === 'three' ? 3 : 1;
 
         for (let typed = 0; typed < count; typed++) peer.type('q');
-        expectPeerLetters.count += count;
+        peerLetters += count;
         send(docB, docA);
         const got = heardLetters([placed?.path[0] ?? typedIndex]);
 
-        if (got !== expectPeerLetters.count) {
+        if (got !== peerLetters) {
           fail(
-            `cohort ${cohort}: the typing peer read back ${got} of the teammate's letters before key ${key}, but H ${hear} sent ${expectPeerLetters.count}`
+            `cohort ${cohort}: the typing peer read back ${got} of the teammate's letters before key ${key}, but H ${hear} sent ${peerLetters}`
           );
         }
         observed += 1;
@@ -740,7 +746,7 @@ const createTeammate = (
                 shapeId: `h1-added-${key}`,
                 size: { height: 10, width: 10 },
                 type: 'boardGeo',
-                zIndex: 'zzz',
+                zIndex: 'd0000',
               },
               { at: [at] }
             )
@@ -762,8 +768,6 @@ const createTeammate = (
         return null;
       }
 
-      // A round: start a new Suggesting run, a Plain teammate types at its
-      // start, and the timed key types again after it.
       const note =
         hear === 'rounds-five'
           ? roundNotes[key % roundNotes.length]
@@ -778,13 +782,13 @@ const createTeammate = (
       send(docA, docB);
       peer.select(start, 2);
       peer.type('q');
-      expectPeerLetters.count += 1;
+      peerLetters += 1;
       send(docB, docA);
       const got = heardLetters(roundNotes);
 
-      if (got !== expectPeerLetters.count) {
+      if (got !== peerLetters) {
         fail(
-          `cohort ${cohort}: the typing peer read back ${got} of the teammate's letters before round ${key}, but H ${hear} sent ${expectPeerLetters.count}`
+          `cohort ${cohort}: the typing peer read back ${got} of the teammate's letters before round ${key}, but H ${hear} sent ${peerLetters}`
         );
       }
       observed += 1;
@@ -792,7 +796,6 @@ const createTeammate = (
       return start;
     },
     observed: () => observed,
-    /** After the last key: the teammate's document equals the typing peer's. */
     agree: () => {
       send(docA, docB);
       send(docB, docA);
@@ -871,7 +874,6 @@ const measure = (name: string) => {
   const samples: number[] = [];
   const cpuSamples: number[] = [];
   const work = { busyMs: 0, delayedKeys: 0, frozenEntries: 0, stringChars: 0 };
-  // plant-tail's reference: the keys it left alone, after the first ten.
   const undelayed: number[] = [];
   const lettersBefore = lettersIn(
     driver.stored().roots?.[target.root ?? ''],
@@ -996,8 +998,6 @@ const measure = (name: string) => {
   const sortedCpu = [...cpuSamples].sort((left, right) => left - right);
   const p95CpuMs = percentile(sortedCpu, 0.95);
 
-  // A key already past the cap needs no delay, so this plant proves its work
-  // by the p95 it reads, not by the keys it delayed.
   if (arm === 'plant-pastcap' && p95CpuMs <= capMs) {
     fail(
       `cohort ${cohort}: plant-pastcap reads CPU p95 ${p95CpuMs} ms, not past the ${capMs} ms cap`

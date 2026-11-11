@@ -1,4 +1,5 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { refuseVetoedWrite } from '../core/node-write-veto';
 import {
   applyBuiltDocumentChange,
   getActiveUpdateRoot,
@@ -339,6 +340,14 @@ export const setNodes = ((
 
       if (hasChanges) {
         if (NodeApi.isElement(node) && typeof newProperties.type === 'string') {
+          refuseVetoedWrite(editor, {
+            kind: 'retype',
+            node,
+            path,
+            root,
+            type: newProperties.type,
+          });
+
           const changed = getEditorSchema(editor).elementForTypeChangeAt(
             node,
             newProperties.type,

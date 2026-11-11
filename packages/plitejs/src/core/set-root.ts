@@ -185,6 +185,9 @@ const keepNodeMember = (
   );
 };
 
+const leavesMember = (selection: NodeSelection, member: number) =>
+  selection.paths.some((path) => path.length === 1 || path[0] !== member);
+
 const settleText = (
   site: SetSite,
   root: string,
@@ -262,7 +265,9 @@ export const settleCaret = (
   }
   const member = root === previous.root ? memberOf(previous.selection) : null;
   const selection = SelectionApi.isNode(written)
-    ? keepNodeMember(written, member)
+    ? law === 'move' && member !== null && leavesMember(written, member)
+      ? previous.selection
+      : keepNodeMember(written, member)
     : settleText(site, root, written, member, law);
 
   return Object.freeze({

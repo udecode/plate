@@ -608,6 +608,29 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     return null;
   }
 
+  const leavesBlock = (blockPath: Path, edge: Point, reverse: boolean) => {
+    if (PointApi.equals(selection.focus, edge)) return true;
+    try {
+      const container = getPathElement(editor, blockPath);
+      const root =
+        selection.focus.root ??
+        toInternalRoot(editor.read((state) => state.view.root()));
+
+      return (
+        !!container &&
+        isPointOnVisualBoundaryLine({
+          container,
+          direction: reverse ? 'backward' : 'forward',
+          editor,
+          point: selection.focus,
+          root,
+        })
+      );
+    } catch {
+      return false;
+    }
+  };
+
   const getAdjacentTarget = (reverse: boolean) => {
     const adjacent = editor.read((state) => {
       const block = state.nodes.block({ at: selection.focus });
@@ -620,21 +643,22 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
           ? state.points.before(edge, { unit: 'offset' })
           : state.points.after(edge, { unit: 'offset' }));
 
-      return block && edge && point
-        ? { blockPath: block[1], edge, point }
-        : null;
+      return block && edge ? { blockPath: block[1], edge, point } : null;
     });
 
     if (!adjacent) return null;
-    // A vertical move never steps into another member of a set root; the
-    // native move that follows is clamped back to this member's edge.
+    // The browser moves a caret by layout, which can carry it into another
+    // member of a set root, so the model moves it to this member's edge.
     if (
-      adjacent.point.path[0] !== selection.focus.path[0] &&
+      adjacent.point?.path[0] !== selection.focus.path[0] &&
       selection.focus.root !== undefined &&
       isSetRootOf(editor, selection.focus.root)
     ) {
-      return null;
+      return leavesBlock(adjacent.blockPath, adjacent.edge, reverse)
+        ? SelectionApi.text({ anchor: adjacent.edge, focus: adjacent.edge })
+        : null;
     }
+    if (!adjacent.point) return null;
 
     const ancestorOwner = getSelectableOwnerAncestorNodeSelection(
       editor,
@@ -657,30 +681,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
         .some(({ selectionPolicy }) => selectionPolicy === 'model');
 
     if (!owner && !modelSelectedText) return null;
-
-    if (!PointApi.equals(selection.focus, adjacent.edge)) {
-      try {
-        const container = getPathElement(editor, adjacent.blockPath);
-        const root =
-          selection.focus.root ??
-          toInternalRoot(editor.read((state) => state.view.root()));
-
-        if (
-          !container ||
-          !isPointOnVisualBoundaryLine({
-            container,
-            direction: reverse ? 'backward' : 'forward',
-            editor,
-            point: selection.focus,
-            root,
-          })
-        ) {
-          return null;
-        }
-      } catch {
-        return null;
-      }
-    }
+    if (!leavesBlock(adjacent.blockPath, adjacent.edge, reverse)) return null;
 
     if (!owner) {
       return SelectionApi.text({

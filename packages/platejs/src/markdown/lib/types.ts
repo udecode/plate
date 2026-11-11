@@ -304,6 +304,7 @@ export type SerializeMdContext = Readonly<
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;
     modelLocation: (node: Descendant) => MarkdownModelLocation | undefined;
+    readRoots: Set<RootKey>;
     report: (diagnostic: MarkdownDiagnostic) => void;
     remarkPlugins: Pluggable[];
     state: EditorCoreStateView;

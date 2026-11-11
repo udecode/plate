@@ -1,4 +1,5 @@
-import { isDOMNode } from '../../dom';
+import { isDOMElement, isDOMNode } from '../../dom';
+import type { EditableHandlerContext } from '../components/editable';
 
 type ExternalHostOwner = Readonly<{
   root: () => HTMLElement | null;
@@ -44,7 +45,7 @@ export const getExternalTextHostOwner = (target: EventTarget | null) => {
 
 /** Registration, not a spoofable DOM attribute, grants foreign input ownership. */
 export const getEditableInteractionOwner = (
-  root: HTMLElement | null,
+  root: Element | null,
   target: EventTarget | null
 ) => {
   if (!root || !target || !('nodeType' in target)) return 'outside' as const;
@@ -66,6 +67,49 @@ export const getEditableInteractionOwner = (
     return 'chrome' as const;
   }
   return 'editor' as const;
+};
+
+export const isDOMHandler = (name: string, value: unknown) =>
+  /^on[A-Z]/.test(name) && typeof value === 'function';
+
+type ViewHandler = (
+  event: Readonly<{
+    currentTarget: EventTarget | null;
+    target: EventTarget | null;
+  }>,
+  context?: EditableHandlerContext
+) => unknown;
+
+type ViewHandlers<T> = {
+  [K in keyof T]: K extends `on${string}`
+    ? NonNullable<T[K]> extends (event: infer E, context: infer C) => infer R
+      ? (event: E, context?: C) => R
+      : T[K]
+    : T[K];
+};
+
+export const createViewHandlerBinder = (context: EditableHandlerContext) => {
+  const bound = new WeakMap<ViewHandler, ViewHandler>();
+
+  return <T extends object>(props: T): ViewHandlers<T> =>
+    Object.fromEntries(
+      Object.entries(props).map(([name, value]) => {
+        if (!isDOMHandler(name, value)) return [name, value];
+        const handler = value as ViewHandler;
+        let viewHandler = bound.get(handler);
+
+        if (!viewHandler) {
+          viewHandler = (event, handlerContext) =>
+            isDOMElement(event.currentTarget) &&
+            getEditableInteractionOwner(event.currentTarget, event.target) ===
+              'nested-editor'
+              ? undefined
+              : handler(event, handlerContext ?? context);
+          bound.set(handler, viewHandler);
+        }
+        return [name, viewHandler];
+      })
+    ) as ViewHandlers<T>;
 };
 
 /** Keep every React event family outside the outer editing pipeline. */

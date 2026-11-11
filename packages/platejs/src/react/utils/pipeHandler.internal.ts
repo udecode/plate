@@ -7,6 +7,10 @@ import type {
   InternalReactEditorWithInstalledPlugins,
   Editor,
 } from '../editor/Editor';
+import {
+  type EditableHandlerContext,
+  getHandlerView,
+} from '../internal/plite-components';
 import type { AnyResolvedPlugin } from '../plugin';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { DOMHandlers } from '../plugin/DOMHandlers';
@@ -61,7 +65,11 @@ const convertDomEventToSyntheticEvent = (
 /** Check if an event is overridden by a handler. */
 const isEventHandled = <EventType extends Event | React.SyntheticEvent>(
   event: EventType,
-  handler?: (event: EventType) => boolean | void
+  context: EditableHandlerContext,
+  handler?: (
+    event: EventType,
+    context: EditableHandlerContext
+  ) => boolean | void
 ) => {
   if (!handler) {
     return false;
@@ -69,7 +77,7 @@ const isEventHandled = <EventType extends Event | React.SyntheticEvent>(
 
   // The custom event handler may return a boolean to specify whether the event
   // shall be treated as being handled or not.
-  const shouldTreatEventAsHandled = handler(event);
+  const shouldTreatEventAsHandled = handler(event, context);
 
   if (shouldTreatEventAsHandled != null) {
     return shouldTreatEventAsHandled;
@@ -104,7 +112,9 @@ type PipeHandlerOptions<K extends DOMHandlerProp> = {
   editableProps?: Partial<Record<K, unknown>> | null;
 };
 
-type PipedDOMHandler = ((event: any) => boolean | void) | undefined;
+type PipedDOMHandler =
+  | ((event: any, context: EditableHandlerContext) => boolean | void)
+  | undefined;
 
 export function pipeHandler<V extends Value, D, K extends DOMHandlerProp>(
   editor: InternalReactEditorWithInstalledPlugins<V, D>,
@@ -116,7 +126,8 @@ export function pipeHandler<K extends DOMHandlerProp>(
 ): PipedDOMHandler {
   const plateEditor = editor as Editor;
   const propsHandler = editableProps?.[handlerKey] as (
-    event: any
+    event: any,
+    context: EditableHandlerContext
   ) => boolean | void;
 
   const pluginHandlerName = getDOMHandlerName(handlerKey);
@@ -128,7 +139,8 @@ export function pipeHandler<K extends DOMHandlerProp>(
 
   if (relevantPlugins.length === 0 && !propsHandler) return undefined;
 
-  return (event: any) => {
+  return (event: any, context: EditableHandlerContext) => {
+    const view = getHandlerView(context);
     const isDomEvent = event instanceof Event;
     const handledEvent =
       isDomEvent && handlerKey !== 'onDOMBeforeInput'
@@ -136,7 +148,7 @@ export function pipeHandler<K extends DOMHandlerProp>(
         : event;
 
     const eventIsHandled = relevantPlugins.some((plugin) => {
-      if (isEditOnly(plateEditor.read.view.isReadOnly(), plugin, 'on')) {
+      if (isEditOnly(view.read.view.isReadOnly(), plugin, 'on')) {
         return false;
       }
 
@@ -147,7 +159,7 @@ export function pipeHandler<K extends DOMHandlerProp>(
       if (!pluginHandler) return false;
 
       const shouldTreatEventAsHandled = pluginHandler({
-        ...createPluginContext(plateEditor, plugin),
+        ...createPluginContext(view, plugin),
         event: handledEvent,
       });
 
@@ -160,6 +172,6 @@ export function pipeHandler<K extends DOMHandlerProp>(
 
     if (eventIsHandled) return true;
 
-    return isEventHandled(handledEvent, propsHandler);
+    return isEventHandled(handledEvent, context, propsHandler);
   };
 }

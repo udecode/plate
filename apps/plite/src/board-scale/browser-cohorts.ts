@@ -1,14 +1,7 @@
 import type { BoardWorkload } from './stub-board';
 
-/**
- * The browser lanes' cohorts, query and plants. The dev page and the
- * Playwright spec both read this file, so it imports no editor code.
- */
-
-/** Where the board's camera looks: at the typed note, at the board's origin, or at every shape. */
 export type BoardView = 'typed' | 'origin' | 'dense';
 
-/** What a cohort's name claims: the workload and where the camera looks. */
 export type BrowserClaim = Readonly<{
   view: BoardView;
   workload: BoardWorkload;
@@ -47,45 +40,22 @@ export const BROWSER_COHORTS: Readonly<Record<string, BrowserClaim>> = {
   },
 };
 
-/**
- * The 50-shape control a cohort reads against. A key with any pending change
- * frames, so a cohort with pending shapes reads against a framed control, as
- * the model lane's does.
- */
 export const controlCohortOf = (cohort: string) =>
   (BROWSER_COHORTS[cohort]?.workload.pending ?? 0) > 0 ? 'N50-framed' : 'N50';
 
-/**
- * The renderer arms. W is the gate's arm: the board mounts its root through
- * `slots.contentRoot('shapes', { viewport })`, whose viewport keeps only the
- * shapes the view's camera meets, found through a view-local rbush index,
- * plus the shapes that hold the selection. A mounts every shape, an uncosted
- * full-DOM control.
- */
 const RENDER_ARMS = ['A', 'W'] as const;
 
 export type RenderArm = (typeof RENDER_ARMS)[number];
 
-/** The arm a known-bad `arm` cohort mounts instead of the one it names. */
 export const NEXT_RENDER_ARM: Readonly<Record<RenderArm, RenderArm>> = {
   A: 'W',
   W: 'A',
 };
 
-/**
- * A known-bad cohort keeps its name and breaks one parameter. N, A, S, F and
- * position break the stub board as the model lane does; `view` puts a dense
- * claim behind the typed-note camera, and `arm` mounts the next renderer arm.
- */
 const BROWSER_FAULTS = ['N', 'A', 'S', 'F', 'position', 'view', 'arm'] as const;
 
 export type BrowserFault = (typeof BROWSER_FAULTS)[number];
 
-/**
- * The layout plant's shapes per key. More than the 50-shape control, so N2's
- * layout count catches it, and capped, because one forced layout of a
- * 4,000-shape board costs milliseconds and every shape per key took 14 s.
- */
 export const LAYOUT_THRASH_SHAPES = 100;
 
 /**
@@ -95,77 +65,56 @@ export const LAYOUT_THRASH_SHAPES = 100;
  */
 export const BUSY_PLANT_MS = 12;
 
-/**
- * The defer plant's delay before the mutation lands: three frames, past the
- * frame quantization of a WebKit key that already takes three frames.
- */
 export const DEFER_PLANT_MS = 50;
 
-/**
- * Each planted arm, by the line that must reject it:
- * - render: N1, every shape re-renders on every key; on arm W the board
- *   re-renders too, and W1's board-render count rejects it.
- * - shape-render: W1, every mounted shape re-renders on every key while the
- *   board does not, which W1's shape-render count rejects.
- * - shape-selector: W1, every mounted shape adds an editor selector that runs
- *   on every commit and renders nothing, which W1's selector and subscriber
- *   visit count rejects once N mounts more shapes than the 50-shape board.
- * - busy: N1, a BUSY_PLANT_MS busy wait in the key handler.
- * - slow: M0 and J1, busy wait of (factor - 1) times the running median of
- *   the key's own N1 time, or of its own N2 time inside the next frame.
- * - defer: N2, the mutation lands DEFER_PLANT_MS late.
- * - layout: N2, a layout read per shape per key, up to LAYOUT_THRASH_SHAPES
- *   shapes, each after a write that dirties it.
- * - camera-write, pan-render, drop, skip, ignore: P1.
- * - drag-render, drag-ignore, drag-members-still, drag-busy,
- *   drag-members-unmount: G1. The members-still plant moves the frame and
- *   leaves its members; the busy one holds the thread on each move until two
- *   frame intervals past the last frame, so the move loses one frame wherever
- *   in a frame it arrives. On arm W the members-unmount plant drops the
- *   frame's members from the drag's search, so they unmount once the view
- *   stops after the first move.
- * - double-mount, keep-alive: L1. On arm W the first mount of double-mount
- *   skips culling and mounts every shape.
- * - cull-endpoints: the correctness guard; arm W keeps an arrow only when one
- *   of its ends is in view, so an arrow that crosses the view unmounts.
- * - late-motion: the correctness guard; arm W learns that the view moves only
- *   in the view's first frame after a camera change, so a reindex before that
- *   frame unmounts the shapes it showed.
- */
-const BOARD_PLANTS = [
-  'render',
-  'shape-render',
-  'shape-selector',
-  'busy',
-  'slow',
-  'defer',
-  'layout',
-  'camera-write',
-  'pan-render',
-  'drop',
-  'skip',
-  'ignore',
-  'drag-render',
-  'drag-ignore',
-  'drag-members-still',
-  'drag-busy',
-  'drag-members-unmount',
-  'double-mount',
-  'keep-alive',
-  'cull-endpoints',
-  'late-motion',
-] as const;
+type GateLine =
+  | 'G1'
+  | 'J1'
+  | 'L1'
+  | 'M0'
+  | 'N1'
+  | 'N2'
+  | 'P1'
+  | 'W1'
+  | 'correctness guard';
 
-export type BoardPlant = (typeof BOARD_PLANTS)[number];
+export const PLANT_REJECTING_LINES = {
+  render: ['N1', 'W1'],
+  'shape-render': ['W1'],
+  'shape-selector': ['W1'],
+  busy: ['N1'],
+  slow: ['M0', 'J1'],
+  defer: ['N2'],
+  layout: ['N2'],
+  'camera-write': ['P1'],
+  'pan-render': ['P1'],
+  drop: ['P1'],
+  skip: ['P1'],
+  ignore: ['P1'],
+  'drag-render': ['G1'],
+  'drag-ignore': ['G1'],
+  'drag-members-still': ['G1'],
+  'drag-busy': ['G1'],
+  'drag-members-unmount': ['G1'],
+  'double-mount': ['L1'],
+  'keep-alive': ['L1'],
+  'cull-endpoints': ['correctness guard'],
+  'late-motion': ['correctness guard'],
+} as const satisfies Readonly<Record<string, readonly GateLine[]>>;
 
-/** `flat` builds a flat document with the cohort's block count, the M0 and L1 control. */
+export type BoardPlant = keyof typeof PLANT_REJECTING_LINES;
+
+const BOARD_PLANTS = Object.keys(PLANT_REJECTING_LINES) as BoardPlant[];
+
 export type BoardBuild = 'board' | 'flat';
+
+export type BoardRenderer = 'production' | 'stub';
 
 export type BoardQuery = Readonly<{
   arm: RenderArm;
   build: BoardBuild;
+  renderer: BoardRenderer;
   cohort: string;
-  /** For the slow plant: the ratio it plants and the time it scales. */
   factor: number;
   knownBad: BrowserFault | null;
   plant: BoardPlant | null;
@@ -213,6 +162,10 @@ export const parseBoardQuery = (search: string): BoardQuery => {
     plant: query.has('plant')
       ? oneOf('plant', query.get('plant'), BOARD_PLANTS)
       : null,
+    renderer: oneOf('renderer', query.get('renderer') ?? 'production', [
+      'production',
+      'stub',
+    ]),
     slowBasis: oneOf('slowBasis', query.get('slowBasis') ?? 'n1', ['n1', 'n2']),
   };
 };

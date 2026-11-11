@@ -1,6 +1,8 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { refuseVetoedWrite } from '../core/node-write-veto';
 import {
   applyBuiltDocumentChange,
+  getActiveUpdateRoot,
   getCurrentSelection,
   runEditorTransaction,
 } from '../core/public-state';
@@ -10,6 +12,7 @@ import { nodes as getNodes } from '../editor/nodes';
 import {
   type Ancestor,
   type Descendant,
+  type Element,
   LocationApi,
   type Node,
   NodeApi,
@@ -32,7 +35,7 @@ import type {
   NodeMutationMethods,
   NodeUnwrapNodesOptions,
 } from '../interfaces/transforms/node';
-import { stripLocationRoots } from '../internal/root-location';
+import { MAIN_ROOT_KEY, stripLocationRoots } from '../internal/root-location';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { liftNodes } from './lift-nodes';
@@ -82,13 +85,21 @@ export const unwrapNodes = ((
   editor: Editor,
   options: NodeUnwrapNodesOptions = {}
 ) => {
+  const vetoUnwrap = (node: Element, path: Path) =>
+    refuseVetoedWrite(editor, {
+      kind: 'unwrap',
+      node,
+      path,
+      root: getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY,
+    });
   const unwrapNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
 
-    if (NodeApi.isText(node) || path.length === 0) {
+    if (!NodeApi.isElement(node) || path.length === 0) {
       return;
     }
 
+    vetoUnwrap(node, path);
     applyBuiltDocumentChange(editor, (builder, root) =>
       builder.unwrapNode(root, path)
     );
@@ -228,6 +239,7 @@ export const unwrapNodes = ((
           range = intersection;
         }
 
+        if (NodeApi.isElement(node)) vetoUnwrap(node, path);
         liftNodes(editor, {
           at: range,
           match: (candidate, candidatePath) =>

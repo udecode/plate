@@ -213,11 +213,15 @@ export class RootProjection extends Level {
   }
 
   private publish(from: DocumentIndex | null, change: RootChange | null) {
+    if (!this.changed) {
+      this.projected = this.stored;
+
+      return change && !change.empty ? change : null;
+    }
     if (from && (!change || change.empty)) {
       this.projected = from;
       return null;
     }
-    if (!this.changed) this.projected = this.stored;
 
     return change;
   }

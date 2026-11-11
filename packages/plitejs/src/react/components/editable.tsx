@@ -254,9 +254,16 @@ const updateEditableDropCursor = (
 
 export type EditableHandlerResult = boolean | EditableRepairRequest | void;
 
-export type EditableInputEventContext = {
-  data: unknown;
+/**
+ * What an editable passes each DOM handler after its event. `editor` is the
+ * view whose editable runs the handler, such as a content root's.
+ */
+export type EditableHandlerContext = {
   editor: ReactRuntimeEditor;
+};
+
+export type EditableInputEventContext = EditableHandlerContext & {
+  data: unknown;
   event?: InputEvent | React.KeyboardEvent<HTMLDivElement>;
   inputType?: string;
   intent: InputIntent | null;
@@ -274,13 +281,9 @@ export type EditableDOMBeforeInputHandler = (
   context: EditableDOMBeforeInputContext
 ) => EditableHandlerResult;
 
-export type EditableKeyDownContext = {
-  editor: ReactRuntimeEditor;
-};
-
 export type EditableKeyDownHandler = (
   event: React.KeyboardEvent<HTMLDivElement>,
-  context: EditableKeyDownContext
+  context: EditableHandlerContext
 ) => EditableHandlerResult;
 
 /**

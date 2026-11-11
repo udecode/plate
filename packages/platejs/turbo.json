@@ -4578,8 +4578,15 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:board",
-        "source-hash:partition:core"
+        "source-hash:partition:core",
+        "source-hash:partition:markdown",
+        "source-hash:partition:react",
+        "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:standard-list",
+        "source-hash:partition:yjs",
+        "source-hash:partition:yjs-react"
       ],
       "inputs": [
         "src/features/board/**",
@@ -4627,10 +4634,12 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:board",
         "source-hash:partition:board-react",
         "source-hash:partition:core",
-        "source-hash:partition:react-core"
+        "source-hash:partition:react-core",
+        "source-hash:partition:suggestion-react"
       ],
       "inputs": [
         "src/react/features/board/**",
@@ -4880,6 +4889,7 @@
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:authored",
+        "source-hash:partition:board",
         "source-hash:partition:comments",
         "source-hash:partition:core"
       ],
@@ -6103,6 +6113,7 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:details",
         "source-hash:partition:footnote",

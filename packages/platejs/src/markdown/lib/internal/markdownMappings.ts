@@ -67,7 +67,11 @@ type BivariantCallback<TArgs extends readonly unknown[], TResult> = {
   bivarianceHack(...args: TArgs): TResult;
 }['bivarianceHack'];
 
-type MarkdownEncodeResult = MdRootContent | MarkdownRefusal | undefined;
+type MarkdownEncodeResult =
+  | MdRootContent
+  | readonly MdRootContent[]
+  | MarkdownRefusal
+  | undefined;
 
 type ErasedMarkdownNodeMapping = Readonly<{
   attributes?: Readonly<Record<string, string>>;
@@ -137,7 +141,7 @@ type MarkdownDecoder = Readonly<{
  */
 export type MarkdownEncoded = Readonly<{
   claimed: ReadonlySet<string>;
-  node: MdRootContent;
+  nodes: readonly MdRootContent[];
   owner: string;
 }>;
 
@@ -669,6 +673,20 @@ const createEncodeContext = (
 
   return {
     ...createCommonContext(compiled, options),
+    contentRoot: (slot) => {
+      const root = ElementApi.isElement(node)
+        ? options.state.schema.getElementContentRoots(node)[slot]
+        : undefined;
+
+      if (root === undefined) {
+        throw new Error(
+          `Markdown node mapping "${compiled.owner}" read content root slot "${slot}", which its node does not own.`
+        );
+      }
+      options.readRoots.add(root);
+
+      return options.document.roots?.[root] ?? [];
+    },
     ...createPluginFormatModelView(
       options.document,
       node,
@@ -814,15 +832,19 @@ const createEncoder =
         `Markdown node mapping "${compiled.owner}" returned no encoded node.`
       );
     }
+    const nodes: readonly MdRootContent[] = Array.isArray(encoded)
+      ? encoded
+      : [encoded as MdRootContent];
+
     // `encodeAttributes` output claims its properties only where the returned
     // tree keeps it.
-    if (written.size > 0) claimWrittenAttributes(encoded, written, claimed);
+    if (written.size > 0) {
+      for (const mdNode of nodes) {
+        claimWrittenAttributes(mdNode, written, claimed);
+      }
+    }
 
-    return {
-      claimed,
-      node: encoded as MdRootContent,
-      owner: compiled.owner,
-    };
+    return { claimed, nodes, owner: compiled.owner };
   };
 
 const claimWrittenAttributes = (

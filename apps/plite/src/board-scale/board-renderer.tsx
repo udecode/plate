@@ -12,36 +12,28 @@ import * as React from 'react';
 
 import type { BoardPlant, RenderArm } from './browser-cohorts';
 import {
-  BASE62,
   type BoardCamera,
   type BoardPoint,
   plateBoardPlugins,
   type StoredNode,
+  stubBoardPlugins,
   VIEWPORT,
 } from './stub-board';
 
-/**
- * The Scale gate's positioned renderer for the stub board. The board is a
- * void block whose shapes are the top-level blocks of the content root it
- * owns, and it mounts them through `slots.contentRoot('shapes')`. Each
- * mounted view of a board keeps its own camera, layers and drag: a clipped
- * surface whose shapes sit absolutely from their place and size with a
- * z-index rank from their stacking key, while the DOM keeps the stored
- * order. The camera and a frame drag's preview reach the DOM through two
- * transforms and a translate on each dragged shape, so neither renders a
- * shape nor writes the document. Arm W also passes the slot a viewport, the
- * keys of the shapes its camera meets, as `useBoardWindow` says.
- */
-
 type ShapeGeometry = Readonly<{
   end?: BoardPoint;
-  place?: BoardPoint & { frame?: string; frameOrigin?: BoardPoint };
+  place?: BoardPoint;
   size?: Readonly<{ height: number; width: number }>;
   start?: BoardPoint;
 }>;
 
 type ShapeFields = ShapeGeometry &
-  Readonly<{ shapeId?: string; type: string; zIndex?: string }>;
+  Readonly<{
+    frame?: string;
+    shapeId?: string;
+    type: string;
+    zIndex?: string;
+  }>;
 
 export type ShapeBox = Readonly<{
   height: number;
@@ -50,7 +42,6 @@ export type ShapeBox = Readonly<{
   y: number;
 }>;
 
-/** A shape's box in board coordinates, as the renderer places it. */
 export const shapeBox = (shape: ShapeGeometry): ShapeBox => {
   if (shape.start && shape.end) {
     return {
@@ -62,52 +53,71 @@ export const shapeBox = (shape: ShapeGeometry): ShapeBox => {
   }
 
   const place = shape.place ?? { x: 0, y: 0 };
-  const origin = place.frame ? (place.frameOrigin ?? { x: 0, y: 0 }) : null;
 
   return {
     height: shape.size?.height ?? 0,
     width: shape.size?.width ?? 0,
-    x: place.x + (origin?.x ?? 0),
-    y: place.y + (origin?.y ?? 0),
+    x: place.x,
+    y: place.y,
   };
 };
 
-// The stub's stacking keys all have one length, so decoding their digits keeps
-// their order.
-const rankOf = (key = 'c000') => {
-  let rank = 0;
+const byStack = (a: ShapeFields, b: ShapeFields) => {
+  const left = a.zIndex ?? '';
+  const right = b.zIndex ?? '';
 
-  for (let index = 1; index < key.length; index++) {
-    rank = rank * 62 + BASE62.indexOf(key[index]);
-  }
+  if (left !== right) return left < right ? -1 : 1;
 
-  return rank + 1;
+  return (a.shapeId ?? '') < (b.shapeId ?? '') ? -1 : 1;
 };
 
-/** One mounted view of a board: its camera, its two layers and its drag. */
+const stackRanks = new WeakMap<
+  readonly ShapeFields[],
+  ReadonlyMap<string | undefined, number>
+>();
+
+const stackRankOf = (shapes: readonly ShapeFields[], shape: ShapeFields) => {
+  let ranks = stackRanks.get(shapes);
+
+  if (!ranks) {
+    ranks = new Map(
+      [...shapes].sort(byStack).map((each, at) => [each.shapeId, at + 1])
+    );
+    stackRanks.set(shapes, ranks);
+  }
+
+  return ranks.get(shape.shapeId) ?? 0;
+};
+
+const StackRank = React.createContext<(shape: ShapeFields) => number>(() => 0);
+
+export type RendererView = Readonly<{
+  camera: BoardCamera;
+  layer: HTMLElement | null;
+  zoomLayer: HTMLElement | null;
+}>;
+
+export const transformOf = (view: RendererView | null) =>
+  view?.layer && view.zoomLayer
+    ? new DOMMatrixReadOnly(getComputedStyle(view.layer).transform).multiply(
+        new DOMMatrixReadOnly(getComputedStyle(view.zoomLayer).transform)
+      )
+    : null;
+
 export type BoardView = {
   camera: BoardCamera;
-  /** The zoom the child layer draws the shapes at. */
   drawnZoom: number;
   layer: HTMLDivElement | null;
-  /** Called once a frame while the view moves, and once in the frame after it stops. */
   listeners: Set<(moving: boolean) => void>;
   root: string;
   zoomLayer: HTMLDivElement | null;
-  /** The frame a drag moves and its offset in board units. */
   drag: Readonly<{ dx: number; dy: number; id: string }> | null;
   dragged: readonly HTMLElement[];
-  /**
-   * The board point a drag grabbed, the pointer's last client point and the
-   * surface's client corner, so a pan or zoom mid-drag keeps the grabbed
-   * point under the pointer.
-   */
   grab: Readonly<{
     board: BoardPoint;
     pointer: BoardPoint;
     surface: BoardPoint;
   }> | null;
-  /** Set from the camera change until the frame after the view stops. */
   frame: number;
   identityAnimation: Animation | null;
   moved: boolean;
@@ -145,9 +155,7 @@ const boardPointAt = (
   y: view.camera.y + (client.y - surface.y) / view.camera.zoom,
 });
 
-const LOOK: Readonly<Record<string, React.CSSProperties>> = {
-  // An arrow's box spans its two ends, so a fill would cover the shapes
-  // between them and take their clicks.
+export const LOOK: Readonly<Record<string, React.CSSProperties>> = {
   boardArrow: { borderTop: '2px solid #475569', pointerEvents: 'none' },
   boardFrame: { border: '1px dashed #64748b', cursor: 'grab' },
   boardGeo: { background: '#dbeafe', border: '1px solid #60a5fa' },
@@ -163,6 +171,25 @@ const LOOK: Readonly<Record<string, React.CSSProperties>> = {
 const WHEEL_STEP_ZOOM = 100;
 const DROP_MS = 40;
 
+type CommittedFiber = {
+  alternate: CommittedFiber | null;
+  child: CommittedFiber | null;
+  flags: number;
+  memoizedProps: { element?: StoredNode } | null;
+  sibling: CommittedFiber | null;
+  subtreeFlags: number;
+  type: unknown;
+};
+
+declare global {
+  interface Window {
+    __BOARD_SCALE_COMMIT__?: (root: { current: CommittedFiber }) => void;
+  }
+}
+
+/** React's flag on a fiber whose component rendered and changed this commit. */
+const PERFORMED_WORK = 1;
+
 type CullBox = BBox & { index: number };
 
 const union = (left: readonly number[], right: readonly number[]) =>
@@ -172,36 +199,21 @@ const sameIndexes = (left: readonly number[], right: readonly number[]) =>
   left.length === right.length &&
   left.every((index, at) => index === right[at]);
 
-/**
- * The stub board's renderer for one page: its counters, its plants and the
- * composed Plate plugins whose board and shape components draw it. Every
- * mounted board gets its own view, so a second view of one board, such as
- * the keep-alive plant's hidden copy, never moves the first one's camera.
- */
-export const createBoardRenderer = (config: RendererConfig) => {
-  /** Board and shape renders and mounts, and arm W's window work, which the lanes read back. */
+export const createInstruments = (moving: () => boolean) => {
   const stats = {
     boardRenders: 0,
-    /** Arm W's scans of the root for a changed place, size or child. */
     geometryScans: 0,
-    /** Arm W's spatial index rebuilds, one per change to a place, size or the root's blocks. */
     indexBuilds: 0,
-    /** Shape trees mounted now. */
-    live: 0,
-    /** Shape trees mounted in all. */
+    mountedNow: 0,
     mounts: 0,
-    /** Shape trees unmounted while the view moved, which arm W must never do. */
     motionUnmounts: 0,
     renderedIds: new Map<string, number>(),
     renders: 0,
-    /** Commits of a shape tree that was already mounted. */
     updates: 0,
     valueChanges: 0,
-    /** Arm W's searches of its index for the shapes in view. */
     visibilityRecomputes: 0,
   };
 
-  /** Work each planted arm records, so a plant that did nothing fails. */
   const plantWork = {
     busyMs: 0,
     cameraWrites: 0,
@@ -218,13 +230,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
     stillMembers: 0,
     unmountedMembers: 0,
   };
-  const { arm, plant } = config;
-  const views = new Set<BoardView>();
-  const queuedRenders = new Set<BoardView>();
-  /** Writes the camera into the document, for the camera-write plant. */
-  let onCameraWrite: (camera: BoardCamera) => void = () => {};
-  let windows = 0;
-
   const busyWait = (ms: number) => {
     const end = performance.now() + ms;
 
@@ -245,12 +250,119 @@ export const createBoardRenderer = (config: RendererConfig) => {
   };
   const readTick = () => tick;
 
-  /** Re-renders every shape, for the plants that render shapes they should not. */
   const bumpShapeTick = () => {
     tick += 1;
     plantWork.renderBumps += 1;
     for (const listener of tickListeners) listener();
   };
+
+  const countShapeRender = (id: string, update: boolean) => {
+    stats.renders += 1;
+    stats.renderedIds.set(id, (stats.renderedIds.get(id) ?? 0) + 1);
+    if (update) stats.updates += 1;
+  };
+
+  const useShapeMount = () => {
+    'use no memo';
+    React.useLayoutEffect(() => {
+      stats.mounts += 1;
+      stats.mountedNow += 1;
+
+      return () => {
+        stats.mountedNow -= 1;
+        if (moving()) stats.motionUnmounts += 1;
+      };
+    }, []);
+  };
+
+  /**
+   * A fiber that rendered and changed carries PerformedWork, and so does each
+   * ancestor's subtree flags, so the walk enters only the branches that
+   * rendered.
+   */
+  const countCommittedRenders = ({
+    boards = [],
+    shapes,
+  }: Readonly<{ boards?: readonly unknown[]; shapes: readonly unknown[] }>) => {
+    window.__BOARD_SCALE_COMMIT__ = (root) => {
+      const stack = [root.current];
+
+      while (stack.length > 0) {
+        const fiber = stack.pop();
+
+        if (!fiber) continue;
+        if (fiber.flags & PERFORMED_WORK) {
+          if (shapes.includes(fiber.type)) {
+            countShapeRender(
+              fiber.memoizedProps?.element?.shapeId ?? '',
+              fiber.alternate !== null
+            );
+          } else if (boards.includes(fiber.type)) {
+            stats.boardRenders += 1;
+          }
+        }
+        if (fiber.subtreeFlags & PERFORMED_WORK) {
+          for (let { child } = fiber; child; child = child.sibling) {
+            stack.push(child);
+          }
+        }
+      }
+    };
+  };
+
+  let keptAlive = false;
+  const keepAliveListeners = new Set<() => void>();
+  const subscribeKeepAlive = (listener: () => void) => {
+    keepAliveListeners.add(listener);
+
+    return () => {
+      keepAliveListeners.delete(listener);
+    };
+  };
+  const readKeepAlive = () => keptAlive;
+  const keepAlive = () => {
+    keptAlive = true;
+    for (const listener of keepAliveListeners) listener();
+  };
+  const useKeptAlive = () =>
+    React.useSyncExternalStore(
+      subscribeKeepAlive,
+      readKeepAlive,
+      readKeepAlive
+    );
+
+  return {
+    bumpShapeTick,
+    busyWait,
+    countCommittedRenders,
+    keepAlive,
+    plantWork,
+    readTick,
+    stats,
+    subscribeTick,
+    useKeptAlive,
+    useShapeMount,
+  };
+};
+
+export const createBoardRenderer = (config: RendererConfig) => {
+  const { arm, plant } = config;
+  const views = new Set<BoardView>();
+  const {
+    bumpShapeTick,
+    busyWait,
+    countCommittedRenders,
+    keepAlive,
+    plantWork,
+    readTick,
+    stats,
+    subscribeTick,
+    useKeptAlive,
+    useShapeMount,
+  } = createInstruments(() => [...views].some(isViewMoving));
+  const queuedRenders = new Set<BoardView>();
+  let onCameraWrite: (camera: BoardCamera) => void = () => {};
+  let windows = 0;
 
   const createView = (root: string): BoardView => ({
     camera: config.camera,
@@ -473,45 +585,46 @@ export const createBoardRenderer = (config: RendererConfig) => {
     };
   };
 
-  const useShapeLife = (id: string) => {
-    // oxlint-disable-next-line react/immutability -- counting renders is this probe's job; Shape opts out of the compiler so every render runs.
-    stats.renders += 1;
-    stats.renderedIds.set(id, (stats.renderedIds.get(id) ?? 0) + 1);
+  const attachView = (
+    view: BoardView,
+    layer: HTMLDivElement | null,
+    zoomLayer: HTMLDivElement | null
+  ) => {
+    if (!layer || !zoomLayer) return undefined;
+    view.layer = layer;
+    view.zoomLayer = zoomLayer;
+    layer.style.transform = panTransform(view);
+    zoomLayer.style.transform = zoomTransform(view);
+    views.add(view);
 
-    // A layout effect, so the counts are whole when readiness is stamped in
-    // the next frame.
-    React.useLayoutEffect(() => {
-      stats.mounts += 1;
-      stats.live += 1;
+    const surface = layer.parentElement;
+    const remove = surface ? installGestures(view, surface) : undefined;
 
-      return () => {
-        stats.live -= 1;
-        if ([...views].some(isViewMoving)) stats.motionUnmounts += 1;
-      };
-    }, []);
-
-    const committed = React.useRef(false);
-
-    React.useLayoutEffect(() => {
-      if (committed.current) stats.updates += 1;
-      committed.current = true;
-    });
+    return () => {
+      view.identityAnimation?.cancel();
+      view.identityAnimation = null;
+      view.layer = null;
+      view.zoomLayer = null;
+      views.delete(view);
+      queuedRenders.delete(view);
+      remove?.();
+    };
   };
 
   function Shape(props: RenderElementProps) {
-    // Render counts must run on every render, which compiler memoization skips.
     'use no memo';
     const shape = props.element as unknown as ShapeFields;
     const box = shapeBox(shape);
+    const rankOf = React.useContext(StackRank);
 
-    useShapeLife(shape.shapeId ?? '');
+    useShapeMount();
 
     return (
       <EditorElement
         {...props}
         attributes={{
           ...props.attributes,
-          'data-frame': shape.place?.frame,
+          'data-frame': shape.frame,
           'data-shape-id': shape.shapeId,
           'data-shape-type': shape.type,
         }}
@@ -522,7 +635,7 @@ export const createBoardRenderer = (config: RendererConfig) => {
           position: 'absolute',
           top: box.y,
           width: box.width,
-          zIndex: rankOf(shape.zIndex),
+          zIndex: rankOf(shape),
           ...LOOK[shape.type],
         }}
       >
@@ -549,17 +662,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
     return <Shape {...props} />;
   }
 
-  /**
-   * Arm W's window over one view: an rbush index of the root's shape boxes,
-   * the ascending indexes it keeps mounted and their node keys. The index
-   * rebuilds only when a shape's place, size or ends or the root's blocks
-   * change. The kept indexes are the shapes the view's camera meets and a
-   * dragged frame's members wherever the drag moved them; the slot itself
-   * keeps the shapes a selection end sits in. While the view
-   * moves the window only grows; it drops the shapes that left the view in
-   * the frame after the view stops, because in WebKit each unmount redrew
-   * every mounted shape.
-   */
   const createWindow = (
     editor: ReturnType<typeof useEditor>,
     view: BoardView
@@ -569,11 +671,9 @@ export const createBoardRenderer = (config: RendererConfig) => {
     let children: readonly ShapeFields[] | null = null;
     let geometry: ReadonlyArray<readonly unknown[]> = [];
     let boxes: readonly ShapeBox[] = [];
-    // Each shape's id, and each frame's id, to the indexes a drag of that id moves.
     let framed = new Map<string, number[]>();
     let shown: readonly number[] = [];
     let keys: ReadonlySet<NodeKey> = new Set();
-    /** The view's motion as the view listener last reported it, read only by the late-motion plant. */
     let heardMoving = false;
     const moving = () =>
       plant === 'late-motion' ? heardMoving : isViewMoving(view);
@@ -634,7 +734,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
       return [...hits].sort((left, right) => left - right);
     };
 
-    /** Re-indexes when a shape's box or the root's blocks changed; true when it did. */
     const sync = () => {
       const next = rootView.read.children() as readonly ShapeFields[];
 
@@ -680,7 +779,7 @@ export const createBoardRenderer = (config: RendererConfig) => {
       boxes = next.map(shapeBox);
       framed = new Map();
       next.forEach((shape, index) => {
-        for (const id of [shape.shapeId, shape.place?.frame]) {
+        for (const id of [shape.shapeId, shape.frame]) {
           if (id === undefined) continue;
           const members = framed.get(id);
           if (members) members.push(index);
@@ -700,7 +799,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
       return true;
     };
 
-    /** Searches again; true when the kept indexes changed and the board must render. */
     const refresh = () => {
       const found = search();
       const next = moving() ? union(shown, found) : found;
@@ -739,8 +837,12 @@ export const createBoardRenderer = (config: RendererConfig) => {
     });
 
     return {
-      /** Re-indexes from a commit that may have moved a shape; true when the board must render. */
-      follow: () => sync() && (refresh() || true),
+      follow: () => {
+        if (!sync()) return false;
+        refresh();
+
+        return true;
+      },
       viewport,
       view: (viewMoving: boolean) => {
         heardMoving = viewMoving;
@@ -750,18 +852,12 @@ export const createBoardRenderer = (config: RendererConfig) => {
     };
   };
 
-  /**
-   * Arm W's viewport for one view. A camera change searches the index at most
-   * once a frame, and the board renders only when the kept shapes change; a
-   * key that changes only a shape's text renders neither the board nor a
-   * search.
-   */
   const useBoardWindow = (view: BoardView) => {
+    'use no memo';
     const editor = useEditor();
     const [window] = React.useState(() => createWindow(editor, view));
     const [, rerender] = React.useReducer((count: number) => count + 1, 0);
 
-    // A shape this render mounted mid-drag joins the drag's preview before paint.
     React.useLayoutEffect(() => {
       queuedRenders.delete(view);
       if (view.drag) placeDragged(view);
@@ -774,8 +870,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
       };
 
       view.listeners.add(onView);
-      // A text edit commits no property or structure change, so it costs no
-      // scan and no search.
       const unsubscribeCommit = editor.subscribeCommit(({ changed }) => {
         if (
           (changed.hasAny('properties') ||
@@ -806,36 +900,18 @@ export const createBoardRenderer = (config: RendererConfig) => {
     view: BoardView;
   }) {
     'use no memo';
-    const layerRef = React.useCallback(
-      (node: HTMLDivElement | null) => {
-        // oxlint-disable-next-line react/immutability -- the camera view is the gesture handlers' mutable state, not React state; they move this layer outside React.
-        view.layer = node;
+    const editor = useEditor();
+    const [rankOf] = React.useState(() => {
+      const rootView = createEditorView(editor, { root: view.root });
 
-        if (!node) return undefined;
-        node.style.transform = panTransform(view);
-        views.add(view);
+      return (shape: ShapeFields) =>
+        stackRankOf(rootView.read.children(), shape);
+    });
+    const layerRef = React.useRef<HTMLDivElement>(null);
+    const zoomLayerRef = React.useRef<HTMLDivElement>(null);
 
-        const surface = node.parentElement;
-        const remove = surface ? installGestures(view, surface) : undefined;
-
-        // React 19 runs a ref's cleanup on detach instead of calling it with null.
-        return () => {
-          view.identityAnimation?.cancel();
-          view.identityAnimation = null;
-          view.layer = null;
-          views.delete(view);
-          queuedRenders.delete(view);
-          remove?.();
-        };
-      },
-      [view]
-    );
-    const zoomRef = React.useCallback(
-      (node: HTMLDivElement | null) => {
-        // oxlint-disable-next-line react/immutability -- as with the layer above.
-        view.zoomLayer = node;
-        if (node) node.style.transform = zoomTransform(view);
-      },
+    React.useLayoutEffect(
+      () => attachView(view, layerRef.current, zoomLayerRef.current),
       [view]
     );
 
@@ -869,7 +945,7 @@ export const createBoardRenderer = (config: RendererConfig) => {
           }}
         >
           <div
-            ref={zoomRef}
+            ref={zoomLayerRef}
             style={{
               left: 0,
               position: 'absolute',
@@ -877,7 +953,7 @@ export const createBoardRenderer = (config: RendererConfig) => {
               transformOrigin: '0 0',
             }}
           >
-            {content}
+            <StackRank value={rankOf}>{content}</StackRank>
           </div>
         </div>
         {props.children}
@@ -888,11 +964,8 @@ export const createBoardRenderer = (config: RendererConfig) => {
   const rootOf = (props: RenderElementProps) =>
     (props.element as unknown as StoredNode).childRoots?.shapes ?? '';
 
-  /** Arm A mounts every shape: the uncosted full-DOM control. */
   function Board(props: RenderElementProps) {
     'use no memo';
-    // oxlint-disable-next-line react/immutability -- counting renders is this probe's job.
-    stats.boardRenders += 1;
     const [view] = React.useState(() => createView(rootOf(props)));
 
     return (
@@ -904,27 +977,22 @@ export const createBoardRenderer = (config: RendererConfig) => {
     );
   }
 
-  /** Arm W mounts the root through the slot's window over this view's camera. */
   function WindowBoard(props: RenderElementProps) {
     'use no memo';
-    // oxlint-disable-next-line react/immutability -- counting renders is this probe's job.
-    stats.boardRenders += 1;
     const [view] = React.useState(() => createView(rootOf(props)));
-    // The double-mount plant mounts every shape in the page's first window
-    // board, as a board whose index is not ready on its first render would,
-    // before the remount that windows it.
     const [unwindowed] = React.useState(() => {
       windows += 1;
 
       return plant === 'double-mount' && windows === 1;
     });
     const viewport = useBoardWindow(view);
+    const keptAlive = useKeptAlive();
 
     return (
       <BoardSurface
         content={props.slots.contentRoot(
           'shapes',
-          unwindowed ? undefined : { viewport }
+          unwindowed || keptAlive ? undefined : { viewport }
         )}
         props={props}
         view={view}
@@ -932,10 +1000,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
     );
   }
 
-  /**
-   * Arm W's render plant: the board renders on every key, and with it every
-   * mounted shape, which W1's board-render count in the type lane must reject.
-   */
   function TickingWindowBoard(props: RenderElementProps) {
     'use no memo';
     React.useSyncExternalStore(subscribeTick, readTick, readTick);
@@ -943,9 +1007,6 @@ export const createBoardRenderer = (config: RendererConfig) => {
     return <WindowBoard {...props} />;
   }
 
-  // A plant that renders shapes it should not gets shapes that subscribe to
-  // the plant's tick, and the selector plant gets shapes that each add a
-  // selector; every other arm gets plain shapes.
   const ShapeComponent =
     plant === 'render' ||
     plant === 'shape-render' ||
@@ -956,23 +1017,29 @@ export const createBoardRenderer = (config: RendererConfig) => {
         ? SelectingShape
         : Shape;
 
-  const plugins = plateBoardPlugins('composed', {
-    board:
-      arm === 'A'
-        ? Board
-        : plant === 'render'
-          ? TickingWindowBoard
-          : WindowBoard,
-    boardArrow: ShapeComponent,
-    boardFrame: ShapeComponent,
-    boardGeo: ShapeComponent,
-    boardNote: ShapeComponent,
-    boardStroke: ShapeComponent,
-  });
+  countCommittedRenders({ boards: [Board, WindowBoard], shapes: [Shape] });
+
+  const plugins = plateBoardPlugins(
+    'composed',
+    stubBoardPlugins({
+      board:
+        arm === 'A'
+          ? Board
+          : plant === 'render'
+            ? TickingWindowBoard
+            : WindowBoard,
+      boardArrow: ShapeComponent,
+      boardFrame: ShapeComponent,
+      boardGeo: ShapeComponent,
+      boardNote: ShapeComponent,
+      boardStroke: ShapeComponent,
+    })
+  );
 
   return {
     bumpShapeTick,
     busyWait,
+    keepAlive,
     plantWork,
     plugins,
     recordValueChange: () => {
@@ -984,17 +1051,7 @@ export const createBoardRenderer = (config: RendererConfig) => {
     stats,
     viewsSettled: () =>
       queuedRenders.size === 0 && ![...views].some(isViewMoving),
-    /** The first mounted view of `root`, the one the lanes drive. */
     viewOf: (root: string) =>
       [...views].find((view) => view.root === root) ?? null,
-    /** The view's two layers' transforms, composed. */
-    transformOf: (view: BoardView | null) =>
-      view?.layer && view.zoomLayer
-        ? new DOMMatrixReadOnly(
-            getComputedStyle(view.layer).transform
-          ).multiply(
-            new DOMMatrixReadOnly(getComputedStyle(view.zoomLayer).transform)
-          )
-        : null,
   };
 };

@@ -1,6 +1,7 @@
 import type { Element, Path } from '../../facade';
 
-type ElementContentRootSlot<N extends Element> = N extends {
+/** The `childRoots` slot names of `N`, or any slot name when `N` declares none. */
+export type ElementContentRootSlot<N extends Element> = N extends {
   childRoots: infer TRoots extends Readonly<Record<string, string>>;
 }
   ? Extract<keyof TRoots, string>

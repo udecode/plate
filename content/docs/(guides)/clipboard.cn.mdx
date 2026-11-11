@@ -353,9 +353,10 @@ const slice = ContentSlice.fromJSON({
 editor.update.slice.replace(slice);
 ```
 
-直接 HTML/Markdown `parseSlice` 产生闭合、无 root 的 slice。只有 native fragment
-transport 可以为 open edge 与 detached root 提供 authority。Destination-specific
-fit 在 insertion owner 处发生。
+直接 HTML/Markdown `parseSlice` 产生闭合的 slice。Markdown slice 不带 root，
+HTML slice 只携带 mapping 解码出的 content root。只有 native fragment transport
+可以为 open edge 提供 authority。Destination-specific fit 在 insertion owner 处
+发生。
 
 ## Browser proof
 

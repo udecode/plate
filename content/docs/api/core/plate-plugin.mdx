@@ -465,7 +465,7 @@ Defines structural composition around Plate surfaces and rendered nodes. Each sl
 
 <APISubList>
 <APISubListItem parent="slots" name="wrapRoot" type="({ children, editableRef }) => ReactNode" optional>
-Wraps the complete Plate root for the mounted Plate view and receives `{ children, editableRef }`. The ref identifies that view’s actual Editable and is `null` before attachment and after detach.
+Wraps the complete Plate root for the mounted Plate view and receives `{ children, editableRef }`. The ref identifies that view's actual Editable and is `null` before attachment and after detach.
 </APISubListItem>
 <APISubListItem parent="slots" name="wrapContent" type="NodeComponent" optional>
 Wraps Editable content and Plate lifecycle effects inside the Plate root.
@@ -578,6 +578,10 @@ Renders after a node's children inside its primary component.
   Ordered values bound to typed plugin points. Use them for declarative values
   collected by a specific plugin owner. Clipboard ingress composes through the
   `domCommands.insertData` command.
+
+  `transferVeto` refuses a drag, keyboard move or `editor.api.transfer`
+  landing. `nodeWriteVeto` refuses a type change, wrap or unwrap of a node, as
+  [Roots](/docs/roots#content-roots) shows. Import both from `platejs`.
 </APIItem>
 
 <APIItem name="activate" type="PluginDefinitionInput['activate']">

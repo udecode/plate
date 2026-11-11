@@ -57,7 +57,10 @@ const MyEditor = () => {
 
 ## Editor-aware handlers
 
-Use `onKeyDown` and `onDOMBeforeInput` when a handler needs editor context:
+Every handler gets an `EditableHandlerContext` after its event, whose `editor`
+is the view whose editable runs it, such as a content root's. The context of
+`onDOMBeforeInput` also carries the input's `inputType`, `data` and target
+`selection`:
 
 ```tsx
 <Editable
@@ -79,3 +82,10 @@ Use `onKeyDown` and `onDOMBeforeInput` when a handler needs editor context:
   }}
 />
 ```
+
+In a content root's editable, the platform's undo and redo keys (Mod+Z and
+Mod+Shift+Z, and Ctrl+Y outside Apple platforms) never reach `onKeyDown`,
+because the editor replays history first. Shift with an arrow key skips it too,
+because the editor extends the selection first, unless the root's structure is
+a set, as a board's is. Every other key reaches `onKeyDown` as it does in the
+main editable.

@@ -11,10 +11,12 @@ import {
   createEditor as createPlateEditor,
   definePlugin as definePlatePlugin,
   type NodeComponent,
+  TrailingBlockPlugin,
 } from 'platejs';
 import {
   createEditor as createPliteEditor,
   defineEditorSchema,
+  type PluginReference,
   property,
   schema,
   target,
@@ -26,12 +28,11 @@ import {
   type AuthoredQuery,
 } from 'plitejs/authored';
 
-/**
- * The Scale gate's stub board: a disposable forecast of the board's stored
- * shape, built from stubs so the A, S and F cohorts run before any board code
- * ships. The Bun and Node model lanes and the apps/plite browser lanes import
- * it, so every lane types into the same document.
- */
+import {
+  BaseBoardGeoPlugin,
+  BaseBoardNotePlugin,
+  BaseBoardPlugin,
+} from '../../../../packages/platejs/src/features/board';
 
 const SHAPE_TYPES = [
   'boardNote',
@@ -48,36 +49,22 @@ export type BoardLayer = 'plite' | 'plate' | 'composed';
 
 export type TypedPosition = 'first' | 'middle' | 'last';
 
-/**
- * Where the S pending shapes sit: `spread` keeps no two adjacent, and `head`
- * is one run from the board's first child that ends right before the typed
- * note, which then sits at index S.
- */
 export type PendingPlacement = 'spread' | 'head';
 
-/** How the lane types: Plain writes as written, Suggesting records a suggestion. */
 export type BoardIntent = 'plain' | 'suggesting';
 
-/** One cohort's workload, as its name claims it. */
 export type BoardWorkload = Readonly<{
-  /** Shapes per board, N. */
   shapes: number;
-  /** Boards in the document, B. Each holds `shapes`. */
   boards: number;
-  /** Arrows bound to the typed note, A. */
   arrowsToTyped: number;
-  /** Shapes holding one pending authored suggestion each, S. */
   pending: number;
-  /** Members of the typed note's frame, the typed note included, F. */
   frameMembers: number;
   position: TypedPosition;
   placement: PendingPlacement;
   intent: BoardIntent;
-  /** All shapes in view at the smallest zoom, instead of about 40. */
   dense: boolean;
 }>;
 
-/** The parameter a known-bad cohort breaks while keeping its name. */
 export type BoardFault =
   | 'N'
   | 'A'
@@ -100,7 +87,6 @@ const LEAD_PARAGRAPHS = 10;
 export const BASE62 =
   '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-/** A valid fractional-indexing key whose bytewise order follows `index`. */
 const stackingKey = (index: number) => {
   let digits = '';
   let rest = index;
@@ -122,22 +108,17 @@ const paragraph = (value: string) => ({
 const boardRootName = (board: number) => `board:${board}`;
 
 export type TypedTarget = Readonly<{
-  /** Top-level index of the board block that owns the typed note's root. */
   board: number;
-  /** The root that holds the typed note. */
   root: string;
   shapeId: string;
-  /** Path of the typed note's first paragraph's text, inside `root`. */
   textPath: number[];
 }>;
 
-/** A document as the editor loads it: the main root and each board's root. */
 export type BoardValue = {
   children: Array<Record<string, unknown>>;
   roots?: Record<string, Array<Record<string, unknown>>>;
 };
 
-/** An arrow the typed note's board seeds to cross one view with both ends off screen. */
 export type SeededCrossing = Readonly<{
   shapeId: string;
   view: 'typed' | 'origin';
@@ -152,10 +133,6 @@ export type BoardFixture = Readonly<{
 
 type Kind = 'note' | 'geo' | 'arrow';
 
-/**
- * A pending property suggestion as the authored layer stores it, so a load
- * holds S open suggestions without S separate proposal commits.
- */
 const pendingMark = (
   slot: number,
   key: string,
@@ -176,10 +153,6 @@ const pendingMark = (
   };
 };
 
-/**
- * 70% notes, 20% geo shapes and 10% arrows, the typed index a note. A head
- * run makes its first `notesFirst` shapes notes, so the run is unbroken.
- */
 const shapeKinds = (
   count: number,
   typedIndex: number,
@@ -219,32 +192,40 @@ const typedIndexOf = (
   return position === 'last' ? count - 1 : Math.floor(count / 2);
 };
 
-const gridColumns = (count: number) => Math.max(8, Math.ceil(Math.sqrt(count)));
+type Grid = Readonly<{ columns: number; pitch: BoardPoint }>;
 
-const gridPlace = (index: number, columns: number) => ({
-  x: (index % columns) * PITCH.x,
-  y: Math.floor(index / columns) * PITCH.y,
+const DENSE_PITCH = { x: SIZE.width + 10, y: SIZE.height + 10 } as const;
+
+const gridOf = (count: number, dense: boolean): Grid =>
+  dense
+    ? {
+        columns: Math.ceil(
+          Math.sqrt(
+            (count * VIEWPORT.width * DENSE_PITCH.y) /
+              (VIEWPORT.height * DENSE_PITCH.x)
+          )
+        ),
+        pitch: DENSE_PITCH,
+      }
+    : { columns: Math.max(8, Math.ceil(Math.sqrt(count))), pitch: PITCH };
+
+const gridPlace = (index: number, { columns, pitch }: Grid) => ({
+  x: (index % columns) * pitch.x,
+  y: Math.floor(index / columns) * pitch.y,
 });
 
-type ShapePlace = BoardPoint &
-  Readonly<{ frame?: string; frameOrigin?: BoardPoint }>;
-
-/** A shape's top-left corner in board coordinates; a frame member's place is relative to its frame. */
-const boardOrigin = (place: ShapePlace | undefined) => ({
-  x: (place?.x ?? 0) + (place?.frame ? (place.frameOrigin?.x ?? 0) : 0),
-  y: (place?.y ?? 0) + (place?.frame ? (place.frameOrigin?.y ?? 0) : 0),
+const spanOf = (start: BoardPoint, end: BoardPoint) => ({
+  place: { x: Math.min(start.x, end.x), y: Math.min(start.y, end.y) },
+  size: {
+    height: Math.max(2, Math.abs(end.y - start.y)),
+    width: Math.max(2, Math.abs(end.x - start.x)),
+  },
 });
 
-/**
- * The places of the arrows that cross a view with both ends off screen, one
- * pair of end shapes per row: the typed note's row, which the typed view
- * centers, and the origin view's middle row. Each pair sits one board width
- * left of the grid and one board width right of it, past the dense view too.
- */
-const crossingPlaces = (rowCenters: readonly number[], columns: number) =>
+const crossingPlaces = (rowCenters: readonly number[], grid: Grid) =>
   rowCenters.flatMap((center) => {
     const y = center - SIZE.height / 2;
-    const width = columns * PITCH.x;
+    const width = grid.columns * grid.pitch.x;
 
     return [
       { x: -width - SIZE.width, y },
@@ -252,11 +233,6 @@ const crossingPlaces = (rowCenters: readonly number[], columns: number) =>
     ];
   });
 
-/**
- * Builds the Scale gate's document: 10 paragraphs, the boards, then 10
- * paragraphs. A fault keeps the workload's name and breaks one parameter, so
- * the read-back must catch it.
- */
 export const buildBoardFixture = (
   workload: BoardWorkload,
   fault?: BoardFault
@@ -296,7 +272,7 @@ export const buildBoardFixture = (
       typedIndex,
       holdsTyped && placement === 'head' ? workload.pending : 0
     );
-    const columns = gridColumns(count);
+    const grid = gridOf(count, workload.dense);
     const ids = kinds.map((_kind, index) =>
       index === typedIndex ? typedId : `b${board}-s${index}`
     );
@@ -323,8 +299,6 @@ export const buildBoardFixture = (
       }
     }
 
-    // The last arrows cross the views, bound to the last spare geo shapes,
-    // which move off the grid; the typed note's arrows come first.
     const arrowSlots = kinds.flatMap((kind, index) =>
       kind === 'arrow' ? [index] : []
     );
@@ -339,8 +313,7 @@ export const buildBoardFixture = (
     const crossingRows = [
       {
         center:
-          gridPlace(holdsTyped ? typedIndex : Math.floor(count / 2), columns)
-            .y +
+          gridPlace(holdsTyped ? typedIndex : Math.floor(count / 2), grid).y +
           SIZE.height / 2,
         view: 'typed',
       },
@@ -366,7 +339,7 @@ export const buildBoardFixture = (
     }
     const moved = new Map<number, BoardPoint>();
 
-    crossingPlaces(rowCenters, columns).forEach((place, at) => {
+    crossingPlaces(rowCenters, grid).forEach((place, at) => {
       const crossing = crossings[Math.floor(at / 2)];
 
       if (crossing) {
@@ -374,30 +347,26 @@ export const buildBoardFixture = (
       }
     });
 
-    let framed = 0;
-    const places = kinds.map((kind, index): ShapePlace => {
-      const place = moved.get(index) ?? gridPlace(index, columns);
+    const frameOrigin = frameSlot >= 0 ? gridPlace(frameSlot, grid) : null;
+    const frameOf = new Map<number, string>();
+    const places = kinds.map((kind, index): BoardPoint => {
+      const place = moved.get(index) ?? gridPlace(index, grid);
 
-      if (index === frameSlot || kind === 'arrow') return place;
+      if (index === frameSlot || kind === 'arrow' || !frameOrigin) return place;
       const joinsFrame =
         holdsTyped &&
         !moved.has(index) &&
-        (index === typedIndex || framed < workload.frameMembers - 1) &&
-        framed < workload.frameMembers;
-      framed += joinsFrame ? 1 : 0;
+        (index === typedIndex || frameOf.size < workload.frameMembers - 1) &&
+        frameOf.size < workload.frameMembers;
 
-      return joinsFrame
-        ? {
-            ...place,
-            frame: fault === 'F' ? `${frameId}-gone` : frameId,
-            frameOrigin: gridPlace(frameSlot, columns),
-          }
-        : place;
+      if (!joinsFrame) return place;
+      frameOf.set(index, fault === 'F' ? `${frameId}-gone` : frameId);
+
+      return { x: place.x + frameOrigin.x, y: place.y + frameOrigin.y };
     });
     const frameSize = { height: PITCH.y * 4, width: PITCH.x * 4 };
-    /** The board point at `anchor` on the shape in `slot`, in fractions of its width and height. */
     const anchored = (slot: number, anchor: readonly [number, number]) => {
-      const origin = boardOrigin(places[slot]);
+      const origin = places[slot];
       const size =
         slot === frameSlot ? frameSize : kinds[slot] === 'arrow' ? null : SIZE;
 
@@ -422,12 +391,14 @@ export const buildBoardFixture = (
       const shapeId = idAt(index);
       const zIndex = stackingKey(index);
       const place = places[index];
+      const frame = frameOf.get(index);
+      const member = frame ? { frame } : {};
 
       if (index === frameSlot) {
         return {
           children: text(''),
           name: 'Frame',
-          place: { ...place, origin: place },
+          place,
           shapeId,
           size: frameSize,
           type: 'boardFrame',
@@ -439,16 +410,19 @@ export const buildBoardFixture = (
         const bindTyped =
           !crossing && holdsTyped && boundArrows < workload.arrowsToTyped;
         boundArrows += bindTyped ? 1 : 0;
+        const head = end(crossing ? crossing.right : otherSlot(index + 3));
+        const tail = crossing
+          ? start(crossing.left)
+          : bindTyped
+            ? start(typedIndex, fault === 'A' ? `missing-${index}` : typedId)
+            : start(otherSlot(index + 1));
 
         return {
           children: [paragraph('')],
-          end: end(crossing ? crossing.right : otherSlot(index + 3)),
+          end: head,
+          ...spanOf(tail, head),
           shapeId,
-          start: crossing
-            ? start(crossing.left)
-            : bindTyped
-              ? start(typedIndex, fault === 'A' ? `missing-${index}` : typedId)
-              : start(otherSlot(index + 1)),
+          start: tail,
           type: 'boardArrow',
           zIndex,
         };
@@ -468,6 +442,7 @@ export const buildBoardFixture = (
       if (kind === 'geo') {
         return {
           children: [paragraph(`Label ${index}`)],
+          ...member,
           geo: 'rectangle',
           place,
           shapeId,
@@ -495,6 +470,7 @@ export const buildBoardFixture = (
             type: 'paragraph',
           },
         ],
+        ...member,
         place,
         shapeId,
         size: SIZE,
@@ -508,15 +484,15 @@ export const buildBoardFixture = (
   const typedIndex = typedShapes.findIndex(
     (shape) => shape.shapeId === typedId
   );
-  const columns = gridColumns(typedShapes.length);
-  const rows = Math.ceil(typedShapes.length / columns);
+  const grid = gridOf(typedShapes.length, workload.dense);
+  const rows = Math.ceil(typedShapes.length / grid.columns);
   const camera = workload.dense
     ? {
         x: 0,
         y: 0,
         zoom: Math.min(
-          VIEWPORT.width / (columns * PITCH.x),
-          VIEWPORT.height / (rows * PITCH.y)
+          VIEWPORT.width / (grid.columns * grid.pitch.x),
+          VIEWPORT.height / (rows * grid.pitch.y)
         ),
       }
     : { x: 0, y: 0, zoom: 1 };
@@ -538,7 +514,7 @@ export const buildBoardFixture = (
         ...boards.map((_shapes, board) => ({
           childRoots: { shapes: boardRootName(board) },
           children: text(''),
-          height: 480,
+          height: VIEWPORT.height,
           type: 'board',
         })),
         ...Array.from({ length: LEAD_PARAGRAPHS }, (_v, index) =>
@@ -552,7 +528,38 @@ export const buildBoardFixture = (
   };
 };
 
-/** A document of `blocks` paragraphs, typed in the middle one. */
+export const shiftBoardFixture = (
+  fixture: BoardFixture,
+  by: BoardPoint
+): BoardFixture => {
+  const shift = <P extends BoardPoint>(point: P): P => ({
+    ...point,
+    x: point.x - by.x,
+    y: point.y - by.y,
+  });
+  const roots = Object.fromEntries(
+    Object.entries(fixture.value.roots ?? {}).map(([name, shapes]) => [
+      name,
+      shapes.map((shape) => {
+        const { end, place, start } = shape as {
+          end?: BoardPoint;
+          place?: BoardPoint;
+          start?: BoardPoint;
+        };
+
+        return {
+          ...shape,
+          ...(place ? { place: shift(place) } : {}),
+          ...(start ? { start: shift(start) } : {}),
+          ...(end ? { end: shift(end) } : {}),
+        };
+      }),
+    ])
+  );
+
+  return { ...fixture, value: { ...fixture.value, roots } };
+};
+
 export const buildFlatFixture = (blocks: number) => ({
   textPath: [Math.floor(blocks / 2), 0],
   value: {
@@ -565,7 +572,8 @@ export const buildFlatFixture = (blocks: number) => ({
 export type StoredNode = Readonly<{
   childRoots?: Readonly<{ shapes?: string }>;
   children?: readonly StoredNode[];
-  place?: { frame?: string; frameOrigin?: BoardPoint; x: number; y: number };
+  frame?: string;
+  place?: BoardPoint;
   shapeId?: string;
   size?: { height: number; width: number };
   start?: { shape: string; x: number; y: number };
@@ -574,7 +582,6 @@ export type StoredNode = Readonly<{
   type?: string;
 }>;
 
-/** A document as it would persist. */
 export type StoredValue = Readonly<{
   children: readonly StoredNode[];
   roots?: Readonly<Record<string, readonly StoredNode[]>>;
@@ -588,9 +595,7 @@ export type BoardReadback = Readonly<{
   blockCount: number;
   boards: number;
   collaboration: boolean;
-  /** Named roots the document holds. */
   roots: number;
-  /** The root that holds the typed note, or null when no board does. */
   typedRoot: string | null;
   frameMembers: number;
   pending: number;
@@ -601,7 +606,6 @@ export type BoardReadback = Readonly<{
   typedPosition: TypedPosition | 'other' | 'missing';
 }>;
 
-// A board block is void, so its one empty text is no text block.
 const countTextBlocks = (nodes: readonly StoredNode[]): number =>
   nodes.reduce((sum, node) => {
     if (!node.children || node.type === 'board') return sum;
@@ -612,11 +616,6 @@ const countTextBlocks = (nodes: readonly StoredNode[]): number =>
     return sum + countTextBlocks(node.children);
   }, 0);
 
-/**
- * Reads the workload back from a live document, so a cohort whose fixture
- * ignored or renamed a parameter cannot measure a default. `pendingShapes`
- * holds the shape each pending ledger suggestion touches.
- */
 export const readBoardWorkload = (
   value: StoredValue,
   typedShapeId: string,
@@ -635,8 +634,7 @@ export const readBoardWorkload = (
   const typed = shapes[typedIndex];
   const ids = new Set(shapes.map((shape) => shape.shapeId));
   const frame = shapes.find(
-    (shape) =>
-      shape.type === 'boardFrame' && shape.shapeId === typed?.place?.frame
+    (shape) => shape.type === 'boardFrame' && shape.shapeId === typed?.frame
   );
   const view = {
     bottom: camera.y + VIEWPORT.height / camera.zoom,
@@ -645,7 +643,7 @@ export const readBoardWorkload = (
     top: camera.y,
   };
   const inView = (shape: StoredNode) => {
-    const start = shape.start ?? boardOrigin(shape.place);
+    const start = shape.start ?? shape.place ?? { x: 0, y: 0 };
     const end = shape.end ?? {
       x: start.x + (shape.size?.width ?? 0),
       y: start.y + (shape.size?.height ?? 0),
@@ -692,7 +690,7 @@ export const readBoardWorkload = (
     roots: Object.keys(value.roots ?? {}).length,
     typedRoot: typedBoard?.childRoots?.shapes ?? null,
     frameMembers: frame
-      ? shapes.filter((shape) => shape.place?.frame === frame.shapeId).length
+      ? shapes.filter((shape) => shape.frame === frame.shapeId).length
       : 0,
     pending: new Set(pendingShapes.filter((id) => ids.has(id))).size,
     placement,
@@ -716,7 +714,6 @@ export const readBoardWorkload = (
   };
 };
 
-/** What the read-back must show for a workload, field by field. */
 export const expectedReadback = (workload: BoardWorkload) => ({
   arrowsToTyped: workload.arrowsToTyped,
   boards: workload.boards,
@@ -737,10 +734,6 @@ export const expectedReadback = (workload: BoardWorkload) => ({
   typedIndex: typedIndexOf(workload.shapes, workload),
 });
 
-/**
- * The intent a lane typed in, read back from the authored ledger: Suggesting
- * adds a pending change for the typed text, and Plain adds none.
- */
 export const readIntent = (
   pendingBefore: number,
   pendingAfter: number
@@ -765,6 +758,9 @@ const boardProperties = {
   fill: schema.elementProperty(property.string(), {
     target: target.types(['boardGeo']),
   }),
+  frame: schema.elementProperty(property.string(), {
+    target: target.types(['boardNote', 'boardGeo']),
+  }),
   geo: schema.elementProperty(property.string(), {
     target: target.types(['boardGeo']),
   }),
@@ -778,6 +774,7 @@ const boardProperties = {
     target: target.types([
       'boardNote',
       'boardGeo',
+      'boardArrow',
       'boardFrame',
       'boardStroke',
     ]),
@@ -796,6 +793,7 @@ const boardProperties = {
     target: target.types([
       'boardNote',
       'boardGeo',
+      'boardArrow',
       'boardFrame',
       'boardStroke',
     ]),
@@ -808,8 +806,6 @@ const boardProperties = {
   }),
 };
 
-// A board is a void block that owns one root, and each shape is a top-level
-// block of that root.
 const boardElements = {
   board: {
     contentRoots: {
@@ -858,7 +854,6 @@ const pliteSchema = defineEditorSchema('board-scale', {
   version: 1,
 });
 
-/** A renderer's component for each board element type, for the browser lanes. */
 export type BoardComponents = Partial<
   Record<keyof typeof boardElements, NodeComponent>
 >;
@@ -897,22 +892,50 @@ const ListPropertiesPlugin = definePlatePlugin('listProperties', {
   },
 });
 
-const boardPlatePlugins = (components: BoardComponents) => [
+export const stubBoardPlugins = (components: BoardComponents = {}) => [
   ...(Object.keys(boardElements) as Array<keyof typeof boardElements>).map(
     (type) => plateShape(type, components)
   ),
   BoardPropertiesPlugin,
 ];
 
-/**
- * The Plate plugins of one layer: Plate core with the board stubs and plain
- * list properties, or Plate composed with the real heading, list, quote, mark
- * and link plugins. Both install the authored plugin, so S runs on each. The
- * browser lanes pass their renderer's components; the model lanes pass none.
- */
+export const boardShapeStubs = (components: BoardComponents = {}) => {
+  const { end, frame, name, start } = boardProperties;
+
+  return {
+    arrow: plateShape('boardArrow', components),
+    frame: plateShape('boardFrame', components),
+    properties: definePlatePlugin('boardStubProperties', {
+      schema: { properties: { end, frame, name, start } },
+    }),
+  };
+};
+
+export const NOTE_TARGETS = [BaseParagraphPlugin, BaseHeadingPlugin] as const;
+
+const shippedBoardPlugins = () => {
+  const stubs = boardShapeStubs();
+
+  return [
+    BaseBoardPlugin.configure({
+      targetPlugins: [
+        BaseBoardNotePlugin,
+        BaseBoardGeoPlugin,
+        stubs.arrow,
+        stubs.frame,
+      ],
+    }),
+    BaseBoardNotePlugin.configure({ targetPlugins: NOTE_TARGETS }),
+    BaseBoardGeoPlugin,
+    stubs.arrow,
+    stubs.frame,
+    stubs.properties,
+  ];
+};
+
 export const plateBoardPlugins = (
   layer: 'plate' | 'composed',
-  components: BoardComponents = {}
+  board?: readonly PluginReference[]
 ) => {
   const authoredPlugin = authored({ authorId: 'board-scale' });
 
@@ -921,7 +944,7 @@ export const plateBoardPlugins = (
         BaseParagraphPlugin,
         BaseHeadingPlugin,
         ListPropertiesPlugin,
-        ...boardPlatePlugins(components),
+        ...stubBoardPlugins(),
         authoredPlugin,
       ]
     : [
@@ -934,22 +957,17 @@ export const plateBoardPlugins = (
         BaseUnderlinePlugin,
         BaseCodePlugin,
         BaseLinkPlugin,
-        ...boardPlatePlugins(components),
+        ...(board ?? shippedBoardPlugins()),
+        TrailingBlockPlugin,
         authoredPlugin,
       ];
 };
 
-/** Where the lane types: a path in the main root, or in a named root. */
 export type TextTarget = Readonly<{ path: readonly number[]; root?: string }>;
 
-/**
- * The editor a lane drives, as far as the lanes use it, the same on every
- * layer. The H1 lane installs a Yjs binding and writes through a root's view.
- */
 export type BoardEditor = Readonly<{
   api: {
     authored: { setView: (view: { intent: 'propose' }) => void };
-    history: { redo: () => void; undo: () => void };
   };
   install: (plugin: never) => () => void;
   read: {
@@ -960,27 +978,17 @@ export type BoardEditor = Readonly<{
   update: (run: (tx: never) => void) => void;
 }>;
 
-/** What a lane does to one editor, the same on every layer. */
 export type BoardDriver = Readonly<{
   editor: BoardEditor;
-  /** The live top-level blocks of a named root, for a plant or a read-back that runs per key. */
   rootChildren: (root: string) => readonly Descendant[];
-  /** The shape each pending suggestion in the authored ledger touches. */
   pendingShapes: () => string[];
-  /** Collapses the selection at the start of the text at `target`. */
   select: (target: TextTarget, offset?: number) => void;
-  /**
-   * A whole copy of the document as it would persist, for read-backs outside
-   * the timed keys; between timed keys its garbage lands in the next key.
-   */
   stored: () => StoredValue;
-  /** Inserts `text` at the selection in one update, as a keystroke does. */
   type: (text: string) => void;
 }>;
 
 export type AuthoredChanges = (query: AuthoredQuery) => AuthoredPage;
 
-/** The shape each pending suggestion's first range starts in. */
 export const pendingShapesOf = (
   stored: StoredValue,
   changes: AuthoredChanges
@@ -1038,10 +1046,6 @@ const driverOf = (editor: BoardEditor): BoardDriver => {
   };
 };
 
-/**
- * Builds one layer's editor over `value`: raw Plite with its own schema, or
- * Plate. A `suggesting` driver switches its view to Suggesting before typing.
- */
 export const createBoardDriver = (
   layer: BoardLayer,
   value: BoardValue,

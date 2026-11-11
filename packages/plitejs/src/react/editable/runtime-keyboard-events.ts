@@ -2,6 +2,7 @@ import { type KeyboardEvent, useCallback, useContext } from 'react';
 
 import { type NodeKey, type Point, type Selection, SelectionApi } from '../..';
 import { rootNodesOf } from '../../core/change/document-index';
+import { getSelectionRoot } from '../../core/public-state';
 import {
   createDOMGeometryKernel,
   type DOMPhaseScheduler,
@@ -17,6 +18,7 @@ import type { MountedTopLevelRange } from '../viewport-commands';
 import { getSelectableOwnerVerticalNavigationTarget } from './caret-engine';
 import {
   getContentRootVerticalMoveTarget,
+  isSetRootOfOtherView,
   readContentRootAwareSelection,
   shouldModelOwnContentRootVerticalSelection,
 } from './content-root-navigation';
@@ -40,10 +42,12 @@ import { getExternalTextHostOwner } from './interaction-owner';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
 import {
   getSnapshot as editorGetSnapshot,
+  getEditorRuntimeOwner,
   getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
+import { readRuntimeSelection } from './runtime-selection-state';
 import { resolveViewBoundaryDOMPoint } from './selection-projected-dom';
 import { moveByViewLines, ViewLinesContext } from './view-lines';
 
@@ -585,7 +589,14 @@ export const useRuntimeKeyboardEvents = ({
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
-          if (isNestedEditableTarget()) return true;
+          if (isNestedEditableTarget()) {
+            const shared = readRuntimeSelection(getEditorRuntimeOwner(editor));
+
+            return !(
+              shared &&
+              isSetRootOfOtherView(editor, getSelectionRoot(editor, shared))
+            );
+          }
 
           const { selection } = editorGetSnapshot(editor);
 

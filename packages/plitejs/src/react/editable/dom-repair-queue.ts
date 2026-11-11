@@ -49,6 +49,7 @@ import {
   getEditableNativeGroupingInput,
   isSelectionHeldForNativeMove,
 } from './input-state';
+import { getUserTextLanding } from './mutation-controller';
 import { readRuntimeText } from './runtime-live-state';
 import {
   readRuntimeSelection,
@@ -375,6 +376,13 @@ export const createDOMRepairQueue = ({
 
     const nextOffset = insert.offset + insert.text.length;
     const at = { path: target.path, offset: insert.offset };
+    const insertsAtSelection =
+      getUserTextLanding(editor, {
+        composed: false,
+        inputType: 'insertText',
+        replayed: false,
+        target: selection,
+      }) !== 'pinned';
 
     armRepairInducedSelectionOriginGuard();
     const committed = profileDOMRepairDuration('captured-update-model', () =>
@@ -386,6 +394,11 @@ export const createDOMRepairQueue = ({
           updateNativeTextInput(
             editor,
             (tx) => {
+              if (insertsAtSelection) {
+                tx.text.insert(insert.text);
+                return;
+              }
+
               tx.text.insert(insert.text, { at });
               const selectionAfter = tx.selection();
 

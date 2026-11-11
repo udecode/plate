@@ -17,8 +17,9 @@ const CORNERS = [
 
 /**
  * One shape on a board, placed at its box and painted at its stacking rank,
- * while the DOM keeps the board's stored order. A selected shape shows four
- * resize handles, `[data-board-handle]`, and `data-selected`.
+ * while the DOM keeps the board's stored order. A selected shape shows
+ * `data-selected`, and a shape selected alone also shows four resize handles,
+ * `[data-board-handle]`.
  */
 export function BoardShape({
   className,
@@ -35,7 +36,8 @@ export function BoardShape({
     () => view.layoutOf(key),
     () => view.layoutOf(key)
   );
-  const selected = useElementSelected({ mode: 'object' });
+  const selected = useElementSelected({ mode: 'node' });
+  const alone = useElementSelected({ mode: 'object' });
 
   return (
     <EditorElement
@@ -58,7 +60,7 @@ export function BoardShape({
       }}
     >
       {props.children}
-      {selected &&
+      {alone &&
         CORNERS.map(([corner, place]) => (
           <div
             contentEditable={false}

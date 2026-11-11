@@ -13,6 +13,12 @@ export const BaseBoardGeoPlugin = defineBoardShape('boardGeo', {
     geo: property.enum(BOARD_GEOS, { default: 'rectangle' }),
   },
   size: { height: 100, width: 160 },
-});
+}).extend(({ defineFormats }) => ({
+  formats: defineFormats({
+    markdown: {
+      encode: ({ encodeFlow, node }) => encodeFlow(node.children),
+    },
+  }),
+}));
 
 export type BoardGeoElement = ElementOf<typeof BaseBoardGeoPlugin>;

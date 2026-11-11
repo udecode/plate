@@ -33,10 +33,6 @@ const appRoot = path.resolve(here, '../..');
 const SPEC = 'tests/plite-browser/board-scale.spec.ts';
 const args = new Map();
 
-/**
- * The runner caches the spec's test list by source and env, not by the job
- * file, so a list cached for another batch size would run the wrong tests.
- */
 const forgetBoardScalePlans = (app) => {
   const dir = path.join(app, '.tmp/plite-browser-runner');
 
@@ -156,8 +152,6 @@ process.stderr.write(run.stdout ?? '');
 process.stderr.write(run.stderr ?? '');
 
 if (run.status !== 0) {
-  // The runner keeps a failed test's output in its own files, so the lane
-  // repeats the assertion the spec wrote to the log.
   const failure = existsSync(output)
     ? JSON.parse(readFileSync(output, 'utf-8')).log.error
     : undefined;

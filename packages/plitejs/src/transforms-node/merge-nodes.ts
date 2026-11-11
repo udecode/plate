@@ -1,6 +1,9 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { refuseVetoedWrite } from '../core/node-write-veto';
+import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
+  getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
 import { node as getNode } from '../editor/node';
@@ -52,6 +55,43 @@ const readPrevious = (editor: Editor, options?: EditorPreviousOptions<Node>) =>
 
 const getChildren = (editor: Editor, node: Ancestor) =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
+
+const refuseVetoedMergeUnwraps = (
+  editor: Editor,
+  {
+    emptyAncestorPath,
+    node,
+    path,
+    removesPrev,
+  }: Readonly<{
+    emptyAncestorPath: Path | undefined;
+    node: Node;
+    path: Path;
+    removesPrev: boolean;
+  }>
+) => {
+  const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
+
+  if (NodeApi.isElement(node) && !removesPrev) {
+    refuseVetoedWrite(editor, { kind: 'unwrap', node, path, root });
+  }
+  if (!emptyAncestorPath) return;
+
+  for (const [ancestor, ancestorPath] of readLevels(editor, { at: path })) {
+    if (
+      ancestorPath.length >= emptyAncestorPath.length &&
+      ancestorPath.length < path.length &&
+      NodeApi.isElement(ancestor)
+    ) {
+      refuseVetoedWrite(editor, {
+        kind: 'unwrap',
+        node: ancestor,
+        path: ancestorPath,
+        root,
+      });
+    }
+  }
+};
 
 const pathContainsPath = (ancestor: Path, path: Path) =>
   PathApi.equals(ancestor, path) || PathApi.isAncestor(ancestor, path);
@@ -236,6 +276,18 @@ export const mergeNodes = ((
       );
     }
 
+    const removesPrev = editorShouldMergeNodesRemovePrevNode(
+      editor,
+      prev,
+      current
+    );
+    refuseVetoedMergeUnwraps(editor, {
+      emptyAncestorPath: emptyAncestor?.[1],
+      node,
+      path,
+      removesPrev,
+    });
+
     // If the node isn't already the next sibling of the previous node, move
     // it so that it is before merging.
     if (!isPreviousSibling) {
@@ -250,7 +302,7 @@ export const mergeNodes = ((
       removeNodes(editor, { at: emptyPath, voids });
     }
 
-    if (editorShouldMergeNodesRemovePrevNode(editor, prev, current)) {
+    if (removesPrev) {
       removeNodes(editor, { at: prevPath, voids });
     } else {
       applyBuiltDocumentChange(editor, (builder, root) =>

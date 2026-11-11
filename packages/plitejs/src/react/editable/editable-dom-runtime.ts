@@ -1467,14 +1467,29 @@ export class EditableDOMRuntime {
 
     if (!this.connected || !node || this.nativeInputListenersCleanup) return;
 
+    const takesViewCaret = (
+      owner: ReturnType<typeof getEditableInteractionOwner>
+    ) =>
+      owner !== 'nested-editor' &&
+      !this.webKitProbeActive.current &&
+      activateViewCaret(this.editorValue);
+    let compositionTookViewCaret = false;
+    // A composition takes the view's caret before the input method writes,
+    // because moving the caret after it writes reverts its text.
+    const handleCompositionStart = (event: CompositionEvent) => {
+      const owner = getEditableInteractionOwner(node, event.target);
+
+      compositionTookViewCaret =
+        owner !== 'external-text' && takesViewCaret(owner);
+    };
     const handleBeforeInput = (event: InputEvent) => {
       const owner = getEditableInteractionOwner(node, event.target);
 
       if (owner === 'external-text') return;
       if (
-        owner !== 'nested-editor' &&
-        !this.webKitProbeActive.current &&
-        activateViewCaret(this.editorValue)
+        this.state.isComposing
+          ? compositionTookViewCaret
+          : takesViewCaret(owner)
       ) {
         setEditableModelSelectionPreference({
           inputController: this.inputController,
@@ -1483,6 +1498,7 @@ export class EditableDOMRuntime {
           selectionSource: 'model-owned',
         });
       }
+      compositionTookViewCaret = false;
       this.nativeInputHandlers.beforeInput?.(event);
     };
     const handleInput = (event: Event) => {
@@ -1546,6 +1562,7 @@ export class EditableDOMRuntime {
       noteAfterInsertCaret(this.editorValue, commit)
     );
 
+    node.addEventListener('compositionstart', handleCompositionStart);
     node.addEventListener('beforeinput', handleBeforeInput);
     node.addEventListener('input', handleInput);
     node.addEventListener('pointerdown', clearCaret, true);
@@ -1558,6 +1575,7 @@ export class EditableDOMRuntime {
       claims.destroy();
       this.selectionClaimsValue = null;
       detachSelectionChangeListener();
+      node.removeEventListener('compositionstart', handleCompositionStart);
       node.removeEventListener('beforeinput', handleBeforeInput);
       node.removeEventListener('input', handleInput);
       ownerWindow?.removeEventListener('pointerdown', notePointerPress, true);

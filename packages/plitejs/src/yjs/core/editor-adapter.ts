@@ -1,14 +1,20 @@
 import {
   hasInternalDocumentChangeRoot,
   mapInternalDocumentChangePosition,
+  valueRoot,
   valueRootIndex,
   valueRootNodes,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
 import { withoutRepairOrphans } from '../../core/document-admission';
+import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
-import { type AdmittedRepair, runTrustedUpdate } from '../../core/public-state';
+import {
+  type AdmittedRepair,
+  getCurrentSelection,
+  runTrustedUpdate,
+} from '../../core/public-state';
 import { withoutPlacement } from '../../core/view-carets';
 import type {
   Descendant,
@@ -193,34 +199,46 @@ export const createYjsEditorAdapter = (
           })
         : null;
     const publishable = imported?.change ?? change;
-    const selectionAfter = (nextValue: EditorDocumentValue) => {
+    const wasSetRoot = (root: string) =>
+      getEditorSchema(editor).isSetRoot(root, {
+        rootChildren: (name: string) => valueRoot(currentValue, name),
+        value: () => currentValue,
+      });
+    const selectionAfter = (
+      nextValue: EditorDocumentValue,
+      editorMapped: () => EditorSelection | null
+    ) => {
       if (selection === undefined || selection === null) return null;
 
       const editorRoot =
         !SelectionApi.isNode(selection) && !RangeApi.isRange(selection)
           ? normalizeRootKey(editor.read.view.root())
           : normalizeRootKey(SelectionApi.root(selection));
+      const changes =
+        replacement === undefined && publishable && !publishable.empty;
+
+      if (changes && SelectionApi.isNode(selection)) return editorMapped();
 
       // A text selection maps through the change, so a caret after a
       // remote split moves into the line that now holds its letters.
       const mapped =
-        replacement === undefined &&
-        publishable &&
-        !publishable.empty &&
+        changes &&
         !SelectionApi.isNode(selection) &&
         !('kind' in selection && selection.kind !== 'text')
-          ? (mapImportRange(
+          ? mapImportRange(
               publishable,
               currentValue,
               nextValue,
               editorRoot,
               selection
-            ) ?? selection)
+            )
           : selection;
+
+      if (mapped === null && wasSetRoot(editorRoot)) return editorMapped();
 
       return sanitizeImportSelection(
         valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
-        mapped
+        mapped ?? selection
       );
     };
 
@@ -249,7 +267,9 @@ export const createYjsEditorAdapter = (
             tx.changes.apply(publishable);
           }
           if (selection !== undefined) {
-            const nextSelection = selectionAfter(tx.value());
+            const nextSelection = selectionAfter(tx.value(), () =>
+              getCurrentSelection(editor)
+            );
 
             withoutPlacement(editor, () => tx.selection.set(nextSelection));
           }

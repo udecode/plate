@@ -168,7 +168,8 @@ const serializeMarkdownDataTransferSlice = (
   if (slice.openStart === 0 && slice.openEnd === 0) {
     const result = serializeMarkdownSliceWithRuntime(
       runtime,
-      toMarkdownBlocks(runtime, slice.content)
+      toMarkdownBlocks(runtime, slice.content),
+      slice.roots
     );
 
     return result.ok ? result.data : null;
@@ -177,7 +178,8 @@ const serializeMarkdownDataTransferSlice = (
   const serialize = (children: readonly Descendant[]) => {
     const result = serializeMarkdownSliceWithRuntime(
       runtime,
-      toMarkdownBlocks(runtime, children)
+      toMarkdownBlocks(runtime, children),
+      slice.roots
     );
 
     if (!result.ok) {

@@ -1,3 +1,4 @@
+import { createEditorViewRuntime } from '../editor-runtime-view';
 import type {
   AnyEditor,
   ContentSlice,
@@ -1197,19 +1198,55 @@ export type TransferApi = Readonly<{
   move: (input: TransferInput) => TransferOutcome;
 }>;
 
+const selectionReader = (from: AnyEditor): AnyEditor => {
+  const selection = from.read.selection();
+  const root = selection && SelectionApi.root(selection);
+
+  return !root || root === getEditorRuntimeRoot(from)
+    ? from
+    : (createEditorViewRuntime(from, { root }) as AnyEditor);
+};
+
+const fromSelectionRoot = (
+  editor: AnyEditor,
+  input: TransferInput
+): TransferInput =>
+  input.nodes || input.range
+    ? input
+    : { ...input, from: selectionReader(input.from ?? editor) };
+
 const TRANSFER_PLUGIN = definePlugin('transfer', {
   read: ({ editor }): TransferRead => ({
-    check: (input) => checkTransfer(editor as AnyEditor, input, 'move'),
-    nodes: (options) =>
-      transferEntries(editor as AnyEditor, options?.node).flatMap(
-        ([node]) => editor.key(node) ?? []
+    check: (input) =>
+      checkTransfer(
+        editor as AnyEditor,
+        fromSelectionRoot(editor as AnyEditor, input),
+        'move'
       ),
+    nodes: (options) => {
+      const reader =
+        options?.node === undefined
+          ? selectionReader(editor as AnyEditor)
+          : (editor as AnyEditor);
+
+      return transferEntries(reader, options?.node).flatMap(
+        ([node]) => reader.key(node) ?? []
+      );
+    },
   }),
   api: ({ editor }): TransferApi => ({
     copy: (input: TransferInput) =>
-      runTransfer(editor as AnyEditor, input, 'copy'),
+      runTransfer(
+        editor as AnyEditor,
+        fromSelectionRoot(editor as AnyEditor, input),
+        'copy'
+      ),
     move: (input: TransferInput) =>
-      runTransfer(editor as AnyEditor, input, 'move'),
+      runTransfer(
+        editor as AnyEditor,
+        fromSelectionRoot(editor as AnyEditor, input),
+        'move'
+      ),
   }),
 });
 

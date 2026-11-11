@@ -37,8 +37,9 @@ editor.update((tx) => tx.value.replace(result.document));
 `[data-editor="true"]` 元素时，Plate 读取它的 children；没有 marker 时读取
 `body`；多个 marker 会返回错误。
 
-插入内容使用 `parseSlice`。它返回闭合、无 root 的 `ContentSlice`，不会把
-editor marker 当成完整 document 的权限。
+插入内容使用 `parseSlice`。它返回闭合的 `ContentSlice`，不会把
+editor marker 当成完整 document 的权限。只有当某个 element 的 mapping 解码出
+[content root](#content-root) 时，slice 才携带 `roots`。
 
 ```ts
 const result = editor.api.html.parseSlice('<p>Paste me</p>');
@@ -50,7 +51,7 @@ if (result.ok) {
 ```
 
 只有 insertion destination 已知后，插入 owner 才会 fit slice。直接解析 HTML
-不会虚构 open edge 或 detached root。
+不会虚构 open edge。
 
 ### 浏览器中的 detached 转换
 
@@ -208,7 +209,8 @@ const NotePlugin = definePlugin('note', {
 mapping 会让复制内容只保留纯文本。
 
 当前 plugin 自己的 mapping 使用 `defineFormats(map)`；foreign target 使用
-`defineFormats(TargetPlugin, map)`。语义 key 是 `html`，MIME negotiation 不属于
+`defineFormats(TargetPlugin, map)`。Target plugin 缺失或被禁用的 foreign
+mapping 没有可映射的内容，会被跳过。语义 key 是 `html`，MIME negotiation 不属于
 这张 map。
 
 需要拥有完整 `text/html` browser payload 时，通过 `dataTransferFormats` 注册
@@ -217,6 +219,57 @@ mapping 会让复制内容只保留纯文本。
 方式解码并报告）。准备后的 payload 中没有可插入内容时，它返回空 slice。返回该
 slice 即认领 paste，返回 `null` 则让下一个 format 尝试。参阅
 [Clipboard](/cn/docs/clipboard#自定义-datatransfer-format)。
+
+### Content root
+
+拥有 [content root](/cn/docs/roots#content-roots) 的 element 用
+`contentRoot(slot)` 放置该 root 的 block，并通过 `decode` 结果中的
+`contentRoots` 把它们读回来。
+
+```ts
+import { definePlugin, schema } from 'platejs';
+
+const AsidePlugin = definePlugin('aside', {
+  schema: {
+    element: {
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      html: {
+        match: [{ tag: 'aside' }],
+        decode: ({ element }) => ({ contentRoots: { body: element } }),
+        encode: ({ content, contentRoot }) => ({
+          children: [content, contentRoot('body')],
+          tag: 'aside',
+        }),
+      },
+    }),
+});
+```
+
+当 aside 的 `body` root 包含一个 paragraph 时，该 mapping 写出
+`<aside><p>One</p></aside>`。
+
+- `contentRoot(slot)` 返回一个 token，渲染 node 上 `slot` 所指 root 的 block。
+  每个 token 必须恰好放置一次。即使是 void element，`content` 也仍需放置一次，
+  其 children 渲染为空。
+- `contentRoots` 把每个 slot 映射到一个 HTML element，其子节点保存该 root 的
+  block。容器不会被解码为 element 自身的 children；省略的 slot 解码为空 root。
+- 每个解码出的 root 都获得新的名称。`parse` 把它的 block 放在 document 的
+  `roots` 中，`parseSlice` 把它放在 slice 的 `roots` 中。
+- 序列化会把没有任何 mapping 放置的 named root 报告为 `html-unsupported-root`，
+  这是一个 warning。读取 node 不拥有的 slot 会抛出异常。
 
 ## Result 与 diagnostics
 

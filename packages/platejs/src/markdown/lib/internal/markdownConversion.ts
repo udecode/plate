@@ -20,6 +20,7 @@ import {
   ElementApi,
   ElementIdPlugin,
   type MarkdownPluginRegistry,
+  type RootKey,
   TextApi,
 } from '../../../core';
 import {
@@ -31,7 +32,10 @@ import {
   landsMarkdownParagraph,
   UNLANDED_MARKDOWN_PARAGRAPH_TYPE,
 } from '../../../internal/plugin/markdownParagraph';
-import { createPluginFormatRegistry } from '../../../internal/plugin/pluginFormatOperation';
+import {
+  createContentFormatDocument,
+  createPluginFormatRegistry,
+} from '../../../internal/plugin/pluginFormatOperation';
 import { createValidatedContentSlice } from '../../../internal/utils/trustedContentSlice';
 import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
@@ -241,7 +245,8 @@ export const getMergedOptionsSerialize = (
   runtime: MarkdownRuntime,
   options: MarkdownSerializePolicy = {},
   documentOverride?: MarkdownSerializeDocumentValue,
-  diagnostics = new MarkdownDiagnostics()
+  diagnostics = new MarkdownDiagnostics(),
+  readRoots = new Set<RootKey>()
 ): SerializeMdContext => {
   const { plainMarks, remarkPlugins, remarkStringifyOptions } = runtime.options;
 
@@ -255,6 +260,7 @@ export const getMergedOptionsSerialize = (
     plainMarks:
       options.plainMarks ?? (plainMarks ? [...plainMarks] : plainMarks),
     preserveEmptyParagraphs: options.preserveEmptyParagraphs,
+    readRoots,
     remarkPlugins: materializeRemarkPlugins(remarkPlugins),
     remarkStringifyOptions:
       options.remarkStringifyOptions ??
@@ -385,13 +391,15 @@ export const serializeMdWithRuntime = (
   runtime: MarkdownRuntime,
   options: MarkdownSerializePolicy = {},
   document?: MarkdownSerializeDocumentValue,
-  diagnostics = new MarkdownDiagnostics()
+  diagnostics = new MarkdownDiagnostics(),
+  readRoots?: Set<RootKey>
 ) => {
   const mergedOptions = getMergedOptionsSerialize(
     runtime,
     options,
     document,
-    diagnostics
+    diagnostics,
+    readRoots
   );
   const { remarkPlugins, value } = mergedOptions;
   const unwritable: MarkdownWriterExtension & {
@@ -1246,9 +1254,19 @@ export const serializeMarkdownWithRuntime = (
   initialDiagnostics: readonly MarkdownDiagnostic[] = []
 ): MarkdownSerializeResult => {
   runtime.state.schema.assertDocument(document);
+  const readRoots = new Set<RootKey>();
+  const serialized = new MarkdownDiagnostics();
+  const data = serializeMdWithRuntime(
+    runtime,
+    options,
+    document,
+    serialized,
+    readRoots
+  );
   const diagnostics = new MarkdownDiagnostics(initialDiagnostics);
 
   Object.keys(document.roots ?? {})
+    .filter((root) => !readRoots.has(root))
     .sort()
     .forEach((root) => {
       diagnostics.report({
@@ -1269,31 +1287,33 @@ export const serializeMarkdownWithRuntime = (
         severity: 'warning',
       });
     });
+  serialized.all().forEach(diagnostics.report);
 
-  return finishMarkdownSerialize(runtime, options, document, diagnostics);
+  return finishMarkdownSerialize(data, diagnostics);
 };
 
 export const serializeMarkdownSliceWithRuntime = (
   runtime: MarkdownRuntime,
-  children: Element[]
+  children: Element[],
+  roots?: ContentSlice['roots']
 ): MarkdownSerializeResult => {
-  runtime.state.schema.assertFragment(children);
+  const diagnostics = new MarkdownDiagnostics();
 
   return finishMarkdownSerialize(
-    runtime,
-    {},
-    { children },
-    new MarkdownDiagnostics()
+    serializeMdWithRuntime(
+      runtime,
+      {},
+      createContentFormatDocument({ content: children, roots }),
+      diagnostics
+    ),
+    diagnostics
   );
 };
 
 const finishMarkdownSerialize = (
-  runtime: MarkdownRuntime,
-  options: MarkdownSerializePolicy,
-  document: EditorDocumentValue,
+  data: string,
   diagnostics: MarkdownDiagnostics
 ): MarkdownSerializeResult => {
-  const data = serializeMdWithRuntime(runtime, options, document, diagnostics);
   const failure = diagnostics.failure();
 
   if (failure) return Object.freeze({ diagnostics: failure, ok: false });

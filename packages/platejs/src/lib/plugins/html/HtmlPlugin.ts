@@ -1,4 +1,5 @@
 import isEqual from 'lodash/isEqual.js';
+import { nanoid } from 'nanoid';
 
 import type {
   DataTransferFormat,
@@ -21,6 +22,7 @@ import {
   type InternalEditorSchemaApi,
   type Path,
   type PropertyValueDescriptor,
+  type RootKey,
   type SchemaProperty,
   type SchemaTarget,
   type Text,
@@ -411,6 +413,12 @@ const COMPILED_PLATE_HTML_BY_SCHEMA = new WeakMap<
   CompiledPlateHtmlArtifact
 >();
 
+const isContainerElement = (value: unknown): value is HTMLElement =>
+  typeof value === 'object' &&
+  value !== null &&
+  'nodeType' in value &&
+  value.nodeType === 1;
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -556,7 +564,7 @@ const compileRule = (
   target: string | null,
   factory: ErasedPluginCallable,
   defaultBlockType: string | null
-): CompiledHtmlRule => {
+): CompiledHtmlRule | null => {
   function assertDeclaration(
     value: unknown
   ): asserts value is HtmlRuleDeclaration {
@@ -629,6 +637,7 @@ const compileRule = (
   const targetPlugin = target ? pluginsByName.get(target) : ownerPlugin;
 
   if (!targetPlugin || targetPlugin.enabled === false) {
+    if (target) return null;
     throw new Error(
       `Plate HTML mapping "${ownerPlugin.name}" targets missing or disabled plugin "${target}".`
     );
@@ -664,7 +673,25 @@ const compileRule = (
 
   let kind: CompiledHtmlRule['kind'];
   let targetType: string | null = null;
-  const properties = compileProperties(ownerPlugin.name, binding);
+  const ownerBinding = target ? model.byName[ownerPlugin.name] : undefined;
+  const ownerProperties =
+    ownerBinding && binding.kind === 'element' && binding.elementType
+      ? compileProperties(ownerPlugin.name, ownerBinding).filter(
+          ({ property }) =>
+            property.placement === 'element' &&
+            property.target !== undefined &&
+            targetMatchesElementType(
+              model,
+              property.target,
+              binding.elementType ??
+                failInvariant('Expected value to be defined')
+            ) === true
+        )
+      : [];
+  const properties = Object.freeze([
+    ...compileProperties(ownerPlugin.name, binding),
+    ...ownerProperties,
+  ]);
 
   if (
     binding.kind === 'element' &&
@@ -923,7 +950,8 @@ const rulesMayOverlap = (left: CompiledHtmlRule, right: CompiledHtmlRule) =>
   );
 
 const ruleClaimKeys = (rule: CompiledHtmlRule) => {
-  const keys = rule.properties.map(({ id }) => `property:${id}`);
+  const scope = rule.kind === 'element' ? `@${rule.targetType}` : '';
+  const keys = rule.properties.map(({ id }) => `property:${id}${scope}`);
 
   if (rule.kind === 'element' || rule.createsElement) {
     keys.push(`element:${rule.targetType}`);
@@ -1219,6 +1247,7 @@ const elementValuesFromDecode = (
   }
   const fields = new Set([
     'children',
+    'contentRoots',
     ...rule.properties.map(({ key }) => key),
   ]);
   const unknownField = Object.keys(value).find((field) => !fields.has(field));
@@ -1231,6 +1260,15 @@ const elementValuesFromDecode = (
   if (Object.hasOwn(value, 'children') && !Array.isArray(value.children)) {
     throw new Error(
       `Plate HTML mapping "${rule.owner}" element decode children must be an array.`
+    );
+  }
+  if (
+    Object.hasOwn(value, 'contentRoots') &&
+    (!isRecord(value.contentRoots) ||
+      !Object.values(value.contentRoots).every(isContainerElement))
+  ) {
+    throw new Error(
+      `Plate HTML mapping "${rule.owner}" element decode contentRoots must map slots to elements.`
     );
   }
   rule.properties.forEach((property) => {
@@ -1252,6 +1290,18 @@ const validateExplicitDecodedChildren = (
   value: Record<string, unknown>,
   state: EditorCoreStateView
 ) => {
+  const declared = state.schema.element(
+    rule.targetType ?? failInvariant('Expected value to be defined')
+  )?.contentRoots;
+  const undeclared = Object.keys(
+    isRecord(value.contentRoots) ? value.contentRoots : {}
+  ).find((slot) => !declared || !Object.hasOwn(declared, slot));
+
+  if (undeclared !== undefined) {
+    throw new Error(
+      `Plate HTML mapping "${rule.owner}" decoded content root slot "${undeclared}", which "${rule.targetType}" does not declare.`
+    );
+  }
   if (!Object.hasOwn(value, 'children')) return value;
   const children = value.children as Descendant[];
   const properties = Object.fromEntries(
@@ -1680,6 +1730,15 @@ const EMBEDDED_HTML_CONTENT = new Set([
  * @internal
  */
 export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
+  'data-board',
+  'data-board-color',
+  'data-board-fill',
+  'data-board-geo',
+  'data-board-height',
+  'data-board-place',
+  'data-board-shape-id',
+  'data-board-size',
+  'data-board-z-index',
   'data-checked',
   'data-code-trailing-newlines',
   'data-editor-footnote-ref',
@@ -1722,14 +1781,21 @@ type HtmlDecodeOperation = Readonly<{
   reportMappingErrors?: boolean;
 }>;
 
+type HtmlDecodedContent = Readonly<{
+  children: Descendant[];
+  roots: Readonly<Record<RootKey, Descendant[]>>;
+}>;
+
 const decodeCompiledHtml = (
   editor: Editor,
   root: HTMLElement,
   artifact: CompiledPlateHtmlArtifact,
   state: EditorCoreStateView,
   operation: HtmlDecodeOperation
-): Descendant[] => {
+): HtmlDecodedContent => {
   const reportMappingErrors = operation.reportMappingErrors ?? true;
+  const roots: Record<RootKey, Descendant[]> = {};
+  const contentRootContainers = new Set<Node>();
   const fitSchema = operation.fitSchema ?? true;
   // Attributes each source element's kept results represent.
   const claimedAttributes = new Map<Element, Set<string>>();
@@ -1831,9 +1897,39 @@ const decodeCompiledHtml = (
     parent: HTMLElement,
     parentType: string | null
   ): Descendant[] =>
-    Array.from(parent.childNodes).flatMap((child) =>
-      decodeNode(child, parentType)
+    contentRootContainers.has(parent)
+      ? []
+      : Array.from(parent.childNodes).flatMap((child) =>
+          contentRootContainers.has(child) ? [] : decodeNode(child, parentType)
+        );
+  const decodeContentRoots = (
+    type: string,
+    decoded: Readonly<Record<string, unknown>>
+  ) => {
+    const declared = Object.keys(
+      state.schema.element(type)?.contentRoots ?? {}
     );
+
+    if (declared.length === 0) return undefined;
+    const containersBySlot = isRecord(decoded.contentRoots)
+      ? decoded.contentRoots
+      : {};
+
+    return Object.fromEntries(
+      declared.map((slot) => {
+        const container = containersBySlot[slot];
+        const name = `${type}:${nanoid()}`;
+
+        roots[name] = isContainerElement(container)
+          ? Array.from(container.childNodes).flatMap((child) =>
+              decodeNode(child, null)
+            )
+          : [];
+
+        return [slot, name];
+      })
+    );
+  };
 
   const decodeNode = (
     node: ChildNode,
@@ -1914,6 +2010,13 @@ const decodeCompiledHtml = (
 
       if (result === undefined) continue;
       claimFormatting(rule, matchedFormatting, claims);
+      if (isRecord(result.contentRoots)) {
+        for (const container of Object.values(result.contentRoots)) {
+          if (isContainerElement(container)) {
+            contentRootContainers.add(container);
+          }
+        }
+      }
       structural = Object.freeze({ claims, result, rule });
       break;
     }
@@ -2139,11 +2242,11 @@ const decodeCompiledHtml = (
     }
     claim(element, structural.claims);
     claim(element, propertyClaims);
-    const createdElement = state.schema.create(
+    const structuralType =
       structural.rule.targetType ??
-        failInvariant('Expected value to be defined'),
-      properties
-    );
+      failInvariant('Expected value to be defined');
+    const createdElement = state.schema.create(structuralType, properties);
+    const childRoots = decodeContentRoots(structuralType, structural.result);
     const children =
       fitSchema && hasDecodedChildren && !hasExplicitChildren
         ? fitDecodedChildren(content, createdElement, state)
@@ -2152,6 +2255,7 @@ const decodeCompiledHtml = (
     return liftDisallowedBlocks({
       ...createdElement,
       ...properties,
+      ...(childRoots ? { childRoots } : {}),
       children: hasDecodedChildren ? children : createdElement.children,
     });
   };
@@ -2242,9 +2346,17 @@ const decodeCompiledHtml = (
 
   const marked = dropOmittedTextDefaults(decoded, state);
 
-  return coalesceAdjacentText(
-    fitSchema ? wrapRootInlineRuns(marked, state) : marked
-  );
+  return Object.freeze({
+    children: coalesceAdjacentText(
+      fitSchema ? wrapRootInlineRuns(marked, state) : marked
+    ),
+    roots: Object.fromEntries(
+      Object.entries(roots).map(([name, blocks]) => [
+        name,
+        coalesceAdjacentText(dropOmittedTextDefaults(blocks, state)),
+      ])
+    ),
+  });
 };
 
 const dropOmittedTextDefaults = (
@@ -2494,8 +2606,12 @@ const compileWrites = (
 const compileNodeSpec = (
   value: unknown,
   seen: WeakSet<object>,
-  onUnsafe: HtmlUnsafeReport
+  onUnsafe: HtmlUnsafeReport,
+  rootTokens: ReadonlyMap<unknown, RootKey> = new Map()
 ): MutableHtmlNode => {
+  const isContentToken = (child: unknown): child is HtmlContentToken =>
+    child === HTML_CONTENT_TOKEN || rootTokens.has(child);
+
   if (!isRecord(value)) {
     throw new Error('Plate HTML node encoder must return an object.');
   }
@@ -2525,8 +2641,8 @@ const compileNodeSpec = (
       ? HTML_VOID_TAGS.has(tag)
         ? []
         : [HTML_CONTENT_TOKEN]
-      : value.children === HTML_CONTENT_TOKEN
-        ? [HTML_CONTENT_TOKEN]
+      : isContentToken(value.children)
+        ? [value.children]
         : value.children;
 
   if (!Array.isArray(inputChildren)) {
@@ -2535,7 +2651,7 @@ const compileNodeSpec = (
     );
   }
   const children = inputChildren.map((child) => {
-    if (child === HTML_CONTENT_TOKEN) return child;
+    if (isContentToken(child)) return child;
     if (isRecord(child) && Object.keys(child).length === 1 && 'text' in child) {
       if (typeof child.text !== 'string') {
         throw new Error('Plate HTML literal text must be a string.');
@@ -2544,7 +2660,7 @@ const compileNodeSpec = (
       return Object.freeze({ text: child.text });
     }
 
-    return compileNodeSpec(child, seen, onUnsafe);
+    return compileNodeSpec(child, seen, onUnsafe, rootTokens);
   });
 
   return {
@@ -2617,9 +2733,11 @@ const escapeHtmlAttribute = (value: string) =>
 const renderNodeSpec = (
   root: MutableHtmlNode,
   content: string,
-  allowVoidRoot = false
+  allowVoidRoot = false,
+  rootContent: ReadonlyMap<unknown, string> = new Map()
 ) => {
   let contentTokens = 0;
+  const placedRoots = new Set<unknown>();
   const render = (node: MutableHtmlNode): string => {
     const attributes = [...node.attributeWrites.entries()]
       .filter(([, value]) => value !== null)
@@ -2657,6 +2775,18 @@ const renderNodeSpec = (
           contentTokens += 1;
 
           return content;
+        }
+        const rooted = rootContent.get(child);
+
+        if (rooted !== undefined) {
+          if (placedRoots.has(child)) {
+            throw new Error(
+              'Plate HTML node spec must place each content root token once.'
+            );
+          }
+          placedRoots.add(child);
+
+          return rooted;
         }
         if ('text' in child) return escapeHtmlText(child.text);
         if ('tag' in child) return render(child);
@@ -2761,6 +2891,7 @@ type HtmlEncodeOperation = Readonly<{
   onLoss?: (loss: HtmlMappingLoss) => void;
   onUnsafe: (removal: HtmlUnsafeOutput) => void;
   operationKey: object;
+  readRoots?: Set<RootKey>;
   reportMappingErrors?: boolean;
 }>;
 
@@ -2776,6 +2907,7 @@ const reportUnclaimedProperties = (
   claimed: ReadonlySet<string>,
   state: EditorCoreStateView,
   path: Path,
+  root: RootKey,
   onLoss?: (loss: HtmlMappingLoss) => void
 ) => {
   const placement = ElementApi.isElement(node) ? 'element' : 'text';
@@ -2792,7 +2924,7 @@ const reportUnclaimedProperties = (
         action: 'dropped' as const,
         kind: 'attribute' as const,
         message,
-        model: Object.freeze({ path, property: key, root: 'main' as const }),
+        model: Object.freeze({ path, property: key, root }),
         owner: 'core:html',
       })
     );
@@ -2860,8 +2992,10 @@ const encodeContext = (
   parentType: string | null,
   document: EditorDocumentValue,
   path: Path,
+  root: RootKey,
   getFormatContext: ReturnType<typeof createPluginFormatOperationContext>,
   operationKey: object,
+  contentRoot: (slot: string) => HtmlContentToken,
   onLoss?: (loss: HtmlMappingLoss) => void
 ) => {
   const values = new Map<string, unknown>();
@@ -2873,7 +3007,7 @@ const encodeContext = (
   });
   const record = Object.fromEntries(values);
 
-  const model = createPluginFormatModelView(document, node, path, 'main');
+  const model = createPluginFormatModelView(document, node, path, root);
   const report = (diagnostic: HtmlMappingDiagnosticInput) => {
     if (!onLoss) {
       throw new Error(
@@ -2883,7 +3017,7 @@ const encodeContext = (
     onLoss(
       Object.freeze({
         ...diagnostic,
-        model: Object.freeze({ path, root: 'main' as const }),
+        model: Object.freeze({ path, root }),
         owner: rule.owner,
       })
     );
@@ -2913,6 +3047,7 @@ const encodeContext = (
       ? Object.freeze({
           ...operationContext,
           content: HTML_CONTENT_TOKEN,
+          contentRoot,
           preserve,
         })
       : rule.properties.length === 1
@@ -2978,7 +3113,7 @@ const encodeCompiledHtml = (
 ) => {
   const reportMappingErrors = operation.reportMappingErrors ?? true;
   const document = operation.document ?? createContentFormatDocument(slice);
-  const reportLoss = (path: Path) =>
+  const reportLoss = (path: Path, root: RootKey) =>
     operation.onLoss
       ? (loss: HtmlMappingLoss) =>
           operation.onLoss?.(
@@ -2986,25 +3121,57 @@ const encodeCompiledHtml = (
               ? loss
               : Object.freeze({
                   ...loss,
-                  model: Object.freeze({ path, root: 'main' as const }),
+                  model: Object.freeze({ path, root }),
                 })
           )
       : undefined;
+  const encodeRoot = (root: RootKey) =>
+    (document.roots?.[root] ?? [])
+      .map((node, index) => encodeNode(node, null, [index], [index], root))
+      .join('');
   const encodeNode = (
     node: Descendant,
     parentType: string | null,
     modelPath: Path,
-    sourcePath: Path
+    sourcePath: Path,
+    root: RootKey
   ): string => {
     const path = state.nodes.path(node) ?? sourcePath;
-    const onLoss = reportLoss(path);
+    const onLoss = reportLoss(path, root);
     const onUnsafe = (removal: HtmlUnsafeRemoval) =>
       operation.onUnsafe(
         Object.freeze({
           ...removal,
-          model: Object.freeze({ path, root: 'main' as const }),
+          model: Object.freeze({ path, root }),
         })
       );
+    const rootTokens = new Map<unknown, RootKey>();
+    const contentRoot = (slot: string) => {
+      const named = ElementApi.isElement(node)
+        ? state.schema.getElementContentRoots(node)[slot]
+        : undefined;
+
+      if (named === undefined) {
+        throw new Error(
+          `Plate HTML encode read content root slot "${slot}", which its node does not own.`
+        );
+      }
+      const token: HtmlContentToken = Object.freeze({
+        __htmlContentToken: true,
+      });
+
+      rootTokens.set(token, named);
+
+      return token;
+    };
+    const placedRoots = (spec: MutableHtmlNode): Array<[unknown, RootKey]> =>
+      spec.children.flatMap((child) => {
+        const named = rootTokens.get(child);
+
+        if (named !== undefined) return [[child, named]];
+
+        return 'tag' in child ? placedRoots(child) : [];
+      });
 
     if (TextApi.isText(node)) {
       const wrappers: Array<
@@ -3033,11 +3200,13 @@ const encodeCompiledHtml = (
           parentType,
           document,
           modelPath,
+          root,
           operation.getFormatContext,
           operation.operationKey,
+          contentRoot,
           onLoss
         );
-        const root = encodeWithRule(
+        const wrapperRoot = encodeWithRule(
           editor,
           rule,
           node,
@@ -3056,11 +3225,19 @@ const encodeCompiledHtml = (
         pending.forEach(({ id }) => {
           handled.add(id);
         });
-        if (root === null) continue;
-        wrappers.push(Object.freeze({ root, rule }));
+        if (wrapperRoot === null) continue;
+        wrappers.push(Object.freeze({ root: wrapperRoot, rule }));
         invocation.retain(claimed);
       }
-      reportUnclaimedProperties(node, parentType, claimed, state, path, onLoss);
+      reportUnclaimedProperties(
+        node,
+        parentType,
+        claimed,
+        state,
+        path,
+        root,
+        onLoss
+      );
       let html = escapeHtmlText(node.text);
 
       for (let index = wrappers.length - 1; index >= 0; index--) {
@@ -3082,7 +3259,13 @@ const encodeCompiledHtml = (
     const encodeChildren = () =>
       node.children
         .map((child, index) =>
-          encodeNode(child, node.type, [...modelPath, index], [...path, index])
+          encodeNode(
+            child,
+            node.type,
+            [...modelPath, index],
+            [...path, index],
+            root
+          )
         )
         .join('');
     const structuralRules = serializerIndex.elementsByType.get(node.type) ?? [];
@@ -3097,8 +3280,10 @@ const encodeCompiledHtml = (
         parentType,
         document,
         modelPath,
+        root,
         operation.getFormatContext,
         operation.operationKey,
+        contentRoot,
         onLoss
       );
 
@@ -3137,7 +3322,12 @@ const encodeCompiledHtml = (
         )(structuralContext);
 
         if (spec === null) return null;
-        const innerRoot = compileNodeSpec(spec, new WeakSet(), onUnsafe);
+        const innerRoot = compileNodeSpec(
+          spec,
+          new WeakSet(),
+          onUnsafe,
+          rootTokens
+        );
 
         return Object.freeze({
           patchTarget: findPatchTarget(innerRoot),
@@ -3149,7 +3339,7 @@ const encodeCompiledHtml = (
 
     // An encoder that returns null omits the element and its subtree.
     if (encoded === null) return '';
-    const { patchTarget, root } = encoded;
+    const { patchTarget, root: innerSpec } = encoded;
     const claimed = new Set<string>();
     const handledProperties = new Set<string>(
       structuralRule.properties.map(({ id }) => id)
@@ -3172,8 +3362,10 @@ const encodeCompiledHtml = (
         parentType,
         document,
         modelPath,
+        root,
         operation.getFormatContext,
         operation.operationKey,
+        contentRoot,
         onLoss
       );
 
@@ -3214,8 +3406,10 @@ const encodeCompiledHtml = (
         parentType,
         document,
         modelPath,
+        root,
         operation.getFormatContext,
         operation.operationKey,
+        contentRoot,
         onLoss
       );
 
@@ -3242,8 +3436,23 @@ const encodeCompiledHtml = (
       wrappers.push(Object.freeze({ root: wrapper, rule }));
       invocation.retain(claimed);
     }
-    reportUnclaimedProperties(node, parentType, claimed, state, path, onLoss);
+    reportUnclaimedProperties(
+      node,
+      parentType,
+      claimed,
+      state,
+      path,
+      root,
+      onLoss
+    );
     const content = encodeChildren();
+    const rootContent = new Map(
+      placedRoots(innerSpec).map(([token, named]) => {
+        operation.readRoots?.add(named);
+
+        return [token, encodeRoot(named)] as const;
+      })
+    );
     let html = encodeWithRule(
       editor,
       structuralRule,
@@ -3251,9 +3460,10 @@ const encodeCompiledHtml = (
       parentType,
       () =>
         renderNodeSpec(
-          root,
+          innerSpec,
           content,
-          state.schema.element(node.type)?.behavior.void === true
+          state.schema.element(node.type)?.behavior.void === true,
+          rootContent
         ),
       reportMappingErrors
     );
@@ -3275,7 +3485,7 @@ const encodeCompiledHtml = (
   };
 
   return slice.content
-    .map((node, index) => encodeNode(node, null, [index], [index]))
+    .map((node, index) => encodeNode(node, null, [index], [index], 'main'))
     .join('');
 };
 
@@ -3525,7 +3735,7 @@ export const compilePlateHtmlFormat = (
   const rules = Object.freeze(
     plugins
       .flatMap((plugin) =>
-        getPluginDescriptorMetadata(plugin).htmlMappingContributions.map(
+        getPluginDescriptorMetadata(plugin).htmlMappingContributions.flatMap(
           ({ factory, targetPlugin }) =>
             compileRule(
               editor,
@@ -3535,7 +3745,7 @@ export const compilePlateHtmlFormat = (
               targetPlugin,
               factory,
               defaultBlockType
-            )
+            ) ?? []
         )
       )
       .sort(compareRules)
@@ -3667,7 +3877,7 @@ export const compileHtmlElementDecoder = (
       onLoss,
       operationKey,
       reportMappingErrors: false,
-    });
+    }).children;
   };
 };
 
@@ -3803,7 +4013,7 @@ const decodeMaterializedHtmlWithEditor = (
   const lossPolicy = options.lossPolicy ?? 'reject';
   const losses: HtmlMappingLoss[] = [];
   const preparedRemovals: HtmlDiagnostic[] = [];
-  const { children, schema } = readState((state) => {
+  const { decoded, schema } = readState((state) => {
     prepareHtmlDocument(artifact, root, state, operationKey, (loss) =>
       losses.push(loss)
     );
@@ -3823,7 +4033,7 @@ const decodeMaterializedHtmlWithEditor = (
       (options.collapseWhitespace ?? true) ? collapseWhiteSpace(root) : root;
 
     return Object.freeze({
-      children: decodeCompiledHtml(editor, normalized, artifact, state, {
+      decoded: decodeCompiledHtml(editor, normalized, artifact, state, {
         fitSchema: false,
         onLoss: (loss) => losses.push(loss),
         operationKey,
@@ -3832,6 +4042,8 @@ const decodeMaterializedHtmlWithEditor = (
       schema: state.schema as InternalEditorSchemaApi,
     });
   });
+  const { children, roots } = decoded;
+  const hasRoots = Object.keys(roots).length > 0;
   const mappingDiagnostics = htmlMappingDiagnostics(
     losses,
     'parse',
@@ -3852,7 +4064,14 @@ const decodeMaterializedHtmlWithEditor = (
     (diagnostic) => diagnostic.severity === 'error'
   );
   if (kind === 'slice') {
-    const slice = ContentSlice.closed(children);
+    const slice = hasRoots
+      ? ContentSlice.fromJSON({
+          content: children,
+          openEnd: 0,
+          openStart: 0,
+          roots,
+        })
+      : ContentSlice.closed(children);
     const assertContentSliceForSchema: InternalEditorSchemaApi['assertContentSliceForSchema'] =
       schema.assertContentSliceForSchema;
 
@@ -3876,6 +4095,7 @@ const decodeMaterializedHtmlWithEditor = (
     fitted = schema.fitDocumentWithReport(
       Object.freeze({
         children: Object.freeze(children),
+        ...(hasRoots ? { roots } : {}),
       }) as unknown as EditorDocumentValue
     );
   } catch (error) {
@@ -3969,9 +4189,12 @@ export const parseHtmlSliceWithEditor = (
   ) as HtmlSliceParseResult;
 
 const htmlDocumentDiagnostics = (
-  document: EditorDocumentValue
+  document: EditorDocumentValue,
+  readRoots: ReadonlySet<RootKey>
 ): readonly HtmlWarningDiagnostic[] => {
-  const roots = Object.keys(document.roots ?? {});
+  const roots = Object.keys(document.roots ?? {}).filter(
+    (root) => !readRoots.has(root)
+  );
   const metadata = Object.keys(document.meta ?? {}).filter(
     (key) => key !== 'authored'
   );
@@ -4010,6 +4233,7 @@ export const serializeHtmlDocumentWithState = (
   const losses: HtmlMappingLoss[] = [];
   const removals: HtmlDiagnostic[] = [];
   const operationKey = Object.freeze({});
+  const readRoots = new Set<RootKey>();
   const data = encodeCompiledHtml(
     editor,
     ContentSlice.closed(outputDocument.children),
@@ -4024,6 +4248,7 @@ export const serializeHtmlDocumentWithState = (
           unsafeContentDiagnostic(removal, { model: removal.model }, lossPolicy)
         ),
       operationKey,
+      readRoots,
       reportMappingErrors: false,
     }
   );
@@ -4033,7 +4258,7 @@ export const serializeHtmlDocumentWithState = (
   ];
   const warnings = Object.freeze([
     ...projectionDiagnostics,
-    ...htmlDocumentDiagnostics(outputDocument),
+    ...htmlDocumentDiagnostics(outputDocument, readRoots),
   ]);
 
   if (encodeDiagnostics.some((diagnostic) => diagnostic.severity === 'error')) {

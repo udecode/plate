@@ -193,7 +193,8 @@ export function useBasicEditor() {
       name="editor.api.html.parseSlice"
       type="(source: string, options?: HtmlEditorParseOptions) => HtmlSliceParseResult"
     >
-      使用已安装 target 解析闭合、无 root 的 HTML insertion slice。
+      使用已安装 target 解析闭合的 HTML insertion slice。只有 mapping 解码出的
+      content root 才会出现在 slice 的 `roots` 中。
     </APIItem>
     <APIItem
       name="editor.api.html.serialize"

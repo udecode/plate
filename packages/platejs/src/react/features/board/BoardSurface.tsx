@@ -4,7 +4,9 @@ import { BOARD_SHAPES_SLOT } from '../../../features/board/lib/boardShape.intern
 import {
   EditorElement,
   type EditorElementProps,
+  useEditor,
   useModelEditor,
+  useElementSelected,
 } from '../../core';
 import type { BoardPlugin } from './BoardPlugin';
 import {
@@ -30,7 +32,10 @@ export type {
  * the document; a gesture writes through the board's commands once, on
  * release. Pan with the wheel or a drag on the board, zoom with Mod and the
  * wheel. `toolbar` renders over the board, where `useBoardView` and
- * `useBoardActions` reach this view.
+ * `useBoardActions` reach this view. A read-only view or a preview pans and
+ * selects but never writes, and a gesture under way when the view turns so
+ * ends with no write. The board shows `data-selected` while a selection of
+ * its document covers it.
  */
 export function BoardSurface({
   toolbar,
@@ -38,7 +43,11 @@ export function BoardSurface({
 }: EditorElementProps<typeof BoardPlugin> & { toolbar?: React.ReactNode }) {
   const { element } = props;
   const editor = useModelEditor();
-  const [view] = React.useState(() => createBoardView(editor, element));
+  const mounted = useEditor();
+  const selected = useElementSelected();
+  const [view] = React.useState(() =>
+    createBoardView(editor, mounted, element)
+  );
   const viewport = React.useSyncExternalStore(
     view.subscribeViewport,
     view.viewport,
@@ -55,7 +64,11 @@ export function BoardSurface({
     <BoardViewContext.Provider value={view}>
       <EditorElement
         {...props}
-        attributes={{ ...props.attributes, 'data-board': view.root }}
+        attributes={{
+          ...props.attributes,
+          'data-board': view.root,
+          'data-selected': selected || undefined,
+        }}
         style={{
           height: element.height,
           overflow: 'clip',

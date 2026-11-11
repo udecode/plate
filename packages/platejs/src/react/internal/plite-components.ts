@@ -1,4 +1,5 @@
 import {
+  type EditableHandlerContext,
   EditorRoot as NativeEditorRoot,
   type EditorRootProps as NativeEditorRootProps,
   useEditorContext as usePliteEditorContext,
@@ -9,7 +10,7 @@ import type { EditorViewOptions } from '../../facade';
 import type { Editor } from '../editor/Editor';
 
 export { Editable } from 'plitejs/react';
-export type { EditableProps } from 'plitejs/react';
+export type { EditableHandlerContext, EditableProps } from 'plitejs/react';
 
 // The public Plate root checks capability inference before private composition
 // carries view policy alongside the erased editor specialization.
@@ -23,3 +24,6 @@ export const useEditorContext = (): Editor =>
 
 export const useOptionalEditorContext = (): Editor | null =>
   useOptionalPliteEditorContext() as unknown as Editor | null;
+
+export const getHandlerView = (context: EditableHandlerContext): Editor =>
+  context.editor as unknown as Editor;

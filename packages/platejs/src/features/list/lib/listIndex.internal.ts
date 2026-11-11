@@ -592,7 +592,6 @@ const countDetached = (children: readonly Descendant[]) => {
 const getDocumentRoot = (document: EditorDocumentValue, root: RootKey) =>
   root === 'main' ? document.children : (document.roots?.[root] ?? []);
 
-/** Number of an element in a detached document, such as content being encoded. */
 export const getDocumentListOrdinal = (
   document: EditorDocumentValue,
   root: RootKey,

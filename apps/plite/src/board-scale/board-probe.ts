@@ -3,7 +3,8 @@
 import { createEditorView } from 'platejs';
 import { readCoreWork } from 'plitejs/internal';
 
-import { createBoardRenderer, shapeBox } from './board-renderer';
+import { createProductionRenderer } from './board-production';
+import { createBoardRenderer, shapeBox, transformOf } from './board-renderer';
 import {
   BROWSER_COHORTS,
   BUSY_PLANT_MS,
@@ -18,23 +19,18 @@ import {
   type BoardCamera,
   type BoardFault,
   type BoardFixture,
+  type BoardPoint,
   buildBoardFixture,
   buildFlatFixture,
   expectedReadback,
   pendingShapesOf,
   readBoardWorkload,
   type SeededCrossing,
+  shiftBoardFixture,
   type StoredNode,
   type StoredValue,
   VIEWPORT,
 } from './stub-board';
-
-/**
- * The browser lanes' in-page instruments. The page installs them before the
- * first editable note mounts and exposes them as `window.__BOARD_SCALE__`; the
- * Playwright spec drives trusted input and asserts every line on what they
- * return.
- */
 
 type ProbeTx = {
   nodes: { set: (props: object, options: { at: number[] }) => void };
@@ -58,9 +54,13 @@ type ProbeEditor = Readonly<{
   update: (run: (tx: ProbeTx) => void) => void;
 }>;
 
-const cameraFor = (view: BoardView, fixture: BoardFixture): BoardCamera => {
+const cameraFor = (
+  view: BoardView,
+  fixture: BoardFixture,
+  offset: BoardPoint = { x: 0, y: 0 }
+): BoardCamera => {
   if (view === 'dense') return fixture.camera;
-  if (view === 'origin') return { x: 0, y: 0, zoom: 1 };
+  if (view === 'origin') return { x: -offset.x, y: -offset.y, zoom: 1 };
 
   const [index] = fixture.typed.textPath;
   const shape = (
@@ -81,7 +81,12 @@ const cameraFor = (view: BoardView, fixture: BoardFixture): BoardCamera => {
 
 const STUB_FAULTS = new Set<string>(['N', 'A', 'S', 'F', 'position']);
 
-/** Everything the page builds before its timed mount starts. */
+const FRAME_MS = 17;
+
+const keydownSpreadMs = (key: number) => (key * 7) % FRAME_MS;
+
+const QUARTER_FRAME_SLACK = 0.25;
+
 export const prepareBoardScale = (search: string) => {
   const query = parseBoardQuery(search);
   const claim = BROWSER_COHORTS[query.cohort];
@@ -98,21 +103,22 @@ export const prepareBoardScale = (search: string) => {
     claimedCamera,
     false
   );
-  const built = fault ? buildBoardFixture(claim.workload, fault) : claimed;
-  const camera = cameraFor(
-    query.knownBad === 'view' && claim.view === 'dense' ? 'typed' : claim.view,
-    built
-  );
+  const faulted = fault ? buildBoardFixture(claim.workload, fault) : claimed;
+  const view =
+    query.knownBad === 'view' && claim.view === 'dense' ? 'typed' : claim.view;
+  const stub = query.renderer === 'stub';
+  const wanted = cameraFor(view, faulted);
+  const offset = stub ? { x: 0, y: 0 } : { x: wanted.x, y: wanted.y };
+  const built = stub ? faulted : shiftBoardFixture(faulted, offset);
+  const camera = cameraFor(view, built, offset);
   const mountedArm =
     query.knownBad === 'arm' ? NEXT_RENDER_ARM[query.arm] : query.arm;
   const flat =
     query.build === 'flat' ? buildFlatFixture(claimedRead.blockCount) : null;
-
-  const renderer = createBoardRenderer({
-    arm: mountedArm,
-    camera,
-    plant: query.plant,
-  });
+  const rendererConfig = { arm: mountedArm, camera, plant: query.plant };
+  const renderer = stub
+    ? createBoardRenderer(rendererConfig)
+    : createProductionRenderer(rendererConfig);
 
   return {
     camera,
@@ -126,6 +132,7 @@ export const prepareBoardScale = (search: string) => {
         },
     fixture: built,
     mountedArm,
+    offset,
     plugins: renderer.plugins,
     query,
     renderer,
@@ -161,13 +168,6 @@ const measureFrameInterval = async () => {
   );
 };
 
-/**
- * One pointermove of a frame drag, read in the first frame after it: whether
- * the frame sat at the pointer, how many members whose dragged box meets the
- * view were not mounted and how many sat elsewhere, how many display frames
- * passed from the last frame before the move to the start of that one, and
- * the milliseconds from the event to the read.
- */
 type DragMove = {
   atPointer: boolean;
   frames: number;
@@ -204,8 +204,7 @@ export const installBoardProbe = (
   const typedView = () => (typedRoot ? renderer.viewOf(typedRoot) : null);
   const readCamera = () => typedView()?.camera ?? prepared.camera;
   const boardLayer = () => typedView()?.layer ?? null;
-  const readBoardTransform = () => renderer.transformOf(typedView());
-  /** The typed board's root, for edits through the editor as a peer's change lands. */
+  const readBoardTransform = () => transformOf(typedView());
   const rootUpdate = (run: (tx: ProbeTx) => void) =>
     (
       createEditorView(editor as never, {
@@ -216,16 +215,11 @@ export const installBoardProbe = (
     ).update(run);
   const storedValue = () =>
     JSON.parse(JSON.stringify(editor.read.value())) as StoredValue;
-  // A content root's text carries paths inside its root, so the typed text is
-  // looked up under the typed board, where no main-root path can match.
-  const textScope = () =>
-    (typedRoot
-      ? document.querySelector<HTMLElement>(`[data-board="${typedRoot}"]`)
-      : null) ?? document;
-  const textHost = () =>
-    textScope().querySelector<HTMLElement>(
-      `[data-editor-node="text"][data-editor-path="${textPath.join(',')}"]`
-    );
+  const textAtPath = `[data-editor-node="text"][data-editor-path="${textPath.join(',')}"]`;
+  const typedTextSelector = typedRoot
+    ? `[data-board="${typedRoot}"] ${textAtPath}`
+    : `${textAtPath}:not([data-board] *)`;
+  const textHost = () => document.querySelector<HTMLElement>(typedTextSelector);
   const editable = () =>
     textHost()?.closest<HTMLElement>('[contenteditable="true"]') ??
     document.querySelector<HTMLElement>('[contenteditable="true"]');
@@ -254,13 +248,15 @@ export const installBoardProbe = (
     (block) => (block as StoredNode).childRoots?.shapes === typedRoot
   );
 
-  renderer.setCameraWrite((camera) => {
+  renderer.setCameraWrite(() => {
     editor.update((tx) =>
-      tx.nodes.set({ height: Math.round(480 + camera.x) }, { at: [boardIndex] })
+      tx.nodes.set(
+        { height: VIEWPORT.height + (plantWork.cameraWrites % 2) },
+        { at: [boardIndex] }
+      )
     );
   });
 
-  // The clock starts in the first listener a key reaches.
   window.addEventListener(
     'keydown',
     (event) => {
@@ -340,8 +336,6 @@ export const installBoardProbe = (
         event.preventDefault();
         event.stopImmediatePropagation();
         plantWork.deferredKeys += 1;
-        // A wall-clock delay, because a key that outlasts a frame lands its
-        // rAF hops in frames N2 already waits for.
         setTimeout(
           () => editor.update((tx) => tx.text.insert(data)),
           DEFER_PLANT_MS
@@ -390,9 +384,31 @@ export const installBoardProbe = (
       return { blocks: stored.children.length, collaboration: false };
     }
 
-    const mountedArm = document.querySelector<HTMLElement>(
+    const surface = document.querySelector<HTMLElement>(
       `[data-board="${typedRoot}"]`
-    )?.dataset.renderArm;
+    );
+    const size = surface?.getBoundingClientRect();
+
+    if (
+      size &&
+      (size.width !== VIEWPORT.width || size.height !== VIEWPORT.height)
+    ) {
+      throw new Error(
+        `the board surface is ${size.width}x${size.height}, not ${VIEWPORT.width}x${VIEWPORT.height}`
+      );
+    }
+    if (
+      query.renderer === 'production' &&
+      (boardStats.geometryScans === 0 ||
+        boardStats.indexBuilds === 0 ||
+        boardStats.visibilityRecomputes === 0 ||
+        boardStats.renders === 0)
+    ) {
+      throw new Error(
+        `the shipped view counted no work: ${JSON.stringify({ geometryScans: boardStats.geometryScans, indexBuilds: boardStats.indexBuilds, renders: boardStats.renders, visibilityRecomputes: boardStats.visibilityRecomputes })}`
+      );
+    }
+    const mountedArm = surface?.dataset.renderArm;
 
     return {
       ...readBoardWorkload(
@@ -418,10 +434,6 @@ export const installBoardProbe = (
     top: camera.y,
   });
 
-  /**
-   * The ids of the shapes the camera's view meets, found by a linear scan of
-   * the stored board, so arm W's index search has a check of its own.
-   */
   const shapesInView = () => {
     const view = viewRect(readCamera());
 
@@ -470,10 +482,6 @@ export const installBoardProbe = (
       : null;
   };
 
-  /**
-   * The arrows whose box meets the view while both ends sit off screen, with
-   * whether each is mounted and where. A cull by endpoint drops exactly these.
-   */
   const crossingArrows = async () => {
     await nextFrame();
     await nextFrame();
@@ -515,12 +523,6 @@ export const installBoardProbe = (
     });
   };
 
-  /**
-   * Shapes whose rect is not where their place and the camera put them, a
-   * mounted shape out of stored order, and a shape in view left unmounted.
-   * Waits two frames first, so arm W's search after the last camera change
-   * has rendered.
-   */
   const misplaced = async () => {
     await nextFrame();
     await nextFrame();
@@ -574,11 +576,6 @@ export const installBoardProbe = (
     await nextFrame();
   };
 
-  /**
-   * The arrows the fixture seeded to cross a view, each read in its own view:
-   * whether it crosses that view with both ends off screen, and every arrow
-   * that crosses there, mounted or not and where.
-   */
   const seededCrossings = async () => {
     const checked: Array<{
       arrows: Array<{
@@ -594,7 +591,7 @@ export const installBoardProbe = (
 
     for (const { shapeId, view } of prepared.fixture.crossings) {
       const camera = readCamera();
-      const target = cameraFor(view, prepared.fixture);
+      const target = cameraFor(view, prepared.fixture, prepared.offset);
 
       if (target.zoom !== camera.zoom) {
         throw new Error(`the ${view} view's zoom differs from the camera's`);
@@ -631,20 +628,18 @@ export const installBoardProbe = (
     query,
     readback,
     ready: null as null | {
-      live: number;
+      mountedNow: number;
       mountMs: number;
       mounts: number;
     },
     stats: boardStats,
 
-    /** Core's React selector runs and commit listener calls so far. */
     coreWork: () => {
       const { selectorVisits, subscriberVisits } = readCoreWork();
 
       return { selectorVisits, subscriberVisits };
     },
 
-    /** Collapses the caret at the start of the typed text and waits until the model agrees. */
     placeCaret: async () => {
       const host = textHost();
       const root = editable();
@@ -698,7 +693,6 @@ export const installBoardProbe = (
 
     shapesInView: () => shapesInView().length,
 
-    /** The model selection and whether the DOM selection sits in the typed note. */
     selectionState: () => {
       const selection = editor.read.selection();
       const dom = document.getSelection();
@@ -719,7 +713,6 @@ export const installBoardProbe = (
           ? `${anchorElement.tagName} ${anchorElement.getAttribute('data-editor-path') ?? ''}`
           : null,
         domInTyped: inTyped(dom?.anchorNode) && inTyped(dom?.focusNode),
-        /** Copies of the typed note in the DOM; arm W must never mount one twice. */
         typedCount: prepared.typedShapeId
           ? document.querySelectorAll(
               `[data-shape-id="${prepared.typedShapeId}"]`
@@ -731,11 +724,6 @@ export const installBoardProbe = (
       };
     },
 
-    /**
-     * Inserts `text` at the start of the nearest note right of the view, through
-     * the editor as a peer's change lands, and returns how far to pan to show
-     * it whole with the board and culling work the edit cost.
-     */
     peerEdit: async (text: string) => {
       const shapes = storedBoard() ?? [];
       const camera = readCamera();
@@ -780,10 +768,6 @@ export const installBoardProbe = (
       };
     },
 
-    /**
-     * Writes a new place for a shape, inside the current view, and returns
-     * whether it is mounted there with the index rebuilds the write cost.
-     */
     moveIntoView: async (shapeId: string) => {
       const index = (storedBoard() ?? []).findIndex(
         (shape) => shape.shapeId === shapeId
@@ -807,13 +791,6 @@ export const installBoardProbe = (
       };
     },
 
-    /**
-     * Pans the camera by `dx` and, before the view's first frame, moves an
-     * unmounted shape by one unit, then returns how many shapes unmounted
-     * while the view still moved and which shapes mounted before the pan,
-     * other than the one that holds the selection, stayed mounted out of view
-     * once it stopped.
-     */
     reindexMidPan: async (dx: number) => {
       const mounted = new Set(
         shapeElements().map((element) => element.dataset.shapeId ?? '')
@@ -870,7 +847,6 @@ export const installBoardProbe = (
       return before;
     },
 
-    /** Resolves once key `count` has its N1 and N2 samples, or reports what it lacks. */
     waitKey: (count: number, timeoutMs: number) =>
       new Promise<string | null>((resolve) => {
         const deadline = performance.now() + timeoutMs;
@@ -879,11 +855,7 @@ export const installBoardProbe = (
 
           if (sample?.frameEnd !== undefined) {
             onFrameEnd = null;
-            // Resolving at the frame sample would lock the next keydown to
-            // the same point in the frame, and work shorter than a frame
-            // would never show in N2. A gap of 0 to 16 ms, the same sequence
-            // in every arm, spreads keydowns over the frame as a typist's do.
-            setTimeout(() => resolve(null), (count * 7) % 17);
+            setTimeout(() => resolve(null), keydownSpreadMs(count));
 
             return;
           }
@@ -918,16 +890,13 @@ export const installBoardProbe = (
       }));
     },
 
-    /**
-     * Pans or zooms the camera for `durationMs` by one scripted wheel event a
-     * frame, reading the camera back from the layers' transforms on every frame.
-     */
     gesture: async (mode: 'pan' | 'zoom', durationMs: number, step: number) => {
       const layer = boardLayer();
       const surface = layer?.parentElement;
 
       if (!layer || !surface) throw new Error('no board surface to pan');
       const interval = await measureFrameInterval();
+      const corner = surface.getBoundingClientRect();
       const start = readCamera();
       const before = { ...boardStats };
       const stamps: number[] = [];
@@ -965,6 +934,8 @@ export const installBoardProbe = (
           new WheelEvent('wheel', {
             bubbles: true,
             cancelable: true,
+            clientX: corner.left,
+            clientY: corner.top,
             ctrlKey: mode === 'zoom',
             deltaX: mode === 'pan' ? step : 0,
             deltaY: mode === 'zoom' ? -step : 0,
@@ -999,7 +970,6 @@ export const installBoardProbe = (
       };
     },
 
-    /** The client point of the frame's empty top-left gap, where a drag grabs it. */
     frameGrabPoint: () => {
       const frame = document.querySelector<HTMLElement>(
         '[data-shape-type="boardFrame"]'
@@ -1016,14 +986,6 @@ export const installBoardProbe = (
       };
     },
 
-    /**
-     * Starts recording one sample per pointermove, read in the first frame
-     * after it: whether the frame and each member whose dragged box meets the
-     * view is mounted where the drag puts it, and in which display frame of
-     * `interval` ms that frame started, counted from the last frame before
-     * the move. A loop of rAF callbacks stamps every frame, so the count does
-     * not depend on where in a frame the move arrives.
-     */
     startDrag: (frameId: string, interval: number) => {
       const surface = surfaceRect();
 
@@ -1035,10 +997,8 @@ export const installBoardProbe = (
         rect.top < surface.bottom;
       const meetsView = (element: HTMLElement) =>
         meets(element.getBoundingClientRect());
-      // Placed from the stored board and looked up by id on each move, so a
-      // member that unmounts, or remounts as a new element, is still checked.
       const dragged = (storedBoard() ?? []).flatMap((shape) =>
-        shape.shapeId === frameId || shape.place?.frame === frameId
+        shape.shapeId === frameId || shape.frame === frameId
           ? [{ id: shape.shapeId ?? '', origin: screenRect(shape, surface) }]
           : []
       );
@@ -1123,7 +1083,8 @@ export const installBoardProbe = (
             // count reads when its callbacks ran. The quarter frame absorbs a
             // measured interval that rounds the display's down.
             frames: Math.floor(
-              (event.data.started - pending.after) / interval + 0.25
+              (event.data.started - pending.after) / interval +
+                QUARTER_FRAME_SLACK
             ),
             membersMissing,
             membersOff,
@@ -1145,8 +1106,6 @@ export const installBoardProbe = (
           x: event.clientX,
           y: event.clientY,
         };
-        // Holds the thread until a frame past the next one would start, so
-        // the move's own frame is lost at any input phase.
         if (plant === 'drag-busy') {
           busyWait(Math.max(0, lastFrame + 2 * interval - performance.now()));
         }

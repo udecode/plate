@@ -33,7 +33,8 @@ import type {
 } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
-import type { Descendant, EditorJsonValue } from '../../facade';
+import type { Descendant, EditorJsonValue, Element } from '../../facade';
+import type { ElementContentRootSlot } from '../types/RenderElementProps';
 import type { AnyBasePluginDefinition } from './PluginDefinition';
 import type {
   MarkdownMappingDiagnosticInput,
@@ -169,6 +170,13 @@ export type MarkdownEncodeContext<
 > = MarkdownContext<D> &
   Omit<PluginFormatModelView, 'node'> &
   Readonly<{
+    /**
+     * The blocks of the content root that `slot` names on `node`, in stored
+     * order. Serializing reports each document root no mapping read.
+     */
+    contentRoot: (
+      slot: ElementContentRootSlot<Extract<TNode, Element>>
+    ) => readonly Descendant[];
     encode: (nodes: readonly Descendant[]) => RootContent[];
     encodeBlocks: (nodes: readonly Descendant[]) => BlockContent[];
     encodeFlow: (
@@ -241,9 +249,13 @@ type MarkdownElementMappingBase<
   decode?: (
     context: MarkdownDecodeContext<TSource, D>
   ) => Descendant | Descendant[] | MarkdownRefusal | undefined;
+  /**
+   * Return the Markdown node that stands for the node, several to write it as
+   * a run of siblings, `undefined` to decline, or `refuse(message)`.
+   */
   encode?: (
     context: MarkdownEncodeContext<PluginFormatNode<D>, D>
-  ) => RootContent | MarkdownRefusal | undefined;
+  ) => RootContent | readonly RootContent[] | MarkdownRefusal | undefined;
   /** Higher runs first among claim mappings on one selector. */
   priority?: number;
   style?: never;

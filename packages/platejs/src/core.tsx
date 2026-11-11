@@ -39,6 +39,7 @@ export {
   isEditor,
   locateAt,
   mapEffect,
+  nodeWriteVeto,
   property,
   readEditorSchemaContract,
   readEditorSelection,

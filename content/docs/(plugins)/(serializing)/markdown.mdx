@@ -477,6 +477,45 @@ Pass an array to declare several mappings for one plugin. Use
 for a foreign target. A plugin's `formats` accept only the `html`, `markdown`,
 and `plainText` keys; MIME payloads belong in `dataTransferFormats`.
 
+### Content roots
+
+An element that owns a [content root](/docs/roots#content-roots) writes that
+root's blocks through `contentRoot(slot)`. It returns the blocks of the root
+that `slot` names on the node, in stored order. `encode` may return an array of
+Markdown nodes, which are written as siblings in the element's place.
+
+```ts
+import { definePlugin, schema } from 'platejs';
+
+const AsidePlugin = definePlugin('aside', {
+  schema: {
+    element: {
+      contentRoots: {
+        body: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  },
+  formats: ({ defineFormats }) =>
+    defineFormats({
+      markdown: {
+        encode: ({ contentRoot, encode }) => encode(contentRoot('body')),
+      },
+    }),
+});
+```
+
+Markdown has no syntax for a separate root, so parsing this output reads the
+blocks as ordinary blocks of the document. Serialization reports each named
+root that no mapping reads through `contentRoot` as
+`markdown-unsupported-root`. Reading a slot the node does not own throws.
+
 ## Remark plugins
 
 Configure remark plugins once on `MarkdownPlugin`. Every parse and serialize
@@ -527,7 +566,7 @@ reportWarnings(result.diagnostics);
 | `markdown-inline-blocks` | Error | `parseInline` input that produced blocks. |
 | `markdown-schema-repair` | Warning; error when lossy under `'reject'` | A schema repair applied to the parsed document. |
 | `markdown-schema-invalid` | Error | Parsed content the schema rejects. |
-| `markdown-unsupported-root`, `markdown-unsupported-metadata` | Warning | A named root or document metadata omitted on export. |
+| `markdown-unsupported-root`, `markdown-unsupported-metadata` | Warning | A named root that no mapping read through [`contentRoot`](#content-roots), or document metadata, omitted on export. |
 
 Authored projection diagnostics use the same result. Configuration failures and
 mapping contract violations throw.

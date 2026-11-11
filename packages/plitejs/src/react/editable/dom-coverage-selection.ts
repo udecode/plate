@@ -346,7 +346,10 @@ export const applyDOMCoverageSelectionPolicy = ({
   coverage: DOMCoverageSession;
   editor: ReactRuntimeEditor;
   editorElement?: HTMLElement;
-  exportSelection: (points: DOMSelectionPoints | null, parked: boolean) => void;
+  exportSelection: (
+    points: DOMSelectionPoints | null,
+    modelOwned: boolean
+  ) => void;
   inputController: EditableInputController;
   selection: ModelRange;
 }) => {
@@ -394,7 +397,9 @@ export const applyDOMCoverageSelectionPolicy = ({
     ? getParkedPoints(coverage, editor, selection, editorElement)
     : getProjectedPoints(coverage, editor, selection, editorElement);
 
-  exportSelection(points, parked);
+  // Chromium answers a key on an empty DOM selection with a caret at the
+  // editable's start, so a range the browser shows nothing of stays model-owned.
+  exportSelection(points, parked || !points);
 
   if (parked) {
     inputController.state.parkedExport = {
