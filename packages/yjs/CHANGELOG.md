@@ -1,5 +1,12 @@
 # @platejs/yjs
 
+## 53.5.6
+
+### Patch Changes
+
+- [#5338](https://github.com/udecode/plate/pull/5338) by [@yulman2207](https://github.com/yulman2207) –
+  - Accept `@hocuspocus/provider` v4 in the peer dependency range, so installing it no longer warns about an unmet peer.
+
 ## 53.2.0
 
 ### Minor Changes
