@@ -337,11 +337,29 @@ Read the actual consumer before claiming an external service worked:
   `pnpm --filter www build:tw` when missing. Use Chrome for the download,
   then inspect the saved file. A browser-rendering claim also needs an allowed
   view of that file; record a URL-policy block as a capability gap.
-- Hocuspocus collaboration needs its configured WebSocket server. A manual
-  connection-status fixture proves that state only. Pro/reference iframe
-  content needs the external route and any access it requires.
+- `/examples/plite/yjs-hocuspocus` syncs through a Hocuspocus server at
+  `NEXT_PUBLIC_PLITE_YJS_URL`, `ws://localhost:4444/yjs` by default. From the
+  checkout root, run
+  `PLITE_YJS_STORAGE_DIR=<run folder>/yjs-data bun tooling/plite/donor/yjs/hocuspocus-server.ts`
+  and wait for its `Hocuspocus listening` line. `pnpm dev:webrtc` and the www
+  `rc` script also bind port 4444, so the server cannot start while either runs.
+  Open each peer on a locally served www at
+  `/examples/plite/yjs-hocuspocus?connection=manual&peer=<a|b|c>&room=<room>`
+  and press its Online button; its Offline button disconnects that peer alone.
+  Beta's https page cannot reach a server on `localhost` from Claude's
+  built-in browser or from Safari in the iOS Simulator. A physical iPhone reads
+  the default URL's `localhost` as itself, so an iPhone peer runs in the iOS
+  Simulator. `apps/plite/tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts`
+  drives two peers through the managed Plite runner and starts its own server
+  when none answers. The docs collaboration demo, on
+  `/docs/examples/collaboration-example` and `/docs/yjs`, syncs its peers
+  through a room inside the page and needs no server. A manual
+  connection-status fixture proves that state only.
+- Pro/reference iframe content needs the external route and any access it
+  requires.
 - Mobile viewport and synthetic composition tests retain their proxy scope.
-  Raw Android/iOS or OS IME claims require the actual device/input method.
+  Raw Android/iOS or OS IME claims require the actual device or input method,
+  through a lane that native editor proof names.
 
 Read [native editor proof and scenario generation](./references/editor-proof.md)
 for selection, keyboard, pointer, screenshots, undo, geometry or device work.

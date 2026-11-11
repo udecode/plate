@@ -21,7 +21,8 @@ Do not bake one historical repro into the workflow.
    - A-side online edits while A remains connected
    - B reconnect
    - observe final convergence, selection, history, or presence state
-6. Compare the observed Potion result with the local Slate Yjs result. Treat
+6. Compare the observed Potion result with the local result on the Plite or
+   Plate Yjs route under test. Treat
    Potion as reference evidence, not automatic proof; confirm the local schema
    and operation shape are equivalent.
 
@@ -46,8 +47,9 @@ collaboration repro counts:
 - B can reconnect without forcing A offline.
 
 If the current tool exposes a per-page network/CDP primitive, use that. If it
-only exposes whole-context offline state, do not use it for this proof; it is
-the wrong oracle for split-brain Yjs behavior.
+only exposes whole-context offline state, give B a context of its own,
+because a context offline with both peers in it is the wrong oracle for
+split-brain Yjs behavior.
 
 ## One-Off Repro Checklist
 
@@ -64,9 +66,9 @@ For each new case:
 
 ## Interpretation
 
-- If Potion preserves content or history that local Slate Yjs loses, treat the
+- If Potion preserves content or history that the local route loses, treat the
   local behavior as suspicious.
-- If Potion produces the same result as local Slate Yjs, treat that conflict
+- If Potion produces the same result as the local route, treat that conflict
   behavior as plausible, then verify the local operation sequence really
   matches Potion.
 - If Potion and local differ, do not jump straight to a fix. First compare
