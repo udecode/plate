@@ -206,6 +206,7 @@
       "authored={ownerAuthored as never}"
     ]
   },
+  "plate/no-bare-peer-delivery": {},
   "plate/no-branded-value": {},
   "plate/no-existence-only-test": {},
   "plate/no-fixed-sleep": {},

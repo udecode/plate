@@ -654,6 +654,16 @@ export default defineConfig({
     {
       files: [
         'packages/*/src/**/*.{cts,mts,ts,tsx}',
+        'apps/sync-server/src/**/*.{cts,mts,ts,tsx}',
+      ],
+      excludeFiles: ['**/*.spec.*', '**/*.test.*', '**/__tests__/**'],
+      rules: {
+        'plate/no-bare-peer-delivery': 'error',
+      },
+    },
+    {
+      files: [
+        'packages/*/src/**/*.{cts,mts,ts,tsx}',
         'apps/www/src/registry/**/*.{ts,tsx}',
       ],
       excludeFiles: ['**/*.spec.*', '**/*.test.*', '**/__tests__/**'],

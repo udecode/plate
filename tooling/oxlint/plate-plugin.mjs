@@ -2055,6 +2055,433 @@ const editableOwnDOMTree = {
   },
 };
 
+// Most loops over `listeners`, `observers` or `callbacks` are deliberate: React
+// store pings, participants that run before the change is final, listeners
+// wrapped where they subscribe. A fan-out to peers or connections is not.
+const RECIPIENT_NAME = /client|connection|peer|sink|socket/iu;
+
+const DELIVERY_METHODS = new Set(['deliver', 'postMessage', 'send']);
+
+const OBSERVER_RUNNERS = new Set(['notifyObservers', 'runEditorObserver']);
+
+const LIFECYCLE_ERROR_MODULE = 'packages/plitejs/src/core/lifecycle-error';
+
+// A Map's `forEach` passes the value first and the key second, and either can
+// be the connection.
+const ELEMENT_PARAMS = new Map([
+  ['every', [0]],
+  ['filter', [0]],
+  ['find', [0]],
+  ['findIndex', [0]],
+  ['flatMap', [0]],
+  ['forEach', [0, 1]],
+  ['map', [0]],
+  ['reduce', [1]],
+  ['reduceRight', [1]],
+  ['some', [0]],
+]);
+
+const GUARD_COMPARISONS = new Set(['!=', '!==', '==', '===']);
+
+const unwrap = (node) =>
+  node?.type === 'ChainExpression' ||
+  node?.type === 'TSAsExpression' ||
+  node?.type === 'TSNonNullExpression'
+    ? unwrap(node.expression)
+    : node;
+
+const someNode = (node, test) =>
+  Boolean(node) &&
+  (test(node) ||
+    (!isFunctionValue(node) &&
+      childNodes(node).some((child) => someNode(child, test))));
+
+const isBuiltin = (node, name) =>
+  unwrap(node)?.type === 'Identifier' && unwrap(node).name === name;
+
+const collectionNames = (node) => {
+  switch (node?.type) {
+    case 'Identifier': {
+      return [node.name];
+    }
+    case 'MemberExpression': {
+      return node.computed ? [] : [node.property.name];
+    }
+    case 'ChainExpression':
+    case 'TSAsExpression':
+    case 'TSNonNullExpression': {
+      return collectionNames(node.expression);
+    }
+    case 'LogicalExpression': {
+      return collectionNames(node.left);
+    }
+    case 'SpreadElement': {
+      return collectionNames(node.argument);
+    }
+    case 'ArrayExpression': {
+      return node.elements.flatMap(collectionNames);
+    }
+    case 'NewExpression': {
+      return collectionNames(node.arguments[0]);
+    }
+    case 'CallExpression': {
+      const callee = unwrap(node.callee);
+      if (callee.type !== 'MemberExpression') return [];
+      if (
+        isBuiltin(callee.object, 'Array') ||
+        isBuiltin(callee.object, 'Object')
+      ) {
+        return collectionNames(node.arguments[0]);
+      }
+      return [...collectionNames(callee), ...collectionNames(callee.object)];
+    }
+    default: {
+      return [];
+    }
+  }
+};
+
+const bindingNames = (pattern, names = new Set()) => {
+  switch (pattern?.type) {
+    case 'Identifier': {
+      names.add(pattern.name);
+      break;
+    }
+    case 'ArrayPattern': {
+      for (const element of pattern.elements) bindingNames(element, names);
+      break;
+    }
+    case 'ObjectPattern': {
+      for (const property of pattern.properties) {
+        bindingNames(property.value ?? property.argument, names);
+      }
+      break;
+    }
+    case 'AssignmentPattern': {
+      bindingNames(pattern.left, names);
+      break;
+    }
+    case 'RestElement': {
+      bindingNames(pattern.argument, names);
+      break;
+    }
+    default:
+  }
+  return names;
+};
+
+const deliveryTargets = (call) => {
+  const callee = unwrap(call.callee);
+  const [first] = call.arguments;
+  const helper =
+    call.arguments.length > 1 && first.type === 'Identifier'
+      ? first.name
+      : null;
+  if (callee.type === 'Identifier') {
+    return [
+      {
+        element: callee.name,
+        needsRecipientName: !DELIVERY_METHODS.has(callee.name),
+      },
+      ...(helper && callee.name === 'send'
+        ? [
+            {
+              certifiedBy: {
+                forbids: null,
+                name: 'send',
+                owners: ['function'],
+              },
+              element: helper,
+            },
+          ]
+        : []),
+    ];
+  }
+  if (callee.type !== 'MemberExpression') return [];
+  const method = propertyName(callee);
+  if (helper && method === 'send' && callee.object.type === 'ThisExpression') {
+    return [
+      {
+        certifiedBy: { forbids: null, name: 'send', owners: ['class'] },
+        element: helper,
+      },
+    ];
+  }
+  if (!DELIVERY_METHODS.has(method)) return [];
+  const receiver = unwrap(callee.object);
+  let root = receiver;
+  while (root.type === 'MemberExpression') root = unwrap(root.object);
+  if (root.type !== 'Identifier') return [];
+  return [
+    {
+      certifiedBy:
+        receiver === root
+          ? { forbids: method, name: method, owners: ['class', 'object'] }
+          : null,
+      element: root.name,
+    },
+  ];
+};
+
+const callbackLoop = (fn) => {
+  const call = fn.parent;
+  if (call?.type !== 'CallExpression') return null;
+  const callee = unwrap(call.callee);
+  if (callee.type !== 'MemberExpression' || callee.computed) return null;
+  const method = callee.property.name;
+  if (isBuiltin(callee.object, 'Array')) {
+    return method === 'from' && call.arguments[1] === fn
+      ? { collection: call.arguments[0], elements: [fn.params[0]] }
+      : null;
+  }
+  return call.arguments[0] === fn && ELEMENT_PARAMS.has(method)
+    ? {
+        collection: callee.object,
+        elements: ELEMENT_PARAMS.get(method).map((index) => fn.params[index]),
+      }
+    : null;
+};
+
+const loopOf = (call, name) => {
+  let child = call;
+  for (let node = call.parent; node; child = node, node = node.parent) {
+    if (node.type === 'ForOfStatement' && child === node.body) {
+      const binding =
+        node.left.type === 'VariableDeclaration'
+          ? node.left.declarations[0].id
+          : node.left;
+      if (bindingNames(binding).has(name)) {
+        return { collection: node.right, node };
+      }
+    } else if (isFunctionValue(node)) {
+      if (!node.params.some((param) => bindingNames(param).has(name))) continue;
+      const loop = callbackLoop(node);
+      return loop &&
+        loop.elements.some((element) => bindingNames(element).has(name))
+        ? { collection: loop.collection, node }
+        : null;
+    }
+  }
+  return null;
+};
+
+const statementType = (statement) =>
+  statement.type === 'ExpressionStatement'
+    ? unwrap(statement.expression).type
+    : null;
+
+// A catch isolates only when it is calls and assignments: anything else, such
+// as `return`, a loop, an `if` or an `await`, can leave the loop.
+const isolatesBlock = (statement) =>
+  statement.type === 'TryStatement' &&
+  Boolean(statement.handler) &&
+  !statement.finalizer &&
+  statement.handler.body.body.every((handled) =>
+    ['AssignmentExpression', 'CallExpression'].includes(statementType(handled))
+  ) &&
+  statement.handler.body.body.some(
+    (handled) => statementType(handled) === 'CallExpression'
+  ) &&
+  !someNode(
+    statement.handler.body,
+    (node) => node.type === 'AwaitExpression' || node.type === 'YieldExpression'
+  );
+
+const isIsolated = (call, loop, runners) => {
+  let child = call;
+  for (
+    let node = call.parent;
+    node !== loop;
+    child = node, node = node.parent
+  ) {
+    if (
+      node.type === 'TryStatement' &&
+      child === node.block &&
+      isolatesBlock(node)
+    ) {
+      return true;
+    }
+    if (
+      node.type === 'CallExpression' &&
+      isFunction(child) &&
+      node.arguments.includes(child) &&
+      node.callee.type === 'Identifier' &&
+      runners.has(node.callee.name)
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const isBareReturn = (statement) =>
+  (statement.type === 'ReturnStatement' && !statement.argument) ||
+  (statement.type === 'BlockStatement' &&
+    statement.body.length === 1 &&
+    isBareReturn(statement.body[0]));
+
+const isReadOnlyTest = (node) => {
+  switch (node.type) {
+    case 'Identifier': {
+      return true;
+    }
+    case 'MemberExpression': {
+      return !node.computed && isReadOnlyTest(node.object);
+    }
+    case 'UnaryExpression': {
+      return node.operator === '!' && isReadOnlyTest(node.argument);
+    }
+    case 'BinaryExpression': {
+      return (
+        GUARD_COMPARISONS.has(node.operator) &&
+        ((node.left.type === 'Literal' && isReadOnlyTest(node.right)) ||
+          (node.right.type === 'Literal' && isReadOnlyTest(node.left)))
+      );
+    }
+    default: {
+      return false;
+    }
+  }
+};
+
+const isGuard = (statement) =>
+  statement.type === 'IfStatement' &&
+  !statement.alternate &&
+  isBareReturn(statement.consequent) &&
+  isReadOnlyTest(statement.test);
+
+// A certified method's try must not call a method of its own name: a `send`
+// that wraps `ws.send` says nothing of a bare `ws.send`.
+const catchesOwnFailure = (fn, forbids) => {
+  if (
+    fn.body.type !== 'BlockStatement' ||
+    !fn.params.every((param) => param.type === 'Identifier')
+  ) {
+    return false;
+  }
+  const rest = fn.body.body.slice(
+    fn.body.body.findIndex((statement) => !isGuard(statement))
+  );
+  return (
+    rest.length === 1 &&
+    isolatesBlock(rest[0]) &&
+    !someNode(
+      rest[0].block,
+      (node) =>
+        forbids !== null &&
+        node.type === 'CallExpression' &&
+        unwrap(node.callee).type === 'MemberExpression' &&
+        propertyName(unwrap(node.callee)) === forbids
+    )
+  );
+};
+
+const definitionsByName = (program) => {
+  const definitions = new Map();
+  const add = (name, owner, fn) => {
+    if (name && fn && isFunctionValue(fn)) {
+      definitions.set(name, [...(definitions.get(name) ?? []), { fn, owner }]);
+    }
+  };
+  const visit = (node) => {
+    if (node.type === 'Property') {
+      add(staticKeyName(node.key, node.computed), 'object', node.value);
+    } else if (
+      node.type === 'MethodDefinition' ||
+      node.type === 'PropertyDefinition'
+    ) {
+      add(staticKeyName(node.key, node.computed), 'class', node.value);
+    } else if (node.type === 'FunctionDeclaration') {
+      add(node.id?.name, 'function', node);
+    } else if (node.type === 'VariableDeclarator') {
+      add(node.id.name, 'function', node.init);
+    }
+    childNodes(node).forEach(visit);
+  };
+  visit(program);
+  return definitions;
+};
+
+const isLifecycleErrorModule = (source, file) =>
+  source === 'plitejs/internal' ||
+  (source.startsWith('.') &&
+    path.posix
+      .join(path.posix.dirname(file), source)
+      .replace(/\.[cm]?[jt]sx?$/u, '') === LIFECYCLE_ERROR_MODULE);
+
+const importedRunners = (context) => {
+  const file = relativeFilename(context);
+  return new Set(
+    context.sourceCode.ast.body.flatMap((statement) =>
+      statement.type === 'ImportDeclaration' &&
+      isLifecycleErrorModule(statement.source.value, file)
+        ? statement.specifiers
+            .filter(
+              (specifier) =>
+                specifier.type === 'ImportSpecifier' &&
+                OBSERVER_RUNNERS.has(staticKeyName(specifier.imported))
+            )
+            .map((specifier) => specifier.local.name)
+        : []
+    )
+  );
+};
+
+const noBarePeerDelivery = {
+  create(context) {
+    const runners = importedRunners(context);
+    let definitions;
+    const certifies = (by) => {
+      if (!by) return false;
+      definitions ??= definitionsByName(context.sourceCode.ast);
+      const found = (definitions.get(by.name) ?? []).filter(({ owner }) =>
+        by.owners.includes(owner)
+      );
+      return (
+        found.length > 0 &&
+        found.every(({ fn }) => catchesOwnFailure(fn, by.forbids))
+      );
+    };
+    return {
+      CallExpression(node) {
+        for (const target of deliveryTargets(node)) {
+          const loop = loopOf(node, target.element);
+          if (
+            !loop ||
+            (target.needsRecipientName &&
+              ![...collectionNames(loop.collection), target.element].some(
+                (name) => RECIPIENT_NAME.test(name)
+              )) ||
+            isIsolated(node, loop.node, runners) ||
+            certifies(target.certifiedBy)
+          ) {
+            continue;
+          }
+          context.report({
+            data: {
+              call: context.sourceCode.getText(node.callee),
+              collection: context.sourceCode.getText(loop.collection),
+            },
+            messageId: 'bare',
+            node,
+          });
+          return;
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'A loop that delivers to peers or connections isolates each delivery, so one failing delivery never stops the rest.',
+    },
+    messages: {
+      bare: "This loop over `{{collection}}` calls `{{call}}` bare, so one failing delivery stops every recipient after it (baselined in this file: {{baselined}}). Make each delivery catch its own failure: wrap the call in a try with no `finally` whose catch holds only calls and assignments, with no `return`, `break`, `continue`, `throw` or `await`, or call a method this file defines whose body is that one try, like the sync server's `peer.deliver`, which closes the connection whose send fails. For a listener set an editor owns, deliver through `notifyObservers` or `runEditorObserver` from `packages/plitejs/src/core/lifecycle-error.ts`.",
+    },
+    type: 'problem',
+  },
+};
+
 export { noAsNever };
 
 export default {
@@ -2073,6 +2500,10 @@ export default {
     ),
     'no-annotated-inferred-callback': noAnnotatedInferredCallback,
     'no-as-never': withBaseline('no-as-never', noAsNever),
+    'no-bare-peer-delivery': withBaseline(
+      'no-bare-peer-delivery',
+      noBarePeerDelivery
+    ),
     'no-branded-value': withBaseline('no-branded-value', noBrandedValue),
     'no-dom-window-timer': noDOMWindowTimer,
     'no-existence-only-test': withBaseline(
