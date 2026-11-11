@@ -81,7 +81,7 @@ import { basename, dirname, isAbsolute, join, normalize, relative, resolve } fro
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
-import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
+import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
 import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -266,7 +266,7 @@ const transcriptOf = (run) => (run ? basename(run.transcript, '.jsonl') : null);
 // that names session: also records the writing session's transcript id.
 function stampTranscript(cells, run) {
   const [phase, , , evidence, result] = cells;
-  const owning = phase === 'chip' && /^(?:offered|updated)\b/u.test(result) && hasToken(evidence, 'session') && !hasToken(evidence, 'transcript');
+  const owning = phase === 'chip' && /^(?:offered|updated)\b/u.test(result) && namesOwner(evidence) && !hasToken(evidence, 'transcript');
   return owning && run ? [cells[0], cells[1], cells[2], `${evidence}; transcript: ${transcriptOf(run)}`, cells[4]] : cells;
 }
 

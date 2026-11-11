@@ -1,62 +1,62 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "chips": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "431590330150d4cd7ff46c123950d1fc9b8c435fb7b9d3cb813cd13f4eb44e6f"
+      "computedHash": "1098eb6a2a1e56430201803e5542e5481212ff3d0839260ddf0f1ff70e536c6a"
     },
     "cleanup": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "f4f5b655132dbcf2ca2361877ce849e1ffe70ed87dff9fa23c09c58aa4ecac61"
+      "computedHash": "72e5a4beab65d786136d9da05e24c2631b12bf24ca0863170a2079f9ef9f6ab0"
     },
     "plan-page": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "9f465e291296b5669a182333cf9e2eb5ab4b70a9e7ebcb8a95f861e39dc8f33d"
+      "computedHash": "f6171ba77643ada4b9973ab8081233540c704fc7ac4b2ada2c909d6199b96d0e"
     },
     "redo": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/redo/SKILL.md",
-      "computedHash": "d4a13f213fc569ba248556b3a31ae2e461e609867582cfaca071edd16d06fa4d"
+      "computedHash": "fa21b464ac3c628daab831b0c9ca9fc2154e32428bc1067883bc06c3b63fb3ca"
     },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
-      "computedHash": "c1a68ee06a668aced9ab2b5fbdea5f989864123794eb2e056b339a072dbb7f10"
+      "computedHash": "e5cffbeea5a955e9fed01abf759c0f2b020ec6095b60924ba7b7ccf60165cc43"
     },
     "tanstack-virtual": {
       "source": "tanstack-skills/tanstack-skills",
       "sourceType": "github",
-      "computedHash": "987d0fcffeac700cea1303a13a9cecd8a4583985dd675f97ebbca27bfa592b47"
+      "computedHash": "e322b98ce04e6e5d206ef041b0b16078d26506c98f38ba565e553925c3da9bc5"
     },
     "test-audit": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/test-audit/SKILL.md",
-      "computedHash": "6097fc0e3a7adb2de0a6e0be5008fe4afb6b2c4ebc5c29507f58499904112a04"
+      "computedHash": "d916d794c99c0ac203e025011fb3a907d4d289d57bd4db80a5db3d1dd3e0d14a"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
-      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
+      "computedHash": ""
     },
     "video-transcripts": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/video-transcripts/SKILL.md",
-      "computedHash": "da34c4910c0ac4fc7e8086c77842e6879eb4d24ef3eff119b5b7fada07b66c0e"
+      "computedHash": "fe0efbaa49b967fbdb01589559b6ee546dea58fc43ca88b21dc90841188bf0a7"
     },
     "walkthrough": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/walkthrough/SKILL.md",
-      "computedHash": "693e514613dbd1aae21ea48ca430962c93e70adc14d10c0a4f70dc2dc76c8a3a"
+      "computedHash": "72795b89c7ef9cce3ec88e6ce7b1473baff1c8135325d658a65afeeb25e9e4b9"
     }
   }
 }

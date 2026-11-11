@@ -164,13 +164,13 @@ function main() {
       'chip',
       `${id} Run formal intake over the fixes since ${intakeDay}`,
       `${fixes} fix commits landed on next since ${since}, the later of the newest formal intake, ${config.plans}/${intake}, and the last intake task's close. Run the formal intake that AGENTS.md's Owner phrases define, which reads every fix since that intake, to judge where a new formal check is worth building.`,
-      `writes: ${config.plans}; topic: ${TOPIC}; kind: decide; priority: P3; via: hook; session: ${session}`,
+      `writes: ${config.plans}; topic: ${TOPIC}; kind: decide; priority: P3; via: hook; session: none`,
       'offered',
     ]);
     process.stdout.write(
       JSON.stringify({
         decision: 'block',
-        reason: `Formal intake is due: ${fixes} fix commits landed on next since ${since}, and this session landed ${landed}. This hook offered it as ${id} in the suggested-task ledger. Run the chips skill's Close mode on ${id} now, which cards it with the prompt that node .agents/pstack/decisions-check.mjs chips brief ${id} prints or lists it where this runtime has no suggest tool, and say so in one line.`,
+        reason: `Formal intake is due: ${fixes} fix commits landed on next since ${since}, and this session landed ${landed}. This hook offered it as ${id} in the suggested-task ledger with no owner, because it lies outside this session's domain, so only /chips all cards it. Say so in one line.`,
       })
     );
   } finally {
