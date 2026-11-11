@@ -42,6 +42,7 @@ const EDITORLESS_ROUTES = new Set([
 ]);
 
 const BETA_ONLY = new Set([
+  '/docs/examples/demo',
   '/docs/examples/document-migration',
   '/docs/lint',
   '/docs/pagination',
