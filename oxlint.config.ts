@@ -274,6 +274,9 @@ export default defineConfig({
         'apps/plite/src/board-scale/model-lane.ts',
         'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
         'apps/www/src/app/dev/editor-perf/page.tsx',
+        // This route proves two raw Plite editors stay in step through a room
+        // that orders their changes.
+        'apps/www/src/app/dev/sync/**',
         // This spec proves Plate's kit compiles to a schema that tracks no
         // places, so moves in Plate record nothing new.
         'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',

@@ -743,6 +743,9 @@ type Rewrite = Readonly<{
   settlePoints: readonly number[];
 }>;
 
+const between = (join: Join, from: number, to: number) =>
+  join.first.to <= from && to <= join.second.from;
+
 /**
  * Rewrite a change for a positional rebase: its joins keep the meeting texts
  * apart, a join whose line the other side removes keeps only its text edits,
@@ -868,28 +871,33 @@ const rewrite = (
           result,
           restored.map(({ at, slice }) => ({ from: at, insert: slice, to: at }))
         );
-  const live = others.filter((join) => !moot(join));
+  const { removes } = removedJoinedLines(change, document);
+  const live = others.filter((join) => !removes(join));
   const cuts: Range[] = [];
   const moved = new Map<Join, PreparedTokenSlice[]>();
 
   position = 0;
   for (let index = 0; index < apart.sections.length; index += 2) {
-    if (apart.sections[index] === 0 && apart.sections[index + 1] > 0) {
+    const size = apart.sections[index];
+
+    if (apart.sections[index + 1] > 0) {
       const slice = apart.data[index / 2] as PreparedTokenSlice;
-      const join = live.find(
+      const near = live.find(
         ({ window }) => window.from <= position && position <= window.to
       );
+      const join =
+        near &&
+        (size === 0 ||
+          (between(near, position, position + size) &&
+            isWholeLines(slice.tokens)))
+          ? near
+          : undefined;
       const split = join && splitAtJoin(document, join, position, slice);
 
       // Only whole lines can move out from between two lines, so an insert
       // into the empty text between two inline lines takes no rebase by
       // position.
-      if (
-        join &&
-        !split &&
-        join.first.to <= position &&
-        position <= join.second.from
-      ) {
+      if (join && !split && between(join, position, position)) {
         return null;
       }
       if (join && split) {
@@ -903,7 +911,7 @@ const rewrite = (
       }
     }
 
-    position += apart.sections[index];
+    position += size;
   }
 
   const chainEnds = new Map<Join, number>();
