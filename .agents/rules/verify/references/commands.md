@@ -80,13 +80,26 @@ Rules:
   takes them for diagnostics. A file stops at its first failing batch and
   resumes its passing batches on the next run, so a case after a known
   failure runs only once its file runs without that failure;
-- do not run multiple managed Playwright commands in parallel,
-  including through `multi_tool_use.parallel`. The managed route builds and
-  serves the Next example app, and concurrent runs can trip the Next build lock
-  (`Another next build process is already running`) or prove the wrong stale
-  server. Parallelize file reads, but serialize managed Playwright proofs
-  unless one checkpoint explicitly owns a prebuilt server plus
-  `PLAYWRIGHT_BASE_URL`. During a managed proof, run nothing that writes under
+- managed Playwright proofs never run at the same time. Two at once share
+  the CPU and fail timing-sensitive specs that pass alone, can trip the Next
+  build lock (`Another next build process is already running`) or prove the
+  wrong stale server. `run-plite-browser.mjs` and the `pretest` build before it
+  each hold a lock in the system temp folder while they run, so Plite browser runs started together, from any checkout or
+  delegate, run one after another, and each waiting run prints whose run it
+  waits on every minute. Other Playwright runs, such as `apps/www`'s, take no
+  lock. The lead still starts its own helpers' runs one
+  after another, holding back a helper's browser run until the run before it
+  exits, because a run that waits on the lock under `proof.mjs`
+  keeps its share of the core pool; the lock catches the Plite runs the lead does
+  not see, such as another session's. Both waits, the held-back run's and the lock's, are for another run, not for
+  the host's load, so the Time budget rule allows them, and the lock's wait counts toward
+  the waiting command's hour. Start each run in the background with the
+  tool's own timeout set above its `proof.mjs --timeout`, because the
+  harness's shorter default stops it first. A stress run whose timeout is
+  longer than the tool allows starts detached under `nohup`, with its output
+  and exit status in a file the lead waits on. A run that times out while it waited on
+  another session's run reruns once that run ends, as a proof that failed
+  only from host load does. Parallelize file reads. During a managed proof, run nothing that writes under
   the runner's source entries, such as a bun test that rewrites snapshots,
   `build:registry` or a writing pass, because the runner then stops at
   `source-changed` and its next run starts from the first batch;

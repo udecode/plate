@@ -89,6 +89,7 @@ vitest.config.*
 /apps/plite/scripts/build-browser-if-stale.*
 /apps/plite/scripts/inspect-plite-browser.*
 /apps/plite/scripts/merge-plite-browser-summaries.*
+/apps/plite/scripts/plite-browser-lock.*
 /apps/plite/scripts/plite-browser-runner.*
 /apps/plite/scripts/plite-proof-inputs.*
 /apps/plite/scripts/run-plite-browser.*
