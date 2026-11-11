@@ -22,8 +22,8 @@
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.5.2",
-    "lucide-react": "1.68.0",
-    "next": "16.4.5",
+    "lucide-react": "1.72.0",
+    "next": "16.4.6",
     "platejs": "^53.5.2",
     "radix-ui": "^1.8.1",
     "react": "19.3.1",
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.0",
-    "@tailwindcss/postcss": "4.3.4",
+    "@tailwindcss/postcss": "4.3.5",
     "@types/node": "^26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
@@ -43,7 +43,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "lefthook": "^2.2.2",
     "postcss": "^8.5.32",
-    "tailwindcss": "4.3.4",
+    "tailwindcss": "4.3.5",
     "typescript": "6.0.2",
     "ultracite": "7.8.3"
   },
