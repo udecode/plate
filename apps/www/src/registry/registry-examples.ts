@@ -416,6 +416,37 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'A whiteboard with a note, a shape, an arrow, a frame and a pen line, and a second board to paste into.',
+      files: [
+        {
+          path: 'examples/board-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/board-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/board',
+            title: 'Board',
+          },
+        ],
+      },
+      name: 'board-demo',
+      registryDependencies: [
+        '@plate/board',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      title: 'Board',
+      type: 'registry:example',
+    },
+    {
       description: 'Restrict the editor to a single block.',
       files: [
         {

@@ -1,0 +1,14 @@
+---
+id: 2026-11-12-add-board
+date: 2026-11-12
+status: draft
+kind: new
+summary: 'Add a whiteboard block with notes, shapes, arrows, frames and pen lines'
+change: { 'type': 'source', 'date': '2026-11-12', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-12-board-whiteboard-block-notes-shapes-b20356d8","kind":"new","migrationNotes":[]} -->
+
+- **`board`**: Add `BoardKit`, a whiteboard block with notes, geo shapes, arrows, frames and pen lines, and its toolbar of select, note, shape, arrow, frame and pen tools. Add it beside `EditorKit`. A Yjs room created before the board refuses an editor with it, so seed a new room from the old room's document, as the Board docs page shows.

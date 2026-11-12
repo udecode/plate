@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-12-add-board",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-12-add-board.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add a whiteboard block with notes, shapes, arrows, frames and pen lines",
+  "targets": [
+    {
+      "name": "board",
+      "files": ["apps/www/src/registry/components/editor/board.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-12-board-whiteboard-block-notes-shapes-b20356d8",
+      "kind": "new",
+      "summary": "Add `BoardKit`, a whiteboard block with notes, geo shapes, arrows, frames and pen lines, and its toolbar of select, note, shape, arrow, frame and pen tools. Add it beside `EditorKit`. A Yjs room created before the board refuses an editor with it, so seed a new room from the old room's document, as the Board docs page shows.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-12",
+          "entry": "2026-11-12-add-board",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

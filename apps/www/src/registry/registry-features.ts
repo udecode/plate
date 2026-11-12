@@ -333,6 +333,24 @@ export const registryFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/board.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'board',
+    type: 'registry:component',
+    description:
+      'A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.',
+    title: 'Board',
+    meta: {
+      docs: [{ route: '/docs/board' }],
+      examples: ['board-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/callout.tsx',
         type: 'registry:component',
       },

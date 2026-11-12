@@ -12,7 +12,6 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/react-core.tsbuildinfo"
   },
   "exclude": [
-    "../src/react/features/board/**/*",
     "../src/react/virtualized.*",
     "../src/react/index.*",
     "../src/react/features/basic-nodes/**/*",
@@ -21,6 +20,7 @@
     "../src/react/features/indent/**/*",
     "../src/react/features/link/**/*",
     "../src/react/features/list/**/*",
+    "../src/react/features/board/**/*",
     "../src/react/features/callout/**/*",
     "../src/react/features/comments/**/*",
     "../src/react/features/date/**/*",

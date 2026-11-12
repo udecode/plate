@@ -598,6 +598,19 @@ const AnchorPlugin = definePlugin("anchor", {
 的 `id`）会把 schema 契约的存储修订设为 2，因为建议会存储保存其值的备用 block，
 所以它同样会改变指纹。
 
+用 `editor.read.unique.holder(property, value)` 查找持有某个唯一值的元素；在
+update 内使用 `tx.unique.holder`。它读取唯一值索引而不扫描文档，覆盖所有根，返回持有者的
+`key`、`path` 和 `root`；没有元素持有该值时返回 `null`。在 update 内，它也能找到在同一次
+update 中较早取得该值的元素。
+
+```ts
+const holder = editor.read.unique.holder("anchorId", anchorId);
+
+if (holder) {
+  editor.update((tx) => tx.nodes.remove({ at: holder.key }));
+}
+```
+
 ### 规范化
 
 控制编辑器是否在初始化时规范化其内容：

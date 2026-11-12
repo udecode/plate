@@ -47,6 +47,16 @@
       "import": "./dist/ai/react/index.js",
       "default": "./dist/ai/react/index.js"
     },
+    "./board": {
+      "types": "./dist/features/board/index.d.ts",
+      "import": "./dist/features/board/index.js",
+      "default": "./dist/features/board/index.js"
+    },
+    "./board/react": {
+      "types": "./dist/react/features/board/index.d.ts",
+      "import": "./dist/react/features/board/index.js",
+      "default": "./dist/react/features/board/index.js"
+    },
     "./callout": {
       "types": "./dist/features/callout/index.d.ts",
       "import": "./dist/features/callout/index.js",

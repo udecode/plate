@@ -163,6 +163,53 @@ element-owned annotation surface. Moving an owner preserves its root key.
 Removing, retargeting, or changing the type of an exclusive owner removes the
 root only when it becomes orphaned.
 
+### Set roots
+
+Declare `structure: { kind: "set" }` on an exclusive content root when each of
+its top-level blocks is a separate item, such as the shapes of a whiteboard.
+Each top-level block of the root is then a member of the set. Plate's
+[board](/docs/board) is built this way.
+
+```tsx
+import { definePlugin, schema } from "plitejs";
+
+const canvases = definePlugin("canvases", {
+  schema: {
+    elements: {
+      canvas: {
+        contentRoots: {
+          shapes: {
+            content: schema.content.types(["note"], { min: 0 }),
+            ownership: "exclusive",
+            structure: { kind: "set" },
+          },
+        },
+        void: "block",
+      },
+      note: {
+        content: schema.content.types(["paragraph"], {
+          default: { type: "paragraph" },
+          min: 1,
+        }),
+        object: true,
+      },
+    },
+  },
+});
+```
+
+The schema refuses a set root unless its ownership is `"exclusive"`, its owner
+is a void element, and each block type the root admits is an object or a void
+element. Every reader then treats the members as separate items:
+
+- A text selection stays in one member. A selection write that crosses
+  members, such as Select All, settles in one member and raises no error.
+- Removing text or a fragment over a range across members refuses and
+  changes nothing. A delete over all of one member's text keeps the member,
+  emptied.
+- Comparison reports a changed member as one change. Members keep their stored
+  order.
+
 A plugin can refuse a type change, wrap, or unwrap of its own owner before the
 write applies. Contribute a `nodeWriteVeto` that returns `true` for the writes
 it refuses:
@@ -191,9 +238,10 @@ One refusal from any contributed veto rolls back the whole update, as a
 history replays never consult a veto. Removing the owner is not one of these
 writes, so the orphan rule above still applies to it.
 
-Duplicate and copy/paste clone detached roots. Keys remap deterministically to
-`:copy`, then `:copy:2`, while shared aliases in the copied group continue to
-share one remapped root. Owner-first and root-first creation are both valid
+Duplicate and copy/paste clone detached roots. Each copy gets a key that no
+earlier copy took, `<root>:copy:<n>`, or `<root>:copy:<clientID>:<n>` in an
+editor bound to Yjs, so two collaborators' copies never share a key. Shared
+aliases in the copied group continue to share one remapped root. Owner-first and root-first creation are both valid
 inside one transaction. `ContentSlice` carries the transitive detached-root
 payload across clipboard and insertion boundaries, including a collapsed
 target. Cut captures that payload before deleting the owner and root in one

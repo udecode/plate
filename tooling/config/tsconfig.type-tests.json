@@ -23,6 +23,10 @@
       "platejs/ai": ["../../packages/platejs/src/ai/index.ts"],
       "platejs/ai/react": ["../../packages/platejs/src/ai/react/index.ts"],
       "platejs/authored": ["../../packages/platejs/src/authored/index.ts"],
+      "platejs/board": ["../../packages/platejs/src/features/board/index.ts"],
+      "platejs/board/react": [
+        "../../packages/platejs/src/react/features/board/index.ts"
+      ],
       "platejs/callout": [
         "../../packages/platejs/src/features/callout/index.ts"
       ],

@@ -655,6 +655,21 @@ migration step. A generated element property that Suggesting supports, such as
 because suggestions store spare blocks that hold its values. The revision
 changes the fingerprint the same way.
 
+Find the element that holds a unique value with
+`editor.read.unique.holder(property, value)`, or `tx.unique.holder` inside an
+update. It reads the unique index instead of scanning, in every root, and
+returns the holder's `key`, `path` and `root`, or `null` when no element holds
+the value. Inside an update it also finds an element that took the value
+earlier in that update.
+
+```ts
+const holder = editor.read.unique.holder("anchorId", anchorId);
+
+if (holder) {
+  editor.update((tx) => tx.nodes.remove({ at: holder.key }));
+}
+```
+
 ### Navigation feedback
 
 Plate's navigation feedback plugin shows "you landed here" feedback after TOC

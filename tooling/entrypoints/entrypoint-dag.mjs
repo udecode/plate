@@ -79,6 +79,7 @@ export const rootFeatureDependencies = Object.freeze({
 });
 
 export const publicFeatureDependencies = Object.freeze({
+  board: [],
   callout: [],
   combobox: [],
   comments: [],
@@ -97,6 +98,7 @@ export const publicFeatureDependencies = Object.freeze({
 });
 
 export const publicFeatureReactEntrypoints = Object.freeze([
+  'board',
   'callout',
   'comments',
   'date',
@@ -124,6 +126,7 @@ const standardReactDependencies = {
 
 const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
+  board: ['react'],
   combobox: ['react'],
   list: ['react'],
   resizable: ['react'],
@@ -251,15 +254,6 @@ export const entrypointDags = {
         )
       ),
       authored: headless(directory('authored', ['core'], ['plitejs/authored'])),
-      board: headless(privateDirectory('features/board', ['core'])),
-      'board/react': client(
-        privateDirectory(
-          'react/features/board',
-          ['core', 'react-core', 'board'],
-          [],
-          { peerDependencies: ['react'] }
-        )
-      ),
       core: headless(
         privateRoot(['dom', 'history'], ['plitejs', 'plitejs/internal'])
       ),

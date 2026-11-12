@@ -1,5 +1,5 @@
 {
-  "generation": "81cba5a751a19c16998922574205bc937cc29ff52f825c68b5c0cbb475f4fc7e",
+  "generation": "729a9519fdc5f7bb20c9d55e1ad84b4c10da4f1b52e4979de657528a601a6cad",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2554,6 +2554,36 @@
           ],
           "name": "block-placeholder",
           "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/board.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/board.tsx"
+            }
+          ],
+          "name": "board",
+          "type": "registry:component",
+          "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
+          "title": "Board",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/board"
+              }
+            ],
+            "examples": [
+              "board-demo"
+            ]
+          },
+          "registryDependencies": [
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -5214,6 +5244,37 @@
             "@plate/dnd"
           ],
           "title": "Excalidraw",
+          "type": "registry:example"
+        },
+        {
+          "description": "A whiteboard with a note, a shape, an arrow, a frame and a pen line, and a second board to paste into.",
+          "files": [
+            {
+              "path": "examples/board-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/board-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/board",
+                "title": "Board"
+              }
+            ],
+            "registry": false
+          },
+          "name": "board-demo",
+          "registryDependencies": [
+            "@plate/board",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "title": "Board",
           "type": "registry:example"
         },
         {
@@ -9429,6 +9490,36 @@
           ],
           "files": [
             {
+              "path": "components/editor/board.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/board.tsx"
+            }
+          ],
+          "name": "board",
+          "type": "registry:component",
+          "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
+          "title": "Board",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/board"
+              }
+            ],
+            "examples": [
+              "board-demo"
+            ]
+          },
+          "registryDependencies": [
+            "@plate/toolbar"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
               "path": "components/editor/callout.tsx",
               "type": "registry:component",
               "target": "@components/editor/callout.tsx"
@@ -12081,6 +12172,37 @@
             "@plate/dnd"
           ],
           "title": "Excalidraw",
+          "type": "registry:example"
+        },
+        {
+          "description": "A whiteboard with a note, a shape, an arrow, a frame and a pen line, and a second board to paste into.",
+          "files": [
+            {
+              "path": "examples/board-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/board-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/board",
+                "title": "Board"
+              }
+            ],
+            "registry": false
+          },
+          "name": "board-demo",
+          "registryDependencies": [
+            "@plate/board",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "title": "Board",
           "type": "registry:example"
         },
         {

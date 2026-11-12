@@ -9,6 +9,8 @@
       "platejs/ai": ["./src/ai/index.ts"],
       "platejs/ai/react": ["./src/ai/react/index.ts"],
       "platejs/authored": ["./src/authored/index.ts"],
+      "platejs/board": ["./src/features/board/index.ts"],
+      "platejs/board/react": ["./src/react/features/board/index.ts"],
       "platejs/callout": ["./src/features/callout/index.ts"],
       "platejs/callout/react": ["./src/react/features/callout/index.ts"],
       "platejs/code-block/codemirror": ["./src/code-block/codemirror/index.ts"],

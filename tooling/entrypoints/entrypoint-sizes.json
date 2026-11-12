@@ -12,6 +12,10 @@
       "bytes": 175784,
       "gzip": 51447
     },
+    "platejs/board": {
+      "bytes": 700114,
+      "gzip": 218421
+    },
     "platejs/callout": {
       "bytes": 116168,
       "gzip": 31907
@@ -71,6 +75,10 @@
     "platejs/toc": {
       "bytes": 671928,
       "gzip": 209141
+    },
+    "platejs/board/react": {
+      "bytes": 836526,
+      "gzip": 264058
     },
     "platejs/callout/react": {
       "bytes": 118344,

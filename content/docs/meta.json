@@ -66,6 +66,7 @@
     "[Blockquote](/docs/blockquote)",
     "[Heading](/docs/heading)",
     "[Horizontal Rule](/docs/horizontal-rule)",
+    "[Board](/docs/board)",
     "[Callout](/docs/callout)",
     "[Code Block](/docs/code-block)",
     "[Column](/docs/column)",
@@ -153,6 +154,7 @@
     "[Node Components](/docs/components#node-components)",
     "[List](/docs/components/block-list)",
     "[Blockquote Element](/docs/components/blockquote)",
+    "[Board Element](/docs/components/board)",
     "[Callout Node](/docs/components/callout)",
     "[Code Block Nodes](/docs/components/code-block)",
     "[Code Leaf](/docs/components/code)",
@@ -197,6 +199,7 @@
     "[Preview Markdown](/docs/examples/preview-markdown)",
     "[Collaboration Demo](/docs/examples/collaboration)",
     "[Table Nomerge Demo](/docs/examples/table-nomerge)",
+    "[Board Demo](/docs/examples/board)",
     "[Excalidraw Demo](/docs/examples/excalidraw)",
     "[Single Block Demo](/docs/examples/single-block)",
     "[Find Demo](/docs/examples/find)",
@@ -643,6 +646,12 @@
               "titleCn": "Blockquote"
             },
             {
+              "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
+              "href": "/docs/components/board",
+              "title": "Board",
+              "titleCn": "白板"
+            },
+            {
               "description": "A callout component for highlighting important information with customizable icons and styles.",
               "href": "/docs/components/callout",
               "title": "Callout",
@@ -906,6 +915,12 @@
               "href": "/docs/examples/table-nomerge",
               "title": "Table Nomerge Demo",
               "titleCn": "Table Nomerge"
+            },
+            {
+              "description": "A whiteboard with a note, a shape, an arrow, a frame and a pen line, and a second board to paste into.",
+              "href": "/docs/examples/board",
+              "title": "Board Demo",
+              "titleCn": "白板演示"
             },
             {
               "description": "A drawing component powered by Excalidraw.",
@@ -1519,6 +1534,17 @@
                   "titleCn": "Basic Blocks",
                   "keywords": [
                     "element"
+                  ]
+                },
+                {
+                  "description": "Place notes, shapes, arrows, frames and pen lines on a whiteboard block.",
+                  "href": "/docs/board",
+                  "title": "Board",
+                  "titleCn": "白板",
+                  "keywords": [
+                    "element",
+                    "whiteboard",
+                    "canvas"
                   ]
                 },
                 {
@@ -2170,6 +2196,16 @@
           "element"
         ],
         "title": "Horizontal Rule"
+      },
+      "/docs/board": {
+        "description": "Place notes, shapes, arrows, frames and pen lines on a whiteboard block.",
+        "keywords": [
+          "element",
+          "whiteboard",
+          "canvas"
+        ],
+        "title": "Board",
+        "titleCn": "白板"
       },
       "/docs/callout": {
         "description": "Highlight important information or add special notes.",

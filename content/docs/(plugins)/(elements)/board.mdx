@@ -1,0 +1,369 @@
+---
+title: Board
+description: A whiteboard block whose notes, shapes, arrows, frames and pen lines are blocks of the document.
+docs:
+  - route: /docs/components/board
+    title: Board Element
+---
+
+<ComponentPreview name="board-demo" />
+
+<PackageInfo>
+
+## Features
+
+- A void `board` block that owns its own list of shapes. Each shape is a top-level block of that list, so sync, suggestions, undo and copy and paste work per shape.
+- Five shape types: sticky notes and geo shapes that hold rich text, arrows whose ends bind to shapes, frames that hold shapes, and pen lines.
+- Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
+- Copy and paste with fresh shape ids. A copied arrow binds the copied shapes, and the copies land above every shape, at the pointer when it is over the board.
+- A camera, a tool and a next style for each mounted view, which the document never stores.
+- Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+`BoardKit` installs `BoardPlugin` and the five shape plugins with the copied board UI: the board surface with its toolbar and one renderer per shape type.
+
+<ComponentSource name="board" />
+
+- `BoardElement`: renders the board surface and its toolbar.
+- `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
+- `BoardToolbar`: picks the tool, and removes a selected frame while it keeps the frame's shapes.
+
+### Add kit
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BoardKit } from '@/components/editor/board';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...BoardKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add plugins
+
+Install the board and each shape type it holds. Configure each plugin with the component that draws it.
+
+```tsx
+import {
+  BoardArrowPlugin,
+  BoardFramePlugin,
+  BoardGeoPlugin,
+  BoardNotePlugin,
+  BoardPlugin,
+  BoardStrokePlugin,
+} from 'platejs/board/react';
+import { createEditor } from 'platejs/react';
+
+import {
+  BoardArrowElement,
+  BoardElement,
+  BoardFrameElement,
+  BoardGeoElement,
+  BoardNoteElement,
+  BoardStrokeElement,
+} from '@/components/editor/board';
+
+const editor = createEditor({
+  plugins: [
+    BoardPlugin.configure({ component: BoardElement }),
+    BoardNotePlugin.configure({ component: BoardNoteElement }),
+    BoardGeoPlugin.configure({ component: BoardGeoElement }),
+    BoardArrowPlugin.configure({ component: BoardArrowElement }),
+    BoardFramePlugin.configure({ component: BoardFrameElement }),
+    BoardStrokePlugin.configure({ component: BoardStrokeElement }),
+  ],
+});
+```
+
+</Steps>
+
+## Keyboard and pointer
+
+| Input | Result |
+| --- | --- |
+| A press on a shape | Selects it. Shift adds it to the selection. |
+| Double click, or Enter on a selected note, shape or arrow | Edits its text. |
+| Escape | Climbs from the text to its shape, then to the board. |
+| Enter on a selected board | Selects its first shape. |
+| `V`, `N`, `R`, `A`, `F`, `P` | Pick the select, note, shape, arrow, frame and pen tools. |
+| Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. |
+| `]` and `[` | Bring the selected shapes forward or send them backward one step. |
+| Mod+Shift+Up and Mod+Shift+Down | Bring the selected shapes to the front or send them to the back. |
+| Delete or Backspace | Removes the selected shapes. A frame goes with the shapes in it. |
+| Mod+A with a shape selected | Selects every shape of the board. |
+| Tab and Shift+Tab | Move between shapes in reading order, and leave the board after the last one. |
+| A drag with Alt held | Copies the dragged shapes. |
+| Wheel, or a drag on the empty board | Pans. Mod with the wheel zooms. |
+
+Backspace at the start of the block after a board, or Delete at the end of the block before it, selects the board. The next Backspace or Delete removes it with every shape, and one undo puts it back.
+
+## Insert shapes from code
+
+Every board command runs inside `editor.update` with no selection, so a Node agent on the same Yjs document uses the same calls as the toolbar. A board insert returns the board's key, and a shape insert names its board and returns the new shape's id. Shape ids are unique in the whole document, so later commands name a shape by its id alone.
+
+```ts
+import {
+  BaseBoardArrowPlugin,
+  BaseBoardGeoPlugin,
+  BaseBoardNotePlugin,
+  BaseBoardPlugin,
+} from 'platejs/board';
+
+editor.update((tx) => {
+  const board = tx.plugin(BaseBoardPlugin).insert({ height: 480 }, { at: [1] });
+
+  if (!board) return;
+
+  const note = tx.plugin(BaseBoardNotePlugin).insert(
+    {
+      children: [{ children: [{ text: 'Launch' }], type: 'paragraph' }],
+      x: 120,
+      y: 80,
+    },
+    { board }
+  );
+  const rect = tx
+    .plugin(BaseBoardGeoPlugin)
+    .insert({ geo: 'rectangle', x: 480, y: 80 }, { board });
+
+  if (note && rect) {
+    tx.plugin(BaseBoardArrowPlugin).insert({ end: rect, start: note });
+  }
+});
+```
+
+Move, resize, restack and remove shapes by id:
+
+```ts
+editor.update((tx) => {
+  const boards = tx.plugin(BaseBoardPlugin);
+
+  boards.move([noteId], { x: 40, y: 0 });
+  boards.resize(noteId, { height: 240, width: 240, x: 160, y: 80 });
+  boards.restack([noteId], 'front');
+  boards.remove([rectId]);
+});
+```
+
+A style change is a plain property write on the shape's key:
+
+```ts
+editor.update((tx) => {
+  const shape = tx.plugin(BaseBoardPlugin).shape(rectId);
+
+  if (shape) tx.nodes.set({ fill: 'blue' }, { at: shape.key });
+});
+```
+
+## Add your own shape
+
+`defineBoardShape` defines a shape that holds text, with its own properties and default size. List it in the board's `targetPlugins`, beside the shape types you keep. The shape then gets its id, place and size, stacking, frames, arrow ends, copy and paste, suggestions and sync from the board.
+
+```tsx
+import { property } from 'platejs';
+import {
+  BaseBoardGeoPlugin,
+  BaseBoardNotePlugin,
+  BaseBoardPlugin,
+  defineBoardShape,
+} from 'platejs/board';
+
+const BaseCardPlugin = defineBoardShape('card', {
+  properties: { status: property.enum(['todo', 'doing', 'done'], { default: 'todo' }) },
+  size: { height: 160, width: 240 },
+});
+
+const plugins = [
+  BaseBoardPlugin.configure({
+    targetPlugins: [BaseBoardNotePlugin, BaseBoardGeoPlugin, BaseCardPlugin],
+  }),
+  BaseBoardNotePlugin,
+  BaseBoardGeoPlugin,
+  BaseCardPlugin,
+];
+```
+
+`tx.plugin(BaseCardPlugin).insert({ status: 'doing', x: 0, y: 0 }, { board })` adds a card. HTML serialize refuses a board that holds your own shape, so persist the Plate value for such a board.
+
+## Value shape
+
+A board block sits in its document like any other block and holds one empty text. Its shapes sit in the content root that `childRoots.shapes` names, as that root's top-level blocks. The board's `insert` creates the block and its root in one change and names the root, so app code never names a root.
+
+```ts
+const value = {
+  children: [
+    {
+      childRoots: { shapes: 'board:k3f9' },
+      children: [{ text: '' }],
+      height: 480,
+      type: 'board',
+    },
+  ],
+  roots: {
+    'board:k3f9': [
+      {
+        children: [{ children: [{ text: 'Launch' }], type: 'paragraph' }],
+        place: { x: 40, y: 30 },
+        shapeId: 'n1',
+        size: { height: 160, width: 200 },
+        type: 'boardNote',
+        zIndex: 'a1',
+      },
+    ],
+  },
+};
+```
+
+| Property | Shapes | Notes |
+| --- | --- | --- |
+| `shapeId` | All | Unique in the whole document. Every paste, drop and duplicate gives its copy a fresh id. |
+| `zIndex` | All | A fractional key that sets the paint order. Frames paint behind the other shapes. |
+| `place` | All but arrows | `{ x, y }`. Inside a frame it also holds `frame` and `frameOrigin`, and `x` and `y` are measured from the frame. A frame's own `place` holds its `origin`. |
+| `size` | All but arrows | `{ width, height }`. |
+| `start`, `end` | Arrows | `{ shape, anchor, x, y }` for an end bound to a shape, or `{ x, y }` for a free end. `x` and `y` hold the point the end last drew at. |
+| `points` | Pen lines | Flat `[x, y, pressure]` triples, each a fraction of the line's box. |
+| `fill` | Notes and geo shapes | A CSS color, or `'none'` for no fill. Defaults to `'yellow'` on a note and `'none'` on a geo shape. |
+| `geo` | Geo shapes | One of `'rectangle'`, `'ellipse'`, `'diamond'` or `'triangle'`. |
+| `name` | Frames | Shown above the frame. |
+
+The camera, the tool, the next style, the selection handles and a gesture in progress are never stored.
+
+## Collaboration
+
+Each shape is a block of the document, so `YjsPlugin` syncs boards with no extra setup. When two people change different properties of one shape, such as a move and a recolor, both changes stay. A drag reaches teammates as one change when it is dropped.
+
+### Add the board to an app with Yjs rooms
+
+Adding the board adds element types, so it changes the app's schema identity. A Yjs room keeps the schema identity it was created with, so an editor with the board refuses to join a room written before it. It throws a `Yjs schema mismatch` error, or `Yjs derived schema mismatch` when the app declares no `schema`. Move each room's document to a new room:
+
+<Steps>
+
+### Bump the schema version
+
+Add a migration step for the new version. A step that only adds element types returns the document unchanged. Register the version 3 fingerprint in `sourceFingerprints` from the migration scaffold, as [document migrations](/docs/editor#document-migrations) shows.
+
+```ts title="src/editor.ts"
+import { defineDocumentMigrations } from 'platejs/migrations';
+
+import { BoardKit } from '@/components/editor/board';
+import { EditorKit } from '@/components/editor/plugins';
+
+import { fingerprint as v3Fingerprint } from './migrations/v4-add-board/from';
+
+export const EditorPlugins = [...EditorKit, ...BoardKit];
+
+export const EditorSchema = { id: 'acme-document', version: 4 } as const;
+
+export const EditorMigrations = defineDocumentMigrations({
+  plugins: EditorPlugins,
+  schema: EditorSchema,
+  sourceFingerprints: { 3: v3Fingerprint },
+  steps: { 4: ({ document }) => ({ document }) },
+});
+```
+
+### Migrate the old room's document
+
+Read the document and its schema identity from an editor bound to the old room, with the old plugins and schema, then migrate it.
+
+```ts
+import { migrateDocument } from 'platejs/migrations';
+
+const current = migrateDocument(
+  {
+    document: oldEditor.read.value(),
+    schema: oldEditor.read.schema.identity(),
+  },
+  { migrations: EditorMigrations }
+).output;
+```
+
+### Seed a new room
+
+Create the new room's editor from the migrated document. Give `seed: true` to one editor only, the one your app picked to fill the new empty room.
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { YjsPlugin } from 'platejs/yjs/react';
+
+const editor = createEditor({
+  initialValue: current,
+  plugins: [
+    ...EditorPlugins,
+    YjsPlugin.create({
+      doc: newRoomDocument,
+      initialReady: true,
+      rootName: newRoomId,
+      seed: true,
+    }),
+  ],
+  schema: EditorSchema,
+});
+```
+
+</Steps>
+
+Every other peer joins the new room with the new plugins and schema, and without `seed`. See [Yjs](/docs/yjs) and [document migrations](/docs/editor#document-migrations).
+
+## Limits
+
+- Find searches the text of notes. Comments refuse a range inside a note.
+- Moving a paragraph inside a note is refused. Moving the whole shape keeps its text.
+- Undo of a move puts back your old place, even over a teammate's later move of the same shape.
+- A long note gets slower, because a note's lines sync as one unit.
+- Each keystroke does some work for every board in the document, so keep a document to 100 boards or fewer.
+- Markdown keeps the text of each shape in reading order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only the five built-in shape types, to keep a board whole.
+- A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
+- A board inside a note, and rotation, are not supported.
+
+## Plugins
+
+### `BoardPlugin`
+
+The board block, a void element that owns a content root of shapes. `targetPlugins` lists the shape types the board holds, by default the five below.
+
+### `BoardNotePlugin`, `BoardGeoPlugin`, `BoardArrowPlugin`, `BoardFramePlugin`, `BoardStrokePlugin`
+
+The shape types: `boardNote`, `boardGeo`, `boardArrow`, `boardFrame` and `boardStroke`. Frames and pen lines are voids; notes, geo shapes and arrows hold blocks.
+
+## API Reference
+
+| API | Package | Use |
+| --- | --- | --- |
+| `BaseBoardPlugin`, `BaseBoardNotePlugin`, `BaseBoardGeoPlugin`, `BaseBoardArrowPlugin`, `BaseBoardFramePlugin`, `BaseBoardStrokePlugin` | `platejs/board` | Headless board and shape plugins. |
+| `defineBoardShape(name, { properties, size })` | `platejs/board` | Defines an app shape that holds text. |
+| `tx.plugin(BaseBoardPlugin).insert(props?, options?)` | `BaseBoardPlugin` | Adds a board with an empty root at `options.at` or after the selected block, and returns its key. |
+| `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | Each shape plugin | Adds a shape above every shape of `board` and returns its id. An arrow takes `{ start, end }`, each a shape id, `{ shape, anchor }` or a board point, and joins the board its bound ends name. |
+| `move(ids, delta)` | `BaseBoardPlugin` | Moves shapes. A shape joins the frontmost frame under its middle or leaves its frame. |
+| `resize(id, { x, y, width, height })` | `BaseBoardPlugin` | Sets a shape's place and size together. |
+| `restack(ids, direction)` | `BaseBoardPlugin` | `'front'`, `'back'`, `'forward'` or `'backward'`, in paint order only. |
+| `remove(ids)` | `BaseBoardPlugin` | Removes shapes, each frame with its shapes. An arrow bound to a removed shape keeps a loose end where it drew it. |
+| `removeFrame(id)` | `BaseBoardPlugin` | Removes a frame and keeps its shapes where they are. |
+| `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | Pastes a copy of the shapes in `slice` into `board`, with fresh ids, and returns the copies' ids. |
+| `shapes(board)`, `shape(id)`, `arrowEnds(id)`, `slice(ids)` | `BaseBoardPlugin` | Read the shapes of a board, one shape by id in any board, where an arrow draws its ends, and the slice a copy of shapes carries. Call them on `tx.plugin(BaseBoardPlugin)`. |
+| `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. |
+| `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Read the view's `tool`, `camera`, `nextStyle` and `selectedFrame`; call `setTool`, `setNextStyle`, `fit` and `removeFrame`. The next style's `fill` goes to both the next note and the next geo shape. |
+| `useArrowPath(element)`, `useStrokePath(element)` | `platejs/board/react` | The drawn path of an arrow or a pen line. |

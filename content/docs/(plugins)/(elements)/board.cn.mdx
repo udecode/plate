@@ -1,0 +1,369 @@
+---
+title: 白板
+description: 一个白板块，其中的便签、图形、箭头、框架和笔迹都是文档里的块。
+docs:
+  - route: /docs/components/board
+    title: 白板元素
+---
+
+<ComponentPreview name="board-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 一个 void `board` 块，拥有自己的图形列表。每个图形都是该列表的顶层块，因此同步、建议、撤销以及复制粘贴都以图形为单位。
+- 五种图形：可容纳富文本的便签和几何图形、两端可绑定到图形的箭头、可容纳图形的框架，以及笔迹。
+- 插入、移动、缩放、调整层级和删除图形的命令。撤销不会拆开一次调用，在建议模式下每次调用是一条建议。
+- 复制粘贴时图形获得新 id。复制的箭头绑定到复制出的图形，副本落在所有图形之上；指针位于白板上时，副本落在指针处。
+- 每个挂载的视图各自拥有相机、工具和下一个样式，文档从不存储它们。
+- 只挂载相机附近的图形，因此每次按键的工作量不会随白板变大而增加。
+
+</PackageInfo>
+
+## 套件用法
+
+<Steps>
+
+### 安装
+
+`BoardKit` 安装 `BoardPlugin` 和五个图形插件，并配好复制的白板 UI：带工具栏的白板表面，以及每种图形的渲染组件。
+
+<ComponentSource name="board" />
+
+- `BoardElement`：渲染白板表面及其工具栏。
+- `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
+- `BoardToolbar`：选择工具；选中框架时，可以删除框架并保留其中的图形。
+
+### 添加套件
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BoardKit } from '@/components/editor/board';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ...BoardKit,
+  ],
+});
+```
+
+</Steps>
+
+## 手动用法
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+安装白板及其容纳的每种图形，并为每个插件配置绘制它的组件。
+
+```tsx
+import {
+  BoardArrowPlugin,
+  BoardFramePlugin,
+  BoardGeoPlugin,
+  BoardNotePlugin,
+  BoardPlugin,
+  BoardStrokePlugin,
+} from 'platejs/board/react';
+import { createEditor } from 'platejs/react';
+
+import {
+  BoardArrowElement,
+  BoardElement,
+  BoardFrameElement,
+  BoardGeoElement,
+  BoardNoteElement,
+  BoardStrokeElement,
+} from '@/components/editor/board';
+
+const editor = createEditor({
+  plugins: [
+    BoardPlugin.configure({ component: BoardElement }),
+    BoardNotePlugin.configure({ component: BoardNoteElement }),
+    BoardGeoPlugin.configure({ component: BoardGeoElement }),
+    BoardArrowPlugin.configure({ component: BoardArrowElement }),
+    BoardFramePlugin.configure({ component: BoardFrameElement }),
+    BoardStrokePlugin.configure({ component: BoardStrokeElement }),
+  ],
+});
+```
+
+</Steps>
+
+## 键盘和指针
+
+| 输入 | 结果 |
+| --- | --- |
+| 按下图形 | 选中它。按住 Shift 会把它加入选区。 |
+| 双击，或在选中的便签、几何图形或箭头上按 Enter | 编辑其文字。 |
+| Escape | 从文字上升到所在图形，再上升到白板。 |
+| 在选中的白板上按 Enter | 选中它的第一个图形。 |
+| `V`、`N`、`R`、`A`、`F`、`P` | 选择选择、便签、图形、箭头、框架和笔工具。 |
+| 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。 |
+| `]` 和 `[` | 把选中的图形上移或下移一层。 |
+| Mod+Shift+Up 和 Mod+Shift+Down | 把选中的图形置于顶层或底层。 |
+| Delete 或 Backspace | 删除选中的图形。框架会连同其中的图形一起删除。 |
+| 选中图形时按 Mod+A | 选中白板上的所有图形。 |
+| Tab 和 Shift+Tab | 按阅读顺序在图形之间移动，最后一个图形之后离开白板。 |
+| 按住 Alt 拖动 | 复制被拖动的图形。 |
+| 滚轮，或在白板空白处拖动 | 平移。按住 Mod 滚动滚轮会缩放。 |
+
+在白板之后那个块的开头按 Backspace，或在白板之前那个块的末尾按 Delete，会选中白板。再按一次 Backspace 或 Delete 会删除白板及其所有图形，一次撤销即可恢复。
+
+## 用代码插入图形
+
+每个白板命令都在 `editor.update` 内运行，不需要选区，因此同一 Yjs 文档上的 Node 代理与工具栏使用相同的调用。插入白板返回白板的 key；插入图形时指定所属白板，并返回新图形的 id。图形 id 在整个文档中唯一，所以后续命令只用 id 指定图形。
+
+```ts
+import {
+  BaseBoardArrowPlugin,
+  BaseBoardGeoPlugin,
+  BaseBoardNotePlugin,
+  BaseBoardPlugin,
+} from 'platejs/board';
+
+editor.update((tx) => {
+  const board = tx.plugin(BaseBoardPlugin).insert({ height: 480 }, { at: [1] });
+
+  if (!board) return;
+
+  const note = tx.plugin(BaseBoardNotePlugin).insert(
+    {
+      children: [{ children: [{ text: 'Launch' }], type: 'paragraph' }],
+      x: 120,
+      y: 80,
+    },
+    { board }
+  );
+  const rect = tx
+    .plugin(BaseBoardGeoPlugin)
+    .insert({ geo: 'rectangle', x: 480, y: 80 }, { board });
+
+  if (note && rect) {
+    tx.plugin(BaseBoardArrowPlugin).insert({ end: rect, start: note });
+  }
+});
+```
+
+按 id 移动、缩放、调整层级和删除图形：
+
+```ts
+editor.update((tx) => {
+  const boards = tx.plugin(BaseBoardPlugin);
+
+  boards.move([noteId], { x: 40, y: 0 });
+  boards.resize(noteId, { height: 240, width: 240, x: 160, y: 80 });
+  boards.restack([noteId], 'front');
+  boards.remove([rectId]);
+});
+```
+
+修改样式就是在图形的 key 上写普通属性：
+
+```ts
+editor.update((tx) => {
+  const shape = tx.plugin(BaseBoardPlugin).shape(rectId);
+
+  if (shape) tx.nodes.set({ fill: 'blue' }, { at: shape.key });
+});
+```
+
+## 添加自定义图形
+
+`defineBoardShape` 定义一种容纳文字的图形，带有自己的属性和默认尺寸。把它和你保留的图形类型一起列入白板的 `targetPlugins`。这样它就从白板获得 id、位置和尺寸、层级、框架、箭头端点、复制粘贴、建议和同步。
+
+```tsx
+import { property } from 'platejs';
+import {
+  BaseBoardGeoPlugin,
+  BaseBoardNotePlugin,
+  BaseBoardPlugin,
+  defineBoardShape,
+} from 'platejs/board';
+
+const BaseCardPlugin = defineBoardShape('card', {
+  properties: { status: property.enum(['todo', 'doing', 'done'], { default: 'todo' }) },
+  size: { height: 160, width: 240 },
+});
+
+const plugins = [
+  BaseBoardPlugin.configure({
+    targetPlugins: [BaseBoardNotePlugin, BaseBoardGeoPlugin, BaseCardPlugin],
+  }),
+  BaseBoardNotePlugin,
+  BaseBoardGeoPlugin,
+  BaseCardPlugin,
+];
+```
+
+`tx.plugin(BaseCardPlugin).insert({ status: 'doing', x: 0, y: 0 }, { board })` 会添加一张卡片。HTML 序列化会拒绝包含自定义图形的白板，因此这样的白板请持久化 Plate 值。
+
+## 值结构
+
+白板块和其他块一样位于文档中，只包含一个空文本。它的图形位于 `childRoots.shapes` 指定的内容根中，是该根的顶层块。白板的 `insert` 在一次变更中创建块及其根，并为根命名，因此应用代码从不需要为根命名。
+
+```ts
+const value = {
+  children: [
+    {
+      childRoots: { shapes: 'board:k3f9' },
+      children: [{ text: '' }],
+      height: 480,
+      type: 'board',
+    },
+  ],
+  roots: {
+    'board:k3f9': [
+      {
+        children: [{ children: [{ text: 'Launch' }], type: 'paragraph' }],
+        place: { x: 40, y: 30 },
+        shapeId: 'n1',
+        size: { height: 160, width: 200 },
+        type: 'boardNote',
+        zIndex: 'a1',
+      },
+    ],
+  },
+};
+```
+
+| 属性 | 图形 | 说明 |
+| --- | --- | --- |
+| `shapeId` | 全部 | 在整个文档中唯一。每次粘贴、拖放和复制都会给副本新 id。 |
+| `zIndex` | 全部 | 决定绘制顺序的分数键。框架绘制在其他图形之后。 |
+| `place` | 除箭头外 | `{ x, y }`。在框架内时还包含 `frame` 和 `frameOrigin`，`x` 和 `y` 从框架起算。框架自己的 `place` 包含它的 `origin`。 |
+| `size` | 除箭头外 | `{ width, height }`。 |
+| `start`、`end` | 箭头 | 绑定到图形的端点是 `{ shape, anchor, x, y }`，自由端点是 `{ x, y }`。`x` 和 `y` 保存该端点上次绘制的位置。 |
+| `points` | 笔迹 | 扁平的 `[x, y, pressure]` 三元组，每个值都是笔迹框内的比例。 |
+| `fill` | 便签和几何图形 | CSS 颜色，或表示无填充的 `'none'`。便签默认 `'yellow'`，几何图形默认 `'none'`。 |
+| `geo` | 几何图形 | 取值为 `'rectangle'`、`'ellipse'`、`'diamond'` 或 `'triangle'`。 |
+| `name` | 框架 | 显示在框架上方。 |
+
+相机、工具、下一个样式、选区控制点和进行中的手势都不会被存储。
+
+## 协作
+
+每个图形都是文档中的块，因此 `YjsPlugin` 无需额外配置即可同步白板。两人修改同一图形的不同属性时，例如一人移动、一人改色，两项修改都会保留。拖动在松开时作为一次变更发给协作者。
+
+### 在已有 Yjs 房间的应用中添加白板
+
+添加白板会增加元素类型，因此会改变应用的 schema identity。Yjs 房间保留其创建时的 schema identity，所以带白板的编辑器会拒绝加入在此之前写入的房间。它会报 `Yjs schema mismatch` 错误；如果应用没有声明 `schema`，则报 `Yjs derived schema mismatch`。把每个房间的文档迁移到新房间：
+
+<Steps>
+
+### 提升 schema 版本
+
+为新版本添加一个迁移步骤。只增加元素类型的步骤原样返回文档。按[文档迁移](/docs/editor#document-migrations)所示，把迁移脚手架给出的版本 3 指纹登记到 `sourceFingerprints`。
+
+```ts title="src/editor.ts"
+import { defineDocumentMigrations } from 'platejs/migrations';
+
+import { BoardKit } from '@/components/editor/board';
+import { EditorKit } from '@/components/editor/plugins';
+
+import { fingerprint as v3Fingerprint } from './migrations/v4-add-board/from';
+
+export const EditorPlugins = [...EditorKit, ...BoardKit];
+
+export const EditorSchema = { id: 'acme-document', version: 4 } as const;
+
+export const EditorMigrations = defineDocumentMigrations({
+  plugins: EditorPlugins,
+  schema: EditorSchema,
+  sourceFingerprints: { 3: v3Fingerprint },
+  steps: { 4: ({ document }) => ({ document }) },
+});
+```
+
+### 迁移旧房间的文档
+
+从绑定到旧房间、使用旧插件和旧 schema 的编辑器读取文档及其 schema identity，然后迁移。
+
+```ts
+import { migrateDocument } from 'platejs/migrations';
+
+const current = migrateDocument(
+  {
+    document: oldEditor.read.value(),
+    schema: oldEditor.read.schema.identity(),
+  },
+  { migrations: EditorMigrations }
+).output;
+```
+
+### 为新房间写入初始内容
+
+用迁移后的文档创建新房间的编辑器。只把 `seed: true` 交给一个编辑器，即应用选定来填充这个新空房间的那个。
+
+```tsx
+import { createEditor } from 'platejs/react';
+import { YjsPlugin } from 'platejs/yjs/react';
+
+const editor = createEditor({
+  initialValue: current,
+  plugins: [
+    ...EditorPlugins,
+    YjsPlugin.create({
+      doc: newRoomDocument,
+      initialReady: true,
+      rootName: newRoomId,
+      seed: true,
+    }),
+  ],
+  schema: EditorSchema,
+});
+```
+
+</Steps>
+
+其他协作者使用新插件和新 schema 加入新房间，且不传 `seed`。参见 [Yjs](/cn/docs/yjs) 和[文档迁移](/cn/docs/editor#文档迁移)。
+
+## 限制
+
+- 查找会搜索便签中的文字。评论会拒绝便签内的范围。
+- 不能在便签内移动段落。移动整个图形会保留其文字。
+- 撤销移动会放回你原来的位置，即使协作者之后移动过同一图形。
+- 便签很长时会变慢，因为一个便签的所有行作为一个单元同步。
+- 每次按键都要为文档中的每个白板做一些工作，因此一个文档最好不超过 100 个白板。
+- Markdown 按阅读顺序保留每个图形的文字，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含五种内置图形时，也可以持久化 HTML。
+- 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
+- 不支持便签内的白板，也不支持旋转。
+
+## 插件
+
+### `BoardPlugin`
+
+白板块，一个拥有图形内容根的 void 元素。`targetPlugins` 列出白板容纳的图形类型，默认是下面五种。
+
+### `BoardNotePlugin`、`BoardGeoPlugin`、`BoardArrowPlugin`、`BoardFramePlugin`、`BoardStrokePlugin`
+
+各图形类型：`boardNote`、`boardGeo`、`boardArrow`、`boardFrame` 和 `boardStroke`。框架和笔迹是 void；便签、几何图形和箭头容纳块。
+
+## API 参考
+
+| API | 包 | 用途 |
+| --- | --- | --- |
+| `BaseBoardPlugin`、`BaseBoardNotePlugin`、`BaseBoardGeoPlugin`、`BaseBoardArrowPlugin`、`BaseBoardFramePlugin`、`BaseBoardStrokePlugin` | `platejs/board` | 无头白板和图形插件。 |
+| `defineBoardShape(name, { properties, size })` | `platejs/board` | 定义一种容纳文字的应用图形。 |
+| `tx.plugin(BaseBoardPlugin).insert(props?, options?)` | `BaseBoardPlugin` | 在 `options.at` 或选中块之后添加一个带空根的白板，并返回其 key。 |
+| `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | 各图形插件 | 在 `board` 所有图形之上添加图形并返回其 id。箭头接收 `{ start, end }`，每个端点是图形 id、`{ shape, anchor }` 或白板上的点，并加入其绑定端点所在的白板。 |
+| `move(ids, delta)` | `BaseBoardPlugin` | 移动图形。图形会加入其中点下方最上层的框架，或离开所在框架。 |
+| `resize(id, { x, y, width, height })` | `BaseBoardPlugin` | 同时设置图形的位置和尺寸。 |
+| `restack(ids, direction)` | `BaseBoardPlugin` | `'front'`、`'back'`、`'forward'` 或 `'backward'`，只改变绘制顺序。 |
+| `remove(ids)` | `BaseBoardPlugin` | 删除图形，框架连同其中的图形。绑定到被删图形的箭头会在原绘制处留下自由端点。 |
+| `removeFrame(id)` | `BaseBoardPlugin` | 删除框架，图形留在原处。 |
+| `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | 把 `slice` 中图形的副本以新 id 粘贴到 `board`，并返回副本的 id。 |
+| `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置，以及复制图形所携带的 slice。在 `tx.plugin(BaseBoardPlugin)` 上调用。 |
+| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。 |
+| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 读取视图的 `tool`、`camera`、`nextStyle` 和 `selectedFrame`；调用 `setTool`、`setNextStyle`、`fit` 和 `removeFrame`。下一个样式的 `fill` 同时用于下一个便签和下一个几何图形。 |
+| `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |

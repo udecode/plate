@@ -13,6 +13,8 @@
       "platejs/ai": ["../platejs/src/ai/index.ts"],
       "platejs/ai/react": ["../platejs/src/ai/react/index.ts"],
       "platejs/authored": ["../platejs/src/authored/index.ts"],
+      "platejs/board": ["../platejs/src/features/board/index.ts"],
+      "platejs/board/react": ["../platejs/src/react/features/board/index.ts"],
       "platejs/callout": ["../platejs/src/features/callout/index.ts"],
       "platejs/callout/react": [
         "../platejs/src/react/features/callout/index.ts"

@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-12-add-board",
+      "href": "/registry/changelog/2026-11-12-add-board.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add a whiteboard block with notes, shapes, arrows, frames and pen lines",
+      "change": {
+        "type": "source",
+        "date": "2026-11-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-10-discussion-safari-taps",
       "href": "/registry/changelog/2026-11-10-discussion-safari-taps.json",
       "status": "draft",
