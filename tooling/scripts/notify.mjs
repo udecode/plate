@@ -1,17 +1,28 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { findings } from '../../.agents/pstack/writing-check.mjs';
 
 const USAGE =
-  'usage: notify send --to <login|dev> <text...> | notify landed <push-event.json> | notify check';
+  'usage: notify send --to <login|dev> [--file <png|jpg|gif|mp4|webm>]... <text...> | notify team <revision-range> | notify check';
 const DAY = 24 * 60 * 60 * 1000;
 const LIMIT = 2000;
+const MAX_FILES = 4;
+// Discord's default limits since 2026-09-03: 20 MiB per file, 25 MiB per message request.
+const MAX_FILE_BYTES = 20 * 1024 * 1024;
+const MAX_MESSAGE_BYTES = 25 * 1024 * 1024;
+const MEDIA = /\.(png|jpe?g|gif|mp4|webm)$/iu;
 const TOKEN_FILE = join(homedir(), '.claude', 'channels', 'discord', '.env');
 
 const fail = (code, message) => {
@@ -62,11 +73,14 @@ const MENTION = new RegExp(
 );
 const namesCommit = (word) => /[a-f]/u.test(word);
 
+const originRepo = (dir) =>
+  /github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/u.exec(
+    git(dir, ['remote', 'get-url', 'origin'])
+  )?.[1];
+
 const linkCommits = (text) => {
   const repos = gitDirs().flatMap((dir) => {
-    const repo = /github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/u.exec(
-      git(dir, ['remote', 'get-url', 'origin'])
-    )?.[1];
+    const repo = originRepo(dir);
     return repo ? [{ dir, repo }] : [];
   });
   const missing = [];
@@ -157,15 +171,36 @@ const readToken = () => {
   return token;
 };
 
-const post = async (channel, token, body) => {
+const post = async (channel, token, body, files = []) => {
   const api = process.env.DISCORD_API ?? 'https://discord.com/api/v10';
+  const headers = { Authorization: `Bot ${token}` };
+  let payload = JSON.stringify(body);
+  if (files.length > 0) {
+    payload = new FormData();
+    payload.append(
+      'payload_json',
+      JSON.stringify({
+        ...body,
+        attachments: files.map((file, id) => ({
+          id,
+          filename: basename(file),
+        })),
+      })
+    );
+    for (const [id, file] of files.entries()) {
+      payload.append(
+        `files[${id}]`,
+        new Blob([readFileSync(file)]),
+        basename(file)
+      );
+    }
+  } else {
+    headers['Content-Type'] = 'application/json';
+  }
   const response = await fetch(`${api}/channels/${channel}/messages`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bot ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+    headers,
+    body: payload,
   });
   const text = await response.text();
   if (!response.ok) {
@@ -191,14 +226,33 @@ const send = async (args) => {
     parsed = parseArgs({
       args,
       allowPositionals: true,
-      options: { to: { type: 'string' } },
+      options: {
+        file: { type: 'string', multiple: true },
+        to: { type: 'string' },
+      },
     });
   } catch {
     fail(2, USAGE);
   }
-  const { to } = parsed.values;
+  const { file: files = [], to } = parsed.values;
   const text = parsed.positionals.join(' ').trim();
   if (!to || !text) fail(2, USAGE);
+  if (files.length > MAX_FILES) fail(2, `attach at most ${MAX_FILES} files`);
+  for (const file of files) {
+    if (!MEDIA.test(file) || !existsSync(file)) {
+      fail(2, `${file} is not a PNG, JPG, GIF, MP4 or WebM file on disk`);
+    }
+    if (statSync(file).size > MAX_FILE_BYTES) {
+      fail(2, `${file} is over Discord's 20 MiB limit for one file`);
+    }
+  }
+  const bytes = files.reduce((sum, file) => sum + statSync(file).size, 0);
+  if (bytes > MAX_MESSAGE_BYTES) {
+    fail(
+      2,
+      "the files together are over Discord's 25 MiB limit for one message"
+    );
+  }
   const broken = findings(text);
   if (broken.length > 0) {
     fail(
@@ -252,7 +306,7 @@ const send = async (args) => {
     return;
   }
 
-  await post(config.channel, readToken(), body);
+  await post(config.channel, readToken(), body, files);
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(
     path,
@@ -260,29 +314,39 @@ const send = async (args) => {
   );
 };
 
-const landed = async (args) => {
+// zbot, outside this repository, runs this on a range of next and posts each message
+// it prints, holding a UI commit's messages by sha until that commit's demo is ready.
+const team = (args) => {
   if (args.length !== 1) fail(2, USAGE);
-  const event = JSON.parse(readFileSync(args[0], 'utf-8'));
   const config = readConfig();
+  const repo = originRepo([]);
+  if (!repo) fail(1, 'notify team cannot read the GitHub repository of origin');
   const kinds = {
     Team: { allowedMentions: { parse: [] } },
     'Team-Action': recipients(config).dev,
   };
-  const messages = (event.commits ?? []).flatMap((commit) => {
-    const link = ` (${commitLink(event.repository.full_name, commit.id, commit.id.slice(0, 7))})`;
-    return teamLines(commit.message).map(({ kind, text }) =>
-      message(kinds[kind], `${text}${link}`)
-    );
-  });
-  if (messages.length === 0) {
-    console.log('no Team or Team-Action lines in this push');
-    return;
+  const run = spawnSync(
+    'git',
+    ['log', '--reverse', '--format=%H%x00%B%x00', args[0]],
+    { encoding: 'utf-8' }
+  );
+  if (run.status !== 0) {
+    fail(1, `notify team cannot read ${args[0]}: ${run.stderr.trim()}`);
   }
-  checkLength(messages);
-  const token = readToken();
-  for (const body of messages) {
-    await post(config.channel, token, body);
+  const fields = run.stdout.split('\0').map((field) => field.trim());
+  const messages = [];
+  for (let i = 0; i + 1 < fields.length; i += 2) {
+    const sha = fields[i];
+    const link = ` (${commitLink(repo, sha, sha.slice(0, 7))})`;
+    for (const { kind, text } of teamLines(fields[i + 1])) {
+      messages.push({
+        sha,
+        channel: config.channel,
+        ...message(kinds[kind], `${text}${link}`),
+      });
+    }
   }
+  console.log(JSON.stringify(messages));
 };
 
 // land.mjs runs this as a land check, after it squashes the task's commit and
@@ -323,6 +387,6 @@ const check = (args) => {
 };
 
 const [command, ...rest] = process.argv.slice(2);
-const commands = { check, landed, send };
+const commands = { check, send, team };
 if (!Object.hasOwn(commands, command ?? '')) fail(2, USAGE);
 await commands[command](rest);
