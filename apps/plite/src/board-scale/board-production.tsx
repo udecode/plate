@@ -479,7 +479,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
 
     return (
       <BoardSurface
-        {...(props as unknown as React.ComponentProps<typeof BoardSurface>)}
+        {...(props as unknown as Parameters<typeof BoardSurface>[0])}
         attributes={{ ...props.attributes, 'data-render-arm': arm }}
         slots={slots}
         toolbar={<ViewProbe handleRef={handleRef} />}

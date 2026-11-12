@@ -31,6 +31,7 @@ import { BaseBoardArrowPlugin } from './BaseBoardArrowPlugin';
 import { BaseBoardFramePlugin } from './BaseBoardFramePlugin';
 import { BaseBoardGeoPlugin } from './BaseBoardGeoPlugin';
 import { BaseBoardNotePlugin } from './BaseBoardNotePlugin';
+import { BaseBoardStrokePlugin } from './BaseBoardStrokePlugin';
 import {
   ARROW_SIDES,
   BOARD_ARROW_TYPE,
@@ -234,6 +235,7 @@ export const BaseBoardPlugin = definePlugin('board', {
     BaseBoardGeoPlugin,
     BaseBoardArrowPlugin,
     BaseBoardFramePlugin,
+    BaseBoardStrokePlugin,
   ],
 })
   .extend(({ defineFormats, editor, plugin, schema: { properties, type } }) => {

@@ -826,6 +826,9 @@ importers:
       parse5:
         specifier: ^8.0.1
         version: 8.0.1
+      perfect-freehand:
+        specifier: 1.2.0
+        version: 1.2.0
       plitejs:
         specifier: workspace:*
         version: link:../plitejs

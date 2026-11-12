@@ -501,6 +501,7 @@
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
     "parse5": "^8.0.1",
+    "perfect-freehand": "1.2.0",
     "plitejs": "workspace:*",
     "rbush": "4.0.1",
     "saxes": "6.0.0",

@@ -7,14 +7,17 @@ import {
   useEditorSelector,
   useElementSelected,
 } from '../../core';
+import type { BoardStrokePath } from './boardInk.internal';
 import type {
   BoardArrowPlugin,
   BoardFramePlugin,
   BoardGeoPlugin,
   BoardNotePlugin,
+  BoardStrokePlugin,
 } from './BoardPlugin';
 import { type BoardArrowPath, useBoardViewContext } from './boardView.internal';
 
+export type { BoardStrokePath } from './boardInk.internal';
 export type { BoardArrowPath } from './boardView.internal';
 
 const CORNERS = [
@@ -52,12 +55,13 @@ function AloneHandles() {
 
 /**
  * One member of a board, painted at its stacking rank while the DOM keeps the
- * board's stored order. A shape or frame sits at its box and, selected alone,
- * shows four resize handles, `[data-board-handle]`. An arrow sits at the
- * board's origin with no size, so its component draws in board coordinates
- * from `useArrowPath`, and it has no handles. A frame takes a press only on
- * its edge or on a child marked `[data-board-frame-name]`, such as its name.
- * A selected member shows `data-selected`.
+ * board's stored order. A shape, frame or stroke sits at its box and,
+ * selected alone, shows four resize handles, `[data-board-handle]`. An arrow
+ * sits at the board's origin with no size, so its component draws in board
+ * coordinates from `useArrowPath`, and it has no handles. A frame takes a
+ * press only on its edge or on a child marked `[data-board-frame-name]`, such
+ * as its name, and a stroke only on its line, which its component draws from
+ * `useStrokePath`. A selected member shows `data-selected`.
  */
 export function BoardShape({
   className,
@@ -68,6 +72,7 @@ export function BoardShape({
   | typeof BoardFramePlugin
   | typeof BoardGeoPlugin
   | typeof BoardNotePlugin
+  | typeof BoardStrokePlugin
 > & {
   className?: string;
   style?: React.CSSProperties;
@@ -125,4 +130,21 @@ export const useArrowPath = (element: Element): BoardArrowPath | undefined => {
   const read = () => view.arrowPathOf(key);
 
   return React.useSyncExternalStore(subscribe, read, read);
+};
+
+/**
+ * Where the board stroke `element` draws its line: an SVG path within a box
+ * of the stroke's stored size, which a component scales to the stroke's box,
+ * so a resize preview stretches it until the release redraws it. It stays the
+ * same object while the stroke's points and size stay the same, so a move
+ * does not redraw it.
+ */
+export const useStrokePath = (
+  element: Element
+): BoardStrokePath | undefined => {
+  const view = useBoardViewContext();
+  const key = view.keyOf(element);
+  const read = () => view.strokePathOf(key);
+
+  return React.useSyncExternalStore(view.subscribeShapes, read, read);
 };
