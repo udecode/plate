@@ -154,6 +154,8 @@ export function invocationRun(identity, transcripts) {
 }
 
 const NOTIFIED = /<task-notification>[\s\S]*?<tool-use-id>([^<]+)<\/tool-use-id>/gu;
+// A PreToolUse hook can move a call to the background. The transcript keeps the input the model sent, so only the start result shows it.
+const BACKGROUNDED = /^Command running in background with ID: /u;
 const OUTPUT_FILE = /Output is being written to: (\S+?)\.?(?:\s|$)/u;
 const EXIT_LINE = /(?:^|\n)\[(?:exited with code -?\d+|killed)\]\n?$/u;
 
@@ -182,8 +184,9 @@ function openClaudeCalls(transcripts) {
         if (record.type === 'assistant' && block.type === 'tool_use' && block.name === 'Bash') open.set(block.id, { record, command: block.input?.command, background: block.input?.run_in_background === true, output: null });
         if (record.type !== 'user' || block.type !== 'tool_result' || !open.has(block.tool_use_id)) continue;
         const call = open.get(block.tool_use_id);
-        if (block.is_error || !call.background) open.delete(block.tool_use_id);
-        else call.output = OUTPUT_FILE.exec(typeof block.content === 'string' ? block.content : '')?.[1] ?? null;
+        const said = typeof block.content === 'string' ? block.content : '';
+        if (block.is_error || !(call.background || BACKGROUNDED.test(said))) open.delete(block.tool_use_id);
+        else call.output = OUTPUT_FILE.exec(said)?.[1] ?? null;
       }
     }
     return [...open.values()].map(({ record, command, output }) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript, command, output }));

@@ -972,8 +972,10 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       .map(({ task, crowded }) => ({ kind: 'deferred', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: its review scope is deferred, and ${crowded} ready ${crowded === 1 ? 'task that ranks' : 'tasks that rank'} above it ${crowded === 1 ? 'has' : 'have'} no room for a card; ${withdrawn(task.card)} once it is withdrawn or its session has ended` })),
   ];
   const misdeferred = deferredProblem();
+  const mistiered = tiersProblem();
   const rows = [
     ...(misdeferred ? [{ kind: 'problem', ids: [], text: misdeferred }] : []),
+    ...(mistiered ? [{ kind: 'problem', ids: [], text: mistiered }] : []),
     ...waiting.flatMap(({ task, stuck }) => stuck.map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker}; log updated with the waits it has now` }))),
     ...[...topics.values()]
       .filter((entry) => freeDecides(entry).length > 1)
@@ -1101,9 +1103,36 @@ const milestoneClassOf = ({ reviewScope, regression }) => {
 const MILESTONE_RANK = { regression: 0, new: 1, experimental: 2 };
 const milestoneRank = (task) => MILESTONE_RANK[milestoneClassOf(task) ?? 'new'];
 
+const configuredTiers = () => {
+  const listed = projectConfig().chips?.tiers;
+  return Array.isArray(listed) ? listed : null;
+};
+const matchers = (tier) => (tier.paths?.length ?? 0) + (tier.scopes?.length ?? 0);
+const under = (path, dirs = []) => dirs.some((dir) => path === dir.replace(/\/$/u, '') || path.startsWith(dir.endsWith('/') ? dir : `${dir}/`));
+const tierOf = (task) => {
+  const tiers = configuredTiers();
+  if (!tiers) return null;
+  if (task.regression.length > 0 || failsOnBase(task)) return { name: 'regression', at: -1 };
+  const hit = tiers.findIndex((tier) => matchers(tier) > 0 && (task.writes.some((path) => under(path, tier.paths) && !under(path, tier.except)) || (tier.scopes ?? []).includes(task.reviewScope)));
+  const at = hit === -1 ? tiers.findIndex((tier) => matchers(tier) === 0) : hit;
+  return at === -1 ? { name: 'other', at: tiers.length } : { name: tiers[at].name, at };
+};
+const classRank = (task) => tierOf(task)?.at ?? milestoneRank(task);
+const classLabel = (task) => tierOf(task)?.name ?? milestoneClassOf(task);
+
+function tiersProblem() {
+  const tiers = projectConfig().chips?.tiers;
+  if (tiers === undefined) return null;
+  const list = (value) => value === undefined || (Array.isArray(value) && value.every((each) => typeof each === 'string' && each));
+  const fine = Array.isArray(tiers) && tiers.every((tier) => tier && typeof tier.name === 'string' && tier.name && list(tier.paths) && list(tier.except) && list(tier.scopes));
+  if (!fine) return 'fix chips.tiers in .agents/pstack.json: it is a list of { name, paths, except, scopes } in rank order, each list of strings, so chips ranks by milestone class until it is one';
+  const loose = tiers.filter((tier) => matchers(tier) === 0);
+  return loose.length > 1 ? `fix chips.tiers in .agents/pstack.json: ${loose.map((tier) => tier.name).join(' and ')} name no paths or scopes, and only one tier may catch the tasks no other tier matches` : null;
+}
+
 const PUBLIC_ISSUE = /(?<![&\w])[\w.-]*#\d+\b|:\/\/\S+\/issues\/\d+/u;
 const issueRank = (task) => (PUBLIC_ISSUE.test(task.repro ?? '') ? 0 : 1);
-const byPriority = (a, b) => Number(a.deferred) - Number(b.deferred) || rank(a) - rank(b) || milestoneRank(a) - milestoneRank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
+const byPriority = (a, b) => Number(a.deferred) - Number(b.deferred) || rank(a) - rank(b) || classRank(a) - classRank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
 
 function shipOffers(items, tasks, open) {
   const served = new Set(open.map((task) => task.ship).filter(Boolean));
@@ -1155,7 +1184,7 @@ const sharesWith = (task, open) => {
   return ids.length > 5 ? [...ids.slice(0, 5), `${ids.length - 5} more`] : ids;
 };
 
-const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.topic ? `  [${task.topic}${task.kind === 'decide' ? ', decide' : ''}]` : ''}${milestoneClassOf(task) ? `  ${milestoneClassOf(task)}` : ''}${task.owns.length ? `  owns ${task.owns.join(', ')}` : ''}${extra}`;
+const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.topic ? `  [${task.topic}${task.kind === 'decide' ? ', decide' : ''}]` : ''}${classLabel(task) ? `  ${classLabel(task)}` : ''}${task.owns.length ? `  owns ${task.owns.join(', ')}` : ''}${extra}`;
 
 export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
@@ -1255,6 +1284,7 @@ function brief(task, ledger, max, tasks, codex, state) {
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
   const priority = priorityOf(task);
   const milestone = milestoneClassOf(task);
+  const tier = tierOf(task);
   return [
     `${priority ? `[${priority}] ` : ''}${displayTitle(task)}`,
     '',
@@ -1264,6 +1294,7 @@ function brief(task, ledger, max, tasks, codex, state) {
     ...(task.regressed ? [`Regressed in: ${task.regressed}`] : []),
     ...(task.ship ? [`Serves ship item: ${task.ship}`] : []),
     ...(task.reviewScope ? [`Review scope: ${task.reviewScope}.${milestone ? ` Milestone: ${milestone}.` : ''}${task.deferred ? ' Deferred, so it ranks after every task whose scope chips.deferred does not list.' : ''}`] : []),
+    ...(tier ? [`Tier: ${tier.name}, ${tier.at === -1 ? 'first in its priority, because it owns a check that fails on the base branch or names a page where it still works' : `rank ${tier.at + 1} of chips.tiers within its priority`}.`] : []),
     ...(task.regression.length ? [`Regression: it still works on ${task.regression.join(', ')}`] : []),
     'Findings:',
     ...task.findings.map((finding) => `- ${finding}`),
