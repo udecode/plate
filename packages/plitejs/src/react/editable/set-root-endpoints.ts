@@ -1,4 +1,4 @@
-import { type Path, PathApi, type Point, type RootKey } from '../..';
+import { NodeApi, type Path, PathApi, type Point, type RootKey } from '../..';
 import { getSetSite } from '../../core/public-state';
 import type { AnyEditor } from '../../interfaces/editor';
 import { MAIN_ROOT_KEY } from '../root-key';
@@ -53,6 +53,24 @@ export const isSetRootOf = (editor: AnyEditor, root: RootKey) => {
   const site = getSetSite(getEditorRuntimeOwner(editor));
 
   return site.schema.isSetRoot(root, site);
+};
+
+export const isSetHolderPoint = (editor: AnyEditor, point: Point) => {
+  const site = getSetSite(getEditorRuntimeOwner(editor));
+
+  if (!site.schema.declaresSetRoots()) return false;
+
+  return editor.read(
+    (state) =>
+      !!state.nodes.above({
+        at: point,
+        match: (node) =>
+          NodeApi.isElement(node) &&
+          state.schema.isVoid(node) &&
+          site.schema.holdsSetRoot(node.type),
+        voids: true,
+      })
+  );
 };
 
 /**

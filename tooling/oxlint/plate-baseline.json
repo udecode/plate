@@ -11,7 +11,6 @@
     ],
     "packages/plitejs/src/react/editable/caret-engine.ts": [
       "editor.api.dom?.root();",
-      "getMountedEditableDOMRuntime(editor)",
       "getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();"
     ],
     "packages/plitejs/src/react/editable/clipboard-input-strategy.ts": [

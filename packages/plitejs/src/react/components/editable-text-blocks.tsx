@@ -277,6 +277,7 @@ const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
     renderElement?: RenderElementRenderer<TElement>;
     renderChildren: (from?: number, to?: number) => ReactNode;
     elementKey: NodeKey;
+    isVoid: boolean;
     renderLeaf?: (props: RenderLeafProps) => ReactNode;
     renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
     renderText?: (props: RenderTextProps) => ReactNode;
@@ -374,7 +375,7 @@ const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
 
       return (
         <>
-          {childCount > 0
+          {childCount > 0 && !props.isVoid
             ? renderContentBoundary({
                 boundaryId: `content-root:${props.nodeKey}:${slot}`,
                 copyPolicy: 'exclude',
@@ -1131,6 +1132,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
         ...renderElementPropsBase,
         coverage,
         elementKey: nodeKey,
+        isVoid: voidNode,
         renderElement,
         renderChildren,
         renderLeaf,

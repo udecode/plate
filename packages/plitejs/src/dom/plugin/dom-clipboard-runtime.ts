@@ -24,6 +24,7 @@ import {
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { importContentSlice } from '../../core/import-content-slice';
 import { getInstalledPlugin } from '../../core/plugin';
+import { getSetSite } from '../../core/public-state';
 import { withLandingBlock } from '../../editor/insert-default-child';
 import {
   getSelection as getEditorSelection,
@@ -588,6 +589,25 @@ const holdsContent = (
   return markChildUI(element, step.scope, step.host, ui);
 };
 
+const reachesSetRootCanvas = <V extends Value>(
+  editor: DOMEditor<V>,
+  range: Range
+) => {
+  const { schema } = getSetSite(editor);
+
+  return (
+    schema.declaresSetRoots() &&
+    editor.read((state) =>
+      state.nodes.some({
+        at: range,
+        match: (node) =>
+          PliteNode.isElement(node) && schema.holdsSetRoot(node.type),
+        voids: true,
+      })
+    )
+  );
+};
+
 const markChildUI = (
   parent: ParentNode,
   scope: CopyScope,
@@ -764,7 +784,7 @@ export const writeDOMRangeData = <V extends Value>(
   // Clone the range so the encoded fragment can be recovered from HTML paste.
   const domRange = DOMEditor.resolveDOMRange(editor, range);
 
-  if (!domRange) {
+  if (!domRange || reachesSetRootCanvas(editor, range)) {
     writeModelBackedRangeData(
       editor,
       data,

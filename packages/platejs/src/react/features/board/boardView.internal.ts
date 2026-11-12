@@ -1108,13 +1108,15 @@ export const createBoardView = (
     );
   };
 
-  const land = (slice: ContentSlice, place: BoardPlace) => {
+  const land = (slice: ContentSlice, place?: BoardPlace) => {
     if (!writable()) return false;
 
     const ids = mounted.update((tx) => {
       tx.history.newBatch();
 
-      return tx.plugin(BaseBoardPlugin).insertCopy(slice, { board, place });
+      return tx
+        .plugin(BaseBoardPlugin)
+        .insertCopy(slice, { board, ...(place ? { place } : {}) });
     });
 
     if (!ids) return false;
@@ -1418,6 +1420,7 @@ export const createBoardView = (
           };
         }
       } else if (state.tool === 'select') {
+        keepKeysOnBoard();
         gesture = {
           camera: state.camera,
           kind: 'pan',
@@ -1565,20 +1568,21 @@ export const createBoardView = (
     };
     const onPaste = (event: ClipboardEvent) => {
       const target = clipboardTarget(event);
+      const onBoard =
+        (!!target && target === focusTarget) ||
+        (!!hover &&
+          editor.api.dom.hasEditableTarget(target) &&
+          (host.contains(target) || target.contains(host)));
 
-      if (
-        !hover ||
-        !event.clipboardData ||
-        !editor.api.dom.hasEditableTarget(target) ||
-        !(host.contains(target) || target.contains(host))
-      ) {
-        return;
-      }
+      if (!event.clipboardData || !onBoard) return;
 
       const read = editor.api.dom.clipboard.readSlice(event.clipboardData);
 
       measure();
-      if (read.kind !== 'slice' || !land(read.slice, boardPointAt(hover))) {
+      if (
+        read.kind !== 'slice' ||
+        !land(read.slice, hover ? boardPointAt(hover) : undefined)
+      ) {
         return;
       }
       event.preventDefault();

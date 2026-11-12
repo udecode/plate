@@ -67,7 +67,7 @@ import {
   getSelectableOwnerAncestorNodeSelection,
   getSelectableOwnerNodeSelection,
 } from './selection-void-target';
-import { isSetRootOf } from './set-root-endpoints';
+import { isSetHolderPoint, isSetRootOf } from './set-root-endpoints';
 import { claimPageSelection } from './unread-press';
 
 export type EditableCaretMovementResult = {
@@ -556,7 +556,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
   editor: ReactRuntimeEditor;
   event: Pick<
     KeyboardEvent<HTMLDivElement>,
-    'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'
+    'altKey' | 'ctrlKey' | 'currentTarget' | 'key' | 'metaKey' | 'shiftKey'
   >;
   selection: Range | Selection;
 }) => {
@@ -564,13 +564,16 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
-    event.shiftKey ||
     (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')
   ) {
     return null;
   }
 
+  const extend = event.shiftKey;
+
   if (SelectionApi.isNode(selection)) {
+    if (extend) return null;
+
     const firstPath = selection.paths[0];
     const lastPath = selection.paths.at(-1) ?? firstPath;
 
@@ -604,7 +607,10 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
       : SelectionApi.text({ anchor: edge, focus: edge });
   }
 
-  if (!SelectionApi.isText(selection) || !RangeApi.isCollapsed(selection)) {
+  if (
+    !SelectionApi.isText(selection) ||
+    (!extend && !RangeApi.isCollapsed(selection))
+  ) {
     return null;
   }
 
@@ -647,10 +653,40 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     });
 
     if (!adjacent) return null;
+    const coverage = getMountedEditableDOMRuntime(
+      editor,
+      event.currentTarget
+    )?.domCoverage;
+    const hidden = adjacent.point
+      ? coverage?.getBoundaryForPoint(adjacent.point)
+      : null;
+    const shown =
+      adjacent.point && hidden?.selectionPolicy === 'skip'
+        ? coverage?.getPointOutsideBoundary(hidden, adjacent.point, {
+            reverse,
+          })
+        : adjacent.point;
+    // Chromium and WebKit bound a line move by the highest editable ancestor
+    // (HighestEditableRoot, highestEditableRoot), so it can carry the caret
+    // into a nested editing host, and the model owns each step onto and off a
+    // void that holds a set root.
+    const holderStep =
+      isSetHolderPoint(editor, selection.focus) ||
+      (!!shown && isSetHolderPoint(editor, shown));
+    const point = holderStep ? shown : adjacent.point;
+
+    if (holderStep && !point) return selection;
+    if (extend) {
+      return holderStep &&
+        point &&
+        leavesBlock(adjacent.blockPath, adjacent.edge, reverse)
+        ? SelectionApi.text({ anchor: selection.anchor, focus: point })
+        : null;
+    }
     // The browser moves a caret by layout, which can carry it into another
     // member of a set root, so the model moves it to this member's edge.
     if (
-      adjacent.point?.path[0] !== selection.focus.path[0] &&
+      point?.path[0] !== selection.focus.path[0] &&
       selection.focus.root !== undefined &&
       isSetRootOf(editor, selection.focus.root)
     ) {
@@ -658,37 +694,26 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
         ? SelectionApi.text({ anchor: adjacent.edge, focus: adjacent.edge })
         : null;
     }
-    if (!adjacent.point) return null;
+    if (!point) return null;
 
     const ancestorOwner = getSelectableOwnerAncestorNodeSelection(
       editor,
-      adjacent.point
+      point
     );
     const owner =
       ancestorOwner && !PathApi.equals(ancestorOwner.path, adjacent.blockPath)
         ? ancestorOwner
         : null;
-    // Browsers do not move a native caret into a nested editing host, so text
-    // under a 'model' coverage boundary, such as an external text view, is
-    // entered by setting the model selection.
     const modelSelectedText =
       !owner &&
-      getMountedEditableDOMRuntime(editor)
-        ?.domCoverage.getBoundariesForRange({
-          anchor: adjacent.point,
-          focus: adjacent.point,
-        })
+      coverage
+        ?.getBoundariesForRange({ anchor: point, focus: point })
         .some(({ selectionPolicy }) => selectionPolicy === 'model');
 
-    if (!owner && !modelSelectedText) return null;
+    if (!owner && !modelSelectedText && !holderStep) return null;
     if (!leavesBlock(adjacent.blockPath, adjacent.edge, reverse)) return null;
 
-    if (!owner) {
-      return SelectionApi.text({
-        anchor: adjacent.point,
-        focus: adjacent.point,
-      });
-    }
+    if (!owner) return SelectionApi.text({ anchor: point, focus: point });
 
     if (reverse) {
       const captionEnd = editor.read((state) => state.points.end(owner.path));
@@ -703,7 +728,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
           focus: selection.focus,
         });
         const captionRect = captionHost?.getBoundingClientRect();
-        const point =
+        const captionPoint =
           hasUsableRect(sourceRect) &&
           captionHost &&
           captionRect &&
@@ -721,8 +746,8 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
               )
             : null;
         const target =
-          point && PathApi.isDescendant(point.path, owner.path)
-            ? point
+          captionPoint && PathApi.isDescendant(captionPoint.path, owner.path)
+            ? captionPoint
             : captionEnd;
 
         return SelectionApi.text({ anchor: target, focus: target });
@@ -736,10 +761,9 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     return getAdjacentTarget(false);
   }
 
-  const owner = getSelectableOwnerAncestorNodeSelection(
-    editor,
-    selection.focus
-  );
+  const owner = extend
+    ? null
+    : getSelectableOwnerAncestorNodeSelection(editor, selection.focus);
 
   if (!owner) return getAdjacentTarget(true);
 
@@ -911,18 +935,24 @@ const getVisibleOwnerTarget = (
 ) => {
   if (!SelectionApi.isText(target)) return target;
 
-  const boundary = coverage
-    ?.getBoundariesForRange(target)
-    .find(({ selectionPolicy }) => selectionPolicy === 'skip');
+  const collapsed = RangeApi.isCollapsed(target);
+  const boundary = collapsed
+    ? coverage
+        ?.getBoundariesForRange(target)
+        .find(({ selectionPolicy }) => selectionPolicy === 'skip')
+    : coverage?.getBoundaryForPoint(target.focus);
 
-  if (!boundary) return target;
+  if (boundary?.selectionPolicy !== 'skip') return target;
 
   const outside = coverage?.getPointOutsideBoundary(boundary, target.focus, {
     reverse,
   });
 
   return outside
-    ? SelectionApi.text({ anchor: outside, focus: outside })
+    ? SelectionApi.text({
+        anchor: collapsed ? outside : target.anchor,
+        focus: outside,
+      })
     : null;
 };
 
