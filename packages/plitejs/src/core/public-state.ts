@@ -4798,12 +4798,14 @@ const placeSliceFitRange = (
 
       if (index >= 0 && index <= parentChildren.length) {
         const boundaryPoint =
-          (index < parentChildren.length
-            ? state.points.start([...parentPath, index])
-            : undefined) ??
-          (index > 0
-            ? state.points.end([...parentPath, index - 1])
-            : undefined);
+          parentPath.length === 0 && parentChildren.length === 0
+            ? { offset: 0, path: parentPath }
+            : ((index < parentChildren.length
+                ? state.points.start([...parentPath, index])
+                : undefined) ??
+              (index > 0
+                ? state.points.end([...parentPath, index - 1])
+                : undefined));
 
         if (boundaryPoint) {
           const position = DocumentIndex.fromValue(
@@ -5398,13 +5400,12 @@ const landSlice = (
     root: toPublicRoot(root),
   });
   const trailingType = NodeApi.isElement(trailing) ? trailing.type : null;
-  const notesFloor = writesSite
-    ? getDefined(
-        (site.kind === 'blocks'
-          ? getDefined(site.blocks.at(-1))[1]
-          : RangeApi.end(site.range).path)[0]
-      ) + 1
-    : 0;
+  const sitePath = writesSite
+    ? site.kind === 'blocks'
+      ? getDefined(site.blocks.at(-1))[1]
+      : RangeApi.end(site.range).path
+    : [];
+  const notesFloor = sitePath.length === 0 ? 0 : getDefined(sitePath[0]) + 1;
   const removing =
     site.kind === 'blocks' && !writesSite
       ? site.blocks.flatMap(([, path]) => (path.length === 1 ? path : []))
