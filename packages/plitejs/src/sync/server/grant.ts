@@ -16,15 +16,42 @@ export type SyncStep = Readonly<{
 
 export type ChangeClaim = Readonly<{ author: string; change: string }>;
 
-export type SyncCover =
-  | Readonly<{ claims: readonly ChangeClaim[]; covered: true }>
-  | Readonly<{ covered: false }>;
+/** The batch writes no verdict record, so the room asks again at its head. */
+export type SyncAtHead = Readonly<{ kind: 'at-head' }>;
 
-export type SyncWriteCheck = (
-  step: SyncStep,
-  grant: SyncGrant,
-  schema: CompiledEditorSchema
-) => SyncCover;
+export type SyncCover =
+  | Readonly<{
+      claims: readonly ChangeClaim[];
+      /**
+       * The room's own change at the head to the result the batch gives. When
+       * set, the room logs it in place of the batch's bytes.
+       */
+      change?: DocumentChange;
+      kind: 'covered';
+      /**
+       * Set for a decision on a split, join, wrap or unwrap. When it crossed
+       * entries, the batch rebased over them must give `change`'s result.
+       */
+      structure?: true;
+    }>
+  | Readonly<{ kind: 'refused' }>
+  /** A decided change changed between the batch's base and the head. */
+  | Readonly<{ kind: 'stale' }>;
+
+/**
+ * A batch that writes verdict records is judged at its base, with `head` the
+ * room's document when that differs from the base. Any other batch is judged
+ * at the room's head, so with `head` set it answers `at-head`.
+ */
+export type SyncWriteCheck = {
+  (step: SyncStep, grant: SyncGrant, schema: CompiledEditorSchema): SyncCover;
+  (
+    step: SyncStep,
+    grant: SyncGrant,
+    schema: CompiledEditorSchema,
+    head: JsonEditorValue | undefined
+  ): SyncAtHead | SyncCover;
+};
 
 export type SyncClaimsReader = (
   document: JsonEditorValue

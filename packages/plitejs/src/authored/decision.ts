@@ -4,6 +4,7 @@ import {
   getInternalDocumentRootChange,
   valueRoot,
   valueRootIndex,
+  withDocumentChangeRecords,
 } from '../core/change/document-change';
 import type { DocumentIndex } from '../core/change/document-index';
 import { jsonEqual } from '../core/change/json';
@@ -15,7 +16,11 @@ import {
   ElementGenerationMaskedError,
   type InternalEditorSchemaApi,
 } from '../core/editor-schema';
-import { deriveValue, getValueRecords } from '../core/record-store';
+import {
+  deriveValue,
+  getValueRecords,
+  recordOpsBetween,
+} from '../core/record-store';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
 import { EditorSchemaValidationError } from '../core/schema-validation';
 import type { EditorDocumentValue } from '../interfaces/editor';
@@ -34,7 +39,7 @@ import {
 import { type BookView, ChangeBook } from './ledger/book';
 import { rootOf } from './ledger/roots';
 import { countLedgerWork } from './ledger/work';
-import { storedResolveSchemaOf } from './resolve-schema';
+import { detachedResolveSchemaOf } from './resolve-schema';
 import { decidedContentChange } from './tree/alignment';
 import { coverStoredValues } from './tree/holds';
 import { type AuthoredMark, AuthoredMarkError } from './tree/marks';
@@ -69,9 +74,12 @@ export type Decided =
   | Readonly<{ status: 'blocked'; with: readonly string[] }>
   | Readonly<{ status: 'invalid' }>
   | Readonly<{
+      /** From `value` to the decided value, records included. */
+      change: DocumentChange;
       decided: readonly string[];
       status: 'decided';
       value: JsonEditorValue;
+      verdicts: readonly VerdictRecord[];
       windowed: WindowedDecision | null;
     }>;
 
@@ -135,15 +143,18 @@ export const spareGuardOver = (
 export const storedDecisionSiteOf = (
   schema: CompiledEditorSchema,
   value: JsonEditorValue
-): DecisionSite => ({
-  book: new ChangeBook((node) => node).sync(value),
-  resolveSchema: storedResolveSchemaOf(schema, value as EditorDocumentValue),
-  spares: spareGuardOver(
+): DecisionSite => {
+  const detached = createDetachedEditorSchema(
     schema,
-    createDetachedEditorSchema(schema, value as EditorDocumentValue),
-    value
-  ),
-});
+    value as EditorDocumentValue
+  );
+
+  return {
+    book: new ChangeBook((node) => node).sync(value),
+    resolveSchema: detachedResolveSchemaOf(schema, detached),
+    spares: spareGuardOver(schema, detached, value),
+  };
+};
 
 const windowedValue = (
   value: JsonEditorValue,
@@ -462,16 +473,17 @@ export const decide = (
     resolution.resolvedOf
   );
   const decided = windowed && windowedValue(value, windowed, actions);
+  const written = verdicts.map((record) =>
+    record.verdict === 'accept'
+      ? {
+          ...record,
+          completed: completed.get(incarnationOf(record.member)) ?? [],
+        }
+      : record
+  );
   const decidedValue = withVerdicts(
     decided ? decided.value : getDefined(whole).value,
-    verdicts.map((record) =>
-      record.verdict === 'accept'
-        ? {
-            ...record,
-            completed: completed.get(incarnationOf(record.member)) ?? [],
-          }
-        : record
-    )
+    written
   );
   const { candidates, remains } = remainsAfter(
     value,
@@ -503,12 +515,27 @@ export const decide = (
     return { status: 'blocked', with: undecidedLosingText };
   }
 
+  const records = recordOpsBetween(
+    getValueRecords(value),
+    getValueRecords(decidedValue)
+  );
+
   return {
+    change: withDocumentChangeRecords(
+      decided
+        ? decided.change
+        : decidedContentChange(value, decidedValue, {
+            facts: factsOf(value),
+            outcomes: actions,
+          }),
+      records
+    ),
     decided: [
       ...new Set([...resolution.decided, ...ids.filter((id) => !remains(id))]),
     ],
     status: 'decided',
     value: decidedValue,
+    verdicts: written,
     windowed: decided,
   };
 };

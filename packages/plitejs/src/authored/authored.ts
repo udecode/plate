@@ -84,7 +84,6 @@ import {
   deriveValue,
   getValueRecords,
   NO_RECORD_OPS,
-  recordOpsBetween,
   withValueRecords,
 } from '../core/record-store';
 import {
@@ -186,7 +185,7 @@ import {
   authoredResolveSchemaOf,
   storedResolveSchemaOf,
 } from './resolve-schema';
-import { characterAlignedChange, decidedContentChange } from './tree/alignment';
+import { characterAlignedChange } from './tree/alignment';
 import { closeCommandValues, generatedOf } from './tree/command-values';
 import { relinkCuts } from './tree/cuts';
 import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
@@ -713,19 +712,6 @@ const changesOf = (editor: Editor, value: JsonEditorValue) =>
   ledgerOf(editor).changes(value);
 
 type Outcome = 'accept' | 'reject';
-
-const decidedChange = (
-  value: JsonEditorValue,
-  decided: JsonEditorValue,
-  actions: ReadonlyMap<string, Outcome>
-) =>
-  withDocumentChangeRecords(
-    decidedContentChange(value, decided, {
-      facts: factsOf(value),
-      outcomes: actions,
-    }),
-    recordOpsBetween(getValueRecords(value), getValueRecords(decided))
-  );
 
 /** `value` without its records, which a decision only adds to. */
 const contentOf = (value: JsonEditorValue): JsonEditorValue => {
@@ -1364,24 +1350,15 @@ export const createAuthoredPlugin = (
       return { result: { ids, status: 'invalid' } };
     }
 
-    const { value: decidedValue, windowed: decided } = outcome;
+    const { change, value: decidedValue, windowed: decided } = outcome;
     const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-    const windowedChange = decided
-      ? withDocumentChangeRecords(
-          decided.change,
-          recordOpsBetween(
-            getValueRecords(value),
-            getValueRecords(decidedValue)
-          )
-        )
-      : null;
 
     try {
-      if (decided && windowedChange) {
+      if (decided) {
         schema.checkDocumentChange({
           after: decidedValue as EditorDocumentValue,
           before: value as EditorDocumentValue,
-          change: windowedChange,
+          change,
           indexedAfter: decided.indexedAfter,
           indexedBefore: decided.indexedBefore,
         });
@@ -1392,9 +1369,6 @@ export const createAuthoredPlugin = (
       if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
       throw error;
     }
-
-    const change =
-      windowedChange ?? decidedChange(value, decidedValue, actions);
 
     if (change.empty) return { result: { ids: [], status: 'unchanged' } };
 

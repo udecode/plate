@@ -259,10 +259,13 @@ export const blockRevisionOf = (
   return value;
 };
 
-// Blocks add their parts, so a key in one block of a change that spans many
-// moves the revision by that block's part alone.
-const revisionOf = (list: readonly Occurrence[]) => {
-  let revision = 0;
+const blockPartsOf = (list: readonly Occurrence[]) => {
+  const parts: Array<
+    Readonly<{
+      list: ReadonlyArray<Pick<Occurrence, 'mark' | 'node' | 'path'>>;
+      root: string;
+    }>
+  > = [];
   let start = 0;
 
   for (let at = 1; at <= list.length; at++) {
@@ -272,21 +275,55 @@ const revisionOf = (list: readonly Occurrence[]) => {
     if (next && next.root === first.root && next.path[0] === first.path[0]) {
       continue;
     }
-    revision =
-      (revision +
-        blockRevisionOf(
-          first.root,
-          list.slice(start, at).map((occurrence) => ({
-            ...occurrence,
-            path: occurrence.path.slice(1),
-          }))
-        )) >>>
-      0;
+    parts.push({
+      list: list.slice(start, at).map((occurrence) => ({
+        ...occurrence,
+        path: occurrence.path.slice(1),
+      })),
+      root: first.root,
+    });
     start = at;
   }
 
-  return revision;
+  return parts;
 };
+
+// Blocks add their parts, so a key in one block of a change that spans many
+// moves the revision by that block's part alone.
+const revisionOf = (list: readonly Occurrence[]) =>
+  blockPartsOf(list).reduce(
+    (revision, { list: part, root }) =>
+      (revision + blockRevisionOf(root, part)) >>> 0,
+    0
+  );
+
+const shapeOf = (node: Node): unknown => {
+  const { children, ...own } = node;
+
+  return [own, (children ?? []).filter((child) => !isText(child)).map(shapeOf)];
+};
+
+/**
+ * Exactly what a change's revision hashes, as one key, so two lists of
+ * occurrences give one key only when the revision reads the same content.
+ *
+ * @internal
+ */
+export const revisionReadOf = (list: readonly Occurrence[]) =>
+  JSON.stringify(
+    blockPartsOf(list)
+      .map(({ list: part, root }) =>
+        JSON.stringify([
+          root,
+          part.map(({ mark, node, path }) => [
+            isLineBreak(mark) ? path : null,
+            mark,
+            KINDS[mark.kind] === 'structure' ? shapeOf(node) : node,
+          ]),
+        ])
+      )
+      .sort()
+  );
 
 /**
  * The change one id's occurrences make; `list` holds them in document order.

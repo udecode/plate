@@ -133,13 +133,22 @@ export const storedResolveSchemaOf = (
   schema: CompiledEditorSchema,
   document: EditorDocumentValue,
   options: ResolveSchemaOptions = {}
-): AuthoredResolveSchema => {
-  const detached = createDetachedEditorSchema(schema, document);
+): AuthoredResolveSchema =>
+  detachedResolveSchemaOf(
+    schema,
+    createDetachedEditorSchema(schema, document),
+    options
+  );
 
-  return resolveSchemaOver(
+/** `storedResolveSchemaOf` over a detached schema the caller also reads. */
+export const detachedResolveSchemaOf = (
+  schema: CompiledEditorSchema,
+  detached: InternalEditorSchemaApi,
+  options: ResolveSchemaOptions = {}
+): AuthoredResolveSchema =>
+  resolveSchemaOver(
     getRepresentationEditorFromApi(detached),
     detached,
     schema,
     options
   );
-};

@@ -32,6 +32,7 @@ import { type MalformedSubmit, readClientMessage } from './client-message';
 import {
   readSyncGrant,
   type SyncAuthored,
+  type SyncCover,
   type SyncGrant,
   type SyncStep,
 } from './grant';
@@ -106,7 +107,11 @@ type Member = Readonly<{ epoch: string; grant: SyncGrant; schema: string }>;
 declare const coveredByGrant: unique symbol;
 
 type CoveredStep = SyncStep &
-  Readonly<{ [coveredByGrant]: true; owners: readonly ChangeOwner[] }>;
+  Readonly<{
+    [coveredByGrant]: true;
+    owners: readonly ChangeOwner[];
+    structure: boolean;
+  }>;
 
 type Admission =
   | Readonly<{
@@ -333,21 +338,36 @@ export const createSyncServer = <
   const coveredStepOf = async (
     room: LoadedRoom,
     step: SyncStep,
-    grant: SyncGrant
-  ): Promise<CoveredStep | 'grant' | 'invalid'> => {
-    const cover = attempt(() =>
-      authored.covers(step, grant, getCompiledEditorSchema(room.editor))
-    );
-
+    grant: SyncGrant,
+    cover: SyncCover | null,
+    head: JsonEditorValue | undefined
+  ): Promise<
+    CoveredStep | Extract<SyncSubmitRefusal, 'grant' | 'invalid' | 'lost'>
+  > => {
     if (!cover) return 'invalid';
-    if (!cover.covered) return 'grant';
+    if (cover.kind === 'stale') return 'lost';
+    if (cover.kind === 'refused') return 'grant';
+
+    const before = head ?? step.before;
+    const logged = cover.change;
+    const own = logged
+      ? attempt(() => ({
+          after: logged.apply(before),
+          before,
+          change: logged,
+        }))
+      : step;
+
+    if (!own) return 'invalid';
 
     const changes = [...new Set(cover.claims.map(({ change }) => change))];
     const bound =
       changes.length === 0 ? [] : await storage.owners(room.name, changes);
     const owners = ownersToBind(cover.claims, bound, grant.actor);
 
-    return owners ? ({ ...step, owners } as CoveredStep) : 'grant';
+    return owners
+      ? ({ ...own, owners, structure: cover.structure === true } as CoveredStep)
+      : 'grant';
   };
 
   const admit = (
@@ -433,31 +453,67 @@ export const createSyncServer = <
 
     const { baseValue, gap } = await historyOf(room, base);
 
-    if (!attempt(() => change.apply(baseValue))) return refuse('invalid');
+    const own = attempt(() => ({
+      after: change.apply(baseValue),
+      before: baseValue,
+      change,
+    }));
+
+    if (!own) return refuse('invalid');
 
     const skipsOwnEntry = gap.some((entry) => entry.writer === writer);
 
     if (skipsOwnEntry) return refuse('invalid');
 
     const accepted = gap.map((entry) => entry.change);
-    const rebase = attempt(() => rebaseOver(accepted, change, baseValue));
+    const rebased = () => {
+      const rebase = attempt(() => rebaseOver(accepted, change, baseValue));
 
-    if (!rebase) return refuse('invalid');
-    if (rebase.kind !== 'rebased') return refuse(rebase.kind);
+      if (!rebase) return 'invalid';
+      if (rebase.kind !== 'rebased') return rebase.kind;
 
-    const moved = rebase.change;
-    const step = attempt(() => ({
-      after: moved.apply(room.value),
-      before: room.value,
-      change: moved,
-    }));
+      const moved = rebase.change;
 
-    if (!step) return refuse('invalid');
+      return (
+        attempt(() => ({
+          after: moved.apply(room.value),
+          before: room.value,
+          change: moved,
+        })) ?? 'invalid'
+      );
+    };
+    const head = gap.length > 0 ? room.value : undefined;
+    const schema = getCompiledEditorSchema(room.editor);
+    const cover = attempt(() =>
+      authored.covers(own, member.grant, schema, head)
+    );
+    const judged = cover?.kind === 'at-head' ? rebased() : own;
 
-    const covered = await coveredStepOf(room, step, member.grant);
+    if (typeof judged === 'string') return refuse(judged);
+
+    const covered = await coveredStepOf(
+      room,
+      judged,
+      member.grant,
+      cover?.kind === 'at-head'
+        ? attempt(() => authored.covers(judged, member.grant, schema))
+        : cover,
+      head
+    );
 
     if (typeof covered === 'string') return refuse(covered);
+    if (covered.structure && gap.length > 0) {
+      const step = rebased();
 
+      if (
+        typeof step === 'string' ||
+        !sameDocument(step.after, covered.after)
+      ) {
+        return refuse('lost');
+      }
+    }
+
+    const logged = covered.change;
     const mark = { actor: member.grant.actor, writer };
     const judge = () =>
       judgeSpan({
@@ -465,11 +521,11 @@ export const createSyncServer = <
         base: baseValue,
         head: room.head,
         isSetValued: room.isSetValued,
-        merged: [viewOfChange(moved)],
+        merged: [viewOfChange(logged)],
         own: [viewOfChange(change)],
       }).kind;
 
-    if (moved.empty) {
+    if (logged.empty) {
       if (judge() !== 'held') return refuse('lost');
 
       await storage.settle(room.name, {
@@ -650,7 +706,7 @@ export const createSyncServer = <
 
         return;
       }
-      grant ??= readSyncGrant(await authorize(request));
+      grant = readSyncGrant(await authorize(request));
 
       if (grant === null) {
         peer.deliver({ reason: 'unauthorized', type: 'refused' });

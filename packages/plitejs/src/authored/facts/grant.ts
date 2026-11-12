@@ -1,7 +1,17 @@
+import type { DocumentChange } from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getRecordEntries, getValueRecords } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
-import type { ChangeClaim, SyncGrant } from '../../sync/server/grant';
+import type {
+  ChangeClaim,
+  SyncAtHead,
+  SyncGrant,
+} from '../../sync/server/grant';
+import {
+  type DecisionRequest,
+  type DecisionSite,
+  storedDecisionSiteOf,
+} from '../decision';
 import { type FormatTag, keyTips, sameValue } from '../tree/layers';
 import {
   type AuthoredMember,
@@ -20,7 +30,14 @@ import {
   RESERVES,
   VERDICTS,
 } from './records';
-import { replaysWithdrawal } from './replay';
+import {
+  decideAtHead,
+  decidesStructure,
+  replayAt,
+  replaysWithdrawal,
+  type VerdictBatch,
+  verdictBatchOf,
+} from './replay';
 import {
   type AuthoredStep,
   type AuthoredWrite,
@@ -32,9 +49,24 @@ import {
   type SetKey,
 } from './writes';
 
+export type Refusal =
+  | Readonly<{ kind: 'uncovered'; write: AuthoredWrite }>
+  /** The batch drops a verdict record, as an undo or a redo does. */
+  | Readonly<{ kind: 'reopens' }>
+  /** Its verdict records name an Editing change, two tokens or two verdicts. */
+  | Readonly<{ kind: 'unreadable' }>
+  /** No request its verdict records name gives its result at its base. */
+  | Readonly<{ kind: 'unreplayed' }>;
+
 export type Cover =
-  | Readonly<{ claims: readonly ChangeClaim[]; covered: true }>
-  | Readonly<{ covered: false; write: AuthoredWrite }>;
+  | Readonly<{
+      claims: readonly ChangeClaim[];
+      change?: DocumentChange;
+      kind: 'covered';
+      structure?: true;
+    }>
+  | Readonly<{ kind: 'refused'; why: Refusal }>
+  | Readonly<{ kind: 'stale' }>;
 
 type Kind = AuthoredWrite['kind'];
 type OrdinaryKind = Exclude<Kind, 'verdict'>;
@@ -311,23 +343,6 @@ const firstUncovered = (writes: AuthoredWrites, judge: Judge) =>
     );
   });
 
-const ownWithdrawalOf = (writes: AuthoredWrites, grant: SyncGrant) => [
-  ...new Set(
-    writes.writes.flatMap((write) =>
-      (write.kind === 'released'
-        ? [write.claim]
-        : write.kind === 'removed'
-          ? write.under
-          : []
-      ).flatMap((claim) =>
-        claim.author === grant.actor && !isEditingChange(claim.change)
-          ? [claim.change]
-          : []
-      )
-    )
-  ),
-];
-
 const changeClaimsOf = (bases: readonly MarkBase[]) => {
   const claims = new Map<string, ChangeClaim>();
 
@@ -395,20 +410,92 @@ export const decidedChangesIn = (
   ),
 ];
 
-export const grantCovers = (
+// Rejecting an own change that still holds a claim in the result would
+// delete its other letters too, so a withdrawal rejects only the ones the
+// batch removes whole.
+const ownChangesRemovedBy = (
+  { after, before }: AuthoredStep,
+  { actor }: SyncGrant
+) => {
+  const kept = new Set(changeClaimsIn(after).map(({ change }) => change));
+
+  return [
+    ...new Set(
+      changeClaimsIn(before).flatMap(({ author, change }) =>
+        author === actor && !kept.has(change) ? [change] : []
+      )
+    ),
+  ];
+};
+
+const requestsOf = (
+  { actions, token }: VerdictBatch,
+  grant: SyncGrant,
+  step: AuthoredStep,
+  { book }: DecisionSite
+): readonly DecisionRequest[] => {
+  const mint = () => token;
+  const withdraws = [...actions].every(([change, verdict]) => {
+    const list = book.occurrences(change);
+
+    return (
+      verdict === 'reject' &&
+      list.length > 0 &&
+      list.every(({ mark }) => mark.author === grant.actor)
+    );
+  });
+
+  return [
+    ...(grant.decide ? [{ actions, token: mint, withdraws: false }] : []),
+    ...(withdraws
+      ? [
+          {
+            actions: new Map([
+              ...actions,
+              ...ownChangesRemovedBy(step, grant).map(
+                (change) => [change, 'reject'] as const
+              ),
+            ]),
+            token: mint,
+            withdraws: true,
+          },
+        ]
+      : []),
+  ];
+};
+
+const decisionCover = (
+  step: AuthoredStep,
+  batch: VerdictBatch,
+  grant: SyncGrant,
+  schema: CompiledEditorSchema,
+  head: JsonEditorValue | undefined
+): Cover => {
+  const site = storedDecisionSiteOf(schema, step.before);
+  const replay = replayAt(step, requestsOf(batch, grant, step, site), site);
+
+  if (!replay) return { kind: 'refused', why: { kind: 'unreplayed' } };
+
+  const decided =
+    head === undefined ? replay.decided : decideAtHead(replay, head, schema);
+
+  if (!decided) return { kind: 'stale' };
+
+  return {
+    claims: [],
+    change: decided.change,
+    kind: 'covered',
+    ...(decidesStructure(replay) ? { structure: true as const } : {}),
+  };
+};
+
+const ordinaryCover = (
   step: AuthoredStep,
   grant: SyncGrant,
   schema: CompiledEditorSchema
 ): Cover => {
   const writes = authoredWritesOf(step);
-  const covered: Cover = {
-    claims: changeClaimsOf(writes.claims),
-    covered: true,
-  };
-  const verdict = writes.writes.find(({ kind }) => kind === 'verdict');
-
-  if (verdict) return { covered: false, write: verdict };
-
+  const claims = changeClaimsOf(writes.claims);
   let headCutHalves: ReadonlySet<string> | undefined;
   const uncovered = firstUncovered(writes, {
     grant,
@@ -421,11 +508,44 @@ export const grantCovers = (
     writes,
   });
 
-  if (!uncovered) return covered;
+  if (!uncovered) return { claims, kind: 'covered' };
 
-  const withdrawn = ownWithdrawalOf(writes, grant);
+  const withdrawn = ownChangesRemovedBy(step, grant);
+  const decided =
+    withdrawn.length > 0 && replaysWithdrawal(step, withdrawn, schema);
 
-  return withdrawn.length > 0 && replaysWithdrawal(step, withdrawn, schema)
-    ? covered
-    : { covered: false, write: uncovered };
+  return decided
+    ? { claims, change: decided.change, kind: 'covered' }
+    : { kind: 'refused', why: { kind: 'uncovered', write: uncovered } };
 };
+
+export function grantCovers(
+  step: AuthoredStep,
+  grant: SyncGrant,
+  schema: CompiledEditorSchema
+): Cover;
+export function grantCovers(
+  step: AuthoredStep,
+  grant: SyncGrant,
+  schema: CompiledEditorSchema,
+  head: JsonEditorValue | undefined
+): Cover | SyncAtHead;
+export function grantCovers(
+  step: AuthoredStep,
+  grant: SyncGrant,
+  schema: CompiledEditorSchema,
+  head?: JsonEditorValue
+): Cover | SyncAtHead {
+  const batch = verdictBatchOf(step.change);
+
+  if (batch === null) {
+    return head === undefined
+      ? ordinaryCover(step, grant, schema)
+      : { kind: 'at-head' };
+  }
+  if (typeof batch === 'string') {
+    return { kind: 'refused', why: { kind: batch } };
+  }
+
+  return decisionCover(step, batch, grant, schema, head);
+}
