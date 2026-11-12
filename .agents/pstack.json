@@ -236,7 +236,10 @@
       "paths": [
         "packages/platejs/turbo.json",
         "packages/plitejs/turbo.json",
-        "packages/test/turbo.json"
+        "packages/test/turbo.json",
+        "packages/platejs/tsconfig.entrypoints/*.json",
+        "packages/plitejs/tsconfig.entrypoints/*.json",
+        "packages/test/tsconfig.entrypoints/*.json"
       ],
       "command": "pnpm entrypoint:turbo:generate",
       "always": true
