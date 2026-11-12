@@ -12,7 +12,7 @@ import type { AnyEditor } from '../interfaces/editor';
 export const SYNC_PROTOCOL = 1;
 
 /** Raised whenever either end changes how it rebases or judges a batch. */
-export const SYNC_RULES = 1;
+export const SYNC_RULES = 2;
 
 /** Both ends rebase with these settings, the accepted change first. */
 export const SYNC_REBASE = {
@@ -61,6 +61,7 @@ export type SyncSubmitRefusal =
   | 'digest'
   | 'epoch'
   | 'expired'
+  | 'grant'
   | 'hello'
   | 'invalid'
   | 'lost'

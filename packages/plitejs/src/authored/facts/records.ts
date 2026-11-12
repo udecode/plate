@@ -124,7 +124,7 @@ export const verdictIdOf = ({ decision, member, verdict }: VerdictRecord) =>
     member.inc === undefined ? member.at : null
   )}${JSON.stringify(verdict)},${JSON.stringify(decision)}]`;
 
-export const verdictIncarnationOf = (id: string) => {
+const verdictIncarnationOf = (id: string) => {
   const [, change, inc, at] = JSON.parse(id) as [
     string,
     string,

@@ -27,7 +27,6 @@ import {
 import { jsonEqual } from '../core/change/json';
 import {
   copyFields,
-  copyRoots,
   lazyRootOf,
   visitRootNames,
   setLazyRoot,
@@ -59,7 +58,6 @@ import {
   type InternalEditorRuntime,
 } from '../core/editor-runtime';
 import {
-  ElementGenerationMaskedError,
   type InternalEditorSchemaApi,
   withoutGeneration,
 } from '../core/editor-schema';
@@ -101,7 +99,6 @@ import {
   rootsDeletedByName,
 } from '../core/root-ownership';
 import { tracksPlaces, uniquePropertiesOf } from '../core/schema-compiler';
-import { EditorSchemaValidationError } from '../core/schema-validation';
 import {
   type TxDeclaredMethod,
   txOnly,
@@ -130,14 +127,12 @@ import { type Point, PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
-import { MAIN_ROOT_KEY } from '../internal/root-location';
 import {
-  blockOccurrencesOf,
   indexAuthoredChanges,
   type Occurrence,
   readAuthoredDetails,
 } from './changes';
-import { decisionWindowsOf, type SpareGuard } from './decision-window';
+import { claimOf, decide, isRefusal, spareGuardOver } from './decision';
 import {
   authoredAdmission,
   createDocumentMarksValidator,
@@ -157,15 +152,11 @@ import {
 import {
   authoredRecords,
   type ContextRecord,
-  incarnationOf,
   incarnationOfLink,
   type LandedRecord,
   landedOf,
   putContexts,
   putLanded,
-  putVerdicts,
-  reserveNodesIn,
-  type VerdictRecord,
   withStore,
 } from './facts/records';
 import {
@@ -173,7 +164,7 @@ import {
   projectAuthoredBlocks,
   projectAuthoredDocumentUnder,
 } from './format';
-import type { BookSink, BookView } from './ledger/book';
+import type { BookSink } from './ledger/book';
 import {
   createReviewLedger,
   getReviewLedger,
@@ -181,7 +172,6 @@ import {
 } from './ledger/ledger';
 import { contentRootsOf, rootOf } from './ledger/roots';
 import { blockFactsOf, isBuilt } from './ledger/runs';
-import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
   storesGeneratedValues,
@@ -199,11 +189,9 @@ import {
 import { characterAlignedChange, decidedContentChange } from './tree/alignment';
 import { closeCommandValues, generatedOf } from './tree/command-values';
 import { relinkCuts } from './tree/cuts';
-import { coverStoredValues } from './tree/holds';
 import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
 import {
   type AuthoredMark,
-  AuthoredMarkError,
   authoredMarksSchema,
   followsOf,
   isAuthoredSetValued,
@@ -217,20 +205,16 @@ import {
   NO_SPARE_WRITES,
   type SpareBlocks,
   spareWritesChange,
-  completionBuilds,
   sparesFor,
   storesSpares,
 } from './tree/reserves';
 import {
   type AuthoredResolveSchema,
   claimsBreakBefore,
-  completedJoinKeys,
   projectAuthoredValue,
   isTextBlock,
   pastFollowers,
   resolveAuthoredChildren,
-  resolveAuthoredValue,
-  resolveAuthoredWindows,
 } from './tree/resolve';
 import { spareBlock, spareRoot } from './tree/spare-lines';
 import type {
@@ -363,13 +347,6 @@ const elementOf = (props: Readonly<Record<string, unknown>>): Element => ({
   type: String(props.type),
 });
 
-// A build that finds no spare for the generated value it needs refuses as a
-// schema refusal does.
-const isRefusal = (error: unknown) =>
-  error instanceof EditorSchemaValidationError ||
-  error instanceof AuthoredMarkError ||
-  error instanceof ElementGenerationMaskedError;
-
 const isReplay = (tags: readonly string[]) =>
   tags.includes('historic') || tags.includes('collaboration');
 
@@ -385,40 +362,6 @@ const isStruck = (editor: Editor, node: unknown) => {
     marksOf(node, facts).some((mark) => mark.kind === 'delete')
   );
 };
-
-const claimIn = (
-  blocks: readonly unknown[],
-  facts: ReviewFacts,
-  change: string
-) => {
-  const find = (nodes: readonly unknown[]): AuthoredMark | null => {
-    for (const node of nodes) {
-      const mark = marksOf(node, facts).find((item) => item.change === change);
-
-      if (mark) return mark;
-
-      const nested = find(
-        (node as { children?: readonly unknown[] }).children ?? []
-      );
-
-      if (nested) return nested;
-    }
-
-    return null;
-  };
-
-  return find(blocks);
-};
-
-const claimOf = (
-  value: EditorDocumentValue | JsonEditorValue,
-  change: string
-) =>
-  claimIn(
-    [...value.children, ...Object.values(value.roots ?? {}).flat()],
-    factsOf(value),
-    change
-  );
 
 const positionOf = (value: JsonEditorValue, root: string, point: Point) =>
   valueRootIndex(value, root).positionAt(point);
@@ -783,83 +726,6 @@ const decidedChange = (
     }),
     recordOpsBetween(getValueRecords(value), getValueRecords(decided))
   );
-
-const windowedValue = (
-  value: JsonEditorValue,
-  { records, windows }: NonNullable<ReturnType<typeof resolveAuthoredWindows>>,
-  actions: ReadonlyMap<string, Outcome>
-) => {
-  const facts = factsOf(value);
-  const changes = new Map<string, RootChange>();
-
-  for (const { after, before, from, root } of windows) {
-    const index = valueRootIndex(value, root);
-    const local = getInternalDocumentRootChange(
-      decidedContentChange(
-        { children: before },
-        { children: after },
-        { facts, outcomes: actions }
-      ),
-      'main'
-    );
-
-    if (local && !local.empty) {
-      changes.set(
-        root,
-        local.embed(index.length, index.childPosition([], from))
-      );
-    }
-  }
-
-  const roots = value.roots && copyRoots({}, value.roots);
-  const decided = deriveValue(
-    value,
-    roots ? { roots: roots as JsonEditorValue['roots'] } : {},
-    records
-  );
-
-  const indexedAfter = new Map<string, DocumentIndex>();
-  const indexedBefore = new Map<string, DocumentIndex>();
-
-  for (const [root, change] of changes) {
-    const before = valueRootIndex(value, root);
-    const after = change.apply(before);
-
-    indexedBefore.set(root, before);
-    indexedAfter.set(root, after);
-    if (root === MAIN_ROOT_KEY) setLazyRoot(decided, 'children', after);
-    else setLazyRoot(getDefined(roots), root, after);
-  }
-
-  return {
-    change: createInternalDocumentChange(changes),
-    indexedAfter,
-    indexedBefore,
-    value: decided,
-  };
-};
-
-const spareGuardOf = (
-  editor: Editor,
-  value: JsonEditorValue
-): SpareGuard | null => {
-  const compiled = getCompiledEditorSchema(editor);
-
-  if (!storesSpares(compiled)) return null;
-
-  const schema = getEditorSchema(editor);
-
-  return {
-    builds: (type, root) =>
-      completionBuilds(
-        compiled,
-        type === null
-          ? schema.getRootContent(root, value as EditorDocumentValue)
-          : schema.getElementContent(type)
-      ),
-    stored: reserveNodesIn(getValueRecords(value)).length > 0,
-  };
-};
 
 /** `value` without its records, which a decision only adds to. */
 const contentOf = (value: JsonEditorValue): JsonEditorValue => {
@@ -1314,195 +1180,6 @@ const writtenNamedRoots = (steps: readonly DraftStep[]) => {
   return written;
 };
 
-const insertionsInDroppedRoots = (
-  value: JsonEditorValue,
-  decided: JsonEditorValue
-) => {
-  const facts = factsOf(value);
-  const stranded = new Set<string>();
-  const visit = (node: JsonNode, struck: boolean) => {
-    const marks = marksOf(node, facts);
-    const covered = struck || marks.some((mark) => mark.kind === 'delete');
-
-    if (typeof node.text === 'string') {
-      if (covered || node.text === '') return;
-      for (const mark of marks) {
-        if (mark.kind === 'insert') stranded.add(mark.change);
-      }
-      return;
-    }
-    for (const child of node.children ?? []) visit(child, covered);
-  };
-
-  for (const [root, children] of Object.entries(value.roots ?? {})) {
-    if (Object.hasOwn(decided.roots ?? {}, root)) continue;
-    for (const child of children) visit(child, false);
-  }
-
-  return stranded;
-};
-
-type ReplacedRange = readonly [
-  from: number,
-  to: number,
-  afterFrom: number,
-  afterTo: number,
-];
-
-/**
- * The resolution rebuilds every block, so a block it left alone is one equal
- * to the original it resolves.
- */
-const replacedRanges = (
-  before: readonly JsonNode[],
-  after: readonly JsonNode[],
-  resolvedOf: (original: JsonNode) => JsonNode | null
-) => {
-  const ranges: ReplacedRange[] = [];
-  let positions: Map<JsonNode, number> | undefined;
-  const kept = (from: number, afterAt: number) => {
-    const node = after[afterAt];
-
-    if (before[from] === node) return true;
-    positions ??= new Map(
-      before.flatMap((original, index) => {
-        const resolved = resolvedOf(original);
-
-        return resolved ? [[resolved, index] as const] : [];
-      })
-    );
-
-    countLedgerWork('pairedBlocks');
-
-    return positions.get(node) === from && jsonEqual(before[from], node);
-  };
-  let from = 0;
-  let afterFrom = 0;
-
-  while (from < before.length || afterFrom < after.length) {
-    if (from < before.length && kept(from, afterFrom)) {
-      from += 1;
-      afterFrom += 1;
-      continue;
-    }
-
-    let afterTo = afterFrom;
-    let to = before.length;
-
-    for (; afterTo < after.length; afterTo += 1) {
-      const at = positions?.get(after[afterTo]) ?? -1;
-
-      if (at >= from && kept(at, afterTo)) {
-        to = at;
-        break;
-      }
-    }
-
-    ranges.push([from, to, afterFrom, afterTo]);
-    from = to;
-    afterFrom = afterTo;
-  }
-
-  return ranges;
-};
-
-type DecidedRun = Readonly<{
-  after: readonly JsonNode[];
-  before: readonly JsonNode[];
-  from: number;
-  root: string;
-}>;
-
-const decidedRunsOf = (value: JsonEditorValue, decided: JsonEditorValue) => {
-  const runs: DecidedRun[] = [];
-  const dropped: string[] = [];
-
-  for (const root of ['main', ...Object.keys(value.roots ?? {})]) {
-    if (root !== 'main' && !Object.hasOwn(decided.roots ?? {}, root)) {
-      dropped.push(root);
-    } else {
-      runs.push({
-        after: valueRoot(decided, root),
-        before: valueRoot(value, root),
-        from: 0,
-        root,
-      });
-    }
-  }
-
-  return { dropped, runs };
-};
-
-const remainsAfter = (
-  value: JsonEditorValue,
-  decided: JsonEditorValue,
-  {
-    dropped,
-    runs,
-  }: Readonly<{ dropped: readonly string[]; runs: readonly DecidedRun[] }>,
-  book: BookView,
-  resolvedIn: (root: string) => ((original: JsonNode) => JsonNode | null) | null
-) => {
-  const facts = factsOf(decided);
-  const replaced = new Map<string, ReplacedRange[]>();
-  const kept = new Set<string>();
-  const candidates = new Set<string>();
-
-  for (const root of dropped) {
-    for (const id of book.idsIn(root, 0, rootOf(value, root).size)) {
-      candidates.add(id);
-    }
-  }
-  for (const { after, before, from: offset, root } of runs) {
-    const ranges = replacedRanges(
-      before,
-      after,
-      resolvedIn(root) ?? (() => null)
-    );
-    const shifted = replaced.get(root) ?? [];
-
-    replaced.set(root, shifted);
-    for (const [from, to, afterFrom, afterTo] of ranges) {
-      countLedgerWork('strandedBlocks', to - from + afterTo - afterFrom);
-      for (const id of book.idsIn(root, from + offset, to + offset)) {
-        candidates.add(id);
-      }
-      for (const block of after.slice(afterFrom, afterTo)) {
-        for (const id of blockOccurrencesOf(block, (node) =>
-          marksOf(node, facts)
-        ).occurrences.keys()) {
-          kept.add(id);
-        }
-      }
-      shifted.push([from + offset, to + offset, afterFrom, afterTo]);
-    }
-  }
-
-  const remains = (id: string) =>
-    kept.has(id) ||
-    book.occurrences(id).some(({ node, path, root }) => {
-      const ranges =
-        replaced.get(root) ?? (dropped.includes(root) ? undefined : []);
-
-      return (
-        ranges !== undefined &&
-        !ranges.some(([from, to]) => path[0] >= from && path[0] < to) &&
-        marksOf(node, facts).some((mark) => mark.change === id)
-      );
-    });
-
-  return { candidates, remains };
-};
-
-const incarnationsOf = (occurrences: readonly Occurrence[]) =>
-  new Map(occurrences.map(({ mark }) => [incarnationOf(mark), mark])).values();
-
-const withVerdicts = (
-  value: JsonEditorValue,
-  verdicts: readonly VerdictRecord[]
-): JsonEditorValue =>
-  verdicts.length === 0 ? value : deriveValue(value, {}, putVerdicts(verdicts));
-
 /**
  * The `authored` plugin with deterministic ids, clock and starting intent,
  * for tests.
@@ -1666,132 +1343,28 @@ export const createAuthoredPlugin = (
     if (conflicting) return { result: { ids, status: 'invalid' } };
     if (ids.length === 0) return { result: { ids, status: 'unchanged' } };
 
-    const outcome = (change: string) => actions.get(change) ?? 'keep';
-    const resolveSchema = authoredResolveSchemaOf(editor);
-    const resolveOptions = { stores: true, withdraws };
-    const windows = decisionWindowsOf(
+    const outcome = decide(
       value,
-      ids,
-      (id) => book.occurrences(id),
-      spareGuardOf(editor, value)
-    );
-    let windowed: ReturnType<typeof resolveAuthoredWindows> = null;
-    let whole: ReturnType<typeof resolveAuthoredValue> | null = null;
-
-    try {
-      windowed =
-        windows &&
-        resolveAuthoredWindows(
-          value,
-          windows,
-          outcome,
-          resolveSchema,
-          resolveOptions
-        );
-      if (!windowed) {
-        coverStoredValues(getCompiledEditorSchema(editor), [
-          ...value.children,
-          ...Object.values(value.roots ?? {}).flat(),
-        ]);
-        whole = resolveAuthoredValue(
-          value,
-          outcome,
-          resolveSchema,
-          resolveOptions
-        );
+      { actions, token: createIncarnationId, withdraws },
+      {
+        book,
+        resolveSchema: authoredResolveSchemaOf(editor),
+        spares: spareGuardOver(
+          getCompiledEditorSchema(editor),
+          getEditorSchema(editor),
+          value
+        ),
       }
-    } catch (error) {
-      if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
-      throw error;
+    );
+
+    if (outcome.status === 'blocked') {
+      return { result: { ids, status: 'blocked', with: outcome.with } };
+    }
+    if (outcome.status === 'invalid') {
+      return { result: { ids, status: 'invalid' } };
     }
 
-    const resolution = windowed ?? getDefined(whole);
-
-    const blockers = resolution.blockers.filter(
-      (change) => !actions.has(change)
-    );
-
-    if (blockers.length > 0) {
-      return { result: { ids, status: 'blocked', with: blockers } };
-    }
-    if (resolution.unplaceable) return { result: { ids, status: 'invalid' } };
-
-    // One token per decision, so a peer's decision on the same incarnation
-    // gets its own key and an undo drops only this one.
-    const decision = createIncarnationId();
-    // A withdrawal leaves no record unless a mark of the change stays stored,
-    // which every later read must see as rejected.
-    const facts = windowed && factsOf(value);
-    const stays = (id: string) =>
-      windowed
-        ? windowed.windows.some(
-            ({ after }) => claimIn(after, getDefined(facts), id) !== null
-          )
-        : !!claimOf(getDefined(whole).value, id);
-    const verdicts = [...actions]
-      .filter(([id]) => !withdraws || stays(id))
-      .flatMap(([id, verdict]) =>
-        [...incarnationsOf(book.occurrences(id))].map(
-          ({ at, change, inc }): VerdictRecord => ({
-            decision,
-            member: inc === undefined ? { at, change } : { at, change, inc },
-            verdict,
-          })
-        )
-      );
-    const completed = completedJoinKeys(
-      [...actions].flatMap(([id, action]) =>
-        action === 'accept' ? book.occurrences(id) : []
-      ),
-      resolution.resolvedOf
-    );
-    const decided = windowed && windowedValue(value, windowed, actions);
-    const decidedValue = withVerdicts(
-      decided ? decided.value : getDefined(whole).value,
-      verdicts.map((record) =>
-        record.verdict === 'accept'
-          ? {
-              ...record,
-              completed: completed.get(incarnationOf(record.member)) ?? [],
-            }
-          : record
-      )
-    );
-    // A change whose inserted text the decision removes, such as text typed
-    // inside a rejected insertion, goes only when it is decided too. An empty
-    // block completion built holds nothing to lose.
-    const { candidates, remains } = remainsAfter(
-      value,
-      decidedValue,
-      windowed
-        ? { dropped: [], runs: windowed.windows }
-        : decidedRunsOf(value, decidedValue),
-      book,
-      resolution.resolvedIn
-    );
-    const inDroppedRoots = windowed
-      ? new Set<string>()
-      : insertionsInDroppedRoots(value, decidedValue);
-    const taken = book
-      .pendingInOrder(new Set([...candidates, ...inDroppedRoots]))
-      .filter(
-        (id) =>
-          !actions.has(id) &&
-          (inDroppedRoots.has(id) ||
-            (!remains(id) &&
-              book
-                .occurrences(id)
-                .some(
-                  ({ mark, node }) =>
-                    mark.kind === 'insert' &&
-                    typeof node.text === 'string' &&
-                    node.text !== ''
-                )))
-      );
-
-    if (taken.length > 0) {
-      return { result: { ids, status: 'blocked', with: taken } };
-    }
+    const { value: decidedValue, windowed: decided } = outcome;
     const schema: InternalEditorSchemaApi = getEditorSchema(editor);
     const windowedChange = decided
       ? withDocumentChangeRecords(
@@ -1825,17 +1398,13 @@ export const createAuthoredPlugin = (
 
     if (change.empty) return { result: { ids: [], status: 'unchanged' } };
 
-    const decidedIds = [
-      ...new Set([...resolution.decided, ...ids.filter((id) => !remains(id))]),
-    ];
-
     return {
       change,
-      result: { ids: decidedIds, status: 'applied' },
+      result: { ids: [...outcome.decided], status: 'applied' },
       settles: settlesTextAlone(
         value,
         change,
-        [...new Set([...ids, ...decidedIds])],
+        [...new Set([...ids, ...outcome.decided])],
         actions,
         (id) => book.occurrences(id),
         withdraws

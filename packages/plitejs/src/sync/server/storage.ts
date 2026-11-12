@@ -29,12 +29,21 @@ export type StoredReceipt = Readonly<{
 /** Binds a writer to the actor whose batch it first settled. */
 export type WriterMark = Readonly<{ actor: string; writer: string }>;
 
-/** A satisfied batch settles with no entry. */
-export type Settlement = Readonly<{
-  entry?: StoredEntry;
-  mark: WriterMark;
-  receipt: StoredReceipt;
-}>;
+export type ChangeOwner = Readonly<{ author: string | null; change: string }>;
+
+export type Settlement = Readonly<{ mark: WriterMark }> &
+  (
+    | Readonly<{
+        entry: StoredEntry;
+        owners: readonly ChangeOwner[];
+        receipt: StoredReceipt & Readonly<{ status: 'accepted' }>;
+      }>
+    | Readonly<{
+        entry?: undefined;
+        owners?: undefined;
+        receipt: StoredReceipt & Readonly<{ status: 'satisfied' }>;
+      }>
+  );
 
 export type StoredRoom = Readonly<{
   epoch: string;
@@ -46,28 +55,38 @@ export type StoredRoom = Readonly<{
 
 /**
  * A room's durable state. `settle` is the one write a host maps to one
- * transaction, so a crash leaves the entry, the mark and the receipt all
- * written or none of them.
+ * transaction, so a crash leaves the entry, the mark, the receipt and the
+ * owners all written or none of them. It never replaces a stored owner.
  */
 export type SyncStorage = Readonly<{
   /** The newest checkpoint at or below `version`. */
   checkpoint: (room: string, version: number) => Promise<Checkpoint | null>;
   /**
    * Drops the entries at or below the newest checkpoint written before
-   * `before`, keeping every receipt, and returns the new floor.
+   * `before`, keeping every receipt, writer mark and change owner, and
+   * returns the new floor.
    */
   compact: (room: string, before: number) => Promise<number>;
   /** The entries after `version`, oldest first. */
   entries: (room: string, version: number) => Promise<readonly StoredEntry[]>;
   /**
    * The stored room. A room storage has never held is created with a new
-   * epoch, `schema` and its first checkpoint.
+   * epoch, `schema`, its first checkpoint and `owners`; a stored room ignores
+   * `create`.
    */
   load: (
     room: string,
-    create: Readonly<{ checkpoint: Checkpoint; schema: string }>
+    create: Readonly<{
+      checkpoint: Checkpoint;
+      owners: readonly ChangeOwner[];
+      schema: string;
+    }>
   ) => Promise<StoredRoom>;
   mark: (room: string, writer: string) => Promise<WriterMark | null>;
+  owners: (
+    room: string,
+    changes: readonly string[]
+  ) => Promise<readonly ChangeOwner[]>;
   receipt: (room: string, key: ReceiptKey) => Promise<StoredReceipt | null>;
   saveCheckpoint: (room: string, checkpoint: Checkpoint) => Promise<void>;
   settle: (room: string, settlement: Settlement) => Promise<void>;

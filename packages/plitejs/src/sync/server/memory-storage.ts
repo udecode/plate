@@ -1,4 +1,5 @@
 import type {
+  ChangeOwner,
   Checkpoint,
   ReceiptKey,
   StoredEntry,
@@ -14,8 +15,15 @@ type MemoryRoom = {
   epoch: string;
   floor: number;
   marks: Map<string, WriterMark>;
+  owners: Map<string, string | null>;
   receipts: Map<string, StoredReceipt>;
   schema: string;
+};
+
+const bindOwners = (room: MemoryRoom, owners: readonly ChangeOwner[]) => {
+  for (const { author, change } of owners) {
+    if (!room.owners.has(change)) room.owners.set(change, author);
+  }
 };
 
 const keyOf = ({ epoch, seq, writer }: ReceiptKey) =>
@@ -74,35 +82,51 @@ export const memoryStorage = (): SyncStorage => {
       asStorageCall(() =>
         roomOf(name).entries.filter((entry) => entry.version > version)
       ),
-    load: (name, { checkpoint, schema }) =>
+    load: (name, { checkpoint, owners, schema }) =>
       asStorageCall(() => {
-        const room = rooms.get(name) ?? {
-          checkpoints: [checkpoint],
-          entries: [],
-          epoch: crypto.randomUUID(),
-          floor: checkpoint.version,
-          marks: new Map(),
-          receipts: new Map(),
-          schema,
-        };
+        let room = rooms.get(name);
 
-        rooms.set(name, room);
+        if (!room) {
+          room = {
+            checkpoints: [checkpoint],
+            entries: [],
+            epoch: crypto.randomUUID(),
+            floor: checkpoint.version,
+            marks: new Map(),
+            owners: new Map(),
+            receipts: new Map(),
+            schema,
+          };
+          bindOwners(room, owners);
+          rooms.set(name, room);
+        }
 
         return stored(room);
       }),
     mark: (name, writer) =>
       asStorageCall(() => roomOf(name).marks.get(writer) ?? null),
+    owners: (name, changes) =>
+      asStorageCall(() => {
+        const { owners } = roomOf(name);
+
+        return changes.flatMap((change) => {
+          const author = owners.get(change);
+
+          return author === undefined ? [] : [{ author, change }];
+        });
+      }),
     receipt: (name, key) =>
       asStorageCall(() => roomOf(name).receipts.get(keyOf(key)) ?? null),
     saveCheckpoint: (name, checkpoint) =>
       asStorageCall(() => {
         roomOf(name).checkpoints.push(checkpoint);
       }),
-    settle: (name, { entry, mark, receipt }) =>
+    settle: (name, { entry, mark, owners, receipt }) =>
       asStorageCall(() => {
         const room = roomOf(name);
 
         if (entry) room.entries.push(entry);
+        bindOwners(room, owners ?? []);
         room.marks.set(mark.writer, mark);
         room.receipts.set(keyOf(receipt.key), receipt);
       }),

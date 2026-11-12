@@ -409,7 +409,8 @@ const isLinkText = (follows: string) => {
   );
 };
 
-const parseMember = (value: unknown): AuthoredMember | null => {
+/** @internal */
+export const parseMember = (value: unknown): AuthoredMember | null => {
   if (!isRecord(value)) return null;
   if (value.kind === 'as') {
     return isAsMember(value) ? (value as AsMember) : null;

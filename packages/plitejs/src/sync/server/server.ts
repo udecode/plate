@@ -29,7 +29,14 @@ import {
   schemaFingerprintOf,
 } from '../protocol';
 import { type MalformedSubmit, readClientMessage } from './client-message';
-import type { StoredEntry, SyncStorage } from './storage';
+import {
+  readSyncGrant,
+  type SyncAuthored,
+  type SyncGrant,
+  type SyncStep,
+} from './grant';
+import { ownersToBind, seedOwnersOf } from './owners';
+import type { ChangeOwner, StoredEntry, SyncStorage } from './storage';
 
 const IDLE_MS = 60_000;
 const CHECKPOINT_EVERY = 256;
@@ -37,11 +44,7 @@ const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 const REMOTE = { tags: ['collaboration', 'history-skip'] } as const;
 
-export type SyncGrant = Readonly<{
-  access: 'edit' | 'suggest';
-  actor: string;
-  decide: boolean;
-}>;
+export type { SyncGrant } from './grant';
 
 export type SyncRequest = Readonly<{ room: string; token: string }>;
 
@@ -64,6 +67,7 @@ export type SyncServerOptions<
   authorize: (
     request: SyncRequest
   ) => Promise<SyncGrant | null> | SyncGrant | null;
+  authored: SyncAuthored;
   /** A fresh headless editor with the schema every tab of the room uses. */
   editor: () => Editor<V, TPlugins>;
   storage: SyncStorage;
@@ -97,7 +101,12 @@ type Slot = {
   turn: Promise<unknown>;
 };
 
-type Member = Readonly<{ actor: string; epoch: string; schema: string }>;
+type Member = Readonly<{ epoch: string; grant: SyncGrant; schema: string }>;
+
+declare const coveredByGrant: unique symbol;
+
+type CoveredStep = SyncStep &
+  Readonly<{ [coveredByGrant]: true; owners: readonly ChangeOwner[] }>;
 
 type Admission =
   | Readonly<{
@@ -161,6 +170,7 @@ export const createSyncServer = <
   TPlugins extends readonly unknown[],
 >({
   authorize,
+  authored,
   editor: createRoomEditor,
   storage,
 }: SyncServerOptions<V, TPlugins>) => {
@@ -169,8 +179,13 @@ export const createSyncServer = <
   const load = async (name: string): Promise<LoadedRoom> => {
     const editor = createRoomEditor();
     const schema = await schemaFingerprintOf(editor);
+    const document = valueOf(editor);
     const stored = await storage.load(name, {
-      checkpoint: { at: Date.now(), document: valueOf(editor), version: 0 },
+      checkpoint: { at: Date.now(), document, version: 0 },
+      owners: seedOwnersOf(
+        authored.claimsIn(document),
+        authored.decidedIn(document)
+      ),
       schema,
     });
     const floor =
@@ -187,7 +202,7 @@ export const createSyncServer = <
       name,
       schema,
       serving: false,
-      value: valueOf(editor),
+      value: document,
     };
 
     if (stored.schema !== schema) return room;
@@ -195,13 +210,13 @@ export const createSyncServer = <
     const { baseValue } = await storedHistory(name, room.head);
 
     room.value = baseValue;
-    resetEditorToHead(room);
-    room.serving = sameDocument(valueOf(editor), baseValue);
+    serveFromHead(room);
 
     return room;
   };
 
-  const resetEditorToHead = ({ editor, value }: LoadedRoom) => {
+  const serveFromHead = (room: LoadedRoom) => {
+    const { editor, value } = room;
     const change = DocumentChange.between(valueOf(editor), value);
 
     if (!change.empty) {
@@ -209,6 +224,12 @@ export const createSyncServer = <
         tx.changes.apply(change);
       });
     }
+    room.serving = sameDocument(valueOf(editor), value);
+  };
+
+  const renewEditor = (room: LoadedRoom) => {
+    room.editor = createRoomEditor();
+    serveFromHead(room);
   };
 
   const storedHistory = async (name: string, base: number) => {
@@ -309,11 +330,30 @@ export const createSyncServer = <
     return run;
   };
 
-  const admit = (room: LoadedRoom, change: DocumentChange): Admission => {
-    const expected = attempt(() => change.apply(room.value));
+  const coveredStepOf = async (
+    room: LoadedRoom,
+    step: SyncStep,
+    grant: SyncGrant
+  ): Promise<CoveredStep | 'grant' | 'invalid'> => {
+    const cover = attempt(() =>
+      authored.covers(step, grant, getCompiledEditorSchema(room.editor))
+    );
 
-    if (!expected) return { kind: 'refused', reason: 'invalid' };
+    if (!cover) return 'invalid';
+    if (!cover.covered) return 'grant';
 
+    const changes = [...new Set(cover.claims.map(({ change }) => change))];
+    const bound =
+      changes.length === 0 ? [] : await storage.owners(room.name, changes);
+    const owners = ownersToBind(cover.claims, bound, grant.actor);
+
+    return owners ? ({ ...step, owners } as CoveredStep) : 'grant';
+  };
+
+  const admit = (
+    room: LoadedRoom,
+    { after: expected, change }: CoveredStep
+  ): Admission => {
     let published: DocumentChange | undefined;
     const stop = room.editor.subscribeCommit((commit) => {
       published = commit.changes;
@@ -324,6 +364,8 @@ export const createSyncServer = <
         tx.changes.apply(change);
       });
     } catch {
+      renewEditor(room);
+
       return { kind: 'refused', reason: 'invalid' };
     } finally {
       stop();
@@ -338,7 +380,7 @@ export const createSyncServer = <
       !sameDocument(headValue, expected) ||
       !sameDocument(valueOf(room.editor), expected)
     ) {
-      resetEditorToHead(room);
+      renewEditor(room);
 
       return { kind: 'refused', reason: 'normalized' };
     }
@@ -364,7 +406,7 @@ export const createSyncServer = <
 
     const bound = await storage.mark(room.name, writer);
 
-    if (bound && bound.actor !== member.actor) return refuse('writer');
+    if (bound && bound.actor !== member.grant.actor) return refuse('writer');
 
     const key = { epoch: room.epoch, seq, writer };
     const prior = await storage.receipt(room.name, key);
@@ -404,7 +446,19 @@ export const createSyncServer = <
     if (rebase.kind !== 'rebased') return refuse(rebase.kind);
 
     const moved = rebase.change;
-    const mark = { actor: member.actor, writer };
+    const step = attempt(() => ({
+      after: moved.apply(room.value),
+      before: room.value,
+      change: moved,
+    }));
+
+    if (!step) return refuse('invalid');
+
+    const covered = await coveredStepOf(room, step, member.grant);
+
+    if (typeof covered === 'string') return refuse(covered);
+
+    const mark = { actor: member.grant.actor, writer };
     const judge = () =>
       judgeSpan({
         accepted: accepted.map(viewOfChange),
@@ -437,7 +491,7 @@ export const createSyncServer = <
       if (verdict === 'lost' || verdict === 'unjudged') return refuse('lost');
     }
 
-    const admission = admit(room, moved);
+    const admission = admit(room, covered);
 
     if (admission.kind === 'refused') return refuse(admission.reason);
 
@@ -452,6 +506,7 @@ export const createSyncServer = <
     await storage.settle(room.name, {
       entry: { at, change: published, seq, version, writer },
       mark,
+      owners: covered.owners,
       receipt: { digest, key, status: 'accepted', version, ...rewritten },
     });
 
@@ -552,7 +607,7 @@ export const createSyncServer = <
 
   const connect: SyncConnect = (send, request) => {
     let joined: Readonly<{ epoch: string; schema: string }> | null = null;
-    let actor: string | null = null;
+    let grant: SyncGrant | null = null;
     let queue: Promise<unknown> = Promise.resolve();
 
     const leaveBroadcast = () => slots.get(request.room)?.peers.delete(peer);
@@ -595,12 +650,9 @@ export const createSyncServer = <
 
         return;
       }
-      if (actor === null) {
-        const grant = await authorize(request);
+      grant ??= readSyncGrant(await authorize(request));
 
-        actor = grant?.actor ?? null;
-      }
-      if (actor === null) {
+      if (grant === null) {
         peer.deliver({ reason: 'unauthorized', type: 'refused' });
 
         return;
@@ -618,7 +670,7 @@ export const createSyncServer = <
     };
 
     const submit = async (message: SyncSubmit) => {
-      const member = joined && actor !== null ? { ...joined, actor } : null;
+      const member = joined && grant !== null ? { ...joined, grant } : null;
 
       if (!member) {
         peer.deliver(refusal(message, 'hello', 0));
@@ -688,7 +740,7 @@ export const createSyncServer = <
 
       if (!changes) return null;
 
-      resetEditorToHead(room);
+      renewEditor(room);
 
       const submit = {
         base: room.head,
@@ -698,7 +750,7 @@ export const createSyncServer = <
       };
       return settleIn(
         room,
-        { actor: grant.actor, epoch: room.epoch, schema: room.schema },
+        { epoch: room.epoch, grant, schema: room.schema },
         { ...submit, digest: await digestOf(submit), type: 'submit' }
       );
     });

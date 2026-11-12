@@ -88,7 +88,7 @@ type Step = Readonly<{ below: LayerValue; tags: readonly FormatTag[] }>;
 const absent = (value: unknown): value is null | undefined =>
   value === null || value === undefined;
 
-const sameValue = (left: LayerValue, right: LayerValue) =>
+export const sameValue = (left: LayerValue, right: LayerValue) =>
   absent(left) ? absent(right) : !absent(right) && jsonEqual(left, right);
 
 const valueOf = (write: FormatWrite | undefined): LayerValue =>
