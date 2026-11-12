@@ -45,9 +45,11 @@ export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
  */
 export type BoardTool = 'arrow' | 'frame' | 'geo' | 'note' | 'pen' | 'select';
 
-/** The style the next shape a board view adds gets. */
+/**
+ * The style the next shape a board view adds gets. Its `fill` goes to both the
+ * next note and the next geo shape.
+ */
 export type BoardStyle = Readonly<{
-  color?: string;
   fill?: string;
   geo?: BoardGeo;
 }>;

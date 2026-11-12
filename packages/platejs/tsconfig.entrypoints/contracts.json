@@ -5,6 +5,9 @@
       "path": "./authored.json"
     },
     {
+      "path": "./board.json"
+    },
+    {
       "path": "./code-block-codemirror.json"
     },
     {

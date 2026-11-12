@@ -18,6 +18,7 @@ import {
   BoardNotePlugin,
   BoardPlugin,
   BoardShape,
+  BoardStrokePlugin,
   BoardSurface,
   useArrowPath,
 } from '../../../../packages/platejs/src/react/features/board';
@@ -612,6 +613,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
         BoardGeoPlugin,
         BoardArrowPlugin,
         BoardFramePlugin,
+        BoardStrokePlugin,
       ],
     }),
     BoardNotePlugin.configure({
@@ -621,6 +623,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     BoardGeoPlugin.configure({ component: ShapeComponent as never }),
     BoardArrowPlugin.configure({ component: ArrowShape as never }),
     BoardFramePlugin.configure({ component: FrameShape as never }),
+    BoardStrokePlugin.configure({ component: ShapeComponent as never }),
   ]);
 
   return {

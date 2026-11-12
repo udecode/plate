@@ -29,9 +29,12 @@ import {
 } from 'plitejs/authored';
 
 import {
+  BaseBoardArrowPlugin,
+  BaseBoardFramePlugin,
   BaseBoardGeoPlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
+  BaseBoardStrokePlugin,
 } from '../../../../packages/platejs/src/features/board';
 
 const SHAPE_TYPES = [
@@ -454,7 +457,7 @@ export const buildBoardFixture = (
       }
 
       return {
-        ...suggest('color', 'yellow', 'blue'),
+        ...suggest('fill', 'yellow', 'blue'),
         children: [
           { children: text(`Note ${index}`), level: 2, type: 'heading' },
           {
@@ -577,9 +580,8 @@ const mapRoots = (
 
 const BOARD_ORIGIN: BoardPoint = { x: 0, y: 0 };
 
-export const toShippedStorage = (fixture: BoardFixture): BoardFixture => ({
-  ...fixture,
-  value: mapRoots(fixture.value, (shapes) => {
+const toShippedValue = (value: BoardValue): BoardValue =>
+  mapRoots(value, (shapes) => {
     const origins = new Map(
       shapes.flatMap((shape) =>
         shape.type === 'boardFrame'
@@ -618,7 +620,11 @@ export const toShippedStorage = (fixture: BoardFixture): BoardFixture => ({
         },
       };
     });
-  }),
+  });
+
+export const toShippedStorage = (fixture: BoardFixture): BoardFixture => ({
+  ...fixture,
+  value: toShippedValue(fixture.value),
 });
 
 export const toStubLayout = (value: StoredValue): StoredValue =>
@@ -845,14 +851,11 @@ const shapeContent = (types: readonly string[]) =>
   });
 
 const boardProperties = {
-  color: schema.elementProperty(property.string(), {
-    target: target.types(['boardNote']),
-  }),
   end: schema.elementProperty(property.json(), {
     target: target.types(['boardArrow']),
   }),
   fill: schema.elementProperty(property.string(), {
-    target: target.types(['boardGeo']),
+    target: target.types(['boardGeo', 'boardNote']),
   }),
   frame: schema.elementProperty(property.string(), {
     target: target.types(['boardNote', 'boardGeo']),
@@ -995,39 +998,24 @@ export const stubBoardPlugins = (components: BoardComponents = {}) => [
   BoardPropertiesPlugin,
 ];
 
-export const boardShapeStubs = (components: BoardComponents = {}) => {
-  const { end, frame, name, start } = boardProperties;
-
-  return {
-    arrow: plateShape('boardArrow', components),
-    frame: plateShape('boardFrame', components),
-    properties: definePlatePlugin('boardStubProperties', {
-      schema: { properties: { end, frame, name, start } },
-    }),
-  };
-};
-
 export const NOTE_TARGETS = [BaseParagraphPlugin, BaseHeadingPlugin] as const;
 
-const shippedBoardPlugins = () => {
-  const stubs = boardShapeStubs();
-
-  return [
-    BaseBoardPlugin.configure({
-      targetPlugins: [
-        BaseBoardNotePlugin,
-        BaseBoardGeoPlugin,
-        stubs.arrow,
-        stubs.frame,
-      ],
-    }),
-    BaseBoardNotePlugin.configure({ targetPlugins: NOTE_TARGETS }),
-    BaseBoardGeoPlugin,
-    stubs.arrow,
-    stubs.frame,
-    stubs.properties,
-  ];
-};
+const shippedBoardPlugins = () => [
+  BaseBoardPlugin.configure({
+    targetPlugins: [
+      BaseBoardNotePlugin,
+      BaseBoardGeoPlugin,
+      BaseBoardArrowPlugin,
+      BaseBoardFramePlugin,
+      BaseBoardStrokePlugin,
+    ],
+  }),
+  BaseBoardNotePlugin.configure({ targetPlugins: NOTE_TARGETS }),
+  BaseBoardGeoPlugin,
+  BaseBoardArrowPlugin,
+  BaseBoardFramePlugin,
+  BaseBoardStrokePlugin,
+];
 
 export const plateBoardPlugins = (
   layer: 'plate' | 'composed',
@@ -1128,7 +1116,7 @@ const driverOf = (editor: BoardEditor): BoardDriver => {
   };
   const update = editor.update as (run: (tx: Tx) => void) => void;
   const stored = (): StoredValue =>
-    JSON.parse(JSON.stringify(editor.read.value()));
+    toStubLayout(JSON.parse(JSON.stringify(editor.read.value())));
 
   return {
     editor,
@@ -1153,7 +1141,9 @@ export const createBoardDriver = (
         plugins: [pliteSchema, authored({ authorId: 'board-scale' })],
       })
     : createPlateEditor({
-        initialValue: value as never,
+        initialValue: (layer === 'composed'
+          ? toShippedValue(value)
+          : value) as never,
         plugins: plateBoardPlugins(layer),
       })) as unknown as BoardEditor;
 

@@ -57,11 +57,17 @@ import {
 } from './boardFrame.internal';
 import {
   BOARD_ARROW_ATTRIBUTES,
+  BOARD_FRAME_ATTRIBUTES,
   BOARD_SHAPE_ATTRIBUTES,
+  BOARD_STROKE_ATTRIBUTES,
   decodeBoardArrowAttributes,
+  decodeBoardFrameAttributes,
   decodeBoardShapeAttributes,
+  decodeBoardStrokeAttributes,
   encodeBoardArrowAttributes,
+  encodeBoardFrameAttributes,
   encodeBoardShapeAttributes,
+  encodeBoardStrokeAttributes,
 } from './boardHtml.internal';
 import {
   type BoardFrameEntry,
@@ -269,19 +275,19 @@ export const BaseBoardPlugin = definePlugin('board', {
             const shape = decodeBoardShapeAttributes(element);
 
             if (!shape) return undefined;
-            preserve(...BOARD_SHAPE_ATTRIBUTES, 'data-board-color');
+            preserve(...BOARD_SHAPE_ATTRIBUTES, 'data-board-fill');
 
-            const color = element.getAttribute('data-board-color');
+            const fill = element.getAttribute('data-board-fill');
 
-            return { ...shape, ...(color === null ? {} : { color }) };
+            return { ...shape, ...(fill === null ? {} : { fill }) };
           },
           encode: ({ node, preserve }) => {
-            preserve('color', 'place', 'size', 'zIndex');
+            preserve('fill', 'place', 'size', 'zIndex');
 
             return {
               attributes: {
                 ...encodeBoardShapeAttributes(node),
-                'data-board-color': node.color,
+                'data-board-fill': node.fill,
                 'data-board': 'note',
               },
               tag: 'div',
@@ -915,6 +921,58 @@ export const BaseBoardPlugin = definePlugin('board', {
           };
         },
         match: [{ attributes: { 'data-board': 'arrow' }, tag: 'div' }],
+      },
+    }),
+  }))
+  .extend(({ defineFormats }) => ({
+    formats: defineFormats(BaseBoardFramePlugin, {
+      html: {
+        decode: ({ element, preserve }) => {
+          const frame = decodeBoardFrameAttributes(element);
+
+          if (!frame) return undefined;
+          preserve(...BOARD_FRAME_ATTRIBUTES);
+
+          return frame;
+        },
+        encode: ({ node, preserve }) => {
+          preserve('name', 'place', 'size', 'zIndex');
+
+          return {
+            attributes: {
+              ...encodeBoardFrameAttributes(node),
+              'data-board': 'frame',
+            },
+            tag: 'div',
+          };
+        },
+        match: [{ attributes: { 'data-board': 'frame' }, tag: 'div' }],
+      },
+    }),
+  }))
+  .extend(({ defineFormats }) => ({
+    formats: defineFormats(BaseBoardStrokePlugin, {
+      html: {
+        decode: ({ element, preserve }) => {
+          const stroke = decodeBoardStrokeAttributes(element);
+
+          if (!stroke) return undefined;
+          preserve(...BOARD_STROKE_ATTRIBUTES);
+
+          return stroke;
+        },
+        encode: ({ node, preserve }) => {
+          preserve('place', 'points', 'size', 'zIndex');
+
+          return {
+            attributes: {
+              ...encodeBoardStrokeAttributes(node),
+              'data-board': 'stroke',
+            },
+            tag: 'div',
+          };
+        },
+        match: [{ attributes: { 'data-board': 'stroke' }, tag: 'div' }],
       },
     }),
   }));

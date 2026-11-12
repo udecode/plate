@@ -1,11 +1,11 @@
 import { type BoardArrowEnd, isBoardArrowEnd } from './boardArrow.internal';
+import { isBoardFramePlace, isBoardShapePlace } from './boardFrame.internal';
 import {
-  type BoardPlace,
   type BoardSize,
-  isBoardPlace,
   isBoardSize,
   isStackingKey,
 } from './boardShape.internal';
+import { isBoardStrokePoints } from './boardStroke.internal';
 
 const readJson = (
   element: Readonly<HTMLElement>,
@@ -38,11 +38,12 @@ export const encodeBoardShapeAttributes = (
     typeof node.zIndex === 'string' ? node.zIndex : undefined,
 });
 
-export const decodeBoardShapeAttributes = (
-  element: Readonly<HTMLElement>
+const decodeBoxAttributes = <TPlace>(
+  element: Readonly<HTMLElement>,
+  isPlace: (value: unknown) => value is TPlace
 ):
   | Readonly<{
-      place: BoardPlace;
+      place: TPlace;
       shapeId?: string;
       size: BoardSize;
       zIndex: string;
@@ -53,12 +54,15 @@ export const decodeBoardShapeAttributes = (
   const zIndex = element.getAttribute('data-board-z-index');
   const shapeId = element.getAttribute('data-board-shape-id');
 
-  if (!isBoardPlace(place) || !isBoardSize(size) || !isStackingKey(zIndex)) {
+  if (!isPlace(place) || !isBoardSize(size) || !isStackingKey(zIndex)) {
     return undefined;
   }
 
   return { place, ...(shapeId ? { shapeId } : {}), size, zIndex };
 };
+
+export const decodeBoardShapeAttributes = (element: Readonly<HTMLElement>) =>
+  decodeBoxAttributes(element, isBoardShapePlace);
 
 export const BOARD_SHAPE_ATTRIBUTES = [
   'data-board-place',
@@ -116,4 +120,58 @@ export const BOARD_ARROW_ATTRIBUTES = [
   'data-board-shape-id',
   'data-board-start',
   'data-board-z-index',
+] as const;
+
+export const encodeBoardFrameAttributes = (
+  node: Readonly<{
+    name?: unknown;
+    place?: unknown;
+    shapeId?: unknown;
+    size?: unknown;
+    zIndex?: unknown;
+  }>
+) => ({
+  ...encodeBoardShapeAttributes(node),
+  'data-board-name': typeof node.name === 'string' ? node.name : undefined,
+});
+
+export const decodeBoardFrameAttributes = (element: Readonly<HTMLElement>) => {
+  const frame = decodeBoxAttributes(element, isBoardFramePlace);
+  const name = element.getAttribute('data-board-name');
+
+  if (!frame) return undefined;
+
+  return name === null ? frame : { ...frame, name };
+};
+
+export const BOARD_FRAME_ATTRIBUTES = [
+  ...BOARD_SHAPE_ATTRIBUTES,
+  'data-board-name',
+] as const;
+
+export const encodeBoardStrokeAttributes = (
+  node: Readonly<{
+    place?: unknown;
+    points?: unknown;
+    shapeId?: unknown;
+    size?: unknown;
+    zIndex?: unknown;
+  }>
+) => ({
+  ...encodeBoardShapeAttributes(node),
+  'data-board-points': JSON.stringify(node.points),
+});
+
+export const decodeBoardStrokeAttributes = (element: Readonly<HTMLElement>) => {
+  const shape = decodeBoardShapeAttributes(element);
+  const points = readJson(element, 'data-board-points');
+
+  if (!shape || !isBoardStrokePoints(points)) return undefined;
+
+  return { ...shape, points };
+};
+
+export const BOARD_STROKE_ATTRIBUTES = [
+  ...BOARD_SHAPE_ATTRIBUTES,
+  'data-board-points',
 ] as const;

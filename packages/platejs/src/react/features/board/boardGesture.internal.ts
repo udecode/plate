@@ -490,13 +490,13 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
           break;
         }
         case 'note': {
-          const { color } = nextStyle;
+          const { fill } = nextStyle;
 
           core.insertWith((tx) =>
             tx
               .plugin(BaseBoardNotePlugin)
               .insert(
-                { ...at, ...(color === undefined ? {} : { color }) },
+                { ...at, ...(fill === undefined ? {} : { fill }) },
                 { board: core.board }
               )
           );

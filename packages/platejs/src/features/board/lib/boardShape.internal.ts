@@ -354,7 +354,7 @@ export const defineBoardShape = <
   const TProperties extends SchemaElementProperties = {},
 >(
   name: TName,
-  { properties, size }: Readonly<{ properties?: TProperties; size: BoardSize }>
+  { properties, size }: Readonly<{ properties: TProperties; size: BoardSize }>
 ) =>
   definePlugin(name, {
     schema: ({ targetElementTypes }) => ({
@@ -365,7 +365,7 @@ export const defineBoardShape = <
           min: 1,
         }),
         object: true,
-        ...(properties ? { properties } : {}),
+        properties,
       },
     }),
     targetPlugins: [BaseParagraphPlugin, PLUGINS.heading],
