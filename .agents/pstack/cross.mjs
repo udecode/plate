@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { constants, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,11 +37,41 @@ const cleanups = new Set();
 const folders = new Set();
 export const STOP_GRACE_MS = 3000;
 export const GIVE_UP_MS = 3000;
+
+// A runtime starts some commands in a process group of their own, so each
+// process that inherited the seat's mark also counts as the seat's. macOS
+// hides the environment of its own signed binaries, such as sleep.
+const SEAT_MARK = 'PSTACK_SEAT';
+
+function markedProcesses(seat) {
+  const mark = `${SEAT_MARK}=${seat}`;
+  if (process.platform === 'linux') {
+    return readdirSync('/proc')
+      .filter((name) => /^\d+$/u.test(name))
+      .filter((pid) => {
+        try {
+          return readFileSync(`/proc/${pid}/environ`, 'utf8').split('\0').includes(mark);
+        } catch {
+          return false;
+        }
+      })
+      .map(Number);
+  }
+  const listing = spawnSync('ps', ['-axEww', '-o', 'pid=,command='], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).stdout ?? '';
+  return listing
+    .split('\n')
+    .filter((line) => line.split(' ').includes(mark))
+    .map((line) => Number.parseInt(line, 10));
+}
 let stopsOnSignals = false;
 let stopping = false;
 const removeFolder = (folder) => {
   rmSync(folder, { recursive: true, force: true });
   folders.delete(folder);
+};
+const waitGone = async (seats) => {
+  const deadline = Date.now() + STOP_GRACE_MS;
+  while (seats.some((signalSeat) => signalSeat(0)) && Date.now() < deadline) await new Promise((wake) => setTimeout(wake, 100));
 };
 const stopOnSignals = () => {
   if (stopsOnSignals) return;
@@ -50,12 +80,11 @@ const stopOnSignals = () => {
     process.on(signal, async () => {
       if (stopping) return;
       stopping = true;
-      const groups = [...running];
-      for (const signalGroup of groups) signalGroup('SIGTERM');
+      const seats = [...running];
+      for (const signalSeat of seats) signalSeat('SIGTERM');
       await Promise.allSettled([...cleanups].map(async (cleanup) => cleanup()));
-      const deadline = Date.now() + STOP_GRACE_MS;
-      while (groups.some((signalGroup) => signalGroup(0)) && Date.now() < deadline) await new Promise((wake) => setTimeout(wake, 100));
-      for (const signalGroup of groups) signalGroup('SIGKILL');
+      await waitGone(seats);
+      for (const signalSeat of seats) signalSeat('SIGKILL');
       for (const folder of folders) removeFolder(folder);
       process.exit(128 + constants.signals[signal]);
     });
@@ -114,6 +143,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   // A Codex Desktop parent exports its permission profile, which outranks --sandbox in a run that loads the user's config.
   const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, PSTACK_READ_ONLY: ___, ...env } = process.env;
   if (!bypass) env.PSTACK_READ_ONLY = '1';
+  env[SEAT_MARK] = sessionId;
   return new Promise((resolve) => {
     let settled = false;
     let late = false;
@@ -121,28 +151,30 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     const done = (answer) => {
       if (settled || stopping) return;
       settled = true;
-      running.delete(signalGroup);
+      running.delete(signalSeat);
       for (const timer of timers) clearTimeout(timer);
       removeFolder(answerDir);
       if (reach) removeFolder(runCwd);
       resolve(answer);
     };
     const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
-    const signalGroup = (signal) => {
-      try {
-        process.kill(-child.pid, signal);
-        return true;
-      } catch {
-        return false;
+    const signalSeat = (signal) => {
+      let alive = false;
+      for (const pid of [-child.pid, ...markedProcesses(sessionId)]) {
+        try {
+          process.kill(pid, signal);
+          alive = true;
+        } catch {}
       }
+      return alive;
     };
-    running.add(signalGroup);
+    running.add(signalSeat);
     timers.push(
       setTimeout(() => {
         late = child.exitCode === null && child.signalCode === null;
-        signalGroup('SIGTERM');
+        signalSeat('SIGTERM');
       }, timeout * 1000),
-      setTimeout(() => signalGroup('SIGKILL'), timeout * 1000 + 2000),
+      setTimeout(() => signalSeat('SIGKILL'), timeout * 1000 + 2000),
       setTimeout(() => done({ runtime, ok: false, text: `no answer within ${timeout} seconds` }), timeout * 1000 + GIVE_UP_MS),
     );
     let stdout = '';
@@ -150,7 +182,11 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     child.stdout.on('data', (chunk) => (stdout += chunk));
     child.stderr.on('data', (chunk) => (stderr += chunk));
     child.on('error', (error) => done({ runtime, ok: false, text: error.message }));
-    child.on('close', (code, signal) => {
+    child.on('close', async (code, signal) => {
+      if (signalSeat('SIGTERM')) {
+        await waitGone([signalSeat]);
+        signalSeat('SIGKILL');
+      }
       try {
         if (computerUse) writeFileSync(computerUse.events, stdout);
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
