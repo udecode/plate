@@ -63,7 +63,10 @@
       "tooling/scripts/review-ledger.mjs",
       "ship"
     ],
-    "scopes": "docs/research/review-scopes"
+    "scopes": "docs/research/review-scopes",
+    "deferred": [
+      "collaboration"
+    ]
   },
   "team": {
     "felixfeng33": {
