@@ -56,8 +56,11 @@ const RESULT_ENV =
  *   `filesOnly` check reads the working files and neither HEAD nor the
  *   index, so a commit that changes no file keeps its pass. A run of only
  *   `tests` is a check of its own, so it never covers the whole command.
- * @typedef {{ kind: 'exact' | 'pass' | 'merge-base', files: string[], retargeted: string[], label: string }} Base
+ * @typedef {{ kind: 'exact' | 'pass' | 'merge-base', files: string[], retargeted: string[], versions?: (file: string) => [string | null, string | null][] | null, label: string }} Base
  *   Evidence that a check passed: the files changed since, and where it passed.
+ *   `versions` gives a file of the public half that changed in place its text
+ *   before and after each change since, null for a side that does not hold
+ *   it, and gives null for any other file.
  */
 
 /** Whether this run ignores recorded passes and records none. */
@@ -71,20 +74,24 @@ const lines = (text) => text.trim().split('\n');
 const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const SYMLINK = '120000';
 
-const RAW_DIFF = /^:(?<oldMode>\d+) (?<newMode>\d+) \S+ \S+ (?<status>[A-Z])/u;
+const RAW_DIFF =
+  /^:(?<oldMode>\d+) (?<newMode>\d+) (?<oldBlob>\S+) (?<newBlob>\S+) (?<status>[A-Z])/u;
 const retargets = ({ newMode, oldMode, status }) =>
   status !== 'M' || [oldMode, newMode].includes(SYMLINK);
 const rawChanges = (text) => {
   const fields = entries(text);
   const changes = [];
   for (let at = 0; at < fields.length; at += 2) {
+    const { groups } = RAW_DIFF.exec(fields[at]);
     changes.push({
+      blobs: [groups.oldBlob, groups.newBlob],
       file: fields[at + 1],
-      retargeted: retargets(RAW_DIFF.exec(fields[at]).groups),
+      retargeted: retargets(groups),
     });
   }
   return changes;
 };
+const ABSENT = /^0+$/u;
 
 // Both halves read the checkout's own .gitprivate, so each file lands in
 // exactly one of them even where the clone's config names another copy.
@@ -531,6 +538,7 @@ export function openCache(root, { fresh = false } = {}) {
     }
     const files = new Set();
     const retargeted = new Set();
+    const blobs = new Map();
     for (const side of filesOnly ? ['work'] : ['work', 'head']) {
       for (const half of ['public', 'private']) {
         const [a, b] = [from[side][half], to[side][half]];
@@ -539,6 +547,12 @@ export function openCache(root, { fresh = false } = {}) {
         if (changed === null) return null;
         for (const change of changed) {
           files.add(change.file);
+          blobs.set(
+            change.file,
+            half === 'public' && blobs.get(change.file) !== null
+              ? [...(blobs.get(change.file) ?? []), change.blobs]
+              : null
+          );
           if (side === 'work' && change.retargeted) {
             retargeted.add(change.file);
           }
@@ -550,13 +564,27 @@ export function openCache(root, { fresh = false } = {}) {
         const indexed = new Set(from.index[half]).symmetricDifference(
           new Set(to.index[half])
         );
-        for (const entry of indexed) files.add(entry.slice(1));
+        for (const entry of indexed) {
+          files.add(entry.slice(1));
+          blobs.set(entry.slice(1), null);
+        }
       }
     }
     return {
       files: [...files].sort(byCodeUnit),
       retargeted: [...retargeted].sort(byCodeUnit),
+      versions: (file) =>
+        blobs.get(file)?.map((pair) => pair.map(blobText)) ?? null,
     };
+  };
+  const blobTexts = new Map();
+  const blobText = (blob) => {
+    if (ABSENT.test(blob)) return null;
+    if (!blobTexts.has(blob)) {
+      const result = gitIn(root, 'public')(['cat-file', 'blob', blob]);
+      blobTexts.set(blob, result.status === 0 ? result.stdout : null);
+    }
+    return blobTexts.get(blob);
   };
   const flush = () => {
     const notRecorded = () =>

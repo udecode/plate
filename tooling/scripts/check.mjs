@@ -147,12 +147,82 @@ const GLOBAL_PATHS = [
   'bunfig.toml',
   'config/',
   'package.json',
-  'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'tooling/config/',
   'tsconfig.json',
   'turbo.json',
 ];
+
+// pnpm-lock.yaml lists each workspace package's dependencies under
+// `importers:` and the packages they resolve to under `packages:` and
+// `snapshots:`. A change that edits only importers, and adds or drops whole
+// resolved packages, reaches only those importers' manifests; any other
+// change can reach every step.
+const LOCKFILE = 'pnpm-lock.yaml';
+const RESOLVED = new Set(['packages', 'snapshots']);
+const LOCKFILE_KEY = /^ *("[^"]*"|'(?:[^']|'')*'|[^\s"':][^:]*?):(?: |$)/u;
+/** Each top-level key's entries, keyed by name, or null on a line it cannot read. */
+const lockfileSections = (text) => {
+  const sections = new Map();
+  let entries = null;
+  let entry = '';
+  for (const line of text.split('\n')) {
+    const top = /^\S/u.test(line);
+    if (top || (entries && /^ {2}\S/u.test(line))) {
+      const key = LOCKFILE_KEY.exec(line);
+      if (!key) return null;
+      const value = line.slice(key[0].length);
+      entry = top ? '' : key[1];
+      if (top) {
+        entries = new Map();
+        sections.set(key[1], entries);
+      }
+      entries.set(entry, value ? `${value}\n` : '');
+    } else if (entries && line.trim()) {
+      entries.set(entry, `${entries.get(entry)}${line}\n`);
+    }
+  }
+  return sections;
+};
+const lockfileChange = (before, after) => {
+  const [was, now] = [lockfileSections(before), lockfileSections(after)];
+  if (!was || !now) return null;
+  const manifests = [];
+  for (const name of new Set([...was.keys(), ...now.keys()])) {
+    const [a, b] = [was.get(name), now.get(name)];
+    if (!a || !b) return null;
+    for (const key of new Set([...a.keys(), ...b.keys()])) {
+      if (a.get(key) === b.get(key)) continue;
+      if (name === 'importers' && key) {
+        const dir = key.replace(/^'(.*)'$/u, '$1');
+        manifests.push(dir === '.' ? 'package.json' : `${dir}/package.json`);
+      } else if (!RESOLVED.has(name) || !key || a.has(key) === b.has(key)) {
+        return null;
+      }
+    }
+  }
+  return manifests;
+};
+const lockfileChanges = new Map();
+/** The manifests that lockfile changes reach, or null for every step. */
+const lockfileReach = (pairs) => {
+  if (!pairs?.length) return null;
+  const manifests = new Set();
+  for (const [before, after] of pairs) {
+    if (before === null || after === null) return null;
+    let change = lockfileChanges.get(before)?.get(after);
+    if (change === undefined) {
+      change = lockfileChange(before, after);
+      lockfileChanges.set(
+        before,
+        (lockfileChanges.get(before) ?? new Map()).set(after, change)
+      );
+    }
+    if (change === null) return null;
+    for (const manifest of change) manifests.add(manifest);
+  }
+  return [...manifests];
+};
 
 // ci-workflow.test.mjs lists tooling/scripts to find check scripts that no
 // step runs, so it reaches each one without naming it.
@@ -174,10 +244,13 @@ const packageDiff = () =>
 // steps at 4 fan out to many workers themselves. Two steps that name the
 // same folder in `holds` never overlap, because one of them writes it. An
 // `alone` step runs after every other step, one at a time, for the reason its
-// value gives.
+// value gives. Under --affected, the `quick` steps run first and the rest
+// start only once every one of them passes, and no step starts after one
+// fails, so a type or lint error fails a landing before any slow step starts.
 export const steps = [
   {
     name: 'lint',
+    quick: true,
     run: 'pnpm lint',
     fix: 'pnpm lint:fix',
     affected: formatted,
@@ -194,6 +267,7 @@ export const steps = [
   },
   {
     name: 'lint-baseline',
+    quick: true,
     run: 'node tooling/oxlint/plate-baseline.mjs --check',
     fix: 'pnpm lint:baseline',
     affected: source,
@@ -201,6 +275,7 @@ export const steps = [
   },
   {
     name: 'typecheck',
+    quick: true,
     cores: 3,
     holds: ['packages/cli/tmp-*'],
     run: 'pnpm typecheck && node tooling/scripts/check-source-declaration-leaks.mjs',
@@ -212,6 +287,7 @@ export const steps = [
     // tsc reads the route types in the ignored apps/plite/.next/types, so the
     // step writes them from the app's source first.
     name: 'plite-app-typecheck',
+    quick: true,
     holds: ['apps/plite/.next'],
     run: 'pnpm --filter plite exec next typegen && pnpm --filter plite typecheck',
     affected: source,
@@ -220,6 +296,7 @@ export const steps = [
   },
   {
     name: 'plite-device-typecheck',
+    quick: true,
     private: true,
     run: 'pnpm --filter plite typecheck:device',
     affected: source,
@@ -228,6 +305,7 @@ export const steps = [
   },
   {
     name: 'type-tests',
+    quick: true,
     private: true,
     run: 'pnpm test:types',
     affected: source,
@@ -806,10 +884,14 @@ const expand = (command, seen = new Set()) => {
  *   `files` needs from a step: nothing, its whole run, or the files to run
  *   it on
  */
-const needs = (files, retargeted) => {
-  const everything = files.some((file) =>
-    GLOBAL_PATHS.some((path) => matches(path, file))
-  );
+const needs = (files, retargeted, versions) => {
+  const manifests = files.includes(LOCKFILE)
+    ? lockfileReach(versions?.(LOCKFILE))
+    : [];
+  const reached = [...files, ...(manifests ?? [])];
+  const everything =
+    manifests === null ||
+    reached.some((file) => GLOBAL_PATHS.some((path) => matches(path, file)));
   let called;
   const calls = (step) => {
     called ??= new Set(
@@ -827,7 +909,7 @@ const needs = (files, retargeted) => {
     if (!step.affected) return true;
     if (files.length === 0 || step.affected === never) return null;
     if (everything || calls(step)) return true;
-    const hit = step.affected(files, retargeted);
+    const hit = step.affected(reached, retargeted);
     if (!Array.isArray(hit)) return hit ? true : null;
     return hit.length > 0 ? hit : null;
   };
@@ -845,7 +927,7 @@ const planStep = (step, bases) => {
   const fewest = bases.toSorted((a, b) => a.files.length - b.files.length);
   for (const base of fewest) {
     if (base.kind === 'exact') return { cover: base };
-    const needed = needs(base.files, base.retargeted)(step);
+    const needed = needs(base.files, base.retargeted, base.versions)(step);
     if (needed === null) return { cover: base };
     if (
       Array.isArray(needed) &&
@@ -857,9 +939,13 @@ const planStep = (step, bases) => {
   return { need };
 };
 
-/** Each default step with the command a change to `files` needs, or null. */
-export const planAffected = (files, retargeted = []) => {
-  const need = needs(files, retargeted);
+/**
+ * Each default step with the command a change to `files` needs, or null.
+ * `versions` gives a changed file's text before and after, as a cache base
+ * does.
+ */
+export const planAffected = (files, retargeted = [], versions = () => null) => {
+  const need = needs(files, retargeted, versions);
   return steps
     .filter((step) => !step.optIn)
     .map((step) => {
@@ -1094,6 +1180,7 @@ const main = async () => {
   for (const signal of signals) process.on(signal, stop);
   const recordsPasses = selected.some(({ scope }) => scope.key);
   if (recordsPasses) cache.watch();
+  let firstFailure = null;
   const start = async ({ command, scope, step }) => {
     console.info(`[check] ${step.name} started`);
     const log = join(logs, `${step.name}.log`);
@@ -1111,6 +1198,8 @@ const main = async () => {
     // after one never counts as passed.
     if (result.status === 0 && !interrupted) {
       cache.record(scope, result.seconds, reason);
+    } else if (!interrupted) {
+      firstFailure ??= step.name;
     }
     if (group) console.info(`::group::${step.name}`);
     console.info(`${group ? '' : '\n'}[check] ${step.name}: ${command}`);
@@ -1124,7 +1213,8 @@ const main = async () => {
     console.info(`[check] ${step.name} ${state} in ${result.seconds}s`);
     if (group) console.info('::endgroup::');
   };
-  const stopped = () => interrupted !== 0;
+  const stopped = () =>
+    interrupted !== 0 || (affected && firstFailure !== null);
   try {
     if (writing) {
       for (const entry of selected) {
@@ -1132,7 +1222,16 @@ const main = async () => {
         await start(entry);
       }
     } else {
-      await schedule(selected, budget, start, stopped);
+      const tiers = affected
+        ? [
+            selected.filter(({ step }) => step.quick),
+            selected.filter(({ step }) => !step.quick),
+          ]
+        : [selected];
+      for (const tier of tiers) {
+        if (stopped()) break;
+        await schedule(tier, budget, start, stopped);
+      }
     }
   } finally {
     for (const signal of signals) process.removeListener(signal, stop);
@@ -1146,6 +1245,12 @@ const main = async () => {
   console.info('\n[check] summary');
   let failed = 0;
   for (const { step } of selected) {
+    if (!results.has(step.name)) {
+      console.info(
+        `  ${step.name.padEnd(20)}     -  not started: ${firstFailure} failed first`
+      );
+      continue;
+    }
     const { seconds, status } = results.get(step.name);
     const fix = writing ? null : step.write ? 'pnpm generate' : step.fix;
     if (status !== 0) failed += 1;
@@ -1158,7 +1263,10 @@ const main = async () => {
     );
   }
   if (failed > 0) {
-    console.error(`[check] ${failed} of ${selected.length} steps failed.`);
+    const unstarted = selected.length - results.size;
+    console.error(
+      `[check] ${failed} of ${selected.length} steps failed${unstarted > 0 ? `, and ${unstarted} did not start` : ''}.`
+    );
     return 1;
   }
   const covered = chosen.length - selected.length;
