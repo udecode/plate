@@ -4,6 +4,7 @@ import type {
   Editor,
   EditorStateView,
   TransactionSpec,
+  Value,
 } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 import { getDefined } from '../internal/get-defined';
@@ -37,6 +38,24 @@ export type PastePlan = Readonly<{
   slice: ContentSlice | null;
 }>;
 
+export const readSliceLanding = <V extends Value>(
+  editor: Editor<V>,
+  input: SliceLandingInput
+): SliceLanding => {
+  const { root } = input.target;
+
+  return executeEditorRead(
+    editor,
+    editorReads.slice.landing,
+    input,
+    ({ slice }): SliceLanding => ({ slice }),
+    root === editor.read.view.root()
+      ? editor
+      : () =>
+          createEditorViewRuntime(editor, root === undefined ? {} : { root })
+  );
+};
+
 export const planPaste = (
   editor: Editor,
   state: EditorStateView,
@@ -68,19 +87,12 @@ export const planPaste = (
   }
 
   const { target } = site;
-  const landed = executeEditorRead(
-    editor,
-    editorReads.slice.landing,
-    { intent, slice: limited, source: input.slice, target },
-    ({ slice }): SliceLanding => ({ slice }),
-    target.root === editor.read.view.root()
-      ? editor
-      : () =>
-          createEditorViewRuntime(
-            editor,
-            target.root === undefined ? {} : { root: target.root }
-          )
-  );
+  const landed = readSliceLanding(editor, {
+    intent,
+    slice: limited,
+    source: input.slice,
+    target,
+  });
   const { replaceEmpty } = landed;
   const landingSource = dissolve(landed.slice);
   const slice = limitSliceToLength(landingSource, site.remainingLength);

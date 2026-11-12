@@ -122,10 +122,6 @@ export const registerReadInRegistry = <TEditor extends BaseEditor<any, any>>(
   };
 };
 
-/**
- * A function `stateSource` runs only when the read has handlers, so a read
- * without handlers runs its default on the owner's state.
- */
 export const executeEditorRead = <
   TRead extends EditorReadDescriptor<any, any, any>,
 >(
@@ -133,24 +129,24 @@ export const executeEditorRead = <
   read: TRead,
   input: EditorReadInput<TRead>,
   applyDefault: (input: EditorReadInput<TRead>) => EditorReadResult<TRead>,
-  stateSource?: BaseEditor<any, any> | (() => BaseEditor<any, any>)
+  handlerView?: BaseEditor<any, any> | (() => BaseEditor<any, any>)
 ): EditorReadResult<TRead> => {
   const owner = getEditorRuntimeOwner(editor as Editor);
   const entries =
     getPluginRegistry(owner).reads.byDescriptor.get(read)?.entries ?? [];
-  const source =
-    typeof stateSource === 'function'
+  const view =
+    typeof handlerView === 'function'
       ? entries.length > 0
-        ? stateSource()
+        ? handlerView()
         : undefined
-      : stateSource;
+      : handlerView;
   const runInRead = <T>(fn: () => T): T => {
     const exitRead = enterEditorRead(owner);
 
     try {
-      return source
+      return view
         ? withTransactionSpecDraftRead(owner, () =>
-            source.read((state) => fnWithState(fn, state))
+            view.read((state) => fnWithState(fn, state))
           )
         : fnWithState(fn, getEditorStateView(owner));
     } finally {
@@ -231,7 +227,7 @@ export const executeEditorRead = <
       );
     };
     return registration.run({
-      editor,
+      editor: view ?? editor,
       input: currentInput,
       next,
       state: activeState,

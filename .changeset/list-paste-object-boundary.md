@@ -11,3 +11,5 @@ Leave void and read-only element text out of `text.string` over a node selection
 Join pasted text with its neighbors in a named root that declares no content rules, as in the main document.
 
 Add `editorReads.slice.landing` with its `SliceLanding`, `SliceLandingInput` and `SliceLandingTarget` types. After paste handlers delegate, a plugin can shape the slice a paste lands, reading the root the paste lands in, and propose whole blocks for an empty target block; the editor checks that proposal against the schema and `maxLength`. Keep command handling in editor views.
+
+Run `editorReads.slice.export` and then `editorReads.slice.landing` on the blocks `tx.blocks.duplicate` copies, as a paste does, so a middleware that cleans copied content cleans duplicates too. The landing read gets intent `copy` and a `beside` target, which names no `block`, so a landing middleware checks `target.kind` before it reads `target.block`.

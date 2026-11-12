@@ -3,12 +3,12 @@ import type { Element } from '../interfaces/element';
 import type { NodeEntry } from '../interfaces/node';
 
 /**
- * Where a paste lands, after the caret is placed. `empty` is a collapsed caret
- * in an empty block that a whole-block paste may replace. `context` holds the
- * lowest block at the target's start, the first selected block's start for a
- * paste that replaces selected blocks whole, or `null` when no block is found
- * there. `root` is the named root the paste lands in, absent for the main
- * document.
+ * Where a paste or a block duplicate lands. `empty` is a collapsed caret in an
+ * empty block that a whole-block paste may replace. `context` holds the lowest
+ * block at a paste's start, the first selected block's start for a paste that
+ * replaces selected blocks whole, or `null` when no block is found there.
+ * `beside` is a block duplicate. `root` is the named root the slice lands in,
+ * absent for the main document.
  */
 export type SliceLandingTarget =
   | Readonly<{ block: NodeEntry<Element>; kind: 'empty'; root?: string }>
@@ -16,13 +16,21 @@ export type SliceLandingTarget =
       block: NodeEntry<Element> | null;
       kind: 'context';
       root?: string;
-    }>;
+    }>
+  /**
+   * The slice holds closed copies of whole blocks, which land as the next
+   * siblings of the last block copied, in `root`. `source` is the whole copy
+   * and `slice` what survives the length limit, as for a paste. No target
+   * block is fitted, so a middleware refreshes only what a copy must not share
+   * with its source.
+   */
+  | Readonly<{ kind: 'beside'; root?: string }>;
 
 export type SliceLandingInput = Readonly<{
   /**
-   * `copy` for a paste, a node-selection replace and a copied text drop;
-   * `move` for a text drag that moves, where only properties declared
-   * `landing: 'rebase'` or `'adopt'` may change.
+   * `copy` for a paste, a node-selection replace, a copied text drop and a
+   * block duplicate; `move` for a text drag that moves, where only properties
+   * declared `landing: 'rebase'` or `'adopt'` may change.
    */
   intent: 'copy' | 'move';
   /** The command's slice as handlers left it, before the length limit. */

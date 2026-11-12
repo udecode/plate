@@ -408,6 +408,35 @@ const withShapeRoots = (
 export const withFreshRootShapeIds = (slice: ContentSlice, isShape: IsShape) =>
   withShapeRoots(slice, isShape, withFreshShapeIds);
 
+const looseSlots = (
+  source: readonly Descendant[] | undefined,
+  shapes: readonly Element[]
+) =>
+  source && source.length !== shapes.length
+    ? relinked(shapes, (link) =>
+        slotIndexOf(link) === undefined ? link : undefined
+      )
+    : undefined;
+
+export const withCutSlotsLoose = (
+  source: ContentSlice,
+  slice: ContentSlice,
+  isShape: IsShape
+): ContentSlice => {
+  const content =
+    slice.content.length > 0 && slice.content.every(isShape)
+      ? looseSlots(source.content, slice.content)
+      : undefined;
+
+  return withShapeRoots(
+    content
+      ? ContentSlice.withContent(slice, content, { open: 'preserve' })
+      : slice,
+    isShape,
+    (shapes, root) => looseSlots(source.roots?.[root], shapes)
+  );
+};
+
 export const withCarriedRootSlots = (
   slice: ContentSlice,
   isShape: IsShape,

@@ -409,6 +409,7 @@ import {
   valueSite,
 } from './set-root';
 import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
+import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
@@ -4686,14 +4687,16 @@ type SliceFitPlace =
       root: string;
     }>;
 
+type PasteLandingTarget = Exclude<SliceLandingTarget, { kind: 'beside' }>;
+
 let readSliceFitPlace: (site: SliceFitSite) => SliceFitPlace;
 
 class SliceFitSite {
   readonly #place: SliceFitPlace;
   readonly remainingLength: number | undefined;
-  readonly target: SliceLandingTarget;
+  readonly target: PasteLandingTarget;
 
-  constructor(place: SliceFitPlace, target: SliceLandingTarget) {
+  constructor(place: SliceFitPlace, target: PasteLandingTarget) {
     this.#place = place;
     this.remainingLength = place.remainingLength;
     this.target = target;
@@ -4911,7 +4914,7 @@ const getSliceFitTarget = (
   state: EditorStateView,
   place: SliceFitPlace,
   requested: Location | undefined
-): SliceLandingTarget => {
+): PasteLandingTarget => {
   const publicRoot = toPublicRoot(place.root ?? MAIN_ROOT_KEY);
   const root = publicRoot === undefined ? {} : { root: publicRoot };
 
@@ -7850,14 +7853,37 @@ export const getUpdateView = <
     for (const [name, children] of Object.entries(roots)) {
       roots[name] = schema.copyChildren(children, name);
     }
-    const slice = remapContentSliceRoots(
+    const scope = root === MAIN_ROOT_KEY ? {} : { root };
+    const copy = projectEditorExportSlice(
       editor,
       ContentSlice.fromJSON({
         content: source,
         openEnd: 0,
         openStart: 0,
         ...(Object.keys(roots).length > 0 ? { roots } : {}),
-      })
+      }),
+      {
+        at: SelectionApi.nodes(
+          entries.map(([, path]) => path) as [Path, ...Path[]],
+          { mode: 'block', ...scope }
+        ),
+      }
+    );
+    const limited = limitSliceToLength(
+      copy,
+      getInsertRemainingLength(getStateView(editor), { at: insertPath })
+    );
+
+    if (limited.content.length === 0) return;
+    const landed = readSliceLanding(editor, {
+      intent: 'copy',
+      slice: limited,
+      source: copy,
+      target: { kind: 'beside', ...scope },
+    });
+    const slice = remapContentSliceRoots(
+      editor,
+      ContentSlice.fromJSON<V>(landed.slice)
     );
 
     const parentPath = PathApi.parent(insertPath);
@@ -7872,11 +7898,26 @@ export const getUpdateView = <
 
     if (!content.every((node) => node !== null)) return;
 
-    txRecord.nodes.insert(content as Array<ElementOrTextIn<V>>, {
-      ...options,
-      at: insertPath,
+    const insertOptions = { ...options, at: insertPath };
+
+    if (!slice.roots && !namesContentRoot(editor, slice.content)) {
+      txRecord.nodes.insert(
+        content as Array<ElementOrTextIn<V>>,
+        insertOptions
+      );
+      return;
+    }
+    const spec = createCheckedSliceSpec(editor, (transaction) => {
+      transaction.nodes.insert(
+        content as Array<ElementOrTextIn<V>>,
+        insertOptions
+      );
+      materializeContentSliceRoots(editor, slice);
+
+      return true;
     });
-    materializeContentSliceRoots(editor, slice);
+
+    if (spec) applyTransactionSpec(editor, spec);
   };
   const duplicateBlocks = ((
     inputOptions: BlockDuplicateOptions & {

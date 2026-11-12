@@ -7,7 +7,10 @@ import {
   type SliceLanding,
   type SliceLandingInput,
 } from '../../../core';
-import { landListContent } from './listIdentity.internal';
+import {
+  landListContent,
+  withFreshContainedLists,
+} from './listIdentity.internal';
 import { isListItem, LIST_FIELDS } from './listIndex.internal';
 
 const peelOpenWrappers = (slice: ContentSlice) => {
@@ -63,6 +66,17 @@ export const landListPaste = (
   }: Readonly<{ headingType: string | undefined; paragraphType: string }>
 ): SliceLanding => {
   const { slice } = landed;
+
+  if (target.kind === 'beside') {
+    const content = withFreshContainedLists(slice.content);
+
+    return content === slice.content
+      ? landed
+      : {
+          slice: ContentSlice.withContent(slice, content, { open: 'preserve' }),
+        };
+  }
+
   const { content: blocks, wrappers } = peelOpenWrappers(slice);
   const placement = intent === 'move' ? 'move' : 'paste';
   const kept = landListContent(

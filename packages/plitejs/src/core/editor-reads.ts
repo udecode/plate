@@ -76,9 +76,11 @@ export const editorReads = Object.freeze({
   }),
   slice: Object.freeze({
     /**
-     * Shape what a paste lands after command handlers delegate, from the target
-     * the editor resolved; the default lands `slice` unchanged. Reads the
-     * current command draft; raw transaction replacement and fitting bypass it.
+     * Shape what a paste or a block duplicate lands, from the target the editor
+     * resolved; the default lands `slice` unchanged. A paste runs this read
+     * after command handlers delegate, and a duplicate after `slice.export`,
+     * with intent `copy` and a `beside` target. Reads the current command
+     * draft; raw transaction replacement and fitting bypass it.
      */
     landing: defineRead<SliceLandingInput, SliceLanding>('slice.landing'),
     export: defineRead<

@@ -233,6 +233,13 @@ export type BlockInsertOptions<
 ) & { select?: boolean; voids?: boolean };
 
 export type EditorTransactionBlocksApi<V extends Value = Value> = {
+  /**
+   * Copy the target blocks, with the roots they own, and insert the copies
+   * after the last of them. The copies pass through the `slice.export` read
+   * over a block node selection of the blocks, then the `slice.landing` read
+   * with intent `copy` and a `beside` target, so plugins shape what lands.
+   * Changes nothing when a copy is not allowed at its place.
+   */
   duplicate: {
     <const TType extends NodeTypeSelector>(
       options: Omit<

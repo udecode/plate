@@ -45,6 +45,7 @@ import {
   placeShapeCopies,
   shapeIdOf,
   withCarriedRootSlots,
+  withCutSlotsLoose,
   withFreshRootShapeIds,
   withSourcePaintOrder,
 } from './boardCopy.internal';
@@ -550,12 +551,13 @@ export const BaseBoardPlugin = definePlugin('board', {
         around(editorReads.slice.landing, ({ input, next, state }) => {
           const landed = next();
           const { root } = input.target;
-          const shapes = shapesOf(landed.slice);
+          const kept = withCutSlotsLoose(input.source, landed.slice, isShape);
+          const shapes = shapesOf(kept);
           const members = boardMembersOf(state, properties);
-          const slice =
+          const slice = withFreshRootShapeIds(
             root !== undefined && shapes
               ? ContentSlice.withContent(
-                  landed.slice,
+                  kept,
                   placeShapeCopies(
                     shapes,
                     members.membersIn(root),
@@ -563,7 +565,9 @@ export const BaseBoardPlugin = definePlugin('board', {
                   ),
                   { open: 'preserve' }
                 )
-              : withFreshRootShapeIds(landed.slice, isShape);
+              : kept,
+            isShape
+          );
 
           return {
             ...landed,

@@ -449,6 +449,40 @@ export const landListContent = <N extends Descendant>(
   );
 };
 
+export const withFreshContainedLists = <N extends Descendant>(
+  content: readonly N[]
+): readonly N[] => {
+  const topLevelListIds = new Set(
+    content.flatMap((node) =>
+      ElementApi.isElement(node) && isListItem(node)
+        ? [listIdOf(node) ?? '']
+        : []
+    )
+  );
+  const fresh = new Map<string, string>();
+  let changed = false;
+  const visit = (node: Element, top = false): Element => {
+    const children = node.children.map((child) =>
+      ElementApi.isElement(child) ? visit(child) : child
+    );
+    const source = listIdOf(node) ?? '';
+    if (top || !isListItem(node) || topLevelListIds.has(source)) {
+      return { ...node, children };
+    }
+    let listId = fresh.get(source);
+    if (!listId) {
+      listId = createListId();
+      fresh.set(source, listId);
+    }
+    changed = true;
+    return { ...node, children, listId };
+  };
+  const landed = content.map((node) =>
+    ElementApi.isElement(node) ? (visit(node, true) as unknown as N) : node
+  );
+  return changed ? landed : content;
+};
+
 export const adoptMetrics = { visited: 0 };
 
 type CopiedItem = Readonly<{ node: Element; path: Path }>;
