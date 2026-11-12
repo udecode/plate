@@ -1016,8 +1016,11 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
 }
 
 const failsOnBase = (task) => task.owns.length > 0;
-const ownPriority = (task) => (failsOnBase(task) ? 'P0' : task.priority);
-export const priorityOf = (task) => higher(ownPriority(task), task.blockingPriority);
+const ownPriority = (task) => (failsOnBase(task) ? (lateTier(task) ? (task.priority ?? 'P1') : 'P0') : task.priority);
+export const priorityOf = (task) => {
+  const priority = higher(ownPriority(task), task.blockingPriority);
+  return priority === 'P0' && lateTier(task) ? 'P1' : priority;
+};
 
 const cardDrift = (task) => (task.cardEffort && task.cardEffort !== levelOf(task) ? `it was offered at ${task.cardEffort} and the task is at ${levelOf(task)} now` : null);
 
@@ -1107,15 +1110,28 @@ const configuredTiers = () => {
   const listed = projectConfig().chips?.tiers;
   return Array.isArray(listed) ? listed : null;
 };
-const matchers = (tier) => (tier.paths?.length ?? 0) + (tier.scopes?.length ?? 0);
+const matchers = (tier) => (tier.paths?.length ?? 0) + (tier.scopes?.length ?? 0) + (tier.checks?.length ?? 0);
+const ownsOnly = (task, prefixes = []) => task.owns.length > 0 && prefixes.length > 0 && task.owns.every((check) => prefixes.some((prefix) => check.startsWith(prefix)));
+const placeOf = (task, tiers) => {
+  const byCheck = tiers.findIndex((tier) => ownsOnly(task, tier.checks));
+  const hit = byCheck !== -1 ? byCheck : tiers.findIndex((tier) => task.writes.some((path) => under(path, tier.paths) && !under(path, tier.except)) || (tier.scopes ?? []).includes(task.reviewScope));
+  const fallback = tiers.findIndex((tier) => matchers(tier) === 0);
+  return { at: hit === -1 ? (fallback === -1 ? tiers.length : fallback) : hit, fallback };
+};
+const lateTier = (task) => {
+  const tiers = configuredTiers();
+  if (!tiers) return false;
+  const { at, fallback } = placeOf(task, tiers);
+  return fallback !== -1 && at > fallback;
+};
 const under = (path, dirs = []) => dirs.some((dir) => path === dir.replace(/\/$/u, '') || path.startsWith(dir.endsWith('/') ? dir : `${dir}/`));
 const tierOf = (task) => {
   const tiers = configuredTiers();
   if (!tiers) return null;
-  if (task.regression.length > 0 || failsOnBase(task)) return { name: 'regression', at: -1 };
-  const hit = tiers.findIndex((tier) => matchers(tier) > 0 && (task.writes.some((path) => under(path, tier.paths) && !under(path, tier.except)) || (tier.scopes ?? []).includes(task.reviewScope)));
-  const at = hit === -1 ? tiers.findIndex((tier) => matchers(tier) === 0) : hit;
-  return at === -1 ? { name: 'other', at: tiers.length } : { name: tiers[at].name, at };
+  const { at, fallback } = placeOf(task, tiers);
+  const late = fallback !== -1 && at > fallback;
+  if (!late && (task.regression.length > 0 || failsOnBase(task))) return { name: 'regression', at: -1 };
+  return at === tiers.length ? { name: 'other', at } : { name: tiers[at].name, at };
 };
 const classRank = (task) => tierOf(task)?.at ?? milestoneRank(task);
 const classLabel = (task) => tierOf(task)?.name ?? milestoneClassOf(task);
@@ -1124,10 +1140,10 @@ function tiersProblem() {
   const tiers = projectConfig().chips?.tiers;
   if (tiers === undefined) return null;
   const list = (value) => value === undefined || (Array.isArray(value) && value.every((each) => typeof each === 'string' && each));
-  const fine = Array.isArray(tiers) && tiers.every((tier) => tier && typeof tier.name === 'string' && tier.name && list(tier.paths) && list(tier.except) && list(tier.scopes));
-  if (!fine) return 'fix chips.tiers in .agents/pstack.json: it is a list of { name, paths, except, scopes } in rank order, each list of strings, so chips ranks by milestone class until it is one';
+  const fine = Array.isArray(tiers) && tiers.every((tier) => tier && typeof tier.name === 'string' && tier.name && list(tier.paths) && list(tier.except) && list(tier.scopes) && list(tier.checks));
+  if (!fine) return 'fix chips.tiers in .agents/pstack.json: it is a list of { name, paths, except, scopes, checks } in rank order, each list of strings, so chips ranks by milestone class until it is one';
   const loose = tiers.filter((tier) => matchers(tier) === 0);
-  return loose.length > 1 ? `fix chips.tiers in .agents/pstack.json: ${loose.map((tier) => tier.name).join(' and ')} name no paths or scopes, and only one tier may catch the tasks no other tier matches` : null;
+  return loose.length > 1 ? `fix chips.tiers in .agents/pstack.json: ${loose.map((tier) => tier.name).join(' and ')} name no paths, scopes or checks, and only one tier may catch the tasks no other tier matches` : null;
 }
 
 const PUBLIC_ISSUE = /(?<![&\w])[\w.-]*#\d+\b|:\/\/\S+\/issues\/\d+/u;
