@@ -413,11 +413,9 @@ function SelectEditorField({
     const index = (activeIndex + step + options.length) % options.length;
 
     setActive({ key: tagKey(options[index].value), search });
-    requestAnimationFrame(() => {
-      document
-        .getElementById(optionId(index))
-        ?.scrollIntoView({ block: 'nearest' });
-    });
+    document
+      .getElementById(optionId(index))
+      ?.scrollIntoView({ block: 'nearest' });
   };
 
   React.useEffect(() => {
