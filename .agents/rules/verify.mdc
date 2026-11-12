@@ -160,13 +160,16 @@ its `exit N` line; after an interruption or resume, only those logs count.
   on the same port reuses it; when a server already holds that port, pick
   another port, and leave `PLATE_WWW_DIST_DIR` unset.
 - www browser specs: with `PLAYWRIGHT_BASE_URL` unset, `test:www-browser:*`
-  starts `pnpm dev:plite` itself, which sets `PLATE_WWW_PLITE=1` and
-  `PLATE_WWW_DEV_SOURCE=1`. A server you start for those specs runs in that
-  mode, such as the `www-plite-drive` entry of `.claude/launch.json`. Plite
-  mode serves a different shell and root layout, so a spec green on a server
-  without the flag, such as 3297, is not green for the runner.
-  `GET /api/plite/ready` returns the server's `plite` and `devSource` flags,
-  and the runner's global setup refuses a server that lacks either one. On a
+  starts `pnpm dev:plite` itself, which sets `PLATE_WWW_PLITE=1`,
+  `PLATE_WWW_DEV_SOURCE=1` and `PLATE_WWW_DYNAMIC_DOCS=1`. A server you start
+  for those specs runs in that mode, such as the `www-plite-drive` entry of
+  `.claude/launch.json`. Plite mode serves a different shell and root layout,
+  so a spec green on a server without the flag, such as 3297, is not green for
+  the runner. Without dynamic docs the server compiles every MDX page into each
+  docs route and holds about three times the memory over one spec file.
+  `GET /api/plite/ready` returns the server's `plite`,
+  `devSource` and `dynamicDocs` flags, and the runner's global setup refuses a
+  server that lacks any of them. On a
   server that just started, the first request to a docs page can compile for
   over two minutes, past the specs' 45-second test timeout, so request each
   route the selected specs open once with `curl` before the run.
