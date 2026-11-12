@@ -3,8 +3,19 @@
 import { createEditorView } from 'platejs';
 import { readCoreWork } from 'plitejs/internal';
 
+import {
+  type BoardArrowEnds,
+  type BoardArrowTarget,
+  boardArrowTargetOf,
+  resolveBoardArrow,
+} from '../../../../packages/platejs/src/features/board/lib/boardArrow.internal';
 import { createProductionRenderer } from './board-production';
-import { createBoardRenderer, shapeBox, transformOf } from './board-renderer';
+import {
+  createBoardRenderer,
+  type ShapeBox,
+  shapeBox,
+  transformOf,
+} from './board-renderer';
 import {
   BROWSER_COHORTS,
   BUSY_PLANT_MS,
@@ -25,8 +36,10 @@ import {
   expectedReadback,
   pendingShapesOf,
   readBoardWorkload,
+  toStubLayout,
   type SeededCrossing,
   shiftBoardFixture,
+  toShippedStorage,
   type StoredNode,
   type StoredValue,
   VIEWPORT,
@@ -81,6 +94,51 @@ const cameraFor = (
 
 const STUB_FAULTS = new Set<string>(['N', 'A', 'S', 'F', 'position']);
 
+const shapesById = (shapes: readonly StoredNode[]) =>
+  new Map(shapes.map((shape) => [shape.shapeId ?? '', shape]));
+
+const targetsOf =
+  (
+    shapes: ReadonlyMap<string, StoredNode>,
+    carried: ReadonlySet<string> = new Set(),
+    delta: BoardPoint = { x: 0, y: 0 }
+  ) =>
+  (id: string): BoardArrowTarget | undefined => {
+    const shape = shapes.get(id);
+
+    if (!shape?.place || !shape.size) return undefined;
+    const shift = carried.has(id) ? delta : { x: 0, y: 0 };
+
+    return boardArrowTargetOf({
+      place: { x: shape.place.x + shift.x, y: shape.place.y + shift.y },
+      size: shape.size,
+    });
+  };
+
+const drawnEnds = (
+  shape: StoredNode,
+  targetOf: (id: string) => BoardArrowTarget | undefined
+) =>
+  shape.start && shape.end
+    ? resolveBoardArrow({ end: shape.end, start: shape.start }, targetOf)
+    : null;
+
+const spanOf = ({ end, start }: BoardArrowEnds): ShapeBox => ({
+  height: Math.abs(end.y - start.y),
+  width: Math.abs(end.x - start.x),
+  x: Math.min(start.x, end.x),
+  y: Math.min(start.y, end.y),
+});
+
+const drawnBox = (
+  shape: StoredNode,
+  targetOf: (id: string) => BoardArrowTarget | undefined
+) => {
+  const ends = drawnEnds(shape, targetOf);
+
+  return ends ? spanOf(ends) : shapeBox(shape);
+};
+
 const FRAME_MS = 17;
 
 const keydownSpreadMs = (key: number) => (key * 7) % FRAME_MS;
@@ -109,8 +167,9 @@ export const prepareBoardScale = (search: string) => {
   const stub = query.renderer === 'stub';
   const wanted = cameraFor(view, faulted);
   const offset = stub ? { x: 0, y: 0 } : { x: wanted.x, y: wanted.y };
-  const built = stub ? faulted : shiftBoardFixture(faulted, offset);
-  const camera = cameraFor(view, built, offset);
+  const shifted = stub ? faulted : shiftBoardFixture(faulted, offset);
+  const camera = cameraFor(view, shifted, offset);
+  const built = stub ? shifted : toShippedStorage(shifted);
   const mountedArm =
     query.knownBad === 'arm' ? NEXT_RENDER_ARM[query.arm] : query.arm;
   const flat =
@@ -169,6 +228,7 @@ const measureFrameInterval = async () => {
 };
 
 type DragMove = {
+  arrowsBehind: number;
   atPointer: boolean;
   frames: number;
   membersMissing: number;
@@ -214,7 +274,9 @@ export const installBoardProbe = (
       }
     ).update(run);
   const storedValue = () =>
-    JSON.parse(JSON.stringify(editor.read.value())) as StoredValue;
+    toStubLayout(
+      JSON.parse(JSON.stringify(editor.read.value())) as StoredValue
+    );
   const textAtPath = `[data-editor-node="text"][data-editor-path="${textPath.join(',')}"]`;
   const typedTextSelector = typedRoot
     ? `[data-board="${typedRoot}"] ${textAtPath}`
@@ -234,12 +296,15 @@ export const installBoardProbe = (
   let drag: {
     count: () => number;
     finish: () => {
+      boundArrowsInView: number;
+      boundArrowsRedrawn: number;
       members: number;
       membersInView: number;
       moves: DragMove[];
       nonMemberRenders: number;
       nonMembersChecked: number;
       nonMembersMoved: string[];
+      releaseWrites: number;
       writes: number;
     };
   } | null = null;
@@ -436,9 +501,11 @@ export const installBoardProbe = (
 
   const shapesInView = () => {
     const view = viewRect(readCamera());
+    const shapes = storedBoard() ?? [];
+    const targetOf = targetsOf(shapesById(shapes));
 
-    return (storedBoard() ?? []).flatMap((shape) => {
-      const box = shapeBox(shape);
+    return shapes.flatMap((shape) => {
+      const box = drawnBox(shape, targetOf);
 
       return box.x <= view.right &&
         box.x + box.width >= view.left &&
@@ -453,11 +520,10 @@ export const installBoardProbe = (
     document.querySelector(`[data-shape-id="${shapeId}"]`) !== null;
 
   const screenRect = (
-    shape: StoredNode,
+    box: ShapeBox,
     surface: DOMRect,
     camera = readCamera()
   ): ScreenRect => {
-    const box = shapeBox(shape);
     const left = surface.left + (box.x - camera.x) * camera.zoom;
     const top = surface.top + (box.y - camera.y) * camera.zoom;
 
@@ -469,16 +535,29 @@ export const installBoardProbe = (
     };
   };
 
+  const rectOff = (rect: ScreenRect, want: ScreenRect, slack: number) =>
+    (['left', 'top', 'right', 'bottom'] as const).some(
+      (edge) => Math.abs(rect[edge] - want[edge]) > slack
+    );
+
   const placeError = (
     element: HTMLElement,
     shape: StoredNode,
+    targetOf: (id: string) => BoardArrowTarget | undefined,
     surface: DOMRect
   ) => {
     const rect = element.getBoundingClientRect();
-    const { left, top } = screenRect(shape, surface);
+    const want = screenRect(drawnBox(shape, targetOf), surface);
+    const arrow = Boolean(shape.start && shape.end);
+    const at = (box: ScreenRect) =>
+      `${box.left.toFixed(1)},${box.top.toFixed(1)}${arrow ? ` to ${box.right.toFixed(1)},${box.bottom.toFixed(1)}` : ''}`;
+    const off = arrow
+      ? rectOff(rect, want, 0.75)
+      : Math.abs(rect.left - want.left) > 0.75 ||
+        Math.abs(rect.top - want.top) > 0.75;
 
-    return Math.abs(rect.left - left) > 0.75 || Math.abs(rect.top - top) > 0.75
-      ? `${element.dataset.shapeId} at ${rect.left.toFixed(1)},${rect.top.toFixed(1)} not ${left.toFixed(1)},${top.toFixed(1)}`
+    return off
+      ? `${element.dataset.shapeId} at ${at(rect)} not ${at(want)}`
       : null;
   };
 
@@ -487,17 +566,19 @@ export const installBoardProbe = (
     await nextFrame();
     const view = viewRect(readCamera());
     const surface = surfaceRect();
+    const shapes = storedBoard() ?? [];
+    const targetOf = targetsOf(shapesById(shapes));
     const sees = (point: { x: number; y: number }) =>
       point.x >= view.left &&
       point.x <= view.right &&
       point.y >= view.top &&
       point.y <= view.bottom;
 
-    return (storedBoard() ?? []).flatMap((shape) => {
-      const { end, start } = shape;
+    return shapes.flatMap((shape) => {
+      const ends = drawnEnds(shape, targetOf);
 
-      if (!start || !end || sees(start) || sees(end)) return [];
-      const box = shapeBox(shape);
+      if (!ends || sees(ends.start) || sees(ends.end)) return [];
+      const box = spanOf(ends);
 
       if (
         box.x > view.right ||
@@ -516,7 +597,9 @@ export const installBoardProbe = (
         {
           id,
           misplaced:
-            element && surface ? placeError(element, shape, surface) : null,
+            element && surface
+              ? placeError(element, shape, targetOf, surface)
+              : null,
           mounted: element !== null,
         },
       ];
@@ -531,6 +614,7 @@ export const installBoardProbe = (
     const wrong: string[] = [];
 
     if (!surface || !shapes) return ['no board surface'];
+    const targetOf = targetsOf(shapesById(shapes));
     const byId = new Map(
       shapes.map((shape, index) => [shape.shapeId ?? '', { index, shape }])
     );
@@ -548,7 +632,7 @@ export const installBoardProbe = (
         );
       }
       lastIndex = index;
-      const error = placeError(element, shape, surface);
+      const error = placeError(element, shape, targetOf, surface);
 
       if (error) wrong.push(error);
     }
@@ -978,11 +1062,13 @@ export const installBoardProbe = (
 
       if (!frame || !rect) return null;
       const { zoom } = readCamera();
+      const betweenMemberColumnsX = 180;
+      const insideFrameEdgeBandY = 4;
 
       return {
         id: frame.dataset.shapeId ?? '',
-        x: rect.left + 180 * zoom,
-        y: rect.top + 135 * zoom,
+        x: rect.left + betweenMemberColumnsX * zoom,
+        y: rect.top + insideFrameEdgeBandY,
       };
     },
 
@@ -995,11 +1081,28 @@ export const installBoardProbe = (
         rect.left < surface.right &&
         rect.bottom > surface.top &&
         rect.top < surface.bottom;
-      const meetsView = (element: HTMLElement) =>
-        meets(element.getBoundingClientRect());
-      const dragged = (storedBoard() ?? []).flatMap((shape) =>
-        shape.shapeId === frameId || shape.frame === frameId
-          ? [{ id: shape.shapeId ?? '', origin: screenRect(shape, surface) }]
+      const shapes = storedBoard() ?? [];
+      const byId = shapesById(shapes);
+      const { zoom } = readCamera();
+      const carried = new Set(
+        shapes.flatMap((shape) =>
+          shape.shapeId === frameId || shape.frame === frameId
+            ? [shape.shapeId ?? '']
+            : []
+        )
+      );
+      const bound = shapes.filter(
+        ({ end, start }) =>
+          start && end && (carried.has(start.shape) || carried.has(end.shape))
+      );
+      const dragged = shapes.flatMap((shape) =>
+        carried.has(shape.shapeId ?? '')
+          ? [
+              {
+                id: shape.shapeId ?? '',
+                origin: screenRect(shapeBox(shape), surface),
+              },
+            ]
           : []
       );
       const own = dragged.find(({ id }) => id === frameId);
@@ -1009,17 +1112,27 @@ export const installBoardProbe = (
       const membersInView = members.filter(({ origin }) =>
         meets(origin)
       ).length;
-      const nonMembers = shapeElements().filter(
-        (element) =>
-          element.dataset.frame !== frameId &&
-          element.dataset.shapeId !== frameId
-      );
+      const boundIds = new Set(bound.map((arrow) => arrow.shapeId ?? ''));
+      const inDrag = new Set([...carried, ...boundIds]);
+      const elementsInView = (keep: (id: string) => boolean) =>
+        shapeElements().filter(
+          (element) =>
+            keep(element.dataset.shapeId ?? '') &&
+            meets(element.getBoundingClientRect())
+        );
       const nonMemberIds = new Set(
-        nonMembers.map((element) => element.dataset.shapeId)
+        shapeElements().flatMap((element) => {
+          const id = element.dataset.shapeId ?? '';
+
+          return inDrag.has(id) ? [] : [id];
+        })
       );
       const rendersBefore = new Map(boardStats.renderedIds);
       const changesBefore = boardStats.valueChanges;
-      const inView = nonMembers.filter(meetsView);
+      const inView = elementsInView((id) => nonMemberIds.has(id));
+      const boundInView = elementsInView((id) => boundIds.has(id)).map(
+        (element) => element.dataset.shapeId ?? ''
+      );
       const fixedRects = inView.map((element) =>
         element.getBoundingClientRect()
       );
@@ -1077,7 +1190,25 @@ export const installBoardProbe = (
             else if (!at) membersOff += 1;
           }
 
+          const movedTargets = targetsOf(byId, carried, {
+            x: dx / zoom,
+            y: dy / zoom,
+          });
+          let arrowsBehind = 0;
+
+          for (const arrow of bound) {
+            const want = screenRect(drawnBox(arrow, movedTargets), surface);
+
+            if (!meets(want)) continue;
+            const rect = document
+              .querySelector(`[data-shape-id="${arrow.shapeId}"]`)
+              ?.getBoundingClientRect();
+
+            if (!rect || rectOff(rect, want, 1)) arrowsBehind += 1;
+          }
+
           moves.push({
+            arrowsBehind,
             atPointer: placed(own) === true,
             // A frame's own stamp can name a vsync it started after, so the
             // count reads when its callbacks ran. The quarter frame absorbs a
@@ -1111,8 +1242,14 @@ export const installBoardProbe = (
         }
       };
 
+      let changesBeforeRelease: number | null = null;
+      const snapshotBeforeRelease = () => {
+        changesBeforeRelease ??= boardStats.valueChanges;
+      };
+
       window.addEventListener('pointerdown', onDown, true);
       window.addEventListener('pointermove', onMove, true);
+      window.addEventListener('pointerup', snapshotBeforeRelease, true);
 
       drag = {
         count: () => moves.length,
@@ -1120,6 +1257,8 @@ export const installBoardProbe = (
           looping = false;
           window.removeEventListener('pointerdown', onDown, true);
           window.removeEventListener('pointermove', onMove, true);
+          window.removeEventListener('pointerup', snapshotBeforeRelease, true);
+          const ended = changesBeforeRelease ?? boardStats.valueChanges;
           const moved = inView.flatMap((element, index) => {
             const rect = element.getBoundingClientRect();
             const dx = rect.left - fixedRects[index].left;
@@ -1131,22 +1270,27 @@ export const installBoardProbe = (
                 ]
               : [];
           });
+          const rendersOf = (id: string) =>
+            (boardStats.renderedIds.get(id) ?? 0) -
+            (rendersBefore.get(id) ?? 0);
           let nonMemberRenders = 0;
 
-          for (const [id, count] of boardStats.renderedIds) {
-            if (nonMemberIds.has(id)) {
-              nonMemberRenders += count - (rendersBefore.get(id) ?? 0);
-            }
-          }
+          for (const id of nonMemberIds) nonMemberRenders += rendersOf(id);
 
           return {
-            members: shapeElements().length - nonMembers.length,
+            boundArrowsInView: boundInView.length,
+            boundArrowsRedrawn: boundInView.filter((id) => rendersOf(id) > 0)
+              .length,
+            members: shapeElements().filter((element) =>
+              carried.has(element.dataset.shapeId ?? '')
+            ).length,
             membersInView,
             moves,
             nonMemberRenders,
             nonMembersChecked: inView.length,
             nonMembersMoved: moved,
-            writes: boardStats.valueChanges - changesBefore,
+            releaseWrites: boardStats.valueChanges - ended,
+            writes: ended - changesBefore,
           };
         },
       };

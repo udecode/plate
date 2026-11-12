@@ -4,10 +4,12 @@ import type { Element } from '../../../core';
 import {
   EditorElement,
   type EditorElementProps,
+  useEditorSelector,
   useElementSelected,
 } from '../../core';
 import type {
   BoardArrowPlugin,
+  BoardFramePlugin,
   BoardGeoPlugin,
   BoardNotePlugin,
 } from './BoardPlugin';
@@ -22,20 +24,50 @@ const CORNERS = [
   ['se', { bottom: -4, cursor: 'nwse-resize', right: -4 }],
 ] as const;
 
+function Handles() {
+  return CORNERS.map(([corner, place]) => (
+    <div
+      contentEditable={false}
+      data-board-handle={corner}
+      key={corner}
+      style={{
+        background: 'white',
+        border: '1px solid currentColor',
+        height: 8,
+        position: 'absolute',
+        width: 8,
+        ...place,
+      }}
+    />
+  ));
+}
+
+function AloneHandles() {
+  const alone = useEditorSelector(
+    (editor) => editor.read.selection.nodes().length === 1
+  );
+
+  return alone && <Handles />;
+}
+
 /**
  * One member of a board, painted at its stacking rank while the DOM keeps the
- * board's stored order. A shape sits at its box, and a shape selected alone
+ * board's stored order. A shape or frame sits at its box and, selected alone,
  * shows four resize handles, `[data-board-handle]`. An arrow sits at the
  * board's origin with no size, so its component draws in board coordinates
- * from `useArrowPath`, and it has no handles. A selected member shows
- * `data-selected`.
+ * from `useArrowPath`, and it has no handles. A frame takes a press only on
+ * its edge or on a child marked `[data-board-frame-name]`, such as its name.
+ * A selected member shows `data-selected`.
  */
 export function BoardShape({
   className,
   style,
   ...props
 }: EditorElementProps<
-  typeof BoardArrowPlugin | typeof BoardGeoPlugin | typeof BoardNotePlugin
+  | typeof BoardArrowPlugin
+  | typeof BoardFramePlugin
+  | typeof BoardGeoPlugin
+  | typeof BoardNotePlugin
 > & {
   className?: string;
   style?: React.CSSProperties;
@@ -48,7 +80,6 @@ export function BoardShape({
     () => view.layoutOf(key)
   );
   const selected = useElementSelected({ mode: 'node' });
-  const alone = useElementSelected({ mode: 'object' });
   const arrow = layout?.kind === 'arrow';
 
   return (
@@ -72,23 +103,7 @@ export function BoardShape({
       }}
     >
       {props.children}
-      {alone &&
-        !arrow &&
-        CORNERS.map(([corner, place]) => (
-          <div
-            contentEditable={false}
-            data-board-handle={corner}
-            key={corner}
-            style={{
-              background: 'white',
-              border: '1px solid currentColor',
-              height: 8,
-              position: 'absolute',
-              width: 8,
-              ...place,
-            }}
-          />
-        ))}
+      {selected && !arrow && <AloneHandles />}
     </EditorElement>
   );
 }

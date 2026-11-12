@@ -23,10 +23,13 @@ import {
   isBoundArrowEnd,
   resolveBoardArrow,
 } from './boardArrow.internal';
+import { boardLayerOf } from './boardFrame.internal';
+import { boardNodeMembersOf } from './boardMember.internal';
 import {
-  BOARD_SHAPES_SLOT,
+  appendBoardMember,
   type BoardPlace,
-  stackingKeyAbove,
+  boardShapesRootOf,
+  stackingKeyAboveLayer,
 } from './boardShape.internal';
 
 export type {
@@ -98,7 +101,7 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
       root: string,
       sides: readonly BoardArrowSide[]
     ) => {
-      const targetOnBoard = boardTargetsOn(tx, root);
+      const targetOnBoard = boardTargetsOn(boardNodeMembersOf(tx).member, root);
       const drawn = resolveBoardArrow(ends, targetOnBoard);
       const written: Partial<Record<BoardArrowSide, BoardArrowEnd>> = {};
 
@@ -141,12 +144,8 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
           { board }: Readonly<{ board?: NodeKey }> = {}
         ): string | undefined => {
           const ends = { end: storedOf(end), start: storedOf(start) };
-          const owner =
-            board === undefined ? undefined : tx.nodes.get(board)?.[0];
           const named =
-            owner && ElementApi.isElement(owner)
-              ? tx.schema.getElementContentRoots(owner)[BOARD_SHAPES_SLOT]
-              : undefined;
+            board === undefined ? undefined : boardShapesRootOf(tx, board);
           const bound = [ends.start, ends.end].find(isBoundArrowEnd);
           const root =
             named ?? (bound && tx.unique.holder('shapeId', bound.shape)?.root);
@@ -158,17 +157,17 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
             return undefined;
           }
 
-          const shapes = tx.root(root);
           const shapeId = nanoid();
           const arrow = tx.schema.create(type, {
             ...written,
             shapeId,
-            zIndex: stackingKeyAbove(shapes),
+            zIndex: stackingKeyAboveLayer(tx.root(root), boardLayerOf(type)),
           });
 
-          tx.nodes.replaceChildren(
-            [children ? { ...arrow, children: [...children] } : arrow],
-            { at: [], count: 0, index: shapes.length, root }
+          appendBoardMember(
+            tx,
+            root,
+            children ? { ...arrow, children: [...children] } : arrow
           );
 
           return shapeId;

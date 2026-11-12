@@ -3,6 +3,7 @@
  */
 
 export * from './BaseBoardArrowPlugin';
+export * from './BaseBoardFramePlugin';
 export * from './BaseBoardGeoPlugin';
 export * from './BaseBoardNotePlugin';
 export * from './BaseBoardPlugin';

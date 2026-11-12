@@ -1,14 +1,9 @@
-import {
-  type EditorStateNodesApi,
-  type EditorStateUniqueApi,
-  ElementApi,
-  type Node,
-} from '../../../core';
+import { ElementApi, type Node } from '../../../core';
+import type { BoardMemberEntry } from './boardMember.internal';
 import {
   type BoardPlace,
   type BoardSize,
   isBoardPlace,
-  isBoardSize,
 } from './boardShape.internal';
 
 export const BOARD_ARROW_TYPE = 'boardArrow';
@@ -74,42 +69,45 @@ export const arrowEndsOf = (
     ? { end: node.end, start: node.start }
     : null;
 
-const OUTLINES = new Set<unknown>([
+const OUTLINES: readonly BoardOutline[] = [
   'diamond',
   'ellipse',
   'rectangle',
   'triangle',
-]);
+];
 
-export const boardArrowTargetOf = (
-  node: Node | undefined
-): BoardArrowTarget | undefined =>
-  node &&
-  ElementApi.isElement(node) &&
-  isBoardPlace(node.place) &&
-  isBoardSize(node.size)
-    ? {
-        outline: OUTLINES.has(node.geo)
-          ? (node.geo as BoardOutline)
-          : 'rectangle',
-        place: node.place,
-        size: node.size,
-      }
-    : undefined;
+const isOutline = (value: unknown): value is BoardOutline =>
+  OUTLINES.some((outline) => outline === value);
 
+export const boardArrowTargetOf = ({
+  geo,
+  place,
+  size,
+}: Readonly<{
+  geo?: unknown;
+  place: BoardPlace;
+  size: BoardSize;
+}>): BoardArrowTarget => ({
+  outline: isOutline(geo) ? geo : 'rectangle',
+  place,
+  size,
+});
+
+/**
+ * Where the arrows of the board root `root` may bind: each frame and shape of
+ * that root that `memberOf` finds, never an arrow.
+ */
 export const boardTargetsOn =
-  (
-    reader: Readonly<{
-      nodes: Pick<EditorStateNodesApi, 'get'>;
-      unique: EditorStateUniqueApi;
-    }>,
-    root: string
-  ) =>
+  (memberOf: (id: string) => BoardMemberEntry | null, root: string) =>
   (id: string): BoardArrowTarget | undefined => {
-    const holder = reader.unique.holder('shapeId', id);
+    const member = memberOf(id);
 
-    return holder?.root === root
-      ? boardArrowTargetOf(reader.nodes.get(holder.key)?.[0])
+    return member && member.kind !== 'arrow' && member.root === root
+      ? boardArrowTargetOf({
+          geo: member.node.geo,
+          place: member.place,
+          size: member.size,
+        })
       : undefined;
   };
 

@@ -560,6 +560,94 @@ export const shiftBoardFixture = (
   return { ...fixture, value: { ...fixture.value, roots } };
 };
 
+const mapRoots = (
+  value: BoardValue,
+  map: (
+    shapes: ReadonlyArray<Record<string, unknown>>
+  ) => Array<Record<string, unknown>>
+): BoardValue => ({
+  ...value,
+  roots: Object.fromEntries(
+    Object.entries(value.roots ?? {}).map(([name, shapes]) => [
+      name,
+      map(shapes),
+    ])
+  ),
+});
+
+const BOARD_ORIGIN: BoardPoint = { x: 0, y: 0 };
+
+export const toShippedStorage = (fixture: BoardFixture): BoardFixture => ({
+  ...fixture,
+  value: mapRoots(fixture.value, (shapes) => {
+    const origins = new Map(
+      shapes.flatMap((shape) =>
+        shape.type === 'boardFrame'
+          ? [[shape.shapeId, (shape as StoredNode).place] as const]
+          : []
+      )
+    );
+
+    return shapes.map((shape) => {
+      const { place } = shape as StoredNode;
+
+      if (shape.type === 'boardArrow') {
+        const { place: _place, size: _size, ...ends } = shape;
+
+        return ends;
+      }
+      if (shape.type === 'boardFrame' && place) {
+        return {
+          ...shape,
+          place: { origin: { x: place.x, y: place.y }, x: place.x, y: place.y },
+        };
+      }
+      const { frame, ...rest } = shape;
+
+      if (typeof frame !== 'string' || !place) return shape;
+
+      const origin = origins.get(frame) ?? BOARD_ORIGIN;
+
+      return {
+        ...rest,
+        place: {
+          frame,
+          frameOrigin: { x: origin.x, y: origin.y },
+          x: place.x - origin.x,
+          y: place.y - origin.y,
+        },
+      };
+    });
+  }),
+});
+
+export const toStubLayout = (value: StoredValue): StoredValue =>
+  mapRoots(value as BoardValue, (shapes) => {
+    const origins = new Map(
+      shapes.flatMap((shape) => {
+        const { place } = shape as StoredNode;
+
+        return shape.type === 'boardFrame' && place?.origin
+          ? [[shape.shapeId, place.origin] as const]
+          : [];
+      })
+    );
+
+    return shapes.map((shape) => {
+      const { place } = shape as StoredNode;
+
+      if (!place?.frame || !place.frameOrigin) return shape;
+
+      const origin = origins.get(place.frame) ?? place.frameOrigin;
+
+      return {
+        ...shape,
+        frame: place.frame,
+        place: { x: origin.x + place.x, y: origin.y + place.y },
+      };
+    });
+  });
+
 export const buildFlatFixture = (blocks: number) => ({
   textPath: [Math.floor(blocks / 2), 0],
   value: {
@@ -569,15 +657,23 @@ export const buildFlatFixture = (blocks: number) => ({
   } satisfies BoardValue,
 });
 
+type BoundEnd = Readonly<{
+  anchor: readonly [number, number];
+  shape: string;
+  x: number;
+  y: number;
+}>;
+
 export type StoredNode = Readonly<{
   childRoots?: Readonly<{ shapes?: string }>;
   children?: readonly StoredNode[];
   frame?: string;
-  place?: BoardPoint;
+  place?: BoardPoint &
+    Readonly<{ frame?: string; frameOrigin?: BoardPoint; origin?: BoardPoint }>;
   shapeId?: string;
   size?: { height: number; width: number };
-  start?: { shape: string; x: number; y: number };
-  end?: { shape: string; x: number; y: number };
+  start?: BoundEnd;
+  end?: BoundEnd;
   text?: string;
   type?: string;
 }>;

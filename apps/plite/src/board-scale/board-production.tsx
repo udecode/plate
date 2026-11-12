@@ -11,11 +11,14 @@ import * as React from 'react';
 
 import { BaseBoardPlugin } from '../../../../packages/platejs/src/features/board';
 import {
+  BoardArrowPlugin,
+  BoardFramePlugin,
   BoardGeoPlugin,
   BoardNotePlugin,
   BoardPlugin,
   BoardShape,
   BoardSurface,
+  useArrowPath,
 } from '../../../../packages/platejs/src/react/features/board';
 import {
   type BoardView as ShippedView,
@@ -26,7 +29,6 @@ import type { BoardPlant, RenderArm } from './browser-cohorts';
 import {
   type BoardCamera,
   type BoardPoint,
-  boardShapeStubs,
   NOTE_TARGETS,
   plateBoardPlugins,
   type StoredNode,
@@ -36,6 +38,7 @@ import {
 type Instruments = ReturnType<typeof createInstruments>;
 
 type Handle = {
+  dragFrame: string | null;
   layer: HTMLElement | null;
   unheard: boolean;
   view: ShippedView | null;
@@ -77,8 +80,24 @@ const countRbush = (stats: Instruments['stats'], onLoad: () => void) => {
   };
 };
 
+const FRAME_NAME_LOOK: React.CSSProperties = {
+  bottom: '100%',
+  fontSize: 12,
+  left: 0,
+  position: 'absolute',
+  whiteSpace: 'nowrap',
+};
+
+const ARROW_LOOK: React.CSSProperties = { pointerEvents: 'none' };
+
 const DROP_MS = 40;
 const WHEEL_STEP_ZOOM = 100;
+
+const marksOf = (shape: StoredNode) => ({
+  'data-frame': shape.place?.frame,
+  'data-shape-id': shape.shapeId,
+  'data-shape-type': shape.type,
+});
 
 const isMoving = (handle: Handle) =>
   (handle.layer?.getAnimations().length ?? 0) > 0;
@@ -257,6 +276,18 @@ export const createProductionRenderer = (config: ProductionConfig) => {
 
       return { ...viewport, mountedKeys: new Set(kept) };
     }
+    if (plant === 'drag-members-unmount' && handle.dragFrame) {
+      const kept = [...viewport.mountedKeys].filter((key) => {
+        const node = editor.read.nodes.get(key)?.[0] as StoredNode | undefined;
+
+        if (node?.place?.frame !== handle.dragFrame) return true;
+        plantWork.unmountedMembers += 1;
+
+        return false;
+      });
+
+      return { ...viewport, mountedKeys: new Set(kept) };
+    }
 
     return viewport;
   };
@@ -295,15 +326,67 @@ export const createProductionRenderer = (config: ProductionConfig) => {
       }
     };
 
+    const onDragDown = (event: PointerEvent) => {
+      const frame =
+        event.target instanceof Element
+          ? event.target.closest<HTMLElement>('[data-shape-type="boardFrame"]')
+          : null;
+
+      handle.dragFrame =
+        frame && host.contains(frame) ? (frame.dataset.shapeId ?? null) : null;
+      if (handle.dragFrame && plant === 'drag-members-unmount') {
+        reindexes += 1;
+        for (const listener of reindexListeners) listener();
+      }
+    };
+    const onDragUp = () => {
+      handle.dragFrame = null;
+    };
+    const swallowTimedMove = (event: PointerEvent) => {
+      if (!handle.dragFrame) return;
+      event.stopImmediatePropagation();
+      plantWork.ignoredEvents += 1;
+    };
+    const onMovedPreview = () => {
+      const id = handle.dragFrame;
+
+      if (!id) return;
+      if (plant === 'drag-render') {
+        plantWork.dragRenders += 1;
+        bumpShapeTick();
+      }
+      if (plant === 'drag-members-still') {
+        for (const member of host.querySelectorAll<HTMLElement>(
+          `[data-frame="${id}"]`
+        )) {
+          member.style.translate = '';
+          plantWork.stillMembers += 1;
+        }
+      }
+    };
+    const drags = plant?.startsWith('drag-') ?? false;
+
     host.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('wheel', onCaptureWheel, {
       capture: true,
       passive: false,
     });
+    if (drags) {
+      window.addEventListener('pointerdown', onDragDown, true);
+      window.addEventListener('pointerup', onDragUp, true);
+      if (plant === 'drag-ignore') {
+        document.addEventListener('pointermove', swallowTimedMove, true);
+      }
+      window.addEventListener('pointermove', onMovedPreview);
+    }
 
     return () => {
       host.removeEventListener('wheel', onWheel);
       window.removeEventListener('wheel', onCaptureWheel, { capture: true });
+      window.removeEventListener('pointerdown', onDragDown, true);
+      window.removeEventListener('pointerup', onDragUp, true);
+      document.removeEventListener('pointermove', swallowTimedMove, true);
+      window.removeEventListener('pointermove', onMovedPreview);
     };
   };
 
@@ -356,6 +439,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     const editor = useModelEditor();
     React.useSyncExternalStore(subscribeReindex, readReindex, readReindex);
     const handleRef = React.useRef<Handle>({
+      dragFrame: null,
       layer: null,
       unheard: false,
       view: null,
@@ -418,16 +502,16 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     if (view) instrumentView(view);
     useShapeMount();
 
+    const arrow = shape.type === 'boardArrow';
+
     return (
       <BoardShape
         {...(props as unknown as React.ComponentProps<typeof BoardShape>)}
         attributes={{
           ...props.attributes,
-          'data-frame': shape.frame,
-          'data-shape-id': shape.shapeId,
-          'data-shape-type': shape.type,
+          ...(arrow ? {} : marksOf(shape)),
         }}
-        style={LOOK[shape.type ?? '']}
+        style={arrow ? ARROW_LOOK : LOOK[shape.type ?? '']}
       />
     );
   }
@@ -451,23 +535,82 @@ export const createProductionRenderer = (config: ProductionConfig) => {
   }
 
   const ShapeComponent =
-    plant === 'render'
+    plant === 'render' || plant === 'drag-render'
       ? TickingShape
       : plant === 'shape-selector'
         ? SelectingShape
         : Shape;
-  const stubs = boardShapeStubs({
-    boardArrow: ShapeComponent,
-    boardFrame: ShapeComponent,
-  });
+
+  function FrameShape(props: RenderElementProps) {
+    'use no memo';
+    const { name } = props.element as { name?: string };
+
+    return (
+      <ShapeComponent {...props}>
+        {props.children}
+        <div
+          contentEditable={false}
+          data-board-frame-name=""
+          style={FRAME_NAME_LOOK}
+        >
+          {name || 'Frame'}
+        </div>
+      </ShapeComponent>
+    );
+  }
+
+  function ArrowShape(props: RenderElementProps) {
+    'use no memo';
+    const drawn = useArrowPath(props.element);
+
+    if (!drawn) return <ShapeComponent {...props} />;
+
+    const { end, start } = drawn;
+    const x = Math.min(start.x, end.x);
+    const y = Math.min(start.y, end.y);
+
+    return (
+      <ShapeComponent {...props}>
+        <div
+          {...marksOf(props.element)}
+          contentEditable={false}
+          style={{
+            height: Math.abs(end.y - start.y),
+            left: x,
+            position: 'absolute',
+            top: y,
+            width: Math.abs(end.x - start.x),
+          }}
+        >
+          <svg
+            aria-hidden
+            height={1}
+            style={{ overflow: 'visible', position: 'absolute' }}
+            width={1}
+          >
+            <line
+              stroke="#475569"
+              strokeWidth={2}
+              x1={start.x - x}
+              x2={end.x - x}
+              y1={start.y - y}
+              y2={end.y - y}
+            />
+          </svg>
+        </div>
+        {props.children}
+      </ShapeComponent>
+    );
+  }
+
   const plugins = plateBoardPlugins('composed', [
     BoardPlugin.configure({
       component: (plant === 'render' ? TickingBoard : Board) as never,
       targetPlugins: [
         BoardNotePlugin,
         BoardGeoPlugin,
-        stubs.arrow,
-        stubs.frame,
+        BoardArrowPlugin,
+        BoardFramePlugin,
       ],
     }),
     BoardNotePlugin.configure({
@@ -475,9 +618,8 @@ export const createProductionRenderer = (config: ProductionConfig) => {
       targetPlugins: NOTE_TARGETS,
     }),
     BoardGeoPlugin.configure({ component: ShapeComponent as never }),
-    stubs.arrow,
-    stubs.frame,
-    stubs.properties,
+    BoardArrowPlugin.configure({ component: ArrowShape as never }),
+    BoardFramePlugin.configure({ component: FrameShape as never }),
   ]);
 
   return {

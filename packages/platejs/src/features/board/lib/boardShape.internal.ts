@@ -11,9 +11,14 @@ import {
   type BasePluginDefinition,
   definePlugin,
   type Descendant,
+  type EditorStateNodesApi,
+  type EditorStateSchemaApi,
   type EditorUpdateContext,
+  type EditorUpdateTransaction,
+  type Element,
   ElementApi,
   locateAt,
+  type Node,
   type NodeKey,
   PLUGINS,
   type PluginTransaction,
@@ -24,17 +29,31 @@ import {
   txLocate,
 } from '../../../core';
 import type { TxDeclaredMethod } from '../../../facade';
+import { boardFramesIn, boardLayerOf, placeAmong } from './boardFrame.internal';
 
-/** A shape's place on its board, in board coordinates. */
+/** A point on a board, in board coordinates. */
 export type BoardPlace = Readonly<{ x: number; y: number }>;
 
 /** A shape's size on its board. */
 export type BoardSize = Readonly<{ height: number; width: number }>;
 
+/** Where `restack` moves shapes in paint order. */
+export type BoardRestackDirection = 'back' | 'backward' | 'forward' | 'front';
+
 export const BOARD_SHAPES_SLOT = 'shapes';
 
-export const shapeSelectionMode = (count: number) =>
-  count === 1 ? ('object' as const) : ('block' as const);
+/**
+ * How a selection of board members selects them. Plite takes an object
+ * selection only of one object that is not void, so a frame, a void, takes a
+ * block selection.
+ */
+export const shapeSelectionMode = (
+  rules: Pick<EditorStateSchemaApi, 'isObject' | 'isVoid'>,
+  nodes: readonly Node[]
+) =>
+  nodes.length === 1 && rules.isObject(nodes[0]) && !rules.isVoid(nodes[0])
+    ? ('object' as const)
+    : ('block' as const);
 
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
@@ -57,6 +76,35 @@ export const isBoardSize = (value: unknown): value is BoardSize =>
   isFiniteNumber((value as BoardSize).width) &&
   (value as BoardSize).height > 0 &&
   (value as BoardSize).width > 0;
+
+/** The content root that holds the members of the board block `board`. */
+export const boardShapesRootOf = (
+  reader: Readonly<{
+    nodes: Pick<EditorStateNodesApi, 'get'>;
+    schema: Pick<EditorStateSchemaApi, 'getElementContentRoots'>;
+  }>,
+  board: NodeKey
+) => {
+  const owner = reader.nodes.get(board)?.[0];
+
+  return owner && ElementApi.isElement(owner)
+    ? reader.schema.getElementContentRoots(owner)[BOARD_SHAPES_SLOT]
+    : undefined;
+};
+
+/** Add `node` after the last member of the board root `root`. */
+export const appendBoardMember = (
+  tx: Pick<EditorUpdateTransaction, 'nodes' | 'root'>,
+  root: string,
+  node: Element
+) => {
+  tx.nodes.replaceChildren([node], {
+    at: [],
+    count: 0,
+    index: tx.root(root).length,
+    root,
+  });
+};
 
 const BASE_62 = /^[\dA-Za-z]+$/;
 const SMALLEST_KEY = `A${'0'.repeat(26)}`;
@@ -122,25 +170,97 @@ export const stackingKeysBetween = (
   );
 };
 
-export const stackingKeyBetween = (
-  lower: string | null,
-  upper: string | null
-) => distinctPeerKey(generateKeyBetween(lower, upper), upper);
-
-export const stackingKeyAbove = (members: readonly Descendant[]) => {
+/** The highest stacking key among the `members` that paint in `layer`. */
+export const topKeyInLayer = (members: readonly Descendant[], layer: 0 | 1) => {
   let top: string | null = null;
 
-  for (const { zIndex } of members) {
-    if (typeof zIndex === 'string' && (top === null || zIndex > top)) {
+  for (const member of members) {
+    const { zIndex } = member;
+
+    if (
+      ElementApi.isElement(member) &&
+      boardLayerOf(member.type) === layer &&
+      typeof zIndex === 'string' &&
+      (top === null || zIndex > top)
+    ) {
       top = zIndex;
     }
   }
 
-  return stackingKeyBetween(top, null);
+  return top;
+};
+
+/** A stacking key above every member of `members` that paints in `layer`. */
+export const stackingKeyAboveLayer = (
+  members: readonly Descendant[],
+  layer: 0 | 1
+) =>
+  distinctPeerKey(
+    generateKeyBetween(topKeyInLayer(members, layer), null),
+    null
+  );
+
+/**
+ * New stacking keys for the `moving` members of one paint layer `group`,
+ * sorted in paint order, that move them `direction` and keep their order
+ * among themselves. Empty when they cannot move that way.
+ */
+export const restackKeys = <T extends Readonly<{ id: string; zIndex: string }>>(
+  group: readonly T[],
+  moving: ReadonlySet<string>,
+  direction: BoardRestackDirection
+): Array<readonly [T, string]> => {
+  const stacked = group.filter(({ id }) => moving.has(id));
+  const others = group.filter(({ id }) => !moving.has(id));
+  const lowest = others[0];
+  const highest = others.at(-1);
+
+  if (stacked.length === 0 || !lowest || !highest) return [];
+
+  let bounds: readonly [string | null, string | null] | null = null;
+
+  if (direction === 'front') {
+    bounds = [highest.zIndex, null];
+  } else if (direction === 'back') {
+    bounds = [null, lowest.zIndex];
+  } else if (direction === 'forward') {
+    const top = group.findLastIndex(({ id }) => moving.has(id));
+    const next = group.slice(top + 1).find(({ id }) => !moving.has(id));
+
+    if (next) {
+      bounds = [
+        next.zIndex,
+        others.find(({ zIndex }) => zIndex > next.zIndex)?.zIndex ?? null,
+      ];
+    }
+  } else {
+    const bottom = group.findIndex(({ id }) => moving.has(id));
+    const previous = group
+      .slice(0, bottom)
+      .findLast(({ id }) => !moving.has(id));
+
+    if (previous) {
+      bounds = [
+        others.findLast(({ zIndex }) => zIndex < previous.zIndex)?.zIndex ??
+          null,
+        previous.zIndex,
+      ];
+    }
+  }
+  if (!bounds) return [];
+
+  const keys = stackingKeysBetween(...bounds, stacked.length);
+
+  return stacked.map((member, index) => [member, keys[index]] as const);
 };
 
 export type BoardShapeInsertProps<TOwn> = Readonly<{
   children?: readonly Descendant[];
+  /**
+   * The id of a frame to join when the shape overlaps it, in place of the
+   * frontmost frame under the shape's middle.
+   */
+  frame?: string;
   height?: number;
   width?: number;
   x: number;
@@ -187,6 +307,7 @@ function boardShapeStage(size: BoardSize): unknown {
         (
           {
             children,
+            frame,
             height = size.height,
             width = size.width,
             x,
@@ -195,11 +316,7 @@ function boardShapeStage(size: BoardSize): unknown {
           }: BoardShapeInsertProps<Readonly<Record<string, unknown>>>,
           { board }: Readonly<{ board: NodeKey }>
         ) => {
-          const owner = tx.nodes.get(board)?.[0];
-          const root =
-            owner && ElementApi.isElement(owner)
-              ? tx.schema.getElementContentRoots(owner)[BOARD_SHAPES_SLOT]
-              : undefined;
+          const root = boardShapesRootOf(tx, board);
 
           if (!root) return undefined;
 
@@ -207,15 +324,20 @@ function boardShapeStage(size: BoardSize): unknown {
           const shapeId = nanoid();
           const shape = tx.schema.create(type, {
             ...own,
-            place: { x, y },
+            place: placeAmong(
+              boardFramesIn(shapes).values(),
+              { place: { x, y }, size: { height, width } },
+              { requested: frame }
+            ),
             shapeId,
             size: { height, width },
-            zIndex: stackingKeyAbove(shapes),
+            zIndex: stackingKeyAboveLayer(shapes, boardLayerOf(type)),
           });
 
-          tx.nodes.replaceChildren(
-            [children ? { ...shape, children: [...children] } : shape],
-            { at: [], count: 0, index: shapes.length, root }
+          appendBoardMember(
+            tx,
+            root,
+            children ? { ...shape, children: [...children] } : shape
           );
 
           return shapeId;
