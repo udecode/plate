@@ -2,6 +2,7 @@
 
 import type { NodeKey } from 'platejs';
 import {
+  type EditorElementProps,
   type RenderElementProps,
   useEditorSelector,
   useModelEditor,
@@ -434,7 +435,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     return <span hidden ref={ref} />;
   }
 
-  function Board(props: RenderElementProps) {
+  function Board(props: EditorElementProps<typeof BoardPlugin>) {
     'use no memo';
     const editor = useModelEditor();
     React.useSyncExternalStore(subscribeReindex, readReindex, readReindex);
@@ -479,7 +480,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
 
     return (
       <BoardSurface
-        {...(props as unknown as Parameters<typeof BoardSurface>[0])}
+        {...props}
         attributes={{ ...props.attributes, 'data-render-arm': arm }}
         slots={slots}
         toolbar={<ViewProbe handleRef={handleRef} />}
@@ -487,7 +488,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     );
   }
 
-  function TickingBoard(props: RenderElementProps) {
+  function TickingBoard(props: EditorElementProps<typeof BoardPlugin>) {
     'use no memo';
     React.useSyncExternalStore(subscribeTick, readTick, readTick);
 
