@@ -143,13 +143,19 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
 
 const REFUSED: Readonly<Record<string, string>> = {
   'code-block': 'code blocks',
-  table: 'tables',
 };
+const REFUSED_STRUCTURE = new Map([
+  ['list', "Suggesting can't change list items yet, only the text in them."],
+  [
+    'table',
+    "Suggesting can't change tables yet, only the text in their cells. Switch to Editing to change them.",
+  ],
+]);
 const refusedPlaces = new Intl.ListFormat('en');
 
 function vetoMessage(reasons: readonly string[]) {
   const places = reasons
-    .filter((reason) => reason !== 'list')
+    .filter((reason) => !REFUSED_STRUCTURE.has(reason))
     .map((reason) => REFUSED[reason] ?? reason);
   const sentences =
     places.length > 0
@@ -158,13 +164,10 @@ function vetoMessage(reasons: readonly string[]) {
         ]
       : [];
 
-  if (reasons.includes('list')) {
-    sentences.push(
-      "Suggesting can't change list items yet, only the text in them."
-    );
-  }
-
-  return sentences.join(' ');
+  return [
+    ...sentences,
+    ...reasons.flatMap((reason) => REFUSED_STRUCTURE.get(reason) ?? []),
+  ].join(' ');
 }
 
 function SuggestionRefusals() {

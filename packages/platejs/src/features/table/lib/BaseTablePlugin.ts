@@ -1198,9 +1198,19 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
   }),
 }))
   .extend(({ editor, schema: { type }, store }) => ({
-    // Review marks cannot hold a table's grid yet.
     contributions: [
-      authoredVeto.of((element) => (element.type === type ? 'table' : null)),
+      authoredVeto.of((element, touch) => {
+        const gridTypes = [
+          type,
+          editor.plugin(BaseTableRowPlugin).schema.type,
+          editor.plugin(BaseTableCellPlugin).schema.type,
+        ];
+
+        return touch === 'element' &&
+          gridTypes.some((gridType) => gridType === element.type)
+          ? 'table'
+          : null;
+      }),
     ],
     read: ({ state }) => {
       const cellType = () => editor.plugin(BaseTableCellPlugin).schema.type;
