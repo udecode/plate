@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "components": {
     "dnd": [
+      "2026-11-13-dnd-object-content",
       "2026-11-13-fix-dnd-phone-handles",
       "2026-10-17-base-dnd-tooltip",
       "2026-10-17-table-handle-stacking",

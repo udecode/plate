@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-13-dnd-object-content",
+      "href": "/registry/changelog/2026-11-13-dnd-object-content.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Hide block handles inside board notes, shapes and arrow labels",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-13-fix-dnd-phone-handles",
       "href": "/registry/changelog/2026-11-13-fix-dnd-phone-handles.json",
       "status": "draft",

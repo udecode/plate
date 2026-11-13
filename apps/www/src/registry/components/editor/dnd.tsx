@@ -456,10 +456,23 @@ export const DndPlugin = definePlugin('dnd', {
     afterEditable: DropIndicator,
     wrapNode: {
       component: Draggable,
-      match: ({ editor, element }) =>
-        !editor.read.view.isReadOnly() &&
-        editor.read.schema.isBlockContent(element) &&
-        editor.read.nodes.isSelectable(element),
+      // A board refuses every move of a block inside its notes, shapes and
+      // arrows, which are objects, so a block whose parent is an object gets
+      // no handle.
+      match: ({ editor, element, renderPath }) => {
+        if (
+          editor.read.view.isReadOnly() ||
+          !editor.read.schema.isBlockContent(element) ||
+          !editor.read.nodes.isSelectable(element)
+        ) {
+          return false;
+        }
+        if (renderPath.length === 1) return true;
+
+        const parent = editor.read.nodes.parent(element)?.[0];
+
+        return !parent || !editor.read.schema.isObject(parent);
+      },
     },
     wrapRoot: DndRoot,
   },

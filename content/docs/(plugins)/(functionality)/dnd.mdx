@@ -31,7 +31,7 @@ docs:
 
 ### Installation
 
-`DndKit` adds a handle to each selectable block at any depth, such as blocks inside blockquotes, details, columns and table cells, and shows only the handle of the innermost hovered block. Rows, cells, column items and the details summary get none. It also paints the drop indicator and binds the keyboard moves. Drag and drop uses the browser's native events; it needs no provider or extra dependency.
+`DndKit` adds a handle to each selectable block at any depth, such as blocks inside blockquotes, details, columns and table cells, and shows only the handle of the innermost hovered block. Rows, cells, column items, the details summary and the blocks inside an object, such as a board's note, shape or arrow label, get none. It also paints the drop indicator and binds the keyboard moves. Drag and drop uses the browser's native events; it needs no provider or extra dependency.
 
 <ComponentSource name="dnd" />
 
@@ -136,7 +136,7 @@ export const DragHandlePlugin = definePlugin('dragHandle', {
 });
 ```
 
-The match gives every selectable block a handle, at any depth; match `renderPath.length === 1` for top-level blocks only. `drag.start` returns `null` when nothing can be dragged, such as a removed block. While the drag runs, every dragged block carries `data-editor-dragging`, which the wrapper above dims. A read-only view starts a copy-only drag.
+The match gives every selectable block a handle, at any depth; match `renderPath.length === 1` for top-level blocks only. The copied kit also skips a block whose parent is an object, such as a board note, because the board refuses every move of a block inside its shapes. `drag.start` returns `null` when nothing can be dragged, such as a removed block. While the drag runs, every dragged block carries `data-editor-dragging`, which the wrapper above dims. A read-only view starts a copy-only drag.
 
 The indicator moves on every `dragover`, so position it with `transform`, which skips layout. Column items lay out horizontally, so their indicator has `axis: 'x'`. Paint a vertical line from `line.x`, `line.y` and `line.height`.
 

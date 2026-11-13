@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-13-dnd-object-content",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-13-dnd-object-content.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Hide block handles inside board notes, shapes and arrow labels",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-13-dnd-block-handles-inside-board-ef8a6052",
+      "kind": "fix",
+      "summary": "Show no block handle on the blocks inside an object, such as a board's note, shape or arrow label, because the board refuses every move of them. Top-level blocks and blocks in tables, columns and other containers keep their handles.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-dnd-object-content",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
