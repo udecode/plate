@@ -1,3 +1,4 @@
+import type { NodeKey } from '../../../core';
 import {
   BaseBoardArrowPlugin,
   BaseBoardFramePlugin,
@@ -21,6 +22,7 @@ import {
   previewArrowLine,
   previewCopy,
   previewFrameOutline,
+  previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
 import type { BoardCamera, BoardViewCore } from './boardView.internal';
@@ -36,6 +38,13 @@ type Gesture = Readonly<{ pointerId: number }> &
         pointer: BoardPlace;
         press: BoardPlace;
         start: BoardArrowEndInput;
+      }
+    | {
+        kind: 'box';
+        base: readonly NodeKey[];
+        from: BoardPlace;
+        outline: HTMLElement;
+        pointer: BoardPlace;
       }
     | {
         kind: 'frame';
@@ -112,6 +121,12 @@ const frameToolBox = (
   };
 };
 
+const holds = (outer: BoardBox, inner: BoardBox) =>
+  inner.x >= outer.x &&
+  inner.y >= outer.y &&
+  inner.x + inner.width <= outer.x + outer.width &&
+  inner.y + inner.height <= outer.y + outer.height;
+
 const fractionOf = (offset: number, length: number) =>
   length > 0 ? Math.min(1, Math.max(0, offset / length)) : 0.5;
 
@@ -155,9 +170,9 @@ const elementOf = (host: HTMLElement, id: string) =>
   host.querySelector<HTMLElement>(`[data-board-shape="${CSS.escape(id)}"]`);
 
 /**
- * The board's pointer gestures on `host`: pan, move, copy drag, resize, the
- * pen's line and the other tools' drags, each previewed with no write and
- * committed once on release.
+ * The board's pointer gestures on `host`: pan, the selection box, move, copy
+ * drag, resize, the pen's line and the other tools' drags, each previewed with
+ * no write and committed once on release.
  */
 export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
@@ -166,15 +181,58 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   let gesture: Gesture | null = null;
   let swallowClick = false;
   let pressed: BoardShapeLayout | undefined;
+  let spaceHeld = false;
 
   const drawPen = ({ path, points }: Extract<Gesture, { kind: 'pen' }>) => {
     path.setAttribute('d', strokeOutline(points, false));
+  };
+
+  const pan = (pointer: BoardPlace, pointerId: number): Gesture => ({
+    camera: core.state().camera,
+    kind: 'pan',
+    pointer,
+    pointerId,
+    start: pointer,
+  });
+
+  const pick = (keys: readonly NodeKey[]) => {
+    if (keys.length > 0) core.select(keys);
+    else core.keepKeysOnBoard();
+    core.voice.hold(true);
   };
 
   const follow = () => {
     if (!gesture || gesture.kind === 'pan' || gesture.kind === 'pen') return;
 
     const at = core.boardPointAt(gesture.pointer);
+
+    if (gesture.kind === 'box') {
+      const span = spanOf({ end: at, start: gesture.from });
+      const keys = new Set(gesture.base.filter((key) => index.layout(key)));
+
+      placeElement(gesture.outline, span);
+      for (const { key } of index.search({
+        maxX: span.x + span.width,
+        maxY: span.y + span.height,
+        minX: span.x,
+        minY: span.y,
+      })) {
+        const layout = index.layout(key);
+
+        if (layout && holds(span, layout.box)) keys.add(key);
+      }
+
+      const selected = core.selectedShapes();
+
+      if (
+        keys.size !== selected.length ||
+        selected.some(({ key }) => !keys.has(key))
+      ) {
+        pick([...keys]);
+      }
+
+      return;
+    }
 
     if (gesture.kind === 'arrow') {
       gesture.line.setAttribute('x2', String(at.x));
@@ -243,7 +301,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       done.element.style.cssText = done.restore;
     } else if (done.kind === 'arrow') {
       done.line.ownerSVGElement?.remove();
-    } else if (done.kind === 'frame') {
+    } else if (done.kind === 'box' || done.kind === 'frame') {
       done.outline.remove();
     } else if (done.kind === 'pen') {
       done.path.ownerSVGElement?.remove();
@@ -279,6 +337,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       return;
     }
     cancel();
+    if (done.kind === 'box') return;
     if (done.kind === 'pen') {
       core.write((tx) =>
         tx
@@ -363,7 +422,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     if (gesture) return;
     pressed = undefined;
     swallowClick = false;
-    if (event.button !== 0 || !(event.target instanceof Element)) return;
+    if (event.button > 1 || !(event.target instanceof Element)) return;
     if (event.target.closest('[data-board-toolbar]')) return;
 
     core.measure();
@@ -383,8 +442,11 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       !!handle
     );
     const draws = tool === 'arrow' || tool === 'pen';
+    const typing = core.writable() && !!core.editedShape();
 
-    if (!draws && shapeElement && shape && handle) {
+    if (event.button === 1 || (spaceHeld && !typing)) {
+      gesture = pan(pointer, pointerId);
+    } else if (!draws && shapeElement && shape && handle) {
       if (!core.writable()) return;
       gesture = {
         corner: handle,
@@ -522,24 +584,36 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
           break;
         }
         case 'select': {
-          core.keepKeysOnBoard();
+          if (event.pointerType === 'touch') {
+            core.keepKeysOnBoard();
+            gesture = pan(pointer, pointerId);
+            break;
+          }
+
+          const base = event.shiftKey
+            ? core.selectedShapes().map(({ key }) => key)
+            : [];
+
+          pick(base);
           gesture = {
-            camera: core.state().camera,
-            kind: 'pan',
+            base,
+            from: at,
+            kind: 'box',
+            outline: previewSelectBox(core.zoomLayer(), at, previewRank()),
             pointer,
             pointerId,
-            start: pointer,
           };
           break;
         }
       }
     }
 
-    if (gesture) core.voice.hold();
+    if (gesture) core.voice.hold(gesture.kind === 'box');
     event.preventDefault();
     event.stopPropagation();
     host.setPointerCapture(pointerId);
-    swallowClick = true;
+    // A middle press ends in auxclick, not click.
+    swallowClick = event.button === 0;
   };
   const owns = (event: PointerEvent) => gesture?.pointerId === event.pointerId;
   const onPointerMove = (event: PointerEvent) => {
@@ -596,6 +670,16 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     event.stopPropagation();
     core.edit(shape.key);
   };
+  const onSpace = (event: KeyboardEvent) => {
+    if (event.code !== 'Space' && event.key !== ' ') return;
+    spaceHeld =
+      event.type === 'keydown' &&
+      event.target instanceof Node &&
+      host.contains(event.target);
+  };
+  const releaseSpace = () => {
+    spaceHeld = false;
+  };
   const view = host.ownerDocument.defaultView;
 
   host.addEventListener('pointerdown', onPointerDown, true);
@@ -604,6 +688,9 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   host.addEventListener('pointercancel', onPointerCancel);
   view?.addEventListener('click', onClick, true);
   view?.addEventListener('dblclick', onDoubleClick, true);
+  view?.addEventListener('keydown', onSpace, true);
+  view?.addEventListener('keyup', onSpace, true);
+  view?.addEventListener('blur', releaseSpace);
 
   return {
     /** End the gesture in flight with no write, and return whether one was. */
@@ -616,12 +703,22 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       host.removeEventListener('pointercancel', onPointerCancel);
       view?.removeEventListener('click', onClick, true);
       view?.removeEventListener('dblclick', onDoubleClick, true);
+      view?.removeEventListener('keydown', onSpace, true);
+      view?.removeEventListener('keyup', onSpace, true);
+      view?.removeEventListener('blur', releaseSpace);
     },
     /** Redraw the gesture's preview after the camera or the shapes moved. */
     follow,
     /** End a gesture that would write once the view can no longer write. */
     refuseWrites: () => {
-      if (gesture && gesture.kind !== 'pan' && !core.writable()) cancel();
+      if (
+        gesture &&
+        gesture.kind !== 'pan' &&
+        gesture.kind !== 'box' &&
+        !core.writable()
+      ) {
+        cancel();
+      }
     },
   };
 };

@@ -49,6 +49,8 @@ export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
  * and stays the tool after it draws. The other tools act on an empty part of
  * the board, which includes the inside of a frame. `frame` draws a frame over
  * a drag, or adds one of the frame's default size centered at a click.
+ * `select` selects the shapes a mouse or pen drag's box holds wholly, adding
+ * them to the selection with Shift, and pans on a touch drag.
  */
 export type BoardTool = 'arrow' | 'frame' | 'geo' | 'note' | 'pen' | 'select';
 

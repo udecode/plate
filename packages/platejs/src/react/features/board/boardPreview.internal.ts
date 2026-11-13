@@ -91,19 +91,20 @@ export const previewArrowLine = (
   return line;
 };
 
-/** The dashed outline a frame drag shows in `layer` from board point `from`. */
-export const previewFrameOutline = (
+const previewOutline = (
   layer: HTMLElement | null,
+  name: string,
   from: BoardPlace,
-  rank: number
+  rank: number,
+  style: Readonly<{ background?: string; border: string }>
 ) => {
   const outline = (layer?.ownerDocument ?? document).createElement('div');
 
   outline.setAttribute('aria-hidden', 'true');
-  outline.setAttribute('data-board-frame-preview', '');
+  outline.setAttribute(name, '');
   outline.setAttribute('data-editor-root-chrome-ignore', 'true');
   Object.assign(outline.style, {
-    border: '1px dashed currentColor',
+    ...style,
     boxSizing: 'border-box',
     pointerEvents: 'none',
     position: 'absolute',
@@ -114,6 +115,27 @@ export const previewFrameOutline = (
 
   return outline;
 };
+
+/** The dashed outline a frame drag shows in `layer` from board point `from`. */
+export const previewFrameOutline = (
+  layer: HTMLElement | null,
+  from: BoardPlace,
+  rank: number
+) =>
+  previewOutline(layer, 'data-board-frame-preview', from, rank, {
+    border: '1px dashed currentColor',
+  });
+
+/** The box a selection drag shows in `layer` from board point `from`. */
+export const previewSelectBox = (
+  layer: HTMLElement | null,
+  from: BoardPlace,
+  rank: number
+) =>
+  previewOutline(layer, 'data-board-select-box', from, rank, {
+    background: 'color-mix(in oklab, currentColor 8%, transparent)',
+    border: '1px solid currentColor',
+  });
 
 /** The line a pen drag shows in `layer`, drawn in board coordinates. */
 export const previewStroke = (layer: HTMLElement | null, rank: number) => {

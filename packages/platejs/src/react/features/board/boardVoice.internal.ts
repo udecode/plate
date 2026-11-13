@@ -195,8 +195,8 @@ export const createBoardVoice = ({
   };
 
   return {
-    hold: () => {
-      owed = pending;
+    hold: (owesSelection = false) => {
+      owed = owesSelection ? { kind: 'selection' } : pending;
       pending = null;
     },
     release: () => {
