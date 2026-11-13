@@ -186,7 +186,14 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。`propose` view 会拒绝无法记录为 proposal 的写入并将其回滚，两种模式也都会拒绝某些位于段落旁的编辑，这些段落被待处理的合并显示在其存储位置之外；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。在编辑模式下对待处理的格式 suggestion 再设置格式会直接应用，并保留该 suggestion 待处理，因此之后拒绝它仍会保留这次直接编辑。如果协作者在这次编辑同步期间决定或撤回该 suggestion，这次直接编辑可能丢失。
+为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。表格单元格或列表项内的文本编辑也会记录。建议模式目前仍会拒绝以下编辑：
+
+- 修改表格本身，例如添加行或合并单元格
+- 粘贴表格，或在跨越多个表格单元格的选区上粘贴
+- 修改列表项本身，例如在列表项中按 Enter 或 Tab，或在其开头按 Backspace
+- 代码块内的任何编辑
+
+`propose` view 会拒绝无法记录为 proposal 的写入并将其回滚，两种模式也都会拒绝某些位于段落旁的编辑，这些段落被待处理的合并显示在其存储位置之外；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。在编辑模式下对待处理的格式 suggestion 再设置格式会直接应用，并保留该 suggestion 待处理，因此之后拒绝它仍会保留这次直接编辑。如果协作者在这次编辑同步期间决定或撤回该 suggestion，这次直接编辑可能丢失。
 
 ### Accepted、proposed 和 markup
 
