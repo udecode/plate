@@ -1,17 +1,32 @@
 ---
 title: 本地文档
-description: 在本地设置 Plate 文档，实现版本控制和 AI 增强的开发体验。
+description: 让编码 agent 读取随已安装版本发布的 Plate 文档，或把文档复制到项目中。
 ---
 
-把 Plate 文档复制到项目中，便于与应用代码一起审阅、定制和版本控制。
-需要特定版本的 API 文档时，应使用对应版本的注册表。
+每个 `platejs` 版本都在 `node_modules/platejs/dist/docs/` 中附带 Markdown
+格式的文档。这些文件与已安装的版本一致，编码 agent 读到的是应用实际使用的
+API，而不是它记忆中的 API。
 
-本地文档让开发者和编码工具按文件查找相关指南，也可以与其他库的文档
-放在同一个站点中。
+## 让 agent 读取文档
 
-## 设置指南
+把下面这段内容加入应用的 `AGENTS.md`，或你的编码工具读取的规则文件：
 
-有两种方式设置本地文档：
+```md
+This app uses Plate (`platejs`), whose API differs from older versions you
+may remember. Before you write editor code, read
+`node_modules/platejs/dist/docs/llms.txt` and the pages it lists. They match
+the installed version.
+```
+
+`llms.txt` 写明已安装的版本，并列出每个页面及其描述。页面中的
+`/docs/<path>` 链接在 `llms.txt` 列出该页面时，对应
+`node_modules/platejs/dist/docs/` 中的 `<path>.md` 文件。在 monorepo 中，
+请让这段内容指向应用解析 `platejs` 时使用的 `node_modules` 文件夹。
+
+## 把文档复制到项目中
+
+从 `@plate` 注册表复制文档 MDX，用于审阅、定制，或与其他库的文档放在同一个
+站点中。注册表提供最新的文档，可能与已安装的版本不同。
 
 ### 方式一：文档应用
 
@@ -85,8 +100,9 @@ npx shadcn@latest add @plate/fumadocs
   `registryDependencies` 的叶子注册表项目才适合使用 GitHub 原始 URL。
 
 不要从 GitHub 原始 tag 安装 `fumadocs.json` 或 `docs.json` 这类聚合项目：
-它们的传递注册表依赖可能会解析到实时注册表。要安装完整的特定版本文档，
-请从匹配的 Plate checkout 生成或提供注册表，确保每个传递项目都来自同一版本。
+它们的传递注册表依赖可能会解析到实时注册表。要获取完整的特定版本文档，
+请阅读上文的包内文档，或从匹配的 Plate checkout 生成或提供注册表，确保每个
+传递项目都来自同一版本。
 
 </Callout>
 

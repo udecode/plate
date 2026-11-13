@@ -316,7 +316,10 @@ const main = async () => {
         ['pack', '--pack-destination', tempRoot, '--json'],
         { cwd: packageDirectory, encoding: 'utf-8' }
       );
-      const packResult = JSON.parse(packOutput) as {
+      // pnpm prints the prepack banner to stdout ahead of the JSON.
+      const packResult = JSON.parse(
+        packOutput.slice(packOutput.search(/^\{/m))
+      ) as {
         filename: string;
         version: string;
       };

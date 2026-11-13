@@ -13,38 +13,40 @@ const { sourcePathToDocsRoute } =
 
 export const PLITE_EXAMPLES_DIR = 'apps/www/src/app/(app)/examples/plite';
 
-function previewNames(text) {
-  const prose = [];
+export function proseChunks(text) {
+  const chunks = [];
   let fence = null;
 
   for (const line of text.split('\n')) {
     const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
-    if (marker && !fence) fence = marker;
-    else if (
-      marker &&
-      marker.startsWith(fence[0]) &&
-      marker.length >= fence.length
-    ) {
+    const prose = !fence && !marker;
+
+    if (!fence) fence = marker ?? null;
+    else if (marker?.startsWith(fence[0]) && marker.length >= fence.length) {
       fence = null;
-    } else if (!fence) prose.push(line);
+    }
+
+    const last = chunks.at(-1);
+    if (last?.prose === prose) last.text += `\n${line}`;
+    else chunks.push({ prose, text: line });
   }
 
-  return [
-    ...prose
-      .join('\n')
-      .matchAll(/<ComponentPreview\b[^>]*?\bname=["']([^"']+)["']/g),
-  ].map((match) => match[1]);
+  return chunks;
 }
 
-export function readSources(root) {
-  const { items } = JSON.parse(
-    readFileSync(
-      path.join(root, 'apps/www/src/__registry__/registry-metadata.json'),
-      'utf-8'
-    )
-  ).registries.base;
-  const previews = new Map();
-  const docs = execFileSync(
+function previewNames(text) {
+  return proseChunks(text)
+    .filter((chunk) => chunk.prose)
+    .flatMap((chunk) => [
+      ...chunk.text.matchAll(
+        /<ComponentPreview\b[^>]*?\bname=["']([^"']+)["']/g
+      ),
+    ])
+    .map((match) => match[1]);
+}
+
+export function listDocPages(root) {
+  return execFileSync(
     'git',
     [
       'ls-files',
@@ -64,11 +66,28 @@ export function readSources(root) {
     .split('\n')
     .filter(
       (file) => file.endsWith('.mdx') && existsSync(path.join(root, file))
-    );
+    )
+    .map((file) => ({
+      file,
+      route: sourcePathToDocsRoute(file.slice('content/docs/'.length)),
+    }));
+}
+
+export function readRegistryItems(root) {
+  return JSON.parse(
+    readFileSync(
+      path.join(root, 'apps/www/src/__registry__/registry-metadata.json'),
+      'utf-8'
+    )
+  ).registries.base.items;
+}
+
+export function readSources(root) {
+  const items = readRegistryItems(root);
+  const previews = new Map();
   const pages = [];
 
-  for (const file of docs) {
-    const route = sourcePathToDocsRoute(file.slice('content/docs/'.length));
+  for (const { file, route } of listDocPages(root)) {
     pages.push(route);
     for (const name of previewNames(
       readFileSync(path.join(root, file), 'utf-8')

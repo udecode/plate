@@ -428,6 +428,7 @@
     "lint:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs upload-react",
     "lint:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs yjs",
     "lint:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs yjs-react",
+    "prepack": "node ../../tooling/scripts/build-package-docs.mjs",
     "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs platejs test",
     "test:partition:ai": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai",
     "test:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai-react",

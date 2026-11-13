@@ -1,18 +1,34 @@
 ---
 title: Local Docs
-description: Set up Plate's documentation locally for version-controlled, AI-enhanced development.
+description: Point coding agents at the Plate docs that ship with your installed version, or copy the docs into your project.
 ---
 
-Copy Plate documentation into your project to review, customize, and version
-it alongside the application. Use a registry built from the matching Plate
-version when you need version-specific API documentation.
+Every `platejs` release ships its documentation as Markdown in
+`node_modules/platejs/dist/docs/`. These files match the installed version, so
+a coding agent reads the API your app uses instead of the one it remembers.
 
-Local files let developers and coding tools open the relevant guide directly.
-You can also host them alongside documentation for other libraries.
+## Point your agent at the docs
 
-## Setup guide
+Add this block to your app's `AGENTS.md`, or to the rules file your coding tool
+reads:
 
-There are two ways to set up local documentation:
+```md
+This app uses Plate (`platejs`), whose API differs from older versions you
+may remember. Before you write editor code, read
+`node_modules/platejs/dist/docs/llms.txt` and the pages it lists. They match
+the installed version.
+```
+
+`llms.txt` names the installed version and lists every page with its
+description. A `/docs/<path>` link inside a page is the file `<path>.md` in
+`node_modules/platejs/dist/docs/` when `llms.txt` lists it. In a monorepo,
+point the block at the `node_modules` folder your app resolves `platejs` from.
+
+## Copy the docs into your project
+
+Copy the docs MDX from the `@plate` registry to review or customize them, or to
+host them beside the documentation of other libraries. The registry serves the
+newest docs, which can differ from your installed version.
 
 ### Option 1: docs app
 
@@ -88,7 +104,8 @@ npx shadcn@latest add @plate/fumadocs
 
 Do not install aggregate items such as `fumadocs.json` or `docs.json` from a
 raw GitHub tag: their transitive registry dependencies can resolve from the
-live registry. For full version-pinned docs, generate or serve the registry
+live registry. For full version-pinned docs, read the
+[package docs](#point-your-agent-at-the-docs), or generate or serve the registry
 from the matching Plate checkout so every transitive item comes from the same
 version.
 

@@ -31,6 +31,7 @@ import {
   resolvePublicEntrypoint,
 } from '../entrypoints/entrypoint-dag.mjs';
 import { createSsrRuntimeProofSource } from '../entrypoints/entrypoint-runtime.mjs';
+import { DOCS_DIR, docsIndexHeading } from './build-package-docs.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -82,6 +83,7 @@ export const PLITE_RELEASE_PACKAGES = [
   {
     allowedPlateRuntime: ['plitejs'],
     directory: 'packages/platejs',
+    docs: DOCS_DIR,
     name: 'platejs',
   },
 ];
@@ -561,8 +563,39 @@ function collectDeclarationImportSpecifiers(source) {
   return [...imports].sort(compareStrings);
 }
 
+function auditPackedDocs({ docs, files, packageJson }) {
+  const indexPath = `${docs}/llms.txt`;
+  const index = files.find((file) => normalizePackedPath(file) === indexPath);
+
+  if (!index) {
+    return [
+      `${indexPath} is missing, so the release would ship without its docs`,
+    ];
+  }
+
+  const errors = [];
+  const heading = docsIndexHeading(packageJson);
+  const packedFiles = new Set(files.map(normalizePackedPath));
+  const pages = [...index.source.matchAll(/\]\(([^)]+\.md)\)/g)].map(
+    ([, page]) => page
+  );
+
+  if (index.source.split('\n', 1)[0] !== heading) {
+    errors.push(`${indexPath} must open with "${heading}"`);
+  }
+  if (pages.length === 0) errors.push(`${indexPath} lists no pages`);
+  for (const page of pages) {
+    if (!packedFiles.has(`${docs}/${page}`)) {
+      errors.push(`${indexPath} lists ${page}, which the package lacks`);
+    }
+  }
+
+  return errors;
+}
+
 export function auditPackedPackage({
   allowedPlateRuntime,
+  docs,
   files,
   packageJson,
 }) {
@@ -661,6 +694,8 @@ export function auditPackedPackage({
   }
 
   errors.push(...auditDeclarationImports(files));
+
+  if (docs) errors.push(...auditPackedDocs({ docs, files, packageJson }));
 
   return errors;
 }
@@ -1822,7 +1857,10 @@ function packAndInstallPackage({
     ['pack', '--json', '--pack-destination', tarballDirectory],
     { cwd: packageSourceDirectory }
   );
-  const packMetadata = JSON.parse(packResult.stdout.trim());
+  // pnpm prints the prepack banner to stdout ahead of the JSON.
+  const packMetadata = JSON.parse(
+    packResult.stdout.slice(packResult.stdout.search(/^\{/m))
+  );
   const packageDirectory = join(
     consumerDirectory,
     'node_modules',
@@ -1899,13 +1937,16 @@ function auditInstalledPackage({
   const files = walkFiles(packageDirectory).map((absolutePath) => ({
     path: relative(packageDirectory, absolutePath).split(sep).join('/'),
     source:
-      absolutePath.endsWith('.js') || absolutePath.endsWith('.d.ts')
+      absolutePath.endsWith('.js') ||
+      absolutePath.endsWith('.d.ts') ||
+      absolutePath.endsWith('.txt')
         ? readFileSync(absolutePath, 'utf-8')
         : '',
   }));
 
   return auditPackedPackage({
     allowedPlateRuntime: packageContract.allowedPlateRuntime,
+    docs: packageContract.docs,
     files,
     packageJson,
   });
