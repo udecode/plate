@@ -12,10 +12,9 @@
 // is a fork rebases onto upstream and opens the PR there from the fork. The PR
 // body is the page `plan-page.mjs <plan> --pr` renders, with each frame it
 // prints attached, when the task changes exactly one dated plan, and the
-// commit body otherwise; a refused render stops before the push. When
-// <branch>'s rules require an approval that a later push dismisses, it then
-// arms GitHub auto-merge, so the PR merges once a reviewer approves its latest
-// push.
+// commit body otherwise; a refused render stops before the push. It then
+// arms GitHub auto-merge on the PR with a merge method <branch>'s rules allow,
+// so the PR merges once its required checks and reviews pass.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is. With --dry it checks
 // the message, its source and the Defaults table of each open dated plan the
@@ -725,16 +724,14 @@ if (mode === 'push') {
   console.log(armAutoMerge((forked ? repo('upstream') : repo('origin')).join('/'), url));
 }
 
-// Auto-merge lands whatever head is ready, so it is armed only where a required approval goes stale on a push and the approval of the landing head stays the gate.
+// Every PR land.mjs opens gets auto-merge, so a green, approved PR never waits on a maintainer to press merge (owner's word, 2026-11-12).
+// An unreadable rule set constrains nothing here, because GitHub refuses a method the base forbids and that refusal is reported.
 function armAutoMerge(slug, url) {
   const rules = spawnSync('gh', ['api', `repos/${slug}/rules/branches/${branch}`], { encoding: 'utf8' });
-  if (rules.status !== 0) return `Auto-merge stays off: could not read ${branch}'s rules: ${rules.stderr.trim()}`;
-  const reviews = JSON.parse(rules.stdout).filter((rule) => rule.type === 'pull_request').map((rule) => rule.parameters ?? {});
-  const gated = reviews.some((rule) => rule.required_approving_review_count > 0 && (rule.dismiss_stale_reviews_on_push || rule.require_last_push_approval));
-  if (!gated) return `Auto-merge stays off: ${branch}'s rules require no approval of a PR's latest push.`;
+  const reviews = rules.status === 0 ? JSON.parse(rules.stdout).filter((rule) => rule.type === 'pull_request').map((rule) => rule.parameters ?? {}) : [];
   const method = ['squash', 'merge', 'rebase'].find((name) => reviews.every((rule) => (rule.allowed_merge_methods ?? [name]).includes(name)));
   if (!method) return `Auto-merge stays off: ${branch}'s rules allow no merge method in common.`;
   const run = spawnSync('gh', ['pr', 'merge', url, '--auto', `--${method}`], { encoding: 'utf8' });
   if (run.status !== 0) return `Auto-merge stays off: gh pr merge --auto failed: ${`${run.stderr}${run.stdout}`.trim()}`;
-  return `Armed auto-merge (${method}): the PR merges once a reviewer approves its latest push.`;
+  return `Armed auto-merge (${method}): the PR merges once its required checks and reviews pass.`;
 }

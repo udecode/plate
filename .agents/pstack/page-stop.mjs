@@ -5,8 +5,9 @@
 // Prints the Artifact publish that adds or updates this run's part of its
 // subject page, and the files to read in full before sending it. --base names
 // the page as the Artifact tool last returned it; without it the helper starts
-// from this checkout's last publish. --new makes a new page for a subject whose
-// page no longer opens.
+// from the page this checkout last wrote, or from an empty page while the plan
+// has no page link.
+// --new makes a new page for a subject whose page no longer opens.
 // --hook reads a Claude Code PostToolUseFailure payload and, when a plan
 // page's publish failed because the page no longer opens, tells the lead to
 // rerun with --new.
@@ -57,12 +58,13 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   const url = fresh ? null : bound;
   const store = fresh && bound ? gonePagesFile(root) : null;
   if (store) appendFileSync(store, `${bound}\n`);
-  const base = baseOf(fresh ? null : baseFile ? resolve(baseFile) : join(out, 'index.html'));
+  const base = baseOf(fresh ? null : baseFile ? resolve(baseFile) : url ? join(out, 'index.html') : null);
   const now = new Date().toISOString();
   const header = runHeader(planPath, { session, at: now });
   const previous = readJson(join(out, 'runs', `${header.key}.json`));
   const listed = base.runs.find((entry) => entry.key === header.key);
-  const onPage = listed && previous?.at === listed.at ? previous : null;
+  const unlinked = !url && !fresh && !baseFile;
+  const onPage = unlinked || (listed && previous?.at === listed.at) ? previous : null;
   const { occurrence, since } = occurrenceOf(planPath, header.stage);
   header.occurrence = occurrence;
   header.since = since ?? (onPage?.occurrence === occurrence ? onPage.since : now);

@@ -18,7 +18,7 @@ import {
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, readFence, reopened, splitRow, stageOfRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
+import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, outsideFences, readFence, reopened, splitRow, stageOfRow, stateOf, strayFence, TABLE_RULE, tablesOf } from './status.mjs';
 
 export const slugOf = (path) => path.split('/').at(-1).replace(/\.md$/u, '').replace(/[^A-Za-z0-9._-]+/gu, '-');
 
@@ -541,8 +541,9 @@ function briefOf(plan) {
   const section = sectionNamed(plan, 'Brief');
   if (!section) return null;
   const answers = [];
-  for (const line of section.lines) {
-    const heading = line.match(/^###\s+(.*)$/);
+  const outside = outsideFences(section.lines);
+  for (const [index, line] of section.lines.entries()) {
+    const heading = outside[index] && line.match(/^###\s+(.*)$/);
     if (heading) answers.push({ question: heading[1].trim(), lines: [] });
     else answers.at(-1)?.lines.push(line);
   }
@@ -1004,8 +1005,9 @@ function questionGroups(sections) {
     if (note === last) note.lines.push('');
     if (!from && intro.length) intro.push('');
     let own = null;
-    for (const line of lines) {
-      const heading = line.match(/^###\s+(.*)$/);
+    const outside = outsideFences(lines);
+    for (const [index, line] of lines.entries()) {
+      const heading = outside[index] && line.match(/^###\s+(.*)$/);
       if (heading) groups.push((own = { header: heading[1].trim(), lines: [], from, plan }));
       else (own?.lines ?? (from ? note.lines : intro)).push(line);
     }
@@ -1073,6 +1075,10 @@ function assertPlain(plan, where) {
       if (code) throw new Error(`## ${title} in ${where} holds code ${code}; the page shows this section, so write it in plain words and keep code in the plan's other sections`);
     }
   }
+}
+
+function assertFences(plan, where) {
+  if (plan.strayLine) throw new Error(`${where} line ${plan.strayLine} opens a fence that never closes or that holds another fence's opening line, so later headings can read as code; close it first, or quote fenced text in a longer fence such as \`\`\`\`md`);
 }
 
 const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} and ${items.at(-1)}` : items[0]);
@@ -1385,22 +1391,25 @@ function parsePlan(source) {
   let title = '';
   const lead = [];
   const sections = [];
-  for (const line of lines) {
-    const field = line.match(/^(Status|Page|Topic|Playbook|Plans):\s*(.*)$/);
+  const outside = outsideFences(lines);
+  for (const [index, line] of lines.entries()) {
+    const field = outside[index] && line.match(/^(Status|Page|Topic|Playbook|Plans):\s*(.*)$/);
     if (field && sections.length === 0) {
       meta[field[1].toLowerCase()] = field[2].trim();
       fields[field[1].toLowerCase()] = field[2].trim();
       continue;
     }
-    if (!title && /^#\s+/.test(line)) {
+    if (!title && outside[index] && /^#\s+/.test(line)) {
       title = line.replace(/^#\s+/, '').trim();
       continue;
     }
-    const heading = line.match(/^##\s+(.*)$/);
+    const heading = outside[index] && line.match(/^##\s+(.*)$/);
     if (heading) sections.push({ title: heading[1].trim(), lines: [] });
     else (sections.at(-1)?.lines ?? lead).push(line);
   }
-  return { meta, fields, lists, title, lead, sections };
+  const stray = strayFence(lines);
+  const strayLine = stray < 0 ? 0 : source.split('\n').length - lines.length + stray + 1;
+  return { meta, fields, lists, title, lead, sections, strayLine };
 }
 
 const severity = (row) => {
@@ -1533,6 +1542,7 @@ function page(planPath, { folded = false, run = null } = {}) {
     if (!finished(entry.plan.meta.status ?? '') && owesBrief(entry)) assertBrief(entry.plan, where);
     assertDemo(entry.plan, where);
     if (stateOf(entry.plan.meta.status ?? '') && !finished(entry.plan.meta.status ?? '')) {
+      assertFences(entry.plan, where);
       assertAsks(entry.plan, where);
       assertPlain(entry.plan, where);
       assertTeach(entry.plan, where);
@@ -2489,7 +2499,7 @@ function topicIndex(root) {
         .map((name) => basename(name, '.md'))
     : [];
   const hubPath = (name) => (topic.hub ? topic.hub.replaceAll('{topic}', name) : null);
-  const asks = (plan) => plan.sections.some((section) => /^open questions$/i.test(section.title) && section.lines.some((line) => /^###\s/.test(line)));
+  const asks = (plan) => plan.sections.some((section) => /^open questions$/i.test(section.title) && outsideFences(section.lines).some((outside, index) => outside && /^###\s/.test(section.lines[index])));
   const subjects = names.map((name) => {
     const doc = parsePlan(readFileSync(join(topicsDir, `${name}.md`), 'utf-8'));
     const iterations = iterationsOf(plansDir, name, topic);

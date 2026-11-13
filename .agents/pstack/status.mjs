@@ -197,8 +197,8 @@ export const PROVEN = ['fixed', 'proven', 'verified'];
 export const statusOf = (result) => result.replace(/^'/u, '').match(/^[a-z]+/iu)?.[0]?.toLowerCase();
 
 export function parseFence(line) {
-  const match = line.match(/^\s*(```|~~~)(.*)$/);
-  if (!match || (match[1] === '```' && match[2].includes('`'))) return null;
+  const match = line.match(/^\s*(`{3,}|~{3,})(.*)$/);
+  if (!match || (match[1][0] === '`' && match[2].includes('`'))) return null;
   const words = match[2].trim().split(/\s+/).filter(Boolean);
   const tag = ['before', 'after'].includes(words.at(-1)) ? words.pop() : undefined;
   return { marker: match[1], lang: words[0] ?? '', tag };
@@ -262,19 +262,48 @@ export function markdownLines(markdown) {
   return lines;
 }
 
-export function readFence(lines, start) {
-  const { marker, lang, tag } = parseFence(lines[start]);
-  const body = [];
+const indentOf = (line) => line.length - line.trimStart().length;
+
+const sameFence = (opener) => {
+  const { marker } = parseFence(opener);
+  const deepest = indentOf(opener) + 3;
+  const run = new RegExp(`^[ \\t]{0,${deepest}}${marker[0]}{${marker.length},}`, 'u');
+  const rest = (line) => line.replace(run, '').trim();
+  return { closes: (line) => run.test(line) && !rest(line), opens: (line) => run.test(line) && Boolean(rest(line)) && isFence(line) };
+};
+
+function fenceClose(lines, start) {
+  const { closes } = sameFence(lines[start]);
   let index = start + 1;
-  for (
-    ;
-    index < lines.length && !lines[index].trim().startsWith(marker);
-    index += 1
-  ) {
-    body.push(lines[index]);
-  }
-  return { lang, tag, body: body.join('\n'), next: index + 1 };
+  while (index < lines.length && !closes(lines[index])) index += 1;
+  return index;
 }
+
+export function readFence(lines, start) {
+  const { lang, tag } = parseFence(lines[start]);
+  const close = fenceClose(lines, start);
+  return { lang, tag, body: lines.slice(start + 1, close).join('\n'), next: close + 1 };
+}
+
+function fenceSpans(lines) {
+  const spans = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    if (!isFence(lines[index])) continue;
+    const close = fenceClose(lines, index);
+    spans.push({ open: index, close });
+    if (close < lines.length) index = close;
+  }
+  return spans;
+}
+
+export function outsideFences(lines) {
+  const outside = lines.map(() => true);
+  for (const { open, close } of fenceSpans(lines)) if (close < lines.length) outside.fill(false, open, close + 1);
+  return outside;
+}
+
+export const strayFence = (lines) =>
+  fenceSpans(lines).find(({ open, close }) => close === lines.length || lines.slice(open + 1, close).some(sameFence(lines[open]).opens))?.open ?? -1;
 
 export const TABLE_RULE = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
 
