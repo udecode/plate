@@ -1,5 +1,5 @@
 {
-  "generation": "3b4b41b8790c8978e4080ed3a69ca1ea8e5c93eb9fe568c89e550567904b9d6a",
+  "generation": "aadcaa45790bd4a9524dc1d6504b5d395eb103a9c1eb39e5838909648d906a24",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -823,7 +823,8 @@
           "title": "Mark Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/use-mounted"
           ]
         },
         {
@@ -7791,7 +7792,8 @@
           "title": "Mark Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
-            "@plate/toolbar"
+            "@plate/toolbar",
+            "@plate/use-mounted"
           ]
         },
         {

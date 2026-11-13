@@ -1,6 +1,6 @@
 'use client';
 
-import type { ScriptValue } from 'platejs';
+import { IS_APPLE, type ScriptValue } from 'platejs';
 import {
   type BoldPlugin,
   type CodePlugin,
@@ -18,6 +18,7 @@ import {
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 type BooleanMarkPlugin =
   | typeof BoldPlugin
@@ -28,25 +29,58 @@ type BooleanMarkPlugin =
   | typeof StrikethroughPlugin
   | typeof UnderlinePlugin;
 
-export function MarkToolbarButton(
-  props: React.ComponentProps<typeof ToolbarButton> &
-    (
-      | {
-          plugin: BooleanMarkPlugin;
-          value?: never;
-        }
-      | {
-          plugin: typeof ScriptPlugin;
-          value: ScriptValue;
-        }
-    )
-) {
+const APPLE_KEY_GLYPHS: Record<string, string> = {
+  Alt: '⌥',
+  Meta: '⌘',
+  Shift: '⇧',
+};
+
+export function MarkToolbarButton({
+  shortcut,
+  ...props
+}: React.ComponentProps<typeof ToolbarButton> & {
+  /** `mod`, `shift` or `alt` joined to one key with `+`, such as `mod+shift+x`. */
+  shortcut?: string;
+} & (
+    | {
+        plugin: BooleanMarkPlugin;
+        value?: never;
+      }
+    | {
+        plugin: typeof ScriptPlugin;
+        value: ScriptValue;
+      }
+  )) {
   const editor = useOptionalEditor();
+  const shortcutProps = useShortcutProps(props.tooltip, shortcut);
   if (!editor) {
     const { plugin, value, ...buttonProps } = props;
-    return <ToolbarButton {...buttonProps} disabled />;
+    return <ToolbarButton {...buttonProps} {...shortcutProps} disabled />;
   }
-  return <MountedMarkToolbarButton {...props} />;
+  return <MountedMarkToolbarButton {...props} {...shortcutProps} />;
+}
+
+// The platform is known only on the client, so the server and the first client
+// render leave the shortcut out and the label appears after mount.
+function useShortcutProps(tooltip: React.ReactNode, shortcut?: string) {
+  const mounted = useMounted();
+  if (!shortcut || !mounted || typeof tooltip !== 'string') return {};
+
+  const keys = shortcut.split('+').map((key) => {
+    if (key === 'mod') return IS_APPLE ? 'Meta' : 'Control';
+    return key[0].toUpperCase() + key.slice(1);
+  });
+  const label = keys
+    .map((key) =>
+      IS_APPLE ? (APPLE_KEY_GLYPHS[key] ?? key) : key.replace('Control', 'Ctrl')
+    )
+    .join('+');
+
+  return {
+    'aria-keyshortcuts': keys.join('+'),
+    'aria-label': tooltip,
+    tooltip: `${tooltip} (${label})`,
+  };
 }
 
 function MountedMarkToolbarButton({

@@ -1,0 +1,15 @@
+---
+id: 2026-11-13-platform-shortcut-labels
+date: 2026-11-13
+status: draft
+kind: fix
+summary: "Label toolbar shortcuts for the user's platform"
+change: { 'type': 'source', 'date': '2026-11-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-13-fixed-toolbar-label-shortcuts-user-s-4662f3a3","kind":"fix","migrationNotes":[]} -->
+
+- **`mark-toolbar-button`**: Add a `shortcut` prop, such as `mod+b`. After mount, the tooltip shows it with `⌘` on Apple devices and `Ctrl` elsewhere, and the button sets `aria-keyshortcuts`.
+- **`fixed-toolbar`**, **`floating-toolbar`**: Show the Bold, Italic, Underline, Strikethrough and Code shortcuts as `Ctrl` on Windows and Linux instead of always `⌘`.

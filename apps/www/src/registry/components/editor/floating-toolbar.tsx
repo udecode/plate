@@ -57,29 +57,43 @@ export function FloatingToolbarButtons() {
           <ToolbarGroup>
             <TurnIntoToolbarButton />
 
-            <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
+            <MarkToolbarButton
+              plugin={BoldPlugin}
+              shortcut="mod+b"
+              tooltip="Bold"
+            >
               <BoldIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
+            <MarkToolbarButton
+              plugin={ItalicPlugin}
+              shortcut="mod+i"
+              tooltip="Italic"
+            >
               <ItalicIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               plugin={UnderlinePlugin}
-              tooltip="Underline (⌘+U)"
+              shortcut="mod+u"
+              tooltip="Underline"
             >
               <UnderlineIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               plugin={StrikethroughPlugin}
-              tooltip="Strikethrough (⌘+⇧+X)"
+              shortcut="mod+shift+x"
+              tooltip="Strikethrough"
             >
               <StrikethroughIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton plugin={CodePlugin} tooltip="Code (⌘+E)">
+            <MarkToolbarButton
+              plugin={CodePlugin}
+              shortcut="mod+e"
+              tooltip="Code"
+            >
               <Code2Icon />
             </MarkToolbarButton>
 

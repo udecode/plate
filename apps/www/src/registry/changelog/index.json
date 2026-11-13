@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-13-platform-shortcut-labels",
+      "href": "/registry/changelog/2026-11-13-platform-shortcut-labels.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Label toolbar shortcuts for the user's platform",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["mark-toolbar-button", "fixed-toolbar", "floating-toolbar"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-12-add-board",
       "href": "/registry/changelog/2026-11-12-add-board.json",
       "status": "draft",
