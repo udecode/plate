@@ -5,6 +5,7 @@ import {
   EditorElement,
   type EditorElementProps,
   useEditor,
+  useEditorHistory,
   useModelEditor,
   useElementSelected,
 } from '../../core';
@@ -40,10 +41,12 @@ export type {
  * `useBoardActions` reach this view. A read-only view or a preview pans and
  * selects but never writes, and a gesture under way when the view turns so
  * ends with no write. The board shows `data-selected` while a selection of
- * its document covers it. `messages` holds every word the board says, and
- * the view whose surface holds focus says one message per action into the
- * editor's status region. `height` sets this view's height and defaults to
- * the board's stored `height`; it never changes the document.
+ * its document covers it. Its focus target, `[data-board-focus]`, is its one
+ * Tab stop and holds focus while shapes are selected; undo and redo run there
+ * and focus follows what they restore. `messages` holds every word the board
+ * says, and the view whose surface holds focus says one message per action
+ * into the editor's status region. `height` sets this view's height and
+ * defaults to the board's stored `height`; it never changes the document.
  */
 export function BoardSurface({
   height,
@@ -71,8 +74,16 @@ export function BoardSurface({
     (layer: HTMLDivElement | null) => (layer ? view.attach(layer) : undefined),
     [view]
   );
+  const history = useEditorHistory({
+    editor: mounted,
+    focusPolicy: 'none',
+    onReplay: view.refocusAfterReplay,
+  });
 
-  React.useLayoutEffect(() => view.speakWith(messages), [view, messages]);
+  React.useLayoutEffect(
+    () => view.renderWith({ history, messages }),
+    [history, messages, view]
+  );
   React.useEffect(() => view.connect(), [view]);
 
   return (
@@ -91,9 +102,11 @@ export function BoardSurface({
           touchAction: 'none',
         }}
       >
+        {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions -- Tab in a shape's text reaches this layer after the text's own keys; the keys belong to the shapes' text, which owns the role. */}
         <div
           data-board-layer=""
           ref={attach}
+          onKeyDown={view.takeTextTab}
           style={{
             left: 0,
             position: 'absolute',
@@ -113,11 +126,15 @@ export function BoardSurface({
           >
             {props.slots.contentRoot(BOARD_SHAPES_SLOT, {
               ariaLabel: messages.label,
+              tabIndex: -1,
               viewport,
             })}
           </div>
         </div>
-        <BoardFocusTarget />
+        <BoardFocusTarget
+          instructions={messages.instructions}
+          label={messages.label}
+        />
         {toolbar && (
           <div contentEditable={false} data-board-toolbar="">
             {toolbar}
@@ -129,14 +146,40 @@ export function BoardSurface({
   );
 }
 
-function BoardFocusTarget() {
+const WITHOUT_OWN_FOCUS_RING: React.CSSProperties = {
+  clipPath: 'inset(50%)',
+  height: 0,
+  position: 'absolute',
+  width: 0,
+};
+
+// A screen reader passes letters and arrows to a focused application, and
+// keeps its own browse keys on a plain element.
+function BoardFocusTarget({
+  instructions,
+  label,
+}: {
+  instructions: string;
+  label: string;
+}) {
+  const described = React.useId();
+
   return (
-    <div
-      contentEditable={false}
-      data-board-focus=""
-      tabIndex={-1}
-      style={{ height: 0, outline: 'none', position: 'absolute', width: 0 }}
-    />
+    <>
+      <div
+        aria-describedby={described}
+        aria-label={label}
+        contentEditable={false}
+        data-board-focus=""
+        role="application"
+        // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- The application takes the board's one Tab stop and its keys.
+        tabIndex={0}
+        style={WITHOUT_OWN_FOCUS_RING}
+      />
+      <div contentEditable={false} hidden id={described}>
+        {instructions}
+      </div>
+    </>
   );
 }
 

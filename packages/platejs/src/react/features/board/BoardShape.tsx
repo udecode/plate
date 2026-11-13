@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import type { Element } from '../../../core';
+import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
 import {
   EditorElement,
   type EditorElementProps,
@@ -80,11 +81,11 @@ export function BoardShape({
 }) {
   useClaimEditableDOMCommit();
   const view = useBoardViewContext();
-  const key = view.keyOf(props.element);
+  const id = shapeIdOf(props.element);
   const layout = React.useSyncExternalStore(
     view.subscribeShapes,
-    () => view.layoutOf(key),
-    () => view.layoutOf(key)
+    () => view.layoutOf(id),
+    () => view.layoutOf(id)
   );
   const selected = useElementSelected({ mode: 'node' });
   const arrow = layout?.kind === 'arrow';
@@ -124,12 +125,12 @@ export function BoardShape({
  */
 export const useArrowPath = (element: Element): BoardArrowPath | undefined => {
   const view = useBoardViewContext();
-  const key = view.keyOf(element);
+  const id = shapeIdOf(element);
   const subscribe = React.useCallback(
-    (listener: () => void) => view.subscribeArrow(key, listener),
-    [key, view]
+    (listener: () => void) => view.subscribeArrow(id, listener),
+    [id, view]
   );
-  const read = () => view.arrowPathOf(key);
+  const read = () => view.arrowPathOf(id);
 
   return React.useSyncExternalStore(subscribe, read, read);
 };
@@ -145,8 +146,8 @@ export const useStrokePath = (
   element: Element
 ): BoardStrokePath | undefined => {
   const view = useBoardViewContext();
-  const key = view.keyOf(element);
-  const read = () => view.strokePathOf(key);
+  const id = shapeIdOf(element);
+  const read = () => view.strokePathOf(id);
 
   return React.useSyncExternalStore(view.subscribeShapes, read, read);
 };

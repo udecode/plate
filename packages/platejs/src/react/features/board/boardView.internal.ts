@@ -4,9 +4,11 @@ import {
   type ContentSlice,
   createEditorView,
   type Element,
+  ElementApi,
   type Descendant,
   type NodeKey,
   type PluginTransaction,
+  SelectionApi,
 } from '../../../core';
 import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
@@ -16,11 +18,16 @@ import {
   type BoardRestackDirection,
   type BoardSize,
 } from '../../../features/board/lib';
+import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
 import {
   BOARD_SHAPES_SLOT,
   shapeSelectionMode,
 } from '../../../features/board/lib/boardShape.internal';
-import type { Editor } from '../../core';
+import type {
+  EditableHistoryReplayEvent,
+  Editor,
+  EditorHistoryController,
+} from '../../core';
 import { attachBoardClipboard } from './boardClipboard.internal';
 import { attachBoardGestures } from './boardGesture.internal';
 import {
@@ -29,8 +36,9 @@ import {
   type BoardShapeLayout,
   createBoardIndex,
 } from './boardIndex.internal';
-import { attachBoardKeys } from './boardKeys.internal';
+import { attachBoardKeys, takeTextTab } from './boardKeys.internal';
 import {
+  activeElementOf,
   type BoardMessages,
   type BoardVoice,
   createBoardVoice,
@@ -115,10 +123,11 @@ export type BoardViewCore = Readonly<{
   insertWith: (insert: (tx: PluginTransaction) => string | undefined) => void;
   keepKeysOnBoard: () => void;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
-  /** Put the caret before the board, or after it, and leave the board. */
   leaveBoard: (backward: boolean) => boolean;
   measure: () => void;
   mounted: Editor;
+  paste: (data: DataTransfer) => boolean;
+  redo: () => void;
   reveal: (path: readonly number[]) => boolean;
   select: (keys: readonly NodeKey[]) => void;
   selectBoard: () => void;
@@ -128,6 +137,7 @@ export type BoardViewCore = Readonly<{
   shapeAt: (at: BoardPlace) => BoardShapeLayout | undefined;
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
+  undo: () => void;
   voice: Pick<BoardVoice, 'hold' | 'release'>;
   writable: () => boolean;
   /**
@@ -157,6 +167,16 @@ const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
   };
 };
 
+const SHAPES_EDITABLE = `[data-editor-content-root-slot="${BOARD_SHAPES_SLOT}"] [contenteditable="true"]`;
+
+const setShapeSelection = (tx: PluginTransaction, keys: readonly NodeKey[]) =>
+  tx.selection.setNodes(keys, {
+    mode: shapeSelectionMode(
+      tx.schema,
+      keys.flatMap((key) => tx.nodes.get(key)?.[0] ?? [])
+    ),
+  });
+
 export const createBoardView = (
   editor: Editor,
   mounted: Editor,
@@ -169,6 +189,7 @@ export const createBoardView = (
     editor.read.schema.getElementContentRoots(element)[BOARD_SHAPES_SLOT] ?? '';
   const rootView = createEditorView(editor, { root });
   const boards = editor.plugin(BaseBoardPlugin);
+  const shownBoards = mounted.plugin(BaseBoardPlugin);
 
   let state: BoardViewState = {
     camera: { x: 0, y: 0, zoom: 1 },
@@ -185,11 +206,34 @@ export const createBoardView = (
     for (const listener of stateListeners) listener();
   };
 
-  const members = () => boards.read.shapes(board);
+  let shownView = createEditorView(mounted, { root });
+  let renderedKeyOf = new Map<NodeKey, NodeKey>();
   const index = createBoardIndex({
-    children: () => rootView.read.children(),
+    children: () => shownView.read.children(),
     isVoid: (node) => editor.read.schema.isVoid(node),
-    members,
+    members: () => {
+      const shown = new Map(
+        shownView.read
+          .children()
+          .map((node, at) => [
+            ElementApi.isElement(node) ? shapeIdOf(node) : '',
+            shownView.key([at]),
+          ])
+      );
+      const entries = shownBoards.read
+        .shapes(board)
+        .filter(({ id }) => shown.has(id));
+
+      renderedKeyOf = new Map(
+        entries.flatMap(({ id, key }) => {
+          const rendered = shown.get(id);
+
+          return rendered ? [[key, rendered]] : [];
+        })
+      );
+
+      return entries;
+    },
   });
   let shownVersion = 0;
   let mountedKeys: ReadonlySet<NodeKey> = new Set();
@@ -216,7 +260,7 @@ export const createBoardView = (
           minX: x,
           minY: y,
         })
-        .map((box) => box.key)
+        .flatMap((box) => renderedKeyOf.get(box.key) ?? [])
     );
     const next = frame === 0 ? found : new Set([...mountedKeys, ...found]);
 
@@ -237,11 +281,13 @@ export const createBoardView = (
   };
 
   const follow = () => {
+    const rendered = renderedKeyOf;
+
     index.update();
+    if (renderedKeyOf !== rendered) refresh();
     if (index.version() === shownVersion) return;
     shownVersion = index.version();
     for (const listener of shapeListeners) listener();
-    refresh();
     gestures?.follow();
   };
 
@@ -355,7 +401,11 @@ export const createBoardView = (
   const voice = createBoardVoice({
     editor,
     index,
-    members,
+    members: () => {
+      index.update();
+
+      return index.entries();
+    },
     messages: () => messages,
     selectedShapes,
     surface: () => surface,
@@ -386,32 +436,29 @@ export const createBoardView = (
 
   const focusRoot = () => {
     surface
-      ?.querySelector<HTMLElement>(
-        `[data-editor-content-root-slot="${BOARD_SHAPES_SLOT}"] [contenteditable="true"]`
-      )
+      ?.querySelector<HTMLElement>(SHAPES_EDITABLE)
       ?.focus({ preventScroll: true });
+  };
+
+  const parentEditable = () =>
+    surface?.parentElement?.closest<HTMLElement>('[contenteditable="true"]');
+
+  const mainEditable = () => {
+    let editable = parentEditable();
+    let slot = editable?.closest('[data-editor-content-root-slot]');
+
+    while (slot) {
+      editable = slot.parentElement?.closest<HTMLElement>(
+        '[contenteditable="true"]'
+      );
+      slot = editable?.closest('[data-editor-content-root-slot]');
+    }
+
+    return editable;
   };
 
   const focusDocument = () => {
-    surface?.parentElement
-      ?.closest<HTMLElement>('[contenteditable="true"]')
-      ?.focus({ preventScroll: true });
-  };
-
-  const select = (keys: readonly NodeKey[]) => {
-    const order = new Map(index.entries().map((entry, at) => [entry.key, at]));
-    const sorted = keys.toSorted(
-      (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)
-    );
-    focusRoot();
-    editor.update((tx) =>
-      tx.selection.setNodes(sorted, {
-        mode: shapeSelectionMode(
-          tx.schema,
-          sorted.flatMap((key) => tx.nodes.get(key)?.[0] ?? [])
-        ),
-      })
-    );
+    parentEditable()?.focus({ preventScroll: true });
   };
 
   const keepKeysOnBoard = () => {
@@ -419,6 +466,54 @@ export const createBoardView = (
     focusTarget.focus({ preventScroll: true });
     // Firefox keeps the selection when a non-editable element takes focus.
     editor.api.dom.deselect();
+  };
+
+  const select = (keys: readonly NodeKey[]) => {
+    const order = new Map(index.entries().map((entry, at) => [entry.key, at]));
+    const sorted = keys.toSorted(
+      (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)
+    );
+    keepKeysOnBoard();
+    editor.update((tx) => setShapeSelection(tx, sorted));
+  };
+
+  let history: Pick<EditorHistoryController, 'redo' | 'undo'> | null = null;
+
+  const keyById = (id: string) => {
+    if (!index.byId(id)) index.update();
+
+    return index.byId(id)?.key;
+  };
+
+  const refocusAfterReplay = ({ result }: EditableHistoryReplayEvent) => {
+    const range = editor.read.selection();
+
+    if (
+      result.status !== 'applied' ||
+      !range ||
+      !surface?.contains(activeElementOf(surface))
+    ) {
+      return;
+    }
+
+    const held = SelectionApi.root(range);
+    const main = mainEditable();
+    const holder =
+      held &&
+      main?.querySelector<HTMLElement>(`[data-board="${CSS.escape(held)}"]`);
+    const selectsShapes =
+      editor.read.selection.nodeMode() !== null &&
+      editor.read.selection.nodes().every(([, path]) => path.length === 1);
+
+    if (!holder) {
+      main?.focus({ preventScroll: true });
+      return;
+    }
+    holder
+      .querySelector<HTMLElement>(
+        selectsShapes ? ':scope > [data-board-focus]' : SHAPES_EDITABLE
+      )
+      ?.focus({ preventScroll: true });
   };
 
   const write = <T>(change: (tx: PluginTransaction) => T) => {
@@ -487,6 +582,16 @@ export const createBoardView = (
     return true;
   };
 
+  const paste = (data: DataTransfer) => {
+    if (!writable()) return false;
+
+    const keys = selectedShapes().map(({ key }) => key);
+
+    shownView.update((tx) => setShapeSelection(tx, keys));
+
+    return !!shownView.api.dom.clipboard.insertData(data);
+  };
+
   const core: BoardViewCore = {
     board,
     boardPointAt,
@@ -523,6 +628,12 @@ export const createBoardView = (
     keepKeysOnBoard,
     land,
     leaveBoard: (backward) => {
+      if (!writable()) {
+        editor.update((tx) => tx.selection.set(null));
+
+        return false;
+      }
+
       const path = editor.read.nodes.path(board);
       const point =
         path &&
@@ -538,10 +649,14 @@ export const createBoardView = (
     },
     measure,
     mounted,
+    paste,
+    redo: () => {
+      if (writable()) history?.redo();
+    },
     reveal,
     select,
     selectBoard: () => {
-      focusDocument();
+      if (writable()) focusDocument();
       editor.update((tx) => tx.selection.setNodes([board], { mode: 'block' }));
     },
     selectedShapes,
@@ -553,6 +668,9 @@ export const createBoardView = (
     shapeAt: (at) => index.shapeAt(at, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
+    undo: () => {
+      if (writable()) history?.undo();
+    },
     voice,
     writable,
     write,
@@ -666,7 +784,11 @@ export const createBoardView = (
 
   return {
     actions,
-    arrowPathOf: index.arrowPathOf,
+    arrowPathOf: (id: string) => {
+      const key = keyById(id);
+
+      return key ? index.arrowPathOf(key) : undefined;
+    },
     attach,
     connect: () => {
       const unsubscribe = editor.subscribeCommit(({ changed }) => {
@@ -685,6 +807,8 @@ export const createBoardView = (
 
       const unsubscribeViewState = subscribeEditorViewState(mounted, () => {
         gestures?.refuseWrites();
+        shownView = createEditorView(mounted, { root });
+        follow();
         showSelectedFrame();
       });
 
@@ -696,21 +820,31 @@ export const createBoardView = (
         unsubscribeViewState();
       };
     },
-    keyOf,
-    layoutOf: (key: NodeKey) => {
-      if (!index.layout(key)) index.update();
+    refocusAfterReplay,
+    layoutOf: (id: string) => {
+      if (!index.byId(id)) index.update();
 
-      return index.layout(key);
+      return index.byId(id);
+    },
+    renderWith: (
+      next: Readonly<{
+        history: Pick<EditorHistoryController, 'redo' | 'undo'>;
+        messages: BoardMessages;
+      }>
+    ) => {
+      ({ history, messages } = next);
     },
     root,
-    speakWith: (next: BoardMessages) => {
-      messages = next;
-    },
     state: () => state,
-    strokePathOf: index.strokePathOf,
+    strokePathOf: (id: string) => {
+      const key = keyById(id);
+
+      return key ? index.strokePathOf(key) : undefined;
+    },
     subscribe: subscribeTo(stateListeners),
-    subscribeArrow: (key: NodeKey, listener: () => void) => {
-      const stop = index.subscribeArrow(key, listener);
+    subscribeArrow: (id: string, listener: () => void) => {
+      const key = keyById(id);
+      const stop = key ? index.subscribeArrow(key, listener) : () => {};
 
       shapeListeners.add(listener);
 
@@ -721,6 +855,7 @@ export const createBoardView = (
     },
     subscribeShapes: subscribeTo(shapeListeners),
     subscribeViewport: subscribeTo(viewportListeners),
+    takeTextTab: (event: React.KeyboardEvent) => takeTextTab(core, event),
     viewport: () => viewport,
   };
 };

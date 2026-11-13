@@ -1,8 +1,11 @@
+import type * as React from 'react';
+
 import { Hotkeys } from '../../../core';
 import type {
   BoardPlace,
   BoardRestackDirection,
 } from '../../../features/board/lib';
+import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
 import type { BoardShapeLayout } from './boardIndex.internal';
 import type { BoardTool, BoardViewCore } from './boardView.internal';
 
@@ -36,6 +39,22 @@ const RESTACK_KEYS: Readonly<Record<string, BoardRestackDirection>> = {
  */
 export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
+
+  const selectFirst = () => {
+    const [first] = index.entries();
+
+    if (first) core.select([first.key]);
+
+    return !!first;
+  };
+
+  const historyKey = (event: KeyboardEvent) => {
+    if (Hotkeys.isUndo(event)) core.undo();
+    else if (Hotkeys.isRedo(event)) core.redo();
+    else return false;
+
+    return true;
+  };
 
   const tab = (shapes: readonly BoardShapeLayout[], backward: boolean) => {
     const entries = index.entries();
@@ -92,7 +111,9 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       core.commit({ ids, kind: 'remove' });
     } else if (event.key === 'Enter') {
-      if (shapes.length === 1 && shapes[0].holdsText) core.edit(shapes[0].key);
+      if (shapes.length === 1 && shapes[0].holdsText && core.writable()) {
+        core.edit(shapes[0].key);
+      }
     } else if (event.key.length !== 1) {
       return false;
     }
@@ -101,12 +122,10 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const focusKey = (event: KeyboardEvent) => {
-    if (Hotkeys.isUndo(event)) {
-      if (core.writable()) core.mounted.api.history.undo();
-    } else if (Hotkeys.isRedo(event)) {
-      if (core.writable()) core.mounted.api.history.redo();
-    } else if (event.altKey || event.ctrlKey || event.metaKey) {
+    if (event.altKey || event.ctrlKey || event.metaKey) {
       return false;
+    } else if (event.key === 'Enter') {
+      return selectFirst();
     } else if (event.key === 'Escape') {
       core.selectBoard();
     } else if (TOOL_KEYS[event.key]) {
@@ -123,13 +142,19 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
-  const boardKey = (event: KeyboardEvent) => {
-    const [first] = index.entries();
+  const boardKey = (event: KeyboardEvent) =>
+    event.key === 'Enter' && core.boardSelected() && selectFirst();
 
-    if (event.key !== 'Enter' || !first || !core.boardSelected()) return false;
-    core.select([first.key]);
+  const takes = (
+    event: KeyboardEvent,
+    selected: readonly BoardShapeLayout[]
+  ) => {
+    const onTarget = event.target === core.focusTarget();
 
-    return true;
+    if (onTarget && historyKey(event)) return true;
+    if (selected.length > 0) return shapeKey(event, selected);
+
+    return onTarget && focusKey(event);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -147,13 +172,8 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
           ? core.editedShape()
           : null;
 
-      if (edited) {
-        core.select([edited.key]);
-      } else if (selected.length > 0) {
-        if (!shapeKey(event, selected)) return;
-      } else if (event.target !== core.focusTarget() || !focusKey(event)) {
-        return;
-      }
+      if (edited) core.select([edited.key]);
+      else if (!takes(event, selected)) return;
     } else if (!event.target.contains(host) || !boardKey(event)) {
       return;
     }
@@ -167,4 +187,26 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   return () => {
     view?.removeEventListener('keydown', onKeyDown, true);
   };
+};
+
+export const takeTextTab = (
+  core: BoardViewCore,
+  event: React.KeyboardEvent
+) => {
+  if (
+    event.key !== 'Tab' ||
+    event.isDefaultPrevented() ||
+    isImeConfirmKeyEvent(event.nativeEvent) ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey
+  ) {
+    return;
+  }
+
+  const edited = core.editedShape();
+
+  if (!edited) return;
+  event.preventDefault();
+  core.select([edited.key]);
 };

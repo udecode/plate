@@ -44,8 +44,16 @@ export type BoardShapeDescription =
  * nothing.
  */
 export type BoardMessages = Readonly<{
-  /** The board's accessible name, which its shapes' content root carries. */
+  /**
+   * The board's accessible name, which its focus target and its shapes'
+   * content root carry.
+   */
   label: string;
+  /**
+   * The focus target's description, which a screen reader says when the
+   * target takes focus.
+   */
+  instructions: string;
   /**
    * Called when the selection becomes one shape, with its 1-based place in
    * stored order among the board's shapes.

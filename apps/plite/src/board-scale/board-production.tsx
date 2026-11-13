@@ -4,6 +4,7 @@ import type { NodeKey } from 'platejs';
 import {
   type EditorElementProps,
   type RenderElementProps,
+  useEditor,
   useEditorSelector,
   useModelEditor,
 } from 'platejs/react';
@@ -42,6 +43,7 @@ type Instruments = ReturnType<typeof createInstruments>;
 
 const MESSAGES: BoardMessages = {
   label: 'Board',
+  instructions: 'Enter selects the first shape.',
   removed: (count) => `${count} removed`,
   shape: ({ kind, text }, { position, total }) =>
     `${text || kind}. ${position} of ${total}`,
@@ -150,7 +152,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     for (const listener of reindexListeners) listener();
   });
 
-  const countScans = (editor: ReturnType<typeof useModelEditor>) => {
+  const countScans = (editor: ReturnType<typeof useEditor>) => {
     if (scanned.has(editor)) return;
     scanned.add(editor);
 
@@ -195,7 +197,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     const { layoutOf, subscribeShapes } = view;
 
     const copies = new Map<
-      NodeKey,
+      string,
       { copy: ReturnType<typeof layoutOf>; from: unknown; tick: number }
     >();
 
@@ -464,8 +466,10 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     });
 
     const keptAlive = useKeptAlive();
+    const mounted = useEditor();
 
     countScans(editor);
+    countScans(mounted);
 
     const slots = {
       ...props.slots,

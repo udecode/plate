@@ -67,6 +67,8 @@ const nameOf = (shape: BoardShapeDescription): string => {
 
 const boardMessages: BoardMessages = {
   label: 'Board',
+  instructions:
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last.',
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) => `${count} shapes selected`,
@@ -104,6 +106,9 @@ export function BoardToolbar() {
   );
 }
 
+const BOARD_FOCUS_RING =
+  'has-[[data-board-focus]:focus-visible]:not-has-[[data-board-shape][data-selected]]:ring-[3px] has-[[data-board-focus]:focus-visible]:not-has-[[data-board-shape][data-selected]]:ring-ring/50';
+
 const BOARD_GRID =
   'bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px]';
 
@@ -115,6 +120,7 @@ export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
         ...props.attributes,
         className: cn(
           'my-4 rounded-lg border data-selected:ring-2 data-selected:ring-ring',
+          BOARD_FOCUS_RING,
           BOARD_GRID
         ),
       }}
@@ -133,7 +139,8 @@ export function BoardPageElement(
       attributes={{
         ...props.attributes,
         className: cn(
-          'data-selected:ring-2 data-selected:ring-ring data-selected:ring-inset',
+          'ring-inset data-selected:ring-2 data-selected:ring-ring',
+          BOARD_FOCUS_RING,
           BOARD_GRID
         ),
       }}
