@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-13-ios-keyboard-menus-comment",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-13-ios-keyboard-menus-comment.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep slash and mention menus and the comment field usable with the iOS keyboard open",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-13-inline-combobox-available-height-e07f581c",
+      "kind": "fix",
+      "summary": "Fit the slash and mention menus in the space left above or below the caret, so the first item stays visible when the on-screen keyboard is open.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-ios-keyboard-menus-comment",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-13-comment-phone-input-4d2a9b70",
+      "kind": "fix",
+      "summary": "Use 16px comment text on phones so iOS Safari no longer zooms the page when the comment field takes focus, and show a send key on the on-screen keyboard.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "editor"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-ios-keyboard-menus-comment",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

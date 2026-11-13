@@ -262,7 +262,7 @@ const InlineComboboxContent = ({
       <ComboboxPopover
         id={box.listboxId}
         className={cn(
-          'cn-command cn-command-list z-500 w-[300px] overflow-x-hidden overflow-y-auto shadow-md',
+          'cn-command cn-command-list z-500 max-h-[min(--spacing(72),var(--popover-available-height,--spacing(72)))] w-[300px] overflow-x-hidden overflow-y-auto shadow-md',
           className
         )}
         autoFocusOnHide={false}

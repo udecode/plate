@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-13-ios-keyboard-menus-comment",
+      "href": "/registry/changelog/2026-11-13-ios-keyboard-menus-comment.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep slash and mention menus and the comment field usable with the iOS keyboard open",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox", "comment", "editor"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-12-add-board",
       "href": "/registry/changelog/2026-11-12-add-board.json",
       "status": "draft",

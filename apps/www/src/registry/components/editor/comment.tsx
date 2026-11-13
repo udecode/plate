@@ -247,6 +247,7 @@ function CommentInput({
               aria-label={ariaLabel}
               autoComplete="off"
               autoFocus={autoFocus}
+              enterKeyHint="send"
               className={cn(
                 'min-h-[25px] grow pt-0.5',
                 showAvatar ? 'pr-8' : 'pr-16'
