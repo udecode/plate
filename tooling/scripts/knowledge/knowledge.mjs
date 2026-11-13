@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, normalize } from 'node:path';
 
 // Parsers stay private to this file so a store's legacy format never leaks past
@@ -1679,10 +1679,14 @@ export function pathSet(paths) {
   return { has: (path) => all.has(path) || dirs.has(path.replace(/\/$/, '')) };
 }
 
-/** The paths a fresh checkout of `ref` holds, or of the index when `ref` is omitted. */
-export function trackedPaths(root, ref) {
-  return pathSet(ref ? filesAt(root, ref) : trackedFiles(root));
-}
+export const pathsAt = (root, ref) => pathSet(filesAt(root, ref));
+
+const trackedPathsOnDisk = (root) =>
+  pathSet(
+    trackedFiles(root).filter((file) =>
+      lstatSync(join(root, file), { throwIfNoEntry: false })
+    )
+  );
 
 const ROOTS =
   '(?:docs|packages|apps|tooling|benchmarks|content|\\.agents|\\.claude|templates|config)/';
@@ -1858,7 +1862,7 @@ export function findings(
   {
     tracked = index.tree.ref
       ? pathSet(index.tree.list())
-      : trackedPaths(index.tree.repo),
+      : trackedPathsOnDisk(index.tree.repo),
   } = {}
 ) {
   const { tree } = index;

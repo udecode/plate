@@ -20,8 +20,8 @@ import {
   gaps,
   indexPatterns,
   loadIndex,
+  pathsAt,
   REPOS,
-  trackedPaths,
   workTree,
   writeBack,
 } from './knowledge.mjs';
@@ -266,7 +266,7 @@ function newRuleViolations(base, baseline) {
   if (!fresh.length) return [];
   const found = groupFindings(
     findings(loadIndex(commitTree(root, base, indexPatterns)), {
-      tracked: trackedPaths(root, base),
+      tracked: pathsAt(root, base),
     }).filter((item) => fresh.includes(item.rule))
   );
   return differences(
