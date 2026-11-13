@@ -115,6 +115,13 @@ const setRootImportPattern = {
     'core/set-root.ts makes settled carets. Write a selection through the transaction or read API, which settles it.',
 };
 
+const commitFactsImportPattern = {
+  regex: '^(?:\\.\\.?/)+(?:[^/]+/)*commit$',
+  importNames: ['getEditorCommitFacts'],
+  message:
+    "Only history, which replays a commit by its facts, and core/change, which writes them, read a commit's facts.",
+};
+
 const setRootImporters = [
   'packages/plitejs/src/core/editor-commands.ts',
   'packages/plitejs/src/core/node-selection.ts',
@@ -507,7 +514,13 @@ export default defineConfig({
       rules: {
         'no-restricted-imports': [
           'error',
-          { patterns: [...plitejsSourceImportPatterns, setRootImportPattern] },
+          {
+            patterns: [
+              ...plitejsSourceImportPatterns,
+              setRootImportPattern,
+              commitFactsImportPattern,
+            ],
+          },
         ],
       },
     },
@@ -520,6 +533,30 @@ export default defineConfig({
         'packages/plitejs/src/**/*.spec.*',
         'packages/plitejs/src/**/*.test.*',
         'packages/plitejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              ...plitejsSourceImportPatterns,
+              ...plitejsRootImportPatterns,
+              setRootImportPattern,
+              commitFactsImportPattern,
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: [
+        'packages/plitejs/src/core/change/**/*.ts',
+        'packages/plitejs/src/history/**/*.ts',
+      ],
+      excludeFiles: [
+        'packages/plitejs/src/**/*.spec.*',
+        'packages/plitejs/src/**/*.test.*',
+        'packages/plitejs/src/history/index.ts',
       ],
       rules: {
         'no-restricted-imports': [
@@ -543,6 +580,7 @@ export default defineConfig({
             patterns: [
               ...plitejsSourceImportPatterns,
               ...plitejsRootImportPatterns,
+              commitFactsImportPattern,
             ],
           },
         ],
@@ -553,7 +591,12 @@ export default defineConfig({
       rules: {
         'no-restricted-imports': [
           'error',
-          { patterns: plitejsSourceImportPatterns },
+          {
+            patterns: [
+              ...plitejsSourceImportPatterns,
+              commitFactsImportPattern,
+            ],
+          },
         ],
       },
     },

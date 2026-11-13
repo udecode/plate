@@ -26,9 +26,11 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
+  rootComposeRebuilds,
   valueRootIndex,
 } from './document-change';
 import { DocumentIndex, rootNodesOf } from './document-index';
+import { DraftFacts } from './draft-facts';
 import {
   type EnclosureShell,
   unwrapNodeChange,
@@ -44,6 +46,15 @@ import {
   type NewLetters,
   textSpansIn,
 } from './new-letters';
+import {
+  type Carry,
+  type ChangeFacts,
+  type Heir,
+  type Merge,
+  NO_FACTS,
+  recordedFacts,
+  UNKNOWN_FACTS,
+} from './record';
 import {
   keptRunsOf,
   RootChange,
@@ -69,6 +80,44 @@ import {
   type JsonNode,
   type JsonPoint,
 } from './tokens';
+
+const holdsWholeNodes = (slice: PreparedTokenSlice) => {
+  let depth = 0;
+
+  for (const token of slice.tokens) {
+    if (token.kind === 'open') depth += 1;
+    if (token.kind === 'close') depth -= 1;
+    if (depth < 0) return false;
+  }
+
+  return depth === 0;
+};
+
+const rewritesPartOfANode = (
+  change: RootChange,
+  before: () => DocumentIndex
+) => {
+  let position = 0;
+
+  for (let pair = 0; pair < change.sections.length; pair += 2) {
+    const removed = getDefined(change.sections[pair]);
+    const inserted = getDefined(change.sections[pair + 1]);
+
+    if (
+      inserted >= 0 &&
+      !(
+        holdsWholeNodes(before().slice(position, position + removed)) &&
+        (inserted === 0 ||
+          holdsWholeNodes(change.data[pair >> 1] as PreparedTokenSlice))
+      )
+    ) {
+      return true;
+    }
+    position += removed;
+  }
+
+  return false;
+};
 
 export type DocumentChangeStep = Readonly<{
   after: JsonEditorValue;
@@ -170,6 +219,7 @@ export type DraftStep = Readonly<{
   composition?: CompositionStamp;
   /** Letters this step's author wrote, in its after document. */
   letters?: NewLetters;
+  facts: ChangeFacts;
 }>;
 
 /** @internal */
@@ -186,6 +236,7 @@ export type PreparedDocumentChange = Readonly<{
   before: JsonEditorValue;
   canonical: boolean;
   change: DocumentChange;
+  facts: ChangeFacts;
   steps: readonly DraftStep[];
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   indexedBefore: ReadonlyMap<string, DocumentIndex>;
@@ -210,6 +261,7 @@ export class ChangeDraft {
   private stepMove: DraftStepMove | null = null;
   private keepsLetters = false;
   private marks: NewLetters = new Map();
+  private record: DraftFacts | null = null;
   private stepOrigin: DraftStepOrigin | null = null;
   private stepSource: DraftStepSource = 'command';
   private readonly assertCanonical?: (
@@ -431,7 +483,49 @@ export class ChangeDraft {
     this.appliedSteps.length = 0;
     this.appliedSteps.push(...from.appliedSteps);
     this.marks = from.marks;
+    this.record = from.record?.clone() ?? null;
     this.spanStart = from.spanStart;
+  }
+
+  factsFor(change: DocumentChange): ChangeFacts {
+    return sameRootChanges(change, this.accumulated)
+      ? (this.record?.facts() ?? NO_FACTS)
+      : UNKNOWN_FACTS;
+  }
+
+  private diffFacts(change: DocumentChange): ChangeFacts {
+    for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+      if (rewritesPartOfANode(rootChange, () => this.getIndex(root))) {
+        return UNKNOWN_FACTS;
+      }
+    }
+
+    return NO_FACTS;
+  }
+
+  private landedAsUnknown(facts: ChangeFacts) {
+    return this.stepMove?.role === 'landing' ? UNKNOWN_FACTS : facts;
+  }
+
+  private recordFacts(
+    prefix: DocumentChange,
+    change: DocumentChange,
+    facts: ChangeFacts
+  ) {
+    if (this.record?.unknown) return;
+    if (
+      facts.kind === 'unknown' ||
+      (hasRootLifecycle(prefix, change) &&
+        rootComposeRebuilds(prefix, change) !== undefined)
+    ) {
+      (this.record ??= new DraftFacts()).forget();
+      return;
+    }
+    if (!this.record && facts.roots.size === 0) return;
+
+    (this.record ??= new DraftFacts()).add(change, facts, (root) =>
+      getInternalDocumentRootChange(prefix, root)
+    );
   }
 
   /**
@@ -671,6 +765,7 @@ export class ChangeDraft {
         before: this.source,
         canonical: this.canonical,
         change: classifiedChange,
+        facts: this.factsFor(classifiedChange),
         steps: Object.freeze([...this.appliedSteps]),
         indexedAfter,
         indexedBefore,
@@ -707,6 +802,14 @@ export class ChangeDraft {
       ? payload.change
       : this.accumulated.compose(payload.change, this.source);
 
+    if (!payload.change.empty) {
+      this.recordFacts(
+        this.accumulated,
+        payload.change,
+        this.landedAsUnknown(payload.facts)
+      );
+    }
+
     for (const [root, index] of payload.indexes) {
       this.indexes.set(root, index);
     }
@@ -721,7 +824,11 @@ export class ChangeDraft {
         continue;
       }
       const { letters, ...rest } = step;
-      const moved = { ...rest, move: this.stepMove };
+      const moved = {
+        ...rest,
+        facts: this.landedAsUnknown(rest.facts),
+        move: this.stepMove,
+      };
       // A move fits its landing in a prepared fork, whose paste path marks
       // the landed letters as new. A move carries only letters read from the
       // document, so its landing keeps no marks.
@@ -797,6 +904,7 @@ export class ChangeDraft {
       carried?: readonly CarriedRun[];
       classify?: boolean;
       drops?: readonly CarriedDrop[];
+      facts?: ChangeFacts;
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
       letters?: NewLetters;
       origin?: DraftStepOrigin;
@@ -906,6 +1014,9 @@ export class ChangeDraft {
     });
 
     if (this.trackChanges) {
+      const prefix = this.accumulated;
+      const facts = this.landedAsUnknown(options.facts ?? UNKNOWN_FACTS);
+
       this.accumulated = this.accumulated.empty
         ? classifiedChange
         : this.accumulated.compose(classifiedChange, this.source);
@@ -914,6 +1025,7 @@ export class ChangeDraft {
           ? options.relocations
           : undefined;
 
+        this.recordFacts(prefix, classifiedChange, facts);
         this.land(
           this.composed({
             indexedAfter,
@@ -926,6 +1038,7 @@ export class ChangeDraft {
             ...(carried?.length ? { carried } : {}),
             ...(options.drops?.length ? { drops: options.drops } : {}),
             ...(options.letters ? { letters: options.letters } : {}),
+            facts,
           })
         );
         countCoreWork('relocations', relocations?.length ?? 0);
@@ -944,10 +1057,12 @@ export class ChangeDraft {
     });
   }
 
-  /** Apply an externally supplied change that must already be publishable. */
-  applyCanonical(change: DocumentChange): DocumentChangeStep {
+  applyCanonical(
+    change: DocumentChange,
+    facts: ChangeFacts = UNKNOWN_FACTS
+  ): DocumentChangeStep {
     if (!this.validate && !this.validateConstructed && !this.assertCanonical) {
-      const step = this.apply(change);
+      const step = this.apply(change, { facts });
 
       this.canonical = true;
 
@@ -992,6 +1107,7 @@ export class ChangeDraft {
     this.assertCanonical?.(candidate.after, accumulated);
 
     return this.applyTrustedCanonical(candidate.change, {
+      facts,
       indexedAfter: candidate.indexedAfter,
       runtimeCandidates: candidate.runtimeCandidates,
     });
@@ -1009,6 +1125,7 @@ export class ChangeDraft {
   applyTrustedCanonical(
     change: DocumentChange,
     options: Readonly<{
+      facts?: ChangeFacts;
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
       origin?: DraftStepOrigin;
       runtimeCandidates?: ReadonlyMap<
@@ -1017,9 +1134,12 @@ export class ChangeDraft {
       >;
     }> = {}
   ): DocumentChangeStep {
+    const facts = this.landedAsUnknown(options.facts ?? UNKNOWN_FACTS);
+
     if (!options.indexedAfter) {
       const step = this.apply(change, {
         classify: false,
+        facts,
         origin: options.origin,
       });
 
@@ -1179,10 +1299,13 @@ export class ChangeDraft {
       this.indexes.delete(root);
     }
 
+    const prefix = this.accumulated;
+
     this.accumulated = this.accumulated.empty
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
+      this.recordFacts(prefix, canonicalChange, facts);
       this.land(
         this.composed({
           indexedAfter,
@@ -1191,6 +1314,7 @@ export class ChangeDraft {
           move: this.stepMove,
           origin: this.originOf(options.origin),
           source: this.stepSource,
+          facts,
         })
       );
     }
@@ -1252,6 +1376,7 @@ export class ChangeDraft {
         ? this.apply(constructionChange, {
             ...options,
             drops,
+            facts: this.diffFacts(constructionChange),
             origin: options.origin ?? 'canonical',
           })
         : null;
@@ -1272,6 +1397,7 @@ export class ChangeDraft {
 
     if (this.accumulated.empty) {
       this.current = this.source;
+      this.record = null;
       this.indexes.clear();
       for (const [root, index] of this.sourceIndexes) {
         this.indexes.set(root, index);
@@ -1409,10 +1535,23 @@ export class ChangeDraft {
   }
 
   mergeNode(root: string, path: readonly number[]) {
+    const document = this.getIndex(root);
+    const change = mergeNodeChange(document, path);
+    const previous = [...path.slice(0, -1), getDefined(path.at(-1)) - 1];
+    const merge: Merge = [
+      document.nodeRange(path).from,
+      document.nodeRange(previous).from,
+    ];
+
     return this.applyRoot(
       root,
       'merge',
-      mergeNodeChange(this.getIndex(root), path)
+      change,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { carries: [], heirs: [], merges: [merge] }
     );
   }
 
@@ -1425,16 +1564,22 @@ export class ChangeDraft {
     const document = this.getIndex(root);
     const wasCanonical = this.canonical;
     const change = moveNodeChange(document, path, newPath);
+    const moved = this.movedRun(root, document, path, change);
     const step = this.applyRoot(
       root,
       'move',
       change,
       undefined,
-      this.recordsRelocations
-        ? this.movedRun(root, document, path, change)
-        : undefined,
+      this.recordsRelocations ? moved : undefined,
       undefined,
-      carriedRunOfMove(root, document, document.nodeRange(path), change)
+      carriedRunOfMove(root, document, document.nodeRange(path), change),
+      {
+        carries: moved.flatMap(({ at, length, source }): Carry[] =>
+          typeof source === 'number' ? [[at, source, length]] : []
+        ),
+        heirs: [],
+        merges: [],
+      }
     );
 
     if (wasCanonical && options.preservesRepresentation) {
@@ -1562,7 +1707,7 @@ export class ChangeDraft {
 
     const document = this.getIndex(root);
 
-    return this.applyRoot(
+    return this.applyDiff(
       root,
       'replace',
       reconcileChildrenStep(document, [], 0, document.value.length, children)
@@ -1584,7 +1729,7 @@ export class ChangeDraft {
       throw new RangeError('A slice replacement range must be forward.');
     }
 
-    return this.applyRoot(
+    return this.applyDiff(
       root,
       'slice',
       RootChange.create(document, {
@@ -1644,15 +1789,20 @@ export class ChangeDraft {
     properties: JsonRecord
   ) {
     const document = this.getIndex(root);
+    const change = splitNodeChange(document, path, position, properties);
+    const heir = this.splitHeir(document, path, position);
 
     return this.applyRoot(
       root,
       'split',
-      splitNodeChange(document, path, position, properties),
+      change,
       undefined,
       this.tracksPlaces
-        ? this.splitRun(root, document, path, position)
-        : undefined
+        ? [{ at: heir[0], length: 1, root, source: heir[1] }]
+        : undefined,
+      undefined,
+      undefined,
+      { carries: [], heirs: [heir], merges: [] }
     );
   }
 
@@ -1747,25 +1897,17 @@ export class ChangeDraft {
   }
 
   /** The new node's open token continues the split node's. */
-  private splitRun(
-    root: string,
+  private splitHeir(
     document: DocumentIndex,
     path: readonly number[],
     position: number
-  ): readonly Relocation[] {
+  ): Heir {
     const node = document.node(path);
     const boundary = isTextNode(node)
       ? document.positionAt({ offset: position, path: [...path] })
       : document.childPosition(path, position);
 
-    return [
-      {
-        at: boundary + 1,
-        length: 1,
-        root,
-        source: document.nodeRange(path).from,
-      },
-    ];
+    return [boundary + 1, document.nodeRange(path).from];
   }
 
   private applyRoot(
@@ -1775,7 +1917,8 @@ export class ChangeDraft {
     indexedAfter?: DocumentIndex,
     relocations?: readonly Relocation[],
     letters?: readonly LetterSpan[],
-    carried?: readonly CarriedRun[]
+    carried?: readonly CarriedRun[],
+    facts?: Readonly<{ carries: Carry[]; heirs: Heir[]; merges: Merge[] }>
   ) {
     return this.apply(
       createInternalDocumentChange(
@@ -1783,6 +1926,7 @@ export class ChangeDraft {
       ),
       {
         carried,
+        facts: facts ? recordedFacts([[root, facts]]) : NO_FACTS,
         indexedAfter: indexedAfter
           ? new Map([[root, indexedAfter]])
           : undefined,
@@ -1796,12 +1940,23 @@ export class ChangeDraft {
     );
   }
 
+  private applyDiff(root: string, origin: DraftStepOrigin, change: RootChange) {
+    const documentChange = createInternalDocumentChange(
+      change.empty ? new Map() : new Map([[root, change]])
+    );
+
+    return this.apply(documentChange, {
+      facts: this.diffFacts(documentChange),
+      origin,
+    });
+  }
+
   private applyConstructed(
     change: DocumentChange,
     origin: DraftStepOrigin,
     indexedAfter?: ReadonlyMap<string, DocumentIndex>
   ): DocumentChangeStep {
-    return this.apply(change, { indexedAfter, origin });
+    return this.apply(change, { facts: NO_FACTS, indexedAfter, origin });
   }
 
   getIndex(root: string) {
@@ -1869,6 +2024,28 @@ export class ChangeDraft {
     return document;
   }
 }
+
+const hasRootLifecycle = (...changes: readonly DocumentChange[]) =>
+  changes.some(
+    (change) => change.createRoots.size > 0 || change.deleteRoots.size > 0
+  );
+
+const sameRootChanges = (left: DocumentChange, right: DocumentChange) => {
+  if (left === right) return true;
+
+  const leftRoots = new Map(getInternalDocumentChangeEntries(left));
+  const rightRoots = [...getInternalDocumentChangeEntries(right)];
+
+  return (
+    leftRoots.size === rightRoots.length &&
+    rightRoots.every(([root, change]) => leftRoots.get(root) === change) &&
+    sameSet(left.createRoots, right.createRoots) &&
+    sameSet(left.deleteRoots, right.deleteRoots)
+  );
+};
+
+const sameSet = (left: ReadonlySet<string>, right: ReadonlySet<string>) =>
+  left.size === right.size && [...left].every((item) => right.has(item));
 
 /**
  * The runs `steps` carried, as their composed change carries them: each

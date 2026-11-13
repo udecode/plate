@@ -1,3 +1,4 @@
+import { countCoreWork } from '../work';
 import {
   assertDocumentRootKey,
   type DocumentChange,
@@ -123,25 +124,17 @@ const sortedRootFacts = (
     const last = runs.at(-1);
 
     if (continues(last, carry)) {
-      runs[runs.length - 1] = Object.freeze([
-        last[0],
-        last[1],
-        last[2] + carry[2],
-      ]);
+      runs[runs.length - 1] = [last[0], last[1], last[2] + carry[2]];
     } else {
-      runs.push(Object.freeze(carry));
+      runs.push(carry);
     }
   }
 
-  return Object.freeze({
-    carries: Object.freeze(runs),
-    heirs: Object.freeze(
-      heirs.sort(byFirst).map((heir) => Object.freeze(heir))
-    ),
-    merges: Object.freeze(
-      merges.sort(byFirst).map((merge) => Object.freeze(merge))
-    ),
-  });
+  return {
+    carries: runs,
+    heirs: heirs.sort(byFirst),
+    merges: merges.sort(byFirst),
+  };
 };
 
 // Roots sort by key, so equal facts write equal JSON.
@@ -152,10 +145,27 @@ const recorded = (
     .filter(([, facts]) => !isEmptyRoot(facts))
     .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
 
-  return roots.length === 0
-    ? NO_FACTS
-    : Object.freeze({ kind: 'recorded', roots: freezeReadonlyMap(roots) });
+  if (roots.length === 0) return NO_FACTS;
+  countCoreWork('factAllocations');
+
+  return { kind: 'recorded', roots: new Map(roots) };
 };
+
+/** @internal */
+export const recordedFacts = (
+  roots: Iterable<
+    readonly [
+      string,
+      Readonly<{ carries: Carry[]; heirs: Heir[]; merges: Merge[] }>,
+    ]
+  >
+): ChangeFacts =>
+  recorded(
+    [...roots].map(([root, { carries, heirs, merges }]) => [
+      root,
+      sortedRootFacts(carries, heirs, merges),
+    ])
+  );
 
 /**
  * The facts of the inverse change. A carry swaps its ends, and heirs and
@@ -600,7 +610,7 @@ const readCarry = (fact: readonly unknown[]): Carry | null => {
     isPosition(from) &&
     isPosition(length) &&
     length >= 1
-    ? Object.freeze([at, from, length] as const)
+    ? ([at, from, length] as const)
     : null;
 };
 
@@ -608,7 +618,7 @@ const readPair = (fact: readonly unknown[]): Heir | Merge | null => {
   const [at, other] = fact;
 
   return fact.length === 2 && isPosition(at) && isPosition(other)
-    ? Object.freeze([at, other] as const)
+    ? ([at, other] as const)
     : null;
 };
 
@@ -618,7 +628,7 @@ const readTable = <T extends readonly number[]>(
   read: (fact: readonly unknown[]) => T | null,
   end: (fact: T) => number
 ): readonly T[] => {
-  if (value === undefined) return Object.freeze([]);
+  if (value === undefined) return [];
   if (!Array.isArray(value) || value.length === 0) {
     return refuse(`Facts table ${label} must be a non-empty array.`);
   }
@@ -637,7 +647,7 @@ const readTable = <T extends readonly number[]>(
     facts.push(fact);
   }
 
-  return Object.freeze(facts);
+  return facts;
 };
 
 // Refuses a carry that continues the one before it, which `sortedRootFacts`
@@ -701,7 +711,7 @@ export const factsFromJSON = (json: unknown): ChangeFacts => {
         return refuse(`Facts of root ${root} must hold one or more tables.`);
       }
 
-      const facts: RootFacts = Object.freeze({
+      const facts: RootFacts = {
         carries: readCarries(value.carries, `${root}.carries`),
         heirs: readTable(
           value.heirs,
@@ -715,7 +725,7 @@ export const factsFromJSON = (json: unknown): ChangeFacts => {
           readPair,
           ([at]) => at + 1
         ),
-      });
+      };
 
       return [root, facts] as const;
     })

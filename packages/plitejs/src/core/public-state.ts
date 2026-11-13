@@ -12799,6 +12799,7 @@ export const runEditorTransaction = <R>(
                       ? snapshot.builder.carriedRuns()
                       : [],
                   changes: canonicalChanges,
+                  facts: snapshot.builder.factsFor(canonicalChanges),
                   completedTextDeletion,
                   dirtyStateKeys: [...snapshot.dirtyStateKeys],
                   effects: [...snapshot.effects],

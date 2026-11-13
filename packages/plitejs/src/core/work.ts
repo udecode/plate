@@ -41,6 +41,9 @@ export type CoreWork = {
   encodedTokens: number;
   /** Incremental paths a collaboration binding refused for a fallback. */
   fallbacks: number;
+  /** Fact positions a draft mapped through a step, one per fact it wrote or a step dropped. */
+  factPositions: number;
+  factAllocations: number;
   /** Former-place lookups for a value a node carried into a new place. */
   formerPlaceCalls: number;
   /** Steps, landed nodes and pieces those lookups examined. */
@@ -175,6 +178,8 @@ export const coreWork: CoreWork = {
   copiedSlots: 0,
   encodedTokens: 0,
   fallbacks: 0,
+  factPositions: 0,
+  factAllocations: 0,
   formerPlaceCalls: 0,
   formerPlaceVisits: 0,
   heldBlocks: 0,

@@ -34,6 +34,7 @@ import {
 } from './change/document-change';
 import type { DocumentIndex, NodeList } from './change/document-index';
 import { lazyRootOf, setLazyRoot } from './change/lazy-root';
+import { type ChangeFacts, NO_FACTS, UNKNOWN_FACTS } from './change/record';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot, toPublicRoot } from './public-root';
@@ -92,6 +93,7 @@ type CommitInput<V extends Value> = Omit<
   completedTextDeletion?: CompletedTextDeletion | null;
   carried?: readonly CarriedRun[];
   editor: Editor<V>;
+  facts?: ChangeFacts;
   replace?: boolean;
   admission?: EditorCommitAdmission | null;
   settlement?: EditorCommitSettlement;
@@ -147,6 +149,7 @@ const EDITOR_COMMIT_CARRIED = new WeakMap<
   EditorCommit,
   readonly CarriedRun[]
 >();
+const EDITOR_COMMIT_FACTS = new WeakMap<EditorCommit, ChangeFacts>();
 const EDITOR_COMMIT_ADMISSIONS = new WeakMap<
   EditorCommit,
   EditorCommitAdmission
@@ -279,6 +282,10 @@ export const getEditorCommitRest = (
 export const getEditorCommitCarriedRuns = (
   commit: EditorCommit
 ): readonly CarriedRun[] => EDITOR_COMMIT_CARRIED.get(commit) ?? [];
+
+/** @internal */
+export const getEditorCommitFacts = (commit: EditorCommit): ChangeFacts =>
+  EDITOR_COMMIT_FACTS.get(commit) ?? NO_FACTS;
 
 /** @internal */
 export const getEditorCommitAdmission = (
@@ -1345,6 +1352,7 @@ export const createEditorCommit = <V extends Value>(
     carried,
     completedTextDeletion,
     editor,
+    facts = UNKNOWN_FACTS,
     replace = false,
     settlement,
     split,
@@ -1415,6 +1423,7 @@ export const createEditorCommit = <V extends Value>(
   }
   if (admission) EDITOR_COMMIT_ADMISSIONS.set(commit, admission);
   if (carried?.length) EDITOR_COMMIT_CARRIED.set(commit, carried);
+  if (facts !== NO_FACTS) EDITOR_COMMIT_FACTS.set(commit, facts);
   if (split) {
     EDITOR_COMMIT_UNSETTLES.set(commit, () => split.takeBack);
     EDITOR_COMMIT_RESTS.set(commit, split.rest);
