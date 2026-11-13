@@ -1,6 +1,18 @@
 'use client';
 
 import {
+  CircleIcon,
+  DiamondIcon,
+  FrameIcon,
+  MousePointer2Icon,
+  MoveUpRightIcon,
+  PencilIcon,
+  ScanIcon,
+  SquareIcon,
+  StickyNoteIcon,
+  TriangleIcon,
+} from 'lucide-react';
+import {
   BoardArrowPlugin,
   BoardFramePlugin,
   BoardGeoPlugin,
@@ -10,6 +22,7 @@ import {
   BoardShape,
   type BoardShapeDescription,
   BoardStrokePlugin,
+  type BoardStyle,
   BoardSurface,
   type BoardTool,
   useArrowPath,
@@ -21,17 +34,42 @@ import type { EditorElementProps } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/registry/components/editor/dropdown-menu';
 import { Toolbar, ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const TOOLS: ReadonlyArray<
-  Readonly<{ key: string; label: string; tool: BoardTool }>
+  Readonly<{
+    icon: React.ComponentType;
+    key: string;
+    label: string;
+    tool: BoardTool;
+  }>
 > = [
-  { key: 'V', label: 'Select', tool: 'select' },
-  { key: 'N', label: 'Note', tool: 'note' },
-  { key: 'R', label: 'Shape', tool: 'geo' },
-  { key: 'A', label: 'Arrow', tool: 'arrow' },
-  { key: 'F', label: 'Frame', tool: 'frame' },
-  { key: 'P', label: 'Pen', tool: 'pen' },
+  { icon: MousePointer2Icon, key: 'V', label: 'Select', tool: 'select' },
+  { icon: StickyNoteIcon, key: 'N', label: 'Note', tool: 'note' },
+  { icon: SquareIcon, key: 'R', label: 'Shape', tool: 'geo' },
+  { icon: MoveUpRightIcon, key: 'A', label: 'Arrow', tool: 'arrow' },
+  { icon: FrameIcon, key: 'F', label: 'Frame', tool: 'frame' },
+  { icon: PencilIcon, key: 'P', label: 'Pen', tool: 'pen' },
+];
+
+const GEOS: ReadonlyArray<
+  Readonly<{
+    geo: NonNullable<BoardStyle['geo']>;
+    icon: React.ComponentType;
+    label: string;
+  }>
+> = [
+  { geo: 'rectangle', icon: SquareIcon, label: 'Rectangle' },
+  { geo: 'ellipse', icon: CircleIcon, label: 'Ellipse' },
+  { geo: 'diamond', icon: DiamondIcon, label: 'Diamond' },
+  { geo: 'triangle', icon: TriangleIcon, label: 'Triangle' },
 ];
 
 const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
@@ -77,23 +115,65 @@ const boardMessages: BoardMessages = {
     count === 1 ? 'Shape deleted' : `${count} shapes deleted`,
 };
 
+function BoardShapeMenu({ pressed }: { pressed: boolean }) {
+  const geo = useBoardView((view) => view.nextStyle.geo ?? 'rectangle');
+  const { setNextStyle, setTool } = useBoardActions();
+  const Icon = GEOS.find((item) => item.geo === geo)?.icon ?? SquareIcon;
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger>
+        <ToolbarButton isDropdown pressed={pressed} tooltip="Shape (R)">
+          <Icon />
+        </ToolbarButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top">
+        <DropdownMenuRadioGroup
+          value={geo}
+          onValueChange={(value) => {
+            const picked = GEOS.find((item) => item.geo === value);
+
+            if (!picked) return;
+            setNextStyle({ geo: picked.geo });
+            setTool('geo');
+          }}
+        >
+          {GEOS.map(({ geo: itemGeo, icon: ItemIcon, label }) => (
+            <DropdownMenuRadioItem key={itemGeo} value={itemGeo}>
+              <ItemIcon />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function BoardToolbar() {
   const tool = useBoardView((view) => view.tool);
   const frame = useBoardView((view) => view.selectedFrame);
-  const { removeFrame, setTool } = useBoardActions();
+  const { fit, removeFrame, setTool } = useBoardActions();
 
   return (
     <Toolbar className="absolute bottom-2 left-1/2 z-10 -translate-x-1/2 gap-0.5 rounded-lg border bg-background p-1 shadow-sm">
-      {TOOLS.map((item) => (
-        <ToolbarButton
-          key={item.tool}
-          pressed={tool === item.tool}
-          tooltip={`${item.label} (${item.key})`}
-          onClick={() => setTool(item.tool)}
-        >
-          {item.label}
-        </ToolbarButton>
-      ))}
+      {TOOLS.map(({ icon: Icon, key, label, tool: itemTool }) =>
+        itemTool === 'geo' ? (
+          <BoardShapeMenu key={itemTool} pressed={tool === 'geo'} />
+        ) : (
+          <ToolbarButton
+            key={itemTool}
+            pressed={tool === itemTool}
+            tooltip={`${label} (${key})`}
+            onClick={() => setTool(itemTool)}
+          >
+            <Icon />
+          </ToolbarButton>
+        )
+      )}
+      <ToolbarButton tooltip="Fit every shape in view" onClick={fit}>
+        <ScanIcon />
+      </ToolbarButton>
       {frame && (
         <ToolbarButton
           tooltip="Remove the frame and keep its shapes"

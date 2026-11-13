@@ -1,5 +1,5 @@
 {
-  "generation": "447103e12537d651c306602a803f5003718a0ed9824be565a6f089dc7997b79a",
+  "generation": "61cd30d35c78b58e927e5d12baf0fca2b1428684304b0d420a2d710faec2efa4",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2559,7 +2559,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -2584,6 +2585,7 @@
             ]
           },
           "registryDependencies": [
+            "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
         },
@@ -9524,7 +9526,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -9549,6 +9552,7 @@
             ]
           },
           "registryDependencies": [
+            "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
         },

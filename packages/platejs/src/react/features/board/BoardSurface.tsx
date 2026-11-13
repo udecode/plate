@@ -36,8 +36,10 @@ export type {
  * camera, at their place and stacking rank, through the board's content root.
  * It owns the view's camera, tool, next style and gestures, which never reach
  * the document; a gesture writes through the board's commands once, on
- * release. Pan with the wheel or a drag on the board, zoom with Mod and the
- * wheel. `toolbar` renders over the board, where `useBoardView` and
+ * release. Pan with the wheel, a middle-button drag or a drag with Space held,
+ * zoom with Mod and the wheel. With the select tool, a touch drag on empty
+ * board pans, and a mouse or pen drag there selects the shapes its box holds.
+ * `toolbar` renders over the board, where `useBoardView` and
  * `useBoardActions` reach this view. A read-only view or a preview pans and
  * selects but never writes, and a gesture under way when the view turns so
  * ends with no write. The board shows `data-selected` while a selection of

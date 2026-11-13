@@ -2560,9 +2560,11 @@
       "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0"
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
