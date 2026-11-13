@@ -4,7 +4,7 @@ import { getDocsSidebar } from './docs-page-tree';
 import { isMainDocsHref } from './docs-sidebar';
 import { PLATE_DEFAULT_REGISTRY_STYLE } from './plate-registry-styles';
 
-const SITE_URL = 'https://platejs.org';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://platejs.org';
 const PLATE_REGISTRY_URL = `${SITE_URL}/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
 
 type PlateLLMFrontmatter = {
@@ -21,7 +21,7 @@ export type PlateLLMPage = {
   };
 };
 
-const getAbsoluteUrl = (url: string) => `${SITE_URL}${url}`;
+export const getAbsoluteUrl = (url: string) => `${SITE_URL}${url}`;
 
 const getPageFrontmatter = async (page: PlateLLMPage) => {
   try {

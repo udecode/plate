@@ -114,6 +114,7 @@ jobs:
       - name: Build deployment
         id: build
         env:
+          NEXT_PUBLIC_SITE_URL: ${{ github.ref_name == 'main' && 'https://platejs.org' || 'https://beta.platejs.org' }}
           PLATE_BUILD_BASIC: '0'
         run: |
           nproc

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { NextResponse, type NextRequest } from 'next/server';
 
 import {
+  getAbsoluteUrl,
   getPlateLLMPageMarkdownFromPage,
   stripMarkdownSuffixFromSlug,
 } from '@/lib/llm';
@@ -22,7 +23,7 @@ export async function GET(
   }
 
   const content = await getPlateLLMPageMarkdownFromPage({
-    docUrl: `https://platejs.org${hrefWithLocale(page.url, 'cn')}`,
+    docUrl: getAbsoluteUrl(hrefWithLocale(page.url, 'cn')),
     page,
   });
 

@@ -19,7 +19,7 @@ import { getDocsSidebar, getPagerForDoc } from '@/lib/docs-page-tree';
 import { selectDocsSidebar } from '@/lib/docs-sidebar';
 import { registryExampleSlug } from '@/lib/docs-routes';
 import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
-import { getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
+import { getAbsoluteUrl, getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -328,7 +328,7 @@ async function DocPageContent({
 
   const toc = await getTableOfContents(raw);
   const neighbours = getPagerForDoc({ slug: doc.url }, locale);
-  const docUrl = `https://platejs.org${localizedDocUrl}`;
+  const docUrl = getAbsoluteUrl(localizedDocUrl);
   const sidebar = getDocsSidebar(locale);
 
   return (
