@@ -7,7 +7,8 @@
   "check": "pnpm check",
   "landChecks": [
     "node tooling/scripts/notify.mjs check",
-    "node tooling/scripts/review-ledger.mjs land"
+    "node tooling/scripts/review-ledger.mjs land",
+    "node tooling/scripts/plan-cuts.mjs land"
   ],
   "freshEnv": [
     "TURBO_FORCE=true",
