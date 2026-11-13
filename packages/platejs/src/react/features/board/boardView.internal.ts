@@ -112,6 +112,7 @@ export type BoardViewCore = Readonly<{
   boardSelected: () => boolean;
   /** End the pointer gesture in flight with no write, and return whether one was. */
   cancelGesture: () => boolean;
+  viewCenter: () => BoardPlace;
   commit: (change: BoardWrite) => void;
   edit: (key: NodeKey) => void;
   editedShape: () => BoardShapeLayout | null;
@@ -125,7 +126,7 @@ export type BoardViewCore = Readonly<{
    * whose id it returns and go back to the select tool.
    */
   insertWith: (insert: (tx: PluginTransaction) => string | undefined) => void;
-  keepKeysOnBoard: () => void;
+  deselectOnBoard: () => void;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
   leaveBoard: (backward: boolean) => boolean;
   measure: () => void;
@@ -142,7 +143,7 @@ export type BoardViewCore = Readonly<{
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   undo: () => void;
-  voice: Pick<BoardVoice, 'hold' | 'release'>;
+  voice: Pick<BoardVoice, 'hold' | 'release' | 'repeatSelection'>;
   writable: () => boolean;
   /**
    * Run `change` as one undo step when the view can write, and return its
@@ -520,9 +521,9 @@ export const createBoardView = (
     return !!focusTarget.current;
   };
 
-  const keepKeysOnBoard = () => {
+  const deselectOnBoard = () => {
     if (!focusBoard()) return;
-    // Firefox keeps the selection when a non-editable element takes focus.
+    // Chrome and Firefox keep the editable's caret after focus leaves it.
     editor.api.dom.deselect();
   };
 
@@ -531,7 +532,7 @@ export const createBoardView = (
     const sorted = keys.toSorted(
       (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)
     );
-    keepKeysOnBoard();
+    deselectOnBoard();
     editor.update((tx) => setShapeSelection(tx, sorted));
   };
 
@@ -572,7 +573,7 @@ export const createBoardView = (
     });
 
     if (!written) return;
-    if (change.kind === 'remove') keepKeysOnBoard();
+    if (change.kind === 'remove') deselectOnBoard();
     else if (change.kind === 'removeFrame') focusBoard();
     else return;
     voice.removed(before - boards.read.shapes(board).length);
@@ -628,6 +629,14 @@ export const createBoardView = (
       return nodes.length === 1 && keyOf(nodes[0][0]) === board;
     },
     cancelGesture: () => gestures?.cancel() ?? false,
+    viewCenter: () => {
+      const { x, y, zoom } = state.camera;
+
+      return {
+        x: x + size.width / 2 / zoom,
+        y: y + size.height / 2 / zoom,
+      };
+    },
     commit,
     edit: (key) => {
       focusRoot();
@@ -653,7 +662,7 @@ export const createBoardView = (
         box.y + box.height <= y + size.height / zoom
       );
     },
-    keepKeysOnBoard,
+    deselectOnBoard,
     land,
     leaveBoard: (backward) => {
       if (!writable()) {

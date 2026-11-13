@@ -1,12 +1,14 @@
 import type * as React from 'react';
 
 import { Hotkeys } from '../../../core';
+import { usesAppleDOMHotkeys } from '../../../dom/plite-dom.internal';
 import type {
   BoardPlace,
   BoardRestackDirection,
 } from '../../../features/board/lib';
 import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
 import type { BoardShapeLayout } from './boardIndex.internal';
+import { frontmostAround, pickInDirection } from './boardPick.internal';
 import type { BoardTool, BoardViewCore } from './boardView.internal';
 
 const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
@@ -41,6 +43,11 @@ const OPEN_POPUP =
 
 const plainKey = (event: KeyboardEvent) =>
   !event.altKey && !event.ctrlKey && !event.metaKey;
+
+const pickKey = (event: KeyboardEvent) =>
+  !event.altKey &&
+  !event.shiftKey &&
+  (usesAppleDOMHotkeys(event) ? event.metaKey : event.ctrlKey);
 
 export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
@@ -137,6 +144,34 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return core.leaveBoard(backward);
   };
 
+  const pick = (shapes: readonly BoardShapeLayout[], direction: BoardPlace) => {
+    const entries = index.entries();
+    const [first] = shapes;
+    const own = first && entries.find(({ key }) => key === first.key);
+    const frame = own?.kind === 'shape' ? own.frame : undefined;
+    const layouts = entries.flatMap(({ id, key }) =>
+      id === frame ? [] : (index.layout(key) ?? [])
+    );
+    const start = first?.box ?? { height: 0, width: 0, ...core.viewCenter() };
+    const next =
+      pickInDirection(layouts, start, direction) ??
+      (first
+        ? undefined
+        : (core.shapeAt(start) ?? frontmostAround(layouts, start)));
+
+    if (!next) {
+      core.voice.repeatSelection();
+
+      return true;
+    }
+    if (!core.inView(next)) {
+      core.reveal([entries.findIndex(({ key }) => key === next.key)]);
+    }
+    core.select([next.key]);
+
+    return true;
+  };
+
   const shapeKey = (
     event: KeyboardEvent,
     shapes: readonly BoardShapeLayout[]
@@ -223,6 +258,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       plainKey(event)
     ) {
       return focusToolbar();
+    }
+
+    const arrow = ARROWS[event.key];
+
+    if ((onTarget || selected.length > 0) && arrow && pickKey(event)) {
+      return pick(selected, arrow);
     }
     if (selected.length > 0) return shapeKey(event, selected);
 

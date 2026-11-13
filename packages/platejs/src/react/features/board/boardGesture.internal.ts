@@ -197,7 +197,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
   const pick = (keys: readonly NodeKey[]) => {
     if (keys.length > 0) core.select(keys);
-    else core.keepKeysOnBoard();
+    else core.deselectOnBoard();
     core.voice.hold(true);
   };
 
@@ -568,7 +568,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
         }
         case 'pen': {
           if (!core.writable()) return;
-          core.keepKeysOnBoard();
+          core.deselectOnBoard();
 
           const points: BoardInkPoint[] = [];
 
@@ -585,7 +585,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
         }
         case 'select': {
           if (event.pointerType === 'touch') {
-            core.keepKeysOnBoard();
+            core.deselectOnBoard();
             gesture = pan(pointer, pointerId);
             break;
           }

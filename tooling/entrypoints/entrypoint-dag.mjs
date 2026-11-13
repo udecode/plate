@@ -119,6 +119,7 @@ export const publicReactOnlyEntrypoints = Object.freeze([
 ]);
 
 const standardReactDependencies = {
+  board: ['dom'],
   combobox: ['combobox'],
   suggestion: ['authored'],
   table: ['dom'],

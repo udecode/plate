@@ -173,16 +173,16 @@
       "gzip": 206468
     },
     "plitejs/pagination/react": {
-      "bytes": 1405388,
-      "gzip": 429279
+      "bytes": 1405333,
+      "gzip": 429254
     },
     "plitejs/react": {
-      "bytes": 1581923,
-      "gzip": 482539
+      "bytes": 1581868,
+      "gzip": 482514
     },
     "plitejs/react/virtualized": {
-      "bytes": 1362479,
-      "gzip": 415223
+      "bytes": 1362424,
+      "gzip": 415205
     },
     "plitejs/testing": {
       "bytes": 833793,

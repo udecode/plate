@@ -32,7 +32,6 @@ export type HistoryFocusOwnerApi = {
 export const resolveHistoryFocusEditor = ({
   currentRoot,
   editor,
-  fallbackRoot = MAIN_ROOT_KEY,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -41,7 +40,6 @@ export const resolveHistoryFocusEditor = ({
 }: HistoryFocusOwnerApi & {
   currentRoot?: RootKey | null;
   editor: ReactRuntimeEditor;
-  fallbackRoot?: RootKey;
   historyRoot?: RootKey | null;
   selectionRoot?: RootKey | null;
 }) => {
@@ -56,7 +54,7 @@ export const resolveHistoryFocusEditor = ({
     editor;
 
   if (selectionRoot) return viewOf(selectionRoot, ownerOf(selectionRoot));
-  if (!historyRoot) return viewOf(currentRoot ?? fallbackRoot, null);
+  if (!historyRoot) return viewOf(currentRoot ?? MAIN_ROOT_KEY, null);
 
   const historyOwner = ownerOf(historyRoot);
 
@@ -75,17 +73,14 @@ const getChangedRoot = (changes: EditorCommit['changes']): RootKey | null => {
     ...changes.createRoots,
     ...changes.deleteRoots,
   ]);
-  const changed = getInternalDocumentChangeRootKeys(changes);
-  const surviving = changed.filter((root) => !createdOrDeleted.has(root));
-  const onlyRoot = (roots: Iterable<RootKey>) => {
-    const unique = new Set(roots);
+  const surviving = new Set(
+    getInternalDocumentChangeRootKeys(changes).filter(
+      (root) => !createdOrDeleted.has(root)
+    )
+  );
+  const roots = surviving.size > 0 ? surviving : createdOrDeleted;
 
-    return unique.size === 1 ? (unique.values().next().value ?? null) : null;
-  };
-
-  if (surviving.length > 0) return onlyRoot(surviving);
-
-  return onlyRoot([...changed, ...createdOrDeleted]);
+  return roots.size === 1 ? (roots.values().next().value ?? null) : null;
 };
 
 export const getModelOwnedHistoryFocusRepair = ({

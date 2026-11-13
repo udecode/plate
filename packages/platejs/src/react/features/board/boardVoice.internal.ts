@@ -206,6 +206,7 @@ export const createBoardVoice = ({
     removed: (count: number) => {
       if (count > 0) say({ count, kind: 'removed' });
     },
+    repeatSelection: () => say({ kind: 'selection' }),
     selectionChanged: () => {
       const next = selectedShapes().map(({ key }) => key);
 
