@@ -3,9 +3,10 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
-import { landed, stateOf } from './status.mjs';
+import { parsePlan } from './plan-page.mjs';
+import { landed, stateOf, waitsOnOwner } from './status.mjs';
 
 export const LEDGER = 'suggested-tasks.decisions.tsv';
 // Trunk delivery keeps the ledger out of the branch's history: git ignores the artifacts
@@ -64,7 +65,7 @@ const LIST_KEYS = ['writes', 'waits', 'owns', 'commit', 'from', 'regression'];
 const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'shown', 'session', 'transcript', 'codex', 'via', 'review-scope', ...EVIDENCE];
 const KINDS = ['fix', 'decide', 'review'];
 const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
-const ROUTES = ['verdict', 'babysit', 'time', 'hook', 'panel'];
+const ROUTES = ['verdict', 'babysit', 'time', 'hook', 'panel', 'stale'];
 const CARD_LIMIT = 10;
 
 const CHIP = /^([\w-]+) (?:(?:Now|After): )?\S/u;
@@ -165,9 +166,57 @@ const planOnOrigin = memo((plan) => {
     return null;
   }
 });
+const readsOrigin = (plan) => trunk() && !isAbsolute(plan);
 let worktreeRoots;
-const planInWorktree = (plan) =>
-  (worktreeRoots ??= (execFileSync('git', ['worktree', 'list', '--porcelain'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).match(/^worktree .+$/gmu) ?? []).map((line) => line.slice('worktree '.length))).some((root) => existsSync(join(root, plan)));
+const checkouts = () => {
+  if (!worktreeRoots) {
+    let listed = [];
+    try {
+      listed = (execFileSync('git', ['worktree', 'list', '--porcelain'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).match(/^worktree .+$/gmu) ?? []).map((line) => line.slice('worktree '.length));
+    } catch {}
+    worktreeRoots = [...new Set([resolve('.'), ...listed])];
+  }
+  return worktreeRoots;
+};
+const worktreeCopy = (plan) => checkouts().map((root) => join(root, plan)).find((path) => existsSync(path)) ?? null;
+const real = (path) => (existsSync(path) ? realpathSync(path) : path);
+const inCheckout = (plan) => {
+  if (!isAbsolute(plan)) return plan;
+  const path = real(plan);
+  const inside = checkouts()
+    .map((root) => relative(real(root), path))
+    .filter((rel) => rel && !rel.startsWith('..') && !isAbsolute(rel));
+  return inside.sort((a, b) => a.length - b.length)[0] ?? plan;
+};
+
+const PLAN_IDLE_LIMIT_MS = 7 * 86_400_000;
+const lastRowAt = (log) => {
+  if (!existsSync(log)) return 0;
+  const last = readFileSync(log, 'utf8').trimEnd().split('\n').at(-1) ?? '';
+  return Date.parse(last.split('\t')[0]) || 0;
+};
+const planActiveAt = memo((given) => {
+  const plan = inCheckout(given);
+  const log = plan.replace(/\.md$/u, '.decisions.tsv');
+  const outside = isAbsolute(plan);
+  const repos = outside ? [['-C', dirname(plan)]] : [[], ...(companionGitDir() ? [companionGitDir()] : [])];
+  const paths = outside ? [basename(plan), basename(log)] : [plan, log];
+  const ref = readsOrigin(plan) ? `origin/${branch()}` : 'HEAD';
+  const commits = repos.map((via) => {
+    try {
+      return Number(execFileSync('git', [...via, 'log', '-1', '--format=%ct', ref, '--', ...paths], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })) * 1000 || 0;
+    } catch {
+      return 0;
+    }
+  });
+  const rows = (outside ? [log] : checkouts().map((root) => join(root, log))).map(lastRowAt);
+  return Math.max(0, ...commits, ...rows) || null;
+});
+const planSubject = (text) => {
+  const plan = parsePlan(text);
+  const field = projectConfig().pageTopic?.field?.toLowerCase();
+  return { scope: (field && plan.lists[field]?.[0]) || plan.fields.topic || null };
+};
 
 const parseRow = ([phase, decision = '', why = '', evidence = '', result = '']) => {
   const [, id] = phase === 'chip' ? (decision.match(CHIP) ?? []) : [];
@@ -258,6 +307,7 @@ export function recordRow(tasks, cells, ts = null) {
       ownerTranscript: given.transcript ?? null,
       outside: given.session === 'none',
       startedIn: null,
+      startedAt: null,
       effort: null,
       fast: given.fast === 'yes',
       priority: given.priority ?? null,
@@ -294,6 +344,7 @@ export function recordRow(tasks, cells, ts = null) {
   }
   if (row.move === 'started') {
     task.status = 'started';
+    task.startedAt ??= ts;
     if (given.session) task.startedIn = given.session;
   }
   if (row.move === 'landed') {
@@ -383,7 +434,7 @@ const tokenProblems = (given, where) => {
   if (given.transcript !== undefined && !SESSION.test(given.transcript)) found.push(`${where}: transcript: names the session's transcript id as one token${ranOn(given.transcript)}`);
   if (given.codex !== undefined && given.codex !== 'always') found.push(`${where}: codex: is always, which forces the card session's Codex handoff`);
   if (given.priority !== undefined && !PRIORITIES.includes(given.priority)) found.push(`${where}: priority: is P0, P1, P2 or P3, as chips.md's Priority says`);
-  if (given.via !== undefined && !ROUTES.includes(given.via)) found.push(`${where}: via: is verdict, babysit, time, hook or panel, the route that lets a run offer a P2 or P3 task, as chips.md's Offer says`);
+  if (given.via !== undefined && !ROUTES.includes(given.via)) found.push(`${where}: via: is verdict, babysit, time, hook, panel or stale, the route that lets a run offer a P2 or P3 task, as chips.md's Offer says`);
   if (given.shown !== undefined && !PRIORITIES.includes(given.shown)) found.push(`${where}: shown: is the priority the card's title shows, P0, P1, P2 or P3`);
   if (given.repro === '') found.push(`${where}: repro: names a failing test, or exact steps someone ran and saw fail`);
   if (given.regressed !== undefined && !/^[0-9a-f]{7,40}$/u.test(given.regressed)) found.push(`${where}: regressed: names the commit the regression came in by its hash`);
@@ -494,6 +545,7 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
     if (!given.priority && !given.owns?.length) found.push(`${where}: a new offer names its priority as "priority: P0", P1, P2 or P3, as chips.md's Priority says; a task that owns a check failing on the base branch is P0 without one`);
     if (['P2', 'P3'].includes(given.priority) && !given.via) found.push(`${where}: a run offers a task only for a new P0 or P1 finding, as chips.md's Offer says, so list this ${given.priority} finding in the plan's Open work, or in the reply when the run keeps no plan; an offer for an item the run's verdict judges, for a finding in a babysit run, for a measurement the Time budget rule sends to a task, from a project hook that finds recurring work due, or for the design question that two open critical panel findings require names its route as via: verdict, via: babysit, via: time, via: hook or via: panel`);
     if (given.via === 'panel' && given.kind !== 'decide') found.push(`${where}: via: panel is the route for the design question that two open critical panel findings require, so it goes only on a kind: decide offer`);
+    if (given.via === 'stale' && given.kind !== 'decide') found.push(`${where}: via: stale goes only on a kind: decide offer, because it names the fresh verdict on a plan idle for a week, as chips.md's waits bullet says`);
   }
   const claimed = ['P0', 'P1'].includes(given.priority) ? afterRow(before, cells).get(id) : null;
   if (claimed && !claimed.owns.length && !claimed.repro) {
@@ -675,7 +727,7 @@ export function gitMerges({ fetch = false, branch } = {}) {
     },
     (path, since) => `${since}\0${path}`,
   );
-  return { merged, dirty, committedSince, note };
+  return { merged, dirty, committedSince, activeAt: planActiveAt, note };
 }
 
 const cyclicEdges = (tasks) => {
@@ -691,13 +743,13 @@ const cyclicEdges = (tasks) => {
   return edges;
 };
 
-const loopsBack = (from, origin, tasks, seen = new Set()) => {
+const loopsBack = (from, origin, tasks, waitsOf = (task) => task.waits, seen = new Set()) => {
   if (seen.has(from.id)) return false;
   seen.add(from.id);
-  return from.waits.some((wait) => {
+  return waitsOf(from).some((wait) => {
     const [, , taskId] = wait.match(WAIT) ?? [];
     const next = taskId && follow(taskId, tasks);
-    return next?.status === 'offered' && (next.id === origin.id || loopsBack(next, origin, tasks, seen));
+    return next?.status === 'offered' && (next.id === origin.id || loopsBack(next, origin, tasks, waitsOf, seen));
   });
 };
 
@@ -731,15 +783,30 @@ function waitBlocker(wait, origin, tasks, git) {
     return { text: `task:${taskId} closed as dismissed ${task.reason} without its result`, stuck: true };
   }
   if (plan) {
-    const onOrigin = trunk() && !isAbsolute(plan);
+    const onOrigin = readsOrigin(plan);
     const text = onOrigin ? planOnOrigin(plan) : existsSync(plan) ? readFileSync(plan, 'utf8') : null;
-    if (text === null) return onOrigin && planInWorktree(plan) ? { text: `run:${plan} not landed` } : { text: `run:${plan} dangling, no such plan`, stuck: true };
-    const status = text.match(/^Status:\s*(.*)$/mu)?.[1] ?? '';
+    if (text === null) {
+      const copy = onOrigin ? worktreeCopy(plan) : null;
+      if (copy === null) return { text: `run:${plan} dangling, no such plan`, stuck: true };
+      return staleWait(plan, readFileSync(copy, 'utf8'), git) ?? { text: `run:${plan} not landed` };
+    }
+    const status = statusOf(text);
     if (landed(status)) return null;
     const state = stateOf(status);
-    return state === 'done' ? { text: `run:${plan} closed without its result`, stuck: true } : { text: `run:${plan} ${state ?? 'without a Status line'}` };
+    if (state === 'done') return { text: `run:${plan} closed without its result`, stuck: true };
+    return staleWait(plan, text, git) ?? { text: `run:${plan} ${state ?? 'without a Status line'}` };
   }
   return { text: `${wait} malformed`, stuck: true, malformed: true };
+}
+
+const statusOf = (text) => text.match(/^Status:\s*(.*)$/mu)?.[1] ?? '';
+
+function staleWait(plan, text, git) {
+  const at = git.activeAt(plan);
+  if (at === null || Date.now() - at <= PLAN_IDLE_LIMIT_MS) return null;
+  const status = statusOf(text);
+  const owner = waitsOnOwner(status);
+  return { text: `run:${plan} ${owner ? 'waits on you' : 'stale'}, idle since ${new Date(at).toISOString().slice(0, 10)}`, stale: { plan, at, owner, status: status.trim(), ...planSubject(text) } };
 }
 
 function queueBlockers(task, tasks, git, ready) {
@@ -899,7 +966,7 @@ export function startedOverlaps(tasks) {
 // A session cards only the tasks it owns. With all, it also cards the tasks no
 // session owns and takes over each one whose owner is not in live, the ids of
 // the sessions not archived; without live, no owner counts as gone.
-export function board(tasks, git, here = null, { transcript = null, all = false, live = null, ship = NO_SHIP } = {}) {
+export function board(tasks, git, here = null, { transcript = null, all = false, live = null, ship = NO_SHIP, sync = false } = {}) {
   const open = [...tasks.values()].filter(isOpen).sort(byOrder);
   const started = open.filter((task) => task.status === 'started');
   const offered = open.filter((task) => task.status === 'offered');
@@ -914,11 +981,12 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       continue;
     }
     const found = queueBlockers(task, tasks, git, ready);
-    if (found.length > 0) waiting.push({ task, blockers: found.map((blocker) => blocker.text), stuck: found.filter((blocker) => blocker.stuck).map((blocker) => blocker.text) });
+    if (found.length > 0) waiting.push({ task, blockers: found.map((blocker) => blocker.text), stuck: found.filter((blocker) => blocker.stuck).map((blocker) => blocker.text), stale: found.flatMap((blocker) => (blocker.stale ? [blocker.stale] : [])) });
     else ready.push(task);
   }
   ready.sort(byPriority);
   waiting.sort((a, b) => byPriority(a.task, b.task));
+  const stale = stalePlans(waiting);
   const topics = new Map();
   for (const task of open) {
     if (!task.topic) continue;
@@ -986,6 +1054,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       .filter((task) => task.topic && !ownPriority(task))
       .map((task) => ({ kind: 'priority', ids: [task.id], text: `prioritize ${task.id}: log updated with priority: and the evidence a P0 or P1 claim needs, as chips.md's Priority says` })),
     ...shipOffers(ship.items, tasks, open),
+    ...staleItems(stale, open, tasks),
     ...lost.map((task) => ({ kind: 'migrate', ids: [task.id], text: `reopen ${task.id} or close it: a dropped card closed it as gone; log reopened, then updated with topic: and waits:, or dismissed done or superseded` })),
   ];
   const owed = [...tasks.values()].filter((task) => task.status === 'landed' && fastOf(task) && !task.reviewed).sort(byOrder);
@@ -993,7 +1062,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
   const merge = mergeItem(offered, tasks, git);
   const cardable = ready.filter((task) => !task.card && mayCard(task) && ownPriority(task));
   const room = Math.max(0, CARD_LIMIT - offered.filter((task) => task.card && !elsewhere(task)).length);
-  const notes = cardable.length > room ? [{ kind: 'note', text: `${cardable.length - room} more can start once this session holds fewer than ${CARD_LIMIT} cards; the card pass offers them in board order` }] : [];
+  const notes = !sync && cardable.length > room ? [{ kind: 'note', text: `${cardable.length - room} more can start once this session holds fewer than ${CARD_LIMIT} cards; the card pass offers them in board order` }] : [];
   const cards = cardable
     .slice(0, room)
     .map((task) => {
@@ -1006,19 +1075,20 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       };
     });
   const passes = [
-    ['withdrawal', here === null ? [] : withdrawals],
+    ['withdrawal', here === null ? [] : sync ? withdrawals.filter((item) => item.kind === 'problem') : withdrawals],
     ['ledger', merge ? [merge, ...rows.filter((item) => !item.ids.some((id) => merge.ids.includes(id)))] : rows],
-    ['card', cards],
+    ['card', sync ? [] : cards],
   ];
   const [pass, items] = passes.find(([, each]) => each.length > 0) ?? [null, []];
   const problem = [...withdrawals, ...rows].some((item) => item.kind === 'problem');
-  return { open, ready, cardable, others, all, started, waiting, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...(pass === 'card' || pass === null ? notes : []), ...checks, ...runs], pass, problem, here, note: git.note, shipNote: ship.note };
+  return { open, ready, cardable, others, all, sync, started, waiting, stale, unmigrated, lost, owed, topics: [...topics.values()], todo: [...items, ...(pass === 'card' || pass === null ? notes : []), ...checks, ...runs], pass, problem, here, note: git.note, shipNote: ship.note };
 }
 
 const failsOnBase = (task) => task.owns.length > 0;
 const ownPriority = (task) => (failsOnBase(task) ? (lateTier(task) ? (task.priority ?? 'P1') : 'P0') : task.priority);
+const liftedOf = (task) => higher(ownPriority(task), task.blockingPriority);
 export const priorityOf = (task) => {
-  const priority = higher(ownPriority(task), task.blockingPriority);
+  const priority = liftedOf(task);
   return priority === 'P0' && lateTier(task) ? 'P1' : priority;
 };
 
@@ -1037,7 +1107,7 @@ function liftPriorities(tasks) {
       const level = priorityOf(waiter);
       for (const wait of waiter.waits) {
         const blocker = follow(wait.match(WAIT)?.[2] ?? '', tasks);
-        const current = blocker && priorityOf(blocker);
+        const current = blocker && liftedOf(blocker);
         if (!level || !blocker || blocker === waiter || !isOpen(blocker) || (waiter.deferred && !blocker.deferred) || (current && current <= level)) continue;
         blocker.blockingPriority = level;
         blocker.blocks = waiter.id;
@@ -1163,6 +1233,94 @@ function shipOffers(items, tasks, open) {
     });
 }
 
+const andList = (items) => (items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`);
+const kebab = (text) => text.toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-+|-+$/gu, '');
+const planSlug = (plan) => basename(plan, '.md').replace(/^\d{4}-\d{2}-\d{2}-/u, '');
+
+function stalePlans(waiting) {
+  const plans = new Map();
+  for (const { task, stale } of waiting) {
+    for (const entry of stale) {
+      const known = plans.get(entry.plan) ?? { ...entry, waiters: [] };
+      known.waiters.push(task);
+      plans.set(entry.plan, known);
+    }
+  }
+  return [...plans.values()].sort((a, b) => Number(b.owner) - Number(a.owner) || a.at - b.at);
+}
+
+const verdictTopic = (entry) => (entry.scope ? `review-${kebab(entry.scope)}` : kebab(planSlug(entry.plan)) || 'stale-plan');
+
+function staleItems(stale, open, tasks) {
+  const decides = open.filter((task) => task.kind === 'decide');
+  const wrotePlan = (task, entry) => task.status === 'started' && task.startedAt && Date.parse(task.startedAt) < entry.at;
+  const foldable = (task) => task.status === 'offered' && !held(task);
+  const moved = new Map();
+  const waitsOf = (task) => moved.get(task) ?? task.waits;
+  const folds = new Map();
+  const groups = new Map();
+  const problems = [];
+  for (const entry of stale.filter((each) => !each.owner)) {
+    const topic = verdictTopic(entry);
+    const question = decides.find((task) => task.topic === topic);
+    const verdict = decides.find((task) => task.writes.includes(entry.plan) && !wrotePlan(task, entry)) ?? (question && foldable(question) ? question : null);
+    if (!verdict) {
+      const group = groups.get(topic) ?? { question, entries: [] };
+      group.entries.push(entry);
+      groups.set(topic, group);
+      continue;
+    }
+    if (!verdict.writes.includes(entry.plan)) folds.set(verdict, [...(folds.get(verdict) ?? []), entry.plan]);
+    for (const task of entry.waiters) {
+      if (held(task)) continue;
+      if (task !== verdict && verdict.status === 'offered' && loopsBack(verdict, task, tasks, waitsOf)) {
+        problems.push({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: run:${entry.plan} is stale, and its verdict ${verdict.id} waits back on ${task.id}; log updated with the waits it has now` });
+        continue;
+      }
+      const swap = task === verdict ? [] : [`task:${verdict.id}`];
+      moved.set(task, waitsOf(task).flatMap((wait) => (wait === `run:${entry.plan}` ? swap : [wait])));
+    }
+  }
+  const ownRun = ({ question, entries }) => question && entries.some((entry) => question.writes.includes(entry.plan) && wrotePlan(question, entry));
+  return [
+    ...[...moved].map(([task, waits]) => ({ kind: 'stale', ids: [task.id], text: `move ${task.id}'s waits on stale plans to their fresh verdict: log updated with waits: ${waits.length ? [...new Set(waits)].join(', ') : 'none'}` })),
+    ...problems,
+    ...[...folds].map(([verdict, plans]) => ({ kind: 'stale', ids: [verdict.id], text: `fold the stale plan${plans.length > 1 ? 's' : ''} ${andList(plans)} into ${verdict.id}, the open design question in ${verdict.topic}: log folded with writes: ${plans.join(', ')}` })),
+    ...[...groups.values()].map((group) => (ownRun(group) ? settleRun(group) : verdictOffer(group))),
+  ];
+}
+
+function settleRun({ question, entries }) {
+  const plans = entries.map((entry) => entry.plan);
+  return { kind: 'stale', ids: [question.id], text: `settle ${question.id}, the started run that wrote the stale plan${plans.length > 1 ? 's' : ''} ${andList(plans)} and still holds ${question.topic}: log landed with the commit that holds its change, or dismissed stopped when none does` };
+}
+
+function verdictOffer({ question, entries }) {
+  const { scope } = entries[0];
+  const plans = entries.map((entry) => entry.plan);
+  const waiters = [...new Set(entries.flatMap((entry) => entry.waiters.map((task) => task.id)))];
+  const since = new Date(Math.max(...entries.map((entry) => entry.at))).toISOString().slice(0, 10);
+  const scopes = projectConfig().chips?.scopes;
+  const file = scope && scopes && existsSync(scopes) ? readdirSync(scopes).find((name) => name.replace(/\.[^.]+$/u, '') === scope) : null;
+  const many = plans.length > 1;
+  const title = scope ? `Decide ${scope} again instead of resuming its plan${many ? 's' : ''}${XHIGH}` : `Decide again whether to resume the ${planSlug(plans[0])} plan${XHIGH}`;
+  const topic = verdictTopic(entries[0]);
+  const holder = question ? ` It waits on ${question.id}, the design question ${topic} holds now, which cannot take ${many ? 'these plans' : 'this plan'} while it ${question.status === 'started' ? 'runs' : `holds card ${question.card}`}.` : '';
+  const finding = `${andList(plans)} ${many ? 'have' : 'has'} had no commit and no decision log row since ${since}, and a plan idle for a week does not resume, so its next step is a verdict again${scope ? ` on ${scope}` : ''}. ${andList(waiters)} ${waiters.length === 1 ? 'waits' : 'wait'} on ${many ? 'them' : 'it'}.${holder} Pursue into a fresh plan or Stop, close each old plan as superseded either way, and give each task that waits on this one a wait on the fresh plan when it needs that plan's result or writes its files.`;
+  const tokens = [
+    `writes: ${[...plans, ...(file ? [join(scopes, file)] : [])].join(', ')}`,
+    `topic: ${topic}`,
+    'kind: decide',
+    'priority: P2',
+    'via: stale',
+    ...(scopes ? [`review-scope: ${file ? scope : 'none'}`] : []),
+    ...(question ? [`waits: task:${question.id}`] : []),
+    'session: none',
+  ].join('; ');
+  const what = scope ? `on review scope ${scope} for the stale plan${many ? 's' : ''} ${andList(plans)}` : `for the stale plan ${plans[0]}`;
+  return { kind: 'stale', ids: [], text: `offer one verdict ${what}, which ${andList(waiters)} ${waiters.length === 1 ? 'waits' : 'wait'} on: append chip "${newId()} ${title}" "${finding}" "${tokens}" offered` };
+}
+
 // Fast work stays owed until a review task covers it, so a declined or
 // stopped review leaves it owed again.
 function reviewItems(tasks, owed) {
@@ -1206,6 +1364,7 @@ export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
   if (view.shipNote) out.push(`No ship list: ${view.shipNote}.`);
+  if (view.sync) out.push('chips sync leaves out the card pass, so it offers no card.');
   if (view.here && view.all) out.push('This session cards the tasks it owns, the ship-list tasks and the ones no session owns, and takes over each task whose owner session is archived or gone.');
   else if (view.here) out.push('This session cards the tasks it owns, the ones it offered or carded first when the offer named no session. chips all also takes the ship-list tasks, which no session owns, and the tasks no live session owns.');
   const section = (title, rows) => {
@@ -1245,6 +1404,10 @@ export function renderBoard(view, ledger, max = null) {
   deferredApart('Ready', view.ready, (task) => task, (task) => line(task, loweredEffort(task) + blocking(task) + (task.card ? card(task) : '  no card') + shares(task)));
   section('Started', view.started.map((task) => line(task, task.startedIn ? `  session ${task.startedIn}` : '')));
   deferredApart('Waiting', view.waiting, ({ task }) => task, ({ task, blockers }) => line(task, `${loweredEffort(task)}${blocking(task)}  waits on ${blockers.join('; ')}`));
+  section(
+    'Stale plans',
+    view.stale.map(({ plan, at, owner, status, waiters }) => `  ${plan}  idle ${Math.floor((Date.now() - at) / 86_400_000)} days  ${owner ? `waits on you: ${status}` : status}  ${andList(waiters.map((task) => task.id))} ${waiters.length === 1 ? 'waits' : 'wait'} on it`),
+  );
   section('Owed review', view.owed.map((task) => line(task, task.patch ? `  patch ${task.patch}` : '')));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));

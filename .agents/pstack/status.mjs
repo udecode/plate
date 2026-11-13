@@ -31,6 +31,15 @@ export function stateOf(status) {
   return Object.keys(STATES).find((state) => STATES[state].includes(first)) ?? null;
 }
 
+const WAIT_WORD = /\b(?:wait(?:s|ing)?|awaiting|blocked|needs?|hold|held|until)\b/iu;
+const OWNER_WORD = /\b(?:you|your|owner)\b/iu;
+export const waitsOnOwner = (status) =>
+  /^\W*paused\b/iu.test(status) ||
+  status.split(/[.;]/u).some((clause) => {
+    const at = clause.search(WAIT_WORD);
+    return at >= 0 && OWNER_WORD.test(clause.slice(at));
+  });
+
 export const SEATS = /^seats\s/u;
 export const CRITICAL_SEATS = /^critical \[([^\]]*)\]:\s*\S/u;
 

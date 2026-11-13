@@ -46,6 +46,11 @@
 //        its topic and a Do list of one pass, withdrawals, then ledger rows, then cards,
 //        and exits 1 when any pass holds a problem: a card on a task that cannot start,
 //        a wait that can never clear or two open design questions in one topic;
+//        a run: wait on a plan whose last commit and last decision log row are over a
+//        week old reads it as stale and lists it under Stale plans, the ones whose
+//        Status waits on the owner first; for each other stale plan the Do list offers
+//        one fresh verdict per review scope, or folds the plan into the design question
+//        its scope's topic holds, and moves each wait on the plan there;
 //        <ledger> defaults to <plans>/artifacts/suggested-tasks.decisions.tsv in trunk
 //        delivery and <plans>/suggested-tasks.decisions.tsv otherwise,
 //        --fetch refreshes the remote branches that PR waits read, and --session names
@@ -55,6 +60,10 @@
 //        (lists every priority, also cards the tasks no session owns, and with the session
 //        tool's list saved as a JSON array, takes over each task whose owner session is
 //        archived or gone)
+//        node .agents/pstack/decisions-check.mjs chips sync [--session <id>] [<ledger>]
+//        (prints the board without its card pass, and withdraws only the cards of tasks
+//        that cannot start, so a sweep that applies its Do list brings the ledger up to
+//        date and offers no card)
 //        node .agents/pstack/decisions-check.mjs chips stale [<ledger>]
 //        (prints each open task's age, its priority, a ship item that closed, the paths it
 //        writes that were deleted since its offer or are missing, the commits on its paths
@@ -169,7 +178,7 @@ function chipsArgs(args) {
   const valued = new Set(['--session', '--sessions'].flatMap((name) => (args.includes(name) ? [args.indexOf(name), args.indexOf(name) + 1] : [])));
   const at = args.flatMap((arg, index) => (index > 0 && arg !== '--fetch' && !valued.has(index) ? [index] : []));
   const first = args[at[0]];
-  const logAt = first === 'brief' ? at[2] : ['stale', 'groups', 'all', 'cleanup'].includes(first) ? at[1] : first === 'id' ? undefined : at[0];
+  const logAt = first === 'brief' ? at[2] : ['stale', 'groups', 'all', 'cleanup', 'sync'].includes(first) ? at[1] : first === 'id' ? undefined : at[0];
   return { rest: at.map((index) => args[index]), logAt };
 }
 function runLedgerCommandFromMainCheckout(args) {
@@ -696,7 +705,7 @@ function dispatch() {
       (ok ? console.info : console.error)(text);
       return ok ? 0 : 1;
     }
-    const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, { ...owning, ship: shipList() });
+    const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, { ...owning, ship: shipList(), sync: rest[0] === 'sync' });
     for (const note of startedOverlaps(tasks)) console.error(note);
     console.info(renderBoard(view, ledger, maxEffort()));
     return view.problem ? 1 : 0;
