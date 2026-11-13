@@ -330,7 +330,7 @@ export const createSyncServer = <
     for (const peer of slot.peers) {
       if (peer.welcomedEpoch === room.epoch) continue;
       slot.peers.delete(peer);
-      peer.deliver({ reason: 'epoch', type: 'refused' });
+      peer.deliver({ epoch: room.epoch, reason: 'epoch', type: 'refused' });
     }
   };
 
@@ -521,7 +521,17 @@ export const createSyncServer = <
       refusal(submit, reason, room.head);
 
     if (!servesSchema(room, member.schema)) return refuse('schema');
-    if (member.epoch !== room.epoch) return refuse('epoch');
+    if (member.epoch !== room.epoch) {
+      return {
+        epoch: room.epoch,
+        reason: 'epoch',
+        seq,
+        status: 'refused',
+        type: 'receipt',
+        version: room.head,
+        writer,
+      };
+    }
 
     const digest = await digestOf(submit);
 
@@ -830,7 +840,7 @@ export const createSyncServer = <
         if (!servesSchema(room, message.schema)) {
           peer.deliver({ reason: 'schema', type: 'refused' });
         } else if (message.epoch !== null && message.epoch !== room.epoch) {
-          peer.deliver({ reason: 'epoch', type: 'refused' });
+          peer.deliver({ epoch: room.epoch, reason: 'epoch', type: 'refused' });
         } else {
           joined = await welcome(room, slot, peer, message.version);
         }

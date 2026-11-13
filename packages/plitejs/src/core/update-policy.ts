@@ -92,3 +92,14 @@ export const compileEditorUpdatePolicy = (
 };
 
 export const EMPTY_EDITOR_UPDATE_POLICY = compileEditorUpdatePolicy();
+
+export const REMOTE_UPDATE = Object.freeze({
+  tags: Object.freeze([
+    'collaboration',
+    'remote-yjs-import',
+    'history-skip',
+    'skip-dom-selection',
+    'skip-selection-focus',
+    'skip-scroll-into-view',
+  ]),
+} satisfies EditorUpdatePolicy);

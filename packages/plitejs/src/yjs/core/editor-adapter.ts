@@ -15,13 +15,13 @@ import {
   getCurrentSelection,
   runTrustedUpdate,
 } from '../../core/public-state';
+import { REMOTE_UPDATE } from '../../core/update-policy';
 import { withoutPlacement } from '../../core/view-carets';
 import type {
   Descendant,
   DocumentChange,
   EditorDocumentValue,
   EditorSelection,
-  EditorUpdatePolicy,
   JsonEditorValue,
   Path,
   Range,
@@ -66,18 +66,7 @@ export type YjsEditorAdapter = {
  * remote Yjs import, so history and outbound subscriptions treat it like the
  * binding's own imports.
  */
-export const YjsUpdatePolicy = Object.freeze({
-  remote: Object.freeze({
-    tags: Object.freeze([
-      'collaboration',
-      'remote-yjs-import',
-      'history-skip',
-      'skip-dom-selection',
-      'skip-selection-focus',
-      'skip-scroll-into-view',
-    ]),
-  } satisfies EditorUpdatePolicy),
-});
+export const YjsUpdatePolicy = Object.freeze({ remote: REMOTE_UPDATE });
 
 /** Reads the top-level node through `at`, so a lazy root builds no array. */
 const nodeAtImportPath = (children: NodeList<Descendant>, path: Path) => {

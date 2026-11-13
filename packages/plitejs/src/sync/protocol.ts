@@ -50,17 +50,11 @@ export type SyncSubmit = Readonly<{
 
 export type SyncClientMessage = SyncHello | SyncSubmit;
 
-export type SyncJoinRefusal =
-  | 'epoch'
-  | 'protocol'
-  | 'room'
-  | 'schema'
-  | 'unauthorized';
+export type SyncJoinRefusal = 'protocol' | 'room' | 'schema' | 'unauthorized';
 
 export type SyncSubmitRefusal =
   | 'ahead'
   | 'digest'
-  | 'epoch'
   | 'expired'
   | 'grant'
   | 'hello'
@@ -88,6 +82,7 @@ export type SyncReceipt = Readonly<{
         status: SyncSettled;
       }>
     | Readonly<{ reason: SyncSubmitRefusal; status: 'refused' }>
+    | Readonly<{ epoch: string; reason: 'epoch'; status: 'refused' }>
   );
 
 export type SyncServerMessage =
@@ -99,6 +94,7 @@ export type SyncServerMessage =
       version: number;
     }>
   | Readonly<{ reason: SyncJoinRefusal; type: 'refused' }>
+  | Readonly<{ epoch: string; reason: 'epoch'; type: 'refused' }>
   | Readonly<{ document: JsonEditorValue; type: 'snapshot'; version: number }>
   | SyncReceipt;
 

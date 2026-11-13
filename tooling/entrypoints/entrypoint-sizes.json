@@ -190,11 +190,11 @@
     },
     "plitejs/yjs": {
       "bytes": 908107,
-      "gzip": 282473
+      "gzip": 282464
     },
     "plitejs/yjs/react": {
       "bytes": 1006691,
-      "gzip": 314608
+      "gzip": 314576
     }
   }
 }

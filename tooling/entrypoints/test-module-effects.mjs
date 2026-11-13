@@ -143,6 +143,8 @@ export const testModuleEffects = {
       'packages/*/package.json',
     ],
   },
+  'packages/plitejs/test/sync/websocket.spec.ts':
+    'serves its WebSocket room on a free local port and reads no repository file',
   'packages/plitejs/test/test-helper-boundary-contract.ts': {
     reads: ['packages/plitejs/test/support/snapshot.ts'],
   },
