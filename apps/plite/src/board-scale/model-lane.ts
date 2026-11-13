@@ -539,12 +539,13 @@ const checkReadback = (workload: Workload, driver: BoardDriver) => {
 
   if (workload.kind === 'flat') {
     const blocks = stored.children.length;
-    entry.readback = { blocks, collaboration: false, roots: 0 };
+    const roots = Object.keys(stored.roots ?? {}).length;
+    entry.readback = { blocks, collaboration: false, roots };
     writeLog();
 
-    if (blocks !== workload.blocks || stored.roots) {
+    if (blocks !== workload.blocks || roots > 0) {
       fail(
-        `cohort ${cohort}: read back ${blocks} flat blocks and ${Object.keys(stored.roots ?? {}).length} roots, but the flat control claims ${workload.blocks} and none`
+        `cohort ${cohort}: read back ${blocks} flat blocks and ${roots} roots, but the flat control claims ${workload.blocks} and none`
       );
     }
 
