@@ -34,7 +34,7 @@ docs:
 - `BoardElement`：渲染白板表面及其工具栏。
 - `BoardPageElement`：渲染填满容器的白板。`BoardPageKit` 用它代替 `BoardElement`。
 - `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
-- `BoardToolbar`：选择工具；选中框架时，可以删除框架并保留其中的图形。
+- `BoardToolbar`：选择工具，图形菜单可选矩形、椭圆、菱形或三角形。填充菜单为选中的可填充图形（例如便签和几何图形）上色；没有选中这类图形时，为下一个新图形设置颜色。适应按钮让所有图形进入视图。选中框架时，可以删除框架并保留其中的图形。
 
 ### 添加套件
 
@@ -57,7 +57,7 @@ const editor = createEditor({
 
 ### 白板页面
 
-在这个示例中，白板是页面中唯一的块，就像白板应用一样。它在这里填满预览框，在[自己的页面](/blocks/board-page-demo)中填满整个窗口。在空白处拖动或滚动滚轮可平移，按住 Mod 并滚动滚轮可缩放。
+在这个示例中，白板是页面中唯一的块，就像白板应用一样。它在这里填满预览框，在[自己的页面](/blocks/board-page-demo)中填满整个窗口。在空白处拖动会绘制选择框。滚动滚轮、按住 Space 拖动或用中键拖动可平移，按住 Mod 并滚动滚轮可缩放。
 
 <ComponentPreview name="board-page-demo" />
 
@@ -127,7 +127,8 @@ const editor = createEditor({
 | 选中图形时按 Mod+A | 选中白板上的所有图形。 |
 | Tab 和 Shift+Tab | 按阅读顺序在图形之间移动，最后一个图形之后离开白板。 |
 | 按住 Alt 拖动 | 复制被拖动的图形。 |
-| 滚轮，或在白板空白处拖动 | 平移。按住 Mod 滚动滚轮会缩放。 |
+| 使用选择工具时在白板空白处拖动 | 绘制选择框，并选中完全位于框内的所有图形。按住 Shift 会保留已选中的图形。触摸拖动则会平移。 |
+| 滚轮，或按住 Space 拖动，或用中键拖动 | 从任意位置平移，在图形上方也可以。按住 Mod 滚动滚轮会缩放。 |
 
 在白板之后那个块的开头按 Backspace，或在白板之前那个块的末尾按 Delete，会选中白板。再按一次 Backspace 或 Delete 会删除白板及其所有图形，一次撤销即可恢复。
 
