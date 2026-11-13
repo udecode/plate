@@ -71,14 +71,14 @@ export type SyncStorage = Readonly<{
   entries: (room: string, version: number) => Promise<readonly StoredEntry[]>;
   /**
    * The stored room. A room storage has never held is created with a new
-   * epoch, `schema`, its first checkpoint and `owners`; a stored room ignores
-   * `create`.
+   * epoch, `schema`, its first checkpoint and the owners `owners` returns; a
+   * stored room ignores `create` and never calls `owners`.
    */
   load: (
     room: string,
     create: Readonly<{
       checkpoint: Checkpoint;
-      owners: readonly ChangeOwner[];
+      owners: () => readonly ChangeOwner[];
       schema: string;
     }>
   ) => Promise<StoredRoom>;

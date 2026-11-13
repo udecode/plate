@@ -163,6 +163,9 @@ export const testModuleEffects = {
   'packages/plitejs/vitest.config.mjs': {
     runs: ['packages/plitejs/test/react/vitest-setup.ts'],
   },
+  'packages/plitejs/vitest.config.workers.mjs': {
+    runs: ['packages/plitejs/test/sync/cloudflare/worker.ts'],
+  },
   'packages/test/src/playwright/artifacts.ts':
     'writes test output that its caller names',
   'packages/test/src/playwright/clipboard.ts':

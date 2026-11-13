@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 
+import { vitestSuiteOf, vitestSuites } from '../config/test-suites.mjs';
 import { entrypointDags } from '../entrypoints/entrypoint-dag.mjs';
 import { repoRoot } from '../entrypoints/entrypoint-turbo.mjs';
 
@@ -30,6 +32,8 @@ const run = (executable, args, cwd = packageRoot) => {
   return result.status ?? 1;
 };
 
+const TEST_FILE = /[._](?:spec|test)\.[cm]?[jt]sx?$/;
+
 const runFocused = () => {
   if (taskName === 'lint') {
     return run('pnpm', ['exec', 'ultracite', 'check', ...taskArguments]);
@@ -38,23 +42,61 @@ const runFocused = () => {
     return run('bun', ['test', ...taskArguments]);
   }
 
-  const usesReactRunner = taskArguments.some((argument) =>
-    argument.includes('test/react/')
-  );
+  const runners = new Map();
 
-  return usesReactRunner
+  for (const argument of taskArguments) {
+    const target = path.resolve(packageRoot, argument);
+
+    if (!existsSync(target)) continue;
+
+    const relative = path.relative(packageRoot, target);
+    const isFolder = statSync(target).isDirectory();
+    const suite = vitestSuiteOf(
+      packageName,
+      '',
+      isFolder ? `${relative}/` : relative
+    );
+    const runner =
+      suite?.config ?? (!isFolder && TEST_FILE.test(relative) ? 'bun' : null);
+
+    if (runner) {
+      runners.set(runner, {
+        named: [...(runners.get(runner)?.named ?? []), argument],
+        suite,
+      });
+    }
+  }
+
+  if (runners.size > 1) {
+    console.error(
+      `These files run under different runners, so name each runner's files in a command of its own: ${[
+        ...runners,
+      ]
+        .map(([runner, { named }]) => `${runner}: ${named.join(' ')}`)
+        .join('; ')}`
+    );
+    return 1;
+  }
+
+  const [{ suite } = {}] = runners.values();
+
+  return suite
     ? run('pnpm', [
         'exec',
         'vitest',
         'run',
         '--config',
-        './vitest.config.mjs',
+        `./${suite.config}`,
+        ...suite.args,
         ...taskArguments,
       ])
     : run('bun', [
         'test',
         '--preload',
         '../../config/plite-source-test-setup.ts',
+        ...(vitestSuites[packageName] ?? []).flatMap(({ folder }) =>
+          folder ? [`--path-ignore-patterns=${folder}**`] : []
+        ),
         ...taskArguments,
       ]);
 };

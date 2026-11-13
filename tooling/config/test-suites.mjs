@@ -24,20 +24,33 @@ export const TEST_FILE_PATTERNS = [
   'tooling/oxlint/**/*.test.mjs',
 ];
 
-// Bun runs every package runtime test file except these, which Vitest runs
-// with the package's config.
+const underFolder = (folder) => ({
+  folder,
+  includes: (partitionName, filename) => filename.startsWith(folder),
+});
+
 export const vitestSuites = {
-  '@platejs/test': {
-    args: ['--project', 'browser'],
-    config: 'vitest.config.ts',
-    includes: (partitionName) => partitionName === 'browser',
-  },
-  plitejs: {
-    args: [],
-    config: 'vitest.config.mjs',
-    includes: (partitionName, filename) => filename.startsWith('test/react/'),
-  },
+  '@platejs/test': [
+    {
+      args: ['--project', 'browser'],
+      config: 'vitest.config.ts',
+      includes: (partitionName) => partitionName === 'browser',
+    },
+  ],
+  plitejs: [
+    { args: [], config: 'vitest.config.mjs', ...underFolder('test/react/') },
+    {
+      args: [],
+      config: 'vitest.config.workers.mjs',
+      ...underFolder('test/sync/cloudflare/'),
+    },
+  ],
 };
+
+export const vitestSuiteOf = (packageName, partitionName, filename) =>
+  vitestSuites[packageName]?.find((suite) =>
+    suite.includes(partitionName, filename)
+  );
 
 export const TEST_DEFERRED_FILE_PATTERNS = [
   'apps/**/__deferred__/**/*.deferred.spec.{ts,tsx}',

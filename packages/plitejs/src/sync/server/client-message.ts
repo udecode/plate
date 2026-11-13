@@ -7,6 +7,8 @@ export type MalformedSubmit = Readonly<{
   writer: string;
 }>;
 
+const MAX_WRITER_LENGTH = 256;
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -53,7 +55,8 @@ export const readClientMessage = (
     return isCount(base) &&
       isVersion3Change(change) &&
       typeof digest === 'string' &&
-      isCount(seq)
+      isCount(seq) &&
+      writer.length <= MAX_WRITER_LENGTH
       ? { base, change, digest, seq, type, writer }
       : { seq, type: 'malformed', writer };
   }

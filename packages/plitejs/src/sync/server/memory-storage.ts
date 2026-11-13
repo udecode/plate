@@ -97,7 +97,7 @@ export const memoryStorage = (): SyncStorage => {
             receipts: new Map(),
             schema,
           };
-          bindOwners(room, owners);
+          bindOwners(room, owners());
           rooms.set(name, room);
         }
 

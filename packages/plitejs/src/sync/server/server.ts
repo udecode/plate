@@ -57,15 +57,36 @@ export type { SyncGrant } from './grant';
 
 export type SyncRequest = Readonly<{ room: string; token: string }>;
 
+/**
+ * What a connection holds between two messages, as plain data, so a host
+ * whose platform drops its memory can keep the connection alive across it.
+ */
+export type SyncConnectionSnapshot =
+  | Readonly<{ kind: 'closed' }>
+  | Readonly<{
+      broadcast: boolean;
+      grant: SyncGrant | null;
+      joined: Readonly<{ epoch: string; schema: string }> | null;
+      kind: 'open';
+      sentThrough: number;
+      welcomedEpoch: string | null;
+    }>;
+
 export type SyncConnection = Readonly<{
   close: () => void;
   /** Settles once the message is handled, and rejects when storage fails. */
   receive: (data: string) => Promise<void>;
+  snapshot: () => SyncConnectionSnapshot;
 }>;
 
+/**
+ * Connects a socket. A `restored` snapshot reinstates a connection the host
+ * kept across a restart without a new hello: nothing is sent or authorized.
+ */
 export type SyncConnect = (
   send: (data: string) => void,
-  request: SyncRequest
+  request: SyncRequest,
+  restored?: SyncConnectionSnapshot
 ) => SyncConnection;
 
 export type SyncServerOptions<
@@ -80,6 +101,11 @@ export type SyncServerOptions<
   /** A fresh headless editor with the schema every tab of the room uses. */
   editor: () => Editor<V, TPlugins>;
   storage: SyncStorage;
+  /**
+   * `idle` unloads a room 60 s after its last message. `host` never unloads,
+   * for a host whose platform drops the whole server when it idles.
+   */
+  unload?: 'host' | 'idle';
 }>;
 
 type Peer = {
@@ -183,6 +209,7 @@ export const createSyncServer = <
   authored,
   editor: createRoomEditor,
   storage,
+  unload: unloadAfter = 'idle',
 }: SyncServerOptions<V, TPlugins>) => {
   const slots = new Map<string, Slot>();
 
@@ -192,20 +219,14 @@ export const createSyncServer = <
     const document = valueOf(editor);
     const stored = await storage.load(name, {
       checkpoint: { at: Date.now(), document, version: 0 },
-      owners: seedOwnersOf(
-        authored.claimsIn(document),
-        authored.decidedIn(document)
-      ),
+      owners: () =>
+        seedOwnersOf(authored.claimsIn(document), authored.decidedIn(document)),
       schema,
     });
-    const floor =
-      stored.head > stored.floor
-        ? await storage.compact(name, Date.now() - RETENTION_MS)
-        : stored.floor;
     const room: LoadedRoom = {
       editor,
       epoch: stored.epoch,
-      floor,
+      floor: stored.floor,
       head: stored.head,
       headEntry: null,
       isSetValued: setValuedIn(editor),
@@ -280,6 +301,7 @@ export const createSyncServer = <
   };
 
   const touch = (name: string, slot: Slot) => {
+    if (unloadAfter === 'host') return;
     clearTimeout(slot.idle);
     slot.idle = setTimeout(() => {
       slot.turn = slot.turn.then(() => {
@@ -748,9 +770,10 @@ export const createSyncServer = <
     return peer.open ? { epoch: room.epoch, schema: room.schema } : null;
   };
 
-  const connect: SyncConnect = (send, request) => {
-    let joined: Readonly<{ epoch: string; schema: string }> | null = null;
-    let grant: SyncGrant | null = null;
+  const connect: SyncConnect = (send, request, restored) => {
+    const kept = restored?.kind === 'open' ? restored : null;
+    let joined = kept?.joined ?? null;
+    let grant = kept?.grant ?? null;
     let queue: Promise<unknown> = Promise.resolve();
 
     const leaveBroadcast = () => slots.get(request.room)?.peers.delete(peer);
@@ -774,10 +797,12 @@ export const createSyncServer = <
           close();
         }
       },
-      welcomedEpoch: null,
-      open: true,
-      sentThrough: 0,
+      welcomedEpoch: kept?.welcomedEpoch ?? null,
+      open: restored?.kind !== 'closed',
+      sentThrough: kept?.sentThrough ?? 0,
     };
+
+    if (kept?.broadcast) slotOf(request.room).peers.add(peer);
 
     const hello = async (message: SyncHello) => {
       joined = null;
@@ -850,6 +875,17 @@ export const createSyncServer = <
 
         return run.then(() => {});
       },
+      snapshot: () =>
+        peer.open
+          ? {
+              broadcast: slots.get(request.room)?.peers.has(peer) ?? false,
+              grant,
+              joined,
+              kind: 'open',
+              sentThrough: peer.sentThrough,
+              welcomedEpoch: peer.welcomedEpoch,
+            }
+          : { kind: 'closed' },
     };
   };
 

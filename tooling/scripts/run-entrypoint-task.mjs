@@ -3,7 +3,11 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-import { TEST_TIMEOUT_MS, vitestSuites } from '../config/test-suites.mjs';
+import {
+  TEST_TIMEOUT_MS,
+  vitestSuiteOf,
+  vitestSuites,
+} from '../config/test-suites.mjs';
 import { entrypointDags } from '../entrypoints/entrypoint-dag.mjs';
 import {
   getPackageLintFiles,
@@ -130,11 +134,9 @@ const runTests = (runtimeTestFiles, traceEnv) => {
     return 0;
   };
 
-  const suite = vitestSuites[packageName];
-  const vitestFiles = suite
-    ? files.filter((filename) => suite.includes(partitionName, filename))
-    : [];
-  const bunFiles = files.filter((filename) => !vitestFiles.includes(filename));
+  const suiteOf = (filename) =>
+    vitestSuiteOf(packageName, partitionName, filename);
+  const bunFiles = files.filter((filename) => !suiteOf(filename));
 
   if (bunFiles.length > 0) {
     const status = runBunTests(bunFiles);
@@ -142,8 +144,12 @@ const runTests = (runtimeTestFiles, traceEnv) => {
     if (status !== 0) return status;
   }
 
-  if (vitestFiles.length > 0) {
-    return runTest(path.join(packageRoot, suite.config), 'pnpm', [
+  for (const suite of vitestSuites[packageName] ?? []) {
+    const vitestFiles = files.filter((filename) => suiteOf(filename) === suite);
+
+    if (vitestFiles.length === 0) continue;
+
+    const status = runTest(path.join(packageRoot, suite.config), 'pnpm', [
       'exec',
       'vitest',
       'run',
@@ -153,6 +159,8 @@ const runTests = (runtimeTestFiles, traceEnv) => {
       ...suite.args,
       ...vitestFiles,
     ]);
+
+    if (status !== 0) return status;
   }
 
   return 0;

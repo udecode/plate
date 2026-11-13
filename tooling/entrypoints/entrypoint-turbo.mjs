@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
-import { vitestSuites } from '../config/test-suites.mjs';
+import { vitestSuiteOf, vitestSuites } from '../config/test-suites.mjs';
 import {
   importClosure,
   isTypecheckedSource,
@@ -658,16 +658,19 @@ const runtimeTestClosure = (packageName, partitionName, roots) => {
 
 // Vitest loads its config's setup files by path, so the walk starts from the
 // config and its test-module-effects.mjs entry.
-const vitestConfigFiles = (packageName, partitionName, runtimeTestFiles) => {
-  const suite = vitestSuites[packageName];
-
-  return suite &&
-    runtimeTestFiles.some((filename) =>
-      suite.includes(partitionName, packageRelativePath(packageName, filename))
+const vitestConfigFiles = (packageName, partitionName, runtimeTestFiles) =>
+  (vitestSuites[packageName] ?? [])
+    .filter((suite) =>
+      runtimeTestFiles.some(
+        (filename) =>
+          vitestSuiteOf(
+            packageName,
+            partitionName,
+            packageRelativePath(packageName, filename)
+          ) === suite
+      )
     )
-    ? [path.join(packageRoot(packageName), suite.config)]
-    : [];
-};
+    .map((suite) => path.join(packageRoot(packageName), suite.config));
 
 const runtimeTestTaskGraph = (packageName, partitionName, runtimeTestFiles) => {
   const loadedFiles = runtimeTestClosure(packageName, partitionName, [
