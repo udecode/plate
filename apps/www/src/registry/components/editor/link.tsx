@@ -449,7 +449,14 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   };
   const insertRef = useComposedRef(insertFloating.refs.setFloating);
   const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return;
+    if (
+      event.key !== 'Enter' ||
+      event.nativeEvent.isComposing ||
+      // oxlint-disable-next-line typescript/no-deprecated -- Safari sends the Enter that confirms an input method candidate after compositionend, with only key code 229 to tell it apart.
+      event.keyCode === 229
+    ) {
+      return;
+    }
 
     event.preventDefault();
     event.stopPropagation();

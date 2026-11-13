@@ -260,7 +260,9 @@ function CommentInput({
                 if (
                   event.key === 'Enter' &&
                   !event.shiftKey &&
-                  !event.nativeEvent.isComposing
+                  !event.nativeEvent.isComposing &&
+                  // oxlint-disable-next-line typescript/no-deprecated -- Safari sends the Enter that confirms an input method candidate after compositionend, with only key code 229 to tell it apart.
+                  event.keyCode !== 229
                 ) {
                   event.preventDefault();
                   void submit();

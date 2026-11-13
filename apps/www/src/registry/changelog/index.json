@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-13-ime-confirm-enter",
+      "href": "/registry/changelog/2026-11-13-ime-confirm-enter.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep Safari's input method Enter from sending a comment or a link",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment", "link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-12-add-board",
       "href": "/registry/changelog/2026-11-12-add-board.json",
       "status": "draft",

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-13-ime-confirm-enter",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-13-ime-confirm-enter.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep Safari's input method Enter from sending a comment or a link",
+  "targets": [
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-13-comment-keep-safari-s-input-eb88f837",
+      "kind": "fix",
+      "summary": "Ignore the Enter that picks an input method candidate in Safari, so the comment field and the link URL field no longer submit half-written Japanese or Chinese text.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment", "link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-ime-confirm-enter",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
