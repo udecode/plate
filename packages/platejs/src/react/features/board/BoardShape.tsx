@@ -7,6 +7,7 @@ import {
   useEditorSelector,
   useElementSelected,
 } from '../../core';
+import { useClaimEditableDOMCommit } from '../../plite-react';
 import type { BoardStrokePath } from './boardInk.internal';
 import type {
   BoardArrowPlugin,
@@ -77,6 +78,7 @@ export function BoardShape({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  useClaimEditableDOMCommit();
   const view = useBoardViewContext();
   const key = view.keyOf(props.element);
   const layout = React.useSyncExternalStore(
