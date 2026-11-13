@@ -13,6 +13,7 @@ import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
   BaseBoardPlugin,
   type BoardGeo,
+  type BoardMemberEntry,
   type BoardPlace,
   type BoardRestackDirection,
   type BoardSize,
@@ -64,23 +65,29 @@ export type BoardStyle = Readonly<{
 }>;
 
 /**
- * One mounted view's state, which lives in the view and never in the
- * document, so two views of one board each keep their own.
+ * One mounted view's state. It lives in the view and never in the document, so
+ * two views of one board each keep their own camera, tool and next style.
  */
 export type BoardViewState = Readonly<{
   camera: BoardCamera;
   nextStyle: BoardStyle;
   /**
-   * The id of the frame selected alone, or null. A view that cannot write
-   * shows none, since it runs no frame action.
+   * The selected shapes of this view's board in stored order, each with its
+   * node as this view shows it, or none when the selection holds no shape of
+   * this board. The array stays the same until the selection or a listed shape
+   * changes.
    */
-  selectedFrame: string | null;
+  selectedShapes: readonly BoardMemberEntry[];
   tool: BoardTool;
+  /** Whether the view can write: false when it is read-only or a preview. */
+  writable: boolean;
 }>;
 
 export type BoardViewActions = Readonly<{
   /** Move the camera so every shape is in view, at most at full size. */
   fit: () => void;
+  /** Move focus to the board and keep its selection, such as after a toolbar menu closes. */
+  focus: () => void;
   /** Remove the frame `id` and keep its shapes where they are, as one undo step. */
   removeFrame: (id: string) => void;
   /** Merge `style` into the style the next added shape gets. */
@@ -156,6 +163,27 @@ const clampZoom = (zoom: number) =>
 const sameKeys = (a: ReadonlySet<NodeKey>, b: ReadonlySet<NodeKey>) =>
   a.size === b.size && [...a].every((key) => b.has(key));
 
+const sameValue = (a: unknown, b: unknown): boolean =>
+  a === b ||
+  (typeof a === 'object' &&
+    typeof b === 'object' &&
+    a !== null &&
+    b !== null &&
+    Object.keys(a).length === Object.keys(b).length &&
+    Object.entries(a).every(([field, value]) =>
+      sameValue(value, (b as Readonly<Record<string, unknown>>)[field])
+    ));
+
+const sameShapes = (
+  next: readonly BoardMemberEntry[],
+  previous: readonly BoardMemberEntry[]
+) =>
+  next.length === previous.length &&
+  next.every(
+    (entry, at) =>
+      entry.node === previous[at].node && sameValue(entry, previous[at])
+  );
+
 const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
   listeners.add(listener);
 
@@ -188,11 +216,20 @@ export const createBoardView = (
   const boards = editor.plugin(BaseBoardPlugin);
   const shownBoards = mounted.plugin(BaseBoardPlugin);
 
+  const writable = () => {
+    const authored = readAuthoredView(mounted);
+
+    return (
+      !mounted.read.view.isReadOnly() && !(authored && 'preview' in authored)
+    );
+  };
+
   let state: BoardViewState = {
     camera: { x: 0, y: 0, zoom: 1 },
     nextStyle: {},
-    selectedFrame: null,
+    selectedShapes: [],
     tool: 'select',
+    writable: writable(),
   };
   const stateListeners = new Set<() => void>();
   const shapeListeners = new Set<() => void>();
@@ -267,14 +304,31 @@ export const createBoardView = (
     for (const listener of viewportListeners) listener();
   };
 
-  const showSelectedFrame = () => {
-    const shapes = selectedShapes();
-    const selectedFrame =
-      shapes.length === 1 && shapes[0].kind === 'frame' && writable()
-        ? shapes[0].id
-        : null;
+  const withShownNode = (entry: BoardMemberEntry) => {
+    const node = mounted.read.nodes.get(entry.key)?.[0];
 
-    if (selectedFrame !== state.selectedFrame) setState({ selectedFrame });
+    return ElementApi.isElement(node) && node !== entry.node
+      ? { ...entry, node }
+      : entry;
+  };
+
+  const showSelection = () => {
+    const keys = selectedKeys();
+    const listed =
+      keys.size === 0
+        ? []
+        : index
+            .entries()
+            .filter((entry) => keys.has(entry.key))
+            .map(withShownNode);
+    const selected = sameShapes(listed, state.selectedShapes)
+      ? state.selectedShapes
+      : listed;
+    const canWrite = writable();
+
+    if (selected !== state.selectedShapes || canWrite !== state.writable) {
+      setState({ selectedShapes: selected, writable: canWrite });
+    }
   };
 
   const follow = () => {
@@ -380,12 +434,13 @@ export const createBoardView = (
     refresh();
   };
 
-  const selectedShapes = (): BoardShapeLayout[] => {
-    if (!editor.read.selection.nodeMode()) return [];
+  const selectedKeys = (): ReadonlySet<NodeKey> =>
+    editor.read.selection.nodeMode()
+      ? new Set(editor.read.selection.nodes().map(([node]) => keyOf(node)))
+      : new Set();
 
-    const keys = new Set(
-      editor.read.selection.nodes().map(([node]) => keyOf(node))
-    );
+  const selectedShapes = (): BoardShapeLayout[] => {
+    const keys = selectedKeys();
 
     return index.entries().flatMap((entry) => {
       const layout = keys.has(entry.key) && index.layout(entry.key);
@@ -407,14 +462,6 @@ export const createBoardView = (
     selectedShapes,
     surface: () => surface,
   });
-
-  const writable = () => {
-    const authored = readAuthoredView(mounted);
-
-    return (
-      !mounted.read.view.isReadOnly() && !(authored && 'preview' in authored)
-    );
-  };
 
   const editedShape = () => {
     const range = editor.read.selection();
@@ -730,6 +777,9 @@ export const createBoardView = (
         zoom,
       });
     },
+    focus: () => {
+      core.focusBoard();
+    },
     removeFrame: (id) => commit({ id, kind: 'removeFrame' }),
     setNextStyle: (style) =>
       setState({ nextStyle: { ...state.nextStyle, ...style } }),
@@ -753,8 +803,8 @@ export const createBoardView = (
         ) {
           follow();
         }
-        if (changed.hasAny('selection') || state.selectedFrame !== null) {
-          showSelectedFrame();
+        if (changed.hasAny('selection') || editor.read.selection.nodeMode()) {
+          showSelection();
         }
         if (changed.hasAny('selection')) voice.selectionChanged();
       });
@@ -763,11 +813,11 @@ export const createBoardView = (
         gestures?.refuseWrites();
         shownView = createEditorView(mounted, { root });
         follow();
-        showSelectedFrame();
+        showSelection();
       });
 
       follow();
-      showSelectedFrame();
+      showSelection();
 
       return () => {
         unsubscribe();

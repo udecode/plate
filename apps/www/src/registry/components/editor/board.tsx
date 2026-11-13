@@ -1,11 +1,13 @@
 'use client';
 
 import {
+  BanIcon,
   CircleIcon,
   DiamondIcon,
   FrameIcon,
   MousePointer2Icon,
   MoveUpRightIcon,
+  PaintBucketIcon,
   PencilIcon,
   ScanIcon,
   SquareIcon,
@@ -30,7 +32,7 @@ import {
   useBoardView,
   useStrokePath,
 } from 'platejs/board/react';
-import type { EditorElementProps } from 'platejs/react';
+import { type EditorElementProps, useEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -41,7 +43,11 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
-import { Toolbar, ToolbarButton } from '@/registry/components/editor/toolbar';
+import {
+  Toolbar,
+  ToolbarButton,
+  ToolbarGroup,
+} from '@/registry/components/editor/toolbar';
 
 const TOOLS: ReadonlyArray<
   Readonly<{
@@ -71,6 +77,19 @@ const GEOS: ReadonlyArray<
   { geo: 'diamond', icon: DiamondIcon, label: 'Diamond' },
   { geo: 'triangle', icon: TriangleIcon, label: 'Triangle' },
 ];
+
+const FILLS: ReadonlyArray<Readonly<{ fill: string; label: string }>> = [
+  { fill: 'none', label: 'No fill' },
+  { fill: 'yellow', label: 'Yellow' },
+  { fill: 'orange', label: 'Orange' },
+  { fill: 'red', label: 'Red' },
+  { fill: 'green', label: 'Green' },
+  { fill: 'blue', label: 'Blue' },
+  { fill: 'violet', label: 'Violet' },
+];
+
+const tint = (fill: string) =>
+  `color-mix(in oklab, ${fill} 30%, var(--background))`;
 
 const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
   arrow: 'Arrow',
@@ -150,38 +169,114 @@ function BoardShapeMenu({ pressed }: { pressed: boolean }) {
   );
 }
 
+function BoardSwatch({ fill }: { fill: string | undefined }) {
+  if (fill === undefined) return <PaintBucketIcon />;
+  if (fill === 'none') return <BanIcon />;
+
+  return (
+    <span
+      className="size-4 rounded-full border border-foreground/20"
+      style={{ backgroundColor: fill }}
+    />
+  );
+}
+
+function BoardFillMenu() {
+  const editor = useEditor();
+  const selected = useBoardView((view) => view.selectedShapes);
+  const writable = useBoardView((view) => view.writable);
+  const nextFill = useBoardView((view) => view.nextStyle.fill);
+  const { focus, setNextStyle } = useBoardActions();
+  const filled = selected.flatMap(({ key, node }) =>
+    typeof node.fill === 'string' ? [{ fill: node.fill, key }] : []
+  );
+  const shared = new Set(filled.map(({ fill }) => fill));
+  const pressed =
+    filled.length === 0
+      ? nextFill
+      : shared.size === 1
+        ? filled[0].fill
+        : undefined;
+
+  const pick = (fill: string) => {
+    if (filled.length === 0) {
+      setNextStyle({ fill });
+
+      return;
+    }
+
+    editor.update((tx) => {
+      tx.history.newBatch();
+      for (const { key } of filled) tx.nodes.set({ fill }, { at: key });
+    });
+  };
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger disabled={!writable}>
+        <ToolbarButton isDropdown disabled={!writable} tooltip="Fill">
+          <BoardSwatch fill={pressed} />
+        </ToolbarButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top">
+        <DropdownMenuRadioGroup value={pressed ?? ''} onValueChange={pick}>
+          {FILLS.map(({ fill, label }) => (
+            <DropdownMenuRadioItem key={fill} finalFocus={focus} value={fill}>
+              <BoardSwatch fill={fill} />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function BoardToolbar() {
   const tool = useBoardView((view) => view.tool);
-  const frame = useBoardView((view) => view.selectedFrame);
+  const frame = useBoardView((view) => {
+    const [only, ...rest] = view.selectedShapes;
+
+    return view.writable && only?.kind === 'frame' && rest.length === 0
+      ? only.id
+      : null;
+  });
   const { fit, removeFrame, setTool } = useBoardActions();
 
   return (
-    <Toolbar className="absolute bottom-2 left-1/2 z-10 -translate-x-1/2 gap-0.5 rounded-lg border bg-background p-1 shadow-sm">
-      {TOOLS.map(({ icon: Icon, key, label, tool: itemTool }) =>
-        itemTool === 'geo' ? (
-          <BoardShapeMenu key={itemTool} pressed={tool === 'geo'} />
-        ) : (
-          <ToolbarButton
-            key={itemTool}
-            pressed={tool === itemTool}
-            tooltip={`${label} (${key})`}
-            onClick={() => setTool(itemTool)}
-          >
-            <Icon />
-          </ToolbarButton>
-        )
-      )}
-      <ToolbarButton tooltip="Fit every shape in view" onClick={fit}>
-        <ScanIcon />
-      </ToolbarButton>
-      {frame && (
-        <ToolbarButton
-          tooltip="Remove the frame and keep its shapes"
-          onClick={() => removeFrame(frame)}
-        >
-          Remove frame
+    <Toolbar className="absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap justify-center gap-0.5 rounded-lg border bg-background p-1 shadow-sm">
+      <ToolbarGroup>
+        {TOOLS.map(({ icon: Icon, key, label, tool: itemTool }) =>
+          itemTool === 'geo' ? (
+            <BoardShapeMenu key={itemTool} pressed={tool === 'geo'} />
+          ) : (
+            <ToolbarButton
+              key={itemTool}
+              pressed={tool === itemTool}
+              tooltip={`${label} (${key})`}
+              onClick={() => setTool(itemTool)}
+            >
+              <Icon />
+            </ToolbarButton>
+          )
+        )}
+      </ToolbarGroup>
+      <ToolbarGroup>
+        <BoardFillMenu />
+      </ToolbarGroup>
+      <ToolbarGroup>
+        <ToolbarButton tooltip="Fit every shape in view" onClick={fit}>
+          <ScanIcon />
         </ToolbarButton>
-      )}
+        {frame && (
+          <ToolbarButton
+            tooltip="Remove the frame and keep its shapes"
+            onClick={() => removeFrame(frame)}
+          >
+            Remove frame
+          </ToolbarButton>
+        )}
+      </ToolbarGroup>
     </Toolbar>
   );
 }
@@ -239,7 +334,10 @@ export function BoardNoteElement(
       {...props}
       className="rounded-sm p-3 text-sm shadow-md data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed"
       style={{
-        backgroundColor: `color-mix(in oklab, ${props.element.fill} 30%, var(--background))`,
+        backgroundColor:
+          props.element.fill === 'none'
+            ? 'var(--background)'
+            : tint(props.element.fill),
       }}
     />
   );
@@ -282,10 +380,13 @@ export function BoardGeoElement(
           aria-hidden
           className="pointer-events-none size-full overflow-visible"
           data-board-geo-outline={props.element.geo}
-          fill={props.element.fill}
           preserveAspectRatio="none"
           stroke="currentColor"
           strokeWidth={2}
+          style={{
+            fill:
+              props.element.fill === 'none' ? 'none' : tint(props.element.fill),
+          }}
           viewBox="0 0 100 100"
         >
           {GEO_OUTLINES[props.element.geo]}

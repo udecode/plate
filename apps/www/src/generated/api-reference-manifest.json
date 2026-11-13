@@ -11327,18 +11327,18 @@
           "kind": "type",
           "name": "BoardViewActions",
           "runtime": false,
-          "signature": "type BoardViewActions = Readonly<{\n  /** Move the camera so every shape is in view, at most at full size. */\n  fit: () => void;\n  /** Remove the frame `id` and keep its shapes where they are, as one undo step. */\n  removeFrame: (id: string) => void;\n  /** Merge `style` into the style the next added shape gets. */\n  setNextStyle: (style: BoardStyle) => void;\n  setTool: (tool: BoardTool) => void;\n}>;",
+          "signature": "type BoardViewActions = Readonly<{\n  /** Move the camera so every shape is in view, at most at full size. */\n  fit: () => void;\n  /** Move focus to the board and keep its selection, such as after a toolbar menu closes. */\n  focus: () => void;\n  /** Remove the frame `id` and keep its shapes where they are, as one undo step. */\n  removeFrame: (id: string) => void;\n  /** Merge `style` into the style the next added shape gets. */\n  setNextStyle: (style: BoardStyle) => void;\n  setTool: (tool: BoardTool) => void;\n}>;",
           "source": null,
           "typeParameters": []
         },
         "platejs/board/react:BoardViewState": {
           "aliases": [],
-          "documentation": "One mounted view's state, which lives in the view and never in the\ndocument, so two views of one board each keep their own.",
+          "documentation": "One mounted view's state. It lives in the view and never in the document, so\ntwo views of one board each keep their own camera, tool and next style.",
           "entrypoint": "platejs/board/react",
           "kind": "type",
           "name": "BoardViewState",
           "runtime": false,
-          "signature": "type BoardViewState = Readonly<{\n  camera: BoardCamera;\n  nextStyle: BoardStyle;\n  /**\n   * The id of the frame selected alone, or null. A view that cannot write\n   * shows none, since it runs no frame action.\n   */\n  selectedFrame: string | null;\n  tool: BoardTool;\n}>;",
+          "signature": "type BoardViewState = Readonly<{\n  camera: BoardCamera;\n  nextStyle: BoardStyle;\n  /**\n   * The selected shapes of this view's board in stored order, each with its\n   * node as this view shows it, or none when the selection holds no shape of\n   * this board. The array stays the same until the selection or a listed shape\n   * changes.\n   */\n  selectedShapes: readonly BoardMemberEntry[];\n  tool: BoardTool;\n  /** Whether the view can write: false when it is read-only or a preview. */\n  writable: boolean;\n}>;",
           "source": null,
           "typeParameters": []
         },
