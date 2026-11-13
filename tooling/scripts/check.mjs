@@ -246,7 +246,8 @@ const packageDiff = () =>
 // `alone` step runs after every other step, one at a time, for the reason its
 // value gives. Under --affected, the `quick` steps run first and the rest
 // start only once every one of them passes, and no step starts after one
-// fails, so a type or lint error fails a landing before any slow step starts.
+// fails, so a type, lint or citation error fails a landing before any slow
+// step starts.
 export const steps = [
   {
     name: 'lint',
@@ -691,6 +692,7 @@ export const steps = [
   },
   {
     name: 'knowledge',
+    quick: true,
     private: true,
     run: 'node tooling/scripts/knowledge/kb.mjs check',
     fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
