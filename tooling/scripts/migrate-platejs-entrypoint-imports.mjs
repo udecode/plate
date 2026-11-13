@@ -162,61 +162,6 @@ assertRootDoesNotOwnFeatureSymbols({
   specifier: 'platejs/react',
 });
 
-if (process.argv.includes('--update-api-config')) {
-  const configPath = path.join(repoRoot, 'apps/www/api-reference.config.json');
-  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  const platePackage = config.packages.find(({ name }) => name === 'platejs');
-  const rootDecision = platePackage?.entrypoints?.['.'];
-
-  if (!rootDecision) {
-    throw new Error(
-      'Plate API reference config must define the root entrypoint.'
-    );
-  }
-
-  const decisions = new Map(
-    Object.keys(publicFeatureDependencies).map((name) => [
-      `./${name}`,
-      {
-        exclude: [],
-        excludeReason: rootDecision.excludeReason,
-        include: {},
-      },
-    ])
-  );
-  rootDecision.exclude = rootDecision.exclude.filter((symbol) => {
-    const owner = headlessOwners.get(symbol);
-    if (!owner) return true;
-
-    decisions.get(`./${owner.slice('platejs/'.length)}`).exclude.push(symbol);
-    return false;
-  });
-  for (const [symbol, route] of Object.entries(rootDecision.include)) {
-    const owner = headlessOwners.get(symbol);
-    if (!owner) continue;
-
-    decisions.get(`./${owner.slice('platejs/'.length)}`).include[symbol] =
-      route;
-    delete rootDecision.include[symbol];
-  }
-  for (const decision of decisions.values()) {
-    decision.exclude.sort((left, right) => left.localeCompare(right));
-    decision.include = Object.fromEntries(
-      Object.entries(decision.include).sort(([left], [right]) =>
-        left.localeCompare(right)
-      )
-    );
-  }
-
-  platePackage.entrypoints = Object.fromEntries([
-    ['.', rootDecision],
-    ...[...decisions].sort(([left], [right]) => left.localeCompare(right)),
-  ]);
-  fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
-  console.log('Moved Plate API decisions to canonical feature entrypoints.');
-  process.exit(0);
-}
-
 const renderImport = (node, specifiers, moduleSpecifier, source) => {
   const typePrefix = node.importKind === 'type' ? ' type' : '';
   const defaultSpecifier = specifiers.find(

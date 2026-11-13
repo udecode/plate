@@ -762,14 +762,13 @@ export const steps = [
     cores: 2,
     holds: ['packages/*/dist', 'apps/www/.source'],
     run: 'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www typecheck',
-    // next.config.ts imports docs/plite/reference/public-route-map.json, and
-    // scripts/build-registry.mts imports the entrypoint DAG.
     affected: touches(
       'apps/www/',
       'content/',
       'docs/plite/reference/',
       'packages/',
-      'tooling/entrypoints/'
+      'tooling/entrypoints/',
+      'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
     filesOnly: true,

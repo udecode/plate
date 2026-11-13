@@ -29,7 +29,7 @@
       ".claude/skills/**",
       ".changeset/**",
       "benchmarks/**",
-      "apps/www/api-reference.config.json",
+      "apps/www/api-reference-baseline.json",
       "apps/www/public/r/**",
       "apps/www/public/rd/**",
       "apps/www/src/__registry__/**",

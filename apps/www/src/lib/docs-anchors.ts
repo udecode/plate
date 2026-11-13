@@ -37,10 +37,3 @@ export function apiItemAnchor(
     .replace(NON_ALPHANUMERIC_REGEX, '-')
     .replace(EDGE_DASH_REGEX, '');
 }
-
-/** The id of an `<APIReference package symbol>` section. */
-export function apiReferenceAnchor(packageName: string, symbol: string) {
-  return `api-${packageName}-${symbol}`
-    .toLowerCase()
-    .replace(NON_ALPHANUMERIC_REGEX, '-');
-}

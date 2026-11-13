@@ -14,6 +14,7 @@ Read this file in full before you write, review or deslop any source, test or to
 
 ## Comments and JSDoc
 
+- Every export of a public `platejs` entrypoint carries a doc comment that says what it is for, because that comment is what an agent reads on hover and in the packed declarations. The API reference check fails a new export without one, and `apps/www/api-reference-baseline.json` lists the exports that predate the rule and only shrinks.
 - JSDoc must be first-class for agents. The `no-comments` pass keeps public JSDoc and the intentional `@ts-expect-error` assertions that prove invalid public calls are rejected. It also keeps a non-obvious reason in our own code until an authorized, verified structural change makes it redundant, and a constraint comment whose type, test or lint encoding is not authorized stays in place with the missing encoding reported. A comment whose claim is still ambiguous or unverified after the check stays in place as an open finding; the `no-comments` and comment-sicko rule to delete on doubt does not apply.
 
 ## Tests

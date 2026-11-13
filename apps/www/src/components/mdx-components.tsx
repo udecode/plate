@@ -3,7 +3,6 @@ import Image from 'next/image';
 import type { HTMLAttributes, ReactNode } from 'react';
 import * as React from 'react';
 
-import { APIReference } from '@/components/api-reference';
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
 import { ComponentInstallation } from '@/components/component-installation';
@@ -93,7 +92,6 @@ export const mdxComponents = {
   APIMethods,
   APIOptions,
   APIParameters,
-  APIReference,
   APIProps,
   APIReturns,
   APIState,

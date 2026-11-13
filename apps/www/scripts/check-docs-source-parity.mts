@@ -4,11 +4,7 @@ import path from 'node:path';
 import { getTableOfContents } from 'fumadocs-core/content/toc';
 import matter from 'gray-matter';
 
-import {
-  apiItemAnchor,
-  apiListAnchor,
-  apiReferenceAnchor,
-} from '@/lib/docs-anchors';
+import { apiItemAnchor, apiListAnchor } from '@/lib/docs-anchors';
 import { registryExampleSlug, sourcePathToDocsRoute } from '@/lib/docs-routes';
 import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { hrefWithLocale } from '@/lib/withLocale';
@@ -295,13 +291,6 @@ function getDocsAnchors(source: string) {
           listTypes.at(-1),
           attributes.get('parent') ?? '',
           attributes.get('name') ?? ''
-        )
-      );
-    } else if (name === 'APIReference') {
-      anchors.add(
-        apiReferenceAnchor(
-          attributes.get('package') ?? '',
-          attributes.get('symbol') ?? ''
         )
       );
     }

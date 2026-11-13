@@ -12,20 +12,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import ts from '@typescript/typescript6';
 
-type EntrypointDecision = {
-  exclude: string[];
-  excludeReason: string;
-  include: Record<string, string>;
-};
-
-type ReferenceConfig = {
-  packages: Array<{
-    directory: string;
-    entrypoints: Record<string, EntrypointDecision>;
-    name: string;
-  }>;
-  schemaVersion: 1;
-};
+import {
+  enforceBaseline,
+  groupFindings,
+} from '../../../tooling/scripts/finding-baseline.mjs';
 
 type SymbolFact = {
   aliases: string[];
@@ -33,7 +23,6 @@ type SymbolFact = {
   entrypoint: string;
   kind: string;
   name: string;
-  route: string | null;
   runtime: boolean;
   signature: string;
   source: string | null;
@@ -43,10 +32,15 @@ type SymbolFact = {
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(appRoot, '../..');
 const declarationSuffixPattern = /\.d\.ts$/;
-const configPath = join(appRoot, 'api-reference.config.json');
 const outputPath = join(appRoot, 'src/generated/api-reference-manifest.json');
+const baselineFile = 'apps/www/api-reference-baseline.json';
+const undocumentedRule = 'undocumented-export';
+const packageName = 'platejs';
+const packageDirectory = join(repoRoot, 'packages/platejs');
 const args = new Set(process.argv.slice(2));
-const config = JSON.parse(readFileSync(configPath, 'utf-8')) as ReferenceConfig;
+
+const specifier = (entrypoint: string) =>
+  entrypoint === '.' ? packageName : `${packageName}${entrypoint.slice(1)}`;
 
 const symbolKind = (symbol: ts.Symbol) => {
   const { flags } = symbol;
@@ -62,11 +56,7 @@ const symbolKind = (symbol: ts.Symbol) => {
   return 'symbol';
 };
 
-const findSource = (
-  packageDirectory: string,
-  sourceFile: ts.SourceFile,
-  declaration: ts.Declaration
-) => {
+const findSource = (sourceFile: ts.SourceFile, declaration: ts.Declaration) => {
   const prefix = sourceFile.text.slice(0, declaration.getStart(sourceFile));
   const matches = Array.from(prefix.matchAll(/#region ([^\n]+\.d\.ts)/g));
   const declarationSource = matches.at(-1)?.[1];
@@ -173,13 +163,10 @@ const formatDeclaration = (
 };
 
 const extractEntrypoint = async (
-  packageName: string,
-  packageDirectory: string,
   packageRoot: string,
   entrypoint: string,
   declarationRelativePath: string,
   runtimeRelativePath: string,
-  decision: EntrypointDecision,
   program: ts.Program,
   publicExports: Map<ts.Symbol, PublicTypeExport[]>
 ) => {
@@ -196,7 +183,7 @@ const extractEntrypoint = async (
 
   if (!moduleSymbol) {
     throw new Error(
-      `Cannot inspect packed entrypoint ${packageName}${entrypoint}.`
+      `Cannot inspect packed entrypoint ${specifier(entrypoint)}.`
     );
   }
 
@@ -214,32 +201,8 @@ const extractEntrypoint = async (
   for (const runtimeName of runtimeNames) {
     if (!declarationNames.has(runtimeName)) {
       throw new Error(
-        `${packageName}${entrypoint} exports runtime value ${runtimeName} without a declaration.`
+        `${specifier(entrypoint)} exports runtime value ${runtimeName} without a declaration.`
       );
-    }
-  }
-
-  const included = new Set(Object.keys(decision.include));
-  const excluded = new Set(decision.exclude);
-
-  if (!args.has('--init')) {
-    for (const symbol of exportedSymbols) {
-      const hasInclude = included.has(symbol.name);
-      const hasExclude = excluded.has(symbol.name);
-
-      if (hasInclude === hasExclude) {
-        throw new Error(
-          `${packageName}${entrypoint} symbol ${symbol.name} must be included or excluded exactly once.`
-        );
-      }
-    }
-
-    for (const decidedName of [...included, ...excluded]) {
-      if (!declarationNames.has(decidedName)) {
-        throw new Error(
-          `${packageName}${entrypoint} decision references missing symbol ${decidedName}.`
-        );
-      }
     }
   }
 
@@ -263,13 +226,9 @@ const extractEntrypoint = async (
       documentation: ts.displayPartsToString(
         symbol.getDocumentationComment(checker)
       ),
-      entrypoint:
-        entrypoint === '.'
-          ? packageName
-          : `${packageName}${entrypoint.slice(1)}`,
+      entrypoint: specifier(entrypoint),
       kind: symbolKind(symbol),
       name: exportedSymbol.name,
-      route: decision.include[exportedSymbol.name] ?? null,
       runtime: runtimeNames.has(exportedSymbol.name),
       signature:
         declaration && declarationSourceFile
@@ -281,7 +240,7 @@ const extractEntrypoint = async (
             ),
       source:
         declaration && declarationSourceFile
-          ? findSource(packageDirectory, declarationSourceFile, declaration)
+          ? findSource(declarationSourceFile, declaration)
           : null,
       typeParameters,
     };
@@ -289,158 +248,110 @@ const extractEntrypoint = async (
 };
 
 const main = async () => {
-  execFileSync(
-    'pnpm',
-    [
-      'turbo',
-      'run',
-      'build',
-      ...config.packages.map(
-        (packageConfig) => `--filter=${packageConfig.name}`
-      ),
-    ],
-    { cwd: repoRoot, stdio: 'inherit' }
-  );
+  execFileSync('pnpm', ['turbo', 'run', 'build', `--filter=${packageName}`], {
+    cwd: repoRoot,
+    stdio: 'inherit',
+  });
 
   const tempRoot = mkdtempSync(join(tmpdir(), 'plate-api-reference-'));
-  const manifestPackages: Record<
-    string,
-    { symbols: Record<string, SymbolFact>; version: string }
-  > = {};
+  const symbols: Record<string, SymbolFact> = {};
+  let version = '';
 
   try {
-    for (const packageConfig of config.packages) {
-      const packageDirectory = resolve(appRoot, packageConfig.directory);
-      const packOutput = execFileSync(
-        'pnpm',
-        ['pack', '--pack-destination', tempRoot, '--json'],
-        { cwd: packageDirectory, encoding: 'utf-8' }
-      );
-      // pnpm prints the prepack banner to stdout ahead of the JSON.
-      const packResult = JSON.parse(
-        packOutput.slice(packOutput.search(/^\{/m))
-      ) as {
-        filename: string;
-        version: string;
-      };
-      execFileSync('tar', ['-xzf', packResult.filename, '-C', tempRoot]);
+    const packOutput = execFileSync(
+      'pnpm',
+      ['pack', '--pack-destination', tempRoot, '--json'],
+      { cwd: packageDirectory, encoding: 'utf-8' }
+    );
+    // pnpm prints the prepack banner to stdout ahead of the JSON.
+    const packResult = JSON.parse(
+      packOutput.slice(packOutput.search(/^\{/m))
+    ) as {
+      filename: string;
+      version: string;
+    };
+    ({ version } = packResult);
+    execFileSync('tar', ['-xzf', packResult.filename, '-C', tempRoot]);
 
-      const packageRoot = join(tempRoot, 'package');
-      // Packed workspace packages keep real dependency edges, so runtime export
-      // inspection needs the workspace's installed dependency graph.
-      symlinkSync(
-        join(packageDirectory, 'node_modules'),
-        join(packageRoot, 'node_modules')
-      );
-      const packageJson = JSON.parse(
-        readFileSync(join(packageRoot, 'package.json'), 'utf-8')
-      ) as {
-        exports: Record<
-          string,
-          string | { default?: string; import?: string; types?: string }
-        >;
-      };
-      const symbols: Record<string, SymbolFact> = {};
-      const declarationEntrypoints = Object.entries(
-        packageJson.exports
-      ).flatMap(([entrypoint, target]) =>
-        typeof target !== 'string' && target.types
-          ? [{ entrypoint, path: join(packageRoot, target.types) }]
-          : []
-      );
-      const program = ts.createProgram(
-        declarationEntrypoints.map((entry) => entry.path),
-        {
-          allowJs: false,
-          module: ts.ModuleKind.NodeNext,
-          moduleResolution: ts.ModuleResolutionKind.NodeNext,
-          noEmit: true,
-          skipLibCheck: true,
-          target: ts.ScriptTarget.ESNext,
-        }
-      );
-      const checker = program.getTypeChecker();
-      const publicExports = new Map<ts.Symbol, PublicTypeExport[]>();
+    const packageRoot = join(tempRoot, 'package');
+    symlinkSync(
+      join(packageDirectory, 'node_modules'),
+      join(packageRoot, 'node_modules')
+    );
+    const packageJson = JSON.parse(
+      readFileSync(join(packageRoot, 'package.json'), 'utf-8')
+    ) as {
+      exports: Record<
+        string,
+        string | { default?: string; import?: string; types?: string }
+      >;
+    };
+    const entrypoints = Object.entries(packageJson.exports).flatMap(
+      ([entrypoint, target]) => {
+        if (typeof target === 'string' || !target.types) return [];
 
-      for (const entry of declarationEntrypoints) {
-        const sourceFile = program.getSourceFile(entry.path);
-        const moduleSymbol =
-          sourceFile && checker.getSymbolAtLocation(sourceFile);
+        const runtime = target.import ?? target.default;
 
-        if (!moduleSymbol) continue;
-
-        for (const exported of checker.getExportsOfModule(moduleSymbol)) {
-          const symbol = resolveSymbol(checker, exported);
-          const entries = publicExports.get(symbol) ?? [];
-          entries.push({
-            entrypoint:
-              entry.entrypoint === '.'
-                ? packageConfig.name
-                : `${packageConfig.name}${entry.entrypoint.slice(1)}`,
-            name: exported.name,
-          });
-          publicExports.set(symbol, entries);
-        }
-      }
-
-      for (const [entrypoint, decision] of Object.entries(
-        packageConfig.entrypoints
-      )) {
-        const exportTarget = packageJson.exports[entrypoint];
-
-        if (!exportTarget || typeof exportTarget === 'string') {
+        if (!runtime) {
           throw new Error(
-            `${packageConfig.name}${entrypoint} needs explicit packed types and runtime exports.`
+            `${specifier(entrypoint)} has packed types but no runtime output.`
           );
         }
 
-        const declarationPath = exportTarget.types;
-        const runtimePath = exportTarget.import ?? exportTarget.default;
-
-        if (!declarationPath || !runtimePath) {
-          throw new Error(
-            `${packageConfig.name}${entrypoint} is missing packed types or runtime output.`
-          );
-        }
-
-        const facts = await extractEntrypoint(
-          packageConfig.name,
-          packageDirectory,
-          packageRoot,
-          entrypoint,
-          declarationPath,
-          runtimePath,
-          decision,
-          program,
-          publicExports
-        );
-
-        if (args.has('--init')) {
-          decision.exclude = facts
-            .map((fact) => fact.name)
-            .filter((name) => !(name in decision.include))
-            .sort();
-        }
-
-        for (const fact of facts) {
-          const id = `${fact.entrypoint}:${fact.name}`;
-
-          if (symbols[id]) throw new Error(`Duplicate API fact ${id}.`);
-
-          symbols[id] = fact;
-        }
+        return [{ declaration: target.types, entrypoint, runtime }];
       }
+    );
+    const program = ts.createProgram(
+      entrypoints.map((entry) => join(packageRoot, entry.declaration)),
+      {
+        allowJs: false,
+        module: ts.ModuleKind.NodeNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        noEmit: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ESNext,
+      }
+    );
+    const checker = program.getTypeChecker();
+    const publicExports = new Map<ts.Symbol, PublicTypeExport[]>();
 
-      manifestPackages[packageConfig.name] = {
-        symbols: Object.fromEntries(
-          Object.entries(symbols).sort(([left], [right]) =>
-            left.localeCompare(right)
-          )
-        ),
-        version: packResult.version,
-      };
+    for (const entry of entrypoints) {
+      const sourceFile = program.getSourceFile(
+        join(packageRoot, entry.declaration)
+      );
+      const moduleSymbol =
+        sourceFile && checker.getSymbolAtLocation(sourceFile);
 
-      rmSync(packageRoot, { force: true, recursive: true });
+      if (!moduleSymbol) continue;
+
+      for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+        const symbol = resolveSymbol(checker, exported);
+        const entries = publicExports.get(symbol) ?? [];
+        entries.push({
+          entrypoint: specifier(entry.entrypoint),
+          name: exported.name,
+        });
+        publicExports.set(symbol, entries);
+      }
+    }
+
+    for (const entry of entrypoints) {
+      const facts = await extractEntrypoint(
+        packageRoot,
+        entry.entrypoint,
+        entry.declaration,
+        entry.runtime,
+        program,
+        publicExports
+      );
+
+      for (const fact of facts) {
+        const id = `${fact.entrypoint}:${fact.name}`;
+
+        if (symbols[id]) throw new Error(`Duplicate API fact ${id}.`);
+
+        symbols[id] = fact;
+      }
     }
   } finally {
     rmSync(tempRoot, { force: true, recursive: true });
@@ -448,27 +359,53 @@ const main = async () => {
 
   const manifest = `${JSON.stringify(
     {
-      packages: manifestPackages,
+      packages: {
+        [packageName]: {
+          symbols: Object.fromEntries(
+            Object.entries(symbols).sort(([left], [right]) =>
+              left.localeCompare(right)
+            )
+          ),
+          version,
+        },
+      },
       schemaVersion: 1,
     },
     null,
     2
   )}\n`;
 
-  if (args.has('--init')) {
-    writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
-  }
+  const check = args.has('--check');
+  const stale = check && readFileSync(outputPath, 'utf-8') !== manifest;
 
-  if (args.has('--check')) {
-    const current = readFileSync(outputPath, 'utf-8');
+  if (!check) writeFileSync(outputPath, manifest);
 
-    if (current !== manifest) {
-      throw new Error(
-        'API reference manifest is stale. Run pnpm --filter www api-reference.'
-      );
-    }
-  } else {
-    writeFileSync(outputPath, manifest);
+  process.exitCode = enforceBaseline({
+    file: baselineFile,
+    found: {
+      [undocumentedRule]: {},
+      ...groupFindings(
+        Object.values(symbols)
+          .filter((fact) => !fact.documentation.trim())
+          .map((fact) => ({
+            file: fact.entrypoint,
+            identity: fact.name,
+            rule: undocumentedRule,
+          }))
+      ),
+    },
+    lowerCommand: 'pnpm --filter www api-reference',
+    mode:
+      (['check', 'init'] as const).find((mode) => args.has(`--${mode}`)) ??
+      'lower',
+    newFindingsHelp: `Each public ${packageName} export needs a doc comment that says what it is for. Write it on the declaration in the package source.`,
+    rules: [undocumentedRule],
+  });
+
+  if (stale) {
+    throw new Error(
+      'API reference manifest is stale. Run pnpm --filter www api-reference.'
+    );
   }
 };
 
