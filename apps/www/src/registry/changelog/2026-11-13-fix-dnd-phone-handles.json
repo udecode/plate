@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-13-fix-dnd-phone-handles",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-13-fix-dnd-phone-handles.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show one block drag handle on narrow screens instead of one per block",
+  "targets": [
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-13-dnd-block-drag-handles-narrow-a110eca1",
+      "kind": "fix",
+      "summary": "Below 640px, hide each block's drag handle until the pointer is over the block, or on a touch screen until the block holds the selection. Before, every top-level block showed its handle.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-fix-dnd-phone-handles",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

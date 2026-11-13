@@ -357,7 +357,7 @@ function Gutter({
       {...props}
       className={cn(
         'editor-gutterLeft',
-        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none hover:opacity-100 sm:opacity-0 [:is(td,th)_&]:w-3',
+        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none opacity-0 hover:opacity-100 [:is(td,th)_&]:w-3',
         'focus-within:opacity-100',
         className
       )}

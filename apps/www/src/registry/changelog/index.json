@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-13-fix-dnd-phone-handles",
+      "href": "/registry/changelog/2026-11-13-fix-dnd-phone-handles.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show one block drag handle on narrow screens instead of one per block",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-13-ime-confirm-enter",
       "href": "/registry/changelog/2026-11-13-ime-confirm-enter.json",
       "status": "draft",

@@ -1,0 +1,14 @@
+---
+id: 2026-11-13-fix-dnd-phone-handles
+date: 2026-11-13
+status: draft
+kind: fix
+summary: 'Show one block drag handle on narrow screens instead of one per block'
+change: { 'type': 'source', 'date': '2026-11-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-13-dnd-block-drag-handles-narrow-a110eca1","kind":"fix","migrationNotes":[]} -->
+
+- **`dnd`**: Below 640px, hide each block's drag handle until the pointer is over the block, or on a touch screen until the block holds the selection. Before, every top-level block showed its handle.
