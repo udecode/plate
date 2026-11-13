@@ -1099,6 +1099,36 @@ export const createInternalRootChangeFromNodeSections = (
   );
 };
 
+const touchedRootsOf = (change: DocumentChange) =>
+  new Set([
+    ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
+    ...change.createRoots,
+    ...change.deleteRoots,
+  ]);
+
+/**
+ * A root that one change creates or deletes while the other touches it.
+ * `compose` rebuilds that root from the source value instead of composing
+ * positions.
+ *
+ * @internal
+ */
+export const rootComposeRebuilds = (
+  first: DocumentChange,
+  second: DocumentChange
+) => {
+  const secondRoots = touchedRootsOf(second);
+
+  return [...touchedRootsOf(first)].find(
+    (root) =>
+      secondRoots.has(root) &&
+      (first.createRoots.has(root) ||
+        first.deleteRoots.has(root) ||
+        second.createRoots.has(root) ||
+        second.deleteRoots.has(root))
+  );
+};
+
 export class DocumentChange {
   static readonly empty = new DocumentChange();
 
@@ -1366,34 +1396,16 @@ export class DocumentChange {
    * value-free change algebra can recover.
    */
   compose(other: DocumentChange, value?: JsonEditorValue) {
-    const thisTouchedRoots = new Set([
-      ...[...getInternalDocumentChangeEntries(this)].map(([root]) => root),
-      ...this.createRoots,
-      ...this.deleteRoots,
-    ]);
-    const otherTouchedRoots = new Set([
-      ...[...getInternalDocumentChangeEntries(other)].map(([root]) => root),
-      ...other.createRoots,
-      ...other.deleteRoots,
-    ]);
-    const overlappingLifecycleRoot = [...thisTouchedRoots].find(
-      (root) =>
-        otherTouchedRoots.has(root) &&
-        (this.createRoots.has(root) ||
-          this.deleteRoots.has(root) ||
-          other.createRoots.has(root) ||
-          other.deleteRoots.has(root))
-    );
-
+    const rebuiltRoot = rootComposeRebuilds(this, other);
     const records = composeRecordOps(
       getInternalDocumentChangeRecords(this),
       getInternalDocumentChangeRecords(other)
     );
 
-    if (overlappingLifecycleRoot) {
+    if (rebuiltRoot) {
       if (!value) {
         throw new Error(
-          `Composing overlapping lifecycle changes for root ${overlappingLifecycleRoot} requires the source value.`
+          `Composing overlapping lifecycle changes for root ${rebuiltRoot} requires the source value.`
         );
       }
 
