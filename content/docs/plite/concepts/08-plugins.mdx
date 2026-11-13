@@ -436,8 +436,9 @@ from `state.transaction(...)` when it owns the payload, or `next()` to continue
 Plite's slice, DataTransfer-format, and plain-text import path. See
 [Clipboard And Paste](17-clipboard-and-paste).
 
-Wrap `editorReads.slice.export` with `readMiddleware` to sanitize copied or
-dragged content. Call `editor.read.slice.export()` when content leaves the
+Wrap `editorReads.slice.export` with `readMiddleware` to sanitize copied,
+dragged or duplicated content. `tx.blocks.duplicate` runs it over the blocks it
+copies. Call `editor.read.slice.export()` when content leaves the
 editor; `editor.read.slice.get()` returns the structural selection slice
 unchanged.
 

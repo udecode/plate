@@ -480,6 +480,7 @@ text 最后一个 leaf（`leafPosition` 缺失或带有 `isLast` 的 leaf）的 
   基于已声明 Plate `editorReads` descriptor 的类型化 middleware。
 
   命令处理器委托默认替换实现后，`editorReads.slice.landing` 决定粘贴落地的内容。
+  区块副本也会在 `editorReads.slice.export` 之后运行它，`intent` 为 `copy`，`target` 为不指向任何块的 `beside`。
   它的 `state` 读取当前命令草稿中粘贴落入的根，所以 `target.block` 中的路径属于该根。
   输入中的 `source` 是处理器给出的切片，`slice` 是符合 `maxLength` 的部分，`target` 是编辑器解析出的目标，`intent` 在粘贴或复制文本的拖拽时为 `copy`，在移动文本的拖拽时为 `move`。读取改变了被移动内容的文本或标记，或移动携带的区块的类型或属性（声明为 `landing: 'rebase'` 或 `'adopt'` 的属性除外）时，移动以 `lossy` 拒绝。移动不检查被移动文本在落点处并入的区块及其外层区块，但会检查它携带的其他所有区块，包括空的最后一个区块。封闭区块（例如标题）不会并入任何区块；移动落在空区块中时，被移动的区块可以继承被替换区块的属性。粘贴替换
   掉的文本不计入限制。空块中的折叠光标得到 `empty`，其他情况得到 `context`，并带有

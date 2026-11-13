@@ -110,6 +110,15 @@ move carries, an empty last block included. A closed block, such as a title,
 joins nothing. In an empty block, the moved block may take properties from the
 block it replaces.
 
+A block duplicate, `tx.blocks.duplicate`, runs `editorReads.slice.export` over
+the duplicated blocks and then this read, with intent `copy` and a `beside`
+target. A `beside` target names no block, because the copies land after the
+last block copied. A middleware checks `target.kind` before it reads
+`target.block`. Its `source` is the whole copy and `slice` what survives
+`maxLength`, as for a paste. Plate ignores any `replaceEmpty` it returns. On a
+duplicate, Plate's list plugin gives each list inside a copied block, such as a
+quote, its own id, unless a copied list item keeps that list.
+
 ```ts
 import { definePlugin, editorReads } from "platejs";
 

@@ -15,7 +15,7 @@ docs:
 - A void `board` block that owns its own list of shapes. Each shape is a top-level block of that list, so sync, suggestions, undo and copy and paste work per shape.
 - Five shape types: sticky notes and geo shapes that hold rich text, arrows whose ends bind to shapes, frames that hold shapes, and pen lines.
 - Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
-- Copy and paste with fresh shape ids. A copied arrow binds the copied shapes, and the copies land above every shape, at the pointer when it is over the board.
+- Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
 - A camera, a tool and a next style for each mounted view, which the document never stores.
 - Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
 

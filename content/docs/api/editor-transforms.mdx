@@ -230,7 +230,9 @@ if (!inserted) {
 
 #### `tx.blocks.duplicate(options?)`
 
-Duplicate the targeted blocks after the last matching block.
+Duplicate the targeted blocks after the last matching block. The copy runs
+`editorReads.slice.export`, then `editorReads.slice.landing` with a `beside`
+target, so read middleware shapes it as it shapes a paste.
 
 #### `tx.blocks.reset(options?)`
 

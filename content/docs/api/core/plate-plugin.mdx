@@ -518,7 +518,9 @@ Renders after a node's children inside its primary component.
   Typed middleware over declared Plate `editorReads` descriptors.
 
   `editorReads.slice.landing` shapes what a paste lands after command handlers
-  delegate to the default replacement. Its `state` reads the command's current
+  delegate to the default replacement. A block duplicate runs it too, after
+  `editorReads.slice.export`, with intent `copy` and a `beside` target that
+  names no block. Its `state` reads the command's current
   draft in the root the paste lands in, so a path in `target.block` resolves
   there. Its input has the handlers' slice as
   `source`, what fits `maxLength` as `slice`, the `target` the editor
