@@ -1,5 +1,7 @@
 # Plate agent rules
 
+This codebase is yours: what it's for and how it's built are your call, and you'll keep building on it.
+
 Paths in these instructions are relative to the repository root.
 
 - `AGENTS.md` and `.agents/rules/*.mdc` own local instructions. After editing either, run `pnpm run prepare` and confirm with `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`; [docs/development/agent-skills.md](docs/development/agent-skills.md) says what each does. Never edit vendor/package skills or any Next dev loop copy. pstack skills come from the pinned plugin as `pstack:<name>`; other shared skills are installed by name. Load a repo rule through the Skill tool, or read its whole source and every reference it marks as required; a sampled first screen does not count as reading it.
