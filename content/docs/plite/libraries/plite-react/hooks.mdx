@@ -198,13 +198,20 @@ surface. Handle expected outcomes such as `blocked`, `busy`, `empty`, and
 />
 ```
 
-A `failed` outcome means the replay's owner or settlement threw; the editor
+A `failed` outcome means the replay, its owner or its settlement threw; the editor
 reports that error to its `lifecycleErrorSink`. With no sink, it uses
 `reportError`, or `console.error` where `reportError` does not exist. The mounted runtime restores selection and focus only when the
 initiating surface, focus target, and editor commit remain unchanged through
 settlement. A throw from `onHistoryReplay`, or from that selection and focus
 repair, reaches the same sink with `phase: "observer"`, and the other steps
 still run.
+
+Pass `onReplay` to run code after each undo or redo the controller starts. It
+receives the same event as `onHistoryReplay`, after any selection the replay
+restores. A callback that moves focus should check that focus is still where
+the undo started, and pass `focusPolicy: "none"`, because the default repair
+can focus another view after the callback runs. With no mounted editor surface,
+it reports an `unavailable` result with reason `unmounted`.
 
 ## Runtime and root hooks
 

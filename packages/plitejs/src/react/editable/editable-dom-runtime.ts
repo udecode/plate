@@ -1371,15 +1371,18 @@ export class EditableDOMRuntime {
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root',
     onFulfilled?: (result: EditableHistoryReplayResult) => void
   ): void {
+    const deliver = (result: EditableHistoryReplayResult) => {
+      this.observeHistoryReplay(direction, () =>
+        this.historyReplayHandler({ direction, result })
+      );
+      this.observeHistoryReplay(direction, () => onFulfilled?.(result));
+    };
+
     void this.replayHistory(direction, focusPolicy).then(
-      (result) => {
-        this.observeHistoryReplay(direction, () =>
-          this.historyReplayHandler({ direction, result })
-        );
-        this.observeHistoryReplay(direction, () => onFulfilled?.(result));
-      },
+      deliver,
       (error: unknown) => {
         this.reportHistoryReplayError(direction, 'replay', error);
+        deliver({ status: 'failed' });
       }
     );
   }
