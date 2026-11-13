@@ -84,7 +84,7 @@ export type BoardViewState = Readonly<{
 }>;
 
 export type BoardViewActions = Readonly<{
-  /** Move the camera so every shape is in view, at most at full size. */
+  /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. */
   fit: () => void;
   /** Move focus to the board and keep its selection, such as after a toolbar menu closes. */
   focus: () => void;
@@ -419,6 +419,29 @@ export const createBoardView = (
     x: state.camera.x + (client.x - corner.x) / state.camera.zoom,
     y: state.camera.y + (client.y - corner.y) / state.camera.zoom,
   });
+
+  const rowsClearOfToolbar = () => {
+    const rows = { bottom: size.height, top: 0 };
+    const toolbar = surface?.querySelector(':scope > [data-board-toolbar]');
+
+    if (!surface || !toolbar) return rows;
+
+    const edge = surface.getBoundingClientRect().top + surface.clientTop;
+
+    for (const child of toolbar.children) {
+      const rect = child.getBoundingClientRect();
+      const from = rect.top - edge;
+      const to = rect.bottom - edge;
+
+      if (to <= 0 || from >= size.height) continue;
+      if (from + to > size.height) rows.bottom = Math.min(rows.bottom, from);
+      else rows.top = Math.max(rows.top, to);
+    }
+
+    return rows.bottom - rows.top > 2 * FIT_PADDING
+      ? rows
+      : { bottom: size.height, top: 0 };
+  };
 
   const measure = () => {
     if (!surface) return;
@@ -763,17 +786,19 @@ export const createBoardView = (
       const minY = Math.min(...boxes.map(({ y }) => y));
       const maxX = Math.max(...boxes.map(({ width, x }) => x + width));
       const maxY = Math.max(...boxes.map(({ height, y }) => y + height));
+      const { bottom, top } = rowsClearOfToolbar();
+      const height = bottom - top;
       const zoom = clampZoom(
         Math.min(
           1,
           size.width / (maxX - minX + 2 * FIT_PADDING),
-          size.height / (maxY - minY + 2 * FIT_PADDING)
+          height / (maxY - minY + 2 * FIT_PADDING)
         )
       );
 
       setCamera({
         x: (minX + maxX) / 2 - size.width / 2 / zoom,
-        y: (minY + maxY) / 2 - size.height / 2 / zoom,
+        y: (minY + maxY) / 2 - (top + height / 2) / zoom,
         zoom,
       });
     },
