@@ -689,6 +689,12 @@ const shouldSaveCommit = (
   !commit.annotations[documentReplacement.key] &&
   (!commit.changes.empty || effects.length > 0);
 
+const changesNothing = (commit: EditorCommit) =>
+  commit.changes.empty &&
+  !commit.selectionChanged &&
+  !commit.changed.hasAny('marks') &&
+  commit.dirtyStateKeys.length === 0;
+
 const createHistoryPlugin = <
   const TEnabled extends boolean | undefined = undefined,
 >(
@@ -919,7 +925,9 @@ const createHistoryPlugin = <
     }
 
     if (!shouldSaveCommit(commit, effects)) {
-      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      if (!changesNothing(commit)) {
+        LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      }
 
       if (!commit.tags.includes('historic') && !changes.empty) {
         queuePendingHistoryReplayMapping(editor, changes, after);
