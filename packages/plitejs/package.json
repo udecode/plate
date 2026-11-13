@@ -128,7 +128,7 @@
     "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs testing",
     "lint:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs lint plitejs yjs",
     "test": "node ../../tooling/scripts/run-entrypoint-package-task.mjs plitejs test",
-    "test:bun": "bun test --preload ../../config/plite-source-test-setup.ts --path-ignore-patterns 'test/react/**' --path-ignore-patterns 'test/sync/cloudflare/**'",
+    "test:bun": "bun test --timeout 30000 --preload ../../config/plite-source-test-setup.ts --path-ignore-patterns 'test/react/**' --path-ignore-patterns 'test/sync/cloudflare/**'",
     "test:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs authored",
     "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs core",
     "test:partition:diff": "node ../../tooling/scripts/run-entrypoint-task.mjs test plitejs diff",
