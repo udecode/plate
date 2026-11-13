@@ -10,9 +10,11 @@
 // timeout stopped logs that before `exit=ETIMEDOUT`, whatever the command
 // returned, and stops every process still in the command's process group.
 // Before it starts, it holds half a core of this machine's core pool for each
-// of its --cores (default 1) workers. Every proof.mjs and land.mjs check of
-// every session shares the pool. It waits while the pool is full or free
-// memory is low, and waiters enter in the order they arrived.
+// of its --cores (default 1) workers. A --stress run holds a whole core for
+// each, and is refused when its --cores is over half the machine's cores.
+// Every proof.mjs and land.mjs check of every session shares the pool. It
+// waits while the pool is full or free memory is low, and waiters enter in
+// the order they arrived.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs';
@@ -47,6 +49,8 @@ const MIN_FREE_MEMORY = 0.15;
 // files stay in cores, so a proof.mjs from an older checkout reads the same
 // fill.
 const CORES_PER_WORKER = 0.5;
+const STRESS_CORES_PER_WORKER = 1;
+const STRESS_MAX_CORE_SHARE = 0.5;
 const POLL_MS = 2000;
 const STALE_LOCK_MS = 10_000;
 
@@ -109,10 +113,10 @@ function entries(suffix) {
 // none, so a proof started inside a proof or a land check never waits on its
 // own parent. A waiter counts every earlier waiter's ask as held, so small
 // proofs that arrive later never take the cores a land check is waiting for.
-export function reserve(workers, label) {
+export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
   if (process.env[HELD]) return () => {};
   const capacity = availableParallelism();
-  const want = Math.min(workers * CORES_PER_WORKER, capacity);
+  const want = Math.min(workers * coresPerWorker, capacity);
   mkdirSync(POOL, { recursive: true });
   const mine = join(POOL, `${process.pid}.json`);
   const ticket = join(POOL, `${process.pid}.wait`);
@@ -165,7 +169,11 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
   if (!dir || !name || command.length === 0 || name.split('/').includes('..')) throw new Error('prove needs a run directory, a name without "..", and a command');
   if (timeout !== undefined && !(Number.isFinite(timeout) && timeout > 0)) throw new Error(`--timeout takes a positive number of seconds, got ${timeout}`);
   if (!(Number.isInteger(cores) && cores > 0)) throw new Error(`--cores takes a positive whole number, got ${cores}`);
-  if (!stress) {
+  if (stress) {
+    const most = Math.max(1, Math.floor(availableParallelism() * STRESS_MAX_CORE_SHARE));
+    if (cores > most)
+      throw new Error(`--stress with --cores ${cores} is over half of this machine's ${availableParallelism()} cores; run the command with at most ${most} workers and pass --cores ${most}`);
+  } else {
     if (timeout > TIME_BUDGET_SECONDS)
       throw new Error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the proof, or offer it as a suggested task whose session passes --stress`);
     timeout ??= TIME_BUDGET_SECONDS;
@@ -176,7 +184,7 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
   const header = `$ (${resolve(cwd)}) ${line}\n`;
   writeSync(fd, header);
   const [file, args] = shell ? ['bash', ['-o', 'pipefail', '-c', command[0]]] : [command[0], command.slice(1)];
-  const release = reserve(cores, `proof.mjs ${name}`);
+  const release = reserve(cores, `proof.mjs ${name}`, stress ? STRESS_CORES_PER_WORKER : CORES_PER_WORKER);
   const result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), SUPERVISE_GROUP, String(timeout ?? 0), file, ...args], {
     cwd,
     stdio: ['ignore', fd, fd, 'pipe'],
