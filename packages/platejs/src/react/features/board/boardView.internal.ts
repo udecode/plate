@@ -107,6 +107,7 @@ export type BoardViewCore = Readonly<{
   edit: (key: NodeKey) => void;
   editedShape: () => BoardShapeLayout | null;
   editor: Editor;
+  focusBoard: () => boolean;
   focusTarget: React.RefObject<HTMLElement | null>;
   inView: (layout: BoardShapeLayout) => boolean;
   index: BoardIndex;
@@ -443,9 +444,14 @@ export const createBoardView = (
     parentEditable()?.focus({ preventScroll: true });
   };
 
+  const focusBoard = () => {
+    focusTarget.current?.focus({ preventScroll: true });
+
+    return !!focusTarget.current;
+  };
+
   const keepKeysOnBoard = () => {
-    if (!focusTarget.current) return;
-    focusTarget.current.focus({ preventScroll: true });
+    if (!focusBoard()) return;
     // Firefox keeps the selection when a non-editable element takes focus.
     editor.api.dom.deselect();
   };
@@ -497,9 +503,9 @@ export const createBoardView = (
 
     if (!written) return;
     if (change.kind === 'remove') keepKeysOnBoard();
-    if (change.kind === 'remove' || change.kind === 'removeFrame') {
-      voice.removed(before - boards.read.shapes(board).length);
-    }
+    else if (change.kind === 'removeFrame') focusBoard();
+    else return;
+    voice.removed(before - boards.read.shapes(board).length);
   };
 
   const insertWith = (
@@ -563,6 +569,7 @@ export const createBoardView = (
     },
     editedShape,
     editor,
+    focusBoard,
     focusTarget,
     index,
     insertWith,

@@ -43,10 +43,14 @@ export type {
  * ends with no write. The board shows `data-selected` while a selection of
  * its document covers it. Its focus target, `[data-board-focus]`, is its one
  * Tab stop and holds focus while shapes are selected; undo and redo run there
- * and focus follows what they restore. `messages` holds every word the board
- * says, and the view whose surface holds focus says one message per action
- * into the editor's status region. `height` sets this view's height and
- * defaults to the board's stored `height`; it never changes the document.
+ * and focus follows what they restore. Shift+Enter there or on selected
+ * shapes focuses the toolbar's first enabled control and keeps the selection,
+ * and Escape on a toolbar control outside an open popup, or a Shift+Tab that
+ * leaves the toolbar, returns focus to the focus target. The toolbar's
+ * controls keep every other key. `messages` holds every word the board says,
+ * and the view whose surface holds focus says one message per action into the
+ * editor's status region. `height` sets this view's height and defaults to
+ * the board's stored `height`; it never changes the document.
  */
 export function BoardSurface({
   height,

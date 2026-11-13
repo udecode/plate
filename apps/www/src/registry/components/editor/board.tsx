@@ -68,7 +68,7 @@ const nameOf = (shape: BoardShapeDescription): string => {
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Shift+Enter reaches the toolbar.',
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) => `${count} shapes selected`,

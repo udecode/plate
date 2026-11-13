@@ -33,12 +33,76 @@ const RESTACK_KEYS: Readonly<Record<string, BoardRestackDirection>> = {
   ']': 'forward',
 };
 
-/**
- * The board's keys: on selected shapes, on the board's focus target, and on
- * the board block selected in its document. Returns the detach.
- */
+const TOOLBAR_CONTROLS =
+  'a[href], button, input:not([type="hidden"]), select, textarea';
+
+const OPEN_POPUP =
+  '[aria-expanded="true"], [popover], [role="dialog"], [role="listbox"], [role="menu"], dialog';
+
+const plainKey = (event: KeyboardEvent) =>
+  !event.altKey && !event.ctrlKey && !event.metaKey;
+
 export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
+
+  const toolbar = () =>
+    host.querySelector<HTMLElement>(':scope > [data-board-toolbar]');
+
+  const toolbarControls = () =>
+    [
+      ...(toolbar()?.querySelectorAll<HTMLElement>(TOOLBAR_CONTROLS) ?? []),
+    ].filter(
+      (control) => !control.matches(':disabled, [aria-disabled="true"]')
+    );
+
+  const focusToolbar = () => {
+    const [first] = toolbarControls();
+
+    first?.focus();
+
+    return !!first;
+  };
+
+  const selectEdited = () => {
+    const edited = core.editedShape();
+
+    if (edited) core.select([edited.key]);
+
+    return !!edited;
+  };
+
+  const returnToBoard = () => selectEdited() || core.focusBoard();
+
+  // Shift+Tab leaves the toolbar here instead of through the browser, because
+  // Firefox moves focus before a roving-focus toolbar takes its own container
+  // out of the Tab order, and the container sends focus back to the control.
+  const toolbarKey = (
+    event: KeyboardEvent,
+    target: Element,
+    bar: HTMLElement
+  ) => {
+    if (event.key === 'Escape') {
+      const popup = target.closest(OPEN_POPUP);
+
+      if (popup && bar.contains(popup)) return false;
+      core.cancelGesture();
+
+      return returnToBoard();
+    }
+    if (event.key !== 'Tab' || !event.shiftKey || !plainKey(event)) {
+      return false;
+    }
+
+    return (
+      !toolbarControls().some(
+        (control) =>
+          control !== target &&
+          control.tabIndex >= 0 &&
+          control.compareDocumentPosition(target) &
+            control.DOCUMENT_POSITION_FOLLOWING
+      ) && returnToBoard()
+    );
+  };
 
   const selectFirst = () => {
     const [first] = index.entries();
@@ -152,31 +216,39 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     const onTarget = event.target === core.focusTarget.current;
 
     if (onTarget && historyKey(event)) return true;
+    if (
+      (onTarget || selected.length > 0) &&
+      event.key === 'Enter' &&
+      event.shiftKey &&
+      plainKey(event)
+    ) {
+      return focusToolbar();
+    }
     if (selected.length > 0) return shapeKey(event, selected);
 
     return onTarget && focusKey(event);
   };
 
+  const boardTakes = (event: KeyboardEvent, target: Element) => {
+    if (!host.contains(target)) return target.contains(host) && boardKey(event);
+    if (event.key === 'Escape' && selectEdited()) return true;
+
+    return takes(event, core.selectedShapes());
+  };
+
+  const keyTaken = (event: KeyboardEvent, target: Element) => {
+    const bar = target.closest<HTMLElement>('[data-board-toolbar]');
+
+    if (bar?.parentElement === host) return toolbarKey(event, target, bar);
+    if (event.key === 'Escape' && core.cancelGesture()) return true;
+
+    return !bar && boardTakes(event, target);
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
-    if (!(event.target instanceof Node)) return;
-    if (event.key === 'Escape' && core.cancelGesture()) {
-      event.preventDefault();
-      event.stopPropagation();
+    const { target } = event;
 
-      return;
-    }
-    if (host.contains(event.target)) {
-      const selected = core.selectedShapes();
-      const edited =
-        event.key === 'Escape' && selected.length === 0
-          ? core.editedShape()
-          : null;
-
-      if (edited) core.select([edited.key]);
-      else if (!takes(event, selected)) return;
-    } else if (!event.target.contains(host) || !boardKey(event)) {
-      return;
-    }
+    if (!(target instanceof Element) || !keyTaken(event, target)) return;
     event.preventDefault();
     event.stopPropagation();
   };
