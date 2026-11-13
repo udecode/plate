@@ -92,7 +92,7 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 | Editor behavior law and coverage evidence | `docs/editor-behavior/**`, reconciled per Source authority |
 | A plan, its execution, a bug fix and PR closure | the project playbooks listed in the pstack block (`.agents/playbooks/`) |
 | "next", "what's next" and whether a suggested task is still worth doing | the `chips` skill's answer to a question about open chips, which writes no page or plan, whatever the Plan pages rule or the `plan-page` skill says of a "next" answer |
-| What to do from any input, and whether an API or architecture proposal earns further work | `verdict` |
+| What to do from any input, whether an API or architecture proposal earns further work, and a scope's next step to build, cut or redesign, judged against other editors | `verdict` |
 | Public call shape and reusable API debt | `best-api` |
 | Architecture and API adoption plans, and read-only architecture audits, Plate or Plite | the Plan playbook with `.agents/playbooks/references/architecture.md` (its Audit section for a read-only audit) |
 | Complete Plate feature across packages, UI, docs and release | `plate-plugins` feature delivery, through the Plan and Build playbooks |
