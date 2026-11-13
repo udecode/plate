@@ -279,8 +279,9 @@ A root whose blocks are selected as whole objects, such as a board's shapes,
 can give focus to an element of its own instead of its editable. Pass
 `nodeSelectionFocus`, a ref to that element. That element takes focus when the
 editor moves focus into the root, as after an undo, while there is no selection
-or a node selection holds only the root's top-level blocks. A caret or a
-selection inside a block still focuses the root's editable. Unless the element
+or a node selection holds only the root's top-level blocks. It does not take
+focus while the editor shows a caret or a text selection, or on a call to
+`editor.api.dom.focus()`, which focuses the root's editable. Unless the element
 is a control, such as a button, the editor reads no keys from it, so it must
 handle the keys it needs, such as undo and redo through the `onKeyDown` of
 `useEditorHistory`.

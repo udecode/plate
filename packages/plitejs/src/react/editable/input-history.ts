@@ -1,21 +1,11 @@
+import type { EditorUpdateTransaction, Value } from '../..';
 import {
-  type EditorUpdateTransaction,
-  type Value,
-  defineUpdateAnnotation,
-} from '../..';
+  type NativeGroupingInput,
+  nativeGroupingInput,
+} from '../../core/native-grouping-input';
 import { profilePliteReactDuration } from '../render-profiler';
 import type { Editor } from './runtime-editor-api';
 import { getEditorRuntime } from './runtime-editor-api';
-
-export type NativeGroupingInput = Readonly<{
-  origin: number;
-  composition?: number;
-}>;
-
-export const nativeGroupingInput = defineUpdateAnnotation<NativeGroupingInput>({
-  combine: (_previous, next) => next,
-  key: 'history.native-grouping-input',
-});
 
 let nextNativeGroupingId = 0;
 

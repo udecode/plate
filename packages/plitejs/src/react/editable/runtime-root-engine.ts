@@ -4,7 +4,6 @@ import {
   useCallback,
   useMemo,
   useSyncExternalStore,
-  type RefObject,
 } from 'react';
 
 import type { DOMRange } from '../../dom';
@@ -25,11 +24,9 @@ import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
+  NodeSelectionFocus,
 } from './editable-dom-runtime';
-import {
-  focusNodeSelectionStandIn,
-  getModelOwnedHistoryFocusRepair,
-} from './history-focus';
+import { getModelOwnedHistoryFocusRepair } from './history-focus';
 import { useEditableRootRef } from './input-router';
 import {
   beginEditableNativeSelectionImport,
@@ -121,7 +118,7 @@ export const useEditableRootRuntime = ({
   editor: ReactRuntimeEditor;
   forwardedRef?: ForwardedRef<HTMLDivElement>;
   viewportRuntime: EditableViewportRuntime | null;
-  nodeSelectionFocus?: RefObject<HTMLElement | null> | null;
+  nodeSelectionFocus?: NodeSelectionFocus;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onDropResult?: (result: EditableDropResult) => void;
@@ -234,7 +231,7 @@ export const useEditableRootRuntime = ({
     scrollSelectionIntoView,
     syncDOMSelectionToEditor,
   });
-  runtime.updateHistoryFocusHandler((policy) => {
+  runtime.updateHistoryFocusHandler((policy, replayChanges) => {
     if (policy !== 'restore-root') return;
 
     const next = getModelOwnedHistoryFocusRepair({
@@ -243,6 +240,7 @@ export const useEditableRootRuntime = ({
       getContentRootOwnerViewEditor:
         pliteRuntimeContext?.getContentRootOwnerViewEditor,
       getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+      replayChanges,
     });
     if (!next.repair) return;
     if (next.focusEditor) {
@@ -250,7 +248,7 @@ export const useEditableRootRuntime = ({
         focusEditor: next.focusEditor,
       });
     } else if (
-      !focusNodeSelectionStandIn(editor, runtime) &&
+      !runtime.focusNodeSelectionElement() &&
       !runtime.externalText.focusSelection()
     ) {
       runtime.rootElement?.focus({ preventScroll: true });

@@ -110,7 +110,7 @@ export type BoardViewCore = Readonly<{
   editedShape: () => BoardShapeLayout | null;
   editor: Editor;
   focusBoard: () => boolean;
-  focusTarget: React.RefObject<HTMLElement | null>;
+  focusTarget: React.RefObject<HTMLDivElement | null>;
   inView: (layout: BoardShapeLayout) => boolean;
   index: BoardIndex;
   /**
@@ -243,9 +243,7 @@ export const createBoardView = (
   let drawnZoom = state.camera.zoom;
   let layer: HTMLElement | null = null;
   let zoomLayer: HTMLElement | null = null;
-  const focusTarget: React.RefObject<HTMLElement | null> = {
-    current: null,
-  };
+  const focusTarget = React.createRef<HTMLDivElement>();
   let surface: HTMLElement | null = null;
   let gestures: ReturnType<typeof attachBoardGestures> | null = null;
 
@@ -646,9 +644,6 @@ export const createBoardView = (
       node.firstElementChild instanceof HTMLElement
         ? node.firstElementChild
         : null;
-    focusTarget.current = host.querySelector<HTMLElement>(
-      ':scope > [data-board-focus]'
-    );
     surface = host;
     paintCamera();
 
@@ -699,7 +694,6 @@ export const createBoardView = (
       identityAnimation = null;
       layer = null;
       zoomLayer = null;
-      focusTarget.current = null;
       surface = null;
       resizeObserver.disconnect();
       host.removeEventListener('wheel', onWheel);

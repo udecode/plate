@@ -46,6 +46,7 @@ import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
+  NodeSelectionFocus,
 } from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
 import {
@@ -223,11 +224,14 @@ export type EditableContentRootSlotOptions = {
   /**
    * The element that takes focus in place of this root's editable when the
    * editor moves focus here, as after an undo, while there is no selection or
-   * a node selection holds only top-level blocks of this root. Unless the
-   * element is a control, such as a button, the editor reads no keys from it,
-   * so it must handle the keys it needs, such as undo and redo.
+   * a node selection holds only top-level blocks of this root. It does not
+   * take focus while the editor shows a caret or a text selection, even one
+   * the model does not hold, or on a call to `editor.api.dom.focus()`, which
+   * focuses the editable. Unless the element is a control, such as a button,
+   * the editor reads no keys from it, so it must handle the keys it needs,
+   * such as undo and redo.
    */
-  nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
+  nodeSelectionFocus?: NodeSelectionFocus;
   placeholder?: ReactNode;
   readOnly?: boolean;
   spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
@@ -632,7 +636,7 @@ function EditableContentRootWindow({
   viewport: { mountedKeys, reveal },
   ...props
 }: EditableProps & {
-  nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
+  nodeSelectionFocus?: NodeSelectionFocus;
   viewport: EditableContentRootViewport;
 }) {
   const topLevelNodeKeys = useRootNodeKeys();
@@ -1274,7 +1278,7 @@ const EditableInner = <TElement extends ElementNode>({
   ...callerProps
 }: EditableProps<TElement> & {
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
-  nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
+  nodeSelectionFocus?: NodeSelectionFocus;
   viewLines?: ViewLines | null;
   viewportPlan?: EditableViewportPlan | null;
 }) => {

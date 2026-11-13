@@ -10,6 +10,10 @@ import {
   type Value,
 } from '../..';
 import { withCompositionStamp } from '../../core/composition-stamp';
+import {
+  type NativeGroupingInput,
+  nativeGroupingInput,
+} from '../../core/native-grouping-input';
 import { getRootTransaction } from '../../core/plugin-dispatch';
 import {
   asSelectionMotion,
@@ -46,8 +50,6 @@ import {
   type EditableRepairPolicy,
   getEditableRepairPolicy,
 } from './editing-kernel';
-import { focusNodeSelectionStandIn } from './history-focus';
-import { type NativeGroupingInput, nativeGroupingInput } from './input-history';
 import {
   commitUnderCompositionReceipt,
   type EditableInputController,
@@ -851,10 +853,7 @@ export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
 
     if (
       editorElement &&
-      focusNodeSelectionStandIn(
-        editor,
-        findMountedEditableDOMRuntime(editorElement)
-      )
+      findMountedEditableDOMRuntime(editorElement)?.focusNodeSelectionElement()
     ) {
       return true;
     }

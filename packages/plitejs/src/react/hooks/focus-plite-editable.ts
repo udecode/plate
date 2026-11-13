@@ -11,7 +11,10 @@ import {
   getDOMRangeSelectionPoints,
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
-import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
+import {
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from '../editable/editable-dom-runtime';
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import {
   type Editor,
@@ -132,6 +135,13 @@ const focusPliteEditableForRequest = <
   if (!ownsEditableFocusRequest(request)) return;
 
   const element = editor.api.dom.editable();
+
+  if (
+    element &&
+    findMountedEditableDOMRuntime(element)?.focusNodeSelectionElement()
+  ) {
+    return;
+  }
 
   const viewSelection = readPliteViewSelection(editor);
 

@@ -1,11 +1,10 @@
-import type { Path, RootKey } from '../..';
+import type { EditorCommit, Path, RootKey } from '../..';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
 } from '../view-selection';
-import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableRepairRequest } from './mutation-controller';
 import { shouldForceRenderAfterModelOwnedHistory } from './mutation-history';
 import {
@@ -30,11 +29,6 @@ export type HistoryFocusOwnerApi = {
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
 };
 
-const isOwnerForRoot = (
-  owner: HistoryContentRootOwner | null | undefined,
-  root: RootKey | null | undefined
-) => Boolean(owner && root && owner.childRoot === root);
-
 export const resolveHistoryFocusEditor = ({
   currentRoot,
   editor,
@@ -51,86 +45,47 @@ export const resolveHistoryFocusEditor = ({
   historyRoot?: RootKey | null;
   selectionRoot?: RootKey | null;
 }) => {
-  if (selectionRoot) {
-    const selectionOwner = getActiveContentRootOwner?.(selectionRoot);
+  const ownerOf = (root: RootKey) => {
+    const owner = getActiveContentRootOwner?.(root);
 
-    return (
-      (selectionOwner && isOwnerForRoot(selectionOwner, selectionRoot)
-        ? getContentRootOwnerViewEditor?.(selectionOwner)
-        : null) ??
-      getMountedViewEditor?.(selectionRoot) ??
-      editor
-    );
-  }
+    return owner?.childRoot === root ? owner : null;
+  };
+  const viewOf = (root: RootKey, owner: HistoryContentRootOwner | null) =>
+    (owner ? getContentRootOwnerViewEditor?.(owner) : null) ??
+    getMountedViewEditor?.(root) ??
+    editor;
 
-  const historyOwner = historyRoot
-    ? getActiveContentRootOwner?.(historyRoot)
-    : null;
+  if (selectionRoot) return viewOf(selectionRoot, ownerOf(selectionRoot));
+  if (!historyRoot) return viewOf(currentRoot ?? fallbackRoot, null);
 
-  if (historyOwner && historyRoot && historyOwner.childRoot === historyRoot) {
-    return (
-      getContentRootOwnerViewEditor?.(historyOwner) ??
-      getMountedViewEditor?.(historyRoot) ??
-      editor
-    );
-  }
+  const historyOwner = ownerOf(historyRoot);
 
-  const currentOwner = currentRoot
-    ? getActiveContentRootOwner?.(currentRoot)
-    : null;
+  if (historyOwner) return viewOf(historyRoot, historyOwner);
 
-  if (
-    historyRoot &&
-    currentOwner &&
-    historyRoot === currentOwner.ownerRoot &&
-    isOwnerForRoot(currentOwner, currentRoot)
-  ) {
-    return (
-      getContentRootOwnerViewEditor?.(currentOwner) ??
-      getMountedViewEditor?.(historyRoot) ??
-      editor
-    );
-  }
+  const currentOwner = currentRoot ? ownerOf(currentRoot) : null;
 
-  return (
-    getMountedViewEditor?.(historyRoot ?? currentRoot ?? fallbackRoot) ?? editor
+  return viewOf(
+    historyRoot,
+    currentOwner?.ownerRoot === historyRoot ? currentOwner : null
   );
 };
 
-export const focusNodeSelectionStandIn = (
-  editor: ReactRuntimeEditor,
-  runtime: EditableDOMRuntime | null
-) => {
-  const element = runtime?.nodeSelectionFocus?.current;
-
-  if (!element?.isConnected) return false;
-
-  const holdsTopLevelBlocks =
-    !readRuntimeSelection(getEditorRuntimeOwner(editor)) ||
-    editor.read(
-      (state) =>
-        getEditorSelectionRoot(editor) === toInternalRoot(state.view.root()) &&
-        state.selection.nodeMode() !== null &&
-        state.selection.nodes().every(([, path]) => path.length === 1)
-    );
-
-  if (!holdsTopLevelBlocks) return false;
-
-  element.focus({ preventScroll: true });
-  return true;
-};
-
-const getLastCommitSingleChangedRoot = (
-  editor: ReactRuntimeEditor
-): RootKey | null => {
-  const commit = editor.read((state) => state.lastCommit());
-  const roots = new Set<RootKey>([
-    ...(commit ? getInternalDocumentChangeRootKeys(commit.changes) : []),
-    ...(commit?.changes.createRoots ?? []),
-    ...(commit?.changes.deleteRoots ?? []),
+const getChangedRoot = (changes: EditorCommit['changes']): RootKey | null => {
+  const createdOrDeleted = new Set<RootKey>([
+    ...changes.createRoots,
+    ...changes.deleteRoots,
   ]);
+  const changed = getInternalDocumentChangeRootKeys(changes);
+  const surviving = changed.filter((root) => !createdOrDeleted.has(root));
+  const onlyRoot = (roots: Iterable<RootKey>) => {
+    const unique = new Set(roots);
 
-  return roots.size === 1 ? (roots.values().next().value ?? null) : null;
+    return unique.size === 1 ? (unique.values().next().value ?? null) : null;
+  };
+
+  if (surviving.length > 0) return onlyRoot(surviving);
+
+  return onlyRoot([...changed, ...createdOrDeleted]);
 };
 
 export const getModelOwnedHistoryFocusRepair = ({
@@ -138,8 +93,10 @@ export const getModelOwnedHistoryFocusRepair = ({
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
+  replayChanges,
 }: {
   editor: ReactRuntimeEditor;
+  replayChanges: EditorCommit['changes'] | null;
 } & HistoryFocusOwnerApi): {
   focusEditor?: ReactRuntimeEditor;
   repair?: EditableRepairRequest;
@@ -155,7 +112,7 @@ export const getModelOwnedHistoryFocusRepair = ({
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
-    historyRoot: getLastCommitSingleChangedRoot(editor),
+    historyRoot: replayChanges ? getChangedRoot(replayChanges) : null,
     selectionRoot,
   });
 

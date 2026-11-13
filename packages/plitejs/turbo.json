@@ -914,7 +914,6 @@
         "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:history",
-        "source-hash:partition:react",
         "source-hash:partition:testing",
         "source-hash:partition:yjs"
       ],

@@ -135,6 +135,7 @@ export function BoardSurface({
           </div>
         </div>
         <BoardFocusTarget
+          focusRef={view.focusTarget}
           instructions={messages.instructions}
           label={messages.label}
         />
@@ -159,9 +160,11 @@ const WITHOUT_OWN_FOCUS_RING: React.CSSProperties = {
 // A screen reader passes letters and arrows to a focused application, and
 // keeps its own browse keys on a plain element.
 function BoardFocusTarget({
+  focusRef,
   instructions,
   label,
 }: {
+  focusRef: React.Ref<HTMLDivElement>;
   instructions: string;
   label: string;
 }) {
@@ -174,6 +177,7 @@ function BoardFocusTarget({
         aria-label={label}
         contentEditable={false}
         data-board-focus=""
+        ref={focusRef}
         role="application"
         // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- The application takes the board's one Tab stop and its keys.
         tabIndex={0}

@@ -1,10 +1,4 @@
-import {
-  type RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Range } from '../..';
 import type { EditableViewportRuntime } from '../components/editable';
@@ -16,13 +10,14 @@ import {
   type EditableHistoryReplayEvent,
   type EditablePasteResult,
   isEditableDOMSelectionPartial,
+  type NodeSelectionFocus,
 } from './editable-dom-runtime';
 import { readRuntimeSelectionRange } from './runtime-selection-state';
 
 export const useEditableRootRuntimeState = ({
   viewportRuntime,
   editor,
-  nodeSelectionFocus = null,
+  nodeSelectionFocus,
   onDropResult,
   onHistoryReplay,
   onPasteResult,
@@ -30,7 +25,7 @@ export const useEditableRootRuntimeState = ({
 }: {
   viewportRuntime: EditableViewportRuntime | null;
   editor: ReactRuntimeEditor;
-  nodeSelectionFocus?: RefObject<HTMLElement | null> | null;
+  nodeSelectionFocus?: NodeSelectionFocus;
   onDropResult?: (result: EditableDropResult) => void;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onPasteResult?: (result: EditablePasteResult) => void;

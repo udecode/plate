@@ -17,6 +17,7 @@ import {
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
 import { getInstalledPlugin } from '../../core/plugin';
 import {
+  type EditorHistoryReplayReceipt,
   readEditorHistoryReplayReceipt,
   withUpdateTagContext,
 } from '../../core/public-state';
@@ -59,6 +60,7 @@ import {
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
+  readPliteViewSelection,
   readPliteViewSelectionHistoryGroup,
   writePliteViewSelection,
 } from '../view-selection';
@@ -83,6 +85,7 @@ import {
   clearEditableCompositionRuntimeState,
   endSelectionImport,
   type EditableInputController,
+  exportEditableDOMSelection,
   isSelectionHeldForNativeMove,
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
@@ -91,10 +94,13 @@ import type { DeferredMutation } from './model-input-strategy';
 import { RenderContractMonitor } from './render-contract-monitor';
 import {
   getEditorRuntimeOwner,
+  getEditorSelectionRoot,
   setEditorComposing,
+  toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { importUnreadPressCaret } from './runtime-selection-engine';
+import { readRuntimeSelection } from './runtime-selection-state';
 import { attachEditableSelectionChangeListener } from './selection-change-listener';
 import { SelectionClaims } from './selection-claim';
 import { setEditableModelSelectionPreference } from './selection-controller';
@@ -108,6 +114,13 @@ type MutableCell<T> = { current: T };
 
 /** Focus behavior after mounted undo or redo applies a history batch. */
 export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
+
+export type NodeSelectionFocus = RefObject<HTMLElement | null>;
+
+type EditorHistoryFocusHandler = (
+  policy: EditorHistoryFocusPolicy,
+  replayChanges: EditorCommit['changes'] | null
+) => void;
 
 export type EditableHistoryReplayResult =
   | HistoryOutcome
@@ -322,9 +335,46 @@ export const subscribeEditableRuntimeFocus = <
   };
 };
 
+const watchReplay = (editor: ReactRuntimeEditor, targetDocument: Document) => {
+  const stopPlacements = watchFirstPlacement(editor);
+  const snapshotCommits = new Map<number, EditorCommit['changes']>();
+  let interacted = false;
+  const interact = () => {
+    interacted = true;
+  };
+  const stopCommits = editor.subscribeCommit((commit) => {
+    if (commit.changed.hasAny('snapshot')) {
+      snapshotCommits.set(commit.version, commit.changes);
+    }
+  });
+
+  targetDocument.addEventListener('focusin', interact, true);
+  targetDocument.addEventListener('pointerdown', interact, true);
+
+  return () => {
+    const placedAt = stopPlacements();
+
+    stopCommits();
+    targetDocument.removeEventListener('focusin', interact, true);
+    targetDocument.removeEventListener('pointerdown', interact, true);
+
+    return {
+      changes: (receipt: EditorHistoryReplayReceipt) =>
+        snapshotCommits.get(receipt.version) ?? null,
+      interrupted: (receipt: EditorHistoryReplayReceipt) =>
+        interacted ||
+        [...snapshotCommits.keys()].some(
+          (version) =>
+            version !== receipt.version && version !== receipt.claimVersion
+        ),
+      placedAt,
+    };
+  };
+};
+
 type EditableDOMRuntimeUpdate = {
   viewportRuntime: EditableViewportRuntime | null;
-  nodeSelectionFocus: RefObject<HTMLElement | null> | null;
+  nodeSelectionFocus: NodeSelectionFocus | undefined;
   onComposingChange: (nextValue: boolean) => void;
   onHistoryReplay: (event: EditableHistoryReplayEvent) => void;
   onDropResult: (result: EditableDropResult) => void;
@@ -368,7 +418,7 @@ export class EditableDOMRuntime {
 
   private viewportRuntimeValue: EditableViewportRuntime | null;
 
-  private nodeSelectionFocusValue: RefObject<HTMLElement | null> | null;
+  private nodeSelectionFocus: NodeSelectionFocus | undefined;
 
   private readonly editorValue: ReactRuntimeEditor;
 
@@ -385,8 +435,7 @@ export class EditableDOMRuntime {
     globalThis.Node,
     () => void
   >();
-  private historyFocusHandler: (policy: EditorHistoryFocusPolicy) => void =
-    () => {};
+  private historyFocusHandler: EditorHistoryFocusHandler = () => {};
 
   private historySettleHandler: () => void = () => {};
 
@@ -449,7 +498,7 @@ export class EditableDOMRuntime {
 
   constructor({
     viewportRuntime = null,
-    nodeSelectionFocus = null,
+    nodeSelectionFocus,
     editor,
     onComposingChange = () => {},
     onHistoryReplay = () => {},
@@ -463,7 +512,7 @@ export class EditableDOMRuntime {
     testRootFacts?: DOMRootRuntimeOptions<HTMLDivElement>['testRootFacts'];
   }) {
     this.viewportRuntimeValue = viewportRuntime;
-    this.nodeSelectionFocusValue = nodeSelectionFocus;
+    this.nodeSelectionFocus = nodeSelectionFocus;
     this.editorValue = editor;
     this.onComposingChange = onComposingChange;
     this.historyReplayHandler = onHistoryReplay;
@@ -652,16 +701,58 @@ export class EditableDOMRuntime {
     return this.editorValue;
   }
 
-  get nodeSelectionFocus() {
-    return this.nodeSelectionFocusValue;
-  }
-
   get readOnly() {
     return this.readOnlyValue;
   }
 
   get rootElement() {
     return this.rootRef.current;
+  }
+
+  focusNodeSelectionElement() {
+    const element = this.nodeSelectionFocus?.current;
+    const editor = this.editorValue;
+
+    if (!element?.isConnected || readPliteViewSelection(editor)) return false;
+
+    const selectsOnlyTopLevelBlocks = () =>
+      editor.read(
+        (state) =>
+          getEditorSelectionRoot(editor) ===
+            toInternalRoot(state.view.root()) &&
+          state.selection.nodeMode() !== null &&
+          state.selection.nodes().every(([, path]) => path.length === 1)
+      );
+
+    if (
+      readRuntimeSelection(getEditorRuntimeOwner(editor)) &&
+      !selectsOnlyTopLevelBlocks()
+    ) {
+      return false;
+    }
+
+    element.focus({ preventScroll: true });
+
+    const root = this.rootElement;
+    const tree = root?.getRootNode() as Document | ShadowRoot | undefined;
+
+    // Chrome and Firefox keep the editable's caret after focus leaves it.
+    if (tree && containsShadowAware(root, getSelection(tree)?.anchorNode)) {
+      const { state } = this.inputController;
+
+      exportEditableDOMSelection(state, tree, null, () =>
+        this.domPhaseScheduler.schedule(
+          'selection-repair',
+          'clear-node-selection-focus-update',
+          () => {
+            state.isUpdatingSelection = false;
+          },
+          { timing: 'timeout' }
+        )
+      );
+    }
+
+    return true;
   }
 
   get state() {
@@ -1213,9 +1304,7 @@ export class EditableDOMRuntime {
     this.selectionExportAfterDOMCommitHandler = handler;
   }
 
-  updateHistoryFocusHandler(
-    handler: (policy: EditorHistoryFocusPolicy) => void
-  ) {
+  updateHistoryFocusHandler(handler: EditorHistoryFocusHandler) {
     this.historyFocusHandler = handler;
   }
 
@@ -1277,31 +1366,9 @@ export class EditableDOMRuntime {
       return { reason: 'not-installed', status: 'unavailable' };
     }
 
-    const targetDocument = root.ownerDocument;
-    let presentationInvalidated = false;
-    const invalidatePresentation = () => {
-      presentationInvalidated = true;
-    };
-    const version =
-      this.editorValue.read((state) => state.lastCommit()?.version) ?? 0;
     const run = () => history[direction]();
-    // The replay places first; a placement made while it settles is newer.
-    const stopPlacements = watchFirstPlacement(this.editorValue);
-    let placedAt: number;
-    let lastSnapshotVersion = version;
-    const stopCommits = this.editorValue.subscribeCommit((commit) => {
-      if (commit.changed.hasAny('snapshot')) {
-        lastSnapshotVersion = Math.max(lastSnapshotVersion, commit.version);
-      }
-    });
-
-    targetDocument.addEventListener('focusin', invalidatePresentation, true);
-    targetDocument.addEventListener(
-      'pointerdown',
-      invalidatePresentation,
-      true
-    );
-
+    const finishWatch = watchReplay(this.editorValue, root.ownerDocument);
+    let watched: ReturnType<typeof finishWatch>;
     let result: HistoryOutcome;
 
     try {
@@ -1319,18 +1386,7 @@ export class EditableDOMRuntime {
         ? replayed.settled
         : Promise.resolve(replayed));
     } finally {
-      placedAt = stopPlacements();
-      stopCommits();
-      targetDocument.removeEventListener(
-        'focusin',
-        invalidatePresentation,
-        true
-      );
-      targetDocument.removeEventListener(
-        'pointerdown',
-        invalidatePresentation,
-        true
-      );
+      watched = finishWatch();
     }
 
     if (result.status !== 'applied') return result;
@@ -1341,9 +1397,7 @@ export class EditableDOMRuntime {
       !receipt ||
       !this.connected ||
       this.rootElement !== root ||
-      presentationInvalidated ||
-      receipt.version !== (receipt.claimVersion ?? version) + 1 ||
-      lastSnapshotVersion > receipt.version
+      watched.interrupted(receipt)
     ) {
       return result;
     }
@@ -1352,11 +1406,13 @@ export class EditableDOMRuntime {
       writePliteViewSelection(
         this.editorValue,
         readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null,
-        { placedAt }
+        { placedAt: watched.placedAt }
       )
     );
+    const replayChanges = watched.changes(receipt);
+
     this.observeHistoryReplay(direction, () =>
-      this.historyFocusHandler(focusPolicy)
+      this.historyFocusHandler(focusPolicy, replayChanges)
     );
     return result;
   }
@@ -1441,7 +1497,7 @@ export class EditableDOMRuntime {
   update(update: EditableDOMRuntimeUpdate) {
     const readOnlyChanged = this.readOnlyValue !== update.readOnly;
     this.viewportRuntimeValue = update.viewportRuntime;
-    this.nodeSelectionFocusValue = update.nodeSelectionFocus;
+    this.nodeSelectionFocus = update.nodeSelectionFocus;
     this.onComposingChange = update.onComposingChange;
     this.historyReplayHandler = update.onHistoryReplay;
     this.pasteResultHandler = update.onPasteResult;

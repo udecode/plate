@@ -9,6 +9,7 @@ import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
+  NodeSelectionFocus,
 } from '../editable/editable-dom-runtime';
 import type {
   EditableRepairRequest,
@@ -296,7 +297,7 @@ export const EditableDOMRoot = (
     deferNativeTextInputRepair?: boolean;
     viewportRuntime?: EditableViewportRuntime | null;
     ignoreBlankEditableRootClicks?: boolean;
-    nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
+    nodeSelectionFocus?: NodeSelectionFocus;
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
     onKeyDown?: EditableKeyDownHandler;

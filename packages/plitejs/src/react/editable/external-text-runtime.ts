@@ -18,6 +18,7 @@ import { RootChange } from '../../core/change/root-change';
 import { projectEditorTextSplices } from '../../core/change/text-splices';
 import { PreparedTokenSlice } from '../../core/change/tokens';
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
+import { nativeGroupingInput } from '../../core/native-grouping-input';
 import { setShownSelectionAsView } from '../../core/view-carets';
 import { IS_FOCUSED } from '../../dom/internal';
 import type { PliteDecorationStore } from '../decoration-context';
@@ -41,7 +42,6 @@ import {
 import {
   createNativeGroupingId,
   getNativeTextInputUpdateTags,
-  nativeGroupingInput,
 } from './input-history';
 import { openInputTarget } from './input-target';
 import { registerExternalTextHost } from './interaction-owner';

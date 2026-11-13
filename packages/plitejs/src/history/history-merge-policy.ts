@@ -8,6 +8,7 @@ import {
   getEditorCommitCompletedTextDeletion,
   getEditorCommitSnapshot,
 } from '../core/commit';
+import type { NativeGroupingInput } from '../core/native-grouping-input';
 import { MAIN_ROOT_KEY, toPublicRoot } from '../core/public-root';
 import type { Batch } from './history';
 
@@ -27,11 +28,6 @@ type HistoryPoint = Readonly<{
 
 type ChangedRange = readonly [number, number, number, number];
 
-export type NativeHistoryGrouping = Readonly<{
-  composition?: number;
-  origin: number;
-}>;
-
 type TextHistoryGroup = Readonly<{
   afterPoint: HistoryPoint | null;
   beforePoint: HistoryPoint | null;
@@ -49,7 +45,7 @@ type TextHistoryGroup = Readonly<{
 export type HistoryBatchGroup = Readonly<{
   /** No later commit merges into the entry. */
   closed?: true;
-  native?: NativeHistoryGrouping;
+  native?: NativeGroupingInput;
   scope?: object;
 }> &
   (

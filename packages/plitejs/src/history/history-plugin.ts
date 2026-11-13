@@ -57,6 +57,10 @@ import {
   getEditorRuntimeOwner,
 } from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
+import {
+  type NativeGroupingInput,
+  nativeGroupingInput,
+} from '../core/native-grouping-input';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
@@ -89,7 +93,6 @@ import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
 import {
   createHistoryBatchGroup,
   type HistoryBatchGroup,
-  type NativeHistoryGrouping,
   isSameHistoryPath,
   mergeHistoryBatchGroups,
   shouldMergeBatch,
@@ -503,35 +506,9 @@ const getTextBurstSelectionBefore = ({
   };
 };
 
-const readNativeHistoryGrouping = (
-  commit: EditorCommit
-): NativeHistoryGrouping | undefined => {
-  const value = commit.annotations['history.native-grouping-input'];
-
-  if (
-    typeof value !== 'object' ||
-    value === null ||
-    !Number.isSafeInteger(Reflect.get(value, 'origin'))
-  ) {
-    return undefined;
-  }
-  const composition = Reflect.get(value, 'composition');
-
-  if (composition !== undefined && !Number.isSafeInteger(composition)) {
-    return undefined;
-  }
-
-  return Object.freeze({
-    origin: Reflect.get(value, 'origin') as number,
-    ...(composition === undefined
-      ? {}
-      : { composition: composition as number }),
-  });
-};
-
 const canMergeNativeHistory = (
-  current: NativeHistoryGrouping | undefined,
-  previous: NativeHistoryGrouping | undefined,
+  current: NativeGroupingInput | undefined,
+  previous: NativeGroupingInput | undefined,
   withinAutomaticWindow: boolean
 ) => {
   if (!current && !previous) return withinAutomaticWindow;
@@ -557,7 +534,9 @@ const prepareHistoryBatch = <V extends Value>(
   group: HistoryBatchGroup | null;
 }> | null => {
   const baseGroup = createHistoryBatchGroup(commit);
-  const native = readNativeHistoryGrouping(commit);
+  const native = commit.annotations[nativeGroupingInput.key] as
+    | NativeGroupingInput
+    | undefined;
   const group: HistoryBatchGroup | null = baseGroup
     ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
     : native?.composition === undefined
