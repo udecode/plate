@@ -1100,6 +1100,19 @@ const main = async () => {
     return 1;
   }
 
+  // pnpm writes the lockfile it last installed to node_modules/.pnpm/lock.yaml.
+  const installed = join(root, 'node_modules/.pnpm/lock.yaml');
+  if (
+    existsSync(installed) &&
+    readFileSync(installed, 'utf-8') !==
+      readFileSync(join(root, LOCKFILE), 'utf-8')
+  ) {
+    console.error(
+      `[check] ${LOCKFILE} differs from the lockfile pnpm last installed, so the steps would run against stale node_modules. Run pnpm install --offline, or pnpm install when the store lacks a package, then run the check again.`
+    );
+    return 1;
+  }
+
   let chosen = affected
     ? steps.filter((step) => !step.optIn)
     : selectSteps(args);
