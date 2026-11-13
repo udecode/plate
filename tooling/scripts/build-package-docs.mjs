@@ -37,6 +37,26 @@ const ROOT = path.resolve(import.meta.dirname, '../..');
 const PACKAGE_DIR = path.join(ROOT, 'packages/platejs');
 const REGISTRY_TAG =
   /<Component(PreviewPro|Preview|Source|Installation)\b([^>]*?)\/>/g;
+const DOCS_SOURCE = 'content/docs';
+
+const inSeparateDocsSite = (file) => {
+  for (
+    let dir = path.dirname(file);
+    dir.startsWith(`${DOCS_SOURCE}/`);
+    dir = path.dirname(dir)
+  ) {
+    const meta = path.join(ROOT, dir, 'meta.json');
+
+    if (
+      existsSync(meta) &&
+      JSON.parse(readFileSync(meta, 'utf-8')).root === true
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 const attribute = (attributes, name) =>
   new RegExp(`\\b${name}="([^"]+)"`).exec(attributes)?.[1];
@@ -110,7 +130,9 @@ function writePackageDocs() {
     ])
   );
   const pages = listDocPages(ROOT)
-    .filter(({ file }) => !file.endsWith('.cn.mdx'))
+    .filter(
+      ({ file }) => !file.endsWith('.cn.mdx') && !inSeparateDocsSite(file)
+    )
     .map(({ file, route }) => ({
       out:
         route === '/docs' ? 'index.md' : `${route.slice('/docs/'.length)}.md`,

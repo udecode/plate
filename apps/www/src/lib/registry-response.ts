@@ -171,7 +171,7 @@ async function isIndexedPayload({
   root: string;
   style: string;
 }) {
-  if (fileName === 'registry.json' || fileName === 'registry-docs.json') {
+  if (fileName === 'registry.json') {
     return true;
   }
 

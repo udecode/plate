@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-13-remove-docs-items",
+      "href": "/registry/changelog/2026-11-13-remove-docs-items.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove the docs registry items",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["docs", "fumadocs", "docs-meta"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-12-add-board",
       "href": "/registry/changelog/2026-11-12-add-board.json",
       "status": "draft",

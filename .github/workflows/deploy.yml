@@ -151,7 +151,7 @@ jobs:
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/" > /dev/null
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/docs/installation/react" > /dev/null
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/api/search?query=controlled&locale=en" | jq --exit-status 'type == "array" and length > 0' > /dev/null
-          curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/r/installation-docs.json" | jq --exit-status '.files | length > 0' > /dev/null
+          curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/r/editor-basic.json" | jq --exit-status '.files | length > 0' > /dev/null
 
       - name: Publish the current branch deployment
         shell: bash

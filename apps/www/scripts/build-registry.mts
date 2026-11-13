@@ -11,11 +11,7 @@ import {
 } from 'node:fs/promises';
 import path from 'node:path';
 
-import {
-  type Registry,
-  type RegistryItem,
-  registrySchema,
-} from 'shadcn/schema';
+import { type Registry, registrySchema } from 'shadcn/schema';
 
 import {
   PLATE_REGISTRY_BASES,
@@ -30,7 +26,6 @@ import { createRegistryResponse } from '@/lib/registry-response';
 import { createPlateRegistry } from '@/registry/registry';
 import { PLATE_REGISTRY_VARIANT_ITEM_NAMES } from '@/registry/registry-variants';
 
-import { createDocsRegistry } from './build-docs-registry.mts';
 import {
   acquireRegistryBuildLock,
   createRegistryGeneration,
@@ -93,8 +88,7 @@ function sanitizeRegistry(registry: Registry): Registry {
 
 function createRawRegistry(
   registry: Registry,
-  kind: 'canonical' | 'provider-overlay',
-  docsItems: RegistryItem[]
+  kind: 'canonical' | 'provider-overlay'
 ) {
   const sourceItems =
     kind === 'canonical'
@@ -102,12 +96,10 @@ function createRawRegistry(
       : registry.items.filter((item) =>
           PLATE_REGISTRY_VARIANT_ITEM_NAMES.has(item.name)
         );
-  const sanitized = sanitizeRegistry({ ...registry, items: sourceItems });
 
-  return registrySchema.parse({
-    ...sanitized,
-    items: [...sanitized.items, ...docsItems],
-  });
+  return registrySchema.parse(
+    sanitizeRegistry({ ...registry, items: sourceItems })
+  );
 }
 
 function buildShadcn(registryFile: string, outputDir: string) {
@@ -214,7 +206,6 @@ async function validateStagedGeneration(stageDir: string) {
     )
   ) as RegistryPayload;
   const expectedFiles = [
-    'registry-docs.json',
     'registry.json',
     ...(registry.items ?? []).map((item) => `${item.name}.json`),
   ].sort();
@@ -342,7 +333,6 @@ if (recoverToken !== null) {
 }
 
 const checkOnly = process.argv.includes('--check');
-const docsRegistry = await createDocsRegistry();
 const derivedRegistries = Object.fromEntries(
   PLATE_REGISTRY_BASES.map((base) => [
     base,
@@ -354,7 +344,6 @@ const derivedRegistries = Object.fromEntries(
 ) as Record<PlateRegistryBase, Registry>;
 const sourceIdentity = sha256(
   JSON.stringify({
-    docsRegistry,
     registries: derivedRegistries,
     shadcnStyleCommit: SHADCN_STYLE_SOURCE_COMMIT,
   })
@@ -368,19 +357,12 @@ try {
   for (const target of buildTargets) {
     const rawRegistry = createRawRegistry(
       derivedRegistries[target.base],
-      target.kind,
-      target.kind === 'canonical' ? docsRegistry.items : []
+      target.kind
     );
 
     console.info(`Building neutral ${target.base} registry source...`);
     await writeJson(target.registryFile, rawRegistry);
     await buildShadcn(target.registryFile, target.outputDir);
-    if (target.kind === 'canonical') {
-      await writeJson(
-        path.join(target.outputDir, 'registry-docs.json'),
-        docsRegistry
-      );
-    }
   }
 
   console.info('Materializing neutral provider and style overlays...');

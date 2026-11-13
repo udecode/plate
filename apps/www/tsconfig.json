@@ -207,7 +207,6 @@
   "exclude": [
     "node_modules",
     "__registry__",
-    "**/blocks/fumadocs",
     "src/__tests__/package-integration/**/*"
   ]
 }

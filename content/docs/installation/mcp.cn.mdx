@@ -3,7 +3,7 @@ title: MCP 服务器
 description: 在 Plate 中使用 Model Context Protocol。
 ---
 
-将 shadcn MCP 服务器连接到 Plate 注册表，让编码工具访问编辑器模板、插件套件、复制的组件和文档。
+将 shadcn MCP 服务器连接到 Plate 注册表，让编码工具访问编辑器模板、插件套件和复制的组件。
 
 ## 什么是 MCP？
 
@@ -15,7 +15,6 @@ shadcn 服务器读取项目 `components.json` 中配置的注册表。
 配置完成后，编码工具可以：
 
 - 访问我们所有的编辑器模板、插件和 UI 组件
-- 访问我们的完整文档，包括指南和 API 参考
 - 生成具有正确导入和配置的代码
 - 帮助设置完整的编辑器实例或特定功能
 - 保持你的 Plate 配置和组件最新
@@ -24,7 +23,7 @@ shadcn 服务器读取项目 `components.json` 中配置的注册表。
 
 ```bash
 "Set up a Plate editor with basic formatting and table support"
-"Help me understand how the EditorRoot AI plugin works"
+"Add AI commands to my editor"
 "Update my editor components to the latest version"
 ```
 
@@ -34,16 +33,14 @@ Plate 生态系统提供结构化信息，支持 MCP 的工具可以从统一注
 
 - 编辑器模板和插件配置
 - UI 组件及其依赖项
-- 文档文件和迁移指南
-- API 参考和示例
 
 注册表提供各组件的源码和依赖信息，供编码工具检查配置和生成示例。
 
 ## 本地文档
 
-每个 `platejs` 版本都在 `node_modules/platejs/dist/docs/` 中附带与其一致的
-Markdown 文档。按照[本地文档](/docs/installation/docs)让编码 agent 读取这些文档。
-从注册表复制的文档是最新的文档，请对照已安装的版本检查其中的 API。
+注册表提供组件，不提供文档。每个 `platejs` 版本都在
+`node_modules/platejs/dist/docs/` 中附带与其一致的 Markdown 文档。按照
+[本地文档](/docs/installation/docs)让编码 agent 读取这些文档。
 
 ## 设置 MCP
 
@@ -151,7 +148,7 @@ args = ["shadcn@latest", "mcp"]
 
 ## 最佳实践
 
-1.  **本地文档：** 设置本地文档以提供 AI 工具版本特定的上下文。这确保了更准确的帮助，特别是对于较大的项目。
+1.  **本地文档：** 让编码 agent 读取 `node_modules/platejs/dist/docs/` 中与已安装版本一致的文档。参见[本地文档](/docs/installation/docs)。
 2.  **AI 辅助开发：** 让 AI 处理编辑器设置、插件集成和组件添加。
 3.  **手动回退：** 在需要时使用 [shadcn CLI](/docs/installation/plate-ui) 进行手动添加（例如，使用小型模型或过时的文档）。
-4.  **保持更新：** 保持你的 Plate 组件和本地文档同步。当 AI 需要同步复制的 registry 文件时，使用 [Plate UI](/cn/docs/installation/plate-ui) 中的同步流程。
+4.  **保持更新：** 包内文档随 `platejs` 一起更新。当 AI 需要同步复制的 registry 文件时，使用 [Plate UI](/cn/docs/installation/plate-ui) 中的同步流程。

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-13-remove-docs-items",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-13-remove-docs-items.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Remove the docs registry items",
+  "targets": [
+    {
+      "name": "docs",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for docs."
+        }
+      ]
+    },
+    {
+      "name": "fumadocs",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for fumadocs."
+        }
+      ]
+    },
+    {
+      "name": "docs-meta",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for docs-meta."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-13-docs-remove-registry-items-0eb1bd82",
+      "kind": "remove",
+      "summary": "Remove the docs items, including each page's `-docs` item. Each `platejs` release ships docs for its version in `node_modules/platejs/dist/docs/`, so point your coding agent there.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docs", "fumadocs", "docs-meta"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-remove-docs-items",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

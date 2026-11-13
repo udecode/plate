@@ -48,7 +48,6 @@ const getPageTitle = async (page: PlateLLMPage) => {
 const PLATE_REGISTRY_MARKDOWN = `## Registry URLs
 
 - Components index: ${PLATE_REGISTRY_URL}/registry.json
-- Docs index: ${PLATE_REGISTRY_URL}/registry-docs.json
 - Component content: ${PLATE_REGISTRY_URL}/{name}.json
 
 Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in this page can be resolved at \`${PLATE_REGISTRY_URL}/{name}.json\`.

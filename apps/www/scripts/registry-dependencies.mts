@@ -41,11 +41,3 @@ export function toPublicRegistryDependencySpecifier(
 
   return `${normalizeRegistryBaseUrl(registryBaseUrl)}/${plateItemName}.json`;
 }
-
-export function toPlateRegistryDependencySpecifier(dependency: string) {
-  if (dependency.startsWith(PLATE_REGISTRY_NAMESPACE_PREFIX)) {
-    return dependency;
-  }
-
-  return `${PLATE_REGISTRY_NAMESPACE_PREFIX}${dependency}`;
-}
