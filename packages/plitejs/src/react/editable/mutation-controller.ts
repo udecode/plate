@@ -40,11 +40,13 @@ import {
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
 import type { DOMRepairQueue } from './dom-repair-queue';
+import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   type EditableCommand,
   type EditableRepairPolicy,
   getEditableRepairPolicy,
 } from './editing-kernel';
+import { focusNodeSelectionStandIn } from './history-focus';
 import { type NativeGroupingInput, nativeGroupingInput } from './input-history';
 import {
   commitUnderCompositionReceipt,
@@ -845,11 +847,21 @@ export const executeEditableRepairPolicy = ({
 
 export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
   try {
+    const editorElement = ReactEditor.editable(editor);
+
+    if (
+      editorElement &&
+      focusNodeSelectionStandIn(
+        editor,
+        findMountedEditableDOMRuntime(editorElement)
+      )
+    ) {
+      return true;
+    }
+
     const viewSelection = readPliteViewSelection(editor);
 
     if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
-      const editorElement = ReactEditor.editable(editor);
-
       if (!editorElement) return false;
       editorElement.focus({ preventScroll: true });
       return true;

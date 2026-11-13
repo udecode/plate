@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import type { Range } from '../..';
 import type { EditableViewportRuntime } from '../components/editable';
@@ -16,6 +22,7 @@ import { readRuntimeSelectionRange } from './runtime-selection-state';
 export const useEditableRootRuntimeState = ({
   viewportRuntime,
   editor,
+  nodeSelectionFocus = null,
   onDropResult,
   onHistoryReplay,
   onPasteResult,
@@ -23,6 +30,7 @@ export const useEditableRootRuntimeState = ({
 }: {
   viewportRuntime: EditableViewportRuntime | null;
   editor: ReactRuntimeEditor;
+  nodeSelectionFocus?: RefObject<HTMLElement | null> | null;
   onDropResult?: (result: EditableDropResult) => void;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onPasteResult?: (result: EditablePasteResult) => void;
@@ -36,6 +44,7 @@ export const useEditableRootRuntimeState = ({
       new EditableDOMRuntime({
         viewportRuntime,
         editor,
+        nodeSelectionFocus,
         onComposingChange: setIsComposing,
         onDropResult,
         onHistoryReplay,
@@ -50,6 +59,7 @@ export const useEditableRootRuntimeState = ({
   useIsomorphicLayoutEffect(() => {
     runtime.update({
       viewportRuntime,
+      nodeSelectionFocus,
       onComposingChange: setIsComposing,
       onDropResult: onDropResult ?? (() => {}),
       onHistoryReplay: onHistoryReplay ?? (() => {}),
@@ -59,6 +69,7 @@ export const useEditableRootRuntimeState = ({
     });
   }, [
     viewportRuntime,
+    nodeSelectionFocus,
     onDropResult,
     onHistoryReplay,
     onPasteResult,

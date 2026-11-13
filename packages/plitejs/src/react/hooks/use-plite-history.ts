@@ -6,16 +6,12 @@ import {
   type RootKey,
   SelectionApi,
 } from '../..';
-import {
-  type EditableHistoryReplayEvent,
-  type EditableHistoryReplayResult,
-  type EditorHistoryFocusPolicy as EditableEditorHistoryFocusPolicy,
-  getMountedEditableDOMRuntime,
-} from '../editable/editable-dom-runtime';
+import type { EditorHistoryFocusPolicy as EditableEditorHistoryFocusPolicy } from '../editable/editable-dom-runtime';
 import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
+import { applyModelOwnedHistoryIntent } from '../editable/mutation-history';
 import { failInvariant, toInternalRoot } from '../editable/runtime-editor-api';
 import type { Editor } from '../plugin/with-react';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
@@ -32,13 +28,6 @@ export type EditorHistoryFocusPolicy = EditableEditorHistoryFocusPolicy;
 /** Options for history commands and shortcut handling. */
 export type UseEditorHistoryOptions<TRoot extends RootKey = RootKey> = {
   focusPolicy?: EditorHistoryFocusPolicy;
-  /**
-   * Called with the outcome of each undo or redo this controller starts, after
-   * any selection the replay restores. Pass `focusPolicy: 'none'` when this
-   * moves focus, because the `'restore-root'` repair can focus another view
-   * after it runs.
-   */
-  onReplay?: (event: EditableHistoryReplayEvent) => void;
 } & (
   | {
       /** Bind commands and focus to this existing view, including outside an editor root. */
@@ -119,7 +108,6 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
 export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   editor: providedEditor,
   focusPolicy = 'restore-root',
-  onReplay,
   root: fixedRoot,
 }: UseEditorHistoryOptions<TRoot> = {}): EditorHistoryController {
   if (fixedRoot === MAIN_ROOT_KEY) {
@@ -162,17 +150,9 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
 
   const applyHistory = useCallback(
     (direction: HistoryDirection): void => {
-      const runtime = getMountedEditableDOMRuntime(editor);
-      const report = (result: EditableHistoryReplayResult) =>
-        onReplay?.({ direction, result });
-
-      if (runtime) {
-        runtime.dispatchHistory(direction, focusPolicy, report);
-      } else {
-        report({ reason: 'unmounted', status: 'unavailable' });
-      }
+      applyModelOwnedHistoryIntent({ direction, editor, focusPolicy });
     },
-    [editor, focusPolicy, onReplay]
+    [editor, focusPolicy]
   );
   const undo = useCallback(() => applyHistory('undo'), [applyHistory]);
   const redo = useCallback(() => applyHistory('redo'), [applyHistory]);

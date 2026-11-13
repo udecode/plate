@@ -17,7 +17,7 @@ export const attachBoardClipboard = (
       : activeElementOf(host);
   const onCopy = (event: ClipboardEvent) => {
     if (
-      clipboardTarget(event) !== core.focusTarget() ||
+      clipboardTarget(event) !== core.focusTarget.current ||
       !event.clipboardData ||
       core.selectedShapes().length === 0
     ) {
@@ -33,7 +33,7 @@ export const attachBoardClipboard = (
 
     if (
       !(
-        target === core.focusTarget() ||
+        target === core.focusTarget.current ||
         editor.api.dom.hasEditableTarget(target)
       ) ||
       !host.contains(target) ||
@@ -51,7 +51,7 @@ export const attachBoardClipboard = (
   const onPaste = (event: ClipboardEvent) => {
     const target = clipboardTarget(event);
     const onBoard =
-      (!!target && target === core.focusTarget()) ||
+      (!!target && target === core.focusTarget.current) ||
       (!!hover &&
         editor.api.dom.hasEditableTarget(target) &&
         (host.contains(target) || target.contains(host)));
@@ -68,7 +68,7 @@ export const attachBoardClipboard = (
         return;
       }
     } else if (
-      target !== core.focusTarget() ||
+      target !== core.focusTarget.current ||
       core.selectedShapes().length === 0 ||
       !core.paste(event.clipboardData)
     ) {

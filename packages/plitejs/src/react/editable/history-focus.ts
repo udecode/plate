@@ -5,6 +5,7 @@ import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
 } from '../view-selection';
+import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableRepairRequest } from './mutation-controller';
 import { shouldForceRenderAfterModelOwnedHistory } from './mutation-history';
 import {
@@ -50,6 +51,18 @@ export const resolveHistoryFocusEditor = ({
   historyRoot?: RootKey | null;
   selectionRoot?: RootKey | null;
 }) => {
+  if (selectionRoot) {
+    const selectionOwner = getActiveContentRootOwner?.(selectionRoot);
+
+    return (
+      (selectionOwner && isOwnerForRoot(selectionOwner, selectionRoot)
+        ? getContentRootOwnerViewEditor?.(selectionOwner)
+        : null) ??
+      getMountedViewEditor?.(selectionRoot) ??
+      editor
+    );
+  }
+
   const historyOwner = historyRoot
     ? getActiveContentRootOwner?.(historyRoot)
     : null;
@@ -79,12 +92,32 @@ export const resolveHistoryFocusEditor = ({
     );
   }
 
-  const focusRoot =
-    historyRoot && isOwnerForRoot(currentOwner, currentRoot)
-      ? historyRoot
-      : (selectionRoot ?? historyRoot ?? currentRoot ?? fallbackRoot);
+  return (
+    getMountedViewEditor?.(historyRoot ?? currentRoot ?? fallbackRoot) ?? editor
+  );
+};
 
-  return getMountedViewEditor?.(focusRoot) ?? editor;
+export const focusNodeSelectionStandIn = (
+  editor: ReactRuntimeEditor,
+  runtime: EditableDOMRuntime | null
+) => {
+  const element = runtime?.nodeSelectionFocus?.current;
+
+  if (!element?.isConnected) return false;
+
+  const holdsTopLevelBlocks =
+    !readRuntimeSelection(getEditorRuntimeOwner(editor)) ||
+    editor.read(
+      (state) =>
+        getEditorSelectionRoot(editor) === toInternalRoot(state.view.root()) &&
+        state.selection.nodeMode() !== null &&
+        state.selection.nodes().every(([, path]) => path.length === 1)
+    );
+
+  if (!holdsTopLevelBlocks) return false;
+
+  element.focus({ preventScroll: true });
+  return true;
 };
 
 const getLastCommitSingleChangedRoot = (

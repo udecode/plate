@@ -149,7 +149,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     event: KeyboardEvent,
     selected: readonly BoardShapeLayout[]
   ) => {
-    const onTarget = event.target === core.focusTarget();
+    const onTarget = event.target === core.focusTarget.current;
 
     if (onTarget && historyKey(event)) return true;
     if (selected.length > 0) return shapeKey(event, selected);

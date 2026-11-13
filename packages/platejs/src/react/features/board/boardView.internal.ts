@@ -8,7 +8,6 @@ import {
   type Descendant,
   type NodeKey,
   type PluginTransaction,
-  SelectionApi,
 } from '../../../core';
 import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
@@ -23,11 +22,7 @@ import {
   BOARD_SHAPES_SLOT,
   shapeSelectionMode,
 } from '../../../features/board/lib/boardShape.internal';
-import type {
-  EditableHistoryReplayEvent,
-  Editor,
-  EditorHistoryController,
-} from '../../core';
+import type { Editor, EditorHistoryController } from '../../core';
 import { attachBoardClipboard } from './boardClipboard.internal';
 import { attachBoardGestures } from './boardGesture.internal';
 import {
@@ -38,7 +33,6 @@ import {
 } from './boardIndex.internal';
 import { attachBoardKeys, takeTextTab } from './boardKeys.internal';
 import {
-  activeElementOf,
   type BoardMessages,
   type BoardVoice,
   createBoardVoice,
@@ -113,7 +107,7 @@ export type BoardViewCore = Readonly<{
   edit: (key: NodeKey) => void;
   editedShape: () => BoardShapeLayout | null;
   editor: Editor;
-  focusTarget: () => HTMLElement | null;
+  focusTarget: React.RefObject<HTMLElement | null>;
   inView: (layout: BoardShapeLayout) => boolean;
   index: BoardIndex;
   /**
@@ -246,7 +240,9 @@ export const createBoardView = (
   let drawnZoom = state.camera.zoom;
   let layer: HTMLElement | null = null;
   let zoomLayer: HTMLElement | null = null;
-  let focusTarget: HTMLElement | null = null;
+  const focusTarget: React.RefObject<HTMLElement | null> = {
+    current: null,
+  };
   let surface: HTMLElement | null = null;
   let gestures: ReturnType<typeof attachBoardGestures> | null = null;
 
@@ -443,27 +439,13 @@ export const createBoardView = (
   const parentEditable = () =>
     surface?.parentElement?.closest<HTMLElement>('[contenteditable="true"]');
 
-  const mainEditable = () => {
-    let editable = parentEditable();
-    let slot = editable?.closest('[data-editor-content-root-slot]');
-
-    while (slot) {
-      editable = slot.parentElement?.closest<HTMLElement>(
-        '[contenteditable="true"]'
-      );
-      slot = editable?.closest('[data-editor-content-root-slot]');
-    }
-
-    return editable;
-  };
-
   const focusDocument = () => {
     parentEditable()?.focus({ preventScroll: true });
   };
 
   const keepKeysOnBoard = () => {
-    if (!focusTarget) return;
-    focusTarget.focus({ preventScroll: true });
+    if (!focusTarget.current) return;
+    focusTarget.current.focus({ preventScroll: true });
     // Firefox keeps the selection when a non-editable element takes focus.
     editor.api.dom.deselect();
   };
@@ -483,37 +465,6 @@ export const createBoardView = (
     if (!index.byId(id)) index.update();
 
     return index.byId(id)?.key;
-  };
-
-  const refocusAfterReplay = ({ result }: EditableHistoryReplayEvent) => {
-    const range = editor.read.selection();
-
-    if (
-      result.status !== 'applied' ||
-      !range ||
-      !surface?.contains(activeElementOf(surface))
-    ) {
-      return;
-    }
-
-    const held = SelectionApi.root(range);
-    const main = mainEditable();
-    const holder =
-      held &&
-      main?.querySelector<HTMLElement>(`[data-board="${CSS.escape(held)}"]`);
-    const selectsShapes =
-      editor.read.selection.nodeMode() !== null &&
-      editor.read.selection.nodes().every(([, path]) => path.length === 1);
-
-    if (!holder) {
-      main?.focus({ preventScroll: true });
-      return;
-    }
-    holder
-      .querySelector<HTMLElement>(
-        selectsShapes ? ':scope > [data-board-focus]' : SHAPES_EDITABLE
-      )
-      ?.focus({ preventScroll: true });
   };
 
   const write = <T>(change: (tx: PluginTransaction) => T) => {
@@ -612,7 +563,7 @@ export const createBoardView = (
     },
     editedShape,
     editor,
-    focusTarget: () => focusTarget,
+    focusTarget,
     index,
     insertWith,
     inView: ({ box }) => {
@@ -686,7 +637,7 @@ export const createBoardView = (
       node.firstElementChild instanceof HTMLElement
         ? node.firstElementChild
         : null;
-    focusTarget = host.querySelector<HTMLElement>(
+    focusTarget.current = host.querySelector<HTMLElement>(
       ':scope > [data-board-focus]'
     );
     surface = host;
@@ -739,7 +690,7 @@ export const createBoardView = (
       identityAnimation = null;
       layer = null;
       zoomLayer = null;
-      focusTarget = null;
+      focusTarget.current = null;
       surface = null;
       resizeObserver.disconnect();
       host.removeEventListener('wheel', onWheel);
@@ -820,7 +771,7 @@ export const createBoardView = (
         unsubscribeViewState();
       };
     },
-    refocusAfterReplay,
+    focusTarget,
     layoutOf: (id: string) => {
       if (!index.byId(id)) index.update();
 

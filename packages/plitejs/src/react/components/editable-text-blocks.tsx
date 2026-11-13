@@ -220,6 +220,14 @@ export type EditableContentRootSlotOptions = {
   className?: string;
   disableDefaultStyles?: boolean;
   id?: string;
+  /**
+   * The element that takes focus in place of this root's editable when the
+   * editor moves focus here, as after an undo, while there is no selection or
+   * a node selection holds only top-level blocks of this root. Unless the
+   * element is a control, such as a button, the editor reads no keys from it,
+   * so it must handle the keys it needs, such as undo and redo.
+   */
+  nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
   placeholder?: ReactNode;
   readOnly?: boolean;
   spellCheck?: TextareaHTMLAttributes<HTMLDivElement>['spellCheck'];
@@ -491,6 +499,7 @@ function EditableContentRootView({
     className,
     disableDefaultStyles,
     id,
+    nodeSelectionFocus,
     placeholder,
     spellCheck,
     style,
@@ -604,9 +613,16 @@ function EditableContentRootView({
       suppressContentEditableWarning
     >
       {viewport ? (
-        <EditableContentRootWindow {...editableProps} viewport={viewport} />
+        <EditableContentRootWindow
+          {...editableProps}
+          nodeSelectionFocus={nodeSelectionFocus}
+          viewport={viewport}
+        />
       ) : (
-        <EditableInner {...editableProps} />
+        <EditableInner
+          {...editableProps}
+          nodeSelectionFocus={nodeSelectionFocus}
+        />
       )}
     </div>
   );
@@ -615,7 +631,10 @@ function EditableContentRootView({
 function EditableContentRootWindow({
   viewport: { mountedKeys, reveal },
   ...props
-}: EditableProps & { viewport: EditableContentRootViewport }) {
+}: EditableProps & {
+  nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
+  viewport: EditableContentRootViewport;
+}) {
   const topLevelNodeKeys = useRootNodeKeys();
   const selectionPaths = useSelectionPaths(true);
   const viewportPlan = React.useMemo(
@@ -1249,11 +1268,13 @@ const EditableInner = <TElement extends ElementNode>({
   spellCheck,
   style,
   elementLayouts,
+  nodeSelectionFocus,
   viewLines = null,
   viewportPlan = null,
   ...callerProps
 }: EditableProps<TElement> & {
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
+  nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
   viewLines?: ViewLines | null;
   viewportPlan?: EditableViewportPlan | null;
 }) => {
@@ -1540,6 +1561,7 @@ const EditableInner = <TElement extends ElementNode>({
               }
               id={id}
               ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+              nodeSelectionFocus={nodeSelectionFocus}
               onBeforeInput={onBeforeInput}
               onBlurCapture={handleBlurCapture}
               onDOMBeforeInput={onDOMBeforeInput}

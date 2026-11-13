@@ -206,13 +206,6 @@ settlement. A throw from `onHistoryReplay`, or from that selection and focus
 repair, reaches the same sink with `phase: "observer"`, and the other steps
 still run.
 
-Pass `onReplay` to run code after each undo or redo the controller starts. It
-receives the same event as `onHistoryReplay`, after any selection the replay
-restores. A callback that moves focus should check that focus is still where
-the undo started, and pass `focusPolicy: "none"`, because the default repair
-can focus another view after the callback runs. With no mounted editor surface,
-it reports an `unavailable` result with reason `unmounted`.
-
 ## Runtime and root hooks
 
 Use these when one editor owns multiple roots or external chrome.

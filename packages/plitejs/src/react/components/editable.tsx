@@ -296,6 +296,7 @@ export const EditableDOMRoot = (
     deferNativeTextInputRepair?: boolean;
     viewportRuntime?: EditableViewportRuntime | null;
     ignoreBlankEditableRootClicks?: boolean;
+    nodeSelectionFocus?: React.RefObject<HTMLElement | null>;
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
     onKeyDown?: EditableKeyDownHandler;
@@ -319,6 +320,7 @@ export const EditableDOMRoot = (
     deferNativeTextInputRepair = false,
     viewportRuntime = null,
     ignoreBlankEditableRootClicks = false,
+    nodeSelectionFocus,
     onKeyDown: propsOnKeyDown,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onHistoryReplay,
@@ -351,6 +353,7 @@ export const EditableDOMRoot = (
     forwardedRef,
     deferNativeTextInputRepair,
     viewportRuntime,
+    nodeSelectionFocus,
     onDOMBeforeInput: propsOnDOMBeforeInput,
     onHistoryReplay,
     onDropResult,

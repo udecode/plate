@@ -4,6 +4,7 @@ import {
   useCallback,
   useMemo,
   useSyncExternalStore,
+  type RefObject,
 } from 'react';
 
 import type { DOMRange } from '../../dom';
@@ -25,7 +26,10 @@ import type {
   EditableDropResult,
   EditablePasteResult,
 } from './editable-dom-runtime';
-import { getModelOwnedHistoryFocusRepair } from './history-focus';
+import {
+  focusNodeSelectionStandIn,
+  getModelOwnedHistoryFocusRepair,
+} from './history-focus';
 import { useEditableRootRef } from './input-router';
 import {
   beginEditableNativeSelectionImport,
@@ -102,6 +106,7 @@ export const useEditableRootRuntime = ({
   editor,
   forwardedRef,
   viewportRuntime,
+  nodeSelectionFocus,
   onDOMBeforeInput,
   onHistoryReplay,
   onDropResult,
@@ -116,6 +121,7 @@ export const useEditableRootRuntime = ({
   editor: ReactRuntimeEditor;
   forwardedRef?: ForwardedRef<HTMLDivElement>;
   viewportRuntime: EditableViewportRuntime | null;
+  nodeSelectionFocus?: RefObject<HTMLElement | null> | null;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onDropResult?: (result: EditableDropResult) => void;
@@ -143,6 +149,7 @@ export const useEditableRootRuntime = ({
   const rootRuntimeState = useEditableRootRuntimeState({
     viewportRuntime,
     editor,
+    nodeSelectionFocus,
     onDropResult,
     onHistoryReplay,
     onPasteResult,
@@ -242,7 +249,10 @@ export const useEditableRootRuntime = ({
       repairRuntime.requestEditableRepair(next.repair, {
         focusEditor: next.focusEditor,
       });
-    } else if (!runtime.externalText.focusSelection()) {
+    } else if (
+      !focusNodeSelectionStandIn(editor, runtime) &&
+      !runtime.externalText.focusSelection()
+    ) {
       runtime.rootElement?.focus({ preventScroll: true });
       runtime.requestSelectionExportAfterDOMCommit();
     }

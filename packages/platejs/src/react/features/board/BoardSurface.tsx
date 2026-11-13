@@ -74,11 +74,7 @@ export function BoardSurface({
     (layer: HTMLDivElement | null) => (layer ? view.attach(layer) : undefined),
     [view]
   );
-  const history = useEditorHistory({
-    editor: mounted,
-    focusPolicy: 'none',
-    onReplay: view.refocusAfterReplay,
-  });
+  const history = useEditorHistory({ editor: mounted });
 
   React.useLayoutEffect(
     () => view.renderWith({ history, messages }),
@@ -126,6 +122,7 @@ export function BoardSurface({
           >
             {props.slots.contentRoot(BOARD_SHAPES_SLOT, {
               ariaLabel: messages.label,
+              nodeSelectionFocus: view.focusTarget,
               tabIndex: -1,
               viewport,
             })}
