@@ -4,9 +4,11 @@ import {
   BoardArrowPlugin,
   BoardFramePlugin,
   BoardGeoPlugin,
+  type BoardMessages,
   BoardNotePlugin,
   BoardPlugin,
   BoardShape,
+  type BoardShapeDescription,
   BoardStrokePlugin,
   BoardSurface,
   type BoardTool,
@@ -30,6 +32,47 @@ const TOOLS: ReadonlyArray<
   { key: 'F', label: 'Frame', tool: 'frame' },
   { key: 'P', label: 'Pen', tool: 'pen' },
 ];
+
+const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
+  arrow: 'Arrow',
+  frame: 'Frame',
+  geo: 'Shape',
+  note: 'Note',
+  shape: 'Shape',
+  stroke: 'Line',
+};
+
+const TOOL_NAMES: Readonly<Record<BoardTool, string>> = {
+  arrow: 'Arrow tool',
+  frame: 'Frame tool',
+  geo: 'Shape tool',
+  note: 'Note tool',
+  pen: 'Pen tool',
+  select: 'Select tool',
+};
+
+const nameOf = (shape: BoardShapeDescription): string => {
+  if (shape.kind === 'arrow') {
+    const end = (side: BoardShapeDescription | null) =>
+      side ? nameOf(side) : 'nothing';
+
+    const ends = `Arrow from ${end(shape.ends.start)} to ${end(shape.ends.end)}`;
+
+    return shape.text ? `${shape.text}, ${ends}` : ends;
+  }
+
+  return shape.text ? `${shape.text}, ${KINDS[shape.kind]}` : KINDS[shape.kind];
+};
+
+const boardMessages: BoardMessages = {
+  label: 'Board',
+  shape: (shape, { position, total }) =>
+    `${nameOf(shape)}. ${position} of ${total}`,
+  shapes: (count) => `${count} shapes selected`,
+  tool: (tool) => TOOL_NAMES[tool],
+  removed: (count) =>
+    count === 1 ? 'Shape deleted' : `${count} shapes deleted`,
+};
 
 export function BoardToolbar() {
   const tool = useBoardView((view) => view.tool);
@@ -69,6 +112,7 @@ export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
         className:
           'my-4 rounded-lg border bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px] data-selected:ring-2 data-selected:ring-ring',
       }}
+      messages={boardMessages}
       toolbar={<BoardToolbar />}
     />
   );

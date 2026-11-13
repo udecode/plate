@@ -1,5 +1,6 @@
 import type { BoardPlace } from '../../../features/board/lib';
 import type { BoardViewCore } from './boardView.internal';
+import { activeElementOf } from './boardVoice.internal';
 
 /**
  * The board's cut and paste: a cut of selected shapes runs the board's
@@ -18,7 +19,7 @@ export const attachBoardClipboard = (
   const clipboardTarget = (event: ClipboardEvent) =>
     editor.api.dom.hasEditableTarget(event.target)
       ? event.target
-      : host.ownerDocument.activeElement;
+      : activeElementOf(host);
   const onCut = (event: ClipboardEvent) => {
     const shapes = core.selectedShapes();
     const target = clipboardTarget(event);

@@ -16,6 +16,7 @@ import {
   createBoardView,
   useBoardViewContext,
 } from './boardView.internal';
+import type { BoardMessages } from './boardVoice.internal';
 
 export type {
   BoardCamera,
@@ -24,6 +25,10 @@ export type {
   BoardViewActions,
   BoardViewState,
 } from './boardView.internal';
+export type {
+  BoardMessages,
+  BoardShapeDescription,
+} from './boardVoice.internal';
 
 /**
  * A board's mounted view: a clipped surface that draws the shapes near its
@@ -35,18 +40,24 @@ export type {
  * `useBoardActions` reach this view. A read-only view or a preview pans and
  * selects but never writes, and a gesture under way when the view turns so
  * ends with no write. The board shows `data-selected` while a selection of
- * its document covers it.
+ * its document covers it. `messages` holds every word the board says, and
+ * the view whose surface holds focus says one message per action into the
+ * editor's status region.
  */
 export function BoardSurface({
+  messages,
   toolbar,
   ...props
-}: EditorElementProps<typeof BoardPlugin> & { toolbar?: React.ReactNode }) {
+}: EditorElementProps<typeof BoardPlugin> & {
+  messages: BoardMessages;
+  toolbar?: React.ReactNode;
+}) {
   const { element } = props;
   const editor = useModelEditor();
   const mounted = useEditor();
   const selected = useElementSelected();
   const [view] = React.useState(() =>
-    createBoardView(editor, mounted, element)
+    createBoardView(editor, mounted, element, messages)
   );
   const viewport = React.useSyncExternalStore(
     view.subscribeViewport,
@@ -58,6 +69,7 @@ export function BoardSurface({
     [view]
   );
 
+  React.useLayoutEffect(() => view.speakWith(messages), [view, messages]);
   React.useEffect(() => view.connect(), [view]);
 
   return (
@@ -97,7 +109,7 @@ export function BoardSurface({
             }}
           >
             {props.slots.contentRoot(BOARD_SHAPES_SLOT, {
-              ariaLabel: 'Board',
+              ariaLabel: messages.label,
               viewport,
             })}
           </div>

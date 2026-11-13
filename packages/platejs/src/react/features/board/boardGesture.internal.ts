@@ -233,6 +233,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
     if (!done) return false;
     gesture = null;
+    core.voice.release();
     if (done.kind === 'move') {
       for (const shape of done.elements) {
         if (done.copy) shape.remove();
@@ -273,6 +274,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
     if (!done || done.kind === 'pan') {
       gesture = null;
+      core.voice.release();
 
       return;
     }
@@ -533,6 +535,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       }
     }
 
+    if (gesture) core.voice.hold();
     event.preventDefault();
     event.stopPropagation();
     host.setPointerCapture(pointerId);

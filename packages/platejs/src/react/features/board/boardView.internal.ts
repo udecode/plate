@@ -30,6 +30,11 @@ import {
   createBoardIndex,
 } from './boardIndex.internal';
 import { attachBoardKeys } from './boardKeys.internal';
+import {
+  type BoardMessages,
+  type BoardVoice,
+  createBoardVoice,
+} from './boardVoice.internal';
 
 export type { BoardArrowPath, BoardShapeLayout } from './boardIndex.internal';
 
@@ -123,6 +128,7 @@ export type BoardViewCore = Readonly<{
   shapeAt: (at: BoardPlace) => BoardShapeLayout | undefined;
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
+  voice: Pick<BoardVoice, 'hold' | 'release'>;
   writable: () => boolean;
   /**
    * Run `change` as one undo step when the view can write, and return its
@@ -154,7 +160,8 @@ const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
 export const createBoardView = (
   editor: Editor,
   mounted: Editor,
-  element: Element
+  element: Element,
+  initialMessages: BoardMessages
 ) => {
   const keyOf = (node: Descendant) => editor.read((state) => state.key(node));
   const board = keyOf(element);
@@ -178,10 +185,11 @@ export const createBoardView = (
     for (const listener of stateListeners) listener();
   };
 
+  const members = () => boards.read.shapes(board);
   const index = createBoardIndex({
     children: () => rootView.read.children(),
     isVoid: (node) => editor.read.schema.isVoid(node),
-    members: () => boards.read.shapes(board),
+    members,
   });
   let shownVersion = 0;
   let mountedKeys: ReadonlySet<NodeKey> = new Set();
@@ -343,6 +351,16 @@ export const createBoardView = (
     });
   };
 
+  let messages = initialMessages;
+  const voice = createBoardVoice({
+    editor,
+    index,
+    members,
+    messages: () => messages,
+    selectedShapes,
+    surface: () => surface,
+  });
+
   const writable = () => {
     const authored = readAuthoredView(mounted);
 
@@ -414,6 +432,7 @@ export const createBoardView = (
   };
 
   const commit = (change: BoardWrite) => {
+    const before = boards.read.shapes(board).length;
     const written = write((tx) => {
       const commands = tx.plugin(BaseBoardPlugin);
 
@@ -430,7 +449,11 @@ export const createBoardView = (
       return true;
     });
 
-    if (written && change.kind === 'remove') keepKeysOnBoard();
+    if (!written) return;
+    if (change.kind === 'remove') keepKeysOnBoard();
+    if (change.kind === 'remove' || change.kind === 'removeFrame') {
+      voice.removed(before - boards.read.shapes(board).length);
+    }
   };
 
   const insertWith = (
@@ -523,10 +546,14 @@ export const createBoardView = (
     },
     selectedShapes,
     setCamera,
-    setTool: (tool) => setState({ tool }),
+    setTool: (tool) => {
+      setState({ tool });
+      voice.tool(tool);
+    },
     shapeAt: (at) => index.shapeAt(at, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
+    voice,
     writable,
     write,
     zoomLayer: () => zoomLayer,
@@ -653,6 +680,7 @@ export const createBoardView = (
         if (changed.hasAny('selection') || state.selectedFrame !== null) {
           showSelectedFrame();
         }
+        if (changed.hasAny('selection')) voice.selectionChanged();
       });
 
       const unsubscribeViewState = subscribeEditorViewState(mounted, () => {
@@ -675,6 +703,9 @@ export const createBoardView = (
       return index.layout(key);
     },
     root,
+    speakWith: (next: BoardMessages) => {
+      messages = next;
+    },
     state: () => state,
     strokePathOf: index.strokePathOf,
     subscribe: subscribeTo(stateListeners),

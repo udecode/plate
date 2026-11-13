@@ -15,6 +15,7 @@ import {
   BoardArrowPlugin,
   BoardFramePlugin,
   BoardGeoPlugin,
+  type BoardMessages,
   BoardNotePlugin,
   BoardPlugin,
   BoardShape,
@@ -38,6 +39,15 @@ import {
 } from './stub-board';
 
 type Instruments = ReturnType<typeof createInstruments>;
+
+const MESSAGES: BoardMessages = {
+  label: 'Board',
+  removed: (count) => `${count} removed`,
+  shape: ({ kind, text }, { position, total }) =>
+    `${text || kind}. ${position} of ${total}`,
+  shapes: (count) => `${count} shapes`,
+  tool: (tool) => tool,
+};
 
 type Handle = {
   dragFrame: string | null;
@@ -483,6 +493,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
       <BoardSurface
         {...props}
         attributes={{ ...props.attributes, 'data-render-arm': arm }}
+        messages={MESSAGES}
         slots={slots}
         toolbar={<ViewProbe handleRef={handleRef} />}
       />

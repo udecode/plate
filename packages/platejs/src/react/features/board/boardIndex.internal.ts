@@ -354,6 +354,9 @@ export const createBoardIndex = ({
     }
   };
 
+  const drawnTo = (end: BoardArrowEnd) =>
+    isBoundArrowEnd(end) && targets.has(end.shape) ? end.shape : undefined;
+
   return {
     arrowPathOf: (key: NodeKey) => {
       if (!arrows.has(key)) update();
@@ -369,6 +372,7 @@ export const createBoardIndex = ({
       previewed = new Map();
       notifyArrows(keys);
     },
+    drawnTo,
     entries: () => entries,
     layout: (key: NodeKey) => layouts.get(key),
     layouts: () => layouts.values(),
@@ -397,9 +401,9 @@ export const createBoardIndex = ({
       }
 
       const shift = (end: BoardArrowEnd) =>
-        isBoundArrowEnd(end) && targets.has(end.shape)
-          ? end
-          : { x: end.x + delta.x, y: end.y + delta.y };
+        drawnTo(end) === undefined
+          ? { x: end.x + delta.x, y: end.y + delta.y }
+          : end;
       const next = new Map<NodeKey, BoardArrowPath>();
 
       for (const key of reached) {
