@@ -4,7 +4,6 @@ import {
   judgeSpan,
   viewOfChange,
 } from '../../core/change/effect-ledger';
-import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { getCompiledPropertyMergeStrategy } from '../../core/schema-compiler';
@@ -26,6 +25,7 @@ import {
   digestOf,
   documentOf,
   rebaseOver,
+  sameDocument,
   schemaFingerprintOf,
 } from '../protocol';
 import { type MalformedSubmit, readClientMessage } from './client-message';
@@ -35,12 +35,20 @@ import {
   type SyncCover,
   type SyncGrant,
   type SyncStep,
+  type SyncTakeBack,
 } from './grant';
 import { ownersToBind, seedOwnersOf } from './owners';
 import type { ChangeOwner, StoredEntry, SyncStorage } from './storage';
+import {
+  type LaterEntry,
+  putAllIndexOf,
+  putEntryAt,
+  takeBack,
+} from './take-back';
 
 const IDLE_MS = 60_000;
 const CHECKPOINT_EVERY = 256;
+const TAKE_BACK_SCAN = 256;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 const REMOTE = { tags: ['collaboration', 'history-skip'] } as const;
@@ -151,9 +159,6 @@ const entryOf = ({ change, seq, version, writer }: StoredEntry): SyncEntry => ({
 
 const valueOf = (editor: AnyEditor): JsonEditorValue =>
   documentOf(editor.read.value());
-
-const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
-  jsonEqual(documentOf(left), documentOf(right));
 
 const servesSchema = (room: LoadedRoom, schema: string) =>
   room.serving && schema === room.schema;
@@ -346,7 +351,7 @@ export const createSyncServer = <
   > => {
     if (!cover) return 'invalid';
     if (cover.kind === 'stale') return 'lost';
-    if (cover.kind === 'refused') return 'grant';
+    if (cover.kind === 'refused' || cover.kind === 'takes-back') return 'grant';
 
     const before = head ?? step.before;
     const logged = cover.change;
@@ -367,6 +372,82 @@ export const createSyncServer = <
 
     return owners
       ? ({ ...own, owners, structure: cover.structure === true } as CoveredStep)
+      : 'grant';
+  };
+
+  const withdrawsOwn = async (
+    room: LoadedRoom,
+    rejected: readonly string[] | null,
+    actor: string
+  ) => {
+    if (!rejected) return false;
+
+    const owners = await storage.owners(room.name, rejected);
+
+    return rejected.every((change) =>
+      owners.some((owner) => owner.change === change && owner.author === actor)
+    );
+  };
+
+  const takenBackStepOf = async (
+    room: LoadedRoom,
+    cover: SyncTakeBack,
+    batch: SyncStep,
+    grant: SyncGrant,
+    writer: string
+  ): Promise<CoveredStep | Extract<SyncSubmitRefusal, 'grant' | 'lost'>> => {
+    if (
+      !grant.decide &&
+      !(await withdrawsOwn(room, cover.rejected, grant.actor))
+    ) {
+      return 'grant';
+    }
+
+    const from = Math.max(room.floor, room.head - TAKE_BACK_SCAN);
+    const { baseValue, gap } = await storedHistory(room.name, from);
+    const index = putAllIndexOf(
+      gap.map(({ change }) => change),
+      cover.set,
+      cover.verdicts
+    );
+
+    if (index === null || gap[index].writer !== writer) return 'grant';
+
+    const entries: LaterEntry[] = [];
+    let value = baseValue;
+
+    for (const { change, writer: by } of gap) {
+      const after = change.apply(value);
+
+      entries.push({ after, before: value, change, writer: by });
+      value = after;
+    }
+
+    const change = takeBack(
+      putEntryAt(entries, index),
+      room.value,
+      getCompiledEditorSchema(room.editor)
+    );
+
+    if (!change) return 'lost';
+
+    const after = attempt(() => change.apply(room.value));
+
+    if (!after || !sameDocument(after, batch.after)) return 'grant';
+
+    const changes = [...new Set(cover.claims.map((claim) => claim.change))];
+    const bound =
+      changes.length === 0 ? [] : await storage.owners(room.name, changes);
+    const owners = ownersToBind(cover.claims, bound, grant.actor);
+
+    return owners
+      ? ({
+          after,
+          before: room.value,
+          change,
+          owners,
+          structure: false,
+        } as CoveredStep)
       : 'grant';
   };
 
@@ -487,19 +568,25 @@ export const createSyncServer = <
     const cover = attempt(() =>
       authored.covers(own, member.grant, schema, head)
     );
-    const judged = cover?.kind === 'at-head' ? rebased() : own;
+    const judged =
+      cover?.kind === 'at-head' || (cover?.kind === 'takes-back' && head)
+        ? rebased()
+        : own;
 
     if (typeof judged === 'string') return refuse(judged);
 
-    const covered = await coveredStepOf(
-      room,
-      judged,
-      member.grant,
-      cover?.kind === 'at-head'
-        ? attempt(() => authored.covers(judged, member.grant, schema))
-        : cover,
-      head
-    );
+    const covered =
+      cover?.kind === 'takes-back'
+        ? await takenBackStepOf(room, cover, judged, member.grant, writer)
+        : await coveredStepOf(
+            room,
+            judged,
+            member.grant,
+            cover?.kind === 'at-head'
+              ? attempt(() => authored.covers(judged, member.grant, schema))
+              : cover,
+            head
+          );
 
     if (typeof covered === 'string') return refuse(covered);
     if (covered.structure && gap.length > 0) {

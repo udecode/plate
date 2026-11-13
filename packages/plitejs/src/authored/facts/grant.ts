@@ -1,11 +1,16 @@
 import type { DocumentChange } from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
-import { getRecordEntries, getValueRecords } from '../../core/record-store';
+import {
+  getRecord,
+  getRecordEntries,
+  getValueRecords,
+} from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import type {
   ChangeClaim,
   SyncAtHead,
   SyncGrant,
+  SyncTakeBack,
 } from '../../sync/server/grant';
 import {
   type DecisionRequest,
@@ -37,6 +42,7 @@ import {
   replaysWithdrawal,
   type VerdictBatch,
   verdictBatchOf,
+  type VerdictDrops,
 } from './replay';
 import {
   type AuthoredStep,
@@ -51,9 +57,10 @@ import {
 
 export type Refusal =
   | Readonly<{ kind: 'uncovered'; write: AuthoredWrite }>
-  /** The batch drops a verdict record, as an undo or a redo does. */
-  | Readonly<{ kind: 'reopens' }>
-  /** Its verdict records name an Editing change, two tokens or two verdicts. */
+  /**
+   * It puts and drops verdict records, drops one its base lacks, or names an
+   * Editing change, two tokens or two verdicts.
+   */
   | Readonly<{ kind: 'unreadable' }>
   /** No request its verdict records name gives its result at its base. */
   | Readonly<{ kind: 'unreplayed' }>;
@@ -66,7 +73,8 @@ export type Cover =
       structure?: true;
     }>
   | Readonly<{ kind: 'refused'; why: Refusal }>
-  | Readonly<{ kind: 'stale' }>;
+  | Readonly<{ kind: 'stale' }>
+  | SyncTakeBack;
 
 type Kind = AuthoredWrite['kind'];
 type OrdinaryKind = Exclude<Kind, 'verdict'>;
@@ -519,6 +527,34 @@ const ordinaryCover = (
     : { kind: 'refused', why: { kind: 'uncovered', write: uncovered } };
 };
 
+// The room covers an undo only as its own take-back of the entry that put
+// these records, so the batch's bytes are compared, not judged write by write.
+const takeBackCover = (step: AuthoredStep, { drops }: VerdictDrops): Cover => {
+  const store = getValueRecords(step.before);
+  const records = drops.flatMap((id) => {
+    const json = getRecord(store, VERDICTS, id);
+    const record = json === undefined ? null : parseVerdict(id, json);
+
+    return record ? [record] : [];
+  });
+
+  if (records.length < drops.length) {
+    return { kind: 'refused', why: { kind: 'unreadable' } };
+  }
+
+  const rejected = records.every(({ verdict }) => verdict === 'reject')
+    ? [...new Set(records.map(({ member }) => member.change))]
+    : null;
+
+  return {
+    claims: changeClaimsOf(authoredWritesOf(step).claims),
+    kind: 'takes-back',
+    rejected,
+    set: VERDICTS,
+    verdicts: drops,
+  };
+};
+
 export function grantCovers(
   step: AuthoredStep,
   grant: SyncGrant,
@@ -546,6 +582,7 @@ export function grantCovers(
   if (typeof batch === 'string') {
     return { kind: 'refused', why: { kind: batch } };
   }
+  if ('drops' in batch) return takeBackCover(step, batch);
 
   return decisionCover(step, batch, grant, schema, head);
 }

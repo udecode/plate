@@ -28,6 +28,8 @@ export type VerdictBatch = Readonly<{
   token: string;
 }>;
 
+export type VerdictDrops = Readonly<{ drops: readonly [string, ...string[]] }>;
+
 type DecidedValue = Extract<Decided, Readonly<{ status: 'decided' }>>;
 
 export type Replay = Readonly<{
@@ -46,24 +48,32 @@ export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
   jsonEqual(documentOf(left), documentOf(right));
 
 /**
- * `null` when the batch writes no verdict record. `'reopens'` when it drops
- * one, which only an undo or redo does. `'unreadable'` when it names an
- * Editing change, two tokens or two verdicts on one change.
+ * `null` when the batch writes no verdict record, and the ids it drops when it
+ * only drops them, as an undo does. `'unreadable'` when it both puts and drops
+ * them, or names an Editing change, two tokens or two verdicts on one change.
  */
 export const verdictBatchOf = (
   change: DocumentChange
-): VerdictBatch | 'reopens' | 'unreadable' | null => {
+): VerdictBatch | VerdictDrops | 'unreadable' | null => {
   const ops = getInternalDocumentChangeRecords(change).get(VERDICTS);
 
   if (!ops || ops.size === 0) return null;
+
+  const [first, ...rest] = [...ops].flatMap(([id, json]) =>
+    json === null ? [id] : []
+  );
+
+  if (first !== undefined) {
+    return rest.length + 1 === ops.size
+      ? { drops: [first, ...rest] }
+      : 'unreadable';
+  }
 
   const actions = new Map<string, Verdict>();
   const tokens = new Set<string>();
 
   for (const [id, json] of ops) {
-    if (json === null) return 'reopens';
-
-    const record = parseVerdict(id, json);
+    const record = json === null ? null : parseVerdict(id, json);
     const { change: decided } = record?.member ?? {};
 
     if (

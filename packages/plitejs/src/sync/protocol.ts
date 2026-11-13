@@ -3,6 +3,7 @@ import {
   type DocumentChangeJson,
   rebaseDocumentChange,
 } from '../core/change/document-change';
+import { jsonEqual } from '../core/change/json';
 import { hasRootNames } from '../core/change/lazy-root';
 import type { JsonEditorValue } from '../core/change/tokens';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
@@ -136,6 +137,9 @@ export const documentOf = (value: JsonEditorValue): JsonEditorValue => {
     ...(Object.keys(records).length > 0 ? { records } : {}),
   };
 };
+
+export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
+  jsonEqual(documentOf(left), documentOf(right));
 
 /**
  * Rebases `change` over the accepted changes one at a time, from the value

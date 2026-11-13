@@ -36,7 +36,25 @@ export type SyncCover =
     }>
   | Readonly<{ kind: 'refused' }>
   /** A decided change changed between the batch's base and the head. */
-  | Readonly<{ kind: 'stale' }>;
+  | Readonly<{ kind: 'stale' }>
+  | SyncTakeBack;
+
+/**
+ * The batch only drops verdict records, so the room covers it only as its own
+ * take-back of the writer's entry that put every one of them.
+ */
+export type SyncTakeBack = Readonly<{
+  claims: readonly ChangeClaim[];
+  kind: 'takes-back';
+  /**
+   * The changes the dropped verdicts reject, or null when one accepts. When
+   * the writer's actor owns each, the undo is a withdrawal's.
+   */
+  rejected: readonly string[] | null;
+  /** The record set that holds the dropped verdicts. */
+  set: string;
+  verdicts: readonly [string, ...string[]];
+}>;
 
 /**
  * A batch that writes verdict records is judged at its base, with `head` the
