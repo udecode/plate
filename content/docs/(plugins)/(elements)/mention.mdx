@@ -116,7 +116,6 @@ Call the mention update from the item's `onSelect`. The popup first removes the 
 
 ```tsx
 <InlineComboboxItem
-  value={item.label}
   onSelect={(tx) => {
     tx.plugin(MentionPlugin).insert({
       label: item.label,
@@ -193,4 +192,4 @@ Parsing reads `mention:` links back into mention nodes. Other links such as `[@d
 | `MentionPlugin` | `platejs/react` | React mention plugin. |
 | `editor.plugin(MentionPlugin).update.insert({ ref, label? })` | `BaseMentionPlugin` update | Inserts the mention node at the current selection. |
 | `useCombobox` | `platejs/combobox/react` | Opens the popup on a typed `@` and completes the query. |
-| `inline-combobox` | Copied registry UI | Handles the listbox, keyboard navigation and filtering for the mention popup. |
+| `inline-combobox` | Copied registry UI | Handles the listbox and keyboard navigation for the mention popup, and exports the `rankOptions` that orders its items. |

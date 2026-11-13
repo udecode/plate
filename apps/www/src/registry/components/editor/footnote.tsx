@@ -429,11 +429,7 @@ export function FootnoteDefinitionElement(
 
 export function FootnoteCombobox({ editableRef }: EditableSiblingProps) {
   return (
-    <InlineCombobox
-      editableRef={editableRef}
-      filter={false}
-      plugin={FootnotePlugin}
-    >
+    <InlineCombobox editableRef={editableRef} plugin={FootnotePlugin}>
       <FootnoteComboboxContent />
     </InlineCombobox>
   );
@@ -474,7 +470,6 @@ function FootnoteComboboxContent() {
       <InlineComboboxGroup>
         {showCreateOption && (!query || numericQuery) ? (
           <InlineComboboxItem
-            value={`new-${proposedRef}`}
             onSelect={(tx) => {
               if (
                 numericQuery &&
@@ -502,7 +497,6 @@ function FootnoteComboboxContent() {
         {filteredFootnotes.map(({ ref, text }) => (
           <InlineComboboxItem
             key={ref}
-            value={`footnote-${ref}`}
             onSelect={(tx) => {
               tx.plugin(FootnotePlugin).insert({ focusDefinition: false, ref });
             }}

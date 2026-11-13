@@ -77,7 +77,7 @@ export const HashtagPlugin = definePlugin('hashtag', {
 
 ### Create the popup
 
-The popup renders next to the editor and reads the query from the text after the trigger:
+The popup renders next to the editor. Its content reads the query typed after the trigger and ranks the tags with `rankOptions`, best match first:
 
 ```tsx showLineNumbers
 import {
@@ -90,29 +90,40 @@ import {
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxItem,
+  rankOptions,
+  useInlineComboboxQuery,
 } from '@/components/editor/inline-combobox';
 import { HashtagPlugin } from './hashtag-plugin';
 
-const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
+const tags = ['Frontend', 'Backend', 'Design', 'Urgent'].map((label) => ({
+  label,
+}));
 
 export function HashtagCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
-      <InlineComboboxContent>
-        <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
-        {tags.map((tag) => (
-          <InlineComboboxItem
-            key={tag}
-            value={tag}
-            onSelect={(tx) => {
-              tx.plugin(HashtagPlugin).insert({ value: tag });
-            }}
-          >
-            #{tag}
-          </InlineComboboxItem>
-        ))}
-      </InlineComboboxContent>
+      <HashtagComboboxContent />
     </InlineCombobox>
+  );
+}
+
+function HashtagComboboxContent() {
+  const query = useInlineComboboxQuery();
+
+  return (
+    <InlineComboboxContent>
+      <InlineComboboxEmpty>No tags found</InlineComboboxEmpty>
+      {rankOptions(tags, query).map(({ label }) => (
+        <InlineComboboxItem
+          key={label}
+          onSelect={(tx) => {
+            tx.plugin(HashtagPlugin).insert({ value: label });
+          }}
+        >
+          #{label}
+        </InlineComboboxItem>
+      ))}
+    </InlineComboboxContent>
   );
 }
 
@@ -236,6 +247,6 @@ While a typed trigger's query is open, the editor reports itself as a combobox. 
 
 ## Registry UI
 
-The copied `inline-combobox` component wraps `useCombobox` with an Ariakit listbox. It owns filtering, the active option and the popup position at the trigger. Insert the chosen feature in `InlineComboboxItem.onSelect`, using its inferred transaction, and return the command's result, or `false` when the option is no longer available. Read the query inside the popup with `useInlineComboboxQuery()`. Use `onClick` for a UI action after a successful completion, such as opening another popover.
+The copied `inline-combobox` component wraps `useCombobox` with an Ariakit listbox. It owns the active option and the popup position at the trigger. Inside the popup, read the query with `useInlineComboboxQuery()` and pass it with the menu's options to `rankOptions(options, query)`. It returns the options that match, best match first: an exact label or keyword, then a label that starts with the query, then a later word of the label, then a keyword or the group. Equal matches keep the list's order, and a blank query keeps every option. Insert the chosen feature in `InlineComboboxItem.onSelect`, using its inferred transaction, and return the command's result, or `false` when the option is no longer available. Use `onClick` for a UI action after a successful completion, such as opening another popover.
 
 <ComponentSource name="inline-combobox" />

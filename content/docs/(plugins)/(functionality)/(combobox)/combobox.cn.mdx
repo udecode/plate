@@ -77,7 +77,7 @@ export const HashtagPlugin = definePlugin('hashtag', {
 
 ### 创建弹出框
 
-弹出框渲染在编辑器旁边，并从触发字符之后的文本读取查询：
+弹出框渲染在编辑器旁边。其内容读取触发字符之后输入的查询，并用 `rankOptions` 对标签排序，最佳匹配排在最前：
 
 ```tsx showLineNumbers
 import {
@@ -90,29 +90,40 @@ import {
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxItem,
+  rankOptions,
+  useInlineComboboxQuery,
 } from '@/components/editor/inline-combobox';
 import { HashtagPlugin } from './hashtag-plugin';
 
-const tags = ['Frontend', 'Backend', 'Design', 'Urgent'];
+const tags = ['Frontend', 'Backend', 'Design', 'Urgent'].map((label) => ({
+  label,
+}));
 
 export function HashtagCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={HashtagPlugin}>
-      <InlineComboboxContent>
-        <InlineComboboxEmpty>未找到标签</InlineComboboxEmpty>
-        {tags.map((tag) => (
-          <InlineComboboxItem
-            key={tag}
-            value={tag}
-            onSelect={(tx) => {
-              tx.plugin(HashtagPlugin).insert({ value: tag });
-            }}
-          >
-            #{tag}
-          </InlineComboboxItem>
-        ))}
-      </InlineComboboxContent>
+      <HashtagComboboxContent />
     </InlineCombobox>
+  );
+}
+
+function HashtagComboboxContent() {
+  const query = useInlineComboboxQuery();
+
+  return (
+    <InlineComboboxContent>
+      <InlineComboboxEmpty>未找到标签</InlineComboboxEmpty>
+      {rankOptions(tags, query).map(({ label }) => (
+        <InlineComboboxItem
+          key={label}
+          onSelect={(tx) => {
+            tx.plugin(HashtagPlugin).insert({ value: label });
+          }}
+        >
+          #{label}
+        </InlineComboboxItem>
+      ))}
+    </InlineComboboxContent>
   );
 }
 
@@ -236,6 +247,6 @@ const editor = createEditor({
 
 ## Registry UI
 
-复制的 `inline-combobox` 组件用 Ariakit 列表封装 `useCombobox`。它负责过滤、当前选项以及在触发字符处定位弹出框。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能并返回命令的结果，当选项不再可用时返回 `false`。在弹出框内使用 `useInlineComboboxQuery()` 读取查询。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
+复制的 `inline-combobox` 组件用 Ariakit 列表封装 `useCombobox`。它负责当前选项以及在触发字符处定位弹出框。在弹出框内用 `useInlineComboboxQuery()` 读取查询，并把它和菜单的选项一起传给 `rankOptions(options, query)`。它返回匹配的选项，最佳匹配排在最前：标签或关键词完全相同，然后是以查询开头的标签，然后是标签中后面的单词，最后是关键词或分组。同等匹配保留列表顺序，空查询保留所有选项。在 `InlineComboboxItem.onSelect` 中使用推断的事务插入所选功能并返回命令的结果，当选项不再可用时返回 `false`。成功补全后的 UI 操作（例如打开另一个弹出框）放在 `onClick` 中。
 
 <ComponentSource name="inline-combobox" />

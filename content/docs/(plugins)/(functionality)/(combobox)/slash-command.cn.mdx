@@ -87,7 +87,7 @@ const editor = createEditor({
 如何使用斜杠命令：
 
 1. 在行首或空格后输入 `/` 打开斜杠菜单
-2. 继续输入以筛选选项，或使用方向键导航
+2. 继续输入以缩小选项范围，最佳匹配排在最前，或使用方向键导航
 3. 按回车、Tab 或点击执行选项；它会替换输入的 `/` 和查询
 4. 按 Escape 关闭菜单并保留输入的文本
 
@@ -111,4 +111,4 @@ const editor = createEditor({
 |-----|------|------|
 | `SlashPlugin` | `slash` registry | 仅在编辑时启用的插件，其状态保存 `/` 触发策略和代码块检查。 |
 | `SlashKit` | `slash` registry | 在 `afterEditable` 插槽中挂载 `SlashCombobox` 的 `SlashPlugin`。 |
-| `SlashCombobox` | `slash` registry | 斜杠菜单，由文件中的 `groups` 列表构建。编辑该列表来添加、移除或重新排序选项。 |
+| `SlashCombobox` | `slash` registry | 斜杠菜单，由文件中的 `groups` 列表构建。编辑该列表来添加、移除或重新排序选项。输入查询时，菜单把最佳匹配排在最前，只在同等匹配之间保留列表顺序。 |

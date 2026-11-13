@@ -150,8 +150,7 @@ Search ranks an exact shortcode first, then the shortest shortcode that starts
 with the query, then a label word that starts with it, then any match in the
 label, tags or shortcodes. It returns at most 60 results.
 
-`EmojiCombobox` sets `filter={false}` because emoji search already returns
-filtered results, and `hideWhenNoValue`, so the popup stays closed until the
+`EmojiCombobox` sets `hideWhenNoValue`, so the popup stays closed until the
 user types after `:`. While the data loads, the popup shows a loading row and
 holds Enter, so Enter keeps the typed shortcode. When the data cannot load,
 the popup says so and retries on the next keystroke.

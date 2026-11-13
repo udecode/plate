@@ -27,7 +27,6 @@ import {
   BaseHeadingPlugin,
   BaseListPlugin,
   BaseParagraphPlugin,
-  PLUGINS,
   type PluginTransaction,
 } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
@@ -56,17 +55,18 @@ import {
   InlineComboboxGroup,
   InlineComboboxGroupLabel,
   InlineComboboxItem,
+  rankOptions,
+  useInlineComboboxQuery,
 } from './inline-combobox';
 
 type Item = {
   icon: React.ReactNode;
   isAvailable: (editor: Editor) => boolean;
-  value: string;
+  label: string;
   onClick?: (editor: Editor) => void;
   onSelect?: (editor: Editor, tx: PluginTransaction) => boolean | void;
   focusEditor?: boolean;
   keywords?: string[];
-  label?: string;
 };
 
 type Group = {
@@ -102,7 +102,7 @@ const groups: Group[] = [
         focusEditor: false,
         icon: <SparklesIcon />,
         isAvailable: (editor) => editor.plugin(AIChatPlugin).installed,
-        value: 'AI',
+        label: 'AI',
         onClick: (editor) => {
           const ai = editor.plugin(AIChatPlugin);
 
@@ -121,7 +121,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseParagraphPlugin).installed,
         keywords: ['paragraph'],
         label: 'Text',
-        value: PLUGINS.paragraph,
         onSelect: (editor, tx) =>
           isTitle(editor, tx)
             ? tx.blocks.reset({ unset: ['level'] })
@@ -132,7 +131,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseHeadingPlugin).installed,
         keywords: ['title', 'h1'],
         label: 'Heading 1',
-        value: 'heading-1',
         onSelect: (editor, tx) => upsertHeading(editor, tx, 1),
       },
       {
@@ -140,7 +138,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseHeadingPlugin).installed,
         keywords: ['subtitle', 'h2'],
         label: 'Heading 2',
-        value: 'heading-2',
         onSelect: (editor, tx) => upsertHeading(editor, tx, 2),
       },
       {
@@ -148,7 +145,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseHeadingPlugin).installed,
         keywords: ['subtitle', 'h3'],
         label: 'Heading 3',
-        value: 'heading-3',
         onSelect: (editor, tx) => upsertHeading(editor, tx, 3),
       },
       {
@@ -156,7 +152,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseListPlugin).installed,
         keywords: ['unordered', 'ul', '-'],
         label: 'Bulleted list',
-        value: 'disc',
         onSelect: (_editor, tx) =>
           tx
             .plugin(BaseListPlugin)
@@ -167,7 +162,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseListPlugin).installed,
         keywords: ['ordered', 'ol', '1'],
         label: 'Numbered list',
-        value: 'decimal',
         onSelect: (_editor, tx) =>
           tx
             .plugin(BaseListPlugin)
@@ -176,9 +170,8 @@ const groups: Group[] = [
       {
         icon: <Square />,
         isAvailable: (editor) => editor.plugin(BaseListPlugin).installed,
-        keywords: ['checklist', 'task', 'checkbox', '[]'],
+        keywords: ['checklist', 'task', 'checkbox', 'todo', '[]'],
         label: 'To-do list',
-        value: 'todo',
         onSelect: (_editor, tx) =>
           tx.plugin(BaseListPlugin).upsert({ type: 'task' }, { select: true }),
       },
@@ -187,16 +180,14 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseDetailsPlugin).installed,
         keywords: ['collapsible', 'expandable'],
         label: 'Details',
-        value: PLUGINS.details,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseDetailsPlugin).upsert({}, { select: true }),
       },
       {
         icon: <Code2 />,
         isAvailable: (editor) => editor.plugin(BaseCodeBlockPlugin).installed,
-        keywords: ['```'],
+        keywords: ['codeblock', '```'],
         label: 'Code Block',
-        value: PLUGINS.codeBlock,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseCodeBlockPlugin).upsert({}, { select: true }),
       },
@@ -204,7 +195,6 @@ const groups: Group[] = [
         icon: <Table />,
         isAvailable: (editor) => editor.plugin(BaseTablePlugin).installed,
         label: 'Table',
-        value: PLUGINS.table,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseTablePlugin).upsert({}, { select: true }),
       },
@@ -213,7 +203,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseBlockquotePlugin).installed,
         keywords: ['citation', 'blockquote', 'quote', '>'],
         label: 'Blockquote',
-        value: PLUGINS.blockquote,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseBlockquotePlugin).upsert({}, { select: true }),
       },
@@ -222,7 +211,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseCalloutPlugin).installed,
         keywords: ['note'],
         label: 'Callout',
-        value: PLUGINS.callout,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseCalloutPlugin).upsert({}, { select: true }),
       },
@@ -236,7 +224,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseTocPlugin).installed,
         keywords: ['toc'],
         label: 'Table of contents',
-        value: PLUGINS.toc,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseTocPlugin).upsert({}, { select: true }),
       },
@@ -244,7 +231,6 @@ const groups: Group[] = [
         icon: <Columns3Icon />,
         isAvailable: (editor) => editor.plugin(BaseColumnGroupPlugin).installed,
         label: '3 columns',
-        value: 'action_three_columns',
         onSelect: (_editor, tx) =>
           tx
             .plugin(BaseColumnGroupPlugin)
@@ -255,7 +241,6 @@ const groups: Group[] = [
         icon: <RadicalIcon />,
         isAvailable: (editor) => editor.plugin(BaseEquationPlugin).installed,
         label: 'Equation',
-        value: PLUGINS.equation,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseEquationPlugin).upsert({}, { select: true }),
       },
@@ -264,7 +249,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseExcalidrawPlugin).installed,
         keywords: ['excalidraw'],
         label: 'Excalidraw',
-        value: PLUGINS.excalidraw,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseExcalidrawPlugin).upsert({}, { select: true }),
       },
@@ -278,7 +262,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseDatePlugin).installed,
         keywords: ['time'],
         label: 'Date',
-        value: PLUGINS.date,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseDatePlugin).insert({}, { select: true }),
       },
@@ -287,7 +270,6 @@ const groups: Group[] = [
         isAvailable: (editor) => editor.plugin(BaseFootnotePlugin).installed,
         keywords: ['citation', 'fn', 'footnote', '[^]'],
         label: 'Footnote',
-        value: 'action_footnote',
         onSelect: (_editor, tx) =>
           tx.plugin(BaseFootnotePlugin).insert({}, { select: true }),
       },
@@ -297,7 +279,6 @@ const groups: Group[] = [
         isAvailable: (editor) =>
           editor.plugin(BaseInlineEquationPlugin).installed,
         label: 'Inline Equation',
-        value: PLUGINS.inlineEquation,
         onSelect: (_editor, tx) =>
           tx.plugin(BaseInlineEquationPlugin).insert({}, { select: true }),
       },
@@ -306,54 +287,58 @@ const groups: Group[] = [
 ];
 
 export function SlashCombobox({ editableRef }: EditableSiblingProps) {
-  const editor = useEditor();
-  const availableGroups = groups
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => item.isAvailable(editor)),
-    }))
-    .filter((group) => group.items.length > 0);
-
   return (
     <InlineCombobox editableRef={editableRef} plugin={SlashPlugin}>
-      <InlineComboboxContent>
-        <InlineComboboxEmpty>No results</InlineComboboxEmpty>
-
-        {availableGroups.map(({ group, items }) => (
-          <InlineComboboxGroup key={group}>
-            <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
-
-            {items.map(
-              ({
-                focusEditor,
-                icon,
-                keywords,
-                label,
-                value,
-                onClick,
-                onSelect,
-              }) => (
-                <InlineComboboxItem
-                  key={value}
-                  value={value}
-                  onClick={() => {
-                    onClick?.(editor);
-                  }}
-                  onSelect={(tx) => onSelect?.(editor, tx)}
-                  label={label}
-                  focusEditor={focusEditor}
-                  group={group}
-                  keywords={keywords}
-                >
-                  <div className="mr-2 text-muted-foreground">{icon}</div>
-                  {label ?? value}
-                </InlineComboboxItem>
-              )
-            )}
-          </InlineComboboxGroup>
-        ))}
-      </InlineComboboxContent>
+      <SlashComboboxContent />
     </InlineCombobox>
+  );
+}
+
+function SlashComboboxContent() {
+  const editor = useEditor();
+  const query = useInlineComboboxQuery();
+  const availableGroups = groups
+    .map(({ group, items }) => ({
+      group,
+      items: items.filter((item) => item.isAvailable(editor)),
+    }))
+    .filter(({ items }) => items.length > 0);
+  const rankedAcrossGroups = rankOptions(
+    availableGroups.flatMap(({ group, items }) =>
+      items.map((item) => ({ ...item, group }))
+    ),
+    query
+  );
+  const sections = query.trim()
+    ? [{ group: undefined, items: rankedAcrossGroups }]
+    : availableGroups;
+
+  return (
+    <InlineComboboxContent>
+      <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+
+      {sections.map(({ group, items }) => (
+        <InlineComboboxGroup key={group ?? 'results'}>
+          {group ? (
+            <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
+          ) : null}
+
+          {items.map(({ focusEditor, icon, label, onClick, onSelect }) => (
+            <InlineComboboxItem
+              key={label}
+              onClick={() => {
+                onClick?.(editor);
+              }}
+              onSelect={(tx) => onSelect?.(editor, tx)}
+              focusEditor={focusEditor}
+            >
+              <div className="mr-2 text-muted-foreground">{icon}</div>
+              {label}
+            </InlineComboboxItem>
+          ))}
+        </InlineComboboxGroup>
+      ))}
+    </InlineComboboxContent>
   );
 }
 

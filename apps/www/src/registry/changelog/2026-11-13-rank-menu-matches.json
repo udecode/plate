@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-13-rank-menu-matches",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-13-rank-menu-matches.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Rank slash and mention menu matches",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention",
+      "files": ["apps/www/src/registry/components/editor/mention.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji",
+      "files": ["apps/www/src/registry/components/editor/emoji.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-13-rank-menu-matches-inline-combobox",
+      "kind": "behavior",
+      "summary": "Add `rankOptions(options, query)`, which keeps the options that match the query, best match first: an exact label or keyword, then a label that starts with the query, then a later label word, then a keyword or the group. Remove the `value`, `keywords`, `group` and `label` props from `InlineComboboxItem` and the `filter` prop from `InlineCombobox`; a menu ranks its own list and renders the result.",
+      "details": [],
+      "migrationNotes": [
+        "Rank each menu's list with rankOptions in a component rendered inside InlineCombobox, because useInlineComboboxQuery reads the query from it, and render the result; delete value, keywords, group and label from InlineComboboxItem and filter from InlineCombobox."
+      ],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-rank-menu-matches",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-13-rank-menu-matches-slash",
+      "kind": "behavior",
+      "summary": "Rank options while you type in one list without group headings, so `/co` picks Code Block and `/bl` picks Blockquote. Add the `todo` and `codeblock` keywords, and stop matching internal ids.",
+      "details": [],
+      "migrationNotes": [
+        "Delete value from your own items in groups, and give each item a label no other item uses, because the typed list keys items by label.",
+        "While a query is typed, rank the items of every group together in one list, so the best match comes first across groups."
+      ],
+      "targets": ["slash"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-rank-menu-matches",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-13-rank-menu-matches-mention",
+      "kind": "behavior",
+      "summary": "Rank names that start with the query first, so `@as` picks Asajj Ventress.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["mention"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-rank-menu-matches",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-13-rank-menu-matches-emoji-footnote",
+      "kind": "wiring",
+      "summary": "Drop the `filter={false}` and item `value` props, which the combobox no longer reads.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["emoji", "footnote"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-13",
+          "entry": "2026-11-13-rank-menu-matches",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

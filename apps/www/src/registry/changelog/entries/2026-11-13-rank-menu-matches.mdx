@@ -1,0 +1,26 @@
+---
+id: 2026-11-13-rank-menu-matches
+date: 2026-11-13
+status: draft
+kind: behavior
+summary: 'Rank slash and mention menu matches'
+change: { 'type': 'source', 'date': '2026-11-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-13-rank-menu-matches-inline-combobox","kind":"behavior","migrationNotes":["Rank each menu's list with rankOptions in a component rendered inside InlineCombobox, because useInlineComboboxQuery reads the query from it, and render the result; delete value, keywords, group and label from InlineComboboxItem and filter from InlineCombobox."]} -->
+
+- **`inline-combobox`**: Add `rankOptions(options, query)`, which keeps the options that match the query, best match first: an exact label or keyword, then a label that starts with the query, then a later label word, then a keyword or the group. Remove the `value`, `keywords`, `group` and `label` props from `InlineComboboxItem` and the `filter` prop from `InlineCombobox`; a menu ranks its own list and renders the result.
+
+<!-- entry: {"id":"2026-11-13-rank-menu-matches-slash","kind":"behavior","migrationNotes":["Delete value from your own items in groups, and give each item a label no other item uses, because the typed list keys items by label.","While a query is typed, rank the items of every group together in one list, so the best match comes first across groups."]} -->
+
+- **`slash`**: Rank options while you type in one list without group headings, so `/co` picks Code Block and `/bl` picks Blockquote. Add the `todo` and `codeblock` keywords, and stop matching internal ids.
+
+<!-- entry: {"id":"2026-11-13-rank-menu-matches-mention","kind":"behavior","migrationNotes":[]} -->
+
+- **`mention`**: Rank names that start with the query first, so `@as` picks Asajj Ventress.
+
+<!-- entry: {"id":"2026-11-13-rank-menu-matches-emoji-footnote","kind":"wiring","migrationNotes":[]} -->
+
+- **`emoji`**, **`footnote`**: Drop the `filter={false}` and item `value` props, which the combobox no longer reads.

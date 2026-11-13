@@ -87,7 +87,7 @@ Its state is a [`ComboboxState`](/docs/combobox#comboboxstate). A `/` opens the 
 How to use slash commands:
 
 1. Type `/` at the start of a line or after a space to open the slash menu
-2. Keep typing to filter options, or use the arrow keys to navigate
+2. Keep typing to narrow the options, best match first, or use the arrow keys to navigate
 3. Press Enter, press Tab or click to run an option; it replaces the typed `/` and query
 4. Press Escape to close the menu and keep the typed text
 
@@ -111,4 +111,4 @@ Available options include:
 |-----|--------|-----|
 | `SlashPlugin` | `slash` registry | Edit-only plugin whose state holds the `/` trigger policy and the code-block check. |
 | `SlashKit` | `slash` registry | `SlashPlugin` with `SlashCombobox` in its `afterEditable` slot. |
-| `SlashCombobox` | `slash` registry | The slash menu, built from the file's `groups` list. Edit that list to add, remove or reorder options. |
+| `SlashCombobox` | `slash` registry | The slash menu, built from the file's `groups` list. Edit that list to add, remove or reorder options. While you type, the menu lists matches best first and keeps the list's order only between equal matches. |

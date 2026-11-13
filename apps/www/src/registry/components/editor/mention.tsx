@@ -22,6 +22,8 @@ import {
   InlineComboboxEmpty,
   InlineComboboxGroup,
   InlineComboboxItem,
+  rankOptions,
+  useInlineComboboxQuery,
 } from './inline-combobox';
 
 export function MentionElement(
@@ -77,27 +79,34 @@ export function MentionElement(
 export function MentionCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
-      <InlineComboboxContent className="my-1.5">
-        <InlineComboboxEmpty>No results</InlineComboboxEmpty>
-
-        <InlineComboboxGroup>
-          {MENTIONABLES.map((item) => (
-            <InlineComboboxItem
-              key={item.ref}
-              value={item.label}
-              onSelect={(tx) => {
-                tx.plugin(MentionPlugin).insert({
-                  label: item.label,
-                  ref: item.ref,
-                });
-              }}
-            >
-              {item.label}
-            </InlineComboboxItem>
-          ))}
-        </InlineComboboxGroup>
-      </InlineComboboxContent>
+      <MentionComboboxContent />
     </InlineCombobox>
+  );
+}
+
+function MentionComboboxContent() {
+  const query = useInlineComboboxQuery();
+
+  return (
+    <InlineComboboxContent className="my-1.5">
+      <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+
+      <InlineComboboxGroup>
+        {rankOptions(MENTIONABLES, query).map((item) => (
+          <InlineComboboxItem
+            key={item.ref}
+            onSelect={(tx) => {
+              tx.plugin(MentionPlugin).insert({
+                label: item.label,
+                ref: item.ref,
+              });
+            }}
+          >
+            {item.label}
+          </InlineComboboxItem>
+        ))}
+      </InlineComboboxGroup>
+    </InlineComboboxContent>
   );
 }
 

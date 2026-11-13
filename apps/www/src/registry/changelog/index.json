@@ -92,6 +92,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-13-rank-menu-matches",
+      "href": "/registry/changelog/2026-11-13-rank-menu-matches.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Rank slash and mention menu matches",
+      "change": {
+        "type": "source",
+        "date": "2026-11-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox", "slash", "mention", "emoji", "footnote"],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-13-remove-docs-items",
       "href": "/registry/changelog/2026-11-13-remove-docs-items.json",
       "status": "draft",

@@ -97,7 +97,6 @@ const editor = createEditor({
 
 ```tsx
 <InlineComboboxItem
-  value={item.label}
   onSelect={(tx) => {
     tx.plugin(MentionPlugin).insert({
       label: item.label,

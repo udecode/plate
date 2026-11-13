@@ -21,7 +21,6 @@ export function EmojiCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox
       editableRef={editableRef}
-      filter={false}
       plugin={EmojiPlugin}
       hideWhenNoValue
       loading={status === 'loading'}
@@ -49,7 +48,6 @@ function EmojiComboboxContent() {
         {results.map((emoji) => (
           <InlineComboboxItem
             key={emoji.emoji}
-            value={emoji.label}
             onSelect={(tx) => {
               tx.text.insert(emoji.emoji);
             }}

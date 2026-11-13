@@ -25,14 +25,8 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-type FilterFn = (
-  item: { value: string; group?: string; keywords?: string[]; label?: string },
-  search: string
-) => boolean;
-
 type InlineComboboxContextValue = {
   box: UseComboboxReturn;
-  filter: FilterFn | false;
   match: ComboboxMatch | null;
   open: boolean;
   setHasEmpty: (hasEmpty: boolean) => void;
@@ -57,19 +51,87 @@ const useInlineComboboxOpen = () => useInlineComboboxContext().open;
 const useInlineComboboxQuery = () =>
   useInlineComboboxContext().match?.query ?? '';
 
-const defaultFilter: FilterFn = (
-  { group, keywords = [], label, value },
-  search
-) => {
-  const uniqueTerms = new Set(
-    [value, ...keywords, group, label].flatMap((term) =>
-      typeof term === 'string' ? [term] : []
-    )
-  );
+type RankedOption = {
+  label: string;
+  group?: string;
+  keywords?: readonly string[];
+};
 
-  return Array.from(uniqueTerms).some((keyword) =>
-    filterWords(keyword, search)
+const collator = new Intl.Collator(undefined, {
+  sensitivity: 'base',
+  usage: 'search',
+});
+
+const sameText = (a: string, b: string) => collator.compare(a, b) === 0;
+
+const toWords = (text: string) => text.trim().split(/\s+/);
+
+const sameWords = (text: string, words: readonly string[]) => {
+  const textWords = toWords(text);
+
+  return (
+    textWords.length === words.length &&
+    words.every((word, i) => sameText(textWords[i], word))
   );
+};
+
+const startsWithWords = (text: string, words: readonly string[]) => {
+  const textWords = toWords(text);
+  const last = words.length - 1;
+
+  return words.every((word, i) => {
+    const textWord = textWords[i];
+
+    return (
+      textWord !== undefined &&
+      sameText(i === last ? textWord.slice(0, word.length) : textWord, word)
+    );
+  });
+};
+
+const matchBand = (
+  { group, keywords = [], label }: RankedOption,
+  query: string,
+  words: readonly string[]
+) => {
+  if (
+    sameWords(label, words) ||
+    keywords.some((keyword) => sameWords(keyword, words))
+  ) {
+    return 0;
+  }
+  if (filterWords(label, query)) {
+    return startsWithWords(label, words) ? 1 : 2;
+  }
+  if (keywords.some((keyword) => filterWords(keyword, query))) return 3;
+
+  return group !== undefined && filterWords(group, query) ? 3 : null;
+};
+
+/**
+ * The options `query` keeps, best match first: the label or a keyword equals
+ * the query, then the label starts with it, then a later word of the label
+ * does, then a keyword or the group does. Equal matches keep the given order,
+ * and a blank query keeps every option.
+ */
+const rankOptions = <T extends RankedOption>(
+  options: readonly T[],
+  query: string
+): T[] => {
+  const search = query.trim();
+
+  if (!search) return [...options];
+
+  const words = toWords(search);
+
+  return options
+    .flatMap((option) => {
+      const band = matchBand(option, search, words);
+
+      return band === null ? [] : [{ band, option }];
+    })
+    .sort((a, b) => a.band - b.band)
+    .map(({ option }) => option);
 };
 
 // The popup's DOM holds the option order. Ariakit sorts its collection a frame
@@ -85,7 +147,6 @@ const getOptions = (contentElement: HTMLElement | null) =>
 const InlineCombobox = <P extends PluginReference>({
   children,
   editableRef,
-  filter = defaultFilter,
   hideWhenNoValue = false,
   loading = false,
   plugin,
@@ -93,7 +154,6 @@ const InlineCombobox = <P extends PluginReference>({
   children: React.ReactNode;
   editableRef: UseComboboxOptions<P>['editableRef'];
   plugin: UseComboboxOptions<P>['plugin'];
-  filter?: FilterFn | false;
   hideWhenNoValue?: boolean;
   /** Options are still loading: Enter and Tab do nothing. */
   loading?: boolean;
@@ -223,8 +283,8 @@ const InlineCombobox = <P extends PluginReference>({
   }, [dismiss, queryBecameProse]);
 
   const contextValue = React.useMemo<InlineComboboxContextValue>(
-    () => ({ box, filter, match, open, setHasEmpty }),
-    [box, filter, match, open]
+    () => ({ box, match, open, setHasEmpty }),
+    [box, match, open]
   );
 
   return (
@@ -296,31 +356,18 @@ const comboboxItemVariants = cva(
 const InlineComboboxItem = ({
   className,
   focusEditor = true,
-  group,
-  keywords,
-  label,
   onClick,
   onSelect,
   ...props
-}: Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect' | 'value'> & {
+}: Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect'> & {
   focusEditor?: boolean;
-  group?: string;
-  keywords?: string[];
-  label?: string;
-  value: string;
   /** Insert the completion. Return false to refuse and keep the query. */
   onSelect?: Parameters<UseComboboxReturn['complete']>[1];
 }) => {
-  const { value } = props;
   const editor = useEditor();
-  const { box, filter, match } = useInlineComboboxContext();
-  const search = match?.query ?? '';
-  const visible = React.useMemo(
-    () => !filter || filter({ group, keywords, label, value }, search),
-    [filter, group, keywords, label, value, search]
-  );
+  const { box, match } = useInlineComboboxContext();
 
-  if (!visible || !match) return null;
+  if (!match) return null;
 
   return (
     <ComboboxItem
@@ -405,6 +452,7 @@ export {
   InlineComboboxGroup,
   InlineComboboxGroupLabel,
   InlineComboboxItem,
+  rankOptions,
   useInlineComboboxOpen,
   useInlineComboboxQuery,
 };
