@@ -1,5 +1,5 @@
 {
-  "generation": "cd54cfbca0df26783ad5e2ffc0f51f0420044bebdd16e630e1156c4be1559551",
+  "generation": "6ef3f315353c5362ba66e12faad333ec85a6962f2ff02717eadab3ba31f36846",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2578,7 +2578,8 @@
               }
             ],
             "examples": [
-              "board-demo"
+              "board-demo",
+              "board-page-demo"
             ]
           },
           "registryDependencies": [
@@ -5275,6 +5276,41 @@
             "@plate/dnd"
           ],
           "title": "Board",
+          "type": "registry:example"
+        },
+        {
+          "description": "A page whose only block is a board that fills the window, like a whiteboard app.",
+          "files": [
+            {
+              "path": "examples/board-page-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/board-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "containerClassName": "h-dvh",
+            "docs": [
+              {
+                "route": "/docs/board",
+                "title": "Board"
+              }
+            ],
+            "registry": false
+          },
+          "name": "board-page-demo",
+          "registryDependencies": [
+            "@plate/board",
+            "@plate/editor",
+            "@plate/autoformat",
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
+            "@plate/link",
+            "@plate/list"
+          ],
+          "title": "Board page",
           "type": "registry:example"
         },
         {
@@ -9506,7 +9542,8 @@
               }
             ],
             "examples": [
-              "board-demo"
+              "board-demo",
+              "board-page-demo"
             ]
           },
           "registryDependencies": [
@@ -12203,6 +12240,41 @@
             "@plate/dnd"
           ],
           "title": "Board",
+          "type": "registry:example"
+        },
+        {
+          "description": "A page whose only block is a board that fills the window, like a whiteboard app.",
+          "files": [
+            {
+              "path": "examples/board-page-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/board-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "containerClassName": "h-dvh",
+            "docs": [
+              {
+                "route": "/docs/board",
+                "title": "Board"
+              }
+            ],
+            "registry": false
+          },
+          "name": "board-page-demo",
+          "registryDependencies": [
+            "@plate/board",
+            "@plate/editor",
+            "@plate/autoformat",
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
+            "@plate/link",
+            "@plate/list"
+          ],
+          "title": "Board page",
           "type": "registry:example"
         },
         {

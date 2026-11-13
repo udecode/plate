@@ -32,6 +32,7 @@ docs:
 <ComponentSource name="board" />
 
 - `BoardElement`: renders the board surface and its toolbar.
+- `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
 - `BoardToolbar`: picks the tool, and removes a selected frame while it keeps the frame's shapes.
 
@@ -51,6 +52,16 @@ const editor = createEditor({
 ```
 
 </Steps>
+
+## Examples
+
+### Board page
+
+In this example the board is the page's only block, like a whiteboard app. It fills its frame here and the whole window on [its own page](/blocks/board-page-demo). Pan with a drag on empty board or with the wheel, and zoom with Mod and the wheel.
+
+<ComponentPreview name="board-page-demo" />
+
+`BoardPageKit` draws the board with `BoardPageElement`, which passes `height="100%"` to `BoardSurface`. That `height` replaces the board's stored `height` in this view and never changes the document, so the board takes the height of the editor around it. Give the editor a height, as the example does with `<Editor className="h-full" variant="none" />` inside a container of set height. Leave out kits that wrap each block or add a paragraph after the last one, such as the drag handles and the trailing block of `EditorKit`.
 
 ## Manual usage
 
@@ -338,6 +349,7 @@ Every other peer joins the new room with the new plugins and schema, and without
 - Markdown keeps the text of each shape in reading order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only the five built-in shape types, to keep a board whole.
 - A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
 - A board inside a note, and rotation, are not supported.
+- On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Enter with the caret on the board block, where Mod+A can put it, adds a paragraph after it. Undo brings the board back.
 
 ## Plugins
 
@@ -364,6 +376,6 @@ The shape types: `boardNote`, `boardGeo`, `boardArrow`, `boardFrame` and `boardS
 | `removeFrame(id)` | `BaseBoardPlugin` | Removes a frame and keeps its shapes where they are. |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | Pastes a copy of the shapes in `slice` into `board`, with fresh ids, and returns the copies' ids. |
 | `shapes(board)`, `shape(id)`, `arrowEnds(id)`, `slice(ids)` | `BaseBoardPlugin` | Read the shapes of a board, one shape by id in any board, where an arrow draws its ends, and the slice a copy of shapes carries. Call them on `tx.plugin(BaseBoardPlugin)`. |
-| `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. |
+| `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. The surface's `height` sets its view's height and defaults to the board's stored `height`. |
 | `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Read the view's `tool`, `camera`, `nextStyle` and `selectedFrame`; call `setTool`, `setNextStyle`, `fit` and `removeFrame`. The next style's `fill` goes to both the next note and the next geo shape. |
 | `useArrowPath(element)`, `useStrokePath(element)` | `platejs/board/react` | The drawn path of an arrow or a pen line. |

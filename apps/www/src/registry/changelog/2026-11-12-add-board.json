@@ -22,6 +22,15 @@
       "files": ["apps/www/src/registry/components/editor/board.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "board-page-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-page-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -35,6 +44,23 @@
       "source": {
         "line": 14,
         "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-12",
+          "entry": "2026-11-12-add-board",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-12-board-page-kit",
+      "kind": "new",
+      "summary": "Add `BoardPageKit`, whose `BoardPageElement` draws a board that fills its container, for a page whose one block is a board. The `board-page-demo` example builds that page without `EditorKit`, whose drag handles and trailing paragraph would wrap and follow the board.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board", "board-page-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
         "legacyRelease": {
           "date": "2026-11-12",
           "entry": "2026-11-12-add-board",

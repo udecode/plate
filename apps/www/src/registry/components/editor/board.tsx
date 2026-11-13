@@ -20,6 +20,7 @@ import {
 import type { EditorElementProps } from 'platejs/react';
 import * as React from 'react';
 
+import { cn } from '@/lib/utils';
 import { Toolbar, ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const TOOLS: ReadonlyArray<
@@ -103,15 +104,40 @@ export function BoardToolbar() {
   );
 }
 
+const BOARD_GRID =
+  'bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px]';
+
 export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
   return (
     <BoardSurface
       {...props}
       attributes={{
         ...props.attributes,
-        className:
-          'my-4 rounded-lg border bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px] data-selected:ring-2 data-selected:ring-ring',
+        className: cn(
+          'my-4 rounded-lg border data-selected:ring-2 data-selected:ring-ring',
+          BOARD_GRID
+        ),
       }}
+      messages={boardMessages}
+      toolbar={<BoardToolbar />}
+    />
+  );
+}
+
+export function BoardPageElement(
+  props: EditorElementProps<typeof BoardPlugin>
+) {
+  return (
+    <BoardSurface
+      {...props}
+      attributes={{
+        ...props.attributes,
+        className: cn(
+          'data-selected:ring-2 data-selected:ring-ring data-selected:ring-inset',
+          BOARD_GRID
+        ),
+      }}
+      height="100%"
       messages={boardMessages}
       toolbar={<BoardToolbar />}
     />
@@ -292,11 +318,20 @@ export function BoardStrokeElement(
   );
 }
 
-export const BoardKit = [
-  BoardPlugin.configure({ component: BoardElement }),
+const BoardShapeKit = [
   BoardNotePlugin.configure({ component: BoardNoteElement }),
   BoardGeoPlugin.configure({ component: BoardGeoElement }),
   BoardArrowPlugin.configure({ component: BoardArrowElement }),
   BoardFramePlugin.configure({ component: BoardFrameElement }),
   BoardStrokePlugin.configure({ component: BoardStrokeElement }),
+];
+
+export const BoardKit = [
+  BoardPlugin.configure({ component: BoardElement }),
+  ...BoardShapeKit,
+];
+
+export const BoardPageKit = [
+  BoardPlugin.configure({ component: BoardPageElement }),
+  ...BoardShapeKit,
 ];

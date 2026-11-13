@@ -51,8 +51,8 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["board"],
-      "entries": 1,
+      "targets": ["board", "board-page-demo"],
+      "entries": 2,
       "diagnostics": []
     },
     {

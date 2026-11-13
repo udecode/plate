@@ -12,3 +12,7 @@ diagnostics: []
 <!-- entry: {"id":"2026-11-12-board-whiteboard-block-notes-shapes-b20356d8","kind":"new","migrationNotes":[]} -->
 
 - **`board`**: Add `BoardKit`, a whiteboard block with notes, geo shapes, arrows, frames and pen lines, and its toolbar of select, note, shape, arrow, frame and pen tools. Add it beside `EditorKit`. The copied board writes every word the board says in `boardMessages`, and the board tells screen readers the selected shape and its place, the picked tool and how many shapes a removal took off. A Yjs room created before the board refuses an editor with it, so seed a new room from the old room's document, as the Board docs page shows.
+
+<!-- entry: {"id":"2026-11-12-board-page-kit","kind":"new","migrationNotes":[]} -->
+
+- **`board`**, **`board-page-demo`**: Add `BoardPageKit`, whose `BoardPageElement` draws a board that fills its container, for a page whose one block is a board. The `board-page-demo` example builds that page without `EditorKit`, whose drag handles and trailing paragraph would wrap and follow the board.

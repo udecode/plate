@@ -447,6 +447,41 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'A page whose only block is a board that fills the window, like a whiteboard app.',
+      files: [
+        {
+          path: 'examples/board-page-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/board-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        containerClassName: 'h-dvh',
+        docs: [
+          {
+            route: '/docs/board',
+            title: 'Board',
+          },
+        ],
+      },
+      name: 'board-page-demo',
+      registryDependencies: [
+        '@plate/board',
+        '@plate/editor',
+        '@plate/autoformat',
+        '@plate/basic-blocks',
+        '@plate/basic-marks',
+        '@plate/link',
+        '@plate/list',
+      ],
+      title: 'Board page',
+      type: 'registry:example',
+    },
+    {
       description: 'Restrict the editor to a single block.',
       files: [
         {

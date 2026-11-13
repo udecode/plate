@@ -81,6 +81,7 @@
       "2025-10-17-fix-react-decouple"
     ],
     "board": ["2026-11-12-add-board"],
+    "board-page-demo": ["2026-11-12-add-board"],
     "floating-popover": [
       "2026-11-10-discussion-safari-taps",
       "2026-11-07-toolbar-overlays-close-on-scroll",

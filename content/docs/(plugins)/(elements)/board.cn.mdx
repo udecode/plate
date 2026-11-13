@@ -32,6 +32,7 @@ docs:
 <ComponentSource name="board" />
 
 - `BoardElement`：渲染白板表面及其工具栏。
+- `BoardPageElement`：渲染填满容器的白板。`BoardPageKit` 用它代替 `BoardElement`。
 - `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
 - `BoardToolbar`：选择工具；选中框架时，可以删除框架并保留其中的图形。
 
@@ -51,6 +52,16 @@ const editor = createEditor({
 ```
 
 </Steps>
+
+## 示例
+
+### 白板页面
+
+在这个示例中，白板是页面中唯一的块，就像白板应用一样。它在这里填满预览框，在[自己的页面](/blocks/board-page-demo)中填满整个窗口。在空白处拖动或滚动滚轮可平移，按住 Mod 并滚动滚轮可缩放。
+
+<ComponentPreview name="board-page-demo" />
+
+`BoardPageKit` 用 `BoardPageElement` 绘制白板，它向 `BoardSurface` 传入 `height="100%"`。这个 `height` 在此视图中替代白板存储的 `height`，且不会改变文档，因此白板取其外层编辑器的高度。请给编辑器设置高度，就像示例在一个设定了高度的容器中使用 `<Editor className="h-full" variant="none" />` 那样。去掉包裹每个块或在最后一个块后添加段落的套件，例如 `EditorKit` 的拖动手柄和末尾块。
 
 ## 手动用法
 
@@ -338,6 +349,7 @@ const editor = createEditor({
 - Markdown 按阅读顺序保留每个图形的文字，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含五种内置图形时，也可以持久化 HTML。
 - 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
 - 不支持便签内的白板，也不支持旋转。
+- 在白板页面中，白板仍是文档中的一个块。选中白板时按 Delete 或 Backspace 会删除它及其图形；光标在白板块上时（Mod+A 可能把光标放在那里）按 Enter 会在白板后添加一个段落。撤销可以恢复白板。
 
 ## 插件
 
@@ -364,6 +376,6 @@ const editor = createEditor({
 | `removeFrame(id)` | `BaseBoardPlugin` | 删除框架，图形留在原处。 |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | 把 `slice` 中图形的副本以新 id 粘贴到 `board`，并返回副本的 id。 |
 | `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置，以及复制图形所携带的 slice。在 `tx.plugin(BaseBoardPlugin)` 上调用。 |
-| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。 |
+| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面的 `height` 设置其视图的高度，默认为白板存储的 `height`。 |
 | `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 读取视图的 `tool`、`camera`、`nextStyle` 和 `selectedFrame`；调用 `setTool`、`setNextStyle`、`fit` 和 `removeFrame`。下一个样式的 `fill` 同时用于下一个便签和下一个几何图形。 |
 | `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |

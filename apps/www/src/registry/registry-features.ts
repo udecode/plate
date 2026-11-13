@@ -344,7 +344,7 @@ export const registryFeatures: Registry['items'] = [
     title: 'Board',
     meta: {
       docs: [{ route: '/docs/board' }],
-      examples: ['board-demo'],
+      examples: ['board-demo', 'board-page-demo'],
     },
   },
   {
