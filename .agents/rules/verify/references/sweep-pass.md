@@ -32,14 +32,14 @@ The run directory is `docs/plans/artifacts/<slug>/` in the main checkout, given 
 
 ## Run the lanes
 
-1. Run `gh auth status`, because `collect` reads the Deploy workflow's runs. Run `tabs_context`. When it says the pane is hidden, ask the owner once to show it with Cmd+Shift+B and go on; until they do, each lane checks a frame claim with a headless replay.
-2. Open one tab of your own on beta and read `localStorage.getItem('theme')` there. Every lane's tab shares that value, and the D key outside an editor flips it. Close the tab.
+1. Run `gh auth status`, because `collect` reads the Deploy workflow's runs.
+2. Open a tab of your own on beta with `preview_start`, and keep it open until the last lane has ended. Closing the pane's last tab closes the pane, and a lane's `tabs_create` fails while the pane is closed. Read `localStorage.getItem('theme')` in your tab; every lane's tab shares that value, and the D key outside an editor flips it. When `tabs_context` says the pane is hidden, ask the owner once to show it with Cmd+Shift+B and go on; until they do, each lane checks a frame claim with a headless replay.
 3. Start each lane with the `Agent` tool: `subagent_type: "general-purpose"`, `model: "opus"`, `effort` the level `node .agents/pstack/lead.mjs` prints and `run_in_background: true`. Its prompt names its brief, for example "You are lane L3 of a sweep agent pass over beta pages. Read `<run dir>/lanes/L3.md` in full and follow it."
 4. Run at most six lanes at once, because the pane holds a limited number of tabs. Set a lane's `state` in `queue.tsv` to `running` when it starts and to `done` or `stopped` when it ends, and start the next `waiting` lane then.
 5. Save each lane's final message to `<run dir>/lanes/<lane>-reply.md` when it arrives.
 6. A lane stops itself after an hour. Stop a lane still running at 65 minutes with `TaskStop`. For each of its rows that has no record, write one with result `untested` and a note that the lane was stopped.
 
-Do not drive the pane while lanes run. After the last lane, open a tab of your own on beta again. When the stored theme differs from the one you read in step 2, set it back with `javascript_tool`, or remove it when it was unset, and reload. Then close the tab.
+Do not drive the pane while lanes run. After the last lane, read the stored theme again in your tab. When it differs from the one you read in step 2, set it back with `javascript_tool`, or remove it when it was unset, and reload. Then close your tab.
 
 ## Collect
 
