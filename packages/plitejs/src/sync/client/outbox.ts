@@ -18,14 +18,29 @@ export type Confirmed = Readonly<{
 }>;
 
 export type KeptReason =
-  | Readonly<{ check: 'moved'; kind: 'decision' }>
+  | Readonly<{
+      check: 'judge' | 'moved' | 'stale' | 'structure';
+      kind: 'decision';
+    }>
   | Readonly<{ kind: 'conflict' }>
   | Readonly<{ kind: 'expired' }>
   | Readonly<{ kind: 'refused'; reason: string }>;
 
+/** The document the reviewer decided on, their change and what landed since. */
+export type DecisionOrigin = Readonly<{
+  before: JsonEditorValue;
+  change: DocumentChangeJson;
+  since: readonly DocumentChangeJson[];
+}>;
+
 export type SavedBatch = Readonly<{ decision: boolean; seq: number }> &
   (
-    | Readonly<{ change: DocumentChangeJson; state: 'saved' }>
+    | Readonly<{
+        change: DocumentChangeJson;
+        origin?: DecisionOrigin;
+        state: 'saved';
+        takesBackSeq?: number;
+      }>
     | Readonly<{ change: DocumentChangeJson; frame: string; state: 'sent' }>
     | Readonly<{ frame: string; state: 'withheld' }>
     | Readonly<{

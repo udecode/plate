@@ -1,8 +1,8 @@
 import {
   DocumentChange,
-  filterDocumentChangeRecordSets,
   getInternalDocumentChangeRecords,
   valueRoot,
+  withoutRetainedRecordSets,
 } from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
@@ -31,11 +31,7 @@ export type PutEntry = Readonly<{
 const inverseOf = (
   { before, change }: PutEntry,
   { recordSets }: CompiledEditorSchema
-) =>
-  filterDocumentChangeRecordSets(
-    change.invert(before),
-    (set) => recordSets.get(set)?.history !== 'retain'
-  );
+) => withoutRetainedRecordSets(change.invert(before), recordSets);
 
 const keepsItsRecords = (entry: PutEntry, head: JsonEditorValue) => {
   const written = getValueRecords(entry.after);

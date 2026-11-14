@@ -989,8 +989,16 @@ export type EditorHistoryReplayReceipt = Readonly<{
   version: number;
 }>;
 
+export type EditorHistoryStep = Readonly<{ identity: object }>;
+
 type EditorHistoryRuntime = Readonly<{
   head: (direction: 'redo' | 'undo') => object | null;
+  replaceUndoStep: (
+    step: EditorHistoryStep,
+    change: DocumentChange,
+    matches: (base: EditorDocumentValue) => boolean
+  ) => boolean;
+  stepOf: (commit: EditorCommit) => EditorHistoryStep | null;
 }>;
 
 const EDITOR_HISTORY_RUNTIMES = new WeakMap<Editor, EditorHistoryRuntime>();
@@ -1023,6 +1031,25 @@ export const readEditorHistoryHeadIdentity = (
 ) =>
   EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.head(direction) ??
   null;
+
+export const readEditorCommitHistoryStep = (
+  editor: Editor,
+  commit: EditorCommit
+) =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.stepOf(commit) ??
+  null;
+
+export const replaceEditorUndoStep = (
+  editor: Editor,
+  step: EditorHistoryStep,
+  change: DocumentChange,
+  matches: (base: EditorDocumentValue) => boolean
+) =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.replaceUndoStep(
+    step,
+    change,
+    matches
+  ) ?? false;
 
 /** Attach private mounted-view metadata to an applied replay result. */
 export const recordEditorHistoryReplayReceipt = (

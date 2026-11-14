@@ -1792,6 +1792,7 @@ export const writeHistory = <V extends Value>(
   }> = {}
 ) => {
   const store = getStore(editor);
+  const identity = {};
 
   publish(editor, store, {
     [stack]: pushBranch(
@@ -1809,11 +1810,13 @@ export const writeHistory = <V extends Value>(
       options.group ?? null,
       options.recovery ?? null,
       options.anchorCeiling ?? 0,
-      {},
+      identity,
       options.carets ?? null
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
+
+  return identity;
 };
 
 export const replaceHistoryHead = <V extends Value>(
@@ -1856,6 +1859,49 @@ export const replaceHistoryHead = <V extends Value>(
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
+};
+
+export const replaceUndoStep = <V extends Value>(
+  editor: Editor<V>,
+  identity: object,
+  change: DocumentChange,
+  matches: (base: EditorDocumentValue<V>) => boolean
+) => {
+  const store = getStore(editor);
+
+  if (store.pendingReplay) return false;
+
+  const { entries } = resolveAll(editor, store.undos);
+  const entry = entries.find((item) => item.identity === identity);
+
+  if (!entry || !matches(entry.base)) return false;
+
+  const {
+    carried: _carried,
+    rest: _rest,
+    unsettle: _unsettle,
+    ...plain
+  } = entry.batch;
+  const replaced: ResolvedHistoryEntry<V> = {
+    ...entry,
+    batch: { ...plain, change },
+    kept: null,
+    replay: recordHistoryReplay(
+      historyReplaySchemaOf(editor),
+      entry.base,
+      change,
+      'undo'
+    ),
+  };
+
+  publish(editor, store, {
+    undos: rebuildBranch(
+      entries.map((item) => (item === entry ? replaced : item)),
+      store.maxDepth
+    ),
+  });
+
+  return true;
 };
 
 const DROPPED_HISTORY_CAUSES = new WeakMap<AnyEditor, unknown[]>();

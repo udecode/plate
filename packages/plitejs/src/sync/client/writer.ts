@@ -1,15 +1,28 @@
-import { DocumentChange } from '../../core/change/document-change';
+import {
+  DocumentChange,
+  rebaseDocumentChange,
+} from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import {
   digestOf,
   SYNC_PROTOCOL,
+  SYNC_REBASE,
   type SyncEntry,
   type SyncJoinRefusal,
   type SyncReceipt,
   type SyncSubmit,
   sameDocument,
 } from '../protocol';
-import { crossChain, type KeepAs, withdrawn } from './chain';
+import {
+  type CrossAs,
+  crossChain,
+  type KeepAs,
+  leaving,
+  type ShownBatch,
+  shownValue,
+  withdrawn,
+} from './chain';
+import { MOVED, type SyncDecide } from './decision';
 import {
   applyWrite,
   type KeptReason,
@@ -42,8 +55,6 @@ export type SyncClientState = Readonly<{
 
 type SentBatch = Extract<SavedBatch, { state: 'sent' }>;
 type InFlight = Extract<SavedBatch, { state: 'sent' | 'withheld' }>;
-
-const MOVED: KeptReason = { check: 'moved', kind: 'decision' };
 
 const queueWrites = (
   store: OutboxStore,
@@ -141,23 +152,53 @@ const replaced = (
   after: readonly SavedBatch[]
 ) => after.filter((batch, index) => batch !== before[index]);
 
+type Shown = 'exact' | 'rewritten';
+
+const takenBackAt = (
+  batch: ShownBatch,
+  takeBack: DocumentChange,
+  afterDecision: JsonEditorValue,
+  beforeBatch: JsonEditorValue
+): KeptReason | ShownBatch => {
+  const rebase = rebaseDocumentChange(
+    DocumentChange.between(afterDecision, beforeBatch),
+    takeBack,
+    afterDecision,
+    SYNC_REBASE
+  );
+
+  return rebase.kind === 'pair'
+    ? { ...batch, change: rebase.b.toJSON() }
+    : MOVED;
+};
+
 export const createWriter = ({
   changed,
+  decide,
   fresh,
   record: opened,
   schema,
+  settledDecision,
   show,
   showDocument,
   store,
+  takeBack,
   transport,
 }: Readonly<{
   changed: () => void;
+  decide: SyncDecide;
   fresh: boolean;
   record: OutboxRecord;
   schema: string;
-  show: (change: DocumentChange) => void;
-  showDocument: (document: JsonEditorValue) => void;
+  settledDecision?: (
+    seq: number,
+    logged: DocumentChange | null,
+    before: JsonEditorValue
+  ) => void;
+  show: (change: DocumentChange) => Shown;
+  showDocument: (document: JsonEditorValue) => Shown;
   store: OutboxStore;
+  takeBack: (logged: DocumentChange, before: JsonEditorValue) => DocumentChange;
   transport: SyncTransport;
 }>) => {
   let record = opened;
@@ -169,6 +210,7 @@ export const createWriter = ({
   let stalled = false;
   let stopped: SyncStop | null = null;
   let destroyed = false;
+  let drifted = false;
 
   const writes = queueWrites(store, record.head.writer, (ok) => {
     if (destroyed || saveFailed === !ok) return;
@@ -208,12 +250,47 @@ export const createWriter = ({
     }
   };
 
-  const unsentDecision: KeepAs = (batch) =>
+  const movedDecision: KeepAs = (batch) =>
     batch.decision &&
     (batch.state === 'saved' ||
       (batch.state === 'sent' && batch.frame !== savedFrame))
       ? MOVED
       : null;
+
+  const redecided: CrossAs = (batch, before, carried) => {
+    if (carried.empty) return null;
+    if (batch.state !== 'saved' || !batch.origin) return movedDecision(batch);
+
+    const origin = {
+      ...batch.origin,
+      since: [...batch.origin.since, carried.toJSON()],
+    };
+    const decided = decide(origin, carried.apply(before));
+
+    return decided instanceof DocumentChange
+      ? { ...batch, change: decided.toJSON(), origin }
+      : decided;
+  };
+
+  const redecidedIn = (batches: readonly SavedBatch[]): CrossAs => {
+    const takenBack = new Set(
+      batches.flatMap((batch) =>
+        batch.state === 'saved' && batch.takesBackSeq !== undefined
+          ? [batch.takesBackSeq]
+          : []
+      )
+    );
+
+    return (batch, before, carried) => {
+      if (carried.empty || batch.state !== 'saved') {
+        return redecided(batch, before, carried);
+      }
+      if (batch.takesBackSeq !== undefined) return null;
+      if (takenBack.has(batch.seq)) return MOVED;
+
+      return redecided(batch, before, carried);
+    };
+  };
 
   const crossOrWithdraw = (
     batches: readonly SavedBatch[],
@@ -224,14 +301,23 @@ export const createWriter = ({
     try {
       const crossed = crossing();
 
-      if (!crossed.carried.empty) show(crossed.carried);
+      if (!crossed.carried.empty && show(crossed.carried) === 'rewritten') {
+        drifted = true;
+      }
 
       return replaced(batches, crossed.batches);
     } catch {
-      showDocument(document);
+      drifted = showDocument(document) === 'rewritten';
 
       return replaced(batches, withdrawn(batches, keepAs));
     }
+  };
+
+  const showExactly = () => {
+    if (!drifted) return;
+    drifted =
+      showDocument(shownValue(record.confirmed.document, record.batches)) ===
+      'rewritten';
   };
 
   const settle = (
@@ -247,7 +333,13 @@ export const createWriter = ({
     const document = logged ? logged.apply(before) : before;
     const tail = record.batches.filter(({ seq }) => seq !== batch.seq);
     const carried = DocumentChange.between(shown, document);
-    const keepAs = carried.empty ? undefined : unsentDecision;
+    const crossAs = redecidedIn(tail);
+    const takesThisBack = (other: SavedBatch) =>
+      other.state === 'saved' && other.takesBackSeq === batch.seq;
+    const roomTakeBack =
+      batch.state === 'sent' && logged && tail.some(takesThisBack)
+        ? takeBack(logged, before)
+        : null;
 
     save({
       confirmed: { document, version },
@@ -255,10 +347,17 @@ export const createWriter = ({
       put: crossOrWithdraw(
         tail,
         document,
-        () => crossChain(carried, shown, tail, keepAs),
-        keepAs
+        () =>
+          crossChain(carried, shown, tail, (other, at, moved) =>
+            roomTakeBack && takesThisBack(other)
+              ? takenBackAt(other, roomTakeBack, document, moved.apply(at))
+              : crossAs(other, at, moved)
+          ),
+        movedDecision
       ),
     });
+    showExactly();
+    if (batch.decision) settledDecision?.(batch.seq, logged, before);
     stalled = false;
     link?.hold(null);
   };
@@ -279,7 +378,9 @@ export const createWriter = ({
       });
     } else {
       const at = record.confirmed.document;
-      const keepAs: KeepAs = ({ seq }) => (seq === batch.seq ? reason : null);
+      const crossAs = redecidedIn(record.batches);
+      const refused: CrossAs = (other, before, carried) =>
+        other.seq === batch.seq ? reason : crossAs(other, before, carried);
 
       save({
         put: crossOrWithdraw(
@@ -290,11 +391,12 @@ export const createWriter = ({
               DocumentChange.between(at, at),
               at,
               record.batches,
-              keepAs
+              refused
             ),
-          keepAs
+          (other) => (other.seq === batch.seq ? reason : movedDecision(other))
         ),
       });
+      showExactly();
     }
     stalled = false;
     link?.hold(null);
@@ -309,10 +411,12 @@ export const createWriter = ({
       put: crossOrWithdraw(
         record.batches,
         document,
-        () => crossChain(change, at, record.batches, unsentDecision),
-        unsentDecision
+        () =>
+          crossChain(change, at, record.batches, redecidedIn(record.batches)),
+        movedDecision
       ),
     });
+    showExactly();
   };
 
   const install = (entries: readonly SyncEntry[]) => {
@@ -338,24 +442,19 @@ export const createWriter = ({
   const installSnapshot = (document: JsonEditorValue, version: number) => {
     if (sameDocument(document, record.confirmed.document)) {
       save({ confirmed: { document, version } });
+      showExactly();
 
       return;
     }
 
     const batches = record.batches.map((batch): SavedBatch => {
-      if (batch.state === 'saved') {
-        return { ...batch, reason: { kind: 'expired' }, state: 'kept' };
-      }
-      if (batch.state === 'sent') {
-        const { decision, frame, seq } = batch;
-
-        return { decision, frame, seq, state: 'withheld' };
-      }
+      if (batch.state === 'saved') return leaving(batch, { kind: 'expired' });
+      if (batch.state === 'sent') return leaving(batch, movedDecision(batch));
 
       return batch;
     });
 
-    showDocument(document);
+    drifted = showDocument(document) === 'rewritten';
     save({
       confirmed: { document, version },
       put: replaced(record.batches, batches),
@@ -425,7 +524,7 @@ export const createWriter = ({
     try {
       for (let next = sendable(); next; next = sendable()) {
         const { base, front } = next;
-        const { change, seq } = front;
+        const { change, decision, seq } = front;
         const { writer } = record.head;
         const digest = await digestOf({ change, seq, writer });
         const still = sendable();
@@ -441,8 +540,10 @@ export const createWriter = ({
           writer,
         };
         const sent: SentBatch = {
-          ...front,
+          change,
+          decision,
           frame: JSON.stringify(submit),
+          seq,
           state: 'sent',
         };
 
@@ -537,17 +638,32 @@ export const createWriter = ({
       link = null;
     },
     retrySaves: writes.retrySaves,
-    saveCommit: (change: DocumentChange, decision: boolean) => {
-      if (destroyed) return;
+    saveCommit: (
+      change: DocumentChange,
+      decision: boolean,
+      takesBackSeq?: number
+    ) => {
+      if (destroyed) return null;
 
-      const { head } = record;
+      const { batches, confirmed, head } = record;
+      const json = change.toJSON();
+      const origin =
+        decision && takesBackSeq === undefined
+          ? {
+              before: shownValue(confirmed.document, batches),
+              change: json,
+              since: [],
+            }
+          : undefined;
 
       save({
         head: { ...head, nextSeq: head.nextSeq + 1 },
         put: [
           {
-            change: change.toJSON(),
+            change: json,
             decision,
+            ...(origin ? { origin } : {}),
+            ...(takesBackSeq === undefined ? {} : { takesBackSeq }),
             seq: head.nextSeq,
             state: 'saved',
           },
@@ -555,6 +671,8 @@ export const createWriter = ({
       });
       changed();
       void freeze();
+
+      return head.nextSeq;
     },
     setOffline: (offline: boolean) => {
       if (destroyed) return;

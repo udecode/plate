@@ -1,9 +1,20 @@
-import { DocumentChange } from '../../core/change/document-change';
+import {
+  DocumentChange,
+  type DocumentChangeJson,
+  withoutRetainedRecordSets,
+} from '../../core/change/document-change';
+import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { notifyObservers } from '../../core/lifecycle-error';
+import { getCompiledEditorSchema } from '../../core/plugin-registry';
+import {
+  type EditorHistoryStep,
+  readEditorCommitHistoryStep,
+  replaceEditorUndoStep,
+} from '../../core/public-state';
 import { REMOTE_UPDATE } from '../../core/update-policy';
 import type { AnyEditor } from '../../interfaces/editor';
-import { documentOf, schemaFingerprintOf } from '../protocol';
+import { documentOf, schemaFingerprintOf, setValuedIn } from '../protocol';
 import { shownValue } from './chain';
 import {
   type ClaimedOutbox,
@@ -12,12 +23,14 @@ import {
   type SyncLocks,
   type SyncRelease,
 } from './claim';
+import { type SyncDecisionOf, syncDecider } from './decision';
 import type { OutboxRecord, OutboxStore } from './outbox';
 import { type Clock, type SyncTransport, systemClock } from './transport';
 import { createWriter, type SyncClientState } from './writer';
 
 export type SyncClientDecisions = Readonly<{
   changesVerdicts: (change: DocumentChange) => boolean;
+  decisionOf: SyncDecisionOf;
 }>;
 
 export type SyncClient = Readonly<{
@@ -40,6 +53,12 @@ type ClientOptions = Readonly<{
   store: OutboxStore;
   transport: SyncTransport;
 }>;
+
+const blocksOf = (value: JsonEditorValue) => {
+  const { records: _records, ...blocks } = documentOf(value);
+
+  return blocks;
+};
 
 const startClient = (
   {
@@ -87,9 +106,23 @@ const startClient = (
     );
   };
   const show = (change: DocumentChange) => {
-    editor.update(REMOTE_UPDATE, (tx) => {
-      tx.changes.apply(change);
+    const committed: DocumentChange[] = [];
+    const stop = editor.subscribeCommit((commit) => {
+      committed.push(commit.changes);
     });
+
+    try {
+      editor.update(REMOTE_UPDATE, (tx) => {
+        tx.changes.apply(change);
+      });
+    } finally {
+      stop();
+    }
+
+    return committed.length === 1 &&
+      jsonEqual(committed[0].toJSON(), change.toJSON())
+      ? 'exact'
+      : 'rewritten';
   };
   const showDocument = (document: JsonEditorValue) => {
     const change = DocumentChange.between(
@@ -97,10 +130,48 @@ const startClient = (
       document
     );
 
-    if (!change.empty) show(change);
+    return change.empty ? 'exact' : show(change);
   };
 
   showDocument(shownValue(record.confirmed.document, record.batches));
+
+  const decide = syncDecider(
+    (step) =>
+      decisions.decisionOf(step, actor, getCompiledEditorSchema(editor)),
+    setValuedIn(editor)
+  );
+  const latestCommits = new Map<
+    number,
+    Readonly<{ change: DocumentChangeJson; step: EditorHistoryStep }>
+  >();
+  const roomTakeBackOf = (logged: DocumentChange, before: JsonEditorValue) =>
+    withoutRetainedRecordSets(
+      logged.invert(before),
+      getCompiledEditorSchema(editor).recordSets
+    );
+  const undoWhatTheRoomLogged = (
+    seq: number,
+    logged: DocumentChange | null,
+    before: JsonEditorValue
+  ) => {
+    const commit = latestCommits.get(seq);
+
+    latestCommits.delete(seq);
+    if (!commit || !logged || jsonEqual(logged.toJSON(), commit.change)) {
+      return;
+    }
+
+    const after = logged.apply(before);
+    const takeBackAppliesTo = (base: JsonEditorValue) =>
+      jsonEqual(blocksOf(base), blocksOf(after));
+
+    replaceEditorUndoStep(
+      editor,
+      commit.step,
+      roomTakeBackOf(logged, before),
+      takeBackAppliesTo
+    );
+  };
 
   const draining = new Map<Writer, SyncRelease>();
   let destroyed = false;
@@ -130,12 +201,15 @@ const startClient = (
       gateDrainsOnEditor();
       changed();
     },
+    decide,
     fresh: !opened,
     record,
     schema,
+    settledDecision: undoWhatTheRoomLogged,
     show,
     showDocument,
     store,
+    takeBack: roomTakeBackOf,
     transport,
   });
 
@@ -150,24 +224,34 @@ const startClient = (
         }
         changed();
       },
+      decide,
       fresh: false,
       record: claimed.record,
       schema,
-      show: () => {},
-      showDocument: () => {},
+      show: () => 'exact',
+      showDocument: () => 'exact',
       store,
+      takeBack: roomTakeBackOf,
       transport,
     });
 
     draining.set(other, claimed.release);
   }
 
+  const stepSeqs = new WeakMap<object, number>();
   const stop = editor.subscribeCommit((commit) => {
     if (commit.tags.includes('collaboration') || commit.changes.empty) return;
-    writer.saveCommit(
-      commit.changes,
-      decisions.changesVerdicts(commit.changes)
-    );
+
+    const decision = decisions.changesVerdicts(commit.changes);
+    const step = decision ? readEditorCommitHistoryStep(editor, commit) : null;
+    const takesBackSeq = step ? stepSeqs.get(step.identity) : undefined;
+    const seq = writer.saveCommit(commit.changes, decision, takesBackSeq);
+
+    if (takesBackSeq !== undefined) latestCommits.delete(takesBackSeq);
+    if (seq !== null && step) {
+      latestCommits.set(seq, { change: commit.changes.toJSON(), step });
+      stepSeqs.set(step.identity, seq);
+    }
   });
 
   writer.connect();

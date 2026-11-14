@@ -6,7 +6,6 @@ import {
 } from '../../core/change/effect-ledger';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
-import { getCompiledPropertyMergeStrategy } from '../../core/schema-compiler';
 import type {
   AnyEditor,
   Editor,
@@ -26,6 +25,7 @@ import {
   documentOf,
   rebaseOver,
   sameDocument,
+  setValuedIn,
   schemaFingerprintOf,
 } from '../protocol';
 import { type MalformedSubmit, readClientMessage } from './client-message';
@@ -188,14 +188,6 @@ const valueOf = (editor: AnyEditor): JsonEditorValue =>
 
 const servesSchema = (room: LoadedRoom, schema: string) =>
   room.serving && schema === room.schema;
-
-const setValuedIn = (editor: AnyEditor): SetValued => {
-  const compiled = getCompiledEditorSchema(editor);
-
-  return (placement, key, context) =>
-    getCompiledPropertyMergeStrategy(compiled, placement, key, context) ===
-    'set';
-};
 
 /**
  * The authority for sync rooms. It admits each batch once, in log order, and

@@ -38,11 +38,11 @@ import {
 } from '../core/change/carried-run';
 import {
   collapseDocumentElementPropertyWrites,
-  filterDocumentChangeRecordSets,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   isInternalDocumentChangeNoop,
   valueRootIndex,
+  withoutRetainedRecordSets,
 } from '../core/change/document-change';
 import {
   getEditorCommitAdmission,
@@ -70,6 +70,7 @@ import {
   isBuildingTransactionSpec,
   isInTransaction,
   type EditorHistoryReplayReceipt,
+  type EditorHistoryStep,
   recordEditorHistoryReplayReceipt,
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
@@ -133,6 +134,7 @@ import {
   readPendingHistoryReplay,
   replaceHistoryHead,
   replaceHistoryState,
+  replaceUndoStep,
   restoreHistoryState,
   settlePendingHistoryReplay,
   withHistoryStateDraft,
@@ -220,6 +222,7 @@ type HistoryAction = 'redo' | 'undo';
 const HISTORY_ACTIVATION = new WeakMap<Editor, object>();
 const LAST_AUTOMATIC_HISTORY_GROUP_TIME = new WeakMap<Editor, number>();
 const PENDING_HISTORY_SCHEMA_ACTIVATION = new WeakMap<Editor, object>();
+const COMMIT_STEPS = new WeakMap<EditorCommit, EditorHistoryStep>();
 
 const getHistoryMaxDepth = (options: Pick<HistoryOptions, 'maxDepth'>) => {
   const maxDepth = options.maxDepth ?? 100;
@@ -703,10 +706,7 @@ const createHistoryPlugin = <
     // Undo and redo never touch a retained record set.
     const { recordSets } = getCompiledEditorSchema(editor);
     const kept = (change: DocumentChange) =>
-      filterDocumentChangeRecordSets(
-        change,
-        (set) => recordSets.get(set)?.history !== 'retain'
-      );
+      withoutRetainedRecordSets(change, recordSets);
     const changes = kept(commit.changes);
     const inverse = kept(commit.inverseChanges);
 
@@ -888,6 +888,7 @@ const createHistoryPlugin = <
         unsettled,
         replayRequest
       );
+      COMMIT_STEPS.set(commit, { identity: entry.identity });
       return Object.freeze({
         receipt: Object.freeze({
           group: entry.identity,
@@ -1106,16 +1107,18 @@ const createHistoryPlugin = <
           : {}),
       });
     } else {
-      writeHistory(editor, 'undos', preparedBatch, after, {
-        anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
-        carets,
-        clearRedos: true,
-        group:
-          settles && prepared.group
-            ? Object.freeze({ ...prepared.group, closed: true })
-            : prepared.group,
-        recovery: anchorCapture?.recovery ?? null,
-        ...(takesBackCommit ? { restores: before } : {}),
+      COMMIT_STEPS.set(commit, {
+        identity: writeHistory(editor, 'undos', preparedBatch, after, {
+          anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
+          carets,
+          clearRedos: true,
+          group:
+            settles && prepared.group
+              ? Object.freeze({ ...prepared.group, closed: true })
+              : prepared.group,
+          recovery: anchorCapture?.recovery ?? null,
+          ...(takesBackCommit ? { restores: before } : {}),
+        }),
       });
     }
     if (explicitPush || preparedBatch.effects.length > 0) {
@@ -1477,6 +1480,9 @@ const createHistoryPlugin = <
           head: (direction) =>
             peekHistoryEntry(editor, direction === 'undo' ? 'undos' : 'redos')
               ?.identity ?? null,
+          replaceUndoStep: ({ identity }, change, matches) =>
+            replaceUndoStep(editor, identity, change, matches),
+          stepOf: (commit) => COMMIT_STEPS.get(commit) ?? null,
         })
       );
       context.onCleanup(

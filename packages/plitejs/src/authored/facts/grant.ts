@@ -6,6 +6,7 @@ import {
   getValueRecords,
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import type { SyncDecision } from '../../sync/client/decision';
 import type {
   ChangeClaim,
   SyncAtHead,
@@ -472,6 +473,44 @@ const requestsOf = (
   ];
 };
 
+const decisionReplayOf = (
+  step: AuthoredStep,
+  batch: VerdictBatch,
+  grant: SyncGrant,
+  schema: CompiledEditorSchema
+) => {
+  const site = storedDecisionSiteOf(schema, step.before);
+
+  return replayAt(step, requestsOf(batch, grant, step, site), site);
+};
+
+/** What `step` decides, or null when it puts no verdict the tab can replay. */
+export const syncDecisionOf = (
+  step: AuthoredStep,
+  actor: string,
+  schema: CompiledEditorSchema
+): SyncDecision | null => {
+  const batch = verdictBatchOf(step.change);
+
+  if (batch === null || typeof batch === 'string' || 'drops' in batch) {
+    return null;
+  }
+
+  const replay = decisionReplayOf(
+    step,
+    batch,
+    { access: 'edit', actor, decide: true },
+    schema
+  );
+
+  return (
+    replay && {
+      atHead: (head) => decideAtHead(replay, head, schema)?.change ?? null,
+      decidesStructure: decidesStructure(replay),
+    }
+  );
+};
+
 const decisionCover = (
   step: AuthoredStep,
   batch: VerdictBatch,
@@ -479,8 +518,7 @@ const decisionCover = (
   schema: CompiledEditorSchema,
   head: JsonEditorValue | undefined
 ): Cover => {
-  const site = storedDecisionSiteOf(schema, step.before);
-  const replay = replayAt(step, requestsOf(batch, grant, step, site), site);
+  const replay = decisionReplayOf(step, batch, grant, schema);
 
   if (!replay) return { kind: 'refused', why: { kind: 'unreplayed' } };
 

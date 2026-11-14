@@ -3,11 +3,13 @@ import {
   type DocumentChangeJson,
   rebaseDocumentChange,
 } from '../core/change/document-change';
+import type { SetValued } from '../core/change/effect-ledger';
 import { jsonEqual } from '../core/change/json';
 import { hasRootNames } from '../core/change/lazy-root';
 import type { JsonEditorValue } from '../core/change/tokens';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { getValueRecords, recordStoreToJson } from '../core/record-store';
+import { getCompiledPropertyMergeStrategy } from '../core/schema-compiler';
 import type { AnyEditor } from '../interfaces/editor';
 
 export const SYNC_PROTOCOL = 1;
@@ -132,6 +134,14 @@ export const documentOf = (value: JsonEditorValue): JsonEditorValue => {
     ...(value.roots && hasRootNames(value.roots) ? { roots: value.roots } : {}),
     ...(Object.keys(records).length > 0 ? { records } : {}),
   };
+};
+
+export const setValuedIn = (editor: AnyEditor): SetValued => {
+  const compiled = getCompiledEditorSchema(editor);
+
+  return (placement, key, context) =>
+    getCompiledPropertyMergeStrategy(compiled, placement, key, context) ===
+    'set';
 };
 
 export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>

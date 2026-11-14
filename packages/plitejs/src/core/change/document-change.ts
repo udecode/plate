@@ -835,6 +835,16 @@ export const filterDocumentChangeRecordSets = (
   );
 
 /** @internal */
+export const withoutRetainedRecordSets = (
+  change: DocumentChange,
+  recordSets: ReadonlyMap<string, Readonly<{ history?: 'retain' | 'undo' }>>
+) =>
+  filterDocumentChangeRecordSets(
+    change,
+    (set) => recordSets.get(set)?.history !== 'retain'
+  );
+
+/** @internal */
 export const withInternalDocumentRootChange = (
   change: DocumentChange,
   root: string,
