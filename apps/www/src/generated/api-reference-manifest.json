@@ -11234,7 +11234,7 @@
         },
         "platejs/board/react:BoardShape": {
           "aliases": [],
-          "documentation": "One member of a board, painted at its stacking rank while the DOM keeps the\nboard's stored order. A shape, frame or stroke sits at its box and,\nselected alone, shows four resize handles, `[data-board-handle]`. An arrow\nsits at the board's origin with no size, so its component draws in board\ncoordinates from `useArrowPath`, and it has no handles. A frame takes a\npress only on its edge or on a child marked `[data-board-frame-name]`, such\nas its name, and a stroke only on its line, which its component draws from\n`useStrokePath`. A selected member shows `data-selected`.",
+          "documentation": "One member of a board, painted at its stacking rank while the DOM keeps the\nboard's stored order. A shape, frame or stroke sits at its box and,\nselected alone, shows four resize handles, `[data-board-handle]`. An arrow\nsits at the board's origin with no size, so its component draws in board\ncoordinates from `useArrowPath`, and it has no handles. A frame takes a\npress only on its edge or on a child marked `[data-board-frame-name]`, such\nas its name, and a stroke only on its line, which its component draws from\n`useStrokePath`. A selected member shows `data-selected`, and one the\neraser will remove on release shows `data-erasing`.",
           "entrypoint": "platejs/board/react",
           "kind": "function",
           "name": "BoardShape",
@@ -11300,12 +11300,12 @@
         },
         "platejs/board/react:BoardTool": {
           "aliases": [],
-          "documentation": "What a press on the board does: `arrow` draws an arrow from the press to\nthe release, and `pen` draws a line along the drag, or a dot at a click,\nand stays the tool after it draws. The other tools act on an empty part of\nthe board, which includes the inside of a frame. `frame` draws a frame over\na drag, or adds one of the frame's default size centered at a click.\n`select` selects the shapes a mouse or pen drag's box holds wholly, adding\nthem to the selection with Shift, and pans on a touch drag.",
+          "documentation": "What a press on the board does: `arrow` draws an arrow from the press to\nthe release, and `pen` draws a line along the drag, or a dot at a click,\nand stays the tool after it draws. `eraser` marks every note, shape, arrow\nand pen line a click or drag passes over, but never a frame, and removes\nthem as one undo step on release, and stays the tool. A marked shape shows\n`data-erasing`. The other tools act on an empty part of the board, which\nincludes the inside of a frame. `frame` draws a frame over a drag, or adds\none of the frame's default size centered at a click. `select` selects the\nshapes a mouse or pen drag's box holds wholly, adding them to the selection\nwith Shift, and pans on a touch drag.",
           "entrypoint": "platejs/board/react",
           "kind": "type",
           "name": "BoardTool",
           "runtime": false,
-          "signature": "type BoardTool = 'arrow' | 'frame' | 'geo' | 'note' | 'pen' | 'select';",
+          "signature": "type BoardTool = 'arrow' | 'eraser' | 'frame' | 'geo' | 'note' | 'pen' | 'select';",
           "source": null,
           "typeParameters": []
         },

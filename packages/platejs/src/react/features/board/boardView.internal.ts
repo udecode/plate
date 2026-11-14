@@ -53,13 +53,23 @@ export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
 /**
  * What a press on the board does: `arrow` draws an arrow from the press to
  * the release, and `pen` draws a line along the drag, or a dot at a click,
- * and stays the tool after it draws. The other tools act on an empty part of
- * the board, which includes the inside of a frame. `frame` draws a frame over
- * a drag, or adds one of the frame's default size centered at a click.
- * `select` selects the shapes a mouse or pen drag's box holds wholly, adding
- * them to the selection with Shift, and pans on a touch drag.
+ * and stays the tool after it draws. `eraser` marks every note, shape, arrow
+ * and pen line a click or drag passes over, but never a frame, and removes
+ * them as one undo step on release, and stays the tool. A marked shape shows
+ * `data-erasing`. The other tools act on an empty part of the board, which
+ * includes the inside of a frame. `frame` draws a frame over a drag, or adds
+ * one of the frame's default size centered at a click. `select` selects the
+ * shapes a mouse or pen drag's box holds wholly, adding them to the selection
+ * with Shift, and pans on a touch drag.
  */
-export type BoardTool = 'arrow' | 'frame' | 'geo' | 'note' | 'pen' | 'select';
+export type BoardTool =
+  | 'arrow'
+  | 'eraser'
+  | 'frame'
+  | 'geo'
+  | 'note'
+  | 'pen'
+  | 'select';
 
 export type BoardPlaceTool = Extract<BoardTool, 'frame' | 'geo' | 'note'>;
 
@@ -131,6 +141,8 @@ export type BoardViewCore = Readonly<{
   replaceInteraction: (interaction: BoardInteraction) => () => void;
   boardSelected: () => boolean;
   cancelInteraction: () => boolean;
+  /** Unmark every shape the eraser marked, and return their ids. */
+  clearErasing: () => readonly string[];
   viewCenter: () => BoardPlace;
   commit: (change: BoardWrite) => void;
   edit: (key: NodeKey) => void;
@@ -147,6 +159,8 @@ export type BoardViewCore = Readonly<{
   deselectOnBoard: () => boolean;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
   leaveBoard: (backward: boolean) => boolean;
+  /** Mark the shapes `ids` as ones the eraser will remove. */
+  markErasing: (ids: readonly string[]) => void;
   measure: () => void;
   mounted: Editor;
   pan: (viewFraction: BoardPlace) => void;
@@ -165,6 +179,7 @@ export type BoardViewCore = Readonly<{
   setCamera: (camera: BoardCamera) => void;
   setTool: (tool: BoardTool) => void;
   shapeAt: (at: BoardPlace) => BoardShapeLayout | undefined;
+  shapesAlong: (from: BoardPlace, to: BoardPlace) => readonly string[];
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   undo: () => void;
@@ -265,6 +280,14 @@ export const createBoardView = (
   const stateListeners = new Set<() => void>();
   const shapeListeners = new Set<() => void>();
   const viewportListeners = new Set<() => void>();
+  const erasing = new Set<string>();
+  const erasingListeners = new Map<string, Set<() => void>>();
+
+  const notifyErasing = (ids: Iterable<string>) => {
+    for (const id of ids) {
+      for (const listener of erasingListeners.get(id) ?? []) listener();
+    }
+  };
 
   const setState = (next: Partial<BoardViewState>) => {
     state = { ...state, ...next };
@@ -275,6 +298,7 @@ export const createBoardView = (
   let renderedKeyOf = new Map<NodeKey, NodeKey>();
   const index = createBoardIndex({
     children: () => shownView.read.children(),
+    isEmpty: (block) => editor.read.nodes.isEmpty(block),
     isVoid: (node) => editor.read.schema.isVoid(node),
     members: () => {
       const shown = new Map(
@@ -298,6 +322,11 @@ export const createBoardView = (
       );
 
       return entries;
+    },
+    nodeOf: (key) => {
+      const node = mounted.read.nodes.get(key)?.[0];
+
+      return ElementApi.isElement(node) ? node : undefined;
     },
   });
   let shownVersion = 0;
@@ -804,6 +833,14 @@ export const createBoardView = (
       return !!path && PathApi.isAncestor(path, range.anchor.path);
     },
     cancelInteraction,
+    clearErasing: () => {
+      const ids = [...erasing];
+
+      erasing.clear();
+      notifyErasing(ids);
+
+      return ids;
+    },
     viewCenter,
     commit,
     edit: (key) => {
@@ -853,6 +890,12 @@ export const createBoardView = (
 
       return true;
     },
+    markErasing: (ids) => {
+      const added = ids.filter((id) => !erasing.has(id));
+
+      for (const id of added) erasing.add(id);
+      notifyErasing(added);
+    },
     measure,
     mounted,
     pan: (viewFraction) => {
@@ -886,6 +929,7 @@ export const createBoardView = (
       voice.tool(tool);
     },
     shapeAt: (at) => index.shapeAt(at, state.camera.zoom),
+    shapesAlong: (from, to) => index.shapesAlong(from, to, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
     undo: () => {
@@ -1022,6 +1066,7 @@ export const createBoardView = (
         unsubscribeViewState();
       };
     },
+    erasing: (id: string) => erasing.has(id),
     focusTarget,
     layoutOf: (id: string) => {
       if (!index.byId(id)) index.update();
@@ -1053,6 +1098,17 @@ export const createBoardView = (
       return () => {
         stop();
         shapeListeners.delete(listener);
+      };
+    },
+    subscribeErasing: (id: string, listener: () => void) => {
+      const listeners = erasingListeners.get(id) ?? new Set();
+
+      listeners.add(listener);
+      erasingListeners.set(id, listeners);
+
+      return () => {
+        listeners.delete(listener);
+        if (listeners.size === 0) erasingListeners.delete(id);
       };
     },
     subscribeShapes: subscribeTo(shapeListeners),

@@ -45,6 +45,10 @@ type Gesture = Readonly<{ pointerId: number }> &
         pointer: BoardPlace;
       }
     | {
+        kind: 'erase';
+        pointer: BoardPlace;
+      }
+    | {
         kind: 'frame';
         from: BoardPlace;
         outline: HTMLElement;
@@ -167,8 +171,8 @@ const elementOf = (host: HTMLElement, id: string) =>
 
 /**
  * The board's pointer gestures on `host`: pan, the selection box, move, copy
- * drag, resize, the pen's line and the other tools' drags, each previewed with
- * no write and committed once on release.
+ * drag, resize, the pen's line, the eraser and the other tools' drags, each
+ * previewed with no write and committed once on release.
  */
 export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
@@ -185,6 +189,14 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     path.setAttribute('d', strokeOutline(points, false));
   };
 
+  // Both client points go through the current camera, so a pan mid-drag
+  // cannot stretch the segment across the board.
+  const erase = (from: BoardPlace, to: BoardPlace) => {
+    core.markErasing(
+      core.shapesAlong(core.boardPointAt(from), core.boardPointAt(to))
+    );
+  };
+
   const pan = (pointer: BoardPlace, pointerId: number): Gesture => ({
     kind: 'pan',
     pointer,
@@ -198,7 +210,14 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const follow = () => {
-    if (!gesture || gesture.kind === 'pan' || gesture.kind === 'pen') return;
+    if (
+      !gesture ||
+      gesture.kind === 'erase' ||
+      gesture.kind === 'pan' ||
+      gesture.kind === 'pen'
+    ) {
+      return;
+    }
 
     const at = core.boardPointAt(gesture.pointer);
 
@@ -302,6 +321,8 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       done.outline.remove();
     } else if (done.kind === 'pen') {
       done.path.ownerSVGElement?.remove();
+    } else if (done.kind === 'erase') {
+      core.clearErasing();
     }
     index.clearPreview();
 
@@ -334,8 +355,25 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
       return;
     }
+
+    const erased = done.kind === 'erase' ? core.clearErasing() : [];
+
     cancel();
     if (done.kind === 'box') return;
+    if (done.kind === 'erase') {
+      index.update();
+
+      // Since the drag marked them, a shape may be gone or retyped into a frame.
+      const ids = erased.filter((id) => {
+        const kind = index.byId(id)?.kind;
+
+        return kind === 'arrow' || kind === 'shape';
+      });
+
+      if (ids.length > 0) core.commit({ ids, kind: 'remove' });
+
+      return;
+    }
     if (done.kind === 'pen') {
       core.write((tx) =>
         tx
@@ -438,7 +476,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       at,
       !!handle
     );
-    const draws = tool === 'arrow' || tool === 'pen';
+    const draws = tool === 'arrow' || tool === 'eraser' || tool === 'pen';
     const typing = core.writable() && !!core.editedShape();
 
     if (event.button === 1 || (spaceHeld && !typing)) {
@@ -523,6 +561,13 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
           };
           break;
         }
+        case 'eraser': {
+          if (!core.writable()) return;
+          core.deselectOnBoard();
+          gesture = { kind: 'erase', pointer, pointerId };
+          erase(pointer, pointer);
+          break;
+        }
         case 'frame': {
           if (!core.writable()) return;
           gesture = {
@@ -588,7 +633,10 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       free = core.replaceInteraction({
         cancel,
         kind:
-          kind === 'arrow' || kind === 'frame' || kind === 'pen'
+          kind === 'arrow' ||
+          kind === 'erase' ||
+          kind === 'frame' ||
+          kind === 'pen'
             ? 'draw'
             : 'drag',
       });
@@ -610,6 +658,8 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     if (gesture.kind === 'pen') {
       addPenPoint(gesture.points, core.boardPointAt(gesture.pointer), event);
       drawPen(gesture);
+    } else if (gesture.kind === 'erase') {
+      erase(previous, gesture.pointer);
     } else if (gesture.kind === 'pan') {
       const { camera } = core.state();
       const { pointer } = gesture;
@@ -628,7 +678,14 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       clicker = undefined;
       swallowClick = true;
     }
-    if (owns(event)) release();
+    if (!owns(event)) return;
+    if (gesture?.kind === 'erase') {
+      const previous = gesture.pointer;
+
+      gesture.pointer = { x: event.clientX, y: event.clientY };
+      erase(previous, gesture.pointer);
+    }
+    release();
   };
   const onPointerCancel = (event: PointerEvent) => {
     if (owns(event)) cancel();

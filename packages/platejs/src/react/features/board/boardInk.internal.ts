@@ -97,24 +97,63 @@ const distanceToSegment = (
   return Math.hypot(at.x - from.x - along * dx, at.y - from.y - along * dy);
 };
 
+/** Which side of the line from `from` to `to` the point `at` lies on, by sign. */
+export const lineSide = (from: BoardPlace, to: BoardPlace, at: BoardPlace) =>
+  (to.x - from.x) * (at.y - from.y) - (to.y - from.y) * (at.x - from.x);
+
+const crosses = (a: BoardPlace, b: BoardPlace, c: BoardPlace, d: BoardPlace) =>
+  lineSide(c, d, a) * lineSide(c, d, b) < 0 &&
+  lineSide(a, b, c) * lineSide(a, b, d) < 0;
+
+/** The shortest distance between the segments `from`-`to` and `start`-`end`. */
+export const segmentGap = (
+  from: BoardPlace,
+  to: BoardPlace,
+  start: BoardPlace,
+  end: BoardPlace
+) =>
+  crosses(from, to, start, end)
+    ? 0
+    : Math.min(
+        distanceToSegment(from, start, end),
+        distanceToSegment(to, start, end),
+        distanceToSegment(start, from, to),
+        distanceToSegment(end, from, to)
+      );
+
 /**
- * Whether board point `at` lies on the line through `ink`, or within
- * `INK_SLOP_PX` screen pixels of it at `zoom`.
+ * Whether the segment from board point `from` to `to` passes over the line
+ * through `ink`, or within `INK_SLOP_PX` screen pixels of it at `zoom`. A
+ * press passes its point as both `from` and `to`.
  */
 export const onInk = (
   ink: readonly BoardInkPoint[],
-  at: BoardPlace,
+  from: BoardPlace,
+  to: BoardPlace,
   zoom: number
 ) => {
   const slop = INK_SLOP_PX / zoom;
+  const minX = Math.min(from.x, to.x);
+  const maxX = Math.max(from.x, to.x);
+  const minY = Math.min(from.y, to.y);
+  const maxY = Math.max(from.y, to.y);
   let previous: (BoardPlace & { radius: number }) | undefined;
 
   for (const [x, y, pressure] of ink) {
     const point = { radius: boardStrokeRadius(pressure), x, y };
-    const reach = Math.max(point.radius, previous?.radius ?? 0) + slop;
+    const start = previous ?? point;
+    const reach = Math.max(point.radius, start.radius) + slop;
 
-    if (distanceToSegment(at, previous ?? point, point) <= reach) return true;
     previous = point;
+    if (
+      Math.min(start.x, x) - reach > maxX ||
+      Math.max(start.x, x) + reach < minX ||
+      Math.min(start.y, y) - reach > maxY ||
+      Math.max(start.y, y) + reach < minY
+    ) {
+      continue;
+    }
+    if (segmentGap(from, to, start, point) <= reach) return true;
   }
 
   return false;

@@ -1,5 +1,9 @@
 import { type ElementOf, property } from '../../../core';
-import { BOARD_GEO_SIZE, defineBoardShape } from './boardShape.internal';
+import {
+  BOARD_GEO_SIZE,
+  BOARD_GEO_TYPE,
+  defineBoardShape,
+} from './boardShape.internal';
 
 const BOARD_GEOS = ['diamond', 'ellipse', 'rectangle', 'triangle'] as const;
 
@@ -7,7 +11,7 @@ const BOARD_GEOS = ['diamond', 'ellipse', 'rectangle', 'triangle'] as const;
 export type BoardGeo = (typeof BOARD_GEOS)[number];
 
 /** A geometric shape on a board, with a text label. */
-export const BaseBoardGeoPlugin = defineBoardShape('boardGeo', {
+export const BaseBoardGeoPlugin = defineBoardShape(BOARD_GEO_TYPE, {
   properties: {
     fill: property.string({ default: 'none' }),
     geo: property.enum(BOARD_GEOS, { default: 'rectangle' }),

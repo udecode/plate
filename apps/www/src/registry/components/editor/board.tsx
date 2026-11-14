@@ -4,6 +4,7 @@ import {
   BanIcon,
   CircleIcon,
   DiamondIcon,
+  EraserIcon,
   FrameIcon,
   MousePointer2Icon,
   MoveUpRightIcon,
@@ -66,6 +67,7 @@ const TOOLS: ReadonlyArray<
   { icon: MoveUpRightIcon, key: 'A', label: 'Arrow', tool: 'arrow' },
   { icon: FrameIcon, key: 'F', label: 'Frame', tool: 'frame' },
   { icon: PencilIcon, key: 'P', label: 'Pen', tool: 'pen' },
+  { icon: EraserIcon, key: 'E', label: 'Eraser', tool: 'eraser' },
 ];
 
 const GEOS: ReadonlyArray<
@@ -105,6 +107,7 @@ const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
 
 const TOOL_NAMES: Readonly<Record<BoardTool, string>> = {
   arrow: 'Arrow tool',
+  eraser: 'Eraser tool',
   frame: 'Frame tool',
   geo: 'Shape tool',
   note: 'Note tool',
@@ -242,11 +245,12 @@ function BoardZoomLevel() {
 
   return (
     <ToolbarButton
+      className="w-10 px-0"
       aria-label={`Zoom ${percent}%, reset to 100%`}
       tooltip="Reset to 100% (Shift+0)"
       onClick={resetZoom}
     >
-      <span className="min-w-[6ch] text-center tabular-nums">{percent}%</span>
+      <span className="text-xs tabular-nums">{percent}%</span>
     </ToolbarButton>
   );
 }
@@ -263,7 +267,7 @@ export function BoardToolbar() {
   const { fit, removeFrame, setTool, zoomIn, zoomOut } = useBoardActions();
 
   return (
-    <Toolbar className="absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap justify-center gap-0.5 rounded-lg border bg-background p-1 shadow-sm">
+    <Toolbar className="absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap justify-center gap-y-0.5 rounded-lg border bg-background p-1 shadow-sm">
       <ToolbarGroup>
         {TOOLS.map(({ icon: Icon, key, label, tool: itemTool }) =>
           itemTool === 'geo' ? (
@@ -310,6 +314,8 @@ export function BoardToolbar() {
 const BOARD_FOCUS_RING =
   'has-[[data-board-focus]:focus-visible]:not-has-[[data-board-shape][data-selected]]:ring-[3px] has-[[data-board-focus]:focus-visible]:not-has-[[data-board-shape][data-selected]]:ring-ring/50';
 
+const BOARD_ERASING = '[&_[data-board-shape][data-erasing]]:opacity-30';
+
 const BOARD_GRID =
   'bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px]';
 
@@ -321,6 +327,7 @@ export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
         ...props.attributes,
         className: cn(
           'my-4 rounded-lg border data-selected:ring-2 data-selected:ring-ring',
+          BOARD_ERASING,
           BOARD_FOCUS_RING,
           BOARD_GRID
         ),
@@ -341,6 +348,7 @@ export function BoardPageElement(
         ...props.attributes,
         className: cn(
           'ring-inset data-selected:ring-2 data-selected:ring-ring',
+          BOARD_ERASING,
           BOARD_FOCUS_RING,
           BOARD_GRID
         ),

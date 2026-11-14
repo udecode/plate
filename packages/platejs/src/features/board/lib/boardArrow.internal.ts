@@ -187,6 +187,43 @@ const corners = ({ outline, place: { x, y }, size }: BoardArrowTarget) => {
   ];
 };
 
+const MIN_ELLIPSE_SIDES = 8;
+
+/**
+ * The corners of a target's outline, with an ellipse as a polygon whose sides
+ * stay within one screen pixel of the ellipse at `zoom`.
+ */
+export const boardOutlineOf = (
+  target: BoardArrowTarget,
+  zoom: number
+): readonly BoardPlace[] => {
+  if (target.outline !== 'ellipse') return corners(target);
+
+  const {
+    place: { x, y },
+    size,
+  } = target;
+  const rx = size.width / 2;
+  const ry = size.height / 2;
+  // The middle of each side sits radius * (1 - cos(PI / sides)) inside the
+  // ellipse, so a large ellipse seen up close needs more sides.
+  const sides = Math.max(
+    MIN_ELLIPSE_SIDES,
+    Math.ceil(
+      Math.PI / Math.acos(Math.max(0, 1 - 1 / (Math.max(rx, ry) * zoom)))
+    )
+  );
+
+  return Array.from({ length: sides }, (_, at) => {
+    const angle = (2 * Math.PI * at) / sides;
+
+    return {
+      x: x + rx + rx * Math.cos(angle),
+      y: y + ry + ry * Math.sin(angle),
+    };
+  });
+};
+
 const stopAt = (from: BoardPlace, to: BoardPlace, target: BoardArrowTarget) => {
   const points = corners(target);
   const hits =

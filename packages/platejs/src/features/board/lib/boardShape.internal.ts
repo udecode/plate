@@ -45,6 +45,8 @@ export const BOARD_SHAPES_SLOT = 'shapes';
 
 export const BOARD_NOTE_SIZE: BoardSize = { height: 200, width: 200 };
 
+export const BOARD_GEO_TYPE = 'boardGeo';
+
 export const BOARD_GEO_SIZE: BoardSize = { height: 100, width: 160 };
 
 /**

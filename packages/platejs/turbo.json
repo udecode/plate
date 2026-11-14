@@ -4637,6 +4637,7 @@
         "source-hash:partition:board",
         "source-hash:partition:board-react",
         "source-hash:partition:core",
+        "source-hash:partition:math",
         "source-hash:partition:proxies",
         "source-hash:partition:react-core",
         "source-hash:partition:suggestion-react"

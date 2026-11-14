@@ -1,6 +1,6 @@
 import RBush, { type BBox } from 'rbush';
 
-import type { NodeKey } from '../../../core';
+import { type Element, ElementApi, type NodeKey } from '../../../core';
 import type {
   BoardFrameEntry,
   BoardMemberEntry,
@@ -14,6 +14,7 @@ import {
   type BoardArrowEnds,
   type BoardArrowTarget,
   boardArrowTargetOf,
+  boardOutlineOf,
   isBoundArrowEnd,
   resolveBoardArrow,
 } from '../../../features/board/lib/boardArrow.internal';
@@ -21,8 +22,11 @@ import {
   paintKeyOf,
   paintOrder,
 } from '../../../features/board/lib/boardCopy.internal';
+import { BOARD_GEO_TYPE } from '../../../features/board/lib/boardShape.internal';
 import {
+  BOARD_STROKE_REACH,
   BOARD_STROKE_TYPE,
+  type BoardInkPoint,
   boardInkIn,
   type BoardStrokePoints,
 } from '../../../features/board/lib/boardStroke.internal';
@@ -30,6 +34,8 @@ import {
   type BoardStrokePath,
   INK_SLOP_PX,
   onInk,
+  lineSide,
+  segmentGap,
   strokeOutline,
 } from './boardInk.internal';
 
@@ -111,6 +117,21 @@ const inkOf = (entry: BoardMemberEntry): BoardStrokePoints | undefined =>
 const sameInk = (a: BoardStrokePoints, b: BoardStrokePoints) =>
   a === b || (a.length === b.length && a.every((value, at) => value === b[at]));
 
+// An unchanged member keeps its layout object, so its line in board
+// coordinates is computed once, not on every press or eraser move.
+const drawnInk = new WeakMap<BoardShapeLayout, readonly BoardInkPoint[]>();
+
+const inkOnBoard = (layout: BoardShapeLayout, ink: BoardStrokePoints) => {
+  let drawn = drawnInk.get(layout);
+
+  if (!drawn) {
+    drawn = boardInkIn(ink, layout.box);
+    drawnInk.set(layout, drawn);
+  }
+
+  return drawn;
+};
+
 const inBox = (box: BoardBox, at: BoardPlace) =>
   at.x >= box.x &&
   at.y >= box.y &&
@@ -126,6 +147,40 @@ const onFrameEdge = (box: BoardBox, at: BoardPlace, zoom: number) =>
   ) <
   FRAME_EDGE_PX / zoom;
 
+// Every outline is convex, so a point inside it is on one side of each edge.
+const inOutline = (outline: readonly BoardPlace[], at: BoardPlace) => {
+  const sides = new Set(
+    outline.map((start, index) =>
+      Math.sign(lineSide(start, outline[(index + 1) % outline.length], at))
+    )
+  );
+
+  return !sides.has(1) || !sides.has(-1);
+};
+
+const outlineAlong = (
+  outline: readonly BoardPlace[],
+  from: BoardPlace,
+  to: BoardPlace,
+  slop: number,
+  solid: () => boolean
+) =>
+  outline.some(
+    (start, at) =>
+      segmentGap(from, to, start, outline[(at + 1) % outline.length]) <= slop
+  ) ||
+  ((inOutline(outline, from) || inOutline(outline, to)) && solid());
+
+// A geo shape with no fill and no label draws only its outline, so, as in
+// Excalidraw, the eraser reaches it only near that outline.
+const hollow = (
+  node: Element | undefined,
+  isEmpty: (block: Element) => boolean
+) =>
+  node?.type === BOARD_GEO_TYPE &&
+  (node.fill ?? 'none') === 'none' &&
+  node.children.every((block) => ElementApi.isElement(block) && isEmpty(block));
+
 const reaches = (layout: BoardShapeLayout, at: BoardPlace, zoom: number) => {
   switch (layout.kind) {
     case 'arrow': {
@@ -136,7 +191,7 @@ const reaches = (layout: BoardShapeLayout, at: BoardPlace, zoom: number) => {
     }
     default: {
       return layout.ink
-        ? onInk(boardInkIn(layout.ink, layout.box), at, zoom)
+        ? onInk(inkOnBoard(layout, layout.ink), at, at, zoom)
         : inBox(layout.box, at);
     }
   }
@@ -150,13 +205,18 @@ const reaches = (layout: BoardShapeLayout, at: BoardPlace, zoom: number) => {
  */
 export const createBoardIndex = ({
   children: childrenOf,
+  isEmpty,
   isVoid,
   members: membersRead,
+  nodeOf,
 }: Readonly<{
   /** The board root's top-level blocks, whose identity changes with them. */
   children: () => readonly unknown[];
+  isEmpty: (block: Element) => boolean;
   isVoid: (node: BoardMemberEntry['node']) => boolean;
   members: () => readonly BoardMemberEntry[];
+  /** A member's current node, which a text commit changes without an update. */
+  nodeOf: (key: NodeKey) => Element | undefined;
 }>) => {
   const tree = new RBush<CullBox>();
   let children: readonly unknown[] | null = null;
@@ -191,7 +251,7 @@ export const createBoardIndex = ({
     const shown = targets.get(entry.id);
 
     return (
-      previous.kind === entry.kind &&
+      entry.node.type === previous.node.type &&
       (!isStroke(entry) || entry.node.points === previous.node.points) &&
       (entry.kind === 'frame' ||
         (previous.kind === 'shape' && previous.frame === entry.frame)) &&
@@ -317,6 +377,7 @@ export const createBoardIndex = ({
         previous &&
           previous.rank === rank &&
           previous.id === entry.id &&
+          previous.kind === entry.kind &&
           previous.holdsText === holdsText &&
           previous.ink === ink &&
           sameBox(previous.box, box)
@@ -351,6 +412,44 @@ export const createBoardIndex = ({
   const notifyArrows = (keys: Iterable<NodeKey>) => {
     for (const key of keys) {
       for (const listener of arrowListeners.get(key) ?? []) listener();
+    }
+  };
+
+  const along = (
+    layout: BoardShapeLayout,
+    from: BoardPlace,
+    to: BoardPlace,
+    zoom: number
+  ) => {
+    const slop = INK_SLOP_PX / zoom;
+
+    switch (layout.kind) {
+      case 'arrow': {
+        const drawn = arrows.get(layout.key)?.drawn;
+
+        return !!drawn && segmentGap(from, to, drawn.start, drawn.end) <= slop;
+      }
+      case 'frame': {
+        return false;
+      }
+      default: {
+        if (layout.ink) {
+          return onInk(inkOnBoard(layout, layout.ink), from, to, zoom);
+        }
+
+        const target = targets.get(layout.id);
+
+        return (
+          !!target &&
+          outlineAlong(
+            boardOutlineOf(target, zoom),
+            from,
+            to,
+            slop,
+            () => !hollow(nodeOf(layout.key), isEmpty)
+          )
+        );
+      }
     }
   };
 
@@ -438,6 +537,32 @@ export const createBoardIndex = ({
       notifyArrows([...next.keys(), ...left]);
     },
     search: (box: BBox) => tree.search(box),
+    /**
+     * The ids of the members the segment from board point `from` to `to`
+     * passes over, or within `INK_SLOP_PX` screen pixels of at `zoom`: a
+     * stroke near its line, an arrow near its drawn line, any other shape
+     * inside or near its outline, and a geo shape with no fill or label only
+     * near its outline. A frame is never among them.
+     */
+    shapesAlong: (from: BoardPlace, to: BoardPlace, zoom: number) => {
+      // A stroke resized below twice its line's radius draws past its box,
+      // by up to that radius.
+      const reach = INK_SLOP_PX / zoom + BOARD_STROKE_REACH;
+      const ids: string[] = [];
+
+      for (const { key } of tree.search({
+        maxX: Math.max(from.x, to.x) + reach,
+        maxY: Math.max(from.y, to.y) + reach,
+        minX: Math.min(from.x, to.x) - reach,
+        minY: Math.min(from.y, to.y) - reach,
+      })) {
+        const layout = layouts.get(key);
+
+        if (layout && along(layout, from, to, zoom)) ids.push(layout.id);
+      }
+
+      return ids;
+    },
     /**
      * The frontmost member a press at `at` reaches: no arrow, a frame only on
      * its edge, and a stroke only on its line.
