@@ -17,6 +17,7 @@ docs:
 - Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
 - A camera, a tool and a next style for each mounted view, which the document never stores.
+- Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. A screen reader hears the selected shape, the picked tool, the zoom and each removal, in words your app passes.
 - Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
 
 </PackageInfo>
@@ -113,24 +114,66 @@ const editor = createEditor({
 
 ## Keyboard and pointer
 
+Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its focus target, which holds focus while you move between shapes.
+
 | Input | Result |
 | --- | --- |
 | A press on a shape | Selects it. Shift adds it to the selection. |
+| Enter on the focused or selected board | Selects its first shape. |
+| Tab and Shift+Tab | Move between shapes in the order the board stores them, and leave the board after the last one. A shape outside the view comes into it. |
+| Mod with an arrow | Selects the nearest shape in that direction and brings it into view. With nothing selected, it starts from the view's center. With no shape that way, the selection stays and the board says it again. |
 | Double click, or Enter on a selected note, shape or arrow | Edits its text. |
 | Escape | Climbs from the text to its shape, then to the board. |
-| Enter on a selected board | Selects its first shape. |
+| Shift+Enter on the focused board or its selected shapes | Moves focus to the toolbar. Escape or Shift+Tab moves it back. |
 | `V`, `N`, `R`, `A`, `F`, `P` | Pick the select, note, shape, arrow, frame and pen tools. |
 | Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. |
 | `]` and `[` | Bring the selected shapes forward or send them backward one step. |
 | Mod+Shift+Up and Mod+Shift+Down | Bring the selected shapes to the front or send them to the back. |
 | Delete or Backspace | Removes the selected shapes. A frame goes with the shapes in it. |
 | Mod+A with a shape selected | Selects every shape of the board. |
-| Tab and Shift+Tab | Move between shapes in reading order, and leave the board after the last one. |
+| Mod+Z, and Mod+Shift+Z or Control+Y | Undo and redo. Control+Y redoes only off a Mac. Focus follows the shapes the undo selects. |
+| `=` or `+`, and `-` | Zoom in or out to the next of 10, 25, 50, 100, 200, 400 and 800 percent. |
+| Shift+0 | Zooms to 100 percent. |
+| Shift+1 | Fits every shape in the view. |
+| PageDown and PageUp | Pan down or up by 80 percent of the view, or right and left with Shift. |
 | A drag with Alt held | Copies the dragged shapes. |
 | A drag on the empty board with the select tool | Draws a selection box and selects every shape wholly inside it. Shift keeps the shapes already selected. A touch drag pans instead. |
 | Wheel, or a drag with Space held or with the middle button | Pans, from any point and over shapes too. Mod with the wheel zooms. |
 
+On a read-only board, the keys that change nothing still work: Tab and Shift+Tab, Mod with an arrow, Mod+A, Enter on the board, Escape, Shift+Enter, the tool letters, and the zoom, fit and pan keys. The keys that write do nothing and say nothing. After the last shape, Tab clears the selection and the browser moves focus out of the board.
+
 Backspace at the start of the block after a board, or Delete at the end of the block before it, selects the board. The next Backspace or Delete removes it with every shape, and one undo puts it back.
+
+## Screen readers
+
+The board says what happens through the editor's one status region, in the words your copied board passes as `messages`. The prop is required, and the package ships no English word. Only the view that holds focus says anything, so a second view of the same board stays silent. A member that returns an empty string says nothing. Moves, restacks and pans say nothing.
+
+| Member | Use |
+| --- | --- |
+| `label` | The board's name, on its focus target and on the region of its shapes. |
+| `instructions` | The focus target's description, which a screen reader says when the board takes focus. |
+| `shape(shape, { position, total })` | Said when the selection becomes one shape, with its place in stored order, such as `Ship it, Shape. 3 of 5`. |
+| `shapes(count)` | Said when the selection becomes several shapes. |
+| `tool(tool)` | Said when a letter or the toolbar picks a tool. |
+| `zoom(percent)` | Said when a zoom key or `fit` changes the zoom. A wheel zoom says nothing. |
+| `removed(count)` | Said when a removal lands, with the number of shapes it took off the board, a removed frame's shapes included. |
+
+`shape` gets a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. The copied board passes:
+
+```tsx
+const boardMessages: BoardMessages = {
+  label: 'Board',
+  instructions:
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. Shift+Enter reaches the toolbar.',
+  shape: (shape, { position, total }) =>
+    `${nameOf(shape)}. ${position} of ${total}`,
+  shapes: (count) => `${count} shapes selected`,
+  tool: (tool) => TOOL_NAMES[tool],
+  zoom: (percent) => `Zoom ${percent}%`,
+  removed: (count) =>
+    count === 1 ? 'Shape deleted' : `${count} shapes deleted`,
+};
+```
 
 ## Insert shapes from code
 
@@ -350,6 +393,7 @@ Every other peer joins the new room with the new plugins and schema, and without
 - Markdown keeps the text of each shape in reading order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only the five built-in shape types, to keep a board whole.
 - A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
 - A board inside a note, and rotation, are not supported.
+- A keyboard alone cannot place a shape, draw or bind an arrow, or resize a shape.
 - On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Enter with the caret on the board block, where Mod+A can put it, adds a paragraph after it. Undo brings the board back.
 
 ## Plugins
@@ -377,6 +421,7 @@ The shape types: `boardNote`, `boardGeo`, `boardArrow`, `boardFrame` and `boardS
 | `removeFrame(id)` | `BaseBoardPlugin` | Removes a frame and keeps its shapes where they are. |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | Pastes a copy of the shapes in `slice` into `board`, with fresh ids, and returns the copies' ids. |
 | `shapes(board)`, `shape(id)`, `arrowEnds(id)`, `slice(ids)` | `BaseBoardPlugin` | Read the shapes of a board, one shape by id in any board, where an arrow draws its ends, and the slice a copy of shapes carries. Call them on `tx.plugin(BaseBoardPlugin)`. |
-| `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. The surface's `height` sets its view's height and defaults to the board's stored `height`. |
+| `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. The surface's required `messages` holds every word the board says, as [Screen readers](#screen-readers) lists. Its `height` sets its view's height and defaults to the board's stored `height`. |
+| `BoardMessages`, `BoardShapeDescription` | `platejs/board/react` | The type of `messages`, and the shape that `messages.shape` describes. |
 | `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Read the view's `tool`, `camera` and `nextStyle`, its board's selected shapes as `selectedShapes`, and whether it can write as `writable`; call `setTool`, `setNextStyle`, `fit`, `removeFrame` and `focus`, which moves focus back to the board and keeps its selection, such as after a toolbar menu closes. The next style's `fill` goes to both the next note and the next geo shape. |
 | `useArrowPath(element)`, `useStrokePath(element)` | `platejs/board/react` | The drawn path of an arrow or a pen line. |
