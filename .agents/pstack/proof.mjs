@@ -9,12 +9,15 @@
 // --timeout defaults to 3,600 seconds and a longer one is refused. A run its
 // timeout stopped logs that before `exit=ETIMEDOUT`, whatever the command
 // returned, and stops every process still in the command's process group.
-// Before it starts, it holds half a core of this machine's core pool for each
-// of its --cores (default 1) workers. A --stress run holds a whole core for
+// Before it starts, it asks this machine's core pool for half a core for each
+// of its --cores (default 1) workers. A --stress run asks for a whole core for
 // each, and is refused when its --cores is over half the machine's cores.
-// Every proof.mjs and land.mjs check of every session shares the pool. It
-// waits while the pool is full or free memory is low, and waiters enter in
-// the order they arrived.
+// Every proof.mjs and land.mjs check of every session shares the pool, and
+// the pool counts the workers each one runs, so a command that runs
+// more workers than it asked for holds a share for each. It waits while the
+// pool is full or free memory is low, or while the pool still counts the
+// workers of a command that just started, and waiters enter in the order
+// they arrived.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs';
@@ -53,7 +56,12 @@ const STRESS_CORES_PER_WORKER = 1;
 const STRESS_MAX_CORE_SHARE = 0.5;
 const POLL_MS = 2000;
 const STALE_LOCK_MS = 10_000;
+// On a loaded machine a new command had started four fifths of its workers
+// within five seconds (measured 2026-11-14). Without this wait, commands that
+// start together all enter before the pool has counted the workers of any.
+const WATCH_MS = 6000;
 
+const tenths = (cores) => Math.round(cores * 10) / 10;
 const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 const alive = (pid) => {
   try {
@@ -108,11 +116,42 @@ function entries(suffix) {
   return live;
 }
 
+// Counts the workers that run under a process now. A process that is running
+// or ready to run is one worker, because on a loaded machine its CPU share
+// reads far under the core it would use, and a process whose threads use
+// several cores is that many. Where `ps` cannot run or hangs, nothing counts.
+function countWorkers() {
+  const { stdout } = spawnSync('ps', ['-A', '-o', 'pid=', '-o', 'ppid=', '-o', 'pcpu=', '-o', 'state='], { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' }, timeout: 10_000 });
+  const children = new Map();
+  for (const line of (stdout ?? '').split('\n')) {
+    const [pid, parent, pcpu, state] = line.trim().split(/\s+/u);
+    if (!state) continue;
+    const child = { pid: Number(pid), workers: Math.max(state.startsWith('R') ? 1 : 0, (Number(pcpu) || 0) / 100) };
+    if (!children.has(Number(parent))) children.set(Number(parent), []);
+    children.get(Number(parent)).push(child);
+  }
+  return (root) => {
+    const seen = new Set([root]);
+    let workers = 0;
+    for (const under = [...(children.get(root) ?? [])]; under.length > 0; ) {
+      const child = under.pop();
+      if (seen.has(child.pid)) continue;
+      seen.add(child.pid);
+      workers += child.workers;
+      under.push(...(children.get(child.pid) ?? []));
+    }
+    return workers;
+  };
+}
+
 // Holds the machine-wide pool's share for `workers` until the returned release
 // runs or this process exits. A process whose ancestor holds a share takes
 // none, so a proof started inside a proof or a land check never waits on its
 // own parent. A waiter counts every earlier waiter's ask as held, so small
 // proofs that arrive later never take the cores a land check is waiting for.
+// It charges each holder the larger of its ask and the workers it runs now,
+// so the ask in a holder's file never changes and an older proof.mjs still
+// reads it.
 export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
   if (process.env[HELD]) return () => {};
   const capacity = availableParallelism();
@@ -121,22 +160,29 @@ export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
   const mine = join(POOL, `${process.pid}.json`);
   const ticket = join(POOL, `${process.pid}.wait`);
   let since = null;
-  let reported = false;
+  const reported = new Set();
   for (;;) {
+    const running = countWorkers();
     if (lockPool()) {
-      let reason;
+      let waiting;
       try {
+        const now = Date.now();
         if (since === null) {
-          since = Date.now();
+          since = now;
           writeFileSync(ticket, JSON.stringify({ pid: process.pid, cores: want, label, since }));
         }
-        const live = entries('.json');
-        const held = live.reduce((sum, holder) => sum + holder.cores, 0);
+        const live = entries('.json').map((holder) => ({
+          ...holder,
+          used: Math.min(capacity, Math.max(holder.cores, tenths(running(holder.pid) * (holder.perWorker ?? CORES_PER_WORKER)))),
+        }));
+        const held = tenths(live.reduce((sum, holder) => sum + holder.used, 0));
+        const watched = live.find((holder) => Math.abs(now - holder.since) < WATCH_MS);
         const ahead = entries('.wait').filter((waiter) => waiter.since < since || (waiter.since === since && waiter.pid < process.pid));
         const queued = ahead.reduce((sum, waiter) => sum + waiter.cores, 0);
         const free = freeMemory();
-        if (held + queued + want <= capacity && free >= MIN_FREE_MEMORY) {
-          writeFileSync(mine, JSON.stringify({ pid: process.pid, cores: want, label }));
+        const fits = held + queued + want <= capacity;
+        if (fits && free >= MIN_FREE_MEMORY && !watched) {
+          writeFileSync(mine, JSON.stringify({ pid: process.pid, cores: want, label, since: now, perWorker: coresPerWorker }));
           rmSync(ticket, { force: true });
           process.env[HELD] = '1';
           const release = () => {
@@ -147,15 +193,21 @@ export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
           return release;
         }
         const behind = ahead.length > 0 ? `, and ${queued} asked for by ${ahead.length} earlier waiter${ahead.length === 1 ? '' : 's'}` : '';
-        reason =
-          held + queued + want > capacity
-            ? `${held} of ${capacity} cores held by ${live.map((holder) => `${holder.label} (${holder.pid}, ${holder.cores})`).join(', ') || 'nobody'}${behind}`
-            : `free memory is ${Math.round(free * 100)}%, under ${MIN_FREE_MEMORY * 100}%`;
+        const share = (holder) => (holder.used > holder.cores ? `${holder.used} in use, asked ${holder.cores}` : holder.cores);
+        if (!fits) waiting = { kind: 'cores', reason: `${held} of ${capacity} cores held by ${live.map((holder) => `${holder.label} (${holder.pid}, ${share(holder)})`).join(', ') || 'nobody'}${behind}` };
+        else if (free < MIN_FREE_MEMORY) waiting = { kind: 'memory', reason: `free memory is ${Math.round(free * 100)}%, under ${MIN_FREE_MEMORY * 100}%` };
+        else {
+          const seconds = Math.round((now - watched.since) / 1000);
+          waiting = {
+            kind: 'count',
+            reason: `${watched.label} (${watched.pid}) started ${seconds} second${seconds === 1 ? '' : 's'} ago, and the pool counts the workers of a new command for ${WATCH_MS / 1000} seconds before it admits the next`,
+          };
+        }
       } finally {
         rmSync(POOL_LOCK, { recursive: true, force: true });
       }
-      if (!reported) console.error(`${label}: waiting for ${want} of this machine's cores; ${reason}`);
-      reported = true;
+      if (!reported.has(waiting.kind)) console.error(`${label}: waiting for ${want} of this machine's cores; ${waiting.reason}`);
+      reported.add(waiting.kind);
     }
     sleep(POLL_MS);
   }
