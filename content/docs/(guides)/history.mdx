@@ -247,9 +247,7 @@ Replay the current undo batch.
 Replay the current redo batch.
 
 Both methods return `{ status: "applied" }` after a replay and
-`{ status: "empty" }` when no surviving batch exists. An authored dependency
-conflict returns `{ status: "blocked", conflicts }`, where `conflicts` contains
-the immutable contribution IDs that block replay. A replay requested while
+`{ status: "empty" }` when no surviving batch exists. A replay requested while
 another live-session replay is pending returns `{ status: "busy" }` without
 claiming another batch.
 

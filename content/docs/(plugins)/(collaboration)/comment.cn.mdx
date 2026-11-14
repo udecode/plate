@@ -161,7 +161,7 @@ await repository.put(revision, { ifMatch: previousRevision });
 
 加载前，在存储层验证文档版本与对话代次的关联。用 `revision.document` 创建新编辑器，将 `revision.comments` 传给 `initialComments`，并安装相同的内容插件。Comments 会在挂载前验证格式版本、重复 ID、时间戳、目标一致性和范围恢复，但无法识别坐标看似有效的其他文档。
 
-如果保存的不透明范围包含 Authored 绑定，加载 `initialComments` 时必须安装与保存文档时相同的 Authored runtime。`SuggestionKit` 提供 `AuthoredPlugin`；仅安装 Comments 的无界面配置需要从 `platejs/authored` 添加匹配的 Authored 插件。保留完整的已保存文档及所需 authored history。缺少 runtime 或历史会拒绝恢复，不会回退到普通坐标。普通范围评论仍不要求 Authored。
+保存的范围只包含普通坐标，只与保存时的文档版本对应。建议上的线程保存的是 change ID，而不是范围。普通范围评论仍不要求 Authored。
 
 普通重新加载从空的本地撤销栈开始。`getThreads()` 只读取实时语义记录；持久化时使用 `toJSON()` 保存对应版本的附着位置。不要在每次输入或附着位置订阅回调中导出整个 envelope。
 

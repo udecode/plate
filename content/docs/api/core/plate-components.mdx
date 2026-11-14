@@ -53,7 +53,7 @@ For an editor with [authored changes](/docs/authored-changes), pass `authored` t
 | `{ preview: 'proposed' }` | Display every pending change accepted. Throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. |
 | `{ preview: 'accepted' }` | Display every pending change rejected. Throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. |
 
-The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the value updates that view without remounting it. Rerendering with an equivalent value preserves mode changes made through its mounted plugin portal. The prop does not change the saved document or accept or reject suggestions.
+The prop requires an installed authored capability. Each `EditorRoot` configures its own view, so two views of one document can use different values. Changing the value updates that view without remounting it. Rerendering with an equivalent value keeps a view change made through `AuthoredPlugin`'s `api.setView`. The prop does not change the saved document or accept or reject suggestions.
 
 ## Read-only view
 

@@ -14,10 +14,10 @@ docs:
 
 - **上下文感知命令菜单**，可适应光标、文本选择和块选择工作流。
 - **流式 Markdown 预览**，支持表格、列和代码块，通过 `editor.plugin(AIChatPlugin).api.setPreview` 发布。
-- **插入和聊天审查模式**，共享临时草稿。
+- **插入和聊天审查模式**，生成的响应保留为临时草稿，聊天编辑则作为文档中的建议。
 - **块选择感知操作**，使用 `editor.plugin(AIChatPlugin).api.replaceSelection` 和 `insertBelow` 替换或追加整个部分。
 - **与 `@ai-sdk/react` 直接集成**，使 `editor.plugin(AIChatPlugin).api.submit` 可以从 Vercel AI SDK 助手流式传输响应。
-- **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
+- **显式接受**，在一个撤销步骤中应用草稿，或接受聊天编辑的建议，不改变编辑模式。
 
 </PackageInfo>
 
@@ -129,7 +129,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，并为 `CommentsPlugin` 配置当前用户及对应文档版本的 `initialComments: CommentsJSON`。
+`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置对应文档版本的 `initialComments: CommentsJSON`。
 
 已完成的生成评论直接发布为普通线程，不显示批准提示。通过 `CommentsPlugin.configure({ initialState: { mutate } })` 配置授权和规范持久化；集成等待持久化操作结果后才确认发布成功。生成文档编辑的草稿接受控件不会阻止评论发布。持久化与操作结果请参阅[评论](/docs/comment)。
 
@@ -272,6 +272,11 @@ Markdown 无法表示的响应会清空草稿。
 草稿不修改文档、历史或编辑模式。`accept()` 在一个历史批次中应用草稿。
 `reset()` 丢弃草稿并恢复映射后的原始选择，不回滚其他编辑。
 
+聊天编辑不使用草稿。在 `mode: 'chat'` 且 `toolName: 'edit'` 时，`setPreview`
+把响应作为建议写入文档，Editing 与 Suggesting 中都是如此，`previewValue` 保持为空。
+`useAIChat` 在响应完成后发布它。该解析保持严格，Markdown 无法表示的响应会撤回该建议。
+`accept()` 接受该建议，`hide()`、`reset()` 与 `reload()` 撤回它。
+
 <ComponentPreview name="markdown-streaming-demo" />
 
 ## Plate Plus
@@ -305,9 +310,9 @@ Markdown，因此插入和替换命令不依赖预览组件是否挂载。
 
 ## 追踪 AI 编辑
 
-AI 保留当前视图的输入策略。在 Editing 模式接受草稿会写入普通内容；
-在 Suggesting 模式接受草稿会创建供后续审阅的原生建议。
-流式传输本身不创建建议，也不切换模式。Copilot ghost text 同样在接受前保持临时状态。
+草稿保留当前视图的输入策略。在 Editing 模式接受草稿会写入普通内容；
+在 Suggesting 模式接受草稿会创建供后续审阅的原生建议。聊天编辑在两种视图中都是建议，
+接受它即决定该建议。流式传输不创建建议，也不切换模式。Copilot ghost text 同样在接受前保持临时状态。
 
 ## AI Chat 能力
 
@@ -340,7 +345,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
     <APIItem name="chat" type="AIChatAdapter" optional>`useAIChat` 发布的当前消息、状态、错误和控制器（内部管理）。</APIItem>
     <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>与编辑器作用域运行时标识配对的差异编辑建议节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
-    <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
+    <APIItem name="mode" type="'chat' | 'insert'">`'insert'` 在源区块后显示草稿，`'chat'` 在审阅菜单中显示草稿。`'chat'` 模式下，编辑工具把建议写入文档，而不是草稿。默认为 `'insert'`。</APIItem>
     <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>
     <APIItem name="previewValue" type="Value" optional>由编辑器会话解析并供插入和替换命令使用的生成预览节点（内部管理）。</APIItem>
     <APIItem name="streaming" type="boolean" optional>响应流式传输时为 true。默认为 `false`。</APIItem>
@@ -370,7 +375,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
 ### `editor.plugin(AIChatPlugin).api.reset()`
 
 停止请求并清除草稿和聊天状态。如果目标仍存在且视图可写，恢复映射后的原始选择。
-此操作不会撤销文档编辑或决定已有建议。
+此操作会撤回聊天编辑的建议，不会撤销其他编辑或决定其他建议。
 
 ### `editor.read.aiChat.node(options?)`
 
@@ -399,7 +404,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
 
 ### `editor.plugin(AIChatPlugin).api.hide(options?)`
 
-关闭 AI 菜单、停止请求并丢弃尚未应用的草稿，原始文档和历史记录保持不变。
+关闭 AI 菜单、停止请求，并丢弃尚未应用的草稿或撤回聊天编辑的建议。文档的其他内容保持不变。
 如需停止生成并保留部分响应以供审核，请使用 `stop()`。
 
 <API name="hide">
@@ -412,7 +417,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
 
 ### `editor.plugin(AIChatPlugin).api.accept()`
 
-按照当前编辑模式，在一个可逆操作中应用草稿。
+按照当前编辑模式，在一个可逆操作中应用草稿，或接受聊天编辑的建议。
 
 ### `editor.plugin(AIChatPlugin).api.insertBelow(options?)`
 
@@ -438,7 +443,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
 
 `AIChatEditor` 以紫色显示 `previewValue`，并在流式传输时显示末尾指示点。
 插入模式在源区块后显示草稿，聊天模式在审阅菜单中显示草稿。
-两种模式共享草稿和接受操作。应用草稿不依赖预览组件是否挂载。
+两种模式共享草稿和接受操作。聊天编辑不显示预览，因为它的建议已在文档中。应用草稿不依赖预览组件是否挂载。
 
 ## 自定义
 
@@ -513,4 +518,4 @@ export const aiChatItems = {
 - `selectionCommand`：文本被选中且尚无响应。
 - `cursorSuggestion` / `selectionSuggestion`：存在响应，因此显示接受、重试或在下方插入等操作。
 
-使用 `toolName`（`'generate' | 'edit' | 'comment'`）控制流式 hooks 如何处理响应。`'generate'` 和 `'edit'` 发布临时草稿，`'comment'` 可通过 `aiChat.read.commentRange` 将反馈映射为讨论范围。
+使用 `toolName`（`'generate' | 'edit' | 'comment'`）控制流式 hooks 如何处理响应。`'generate'` 发布临时草稿，`'edit'` 在插入模式下发布临时草稿、在聊天模式下发布建议，`'comment'` 可通过 `aiChat.read.commentRange` 将反馈映射为讨论范围。

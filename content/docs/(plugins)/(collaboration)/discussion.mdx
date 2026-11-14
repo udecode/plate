@@ -151,7 +151,7 @@ Preserve input for non-applied results and thrown errors. Replies use the change
 
 ## Without Comments
 
-`SuggestionPlugin` does not depend on Comments. An editor can use suggestion modes, semantic decorations, active-card state, `useSuggestionChanges(path)`, and `useSuggestionGroups(blockKey)` without installing `CommentsPlugin` or `DiscussionKit`.
+`SuggestionPlugin` does not depend on Comments. Without installing `CommentsPlugin` or `DiscussionKit`, an editor can switch between Editing and Suggesting with `AuthoredPlugin`'s `api.setView`, and use semantic decorations, active-card state, `useSuggestionChanges(path)`, and `useSuggestionGroups(blockKey)`.
 
 Add Discussion only when the product needs cards, replies, authors, dates, or popovers. Those presentation and thread-joining choices remain in copied registry code.
 

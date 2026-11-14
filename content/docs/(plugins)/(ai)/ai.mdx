@@ -14,10 +14,10 @@ docs:
 
 - **Context-aware command menu** that adapts to cursor, text selection, and block selection workflows.
 - **Streaming Markdown previews** with table, column, and code block support through `editor.plugin(AIChatPlugin).api.setPreview`.
-- **Insert and chat review modes** backed by a temporary draft.
+- **Insert and chat review modes** that hold a generated response as a temporary draft and a chat edit as a suggestion in the document.
 - **Block selection aware actions** to replace or append entire sections using `editor.plugin(AIChatPlugin).api.replaceSelection` and `insertBelow`.
 - **Direct integration with `@ai-sdk/react`** so `editor.plugin(AIChatPlugin).api.submit` can stream responses from Vercel AI SDK helpers.
-- **Explicit acceptance** that applies a draft in one undo step and preserves the selected editing mode.
+- **Explicit acceptance** that applies a draft in one undo step, or accepts a chat edit's suggestion, without changing the editing mode.
 
 </PackageInfo>
 
@@ -129,7 +129,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit` and configure `CommentsPlugin` with the current user and the matching revision's `initialComments: CommentsJSON`.
+`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with the matching revision's `initialComments: CommentsJSON`.
 
 Completed generated comments publish directly as ordinary threads without an approval prompt. Configure authorization and canonical persistence through `CommentsPlugin.configure({ initialState: { mutate } })`; the integration awaits the durable mutation result before treating publication as successful. The draft acceptance controls for generated document edits do not gate comment publication. See [Comments](/docs/comment) for persistence and mutation results.
 
@@ -272,7 +272,7 @@ the editor's installed Markdown mappings and stores the result in
 `previewValue`. With `final: false`, the parse uses
 `{ lossPolicy: 'allow', partial: true }`: an unfinished trailing tag stays hidden
 and unsupported content previews as text. `final` defaults to `true`; that parse
-is strict, and a response Markdown cannot represent clears the draft.
+is strict, and a response that Markdown cannot represent clears the draft.
 Each parse, the final one included, continues the latest partial parse of the
 same response. After a final parse, `hide()`, `reset()`, `reload()` or
 `submit()`, the next parse starts over. `stop()` ends
@@ -287,13 +287,22 @@ applies it in one history batch. `reset()` drops it and restores the mapped
 invoking selection without reverting other edits. A deleted target cannot be
 replaced through its former path.
 
+A chat edit skips the draft. With `mode: 'chat'` and `toolName: 'edit'`,
+`setPreview` writes the response into the document as a suggestion, in Editing
+and Suggesting alike, and `previewValue` stays empty. `useAIChat` publishes it
+once the response finishes. The parse is strict, and a response that Markdown
+cannot represent withdraws the suggestion. `accept()` accepts it, and `hide()`,
+`reset()` and `reload()` withdraw it.
+
 <ComponentPreview name="markdown-streaming-demo" />
 
 ## Tracked AI edits
 
-AI keeps the current view's input policy. Accepting in Editing writes ordinary
-content. Accepting in Suggesting creates a native tracked edit for subsequent
-review. Streaming itself does not create suggestions or change the mode.
+A draft keeps the current view's input policy. Accepting it in Editing writes
+ordinary content, and accepting it in Suggesting creates a native tracked edit
+for later review. A chat edit is a suggestion in either view, and accepting it
+decides that suggestion. Streaming does not create suggestions or change the
+mode.
 
 Copilot ghost text also stays temporary until accepted.
 
@@ -315,7 +324,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="chat" type="AIChatAdapter" optional>Current messages, status, error, and controls published by `useAIChat` (managed internally).</APIItem>
     <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for native authored replacements (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
-    <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
+    <APIItem name="mode" type="'chat' | 'insert'">`'insert'` shows the draft after the invoking block, and `'chat'` shows it in the review menu. In `'chat'` mode the edit tool writes a suggestion into the document instead of a draft. Defaults to `'insert'`.</APIItem>
     <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
     <APIItem name="previewValue" type="Value" optional>Generated preview nodes parsed by the editor session for insert and replace commands (managed internally).</APIItem>
     <APIItem name="streaming" type="boolean" optional>True while a response is streaming. Defaults to `false`.</APIItem>
@@ -343,8 +352,9 @@ Submits a prompt to your model provider. When `mode` is omitted it defaults to `
 ### `editor.plugin(AIChatPlugin).api.reset()`
 
 Stops the request, clears the draft and chat state, and restores the mapped
-invoking selection when its target still exists in a writable view. It does
-not undo document edits or decide tracked suggestions.
+invoking selection when its target still exists in a writable view. It
+withdraws a chat edit's suggestion. It does not undo other edits or decide
+other suggestions.
 
 ### `editor.read.aiChat.node(options?)`
 
@@ -374,9 +384,10 @@ The session retains this target through submission and retry.
 
 ### `editor.plugin(AIChatPlugin).api.hide(options?)`
 
-Closes the AI menu, stops its request, and discards the unapplied draft. The
-source document and its history stay unchanged. Use `stop()` to pause generation
-while keeping the partial response available for review.
+Closes the AI menu, stops its request, and discards the unapplied draft or
+withdraws a chat edit's suggestion. Nothing else in the document changes. Use
+`stop()` to pause generation while keeping the partial response available for
+review.
 
 <API name="hide">
 <APIParameters>
@@ -386,7 +397,8 @@ while keeping the partial response available for review.
 
 ### `editor.plugin(AIChatPlugin).api.accept()`
 
-Applies the current draft as one reversible edit under the current editing mode.
+Applies the current draft as one reversible edit under the current editing mode,
+or accepts a chat edit's suggestion.
 
 ### `editor.plugin(AIChatPlugin).api.insertBelow(options?)`
 
@@ -413,7 +425,8 @@ Replaces the mapped selection with the draft in one history batch.
 `AIChatEditor` renders `previewValue` as the `document` of a static preview
 editor, with purple draft text and a trailing stream indicator; the preview
 editor itself is never edited. Insert mode places it after the invoking block; chat mode
-places it in the review menu. Both use the same draft and acceptance actions.
+places it in the review menu. Both use the same draft and acceptance actions. A
+chat edit shows no preview, because its suggestion is already in the document.
 The package parses Markdown using the editor's installed plugins, so applying
 a draft also works without a mounted preview component.
 
@@ -550,5 +563,6 @@ The menu automatically switches between command and suggestion states:
 - `cursorSuggestion` / `selectionSuggestion`: A response exists, so actions like Accept, Try Again, or Insert Below are shown.
 
 Use `toolName` (`'generate' | 'edit' | 'comment'`) to control how streaming
-hooks process the response. Both `'generate'` and `'edit'` publish a draft; `'comment'` can map feedback through
-`aiChat.read.commentRange`.
+hooks process the response. `'generate'` publishes a draft, `'edit'` publishes a
+draft in insert mode and a suggestion in chat mode, and `'comment'` can map
+feedback through `aiChat.read.commentRange`.

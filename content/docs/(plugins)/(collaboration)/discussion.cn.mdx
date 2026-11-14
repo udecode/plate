@@ -151,7 +151,7 @@ if (result.status === 'applied') {
 
 ## 不使用 Comments
 
-`SuggestionPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以使用建议模式、语义 decoration、活动卡片状态、`useSuggestionChanges(path)` 和 `useSuggestionGroups(blockKey)`。
+`SuggestionPlugin` 不依赖 Comments。编辑器无需安装 `CommentsPlugin` 或 `DiscussionKit`，也可以通过 `AuthoredPlugin` 的 `api.setView` 在编辑和建议之间切换，并使用语义 decoration、活动卡片状态、`useSuggestionChanges(path)` 和 `useSuggestionGroups(blockKey)`。
 
 只有产品需要卡片、回复、作者、日期或 popover 时才添加 Discussion。这些展示和 thread 关联逻辑保留在复制的 registry 代码中。
 

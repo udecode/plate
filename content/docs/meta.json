@@ -1293,7 +1293,7 @@
               "titleCn": "编辑器"
             },
             {
-              "description": "Capture attributed edits, review proposals, retain author history, and export explicit projections.",
+              "description": "Record attributed edits, review proposals by change or card, and export explicit projections.",
               "href": "/docs/authored-changes",
               "keywords": [
                 "review",

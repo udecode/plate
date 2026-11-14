@@ -234,7 +234,7 @@ composer state or retired mutation queues. Applications that must preserve the
 editor instance need one owner that can commit or discard all of those runtime
 resources together.
 
-If saved opaque ranges contain Authored bindings, install the same Authored runtime used for the saved document when loading `initialComments`. `SuggestionKit` supplies `AuthoredPlugin`; for a headless Comments-only setup, add the matching Authored plugin from `platejs/authored`. Preserve the full saved document and required authored history. A missing runtime or missing history rejects restoration; saved bindings do not fall back to plain coordinates. Authored remains optional for ordinary range comments.
+A saved range holds plain coordinates, which match only the revision it was saved with. A thread on a suggestion saves the change's ID instead of a range. Authored remains optional for ordinary range comments.
 
 Ordinary reload starts fresh local undo. `getThreads()` reads live conversation records; use `toJSON()` to persist their revision-bound attachments. Do not export the envelope on every keystroke or from attachment subscriptions.
 
@@ -299,7 +299,7 @@ const initialComments: CommentsJSON = {
 
 Open a fresh read-only editor with `revision.document` and this `initialComments`. Newer threads without a saved target are unavailable; currently deleted threads stay absent. Change targets can be located only when their IDs exist in that revision's Authored document.
 
-Restoring a version creates a new application revision under both document-head and conversation-generation checks. Retain current conversations, install only the selected revision's proven targets, and open a fresh editor with empty local history. Local thread-creation undo is session-only and is not restored from `CommentsJSON` or `History.toJSON()`. See [History](/docs/history) for local undo and retained author history.
+Restoring a version creates a new application revision under both document-head and conversation-generation checks. Retain current conversations, install only the selected revision's proven targets, and open a fresh editor with empty local history. Local thread-creation undo is session-only and is not restored from `CommentsJSON` or `History.toJSON()`. See [History](/docs/history) for local undo.
 
 ### Collaboration
 

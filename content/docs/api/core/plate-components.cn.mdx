@@ -53,7 +53,7 @@ export function Editor() {
 | `{ preview: 'proposed' }` | 显示接受全部待处理 change 后的内容。普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更。 |
 | `{ preview: 'accepted' }` | 显示拒绝全部待处理 change 后的内容。普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更。 |
 
-每个 `EditorRoot` 独立配置一个 view。修改该值会更新该 view，但不会重新挂载，也不会接受或拒绝 change。
+该属性要求已安装 authored capability。每个 `EditorRoot` 独立配置一个 view，因此同一文档的两个 view 可以使用不同的值。修改该值会更新该 view，但不会重新挂载。使用等价值重新渲染时，会保留通过 `AuthoredPlugin` 的 `api.setView` 做出的 view 切换。该属性不会修改已保存的文档，也不会接受或拒绝建议。
 
 ## 只读视图
 

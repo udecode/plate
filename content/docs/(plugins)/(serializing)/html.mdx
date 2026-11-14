@@ -142,11 +142,10 @@ replacement, or unwrap.
 Semantic HTML supports the visible `accepted` and `proposed` projections. It
 does not embed a hidden Plate document or restore review state from HTML.
 
-A document from an editor with authored changes installed carries authored
-metadata even before any proposal. Both `editor.api.html.serialize` and
-`serializeHtml` throw a `TypeError` for such a document unless `projection` is
-`'accepted'` or `'proposed'`. A document without authored metadata ignores
-`projection`.
+A document with pending suggestions needs `projection: 'accepted'` or
+`'proposed'`. Without it, `editor.api.html.serialize` and `serializeHtml` throw
+a `TypeError`. A document with no pending suggestion serializes as it is when
+`projection` is omitted. Any other `projection` value throws a `TypeError`.
 
 ```ts
 const proposed = editor.api.html.serialize({ projection: 'proposed' });

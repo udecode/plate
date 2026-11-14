@@ -149,6 +149,9 @@ editor.update({ history: "skip" }).text.insert("Imported");
 [Editor Transforms](/docs/api/editor-transforms) 和
 [Plate transform reference](/docs/api/editor-transforms)。
 
+编辑器拒绝一次更新时，例如 Suggesting 无法记录的写入，整个更新会回滚并发布一次拒绝，
+直接方法返回 `undefined`。请根据更新的返回值判断写入结果，不要依赖回调赋给外部变量的值。
+
 ### 已安装的 format API
 
 HTML 与 Markdown plugin 提供 convenience API。每次 operation 会复用 editor
