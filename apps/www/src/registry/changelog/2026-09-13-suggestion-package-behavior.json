@@ -50,7 +50,7 @@
     {
       "id": "2026-09-13-suggestion-package-behavior",
       "kind": "wiring",
-      "summary": "Use `SuggestionPlugin`, view-local activation, and authored-change hooks in copied controls and review cards. Customize styles, cards, and Comments composition in registry source.",
+      "summary": "Use `SuggestionPlugin`, view-local activation, and authored-change hooks in copied controls and review cards, and switch Suggesting through `AuthoredPlugin`'s `setView`. Customize styles, cards, and Comments composition in registry source.",
       "details": [],
       "migrationNotes": [],
       "targets": [

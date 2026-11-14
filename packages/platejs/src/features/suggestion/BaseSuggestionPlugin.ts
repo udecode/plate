@@ -3,33 +3,12 @@ import { definePlugin } from '../../core';
 import { PLUGINS } from '../../utils';
 import { suggestionColorOf } from './suggestionColorOf';
 
-const suggestionModes = {
-  editing: 'editing',
-  suggesting: 'suggesting',
-} as const;
-
 const joinUnique = (values: readonly string[]) =>
   [...new Set(values)].join(' ');
 
-/** Native authored-change interaction and the marks each node paints. */
+/** Paints each node's pending authored changes as `data-editor-authored-*` attributes. */
 export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
   dependencies: [AuthoredPlugin],
-  api: ({ editor }) => ({
-    setMode: (mode: keyof typeof suggestionModes) => {
-      editor.plugin(AuthoredPlugin).api.setView({
-        intent: mode === suggestionModes.editing ? 'edit' : 'propose',
-      });
-    },
-  }),
-  read: ({ editor }) => ({
-    mode: () => {
-      const view = editor.plugin(AuthoredPlugin).read.view();
-
-      return 'intent' in view && view.intent === 'propose'
-        ? suggestionModes.suggesting
-        : suggestionModes.editing;
-    },
-  }),
   inject: {
     nodeProps: {
       nodeKey: 'authored',

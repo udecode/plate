@@ -65,7 +65,7 @@
       "gzip": 33433
     },
     "platejs/suggestion": {
-      "bytes": 1090290,
+      "bytes": 1090204,
       "gzip": 348122
     },
     "platejs/table": {
@@ -117,8 +117,8 @@
       "gzip": 33831
     },
     "platejs/suggestion/react": {
-      "bytes": 1098740,
-      "gzip": 351288
+      "bytes": 1098522,
+      "gzip": 351258
     },
     "platejs/table/react": {
       "bytes": 784076,

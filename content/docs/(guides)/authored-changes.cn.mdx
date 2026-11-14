@@ -16,7 +16,7 @@ Authored changes 在一个保存的文档中维护已接受内容、待处理 pr
 
 | 需求                       | 接口                                                                   |
 | -------------------------- | ---------------------------------------------------------------------- |
-| 在编辑和建议模式之间切换   | `platejs/suggestion/react` 的 `SuggestionPlugin`                       |
+| 在编辑和建议模式之间切换   | `platejs/authored` 中 `AuthoredPlugin` 的 `api.setView`                |
 | 添加复制的高亮和审阅卡片   | [SuggestionKit](/docs/suggestion) 和 [DiscussionKit](/docs/discussion) |
 | 以编辑器的用户记录 change  | `platejs/authored` 的 `AuthoredPlugin`                                 |
 | 读取和决定 change 或卡片   | 已安装的 authored plugin portal                                        |
@@ -109,12 +109,10 @@ export function SuggestionEditor() {
 
 编辑器必须安装 authored plugin，可以直接安装，也可以通过 `SuggestionPlugin` 安装。修改 `authored` prop 会更新这个 view。以等价值重新渲染时，会保留之后通过已挂载 view 的 portal 做出的模式修改。
 
-交互式模式控件请让 `SuggestionPlugin` 修改 intent：
+交互式模式控件请在已挂载的 view 上设置 intent：
 
 ```tsx
-import { SuggestionPlugin } from "platejs/suggestion/react";
-
-editor.plugin(SuggestionPlugin).api.setMode("suggesting");
+editor.plugin(AuthoredPlugin).api.setView({ intent: "propose" });
 ```
 
 要以所有待处理 change 都已决定的状态阅读文档，请把 view 切换为 preview：

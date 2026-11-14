@@ -16,7 +16,7 @@ Authored changes keep accepted content, pending proposals, and stable change ide
 
 | Need                                     | Surface                                                                 |
 | ---------------------------------------- | ----------------------------------------------------------------------- |
-| Switch between editing and suggesting    | `SuggestionPlugin` from `platejs/suggestion/react`                      |
+| Switch between editing and suggesting    | `AuthoredPlugin`'s `api.setView` from `platejs/authored`                |
 | Add copied highlighting and review cards | [SuggestionKit](/docs/suggestion) and [DiscussionKit](/docs/discussion) |
 | Record changes as the editor's user      | `AuthoredPlugin` from `platejs/authored`                                |
 | Read and decide changes or cards         | The installed authored plugin portal                                    |
@@ -111,12 +111,10 @@ export function SuggestionEditor() {
 
 The editor must install an authored plugin, either directly or through `SuggestionPlugin`. Changing the `authored` prop updates this view. Rerendering with an equivalent value preserves later mode changes made through the mounted view's portal.
 
-For an interactive mode control, let `SuggestionPlugin` change the intent:
+For an interactive mode control, set the intent on the mounted view:
 
 ```tsx
-import { SuggestionPlugin } from "platejs/suggestion/react";
-
-editor.plugin(SuggestionPlugin).api.setMode("suggesting");
+editor.plugin(AuthoredPlugin).api.setView({ intent: "propose" });
 ```
 
 To read the document with every pending change decided, switch the view to a preview:

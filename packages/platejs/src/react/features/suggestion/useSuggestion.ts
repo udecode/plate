@@ -15,7 +15,6 @@ import {
 import { useEditorViewState } from '../../plite-react';
 import { useEditor } from '../../stores';
 import { useSuggestionViewStore, viewKey } from './suggestion-view.internal';
-import { SuggestionPlugin } from './SuggestionPlugin';
 
 const sameChanges = (
   left: readonly AuthoredChange[] | null,
@@ -169,14 +168,5 @@ export const useSuggestionGroups = (blockKey: NodeKey) => {
   return useAuthoredRead(
     () => editor.plugin(AuthoredPlugin).read.groups({ at: blockKey }),
     { equal: sameGroups, when }
-  );
-};
-
-/** Read whether the exact mounted editor view is editing or suggesting. */
-export const useSuggestionMode = () => {
-  const editor = useEditor();
-
-  return useEditorViewState(editor, () =>
-    editor.plugin(SuggestionPlugin).read.mode()
   );
 };

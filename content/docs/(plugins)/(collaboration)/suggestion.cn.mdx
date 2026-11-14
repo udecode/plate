@@ -45,7 +45,7 @@ npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.or
 
 <ComponentSource name="suggestion" />
 
-`SuggestionKit` 通过 `render.contentAttributes` 配置包中 `SuggestionPlugin` 的默认样式。包负责建议模式、语义属性、活动卡片行为和 authored-change hooks。Core 将 kit 的类名应用到现有内容根节点，直接使用 `EditorContent` 时也适用。`DiscussionKit` 添加区块按钮、接受和拒绝卡片以及评论回复。
+`SuggestionKit` 通过 `render.contentAttributes` 配置包中 `SuggestionPlugin` 的默认样式。包负责语义属性、活动卡片行为和 authored-change hooks。Core 将 kit 的类名应用到现有内容根节点，直接使用 `EditorContent` 时也适用。`DiscussionKit` 添加区块按钮、接受和拒绝卡片以及评论回复。
 
 ### 添加套件
 
@@ -109,32 +109,34 @@ export function SuggestionEditor() {
 
 如上例所示，用 `EditorRoot authored={{ intent: 'propose' }}` 设置初始 view。修改该值会更新这个 view。以等价值重新渲染时，会保留其控件做出的模式修改。
 
-交互式模式控件请从已挂载的 editor view 调用 `SuggestionPlugin` portal：
+交互式模式控件请通过 `AuthoredPlugin` 设置和读取已挂载 editor view 的 intent：
 
 ```tsx
-import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
-import { useEditor } from 'platejs/react';
+import { AuthoredPlugin } from 'platejs/authored';
+import { useEditor, useEditorViewState } from 'platejs/react';
 
 export function SuggestionModeButton() {
   const editor = useEditor();
-  const mode = useSuggestionMode();
-  const suggestion = editor.plugin(SuggestionPlugin);
+  const authored = editor.plugin(AuthoredPlugin);
+  const isSuggesting = useEditorViewState(editor, () => {
+    const view = authored.read.view();
+
+    return 'intent' in view && view.intent === 'propose';
+  });
 
   return (
     <button
       onClick={() =>
-        suggestion.api.setMode(
-          mode === 'suggesting' ? 'editing' : 'suggesting'
-        )
+        authored.api.setView({ intent: isSuggesting ? 'edit' : 'propose' })
       }
     >
-      {mode === 'suggesting' ? '停止建议' : '建议修改'}
+      {isSuggesting ? '停止建议' : '建议修改'}
     </button>
   );
 }
 ```
 
-`setMode` 设置 view 的输入 intent：`'suggesting'` 设置 `{ intent: 'propose' }`，`'editing'` 设置 `{ intent: 'edit' }`。两者都显示待处理的插入和删除。编辑模式下，普通编辑直接应用；建议模式下，它们成为当前作者的 proposal。
+`{ intent: 'propose' }` 是建议模式，`{ intent: 'edit' }` 是编辑模式。两者都显示待处理的插入和删除。编辑模式下，普通编辑直接应用；建议模式下，它们成为当前作者的 proposal。
 
 模式属于精确的已挂载 view。同一个文档的两个 view 可以使用不同模式，互不影响。
 
@@ -150,7 +152,7 @@ const authored = editor.plugin(AuthoredPlugin);
 authored.api.setView({ preview: 'proposed' });
 ```
 
-Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更；`read.mode()` 把它报告为 `'editing'`。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。调用 `setMode` 可离开 preview。
+Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更；`read.view()` 返回该 preview，例如 `{ preview: 'proposed' }`，它没有 intent。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。用 `setView` 设置一个 intent 即可离开 preview。
 
 在 preview 下，每个区块读取它所显示的存储内容上的卡片和 change，包括 preview 隐藏在其中的内容，以及 preview 去掉的外层元素上的卡片和 change，例如 preview 应用了待处理解除包裹的 quote。Preview 只按 node 的 key 或 path 读取它们，下面的 hook 就是这样读取的；传入 point 或 range 会抛出 `platejs/authored` 导出的 `AuthoredPlaceError`。被 preview 隐藏的顶层区块，其卡片不会显示在任何区块上；要查看并决定这些卡片，请切换到编辑模式。例外是被合并的行，它会显示其两半之间被隐藏区块的卡片。Preview 为补全文档而添加的顶层区块，例如某个建议删除了唯一区块时 preview 显示的空段落，不显示任何卡片。它在容器内添加的区块，例如某个建议删除了 quote 中唯一的段落时，可能显示它所替代的隐藏段落的卡片。在 preview 下，复制的 discussion 会把建议或 change 讨论的弹出层锚定在最后按下触发按钮的段落上，并且只在该段落显示该讨论时才打开它。
 
@@ -163,10 +165,8 @@ import {
   useActiveSuggestion,
   useSuggestionChanges,
   useSuggestionGroups,
-  useSuggestionMode,
 } from 'platejs/suggestion/react';
 
-const mode = useSuggestionMode();
 const changes = useSuggestionChanges(path);
 const cards = useSuggestionGroups(blockKey);
 const { activeId, setActiveId } = useActiveSuggestion();
@@ -285,10 +285,11 @@ const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 
 ## Headless 用法
 
-使用 `BaseSuggestionPlugin` 可在不安装 React、Comments 或复制 UI 的情况下获得建议模式和语义 decoration：
+使用 `BaseSuggestionPlugin` 可在不安装 React、Comments 或复制 UI 的情况下获得语义 decoration。通过它安装的 `AuthoredPlugin` 设置建议模式：
 
 ```tsx title="suggestion-editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from 'platejs';
+import { AuthoredPlugin } from 'platejs/authored';
 import { BaseSuggestionPlugin } from 'platejs/suggestion';
 
 const editor = createEditor({
@@ -299,7 +300,7 @@ const editor = createEditor({
   userId: 'alice',
 });
 
-editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
+editor.plugin(AuthoredPlugin).api.setView({ intent: 'propose' });
 ```
 
 带标记的文本和元素提供 `data-editor-authored-change`、`data-editor-authored-kind`、`data-editor-authored-author`、`data-editor-authored-groups` 和 `data-editor-authored-color`。除 `color` 外，每个属性都是以空格分隔的列表；`color` 是该元素所绘制卡片的调色板槽位，取值 0 到 6。待处理删除的 `kind` 包含 `delete`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `BaseSuggestionPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
@@ -332,25 +333,16 @@ if (result.status === 'applied') {
 
 ### `BaseSuggestionPlugin`
 
-从 `platejs/suggestion` 导入。它提供两个建议模式和无 CSS 的语义 decoration，并依赖 `AuthoredPlugin` 管理 change record 和身份。
+从 `platejs/suggestion` 导入。它提供无 CSS 的语义 decoration，并依赖 `AuthoredPlugin`，后者管理 change record、身份和 view 的 intent。
 
 ### `SuggestionPlugin`
 
 从 `platejs/suggestion/react` 导入。它在 `BaseSuggestionPlugin` 上添加精确 view 的活动状态和指针激活。
 
-### `suggestion.api.setMode(mode)`
-
-通过 `editor.plugin(SuggestionPlugin)` 或 `editor.plugin(BaseSuggestionPlugin)` 设置后续输入是 proposal 还是直接编辑。它设置 view 的 intent，即 `'propose'` 或 `'edit'`；两者都显示待处理的插入和删除。
-
-### `suggestion.read.mode()`
-
-`propose` view 读取为 `'suggesting'`，`edit` view 或 preview 读取为 `'editing'`。
-
 ### React hooks
 
 | Hook | 结果 |
 | --- | --- |
-| `useSuggestionMode()` | 精确挂载 view 的 `'suggesting' \| 'editing'` 模式。 |
 | `useSuggestionChanges(path)` | `path` 处区块的原生 `AuthoredChange` 记录。 |
 | `useSuggestionGroups(blockKey)` | 该 key 对应区块的审阅卡片摘要。 |
 | `useActiveSuggestion()` | View 局部活动卡片的 `activeId` 和 `setActiveId` 函数。 |

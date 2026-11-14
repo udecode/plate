@@ -96,14 +96,16 @@ const tableResize = useTableResizeController();
 // Good: host-owned app code outside copied registry UI uses its inferred editor.
 const api = editor.api.comments;
 
-// Good: copied suggestion UI uses its owning descriptor.
-const suggestionApi = editor.plugin(SuggestionPlugin).api;
+// Good: copied suggestion UI calls the descriptor that owns the view.
+const authored = editor.plugin(AuthoredPlugin);
+
+authored.api.setView({ intent: 'propose' });
 
 // Good: feature-owned cross-feature integration checks the optional portal.
-const optionalSuggestion = editor.plugin(SuggestionPlugin);
+const optionalComments = editor.plugin(CommentsPlugin);
 
-if (optionalSuggestion.installed) {
-  optionalSuggestion.api.createIdentity();
+if (optionalComments.installed) {
+  optionalComments.api.setActive([threadId]);
 }
 
 // Good: package core owns commands/state, platform UI composes locally.

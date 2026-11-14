@@ -45,7 +45,7 @@ npx shadcn@latest add https://platejs.org/r/basic-blocks.json https://platejs.or
 
 <ComponentSource name="suggestion" />
 
-`SuggestionKit` configures the package `SuggestionPlugin` with `render.contentAttributes` for its default styles. The package supplies suggestion modes, semantic attributes, active-card behavior, and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
+`SuggestionKit` configures the package `SuggestionPlugin` with `render.contentAttributes` for its default styles. The package supplies semantic attributes, active-card behavior, and authored-change hooks. Core applies the kit's classes to the existing content root, including when you render `EditorContent` directly. `DiscussionKit` adds block buttons, Accept and Reject cards, and comment replies.
 
 ### Add the kits
 
@@ -109,32 +109,34 @@ Replace `'alice'` with the authenticated user's ID. The editor's `userId` attrib
 
 Set the starting view with `EditorRoot authored={{ intent: 'propose' }}` as in the example above. Changing the value updates that view. Rerendering with an equivalent value preserves mode changes made by its controls.
 
-For an interactive mode control, call the `SuggestionPlugin` portal from the mounted editor view:
+For an interactive mode control, set and read the intent of the mounted editor view through `AuthoredPlugin`:
 
 ```tsx
-import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
-import { useEditor } from 'platejs/react';
+import { AuthoredPlugin } from 'platejs/authored';
+import { useEditor, useEditorViewState } from 'platejs/react';
 
 export function SuggestionModeButton() {
   const editor = useEditor();
-  const mode = useSuggestionMode();
-  const suggestion = editor.plugin(SuggestionPlugin);
+  const authored = editor.plugin(AuthoredPlugin);
+  const isSuggesting = useEditorViewState(editor, () => {
+    const view = authored.read.view();
+
+    return 'intent' in view && view.intent === 'propose';
+  });
 
   return (
     <button
       onClick={() =>
-        suggestion.api.setMode(
-          mode === 'suggesting' ? 'editing' : 'suggesting'
-        )
+        authored.api.setView({ intent: isSuggesting ? 'edit' : 'propose' })
       }
     >
-      {mode === 'suggesting' ? 'Stop suggesting' : 'Suggest edits'}
+      {isSuggesting ? 'Stop suggesting' : 'Suggest edits'}
     </button>
   );
 }
 ```
 
-`setMode` sets the view's input intent: `'suggesting'` sets `{ intent: 'propose' }` and `'editing'` sets `{ intent: 'edit' }`. Both show the pending insertions and deletions. In Editing mode, ordinary edits apply directly; in Suggestion mode, they become proposals by the current author.
+`{ intent: 'propose' }` is Suggestion mode and `{ intent: 'edit' }` is Editing mode. Both show the pending insertions and deletions. In Editing mode, ordinary edits apply directly; in Suggestion mode, they become proposals by the current author.
 
 Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
 
@@ -150,7 +152,7 @@ const authored = editor.plugin(AuthoredPlugin);
 authored.api.setView({ preview: 'proposed' });
 ```
 
-A preview throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. `read.mode()` reports it as `'editing'`. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Call `setMode` to leave the preview.
+A preview throws on a plain edit, but some other writes still change the document, such as an update that makes a decision, undo and redo, and remote collaboration changes. `read.view()` returns the preview, such as `{ preview: 'proposed' }`, which has no intent. Switching to a preview does not accept or reject changes. Coordinates can differ between views, so read selections and apply edits through the view that produced them. Set an intent with `setView` to leave the preview.
 
 Under a preview, each block reads the cards and changes of the stored content it shows, with what the preview hides inside it, and those of an element around it that the preview takes away, such as a quote whose pending unwrap the preview applies. A preview reads them by a node's key or path only, as the hooks below do; a point or a range throws `AuthoredPlaceError`, which `platejs/authored` exports. The cards of a top-level block the preview hides show on no block, so switch to Editing to see and decide them. The exception is a joined line, which shows the cards of a hidden block between its two halves. A top-level block the preview adds to complete the document, such as the empty paragraph it shows when a suggestion deletes the only block, shows no cards. One it adds inside a container, as when a suggestion deletes the only paragraph of a quote, can show the cards of the hidden paragraph it replaces. Under a preview, the copied discussion anchors the popover of a suggestion or a change thread on the paragraph whose trigger was pressed last, and opens it only when that paragraph shows the thread.
 
@@ -163,10 +165,8 @@ import {
   useActiveSuggestion,
   useSuggestionChanges,
   useSuggestionGroups,
-  useSuggestionMode,
 } from 'platejs/suggestion/react';
 
-const mode = useSuggestionMode();
 const changes = useSuggestionChanges(path);
 const cards = useSuggestionGroups(blockKey);
 const { activeId, setActiveId } = useActiveSuggestion();
@@ -288,10 +288,11 @@ for Word revisions.
 
 ## Headless usage
 
-Use `BaseSuggestionPlugin` for suggestion modes and semantic decorations without React, Comments, or copied UI:
+Use `BaseSuggestionPlugin` for semantic decorations without React, Comments, or copied UI. Set Suggestion mode through `AuthoredPlugin`, which it installs:
 
 ```tsx title="suggestion-editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from 'platejs';
+import { AuthoredPlugin } from 'platejs/authored';
 import { BaseSuggestionPlugin } from 'platejs/suggestion';
 
 const editor = createEditor({
@@ -302,7 +303,7 @@ const editor = createEditor({
   userId: 'alice',
 });
 
-editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
+editor.plugin(AuthoredPlugin).api.setView({ intent: 'propose' });
 ```
 
 Marked text and elements expose `data-editor-authored-change`, `data-editor-authored-kind`, `data-editor-authored-author`, `data-editor-authored-groups`, and `data-editor-authored-color`. Each holds a space-separated list, except `color`, which holds the palette slot, 0 to 6, of the card the element paints. A pending deletion has `delete` in its `kind`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
@@ -335,25 +336,16 @@ Preserve input for non-applied results and thrown errors. Comments authorizes du
 
 ### `BaseSuggestionPlugin`
 
-Import from `platejs/suggestion`. It supplies the two suggestion modes and CSS-free semantic decorations, and depends on `AuthoredPlugin` for change records and identity.
+Import from `platejs/suggestion`. It supplies CSS-free semantic decorations and depends on `AuthoredPlugin`, which owns change records, identity and the view's intent.
 
 ### `SuggestionPlugin`
 
 Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with exact-view active state and pointer activation.
 
-### `suggestion.api.setMode(mode)`
-
-Set whether subsequent input proposes or directly edits through `editor.plugin(SuggestionPlugin)` or `editor.plugin(BaseSuggestionPlugin)`. It sets the view's intent, `'propose'` or `'edit'`; both show pending insertions and deletions.
-
-### `suggestion.read.mode()`
-
-Read `'suggesting'` for a `propose` view, and `'editing'` for an `edit` view or a preview.
-
 ### React hooks
 
 | Hook | Result |
 | --- | --- |
-| `useSuggestionMode()` | The exact mounted view's `'suggesting' \| 'editing'` mode. |
 | `useSuggestionChanges(path)` | Native `AuthoredChange` records of the block at `path`. |
 | `useSuggestionGroups(blockKey)` | Summaries of the review cards of the block with that key. |
 | `useActiveSuggestion()` | The view-local active card's `activeId` and the `setActiveId` function. |

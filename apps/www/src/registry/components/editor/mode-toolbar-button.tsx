@@ -8,13 +8,17 @@ import {
   XIcon,
 } from 'lucide-react';
 import { setEditorReadOnly } from 'platejs';
-import { type AuthoredChange, AuthoredPlugin } from 'platejs/authored';
+import {
+  type AuthoredChange,
+  AuthoredPlugin,
+  type AuthoredView,
+} from 'platejs/authored';
 import {
   useEditor,
   useEditorSelector,
   useEditorViewState,
 } from 'platejs/react';
-import { SuggestionPlugin, useSuggestionMode } from 'platejs/suggestion/react';
+import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -45,6 +49,9 @@ const MODE_ITEMS = {
   },
 } satisfies Record<string, { icon: React.ReactNode; label: string }>;
 
+const proposes = (view: AuthoredView) =>
+  'intent' in view && view.intent === 'propose';
+
 export function ModeToolbarButton() {
   const suggestionsAvailable = useEditorSelector(
     (editor) => editor.plugin(SuggestionPlugin).installed
@@ -53,26 +60,28 @@ export function ModeToolbarButton() {
   return suggestionsAvailable ? (
     <SuggestionModeToolbarButton />
   ) : (
-    <ModeToolbarButtonContent suggestionMode={null} />
+    <ModeToolbarButtonContent isSuggesting={null} />
   );
 }
 
 function SuggestionModeToolbarButton() {
-  const suggestionMode = useSuggestionMode();
+  const editor = useEditor();
+  const isSuggesting = useEditorViewState(editor, () =>
+    proposes(editor.plugin(AuthoredPlugin).read.view())
+  );
 
-  return <ModeToolbarButtonContent suggestionMode={suggestionMode} />;
+  return <ModeToolbarButtonContent isSuggesting={isSuggesting} />;
 }
 
 function ModeToolbarButtonContent({
-  suggestionMode,
+  isSuggesting,
 }: {
-  suggestionMode: 'editing' | 'suggesting' | null;
+  isSuggesting: boolean | null;
 }) {
   const editor = useEditor();
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
-  const suggestionsInstalled = suggestionMode !== null;
-  const isSuggesting = suggestionMode === 'suggesting';
+  const suggestionsInstalled = isSuggesting !== null;
   const value = readOnly ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
   return (
@@ -98,12 +107,10 @@ function ModeToolbarButtonContent({
               return;
             }
             if (newValue === 'suggestion') {
-              const suggestions = editor.plugin(SuggestionPlugin);
+              const authored = editor.plugin(AuthoredPlugin);
 
-              suggestions.api.setMode('suggesting');
-              // A refused switch keeps the mode, and Viewing stays read-only
-              // rather than becoming Editing.
-              if (suggestions.read.mode() === 'suggesting') {
+              authored.api.setView({ intent: 'propose' });
+              if (proposes(authored.read.view())) {
                 setEditorReadOnly(editor, false);
               }
 
@@ -111,7 +118,7 @@ function ModeToolbarButtonContent({
             }
             setEditorReadOnly(editor, false);
             if (suggestionsInstalled) {
-              editor.plugin(SuggestionPlugin).api.setMode('editing');
+              editor.plugin(AuthoredPlugin).api.setView({ intent: 'edit' });
             }
           }}
           value={value}
