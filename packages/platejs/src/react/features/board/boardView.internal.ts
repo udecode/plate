@@ -51,22 +51,26 @@ export type { BoardArrowPath, BoardShapeLayout } from './boardIndex.internal';
 export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
 
 /**
- * What a press on the board does: `arrow` draws an arrow from the press to
- * the release, and `pen` draws a line along the drag, or a dot at a click,
- * and stays the tool after it draws. `eraser` marks every note, shape, arrow
- * and pen line a click or drag passes over, but never a frame, and removes
- * them as one undo step on release, and stays the tool. A marked shape shows
- * `data-erasing`. The other tools act on an empty part of the board, which
- * includes the inside of a frame. `frame` draws a frame over a drag, or adds
- * one of the frame's default size centered at a click. `select` selects the
- * shapes a mouse or pen drag's box holds wholly, adding them to the selection
- * with Shift, and pans on a touch drag.
+ * What a press on the board does: `hand` pans the view on a drag that starts
+ * anywhere on the board, shapes included, and never selects, moves or edits.
+ * Its press moves focus to the board unless focus is in the text of a shape on
+ * this board, so a note being edited keeps its edit. `arrow` draws an arrow
+ * from the press to the release, and `pen` draws a line along the drag, or a
+ * dot at a click, and stays the tool after it draws. `eraser` marks every note,
+ * shape, arrow and pen line a click or drag passes over, but never a frame, and
+ * removes them as one undo step on release, and stays the tool. A marked shape
+ * shows `data-erasing`. The other tools act on an empty part of the board,
+ * which includes the inside of a frame. `frame` draws a frame over a drag, or
+ * adds one of the frame's default size centered at a click. `select` selects
+ * the shapes a mouse or pen drag's box holds wholly, adding them to the
+ * selection with Shift, and pans on a touch drag.
  */
 export type BoardTool =
   | 'arrow'
   | 'eraser'
   | 'frame'
   | 'geo'
+  | 'hand'
   | 'note'
   | 'pen'
   | 'select';
@@ -241,7 +245,7 @@ const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
   };
 };
 
-const SHAPES_EDITABLE = `[data-editor-content-root-slot="${BOARD_SHAPES_SLOT}"] [contenteditable="true"]`;
+export const SHAPES_EDITABLE = `[data-editor-content-root-slot="${BOARD_SHAPES_SLOT}"] [data-editor="true"][contenteditable="true"]`;
 
 const setShapeSelection = (tx: PluginTransaction, keys: readonly NodeKey[]) =>
   tx.selection.setNodes(keys, {

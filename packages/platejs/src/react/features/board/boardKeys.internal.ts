@@ -26,6 +26,7 @@ const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
   a: 'arrow',
   e: 'eraser',
   f: 'frame',
+  h: 'hand',
   n: 'note',
   p: 'pen',
   r: 'geo',

@@ -6,6 +6,7 @@ import {
   DiamondIcon,
   EraserIcon,
   FrameIcon,
+  HandIcon,
   MousePointer2Icon,
   MoveUpRightIcon,
   PaintBucketIcon,
@@ -62,6 +63,7 @@ const TOOLS: ReadonlyArray<
   }>
 > = [
   { icon: MousePointer2Icon, key: 'V', label: 'Select', tool: 'select' },
+  { icon: HandIcon, key: 'H', label: 'Hand', tool: 'hand' },
   { icon: StickyNoteIcon, key: 'N', label: 'Note', tool: 'note' },
   { icon: SquareIcon, key: 'R', label: 'Shape', tool: 'geo' },
   { icon: MoveUpRightIcon, key: 'A', label: 'Arrow', tool: 'arrow' },
@@ -110,6 +112,7 @@ const TOOL_NAMES: Readonly<Record<BoardTool, string>> = {
   eraser: 'Eraser tool',
   frame: 'Frame tool',
   geo: 'Shape tool',
+  hand: 'Hand tool',
   note: 'Note tool',
   pen: 'Pen tool',
   select: 'Select tool',
@@ -280,6 +283,7 @@ export function BoardToolbar() {
           ) : (
             <ToolbarButton
               key={itemTool}
+              className="px-1.5"
               pressed={tool === itemTool}
               tooltip={`${label} (${key})`}
               onClick={() => setTool(itemTool)}
@@ -293,18 +297,31 @@ export function BoardToolbar() {
         <BoardFillMenu />
       </ToolbarGroup>
       <ToolbarGroup>
-        <ToolbarButton tooltip="Zoom out (-)" onClick={zoomOut}>
+        <ToolbarButton
+          className="px-1.5"
+          tooltip="Zoom out (-)"
+          onClick={zoomOut}
+        >
           <ZoomOutIcon />
         </ToolbarButton>
         <BoardZoomLevel />
-        <ToolbarButton tooltip="Zoom in (+)" onClick={zoomIn}>
+        <ToolbarButton
+          className="px-1.5"
+          tooltip="Zoom in (+)"
+          onClick={zoomIn}
+        >
           <ZoomInIcon />
         </ToolbarButton>
-        <ToolbarButton tooltip="Fit every shape in view" onClick={fit}>
+        <ToolbarButton
+          className="px-1.5"
+          tooltip="Fit every shape in view"
+          onClick={fit}
+        >
           <ScanIcon />
         </ToolbarButton>
         {frame && (
           <ToolbarButton
+            className="px-1.5"
             tooltip="Remove the frame and keep its shapes"
             onClick={() => removeFrame(frame)}
           >

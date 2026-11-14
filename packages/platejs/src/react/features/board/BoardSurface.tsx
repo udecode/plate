@@ -37,9 +37,12 @@ export type {
  * camera, at their place and stacking rank, through the board's content root.
  * It owns the view's camera, tool, next style and gestures, which never reach
  * the document; a gesture writes through the board's commands once, on
- * release. Pan with the wheel, a middle-button drag or a drag with Space held,
- * zoom with Mod and the wheel. With the select tool, a touch drag on empty
- * board pans, and a mouse or pen drag there selects the shapes its box holds.
+ * release. Pan with the wheel, a middle-button drag, a drag with Space held or
+ * a drag with the hand tool. While the hand is picked, the board shows a grab
+ * cursor, except over its toolbar and an element that sets its own cursor,
+ * such as a resize handle. Zoom with Mod and the wheel. With the select tool, a
+ * touch drag on empty board pans, and a mouse or pen drag there selects the
+ * shapes its box holds.
  * `toolbar` renders over the board, where `useBoardView` and
  * `useBoardActions` reach this view. A read-only view or a preview pans and
  * selects but never writes, and a gesture under way when the view turns so
@@ -87,6 +90,8 @@ export function BoardSurface({
     [view]
   );
   const history = useEditorHistory({ editor: mounted });
+  const readHand = () => view.state().tool === 'hand';
+  const hand = React.useSyncExternalStore(view.subscribe, readHand, readHand);
 
   React.useLayoutEffect(
     () => view.renderWith({ history, messages }),
@@ -104,6 +109,7 @@ export function BoardSurface({
           'data-selected': selected || undefined,
         }}
         style={{
+          cursor: hand ? 'grab' : undefined,
           height: height ?? element.height,
           overflow: 'clip',
           position: 'relative',
@@ -150,6 +156,7 @@ export function BoardSurface({
             contentEditable={false}
             data-board-toolbar=""
             role="presentation"
+            style={{ cursor: 'default' }}
             onKeyDown={keepToolbarArrowFromBrowser}
           >
             {toolbar}

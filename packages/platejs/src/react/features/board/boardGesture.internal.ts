@@ -23,7 +23,8 @@ import {
   previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
-import type { BoardViewCore } from './boardView.internal';
+import { type BoardViewCore, SHAPES_EDITABLE } from './boardView.internal';
+import { activeElementOf } from './boardVoice.internal';
 
 type Corner = 'ne' | 'nw' | 'se' | 'sw';
 
@@ -453,6 +454,8 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     };
   };
 
+  const inOwnText = (element: Element | null) =>
+    !!element && element === host.querySelector(SHAPES_EDITABLE);
   const onPointerDown = (event: PointerEvent) => {
     if (gesture) return;
     pressed = undefined;
@@ -479,7 +482,10 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     const draws = tool === 'arrow' || tool === 'eraser' || tool === 'pen';
     const typing = core.writable() && !!core.editedShape();
 
-    if (event.button === 1 || (spaceHeld && !typing)) {
+    if (event.button === 1 || tool === 'hand' || (spaceHeld && !typing)) {
+      if (tool === 'hand' && !inOwnText(activeElementOf(host))) {
+        core.focusBoard();
+      }
       gesture = pan(pointer, pointerId);
     } else if (!draws && shapeElement && shape && handle) {
       if (!core.writable()) return;
