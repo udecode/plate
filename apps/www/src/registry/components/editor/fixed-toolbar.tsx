@@ -98,43 +98,26 @@ export function FixedToolbarButtons({
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <MarkToolbarButton
-              plugin={BoldPlugin}
-              shortcut="mod+b"
-              tooltip="Bold"
-            >
+            <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
               <BoldIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              plugin={ItalicPlugin}
-              shortcut="mod+i"
-              tooltip="Italic"
-            >
+            <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
               <ItalicIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              plugin={UnderlinePlugin}
-              shortcut="mod+u"
-              tooltip="Underline"
-            >
+            <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
               <UnderlineIcon />
             </MarkToolbarButton>
 
             <MarkToolbarButton
               plugin={StrikethroughPlugin}
-              shortcut="mod+shift+x"
               tooltip="Strikethrough"
             >
               <StrikethroughIcon />
             </MarkToolbarButton>
 
-            <MarkToolbarButton
-              plugin={CodePlugin}
-              shortcut="mod+e"
-              tooltip="Code"
-            >
+            <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
               <Code2Icon />
             </MarkToolbarButton>
 

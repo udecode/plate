@@ -113,9 +113,9 @@ export default function MyEditorPage() {
     <EditorRoot editor={editor}>
       <EditorFrame>
         <FixedToolbar className="justify-start rounded-t-lg">
-          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">U</MarkToolbarButton>
         </FixedToolbar>
         <EditorContainer>
           <Editor placeholder="Type your amazing content here..." />
@@ -203,9 +203,9 @@ export default function MyEditorPage() {
           <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
           <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
           {/* Mark Toolbar Buttons */}
-          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">U</MarkToolbarButton>
         </FixedToolbar>
         <EditorContainer>
           <Editor placeholder="Type your amazing content here..." />
@@ -323,9 +323,9 @@ function MyEditor({ value }: { value: Value }) {
           <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 2 })}>H2</ToolbarButton>
           <ToolbarButton onClick={() => editor.plugin(HeadingPlugin).update.toggle({ level: 3 })}>H3</ToolbarButton>
           <ToolbarButton onClick={() => editor.plugin(BlockquotePlugin).update.toggle()}>Quote</ToolbarButton>
-          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">B</MarkToolbarButton>
-          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">I</MarkToolbarButton>
-          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">U</MarkToolbarButton>
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">B</MarkToolbarButton>
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">I</MarkToolbarButton>
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">U</MarkToolbarButton>
           <div className="flex-1" />
           <ToolbarButton
             className="px-2"

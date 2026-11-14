@@ -87,7 +87,14 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["mark-toolbar-button", "fixed-toolbar", "floating-toolbar"],
+      "targets": [
+        "mark-toolbar-button",
+        "fixed-toolbar",
+        "floating-toolbar",
+        "installation-next-02-marks-demo",
+        "installation-next-03-elements-demo",
+        "installation-next-demo"
+      ],
       "entries": 2,
       "diagnostics": []
     },

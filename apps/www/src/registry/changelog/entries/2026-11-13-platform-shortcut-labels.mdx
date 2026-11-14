@@ -9,7 +9,10 @@ release: { 'status': 'unresolved' }
 diagnostics: []
 ---
 
-<!-- entry: {"id":"2026-11-13-fixed-toolbar-label-shortcuts-user-s-4662f3a3","kind":"fix","migrationNotes":[]} -->
+<!-- entry: {"id":"2026-11-13-fixed-toolbar-label-shortcuts-user-s-4662f3a3","kind":"fix","migrationNotes":["Remove keys written into a `MarkToolbarButton` tooltip, such as `tooltip=\"Bold (⌘+B)\"`, or the tooltip shows them twice."]} -->
 
-- **`mark-toolbar-button`**: Add a `shortcut` prop, such as `mod+b`. After mount, the tooltip shows it with `⌘` on Apple devices and `Ctrl` elsewhere, and the button sets `aria-keyshortcuts`.
-- **`fixed-toolbar`**, **`floating-toolbar`**: Show the Bold, Italic, Underline, Strikethrough and Code shortcuts as `Ctrl` on Windows and Linux instead of always `⌘`.
+- **`mark-toolbar-button`**: Show the shortcut of the plugin the button toggles, so a rebound shortcut shows its new keys. After mount, the tooltip shows it as `⇧⌘X` on Apple devices and `Ctrl+Shift+X` elsewhere, and the button sets `aria-keyshortcuts`. A disabled button shows no shortcut.
+
+<!-- entry: {"id":"2026-11-13-toolbars-platform-shortcut-labels","kind":"fix","migrationNotes":[]} -->
+
+- **`fixed-toolbar`**, **`floating-toolbar`**, **`installation-next-02-marks-demo`**, **`installation-next-03-elements-demo`**, **`installation-next-demo`**: Show each mark button's shortcut for the user's platform instead of always `⌘`. The fixed toolbar's Highlight button shows its `BasicMarksKit` shortcut, which it did not show before.

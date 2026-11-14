@@ -162,7 +162,7 @@ import { MarkToolbarButton } from '@/components/editor/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
-    <MarkToolbarButton plugin={BoldPlugin} tooltip="粗体 (⌘+B)">
+    <MarkToolbarButton plugin={BoldPlugin} tooltip="粗体">
       <BoldIcon />
     </MarkToolbarButton>
   );
@@ -171,6 +171,9 @@ export function BoldToolbarButton() {
 
 - `plugin`: 指定要切换的标记插件（例如 `BoldPlugin`）
 - `tooltip`: 为按钮提供提示信息
+- `MarkToolbarButton` 会把插件自身的快捷键加到提示信息中，例如在 Mac 上显示
+  `粗体 (⌘B)`，在其他平台显示 `粗体 (Ctrl+B)`，并据此设置
+  `aria-keyshortcuts`。重新绑定的快捷键会显示新的按键。
 - `MarkToolbarButton` 直接在组件中读取标记状态并处理切换。
 
 ### 转换工具栏按钮

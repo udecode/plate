@@ -119,13 +119,13 @@ function ValueEditor({ value }: { value: Value }) {
             Quote
           </ToolbarButton>
 
-          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
+          <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
             B
           </MarkToolbarButton>
-          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
+          <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
             I
           </MarkToolbarButton>
-          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">
+          <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
             U
           </MarkToolbarButton>
 

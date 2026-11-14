@@ -36,15 +36,41 @@
       "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "installation-next-02-marks-demo",
+      "files": [
+        "apps/www/src/registry/examples/installation-next-02-marks-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "installation-next-03-elements-demo",
+      "files": [
+        "apps/www/src/registry/examples/installation-next-03-elements-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "installation-next-demo",
+      "files": [
+        "apps/www/src/registry/examples/installation-next-04-value-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
     {
       "id": "2026-11-13-fixed-toolbar-label-shortcuts-user-s-4662f3a3",
       "kind": "fix",
-      "summary": "Add a `shortcut` prop, such as `mod+b`. After mount, the tooltip shows it with `⌘` on Apple devices and `Ctrl` elsewhere, and the button sets `aria-keyshortcuts`.",
+      "summary": "Show the shortcut of the plugin the button toggles, so a rebound shortcut shows its new keys. After mount, the tooltip shows it as `⇧⌘X` on Apple devices and `Ctrl+Shift+X` elsewhere, and the button sets `aria-keyshortcuts`. A disabled button shows no shortcut.",
       "details": [],
-      "migrationNotes": [],
+      "migrationNotes": [
+        "Remove keys written into a `MarkToolbarButton` tooltip, such as `tooltip=\"Bold (⌘+B)\"`, or the tooltip shows them twice."
+      ],
       "targets": ["mark-toolbar-button"],
       "source": {
         "line": 14,
@@ -57,14 +83,20 @@
       }
     },
     {
-      "id": "2026-11-13-platform-shortcut-labels-2",
+      "id": "2026-11-13-toolbars-platform-shortcut-labels",
       "kind": "fix",
-      "summary": "Show the Bold, Italic, Underline, Strikethrough and Code shortcuts as `Ctrl` on Windows and Linux instead of always `⌘`.",
+      "summary": "Show each mark button's shortcut for the user's platform instead of always `⌘`. The fixed toolbar's Highlight button shows its `BasicMarksKit` shortcut, which it did not show before.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["fixed-toolbar", "floating-toolbar"],
+      "targets": [
+        "fixed-toolbar",
+        "floating-toolbar",
+        "installation-next-02-marks-demo",
+        "installation-next-03-elements-demo",
+        "installation-next-demo"
+      ],
       "source": {
-        "line": 15,
+        "line": 18,
         "row": 2,
         "legacyRelease": {
           "date": "2026-11-13",

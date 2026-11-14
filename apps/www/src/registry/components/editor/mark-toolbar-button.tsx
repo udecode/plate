@@ -1,6 +1,11 @@
 'use client';
 
-import { IS_APPLE, type ScriptValue } from 'platejs';
+import type { ScriptValue } from 'platejs';
+import {
+  ariaKeyShortcuts,
+  type HotkeySpec,
+  usesAppleDOMHotkeys,
+} from 'platejs/dom';
 import {
   type BoldPlugin,
   type CodePlugin,
@@ -29,56 +34,78 @@ type BooleanMarkPlugin =
   | typeof StrikethroughPlugin
   | typeof UnderlinePlugin;
 
-const APPLE_KEY_GLYPHS: Record<string, string> = {
+const SCRIPT_SHORTCUTS = {
+  sub: 'subscript',
+  sup: 'superscript',
+} as const;
+
+const APPLE_MODIFIER_GLYPHS: Record<string, string> = {
   Alt: '⌥',
+  Control: '⌃',
   Meta: '⌘',
   Shift: '⇧',
 };
 
-export function MarkToolbarButton({
-  shortcut,
-  ...props
-}: React.ComponentProps<typeof ToolbarButton> & {
-  /** `mod`, `shift` or `alt` joined to one key with `+`, such as `mod+shift+x`. */
-  shortcut?: string;
-} & (
-    | {
-        plugin: BooleanMarkPlugin;
-        value?: never;
-      }
-    | {
-        plugin: typeof ScriptPlugin;
-        value: ScriptValue;
-      }
-  )) {
+export function MarkToolbarButton(
+  props: Omit<React.ComponentProps<typeof ToolbarButton>, 'value'> &
+    (
+      | {
+          plugin: BooleanMarkPlugin;
+          value?: never;
+        }
+      | {
+          plugin: typeof ScriptPlugin;
+          value: ScriptValue;
+        }
+    )
+) {
   const editor = useOptionalEditor();
-  const shortcutProps = useShortcutProps(props.tooltip, shortcut);
   if (!editor) {
     const { plugin, value, ...buttonProps } = props;
-    return <ToolbarButton {...buttonProps} {...shortcutProps} disabled />;
+    return <ToolbarButton {...buttonProps} disabled />;
   }
-  return <MountedMarkToolbarButton {...props} {...shortcutProps} />;
+  return <MountedMarkToolbarButton {...props} />;
 }
 
-// The platform is known only on the client, so the server and the first client
-// render leave the shortcut out and the label appears after mount.
-function useShortcutProps(tooltip: React.ReactNode, shortcut?: string) {
+function useShortcutProps(
+  {
+    'aria-label': ariaLabel,
+    tooltip,
+  }: React.ComponentProps<typeof ToolbarButton>,
+  keys?: HotkeySpec
+) {
   const mounted = useMounted();
-  if (!shortcut || !mounted || typeof tooltip !== 'string') return {};
+  if (!keys || !mounted) return {};
 
-  const keys = shortcut.split('+').map((key) => {
-    if (key === 'mod') return IS_APPLE ? 'Meta' : 'Control';
-    return key[0].toUpperCase() + key.slice(1);
+  const apple = usesAppleDOMHotkeys(document);
+  const shortcuts = ariaKeyShortcuts(keys, {
+    platform: apple ? 'apple' : 'other',
   });
-  const label = keys
-    .map((key) =>
-      IS_APPLE ? (APPLE_KEY_GLYPHS[key] ?? key) : key.replace('Control', 'Ctrl')
-    )
-    .join('+');
+  if (!shortcuts) return {};
+  if (!tooltip) return { 'aria-keyshortcuts': shortcuts };
+
+  const [combo] = shortcuts.split(' ');
+  const label = apple
+    ? combo
+        .split('+')
+        .map((key) => APPLE_MODIFIER_GLYPHS[key] ?? key)
+        .join('')
+    : combo.replace('Control', 'Ctrl');
+
+  if (typeof tooltip !== 'string') {
+    return {
+      'aria-keyshortcuts': shortcuts,
+      tooltip: (
+        <>
+          {tooltip} ({label})
+        </>
+      ),
+    };
+  }
 
   return {
-    'aria-keyshortcuts': keys.join('+'),
-    'aria-label': tooltip,
+    'aria-keyshortcuts': shortcuts,
+    'aria-label': ariaLabel ?? tooltip,
     tooltip: `${tooltip} (${label})`,
   };
 }
@@ -90,16 +117,23 @@ function MountedMarkToolbarButton({
 }: React.ComponentProps<typeof MarkToolbarButton>) {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const { installed } = editor.plugin(plugin);
+  const portal = editor.plugin(plugin);
+  const disabled = props.disabled || readOnly || !portal.installed;
+  const shortcutName = value === undefined ? 'toggle' : SCRIPT_SHORTCUTS[value];
+  const shortcutProps = useShortcutProps(
+    props,
+    disabled ? undefined : portal.shortcuts[shortcutName]?.keys
+  );
   const pressed = useEditorSelector((innerEditor) => {
-    const portal = innerEditor.plugin(plugin);
-    return portal.installed && portal.read.isActive(value);
+    const innerPortal = innerEditor.plugin(plugin);
+    return innerPortal.installed && innerPortal.read.isActive(value);
   });
 
   return (
     <ToolbarButton
       {...props}
-      disabled={props.disabled || readOnly || !installed}
+      {...shortcutProps}
+      disabled={disabled}
       pressed={pressed}
       onClick={() => {
         if (editor.read.view.isReadOnly() || !editor.plugin(plugin).installed) {
