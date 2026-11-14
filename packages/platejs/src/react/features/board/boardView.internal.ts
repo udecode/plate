@@ -90,9 +90,15 @@ export type BoardViewActions = Readonly<{
   focus: () => void;
   /** Remove the frame `id` and keep its shapes where they are, as one undo step. */
   removeFrame: (id: string) => void;
+  /** Zoom to 100 percent around the view's center, as Shift+0 does. A focused board says the new zoom when it changes. */
+  resetZoom: () => void;
   /** Merge `style` into the style the next added shape gets. */
   setNextStyle: (style: BoardStyle) => void;
   setTool: (tool: BoardTool) => void;
+  /** Zoom in to the next of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `+` does, and do nothing at 800. A focused board says the new zoom. */
+  zoomIn: () => void;
+  /** Zoom out to the next lower of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `-` does, and do nothing at 10. A focused board says the new zoom. */
+  zoomOut: () => void;
 }>;
 
 export type BoardWrite =
@@ -140,6 +146,7 @@ export type BoardViewCore = Readonly<{
   pan: (viewFraction: BoardPlace) => void;
   paste: (data: DataTransfer) => boolean;
   redo: () => void;
+  resetZoom: () => void;
   reveal: (path: readonly number[]) => boolean;
   select: (keys: readonly NodeKey[]) => void;
   selectBoard: () => void;
@@ -157,9 +164,9 @@ export type BoardViewCore = Readonly<{
    * result.
    */
   write: <T>(change: (tx: PluginTransaction) => T) => T | undefined;
+  zoomIn: () => void;
   zoomLayer: () => HTMLElement | null;
-  zoomStep: (direction: -1 | 1) => void;
-  zoomTo: (zoom: number) => void;
+  zoomOut: () => void;
 }>;
 
 const MIN_ZOOM = 0.1;
@@ -535,6 +542,16 @@ export const createBoardView = (
     sayZoomFrom(before);
   };
 
+  const zoomStep = (direction: -1 | 1) => {
+    const said = percentOf(state.camera.zoom);
+    const next =
+      direction > 0
+        ? ZOOM_STEPS.find((step) => percentOf(step) > said)
+        : ZOOM_STEPS.findLast((step) => percentOf(step) < said);
+
+    if (next !== undefined) zoomTo(next);
+  };
+
   const fit = () => {
     const boxes = [...index.layouts()].map(({ box }) => box);
 
@@ -777,6 +794,7 @@ export const createBoardView = (
     redo: () => {
       if (writable()) history?.redo();
     },
+    resetZoom: () => zoomTo(1),
     reveal,
     select,
     selectBoard: () => {
@@ -801,17 +819,9 @@ export const createBoardView = (
     voice,
     writable,
     write,
+    zoomIn: () => zoomStep(1),
     zoomLayer: () => zoomLayer,
-    zoomStep: (direction) => {
-      const said = percentOf(state.camera.zoom);
-      const next =
-        direction > 0
-          ? ZOOM_STEPS.find((step) => percentOf(step) > said)
-          : ZOOM_STEPS.findLast((step) => percentOf(step) < said);
-
-      if (next !== undefined) zoomTo(next);
-    },
-    zoomTo,
+    zoomOut: () => zoomStep(-1),
   };
 
   const attach = (node: HTMLElement) => {
@@ -891,9 +901,12 @@ export const createBoardView = (
       core.focusBoard();
     },
     removeFrame: (id) => commit({ id, kind: 'removeFrame' }),
+    resetZoom: core.resetZoom,
     setNextStyle: (style) =>
       setState({ nextStyle: { ...state.nextStyle, ...style } }),
     setTool: core.setTool,
+    zoomIn: core.zoomIn,
+    zoomOut: core.zoomOut,
   };
 
   return {

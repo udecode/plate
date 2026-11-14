@@ -13,6 +13,9 @@ import {
   SquareIcon,
   StickyNoteIcon,
   TriangleIcon,
+  UngroupIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
 } from 'lucide-react';
 import {
   BoardArrowPlugin,
@@ -233,6 +236,21 @@ function BoardFillMenu() {
   );
 }
 
+function BoardZoomLevel() {
+  const percent = useBoardView((view) => Math.round(view.camera.zoom * 100));
+  const { resetZoom } = useBoardActions();
+
+  return (
+    <ToolbarButton
+      aria-label={`Zoom ${percent}%, reset to 100%`}
+      tooltip="Reset to 100% (Shift+0)"
+      onClick={resetZoom}
+    >
+      <span className="min-w-[6ch] text-center tabular-nums">{percent}%</span>
+    </ToolbarButton>
+  );
+}
+
 export function BoardToolbar() {
   const tool = useBoardView((view) => view.tool);
   const frame = useBoardView((view) => {
@@ -242,7 +260,7 @@ export function BoardToolbar() {
       ? only.id
       : null;
   });
-  const { fit, removeFrame, setTool } = useBoardActions();
+  const { fit, removeFrame, setTool, zoomIn, zoomOut } = useBoardActions();
 
   return (
     <Toolbar className="absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap justify-center gap-0.5 rounded-lg border bg-background p-1 shadow-sm">
@@ -266,6 +284,13 @@ export function BoardToolbar() {
         <BoardFillMenu />
       </ToolbarGroup>
       <ToolbarGroup>
+        <ToolbarButton tooltip="Zoom out (-)" onClick={zoomOut}>
+          <ZoomOutIcon />
+        </ToolbarButton>
+        <BoardZoomLevel />
+        <ToolbarButton tooltip="Zoom in (+)" onClick={zoomIn}>
+          <ZoomInIcon />
+        </ToolbarButton>
         <ToolbarButton tooltip="Fit every shape in view" onClick={fit}>
           <ScanIcon />
         </ToolbarButton>
@@ -274,7 +299,7 @@ export function BoardToolbar() {
             tooltip="Remove the frame and keep its shapes"
             onClick={() => removeFrame(frame)}
           >
-            Remove frame
+            <UngroupIcon />
           </ToolbarButton>
         )}
       </ToolbarGroup>

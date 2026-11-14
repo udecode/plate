@@ -67,8 +67,9 @@ export type BoardMessages = Readonly<{
   /** Called when a tool is picked, by its key or from the toolbar. */
   tool: (tool: BoardTool) => string;
   /**
-   * Called when a zoom key or `fit` changes the view's zoom, with the new zoom
-   * in whole percent. A zoom with the wheel says nothing.
+   * Called when a zoom key, `zoomIn`, `zoomOut`, `resetZoom` or `fit` changes
+   * the view's zoom, with the new zoom in whole percent. A zoom with the wheel
+   * says nothing.
    */
   zoom: (percent: number) => string;
   /**

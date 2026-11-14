@@ -193,11 +193,11 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   // layout types + only with Shift+1, so a + there zooms in.
   const cameraKey = (event: KeyboardEvent) => {
     if (!plainKey(event)) return false;
-    if (event.shiftKey && event.code === 'Digit0') core.zoomTo(1);
+    if (event.shiftKey && event.code === 'Digit0') core.resetZoom();
     else if (event.shiftKey && event.code === 'Digit1' && event.key !== '+') {
       core.fit();
-    } else if (event.key === '=' || event.key === '+') core.zoomStep(1);
-    else if (event.key === '-') core.zoomStep(-1);
+    } else if (event.key === '=' || event.key === '+') core.zoomIn();
+    else if (event.key === '-') core.zoomOut();
     else if (event.key === 'PageDown' || event.key === 'PageUp') {
       const page = event.key === 'PageDown' ? 0.8 : -0.8;
 
