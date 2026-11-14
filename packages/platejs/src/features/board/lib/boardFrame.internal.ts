@@ -163,6 +163,11 @@ export const boxHolds = (outer: Box, inner: Box) =>
   inner.place.x + inner.size.width <= outer.place.x + outer.size.width &&
   inner.place.y + inner.size.height <= outer.place.y + outer.size.height;
 
+export const frameTakes = (
+  box: Box,
+  shape: Box & Readonly<{ content: boolean; frame?: string | undefined }>
+) => shape.content && shape.frame === undefined && boxHolds(box, shape);
+
 const paintsAbove = (a: BoardFrameBox, b: BoardFrameBox) =>
   a.zIndex === b.zIndex ? a.id > b.id : a.zIndex > b.zIndex;
 
@@ -212,3 +217,9 @@ export const placeAmong = (
     ? { ...placed, frameOrigin: current.frameOrigin }
     : placed;
 };
+
+export const readBackPointOf = (
+  frames: ReadonlyMap<string, BoardFrameBox>,
+  box: Box
+) =>
+  boardPointOf(placeAmong(frames.values(), box), (id) => frames.get(id)).point;

@@ -1,5 +1,5 @@
 import { type ElementOf, property } from '../../../core';
-import { defineBoardShape } from './boardShape.internal';
+import { BOARD_GEO_SIZE, defineBoardShape } from './boardShape.internal';
 
 const BOARD_GEOS = ['diamond', 'ellipse', 'rectangle', 'triangle'] as const;
 
@@ -12,7 +12,7 @@ export const BaseBoardGeoPlugin = defineBoardShape('boardGeo', {
     fill: property.string({ default: 'none' }),
     geo: property.enum(BOARD_GEOS, { default: 'rectangle' }),
   },
-  size: { height: 100, width: 160 },
+  size: BOARD_GEO_SIZE,
 }).extend(({ defineFormats }) => ({
   formats: defineFormats({
     markdown: {

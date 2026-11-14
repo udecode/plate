@@ -13,6 +13,9 @@ import {
 } from '../../../core';
 import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
+  BaseBoardFramePlugin,
+  BaseBoardGeoPlugin,
+  BaseBoardNotePlugin,
   BaseBoardPlugin,
   type BoardGeo,
   type BoardMemberEntry,
@@ -21,6 +24,7 @@ import {
   type BoardSize,
 } from '../../../features/board/lib';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
+import { frameTakes } from '../../../features/board/lib/boardFrame.internal';
 import {
   BOARD_SHAPES_SLOT,
   shapeSelectionMode,
@@ -56,6 +60,8 @@ export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
  * them to the selection with Shift, and pans on a touch drag.
  */
 export type BoardTool = 'arrow' | 'frame' | 'geo' | 'note' | 'pen' | 'select';
+
+export type BoardPlaceTool = Extract<BoardTool, 'frame' | 'geo' | 'note'>;
 
 /**
  * The style the next shape a board view adds gets. Its `fill` goes to both the
@@ -135,11 +141,9 @@ export type BoardViewCore = Readonly<{
   focusTarget: React.RefObject<HTMLDivElement | null>;
   inView: (layout: BoardShapeLayout) => boolean;
   index: BoardIndex;
-  /**
-   * When the view can write, run `insert` as one undo step, select the shape
-   * whose id it returns and go back to the select tool.
-   */
-  insertWith: (insert: (tx: PluginTransaction) => string | undefined) => void;
+  insertAndSelect: (
+    insert: (tx: PluginTransaction) => string | undefined
+  ) => boolean;
   deselectOnBoard: () => boolean;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
   leaveBoard: (backward: boolean) => boolean;
@@ -147,6 +151,11 @@ export type BoardViewCore = Readonly<{
   mounted: Editor;
   pan: (viewFraction: BoardPlace) => void;
   paste: (data: DataTransfer) => boolean;
+  place: (
+    tool: BoardPlaceTool,
+    box: BoardBox,
+    options?: Readonly<{ takesShapes?: boolean }>
+  ) => boolean;
   redo: () => void;
   resetZoom: () => void;
   reveal: (path: readonly number[]) => boolean;
@@ -676,16 +685,67 @@ export const createBoardView = (
     voice.removed(before - boards.read.shapes(board).length);
   };
 
-  const insertWith = (
+  const insertAndSelect = (
     insert: (tx: PluginTransaction) => string | undefined
   ) => {
-    if (!writable()) return;
+    if (!writable()) return false;
 
     const id = write(insert);
     const inserted = id && boards.read.shape(id);
 
+    if (!inserted) return false;
     setState({ tool: 'select' });
-    if (inserted) select([inserted.key]);
+    select([inserted.key]);
+
+    return true;
+  };
+
+  const placeShape: BoardViewCore['place'] = (
+    tool,
+    box,
+    { takesShapes = false } = {}
+  ) => {
+    if (tool === 'frame' && takesShapes) {
+      const at = {
+        place: { x: box.x, y: box.y },
+        size: { height: box.height, width: box.width },
+      };
+
+      index.update();
+      if (
+        !index.entries().some(
+          (entry) =>
+            entry.kind === 'shape' &&
+            frameTakes(at, {
+              ...entry,
+              content: mounted.read.nodes.isContent(entry.node),
+            })
+        )
+      ) {
+        return false;
+      }
+    }
+
+    const { fill, geo } = state.nextStyle;
+    const style = fill === undefined ? {} : { fill };
+
+    return insertAndSelect((tx) => {
+      if (tool === 'frame') {
+        return tx.plugin(BaseBoardFramePlugin).insert(box, { board });
+      }
+      if (tool === 'note') {
+        return tx
+          .plugin(BaseBoardNotePlugin)
+          .insert({ ...box, ...style }, { board });
+      }
+
+      return tx
+        .plugin(BaseBoardGeoPlugin)
+        .insert(
+          { ...box, ...style, ...(geo === undefined ? {} : { geo }) },
+          { board }
+        );
+    });
   };
 
   const land = (slice: ContentSlice, place?: BoardPlace) => {
@@ -760,7 +820,7 @@ export const createBoardView = (
     focusBoard,
     focusTarget,
     index,
-    insertWith,
+    insertAndSelect,
     inView: ({ box }) => {
       const { x, y, zoom } = state.camera;
 
@@ -805,6 +865,7 @@ export const createBoardView = (
       });
     },
     paste,
+    place: placeShape,
     redo: () => {
       if (writable()) history?.redo();
     },

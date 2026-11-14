@@ -1,12 +1,12 @@
 import { type ElementOf, property } from '../../../core';
-import { defineBoardShape } from './boardShape.internal';
+import { BOARD_NOTE_SIZE, defineBoardShape } from './boardShape.internal';
 
 /** A sticky note on a board, holding rich text. */
 export const BaseBoardNotePlugin = defineBoardShape('boardNote', {
   properties: {
     fill: property.string({ default: 'yellow' }),
   },
-  size: { height: 200, width: 200 },
+  size: BOARD_NOTE_SIZE,
 }).extend(({ defineFormats }) => ({
   formats: defineFormats({
     markdown: {

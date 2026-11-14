@@ -43,6 +43,10 @@ export type BoardRestackDirection = 'back' | 'backward' | 'forward' | 'front';
 
 export const BOARD_SHAPES_SLOT = 'shapes';
 
+export const BOARD_NOTE_SIZE: BoardSize = { height: 200, width: 200 };
+
+export const BOARD_GEO_SIZE: BoardSize = { height: 100, width: 160 };
+
 /**
  * How a selection of board members selects them. Plite takes an object
  * selection only of one object that is not void, so a frame, a void, takes a
@@ -333,14 +337,20 @@ function boardShapeStage(size: BoardSize): unknown {
           if (!root) return undefined;
 
           const shapes = tx.root(root);
+          const place = placeAmong(
+            boardFramesIn(shapes).values(),
+            { place: { x, y }, size: { height, width } },
+            { requested: frame }
+          );
+
+          if (![place.x, place.y, height, width].every(Number.isFinite)) {
+            return undefined;
+          }
+
           const shapeId = nanoid();
           const shape = tx.schema.create(type, {
             ...own,
-            place: placeAmong(
-              boardFramesIn(shapes).values(),
-              { place: { x, y }, size: { height, width } },
-              { requested: frame }
-            ),
+            place,
             shapeId,
             size: { height, width },
             zIndex: stackingKeyAboveLayer(shapes, boardLayerOf(type)),

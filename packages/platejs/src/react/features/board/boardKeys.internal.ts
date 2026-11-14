@@ -5,11 +5,21 @@ import { usesAppleDOMHotkeys } from '../../../dom/plite-dom.internal';
 import type {
   BoardPlace,
   BoardRestackDirection,
+  BoardSize,
 } from '../../../features/board/lib';
 import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
-import type { BoardShapeLayout } from './boardIndex.internal';
-import { frontmostAround, pickInDirection } from './boardPick.internal';
-import type { BoardTool, BoardViewCore } from './boardView.internal';
+import type { BoardBox, BoardShapeLayout } from './boardIndex.internal';
+import {
+  BOARD_PLACE_SIZE,
+  freePointFrom,
+  frontmostAround,
+  pickInDirection,
+} from './boardPick.internal';
+import type {
+  BoardPlaceTool,
+  BoardTool,
+  BoardViewCore,
+} from './boardView.internal';
 
 const TOOL_KEYS: Readonly<Record<string, BoardTool>> = {
   a: 'arrow',
@@ -26,6 +36,8 @@ const ARROWS: Readonly<Record<string, BoardPlace>> = {
   ArrowRight: { x: 1, y: 0 },
   ArrowUp: { x: 0, y: -1 },
 };
+
+const PLACE_GAP = 24;
 
 const NUDGE = 1;
 const SHIFT_NUDGE = 10;
@@ -198,6 +210,99 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
+  const spanOfShapes = (shapes: readonly BoardShapeLayout[]) => {
+    if (shapes.length === 0) return undefined;
+
+    let left = Number.POSITIVE_INFINITY;
+    let top = Number.POSITIVE_INFINITY;
+    let right = Number.NEGATIVE_INFINITY;
+    let bottom = Number.NEGATIVE_INFINITY;
+
+    for (const { box } of shapes) {
+      left = Math.min(left, box.x);
+      top = Math.min(top, box.y);
+      right = Math.max(right, box.x + box.width);
+      bottom = Math.max(bottom, box.y + box.height);
+    }
+
+    return { height: bottom - top, width: right - left, x: left, y: top };
+  };
+
+  const centeredOnView = (size: BoardSize): BoardBox => {
+    const center = core.viewCenter();
+
+    return {
+      height: size.height,
+      width: size.width,
+      x: center.x - size.width / 2,
+      y: center.y - size.height / 2,
+    };
+  };
+
+  const placeBeside = (
+    tool: Exclude<BoardPlaceTool, 'frame'>,
+    around?: BoardBox
+  ) => {
+    const size = BOARD_PLACE_SIZE[tool];
+    const start = around
+      ? { x: around.x + around.width + PLACE_GAP, y: around.y }
+      : centeredOnView(size);
+    const point = freePointFrom(start, size, index.entries());
+
+    return !!point && core.place(tool, { ...point, ...size });
+  };
+
+  const placeFrame = (around?: BoardBox) =>
+    around
+      ? core.place(
+          'frame',
+          {
+            height: around.height + 2 * PLACE_GAP,
+            width: around.width + 2 * PLACE_GAP,
+            x: around.x - PLACE_GAP,
+            y: around.y - PLACE_GAP,
+          },
+          { takesShapes: true }
+        )
+      : core.place('frame', centeredOnView(BOARD_PLACE_SIZE.frame));
+
+  const placeWith = (tool: BoardPlaceTool) => {
+    core.cancelInteraction();
+
+    const around = spanOfShapes(core.selectedShapes());
+    const placed =
+      tool === 'frame' ? placeFrame(around) : placeBeside(tool, around);
+
+    if (!placed) {
+      core.voice.repeatSelection();
+
+      return;
+    }
+
+    const [shape] = core.selectedShapes();
+
+    if (shape && !core.inView(shape)) {
+      core.reveal([index.entries().findIndex(({ key }) => key === shape.key)]);
+    }
+  };
+
+  const placeKey = (event: KeyboardEvent) => {
+    const { tool } = core.state();
+
+    if (
+      event.key !== 'Enter' ||
+      event.shiftKey ||
+      !plainKey(event) ||
+      (tool !== 'frame' && tool !== 'geo' && tool !== 'note') ||
+      !core.writable()
+    ) {
+      return false;
+    }
+    if (!event.repeat) placeWith(tool);
+
+    return true;
+  };
+
   // Shift with 0 or 1 types another character on many layouts, such as = for
   // Shift+0 on a German one, so those two read the physical key. A Swiss
   // layout types + only with Shift+1, so a + there zooms in.
@@ -312,6 +417,8 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     ) {
       return event.repeat || focusToolbar();
     }
+
+    if ((onTarget || selected.length > 0) && placeKey(event)) return true;
 
     const arrow = ARROWS[event.key];
 

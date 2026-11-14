@@ -1,9 +1,6 @@
 import type { NodeKey } from '../../../core';
 import {
   BaseBoardArrowPlugin,
-  BaseBoardFramePlugin,
-  BaseBoardGeoPlugin,
-  BaseBoardNotePlugin,
   BaseBoardStrokePlugin,
   type BoardArrowEndInput,
   type BoardPlace,
@@ -17,6 +14,7 @@ import {
   spanOf,
 } from './boardIndex.internal';
 import { simulatedPressure, strokeOutline } from './boardInk.internal';
+import { BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
   placeElement,
   previewArrowLine,
@@ -348,21 +346,20 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       if (dragged(done.press, done.pointer)) {
         const end = arrowEndAt(core.boardPointAt(done.pointer));
 
-        core.insertWith((tx) =>
+        core.insertAndSelect((tx) =>
           tx
             .plugin(BaseBoardArrowPlugin)
             .insert({ end, start: done.start }, { board: core.board })
         );
       }
     } else if (done.kind === 'frame') {
-      const box = frameToolBox(
-        done.from,
-        core.boardPointAt(done.pointer),
-        dragged(done.press, done.pointer)
-      );
-
-      core.insertWith((tx) =>
-        tx.plugin(BaseBoardFramePlugin).insert(box, { board: core.board })
+      core.place(
+        'frame',
+        frameToolBox(
+          done.from,
+          core.boardPointAt(done.pointer),
+          dragged(done.press, done.pointer)
+        )
       );
     } else if (done.kind === 'move') {
       const { carried, copy, delta, ids } = done;
@@ -428,7 +425,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     core.measure();
 
     const { pointerId } = event;
-    const { nextStyle, tool } = core.state();
+    const { tool } = core.state();
     const pointer = { x: event.clientX, y: event.clientY };
     const at = core.boardPointAt(pointer);
     const handle =
@@ -538,32 +535,9 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
           };
           break;
         }
-        case 'geo': {
-          const { fill, geo } = nextStyle;
-
-          core.insertWith((tx) =>
-            tx.plugin(BaseBoardGeoPlugin).insert(
-              {
-                ...at,
-                ...(fill === undefined ? {} : { fill }),
-                ...(geo === undefined ? {} : { geo }),
-              },
-              { board: core.board }
-            )
-          );
-          break;
-        }
+        case 'geo':
         case 'note': {
-          const { fill } = nextStyle;
-
-          core.insertWith((tx) =>
-            tx
-              .plugin(BaseBoardNotePlugin)
-              .insert(
-                { ...at, ...(fill === undefined ? {} : { fill }) },
-                { board: core.board }
-              )
-          );
+          core.place(tool, { ...at, ...BOARD_PLACE_SIZE[tool] });
           break;
         }
         case 'pen': {

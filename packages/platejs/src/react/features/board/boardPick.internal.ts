@@ -1,5 +1,25 @@
-import type { BoardPlace } from '../../../features/board/lib';
+import type {
+  BoardFrameEntry,
+  BoardMemberEntry,
+  BoardPlace,
+  BoardSize,
+} from '../../../features/board/lib';
+import {
+  BOARD_FRAME_SIZE,
+  readBackPointOf,
+} from '../../../features/board/lib/boardFrame.internal';
+import {
+  BOARD_GEO_SIZE,
+  BOARD_NOTE_SIZE,
+} from '../../../features/board/lib/boardShape.internal';
 import type { BoardBox, BoardShapeLayout } from './boardIndex.internal';
+import type { BoardPlaceTool } from './boardView.internal';
+
+export const BOARD_PLACE_SIZE: Readonly<Record<BoardPlaceTool, BoardSize>> = {
+  frame: BOARD_FRAME_SIZE,
+  geo: BOARD_GEO_SIZE,
+  note: BOARD_NOTE_SIZE,
+};
 
 const DEGREES = 180 / Math.PI;
 
@@ -64,4 +84,32 @@ export const pickInDirection = (
   }
 
   return picked;
+};
+
+const PLACE_STEP = 24;
+
+export const freePointFrom = (
+  start: BoardPlace,
+  size: BoardSize,
+  entries: readonly BoardMemberEntry[]
+) => {
+  const frames = new Map<string, BoardFrameEntry>();
+  const held = new Set<string>();
+
+  for (const entry of entries) {
+    if (entry.kind === 'frame') frames.set(entry.id, entry);
+    if (entry.kind !== 'arrow') held.add(`${entry.place.x} ${entry.place.y}`);
+  }
+
+  for (let step = 0; step <= entries.length; step += 1) {
+    const point = {
+      x: start.x + step * PLACE_STEP,
+      y: start.y + step * PLACE_STEP,
+    };
+    const { x, y } = readBackPointOf(frames, { place: point, size });
+
+    if (!held.has(`${x} ${y}`)) return point;
+  }
+
+  return undefined;
 };

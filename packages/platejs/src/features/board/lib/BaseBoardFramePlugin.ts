@@ -14,8 +14,8 @@ import {
   boardFramesIn,
   boardLayerOf,
   boardPointOf,
-  boxHolds,
   framedPlace,
+  frameTakes,
   isFrameable,
 } from './boardFrame.internal';
 import {
@@ -42,8 +42,9 @@ export const BaseBoardFramePlugin = definePlugin(BOARD_FRAME_TYPE, {
     /**
      * Add a frame above every frame of the board block `board`, with its
      * origin at its place, and return its id. It takes in each shape that
-     * lies wholly in it and is in no other frame. Return undefined when
-     * `board` is no board.
+     * lies wholly in it and is in no other frame. Return undefined, and write
+     * nothing, when `board` is no board or when a coordinate it would store,
+     * its own or that of a shape it takes in, is not a finite number.
      */
     insert: txLocate(
       locateAt(1, 'board'),
@@ -79,11 +80,32 @@ export const BaseBoardFramePlugin = definePlugin(BOARD_FRAME_TYPE, {
             frames.get(id)
           );
 
-          return frame === undefined &&
-            boxHolds(box, { place: point, size: node.size })
-            ? [{ key: tx.key(node), point }]
+          return frameTakes(box, {
+            content: tx.nodes.isContent(node),
+            frame,
+            place: point,
+            size: node.size,
+          })
+            ? [
+                {
+                  key: tx.key(node),
+                  place: framedPlace({ id: shapeId, origin }, point),
+                },
+              ]
             : [];
         });
+
+        if (
+          ![
+            x,
+            y,
+            height,
+            width,
+            ...taken.flatMap(({ place }) => [place.x, place.y]),
+          ].every(Number.isFinite)
+        ) {
+          return undefined;
+        }
 
         appendBoardMember(
           tx,
@@ -99,11 +121,8 @@ export const BaseBoardFramePlugin = definePlugin(BOARD_FRAME_TYPE, {
             ),
           })
         );
-        for (const { key, point } of taken) {
-          tx.nodes.set(
-            { place: framedPlace({ id: shapeId, origin }, point) },
-            { at: key }
-          );
+        for (const { key, place } of taken) {
+          tx.nodes.set({ place }, { at: key });
         }
 
         return shapeId;
