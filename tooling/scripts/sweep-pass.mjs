@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,10 +15,17 @@ const ROOT = path.resolve(
   '../..'
 );
 const USAGE =
-  'usage: sweep-pass.mjs rows --pages [--only <route prefix>] [--base <url>] --out <file> | collect --dir <run dir>';
+  'usage: sweep-pass.mjs rows --pages [--only <route prefix>] [--base <url>] --out <file> | plan --rows <file> --dir <run dir> [--lanes <n>] [--lang en|zh] | collect --dir <run dir>';
 const BETA = 'https://beta.platejs.org';
 const SESSION_BUDGET = 10;
 const DEPLOY_LOOKBACK_DAYS = 7;
+const LANE_TARGET = 50;
+const LANE_CAP = 60;
+const LANGUAGES = { en: 'English', zh: 'Chinese' };
+const LANE_RULES = path.join(
+  ROOT,
+  '.agents/rules/verify/references/sweep-lane.md'
+);
 const ISO_TIME = /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?(Z|[+-]\d\d:\d\d)$/;
 const VIDEO = /\.(mp4|webm)$/i;
 
@@ -136,16 +149,17 @@ function readJson(file, where, problems) {
   return value;
 }
 
-function readRows(dir, problems) {
-  const rows = readJson(path.join(dir, 'rows.json'), 'rows.json', problems);
+function readRows(file, problems) {
+  const name = path.basename(file);
+  const rows = readJson(file, name, problems);
   if (rows === undefined) return [];
   if (!Array.isArray(rows) || rows.length === 0) {
-    problems.push('rows.json: needs a list of one or more rows');
+    problems.push(`${name}: needs a list of one or more rows`);
     return [];
   }
   const ids = new Set();
   return rows.filter((row, index) => {
-    const where = `rows.json row ${index + 1}`;
+    const where = `${name} row ${index + 1}`;
     if (!Object.hasOwn(RESULTS, row?.kind)) {
       problems.push(`${where}: "kind" must be session or recheck`);
       return false;
@@ -335,9 +349,156 @@ function markdown(results) {
   return `${lines.join('\n')}\n`;
 }
 
+function pageGroups(rows) {
+  const pageOf = (row) => new URL(row.url).pathname;
+  return [...Map.groupBy(rows, pageOf).values()].map((group) => ({
+    page: pageOf(group[0]),
+    budget: group.reduce((sum, row) => sum + row.budget, 0),
+    rows: group.toSorted(
+      (a, b) => Number(a.kind !== 'session') - Number(b.kind !== 'session')
+    ),
+  }));
+}
+
+function pack(groups, count) {
+  const lanes = Array.from({ length: count }, () => ({
+    budget: 0,
+    groups: [],
+  }));
+  for (const group of groups.toSorted((a, b) => b.budget - a.budget)) {
+    const lane = lanes.reduce((least, each) =>
+      each.budget < least.budget ? each : least
+    );
+    lane.budget += group.budget;
+    lane.groups.push(group);
+  }
+  return lanes.map((lane, index) => ({
+    name: `L${index + 1}`,
+    budget: lane.budget,
+    rows: lane.groups
+      .toSorted((a, b) => groups.indexOf(a) - groups.indexOf(b))
+      .flatMap((group) => group.rows),
+  }));
+}
+
+function splitLanes(rows, lanes, problems) {
+  const groups = pageGroups(rows);
+  const total = groups.reduce((sum, group) => sum + group.budget, 0);
+  for (const group of groups.filter((each) => each.budget > LANE_CAP)) {
+    problems.push(
+      `${group.page}: its rows hold ${group.budget} minutes, more than one lane's ${LANE_CAP}; lower their budgets`
+    );
+  }
+  if (lanes > groups.length) {
+    problems.push(
+      `--lanes ${lanes} is more than the ${groups.length} pages these rows test`
+    );
+  }
+  if (problems.length > 0) return [];
+  for (let count = lanes ?? Math.ceil(total / LANE_TARGET); ; count++) {
+    const split = pack(groups, count);
+    if (split.every((lane) => lane.budget <= LANE_CAP)) return split;
+    if (lanes !== undefined) {
+      problems.push(
+        `${lanes} lanes cannot hold ${total} minutes at ${LANE_CAP} minutes a lane; raise --lanes or leave it out`
+      );
+      return [];
+    }
+  }
+}
+
+function brief({ budget, name, rows }, dir, lang) {
+  const lines = [
+    `# Lane ${name}`,
+    '',
+    `Read \`${LANE_RULES}\` in full before anything else; it holds this lane's rules. Write every text field of your records in ${LANGUAGES[lang]}.`,
+    '',
+    `- Run directory: \`${dir}\``,
+    `- Lane: ${name}. Name each clip \`clips/${name}-<row number>-<slug>.webm\`.`,
+    `- Budget: ${budget} minutes over ${rows.length} rows.`,
+    '',
+    '## Rows',
+  ];
+  rows.forEach((row, index) => {
+    lines.push(
+      '',
+      `### ${index + 1}. \`${row.id}\``,
+      '',
+      row.kind === 'recheck'
+        ? `- Kind: recheck of ${row.issue}`
+        : '- Kind: session',
+      `- Beta: ${row.url}`,
+      row.kind === 'recheck'
+        ? `- Confirm: ${row.expect}`
+        : `- Reference: ${row.reference ?? 'none, beta only'}`,
+      `- Budget: ${row.budget} minutes`,
+      `- Record: \`records/${name}-${index + 1}.json\``
+    );
+    if (row.context) {
+      lines.push('- Context:', ...row.context.map((line) => `  - ${line}`));
+    }
+  });
+  return `${lines.join('\n')}\n`;
+}
+
+function plan({ dir, lanes, lang = 'en', rows: file }) {
+  const problems = [];
+  if (!Object.hasOwn(LANGUAGES, lang)) {
+    problems.push(`--lang must be one of ${Object.keys(LANGUAGES).join(', ')}`);
+  }
+  if (lanes !== undefined && !(Number.isInteger(lanes) && lanes > 0)) {
+    problems.push('--lanes must be a whole number above 0');
+  }
+  if (existsSync(path.join(dir, 'lanes.json'))) {
+    problems.push(`${dir} already holds a planned pass; plan into a new one`);
+  }
+  const rows = readRows(file, problems);
+  if (problems.length > 0) return problems;
+  const split = splitLanes(rows, lanes, problems);
+  if (problems.length > 0) return problems;
+  for (const folder of ['lanes', 'records', 'clips']) {
+    mkdirSync(path.join(dir, folder), { recursive: true });
+  }
+  writeFileSync(
+    path.join(dir, 'rows.json'),
+    `${JSON.stringify(rows, null, 2)}\n`
+  );
+  const planned = split.map((lane) => ({
+    name: lane.name,
+    budget: lane.budget,
+    brief: `lanes/${lane.name}.md`,
+    rows: lane.rows.map((row) => row.id),
+  }));
+  writeFileSync(
+    path.join(dir, 'lanes.json'),
+    `${JSON.stringify({ lang, lanes: planned }, null, 2)}\n`
+  );
+  writeFileSync(
+    path.join(dir, 'queue.tsv'),
+    `${[
+      'lane\tbudget\trows\tbrief\tstate',
+      ...planned.map((lane) =>
+        [lane.name, lane.budget, lane.rows.length, lane.brief, 'waiting'].join(
+          '\t'
+        )
+      ),
+    ].join('\n')}\n`
+  );
+  for (const lane of split) {
+    writeFileSync(
+      path.join(dir, 'lanes', `${lane.name}.md`),
+      brief(lane, dir, lang)
+    );
+  }
+  console.log(
+    `${rows.length} rows in ${split.length} lanes of ${split.map((lane) => lane.budget).join(', ')} minutes: ${path.join(dir, 'lanes.json')}, queue.tsv and lanes/`
+  );
+  return [];
+}
+
 function collect(dir) {
   const problems = [];
-  const rows = readRows(dir, problems);
+  const rows = readRows(path.join(dir, 'rows.json'), problems);
   const records = readRecords(dir, rows, problems);
   if (problems.length > 0) return problems;
   const live = successfulDeploys(
@@ -396,6 +557,9 @@ function parseArgs(argv) {
     else if (arg === '--base') options.base = value().replace(/\/$/, '');
     else if (arg === '--out') options.out = path.resolve(value());
     else if (arg === '--dir') options.dir = path.resolve(value());
+    else if (arg === '--rows') options.rows = path.resolve(value());
+    else if (arg === '--lanes') options.lanes = Number(value());
+    else if (arg === '--lang') options.lang = value();
     else throw new Error(USAGE);
   }
   return options;
@@ -407,12 +571,15 @@ async function main([command, ...argv]) {
     await writeRows(options);
     return 0;
   }
-  if (command === 'collect' && options.dir) {
-    const problems = collect(options.dir);
+  if (
+    (command === 'collect' && options.dir) ||
+    (command === 'plan' && options.dir && options.rows)
+  ) {
+    const problems = command === 'plan' ? plan(options) : collect(options.dir);
     for (const problem of problems) console.error(problem);
     if (problems.length === 0) return 0;
     console.error(
-      `collect: ${problems.length} problems, nothing written. Fix the records and run collect again.`
+      `${command}: ${problems.length} problems, nothing written. Fix them and run ${command} again.`
     );
     return 1;
   }
