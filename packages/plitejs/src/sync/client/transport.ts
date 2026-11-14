@@ -153,13 +153,20 @@ export const socketTransport = (
       socket?.send(frame);
       cancelFrame = clock.wait(ANSWER_DEADLINES[frameTries], () => {
         frameTries += 1;
-        if (frameTries < ANSWER_DEADLINES.length) sendFrame();
-        else peer.receive({ type: 'unanswered' });
+        if (frameTries < ANSWER_DEADLINES.length) {
+          sendFrame();
+
+          return;
+        }
+        peer.receive({ type: 'unanswered' });
+        // A live room answers the hello, so only a dead socket misses its waits and reconnects.
+        rejoin();
       });
     };
 
     const sendHello = () => {
       cancelHello();
+      cancelFrame();
       if (!open) return;
       welcomed = false;
       socket?.send(JSON.stringify(peer.hello()));
@@ -170,43 +177,55 @@ export const socketTransport = (
       });
     };
 
+    const rejoin = () => {
+      helloTries = 0;
+      sendHello();
+    };
+
+    const redial = () => {
+      const delay = reconnectDelay * (0.5 + clock.random() / 2);
+
+      reconnectDelay = Math.min(reconnectDelay * 2, LAST_RECONNECT);
+      cancelReconnect = clock.wait(delay, start);
+    };
+
     const start = () => {
       if (ended) return;
-      socket = dial({
-        closed: () => {
-          if (!open && socket === null) return;
-          open = false;
-          welcomed = false;
-          socket = null;
-          cancelHello();
-          cancelFrame();
-          if (ended) return;
-          peer.receive({ type: 'closed' });
-
-          const delay = reconnectDelay * (0.5 + clock.random() / 2);
-
-          reconnectDelay = Math.min(reconnectDelay * 2, LAST_RECONNECT);
-          cancelReconnect = clock.wait(delay, start);
-        },
-        open: () => {
-          open = true;
-          helloTries = 0;
-          frameTries = 0;
-          sendHello();
-        },
-        text: (data) => {
-          const message = readServerMessage(data);
-
-          if (!message || ended) return;
-          if (message.type === 'welcome' || message.type === 'refused') {
+      try {
+        socket = dial({
+          closed: () => {
+            if (!open && socket === null) return;
+            open = false;
+            welcomed = false;
+            socket = null;
             cancelHello();
-            welcomed = message.type === 'welcome';
-            if (welcomed) reconnectDelay = FIRST_RECONNECT;
-          }
-          peer.receive(message);
-          if (message.type === 'welcome') sendFrame();
-        },
-      });
+            cancelFrame();
+            if (ended) return;
+            peer.receive({ type: 'closed' });
+            redial();
+          },
+          open: () => {
+            open = true;
+            helloTries = 0;
+            frameTries = 0;
+            sendHello();
+          },
+          text: (data) => {
+            const message = readServerMessage(data);
+
+            if (!message || ended) return;
+            if (message.type === 'welcome' || message.type === 'refused') {
+              cancelHello();
+              welcomed = message.type === 'welcome';
+              if (welcomed) reconnectDelay = FIRST_RECONNECT;
+            }
+            peer.receive(message);
+            if (message.type === 'welcome') sendFrame();
+          },
+        });
+      } catch {
+        redial();
+      }
     };
 
     start();
@@ -226,10 +245,7 @@ export const socketTransport = (
         frameTries = 0;
         sendFrame();
       },
-      rejoin: () => {
-        helloTries = 0;
-        sendHello();
-      },
+      rejoin,
     };
   },
 });

@@ -55,6 +55,12 @@ const queueWrites = (
   let durable = 0;
   let writing = false;
   const waiting = new Map<number, () => void>();
+  const idlers: Array<() => void> = [];
+
+  const settled = () => {
+    if (writing) return;
+    for (const idle of idlers.splice(0)) idle();
+  };
 
   const flush = () => {
     if (writing || !pending) return;
@@ -64,7 +70,9 @@ const queueWrites = (
 
     pending = null;
     writing = true;
-    store.write(writer, write).then(
+    new Promise<void>((resolve) => {
+      resolve(store.write(writer, write));
+    }).then(
       () => {
         writing = false;
         durable = revision;
@@ -75,6 +83,7 @@ const queueWrites = (
         }
         saved(true);
         flush();
+        settled();
       },
       () => {
         writing = false;
@@ -85,6 +94,7 @@ const queueWrites = (
           pending = write;
         }
         saved(false);
+        settled();
       }
     );
   };
@@ -103,6 +113,23 @@ const queueWrites = (
         : new Promise<void>((resolve) => {
             waiting.set(revision, resolve);
           }),
+    retrySaves: () =>
+      new Promise<void>((resolve) => {
+        let tried = false;
+        const idle = () => {
+          if (writing) {
+            idlers.push(idle);
+          } else if (pending && !tried) {
+            tried = true;
+            flush();
+            idlers.push(idle);
+          } else {
+            resolve();
+          }
+        };
+
+        idle();
+      }),
   };
 };
 
@@ -176,6 +203,9 @@ export const createWriter = ({
     joined = false;
     link?.close();
     link = null;
+    if (reason.kind === 'epoch' || reason.kind === 'ahead') {
+      save({ head: { ...record.head, stopped: true } });
+    }
   };
 
   const unsentDecision: KeepAs = (batch) =>
@@ -433,6 +463,7 @@ export const createWriter = ({
       switch (event.type) {
         case 'closed': {
           joined = false;
+          stalled = false;
           break;
         }
         case 'entries': {
@@ -483,6 +514,7 @@ export const createWriter = ({
 
   const connect = () => {
     if (link || stopped || destroyed || record.head.offline) return;
+    stalled = false;
     link = transport.connect({
       hello: () => ({
         epoch: record.head.epoch,
@@ -504,6 +536,7 @@ export const createWriter = ({
       link?.close();
       link = null;
     },
+    retrySaves: writes.retrySaves,
     saveCommit: (change: DocumentChange, decision: boolean) => {
       if (destroyed) return;
 

@@ -8,6 +8,7 @@ export type OutboxHead = Readonly<{
   offline: boolean;
   opened: number;
   room: string;
+  stopped: boolean;
   writer: string;
 }>;
 
@@ -49,6 +50,7 @@ export type OutboxWrite = Readonly<{
 }>;
 
 export type OutboxStore = Readonly<{
+  list: (room: string) => Promise<readonly OutboxRecord[]>;
   load: (writer: string) => Promise<OutboxRecord | null>;
   write: (writer: string, write: OutboxWrite) => Promise<void>;
 }>;

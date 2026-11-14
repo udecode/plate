@@ -115,7 +115,7 @@ export const digestOf = ({
 }: Readonly<{ change: DocumentChangeJson; seq: number; writer: string }>) =>
   sha256(JSON.stringify({ writer, seq, change }));
 
-export const schemaFingerprintOf = (editor: AnyEditor) =>
+export const schemaFingerprintOf = async (editor: AnyEditor) =>
   sha256(
     JSON.stringify({
       identity: editor.read.schema.identity(),
