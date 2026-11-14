@@ -1713,25 +1713,27 @@ const createPluginShortcuts = (
         const namespacedKey = `${plugin.name}.${originalKey}`;
 
         if (hotkey === null) {
-          // If hotkey is null, remove the namespaced shortcut
           delete shortcuts[namespacedKey];
         } else if (hotkey && typeof hotkey === 'object') {
-          const { target, ...hotkeyOptions } = hotkey;
-          const resolvedHotkey = { ...hotkeyOptions } as Record<
-            string,
-            unknown
-          > & {
-            handler?: NonNullable<BasePlugin['shortcuts'][string]>['handler'];
-            priority?: number;
-          };
+          const { handler: declaredHandler, target, ...options } = hotkey;
+          const unknownField = Object.entries(options).find(
+            ([field, value]) =>
+              value !== undefined && field !== 'keys' && field !== 'priority'
+          )?.[0];
+          let handler = declaredHandler;
 
-          if (resolvedHotkey.handler && target !== undefined) {
+          if (unknownField) {
+            throw new TypeError(
+              `Plate shortcut "${namespacedKey}" has unknown field \`${unknownField}\`. A shortcut takes \`keys\`, \`priority\`, and a \`handler\` or a \`target\`.`
+            );
+          }
+          if (handler && target !== undefined) {
             throw new Error(
               `Plate shortcut "${namespacedKey}" cannot define \`target\` together with a custom handler.`
             );
           }
 
-          if (!resolvedHotkey.handler && updateMethods) {
+          if (!handler && updateMethods) {
             if (
               target !== undefined &&
               target !== 'api' &&
@@ -1780,7 +1782,7 @@ const createPluginShortcuts = (
             })();
 
             if (route === 'update') {
-              resolvedHotkey.handler = ({ editor: commandEditor }) => {
+              handler = ({ editor: commandEditor }) => {
                 const updateGroup = (
                   commandEditor.update as unknown as Record<string, unknown>
                 )[plugin.name];
@@ -1800,7 +1802,7 @@ const createPluginShortcuts = (
                 return result === false ? false : undefined;
               };
             } else {
-              resolvedHotkey.handler = ({ editor: commandEditor }) => {
+              handler = ({ editor: commandEditor }) => {
                 const commandApi = Reflect.get(commandEditor.api, plugin.name);
                 const command = isApiRecord(commandApi)
                   ? commandApi[originalKey]
@@ -1817,7 +1819,10 @@ const createPluginShortcuts = (
             }
           }
 
-          resolvedHotkey.priority ??= 0;
+          const priority = options.priority ?? 0;
+          const resolvedHotkey = handler
+            ? { ...options, handler, priority }
+            : { ...options, priority };
 
           shortcuts[namespacedKey] = resolvedHotkey;
           compilerInputs.push({

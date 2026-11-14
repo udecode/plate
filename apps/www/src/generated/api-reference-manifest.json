@@ -3269,7 +3269,7 @@
           "kind": "type",
           "name": "EditorShortcut",
           "runtime": false,
-          "signature": "type EditorShortcut = EditorShortcutOptions & ({\n  handler: (ctx: {\n    editor: Editor;\n    event: KeyboardEvent;\n    eventDetails: HotkeysEvent;\n  }) => boolean | void;\n  target?: never;\n} | {\n  handler?: never;\n  /** Disambiguates a command name present in both public namespaces. */\n  target?: 'api' | 'update';\n});",
+          "signature": "type EditorShortcut = EditorShortcutOptions & ({\n  handler: (ctx: {\n    editor: Editor;\n    event: KeyboardEvent;\n  }) => boolean | void;\n  target?: never;\n} | {\n  handler?: never;\n  /** Disambiguates a command name present in both public namespaces. */\n  target?: 'api' | 'update';\n});",
           "source": null,
           "typeParameters": []
         },
@@ -4553,17 +4553,6 @@
           "name": "Hotkeys",
           "runtime": true,
           "signature": "Hotkeys: {\n  isBold: (event: KeyboardEventLike) => boolean;\n  isCompose: (event: KeyboardEventLike) => boolean;\n  isDeleteBackward: (event: KeyboardEventLike) => boolean;\n  isDeleteForward: (event: KeyboardEventLike) => boolean;\n  isDeleteLineBackward: (event: KeyboardEventLike) => boolean;\n  isDeleteLineForward: (event: KeyboardEventLike) => boolean;\n  isDeleteWordBackward: (event: KeyboardEventLike) => boolean;\n  isDeleteWordForward: (event: KeyboardEventLike) => boolean;\n  isEscape: (event: KeyboardEventLike) => boolean;\n  isExtendBackward: (event: KeyboardEventLike) => boolean;\n  isExtendDownward: (event: KeyboardEventLike) => boolean;\n  isExtendForward: (event: KeyboardEventLike) => boolean;\n  isExtendLineBackward: (event: KeyboardEventLike) => boolean;\n  isExtendLineForward: (event: KeyboardEventLike) => boolean;\n  isExtendUpward: (event: KeyboardEventLike) => boolean;\n  isItalic: (event: KeyboardEventLike) => boolean;\n  isMoveBackward: (event: KeyboardEventLike) => boolean;\n  isMoveDownward: (event: KeyboardEventLike) => boolean;\n  isMoveForward: (event: KeyboardEventLike) => boolean;\n  isMoveLineBackward: (event: KeyboardEventLike) => boolean;\n  isMoveLineForward: (event: KeyboardEventLike) => boolean;\n  isMoveUpward: (event: KeyboardEventLike) => boolean;\n  isMoveWordBackward: (event: KeyboardEventLike) => boolean;\n  isMoveWordForward: (event: KeyboardEventLike) => boolean;\n  isRedo: (event: KeyboardEventLike) => boolean;\n  isSelectAll: (event: KeyboardEventLike) => boolean;\n  isSoftBreak: (event: KeyboardEventLike) => boolean;\n  isSplitBlock: (event: KeyboardEventLike) => boolean;\n  isTab: (editor: Editor, event: KeyboardEventLike, { composing }?: {\n    /** Ignore the event if composing. */\n    composing?: boolean;\n  }) => boolean;\n  isTransposeCharacter: (event: KeyboardEventLike) => boolean;\n  isUndo: (event: KeyboardEventLike) => boolean;\n  isUntab: (editor: Editor, event: KeyboardEventLike, { composing }?: {\n    composing?: boolean;\n  }) => boolean;\n}",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:HotkeysEvent": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "HotkeysEvent",
-          "runtime": false,
-          "signature": "type HotkeysEvent = {\n  keys?: readonly string[];\n  description?: string;\n  alt?: boolean;\n  ctrl?: boolean;\n  meta?: boolean;\n  mod?: boolean;\n  shift?: boolean;\n  useKey?: boolean;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -7321,12 +7310,12 @@
         },
         "platejs:PluginShortcutInput": {
           "aliases": [],
-          "documentation": "Validate inferred shortcut object keys against callable plugin commands.\nUnknown names require a custom handler; ambiguous names require an explicit\nroute, except plugin/editor API collisions which require a custom handler.",
+          "documentation": "Validate inferred shortcut object keys against callable plugin commands.\nUnknown names require a custom handler; ambiguous names require an explicit\nroute, except plugin/editor API collisions which require a custom handler.\nFields outside the shortcut shape are rejected, because inference would\notherwise accept them as known properties.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "PluginShortcutInput",
           "runtime": false,
-          "signature": "type PluginShortcutInput<C extends AnyBasePluginDefinition, TShortcuts extends Record<string, TShortcut | null | undefined>, TShortcut = EditorShortcut> = TShortcuts & { [K in keyof TShortcuts]: K extends string ? Extract<TShortcuts[K], null | undefined> | (Exclude<TShortcuts[K], null | undefined> extends never ? never : PluginShortcutForKey<C, K, TShortcut>) : never; };",
+          "signature": "type PluginShortcutInput<C extends AnyBasePluginDefinition, TShortcuts extends Record<string, TShortcut | null | undefined>, TShortcut = EditorShortcut> = TShortcuts & { [K in keyof TShortcuts]: K extends string ? Extract<TShortcuts[K], null | undefined> | (Exclude<TShortcuts[K], null | undefined> extends never ? never : PluginShortcutForKey<C, K, TShortcut> & UnknownShortcutFields<Exclude<TShortcuts[K], null | undefined>, TShortcut>) : never; };",
           "source": null,
           "typeParameters": [
             "C extends AnyBasePluginDefinition",
@@ -19388,7 +19377,7 @@
           "kind": "type",
           "name": "EditorShortcut",
           "runtime": false,
-          "signature": "type EditorShortcut = EditorShortcutOptions & ({\n  handler: (ctx: {\n    editor: Editor;\n    event: KeyboardEvent;\n    eventDetails: HotkeysEvent;\n  }) => boolean | void;\n  target?: never;\n} | {\n  handler?: never;\n  /** Disambiguates a command name present in both public namespaces. */\n  target?: 'api' | 'update';\n});",
+          "signature": "type EditorShortcut = EditorShortcutOptions & ({\n  handler: (ctx: {\n    editor: Editor;\n    event: KeyboardEvent;\n  }) => boolean | void;\n  target?: never;\n} | {\n  handler?: never;\n  /** Disambiguates a command name present in both public namespaces. */\n  target?: 'api' | 'update';\n});",
           "source": null,
           "typeParameters": []
         },
@@ -20928,17 +20917,6 @@
           "name": "Hotkeys",
           "runtime": true,
           "signature": "Hotkeys: {\n  isBold: (event: KeyboardEventLike) => boolean;\n  isCompose: (event: KeyboardEventLike) => boolean;\n  isDeleteBackward: (event: KeyboardEventLike) => boolean;\n  isDeleteForward: (event: KeyboardEventLike) => boolean;\n  isDeleteLineBackward: (event: KeyboardEventLike) => boolean;\n  isDeleteLineForward: (event: KeyboardEventLike) => boolean;\n  isDeleteWordBackward: (event: KeyboardEventLike) => boolean;\n  isDeleteWordForward: (event: KeyboardEventLike) => boolean;\n  isEscape: (event: KeyboardEventLike) => boolean;\n  isExtendBackward: (event: KeyboardEventLike) => boolean;\n  isExtendDownward: (event: KeyboardEventLike) => boolean;\n  isExtendForward: (event: KeyboardEventLike) => boolean;\n  isExtendLineBackward: (event: KeyboardEventLike) => boolean;\n  isExtendLineForward: (event: KeyboardEventLike) => boolean;\n  isExtendUpward: (event: KeyboardEventLike) => boolean;\n  isItalic: (event: KeyboardEventLike) => boolean;\n  isMoveBackward: (event: KeyboardEventLike) => boolean;\n  isMoveDownward: (event: KeyboardEventLike) => boolean;\n  isMoveForward: (event: KeyboardEventLike) => boolean;\n  isMoveLineBackward: (event: KeyboardEventLike) => boolean;\n  isMoveLineForward: (event: KeyboardEventLike) => boolean;\n  isMoveUpward: (event: KeyboardEventLike) => boolean;\n  isMoveWordBackward: (event: KeyboardEventLike) => boolean;\n  isMoveWordForward: (event: KeyboardEventLike) => boolean;\n  isRedo: (event: KeyboardEventLike) => boolean;\n  isSelectAll: (event: KeyboardEventLike) => boolean;\n  isSoftBreak: (event: KeyboardEventLike) => boolean;\n  isSplitBlock: (event: KeyboardEventLike) => boolean;\n  isTab: (editor: Editor, event: KeyboardEventLike, { composing }?: {\n    /** Ignore the event if composing. */\n    composing?: boolean;\n  }) => boolean;\n  isTransposeCharacter: (event: KeyboardEventLike) => boolean;\n  isUndo: (event: KeyboardEventLike) => boolean;\n  isUntab: (editor: Editor, event: KeyboardEventLike, { composing }?: {\n    composing?: boolean;\n  }) => boolean;\n}",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/react:HotkeysEvent": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/react",
-          "kind": "type",
-          "name": "HotkeysEvent",
-          "runtime": false,
-          "signature": "type HotkeysEvent = {\n  keys?: readonly string[];\n  description?: string;\n  alt?: boolean;\n  ctrl?: boolean;\n  meta?: boolean;\n  mod?: boolean;\n  shift?: boolean;\n  useKey?: boolean;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -23995,12 +23973,12 @@
         },
         "platejs/react:PluginShortcutInput": {
           "aliases": [],
-          "documentation": "Validate inferred shortcut object keys against callable plugin commands.\nUnknown names require a custom handler; ambiguous names require an explicit\nroute, except plugin/editor API collisions which require a custom handler.",
+          "documentation": "Validate inferred shortcut object keys against callable plugin commands.\nUnknown names require a custom handler; ambiguous names require an explicit\nroute, except plugin/editor API collisions which require a custom handler.\nFields outside the shortcut shape are rejected, because inference would\notherwise accept them as known properties.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "PluginShortcutInput",
           "runtime": false,
-          "signature": "type PluginShortcutInput<C extends AnyBasePluginDefinition, TShortcuts extends Record<string, TShortcut | null | undefined>, TShortcut = EditorShortcut> = TShortcuts & { [K in keyof TShortcuts]: K extends string ? Extract<TShortcuts[K], null | undefined> | (Exclude<TShortcuts[K], null | undefined> extends never ? never : PluginShortcutForKey<C, K, TShortcut>) : never; };",
+          "signature": "type PluginShortcutInput<C extends AnyBasePluginDefinition, TShortcuts extends Record<string, TShortcut | null | undefined>, TShortcut = EditorShortcut> = TShortcuts & { [K in keyof TShortcuts]: K extends string ? Extract<TShortcuts[K], null | undefined> | (Exclude<TShortcuts[K], null | undefined> extends never ? never : PluginShortcutForKey<C, K, TShortcut> & UnknownShortcutFields<Exclude<TShortcuts[K], null | undefined>, TShortcut>) : never; };",
           "source": null,
           "typeParameters": [
             "C extends AnyBasePluginDefinition",
@@ -26057,7 +26035,7 @@
           "kind": "type",
           "name": "Shortcut",
           "runtime": false,
-          "signature": "type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & ({\n  handler: (context: {\n    editor: Editor;\n    event: KeyboardEvent;\n    eventDetails: HotkeysEvent;\n  }) => boolean | void;\n  target?: never;\n} | {\n  handler?: never;\n  target?: 'api' | 'update';\n});",
+          "signature": "type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & ({\n  handler: (context: {\n    editor: Editor;\n    event: KeyboardEvent;\n  }) => boolean | void;\n  target?: never;\n} | {\n  handler?: never;\n  target?: 'api' | 'update';\n});",
           "source": null,
           "typeParameters": []
         },

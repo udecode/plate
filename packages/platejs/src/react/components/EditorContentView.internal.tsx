@@ -15,7 +15,6 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
 import { usePlateModel } from '../internal/plate-context';
 import {
-  type EditableHandlerContext,
   getHandlerView,
   type EditableProps as RuntimeEditableProps,
 } from '../internal/plite-components';
@@ -198,49 +197,30 @@ function EditorContentBranch<TExtra extends object>({
         editableProps: editableInput,
         handlerKey,
       }) as any;
-      const shortcutPhase =
-        handlerKey === 'onKeyDown'
-          ? 'keydown'
-          : handlerKey === 'onKeyUp'
-            ? 'keyup'
-            : null;
-      const hasShortcut =
-        shortcutPhase && shortcutTable.some((item) => item[shortcutPhase]);
 
-      if (hasShortcut) {
-        nextProps[handlerKey] = ((
-          event: React.KeyboardEvent<HTMLDivElement>,
-          context: EditableHandlerContext
-        ) => {
-          const shortcutHandled = dispatchPlateShortcut(
+      if (handler) nextProps[handlerKey] = handler;
+    });
+
+    if (shortcutTable.length > 0) {
+      const pipedHandler = nextProps.onKeyDown;
+
+      nextProps.onKeyDown = (event, context) => {
+        if (
+          !dispatchPlateShortcut(
             getHandlerView(context),
             event.nativeEvent,
-            shortcutPhase,
             shortcutTable
-          );
+          )
+        ) {
+          return pipedHandler?.(event, context);
+        }
 
-          if (!shortcutHandled) return handler?.(event, context);
+        event.preventDefault();
+        event.stopPropagation();
 
-          if (
-            event.nativeEvent.defaultPrevented &&
-            !event.isDefaultPrevented()
-          ) {
-            event.preventDefault();
-          }
-
-          // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] Detect propagation stopped directly on the native event, then synchronize React's event flag.
-          if (event.nativeEvent.cancelBubble) {
-            event.stopPropagation();
-
-            return true;
-          }
-
-          return handler?.(event, context);
-        }) as any;
-      } else if (handler) {
-        nextProps[handlerKey] = handler;
-      }
-    });
+        return true;
+      };
+    }
 
     const pipedKeyDown = nextProps.onKeyDown;
 

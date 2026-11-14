@@ -4,7 +4,6 @@
 
 export * from './AnyObject';
 export * from './EditableProps';
-export * from './Hotkeys';
 export * from './Nullable';
 export * from './RenderElementProps';
 export * from './RenderLeafProps';

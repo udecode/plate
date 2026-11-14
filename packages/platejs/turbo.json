@@ -6672,6 +6672,7 @@
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-basic-nodes-react",
         "source-hash:partition:standard-basic-styles-react",
+        "source-hash:partition:standard-indent",
         "source-hash:partition:standard-link",
         "source-hash:partition:standard-link-react",
         "source-hash:partition:standard-list",

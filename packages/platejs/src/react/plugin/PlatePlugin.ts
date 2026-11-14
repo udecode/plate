@@ -36,7 +36,6 @@ import type {
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   EditorShortcut,
-  HotkeysEvent,
   InferApi,
   InferConflicts,
   InferDependencies,
@@ -494,7 +493,6 @@ export type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> &
         handler: (context: {
           editor: Editor;
           event: KeyboardEvent;
-          eventDetails: HotkeysEvent;
         }) => boolean | void;
         target?: never;
       }

@@ -27,11 +27,10 @@ description: 配置 Plate 插件的键盘快捷键。
 
 | 字段 | 含义 |
 | --- | --- |
-| `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'` 或 `'mod+b'`。 |
-| `handler` | 接收 `{ editor, event, eventDetails }` 的显式处理函数。 |
+| `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'`；多个组合用数组，例如 `['mod+b', 'ctrl+b']`。 |
+| `handler` | 接收 `{ editor, event }` 的显式处理函数。 |
 | `target` | 同名更新方法和 API 方法同时存在时，用 `'update'` 或 `'api'` 消除歧义。 |
 | `priority` | 快捷键的局部优先级；默认为 `0`。 |
-| `preventDefault` | 已处理快捷键的浏览器默认行为策略。省略时，Plate 调用 `preventDefault()` 和 `stopPropagation()`。 |
 | `null` | 删除这个命名快捷键。 |
 
 ## 链接更新方法
@@ -116,18 +115,37 @@ export const DraftPlugin = definePlugin('draft', {
 });
 ```
 
-返回 `false` 表示未处理，Plate 不会阻止该按键事件。`preventDefault` 省略时，返回 `true` 或 `undefined` 表示已处理。
-
-## 默认事件行为
-
-| 配置 | 行为 |
+| 处理函数返回 | 行为 |
 | --- | --- |
-| 省略 `preventDefault`，且处理结果不是 `false` | Plate 调用 `event.preventDefault()` 和 `event.stopPropagation()`。 |
-| 返回 `false` | Plate 不修改事件，并尝试下一个匹配的快捷键。 |
-| `preventDefault: false` 且事件已处理 | Plate 停止快捷键分发，但保留浏览器默认行为。 |
-| `preventDefault: true`，或判断函数返回 `true` | Plate 调用 `event.preventDefault()`。 |
+| `false` | 未处理。Plate 不修改事件，并尝试下一个匹配的快捷键。 |
+| 其他值 | 已处理。Plate 调用 `event.preventDefault()` 和 `event.stopPropagation()`，按键不会再到达其他按键处理函数。 |
 
-普通编辑器命令应省略 `preventDefault`。
+Plate 在 keydown 时运行快捷键。需要在 keyup 时执行的操作，请使用插件的 `on.keyUp` 处理函数。
+
+## 让浏览器处理按键
+
+已处理的快捷键总会阻止浏览器自身的行为，而第一个匹配且处理函数不返回 `false` 的快捷键会接管该按键。所以每个绑定该按键的插件都必须放行。要在每次按键时都保留浏览器的行为，把这些快捷键都设为 `null`。只想在某些位置保留时，用 `extend` 包装每个插件的处理函数，并在那里返回 `false`。
+
+```tsx title="plugins/indent-plugin.tsx" showLineNumbers
+import { IndentPlugin } from 'platejs/react';
+
+export const AppIndentPlugin = IndentPlugin.extend(({ plugin }) => ({
+  shortcuts: {
+    tab: {
+      keys: 'tab',
+      handler: (context) => {
+        const block = context.editor.read.nodes.block();
+
+        if (block?.[1][0] === 0) return false;
+
+        return plugin.shortcuts.tab?.handler?.(context);
+      },
+    },
+  },
+}));
+```
+
+当 `IndentPlugin` 是唯一绑定 Tab 的插件时，在第一个块中按 Tab 交给浏览器处理，在其他块中按 Tab 会缩进该块。其他插件也绑定 Tab，例如 `ListPlugin`、`TablePlugin` 和 `CodeBlockPlugin`，安装它们时请用同样的方式包装它们的 Tab 快捷键。链接到插件方法的快捷键没有可包装的处理函数，它的包装函数直接调用该方法。快捷键不能同时保留 `target` 和 `handler`，所以当它声明了 `target` 时（例如 `CopilotPlugin` 的 `accept`），把它设为 `null`，再用新名称声明包装快捷键。
 
 ## 配置已有快捷键
 
@@ -144,6 +162,8 @@ export const AppBoldPlugin = BoldPlugin.configure({
   },
 });
 ```
+
+配置后的快捷键保留你未写出的字段。
 
 将快捷键设为 `null` 可删除它：
 
@@ -243,12 +263,14 @@ export const editor = createEditor({
 ## API 参考
 
 ```ts title="Shortcut 类型"
-type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & (
+type Shortcut = {
+  keys?: string | readonly string[];
+  priority?: number;
+} & (
   | {
       handler: (context: {
         editor: Editor;
         event: KeyboardEvent;
-        eventDetails: HotkeysEvent;
       }) => boolean | void;
       target?: never;
     }

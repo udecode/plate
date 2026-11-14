@@ -32,11 +32,10 @@ uses a later stage. Custom handlers do not need a linked method.
 
 | Field | Meaning |
 | --- | --- |
-| `keys` | Key combination compiled by Plate's realm-aware matcher. Use a string like `'mod+b'` or arrays like `['mod+b', 'ctrl+b']`. |
-| `handler` | Explicit callback receiving `{ editor, event, eventDetails }`. |
+| `keys` | Key combination compiled by Plate's realm-aware matcher. Use a string like `'mod+b'`, or an array like `['mod+b', 'ctrl+b']` for several combinations. |
+| `handler` | Explicit callback receiving `{ editor, event }`. |
 | `target` | Optional `'update'` or `'api'` disambiguation when both same-named routes exist. |
 | `priority` | Shortcut-local priority. Defaults to `0`. |
-| `preventDefault` | Browser-default policy for a handled shortcut. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
 | `null` | Removes that named shortcut from the plugin. |
 
 ## Linked update shortcuts
@@ -128,18 +127,49 @@ export const DraftPlugin = definePlugin('draft', {
 });
 ```
 
-Returning `false` means "not handled"; Plate will not call `preventDefault()` for that key press. Returning `true` or `undefined` means handled when `preventDefault` is omitted.
-
-## Prevent default
-
-| Configuration | Behavior |
+| Handler returns | Behavior |
 | --- | --- |
-| `preventDefault` omitted and handler returns anything except `false` | Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
-| Handler returns `false` | Plate leaves the event alone and tries the next matching shortcut. |
-| `preventDefault: false` and handler handles the event | Plate stops shortcut dispatch and leaves the browser default enabled. |
-| `preventDefault: true`, or a predicate returning `true` | Plate calls `event.preventDefault()`. |
+| `false` | Not handled. Plate leaves the event alone and tries the next matching shortcut. |
+| Anything else | Handled. Plate calls `event.preventDefault()` and `event.stopPropagation()`, so the key reaches no other key handler. |
 
-Use the default omission for normal editor commands.
+Plate runs shortcuts on keydown. For a keyup action, use the plugin's
+`on.keyUp` handler.
+
+## Let the browser handle a key
+
+A handled shortcut always prevents the browser's own action, and the first
+matching shortcut whose handler does not return `false` takes the key. So every
+plugin that binds the key must let it through. To keep the browser's action on
+every key press, set each of those shortcuts to `null`. To keep it only in some
+places, wrap each plugin's handler with `extend` and return `false` there.
+
+```tsx title="plugins/indent-plugin.tsx" showLineNumbers
+import { IndentPlugin } from 'platejs/react';
+
+export const AppIndentPlugin = IndentPlugin.extend(({ plugin }) => ({
+  shortcuts: {
+    tab: {
+      keys: 'tab',
+      handler: (context) => {
+        const block = context.editor.read.nodes.block();
+
+        if (block?.[1][0] === 0) return false;
+
+        return plugin.shortcuts.tab?.handler?.(context);
+      },
+    },
+  },
+}));
+```
+
+With `IndentPlugin` as the only Tab owner, Tab in the first block is left to
+the browser, and Tab in any other block indents it. Other plugins bind Tab too,
+such as `ListPlugin`, `TablePlugin` and `CodeBlockPlugin`, so wrap their Tab
+shortcuts the same way when they are installed. A shortcut that links to a
+plugin method has no handler to wrap, so its wrapper calls that method. A
+shortcut cannot keep a `target` beside a `handler`. So when the linked shortcut
+declares a `target`, such as `CopilotPlugin`'s `accept`, set it to `null` and
+declare the wrapper under a new name.
 
 ## Configure existing shortcuts
 
@@ -156,6 +186,8 @@ export const AppBoldPlugin = BoldPlugin.configure({
   },
 });
 ```
+
+A configured shortcut keeps each field you leave out.
 
 Set a shortcut to `null` to remove it.
 
@@ -272,12 +304,14 @@ Other plugins often expose `toggle`, `insert`, or feature-specific transforms wi
 ## API Reference
 
 ```ts title="Shortcut type"
-type Shortcut = Omit<EditorShortcut, 'handler' | 'target'> & (
+type Shortcut = {
+  keys?: string | readonly string[];
+  priority?: number;
+} & (
   | {
       handler: (context: {
         editor: Editor;
         event: KeyboardEvent;
-        eventDetails: HotkeysEvent;
       }) => boolean | void;
       target?: never;
     }

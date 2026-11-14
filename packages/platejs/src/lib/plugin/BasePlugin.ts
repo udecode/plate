@@ -1,6 +1,7 @@
 import type {
   DataTransferDecodeContext,
   DataTransferEncodeContext,
+  HotkeySpec,
 } from '../../dom/plite-dom.internal';
 import type {
   ContentSlice,
@@ -52,7 +53,6 @@ import type {
 } from '../plugins/input-rules/types';
 import type {
   ElementContentRootSlot,
-  HotkeysEvent,
   RenderElementProps,
   StaticRenderLeafProps,
   RenderTextProps,
@@ -2018,25 +2018,8 @@ export type TransformOptions<
 > = BaseTransformOptions & BasePluginContext<C>;
 
 type EditorShortcutOptions = {
-  keys?: ReadonlyArray<readonly string[]> | readonly string[] | string | null;
-  delimiter?: string;
-  description?: string;
-  enabled?: Trigger;
-  enableOnContentEditable?: boolean;
-  enableOnFormTags?:
-    | ReadonlyArray<
-        'INPUT' | 'SELECT' | 'TEXTAREA' | 'input' | 'select' | 'textarea'
-      >
-    | boolean;
-  ignoreEventWhenPrevented?: boolean;
-  ignoreModifiers?: boolean;
-  keydown?: boolean;
-  keyup?: boolean;
-  preventDefault?: Trigger;
+  keys?: HotkeySpec;
   priority?: number;
-  splitKey?: string;
-  useKey?: boolean;
-  ignoreEventWhen?: (e: KeyboardEvent) => boolean;
 };
 
 export type EditorShortcut = EditorShortcutOptions &
@@ -2045,7 +2028,6 @@ export type EditorShortcut = EditorShortcutOptions &
         handler: (ctx: {
           editor: Editor;
           event: KeyboardEvent;
-          eventDetails: HotkeysEvent;
         }) => boolean | void;
         target?: never;
       }
@@ -2111,10 +2093,16 @@ export type DeclaredPluginShortcutInput<
   ]: PluginShortcutForKey<C, K, TShortcut> | null;
 }>;
 
+type UnknownShortcutFields<TDeclared, TShortcut> = {
+  [P in Exclude<keyof TDeclared, keyof TShortcut>]: never;
+};
+
 /**
  * Validate inferred shortcut object keys against callable plugin commands.
  * Unknown names require a custom handler; ambiguous names require an explicit
  * route, except plugin/editor API collisions which require a custom handler.
+ * Fields outside the shortcut shape are rejected, because inference would
+ * otherwise accept them as known properties.
  */
 export type PluginShortcutInput<
   C extends AnyBasePluginDefinition,
@@ -2126,10 +2114,10 @@ export type PluginShortcutInput<
         | Extract<TShortcuts[K], null | undefined>
         | (Exclude<TShortcuts[K], null | undefined> extends never
             ? never
-            : PluginShortcutForKey<C, K, TShortcut>)
+            : PluginShortcutForKey<C, K, TShortcut> &
+                UnknownShortcutFields<
+                  Exclude<TShortcuts[K], null | undefined>,
+                  TShortcut
+                >)
     : never;
 };
-
-type Trigger =
-  | ((keyboardEvent: KeyboardEvent, hotkeysEvent: HotkeysEvent) => boolean)
-  | boolean;

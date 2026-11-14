@@ -1,19 +1,17 @@
 import {
   createCompiledHotkeyMatcher,
+  type HotkeySpec,
   usesAppleDOMHotkeys,
 } from '../../dom/plite-dom.internal';
-import type { EditorShortcut, HotkeysEvent } from '../../lib';
-import { failInvariant } from '../failInvariant';
+import type { EditorShortcut } from '../../lib';
 
 export type CompiledPlateShortcut = Readonly<{
   declarationIndex: number;
+  handler: NonNullable<EditorShortcut['handler']>;
   id: string;
-  keydown: boolean;
-  keyup: boolean;
-  match: (event: KeyboardEvent) => HotkeysEvent | null;
+  match: (event: KeyboardEvent) => boolean;
   pluginIndex: number;
   priority: number;
-  shortcut: EditorShortcut;
 }>;
 
 type PlateShortcutCompilerInput = Readonly<{
@@ -23,109 +21,12 @@ type PlateShortcutCompilerInput = Readonly<{
   shortcut: EditorShortcut;
 }>;
 
-const MODIFIER_KEYS = new Set([
-  'alt',
-  'cmd',
-  'command',
-  'control',
-  'ctrl',
-  'ctl',
-  'meta',
-  'mod',
-  'opt',
-  'option',
-  'shift',
-  'win',
-  'windows',
-]);
-const OPTIONAL_MODIFIER_SUFFIX_RE = /\?$/;
+const compileShortcutMatch = (keys: HotkeySpec) => {
+  const matchApple = createCompiledHotkeyMatcher(keys, { platform: 'apple' });
+  const matchOther = createCompiledHotkeyMatcher(keys, { platform: 'other' });
 
-const normalizeShortcutKeys = (
-  keys: NonNullable<EditorShortcut['keys']>,
-  delimiter = ',',
-  splitKey = '+'
-) => {
-  const normalize = (value: string) =>
-    (splitKey === '+' ? value : value.split(splitKey).join('+')).trim();
-
-  if (typeof keys === 'string') {
-    return keys.split(delimiter).map(normalize).filter(Boolean);
-  }
-  return keys
-    .flatMap((value) =>
-      typeof value === 'string' ? value.split(delimiter) : [value.join('+')]
-    )
-    .map(normalize)
-    .filter(Boolean);
-};
-
-const createHotkeysEvent = (
-  spec: string,
-  shortcut: EditorShortcut
-): HotkeysEvent => {
-  const tokens = spec.toLowerCase().split('+');
-  const tokenSet = new Set(
-    tokens.map((token) => token.replace(OPTIONAL_MODIFIER_SUFFIX_RE, ''))
-  );
-  const has = (...values: string[]) =>
-    values.some((value) => tokenSet.has(value));
-
-  return Object.freeze({
-    alt: has('alt', 'opt', 'option'),
-    ctrl: has('control', 'ctrl', 'ctl'),
-    description: shortcut.description,
-    keys: Object.freeze(
-      tokens
-        .map((token) => token.replace(OPTIONAL_MODIFIER_SUFFIX_RE, ''))
-        .filter((token) => !MODIFIER_KEYS.has(token))
-    ),
-    meta: has('cmd', 'command', 'meta', 'win', 'windows'),
-    mod: has('mod'),
-    shift: has('shift'),
-    useKey: shortcut.useKey,
-  });
-};
-
-const compileShortcutMatch = (shortcut: EditorShortcut) => {
-  const specs = normalizeShortcutKeys(
-    shortcut.keys ?? failInvariant('Expected value to be defined'),
-    shortcut.delimiter,
-    shortcut.splitKey
-  ).map((spec) => {
-    const eventDetails = createHotkeysEvent(spec, shortcut);
-
-    if (spec === '*') {
-      return {
-        eventDetails,
-        matchApple: () => true,
-        matchOther: () => true,
-      };
-    }
-
-    return {
-      eventDetails,
-      matchApple: createCompiledHotkeyMatcher(spec, {
-        ignoreModifiers: shortcut.ignoreModifiers,
-        platform: 'apple',
-      }),
-      matchOther: createCompiledHotkeyMatcher(spec, {
-        ignoreModifiers: shortcut.ignoreModifiers,
-        platform: 'other',
-      }),
-    };
-  });
-
-  return (event: KeyboardEvent): HotkeysEvent | null => {
-    const apple = usesAppleDOMHotkeys(event);
-
-    for (const spec of specs) {
-      if ((apple ? spec.matchApple : spec.matchOther)(event)) {
-        return spec.eventDetails;
-      }
-    }
-
-    return null;
-  };
+  return (event: KeyboardEvent) =>
+    (usesAppleDOMHotkeys(event) ? matchApple : matchOther)(event);
 };
 
 export const compilePlateShortcuts = (
@@ -133,30 +34,32 @@ export const compilePlateShortcuts = (
 ): readonly CompiledPlateShortcut[] =>
   Object.freeze(
     shortcuts
-      .filter(({ shortcut }) => shortcut.keys && shortcut.handler)
-      .map(({ declarationIndex, id, pluginIndex, shortcut }) => {
-        const priority = shortcut.priority ?? 0;
-
-        if (!Number.isFinite(priority)) {
-          throw new TypeError(
-            `Plate shortcut "${id}" priority must be a finite number.`
-          );
-        }
-
-        return Object.freeze({
+      .flatMap(
+        ({
           declarationIndex,
           id,
-          keydown:
-            shortcut.keydown === undefined
-              ? shortcut.keyup !== true
-              : shortcut.keydown,
-          keyup: shortcut.keyup === true,
-          match: compileShortcutMatch(shortcut),
           pluginIndex,
-          priority,
-          shortcut,
-        });
-      })
+          shortcut: { handler, keys, priority = 0 },
+        }) => {
+          if (!keys || !handler) return [];
+          if (!Number.isFinite(priority)) {
+            throw new TypeError(
+              `Plate shortcut "${id}" priority must be a finite number.`
+            );
+          }
+
+          return [
+            Object.freeze({
+              declarationIndex,
+              handler,
+              id,
+              match: compileShortcutMatch(keys),
+              pluginIndex,
+              priority,
+            }),
+          ];
+        }
+      )
       .sort(
         (left, right) =>
           right.priority - left.priority ||

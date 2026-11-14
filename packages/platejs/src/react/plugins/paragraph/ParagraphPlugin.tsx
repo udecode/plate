@@ -13,7 +13,6 @@ export const ParagraphPlugin = toReactPlugin(BaseParagraphPlugin).extend({
         });
       },
       keys: ['mod+alt+0', 'mod+shift+0'],
-      preventDefault: true,
     },
   },
 });
