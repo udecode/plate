@@ -169,6 +169,116 @@ const compileHotkey = (
   return compiled;
 };
 
+const compileHotkeys = (hotkey: HotkeySpec, options?: HotkeyMatchOptions) =>
+  (Array.isArray(hotkey) ? hotkey : [hotkey]).map((value) =>
+    compileHotkey(value, options)
+  );
+
+const ARIA_MODIFIER_ORDER: readonly ModifierKey[] = [
+  'ctrlKey',
+  'altKey',
+  'shiftKey',
+  'metaKey',
+];
+
+const ARIA_NAMED_KEYS = new Map(
+  Object.values(KEY_TOKEN_NAMES)
+    .filter((name) => name.length > 1 && name !== 'CapsLock')
+    .map((name) => [name.toLowerCase(), name])
+);
+
+const ARIA_CODE_KEYS: Record<string, string> = {
+  backquote: '`',
+  backslash: '\\',
+  bracketleft: '[',
+  bracketright: ']',
+  comma: ',',
+  equal: '=',
+  minus: '-',
+  period: '.',
+  quote: "'",
+  semicolon: ';',
+  slash: '/',
+};
+
+const ARIA_LETTER_OR_DIGIT_CODE_RE = /^(?:key([a-z])|digit(\d))$/;
+const ARIA_FUNCTION_KEY_RE = /^f(?:[1-9]|1\d|2[0-4])$/;
+
+const expandOptionalModifiers = (compiled: CompiledHotkey) => {
+  let combos = [compiled];
+
+  for (const modifier of ARIA_MODIFIER_ORDER) {
+    combos = combos.flatMap((combo) =>
+      combo[modifier] === 'any'
+        ? [
+            { ...combo, [modifier]: false },
+            { ...combo, [modifier]: true },
+          ]
+        : [combo]
+    );
+  }
+
+  return combos;
+};
+
+const ariaKeyName = (key: string, optionOnApple: boolean) => {
+  if (SINGLE_LETTER_RE.test(key)) {
+    return optionOnApple ? undefined : key.toUpperCase();
+  }
+  if (key === ' ') {
+    return optionOnApple ? undefined : 'Space';
+  }
+
+  const lower = key.toLowerCase();
+  const code = ARIA_LETTER_OR_DIGIT_CODE_RE.exec(lower);
+
+  if (code) {
+    return (code[1] ?? code[2])?.toUpperCase();
+  }
+  if (ARIA_FUNCTION_KEY_RE.test(lower)) {
+    return lower.toUpperCase();
+  }
+
+  return ARIA_NAMED_KEYS.get(lower) ?? ARIA_CODE_KEYS[lower];
+};
+
+/**
+ * Names the combos of a hotkey the way the `aria-keyshortcuts` attribute does,
+ * such as `Control+Shift+X`, joined by spaces. Each name is a combo the hotkey
+ * matcher matches on a US layout for `platform`. A combo whose key is a literal
+ * digit or punctuation character, or a letter or Space with Option on Apple,
+ * gets no name. To name a letter, digit or punctuation key, write its code,
+ * such as `digit1` or `keyi`.
+ * Returns `undefined` when no combo has a name, and throws the matcher's
+ * `TypeError` for a hotkey it rejects.
+ */
+export const ariaKeyShortcuts = (
+  hotkey: HotkeySpec,
+  options: { platform: HotkeyPlatform }
+): string | undefined => {
+  const apple = isApplePlatform(options.platform);
+  const names = new Set<string>();
+
+  for (const combo of compileHotkeys(hotkey, options).flatMap(
+    expandOptionalModifiers
+  )) {
+    const key = ariaKeyName(combo.key, apple && combo.altKey === true);
+
+    if (key) {
+      names.add(
+        [
+          ...ARIA_MODIFIER_ORDER.filter(
+            (modifier) => combo[modifier] === true
+          ).map((modifier) => MODIFIER_KEYS[modifier]),
+          key,
+        ].join('+')
+      );
+    }
+  }
+
+  return names.size > 0 ? [...names].join(' ') : undefined;
+};
+
 const matchModifier = (
   event: KeyboardEventLike,
   key: ModifierKey,
@@ -245,9 +355,7 @@ export const createCompiledHotkeyMatcher = (
   hotkey: HotkeySpec,
   options?: HotkeyMatchOptions
 ): HotkeyMatcher => {
-  const compiled = (Array.isArray(hotkey) ? hotkey : [hotkey]).map((value) =>
-    compileHotkey(value, options)
-  );
+  const compiled = compileHotkeys(hotkey, options);
 
   return (event: KeyboardEventLike) =>
     compiled.some((entry) =>

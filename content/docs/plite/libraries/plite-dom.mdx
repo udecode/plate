@@ -42,6 +42,25 @@ Framework adapters can use `DOMEditor`, `getEditorDOMRoot`,
 `usesAppleDOMHotkeys` for explicit host integration without importing private
 runtime modules.
 
+`ariaKeyShortcuts(hotkey, { platform })` turns a hotkey into the value of the
+`aria-keyshortcuts` attribute. It names only combos the matcher matches on a
+US layout, and returns `undefined` when it can name none:
+
+```ts
+import { ariaKeyShortcuts, usesAppleDOMHotkeys } from "plitejs/dom";
+
+const platform = usesAppleDOMHotkeys(document) ? "apple" : "other";
+
+ariaKeyShortcuts("mod+shift+x", { platform });
+// "Shift+Meta+X" on a Mac, "Control+Shift+X" elsewhere
+```
+
+It leaves out a combo whose key is a literal digit or punctuation character,
+such as `mod+shift+0`, because Shift and the keyboard layout change the
+character that key types. On Apple it also leaves out a letter or Space with
+Option, because Option changes the character too. To name a letter, digit or
+punctuation key, write its code, such as `mod+alt+digit1` or `mod+alt+keyi`.
+
 DOM utilities include shadow-aware traversal, active element/window/selection
 lookups, DOM type guards, DOM point normalization, plain-text paste detection,
 tracked mutation detection, and DOM order checks:

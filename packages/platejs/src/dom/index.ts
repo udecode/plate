@@ -1,8 +1,10 @@
 export {
+  ariaKeyShortcuts,
   domCommands,
   dataTransferFormats,
   isHotkey,
   DOMResolutionError,
+  usesAppleDOMHotkeys,
   writeDataTransferFragment,
 } from 'plitejs/dom';
 

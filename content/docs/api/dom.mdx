@@ -445,9 +445,10 @@ A successful model lookup does not prove that its DOM is mounted.
 
 ## Host utilities
 
-`platejs/dom` exports `isHotkey` for platform-aware keyboard matching and
-`domCommands`, `dataTransferFormats`, and `writeDataTransferFragment` for
-browser transfer integration. Semantic HTML,
+`platejs/dom` exports `isHotkey` for platform-aware keyboard matching,
+`ariaKeyShortcuts` and `usesAppleDOMHotkeys` for a shortcut's
+`aria-keyshortcuts` value, and `domCommands`, `dataTransferFormats`, and
+`writeDataTransferFragment` for browser transfer integration. Semantic HTML,
 Markdown, and plain-text node mappings belong in the owning plugin's
 `formats` declaration.
 

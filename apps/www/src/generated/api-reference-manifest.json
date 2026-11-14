@@ -12296,6 +12296,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/dom:ariaKeyShortcuts": {
+          "aliases": [],
+          "documentation": "Names the combos of a hotkey the way the `aria-keyshortcuts` attribute does,\nsuch as `Control+Shift+X`, joined by spaces. Each name is a combo the hotkey\nmatcher matches on a US layout for `platform`. A combo whose key is a literal\ndigit or punctuation character, or a letter or Space with Option on Apple,\ngets no name. To name a letter, digit or punctuation key, write its code,\nsuch as `digit1` or `keyi`.\nReturns `undefined` when no combo has a name, and throws the matcher's\n`TypeError` for a hotkey it rejects.",
+          "entrypoint": "platejs/dom",
+          "kind": "const",
+          "name": "ariaKeyShortcuts",
+          "runtime": true,
+          "signature": "ariaKeyShortcuts: (hotkey: HotkeySpec, options: {\n  platform: HotkeyPlatform;\n}) => string | undefined",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/dom:ClipboardSliceRead": {
           "aliases": [],
           "documentation": "",
@@ -12635,6 +12646,17 @@
           "name": "ScrollIntoViewTarget",
           "runtime": false,
           "signature": "type ScrollIntoViewTarget = DOMRange | Path | Point | Range$1;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/dom:usesAppleDOMHotkeys": {
+          "aliases": [],
+          "documentation": "Returns whether an event, node, window, or document belongs to an Apple\nplatform, where `mod` is Command.",
+          "entrypoint": "platejs/dom",
+          "kind": "const",
+          "name": "usesAppleDOMHotkeys",
+          "runtime": true,
+          "signature": "usesAppleDOMHotkeys: (event: unknown) => boolean",
           "source": null,
           "typeParameters": []
         },

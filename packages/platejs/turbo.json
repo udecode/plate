@@ -6883,6 +6883,7 @@
         "source-hash:partition:html",
         "source-hash:partition:html-server",
         "source-hash:partition:migrations",
+        "source-hash:partition:proxies",
         "source-hash:partition:root",
         "source-hash:partition:yjs",
         "source-hash:partition:yjs-react"

@@ -227,8 +227,8 @@ const resolveDOMSourceFacts = (source: unknown) => {
 };
 
 /**
- * Resolve Apple modifier semantics from the event's own realm.
- *
+ * Returns whether an event, node, window, or document belongs to an Apple
+ * platform, where `mod` is Command.
  */
 export const usesAppleDOMHotkeys = (event: unknown) =>
   resolveDOMSourceFacts(event)?.platform === 'apple';
