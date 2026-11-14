@@ -38,12 +38,14 @@ import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
 import { checkedCarryProgram, historyReplaySchemaOf } from './history-replay';
 import {
   freezeHistoryBatch,
+  historyBatchStepId,
   historyFactsOf,
   historyFallbackOf,
   historyFollowsFacts,
   withHistoryFacts,
   withHistoryFallback,
   withHistoryProgram,
+  withHistoryStepId,
 } from './history-state';
 
 export const isHistorySchemaIdentity = (
@@ -112,6 +114,16 @@ const encodeBatch = (
     : {}),
   ...(records ? encodeRecord(historyFactsOf(batch)) : {}),
   ...(fallback ? { fallback: encodeBatch(editor, fallback, records) } : {}),
+});
+
+const encodeStep = (
+  editor: AnyEditor,
+  batch: Batch,
+  records: boolean,
+  fallback?: Batch | null
+): HistoryBatchJSON => ({
+  ...encodeBatch(editor, batch, records, fallback),
+  id: historyBatchStepId(batch),
 });
 
 const isPosition = (value: unknown): value is number =>
@@ -348,6 +360,8 @@ const decodeBatch = <V extends Value>(
     (input.rest !== undefined &&
       (version < 5 || input.unsettle === undefined)) ||
     (input.carried !== undefined && version < 5) ||
+    (input.id !== undefined &&
+      (nested || typeof input.id !== 'string' || input.id.length === 0)) ||
     !Array.isArray(input.effects) ||
     !Object.hasOwn(input, 'change') ||
     !Object.hasOwn(input, 'selectionAfter') ||
@@ -434,9 +448,9 @@ const decodeBatch = <V extends Value>(
     ...(carried ? { carried } : {}),
   };
 
-  const recorded = withHistoryFacts(
-    batch,
-    version === 7 ? decodeRecord(input) : undefined
+  const recorded = withHistoryStepId(
+    withHistoryFacts(batch, version === 7 ? decodeRecord(input) : undefined),
+    typeof input.id === 'string' ? input.id : undefined
   );
 
   return input.fallback === undefined
@@ -470,6 +484,14 @@ export const decodeHistoryValue = <V extends Value>(
   const schema = copyHistorySchemaIdentity(json.schema);
 
   assertSchemaIdentity(editor, schema);
+
+  const ids = [...json.redos, ...json.undos].flatMap((step) =>
+    isObject(step) && typeof step.id === 'string' ? [step.id] : []
+  );
+
+  if (new Set(ids).size !== ids.length) {
+    throw new Error('Invalid history JSON: two steps share one id.');
+  }
 
   const { effectTypes } = getInternalPluginRegistry(editor);
   const history = Object.freeze({
@@ -526,10 +548,10 @@ export const encodeHistoryValue = <V extends Value>(
 
   return {
     redos: redos.map((batch) =>
-      encodeBatch(editor, batch, records, fallbacks.get(batch))
+      encodeStep(editor, batch, records, fallbacks.get(batch))
     ),
     schema,
-    undos: undos.map((batch) => encodeBatch(editor, batch, records)),
+    undos: undos.map((batch) => encodeStep(editor, batch, records)),
     version: records
       ? 7
       : redos.some((batch) => fallbacks.has(batch))

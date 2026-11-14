@@ -118,6 +118,11 @@ export type HistoryBatchJSON = Readonly<{
    * applies from the same document when a guard refuses this one.
    */
   fallback?: HistoryBatchJSON;
+  /**
+   * The step's id, which undo, redo, a merge and a restore keep. Never on a
+   * `fallback`. A step saved without one gets a fresh id when it loads.
+   */
+  id?: string;
 }>;
 
 const hasFunctions = (

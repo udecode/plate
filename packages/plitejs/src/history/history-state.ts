@@ -382,6 +382,57 @@ export const setHistoryFollowsFacts = (on: boolean) => {
 /** @internal */
 export const historyFollowsFacts = () => followsFacts;
 
+const STEP_IDS = new WeakMap<object, string>();
+const HISTORY_STEPS = new WeakMap<Batch, object>();
+
+const mintStepId = () =>
+  btoa(String.fromCodePoint(...crypto.getRandomValues(new Uint8Array(16))))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replaceAll('=', '');
+
+export const historyStepId = (step: object) => {
+  const known = STEP_IDS.get(step);
+
+  if (known) return known;
+
+  const id = mintStepId();
+
+  STEP_IDS.set(step, id);
+
+  return id;
+};
+
+const withHistoryStep = <B extends Batch>(batch: B, step: object): B => {
+  HISTORY_STEPS.set(batch, step);
+
+  return batch;
+};
+
+export const withHistoryStepId = <B extends Batch>(
+  batch: B,
+  id: string | undefined
+): B => {
+  if (id === undefined) return batch;
+
+  const step = {};
+
+  STEP_IDS.set(step, id);
+
+  return withHistoryStep(batch, step);
+};
+
+export const historyBatchStepId = (batch: Batch) => {
+  let step = HISTORY_STEPS.get(batch);
+
+  if (!step) {
+    step = {};
+    withHistoryStep(batch, step);
+  }
+
+  return historyStepId(step);
+};
+
 const HISTORY_FACTS = new WeakMap<Batch, ChangeFacts>();
 
 export const withHistoryFacts = <B extends Batch>(
@@ -479,8 +530,10 @@ export const freezeHistoryBatch = <V extends Value>(
     HISTORY_PROGRAMS.get(batch)
   );
   const fallback = HISTORY_FALLBACKS.get(batch);
+  const step = HISTORY_STEPS.get(batch);
 
   if (fallback !== undefined) HISTORY_FALLBACKS.set(frozen, fallback);
+  if (step) withHistoryStep(frozen, step);
 
   return withHistoryFacts(frozen, HISTORY_FACTS.get(batch));
 };
@@ -516,12 +569,15 @@ const branch = <V extends Value>(
   Object.freeze({
     anchorCeiling,
     base,
-    batch: withHistoryFacts(
-      withHistoryProgram(
-        freezeBatch({ ...batch, change: replay.change }),
-        replay.program
+    batch: withHistoryStep(
+      withHistoryFacts(
+        withHistoryProgram(
+          freezeBatch({ ...batch, change: replay.change }),
+          replay.program
+        ),
+        replay.change === batch.change ? HISTORY_FACTS.get(batch) : undefined
       ),
-      replay.change === batch.change ? HISTORY_FACTS.get(batch) : undefined
+      identity
     ),
     carets,
     carries: replay.carried !== undefined || (next?.carries ?? false),
@@ -1736,7 +1792,7 @@ const fromBatches = <V extends Value>(
   for (const entry of entries.toReversed()) {
     const fallback =
       direction === 'redo' ? historyFallbackOf(entry.batch) : null;
-    const identity = {};
+    const identity = HISTORY_STEPS.get(entry.batch) ?? {};
 
     value = branch(
       entry.batch,
