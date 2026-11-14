@@ -106,12 +106,17 @@ export type BoardWrite =
       ids: readonly string[];
     }>;
 
+export type BoardInteraction = Readonly<{
+  cancel: () => void;
+  kind: 'drag' | 'draw';
+}>;
+
 export type BoardViewCore = Readonly<{
   board: NodeKey;
   boardPointAt: (client: BoardPlace) => BoardPlace;
+  replaceInteraction: (interaction: BoardInteraction) => () => void;
   boardSelected: () => boolean;
-  /** End the pointer gesture in flight with no write, and return whether one was. */
-  cancelGesture: () => boolean;
+  cancelInteraction: () => boolean;
   viewCenter: () => BoardPlace;
   commit: (change: BoardWrite) => void;
   edit: (key: NodeKey) => void;
@@ -291,6 +296,17 @@ export const createBoardView = (
   const focusTarget = React.createRef<HTMLDivElement>();
   let surface: HTMLElement | null = null;
   let gestures: ReturnType<typeof attachBoardGestures> | null = null;
+  let interaction: BoardInteraction | null = null;
+
+  const cancelInteraction = () => {
+    const held = interaction;
+
+    if (!held) return false;
+    interaction = null;
+    held.cancel();
+
+    return true;
+  };
 
   const refresh = () => {
     const { x, y, zoom } = state.camera;
@@ -681,6 +697,14 @@ export const createBoardView = (
   };
 
   const core: BoardViewCore = {
+    replaceInteraction: (next) => {
+      cancelInteraction();
+      interaction = next;
+
+      return () => {
+        if (interaction === next) interaction = null;
+      };
+    },
     board,
     boardPointAt,
     boardSelected: () => {
@@ -688,7 +712,7 @@ export const createBoardView = (
 
       return nodes.length === 1 && keyOf(nodes[0][0]) === board;
     },
-    cancelGesture: () => gestures?.cancel() ?? false,
+    cancelInteraction,
     viewCenter,
     commit,
     edit: (key) => {
@@ -762,6 +786,9 @@ export const createBoardView = (
     selectedShapes,
     setCamera,
     setTool: (tool) => {
+      if (interaction?.kind === 'draw' && tool !== state.tool) {
+        cancelInteraction();
+      }
       setState({ tool });
       voice.tool(tool);
     },

@@ -177,7 +177,9 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   const previewRank = () => index.entries().length + 1;
 
   let gesture: Gesture | null = null;
+  let free: (() => void) | null = null;
   let swallowClick = false;
+  let clicker: number | undefined;
   let pressed: BoardShapeLayout | undefined;
   let spaceHeld = false;
 
@@ -287,6 +289,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
     if (!done) return false;
     gesture = null;
+    free?.();
     core.voice.release();
     if (done.kind === 'move') {
       for (const shape of done.elements) {
@@ -328,6 +331,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
     if (!done || done.kind === 'pan') {
       gesture = null;
+      free?.();
       core.voice.release();
 
       return;
@@ -604,12 +608,23 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       }
     }
 
-    if (gesture) core.voice.hold(gesture.kind === 'box');
+    if (gesture) {
+      const { kind } = gesture;
+
+      free = core.replaceInteraction({
+        cancel,
+        kind:
+          kind === 'arrow' || kind === 'frame' || kind === 'pen'
+            ? 'draw'
+            : 'drag',
+      });
+      core.voice.hold(kind === 'box');
+    }
     event.preventDefault();
     event.stopPropagation();
     host.setPointerCapture(pointerId);
     // A middle press ends in auxclick, not click.
-    swallowClick = event.button === 0;
+    clicker = event.button === 0 ? pointerId : undefined;
   };
   const owns = (event: PointerEvent) => gesture?.pointerId === event.pointerId;
   const onPointerMove = (event: PointerEvent) => {
@@ -635,10 +650,17 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     }
   };
   const onPointerUp = (event: PointerEvent) => {
+    if (event.pointerId === clicker) {
+      clicker = undefined;
+      swallowClick = true;
+    }
     if (owns(event)) release();
   };
   const onPointerCancel = (event: PointerEvent) => {
     if (owns(event)) cancel();
+  };
+  const onLostPointerCapture = (event: PointerEvent) => {
+    if (event.pointerId === clicker) clicker = undefined;
   };
   const onClick = (event: MouseEvent) => {
     const swallow = swallowClick;
@@ -646,6 +668,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     swallowClick = false;
     if (
       !swallow ||
+      !event.detail ||
       !(event.target instanceof Node) ||
       !host.contains(event.target)
     ) {
@@ -686,6 +709,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   host.addEventListener('pointermove', onPointerMove);
   host.addEventListener('pointerup', onPointerUp);
   host.addEventListener('pointercancel', onPointerCancel);
+  host.addEventListener('lostpointercapture', onLostPointerCapture);
   view?.addEventListener('click', onClick, true);
   view?.addEventListener('dblclick', onDoubleClick, true);
   view?.addEventListener('keydown', onSpace, true);
@@ -693,14 +717,13 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   view?.addEventListener('blur', releaseSpace);
 
   return {
-    /** End the gesture in flight with no write, and return whether one was. */
-    cancel,
     detach: () => {
       cancel();
       host.removeEventListener('pointerdown', onPointerDown, true);
       host.removeEventListener('pointermove', onPointerMove);
       host.removeEventListener('pointerup', onPointerUp);
       host.removeEventListener('pointercancel', onPointerCancel);
+      host.removeEventListener('lostpointercapture', onLostPointerCapture);
       view?.removeEventListener('click', onClick, true);
       view?.removeEventListener('dblclick', onDoubleClick, true);
       view?.removeEventListener('keydown', onSpace, true);

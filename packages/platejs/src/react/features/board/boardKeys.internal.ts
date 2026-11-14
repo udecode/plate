@@ -108,7 +108,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       const popup = target.closest(OPEN_POPUP);
 
       if (popup && bar.contains(popup)) return false;
-      core.cancelGesture();
+      core.cancelInteraction();
 
       return returnToBoard();
     }
@@ -317,7 +317,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     const bar = target.closest<HTMLElement>('[data-board-toolbar]');
 
     if (bar?.parentElement === host) return toolbarKey(event, target, bar);
-    if (event.key === 'Escape' && core.cancelGesture()) return true;
+    if (event.key === 'Escape' && core.cancelInteraction()) return true;
 
     return !bar && boardTakes(event, target);
   };
