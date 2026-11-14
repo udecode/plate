@@ -45,8 +45,15 @@ import {
   withoutRetainedRecordSets,
 } from '../core/change/document-change';
 import {
+  type ChangeFacts,
+  composeFacts,
+  flipFacts,
+  UNKNOWN_FACTS,
+} from '../core/change/record';
+import {
   getEditorCommitAdmission,
   getEditorCommitCarriedRuns,
+  getEditorCommitFacts,
   getEditorCommitRest,
   getEditorCommitStartedAt,
   getEditorCommitUnsettle,
@@ -64,6 +71,7 @@ import {
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
+  applyDocumentChange,
   documentReplacement,
   getCurrentSelectionRoot,
   getEditorUpdateRoot,
@@ -118,11 +126,14 @@ import {
   clearHistoryState,
   completeHistoryAction,
   configureHistoryState,
+  crossingDropCount,
   dropHistoryHead,
   attachKeptHistoryRedo,
   dropPendingHistoryReplayEntry,
   getHistory,
   getWorkingHistory,
+  historyFactsOf,
+  historyFollowsFacts,
   historyProgramOf,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
@@ -139,6 +150,7 @@ import {
   settlePendingHistoryReplay,
   withHistoryStateDraft,
   withPublishedHistoryState,
+  withHistoryFacts,
   withHistoryProgram,
   writeHistory,
 } from './history-state';
@@ -399,8 +411,10 @@ const consumeHistoryBatch = <V extends Value>(
   const caretRoot = getSelection(getEditorRuntimeOwner(editor))
     ? getCurrentSelectionRoot(editor)
     : undefined;
+  const facts = historyFactsOf(batch);
 
-  tx.changes.apply(batch.change);
+  applyDocumentChange(getEditorRuntimeOwner(editor), batch.change, {}, facts);
+  if (facts?.kind === 'recorded') countCoreWork('factedReplays');
   for (const effect of batch.effects) {
     tx.effects.emit(effect.type, effect.value);
   }
@@ -709,6 +723,11 @@ const createHistoryPlugin = <
       withoutRetainedRecordSets(change, recordSets);
     const changes = kept(commit.changes);
     const inverse = kept(commit.inverseChanges);
+    const facts = historyFollowsFacts()
+      ? getEditorCommitFacts(commit)
+      : undefined;
+    const inverseFacts = (change: DocumentChange) =>
+      facts && change === inverse ? flipFacts(facts) : undefined;
 
     const effects = commit.effects.filter(
       (effect) => effect.type.history !== 'skip'
@@ -871,18 +890,21 @@ const createHistoryPlugin = <
         editor,
         source,
         destination,
-        withHistoryProgram(
-          {
-            ...moved,
-            ...redone,
-            change,
-            effects: effects.toReversed().map(invertEffect),
-            ...redoParts,
-            ...(inverted
-              ? { carried: [inverted.run] }
-              : carried && carriedBack(carried, change, after)),
-          },
-          inverted?.program
+        withHistoryFacts(
+          withHistoryProgram(
+            {
+              ...moved,
+              ...redone,
+              change,
+              effects: effects.toReversed().map(invertEffect),
+              ...redoParts,
+              ...(inverted
+                ? { carried: [inverted.run] }
+                : carried && carriedBack(carried, change, after)),
+            },
+            inverted?.program
+          ),
+          inverseFacts(change)
         ),
         after,
         unsettled,
@@ -905,7 +927,12 @@ const createHistoryPlugin = <
 
       if (!commit.tags.includes('historic') && !changes.empty) {
         queuePendingHistoryReplayMapping(editor, changes, after);
-        queueHistoryMapping(editor, changes, after);
+        queueHistoryMapping(
+          editor,
+          changes,
+          after,
+          facts ? { before, facts } : undefined
+        );
       }
       return undefined;
     }
@@ -954,7 +981,7 @@ const createHistoryPlugin = <
             carried.carried[0]
           )
         : undefined;
-    const preparedBatch = checked
+    const programBatch = checked
       ? withHistoryProgram(
           { ...partedBatch, carried: [checked.run] },
           checked.program
@@ -962,6 +989,10 @@ const createHistoryPlugin = <
       : carried
         ? { ...partedBatch, ...carried }
         : partedBatch;
+    const preparedBatch = withHistoryFacts(
+      programBatch,
+      inverseFacts(programBatch.change)
+    );
     const takesBackCommit =
       preparedBatch.change === inverse &&
       getInternalDocumentChangeRecords(commit.inverseChanges).size === 0;
@@ -1040,6 +1071,8 @@ const createHistoryPlugin = <
     if (lastEntry && merge) {
       const { selectionAfterRoot: _selectionAfterRoot, ...previousBatch } =
         lastEntry.batch;
+      const factsOf = (batch: Batch): ChangeFacts =>
+        historyFactsOf(batch) ?? UNKNOWN_FACTS;
       const mergedBatch = {
         ...previousBatch,
         change: preparedBatch.change.compose(
@@ -1078,7 +1111,18 @@ const createHistoryPlugin = <
         lastEntry.anchorCeiling
       );
 
-      replaceHistoryHead(editor, 'undos', mergedBatch, after, {
+      const mergedFacts =
+        facts &&
+        composeFacts(
+          preparedBatch.change,
+          factsOf(preparedBatch),
+          lastEntry.batch.change,
+          factsOf(lastEntry.batch)
+        );
+
+      const joined = withHistoryFacts(mergedBatch, mergedFacts);
+
+      replaceHistoryHead(editor, 'undos', joined, after, {
         anchorCeiling: lastEntry.anchorCeiling,
         carets: mergeHistoryCarets(
           editor,
@@ -1378,6 +1422,7 @@ const createHistoryPlugin = <
         if (readPendingHistoryReplay(editor)) return BUSY_HISTORY_RESULT;
 
         let entry: ReturnType<typeof peekHistoryEntry>;
+        const drops = crossingDropCount(editor);
 
         try {
           entry = peekHistoryEntry(
@@ -1388,6 +1433,7 @@ const createHistoryPlugin = <
           dropFailedHistoryHead(editor, direction, error);
           return FAILED_HISTORY_RESULT;
         }
+        if (crossingDropCount(editor) !== drops) return FAILED_HISTORY_RESULT;
 
         if (!entry) return EMPTY_HISTORY_RESULT;
 

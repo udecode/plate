@@ -217,6 +217,7 @@ import {
   mergeSpans,
   type NewLetters,
 } from './change/new-letters';
+import type { ChangeFacts } from './change/record';
 import { keptRunsOf, type RootChange } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
 import {
@@ -12149,7 +12150,8 @@ const applyTransactionSpecDocumentChangeStep = (
 export const applyDocumentChange = (
   editor: Editor,
   change: DocumentChange,
-  options: ApplyDocumentChangeOptions = {}
+  options: ApplyDocumentChangeOptions = {},
+  facts?: ChangeFacts
 ) => {
   const snapshot = getTransactionSnapshot(editor);
 
@@ -12157,7 +12159,7 @@ export const applyDocumentChange = (
     throw new Error('Document changes require an active transaction draft.');
   }
 
-  const step = snapshot.builder.applyCanonical(change);
+  const step = snapshot.builder.applyCanonical(change, facts);
 
   applyTransactionSpecDocumentChangeStep(editor, step, options);
 };

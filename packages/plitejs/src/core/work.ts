@@ -7,6 +7,7 @@
 export type CoreWork = {
   /** Positions mapped between the stored and projected documents. */
   adapterMappings: number;
+  admittedChanges: number;
   /** Sequence nodes built. */
   allocatedNodes: number;
   keptRedoFallbacks: number;
@@ -46,9 +47,11 @@ export type CoreWork = {
    * two changes it crosses and not the document.
    */
   crossingPieces: number;
+  crossedSteps: number;
   /** Fact positions a draft mapped through a step, one per fact it wrote or a step dropped. */
   factPositions: number;
   factAllocations: number;
+  factedReplays: number;
   /** Former-place lookups for a value a node carried into a new place. */
   formerPlaceCalls: number;
   /** Steps, landed nodes and pieces those lookups examined. */
@@ -165,6 +168,7 @@ export type CoreWork = {
  */
 export const coreWork: CoreWork = {
   adapterMappings: 0,
+  admittedChanges: 0,
   allocatedNodes: 0,
   keptRedoFallbacks: 0,
   anchorScopes: 0,
@@ -186,8 +190,10 @@ export const coreWork: CoreWork = {
   encodedTokens: 0,
   fallbacks: 0,
   crossingPieces: 0,
+  crossedSteps: 0,
   factPositions: 0,
   factAllocations: 0,
+  factedReplays: 0,
   formerPlaceCalls: 0,
   formerPlaceVisits: 0,
   heldBlocks: 0,

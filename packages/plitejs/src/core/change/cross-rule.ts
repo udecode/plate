@@ -15,6 +15,7 @@ import {
   PreparedTokenSlice,
   tokensEqual,
 } from './tokens';
+import type { PropertyModification } from './transform';
 
 /** @internal */
 export type FactedChange = Readonly<{
@@ -23,9 +24,25 @@ export type FactedChange = Readonly<{
 }>;
 
 /** @internal */
+export type ElementContent = Readonly<{
+  allowedElementTypes: ReadonlySet<string>;
+  allowsText: boolean;
+  allowsUnknownElements: boolean;
+  max: number | null;
+  min: number;
+  prefix?: readonly unknown[];
+}>;
+
+/** @internal */
 export type ElementSchema = Readonly<{
-  allowsText: (element: JsonNode) => boolean;
+  content: (element: JsonNode) => ElementContent | 'unknown';
   isInline: (element: JsonNode) => boolean;
+  ownsContentRoot: (element: JsonNode) => boolean;
+  propertiesReadParents: () => boolean;
+  rootContent: (
+    document: JsonEditorValue,
+    root: string
+  ) => ElementContent | 'unknown';
 }>;
 
 /** @internal */
@@ -36,11 +53,13 @@ export type StepRejection =
   | 'a run closes another kind of element'
   | 'a run closes more elements than its gap sits in'
   | 'a run mixes letters with structure'
-  | 'a run splits or joins an element that holds blocks'
+  | 'a run splits or joins an element whose content allows blocks'
+  | 'a run splits or joins an element of a type the schema does not know'
   | 'a run splits or joins an element whose content allows no text'
   | 'a run splits or joins more than a block and its text leaf'
   | 'a run that is no mirrored split or join'
   | 'a set that is not on a kept block'
+  | 'a set writes a type other than one text block for another'
   | 'an heir does not name the element its mirror close ends'
   | 'the step carries'
   | 'the step changes roots or records'
@@ -55,7 +74,12 @@ export type SkippedRejection =
   | 'the skipped change does not drop exactly one run'
   | 'the skipped change drops no whole block'
   | 'the skipped change has unknown facts'
+  | 'the skipped change moves a block out of or into an element of a type the schema does not know'
+  | 'the skipped change moves a block out of or into a parent whose content bounds its children'
   | 'the skipped change moves a block out of or into an element whose content allows text'
+  | 'the skipped change moves a block into a parent that refuses an element type the parent it leaves allows'
+  | 'the skipped change moves a block inside a parent whose content has a prefix'
+  | 'the skipped change moves a block to another parent while a property target reads the parent'
   | 'the skipped change moves nothing'
   | 'the skipped change sets a property'
   | 'the skipped change splits or joins'
@@ -66,6 +90,7 @@ type Piece = Readonly<{
   at: number;
   dropped: number;
   out: number;
+  properties: readonly PropertyModification[];
   setLength: number;
   written: PreparedTokenSlice;
 }>;
@@ -86,6 +111,7 @@ const piecesOf = (change: RootChange) => {
       at: open.at,
       dropped: open.dropped,
       out: open.out,
+      properties: [],
       setLength: 0,
       written: PreparedTokenSlice.concat(open.slices),
     });
@@ -103,6 +129,9 @@ const piecesOf = (change: RootChange) => {
           at,
           dropped: 0,
           out,
+          properties: change.data[
+            index >> 1
+          ] as readonly PropertyModification[],
           setLength: length,
           written: PreparedTokenSlice.empty,
         });
@@ -150,13 +179,6 @@ const factCount = (facts: RootFacts) =>
 
 const isText = (token: JsonToken) => token.kind === 'text';
 
-const positionsOf = (tokens: readonly JsonToken[]) =>
-  tokens.flatMap((token): Array<JsonToken | null> =>
-    token.kind === 'text'
-      ? Array.from({ length: token.text.length }, () => null)
-      : [token]
-  );
-
 const readTokens = (document: DocumentIndex, from: number, to: number) => {
   countCoreWork('ruleTokens', to - from);
 
@@ -181,47 +203,123 @@ const isBlock = (
   schema: ElementSchema
 ) => range?.kind === 'element' && !schema.isInline(document.node(range.path));
 
-const childrenOf = (document: DocumentIndex, range: IndexedNodeRange) => {
-  const children = document.node(range.path).children ?? [];
-
-  countCoreWork('ruleTokens', children.length);
-
-  return children;
-};
-
-const holdsBlock = (
-  document: DocumentIndex,
-  range: IndexedNodeRange | null,
-  schema: ElementSchema
-) =>
-  range !== null &&
-  childrenOf(document, range).some(
-    (child) => child.children !== undefined && !schema.isInline(child)
-  );
-
-const allowsText = (
+const contentAt = (
   document: DocumentIndex,
   range: IndexedNodeRange,
   schema: ElementSchema
-) => schema.allowsText(document.node(range.path));
+) => schema.content(document.node(range.path));
+
+const allowsBlocks = (content: ElementContent, schema: ElementSchema) =>
+  content.allowsUnknownElements ||
+  [...content.allowedElementTypes].some(
+    (type) => !schema.isInline({ children: [], type })
+  );
+
+const isTextBlock = (element: JsonNode, schema: ElementSchema) => {
+  const content = schema.content(element);
+
+  return (
+    content !== 'unknown' &&
+    content.allowsText &&
+    !allowsBlocks(content, schema) &&
+    !schema.isInline(element) &&
+    !schema.ownsContentRoot(element)
+  );
+};
+
+const retypesNoParent = (
+  element: JsonNode,
+  properties: readonly PropertyModification[],
+  schema: ElementSchema
+) => {
+  const retype = properties.find(({ key }) => key === 'type');
+
+  return (
+    !retype ||
+    (retype.type === 'set' &&
+      typeof retype.value === 'string' &&
+      isTextBlock(element, schema) &&
+      isTextBlock({ children: [], type: retype.value }, schema))
+  );
+};
 
 // schema-compiler.ts refuses a root grammar that allows text
 // ('text-in-root-content').
 const ROOT_CONTENT_ALLOWS_TEXT = false;
 
+const parentAt = (document: DocumentIndex, gap: number) =>
+  enclosing(document, gap).at(-1) ?? null;
+
 const parentAllowsText = (
   document: DocumentIndex,
-  gap: number,
+  parent: IndexedNodeRange | null,
   schema: ElementSchema
-) => {
-  const parent = enclosing(document, gap).at(-1);
+): boolean | 'unknown' => {
+  if (parent === null) return ROOT_CONTENT_ALLOWS_TEXT;
 
-  return parent === undefined
-    ? ROOT_CONTENT_ALLOWS_TEXT
-    : allowsText(document, parent, schema);
+  const content = contentAt(document, parent, schema);
+
+  return content === 'unknown' ? content : content.allowsText;
 };
 
-const mirrors = (run: ReadonlyArray<JsonToken | null>) => {
+const destinationInside = (
+  parent: IndexedNodeRange | null,
+  destination: number
+) =>
+  parent === null ||
+  (parent.contentFrom <= destination && destination <= parent.contentTo);
+
+const contentRejection = (
+  document: JsonEditorValue,
+  index: DocumentIndex,
+  root: string,
+  [leaves, enters]: readonly [IndexedNodeRange | null, IndexedNodeRange | null],
+  destination: number,
+  schema: ElementSchema
+): SkippedRejection | null => {
+  const contentOf = (parent: IndexedNodeRange | null) =>
+    parent === null
+      ? schema.rootContent(document, root)
+      : contentAt(index, parent, schema);
+
+  if (leaves?.from === enters?.from) {
+    const parent = contentOf(leaves);
+
+    return parent !== 'unknown' && (parent.prefix?.length ?? 0) > 0
+      ? 'the skipped change moves a block inside a parent whose content has a prefix'
+      : null;
+  }
+  if (schema.propertiesReadParents()) {
+    return 'the skipped change moves a block to another parent while a property target reads the parent';
+  }
+
+  const left = contentOf(leaves);
+  const entered = contentOf(enters);
+
+  if (left === 'unknown' || entered === 'unknown') {
+    return 'the skipped change moves a block out of or into an element of a type the schema does not know';
+  }
+
+  const keptChildren = destinationInside(leaves, destination) ? 1 : 0;
+
+  if (
+    left.min > keptChildren ||
+    entered.max !== null ||
+    (left.prefix?.length ?? 0) > 0 ||
+    (entered.prefix?.length ?? 0) > 0
+  ) {
+    return 'the skipped change moves a block out of or into a parent whose content bounds its children';
+  }
+
+  return (left.allowsUnknownElements && !entered.allowsUnknownElements) ||
+    [...left.allowedElementTypes].some(
+      (type) => !entered.allowedElementTypes.has(type)
+    )
+    ? 'the skipped change moves a block into a parent that refuses an element type the parent it leaves allows'
+    : null;
+};
+
+const mirrors = (run: readonly JsonToken[]) => {
   const levels = run.length / 2;
 
   if (!Number.isInteger(levels) || levels === 0) return false;
@@ -231,8 +329,8 @@ const mirrors = (run: ReadonlyArray<JsonToken | null>) => {
     const open = run[levels + level];
 
     if (
-      close?.kind !== 'close' ||
-      open?.kind !== 'open' ||
+      close.kind !== 'close' ||
+      open.kind !== 'open' ||
       close.nodeKind !== open.nodeKind
     ) {
       return false;
@@ -240,6 +338,23 @@ const mirrors = (run: ReadonlyArray<JsonToken | null>) => {
   }
 
   return true;
+};
+
+const MOST_MIRRORED_LEVELS = 2;
+
+const droppedRun = (
+  document: DocumentIndex,
+  { at, dropped }: Piece
+): readonly JsonToken[] | 'letters' | 'long' => {
+  const leaf = enclosing(document, at).at(-1);
+
+  if (leaf?.kind === 'text' && at + dropped <= leaf.contentTo) {
+    return 'letters';
+  }
+
+  return dropped > 2 * MOST_MIRRORED_LEVELS
+    ? 'long'
+    : readTokens(document, at, at + dropped);
 };
 
 /** @internal */
@@ -280,31 +395,29 @@ export const stepRejection = (
 
     countCoreWork('ruleTokens');
 
-    return piece.setLength === 1 &&
-      isBlock(index, index.nodeStartingAt(piece.at), schema)
+    const target = index.nodeStartingAt(piece.at);
+
+    if (piece.setLength !== 1 || !target || !isBlock(index, target, schema)) {
+      return 'a set that is not on a kept block';
+    }
+
+    return retypesNoParent(index.node(target.path), piece.properties, schema)
       ? null
-      : 'a set that is not on a kept block';
+      : 'a set writes a type other than one text block for another';
   }
   if (piece.dropped > 0 && piece.written.length > 0) {
     return 'a piece both drops and writes';
   }
 
   const writes = piece.written.length > 0;
-  const tokens = writes
-    ? piece.written.tokens
-    : readTokens(index, piece.at, piece.at + piece.dropped);
+  const run = writes ? piece.written.tokens : droppedRun(index, piece);
 
-  if (tokens.every(isText)) {
+  if (run === 'letters' || (run !== 'long' && run.every(isText))) {
     return heirs.length + merges.length > 0 ? 'a fact names no piece' : null;
   }
-
-  const run = positionsOf(tokens);
-
-  if (!mirrors(run)) {
-    return run.includes(null)
-      ? 'a run mixes letters with structure'
-      : 'a run that is no mirrored split or join';
-  }
+  if (run === 'long') return 'a run that is no mirrored split or join';
+  if (run.some(isText)) return 'a run mixes letters with structure';
+  if (!mirrors(run)) return 'a run that is no mirrored split or join';
 
   const levels = run.length / 2;
   const around = enclosing(index, piece.at);
@@ -318,22 +431,29 @@ export const stepRejection = (
   if (!isBlock(index, outer, schema)) {
     return 'a run that is no mirrored split or join';
   }
-  if (levels > 2 || (levels === 2 && around.at(-1)?.kind !== 'text')) {
+  if (
+    levels > MOST_MIRRORED_LEVELS ||
+    (levels === MOST_MIRRORED_LEVELS && around.at(-1)?.kind !== 'text')
+  ) {
     return 'a run splits or joins more than a block and its text leaf';
   }
 
   const dropped = writes ? null : index.nodeStartingAt(piece.at + levels);
+  const contents = [outer, dropped].flatMap((range) =>
+    range === null ? [] : [contentAt(index, range, schema)]
+  );
 
-  // A quote splits between two of its lines and joins the quote beside it by
-  // the same mirrored run as a line, and both keep today's path.
-  if (holdsBlock(index, outer, schema) || holdsBlock(index, dropped, schema)) {
-    return 'a run splits or joins an element that holds blocks';
+  if (contents.includes('unknown')) {
+    return 'a run splits or joins an element of a type the schema does not know';
   }
-  if (
-    !allowsText(index, outer, schema) ||
-    (dropped !== null && !allowsText(index, dropped, schema))
-  ) {
+
+  const known = contents.filter((content) => content !== 'unknown');
+
+  if (known.some((content) => !content.allowsText)) {
     return 'a run splits or joins an element whose content allows no text';
+  }
+  if (known.some((content) => allowsBlocks(content, schema))) {
+    return 'a run splits or joins an element whose content allows blocks';
   }
 
   for (let level = 0; level < levels; level++) {
@@ -445,12 +565,28 @@ export const skippedRejection = (
     return 'the carries do not cover the moved block in order';
   }
 
-  if (
-    parentAllowsText(index, drop.at, schema) ||
-    parentAllowsText(index, copy.at, schema)
-  ) {
+  const ends = [parentAt(index, drop.at), parentAt(index, copy.at)] as const;
+  const parents = new Set(
+    ends.map((parent) => parentAllowsText(index, parent, schema))
+  );
+
+  if (parents.has('unknown')) {
+    return 'the skipped change moves a block out of or into an element of a type the schema does not know';
+  }
+  if (parents.has(true)) {
     return 'the skipped change moves a block out of or into an element whose content allows text';
   }
+
+  const refused = contentRejection(
+    document,
+    index,
+    root,
+    ends,
+    copy.at,
+    schema
+  );
+
+  if (refused) return refused;
 
   for (const piece of roots[0].pieces) {
     let position = piece.out;

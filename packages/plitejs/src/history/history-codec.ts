@@ -13,6 +13,13 @@ import {
   getInternalDocumentRootChange,
   valueRootIndex,
 } from '../core/change/document-change';
+import {
+  type ChangeFacts,
+  factsFromJSON,
+  factsToJSON,
+  NO_FACTS,
+  UNKNOWN_FACTS,
+} from '../core/change/record';
 import { getPluginRegistry as getInternalPluginRegistry } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
@@ -31,7 +38,10 @@ import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
 import { checkedCarryProgram, historyReplaySchemaOf } from './history-replay';
 import {
   freezeHistoryBatch,
+  historyFactsOf,
   historyFallbackOf,
+  historyFollowsFacts,
+  withHistoryFacts,
   withHistoryFallback,
   withHistoryProgram,
 } from './history-state';
@@ -51,9 +61,30 @@ const copyHistorySchemaIdentity = (
   return identity;
 };
 
+const encodeRecord = (facts: ChangeFacts | undefined) => {
+  const json = factsToJSON(facts ?? UNKNOWN_FACTS);
+
+  if (json.kind === 'unknown') return { record: null };
+
+  const roots = Object.entries(json.roots).filter(
+    ([, root]) => Object.keys(root).length > 0
+  );
+
+  return roots.length > 0 ? { record: Object.fromEntries(roots) } : {};
+};
+
+const decodeRecord = (input: Readonly<Record<string, unknown>>) => {
+  if (!Object.hasOwn(input, 'record')) return NO_FACTS;
+
+  return input.record === null
+    ? UNKNOWN_FACTS
+    : factsFromJSON({ kind: 'recorded', roots: input.record });
+};
+
 const encodeBatch = (
   editor: AnyEditor,
   batch: Batch,
+  records: boolean,
   fallback?: Batch | null
 ): HistoryBatchJSON => ({
   change: batch.change.toJSON(),
@@ -79,7 +110,8 @@ const encodeBatch = (
         ),
       }
     : {}),
-  ...(fallback ? { fallback: encodeBatch(editor, fallback) } : {}),
+  ...(records ? encodeRecord(historyFactsOf(batch)) : {}),
+  ...(fallback ? { fallback: encodeBatch(editor, fallback, records) } : {}),
 });
 
 const isPosition = (value: unknown): value is number =>
@@ -114,7 +146,10 @@ const decodeCarriedRuns = (value: unknown): readonly CarriedRun[] | null =>
 
 const isHistoryJSON = (value: unknown): value is HistoryJSON =>
   isObject(value) &&
-  (value.version === 4 || value.version === 5 || value.version === 6) &&
+  (value.version === 4 ||
+    value.version === 5 ||
+    value.version === 6 ||
+    value.version === 7) &&
   isHistorySchemaIdentity(value.schema) &&
   Array.isArray(value.redos) &&
   Array.isArray(value.undos);
@@ -301,11 +336,12 @@ const decodeBatch = <V extends Value>(
   input: unknown,
   effectTypes: ReadonlyMap<string, { type: EditorEffectType }>,
   direction: 'redo' | 'undo',
-  version: 4 | 5 | 6,
+  version: HistoryJSON['version'],
   nested = false
 ): Batch<V> => {
   if (
     !isObject(input) ||
+    (input.record !== undefined && version < 7) ||
     (input.fallback !== undefined &&
       (version < 6 || direction !== 'redo' || nested)) ||
     (input.unsettle !== undefined && direction === 'redo') ||
@@ -398,10 +434,15 @@ const decodeBatch = <V extends Value>(
     ...(carried ? { carried } : {}),
   };
 
+  const recorded = withHistoryFacts(
+    batch,
+    version === 7 ? decodeRecord(input) : undefined
+  );
+
   return input.fallback === undefined
-    ? batch
+    ? recorded
     : withHistoryFallback(
-        batch,
+        recorded,
         freezeHistoryBatch(
           decodeBatch(
             editor,
@@ -422,7 +463,7 @@ export const decodeHistoryValue = <V extends Value>(
 ): History<V> => {
   if (!isHistoryJSON(json)) {
     throw new Error(
-      'Invalid history JSON or unsupported history version; expected version 4, 5 or 6.'
+      'Invalid history JSON or unsupported history version; expected version 4, 5, 6 or 7.'
     );
   }
 
@@ -481,17 +522,20 @@ export const encodeHistoryValue = <V extends Value>(
 
   const redos = persistent(history.redos);
   const undos = persistent(history.undos);
+  const records = historyFollowsFacts();
 
   return {
     redos: redos.map((batch) =>
-      encodeBatch(editor, batch, fallbacks.get(batch))
+      encodeBatch(editor, batch, records, fallbacks.get(batch))
     ),
     schema,
-    undos: undos.map((batch) => encodeBatch(editor, batch)),
-    version: redos.some((batch) => fallbacks.has(batch))
-      ? 6
-      : [...redos, ...undos].some((batch) => batch.rest || batch.carried)
-        ? 5
-        : 4,
+    undos: undos.map((batch) => encodeBatch(editor, batch, records)),
+    version: records
+      ? 7
+      : redos.some((batch) => fallbacks.has(batch))
+        ? 6
+        : [...redos, ...undos].some((batch) => batch.rest || batch.carried)
+          ? 5
+          : 4,
   };
 };

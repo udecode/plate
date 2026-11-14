@@ -9,6 +9,7 @@ import {
   type Value,
 } from '..';
 import type { CarriedRun } from '../core/change/carried-run';
+import type { RootFactsJson } from '../core/change/record';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import type { encodeEditorSelection } from '../core/selection-protocol';
 import type { encodeEditorEffect } from '../core/value-codec';
@@ -74,10 +75,11 @@ export type HistoryJSON = Readonly<{
   schema: EditorSchemaIdentity;
   undos: readonly HistoryBatchJSON[];
   /**
-   * 6 when a redo keeps a `fallback`, else 5 when a step keeps `rest` or
-   * `carried`, else 4.
+   * 7 when history follows recorded facts, an internal mode, else 6 when a
+   * redo keeps a `fallback`, else 5 when a step keeps `rest` or `carried`,
+   * else 4.
    */
-  version: 4 | 5 | 6;
+  version: 4 | 5 | 6 | 7;
 }>;
 
 export type HistoryBatchJSON = Readonly<{
@@ -93,6 +95,11 @@ export type HistoryBatchJSON = Readonly<{
   unsettle?: ReturnType<DocumentChange['toJSON']>;
   /** Only beside `unsettle` on a step whose commit settled a decision's text. */
   rest?: ReturnType<DocumentChange['toJSON']>;
+  /**
+   * Only at version 7: the facts of what the step moved, split and joined,
+   * per root, or null when they are unknown. A step with no fact omits it.
+   */
+  record?: Readonly<Record<string, RootFactsJson>> | null;
   /**
    * Only on a step that merges a line into a nested line or takes it back.
    * A run names `landed` only when it differs from `length`.

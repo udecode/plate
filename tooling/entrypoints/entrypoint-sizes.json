@@ -5,16 +5,16 @@
   },
   "sizes": {
     "platejs": {
-      "bytes": 1373095,
-      "gzip": 432808
+      "bytes": 1396901,
+      "gzip": 441192
     },
     "platejs/math": {
       "bytes": 175784,
       "gzip": 51877
     },
     "platejs/board": {
-      "bytes": 707867,
-      "gzip": 220853
+      "bytes": 708136,
+      "gzip": 220964
     },
     "platejs/callout": {
       "bytes": 116168,
@@ -25,108 +25,108 @@
       "gzip": 424
     },
     "platejs/comments": {
-      "bytes": 712306,
-      "gzip": 221643
+      "bytes": 712553,
+      "gzip": 221756
     },
     "platejs/date": {
       "bytes": 117998,
       "gzip": 32749
     },
     "platejs/details": {
-      "bytes": 691125,
-      "gzip": 215591
+      "bytes": 691372,
+      "gzip": 215701
     },
     "platejs/upload": {
-      "bytes": 764011,
-      "gzip": 231017
+      "bytes": 764258,
+      "gzip": 231130
     },
     "platejs/find": {
-      "bytes": 682598,
-      "gzip": 212791
+      "bytes": 682845,
+      "gzip": 212898
     },
     "platejs/footnote": {
-      "bytes": 689185,
-      "gzip": 214815
+      "bytes": 689432,
+      "gzip": 214919
     },
     "platejs/layout": {
-      "bytes": 685832,
-      "gzip": 213936
+      "bytes": 686079,
+      "gzip": 214041
     },
     "platejs/lint": {
-      "bytes": 687711,
-      "gzip": 214612
+      "bytes": 687958,
+      "gzip": 214722
     },
     "platejs/media": {
-      "bytes": 711604,
-      "gzip": 222416
+      "bytes": 711851,
+      "gzip": 222521
     },
     "platejs/mention": {
       "bytes": 120864,
       "gzip": 33433
     },
     "platejs/suggestion": {
-      "bytes": 1090204,
-      "gzip": 348122
+      "bytes": 1090257,
+      "gzip": 348150
     },
     "platejs/table": {
-      "bytes": 760885,
-      "gzip": 237012
+      "bytes": 761231,
+      "gzip": 237150
     },
     "platejs/toc": {
-      "bytes": 681200,
-      "gzip": 212340
+      "bytes": 681447,
+      "gzip": 212451
     },
     "platejs/board/react": {
-      "bytes": 1066454,
-      "gzip": 333628
+      "bytes": 1070550,
+      "gzip": 335217
     },
     "platejs/callout/react": {
       "bytes": 118344,
       "gzip": 32314
     },
     "platejs/comments/react": {
-      "bytes": 715869,
-      "gzip": 222864
+      "bytes": 716116,
+      "gzip": 222972
     },
     "platejs/date/react": {
       "bytes": 120118,
       "gzip": 33086
     },
     "platejs/details/react": {
-      "bytes": 693336,
-      "gzip": 216077
+      "bytes": 693583,
+      "gzip": 216187
     },
     "platejs/upload/react": {
-      "bytes": 766815,
-      "gzip": 231910
+      "bytes": 767062,
+      "gzip": 232022
     },
     "platejs/footnote/react": {
-      "bytes": 835671,
-      "gzip": 263605
+      "bytes": 835918,
+      "gzip": 263719
     },
     "platejs/layout/react": {
-      "bytes": 688043,
-      "gzip": 214686
+      "bytes": 688290,
+      "gzip": 214788
     },
     "platejs/media/react": {
-      "bytes": 713629,
-      "gzip": 222959
+      "bytes": 713876,
+      "gzip": 223059
     },
     "platejs/mention/react": {
       "bytes": 123040,
       "gzip": 33831
     },
     "platejs/suggestion/react": {
-      "bytes": 1098522,
-      "gzip": 351258
+      "bytes": 1098575,
+      "gzip": 351285
     },
     "platejs/table/react": {
-      "bytes": 784076,
-      "gzip": 244923
+      "bytes": 784539,
+      "gzip": 245108
     },
     "platejs/toc/react": {
-      "bytes": 683356,
-      "gzip": 213063
+      "bytes": 683603,
+      "gzip": 213171
     },
     "platejs/combobox/react": {
       "bytes": 14626,
@@ -137,64 +137,64 @@
       "gzip": 1970
     },
     "plitejs": {
-      "bytes": 871399,
-      "gzip": 271620
+      "bytes": 871646,
+      "gzip": 271728
     },
     "plitejs/annotations": {
-      "bytes": 654431,
-      "gzip": 205435
+      "bytes": 654678,
+      "gzip": 205542
     },
     "plitejs/authored": {
-      "bytes": 1088925,
-      "gzip": 348331
+      "bytes": 1089172,
+      "gzip": 348433
     },
     "plitejs/diff": {
-      "bytes": 195704,
-      "gzip": 61359
+      "bytes": 195783,
+      "gzip": 61394
     },
     "plitejs/dom": {
-      "bytes": 808811,
-      "gzip": 255385
+      "bytes": 809974,
+      "gzip": 255887
     },
     "plitejs/history": {
-      "bytes": 764828,
-      "gzip": 240283
+      "bytes": 788245,
+      "gzip": 248476
     },
     "plitejs/hyperscript": {
-      "bytes": 831056,
-      "gzip": 260627
+      "bytes": 831303,
+      "gzip": 260742
     },
     "plitejs/internal": {
-      "bytes": 855010,
-      "gzip": 267269
+      "bytes": 855257,
+      "gzip": 267372
     },
     "plitejs/pagination": {
-      "bytes": 659648,
-      "gzip": 206468
+      "bytes": 659895,
+      "gzip": 206576
     },
     "plitejs/pagination/react": {
-      "bytes": 1405333,
-      "gzip": 429254
+      "bytes": 1405699,
+      "gzip": 429422
     },
     "plitejs/react": {
-      "bytes": 1581868,
-      "gzip": 482514
+      "bytes": 1582234,
+      "gzip": 482681
     },
     "plitejs/react/virtualized": {
-      "bytes": 1362424,
-      "gzip": 415205
+      "bytes": 1362790,
+      "gzip": 415362
     },
     "plitejs/testing": {
-      "bytes": 833793,
-      "gzip": 260958
+      "bytes": 834040,
+      "gzip": 261077
     },
     "plitejs/yjs": {
-      "bytes": 908107,
-      "gzip": 282464
+      "bytes": 908196,
+      "gzip": 282499
     },
     "plitejs/yjs/react": {
-      "bytes": 1006691,
-      "gzip": 314576
+      "bytes": 1006780,
+      "gzip": 314614
     }
   }
 }

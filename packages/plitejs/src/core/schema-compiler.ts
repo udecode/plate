@@ -3573,6 +3573,42 @@ export const toCompiledNodeContext = (
 };
 
 const tracksPlacesBySchema = new WeakMap<object, boolean>();
+const readsParentsBySchema = new WeakMap<object, boolean>();
+
+const targetReadsParent = (target: SchemaTarget): boolean => {
+  switch (target.kind) {
+    case 'and':
+    case 'or': {
+      return target.targets.some(targetReadsParent);
+    }
+    case 'not': {
+      return targetReadsParent(target.target);
+    }
+    case 'parent': {
+      return true;
+    }
+    default: {
+      return false;
+    }
+  }
+};
+
+/** @internal */
+export const propertyTargetsReadParents = (
+  schema: Pick<CompiledEditorSchema, 'properties'>
+): boolean => {
+  const cached = readsParentsBySchema.get(schema);
+
+  if (cached !== undefined) return cached;
+
+  const reads = [...schema.properties.byId.values()].some(
+    (property) => property.target !== null && targetReadsParent(property.target)
+  );
+
+  readsParentsBySchema.set(schema, reads);
+
+  return reads;
+};
 
 /**
  * Whether some declaration's target can fail at one place where its node
