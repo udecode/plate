@@ -163,8 +163,20 @@ export const autosave = (root) => {
   }
 };
 
+// Hooks run these fetches while the git command that fired them waits, so a
+// remote that stops sending bytes fails the fetch and the hook goes on with
+// the refs it already has.
+const STALL_LIMITED_FETCH = [
+  '-c',
+  'http.lowSpeedLimit=1000',
+  '-c',
+  'http.lowSpeedTime=20',
+  'fetch',
+  '--quiet',
+  'origin',
+];
 const fetchPrivate = (root) =>
-  privateGit(root, ['fetch', '--quiet', 'origin']).status === 0;
+  privateGit(root, STALL_LIMITED_FETCH).status === 0;
 
 /** Merges plate-private's next into the private branch after a public pull. */
 export const sync = (root) => {
@@ -309,7 +321,7 @@ const followBranch = (root) => {
     'HEAD',
   ]).stdout.trim();
   if (!branch || !held || branch === held) return;
-  privateGit(root, ['fetch', '--quiet', 'origin']);
+  fetchPrivate(root);
   const ownCommit = privateGit(root, [
     'rev-list',
     '--max-count=1',
@@ -349,7 +361,7 @@ export const attach = (root) => {
   }
   const shared = (args, options) =>
     run(main, [`--git-dir=${folder}`, ...args], options);
-  shared(['fetch', '--quiet', 'origin']);
+  shared(STALL_LIMITED_FETCH);
   const base =
     pairedCommit(main, must(root, ['rev-parse', 'HEAD']).trim()) ??
     (shared(['rev-parse', '--verify', '--quiet', UPSTREAM]).status === 0
