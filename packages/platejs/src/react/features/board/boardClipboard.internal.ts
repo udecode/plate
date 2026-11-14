@@ -9,12 +9,18 @@ export const attachBoardClipboard = (
   const { editor } = core;
   let hover: BoardPlace | null = null;
 
-  // A shape selection has no DOM range, so Firefox fires its clipboard
-  // events at the body; the focused element names the view they are for.
-  const clipboardTarget = (event: ClipboardEvent) =>
-    editor.api.dom.hasEditableTarget(event.target)
+  // Firefox fires clipboard events at the body when a shape selection leaves
+  // no DOM range, and Chromium and Firefox fire them at the start of a
+  // document range that focus left for the board. The focused element names
+  // the view they are for.
+  const clipboardTarget = (event: ClipboardEvent) => {
+    const active = activeElementOf(host);
+
+    return active !== core.focusTarget.current &&
+      editor.api.dom.hasEditableTarget(event.target)
       ? event.target
-      : activeElementOf(host);
+      : active;
+  };
   const onCopy = (event: ClipboardEvent) => {
     if (
       clipboardTarget(event) !== core.focusTarget.current ||
@@ -31,6 +37,12 @@ export const attachBoardClipboard = (
     const shapes = core.selectedShapes();
     const target = clipboardTarget(event);
 
+    if (target === core.focusTarget.current && shapes.length === 0) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      return;
+    }
     if (
       !(
         target === core.focusTarget.current ||
@@ -50,8 +62,9 @@ export const attachBoardClipboard = (
   };
   const onPaste = (event: ClipboardEvent) => {
     const target = clipboardTarget(event);
+    const onTarget = !!target && target === core.focusTarget.current;
     const onBoard =
-      (!!target && target === core.focusTarget.current) ||
+      onTarget ||
       (!!hover &&
         editor.api.dom.hasEditableTarget(target) &&
         (host.contains(target) || target.contains(host)));
@@ -61,19 +74,15 @@ export const attachBoardClipboard = (
     const read = editor.api.dom.clipboard.readSlice(event.clipboardData);
 
     core.measure();
-    if (read.kind === 'slice') {
-      if (
-        !core.land(read.slice, hover ? core.boardPointAt(hover) : undefined)
-      ) {
-        return;
-      }
-    } else if (
-      target !== core.focusTarget.current ||
-      core.selectedShapes().length === 0 ||
-      !core.paste(event.clipboardData)
-    ) {
-      return;
-    }
+
+    const pasted =
+      read.kind === 'slice'
+        ? core.land(read.slice, hover ? core.boardPointAt(hover) : undefined)
+        : onTarget &&
+          core.selectedShapes().length > 0 &&
+          core.paste(event.clipboardData);
+
+    if (!(pasted || onTarget)) return;
     event.preventDefault();
     event.stopPropagation();
   };

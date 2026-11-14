@@ -7,7 +7,9 @@ import {
   ElementApi,
   type Descendant,
   type NodeKey,
+  PathApi,
   type PluginTransaction,
+  SelectionApi,
 } from '../../../core';
 import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
@@ -138,7 +140,7 @@ export type BoardViewCore = Readonly<{
    * whose id it returns and go back to the select tool.
    */
   insertWith: (insert: (tx: PluginTransaction) => string | undefined) => void;
-  deselectOnBoard: () => void;
+  deselectOnBoard: () => boolean;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
   leaveBoard: (backward: boolean) => boolean;
   measure: () => void;
@@ -615,9 +617,11 @@ export const createBoardView = (
   };
 
   const deselectOnBoard = () => {
-    if (!focusBoard()) return;
+    if (!focusBoard()) return false;
     // Chrome and Firefox keep the editable's caret after focus leaves it.
     editor.api.dom.deselect();
+
+    return true;
   };
 
   const select = (keys: readonly NodeKey[]) => {
@@ -726,8 +730,18 @@ export const createBoardView = (
     boardPointAt,
     boardSelected: () => {
       const nodes = editor.read.selection.nodes();
+      const range = editor.read.selection();
 
-      return nodes.length === 1 && keyOf(nodes[0][0]) === board;
+      if (nodes.length > 0) {
+        return nodes.length === 1 && keyOf(nodes[0][0]) === board;
+      }
+      if (!range || !editor.read.selection.isCollapsed()) return false;
+
+      const path = createEditorView(editor, {
+        root: SelectionApi.root(range),
+      }).read.nodes.path(board);
+
+      return !!path && PathApi.isAncestor(path, range.anchor.path);
     },
     cancelInteraction,
     viewCenter,

@@ -68,6 +68,9 @@ const pickKey = (event: KeyboardEvent) =>
 export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
 
+  const inThisBoard = (element: Element) =>
+    element.closest('[data-board]') === host;
+
   const toolbar = () =>
     host.querySelector<HTMLElement>(':scope > [data-board-toolbar]');
 
@@ -108,6 +111,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       const popup = target.closest(OPEN_POPUP);
 
       if (popup && bar.contains(popup)) return false;
+      if (event.repeat) return true;
       core.cancelInteraction();
 
       return returnToBoard();
@@ -133,6 +137,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     if (first) core.select([first.key]);
 
     return !!first;
+  };
+
+  const stepOut = (event: KeyboardEvent) => {
+    if (event.repeat) return;
+    if (core.state().tool === 'select') core.selectBoard();
+    else core.setTool('select');
   };
 
   const historyKey = (event: KeyboardEvent) => {
@@ -229,7 +239,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     } else if (event.key === 'Tab') {
       return tab(shapes, event.shiftKey);
     } else if (event.key === 'Escape') {
-      core.selectBoard();
+      stepOut(event);
     } else if (arrow) {
       const step = event.shiftKey ? SHIFT_NUDGE : NUDGE;
 
@@ -245,7 +255,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       core.commit({ ids, kind: 'remove' });
     } else if (event.key === 'Enter') {
-      if (shapes.length === 1 && shapes[0].holdsText && core.writable()) {
+      if (
+        !event.repeat &&
+        shapes.length === 1 &&
+        shapes[0].holdsText &&
+        core.writable()
+      ) {
         core.edit(shapes[0].key);
       }
     } else if (event.key.length !== 1) {
@@ -261,7 +276,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     } else if (event.key === 'Enter') {
       return selectFirst();
     } else if (event.key === 'Escape') {
-      core.selectBoard();
+      stepOut(event);
     } else if (TOOL_KEYS[event.key]) {
       core.setTool(TOOL_KEYS[event.key]);
     } else if (
@@ -277,7 +292,10 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const boardKey = (event: KeyboardEvent) =>
-    event.key === 'Enter' && core.boardSelected() && selectFirst();
+    event.key === 'Enter' &&
+    plainKey(event) &&
+    core.boardSelected() &&
+    (selectFirst() || core.deselectOnBoard());
 
   const takes = (
     event: KeyboardEvent,
@@ -292,7 +310,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       event.shiftKey &&
       plainKey(event)
     ) {
-      return focusToolbar();
+      return event.repeat || focusToolbar();
     }
 
     const arrow = ARROWS[event.key];
@@ -308,6 +326,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
   const boardTakes = (event: KeyboardEvent, target: Element) => {
     if (!host.contains(target)) return target.contains(host) && boardKey(event);
+    if (!inThisBoard(target)) return false;
     if (event.key === 'Escape' && selectEdited()) return true;
 
     return takes(event, core.selectedShapes());
@@ -316,7 +335,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const keyTaken = (event: KeyboardEvent, target: Element) => {
     const bar = target.closest<HTMLElement>('[data-board-toolbar]');
 
-    if (bar?.parentElement === host) return toolbarKey(event, target, bar);
+    if (bar && inThisBoard(bar)) return toolbarKey(event, target, bar);
     if (event.key === 'Escape' && core.cancelInteraction()) return true;
 
     return !bar && boardTakes(event, target);
