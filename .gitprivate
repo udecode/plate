@@ -70,6 +70,7 @@ vitest.config.*
 /packages/plitejs/scripts/authored-recording-order*
 /packages/plitejs/scripts/authored-documents.ts
 /packages/plitejs/scripts/undo-redo-history*
+/packages/plitejs/scripts/change-cross*
 /packages/plitejs/scripts/delete-paste-ranges*
 /packages/platejs/scripts/markdown-round-trip*
 /packages/plitejs/scripts/check-harness.ts

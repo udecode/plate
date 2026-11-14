@@ -41,6 +41,11 @@ export type CoreWork = {
   encodedTokens: number;
   /** Incremental paths a collaboration binding refused for a fallback. */
   fallbacks: number;
+  /**
+   * Pieces, facts and sections a history crossing visited, which follow the
+   * two changes it crosses and not the document.
+   */
+  crossingPieces: number;
   /** Fact positions a draft mapped through a step, one per fact it wrote or a step dropped. */
   factPositions: number;
   factAllocations: number;
@@ -103,6 +108,8 @@ export type CoreWork = {
   rootVisits: number;
   /** Elements and root records a room's read examined for unbuilt spares. */
   spareReads: number;
+  /** Document tokens and nodes phase 1's crossing rule read to judge a change. */
+  ruleTokens: number;
   /** Change sections read to map a position or compose a change. */
   sectionsWalked: number;
   /** Document tokens, written tokens and cut elements a history replay's walk of a change visited. */
@@ -178,6 +185,7 @@ export const coreWork: CoreWork = {
   copiedSlots: 0,
   encodedTokens: 0,
   fallbacks: 0,
+  crossingPieces: 0,
   factPositions: 0,
   factAllocations: 0,
   formerPlaceCalls: 0,
@@ -211,6 +219,7 @@ export const coreWork: CoreWork = {
   rootVisits: 0,
   spareReads: 0,
   spareIdChecks: 0,
+  ruleTokens: 0,
   sectionsWalked: 0,
   replayWalkVisits: 0,
   snapshotIndexes: 0,
