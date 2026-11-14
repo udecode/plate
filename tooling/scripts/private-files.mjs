@@ -324,12 +324,26 @@ export const pairedCommits = (root, revs) => {
 export const pairedCommit = (root, rev) =>
   pairedCommits(root, [rev]).get(rev) ?? null;
 
+/**
+ * The plate-private commit that a landing onto `base`, a udecode/plate rev,
+ * compares against.
+ */
+export const landingPair = (root, base) => {
+  const meets = ['merge-base', 'HEAD', UPSTREAM];
+  const name = `${base}^{commit}`;
+  const landed =
+    isSplit(root) &&
+    objectIds(root, [name]).get(name) === run(root, meets).stdout.trim() &&
+    privateGit(root, meets).stdout.trim();
+  return landed || pairedCommit(root, base);
+};
+
 /** `git show <rev>:<file>` from whichever repository tracks the file. */
-export const showAt = (root, rev, file) => {
+export const showAt = (root, rev, file, { pair = pairedCommit } = {}) => {
   if (!privatePaths(root, [file]).has(file)) {
     return run(root, ['show', `${rev}:${file}`]);
   }
-  const paired = pairedCommit(root, rev);
+  const paired = pair(root, rev);
   if (!paired) return run(root, ['show', `${rev}:${file}`]);
   return privateGit(root, ['show', `${paired}:${file}`]);
 };
@@ -338,14 +352,16 @@ export const showAt = (root, rev, file) => {
  * The `{ rev, file }` pairs whose file exists at rev, each read from
  * whichever repository tracks the file, as `${rev}:${file}` keys.
  */
-export const existingAt = (root, pairs) => {
+export const existingAt = (root, pairs, { pair } = {}) => {
   const hidden = privatePaths(root, [
     ...new Set(pairs.map(({ file }) => file)),
   ]);
-  const paired = pairedCommits(
-    root,
-    pairs.filter(({ file }) => hidden.has(file)).map(({ rev }) => rev)
-  );
+  const revs = pairs
+    .filter(({ file }) => hidden.has(file))
+    .map(({ rev }) => rev);
+  const paired = pair
+    ? new Map([...new Set(revs)].map((rev) => [rev, pair(root, rev)]))
+    : pairedCommits(root, revs);
   const own = [];
   const side = [];
   for (const { rev, file } of pairs) {
@@ -367,8 +383,8 @@ export const existingAt = (root, pairs) => {
   return found;
 };
 
-export const existsAt = (root, rev, file) =>
-  existingAt(root, [{ rev, file }]).has(`${rev}:${file}`);
+export const existsAt = (root, rev, file, options) =>
+  existingAt(root, [{ rev, file }], options).has(`${rev}:${file}`);
 
 export const publicObjects = (root) =>
   path.join(
@@ -386,7 +402,7 @@ export const publicObjects = (root) =>
  * files, so plate-private compares them against its tree through this
  * repository's objects.
  */
-export const changedSince = (root, rev) => {
+export const changedSince = (root, rev, { pair = pairedCommit } = {}) => {
   const diff = ['diff', '--name-only', '--no-renames', rev, '--'];
   const listed = run(root, diff);
   if (listed.status !== 0) return null;
@@ -397,7 +413,7 @@ export const changedSince = (root, rev) => {
     const hidden = privatePaths(root, files);
     files = files.filter((file) => !hidden.has(file));
   }
-  const paired = presplit ? rev : pairedCommit(root, rev);
+  const paired = presplit ? rev : pair(root, rev);
   if (!paired) return files;
   const side = privateGit(root, [...diff.slice(0, -2), paired, '--'], {
     env: presplit
@@ -489,12 +505,17 @@ export const inHistory = (root, file) =>
     : historyOf(root).has(file.replace(/\/+$/u, ''));
 
 /** The files both repositories track at a udecode/plate rev, sorted. */
-export const filesAt = (root, rev, pathspecs = []) => {
+export const filesAt = (
+  root,
+  rev,
+  pathspecs = [],
+  { pair = pairedCommit } = {}
+) => {
   const list = (result) => entries(result.stdout);
   const files = list(
     run(root, ['ls-tree', '-r', '-z', '--name-only', rev, '--', ...pathspecs])
   );
-  const paired = pairedCommit(root, rev);
+  const paired = pair(root, rev);
   if (paired) {
     files.push(
       ...list(

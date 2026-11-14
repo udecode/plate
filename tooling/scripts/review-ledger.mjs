@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+} from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { landed, stateOf } from '../../.agents/pstack/status.mjs';
+import { landed, stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
+import { gitMerges } from '../../.agents/pstack/tasks.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import {
   changedSince,
@@ -13,6 +20,9 @@ import {
   filesAt,
   grepFiles,
   inHistory,
+  isSplit,
+  landingPair,
+  privateGit,
   showAt,
   trackedFiles,
   untrackedFiles,
@@ -505,6 +515,7 @@ function pageOf(scopes, path, text) {
       : [],
     entries: entriesFor(scopes, meta.review_scopes, inputs, path),
     summary: leadOf(text),
+    jobs: jobsOf(text),
     previous: null,
     reconciliation: [],
     references: [],
@@ -1268,6 +1279,7 @@ export function status(root) {
     deferred: count('deferred'),
     closed: count(null),
     unowned: coverage(root, { ledger }).unowned.total,
+    due: dueScopes(root, ledger, plans).length,
     open: [...states]
       .filter(([, state]) => state.open)
       .map(([id, state]) => ({
@@ -1309,37 +1321,221 @@ const shipSteps = {
 export function ship(root) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
-  const running = plans.filter((plan) =>
-    ['active', 'held', 'planning'].includes(stateOf(plan.status))
-  );
-  const experimental =
-    readJson(root, '.agents/pstack.json', ledger.warnings).value?.triage
-      ?.experimental ?? [];
+  const running = runningPlans(plans);
+  const experimental = configOf(root, ledger).triage?.experimental ?? [];
   return [...ledger.scopes.values()].sort(byId).flatMap((scope) => {
     const step = shipSteps[openState(ledger, scope.id, plans).open];
     if (!step || experimental.includes(scope.id)) return [];
-    const item = step({ id: scope.id, title: scope.title ?? scope.id });
+    const item = offerOf(scope, step, running);
     const prerequisites = (scope.dependsOn ?? []).filter(
       (id) => ledger.scopes.has(id) && openState(ledger, id, plans).open
     );
     return [
-      {
-        id: scope.id,
-        ...item,
-        finding: prerequisites.length
-          ? `${item.finding} It builds on ${prerequisites.join(', ')}, still open: ${scope.prerequisiteReason}`
-          : item.finding,
-        writes: [
-          subjectOf(scope.id),
-          ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
-        ],
-        topic: `review-${scope.id}`,
-        waits: running
-          .filter((plan) => plan.scopes.includes(scope.id))
-          .map((plan) => `run:${plan.path}`),
-      },
+      prerequisites.length
+        ? {
+            ...item,
+            finding: `${item.finding} It builds on ${prerequisites.join(', ')}, still open: ${scope.prerequisiteReason}`,
+          }
+        : item,
     ];
   });
+}
+
+const configOf = (root, ledger) =>
+  readJson(root, '.agents/pstack.json', ledger.warnings).value ?? {};
+
+const runningPlans = (plans) =>
+  plans.filter((plan) =>
+    ['active', 'held', 'planning'].includes(stateOf(plan.status))
+  );
+
+const offerOf = (scope, step, running) => ({
+  id: scope.id,
+  ...step({ id: scope.id, title: scope.title ?? scope.id }),
+  writes: [
+    subjectOf(scope.id),
+    ...(scope.owners ?? []).map((path) => path.replace(/\/$/, '')),
+  ],
+  topic: `review-${scope.id}`,
+  waits: running
+    .filter((plan) => plan.scopes.includes(scope.id))
+    .map((plan) => `run:${plan.path}`),
+});
+
+const dueSteps = {
+  closed: (scope) => ({
+    title: `Pick the next step for ${scope.title} (xhigh)`,
+    kind: 'decide',
+    finding: `The audit pass has not reached the ${scope.id} scope: no review has ranked its jobs against other editors. Run verdict ${scope.id} with the Verdict playbook's Next step, as its Audit pass section says.`,
+  }),
+  unreviewed: (scope) => ({
+    title: `Review ${scope.title} (xhigh)`,
+    kind: 'decide',
+    finding: `Nobody has reviewed the ${scope.id} scope yet, so the audit pass has not reached it. Run verdict ${scope.id} with the Verdict playbook's Next step, as its Audit pass section says.`,
+  }),
+};
+
+const under = (path, dirs = []) =>
+  dirs.some(
+    (dir) =>
+      path === dir.replace(/\/$/, '') ||
+      path.startsWith(dir.endsWith('/') ? dir : `${dir}/`)
+  );
+
+function tierAt(tiers, { id, writes }) {
+  const hit = tiers.findIndex(
+    (tier) =>
+      writes.some(
+        (path) => under(path, tier.paths) && !under(path, tier.except)
+      ) || (tier.scopes ?? []).includes(id)
+  );
+  if (hit !== -1) return hit;
+  const fallback = tiers.findIndex(
+    (tier) =>
+      !(tier.paths?.length || tier.scopes?.length || tier.checks?.length)
+  );
+  return fallback === -1 ? tiers.length : fallback;
+}
+
+const leadScope = (page) => page.scopes[0];
+
+function passStart(root, ledger) {
+  const since = configOf(root, ledger).audit?.since;
+  if (since === undefined) return Number.NEGATIVE_INFINITY;
+  const at = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?Z)?$/.test(
+    since
+  )
+    ? Date.parse(since)
+    : Number.NaN;
+  assert.ok(
+    !Number.isNaN(at) &&
+      new Date(at).toISOString().startsWith(since.slice(0, 10)),
+    `audit.since in .agents/pstack.json is ${JSON.stringify(since)}, which is no UTC time. Write it as 2026-11-14T09:30:00Z, or as 2026-11-14 for the start of that day.`
+  );
+  return at;
+}
+
+function beganAt(root, page) {
+  const log = page.path?.replace(/\.md$/, '.decisions.tsv');
+  const first =
+    log && existsSync(join(root, log))
+      ? Date.parse(read(root, log).split('\n')[1]?.split('\t')[0])
+      : Number.NaN;
+  return Number.isNaN(first) ? Date.parse(`${page.date}T00:00:00Z`) : first;
+}
+
+function dueScopes(root, ledger, plans) {
+  const start = passStart(root, ledger);
+  const counted = [...ledger.pages.values()].filter(
+    (page) =>
+      ['ranked', 'unread'].includes(page.jobs) && beganAt(root, page) >= start
+  );
+  const ranked = new Set(
+    counted.filter((page) => page.jobs === 'ranked').map(leadScope)
+  );
+  return [...ledger.scopes.values()].flatMap((scope) => {
+    const open = openState(ledger, scope.id, plans).open ?? 'closed';
+    const unread = counted
+      .filter((page) => page.jobs === 'unread' && leadScope(page) === scope.id)
+      .map((page) => page.path);
+    return dueSteps[open] && !ranked.has(scope.id)
+      ? [{ scope, open, unread }]
+      : [];
+  });
+}
+
+const idleLimit = 7 * 86_400_000;
+
+function changesSince(root, paths, head) {
+  const began = head ? beganAt(root, head) : Number.NaN;
+  if (!paths.length || Number.isNaN(began)) return 0;
+  const count = [
+    'rev-list',
+    '--count',
+    `--since=${Math.floor(began / 1000)}`,
+    'HEAD',
+    '--',
+    ...paths,
+  ];
+  const halves = [
+    git(root, count),
+    isSplit(root) ? privateGit(root, count).stdout : null,
+  ];
+  return halves.reduce((sum, out) => sum + Number(out?.trim() || 0), 0);
+}
+
+/**
+ * The task board dates a plan's last activity through git in the working
+ * directory, so its answer holds only when the process runs in `root`.
+ * Elsewhere the activity stays unknown, and every open plan keeps its wait.
+ */
+const boardActivity = (root) =>
+  realpathSync(root) === realpathSync(process.cwd())
+    ? gitMerges().activeAt
+    : () => null;
+
+/** The scopes the audit pass has not reached, each as the task to offer. */
+export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
+  const ledger = loadLedger(root);
+  const plans = plansOf(root, ledger);
+  const config = configOf(root, ledger);
+  const { tiers = [], deferred = [] } = config.chips ?? {};
+  const experimental = config.triage?.experimental ?? [];
+  const scopes = dueScopes(root, ledger, plans);
+  const reached = new Set(scopes.map(({ scope }) => scope.id));
+  const running = runningPlans(plans).filter((plan) =>
+    plan.scopes.some((id) => reached.has(id))
+  );
+  const idle = running.filter((plan) => {
+    const at = activeAt(plan.path);
+    return at !== null && now - at > idleLimit && !waitsOnOwner(plan.status);
+  });
+  const live = running.filter((plan) => !idle.includes(plan));
+  return scopes
+    .map(({ scope, open, unread }) => {
+      const offer = offerOf(scope, dueSteps[open], live);
+      const led = idle
+        .filter((plan) => plan.scopes[0] === scope.id)
+        .map((plan) => plan.path);
+      const notes = [
+        unread.length
+          ? `The ledger does not count the Jobs table in ${unread.join(', ')}, because the table has no row, sits inside a code fence or follows a line of HTML. Read that page first, and when it already ranks the scope's jobs, move its table to plain lines under the Jobs heading instead of judging the scope again.`
+          : '',
+        led.length
+          ? `Each of these plans names the scope first and has had no commit or decision log row for a week, so it does not resume, and this verdict decides what becomes of it: ${led.join(', ')}.`
+          : '',
+      ];
+      const item = {
+        ...offer,
+        finding: [offer.finding, ...notes].filter(Boolean).join(' '),
+        writes: [...offer.writes, ...led],
+      };
+      const at = tierAt(tiers, item);
+      const head = latest(headsOf(ledger, scope.id));
+      const date = head?.date ?? '';
+      return {
+        item: {
+          ...item,
+          tier: tiers[at]?.name ?? 'other',
+          changes: changesSince(root, scope.owners ?? [], head),
+          ...(open === 'unreviewed' && !experimental.includes(scope.id)
+            ? { ship: scope.id }
+            : {}),
+        },
+        deferred: Number(deferred.includes(scope.id)),
+        at,
+        date,
+      };
+    })
+    .sort(
+      (a, b) =>
+        a.deferred - b.deferred ||
+        a.at - b.at ||
+        b.item.changes - a.item.changes ||
+        byCodeUnit(a.date, b.date) ||
+        byCodeUnit(a.item.id, b.item.id)
+    )
+    .map(({ item }) => item);
 }
 
 /** Markdown for people, printed instead of committed. */
@@ -1731,7 +1927,8 @@ export function checkPlans(root, paths, { base = 'HEAD' } = {}) {
  * are frozen legacy, so the landing reads only pages.
  */
 export function checkLanding(root, { base }) {
-  const changed = changedSince(root, base);
+  const pairing = { pair: landingPair };
+  const changed = changedSince(root, base, pairing);
   assert.ok(
     changed,
     `Cannot diff against the base commit ${base}. Pass a base this checkout holds.`
@@ -1741,12 +1938,18 @@ export function checkLanding(root, { base }) {
     const page = text === null ? null : pageOf(ledger.scopes, path, text);
     return page && { scopes: page.scopes, basis: page.basis };
   };
-  const paths = [
-    ...new Set([...changed, ...untrackedFiles(root, ['docs/plans'])]),
-  ].filter((path) => path.startsWith('docs/plans/') && path.endsWith('.md'));
+  const landing = [
+    ...new Set([
+      ...changed,
+      ...untrackedFiles(root, ['docs/plans', ...census.roots]),
+    ]),
+  ];
+  const paths = landing.filter(
+    (path) => path.startsWith('docs/plans/') && path.endsWith('.md')
+  );
   const touched = new Set();
   for (const path of paths) {
-    const shown = showAt(root, base, path);
+    const shown = showAt(root, base, path, pairing);
     const before = pageLinks(path, shown.status === 0 ? shown.stdout : null);
     const after = pageLinks(
       path,
@@ -1757,7 +1960,25 @@ export function checkLanding(root, { base }) {
     for (const id of before?.basis ?? []) touched.add(id);
   }
   const plans = paths.filter((path) => existsSync(join(root, path)));
-  const errors = planErrors(root, ledger, plans, base);
+  const errors = planErrors(root, ledger, plans, base, pairing);
+  const holdsLedger = ledger.scopes.size > 0;
+  const unnamed = holdsLedger
+    ? landing.filter(
+        (path) =>
+          inCensus(path) &&
+          existsSync(join(root, path)) &&
+          !owningScopes(ledger, path).length &&
+          !existsAt(root, base, path, pairing)
+      )
+    : [];
+  for (const path of unnamed) {
+    const holders = [...ledger.scopes.values()]
+      .filter((scope) => under(path, scope.owners))
+      .map((scope) => scope.id);
+    errors.push(
+      `No scope's members name ${path}, which this landing adds. ${holders.length ? `The owners of ${holders.join(', ')} hold its folder, and an owners entry does not count. ` : ''}Add the file or its folder to the members of the scope whose question it serves, or when it serves a new question, add a scope file in ${scopesDir} whose members name it; node tooling/scripts/review-ledger.mjs lookup ${path} lists the owners of nearby files.`
+    );
+  }
   for (const id of ledger.scopes.keys()) {
     const heads = headsOf(ledger, id);
     if (
@@ -1774,14 +1995,15 @@ export function checkLanding(root, { base }) {
   return { ok: true, plans: plans.length };
 }
 
-function planErrors(root, ledger, paths, base) {
+function planErrors(root, ledger, paths, base, pairing) {
   const errors = [];
   const context = planContext(
     root,
     ledger,
     plansOf(root, ledger),
     base,
-    errors
+    errors,
+    pairing
   );
   for (const path of paths) {
     if (!existsSync(join(root, path))) {
@@ -1799,7 +2021,7 @@ function planErrors(root, ledger, paths, base) {
   return errors;
 }
 
-function planContext(root, ledger, plans, base, errors) {
+function planContext(root, ledger, plans, base, errors, pairing) {
   const baseCommit = git(root, [
     'rev-parse',
     '--verify',
@@ -1812,7 +2034,7 @@ function planContext(root, ledger, plans, base, errors) {
     );
   }
   const atBase = baseCommit
-    ? new Set(filesAt(root, baseCommit, ['docs/plans']))
+    ? new Set(filesAt(root, baseCommit, ['docs/plans'], pairing))
     : null;
   return {
     root,
@@ -1889,6 +2111,40 @@ function sectionOf(text, heading, level = '##') {
     .slice(start + 1, end === -1 ? undefined : end)
     .join('\n')
     .trim();
+}
+
+const fenceOpen = /^ {0,3}(?:(`{3,})[^`]*|(~{3,}).*)$/;
+const fenceClose = (mark) =>
+  new RegExp(`^ {0,3}${mark[0]}{${mark.length},}[ \\t]*$`);
+
+const unfenced = (text) => {
+  let close = null;
+  return text
+    .split(/\r?\n/)
+    .filter((line) => {
+      if (close) {
+        if (close.test(line)) close = null;
+        return false;
+      }
+      const [, ticks, tildes] = fenceOpen.exec(line) ?? [];
+      const mark = ticks ?? tildes;
+      if (mark) close = fenceClose(mark);
+      return !mark;
+    })
+    .join('\n');
+};
+
+const htmlLine = /^ {0,3}</;
+const threePipeLines = /(?:^ {0,3}\|.*(?:\n|$)){3}/m;
+
+function jobsOf(text) {
+  const jobsIn = (page) =>
+    sectionOf(sectionOf(page, 'Evidence'), 'Jobs', '###');
+  const lines = unfenced(text).split('\n');
+  const html = lines.findIndex((line) => htmlLine.test(line));
+  const aboveHtml = (html === -1 ? lines : lines.slice(0, html)).join('\n');
+  if (threePipeLines.test(jobsIn(aboveHtml))) return 'ranked';
+  return /^\s*\|/m.test(jobsIn(text)) ? 'unread' : 'none';
 }
 
 const listItems = (text) =>
@@ -2259,12 +2515,13 @@ export function researchRows(root) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs status|ship|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|land [--base <rev>]|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs status|ship|due|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|land [--base <rev>]|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
   if (command === 'status') return status(root);
   if (command === 'ship') return ship(root);
+  if (command === 'due') return due(root, { activeAt: boardActivity(root) });
   if (command === 'lookup') {
     return lookup(root, argument, { detail: args.includes('--detail') });
   }

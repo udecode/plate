@@ -24,7 +24,7 @@ It discovers and synthesizes. It does not run measured packets (`benchmark`), cl
 | Arguments | Does |
 | --- | --- |
 | `<feature or question>` | Picks the most valuable open research question for it, then runs a discovery run. |
-| none | Picks the top item of `node tooling/scripts/review-ledger.mjs status` (its `queue`) that has no research yet. |
+| none | Picks the first item of `node tooling/scripts/review-ledger.mjs due`, the scopes the audit pass has not reached, that has no research yet. |
 | `full <area>` | Ingests and compiles every relevant corpus into `docs/research` (see Compiled layer below). |
 | `maintain <area>` | Cleans an existing research lane: contradictions, freshness, backlinks, synthesis (see Compiled layer below). |
 | `audit [--target <surface\|full>] <repo>...` | Compares external editor architectures with Plite and Plate through a complete source inventory and explicit extraction decisions ([editor audit](./references/editor-audit.md); full, all, exhaustive or multi-repository audits also read its Strict source-to-contract matrix section). |

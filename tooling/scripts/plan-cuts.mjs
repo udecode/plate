@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   changedSince,
+  landingPair,
   run,
   showAt,
   untrackedFiles,
@@ -137,7 +138,8 @@ const linesBeyondBase = (before, after) => {
 };
 
 export function checkLanding(root, { base, chips = readChips(root) }) {
-  const changed = changedSince(root, base);
+  const pairing = { pair: landingPair };
+  const changed = changedSince(root, base, pairing);
   if (!changed) {
     throw new Error(
       `Cannot diff against the base commit ${base}. Pass a base this checkout holds.`
@@ -149,7 +151,7 @@ export function checkLanding(root, { base, chips = readChips(root) }) {
   ].filter((path) => isPlan(path) && existsSync(join(root, path)));
   for (const path of paths) {
     const after = readFileSync(join(root, path), 'utf-8');
-    const shown = showAt(root, base, path);
+    const shown = showAt(root, base, path, pairing);
     const before = shown.status === 0 ? shown.stdout : '';
     const lines = linesBeyondBase(before, after);
     errors.push(...report(path, cutProblems(after, { chips, lines })));
