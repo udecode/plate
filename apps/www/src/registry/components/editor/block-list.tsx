@@ -43,9 +43,12 @@ function List(
 ) {
   const { listStart, listStyle, listType } = props;
   const isTask = listType === ListType.Task;
+  const isNumbered = listType === ListType.Numbered;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
-    listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
+    isNumbered && listStart === undefined
+      ? 'none'
+      : (listStyle ?? (isNumbered ? 'decimal' : 'none'));
 
   return (
     <InnerList
@@ -57,7 +60,7 @@ function List(
           : undefined
       }
       style={{ listStyleType: markerStyle }}
-      start={listType === ListType.Numbered ? listStart : undefined}
+      start={isNumbered ? listStart : undefined}
     >
       {isTask && <TodoMarker {...props} />}
       <li

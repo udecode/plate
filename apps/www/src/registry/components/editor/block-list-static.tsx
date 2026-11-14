@@ -61,10 +61,12 @@ function List(
   const { listStart, listStyle, listType } = props;
   const isTask = listType === ListType.Task;
   const isBullet = listType === ListType.Bulleted;
+  const isNumbered = listType === ListType.Numbered;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
-    listStyle ??
-    (listType === ListType.Numbered ? 'decimal' : isBullet ? 'disc' : 'none');
+    isNumbered && listStart === undefined
+      ? 'none'
+      : (listStyle ?? (isNumbered ? 'decimal' : isBullet ? 'disc' : 'none'));
 
   return (
     <InnerList
@@ -76,7 +78,7 @@ function List(
           : undefined
       }
       style={{ listStyleType: markerStyle }}
-      start={listType === ListType.Numbered ? listStart : undefined}
+      start={isNumbered ? listStart : undefined}
     >
       <li
         data-checked={

@@ -32,6 +32,20 @@
       "diagnostics": []
     },
     {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
       "name": "discussion",
       "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
@@ -127,6 +141,23 @@
       }
     },
     {
+      "id": "2026-10-13-suggestion-struck-list-number",
+      "kind": "behavior",
+      "summary": "Paint no number on a numbered item that a pending suggestion deletes, and give the items after it the numbers that accepting the deletion gives them.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list", "block-list-static"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-suggestions-review-tree",
+          "section": null
+        }
+      }
+    },
+    {
       "id": "2026-10-13-discussion-card-decide",
       "kind": "behavior",
       "summary": "Accept and Reject on a suggestion card decide the change that card shows.",
@@ -134,8 +165,8 @@
       "migrationNotes": [],
       "targets": ["discussion"],
       "source": {
-        "line": 26,
-        "row": 4,
+        "line": 30,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-10-13",
           "entry": "2026-10-13-suggestions-review-tree",
@@ -158,8 +189,8 @@
         "suggestion-persistence-demo"
       ],
       "source": {
-        "line": 30,
-        "row": 5,
+        "line": 34,
+        "row": 6,
         "legacyRelease": {
           "date": "2026-10-13",
           "entry": "2026-10-13-suggestions-review-tree",
@@ -175,8 +206,8 @@
       "migrationNotes": [],
       "targets": ["version-history-demo"],
       "source": {
-        "line": 34,
-        "row": 6,
+        "line": 38,
+        "row": 7,
         "legacyRelease": {
           "date": "2026-10-13",
           "entry": "2026-10-13-suggestions-review-tree",

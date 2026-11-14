@@ -198,16 +198,38 @@ export const getListIndexMetrics = () => Object.freeze({ ...numberingMetrics });
 
 const indexes = new WeakMap<Editor, Map<RootKey, RootIndex>>();
 
+type FactsReader = (element: Element) => ListFacts | undefined;
+
+type ContentCheck = EditorCoreStateView['nodes']['isContent'];
+
+const contentReaders = new WeakMap<ContentCheck, FactsReader>();
+
+const contentFacts = (isContent: ContentCheck): FactsReader => {
+  let reader = contentReaders.get(isContent);
+
+  if (!reader) {
+    reader = (element) => {
+      const facts = readListFacts(element);
+
+      return facts && isContent(element) ? facts : undefined;
+    };
+    contentReaders.set(isContent, reader);
+  }
+
+  return reader;
+};
+
 const buildRootIndex = (
   children: readonly Descendant[],
-  keyAt: (path: Path) => NodeKey | null | undefined
+  keyAt: (path: Path) => NodeKey | null | undefined,
+  factsOf: FactsReader
 ): RootIndex => {
   const byKey = new Map<NodeKey, ListEntry<NodeKey>>();
   const entries = new Map<string, Array<ListEntry<NodeKey>>>();
   const lists = new Map<string, ListLanes<NodeKey>>();
 
   visitElements(children, (element, path) => {
-    const facts = readListFacts(element);
+    const facts = factsOf(element);
     const key = facts && keyAt(path);
 
     if (!facts || !key) return;
@@ -233,7 +255,8 @@ const buildRootIndex = (
 const rebuildRootIndex = (
   editor: Editor,
   root: RootKey,
-  snapshot: EditorSnapshot
+  snapshot: EditorSnapshot,
+  factsOf: FactsReader
 ) => {
   let roots = indexes.get(editor);
 
@@ -243,8 +266,10 @@ const rebuildRootIndex = (
   }
 
   const previous = roots.get(root);
-  const index = buildRootIndex(snapshot.children, (path) =>
-    snapshot.index.keyAt(path)
+  const index = buildRootIndex(
+    snapshot.children,
+    (path) => snapshot.index.keyAt(path),
+    factsOf
   );
 
   if (previous) {
@@ -267,6 +292,10 @@ export const applyListCommit = (editor: Editor, commit: EditorCommit) => {
 
   if (!roots) return;
 
+  let factsOf: FactsReader | undefined;
+  const content = () =>
+    (factsOf ??= editor.read((state) => contentFacts(state.nodes.isContent)));
+
   for (const [root, index] of roots) {
     const named = root === 'main' ? undefined : root;
     const { changed } = commit;
@@ -283,14 +312,14 @@ export const applyListCommit = (editor: Editor, commit: EditorCommit) => {
       continue;
     }
     if (changed.has('replace', named) || index.children !== before.children) {
-      rebuildRootIndex(editor, root, after);
+      rebuildRootIndex(editor, root, after, content());
       continue;
     }
 
     try {
-      updateRootIndex(index, commit, named, before, after);
+      updateRootIndex(index, commit, named, before, after, content());
     } catch (error) {
-      rebuildRootIndex(editor, root, after);
+      rebuildRootIndex(editor, root, after, content());
       throw error;
     }
   }
@@ -355,7 +384,8 @@ const updateRootIndex = (
   commit: EditorCommit,
   named: NamedRootKey | undefined,
   before: EditorSnapshot,
-  after: EditorSnapshot
+  after: EditorSnapshot,
+  factsOf: FactsReader
 ) => {
   const candidates = new Set(commit.changed.nodeKeys('node', named));
 
@@ -395,7 +425,7 @@ const updateRootIndex = (
     const afterPath = after.index.pathOf(key);
     const afterNode = afterPath ? nodeAt(after.children, afterPath) : undefined;
     const facts = ElementApi.isElement(afterNode)
-      ? readListFacts(afterNode)
+      ? factsOf(afterNode)
       : undefined;
     const beforePath =
       entry && facts && sameFacts(entry.facts, facts)
@@ -470,7 +500,7 @@ const updateRootIndex = (
  */
 export const readListOrdinal = (
   editor: Editor,
-  state: Pick<EditorCoreStateView, 'key' | 'runtime' | 'view'>,
+  state: Pick<EditorCoreStateView, 'key' | 'nodes' | 'runtime' | 'view'>,
   element: Element,
   path: Path
 ): number | undefined => {
@@ -479,16 +509,18 @@ export const readListOrdinal = (
   const snapshot = state.runtime.snapshot();
   const root = state.view.root() ?? 'main';
   const index = indexes.get(editor)?.get(root);
+  const factsOf = contentFacts(state.nodes.isContent);
 
   if (index && index.children !== snapshot.children) {
-    return countDetached(snapshot.children).get(element);
+    return countDetached(snapshot.children, factsOf).get(element);
   }
 
   const key = state.key(path);
 
   return key
-    ? (index ?? rebuildRootIndex(editor, root, snapshot)).byKey.get(key)
-        ?.ordinal
+    ? (index ?? rebuildRootIndex(editor, root, snapshot, factsOf)).byKey.get(
+        key
+      )?.ordinal
     : undefined;
 };
 
@@ -554,22 +586,32 @@ export const readListOrdinalByKey = (
 
 const detachedOrdinals = new WeakMap<
   readonly Descendant[],
-  WeakMap<Element, number>
+  WeakMap<FactsReader, WeakMap<Element, number>>
 >();
 
 // One count of a root's content keyed by element, cached for the content's
 // lifetime: encoders and uncommitted states read it.
-const countDetached = (children: readonly Descendant[]) => {
-  const known = detachedOrdinals.get(children);
+const countDetached = (
+  children: readonly Descendant[],
+  factsOf: FactsReader
+) => {
+  let byReader = detachedOrdinals.get(children);
+
+  if (!byReader) {
+    byReader = new WeakMap();
+    detachedOrdinals.set(children, byReader);
+  }
+
+  const known = byReader.get(factsOf);
 
   if (known) return known;
 
   const values = new WeakMap<Element, number>();
   const lists = new Map<string, Array<ListEntry<Element>>>();
 
-  detachedOrdinals.set(children, values);
+  byReader.set(factsOf, values);
   visitElements(children, (node) => {
-    const facts = readListFacts(node);
+    const facts = factsOf(node);
 
     if (!facts) return;
 
@@ -598,5 +640,5 @@ export const getDocumentListOrdinal = (
   element: Element
 ): number | undefined =>
   element.listType === 'numbered'
-    ? countDetached(getDocumentRoot(document, root)).get(element)
+    ? countDetached(getDocumentRoot(document, root), readListFacts).get(element)
     : undefined;

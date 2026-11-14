@@ -1538,6 +1538,8 @@
       "targets": [
         "suggestion",
         "mode-toolbar-button",
+        "block-list",
+        "block-list-static",
         "discussion",
         "suggestion-demo",
         "suggestion-format-demo",
@@ -1545,7 +1547,7 @@
         "suggestion-persistence-demo",
         "version-history-demo"
       ],
-      "entries": 6,
+      "entries": 7,
       "diagnostics": []
     },
     {

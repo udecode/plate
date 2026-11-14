@@ -156,21 +156,22 @@ export const ListPlugin = toReactPlugin(BaseListPlugin, {
 
       return (innerProps) => {
         const List = isOrderedList(innerProps.element) ? 'ol' : 'ul';
+        const numbered = listType === ListType.Numbered;
+        const ordinal = numbered
+          ? innerProps.editor
+              .plugin(ListPlugin)
+              .read.ordinal(innerProps.element)
+          : undefined;
 
         return (
           <List
             style={{
               listStyleType:
-                listStyle ??
-                (listType === ListType.Numbered ? 'decimal' : 'disc'),
+                numbered && ordinal === undefined
+                  ? 'none'
+                  : (listStyle ?? (numbered ? 'decimal' : 'disc')),
             }}
-            start={
-              listType === ListType.Numbered
-                ? innerProps.editor
-                    .plugin(ListPlugin)
-                    .read.ordinal(innerProps.element)
-                : undefined
-            }
+            start={ordinal}
           >
             <li>{innerProps.children}</li>
           </List>

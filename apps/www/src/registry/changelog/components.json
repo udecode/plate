@@ -909,6 +909,31 @@
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
     ],
+    "block-list": [
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-10-list-restart-continue",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "block-list-static": [
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-10-fix-static-list-indent",
+      "2026-10-10-list-restart-continue",
+      "2026-10-09-export-static-presentation",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "version-history-demo": [
       "2026-10-13-suggestions-review-tree",
       "2026-10-07-editor-user",
@@ -935,17 +960,6 @@
       "2026-08-24-single-selection-authority",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "block-list-static": [
-      "2026-10-12-fix-list-import-export",
-      "2026-10-10-fix-static-list-indent",
-      "2026-10-10-list-restart-continue",
-      "2026-10-09-export-static-presentation",
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
@@ -1041,18 +1055,6 @@
       "2026-10-11-tabbable-kit-view-caret",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-08-12-canonical-node-props"
-    ],
-    "block-list": [
-      "2026-10-10-list-restart-continue",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
     ],
     "callout": [
       "2026-10-08-emoji-frimousse",

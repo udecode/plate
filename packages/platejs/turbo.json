@@ -7616,6 +7616,7 @@
         "plitejs#source-hash:partition:authored",
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:callout",
         "source-hash:partition:core",
         "source-hash:partition:details",
@@ -7678,6 +7679,7 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:details-react",
         "source-hash:partition:react-core",
