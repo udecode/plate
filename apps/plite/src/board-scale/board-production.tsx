@@ -12,6 +12,8 @@ import RBush from 'rbush';
 import * as React from 'react';
 
 import { BaseBoardPlugin } from '../../../../packages/platejs/src/features/board';
+import { boardMembersOf } from '../../../../packages/platejs/src/features/board/lib/boardMember.internal';
+import { boardShapesOf } from '../../../../packages/platejs/src/features/board/lib/boardShape.internal';
 import {
   BoardArrowPlugin,
   BoardFramePlugin,
@@ -134,7 +136,6 @@ export const createProductionRenderer = (config: ProductionConfig) => {
   } = createInstruments(() => [...handles].some(isMoving));
   let onCameraWrite: (camera: BoardCamera) => void = () => {};
   let windows = 0;
-  const scanned = new WeakSet<object>();
 
   let reindexes = 0;
   const reindexListeners = new Set<() => void>();
@@ -152,39 +153,6 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     reindexes += 1;
     for (const listener of reindexListeners) listener();
   });
-
-  const countScans = (editor: ReturnType<typeof useEditor>) => {
-    if (scanned.has(editor)) return;
-    scanned.add(editor);
-
-    type Lookup = (plugin: unknown) => {
-      read: { shapes: (board: NodeKey) => unknown };
-    };
-    const target = editor as unknown as { plugin: Lookup };
-    const lookup = target.plugin;
-
-    target.plugin = (plugin) => {
-      const handle = lookup.call(editor, plugin);
-
-      if (plugin !== BaseBoardPlugin) return handle;
-
-      return new Proxy(handle, {
-        get: (owner, key) =>
-          key === 'read'
-            ? new Proxy(owner.read, {
-                get: (read, name) =>
-                  name === 'shapes'
-                    ? (board: NodeKey) => {
-                        stats.geometryScans += 1;
-
-                        return read.shapes(board);
-                      }
-                    : Reflect.get(read, name),
-              })
-            : Reflect.get(owner, key),
-      });
-    };
-  };
 
   countCommittedRenders({ shapes: [BoardShape] });
 
@@ -467,10 +435,6 @@ export const createProductionRenderer = (config: ProductionConfig) => {
     });
 
     const keptAlive = useKeptAlive();
-    const mounted = useEditor();
-
-    countScans(editor);
-    countScans(mounted);
 
     const slots = {
       ...props.slots,
@@ -508,6 +472,27 @@ export const createProductionRenderer = (config: ProductionConfig) => {
   function TickingBoard(props: EditorElementProps<typeof BoardPlugin>) {
     'use no memo';
     React.useSyncExternalStore(subscribeTick, readTick, readTick);
+
+    return <Board {...props} />;
+  }
+
+  function ScanningBoard(props: EditorElementProps<typeof BoardPlugin>) {
+    'use no memo';
+    const editor = useModelEditor();
+    const mounted = useEditor();
+
+    React.useLayoutEffect(() => {
+      const board = editor.read((state) => state.key(props.element));
+      const onKey = (event: KeyboardEvent) => {
+        if (event.key.length !== 1) return;
+        plantWork.viewScans += 1;
+        mounted.plugin(BaseBoardPlugin).read.shapes(board);
+      };
+
+      window.addEventListener('keydown', onKey, true);
+
+      return () => window.removeEventListener('keydown', onKey, true);
+    }, [editor, mounted, props.element]);
 
     return <Board {...props} />;
   }
@@ -622,8 +607,24 @@ export const createProductionRenderer = (config: ProductionConfig) => {
   }
 
   const plugins = plateBoardPlugins('composed', [
-    BoardPlugin.configure({
-      component: (plant === 'render' ? TickingBoard : Board) as never,
+    BoardPlugin.extend(({ schema: { properties } }) => ({
+      read: ({ state }) => {
+        const members = boardMembersOf(state, properties);
+
+        return {
+          shapes: (board: NodeKey) => {
+            stats.geometryScans += 1;
+
+            return boardShapesOf(state, members, board);
+          },
+        };
+      },
+    })).configure({
+      component: (plant === 'render'
+        ? TickingBoard
+        : plant === 'view-scan'
+          ? ScanningBoard
+          : Board) as never,
       targetPlugins: [
         BoardNotePlugin,
         BoardGeoPlugin,

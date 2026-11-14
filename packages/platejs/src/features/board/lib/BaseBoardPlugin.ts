@@ -80,6 +80,7 @@ import {
   BOARD_SHAPES_SLOT,
   type BoardPlace,
   type BoardRestackDirection,
+  boardShapesOf,
   boardShapesRootOf,
   type BoardSize,
   isBoardSize,
@@ -347,11 +348,8 @@ export const BaseBoardPlugin = definePlugin('board', {
             });
           },
           /** The members of the board block `board`, in stored order. */
-          shapes: (board: NodeKey): BoardMemberEntry[] => {
-            const root = boardShapesRootOf(state, board);
-
-            return root ? members.membersIn(root) : [];
-          },
+          shapes: (board: NodeKey): BoardMemberEntry[] =>
+            boardShapesOf(state, members, board),
         };
       },
     };

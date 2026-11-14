@@ -82,6 +82,7 @@ export const PLANT_REJECTING_LINES = {
   render: ['N1', 'W1'],
   'shape-render': ['W1'],
   'shape-selector': ['W1'],
+  'view-scan': ['W1'],
   busy: ['N1'],
   slow: ['M0', 'J1'],
   defer: ['N2'],

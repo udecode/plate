@@ -30,6 +30,7 @@ import {
 } from '../../../core';
 import type { TxDeclaredMethod } from '../../../facade';
 import { boardFramesIn, boardLayerOf, placeAmong } from './boardFrame.internal';
+import type { BoardMemberEntry, BoardMembers } from './boardMember.internal';
 
 /** A point on a board, in board coordinates. */
 export type BoardPlace = Readonly<{ x: number; y: number }>;
@@ -90,6 +91,17 @@ export const boardShapesRootOf = (
   return owner && ElementApi.isElement(owner)
     ? reader.schema.getElementContentRoots(owner)[BOARD_SHAPES_SLOT]
     : undefined;
+};
+
+/** The members of the board block `board`, in stored order. */
+export const boardShapesOf = (
+  reader: Parameters<typeof boardShapesRootOf>[0],
+  members: Pick<BoardMembers, 'membersIn'>,
+  board: NodeKey
+): BoardMemberEntry[] => {
+  const root = boardShapesRootOf(reader, board);
+
+  return root ? members.membersIn(root) : [];
 };
 
 /** Add `node` after the last member of the board root `root`. */

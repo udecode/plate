@@ -229,6 +229,7 @@ export const createInstruments = (moving: () => boolean) => {
     skippedUpdates: 0,
     stillMembers: 0,
     unmountedMembers: 0,
+    viewScans: 0,
   };
   const busyWait = (ms: number) => {
     const end = performance.now() + ms;
