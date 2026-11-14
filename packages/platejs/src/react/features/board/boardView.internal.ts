@@ -130,10 +130,10 @@ export type BoardWrite =
       ids: readonly string[];
     }>;
 
-export type BoardInteraction = Readonly<{
-  cancel: () => void;
-  kind: 'drag' | 'draw';
-}>;
+export type BoardInteraction = Readonly<
+  | { cancel: () => void; kind: 'drag' | 'draw' }
+  | { cancel: () => void; follow: () => void; kind: 'connect'; start: string }
+>;
 
 export type BoardViewCore = Readonly<{
   board: NodeKey;
@@ -183,7 +183,10 @@ export type BoardViewCore = Readonly<{
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   undo: () => void;
-  voice: Pick<BoardVoice, 'hold' | 'release' | 'repeatSelection'>;
+  voice: Pick<
+    BoardVoice,
+    'aim' | 'connecting' | 'hold' | 'release' | 'repeatSelection'
+  >;
   writable: () => boolean;
   /**
    * Run `change` as one undo step when the view can write, and return its
@@ -407,6 +410,7 @@ export const createBoardView = (
 
     index.update();
     if (renderedKeyOf !== rendered) refresh();
+    if (interaction?.kind === 'connect') interaction.follow();
     if (index.version() === shownVersion) return;
     shownVersion = index.version();
     for (const listener of shapeListeners) listener();
@@ -554,6 +558,7 @@ export const createBoardView = (
 
   let messages = initialMessages;
   const voice = createBoardVoice({
+    editing: () => editedShape() !== null,
     editor,
     index,
     members: () => {
@@ -691,6 +696,15 @@ export const createBoardView = (
 
   const commit = (change: BoardWrite) => {
     const before = boards.read.shapes(board).length;
+
+    if (
+      change.kind === 'remove' &&
+      interaction?.kind === 'connect' &&
+      change.ids.includes(interaction.start)
+    ) {
+      cancelInteraction();
+    }
+
     const written = write((tx) => {
       const commands = tx.plugin(BaseBoardPlugin);
 
@@ -719,7 +733,14 @@ export const createBoardView = (
   ) => {
     if (!writable()) return false;
 
-    const id = write(insert);
+    const id = write((tx) => {
+      const written = insert(tx);
+      const holder = written && tx.unique.holder('shapeId', written);
+
+      if (holder) setShapeSelection(tx, [holder.key]);
+
+      return written;
+    });
     const inserted = id && boards.read.shape(id);
 
     if (!inserted) return false;
@@ -922,7 +943,10 @@ export const createBoardView = (
     selectedShapes,
     setCamera,
     setTool: (tool) => {
-      if (interaction?.kind === 'draw' && tool !== state.tool) {
+      if (
+        (interaction?.kind === 'connect' || interaction?.kind === 'draw') &&
+        tool !== state.tool
+      ) {
         cancelInteraction();
       }
       setState({ tool });

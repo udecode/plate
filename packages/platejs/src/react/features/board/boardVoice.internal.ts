@@ -45,6 +45,21 @@ export type BoardShapeDescription =
  */
 export type BoardMessages = Readonly<{
   /**
+   * Called with `shape` and its 1-based place in stored order among the
+   * board's shapes when Tab, Shift+Tab or Mod with an arrow aims a connect at
+   * it, and again when Mod with an arrow finds no shape that way.
+   */
+  aim: (
+    shape: BoardShapeDescription,
+    at: Readonly<{ position: number; total: number }>
+  ) => string;
+  /**
+   * Called when Enter with the arrow tool starts connecting `from`, the one
+   * selected shape, to another shape. Until the connect aims at a shape, Enter
+   * and an aim key that finds no shape call it again.
+   */
+  connecting: (from: BoardShapeDescription) => string;
+  /**
    * The board's accessible name, which its focus target and its shapes'
    * content root carry.
    */
@@ -62,7 +77,11 @@ export type BoardMessages = Readonly<{
     shape: BoardShapeDescription,
     at: Readonly<{ position: number; total: number }>
   ) => string;
-  /** Called when the selection becomes `count` shapes, more than one. */
+  /**
+   * Called when the selection becomes `count` shapes, more than one, and
+   * with 0 when the board says the selection again while no shape is
+   * selected, such as after an Enter that adds nothing.
+   */
   shapes: (count: number) => string;
   /** Called when a tool is picked, by its key or from the toolbar. */
   tool: (tool: BoardTool) => string;
@@ -81,8 +100,9 @@ export type BoardMessages = Readonly<{
 }>;
 
 type BoardUtterance =
+  | Readonly<{ kind: 'aim' | 'connecting'; key: NodeKey }>
+  | Readonly<{ kind: 'quiet' | 'repeatSelection' | 'selection' }>
   | Readonly<{ kind: 'removed'; count: number }>
-  | Readonly<{ kind: 'selection' }>
   | Readonly<{ kind: 'tool'; tool: BoardTool }>
   | Readonly<{ kind: 'zoom'; percent: number }>;
 
@@ -114,6 +134,7 @@ const sameKeys = (a: readonly NodeKey[], b: readonly NodeKey[]) =>
   a.length === b.length && a.every((key, at) => key === b[at]);
 
 export const createBoardVoice = ({
+  editing,
   editor,
   index,
   members,
@@ -121,6 +142,7 @@ export const createBoardVoice = ({
   selectedShapes,
   surface,
 }: Readonly<{
+  editing: () => boolean;
   editor: Editor;
   index: BoardIndex;
   members: () => readonly BoardMemberEntry[];
@@ -159,26 +181,41 @@ export const createBoardVoice = ({
     };
   };
 
+  const shapeWords = (
+    key: NodeKey | undefined,
+    say: BoardMessages['shape']
+  ): string => {
+    const entries = members();
+    const at = entries.findIndex((entry) => entry.key === key);
+
+    return at === -1
+      ? ''
+      : say(describe(entries[at], entries), {
+          position: at + 1,
+          total: entries.length,
+        });
+  };
+
   const words = (utterance: BoardUtterance) => {
     const said = messages();
 
+    if (utterance.kind === 'quiet') return '';
     if (utterance.kind === 'removed') return said.removed(utterance.count);
     if (utterance.kind === 'tool') return said.tool(utterance.tool);
     if (utterance.kind === 'zoom') return said.zoom(utterance.percent);
+    if (utterance.kind === 'aim') return shapeWords(utterance.key, said.aim);
+    if (utterance.kind === 'connecting') {
+      return shapeWords(utterance.key, said.connecting);
+    }
 
     const shapes = selectedShapes();
 
     if (shapes.length > 1) return said.shapes(shapes.length);
+    if (shapes.length === 0 && utterance.kind === 'repeatSelection') {
+      return editing() ? '' : said.shapes(0);
+    }
 
-    const entries = members();
-    const at = entries.findIndex(({ key }) => key === shapes[0]?.key);
-
-    return at === -1
-      ? ''
-      : said.shape(describe(entries[at], entries), {
-          position: at + 1,
-          total: entries.length,
-        });
+    return shapeWords(shapes[0]?.key, said.shape);
   };
 
   const flush = () => {
@@ -199,10 +236,14 @@ export const createBoardVoice = ({
 
   const say = (utterance: BoardUtterance) => {
     if (!pending) queueMicrotask(flush);
-    pending = utterance;
+    if (utterance.kind !== 'selection' || pending?.kind !== 'repeatSelection') {
+      pending = utterance;
+    }
   };
 
   return {
+    aim: (key: NodeKey) => say({ key, kind: 'aim' }),
+    connecting: (key: NodeKey) => say({ key, kind: 'connecting' }),
     hold: (owesSelection = false) => {
       owed = owesSelection ? { kind: 'selection' } : pending;
       pending = null;
@@ -211,10 +252,9 @@ export const createBoardVoice = ({
       if (owed) say(owed);
       owed = null;
     },
-    removed: (count: number) => {
-      if (count > 0) say({ count, kind: 'removed' });
-    },
-    repeatSelection: () => say({ kind: 'selection' }),
+    removed: (count: number) =>
+      say(count > 0 ? { count, kind: 'removed' } : { kind: 'quiet' }),
+    repeatSelection: () => say({ kind: 'repeatSelection' }),
     selectionChanged: () => {
       const next = selectedShapes().map(({ key }) => key);
 

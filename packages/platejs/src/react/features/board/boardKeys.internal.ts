@@ -8,6 +8,7 @@ import type {
   BoardSize,
 } from '../../../features/board/lib';
 import { isImeConfirmKeyEvent } from '../../utils/dispatchPlateShortcut.internal';
+import { attachBoardConnect } from './boardConnect.internal';
 import type { BoardBox, BoardShapeLayout } from './boardIndex.internal';
 import {
   BOARD_PLACE_SIZE,
@@ -80,6 +81,7 @@ const pickKey = (event: KeyboardEvent) =>
 
 export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
+  const connect = attachBoardConnect(host, core);
 
   const inThisBoard = (element: Element) =>
     element.closest('[data-board]') === host;
@@ -112,6 +114,14 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
   const returnToBoard = () => selectEdited() || core.focusBoard();
 
+  const endConnectOnHistoryKey = (event: KeyboardEvent) => {
+    const history = Hotkeys.isUndo(event) || Hotkeys.isRedo(event);
+
+    if (history && connect.active()) core.cancelInteraction();
+
+    return history;
+  };
+
   // Shift+Tab leaves the toolbar here instead of through the browser, because
   // Firefox moves focus before a roving-focus toolbar takes its own container
   // out of the Tab order, and the container sends focus back to the control.
@@ -120,6 +130,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     target: Element,
     bar: HTMLElement
   ) => {
+    if (endConnectOnHistoryKey(event)) return false;
     if (event.key === 'Escape') {
       const popup = target.closest(OPEN_POPUP);
 
@@ -159,9 +170,9 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const historyKey = (event: KeyboardEvent) => {
+    if (!endConnectOnHistoryKey(event)) return false;
     if (Hotkeys.isUndo(event)) core.undo();
-    else if (Hotkeys.isRedo(event)) core.redo();
-    else return false;
+    else core.redo();
 
     return true;
   };
@@ -183,20 +194,36 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return core.leaveBoard(backward);
   };
 
-  const pick = (shapes: readonly BoardShapeLayout[], direction: BoardPlace) => {
+  const pick = (
+    first: BoardShapeLayout | undefined,
+    direction: BoardPlace,
+    layouts: readonly BoardShapeLayout[]
+  ) => {
+    const start = first?.box ?? { height: 0, width: 0, ...core.viewCenter() };
+
+    return (
+      pickInDirection(layouts, start, direction) ??
+      (first
+        ? undefined
+        : (core.shapeAt(start) ?? frontmostAround(layouts, start)))
+    );
+  };
+
+  const pickSelection = (
+    shapes: readonly BoardShapeLayout[],
+    direction: BoardPlace
+  ) => {
     const entries = index.entries();
     const [first] = shapes;
     const own = first && entries.find(({ key }) => key === first.key);
     const frame = own?.kind === 'shape' ? own.frame : undefined;
-    const layouts = entries.flatMap(({ id, key }) =>
-      id === frame ? [] : (index.layout(key) ?? [])
+    const next = pick(
+      first,
+      direction,
+      entries.flatMap(({ id, key }) =>
+        id === frame ? [] : (index.layout(key) ?? [])
+      )
     );
-    const start = first?.box ?? { height: 0, width: 0, ...core.viewCenter() };
-    const next =
-      pickInDirection(layouts, start, direction) ??
-      (first
-        ? undefined
-        : (core.shapeAt(start) ?? frontmostAround(layouts, start)));
 
     if (!next) {
       core.voice.repeatSelection();
@@ -300,6 +327,59 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       return false;
     }
     if (!event.repeat) placeWith(tool);
+
+    return true;
+  };
+
+  const aimInOrder = (backward: boolean) => {
+    const candidates = connect.candidates();
+    const order = new Map(index.entries().map(({ key }, at) => [key, at]));
+    const orderOf = (layout: BoardShapeLayout | undefined) =>
+      (layout && order.get(layout.key)) ?? -1;
+    const at = orderOf(connect.aimFrom());
+    const next = backward
+      ? (candidates.findLast((layout) => orderOf(layout) < at) ??
+        candidates.at(-1))
+      : (candidates.find((layout) => orderOf(layout) > at) ?? candidates[0]);
+
+    if (next) connect.aimAt(next);
+    else connect.sayAim();
+  };
+
+  const connectKey = (
+    event: KeyboardEvent,
+    selected: readonly BoardShapeLayout[]
+  ) => {
+    const arrow = ARROWS[event.key];
+    const enter = event.key === 'Enter' && !event.shiftKey && plainKey(event);
+
+    if (connect.active()) {
+      if (event.key === 'Tab' && plainKey(event)) {
+        aimInOrder(event.shiftKey);
+      } else if (arrow && pickKey(event)) {
+        const next = pick(connect.aimFrom(), arrow, connect.candidates());
+
+        if (next) connect.aimAt(next);
+        else connect.sayAim();
+      } else if (enter) {
+        if (!event.repeat) connect.finish();
+      } else return false;
+
+      return true;
+    }
+    if (!enter || core.state().tool !== 'arrow' || !core.writable()) {
+      return false;
+    }
+    if (selected.length > 1) {
+      if (!event.repeat) core.voice.repeatSelection();
+
+      return true;
+    }
+
+    const [from] = selected;
+
+    if (!from || from.kind === 'arrow') return false;
+    if (!event.repeat) connect.start(from);
 
     return true;
   };
@@ -419,12 +499,17 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       return event.repeat || focusToolbar();
     }
 
-    if ((onTarget || selected.length > 0) && placeKey(event)) return true;
+    if (
+      (onTarget || selected.length > 0) &&
+      (placeKey(event) || connectKey(event, selected))
+    ) {
+      return true;
+    }
 
     const arrow = ARROWS[event.key];
 
     if ((onTarget || selected.length > 0) && arrow && pickKey(event)) {
-      return pick(selected, arrow);
+      return pickSelection(selected, arrow);
     }
     if ((onTarget || selected.length > 0) && cameraKey(event)) return true;
     if (selected.length > 0) return shapeKey(event, selected);
@@ -462,6 +547,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
   return () => {
     view?.removeEventListener('keydown', onKeyDown, true);
+    connect.detach();
   };
 };
 

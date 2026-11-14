@@ -131,10 +131,15 @@ const nameOf = (shape: BoardShapeDescription): string => {
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another. Shift+Enter reaches the toolbar.',
+  aim: (shape, { position, total }) =>
+    `To ${nameOf(shape)}. ${position} of ${total}`,
+  connecting: (from) =>
+    `Connecting ${nameOf(from)}. Tab picks the other shape, Enter draws the arrow and Escape stops.`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
-  shapes: (count) => `${count} shapes selected`,
+  shapes: (count) =>
+    count === 0 ? 'No shapes selected' : `${count} shapes selected`,
   tool: (tool) => TOOL_NAMES[tool],
   zoom: (percent) => `Zoom ${percent}%`,
   removed: (count) =>
