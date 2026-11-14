@@ -121,7 +121,11 @@ function exampleRoutes(root, items) {
 
 export async function sessionPages(
   root,
-  { betaOnly = BETA_ONLY, stableStatus, twins = STABLE_TWINS }
+  {
+    betaOnly = BETA_ONLY,
+    stableStatus = fetchStableStatus,
+    twins = STABLE_TWINS,
+  } = {}
 ) {
   const registry = await pliteRegistry(root);
   const upstream = new Set(registry.UPSTREAM_PLITE_EXAMPLE_PATHS);
@@ -327,9 +331,7 @@ async function runHealth({ base, engines, only, root }) {
 }
 
 async function printList({ base, root }) {
-  const pages = await sessionPages(root, {
-    stableStatus: fetchStableStatus,
-  });
+  const pages = await sessionPages(root);
   for (const { note, page, reference, tier } of pages) {
     console.log(
       [tier, `${base}${page}`, reference ?? note].filter(Boolean).join('\t')
