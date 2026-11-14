@@ -28,7 +28,7 @@ Without `--list`, the script opens every docs and example route on beta in Chrom
 
 A session is one visit to one page and scope in one browser. An agent runs it first, and a person retests what it finds.
 
-- **The agent pass.** The agent drives the page beside its reference page the way the [playtest](./playtest.md)'s Run steps 2 to 4 drive a feature: every row of the page's scenario catalog in `docs/editor-behavior/scenarios/` when its feature has one, then improvisation with the six moves below, reproducing each find once in a fresh tab before it logs it. It drives the browser the session names. Codex computer use drives desktop Chrome, Safari and Firefox; Claude's built-in browser is Chromium only and suits comparing pixels and paint. For an iPhone session, Claude Code's iOS Simulator tool drives Safari on a simulated iPhone, its Pinyin keyboard included, as [native editor proof](./editor-proof.md) says. The agent types key by key and checks frames as `.agents/pstack/rules/browser.md` says. The round plan sets each page's budget.
+- **The agent pass.** The agent drives the page beside its reference page the way the [playtest](./playtest.md)'s Run steps 2 to 4 drive a feature: every row of the page's scenario catalog in `docs/editor-behavior/scenarios/` when its feature has one, then improvisation with the six moves below, reproducing each find once in a fresh tab before it logs it. It drives the browser the session names. Codex computer use drives desktop Chrome, Safari and Firefox; Claude's built-in browser is Chromium only and suits comparing pixels and paint. For an iPhone session, Claude Code's iOS Simulator tool drives Safari on a simulated iPhone, its Pinyin keyboard included, as [native editor proof](./editor-proof.md) says. The agent types key by key and checks frames as `.agents/pstack/rules/browser.md` says. The round plan sets each page's budget. To run many Chromium sessions at once, [an agent pass](./sweep-pass.md) starts Claude Code subagents and collects their records into one checked `results.json`.
 - **The retest.** A person reruns each find on live beta and marks it a bug, intended design or not reproduced, with the browser and the beta build. A find marked intended design that neither `docs/vision/` nor `docs/editor-behavior/markdown-editing-spec.md` decides goes to triage as a spec question.
 - **The person's own sessions.** A person runs what no agent can drive: checks that need a physical iPhone, OS input methods on a desktop, paste from another app and native drag images. Such a session lasts 8 minutes for a Slate or Plate page and 6 for a New Slate or New Plate page.
 
@@ -55,7 +55,7 @@ Browsers take turns along Chrome, Safari, Firefox, iPhone. In round 1, the first
 
 ## Find notes
 
-A find note is one line, `mm:ss browser: what differed`, written during the session at the recording's timestamp, in the record the round plan names, such as a shared sheet. Each note keeps its clip and, after the retest, its mark.
+A find note is one line, `mm:ss browser: what differed`, written during the session at the recording's timestamp, in the record the round plan names, such as a shared sheet. Each note keeps its clip and, after the retest, its mark. A lane of [an agent pass](./sweep-pass.md) writes each find into its row's record with a clip instead, and the round's record imports them from the pass's `results.json`.
 
 ## Triage a domain
 

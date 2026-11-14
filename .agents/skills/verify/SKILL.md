@@ -1,5 +1,5 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, to prepare a sweep round of beta testing, triage or fix a domain's sweep finds, or decide what follows a round, and to playtest one editor feature.
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, to prepare a sweep round of beta testing, have agents test a list of beta pages in parallel, triage or fix a domain's sweep finds, or decide what follows a round, and to playtest one editor feature.
 argument-hint: '[package | route | cli | collaboration | testing audit | sweep | playtest] <target>'
 name: verify
 metadata:
@@ -251,8 +251,11 @@ clipboard spec below.
 
 Existing repository Playwright specs are executable proof owners. Run them
 through their package runner. Do not build a parallel Puppeteer, raw CDP or
-standalone Playwright driver for interactive QA. Browser emulation does not
-prove raw Android/iOS input.
+standalone Playwright driver for interactive QA. The one exception is
+`tooling/scripts/sweep-clip.mjs`, which an agent pass's lane runs to record a
+find it already made and to check dark mode; a find that shows only in its
+replay stays open for a person. Browser emulation does not prove raw
+Android/iOS input.
 
 Copied UI runs through the React Compiler only in www. Its dev and production
 servers both compile it unless `PLATE_WWW_WEBPACK` is set. Bun specs render it
@@ -394,6 +397,10 @@ domain's finds are triaged into one issue per cause and fixed in one run. Read
 its round plan, running one of its sessions, triaging or fixing a domain's finds, or deciding what follows a
 round. It holds the session, the six moves, the browser rotation, the find
 note, the domain triage, the rechecks and the round loop.
+
+`verify sweep pass <pages or rows file>` has agents test a list of beta pages
+in parallel, such as a round's agent pass or the pages a fix run touched. Read
+[the agent pass](./references/sweep-pass.md) in full before you run one.
 
 ## Playtest
 
