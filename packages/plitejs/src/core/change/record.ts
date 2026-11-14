@@ -187,6 +187,66 @@ export const flipFacts = (facts: ChangeFacts): ChangeFacts =>
         ])
       );
 
+/** @internal */
+export type FactedEdge<T extends JsonEditorValue = JsonEditorValue> = Readonly<{
+  after: T;
+  before: T;
+  change: DocumentChange;
+  facts: ChangeFacts | null;
+}>;
+
+/** @internal */
+export type CarryMap = Readonly<{
+  tokenAt: (token: number) => number | null;
+  gapAt: (position: number, side: -1 | 1) => number | null;
+}>;
+
+/** @internal */
+export const carryMapOf = (
+  facts: ChangeFacts | null,
+  root: string
+): CarryMap | null => {
+  if (facts?.kind !== 'recorded') return null;
+
+  const carries = facts.roots.get(root)?.carries;
+
+  if (!carries?.length) return null;
+  countCoreWork('carryMapsBuilt');
+
+  const ordered = carries.every(
+    ([, from], index) => index === 0 || carries[index - 1][1] < from
+  )
+    ? carries
+    : [...carries].sort((left, right) => left[1] - right[1]);
+  const tokenAt = (token: number) => {
+    let low = 0;
+    let high = ordered.length;
+
+    while (low < high) {
+      const middle = (low + high) >> 1;
+      const [, from, length] = ordered[middle];
+
+      if (from + length <= token) low = middle + 1;
+      else high = middle;
+    }
+
+    const carry = ordered.at(low);
+
+    return carry && carry[1] <= token ? carry[0] + token - carry[1] : null;
+  };
+
+  return {
+    gapAt: (position, side) => {
+      if (side === 1) return tokenAt(position);
+
+      const before = tokenAt(position - 1);
+
+      return before === null ? null : before + 1;
+    },
+    tokenAt,
+  };
+};
+
 type Segment = Readonly<{
   kind: 'carry' | 'heir' | 'kept' | 'merge';
   length: number;

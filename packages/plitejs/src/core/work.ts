@@ -32,6 +32,7 @@ export type CoreWork = {
   carriedSections: number;
   /** Tokens a carried projection read, a letter each. */
   carriedTokens: number;
+  carryMapsBuilt: number;
   clampWrites: number;
   collapsedBoundaryVisits: number;
   composedProjectionSections: number;
@@ -181,6 +182,7 @@ export const coreWork: CoreWork = {
   carriedLines: 0,
   carriedSections: 0,
   carriedTokens: 0,
+  carryMapsBuilt: 0,
   clampWrites: 0,
   collapsedBoundaryVisits: 0,
   composedProjectionSections: 0,

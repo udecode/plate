@@ -1,3 +1,4 @@
+import type { NodeKey } from '../../interfaces/editor';
 import { countCoreWork } from '../work';
 import type { FactedChange } from './cross-rule';
 import {
@@ -22,7 +23,14 @@ import {
   RootChange,
   type SectionData,
 } from './root-change';
-import { type JsonEditorValue, PreparedTokenSlice } from './tokens';
+import {
+  getDocumentSliceNodeKeys,
+  type JsonEditorValue,
+  type JsonToken,
+  PreparedTokenSlice,
+  textToken,
+  tokenLength,
+} from './tokens';
 import type { PropertyModification } from './transform';
 
 /**
@@ -98,6 +106,55 @@ const indexAt = <T extends Readonly<{ length: number }>>(
   }
 
   return -1;
+};
+
+type Range = Readonly<{ from: number; slice: PreparedTokenSlice; to: number }>;
+
+const joinRanges = (ranges: readonly Range[]) => {
+  const tokens: JsonToken[] = [];
+  const nodeKeys = new Map<number, NodeKey>();
+  let text = '';
+  let position = 0;
+
+  for (const { from, slice, to } of ranges) {
+    if (from === to) continue;
+
+    const { offsets, tokens: source } = slice;
+    const sourceKeys = getDocumentSliceNodeKeys(slice);
+    let index = 0;
+
+    for (let high = source.length; index < high;) {
+      const middle = (index + high) >> 1;
+
+      if (offsets[middle] + tokenLength(source[middle]) <= from) {
+        index = middle + 1;
+      } else high = middle;
+    }
+    for (; index < source.length && offsets[index] < to; index += 1) {
+      const token = source[index];
+
+      if (token.kind === 'text') {
+        text += token.text.slice(
+          Math.max(from - offsets[index], 0),
+          to - offsets[index]
+        );
+      } else {
+        const nodeKey = sourceKeys.get(offsets[index]);
+
+        if (nodeKey) nodeKeys.set(position + offsets[index] - from, nodeKey);
+        if (text) tokens.push(textToken(text));
+        text = '';
+        tokens.push(token);
+      }
+    }
+    position += to - from;
+  }
+  if (text) tokens.push(textToken(text));
+  if (tokens.length === 0) return PreparedTokenSlice.empty;
+
+  const joined = PreparedTokenSlice.fromTokens(tokens);
+
+  return nodeKeys.size === 0 ? joined : joined.withNodeKeys(nodeKeys);
 };
 
 const readSkipped = (
@@ -260,7 +317,13 @@ const readSkipped = (
   };
 
   const outputSlice = (from: number, to: number) => {
-    const parts: PreparedTokenSlice[] = [];
+    const ranges: Array<{
+      from: number;
+      slice: PreparedTokenSlice;
+      to: number;
+    }> = [];
+    const baseRuns: Array<{ from: number; ranges: typeof ranges; to: number }> =
+      [];
     let index = indexAt(written, (each) => each.output, from);
 
     for (let at = from; at < to; index += 1) {
@@ -272,21 +335,40 @@ const readSkipped = (
           : written[index];
       const end = Math.min(to, span.output + span.length);
 
-      parts.push(
-        'slice' in span
-          ? span.slice.slice(
-              span.offset + at - span.output,
-              span.offset + end - span.output
-            )
-          : base.slice(
-              span.input + at - span.output,
-              span.input + end - span.output
-            )
-      );
+      if ('slice' in span) {
+        ranges.push({
+          from: span.offset + at - span.output,
+          slice: span.slice,
+          to: span.offset + end - span.output,
+        });
+      } else {
+        const inputAt = span.input + at - span.output;
+        let run = baseRuns.at(-1);
+
+        if (run?.to !== inputAt) {
+          run = { from: inputAt, ranges: [], to: inputAt };
+          baseRuns.push(run);
+        }
+        run.to = inputAt + end - at;
+
+        const range = {
+          from: inputAt - run.from,
+          slice: PreparedTokenSlice.empty,
+          to: run.to - run.from,
+        };
+
+        run.ranges.push(range);
+        ranges.push(range);
+      }
       at = end;
     }
+    for (const run of baseRuns) {
+      const slice = base.slice(run.from, run.to);
 
-    return PreparedTokenSlice.concat(parts);
+      for (const range of run.ranges) range.slice = slice;
+    }
+
+    return joinRanges(ranges);
   };
 
   return {
@@ -694,11 +776,8 @@ const leaveSkipped = ({
       : outside
     ).push(each);
   }
-  const letters: Array<Readonly<{ at: number; slice: PreparedTokenSlice }>> =
-    [];
-  const copyLetters: Array<
-    Readonly<{ at: number; slice: PreparedTokenSlice }>
-  > = [];
+  const edits: Edit[] = [];
+  const copyLetters: Array<Range & Readonly<{ at: number }>> = [];
   let outsideAt = 0;
   let insideAt = 0;
 
@@ -716,40 +795,43 @@ const leaveSkipped = ({
     if (fromInside) insideAt += 1;
     else outsideAt += 1;
     const at = gapOf(each.baseGap);
-    const slice = each.slice.slice(each.offset, each.offset + each.length);
+    const runEnd = each.offset + each.length;
 
-    (moves && at > start && at < end ? copyLetters : letters).push({
-      at,
-      slice,
-    });
+    if (moves && at > start && at < end) {
+      copyLetters.push({
+        at,
+        from: each.offset,
+        slice: each.slice,
+        to: runEnd,
+      });
+    } else {
+      edits.push({
+        from: at,
+        insert: each.slice.slice(each.offset, runEnd),
+        to: at,
+      });
+    }
   }
 
-  const edits: Edit[] = letters.map(({ at, slice }) => ({
-    from: at,
-    insert: slice,
-    to: at,
-  }));
   const carries: Carry[] = [];
   let copyEdit: Edit | null = null;
   const parts: Array<readonly [from: number, to: number]> = [];
 
   if (moves) {
-    const slices: PreparedTokenSlice[] = [];
+    const moved = stepSlice(start, end);
+    const ranges: Range[] = [];
     let at = start;
 
     for (const letter of [
       ...copyLetters,
-      { at: end, slice: PreparedTokenSlice.empty },
+      { at: end, from: 0, slice: PreparedTokenSlice.empty, to: 0 },
     ]) {
-      slices.push(stepSlice(at, letter.at), letter.slice);
+      ranges.push({ from: at - start, slice: moved, to: letter.at - start });
+      ranges.push(letter);
       parts.push([at, letter.at]);
       ({ at } = letter);
     }
-    copyEdit = {
-      from: target,
-      insert: PreparedTokenSlice.concat(slices),
-      to: target,
-    };
+    copyEdit = { from: target, insert: joinRanges(ranges), to: target };
     edits.push({ from: start, to: end }, copyEdit);
   }
   if (edits.length === 0) return null;
@@ -765,7 +847,9 @@ const leaveSkipped = ({
       if (partTo > partFrom) {
         carries.push([output, partFrom, partTo - partFrom]);
       }
-      output += partTo - partFrom + (copyLetters[index]?.slice.length ?? 0);
+      const letter = copyLetters.at(index);
+
+      output += partTo - partFrom + (letter ? letter.to - letter.from : 0);
     });
   }
 

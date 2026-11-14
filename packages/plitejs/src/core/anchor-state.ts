@@ -19,7 +19,8 @@ import {
   setLazyRoot,
 } from './change/lazy-root';
 import { getRangeEndpointAssociations } from './change/range-association';
-import type { JsonNode } from './change/tokens';
+import { type CarryMap, carryMapOf, type FactedEdge } from './change/record';
+import { isElementNode, type JsonNode } from './change/tokens';
 import { reportEditorLifecycleError } from './lifecycle-error';
 import { toPublicRoot } from './public-root';
 import { getValueRecords, withValueRecords } from './record-store';
@@ -59,6 +60,7 @@ export const RECOVERY_AFTER_B_FORWARD = 1 << 11;
 export type AnchorHistoryRecoveryTarget = 'after' | 'before';
 
 export type AnchorHistoryRecovery = Readonly<{
+  restoresOnCommit: boolean;
   data: Int32Array;
   roots: readonly string[];
 }>;
@@ -519,11 +521,13 @@ const withRecoverySide = (flags: number, bit: number, side: -1 | 1) =>
 
 const createAnchorHistoryRecovery = (
   roots: readonly string[],
-  values: ArrayLike<number>
+  values: ArrayLike<number>,
+  restoresOnCommit: boolean
 ): AnchorHistoryRecovery | null =>
   values.length === 0
     ? null
     : Object.freeze({
+        restoresOnCommit,
         data: values instanceof Int32Array ? values : new Int32Array(values),
         roots: Object.freeze([...roots]),
       });
@@ -569,17 +573,21 @@ const mapRecoveryPosition = (
   return change.mapPosition(position, options);
 };
 
-/** Map one private recovery side through the same change as its history base. */
 export const mapAnchorHistoryRecovery = (
   recovery: AnchorHistoryRecovery | null,
   target: AnchorHistoryRecoveryTarget,
-  change: DocumentChange,
-  before: EditorDocumentValue,
-  after: EditorDocumentValue
+  { after, before, change, facts }: FactedEdge<EditorDocumentValue>
 ): AnchorHistoryRecovery | null => {
   if (!recovery || change.empty) return recovery;
 
   const values = new Int32Array(recovery.data);
+  let { restoresOnCommit } = recovery;
+  const carryMaps = new Map<string, CarryMap | null>();
+  const carryMap = (root: string) => {
+    if (!carryMaps.has(root)) carryMaps.set(root, carryMapOf(facts, root));
+
+    return carryMaps.get(root) ?? null;
+  };
   const sourceDocuments = new Map<string, DocumentIndex>();
   const targetDocuments = new Map<string, DocumentIndex>();
   const targetNodes = new Map<
@@ -664,6 +672,62 @@ export const mapAnchorHistoryRecovery = (
 
     return mapped;
   };
+  const carriedPath = (root: string, mode: number, position: number) => {
+    const carry = carryMap(root);
+
+    if (!carry) return null;
+    if (mode === RECOVERY_PATH_MODE_NODE) return carry.tokenAt(position);
+
+    const source = sourceDocument(root);
+    const boundary = source.childBoundaryAt(position);
+    const parent =
+      boundary && boundary.parentPath.length > 0
+        ? carry.tokenAt(source.nodeRange(boundary.parentPath).from)
+        : null;
+    const entry =
+      parent === null ? null : targetDocument(root).nodeStartingAt(parent);
+    const node = entry && targetDocument(root).node(entry.path);
+
+    return boundary &&
+      entry &&
+      node &&
+      isElementNode(node) &&
+      boundary.index <= node.children.length
+      ? targetDocument(root).childPosition(entry.path, boundary.index)
+      : null;
+  };
+  const pathByIdentity = (
+    root: string,
+    mode: number,
+    position: number,
+    association: -1 | 1
+  ) => {
+    const source = sourceDocument(root);
+    const sourceEntry =
+      mode === RECOVERY_PATH_MODE_NODE ? source.nodeStartingAt(position) : null;
+    const sourceBoundary =
+      mode === RECOVERY_PATH_MODE_BOUNDARY
+        ? source.childBoundaryAt(position)
+        : null;
+    const movedEntry = sourceEntry
+      ? targetNodeIndex(root).get(source.node(sourceEntry.path))
+      : sourceBoundary && sourceBoundary.parentPath.length > 0
+        ? targetNodeIndex(root).get(source.node(sourceBoundary.parentPath))
+        : null;
+    const movedPosition =
+      sourceEntry && movedEntry
+        ? movedEntry.from
+        : sourceBoundary && movedEntry
+          ? targetDocument(root).childPosition(
+              movedEntry.path,
+              sourceBoundary.index
+            )
+          : null;
+
+    return (
+      movedPosition ?? mapRecoveryPosition(change, position, association, root)
+    );
+  };
   const firstPosition =
     target === 'before' ? RECOVERY_BEFORE_A : RECOVERY_AFTER_A;
   const secondPosition =
@@ -698,29 +762,11 @@ export const mapAnchorHistoryRecovery = (
       const association =
         recoveryAssociation(flags) === RECOVERY_ASSOCIATION_BACKWARD ? -1 : 1;
       const mode = recoveryPathMode(flags);
-      const source = sourceDocument(root);
-      const sourceEntry =
-        mode === RECOVERY_PATH_MODE_NODE ? source.nodeStartingAt(first) : null;
-      const sourceBoundary =
-        mode === RECOVERY_PATH_MODE_BOUNDARY
-          ? source.childBoundaryAt(first)
-          : null;
-      const movedEntry = sourceEntry
-        ? targetNodeIndex(root).get(source.node(sourceEntry.path))
-        : sourceBoundary && sourceBoundary.parentPath.length > 0
-          ? targetNodeIndex(root).get(source.node(sourceBoundary.parentPath))
-          : null;
-      const movedPosition =
-        sourceEntry && movedEntry
-          ? movedEntry.from
-          : sourceBoundary && movedEntry
-            ? targetDocument(root).childPosition(
-                movedEntry.path,
-                sourceBoundary.index
-              )
-            : null;
+      const carriedPosition = carriedPath(root, mode, first);
       const mapped =
-        movedPosition ?? mapRecoveryPosition(change, first, association, root);
+        carriedPosition ?? pathByIdentity(root, mode, first, association);
+
+      restoresOnCommit ||= carriedPosition !== null;
       const valid =
         mapped !== null &&
         (mode === RECOVERY_PATH_MODE_NODE
@@ -777,8 +823,15 @@ export const mapAnchorHistoryRecovery = (
       );
     }
 
-    const replacement =
+    const carry = carryMap(root);
+    const carriedFirst = carry?.gapAt(first, associations[0]) ?? null;
+    const carriedSecond =
       kind === RECOVERY_KIND_RANGE
+        ? (carry?.gapAt(second, associations[1]) ?? null)
+        : null;
+    const endpointCarried = carriedFirst !== null || carriedSecond !== null;
+    const replacement =
+      kind === RECOVERY_KIND_RANGE && !endpointCarried
         ? mapDocumentRangeReplacement(
             change,
             root,
@@ -788,10 +841,14 @@ export const mapAnchorHistoryRecovery = (
           )
         : null;
     const mappedFirst =
-      replacement?.[0] ?? mapPointPosition(root, first, associations[0]);
+      carriedFirst ??
+      replacement?.[0] ??
+      mapPointPosition(root, first, associations[0]);
     const mappedSecond =
       kind === RECOVERY_KIND_RANGE
-        ? (replacement?.[1] ?? mapPointPosition(root, second, associations[1]))
+        ? (carriedSecond ??
+          replacement?.[1] ??
+          mapPointPosition(root, second, associations[1]))
         : null;
     const firstPoint =
       mappedFirst === null
@@ -822,9 +879,14 @@ export const mapAnchorHistoryRecovery = (
       flags = withRecoverySide(flags, secondSideBit, associations[1]);
     }
     values[offset + RECOVERY_FLAGS] = flags;
+    restoresOnCommit ||= endpointCarried;
   }
 
-  return Object.freeze({ data: values, roots: recovery.roots });
+  return Object.freeze({
+    restoresOnCommit,
+    data: values,
+    roots: recovery.roots,
+  });
 };
 
 /** Merge the earliest before side with the latest after side by runtime ID. */
@@ -926,7 +988,12 @@ export const mergeAnchorHistoryRecovery = (
     );
   }
 
-  return createAnchorHistoryRecovery(roots, data);
+  return createAnchorHistoryRecovery(
+    roots,
+    data,
+    (previous?.restoresOnCommit ?? false) ||
+      (current?.restoresOnCommit ?? false)
+  );
 };
 
 export const consumeAnchorHistoryCapture = (commit: EditorCommit) => {
@@ -1191,7 +1258,9 @@ export const commitAnchorTransaction = (
   ) {
     const { data } = staged.recovery;
     const deferRecovery =
-      !commit.changed.hasAny('structure') && !commit.changed.hasAny('replace');
+      !staged.recovery.restoresOnCommit &&
+      !commit.changed.hasAny('structure') &&
+      !commit.changed.hasAny('replace');
     const restoreMemos = new Map<
       string,
       <T>(position: number, side: -1 | 1, read: () => T) => T
@@ -1351,7 +1420,8 @@ export const commitAnchorTransaction = (
     roots,
     recoveryOffset === recoveryData.length
       ? recoveryData
-      : recoveryData.slice(0, recoveryOffset)
+      : recoveryData.slice(0, recoveryOffset),
+    false
   );
   const anchorCeiling =
     ANCHOR_TRANSACTION_CEILING.get(editor) ??

@@ -1092,18 +1092,15 @@ const createHistoryPlugin = <
       const previousRecovery = mapAnchorHistoryRecovery(
         lastEntry.recovery,
         'after',
-        changes,
-        lastEntry.base,
-        after
+        { after, before: lastEntry.base, change: changes, facts: null }
       );
       const currentRecovery = anchorCapture?.recovery
-        ? mapAnchorHistoryRecovery(
-            anchorCapture.recovery,
-            'before',
-            lastEntry.batch.change,
-            lastEntry.base,
-            lastEntry.batch.change.apply(toChangeValue(lastEntry.base))
-          )
+        ? mapAnchorHistoryRecovery(anchorCapture.recovery, 'before', {
+            after: lastEntry.batch.change.apply(toChangeValue(lastEntry.base)),
+            before: lastEntry.base,
+            change: lastEntry.batch.change,
+            facts: null,
+          })
         : null;
       const mergedRecovery = mergeAnchorHistoryRecovery(
         previousRecovery,

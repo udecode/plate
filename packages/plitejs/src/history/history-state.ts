@@ -855,42 +855,26 @@ const mapHead = <V extends Value>(
     const mappedNextBase = mapped.replay.record().after;
     ({ replay } = mapped);
 
-    recovery = mapAnchorHistoryRecovery(
-      recovery,
-      'after',
-      mapping.change,
-      batchBase,
-      mappedBatchBase
-    );
-    recovery = mapAnchorHistoryRecovery(
-      recovery,
-      'before',
-      mapped.rest,
-      nextBase,
-      mappedNextBase
-    );
+    const batchEdge = {
+      after: mappedBatchBase,
+      before: batchBase,
+      change: mapping.change,
+      facts: mapping.crossing ?? null,
+    };
+    const nextEdge = {
+      after: mappedNextBase,
+      before: nextBase,
+      change: mapped.rest,
+      facts: crossed?.restFacts ?? null,
+    };
+    const sides =
+      replay.direction === 'undo'
+        ? { after: batchEdge, before: nextEdge }
+        : { after: nextEdge, before: batchEdge };
 
-    if (carets) {
-      const batchSide = {
-        after: mappedBatchBase,
-        before: batchBase,
-        change: mapping.change,
-      };
-      const nextSide = {
-        after: mappedNextBase,
-        before: nextBase,
-        change: mapped.rest,
-      };
-
-      carets = mapHistoryCarets(
-        editor,
-        carets,
-        batchValue,
-        replay.direction === 'undo'
-          ? { after: batchSide, before: nextSide }
-          : { after: nextSide, before: batchSide }
-      );
-    }
+    recovery = mapAnchorHistoryRecovery(recovery, 'after', sides.after);
+    recovery = mapAnchorHistoryRecovery(recovery, 'before', sides.before);
+    if (carets) carets = mapHistoryCarets(editor, carets, batchValue, sides);
     const {
       carried: _carried,
       rest: _rest,
@@ -919,17 +903,17 @@ const mapHead = <V extends Value>(
       selectionAfter: mapHistorySelection(
         editor,
         batchValue.selectionAfter,
-        replay.direction === 'undo' ? mapping.change : mapped.rest,
-        replay.direction === 'undo' ? batchBase : nextBase,
-        replay.direction === 'undo' ? mappedBatchBase : mappedNextBase,
+        sides.after.change,
+        sides.after.before,
+        sides.after.after,
         batchValue.selectionAfterRoot ?? MAIN_ROOT_KEY
       ),
       selectionBefore: mapHistorySelection(
         editor,
         batchValue.selectionBefore,
-        replay.direction === 'undo' ? mapped.rest : mapping.change,
-        replay.direction === 'undo' ? nextBase : batchBase,
-        replay.direction === 'undo' ? mappedNextBase : mappedBatchBase,
+        sides.before.change,
+        sides.before.before,
+        sides.before.after,
         batchValue.selectionBeforeRoot ?? MAIN_ROOT_KEY
       ),
     });
@@ -1311,13 +1295,12 @@ const resolveCanonicalTop = <V extends Value>(
     }),
     null,
     head.group,
-    mapAnchorHistoryRecovery(
-      head.recovery,
-      undo ? 'before' : 'after',
-      repair,
-      target,
-      repaired
-    ),
+    mapAnchorHistoryRecovery(head.recovery, undo ? 'before' : 'after', {
+      after: repaired,
+      before: target,
+      change: repair,
+      facts: null,
+    }),
     head.anchorCeiling,
     head.identity,
     head.carets &&
