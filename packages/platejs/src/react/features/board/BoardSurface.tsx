@@ -49,10 +49,15 @@ export type {
  * shapes focuses the toolbar's first enabled control and keeps the selection,
  * and Escape on a toolbar control outside an open popup, or a Shift+Tab that
  * leaves the toolbar, returns focus to the focus target. The toolbar's
- * controls keep every other key. `messages` holds every word the board says,
- * and the view whose surface holds focus says one message per action into the
- * editor's status region. `height` sets this view's height and defaults to
- * the board's stored `height`; it never changes the document.
+ * controls keep every other key. On the focus target or selected shapes, `=`
+ * or `+` and `-` zoom to the next of 10, 25, 50, 100, 200, 400 and 800
+ * percent around the view's center, Shift+0 resets to full size, Shift+1
+ * fits every shape, and PageUp and PageDown pan by 80 percent of the view,
+ * sideways with Shift.
+ * `messages` holds every word the board says, and the view whose surface
+ * holds focus says one message per action into the editor's status region.
+ * `height` sets this view's height and defaults to the board's stored
+ * `height`; it never changes the document.
  */
 export function BoardSurface({
   height,

@@ -84,7 +84,7 @@ export type BoardViewState = Readonly<{
 }>;
 
 export type BoardViewActions = Readonly<{
-  /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. */
+  /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. A focused board says the new zoom when it changes. */
   fit: () => void;
   /** Move focus to the board and keep its selection, such as after a toolbar menu closes. */
   focus: () => void;
@@ -117,6 +117,7 @@ export type BoardViewCore = Readonly<{
   edit: (key: NodeKey) => void;
   editedShape: () => BoardShapeLayout | null;
   editor: Editor;
+  fit: () => void;
   focusBoard: () => boolean;
   focusTarget: React.RefObject<HTMLDivElement | null>;
   inView: (layout: BoardShapeLayout) => boolean;
@@ -131,6 +132,7 @@ export type BoardViewCore = Readonly<{
   leaveBoard: (backward: boolean) => boolean;
   measure: () => void;
   mounted: Editor;
+  pan: (viewFraction: BoardPlace) => void;
   paste: (data: DataTransfer) => boolean;
   redo: () => void;
   reveal: (path: readonly number[]) => boolean;
@@ -151,12 +153,17 @@ export type BoardViewCore = Readonly<{
    */
   write: <T>(change: (tx: PluginTransaction) => T) => T | undefined;
   zoomLayer: () => HTMLElement | null;
+  zoomStep: (direction: -1 | 1) => void;
+  zoomTo: (zoom: number) => void;
 }>;
 
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 8;
+const ZOOM_STEPS = [MIN_ZOOM, 0.25, 0.5, 1, 2, 4, MAX_ZOOM];
 const WHEEL_STEP_ZOOM = 100;
 const FIT_PADDING = 32;
+
+const percentOf = (zoom: number) => Math.round(zoom * 100);
 
 const clampZoom = (zoom: number) =>
   Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
@@ -458,6 +465,15 @@ export const createBoardView = (
     refresh();
   };
 
+  const viewCenter = () => {
+    const { x, y, zoom } = state.camera;
+
+    return {
+      x: x + size.width / 2 / zoom,
+      y: y + size.height / 2 / zoom,
+    };
+  };
+
   const selectedKeys = (): ReadonlySet<NodeKey> =>
     editor.read.selection.nodeMode()
       ? new Set(editor.read.selection.nodes().map(([node]) => keyOf(node)))
@@ -486,6 +502,50 @@ export const createBoardView = (
     selectedShapes,
     surface: () => surface,
   });
+
+  const sayZoomFrom = (before: number) => {
+    if (state.camera.zoom !== before) voice.zoom(percentOf(state.camera.zoom));
+  };
+
+  const zoomTo = (zoom: number) => {
+    const before = state.camera.zoom;
+    const center = viewCenter();
+
+    setCamera({
+      x: center.x - size.width / 2 / zoom,
+      y: center.y - size.height / 2 / zoom,
+      zoom,
+    });
+    sayZoomFrom(before);
+  };
+
+  const fit = () => {
+    const boxes = [...index.layouts()].map(({ box }) => box);
+
+    if (boxes.length === 0 || size.width === 0) return;
+
+    const before = state.camera.zoom;
+    const minX = Math.min(...boxes.map(({ x }) => x));
+    const minY = Math.min(...boxes.map(({ y }) => y));
+    const maxX = Math.max(...boxes.map(({ width, x }) => x + width));
+    const maxY = Math.max(...boxes.map(({ height, y }) => y + height));
+    const { bottom, top } = rowsClearOfToolbar();
+    const height = bottom - top;
+    const zoom = clampZoom(
+      Math.min(
+        1,
+        size.width / (maxX - minX + 2 * FIT_PADDING),
+        height / (maxY - minY + 2 * FIT_PADDING)
+      )
+    );
+
+    setCamera({
+      x: (minX + maxX) / 2 - size.width / 2 / zoom,
+      y: (minY + maxY) / 2 - (top + height / 2) / zoom,
+      zoom,
+    });
+    sayZoomFrom(before);
+  };
 
   const editedShape = () => {
     const range = editor.read.selection();
@@ -629,14 +689,7 @@ export const createBoardView = (
       return nodes.length === 1 && keyOf(nodes[0][0]) === board;
     },
     cancelGesture: () => gestures?.cancel() ?? false,
-    viewCenter: () => {
-      const { x, y, zoom } = state.camera;
-
-      return {
-        x: x + size.width / 2 / zoom,
-        y: y + size.height / 2 / zoom,
-      };
-    },
+    viewCenter,
     commit,
     edit: (key) => {
       focusRoot();
@@ -648,6 +701,7 @@ export const createBoardView = (
     },
     editedShape,
     editor,
+    fit,
     focusBoard,
     focusTarget,
     index,
@@ -686,6 +740,15 @@ export const createBoardView = (
     },
     measure,
     mounted,
+    pan: (viewFraction) => {
+      const { camera } = state;
+
+      setCamera({
+        ...camera,
+        x: camera.x + (viewFraction.x * size.width) / camera.zoom,
+        y: camera.y + (viewFraction.y * size.height) / camera.zoom,
+      });
+    },
     paste,
     redo: () => {
       if (writable()) history?.redo();
@@ -712,6 +775,16 @@ export const createBoardView = (
     writable,
     write,
     zoomLayer: () => zoomLayer,
+    zoomStep: (direction) => {
+      const said = percentOf(state.camera.zoom);
+      const next =
+        direction > 0
+          ? ZOOM_STEPS.find((step) => percentOf(step) > said)
+          : ZOOM_STEPS.findLast((step) => percentOf(step) < said);
+
+      if (next !== undefined) zoomTo(next);
+    },
+    zoomTo,
   };
 
   const attach = (node: HTMLElement) => {
@@ -786,31 +859,7 @@ export const createBoardView = (
   refresh();
 
   const actions: BoardViewActions = {
-    fit: () => {
-      const boxes = [...index.layouts()].map(({ box }) => box);
-
-      if (boxes.length === 0 || size.width === 0) return;
-
-      const minX = Math.min(...boxes.map(({ x }) => x));
-      const minY = Math.min(...boxes.map(({ y }) => y));
-      const maxX = Math.max(...boxes.map(({ width, x }) => x + width));
-      const maxY = Math.max(...boxes.map(({ height, y }) => y + height));
-      const { bottom, top } = rowsClearOfToolbar();
-      const height = bottom - top;
-      const zoom = clampZoom(
-        Math.min(
-          1,
-          size.width / (maxX - minX + 2 * FIT_PADDING),
-          height / (maxY - minY + 2 * FIT_PADDING)
-        )
-      );
-
-      setCamera({
-        x: (minX + maxX) / 2 - size.width / 2 / zoom,
-        y: (minY + maxY) / 2 - (top + height / 2) / zoom,
-        zoom,
-      });
-    },
+    fit,
     focus: () => {
       core.focusBoard();
     },

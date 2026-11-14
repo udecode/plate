@@ -25,7 +25,7 @@ import {
   previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
-import type { BoardCamera, BoardViewCore } from './boardView.internal';
+import type { BoardViewCore } from './boardView.internal';
 
 type Corner = 'ne' | 'nw' | 'se' | 'sw';
 
@@ -71,9 +71,7 @@ type Gesture = Readonly<{ pointerId: number }> &
       }
     | {
         kind: 'pan';
-        camera: BoardCamera;
         pointer: BoardPlace;
-        start: BoardPlace;
       }
     | {
         kind: 'resize';
@@ -188,11 +186,9 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const pan = (pointer: BoardPlace, pointerId: number): Gesture => ({
-    camera: core.state().camera,
     kind: 'pan',
     pointer,
     pointerId,
-    start: pointer,
   });
 
   const pick = (keys: readonly NodeKey[]) => {
@@ -618,17 +614,21 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   const owns = (event: PointerEvent) => gesture?.pointerId === event.pointerId;
   const onPointerMove = (event: PointerEvent) => {
     if (!gesture || !owns(event)) return;
+
+    const previous = gesture.pointer;
+
     gesture.pointer = { x: event.clientX, y: event.clientY };
     if (gesture.kind === 'pen') {
       addPenPoint(gesture.points, core.boardPointAt(gesture.pointer), event);
       drawPen(gesture);
     } else if (gesture.kind === 'pan') {
-      const { camera, pointer, start } = gesture;
+      const { camera } = core.state();
+      const { pointer } = gesture;
 
       core.setCamera({
         ...camera,
-        x: camera.x - (pointer.x - start.x) / camera.zoom,
-        y: camera.y - (pointer.y - start.y) / camera.zoom,
+        x: camera.x - (pointer.x - previous.x) / camera.zoom,
+        y: camera.y - (pointer.y - previous.y) / camera.zoom,
       });
     } else {
       follow();

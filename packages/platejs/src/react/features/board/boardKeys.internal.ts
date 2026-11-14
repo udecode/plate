@@ -172,6 +172,25 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
+  // Shift with 0 or 1 types another character on many layouts, such as = for
+  // Shift+0 on a German one, so those two read the physical key. A Swiss
+  // layout types + only with Shift+1, so a + there zooms in.
+  const cameraKey = (event: KeyboardEvent) => {
+    if (!plainKey(event)) return false;
+    if (event.shiftKey && event.code === 'Digit0') core.zoomTo(1);
+    else if (event.shiftKey && event.code === 'Digit1' && event.key !== '+') {
+      core.fit();
+    } else if (event.key === '=' || event.key === '+') core.zoomStep(1);
+    else if (event.key === '-') core.zoomStep(-1);
+    else if (event.key === 'PageDown' || event.key === 'PageUp') {
+      const page = event.key === 'PageDown' ? 0.8 : -0.8;
+
+      core.pan(event.shiftKey ? { x: page, y: 0 } : { x: 0, y: page });
+    } else return false;
+
+    return true;
+  };
+
   const shapeKey = (
     event: KeyboardEvent,
     shapes: readonly BoardShapeLayout[]
@@ -265,6 +284,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     if ((onTarget || selected.length > 0) && arrow && pickKey(event)) {
       return pick(selected, arrow);
     }
+    if ((onTarget || selected.length > 0) && cameraKey(event)) return true;
     if (selected.length > 0) return shapeKey(event, selected);
 
     return onTarget && focusKey(event);

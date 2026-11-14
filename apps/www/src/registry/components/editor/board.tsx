@@ -130,6 +130,7 @@ const boardMessages: BoardMessages = {
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) => `${count} shapes selected`,
   tool: (tool) => TOOL_NAMES[tool],
+  zoom: (percent) => `Zoom ${percent}%`,
   removed: (count) =>
     count === 1 ? 'Shape deleted' : `${count} shapes deleted`,
 };

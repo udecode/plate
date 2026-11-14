@@ -67,6 +67,11 @@ export type BoardMessages = Readonly<{
   /** Called when a tool is picked, by its key or from the toolbar. */
   tool: (tool: BoardTool) => string;
   /**
+   * Called when a zoom key or `fit` changes the view's zoom, with the new zoom
+   * in whole percent. A zoom with the wheel says nothing.
+   */
+  zoom: (percent: number) => string;
+  /**
    * Called when a removal lands, with the number of shapes it took off the
    * board, a removed frame's members included. The selection it clears says
    * nothing.
@@ -77,7 +82,8 @@ export type BoardMessages = Readonly<{
 type BoardUtterance =
   | Readonly<{ kind: 'removed'; count: number }>
   | Readonly<{ kind: 'selection' }>
-  | Readonly<{ kind: 'tool'; tool: BoardTool }>;
+  | Readonly<{ kind: 'tool'; tool: BoardTool }>
+  | Readonly<{ kind: 'zoom'; percent: number }>;
 
 const KINDS: ReadonlyMap<
   string,
@@ -157,6 +163,7 @@ export const createBoardVoice = ({
 
     if (utterance.kind === 'removed') return said.removed(utterance.count);
     if (utterance.kind === 'tool') return said.tool(utterance.tool);
+    if (utterance.kind === 'zoom') return said.zoom(utterance.percent);
 
     const shapes = selectedShapes();
 
@@ -216,6 +223,7 @@ export const createBoardVoice = ({
       say({ kind: 'selection' });
     },
     tool: (tool: BoardTool) => say({ kind: 'tool', tool }),
+    zoom: (percent: number) => say({ kind: 'zoom', percent }),
   };
 };
 
