@@ -91,14 +91,14 @@ export class SyncRoomHost {
   }
 
   async webSocketMessage(socket: RoomSocket, data: ArrayBuffer | string) {
+    if (typeof data !== 'string') return;
+
     const held = this.#held.get(socket);
 
     if (!held) return;
 
     try {
-      await held.connection.receive(
-        typeof data === 'string' ? data : new TextDecoder().decode(data)
-      );
+      await held.connection.receive(data);
     } catch (error) {
       console.error('The sync room failed a turn.', error);
     } finally {

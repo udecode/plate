@@ -1,4 +1,7 @@
-import { DocumentChange } from '../../core/change/document-change';
+import {
+  DocumentChange,
+  type DocumentChangeJson,
+} from '../../core/change/document-change';
 import {
   type SetValued,
   judgeSpan,
@@ -20,9 +23,12 @@ import {
   type SyncServerMessage,
   type SyncSubmit,
   type SyncSubmitRefusal,
+  SYNC_MAX_BEFORE_WELCOME_BYTES,
+  SYNC_MAX_MESSAGE_BYTES,
   SYNC_PROTOCOL,
   digestOf,
   documentOf,
+  measureMessage,
   rebaseOver,
   sameDocument,
   setValuedIn,
@@ -50,6 +56,9 @@ const IDLE_MS = 60_000;
 const CHECKPOINT_EVERY = 256;
 const TAKE_BACK_SCAN = 256;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+const MAX_WAITING = 8;
+const MAX_WAITING_BYTES =
+  SYNC_MAX_MESSAGE_BYTES + SYNC_MAX_BEFORE_WELCOME_BYTES;
 
 const REMOTE = { tags: ['collaboration', 'history-skip'] } as const;
 
@@ -100,6 +109,11 @@ export type SyncServerOptions<
   authored: SyncAuthored;
   /** A fresh headless editor with the schema every tab of the room uses. */
   editor: () => Editor<V, TPlugins>;
+  /**
+   * The most bytes of change JSON the room logs in one entry, at most and by
+   * default `SYNC_MAX_MESSAGE_BYTES`.
+   */
+  maxChangeBytes?: number;
   storage: SyncStorage;
   /**
    * `idle` unloads a room 60 s after its last message. `host` never unloads,
@@ -151,7 +165,8 @@ type Admission =
   | Readonly<{
       headValue: JsonEditorValue;
       kind: 'admitted';
-      published: DocumentChange;
+      published: DocumentChangeJson;
+      text: string;
     }>
   | Readonly<{ kind: 'refused'; reason: SyncSubmitRefusal }>;
 
@@ -200,9 +215,20 @@ export const createSyncServer = <
   authorize,
   authored,
   editor: createRoomEditor,
+  maxChangeBytes = SYNC_MAX_MESSAGE_BYTES,
   storage,
   unload: unloadAfter = 'idle',
 }: SyncServerOptions<V, TPlugins>) => {
+  if (
+    !Number.isSafeInteger(maxChangeBytes) ||
+    maxChangeBytes <= 0 ||
+    maxChangeBytes > SYNC_MAX_MESSAGE_BYTES
+  ) {
+    throw new RangeError(
+      `maxChangeBytes must be a whole number from 1 to ${SYNC_MAX_MESSAGE_BYTES}.`
+    );
+  }
+
   const slots = new Map<string, Slot>();
 
   const load = async (name: string): Promise<LoadedRoom> => {
@@ -500,7 +526,16 @@ export const createSyncServer = <
       return { kind: 'refused', reason: 'normalized' };
     }
 
-    return { headValue, kind: 'admitted', published: commit };
+    const json = commit.toJSON();
+    const text = JSON.stringify(json);
+
+    if (measureMessage(text, maxChangeBytes) === null) {
+      renewEditor(room);
+
+      return { kind: 'refused', reason: 'size' };
+    }
+
+    return { headValue, kind: 'admitted', published: json, text };
   };
 
   const settleIn = async (
@@ -662,11 +697,9 @@ export const createSyncServer = <
 
     if (admission.kind === 'refused') return refuse(admission.reason);
 
-    const published = admission.published.toJSON();
+    const { published } = admission;
     const rewritten =
-      JSON.stringify(published) === JSON.stringify(submit.change)
-        ? {}
-        : { published };
+      admission.text === JSON.stringify(submit.change) ? {} : { published };
     const version = room.head + 1;
     const at = Date.now();
 
@@ -777,6 +810,8 @@ export const createSyncServer = <
     let joined = kept?.joined ?? null;
     let grant = kept?.grant ?? null;
     let queue: Promise<unknown> = Promise.resolve();
+    const waiting: Array<Readonly<{ bytes: number; data: string }>> = [];
+    let waitingBytes = 0;
 
     const leaveBroadcast = () => slots.get(request.room)?.peers.delete(peer);
 
@@ -870,8 +905,37 @@ export const createSyncServer = <
     return {
       close,
       receive: (data) => {
-        const message = readClientMessage(data);
-        const run = queue.then(() => (message ? handle(message) : undefined));
+        const bytes = measureMessage(
+          data,
+          peer.welcomedEpoch === null
+            ? SYNC_MAX_BEFORE_WELCOME_BYTES
+            : SYNC_MAX_MESSAGE_BYTES
+        );
+
+        if (bytes === null) {
+          peer.deliver({ reason: 'size', type: 'refused' });
+
+          return Promise.resolve();
+        }
+        if (
+          waiting.length === MAX_WAITING ||
+          waitingBytes + bytes > MAX_WAITING_BYTES ||
+          waiting.some((other) => other.data === data)
+        ) {
+          return Promise.resolve();
+        }
+
+        waiting.push({ bytes, data });
+        waitingBytes += bytes;
+
+        const run = queue.then(() => {
+          waiting.shift();
+          waitingBytes -= bytes;
+
+          const message = readClientMessage(data);
+
+          return message ? handle(message) : undefined;
+        });
 
         queue = run.catch(() => {});
 

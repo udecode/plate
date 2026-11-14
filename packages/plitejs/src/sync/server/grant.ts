@@ -81,6 +81,8 @@ export type SyncAuthored = Readonly<{
   decidedIn: (document: JsonEditorValue) => readonly string[];
 }>;
 
+const MAX_ACTOR_LENGTH = 256;
+
 export const readSyncGrant = (value: unknown): SyncGrant | null => {
   if (typeof value !== 'object' || value === null) return null;
 
@@ -89,6 +91,7 @@ export const readSyncGrant = (value: unknown): SyncGrant | null => {
   return (access === 'edit' || access === 'suggest') &&
     typeof actor === 'string' &&
     actor.length > 0 &&
+    actor.length <= MAX_ACTOR_LENGTH &&
     typeof decide === 'boolean'
     ? Object.freeze({ access, actor, decide })
     : null;

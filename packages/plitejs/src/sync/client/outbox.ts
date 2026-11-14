@@ -24,7 +24,8 @@ export type KeptReason =
     }>
   | Readonly<{ kind: 'conflict' }>
   | Readonly<{ kind: 'expired' }>
-  | Readonly<{ kind: 'refused'; reason: string }>;
+  | Readonly<{ kind: 'refused'; reason: string }>
+  | Readonly<{ kind: 'size' }>;
 
 /** The document the reviewer decided on, their change and what landed since. */
 export type DecisionOrigin = Readonly<{

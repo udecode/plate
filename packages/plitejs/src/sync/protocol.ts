@@ -23,6 +23,67 @@ export const SYNC_REBASE = {
   keepEqualInserts: true,
 } as const;
 
+/**
+ * About half the 8 MB a Durable Object's SQLite row holds, so an entry fits
+ * beside its other columns.
+ */
+export const SYNC_MAX_MESSAGE_BYTES = 4 * 1024 * 1024;
+
+export const SYNC_MAX_BEFORE_WELCOME_BYTES = 16 * 1024;
+
+const MAX_NESTING = 256;
+
+const QUOTE = 0x22;
+const BACKSLASH = 0x5c;
+const OPEN_BRACE = 0x7b;
+const OPEN_BRACKET = 0x5b;
+const CLOSE_BRACE = 0x7d;
+const CLOSE_BRACKET = 0x5d;
+
+const encoder = new TextEncoder();
+
+const closingQuote = (text: string, open: number) => {
+  let at = text.indexOf('"', open + 1);
+
+  while (at !== -1) {
+    let slashes = 0;
+
+    while (text.charCodeAt(at - 1 - slashes) === BACKSLASH) slashes += 1;
+    if (slashes % 2 === 0) return at;
+    at = text.indexOf('"', at + 1);
+  }
+
+  return text.length;
+};
+
+const nestingFits = (text: string) => {
+  let depth = 0;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const unit = text.charCodeAt(index);
+
+    if (unit === QUOTE) index = closingQuote(text, index);
+    else if (unit === OPEN_BRACE || unit === OPEN_BRACKET) {
+      depth += 1;
+      if (depth > MAX_NESTING) return false;
+    } else if (unit === CLOSE_BRACE || unit === CLOSE_BRACKET) depth -= 1;
+  }
+
+  return true;
+};
+
+export const measureMessage = (text: string, maxBytes: number) => {
+  if (text.length > maxBytes) return null;
+
+  const { read, written } = encoder.encodeInto(
+    text,
+    // UTF-8 never takes more than 3 bytes per UTF-16 unit.
+    new Uint8Array(Math.min(maxBytes, text.length * 3))
+  );
+
+  return read === text.length && nestingFits(text) ? written : null;
+};
+
 export type SyncEntry = Readonly<{
   change: DocumentChangeJson;
   seq: number;
@@ -52,7 +113,12 @@ export type SyncSubmit = Readonly<{
 
 export type SyncClientMessage = SyncHello | SyncSubmit;
 
-export type SyncJoinRefusal = 'protocol' | 'room' | 'schema' | 'unauthorized';
+export type SyncJoinRefusal =
+  | 'protocol'
+  | 'room'
+  | 'schema'
+  | 'size'
+  | 'unauthorized';
 
 export type SyncSubmitRefusal =
   | 'ahead'
@@ -67,6 +133,7 @@ export type SyncSubmitRefusal =
   | 'reused'
   | 'root-lifecycle'
   | 'schema'
+  | 'size'
   | 'writer';
 
 export type SyncSettled = 'accepted' | 'duplicate' | 'satisfied';

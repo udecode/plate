@@ -5,6 +5,8 @@ import {
 import type { JsonEditorValue } from '../../core/change/tokens';
 import {
   digestOf,
+  measureMessage,
+  SYNC_MAX_MESSAGE_BYTES,
   SYNC_PROTOCOL,
   SYNC_REBASE,
   type SyncEntry,
@@ -237,7 +239,13 @@ export const createWriter = ({
   const release = () => {
     const sent = inFlight();
 
-    if (sent && sent.frame === savedFrame) link?.hold(sent.frame);
+    if (!sent || sent.frame !== savedFrame) return;
+    if (measureMessage(sent.frame, SYNC_MAX_MESSAGE_BYTES) !== null) {
+      link?.hold(sent.frame);
+    } else {
+      keep(sent, { kind: 'size' });
+      changed();
+    }
   };
 
   const stop = (reason: SyncStop) => {
@@ -482,6 +490,8 @@ export const createWriter = ({
         stop({ epoch: receipt.epoch, kind: 'epoch' });
       } else if (receipt.reason === 'ahead' || receipt.reason === 'schema') {
         stop({ kind: receipt.reason });
+      } else if (receipt.reason === 'size') {
+        keep(batch, { kind: 'size' });
       } else {
         keep(batch, { kind: 'refused', reason: receipt.reason });
       }
