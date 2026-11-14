@@ -344,7 +344,11 @@ leaves out each `*.spec.*` file and the other files `.gitprivate` lists. Replay
 those files with `--with <file>` or a second patch from
 `git --git-dir=.git-private --work-tree=. diff`, then check that the run's test
 count includes the new tests. A mutant run on the base copy of a spec passes
-without proving anything.
+without proving anything. `node tooling/scripts/git-private.mjs status` lists
+both halves' changes, and the script runs any other git command on the private
+half. A `git rebase` or `git merge` moves only the public half, so follow it
+with `node tooling/scripts/git-private.mjs sync`, which fetches plate-private
+and merges its `next` into the private branch.
 
 A timing, typing-burst or caret case that fails only on a candidate server
 that has served a long run is not yet a regression. Start a fresh base server
