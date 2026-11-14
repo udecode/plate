@@ -35,7 +35,7 @@ docs:
 - `BoardElement`: renders the board surface and its toolbar.
 - `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
-- `BoardToolbar`: picks the select, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle. Its fill menu colors the selected shapes that take a fill, such as notes and geo shapes, or the next new shape when no such shape is selected. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
+- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle. Its fill menu colors the selected shapes that take a fill, such as notes and geo shapes, or the next new shape when no such shape is selected. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
 
 ### Add kit
 
@@ -58,7 +58,7 @@ const editor = createEditor({
 
 ### Board page
 
-In this example the board is the page's only block, like a whiteboard app. It fills its frame here and the whole window on [its own page](/blocks/board-page-demo). A drag on empty board draws a selection box. Pan with the wheel, or drag with Space held or with the middle button, and zoom with Mod and the wheel.
+In this example the board is the page's only block, like a whiteboard app. It fills its frame here and the whole window on [its own page](/blocks/board-page-demo). A drag on empty board draws a selection box. Pan with the wheel, or drag with the hand, with Space held or with the middle button. Zoom with Mod and the wheel.
 
 <ComponentPreview name="board-page-demo" />
 
@@ -125,7 +125,7 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | Double click, or Enter on a selected note, shape or arrow | Edits its text. |
 | Escape | Climbs from the text to its shape, then to the board. |
 | Shift+Enter on the focused board or its selected shapes | Moves focus to the toolbar. Escape or Shift+Tab moves it back. |
-| `V`, `N`, `R`, `A`, `F`, `P`, `E` | Pick the select, note, shape, arrow, frame, pen and eraser tools. |
+| `V`, `H`, `N`, `R`, `A`, `F`, `P`, `E` | Pick the select, hand, note, shape, arrow, frame, pen and eraser tools. |
 | Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. |
 | `]` and `[` | Bring the selected shapes forward or send them backward one step. |
 | Mod+Shift+Up and Mod+Shift+Down | Bring the selected shapes to the front or send them to the back. |
@@ -139,6 +139,7 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | A drag with Alt held | Copies the dragged shapes. |
 | A click or drag with the eraser | Marks every note, shape, arrow and pen line it passes over, and removes them on release as one undo step. A shape with no fill and no label is marked only where the path passes near its outline, so a pen line inside an empty rectangle goes alone. A frame is never marked; select it and press Delete to remove it. Escape or another tool picked mid-drag removes nothing. |
 | A drag on the empty board with the select tool | Draws a selection box and selects every shape wholly inside it. Shift keeps the shapes already selected. A touch drag pans instead. |
+| A drag with the hand | Pans, from any point and over shapes and the text being edited too. It selects, moves and edits nothing. While the hand is picked, the pointer is an open hand, except over an element with its own cursor, such as a resize handle. |
 | Wheel, or a drag with Space held or with the middle button | Pans, from any point and over shapes too. Mod with the wheel zooms. |
 
 On a read-only board, the keys that change nothing still work: Tab and Shift+Tab, Mod with an arrow, Mod+A, Enter on the board, Escape, Shift+Enter, the tool letters, and the zoom, fit and pan keys. The keys that write do nothing and say nothing. After the last shape, Tab clears the selection and the browser moves focus out of the board.
