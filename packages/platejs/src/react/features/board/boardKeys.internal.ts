@@ -41,6 +41,22 @@ const TOOLBAR_CONTROLS =
 const OPEN_POPUP =
   '[aria-expanded="true"], [popover], [role="dialog"], [role="listbox"], [role="menu"], dialog';
 
+const TEXT_INPUT_TYPES: ReadonlySet<string> = new Set([
+  'email',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'url',
+]);
+
+const isTextField = (target: Element) =>
+  target.localName === 'textarea' ||
+  (target.localName === 'input' &&
+    TEXT_INPUT_TYPES.has((target as HTMLInputElement).type)) ||
+  ('isContentEditable' in target && target.isContentEditable === true);
+
 const plainKey = (event: KeyboardEvent) =>
   !event.altKey && !event.ctrlKey && !event.metaKey;
 
@@ -320,6 +336,21 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   return () => {
     view?.removeEventListener('keydown', onKeyDown, true);
   };
+};
+
+// Outside a text field, Chrome on macOS goes Back on Command with Left and
+// Forward on Command with Right. The toolbar wrapper runs this after the
+// control's own handler, because a control such as a Radix menu trigger, which
+// opens on Mod with Down, skips a key that is already prevented.
+export const keepToolbarArrowFromBrowser = (event: React.KeyboardEvent) => {
+  if (
+    ARROWS[event.key] &&
+    pickKey(event.nativeEvent) &&
+    event.target instanceof Element &&
+    !isTextField(event.target)
+  ) {
+    event.preventDefault();
+  }
 };
 
 export const takeTextTab = (

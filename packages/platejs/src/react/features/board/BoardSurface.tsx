@@ -9,6 +9,7 @@ import {
   useModelEditor,
   useElementSelected,
 } from '../../core';
+import { keepToolbarArrowFromBrowser } from './boardKeys.internal';
 import type { BoardPlugin } from './BoardPlugin';
 import {
   type BoardViewActions,
@@ -145,7 +146,12 @@ export function BoardSurface({
           label={messages.label}
         />
         {toolbar && (
-          <div contentEditable={false} data-board-toolbar="">
+          <div
+            contentEditable={false}
+            data-board-toolbar=""
+            role="presentation"
+            onKeyDown={keepToolbarArrowFromBrowser}
+          >
             {toolbar}
           </div>
         )}
