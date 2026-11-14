@@ -62,13 +62,20 @@ function claudeRun(lines, upTo = lines.length - 1) {
 /** The model and effort a finished `claude -p --session-id <id>` run used. */
 export function claudeSessionRun(sessionId) {
   const projects = join(claudeHome(), 'projects');
-  const path = filesUnder(projects, 1).find((file) => file.endsWith(`/${sessionId}.jsonl`));
+  const path = filesUnder(projects, 1).find((file) => basename(file) === `${sessionId}.jsonl`);
   return path ? claudeRun(tailLines(path)) : null;
 }
 
 const ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/u;
 
+// Windows has no ps that takes -o, so there a command names its runtime by the variable each runtime sets in its shell.
+export const runtimeFromEnv = (env) => (env.CLAUDE_CODE_SESSION_ID ? 'claude' : env.CODEX_THREAD_ID ? 'codex' : null);
+
 function nearestRuntime() {
+  if (process.platform === 'win32') {
+    const name = runtimeFromEnv(process.env);
+    return name && { name, pid: null, shell: null };
+  }
   let pid = process.ppid;
   let shell = null;
   const seen = new Set();
@@ -247,7 +254,7 @@ const ANY_CALL_WAIT_MS = 1000;
 
 function claudeLead(sessionId, command) {
   if (!ID.test(sessionId ?? '')) return { miss: 'CLAUDE_CODE_SESSION_ID holds no session id' };
-  const path = filesUnder(join(claudeHome(), 'projects'), 1).find((file) => file.endsWith(`/${sessionId}.jsonl`));
+  const path = filesUnder(join(claudeHome(), 'projects'), 1).find((file) => basename(file) === `${sessionId}.jsonl`);
   if (!path) return { miss: `no ${sessionId}.jsonl transcript is under ${join(claudeHome(), 'projects')}` };
   const files = [path, ...filesUnder(join(path.slice(0, -'.jsonl'.length), 'subagents'), 0)];
   const parsed = new Map();
