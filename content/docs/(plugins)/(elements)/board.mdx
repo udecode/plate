@@ -35,7 +35,7 @@ docs:
 - `BoardElement`: renders the board surface and its toolbar.
 - `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
-- `BoardToolbar`: picks the tool, and its shape menu picks a rectangle, ellipse, diamond or triangle. Its fill menu colors the selected shapes that take a fill, such as notes and geo shapes, or the next new shape when no such shape is selected. Its fit button brings every shape into view. With a frame selected, it removes the frame and keeps the frame's shapes.
+- `BoardToolbar`: picks the tool, and its shape menu picks a rectangle, ellipse, diamond or triangle. Its fill menu colors the selected shapes that take a fill, such as notes and geo shapes, or the next new shape when no such shape is selected. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
 
 ### Add kit
 
@@ -155,7 +155,7 @@ The board says what happens through the editor's one status region, in the words
 | `shape(shape, { position, total })` | Said when the selection becomes one shape, with its place in stored order, such as `Ship it, Shape. 3 of 5`. |
 | `shapes(count)` | Said when the selection becomes several shapes. |
 | `tool(tool)` | Said when a letter or the toolbar picks a tool. |
-| `zoom(percent)` | Said when a zoom key or `fit` changes the zoom. A wheel zoom says nothing. |
+| `zoom(percent)` | Said when a zoom key, `zoomIn`, `zoomOut`, `resetZoom` or `fit` changes the zoom. A wheel zoom says nothing. |
 | `removed(count)` | Said when a removal lands, with the number of shapes it took off the board, a removed frame's shapes included. |
 
 `shape` gets a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. The copied board passes:
@@ -423,5 +423,5 @@ The shape types: `boardNote`, `boardGeo`, `boardArrow`, `boardFrame` and `boardS
 | `shapes(board)`, `shape(id)`, `arrowEnds(id)`, `slice(ids)` | `BaseBoardPlugin` | Read the shapes of a board, one shape by id in any board, where an arrow draws its ends, and the slice a copy of shapes carries. Call them on `tx.plugin(BaseBoardPlugin)`. |
 | `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. The surface's required `messages` holds every word the board says, as [Screen readers](#screen-readers) lists. Its `height` sets its view's height and defaults to the board's stored `height`. |
 | `BoardMessages`, `BoardShapeDescription` | `platejs/board/react` | The type of `messages`, and the shape that `messages.shape` describes. |
-| `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Read the view's `tool`, `camera` and `nextStyle`, its board's selected shapes as `selectedShapes`, and whether it can write as `writable`; call `setTool`, `setNextStyle`, `fit`, `removeFrame` and `focus`, which moves focus back to the board and keeps its selection, such as after a toolbar menu closes. The next style's `fill` goes to both the next note and the next geo shape. |
+| `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Inside the surface's `toolbar`, read the view's `tool`, `camera` and `nextStyle`, its board's selected shapes as `selectedShapes`, and whether it can write as `writable`. A camera `zoom` of 1 is 100 percent. Call `setTool`, `setNextStyle`, `fit`, `zoomIn`, `zoomOut`, `resetZoom`, `removeFrame` and `focus`. From any zoom, `zoomIn` and `zoomOut` go to the next step the `=` or `+` and `-` keys use, and stop at 800 and 10 percent. `resetZoom` zooms to 100 percent, as Shift+0 does. All three work in a read-only view too. `focus` moves focus back to the board and keeps its selection, such as after a toolbar menu closes. The next style's `fill` goes to both the next note and the next geo shape. |
 | `useArrowPath(element)`, `useStrokePath(element)` | `platejs/board/react` | The drawn path of an arrow or a pen line. |

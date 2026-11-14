@@ -35,7 +35,7 @@ docs:
 - `BoardElement`：渲染白板表面及其工具栏。
 - `BoardPageElement`：渲染填满容器的白板。`BoardPageKit` 用它代替 `BoardElement`。
 - `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
-- `BoardToolbar`：选择工具，图形菜单可选矩形、椭圆、菱形或三角形。填充菜单为选中的可填充图形（例如便签和几何图形）上色；没有选中这类图形时，为下一个新图形设置颜色。适应按钮让所有图形进入视图。选中框架时，可以删除框架并保留其中的图形。
+- `BoardToolbar`：选择工具，图形菜单可选矩形、椭圆、菱形或三角形。填充菜单为选中的可填充图形（例如便签和几何图形）上色；没有选中这类图形时，为下一个新图形设置颜色。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
 
 ### 添加套件
 
@@ -155,7 +155,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | `shape(shape, { position, total })` | 选区变成一个图形时播报，带上它在存储顺序中的位置，例如 `Ship it, Shape. 3 of 5`。 |
 | `shapes(count)` | 选区变成多个图形时播报。 |
 | `tool(tool)` | 用字母键或工具栏选择工具时播报。 |
-| `zoom(percent)` | 缩放键或 `fit` 改变缩放比例时播报。滚轮缩放不播报。 |
+| `zoom(percent)` | 缩放键、`zoomIn`、`zoomOut`、`resetZoom` 或 `fit` 改变缩放比例时播报。滚轮缩放不播报。 |
 | `removed(count)` | 删除完成时播报，带上从白板上移除的图形数，被删除框架中的图形也计算在内。 |
 
 `shape` 收到一个 `BoardShapeDescription`。它的 `kind` 是 `note`、`geo`、`arrow`、`frame`、`stroke`，或者表示应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。复制的白板传入：
@@ -423,5 +423,5 @@ const editor = createEditor({
 | `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置，以及复制图形所携带的 slice。在 `tx.plugin(BaseBoardPlugin)` 上调用。 |
 | `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。 |
 | `BoardMessages`、`BoardShapeDescription` | `platejs/board/react` | `messages` 的类型，以及 `messages.shape` 所描述的图形。 |
-| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 读取视图的 `tool`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `writable` 读取视图能否写入；调用 `setTool`、`setNextStyle`、`fit`、`removeFrame` 和 `focus`，后者把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。下一个样式的 `fill` 同时用于下一个便签和下一个几何图形。 |
+| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `writable` 读取视图能否写入。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setNextStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame` 和 `focus`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。下一个样式的 `fill` 同时用于下一个便签和下一个几何图形。 |
 | `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |
