@@ -35,7 +35,7 @@ docs:
 - `BoardElement`：渲染白板表面及其工具栏。
 - `BoardPageElement`：渲染填满容器的白板。`BoardPageKit` 用它代替 `BoardElement`。
 - `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
-- `BoardToolbar`：选择工具，图形菜单可选矩形、椭圆、菱形或三角形。填充菜单为选中的可填充图形（例如便签和几何图形）上色；没有选中这类图形时，为下一个新图形设置颜色。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
+- `BoardToolbar`：选择选择、便签、图形、箭头、框架、笔或橡皮擦工具，图形菜单可选矩形、椭圆、菱形或三角形。填充菜单为选中的可填充图形（例如便签和几何图形）上色；没有选中这类图形时，为下一个新图形设置颜色。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
 
 ### 添加套件
 
@@ -125,7 +125,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 双击，或在选中的便签、几何图形或箭头上按 Enter | 编辑其文字。 |
 | Escape | 从文字上升到所在图形，再上升到白板。 |
 | 在获得焦点的白板或其选中的图形上按 Shift+Enter | 把焦点移到工具栏。按 Escape 或 Shift+Tab，焦点回到白板。 |
-| `V`、`N`、`R`、`A`、`F`、`P` | 选择选择、便签、图形、箭头、框架和笔工具。 |
+| `V`、`N`、`R`、`A`、`F`、`P`、`E` | 选择选择、便签、图形、箭头、框架、笔和橡皮擦工具。 |
 | 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。 |
 | `]` 和 `[` | 把选中的图形上移或下移一层。 |
 | Mod+Shift+Up 和 Mod+Shift+Down | 把选中的图形置于顶层或底层。 |
@@ -137,6 +137,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | Shift+1 | 让所有图形适配到视图中。 |
 | PageDown 和 PageUp | 向下或向上平移视图的 80%，按住 Shift 时向右或向左平移。 |
 | 按住 Alt 拖动 | 复制被拖动的图形。 |
+| 用橡皮擦点击或拖动 | 标记经过的每个便签、图形、箭头和笔画，松开时作为一个撤销步骤删除它们。没有填充也没有标签的图形，只有路径经过其轮廓附近时才会被标记，所以空矩形里的笔画可以单独擦掉。框架永远不会被标记；要删除框架，请选中它并按 Delete。拖动中按 Escape 或换用其他工具不会删除任何内容。 |
 | 使用选择工具时在白板空白处拖动 | 绘制选择框，并选中完全位于框内的所有图形。按住 Shift 会保留已选中的图形。触摸拖动则会平移。 |
 | 滚轮，或按住 Space 拖动，或用中键拖动 | 从任意位置平移，在图形上方也可以。按住 Mod 滚动滚轮会缩放。 |
 
@@ -421,7 +422,7 @@ const editor = createEditor({
 | `removeFrame(id)` | `BaseBoardPlugin` | 删除框架，图形留在原处。 |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | 把 `slice` 中图形的副本以新 id 粘贴到 `board`，并返回副本的 id。 |
 | `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置，以及复制图形所携带的 slice。在 `tx.plugin(BaseBoardPlugin)` 上调用。 |
-| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。 |
+| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡。 |
 | `BoardMessages`、`BoardShapeDescription` | `platejs/board/react` | `messages` 的类型，以及 `messages.shape` 所描述的图形。 |
 | `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `writable` 读取视图能否写入。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setNextStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame` 和 `focus`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。下一个样式的 `fill` 同时用于下一个便签和下一个几何图形。 |
 | `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |
