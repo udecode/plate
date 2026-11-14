@@ -1,5 +1,4 @@
 import {
-  authoredVeto,
   BaseParagraphPlugin,
   defineInputRule,
   definePlugin,
@@ -1319,11 +1318,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
     },
   }))
   .extend(() => ({
-    contributions: [
-      authoredVeto.of((element, touch) =>
-        element.listType && touch !== 'content' ? 'list' : null
-      ),
-    ],
     readMiddleware: ({ around }) => [
       around(editorReads.slice.landing, ({ editor, input, next, state }) =>
         landListPaste(state, input, next(), {

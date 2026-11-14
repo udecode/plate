@@ -6,7 +6,7 @@ Add `BaseSuggestionPlugin` at `platejs/suggestion` and `SuggestionPlugin`, `useS
 
 Configure each mounted editor's suggestion view with `EditorRoot authored`, while loading saved proposals through the complete document value.
 
-While suggesting, record text typed, deleted or formatted inside a list item, and refuse a change to the list item itself, such as Enter, indenting or joining two items. Inside a table cell, record typing, deleting, Enter, formatting and pasted text, and refuse a change to the table itself, such as adding a row, merging cells or pasting across cells. Refuse every edit inside a code block, formatting included.
+While suggesting, record list edits, such as typing in a list item, Enter, indenting, joining two items or turning a paragraph into a list. Inside a table cell, record typing, deleting, Enter, formatting and pasted text, and refuse a change to the table itself, such as adding a row, merging cells or pasting across cells. Refuse every edit inside a code block, formatting included.
 
 Keep pending suggestions and review controls visible when `SuggestionPlugin` switches subsequent input between suggesting and editing.
 

@@ -145,7 +145,6 @@ const REFUSED: Readonly<Record<string, string>> = {
   'code-block': 'code blocks',
 };
 const REFUSED_STRUCTURE = new Map([
-  ['list', "Suggesting can't change list items yet, only the text in them."],
   [
     'table',
     "Suggesting can't change tables yet, only the text in their cells. Switch to Editing to change them.",

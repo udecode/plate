@@ -327,7 +327,7 @@ const intentionalProductionExtendStageChains = new Map([
         ['formats'],
         ['on', 'read'],
         ['override', 'shortcuts', 'update'],
-        ['commands', 'contributions', 'readMiddleware'],
+        ['commands', 'readMiddleware'],
         ['corrections'],
       ],
     ],
