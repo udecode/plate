@@ -942,12 +942,16 @@ function commitFreshness(tree, record) {
   if (moved === null) {
     return { ...result, reason: `commit ${record.commit} is not reachable` };
   }
+  // A page's own fold rewrites its subject file after review_commit, so
+  // freshness leaves that file out, and with it every later edit to it.
+  const foldTarget = subjectOf(leadScope(record));
   const hit = new Set();
   for (const path of [...moved, ...untrackedFiles(tree.root)]) {
     if (isLaw(path)) {
       result.law.changed.push(path);
       continue;
     }
+    if (path === foldTarget) continue;
     for (const entry of record.entries) {
       if (entry === path || (entry.endsWith('/') && path.startsWith(entry))) {
         hit.add(entry);
