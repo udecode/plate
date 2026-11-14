@@ -1,11 +1,4 @@
-import {
-  definePlugin,
-  editorCommands,
-  NodeApi,
-  PointApi,
-  RangeApi,
-  schema,
-} from 'plitejs';
+import { definePlugin, NodeApi, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
@@ -222,31 +215,6 @@ const table = () =>
         },
       },
     },
-    commands: ({ handle }) => [
-      handle(editorCommands.delete, ({ input, state }) => {
-        const selection = state.selection();
-
-        if (selection && RangeApi.isCollapsed(selection)) {
-          const cell = state.nodes.find({
-            match: (n) => NodeApi.isElement(n) && n.type === 'table-cell',
-          });
-
-          if (cell) {
-            const [, cellPath] = cell;
-            const edge =
-              input.direction === 'backward'
-                ? state.points.start(cellPath)
-                : state.points.end(cellPath);
-
-            if (edge && PointApi.equals(selection.anchor, edge)) {
-              return state.transaction(() => {});
-            }
-          }
-        }
-
-        return false;
-      }),
-    ],
   });
 
 const Element = ({ attributes, children, element }: RenderElementProps) => {

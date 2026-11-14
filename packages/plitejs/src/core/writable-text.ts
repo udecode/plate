@@ -1,11 +1,10 @@
 import type { AnyEditor as Editor } from '../interfaces/editor';
-import { getChildren as editorGetChildren } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import { type Descendant, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { admitsEmptyText } from './content-completion';
-import { getEditorSchema } from './editor-runtime';
+import { getEditorRuntime, getEditorSchema } from './editor-runtime';
 import type { InternalEditorSchemaApi } from './editor-schema';
 import { getCompiledEditorSchemaFromApi } from './editor-schema';
 
@@ -18,10 +17,11 @@ export const isEditablePath = (
   { voids = false } = {}
 ) => {
   const schema = getEditorSchema(editor);
-  let children: readonly Descendant[] = editorGetChildren(editor);
+  let children: Pick<readonly Descendant[], 'at'> =
+    getEditorRuntime(editor).getChildList();
 
   for (const index of path) {
-    const node = children[index];
+    const node = children.at(index);
 
     if (!NodeApi.isElement(node)) return true;
     if (

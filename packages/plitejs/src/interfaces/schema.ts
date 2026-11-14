@@ -445,6 +445,7 @@ export type SchemaElementInput = Readonly<{
   /** Explicit product groups. Structural groups are compiler-derived. */
   groups?: readonly string[];
   inline?: boolean;
+  /** Grid and grid cell roles are always isolating, and refuse `false`. */
   isolating?: boolean;
   markableVoid?: boolean;
   object?: boolean;

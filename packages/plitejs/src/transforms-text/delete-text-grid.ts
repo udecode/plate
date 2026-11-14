@@ -122,6 +122,12 @@ const readLevels = (
   return levels;
 };
 
+export const readGridRole = (editor: Editor, node: unknown) => {
+  const schema = getGridSchema(editor);
+
+  return schema ? getGridRole(schema, node) : null;
+};
+
 export const readGridCell = (editor: Editor, path: Path): Path | null => {
   const schema = getGridSchema(editor);
 

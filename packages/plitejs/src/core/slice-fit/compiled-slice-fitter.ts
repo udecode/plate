@@ -1643,7 +1643,7 @@ export const compileSliceFitter = <V extends Value>(
       const node = getDescendant(rootChildren, path);
 
       if (!node || !ElementApi.isElement(node)) continue;
-      if (getElementBehavior(node).isolating || isGridCell(node)) break;
+      if (getElementBehavior(node).isolating) break;
 
       const range = document.nodeRange(path);
       const startEdge = getTextEdge(node, path, 'start');
@@ -1678,7 +1678,7 @@ export const compileSliceFitter = <V extends Value>(
         const node = getDescendant(rootChildren, path);
 
         if (!node || !ElementApi.isElement(node)) continue;
-        if (getElementBehavior(node).isolating || isGridCell(node)) break;
+        if (getElementBehavior(node).isolating) break;
 
         const range = document.nodeRange(path);
         const endEdge = getTextEdge(node, path, 'end');
@@ -2444,8 +2444,7 @@ export const compileSliceFitter = <V extends Value>(
         if (
           behavior.isolating ||
           behavior.void ||
-          getElementSlicePolicy(parent).preserveContext ||
-          isGridCell(parent)
+          getElementSlicePolicy(parent).preserveContext
         ) {
           break;
         }
@@ -2652,8 +2651,7 @@ export const compileSliceFitter = <V extends Value>(
           return (
             behavior.isolating ||
             behavior.void ||
-            getElementSlicePolicy(node).preserveContext ||
-            isGridCell(node)
+            getElementSlicePolicy(node).preserveContext
           );
         }) + 1;
       const protectedDepth = getProtectedDepth(localStartContext);

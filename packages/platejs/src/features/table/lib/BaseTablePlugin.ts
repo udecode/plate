@@ -2483,15 +2483,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             type: BaseTableCellPlugin,
           });
 
-          if (cellEntry) {
-            const edge = reverse
-              ? state.points.end(cellEntry[1])
-              : state.points.start(cellEntry[1]);
-
-            return edge && PointApi.equals(selection.anchor, edge)
-              ? state.transaction(() => {})
-              : false;
-          }
+          if (cellEntry) return false;
 
           const nextPoint = reverse
             ? state.points.after(selection, { unit: input.unit })

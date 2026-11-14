@@ -36,7 +36,6 @@ import type {
 import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
 import { removeText } from '../transforms-text/delete-text';
-import { shareGridCellOrNone } from '../transforms-text/delete-text-grid';
 import { formatDebugValue } from '../utils/format-debug-value';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { moveNodes } from './move-nodes';
@@ -124,6 +123,39 @@ const crossesIsolatingBoundary = (
       !pathContainsPath(path, prevPath)) ||
     (prevIsolating && !pathContainsPath(prevIsolating[1], path)) ||
     (currentIsolating && !pathContainsPath(currentIsolating[1], prevPath))
+  );
+};
+
+const dissolvesIsolatingDescendant = (
+  editor: Editor,
+  previousNode: Node,
+  current: readonly [Node, Path]
+) => {
+  const [node, path] = current;
+
+  if (!NodeApi.isElement(node) || !NodeApi.isElement(previousNode)) {
+    return false;
+  }
+
+  const schema = getEditorSchema(editor);
+  const [isolated] = getNodes(editor, {
+    at: path,
+    match: (descendant, descendantPath) =>
+      descendantPath.length > path.length &&
+      NodeApi.isElement(descendant) &&
+      schema.isIsolating(descendant),
+    voids: true,
+  });
+
+  return (
+    !!isolated &&
+    !schema.canPlaceAt(
+      previousNode,
+      previousNode.children,
+      node.children,
+      previousNode.children.length,
+      { root: getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY }
+    )
   );
 };
 
@@ -233,9 +265,33 @@ export const mergeNodes = ((
 
     if (
       crossesIsolatingBoundary(editor, prev, current) ||
-      (afterRangeRemoval &&
-        (PathApi.equals(prevPath, path) ||
-          !shareGridCellOrNone(editor, prevPath, path)))
+      (afterRangeRemoval && PathApi.equals(prevPath, path))
+    ) {
+      return;
+    }
+
+    if (
+      !(
+        (NodeApi.isText(node) && NodeApi.isText(previousNode)) ||
+        (NodeApi.isElement(node) && NodeApi.isElement(previousNode))
+      )
+    ) {
+      throw new Error(
+        `Cannot merge the node at path [${path}] with the previous sibling because it is not the same kind: ${formatDebugValue(
+          node
+        )} ${formatDebugValue(previousNode)}`
+      );
+    }
+
+    const removesPrev = editorShouldMergeNodesRemovePrevNode(
+      editor,
+      prev,
+      current
+    );
+
+    if (
+      !removesPrev &&
+      dissolvesIsolatingDescendant(editor, previousNode, current)
     ) {
       return;
     }
@@ -263,24 +319,6 @@ export const mergeNodes = ((
           deletion: 'drop',
         })
       : null;
-    if (
-      !(
-        (NodeApi.isText(node) && NodeApi.isText(previousNode)) ||
-        (NodeApi.isElement(node) && NodeApi.isElement(previousNode))
-      )
-    ) {
-      throw new Error(
-        `Cannot merge the node at path [${path}] with the previous sibling because it is not the same kind: ${formatDebugValue(
-          node
-        )} ${formatDebugValue(previousNode)}`
-      );
-    }
-
-    const removesPrev = editorShouldMergeNodesRemovePrevNode(
-      editor,
-      prev,
-      current
-    );
     refuseVetoedMergeUnwraps(editor, {
       emptyAncestorPath: emptyAncestor?.[1],
       node,

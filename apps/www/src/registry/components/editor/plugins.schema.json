@@ -1880,7 +1880,7 @@
         "behavior": {
           "atom": false,
           "inline": false,
-          "isolating": false,
+          "isolating": true,
           "markableVoid": false,
           "object": false,
           "readOnly": false,
@@ -1937,7 +1937,7 @@
         "behavior": {
           "atom": false,
           "inline": false,
-          "isolating": false,
+          "isolating": true,
           "markableVoid": false,
           "object": false,
           "readOnly": false,
@@ -3858,10 +3858,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:b6ca4ce10fa3eb9e",
+  "fingerprint": "fnv1a64:6989fe11cec4ab0a",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:b6ca4ce10fa3eb9e",
+    "fingerprint": "fnv1a64:6989fe11cec4ab0a",
     "kind": "derived"
   },
   "primaryRoot": {

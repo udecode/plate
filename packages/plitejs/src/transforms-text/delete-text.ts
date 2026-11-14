@@ -14,8 +14,9 @@ import {
   withEditorUpdateRootChildren,
 } from '../core/public-state';
 import { crossesMembers, refuseCrossing } from '../core/set-root';
-import { isWritablePoint } from '../core/writable-text';
+import { isEditablePath, isWritablePoint } from '../core/writable-text';
 import { hasEdgeInReadOnlyInline } from '../editor/element-read-only';
+import { nodes as getNodes } from '../editor/nodes';
 import {
   type Element as EditorElement,
   type Location,
@@ -57,6 +58,8 @@ import {
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 import { mergeNodes, removeNodes } from '../transforms-node';
 import {
+  getEmptyBlockBesideGrid,
+  getGridBesideBlockEdge,
   getEmptyEditableInlinePathAtPoint,
   getPreviousEmptyBlockPathAtBlockStart,
 } from './delete-text-collapsed-path-targets';
@@ -65,6 +68,7 @@ import {
   planGridRemoval,
   planGridSteps,
   readGridCell,
+  readGridRole,
   removeGridSteps,
   shareGridCellOrNone,
 } from './delete-text-grid';
@@ -244,19 +248,91 @@ const getClosestIsolatingAncestor = (
     voids,
   });
 
-const crossesIsolatingBoundary = (
+const clampToIsolationScope = (
   editor: Editor,
-  from: Point,
-  to: Point,
+  at: Point,
+  target: Point,
+  reverse: boolean,
+  voids: boolean
+): Point => {
+  if (PathApi.equals(at.path, target.path)) return target;
+
+  const scope = getClosestIsolatingAncestor(editor, at, voids);
+
+  return scope && !pathContainsPoint(scope[1], target)
+    ? editorPoint(editor, scope[1], { edge: reverse ? 'start' : 'end' })
+    : target;
+};
+
+const isReadOnlyGridPart = (
+  editor: Editor,
+  node: EditorElement,
+  path: Path,
   voids: boolean
 ) => {
-  const fromIsolating = getClosestIsolatingAncestor(editor, from, voids);
-  const toIsolating = getClosestIsolatingAncestor(editor, to, voids);
+  const role = readGridRole(editor, node);
 
   return (
-    (fromIsolating && !pathContainsPoint(fromIsolating[1], to)) ||
-    (toIsolating && !pathContainsPoint(toIsolating[1], from))
+    (role === 'cell' || role === 'row') &&
+    isEditablePath(editor, PathApi.parent(path), { voids })
   );
+};
+
+const stopBeforeEnteredIsolatingNode = (
+  editor: Editor,
+  at: Point,
+  rawReach: Point,
+  reverse: boolean,
+  voids: boolean
+): Point => {
+  const reach = matchPointRootVisibility(rawReach, at);
+
+  if (PathApi.equals(at.path, reach.path)) return reach;
+
+  const schema = getEditorSchema(editor);
+  const [entered] = getNodes(editor, {
+    at: { anchor: at, focus: reach },
+    match: (node, path) =>
+      NodeApi.isElement(node) &&
+      !pathContainsPoint(path, at) &&
+      (isEditablePath(editor, path, { voids })
+        ? schema.isIsolating(node)
+        : isReadOnlyGridPart(editor, node, path, voids)),
+    mode: 'highest',
+    reverse,
+    voids,
+  });
+
+  if (!entered) return reach;
+
+  const [holdsText] = getNodes(editor, {
+    at: entered[1],
+    match: NodeApi.isText,
+    voids: true,
+  });
+
+  if (holdsText) {
+    return (
+      (reverse
+        ? editorAfter(editor, entered[1], { voids: true })
+        : editorBefore(editor, entered[1], { voids: true })) ?? at
+    );
+  }
+
+  const [beside] = getNodes(editor, {
+    at: { anchor: at, focus: reach },
+    match: (node, path) =>
+      NodeApi.isText(node) &&
+      (reverse
+        ? PathApi.isAfter(path, entered[1])
+        : PathApi.isBefore(path, entered[1])),
+    reverse: !reverse,
+    voids,
+  });
+
+  if (!beside) return at;
+
+  return editorPoint(editor, beside[1], { edge: reverse ? 'start' : 'end' });
 };
 
 const resolveMergePoint = (
@@ -319,6 +395,10 @@ const resolveDeleteTarget = (
     const nonEditable = voids ? undefined : getHighestNonEditable(editor, at);
 
     if (nonEditable) {
+      const role = readGridRole(editor, nonEditable[0]);
+
+      if (role === 'cell' || role === 'row') return null;
+
       at = nonEditable[1];
     } else {
       const emptyInlinePath =
@@ -357,6 +437,22 @@ const resolveDeleteTarget = (
         unit,
         voids,
       });
+      const besideGrid =
+        distance > 0 && PointApi.equals(target, at)
+          ? getGridBesideBlockEdge(editor, at, reverse, voids)
+          : null;
+      const emptyBlockBesideGrid =
+        besideGrid && getEmptyBlockBesideGrid(editor, besideGrid);
+
+      if (emptyBlockBesideGrid) {
+        return {
+          kind: 'path',
+          path: emptyBlockBesideGrid.path,
+          fallbackPoint: emptyBlockBesideGrid.landing,
+          initialAt,
+        };
+      }
+
       const targetNonEditable = voids
         ? undefined
         : getHighestNonEditable(editor, target);
@@ -1189,12 +1285,19 @@ const getCollapsedDeleteTarget = (
   }
 ) => {
   const { reverse, distance, unit, voids } = options;
-  const pointTarget = matchPointRootVisibility(
+  const reach = clampToIsolationScope(
+    editor,
+    at,
     reverse
       ? (editorBefore(editor, at, { distance, unit, voids }) ??
           editorPoint(editor, [], { edge: 'start' }))
       : (editorAfter(editor, at, { distance, unit, voids }) ??
           editorPoint(editor, [], { edge: 'end' })),
+    reverse,
+    voids
+  );
+  const pointTarget = matchPointRootVisibility(
+    stopBeforeEnteredIsolatingNode(editor, at, reach, reverse, voids),
     at
   );
 
@@ -1219,7 +1322,7 @@ const getCollapsedDeleteTarget = (
 
   const normalizedOffsetTarget = matchPointRootVisibility(offsetTarget, at);
 
-  if (crossesIsolatingBoundary(editor, at, pointTarget, voids)) {
+  if (PointApi.equals(pointTarget, at)) {
     return at;
   }
 
@@ -1692,6 +1795,30 @@ export const deleteText: TextMutationMethods['delete'] = (
 
     const prepared = prepareAt(editor, options, site.at, false);
 
-    return prepared && applyAt(editor, tx, site, prepared);
+    if (prepared) return applyAt(editor, tx, site, prepared);
+
+    const caret = LocationApi.isPoint(site.at)
+      ? site.at
+      : RangeApi.isRange(site.at) && RangeApi.isCollapsed(site.at)
+        ? site.at.anchor
+        : null;
+    const besideGrid =
+      caret &&
+      options.reverse &&
+      options.at === undefined &&
+      (options.distance ?? 1) > 0
+        ? getGridBesideBlockEdge(editor, caret, true, !!options.voids)
+        : null;
+
+    if (besideGrid) {
+      tx.setSelection(
+        SelectionApi.text({
+          anchor: besideGrid.landing,
+          focus: besideGrid.landing,
+        })
+      );
+    }
+
+    return null;
   });
 };

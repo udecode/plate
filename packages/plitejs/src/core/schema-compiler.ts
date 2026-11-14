@@ -2109,10 +2109,22 @@ const compileElementBehavior = (
     );
   }
 
+  const gridBoundary =
+    input.structure?.kind === 'grid' && input.structure.role !== 'row';
+
+  if (gridBoundary && input.isolating === false) {
+    compileFailure(
+      'invalid-element-behavior',
+      `Schema element at ${source.path} is a grid or grid cell, which is always isolating.`,
+      [source],
+      `${source.path}.isolating`
+    );
+  }
+
   return Object.freeze({
     atom,
     inline,
-    isolating: object || (input.isolating ?? false),
+    isolating: object || gridBoundary || (input.isolating ?? false),
     markableVoid: input.markableVoid ?? voidKind === 'markable-inline',
     object,
     ownsExit: ownsExit || ownedByKind,

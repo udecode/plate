@@ -318,6 +318,7 @@ export const OverridePlugin = definePlugin('override', {}).extend(
                 previous &&
                 ElementApi.isElement(previous[0]) &&
                 !state.schema.isVoid(previous[0]) &&
+                !state.schema.isIsolating(previous[0]) &&
                 previous[0].children.length > 0 &&
                 NodeApi.string(previous[0]).length === 0 &&
                 !shouldRemoveEmptyMergeTarget(previous[0], previous[1])
