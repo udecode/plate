@@ -177,6 +177,46 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 });
 ```
 
+## 在界面中显示快捷键
+
+从 `editor.plugin(plugin).shortcuts` 读取插件的按键，不要再写一遍，这样重新绑定的快捷键会更新标签，删除的快捷键不再显示。`platejs/dom` 中的 `ariaKeyShortcuts` 把按键转换为 `aria-keyshortcuts` 属性的值，例如 `Control+Shift+X`，并且只命名编辑器匹配器在美式键盘布局下能匹配的组合键。
+
+```tsx title="components/bold-button.tsx" showLineNumbers
+'use client';
+
+import { ariaKeyShortcuts, usesAppleDOMHotkeys } from 'platejs/dom';
+import { BoldPlugin, useEditor } from 'platejs/react';
+import * as React from 'react';
+
+export function BoldButton() {
+  const editor = useEditor();
+  const bold = editor.plugin(BoldPlugin);
+  const keys = bold.installed ? bold.shortcuts.toggle?.keys : undefined;
+  const [platform, setPlatform] = React.useState<'apple' | 'other'>();
+
+  React.useEffect(() => {
+    setPlatform(usesAppleDOMHotkeys(document) ? 'apple' : 'other');
+  }, []);
+
+  const shortcuts =
+    keys && platform ? ariaKeyShortcuts(keys, { platform }) : undefined;
+
+  return (
+    <button
+      type="button"
+      aria-keyshortcuts={shortcuts}
+      disabled={!bold.installed}
+      title={shortcuts ? `Bold (${shortcuts})` : 'Bold'}
+      onClick={() => bold.update.toggle()}
+    >
+      B
+    </button>
+  );
+}
+```
+
+只在 `installed` 为 true 时读取快捷键，因为读取编辑器未安装的插件的快捷键会抛出错误。服务端不知道用户的平台，所以标签要等到浏览器中的首次渲染之后才出现。当 `ariaKeyShortcuts` 无法命名任何组合键时返回 `undefined`，例如 `mod+shift+0`，它对应的字符取决于键盘布局。[`MarkToolbarButton`](/docs/components/mark-toolbar-button) 为每个标记按钮完成这些工作，并在 Apple 设备上把按键显示为 `⇧⌘X`。
+
 ## 多个快捷键
 
 一个插件可以声明多个命名快捷键。每个名称应与要调用的方法一致。

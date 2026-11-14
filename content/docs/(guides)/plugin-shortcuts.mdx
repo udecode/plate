@@ -203,6 +203,55 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 
 The `null` value removes `italic.toggle` from the compiled shortcut set.
 
+## Show a shortcut in UI
+
+Read a plugin's keys from `editor.plugin(plugin).shortcuts` instead of writing
+them again, so a rebound shortcut changes its label and a removed one shows
+none. `ariaKeyShortcuts` from `platejs/dom` turns the keys into the value of the
+`aria-keyshortcuts` attribute, such as `Control+Shift+X`, naming only combos
+the editor's matcher matches on a US layout.
+
+```tsx title="components/bold-button.tsx" showLineNumbers
+'use client';
+
+import { ariaKeyShortcuts, usesAppleDOMHotkeys } from 'platejs/dom';
+import { BoldPlugin, useEditor } from 'platejs/react';
+import * as React from 'react';
+
+export function BoldButton() {
+  const editor = useEditor();
+  const bold = editor.plugin(BoldPlugin);
+  const keys = bold.installed ? bold.shortcuts.toggle?.keys : undefined;
+  const [platform, setPlatform] = React.useState<'apple' | 'other'>();
+
+  React.useEffect(() => {
+    setPlatform(usesAppleDOMHotkeys(document) ? 'apple' : 'other');
+  }, []);
+
+  const shortcuts =
+    keys && platform ? ariaKeyShortcuts(keys, { platform }) : undefined;
+
+  return (
+    <button
+      type="button"
+      aria-keyshortcuts={shortcuts}
+      disabled={!bold.installed}
+      title={shortcuts ? `Bold (${shortcuts})` : 'Bold'}
+      onClick={() => bold.update.toggle()}
+    >
+      B
+    </button>
+  );
+}
+```
+
+Read the shortcut only when `installed` is true, because reading the shortcuts
+of a plugin the editor does not have throws. The server has no platform, so the
+label waits for the first render in the browser. `ariaKeyShortcuts` returns
+`undefined` when it can name no combo, such as `mod+shift+0`, whose character
+depends on the keyboard layout. [`MarkToolbarButton`](/docs/components/mark-toolbar-button)
+does this for every mark button and shows the keys as `⇧⌘X` on Apple devices.
+
 ## Multiple shortcuts
 
 A plugin can declare multiple shortcut names. Keep each name aligned with the method it should call.
