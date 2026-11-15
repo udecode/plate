@@ -148,13 +148,13 @@ export type InternalPluginRuntime<V extends Value = Value> = {
     entries: readonly InternalPluginPublicationEntry[],
     options?: PluginReconfigureOptions
   ) => Readonly<{
-    cleanup: () => void;
     commit: () => void;
     configurationChanged: boolean;
     documentChange: DocumentChange;
     finalize: () => void;
     afterPublish: () => void;
     beforePublish: () => void;
+    handUninstalls: (stagedInOrder: readonly StagedPluginInstall[]) => void;
     rollback: () => void;
     schemaContract: () => EditorSchemaContract;
     stage: () => void;
@@ -173,6 +173,11 @@ export type InternalCompiledPluginPublicationEntry = Readonly<{
   sources: readonly PluginReference[];
   /** Optional owner projection for richer package-specific portals. */
   createPortal?: (editor: Editor, descriptor: PluginReference) => unknown;
+}>;
+
+export type StagedPluginInstall = Readonly<{
+  input: PluginInput;
+  onPublished?: (uninstall: () => void) => void;
 }>;
 
 export type InternalPluginPublicationEntry =

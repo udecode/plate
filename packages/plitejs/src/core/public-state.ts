@@ -560,7 +560,7 @@ type TransactionSnapshot = {
       editor?: Editor;
       input: PluginInput;
       migrate?: PluginReconfigureOptions['migrate'];
-      onPublished?: (cleanup: () => void) => void;
+      onPublished?: (uninstall: () => void) => void;
     }>
   >;
   rootIndexes: Record<string, SnapshotIndex>;
@@ -3763,7 +3763,7 @@ export const stagePluginCandidate = (
   editor: Editor,
   key: string,
   input: PluginInput,
-  onPublished?: (cleanup: () => void) => void,
+  onPublished?: (uninstall: () => void) => void,
   pluginEditor?: Editor,
   options: PluginReconfigureOptions = {}
 ) => {
@@ -3780,7 +3780,7 @@ export const stagePluginCandidate = (
     key,
     Object.freeze({
       editor: pluginEditor,
-      input,
+      input: Array.isArray(input) ? Object.freeze(input.slice()) : input,
       migrate: options.migrate,
       onPublished,
     })
@@ -13188,9 +13188,9 @@ export const runEditorTransaction = <R>(
           pluginPublication?.finalize();
           if (pluginPublication) {
             seedUniqueIndex(editor);
-            for (const staged of snapshot.pluginReconfigurations.values()) {
-              staged.onPublished?.(pluginPublication.cleanup);
-            }
+            pluginPublication.handUninstalls([
+              ...snapshot.pluginReconfigurations.values(),
+            ]);
           }
           const afterCommitHandlers =
             snapshot.afterCommitHandlers.length > 0

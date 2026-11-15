@@ -53,6 +53,7 @@ import {
   getEditorRuntimeRoot,
   type InternalCompiledPluginPublicationEntry,
   type InternalPluginPublicationEntry,
+  type StagedPluginInstall,
 } from './editor-runtime';
 import {
   createEditorSchema,
@@ -2490,11 +2491,11 @@ const validatePlugins = <TEditor extends Editor>(
 export type PreparedPluginPublication = Readonly<{
   afterPublish: () => void;
   beforePublish: () => void;
-  cleanup: () => void;
   commit: () => void;
   configurationChanged: boolean;
   documentChange: DocumentChange;
   finalize: () => void;
+  handUninstalls: (stagedInOrder: readonly StagedPluginInstall[]) => void;
   rollback: () => void;
   schemaCompilation: () => PreparedEditorSchemaCompilation;
   schemaContract: () => EditorSchemaContract;
@@ -2528,9 +2529,6 @@ const createNoopPublication = (
   return Object.freeze({
     afterPublish() {},
     beforePublish() {},
-    cleanup() {
-      phase = 'cancelled';
-    },
     commit() {
       if (phase === 'prepared') phase = 'published';
     },
@@ -2539,6 +2537,7 @@ const createNoopPublication = (
     finalize() {
       if (phase === 'published') phase = 'finalized';
     },
+    handUninstalls() {},
     rollback() {
       if (phase === 'prepared' || phase === 'published') phase = 'cancelled';
     },
@@ -2559,6 +2558,96 @@ const createNoopPublication = (
   });
 };
 
+const claimInstallRoots = (
+  input: PluginInput,
+  previousRecords: ReadonlyMap<string, PluginRecord>,
+  nextRecords: ReadonlyMap<string, PluginRecord>,
+  claimed: Set<string>
+) =>
+  normalizePluginInput(input).flatMap((descriptor) => {
+    const { name } = descriptor;
+    const next = nextRecords.get(name);
+
+    if (
+      !next?.explicit ||
+      next.descriptor !== descriptor ||
+      claimed.has(name)
+    ) {
+      return [];
+    }
+    claimed.add(name);
+    const previous = previousRecords.get(name);
+
+    return previous?.explicit && isSameInstalledPlugin(previous, next)
+      ? []
+      : [name];
+  });
+
+const createInstallUninstall = (
+  editor: Editor,
+  rootNames: readonly string[],
+  installedRecords: ReadonlyMap<string, PluginRecord>
+) => {
+  let liveRootNames = rootNames;
+  let running = false;
+
+  return () => {
+    if (
+      liveRootNames.length === 0 ||
+      running ||
+      getEditorLifetime(editor) === 'destroyed'
+    ) {
+      return;
+    }
+    running = true;
+
+    try {
+      const currentState = getPluginState(editor);
+      const isInstalledRecord = (name: string) =>
+        isSameInstalledPlugin(
+          currentState.records.get(name),
+          installedRecords.get(name)
+        );
+      const currentRootNames = liveRootNames.filter(isInstalledRecord);
+      const ownedNames = collectOwnedPluginNames(
+        currentState,
+        currentRootNames
+      );
+      const removableRecords = getInstalledPluginRecords(
+        currentState,
+        [...new Set([...currentRootNames, ...ownedNames])].filter(
+          isInstalledRecord
+        )
+      );
+
+      if (removableRecords.length === 0) {
+        liveRootNames = [];
+        return;
+      }
+
+      const removalInput = removableRecords.map(({ descriptor }) =>
+        canonicalizePlugin({
+          enabled: false,
+          name: descriptor.name,
+        })
+      );
+      const removalKey = `editor.unextend:${(nextDynamicPluginPublication += 1)}`;
+
+      runTrustedUpdate(editor, () => {
+        stagePluginCandidate(editor, removalKey, removalInput, () => {
+          liveRootNames = currentRootNames.filter(
+            (name) =>
+              isInstalledRecord(name) &&
+              currentState.records.get(name)?.explicit
+          );
+        });
+      });
+    } finally {
+      running = false;
+    }
+  };
+};
+
 const prepareRecordPublication = <TEditor extends Editor>(
   editor: TEditor,
   state: PluginState,
@@ -2568,7 +2657,6 @@ const prepareRecordPublication = <TEditor extends Editor>(
   nextOrder: number,
   activatedRecords: readonly PluginRecord[],
   deactivatedRecords: readonly PluginRecord[],
-  cleanupRootNames: readonly string[],
   options: PluginPublicationOptions = {}
 ): PreparedPluginPublication => {
   if (samePluginRecords(previousRecords, nextRecords)) {
@@ -2780,8 +2868,6 @@ const prepareRecordPublication = <TEditor extends Editor>(
     ownsDraftFields = false;
     for (const rollback of appliedDraftFieldDisposals.toReversed()) rollback();
   };
-  let cleanupCalled = false;
-  let cleanupRunning = false;
   let phase: 'cancelled' | 'finalized' | 'prepared' | 'published' = 'prepared';
   let afterPublishCalled = false;
   let beforePublishCalled = false;
@@ -2852,69 +2938,6 @@ const prepareRecordPublication = <TEditor extends Editor>(
         }
       });
     },
-    cleanup() {
-      if (
-        cleanupCalled ||
-        cleanupRunning ||
-        getEditorLifetime(editor) === 'destroyed'
-      ) {
-        return;
-      }
-      cleanupRunning = true;
-
-      try {
-        if (phase !== 'finalized') {
-          rollbackPublication();
-          cleanupCalled = true;
-          return;
-        }
-
-        const currentState = getPluginState(editor);
-        const currentRootNames = cleanupRootNames.filter((name) =>
-          isSameInstalledPlugin(
-            currentState.records.get(name),
-            nextRecords.get(name)
-          )
-        );
-        const ownedNames = collectOwnedPluginNames(
-          currentState,
-          currentRootNames
-        );
-        const affectedNames = [
-          ...new Set([...currentRootNames, ...ownedNames]),
-        ].filter((name) =>
-          isSameInstalledPlugin(
-            currentState.records.get(name),
-            nextRecords.get(name)
-          )
-        );
-        const removableRecords = getInstalledPluginRecords(
-          currentState,
-          affectedNames
-        );
-
-        if (removableRecords.length === 0) {
-          cleanupCalled = true;
-          return;
-        }
-
-        const removalInput = removableRecords.map(({ descriptor }) =>
-          canonicalizePlugin({
-            enabled: false,
-            name: descriptor.name,
-          })
-        );
-        const removalKey = `editor.unextend:${(nextDynamicPluginPublication += 1)}`;
-
-        runTrustedUpdate(editor, () => {
-          stagePluginCandidate(editor, removalKey, removalInput, () => {
-            cleanupCalled = true;
-          });
-        });
-      } finally {
-        cleanupRunning = false;
-      }
-    },
     commit() {
       if (phase !== 'prepared') return;
       if (!staged) {
@@ -2981,6 +3004,25 @@ const prepareRecordPublication = <TEditor extends Editor>(
         }
       });
       phase = 'finalized';
+    },
+    handUninstalls(stagedInOrder: readonly StagedPluginInstall[]) {
+      if (phase !== 'finalized') {
+        throw new Error(
+          'Editor plugin uninstalls exist only after publication.'
+        );
+      }
+      const claimed = new Set<string>();
+
+      for (const { input, onPublished } of stagedInOrder) {
+        const names = claimInstallRoots(
+          input,
+          previousRecords,
+          nextRecords,
+          claimed
+        );
+
+        onPublished?.(createInstallUninstall(editor, names, nextRecords));
+      }
     },
     afterPublish() {
       if (phase !== 'finalized' || afterPublishCalled) return;
@@ -3168,7 +3210,9 @@ export const prepareScopedPluginPublication = <TEditor extends Editor>(
     ) {
       const requiredBy = new Set([...previous.requiredBy, ...entry.requiredBy]);
       const slotOwners = new Set([...previous.slotOwners, ...entry.slotOwners]);
-      const explicit = previous.explicit || entry.explicit;
+      const explicit =
+        (previous.explicit && !disabledNames.has(descriptor.name)) ||
+        entry.explicit;
 
       if (
         explicit === previous.explicit &&
@@ -3287,9 +3331,6 @@ export const prepareScopedPluginPublication = <TEditor extends Editor>(
     nextOrder,
     installedRecords,
     deactivatedRecords,
-    latest.entries
-      .filter((entry) => entry.explicit)
-      .map((entry) => entry.descriptor.name),
     options
   );
 };
