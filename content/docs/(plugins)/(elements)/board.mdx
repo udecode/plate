@@ -17,7 +17,7 @@ docs:
 - Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
 - A camera, a tool and a next style for each mounted view, which the document never stores.
-- Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. A screen reader hears the selected shape, the picked tool, the zoom and each removal, in words your app passes.
+- Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. Enter places a note, shape or frame, and connects two shapes with an arrow. A screen reader hears the selected shape, the picked tool, the zoom, each removal and each step of a connect, in words your app passes.
 - Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
 
 </PackageInfo>
@@ -119,13 +119,16 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | Input | Result |
 | --- | --- |
 | A press on a shape | Selects it. Shift adds it to the selection. |
-| Enter on the focused or selected board | Selects its first shape. |
+| Enter on the selected board, or on the focused board with nothing selected and any tool but the note, shape and frame tools | Selects its first shape. On an empty selected board, it focuses the board, so the tool letters work. |
 | Tab and Shift+Tab | Move between shapes in the order the board stores them, and leave the board after the last one. A shape outside the view comes into it. |
 | Mod with an arrow | Selects the nearest shape in that direction and brings it into view. With nothing selected, it starts from the view's center. With no shape that way, the selection stays and the board says it again. |
 | Double click, or Enter on a selected note, shape or arrow | Edits its text. |
-| Escape | Climbs from the text to its shape, then to the board. |
+| Escape | Ends a drag or a connect in flight and keeps the tool. Otherwise it climbs from the text to its shape. On the focused board or its selected shapes, it then picks the select tool when another tool is picked, or climbs to the board when the select tool is picked. |
 | Shift+Enter on the focused board or its selected shapes | Moves focus to the toolbar. Escape or Shift+Tab moves it back. |
 | `V`, `H`, `N`, `R`, `A`, `F`, `P`, `E` | Pick the select, hand, note, shape, arrow, frame, pen and eraser tools. |
+| Enter with the note or shape tool, on the focused board or its selected shapes | Places a note or shape of the default size 24 px to the right of the selection, or at the view's center with nothing selected. It selects the new shape and picks the select tool, so the next Enter edits its text. When another shape that is not an arrow has its top-left corner where the new shape's top-left corner would go, it tries 24 px down and right, then 48 px, and so on. When no point it tries is free, or a coordinate it would store is not a finite number, Enter places nothing and says the selection again. |
+| Enter with the frame tool, on the focused board or its selected shapes | Places a frame around the selected shapes, padded by 24 px. The frame takes in each shape wholly inside it that no frame holds yet and no suggestion removes. It never takes in an arrow or a frame. With nothing selected, Enter places a frame of the default size at the view's center. When a coordinate the frame would store is not a finite number, or a frame around the selection would take in no shape, Enter places nothing and says the selection again. |
+| Enter with the arrow tool and one shape selected that is not an arrow | Starts connecting that shape. Tab and Shift+Tab move the aim through the other shapes that are not arrows, wrapping at either end, and Mod with an arrow aims at the nearest one that way. Enter draws an arrow bound to the middle of both shapes, selects it and picks the select tool. Escape, a left or middle press on the board, another tool, an undo or redo, removing the shape it started from, the view turning read-only, or focus leaving the board ends the connect without drawing. |
 | Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. |
 | `]` and `[` | Bring the selected shapes forward or send them backward one step. |
 | Mod+Shift+Up and Mod+Shift+Down | Bring the selected shapes to the front or send them to the back. |
@@ -142,7 +145,7 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | A drag with the hand | Pans, from any point and over shapes and the text being edited too. It selects, moves and edits nothing. While the hand is picked, the pointer is an open hand, except over an element with its own cursor, such as a resize handle. |
 | Wheel, or a drag with Space held or with the middle button | Pans, from any point and over shapes too. Mod with the wheel zooms. |
 
-On a read-only board, the keys that change nothing still work: Tab and Shift+Tab, Mod with an arrow, Mod+A, Enter on the board, Escape, Shift+Enter, the tool letters, and the zoom, fit and pan keys. The keys that write do nothing and say nothing. After the last shape, Tab clears the selection and the browser moves focus out of the board.
+On a read-only board, the keys that change nothing still work: Tab and Shift+Tab, Mod with an arrow, Mod+A, Enter on the board, Escape, Shift+Enter, the tool letters, and the zoom, fit and pan keys. The keys that write do nothing and say nothing. With the note, shape, frame or arrow tool, Enter does what it does with the select tool. After the last shape, Tab clears the selection and the browser moves focus out of the board.
 
 Backspace at the start of the block after a board, or Delete at the end of the block before it, selects the board. The next Backspace or Delete removes it with every shape, and one undo puts it back.
 
@@ -154,22 +157,29 @@ The board says what happens through the editor's one status region, in the words
 | --- | --- |
 | `label` | The board's name, on its focus target and on the region of its shapes. |
 | `instructions` | The focus target's description, which a screen reader says when the board takes focus. |
+| `aim(shape, { position, total })` | Said when Tab, Shift+Tab or Mod with an arrow aims a connect at `shape`, with its place in stored order among all shapes, and again when Mod with an arrow finds no shape that way. |
+| `connecting(from)` | Said when Enter with the arrow tool starts connecting `from`, the one selected shape. Until the connect aims at a shape, Enter and an aim key that finds no shape say it again. |
 | `shape(shape, { position, total })` | Said when the selection becomes one shape, with its place in stored order, such as `Ship it, Shape. 3 of 5`. |
-| `shapes(count)` | Said when the selection becomes several shapes. |
+| `shapes(count)` | Said when the selection becomes several shapes, and with 0 when the board says the selection again while no shape is selected, such as after Mod with an arrow on a board with no shapes. |
 | `tool(tool)` | Said when a letter or the toolbar picks a tool. |
 | `zoom(percent)` | Said when a zoom key, `zoomIn`, `zoomOut`, `resetZoom` or `fit` changes the zoom. A wheel zoom says nothing. |
 | `removed(count)` | Said when a removal lands, with the number of shapes it took off the board, a removed frame's shapes included. |
 
-`shape` gets a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. The copied board passes:
+`shape`, `aim` and `connecting` get a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. The copied board passes:
 
 ```tsx
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another. Shift+Enter reaches the toolbar.',
+  aim: (shape, { position, total }) =>
+    `To ${nameOf(shape)}. ${position} of ${total}`,
+  connecting: (from) =>
+    `Connecting ${nameOf(from)}. Tab picks the other shape, Enter draws the arrow and Escape stops.`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
-  shapes: (count) => `${count} shapes selected`,
+  shapes: (count) =>
+    count === 0 ? 'No shapes selected' : `${count} shapes selected`,
   tool: (tool) => TOOL_NAMES[tool],
   zoom: (percent) => `Zoom ${percent}%`,
   removed: (count) =>
@@ -395,8 +405,8 @@ Every other peer joins the new room with the new plugins and schema, and without
 - Markdown keeps the text of each shape in reading order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only the five built-in shape types, to keep a board whole.
 - A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
 - A board inside a note, and rotation, are not supported.
-- A keyboard alone cannot place a shape, draw or bind an arrow, or resize a shape.
-- On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Enter with the caret on the board block, where Mod+A can put it, adds a paragraph after it. Undo brings the board back.
+- A keyboard alone cannot draw an arrow with a free end or with an end off a shape's middle, move an arrow's end to another shape, resize a shape, or add shapes to the selection one by one.
+- On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Undo brings it back. With [exit break](/docs/exit-break) installed, Mod+Enter with the caret on the board, where Mod+A can put it, adds a paragraph after the board, out of sight.
 
 ## Plugins
 
