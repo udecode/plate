@@ -355,6 +355,8 @@ laws stay fixed; changing one requires a new field and an explicit migration.
 Installed code reads final identities from schema handles:
 
 ```ts
+import { schema as generatedSchema } from "./editor.generated";
+
 editor.plugin(HeadingPlugin).schema.type; // 'headingOne'
 generatedSchema.properties.reviewState.key; // 'reviewState'
 ```
@@ -385,10 +387,10 @@ The generated TypeScript module exports the exact `Value` type and static
 schema handles. The generated JSON contract carries the compiled schema
 fingerprint. Neither artifact owns runtime plugin composition:
 
-```tsx title="src/editor/document-editor.tsx"
+```tsx title="src/document-editor.tsx"
 import { createEditor, EditorRoot, useCreateEditor } from "platejs/react";
 
-import { schema as generatedSchema, type Value } from "./plugins.generated";
+import type { Value } from "./editor.generated";
 import { EditorKit, EditorSchema } from "./editor";
 
 export const createDocumentEditor = (initialValue?: Value) =>
@@ -406,8 +408,6 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
     schema: EditorSchema,
     initialValue,
   });
-
-  generatedSchema.properties.reviewState.key;
 
   return (
     <EditorRoot editor={editor}>
@@ -443,10 +443,9 @@ fingerprints, and the structural diff. Add the completed function to
 `EditorMigrations.steps` under the version it produces, and bind the exported
 `from` fingerprint in `sourceFingerprints`.
 
-For offline JSON files, the entry module exports the exact
-`EditorKit`, `EditorSchema`, and `EditorMigrations` names used below. Explicit
-names keep the executable runner deterministic even when the module exports
-other arrays or schema-like objects.
+For offline JSON files, the entry module exports its migrations as
+`EditorMigrations`. The runner reads that one export by name, so other exports
+in the module never change which migrations run.
 
 ```bash
 pnpm exec plate migrate run --entry src/editor.ts --check documents/*.json

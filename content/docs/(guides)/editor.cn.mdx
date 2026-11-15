@@ -331,6 +331,8 @@ property key 和 value law 保持固定；更改它们需要新字段和显式 m
 已安装代码从 schema handle 读取最终 identity：
 
 ```ts
+import { schema as generatedSchema } from "./editor.generated";
+
 editor.plugin(HeadingPlugin).schema.type; // 'headingOne'
 generatedSchema.properties.reviewState.key; // 'reviewState'
 ```
@@ -359,10 +361,10 @@ module，不复制生成的 contract。
 生成的 TypeScript 模块会导出精确的 `Value` 类型和静态 schema handle。
 编译后的 schema 指纹保存在生成的 JSON 合约中。两种产物都不负责运行时插件组合：
 
-```tsx title="src/editor/document-editor.tsx"
+```tsx title="src/document-editor.tsx"
 import { createEditor, EditorRoot, useCreateEditor } from "platejs/react";
 
-import { schema as generatedSchema, type Value } from "./plugins.generated";
+import type { Value } from "./editor.generated";
 import { EditorKit, EditorSchema } from "./editor";
 
 export const createDocumentEditor = (initialValue?: Value) =>
@@ -380,8 +382,6 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
     schema: EditorSchema,
     initialValue,
   });
-
-  generatedSchema.properties.reviewState.key;
 
   return (
     <EditorRoot editor={editor}>
@@ -411,9 +411,8 @@ scaffold 包含带类型的 `FromValue`、`ToValue` 快照、指纹和结构 dif
 加入 `EditorMigrations.steps`，key 是该步骤生成的版本，并把导出的 `from` 指纹绑定到
 `sourceFingerprints`。
 
-离线 JSON 文件的 entry module
-使用下方命令要求的精确导出名：`EditorKit`、`EditorSchema` 和 `EditorMigrations`。即使
-module 还导出其他数组或类似 schema 的对象，显式名称也能让可执行 runner 保持确定性。
+离线 JSON 文件的 entry module 以 `EditorMigrations` 导出迁移。runner 只按这个名称读取
+该导出，所以 module 的其他导出不会改变运行哪些迁移。
 
 ```bash
 pnpm exec plate migrate run --entry src/editor.ts --check documents/*.json
