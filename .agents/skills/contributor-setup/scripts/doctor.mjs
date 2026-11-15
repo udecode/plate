@@ -1,24 +1,20 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import { hookPayload, sessionCheckout } from '../../../pstack/checkout.mjs';
 
 const hook = process.argv.includes('--hook');
-const git = (...args) => {
-  const result = spawnSync('git', args, { encoding: 'utf8' });
-  return result.status === 0 ? result.stdout.trim() : null;
-};
 const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
 
-const root = git('rev-parse', '--show-toplevel');
-if (!root) {
+const checkout = sessionCheckout(hook ? hookPayload().cwd : undefined);
+if (!checkout) {
   if (hook) process.exit(0);
   console.error('Run the doctor from a checkout of the repository.');
   process.exit(2);
 }
-const main = dirname(git('-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'));
+const { main, root } = checkout;
 const settings = readJson(join(root, '.claude/settings.json')) ?? {};
 const pins = Object.entries(settings.enabledPlugins ?? {}).flatMap(([plugin, enabled]) => {
   const marketplace = plugin.split('@')[1];
