@@ -136,8 +136,8 @@ Persist the installed stacks with `History.toJSON(editor)`. Decode them with
 `History.fromJSON(editor, json)`, then install the returned value through
 `tx.history.restore(...)`. Custom standalone effects belong to an installed
 plugin's `effects` resource so their keyed versioned codecs can decode the
-batch. The version 4 and 5 envelopes require the current derived or named
-schema identity and reject `null` or mismatched schema semantics before
+batch. Every envelope, versions 4 to 7, requires the current derived or named
+schema identity and rejects `null` or mismatched schema semantics before
 decoding a batch.
 
 Compatible typing and same-node property updates coalesce from canonical
