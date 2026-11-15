@@ -1,5 +1,5 @@
 import type { Path } from '../../../facade';
-import { PathApi } from '../../../facade';
+import { PathApi, sameResult } from '../../../facade';
 import { useNodeSelector } from '../../plite-react';
 import { useElementStoreContext } from './useElementStore';
 import { useElementStoreSelector } from './useElementStoreSelector.internal';
@@ -22,7 +22,7 @@ export function usePath<T>(
     if (selector) {
       return options?.equalityFn
         ? options.equalityFn(left as T, right as T)
-        : Object.is(left, right);
+        : sameResult(left, right);
     }
 
     return PathApi.equals(left as Path, right as Path);

@@ -20,18 +20,27 @@ export type ReactZustandStoreApi<TState extends object> =
       };
     }>;
 
+const sameStateRoot: (left: unknown, right: unknown) => boolean = Object.is;
+
 export function createZustandStore<TState extends object>(
   initialState: TState,
   options: ZustandStoreOptions = {}
 ): ReactZustandStoreApi<TState> {
   const api = createVanillaZustandStore(initialState, options);
-  const useStore = <TValue = TState>(
-    selector: (state: TState) => TValue = (state) => state as unknown as TValue
-  ) => useZustandSelector(api.store, selector);
+  const useStore = <TValue = TState>(selector?: (state: TState) => TValue) =>
+    useZustandSelector(
+      api.store,
+      selector ?? ((state) => state as unknown as TValue),
+      selector ? undefined : sameStateRoot
+    );
   function useValue(key: 'state'): TState;
   function useValue<TKey extends keyof TState>(key: TKey): TState[TKey];
   function useValue(key: keyof TState | 'state') {
-    return useStore((state) => (key === 'state' ? state : state[key]));
+    return useZustandSelector(
+      api.store,
+      (state) => (key === 'state' ? state : state[key]),
+      key === 'state' ? sameStateRoot : undefined
+    );
   }
 
   return {

@@ -193,6 +193,7 @@ export {
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';
+export { sameResult } from 'plitejs/internal';
 export type {
   EditorDirectUpdate,
   EditorGenericMethod,

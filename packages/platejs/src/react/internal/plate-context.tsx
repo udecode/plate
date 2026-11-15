@@ -121,20 +121,11 @@ function PlateTargetFacts({
   onChange: (snapshot: { target: PlateTarget; facts: PlateViewFacts }) => void;
   target: PlateTarget;
 }) {
-  const facts = useEditorViewState(
-    target.editor,
-    (view) => ({
-      composing: view.isComposing(),
-      focused: view.isFocused(),
-      readOnly: view.isReadOnly(),
-    }),
-    {
-      equalityFn: (a, b) =>
-        a?.composing === b.composing &&
-        a.focused === b.focused &&
-        a.readOnly === b.readOnly,
-    }
-  );
+  const facts = useEditorViewState(target.editor, (view) => ({
+    composing: view.isComposing(),
+    focused: view.isFocused(),
+    readOnly: view.isReadOnly(),
+  }));
   const element = useEditorRootElement(target.editor);
   React.useLayoutEffect(() => {
     // oxlint-disable-next-line react-doctor/no-prop-callback-in-effect -- [P1 local-invariant] Bridge Plite's non-null view selectors into a nullable provider without remounting its editor descendants.

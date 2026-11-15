@@ -27557,7 +27557,7 @@
           "kind": "const",
           "name": "useEditorSelector",
           "runtime": true,
-          "signature": "useEditorSelector: <T>(selector: (editor: Editor, prev?: T) => T, options?: UseEditorSelectorOptions<T>) => T",
+          "signature": "useEditorSelector: <T>(selector: (editor: Editor) => T, options?: UseEditorSelectorOptions<T>) => T",
           "source": null,
           "typeParameters": []
         },

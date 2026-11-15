@@ -9,9 +9,7 @@ type UseElementSelectorOptions<T> = {
   scope?: string;
 };
 
-type ElementSelector<N extends Element, T> = (state: N, prev?: T) => T;
-
-const strictEqual = <T>(a: T, b: T) => a === b;
+type ElementSelector<N extends Element, T> = (state: N) => T;
 
 /** Derive a value from the nearest element payload, skipping path-only updates. */
 export function useElementSelector<T>(
@@ -41,7 +39,11 @@ export function useElementSelector<T>(
   const options = (
     typeof pluginOrSelector === 'function' ? selectorOrOptions : pluginOptions
   ) as UseElementSelectorOptions<T> | undefined;
-  const equalityFn = options?.equalityFn ?? strictEqual<T>;
   const context = useElementStoreContext(plugin?.name ?? options?.scope);
-  return useElementStoreSelector(context, 'element', selector, equalityFn) as T;
+  return useElementStoreSelector(
+    context,
+    'element',
+    selector,
+    options?.equalityFn
+  ) as T;
 }

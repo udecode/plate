@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/with-selector';
 import type { StoreApi } from 'zustand/vanilla';
 
+import { sameResult } from '../../facade';
+
 const subscribeNoop = () => () => {};
 const emptySnapshot = () => null;
 
@@ -22,7 +24,7 @@ export function useZustandSelector<TState, TValue>(
 export function useZustandSelector<TState, TValue>(
   store: StoreApi<TState> | null | undefined,
   selector: (state: TState) => TValue,
-  equalityFn: (left: TValue, right: TValue) => boolean = Object.is
+  equalityFn: (left: TValue, right: TValue) => boolean = sameResult
 ) {
   const select = useCallback(
     (state: TState | null): SelectedStoreValue<TState, TValue> =>

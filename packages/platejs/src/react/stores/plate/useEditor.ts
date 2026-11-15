@@ -99,5 +99,6 @@ export const useEditorState = <T>(
 /** Get the selected root's children. */
 export const useEditorValue = () =>
   useEditorRuntimeState(useEditor(), (state) => state.children(), {
+    equalityFn: Object.is,
     shouldUpdate: childrenChanged,
   });

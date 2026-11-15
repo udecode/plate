@@ -33,17 +33,6 @@ type BlockPlaceholderTarget = Readonly<{
   placeholder: string;
 }>;
 
-const areBlockPlaceholderTargetsEqual = (
-  left: BlockPlaceholderTarget | null,
-  right: BlockPlaceholderTarget | null
-) =>
-  left === right ||
-  (!!left &&
-    !!right &&
-    left.nodeKey === right.nodeKey &&
-    left.placeholder === right.placeholder &&
-    left.className === right.className);
-
 const getBlockPlaceholderTarget = (
   editor: Editor,
   viewEditor: PliteReactEditor,
@@ -127,10 +116,8 @@ export const BlockPlaceholderPlugin = definePlugin(PLUGINS.blockPlaceholder, {
         focused: useEditorFocused(),
         readOnly: useEditorReadOnly(),
       };
-      const target = useEditorRuntimeState(
-        viewEditor,
-        () => getBlockPlaceholderTarget(editor, viewEditor, pluginState, view),
-        { equalityFn: areBlockPlaceholderTargetsEqual }
+      const target = useEditorRuntimeState(viewEditor, () =>
+        getBlockPlaceholderTarget(editor, viewEditor, pluginState, view)
       );
 
       return target

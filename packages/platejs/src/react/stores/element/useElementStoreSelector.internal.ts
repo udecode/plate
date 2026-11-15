@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { sameResult } from '../../../facade';
 import type {
   ElementStoreState,
   useElementStoreContext,
@@ -8,8 +9,8 @@ import type {
 export function useElementStoreSelector<K extends 'element' | 'path', T>(
   context: ReturnType<typeof useElementStoreContext>,
   key: K,
-  selector: (input: ElementStoreState[K], previous?: T) => T,
-  equalityFn: (left: T, right: T) => boolean
+  selector: (input: ElementStoreState[K]) => T,
+  equalityFn: (left: T, right: T) => boolean = sameResult
 ): T | undefined {
   const cacheRef = React.useRef<{
     hasValue: boolean;
@@ -35,22 +36,16 @@ export function useElementStoreSelector<K extends 'element' | 'path', T>(
     const runtime = context?.runtime ?? null;
     const cache = cacheRef.current;
 
-    if (
-      cache.runtime !== runtime ||
-      cache.selector !== selector ||
-      cache.key !== key
-    ) {
+    if (cache.runtime !== runtime || cache.key !== key) {
       cache.hasValue = false;
       cache.input = null;
       cache.key = key;
       cache.runtime = runtime;
-      cache.selector = selector;
+      cache.selector = null;
       cache.value = undefined;
     }
 
     const input = runtime?.getState()[key] ?? null;
-
-    if (cache.input === input && cache.hasValue) return cache.value;
 
     if (!input) {
       cache.hasValue = false;
@@ -59,17 +54,24 @@ export function useElementStoreSelector<K extends 'element' | 'path', T>(
 
       return undefined;
     }
+    if (
+      cache.hasValue &&
+      cache.input === input &&
+      cache.selector === selector
+    ) {
+      return cache.value;
+    }
 
-    const nextValue = selector(input, cache.hasValue ? cache.value : undefined);
+    const nextValue = selector(input);
+
+    cache.input = input;
+    cache.selector = selector;
 
     if (cache.hasValue && equalityFn(cache.value as T, nextValue)) {
-      cache.input = input;
-
       return cache.value;
     }
 
     cache.hasValue = true;
-    cache.input = input;
     cache.value = nextValue;
 
     return nextValue;

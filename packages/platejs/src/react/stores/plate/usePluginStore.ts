@@ -63,7 +63,6 @@ export function usePluginStore<P extends PluginStoreDescriptor, U = unknown>(
   plugin: P,
   selector: (state: InferPluginStoreState<DefinitionOf<P>>) => U,
   options?: {
-    // Equality function. Default is strict equality.
     equalityFn?: (a: U, b: U) => boolean;
   }
 ): U;
@@ -95,7 +94,6 @@ export function useEditorPluginStore<
   plugin: P,
   selector: (state: InferPluginStoreState<DefinitionOf<P>>) => U,
   options?: {
-    // Equality function. Default is strict equality.
     equalityFn?: (a: U, b: U) => boolean;
   }
 ): U;

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { Editor } from '../../editor';
 import {
   type EditorRuntimeStateSelectorOptions,
@@ -13,21 +11,10 @@ export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
 >;
 
 export const useEditorSelector = <T>(
-  selector: (editor: Editor, prev?: T) => T,
+  selector: (editor: Editor) => T,
   options: UseEditorSelectorOptions<T> = {}
 ): T => {
   const editor = useEditor();
-  const previousValueRef = React.useRef<T | undefined>(undefined);
 
-  return useEditorRuntimeState(
-    editor,
-    () => {
-      const nextValue = selector(editor, previousValueRef.current);
-
-      previousValueRef.current = nextValue;
-
-      return nextValue;
-    },
-    options
-  );
+  return useEditorRuntimeState(editor, () => selector(editor), options);
 };
