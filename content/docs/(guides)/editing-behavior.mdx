@@ -187,8 +187,7 @@ Plate's merge-rule middleware adds three important guards:
 
 Use `removeEmpty: true` for text-like blocks such as paragraphs and headings.
 A heading in a required title slot keeps that slot. After Enter at the start of
-the title, the first `Backspace` resets the split-off heading to a paragraph,
-and the second joins it back into the title.
+the title, one `Backspace` joins the split-off heading back into the title.
 
 ```tsx title="plugins.tsx" showLineNumbers
 import { HeadingPlugin } from 'platejs/react';

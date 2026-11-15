@@ -4,6 +4,7 @@ import {
   ElementApi,
   NodeApi,
   PathApi,
+  shouldMergeNodesRemovePrevNode,
   type Path,
   type Element,
 } from '../../facade';
@@ -321,7 +322,9 @@ export const OverridePlugin = definePlugin('override', {}).extend(
                 !state.schema.isIsolating(previous[0]) &&
                 previous[0].children.length > 0 &&
                 NodeApi.string(previous[0]).length === 0 &&
-                !shouldRemoveEmptyMergeTarget(previous[0], previous[1])
+                (!shouldRemoveEmptyMergeTarget(previous[0], previous[1]) ||
+                  (state.nodes.isEmpty(previous[0]) &&
+                    !shouldMergeNodesRemovePrevNode(editor, previous, block)))
               ) {
                 return state.transaction((tx) => {
                   tx.nodes.merge({ at: blockPath });
