@@ -1,6 +1,5 @@
 import {
   DocumentChange,
-  type DocumentChangeJson,
   withoutRetainedRecordSets,
 } from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
@@ -8,7 +7,8 @@ import type { JsonEditorValue } from '../../core/change/tokens';
 import { notifyObservers } from '../../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import {
-  type EditorHistoryStep,
+  isEditorHistoryRestore,
+  mintEditorCommitHistoryStep,
   readEditorCommitHistoryStep,
   replaceEditorUndoStep,
 } from '../../core/public-state';
@@ -24,7 +24,12 @@ import {
   type SyncRelease,
 } from './claim';
 import { type SyncDecisionOf, syncDecider } from './decision';
-import type { OutboxRecord, OutboxStore } from './outbox';
+import type {
+  CommitDecision,
+  OutboxRecord,
+  OutboxStore,
+  StepRebuild,
+} from './outbox';
 import { type Clock, type SyncTransport, systemClock } from './transport';
 import { createWriter, type SyncClientState } from './writer';
 
@@ -97,6 +102,7 @@ const startClient = (
       stopped: false,
       writer: writerId,
     },
+    rebuilds: [],
   };
 
   const listeners = new Set<() => void>();
@@ -140,36 +146,19 @@ const startClient = (
       decisions.decisionOf(step, actor, getCompiledEditorSchema(editor)),
     setValuedIn(editor)
   );
-  const latestCommits = new Map<
-    number,
-    Readonly<{ change: DocumentChangeJson; step: EditorHistoryStep }>
-  >();
   const roomTakeBackOf = (logged: DocumentChange, before: JsonEditorValue) =>
     withoutRetainedRecordSets(
       logged.invert(before),
       getCompiledEditorSchema(editor).recordSets
     );
-  const undoWhatTheRoomLogged = (
-    seq: number,
-    logged: DocumentChange | null,
-    before: JsonEditorValue
-  ) => {
-    const commit = latestCommits.get(seq);
-
-    latestCommits.delete(seq);
-    if (!commit || !logged || jsonEqual(logged.toJSON(), commit.change)) {
-      return;
-    }
-
-    const after = logged.apply(before);
-    const takeBackAppliesTo = (base: JsonEditorValue) =>
-      jsonEqual(blocksOf(base), blocksOf(after));
+  const rebuild = ({ base, step, takeBack }: StepRebuild) => {
+    const blocks = blocksOf(base);
 
     replaceEditorUndoStep(
       editor,
-      commit.step,
-      roomTakeBackOf(logged, before),
-      takeBackAppliesTo
+      step,
+      DocumentChange.fromJSON(takeBack),
+      (stepBase) => jsonEqual(blocksOf(stepBase), blocks)
     );
   };
 
@@ -203,9 +192,9 @@ const startClient = (
     },
     decide,
     fresh: !opened,
+    rebuild,
     record,
     schema,
-    settledDecision: undoWhatTheRoomLogged,
     show,
     showDocument,
     store,
@@ -238,20 +227,29 @@ const startClient = (
     draining.set(other, claimed.release);
   }
 
-  const stepSeqs = new WeakMap<object, number>();
+  for (const entry of writer.rebuilds()) rebuild(entry);
+
   const stop = editor.subscribeCommit((commit) => {
+    if (isEditorHistoryRestore(editor, commit)) {
+      for (const entry of writer.rebuilds()) rebuild(entry);
+    }
     if (commit.tags.includes('collaboration') || commit.changes.empty) return;
 
-    const decision = decisions.changesVerdicts(commit.changes);
-    const step = decision ? readEditorCommitHistoryStep(editor, commit) : null;
-    const takesBackSeq = step ? stepSeqs.get(step.identity) : undefined;
-    const seq = writer.saveCommit(commit.changes, decision, takesBackSeq);
+    const verdicts = decisions.changesVerdicts(commit.changes);
+    const step = (
+      verdicts ? mintEditorCommitHistoryStep : readEditorCommitHistoryStep
+    )(editor, commit);
+    const decision: CommitDecision | null = !verdicts
+      ? null
+      : !step || step.how === 'merge'
+        ? { kind: 'made', step: null }
+        : { kind: step.how === 'push' ? 'made' : step.how, step: step.id };
 
-    if (takesBackSeq !== undefined) latestCommits.delete(takesBackSeq);
-    if (seq !== null && step) {
-      latestCommits.set(seq, { change: commit.changes.toJSON(), step });
-      stepSeqs.set(step.identity, seq);
-    }
+    writer.saveCommit(
+      commit.changes,
+      decision,
+      step?.how === 'merge' ? step.id : null
+    );
   });
 
   writer.connect();

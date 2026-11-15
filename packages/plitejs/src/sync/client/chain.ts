@@ -5,7 +5,7 @@ import {
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { SYNC_REBASE, sameDocument } from '../protocol';
 import { MOVED } from './decision';
-import type { KeptReason, SavedBatch } from './outbox';
+import { type KeptReason, provenanceOf, type SavedBatch } from './outbox';
 
 export type ShownBatch = Extract<SavedBatch, { state: 'saved' | 'sent' }>;
 
@@ -28,21 +28,45 @@ export const leaving = (
   batch: ShownBatch,
   reason: KeptReason | null
 ): SavedBatch => {
-  const { change, decision, seq } = batch;
-
   if (batch.state === 'sent') {
     return reason
       ? { ...batch, reason, state: 'kept' }
-      : { decision, frame: batch.frame, seq, state: 'withheld' };
+      : { ...provenanceOf(batch), frame: batch.frame, state: 'withheld' };
   }
 
   return {
-    change,
-    decision,
+    ...provenanceOf(batch),
+    change: batch.change,
     reason: reason ?? { kind: 'conflict' },
-    seq,
     state: 'kept',
   };
+};
+
+const stepOf = (batch: SavedBatch) => batch.decision?.step ?? null;
+
+export const batchToTakeBack = (
+  batches: readonly SavedBatch[],
+  step: string
+) => {
+  const latest = batches.findLast((batch) => stepOf(batch) === step);
+
+  return latest?.decision?.step && !latest.decision.superseded ? latest : null;
+};
+
+export const superseded = (
+  tail: readonly SavedBatch[],
+  settled: SavedBatch
+): SavedBatch[] => {
+  const step = stepOf(settled);
+
+  return tail.flatMap((batch) =>
+    step !== null &&
+    batch.state === 'kept' &&
+    batch.seq < settled.seq &&
+    batch.decision?.step === step
+      ? [{ ...batch, decision: { ...batch.decision, superseded: true } }]
+      : []
+  );
 };
 
 export type KeepAs = (batch: SavedBatch) => KeptReason | null;

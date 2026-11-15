@@ -381,6 +381,8 @@ const mintStepId = () =>
     .replaceAll('/', '_')
     .replaceAll('=', '');
 
+export const knownHistoryStepId = (step: object) => STEP_IDS.get(step);
+
 export const historyStepId = (step: object) => {
   const known = STEP_IDS.get(step);
 
@@ -2207,7 +2209,7 @@ export const replaceHistoryHead = <V extends Value>(
 
 export const replaceUndoStep = <V extends Value>(
   editor: Editor<V>,
-  identity: object,
+  id: string,
   change: DocumentChange,
   matches: (base: EditorDocumentValue<V>) => boolean
 ) => {
@@ -2217,7 +2219,7 @@ export const replaceUndoStep = <V extends Value>(
 
   const drops: DropSink = [];
   const { entries } = resolveAll(editor, drops, store.undos);
-  const entry = entries.find((item) => item.identity === identity);
+  const entry = entries.find((item) => STEP_IDS.get(item.identity) === id);
 
   if (!entry || !matches(entry.base)) return false;
 

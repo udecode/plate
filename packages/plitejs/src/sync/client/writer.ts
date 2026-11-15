@@ -2,6 +2,7 @@ import {
   DocumentChange,
   rebaseDocumentChange,
 } from '../../core/change/document-change';
+import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import {
   digestOf,
@@ -16,23 +17,28 @@ import {
   sameDocument,
 } from '../protocol';
 import {
+  batchToTakeBack,
   type CrossAs,
   crossChain,
   type KeepAs,
   leaving,
   type ShownBatch,
   shownValue,
+  superseded,
   withdrawn,
 } from './chain';
 import { MOVED, type SyncDecide } from './decision';
 import {
   applyWrite,
+  type CommitDecision,
   type KeptReason,
   mergeWrites,
   type OutboxRecord,
   type OutboxStore,
   type OutboxWrite,
+  provenanceOf,
   type SavedBatch,
+  type StepRebuild,
 } from './outbox';
 import type { SyncEvent, SyncLink, SyncTransport } from './transport';
 
@@ -178,9 +184,9 @@ export const createWriter = ({
   changed,
   decide,
   fresh,
+  rebuild,
   record: opened,
   schema,
-  settledDecision,
   show,
   showDocument,
   store,
@@ -190,13 +196,9 @@ export const createWriter = ({
   changed: () => void;
   decide: SyncDecide;
   fresh: boolean;
+  rebuild?: (entry: StepRebuild) => void;
   record: OutboxRecord;
   schema: string;
-  settledDecision?: (
-    seq: number,
-    logged: DocumentChange | null,
-    before: JsonEditorValue
-  ) => void;
   show: (change: DocumentChange) => Shown;
   showDocument: (document: JsonEditorValue) => Shown;
   store: OutboxStore;
@@ -225,6 +227,9 @@ export const createWriter = ({
 
     return writes.add(write);
   };
+
+  const forgetRebuilds = () =>
+    record.rebuilds.length > 0 ? { rebuilds: [] } : {};
 
   const inFlight = () =>
     record.batches.find(
@@ -259,7 +264,7 @@ export const createWriter = ({
   };
 
   const movedDecision: KeepAs = (batch) =>
-    batch.decision &&
+    batch.decision !== null &&
     (batch.state === 'saved' ||
       (batch.state === 'sent' && batch.frame !== savedFrame))
       ? MOVED
@@ -293,7 +298,7 @@ export const createWriter = ({
       if (carried.empty || batch.state !== 'saved') {
         return redecided(batch, before, carried);
       }
-      if (batch.takesBackSeq !== undefined) return null;
+      if (batch.decision && batch.decision.kind !== 'made') return null;
       if (takenBack.has(batch.seq)) return MOVED;
 
       return redecided(batch, before, carried);
@@ -328,6 +333,39 @@ export const createWriter = ({
       'rewritten';
   };
 
+  const rebuildOf = (
+    batch: InFlight,
+    logged: DocumentChange,
+    before: JsonEditorValue,
+    document: JsonEditorValue,
+    tail: readonly SavedBatch[]
+  ): StepRebuild | null => {
+    const { decision } = batch;
+
+    if (
+      !decision?.step ||
+      decision.kind === 'undo' ||
+      jsonEqual(logged.toJSON(), decision.unrebased)
+    ) {
+      return null;
+    }
+
+    const { step } = decision;
+    const later = tail.some(
+      (other) =>
+        other.seq > batch.seq &&
+        (other.decision?.step === step || other.mergedInto === step)
+    );
+
+    return later
+      ? null
+      : {
+          base: document,
+          step,
+          takeBack: takeBack(logged, before).toJSON(),
+        };
+  };
+
   const settle = (
     batch: InFlight,
     logged: DocumentChange | null,
@@ -339,7 +377,15 @@ export const createWriter = ({
         ? DocumentChange.fromJSON(batch.change).apply(before)
         : before;
     const document = logged ? logged.apply(before) : before;
-    const tail = record.batches.filter(({ seq }) => seq !== batch.seq);
+    const marks = superseded(record.batches, batch);
+    const marked = new Map(marks.map((mark) => [mark.seq, mark]));
+    const tail = record.batches.flatMap((other) =>
+      other.seq === batch.seq ? [] : [marked.get(other.seq) ?? other]
+    );
+    const entry =
+      rebuild && logged
+        ? rebuildOf(batch, logged, before, document, tail)
+        : null;
     const carried = DocumentChange.between(shown, document);
     const crossAs = redecidedIn(tail);
     const takesThisBack = (other: SavedBatch) =>
@@ -352,20 +398,24 @@ export const createWriter = ({
     save({
       confirmed: { document, version },
       drop: [batch.seq],
-      put: crossOrWithdraw(
-        tail,
-        document,
-        () =>
-          crossChain(carried, shown, tail, (other, at, moved) =>
-            roomTakeBack && takesThisBack(other)
-              ? takenBackAt(other, roomTakeBack, document, moved.apply(at))
-              : crossAs(other, at, moved)
-          ),
-        movedDecision
-      ),
+      put: [
+        ...marks,
+        ...crossOrWithdraw(
+          tail,
+          document,
+          () =>
+            crossChain(carried, shown, tail, (other, at, moved) =>
+              roomTakeBack && takesThisBack(other)
+                ? takenBackAt(other, roomTakeBack, document, moved.apply(at))
+                : crossAs(other, at, moved)
+            ),
+          movedDecision
+        ),
+      ],
+      ...(entry ? { rebuilds: [...record.rebuilds, entry] } : {}),
     });
     showExactly();
-    if (batch.decision) settledDecision?.(batch.seq, logged, before);
+    if (entry) rebuild?.(entry);
     stalled = false;
     link?.hold(null);
   };
@@ -375,11 +425,10 @@ export const createWriter = ({
       save({
         put: [
           {
+            ...provenanceOf(batch),
             change: frameChangeOf(batch.frame).toJSON(),
-            decision: batch.decision,
             frame: batch.frame,
             reason,
-            seq: batch.seq,
             state: 'kept',
           },
         ],
@@ -423,6 +472,7 @@ export const createWriter = ({
           crossChain(change, at, record.batches, redecidedIn(record.batches)),
         movedDecision
       ),
+      ...forgetRebuilds(),
     });
     showExactly();
   };
@@ -466,6 +516,7 @@ export const createWriter = ({
     save({
       confirmed: { document, version },
       put: replaced(record.batches, batches),
+      ...forgetRebuilds(),
     });
   };
 
@@ -534,7 +585,7 @@ export const createWriter = ({
     try {
       for (let next = sendable(); next; next = sendable()) {
         const { base, front } = next;
-        const { change, decision, seq } = front;
+        const { change, seq } = front;
         const { writer } = record.head;
         const digest = await digestOf({ change, seq, writer });
         const still = sendable();
@@ -550,10 +601,9 @@ export const createWriter = ({
           writer,
         };
         const sent: SentBatch = {
+          ...provenanceOf(front),
           change,
-          decision,
           frame: JSON.stringify(submit),
-          seq,
           state: 'sent',
         };
 
@@ -647,18 +697,30 @@ export const createWriter = ({
       link?.close();
       link = null;
     },
+    rebuilds: () => record.rebuilds,
     retrySaves: writes.retrySaves,
     saveCommit: (
       change: DocumentChange,
-      decision: boolean,
-      takesBackSeq?: number
+      made: CommitDecision | null,
+      merged: string | null
     ) => {
-      if (destroyed) return null;
+      if (destroyed) return;
 
       const { batches, confirmed, head } = record;
       const json = change.toJSON();
+      const mergedInto =
+        merged !== null &&
+        batches.some(
+          (batch) => batch.state !== 'kept' && batch.decision?.step === merged
+        )
+          ? merged
+          : undefined;
+      const takesBackSeq =
+        made?.step && made.kind !== 'made'
+          ? batchToTakeBack(batches, made.step)?.seq
+          : undefined;
       const origin =
-        decision && takesBackSeq === undefined
+        made?.kind === 'made'
           ? {
               before: shownValue(confirmed.document, batches),
               change: json,
@@ -671,18 +733,21 @@ export const createWriter = ({
         put: [
           {
             change: json,
-            decision,
+            decision:
+              made === null || made.step === null
+                ? made
+                : { ...made, unrebased: json },
+            ...(mergedInto === undefined ? {} : { mergedInto }),
             ...(origin ? { origin } : {}),
             ...(takesBackSeq === undefined ? {} : { takesBackSeq }),
             seq: head.nextSeq,
             state: 'saved',
           },
         ],
+        ...forgetRebuilds(),
       });
       changed();
       void freeze();
-
-      return head.nextSeq;
     },
     setOffline: (offline: boolean) => {
       if (destroyed) return;

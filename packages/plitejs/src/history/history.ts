@@ -113,7 +113,7 @@ export type HistoryBatchJSON = Readonly<{
    * Only on a redo history maps apart from its plain rules: the redo it
    * applies from the same document when a guard refuses this one.
    */
-  fallback?: HistoryBatchJSON;
+  fallback?: Omit<HistoryBatchJSON, 'fallback' | 'id'>;
   /**
    * The step's id, which undo, redo, a merge and a restore keep. Never on a
    * `fallback`. A step saved without one gets a fresh id when it loads.

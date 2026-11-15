@@ -134,6 +134,8 @@ import {
   getWorkingHistory,
   historyFactsOf,
   historyProgramOf,
+  historyStepId,
+  knownHistoryStepId,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
   peekHistoryReplayEntry,
@@ -233,7 +235,19 @@ type HistoryAction = 'redo' | 'undo';
 const HISTORY_ACTIVATION = new WeakMap<Editor, object>();
 const LAST_AUTOMATIC_HISTORY_GROUP_TIME = new WeakMap<Editor, number>();
 const PENDING_HISTORY_SCHEMA_ACTIVATION = new WeakMap<Editor, object>();
-const COMMIT_STEPS = new WeakMap<EditorCommit, EditorHistoryStep>();
+const COMMIT_STEPS = new WeakMap<
+  EditorCommit,
+  Readonly<{ how: EditorHistoryStep['how']; identity: object }>
+>();
+const commitStepWith = (
+  commit: EditorCommit,
+  idOf: (identity: object) => string | undefined
+) => {
+  const step = COMMIT_STEPS.get(commit);
+  const id = step && idOf(step.identity);
+
+  return step && id ? { how: step.how, id } : null;
+};
 
 const getHistoryMaxDepth = (options: Pick<HistoryOptions, 'maxDepth'>) => {
   const maxDepth = options.maxDepth ?? 100;
@@ -906,7 +920,7 @@ const createHistoryPlugin = <
         unsettled,
         replayRequest
       );
-      COMMIT_STEPS.set(commit, { identity: entry.identity });
+      COMMIT_STEPS.set(commit, { how: action, identity: entry.identity });
       return Object.freeze({
         receipt: Object.freeze({
           group: entry.identity,
@@ -1060,6 +1074,13 @@ const createHistoryPlugin = <
               )));
 
     if (lastEntry && merge) {
+      if (knownHistoryStepId(lastEntry.identity)) {
+        COMMIT_STEPS.set(commit, {
+          how: 'merge',
+          identity: lastEntry.identity,
+        });
+      }
+
       const { selectionAfterRoot: _selectionAfterRoot, ...previousBatch } =
         lastEntry.batch;
       const factsOf = (batch: Batch): ChangeFacts =>
@@ -1138,6 +1159,7 @@ const createHistoryPlugin = <
       });
     } else {
       COMMIT_STEPS.set(commit, {
+        how: 'push',
         identity: writeHistory(editor, 'undos', preparedBatch, after, {
           anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
           carets,
@@ -1512,9 +1534,12 @@ const createHistoryPlugin = <
           head: (direction) =>
             peekHistoryEntry(editor, direction === 'undo' ? 'undos' : 'redos')
               ?.identity ?? null,
-          replaceUndoStep: ({ identity }, change, matches) =>
-            replaceUndoStep(editor, identity, change, matches),
-          stepOf: (commit) => COMMIT_STEPS.get(commit) ?? null,
+          mintStepOf: (commit) => commitStepWith(commit, historyStepId),
+          replaceUndoStep: (step, change, matches) =>
+            replaceUndoStep(editor, step, change, matches),
+          restores: (commit) =>
+            commit.annotations[historyRestore.key] !== undefined,
+          stepOf: (commit) => commitStepWith(commit, knownHistoryStepId),
         })
       );
       context.onCleanup(

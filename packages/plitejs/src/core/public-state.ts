@@ -992,15 +992,20 @@ export type EditorHistoryReplayReceipt = Readonly<{
   version: number;
 }>;
 
-export type EditorHistoryStep = Readonly<{ identity: object }>;
+export type EditorHistoryStep = Readonly<{
+  how: 'merge' | 'push' | 'redo' | 'undo';
+  id: string;
+}>;
 
 type EditorHistoryRuntime = Readonly<{
   head: (direction: 'redo' | 'undo') => object | null;
+  mintStepOf: (commit: EditorCommit) => EditorHistoryStep | null;
   replaceUndoStep: (
-    step: EditorHistoryStep,
+    step: string,
     change: DocumentChange,
     matches: (base: EditorDocumentValue) => boolean
   ) => boolean;
+  restores: (commit: EditorCommit) => boolean;
   stepOf: (commit: EditorCommit) => EditorHistoryStep | null;
 }>;
 
@@ -1042,9 +1047,22 @@ export const readEditorCommitHistoryStep = (
   EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.stepOf(commit) ??
   null;
 
+export const mintEditorCommitHistoryStep = (
+  editor: Editor,
+  commit: EditorCommit
+) =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.mintStepOf(
+    commit
+  ) ?? null;
+
+export const isEditorHistoryRestore = (editor: Editor, commit: EditorCommit) =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.restores(
+    commit
+  ) ?? false;
+
 export const replaceEditorUndoStep = (
   editor: Editor,
-  step: EditorHistoryStep,
+  step: string,
   change: DocumentChange,
   matches: (base: EditorDocumentValue) => boolean
 ) =>

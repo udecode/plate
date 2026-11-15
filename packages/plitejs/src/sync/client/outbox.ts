@@ -34,7 +34,26 @@ export type DecisionOrigin = Readonly<{
   since: readonly DocumentChangeJson[];
 }>;
 
-export type SavedBatch = Readonly<{ decision: boolean; seq: number }> &
+export type CommitDecision =
+  | Readonly<{ kind: 'made'; step: null }>
+  | Readonly<{ kind: 'made' | 'redo' | 'undo'; step: string }>;
+
+export type Decision =
+  | Extract<CommitDecision, { step: null }>
+  | (Extract<CommitDecision, { step: string }> &
+      Readonly<{ superseded?: true; unrebased: DocumentChangeJson }>);
+
+export type StepRebuild = Readonly<{
+  base: JsonEditorValue;
+  step: string;
+  takeBack: DocumentChangeJson;
+}>;
+
+export type SavedBatch = Readonly<{
+  decision: Decision | null;
+  mergedInto?: string;
+  seq: number;
+}> &
   (
     | Readonly<{
         change: DocumentChangeJson;
@@ -56,6 +75,7 @@ export type OutboxRecord = Readonly<{
   batches: readonly SavedBatch[];
   confirmed: Confirmed;
   head: OutboxHead;
+  rebuilds: readonly StepRebuild[];
 }>;
 
 export type OutboxWrite = Readonly<{
@@ -63,7 +83,14 @@ export type OutboxWrite = Readonly<{
   drop?: readonly number[];
   head?: OutboxHead;
   put?: readonly SavedBatch[];
+  rebuilds?: readonly StepRebuild[];
 }>;
+
+export const provenanceOf = ({ decision, mergedInto, seq }: SavedBatch) => ({
+  decision,
+  ...(mergedInto === undefined ? {} : { mergedInto }),
+  seq,
+});
 
 export type OutboxStore = Readonly<{
   list: (room: string) => Promise<readonly OutboxRecord[]>;
@@ -95,6 +122,7 @@ export const applyWrite = (
     batches: [...batches.values()].sort((a, b) => a.seq - b.seq),
     confirmed,
     head,
+    rebuilds: write.rebuilds ?? record?.rebuilds ?? [],
   };
 };
 
@@ -112,10 +140,13 @@ export const mergeWrites = (
 
   for (const seq of dropped) put.delete(seq);
 
+  const rebuilds = later.rebuilds ?? earlier.rebuilds;
+
   return {
     confirmed: later.confirmed ?? earlier.confirmed,
     drop: [...dropped],
     head: later.head ?? earlier.head,
     put: [...put.values()],
+    ...(rebuilds ? { rebuilds } : {}),
   };
 };
