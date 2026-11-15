@@ -260,7 +260,7 @@ const imported = migrateDocument(legacyDocument, {
 
 ### `useEditorSelector`
 
-`useEditorSelector(selector, options?)` 从所选编辑器派生值，并仅在结果变化时重新渲染。`selector` 接收 `(editor, previous?)`；选项包括 `equalityFn` 和 `shouldUpdate`。
+`useEditorSelector(selector, options?)` 从所选编辑器派生值，并仅在结果变化时重新渲染。`selector` 接收编辑器，选项为 `equalityFn` 和 `shouldUpdate`。调用未传入 `equalityFn` 时，hook 按值比较每次的结果与上一次的结果，因此 selector 可以返回对象或列表。该比较的限制见[选择器结果](/docs/api/react-hooks#selector-results)。
 
 ### `useEditorState`
 
@@ -324,12 +324,22 @@ const imported = migrateDocument(legacyDocument, {
 
 ### `usePath`
 
-获取最近元素的实时路径。匹配的元素 Provider 不存在时会抛出错误。
+获取最近元素的实时路径，或从路径派生的值。在已渲染的元素外调用时抛出错误。不传
+selector 时，hook 用 `PathApi.equals` 比较路径；传入 selector 时，按
+[选择器结果](/docs/api/react-hooks#selector-results)所述按值比较结果。
 
 <API name="usePath">
+<APIParameters>
+  <APIItem name="selector" type="(path: Path) => T" optional>
+    从路径派生值。
+  </APIItem>
+  <APIItem name="options" type="{ equalityFn?: (a: T, b: T) => boolean }" optional>
+    `equalityFn` 替换 selector 结果的比较方式。
+  </APIItem>
+</APIParameters>
 
-<APIReturns>
-  当前元素的路径。
+<APIReturns type="Path | T">
+  当前元素的路径，或 selector 的结果。
 </APIReturns>
 </API>
 
@@ -339,6 +349,10 @@ const imported = migrateDocument(legacyDocument, {
 
 请传入插件 descriptor 本身，而不是 `{ name }` 对象。descriptor 携带 state
 字段、selector 参数和返回类型，因此不需要手动传泛型。
+
+hook 按值比较每次选中的结果与上一次的结果，见
+[选择器结果](/docs/api/react-hooks#selector-results)。对 selector callback，
+`equalityFn` 会替换该比较。
 
 <API name="usePluginStore">
 <APIParameters>
@@ -350,7 +364,7 @@ const imported = migrateDocument(legacyDocument, {
   </APIItem>
   <APIItem name="...args" type="any[]" optional>
     命名 selector 的参数。selector callback 使用
-    `{ id?, equalityFn? }` 作为最后一个 options 对象。
+    `{ equalityFn? }` 作为最后一个 options 对象。
   </APIItem>
 </APIParameters>
 
@@ -360,6 +374,10 @@ const imported = migrateDocument(legacyDocument, {
 const value = usePluginStore(plugin, "value");
 const doubleValue = usePluginStore(plugin, "doubleValue", 2);
 const state = usePluginStore(plugin, (state) => state);
+const pair = usePluginStore(
+  plugin,
+  (state) => [state.value, state.label] as const
+);
 ```
 
 </API>
@@ -372,6 +390,9 @@ const state = usePluginStore(plugin, (state) => state);
 会抛出错误。
 
 请传入插件 descriptor 本身。`{ name }` 对象不携带视图状态契约。
+
+hook 按值比较每次的结果与上一次的结果，见
+[选择器结果](/docs/api/react-hooks#selector-results)。它不接受 options。
 
 <API name="useViewStore">
 <APIParameters>

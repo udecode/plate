@@ -306,7 +306,7 @@ Creates a memoized Plate editor for React components.
 
 ### `useEditor`
 
-`useEditor(): Editor` returns the nearest provider’s selected editor and throws when no target exists. It rerenders when the provider changes targets without subscribing to document commits. Inside `EditorContent`, it binds commands to that mount’s root, DOM, and permissions.
+`useEditor(): Editor` returns the nearest provider's selected editor and throws when no target exists. It rerenders when the provider changes targets without subscribing to document commits. Inside `EditorContent`, it binds commands to that mount's root, DOM, and permissions.
 
 ### `useOptionalEditor`
 
@@ -314,19 +314,19 @@ Creates a memoized Plate editor for React components.
 
 ### `useEditorSelector`
 
-`useEditorSelector(selector, options?)` derives a value from the selected editor and rerenders when the result changes. The selector receives `(editor, previous?)`; options include `equalityFn` and `shouldUpdate`.
+`useEditorSelector(selector, options?)` derives a value from the selected editor and rerenders when the result changes. The selector receives the editor, and the options are `equalityFn` and `shouldUpdate`. When the call passes no `equalityFn`, the hook compares each result with the earlier one by value, so a selector may return an object or a list. [Selector results](/docs/api/react-hooks#selector-results) gives the limits of that comparison.
 
 ### `useEditorState`
 
-`useEditorState(selector, options?)` subscribes to a value derived from immutable editor state and returns the selector’s inferred result. For a concrete editor type, use `useEditorRuntimeState(editor, selector, options?)`.
+`useEditorState(selector, options?)` subscribes to a value derived from immutable editor state and returns the selector's inferred result. For a concrete editor type, use `useEditorRuntimeState(editor, selector, options?)`.
 
 ### `useEditorComposing`
 
-`useEditorComposing(): boolean` reads the selected view’s composition state.
+`useEditorComposing(): boolean` reads the selected view's composition state.
 
 ### `useEditorReadOnly`
 
-`useEditorReadOnly(): boolean` reads the selected view’s current permission. Captured views become read-only after unmount; an empty controller is also read-only.
+`useEditorReadOnly(): boolean` reads the selected view's current permission. Captured views become read-only after unmount; an empty controller is also read-only.
 
 ### `useEditorMounted`
 
@@ -338,7 +338,7 @@ Creates a memoized Plate editor for React components.
 
 ### `useEditorSelection`
 
-`useEditorSelection(): Range | null` returns the selected root’s text selection. Equal ranges do not trigger a rerender.
+`useEditorSelection(): Range | null` returns the selected root's text selection. Equal ranges do not trigger a rerender.
 
 ### `EditorProvider`
 
@@ -378,13 +378,23 @@ A value derived from the fragment nodes, or undefined if no consistent value is 
 
 ### `usePath`
 
-Get the live path of the closest element and throw when the matching provider
-is absent. Pass a plugin descriptor to select an owning element provider.
+Get the live path of the closest element, or a value derived from it, and
+throw outside a rendered element. Without a selector, the hook compares paths
+with `PathApi.equals`. With one, it compares results by value, as
+[Selector results](/docs/api/react-hooks#selector-results) describes.
 
 <API name="usePath">
+<APIParameters>
+  <APIItem name="selector" type="(path: Path) => T" optional>
+    Derives a value from the path.
+  </APIItem>
+  <APIItem name="options" type="{ equalityFn?: (a: T, b: T) => boolean }" optional>
+    `equalityFn` replaces the comparison of the selector's results.
+  </APIItem>
+</APIParameters>
 
-<APIReturns>
-  The current element path.
+<APIReturns type="Path | T">
+  The current element path, or the selector's result.
 </APIReturns>
 </API>
 
@@ -393,9 +403,13 @@ is absent. Pass a plugin descriptor to select an owning element provider.
 Subscribe to a plugin state field, named selector, or selector callback inside
 `<EditorRoot>`.
 
-Pass the plugin descriptor itself—not a `{ name }` object. The descriptor carries
+Pass the plugin descriptor itself, not a `{ name }` object. The descriptor carries
 the state fields, selector arguments, and return types, so no generic arguments
 are needed.
+
+The hook compares each selected result with the earlier one by value, as
+[Selector results](/docs/api/react-hooks#selector-results) describes. For a
+selector callback, `equalityFn` replaces that comparison.
 
 <API name="usePluginStore">
 <APIParameters>
@@ -406,8 +420,8 @@ are needed.
     A state key, named selector key, or selector callback.
   </APIItem>
   <APIItem name="...args" type="any[]" optional>
-    Arguments for a named selector. Selector callbacks instead accept
-    `{ id?, equalityFn? }` as the final options object.
+    Arguments for a named selector. A selector callback instead takes
+    `{ equalityFn? }` as the final options object.
   </APIItem>
 </APIParameters>
 
@@ -419,8 +433,7 @@ const doubleValue = usePluginStore(plugin, "doubleValue", 2);
 const state = usePluginStore(plugin, (state) => state);
 const pair = usePluginStore(
   plugin,
-  (state) => [state.value, state.label] as const,
-  { equalityFn: shallow }
+  (state) => [state.value, state.label] as const
 );
 ```
 
@@ -436,6 +449,10 @@ the plugin is not installed.
 
 Pass the plugin descriptor itself. A `{ name }` object carries no view state
 contract.
+
+The hook compares each result with the earlier one by value, as
+[Selector results](/docs/api/react-hooks#selector-results) describes. It takes
+no options.
 
 <API name="useViewStore">
 <APIParameters>
