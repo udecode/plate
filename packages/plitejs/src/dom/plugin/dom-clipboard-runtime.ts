@@ -25,6 +25,7 @@ import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { importContentSlice } from '../../core/import-content-slice';
 import { getInstalledPlugin } from '../../core/plugin';
 import { getSetSite } from '../../core/public-state';
+import { captureSliceLanding } from '../../core/slice-landing';
 import { withLandingBlock } from '../../editor/insert-default-child';
 import {
   getSelection as getEditorSelection,
@@ -45,6 +46,7 @@ import {
   createDataTransferTransactionSpec,
   insertDataTransfer,
   recordDataTransferOutcome,
+  sliceAddsContent,
   writeDataTransferFragment,
 } from './data-transfer-format';
 import type { DOMCoverageBoundary, DOMCoverageSession } from './dom-coverage';
@@ -891,19 +893,28 @@ export const createDOMDataTransactionSpec = <V extends Value>(
 ) => {
   const slice = readDOMFragmentData(editor as DOMEditor<V>, data);
 
-  if (slice) {
-    const { result } = evaluateCommandWithState(
-      editor,
-      editorCommands.replaceSlice,
-      state,
-      { slice }
-    );
+  if (!slice) return createDataTransferTransactionSpec(editor, data, { state });
 
-    // The exact editor fragment needs no decoder, so it reports nothing.
-    if (result !== false) return recordDataTransferOutcome(editor, result);
+  const landing = captureSliceLanding(
+    editor,
+    () =>
+      evaluateCommandWithState(editor, editorCommands.replaceSlice, state, {
+        slice,
+      }).result
+  );
+
+  if (landing.result !== false) {
+    return recordDataTransferOutcome(editor, landing.result, {
+      leftOut: landing.lossy,
+    });
   }
 
-  return createDataTransferTransactionSpec(editor, data, { state });
+  return createDataTransferTransactionSpec(editor, data, {
+    state,
+    ...(sliceAddsContent(editor, slice)
+      ? { refusedMimeType: `application/${getDOMClipboardFormatKey(editor)}` }
+      : {}),
+  });
 };
 
 export const readDOMFragmentData = <V extends Value>(

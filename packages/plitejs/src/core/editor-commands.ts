@@ -70,7 +70,7 @@ import {
 } from './public-state';
 import { toCompiledNodeContext } from './schema-compiler';
 import { refuseCrossing } from './set-root';
-import { planPaste, writePaste } from './slice-landing';
+import { notePasteLoss, planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
 
 type CommandStateView = EditorStateView<Value, any>;
@@ -926,6 +926,8 @@ export const editorCommands: EditorCommands = Object.freeze({
       const editor = getActiveCommandEditor();
       const plan = planPaste(editor, state, input, 'copy');
       const written = plan && writePaste(editor, plan);
+
+      notePasteLoss(editor, plan && written ? plan.inputCut : false);
 
       return written ? written.spec : false;
     },

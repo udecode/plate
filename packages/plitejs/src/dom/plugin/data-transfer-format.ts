@@ -27,7 +27,10 @@ import {
   evaluateCommandWithState,
 } from '../../core/command-registry';
 import { createDetachedContentSlice } from '../../core/content-slice';
-import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import {
+  getEditorRuntimeOwner,
+  getEditorSchema,
+} from '../../core/editor-runtime';
 import {
   getCompiledEditorSchemaFromApi,
   getInternalEditorSchemaFromApi,
@@ -55,6 +58,7 @@ import {
   type CompiledSchemaProperty,
 } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
+import { captureSliceLanding } from '../../core/slice-landing';
 import { isTextCell } from '../../core/writable-text';
 import { nodes as getNodes } from '../../editor/nodes';
 import {
@@ -968,6 +972,50 @@ const settleDataTransferInsertion = (
   observation.listener(inserted, observation.diagnostics);
 };
 
+const LEFT_OUT_DATA_TRANSFER_DIAGNOSTIC: DataTransferDiagnostic = Object.freeze(
+  {
+    impact: 'lossy',
+    message: 'Some content did not fit here and was left out.',
+  }
+);
+
+const commitsNothing = (spec: TransactionSpec) =>
+  spec.changes.empty &&
+  spec.effects.length === 0 &&
+  spec.annotations.length === 0 &&
+  spec.selection === undefined;
+
+/** @internal */
+export const sliceAddsContent = <V extends Value>(
+  editor: Editor<V>,
+  slice: ContentSlice
+) => {
+  if (slice.roots) return true;
+
+  const schema = getEditorSchema(editor);
+  let nodes = slice.content;
+
+  for (let depth = 1; ; depth += 1) {
+    if (nodes.every((node) => NodeApi.isText(node) && node.text === '')) {
+      return false;
+    }
+
+    const node = nodes.length === 1 ? getDefined(nodes[0]) : null;
+    const mergesIntoLandingBlock =
+      depth <= slice.openStart && depth <= slice.openEnd;
+
+    if (
+      !node ||
+      !NodeApi.isElement(node) ||
+      !mergesIntoLandingBlock ||
+      schema.isVoid(node)
+    ) {
+      return true;
+    }
+    nodes = node.children;
+  }
+};
+
 /**
  * Bind one built-in insertion outcome to the innermost observation. Later
  * insertions under the same observation belong to their own callers.
@@ -977,7 +1025,13 @@ const settleDataTransferInsertion = (
 export const recordDataTransferOutcome = <V extends Value>(
   editor: Editor<V, any>,
   result: TransactionSpec | false,
-  diagnostics: readonly DataTransferDiagnostic[] = EMPTY_DATA_TRANSFER_DIAGNOSTICS
+  {
+    diagnostics = EMPTY_DATA_TRANSFER_DIAGNOSTICS,
+    leftOut = false,
+  }: Readonly<{
+    diagnostics?: readonly DataTransferDiagnostic[];
+    leftOut?: boolean;
+  }> = {}
 ) => {
   const observation = DATA_TRANSFER_INSERTION_OBSERVATIONS.get(
     getEditorRuntimeOwner(editor)
@@ -987,7 +1041,7 @@ export const recordDataTransferOutcome = <V extends Value>(
 
   observation.diagnostics = diagnostics;
 
-  if (result === false) {
+  if (result === false || commitsNothing(result)) {
     observation.state = 'refused';
 
     return result;
@@ -996,6 +1050,12 @@ export const recordDataTransferOutcome = <V extends Value>(
   observation.state = 'pending';
 
   return attachTransactionSpecAfterCommit(result, () => {
+    if (leftOut) {
+      observation.diagnostics = Object.freeze([
+        ...diagnostics,
+        LEFT_OUT_DATA_TRANSFER_DIAGNOSTIC,
+      ]);
+    }
     settleDataTransferInsertion(observation, true);
   });
 };
@@ -1043,8 +1103,6 @@ export const observeDataTransferInsertion = <T>(
     settleDataTransferInsertion(observation, false);
   };
 
-  // Inside an open update the outcome waits for that update: its commit runs
-  // the insertion's own handler first, and a rollback reports nothing.
   if (!afterActiveTransactionEnds(editor, unsettled)) unsettled();
 
   return result;
@@ -1055,9 +1113,13 @@ export const createDataTransferTransactionSpec = <V extends Value>(
   dataTransfer: DataTransfer,
   options?: Readonly<{
     mimeType?: string;
+    refusedMimeType?: string;
     state?: EditorStateView<V, any>;
   }>
 ) => {
+  const refused = new Set(
+    options?.refusedMimeType ? [options.refusedMimeType] : []
+  );
   const formats = getDataTransferFormats(editor);
   const snapshot = createDataTransferSnapshot(
     dataTransfer,
@@ -1122,37 +1184,39 @@ export const createDataTransferTransactionSpec = <V extends Value>(
 
     if (!slice) continue;
     if (slice.content.length === 0) {
-      return recordDataTransferOutcome(
-        editor,
-        false,
-        selectDataTransferDiagnostics(attempts, attempt)
-      );
+      return recordDataTransferOutcome(editor, false, {
+        diagnostics: selectDataTransferDiagnostics(attempts, attempt),
+      });
     }
 
     const input = { slice };
-    const result = options?.state
-      ? evaluateCommandWithState(
-          editor,
-          editorCommands.replaceSlice,
-          options.state,
-          input
-        ).result
-      : evaluateCommand(editor, editorCommands.replaceSlice, input).result;
-
-    if (result === false) continue;
-
-    return recordDataTransferOutcome(
-      editor,
-      result,
-      selectDataTransferDiagnostics(attempts, attempt)
+    const landing = captureSliceLanding(editor, () =>
+      options?.state
+        ? evaluateCommandWithState(
+            editor,
+            editorCommands.replaceSlice,
+            options.state,
+            input
+          ).result
+        : evaluateCommand(editor, editorCommands.replaceSlice, input).result
     );
+
+    if (landing.result === false) {
+      if (sliceAddsContent(editor, slice)) refused.add(format.mimeType);
+      continue;
+    }
+
+    return recordDataTransferOutcome(editor, landing.result, {
+      diagnostics: selectDataTransferDiagnostics(attempts, attempt),
+      leftOut:
+        landing.lossy ||
+        [...refused].some((mimeType) => mimeType !== format.mimeType),
+    });
   }
 
-  return recordDataTransferOutcome(
-    editor,
-    false,
-    selectDataTransferDiagnostics(attempts, null)
-  );
+  return recordDataTransferOutcome(editor, false, {
+    diagnostics: selectDataTransferDiagnostics(attempts, null),
+  });
 };
 
 export const insertDataTransfer = <V extends Value>(

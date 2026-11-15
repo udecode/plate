@@ -11,7 +11,11 @@ import { getDefined } from '../internal/get-defined';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import type { ReplaceSliceCommand } from './editor-commands';
 import { editorReads } from './editor-reads';
-import { getEditorSchema } from './editor-runtime';
+import {
+  type EditorRuntimeCarrier,
+  getEditorRuntimeOwner,
+  getEditorSchema,
+} from './editor-runtime';
 import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { limitSliceToLength, sliceFitsLength } from './insert-limit';
 import { MAIN_ROOT_KEY } from './public-root';
@@ -157,6 +161,36 @@ export const writePaste = (
       written: plan.slice,
     }
   );
+};
+
+const PASTE_LOSS_NOTES = new WeakMap<object, { lossy: boolean }>();
+
+/** @internal */
+export const notePasteLoss = (editor: EditorRuntimeCarrier, lossy: boolean) => {
+  const note = PASTE_LOSS_NOTES.get(getEditorRuntimeOwner(editor));
+
+  if (note) note.lossy = lossy;
+};
+
+/** @internal */
+export const captureSliceLanding = (
+  editor: EditorRuntimeCarrier,
+  evaluate: () => TransactionSpec | false
+): Readonly<{ lossy: boolean; result: TransactionSpec | false }> => {
+  const owner = getEditorRuntimeOwner(editor);
+  const outer = PASTE_LOSS_NOTES.get(owner);
+  const note = { lossy: false };
+
+  PASTE_LOSS_NOTES.set(owner, note);
+
+  try {
+    const result = evaluate();
+
+    return { lossy: result !== false && note.lossy, result };
+  } finally {
+    if (outer) PASTE_LOSS_NOTES.set(owner, outer);
+    else PASTE_LOSS_NOTES.delete(owner);
+  }
 };
 
 const prepareEmptyBlockReplacement = (
