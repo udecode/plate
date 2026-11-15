@@ -46,7 +46,7 @@
           },
           {
             "type": "command",
-            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" --brief --repo \"$CLAUDE_PROJECT_DIR\"",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" --brief --auto --repo \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30
           },
           {

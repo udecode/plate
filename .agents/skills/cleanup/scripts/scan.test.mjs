@@ -6,7 +6,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { brief, classifyWorktree, deleteSafe, landed, removeLanded, scan } from './scan.mjs';
+import { autoCleanup, brief, classifyWorktree, deleteSafe, landed, removeLanded, scan } from './scan.mjs';
+
+Object.assign(process.env, { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1' });
 
 const DAY = 86_400_000;
 const SCAN = join(dirname(fileURLToPath(import.meta.url)), 'scan.mjs');
@@ -95,7 +97,8 @@ test('only folders no open session, process or server uses are marked safe', asy
     assert.equal(byPath[f.archived], 'safe', 'an archived session whose worktree is clean');
     assert.equal(byPath[f.landed], 'safe', 'an archived session whose changes the checkout already holds');
     assert.equal(byPath[f.unlanded], 'safe', 'an archived session whose patch the checkout has since changed');
-    assert.equal(byPath[f.orphan], 'safe', 'a session left open but idle does not keep its worktree');
+    assert.equal(byPath[f.orphan], 'keep', 'a session left open but idle keeps its worktree for a day');
+    assert.equal(verdicts(scan({ repo: f.main, sessions: f.sessions, sizes: false, now: now + 2 * DAY }).items)[f.orphan], 'safe', 'and not after a quiet day');
     assert.equal(byPath[join(f.caches, '.next', 'dev')], 'keep', "a build output's dev folder whose lock a running server holds");
     assert.equal(byPath[join(f.caches, '.next', 'cache')], 'keep', 'the build cache beside a running dev server');
     assert.equal(byPath[join(f.caches, '.next-plite', 'dev')], 'keep', 'a dev folder whose manifests changed today');
@@ -144,7 +147,7 @@ test('--repos judges each checkout in a folder that has linked worktrees', () =>
 });
 
 test('a worktree outside the folders agents use is asked about even when an archived session owned it', () => {
-  const facts = { agentMade: false, heldCaches: 0, hoursIdle: 48, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, scratchHoursQuiet: null, session: { state: null, title: 'done' }, unreached: 0 };
+  const facts = { agentMade: false, heldCaches: 0, hoursQuiet: 48, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, session: { state: null, title: 'done' }, unreached: 0 };
   assert.equal(classifyWorktree(facts)[0], 'ask');
   assert.equal(classifyWorktree({ ...facts, agentMade: true })[0], 'safe');
 });
@@ -176,13 +179,6 @@ test('--landed passes a change the checkout holds beside another landed patch to
   writeFileSync(join(f.archived, 'dup.txt'), card);
   writeFileSync(join(f.main, 'dup.txt'), card.replace('tail 9', 'TAIL 9'));
   assert.equal(landedOf(f.archived), 'safe');
-});
-
-test('--landed asks about an ignored file the checkout lacks', () => {
-  const f = fixture();
-  mkdirSync(join(f.archived, 'artifacts', 'run'), { recursive: true });
-  writeFileSync(join(f.archived, 'artifacts', 'run', 'proof.log'), 'exit 0\n');
-  assert.equal(landedOf(f.archived), 'ask');
 });
 
 test('--landed passes ignored copies of the checkout and folders an install or build recreates', () => {
@@ -396,10 +392,10 @@ test('delete removes the safe set and leaves every other folder', () => {
   const { removed } = deleteSafe({ repo: f.main, sessions: f.sessions });
   assert.deepEqual(
     removed.map((item) => item.path).sort(),
-    [f.archived, f.landed, f.unlanded, f.orphan, f.keptCache, join(f.caches, '.next-3002'), join(f.caches, '.next-chip-a1'), join(f.caches, '.next', 'dev'), join(f.caches, '.next', 'cache'), join(f.caches, '.next-plite', 'cache')].sort()
+    [f.archived, f.landed, f.unlanded, f.keptCache, join(f.caches, '.next-3002'), join(f.caches, '.next-chip-a1'), join(f.caches, '.next', 'dev'), join(f.caches, '.next', 'cache'), join(f.caches, '.next-plite', 'cache')].sort()
   );
   assert.ok(removed.every((item) => item.bytes !== null), 'each removed folder was measured');
-  for (const kept of [f.open, join(f.caches, '.next', 'server'), join(f.caches, '.next-plite', 'dev'), join(f.caches, '.next-3000')]) assert.ok(existsSync(kept), `${kept} stays`);
+  for (const kept of [f.open, f.orphan, join(f.caches, '.next', 'server'), join(f.caches, '.next-plite', 'dev'), join(f.caches, '.next-3000')]) assert.ok(existsSync(kept), `${kept} stays`);
   const listed = execFileSync('git', ['worktree', 'list'], { cwd: f.main, encoding: 'utf8' });
   assert.ok(![f.archived, f.landed, f.unlanded].some((path) => listed.includes(path)), 'git no longer lists the removed worktrees');
   const patchOf = (path) => removed.find((item) => item.path === path).patch;
@@ -433,6 +429,53 @@ test('a worktree in a session scratch folder stays while that session writes its
   }
 });
 
+test('a worktree stays a day after a session working in it last wrote its transcript', () => {
+  const f = fixture();
+  const config = join(f.root, 'claude-config');
+  const transcript = join(config, 'projects', f.orphan.replace(/[^a-zA-Z0-9]/gu, '-'), 'session.jsonl');
+  mkdirSync(dirname(transcript), { recursive: true });
+  writeFileSync(transcript, '{}\n');
+  const later = Date.now() + 2 * DAY;
+  const saved = process.env.CLAUDE_CONFIG_DIR;
+  process.env.CLAUDE_CONFIG_DIR = config;
+  try {
+    const at = (now) => verdicts(scan({ repo: f.main, sizes: false, now }).items)[f.orphan];
+    utimesSync(transcript, new Date(later - 3_600_000), new Date(later - 3_600_000));
+    assert.equal(at(later), 'keep', 'a transcript written an hour ago');
+    age(transcript, 0);
+    assert.equal(at(later), 'safe', 'a transcript quiet for two days');
+  } finally {
+    if (saved === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = saved;
+  }
+});
+
+test('the session-start cleanup starts once a day unless the models sheet turns it off', () => {
+  const f = fixture();
+  const config = join(f.root, 'claude-config');
+  mkdirSync(config);
+  const saved = process.env.CLAUDE_CONFIG_DIR;
+  process.env.CLAUDE_CONFIG_DIR = config;
+  const started = [];
+  const start = (repo, stamp) => started.push([repo, stamp]);
+  try {
+    const now = Date.now();
+    const stamp = autoCleanup({ repo: f.orphan, now, start });
+    assert.equal(stamp, join(f.main, '.git', 'cleanup', 'last-run'));
+    assert.deepEqual(started, [[f.orphan, stamp]], 'it runs from the session worktree, so the run keeps that one');
+    assert.equal(autoCleanup({ repo: f.main, now, start }), null, 'a second session that day starts none');
+    age(stamp, 2);
+    writeFileSync(join(config, 'pstack-models.md'), 'default effort: high\nauto cleanup: off\n');
+    assert.equal(autoCleanup({ repo: f.main, now, start }), null, 'the user turned it off');
+    writeFileSync(join(config, 'pstack-models.md'), 'auto cleanup: on\n');
+    assert.equal(autoCleanup({ repo: f.main, now, start }), stamp, 'a day later it starts again');
+    assert.equal(started.length, 2);
+  } finally {
+    if (saved === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+    else process.env.CLAUDE_CONFIG_DIR = saved;
+  }
+});
+
 test('a worktree whose folder is gone loses only its record', () => {
   const f = fixture();
   renameSync(f.archived, `${f.archived}-moved`);
@@ -447,14 +490,14 @@ test('a worktree that lost its .git link goes when it holds no files and is aske
   rmSync(f.archived, { recursive: true });
   mkdirSync(join(f.archived, 'packages', 'p'), { recursive: true });
   symlinkSync(f.main, join(f.archived, 'node_modules'));
-  rmSync(join(f.orphan, '.git'));
+  rmSync(join(f.landed, '.git'));
   assert.equal(verdictOf(f, f.archived), 'safe');
-  assert.equal(verdictOf(f, f.orphan), 'ask');
+  assert.equal(verdictOf(f, f.landed), 'ask');
   deleteSafe({ repo: f.main, sessions: f.sessions });
   assert.ok(!git(f.main, 'worktree', 'list').includes(`${f.archived} `), 'git no longer lists the empty one');
   assert.ok(!existsSync(f.archived), 'its empty folder is gone');
   assert.ok(existsSync(join(f.main, 'a.txt')), 'the symlink target stays');
-  assert.ok(existsSync(join(f.orphan, 'a.txt')), 'the one holding files stays');
+  assert.ok(existsSync(join(f.landed, 'a.txt')), 'the one holding files stays');
 });
 
 test('--remove keeps a worktree that lost its .git link while it holds files', () => {

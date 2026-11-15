@@ -5,15 +5,17 @@
 // judged instead.
 //
 //   node scan.mjs [--repo <checkout> | --repos <folder>] [--sessions <file>] [--json] [--no-sizes] [--delete]
-//   node scan.mjs --brief [--repo <checkout>]
+//   node scan.mjs --brief [--auto] [--repo <checkout>]
 //   node scan.mjs --landed <worktree>
 //   node scan.mjs [--repo <checkout>] --remove <worktree>...
 //
 // --sessions takes a JSON array of sessions, each with cwd, isRunning, pinned
-// and title. Only a running or pinned session, a running process or a recent
-// transcript keeps a worktree; uncommitted changes do not, because a card
-// session lands them in the checkout as a patch. A commit that no branch, tag
-// or remote reaches, which only the worktree's HEAD history keeps, makes the
+// and title. Only a running or pinned session, a running process, or a write
+// in the last day to the worktree or to a session transcript naming it keeps
+// a worktree, and the worktree of an archived session does not wait the day.
+// Uncommitted changes do not keep it, because a card session lands them in the
+// checkout as a patch. A commit that no branch, tag or remote reaches, which
+// only the worktree's HEAD history keeps, makes the
 // scan ask when it writes a file whose content the checkout's HEAD and its
 // upstream both lack and neither changed since, because removing the worktree
 // loses it. --delete measures each safe item, judges it again, checks the
@@ -41,10 +43,14 @@
 // patch, as it does for a worktree.
 // --brief prints one line, or nothing, counting the unlocked agent worktrees and
 // the checkout caches cleanup could remove that show no git or cache writes for
-// three days. --landed exits 0 only when every change and ignored file of one
-// worktree is committed where a branch, tag or remote reaches it, recreated by
-// an install or build, or in the checkout, where a tracked edit also counts
-// once the checkout's copy holds its hunks.
+// three days. With --auto it also starts --delete in the background when the
+// clone's last one started over a day ago, unless the user's pstack models
+// sheet holds the line `auto cleanup: off`; git's cleanup/last-run file
+// records the start and holds the run's report. --landed exits 0 only when
+// every change and ignored file of one worktree is committed where a branch,
+// tag or remote reaches it, recreated by an install or build, or in the
+// checkout, where a tracked edit also counts once the checkout's copy holds its
+// hunks.
 // --remove takes worktrees whose work the caller knows landed and judges none of
 // them: it stops each process working in one, saves the uncommitted changes the
 // checkout lacks as a patch as --delete does, saves each commit no branch, tag
@@ -54,8 +60,8 @@
 // file while holding files, one whose commits git cannot list, one whose
 // processes lsof cannot list and one git refuses to remove, and exits 1 when it
 // keeps any.
-import { execFileSync, execSync } from 'node:child_process';
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync, execSync, spawn } from 'node:child_process';
+import { closeSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
@@ -164,8 +170,7 @@ function usageVerdict(facts) {
   if (facts.processes === null) return ['keep', 'lsof could not list the processes working in it'];
   if (facts.processes > 0) return ['keep', `${facts.processes} running processes work in it`];
   if (facts.session?.state) return ['keep', `session "${facts.session.title}" is ${facts.session.state}`];
-  if (!facts.session && facts.scratchHoursQuiet !== null && facts.scratchHoursQuiet < 24) return ['keep', 'the session whose scratch folder holds it wrote its transcript in the last day'];
-  if (!facts.session && facts.scratchHoursQuiet === null && facts.hoursIdle < 24) return ['keep', 'no session claims it, and it changed in the last day'];
+  if (!facts.session?.archived && facts.hoursQuiet < 24) return ['keep', 'it or a session transcript naming it changed in the last day'];
   if (!facts.agentMade) return ['ask', 'it sits outside the folders agents make worktrees in'];
   if (facts.nested) return ['ask', `another worktree lives inside it: ${facts.nested}`];
   if (facts.unlinked) return facts.empty ? ['safe', 'git lost its link to it and it holds no files'] : ['ask', 'git lost its link to it, so the scan cannot read the files in it'];
@@ -180,7 +185,7 @@ function cleanupVerdict(facts) {
   if (facts.heldCaches > 0) return ['keep', 'a running server holds a cache inside it'];
   if (facts.repos > 0) return ['ask', `${facts.repos} submodules or nested repositories inside it`];
   if (facts.unreached !== 0) return ['ask', unreachedReason(facts.unreached)];
-  return ['safe', facts.session ? 'no session that used it is running' : 'no session has used it for a day'];
+  return ['safe', facts.session?.archived ? 'every session that used it is archived' : 'nothing wrote it or a session transcript naming it for a day'];
 }
 
 function landedVerdict(facts) {
@@ -398,17 +403,18 @@ function sessionFor(path, sessions) {
   if (matches.length === 0) return null;
   const live = matches.find((session) => session.isRunning || session.pinned);
   const session = live ?? matches[0];
-  return { state: live ? (live.isRunning ? 'running' : 'pinned') : null, title: session.title ?? session.sessionId ?? 'untitled' };
+  return { archived: matches.every((each) => each.isArchived), state: live ? (live.isRunning ? 'running' : 'pinned') : null, title: session.title ?? session.sessionId ?? 'untitled' };
 }
 
 // A lead's proof worktree sits in its session's scratch folder, whose path
-// names that session; its transcript changes while the session runs.
-function scratchTranscriptMtime(path, projects) {
+// names that session. A session working in the worktree writes a transcript in
+// a folder named for its working directory, every character but a letter or
+// digit written as a dash. Either transcript changes while its session works.
+function transcriptMtime(path, projects) {
   const id = path.split(sep).find((part) => UUID.test(part));
-  if (!id) return null;
-  const dirs = existsSync(projects) ? readdirSync(projects) : [];
-  const transcript = dirs.map((dir) => join(projects, dir, `${id}.jsonl`)).find(existsSync);
-  return transcript ? statSync(transcript).mtimeMs : 0;
+  const scratch = id ? entriesOf(projects).map((dir) => join(dir, `${id}.jsonl`)) : [];
+  const own = entriesOf(join(projects, path.replace(/[^a-zA-Z0-9]/gu, '-'))).filter((file) => file.endsWith('.jsonl'));
+  return newestMtime([...scratch, ...own]);
 }
 
 const agentRoots = (main) =>
@@ -420,7 +426,7 @@ function usageFacts(main, entry, context) {
   const { path } = entry;
   const missing = !existsSync(path);
   const admin = missing ? null : adminDir(path);
-  const transcript = scratchTranscriptMtime(path, context.projects);
+  const changed = Math.max(transcriptMtime(path, context.projects), admin ? adminMtime(admin) : newestMtime([path]));
   return {
     locked: 'locked' in entry ? entry.locked : null,
     missing,
@@ -429,8 +435,7 @@ function usageFacts(main, entry, context) {
     invoking: context.here.some((dir) => within(dir, path)),
     processes: context.cwds === null ? null : context.cwds.filter((cwd) => within(cwd, path)).length,
     session: sessionFor(path, context.sessions),
-    scratchHoursQuiet: transcript === null ? null : (context.now - transcript) / HOUR,
-    hoursIdle: (context.now - (admin ? adminMtime(admin) : newestMtime([path]))) / HOUR,
+    hoursQuiet: (context.now - changed) / HOUR,
     agentMade: agentRoots(main).some((root) => within(path, root)),
     nested: nestedIn(path, context.worktrees),
   };
@@ -599,8 +604,10 @@ const sizeOf = (path) => {
   }
 };
 
+const configDir = () => process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude');
+
 function contextFor(repo, main, sessions, now) {
-  const projects = join(process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude'), 'projects');
+  const projects = join(configDir(), 'projects');
   return { cwds: processCwds(), here: [real(repo), real(process.cwd())], now, projects, sessions, worktrees: listWorktrees(main) };
 }
 
@@ -828,6 +835,23 @@ export function brief({ repo, now = Date.now(), days = 3 }) {
   return `cleanup: ${idle} worktrees and ${caches} Next cache folders here show no git or cache writes for ${days} days; /cleanup removes the ones nothing uses and lists the rest.`;
 }
 
+function startDelete(repo, stamp) {
+  const out = openSync(stamp, 'a');
+  spawn(process.execPath, [fileURLToPath(import.meta.url), '--delete', '--repo', repo], { cwd: repo, detached: true, stdio: ['ignore', out, out] }).unref();
+  closeSync(out);
+}
+
+export function autoCleanup({ repo, now = Date.now(), start = startDelete }) {
+  const sheet = join(configDir(), 'pstack-models.md');
+  if (existsSync(sheet) && /^auto cleanup:\s*off\s*$/imu.test(readFileSync(sheet, 'utf8'))) return null;
+  const stamp = join(git(repo, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'cleanup', 'last-run');
+  if (now - (statOrNull(stamp)?.mtimeMs ?? 0) < 24 * HOUR) return null;
+  mkdirSync(dirname(stamp), { recursive: true });
+  writeFileSync(stamp, `started ${new Date(now).toISOString()}\n`);
+  start(repo, stamp);
+  return stamp;
+}
+
 const gib = (bytes) => (bytes === null ? '?' : `${(bytes / 1024 ** 3).toFixed(1)}G`);
 
 function render({ items, removed }) {
@@ -876,6 +900,8 @@ function main(argv) {
   if (argv.includes('--brief')) {
     const line = brief({ repo });
     if (line) console.log(line);
+    const stamp = argv.includes('--auto') ? autoCleanup({ repo }) : null;
+    if (stamp) console.log(`cleanup: removing in the background what nothing used for a day, as /cleanup does; its report goes to ${stamp}, and the line "auto cleanup: off" in ~/.claude/pstack-models.md turns this off.`);
     return 0;
   }
   const sessionsFile = value('--sessions');
