@@ -133,7 +133,6 @@ import {
   getHistory,
   getWorkingHistory,
   historyFactsOf,
-  historyFollowsFacts,
   historyProgramOf,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
@@ -717,17 +716,14 @@ const createHistoryPlugin = <
       return undefined;
     }
 
-    // Undo and redo never touch a retained record set.
     const { recordSets } = getCompiledEditorSchema(editor);
     const kept = (change: DocumentChange) =>
       withoutRetainedRecordSets(change, recordSets);
     const changes = kept(commit.changes);
     const inverse = kept(commit.inverseChanges);
-    const facts = historyFollowsFacts()
-      ? getEditorCommitFacts(commit)
-      : undefined;
+    const facts = getEditorCommitFacts(commit);
     const inverseFacts = (change: DocumentChange) =>
-      facts && change === inverse ? flipFacts(facts) : undefined;
+      change === inverse ? flipFacts(facts) : undefined;
 
     const effects = commit.effects.filter(
       (effect) => effect.type.history !== 'skip'
@@ -927,12 +923,7 @@ const createHistoryPlugin = <
 
       if (!commit.tags.includes('historic') && !changes.empty) {
         queuePendingHistoryReplayMapping(editor, changes, after);
-        queueHistoryMapping(
-          editor,
-          changes,
-          after,
-          facts ? { before, facts } : undefined
-        );
+        queueHistoryMapping(editor, changes, after, { before, facts });
       }
       return undefined;
     }
@@ -1108,14 +1099,12 @@ const createHistoryPlugin = <
         lastEntry.anchorCeiling
       );
 
-      const mergedFacts =
-        facts &&
-        composeFacts(
-          preparedBatch.change,
-          factsOf(preparedBatch),
-          lastEntry.batch.change,
-          factsOf(lastEntry.batch)
-        );
+      const mergedFacts = composeFacts(
+        preparedBatch.change,
+        factsOf(preparedBatch),
+        lastEntry.batch.change,
+        factsOf(lastEntry.batch)
+      );
 
       const joined = withHistoryFacts(mergedBatch, mergedFacts);
 

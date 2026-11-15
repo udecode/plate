@@ -74,11 +74,7 @@ export type HistoryJSON = Readonly<{
   redos: readonly HistoryBatchJSON[];
   schema: EditorSchemaIdentity;
   undos: readonly HistoryBatchJSON[];
-  /**
-   * 7 when history follows recorded facts, an internal mode, else 6 when a
-   * redo keeps a `fallback`, else 5 when a step keeps `rest` or `carried`,
-   * else 4.
-   */
+  /** 7 for every history this build saves. It still reads 4, 5 and 6. */
   version: 4 | 5 | 6 | 7;
 }>;
 

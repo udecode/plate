@@ -211,7 +211,6 @@ export const carryMapOf = (
   const carries = facts.roots.get(root)?.carries;
 
   if (!carries?.length) return null;
-  countCoreWork('carryMapsBuilt');
 
   const ordered = carries.every(
     ([, from], index) => index === 0 || carries[index - 1][1] < from

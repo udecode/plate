@@ -372,16 +372,6 @@ const omitPrimarySelectionRoot = <T extends Batch['selectionAfter']>(
 const additionalRoot = (root: string | undefined) =>
   root && root !== MAIN_ROOT_KEY ? root : undefined;
 
-let followsFacts = false;
-
-/** @internal */
-export const setHistoryFollowsFacts = (on: boolean) => {
-  followsFacts = on;
-};
-
-/** @internal */
-export const historyFollowsFacts = () => followsFacts;
-
 const STEP_IDS = new WeakMap<object, string>();
 const HISTORY_STEPS = new WeakMap<Batch, object>();
 
@@ -2515,14 +2505,17 @@ export const queueHistoryMapping = <V extends Value>(
   editor: Editor<V>,
   change: DocumentChange,
   after: EditorDocumentValue<V>,
-  skipped?: Readonly<{ before: EditorDocumentValue<V>; facts: ChangeFacts }>
+  skipped: Readonly<{ before: EditorDocumentValue<V>; facts: ChangeFacts }>
 ) => {
   if (change.empty) return;
 
   const store = getStore(editor);
-  const crosses =
-    skipped !== undefined &&
-    admits(editor, store, { change, facts: skipped.facts }, skipped.before);
+  const crosses = admits(
+    editor,
+    store,
+    { change, facts: skipped.facts },
+    skipped.before
+  );
 
   if (crosses) countCoreWork('admittedChanges');
 

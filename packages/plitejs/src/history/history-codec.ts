@@ -41,7 +41,6 @@ import {
   historyBatchStepId,
   historyFactsOf,
   historyFallbackOf,
-  historyFollowsFacts,
   withHistoryFacts,
   withHistoryFallback,
   withHistoryProgram,
@@ -86,7 +85,6 @@ const decodeRecord = (input: Readonly<Record<string, unknown>>) => {
 const encodeBatch = (
   editor: AnyEditor,
   batch: Batch,
-  records: boolean,
   fallback?: Batch | null
 ): HistoryBatchJSON => ({
   change: batch.change.toJSON(),
@@ -112,17 +110,16 @@ const encodeBatch = (
         ),
       }
     : {}),
-  ...(records ? encodeRecord(historyFactsOf(batch)) : {}),
-  ...(fallback ? { fallback: encodeBatch(editor, fallback, records) } : {}),
+  ...encodeRecord(historyFactsOf(batch)),
+  ...(fallback ? { fallback: encodeBatch(editor, fallback) } : {}),
 });
 
 const encodeStep = (
   editor: AnyEditor,
   batch: Batch,
-  records: boolean,
   fallback?: Batch | null
 ): HistoryBatchJSON => ({
-  ...encodeBatch(editor, batch, records, fallback),
+  ...encodeBatch(editor, batch, fallback),
   id: historyBatchStepId(batch),
 });
 
@@ -544,20 +541,13 @@ export const encodeHistoryValue = <V extends Value>(
 
   const redos = persistent(history.redos);
   const undos = persistent(history.undos);
-  const records = historyFollowsFacts();
 
   return {
     redos: redos.map((batch) =>
-      encodeStep(editor, batch, records, fallbacks.get(batch))
+      encodeStep(editor, batch, fallbacks.get(batch))
     ),
     schema,
-    undos: undos.map((batch) => encodeStep(editor, batch, records)),
-    version: records
-      ? 7
-      : redos.some((batch) => fallbacks.has(batch))
-        ? 6
-        : [...redos, ...undos].some((batch) => batch.rest || batch.carried)
-          ? 5
-          : 4,
+    undos: undos.map((batch) => encodeStep(editor, batch)),
+    version: 7,
   };
 };
