@@ -94,6 +94,7 @@ const StackRank = React.createContext<(shape: ShapeFields) => number>(() => 0);
 export type RendererView = Readonly<{
   camera: BoardCamera;
   layer: HTMLElement | null;
+  tool?: string;
   zoomLayer: HTMLElement | null;
 }>;
 

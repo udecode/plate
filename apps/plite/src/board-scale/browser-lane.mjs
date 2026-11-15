@@ -6,11 +6,13 @@
  * `.agents/rules/benchmark/scripts/paired-timing.mjs` reads. The runner's own
  * output goes to stderr, where a failed line's assertion stays readable.
  *
- *   node apps/plite/src/board-scale/browser-lane.mjs --lane type|mount|pan|drag|guard
+ *   node apps/plite/src/board-scale/browser-lane.mjs --lane type|mount|pan|drag|guard|keys
  *     --engine chromium|webkit --render A|W --arm <arm> --cohorts <name,...>
- *     --log-dir <dir> [--base n50|flat] [--assert 1] [--known-bad <fault>]
+ *     --log-dir <dir> [--base n50|flat|same] [--assert 1] [--known-bad <fault>]
  *     [--factor <ratio>] [--slow-basis n1|n2] [--keys 120] [--warmup 20]
- *     [--dry-job 1]
+ *     [--ops <op,...>, required with --lane keys: aim-tab, aim-pick, write-note, write-frame, write-arrow]
+ *     [--aim connect|select] [--write enter|pointer] [--samples 20]
+ *     [--write-warmup 3] [--dry-job 1]
  *
  * Arms: base, candidate, copy, plant-<name> (see browser-cohorts.ts).
  * --dry-job 1 prints the job this arm would run and runs nothing, so a
@@ -87,7 +89,25 @@ const oneOf = (name, allowed, fallback) => {
   return value;
 };
 
-const lane = oneOf('lane', ['type', 'mount', 'pan', 'drag', 'guard']);
+const lane = oneOf('lane', ['type', 'mount', 'pan', 'drag', 'guard', 'keys']);
+const K2_OPS = [
+  'aim-pick',
+  'aim-tab',
+  'write-arrow',
+  'write-frame',
+  'write-note',
+];
+const ops = lane === 'keys' ? required('ops').split(',') : undefined;
+
+for (const op of ops ?? []) {
+  if (!K2_OPS.includes(op)) {
+    throw new Error(
+      `browser lane: --ops ${op} is not one of ${K2_OPS.join(', ')}`
+    );
+  }
+}
+const write =
+  lane === 'keys' ? oneOf('write', ['enter', 'pointer'], 'enter') : undefined;
 const engine = oneOf('engine', ['chromium', 'webkit']);
 const render = oneOf('render', ['A', 'W']);
 const arm = required('arm');
@@ -103,25 +123,34 @@ const logDir = path.resolve(required('log-dir'));
 const dry = args.get('dry-job') === '1';
 
 if (!dry) mkdirSync(logDir, { recursive: true });
-const stem = `${lane}-${arm}-${engine}-${render}${knownBad ? `-bad-${knownBad}` : ''}`;
+const keysPart = ops ? `-${ops.join('+')}-${write}` : '';
+const stem = `${lane}${keysPart}-${arm}-${engine}-${render}${knownBad ? `-bad-${knownBad}` : ''}`;
 let attempt = 1;
 
 while (existsSync(path.join(logDir, `${stem}-a${attempt}.json`))) attempt += 1;
 const output = path.join(logDir, `${stem}-a${attempt}.json`);
 const jobPath = path.join(logDir, `${stem}-a${attempt}.job.json`);
 const job = {
+  aim:
+    lane === 'keys'
+      ? oneOf('aim', ['connect', 'select'], 'connect')
+      : undefined,
   arm,
   assert: args.get('assert') === '1',
-  base: oneOf('base', ['n50', 'flat'], 'n50'),
+  base: oneOf('base', ['n50', 'flat', 'same'], 'n50'),
   cohorts: required('cohorts').split(','),
   factor: Number(args.get('factor') ?? 1.3),
   keys: Number(args.get('keys') ?? 120),
   knownBad,
   lane,
+  ops,
   output,
   render,
+  samples: Number(args.get('samples') ?? 20),
   slowBasis: oneOf('slow-basis', ['n1', 'n2'], 'n1'),
   warmup: Number(args.get('warmup') ?? 20),
+  write,
+  writeWarmup: Number(args.get('write-warmup') ?? 3),
 };
 
 if (dry) {

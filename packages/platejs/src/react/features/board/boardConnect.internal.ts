@@ -1,5 +1,6 @@
 import {
   BaseBoardArrowPlugin,
+  type BoardMemberEntry,
   type BoardPlace,
 } from '../../../features/board/lib';
 import type { BoardBox, BoardShapeLayout } from './boardIndex.internal';
@@ -23,6 +24,11 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
 
     return layout?.kind === 'arrow' ? undefined : layout;
   };
+
+  const aimable = (entry: BoardMemberEntry) =>
+    entry.id === connect?.start || entry.kind === 'arrow'
+      ? undefined
+      : index.layout(entry.key);
 
   const draw = ({ aim, line, start }: Connect) => {
     const from = bindable(start);
@@ -81,14 +87,8 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
   return {
     active: () => !!connect,
     aimAt,
-    candidates: () =>
-      index
-        .entries()
-        .flatMap((entry) =>
-          entry.id === connect?.start || entry.kind === 'arrow'
-            ? []
-            : (index.layout(entry.key) ?? [])
-        ),
+    aimable,
+    candidates: () => index.entries().flatMap((entry) => aimable(entry) ?? []),
     detach: () => {
       host.removeEventListener('focusout', onFocusOut);
     },

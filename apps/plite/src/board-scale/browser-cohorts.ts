@@ -67,9 +67,16 @@ export const BUSY_PLANT_MS = 12;
 
 export const DEFER_PLANT_MS = 50;
 
+export const K2_BUSY_MS = {
+  aimMoved: 1,
+  selectionMoved: 2,
+  shapeAdded: 67,
+} as const;
+
 type GateLine =
   | 'G1'
   | 'J1'
+  | 'K2'
   | 'L1'
   | 'M0'
   | 'N1'
@@ -83,7 +90,9 @@ export const PLANT_REJECTING_LINES = {
   'shape-render': ['W1'],
   'shape-selector': ['W1'],
   'view-scan': ['W1'],
-  busy: ['N1'],
+  busy: ['N1', 'K2'],
+  'aim-render': ['K2'],
+  'write-render': ['K2'],
   slow: ['M0', 'J1'],
   defer: ['N2'],
   layout: ['N2'],

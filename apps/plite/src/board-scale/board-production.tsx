@@ -160,7 +160,11 @@ export const createProductionRenderer = (config: ProductionConfig) => {
   countCommittedRenders({ shapes: [BoardShape] });
 
   const instrumented = new WeakSet<ShippedView>();
-  const layoutPlant = plant === 'shape-render' || plant === 'pan-render';
+  const layoutPlant =
+    plant === 'shape-render' ||
+    plant === 'pan-render' ||
+    plant === 'aim-render' ||
+    plant === 'write-render';
 
   const instrumentView = (view: ShippedView) => {
     if (!layoutPlant || instrumented.has(view)) return;
@@ -669,6 +673,7 @@ export const createProductionRenderer = (config: ProductionConfig) => {
         ? {
             camera: handle.view.state().camera,
             layer: handle.layer,
+            tool: handle.view.state().tool,
             zoomLayer:
               handle.layer?.firstElementChild instanceof HTMLElement
                 ? handle.layer.firstElementChild

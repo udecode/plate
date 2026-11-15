@@ -331,18 +331,24 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const aimInOrder = (backward: boolean) => {
-    const candidates = connect.candidates();
-    const order = new Map(index.entries().map(({ key }, at) => [key, at]));
-    const orderOf = (layout: BoardShapeLayout | undefined) =>
-      (layout && order.get(layout.key)) ?? -1;
-    const at = orderOf(connect.aimFrom());
-    const next = backward
-      ? (candidates.findLast((layout) => orderOf(layout) < at) ??
-        candidates.at(-1))
-      : (candidates.find((layout) => orderOf(layout) > at) ?? candidates[0]);
+    const entries = index.entries();
+    const { length } = entries;
+    const from = connect.aimFrom();
+    const found = from ? entries.findIndex(({ key }) => key === from.key) : -1;
+    const step = backward ? -1 : 1;
+    let at = found === -1 && backward ? length : found;
 
-    if (next) connect.aimAt(next);
-    else connect.sayAim();
+    for (let moved = 0; moved < length; moved++) {
+      at = (at + step + length) % length;
+      const next = connect.aimable(entries[at]);
+
+      if (next) {
+        connect.aimAt(next);
+
+        return;
+      }
+    }
+    connect.sayAim();
   };
 
   const connectKey = (

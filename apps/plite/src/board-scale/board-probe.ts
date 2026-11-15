@@ -20,6 +20,7 @@ import {
   BROWSER_COHORTS,
   BUSY_PLANT_MS,
   DEFER_PLANT_MS,
+  K2_BUSY_MS,
   LAYOUT_THRASH_SHAPES,
   NEXT_RENDER_ARM,
   type BoardView,
@@ -252,6 +253,50 @@ type KeySample = {
   trusted: boolean;
 };
 
+type K2Done =
+  | Readonly<{ from: string | null; kind: 'selectionMoved' }>
+  | Readonly<{ kind: 'aimMoved' }>
+  | Readonly<{ kind: 'shapeAdded' }>;
+
+type K2Arm = Readonly<{
+  done: K2Done;
+  event: 'keydown' | 'pointerdown' | 'pointerup';
+  key: string | null;
+  planted: boolean;
+  said: Readonly<{ end: string; start: string }> | null;
+}>;
+
+type K2Sample = {
+  done?: number;
+  extraMs: number;
+  mounts?: number;
+  result?: string;
+  resultAt?: number;
+  start: number;
+  trusted: boolean;
+  rerenderedIds?: string[];
+  rerenders?: number;
+  words?: string;
+  wordsAt?: number;
+};
+
+const LIVE_REGION = '[role="status"][aria-live="polite"]';
+
+const liveRegionOf = ({ target }: MutationRecord) =>
+  (target instanceof Element ? target : target.parentElement)?.closest(
+    LIVE_REGION
+  ) ?? null;
+
+const fullyIn = (box: ShapeBox, view: ScreenRect) =>
+  box.x >= view.left &&
+  box.x + box.width <= view.right &&
+  box.y >= view.top &&
+  box.y + box.height <= view.bottom;
+
+const ABOVE_ARROWS_PX = 10;
+
+const lineEndKey = (x: number, y: number) => `${x.toFixed(1)},${y.toFixed(1)}`;
+
 export const installBoardProbe = (
   editor: ProbeEditor,
   prepared: PreparedBoardScale
@@ -441,6 +486,201 @@ export const installBoardProbe = (
       channel.port2.postMessage(null);
     });
   });
+
+  const boardHost = () =>
+    document.querySelector<HTMLElement>(`[data-board="${typedRoot}"]`);
+  const aimLineEnd = () => {
+    const line = boardHost()?.querySelector(
+      'svg[data-board-arrow-preview] line'
+    );
+
+    return line
+      ? lineEndKey(
+          Number(line.getAttribute('x2')),
+          Number(line.getAttribute('y2'))
+        )
+      : null;
+  };
+  const rootShapes = () =>
+    (editor.read.value() as StoredValue).roots?.[typedRoot ?? ''] ?? [];
+  const selectedShapes = () =>
+    Array.from(
+      boardHost()?.querySelectorAll('[data-board-shape][data-selected]') ?? [],
+      (element) => element.getAttribute('data-board-shape') ?? ''
+    );
+  let k2: {
+    arm: K2Arm;
+    before: {
+      mounts: number;
+      renders: ReadonlyMap<string, number>;
+    } | null;
+    known: ReadonlySet<string>;
+    lineBefore: string | null;
+    notify: (() => void) | null;
+    sample: K2Sample | null;
+    settled: boolean;
+  } | null = null;
+  let shapeAtLineEnd = new Map<string, string>();
+  const indexLineEnds = (shapes: readonly StoredNode[]) =>
+    new Map(
+      shapes.flatMap((shape) => {
+        const box = shapeBox(shape);
+
+        return shape.type === 'boardArrow'
+          ? []
+          : [
+              [
+                lineEndKey(box.x + box.width / 2, box.y + box.height / 2),
+                shape.shapeId ?? '',
+              ] as const,
+            ];
+      })
+    );
+  const aimedShapeAt = (end: string) =>
+    shapeAtLineEnd.get(end) ?? `line at ${end}`;
+
+  const k2ResultOf = (arm: K2Arm, result: string | undefined) =>
+    arm.done.kind === 'aimMoved' && result ? aimedShapeAt(result) : result;
+  const k2Channel = new MessageChannel();
+
+  const addedShape = (records: readonly MutationRecord[]) => {
+    if (!k2) return null;
+    for (const record of records) {
+      const elements =
+        record.type === 'attributes'
+          ? [record.target]
+          : Array.from(record.addedNodes).flatMap((node) =>
+              node instanceof Element
+                ? [node, ...node.querySelectorAll('[data-board-shape]')]
+                : []
+            );
+
+      for (const element of elements) {
+        const id =
+          element instanceof Element
+            ? element.getAttribute('data-board-shape')
+            : null;
+
+        if (id && !k2.known.has(id)) return id;
+      }
+    }
+
+    return null;
+  };
+
+  const k2Result = (records: readonly MutationRecord[]) => {
+    if (!k2) return null;
+    const { done } = k2.arm;
+
+    if (done.kind === 'shapeAdded') return addedShape(records);
+    if (done.kind === 'selectionMoved') {
+      const ids = selectedShapes();
+
+      return ids.length === 1 && ids[0] !== done.from ? ids[0] : null;
+    }
+    const end = aimLineEnd();
+
+    return end !== null && end !== k2.lineBefore ? end : null;
+  };
+
+  const k2Observer = new MutationObserver((records) => {
+    const now = performance.now();
+    const sample = k2?.sample;
+
+    if (!k2 || !sample || sample.done !== undefined) return;
+    const { said } = k2.arm;
+
+    if (said && sample.wordsAt === undefined) {
+      const words = records
+        .map((record) => liveRegionOf(record)?.textContent ?? '')
+        .find((text) => text.startsWith(said.start) && text.endsWith(said.end));
+
+      if (words) {
+        sample.wordsAt = now;
+        sample.words = words;
+      }
+    }
+    if (sample.resultAt === undefined) {
+      const result = k2Result(records);
+
+      if (result !== null) {
+        sample.resultAt = now;
+        sample.result = result;
+      }
+    }
+    if (sample.resultAt === undefined) return;
+    if (said && sample.wordsAt === undefined) return;
+    sample.done = Math.max(sample.resultAt, sample.wordsAt ?? sample.resultAt);
+    // A second commit after the insert's own, so React cannot fold it in.
+    if (k2.arm.planted && plant === 'write-render') {
+      setTimeout(bumpShapeTick, 0);
+    }
+    requestAnimationFrame(() => k2Channel.port2.postMessage(null));
+  });
+
+  k2Channel.port1.addEventListener('message', () => {
+    // Queued after the write-render plant's timer, so its commit is counted.
+    setTimeout(() => {
+      const armed = k2;
+      const sample = armed?.sample;
+
+      if (!armed?.before || !sample || armed.settled) return;
+      const { mounts, renders } = armed.before;
+      const counts = [...renders].map(
+        ([id, count]) =>
+          [id, (boardStats.renderedIds.get(id) ?? 0) - count] as const
+      );
+
+      sample.rerenders = counts.reduce((sum, [, count]) => sum + count, 0);
+      sample.mounts = boardStats.mounts - mounts;
+      sample.rerenderedIds = counts.flatMap(([id, count]) =>
+        count > 0 ? [id] : []
+      );
+      k2Observer.disconnect();
+      armed.settled = true;
+      armed.notify?.();
+    }, 0);
+  });
+  k2Channel.port1.start();
+
+  const startK2 = (event: Event) => {
+    const armed = k2;
+
+    if (!armed || armed.sample || event.type !== armed.arm.event) return;
+    if (event instanceof KeyboardEvent && event.key !== armed.arm.key) return;
+    armed.before = {
+      mounts: boardStats.mounts,
+      renders: new Map(
+        shapeElements().map(({ dataset }) => {
+          const id = dataset.shapeId ?? '';
+
+          return [id, boardStats.renderedIds.get(id) ?? 0];
+        })
+      ),
+    };
+    const sample: K2Sample = {
+      extraMs: 0,
+      start: performance.now(),
+      trusted: event.isTrusted,
+    };
+
+    armed.sample = sample;
+    if (!armed.arm.planted) return;
+    if (plant === 'busy') {
+      const ms = K2_BUSY_MS[armed.arm.done.kind];
+
+      busyWait(ms);
+      sample.extraMs += ms;
+    } else if (plant === 'aim-render') {
+      bumpShapeTick();
+    }
+  };
+
+  // The page installs the probe before the board mounts, so these window
+  // capture listeners run before the board's own.
+  window.addEventListener('keydown', startK2, true);
+  window.addEventListener('pointerdown', startK2, true);
+  window.addEventListener('pointerup', startK2, true);
 
   const readback = () => {
     const stored = storedValue();
@@ -1297,6 +1537,165 @@ export const installBoardProbe = (
     },
 
     dragCount: () => drag?.count() ?? 0,
+
+    k2Setup: () => {
+      const shapes = storedBoard() ?? [];
+      const camera = readCamera();
+      const view = viewRect(camera);
+      const surface = surfaceRect();
+
+      if (!surface) throw new Error('no board surface for K2');
+      const middle = {
+        x: (view.left + view.right) / 2,
+        y: (view.top + view.bottom) / 2,
+      };
+      const note = (shape: StoredNode | undefined): shape is StoredNode =>
+        shape?.type === 'boardNote' &&
+        shape.shapeId !== prepared.typedShapeId &&
+        fullyIn(shapeBox(shape), view) &&
+        isMounted(shape.shapeId ?? '');
+      let best: { at: number; distance: number } | null = null;
+
+      for (let at = 1; at < shapes.length - 1; at++) {
+        const [left, start, right] = shapes.slice(at - 1, at + 2);
+
+        if (!note(left) || !note(start) || !note(right)) continue;
+        const [l, s, r] = [left, start, right].map(shapeBox);
+
+        if (l.y !== s.y || r.y !== s.y || !(l.x < s.x && s.x < r.x)) continue;
+        const distance = Math.hypot(
+          s.x + s.width / 2 - middle.x,
+          s.y + s.height / 2 - middle.y
+        );
+
+        if (!best || distance < best.distance) best = { at, distance };
+      }
+      if (!best) {
+        throw new Error('K2 found no note in view with notes on both sides');
+      }
+      shapeAtLineEnd = indexLineEnds(shapes);
+      const [left, start, right] = shapes.slice(best.at - 1, best.at + 2);
+      const s = screenRect(shapeBox(start), surface, camera);
+      const r = screenRect(shapeBox(right), surface, camera);
+
+      return {
+        gapAboveArrows: {
+          x: (s.right + r.left) / 2,
+          y: s.top + ABOVE_ARROWS_PX,
+        },
+        left: left.shapeId ?? '',
+        places: {
+          [left.shapeId ?? '']: best.at,
+          [right.shapeId ?? '']: best.at + 2,
+          [start.shapeId ?? '']: best.at + 1,
+        },
+        right: right.shapeId ?? '',
+        rightCenter: { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 },
+        start: start.shapeId ?? '',
+        startCenter: { x: (s.left + s.right) / 2, y: (s.top + s.bottom) / 2 },
+        startGrab: { x: s.left + 6, y: s.top + 6 },
+        total: shapes.length,
+      };
+    },
+
+    k2State: () => {
+      const end = aimLineEnd();
+      const view = typedView();
+
+      return {
+        aimed: end === null ? null : aimedShapeAt(end),
+        selected: selectedShapes(),
+        tool: view && 'tool' in view ? (view.tool ?? null) : null,
+      };
+    },
+
+    k2Count: () => rootShapes().length,
+
+    k2Shape: (id: string) => {
+      const shape = rootShapes().find((each) => each.shapeId === id);
+
+      return shape
+        ? {
+            end: shape.end?.shape ?? null,
+            start: shape.start?.shape ?? null,
+            type: shape.type ?? '',
+          }
+        : null;
+    },
+
+    k2Arm: (arm: K2Arm) => {
+      k2Observer.disconnect();
+      k2 = {
+        arm,
+        before: null,
+        known: new Set(
+          arm.done.kind === 'shapeAdded'
+            ? rootShapes().map((shape) => shape.shapeId ?? '')
+            : []
+        ),
+        lineBefore: aimLineEnd(),
+        notify: null,
+        sample: null,
+        settled: false,
+      };
+      const host = boardHost();
+
+      if (!host) throw new Error('no board for K2 to watch');
+      k2Observer.observe(host, {
+        attributeFilter: ['data-board-shape', 'data-selected', 'x2', 'y2'],
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+      if (!arm.said) return;
+      for (const region of document.querySelectorAll(LIVE_REGION)) {
+        k2Observer.observe(region, {
+          characterData: true,
+          childList: true,
+          subtree: true,
+        });
+      }
+    },
+
+    k2Wait: (timeoutMs: number) =>
+      new Promise<string | null>((resolve) => {
+        const armed = k2;
+
+        if (!armed) {
+          resolve('no K2 operation was armed');
+
+          return;
+        }
+        const timer = setTimeout(() => {
+          armed.notify = null;
+          k2Observer.disconnect();
+          resolve(
+            !armed.sample
+              ? 'reached no listener'
+              : armed.sample.resultAt === undefined
+                ? 'changed no DOM it waits for'
+                : armed.sample.done === undefined
+                  ? `said no words ending ${JSON.stringify(armed.arm.said?.end)} for its result ${String(k2ResultOf(armed.arm, armed.sample.result))}`
+                  : 'never settled'
+          );
+        }, timeoutMs);
+
+        armed.notify = () => {
+          clearTimeout(timer);
+          resolve(null);
+        };
+        if (armed.settled) armed.notify();
+      }),
+
+    k2Take: () => {
+      const sample = k2?.sample ?? null;
+      const arm = k2?.arm;
+
+      k2 = null;
+      if (!sample || !arm) return null;
+
+      return { ...sample, result: k2ResultOf(arm, sample.result) };
+    },
 
     holdUntilViewsSettle: async () => {
       while (!renderer.viewsSettled()) await nextFrame();
