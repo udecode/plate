@@ -231,7 +231,8 @@ const expandMapUnit = <T>(stack: Array<PersistentMapNode<T> | MapEntry<T>>) => {
  */
 export const persistentMapChanges = <T>(
   before: PersistentMapNode<T> | null,
-  after: PersistentMapNode<T> | null
+  after: PersistentMapNode<T> | null,
+  same: (a: T, b: T) => boolean = Object.is
 ): string[] => {
   const changed: string[] = [];
 
@@ -254,7 +255,7 @@ export const persistentMapChanges = <T>(
     } else if (!isMapEntry(b)) {
       expandMapUnit(right);
     } else if (a[0] === b[0]) {
-      if (a[1] !== b[1]) changed.push(a[0]);
+      if (!same(a[1], b[1])) changed.push(a[0]);
       left.pop();
       right.pop();
     } else if (a[0] < b[0]) {

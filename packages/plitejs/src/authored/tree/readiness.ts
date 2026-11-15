@@ -1,7 +1,7 @@
 import type { DocumentIndex } from '../../core/change/document-index';
 import type { JsonNode } from '../../core/change/tokens';
 import {
-  getRecord,
+  getRecordText,
   getRecordSetVersion,
   getValueRecords,
   type RecordSetVersion,
@@ -535,7 +535,7 @@ export class ShownBook {
       countCoreWork('spareRecordMoves');
 
       const old = reads.get(id);
-      const json = getRecord(store, RESERVES, id);
+      const json = getRecordText(store, RESERVES, id);
 
       if (old?.json === json) continue;
       if (old?.read) diffReads(old.read, null, visit);

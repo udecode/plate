@@ -149,6 +149,8 @@ export type CoreWork = {
   yjsLetterLines: number;
   /** Mark records a collaboration binding visits. */
   yjsMarkRecordsVisited: number;
+  /** Canonical record texts built from a record's owned JSON on first read. */
+  recordTexts: number;
   /** Changed lines a Yjs import diffed by value, since the letters could not place them. */
   yjsValueDiffLines: number;
   /** Changed nodes a commit read to move the index of unique values. */
@@ -251,6 +253,7 @@ export const coreWork: CoreWork = {
   yjsJoinSiblingsRead: 0,
   yjsLetterLines: 0,
   yjsMarkRecordsVisited: 0,
+  recordTexts: 0,
   yjsValueDiffLines: 0,
   uniqueHolderReads: 0,
   uniqueIndexedNodes: 0,

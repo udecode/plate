@@ -12,12 +12,14 @@ import { isFrozenWithRoots, visitRootNames } from '../../core/change/lazy-root';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
 import {
-  getRecord,
   getRecordCount,
   getRecordEntries,
+  getRecordIds,
   getRecordSetVersion,
+  getRecordText,
   getRecordsWithPrefix,
   getValueRecords,
+  hasRecord,
   hasRecordWithPrefix,
   type RecordOps,
   type RecordStore,
@@ -105,7 +107,7 @@ const readContext = (
   store: RecordStore,
   ctx: string
 ): ContextRecord | undefined => {
-  const json = getRecord(store, CONTEXTS, ctx);
+  const json = getRecordText(store, CONTEXTS, ctx);
 
   if (json === undefined) return undefined;
 
@@ -221,7 +223,7 @@ export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
       const record = written.get(ctx);
 
       if (record) return record;
-      if (getRecord(store, CONTEXTS, ctx) !== undefined) ended.add(ctx);
+      if (hasRecord(store, CONTEXTS, ctx)) ended.add(ctx);
 
       return readContext(store, ctx);
     };
@@ -236,7 +238,7 @@ export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
     );
 
     if (dropped.size > 0) {
-      for (const [ctx] of getRecordEntries(store, CONTEXTS)) {
+      for (const ctx of getRecordIds(store, CONTEXTS)) {
         const base = readContext(store, ctx)?.base;
 
         if (base != null && dropped.has(base)) {
@@ -260,7 +262,7 @@ export const assertRecordStore = (store: RecordStore) => {
   const ended = new Set<string>();
   const get = (ctx: string) => readContext(store, ctx);
 
-  const records = [...getRecordEntries(store, CONTEXTS)].map(([ctx]) =>
+  const records = [...getRecordIds(store, CONTEXTS)].map((ctx) =>
     getRecordDefined(get(ctx))
   );
 
@@ -357,7 +359,7 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
       },
       contexts: Object.freeze({
         get: (ctx: string) => readContext(store, ctx),
-        has: (ctx: string) => getRecord(store, CONTEXTS, ctx) !== undefined,
+        has: (ctx: string) => hasRecord(store, CONTEXTS, ctx),
       }),
       decides: (change: string) => {
         countLedgerWork('verdictLookups');
@@ -371,7 +373,7 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
       hasVerdict,
       hasVerdicts: getRecordCount(store, VERDICTS) > 0,
       landed: (write: string) => {
-        const json = getRecord(store, LANDED, write);
+        const json = getRecordText(store, LANDED, write);
         const member =
           json === undefined ? null : parseLanded(write, json)?.member;
 

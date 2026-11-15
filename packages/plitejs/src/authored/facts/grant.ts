@@ -1,7 +1,7 @@
 import type { DocumentChange } from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import {
-  getRecord,
+  getRecordText,
   getRecordEntries,
   getValueRecords,
 } from '../../core/record-store';
@@ -570,7 +570,7 @@ const ordinaryCover = (
 const takeBackCover = (step: AuthoredStep, { drops }: VerdictDrops): Cover => {
   const store = getValueRecords(step.before);
   const records = drops.flatMap((id) => {
-    const json = getRecord(store, VERDICTS, id);
+    const json = getRecordText(store, VERDICTS, id);
     const record = json === undefined ? null : parseVerdict(id, json);
 
     return record ? [record] : [];

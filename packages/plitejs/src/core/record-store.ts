@@ -1,6 +1,7 @@
 import type { EditorDocumentRecords } from '../interfaces/editor';
-import { deepFreeze, isRecord } from './change/json';
+import { deepFreeze, isRecord, jsonEqual } from './change/json';
 import { copyFields } from './change/lazy-root';
+import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
 import {
   persistentMapCeiling,
   persistentMapChanges,
@@ -12,10 +13,22 @@ import {
   persistentMapSet,
   persistentMapSize,
 } from './persistent-map';
-import { assertEditorJsonValue } from './value-codec';
+import {
+  assertEditorJsonValue,
+  getEditorJsonRecordEntries,
+  snapshotEditorJsonValue,
+} from './value-codec';
+import { countCoreWork } from './work';
 
-/** One record set: each record's id to its canonical JSON text. */
-type RecordTree = PersistentMapNode<string>;
+type RecordJson = Readonly<Record<string, unknown>>;
+
+/**
+ * One record as its owned JSON, its canonical text or both. A load keeps the
+ * JSON and a put keeps the text, and each side is filled on its first read.
+ */
+type StoredRecord = { json: RecordJson | undefined; text: string | undefined };
+
+type RecordTree = PersistentMapNode<StoredRecord>;
 
 /**
  * A record set's version: the same object in every store version that left
@@ -73,6 +86,30 @@ export const canonicalRecordJson = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
+const textOf = (record: StoredRecord) => {
+  if (record.text === undefined) {
+    countCoreWork('recordTexts');
+    record.text = canonicalRecordJson(record.json);
+  }
+
+  return record.text;
+};
+
+const jsonOf = (record: StoredRecord) => {
+  record.json ??= freezeOwnedJsonValue(
+    deepFreeze(JSON.parse(record.text as string) as RecordJson)
+  );
+
+  return record.json;
+};
+
+// Two records that hold JSON compare as JSON, so neither builds its text.
+const sameRecord = (a: StoredRecord, b: StoredRecord) =>
+  a === b ||
+  (a.json !== undefined && b.json !== undefined
+    ? jsonEqual(a.json, b.json)
+    : textOf(a) === textOf(b));
+
 /**
  * One put, checked as a JSON object and stored as its canonical text. An id
  * names its record's content, so a put of other content under an id `store`
@@ -90,7 +127,7 @@ export const recordPut = (
   }
 
   const json = canonicalRecordJson(record);
-  const existing = getRecord(store, set, id);
+  const existing = getRecordText(store, set, id);
 
   if (existing !== undefined && existing !== json) {
     throw new EditorRecordConflictError(
@@ -104,8 +141,14 @@ export const recordPut = (
 export const recordDrop = (set: string, id: string): RecordOps =>
   new Map([[set, new Map([[id, null]])]]);
 
-export const getRecord = (store: RecordStore, set: string, id: string) =>
-  persistentMapGet(treeOf(store, set), id);
+export const hasRecord = (store: RecordStore, set: string, id: string) =>
+  persistentMapGet(treeOf(store, set), id) !== undefined;
+
+export const getRecordText = (store: RecordStore, set: string, id: string) => {
+  const record = persistentMapGet(treeOf(store, set), id);
+
+  return record === undefined ? undefined : textOf(record);
+};
 
 /** Whether some id in the set starts with `prefix`, in one ceiling lookup. */
 export const hasRecordWithPrefix = (
@@ -127,7 +170,7 @@ export function* getRecordsWithPrefix(
   let found = persistentMapCeiling(tree, prefix);
 
   while (found !== undefined && found[0].startsWith(prefix)) {
-    yield found;
+    yield [found[0], textOf(found[1])] as const;
     found = persistentMapCeiling(tree, `${found[0]}\u0000`);
   }
 }
@@ -143,7 +186,7 @@ export const getRecordSetVersion = (
 export const recordSetChanges = (
   before: RecordSetVersion,
   after: RecordSetVersion
-) => persistentMapChanges(before, after);
+) => persistentMapChanges(before, after, sameRecord);
 
 /** `store` without any record of `set`. */
 export const withoutRecordSet = (store: RecordStore, set: string) => {
@@ -154,8 +197,39 @@ export const withoutRecordSet = (store: RecordStore, set: string) => {
   return Object.freeze(rest);
 };
 
-export const getRecordEntries = (store: RecordStore, set: string) =>
-  persistentMapEntries(treeOf(store, set));
+/**
+ * Each record in the set, in id order.
+ *
+ * @yields {readonly [string, string]} Its id and canonical text.
+ */
+export function* getRecordEntries(
+  store: RecordStore,
+  set: string
+): Generator<readonly [string, string]> {
+  for (const [id, record] of persistentMapEntries(treeOf(store, set))) {
+    yield [id, textOf(record)] as const;
+  }
+}
+
+/**
+ * Each id in the set, in id order, without reading a record.
+ *
+ * @yields {string} The id.
+ */
+export function* getRecordIds(
+  store: RecordStore,
+  set: string
+): Generator<string> {
+  for (const [id] of persistentMapEntries(treeOf(store, set))) yield id;
+}
+
+export const recordStoresEqual = (a: RecordStore, b: RecordStore) =>
+  a === b ||
+  [...new Set([...Object.keys(a), ...Object.keys(b)])].every(
+    (set) =>
+      persistentMapChanges(treeOf(a, set), treeOf(b, set), sameRecord)
+        .length === 0
+  );
 
 export const applyRecordOps = (
   store: RecordStore,
@@ -170,8 +244,12 @@ export const applyRecordOps = (
     for (const [id, json] of writes) {
       if (json === null) {
         tree = persistentMapDelete(tree, id);
-      } else if (persistentMapGet(tree, id) !== json) {
-        tree = persistentMapSet(tree, id, json);
+      } else {
+        const held = persistentMapGet(tree, id);
+
+        if (held === undefined || textOf(held) !== json) {
+          tree = persistentMapSet(tree, id, { json: undefined, text: json });
+        }
       }
     }
 
@@ -265,7 +343,8 @@ export const invertRecordOps = (
     const undo = new Map<string, string | null>();
 
     for (const [id, json] of writes) {
-      const prior = persistentMapGet(tree, id) ?? null;
+      const held = persistentMapGet(tree, id);
+      const prior = held === undefined ? null : textOf(held);
 
       if (prior !== json) undo.set(id, prior);
     }
@@ -315,8 +394,10 @@ export const recordOpsBetween = (
 
     const writes = new Map<string, string | null>();
 
-    for (const id of persistentMapChanges(beforeTree, afterTree)) {
-      writes.set(id, persistentMapGet(afterTree, id) ?? null);
+    for (const id of persistentMapChanges(beforeTree, afterTree, sameRecord)) {
+      const record = persistentMapGet(afterTree, id);
+
+      writes.set(id, record === undefined ? null : textOf(record));
     }
 
     if (writes.size > 0) ops.set(set, writes);
@@ -364,37 +445,46 @@ export const recordOpsFromJson = (json: unknown): RecordOps => {
   );
 };
 
-const parseRecordStore = (json: Readonly<Record<string, unknown>>) => {
-  const store: Record<string, RecordTree> = {};
+const invalidRecords = (): never => {
+  throw new Error('Document records must encode to JSON-compatible data.');
+};
 
-  for (const [set, records] of Object.entries(json)) {
+const parseRecordStore = (json: Readonly<Record<string, unknown>>) => {
+  const sets: Array<readonly [string, RecordTree]> = [];
+
+  for (const [set, records] of getEditorJsonRecordEntries(json) ??
+    invalidRecords()) {
     if (!isRecord(records)) {
       throw new Error(`Invalid records for record set ${set}.`);
     }
 
     const tree = persistentMapFromSorted(
-      Object.keys(records)
-        .sort()
-        .map((id) => {
-          const record = records[id];
-
+      [...(getEditorJsonRecordEntries(records) ?? invalidRecords())]
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([id, record]) => {
           if (!isRecord(record)) {
             throw new Error(`Invalid record ${id} in record set ${set}.`);
           }
 
-          return [id, canonicalRecordJson(record)] as const;
+          return [
+            id,
+            {
+              json: snapshotEditorJsonValue(record, 'Document records'),
+              text: undefined,
+            },
+          ] as const;
         })
     );
 
-    if (tree) store[set] = tree;
+    if (tree) sets.push([set, tree]);
   }
 
-  return Object.freeze(store);
+  return Object.freeze(Object.fromEntries(sets));
 };
 
 /**
- * Parse a document's records, canonicalizing each once. JSON this module
- * serialized, or frozen JSON it parsed before, returns its store as is.
+ * Parse a document's records, keeping each as owned JSON. JSON this module
+ * serialized, or owned JSON it parsed before, returns its store as is.
  */
 export const recordStoreFromJson = (json: unknown): RecordStore => {
   if (json === undefined) return EMPTY_RECORD_STORE;
@@ -404,33 +494,50 @@ export const recordStoreFromJson = (json: unknown): RecordStore => {
     if (known) return known;
   }
   if (!isRecord(json)) throw new Error('Invalid document records.');
-  assertEditorJsonValue(json, 'Document records');
 
   const store = parseRecordStore(json);
 
-  if (Object.isFrozen(json)) STORE_OF_JSON.set(json, store);
+  if (isOwnedJsonValue(json)) STORE_OF_JSON.set(json, store);
 
   return store;
 };
 
+const setJsonOf = (tree: RecordTree) =>
+  freezeOwnedJsonValue(
+    Object.fromEntries(
+      Array.from(persistentMapEntries(tree), ([id, record]) => [
+        id,
+        jsonOf(record),
+      ])
+    )
+  );
+
+// Only the latest store's set tables stay, so the store versions that history
+// keeps hold no table. A set the next store shares with it keeps its table.
+let latestJson: Readonly<{
+  json: EditorDocumentRecords;
+  store: RecordStore;
+}> | null = null;
+
 export const recordStoreToJson = (
   store: RecordStore
 ): EditorDocumentRecords => {
-  const json = deepFreeze(
+  if (latestJson?.store === store) return latestJson.json;
+
+  const latest = latestJson;
+  const json = freezeOwnedJsonValue(
     Object.fromEntries(
       Object.entries(store).map(([set, tree]) => [
         set,
-        Object.fromEntries(
-          [...persistentMapEntries(tree)].map(([id, text]) => [
-            id,
-            JSON.parse(text) as Readonly<Record<string, unknown>>,
-          ])
-        ),
+        latest && treeOf(latest.store, set) === tree
+          ? latest.json[set]
+          : setJsonOf(tree),
       ])
     )
   );
 
   STORE_OF_JSON.set(json, store);
+  latestJson = { json, store };
 
   return json;
 };
@@ -461,21 +568,6 @@ export const withValueRecords = <T extends object>(
   VALUE_RECORDS.set(value, store);
 
   return value;
-};
-
-// Only the latest store's JSON stays memoized, so the store versions history
-// keeps hold no JSON.
-let latestJson: Readonly<{
-  json: EditorDocumentRecords;
-  store: RecordStore;
-}> | null = null;
-
-const latestRecordsJson = (store: RecordStore) => {
-  if (latestJson?.store !== store) {
-    latestJson = { json: recordStoreToJson(store), store };
-  }
-
-  return latestJson.json;
 };
 
 /**
@@ -523,7 +615,7 @@ export const withoutValueRoots = <
 export const showValueRecords = <T extends Record<string, unknown>>(
   value: T,
   store: RecordStore,
-  toJson: (store: RecordStore) => EditorDocumentRecords = latestRecordsJson
+  toJson: (store: RecordStore) => EditorDocumentRecords = recordStoreToJson
 ): T => {
   if (Object.keys(store).length > 0) {
     (value as Record<string, unknown>).records = toJson(store);

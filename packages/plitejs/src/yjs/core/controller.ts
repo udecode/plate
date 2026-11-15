@@ -42,8 +42,9 @@ import {
 } from '../../core/public-state';
 import {
   deriveValue,
-  getRecord,
+  getRecordText,
   getRecordEntries,
+  getRecordIds,
   getValueRecords,
   type RecordOps,
   recordOpsFromJson,
@@ -693,7 +694,7 @@ export class YjsController<
       [...ids].map(([set, setIds]) => [
         set,
         new Map(
-          [...setIds].map((id) => [id, getRecord(store, set, id) ?? null])
+          [...setIds].map((id) => [id, getRecordText(store, set, id) ?? null])
         ),
       ])
     );
@@ -740,7 +741,7 @@ export class YjsController<
       for (const id of setIds) {
         const json = map.get(id) ?? null;
 
-        if (json === (getRecord(store, set, id) ?? null)) continue;
+        if (json === (getRecordText(store, set, id) ?? null)) continue;
 
         writes[set] ??= Object.create(null);
         writes[set][id] = json;
@@ -759,7 +760,7 @@ export class YjsController<
       for (const id of map.keys()) {
         addRecordId(this.pendingRemoteRecords, set, id);
       }
-      for (const [id] of getRecordEntries(store, set)) {
+      for (const id of getRecordIds(store, set)) {
         addRecordId(this.pendingRemoteRecords, set, id);
       }
     }

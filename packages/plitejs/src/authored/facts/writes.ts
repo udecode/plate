@@ -8,7 +8,11 @@ import type { DocumentIndex } from '../../core/change/document-index';
 import { keptRunsOf, type RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { canonicalJsonKey } from '../../core/change/transform';
-import { getRecord, getValueRecords } from '../../core/record-store';
+import {
+  getRecordText,
+  getValueRecords,
+  hasRecord,
+} from '../../core/record-store';
 import type { Path } from '../../interfaces/path';
 import { contentRootsOf } from '../ledger/roots';
 import type { FormatTag, LayerValue } from '../tree/layers';
@@ -881,7 +885,7 @@ export const authoredWritesOf = ({
         for (const member of membersIn(node)) {
           if (
             member.kind === 'in' &&
-            getRecord(headStore, CONTEXTS, member.ctx) !== undefined
+            hasRecord(headStore, CONTEXTS, member.ctx)
           ) {
             for (const claim of claimsOf(
               { [AUTHORED_MARKS_KEY]: [member] },
@@ -1097,7 +1101,7 @@ export const authoredWritesOf = ({
       parseReserve,
       id,
       json,
-      getRecord(headStore, RESERVES, id)
+      getRecordText(headStore, RESERVES, id)
     )
   );
 
@@ -1151,7 +1155,7 @@ export const authoredWritesOf = ({
       continue;
     }
     for (const [id, json] of ops) {
-      const stored = getRecord(headStore, set, id);
+      const stored = getRecordText(headStore, set, id);
 
       if (set === VERDICTS) {
         verdicts.push(

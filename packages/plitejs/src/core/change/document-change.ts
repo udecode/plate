@@ -8,6 +8,7 @@ import {
   hasValueRecords,
   invertRecordOps,
   NO_RECORD_OPS,
+  recordStoresEqual,
   type RecordOps,
   type RecordOpsJson,
   recordOpsBetween,
@@ -1983,7 +1984,7 @@ export const alignedDocumentChange = (
   const changes = new Map<string, RootChange>();
   const classifications = new Map<string, DocumentChangeRootClassification>();
 
-  if (!jsonEqual(getValueRecords(before), getValueRecords(after))) {
+  if (!recordStoresEqual(getValueRecords(before), getValueRecords(after))) {
     return null;
   }
   for (const root of roots) {

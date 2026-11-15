@@ -9,7 +9,7 @@ import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import {
   applyRecordOps,
   deriveValue,
-  getRecord,
+  getRecordText,
   getValueRecords,
   showValueRecords,
 } from '../../core/record-store';
@@ -42,7 +42,8 @@ const keepsItsRecords = (entry: PutEntry, head: JsonEditorValue) => {
     return [...getInternalDocumentChangeRecords(entry.change)].every(
       ([set, ids]) =>
         [...ids.keys()].every(
-          (id) => getRecord(store, set, id) === getRecord(written, set, id)
+          (id) =>
+            getRecordText(store, set, id) === getRecordText(written, set, id)
         )
     );
   });
