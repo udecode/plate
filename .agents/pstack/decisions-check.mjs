@@ -36,6 +36,11 @@
 //        above end once it holds a row whose decision starts with "redesign run:"
 //        followed by text, in phase owner, or in phase verdict with evidence naming
 //        another existing .md or .decisions.tsv file in the plans directory.
+//        Both append forms refuse an open row whose patch: names a new plan in the plans
+//        directory when this log, or a log before it that named its plan the same way,
+//        already names another new plan since its last delivery row "landed as <sha>",
+//        unless an owner row whose decision starts with "second plan:" and quotes the
+//        owner in double quotes comes after the last new plan this log named.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build, the
 //        maxRounds in .agents/pstack.json or 3)
@@ -364,6 +369,57 @@ function redesignProblems(state, cells, where) {
   ];
 }
 
+const PLAN_PATCH = /\bpatch:\s*`?([^\s`;,]+\.md)(?![\w-])/u;
+const planOfLog = (log) => basename(log).replace(/\.decisions\.tsv$/u, '.md');
+const pivotPlanOf = ([, , , , result = '']) => {
+  const path = /^open\b/u.test(result) ? result.match(PLAN_PATCH)?.[1] : null;
+  return path && (dirname(path) === '.' || resolve(dirname(path)) === resolve(plansDir())) ? basename(path) : null;
+};
+const landsWork = ([phase, decision = '']) => phase === 'delivery' && /\blanded as [0-9a-f]{7,40}\b/iu.test(decision);
+const allowsNextPlan = ([phase, decision = '']) => phase === 'owner' && /^second plan:[^"]*"[^"]+"/u.test(decision);
+const rowsOf = (log) => readFileSync(log, 'utf8').split('\n').slice(1).filter(Boolean).map((line) => line.split('\t').slice(1));
+
+function trackPlans(state, cells) {
+  const plan = pivotPlanOf(cells);
+  if (landsWork(cells)) Object.assign(state, { plans: new Set(), allowed: false, landed: true });
+  else if (allowsNextPlan(cells)) state.allowed = true;
+  else if (plan && plan !== state.own && !state.plans.has(plan)) {
+    state.plans.add(plan);
+    state.allowed = false;
+  }
+}
+
+function plansState(log, rows) {
+  const state = { own: planOfLog(log), plans: new Set(), allowed: false, landed: false };
+  for (const cells of rows) trackPlans(state, cells);
+  return state;
+}
+
+function chainPlansSinceLanding(log, seen = new Set([resolve(log)])) {
+  if (!existsSync(plansDir())) return 0;
+  const plan = planOfLog(log);
+  for (const other of decisionLogs(plansDir())) {
+    if (seen.has(resolve(other))) continue;
+    const rows = rowsOf(other);
+    if (!rows.some((cells) => pivotPlanOf(cells) === plan)) continue;
+    seen.add(resolve(other));
+    const state = plansState(other, rows);
+    if (!state.plans.has(plan)) return 0;
+    return state.plans.size + (state.landed ? 0 : chainPlansSinceLanding(other, seen));
+  }
+  return 0;
+}
+
+function secondPlanProblems(state, cells, where, earlier) {
+  const plan = pivotPlanOf(cells);
+  if (!plan || plan === state.own || state.plans.has(plan) || state.allowed) return [];
+  const count = state.plans.size + (state.landed ? 0 : earlier());
+  if (count === 0) return [];
+  return [
+    `${where}: this starts the new plan ${plan} after ${count} new plan${count === 1 ? '' : 's'} since the run's last landing, and the Second plan rule in .agents/pstack/rules/long-runs.md stops the run for the owner before each new plan after the first. Ask the owner that rule's one question, and keep landing the steps that do not depend on the answer. When the owner picks the new plan, log before this row an owner row whose decision starts with "second plan:" and quotes their answer in double quotes. When they keep the base's behavior, log this finding open with patch: none and their answer quoted`,
+  ];
+}
+
 function problems(path) {
   const lines = readFileSync(path, 'utf8').split('\n');
   if (lines[0] !== HEADER) return [`${path}:1: header must be "${HEADER.replaceAll('\t', ' ')}"`];
@@ -410,6 +466,8 @@ function append(path, batch, run, miss = null) {
   for (const line of existing.slice(1).filter(Boolean)) trackRedesign(redesign, line.split('\t').slice(1));
   const steps = trunk() ? { built: new Set(), unlanded: new Set(), landing: false } : null;
   if (steps) for (const line of existing.slice(1)) trackStep(steps, line);
+  const plans = plansState(path, existing.slice(1).filter(Boolean).map((line) => line.split('\t').slice(1)));
+  let earlier = null;
   const chips = readTasks(existing.slice(1));
   const ledger = resolve(path) === resolve(ledgerFile());
   const writer = run ? { session: null, transcript: transcriptOf(run) } : null;
@@ -436,6 +494,8 @@ function append(path, batch, run, miss = null) {
     }
     found.push(...redesignProblems(redesign, cells, where));
     trackRedesign(redesign, cells);
+    found.push(...secondPlanProblems(plans, cells, where, () => (earlier ??= chainPlansSinceLanding(path))));
+    trackPlans(plans, cells);
     if (opens(row) && roster && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
