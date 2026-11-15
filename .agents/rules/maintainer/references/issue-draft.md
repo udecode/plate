@@ -1,8 +1,9 @@
 # Issue draft
 
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
-`udecode/plate-private` GitHub issue. A user request to publish the issue, or a
-Triage run that moves a repro's kind to a new issue, authorizes analysis, necessary
+`udecode/plate-private` GitHub issue. A user request to publish the issue, a
+Triage run that moves a repro's kind to a new issue, or a check that
+`AGENTS.md`'s Manual tests rule files authorizes analysis, necessary
 evidence uploads, creation and read-back in one run. Nothing else creates an issue: the leave in `.agents/pstack/rules/messages.md` to send a message only the team reads covers messages, not issues.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
@@ -120,6 +121,24 @@ clips, find notes and retest marks.
    new repros instead of a new issue, numbering them after the issue's own.
 4. List in the draft every other open issue of the kind. After publishing, the
    tester closes each as a duplicate of the kind's issue.
+
+### Manual tests
+
+`AGENTS.md`'s Manual tests rule files a check that only a person can run, once
+the change it tests has landed. The issue asks a teammate to run the check, so
+it reports no failure yet.
+
+1. Search the open issues for one that asks for the same check on the same
+   device. When one exists, draft a comment that adds the new steps instead of
+   a second issue.
+2. Write the summary as what nobody has tested yet and why an agent cannot
+   test it.
+3. Under Reproduction, name each device and browser, then give the steps on the
+   Beta page.
+4. Under Expected, say what the tester sees when the check passes. Under
+   Actual, say that the check has not run.
+5. Skip the recording steps, because there is no failure to show. The tester
+   answers on the issue with what they saw.
 
 ## Build the evidence packet
 
