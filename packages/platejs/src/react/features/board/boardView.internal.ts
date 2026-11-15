@@ -108,7 +108,7 @@ export type BoardViewState = Readonly<{
 export type BoardViewActions = Readonly<{
   /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. A focused board says the new zoom when it changes. */
   fit: () => void;
-  /** Move focus to the board and keep its selection, such as after a toolbar menu closes. */
+  /** Move focus to the board and keep its selection, such as after a toolbar menu closes. A shape whose text is being edited ends its edit and stays selected. */
   focus: () => void;
   /** Remove the frame `id` and keep its shapes where they are, as one undo step. */
   removeFrame: (id: string) => void;
@@ -657,14 +657,9 @@ export const createBoardView = (
     parentEditable()?.focus({ preventScroll: true });
   };
 
-  const focusBoard = () => {
-    focusTarget.current?.focus({ preventScroll: true });
-
-    return !!focusTarget.current;
-  };
-
   const deselectOnBoard = () => {
-    if (!focusBoard()) return false;
+    if (!focusTarget.current) return false;
+    focusTarget.current.focus({ preventScroll: true });
     // Chrome and Firefox keep the editable's caret after focus leaves it.
     editor.api.dom.deselect();
 
@@ -678,6 +673,15 @@ export const createBoardView = (
     );
     deselectOnBoard();
     editor.update((tx) => setShapeSelection(tx, sorted));
+  };
+
+  const focusBoard = () => {
+    const edited = editedShape();
+
+    if (edited) select([edited.key]);
+    else focusTarget.current?.focus({ preventScroll: true });
+
+    return !!focusTarget.current;
   };
 
   let history: Pick<EditorHistoryController, 'redo' | 'undo'> | null = null;

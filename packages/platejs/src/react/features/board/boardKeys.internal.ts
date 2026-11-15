@@ -113,8 +113,6 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return !!edited;
   };
 
-  const returnToBoard = () => selectEdited() || core.focusBoard();
-
   const endConnectOnHistoryKey = (event: KeyboardEvent) => {
     const history = Hotkeys.isUndo(event) || Hotkeys.isRedo(event);
 
@@ -139,7 +137,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       if (event.repeat) return true;
       core.cancelInteraction();
 
-      return returnToBoard();
+      return core.focusBoard();
     }
     if (event.key !== 'Tab' || !event.shiftKey || !plainKey(event)) {
       return false;
@@ -152,7 +150,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
           control.tabIndex >= 0 &&
           control.compareDocumentPosition(target) &
             control.DOCUMENT_POSITION_FOLLOWING
-      ) && returnToBoard()
+      ) && core.focusBoard()
     );
   };
 
