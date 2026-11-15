@@ -114,6 +114,7 @@
           "authored",
           "diff",
           "documents",
+          "ink",
           "pagination"
         ],
         "paths": [
@@ -185,6 +186,7 @@
       "authored",
       "diff",
       "documents",
+      "ink",
       "pagination"
     ],
     "slatePaths": [
