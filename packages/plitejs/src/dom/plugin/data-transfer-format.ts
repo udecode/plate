@@ -42,6 +42,7 @@ import {
 } from '../../core/plugin-registry';
 import { MAIN_ROOT_KEY, toPublicRoot } from '../../core/public-root';
 import {
+  afterActiveTransactionEnds,
   applyTransactionSpec,
   attachTransactionSpecAfterCommit,
   getActiveEditorTransaction,
@@ -1034,13 +1035,17 @@ export const observeDataTransferInsertion = <T>(
     }
   }
 
-  // Inside an open update the pending insertion still settles on that commit.
-  if (
-    observation.state === 'refused' ||
-    (observation.state === 'pending' && !getActiveEditorTransaction(editor))
-  ) {
-    settleDataTransferInsertion(observation, false);
+  if (observation.state === 'idle' || observation.state === 'settled') {
+    return result;
   }
+
+  const unsettled = () => {
+    settleDataTransferInsertion(observation, false);
+  };
+
+  // Inside an open update the outcome waits for that update: its commit runs
+  // the insertion's own handler first, and a rollback reports nothing.
+  if (!afterActiveTransactionEnds(editor, unsettled)) unsettled();
 
   return result;
 };
