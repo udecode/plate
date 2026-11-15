@@ -20,6 +20,7 @@ import {
 } from './boardView.internal';
 import type { BoardMessages } from './boardVoice.internal';
 
+export type { BoardCorner } from './boardIndex.internal';
 export type {
   BoardCamera,
   BoardStyle,

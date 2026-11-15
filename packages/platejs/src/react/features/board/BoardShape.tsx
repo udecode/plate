@@ -9,6 +9,7 @@ import {
   useElementSelected,
 } from '../../core';
 import { useClaimEditableDOMCommit } from '../../plite-react';
+import type { BoardCorner } from './boardIndex.internal';
 import type { BoardStrokePath } from './boardInk.internal';
 import type {
   BoardArrowPlugin,
@@ -22,12 +23,12 @@ import { type BoardArrowPath, useBoardViewContext } from './boardView.internal';
 export type { BoardStrokePath } from './boardInk.internal';
 export type { BoardArrowPath } from './boardView.internal';
 
-const CORNERS = [
-  ['nw', { cursor: 'nwse-resize', left: -4, top: -4 }],
-  ['ne', { cursor: 'nesw-resize', right: -4, top: -4 }],
-  ['sw', { bottom: -4, cursor: 'nesw-resize', left: -4 }],
-  ['se', { bottom: -4, cursor: 'nwse-resize', right: -4 }],
-] as const;
+const CORNERS: ReadonlyArray<readonly [BoardCorner, React.CSSProperties]> = [
+  ['topLeft', { cursor: 'nwse-resize', left: -4, top: -4 }],
+  ['topRight', { cursor: 'nesw-resize', right: -4, top: -4 }],
+  ['bottomLeft', { bottom: -4, cursor: 'nesw-resize', left: -4 }],
+  ['bottomRight', { bottom: -4, cursor: 'nwse-resize', right: -4 }],
+];
 
 function Handles() {
   return CORNERS.map(([corner, place]) => (
@@ -58,13 +59,14 @@ function AloneHandles() {
 /**
  * One member of a board, painted at its stacking rank while the DOM keeps the
  * board's stored order. A shape, frame or stroke sits at its box and,
- * selected alone, shows four resize handles, `[data-board-handle]`. An arrow
- * sits at the board's origin with no size, so its component draws in board
- * coordinates from `useArrowPath`, and it has no handles. A frame takes a
- * press only on its edge or on a child marked `[data-board-frame-name]`, such
- * as its name, and a stroke only on its line, which its component draws from
- * `useStrokePath`. A selected member shows `data-selected`, and one the
- * eraser will remove on release shows `data-erasing`.
+ * selected alone, shows four resize handles, `[data-board-handle]`, each
+ * valued with its `BoardCorner`. An arrow sits at the board's origin with no
+ * size, so its component draws in board coordinates from `useArrowPath`, and
+ * it has no handles. A frame takes a press only on its edge or on a child
+ * marked `[data-board-frame-name]`, such as its name, and a stroke only on its
+ * line, which its component draws from `useStrokePath`. A selected member
+ * shows `data-selected`, and one the eraser will remove on release shows
+ * `data-erasing`.
  */
 export function BoardShape({
   className,

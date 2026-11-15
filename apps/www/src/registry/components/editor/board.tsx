@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import {
   BoardArrowPlugin,
+  type BoardCorner,
   BoardFramePlugin,
   BoardGeoPlugin,
   type BoardMessages,
@@ -118,6 +119,13 @@ const TOOL_NAMES: Readonly<Record<BoardTool, string>> = {
   select: 'Select tool',
 };
 
+const CORNERS: Readonly<Record<BoardCorner, string>> = {
+  bottomLeft: 'bottom left',
+  bottomRight: 'bottom right',
+  topLeft: 'top left',
+  topRight: 'top right',
+};
+
 const nameOf = (shape: BoardShapeDescription): string => {
   if (shape.kind === 'arrow') {
     const end = (side: BoardShapeDescription | null) =>
@@ -134,7 +142,7 @@ const nameOf = (shape: BoardShapeDescription): string => {
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -143,6 +151,10 @@ const boardMessages: BoardMessages = {
     `${side === 'start' ? 'Start' : 'End'} free at ${x}, ${y}`,
   starting: ({ x, y }, { from }) =>
     `Drawing an arrow from ${from ? nameOf(from) : `${x}, ${y}`}. Arrow keys move its start, Tab picks a shape, Enter keeps the start and Escape stops.`,
+  resizing: (shape, { corner, height, width }) =>
+    `Resizing ${nameOf(shape)} from its ${CORNERS[corner]} corner, ${width} by ${height}. Tab picks a corner, arrow keys resize, Enter keeps it and Escape stops.`,
+  resize: ({ corner, height, width }) =>
+    `${CORNERS[corner]}, ${width} by ${height}`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>

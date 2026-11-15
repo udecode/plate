@@ -135,13 +135,13 @@ export type BoardWrite =
     }>;
 
 export type BoardInteraction = Readonly<
-  | { cancel: () => void; kind: 'drag' | 'draw' }
-  | {
-      cancel: () => void;
-      follow: () => void;
-      kind: 'connect';
-      startShape: () => string | undefined;
-    }
+  {
+    cancel: () => void;
+    follow?: () => void;
+  } & (
+    | { kind: 'connect'; startShape: () => string | undefined }
+    | { kind: 'drag' | 'draw' | 'resize' }
+  )
 >;
 
 export type BoardViewCore = Readonly<{
@@ -200,6 +200,8 @@ export type BoardViewCore = Readonly<{
     | 'hold'
     | 'release'
     | 'repeatSelection'
+    | 'resize'
+    | 'resizing'
     | 'starting'
   >;
   writable: () => boolean;
@@ -346,6 +348,9 @@ export const createBoardView = (
 
       return ElementApi.isElement(node) ? node : undefined;
     },
+    previewCleared: () => {
+      for (const listener of shapeListeners) listener();
+    },
   });
   let shownVersion = 0;
   let mountedKeys: ReadonlySet<NodeKey> = new Set();
@@ -425,7 +430,7 @@ export const createBoardView = (
 
     index.update();
     if (renderedKeyOf !== rendered) refresh();
-    if (interaction?.kind === 'connect') interaction.follow();
+    interaction?.follow?.();
     if (index.version() === shownVersion) return;
     shownVersion = index.version();
     for (const listener of shapeListeners) listener();
@@ -1116,7 +1121,7 @@ export const createBoardView = (
     layoutOf: (id: string) => {
       if (!index.byId(id)) index.update();
 
-      return index.byId(id);
+      return index.shownLayout(id);
     },
     renderWith: (
       next: Readonly<{

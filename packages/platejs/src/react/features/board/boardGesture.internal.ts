@@ -8,14 +8,19 @@ import {
 import { BOARD_FRAME_SIZE } from '../../../features/board/lib/boardFrame.internal';
 import type { BoardInkPoint } from '../../../features/board/lib/boardStroke.internal';
 import {
+  CORNERS_CLOCKWISE,
   type BoardBox,
+  type BoardCorner,
   type BoardShapeLayout,
+  MIN_SHAPE_SIZE,
+  resized,
   sameBox,
   spanOf,
 } from './boardIndex.internal';
 import { simulatedPressure, strokeOutline } from './boardInk.internal';
 import { arrowEndOn, BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
+  elementOf,
   placeElement,
   previewArrowLine,
   previewCopy,
@@ -25,8 +30,6 @@ import {
 } from './boardPreview.internal';
 import { type BoardViewCore, SHAPES_EDITABLE } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
-
-type Corner = 'ne' | 'nw' | 'se' | 'sw';
 
 type Gesture = Readonly<{ pointerId: number }> &
   (
@@ -78,25 +81,16 @@ type Gesture = Readonly<{ pointerId: number }> &
       }
     | {
         kind: 'resize';
-        corner: Corner;
+        corner: BoardCorner;
         element: HTMLElement;
         grab: BoardPlace;
         id: string;
         pointer: BoardPlace;
         rect: BoardBox;
-        restore: string;
         start: BoardBox;
       }
   );
 
-const CORNERS: Readonly<Record<string, Corner>> = {
-  ne: 'ne',
-  nw: 'nw',
-  se: 'se',
-  sw: 'sw',
-};
-
-const MIN_SHAPE_SIZE = 8;
 const CLICK_SLOP_PX = 8;
 
 const dragged = (press: BoardPlace, pointer: BoardPlace) =>
@@ -128,20 +122,6 @@ const holds = (outer: BoardBox, inner: BoardBox) =>
   inner.x + inner.width <= outer.x + outer.width &&
   inner.y + inner.height <= outer.y + outer.height;
 
-const resized = (start: BoardBox, corner: Corner, dx: number, dy: number) => {
-  const west = corner === 'nw' || corner === 'sw';
-  const north = corner === 'ne' || corner === 'nw';
-  const width = Math.max(MIN_SHAPE_SIZE, start.width + (west ? -dx : dx));
-  const height = Math.max(MIN_SHAPE_SIZE, start.height + (north ? -dy : dy));
-
-  return {
-    height,
-    width,
-    x: west ? start.x + start.width - width : start.x,
-    y: north ? start.y + start.height - height : start.y,
-  };
-};
-
 const PRESS_PRESSURE = 0.5;
 
 const addPenPoint = (
@@ -163,9 +143,6 @@ const addPenPoint = (
   }
   points.push([at.x, at.y, pressure]);
 };
-
-const elementOf = (host: HTMLElement, id: string) =>
-  host.querySelector<HTMLElement>(`[data-board-shape="${CSS.escape(id)}"]`);
 
 /**
  * The board's pointer gestures on `host`: pan, the selection box, move, copy
@@ -200,6 +177,12 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     pointer,
     pointerId,
   });
+
+  const placeAtModel = (element: HTMLElement, id: string) => {
+    const layout = index.byId(id);
+
+    if (layout) placeElement(element, layout.box);
+  };
 
   const pick = (keys: readonly NodeKey[]) => {
     if (keys.length > 0) core.select(keys);
@@ -283,10 +266,17 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
         );
       }
     } else {
-      const { id } = gesture;
-      const rect = resized(gesture.start, gesture.corner, dx, dy);
+      const { element, id, start } = gesture;
+      const rect = resized(start, gesture.corner, dx, dy);
 
       gesture.rect = rect;
+      if (sameBox(rect, start)) {
+        placeAtModel(element, id);
+        index.clearPreview();
+
+        return;
+      }
+      index.previewShape(id, rect);
       placeElement(gesture.element, rect);
       index.previewArrows(
         [id],
@@ -312,7 +302,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
         else shape.style.translate = '';
       }
     } else if (done.kind === 'resize') {
-      done.element.style.cssText = done.restore;
+      placeAtModel(done.element, done.id);
     } else if (done.kind === 'arrow') {
       done.line.ownerSVGElement?.remove();
     } else if (done.kind === 'box' || done.kind === 'frame') {
@@ -408,6 +398,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       }
     } else if (!sameBox(done.rect, done.start)) {
       core.commit({ id: done.id, kind: 'resize', rect: done.rect });
+      placeAtModel(done.element, done.id);
     }
   };
 
@@ -452,11 +443,9 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     const { tool } = core.state();
     const pointer = { x: event.clientX, y: event.clientY };
     const at = core.boardPointAt(pointer);
-    const handle =
-      CORNERS[
-        event.target.closest<HTMLElement>('[data-board-handle]')?.dataset
-          .boardHandle ?? ''
-      ];
+    const handleName = event.target.closest<HTMLElement>('[data-board-handle]')
+      ?.dataset.boardHandle;
+    const handle = CORNERS_CLOCKWISE.find((corner) => corner === handleName);
     const { element: shapeElement, shape } = pressTargetAt(
       event.target,
       at,
@@ -481,7 +470,6 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
         pointer,
         pointerId,
         rect: shape.box,
-        restore: shapeElement.style.cssText,
         start: shape.box,
       };
     } else if (!draws && shapeElement && shape) {

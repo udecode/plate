@@ -105,6 +105,40 @@ export const spanOf = ({ end, start }: BoardArrowEnds): BoardBox => ({
   y: Math.min(start.y, end.y),
 });
 
+/**
+ * A corner of a shape's box: the one a corner handle drags, or the one the
+ * keys move while S resizes a shape. The opposite corner stays where it is.
+ */
+export type BoardCorner = 'bottomLeft' | 'bottomRight' | 'topLeft' | 'topRight';
+
+export const CORNERS_CLOCKWISE: readonly BoardCorner[] = [
+  'bottomRight',
+  'bottomLeft',
+  'topLeft',
+  'topRight',
+];
+
+export const MIN_SHAPE_SIZE = 8;
+
+export const resized = (
+  start: BoardBox,
+  corner: BoardCorner,
+  dx: number,
+  dy: number
+): BoardBox => {
+  const left = corner === 'bottomLeft' || corner === 'topLeft';
+  const top = corner === 'topLeft' || corner === 'topRight';
+  const width = Math.max(MIN_SHAPE_SIZE, start.width + (left ? -dx : dx));
+  const height = Math.max(MIN_SHAPE_SIZE, start.height + (top ? -dy : dy));
+
+  return {
+    height,
+    width,
+    x: left ? start.x + start.width - width : start.x,
+    y: top ? start.y + start.height - height : start.y,
+  };
+};
+
 const isStroke = (entry: BoardMemberEntry) =>
   entry.node.type === BOARD_STROKE_TYPE;
 
@@ -209,6 +243,7 @@ export const createBoardIndex = ({
   isVoid,
   members: membersRead,
   nodeOf,
+  previewCleared,
 }: Readonly<{
   /** The board root's top-level blocks, whose identity changes with them. */
   children: () => readonly unknown[];
@@ -217,6 +252,7 @@ export const createBoardIndex = ({
   members: () => readonly BoardMemberEntry[];
   /** A member's current node, which a text commit changes without an update. */
   nodeOf: (key: NodeKey) => Element | undefined;
+  previewCleared: () => void;
 }>) => {
   const tree = new RBush<CullBox>();
   let children: readonly unknown[] | null = null;
@@ -228,6 +264,8 @@ export const createBoardIndex = ({
   let arrows = new Map<NodeKey, ArrowRecord>();
   let arrowsTo = new Map<string, ReadonlySet<NodeKey>>();
   let previewed = new Map<NodeKey, BoardArrowPath>();
+  let previewedBoxes = new Map<string, BoardBox>();
+  const shownLayouts = new WeakMap<BoardShapeLayout, BoardShapeLayout>();
   const arrowListeners = new Map<NodeKey, Set<() => void>>();
   const strokePaths = new WeakMap<BoardStrokePoints, BoardStrokePath>();
   let version = 0;
@@ -464,6 +502,10 @@ export const createBoardIndex = ({
     },
     byId: (id: string) => byId.get(id),
     clearPreview: () => {
+      if (previewedBoxes.size > 0) {
+        previewedBoxes = new Map();
+        previewCleared();
+      }
       if (previewed.size === 0) return;
 
       const keys = [...previewed.keys()];
@@ -536,6 +578,9 @@ export const createBoardIndex = ({
       previewed = next;
       notifyArrows([...next.keys(), ...left]);
     },
+    previewShape: (id: string, box: BoardBox) => {
+      previewedBoxes.set(id, box);
+    },
     resolveArrow: (ends: ArrowEnds) =>
       resolveBoardArrow(ends, (id) => targets.get(id)),
     search: (box: BBox) => tree.search(box),
@@ -593,6 +638,22 @@ export const createBoardIndex = ({
       }
 
       return top;
+    },
+    shownLayout: (id: string) => {
+      const layout = byId.get(id);
+      const box = previewedBoxes.get(id);
+
+      if (!layout || !box) return layout;
+
+      const cached = shownLayouts.get(layout);
+
+      if (cached?.box === box) return cached;
+
+      const shown = { ...layout, box };
+
+      shownLayouts.set(layout, shown);
+
+      return shown;
     },
     /**
      * Where the stroke `key` draws its line within its box. The path is

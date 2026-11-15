@@ -3,6 +3,9 @@ import type { BoardBox } from './boardIndex.internal';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+export const elementOf = (host: HTMLElement, id: string) =>
+  host.querySelector<HTMLElement>(`[data-board-shape="${CSS.escape(id)}"]`);
+
 export const placeElement = (element: HTMLElement, box: BoardBox) => {
   element.style.left = `${box.x}px`;
   element.style.top = `${box.y}px`;

@@ -16,7 +16,11 @@ import {
 } from '../../../features/board/lib';
 import { BOARD_FRAME_TYPE } from '../../../features/board/lib/boardFrame.internal';
 import type { Editor } from '../../core';
-import type { BoardIndex, BoardShapeLayout } from './boardIndex.internal';
+import type {
+  BoardCorner,
+  BoardIndex,
+  BoardShapeLayout,
+} from './boardIndex.internal';
 import type { BoardTool } from './boardView.internal';
 
 /**
@@ -139,6 +143,35 @@ export type BoardMessages = Readonly<{
    * nothing.
    */
   removed: (count: number) => string;
+  /**
+   * Called at each key of a resize that S started: when Tab or Shift+Tab
+   * moves it to another corner, and when an arrow key moves the corner. It
+   * gets the corner the keys move and the size of the box it shows, in whole
+   * units.
+   */
+  resize: (
+    size: Readonly<{ corner: BoardCorner; height: number; width: number }>
+  ) => string;
+  /**
+   * Called when S, with one shape selected that is not an arrow, in a view
+   * that can write, starts resizing `shape` from its bottom-right corner, with
+   * its size in whole units. Tab then moves to the next corner clockwise and
+   * Shift+Tab to the one before, an arrow key moves the corner by 1 unit, or
+   * 10 with Shift, down to 8 units a side, and each calls `resize`. Enter
+   * writes the box when it changed and Escape puts it back. Enter, Escape and
+   * every other end of the resize that says nothing of its own call `shape`
+   * again.
+   */
+  resizing: (
+    shape: BoardShapeDescription,
+    size: Readonly<{ corner: BoardCorner; height: number; width: number }>
+  ) => string;
+}>;
+
+type ResizeSize = Readonly<{
+  corner: BoardCorner;
+  height: number;
+  width: number;
 }>;
 
 type BoardUtterance =
@@ -153,6 +186,8 @@ type BoardUtterance =
   | Readonly<{ kind: 'starting'; at: BoardPlace; key: NodeKey | null }>
   | Readonly<{ kind: 'quiet' | 'repeatSelection' | 'selection' }>
   | Readonly<{ kind: 'removed'; count: number }>
+  | Readonly<{ kind: 'resize'; size: ResizeSize }>
+  | Readonly<{ kind: 'resizing'; key: NodeKey; size: ResizeSize }>
   | Readonly<{ kind: 'tool'; tool: BoardTool }>
   | Readonly<{ kind: 'zoom'; percent: number }>;
 
@@ -179,6 +214,12 @@ const textOf = (node: Element) => {
 
 export const activeElementOf = (host: HTMLElement) =>
   (host.getRootNode() as Document | ShadowRoot).activeElement;
+
+const inWholeUnits = ({ corner, height, width }: ResizeSize) => ({
+  corner,
+  height: Math.round(height),
+  width: Math.round(width),
+});
 
 const sameKeys = (a: readonly NodeKey[], b: readonly NodeKey[]) =>
   a.length === b.length && a.every((key, at) => key === b[at]);
@@ -253,6 +294,14 @@ export const createBoardVoice = ({
     if (utterance.kind === 'removed') return said.removed(utterance.count);
     if (utterance.kind === 'tool') return said.tool(utterance.tool);
     if (utterance.kind === 'zoom') return said.zoom(utterance.percent);
+    if (utterance.kind === 'resize') {
+      return said.resize(inWholeUnits(utterance.size));
+    }
+    if (utterance.kind === 'resizing') {
+      const size = inWholeUnits(utterance.size);
+
+      return shapeWords(utterance.key, (shape) => said.resizing(shape, size));
+    }
     if (utterance.kind === 'aim') {
       const [across, down] = utterance.anchor;
       const anchor = {
@@ -333,6 +382,9 @@ export const createBoardVoice = ({
     removed: (count: number) =>
       say(count > 0 ? { count, kind: 'removed' } : { kind: 'quiet' }),
     repeatSelection: () => say({ kind: 'repeatSelection' }),
+    resize: (size: ResizeSize) => say({ kind: 'resize', size }),
+    resizing: (key: NodeKey, size: ResizeSize) =>
+      say({ key, kind: 'resizing', size }),
     starting: (at: BoardPlace, key: NodeKey | null) =>
       say({ at, key, kind: 'starting' }),
     selectionChanged: () => {

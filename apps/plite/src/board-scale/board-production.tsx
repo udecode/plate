@@ -54,6 +54,9 @@ const MESSAGES: BoardMessages = {
   label: 'Board',
   instructions: 'Enter selects the first shape.',
   removed: (count) => `${count} removed`,
+  resize: ({ corner, height, width }) => `${corner}, ${width} by ${height}`,
+  resizing: ({ kind, text }, { corner, height, width }) =>
+    `resizing ${text || kind} from ${corner}, ${width} by ${height}`,
   shape: ({ kind, text }, { position, total }) =>
     `${text || kind}. ${position} of ${total}`,
   shapes: (count) => `${count} shapes`,

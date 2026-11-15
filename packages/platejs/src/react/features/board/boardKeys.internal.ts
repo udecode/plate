@@ -16,6 +16,7 @@ import {
   frontmostAround,
   pickInDirection,
 } from './boardPick.internal';
+import { attachBoardResize } from './boardResize.internal';
 import type {
   BoardPlaceTool,
   BoardTool,
@@ -39,6 +40,15 @@ const ARROWS: Readonly<Record<string, BoardPlace>> = {
   ArrowRight: { x: 1, y: 0 },
   ArrowUp: { x: 0, y: -1 },
 };
+
+const MODIFIER_KEYS: ReadonlySet<string> = new Set([
+  'Alt',
+  'AltGraph',
+  'CapsLock',
+  'Control',
+  'Meta',
+  'Shift',
+]);
 
 const PLACE_GAP = 24;
 
@@ -83,6 +93,7 @@ const pickKey = (event: KeyboardEvent) =>
 export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
   const connect = attachBoardConnect(host, core);
+  const resize = attachBoardResize(host, core);
 
   const inThisBoard = (element: Element) =>
     element.closest('[data-board]') === host;
@@ -398,6 +409,46 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
+  const resizeKey = (event: KeyboardEvent) => {
+    const arrow = ARROWS[event.key];
+    const heldStart = event.repeat && event.key === 's' && !event.shiftKey;
+
+    if (!plainKey(event)) return false;
+    if (event.key === 'Tab') resize.turn(event.shiftKey);
+    else if (arrow) {
+      const step = event.shiftKey ? SHIFT_NUDGE : NUDGE;
+
+      resize.move({ x: arrow.x * step, y: arrow.y * step });
+    } else if (event.key === 'Enter' && !event.shiftKey) {
+      if (!event.repeat) resize.finish();
+    } else return heldStart;
+
+    return true;
+  };
+
+  const startResizeKey = (
+    event: KeyboardEvent,
+    selected: readonly BoardShapeLayout[]
+  ) => {
+    const [shape] = selected;
+
+    if (
+      event.key !== 's' ||
+      event.shiftKey ||
+      !plainKey(event) ||
+      selected.length !== 1 ||
+      !shape ||
+      shape.kind === 'arrow' ||
+      !core.writable() ||
+      connect.active()
+    ) {
+      return false;
+    }
+    if (!event.repeat) resize.start(shape);
+
+    return true;
+  };
+
   // Shift with 0 or 1 types another character on many layouts, such as = for
   // Shift+0 on a German one, so those two read the physical key. A Swiss
   // layout types + only with Shift+1, so a + there zooms in.
@@ -515,7 +566,9 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     if (
       (onTarget || selected.length > 0) &&
-      (placeKey(event) || connectKey(event, selected))
+      (placeKey(event) ||
+        connectKey(event, selected) ||
+        startResizeKey(event, selected))
     ) {
       return true;
     }
@@ -535,6 +588,11 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     if (!host.contains(target)) return target.contains(host) && boardKey(event);
     if (!inThisBoard(target)) return false;
     if (event.key === 'Escape' && selectEdited()) return true;
+    if (resize.active()) {
+      if (resizeKey(event)) return true;
+      if (MODIFIER_KEYS.has(event.key)) return false;
+      core.cancelInteraction();
+    }
 
     return takes(event, core.selectedShapes());
   };
@@ -562,6 +620,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   return () => {
     view?.removeEventListener('keydown', onKeyDown, true);
     connect.detach();
+    resize.detach();
   };
 };
 
