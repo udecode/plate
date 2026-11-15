@@ -57,8 +57,11 @@ editor.update((tx) => {
 
 ### `useEditorSelector`
 
-`useEditorSelector` subscribes to a derived value. Return a primitive or provide
-`equalityFn` when the selected value needs custom comparison.
+`useEditorSelector` subscribes to a derived value. When the call passes no
+`equalityFn`, the hook compares each result with the earlier one by value, so a
+selector may return an object or a list.
+[Selector results](/docs/api/react-hooks#selector-results) gives the limits of
+that comparison and how `equalityFn` replaces it.
 
 ```tsx title="components/selection-state.tsx"
 const isSelectionExpanded = useEditorSelector(

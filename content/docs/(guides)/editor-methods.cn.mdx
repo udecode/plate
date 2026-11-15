@@ -37,12 +37,17 @@ const MyComponent = () => {
 #### useEditorSelector
 
 - 订阅基于编辑器的特定选择器。这是订阅状态变化最高效的方式。
-- 示例用法：`const hasSelection = useEditorSelector((editor) => !!editor.read.selection());`
 - 当您希望组件响应特定变化重新渲染时，可以使用`useEditorSelector`访问相关属性。
 - 选择器函数在每次编辑器变化时被调用（如每次按键或选择变化），但组件仅在返回值变化时重新渲染。
-- 为确保正常工作，返回值应能使用`===`进行比较。通常这意味着返回原始值（数字、字符串或布尔值）。
-- 可以为`useEditorSelector`提供自定义的`equalityFn`选项来处理`===`不适用的情况。
+- 调用未传入 `equalityFn` 时，钩子按值比较每次的返回值与上一次的返回值，因此选择器可以返回对象或列表。
+- 该比较的限制，以及 `equalityFn` 如何替换它，见[选择器结果](/docs/api/react-hooks#selector-results)。
 - 选择器始终读取最新 render 的闭包值，不接收依赖项列表。
+
+```tsx title="components/selection-state.tsx"
+const isSelectionExpanded = useEditorSelector(
+  (editor) => editor.read.selection.isExpanded()
+);
+```
 
 #### useEditorState
 
