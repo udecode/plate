@@ -393,6 +393,77 @@ test('accepts a budget at or below 1, such as a required improvement', (t) => {
   assert.equal(run.status, 0, run.stderr);
 });
 
+const roomConfig = { ...baseConfig, budget: 1.2, planted: { planted: { small: 1.3 } } };
+
+test('reports a candidate as inconclusive when its budget is more than twice its ratio, so it could more than double and pass', (t) => {
+  const run = analyze(t, roomConfig, measurementsFrom(roomConfig, { small: { base: flat(10), candidate: flat(3), planted: flat(13), copy: flat(3) } }));
+  assert.equal(run.status, 3, run.stderr);
+  assert.match(run.stderr, /small: the budget 1\.2 is more than twice the candidate's 0\.300, so the candidate could grow to 4\.00 times its value/);
+});
+
+test('accepts a candidate whose budget is exactly twice its ratio, whatever the units, and refuses one just under', (t) => {
+  const at = analyze(t, roomConfig, measurementsFrom(roomConfig, { small: { base: flat(10), candidate: flat(6), planted: flat(13), copy: flat(6) } }));
+  assert.equal(at.status, 0, `base 10 and candidate 6 sit exactly at twice under 1.2 and must pass: ${at.stderr}`);
+
+  const under = analyze(t, roomConfig, measurementsFrom(roomConfig, { small: { base: flat(10), candidate: flat(5.9), planted: flat(13), copy: flat(5.9) } }));
+  assert.equal(under.status, 3, `base 10 and candidate 5.9 leave more than twice under 1.2 and must read inconclusive: ${under.stderr}`);
+  assert.match(under.stderr, /small: the budget 1\.2 is more than twice the candidate's 0\.590/);
+});
+
+test('judges the room against the budget a budget law sets, not against the law ratio', (t) => {
+  const config = lawConfig(3);
+  const run = analyze(t, config, measurementsFrom(config, { small: { base: flat(10), candidate: flat(11), planted: flat(30), copy: flat(11) } }));
+  assert.equal(run.status, 3, run.stderr);
+  assert.match(run.stderr, /small: the budget 2\.6 is more than twice the candidate's 1\.100/);
+});
+
+test('passes a cohort whose config.wideRoom gives the reason it may leave that room, and only that cohort', (t) => {
+  const config = {
+    ...twoCohorts,
+    budget: 1.2,
+    planted: { planted: { small: 1.3, large: 1.3 } },
+    wideRoom: { small: 'a paste runs once per gesture, so one frame is its material cost' },
+  };
+  const values = { base: flat(10), candidate: flat(3), planted: flat(13), copy: flat(3) };
+  const run = analyze(t, config, measurementsFrom(config, { small: values, large: values }));
+  assert.equal(run.status, 3, run.stderr);
+  assert.match(run.stdout, /small wide room: a paste runs once per gesture/);
+  assert.match(run.stderr, /large: the budget 1\.2 is more than twice/);
+  assert.doesNotMatch(run.stderr, /small: the budget/);
+
+  const all = { ...config, wideRoom: { ...config.wideRoom, large: 'the same paste at a larger document' } };
+  assert.equal(analyze(t, all, measurementsFrom(all, { small: values, large: values })).status, 0);
+});
+
+test('frees no cohort through a key config.wideRoom inherits, such as a cohort named toString', (t) => {
+  const config = {
+    ...baseConfig,
+    cohorts: ['small', 'toString'],
+    budget: 1.2,
+    planted: { planted: { small: 1.3, toString: 1.3 } },
+    sameCode: { copy: ['small', 'toString'] },
+    wideRoom: { small: 'a paste runs once per gesture, so one frame is its material cost' },
+  };
+  const values = { base: flat(10), candidate: flat(3), planted: flat(13), copy: flat(3) };
+  const run = analyze(t, config, measurementsFrom(config, { small: values, toString: values }));
+  assert.equal(run.status, 3, `toString has no wideRoom reason of its own, so it must read inconclusive: ${run.stdout}`);
+  assert.match(run.stderr, /toString: the budget 1\.2 is more than twice the candidate's 0\.300/);
+  assert.doesNotMatch(run.stdout, /toString wide room/);
+});
+
+test('refuses a config.wideRoom that names no judged cohort or gives no reason', (t) => {
+  const values = small({ base: flat(10), candidate: flat(3), planted: flat(13), copy: flat(3) });
+  for (const [wideRoom, message] of [
+    [null, /config\.wideRoom must map a cohort to the reason its budget may let the candidate more than double/],
+    [{ large: 'once per gesture' }, /config\.wideRoom names large, which config\.cohorts lacks/],
+    [{ small: ' ' }, /config\.wideRoom\.small must give its reason in words/],
+  ]) {
+    const run = analyze(t, { ...roomConfig, wideRoom }, values);
+    assert.equal(run.status, 2, `${message}: ${run.stderr}`);
+    assert.match(run.stderr, message);
+  }
+});
+
 test('refuses to judge measurements taken under another config unless asked to replay them', (t) => {
   const measured = small({ base: flat(10), candidate: flat(10.2), planted: flat(12), copy: flat(10.1) });
   const looser = { ...baseConfig, budget: 1.1 };

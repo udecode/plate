@@ -5,7 +5,10 @@
 // candidate's distance to the budget. It is also inconclusive when a planted
 // arm reads further from the ratio it plants than that ratio's distance to the
 // budget plus the noise, because the line then measured something other than
-// the plant. The run fails when the candidate misses any conclusive cohort, and
+// the plant. It is also inconclusive when its budget is more than twice the
+// candidate's ratio, because the candidate could then more than double and still
+// pass, unless config.wideRoom gives the reason that cohort may leave that room.
+// The run fails when the candidate misses any conclusive cohort, and
 // passes only when every cohort is conclusive and passes. Host load never
 // decides a verdict. The runner records the one-minute load beside each run.
 //
@@ -28,6 +31,8 @@
 // metric in milliseconds: each cohort's budget is the larger of that ratio and
 // 1 plus that many ms over the median of base's six values in the run judged.
 // A planted ratio must pass the law's ratio.
+// `wideRoom`, such as `{ "normal": "a paste runs once per gesture, so one frame is its material cost" }`,
+// maps a cohort to the reason its budget may let the candidate more than double.
 // Every run has six packets, three mirrored pairs. Every cohort needs a
 // planted arm and a same-code arm. No arm is both, and base and candidate are
 // neither. A planted arm carries a deliberate slowdown on its cohorts and names,
@@ -80,7 +85,7 @@ const readConfig = (configPath) => {
   const config = JSON.parse(readFileSync(configPath, 'utf8'));
   const stamp = structuredClone(config);
   const base = path.dirname(path.resolve(configPath));
-  const { arms, budget, budgetLaw, cohorts, metric, planted, sameCode } = config;
+  const { arms, budget, budgetLaw, cohorts, metric, planted, sameCode, wideRoom } = config;
 
   if (typeof metric !== 'string') fail('config.metric must name the measured field');
   if (Object.hasOwn(config, 'loadLimit')) fail('config.loadLimit is gone; host load never gates a run, so drop the field');
@@ -99,6 +104,15 @@ const readConfig = (configPath) => {
     }
   }
   config.budgets = budgets;
+  if (wideRoom !== undefined) {
+    if (wideRoom === null || typeof wideRoom !== 'object' || Array.isArray(wideRoom)) {
+      fail('config.wideRoom must map a cohort to the reason its budget may let the candidate more than double');
+    }
+    for (const [cohort, reason] of Object.entries(wideRoom)) {
+      if (!cohorts.includes(cohort)) fail(`config.wideRoom names ${cohort}, which config.cohorts lacks`);
+      if (typeof reason !== 'string' || reason.trim() === '') fail(`config.wideRoom.${cohort} must give its reason in words`);
+    }
+  }
   if (!arms?.base || !arms?.candidate) fail('config.arms needs a base and a candidate');
   for (const [name, arm] of Object.entries(arms)) {
     if (!Array.isArray(arm.command) || arm.command.length === 0) fail(`config.arms.${name}.command must be an argv array`);
@@ -215,6 +229,8 @@ const checkMatrix = (config, runs) => {
   }
 };
 
+const LOG_EXP_ROUNDOFF = 1e-9;
+
 const judge = (config, { runs }) => {
   checkMatrix(config, runs);
   const value = (arm, packet, cohort) =>
@@ -273,7 +289,13 @@ const judge = (config, { runs }) => {
     if (noise >= margin) {
       reasons.push(`the noise ${noise.toFixed(3)} reaches the candidate's margin ${margin.toFixed(3)} to the budget`);
     }
-    return { cohort, rows, noise, sameCodeGap, spread, budget, baseMedian, reasons, passes: candidate.statistic <= budget };
+    const wide = Object.hasOwn(config.wideRoom ?? {}, cohort) ? config.wideRoom[cohort] : undefined;
+    if (budget > 2 * candidate.statistic * (1 + LOG_EXP_ROUNDOFF) && wide === undefined) {
+      reasons.push(
+        `the budget ${+budget.toFixed(4)} is more than twice the candidate's ${candidate.statistic.toFixed(3)}, so the candidate could grow to ${(budget / candidate.statistic).toFixed(2)} times its value and still pass; time it against its own baseline, or give config.wideRoom.${cohort} the reason it may`
+      );
+    }
+    return { cohort, rows, noise, sameCodeGap, spread, budget, baseMedian, wide, reasons, passes: candidate.statistic <= budget };
   });
 
   const maxLoad = Math.max(...runs.map((run) => run.load));
@@ -311,7 +333,7 @@ const main = (argv) => {
     console.log(`measurements written to ${measurementsPath}`);
   }
   const result = judge(config, measurements);
-  for (const { cohort, rows, noise, sameCodeGap, spread, budget, baseMedian } of result.cohorts) {
+  for (const { cohort, rows, noise, sameCodeGap, spread, budget, baseMedian, wide } of result.cohorts) {
     for (const row of rows) {
       console.log(
         `${cohort} ${row.arm}: median pair ${row.statistic.toFixed(3)} [${row.pairs.map((pair) => pair.toFixed(3)).join(' ')}]`
@@ -323,6 +345,7 @@ const main = (argv) => {
     console.log(
       `${cohort} budget ${budget.toFixed(4)}${baseMedian === undefined ? '' : ` from a base median of ${baseMedian.toFixed(2)} ms`}`
     );
+    if (wide !== undefined) console.log(`${cohort} wide room: ${wide}`);
   }
   console.log(`max one-minute load ${result.maxLoad.toFixed(2)}`);
   if (result.status === 'fail') console.error(`the candidate fails on ${result.misses.join(', ')}`);

@@ -61,9 +61,12 @@ arm measures the noise that load leaves in the candidate. Noise in base moves
 every arm in a packet together, so no same-code gap sees it. The furthest pair
 from its arm's median shows how far noise that differs from pair to pair, base's
 included, moves one ratio. Noise that every pair shares stays unmeasured.
-Only that noise and a planted arm
-decide whether a line is conclusive, and a planted arm that reads far from
-the ratio it plants shows the line measured something other than the plant.
+That noise, a planted arm and the
+budget's room decide whether a line is conclusive. A planted arm that reads
+far from the ratio it plants shows the line measured something other than the
+plant. A budget more than twice the candidate's ratio makes the line
+inconclusive, because the candidate could more than double and still pass,
+unless the config's `wideRoom` gives that cohort's reason.
 Compare only ratios within one run, because absolute medians drift between
 runs. An inconclusive line reruns now,
 or its claim narrows to what a deterministic work count proves. An unpaired

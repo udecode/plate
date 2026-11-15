@@ -89,7 +89,11 @@ Before the architecture owner may lock that target:
    it reads further from the ratio it plants than that ratio's distance to
    the budget plus the noise, or while the noise reaches the candidate's
    distance to the budget. A conclusive cohort therefore has every
-   candidate pair on one side of the budget. A conclusive miss on any
+   candidate pair on one side of the budget. A cohort whose budget is more
+   than twice the candidate's ratio is inconclusive too, because the
+   candidate could more than double and still pass, unless the config's
+   `wideRoom` gives that cohort's reason in words, such as a
+   once-per-gesture cost that stays under a frame. A conclusive miss on any
    cohort fails the run. Only a measured run that
    passes every line rewrites a tracked receipt. It also runs once on a
    known-bad input, which must fail with the probe's own
