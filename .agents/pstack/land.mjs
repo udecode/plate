@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]
+//    or: node .agents/pstack/land.mjs --friction
 // Lands this worktree's task on <branch>, the branch .agents/pstack.json
 // names, as one commit. It commits every change in the worktree, squashes the
 // task's commits into one with the message file's text, rebases it onto the
@@ -39,8 +40,13 @@
 // together. A companion file missing from disk stops the land until it is put
 // back, with `companion.restore` when the config names it, or its deletion is
 // staged. The companion commit pushes after the first, with a `Lands-With:`
-// line naming the commit it landed with; a refused companion push exits 75,
-// and the rerun rebases, checks and pushes it. A checkout whose config names a
+// line naming the commit it landed with. Before it pushes one repository, it
+// fetches the other, unless this run just pushed that one, and when the other
+// gained a commit since the rebase, it rebases both halves and checks them
+// again first. A companion push refused because its origin moved rebases both
+// halves, checks them again and pushes again, within the same three retries as
+// the first push; past them, or on any other refusal, it exits 75, and the
+// rerun rebases, checks and pushes it. A checkout whose config names a
 // companion it lacks refuses to land in push mode. A branch cut before
 // `companion.list` existed on <branch> stops with `companion.migrate`.
 // Each commit ends with a `Lead:` line naming the model and effort lead.mjs
@@ -49,18 +55,37 @@
 // logins, a commit lands only for them unless it names a source: an issue of
 // this repository or its companion, a card in the suggested-task ledger, or a
 // dated plan in the plans directory that exists.
+// A landing takes one share of the machine's core pool, ahead of every proof
+// that waits, the first time it rebuilds or checks, and holds it until it
+// exits. It gives the share back while it waits out a GH006 and takes it again
+// when it next rebuilds or checks. It exits 75 when it still waits for cores
+// at 55 minutes into the run, and after a wait it fetches again and rebases
+// when either tip moved. Each check runs in a process group of its
+// own, and at 55 minutes into the run land.mjs stops that group and exits 75,
+// so a check runner that records each step's pass keeps the steps that
+// finished for the rerun. A check that fails after it ran on a public commit
+// whose companion half reached origin late counts as a move, so land.mjs
+// rebases both halves and checks them again. Each run past the squash appends a line to
+// pstack-land-runs.jsonl in the git common directory when it starts and another
+// when it exits, so a run that a signal stopped still counts, and --friction
+// prints the runs of the last day. A run that exits 75, other than for a GH006,
+// or is stopped loses all its minutes, and any other run loses its wait for
+// cores. When no land-friction task is open and the runs of the last day since
+// the last one closed lost an hour, the run offers one in the suggested-task
+// ledger as it exits.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { availableParallelism, devNull, tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { findLead, leadLabel } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
-import { reserve } from './proof.mjs';
+import { alive, reserve } from './proof.mjs';
 import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
 import { findings } from './writing-check.mjs';
 
-const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]';
+const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry], or node .agents/pstack/land.mjs --friction';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
 const REQUIRED = [
   ['Beyond the ask', 'name every change the request did not ask for'],
@@ -83,9 +108,18 @@ const DECLINED_WAITS = [1, 2, 4, 8, 16];
 const COMMAND_LIMIT = 60 * 60_000;
 const DEADLINE = COMMAND_LIMIT - 5 * 60_000;
 const EX_TEMPFAIL = 75;
+const MOVED = /\[rejected\]|fetch first|non-fast-forward/u;
+const FRICTION_TOPIC = 'land-friction';
+const FRICTION_BOUND_MINUTES = 60;
+const FRICTION_WINDOW = 24 * 60 * 60_000;
+const RUNS_KEPT = 7 * 24 * 60 * 60_000;
 const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || '';
+const startedAt = Date.now();
+const runId = `${process.pid}-${startedAt}`;
 
+let why = '';
 const fail = (message, code = 1) => {
+  why = message.split('\n')[0];
   console.error(`land.mjs: ${message}`);
   process.exit(code);
 };
@@ -124,10 +158,12 @@ function declinedWithoutReason(stderr) {
 const args = process.argv.slice(2);
 let messageFile = null;
 let dry = false;
+let report = false;
 const checks = [];
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === '--message' && args[i + 1]) messageFile = args[++i];
   else if (args[i] === '--dry') dry = true;
+  else if (args[i] === '--friction' && args.length === 1) report = true;
   else if (args[i] === '--check' && args[i + 1]) checks.push(args[++i]);
   else fail(USAGE, 2);
 }
@@ -135,6 +171,12 @@ for (let i = 0; i < args.length; i += 1) {
 const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf8');
 
 process.chdir(must('rev-parse', '--show-toplevel'));
+const common = must('rev-parse', '--path-format=absolute', '--git-common-dir');
+const RUNS = join(common, 'pstack-land-runs.jsonl');
+if (report) {
+  printFriction();
+  process.exit(0);
+}
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
 const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion, generated = [], freshEnv = [], landChecks = [] } = config;
 checks.splice(0, checks.length, ...new Set([...landChecks, ...checks]));
@@ -184,6 +226,51 @@ const gitAsync = (args) =>
   });
 
 let fetched;
+let share = null;
+let stale = false;
+let waitedMs = 0;
+let checkedMs = 0;
+let moves = 0;
+let declines = 0;
+let cause = null;
+
+function takeCores() {
+  if (share) return;
+  share = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs', { first: true, giveUp: () => performance.now() >= DEADLINE });
+  if (!share) {
+    fail(
+      `land.mjs still waited for cores at ${DEADLINE / 60_000} minutes into the run. ` +
+        'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
+      EX_TEMPFAIL
+    );
+  }
+  waitedMs += share.waited;
+  if (share.waited > 0) stale = true;
+}
+
+function dropCores() {
+  share?.();
+  share = null;
+}
+
+async function catchUp() {
+  takeCores();
+  if (!stale) return;
+  const before = fetched;
+  await fetchCompanionFirst();
+  if (fetched.own !== before.own || fetched.theirs !== before.theirs) rebaseFetched();
+}
+
+async function rebaseOntoOrigin() {
+  await fetchCompanionFirst();
+  rebaseFetched();
+}
+
+function rebaseFetched() {
+  rebase();
+  if (pair) rebase(true);
+  refresh();
+}
 
 async function fetchCompanionFirst() {
   const own = ['fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`];
@@ -194,7 +281,17 @@ async function fetchCompanionFirst() {
   if (crun && crun.status !== 0) fail(`git ${theirs.join(' ')} in ${pair.dir} failed: ${crun.stderr.trim()}`);
   // FETCH_HEAD is per worktree. Every worktree shares the upstream refs, and another session's push moves them.
   fetched = { own: must('rev-parse', 'FETCH_HEAD'), theirs: pair ? cmust('rev-parse', 'FETCH_HEAD') : null };
+  stale = false;
 }
+
+// A failed fetch reads as no move, because a flaky fetch of the other repository should not stop a push that its own origin accepts.
+function fetchedPastHead(run, remote, ref) {
+  if (run('fetch', '--quiet', remote, `+refs/heads/${branch}:${ref}`).status !== 0) return false;
+  return run('merge-base', '--is-ancestor', 'FETCH_HEAD', 'HEAD').status !== 0;
+}
+
+const companionMoved = () => fetchedPastHead(cgit, 'origin', cupstream);
+const publicMoved = () => fetchedPastHead(git, canonical, upstream);
 
 function lateCompanionHalf() {
   if (!pair || cgit('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`).status !== 0) return undefined;
@@ -237,8 +334,6 @@ function rebase(inCompanion = false) {
 const nul = (text) => text.split('\0').filter(Boolean);
 const literal = (paths) => paths.map((path) => `:(literal)${path}`);
 const unmerged = (run, globs) => nul(run('diff', '-z', '--name-only', '--diff-filter=U', ...(globs ? ['--', ...globs.map((glob) => `:(glob)${glob}`)] : [])).stdout);
-let rebuildTime = 0;
-let refreshTime = 0;
 const rebuilt = new Set();
 
 function worktreeTree(prefix = [], add = '--all') {
@@ -259,7 +354,6 @@ function rebuild(paths, owners) {
   const gone = paths.filter((path) => !kept.includes(path));
   if (kept.length > 0) must('checkout', 'HEAD', '--', ...literal(kept));
   if (gone.length > 0) must('rm', '--quiet', '--force', '--', ...literal(gone));
-  const started = performance.now();
   const { own: written } = regenerate(
     owners,
     (command) => {
@@ -268,7 +362,6 @@ function rebuild(paths, owners) {
     },
     `The rebase is still in progress. Add or discard those files, ${resume}`
   );
-  rebuildTime = performance.now() - started;
   for (const entry of owners) rebuilt.add(entry);
   if (written.length > 0) must('add', '--all', '--', ...literal(written));
   return spawnSync('git', ['rebase', '--continue'], { encoding: 'utf8', env: { ...process.env, GIT_EDITOR: 'true' } });
@@ -278,9 +371,7 @@ function refresh() {
   const owners = generated.filter((entry) => entry.always && !rebuilt.has(entry));
   if (!landing.own || owners.length === 0) return;
   const rerun = 'then run land.mjs again without --message.';
-  const started = performance.now();
   const { own, theirs } = regenerate(owners, (command) => fail(`${command} failed while rebuilding its generated paths after the rebase. Fix the cause, ${rerun}`), `Add or discard those files, ${rerun}`);
-  refreshTime = performance.now() - started;
   if (own.length + theirs.length === 0) return;
   console.log(`land.mjs rebuilt ${[...own, ...theirs].join(', ')} after the rebase and folds the output into the commit`);
   if (own.length > 0) {
@@ -296,7 +387,7 @@ function refresh() {
 
 // The companion's tree takes `--update`, because with `--all` its git would take every file of this checkout.
 function regenerate(owners, failed, outsideHint) {
-  const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs rebuild');
+  takeCores();
   const own = [];
   const theirs = [];
   let before = worktreeTree();
@@ -315,7 +406,6 @@ function regenerate(owners, failed, outsideHint) {
       sideBefore = sideAfter;
     }
   }
-  release();
   return { own, theirs };
 }
 
@@ -345,7 +435,7 @@ function stageCompanion() {
   if (run.status !== 0) fail(`git add in ${pair.dir} failed: ${run.stderr.trim()}`);
 }
 
-function pushCompanion(lead) {
+async function pushCompanion(lead, publicLanded) {
   const text = cmust('log', '-1', '--format=%B');
   const [subject, ...rest] = text.split('\n');
   const stamped = `${subject}\n\n${trailers(rest.join('\n').trim(), null, lead)}${PAIRED.test(text) ? '' : `\nLands-With: ${must('rev-parse', 'HEAD')}`}`;
@@ -354,12 +444,20 @@ function pushCompanion(lead) {
     writeFileSync(file, `${stamped}\n`);
     cmust('commit', '--quiet', '--amend', '--only', '--file', file);
   }
-  const run = cgit('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
-  if (run.status !== 0) {
-    fail(
-      `git push of the ${pair.dir} commit failed after the rest of the task landed. That commit stays local, so run land.mjs again with no --message; it rebases and checks that commit, then pushes it.\n${run.stderr.trim()}`,
-      EX_TEMPFAIL
-    );
+  for (;;) {
+    if (!publicLanded && publicMoved()) {
+      await retry(target);
+      continue;
+    }
+    const run = cgit('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
+    if (run.status === 0) break;
+    if (!MOVED.test(run.stderr)) {
+      fail(
+        `git push of the ${pair.dir} commit failed after the rest of the task landed. That commit stays local, so run land.mjs again with no --message; it rebases and checks that commit, then pushes it.\n${run.stderr.trim()}`,
+        EX_TEMPFAIL
+      );
+    }
+    await retry(`${pair.dir}'s origin/${branch}`);
   }
   console.log(`Landed ${cmust('rev-parse', '--short', 'HEAD')} on ${pair.dir}'s origin/${branch}`);
 }
@@ -453,6 +551,8 @@ function homes() {
   });
 }
 
+const ledgerFile = () => join(basename(common) === '.git' ? dirname(common) : process.cwd(), ledgerPath(plans, config.delivery));
+
 function sourced(text, plan) {
   if (plan || [...text.matchAll(/^Plan: (\S+)$/gmu)].some(([, path]) => isPlan(path))) return true;
   const ours = homes();
@@ -464,8 +564,7 @@ function sourced(text, plan) {
   if ([...text.matchAll(ISSUE)].some(issue)) return true;
   const cards = text.match(TASK_ID) ?? [];
   if (cards.length === 0) return false;
-  const common = git('rev-parse', '--path-format=absolute', '--git-common-dir').stdout.trim();
-  const ledger = join(basename(common) === '.git' ? dirname(common) : process.cwd(), ledgerPath(plans, config.delivery));
+  const ledger = ledgerFile();
   if (!existsSync(ledger)) return false;
   const tasks = readTasks(readFileSync(ledger, 'utf8').split('\n'));
   return cards.some((id) => tasks.has(id));
@@ -562,6 +661,164 @@ function squash({ subject, body }) {
   return { plan, lead, own: own.length > 0, theirs: theirs.length > 0 };
 }
 
+function minutesOf(ms) {
+  return Math.round(ms / 6_000) / 10;
+}
+
+function loggedRows() {
+  return (existsSync(RUNS) ? readFileSync(RUNS, 'utf8') : '').split('\n').flatMap((line) => {
+    try {
+      return line ? [JSON.parse(line)] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
+// A run writes a row without `exit` when it starts and its full row when it exits. A signal, such as a timeout's, skips Node's exit
+// handlers, so a started run whose process is gone counts as stopped from its start until now, capped at the hour limit.
+function readRuns() {
+  const now = Date.now();
+  const rows = loggedRows();
+  const ended = rows.filter((row) => 'exit' in row);
+  const exited = new Set(ended.map((row) => row.id));
+  const stopped = rows
+    .filter((row) => !('exit' in row) && !exited.has(row.id) && !alive(row.pid))
+    .map((row) => {
+      const end = Math.min(now, Date.parse(row.start) + COMMAND_LIMIT);
+      return { ...row, end: new Date(end).toISOString(), minutes: minutesOf(end - Date.parse(row.start)), exit: null, waited: 0, checked: 0, moves: 0, declines: 0, why: 'stopped by a signal, such as a timeout' };
+    });
+  return [...ended, ...stopped].sort((one, other) => Date.parse(one.end) - Date.parse(other.end));
+}
+
+// A GH006 outage is GitHub's, so a run it ended loses only its wait for cores, as a run that landed does.
+function thrownAway(run) {
+  return run.exit === null || (run.exit === EX_TEMPFAIL && run.cause !== 'declined');
+}
+
+function lostMinutes(run) {
+  return thrownAway(run) ? run.minutes : run.waited;
+}
+
+function total(runs, minutes) {
+  return Math.round(runs.reduce((sum, run) => sum + minutes(run), 0) * 10) / 10;
+}
+
+function logRun(row) {
+  appendFileSync(RUNS, `${JSON.stringify({ id: runId, pid: process.pid, start: new Date(startedAt).toISOString(), session: session || null, subject: message.subject, ...row })}\n`);
+}
+
+function startRun() {
+  try {
+    logRun({});
+  } catch (error) {
+    console.error(`land.mjs: recording this run in ${RUNS} failed: ${error.message}`);
+  }
+  process.on('exit', recordRun);
+}
+
+function recordRun(code) {
+  try {
+    const end = Date.now();
+    logRun({
+      end: new Date(end).toISOString(),
+      minutes: minutesOf(end - startedAt),
+      exit: code,
+      waited: minutesOf(waitedMs),
+      checked: minutesOf(checkedMs),
+      moves,
+      declines,
+      cause,
+      why: code === 0 ? 'landed' : (why || 'land.mjs threw').slice(0, 200),
+    });
+    if (statSync(RUNS).size > 1_000_000) writeFileSync(RUNS, loggedRows().filter((kept) => Date.parse(kept.end ?? kept.start) > end - RUNS_KEPT).map((kept) => `${JSON.stringify(kept)}\n`).join(''));
+    offerFrictionFix(end);
+  } catch (error) {
+    console.error(`land.mjs: recording this run in ${RUNS} failed: ${error.message}`);
+  }
+}
+
+const lockFresh = (lock) => Date.now() - (statSync(lock, { throwIfNoEntry: false })?.mtimeMs ?? 0) < 60_000;
+
+// A landing that dies inside its offer leaves the lock behind. Only the holder of `<lock>.break` removes a stale lock, and it checks
+// the lock again first, so a landing that saw it stale never removes the lock another landing just took.
+function takeLock(lock) {
+  try {
+    mkdirSync(lock);
+    return true;
+  } catch {
+    if (lockFresh(lock)) return false;
+  }
+  const breaker = `${lock}.break`;
+  try {
+    mkdirSync(breaker);
+  } catch {
+    return false;
+  }
+  try {
+    if (!lockFresh(lock)) rmSync(lock, { recursive: true, force: true });
+    mkdirSync(lock);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    rmSync(breaker, { recursive: true, force: true });
+  }
+}
+
+function offerFrictionFix(now) {
+  if (process.env.PSTACK_READ_ONLY) return;
+  const ledger = ledgerFile();
+  if (!existsSync(ledger)) return;
+  // The window starts a day ago at the earliest, so the day's sum bounds it, and a quiet day skips reading the ledger.
+  if (total(readRuns().filter((run) => Date.parse(run.end) > now - FRICTION_WINDOW), lostMinutes) < FRICTION_BOUND_MINUTES) return;
+  const lock = join(common, 'pstack-land-friction.lock');
+  if (!takeLock(lock)) return;
+  try {
+    const rows = readFileSync(ledger, 'utf8').split('\n').filter(Boolean);
+    const ours = [...readTasks(rows).values()].filter((task) => task.topic === FRICTION_TOPIC);
+    if (ours.some((task) => task.status === 'offered' || task.status === 'started')) return;
+    const ids = new Set(ours.map((task) => task.id));
+    const closed = rows.map((row) => row.split('\t')).filter((cells) => ids.has(cells[2]?.split(' ')[0])).map((cells) => Date.parse(cells[0]));
+    const since = Math.max(now - FRICTION_WINDOW, ...closed.filter(Number.isFinite));
+    const runs = readRuns().filter((run) => Date.parse(run.end) > since);
+    const lost = total(runs, lostMinutes);
+    if (lost < FRICTION_BOUND_MINUTES) return;
+    const thrown = runs.filter(thrownAway);
+    const waited = total(runs.filter((run) => !thrownAway(run)), (run) => run.waited);
+    const helper = join(dirname(fileURLToPath(import.meta.url)), 'decisions-check.mjs');
+    const call = (...words) => {
+      const run = spawnSync(process.execPath, [helper, ...words], { encoding: 'utf8' });
+      if (run.status !== 0) throw new Error(`decisions-check.mjs ${words[0]} failed: ${`${run.stderr}${run.stdout}`.trim()}`);
+      return run.stdout.trim();
+    };
+    const id = call('chips', 'id');
+    call(
+      'append',
+      ledger,
+      'chip',
+      `${id} Fix the landing friction land.mjs measured`,
+      `${runs.length} land.mjs runs since ${new Date(since).toISOString().slice(0, 16)} lost ${lost} minutes: ${thrown.length} exited 75 or stopped, after ${total(thrown, (run) => run.minutes)} minutes in all, and the rest waited ${waited} minutes for cores. ` +
+        '`node .agents/pstack/land.mjs --friction` lists the runs. Find what made them slow and fix it in the shared land.mjs or proof.mjs through sync-pstack Lesson mode.',
+      `writes: .agents/pstack/land.mjs, .agents/pstack/proof.mjs; topic: ${FRICTION_TOPIC}; kind: fix; priority: P3; via: hook; session: none`,
+      'offered'
+    );
+    console.log(`land.mjs offered ${id} in ${ledger}, because landings lost ${lost} minutes since ${new Date(since).toISOString().slice(0, 16)}; /chips all cards it. Say so in one line.`);
+  } finally {
+    rmSync(lock, { recursive: true, force: true });
+  }
+}
+
+function printFriction() {
+  const since = Date.now() - FRICTION_WINDOW;
+  const runs = readRuns().filter((run) => Date.parse(run.end) > since);
+  for (const run of runs) {
+    console.log([run.end.slice(5, 16), `${run.minutes}m`, `exit ${run.exit ?? 'signal'}`, `waited ${run.waited}m`, `checked ${run.checked}m`, `moves ${run.moves}`, `declines ${run.declines}`, run.session ?? '-', run.why].join('\t'));
+  }
+  const lost = total(runs, lostMinutes);
+  console.log(`${runs.length} land.mjs runs in the last day lost ${lost} minutes to exit 75, to a stop or to waiting for cores; past ${FRICTION_BOUND_MINUTES} since the last ${FRICTION_TOPIC} task closed, a landing offers one.`);
+}
+
 await fetchCompanionFirst();
 // <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
 const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
@@ -595,6 +852,7 @@ if (dry) {
 }
 const landing = squash(message);
 const { plan, lead } = landing;
+startRun();
 rebase();
 if (pair) rebase(true);
 refresh();
@@ -610,9 +868,44 @@ const stamp = () =>
     checks,
   });
 
-let checkTime = 0;
+const STOPS = ['SIGINT', 'SIGTERM', 'SIGHUP'];
 
-function check(rebased = false) {
+// The check gets a process group of its own, so the deadline stops every step it started. A signal to land.mjs passes on to that group, then ends land.mjs as it would have, so the run log counts the run as stopped.
+function runCheck(command) {
+  if (performance.now() >= DEADLINE) return Promise.resolve({ stopped: true });
+  return new Promise((resolve) => {
+    const child = spawn(command, { shell: true, stdio: ['ignore', 'inherit', 'inherit'], detached: true });
+    const killGroup = (signal) => {
+      try {
+        process.kill(-child.pid, signal);
+      } catch (error) {
+        if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error;
+      }
+    };
+    const pass = (signal) => {
+      killGroup(signal);
+      for (const stop of STOPS) process.off(stop, pass);
+      process.kill(process.pid, signal);
+    };
+    for (const stop of STOPS) process.on(stop, pass);
+    let stopped = false;
+    const timer = setTimeout(() => {
+      stopped = true;
+      killGroup('SIGTERM');
+    }, DEADLINE - performance.now());
+    child.on('close', (status) => {
+      clearTimeout(timer);
+      for (const stop of STOPS) process.off(stop, pass);
+      if (!stopped) return resolve({ status });
+      setTimeout(() => {
+        killGroup('SIGKILL');
+        resolve({ stopped: true });
+      }, MINUTE / 2);
+    });
+  });
+}
+
+async function check(rebased = false) {
   const started = performance.now();
   rmSync(record, { force: true });
   const changed = [
@@ -620,7 +913,6 @@ function check(rebased = false) {
     ...(landing.theirs ? nul(cmust('diff', '-z', '--name-only', '--diff-filter=d', fetched.theirs, 'HEAD')) : []),
   ];
   refuseDefaults(changed);
-  const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs checks');
   if (lintFix && changed.length > 0) {
     const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });
     if (run.status !== 0) fail(`${lintFix} failed on the changed files; fix them and run land.mjs again`);
@@ -634,64 +926,77 @@ function check(rebased = false) {
     }
   }
   for (const command of checks) {
-    const run = spawnSync(command, { shell: true, stdio: 'inherit' });
-    if (run.status === 0) continue;
-    const late = lateCompanionHalf();
-    if (late) {
+    const run = await runCheck(command);
+    if (run.stopped) {
       fail(
-        `check failed: ${command}; it ran on ${late} without that commit's ${pair.dir} half, which reached origin/${branch} after land.mjs read it, and that may cause the failure. ` +
+        `land.mjs stopped ${command} at ${DEADLINE / 60_000} minutes into the run. ` +
           'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
         EX_TEMPFAIL
       );
     }
+    if (run.status === 0) continue;
+    const late = lateCompanionHalf();
+    if (late) {
+      console.log(`check failed: ${command}; it ran on ${late} without that commit's ${pair.dir} half, which reached origin/${branch} after land.mjs read it, so land.mjs checks both halves again.`);
+      checkedMs += performance.now() - started;
+      return retry(`${pair.dir}'s origin/${branch}`);
+    }
     fail(`check failed: ${command}; the squashed commit stays local${rebased ? `, rebased onto the commits origin/${branch} gained while its checks ran, which may cause the failure` : ''}`);
   }
-  release();
   if (dirty() || sideDirty()) {
     const status = [must('status', '--short'), pair ? cmust('status', '--short', '--untracked-files=no') : ''].filter(Boolean).join('\n');
     fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${status}`);
   }
   writeFileSync(record, stamp());
-  checkTime = performance.now() - started;
+  checkedMs += performance.now() - started;
+}
+
+async function retry(where) {
+  if (moves >= RETRIES || performance.now() >= DEADLINE) {
+    fail(
+      `${where} moved, and ${moves >= RETRIES ? `it had moved ${RETRIES} times already while land.mjs checked` : `the run has reached ${DEADLINE / 60_000} minutes`}. ` +
+        'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
+      EX_TEMPFAIL
+    );
+  }
+  moves += 1;
+  console.log(`${where} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
+  await rebaseOntoOrigin();
+  await catchUp();
+  await check(true);
 }
 
 if (fresh) {
   console.log(`${fresh} is set, so land.mjs runs the checks again whatever it recorded.`);
-  check();
+  await catchUp();
+  await check();
 } else if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
   console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
 } else {
-  check();
+  await catchUp();
+  await check();
 }
 
 if (mode === 'push') {
-  let moves = 0;
-  let declines = 0;
+  const pushesPublic = landing.own;
   while (landing.own) {
+    if (pair && companionMoved()) {
+      await retry(`${pair.dir}'s origin/${branch}`);
+      continue;
+    }
     const run = git('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
     if (run.status === 0) break;
-    const moved = /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr);
     const declined = declinedWithoutReason(run.stderr);
     const wait = DECLINED_WAITS[declines];
-    if (moved && moves < RETRIES && performance.now() + checkTime + rebuildTime + refreshTime > DEADLINE) {
-      fail(
-        `origin/${branch} moved, and checking the rebased commit again would end past ${DEADLINE / MINUTE} minutes into the run. ` +
-          'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
-        EX_TEMPFAIL
-      );
-    } else if (moved && moves < RETRIES) {
-      moves += 1;
-      console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
-      await fetchCompanionFirst();
-      rebase();
-      if (pair) rebase(true);
-      refresh();
-      check(true);
+    if (MOVED.test(run.stderr)) {
+      await retry(`origin/${branch}`);
     } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
       declines += 1;
       console.log(`GitHub declined the push to ${branch} with an empty GH006; pushing again in ${wait} min (retry ${declines} of ${DECLINED_WAITS.length})`);
+      dropCores();
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait * MINUTE);
     } else if (declined) {
+      cause = 'declined';
       fail(
         `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(performance.now() / 60_000)} minutes land.mjs has run. ` +
           `The squashed commit stays local and land.mjs recorded it, so run land.mjs again with the same --check options and no --message; it skips the checks unless origin/${branch} has moved since this run last rebased onto it.\n${run.stderr.trim()}`,
@@ -701,8 +1006,11 @@ if (mode === 'push') {
       fail(`git push origin HEAD:${branch} failed: ${run.stderr.trim()}`);
     }
   }
-  if (landing.own) console.log(`Landed ${must('rev-parse', '--short', 'HEAD')} on origin/${branch}: ${message.subject}`);
-  if (landing.theirs) pushCompanion(lead);
+  if (landing.own) {
+    console.log(`Landed ${must('rev-parse', '--short', 'HEAD')} on origin/${branch}: ${message.subject}`);
+    landing.own = false;
+  }
+  if (landing.theirs) await pushCompanion(lead, pushesPublic);
 } else {
   const slug = message.subject.toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '').slice(0, 50);
   const topic = current && current !== branch ? current : `land/${slug}`;

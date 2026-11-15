@@ -16,8 +16,8 @@
 // the pool counts the workers each one runs, so a command that runs
 // more workers than it asked for holds a share for each. It waits while the
 // pool is full or free memory is low, or while the pool still counts the
-// workers of a command that just started, and waiters enter in the order
-// they arrived.
+// workers of a command that just started. Waiters enter in the order they
+// arrived, except that a waiting landing goes ahead of every waiting proof.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs';
@@ -63,7 +63,7 @@ const WATCH_MS = 6000;
 
 const tenths = (cores) => Math.round(cores * 10) / 10;
 const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-const alive = (pid) => {
+export const alive = (pid) => {
   try {
     process.kill(pid, 0);
     return true;
@@ -145,21 +145,26 @@ function countWorkers() {
 }
 
 // Holds the machine-wide pool's share for `workers` until the returned release
-// runs or this process exits. A process whose ancestor holds a share takes
-// none, so a proof started inside a proof or a land check never waits on its
-// own parent. A waiter counts every earlier waiter's ask as held, so small
-// proofs that arrive later never take the cores a land check is waiting for.
-// It charges each holder the larger of its ask and the workers it runs now,
-// so the ask in a holder's file never changes and an older proof.mjs still
-// reads it.
-export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
-  if (process.env[HELD]) return () => {};
+// runs or this process exits; the release's `waited` is the milliseconds the
+// call waited. A process whose ancestor holds a share takes none, so a proof
+// started inside a proof or a land check never waits on its own parent. A
+// waiter counts the ask of every waiter ahead of it as held, so a small proof
+// never takes the cores a larger waiter ahead of it needs. A `first` waiter,
+// which land.mjs passes, is ahead of every waiter without `first`, and none of
+// those enters while it waits, because a proof's workers can outgrow its ask.
+// When `giveUp` returns true while the call waits, it leaves the queue and
+// returns null.
+export function reserve(workers, label, { perWorker: coresPerWorker = CORES_PER_WORKER, first = false, giveUp = () => false } = {}) {
+  const asked = Date.now();
+  if (process.env[HELD]) return Object.assign(() => {}, { waited: 0 });
   const capacity = availableParallelism();
   const want = Math.min(workers * coresPerWorker, capacity);
   mkdirSync(POOL, { recursive: true });
   const mine = join(POOL, `${process.pid}.json`);
   const ticket = join(POOL, `${process.pid}.wait`);
+  const rank = (waiter) => (waiter.first ? 0 : 1);
   let since = null;
+  let slept = false;
   const reported = new Set();
   for (;;) {
     const running = countWorkers();
@@ -169,7 +174,7 @@ export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
         const now = Date.now();
         if (since === null) {
           since = now;
-          writeFileSync(ticket, JSON.stringify({ pid: process.pid, cores: want, label, since }));
+          writeFileSync(ticket, JSON.stringify({ pid: process.pid, cores: want, label, since, first }));
         }
         const live = entries('.json').map((holder) => ({
           ...holder,
@@ -177,11 +182,15 @@ export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
         }));
         const held = tenths(live.reduce((sum, holder) => sum + holder.used, 0));
         const watched = live.find((holder) => Math.abs(now - holder.since) < WATCH_MS);
-        const ahead = entries('.wait').filter((waiter) => waiter.since < since || (waiter.since === since && waiter.pid < process.pid));
+        const own = rank({ first });
+        const ahead = entries('.wait').filter(
+          (waiter) => rank(waiter) < own || (rank(waiter) === own && (waiter.since < since || (waiter.since === since && waiter.pid < process.pid)))
+        );
         const queued = ahead.reduce((sum, waiter) => sum + waiter.cores, 0);
+        const landing = first ? undefined : ahead.find((waiter) => waiter.first);
         const free = freeMemory();
         const fits = held + queued + want <= capacity;
-        if (fits && free >= MIN_FREE_MEMORY && !watched) {
+        if (fits && free >= MIN_FREE_MEMORY && !watched && !landing) {
           writeFileSync(mine, JSON.stringify({ pid: process.pid, cores: want, label, since: now, perWorker: coresPerWorker }));
           rmSync(ticket, { force: true });
           process.env[HELD] = '1';
@@ -190,12 +199,13 @@ export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
             delete process.env[HELD];
           };
           process.once('exit', release);
-          return release;
+          return Object.assign(release, { waited: slept ? Date.now() - asked : 0 });
         }
-        const behind = ahead.length > 0 ? `, and ${queued} asked for by ${ahead.length} earlier waiter${ahead.length === 1 ? '' : 's'}` : '';
+        const behind = ahead.length > 0 ? `, and ${queued} asked for by ${ahead.length} waiter${ahead.length === 1 ? '' : 's'} ahead` : '';
         const share = (holder) => (holder.used > holder.cores ? `${holder.used} in use, asked ${holder.cores}` : holder.cores);
         if (!fits) waiting = { kind: 'cores', reason: `${held} of ${capacity} cores held by ${live.map((holder) => `${holder.label} (${holder.pid}, ${share(holder)})`).join(', ') || 'nobody'}${behind}` };
         else if (free < MIN_FREE_MEMORY) waiting = { kind: 'memory', reason: `free memory is ${Math.round(free * 100)}%, under ${MIN_FREE_MEMORY * 100}%` };
+        else if (landing) waiting = { kind: 'landing', reason: `${landing.label} (${landing.pid}) waits for ${landing.cores} cores, and a waiting landing enters before any proof` };
         else {
           const seconds = Math.round((now - watched.since) / 1000);
           waiting = {
@@ -209,6 +219,11 @@ export function reserve(workers, label, coresPerWorker = CORES_PER_WORKER) {
       if (!reported.has(waiting.kind)) console.error(`${label}: waiting for ${want} of this machine's cores; ${waiting.reason}`);
       reported.add(waiting.kind);
     }
+    if (giveUp()) {
+      rmSync(ticket, { force: true });
+      return null;
+    }
+    slept = true;
     sleep(POLL_MS);
   }
 }
@@ -236,7 +251,7 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
   const header = `$ (${resolve(cwd)}) ${line}\n`;
   writeSync(fd, header);
   const [file, args] = shell ? ['bash', ['-o', 'pipefail', '-c', command[0]]] : [command[0], command.slice(1)];
-  const release = reserve(cores, `proof.mjs ${name}`, stress ? STRESS_CORES_PER_WORKER : CORES_PER_WORKER);
+  const release = reserve(cores, `proof.mjs ${name}`, { perWorker: stress ? STRESS_CORES_PER_WORKER : CORES_PER_WORKER });
   const result = spawnSync(process.execPath, [fileURLToPath(import.meta.url), SUPERVISE_GROUP, String(timeout ?? 0), file, ...args], {
     cwd,
     stdio: ['ignore', fd, fd, 'pipe'],
