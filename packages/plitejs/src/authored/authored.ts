@@ -1203,12 +1203,20 @@ export const createAuthoredPlugin = (
 
     return state;
   };
-  // A view that never chose one follows its editor's.
   const viewOf = (editor: Editor): AuthoredView => {
     const { views } = stateOf(editor);
 
+    for (
+      let runtime: InternalEditorRuntime | undefined = getEditorRuntime(editor);
+      runtime;
+      runtime = runtime.policySource?.current()
+    ) {
+      const view = views.get(runtime);
+
+      if (view) return view;
+    }
+
     return (
-      views.get(getEditorRuntime(editor)) ??
       views.get(getEditorRuntime(getEditorRuntimeOwner(editor))) ?? {
         intent: 'edit',
       }

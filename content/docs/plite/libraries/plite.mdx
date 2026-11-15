@@ -43,7 +43,11 @@ Plugin code reads the document through the editor or state passed to it.
 
 Create a view from another view to read another of its roots. The new view
 reads the requested root, or the primary root when `root` is omitted, and keeps
-the source view's document, read-only state and authored mode:
+the source view's document. It follows the source view's read-only state and
+authored view while both views exist, so it turns read-only when the source
+does. Its own `readOnly: true` keeps it read-only under an editable source, and
+its own `authored` option wins over the source's. A view of a `document`
+follows nothing, because it stays read-only and takes no authored view:
 
 ```ts
 const caption = createEditorView(preview, { root: 'caption:1' });

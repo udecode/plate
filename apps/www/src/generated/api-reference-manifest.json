@@ -27786,7 +27786,7 @@
         },
         "platejs/react:useRootEditor": {
           "aliases": [],
-          "documentation": "Create a command-capable editor for one root.\n\nThe returned object is stable for the requested root and read-only option.\nUse it for root-specific toolbar/sidebar commands. Pass `readOnly: true`\nwhen UI only needs read APIs. Exact plugin capability comes from\n`editor.plugin(Plugin)`.",
+          "documentation": "Create a command-capable editor for one root.\n\nThe returned object is stable for the requested root and read-only option.\nIt obeys the read-only state and the authored view of the mounted view that\nshows its root, and of the view around the hook while none shows it. Use\nit for root-specific toolbar/sidebar commands. Pass\n`readOnly: true` when UI only needs read APIs. Exact plugin capability\ncomes from `editor.plugin(Plugin)`.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useRootEditor",

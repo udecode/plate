@@ -36,7 +36,7 @@ import {
 import { useEditableRootCommitWakeup } from './root-selector-sources';
 import { useRuntimeAndroidEngine } from './runtime-android-engine';
 import {
-  setEditorReadOnly,
+  registerEditorSurface,
   subscribeEditorViewState,
 } from './runtime-editor-api';
 import { useEditableEventRuntime } from './runtime-event-engine';
@@ -160,9 +160,12 @@ export const useEditableRootRuntime = ({
   } = rootRuntimeState;
   const { domPhaseScheduler, inputController, rootRef } = runtime;
 
-  useIsomorphicLayoutEffect(() => {
-    setEditorReadOnly(editor, readOnlyProp);
-  }, [editor, readOnlyProp]);
+  // A layout effect cleans up when an Activity hides the editable, so a hidden
+  // editable does not count.
+  useIsomorphicLayoutEffect(
+    () => registerEditorSurface(editor, readOnlyProp),
+    [editor, readOnlyProp]
+  );
 
   useIsomorphicLayoutEffect(() => {
     IS_READ_ONLY.set(editor, readOnly);

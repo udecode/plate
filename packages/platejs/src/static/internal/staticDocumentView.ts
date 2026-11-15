@@ -51,8 +51,6 @@ export const getStaticDocumentView = (
  */
 export const getStaticRootView = (reader: Editor, root: string): Editor => {
   const base = rootViewBases.get(reader) ?? reader;
-  // A derived view keeps the policy it was created with, so a live editor
-  // that switches modes needs a new reader.
   const authored = readAuthoredView(base);
   const readOnly = base.read.view.isReadOnly();
   let byRoot = rootReaders.get(base);

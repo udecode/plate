@@ -16,7 +16,7 @@ export const applyModelOwnedHistoryIntent = ({
   focusPolicy?: EditorHistoryFocusPolicy;
   runtime?: EditableDOMRuntime | null;
 }) => {
-  if (!runtime) return false;
+  if (!runtime || editor.read.view.isReadOnly()) return false;
 
   runtime.dispatchHistory(direction, focusPolicy);
   return true;

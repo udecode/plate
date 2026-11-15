@@ -10499,22 +10499,32 @@ const selectionPositionEquals = (left: Selection, right: Selection) => {
   );
 };
 
-const setEditorViewStateFlag = (
+const writeEditorViewStateFlag = (
   editor: AnyPluginEditor,
   key: 'composing' | 'focused' | 'readOnly',
   value: boolean,
   fallback: WeakMap<AnyPluginEditor, boolean>
 ) => {
   const { setViewState } = getEditorRuntime(editor);
-  if (setViewState) {
-    const changed = setViewState(key, value);
-    if (changed) notifyEditorViewState(editor, key);
-    return changed;
-  }
+
+  if (setViewState) return setViewState(key, value);
   if ((fallback.get(editor) ?? false) === value) return false;
   fallback.set(editor, value);
-  notifyEditorViewState(editor, key);
+
   return true;
+};
+
+const setEditorViewStateFlag = (
+  editor: AnyPluginEditor,
+  key: 'composing' | 'focused',
+  value: boolean,
+  fallback: WeakMap<AnyPluginEditor, boolean>
+) => {
+  const changed = writeEditorViewStateFlag(editor, key, value, fallback);
+
+  if (changed) notifyEditorViewState(editor, key);
+
+  return changed;
 };
 
 export const setEditorComposing = (
@@ -10571,12 +10581,44 @@ export const setEditorMaxLength = (
   EDITOR_MAX_LENGTH.set(editor, normalizeEditorMaxLength(maxLength));
 };
 
+const reportReadOnlyChange = <T>(
+  editor: AnyPluginEditor,
+  change: () => T
+): T => {
+  const wasReadOnly = editor.read.view.isReadOnly();
+  const result = change();
+
+  if (editor.read.view.isReadOnly() !== wasReadOnly) {
+    notifyEditorViewState(editor, 'readOnly');
+  }
+
+  return result;
+};
+
 export const setEditorReadOnly = (
   editor: AnyPluginEditor,
   readOnly: boolean
 ) => {
-  setEditorViewStateFlag(editor, 'readOnly', readOnly, EDITOR_READ_ONLY);
+  reportReadOnlyChange(editor, () =>
+    writeEditorViewStateFlag(editor, 'readOnly', readOnly, EDITOR_READ_ONLY)
+  );
 };
+
+export const registerEditorSurface = (
+  editor: AnyPluginEditor,
+  readOnly: boolean
+) => {
+  const { registerSurface } = getEditorRuntime(editor);
+
+  if (!registerSurface) return () => {};
+
+  const release = reportReadOnlyChange(editor, () => registerSurface(readOnly));
+
+  return () => reportReadOnlyChange(editor, release);
+};
+
+export const hasEditorSurface = (editor: AnyPluginEditor): boolean =>
+  getEditorRuntime(editor).hasSurface?.() ?? false;
 
 export const notifyEditorViewState = (
   editor: AnyPluginEditor,
@@ -10593,11 +10635,13 @@ export const notifyEditorViewState = (
   });
 };
 
-export const subscribeEditorViewState = <V extends Value>(
-  editor: Editor<V>,
+const isPolicyChange = (change: EditorViewStateChange) =>
+  change === 'authored' || change === 'readOnly';
+
+const listenToViewState = (
+  runtime: object,
   listener: (change: EditorViewStateChange) => void
 ) => {
-  const runtime = getEditorRuntime(editor);
   const listeners = EDITOR_VIEW_STATE_LISTENERS.get(runtime) ?? new Set();
 
   listeners.add(listener);
@@ -10609,6 +10653,86 @@ export const subscribeEditorViewState = <V extends Value>(
     if (listeners.size === 0) {
       EDITOR_VIEW_STATE_LISTENERS.delete(runtime);
     }
+  };
+};
+
+const followViewPolicy = (
+  { policySource: source }: Pick<InternalEditorRuntime, 'policySource'>,
+  hearPolicyChange: (change: EditorViewStateChange) => void,
+  hearSwitch: () => void
+): (() => void) => {
+  if (!source) return () => {};
+
+  const follow = (target: InternalEditorRuntime | undefined) => {
+    if (!target) return () => {};
+
+    const stopTarget = listenToViewState(target, hearPolicyChange);
+    const stopChain = followViewPolicy(target, hearPolicyChange, hearSwitch);
+
+    return () => {
+      stopTarget();
+      stopChain();
+    };
+  };
+  let followed = source.current();
+  let stopFollowed = follow(followed);
+  const stopSource = source.subscribe?.(() => {
+    const next = source.current();
+
+    if (next === followed) return;
+
+    stopFollowed();
+    followed = next;
+    stopFollowed = follow(next);
+    hearSwitch();
+  });
+
+  return () => {
+    stopSource?.();
+    stopFollowed();
+  };
+};
+
+const listenToOwnerAuthoredView = <V extends Value>(
+  editor: Editor<V>,
+  listener: (change: EditorViewStateChange) => void
+) => {
+  const owner: object = getEditorRuntime(getEditorRuntimeOwner(editor));
+
+  if (owner === getEditorRuntime(editor)) return () => {};
+
+  return listenToViewState(owner, (change) => {
+    if (change === 'authored') listener(change);
+  });
+};
+
+export const subscribeEditorViewState = <V extends Value>(
+  editor: Editor<V>,
+  listener: (change: EditorViewStateChange) => void
+) => {
+  const runtime = getEditorRuntime(editor);
+  let subscribed = true;
+  const hearPolicyChange = (change: EditorViewStateChange) => {
+    if (isPolicyChange(change)) listener(change);
+  };
+  const hearSwitch = () => {
+    scheduleMicrotask(() => {
+      for (const change of ['readOnly', 'authored'] as const) {
+        if (!subscribed) return;
+
+        runEditorObserver(editor, 'commit-listener', () => listener(change));
+      }
+    });
+  };
+  const stops = [
+    listenToViewState(runtime, listener),
+    followViewPolicy(runtime, hearPolicyChange, hearSwitch),
+    listenToOwnerAuthoredView(editor, listener),
+  ];
+
+  return () => {
+    subscribed = false;
+    for (const stop of stops) stop();
   };
 };
 

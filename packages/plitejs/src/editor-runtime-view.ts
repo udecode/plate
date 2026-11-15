@@ -2,7 +2,6 @@ import { createEditorAnchorApi } from './core/anchor';
 import {
   configureAuthoredView,
   getAuthoredViewCommit,
-  readAuthoredView,
   withAuthoredUpdateView,
   withAuthoredViewRead,
 } from './core/authored-runtime';
@@ -37,6 +36,7 @@ import {
   hasEditorRuntime,
   type InternalEditorReadRuntime,
   type InternalEditorRuntime,
+  type ViewPolicySource,
   setEditorRuntime,
 } from './core/editor-runtime';
 import { getSourcesForChange } from './core/listener-state';
@@ -125,10 +125,17 @@ type ViewState = {
   composing: boolean;
   document: AdmittedDocument | undefined;
   focused: boolean;
+  policySource: ViewPolicySource | undefined;
   presentation: ViewPresentation;
   readOnly: boolean;
   root: RootKey;
+  surfaces: { readOnly: number; writable: number };
 };
+
+export type ViewPolicyTarget = Readonly<{
+  current: () => Editor | undefined;
+  subscribe: (listener: () => void) => () => void;
+}>;
 
 type LayeredEditorView<TEditor> = Omit<TEditor, 'blur' | 'focus' | 'root'> &
   Pick<EditorView, 'blur' | 'focus' | 'root'>;
@@ -225,11 +232,47 @@ type ViewStateTransformInput<V extends Value> = Pick<
   transaction?: EditorStateView<V, any>['transaction'];
 };
 
+const shownOnlyReadOnly = ({ readOnly, writable }: ViewState['surfaces']) =>
+  readOnly > 0 && writable === 0;
+
+const isViewReadOnly = (state: ViewState): boolean => {
+  if (state.readOnly || shownOnlyReadOnly(state.surfaces)) return true;
+
+  const source = state.policySource?.current();
+  const followed = source && VIEW_STATES.get(source);
+
+  return followed ? isViewReadOnly(followed) : false;
+};
+
+const viewRuntimeOf = (editor: Editor | undefined) => {
+  const runtime = editor && getEditorRuntime(editor);
+
+  return runtime && VIEW_STATES.has(runtime) ? runtime : undefined;
+};
+
+const policySourceOf = (
+  sourceRuntime: InternalEditorRuntime | undefined,
+  target: ViewPolicyTarget | undefined
+): ViewPolicySource | undefined => {
+  if (!target) return sourceRuntime && { current: () => sourceRuntime };
+
+  return {
+    current: () => viewRuntimeOf(target.current()),
+    subscribe: target.subscribe,
+  };
+};
+
+const assertViewWritable = (state: ViewState) => {
+  if (isViewReadOnly(state)) {
+    throw new Error('Cannot update a read-only editor view.');
+  }
+};
+
 const createViewApi = (state: ViewState): EditorStateViewApi =>
   Object.freeze({
     isComposing: () => state.composing,
     isFocused: () => state.focused,
-    isReadOnly: () => state.readOnly,
+    isReadOnly: () => isViewReadOnly(state),
     root: () => toPublicRoot(state.root),
   });
 
@@ -1202,6 +1245,18 @@ const createViewRuntime = <V extends Value>(
       withDocumentViewRead(getViewEditor() ?? editor, () =>
         baseRuntime.read((state) => fn(projectState(state)))
       ),
+    hasSurface: () =>
+      viewState.surfaces.readOnly > 0 || viewState.surfaces.writable > 0,
+    policySource: viewState.policySource,
+    registerSurface: (readOnly) => {
+      const kind = readOnly ? 'readOnly' : 'writable';
+
+      viewState.surfaces[kind] += 1;
+
+      return () => {
+        viewState.surfaces[kind] -= 1;
+      };
+    },
     setViewState: (key, value) => {
       if (key === 'readOnly' && viewState.document) return false;
 
@@ -1210,9 +1265,7 @@ const createViewRuntime = <V extends Value>(
       return changed;
     },
     runCommand: createCommandDispatch(() => {
-      if (viewState.readOnly) {
-        throw new Error('Cannot update a read-only editor view.');
-      }
+      assertViewWritable(viewState);
 
       const viewEditor = getViewEditor();
 
@@ -1293,9 +1346,7 @@ const createViewRuntime = <V extends Value>(
     string: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.string(...args)),
     update: (fn, updateOptions) => {
-      if (viewState.readOnly) {
-        throw new Error('Cannot update a read-only editor view.');
-      }
+      assertViewWritable(viewState);
 
       const runUpdate = () =>
         withEditorUpdateRoot(editor, viewState.root, () =>
@@ -1342,15 +1393,15 @@ export const createEditorViewRuntime = <
 >(
   sourceEditor: Editor<V, TPlugins>,
   options: EditorViewOptions<TRoot> = {},
-  presentation?: ViewPresentation
+  presentation?: ViewPresentation,
+  policyTarget?: ViewPolicyTarget
 ): EditorView<V, TPlugins> => {
-  // A view of a view reads the document runtime directly, so only the
-  // requested root applies. The source view's document and policy carry over.
   const runtimeEditor = getEditorRuntimeOwner(sourceEditor) as Editor<
     V,
     TPlugins
   >;
-  const sourceView = VIEW_STATES.get(getEditorRuntime(sourceEditor));
+  const sourceRuntime = viewRuntimeOf(sourceEditor);
+  const sourceView = sourceRuntime && VIEW_STATES.get(sourceRuntime);
   const document = options.document
     ? admitEditorDocument(getEditorRuntimeOwner(sourceEditor), options.document)
         .document
@@ -1369,12 +1420,14 @@ export const createEditorViewRuntime = <
     composing: sourceEditor.read.view.isComposing(),
     document,
     focused: sourceEditor.read.view.isFocused(),
+    policySource: document
+      ? undefined
+      : policySourceOf(sourceRuntime, policyTarget),
     presentation:
       presentation ?? sourceView?.presentation ?? createViewPresentation(),
-    readOnly: document
-      ? true
-      : Boolean(options.readOnly || sourceView?.readOnly),
+    readOnly: Boolean(document || options.readOnly),
     root: toInternalRoot(options.root),
+    surfaces: { readOnly: 0, writable: 0 },
   };
   const baseRuntime = getEditorRuntime(runtimeEditor);
   let viewEditor: Editor<V> | null = null;
@@ -1393,9 +1446,7 @@ export const createEditorViewRuntime = <
   viewRead.schema = sourceEditor.read.schema;
   const viewUpdate = createEditorUpdateApi<V, TPlugins>(
     (fn, policy) => {
-      if (viewState.readOnly) {
-        throw new Error('Cannot update a read-only editor view.');
-      }
+      assertViewWritable(viewState);
 
       return viewRuntime.update(
         fn as (
@@ -1409,9 +1460,7 @@ export const createEditorViewRuntime = <
       hasTxGroup: (groupName) =>
         getPluginRegistry(sourceEditor).txGroups.has(groupName),
       repairValue: () => {
-        if (viewState.readOnly) {
-          throw new Error('Cannot update a read-only editor view.');
-        }
+        assertViewWritable(viewState);
 
         sourceEditor.update.value.repair();
       },
@@ -1482,13 +1531,7 @@ export const createEditorViewRuntime = <
   );
   inheritPluginRegistry(viewEditor, sourceEditor);
   if (document) registerDocumentView(viewEditor);
-  else {
-    configureAuthoredView(
-      viewEditor,
-      options.authored ??
-        (sourceView ? readAuthoredView(sourceEditor) : undefined)
-    );
-  }
+  else configureAuthoredView(viewEditor, options.authored);
   pluginApis = createEditorViewPluginApis(viewEditor, sourceEditor);
   view.plugin = pluginApis.plugin;
   return Object.freeze(view);

@@ -183,6 +183,11 @@ export type InternalPluginPublicationEntry =
       plugin: PluginReference;
     }>;
 
+export type ViewPolicySource = Readonly<{
+  current: () => InternalEditorRuntime | undefined;
+  subscribe?: (listener: () => void) => () => void;
+}>;
+
 export type InternalEditorRuntime<V extends Value = Value> =
   InternalPluginRuntime<V> &
     InternalEditorReadRuntime &
@@ -192,6 +197,9 @@ export type InternalEditorRuntime<V extends Value = Value> =
         key: 'composing' | 'focused' | 'readOnly',
         value: boolean
       ) => boolean;
+      registerSurface?: (readOnly: boolean) => () => void;
+      hasSurface?: () => boolean;
+      policySource?: ViewPolicySource;
     };
 
 const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();

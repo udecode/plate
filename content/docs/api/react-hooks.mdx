@@ -203,6 +203,12 @@ view. Pass `focusPolicy: 'preserve'` when undo/redo is controlled from external
 UI and DOM focus should stay outside the editor. `history.root` is `undefined`
 for the primary document and the root key for an extra root.
 
+Without `options.editor`, the controls follow the view that `useRootEditor`
+follows for their root. While that view is read-only, `canUndo` and `canRedo`
+are `false`, and `history.undo()` and `history.redo()` do nothing. While
+several `EditorContent`s show the root, `history.undo()` and `history.redo()`
+run only while one of them holds focus.
+
 `history.undo()` and `history.redo()` dispatch mounted UI actions and return
 `void`. `history.pending` is `"undo"`, `"redo"`, or `null`; `canUndo` and
 `canRedo` are both `false` while a live-session replay is pending. A repeated
@@ -284,6 +290,23 @@ root key, inferred from `root`; read a plugin's exact API with
 Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
 true }` when the editor should only read state.
 Omit `root` for the primary document.
+
+The editor follows the `EditorContent` that shows its root inside the
+`EditorRoot` around the hook. When several show the root, it follows the one
+the user last focused or pressed. Until then, and once that one unmounts, it
+follows the first one mounted. While no `EditorContent` there shows the root,
+it follows the `EditorRoot`, or the `EditorContent` around the hook when the
+hook renders inside one.
+
+While what it follows is read-only, every update through the editor throws,
+and `{ readOnly: false }` does not make the editor writable. An `EditorContent`
+that overrides the `readOnly` of its `EditorRoot` decides for the editor too.
+The editor also takes the
+[authored view](/docs/api/core/plate-components#authored-view) of what it
+follows, so it records its edits as proposals in suggesting mode.
+
+A nested `EditorRoot` is a view of its own. An editor from a hook outside it
+does not follow it.
 
 Its `editor.api.dom` calls run in its own `EditorRoot`'s view of `root`, so it
 can focus the view it edits:

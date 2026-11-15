@@ -401,7 +401,10 @@ export const EditorRuntimeView = <
                     value={parentEditor ? true : inheritedTextFlow}
                   >
                     <TextRenderScopeContext value="flat">
-                      <SurfaceRuntimeScope presentation={viewPresentation}>
+                      <SurfaceRuntimeScope
+                        mountedEditor={reactEditor}
+                        presentation={viewPresentation}
+                      >
                         {children}
                       </SurfaceRuntimeScope>
                     </TextRenderScopeContext>

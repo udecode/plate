@@ -170,6 +170,12 @@ view. Pass
 DOM focus should stay outside the editor. `history.root` is `undefined` for the
 primary document and the root key for an extra root.
 
+Without `options.editor`, the controls follow the view that `useRootEditor`
+follows for their root. While that view is read-only, `canUndo` and `canRedo`
+are `false`, and `history.undo()` and `history.redo()` do nothing. While
+several `Editable`s show the root, `history.undo()` and `history.redo()` run
+only while one of them holds focus.
+
 `history.undo()` and `history.redo()` dispatch mounted UI actions and return
 `void`. `history.pending` is `"undo"`, `"redo"`, or `null`; `canUndo` and
 `canRedo` are both `false` while a live-session replay is pending. A repeated
@@ -239,6 +245,24 @@ Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
 true }` when the editor should only read state.
 Omit `root` for the primary document.
 
+The editor follows the view that shows its root inside the `EditorRoot` around
+the hook. An `Editable` without `root` shows the `EditorRoot`'s own root
+through the `EditorRoot`, and an `Editable` with `root` is a view of its own.
+When several views show the root, the editor follows the one the user last
+focused or pressed. Until then, and once that one unmounts, it follows the
+first one mounted. While no view shows the root, it follows the `EditorRoot`,
+or the `Editable` around the hook when the hook renders inside one.
+
+While that view is read-only, every update through the editor throws, and
+`{ readOnly: false }` does not make the editor writable. An `EditorRoot` is
+read-only while it has `readOnly`, or while every `Editable` that shows its own
+root is read-only and at least one does. The editor also takes the view's
+authored view, so it records its edits as proposals while the view is in
+suggesting mode.
+
+A nested `EditorRoot` is a view of its own. An editor from a hook outside it
+does not follow it.
+
 #### `useRootChrome(root?, options?): RootChromeController`
 
 Create root chrome props for mouse interaction outside the editable content,
@@ -289,6 +313,11 @@ Pass `focus: 'restore-root'` when the command should move focus back to the
 editor root before running. Pass `focus: 'none'` to leave focus alone. The
 default is `focus: 'preserve'`. Pass `root` when the command should target a
 known root instead of the editable or active root.
+
+The dispatcher runs the command in the view that `useRootEditor` follows for
+the target root. While that view is read-only, a command that updates the
+editor throws, as an update through a read-only editor does, and the
+dispatcher moves no focus.
 
 For an imperative UI callback that is not a semantic command, use the provider
 editor and React directly. This does not claim replayable command semantics.
