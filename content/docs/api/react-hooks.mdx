@@ -14,6 +14,7 @@ hooks for rendered nodes, and targeted hooks for annotations and geometry.
 - [Element And Node Hooks](/docs/api/react-hooks#element-and-node-hooks)
 - [Annotation Hooks](/docs/api/react-hooks#annotation-hooks)
 - [Geometry Hooks](/docs/api/react-hooks#geometry-hooks)
+- [Selector Results](/docs/api/react-hooks#selector-results)
 
 ## Editor hooks
 
@@ -94,6 +95,17 @@ const isBold = useEditorState((state) => {
 });
 ```
 
+A selector may return an object or a list. The hook renders the component
+again only when a value inside it changes, as
+[Selector results](/docs/api/react-hooks#selector-results) describes.
+
+```typescript
+const marks = useEditorState((state) => ({
+  bold: state.marks()?.bold === true,
+  italic: state.marks()?.italic === true,
+}));
+```
+
 Use `options.shouldUpdate` to skip commits that cannot affect the selected
 value.
 
@@ -127,9 +139,10 @@ const readOnly = useEditorRuntimeState(editor, (state) =>
 Inside provider descendants, prefer `useEditorState`. It reads the same state
 but gets the editor from context.
 
-Commit subscriptions invalidate this selector synchronously. `equalityFn` and
-`shouldUpdate` suppress unnecessary renders. Use a provider selector's explicit
-`deferred` option when delayed delivery is an intentional product choice.
+Commit subscriptions invalidate this selector synchronously. `shouldUpdate`
+skips commits that cannot affect the selected value. Use a provider selector's
+explicit `deferred` option when delayed delivery is an intentional product
+choice.
 
 #### `useStateFieldValue<T>(field, options?): T`
 
@@ -163,14 +176,14 @@ Subscribe to a low-level derived editor value.
 
 Use `useEditorState` for normal app-level editor reads. Use
 `useEditorSelector` when you intentionally need the editor object or an
-installed runtime API. Prefer node-, text-, decoration-, or element-scoped
-hooks when rendering editor content.
+installed runtime API. Prefer the
+[element and node hooks](/docs/api/react-hooks#element-and-node-hooks) when
+rendering editor content.
 
 ```typescript
 const documentVersion = useEditorSelector(
   (editor) => editor.read.runtime.snapshot().version,
   {
-    equalityFn: Object.is,
     shouldUpdate: (commit) =>
       commit === undefined || commit.changed.has("document"),
   }
@@ -268,9 +281,11 @@ const editor = useRootEditor(activeRoot);
 
 #### `useRuntimeState<T>(selector, options?): T`
 
-Subscribe to whole-runtime editor state. The selector runs in a read boundary and
-re-renders only when the selected value changes. Its state holds the core editor
-groups; read a plugin's state through `editor.plugin(Plugin)`.
+Subscribe to whole-runtime editor state. The selector runs in a read boundary,
+and the hook re-renders only when the selected value changes, as
+[Selector results](/docs/api/react-hooks#selector-results) describes. Its
+state holds the core editor groups; read a plugin's state through
+`editor.plugin(Plugin)`.
 
 Shared selector options are `equalityFn`, `shouldUpdate`, and `deferred`.
 Selectors always read the latest render closure. Use `shouldUpdate(commit)`
@@ -385,19 +400,31 @@ type UseElementSelectedOptions = {
 };
 ```
 
-#### `useNodeSelector<T>(selector, equalityFn?, options?): T`
+#### `useElementSelector<T>(selector, options?): T`
 
-Subscribe to a value derived from one mounted node.
+Subscribe to a value derived from the current element inside an element
+renderer. The hook ignores a change to the element's path alone. Pass
+a plugin before the selector to read that plugin's element with its exact type.
 
-Pass `options.nodeKey` to target a specific node, or call it inside an editor
-node renderer to use that renderer's runtime target.
+```tsx
+const rowSize = useElementSelector(TableRowPlugin, (node) => node.height);
+```
 
-#### `useTextSelector<T>(selector, equalityFn?, options?): T`
+Pass `options.equalityFn` to replace the default
+[result comparison](/docs/api/react-hooks#selector-results).
 
-Subscribe to a value derived from one mounted text node.
+#### `usePath(selector?, options?)`
 
-Pass `options.nodeKey` to target a specific text node, or call it inside an
-editor text renderer to use that renderer's runtime target.
+Subscribe to the current element's path inside an element renderer, or to a
+value derived from it. It throws outside a rendered element.
+
+```tsx
+const depth = usePath((path) => path.length);
+```
+
+Without a selector, the hook compares paths with `PathApi.equals`. With one,
+it compares results as [Selector results](/docs/api/react-hooks#selector-results)
+describes, and `options.equalityFn` replaces that comparison.
 
 ## Annotation hooks
 
@@ -454,3 +481,49 @@ const referenceRect = geometry?.boundingRect ?? null;
 `RangeGeometry` contains `boundingRect`, `focusRect`, and `rects`. Use
 `boundingRect` to place a toolbar and `focusRect` to place a caret or label.
 Every rectangle uses viewport coordinates.
+
+## Selector results
+
+A selector hook runs its selector again when the state it reads changes. When
+the call passes no `equalityFn`, the hook compares the new result with the
+earlier one. When both hold the same contents, it returns the earlier result
+and the component does not render again. So a selector may return an object
+or a list. This applies to `useEditorState`, `useEditorRuntimeState`,
+`useEditorSelector`, `useStateFieldValue`, `useRuntimeState`, `useRootState`,
+`useElementSelector`, `usePath` with a selector, `usePluginStore` and
+`useViewStore`.
+
+- Lists and plain objects compare by their contents, with `Object.is` for
+  each value, at every depth.
+- A document node, a React element, a class instance, a function, a `Map`, a
+  `Set` and a DOM node compare by identity. Two paragraphs with the same text
+  are two nodes.
+- One comparison counts at most 100 values and goes at most 64 levels deep.
+  Each list entry and each object field counts as one value, so 20 records of
+  four fields reach the limit. A larger or deeper result counts as changed
+  unless the selector returns the same object.
+- A live object inside a result, such as the editor or the plugin handle from
+  `editor.plugin(Plugin)`, counts as unchanged while it is the same object.
+  Select the fact the component shows instead of the object that holds it.
+
+`equalityFn` replaces this comparison on a hook that takes options. Pass
+`equalityFn: Object.is` to compare one call's results by reference. Use it
+when the selector returns a new object exactly when the contents change, such
+as the document's children, so the hook checks one reference instead of every
+value. Use it too when the component must render each time the selector builds
+a new object.
+
+```typescript
+const children = useEditorState((state) => state.children(), {
+  equalityFn: Object.is,
+});
+```
+
+`useViewStore` takes no options, so it always compares this way.
+
+To render after every commit, select the commit's version number. Each commit
+increases it by one:
+
+```typescript
+const version = useEditorState((state) => state.runtime.snapshot().version);
+```
