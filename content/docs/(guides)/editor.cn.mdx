@@ -146,20 +146,35 @@ export const EditorMigrations = defineDocumentMigrations({
 });
 ```
 
-在存储边界执行转换，再把 `output` 传给编辑器。普通编辑器加载只接受当前输入。
+在应用加载存储文档的地方、任何组件渲染之前执行转换，再把 `output` 传给编辑器。普通编辑器加载只接受当前输入。`applied` 列出实际运行的步骤；它不为空时把 `output` 写回存储，下次加载就不再运行步骤。
+
+```ts title="src/load-document.ts" showLineNumbers
+import { migrateDocument } from "platejs/migrations";
+
+import { EditorMigrations } from "./editor";
+import { readDocument, saveDocument } from "./storage";
+
+export async function loadDocument(id: string) {
+  const { applied, output } = migrateDocument(await readDocument(id), {
+    migrations: EditorMigrations,
+  });
+
+  if (applied.length > 0) await saveDocument(id, output);
+
+  return output;
+}
+```
+
+不要在组件里转换。React 每次渲染都会重新执行组件函数体，而编辑器只保留创建时的值。
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
 import { EditorRoot, useCreateEditor } from "platejs/react";
-import { migrateDocument } from "platejs/migrations";
 
-import { EditorKit, EditorMigrations, EditorSchema } from "./editor";
+import { EditorKit, EditorSchema } from "./editor";
 
-export function DocumentEditor({ persisted }) {
-  const current = migrateDocument(persisted, {
-    migrations: EditorMigrations,
-  }).output;
+export function DocumentEditor({ initialValue }) {
   const editor = useCreateEditor({
-    initialValue: current,
+    initialValue,
     plugins: EditorKit,
     schema: EditorSchema,
   });
@@ -168,7 +183,7 @@ export function DocumentEditor({ persisted }) {
 }
 ```
 
-直接持久化 converter 返回的 envelope。这个版本 55 的 definition 转换版本 53 的
+这个版本 55 的 definition 转换版本 53 的
 envelope 时会运行步骤 54 和 55。缺失步骤、错误 schema ID、未来版本或指纹不匹配都会直接
 报错。每个受支持的历史 envelope 版本都要在 `sourceFingerprints` 中绑定生成的精确
 指纹。

@@ -160,33 +160,45 @@ export const EditorMigrations = defineDocumentMigrations({
 });
 ```
 
-Run the conversion at the storage boundary, then pass its `output` to the
-editor. Ordinary editor loading accepts current input only.
+Run the conversion where the app loads the stored document, before any component
+renders, then pass its `output` to the editor. Ordinary editor loading accepts
+current input only. `applied` lists the steps that ran; when it is not empty,
+save `output` back so the next load runs no steps.
+
+```ts title="src/load-document.ts" showLineNumbers
+import { migrateDocument } from "platejs/migrations";
+
+import { EditorMigrations } from "./editor";
+import { readDocument, saveDocument } from "./storage";
+
+export async function loadDocument(id: string) {
+  const { applied, output } = migrateDocument(await readDocument(id), {
+    migrations: EditorMigrations,
+  });
+
+  if (applied.length > 0) await saveDocument(id, output);
+
+  return output;
+}
+```
+
+Keep the conversion out of the component. React runs a component's body on
+every render, while the editor keeps the value it was created with.
 
 ```tsx title="src/document-editor.tsx" showLineNumbers
 import { EditorRoot, useCreateEditor } from "platejs/react";
-import { migrateDocument } from "platejs/migrations";
 
-import { EditorKit, EditorMigrations, EditorSchema } from "./editor";
+import { EditorKit, EditorSchema } from "./editor";
 
-export function DocumentEditor({ persisted }) {
-  const current = migrateDocument(persisted, {
-    migrations: EditorMigrations,
-  }).output;
+export function DocumentEditor({ initialValue }) {
   const editor = useCreateEditor({
-    initialValue: current,
+    initialValue,
     plugins: EditorKit,
     schema: EditorSchema,
   });
 
   return <EditorRoot editor={editor} />;
 }
-```
-
-Save the returned envelope directly:
-
-```ts
-await saveDocument(current);
 ```
 
 A version 53 envelope converted by this version 55 definition runs steps 54
