@@ -1,5 +1,6 @@
 import { domCommands } from '../../../dom/plite-dom.internal';
 import {
+  type DocumentChange,
   type EditorStateView,
   editorCommands,
   getPluginContributions,
@@ -7,6 +8,7 @@ import {
   type NodeTarget,
   PointApi,
   RangeApi,
+  type Selection,
 } from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { definePlugin } from '../../plugin';
@@ -40,6 +42,8 @@ const insertsAtCaret = (
       : PointApi.isPoint(at) &&
         RangeApi.isCollapsed(selection) &&
         PointApi.equals(at, selection.anchor)));
+
+const INPUT_RULE_TAG = 'input-rule';
 
 const invalidApplyResult = () =>
   new Error(
@@ -210,8 +214,52 @@ export const InputRulesPlugin = definePlugin('inputRules', {
     return types.length > 0 && state.nodes.some({ type: types });
   };
 
+  let pendingRuleKey: string | undefined;
+  let revertible:
+    | { inverse: DocumentChange; selection: Selection; text: string }
+    | undefined;
+
   return {
+    on: {
+      commit: ({ commit }) => {
+        const changesDocument = commit.changed.has('document');
+
+        if (
+          commit.tags.includes(INPUT_RULE_TAG) &&
+          changesDocument &&
+          pendingRuleKey !== undefined
+        ) {
+          revertible = {
+            inverse: commit.inverseChanges,
+            selection: commit.selectionBefore,
+            text: pendingRuleKey,
+          };
+        } else if (changesDocument || commit.selectionChanged) {
+          revertible = undefined;
+        }
+
+        pendingRuleKey = undefined;
+      },
+    },
     commands: ({ around }) => [
+      around(editorCommands.delete, ({ input, state, next }) => {
+        const rule = revertible;
+
+        if (
+          !rule?.selection ||
+          input.direction !== 'backward' ||
+          input.unit !== 'character' ||
+          !state.selection.isCollapsed()
+        ) {
+          return next();
+        }
+
+        return state.transaction((tx) => {
+          tx.changes.apply(rule.inverse);
+          tx.selection.set(rule.selection);
+          tx.text.insert(rule.text);
+        });
+      }),
       around(domCommands.insertData, ({ input, state, next }) => {
         const rules = getPlateRuntime(editor).inputRules.insertData;
 
@@ -485,20 +533,30 @@ export const InputRulesPlugin = definePlugin('inputRules', {
           }
         });
 
-        if (outcome === undefined) return prefix;
         if (isInputRuleDecline(outcome)) return next();
 
-        const continuation = outcome as ReturnType<
-          InsertTextInputRuleContext['next']
-        >;
+        const continuation = outcome as
+          | ReturnType<InsertTextInputRuleContext['next']>
+          | undefined;
+        const typesKey =
+          continuation !== undefined &&
+          (continuation.input?.text ?? input.text) === input.text;
+        const prefixIsEmpty = prefix.changes.empty && !prefix.selection;
+        let spec = prefix;
 
-        if (continuation.input === undefined) return next.after(prefix);
+        if (!prefixIsEmpty || !typesKey) {
+          pendingRuleKey = input.text;
+          spec = state.transaction.extend(prefix, (tx) => {
+            tx.tags.add(INPUT_RULE_TAG);
+          });
+        }
+        if (!continuation) return spec;
+        if (continuation.input === undefined) return next.after(spec);
 
         const { options, text } = continuation.input;
-        const keepsOptions =
-          !options && prefix.changes.empty && !prefix.selection;
+        const keepsOptions = !options && prefixIsEmpty;
 
-        return next.after(prefix, {
+        return next.after(spec, {
           ...input,
           options: keepsOptions ? input.options : options,
           text,

@@ -282,7 +282,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts',
-    [[['commands', 'contributions']]],
+    [[['commands', 'on']]],
   ],
   [
     'packages/platejs/src/internal/plugin/OverridePlugin.ts',
