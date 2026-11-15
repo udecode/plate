@@ -70,9 +70,7 @@ export const migratePlateV54Profile = ({
     const kept = conversionTarget.schema.element(entry.identity);
 
     if (target) {
-      if (entry.kind === 'element-unchanged' || !kept) {
-        firstPartyElementTypes.add(entry.identity);
-      }
+      if (!kept) firstPartyElementTypes.add(entry.identity);
       firstPartyElementTypes.add(target);
     }
 
