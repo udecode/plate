@@ -13,8 +13,6 @@ export interface EditorViewStateSelectorOptions<T> {
   equalityFn?: (a: T | null, b: T) => boolean;
 }
 
-const refEquality = <T>(a: T | null, b: T) => a === b;
-
 /**
  * Subscribe to a derived view-state value from an explicit editor instance.
  *
@@ -23,7 +21,7 @@ const refEquality = <T>(a: T | null, b: T) => a === b;
 export function useEditorViewState<T, TEditor extends AnyEditor = AnyEditor>(
   editor: TEditor,
   selector: (view: EditorStateView<ValueOf<TEditor>>['view']) => T,
-  { equalityFn = refEquality }: EditorViewStateSelectorOptions<T> = {}
+  { equalityFn }: EditorViewStateSelectorOptions<T> = {}
 ): T {
   const readSelectedState = useCallback(
     () => editor.read((state) => selector(state.view)),

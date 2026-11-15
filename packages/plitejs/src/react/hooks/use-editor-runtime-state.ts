@@ -20,8 +20,6 @@ export interface EditorRuntimeStateSelectorOptions<
   shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
 
-const refEquality = <T>(a: T | null, b: T) => a === b;
-
 /**
  * Subscribe to a derived state value from an explicit editor instance.
  *
@@ -36,7 +34,7 @@ export function useEditorRuntimeState<
   editor: TEditor,
   selector: (state: EditorStateView<ValueOf<TEditor>, PluginsOf<TEditor>>) => T,
   {
-    equalityFn = refEquality,
+    equalityFn,
     shouldUpdate,
   }: EditorRuntimeStateSelectorOptions<T, TEditor> = {}
 ): T {

@@ -1,5 +1,6 @@
 import { useState, useSyncExternalStore } from 'react';
 
+import { sameResult } from '../../core/same-result';
 import { countCoreWork } from '../../core/work';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
@@ -111,7 +112,7 @@ const createGenericSelectorStore = <T,>(
 
 export function useGenericSelector<T>(
   selector: () => T,
-  equalityFn: (a: T | null, b: T) => boolean
+  equalityFn: (a: T | null, b: T) => boolean = sameResult
 ): [state: T, update: () => void] {
   'use no memo';
 

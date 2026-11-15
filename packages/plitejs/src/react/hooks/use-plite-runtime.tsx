@@ -72,7 +72,6 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
-const refEquality = <T,>(a: T | null, b: T) => a === b;
 const rootKeyEquality = (
   a: RootKey | null | undefined,
   b: RootKey | undefined
@@ -659,11 +658,7 @@ type ReactEditorState = EditorStateView<
  */
 export function useRuntimeState<T>(
   selector: (state: ReactEditorState) => T,
-  {
-    deferred,
-    equalityFn = refEquality,
-    shouldUpdate,
-  }: RuntimeStateSelectorOptions<T> = {}
+  { deferred, equalityFn, shouldUpdate }: RuntimeStateSelectorOptions<T> = {}
 ): T {
   const { runtime, selectorContext } = useRequiredPliteRuntimeContext();
   const stateSelector = useCallback(
@@ -714,11 +709,7 @@ export function useRuntimeState<T>(
 export function useRootState<T, const TRoot extends RootKey = RootKey>(
   root: NamedRootKey<TRoot> | undefined,
   selector: (state: ReactEditorState) => T,
-  {
-    deferred,
-    equalityFn = refEquality,
-    shouldUpdate,
-  }: RuntimeStateSelectorOptions<T> = {}
+  { deferred, equalityFn, shouldUpdate }: RuntimeStateSelectorOptions<T> = {}
 ): T {
   if (root === MAIN_ROOT_KEY) {
     throw new Error('Omit root to read the primary document root state.');

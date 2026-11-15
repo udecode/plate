@@ -70,8 +70,6 @@ export interface EditorStateSelectorOptions<T> {
 export const EditorSelectorContext =
   createContext<EditorSelectorContextValue | null>(null);
 
-const refEquality = <T,>(a: T | null, b: T) => a === b;
-
 const getSelectorProfileId = (
   profileId: string | undefined,
   nodeKey: NodeKey | null | undefined,
@@ -118,7 +116,7 @@ export function useEditorSelector<T>(
   selector: (editor: ContextEditor) => T,
   {
     deferred,
-    equalityFn = refEquality,
+    equalityFn,
     includeRootOrderChanges,
     profileId,
     runtimeEventSource,
@@ -196,11 +194,7 @@ export function useEditorState<T>(
   selector: (
     state: EditorStateView<ValueOf<ContextEditor>, PluginsOf<ContextEditor>>
   ) => T,
-  {
-    deferred,
-    equalityFn = refEquality,
-    shouldUpdate,
-  }: EditorStateSelectorOptions<T> = {}
+  { deferred, equalityFn, shouldUpdate }: EditorStateSelectorOptions<T> = {}
 ): T {
   const stateSelector = useCallback(
     (editor: ContextEditor) => editor.read((state) => selector(state)),

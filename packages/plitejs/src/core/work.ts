@@ -159,6 +159,8 @@ export type CoreWork = {
   valueHolderReads: number;
   subscriberVisits: number;
   selectorVisits: number;
+  /** Values a selector result comparison charged against its limit. */
+  selectorResultValues: number;
 };
 
 /**
@@ -253,6 +255,7 @@ export const coreWork: CoreWork = {
   valueHolderReads: 0,
   subscriberVisits: 0,
   selectorVisits: 0,
+  selectorResultValues: 0,
 };
 
 /** @internal */
