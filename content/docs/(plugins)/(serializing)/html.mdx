@@ -335,7 +335,9 @@ reports it the same way.
 
 Embedded media (`img`, `video`, `audio`, `iframe`, `canvas`) that no installed
 mapping owns reports `html-unsupported-content`, even when its fallback content
-is kept. A lost property (`kind: 'attribute'` or `'style'`) is a warning under
+is kept. Every `html-unsupported-content` report has `impact: 'lossy'`,
+because no installed mapping represents the content. A lost property
+(`kind: 'attribute'` or `'style'`) is a warning under
 every policy; serialization names it in `model.property`. Under the default `lossPolicy: 'reject'`, a lossy removal and a
 lost element are errors.
 

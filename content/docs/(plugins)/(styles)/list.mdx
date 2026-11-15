@@ -194,7 +194,8 @@ and the text after it becomes another list item.
 When the editor cannot place a list property on a block, such as `indent` on a
 code block that IndentPlugin does not target, the block keeps its type and
 drops that property. HTML reports it as `html-unsupported-content` and Markdown
-as `markdown-unsupported-node`, a warning under every `lossPolicy`. A Markdown
+as `markdown-property-omitted` with the property in `key`, a warning under
+every `lossPolicy`. A Markdown
 item whose first block the list cannot hold, such as a heading when ListPlugin
 targets only paragraphs, reads as a list paragraph. A first block that is not
 a line of text, such as a rule or a quote, keeps its type and leaves the list instead.

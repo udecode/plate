@@ -57,6 +57,7 @@ export type HtmlMappingDiagnosticInput = Readonly<{
 
 export type MarkdownMappingDiagnosticInput = Readonly<{
   action: 'dropped' | 'replaced' | 'unwrapped';
+  key?: never;
   /**
    * `property` when the content stays and only a property is lost, such as a
    * link destination the editor does not allow: that loss warns under every
@@ -65,4 +66,19 @@ export type MarkdownMappingDiagnosticInput = Readonly<{
   kind?: 'element' | 'property';
   message: string;
   nodeType: string;
+}>;
+
+/**
+ * A property a Markdown decoder left off the node it built, such as `indent`
+ * on a block the schema cannot indent. The parse reports it as
+ * `markdown-property-omitted` with this `key`, a warning under every policy.
+ * An encoder claims what it writes instead, and the serializer reports the
+ * rest.
+ */
+export type MarkdownOmittedPropertyInput = Readonly<{
+  action?: never;
+  key: string;
+  kind?: never;
+  message: string;
+  nodeType?: never;
 }>;

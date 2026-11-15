@@ -460,6 +460,12 @@ markdown: {
   handled itself. `kind: 'property'` marks a loss that keeps the content, such
   as a link destination the editor does not allow; it warns under every
   policy. The default `kind: 'element'` follows the loss policy.
+- In `decode`, `report({ key, message })` reports a property that the mapping
+  left off the node it built, such as `indent` on a block the schema cannot
+  indent. The report is `markdown-property-omitted` with that `key`, and it
+  warns under every policy. An encoder does not report a property it leaves
+  out, because serialization reports every property the encoder does not
+  claim.
 - `caption(children)` returns inline content when `children` is one paragraph,
   and `null` otherwise.
 - `preserve(...keys)` claims that the returned output carries these properties

@@ -25,6 +25,10 @@ import {
 } from '../../../internal/plugin/pluginFormatOperation';
 import { isScriptUrl } from '../../../internal/utils/urlPolicy';
 import type { AnyBasePlugin } from '../../../lib/plugin';
+import type {
+  MarkdownMappingDiagnosticInput,
+  MarkdownOmittedPropertyInput,
+} from '../../../lib/plugin/PluginFormatContext';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import {
   buildSlateNode,
@@ -565,6 +569,37 @@ export const setMarkdownStructureKeys = (
   byNode.set(node, keys);
 };
 
+const mappingDiagnostic = (
+  compiled: CompiledMarkdownNodeMapping,
+  diagnostic: MarkdownMappingDiagnosticInput | MarkdownOmittedPropertyInput,
+  phase: 'parse' | 'serialize',
+  lossPolicy: 'allow' | 'reject'
+) => {
+  if (diagnostic.key !== undefined) {
+    return {
+      ...diagnostic,
+      code: 'markdown-property-omitted' as const,
+      owner: compiled.owner,
+      phase,
+      reason: 'unsupported' as const,
+      severity: 'warning' as const,
+    };
+  }
+  const { kind = 'element', ...loss } = diagnostic;
+
+  return {
+    ...loss,
+    code: 'markdown-unsupported-node' as const,
+    impact: 'lossy' as const,
+    owner: compiled.owner,
+    phase,
+    severity:
+      kind === 'property' || lossPolicy === 'allow'
+        ? ('warning' as const)
+        : ('error' as const),
+  };
+};
+
 const createCommonContext = (
   compiled: CompiledMarkdownNodeMapping,
   options: DeserializeMdContext | SerializeMdContext
@@ -630,17 +665,9 @@ const createDecodeContext = (
     };
   },
   refuse,
-  report: ({ kind = 'element', ...diagnostic }) =>
+  report: (diagnostic) =>
     options.report({
-      ...diagnostic,
-      code: 'markdown-unsupported-node',
-      impact: 'lossy',
-      owner: compiled.owner,
-      phase: 'parse',
-      severity:
-        kind === 'property' || options.lossPolicy === 'allow'
-          ? 'warning'
-          : 'error',
+      ...mappingDiagnostic(compiled, diagnostic, 'parse', options.lossPolicy),
       source: options.sourceLocation(node),
     }),
   serializeUnknown: serializeUnknownMdxNode,
@@ -653,21 +680,15 @@ const createEncodeContext = (
   claimed: Set<string>,
   written = new Map<object, string>()
 ): MarkdownEncodeContext => {
-  const report: MarkdownEncodeContext['report'] = ({
-    kind = 'element',
-    ...diagnostic
-  }) =>
+  const report: MarkdownEncodeContext['report'] = (diagnostic) =>
     options.report({
-      ...diagnostic,
-      code: 'markdown-unsupported-node',
-      impact: 'lossy',
+      ...mappingDiagnostic(
+        compiled,
+        diagnostic,
+        'serialize',
+        options.lossPolicy
+      ),
       model: options.modelLocation(node),
-      owner: compiled.owner,
-      phase: 'serialize',
-      severity:
-        kind === 'property' || options.lossPolicy === 'allow'
-          ? 'warning'
-          : 'error',
     });
   const resourceLink = options.remarkStringifyOptions?.resourceLink === true;
 

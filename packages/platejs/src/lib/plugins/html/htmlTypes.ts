@@ -116,6 +116,8 @@ export type HtmlDiagnostic =
       HtmlPolicyDiagnostic<{
         action: 'dropped' | 'replaced' | 'unwrapped';
         code: 'html-unsupported-content';
+        /** Always `lossy`: no installed mapping represents the content. */
+        impact: 'lossless' | 'lossy';
         kind: 'attribute' | 'element' | 'style';
         message: string;
         owner: string;

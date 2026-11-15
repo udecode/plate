@@ -38,7 +38,10 @@ import {
   readBlockReleases,
 } from '../../../internal/plugin/blockRelease';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
-import type { MarkdownMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
+import type {
+  MarkdownMappingDiagnosticInput,
+  MarkdownOmittedPropertyInput,
+} from '../../../lib/plugin/PluginFormatContext';
 import { traverseHtmlElements } from '../../../lib/plugins/html/htmlDom';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
 import { BaseIndentPlugin } from '../../indent';
@@ -746,7 +749,9 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           const reported = new Set<string>();
           const reportOnce = (
             loss: string,
-            diagnostic: MarkdownMappingDiagnosticInput
+            diagnostic:
+              | MarkdownMappingDiagnosticInput
+              | MarkdownOmittedPropertyInput
           ) => {
             if (reported.has(loss)) return;
             reported.add(loss);
@@ -787,10 +792,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               Object.entries(properties).filter(([key]) => {
                 if (fits(key, block.type)) return true;
                 reportOnce(`${key}:${block.type}`, {
-                  action: 'dropped',
-                  kind: 'property',
+                  key,
                   message: `List Markdown omitted property "${key}" on "${block.type}": the schema does not allow it.`,
-                  nodeType: node.type,
                 });
 
                 return false;

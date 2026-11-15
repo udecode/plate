@@ -428,6 +428,7 @@ export type HtmlNodeSpec = Readonly<{
 export type {
   HtmlMappingDiagnosticInput,
   MarkdownMappingDiagnosticInput,
+  MarkdownOmittedPropertyInput,
   PluginFormatContext,
   PluginFormatModelView,
   PluginFormatRegistry,

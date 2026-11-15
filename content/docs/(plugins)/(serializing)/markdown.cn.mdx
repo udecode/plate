@@ -411,6 +411,10 @@ markdown: {
 - `report({ action, kind, message, nodeType })` 报告 mapping 自行处理的损失。
   `kind: 'property'` 表示保留内容的损失（例如 editor 不允许的 link destination），
   在任何策略下都是 warning；默认的 `kind: 'element'` 遵循 loss policy。
+- 在 `decode` 中，`report({ key, message })` 把 mapping 在其构建的 node 上省略的
+  property（例如 schema 无法缩进的块上的 `indent`）报告为带该 `key` 的
+  `markdown-property-omitted`，在任何策略下都是 warning。Encoder 不报告它省略的
+  property，因为序列化会报告 encoder 未声明的每个 property。
 - `caption(children)` 在 `children` 是一个 paragraph 时返回 inline content，否则
   返回 `null`。
 - `preserve(...keys)` 声明返回的输出携带 plugin 的这些 property。Node 上其他

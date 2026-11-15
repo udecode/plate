@@ -38,6 +38,7 @@ import type { ElementContentRootSlot } from '../types/RenderElementProps';
 import type { AnyBasePluginDefinition } from './PluginDefinition';
 import type {
   MarkdownMappingDiagnosticInput,
+  MarkdownOmittedPropertyInput,
   PluginFormatContext,
   PluginFormatModelView,
   PluginFormatRegistry,
@@ -120,7 +121,6 @@ type MarkdownContext<D extends AnyBasePluginDefinition> =
     Readonly<{
       isBlock: (node: Descendant) => boolean;
       isInline: (node: Descendant) => boolean;
-      report: (diagnostic: MarkdownMappingDiagnosticInput) => void;
     }>;
 
 export type MarkdownDecodeContext<
@@ -161,6 +161,9 @@ export type MarkdownDecodeContext<
     /** Attributes of `tag` (default: this node) decoded for the target type. */
     readTagAttributes: (tag?: MarkdownTagNode) => MarkdownTagAttributeView;
     refuse: (message: string) => MarkdownRefusal;
+    report: (
+      diagnostic: MarkdownMappingDiagnosticInput | MarkdownOmittedPropertyInput
+    ) => void;
     serializeUnknown: (node: MdxJsxFlowElement) => string;
   }>;
 
@@ -170,6 +173,7 @@ export type MarkdownEncodeContext<
 > = MarkdownContext<D> &
   Omit<PluginFormatModelView, 'node'> &
   Readonly<{
+    report: (diagnostic: MarkdownMappingDiagnosticInput) => void;
     /**
      * The blocks of the content root that `slot` names on `node`, in stored
      * order. Serializing reports each document root no mapping read.

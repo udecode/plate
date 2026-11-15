@@ -3560,6 +3560,7 @@ const htmlMappingDiagnostics = (
       Object.freeze({
         ...loss,
         code: 'html-unsupported-content' as const,
+        impact: 'lossy' as const,
         phase,
         // A lost property warns under every policy; lost elements follow it.
         severity:
