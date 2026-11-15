@@ -22,6 +22,7 @@ import {
   inHistory,
   isSplit,
   landingPair,
+  pairedCommit,
   privateGit,
   showAt,
   trackedFiles,
@@ -173,7 +174,27 @@ export function observe(root) {
         .join('\n')
     );
   };
-  return { root, files, under, digest };
+  let pages;
+  // The repository that tracks review pages, which is the companion one in a
+  // split checkout.
+  const pageRepo = () => {
+    const split = isSplit(root);
+    const pageGit = split
+      ? (args) => privateGit(root, ['--literal-pathspecs', ...args]).stdout
+      : (args) => git(root, args) ?? '';
+    const list = (args) =>
+      pageGit([...args, '-z'])
+        .split('\0')
+        .filter(Boolean);
+    pages ??= {
+      git: pageGit,
+      base: split ? (commit) => pairedCommit(root, commit) : (commit) => commit,
+      tracks: split ? new Set(list(['ls-files'])) : null,
+      dirty: new Set(list(['diff', '--name-only', '--no-renames', 'HEAD'])),
+    };
+    return pages;
+  };
+  return { root, files, under, digest, pageRepo };
 }
 
 const entryOf = (root, path) =>
@@ -929,6 +950,51 @@ export function freshness(tree, record) {
   return result;
 }
 
+// The commit that records a page's review_commit also writes what its verdict
+// changes, such as its evidence pages. Of the paths given, those that commit
+// alone changed since review_commit stale nothing. Only the repository that
+// tracks review pages counts, so in a split checkout these are companion files.
+function landingWrites(tree, record, paths) {
+  if (!paths.length) return new Set();
+  const repo = tree.pageRepo();
+  const candidates = paths.filter(
+    (path) => (!repo.tracks || repo.tracks.has(path)) && !repo.dirty.has(path)
+  );
+  const base = candidates.length ? repo.base(record.commit) : null;
+  if (!base) return new Set();
+  const lines = (args) => repo.git(args).split('\n').filter(Boolean);
+  const [landing] = lines([
+    'log',
+    '-1',
+    '--format=%H',
+    '-S',
+    `review_commit: ${record.commit}`,
+    '--',
+    record.path,
+  ]);
+  if (!landing) return new Set();
+  const writers = new Map();
+  let commit;
+  for (const line of lines([
+    'log',
+    '--format=%x00%H',
+    '--name-only',
+    '--no-renames',
+    `${base}..HEAD`,
+    '--',
+    ...candidates,
+  ])) {
+    if (line.startsWith('\0')) commit = line.slice(1);
+    else writers.set(line, [...(writers.get(line) ?? []), commit]);
+  }
+  return new Set(
+    candidates.filter((path) => {
+      const commits = writers.get(path);
+      return commits?.length === 1 && commits[0] === landing;
+    })
+  );
+}
+
 function commitFreshness(tree, record) {
   const result = {
     state: 'unknown',
@@ -945,7 +1011,7 @@ function commitFreshness(tree, record) {
   // A page's own fold rewrites its subject file after review_commit, so
   // freshness leaves that file out, and with it every later edit to it.
   const foldTarget = subjectOf(leadScope(record));
-  const hit = new Set();
+  const matches = new Map();
   for (const path of [...moved, ...untrackedFiles(tree.root)]) {
     if (isLaw(path)) {
       result.law.changed.push(path);
@@ -954,10 +1020,14 @@ function commitFreshness(tree, record) {
     if (path === foldTarget) continue;
     for (const entry of record.entries) {
       if (entry === path || (entry.endsWith('/') && path.startsWith(entry))) {
-        hit.add(entry);
+        matches.set(path, [...(matches.get(path) ?? []), entry]);
       }
     }
   }
+  const own = landingWrites(tree, record, [...matches.keys()]);
+  const hit = new Set(
+    [...matches].flatMap(([path, matched]) => (own.has(path) ? [] : matched))
+  );
   for (const entry of [...hit].sort(byCodeUnit)) {
     const present = entry.endsWith('/')
       ? tree.under(entry).length > 0
