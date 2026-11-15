@@ -14569,14 +14569,13 @@
           "kind": "type",
           "name": "DocumentMigration",
           "runtime": false,
-          "signature": "type DocumentMigration<FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue, ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number, TTarget extends DocumentMigrationTarget = DocumentMigrationTarget> = {\n  bivarianceHack(context: DocumentMigrationContext<FromDocument, FromVersion, ToVersion, TTarget>): DocumentMigrationStepResult<ToDocument>;\n}['bivarianceHack'];",
+          "signature": "type DocumentMigration<FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue, ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number> = {\n  bivarianceHack(context: DocumentMigrationContext<FromDocument, FromVersion, ToVersion>): DocumentMigrationStepResult<ToDocument>;\n}['bivarianceHack'];",
           "source": null,
           "typeParameters": [
             "FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue",
             "ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue",
             "FromVersion extends number = number",
-            "ToVersion extends number = number",
-            "TTarget extends DocumentMigrationTarget = DocumentMigrationTarget"
+            "ToVersion extends number = number"
           ]
         },
         "platejs/migrations:DocumentMigrationContext": {
@@ -14586,13 +14585,12 @@
           "kind": "type",
           "name": "DocumentMigrationContext",
           "runtime": false,
-          "signature": "type DocumentMigrationContext<FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number, TTarget extends DocumentMigrationTarget = DocumentMigrationTarget> = Readonly<{\n  document: DeepReadonly<FromDocument>;\n  from: FromVersion;\n  /** Legacy top-level fields no earlier step lifted. */\n  legacy: DocumentMigrationLegacy;\n  target: TTarget;\n  to: ToVersion;\n}>;",
+          "signature": "type DocumentMigrationContext<FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue, FromVersion extends number = number, ToVersion extends number = number> = Readonly<{\n  document: DeepReadonly<FromDocument>;\n  from: FromVersion;\n  /** Legacy top-level fields no earlier step lifted. */\n  legacy: DocumentMigrationLegacy;\n  target: DocumentMigrationTarget;\n  to: ToVersion;\n}>;",
           "source": null,
           "typeParameters": [
             "FromDocument extends EditorDocumentValue & ClosedMigrationDocument<FromDocument> = EditorDocumentValue",
             "FromVersion extends number = number",
-            "ToVersion extends number = number",
-            "TTarget extends DocumentMigrationTarget = DocumentMigrationTarget"
+            "ToVersion extends number = number"
           ]
         },
         "platejs/migrations:DocumentMigrationLegacy": {
@@ -14674,7 +14672,7 @@
           "kind": "type",
           "name": "DocumentMigrationTarget",
           "runtime": false,
-          "signature": "type DocumentMigrationTarget = Readonly<{\n  bindings: EditorCompilation['bindings'];\n  schema: DocumentMigrationSchema;\n}>;",
+          "signature": "type DocumentMigrationTarget = Readonly<{\n  schema: DocumentMigrationSchema;\n}>;",
           "source": null,
           "typeParameters": []
         },

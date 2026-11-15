@@ -27,10 +27,7 @@ import {
   snapshotEditorJsonValue,
 } from '../facade';
 import type { EditorApplicationSchema } from '../lib/editor/editorApplicationSchema';
-import {
-  compilePlateEditorTarget,
-  type EditorCompilation,
-} from '../lib/editor/withPlite';
+import { compilePlateEditorTarget } from '../lib/editor/withPlite';
 import { assertElementIds } from '../lib/plugins/element-id/elementIdAdmission.internal';
 import { ElementIdPlugin } from '../lib/plugins/element-id/ElementIdPlugin';
 import {
@@ -71,7 +68,6 @@ export type DocumentMigrationSchema = Pick<
 
 /** Immutable current-schema facts available to historical migration steps. */
 export type DocumentMigrationTarget = Readonly<{
-  bindings: EditorCompilation['bindings'];
   schema: DocumentMigrationSchema;
 }>;
 
@@ -108,13 +104,12 @@ export type DocumentMigrationContext<
     ClosedMigrationDocument<FromDocument> = EditorDocumentValue,
   FromVersion extends number = number,
   ToVersion extends number = number,
-  TTarget extends DocumentMigrationTarget = DocumentMigrationTarget,
 > = Readonly<{
   document: DeepReadonly<FromDocument>;
   from: FromVersion;
   /** Legacy top-level fields no earlier step lifted. */
   legacy: DocumentMigrationLegacy;
-  target: TTarget;
+  target: DocumentMigrationTarget;
   to: ToVersion;
 }>;
 
@@ -125,15 +120,9 @@ export type DocumentMigration<
     EditorDocumentValue,
   FromVersion extends number = number,
   ToVersion extends number = number,
-  TTarget extends DocumentMigrationTarget = DocumentMigrationTarget,
 > = {
   bivarianceHack(
-    context: DocumentMigrationContext<
-      FromDocument,
-      FromVersion,
-      ToVersion,
-      TTarget
-    >
+    context: DocumentMigrationContext<FromDocument, FromVersion, ToVersion>
   ): DocumentMigrationStepResult<ToDocument>;
 }['bivarianceHack'];
 
@@ -549,10 +538,7 @@ export const defineDocumentMigrations = <
       }
     )
   );
-  const target = Object.freeze({
-    bindings: compiled.artifact.bindings,
-    schema,
-  }) satisfies DocumentMigrationTarget;
+  const target = Object.freeze({ schema }) satisfies DocumentMigrationTarget;
   registerMigrationBindings(target, compiled.modelBindings);
   if (compiled.authored) {
     registerDocumentMigrationAuthoredCapability(
