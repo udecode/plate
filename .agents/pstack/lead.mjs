@@ -308,6 +308,44 @@ export function maxEffort(root = process.cwd()) {
 
 export const capEffort = (effort, max) => (max && EFFORTS.indexOf(effort) > EFFORTS.indexOf(max) ? max : effort);
 
+// Panel seats, architect runners and arena runners run on their named models for model diversity, Opus and
+// gpt-6.1-sol, as the pstack block says. A sheet without one of these lines falls back to pstack's own seat
+// defaults, which name Claude models these projects never dispatch (owner's word, 2026-11-05).
+const SEAT_ROLES = ['interrogate reviewers', 'architect runners', 'arena runners'];
+const SEATS = ['opus', 'codex:gpt-6.1-sol'];
+const NEVER = /\b(?:fable|sonnet|haiku|gpt-6-astra)\b/u;
+
+export const modelsSheet = (runtime, env = process.env) =>
+  runtime === 'claude' ? join(env.HOME ?? homedir(), '.claude/pstack-models.md') : join(env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex'), 'pstack-models.md');
+
+/** Each way a models sheet seats the wrong models, written as the edit that fixes it. */
+export function sheetMisses(text, max) {
+  const roles = new Map(
+    (text ?? '')
+      .split('\n')
+      .map((line) => line.match(/^([a-z][a-z ,-]*):\s*(.*)$/u))
+      .filter(Boolean)
+      .map(([, role, value]) => [role, value])
+  );
+  const misses = [...roles].flatMap(([role, value]) => (NEVER.test(value) ? [`\`${role}:\` names ${value.match(NEVER)[0]}, which no pstack project dispatches`] : []));
+  for (const role of SEAT_ROLES) {
+    const value = roles.get(role);
+    if (value === undefined) {
+      misses.push(`add the line \`${role}: ${SEATS.join(', ')}\``);
+      continue;
+    }
+    const entries = value.split(',').map((entry) => entry.trim().split(/\s+/u));
+    for (const seat of SEATS) {
+      if (!entries.some(([model]) => model === seat || (seat === 'opus' && model.startsWith('claude-opus-')))) misses.push(`\`${role}:\` leaves out ${seat}`);
+    }
+    for (const [model, at] of entries) {
+      const effort = at?.match(/^@(\w+)$/u)?.[1];
+      if (effort && max && EFFORTS.indexOf(effort) < EFFORTS.indexOf(max)) misses.push(`\`${role}:\` runs ${model} @${effort}, below this project's maxEffort ${max}`);
+    }
+  }
+  return misses;
+}
+
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { run, miss } = findLead();
   if (!run) {

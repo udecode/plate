@@ -65,7 +65,10 @@
 // so a check runner that records each step's pass keeps the steps that
 // finished for the rerun. A check that fails after it ran on a public commit
 // whose companion half reached origin late counts as a move, so land.mjs
-// rebases both halves and checks them again. Each run past the squash appends a line to
+// rebases both halves and checks them again. When a rebase changes the folder
+// land.mjs runs from or .agents/pstack.json, the run goes on in a new process
+// that loads the rebased copy, once per landing, and the 55 minutes count the
+// time both processes took. Each run past the squash appends a line to
 // pstack-land-runs.jsonl in the git common directory when it starts and another
 // when it exits, so a run that a signal stopped still counts, and --friction
 // prints the runs of the last day. A run that exits 75, other than for a GH006,
@@ -75,11 +78,11 @@
 // ledger as it exits.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { availableParallelism, devNull, tmpdir } from 'node:os';
-import { basename, dirname, join } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findLead, leadLabel } from './lead.mjs';
+import { findLead, leadLabel, maxEffort, modelsSheet, runtimeFromEnv, sheetMisses } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
 import { alive, reserve } from './proof.mjs';
 import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
@@ -107,6 +110,10 @@ const RETRIES = 3;
 const DECLINED_WAITS = [1, 2, 4, 8, 16];
 const COMMAND_LIMIT = 60 * 60_000;
 const DEADLINE = COMMAND_LIMIT - 5 * 60_000;
+// A run that went on in a new process after a rebase changed the helpers counts the minutes of the process before it, because the hour limit covers both.
+const spent = Number(process.env.PSTACK_LAND_SPENT_MS) || 0;
+const elapsed = () => spent + performance.now();
+const STOPS = ['SIGINT', 'SIGTERM', 'SIGHUP'];
 const EX_TEMPFAIL = 75;
 const MOVED = /\[rejected\]|fetch first|non-fast-forward/u;
 const FRICTION_TOPIC = 'land-friction';
@@ -160,17 +167,21 @@ let messageFile = null;
 let dry = false;
 let report = false;
 const checks = [];
+const rerunArgs = [];
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === '--message' && args[i + 1]) messageFile = args[++i];
   else if (args[i] === '--dry') dry = true;
   else if (args[i] === '--friction' && args.length === 1) report = true;
-  else if (args[i] === '--check' && args[i + 1]) checks.push(args[++i]);
-  else fail(USAGE, 2);
+  else if (args[i] === '--check' && args[i + 1]) {
+    checks.push(args[++i]);
+    rerunArgs.push('--check', args[i]);
+  } else fail(USAGE, 2);
 }
 // Read before the chdir, because the path is relative to the caller's directory.
 const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf8');
 
 process.chdir(must('rev-parse', '--show-toplevel'));
+const helpersDir = relative(realpathSync(process.cwd()), realpathSync(dirname(fileURLToPath(import.meta.url))));
 const common = must('rev-parse', '--path-format=absolute', '--git-common-dir');
 const RUNS = join(common, 'pstack-land-runs.jsonl');
 if (report) {
@@ -196,6 +207,15 @@ const current = must('branch', '--show-current');
 if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
 if (pair && mode !== 'push') fail(`${pair.dir} lands only in push mode; run \`git config pstack.delivery push\``);
+// A PR's panel ran on its author's own models sheet, so a sheet that seats the wrong models stops the PR before it opens.
+const runtime = mode === 'pr' ? runtimeFromEnv(process.env) : null;
+if (runtime) {
+  const sheet = modelsSheet(runtime);
+  const misses = sheetMisses(existsSync(sheet) ? readFileSync(sheet, 'utf8') : '', maxEffort());
+  if (misses.length) {
+    fail(`${sheet} seats panels on models the pstack block in AGENTS.md does not name, so this PR's panel did not run on the project's seats. Fix the sheet, run the panel on the diff again, then run land.mjs again:\n${misses.map((miss) => `- ${miss}`).join('\n')}`);
+  }
+}
 if (companion?.dir && !pair && mode === 'push') {
   fail(`this checkout has no ${companion.dir}, so landing would push ${branch} without its companion half or that half's checks; attach the companion repository first, then run land.mjs again`);
 }
@@ -236,7 +256,7 @@ let cause = null;
 
 function takeCores() {
   if (share) return;
-  share = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs', { first: true, giveUp: () => performance.now() >= DEADLINE });
+  share = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs', { first: true, giveUp: () => elapsed() >= DEADLINE });
   if (!share) {
     fail(
       `land.mjs still waited for cores at ${DEADLINE / 60_000} minutes into the run. ` +
@@ -258,18 +278,42 @@ async function catchUp() {
   if (!stale) return;
   const before = fetched;
   await fetchCompanionFirst();
-  if (fetched.own !== before.own || fetched.theirs !== before.theirs) rebaseFetched();
+  if (fetched.own !== before.own || fetched.theirs !== before.theirs) await rebaseFetched();
 }
 
 async function rebaseOntoOrigin() {
   await fetchCompanionFirst();
-  rebaseFetched();
+  await rebaseFetched();
 }
 
-function rebaseFetched() {
+async function rebaseFetched() {
+  const before = must('rev-parse', 'HEAD');
   rebase();
+  await restartOnRebasedHelpers(before);
   if (pair) rebase(true);
   refresh();
+}
+
+// This process runs the helpers it loaded at its start, so when a rebase changes them or the config, the run goes on in a new process that
+// loads the rebased copy. One restart per landing, so helpers that keep changing cannot loop it.
+async function restartOnRebasedHelpers(before) {
+  if (process.env.PSTACK_LAND_RESTARTED || helpersDir.startsWith('..') || isAbsolute(helpersDir)) return;
+  if (git('diff', '--quiet', before, 'HEAD', '--', helpersDir, '.agents/pstack.json').status === 0) return;
+  console.log(`the rebase changed ${helpersDir} or .agents/pstack.json, so land.mjs goes on in a new process that loads the rebased copy`);
+  dropCores();
+  process.off('exit', recordRun);
+  why = 'went on in a new process that loads the rebased helpers';
+  recordRun('restarted');
+  const child = spawn(process.execPath, [join(helpersDir, 'land.mjs'), ...rerunArgs], {
+    stdio: 'inherit',
+    env: { ...process.env, PSTACK_LAND_RESTARTED: '1', PSTACK_LAND_SPENT_MS: String(Math.round(elapsed())) },
+  });
+  const pass = (signal) => child.kill(signal);
+  for (const stop of STOPS) process.on(stop, pass);
+  const [code, signal] = await new Promise((resolve) => child.on('close', (...end) => resolve(end)));
+  for (const stop of STOPS) process.off(stop, pass);
+  if (signal) process.kill(process.pid, signal);
+  process.exit(code ?? 1);
 }
 
 async function fetchCompanionFirst() {
@@ -853,9 +897,7 @@ if (dry) {
 const landing = squash(message);
 const { plan, lead } = landing;
 startRun();
-rebase();
-if (pair) rebase(true);
-refresh();
+await rebaseFetched();
 
 const record = must('rev-parse', '--git-path', 'pstack-land-checked');
 const stamp = () =>
@@ -868,11 +910,9 @@ const stamp = () =>
     checks,
   });
 
-const STOPS = ['SIGINT', 'SIGTERM', 'SIGHUP'];
-
 // The check gets a process group of its own, so the deadline stops every step it started. A signal to land.mjs passes on to that group, then ends land.mjs as it would have, so the run log counts the run as stopped.
 function runCheck(command) {
-  if (performance.now() >= DEADLINE) return Promise.resolve({ stopped: true });
+  if (elapsed() >= DEADLINE) return Promise.resolve({ stopped: true });
   return new Promise((resolve) => {
     const child = spawn(command, { shell: true, stdio: ['ignore', 'inherit', 'inherit'], detached: true });
     const killGroup = (signal) => {
@@ -892,7 +932,7 @@ function runCheck(command) {
     const timer = setTimeout(() => {
       stopped = true;
       killGroup('SIGTERM');
-    }, DEADLINE - performance.now());
+    }, DEADLINE - elapsed());
     child.on('close', (status) => {
       clearTimeout(timer);
       for (const stop of STOPS) process.off(stop, pass);
@@ -952,7 +992,7 @@ async function check(rebased = false) {
 }
 
 async function retry(where) {
-  if (moves >= RETRIES || performance.now() >= DEADLINE) {
+  if (moves >= RETRIES || elapsed() >= DEADLINE) {
     fail(
       `${where} moved, and ${moves >= RETRIES ? `it had moved ${RETRIES} times already while land.mjs checked` : `the run has reached ${DEADLINE / 60_000} minutes`}. ` +
         'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
@@ -990,7 +1030,7 @@ if (mode === 'push') {
     const wait = DECLINED_WAITS[declines];
     if (MOVED.test(run.stderr)) {
       await retry(`origin/${branch}`);
-    } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
+    } else if (declined && wait !== undefined && elapsed() + wait * MINUTE <= DEADLINE) {
       declines += 1;
       console.log(`GitHub declined the push to ${branch} with an empty GH006; pushing again in ${wait} min (retry ${declines} of ${DECLINED_WAITS.length})`);
       dropCores();
@@ -998,7 +1038,7 @@ if (mode === 'push') {
     } else if (declined) {
       cause = 'declined';
       fail(
-        `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(performance.now() / 60_000)} minutes land.mjs has run. ` +
+        `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(elapsed() / 60_000)} minutes land.mjs has run. ` +
           `The squashed commit stays local and land.mjs recorded it, so run land.mjs again with the same --check options and no --message; it skips the checks unless origin/${branch} has moved since this run last rebased onto it.\n${run.stderr.trim()}`,
         EX_TEMPFAIL
       );
