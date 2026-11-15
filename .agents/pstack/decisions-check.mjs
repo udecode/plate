@@ -91,7 +91,7 @@ import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
-import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
+import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -236,9 +236,10 @@ function rowProblems(line, where, roster, chips) {
     found.push(`${where}: a ${status} result needs "scope:" in its evidence naming what the proof covered, or a partial result that states the gap`);
   }
   if (rest[0] === 'panel' && !SEATS.test(rest[1])) {
-    if (!SEVERITIES.includes(rest[1].split(/\s/u)[0])) found.push(`${where}: a panel row's decision starts with "seats" or a severity: critical, warning or nit; any other phase, such as build or trail, takes a row that is neither`);
+    const severity = severityOf(rest[1]);
+    if (!severity) found.push(`${where}: a panel row's decision starts with "seats" or a severity: critical, warning or nit; any other phase, such as build or trail, takes a row that is neither`);
     else if (!roster) found.push(`${where}: a panel finding needs a "seats" row before it`);
-    else if (rest[1].split(/\s/u)[0] === 'critical') found.push(...unnamedSeats(rest[1], roster, where));
+    else if (severity === 'critical') found.push(...unnamedSeats(rest[1], roster, where));
     if (!/^(applied|dismissed|deferred|open)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed", "deferred" or "open" and gives the reason`);
     else if (/^deferred\b/u.test(rest[4])) {
       if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is never deferred: apply it or pivot the run to it, dismiss it on proof that it is no defect or is rare, or, when its own case fails the same way on the run's base, this run neither causes, worsens nor increases exposure to it, it breaks no outcome or property the typed ask states and it shows no requirement of this run's design unmet, log it open with patch: none, owner:, stop: and each line it limits in the result, and proof: none and the base run in the evidence`);

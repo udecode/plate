@@ -18,7 +18,7 @@ import {
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, outsideFences, readFence, reopened, splitRow, stageOfRow, stateOf, strayFence, TABLE_RULE, tablesOf } from './status.mjs';
+import { SEATS, SEVERITIES, severityOf, STAGE_PHASES, STATES, isFence, isHandOffReview, landed, outsideFences, readFence, reopened, splitRow, stageOfRow, stateOf, strayFence, TABLE_RULE, tablesOf } from './status.mjs';
 
 export const slugOf = (path) => path.split('/').at(-1).replace(/\.md$/u, '').replace(/[^A-Za-z0-9._-]+/gu, '-');
 
@@ -1176,7 +1176,7 @@ const RESULT_HUES = { accepted: 'green', applied: 'green', fixed: 'green', verif
 function findingHtml(decision, result) {
   const severity = decision.match(/^(\w+)/)?.[1];
   const hue = SEVERITY_HUES[severity];
-  const body = hue ? `<span class="badge hue-${hue}">${escapeHtml(severity)}</span> ${inline(decision.slice(severity.length).trim())}` : inline(decision);
+  const body = hue ? `<span class="badge hue-${hue}">${escapeHtml(severity)}</span> ${inline(decision.slice(severity.length).replace(/^:/u, '').trim())}` : inline(decision);
   const word = result.match(/^(\w+)/)?.[1]?.toLowerCase();
   const resultHtml = result ? ` <span class="tone hue-${RESULT_HUES[word] ?? 'grey'}">${inline(result)}</span>` : '';
   return `<li>${body}${resultHtml}</li>`;
@@ -1413,7 +1413,7 @@ function parsePlan(source) {
 }
 
 const severity = (row) => {
-  const rank = SEVERITIES.indexOf(row.decision.split(/\s/u)[0]);
+  const rank = SEVERITIES.indexOf(severityOf(row.decision));
   return rank < 0 ? SEVERITIES.length : rank;
 };
 

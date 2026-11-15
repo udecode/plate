@@ -84,6 +84,8 @@ export const decisionLogs = (plans) =>
 export const isHandOffReview = (phase) => /^review/iu.test(phase ?? '');
 
 export const SEVERITIES = ['critical', 'warning', 'nit'];
+const SEVERITY = new RegExp(`^(?:${SEVERITIES.join('|')})(?=$|[\\s:])`, 'u');
+export const severityOf = (decision) => decision.match(SEVERITY)?.[0];
 
 export const STAGE_PHASES = {
   Design: ['architect', 'prototype', 'arena', 'how', 'why', 'design'],
