@@ -314,7 +314,7 @@ console.table(diagnostics);
 | --- | --- |
 | `api.begin(range?)` | 在调用视图中捕获输入；光标位置扩展为所在文本区块 |
 | `api.pendingRange()` | 读取调用视图中待提交输入映射后的范围 |
-| `api.cancel()` | 取消待提交输入并释放范围 |
+| `api.cancel()` | 关闭待提交输入并释放范围。已经发出的 `create` 仍会完成 |
 | `api.create(body)` | 发布待提交线程；等待 `CommentMutationResult<string>` |
 | `api.createThread(input)` | 发布范围或建议线程；等待 `CommentMutationResult<string>` |
 | `api.reply(id, body)` | 向未解决线程追加消息 |

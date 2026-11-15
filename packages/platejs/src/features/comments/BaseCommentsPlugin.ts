@@ -404,6 +404,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   let destroyed = false;
   const queues = new Map<string, Promise<void>>();
   const generations = new Map<string, number>();
+  const dropComposer = () => {
+    if (composer && !queues.has(composer.id)) composer.anchor.release();
+    composer = null;
+  };
   const threadListeners = new Map<string, Set<() => void>>();
   const visibleListeners = new Set<() => void>();
   const draftListeners = new Set<() => void>();
@@ -675,8 +679,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         }
       });
     });
-    composer?.anchor.release();
-    composer = null;
+    dropComposer();
     anchors.forEach((anchor) => anchor.release());
     anchors.clear();
     nextAnchors.forEach((anchor, id) => anchors.set(id, anchor));
@@ -804,8 +807,13 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     operation: CommentOperation,
     proposed: CommentThread | null,
     anchor?: Anchor<Range>,
-    isCurrent: () => boolean = () => true,
-    afterWrite?: (canonical: CommentThread | null) => void
+    {
+      afterWrite,
+      isCurrent = () => true,
+    }: {
+      afterWrite?: (canonical: CommentThread | null) => void;
+      isCurrent?: () => boolean;
+    } = {}
   ): Promise<CommentMutationResult> => {
     const previous = threads.get(id) ?? null;
     const generation = generations.get(id) ?? 0;
@@ -929,9 +937,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           transition.value ? 'createThread' : 'removeThread',
           transition.value,
           restoredAnchor,
-          () => sameThread(threads.get(thread.id) ?? null, transition.previous),
-          (canonical) => {
-            value = canonical;
+          {
+            afterWrite: (canonical) => {
+              value = canonical;
+            },
+            isCurrent: () =>
+              sameThread(threads.get(thread.id) ?? null, transition.previous),
           }
         );
 
@@ -999,8 +1010,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     });
   const cancel = () => {
     if (!composer) return;
-    composer.anchor.release();
-    composer = null;
+    dropComposer();
     snapshot = Object.freeze({ ...snapshot, pending: null });
     publish({ pending: true });
   };
@@ -1108,22 +1118,23 @@ export const BaseCommentsPlugin = definePlugin('comments', {
               claimed ? 'create' : 'createThread',
               thread,
               anchor,
-              () => !claimed || claimed === composer,
-              (canonical) => {
-                const viewRefuses =
-                  commandEditor !== editor &&
-                  commandEditor.read.view.isReadOnly();
-                if (!canonical || viewRefuses) return;
-                commandEditor.update((tx) => {
-                  tx.effects.emit(commentCreationHistoryEffect, {
-                    attachment: anchor
-                      ? commandEditor.anchor.save(anchor)
-                      : null,
-                    messageId: canonical.messages[0].id,
-                    previous: null,
-                    value: canonical,
+              {
+                afterWrite: (canonical) => {
+                  const viewRefuses =
+                    commandEditor !== editor &&
+                    commandEditor.read.view.isReadOnly();
+                  if (!canonical || viewRefuses) return;
+                  commandEditor.update((tx) => {
+                    tx.effects.emit(commentCreationHistoryEffect, {
+                      attachment: anchor
+                        ? commandEditor.anchor.save(anchor)
+                        : null,
+                      messageId: canonical.messages[0].id,
+                      previous: null,
+                      value: canonical,
+                    });
                   });
-                });
+                },
               }
             );
             return result.status === 'applied'
@@ -1131,7 +1142,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
               : result;
           });
         } finally {
-          if (!claimed && anchor && anchors.get(thread.id) !== anchor) {
+          if (
+            anchor &&
+            anchors.get(thread.id) !== anchor &&
+            composer?.anchor !== anchor
+          ) {
             anchor.release();
           }
         }
@@ -1157,7 +1172,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             deletion: 'nearest',
           });
           const excerpt = commandEditor.read.text.string(range);
-          composer?.anchor.release();
+          dropComposer();
           composer = { anchor, excerpt, id: nanoid() };
           snapshot = Object.freeze({
             ...snapshot,
@@ -1167,7 +1182,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           publish({ pending: true });
           return true;
         },
-        /** Dismiss the pending composer and release its private range. */
+        /**
+         * Dismiss the pending composer. A create already saving keeps its
+         * range until it settles.
+         */
         cancel,
         /** Publish from the pending selection; failure preserves the composer. */
         create: async (body: Value): Promise<CommentMutationResult<string>> => {

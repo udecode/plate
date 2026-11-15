@@ -367,7 +367,7 @@ For stored documents with inline comment properties, see [Import comment annotat
 | --- | --- |
 | `api.begin(range?)` | Capture input in the calling view; a caret expands to its text block |
 | `api.pendingRange()` | Read the pending input's mapped range in the calling view |
-| `api.cancel()` | Cancel pending input and release its range |
+| `api.cancel()` | Close the pending composer and release its range. A `create` already sent from it still finishes |
 | `api.create(body)` | Publish the pending thread; await `CommentMutationResult<string>` |
 | `api.createThread(input)` | Publish a range or authored-change thread; await `CommentMutationResult<string>` |
 | `api.reply(id, body)` | Append a message to an unresolved thread |
