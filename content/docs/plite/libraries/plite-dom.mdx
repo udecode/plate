@@ -210,6 +210,8 @@ reported the same way. During `accept` or `decode`, call
 `report({ impact: "lossy", message: "Unsupported content was omitted." })`
 to report conversion loss. `impact` accepts `"lossless"` or `"lossy"`.
 Mounted paste delivers conversion diagnostics through `Editable.onPasteResult`.
+It also adds one `lossy` report when a format's content does not fit and a
+later format inserts, or when `maxLength` cuts the paste.
 Add a mapping or a format for content the current formats cannot represent.
 
 Framework clipboard writers call

@@ -118,7 +118,9 @@ slice's open edges and detached roots, then fits the complete slice at the
 actual insertion range.
 
 A slice with content that does not fit leaves the transaction untouched, and
-the next format tries. Plain text is the final fallback. An encoder returns a string, or `null`
+the next format tries. When a later format inserts, the paste result gains one
+`lossy` report that some content was left out; so does a paste that
+`maxLength` cuts. Plain text is the final fallback. An encoder returns a string, or `null`
 to leave its MIME type to the next encoder; each MIME type is written once.
 Callback exceptions are reported to the editor's `lifecycleErrorSink` as
 `data-transfer-format` errors with the format `key`, `mimeType`, and `phase`,

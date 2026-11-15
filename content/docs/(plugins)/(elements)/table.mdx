@@ -182,7 +182,7 @@ Merge combines the complete rich content of the selected cells in row-major orde
 
 Structural table paste requires a closed `ContentSlice` containing exactly one table. Open slices, row or cell lists, and tables with siblings are fitted as complete ordinary content. Ordinary content can be broadcast to each selected cell.
 
-Pasting a table into a selected rectangle requires complete tiles. Partial tiles and destination spans crossing the intended coverage are rejected; fully covered spans can be replaced. With `expandOnPaste: false`, overflow is rejected rather than cropped. An unsuccessful fit leaves the document and selection unchanged.
+Pasting a table into a selected rectangle requires complete tiles. Partial tiles and destination spans crossing the intended coverage are rejected; fully covered spans can be replaced. With `expandOnPaste: false`, overflow is rejected rather than cropped. An unsuccessful fit leaves the document and selection unchanged, and the paste tries the clipboard's next format, such as plain text. When that format inserts, `onPasteResult` reports that some content was left out.
 
 Structural cell copy and cut require a rectangular selection that fully covers its spans. A nonrectangular selection still supports deletion, formatting, and ordinary-content paste. Cut clears cells only after a successful clipboard write. Exact slices retain rich content and reachable owned roots. The `text/plain` copy is tab-separated text: one line per row, one field per cell, and a cell's blocks joined by line breaks. Copy wraps a field in quotes and doubles its inner quotes when the field holds a tab or a line break, or starts with a quote.
 

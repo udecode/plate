@@ -220,6 +220,11 @@ decode: ({ data, report }) => {
 返回 `null` 或 `false` 且不报告时保持静默。`accept` 或 `decode` 抛出时，Plate
 丢弃该 format 的报告，并把 error 发送到 `lifecycleErrorSink`。
 
+当 `maxLength` 截断粘贴内容，或 schema 或 `replaceSlice` handler 拒绝某个 format
+的内容而由之后的 format 插入时，Plate 会添加一条 `lossy` 报告：`Some content did
+not fit here and was left out.`。若某个 format 的内容只是一个空的开放区块（例如复制的空行），
+它在落点不会添加任何内容，因此拒绝它不算损失。
+
 ### `null`、`false` 与 throw
 
 - `accept` 返回 `false`：该 format 不适用于当前情况。用于 parse 前的低成本检查。

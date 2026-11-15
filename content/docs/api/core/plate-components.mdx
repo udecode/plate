@@ -426,7 +426,8 @@ Editable surface for an `EditorRoot` editor.
       Called once for each paste that the built-in formats handle: after the paste
       commits (`inserted: true`), or when no format can insert it
       (`inserted: false`). `diagnostics` lists `{ impact, message }` reports;
-      `impact: 'lossy'` means pasted content was left out.
+      `impact: 'lossy'` means pasted content was left out, including content
+      that did not fit where it lands when a simpler format inserted instead.
     </APIItem>
     <APIItem
       name="scrollSelectionIntoView"

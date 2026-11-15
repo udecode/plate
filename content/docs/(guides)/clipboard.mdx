@@ -283,6 +283,12 @@ Returning `null` or `false` without reporting stays silent. If `accept` or
 `decode` throws, Plate discards that format's reports and sends the error to
 `lifecycleErrorSink`.
 
+Plate adds one `lossy` report, `Some content did not fit here and was left
+out.`, when `maxLength` cuts the pasted content, or when the schema or a
+`replaceSlice` handler refuses a format's content and a later format inserts
+instead. A format whose content is only an empty open block, such as a copied
+empty line, adds nothing where it lands, so refusing it is not a loss.
+
 ### Null, false, and throw
 
 - `accept` returning `false` means the format does not apply here. Use it for

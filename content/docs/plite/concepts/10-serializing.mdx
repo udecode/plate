@@ -116,7 +116,8 @@ const ProductTransferPlugin = dataTransferFormats("product", [
 `decode` returns a `ContentSlice` and `encode` returns a string. `accept`
 returning `false`, or `decode` or `encode` returning `null`, lets the next
 format try. The DOM adapter fits a decoded slice at the actual insertion
-destination; a slice that does not fit also falls through to the next format.
+destination; a slice that does not fit also falls through to the next format,
+and the paste reports the loss when that format inserts.
 An empty decoded slice ends the paste without inserting anything.
 
 See [Clipboard And Paste](17-clipboard-and-paste) for the complete negotiation
