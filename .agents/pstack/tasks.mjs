@@ -526,7 +526,7 @@ export const ownerOf = (task) => (task.ship ? null : task.owner);
 const held = (task) => task?.status === 'offered' && task.card;
 const ownerTranscriptOf = (task) => (task.ship ? null : task.ownerTranscript);
 
-export function newChipRowProblems(cells, before, where, git, here = null, shipList = () => NO_SHIP) {
+export function newChipRowProblems(cells, before, where, git, here = null, shipList = () => NO_SHIP, caller = '.') {
   const [, decision, , evidence] = cells;
   const row = parseRow(cells);
   if (!row) return [];
@@ -564,7 +564,9 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
   }
   const scopes = projectConfig().chips?.scopes;
   const scope = given['review-scope'];
-  if (scopes && scope && scope !== 'none' && !reviewScopes(scopes).includes(scope)) found.push(`${where}: review-scope: ${scope} is no review scope in ${scopes}; name the one that owns the task's code, or none`);
+  // caller is the checkout the command ran from. A worktree can hold a scope the
+  // main checkout has not pulled yet, or one its own run adds.
+  if (scopes && scope && scope !== 'none' && ![scopes, resolve(caller, scopes)].some((dir) => reviewScopes(dir).includes(scope))) found.push(`${where}: review-scope: ${scope} is no review scope in ${scopes}; name the one that owns the task's code, or none`);
   const cycledBefore = cyclicEdges(before);
   const added = [...cyclicEdges(afterRow(before, cells))].filter((edge) => !cycledBefore.has(edge)).map((edge) => edge.split(' '));
   const self = added.find(([from, to]) => from === to);

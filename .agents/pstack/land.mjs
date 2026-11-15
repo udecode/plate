@@ -207,13 +207,13 @@ const current = must('branch', '--show-current');
 if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
 if (pair && mode !== 'push') fail(`${pair.dir} lands only in push mode; run \`git config pstack.delivery push\``);
-// A PR's panel ran on its author's own models sheet, so a sheet that seats the wrong models stops the PR before it opens.
+// A PR's panel ran on its author's own models sheet, so a sheet that seats a weaker panel than the project asks stops the PR before it opens.
 const runtime = mode === 'pr' ? runtimeFromEnv(process.env) : null;
 if (runtime) {
   const sheet = modelsSheet(runtime);
   const misses = sheetMisses(existsSync(sheet) ? readFileSync(sheet, 'utf8') : '', maxEffort());
   if (misses.length) {
-    fail(`${sheet} seats panels on models the pstack block in AGENTS.md does not name, so this PR's panel did not run on the project's seats. Fix the sheet, run the panel on the diff again, then run land.mjs again:\n${misses.map((miss) => `- ${miss}`).join('\n')}`);
+    fail(`${sheet} runs panels on models or efforts this project does not allow, so this PR's panel ran weaker than the project asks. Fix the sheet, run the panel on the diff again, then run land.mjs again:\n${misses.map((miss) => `- ${miss}`).join('\n')}`);
   }
 }
 if (companion?.dir && !pair && mode === 'push') {

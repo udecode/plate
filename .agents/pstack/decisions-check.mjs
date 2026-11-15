@@ -267,7 +267,7 @@ function missingFindingPaths(cells, where) {
 function newRowProblems(cells, where, chips, writer) {
   const found = [];
   if (cells[0] === 'chip' && chips) found.push(...missingFindingPaths(cells, where));
-  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, writer, shipList) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
+  return [...found, ...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git, writer, shipList, invokedFrom) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
 }
 
 const transcriptOf = (run) => (run ? basename(run.transcript, '.jsonl') : null);
