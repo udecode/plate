@@ -2710,6 +2710,7 @@ export const createEditorSchema = <V extends Value = Value>(
     validateDeclarativeChildren,
     validateDocument: assertDocument,
     validateSliceVocabulary,
+    withoutGeneration,
   }));
   const fit: InternalEditorSchemaApi<V>['fit'] = sliceFitter.fit;
   const fitContent: InternalEditorSchemaApi<V>['fitContent'] =

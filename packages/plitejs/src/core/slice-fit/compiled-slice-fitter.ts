@@ -21,6 +21,7 @@ import { getDefined } from '../../internal/get-defined';
 import { ChangeDraft, type DocumentChangeStep } from '../change/builder';
 import {
   DocumentChange,
+  assertNamedDocumentRootKey,
   createInternalDocumentChange,
   getInternalDocumentChangeEntries,
   mapInternalDocumentChangePosition,
@@ -60,6 +61,7 @@ import {
   bindCanonicalFitPreparation,
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
+  isLoadedDocumentCanonical,
   mapCanonicalRepresentationPoint,
   prepareCanonicalFitSlice,
   prepareCanonicalRootFit,
@@ -287,6 +289,7 @@ type SliceFitterDependencies<V extends Value> = Readonly<{
   ) => void;
   validateDocument: (value: EditorDocumentValue) => void;
   validateSliceVocabulary: (children: readonly Descendant[]) => void;
+  withoutGeneration: <T>(read: () => T) => T;
 }>;
 
 export type SliceFitterDelegate<V extends Value = Value> = Pick<
@@ -388,6 +391,7 @@ export const compileSliceFitter = <V extends Value>(
     validateDeclarativeChildren,
     validateDocument,
     validateSliceVocabulary,
+    withoutGeneration,
   } = input;
   const getDeclarativeSchema = () => schema;
   const isGridCell = (element: Element) => {
@@ -4138,6 +4142,128 @@ export const compileSliceFitter = <V extends Value>(
     return true;
   };
 
+  const fitKeepsSelection = (
+    document: EditorDocumentValue,
+    {
+      root,
+      selection,
+    }: Readonly<{ root: RootKey; selection: NonNullable<Selection> }>
+  ) => {
+    if (root !== 'main' && !Object.hasOwn(document.roots ?? {}, root)) {
+      return false;
+    }
+
+    const children = getDocumentRoot(document, root);
+    const namesRoot = (named: RootKey | undefined, unnamed: RootKey) =>
+      (named ?? unnamed) === root;
+
+    if (SelectionApi.isNode(selection)) {
+      return (
+        namesRoot(selection.root, 'main') &&
+        selection.paths.every((path) => getDescendant(children, path) !== null)
+      );
+    }
+    const text = Object.hasOwn(selection, 'kind')
+      ? selection
+      : SelectionApi.text(selection);
+
+    if (!SelectionApi.isText(text)) return false;
+
+    return [text.anchor, text.focus].every((point) => {
+      const node = getDescendant(children, point.path);
+
+      return (
+        namesRoot(point.root, root) &&
+        node !== null &&
+        NodeApi.isText(node) &&
+        point.offset <= node.text.length
+      );
+    });
+  };
+
+  const placesEachNodeOnce = (document: EditorDocumentValue) => {
+    const placed = new Set<object>();
+    const places = (children: readonly Descendant[]): boolean =>
+      children.every((node) => {
+        if (placed.has(node)) return false;
+        placed.add(node);
+
+        return !ElementApi.isElement(node) || places(node.children);
+      });
+
+    return (
+      places(document.children) &&
+      Object.values(document.roots ?? {}).every(places)
+    );
+  };
+
+  const ownDocument = (raw: EditorDocumentValue) => {
+    const { records, roots, ...value } = snapshotEditorJsonValue(
+      raw,
+      'Editor schema document'
+    );
+    const named = Object.entries(roots ?? {});
+    const owned = snapshotEditorJsonValue(
+      {
+        ...value,
+        children: [...value.children],
+        ...(named.length > 0
+          ? {
+              roots: Object.fromEntries(
+                named.map(([root, children]) => [root, [...children]])
+              ),
+            }
+          : {}),
+      },
+      'Editor schema document'
+    );
+
+    return (records === undefined
+      ? owned
+      : Object.freeze(
+          showValueRecords({ ...owned }, recordStoreFromJson(records))
+        )) as unknown as EditorDocumentValue<V>;
+  };
+
+  const fullFitFailsOnRoot = (root: string) => root in Object.prototype;
+
+  const reuseCanonicalDocument = (
+    raw: EditorDocumentValue,
+    selectionInput?: Readonly<{
+      root: RootKey;
+      selection: NonNullable<Selection>;
+    }>
+  ) => {
+    if (!placesEachNodeOnce(raw)) return null;
+
+    try {
+      for (const root of Object.keys(raw.roots ?? {})) {
+        if (fullFitFailsOnRoot(root)) return null;
+        assertNamedDocumentRootKey(root);
+      }
+
+      const document = ownDocument(raw);
+
+      if (
+        (selectionInput && !fitKeepsSelection(document, selectionInput)) ||
+        !withoutGeneration(() =>
+          isLoadedDocumentCanonical(getEditor(), document, api)
+        )
+      ) {
+        return null;
+      }
+
+      return Object.freeze({
+        document,
+        selection:
+          selectionInput &&
+          snapshotEditorJsonValue(selectionInput.selection, 'Editor selection'),
+      });
+    } catch {
+      return null;
+    }
+  };
+
   const fitDocumentInput = <TValue extends Value>(
     rawInput: EditorDocumentValue<TValue>,
     selectionInput?: Readonly<{
@@ -4177,6 +4303,13 @@ export const compileSliceFitter = <V extends Value>(
         seededRoots[root] = children;
       }
     }
+
+    const reused = repairCollector
+      ? null
+      : reuseCanonicalDocument(innerInput2, selectionInput);
+
+    if (reused) return reused;
+
     const initial = cloneFrozen({
       children: [],
       ...(innerInput2.meta !== undefined ? { meta: innerInput2.meta } : {}),

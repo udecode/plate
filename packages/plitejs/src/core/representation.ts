@@ -1510,6 +1510,27 @@ const fitRootChildren = (
     : canonical;
 };
 
+const loadedRoots = (document: JsonEditorValue) => [
+  'main',
+  ...Object.keys(document.roots ?? {}),
+];
+
+export const isLoadedDocumentCanonical = (
+  editor: Editor,
+  document: JsonEditorValue,
+  schema: RepresentationSchema
+) => {
+  schema.assertDocument(document);
+
+  return loadedRoots(document).every((root) => {
+    const current = getRootChildren(document, root);
+
+    return (
+      fitRootChildren(editor, current, root, { document, schema }) === current
+    );
+  });
+};
+
 /** An explicit initial value loads canonical under the schema it publishes with. */
 export const constructLoadedDocumentChange = (
   editor: Editor,
@@ -1520,7 +1541,7 @@ export const constructLoadedDocumentChange = (
 
   schema.assertDocument(document);
 
-  for (const root of ['main', ...Object.keys(document.roots ?? {})]) {
+  for (const root of loadedRoots(document)) {
     const current = getRootChildren(document, root);
     const canonical = fitRootChildren(editor, current, root, {
       document,
