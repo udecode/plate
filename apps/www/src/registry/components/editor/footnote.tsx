@@ -55,7 +55,10 @@ type FootnoteOptions = Readonly<{
   nextRef: string;
 }>;
 
-const CLOSED_PREVIEW: FootnotePreview = { isResolved: false };
+const CLOSED_PREVIEW: FootnotePreview = {
+  isResolved: false,
+  previewText: undefined,
+};
 const CLOSED_OPTIONS: FootnoteOptions = { footnotes: [], nextRef: '1' };
 
 const sameOptions = (left: FootnoteOptions | null, right: FootnoteOptions) =>
@@ -123,19 +126,13 @@ export function FootnoteReferenceElement(
   const ref = element.ref ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
-  const { isResolved, previewText } = useEditorSelector<FootnotePreview>(
-    () =>
-      hoverOpen && ref
-        ? {
-            isResolved: footnoteApi.isResolved({ ref }),
-            previewText: footnoteApi.definitionText({ ref }),
-          }
-        : CLOSED_PREVIEW,
-    {
-      equalityFn: (left, right) =>
-        left?.isResolved === right.isResolved &&
-        left.previewText === right.previewText,
-    }
+  const { isResolved, previewText } = useEditorSelector<FootnotePreview>(() =>
+    hoverOpen && ref
+      ? {
+          isResolved: footnoteApi.isResolved({ ref }),
+          previewText: footnoteApi.definitionText({ ref }),
+        }
+      : CLOSED_PREVIEW
   );
   const selected = useElementSelected({ mode: 'text' });
   const isSelectionInsideAtom = useEditorSelector((currentEditor) => {

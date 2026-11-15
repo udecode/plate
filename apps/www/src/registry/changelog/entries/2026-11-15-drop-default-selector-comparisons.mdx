@@ -1,0 +1,14 @@
+---
+id: 2026-11-15-drop-default-selector-comparisons
+date: 2026-11-15
+status: draft
+kind: behavior
+summary: 'Drop the selector comparisons that Plate now makes by default'
+change: { 'type': 'source', 'date': '2026-11-15', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-15-turn-into-toolbar-drop-selector-comparisons-that-3e350255","kind":"behavior","migrationNotes":[]} -->
+
+- **`turn-into-toolbar-button`**, **`footnote`**: Drop the hand-written `equalityFn` from the turn-into menu's structure state and the footnote hover preview, because `useEditorSelector` now compares results by value. Both still skip renders while you type and still update after each change they show.

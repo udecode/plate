@@ -82,20 +82,6 @@ type StructuralState = {
   quote: StructuralActionState;
 };
 
-const structuralStateEqual = (
-  previous: StructuralState | null,
-  next: StructuralState
-) =>
-  !!previous &&
-  previous.code.active === next.code.active &&
-  previous.code.eligible === next.code.eligible &&
-  previous.columns.active === next.columns.active &&
-  previous.columns.eligible === next.columns.eligible &&
-  previous.details.active === next.details.active &&
-  previous.details.eligible === next.details.eligible &&
-  previous.quote.active === next.quote.active &&
-  previous.quote.eligible === next.quote.eligible;
-
 const turnIntoList = defineCommand<
   Readonly<{ type: 'bulleted' | 'numbered' | 'task' }>,
   Editor
@@ -348,9 +334,7 @@ export function TurnIntoToolbarButton() {
     getProp: (node) =>
       ElementApi.isElement(node) ? getLeafFormat(editor, node) : undefined,
   }) as LeafFormat | undefined;
-  const structural = useEditorSelector(getStructuralState, {
-    equalityFn: structuralStateEqual,
-  });
+  const structural = useEditorSelector(getStructuralState);
   const hasSelection = useEditorSelector(
     (current) => readBlocks(current, 'highest').length > 0
   );

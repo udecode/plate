@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-15-drop-default-selector-comparisons",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-15-drop-default-selector-comparisons.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-15",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Drop the selector comparisons that Plate now makes by default",
+  "targets": [
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-15-turn-into-toolbar-drop-selector-comparisons-that-3e350255",
+      "kind": "behavior",
+      "summary": "Drop the hand-written `equalityFn` from the turn-into menu's structure state and the footnote hover preview, because `useEditorSelector` now compares results by value. Both still skip renders while you type and still update after each change they show.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["turn-into-toolbar-button", "footnote"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-15",
+          "entry": "2026-11-15-drop-default-selector-comparisons",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

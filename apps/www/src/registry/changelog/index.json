@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-15-drop-default-selector-comparisons",
+      "href": "/registry/changelog/2026-11-15-drop-default-selector-comparisons.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Drop the selector comparisons that Plate now makes by default",
+      "change": {
+        "type": "source",
+        "date": "2026-11-15",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-13-dnd-object-content",
       "href": "/registry/changelog/2026-11-13-dnd-object-content.json",
       "status": "draft",
