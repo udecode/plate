@@ -375,6 +375,7 @@ import {
   getProtectedInlineSpacerEntries,
 } from './representation';
 import { changedRootsOf } from './root-ownership';
+import { reportShownChange } from './root-target';
 import {
   areEditorSchemaIdentitiesEqual,
   tracksPlaces,
@@ -10612,9 +10613,11 @@ export const registerEditorSurface = (
 
   if (!registerSurface) return () => {};
 
-  const release = reportReadOnlyChange(editor, () => registerSurface(readOnly));
+  const report = <T>(change: () => T) =>
+    reportReadOnlyChange(editor, () => reportShownChange(editor, change));
+  const release = report(() => registerSurface(readOnly));
 
-  return () => reportReadOnlyChange(editor, release);
+  return () => report(release);
 };
 
 export const hasEditorSurface = (editor: AnyPluginEditor): boolean =>
@@ -10666,8 +10669,17 @@ const followViewPolicy = (
   const follow = (target: InternalEditorRuntime | undefined) => {
     if (!target) return () => {};
 
-    const stopTarget = listenToViewState(target, hearPolicyChange);
-    const stopChain = followViewPolicy(target, hearPolicyChange, hearSwitch);
+    // The source names its next view before its switch notice arrives, so a
+    // notice from the view it stopped naming counts as that switch, which has
+    // the listener read both policies.
+    const hearTarget = (change: EditorViewStateChange) => {
+      if (!isPolicyChange(change)) return;
+
+      if (source.current() === target) hearPolicyChange(change);
+      else hearSwitch();
+    };
+    const stopTarget = listenToViewState(target, hearTarget);
+    const stopChain = followViewPolicy(target, hearTarget, hearSwitch);
 
     return () => {
       stopTarget();
@@ -10712,11 +10724,19 @@ export const subscribeEditorViewState = <V extends Value>(
 ) => {
   const runtime = getEditorRuntime(editor);
   let subscribed = true;
+  let switching = false;
   const hearPolicyChange = (change: EditorViewStateChange) => {
-    if (isPolicyChange(change)) listener(change);
+    // A pending switch notice already has the listener read both policies of
+    // the view it now follows, so that view's own notice would repeat it.
+    if (!switching) listener(change);
   };
   const hearSwitch = () => {
+    if (switching) return;
+
+    switching = true;
     scheduleMicrotask(() => {
+      switching = false;
+
       for (const change of ['readOnly', 'authored'] as const) {
         if (!subscribed) return;
 

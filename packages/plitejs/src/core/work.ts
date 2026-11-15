@@ -138,6 +138,8 @@ export type CoreWork = {
   wholeReadNodes: number;
   /** Elements a settlement judged as owners of a content root holding a holder. */
   rootOwnerChecks: number;
+  /** Mounted views a root's target pick asked whether an `Editable` shows them. */
+  rootTargetChecks: number;
   /** Yjs children a collaboration binding enumerated. */
   yjsChildrenRead: number;
   yjsItemSteps: number;
@@ -243,6 +245,7 @@ export const coreWork: CoreWork = {
   walkedSlots: 0,
   wholeReadNodes: 0,
   rootOwnerChecks: 0,
+  rootTargetChecks: 0,
   yjsChildrenRead: 0,
   yjsItemSteps: 0,
   yjsJoinSiblingsRead: 0,
