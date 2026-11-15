@@ -134,11 +134,13 @@ const nameOf = (shape: BoardShapeDescription): string => {
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another. Shift+Enter reaches the toolbar.',
-  aim: (shape, { position, total }) =>
-    `To ${nameOf(shape)}. ${position} of ${total}`,
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. Shift+Enter reaches the toolbar.',
+  aim: (shape, { anchor, position, side, total }) =>
+    `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
-    `Connecting ${nameOf(from)}. Tab picks the other shape, Enter draws the arrow and Escape stops.`,
+    `Connecting ${nameOf(from)}. Tab picks the other shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
+  free: ({ x, y }, { side }) =>
+    `${side === 'start' ? 'Start' : 'End'} free at ${x}, ${y}`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>

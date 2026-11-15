@@ -1,4 +1,5 @@
 import type {
+  BoardArrowAnchor,
   BoardFrameEntry,
   BoardMemberEntry,
   BoardPlace,
@@ -20,6 +21,24 @@ export const BOARD_PLACE_SIZE: Readonly<Record<BoardPlaceTool, BoardSize>> = {
   geo: BOARD_GEO_SIZE,
   note: BOARD_NOTE_SIZE,
 };
+
+type BoardPlacedEnd =
+  | BoardPlace
+  | Readonly<{ anchor: BoardArrowAnchor; shape: string }>;
+
+const fractionOf = (offset: number, length: number) =>
+  length > 0 ? Math.min(1, Math.max(0, offset / length)) : 0.5;
+
+export const anchorIn = (at: BoardPlace, box: BoardBox): BoardArrowAnchor => [
+  fractionOf(at.x - box.x, box.width),
+  fractionOf(at.y - box.y, box.height),
+];
+
+export const arrowEndOn = (
+  at: BoardPlace,
+  shape: BoardShapeLayout | undefined
+): BoardPlacedEnd =>
+  shape ? { anchor: anchorIn(at, shape.box), shape: shape.id } : at;
 
 const DEGREES = 180 / Math.PI;
 

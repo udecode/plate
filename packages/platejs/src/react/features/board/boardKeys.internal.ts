@@ -194,15 +194,15 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const pick = (
-    first: BoardShapeLayout | undefined,
+    from: BoardBox | undefined,
     direction: BoardPlace,
     layouts: readonly BoardShapeLayout[]
   ) => {
-    const start = first?.box ?? { height: 0, width: 0, ...core.viewCenter() };
+    const start = from ?? { height: 0, width: 0, ...core.viewCenter() };
 
     return (
       pickInDirection(layouts, start, direction) ??
-      (first
+      (from
         ? undefined
         : (core.shapeAt(start) ?? frontmostAround(layouts, start)))
     );
@@ -217,7 +217,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     const own = first && entries.find(({ key }) => key === first.key);
     const frame = own?.kind === 'shape' ? own.frame : undefined;
     const next = pick(
-      first,
+      first?.box,
       direction,
       entries.flatMap(({ id, key }) =>
         id === frame ? [] : (index.layout(key) ?? [])
@@ -348,7 +348,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
         return;
       }
     }
-    connect.sayAim();
+    connect.sayEnd();
   };
 
   const connectKey = (
@@ -362,10 +362,14 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       if (event.key === 'Tab' && plainKey(event)) {
         aimInOrder(event.shiftKey);
       } else if (arrow && pickKey(event)) {
-        const next = pick(connect.aimFrom(), arrow, connect.candidates());
+        const next = pick(connect.searchFrom(), arrow, connect.candidates());
 
         if (next) connect.aimAt(next);
-        else connect.sayAim();
+        else connect.sayEnd();
+      } else if (arrow && plainKey(event)) {
+        const step = event.shiftKey ? SHIFT_NUDGE : NUDGE;
+
+        connect.move({ x: arrow.x * step, y: arrow.y * step });
       } else if (enter) {
         if (!event.repeat) connect.finish();
       } else return false;

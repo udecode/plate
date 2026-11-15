@@ -182,14 +182,14 @@ export type BoardViewCore = Readonly<{
   selectedShapes: () => BoardShapeLayout[];
   setCamera: (camera: BoardCamera) => void;
   setTool: (tool: BoardTool) => void;
-  shapeAt: (at: BoardPlace) => BoardShapeLayout | undefined;
+  shapeAt: (at: BoardPlace, except?: string) => BoardShapeLayout | undefined;
   shapesAlong: (from: BoardPlace, to: BoardPlace) => readonly string[];
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   undo: () => void;
   voice: Pick<
     BoardVoice,
-    'aim' | 'connecting' | 'hold' | 'release' | 'repeatSelection'
+    'aim' | 'connecting' | 'free' | 'hold' | 'release' | 'repeatSelection'
   >;
   writable: () => boolean;
   /**
@@ -960,7 +960,7 @@ export const createBoardView = (
       setState({ tool });
       voice.tool(tool);
     },
-    shapeAt: (at) => index.shapeAt(at, state.camera.zoom),
+    shapeAt: (at, except) => index.shapeAt(at, state.camera.zoom, except),
     shapesAlong: (from, to) => index.shapesAlong(from, to, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
     state: () => state,

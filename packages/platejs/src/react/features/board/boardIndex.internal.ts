@@ -536,6 +536,8 @@ export const createBoardIndex = ({
       previewed = next;
       notifyArrows([...next.keys(), ...left]);
     },
+    resolveArrow: (ends: ArrowEnds) =>
+      resolveBoardArrow(ends, (id) => targets.get(id)),
     search: (box: BBox) => tree.search(box),
     /**
      * The ids of the members the segment from board point `from` to `to`
@@ -564,10 +566,10 @@ export const createBoardIndex = ({
       return ids;
     },
     /**
-     * The frontmost member a press at `at` reaches: no arrow, a frame only on
-     * its edge, and a stroke only on its line.
+     * The frontmost member other than `except` that a press at `at` reaches:
+     * no arrow, a frame only on its edge, and a stroke only on its line.
      */
-    shapeAt: (at: BoardPlace, zoom: number) => {
+    shapeAt: (at: BoardPlace, zoom: number, except?: string) => {
       // A press within the slop of a stroke's line can fall past its box.
       const slop = INK_SLOP_PX / zoom;
       let top: BoardShapeLayout | undefined;
@@ -582,6 +584,7 @@ export const createBoardIndex = ({
 
         if (
           layout &&
+          layout.id !== except &&
           (!top || layout.rank > top.rank) &&
           reaches(layout, at, zoom)
         ) {

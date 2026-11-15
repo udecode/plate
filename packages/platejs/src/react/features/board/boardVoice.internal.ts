@@ -9,7 +9,10 @@ import {
   BaseBoardGeoPlugin,
   BaseBoardNotePlugin,
   BaseBoardStrokePlugin,
+  type BoardArrowAnchor,
+  type BoardArrowSide,
   type BoardMemberEntry,
+  type BoardPlace,
 } from '../../../features/board/lib';
 import { BOARD_FRAME_TYPE } from '../../../features/board/lib/boardFrame.internal';
 import type { Editor } from '../../core';
@@ -46,19 +49,39 @@ export type BoardShapeDescription =
 export type BoardMessages = Readonly<{
   /**
    * Called with `shape` and its 1-based place in stored order among the
-   * board's shapes when Tab, Shift+Tab or Mod with an arrow aims a connect at
-   * it, and again when Mod with an arrow finds no shape that way.
+   * board's shapes when a connect's end binds to it: when Tab, Shift+Tab or
+   * Mod with an arrow aims the end at its middle, when an arrow key moves the
+   * end into it or within it, and again when Mod with an arrow finds no shape
+   * that way.
+   * `anchor` is where the end sits in the shape's box, in whole percents
+   * `across` from its left edge and `down` from its top, so its middle is 50
+   * and 50. `side` is the arrow end the keys move.
    */
   aim: (
     shape: BoardShapeDescription,
-    at: Readonly<{ position: number; total: number }>
+    at: Readonly<{
+      anchor: Readonly<{ across: number; down: number }>;
+      position: number;
+      side: BoardArrowSide;
+      total: number;
+    }>
   ) => string;
   /**
    * Called when Enter with the arrow tool starts connecting `from`, the one
-   * selected shape, to another shape. Until the connect aims at a shape, Enter
-   * and an aim key that finds no shape call it again.
+   * selected shape. While the connect has no end, before an arrow key or an
+   * aim key places one and after the shape it binds to is removed, Enter and
+   * an aim key that finds no shape call it again. Enter also calls it again,
+   * and writes no arrow, when the arrow would draw with no length, as with
+   * the end at `from`'s middle.
    */
   connecting: (from: BoardShapeDescription) => string;
+  /**
+   * Called when an arrow key moves a connect's end onto no shape it can bind
+   * to, with the board point it sits at in whole units, and again when Tab or
+   * Shift+Tab finds no shape to aim at, or Mod with an arrow finds no shape
+   * that way from there. `side` is the arrow end the keys move.
+   */
+  free: (place: BoardPlace, end: Readonly<{ side: BoardArrowSide }>) => string;
   /**
    * The board's accessible name, which its focus target and its shapes'
    * content root carry.
@@ -100,7 +123,9 @@ export type BoardMessages = Readonly<{
 }>;
 
 type BoardUtterance =
-  | Readonly<{ kind: 'aim' | 'connecting'; key: NodeKey }>
+  | Readonly<{ kind: 'aim'; anchor: BoardArrowAnchor; key: NodeKey }>
+  | Readonly<{ kind: 'connecting'; key: NodeKey }>
+  | Readonly<{ kind: 'free'; at: BoardPlace }>
   | Readonly<{ kind: 'quiet' | 'repeatSelection' | 'selection' }>
   | Readonly<{ kind: 'removed'; count: number }>
   | Readonly<{ kind: 'tool'; tool: BoardTool }>
@@ -203,7 +228,23 @@ export const createBoardVoice = ({
     if (utterance.kind === 'removed') return said.removed(utterance.count);
     if (utterance.kind === 'tool') return said.tool(utterance.tool);
     if (utterance.kind === 'zoom') return said.zoom(utterance.percent);
-    if (utterance.kind === 'aim') return shapeWords(utterance.key, said.aim);
+    if (utterance.kind === 'aim') {
+      const [across, down] = utterance.anchor;
+      const anchor = {
+        across: Math.round(across * 100),
+        down: Math.round(down * 100),
+      };
+
+      return shapeWords(utterance.key, (shape, at) =>
+        said.aim(shape, { ...at, anchor, side: 'end' })
+      );
+    }
+    if (utterance.kind === 'free') {
+      return said.free(
+        { x: Math.round(utterance.at.x), y: Math.round(utterance.at.y) },
+        { side: 'end' }
+      );
+    }
     if (utterance.kind === 'connecting') {
       return shapeWords(utterance.key, said.connecting);
     }
@@ -242,8 +283,10 @@ export const createBoardVoice = ({
   };
 
   return {
-    aim: (key: NodeKey) => say({ key, kind: 'aim' }),
+    aim: (key: NodeKey, anchor: BoardArrowAnchor) =>
+      say({ anchor, key, kind: 'aim' }),
     connecting: (key: NodeKey) => say({ key, kind: 'connecting' }),
+    free: (at: BoardPlace) => say({ at, kind: 'free' }),
     hold: (owesSelection = false) => {
       owed = owesSelection ? { kind: 'selection' } : pending;
       pending = null;

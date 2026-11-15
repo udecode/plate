@@ -14,7 +14,7 @@ import {
   spanOf,
 } from './boardIndex.internal';
 import { simulatedPressure, strokeOutline } from './boardInk.internal';
-import { BOARD_PLACE_SIZE } from './boardPick.internal';
+import { arrowEndOn, BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
   placeElement,
   previewArrowLine,
@@ -127,9 +127,6 @@ const holds = (outer: BoardBox, inner: BoardBox) =>
   inner.y >= outer.y &&
   inner.x + inner.width <= outer.x + outer.width &&
   inner.y + inner.height <= outer.y + outer.height;
-
-const fractionOf = (offset: number, length: number) =>
-  length > 0 ? Math.min(1, Math.max(0, offset / length)) : 0.5;
 
 const resized = (start: BoardBox, corner: Corner, dx: number, dy: number) => {
   const west = corner === 'nw' || corner === 'sw';
@@ -330,21 +327,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
-  const arrowEndAt = (at: BoardPlace): BoardArrowEndInput => {
-    const top = core.shapeAt(at);
-
-    if (!top) return at;
-
-    const { box } = top;
-
-    return {
-      anchor: [
-        fractionOf(at.x - box.x, box.width),
-        fractionOf(at.y - box.y, box.height),
-      ],
-      shape: top.id,
-    };
-  };
+  const arrowEndAt = (at: BoardPlace) => arrowEndOn(at, core.shapeAt(at));
 
   const release = () => {
     const done = gesture;

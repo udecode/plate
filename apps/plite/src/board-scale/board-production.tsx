@@ -47,6 +47,7 @@ const MESSAGES: BoardMessages = {
   aim: ({ kind, text }, { position, total }) =>
     `to ${text || kind}. ${position} of ${total}`,
   connecting: ({ kind, text }) => `connecting ${text || kind}`,
+  free: ({ x, y }) => `free at ${x}, ${y}`,
   label: 'Board',
   instructions: 'Enter selects the first shape.',
   removed: (count) => `${count} removed`,
