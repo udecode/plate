@@ -5,10 +5,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { zstdCompressSync } from 'node:zlib';
 
 import { autoCleanup, brief, classifyWorktree, deleteSafe, landed, removeLanded, scan } from './scan.mjs';
 
-Object.assign(process.env, { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1' });
+Object.assign(process.env, { CODEX_HOME: mkdtempSync(join(tmpdir(), 'cleanup-codex-')), GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1' });
 
 const DAY = 86_400_000;
 const SCAN = join(dirname(fileURLToPath(import.meta.url)), 'scan.mjs');
@@ -147,7 +148,7 @@ test('--repos judges each checkout in a folder that has linked worktrees', () =>
 });
 
 test('a worktree outside the folders agents use is asked about even when an archived session owned it', () => {
-  const facts = { agentMade: false, heldCaches: 0, hoursQuiet: 48, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, session: { state: null, title: 'done' }, unreached: 0 };
+  const facts = { agentMade: false, codex: 0, heldCaches: 0, hoursQuiet: 48, ignored: { overflow: false, unique: [] }, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, session: { state: null, title: 'done' }, unreached: 0 };
   assert.equal(classifyWorktree(facts)[0], 'ask');
   assert.equal(classifyWorktree({ ...facts, agentMade: true })[0], 'safe');
 });
@@ -374,6 +375,21 @@ test('--landed passes for a worktree whose changes the checkout holds and fails 
   assert.equal(spawnSync(process.execPath, [SCAN, '--landed', f.landed]).status, 1);
 });
 
+test('the scan asks about a worktree holding an ignored file the checkout lacks, in a pstack project only a run artifact', () => {
+  const f = fixture();
+  writeFileSync(join(f.archived, '.env.local'), 'ONLY_HERE=1\n');
+  assert.equal(verdictOf(f, f.archived), 'ask', 'an env file only the worktree has');
+  writeFileSync(join(f.main, '.env.local'), 'ONLY_HERE=1\n');
+  assert.equal(verdictOf(f, f.archived), 'safe', 'the checkout holds the same file');
+  const p = pstackFixture();
+  mkdirSync(join(p.archived, 'apps', 'www', '.source'), { recursive: true });
+  writeFileSync(join(p.archived, 'apps', 'www', '.source', 'browser.ts'), 'generated\n');
+  assert.equal(verdictOf(p, p.archived), 'safe', 'generated output outside the run folders');
+  mkdirSync(join(p.archived, 'docs', 'plans', 'artifacts', 'run'), { recursive: true });
+  writeFileSync(join(p.archived, 'docs', 'plans', 'artifacts', 'run', 'proof.log'), 'exit 0\n');
+  assert.equal(verdictOf(p, p.archived), 'ask', 'a run artifact the checkout lacks');
+});
+
 test('a worktree a running process works in is neither marked safe nor deleted', async () => {
   const f = fixture();
   const shell = spawn('tail', ['-f', '/dev/null'], { cwd: f.archived, stdio: 'ignore' });
@@ -447,6 +463,35 @@ test('a worktree stays a day after a session working in it last wrote its transc
   } finally {
     if (saved === undefined) delete process.env.CLAUDE_CONFIG_DIR;
     else process.env.CLAUDE_CONFIG_DIR = saved;
+  }
+});
+
+test('a worktree stays a day after a Codex chat working in it last wrote its rollout, compressed or not', () => {
+  const f = fixture();
+  const day = join(process.env.CODEX_HOME, 'sessions', '2026', '11', '15');
+  mkdirSync(day, { recursive: true });
+  const meta = `${JSON.stringify({ type: 'session_meta', payload: { cwd: join(f.orphan, 'apps') } })}\n{}\n`;
+  const later = Date.now() + 2 * DAY;
+  const at = () => verdicts(scan({ repo: f.main, sizes: false, now: later }).items)[f.orphan];
+  const write = (name, bytes) => {
+    const path = join(day, name);
+    writeFileSync(path, bytes);
+    utimesSync(path, new Date(later - 3_600_000), new Date(later - 3_600_000));
+    return path;
+  };
+  try {
+    assert.equal(at(), 'safe', 'no Codex chat');
+    const plain = write('rollout-a.jsonl', meta);
+    assert.equal(at(), 'keep', 'a rollout written an hour ago');
+    age(plain, 0);
+    assert.equal(at(), 'safe', 'a rollout quiet for two days');
+    const packed = write('rollout-b.jsonl.zst', zstdCompressSync(meta));
+    assert.equal(at(), 'keep', 'a compressed rollout written an hour ago');
+    rmSync(packed);
+    write('rollout-c.jsonl.zst', zstdCompressSync(meta).subarray(0, 8));
+    assert.equal(at(), 'keep', 'a recent rollout the scan cannot read');
+  } finally {
+    rmSync(join(process.env.CODEX_HOME, 'sessions'), { force: true, recursive: true });
   }
 });
 

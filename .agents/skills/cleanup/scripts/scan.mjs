@@ -13,10 +13,14 @@
 // and title. Only a running or pinned session, a running process, or a write
 // in the last day to the worktree or to a session transcript naming it keeps
 // a worktree, and the worktree of an archived session does not wait the day.
+// A Codex rollout under $CODEX_HOME/sessions/ written in the last day keeps the
+// worktree its chat works in, and one the scan cannot read keeps them all.
 // Uncommitted changes do not keep it, because a card session lands them in the
-// checkout as a patch. A commit that no branch, tag or remote reaches, which
-// only the worktree's HEAD history keeps, makes the
-// scan ask when it writes a file whose content the checkout's HEAD and its
+// checkout as a patch. That patch leaves ignored files out, so an ignored file
+// the checkout lacks makes the scan ask, counting in a pstack project only
+// files under <plans>/artifacts/, as --landed does. A commit that no branch,
+// tag or remote reaches, which only the worktree's HEAD history keeps, makes
+// the scan ask when it writes a file whose content the checkout's HEAD and its
 // upstream both lack and neither changed since, because removing the worktree
 // loses it. --delete measures each safe item, judges it again, checks the
 // running processes once more, saves a worktree's uncommitted changes the
@@ -61,11 +65,12 @@
 // processes lsof cannot list and one git refuses to remove, and exits 1 when it
 // keeps any.
 import { execFileSync, execSync, spawn } from 'node:child_process';
-import { closeSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readlinkSync, readSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import zlib from 'node:zlib';
 
 const HOUR = 3_600_000;
 const WEEK = 7 * 24;
@@ -170,6 +175,8 @@ function usageVerdict(facts) {
   if (facts.processes === null) return ['keep', 'lsof could not list the processes working in it'];
   if (facts.processes > 0) return ['keep', `${facts.processes} running processes work in it`];
   if (facts.session?.state) return ['keep', `session "${facts.session.title}" is ${facts.session.state}`];
+  if (facts.codex === null) return ['keep', 'a Codex chat written in the last day could not be read'];
+  if (facts.codex > 0) return ['keep', 'a Codex chat worked in it in the last day'];
   if (!facts.session?.archived && facts.hoursQuiet < 24) return ['keep', 'it or a session transcript naming it changed in the last day'];
   if (!facts.agentMade) return ['ask', 'it sits outside the folders agents make worktrees in'];
   if (facts.nested) return ['ask', `another worktree lives inside it: ${facts.nested}`];
@@ -180,10 +187,17 @@ function usageVerdict(facts) {
 const unreachedReason = (count) =>
   count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history, with changes the checkout lacks; save them with git branch <name> <sha>`;
 
+const ignoredAsk = ({ overflow, unique }) => {
+  if (overflow) return ['ask', `more than ${IGNORED_LIMIT} ignored files to compare with the checkout`];
+  return unique.length > 0 ? ['ask', `${unique.length} ignored files the checkout lacks, such as ${unique[0]}`] : null;
+};
+
 function cleanupVerdict(facts) {
   if (facts.heldCaches === null) return ['keep', 'lsof could not tell whether a server holds a cache inside it'];
   if (facts.heldCaches > 0) return ['keep', 'a running server holds a cache inside it'];
   if (facts.repos > 0) return ['ask', `${facts.repos} submodules or nested repositories inside it`];
+  const ignored = ignoredAsk(facts.ignored);
+  if (ignored) return ignored;
   if (facts.unreached !== 0) return ['ask', unreachedReason(facts.unreached)];
   return ['safe', facts.session?.archived ? 'every session that used it is archived' : 'nothing wrote it or a session transcript naming it for a day'];
 }
@@ -194,8 +208,8 @@ function landedVerdict(facts) {
   if (facts.repos > 0) return ['ask', `${facts.repos} submodules or nested repositories inside it`];
   if (facts.staged > 0) return ['ask', `${facts.staged} staged changes that differ from its files`];
   if (facts.unlanded > 0) return ['ask', `${facts.unlanded} uncommitted changes the checkout does not hold`];
-  if (facts.ignored.overflow) return ['ask', `more than ${IGNORED_LIMIT} ignored files to compare with the checkout`];
-  if (facts.ignored.unique.length > 0) return ['ask', `${facts.ignored.unique.length} ignored files the checkout lacks, such as ${facts.ignored.unique[0]}`];
+  const ignored = ignoredAsk(facts.ignored);
+  if (ignored) return ignored;
   if (facts.unreached !== 0) return ['ask', unreachedReason(facts.unreached)];
   return ['safe', facts.dirty > 0 ? 'the checkout holds its changes' : 'nothing uncommitted'];
 }
@@ -417,6 +431,50 @@ function transcriptMtime(path, projects) {
   return newestMtime([...scratch, ...own]);
 }
 
+function firstLine(path) {
+  const fd = openSync(path, 'r');
+  try {
+    const chunks = [];
+    const buffer = Buffer.alloc(65_536);
+    for (let read = readSync(fd, buffer); read > 0; read = readSync(fd, buffer)) {
+      const chunk = Buffer.from(buffer.subarray(0, read));
+      chunks.push(chunk);
+      if (chunk.includes(10)) break;
+    }
+    return Buffer.concat(chunks).toString('utf8');
+  } finally {
+    closeSync(fd);
+  }
+}
+
+// Node's zstd decoder returns nothing for a truncated frame, so a rollout
+// without a whole first line counts as unreadable.
+function rolloutCwd(path) {
+  try {
+    const text = path.endsWith('.zst') ? zlib.zstdDecompressSync(readFileSync(path)).toString('utf8') : firstLine(path);
+    const end = text.indexOf('\n');
+    return end === -1 ? null : JSON.parse(text.slice(0, end)).payload?.cwd;
+  } catch {
+    return null;
+  }
+}
+
+// Codex writes each chat to a rollout under sessions/, appends to the file of
+// the chat's first day when it resumes, and later compresses it to .jsonl.zst.
+// The rollout's first line names the chat's working directory.
+function codexCwds(now) {
+  const cwds = [];
+  const walk = (dir) => {
+    for (const path of entriesOf(dir)) {
+      const stat = statOrNull(path);
+      if (stat?.isDirectory()) walk(path);
+      else if (stat && /\.jsonl(\.zst)?$/u.test(path) && now - stat.mtimeMs < 24 * HOUR) cwds.push(rolloutCwd(path));
+    }
+  };
+  walk(join(process.env.CODEX_HOME ?? join(homedir(), '.codex'), 'sessions'));
+  return cwds.includes(null) ? null : cwds.filter((cwd) => typeof cwd === 'string').map(real);
+}
+
 const agentRoots = (main) =>
   [join(main, '.claude', 'worktrees'), join(main, 'docs', 'plans', 'artifacts'), tmpdir(), '/tmp', '/private/tmp'].map(real);
 
@@ -435,6 +493,7 @@ function usageFacts(main, entry, context) {
     invoking: context.here.some((dir) => within(dir, path)),
     processes: context.cwds === null ? null : context.cwds.filter((cwd) => within(cwd, path)).length,
     session: sessionFor(path, context.sessions),
+    codex: context.codex === null ? null : context.codex.filter((cwd) => within(cwd, path)).length,
     hoursQuiet: (context.now - changed) / HOUR,
     agentMade: agentRoots(main).some((root) => within(path, root)),
     nested: nestedIn(path, context.worktrees),
@@ -581,7 +640,12 @@ export function classifyRun(facts) {
 
 const runBytes = (path, action, builds) => (action === 'strip' ? builds.reduce((sum, build) => sum + (sizeOf(build) ?? 0), 0) : sizeOf(path));
 
-const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unlandedCommits(main, entry) });
+const cleanupFacts = (main, entry, worktrees) => ({
+  heldCaches: heldCaches(entry.path, worktrees),
+  repos: nestedRepos(entry.path, statusEntries(entry.path)),
+  ignored: ignoredWork(main, entry.path, new Map(), runRoot(main)),
+  unreached: unlandedCommits(main, entry),
+});
 
 function contentFacts(main, entry, worktrees) {
   const listings = new Map();
@@ -608,7 +672,7 @@ const configDir = () => process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claud
 
 function contextFor(repo, main, sessions, now) {
   const projects = join(configDir(), 'projects');
-  return { cwds: processCwds(), here: [real(repo), real(process.cwd())], now, projects, sessions, worktrees: listWorktrees(main) };
+  return { codex: codexCwds(now), cwds: processCwds(), here: [real(repo), real(process.cwd())], now, projects, sessions, worktrees: listWorktrees(main) };
 }
 
 export function scan({ repo, sessions = [], sizes = true, now = Date.now() }) {
