@@ -129,7 +129,8 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | Enter with the note or shape tool, on the focused board or its selected shapes | Places a note or shape of the default size 24 px to the right of the selection, or at the view's center with nothing selected. It selects the new shape and picks the select tool, so the next Enter edits its text. When another shape that is not an arrow has its top-left corner where the new shape's top-left corner would go, it tries 24 px down and right, then 48 px, and so on. When no point it tries is free, or a coordinate it would store is not a finite number, Enter places nothing and says the selection again. |
 | Enter with the frame tool, on the focused board or its selected shapes | Places a frame around the selected shapes, padded by 24 px. The frame takes in each shape wholly inside it that no frame holds yet and no suggestion removes. It never takes in an arrow or a frame. With nothing selected, Enter places a frame of the default size at the view's center. When a coordinate the frame would store is not a finite number, or a frame around the selection would take in no shape, Enter places nothing and says the selection again. |
 | Enter with the arrow tool and one shape selected that is not an arrow | Starts connecting that shape. Tab and Shift+Tab aim the arrow's end at the middle of the other shapes that are not arrows, wrapping at either end, and Mod with an arrow aims it at the nearest one that way from the end. The arrow keys move the end by 1, or 10 with Shift. It binds where it sits in the frontmost shape under it that is not an arrow or the start, counting a frame only on its edge and a pen line only on its line, and stays free off every such shape. Enter draws the arrow from the start's middle to the end, selects it and picks the select tool. Escape, a left or middle press on the board, another tool, an undo or redo, removing the shape it started from, the view turning read-only, or focus leaving the board ends the connect without drawing. |
-| Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. During a connect they move the arrow's end instead. |
+| Enter with the arrow tool and nothing selected | Starts an arrow at the view's center. The arrow keys move its start by 1, or 10 with Shift. At the center and after each move, the start binds where it sits in the frontmost shape under it that is not an arrow, counting a frame only on its edge and a pen line only on its line, and stays free off every such shape. Tab, Shift+Tab and Mod with an arrow aim it at a shape's middle. Enter keeps the start and connects from there, as the row above does from a selected shape, and the end can bind to any shape but the start's. The same keys and events end it without drawing, and removing the shape the start binds to ends it too. |
+| Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. During a connect they move the end being placed instead. For an arrow begun with nothing selected, that is the start until Enter keeps it, then the end. |
 | `]` and `[` | Bring the selected shapes forward or send them backward one step. |
 | Mod+Shift+Up and Mod+Shift+Down | Bring the selected shapes to the front or send them to the back. |
 | Delete or Backspace | Removes the selected shapes. A frame goes with the shapes in it. |
@@ -157,28 +158,31 @@ The board says what happens through the editor's one status region, in the words
 | --- | --- |
 | `label` | The board's name, on its focus target and on the region of its shapes. |
 | `instructions` | The focus target's description, which a screen reader says when the board takes focus. |
-| `aim(shape, { anchor, position, side, total })` | Said when a connect's end binds to `shape`: when Tab, Shift+Tab or Mod with an arrow aims it at the shape's middle, when an arrow key moves it into or within the shape, and again when Mod with an arrow finds no shape that way. `anchor` is where the end sits in the shape in whole percents, `across` from its left edge and `down` from its top, so the middle is 50 and 50. `side` is `'end'` while the keys move the arrow's end. `position` and `total` give the shape's place in stored order among all shapes. |
-| `connecting(from)` | Said when Enter with the arrow tool starts connecting `from`, the one selected shape. While the connect has no end, before an arrow key or an aim key places one and after the shape it binds to is removed, Enter and an aim key that finds no shape say it again. Enter also says it again, and draws no arrow, when the arrow would have no length, as with the end at `from`'s middle. |
-| `free(place, { side })` | Said when an arrow key moves a connect's end onto no shape it can bind to, with the board point it sits at in whole units, and again when Tab, Shift+Tab or Mod with an arrow finds no shape. `side` is `'end'`. |
+| `aim(shape, { anchor, position, side, total })` | Said when the arrow end the keys move binds to `shape`: when Tab, Shift+Tab or Mod with an arrow aims it at the shape's middle, when an arrow key moves it into or within the shape, and again when Mod with an arrow finds no shape that way. `anchor` is where the end sits in the shape in whole percents, `across` from its left edge and `down` from its top, so the middle is 50 and 50. `side` is `'start'` while the keys place the start of an arrow begun with nothing selected, and `'end'` while they move its end. `position` and `total` give the shape's place in stored order among all shapes. |
+| `connecting(from)` | Said when Enter with the arrow tool starts connecting `from`, the one selected shape, and when Enter keeps the start of an arrow begun with nothing selected, with `from` as the shape that start binds to, or `null` for a start on no shape. While the keys place the end and the connect has none, before an arrow key or an aim key places one and after the shape it binds to is removed, Enter and an aim key that finds no shape say it again. Enter also says it again, and draws no arrow, when the arrow would have no length, as with the end back at the start's point. |
+| `free(place, { side })` | Said when an arrow key moves the arrow end the keys move onto no shape it can bind to, with the board point it sits at in whole units, and again when Tab, Shift+Tab or Mod with an arrow finds no shape. `side` is that end, as in `aim`. |
+| `starting(place, { from })` | Said when Enter with the arrow tool and nothing selected starts an arrow at `place`, the view's center in whole units. The start binds to the shape under that point as an arrow key move binds it, and sits free where that move would bind it to no shape. `from` is the shape the start binds to, or `null` for a free start. |
 | `shape(shape, { position, total })` | Said when the selection becomes one shape, with its place in stored order, such as `Ship it, Shape. 3 of 5`. |
 | `shapes(count)` | Said when the selection becomes several shapes, and with 0 when the board says the selection again while no shape is selected, such as after Mod with an arrow on a board with no shapes. |
 | `tool(tool)` | Said when a letter or the toolbar picks a tool. |
 | `zoom(percent)` | Said when a zoom key, `zoomIn`, `zoomOut`, `resetZoom` or `fit` changes the zoom. A wheel zoom says nothing. |
 | `removed(count)` | Said when a removal lands, with the number of shapes it took off the board, a removed frame's shapes included. |
 
-`shape`, `aim` and `connecting` get a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. The copied board passes:
+`shape`, `aim`, `connecting` and `starting` get a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. The copied board passes:
 
 ```tsx
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
-    `Connecting ${nameOf(from)}. Tab picks the other shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
+    `Connecting ${from ? nameOf(from) : 'a free point'}. Tab picks a shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
   free: ({ x, y }, { side }) =>
     `${side === 'start' ? 'Start' : 'End'} free at ${x}, ${y}`,
+  starting: ({ x, y }, { from }) =>
+    `Drawing an arrow from ${from ? nameOf(from) : `${x}, ${y}`}. Arrow keys move its start, Tab picks a shape, Enter keeps the start and Escape stops.`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>
@@ -408,7 +412,7 @@ Every other peer joins the new room with the new plugins and schema, and without
 - Markdown keeps the text of each shape in reading order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only the five built-in shape types, to keep a board whole.
 - A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
 - A board inside a note, and rotation, are not supported.
-- A keyboard alone cannot start an arrow on a free point or off a shape's middle, move a drawn arrow's ends, resize a shape, or add shapes to the selection one by one.
+- A keyboard alone cannot move a drawn arrow's ends, resize a shape, or add shapes to the selection one by one.
 - On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Undo brings it back. With [exit break](/docs/exit-break) installed, Mod+Enter with the caret on the board, where Mod+A can put it, adds a paragraph after the board, out of sight.
 
 ## Plugins

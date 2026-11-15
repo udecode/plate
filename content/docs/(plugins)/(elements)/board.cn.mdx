@@ -129,7 +129,8 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 使用便签或图形工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选区右侧 24 px 处放置一个默认大小的图形，没有选中图形时放在视图中心，然后选中它并选择选择工具，所以下一次 Enter 会编辑它的文字。其他不是箭头的图形的左上角正好在新图形左上角要放的位置时，依次尝试向右下方 24 px、48 px，以此类推。尝试的点都不空闲，或要存储的坐标不是有限数时，Enter 不放置任何东西，并再次播报选区。 |
 | 使用框架工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选中的图形周围放置一个外扩 24 px 的框架，框架会收纳完全位于其中、不在任何框架里、也没有被建议删除的每个图形（箭头和框架除外）。没有选中图形时，在视图中心放置一个默认大小的框架。框架要存储的坐标不是有限数，或围绕选区的框架不会收纳任何图形时，Enter 不放置任何东西，并再次播报选区。 |
 | 使用箭头工具且选中一个不是箭头的图形时按 Enter | 开始连接这个图形。Tab 和 Shift+Tab 把箭头终点对准其他不是箭头的图形的中心并循环，Mod 加方向键从终点出发，把它对准该方向上最近的这类图形。方向键把终点移动 1 个单位，按住 Shift 时移动 10 个单位。终点绑定到它下方最前面的、既不是箭头也不是起始图形的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，终点保持自由。Enter 从起始图形的中心向终点绘制箭头，选中它并选择选择工具。按 Escape、用左键或中键在白板上按下、换用其他工具、撤销或重做、删除起始图形、视图变为只读或焦点离开白板，都会停止连接且不绘制。 |
-| 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。连接期间，方向键改为移动箭头终点。 |
+| 使用箭头工具且未选中任何图形时按 Enter | 开始绘制一个箭头，起点位于视图中心。方向键把起点移动 1 个单位，按住 Shift 时移动 10 个单位。在视图中心以及每次移动之后，起点都绑定到它下方最前面的、不是箭头的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，起点保持自由。Tab、Shift+Tab 和 Mod 加方向键把起点对准图形的中心。Enter 保留起点并从那里开始连接，与上一行从选中图形开始连接相同，终点可以绑定到起点所在图形以外的任何图形。同样的按键和事件会停止绘制且不写入，删除起点绑定的图形也会停止。 |
+| 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。连接期间，方向键改为移动正在放置的那一端。对于未选中任何图形时开始的箭头，Enter 保留起点之前移动起点，之后移动终点。 |
 | `]` 和 `[` | 把选中的图形上移或下移一层。 |
 | Mod+Shift+Up 和 Mod+Shift+Down | 把选中的图形置于顶层或底层。 |
 | Delete 或 Backspace | 删除选中的图形。框架会连同其中的图形一起删除。 |
@@ -157,28 +158,31 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | --- | --- |
 | `label` | 白板的名称，用在它的焦点目标和图形区域上。 |
 | `instructions` | 焦点目标的描述，白板获得焦点时屏幕阅读器会读出它。 |
-| `aim(shape, { anchor, position, side, total })` | 连接的终点绑定到 `shape` 时播报：Tab、Shift+Tab 或 Mod 加方向键把终点对准它的中心时，方向键把终点移入它或在它内部移动时，以及 Mod 加方向键在该方向上找不到图形时再播报一次。`anchor` 是终点在图形中的位置，用整数百分比表示，`across` 从左边缘算起，`down` 从上边缘算起，中心为 50 和 50。方向键移动箭头终点时，`side` 为 `'end'`。`position` 和 `total` 给出该图形在所有图形的存储顺序中的位置。 |
-| `connecting(from)` | 使用箭头工具按 Enter 开始从 `from`（唯一选中的图形）连接时播报。方向键或目标键放下终点之前，以及终点绑定的图形被删除之后，连接都没有终点，此时按 Enter 或按下找不到图形的目标键会再播报一次。箭头长度会为零时，例如终点位于 `from` 的中心，按 Enter 也会再播报一次，且不绘制箭头。 |
-| `free(place, { side })` | 方向键把连接的终点移到没有可绑定图形的位置时播报，带上终点所在的白板坐标（取整）；Tab、Shift+Tab 或 Mod 加方向键找不到图形时再播报一次。`side` 为 `'end'`。 |
+| `aim(shape, { anchor, position, side, total })` | 按键移动的箭头端点绑定到 `shape` 时播报：Tab、Shift+Tab 或 Mod 加方向键把该端点对准它的中心时，方向键把该端点移入它或在它内部移动时，以及 Mod 加方向键在该方向上找不到图形时再播报一次。`anchor` 是终点在图形中的位置，用整数百分比表示，`across` 从左边缘算起，`down` 从上边缘算起，中心为 50 和 50。在未选中图形时开始的箭头放置起点期间，`side` 为 `'start'`；按键移动箭头终点时为 `'end'`。`position` 和 `total` 给出该图形在所有图形的存储顺序中的位置。 |
+| `connecting(from)` | 使用箭头工具按 Enter 开始从 `from`（唯一选中的图形）连接时播报；在未选中图形时开始的箭头中按 Enter 保留起点时也会播报，此时 `from` 是起点绑定的图形，起点不在任何图形上时为 `null`。按键放置终点期间，在方向键或目标键放下终点之前，以及终点绑定的图形被删除之后，连接都没有终点，此时按 Enter 或按下找不到图形的目标键会再播报一次。箭头长度会为零时，例如终点回到起点的位置，按 Enter 也会再播报一次，且不绘制箭头。 |
+| `free(place, { side })` | 方向键把按键移动的箭头端点移到没有可绑定图形的位置时播报，带上该端点所在的白板坐标（取整）；Tab、Shift+Tab 或 Mod 加方向键找不到图形时再播报一次。`side` 是该端点，与 `aim` 相同。 |
+| `starting(place, { from })` | 使用箭头工具且未选中任何图形时按 Enter 开始绘制箭头时播报，起点位于 `place`，即视图中心的白板坐标（取整）。起点绑定到该点下方的图形，与方向键移动时的绑定相同；若该移动不会绑定到任何图形，起点保持自由。`from` 是起点绑定的图形，起点自由时为 `null`。 |
 | `shape(shape, { position, total })` | 选区变成一个图形时播报，带上它在存储顺序中的位置，例如 `Ship it, Shape. 3 of 5`。 |
 | `shapes(count)` | 选区变成多个图形时播报；没有选中图形而白板再次播报选区时，以 0 调用，例如在没有图形的白板上按 Mod 加方向键之后。 |
 | `tool(tool)` | 用字母键或工具栏选择工具时播报。 |
 | `zoom(percent)` | 缩放键、`zoomIn`、`zoomOut`、`resetZoom` 或 `fit` 改变缩放比例时播报。滚轮缩放不播报。 |
 | `removed(count)` | 删除完成时播报，带上从白板上移除的图形数，被删除框架中的图形也计算在内。 |
 
-`shape`、`aim` 和 `connecting` 收到一个 `BoardShapeDescription`。它的 `kind` 是 `note`、`geo`、`arrow`、`frame`、`stroke`，或者表示应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。复制的白板传入：
+`shape`、`aim`、`connecting` 和 `starting` 收到一个 `BoardShapeDescription`。它的 `kind` 是 `note`、`geo`、`arrow`、`frame`、`stroke`，或者表示应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。复制的白板传入：
 
 ```tsx
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
-    `Connecting ${nameOf(from)}. Tab picks the other shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
+    `Connecting ${from ? nameOf(from) : 'a free point'}. Tab picks a shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
   free: ({ x, y }, { side }) =>
     `${side === 'start' ? 'Start' : 'End'} free at ${x}, ${y}`,
+  starting: ({ x, y }, { from }) =>
+    `Drawing an arrow from ${from ? nameOf(from) : `${x}, ${y}`}. Arrow keys move its start, Tab picks a shape, Enter keeps the start and Escape stops.`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>
@@ -408,7 +412,7 @@ const editor = createEditor({
 - Markdown 按阅读顺序保留每个图形的文字，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含五种内置图形时，也可以持久化 HTML。
 - 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
 - 不支持便签内的白板，也不支持旋转。
-- 仅用键盘不能从自由点或图形中心以外的位置开始绘制箭头，不能移动已绘制箭头的端点，不能调整图形大小，也不能逐个把图形加入选区。
+- 仅用键盘不能移动已绘制箭头的端点，不能调整图形大小，也不能逐个把图形加入选区。
 - 在白板页面中，白板仍是文档中的一个块。选中白板时按 Delete 或 Backspace 会删除它及其图形，撤销可以恢复白板。安装了[退出块结构](/docs/exit-break)时，光标在白板上（Mod+A 可能把光标放在那里）按 Mod+Enter 会在白板后添加一个段落，它在视野之外。
 
 ## 插件

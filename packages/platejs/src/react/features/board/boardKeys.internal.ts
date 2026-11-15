@@ -348,7 +348,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
         return;
       }
     }
-    connect.sayEnd();
+    connect.sayPlaced();
   };
 
   const connectKey = (
@@ -365,7 +365,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
         const next = pick(connect.searchFrom(), arrow, connect.candidates());
 
         if (next) connect.aimAt(next);
-        else connect.sayEnd();
+        else connect.sayPlaced();
       } else if (arrow && plainKey(event)) {
         const step = event.shiftKey ? SHIFT_NUDGE : NUDGE;
 
@@ -387,7 +387,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     const [from] = selected;
 
-    if (!from || from.kind === 'arrow') return false;
+    if (!from) {
+      if (!event.repeat) connect.startFree();
+
+      return true;
+    }
+    if (from.kind === 'arrow') return false;
     if (!event.repeat) connect.start(from);
 
     return true;

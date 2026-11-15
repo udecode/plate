@@ -46,8 +46,11 @@ type Instruments = ReturnType<typeof createInstruments>;
 const MESSAGES: BoardMessages = {
   aim: ({ kind, text }, { position, total }) =>
     `to ${text || kind}. ${position} of ${total}`,
-  connecting: ({ kind, text }) => `connecting ${text || kind}`,
+  connecting: (from) =>
+    `connecting ${from ? from.text || from.kind : 'a free point'}`,
   free: ({ x, y }) => `free at ${x}, ${y}`,
+  starting: ({ x, y }, { from }) =>
+    from ? `starting from ${from.text || from.kind}` : `starting at ${x}, ${y}`,
   label: 'Board',
   instructions: 'Enter selects the first shape.',
   removed: (count) => `${count} removed`,

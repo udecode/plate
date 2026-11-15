@@ -134,13 +134,15 @@ const nameOf = (shape: BoardShapeDescription): string => {
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
-    `Connecting ${nameOf(from)}. Tab picks the other shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
+    `Connecting ${from ? nameOf(from) : 'a free point'}. Tab picks a shape, arrow keys move the end, Enter draws the arrow and Escape stops.`,
   free: ({ x, y }, { side }) =>
     `${side === 'start' ? 'Start' : 'End'} free at ${x}, ${y}`,
+  starting: ({ x, y }, { from }) =>
+    `Drawing an arrow from ${from ? nameOf(from) : `${x}, ${y}`}. Arrow keys move its start, Tab picks a shape, Enter keeps the start and Escape stops.`,
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>

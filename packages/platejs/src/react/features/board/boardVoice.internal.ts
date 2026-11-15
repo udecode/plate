@@ -49,13 +49,15 @@ export type BoardShapeDescription =
 export type BoardMessages = Readonly<{
   /**
    * Called with `shape` and its 1-based place in stored order among the
-   * board's shapes when a connect's end binds to it: when Tab, Shift+Tab or
-   * Mod with an arrow aims the end at its middle, when an arrow key moves the
-   * end into it or within it, and again when Mod with an arrow finds no shape
-   * that way.
+   * board's shapes when the connect end the keys move binds to it: when Tab,
+   * Shift+Tab or Mod with an arrow aims that end at its middle, when an arrow
+   * key moves the end into it or within it, and again when Mod with an arrow
+   * finds no shape that way.
    * `anchor` is where the end sits in the shape's box, in whole percents
    * `across` from its left edge and `down` from its top, so its middle is 50
-   * and 50. `side` is the arrow end the keys move.
+   * and 50. `side` is the arrow end the keys move: `start` while an arrow
+   * begun with nothing selected places its start, and `end` once Enter keeps
+   * the start or when the arrow starts from a selected shape.
    */
   aim: (
     shape: BoardShapeDescription,
@@ -67,19 +69,23 @@ export type BoardMessages = Readonly<{
     }>
   ) => string;
   /**
-   * Called when Enter with the arrow tool starts connecting `from`, the one
-   * selected shape. While the connect has no end, before an arrow key or an
-   * aim key places one and after the shape it binds to is removed, Enter and
-   * an aim key that finds no shape call it again. Enter also calls it again,
-   * and writes no arrow, when the arrow would draw with no length, as with
-   * the end at `from`'s middle.
+   * Called when Enter with the arrow tool starts connecting from `from`, the
+   * one selected shape, and when Enter keeps the start of an arrow begun with
+   * nothing selected, with `from` as the shape that start binds to, or `null`
+   * for a start on no shape. While the keys place the end and the connect
+   * has none, before an arrow key or an aim key places one and after the
+   * shape it binds to is removed, Enter and an aim key that finds no shape
+   * call it again. Enter also calls
+   * it again, and writes no arrow, when the arrow would draw with no length,
+   * as with the end back at the start's point.
    */
-  connecting: (from: BoardShapeDescription) => string;
+  connecting: (from: BoardShapeDescription | null) => string;
   /**
-   * Called when an arrow key moves a connect's end onto no shape it can bind
-   * to, with the board point it sits at in whole units, and again when Tab or
-   * Shift+Tab finds no shape to aim at, or Mod with an arrow finds no shape
-   * that way from there. `side` is the arrow end the keys move.
+   * Called when an arrow key moves the connect end the keys move onto no
+   * shape it can bind to, with the board point it sits at in whole units,
+   * and again when Tab or Shift+Tab finds no shape to aim at, or Mod with an
+   * arrow finds no shape that way from there. `side` is the arrow end the
+   * keys move, as `aim` says.
    */
   free: (place: BoardPlace, end: Readonly<{ side: BoardArrowSide }>) => string;
   /**
@@ -106,6 +112,19 @@ export type BoardMessages = Readonly<{
    * selected, such as after an Enter that adds nothing.
    */
   shapes: (count: number) => string;
+  /**
+   * Called when Enter with the arrow tool and nothing selected, in a view
+   * that can write, starts an arrow at `place`, the view's center in whole
+   * units. The start binds to the shape under that point as an arrow key
+   * move binds it, and sits free where that move would bind it to no shape.
+   * `from` is the shape the start binds to, or `null` for a free start.
+   * The arrow keys and the aim keys then move the start, as they move a
+   * connect's end, and Enter keeps it and calls `connecting`.
+   */
+  starting: (
+    place: BoardPlace,
+    start: Readonly<{ from: BoardShapeDescription | null }>
+  ) => string;
   /** Called when a tool is picked, by its key or from the toolbar. */
   tool: (tool: BoardTool) => string;
   /**
@@ -123,9 +142,15 @@ export type BoardMessages = Readonly<{
 }>;
 
 type BoardUtterance =
-  | Readonly<{ kind: 'aim'; anchor: BoardArrowAnchor; key: NodeKey }>
-  | Readonly<{ kind: 'connecting'; key: NodeKey }>
-  | Readonly<{ kind: 'free'; at: BoardPlace }>
+  | Readonly<{
+      kind: 'aim';
+      anchor: BoardArrowAnchor;
+      key: NodeKey;
+      side: BoardArrowSide;
+    }>
+  | Readonly<{ kind: 'connecting'; key: NodeKey | null }>
+  | Readonly<{ kind: 'free'; at: BoardPlace; side: BoardArrowSide }>
+  | Readonly<{ kind: 'starting'; at: BoardPlace; key: NodeKey | null }>
   | Readonly<{ kind: 'quiet' | 'repeatSelection' | 'selection' }>
   | Readonly<{ kind: 'removed'; count: number }>
   | Readonly<{ kind: 'tool'; tool: BoardTool }>
@@ -236,17 +261,26 @@ export const createBoardVoice = ({
       };
 
       return shapeWords(utterance.key, (shape, at) =>
-        said.aim(shape, { ...at, anchor, side: 'end' })
+        said.aim(shape, { ...at, anchor, side: utterance.side })
       );
     }
     if (utterance.kind === 'free') {
       return said.free(
         { x: Math.round(utterance.at.x), y: Math.round(utterance.at.y) },
-        { side: 'end' }
+        { side: utterance.side }
       );
     }
+    if (utterance.kind === 'starting') {
+      const { at, key } = utterance;
+
+      return key === null
+        ? said.starting(at, { from: null })
+        : shapeWords(key, (from) => said.starting(at, { from }));
+    }
     if (utterance.kind === 'connecting') {
-      return shapeWords(utterance.key, said.connecting);
+      return utterance.key === null
+        ? said.connecting(null)
+        : shapeWords(utterance.key, said.connecting);
     }
 
     const shapes = selectedShapes();
@@ -283,10 +317,11 @@ export const createBoardVoice = ({
   };
 
   return {
-    aim: (key: NodeKey, anchor: BoardArrowAnchor) =>
-      say({ anchor, key, kind: 'aim' }),
-    connecting: (key: NodeKey) => say({ key, kind: 'connecting' }),
-    free: (at: BoardPlace) => say({ at, kind: 'free' }),
+    aim: (key: NodeKey, anchor: BoardArrowAnchor, side: BoardArrowSide) =>
+      say({ anchor, key, kind: 'aim', side }),
+    connecting: (key: NodeKey | null) => say({ key, kind: 'connecting' }),
+    free: (at: BoardPlace, side: BoardArrowSide) =>
+      say({ at, kind: 'free', side }),
     hold: (owesSelection = false) => {
       owed = owesSelection ? { kind: 'selection' } : pending;
       pending = null;
@@ -298,6 +333,8 @@ export const createBoardVoice = ({
     removed: (count: number) =>
       say(count > 0 ? { count, kind: 'removed' } : { kind: 'quiet' }),
     repeatSelection: () => say({ kind: 'repeatSelection' }),
+    starting: (at: BoardPlace, key: NodeKey | null) =>
+      say({ at, key, kind: 'starting' }),
     selectionChanged: () => {
       const next = selectedShapes().map(({ key }) => key);
 

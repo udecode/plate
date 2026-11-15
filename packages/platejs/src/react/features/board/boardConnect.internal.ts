@@ -1,6 +1,8 @@
 import {
   BaseBoardArrowPlugin,
   type BoardArrowAnchor,
+  type BoardArrowEnd,
+  type BoardArrowSide,
   type BoardMemberEntry,
   type BoardPlace,
 } from '../../../features/board/lib';
@@ -10,7 +12,7 @@ import {
   sameBox,
 } from './boardIndex.internal';
 import { anchorIn } from './boardPick.internal';
-import { previewArrowLine } from './boardPreview.internal';
+import { previewArrowLine, previewArrowMark } from './boardPreview.internal';
 import type { BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
@@ -19,14 +21,52 @@ type ConnectEnd = Readonly<{
   bound?: Readonly<{ anchor: BoardArrowAnchor; box: BoardBox; shape: string }>;
 }>;
 
-type Connect = { end?: ConnectEnd; line: SVGLineElement; start: string };
+type Connect = {
+  end?: ConnectEnd;
+  line: SVGLineElement;
+  mark: SVGCircleElement;
+  side: BoardArrowSide;
+  start: ConnectEnd;
+};
+
+const MIDDLE: BoardArrowAnchor = [0.5, 0.5];
 
 const pointIn = (box: BoardBox, [across, down]: BoardArrowAnchor) => ({
   x: box.x + across * box.width,
   y: box.y + down * box.height,
 });
 
-const centerOf = (box: BoardBox) => pointIn(box, [0.5, 0.5]);
+const middleOf = ({ box, id }: BoardShapeLayout): ConnectEnd => ({
+  bound: { anchor: MIDDLE, box, shape: id },
+  keyPoint: pointIn(box, MIDDLE),
+});
+
+const endAt = (
+  keyPoint: BoardPlace,
+  shape: BoardShapeLayout | undefined
+): ConnectEnd =>
+  shape
+    ? {
+        bound: {
+          anchor: anchorIn(keyPoint, shape.box),
+          box: shape.box,
+          shape: shape.id,
+        },
+        keyPoint,
+      }
+    : { keyPoint };
+
+const resolvedOf = ({ bound, keyPoint }: ConnectEnd): BoardArrowEnd =>
+  bound
+    ? {
+        ...pointIn(bound.box, bound.anchor),
+        anchor: bound.anchor,
+        shape: bound.shape,
+      }
+    : keyPoint;
+
+const writtenOf = ({ bound, keyPoint }: ConnectEnd) =>
+  bound ? { anchor: bound.anchor, shape: bound.shape } : keyPoint;
 
 const FLOAT_SLOP = 1e-6;
 
@@ -46,65 +86,77 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
     return layout?.kind === 'arrow' ? undefined : layout;
   };
 
+  const startShape = () => connect?.start.bound?.shape;
+
   const aimable = (entry: BoardMemberEntry) =>
-    entry.id === connect?.start || entry.kind === 'arrow'
+    entry.kind === 'arrow' ||
+    (connect?.side === 'end' && entry.id === startShape())
       ? undefined
       : index.layout(entry.key);
 
-  const draw = ({ end, line, start }: Connect) => {
-    const from = bindable(start);
+  const draw = ({ end, line, mark, start }: Connect) => {
+    const a = start.keyPoint;
+    const b = (end ?? start).keyPoint;
 
-    if (!from) return;
-
-    const a = centerOf(from.box);
-    const b = end?.keyPoint ?? a;
-
+    mark.setAttribute('cx', String(a.x));
+    mark.setAttribute('cy', String(a.y));
     line.setAttribute('x1', String(a.x));
     line.setAttribute('y1', String(a.y));
     line.setAttribute('x2', String(b.x));
     line.setAttribute('y2', String(b.y));
   };
 
+  const followed = (end: ConnectEnd | undefined) => {
+    const bound = end?.bound;
+
+    if (!bound) return end;
+
+    const box = bindable(bound.shape)?.box;
+
+    if (!box) return undefined;
+
+    return sameBox(box, bound.box)
+      ? end
+      : { bound: { ...bound, box }, keyPoint: pointIn(box, bound.anchor) };
+  };
+
   const follow = () => {
     if (!connect) return;
-    if (!core.writable() || !bindable(connect.start)) {
+
+    const start = followed(connect.start);
+
+    if (!core.writable() || !start) {
       core.cancelInteraction();
 
       return;
     }
-    const bound = connect.end?.bound;
-    const box = bound && bindable(bound.shape)?.box;
-
-    if (bound && !box) connect.end = undefined;
-    else if (bound && box && !sameBox(box, bound.box)) {
-      connect.end = {
-        bound: { ...bound, box },
-        keyPoint: pointIn(box, bound.anchor),
-      };
-    }
+    connect.start = start;
+    connect.end = followed(connect.end);
     draw(connect);
   };
 
-  const sayEnd = ({ end, start }: Connect) => {
-    const target = bindable(end?.bound?.shape);
-    const from = bindable(start);
+  const sayConnecting = ({ start }: Connect) =>
+    core.voice.connecting(bindable(start.bound?.shape)?.key ?? null);
 
-    if (end?.bound && target) core.voice.aim(target.key, end.bound.anchor);
-    else if (end && !end.bound) core.voice.free(end.keyPoint);
-    else if (from) core.voice.connecting(from.key);
+  const sayPlaced = (placing: Connect) => {
+    const { side } = placing;
+    const placed = placing[side];
+    const target = bindable(placed?.bound?.shape);
+
+    if (placed?.bound && target) {
+      core.voice.aim(target.key, placed.bound.anchor, side);
+    } else if (placed && !placed.bound) core.voice.free(placed.keyPoint, side);
+    else sayConnecting(placing);
   };
 
   const aimAt = (target: BoardShapeLayout) => {
     if (!connect) return;
-    connect.end = {
-      bound: { anchor: [0.5, 0.5], box: target.box, shape: target.id },
-      keyPoint: centerOf(target.box),
-    };
+    connect[connect.side] = middleOf(target);
     draw(connect);
     if (!core.inView(target)) {
       core.reveal([index.entries().findIndex(({ key }) => key === target.key)]);
     }
-    sayEnd(connect);
+    sayPlaced(connect);
   };
 
   // A window that loses focus fires focusout with no relatedTarget and keeps
@@ -119,7 +171,36 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
   host.addEventListener('focusout', onFocusOut);
 
   const aimFrom = () =>
-    bindable(connect?.end?.bound?.shape) ?? bindable(connect?.start);
+    connect
+      ? (bindable(connect[connect.side]?.bound?.shape) ??
+        bindable(startShape()))
+      : undefined;
+
+  const begin = (start: ConnectEnd, side: BoardArrowSide) => {
+    const line = previewArrowLine(
+      core.zoomLayer(),
+      start.keyPoint,
+      index.entries().length + 1
+    );
+    const next: Connect = {
+      line,
+      mark: previewArrowMark(line, start.keyPoint),
+      side,
+      start,
+    };
+
+    core.replaceInteraction({
+      cancel: () => {
+        next.line.ownerSVGElement?.remove();
+        if (connect === next) connect = null;
+        core.voice.repeatSelection();
+      },
+      follow,
+      kind: 'connect',
+      startShape: () => next.start.bound?.shape,
+    });
+    connect = next;
+  };
 
   return {
     active: () => !!connect,
@@ -132,96 +213,72 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
     },
     finish: () => {
       if (!connect) return;
+      if (connect.side === 'start') {
+        connect.side = 'end';
+        sayConnecting(connect);
+
+        return;
+      }
 
       const { end, start } = connect;
-      const from = bindable(start);
       const drawn =
         end &&
-        from &&
-        index.resolveArrow({
-          end: end.bound
-            ? {
-                ...pointIn(end.bound.box, end.bound.anchor),
-                anchor: end.bound.anchor,
-                shape: end.bound.shape,
-              }
-            : end.keyPoint,
-          start: { ...centerOf(from.box), anchor: [0.5, 0.5], shape: start },
-        });
+        index.resolveArrow({ end: resolvedOf(end), start: resolvedOf(start) });
 
-      if (!end || (drawn && drawsNoLength(drawn))) {
-        if (from) core.voice.connecting(from.key);
+      if (!end || !drawn || drawsNoLength(drawn)) {
+        sayConnecting(connect);
 
         return;
       }
       core.cancelInteraction();
       core.insertAndSelect((tx) =>
-        tx.plugin(BaseBoardArrowPlugin).insert(
-          {
-            end: end.bound
-              ? { anchor: end.bound.anchor, shape: end.bound.shape }
-              : end.keyPoint,
-            start,
-          },
-          { board: core.board }
-        )
+        tx
+          .plugin(BaseBoardArrowPlugin)
+          .insert(
+            { end: writtenOf(end), start: writtenOf(start) },
+            { board: core.board }
+          )
       );
     },
     move: (by: BoardPlace) => {
-      const from = bindable(connect?.start);
+      if (!connect) return;
 
-      if (!connect || !from) return;
-
-      const { x, y } = connect.end?.keyPoint ?? centerOf(from.box);
+      const { side } = connect;
+      const { x, y } = (connect[side] ?? connect.start).keyPoint;
       const keyPoint = { x: x + by.x, y: y + by.y };
-      const shape = core.shapeAt(keyPoint, connect.start);
 
-      connect.end = shape
-        ? {
-            bound: {
-              anchor: anchorIn(keyPoint, shape.box),
-              box: shape.box,
-              shape: shape.id,
-            },
-            keyPoint,
-          }
-        : { keyPoint };
+      connect[side] = endAt(
+        keyPoint,
+        core.shapeAt(keyPoint, side === 'end' ? startShape() : undefined)
+      );
       draw(connect);
-      sayEnd(connect);
+      sayPlaced(connect);
     },
-    sayEnd: () => {
-      if (connect) sayEnd(connect);
+    sayPlaced: () => {
+      if (connect) sayPlaced(connect);
     },
     searchFrom: () => {
-      const end = connect?.end;
-      const middle = end?.bound?.anchor.every((part) => part === 0.5);
+      if (!connect) return undefined;
 
-      return !end || middle
-        ? aimFrom()?.box
-        : { ...end.keyPoint, height: 0, width: 0 };
+      const { bound, keyPoint } = connect[connect.side] ?? connect.start;
+      const box = bound?.anchor.every((part) => part === 0.5)
+        ? bindable(bound.shape)?.box
+        : undefined;
+
+      return box ?? { ...keyPoint, height: 0, width: 0 };
     },
     start: (from: BoardShapeLayout) => {
-      const next: Connect = {
-        line: previewArrowLine(
-          core.zoomLayer(),
-          centerOf(from.box),
-          index.entries().length + 1
-        ),
-        start: from.id,
-      };
-
-      core.replaceInteraction({
-        cancel: () => {
-          next.line.ownerSVGElement?.remove();
-          if (connect === next) connect = null;
-          core.voice.repeatSelection();
-        },
-        follow,
-        kind: 'connect',
-        start: from.id,
-      });
-      connect = next;
+      begin(middleOf(from), 'end');
       core.voice.connecting(from.key);
+    },
+    startFree: () => {
+      const center = core.viewCenter();
+      const at = { x: Math.round(center.x), y: Math.round(center.y) };
+
+      const shape = core.shapeAt(at);
+
+      begin(endAt(at, shape), 'start');
+      core.voice.starting(at, shape?.key ?? null);
     },
   };
 };

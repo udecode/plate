@@ -136,7 +136,12 @@ export type BoardWrite =
 
 export type BoardInteraction = Readonly<
   | { cancel: () => void; kind: 'drag' | 'draw' }
-  | { cancel: () => void; follow: () => void; kind: 'connect'; start: string }
+  | {
+      cancel: () => void;
+      follow: () => void;
+      kind: 'connect';
+      startShape: () => string | undefined;
+    }
 >;
 
 export type BoardViewCore = Readonly<{
@@ -189,7 +194,13 @@ export type BoardViewCore = Readonly<{
   undo: () => void;
   voice: Pick<
     BoardVoice,
-    'aim' | 'connecting' | 'free' | 'hold' | 'release' | 'repeatSelection'
+    | 'aim'
+    | 'connecting'
+    | 'free'
+    | 'hold'
+    | 'release'
+    | 'repeatSelection'
+    | 'starting'
   >;
   writable: () => boolean;
   /**
@@ -704,11 +715,13 @@ export const createBoardView = (
 
   const commit = (change: BoardWrite) => {
     const before = boards.read.shapes(board).length;
+    const connectStart =
+      interaction?.kind === 'connect' ? interaction.startShape() : undefined;
 
     if (
       change.kind === 'remove' &&
-      interaction?.kind === 'connect' &&
-      change.ids.includes(interaction.start)
+      connectStart !== undefined &&
+      change.ids.includes(connectStart)
     ) {
       cancelInteraction();
     }

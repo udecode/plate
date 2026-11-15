@@ -91,6 +91,22 @@ export const previewArrowLine = (
   return line;
 };
 
+export const previewArrowMark = (line: SVGLineElement, at: BoardPlace) => {
+  const mark = line.ownerDocument.createElementNS(SVG_NS, 'circle');
+
+  for (const [name, value] of [
+    ['cx', at.x],
+    ['cy', at.y],
+    ['fill', 'currentColor'],
+    ['r', '4'],
+  ] as const) {
+    mark.setAttribute(name, String(value));
+  }
+  line.after(mark);
+
+  return mark;
+};
+
 const previewOutline = (
   layer: HTMLElement | null,
   name: string,
