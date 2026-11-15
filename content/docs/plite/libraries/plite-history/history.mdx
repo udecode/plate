@@ -111,6 +111,10 @@ when that is unknown. A redo batch can also store a `fallback` batch with no
 `id`. History applies the fallback from the same document when a guard refuses
 the redo.
 
+A batch keeps its `id` through undo, redo, a merge into it, `History.fromJSON`
+and `tx.history.restore`. Two editors that restore the same saved history get
+the same ids.
+
 Compatible typing and same-node property updates coalesce from canonical
 change classifications and changed ranges. Grouping fingerprints are
 runtime-only; loading persisted history starts a fresh automatic group.
@@ -146,9 +150,10 @@ editor.update((tx) => {
 Schema identity is always derived or named; `null` is invalid in memory and in
 history JSON. Decoding reads versions 4 to 7. A batch saved before version 7
 loads with an unknown `record`. A batch saved without an `id` gets a fresh one.
-Schema identity, codec versions,
-effect keys, built-in selection payloads, and JSON values are validated during
-decoding. Failed decoding leaves editor state untouched.
+Decoding refuses an `id` that is empty or not a string, an `id` on a
+`fallback`, and two batches that share one `id`. Schema identity, codec
+versions, effect keys, built-in selection payloads, and JSON values are
+validated during decoding. Failed decoding leaves editor state untouched.
 
 ## Editor API
 
