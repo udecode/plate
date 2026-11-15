@@ -610,7 +610,6 @@ type TransactionToken = {
 type TransactionAfterCommitHandler = {
   handler: EditorCommitHandler<Editor>;
   root: string;
-  /** Runs instead of `handler` when the update ends with no net change. */
   unchanged?: () => void;
 };
 
@@ -1407,15 +1406,7 @@ export const attachTransactionSpecAfterCommit = <
   return spec;
 };
 
-/**
- * Run `ended` once the update holding the innermost open draft ends: after the
- * after-commit handlers registered before it when the update commits, or when
- * it ends with no net change. A spec still being built carries `ended` to the
- * update that applies it. A rolled-back update runs nothing. Returns false,
- * without running `ended`, when no draft is open.
- *
- * @internal
- */
+/** @internal */
 export const afterActiveTransactionEnds = (
   editor: Editor,
   ended: () => void
@@ -13059,11 +13050,14 @@ export const runEditorTransaction = <R>(
           }
           const afterCommitHandlers =
             snapshot.afterCommitHandlers.length > 0
-              ? materializeAfterCommitHandlers(
-                  editor,
-                  change,
-                  snapshot.afterCommitHandlers
-                )
+              ? materializeAfterCommitHandlers(editor, change, [
+                  ...snapshot.afterCommitHandlers.filter(
+                    ({ unchanged }) => !unchanged
+                  ),
+                  ...snapshot.afterCommitHandlers.filter(
+                    ({ unchanged }) => unchanged
+                  ),
+                ])
               : [];
 
           anchorPublication?.notify();
