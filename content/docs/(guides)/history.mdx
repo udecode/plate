@@ -170,11 +170,14 @@ type guard.
 
 #### `History.toJSON(editor): HistoryJSON`
 
-Encode the installed undo and redo stacks as validated JSON, at version 5 when
-a batch keeps `rest` or `carried` and at version 4 otherwise. The envelope
-records the editor's schema identity, and each batch stores its canonical
-`DocumentChange`, registered effects, selection envelopes, and `unsettle`,
-`rest` and `carried` when it has them.
+Encode the installed undo and redo stacks as validated JSON at version 7. The
+envelope records the editor's schema identity, and each batch stores its `id`,
+canonical `DocumentChange`, registered effects, selection envelopes, and
+`unsettle`, `rest`, `carried` and `record` when it has them. `record` lists
+what the batch's change moved, split and joined in each root, or is `null`
+when that is unknown. A redo batch can also store a `fallback` batch with no
+`id`. History applies the fallback from the same document when a guard refuses
+the redo.
 
 This advanced API serializes local document history. It does not serialize the
 native anchor recovery data or live-session effects needed to restore exact
@@ -214,7 +217,9 @@ editor.update((tx) => {
 ```
 
 Schema identity is always derived or named; `null` is invalid in memory and in
-history JSON. Decoding reads versions 4 and 5. Schema identity, codec versions,
+history JSON. Decoding reads versions 4 to 7. A batch saved before version 7
+loads with an unknown `record`. A batch saved without an `id` gets a fresh one.
+Schema identity, codec versions,
 effect keys, built-in selection payloads, and JSON values are validated during
 decoding. Failed decoding leaves editor state untouched.
 
