@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useSyncExternalStore } from 'react';
 
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
+import { markRootViewUsed } from '../../core/root-target';
 import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
@@ -342,11 +343,10 @@ export const EditableDOMRoot = (
   const editor = useEditorContext();
   const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const hasViewSelection = usePliteViewSelectionPresence(editor);
-  const { getMountedViewEditor, setActiveViewEditor } =
-    useRequiredPliteRuntimeContext();
+  const { getMountedViewEditor } = useRequiredPliteRuntimeContext();
   const activateRootView = useCallback(() => {
-    setActiveViewEditor(editor, editorRoot);
-  }, [editor, editorRoot, setActiveViewEditor]);
+    markRootViewUsed(editor);
+  }, [editor]);
   const rootRuntime = useEditableRootRuntime({
     autoFocus,
     callbacks: attributes,

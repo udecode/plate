@@ -32,6 +32,10 @@ const ENTRIES = new WeakMap<
 >();
 // Keyed by view runtime, which a mounted React view editor shares with its view.
 const VIEW_ENTRIES = new WeakMap<object, Entry>();
+// Kept while the view is unmounted: a use can arrive before its view mounts,
+// and StrictMode unmounts a view between its first use and its second mount.
+const USED_AT = new WeakMap<object, number>();
+let lastUse = 0;
 const PENDING = new Set<Entry>();
 
 const findEntry = ([owner, presentation, root]: Key) =>
@@ -144,6 +148,8 @@ const invalidate = (entry: Entry | undefined) => {
   if (PENDING.size === 1) queueMicrotask(announce);
 };
 
+const usedAt = (view: Editor) => USED_AT.get(getEditorRuntime(view)) ?? 0;
+
 export const mountRootView = (
   owner: object,
   presentation: ViewPresentation,
@@ -156,6 +162,11 @@ export const mountRootView = (
 
   entry.views.add(view);
   VIEW_ENTRIES.set(runtime, entry);
+  if (USED_AT.has(runtime)) {
+    entry.usedLatestFirst = [...entry.usedLatestFirst, view].sort(
+      (left, right) => usedAt(right) - usedAt(left)
+    );
+  }
   invalidate(entry);
 
   return () => {
@@ -170,12 +181,11 @@ export const mountRootView = (
   };
 };
 
-export const isRootViewMounted = (view: Editor) =>
-  VIEW_ENTRIES.get(getEditorRuntime(view))?.views.has(view) ?? false;
-
 export const markRootViewUsed = (view: Editor) => {
-  const entry = VIEW_ENTRIES.get(getEditorRuntime(view));
+  const runtime = getEditorRuntime(view);
+  const entry = VIEW_ENTRIES.get(runtime);
 
+  USED_AT.set(runtime, (lastUse += 1));
   if (!entry?.views.has(view) || entry.usedLatestFirst[0] === view) return;
 
   entry.usedLatestFirst = [

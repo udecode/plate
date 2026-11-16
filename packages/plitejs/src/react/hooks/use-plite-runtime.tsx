@@ -32,8 +32,6 @@ import {
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
 import {
-  isRootViewMounted,
-  markRootViewUsed,
   mountRootView,
   readRootTarget,
   subscribeRootTarget,
@@ -162,7 +160,6 @@ type PliteRuntimeContextValue = {
   registerViewEditor: (editor: MountedViewEditor, root: RootKey) => () => void;
   runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
-  setActiveViewEditor: (editor: MountedViewEditor, root: RootKey) => void;
   subscribeRootTarget: (root: RootKey, listener: () => void) => () => void;
 };
 
@@ -411,9 +408,6 @@ export function EditorRuntimeProvider({
   const contentRootOwnerViewEditorsRef = useRef(
     new Map<ViewPresentation, Map<string, typeof reactEditor>>()
   );
-  const activeContentRootOwnersRef = useRef(
-    new Map<ViewPresentation, Map<RootKey, PliteContentRootOwner>>()
-  );
   const subscribeProviderRootTarget = useCallback(
     (
       root: RootKey,
@@ -484,29 +478,10 @@ export function EditorRuntimeProvider({
 
         if (!presentationStillMounted) {
           contentRootOwnerViewEditorsRef.current.delete(presentation);
-          activeContentRootOwnersRef.current.delete(presentation);
         }
       };
     },
     [runtime]
-  );
-  const setActiveViewEditor = useCallback(
-    (editor: typeof reactEditor, root: RootKey) => {
-      const mounted = isRootViewMounted(editor);
-
-      if (mounted) markRootViewUsed(editor);
-      if (mounted || root === MAIN_ROOT_KEY) {
-        const owner = contentRootOwnersRef.current.get(editor);
-
-        if (owner) {
-          presentationMap(
-            activeContentRootOwnersRef.current,
-            getViewPresentation(editor)
-          ).set(root, owner);
-        }
-      }
-    },
-    []
   );
   const registerContentRootOwner = useCallback(
     (editor: typeof reactEditor, owner: PliteContentRootOwner) => {
@@ -549,21 +524,6 @@ export function EditorRuntimeProvider({
   );
   const getActiveContentRootOwner = useCallback(
     (root: RootKey, presentation: ViewPresentation | null) => {
-      if (!presentation) return null;
-
-      const activeOwner = activeContentRootOwnersRef.current
-        .get(presentation)
-        ?.get(root);
-
-      if (
-        activeOwner &&
-        contentRootOwnerViewEditorsRef.current
-          .get(presentation)
-          ?.has(getContentRootOwnerKey(activeOwner))
-      ) {
-        return activeOwner;
-      }
-
       const activeViewEditor = findMountedViewEditor(root, presentation);
 
       return activeViewEditor
@@ -632,7 +592,6 @@ export function EditorRuntimeProvider({
       registerViewEditor,
       runtime,
       selectorContext,
-      setActiveViewEditor,
       subscribeRootTarget: subscribeProviderRootTarget,
     }),
     [
@@ -645,7 +604,6 @@ export function EditorRuntimeProvider({
       registerViewEditor,
       runtime,
       selectorContext,
-      setActiveViewEditor,
       subscribeProviderRootTarget,
     ]
   );

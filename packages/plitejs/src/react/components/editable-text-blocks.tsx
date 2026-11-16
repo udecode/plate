@@ -18,6 +18,7 @@ import {
   type Text as TextNode,
 } from '../..';
 import { readAuthoredView } from '../../core/authored-runtime';
+import { markRootViewUsed } from '../../core/root-target';
 import {
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
@@ -521,11 +522,8 @@ function EditableContentRootView({
   const ownerHandlers = React.useContext(OwnerHandlersContext);
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
-  const {
-    getMountedViewEditor,
-    registerContentRootOwner,
-    setActiveViewEditor,
-  } = useRequiredPliteRuntimeContext();
+  const { getMountedViewEditor, registerContentRootOwner } =
+    useRequiredPliteRuntimeContext();
   useIsomorphicLayoutEffect(
     () =>
       registerContentRootOwner(editor, {
@@ -536,8 +534,8 @@ function EditableContentRootView({
     [editor, ownerPath, ownerRoot, registerContentRootOwner, root]
   );
   const activateRootView = React.useCallback(() => {
-    setActiveViewEditor(editor, root);
-  }, [editor, root, setActiveViewEditor]);
+    markRootViewUsed(editor);
+  }, [editor]);
   const externalMouseGestureRef = React.useRef(false);
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
