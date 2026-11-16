@@ -176,6 +176,10 @@ one. Command interceptors compose a transaction spec through `state`.
 `{ kind: "invalid", source }`, and `{ kind: "slice", slice }`. `writeSlice`
 writes one exact `ContentSlice` plus optional transfer formats. This keeps missing,
 invalid, and valid empty clipboard payloads distinct.
+When `insertData` reads a valid empty slice, it claims the paste, leaves the
+document and selection unchanged, and tries no other format. A plugin
+`insertData` handler that reads another format before it delegates still acts
+on that format.
 Formats supplied to `writeSlice` are authoritative, including an intentional
 empty string. Installed serializers fill only formats the caller omitted.
 

@@ -119,7 +119,9 @@ editor.api.dom.clipboard.writeSlice(dataTransfer, { slice });
 `readSlice` 区分 `{ kind: 'absent' }`、`{ kind: 'invalid', source }` 与
 `{ kind: 'slice', slice }`。`writeSlice` 写入一份精确 `ContentSlice` 与可选
 browser MIME representation。调用方显式提供的 representation 具有 authority，
-包括故意写入的空 string。
+包括故意写入的空 string。`insertData` 读到有效的空 slice 时会认领这次 paste，
+保持文档与选区不变，也不再尝试其他 format。在 delegate 之前读取其他 format 的
+plugin `insertData` handler 仍会按该 format 处理。
 
 Plate 写入 plain text、HTML 与 internal Plate fragment payload。Fragment MIME
 使用 `application/${clipboardFormatKey}`，避免配置不同的 editor 盲目导入彼此

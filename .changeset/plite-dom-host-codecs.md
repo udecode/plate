@@ -7,6 +7,7 @@
 - Preserve open slice edges and every transitively referenced element-owned root in native clipboard payloads
 - Own every public `DataTransfer` contract outside headless Plite, including typed `domCommands.insertData` command interception and exact `readSlice` / `writeSlice` transport
 - Intercept `domCommands.insertData` through plugin `commands`; return a pure transaction spec when the plugin owns the payload or `next()` to continue the internal slice, host-codec, and plain-text path
+- Leave the document and selection unchanged when `insertData` reads a valid empty exact slice, and try no other format
 - Publish clipboard operations under the DOM-owned `editor.api.dom.clipboard` namespace
 - Select default editing-action event phases through one host-facts policy, retaining only the proven Korean iOS Backspace exception
 - Add root-scoped coordinate, caret, visual-line, and rectangle geometry APIs
