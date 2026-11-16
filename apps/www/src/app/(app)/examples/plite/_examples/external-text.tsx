@@ -175,54 +175,60 @@ export const textareaAdapter: ExternalTextAdapter = {
       },
       options
     );
+    const handleKey = (event: KeyboardEvent) => {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        !event.altKey &&
+        event.key.toLowerCase() === 'z'
+      ) {
+        event.preventDefault();
+        actions.history(event.shiftKey ? 'redo' : 'undo');
+        return;
+      }
+      if (
+        composing ||
+        event.isComposing ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      const selection = readSelection(input);
+      const backward =
+        event.key === 'ArrowLeft' ||
+        event.key === 'ArrowUp' ||
+        event.key === 'Backspace';
+      const forward =
+        event.key === 'ArrowRight' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'Delete';
+      const atStart = selection.focus === 0;
+      const atEnd = selection.focus === input.value.length;
+      if (!(backward && atStart) && !(forward && atEnd)) return;
+      const direction = backward ? 'backward' : 'forward';
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        if (selection.anchor !== selection.focus || current.readOnly) return;
+        event.preventDefault();
+        syncSelection();
+        actions.deleteOut({ baseVersion: current.version, direction });
+      } else if (selection.anchor === selection.focus || event.shiftKey) {
+        event.preventDefault();
+        syncSelection();
+        actions.navigateOut({
+          baseVersion: current.version,
+          direction,
+          extend: event.shiftKey,
+        });
+      }
+    };
     input.addEventListener(
       'keydown',
       (event) => {
-        if (
-          (event.metaKey || event.ctrlKey) &&
-          !event.altKey &&
-          event.key.toLowerCase() === 'z'
-        ) {
-          event.preventDefault();
-          actions.history(event.shiftKey ? 'redo' : 'undo');
-          return;
-        }
-        if (
-          composing ||
-          event.isComposing ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.altKey
-        ) {
-          return;
-        }
-        const selection = readSelection(input);
-        const backward =
-          event.key === 'ArrowLeft' ||
-          event.key === 'ArrowUp' ||
-          event.key === 'Backspace';
-        const forward =
-          event.key === 'ArrowRight' ||
-          event.key === 'ArrowDown' ||
-          event.key === 'Delete';
-        const atStart = selection.focus === 0;
-        const atEnd = selection.focus === input.value.length;
-        if (!(backward && atStart) && !(forward && atEnd)) return;
-        const direction = backward ? 'backward' : 'forward';
-        if (event.key === 'Backspace' || event.key === 'Delete') {
-          if (selection.anchor !== selection.focus || current.readOnly) return;
-          event.preventDefault();
-          syncSelection();
-          actions.deleteOut({ baseVersion: current.version, direction });
-        } else if (selection.anchor === selection.focus || event.shiftKey) {
-          event.preventDefault();
-          syncSelection();
-          actions.navigateOut({
-            baseVersion: current.version,
-            direction,
-            extend: event.shiftKey,
-          });
-        }
+        handleKey(event);
+        if (event.defaultPrevented || composing || event.isComposing) return;
+        syncSelection();
+        actions.yieldKey(event);
       },
       options
     );
