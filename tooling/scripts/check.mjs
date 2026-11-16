@@ -13,7 +13,7 @@ import {
   constants as osConstants,
   tmpdir,
 } from 'node:os';
-import { basename, extname, join, matchesGlob } from 'node:path';
+import { basename, extname, join, matchesGlob, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -22,7 +22,7 @@ import {
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
-import { mentionsOutsideComments } from './import-graph.mjs';
+import { mentionsOutsideComments, runtimeClosure } from './import-graph.mjs';
 import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
 
@@ -61,6 +61,26 @@ const canRetargetImports = (files, retargeted) =>
     'tooling/scripts/private-files.mjs'
   )(files) ||
   files.some((file) => RESOLVER_CONFIG.test(file));
+// A formal check is one Bun script under the source aliases, so a source file
+// reaches it only through that script's runtime imports. A public checkout
+// lacks the private scripts, and drops their steps before any runs.
+const runsScript = (script, ...paths) => {
+  let closure;
+  return (files, retargeted) => {
+    if (canRetargetImports(files, retargeted)) return true;
+    if (touches(script, 'config/plite-source-aliases.ts', ...paths)(files)) {
+      return true;
+    }
+    closure ??= existsSync(join(root, script))
+      ? new Set(
+          runtimeClosure([join(root, script)]).map((file) =>
+            relative(root, file)
+          )
+        )
+      : new Set();
+    return files.some((file) => closure.has(file));
+  };
+};
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
 const PACKAGE_MANIFEST = /^packages\/[^/]+\/package\.json$/u;
 const PACKAGE_BUILD =
@@ -375,8 +395,10 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
-    affected: touches(
-      'packages/plitejs/',
+    affected: runsScript(
+      'packages/plitejs/scripts/authored-decision-order.ts',
+      'packages/plitejs/scripts/',
+      'packages/plitejs/test/',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -386,11 +408,10 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:autoformat-rules',
-    affected: touches(
+    affected: runsScript(
+      'apps/www/scripts/autoformat-input-rules.ts',
       'apps/www/scripts/autoformat-input-rules',
       'apps/www/src/registry/components/editor/',
-      'packages/platejs/src/',
-      'packages/plitejs/src/',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -400,9 +421,9 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:yjs-peer-order',
-    affected: touches(
+    affected: runsScript(
+      'packages/plitejs/scripts/yjs-peer-order.ts',
       'packages/plitejs/scripts/yjs-peer-order',
-      'packages/plitejs/src/',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -412,11 +433,10 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:effect-ledger',
-    affected: touches(
-      'config/plite-source-aliases.ts',
+    affected: runsScript(
+      'packages/plitejs/scripts/effect-ledger.ts',
       'packages/plitejs/scripts/check-harness.ts',
-      'packages/plitejs/scripts/effect-ledger',
-      'packages/plitejs/src/'
+      'packages/plitejs/scripts/effect-ledger'
     ),
     key: [],
   },
@@ -425,14 +445,13 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:authored-recording',
-    affected: touches(
+    affected: runsScript(
+      'packages/plitejs/scripts/authored-recording-order.ts',
       'packages/plitejs/scripts/authored-recording-order',
       'packages/plitejs/scripts/authored-documents',
       'packages/plitejs/scripts/check-harness',
       'packages/plitejs/scripts/letter-commands',
-      'packages/plitejs/src/',
       'packages/plitejs/test/support/',
-      'config/plite-source-aliases.ts',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -442,14 +461,13 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:undo-redo-history',
-    affected: touches(
+    affected: runsScript(
+      'packages/plitejs/scripts/undo-redo-history.ts',
       'packages/plitejs/scripts/undo-redo-history',
       'packages/plitejs/scripts/authored-documents',
       'packages/plitejs/scripts/check-harness',
       'packages/plitejs/scripts/letter-commands',
-      'packages/plitejs/src/',
       'packages/plitejs/test/support/',
-      'config/plite-source-aliases.ts',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -459,13 +477,12 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:delete-paste-ranges',
-    affected: touches(
+    affected: runsScript(
+      'packages/plitejs/scripts/delete-paste-ranges.ts',
       'packages/plitejs/scripts/delete-paste-ranges',
       'packages/plitejs/scripts/authored-documents',
       'packages/plitejs/scripts/check-harness',
-      'packages/plitejs/src/',
       'packages/plitejs/test/support/',
-      'config/plite-source-aliases.ts',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -474,11 +491,9 @@ export const steps = [
     name: 'docx-import-report',
     cores: 4,
     run: 'pnpm check:docx-import-report',
-    affected: touches(
-      'packages/platejs/scripts/docx-import-report',
-      'packages/platejs/src/',
-      'packages/plitejs/src/',
-      'config/plite-source-aliases.ts'
+    affected: runsScript(
+      'packages/platejs/scripts/docx-import-report.ts',
+      'packages/platejs/scripts/docx-import-report'
     ),
     key: [],
   },
@@ -487,12 +502,10 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:markdown-round-trip',
-    affected: touches(
+    affected: runsScript(
+      'packages/platejs/scripts/markdown-round-trip.ts',
       'packages/platejs/scripts/markdown-round-trip',
-      'packages/platejs/src/',
       'packages/plitejs/scripts/check-harness',
-      'packages/plitejs/src/',
-      'config/plite-source-aliases.ts',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
@@ -502,12 +515,10 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:table-grid',
-    affected: touches(
+    affected: runsScript(
+      'packages/platejs/scripts/table-grid-commands.ts',
       'packages/platejs/scripts/table-grid-commands',
       'packages/plitejs/scripts/check-harness',
-      'packages/platejs/src/',
-      'packages/plitejs/src/',
-      'config/plite-source-aliases.ts',
       'tooling/scripts/finding-baseline.mjs'
     ),
     key: [],
