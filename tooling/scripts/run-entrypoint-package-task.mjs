@@ -138,7 +138,7 @@ const assertDependencyCache = () => {
 
   if (missing.length > 0) {
     console.error(
-      `${aggregateTaskId} cannot run without its partition tasks passing. These have no successful run: ${missing.join(', ')}. Under --only, run the package script directly instead.`
+      `${aggregateTaskId} cannot run until each of its partition tasks has passed on the current files. These have not: ${missing.join(', ')}. A partition that passed earlier in the check counts as not run when a file it reads changed after it passed, so rerun the check once nothing edits the files. Under --only, run the package script directly instead.`
     );
     return 1;
   }
