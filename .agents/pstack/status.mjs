@@ -122,7 +122,7 @@ export const reopened = (status) => words(status)[0] === 'reopened';
 const LOCATION = /(?::\d+){1,2}(?:-\d+)?$|#L\d+(?:-L?\d+)?$/u;
 const TRAILING = /[.:,;!?*_–—]+$/u;
 const NOT_ONE_FILE = /[*?<>{}|[\]]|\.\.|\$\{/u;
-const tidy = (path) => path.replace(TRAILING, '').replace(LOCATION, '').replace(TRAILING, '');
+export const tidy = (path) => path.replace(TRAILING, '').replace(LOCATION, '').replace(TRAILING, '');
 
 const viaAnotherTree = (lead) => lead.endsWith('/') && !lead.startsWith('/') && lead !== './';
 const firstExisting = (candidates) => candidates.find((candidate) => existsSync(candidate)) ?? candidates.at(-1);
