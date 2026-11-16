@@ -43,7 +43,12 @@
 // its default. Each arm's command prints JSON on its last stdout line with an
 // optional `label`, `loaded`, the files it ran, each path containing the arm's
 // `source`, and `results: [{ cohort, <metric> }]` for exactly the config's
-// cohorts, each metric finite and positive.
+// cohorts, each metric finite and positive. A row may also give `output`, such
+// as a hash of the document the arm ends with. Once any row of a cohort gives
+// one, every row of that cohort, in every arm, must give the same, because a
+// candidate's correctness never comes from the build it judges. A candidate
+// that changes its output on purpose asserts its expected output first and then
+// reports the value the other arms report.
 //
 // Measuring refuses a measurements path that already exists. The runner saves
 // each run, with its label and loaded files, before it checks that run; an arm
@@ -190,6 +195,7 @@ const measure = (config, stamp, outPath) => {
       measurements.runs.push(run);
       writeFileSync(outPath, JSON.stringify(measurements, null, 1));
       checkRun(config, run);
+      checkOutputs(config, measurements.runs);
     }
   }
   return measurements;
@@ -219,8 +225,25 @@ const checkRun = (config, run) => {
   }
 };
 
+const checkOutputs = (config, runs) => {
+  for (const cohort of config.cohorts) {
+    const outputs = new Map();
+    for (const run of runs) {
+      const row = run.results.find((entry) => entry.cohort === cohort);
+      const output = Object.hasOwn(row, 'output') ? JSON.stringify(row.output) : 'no output';
+      if (!outputs.has(output)) outputs.set(output, `${run.arm} packet ${run.packet}`);
+    }
+    if (outputs.size > 1) {
+      fail(
+        `${cohort} rows report different outputs: ${[...outputs].map(([output, run]) => `${run} ${output}`).join('; ')}`
+      );
+    }
+  }
+};
+
 const checkMatrix = (config, runs) => {
   for (const run of runs) checkRun(config, run);
+  checkOutputs(config, runs);
   for (const arm of Object.keys(config.arms)) {
     for (let packet = 0; packet < PACKETS; packet++) {
       const count = runs.filter((run) => run.arm === arm && run.packet === packet).length;

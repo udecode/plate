@@ -594,3 +594,51 @@ for (const [shape, config, message] of [
     assert.match(run.stderr, message);
   });
 }
+
+const withOutputs = (outputOf) => {
+  const measurements = small({ base: flat(10), candidate: flat(10.2), planted: flat(11), copy: flat(10.1) });
+  for (const run of measurements.runs) {
+    const output = outputOf(run);
+    if (output !== undefined) run.results[0].output = output;
+  }
+  return measurements;
+};
+
+test('refuses a cohort whose candidate reports another output than base', (t) => {
+  const run = analyze(t, baseConfig, withOutputs((entry) => (entry.arm === 'candidate' ? 'other document' : 'base document')));
+  assert.equal(run.status, 2, run.stdout);
+  assert.match(run.stderr, /small rows report different outputs: base packet 0 "base document"; candidate packet 0 "other document"/);
+});
+
+test('refuses a row that leaves out the output every other row reports', (t) => {
+  const run = analyze(
+    t,
+    baseConfig,
+    withOutputs((entry) => (entry.arm === 'copy' && entry.packet === 3 ? undefined : 'same document'))
+  );
+  assert.equal(run.status, 2, run.stdout);
+  assert.match(run.stderr, /small rows report different outputs: .*copy packet 3 no output/);
+});
+
+test('judges a cohort whose every row reports the same output', (t) => {
+  const run = analyze(t, baseConfig, withOutputs(() => ({ fingerprint: 'abc', changes: 1 })));
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /the candidate passes every cohort/);
+});
+
+test('stops a measured run at the first arm whose output differs, and keeps the runs before it', (t) => {
+  const { out, run } = measureWith(
+    t,
+    baseConfig,
+    `const arm = process.argv[2];
+console.log(JSON.stringify({ loaded: ['/src/' + arm + '/index.ts'], results: [{ cohort: 'small', median: 10, output: arm === 'candidate' ? 'other' : 'same' }] }));
+`
+  );
+  const result = run();
+  assert.equal(result.status, 2, result.stderr);
+  assert.match(result.stderr, /small rows report different outputs: base packet 0 "same"; candidate packet 0 "other"/);
+  assert.deepEqual(
+    JSON.parse(readFileSync(out, 'utf8')).runs.map((entry) => entry.arm),
+    ['base', 'candidate']
+  );
+});
