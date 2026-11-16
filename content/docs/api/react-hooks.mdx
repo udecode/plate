@@ -217,10 +217,23 @@ UI and DOM focus should stay outside the editor. `history.root` is `undefined`
 for the primary document and the root key for an extra root.
 
 Without `options.editor`, the controls follow the view that `useRootEditor`
-follows for their root. While that view is read-only, `canUndo` and `canRedo`
-are `false`, and `history.undo()` and `history.redo()` do nothing. While
-several `EditorContent`s show the root, `history.undo()` and `history.redo()`
-run only while one of them holds focus.
+follows for their root, and `history.undo()` and `history.redo()` run in that
+view wherever DOM focus is. Each reads its root and that root's view when it
+runs. While that view is read-only, and while no `EditorContent` shows the
+root, `canUndo` and `canRedo` are `false`, and `history.undo()` and
+`history.redo()` do nothing. While that view composes text, `canUndo` and
+`canRedo` are `false`.
+
+Without `options.root`, the controls follow the root the caret is in or was
+last in, and the primary document until a caret lands in a root. History is
+document-wide, so an undo takes back the document's latest change in whichever
+root that change is.
+
+Pass `history.onKeyDown` as the `onKeyDown` of a control beside the editor,
+such as a title input, to give it the undo and redo shortcuts. The handler
+consumes a shortcut only when the command ran, and leaves every other key to
+the browser. [Set roots](/docs/roots#set-roots) shows it on a board's focus
+element.
 
 `history.undo()` and `history.redo()` dispatch mounted UI actions and return
 `void`. `history.pending` is `"undo"`, `"redo"`, or `null`; `canUndo` and
@@ -308,10 +321,12 @@ Omit `root` for the primary document.
 
 The editor follows the `EditorContent` that shows its root inside the
 `EditorRoot` around the hook. When several show the root, it follows the one
-the user last focused or pressed. Until then, and once that one unmounts, it
-follows the first one mounted. While no `EditorContent` there shows the root,
-it follows the `EditorRoot`, or the `EditorContent` around the hook when the
-hook renders inside one.
+the user last focused or pressed. Until the user has focused or pressed one,
+it follows the first one mounted. Once the one it follows unmounts, it follows
+the one the user focused or pressed before that, or the first one mounted when
+the user has focused or pressed no other. While no `EditorContent` there shows
+the root, it follows the `EditorRoot`, or the `EditorContent` around the hook
+when the hook renders inside one.
 
 While what it follows is read-only, every update through the editor throws,
 and `{ readOnly: false }` does not make the editor writable. An `EditorContent`
