@@ -6,7 +6,7 @@ description: "Understand the undo and redo batch shape stored by the history plu
 Plate tracks local undo and redo batches by default. Each batch preserves a
 canonical document change, effects, and selection.
 
-Saving a document revision and its [Comments JSON](/docs/comment#save-and-load)
+Saving a document revision and its [comment ranges](/docs/comment#save-and-load)
 does not save local undo. Ordinary reload creates a fresh editor with empty undo
 and redo stacks. Application version history and pending authored proposals
 have separate lifetimes from this session history.
@@ -356,15 +356,16 @@ Replies, message edits, resolution, reopening, and explicit deletion stay outsid
 document undo. Undoing a suggestion decision preserves its discussion and locates
 it through the same Authored change ID.
 
-Save `editor.read.value()` with `editor.plugin(CommentsPlugin).api.toJSON()` under
-one application revision and conversation generation. Loading that pair creates
-a fresh editor with `initialComments` and an empty local undo stack.
+Save `editor.read.value()` with `editor.plugin(CommentsPlugin).api.ranges()` under
+one application revision, and keep thread rows in your tables. Loading the
+document creates a fresh editor with `initialComments: { ranges, threads }` and
+an empty local undo stack.
 
-For an old-version preview, join current retained conversations with the selected
-revision's saved targets. Threads without a target in that revision are
+For an old-version preview, load the current thread rows with the selected
+revision's saved ranges. Threads without a range in that revision are
 unavailable; currently deleted threads remain absent. A version restore creates
-a new application revision under document-head and conversation-generation
-checks, then opens a fresh editor. It is not a local undo or an in-place document
+a new application revision under a document-head check, then opens a fresh
+editor. It is not a local undo or an in-place document
 replacement. See [Comments](/docs/comment#document-history-and-versions) for the
 target join.
 

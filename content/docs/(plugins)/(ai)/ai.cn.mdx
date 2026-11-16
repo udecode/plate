@@ -129,7 +129,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置对应文档版本的 `initialComments: CommentsJSON`。
+`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。
 
 已完成的生成评论直接发布为普通线程，不显示批准提示。通过 `CommentsPlugin.configure({ initialState: { mutate } })` 配置授权和规范持久化；集成等待持久化操作结果后才确认发布成功。生成文档编辑的草稿接受控件不会阻止评论发布。持久化与操作结果请参阅[评论](/docs/comment)。
 

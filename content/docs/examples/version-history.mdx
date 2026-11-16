@@ -50,6 +50,6 @@ const reloaded = createEditor({
 });
 ```
 
-The fresh editor starts with empty local undo and redo stacks. If the document has comments, save `CommentsJSON` through `comments.toJSON()` with the same revision and load it through `initialComments`; document undo does not rewind the discussion.
+The fresh editor starts with empty local undo and redo stacks. If the document has comments, save `comments.ranges()` with the same revision, keep thread rows in your tables, and load both through `initialComments: { ranges, threads }`; document undo does not rewind the discussion.
 
 See [Authored Changes](/docs/authored-changes) to propose and review changes instead of replacing the document.

@@ -1,0 +1,14 @@
+---
+id: 2026-11-16-save-comment-ranges
+date: 2026-11-16
+status: draft
+kind: wiring
+summary: 'Save comment ranges with each document revision'
+change: { 'type': 'source', 'date': '2026-11-16', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-16-import-toolbar-save-comment-ranges-each-5d653c96","kind":"wiring","migrationNotes":[]} -->
+
+- **`import-toolbar-button`**, **`comment-persistence-demo`**, **`suggestion-persistence-demo`**, **`comment-demo`**, **`comment-overlap-demo`**, **`comment-review-demo`**, **`editor-ai`**: Load comments as `{ threads, ranges }` and save `api.ranges()` with each document revision. The DOCX import in `import-toolbar-button` returns plain ranges keyed by thread ID, and the persistence demos keep thread rows in an app table.

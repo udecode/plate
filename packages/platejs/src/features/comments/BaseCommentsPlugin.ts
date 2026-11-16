@@ -108,17 +108,33 @@ const commentCreationHistoryEffect =
 
 export type PendingComment = Readonly<{ excerpt: string }>;
 
-/** Save together with the exact document revision; ordinary reload starts fresh undo. */
-export type CommentsJSON = Readonly<{
-  kind: 'comments';
-  ranges: ReadonlyArray<
-    Readonly<{
-      range: EditorDocumentRange | null;
-      threadId: string;
-    }>
-  >;
+/**
+ * Primary-document ranges keyed by thread ID. Save them with the exact document
+ * revision they address; the record has a null prototype.
+ */
+export type CommentRanges = Readonly<Record<string, Range>>;
+
+/**
+ * Thread rows from the app's own tables and the ranges saved with the matching
+ * document revision. Ordinary reload starts fresh undo.
+ */
+export type SavedComments = Readonly<{
+  ranges: CommentRanges;
   threads: readonly CommentThread[];
-  version: 1;
+}>;
+
+/**
+ * A saved row the last load dropped, or a saved range with no loaded thread. An
+ * `orphan-range` keeps mapping and saving until its thread loads or the app
+ * calls `discardOrphan`.
+ */
+export type CommentsLoadIssue = Readonly<{
+  code:
+    | 'duplicate-thread'
+    | 'invalid-range'
+    | 'invalid-thread'
+    | 'orphan-range';
+  id: string | null;
 }>;
 
 export type CreateCommentThreadInput = Readonly<{
@@ -146,7 +162,8 @@ export type CommentMutationRequest = Readonly<{
   operation: CommentOperation;
   previous: CommentThread | null;
   proposed: CommentThread | null;
-  attachment?: EditorDocumentRange;
+  /** The range a create or draft publish saves, in the primary document. */
+  range?: Range;
 }>;
 
 export type CommentMutationDecision =
@@ -161,6 +178,8 @@ export type CommentMutationResult<T = undefined> =
 
 export type CommentsSnapshot = Readonly<{
   draftThreadIds: readonly string[];
+  /** Rows the last load dropped, and one `orphan-range` per current orphan. */
+  issues: readonly CommentsLoadIssue[];
   pending: PendingComment | null;
   threadIds: readonly string[];
   visibleThreadIds: readonly string[];
@@ -174,7 +193,7 @@ export type CommentsChange = Readonly<{
 export type CommentsPluginState = {
   activeIds: readonly string[];
   /** Loaded once, before mount, against the matching initial document. */
-  initialComments: CommentsJSON | null;
+  initialComments: SavedComments | null;
   /** Authorize and persist before publication. Throws preserve the previous state. */
   mutate: (
     request: CommentMutationRequest
@@ -309,51 +328,40 @@ const validateThread = (input: unknown): CommentThread => {
 const prepareCommentThread = (input: unknown): CommentThread =>
   validateThread(snapshotCommentData(input));
 
-/** Decode semantic data here; the editor's range codec owns opaque targets. */
-const decodeComments = (value: unknown): CommentsJSON => {
-  const input = snapshotCommentData(value);
-  if (
-    !record(input) ||
-    input.kind !== 'comments' ||
-    input.version !== 1 ||
-    !Array.isArray(input.threads) ||
-    !Array.isArray(input.ranges)
-  ) {
-    throw new Error('Invalid Comments JSON');
+const ownValue = (value: object, key: PropertyKey) => {
+  const property = Object.getOwnPropertyDescriptor(value, key);
+  return property && Object.hasOwn(property, 'value')
+    ? property.value
+    : undefined;
+};
+
+const admitThreads = (value: unknown) => {
+  const rows = record(value) ? ownValue(value, 'threads') : undefined;
+  const ranges = record(value) ? ownValue(value, 'ranges') : undefined;
+  if (!Array.isArray(rows) || !record(ranges)) {
+    throw new Error('Saved comments need a threads array and a ranges record');
   }
-  const threads = input.threads.map(validateThread);
-  const byId = new Map<string, CommentThread>();
-  for (const thread of threads) {
-    if (byId.has(thread.id)) {
-      throw new Error(`Duplicate comment thread ID: ${thread.id}`);
+  const threads = new Map<string, CommentThread>();
+  const issues: CommentsLoadIssue[] = [];
+  for (let index = 0; index < rows.length; index++) {
+    const row = ownValue(rows, index);
+    const rowId = record(row) ? ownValue(row, 'id') : undefined;
+    let thread: CommentThread;
+    try {
+      thread = prepareCommentThread(row);
+      if (thread.status !== 'published') throw new Error('Unpublished');
+    } catch {
+      issues.push({
+        code: 'invalid-thread',
+        id: isCommentId(rowId) ? rowId : null,
+      });
+      continue;
     }
-    if (thread.status !== 'published') {
-      throw new Error('Saved comments must be published');
-    }
-    byId.set(thread.id, thread);
+    if (threads.has(thread.id)) {
+      issues.push({ code: 'duplicate-thread', id: thread.id });
+    } else threads.set(thread.id, thread);
   }
-  const seen = new Set<string>();
-  for (const target of input.ranges) {
-    if (
-      !record(target) ||
-      !isCommentId(target.threadId) ||
-      seen.has(target.threadId) ||
-      byId.get(target.threadId)?.target.type !== 'range' ||
-      (target.range !== null &&
-        (!record(target.range) ||
-          target.range.kind !== 'range' ||
-          target.range.version !== 1))
-    ) {
-      throw new Error('Invalid comment range target');
-    }
-    seen.add(target.threadId);
-  }
-  return Object.freeze({
-    kind: 'comments',
-    version: 1,
-    threads: Object.freeze(threads),
-    ranges: input.ranges,
-  });
+  return { issues, ranges, threads };
 };
 
 const freezeComment = <T>(value: T): T => {
@@ -366,7 +374,8 @@ const freezeComment = <T>(value: T): T => {
 
 /**
  * Owns comment records and their native range lifetime for one editor.
- * Load initialComments and save api.toJSON() with the exact document revision.
+ * Load initialComments from the app's thread rows and the ranges saved with
+ * the exact document revision, and save api.ranges() with each revision.
  * Successful local thread creation joins session undo after durable commit,
  * except through a read-only view.
  * Other conversation actions stay independent; native anchors own mapping.
@@ -378,12 +387,17 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const runtimeOwner = getEditorRuntimeOwner(editor);
   let threads = new Map<string, CommentThread>();
   const anchors = new Map<string, Anchor<Range>>();
+  // Ranges saved while their thread is not loaded here; they paint nothing.
+  const orphans = new Map<string, Anchor<Range>>();
+  const rangesAwaitingMutate = new Map<string, Anchor<Range>>();
+  const unsettledDrafts = new Set<string>();
   let source: ReadonlyArray<{ id: string; anchor: AnnotationAnchor }> = [];
   let sourceOrder = new Map<string, number>();
   let composer: { anchor: Anchor<Range>; excerpt: string; id: string } | null =
     null;
   let snapshot: CommentsSnapshot = Object.freeze({
     draftThreadIds: Object.freeze([]),
+    issues: Object.freeze([]),
     pending: null,
     threadIds: Object.freeze([]),
     visibleThreadIds: Object.freeze([]),
@@ -404,15 +418,49 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   let destroyed = false;
   const queues = new Map<string, Promise<void>>();
   const generations = new Map<string, number>();
+  const submitHolds = new Map<Anchor<Range>, number>();
+  const releaseIfUnheld = (id: string, anchor: Anchor<Range> | undefined) => {
+    if (
+      !destroyed &&
+      anchor &&
+      anchors.get(id) !== anchor &&
+      orphans.get(id) !== anchor &&
+      composer?.anchor !== anchor &&
+      !submitHolds.has(anchor)
+    ) {
+      anchor.release();
+    }
+  };
+  const hold = (anchor: Anchor<Range> | undefined) => {
+    if (anchor) submitHolds.set(anchor, (submitHolds.get(anchor) ?? 0) + 1);
+  };
+  const unhold = (id: string, anchor: Anchor<Range> | undefined) => {
+    if (!anchor) return;
+    const held = (submitHolds.get(anchor) ?? 0) - 1;
+    if (held > 0) submitHolds.set(anchor, held);
+    else submitHolds.delete(anchor);
+    releaseIfUnheld(id, anchor);
+  };
+  const setOrphan = (id: string, anchor: Anchor<Range>) => {
+    const displaced = orphans.get(id);
+    orphans.set(id, anchor);
+    releaseIfUnheld(id, displaced);
+  };
   const dropComposer = () => {
-    if (composer && !queues.has(composer.id)) composer.anchor.release();
+    const dropped = composer;
     composer = null;
+    if (dropped) releaseIfUnheld(dropped.id, dropped.anchor);
   };
   const threadListeners = new Map<string, Set<() => void>>();
   const visibleListeners = new Set<() => void>();
   const draftListeners = new Set<() => void>();
   const pendingListeners = new Set<() => void>();
   const dataListeners = new Set<(change: CommentsChange) => void>();
+  const rangeListeners = new Set<() => void>();
+  let savedRanges = new Map<string, Anchor<Range>>();
+  let loadIssues: readonly CommentsLoadIssue[] = [];
+  let snapshotOrphanIds: readonly string[] = [];
+  let announcedOrphanIds: readonly string[] = [];
   let heldChanges: Array<() => void> | null = null;
   const deliver = <TArgs extends unknown[]>(
     listeners: ReadonlySet<(...args: TArgs) => void>,
@@ -495,16 +543,58 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       deliver(dataListeners, 'snapshot-listener', change);
     }
   };
+  const rangesToSave = () => {
+    const saved = new Map(orphans);
+    rangesAwaitingMutate.forEach((anchor, id) => saved.set(id, anchor));
+    anchors.forEach((anchor, id) => {
+      if (threads.get(id)?.status === 'published' || unsettledDrafts.has(id)) {
+        saved.set(id, anchor);
+      }
+    });
+    return saved;
+  };
+  const sameIds = (left: readonly string[], right: readonly string[]) =>
+    left.length === right.length &&
+    left.every((id, index) => id === right[index]);
+  const currentIssues = () => {
+    snapshotOrphanIds = [...orphans.keys()];
+    return Object.freeze([
+      ...loadIssues,
+      ...snapshotOrphanIds.map((id) => ({ code: 'orphan-range' as const, id })),
+    ]);
+  };
+  const refreshIssues = () => {
+    if (!sameIds([...orphans.keys()], snapshotOrphanIds)) {
+      snapshot = Object.freeze({ ...snapshot, issues: currentIssues() });
+    }
+  };
+  const announceRanges = () => {
+    if (destroyed) return;
+    refreshIssues();
+    const next = rangesToSave();
+    if (
+      sameIds(snapshotOrphanIds, announcedOrphanIds) &&
+      next.size === savedRanges.size &&
+      [...next].every(([id, anchor]) => savedRanges.get(id) === anchor)
+    ) {
+      return;
+    }
+    announcedOrphanIds = snapshotOrphanIds;
+    savedRanges = next;
+    deliver(rangeListeners, 'snapshot-listener');
+  };
   const publish = (changes: {
     draft?: boolean;
     pending?: boolean;
     threads?: readonly string[];
     visible?: boolean;
   }) => {
+    refreshIssues();
     if (changes.draft) deliver(draftListeners, 'snapshot-listener');
     if (changes.pending) deliver(pendingListeners, 'snapshot-listener');
     if (changes.visible) deliver(visibleListeners, 'snapshot-listener');
     if (changes.threads) notifyThreads(changes.threads);
+    announceRanges();
   };
   const nodeKeysAt = (view: Editor, location: Location) => {
     const keys = new Set<NodeKey>();
@@ -565,18 +655,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       : null;
   };
   const seed = store.get('initialComments');
-  let initialComments = seed === null ? null : decodeComments(seed);
-  threads = new Map(
-    initialComments?.threads.map((thread) => [thread.id, thread])
-  );
+  let initialComments = seed === null ? null : admitThreads(seed);
+  threads = initialComments?.threads ?? new Map();
   snapshot = Object.freeze({
     ...snapshot,
     threadIds: Object.freeze([...threads.keys()]),
-    draftThreadIds: Object.freeze(
-      [...threads.values()]
-        .filter((thread) => thread.status === 'draft')
-        .map((thread) => thread.id)
-    ),
     visibleThreadIds: Object.freeze(
       [...threads.values()]
         .filter((thread) => !thread.resolution)
@@ -601,74 +684,88 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       }
     }
   };
-  const initialize = () => {
-    for (const target of initialComments?.ranges ?? []) {
-      if (!target.range) continue;
-      const anchor = editor.anchor.restore(target.range);
+  const anchorAt = (range: Range) =>
+    editor.anchor(range, { association: 'inward', deletion: 'nearest' });
+  const admitRanges = (
+    { issues, ranges, threads: loaded }: ReturnType<typeof admitThreads>,
+    previousOrphans: ReadonlyMap<string, Anchor<Range>>
+  ) => {
+    const nextAnchors = new Map<string, Anchor<Range>>();
+    const nextOrphans = new Map(previousOrphans);
+    const rangeIssues: CommentsLoadIssue[] = [];
+    for (const id of Object.keys(ranges)) {
+      let range: Range;
       try {
-        if (anchor.root !== undefined) {
-          throw new Error('Comment ranges must address the primary document');
-        }
-        const range = anchor.resolve();
-        if (range) validateRange(range);
-        anchors.set(target.threadId, anchor);
-      } catch (error) {
-        anchor.release();
-        throw error;
+        const value = snapshotCommentData(ownValue(ranges, id));
+        if (!RangeApi.isRange(value)) throw new Error('Invalid comment range');
+        range = value;
+        validateRange(range);
+      } catch {
+        rangeIssues.push({ code: 'invalid-range', id });
+        continue;
       }
+      const thread = loaded.get(id);
+      if (thread && thread.target.type !== 'range') {
+        rangeIssues.push({ code: 'invalid-range', id });
+        continue;
+      }
+      nextOrphans.delete(id);
+      (thread ? nextAnchors : nextOrphans).set(id, anchorAt(range));
+    }
+    nextOrphans.forEach((anchor, id) => {
+      const thread = loaded.get(id);
+      if (!thread) return;
+      nextOrphans.delete(id);
+      if (thread.target.type === 'range') nextAnchors.set(id, anchor);
+      else rangeIssues.push({ code: 'invalid-range', id });
+    });
+    return {
+      anchors: nextAnchors,
+      issues: Object.freeze([...issues, ...rangeIssues]),
+      orphans: nextOrphans,
+    };
+  };
+  const initialize = () => {
+    if (initialComments) {
+      const loaded = admitRanges(initialComments, orphans);
+      const previousOrphans = [...orphans];
+      loaded.anchors.forEach((anchor, id) => anchors.set(id, anchor));
+      orphans.clear();
+      loaded.orphans.forEach((anchor, id) => orphans.set(id, anchor));
+      previousOrphans.forEach(([id, anchor]) => releaseIfUnheld(id, anchor));
+      loadIssues = loaded.issues;
+      snapshot = Object.freeze({ ...snapshot, issues: currentIssues() });
     }
     initialComments = null;
+    announcedOrphanIds = snapshotOrphanIds;
+    savedRanges = rangesToSave();
     syncSource();
     refreshViews()();
     active = store.get('activeIds');
     unsubscribeActive = store.subscribe(repaintActive);
   };
-  const replaceComments = (value: CommentsJSON) => {
+  const replaceComments = (value: SavedComments) => {
     if (destroyed) return false;
 
-    const decoded = decodeComments(value);
-    const nextAnchors = new Map<string, Anchor<Range>>();
-
-    try {
-      for (const target of decoded.ranges) {
-        if (!target.range) continue;
-        const anchor = editor.anchor.restore(target.range);
-
-        try {
-          if (anchor.root !== undefined) {
-            throw new Error('Comment ranges must address the primary document');
-          }
-          const range = anchor.resolve();
-          if (range) validateRange(range);
-          nextAnchors.set(target.threadId, anchor);
-        } catch (error) {
-          anchor.release();
-          throw error;
-        }
-      }
-    } catch (error) {
-      nextAnchors.forEach((anchor) => anchor.release());
-      throw error;
-    }
-
-    const changedIds = new Set([
-      ...threads.keys(),
-      ...decoded.threads.map((thread) => thread.id),
-    ]);
+    const admitted = admitThreads(value);
+    const loaded = admitRanges(admitted, orphans);
+    const changedIds = new Set([...threads.keys(), ...admitted.threads.keys()]);
     const previousSnapshot = snapshot;
     const retiredQueues = [...queues];
-    const next = Object.freeze({
+    const next = {
       draftThreadIds: Object.freeze([]),
       pending: null,
-      threadIds: Object.freeze(decoded.threads.map((thread) => thread.id)),
+      threadIds: Object.freeze([...admitted.threads.keys()]),
       visibleThreadIds: Object.freeze(
-        decoded.threads
+        [...admitted.threads.values()]
           .filter((thread) => !thread.resolution)
           .map((thread) => thread.id)
       ),
-    });
+    };
 
     queues.clear();
+    rangesAwaitingMutate.clear();
+    unsettledDrafts.clear();
     retiredQueues.forEach(([id, queue]) => {
       const generation = (generations.get(id) ?? 0) + 1;
 
@@ -679,13 +776,17 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         }
       });
     });
-    dropComposer();
-    anchors.forEach((anchor) => anchor.release());
+    const previousAnchors = [...anchors, ...orphans];
     anchors.clear();
-    nextAnchors.forEach((anchor, id) => anchors.set(id, anchor));
-    threads = new Map(decoded.threads.map((thread) => [thread.id, thread]));
+    loaded.anchors.forEach((anchor, id) => anchors.set(id, anchor));
+    orphans.clear();
+    loaded.orphans.forEach((anchor, id) => orphans.set(id, anchor));
+    dropComposer();
+    previousAnchors.forEach(([id, anchor]) => releaseIfUnheld(id, anchor));
+    ({ threads } = admitted);
     syncSource();
-    snapshot = next;
+    loadIssues = loaded.issues;
+    snapshot = Object.freeze({ ...next, issues: currentIssues() });
     const announce = refreshViews();
     setActive([]);
     announce();
@@ -706,17 +807,25 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   ) => {
     const previous = threads.get(id);
     const previousAnchor = anchors.get(id);
+    const previousOrphan = orphans.get(id);
     if (thread) {
       threads.set(id, thread);
       if (anchor) anchors.set(id, anchor);
+      if (thread.status === 'published') {
+        orphans.delete(id);
+        unsettledDrafts.delete(id);
+      }
     } else {
       threads.delete(id);
       anchors.delete(id);
+      unsettledDrafts.delete(id);
       if (queues.has(id)) generations.set(id, (generations.get(id) ?? 0) + 1);
       else generations.delete(id);
     }
-    const handoff = anchor !== undefined && anchor === composer?.anchor;
+    const retiredComposer = thread && composer?.id === id ? composer : null;
+    const handoff = retiredComposer !== null;
     if (handoff) composer = null;
+    refreshIssues();
     const threadIds =
       previous && thread
         ? snapshot.threadIds
@@ -739,6 +848,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         )
       : snapshot.draftThreadIds;
     if (
+      handoff ||
       threadIds !== snapshot.threadIds ||
       visibleThreadIds !== snapshot.visibleThreadIds ||
       draftThreadIds !== snapshot.draftThreadIds
@@ -758,9 +868,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     // nested commit there can also consume a refresh that ran after it.
     if (previousAnchor !== anchors.get(id)) {
       syncSource();
-      previousAnchor?.release();
+      releaseIfUnheld(id, previousAnchor);
       announce = refreshViews([id]);
     }
+    releaseIfUnheld(id, previousOrphan);
+    releaseIfUnheld(id, retiredComposer?.anchor);
     if (afterWrite) {
       runEditorObserver(editor, 'after-commit', afterWrite, 'comments');
     }
@@ -818,63 +930,108 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     const previous = threads.get(id) ?? null;
     const generation = generations.get(id) ?? 0;
     if (destroyed || !isCurrent()) return { status: 'stale' };
-    const location = anchor ?? anchors.get(id);
-    const decision = await store.get('mutate')(
-      Object.freeze({
-        mutationId: nanoid(),
-        operation,
-        previous,
-        proposed,
-        ...((operation === 'create' ||
-          operation === 'createThread' ||
-          operation === 'publishDraft') &&
-        location
-          ? { attachment: editor.anchor.save(location) }
-          : {}),
-      })
-    );
-    if (
+    const location =
+      operation === 'create' ||
+      operation === 'createThread' ||
+      operation === 'publishDraft'
+        ? (anchor ?? anchors.get(id))
+        : undefined;
+    const isStale = () =>
       destroyed ||
       !isCurrent() ||
       generation !== (generations.get(id) ?? 0) ||
-      (threads.get(id) ?? null) !== previous
-    ) {
-      return { status: 'stale' };
-    }
-    if (decision.status === 'reject') {
-      return {
-        status: 'rejected',
-        ...(decision.code === undefined ? {} : { code: decision.code }),
-      };
-    }
-    if (
-      decision.status !== 'commit' ||
-      (decision.thread === null) !== (proposed === null)
-    ) {
-      throw new Error('Invalid comment mutation decision');
-    }
-    const canonical =
-      decision.thread === null ? null : prepareCommentThread(decision.thread);
-    if (
-      canonical &&
-      (canonical.id !== id ||
-        canonical.status !== 'published' ||
-        canonical.target.type !== proposed?.target.type ||
-        (canonical.target.type === 'change' &&
-          proposed?.target.type === 'change' &&
-          canonical.target.id !== proposed.target.id))
-    ) {
-      throw new Error(
-        'Comment mutation cannot replace thread identity or target'
+      (threads.get(id) ?? null) !== previous;
+    const keptByThrownAttempt =
+      orphans.get(id) ??
+      (unsettledDrafts.has(id) ? anchors.get(id) : undefined);
+    const dropUnwritten = () => {
+      if (
+        location &&
+        location !== keptByThrownAttempt &&
+        orphans.get(id) === location
+      ) {
+        orphans.delete(id);
+        releaseIfUnheld(id, location);
+      }
+    };
+    try {
+      let range: Range | null = null;
+      if (location) {
+        if (location.resolve()) {
+          rangesAwaitingMutate.set(id, location);
+          announceRanges();
+          if (isStale()) {
+            dropUnwritten();
+            return { status: 'stale' };
+          }
+          range = location.resolve();
+        }
+        if (!range) {
+          dropUnwritten();
+          return { status: 'invalid' };
+        }
+      }
+      let decision: CommentMutationDecision;
+      try {
+        decision = await store.get('mutate')(
+          Object.freeze({
+            mutationId: nanoid(),
+            operation,
+            previous,
+            proposed,
+            ...(range ? { range: freezeComment(structuredClone(range)) } : {}),
+          })
+        );
+      } catch (error) {
+        // The server may have stored the create or draft publish, so its range stays saved.
+        if (location && !isStale()) {
+          if (operation === 'publishDraft') unsettledDrafts.add(id);
+          else setOrphan(id, location);
+        }
+        throw error;
+      }
+      if (decision.status === 'reject') dropUnwritten();
+      if (isStale()) return { status: 'stale' };
+      if (decision.status === 'reject') {
+        return {
+          status: 'rejected',
+          ...(decision.code === undefined ? {} : { code: decision.code }),
+        };
+      }
+      if (
+        decision.status !== 'commit' ||
+        (decision.thread === null) !== (proposed === null)
+      ) {
+        throw new Error('Invalid comment mutation decision');
+      }
+      const canonical =
+        decision.thread === null ? null : prepareCommentThread(decision.thread);
+      if (
+        canonical &&
+        (canonical.id !== id ||
+          canonical.status !== 'published' ||
+          canonical.target.type !== proposed?.target.type ||
+          (canonical.target.type === 'change' &&
+            proposed?.target.type === 'change' &&
+            canonical.target.id !== proposed.target.id))
+      ) {
+        throw new Error(
+          'Comment mutation cannot replace thread identity or target'
+        );
+      }
+      setThread(
+        id,
+        canonical,
+        anchor,
+        afterWrite && (() => afterWrite(canonical))
       );
+      return { status: 'applied', value: undefined };
+    } finally {
+      if (location && rangesAwaitingMutate.get(id) === location) {
+        rangesAwaitingMutate.delete(id);
+      }
+      announceRanges();
     }
-    setThread(
-      id,
-      canonical,
-      anchor,
-      afterWrite && (() => afterWrite(canonical))
-    );
-    return { status: 'applied', value: undefined };
   };
   const sameThread = (
     left: CommentThread | null,
@@ -920,6 +1077,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             };
           }
           restoredAnchor = editor.anchor.restore(transition.attachment);
+          hold(restoredAnchor);
           if (!restoredAnchor.resolve()) {
             return {
               status: 'applied',
@@ -979,9 +1137,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           } as const,
         };
       } finally {
-        if (restoredAnchor && anchors.get(thread.id) !== restoredAnchor) {
-          restoredAnchor.release();
-        }
+        unhold(thread.id, restoredAnchor);
       }
     });
 
@@ -1033,10 +1189,18 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     );
     viewIndexes.clear();
     passiveIndexes = new WeakMap();
-    composer?.anchor.release();
+    new Set([
+      ...(composer ? [composer.anchor] : []),
+      ...anchors.values(),
+      ...orphans.values(),
+      ...submitHolds.keys(),
+    ]).forEach((anchor) => anchor.release());
     composer = null;
-    anchors.forEach((anchor) => anchor.release());
     anchors.clear();
+    orphans.clear();
+    submitHolds.clear();
+    rangesAwaitingMutate.clear();
+    unsettledDrafts.clear();
     threads.clear();
     initialComments = null;
     queues.clear();
@@ -1045,6 +1209,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     sourceOrder.clear();
     snapshot = Object.freeze({
       draftThreadIds: Object.freeze([]),
+      issues: Object.freeze([]),
       pending: null,
       threadIds: Object.freeze([]),
       visibleThreadIds: Object.freeze([]),
@@ -1055,6 +1220,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     draftListeners.clear();
     pendingListeners.clear();
     dataListeners.clear();
+    rangeListeners.clear();
   };
 
   COMMENT_CREATION_HISTORY_REPLAYERS.set(runtimeOwner, replayCreation);
@@ -1110,6 +1276,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         const prepared = prepareCreation(input, 'published', claimed?.anchor);
         if (!prepared) return { status: 'invalid' };
         const { thread, anchor } = prepared;
+        hold(anchor);
         try {
           return await enqueue(thread.id, async () => {
             if (threads.has(thread.id)) return { status: 'invalid' };
@@ -1142,13 +1309,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
               : result;
           });
         } finally {
-          if (
-            anchor &&
-            anchors.get(thread.id) !== anchor &&
-            composer?.anchor !== anchor
-          ) {
-            anchor.release();
-          }
+          unhold(thread.id, anchor);
         }
       };
       return {
@@ -1210,20 +1371,37 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         createThread: (input: CreateCommentThreadInput) => submit(input),
         /**
          * Allocate a local draft; only publishDraft invokes durable storage.
-         * Returns null for a range in a named root.
+         * Returns null for a range in a named root, or for an ID that holds an
+         * orphan or has an action in flight.
          */
         createDraft: (input: CreateCommentThreadInput) => {
           const prepared = prepareCreation(input, 'draft');
-          if (!prepared || queues.has(prepared.thread.id)) {
+          if (
+            !prepared ||
+            queues.has(prepared.thread.id) ||
+            orphans.has(prepared.thread.id)
+          ) {
             prepared?.anchor?.release();
             return null;
           }
           setThread(prepared.thread.id, prepared.thread, prepared.anchor);
           return prepared.thread.id;
         },
-        /** Retire an unpublished draft, including its private range. */
+        /**
+         * Retire an unpublished draft and its private range. A draft whose
+         * publish is waiting on `mutate` or threw keeps its range as an orphan;
+         * a publish that then makes no write drops it again, unless an earlier
+         * publish of the draft threw.
+         */
         discardDraft: (id: string) => {
           if (threads.get(id)?.status !== 'draft' || destroyed) return false;
+          const anchor = anchors.get(id);
+          if (
+            anchor &&
+            (unsettledDrafts.has(id) || rangesAwaitingMutate.get(id) === anchor)
+          ) {
+            setOrphan(id, anchor);
+          }
           setThread(id, null);
           return true;
         },
@@ -1257,33 +1435,54 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         getSnapshot: () => snapshot,
         /** Read immutable conversation data; document mapping preserves identity. */
         getThread: (id: string) => threads.get(id),
-        /** Read live semantic records. Use toJSON for persistence. */
+        /** Read live semantic records. Save ranges() with the document. */
         getThreads: (): readonly CommentThread[] =>
           Object.freeze([...threads.values()]),
-        /** Replace the complete saved snapshot for the exact current document. */
+        /**
+         * Replace every thread and range for the exact current document. Bad
+         * rows drop alone and appear in the snapshot's issues.
+         */
         replace: replaceComments,
-        /** Export published conversations and opaque targets for this exact document. */
-        toJSON: (): CommentsJSON => {
-          const records = [...threads.values()].filter(
-            (thread) => thread.status === 'published'
-          );
-          return Object.freeze({
-            kind: 'comments',
-            version: 1,
-            threads: Object.freeze(records),
-            ranges: Object.freeze(
-              records.flatMap((thread) => {
-                if (thread.target.type !== 'range') return [];
-                const anchor = anchors.get(thread.id);
-                return [
-                  Object.freeze({
-                    threadId: thread.id,
-                    range: anchor ? editor.anchor.save(anchor) : null,
-                  }),
-                ];
-              })
-            ),
+        /**
+         * Ranges to save with this exact document revision, keyed by thread ID:
+         * published threads, creates and draft publishes waiting on `mutate`,
+         * drafts whose publish threw, and orphans. Throws once the editor is
+         * destroyed.
+         */
+        ranges: (): CommentRanges => {
+          if (destroyed) {
+            throw new Error('Cannot read comment ranges after destroy');
+          }
+          const result: Record<string, Range> = Object.create(null);
+          rangesToSave().forEach((anchor, id) => {
+            const range = anchor.resolve();
+            if (range) result[id] = freezeComment(structuredClone(range));
           });
+          return Object.freeze(result);
+        },
+        /**
+         * Remove a range whose thread never loaded, such as a create the
+         * server rejected after the range was saved.
+         */
+        discardOrphan: (id: string): 'discarded' | 'not-orphan' => {
+          const orphan = orphans.get(id);
+          if (!orphan || destroyed) return 'not-orphan';
+          orphans.delete(id);
+          releaseIfUnheld(id, orphan);
+          announceRanges();
+          return 'discarded';
+        },
+        /**
+         * Observe a thread gaining, losing or replacing its saved range, such as
+         * a create that changes no document value. Document mapping never
+         * wakes it.
+         */
+        subscribeRanges: (listener: () => void) => {
+          if (destroyed) return () => {};
+          rangeListeners.add(listener);
+          return () => {
+            rangeListeners.delete(listener);
+          };
         },
         /** Resolve the pending selection without exposing its native handle. */
         pendingRange: () =>

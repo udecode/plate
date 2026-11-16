@@ -22,7 +22,7 @@ Discussion is copied UI that opens a block's comments and authored changes in on
 | Copied `suggestion` item | Configure the package plugin's content attributes and compose `SuggestionKit` |
 | Copied `discussion` item | Join authored changes to optional comment threads, then render block triggers, cards, and Floating Discussion |
 
-The application pairs `CommentsJSON` with a document revision, provides users, and authorizes durable writes through `initialState.mutate`. Review marks stay on the document's nodes and review records in its envelope. Comment threads contain semantic targets; current placement comes from `attachment(id)` and may refer to a stable authored change ID.
+The application stores thread rows in its own tables, saves `api.ranges()` with each document revision, provides users, and authorizes durable writes through `initialState.mutate`. Review marks stay on the document's nodes and review records in its envelope. Comment threads contain semantic targets; current placement comes from `attachment(id)` and may refer to a stable authored change ID.
 
 ## Installation
 
@@ -36,13 +36,13 @@ npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/
 
 ## Usage
 
-Pass the verified revision's `CommentsJSON` to `CommentsPlugin`. `EditorKit` includes the copied `SuggestionKit`; a smaller kit can install it explicitly.
+Pass thread rows from your tables and the ranges saved with the document revision to `CommentsPlugin`. `EditorKit` includes the copied `SuggestionKit`; a smaller kit can install it explicitly.
 
 ```tsx title="components/editor/discussion-editor.tsx" showLineNumbers
 'use client';
 
 import type { EditorValueInput } from 'platejs';
-import type { CommentsJSON, CommentUser } from 'platejs/comments';
+import type { CommentRanges, CommentThread, CommentUser } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
@@ -54,12 +54,14 @@ import { Toolbar } from '@/components/editor/toolbar';
 
 export function DiscussionEditor({
   initialValue,
-  initialComments,
+  ranges,
+  threads,
   users,
   userId,
 }: {
   initialValue: EditorValueInput;
-  initialComments: CommentsJSON;
+  ranges: CommentRanges;
+  threads: readonly CommentThread[];
   users: Record<string, CommentUser>;
   userId: string;
 }) {
@@ -68,7 +70,7 @@ export function DiscussionEditor({
       ...EditorKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialComments, users },
+        initialState: { initialComments: { ranges, threads }, users },
       }),
     ],
     initialValue,
@@ -157,9 +159,9 @@ Add Discussion only when the product needs cards, replies, authors, dates, or po
 
 ## Read-only and static rendering
 
-Pass `initialComments` to each fresh editor with its matching document value. Use `CommentsPlugin` for a read-only React editor and `BaseCommentsPlugin` with copied static comment styling for `EditorStatic`. Each editor binds its own attachments and suggestion view state; local undo starts empty.
+Pass each fresh editor an `initialComments` whose ranges were saved with its document value. Use `CommentsPlugin` for a read-only React editor and `BaseCommentsPlugin` with copied static comment styling for `EditorStatic`. Each editor binds its own attachments and suggestion view state; local undo starts empty.
 
-Save `editor.plugin(CommentsPlugin).api.toJSON()` alongside `editor.read.value()` under the same revision. Observe conversation data through `subscribeThreads` and placement through `subscribeAttachments`. See [Comments](/docs/comment) for loading, saving, historical target joins, and awaited actions, and [Suggestions](/docs/suggestion) for modes and authored decisions.
+Save `editor.plugin(CommentsPlugin).api.ranges()` alongside `editor.read.value()` under the same revision, and keep thread rows in your tables. Observe conversation data through `subscribeThreads` and placement through `subscribeAttachments`. See [Comments](/docs/comment#save-and-load) for loading, saving, load issues, orphan ranges, autosave, historical target joins, and awaited actions, and [Suggestions](/docs/suggestion) for modes and authored decisions.
 
 ## API Reference
 

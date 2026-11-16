@@ -1,7 +1,7 @@
 'use client';
 
 import { BaseHeadingPlugin } from 'platejs';
-import type { CommentsJSON } from 'platejs/comments';
+import type { SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   createPretextPageLayoutEngine,
@@ -13,7 +13,7 @@ import {
   type PagedEditableRenderPageProps,
   usePageLayout,
 } from 'platejs/pagination/react';
-import { createEditor, EditorRoot, useCreateEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import * as React from 'react';
 
@@ -105,17 +105,13 @@ const value = [
 
 const commentText = 'highlighted words';
 
-const fixture = createEditor({ initialValue: value, plugins });
-const anchor = fixture.anchor(
-  {
-    anchor: { offset: 0, path: [1, 3] },
-    focus: { offset: commentText.length, path: [1, 3] },
+const initialComments: SavedComments = {
+  ranges: {
+    'paged-comment': {
+      anchor: { offset: 0, path: [1, 3] },
+      focus: { offset: commentText.length, path: [1, 3] },
+    },
   },
-  { association: 'inward', deletion: 'nearest' }
-);
-const initialComments: CommentsJSON = {
-  kind: 'comments',
-  ranges: [{ range: fixture.anchor.save(anchor), threadId: 'paged-comment' }],
   threads: [
     {
       createdAt: '2026-10-06T12:00:00.000Z',
@@ -135,9 +131,7 @@ const initialComments: CommentsJSON = {
       userId: 'ada',
     },
   ],
-  version: 1,
 };
-anchor.release();
 
 // Named fonts only: on macOS, Firefox resolves -apple-system in the
 // OffscreenCanvas that Pretext measures with to a different face than it paints.

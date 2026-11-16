@@ -5,9 +5,9 @@ import {
   type Value,
 } from 'platejs';
 import type {
-  CommentsJSON,
   CommentThread,
   CommentUser,
+  SavedComments,
 } from 'platejs/comments';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
@@ -111,17 +111,14 @@ export const createCommentSnapshot = (document = commentValue) => {
     plugins: [BaseHeadingPlugin, BaseLinkPlugin],
     initialValue: document,
   });
-  const ranges = [
-    {
-      threadId: 'discussion1',
-      range: {
+  const comments: SavedComments = {
+    threads: commentThreads,
+    ranges: {
+      discussion1: {
         anchor: { path: [1, 1, 0], offset: 0 },
         focus: { path: [1, 2], offset: trailingText.indexOf('.') },
       },
-    },
-    {
-      threadId: 'discussion2',
-      range: {
+      discussion2: {
         anchor: { path: [1, 2], offset: trailingText.indexOf('overlapping') },
         focus: {
           path: [1, 2],
@@ -129,20 +126,6 @@ export const createCommentSnapshot = (document = commentValue) => {
         },
       },
     },
-  ];
-  const comments: CommentsJSON = {
-    kind: 'comments',
-    version: 1,
-    threads: commentThreads,
-    ranges: ranges.map(({ threadId, range }) => {
-      const anchor = fixture.anchor(range, {
-        association: 'inward',
-        deletion: 'nearest',
-      });
-      const saved = fixture.anchor.save(anchor);
-      anchor.release();
-      return { threadId, range: saved };
-    }),
   };
   return { document: fixture.read.value(), comments };
 };

@@ -243,7 +243,7 @@ const restored = createEditor({
 
 Use the same content plugins and schema when loading a revision into a fresh editor. Loading validates the review marks, review records, and document schema before publishing the value. Leave the `authored` node property and the review records to the editor. Local undo starts empty.
 
-If you install [Comments](/docs/comment), save `editor.plugin(CommentsPlugin).api.toJSON()` atomically with the document and its application revision and conversation generation. Verify that association, then pass the saved `CommentsJSON` to `CommentsPlugin.configure({ initialState: { initialComments } })` in the fresh editor. Live thread targets contain semantic identities; `attachment(id)` reads their placement. Accepting, rejecting, and undoing a suggestion decision preserve its discussion. Resolving or reopening a thread stays outside document undo.
+If you install [Comments](/docs/comment), keep thread rows in your tables and save `editor.plugin(CommentsPlugin).api.ranges()` atomically with the document and its application revision. In the fresh editor, pass the thread rows and those ranges to `CommentsPlugin.configure({ initialState: { initialComments: { ranges, threads } } })`. Live thread targets contain semantic identities; `attachment(id)` reads their placement. Accepting, rejecting, and undoing a suggestion decision preserve its discussion. Resolving or reopening a thread stays outside document undo.
 
 Historical previews and restores retain current conversations and use only the selected revision's proven targets. See [Comments and versions](/docs/comment#document-history-and-versions).
 

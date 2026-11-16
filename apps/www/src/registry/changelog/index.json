@@ -2,6 +2,32 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-16-save-comment-ranges",
+      "href": "/registry/changelog/2026-11-16-save-comment-ranges.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Save comment ranges with each document revision",
+      "change": {
+        "type": "source",
+        "date": "2026-11-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "import-toolbar-button",
+        "comment-persistence-demo",
+        "suggestion-persistence-demo",
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-review-demo",
+        "editor-ai"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-15-drop-default-selector-comparisons",
       "href": "/registry/changelog/2026-11-15-drop-default-selector-comparisons.json",
       "status": "draft",

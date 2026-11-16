@@ -1,5 +1,5 @@
 import type { EditorDocumentValue } from 'platejs';
-import type { CommentsJSON } from 'platejs/comments';
+import type { SavedComments } from 'platejs/comments';
 
 // Saved native document. Regenerate with apps/www/scripts/generate-rich-text-editor-value.ts.
 export const richTextEditorValue: EditorDocumentValue = {
@@ -950,9 +950,7 @@ export const richTextEditorValue: EditorDocumentValue = {
   ],
 };
 
-export const richTextEditorComments: CommentsJSON = {
-  kind: 'comments',
-  version: 1,
+export const richTextEditorComments: SavedComments = {
   threads: [
     {
       id: 'discussion1',
@@ -1042,28 +1040,16 @@ export const richTextEditorComments: CommentsJSON = {
       resolution: null,
     },
   ],
-  ranges: [
-    {
-      threadId: 'discussion1',
-      range: {
-        kind: 'range',
-        version: 1,
-        value: {
-          association: 'inward',
-          deletion: 'nearest',
-          range: {
-            anchor: {
-              path: [3, 6, 0],
-              offset: 0,
-            },
-            focus: {
-              path: [3, 7],
-              offset: 22,
-            },
-          },
-          root: 'main',
-        },
+  ranges: {
+    discussion1: {
+      anchor: {
+        path: [3, 6, 0],
+        offset: 0,
+      },
+      focus: {
+        path: [3, 7],
+        offset: 22,
       },
     },
-  ],
+  },
 };

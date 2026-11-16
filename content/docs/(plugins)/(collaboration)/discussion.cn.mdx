@@ -22,7 +22,7 @@ Discussion 是复制的 UI，用于在一个锚定 popover 中打开区块的评
 | 复制的 `suggestion` 项 | 配置包中 plugin 的内容属性，并组合 `SuggestionKit` |
 | 复制的 `discussion` 项 | 将 authored change 与可选评论 thread 关联，再渲染区块触发器、卡片和 Floating Discussion |
 
-应用负责关联 `CommentsJSON` 与文档版本、提供用户，并通过 `initialState.mutate` 授权持久化写入。审阅 mark 保存在文档的 node 上，审阅记录保存在 document envelope 中。评论 thread 包含语义目标，通过 `attachment(id)` 读取当前位置；目标也可以是稳定的 authored change ID。
+应用把线程行存于自己的表，随每个文档版本保存 `api.ranges()`，提供用户，并通过 `initialState.mutate` 授权持久化写入。审阅 mark 保存在文档的 node 上，审阅记录保存在 document envelope 中。评论 thread 包含语义目标，通过 `attachment(id)` 读取当前位置；目标也可以是稳定的 authored change ID。
 
 ## 安装
 
@@ -36,13 +36,13 @@ npx shadcn@latest add https://platejs.org/r/discussion.json https://platejs.org/
 
 ## 用法
 
-将已验证版本的 `CommentsJSON` 传给 `CommentsPlugin`。`EditorKit` 包含复制的 `SuggestionKit`；较小的 kit 可以显式安装它。
+将应用表中的线程行和随文档版本保存的范围传给 `CommentsPlugin`。`EditorKit` 包含复制的 `SuggestionKit`；较小的 kit 可以显式安装它。
 
 ```tsx title="components/editor/discussion-editor.tsx" showLineNumbers
 'use client';
 
 import type { EditorValueInput } from 'platejs';
-import type { CommentsJSON, CommentUser } from 'platejs/comments';
+import type { CommentRanges, CommentThread, CommentUser } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
@@ -54,12 +54,14 @@ import { Toolbar } from '@/components/editor/toolbar';
 
 export function DiscussionEditor({
   initialValue,
-  initialComments,
+  ranges,
+  threads,
   users,
   userId,
 }: {
   initialValue: EditorValueInput;
-  initialComments: CommentsJSON;
+  ranges: CommentRanges;
+  threads: readonly CommentThread[];
   users: Record<string, CommentUser>;
   userId: string;
 }) {
@@ -68,7 +70,7 @@ export function DiscussionEditor({
       ...EditorKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialComments, users },
+        initialState: { initialComments: { ranges, threads }, users },
       }),
     ],
     initialValue,
@@ -157,9 +159,9 @@ if (result.status === 'applied') {
 
 ## 只读和静态渲染
 
-将 `initialComments` 及其匹配的文档值传给各个新编辑器。只读 React 编辑器使用 `CommentsPlugin`；`EditorStatic` 使用 `BaseCommentsPlugin` 和复制的静态评论样式。每个编辑器绑定自己的附着位置和 suggestion view 状态，本地 undo stack 从空开始。
+将 `initialComments` 传给各个新编辑器，范围须与文档值一起保存。只读 React 编辑器使用 `CommentsPlugin`；`EditorStatic` 使用 `BaseCommentsPlugin` 和复制的静态评论样式。每个编辑器绑定自己的附着位置和 suggestion view 状态，本地 undo stack 从空开始。
 
-保存时，将 `editor.plugin(CommentsPlugin).api.toJSON()` 与 `editor.read.value()` 按同一版本持久化。通过 `subscribeThreads` 观察对话数据，通过 `subscribeAttachments` 观察位置。加载、保存、历史目标关联和异步操作请参阅[评论](/docs/comment)，模式和 authored decision 请参阅[建议](/docs/suggestion)。
+保存时，将 `editor.plugin(CommentsPlugin).api.ranges()` 与 `editor.read.value()` 按同一版本持久化，线程行保存在应用的表中。通过 `subscribeThreads` 观察对话数据，通过 `subscribeAttachments` 观察位置。加载、保存、加载问题、孤立范围、自动保存、历史目标关联和异步操作请参阅[评论](/docs/comment)，模式和 authored decision 请参阅[建议](/docs/suggestion)。
 
 ## API 参考
 

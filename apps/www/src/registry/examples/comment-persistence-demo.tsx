@@ -1,7 +1,12 @@
 'use client';
 
 import type { EditorValueInput, Value } from 'platejs';
-import type { CommentsJSON, CommentsPluginState } from 'platejs/comments';
+import type {
+  CommentRanges,
+  CommentsPluginState,
+  CommentThread,
+  SavedComments,
+} from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
@@ -25,23 +30,32 @@ import {
   commentUsers,
 } from '@/registry/examples/values/comment-value';
 
-type CommentSnapshot = {
-  comments: CommentsJSON;
+type Revision = {
+  commentRanges: CommentRanges;
   document: EditorValueInput<Value>;
 };
 
+const initial = createCommentSnapshot();
+
 export default function CommentPersistenceDemo() {
-  const [saved, setSaved] = React.useState<CommentSnapshot | null>(null);
-  const [loaded, setLoaded] = React.useState<CommentSnapshot>(
-    createCommentSnapshot
-  );
-  const [preview, setPreview] = React.useState<CommentSnapshot | null>(null);
+  const [saved, setSaved] = React.useState<Revision | null>(null);
+  const [loaded, setLoaded] = React.useState<Revision>({
+    commentRanges: initial.comments.ranges,
+    document: initial.document,
+  });
+  const [preview, setPreview] = React.useState<{
+    comments: SavedComments;
+    document: EditorValueInput<Value>;
+  } | null>(null);
   const [failNext, setFailNext] = React.useState(true);
   const [status, setStatus] = React.useState(
     'Snapshots stay in memory in this example.'
   );
   const [persistence] = React.useState(() => {
     let rejectNextAction = true;
+    const threadTable = new Map<string, CommentThread>(
+      initial.comments.threads.map((thread) => [thread.id, thread])
+    );
     const mutate: CommentsPluginState['mutate'] = (request) => {
       if (
         (request.operation === 'reply' || request.operation === 'reopen') &&
@@ -51,10 +65,15 @@ export default function CommentPersistenceDemo() {
         setFailNext(false);
         return { status: 'reject', code: 'simulated-failure' };
       }
+      const id = request.proposed?.id ?? request.previous?.id;
+      if (request.proposed) {
+        threadTable.set(request.proposed.id, request.proposed);
+      } else if (id) threadTable.delete(id);
       return { status: 'commit', thread: request.proposed };
     };
     return {
       mutate,
+      threads: () => [...threadTable.values()],
       simulateFailure: () => {
         rejectNextAction = true;
         setFailNext(true);
@@ -70,7 +89,10 @@ export default function CommentPersistenceDemo() {
         CommentsPlugin.configure({
           initialState: {
             users: commentUsers,
-            initialComments: loaded.comments,
+            initialComments: {
+              ranges: loaded.commentRanges,
+              threads: persistence.threads(),
+            },
             mutate: persistence.mutate,
           },
         }),
@@ -89,11 +111,11 @@ export default function CommentPersistenceDemo() {
             onClick={() => {
               setSaved(
                 structuredClone({
+                  commentRanges: editor.plugin(CommentsPlugin).api.ranges(),
                   document: editor.read.value(),
-                  comments: editor.plugin(CommentsPlugin).api.toJSON(),
                 })
               );
-              setStatus('Saved the document and its comments in memory.');
+              setStatus('Saved the document and its comment ranges in memory.');
             }}
             size="sm"
             variant="outline"
@@ -119,33 +141,13 @@ export default function CommentPersistenceDemo() {
             disabled={!saved}
             onClick={() => {
               if (!saved) return;
-              const threads = editor
-                .plugin(CommentsPlugin)
-                .api.getThreads()
-                .filter((thread) => thread.status === 'published');
-              const oldRanges = new Map(
-                saved.comments.ranges.map(({ threadId, range }) => [
-                  threadId,
-                  range,
-                ])
-              );
               setPreview(
                 structuredClone({
-                  document: saved.document,
                   comments: {
-                    ...saved.comments,
-                    threads,
-                    ranges: threads.flatMap((thread) =>
-                      thread.target.type === 'range'
-                        ? [
-                            {
-                              threadId: thread.id,
-                              range: oldRanges.get(thread.id) ?? null,
-                            },
-                          ]
-                        : []
-                    ),
+                    ranges: saved.commentRanges,
+                    threads: persistence.threads(),
                   },
+                  document: saved.document,
                 })
               );
             }}
@@ -195,9 +197,7 @@ export default function CommentPersistenceDemo() {
                 .api.reply('discussion1', body);
               if (result.status === 'applied') {
                 editor.plugin(CommentsPlugin).api.setActive(['discussion1']);
-                setStatus(
-                  'Reply added. Save a snapshot to keep it for reload.'
-                );
+                setStatus('Reply saved to the thread table; reload keeps it.');
               }
               return result;
             }}
@@ -210,7 +210,11 @@ export default function CommentPersistenceDemo() {
   );
 }
 
-function HistoricalComments({ snapshot }: { snapshot: CommentSnapshot }) {
+function HistoricalComments({
+  snapshot,
+}: {
+  snapshot: { comments: SavedComments; document: EditorValueInput<Value> };
+}) {
   const editor = useCreateEditor(
     {
       plugins: [

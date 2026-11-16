@@ -241,7 +241,7 @@ const restored = createEditor({
 
 用相同的内容插件和 schema 将版本加载到新 editor。加载过程会在发布 value 前验证审阅 mark、审阅记录和 document schema。`authored` node 属性和审阅记录交由编辑器管理。本地 undo 从空开始。
 
-如果安装了[评论](/docs/comment)，请将 `editor.plugin(CommentsPlugin).api.toJSON()` 与文档、应用版本和对话代次一起原子保存。验证关联后，在新 editor 中用 `CommentsPlugin.configure({ initialState: { initialComments } })` 加载保存的 `CommentsJSON`。实时 thread target 只包含语义身份，通过 `attachment(id)` 读取位置。接受、拒绝和撤销建议决定都会保留讨论；解决或重新打开 thread 不进入文档 undo。
+如果安装了[评论](/docs/comment)，请把线程行保存在应用的表中，并将 `editor.plugin(CommentsPlugin).api.ranges()` 与文档和应用版本一起原子保存。在新 editor 中，把线程行和这些范围传给 `CommentsPlugin.configure({ initialState: { initialComments: { ranges, threads } } })`。实时 thread target 只包含语义身份，通过 `attachment(id)` 读取位置。接受、拒绝和撤销建议决定都会保留讨论；解决或重新打开 thread 不进入文档 undo。
 
 历史预览和恢复保留当前对话，并只使用所选版本可验证的目标。参阅[评论的历史版本](/cn/docs/comment#历史版本)。
 

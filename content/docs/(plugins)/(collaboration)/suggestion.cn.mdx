@@ -208,7 +208,7 @@ Accepted 和 Proposed 控件设置 `preview` view；Markup 设置 `{ intent: 'ed
 
 <ComponentPreview name="suggestion-persistence-demo" height="440px" />
 
-Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档和 `CommentsJSON` 创建新 editor，丢弃未保存的工作，并从空的本地 undo stack 开始。待处理 change 属于文档；对话独立于文档 undo 保存。
+Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档、其评论范围和一起保存的线程行创建新 editor，丢弃未保存的工作，并从空的本地 undo stack 开始。待处理 change 属于文档；对话独立于文档 undo 保存。
 
 ## 创建和决定 change
 
@@ -274,12 +274,12 @@ const result = authored.update.decide({ action: 'accept', changes });
 
 ```tsx
 const savedDocument = editor.read.value();
-const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
+const savedRanges = editor.plugin(CommentsPlugin).api.ranges();
 ```
 
-按同一个应用版本和对话代次原子保存文档与 `CommentsJSON`。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失审阅记录。
+按同一个应用版本原子保存文档与评论范围，线程行保存在应用的表中。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失审阅记录。
 
-创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/cn/docs/comment#历史版本)。
+创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: { ranges: savedRanges, threads } } })`，其中 `threads` 从应用的表读取。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/cn/docs/comment#历史版本)。
 
 选择显式的[导出投影](/cn/docs/authored-changes#导出显式投影)。HTML 与 Markdown 只携带可见的 `accepted` 或 `proposed` content。Plate 需要恢复审阅时保存 authored JSON；需要 Word revision 时使用 DOCX `review` export。
 

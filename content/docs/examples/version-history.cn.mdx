@@ -50,6 +50,6 @@ const reloaded = createEditor({
 });
 ```
 
-新 editor 从空的本地 undo 和 redo stack 开始。如果文档包含评论，用 `comments.toJSON()` 将 `CommentsJSON` 与同一版本保存，通过 `initialComments` 加载；文档 undo 不会回退讨论。
+新 editor 从空的本地 undo 和 redo stack 开始。如果文档包含评论，将 `comments.ranges()` 与同一版本保存，线程行保存在应用的表中，再通过 `initialComments: { ranges, threads }` 一起加载；文档 undo 不会回退讨论。
 
 要提议和审阅修改而不是替换文档，请参阅 [Authored Changes](/cn/docs/authored-changes)。

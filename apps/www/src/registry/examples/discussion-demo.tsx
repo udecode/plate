@@ -2,7 +2,7 @@
 
 import type { EditorDocumentValue } from 'platejs';
 import type { AuthoredMark } from 'platejs/authored';
-import type { CommentsJSON, CommentThread } from 'platejs/comments';
+import type { CommentThread, SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
@@ -183,17 +183,12 @@ const fixture = createEditor({
   initialValue: review,
   userId: 'alice',
 });
-const anchor = fixture.anchor(
-  {
-    anchor: { path: [1, 6, 0], offset: 0 },
-    focus: { path: [1, 7], offset: ' on many text segments'.length },
-  },
-  { association: 'inward', deletion: 'nearest' }
-);
-const initialComments: CommentsJSON = {
-  kind: 'comments',
-  version: 1,
+const initialComments: SavedComments = {
   threads,
-  ranges: [{ threadId: 'discussion1', range: fixture.anchor.save(anchor) }],
+  ranges: {
+    discussion1: {
+      anchor: { path: [1, 6, 0], offset: 0 },
+      focus: { path: [1, 7], offset: ' on many text segments'.length },
+    },
+  },
 };
-anchor.release();

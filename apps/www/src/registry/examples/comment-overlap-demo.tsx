@@ -1,7 +1,7 @@
 'use client';
 
 import { createEditor, type Value } from 'platejs';
-import type { CommentsJSON, CommentThread } from 'platejs/comments';
+import type { CommentThread, SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
@@ -109,26 +109,16 @@ const threads: CommentThread[] = [
 ];
 
 const fixture = createEditor({ initialValue: value });
-const initialComments: CommentsJSON = {
-  kind: 'comments',
-  version: 1,
+const initialComments: SavedComments = {
   threads,
-  ranges: [
-    {
+  ranges: {
+    [threads[0].id]: {
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 22 },
     },
-    {
+    [threads[1].id]: {
       anchor: { path: [0, 0], offset: 11 },
       focus: { path: [0, 0], offset: 31 },
     },
-  ].map((range, index) => {
-    const anchor = fixture.anchor(range, {
-      association: 'inward',
-      deletion: 'nearest',
-    });
-    const saved = fixture.anchor.save(anchor);
-    anchor.release();
-    return { threadId: threads[index].id, range: saved };
-  }),
+  },
 };

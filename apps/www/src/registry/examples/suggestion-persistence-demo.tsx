@@ -1,7 +1,7 @@
 'use client';
 
 import type { EditorValueInput, Value } from 'platejs';
-import type { CommentsJSON } from 'platejs/comments';
+import type { SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
@@ -22,7 +22,7 @@ import { createSuggestionDocument } from '@/registry/examples/values/suggestion-
 
 type SuggestionSnapshot = {
   document: EditorValueInput<Value>;
-  comments: CommentsJSON | null;
+  comments: SavedComments | null;
 };
 
 export default function SuggestionPersistenceDemo() {
@@ -61,7 +61,13 @@ export default function SuggestionPersistenceDemo() {
             setSaved(
               structuredClone({
                 document: editor.read.value(),
-                comments: editor.plugin(CommentsPlugin).api.toJSON(),
+                comments: {
+                  ranges: editor.plugin(CommentsPlugin).api.ranges(),
+                  threads: editor
+                    .plugin(CommentsPlugin)
+                    .api.getThreads()
+                    .filter((thread) => thread.status === 'published'),
+                },
               })
             );
             setStatus('Saved proposals and discussion threads in memory.');

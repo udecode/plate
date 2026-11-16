@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createEditor } from 'platejs';
 import { AuthoredPlugin, projectAuthoredDocument } from 'platejs/authored';
-import type { CommentsJSON } from 'platejs/comments';
+import type { SavedComments } from 'platejs/comments';
 
 import {
   richTextEditorComments,
@@ -86,20 +86,15 @@ const threads = richTextEditorComments.threads.map((thread) =>
       }
 );
 
-const anchor = editor.anchor(
-  {
-    anchor: { path: [3, 6, 0], offset: 0 },
-    focus: { path: [3, 7], offset: ' on many text segments'.length },
-  },
-  { association: 'inward', deletion: 'nearest' }
-);
-const comments: CommentsJSON = {
-  kind: 'comments',
-  version: 1,
+const comments: SavedComments = {
   threads,
-  ranges: [{ threadId: 'discussion1', range: editor.anchor.save(anchor) }],
+  ranges: {
+    discussion1: {
+      anchor: { path: [3, 6, 0], offset: 0 },
+      focus: { path: [3, 7], offset: ' on many text segments'.length },
+    },
+  },
 };
-anchor.release();
 
 const output = fileURLToPath(
   new URL(
@@ -109,7 +104,7 @@ const output = fileURLToPath(
 );
 writeFileSync(
   output,
-  `import type { EditorDocumentValue } from 'platejs';\nimport type { CommentsJSON } from 'platejs/comments';\n\n// Saved native document. Regenerate with apps/www/scripts/generate-rich-text-editor-value.ts.\nexport const richTextEditorValue: EditorDocumentValue = ${JSON.stringify(editor.read.value(), null, 2)};\n\nexport const richTextEditorComments: CommentsJSON = ${JSON.stringify(comments, null, 2)};\n`
+  `import type { EditorDocumentValue } from 'platejs';\nimport type { SavedComments } from 'platejs/comments';\n\n// Saved native document. Regenerate with apps/www/scripts/generate-rich-text-editor-value.ts.\nexport const richTextEditorValue: EditorDocumentValue = ${JSON.stringify(editor.read.value(), null, 2)};\n\nexport const richTextEditorComments: SavedComments = ${JSON.stringify(comments, null, 2)};\n`
 );
 for (const args of [
   ['exec', 'oxlint', '--fix', output],

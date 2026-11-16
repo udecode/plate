@@ -7,12 +7,9 @@ import {
   type BasePluginInput,
   type Editor,
   type EditorDocumentValue,
+  type Range,
 } from 'platejs';
-import type {
-  CommentThread,
-  CommentsJSON,
-  CommentUser,
-} from 'platejs/comments';
+import type { CommentThread, CommentUser } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import type { DocxComment } from 'platejs/docx/import';
 import { MarkdownPlugin } from 'platejs/markdown';
@@ -146,7 +143,7 @@ const importDocxComments = (editor: Editor, source: readonly DocxComment[]) => {
 
   const users: Record<string, CommentUser> = {};
   const threads: CommentThread[] = [];
-  const ranges: Array<CommentsJSON['ranges'][number]> = [];
+  const ranges: Record<string, Range> = {};
   let imported = 0;
 
   groups.forEach((group, rootId) => {
@@ -164,7 +161,7 @@ const importDocxComments = (editor: Editor, source: readonly DocxComment[]) => {
 
     if (!target || messages.length === 0) return;
 
-    let savedRange: CommentsJSON['ranges'][number]['range'];
+    let range: Range | null;
 
     try {
       const anchor = editor.anchor(target.range, {
@@ -173,13 +170,14 @@ const importDocxComments = (editor: Editor, source: readonly DocxComment[]) => {
       });
 
       try {
-        savedRange = editor.anchor.save(anchor);
+        range = anchor.resolve();
       } finally {
         anchor.release();
       }
     } catch {
       return;
     }
+    if (!range) return;
 
     const userId = docxCommentUser(root, users);
     const createdAt = timestamp(root.createdAt);
@@ -200,16 +198,14 @@ const importDocxComments = (editor: Editor, source: readonly DocxComment[]) => {
         userId,
       })
     );
-    ranges.push(Object.freeze({ range: savedRange, threadId: id }));
+    ranges[id] = range;
     imported += messages.length;
   });
 
   return Object.freeze({
     comments: Object.freeze({
-      kind: 'comments' as const,
       ranges: Object.freeze(ranges),
       threads: Object.freeze(threads),
-      version: 1 as const,
     }),
     imported,
     skipped: source.length - imported,

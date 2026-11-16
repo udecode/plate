@@ -2,7 +2,7 @@
 
 import { type Descendant, ElementApi, NodeApi, TextApi } from 'platejs';
 import type { AuthoredMark } from 'platejs/authored';
-import type { CommentsJSON } from 'platejs/comments';
+import type { CommentThread, SavedComments } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { CodeBlockPlugin, createEditor, EditorRoot } from 'platejs/react';
 import * as React from 'react';
@@ -173,7 +173,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       userId: 'alice',
       initialValue: review,
     });
-    const threads: CommentsJSON['threads'] = [
+    const threads: CommentThread[] = [
       {
         id: 'discussion1',
         createdAt: new Date(createdAt).toISOString(),
@@ -234,23 +234,18 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     const commented = review.children[3].children.indexOf(
       paragraph.children[3]
     );
-    const anchor = current.anchor(
-      {
-        anchor: { path: [3, commented, 0], offset: 0 },
-        focus: {
-          path: [3, commented + 1],
-          offset: discussionTail.text.indexOf(locale === 'cn' ? '。' : '.'),
+    const comments: SavedComments = {
+      threads,
+      ranges: {
+        discussion1: {
+          anchor: { path: [3, commented, 0], offset: 0 },
+          focus: {
+            path: [3, commented + 1],
+            offset: discussionTail.text.indexOf(locale === 'cn' ? '。' : '.'),
+          },
         },
       },
-      { association: 'inward', deletion: 'nearest' }
-    );
-    const comments: CommentsJSON = {
-      kind: 'comments',
-      version: 1,
-      threads,
-      ranges: [{ threadId: 'discussion1', range: current.anchor.save(anchor) }],
     };
-    anchor.release();
 
     const editor = createEditor({
       plugins: [

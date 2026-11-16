@@ -208,7 +208,7 @@ Open a change's discussion button and add a reply, then save a snapshot. Accept 
 
 <ComponentPreview name="suggestion-persistence-demo" height="440px" />
 
-The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates a fresh editor from the saved document and `CommentsJSON`, discarding unsaved work and starting an empty local undo stack. Pending changes belong to the document; conversations persist separately from document undo.
+The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates a fresh editor from the saved document, its comment ranges and the thread rows saved beside them, discarding unsaved work and starting an empty local undo stack. Pending changes belong to the document; conversations persist separately from document undo.
 
 ## Create and decide changes
 
@@ -274,12 +274,12 @@ Save the complete value returned by `editor.read.value()`. Pending review marks 
 
 ```tsx
 const savedDocument = editor.read.value();
-const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
+const savedRanges = editor.plugin(CommentsPlugin).api.ranges();
 ```
 
-Persist the document and `CommentsJSON` atomically for the same application revision and conversation generation. Verify that association before loading, and use the same content plugins. Saving only `children` discards the review records.
+Persist the document and its comment ranges atomically for the same application revision, and keep thread rows in your tables. Verify that association before loading, and use the same content plugins. Saving only `children` discards the review records.
 
-Create a fresh editor with the saved document as `initialValue` and `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`. Local undo starts empty. The document preserves each change's author and ID, so replies can locate the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits. For historical previews and restores, [join current conversations with the selected revision's targets](/docs/comment#document-history-and-versions).
+Create a fresh editor with the saved document as `initialValue` and `CommentsPlugin.configure({ initialState: { initialComments: { ranges: savedRanges, threads } } })`, with `threads` read from your table. Local undo starts empty. The document preserves each change's author and ID, so replies can locate the same suggestions. Set `userId` to the current author; loading another author's suggestions does not require changing it or replaying their edits. For historical previews and restores, [join current conversations with the selected revision's targets](/docs/comment#document-history-and-versions).
 
 Choose an explicit [export projection](/docs/authored-changes#export-explicit-projections).
 HTML and Markdown carry visible `accepted` or `proposed` content only. Save

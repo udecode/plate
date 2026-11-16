@@ -29,7 +29,8 @@ resources, such as a Yjs document, when React commits the component, and give
 them back when it unmounts, the editor is replaced or `enabled` turns off.
 
 The replacement editor starts from the options you pass, so capture the old
-editor's document and comments before you switch users:
+editor's document and comment ranges before you switch users. Thread rows come
+from your tables:
 
 ```tsx
 const [userId, setUserId] = useState(session.user.id);
@@ -39,7 +40,9 @@ const editor = useCreateEditor({
   plugins: [
     ...plugins,
     CommentsPlugin.configure({
-      initialState: { initialComments: snapshot.comments },
+      initialState: {
+        initialComments: { ranges: snapshot.commentRanges, threads },
+      },
     }),
   ],
   userId,
@@ -47,16 +50,17 @@ const editor = useCreateEditor({
 
 const switchUser = (nextUserId: string) => {
   setSnapshot({
-    comments: editor.plugin(CommentsPlugin).api.toJSON(),
+    commentRanges: editor.plugin(CommentsPlugin).api.ranges(),
     document: editor.read.value(),
   });
   setUserId(nextUserId);
 };
 ```
 
-A comment change still pending at the switch is missing from the new editor,
-and saving the new editor's comments without a revision check can undo it in
-storage, restoring a removed thread or message. The old editor lets go of its
+A comment change still waiting on `mutate` at the switch reaches your tables
+but not the new editor, which shows it after the next load. A create's range is
+in `ranges()` while it waits, so the new editor keeps it as an orphan until its
+thread loads. The old editor lets go of its
 Yjs document when React commits the new one, so the new editor binds the same
 `rootName` in the same `Y.Doc`.
 
