@@ -61,17 +61,22 @@ export const baseIdentity = (facts: Facts, streams: Streams): Identity => {
 export const stepIdentity = (
   prior: Identity,
   facts: Facts,
-  streams: Streams
+  streams: Streams,
+  /** Each line the step split at its start, as its empty upper half and the line. */
+  starts: ReadonlyArray<readonly [half: Origin, line: Origin]> = []
 ): Identity => {
   const owners = ownersOf(facts, streams);
   const from = new Map<Origin, Origin[]>();
+  const link = (id: Origin, source: Origin) => {
+    const list = from.get(id);
+    if (list === undefined) from.set(id, [source]);
+    else if (!list.includes(source)) list.push(source);
+  };
   for (const [token, owner] of owners) {
     const was = prior.owners.get(token);
-    if (was === undefined || was === owner) continue;
-    const list = from.get(owner);
-    if (list === undefined) from.set(owner, [was]);
-    else if (!list.includes(was)) list.push(was);
+    if (was !== undefined && was !== owner) link(owner, was);
   }
+  for (const [half, line] of starts) link(half, line);
   const elements = new Map<Origin, ElementIdentity>();
   for (const id of facts.elements.keys()) {
     const sources = from.get(id) ?? [];
@@ -131,7 +136,7 @@ export const alive = (fold: Lineage, origin: Origin): boolean =>
   (fold.identity.heirs.get(origin)?.length ?? 0) > 0;
 
 const heirOf = (fold: Lineage, origin: Origin) =>
-  fold.facts.letters.has(origin)
+  fold.facts.letters.has(origin) || fold.facts.elements.has(origin)
     ? origin
     : fold.identity.heirs.get(origin)?.[0];
 
@@ -166,6 +171,8 @@ export type Move = Readonly<{
    * birth, which counts through the base blocks its lineage continues.
    */
   past: ReadonlySet<Origin>;
+  /** Whether a step of the move took the head past a block that step kept, even one a later step removed. */
+  turned: boolean;
 }>;
 
 export type Intent = Readonly<{
@@ -188,10 +195,11 @@ export const renamedIntent = (
   rename: (id: Origin) => Origin
 ): Intent => {
   const moves = new Map<Origin, Move>();
-  for (const [head, { carried, past }] of intent.moves) {
+  for (const [head, { carried, past, turned }] of intent.moves) {
     moves.set(rename(head), {
       carried: new Set([...carried].map(rename)),
       past,
+      turned,
     });
   }
   return {
@@ -238,7 +246,8 @@ const netMoves = (
   }
   const factsAt = (at: number) => (at < 0 ? base : steps[at].after);
   const order = (facts: Facts, left: Origin, right: Origin) =>
-    (facts.index.get(left) ?? -1) < (facts.index.get(right) ?? -1);
+    (facts.rootPosition.get(left) ?? -1) <
+    (facts.rootPosition.get(right) ?? -1);
   const stepOf = (id: Origin) => (isBase(id) ? -1 : (bornAt.get(id) ?? -1));
   const carriedBy = new Map<Origin, Set<Origin>>();
   for (const { moved } of steps) {
@@ -256,7 +265,22 @@ const netMoves = (
   const moves = new Map<Origin, Move>();
   for (const [head, carried] of carriedBy) {
     const past = new Set<Origin>();
-    moves.set(head, { carried, past });
+    const turned = steps.some(({ after, moved }, at) => {
+      if (!moved.has(head)) return false;
+      const before = factsAt(at - 1);
+      return [...before.elements].some(
+        ([block, fact]) =>
+          fact.block &&
+          block !== head &&
+          !carried.has(block) &&
+          after.elements.has(block) &&
+          after.elements.has(head) &&
+          !isAncestor(before, block, head) &&
+          !isAncestor(after, block, head) &&
+          order(before, head, block) !== order(after, head, block)
+      );
+    });
+    moves.set(head, { carried, past, turned });
     // A split at the head's end leaves an empty half that continues it too,
     // and the head stands where the tree the move carried stands.
     const here =

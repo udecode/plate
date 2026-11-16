@@ -83,12 +83,15 @@ type Claims = Readonly<{
   container: (id: string) => string | undefined;
   facet: (id: string, key: string) => boolean;
   order: (left: string, right: string) => boolean;
+  /** The value a record own changed had in the first base. */
+  record: (key: string) => readonly [string | undefined] | undefined;
 }>;
 const NO_CLAIMS: Claims = {
   boundary: () => false,
   container: () => undefined,
   facet: () => false,
   order: () => false,
+  record: () => undefined,
 };
 const proofState: unique symbol = Symbol('held proof');
 export type HeldProof = Readonly<{
@@ -151,6 +154,9 @@ export type Streams = ReadonlyMap<string, readonly Entry[]>;
 class SkippedRunError extends Error {
   override name = 'SkippedRunError';
 }
+
+let reads = 0;
+export const ledgerReads = () => reads;
 
 const shapesOf = (tokens: readonly JsonToken[]) => {
   const shapes: Shape[] = [];
@@ -225,11 +231,13 @@ const forEachNonRisingPair = (
     let right = middle;
     let out = from;
     for (; left < middle && right < to; out += 1) {
+      reads += 1;
       if (values[order[left]] < values[order[right]]) {
         scratch[out] = order[left];
         left += 1;
       } else {
         for (let at = left; at < middle; at += 1) {
+          reads += 1;
           visit(order[at], order[right]);
         }
         scratch[out] = order[right];
@@ -291,8 +299,93 @@ type Step = Readonly<{
   rewrites: ReadonlyArray<
     Readonly<{ deleted: readonly string[]; letters: number }>
   >;
+  /** Each line split at its start, as its empty upper half and the line. */
+  starts: ReadonlyArray<readonly [half: string, line: string]>;
   trees: ReadonlyArray<readonly string[]>;
 }>;
+
+type Extent = {
+  at: number;
+  holdsText: boolean;
+  letters: string[];
+  parent?: Extent;
+  skips: boolean;
+  to: number;
+};
+const extentsOf = (stream: readonly Entry[]) => {
+  const extents = new Map<string, Extent>();
+  const open: Extent[] = [];
+  reads += stream.length;
+  for (const [at, token] of stream.entries()) {
+    if (token.kind === 'skip' || token.kind === 'letter') {
+      reads += open.length;
+      for (const extent of open) {
+        if (token.kind === 'skip') extent.skips = true;
+        else extent.letters.push(token.id);
+      }
+    } else if (token.nodeKind === 'text') {
+      const top = open.at(-1);
+      if (top !== undefined) top.holdsText = true;
+    } else if (token.kind === 'open') {
+      const extent: Extent = {
+        at,
+        holdsText: false,
+        letters: [],
+        parent: open.at(-1),
+        skips: false,
+        to: at,
+      };
+      extents.set(token.id, extent);
+      open.push(extent);
+    } else {
+      const extent = open.pop();
+      if (extent !== undefined) extent.to = at;
+    }
+  }
+  return extents;
+};
+
+// An Enter at a line's start leaves the line's open on the empty upper half
+// and gives the lower half, which keeps the letters, a new open. The empty
+// half is the birth, so the two opens trade names.
+const nameLineStarts = (
+  old: readonly Entry[],
+  stream: Entry[],
+  tag: string
+) => {
+  const starts: Array<readonly [string, string]> = [];
+  const was = extentsOf(old);
+  const now = extentsOf(stream);
+  const isLine = (extent: Extent) =>
+    extent.holdsText && extent.parent?.holdsText !== true;
+  for (const [line, upper] of now) {
+    const before = was.get(line);
+    if (
+      line.startsWith(`${tag}:`) ||
+      before === undefined ||
+      !isLine(upper) ||
+      upper.letters.length > 0 ||
+      upper.skips ||
+      (before.letters.length === 0 && !before.skips)
+    ) {
+      continue;
+    }
+    const next = stream[upper.to + 1];
+    if (next?.kind !== 'open' || !next.id.startsWith(`${tag}:`)) continue;
+    const lower = now.get(next.id) as Extent;
+    if (
+      !isLine(lower) ||
+      (lower.letters.length === 0 && !lower.skips) ||
+      lower.letters.some((id) => !before.letters.includes(id))
+    ) {
+      continue;
+    }
+    stream[upper.at] = { ...(stream[upper.at] as Token), id: next.id };
+    stream[lower.at] = { ...next, id: line };
+    starts.push([next.id, line]);
+  }
+  return starts;
+};
 
 const claimMovedTrees = (
   replacements: readonly Replacement[],
@@ -352,6 +445,18 @@ const claimMovedTrees = (
 // inserts whole where it deletes a different one whole is a birth, such as the
 // block a schema fills in for one the change removed. One that holds letters
 // is the deleted element with new text, as typing over a whole line writes.
+const retypes = (replacement: Replacement) => {
+  const lettersIn = (tokens: readonly Shape[]) =>
+    tokens.flatMap((token) => (token.kind === 'letter' ? [token.ch] : []));
+  const left = lettersIn(replacement.deleted);
+  if (left.length === 0) return false;
+  return lettersIn(replacement.inserted).some((ch) => {
+    const at = left.indexOf(ch);
+    if (at === -1) return true;
+    left.splice(at, 1);
+    return false;
+  });
+};
 const claimWrittenBack = (
   replacements: readonly Replacement[],
   claimed: Set<string>
@@ -359,12 +464,20 @@ const claimWrittenBack = (
   for (const replacement of replacements) {
     const deletedWhole = wholeElementsOf(replacement.deleted);
     const insertedWhole = wholeElementsOf(replacement.inserted, true);
+    const anew = retypes(replacement);
     const deleted = replacement.deleted
       .map((token, at) => ({ at, token }))
-      .filter(({ token }) => !claimed.has(token.id));
+      .filter(
+        ({ token }) =>
+          !claimed.has(token.id) && !(anew && token.kind === 'letter')
+      );
     const inserted = replacement.inserted
       .map((token, at) => ({ at, token }))
-      .filter(({ at }) => replacement.ids[at] === undefined);
+      .filter(
+        ({ at, token }) =>
+          replacement.ids[at] === undefined &&
+          !(anew && token.kind === 'letter')
+      );
     for (const [d, i] of commonPairs(
       deleted,
       inserted,
@@ -387,10 +500,11 @@ const claimJoinedLetters = (
   replacements: readonly Replacement[],
   claimed: Set<string>
 ) => {
-  const looseDeleted = replacements.flatMap(({ deleted }) =>
+  const kept = replacements.filter((replacement) => !retypes(replacement));
+  const looseDeleted = kept.flatMap(({ deleted }) =>
     deleted.filter((token) => token.kind === 'letter' && !claimed.has(token.id))
   );
-  const looseInserted = replacements.flatMap((replacement) =>
+  const looseInserted = kept.flatMap((replacement) =>
     replacement.inserted.flatMap((token, at) =>
       token.kind === 'letter' && replacement.ids[at] === undefined
         ? [{ at, replacement, token }]
@@ -418,6 +532,7 @@ const foldChange = (
   const parts = new Map<string, Array<Replacement | readonly Entry[]>>();
   for (const [root, sections] of view.roots) {
     const old = streams.get(root) ?? [];
+    reads += old.length;
     const rootParts: Array<Replacement | readonly Entry[]> = [];
     let entry = 0;
     let into = 0;
@@ -522,9 +637,9 @@ const foldChange = (
       ).length,
     });
   }
+  const starts: Array<readonly [string, string]> = [];
   for (const [root, rootParts] of parts) {
     const stream: Entry[] = [];
-    const rootBirths: Token[] = [];
     for (const part of rootParts) {
       if (Array.isArray(part)) {
         for (const entry of part as readonly Entry[]) stream.push(entry);
@@ -532,23 +647,27 @@ const foldChange = (
       }
       const replacement = part as Replacement;
       for (const [at, shape] of replacement.inserted.entries()) {
-        const id = replacement.ids[at] as string;
-        const token = { ...shape, id };
-        stream.push(token);
-        if (id.startsWith(`${tag}:`) && isCarrier(token)) {
-          rootBirths.push(token);
-        }
+        stream.push({ ...shape, id: replacement.ids[at] as string });
       }
     }
+    starts.push(...nameLineStarts(streams.get(root) ?? [], stream, tag));
     next.set(root, stream);
-    births.set(root, rootBirths);
+    births.set(
+      root,
+      stream.filter(
+        (token): token is Token =>
+          token.kind !== 'skip' &&
+          token.id.startsWith(`${tag}:`) &&
+          isCarrier(token)
+      )
+    );
   }
   for (const root of view.createRoots) if (!next.has(root)) next.set(root, []);
   for (const root of view.deleteRoots) {
     next.delete(root);
   }
   return {
-    step: { ambiguous, births, rewrites, trees },
+    step: { ambiguous, births, rewrites, starts, trees },
     streams: next,
   };
 };
@@ -602,7 +721,7 @@ type ElementFact = Readonly<{
 export type Facts = Readonly<{
   blocks: ReadonlyMap<string, readonly string[]>;
   elements: ReadonlyMap<string, ElementFact>;
-  index: ReadonlyMap<string, number>;
+  rootPosition: ReadonlyMap<string, number>;
   letters: ReadonlyMap<string, LetterFact>;
   owners: ReadonlyMap<string, string>;
   roots: ReadonlySet<string>;
@@ -618,10 +737,11 @@ type TreeNode = {
 const factsOf = (streams: Streams): Facts => {
   const blocks = new Map<string, string[]>();
   const elements = new Map<string, ElementFact>();
-  const index = new Map<string, number>();
+  const rootPosition = new Map<string, number>();
   const letters = new Map<string, LetterFact>();
   const owners = new Map<string, string>();
   for (const [root, stream] of streams) {
+    reads += stream.length;
     const top: TreeNode[] = [];
     const stack: TreeNode[] = [];
     let position = 0;
@@ -630,7 +750,7 @@ const factsOf = (streams: Streams): Facts => {
         position += token.width;
         continue;
       }
-      if (isCarrier(token)) index.set(token.id, position);
+      if (isCarrier(token)) rootPosition.set(token.id, position);
       position += 1;
       if (token.kind === 'open') {
         const node: TreeNode = { children: [], letters: [], token };
@@ -721,7 +841,7 @@ const factsOf = (streams: Streams): Facts => {
   return {
     blocks,
     elements,
-    index,
+    rootPosition,
     letters,
     owners,
     roots: new Set(streams.keys()),
@@ -813,7 +933,12 @@ const foldChain = (
     const folded = foldChange(streams, view, `${tag}:${at}`);
     if (each !== undefined) {
       const after = factsOf(folded.streams);
-      identity = stepIdentity(identity, after, folded.streams);
+      identity = stepIdentity(
+        identity,
+        after,
+        folded.streams,
+        folded.step.starts
+      );
       each(folded.step, facts, after);
       facts = after;
     }
@@ -859,7 +984,7 @@ const pairKey = (left: string, right: string) =>
 const present = (facts: Facts, id: string | undefined) =>
   id !== undefined && (facts.letters.has(id) || facts.elements.has(id));
 const before = (facts: Facts, left: string, right: string) =>
-  (facts.index.get(left) ?? -1) < (facts.index.get(right) ?? -1);
+  (facts.rootPosition.get(left) ?? -1) < (facts.rootPosition.get(right) ?? -1);
 const threeWaySilent = (
   baseValue: unknown,
   ownValue: unknown,
@@ -873,6 +998,36 @@ const threeWaySilent = (
     !(ownChanged && accChanged && ownValue !== accValue) &&
     mergedValue === (ownChanged ? ownValue : accValue)
   );
+};
+const touchedBetween = (from: Facts, to: Facts) => {
+  reads += to.elements.size + from.elements.size;
+  const touched = new Set<string>();
+  const near = (fact: ElementFact) => {
+    if (fact.prev !== undefined) touched.add(fact.prev);
+    if (fact.next !== undefined) touched.add(fact.next);
+  };
+  for (const [id, fact] of to.elements) {
+    const was = from.elements.get(id);
+    if (was === undefined) {
+      touched.add(id);
+      near(fact);
+    } else if (
+      was.parent !== fact.parent ||
+      was.prev !== fact.prev ||
+      was.next !== fact.next ||
+      canonicalRecordJson(was.props) !== canonicalRecordJson(fact.props) ||
+      (from.blocks.get(id) ?? []).join(' ') !==
+        (to.blocks.get(id) ?? []).join(' ')
+    ) {
+      touched.add(id);
+    }
+  }
+  for (const [id, fact] of from.elements) {
+    if (to.elements.has(id)) continue;
+    touched.add(id);
+    near(fact);
+  }
+  return touched;
 };
 const findLastBefore = <T>(
   list: readonly T[],
@@ -907,6 +1062,20 @@ const ancestorsIn = (facts: Facts, id: string) => {
     chain.push(at);
   }
   return chain;
+};
+const lettersBeside = (facts: Facts, block: string, id: string) => {
+  const at = facts.rootPosition.get(id);
+  if (at === undefined) return [];
+  const letters = facts.blocks.get(block) ?? [];
+  let low = 0;
+  let high = letters.length;
+  while (low < high) {
+    reads += 1;
+    const mid = (low + high) >>> 1;
+    if ((facts.rootPosition.get(letters[mid]) as number) > at) high = mid;
+    else low = mid + 1;
+  }
+  return letters.slice(Math.max(0, low - 1), low + 1);
 };
 const parentOf = (facts: Facts, id: string) => {
   const block = blockOf(facts, id);
@@ -1352,10 +1521,25 @@ const ledgerAt = (
         );
       });
     };
-    const lostWithItsBlock = (fold: Claimant, other: Claimant, id: string) =>
-      (fold.identity.elements.get(id)?.continues ?? []).some(
-        (origin) => isBase(origin) && !alive(other, origin)
+    // An empty line split off an empty one holds nothing of it, and the other
+    // side's change reads the same whether it removed that line or joined it
+    // into the line before, which leaves the half standing (Defaults, "A
+    // merge the rows above read two ways").
+    const lostWithItsBlock = (fold: Claimant, other: Claimant, id: string) => {
+      const sources = (fold.identity.elements.get(id)?.continues ?? []).filter(
+        isBase
       );
+      const splitOffEmpty =
+        !isBase(id) &&
+        fold.facts.elements.get(id)?.block === true &&
+        (fold.facts.blocks.get(id) ?? []).length === 0 &&
+        sources.some(
+          (origin) =>
+            B.elements.get(origin)?.block === true &&
+            (B.blocks.get(origin) ?? []).length === 0
+        );
+      return !splitOffEmpty && sources.some((origin) => !alive(other, origin));
+    };
 
     // A birth stands where its move put it while the merge keeps it on the
     // side's side of every block the move passed.
@@ -1476,7 +1660,15 @@ const ledgerAt = (
       }
       const heirs = other.identity.heirs.get(id) ?? [];
       if (heirs.length === 0) return false;
-      if (movedInto(side, id) !== undefined) return true;
+      // An unwrap edits only its container, so the line it lifts out carries
+      // no edit of its own (Defaults, "Edits the loss rule does not name").
+      const was = containerOf(B, id);
+      const unwrapped =
+        was !== undefined &&
+        !was.startsWith(ROOT) &&
+        !side.facts.elements.has(was) &&
+        containerOf(side.facts, id) === B.elements.get(was)?.parent;
+      if (movedInto(side, id) !== undefined && !unwrapped) return true;
       return !heirs.some((heir) => {
         const [then, now, there] = asSets([
           facetsIn(B, id),
@@ -1492,12 +1684,18 @@ const ledgerAt = (
     for (const id of baseCarriers) {
       if (joinedAway(ownFold, acceptedFold, id)) {
         losses.push(
-          `the merge drops own's edit of ${describe(B, id)}, which accepted joined away`
+          `the merge drops own's edit of ${describe(
+            B,
+            id
+          )}, which accepted joined away`
         );
       }
       if (joinedAway(acceptedFold, ownFold, id)) {
         harms.push(
-          `the merge drops accepted's edit of ${describe(B, id)}, which own joined away`
+          `the merge drops accepted's edit of ${describe(
+            B,
+            id
+          )}, which own joined away`
         );
       }
     }
@@ -1545,6 +1743,7 @@ const ledgerAt = (
       ) {
         continue;
       }
+      reads += 1;
       const [fb, fo, fa, fm] = asSets(
         [B, O, A, M].map((facts) => facetsIn(facts, id))
       );
@@ -1657,13 +1856,90 @@ const ledgerAt = (
     const emptyBlock = (id: string) => B.blocks.get(id)?.length === 0;
     const orderLine = (left: string, right: string) => () =>
       `the order of ${describe(B, left)} and ${describe(B, right)}`;
-    const plainOrderOf = (left: string, right: string) =>
-      [
-        before(B, left, right),
-        before(O, left, right),
-        before(A, left, right),
+    const chainIn = (facts: Facts, id: string) => {
+      const block = blockOf(facts, id);
+      return block === undefined
+        ? ancestorsIn(facts, id)
+        : [block, ...ancestorsIn(facts, block)];
+    };
+    // A half one side cut off a source the other side moved stays where its
+    // side put it, so the move does not order what that half holds against
+    // anything outside the source. A line the side joined into the half is no
+    // source, as the half was not cut from it.
+    const stayingCache = new Map<string, string | undefined>();
+    const stayingSource = (fold: SideFold, other: SideFold, id: string) => {
+      const key = `${fold.side} ${id}`;
+      if (stayingCache.has(key)) return stayingCache.get(key);
+      const was = chainIn(B, id);
+      const movedAlone = (source: string) => {
+        const parent = (
+          B.elements.get(source) ?? other.facts.elements.get(source)
+        )?.parent;
+        return (
+          other.intent.moves.has(source) &&
+          (parent === undefined || !movedBy(other, parent))
+        );
+      };
+      // The other side also moves the source when it moves the line it
+      // joined the source into, which holds what this half holds. A line
+      // joins the one before it, so a source that stood before that line in
+      // base joined it after the move, which did not carry it.
+      const movedHolder = (half: string, origin: string) =>
+        (fold.facts.blocks.get(half) ?? []).some((token) => {
+          const holder = blockOf(other.facts, token);
+          return (
+            holder !== undefined &&
+            holder !== origin &&
+            other.identity.elements.get(holder)?.carries !== origin &&
+            continuesOf(other, holder).includes(origin) &&
+            !(B.elements.has(holder) && before(B, origin, holder)) &&
+            movedAlone(holder)
+          );
+        });
+      let source: string | undefined;
+      for (const half of chainIn(fold.facts, id)) {
+        if (isBase(half)) continue;
+        source = continuesOf(fold, half).find(
+          (origin) =>
+            isBase(origin) &&
+            was.includes(origin) &&
+            fold.identity.elements.get(half)?.carries === origin &&
+            (movedAlone(origin) || movedHolder(half, origin))
+        );
+        if (source !== undefined) break;
+      }
+      stayingCache.set(key, source);
+      return source;
+    };
+    const plainOrderOf = (left: string, right: string) => {
+      reads += 1;
+      const was = before(B, left, right);
+      const apart = (
+        fold: SideFold,
+        other: SideFold,
+        id: string,
+        of: string
+      ) => {
+        const source = stayingSource(fold, other, id);
+        // A move of `of` itself orders it, so the pair follows the side whose
+        // document moved it (Defaults, "Two moves of different blocks to the
+        // same place").
+        return (
+          source !== undefined &&
+          of !== source &&
+          !chainIn(B, of).includes(source) &&
+          ![of, ...chainIn(B, of)].some((held) => movedBy(other, held))
+        );
+      };
+      const unmovedBy = (fold: SideFold, other: SideFold) =>
+        apart(fold, other, left, right) || apart(fold, other, right, left);
+      return [
+        was,
+        unmovedBy(acceptedFold, ownFold) ? was : before(O, left, right),
+        unmovedBy(ownFold, acceptedFold) ? was : before(A, left, right),
         before(M, left, right),
       ] as const;
+    };
     const orderThroughHalves = (left: string, right: string) => {
       if ([left, right].some((id) => splitBySide(id) && !emptyBlock(id))) {
         return;
@@ -1692,12 +1968,78 @@ const ledgerAt = (
       const [own, acc, merged] = [ownFold, acceptedFold, 'merged' as const].map(
         orderIn
       );
-      if (own === undefined || acc === undefined || merged === undefined) {
-        return;
+      const was = before(B, left, right);
+      // Where the merge or a side stands halves on both sides of the other
+      // block, each half answers for its own place. A half its side moved, or
+      // the half that keeps the name, holds the order the sides' documents set
+      // (Defaults, "Two moves of different blocks to the same place"). A half
+      // its side only cut stays where that side put it (Defaults, "Where a
+      // split-off half stands after the other side moves its source"), and
+      // binds no block a side moved, wrapped or deleted (Defaults,
+      // "Placements the loss rule does not name").
+      if (merged === undefined || own === undefined || acc === undefined) {
+        const sideOf = (id: string) =>
+          isBase(id)
+            ? undefined
+            : ownOf.has(id)
+              ? ownFold
+              : A.elements.has(id)
+                ? acceptedFold
+                : undefined;
+        const nameIn = (fold: SideFold, id: string) =>
+          fold === ownFold ? (ownOf.get(id) ?? id) : id;
+        const movedHere = (fold: SideFold, id: string) =>
+          fold.intent.moves.has(id) || movedBy(fold, id);
+        const shifted = (id: string) =>
+          [ownFold, acceptedFold].some((fold) => {
+            const base = B.elements.get(id);
+            const now = fold.facts.elements.get(id);
+            return (
+              base !== undefined &&
+              (now === undefined ||
+                now.parent !== base.parent ||
+                (movedHere(fold, id) &&
+                  (now.prev !== base.prev || now.next !== base.next)))
+            );
+          });
+        // A side reads a half it never saw through the block it was cut from,
+        // unless that side moved the block, which leaves the half behind.
+        const halfOrder = (fold: SideFold, l: string, r: string) => {
+          const at = (id: string, source: string) => {
+            const name = nameIn(fold, id);
+            if (present(fold.facts, name)) return name;
+            return movedHere(fold, source) ? undefined : source;
+          };
+          const [from, to] = [at(l, left), at(r, right)];
+          return from === undefined || to === undefined
+            ? was
+            : before(fold.facts, from, to);
+        };
+        const breaks = heirsIn('merged', left).some((l) =>
+          heirsIn('merged', right).some((r) => {
+            const now = before(M, l, r);
+            const born = [l, r].find((id) => {
+              const fold = sideOf(id);
+              return fold !== undefined && !movedHere(fold, nameIn(fold, id));
+            });
+            if (born === undefined) {
+              return !threeWaySilent(
+                was,
+                halfOrder(ownFold, l, r),
+                halfOrder(acceptedFold, l, r),
+                now
+              );
+            }
+            const against = born === l ? r : l;
+            if (isBase(against) && shifted(against)) return false;
+            return halfOrder(sideOf(born) as SideFold, l, r) !== now;
+          })
+        );
+        if (!breaks) return;
       }
       threeWay(
         orderLine(left, right),
-        before(B, left, right),
+        was,
         own,
         acc,
         merged,
@@ -1705,6 +2047,7 @@ const ledgerAt = (
       );
     };
     const orderPair = (left: string, right: string) => {
+      reads += 1;
       if (rootOf(B, left) !== rootOf(B, right)) return;
       if (splitBySide(left) || splitBySide(right)) {
         orderThroughHalves(left, right);
@@ -1745,11 +2088,13 @@ const ledgerAt = (
       }
       for (const ats of plainByRoot.values()) {
         const inBase = [...ats].sort(
-          (x, y) => (B.index.get(kept[x]) ?? -1) - (B.index.get(kept[y]) ?? -1)
+          (x, y) =>
+            (B.rootPosition.get(kept[x]) ?? -1) -
+            (B.rootPosition.get(kept[y]) ?? -1)
         );
         for (const facts of [O, A, M]) {
           forEachNonRisingPair(
-            inBase.map((at) => facts.index.get(kept[at]) ?? -1),
+            inBase.map((at) => facts.rootPosition.get(kept[at]) ?? -1),
             (x, y) => addPrinting(inBase[x], inBase[y])
           );
         }
@@ -1770,6 +2115,76 @@ const ledgerAt = (
         }
       }
     }
+    // Each pair of kept blocks takes the order the side whose document changed
+    // it gave it, and its base order where neither did, so pair orders that
+    // form a cycle leave no merge that keeps them all, wherever the moves
+    // aimed, and the merge reads lost (Defaults, "Two moves of different
+    // blocks to the same place" and "A merge the rows above read two ways"). A
+    // cycle needs a pair each side changed, as one side's orders alone are its
+    // document's.
+    const keptBlocks = new Map<string | undefined, string[]>();
+    for (const id of kept) {
+      if (B.elements.get(id)?.block) listIn(keptBlocks, rootOf(B, id)).push(id);
+    }
+    for (const ids of keptBlocks.values()) {
+      const inBase = [...ids].sort(
+        (x, y) => (B.rootPosition.get(x) ?? -1) - (B.rootPosition.get(y) ?? -1)
+      );
+      const [ownTurned, accTurned] = [O, A].map((facts) => {
+        const turned = new Set<number>();
+        forEachNonRisingPair(
+          inBase.map((id) => facts.rootPosition.get(id) ?? -1),
+          (x, y) => {
+            turned.add(x);
+            turned.add(y);
+          }
+        );
+        return turned;
+      });
+      if (ownTurned.size === 0 || accTurned.size === 0) continue;
+      const turned = [...new Set([...ownTurned, ...accTurned])]
+        .sort((x, y) => x - y)
+        .map((at) => inBase[at]);
+      const later = new Map(turned.map((id) => [id, [] as string[]]));
+      for (const [at, left] of turned.entries()) {
+        for (const right of turned.slice(at + 1)) {
+          const [was, own, acc] = plainOrderOf(left, right);
+          const ownChanged = claims.order(left, right) || own !== was;
+          if (ownChanged && acc !== was && own !== acc) continue;
+          const first = (ownChanged ? own : acc) ? left : right;
+          later.get(first)?.push(first === left ? right : left);
+        }
+      }
+      const state = new Map<string, 'done' | 'open'>();
+      const path: string[] = [];
+      const cycleFrom = (id: string): readonly string[] | undefined => {
+        state.set(id, 'open');
+        path.push(id);
+        for (const next of later.get(id) ?? []) {
+          reads += 1;
+          if (state.get(next) === 'open') return path.slice(path.indexOf(next));
+          if (state.get(next) === undefined) {
+            const found = cycleFrom(next);
+            if (found !== undefined) return found;
+          }
+        }
+        path.pop();
+        state.set(id, 'done');
+        return undefined;
+      };
+      for (const id of turned) {
+        if (state.has(id)) continue;
+        const cycle = cycleFrom(id);
+        if (cycle !== undefined) {
+          losses.push(
+            `no merge keeps the orders the sides gave ${cycle
+              .map((block) => describe(B, block))
+              .join(', ')}`
+          );
+          break;
+        }
+      }
+    }
     // A cut or a join moves one boundary between two letters, so only letters
     // next to each other among the kept ones answer for it, and a side
     // answers only for the letters its own order puts side by side: a join
@@ -1781,7 +2196,9 @@ const ledgerAt = (
         (x, y) =>
           (rootOf(facts, x) as string).localeCompare(
             rootOf(facts, y) as string
-          ) || (facts.index.get(x) as number) - (facts.index.get(y) as number)
+          ) ||
+          (facts.rootPosition.get(x) as number) -
+            (facts.rootPosition.get(y) as number)
       );
       for (const [at, right] of order.entries()) {
         const left = order[at - 1];
@@ -1809,15 +2226,28 @@ const ledgerAt = (
         )
       );
     // A letter the other side typed where a side split may land in either
-    // half, and a new half it lands in is a line of its own.
-    const typedInto = (byOther: (id: string) => boolean) =>
-      [...M.letters].flatMap(([id, letter]) =>
-        !isBase(id) && byOther(id) ? [letter.block] : []
-      );
+    // half, and a new half it lands in is a line of its own, unless the merge
+    // also put there base letters the side kept in another line.
+    const typedInto = (
+      byOther: (id: string) => boolean,
+      facts: Facts,
+      sideBlock: (block: string) => string | undefined
+    ) =>
+      [...M.letters].flatMap(([id, letter]) => {
+        const mine = sideBlock(letter.block);
+        return !isBase(id) &&
+          byOther(id) &&
+          mine !== undefined &&
+          (M.blocks.get(letter.block) ?? []).every(
+            (held) => !B.letters.has(held) || blockOf(facts, held) === mine
+          )
+          ? [mine]
+          : [];
+      });
     const groundOf = (facts: Facts, blocks: ReadonlySet<string>) => {
       const byRoot = new Map<string, Array<readonly [number, string]>>();
       for (const block of blocks) {
-        const at = facts.index.get(block);
+        const at = facts.rootPosition.get(block);
         const root = rootOf(facts, block);
         if (at === undefined || root === undefined) continue;
         const sorted = byRoot.get(root);
@@ -1833,18 +2263,22 @@ const ledgerAt = (
       O,
       new Set([
         ...groundedIn(O),
-        ...typedInto((id) => !ownOf.has(id)).flatMap((block) => {
-          const mine = ownOf.get(block);
-          return mine === undefined ? [] : [mine];
-        }),
+        ...typedInto(
+          (id) => !ownOf.has(id),
+          O,
+          (block) => ownOf.get(block)
+        ),
       ])
     );
     const accGround = groundOf(
       A,
       new Set([
         ...groundedIn(A),
-        ...typedInto((id) => ownOf.has(id)).filter(
-          (block) => !isBase(block) && A.elements.has(block)
+        ...typedInto(
+          (id) => ownOf.has(id),
+          A,
+          (block) =>
+            !isBase(block) && A.elements.has(block) ? block : undefined
         ),
       ])
     );
@@ -1863,8 +2297,8 @@ const ledgerAt = (
       right: string
     ) => {
       const between = new Set<string>();
-      const from = facts.index.get(left);
-      const to = facts.index.get(right);
+      const from = facts.rootPosition.get(left);
+      const to = facts.rootPosition.get(right);
       const root = rootOf(facts, left);
       const sorted =
         root !== undefined && root === rootOf(facts, right)
@@ -1885,6 +2319,29 @@ const ledgerAt = (
       }
       return between;
     };
+    // Letters a side joined stay apart when a cut the other side made, a half
+    // of a base line that holds letters, stands between them in the merge
+    // (Defaults, "Whether two letters share a line when one side joins lines
+    // and the other cuts one").
+    const cutBetween = (fold: Claimant, left: string, right: string) => {
+      const inMerge = fold === acceptedFold ? (id: string) => id : inOwn;
+      const [from, to] = [left, right]
+        .map((held) => M.rootPosition.get(blockOf(M, held) ?? ''))
+        .sort((x, y) => (x ?? -1) - (y ?? -1));
+      if (from === undefined || to === undefined || from >= to) return false;
+      return [...fold.facts.elements].some(([id, fact]) => {
+        reads += 1;
+        const at = M.rootPosition.get(inMerge(id) ?? '') ?? -1;
+        return (
+          fact.block &&
+          !isBase(id) &&
+          from < at &&
+          at <= to &&
+          (fold.facts.blocks.get(id)?.length ?? 0) > 0 &&
+          continuesOf(fold, id).some(isBase)
+        );
+      });
+    };
     for (const [key, [left, right]] of new Map([
       ...baseSides,
       ...ownSides,
@@ -1893,6 +2350,14 @@ const ledgerAt = (
       const [was, own, acc, merged] = [B, O, A, M].map(
         (facts) => blockOf(facts, left) !== blockOf(facts, right)
       );
+      if (
+        merged &&
+        was &&
+        ((!own && cutBetween(acceptedFold, left, right)) ||
+          (!acc && cutBetween(ownFold, left, right)))
+      ) {
+        continue;
+      }
       const what = () =>
         `the boundary between ${describe(B, left)} and ${describe(B, right)}`;
       const claimed = claims.boundary(left, right);
@@ -2023,6 +2488,9 @@ const ledgerAt = (
       }
     }
 
+    const lineOfHalf = new Map(
+      [...acceptedFold.steps, ...ownFold.steps].flatMap((step) => step.starts)
+    );
     const anchor = (
       side: 'accepted' | 'own',
       fold: Claimant,
@@ -2061,7 +2529,7 @@ const ledgerAt = (
         let high = ids.length;
         while (low < high) {
           const mid = (low + high) >>> 1;
-          if ((on.index.get(ids[mid]) as number) < at) low = mid + 1;
+          if ((on.rootPosition.get(ids[mid]) as number) < at) low = mid + 1;
           else high = mid;
         }
         return low;
@@ -2069,6 +2537,47 @@ const ledgerAt = (
       // The births of an earlier front are accepted's births too, which the
       // rest keeps in their place as the whole does.
       const unborn = side === 'own' ? isBase : inFirstBase;
+      let aroundMoved: Set<string> | undefined;
+      const wrapsBlockOtherMoved = (wrapper: string) => {
+        if (aroundMoved === undefined) {
+          aroundMoved = new Set();
+          for (const block of facts.elements.keys()) {
+            reads += 1;
+            if (!isBase(block) || !movedBy(other, block)) continue;
+            for (const up of ancestorsIn(facts, block)) {
+              reads += 1;
+              aroundMoved.add(up);
+            }
+          }
+        }
+        return aroundMoved.has(wrapper);
+      };
+      const pastBirthsMemo = {
+        next: new Map<string, { base?: string; wraps: boolean }>(),
+        prev: new Map<string, { base?: string; wraps: boolean }>(),
+      };
+      const pastBirths = (from: string | undefined, step: 'next' | 'prev') => {
+        const known = pastBirthsMemo[step];
+        const walked: string[] = [];
+        let at = from;
+        let found: { base?: string; wraps: boolean } | undefined;
+        while (at !== undefined && !unborn(at)) {
+          reads += 1;
+          found = known.get(at);
+          if (found !== undefined) break;
+          walked.push(at);
+          at = facts.elements.get(at)?.[step];
+        }
+        found ??= { base: at, wraps: false };
+        for (const birth of walked.reverse()) {
+          found = {
+            base: found.base,
+            wraps: found.wraps || wrapsBlockOtherMoved(birth),
+          };
+          known.set(birth, found);
+        }
+        return found;
+      };
       for (const [id, letter] of facts.letters) {
         if (unborn(id)) continue;
         const into = translate(id);
@@ -2113,13 +2622,59 @@ const ledgerAt = (
                 return there.get(self) === value && then.get(self) !== value;
               })
             );
-        for (const key of new Set([
-          ...ownBlock.keys(),
-          ...mergedBlock.keys(),
-        ])) {
+        // A letter that stays in its kept base block takes that block's
+        // properties, which the block's own three-way reading judges.
+        const inKeptBlock =
+          isBase(letter.block) && landed.block === letter.block;
+        for (const key of inKeptBlock
+          ? []
+          : new Set([...ownBlock.keys(), ...mergedBlock.keys()])) {
           const value = mergedBlock.get(key);
           if (ownBlock.get(key) !== value && !changedByOther(key, value)) {
             report.push(`the merge changes ${key} of ${name()}`);
+          }
+        }
+        // A half this side cut off a base line takes the other side's change
+        // to that line's properties, as a split copies them, the way a born
+        // letter takes a mark by following the letters around it (Defaults,
+        // "Whether a property one side sets on a line reaches a half the
+        // other side cuts off that line").
+        const cutFrom = isBase(letter.block)
+          ? []
+          : continuesOf(fold, letter.block).filter(
+              (line) =>
+                isBase(line) &&
+                other.facts.elements.has(line) &&
+                row.some(
+                  (held) => B.letters.has(held) && blockOf(B, held) === line
+                )
+            );
+        const unprefixed = (
+          facets: ReadonlyMap<string, string>,
+          prefix: string
+        ) =>
+          new Map(
+            [...facets].flatMap(([key, value]) =>
+              key.startsWith(prefix) ? [[key.slice(prefix.length), value]] : []
+            )
+          );
+        for (const line of cutFrom) {
+          const [then, mine, there, now] = asSets([
+            unprefixed(facetsIn(B, line), 'self.'),
+            unprefixed(facetsIn(facts, id), 'block.'),
+            unprefixed(facetsIn(other.facts, line), 'self.'),
+            unprefixed(facetsIn(M, into), 'block.'),
+          ]);
+          for (const key of new Set([...then.keys(), ...there.keys()])) {
+            if (
+              there.get(key) !== then.get(key) &&
+              mine.get(key) === then.get(key) &&
+              now.get(key) !== there.get(key)
+            ) {
+              report.push(
+                `the merge leaves ${name()} without the ${key} the other side gave the line it was cut from`
+              );
+            }
           }
         }
         const at = row.indexOf(id);
@@ -2164,6 +2719,25 @@ const ledgerAt = (
         const prev = left === undefined ? undefined : translate(left);
         const next = right === undefined ? undefined : translate(right);
         const near = [prev, next].filter((neighbor) => present(M, neighbor));
+        // Letters this side typed side by side answer as one letter, so a run
+        // whose base letters around it are gone stays on its line too, as a
+        // letter whose neighbors are gone does (Defaults, "Placements the loss
+        // rule does not name").
+        const pastRun = (step: -1 | 1) => {
+          let spot = at + step;
+          while (row[spot] !== undefined && !unborn(row[spot])) spot += step;
+          return row[spot];
+        };
+        const anchored = [pastRun(-1), pastRun(1)].some(
+          (held) => held !== undefined && present(M, translate(held))
+        );
+        if (
+          near.length > 0 &&
+          !anchored &&
+          !holdsLine(fold, other, id, into, landed.block)
+        ) {
+          report.push(`the merge moves ${name()} out of its block`);
+        }
         if (near.length === 0) {
           if (!holdsLine(fold, other, id, into, landed.block)) {
             report.push(`the merge moves ${name()} out of its block`);
@@ -2191,12 +2765,12 @@ const ledgerAt = (
               present(M, held) &&
               ridden((move) => move.carried.has(held)) === rides
           );
-          const spot = facts.index.get(id) as number;
+          const spot = facts.rootPosition.get(id) as number;
           const baseBefore = steady.findLast(
-            (held) => (facts.index.get(held) as number) < spot
+            (held) => (facts.rootPosition.get(held) as number) < spot
           );
           const baseAfter = steady.find(
-            (held) => (facts.index.get(held) as number) > spot
+            (held) => (facts.rootPosition.get(held) as number) > spot
           );
           if (
             (baseBefore !== undefined && !before(M, baseBefore, into)) ||
@@ -2208,16 +2782,18 @@ const ledgerAt = (
           }
           continue;
         }
-        const place = facts.index.get(id) as number;
+        const place = facts.rootPosition.get(id) as number;
         const around = aroundByRoot.get(letter.root) ?? [];
         const leftCount = countSortedBefore(around, facts, place);
         const rightFrom = countSortedBefore(around, facts, place + 1);
         const baseLeft = around[leftCount - 1];
         const baseRight = around[rightFrom];
         // A letter this side deleted beside this one was a neighbor too.
-        const indexIn = (held: string) => B.index.get(held) as number;
-        const from = baseLeft === undefined ? -1 : indexIn(baseLeft);
-        const to = baseRight === undefined ? Infinity : indexIn(baseRight);
+        const basePositionOf = (held: string) =>
+          B.rootPosition.get(held) as number;
+        const from = baseLeft === undefined ? -1 : basePositionOf(baseLeft);
+        const to =
+          baseRight === undefined ? Infinity : basePositionOf(baseRight);
         const deletedOnRoot = goneByRoot.get(letter.root) ?? [];
         const deletedBeside = deletedOnRoot.slice(
           countSortedBefore(deletedOnRoot, B, from + 1),
@@ -2250,10 +2826,12 @@ const ledgerAt = (
         }
         // The other side split the base letters around this one apart, so it
         // stays beside one neighbor at most, and a letter with one neighbor may
-        // fall on either side of the split.
+        // fall on either side of the split. Letters of two base blocks were
+        // apart before either side, so the other side parted nothing there.
         const parted = (first?: string, second?: string) =>
           first !== undefined &&
           second !== undefined &&
+          blockOf(B, first) === blockOf(B, second) &&
           other.facts.letters.has(first) &&
           other.facts.letters.has(second) &&
           blockOf(other.facts, first) !== blockOf(other.facts, second);
@@ -2267,15 +2845,15 @@ const ledgerAt = (
           if (held === undefined || !other.facts.letters.has(held)) {
             return false;
           }
-          const edge = other.facts.index.get(held) as number;
+          const edge = other.facts.rootPosition.get(held) as number;
           let previous: string | undefined;
           for (const there of other.facts.letters.keys()) {
-            const spot = other.facts.index.get(there) as number;
+            const spot = other.facts.rootPosition.get(there) as number;
             if (
               spot < edge &&
               rootOf(other.facts, there) === letter.root &&
               (previous === undefined ||
-                spot > (other.facts.index.get(previous) as number))
+                spot > (other.facts.rootPosition.get(previous) as number))
             ) {
               previous = there;
             }
@@ -2291,12 +2869,15 @@ const ledgerAt = (
         // typed in, so it ties with the cut and may fall on either side.
         const cutAtGap = () => {
           const lines = continuesOf(fold, letter.block).filter(isBase);
-          if (lines.length !== 1) return false;
-          const heirs = other.identity.heirs.get(lines[0]) ?? [];
+          const typed = fold.intent.typed.get(id);
+          const home =
+            lines.length === 1 ? lines : lines.filter((on) => typed?.has(on));
+          if (home.length !== 1) return false;
+          const heirs = other.identity.heirs.get(home[0]) ?? [];
           if (heirs.length < 2) return false;
-          const line = (B.blocks.get(lines[0]) ?? []).filter(keptByOther);
-          const last = line.findLast((held) => indexIn(held) <= from);
-          const first = line.find((held) => indexIn(held) >= to);
+          const line = (B.blocks.get(home[0]) ?? []).filter(keptByOther);
+          const last = line.findLast((held) => basePositionOf(held) <= from);
+          const first = line.find((held) => basePositionOf(held) >= to);
           const theirs = other.facts;
           if (last !== undefined && first !== undefined) {
             return blockOf(theirs, last) !== blockOf(theirs, first);
@@ -2307,15 +2888,26 @@ const ledgerAt = (
                 heir !== blockOf(theirs, last) && before(theirs, last, heir)
             );
           }
-          return (
-            first !== undefined &&
-            heirs.some(
+          if (first !== undefined) {
+            return heirs.some(
               (heir) =>
                 heir !== blockOf(theirs, first) && before(theirs, heir, first)
-            )
-          );
+            );
+          }
+          // Every letter of the line the other side kept stands in the gap,
+          // so its cut of the line falls there too.
+          return true;
         };
+        // This side joined the lines of its neighbors, and the other side's
+        // cut keeps them apart, so it ties with that cut as with a split.
+        const joinedAcrossCut =
+          baseLeft !== undefined &&
+          baseRight !== undefined &&
+          blockOf(B, baseLeft) !== blockOf(B, baseRight) &&
+          blockOf(facts, baseLeft) === blockOf(facts, baseRight) &&
+          cutBetween(other, baseLeft, baseRight);
         const split =
+          joinedAcrossCut ||
           cutAtGap() ||
           (baseLeft === undefined && splitAtEdge(span[0])) ||
           parted(
@@ -2366,11 +2958,12 @@ const ledgerAt = (
             );
           });
           if (!mate) return false;
-          const [low, high] = [M.index.get(into), M.index.get(neighbor)].sort(
-            (x, y) => (x as number) - (y as number)
-          ) as [number, number];
+          const [low, high] = [
+            M.rootPosition.get(into),
+            M.rootPosition.get(neighbor),
+          ].sort((x, y) => (x as number) - (y as number)) as [number, number];
           return ![...M.letters.keys()].some((held) => {
-            const spot = M.index.get(held) as number;
+            const spot = M.rootPosition.get(held) as number;
             return (
               onBase(held) &&
               rootOf(M, held) === landed.root &&
@@ -2396,8 +2989,277 @@ const ledgerAt = (
           report.push(`the merge moves ${name()} away from its neighbors`);
         }
       }
+      const extentsByRoot = new Map<string, Map<string, Extent>>();
+      const holdsNothing = (id: string, root: string) => {
+        let extents = extentsByRoot.get(root);
+        if (extents === undefined) {
+          extents = extentsOf(fold.streams.get(root) ?? []);
+          extentsByRoot.set(root, extents);
+        }
+        const extent = extents.get(id);
+        return extent?.letters.length === 0 && !extent.skips;
+      };
+      const placeOf = (on: Facts, id: string) => {
+        const inlines: string[] = [];
+        for (
+          let up = on.elements.get(id)?.parent;
+          up !== undefined;
+          up = on.elements.get(up)?.parent
+        ) {
+          reads += 1;
+          const fact = on.elements.get(up);
+          if (fact === undefined) break;
+          if (fact.block) {
+            return { block: up, inlines: inlines.reverse().join('/') };
+          }
+          inlines.push(canonicalRecordJson(fact.props));
+        }
+        return { block: undefined, inlines: inlines.reverse().join('/') };
+      };
+      const anchorEmptyInline = (id: string, element: ElementFact) => {
+        const into = translate(id);
+        if (into === undefined) return;
+        const name = () => `${side} birth ${describe(facts, id)}`;
+        const landed = M.elements.get(into);
+        if (!landed) {
+          // The empty half a split cut off a base inline element holds none of
+          // what a side wrote, so it goes with its line when the other side
+          // removed the line that line was cut from. One a command inserted
+          // is that side's work, as a typed letter is (Defaults, "Ledger
+          // holes that panel rounds 2 and 3 found after the cap").
+          const was = placeOf(facts, id).block;
+          const splitOff =
+            was !== undefined &&
+            continuesOf(fold, id).some(isBase) &&
+            lostWithItsBlock(fold, other, was);
+          if (!splitOff) report.push(`the merge drops ${name()}`);
+          return;
+        }
+        if (
+          canonicalRecordJson(landed.props) !==
+          canonicalRecordJson(element.props)
+        ) {
+          report.push(`the merge changes the properties of ${name()}`);
+        }
+        const { block: here, inlines } = placeOf(facts, id);
+        const { block: there, inlines: inlinesThere } = placeOf(M, into);
+        if (inlines !== inlinesThere) {
+          report.push(`the merge moves ${name()} out of its inline elements`);
+        }
+        // It follows the nearest letters before and after it in its block, so
+        // it stands with a kept one of them, on either side of the other
+        // side's cut between them, and in its own block when the merge keeps
+        // neither (Defaults, "Ledger holes that panel rounds 2 and 3 found
+        // after the cap").
+        const keptBeside = (
+          here === undefined ? [] : lettersBeside(facts, here, id)
+        ).flatMap((letter) => {
+          const at = translate(letter);
+          const block = at === undefined ? undefined : M.letters.get(at)?.block;
+          return block === undefined ? [] : [block];
+        });
+        const stays =
+          keptBeside.length > 0
+            ? there !== undefined && keptBeside.includes(there)
+            : here === undefined || there === undefined
+              ? here === there
+              : translate(here) === there;
+        if (!stays) report.push(`the merge moves ${name()} out of its block`);
+      };
+      const pins = (sibling: string) =>
+        !movedBy(fold, sibling) &&
+        !movedBy(other, sibling) &&
+        [fold, other].every((claimant) => {
+          const fact = claimant.facts.elements.get(sibling);
+          if (fact === undefined) return !alive(claimant, sibling);
+          return fact.parent.startsWith(ROOT) || isBase(fact.parent);
+        });
+      // The part that keeps the name keeps it even when this side deleted
+      // every base letter the other side left in it (Defaults, "Which line
+      // keeps the name when one side splits it and the other deletes every
+      // letter of the half before the cut").
+      const emptiedHere = (sibling: string | undefined) => {
+        const theirs = (other.facts.blocks.get(sibling ?? '') ?? []).filter(
+          (letter) => B.letters.has(letter)
+        );
+        return (
+          theirs.length > 0 &&
+          theirs.every((letter) => !facts.letters.has(letter))
+        );
+      };
+      // Past a neighbor the other side's move carried off, the nearest base
+      // siblings that no side moved or wrapped still bound a birth, unless it
+      // stands right beside a carried neighbor other than the source the
+      // other side moved its half away from.
+      const pinnedPlace = (
+        id: string,
+        element: ElementFact,
+        landed: ElementFact,
+        into: string,
+        name: () => string
+      ) => {
+        // A rebased split may give this block's name to the other half, so a
+        // block that holds base letters stands where they stand, which may be
+        // the line that pins it under that line's name.
+        const shownLetter = (heldByBlock.get(id) ?? []).find(
+          (token) => facts.letters.has(token) && present(M, token)
+        );
+        const at =
+          shownLetter === undefined
+            ? into
+            : (M.owners.get(shownLetter) as string);
+        const near = M.elements.get(at) ?? landed;
+        const runBefore = pastBirths(element.prev, 'prev');
+        const runAfter = pastBirths(element.next, 'next');
+        const neighbors = [runBefore.base, runAfter.base];
+        // A block the other side joined into a block it moved went with that
+        // move, and so did the source this half was cut off (Defaults, "Where
+        // a split-off half stands after the other side moves its source").
+        const carriedOff = (block: string) =>
+          movedBy(other, block) ||
+          (!other.facts.elements.has(block) &&
+            (heldByBlock.get(block) ?? []).some((token) =>
+              movedBy(other, token)
+            ));
+        // A wrap this side made around a block the other side moved stands
+        // between this birth and its base neighbors, and the move carries it.
+        if (
+          !neighbors.some(
+            (sibling) => sibling !== undefined && carriedOff(sibling)
+          ) &&
+          !continuesOf(fold, id).some(
+            (origin) => isBase(origin) && carriedOff(origin)
+          ) &&
+          !runBefore.wraps &&
+          !runAfter.wraps
+        ) {
+          return;
+        }
+        // A container the merge no longer holds, as the other side unwrapped
+        // it, stands where the blocks it held stand, so they pin in its place.
+        // The half before the other side's cut keeps the line's name when this
+        // side deleted every letter the other side left in it, so a block this
+        // side put before the line stands before that empty half, whichever
+        // block the merge names (Defaults, "Which line keeps the name when one
+        // side splits it and the other deletes every letter of the half before
+        // the cut").
+        const emptiedHalf = (line: string) => {
+          if (!emptiedHere(line)) return undefined;
+          let first: string | undefined;
+          reads += M.elements.size;
+          for (const [part, fact] of M.elements) {
+            const named = fromMerged(part);
+            if (
+              fact.block &&
+              mergedContinues(part, line) &&
+              named !== undefined &&
+              !movedBy(other, named) &&
+              (first === undefined || before(M, part, first))
+            ) {
+              first = part;
+            }
+          }
+          return first;
+        };
+        const pinnedIn = (
+          sibling: string,
+          step: 'next' | 'prev'
+        ): string | undefined => {
+          if (!(unborn(sibling) && pins(sibling))) return undefined;
+          const there = translate(sibling);
+          if (present(M, there)) {
+            return step === 'next' ? (emptiedHalf(sibling) ?? there) : there;
+          }
+          const held = [...facts.elements]
+            .filter(([, fact]) => fact.parent === sibling)
+            .map(([child]) => child);
+          let child = held.find((one) => {
+            const fact = facts.elements.get(one);
+            return step === 'next'
+              ? fact?.prev === undefined
+              : fact?.next === undefined;
+          });
+          while (child !== undefined) {
+            const pinned = pinnedIn(child, step);
+            if (pinned !== undefined) return pinned;
+            child = facts.elements.get(child)?.[step];
+          }
+          return undefined;
+        };
+        // Past the edge of a container the other side unwrapped, the
+        // container's own siblings bound a half cut off a source that side
+        // moved, as the half stays where its side put it (Defaults, "Where a
+        // split-off half stands after the other side moves its source"). A
+        // container that side moved first carries what it held to where the
+        // move put it (Defaults, "Edits the loss rule does not name").
+        const pinnedFrom = (step: 'next' | 'prev') => {
+          let sibling = element[step];
+          let { parent } = element;
+          for (;;) {
+            while (sibling !== undefined) {
+              const pinned = pinnedIn(sibling, step);
+              if (pinned !== undefined) return pinned;
+              sibling = facts.elements.get(sibling)?.[step];
+            }
+            const container = facts.elements.get(parent);
+            if (
+              container === undefined ||
+              !unborn(parent) ||
+              present(M, translate(parent)) ||
+              alive(other, parent) ||
+              movedBy(other, parent)
+            ) {
+              return undefined;
+            }
+            ({ [step]: sibling, parent } = container);
+          }
+        };
+        const after = pinnedFrom('prev');
+        const until = pinnedFrom('next');
+        const fitsAfter =
+          after === undefined || after === at || before(M, after, at);
+        const fitsBefore =
+          until === undefined || until === at || before(M, at, until);
+        const turned =
+          after !== undefined && until !== undefined && before(M, until, after);
+        const keptBase = (merged: string) => {
+          const was = fromMerged(merged);
+          return was !== undefined && unborn(was);
+        };
+        const nextTo = (there: string) =>
+          (['prev', 'next'] as const).some((step) => {
+            let walk = near[step];
+            while (walk !== undefined && walk !== there && !keptBase(walk)) {
+              walk = M.elements.get(walk)?.[step];
+            }
+            return walk === there;
+          });
+        const beside = neighbors.some((sibling) => {
+          if (sibling === undefined || pins(sibling)) return false;
+          if (
+            other.intent.moves.has(sibling) &&
+            continuesOf(fold, id).includes(sibling)
+          ) {
+            return false;
+          }
+          const there = translate(sibling);
+          return present(M, there) && nextTo(there as string);
+        });
+        if (
+          !beside &&
+          !(turned ? fitsAfter || fitsBefore : fitsAfter && fitsBefore)
+        ) {
+          report.push(
+            `the merge puts ${name()} past a block that pins its place`
+          );
+        }
+      };
       for (const [id, element] of facts.elements) {
-        if (unborn(id) || !element.block) continue;
+        if (unborn(id)) continue;
+        if (!element.block) {
+          if (holdsNothing(id, element.root)) anchorEmptyInline(id, element);
+          continue;
+        }
         const into = translate(id);
         if (into === undefined) continue;
         const name = () => `${side} birth ${describe(facts, id)}`;
@@ -2429,20 +3291,75 @@ const ledgerAt = (
           continue;
         }
         // A block that holds base letters goes where they go, so it answers
-        // only for holding them, or for what a later split took of them.
+        // only for holding them, for what a later split took of them, and,
+        // past a source the other side moved, for the blocks that pin it.
         if (held.some((token) => facts.letters.has(token))) {
-          // Twin splits make one line, not an empty one beside it.
-          if (
-            (M.blocks.get(into) ?? []).length === 0 &&
-            held.some(
-              (token) =>
-                facts.letters.has(token) &&
-                present(M, token) &&
-                other.facts.owners.get(token) !== B.owners.get(token)
+          pinnedPlace(id, element, landed, into, name);
+          // Twin splits make one line, not an empty one beside it, and a split
+          // whose letters the merge put back on another line of this side is
+          // undone. The other side's twin is a half of its own, or halves it
+          // cut from that line, that took every letter this one still shows
+          // of the line both cut.
+          const shown = held.filter(
+            (token) => facts.letters.has(token) && present(M, token)
+          );
+          const source = fold.identity.elements.get(id)?.carries;
+          const twinOver = (cut: readonly string[]) => {
+            if (cut.length === 0) return false;
+            const twin = other.facts.owners.get(cut[0]);
+            const halves =
+              source !== undefined &&
+              cut.every((token) => {
+                const half = other.facts.owners.get(token);
+                return (
+                  half !== undefined &&
+                  !isBase(half) &&
+                  continuesOf(other, half).includes(source)
+                );
+              });
+            return (
+              halves ||
+              (twin !== undefined &&
+                !isBase(twin) &&
+                cut.every((token) => other.facts.owners.get(token) === twin))
+            );
+          };
+          // The line a side cut holds the base lines its join put there, so
+          // two splits between the same two letters are twins there too
+          // (Defaults, "A merge the rows above read two ways").
+          const sourceLines =
+            source === undefined
+              ? []
+              : continuesOf(fold, source).filter(isBase);
+          const rejoined = shown.some((token) =>
+            (M.blocks.get(M.owners.get(token) as string) ?? []).some(
+              (letter) =>
+                facts.letters.has(letter) && blockOf(facts, letter) !== id
             )
-          ) {
+          );
+          const twinned =
+            twinOver(shown.filter((token) => blockOf(B, token) === source)) ||
+            twinOver(
+              shown.filter((token) =>
+                sourceLines.includes(blockOf(B, token) as string)
+              )
+            );
+          const there = M.blocks.get(into) ?? [];
+          if (there.length === 0 && (rejoined || twinned)) {
             report.push(
               `the merge leaves ${name()} empty and its letters elsewhere`
+            );
+          } else if (
+            twinned &&
+            !(facts.blocks.get(id) ?? []).some((token) => {
+              const letter = translate(token);
+              return letter !== undefined && M.owners.get(letter) === into;
+            })
+          ) {
+            // A letter typed where both sides cut may land in the line the
+            // twin cuts make, which still leaves the twin's letters elsewhere.
+            report.push(
+              `the merge leaves ${name()} without its letters, which stand elsewhere`
             );
           }
           // It still answers for the parent this side gave it, as a half does
@@ -2507,51 +3424,166 @@ const ledgerAt = (
               break;
             }
           }
-          continue;
+          // A block whose base letters the other side deleted holds none in
+          // the merge, so it also answers for its place as an empty birth
+          // does (Defaults, "Placements the loss rule does not name").
+          if (shown.length > 0) continue;
         }
-        // A wrapper goes where the other side moves what it wraps.
-        const wrapsMoved = (wrapper: string) =>
-          [...facts.elements.keys()].some(
-            (block) =>
-              isBase(block) &&
-              movedBy(other, block) &&
-              ancestorsIn(facts, block).includes(wrapper)
+        // Twin halves of one line may trade names in the merge, each with the
+        // other's properties.
+        const traded = () =>
+          [...other.facts.elements].some(([twin, fact]) => {
+            reads += 1;
+            const there = side === 'own' ? twin : inOwn(twin);
+            const twinLanded =
+              there === undefined ? undefined : M.elements.get(there);
+            return (
+              !isBase(twin) &&
+              twinLanded !== undefined &&
+              (other.facts.blocks.get(twin) ?? []).length === 0 &&
+              continuesOf(other, twin).some(
+                (origin) =>
+                  isBase(origin) && continuesOf(fold, id).includes(origin)
+              ) &&
+              canonicalRecordJson(twinLanded.props) ===
+                canonicalRecordJson(element.props) &&
+              canonicalRecordJson(fact.props) ===
+                canonicalRecordJson(landed.props)
+            );
+          });
+        const mergesLinePropsOnEmptyHalf = () => {
+          const line = lineOfHalf.get(id);
+          if (
+            line === undefined ||
+            !isBase(line) ||
+            !other.facts.elements.has(line)
+          ) {
+            return false;
+          }
+          const [fb, fs, fo, fm] = asSets([
+            facetsIn(B, line),
+            facetsIn(facts, id),
+            facetsIn(other.facts, line),
+            facetsIn(M, into),
+          ]);
+          return [
+            ...new Set([
+              ...fb.keys(),
+              ...fs.keys(),
+              ...fo.keys(),
+              ...fm.keys(),
+            ]),
+          ].every((key) =>
+            threeWaySilent(fb.get(key), fs.get(key), fo.get(key), fm.get(key))
           );
+        };
         if (
           canonicalRecordJson(element.props) !==
-          canonicalRecordJson(landed.props)
+            canonicalRecordJson(landed.props) &&
+          !traded() &&
+          !mergesLinePropsOnEmptyHalf()
         ) {
           report.push(`the merge changes the properties of ${name()}`);
         }
-        if (wrapsMoved(id)) continue;
+        if (wrapsBlockOtherMoved(id)) continue;
         // A sibling the other side moved says nothing about this block, and
         // neither does an open whose letters the other side's split took. One
         // the other side deleted or joined away still orders a birth that
         // continues it.
+        // A parent both sides gave the sibling, as when each unwrapped its
+        // container, carries it nowhere (Defaults, "Edits the loss rule does
+        // not name"), and neither does a move that only lifts it to that
+        // parent, past no base block.
+        const carries = (block: string, token: string) => {
+          const theirs = other.facts.elements.get(block)?.parent;
+          const lifted =
+            theirs === facts.elements.get(block)?.parent &&
+            theirs !== B.elements.get(block)?.parent;
+          // A wrap the other side took back passed no block and left the
+          // sibling in its parent, so it still pins this birth (Defaults,
+          // "Placements the loss rule does not name").
+          const unwrapped =
+            theirs !== undefined && theirs === B.elements.get(block)?.parent;
+          return [...other.intent.moves.values()].some(
+            (move) =>
+              move.carried.has(token) &&
+              (move.past.size > 0 || (!lifted && (!unwrapped || move.turned)))
+          );
+        };
         const carriedAway = (block: string) =>
-          movedBy(other, block) ||
+          carries(block, block) ||
           (other.facts.elements.has(block) &&
             other.facts.elements.get(block)?.parent !==
-              B.elements.get(block)?.parent) ||
+              B.elements.get(block)?.parent &&
+            other.facts.elements.get(block)?.parent !==
+              facts.elements.get(block)?.parent) ||
           (other.identity.heirs.get(block) ?? []).some(
             (heir) => heir !== block && !isBase(heir)
           );
         const steady = (sibling: string | undefined) => {
           if (sibling === undefined) return undefined;
           const carried =
-            heldBase(sibling).some((token) => movedBy(other, token)) ||
+            heldBase(sibling).some((token) => carries(sibling, token)) ||
             continuesOf(fold, sibling).some(
               (block) => isBase(block) && carriedAway(block)
             ) ||
-            wrapsMoved(sibling);
+            wrapsBlockOtherMoved(sibling);
           return carried ? undefined : translate(sibling);
         };
-        const prev = steady(element.prev);
-        const next = steady(element.next);
+        // A base line the other side joined whole into a line of its own that
+        // it did not move still orders this birth by the merged line that
+        // holds its letters (Defaults, "Placements the loss rule does not
+        // name").
+        const joinedInto = (sibling: string | undefined) => {
+          if (
+            sibling === undefined ||
+            !isBase(sibling) ||
+            other.facts.elements.has(sibling) ||
+            movedBy(other, sibling)
+          ) {
+            return undefined;
+          }
+          const heirs = other.identity.heirs.get(sibling) ?? [];
+          const letters = heldBase(sibling).filter((token) =>
+            present(M, token)
+          );
+          const holder =
+            letters.length === 0 ? undefined : M.owners.get(letters[0]);
+          // A join that took the line out of a container it emptied carries
+          // the birth beside it to that line too, as the container is gone.
+          const container = B.elements.get(sibling)?.parent;
+          const emptiedOut =
+            container !== undefined &&
+            isBase(container) &&
+            container === element.parent &&
+            !other.facts.elements.has(container) &&
+            !present(M, container);
+          return heirs.length === 1 &&
+            holder !== into &&
+            (!isBase(heirs[0]) || emptiedOut) &&
+            !movedBy(other, heirs[0]) &&
+            letters.every((token) => M.owners.get(token) === holder)
+            ? holder
+            : undefined;
+        };
+        const placed = (sibling: string | undefined) => {
+          const still = steady(sibling);
+          return present(M, still) ? still : (joinedInto(sibling) ?? still);
+        };
+        const prev = placed(element.prev);
+        const next = placed(element.next);
         // The other side turned its two siblings around, so it stands by one.
         const left = element.prev && translate(element.prev);
         const right = element.next && translate(element.next);
+        // A half does not follow its own source's move (Defaults, "Where a
+        // split-off half stands after the other side moves its source").
         const turned =
+          [element.prev, element.next].some(
+            (sibling) =>
+              sibling !== undefined &&
+              movedBy(other, sibling) &&
+              !continuesOf(fold, id).includes(sibling)
+          ) &&
           present(M, left) &&
           present(M, right) &&
           before(M, right as string, left as string);
@@ -2573,14 +3605,6 @@ const ledgerAt = (
         // the nearest base sibling that neither side moved, wrapped or joined
         // away, even a birth that holds letters the other side's move
         // carried, which no turn of the siblings between them excuses.
-        const pins = (sibling: string) =>
-          !movedBy(fold, sibling) &&
-          !movedBy(other, sibling) &&
-          [fold, other].every((claimant) => {
-            const fact = claimant.facts.elements.get(sibling);
-            if (fact === undefined) return !alive(claimant, sibling);
-            return fact.parent.startsWith(ROOT) || isBase(fact.parent);
-          });
         const nearestBirth = (step: 'next' | 'prev') => {
           let sibling = element[step];
           while (sibling !== undefined && unborn(sibling)) {
@@ -2607,18 +3631,106 @@ const ledgerAt = (
           ) {
             return undefined;
           }
-          return other.facts.elements.has(sibling)
+          // A name the merge gave to the half that move carried pins nothing.
+          const keptName = other.facts.elements.has(sibling)
             ? translate(sibling)
             : undefined;
+          return keptName !== undefined &&
+            (M.blocks.get(keptName) ?? []).some((token) =>
+              movedBy(other, token)
+            )
+            ? undefined
+            : keptName;
         };
-        const besideIn = (block: string) =>
-          landed.prev === block || landed.next === block;
+        const edgeOf = (sibling: string | undefined, last: boolean) => {
+          const row = (facts.blocks.get(sibling ?? '') ?? []).filter(isBase);
+          return last ? row.at(-1) : row[0];
+        };
+        // An empty half cut at a line's edge stands by the letter at that edge
+        // and by the line. When the other side moved a half it cut holding
+        // that letter to stand apart from the line, the half has two places
+        // (Defaults, "A merge the rows above read two ways"); a half moved
+        // right beside the line leaves one place between them.
+        const parted = (
+          [
+            [element.prev, true],
+            [element.next, false],
+          ] as const
+        ).some(([line, last]) => {
+          if (line === undefined || !isBase(line)) return false;
+          if (!continuesOf(fold, id).includes(line)) return false;
+          const edge = edgeOf(line, last);
+          const part =
+            edge === undefined ? undefined : other.facts.owners.get(edge);
+          const there =
+            part === undefined ? undefined : other.facts.elements.get(part);
+          return (
+            part !== undefined &&
+            there !== undefined &&
+            !isBase(part) &&
+            continuesOf(other, part).includes(line) &&
+            movedBy(other, part) &&
+            there.next !== line &&
+            there.prev !== line
+          );
+        });
+        if (parted) {
+          report.push(
+            `the merge places ${name()} by a cut the other side moved away from its line`
+          );
+        }
+        // A half whose source the other side moved or removed stays where its
+        // side put it, so the next block past that source that stays still
+        // bounds it (Defaults, "Where a split-off half stands after the other
+        // side moves its source").
+        const gone = (sibling: string) =>
+          movedBy(other, sibling) || !alive(other, sibling);
+        const pastSource = (step: 'next' | 'prev') => {
+          let sibling = element[step];
+          if (
+            sibling === undefined ||
+            !isBase(sibling) ||
+            !continuesOf(fold, id).includes(sibling) ||
+            !gone(sibling)
+          ) {
+            return undefined;
+          }
+          while (sibling !== undefined && isBase(sibling) && gone(sibling)) {
+            sibling = facts.elements.get(sibling)?.[step];
+          }
+          const still = steady(sibling);
+          return present(M, still) ? still : undefined;
+        };
+        const laterStays = pastSource('next');
+        if (laterStays !== undefined && !before(M, into, laterStays)) {
+          report.push(
+            `the merge takes ${name()} past the block after its source`
+          );
+        }
+        const earlierStays = pastSource('prev');
+        if (earlierStays !== undefined && !before(M, earlierStays, into)) {
+          report.push(
+            `the merge takes ${name()} past the block before its source`
+          );
+        }
+        const besideIn = (
+          block: string,
+          sibling: string | undefined,
+          edge: string | undefined
+        ) =>
+          (landed.prev === block || landed.next === block) &&
+          !emptiedHere(sibling) &&
+          !(edge !== undefined && (M.blocks.get(block) ?? []).includes(edge));
         const earlierKept = splitInPlace('prev');
         if (
           prev === undefined &&
           present(M, earlierKept) &&
           !before(M, earlierKept as string, into) &&
-          !besideIn(earlierKept as string)
+          !besideIn(
+            earlierKept as string,
+            element.prev,
+            edgeOf(element.prev, true)
+          )
         ) {
           report.push(`the merge puts ${name()} before the line it came after`);
         }
@@ -2627,9 +3739,43 @@ const ledgerAt = (
           next === undefined &&
           present(M, laterKept) &&
           !before(M, into, laterKept as string) &&
-          !besideIn(laterKept as string)
+          !besideIn(
+            laterKept as string,
+            element.next,
+            edgeOf(element.next, false)
+          )
         ) {
           report.push(`the merge puts ${name()} after the line it came before`);
+        }
+        // The half before the other side's cut keeps the line's name when this
+        // side deleted every letter in it, so a birth this side put before the
+        // line stands before that empty half, whichever block the merge names
+        // (Defaults, "Which line keeps the name when one side splits it and
+        // the other deletes every letter of the half before the cut").
+        const emptiedParts = (line: string | undefined) =>
+          line === undefined ||
+          !isBase(line) ||
+          !emptiedHere(line) ||
+          continuesOf(fold, id).includes(line)
+            ? []
+            : [...M.elements].flatMap(([part, fact]) => {
+                reads += 1;
+                const theirs = fromMerged(part);
+                return fact.block &&
+                  part !== into &&
+                  mergedContinues(part, line) &&
+                  theirs !== undefined &&
+                  !movedBy(other, theirs)
+                  ? [part]
+                  : [];
+              });
+        if (
+          next === undefined &&
+          emptiedParts(element.next).some((part) => before(M, part, into))
+        ) {
+          report.push(
+            `the merge puts ${name()} after the empty half that keeps its next sibling's name`
+          );
         }
         const laterBirth = nearestBirth('next');
         if (present(M, laterBirth) && !before(M, into, laterBirth as string)) {
@@ -2644,6 +3790,7 @@ const ledgerAt = (
             `the merge turns ${name()} and its earlier sibling around`
           );
         }
+        pinnedPlace(id, element, landed, into, name);
         const parents = [prev, next]
           .filter((sibling) => present(M, sibling))
           .map((sibling) => M.elements.get(sibling as string)?.parent);
@@ -2651,10 +3798,17 @@ const ledgerAt = (
           !isBase(landed.parent) &&
           !landed.parent.startsWith(ROOT) &&
           other.facts.elements.has(fromMerged(landed.parent) ?? landed.parent);
-        // A sibling the other side wrapped may take this block into its
+        // A source the other side wrapped may take this block into its
         // wrapper, as the two tie at the wrapper's edge.
-        const withWrapped = [left, right].some(
-          (sibling) =>
+        const withWrapped = (
+          [
+            [element.prev, left],
+            [element.next, right],
+          ] as const
+        ).some(
+          ([mine, sibling]) =>
+            mine !== undefined &&
+            continuesOf(fold, id).includes(mine) &&
             sibling !== prev &&
             sibling !== next &&
             present(M, sibling) &&
@@ -2725,6 +3879,51 @@ const ledgerAt = (
         }
       }
     }
+    // An empty line a side made is a line too, so the merge that fills it with
+    // base letters the side kept in another line, and keeps no other empty
+    // line for it, dropped that line (Defaults, "A merge the rows above read
+    // two ways": a line one side splits at its start while the other joins
+    // that line into the line before).
+    for (const [side, fold, inMerge] of [
+      ['own', ownFold, inOwn],
+      ['accepted', acceptedFold, (id: string) => id],
+    ] as const) {
+      for (const [id, element] of fold.facts.elements) {
+        if (
+          isBase(id) ||
+          !element.block ||
+          (fold.facts.blocks.get(id)?.length ?? 0) > 0
+        ) {
+          continue;
+        }
+        const heir = inMerge(id);
+        if (heir === undefined || !present(M, heir)) continue;
+        const homes = new Set(
+          (M.blocks.get(heir) ?? []).flatMap((held) => {
+            const home = B.letters.has(held)
+              ? blockOf(fold.facts, held)
+              : undefined;
+            return home === undefined || home === id ? [] : [home];
+          })
+        );
+        if (homes.size === 0) continue;
+        const standsFor = [...M.elements].some(
+          ([other, fact]) =>
+            other !== heir &&
+            fact.block &&
+            (M.blocks.get(other) ?? []).every((held) => !B.letters.has(held)) &&
+            [id, ...homes].some((origin) => mergedContinues(other, origin))
+        );
+        if (!standsFor) {
+          losses.push(
+            `the merge fills ${side}'s empty line ${describe(
+              fold.facts,
+              id
+            )} with letters ${side} kept in another line`
+          );
+        }
+      }
+    }
     for (const id of unexplained) {
       if (present(M, id)) {
         harms.push(`the merge adds ${describe(M, id)}, which no side wrote`);
@@ -2738,9 +3937,12 @@ const ledgerAt = (
       ...mergedFold.records.keys(),
     ]);
     for (const key of recordIds) {
+      // A record own changed answers to the first base, since a front that
+      // shows own's write would otherwise hide it.
+      const claim = claims.record(key);
       threeWay(
         () => `record ${(JSON.parse(key) as string[]).join(' / ')}`,
-        baseRecords.get(key),
+        claim === undefined ? baseRecords.get(key) : claim[0],
         ownFold.records.get(key),
         acceptedFold.records.get(key),
         mergedFold.records.get(key)
@@ -2798,6 +4000,7 @@ const ledgerAt = (
           accepted: acceptedFold,
           claims: claimsOf(
             O,
+            ownFold.records,
             (id) =>
               B.elements.has(id) || B.letters.has(id)
                 ? movedInto(ownFold, id)
@@ -2813,6 +4016,7 @@ const ledgerAt = (
   };
   const claimsOf = (
     O: Facts,
+    ownRecords: Records,
     movedInto: (id: string) => string | undefined,
     sideBySide: ReadonlyMap<string, unknown>
   ): Claims => {
@@ -2846,6 +4050,11 @@ const ledgerAt = (
           rootOf(B, left) === rootOf(B, right) &&
           rootOf(O, left) === rootOf(O, right) &&
           before(B, left, right) !== before(O, left, right)),
+      record: (key) =>
+        claims.record(key) ??
+        (ownRecords.get(key) === baseRecords.get(key)
+          ? undefined
+          : [baseRecords.get(key)]),
     };
   };
 
@@ -2927,7 +4136,11 @@ const ledgerAt = (
     for (const [head, move] of own.intent.moves) {
       const [name] = claimed([head]);
       if (name === undefined) continue;
-      moves.set(name, { carried: named(move.carried), past: move.past });
+      moves.set(name, {
+        carried: named(move.carried),
+        past: move.past,
+        turned: move.turned,
+      });
     }
     // A rebased chain's token flow is the rebase's doing, so an element here
     // continues only what own's own changes made it continue.
@@ -2979,20 +4192,40 @@ const ledgerAt = (
     foldMerged,
     judge: (accepted, own, merged) => judge(accepted, own, merged),
     resume: (proof, rest) => {
-      const front = proof[proofState];
+      const prior = proof[proofState];
       const later = ledgerAt(
-        front.accepted,
+        prior.accepted,
         String(Number(generation) + 1),
         isSetValued,
-        front.claims,
+        prior.claims,
         shortcuts,
         inFirstBase
       );
       const accepted = later.fold(rest.accepted, 'acc');
+      // One step cannot judge a rest that changes an element the front's
+      // accepted or merged changes already changed, such as a split of a half
+      // the front cut, a wrap beside a line it inserted or a join of a line it
+      // split. Such a rest reads lost, and the caller judges the span whole
+      // (effect-ledger skill, Composition law).
+      const front = new Set([
+        ...touchedBetween(B, prior.accepted.facts),
+        ...touchedBetween(prior.accepted.facts, prior.merged.facts),
+      ]);
+      const changed = [
+        ...touchedBetween(prior.accepted.facts, accepted.facts),
+      ].find((id) => front.has(id));
+      if (changed !== undefined) {
+        return {
+          contests: [],
+          harms: [`the rest changes ${changed}, which the front changed`],
+          kind: 'lost',
+          losses: [],
+        };
+      }
       const { origin, own } = later.carry(
-        front.own,
-        front.origin,
-        front.merged.views
+        prior.own,
+        prior.origin,
+        prior.merged.views
       );
       return later.judgeAfter(
         accepted,
