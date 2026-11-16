@@ -1,4 +1,9 @@
-import { type KeyboardEvent, useCallback, useMemo } from 'react';
+import {
+  type KeyboardEvent,
+  useCallback,
+  useMemo,
+  useSyncExternalStore,
+} from 'react';
 
 import {
   type EditorStateView,
@@ -17,10 +22,7 @@ import type { Editor } from '../plugin/with-react';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { useEditorRuntimeState } from './use-editor-runtime-state';
 import { useEditorViewState } from './use-editor-view-state';
-import {
-  createPliteRootEditor,
-  useOptionalPliteRuntimeContext,
-} from './use-plite-runtime';
+import { useOptionalPliteRuntimeContext } from './use-plite-runtime';
 
 /** Focus behavior after mounted undo or redo applies a history batch. */
 export type EditorHistoryFocusPolicy = EditableEditorHistoryFocusPolicy;
@@ -104,7 +106,13 @@ const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
   };
 };
 
-/** Create undo/redo commands and keyboard handling for the active or fixed root. */
+/**
+ * Create undo/redo commands and keyboard handling for the active or fixed root.
+ * Without `editor`, they run through the view of that root the user focused or
+ * pressed most recently among those an `Editable` shows, or the first one
+ * mounted while the user has used none. They are off while that view is
+ * read-only or composes text, and while no `Editable` shows the root.
+ */
 export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   editor: providedEditor,
   focusPolicy = 'restore-root',
@@ -131,17 +139,27 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
     ? toInternalRoot(providedEditor.read.view.root())
     : (fixedRoot ?? historyRoot);
   const publicRoot = toPublicRootOption(root);
-  const editor = useMemo(
-    () =>
-      providedEditor ??
-      createPliteRootEditor(
-        context ?? failInvariant('Expected an editor runtime.'),
-        publicRoot
-      ),
-    [context, providedEditor, publicRoot]
+  const targetContext = providedEditor ? null : context;
+  const subscribeTarget = useCallback(
+    (listener: () => void) =>
+      targetContext
+        ? targetContext.subscribeRootTarget(root, listener)
+        : () => {},
+    [root, targetContext]
   );
-  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
-  const composing = useEditorViewState(editor, (view) => view.isComposing());
+  const readTarget = useCallback(
+    () => targetContext?.getRootTarget(root) ?? null,
+    [root, targetContext]
+  );
+  const target = useSyncExternalStore(subscribeTarget, readTarget, readTarget);
+  const historyEditor = providedEditor ?? target?.view;
+  const shown = providedEditor ? true : (target?.shown ?? false);
+  const readOnly = useEditorViewState(historyEditor ?? source, (view) =>
+    view.isReadOnly()
+  );
+  const composing = useEditorViewState(historyEditor ?? source, (view) =>
+    view.isComposing()
+  );
   const availability = useEditorRuntimeState(
     source,
     selectHistoryAvailability,
@@ -149,34 +167,48 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   );
 
   const applyHistory = useCallback(
-    (direction: HistoryDirection): void => {
-      applyModelOwnedHistoryIntent({ direction, editor, focusPolicy });
+    (direction: HistoryDirection) => {
+      // A focus moves the caret's root and a press moves the store's answer
+      // before this hook renders again, so a command called from either reads
+      // both when it runs.
+      const editor =
+        providedEditor ??
+        targetContext?.getRootTarget(
+          fixedRoot ?? source.read(historyRootSelector)
+        )?.view;
+
+      return editor
+        ? applyModelOwnedHistoryIntent({ direction, editor, focusPolicy })
+        : false;
     },
-    [editor, focusPolicy]
+    [
+      fixedRoot,
+      focusPolicy,
+      historyRootSelector,
+      providedEditor,
+      source,
+      targetContext,
+    ]
   );
-  const undo = useCallback(() => applyHistory('undo'), [applyHistory]);
-  const redo = useCallback(() => applyHistory('redo'), [applyHistory]);
+  const undo = useCallback(() => {
+    applyHistory('undo');
+  }, [applyHistory]);
+  const redo = useCallback(() => {
+    applyHistory('redo');
+  }, [applyHistory]);
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
       const direction = getHistoryDirectionFromNativeEvent(event.nativeEvent);
 
-      if (!direction) return;
-
-      if (readOnly || composing) {
-        return;
-      }
-      if (availability.pending) {
-        applyHistory(direction);
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
+      if (!direction || readOnly || composing) return;
       if (
-        direction === 'undo' ? !availability.canUndo : !availability.canRedo
+        !availability.pending &&
+        (direction === 'undo' ? !availability.canUndo : !availability.canRedo)
       ) {
         return;
       }
-      applyHistory(direction);
+      if (!applyHistory(direction)) return;
+
       event.preventDefault();
       event.stopPropagation();
     },
@@ -193,11 +225,13 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   return useMemo(
     () => ({
       canRedo:
+        shown &&
         !readOnly &&
         !composing &&
         availability.pending === null &&
         availability.canRedo,
       canUndo:
+        shown &&
         !readOnly &&
         !composing &&
         availability.pending === null &&
@@ -217,6 +251,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
       publicRoot,
       readOnly,
       redo,
+      shown,
       undo,
     ]
   );

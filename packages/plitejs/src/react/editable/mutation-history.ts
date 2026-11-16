@@ -3,6 +3,7 @@ import {
   type EditableDOMRuntime,
   type EditorHistoryFocusPolicy,
   getMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntimes,
 } from './editable-dom-runtime';
 
 export const applyModelOwnedHistoryIntent = ({
@@ -16,9 +17,18 @@ export const applyModelOwnedHistoryIntent = ({
   focusPolicy?: EditorHistoryFocusPolicy;
   runtime?: EditableDOMRuntime | null;
 }) => {
-  if (!runtime || editor.read.view.isReadOnly()) return false;
+  // Among several `Editable`s of one view, none is the last active one before
+  // the user acts in one or once that one unmounts, and a control's history
+  // then runs through the first.
+  const historyRuntime =
+    runtime ??
+    getMountedEditableDOMRuntimes(editor).find((mounted) =>
+      Object.is(mounted.editor, editor)
+    );
 
-  runtime.dispatchHistory(direction, focusPolicy);
+  if (!historyRuntime || editor.read.view.isReadOnly()) return false;
+
+  historyRuntime.dispatchHistory(direction, focusPolicy);
   return true;
 };
 

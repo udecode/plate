@@ -27441,7 +27441,7 @@
         },
         "platejs/react:useEditorHistory": {
           "aliases": [],
-          "documentation": "Create undo/redo commands and keyboard handling for the active or fixed root.",
+          "documentation": "Create undo/redo commands and keyboard handling for the active or fixed root.\nWithout `editor`, they run through the view of that root the user focused or\npressed most recently among those an `Editable` shows, or the first one\nmounted while the user has used none. They are off while that view is\nread-only or composes text, and while no `Editable` shows the root.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useEditorHistory",

@@ -139,12 +139,15 @@ const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
 
 type MountedViewEditor = ReactRuntimeEditor<Value, PluginsOf<ReactEditorType>>;
 
+type MountedRootTarget = Readonly<{ shown: boolean; view: MountedViewEditor }>;
+
 type PliteRuntimeContextValue = {
   getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
   ) => MountedViewEditor | null;
   getMountedViewEditor: (root: RootKey) => MountedViewEditor | null;
+  getRootTarget: (root: RootKey) => MountedRootTarget | null;
   getView: (
     options?: EditorViewOptions,
     presentation?: ViewPresentation,
@@ -176,6 +179,10 @@ type PresentationLookups = {
     root: RootKey,
     presentation: ViewPresentation | null
   ) => MountedViewEditor | null;
+  getRootTarget: (
+    root: RootKey,
+    presentation: ViewPresentation | null
+  ) => MountedRootTarget | null;
   subscribeRootTarget: (
     root: RootKey,
     presentation: ViewPresentation | null,
@@ -201,6 +208,7 @@ const scopeRuntimeContext = (
     provider.getContentRootOwnerViewEditor(owner, presentation),
   getMountedViewEditor: (root) =>
     provider.getMountedViewEditor(root, presentation),
+  getRootTarget: (root) => provider.getRootTarget(root, presentation),
   mountedEditor,
   presentation,
   subscribeRootTarget: (root, listener) =>
@@ -425,17 +433,19 @@ export function EditorRuntimeProvider({
     ) => createEditorViewRuntime(runtime, options, presentation, policyTarget),
     [runtime]
   );
-  const findMountedViewEditor = useCallback(
-    (root: RootKey, presentation: ViewPresentation | null) => {
-      const view = presentation
-        ? readRootTarget(runtime, presentation, root)?.view
-        : undefined;
-
-      // The store types a view as a core editor. `registerViewEditor` is the
-      // one caller that mounts a view of this runtime there.
-      return (view ?? null) as typeof reactEditor | null;
-    },
+  // The store types a view as a core editor. `registerViewEditor` is the one
+  // caller that mounts a view of this runtime there.
+  const readProviderRootTarget = useCallback(
+    (root: RootKey, presentation: ViewPresentation | null) =>
+      (presentation
+        ? readRootTarget(runtime, presentation, root)
+        : null) as MountedRootTarget | null,
     [runtime]
+  );
+  const findMountedViewEditor = useCallback(
+    (root: RootKey, presentation: ViewPresentation | null) =>
+      readProviderRootTarget(root, presentation)?.view ?? null,
+    [readProviderRootTarget]
   );
   const registerViewEditor = useCallback(
     (editor: typeof reactEditor, root: RootKey) => {
@@ -616,6 +626,7 @@ export function EditorRuntimeProvider({
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getMountedViewEditor: findMountedViewEditor,
+      getRootTarget: readProviderRootTarget,
       getView,
       registerContentRootOwner,
       registerViewEditor,
@@ -629,6 +640,7 @@ export function EditorRuntimeProvider({
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getView,
+      readProviderRootTarget,
       registerContentRootOwner,
       registerViewEditor,
       runtime,
