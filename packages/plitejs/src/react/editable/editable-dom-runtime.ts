@@ -117,7 +117,7 @@ export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
 export type NodeSelectionFocus = RefObject<HTMLElement | null>;
 
-type EditorHistoryFocusHandler = (
+type SelectionFocusHandler = (
   policy: EditorHistoryFocusPolicy,
   replayChanges: EditorCommit['changes'] | null
 ) => void;
@@ -435,7 +435,7 @@ export class EditableDOMRuntime {
     globalThis.Node,
     () => void
   >();
-  private historyFocusHandler: EditorHistoryFocusHandler = () => {};
+  private selectionFocusHandler: SelectionFocusHandler = () => {};
 
   private historySettleHandler: () => void = () => {};
 
@@ -1304,8 +1304,12 @@ export class EditableDOMRuntime {
     this.selectionExportAfterDOMCommitHandler = handler;
   }
 
-  updateHistoryFocusHandler(handler: EditorHistoryFocusHandler) {
-    this.historyFocusHandler = handler;
+  updateSelectionFocusHandler(handler: SelectionFocusHandler) {
+    this.selectionFocusHandler = handler;
+  }
+
+  restoreSelectionFocus() {
+    this.selectionFocusHandler('restore-root', null);
   }
 
   updateHistorySettleHandler(handler: () => void) {
@@ -1412,7 +1416,7 @@ export class EditableDOMRuntime {
     const replayChanges = watched.changes(receipt);
 
     this.observeHistoryReplay(direction, () =>
-      this.historyFocusHandler(focusPolicy, replayChanges)
+      this.selectionFocusHandler(focusPolicy, replayChanges)
     );
     return result;
   }

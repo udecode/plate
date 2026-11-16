@@ -518,7 +518,8 @@ export const EditableDOMRoot = (
       onBlurCapture: (event: React.FocusEvent<HTMLDivElement>) =>
         attributes.onBlurCapture?.(event),
     },
-    activateRootView
+    activateRootView,
+    { editor, onKeyDown: propsOnKeyDown }
   );
 
   return (

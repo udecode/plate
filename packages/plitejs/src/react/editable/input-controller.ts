@@ -289,7 +289,7 @@ const MODIFIER_ONLY_KEYS = new Set([
   'SymbolLock',
 ]);
 
-const isModifierOnlyKeyboardIntent = (event: KeyboardEvent) =>
+export const isModifierOnlyKeyboardIntent = (event: KeyboardEvent) =>
   MODIFIER_ONLY_KEYS.has(event.key);
 
 export const isImeKeyDown = (nativeEvent: KeyboardEvent) =>

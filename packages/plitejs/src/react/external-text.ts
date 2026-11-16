@@ -66,6 +66,25 @@ export type ExternalTextActions = Readonly<{
     baseVersion: number;
     selection: ExternalTextSelection;
   }) => ExternalTextDispatchResult;
+  /**
+   * Offer a keydown the view declined to the Editable's `onKeyDown`. Pass the
+   * DOM event from its own listener, after every local handler passed on it.
+   * The editor drops the key when something prevents its default or stops
+   * its propagation before the editor root, and refuses keys a text input
+   * uses natively, such as composing and modifier keys, typing, Enter without
+   * Ctrl or Meta, Tab, navigation keys, deletion, select-all, clipboard, undo
+   * and redo keys, and on Apple hosts Control with a letter, the quote key or
+   * Enter. It also refuses every key while the editor or the element is
+   * read-only, during an authored preview, or while any part of the selection
+   * is outside this view's Text. When the view held focus as the key arrived,
+   * focus follows the selection once React commits the handler's change. It
+   * stays put when the handler unmounted the Editable, when the handler moved
+   * focus out of the view or blurred it before returning while the view stayed
+   * mounted, or when focus sits outside the view, other than on the page body,
+   * once React has committed. When the view did not hold focus, focus stays
+   * where it was.
+   */
+  yieldKey: (event: KeyboardEvent) => void;
 }>;
 
 /** Adapter-owned DOM and local resources for one mounted host. */

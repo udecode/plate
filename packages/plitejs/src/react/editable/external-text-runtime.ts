@@ -39,6 +39,7 @@ import {
   failTextProjectionConflict,
   readExternalTextBinding,
 } from './external-text-binding';
+import { isImeKeyDown, isModifierOnlyKeyboardIntent } from './input-controller';
 import {
   createNativeGroupingId,
   getNativeTextInputUpdateTags,
@@ -108,6 +109,60 @@ const APPLIED = Object.freeze({ status: 'applied' } as const);
 const READ_ONLY = Object.freeze({ status: 'read-only' } as const);
 const STALE = Object.freeze({ status: 'stale' } as const);
 const OWNERS_IN_OFFSET_AT = new WeakSet<object>();
+const YIELDED_KEYS = new WeakMap<KeyboardEvent, Entry>();
+const NATIVE_KEYS = new Set([
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'Backspace',
+  'Copy',
+  'Cut',
+  'Dead',
+  'Delete',
+  'End',
+  'Home',
+  'Insert',
+  'PageDown',
+  'PageUp',
+  'Paste',
+  'Process',
+  'Redo',
+  'Tab',
+  'Undo',
+  'Unidentified',
+]);
+const COMMAND_KEYS = new Set(['a', 'c', 'v', 'x', 'y', 'z']);
+const COMMAND_CODES = new Set(['KeyA', 'KeyC', 'KeyV', 'KeyX', 'KeyY', 'KeyZ']);
+const NAMED_KEY = /^[A-Z][\dA-Za-z]+$/;
+const isNativeTextKey = (event: KeyboardEvent, appleHost: boolean) => {
+  const { code, ctrlKey, key, metaKey } = event;
+  if (
+    isImeKeyDown(event) ||
+    isModifierOnlyKeyboardIntent(event) ||
+    NATIVE_KEYS.has(key)
+  ) {
+    return true;
+  }
+  // Apple binds Control chords to text commands, such as Control+K, by
+  // physical key, so a non-Latin layout still counts.
+  if (
+    appleHost &&
+    ctrlKey &&
+    !metaKey &&
+    (/^Key[A-Z]$/.test(code) || code === 'Quote' || key === 'Enter')
+  ) {
+    return true;
+  }
+  const command = ctrlKey || metaKey;
+  if (key === 'Enter') return !command;
+  if (NAMED_KEY.test(key)) return false;
+  if (!command || (!metaKey && event.getModifierState('AltGraph'))) {
+    return true;
+  }
+  if (/^[a-z]$/i.test(key)) return COMMAND_KEYS.has(key.toLowerCase());
+  return COMMAND_CODES.has(code);
+};
 const IGNORED_REGISTRATION = Object.freeze({
   destroy: () => undefined,
   update: () => undefined,
@@ -327,11 +382,17 @@ export class ExternalTextRuntime {
         this.tabbingBackward = null;
         this.focusChanged(entry, false);
       },
-      keyDown: (event) => {
+      keyDown: (event, deliver) => {
         this.tabbingBackward =
           event.key === 'Tab' && event.shiftKey && !event.defaultPrevented
             ? entry
             : null;
+        const native = event.nativeEvent;
+        if (YIELDED_KEYS.get(native) !== entry) return;
+        YIELDED_KEYS.delete(native);
+        if (this.yieldable(entry, native)) {
+          this.deliverKey(entry, deliver);
+        }
       },
     });
     this.registerCoverage(entry, binding);
@@ -639,6 +700,75 @@ export class ExternalTextRuntime {
     if (!this.focusSelection()) {
       this.runtime.requestSelectionExportAfterDOMCommit();
     }
+  }
+
+  private yieldable(entry: Entry, event: KeyboardEvent) {
+    if (
+      event.defaultPrevented ||
+      isNativeTextKey(event, this.runtime.isAppleHost) ||
+      !entry.active ||
+      entry.composing ||
+      entry.inCallback ||
+      entry.invalid ||
+      !entry.view ||
+      !entry.host.isConnected
+    ) {
+      return false;
+    }
+    let binding: Binding | null;
+    try {
+      binding = readExternalTextBinding(this.runtime.editor, entry.elementKey);
+    } catch {
+      return false;
+    }
+    if (
+      !binding ||
+      binding.textKey !== entry.textKey ||
+      this.isReadOnly(binding) ||
+      this.runtime.editor.read.view.isReadOnly()
+    ) {
+      return false;
+    }
+    const { selection } = binding.snapshot;
+    return (
+      RangeApi.isRange(selection) &&
+      toInternalRoot(SelectionApi.root(selection)) ===
+        toInternalRoot(this.runtime.editor.read.view.root()) &&
+      PathApi.equals(selection.anchor.path, binding.textPath) &&
+      PathApi.equals(selection.focus.path, binding.textPath)
+    );
+  }
+
+  private deliverKey(entry: Entry, deliver: () => void) {
+    const { host } = entry;
+    const document = host.ownerDocument;
+    const focused = host.contains(document.activeElement);
+    deliver();
+    if (!focused) return;
+    const handlerMovedFocus = !host.contains(document.activeElement);
+    if (handlerMovedFocus && entry.active) return;
+    // React queues its commit of the handler's change before this microtask.
+    this.runtime.domPhaseScheduler.schedule(
+      'dom-write',
+      'external-text-yielded-key-focus',
+      () => {
+        const settled = document.activeElement;
+        if (settled && settled !== document.body && !host.contains(settled)) {
+          return;
+        }
+        try {
+          this.runtime.restoreSelectionFocus();
+        } catch (error) {
+          reportEditorLifecycleError({
+            cause: error,
+            editor: this.runtime.editor,
+            source: 'external-text',
+            phase: 'focus',
+          });
+        }
+      },
+      { timing: 'microtask' }
+    );
   }
 
   private registerCoverage(entry: Entry, binding: Binding) {
@@ -1123,6 +1253,9 @@ export class ExternalTextRuntime {
         });
         if (focused) this.focusModelSelection();
         return APPLIED;
+      },
+      yieldKey: (event) => {
+        if (event && typeof event === 'object') YIELDED_KEYS.set(event, entry);
       },
     };
   }

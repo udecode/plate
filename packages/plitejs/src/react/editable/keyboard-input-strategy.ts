@@ -410,7 +410,7 @@ export const shouldDeferBackspaceToNativeInput = ({
       host: { isIOS, language },
     })) === 'beforeinput';
 
-const applyUserKeyDownHandler = ({
+export const applyUserKeyDownHandler = ({
   editor,
   event,
   handler,

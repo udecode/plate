@@ -234,7 +234,7 @@ export const useEditableRootRuntime = ({
     scrollSelectionIntoView,
     syncDOMSelectionToEditor,
   });
-  runtime.updateHistoryFocusHandler((policy, replayChanges) => {
+  runtime.updateSelectionFocusHandler((policy, replayChanges) => {
     if (policy !== 'restore-root') return;
 
     const next = getModelOwnedHistoryFocusRepair({

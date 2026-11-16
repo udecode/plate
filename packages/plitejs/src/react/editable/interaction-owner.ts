@@ -1,5 +1,11 @@
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+
 import { isDOMElement, isDOMNode } from '../../dom';
-import type { EditableHandlerContext } from '../components/editable';
+import type {
+  EditableHandlerContext,
+  EditableKeyDownHandler,
+} from '../components/editable';
+import { applyUserKeyDownHandler } from './keyboard-input-strategy';
 
 type ExternalHostOwner = Readonly<{
   root: () => HTMLElement | null;
@@ -8,9 +14,11 @@ type ExternalHostOwner = Readonly<{
   keyDown: (
     event: Readonly<{
       defaultPrevented: boolean;
-      key?: string;
-      shiftKey?: boolean;
-    }>
+      key: string;
+      nativeEvent: KeyboardEvent;
+      shiftKey: boolean;
+    }>,
+    deliver: () => void
   ) => void;
 }>;
 
@@ -112,49 +120,74 @@ export const createViewHandlerBinder = (context: EditableHandlerContext) => {
     ) as ViewHandlers<T>;
 };
 
+type GuardedEvent = Readonly<{
+  currentTarget: HTMLElement;
+  relatedTarget?: EventTarget | null;
+  target: EventTarget | null;
+}>;
+
+const routeExternalEvent = (
+  event: GuardedEvent
+): ExternalHostOwner | 'drop' | 'outer' => {
+  // React bubbles a portal's events through its React parents, so a
+  // popover an element renders reaches here from outside the editor.
+  if (isDOMNode(event.target) && !event.currentTarget.contains(event.target)) {
+    return 'drop';
+  }
+  const external = getExternalTextHostOwner(event.target);
+  if (!external || !event.currentTarget.contains(external.host)) return 'outer';
+  return external.owner.root() === event.currentTarget
+    ? external.owner
+    : 'drop';
+};
+
 /** Keep every React event family outside the outer editing pipeline. */
 export const guardExternalTextEvents = <T extends object>(
   handlers: T,
-  activate: () => void
+  activate: () => void,
+  yielded?: Readonly<{
+    editor: EditableHandlerContext['editor'];
+    onKeyDown?: EditableKeyDownHandler;
+  }>
 ): T =>
   Object.fromEntries(
     Object.entries(handlers).map(([name, handler]) => {
       if (!/^on[A-Z]/.test(name) || typeof handler !== 'function') {
         return [name, handler];
       }
-      return [
-        name,
-        (event: {
-          currentTarget: HTMLElement;
-          defaultPrevented: boolean;
-          key?: string;
-          relatedTarget?: EventTarget | null;
-          shiftKey?: boolean;
-          target: EventTarget | null;
-        }) => {
-          // React bubbles a portal's events through its React parents, so a
-          // popover an element renders reaches here from outside the editor.
-          if (
-            isDOMNode(event.target) &&
-            !event.currentTarget.contains(event.target)
-          ) {
-            return undefined;
-          }
-          const external = getExternalTextHostOwner(event.target);
-          if (external && event.currentTarget.contains(external.host)) {
-            if (external.owner.root() === event.currentTarget) {
-              if (name === 'onFocusCapture') {
-                activate();
-                external.owner.focus();
-              } else if (name === 'onBlurCapture') {
-                external.owner.blur(event.relatedTarget ?? null);
-              } else if (name === 'onKeyDown') {
-                external.owner.keyDown(event);
-              } else if (name === 'onMouseDownCapture') activate();
+      if (name === 'onKeyDown') {
+        return [
+          name,
+          (event: ReactKeyboardEvent<HTMLDivElement>) => {
+            const route = routeExternalEvent(event);
+            if (route === 'outer') return handler(event);
+            if (route !== 'drop') {
+              route.keyDown(event, () => {
+                if (!yielded) return;
+                applyUserKeyDownHandler({
+                  editor: yielded.editor,
+                  event,
+                  handler: yielded.onKeyDown,
+                });
+              });
             }
             return undefined;
-          }
-          return handler(event);
+          },
+        ];
+      }
+      return [
+        name,
+        (event: GuardedEvent) => {
+          const route = routeExternalEvent(event);
+          if (route === 'outer') return handler(event);
+          if (route === 'drop') return undefined;
+          if (name === 'onFocusCapture') {
+            activate();
+            route.focus();
+          } else if (name === 'onBlurCapture') {
+            route.blur(event.relatedTarget ?? null);
+          } else if (name === 'onMouseDownCapture') activate();
+          return undefined;
         },
       ];
     })
