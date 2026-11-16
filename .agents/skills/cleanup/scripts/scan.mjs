@@ -15,17 +15,26 @@
 // a worktree, and the worktree of an archived session does not wait the day.
 // A Codex rollout under $CODEX_HOME/sessions/ written in the last day keeps the
 // worktree its chat works in, and one the scan cannot read keeps them all.
-// Uncommitted changes do not keep it, because a card session lands them in the
-// checkout as a patch. That patch leaves ignored files out, so an ignored file
-// the checkout lacks makes the scan ask, counting in a pstack project only
-// files under <plans>/artifacts/, as --landed does. A commit that no branch,
-// tag or remote reaches, which only the worktree's HEAD history keeps, makes
-// the scan ask when it writes a file whose content the checkout's HEAD and its
-// upstream both lack and neither changed since, because removing the worktree
-// loses it. --delete measures each safe item, judges it again, checks the
-// running processes once more, saves a worktree's uncommitted changes the
-// checkout lacks and its unreached commits as patches under the git folder's
-// cleanup/ and removes it.
+// A write to the worktree is one git records or one to a file it has not
+// committed, other than an ignored file an install or build recreates or, in a
+// pstack project, one outside <plans>/artifacts/. Holding uncommitted changes
+// does not keep a worktree, and neither does holding commits that no branch,
+// tag or remote reaches, which only its HEAD history keeps, or ignored files.
+// --delete measures each safe item, judges it again, checks the running
+// processes once more and saves what a worktree alone holds to a folder of its
+// own under the git folder's cleanup/: changes.patch for its uncommitted
+// changes when the checkout lacks any, staged.patch for its staged changes
+// when a staged version differs from its file, commits.bundle for the
+// unreached commits, ignored/ for each ignored file the checkout lacks or
+// holds with other content, and a file named worktree with its path, branch
+// and HEAD. A worktree whose folder is gone or lost its .git file still gets
+// its bundle, from git's record of it. It removes the worktree only when
+// judging it once more still finds it safe and nothing wrote it during the
+// save. Like --landed, it skips ignored files an install or build recreates
+// and, in a pstack project, those outside <plans>/artifacts/.
+// The scan asks about a worktree whose commits git cannot list, whose index
+// holds an unresolved merge or that has more than IGNORED_LIMIT ignored files
+// to compare.
 // In a pstack project, whose .agents/pstack.json names its plans directory,
 // --landed counts only ignored files under <plans>/artifacts/, because there
 // every other ignored file is build output or a copy of the checkout's, and
@@ -56,16 +65,18 @@
 // checkout, where a tracked edit also counts once the checkout's copy holds its
 // hunks.
 // --remove takes worktrees whose work the caller knows landed and judges none of
-// them: it stops each process working in one, saves the uncommitted changes the
-// checkout lacks as a patch as --delete does, saves each commit no branch, tag
-// or remote reaches as a second patch, and removes it. It keeps a worktree git
-// does not list, a locked one, one outside the folders agents make worktrees
-// in, one holding another worktree, the one it runs in, one that lost its .git
-// file while holding files, one whose commits git cannot list, one whose
-// processes lsof cannot list and one git refuses to remove, and exits 1 when it
-// keeps any.
+// them: it stops each process working in one, saves what that worktree alone
+// holds as --delete does, and removes it. It keeps a worktree git does not
+// list, a locked one, one outside the folders agents make worktrees in, one
+// holding another worktree, the one it runs in, one that lost its .git file
+// while holding files, one whose commits git cannot list, one with more than
+// IGNORED_LIMIT ignored files to compare, one with an unresolved merge, one
+// whose processes lsof cannot list, one whose save fails, one a process starts
+// in or something writes during the save and one git refuses to remove, and
+// exits 1 when it keeps any.
 import { execFileSync, execSync, spawn } from 'node:child_process';
-import { closeSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readlinkSync, readSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { closeSync, copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readlinkSync, readSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import process from 'node:process';
@@ -111,6 +122,7 @@ const statOrNull = (path) => {
   }
 };
 const newestMtime = (paths) => Math.max(0, ...paths.map(statOrNull).filter(Boolean).map((stat) => stat.mtimeMs));
+const newestChange = (paths) => Math.max(0, ...paths.map(statOrNull).filter(Boolean).map((stat) => Math.max(stat.mtimeMs, stat.ctimeMs)));
 const entriesOf = (dir) => {
   try {
     return readdirSync(dir).map((name) => join(dir, name));
@@ -187,18 +199,22 @@ function usageVerdict(facts) {
 const unreachedReason = (count) =>
   count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history, with changes the checkout lacks; save them with git branch <name> <sha>`;
 
+const OVERFLOW = `more than ${IGNORED_LIMIT} ignored files to compare with the checkout`;
+const UNMERGED = 'an unresolved merge, whose index stages a patch cannot save';
+
 const ignoredAsk = ({ overflow, unique }) => {
-  if (overflow) return ['ask', `more than ${IGNORED_LIMIT} ignored files to compare with the checkout`];
+  if (overflow) return ['ask', OVERFLOW];
   return unique.length > 0 ? ['ask', `${unique.length} ignored files the checkout lacks, such as ${unique[0]}`] : null;
 };
 
 function cleanupVerdict(facts) {
   if (facts.heldCaches === null) return ['keep', 'lsof could not tell whether a server holds a cache inside it'];
   if (facts.heldCaches > 0) return ['keep', 'a running server holds a cache inside it'];
+  if (!facts.session?.archived && facts.hoursWritten < 24) return ['keep', 'a file it has not committed changed in the last day'];
   if (facts.repos > 0) return ['ask', `${facts.repos} submodules or nested repositories inside it`];
-  const ignored = ignoredAsk(facts.ignored);
-  if (ignored) return ignored;
-  if (facts.unreached !== 0) return ['ask', unreachedReason(facts.unreached)];
+  if (facts.unmerged > 0) return ['ask', UNMERGED];
+  if (facts.ignored.overflow) return ['ask', OVERFLOW];
+  if (facts.unreached === null) return ['ask', unreachedReason(null)];
   return ['safe', facts.session?.archived ? 'every session that used it is archived' : 'nothing wrote it or a session transcript naming it for a day'];
 }
 
@@ -296,6 +312,8 @@ function statusEntries(path) {
   return entries;
 }
 
+const isUnmerged = (entry) => entry.x === 'U' || entry.y === 'U' || (entry.x === entry.y && 'AD'.includes(entry.x));
+
 const nestedRepos = (path, entries) => entries.filter((entry) => existsSync(join(path, entry.file, '.git'))).length;
 
 function checkoutHoldsHunks(main, path, entry) {
@@ -350,26 +368,32 @@ function companionOf(main) {
   }
 }
 
-function ignoredWork(main, path, listings, root = null) {
+function ignoredWork(main, path, { listings = new Map(), root = null, byContent = false, compare = true } = {}) {
   const unique = [];
   let seen = 0;
+  let newest = 0;
+  let changed = 0;
   const visit = (rel) => {
     if (seen > IGNORED_LIMIT) return;
     if (root && !within(join(path, rel), join(path, root)) && !within(join(path, root), join(path, rel))) return;
-    const isDir = Boolean(statOrNull(join(path, rel))?.isDirectory());
+    const stat = statOrNull(join(path, rel));
+    const isDir = Boolean(stat?.isDirectory());
     if (recreated(path, rel, isDir)) return;
     if (isDir) {
       for (const name of readdirSync(join(path, rel))) visit(join(rel, name));
       return;
     }
     seen += 1;
-    if (root ? !spelledIn(main, rel, listings) : !matchesCheckout(main, path, rel, listings)) unique.push(rel);
+    newest = Math.max(newest, stat?.mtimeMs ?? 0);
+    changed = Math.max(changed, stat?.mtimeMs ?? 0, stat?.ctimeMs ?? 0);
+    if (!compare) return;
+    if (root && !byContent ? !spelledIn(main, rel, listings) : !matchesCheckout(main, path, rel, listings)) unique.push(rel);
   };
   for (const entry of git(path, ['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--directory']).split('\0')) {
     const rel = entry.replace(/\/$/u, '');
     if (rel) visit(rel);
   }
-  return { unique, overflow: seen > IGNORED_LIMIT };
+  return { unique, overflow: seen > IGNORED_LIMIT, newest, changed };
 }
 
 function findCaches(root, depth, worktrees) {
@@ -507,8 +531,23 @@ function heldCaches(path, worktrees) {
 
 // Removing a worktree deletes its HEAD reflog, so a commit made on a detached
 // HEAD and left behind by a later switch or reset is lost unless a ref reaches it.
+// The reflog sits in git's record folder for the worktree, which outlives a
+// folder that is gone or lost its .git file.
+function reflogOf(main, entry) {
+  const records = join(git(main, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'worktrees');
+  const record = entriesOf(records).find((dir) => {
+    try {
+      return real(dirname(readFileSync(join(dir, 'gitdir'), 'utf8').trim())) === entry.path;
+    } catch {
+      return false;
+    }
+  });
+  if (!record) throw new Error('git keeps no record folder for it');
+  return execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', `worktrees/${basename(record)}/HEAD`], { cwd: main, encoding: 'utf8', maxBuffer: Number.POSITIVE_INFINITY, stdio: ['ignore', 'pipe', 'ignore'] });
+}
+
 function unreachedList(main, entry, options, reflog = true) {
-  const history = reflog && !unlinked(entry) ? execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }) : '';
+  const history = reflog ? reflogOf(main, entry) : '';
   const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
   const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
   return execFileSync('git', ['--no-optional-locks', 'rev-list', ...options, '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] });
@@ -548,14 +587,62 @@ function unlandedCommits(main, entry, reflog = true) {
   }
 }
 
-function saveUnreached(main, entry) {
-  const commits = unreachedList(main, entry, ['--reverse', '--topo-order']).split('\n').filter(Boolean);
-  if (commits.length === 0) return null;
+function cleanupDir(main) {
   const dir = join(git(main, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'cleanup');
   mkdirSync(dir, { recursive: true });
-  const file = join(dir, `${basename(entry.path)}-${Date.now().toString(36)}-commits.patch`);
-  writeFileSync(file, commits.map((sha) => git(main, ['format-patch', '-1', '--stdout', '--binary', sha])).join('\n') + '\n');
-  return file;
+  return dir;
+}
+
+const remoteDefault = (main) => {
+  try {
+    return git(main, ['symbolic-ref', '-q', 'refs/remotes/origin/HEAD']);
+  } catch {
+    return null;
+  }
+};
+
+const saveName = (path) => `${basename(path).replace(/[^\w-]/gu, '-')}-${Date.now().toString(36)}-${randomBytes(3).toString('hex')}`;
+const savedAt = (name) => {
+  const stamp = /-([0-9a-z]+)-[0-9a-f]{6}(?:\.partial)?$/u.exec(name)?.[1];
+  return stamp ? Number.parseInt(stamp, 36) : null;
+};
+const staleSave = (name, now) => {
+  const at = savedAt(name);
+  return at !== null && now - at > 24 * HOUR;
+};
+
+function dropStaleSaves(main, now) {
+  for (const ref of git(main, ['for-each-ref', '--format=%(refname)', 'refs/cleanup/']).split('\n')) {
+    if (staleSave(ref.split('/')[2] ?? '', now)) git(main, ['update-ref', '-d', ref]);
+  }
+  for (const dir of entriesOf(cleanupDir(main))) {
+    if (dir.endsWith('.partial') && staleSave(basename(dir), now)) rmSync(dir, { force: true, recursive: true });
+  }
+}
+
+// A bundle keeps merges, which format-patch drops. git bundle packages only
+// named refs, so each unreached tip gets a temporary ref for the run. The
+// bundle leaves out only what a tag or origin's default branch reaches,
+// because a deleted local branch or a pruned pull-request branch would take a
+// prerequisite with it. Without origin/HEAD it leaves out what any remote
+// reaches.
+function saveUnreached(main, entry, file, name) {
+  const commits = unreachedList(main, entry, ['--parents']).split('\n').filter(Boolean).map((line) => line.split(' '));
+  if (commits.length === 0) return;
+  const parents = new Set(commits.flatMap(([, ...each]) => each));
+  const refs = commits.map(([sha]) => sha).filter((sha) => !parents.has(sha)).map((sha, at) => [`refs/cleanup/${name}/${at + 1}`, sha]);
+  const base = remoteDefault(main);
+  try {
+    for (const [ref, sha] of refs) git(main, ['update-ref', ref, sha]);
+    git(main, ['bundle', 'create', '--quiet', file, ...refs.map(([ref]) => ref), '--not', '--tags', ...(base ? [base] : ['--remotes'])]);
+    git(main, ['bundle', 'verify', '--quiet', file]);
+  } finally {
+    for (const [ref] of refs) {
+      try {
+        git(main, ['update-ref', '-d', ref]);
+      } catch {}
+    }
+  }
 }
 
 const RUN_BUILDS = /^(node_modules|\.turbo|\.next(-.*)?)$/u;
@@ -640,12 +727,19 @@ export function classifyRun(facts) {
 
 const runBytes = (path, action, builds) => (action === 'strip' ? builds.reduce((sum, build) => sum + (sizeOf(build) ?? 0), 0) : sizeOf(path));
 
-const cleanupFacts = (main, entry, worktrees) => ({
-  heldCaches: heldCaches(entry.path, worktrees),
-  repos: nestedRepos(entry.path, statusEntries(entry.path)),
-  ignored: ignoredWork(main, entry.path, new Map(), runRoot(main)),
-  unreached: unlandedCommits(main, entry),
-});
+function cleanupFacts(main, entry, context) {
+  const entries = statusEntries(entry.path);
+  const ignored = ignoredWork(main, entry.path, { root: runRoot(main), compare: false });
+  const written = Math.max(ignored.newest, newestMtime(entries.map((each) => join(entry.path, each.file))));
+  return {
+    heldCaches: heldCaches(entry.path, context.worktrees),
+    hoursWritten: (context.now - written) / HOUR,
+    ignored,
+    repos: nestedRepos(entry.path, entries),
+    unmerged: entries.filter(isUnmerged).length,
+    unreached: unreachedCommits(main, entry),
+  };
+}
 
 function contentFacts(main, entry, worktrees) {
   const listings = new Map();
@@ -653,12 +747,15 @@ function contentFacts(main, entry, worktrees) {
   return {
     ...compareWithCheckout(main, entry.path, listings),
     heldCaches: heldCaches(entry.path, worktrees),
-    ignored: ignoredWork(main, entry.path, listings, root),
+    ignored: ignoredWork(main, entry.path, { listings, root }),
     unreached: unlandedCommits(main, entry, root === null),
   };
 }
 
-const judgeWorktree = (main, entry, context) => usageVerdict(usageFacts(main, entry, context)) ?? cleanupVerdict(cleanupFacts(main, entry, context.worktrees));
+function judgeWorktree(main, entry, context) {
+  const usage = usageFacts(main, entry, context);
+  return usageVerdict(usage) ?? cleanupVerdict({ ...usage, ...cleanupFacts(main, entry, context) });
+}
 
 const sizeOf = (path) => {
   try {
@@ -700,30 +797,77 @@ export function scan({ repo, sessions = [], sizes = true, now = Date.now() }) {
   return { main, items };
 }
 
-// A temporary index stages every untracked file without touching the
-// worktree's own index, in case its removal then fails.
-function savePatch(main, path) {
-  const dir = join(git(main, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'cleanup');
-  mkdirSync(dir, { recursive: true });
-  const name = join(dir, `${basename(path)}-${Date.now().toString(36)}`);
-  const env = { ...process.env, GIT_INDEX_FILE: `${name}.index` };
-  const run = (args) => execFileSync('git', ['--no-optional-locks', ...args], { cwd: path, encoding: 'utf8', env, maxBuffer: Number.POSITIVE_INFINITY, stdio: ['ignore', 'pipe', 'pipe'] });
+const gitBytes = (path, args, env = process.env) => execFileSync('git', ['--no-optional-locks', ...args], { cwd: path, env, maxBuffer: Number.POSITIVE_INFINITY, stdio: ['ignore', 'pipe', 'pipe'] });
+
+// Starting from the worktree's index, not HEAD, keeps a file that git add -f
+// tracks although an ignore rule matches it, which git add -A skips.
+function savePatch(path, file) {
+  const scratch = mkdtempSync(join(tmpdir(), 'cleanup-index-'));
+  const env = { ...process.env, GIT_INDEX_FILE: join(scratch, 'index') };
+  const index = gitBytes(path, ['rev-parse', '--path-format=absolute', '--git-path', 'index']).toString().trim();
   try {
-    if (resolves(path, 'HEAD')) run(['read-tree', 'HEAD']);
-    run(['add', '-A']);
-    const patch = run(['diff', '--cached', '--binary']);
-    if (!patch) return null;
-    writeFileSync(`${name}.patch`, patch);
-    return `${name}.patch`;
+    if (existsSync(index)) copyFileSync(index, env.GIT_INDEX_FILE);
+    else if (resolves(path, 'HEAD')) gitBytes(path, ['read-tree', 'HEAD'], env);
+    gitBytes(path, ['add', '-A'], env);
+    const patch = gitBytes(path, ['diff', '--cached', '--binary'], env);
+    if (patch.length === 0) return null;
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, patch);
+    return file;
   } finally {
-    rmSync(env.GIT_INDEX_FILE, { force: true });
+    rmSync(scratch, { force: true, recursive: true });
+  }
+}
+
+// A FIFO or socket holds no content, and cpSync refuses to copy one.
+function saveIgnored(main, path, dir) {
+  const { overflow, unique } = ignoredWork(main, path, { root: runRoot(main), byContent: true });
+  if (overflow) throw new Error(OVERFLOW);
+  for (const rel of unique) {
+    const stat = lstatSync(join(path, rel));
+    if (stat.isFile() || stat.isSymbolicLink()) cpSync(join(path, rel), join(dir, rel), { preserveTimestamps: true, verbatimSymlinks: true });
   }
 }
 
 // A card's landing patch already holds what the checkout matches, so only a
 // worktree with changes the checkout lacks gets a patch.
+function saveWork(main, item, entry) {
+  const name = saveName(item.path);
+  const partial = join(cleanupDir(main), `${name}.partial`);
+  mkdirSync(partial);
+  try {
+    saveUnreached(main, entry, join(partial, 'commits.bundle'), name);
+    if (existsSync(item.path) && !item.unlinked) {
+      const { staged, unlanded } = compareWithCheckout(main, item.path, new Map());
+      if (unlanded > 0) savePatch(item.path, join(partial, 'changes.patch'));
+      if (staged > 0) writeFileSync(join(partial, 'staged.patch'), gitBytes(item.path, ['diff', '--cached', '--binary']));
+      saveIgnored(main, item.path, join(partial, 'ignored'));
+    }
+  } catch (error) {
+    rmSync(partial, { force: true, recursive: true });
+    throw error;
+  }
+  if (readdirSync(partial).length === 0) {
+    rmSync(partial, { recursive: true });
+    return;
+  }
+  writeFileSync(join(partial, 'worktree'), `path ${item.path}\nbranch ${entry.branch ?? 'detached'}\nHEAD ${entry.HEAD}\n`);
+  item.saved = join(cleanupDir(main), name);
+  renameSync(partial, item.saved);
+}
+
+// Saving writes nothing in the worktree, so a write there since it began is
+// another writer's, which the save may lack.
+// A file moved over another keeps its old mtime, but its ctime moves.
+function writtenSince(main, item, started) {
+  if (!existsSync(item.path) || item.unlinked) return false;
+  const admin = adminDir(item.path);
+  const meta = admin ? newestChange(['index', 'HEAD', join('logs', 'HEAD')].map((each) => join(admin, each))) : 0;
+  const files = newestChange(statusEntries(item.path).map((each) => join(item.path, each.file)));
+  return Math.max(meta, files, ignoredWork(main, item.path, { root: runRoot(main), compare: false }).changed) >= started;
+}
+
 function removeFolder(main, item) {
-  if (item.kind === 'worktree' && existsSync(item.path) && !item.unlinked) item.patch = compareWithCheckout(main, item.path, new Map()).unlanded > 0 ? savePatch(main, item.path) : null;
   // git refuses to remove a folder without its .git link but drops the record of a gone one.
   if (item.unlinked) rmSync(item.path, { force: true, recursive: true });
   if (item.kind === 'worktree') {
@@ -753,6 +897,7 @@ function rejudgeWorktree(repo, main, sessions, path) {
 
 export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
   const { main, items } = scan({ repo, sessions, sizes: false, now });
+  dropStaleSaves(main, now);
   const removed = [];
   const run = runFolders(main, Date.now());
   for (const item of items.filter((each) => each.verdict === 'safe')) {
@@ -765,7 +910,7 @@ export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
       }
       Object.assign(item, { action, reason, bytes: runBytes(item.path, action, facts.builds) });
       try {
-        if (action === 'expire') item.patches = facts.repos.map((repo) => savePatch(main, repo)).filter(Boolean);
+        if (action === 'expire') item.patches = facts.repos.map((repo) => savePatch(repo, join(cleanupDir(main), `${saveName(repo)}.patch`))).filter(Boolean);
         for (const path of action === 'strip' ? facts.builds : [item.path]) rmSync(path, { force: true, recursive: true });
       } catch (error) {
         Object.assign(item, { verdict: 'ask', reason: `removal failed: ${String(error.message).split('\n')[0]}` });
@@ -781,7 +926,20 @@ export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
       continue;
     }
     try {
-      if (item.kind === 'worktree' && existsSync(item.path)) item.commits = saveUnreached(main, listWorktrees(main).find((each) => each.path === item.path));
+      if (item.kind === 'worktree') {
+        const started = Date.now();
+        saveWork(main, item, listWorktrees(main).find((each) => each.path === item.path));
+        const again = rejudgeWorktree(repo, main, sessions, item.path);
+        const kept = again[0] !== 'safe' ? again : writtenSince(main, item, started) ? ['keep', 'something wrote it while the scan saved it'] : null;
+        if (kept) {
+          if (item.saved && existsSync(item.path)) {
+            rmSync(item.saved, { force: true, recursive: true });
+            item.saved = undefined;
+          }
+          Object.assign(item, { verdict: kept[0], reason: `kept after saving: ${kept[1]}` });
+          continue;
+        }
+      }
       removeFolder(main, item);
     } catch (error) {
       Object.assign(item, { verdict: 'ask', reason: `removal failed: ${String(error.message).split('\n')[0]}` });
@@ -833,6 +991,8 @@ function removalRefusal(main, listed, path) {
   if (within(real(process.cwd()), path)) return 'this command runs in it';
   if (unlinked(entry) && holdsFiles(path)) return 'git lost its link to it, so it cannot save the files in it';
   if (unreachedCommits(main, entry) === null) return unreachedReason(null);
+  if (!unlinked(entry) && ignoredWork(main, path, { root: runRoot(main), compare: false }).overflow) return OVERFLOW;
+  if (!unlinked(entry) && statusEntries(path).some(isUnmerged)) return UNMERGED;
   return null;
 }
 
@@ -848,11 +1008,18 @@ export function removeLanded({ repo, worktrees }) {
     stopProcesses(pids);
     const item = { kind: 'worktree', path, unlinked: unlinked(listed.find((each) => each.path === path)) };
     try {
-      const commits = saveUnreached(main, listed.find((each) => each.path === path));
+      const started = Date.now();
+      saveWork(main, item, listed.find((each) => each.path === path));
+      const after = processesIn(path);
+      const busy = after === null ? 'lsof could not list the processes working in it' : after.length > 0 ? `${after.length} processes started in it during the save` : writtenSince(main, item, started) ? 'something wrote it during the save' : null;
+      if (busy) {
+        if (item.saved) rmSync(item.saved, { force: true, recursive: true });
+        return { path, removed: false, reason: busy, stopped: pids.length };
+      }
       removeFolder(main, item);
-      return { path, removed: true, patch: item.patch ?? null, commits, stopped: pids.length };
+      return { path, removed: true, saved: item.saved ?? null, stopped: pids.length };
     } catch (error) {
-      return { path, removed: false, reason: `git refused to remove it: ${String(error.stderr ?? error.message).trim()}`, stopped: pids.length };
+      return { path, removed: false, reason: `removal failed: ${String(error.stderr ?? error.message).trim()}`, stopped: pids.length };
     }
   });
 }
@@ -921,7 +1088,7 @@ const gib = (bytes) => (bytes === null ? '?' : `${(bytes / 1024 ** 3).toFixed(1)
 function render({ items, removed }) {
   const order = { ask: 0, keep: 2, safe: 1 };
   const rows = [...items].sort((a, b) => order[a.verdict] - order[b.verdict] || (b.bytes ?? 0) - (a.bytes ?? 0));
-  const lines = rows.map((item) => [item.verdict.toUpperCase().padEnd(4), gib(item.bytes).padStart(7), item.kind.padEnd(8), item.path, item.reason].join('  '));
+  const lines = rows.map((item) => [item.verdict.toUpperCase().padEnd(4), gib(item.bytes).padStart(7), item.kind.padEnd(8), item.path, item.reason, ...(item.saved ? [`saved ${item.saved}`] : [])].join('  '));
   const outermost = items.filter((item) => !items.some((other) => other !== item && other.bytes !== null && within(item.path, other.path)));
   const total = (verdict) => {
     const group = items.filter((item) => item.verdict === verdict);
@@ -930,12 +1097,10 @@ function render({ items, removed }) {
   };
   lines.push('', `safe ${total('safe')}, ask ${total('ask')}, keep ${total('keep')}`);
   if (removed) lines.push(`removed ${removed.length} items, ${gib(removed.reduce((sum, item) => sum + (item.bytes ?? 0), 0))} by du, which counts shared hard links and APFS clones again`);
-  const patches = (removed ?? []).filter((item) => item.patch);
-  if (patches.length > 0) lines.push(`saved the uncommitted changes of ${patches.length} worktrees as patches in ${dirname(patches[0].patch)}`);
+  const saved = (removed ?? []).filter((item) => item.saved);
+  if (saved.length > 0) lines.push(`saved what ${saved.length} worktrees alone held, one folder each, in ${dirname(saved[0].saved)}`);
   const clones = (removed ?? []).flatMap((item) => item.patches ?? []);
   if (clones.length > 0) lines.push(`saved the uncommitted changes of ${clones.length} clones as patches in ${dirname(clones[0])}`);
-  const commits = (removed ?? []).filter((item) => item.commits);
-  if (commits.length > 0) lines.push(`saved the unreached commits of ${commits.length} worktrees as patches in ${dirname(commits[0].commits)}`);
   return lines.join('\n');
 }
 
@@ -957,7 +1122,7 @@ function main(argv) {
     const results = removeLanded({ repo, worktrees: paths });
     for (const result of results) {
       const stopped = result.stopped ? `  stopped ${result.stopped} process${result.stopped === 1 ? '' : 'es'}` : '';
-      console.log(result.removed ? `REMOVED  ${result.path}${result.patch ? `  patch ${result.patch}` : ''}${result.commits ? `  commits ${result.commits}` : ''}${stopped}` : `KEPT  ${result.path}  ${result.reason}${stopped}`);
+      console.log(result.removed ? `REMOVED  ${result.path}${result.saved ? `  saved ${result.saved}` : ''}${stopped}` : `KEPT  ${result.path}  ${result.reason}${stopped}`);
     }
     return results.every((result) => result.removed) ? 0 : 1;
   }
