@@ -30,6 +30,8 @@
     "../src/html/**/*",
     "../src/html/server/**/*",
     "../src/hyperscript/**/*",
+    "../src/features/ink/**/*",
+    "../src/react/features/ink/**/*",
     "../src/markdown/**/*",
     "../src/math/**/*",
     "../src/math/react/**/*",

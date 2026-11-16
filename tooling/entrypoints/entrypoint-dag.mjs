@@ -353,6 +353,17 @@ export const entrypointDags = {
       hyperscript: headless(
         directory('hyperscript', [], ['plitejs/hyperscript'])
       ),
+      ink: headless(privateDirectory('features/ink', ['core'])),
+      'ink/react': client(
+        privateDirectory(
+          'react/features/ink',
+          ['core', 'ink', 'react-core'],
+          [],
+          {
+            peerDependencies: ['react'],
+          }
+        )
+      ),
       markdown: headless(
         directory('markdown', ['authored', 'core', 'standard/list'], [], {
           peerDependencies: ['remark-parse', 'remark-stringify', 'unified'],
@@ -508,6 +519,8 @@ export const entrypointDags = {
         'excalidraw/react',
         'html',
         'html/server',
+        'ink',
+        'ink/react',
         'markdown',
         'math',
         'math/react',
