@@ -9,5 +9,6 @@
 - Indent the first empty line of a code block at offset zero
 - Keep the caret's column when ArrowUp or ArrowDown moves into or out of a CodeMirror code block, including its undrawn last line
 - Draw the CodeMirror code block's caret in its text color, so it shows on a dark page; a theme can still set its own `caretColor`
+- Run editor shortcuts, such as Mod+Enter and your app's own, from inside a CodeMirror code block when CodeMirror does not use the key
 
 Use `createCodeMirrorAdapter` from the optional `platejs/code-block/codemirror` entrypoint for ExternalText synchronization, shared history, selection, and guarded composition/language-load lifetime. Install its CodeMirror language, state, and view peers when using this adapter. Copied code-block UI supplies themes, search, language choices, and native CodeMirror commands.

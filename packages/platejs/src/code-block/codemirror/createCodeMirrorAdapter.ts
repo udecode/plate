@@ -8,6 +8,7 @@ import {
   EditorSelection,
   EditorState,
   findClusterBreak,
+  Prec,
   StateEffect,
   StateField,
   type Extension,
@@ -700,6 +701,18 @@ export function createCodeMirrorAdapter({
 
               return false;
             },
+            focus() {
+              const selection = view.state.selection.main;
+
+              if (
+                selection.anchor !== current.selection?.anchor ||
+                selection.head !== current.selection.focus
+              ) {
+                syncSelection();
+              }
+
+              return false;
+            },
             keydown(event) {
               if (composing || view.composing || event.isComposing) {
                 return false;
@@ -739,6 +752,15 @@ export function createCodeMirrorAdapter({
             },
           ]),
           extensions,
+          Prec.lowest(
+            EditorView.domEventHandlers({
+              keydown(event) {
+                actions.yieldKey(event);
+
+                return false;
+              },
+            })
+          ),
         ],
         parent: host,
         selection:
