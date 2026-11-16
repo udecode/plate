@@ -16,6 +16,9 @@ const RELEASE_OUTPUT = [
   /^apps\/www\/src\/generated\//,
 ];
 const TEMPLATE_SYNC = [/^templates\//];
+const VERSION_PACKAGES =
+  /^(\[Release\] Version packages|Merge pull request #\d+ from [^/\s]+\/changeset-release\/)/;
+const PR_NUMBER = /\(#(\d+)\)(?: \[[^\]]+\])*$|^Merge pull request #(\d+) /;
 const VERSION_BUMP = [
   /^packages\/.+\/package\.json$/,
   /^pnpm-lock\.yaml$/,
@@ -53,7 +56,6 @@ git('fetch', '--quiet', 'origin', 'main', 'next');
 for (const line of git(
   'log',
   '--first-parent',
-  '--no-merges',
   '--reverse',
   '--format=%H%x09%as%x09%s',
   'origin/next..origin/main'
@@ -67,13 +69,19 @@ for (const line of git(
 }
 
 const mootNote = (commit, subject) => {
-  const [author, ...files] = git('show', '--name-only', '--format=%an', commit)
+  const [author, ...files] = git(
+    'show',
+    '--diff-merges=first-parent',
+    '--name-only',
+    '--format=%an',
+    commit
+  )
     .split('\n')
     .filter(Boolean);
   const release = [
     ...RELEASE_OUTPUT,
     ...(author === 'github-actions[bot]' ? TEMPLATE_SYNC : []),
-    ...(subject.startsWith('[Release] Version packages') ? VERSION_BUMP : []),
+    ...(VERSION_PACKAGES.test(subject) ? VERSION_BUMP : []),
   ];
   const within = (rules) => (file) => rules.some((rule) => rule.test(file));
 
@@ -107,8 +115,7 @@ if (flag === '--set') {
 
   const row = rows.find((candidate) =>
     target.startsWith('#')
-      ? /\(#(\d+)\)(?: \[[^\]]+\])*$/.exec(candidate[4])?.[1] ===
-        target.slice(1)
+      ? PR_NUMBER.exec(candidate[4])?.slice(1).find(Boolean) === target.slice(1)
       : candidate[0].startsWith(target.slice(0, 10))
   );
 
