@@ -55,12 +55,14 @@
 // logins, a commit lands only for them unless it names a source: an issue of
 // this repository or its companion, a card in the suggested-task ledger, or a
 // dated plan in the plans directory that exists.
-// A landing takes one share of the machine's core pool, ahead of every proof
-// that waits, the first time it rebuilds or checks, and holds it until it
-// exits. It gives the share back while it waits out a GH006 and takes it again
-// when it next rebuilds or checks. It exits 75 when it still waits for cores
-// at 55 minutes into the run, and after a wait it fetches again and rebases
-// when either tip moved. Each check runs in a process group of its
+// A landing takes one core of the machine's core pool the first time it
+// rebuilds or checks, and holds it until it exits. It never waits for it, so
+// the pool only counts the landing's workers against the proofs that queue.
+// Its check runs with PSTACK_LAND_CHECK=1 and outside that share, so a check
+// that reserves cores through proof.mjs enters at once as a landing too, and
+// the pool counts a check that reserves none under the landing. It gives the
+// share back while it waits out a GH006 and takes it again when it next
+// rebuilds or checks. Each check runs in a process group of its
 // own, and at 55 minutes into the run land.mjs stops that group and exits 75,
 // so a check runner that records each step's pass keeps the steps that
 // finished for the rerun. A check that fails after it ran on a public commit
@@ -79,12 +81,12 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { availableParallelism, devNull, tmpdir } from 'node:os';
+import { devNull, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findLead, leadLabel, maxEffort, modelsSheet, runtimeFromEnv, sheetMisses } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
-import { alive, reserve } from './proof.mjs';
+import { alive, LAND_CHECK, reserve } from './proof.mjs';
 import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
 import { findings } from './writing-check.mjs';
 
@@ -107,6 +109,9 @@ const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
 const PR_SECTIONS = ['Why', 'Verification'];
 const RETRIES = 3;
+// One core covers the git work and the generators, and makes the pool count a
+// check that reserves none.
+const LAND_WORKERS = 2;
 const DECLINED_WAITS = [1, 2, 4, 8, 16];
 const COMMAND_LIMIT = 60 * 60_000;
 const DEADLINE = COMMAND_LIMIT - 5 * 60_000;
@@ -247,7 +252,6 @@ const gitAsync = (args) =>
 
 let fetched;
 let share = null;
-let stale = false;
 let waitedMs = 0;
 let checkedMs = 0;
 let moves = 0;
@@ -256,29 +260,13 @@ let cause = null;
 
 function takeCores() {
   if (share) return;
-  share = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs', { first: true, giveUp: () => elapsed() >= DEADLINE });
-  if (!share) {
-    fail(
-      `land.mjs still waited for cores at ${DEADLINE / 60_000} minutes into the run. ` +
-        'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
-      EX_TEMPFAIL
-    );
-  }
+  share = reserve(LAND_WORKERS, 'land.mjs', { first: true });
   waitedMs += share.waited;
-  if (share.waited > 0) stale = true;
 }
 
 function dropCores() {
   share?.();
   share = null;
-}
-
-async function catchUp() {
-  takeCores();
-  if (!stale) return;
-  const before = fetched;
-  await fetchCompanionFirst();
-  if (fetched.own !== before.own || fetched.theirs !== before.theirs) await rebaseFetched();
 }
 
 async function rebaseOntoOrigin() {
@@ -325,7 +313,6 @@ async function fetchCompanionFirst() {
   if (crun && crun.status !== 0) fail(`git ${theirs.join(' ')} in ${pair.dir} failed: ${crun.stderr.trim()}`);
   // FETCH_HEAD is per worktree. Every worktree shares the upstream refs, and another session's push moves them.
   fetched = { own: must('rev-parse', 'FETCH_HEAD'), theirs: pair ? cmust('rev-parse', 'FETCH_HEAD') : null };
-  stale = false;
 }
 
 // A failed fetch reads as no move, because a flaky fetch of the other repository should not stop a push that its own origin accepts.
@@ -914,7 +901,9 @@ const stamp = () =>
 function runCheck(command) {
   if (elapsed() >= DEADLINE) return Promise.resolve({ stopped: true });
   return new Promise((resolve) => {
-    const child = spawn(command, { shell: true, stdio: ['ignore', 'inherit', 'inherit'], detached: true });
+    const env = { ...process.env, [LAND_CHECK]: '1' };
+    delete env.PSTACK_SLOT;
+    const child = spawn(command, { shell: true, stdio: ['ignore', 'inherit', 'inherit'], detached: true, env });
     const killGroup = (signal) => {
       try {
         process.kill(-child.pid, signal);
@@ -1002,18 +991,18 @@ async function retry(where) {
   moves += 1;
   console.log(`${where} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
   await rebaseOntoOrigin();
-  await catchUp();
+  takeCores();
   await check(true);
 }
 
 if (fresh) {
   console.log(`${fresh} is set, so land.mjs runs the checks again whatever it recorded.`);
-  await catchUp();
+  takeCores();
   await check();
 } else if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
   console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
 } else {
-  await catchUp();
+  takeCores();
   await check();
 }
 

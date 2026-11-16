@@ -22,6 +22,7 @@ import {
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
+import { stepLogger } from './check-steps.mjs';
 import { mentionsOutsideComments, runtimeClosure } from './import-graph.mjs';
 import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
@@ -53,8 +54,10 @@ const FORMATTER_ONLY = new Set(['skills-lock.json']);
 const formatted = (files) => files.some((file) => !unlinted(file));
 const CODE = /\.(?:[cm]?[jt]sx?|sh)$/u;
 const RESOLVER_CONFIG = /(?:^|\/)(?:tsconfig[^/]*|package)\.json$/u;
+// Resolution never tries a prose extension, and an import that names one by
+// its full path could not resolve before the file was added.
 const canRetargetImports = (files, retargeted) =>
-  retargeted.length > 0 ||
+  retargeted.some((file) => !PROSE.test(file)) ||
   touches(
     '.gitprivate',
     'tooling/scripts/import-graph.mjs',
@@ -267,7 +270,38 @@ const packageDiff = () =>
 // value gives. Under --affected, the `quick` steps run first and the rest
 // start only once every one of them passes, and no step starts after one
 // fails, so a type, lint or citation error fails a landing before any slow
-// step starts.
+// step starts. Under --affected, which every landing runs, only the `land`
+// steps run: typecheck, the fast test files and checks that take a second or
+// two. The deep lane runs every other step on next after landing.
+// Bun ignores the www Playwright specs, so editing one cannot change the tests.
+const reachesTests = (files) =>
+  touches(
+    '.agents/rules/',
+    '.github/workflows/',
+    'apps/',
+    'benchmarks/',
+    'content/',
+    'packages/',
+    'tooling/'
+  )(
+    files.filter(
+      (file) =>
+        reachesProduct(file) && !file.startsWith('apps/www/tests/browser/')
+    )
+  ) ||
+  [
+    ...new Set(
+      files.flatMap((file) =>
+        [
+          ...(toolingReach(file)?.tests ?? []),
+          ...(CHECK_SCRIPT.test(file)
+            ? ['tooling/scripts/ci-workflow.test.mjs']
+            : []),
+        ].filter(inTestSuite)
+      )
+    ),
+  ].filter((test) => existsSync(join(root, test)));
+
 export const steps = [
   {
     name: 'lint',
@@ -296,6 +330,7 @@ export const steps = [
   },
   {
     name: 'typecheck',
+    land: true,
     quick: true,
     cores: 3,
     holds: ['packages/cli/tmp-*'],
@@ -335,39 +370,22 @@ export const steps = [
   },
   {
     name: 'test',
+    land: true,
     cores: 4,
     holds: ['apps/www/.source'],
     private: true,
-    run: 'pnpm test',
+    run: 'pnpm test:fast',
     key: [],
-    // Bun ignores the www Playwright specs, so editing one cannot change this step.
-    affected: (files) =>
-      touches(
-        '.agents/rules/',
-        '.github/workflows/',
-        'apps/',
-        'benchmarks/',
-        'content/',
-        'packages/',
-        'tooling/'
-      )(
-        files.filter(
-          (file) =>
-            reachesProduct(file) && !file.startsWith('apps/www/tests/browser/')
-        )
-      ) ||
-      [
-        ...new Set(
-          files.flatMap((file) =>
-            [
-              ...(toolingReach(file)?.tests ?? []),
-              ...(CHECK_SCRIPT.test(file)
-                ? ['tooling/scripts/ci-workflow.test.mjs']
-                : []),
-            ].filter(inTestSuite)
-          )
-        ),
-      ].filter((test) => existsSync(join(root, test))),
+    affected: reachesTests,
+  },
+  {
+    name: 'test-slow',
+    cores: 4,
+    holds: ['apps/www/.source'],
+    private: true,
+    run: 'pnpm test:slow',
+    key: [],
+    affected: reachesTests,
   },
   {
     name: 'plite-browser',
@@ -525,6 +543,7 @@ export const steps = [
   },
   {
     name: 'bench-targets',
+    land: true,
     private: true,
     run: 'pnpm plite:bench:targets:check',
     affected: touches('benchmarks/targets/slate-v2.json'),
@@ -578,6 +597,7 @@ export const steps = [
   },
   {
     name: 'plite-docs',
+    land: true,
     private: true,
     run: 'node tooling/scripts/check-plite-docs.mjs',
     affected: (files) =>
@@ -604,6 +624,7 @@ export const steps = [
   },
   {
     name: 'browser-test-imports',
+    land: true,
     run: 'node tooling/scripts/check-browser-test-imports.mjs',
     fix: 'node tooling/scripts/check-browser-test-imports.mjs --fix',
     affected: touches(
@@ -615,6 +636,7 @@ export const steps = [
   },
   {
     name: 'yjs-element-deletes',
+    land: true,
     run: 'node tooling/scripts/check-yjs-element-deletes.mjs',
     affected: touches('packages/plitejs/'),
     key: [],
@@ -646,6 +668,7 @@ export const steps = [
   },
   {
     name: 'registry-changelog',
+    land: true,
     run: 'node tooling/scripts/generate-ui-changelog-entries.mjs --check',
     write: 'node tooling/scripts/generate-ui-changelog-entries.mjs --write',
     affected: touches(
@@ -658,6 +681,7 @@ export const steps = [
   },
   {
     name: 'mathml-tex-symbols',
+    land: true,
     private: true,
     run: 'node tooling/scripts/mathml-tex-symbols.mjs --check',
     write: 'node tooling/scripts/mathml-tex-symbols.mjs',
@@ -671,12 +695,14 @@ export const steps = [
   },
   {
     name: 'bench-report',
+    land: true,
     private: true,
     run: 'node tooling/scripts/bench-targets.mjs report --check',
     write: 'node tooling/scripts/bench-targets.mjs report',
   },
   {
     name: 'skill-mirrors',
+    land: true,
     run: 'node .agents/rules/plate-next/scripts/sync-resources.mjs --check',
     fix: 'pnpm install',
     affected: touches(
@@ -698,6 +724,7 @@ export const steps = [
   },
   {
     name: 'removed-api-teaching',
+    land: true,
     run: 'node tooling/scripts/check-removed-api-teaching.mjs',
     key: [],
   },
@@ -725,6 +752,7 @@ export const steps = [
   },
   {
     name: 'triage',
+    land: true,
     private: true,
     run: 'node tooling/scripts/triage.mjs check',
     affected: touches('.agents/pstack.json', 'docs/triage/'),
@@ -732,10 +760,12 @@ export const steps = [
   },
   {
     name: 'private',
+    land: true,
     run: 'node tooling/scripts/git-private.mjs check',
   },
   {
     name: 'private-imports',
+    land: true,
     run: 'node tooling/scripts/git-private.mjs imports',
     affected: (files, retargeted) =>
       canRetargetImports(files, retargeted) ||
@@ -747,6 +777,7 @@ export const steps = [
   },
   {
     name: 'manifests',
+    land: true,
     run: 'pnpm test:manifests',
     affected: touches('.changeset/', 'packages/'),
     key: [],
@@ -826,8 +857,11 @@ export const manualOnly = {
   'check:plite:dev': 'Plans Plite proof from changed paths, for local use.',
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
+  'deep-check':
+    'Runs the deep lane on next after landing; its launchd job and the deep-check skill start it.',
   'deps:check': 'Lists available dependency updates; it gates nothing.',
   'p:test': 'Template that each package test script calls.',
+  test: 'Runs every root test file, which the test and test-slow steps split between them.',
   'plite:browser:test':
     'Runs the @platejs/test package tests, which the plite-test step runs.',
   'plite:browser:test:proof':
@@ -1063,6 +1097,7 @@ const main = async () => {
     '--affected',
     '--browser',
     '--build',
+    '--deep',
     '--list',
     '--reads',
     '--write',
@@ -1109,6 +1144,13 @@ const main = async () => {
     );
     return 1;
   }
+  const deep = args.includes('--deep');
+  if (deep && (affected || writing || optIns.length > 0 || names.length > 0)) {
+    console.error(
+      '[check] --deep runs every step that --build --browser runs; run it without --affected, step names, --write, --build, --browser or --reads.'
+    );
+    return 1;
+  }
 
   // pnpm writes the lockfile it last installed to node_modules/.pnpm/lock.yaml.
   const installed = join(root, 'node_modules/.pnpm/lock.yaml');
@@ -1125,7 +1167,20 @@ const main = async () => {
 
   let chosen = affected
     ? steps.filter((step) => !step.optIn)
-    : selectSteps(args);
+    : deep
+      ? steps.filter((step) =>
+          [undefined, '--browser', '--build'].includes(step.optIn)
+        )
+      : selectSteps(args);
+  if (affected) {
+    const later = chosen.filter((step) => !step.land);
+    if (later.length > 0) {
+      console.info(
+        `  skip ${later.map((step) => step.name).join(', ')}: the deep lane runs them on next after landing`
+      );
+    }
+    chosen = chosen.filter((step) => step.land);
+  }
   if (!hasPrivateHalf(root)) {
     const asked = chosen.filter(
       (step) =>
@@ -1145,6 +1200,9 @@ const main = async () => {
     chosen = chosen.filter((step) => !step.private);
   }
   const fresh = freshRun(process.env);
+  const landing = process.env.PSTACK_LAND_CHECK === '1';
+  const logStep = stepLogger(root, { affected, deep, fresh, landing });
+  const near = affected || deep;
   const cache = openCache(root, { fresh: writing || fresh });
   const selected = [];
   for (const step of chosen) {
@@ -1156,18 +1214,17 @@ const main = async () => {
     };
     const { cover: covered, need } = planStep(
       step,
-      cache.bases(scope, { mergeBase: affected, near: affected })
+      cache.bases(scope, { mergeBase: affected, near })
     );
     const ran = Array.isArray(need) ? { ...scope, tests: need } : scope;
     const cover =
       covered ??
-      (ran === scope
-        ? null
-        : planStep(step, cache.bases(ran, { near: affected })).cover);
+      (ran === scope ? null : planStep(step, cache.bases(ran, { near })).cover);
     if (cover) {
       console.info(
         `  skip ${step.name}: ${cover.label}${cover.files.length > 0 ? `, and none of the ${cover.files.length} files changed since reaches it` : ''}`
       );
+      logStep({ step: step.name, covered: cover.label });
       continue;
     }
     selected.push({
@@ -1178,20 +1235,10 @@ const main = async () => {
   }
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();
-  // Writers can read each other's output, so --write keeps one step at a time.
   const share = Math.ceil(availableParallelism() / 2);
-  const budget = writing
-    ? 1
-    : Math.min(
-        share,
-        selected.reduce(
-          (sum, { step }) => sum + Math.min(step.cores ?? 1, share),
-          0
-        )
-      );
+  // Writers can read each other's output, so --write keeps one step at a time.
+  let budget = 1;
   const { reserve } = await import('../../.agents/pstack/proof.mjs');
-  const release =
-    writing || selected.length === 0 ? () => {} : reserve(budget, 'pnpm check');
   const logs = mkdtempSync(join(tmpdir(), 'plate-check-'));
   const running = new Set();
   let interrupted = 0;
@@ -1219,6 +1266,12 @@ const main = async () => {
     });
     const reason = cache.end(step.name);
     results.set(step.name, result);
+    logStep({
+      cores: Math.min(step.cores ?? 1, budget),
+      exit: interrupted ? 'interrupted' : result.status,
+      seconds: result.seconds,
+      step: step.name,
+    });
     // pnpm exits 0 when an interrupt stops its script, so a step that ends
     // after one never counts as passed.
     if (result.status === 0 && !interrupted) {
@@ -1253,15 +1306,28 @@ const main = async () => {
             selected.filter(({ step }) => !step.quick),
           ]
         : [selected];
-      for (const tier of tiers) {
+      // Each tier asks the pool for only the cores its own steps use, so a
+      // landing whose change reaches only the quick steps waits for one or two.
+      for (const tier of tiers.filter((entries) => entries.length > 0)) {
         if (stopped()) break;
-        await schedule(tier, budget, start, stopped);
+        budget = Math.min(
+          share,
+          tier.reduce(
+            (sum, { step }) => sum + Math.min(step.cores ?? 1, share),
+            0
+          )
+        );
+        const release = reserve(budget, 'pnpm check');
+        try {
+          await schedule(tier, budget, start, stopped);
+        } finally {
+          release();
+        }
       }
     }
   } finally {
     for (const signal of signals) process.removeListener(signal, stop);
     rmSync(logs, { force: true, recursive: true });
-    release();
   }
   if (interrupted) return interrupted;
   const { dropped } = cache.flush();
