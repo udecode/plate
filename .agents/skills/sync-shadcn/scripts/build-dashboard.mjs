@@ -1334,10 +1334,54 @@ function renderHtml(dashboard) {
 `;
 }
 
+function findPlanSlicesWithoutRows(features, planPath) {
+  if (!planPath) {
+    return [];
+  }
+
+  const absolutePlanPath = path.resolve(repoRoot, planPath);
+  if (!fs.existsSync(absolutePlanPath)) {
+    throw new Error(`status.json lastPlan does not exist: ${planPath}`);
+  }
+
+  const lines = fs.readFileSync(absolutePlanPath, 'utf8').split('\n');
+  const start = lines.findIndex(
+    (line) => line.trim() === '## Recommended Merge Slices'
+  );
+  if (start === -1) {
+    return [];
+  }
+
+  const itemIds = new Set(
+    features.flatMap((feature) => feature.items.map((item) => item.id))
+  );
+  const missing = [];
+
+  for (const line of lines.slice(start + 1)) {
+    if (line.startsWith('## ')) {
+      break;
+    }
+
+    const slice = line.match(/^\|[^|]*\|\s*`([^`]+)`\s*\|/)?.[1];
+    if (slice && !itemIds.has(slice)) {
+      missing.push(slice);
+    }
+  }
+
+  return missing;
+}
+
 const deltas = readJson(deltasPath);
 const status = readJson(statusPath);
 const deletedScreenshotFiles = cleanupDoneScreenshots(deltas);
 const features = ensureArray(deltas.features).map(normalizeFeature);
+const slicesWithoutRows = findPlanSlicesWithoutRows(features, status.lastPlan);
+
+if (slicesWithoutRows.length > 0) {
+  throw new Error(
+    `${status.lastPlan} recommends slices with no deltas.json item: ${slicesWithoutRows.join(', ')}. Add each as a pending item whose id is the slice id, then rebuild.`
+  );
+}
 
 const dashboard = {
   generatedAt: new Date().toISOString(),

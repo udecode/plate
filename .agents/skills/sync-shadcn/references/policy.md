@@ -61,6 +61,8 @@ Planning mode may:
 - create the active plan
 - write `docs/sync/shadcn/runs/<range>/` artifacts
 - update `lastPlannedCommit` and `lastPlan`
+- add the plan's slices to `docs/sync/shadcn/deltas.json` as `pending` items
+  and rebuild the dashboard
 - directly apply qualifying micro-overlap merges and record them as partial
   syncs
 - ask one review/decision question
@@ -98,6 +100,8 @@ These gates must be closed in the active plan:
   exclusion, or question group.
 - `docs/sync/shadcn/status.json` parses and its `lastPlannedCommit` /
   `lastSyncedCommit` semantics match the work actually completed.
+- Every slice in the plan's `## Recommended Merge Slices` table has a
+  `deltas.json` item, and `pnpm sync-shadcn dashboard --no-open` passed.
 - Browser proof exists when browser-visible docs UI changed, or when a
   planning scope is visual and needs Plate-vs-shadcn parity evidence.
 - A header, nav or search change has browser proof on `/` and `/cn` at mobile width, and command-menu fallback navigation is proved apart from search results.

@@ -39,6 +39,9 @@ State meanings:
 Dashboard source:
 
 - `docs/sync/shadcn/deltas.json` is the editable structured decision source.
+- Planning adds each slice of its plan as a `pending` item, as
+  [Planning](./planning.md) step 6 says. The build fails while a slice in
+  `lastPlan`'s `## Recommended Merge Slices` table has no item.
 - `docs/sync/shadcn/dashboard.json` and
   `docs/sync/shadcn/dashboard.html` are generated views.
 - When adding a landed implementation slice, update `status.json` first, then

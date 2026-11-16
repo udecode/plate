@@ -237,6 +237,17 @@ table in `$RUN/inventory.md` and link it from the plan.
 Ask one pointed question when there are `needs-question` rows. Do not ask about
 settled exclusions.
 
+The plan also has a `## Recommended Merge Slices` table, one row per slice that
+waits on an owner decision, deferred slices included:
+
+| Order | Slice | Class | Files | Why | Verification |
+| --- | --- | --- | --- | --- | --- |
+| 1 | `next-security` | `smart-merge` | `apps/www/package.json` | why Plate needs it | proof to run once accepted |
+
+The second cell holds the slice id in backticks, and that id is the slice's
+`deltas.json` item id. Carry forward every slice an earlier plan left open, under
+the id its dashboard item already has.
+
 ## 5. Status Updates
 
 `docs/sync/shadcn/status.json` has three meanings:
@@ -269,3 +280,19 @@ When advancing the baseline, include:
 ```
 
 Do not delete older run artifacts. They are the audit trail.
+
+## 6. Dashboard Rows
+
+The owner reviews a plan on the dashboard, so planning ends there. After the
+status update:
+
+1. Add each slice in the plan's `## Recommended Merge Slices` table to
+   `docs/sync/shadcn/deltas.json` as an item with state `pending`. Put it under
+   the feature that owns its surface, or under a new feature.
+2. Fill the item's `title`, `upstream`, `files`, `suggestion` with the plan's
+   recommendation, and `evidence` with the plan path and upstream commits. Leave
+   `decision` empty.
+3. Leave an item that already has the slice id unchanged.
+4. Set `reviewState` to `pending` on each feature that gained a pending item.
+5. Run `pnpm sync-shadcn dashboard --no-open`. It fails while a slice in
+   `lastPlan`'s table has no item.
