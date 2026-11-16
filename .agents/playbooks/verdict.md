@@ -9,7 +9,7 @@ Verdict says what to do from an input. Intake reads any input, such as a teammat
 
 ## Paths
 
-Explore runs on `explore <scope or idea>`, when the owner types that word first in a request or as the `verdict` skill's argument, such as `/verdict explore <idea>`. The word picks the path, and its argument never does. A scope id after `explore` runs Explore, and the same id after `verdict` runs the deep path. Its argument names something to build or a direction to settle. A request that asks how existing code works stays with `pstack:how`, even when it opens with the word, and "explore" later in a sentence is plain speech. No card, `decide` chip, audit task, `/loop` or other playbook starts Explore, because each of its rounds waits for the owner's answer.
+Explore runs on `explore <scope or idea>`, when the owner types that word first in a request or as the `verdict` skill's argument, such as `/verdict explore <idea>`. The word picks the path, and its argument never does. A scope id after `explore` runs Explore, and the same id after `verdict` runs the deep path. Its argument names something to build or a direction to settle. A request that asks how existing code works stays with `pstack:how`, even when it opens with the word, and "explore" later in a sentence is plain speech. No audit task, `/loop` or other playbook starts Explore, because each of its rounds waits for the owner's answer. A suggested task, a `decide` chip included, runs Explore only when its brief asks for Explore rounds, because the owner starts its session and answers there. The brief's other writes, such as a subject file, wait for `lock`.
 
 The deep path runs on:
 
@@ -133,7 +133,7 @@ An answer from the owner that only asks a question gets its answer and starts no
 
 The reply ends by naming the owner's three answers: `lock`, `drop`, or anything else for another round.
 
-**End.** Only the owner ends the loop. `lock` converges it, as Converge says. `drop` ends the run with no review, and the reply says that the landed research and the run directory stay. A round changes nothing when its lanes moved no rank, added or cut no step and raised no new question. Its reply says so first and asks for `lock`, and it is the last round the lead runs on its own questions. After it, a plain yes counts as `lock`, and only an answer that names a new question, use case or constraint starts another round.
+**End.** Only the owner ends the loop. `lock` converges it, as Converge says. `drop` ends the run with no review, and the reply says that the landed research and the run directory stay. A round changes nothing when its lanes moved no rank, added or cut no step and raised no new question. Its reply says so first and asks for `lock`, and it is the last round the lead runs on its own questions. After it, a plain yes counts as `lock`, and only an answer that names a new question, use case or constraint starts another round. A card session runs its close, as `.agents/pstack/rules/chips.md`'s Landing says, after the landing that follows `lock` or `drop`, not after a round's research landing.
 
 **Converge.** On `lock`, the run takes the deep path with Next step, on the scope that owns the direction. When no scope owns it, the lead writes the scope file for its question, as the schema says, and the subject file as Steps say of a `decide` chip's new scope. Explore changes the deep path in four places:
 
