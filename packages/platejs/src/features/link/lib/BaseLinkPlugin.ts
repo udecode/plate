@@ -25,7 +25,7 @@ import {
 } from '../../../core';
 import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
 
-const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
+const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\/[^\s<>\\]+$/i;
 
 function encodeUrlInput(url: string) {
   try {

@@ -74,9 +74,10 @@ async function fetchPackageVersion(
       : pkg;
     const { stdout } = await execFilePromise('npm', [
       'view',
+      '--json',
+      '--',
       versionSpecifier,
       'version',
-      '--json',
     ]);
     const versions = NpmVersionsSchema.parse(JSON.parse(stdout));
     const latestMatchingVersion = Array.isArray(versions)

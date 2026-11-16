@@ -270,10 +270,25 @@ const writtenAfter = (parent: MdParent, index: number) => {
 const count = (text: string, character: string) =>
   text.split(character).length - 1;
 
+// GFM links a bare URL only when its domain holds a character other than `.`
+// and `_`, and its last two domain segments hold no `_`.
+const GFM_DOMAIN = /^https?:\/\/((?:[-._]|[^\s\p{P}\p{S}])*)/iu;
+
 const staysBare = (url: string, after: string) => {
   const end = ENDS_BARE_URL.exec(after)?.[0];
+  const domain = GFM_DOMAIN.exec(url)?.[1] ?? '';
 
-  if (end === undefined || TRIMMED_FROM_BARE_URL.test(url)) return false;
+  if (
+    end === undefined ||
+    TRIMMED_FROM_BARE_URL.test(url) ||
+    !/[^._]/.test(domain) ||
+    domain
+      .split('.')
+      .slice(-2)
+      .some((segment) => segment.includes('_'))
+  ) {
+    return false;
+  }
 
   const opened = count(url, '(') - count(url, ')');
 
