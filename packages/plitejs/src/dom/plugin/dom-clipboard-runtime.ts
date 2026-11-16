@@ -885,7 +885,6 @@ export const insertDOMData = <V extends Value>(
   data: DataTransfer
 ): boolean | undefined => dispatchCommand(editor, domCommands.insertData, data);
 
-/** Interpret DOM data into one unpublished transaction spec. */
 export const createDOMDataTransactionSpec = <V extends Value>(
   editor: Editor<V, any>,
   data: DataTransfer,
@@ -894,6 +893,9 @@ export const createDOMDataTransactionSpec = <V extends Value>(
   const slice = readDOMFragmentData(editor as DOMEditor<V>, data);
 
   if (!slice) return createDataTransferTransactionSpec(editor, data, { state });
+  if (slice.content.length === 0) {
+    return recordDataTransferOutcome(editor, false);
+  }
 
   const landing = captureSliceLanding(
     editor,
