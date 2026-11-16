@@ -182,6 +182,18 @@ test('a worktree outside the folders agents use is asked about even when an arch
   assert.equal(classifyWorktree({ ...facts, agentMade: true })[0], 'safe');
 });
 
+test('a quiet worktree on a codex/ branch beside the checkout is safe, and one on another branch is asked about', () => {
+  const f = fixture();
+  const codex = join(f.root, 'ellie-codex-lane');
+  git(f.main, 'worktree', 'add', '-q', '-b', 'codex/lane', codex);
+  quietGit(codex, 3);
+  quietGit(f.orphan, 3);
+  const elsewhere = realpathSync(mkdtempSync(join(f.root, 'tmp-')));
+  const run = spawnSync(process.execPath, [SCAN, '--repo', f.main, '--no-sizes'], { encoding: 'utf8', env: { ...process.env, TMPDIR: elsewhere } });
+  assert.match(run.stdout, new RegExp(`SAFE .*${codex} `), run.stdout);
+  assert.match(run.stdout, new RegExp(`ASK .*${f.orphan}  it sits outside the folders agents make worktrees in`), run.stdout);
+});
+
 test('a scan run from inside a worktree keeps that worktree and judges the others against the real checkout', () => {
   const f = fixture();
   const items = scan({ repo: f.archived, sessions: f.sessions, sizes: false }).items;
