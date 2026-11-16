@@ -23,7 +23,11 @@ export type {
 export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
-export { getEditorCommitSnapshot, getEditorCommitValue } from '../core/commit';
+export {
+  getEditorCommitNode,
+  getEditorCommitSnapshot,
+  getEditorCommitValue,
+} from '../core/commit';
 export { readingCovered } from '../core/property-validity';
 export {
   observeAnchorStateWork,

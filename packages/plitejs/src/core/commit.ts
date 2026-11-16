@@ -14,7 +14,7 @@ import type {
   TopLevelRuntimeRange,
   Value,
 } from '../interfaces/editor';
-import { NodeApi, type Descendant } from '../interfaces/node';
+import { NodeApi, type Descendant, type NodeEntry } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
@@ -238,6 +238,26 @@ export const getEditorCommitSnapshot = <V extends Value>(
   cache.set(root, frozen);
 
   return frozen;
+};
+
+/** @internal */
+export const getEditorCommitNode = (
+  commit: EditorCommit,
+  nodeKey: NodeKey,
+  root: RootKey = 'main'
+): NodeEntry<Descendant> | null => {
+  const path = getEditorCommitSnapshot(commit, root).index.pathOf(nodeKey);
+  const node =
+    path &&
+    getDescendantAtPath(
+      valueRootNodes(
+        getEditorCommitValue(commit),
+        root
+      ) as NodeList<Descendant>,
+      path
+    );
+
+  return path && node ? [node, path] : null;
 };
 
 /**

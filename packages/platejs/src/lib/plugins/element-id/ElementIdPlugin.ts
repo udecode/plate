@@ -1,9 +1,6 @@
 import { nanoid } from 'nanoid';
 
 import {
-  type Descendant,
-  type EditorDocumentValue,
-  type EditorStateView,
   type Element,
   ElementApi,
   type Path,
@@ -12,17 +9,14 @@ import {
   type NodeKey,
   schema,
   target,
-  getEditorCommitSnapshot,
-  getEditorCommitValue,
+  getEditorCommitNode,
   MAIN_ROOT_KEY,
   registerEditorTransactionGuard,
 } from '../../../facade';
-import { failInvariant } from '../../../internal/failInvariant';
 import { definePlugin } from '../../plugin/definePlugin';
 import {
   assertElementId,
   elementIdDocumentRoots,
-  elementIdRootChildren,
 } from './elementIdAdmission.internal';
 
 export type ElementIdPluginState = {
@@ -36,22 +30,6 @@ export type ElementIdEntry = Readonly<{
   path: Path;
   root: RootKey;
 }>;
-
-const getDescendantAt = (
-  children: readonly Descendant[],
-  path: Path
-): Descendant | undefined => {
-  let currentChildren = children;
-  let node: Descendant | undefined;
-
-  for (const index of path) {
-    node = currentChildren[index];
-    if (!node) return undefined;
-    currentChildren = ElementApi.isElement(node) ? node.children : [];
-  }
-
-  return node;
-};
 
 const elementIdInitialState: ElementIdPluginState = {
   generateId: () => nanoid(),
@@ -75,76 +53,25 @@ export const ElementIdPlugin = definePlugin('elementId', {
 }).extend((context) => {
   const { editor } = context;
   const idProperty = context.schema.properties.id;
-  let runtimeIndex: Map<
-    string,
-    Readonly<{
-      path: Path;
-      root: RootKey;
-      nodeKey: NodeKey;
-    }>
-  > | null = null;
-  let runtimeIndexRoots: ReadonlyMap<RootKey, readonly Descendant[]> | null =
-    null;
-  const nodeKeys = new Map<NodeKey, string>();
-  const collectRuntimeRoots = (value: EditorDocumentValue) => {
-    const roots = new Map<RootKey, readonly Descendant[]>();
 
-    for (const root of elementIdDocumentRoots(value)) {
-      roots.set(root, elementIdRootChildren(value, root));
-    }
-
-    return roots;
-  };
-  const hasCurrentRuntimeRoots = (
-    roots: ReadonlyMap<RootKey, readonly Descendant[]>
-  ) =>
-    runtimeIndexRoots?.size === roots.size &&
-    [...roots].every(
-      ([root, children]) => runtimeIndexRoots?.get(root) === children
-    );
-  const indexBuiltFrom = (value: EditorDocumentValue) =>
-    hasCurrentRuntimeRoots(collectRuntimeRoots(value));
-  const indexRuntimeChildren = (
-    state: Pick<EditorStateView, 'key' | 'schema'>,
-    root: RootKey,
-    children: readonly Descendant[],
-    ids: Map<string, Readonly<{ path: Path; root: RootKey; nodeKey: NodeKey }>>,
-    reverse: Map<NodeKey, string>
-  ) => {
-    const visit = (nodes: readonly Descendant[], parentPath: Path) => {
-      nodes.forEach((node, index) => {
-        if (!ElementApi.isElement(node)) return;
-
-        const path = [...parentPath, index];
-        const nodeKey = state.key(node);
-        const id = state.schema.getProperty(node, idProperty);
-
-        // Inside an update a draft can hold an id twice until admission
-        // renames one, so the first holder answers until then.
-        if (typeof id === 'string' && !ids.has(id)) {
-          ids.set(id, { path, root, nodeKey });
-          reverse.set(nodeKey, id);
-        }
-        visit(node.children, path);
-      });
-    };
-
-    visit(children, []);
-  };
   return {
     activate({ onCleanup }) {
       onCleanup(
         registerEditorTransactionGuard(editor, ({ after, commit }) => {
           for (const root of elementIdDocumentRoots(after)) {
             const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-            const snapshot = getEditorCommitSnapshot(commit, root);
+            const mayChangeIds =
+              commit.changed.has('properties', publicRoot) ||
+              commit.changed.has('structure', publicRoot) ||
+              commit.changed.has('replace', publicRoot);
 
+            if (!mayChangeIds) continue;
             for (const nodeKey of new Set([
               ...commit.changed.nodeKeys('node', publicRoot),
               ...commit.changed.nodeKeys('presence', publicRoot),
             ])) {
-              const path = snapshot.index.pathOf(nodeKey);
-              const node = path && getDescendantAt(snapshot.children, path);
+              const [node, path] =
+                getEditorCommitNode(commit, nodeKey, root) ?? [];
 
               if (ElementApi.isElement(node) && node.id !== undefined) {
                 assertElementId(node.id, `Element ID at ${root}:[${path}]`);
@@ -154,107 +81,26 @@ export const ElementIdPlugin = definePlugin('elementId', {
         })
       );
     },
-    on: {
-      commit({ commit }) {
-        if (!runtimeIndex) return;
-        if (!indexBuiltFrom(getEditorCommitValue(commit, 'before'))) {
-          runtimeIndex = null;
-          runtimeIndexRoots = null;
-          nodeKeys.clear();
+    read: ({ state }) => ({
+      entry(id: string): ElementIdEntry | undefined {
+        const holder = state.unique.holder('id', id);
+        const node = holder && state.nodes.get(holder.key)?.[0];
 
-          return;
-        }
-        const changedNodeKeys = new Set([
-          ...commit.changed.nodeKeysAll('node'),
-          ...commit.changed.nodeKeysAll('path'),
-        ]);
-
-        for (const nodeKey of changedNodeKeys) {
-          const id = nodeKeys.get(nodeKey);
-
-          if (id) runtimeIndex.delete(id);
-          nodeKeys.delete(nodeKey);
-        }
-        editor.read((state) => {
-          for (const root of elementIdDocumentRoots(state.value())) {
-            const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-            const rootNodeKeys = new Set([
-              ...commit.changed.nodeKeys('node', publicRoot),
-              ...commit.changed.nodeKeys('path', publicRoot),
-            ]);
-            const snapshot = getEditorCommitSnapshot(commit, root);
-
-            for (const nodeKey of rootNodeKeys) {
-              const path = snapshot.index.pathOf(nodeKey);
-
-              if (!path) continue;
-              const node = getDescendantAt(snapshot.children, path);
-
-              if (!ElementApi.isElement(node)) continue;
-              const id = state.schema.getProperty(node, idProperty);
-
-              if (typeof id !== 'string') continue;
-              (
-                runtimeIndex ?? failInvariant('Expected value to be defined')
-              ).set(id, { path, root, nodeKey });
-              nodeKeys.set(nodeKey, id);
-            }
-          }
-          runtimeIndexRoots = collectRuntimeRoots(state.value());
-        });
+        return holder && ElementApi.isElement(node)
+          ? Object.freeze({ ...holder, node })
+          : undefined;
       },
-    },
-    read: ({ state }) => {
-      const ensureRuntimeIndex = () => {
-        const roots = collectRuntimeRoots(state.value());
+      id(key: NodeKey): string | undefined {
+        const node = state.nodes.get(key)?.[0];
+        const id =
+          ElementApi.isElement(node) &&
+          state.schema.getProperty(node, idProperty);
 
-        if (runtimeIndex && hasCurrentRuntimeRoots(roots)) {
-          return runtimeIndex;
-        }
-        const ids = new Map<
-          string,
-          Readonly<{ path: Path; root: RootKey; nodeKey: NodeKey }>
-        >();
-        const reverse = new Map<NodeKey, string>();
-        for (const [root, children] of roots) {
-          indexRuntimeChildren(state, root, children, ids, reverse);
-        }
-        runtimeIndex = ids;
-        runtimeIndexRoots = roots;
-        nodeKeys.clear();
-        for (const [nodeKey, id] of reverse) nodeKeys.set(nodeKey, id);
-
-        return ids;
-      };
-      const id = (key: NodeKey): string | undefined => {
-        if (!state.nodes.get(key)) return undefined;
-        ensureRuntimeIndex();
-
-        return nodeKeys.get(key);
-      };
-
-      return {
-        entry(innerId: string): ElementIdEntry | undefined {
-          const indexed = ensureRuntimeIndex().get(innerId);
-
-          if (!indexed) return undefined;
-          const value = state.value();
-          const node = getDescendantAt(
-            elementIdRootChildren(value, indexed.root),
-            indexed.path
-          );
-
-          return ElementApi.isElement(node)
-            ? Object.freeze({
-                key: indexed.nodeKey,
-                node,
-                path: indexed.path,
-                root: indexed.root,
-              })
-            : undefined;
-        },
-        id,
-      };
-    },
+        return typeof id === 'string' &&
+          state.unique.holder('id', id)?.key === key
+          ? id
+          : undefined;
+      },
+    }),
   };
 });

@@ -294,7 +294,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts',
-    [[['activate', 'on', 'read']]],
+    [[['activate', 'read']]],
   ],
   [
     'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',

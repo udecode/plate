@@ -225,6 +225,7 @@ export {
   getCompiledEditorSchemaFromApi,
   getCompiledPropertyCandidates,
   getEditorAuthoredDocumentCapability,
+  getEditorCommitNode,
   getEditorCommitSnapshot,
   getEditorCommitValue,
   getEditorUpdateRoot,

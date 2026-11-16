@@ -7078,7 +7078,7 @@ export const reconcileChildrenStep = (
 ) => {
   const currentChildren =
     path.length === 0
-      ? document.value
+      ? document.nodes
       : (() => {
           const parent = document.node(path);
 

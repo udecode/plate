@@ -21,7 +21,7 @@ export const assertElementId = (id: unknown, owner: string): string => {
   return id;
 };
 
-export const elementIdRootChildren = (
+const elementIdRootChildren = (
   value: EditorDocumentValue,
   root: RootKey
 ): readonly Descendant[] =>
