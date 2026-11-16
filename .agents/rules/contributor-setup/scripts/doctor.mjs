@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -15,13 +16,25 @@ if (!checkout) {
   process.exit(2);
 }
 const { main, root } = checkout;
-const settings = readJson(join(root, '.claude/settings.json')) ?? {};
-const pins = Object.entries(settings.enabledPlugins ?? {}).flatMap(([plugin, enabled]) => {
-  const marketplace = plugin.split('@')[1];
-  const source = settings.extraKnownMarketplaces?.[marketplace]?.source;
-  if (!enabled || !source?.ref) return [];
-  const version = /^v?\d+\.\d+/u.test(source.ref) ? source.ref.replace(/^v/u, '') : null;
-  return [{ marketplace, name: plugin.split('@')[0], plugin, ref: source.ref, repo: source.repo, version }];
+const pinsOf = (settings) =>
+  Object.entries(settings?.enabledPlugins ?? {}).flatMap(([plugin, enabled]) => {
+    const marketplace = plugin.split('@')[1];
+    const source = settings.extraKnownMarketplaces?.[marketplace]?.source;
+    if (!enabled || !source?.ref) return [];
+    const version = /^v?\d+\.\d+/u.test(source.ref) ? source.ref.replace(/^v/u, '') : null;
+    return [{ marketplace, name: plugin.split('@')[0], plugin, ref: source.ref, repo: source.repo, version }];
+  });
+const newer = (a, b) => {
+  if (!a.version || !b.version) return false;
+  const [x, y] = [a, b].map((pin) => pin.version.split('.').map(Number));
+  const at = x.findIndex((part, index) => part !== y[index]);
+  return at >= 0 && x[at] > (y[at] ?? 0);
+};
+const trunk = spawnSync('git', ['-C', root, 'show', 'origin/HEAD:.claude/settings.json'], { encoding: 'utf8' });
+const trunkPins = new Map(pinsOf(trunk.status === 0 ? JSON.parse(trunk.stdout) : null).map((pin) => [pin.plugin, pin]));
+const newestPins = pinsOf(readJson(join(root, '.claude/settings.json'))).map((pin) => {
+  const other = trunkPins.get(pin.plugin);
+  return other && newer(other, pin) ? other : pin;
 });
 const home = homedir();
 const findings = [];
@@ -31,7 +44,7 @@ const claude = join(home, '.claude');
 if (existsSync(claude)) {
   const installed = readJson(join(claude, 'plugins/installed_plugins.json'))?.plugins ?? {};
   const marketplaces = readJson(join(claude, 'plugins/known_marketplaces.json')) ?? {};
-  for (const { marketplace, plugin, ref, repo, version } of pins) {
+  for (const { marketplace, plugin, ref, repo, version } of newestPins) {
     const known = marketplaces[marketplace]?.source?.ref;
     if (known && known !== ref)
       stale(
@@ -66,7 +79,7 @@ if (existsSync(config)) {
       `Codex reads the first ${budget} bytes of AGENTS.md, which has ${size}.`,
       'put project_doc_max_bytes = 131072 above the first [table] in ~/.codex/config.toml'
     );
-  for (const { marketplace, name, plugin, ref, repo, version } of pins) {
+  for (const { marketplace, name, plugin, ref, repo, version } of newestPins) {
     const known = tables.get(`marketplaces.${marketplace}`)?.get('ref');
     if (known !== ref)
       stale(
@@ -85,8 +98,8 @@ if (existsSync(config)) {
 
 if (findings.length > 0) {
   console.log(
-    'Your agent setup is behind the plugins this checkout pins. Run each fix below in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. Then ask the human to start a new session, which loads the updated plugins.'
+    'Your agent setup is behind the plugins this repository pins. Run each fix below in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. Then ask the human to start a new session, which loads the updated plugins.'
   );
   for (const { fix, what } of findings) console.log(`stale: ${what}\n  fix: ${fix}`);
-} else if (!hook) console.log('ok: this agent setup matches the plugins this checkout pins.');
+} else if (!hook) console.log('ok: this agent setup matches the plugins this repository pins.');
 process.exit(hook || findings.length === 0 ? 0 : 1);
