@@ -20,11 +20,23 @@ module.exports = {
 
     const links = await (async () => {
       if (changeset.commit) {
-        const { links: innerLinks } = await getInfo({
-          repo: options.repo,
-          commit: changeset.commit,
-        });
-        return innerLinks;
+        try {
+          const { links: innerLinks } = await getInfo({
+            repo: options.repo,
+            commit: changeset.commit,
+          });
+          return innerLinks;
+        } catch (error) {
+          console.warn(
+            `[changeset changelog] Falling back without GitHub metadata: ${error.message}`
+          );
+
+          return {
+            commit: `[\`${changeset.commit}\`](https://github.com/${options.repo}/commit/${changeset.commit})`,
+            pull: null,
+            user: null,
+          };
+        }
       }
       return {
         commit: null,
