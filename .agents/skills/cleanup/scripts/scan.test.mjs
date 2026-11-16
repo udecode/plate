@@ -518,6 +518,22 @@ test('--delete drops the temporary refs and partial saves a run that died left m
   assert.deepEqual(readdirSync(cleanup).filter((each) => each.endsWith('.partial')), [`${fresh}.partial`], 'a partial save a running save may still write stays');
 });
 
+test('--delete deletes each save a week after it was written and keeps the run report', () => {
+  const f = fixture();
+  const cleanup = join(f.main, '.git', 'cleanup');
+  const [folder, patch, recent, report] = ['old-worktree-mvbdgkzl-abcdef', 'old-clone-mvbdgkzl.patch', 'recent-clone.patch', 'last-run'].map((name) => join(cleanup, name));
+  mkdirSync(folder, { recursive: true });
+  writeFileSync(join(folder, 'changes.patch'), 'x\n');
+  for (const path of [patch, recent, report]) writeFileSync(path, 'x\n');
+  for (const path of [folder, patch, report]) age(path, 8);
+  age(recent, 6);
+  deleteSafe({ repo: f.main, sessions: f.sessions });
+  assert.ok(!existsSync(folder), 'a save folder goes a week after it was written');
+  assert.ok(!existsSync(patch), 'a patch an older scan wrote goes too');
+  assert.ok(existsSync(recent), 'a save written within the week stays');
+  assert.ok(existsSync(report), 'the daily run report stays');
+});
+
 test('a worktree a running process works in is neither marked safe nor deleted', async () => {
   const f = fixture();
   const shell = spawn('tail', ['-f', '/dev/null'], { cwd: f.archived, stdio: 'ignore' });

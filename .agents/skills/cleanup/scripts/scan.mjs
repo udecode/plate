@@ -31,7 +31,9 @@
 // its bundle, from git's record of it. It removes the worktree only when
 // judging it once more still finds it safe and nothing wrote it during the
 // save. Like --landed, it skips ignored files an install or build recreates
-// and, in a pstack project, those outside <plans>/artifacts/.
+// and, in a pstack project, those outside <plans>/artifacts/. It deletes each
+// save in cleanup/ a week after it was last written, and keeps the last-run
+// report.
 // The scan asks about a worktree whose commits git cannot list, whose index
 // holds an unresolved merge or that has more than IGNORED_LIMIT ignored files
 // to compare.
@@ -606,18 +608,26 @@ const savedAt = (name) => {
   const stamp = /-([0-9a-z]+)-[0-9a-f]{6}(?:\.partial)?$/u.exec(name)?.[1];
   return stamp ? Number.parseInt(stamp, 36) : null;
 };
-const staleSave = (name, now) => {
+const stampOverADayOld = (name, now) => {
   const at = savedAt(name);
   return at !== null && now - at > 24 * HOUR;
 };
 
 function dropStaleSaves(main, now) {
   for (const ref of git(main, ['for-each-ref', '--format=%(refname)', 'refs/cleanup/']).split('\n')) {
-    if (staleSave(ref.split('/')[2] ?? '', now)) git(main, ['update-ref', '-d', ref]);
+    if (stampOverADayOld(ref.split('/')[2] ?? '', now)) git(main, ['update-ref', '-d', ref]);
   }
-  for (const dir of entriesOf(cleanupDir(main))) {
-    if (dir.endsWith('.partial') && staleSave(basename(dir), now)) rmSync(dir, { force: true, recursive: true });
+  const expired = [];
+  for (const path of entriesOf(cleanupDir(main))) {
+    const name = basename(path);
+    if (name.endsWith('.partial')) {
+      if (stampOverADayOld(name, now)) rmSync(path, { force: true, recursive: true });
+    } else if (name !== 'last-run' && now - (statOrNull(path)?.mtimeMs ?? now) > WEEK * HOUR) {
+      expired.push({ path, bytes: sizeOf(path) });
+      rmSync(path, { force: true, recursive: true });
+    }
   }
+  return expired;
 }
 
 // A bundle keeps merges, which format-patch drops. git bundle packages only
@@ -897,7 +907,7 @@ function rejudgeWorktree(repo, main, sessions, path) {
 
 export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
   const { main, items } = scan({ repo, sessions, sizes: false, now });
-  dropStaleSaves(main, now);
+  const expired = dropStaleSaves(main, now);
   const removed = [];
   const run = runFolders(main, Date.now());
   for (const item of items.filter((each) => each.verdict === 'safe')) {
@@ -947,7 +957,7 @@ export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
     }
     removed.push(item);
   }
-  return { main, items, removed };
+  return { main, items, removed, expired };
 }
 
 const TERM_GRACE_MS = 5000;
@@ -1085,7 +1095,7 @@ export function autoCleanup({ repo, now = Date.now(), start = startDelete }) {
 
 const gib = (bytes) => (bytes === null ? '?' : `${(bytes / 1024 ** 3).toFixed(1)}G`);
 
-function render({ items, removed }) {
+function render({ items, removed, expired }) {
   const order = { ask: 0, keep: 2, safe: 1 };
   const rows = [...items].sort((a, b) => order[a.verdict] - order[b.verdict] || (b.bytes ?? 0) - (a.bytes ?? 0));
   const lines = rows.map((item) => [item.verdict.toUpperCase().padEnd(4), gib(item.bytes).padStart(7), item.kind.padEnd(8), item.path, item.reason, ...(item.saved ? [`saved ${item.saved}`] : [])].join('  '));
@@ -1101,6 +1111,7 @@ function render({ items, removed }) {
   if (saved.length > 0) lines.push(`saved what ${saved.length} worktrees alone held, one folder each, in ${dirname(saved[0].saved)}`);
   const clones = (removed ?? []).flatMap((item) => item.patches ?? []);
   if (clones.length > 0) lines.push(`saved the uncommitted changes of ${clones.length} clones as patches in ${dirname(clones[0])}`);
+  if (expired?.length > 0) lines.push(`deleted ${expired.length} saves written more than a week ago, ${gib(expired.reduce((sum, item) => sum + (item.bytes ?? 0), 0))}, from ${dirname(expired[0].path)}`);
   return lines.join('\n');
 }
 
