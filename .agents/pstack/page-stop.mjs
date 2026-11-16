@@ -13,7 +13,7 @@
 // rerun with --new.
 
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { asksOwner, CODE_VERSION, contextOf, gonePagesFile, pageFile, pageUrlOf, parsePageFile, runBody, runHeader, slugOf, viewerCode } from './plan-page.mjs';
 import { stageOfRow } from './status.mjs';
@@ -50,12 +50,27 @@ function baseOf(path) {
   return { runs: parsed.data.runs, list: parsed.list, code: parsed.data.code ?? 0, note: null };
 }
 
-function publish(command, planPath, { session, base: baseFile, fresh }) {
+function pageMakers(root, account) {
+  const gone = account ? gonePagesFile(root) : null;
+  if (!gone) return null;
+  const path = join(dirname(gone), 'pstack-pages-accounts.json');
+  return { path, gone: existsSync(gone) ? readFileSync(gone, 'utf8').split('\n') : [], ...(readJson(path) ?? { made: {}, links: {} }) };
+}
+
+function publish(command, planPath, { session, base: baseFile, fresh, account }) {
   const { root, plansDir, subject, subjectPath, doc } = contextOf(planPath);
   const name = subject ?? slugOf(planPath);
   const out = join(plansDir, 'artifacts', 'pages', name);
-  const bound = pageUrlOf(root, subjectPath ?? planPath).url;
+  const target = subjectPath ?? planPath;
+  const bound = pageUrlOf(root, target).url;
   const url = fresh ? null : bound;
+  const accounts = pageMakers(root, account);
+  const made = relative(root, target);
+  if (accounts && bound && !accounts.gone.includes(bound) && !accounts.links[bound] && accounts.made[made]) {
+    accounts.links[bound] = accounts.made[made];
+    delete accounts.made[made];
+  }
+  const moved = fresh && bound && accounts && accounts.links[bound] !== account;
   const store = fresh && bound ? gonePagesFile(root) : null;
   if (store) appendFileSync(store, `${bound}\n`);
   const base = baseOf(fresh ? null : baseFile ? resolve(baseFile) : url ? join(out, 'index.html') : null);
@@ -72,6 +87,8 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   header.handback = command === 'stop' ? highest + 1 : (listed?.handback ?? null);
   const body = runBody(planPath, { key: header.key });
   const quiet = onPage ? same(header, onPage, ['asks', 'picks']) : !previous && !listed && !asksOwner(header);
+  if (accounts && !url) accounts.made[made] = account;
+  if (accounts) writeFileSync(accounts.path, `${JSON.stringify({ made: accounts.made, links: accounts.links }, null, 2)}\n`);
   if (command === 'stage' && quiet) return ['Nothing to send: between stops the page changes only for a new or changed open question or (look) or (answer) pick'];
 
   const entry = { key: header.key, session, plan: header.plan, slug: header.slug, title: header.title, added: listed?.added ?? now, at: now, handback: header.handback, done: header.state === 'done' };
@@ -99,16 +116,17 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
     files.push(`code/${version}.js`, `code/${version}.css`);
   }
   const call = { ...(url ? { url } : { icon: 'plan' }), file_path: join(out, 'index.html'), root: out, files };
-  const target = subjectPath ?? planPath;
   return [
     ...(base.note ? [base.note] : []),
     `Read in full, and view each picture, before you send: ${['index.html', ...files].map((path) => join(out, path)).join(' ')}`,
     `Artifact ${JSON.stringify(call)}`,
     url
       ? null
-      : bound
-        ? `This publish makes a new page: replace \`Page: ${bound}\` in ${target} with its URL, and give the plan the reply links a Defaults row that names the old and new links, as the plan-page skill says`
-        : `This publish makes the page: write its URL as \`Page: <url>\` ${subjectPath ? 'under the title' : 'under the `Status:` line'} of ${target}`,
+      : !bound
+        ? `This publish makes the page: write its URL as \`Page: <url>\` ${subjectPath ? 'under the title' : 'under the `Status:` line'} of ${target}`
+        : moved
+          ? `This publish makes a new page, because this claude.ai account did not make the old one, such as after the owner switched accounts: replace \`Page: ${bound}\` in ${target} with its URL, add no Defaults row, offer no pin, and say in the reply that the page moved to this account`
+          : `This publish makes a new page: replace \`Page: ${bound}\` in ${target} with its URL, and give the plan the reply links a Defaults row that names the old and new links, as the plan-page skill says`,
     url ? `If the tool refuses the publish and returns the page's live version, such as when this session has not viewed it or the page changed, run this command again with --base <the source path the refusal saved> and send what it prints. When the refusal saved no file, first read the page's index.html by path with the Artifact tool and pass the file that read saves` : null,
     url ? `If the tool says the page was deleted or is not found, as it also says after a switch to another claude.ai account, run this command again with --new and send what it prints, without asking` : null,
     command === 'stop' ? `Once the publish goes through, reply with 📄 ${url ?? '<url>'}#run-${header.slug}` : null,
@@ -127,7 +145,7 @@ export function hook(input) {
   return {
     hookSpecificOutput: {
       hookEventName: 'PostToolUseFailure',
-      additionalContext: `This publish went to the plan page of ${run.plan}. That page no longer opens, because it was deleted or another claude.ai account owns it. Do not ask the user. Run the page-stop command that printed this publish again with --new, which is \`node .agents/pstack/page-stop.mjs stop ${run.plan} --new\` at a hand-back and \`stage\` otherwise. Send what it prints, and say in the hand-back that the old link stopped working.`,
+      additionalContext: `This publish went to the plan page of ${run.plan}. That page no longer opens, because it was deleted or another claude.ai account owns it. Do not ask the user. Run the page-stop command that printed this publish again with --new, which is \`node .agents/pstack/page-stop.mjs stop ${run.plan} --new\` at a hand-back and \`stage\` otherwise. Send what it prints, and say in the hand-back what it says about the old link.`,
     },
   };
 }
@@ -143,7 +161,7 @@ export function cli(args, env) {
   if (env.CLAUDECODE !== '1') return { code: 0, lines: [CODEX] };
   const session = valueOf('--session') || env.CLAUDE_CODE_SESSION_ID;
   if (!session) return { code: 2, error: 'page-stop needs a session id: pass --session <id>, or run it in Claude Code, which sets CLAUDE_CODE_SESSION_ID' };
-  return { code: 0, lines: publish(command, planPath, { session, base, fresh: flags.includes('--new') }) };
+  return { code: 0, lines: publish(command, planPath, { session, base, fresh: flags.includes('--new'), account: env.CLAUDE_CODE_ACCOUNT_UUID }) };
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {

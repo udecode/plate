@@ -301,7 +301,7 @@
       ".agents/pstack/decisions-check.mjs": "58a3e65fa6de1d25d9377860d74510acf042bd8faaaefe1077228cbeb9234994",
       ".agents/pstack/levels.mjs": "6377cf1ed1de0ddedf9d926e22203ab0e98c880add339c6611627dbadfe17044",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
-      ".agents/pstack/page-stop.mjs": "e656e8da7fbd2d07fdf93f83fa8b39a585050eaccc3773a3835437b9ed707ae4",
+      ".agents/pstack/page-stop.mjs": "a5cbac2e60f285addaa9c69b7b095586cf44cad3462146b194250c7dd976fabf",
       ".agents/pstack/plan-page.mjs": "be986ea62f72e1e9e995ddd237b451b276f038f138f887dbb5ed017bf6b9d784",
       ".agents/pstack/status.mjs": "86f7e489fbb199cc76b625593178269c71157847bebe0d1f9fac9cd0c2bede1c",
       ".agents/pstack/tasks.mjs": "3f096db8e20b4bf08ee12c00ffea2a7477a25646b6c3b9933f7fbda03489e7c6",
@@ -326,7 +326,7 @@
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "38fa1c1690c9ea4a651c9491d48f22779013e888"
+    "source": "09ebd6a63943f833774b7536b780f5010a5490cf"
   },
   "pageTopic": {
     "field": "review_scopes",
