@@ -23,6 +23,7 @@ import {
   type RootKey,
   TextApi,
 } from '../../../core';
+import { sameUpToListIds } from '../../../features/list/lib/listIdentity.internal';
 import {
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
@@ -689,12 +690,6 @@ const snapshotBlocks = (
 ): readonly Descendant[] =>
   ContentSlice.closed(normalizeDocumentChildren(runtime, parsed)).content;
 
-/**
- * Convert `source` to top-level blocks. A parse with a valid previous result
- * of a source prefix reconverts only what follows its last complete segment:
- * each complete segment keeps its converted node objects, so consumers can
- * publish only the changed tail.
- */
 const convertMarkdownSource = (
   runtime: MarkdownRuntime,
   source: string,
@@ -747,6 +742,25 @@ const convertMarkdownSource = (
     0,
     kept === -1 ? previousSegments.length : kept
   );
+
+  // A parse without `partial` converts the whole source, because a remark
+  // plugin may read the whole tree.
+  if (!options.partial) {
+    const fresh = full();
+
+    if (!fresh.nodes || segments.length === 0) return fresh;
+    const keptNodes = segments.flatMap((segment) => segment.nodes);
+    const tail = fresh.nodes.slice(keptNodes.length);
+    const nodes = Object.freeze([...keptNodes, ...tail]);
+
+    return sameUpToListIds(nodes, fresh.nodes)
+      ? {
+          checkpoint: { limits: limitsKey, lossPolicy, segments, source },
+          nodes,
+          unvalidated: tail,
+        }
+      : fresh;
+  }
   const reused = segments.length;
   let stableEnd = segments.at(-1)?.end ?? 0;
   // Each segment parses its own root; the whole source has one.
@@ -766,7 +780,7 @@ const convertMarkdownSource = (
       {
         ...options,
         limits: { ...limits, maxNodes: limits.maxNodes - syntaxNodes + 1 },
-        partial: end === source.length && options.partial,
+        partial: end === source.length,
       },
       local,
       {

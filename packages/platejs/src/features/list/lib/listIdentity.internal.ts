@@ -46,6 +46,48 @@ const identityOf = (element: Element): ListIdentity => ({
 
 export const createListId = () => nanoid(10);
 
+const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  typeof value === 'object' && value !== null;
+
+export const sameUpToListIds = (
+  a: readonly Descendant[],
+  b: readonly Descendant[]
+) => {
+  const forward = new Map<string, string>();
+  const backward = new Map<string, string>();
+  const same = (left: unknown, right: unknown, key?: string): boolean => {
+    if (
+      key === 'listId' &&
+      typeof left === 'string' &&
+      typeof right === 'string'
+    ) {
+      if (
+        (forward.get(left) ?? right) !== right ||
+        (backward.get(right) ?? left) !== left
+      ) {
+        return false;
+      }
+      forward.set(left, right);
+      backward.set(right, left);
+
+      return true;
+    }
+    if (!isRecord(left) || !isRecord(right)) return left === right;
+    const keys = Object.keys(left);
+
+    return (
+      Array.isArray(left) === Array.isArray(right) &&
+      keys.length === Object.keys(right).length &&
+      keys.every(
+        (name) =>
+          Object.hasOwn(right, name) && same(left[name], right[name], name)
+      )
+    );
+  };
+
+  return same(a, b);
+};
+
 const compatible = (
   candidate: Element,
   listType: ListType,
