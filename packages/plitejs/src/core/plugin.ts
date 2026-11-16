@@ -268,6 +268,11 @@ type PluginRecord = {
   requiredBy: ReadonlySet<string>;
   sources: readonly PluginReference[];
   slotOwners: ReadonlySet<string>;
+  /**
+   * Changes when the record is created or becomes explicit, so an uninstall
+   * can tell its own install from a later one of the same definition.
+   */
+  stamp: number;
 };
 
 type PluginRuntimeDefinition = PluginDefinitionInput &
@@ -306,6 +311,7 @@ const CANDIDATE_PLUGIN_APIS = new WeakMap<
   ReadonlyMap<PluginReference, PluginApiMap>
 >();
 let nextDynamicPluginPublication = 0;
+let nextPluginRecordStamp = 0;
 
 /**
  * Test nominal descriptor identity without structural guessing.
@@ -693,9 +699,7 @@ const isSameInstalledPlugin = (
 ) =>
   current !== undefined &&
   installed !== undefined &&
-  current.editor === installed.editor &&
-  current.definition === installed.definition &&
-  current.descriptor === installed.descriptor;
+  current.stamp === installed.stamp;
 
 const getValidationStateWithoutReplacements = (
   state: PluginState,
@@ -2085,6 +2089,7 @@ const createPluginRecord = (entry: PluginEntry, order: number) =>
     requiredBy: Object.freeze(new Set(entry.requiredBy)),
     sources: entry.sources,
     slotOwners: Object.freeze(new Set(entry.slotOwners)),
+    stamp: (nextPluginRecordStamp += 1),
   }) satisfies PluginRecord;
 
 const getOrderedPluginRecords = (
@@ -3228,6 +3233,10 @@ export const prepareScopedPluginPublication = <TEditor extends Editor>(
         explicit,
         requiredBy: Object.freeze(requiredBy),
         slotOwners: Object.freeze(slotOwners),
+        stamp:
+          explicit && !previous.explicit
+            ? (nextPluginRecordStamp += 1)
+            : previous.stamp,
       } satisfies PluginRecord;
 
       nextRecords.set(descriptor.name, retained);
