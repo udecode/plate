@@ -235,12 +235,18 @@ previous = undefined;
 ```
 
 `partial: true` 会隐藏尚未完整到达的末尾 tag（例如 `Before <callo`），也不会报告
-source 末尾仍未闭合的 tag。`lossPolicy: 'allow'` 让 stream 未完成时不支持的内容以
-文本形式可见。`previous` 必须来自同一 editor 的同一 method。当 source 在上一次 result 的
-source 之后继续增长，且 plugin 与 limits 未变时，它已完成的 block 保留其 node object，只
-重新转换其后的文本；其他 hint 都会解析整个 source。在另一个 `lossPolicy` 下的解析（例如
-严格的最终解析）只保留未报告任何 diagnostic 的已完成 block。包含链接引用定义或脚注定义
-（`[id]: url`、`[^1]: note`）的 source 总是完整解析，因为定义会改变它之前的 block。
+source 末尾仍未闭合的 tag。`lossPolicy: 'allow'` 让 stream 未完成时不支持的内容以文本形式可见。`previous` 必须来自同一
+editor 的同一 method。当 source 在上一次 result 的
+source 之后继续增长，且 plugin 与 limits 未变时，它已完成的 block 保留其 node object；其他
+hint 都会解析整个 source。在另一个 `lossPolicy` 下的解析（例如严格的最终解析）只保留未报告任何 diagnostic
+的已完成 block。包含链接引用定义或脚注定义（`[id]: url`、`[^1]: note`）的
+source 总是完整解析，因为定义会改变它之前的 block。
+
+`partial` 解析只转换保留的 block 之后的文本。每个保留的 block 都来自对它自己那一段
+source 的解析，因此读取整棵树的 remark plugin（例如给 block 编号或合并 block 的 plugin）可能让
+preview 与全新解析不同。不带 `partial` 的解析会把整个 source 转换一次：保留的 block
+除列表 id 外与这次转换的开头一致时，result 由保留的 block 和这次转换的其余部分组成，否则
+result 就是这次转换。无论运行哪些 remark plugin，最终 result 除列表 id 外都与全新解析一致。
 
 只读 preview 以解析得到的 block 组成的文档来渲染；editor 提供插件，本身不会被编辑：
 

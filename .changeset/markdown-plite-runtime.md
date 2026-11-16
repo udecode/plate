@@ -10,7 +10,7 @@ Read Markdown as CommonMark (with GFM, math and emoji through `remarkPlugins`) p
 - Remove `remarkMention` and `MentionNode`; mentions read and write as `[label](mention:ref)` links, and bare `@name` stays text
 - Remove `allowedNodes`, `disallowedNodes`, `allowNode`, `splitLineBreaks`, `withoutMdx`, per-call `remarkPlugins` and per-call `rules`; configure `remarkPlugins` on `MarkdownPlugin`
 - Pass `partial: true` when parsing an unfinished stream, such as a streaming AI answer; the final parse stays strict
-- Pass the previous `parseSlice` result as `previous` on each parse of a growing stream, the strict final included; complete blocks convert once and keep their node objects, except in a source with a link reference or footnote definition, which parses whole
+- Pass the previous `parseSlice` result as `previous` on each parse of a growing stream, the strict final included; complete blocks keep their node objects and a `partial` parse converts only the text after them, except in a source with a link reference or footnote definition, which parses whole; the final parse matches a fresh parse apart from list ids whatever remark plugins run
 - Report `markdown-tag-repair` for unbalanced tags, and warn with `markdown-property-omitted` for element and mark properties Markdown cannot carry, such as `textAlign`
 - Read a link with a script or other unsafe destination as its label, and an image with an unsafe source as its alt text, reporting `markdown-unsafe-content`; serializing applies the same check
 - Stop writing `withBlockId` wrappers; `<block id>` wrappers still read when `ElementIdPlugin` is installed

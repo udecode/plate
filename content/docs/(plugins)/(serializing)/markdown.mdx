@@ -263,12 +263,21 @@ previous = undefined;
 `lossPolicy: 'allow'` keeps unsupported content visible as text while the
 stream is incomplete. `previous` must come from the same method of the same
 editor. When the source extends the previous result's source and the plugins
-and limits are unchanged, blocks it already completed keep their node objects,
-and only the text after them is converted again; any other hint parses the
-whole source. A parse under another `lossPolicy`, such as the strict final
-parse, keeps only the completed blocks that reported nothing. A source with a
-link reference or footnote definition (`[id]: url`, `[^1]: note`) always parses
-whole, because a definition can change blocks before it.
+and limits are unchanged, blocks it already completed keep their node objects;
+any other hint parses the whole source. A parse under another `lossPolicy`,
+such as the strict final parse, keeps only the completed blocks that reported
+nothing. A source with a link reference or footnote definition (`[id]: url`,
+`[^1]: note`) always parses whole, because a definition can change blocks
+before it.
+
+A `partial` parse converts only the text after the kept blocks. Each kept block
+came from a parse of its own part of the source, so a remark plugin that reads
+the whole tree, such as one that numbers or joins blocks, can make a preview
+differ from a fresh parse. A parse without `partial` converts the whole source
+once. When the kept blocks match the start of that conversion apart from list
+ids, the result holds the kept blocks and the rest of the conversion; otherwise
+the result is the conversion. Whatever remark plugins run, the final result
+matches a fresh parse apart from list ids.
 
 Render a read-only preview as a document of the parsed blocks; the editor
 supplies the plugins and is not edited:
