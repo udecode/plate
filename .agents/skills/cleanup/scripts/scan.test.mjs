@@ -11,6 +11,18 @@ import { autoCleanup, brief, classifyWorktree, deleteSafe, landed, removeLanded,
 
 Object.assign(process.env, { CODEX_HOME: mkdtempSync(join(tmpdir(), 'cleanup-codex-')), GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1' });
 
+// lsof walks every process on the machine, which took most of this file's run time on a busy
+// host. A stand-in on PATH reports that no process works in or holds anything, and the tests that
+// start a process call realLsof to reach the real one.
+const LSOF = execFileSync('sh', ['-c', 'command -v lsof'], { encoding: 'utf8' }).trim();
+const BIN = mkdtempSync(join(tmpdir(), 'cleanup-bin-'));
+writeFileSync(join(BIN, 'lsof'), `#!/bin/sh\n[ -n "$CLEANUP_REAL_LSOF" ] && exec '${LSOF}' "$@"\ncase " $* " in *" cwd "*) exit 0 ;; esac\nexit 1\n`, { mode: 0o755 });
+process.env.PATH = `${BIN}:${process.env.PATH}`;
+const realLsof = (t) => {
+  process.env.CLEANUP_REAL_LSOF = '1';
+  t.after(() => delete process.env.CLEANUP_REAL_LSOF);
+};
+
 const DAY = 86_400_000;
 const SCAN = join(dirname(fileURLToPath(import.meta.url)), 'scan.mjs');
 const BLOCK = (word) => `a\nb\nc\n${word}\nd\ne\nf\n`;
@@ -87,7 +99,8 @@ const verdicts = (items) => Object.fromEntries(items.map((item) => [item.path, i
 const verdictOf = (f, path) => scan({ repo: f.main, sessions: f.sessions, sizes: false }).items.find((item) => item.path === path)?.verdict;
 const landedOf = (path) => landed({ worktree: path })[0];
 
-test('only folders no open session, process or server uses are marked safe', async () => {
+test('only folders no open session, process or server uses are marked safe', async (t) => {
+  realLsof(t);
   const f = fixture();
   const server = spawn('tail', ['-f', f.lock, f.buildLock], { stdio: 'ignore' });
   await new Promise((done) => setTimeout(done, 300));
@@ -370,7 +383,8 @@ test('a registered worktree named like a cache is never listed as a cache', () =
   assert.deepEqual(rows.map((item) => item.kind), ['worktree']);
 });
 
-test('a server holding a cache deep inside a worktree keeps it', async () => {
+test('a server holding a cache deep inside a worktree keeps it', async (t) => {
+  realLsof(t);
   const f = fixture();
   const deep = join(f.archived, 'l1', 'l2', 'l3', 'l4', '.next-deep', 'dev');
   mkdirSync(deep, { recursive: true });
@@ -534,7 +548,8 @@ test('--delete deletes each save a week after it was written and keeps the run r
   assert.ok(existsSync(report), 'the daily run report stays');
 });
 
-test('a worktree a running process works in is neither marked safe nor deleted', async () => {
+test('a worktree a running process works in is neither marked safe nor deleted', async (t) => {
+  realLsof(t);
   const f = fixture();
   const shell = spawn('tail', ['-f', '/dev/null'], { cwd: f.archived, stdio: 'ignore' });
   await new Promise((done) => setTimeout(done, 300));
@@ -712,7 +727,8 @@ test('the session-start hint counts only folders with no writes for three days t
   );
 });
 
-test('--remove stops the processes in a landed worktree, saves its uncommitted change and removes it without judging it', async () => {
+test('--remove stops the processes in a landed worktree, saves its uncommitted change and removes it without judging it', async (t) => {
+  realLsof(t);
   const f = fixture();
   const server = spawn('tail', ['-f', '/dev/null'], { cwd: f.open, stdio: 'ignore' });
   await new Promise((done) => setTimeout(done, 300));
