@@ -35,6 +35,10 @@ import {
 } from '../../dom/plugin/dom-drag';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
+  eventCarriesBlockFragment,
+  resolveBlockFragmentDropRange,
+} from '../../dom/plugin/dom-event-range-targets';
+import {
   beginDragSession,
   clearDragSession,
   type DragSession,
@@ -58,6 +62,7 @@ import {
   isInteractiveInternalTarget,
 } from './input-controller';
 import { applyEditableCommand } from './mutation-controller';
+import { resolvePlacedDropPoint } from './placed-drag';
 import { writeProjectedViewSelectionClipboardData } from './projected-clipboard';
 import { resolveProjectedSelectionTarget } from './projected-selection-target';
 import {
@@ -78,6 +83,7 @@ import {
   readRuntimeSelection,
   readRuntimeSelectionRange,
 } from './runtime-selection-state';
+import type { ViewLines } from './view-lines';
 
 type EditablePasteHandler = (
   event: ClipboardEvent<HTMLDivElement>
@@ -826,11 +832,13 @@ const applySessionDrop = ({
   event,
   reportDrop,
   session,
+  viewLines,
 }: {
   editor: ReactRuntimeEditor;
   event: DragEvent<HTMLDivElement>;
   reportDrop: (outcome: TransferOutcome) => void;
   session: DragSession;
+  viewLines: ViewLines | null;
 }): EditableClipboardResult => {
   const copy = copyIntentOf(dropInputOf(event), session);
   const { transfer } = editor.api;
@@ -851,9 +859,12 @@ const applySessionDrop = ({
     session.source.kind === 'nodes'
       ? { nodes: session.source.keys }
       : { range: range as Range };
-  const dropPoint =
-    resolveTextDropRangeFromEvent(editor, event)?.anchor ??
-    pointAt(editor, dropInputOf(event));
+  const dropPoint = session.draggedBlock
+    ? null
+    : ((viewLines &&
+        resolvePlacedDropPoint(editor, viewLines, event.nativeEvent)) ??
+      resolveTextDropRangeFromEvent(editor, event)?.anchor ??
+      pointAt(editor, dropInputOf(event)));
   const resolved = session.draggedBlock
     ? resolveDOMDropTarget(editor, dropInputOf(event), {
         copy,
@@ -907,6 +918,7 @@ export const applyEditableDrop = ({
   readOnly,
   reportDrop = () => {},
   runDrop = (drop) => drop(),
+  viewLines = null,
 }: {
   editor: ReactRuntimeEditor;
   event: DragEvent<HTMLDivElement>;
@@ -914,6 +926,7 @@ export const applyEditableDrop = ({
   readOnly: boolean;
   reportDrop?: (outcome: TransferOutcome) => void;
   runDrop?: <T>(drop: () => T) => T;
+  viewLines?: ViewLines | null;
 }): EditableClipboardResult => {
   indicateDOMDropTarget(editor, null);
 
@@ -948,13 +961,30 @@ export const applyEditableDrop = ({
     if (session === 'consumed') return clipboardResult({ command: null });
     if (session) {
       try {
-        return applySessionDrop({ editor, event, reportDrop, session });
+        return applySessionDrop({
+          editor,
+          event,
+          reportDrop,
+          session,
+          viewLines,
+        });
       } finally {
         settleDragSession(session);
       }
     }
 
-    const range = ReactEditor.resolveEventRange(editor, event);
+    const placed = viewLines
+      ? resolvePlacedDropPoint(editor, viewLines, event.nativeEvent)
+      : null;
+    const range = placed
+      ? ((eventCarriesBlockFragment(editor, event.nativeEvent)
+          ? resolveBlockFragmentDropRange(editor, {
+              path: placed.path,
+              resolveDOMNode: (node) => editor.api.dom.resolveDOMNode(node),
+              y: event.clientY,
+            })
+          : null) ?? { anchor: placed, focus: placed })
+      : ReactEditor.resolveEventRange(editor, event);
 
     if (!range) return clipboardResult({ command: null });
 

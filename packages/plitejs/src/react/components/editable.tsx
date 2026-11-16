@@ -3,7 +3,10 @@ import React, { useCallback, useContext, useSyncExternalStore } from 'react';
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { markRootViewUsed } from '../../core/root-target';
 import { type DOMRange, isDOMNode } from '../../dom';
-import { createDOMGeometryKernel } from '../../dom/internal';
+import {
+  createDOMGeometryKernel,
+  getPliteStringPlacementDOMPoint,
+} from '../../dom/internal';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import { clearDragScrollRepaint } from '../../dom/utils/drag-session';
 import type {
@@ -17,6 +20,7 @@ import type {
   InputIntent,
 } from '../editable/input-controller';
 import { guardExternalTextEvents } from '../editable/interaction-owner';
+import { getPlacedDropPlacement } from '../editable/placed-drag';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
 import {
   isVoid as editorIsVoid,
@@ -28,7 +32,7 @@ import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { resolveEditableSelectableOwnerClickTarget } from '../editable/selection-void-target';
 import { activateViewCaret } from '../editable/view-caret-restore';
-import { ViewLinesContext } from '../editable/view-lines';
+import { type ViewLines, ViewLinesContext } from '../editable/view-lines';
 import {
   EditableDOMRuntimeContext,
   useEditableDOMHostFact,
@@ -107,10 +111,12 @@ const getEditableDropCursorRect = ({
   editor,
   event,
   rootElement,
+  viewLines,
 }: {
   editor: ReactRuntimeEditor;
   event: React.DragEvent<HTMLDivElement>;
   rootElement: HTMLElement;
+  viewLines: ViewLines | null;
 }): DropCursorRect | null => {
   const targetElement = getDropCursorTargetElement(event.nativeEvent.target);
 
@@ -133,15 +139,24 @@ const getEditableDropCursorRect = ({
       root: rootElement,
       target: targetElement,
     });
-    const point = geometry.pointAtCoordinates({
-      x: event.nativeEvent.clientX,
-      y: event.nativeEvent.clientY,
-    });
-    const caretRect = point
-      ? geometry.pointRect(point.point, {
-          association: point.association,
-        })
+    const placement =
+      viewLines && getPlacedDropPlacement(viewLines, event.nativeEvent);
+    const placedPoint = placement
+      ? getPliteStringPlacementDOMPoint(placement)
       : null;
+    const point = placedPoint
+      ? null
+      : geometry.pointAtCoordinates({
+          x: event.nativeEvent.clientX,
+          y: event.nativeEvent.clientY,
+        });
+    const caretRect = placedPoint
+      ? geometry.pointRect(placedPoint)
+      : point
+        ? geometry.pointRect(point.point, {
+            association: point.association,
+          })
+        : null;
 
     if (!caretRect || caretRect.height <= 0) {
       return null;
@@ -378,6 +393,7 @@ export const EditableDOMRoot = (
   );
   const hydrated = useHydrated();
   const replacementInputFeaturesAllowed = !hydrated || supportsBeforeInput;
+  const viewLines = useContext(ViewLinesContext);
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
@@ -388,7 +404,7 @@ export const EditableDOMRoot = (
     runtime,
     selection: 'restore',
     selectionBridge: rootInteractionSelectionBridge,
-    viewLines: useContext(ViewLinesContext),
+    viewLines,
   });
   const {
     onMouseDownCapture: onRootMouseDownCapture,
@@ -430,6 +446,7 @@ export const EditableDOMRoot = (
           editor,
           event,
           rootElement: event.currentTarget,
+          viewLines,
         })
       );
     },

@@ -17,7 +17,6 @@ import {
   type RootKey,
   type Selection,
   SelectionApi,
-  TextApi,
 } from '../..';
 import {
   getPlacementGeneration,
@@ -93,10 +92,9 @@ import {
 } from './placed-drag';
 import {
   getEditableRootPliteStringCoordinatePlacement,
-  getPliteStringDocumentOffset,
-  getPliteStringEdgeOffset,
   getPliteStringPlacementDOMPoint,
   type PliteStringCoordinatePlacement,
+  resolvePliteStringPlacementRange,
   type PliteStringPlacementDOMPoint,
 } from './plite-string-coordinate-placement';
 import {
@@ -882,56 +880,6 @@ const getEditableRootChromeCoordinatePlacement = ({
     includeInsideString,
     target: element,
   });
-};
-
-const resolvePliteStringPlacementRange = ({
-  editor,
-  placement,
-}: {
-  editor: RootInteractionEditor;
-  placement: NonNullable<PliteStringCoordinatePlacement>;
-}): Range | null => {
-  const textHost = placement.string.closest<HTMLElement>(
-    '[data-editor-node="text"]'
-  );
-  const path =
-    textHost instanceof HTMLElement
-      ? getPliteNodePathFromDOMElement(textHost)
-      : null;
-  const offset = textHost
-    ? placement.offset == null
-      ? getPliteStringEdgeOffset({
-          edge: placement.edge,
-          rect: placement.rect,
-          string: placement.string,
-          textHost,
-        })
-      : getPliteStringDocumentOffset({
-          offset: placement.offset,
-          string: placement.string,
-          textHost,
-        })
-    : null;
-
-  if (!path || offset == null) {
-    return null;
-  }
-
-  const node = editor.read((state) => state.nodes.get(path)?.[0]) ?? null;
-
-  if (!node) {
-    return null;
-  }
-
-  const safeOffset = TextApi.isText(node)
-    ? Math.max(0, Math.min(offset, node.text.length))
-    : offset;
-  const point = { path, offset: safeOffset };
-
-  return {
-    anchor: point,
-    focus: point,
-  };
 };
 
 const resolveCoordinatePlacementTarget = ({

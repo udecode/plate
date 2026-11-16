@@ -8,13 +8,15 @@ import {
   type Range,
   RangeApi,
 } from '../..';
-import { usesAppleDOMHotkeys } from '../../dom';
+import { isDOMElement, isDOMText, usesAppleDOMHotkeys } from '../../dom';
 import { getTextRunBetweenAtomics } from '../../editor/positions';
 import { getWordSegments } from '../../utils/string';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import { resolvePliteStringPlacementRange } from './plite-string-coordinate-placement';
 import { isPointInsideDOMSelection } from './root-interaction-dom-selection-replay';
 import type { RootInteractionTarget } from './root-interaction-resolver';
 import { getTripleClickBlock } from './selection-triple-click';
+import type { ViewLines } from './view-lines';
 
 export type PlacedPressKind = 'block' | 'plain' | 'shift' | 'word';
 
@@ -49,6 +51,9 @@ export const isTapOnTextBlock = (
     .querySelector('[data-editor-node="text"]')
     ?.closest('[data-editor-node="element"]') === target;
 
+const isInsideVoid = (element: Element) =>
+  element.closest('[data-editor-void="true"]') !== null;
+
 export const classifyPlacedPress = (
   event: MouseEvent<HTMLElement>,
   target: RootInteractionTarget
@@ -58,7 +63,7 @@ export const classifyPlacedPress = (
     // Ctrl-press is the context-menu press on macOS.
     (event.ctrlKey && usesAppleDOMHotkeys(event.nativeEvent)) ||
     (target.kind !== 'editable-root' && target.kind !== 'native-editable') ||
-    target.target.closest('[data-editor-void="true"]') ||
+    isInsideVoid(target.target) ||
     isTapOnTextBlock(event, target.target)
   ) {
     return null;
@@ -269,4 +274,38 @@ export const getPlacedUnit = ({
   return node
     ? getTripleClickBlock(editor, [node, point.path])
     : { block: null, range: { anchor: point, focus: point } };
+};
+
+type PlacedDropPointer = Pick<PlacedPointer, 'clientX' | 'clientY' | 'target'>;
+
+export const getPlacedDropPlacement = (
+  viewLines: ViewLines,
+  { clientX, clientY, target }: PlacedDropPointer
+) => {
+  const element = isDOMText(target)
+    ? target.parentElement
+    : isDOMElement(target)
+      ? target
+      : null;
+
+  if (!element || isInsideVoid(element)) return null;
+
+  return viewLines.placementAt({
+    reach: 'drag',
+    target: element,
+    x: clientX,
+    y: clientY,
+  });
+};
+
+export const resolvePlacedDropPoint = (
+  editor: ReactRuntimeEditor,
+  viewLines: ViewLines,
+  pointer: PlacedDropPointer
+): Point | null => {
+  const placement = getPlacedDropPlacement(viewLines, pointer);
+
+  return placement
+    ? (resolvePliteStringPlacementRange({ editor, placement })?.focus ?? null)
+    : null;
 };

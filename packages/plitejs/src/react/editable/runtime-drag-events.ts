@@ -1,4 +1,4 @@
-import { type DragEvent, useCallback } from 'react';
+import { type DragEvent, useCallback, useContext } from 'react';
 
 import type { TransferOutcome } from '../..';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -16,6 +16,7 @@ import {
   type EditableInputControllerState,
 } from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
+import { ViewLinesContext } from './view-lines';
 
 type DragHandler = (event: DragEvent<HTMLDivElement>) => boolean | void;
 
@@ -46,6 +47,7 @@ export const useRuntimeDragEvents = ({
   state: EditableInputControllerState;
   trace: EditableEventRuntime['trace'];
 }) => {
+  const viewLines = useContext(ViewLinesContext);
   const handleDragEnd = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       const decision = prepareEditableClipboardKernel({
@@ -149,6 +151,7 @@ export const useRuntimeDragEvents = ({
         readOnly,
         reportDrop,
         runDrop,
+        viewLines,
       });
       if (dropResult.repair) {
         repair.requestEditableRepair(dropResult.repair);
@@ -170,6 +173,7 @@ export const useRuntimeDragEvents = ({
       reportDrop,
       runDrop,
       trace,
+      viewLines,
     ]
   );
   const onRuntimeDrop = useEditableDragHandler({ handleDrag: handleDrop });
