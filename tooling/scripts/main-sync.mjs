@@ -9,6 +9,29 @@ import path from 'node:path';
 
 const STATUSES = new Set(['gap', 'pending', 'synced']);
 
+const RELEASE_OUTPUT = [
+  /^\.changeset\/[^/]+\.md$/,
+  /^packages\/.+\/CHANGELOG\.md$/,
+  /^apps\/www\/public\/r\//,
+  /^apps\/www\/src\/generated\//,
+];
+const TEMPLATE_SYNC = [/^templates\//];
+const VERSION_BUMP = [
+  /^packages\/.+\/package\.json$/,
+  /^pnpm-lock\.yaml$/,
+  /^bun\.lock$/,
+];
+const AGENT_WORKFLOW = [
+  /^\.agents\//,
+  /^\.claude\//,
+  /^\.codex\//,
+  /^AGENTS\.md$/,
+  /^CLAUDE\.md$/,
+  /^skills-lock\.json$/,
+  /^skiller-lock\.json$/,
+  /^docs\/(plans|development)\//,
+];
+
 const git = (...args) =>
   execFileSync('git', args, { encoding: 'utf-8' }).trimEnd();
 
@@ -41,6 +64,37 @@ for (const line of git(
   const commit = sha.slice(0, 10);
 
   if (!known.has(commit)) rows.push([commit, date, 'pending', '', subject]);
+}
+
+const mootNote = (commit, subject) => {
+  const [author, ...files] = git('show', '--name-only', '--format=%an', commit)
+    .split('\n')
+    .filter(Boolean);
+  const release = [
+    ...RELEASE_OUTPUT,
+    ...(author === 'github-actions[bot]' ? TEMPLATE_SYNC : []),
+    ...(subject.startsWith('[Release] Version packages') ? VERSION_BUMP : []),
+  ];
+  const within = (rules) => (file) => rules.some((rule) => rule.test(file));
+
+  if (files.length === 0) return null;
+  if (files.every(within(release))) return 'moot: release output';
+  if (files.every(within([...release, ...AGENT_WORKFLOW]))) {
+    return 'moot: agent workflow';
+  }
+
+  return null;
+};
+
+for (const row of rows) {
+  if (row[2] !== 'pending' || row[3]) continue;
+
+  const note = mootNote(row[0], row[4]);
+
+  if (note) {
+    row[2] = 'synced';
+    row[3] = note;
+  }
 }
 
 const [flag, target, status, note = ''] = process.argv.slice(2);
