@@ -20,8 +20,10 @@ import {
   BoardGeoPlugin,
   type BoardMessages,
   BoardNotePlugin,
+  type BoardPickState,
   BoardPlugin,
   BoardShape,
+  type BoardShapeDescription,
   BoardStrokePlugin,
   BoardSurface,
   useArrowPath,
@@ -43,6 +45,12 @@ import {
 
 type Instruments = ReturnType<typeof createInstruments>;
 
+const pickOf = (
+  { kind, text }: BoardShapeDescription,
+  { count, position, selected, total }: BoardPickState
+) =>
+  `${text || kind}, ${selected ? 'selected' : 'not selected'}. ${position} of ${total}. ${count} selected`;
+
 const MESSAGES: BoardMessages = {
   aim: ({ kind, text }, { position, total }) =>
     `to ${text || kind}. ${position} of ${total}`,
@@ -53,6 +61,8 @@ const MESSAGES: BoardMessages = {
     from ? `starting from ${from.text || from.kind}` : `starting at ${x}, ${y}`,
   label: 'Board',
   instructions: 'Enter selects the first shape.',
+  pick: pickOf,
+  picking: (shape, state) => `picking ${pickOf(shape, state)}`,
   removed: (count) => `${count} removed`,
   resize: ({ corner, height, width }) => `${corner}, ${width} by ${height}`,
   resizing: ({ kind, text }, { corner, height, width }) =>

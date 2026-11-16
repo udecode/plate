@@ -26,6 +26,7 @@ import {
   BoardGeoPlugin,
   type BoardMessages,
   BoardNotePlugin,
+  type BoardPickState,
   BoardPlugin,
   BoardShape,
   type BoardShapeDescription,
@@ -139,10 +140,16 @@ const nameOf = (shape: BoardShapeDescription): string => {
   return shape.text ? `${shape.text}, ${KINDS[shape.kind]}` : KINDS[shape.kind];
 };
 
+const pickOf = (
+  shape: BoardShapeDescription,
+  { count, position, selected, total }: BoardPickState
+) =>
+  `${nameOf(shape)}, ${selected ? 'selected' : 'not selected'}. ${position} of ${total}. ${count} selected`;
+
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -155,6 +162,9 @@ const boardMessages: BoardMessages = {
     `Resizing ${nameOf(shape)} from its ${CORNERS[corner]} corner, ${width} by ${height}. Tab picks a corner, arrow keys resize, Enter keeps it and Escape stops.`,
   resize: ({ corner, height, width }) =>
     `${CORNERS[corner]}, ${width} by ${height}`,
+  picking: (shape, state) =>
+    `Picking shapes. ${pickOf(shape, state)}. Tab moves, Space adds or removes, Enter finishes.`,
+  pick: (shape, state) => pickOf(shape, state),
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>
@@ -354,6 +364,9 @@ const BOARD_FOCUS_RING =
 
 const BOARD_ERASING = '[&_[data-board-shape][data-erasing]]:opacity-30';
 
+const CURSOR_RING =
+  'data-board-cursor:after:pointer-events-none data-board-cursor:after:absolute data-board-cursor:after:-inset-1.5 data-board-cursor:after:rounded-md data-board-cursor:after:outline-2 data-board-cursor:after:outline-ring data-board-cursor:after:outline-dashed';
+
 const BOARD_GRID =
   'bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px]';
 
@@ -404,7 +417,10 @@ export function BoardNoteElement(
   return (
     <BoardShape
       {...props}
-      className="rounded-sm p-3 text-sm shadow-md data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed"
+      className={cn(
+        CURSOR_RING,
+        'rounded-sm p-3 text-sm shadow-md data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+      )}
       style={{
         backgroundColor:
           props.element.fill === 'none'
@@ -445,7 +461,10 @@ export function BoardGeoElement(
   return (
     <BoardShape
       {...props}
-      className="flex flex-col justify-center p-3 text-center text-sm data-selected:outline-2 data-selected:outline-offset-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-offset-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed"
+      className={cn(
+        CURSOR_RING,
+        'flex flex-col justify-center p-3 text-center text-sm data-selected:outline-2 data-selected:outline-offset-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-offset-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+      )}
     >
       <div className="absolute inset-0" contentEditable={false}>
         <svg
@@ -475,7 +494,10 @@ export function BoardFrameElement(
   return (
     <BoardShape
       {...props}
-      className="rounded-sm border-2 border-foreground/50 data-selected:border-ring data-[editor-authored-change]:border-dashed data-[editor-authored-change]:border-emerald-600"
+      className={cn(
+        CURSOR_RING,
+        'rounded-sm border-2 border-foreground/50 data-selected:border-ring data-[editor-authored-change]:border-dashed data-[editor-authored-change]:border-emerald-600'
+      )}
     >
       <div
         className="absolute bottom-full left-0 max-w-full cursor-default truncate pb-1 text-xs text-muted-foreground select-none"
@@ -508,7 +530,7 @@ export function BoardArrowElement(
   return (
     <BoardShape
       {...props}
-      className="text-foreground data-selected:text-ring data-[editor-authored-change]:text-emerald-600"
+      className="text-foreground data-selected:text-ring data-[editor-authored-change]:text-emerald-600 [&[data-board-cursor]_[data-board-arrow-path]]:[stroke-dasharray:6_4]"
     >
       <div className="absolute top-0 left-0" contentEditable={false}>
         <svg
@@ -555,7 +577,10 @@ export function BoardStrokeElement(
   return (
     <BoardShape
       {...props}
-      className="text-foreground data-selected:outline-1 data-selected:outline-ring data-selected:outline-dashed data-[editor-authored-change]:text-emerald-600"
+      className={cn(
+        CURSOR_RING,
+        'text-foreground data-selected:outline-1 data-selected:outline-ring data-selected:outline-dashed data-[editor-authored-change]:text-emerald-600'
+      )}
     >
       {drawn && (
         <div className="absolute inset-0" contentEditable={false}>

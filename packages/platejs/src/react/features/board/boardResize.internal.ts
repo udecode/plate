@@ -128,7 +128,9 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
   };
 
   const onPointerDown = () => {
-    if (resize) core.cancelInteraction();
+    if (!resize) return;
+    core.cancelInteraction();
+    core.voice.quiet();
   };
 
   const view = host.ownerDocument.defaultView;

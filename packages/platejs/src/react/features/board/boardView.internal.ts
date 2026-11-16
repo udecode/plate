@@ -141,6 +141,7 @@ export type BoardInteraction = Readonly<
   } & (
     | { kind: 'connect'; startShape: () => string | undefined }
     | { kind: 'drag' | 'draw' | 'resize' }
+    | { kind: 'pick'; cursor: () => string }
   )
 >;
 
@@ -150,6 +151,7 @@ export type BoardViewCore = Readonly<{
   replaceInteraction: (interaction: BoardInteraction) => () => void;
   boardSelected: () => boolean;
   cancelInteraction: () => boolean;
+  interactionKind: () => BoardInteraction['kind'] | undefined;
   /** Unmark every shape the eraser marked, and return their ids. */
   clearErasing: () => readonly string[];
   viewCenter: () => BoardPlace;
@@ -191,6 +193,7 @@ export type BoardViewCore = Readonly<{
   shapesAlong: (from: BoardPlace, to: BoardPlace) => readonly string[];
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
+  toggleSelected: (key: NodeKey) => void;
   undo: () => void;
   voice: Pick<
     BoardVoice,
@@ -198,6 +201,9 @@ export type BoardViewCore = Readonly<{
     | 'connecting'
     | 'free'
     | 'hold'
+    | 'pick'
+    | 'picking'
+    | 'quiet'
     | 'release'
     | 'repeatSelection'
     | 'resize'
@@ -905,6 +911,7 @@ export const createBoardView = (
     focusTarget,
     index,
     insertAndSelect,
+    interactionKind: () => interaction?.kind,
     inView: ({ box }) => {
       const { x, y, zoom } = state.camera;
 
@@ -982,6 +989,15 @@ export const createBoardView = (
     shapesAlong: (from, to) => index.shapesAlong(from, to, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
+    toggleSelected: (key) => {
+      const keys = selectedShapes().map((shape) => shape.key);
+
+      select(
+        keys.includes(key)
+          ? keys.filter((held) => held !== key)
+          : [...keys, key]
+      );
+    },
     undo: () => {
       if (writable()) history?.undo();
     },
@@ -1036,9 +1052,10 @@ export const createBoardView = (
       }
     };
 
-    gestures = attachBoardGestures(host, core);
+    const keys = attachBoardKeys(host, core);
 
-    const detachKeys = attachBoardKeys(host, core);
+    gestures = attachBoardGestures(host, core, keys.spaceHeld);
+
     const detachClipboard = attachBoardClipboard(host, core);
 
     host.addEventListener('wheel', onWheel, { passive: false });
@@ -1055,7 +1072,7 @@ export const createBoardView = (
       surface = null;
       resizeObserver.disconnect();
       host.removeEventListener('wheel', onWheel);
-      detachKeys();
+      keys.detach();
       detachClipboard();
     };
   };
@@ -1118,6 +1135,8 @@ export const createBoardView = (
     },
     erasing: (id: string) => erasing.has(id),
     focusTarget,
+    isCursor: (id: string) =>
+      interaction?.kind === 'pick' && interaction.cursor() === id,
     layoutOf: (id: string) => {
       if (!index.byId(id)) index.update();
 

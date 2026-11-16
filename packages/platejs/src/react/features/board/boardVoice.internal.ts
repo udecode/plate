@@ -45,6 +45,19 @@ export type BoardShapeDescription =
     }>;
 
 /**
+ * Where picking stands when the board says `pick` or `picking`: whether the
+ * shape under the cursor is `selected`, how many shapes are selected
+ * (`count`), and that shape's 1-based `position` in stored order among the
+ * board's `total` shapes.
+ */
+export type BoardPickState = Readonly<{
+  count: number;
+  position: number;
+  selected: boolean;
+  total: number;
+}>;
+
+/**
  * Every word a board says. The view whose surface holds focus puts one
  * message per action into the editor's status region, read from the latest
  * `messages` it rendered with. A member that returns an empty string says
@@ -103,6 +116,29 @@ export type BoardMessages = Readonly<{
    */
   instructions: string;
   /**
+   * Called at each key of picking that Space started: when Tab, Shift+Tab or
+   * Mod with an arrow moves the cursor to `shape`, again when Mod with an
+   * arrow finds no shape that way, and when Space adds the cursor's shape to
+   * the selection or takes it out.
+   */
+  pick: (shape: BoardShapeDescription, state: BoardPickState) => string;
+  /**
+   * Called when Space goes down and comes up on the focus target of a board
+   * with shapes, with no modifier, no other key or pointer press between and
+   * no picking, connect, gesture or resize running, which starts picking in
+   * any view, a read-only one included. `shape` is the cursor's first shape,
+   * the first selected one in stored order or else the first one. Tab and
+   * Shift+Tab then move the cursor through every shape in stored order and
+   * wrap, Mod with an arrow moves it to the nearest shape that way, and Space
+   * adds the cursor's shape to the selection or takes it out, each leaving the
+   * rest of the selection as it is and calling `pick`. Enter, Escape, a
+   * pointer press, focus leaving the board, the cursor's shape going away and
+   * any other board key end picking and keep the selection, and every end but
+   * focus leaving, a pointer press and a key that says something of its own
+   * calls `shape` or `shapes` again.
+   */
+  picking: (shape: BoardShapeDescription, state: BoardPickState) => string;
+  /**
    * Called when the selection becomes one shape, with its 1-based place in
    * stored order among the board's shapes.
    */
@@ -159,8 +195,8 @@ export type BoardMessages = Readonly<{
    * Shift+Tab to the one before, an arrow key moves the corner by 1 unit, or
    * 10 with Shift, down to 8 units a side, and each calls `resize`. Enter
    * writes the box when it changed and Escape puts it back. Enter, Escape and
-   * every other end of the resize that says nothing of its own call `shape`
-   * again.
+   * every other end of the resize but focus leaving and a pointer press call
+   * `shape` again, unless the end says something of its own.
    */
   resizing: (
     shape: BoardShapeDescription,
@@ -183,6 +219,7 @@ type BoardUtterance =
     }>
   | Readonly<{ kind: 'connecting'; key: NodeKey | null }>
   | Readonly<{ kind: 'free'; at: BoardPlace; side: BoardArrowSide }>
+  | Readonly<{ kind: 'pick' | 'picking'; key: NodeKey }>
   | Readonly<{ kind: 'starting'; at: BoardPlace; key: NodeKey | null }>
   | Readonly<{ kind: 'quiet' | 'repeatSelection' | 'selection' }>
   | Readonly<{ kind: 'removed'; count: number }>
@@ -326,6 +363,18 @@ export const createBoardVoice = ({
         ? said.starting(at, { from: null })
         : shapeWords(key, (from) => said.starting(at, { from }));
     }
+    if (utterance.kind === 'pick' || utterance.kind === 'picking') {
+      const { key, kind } = utterance;
+      const selected = selectedShapes();
+      const state = {
+        count: selected.length,
+        selected: selected.some((shape) => shape.key === key),
+      };
+
+      return shapeWords(key, (shape, at) =>
+        said[kind](shape, { ...at, ...state })
+      );
+    }
     if (utterance.kind === 'connecting') {
       return utterance.key === null
         ? said.connecting(null)
@@ -379,6 +428,9 @@ export const createBoardVoice = ({
       if (owed) say(owed);
       owed = null;
     },
+    pick: (key: NodeKey) => say({ key, kind: 'pick' }),
+    picking: (key: NodeKey) => say({ key, kind: 'picking' }),
+    quiet: () => say({ kind: 'quiet' }),
     removed: (count: number) =>
       say(count > 0 ? { count, kind: 'removed' } : { kind: 'quiet' }),
     repeatSelection: () => say({ kind: 'repeatSelection' }),

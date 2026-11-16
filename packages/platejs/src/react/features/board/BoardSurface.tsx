@@ -30,6 +30,7 @@ export type {
 } from './boardView.internal';
 export type {
   BoardMessages,
+  BoardPickState,
   BoardShapeDescription,
 } from './boardVoice.internal';
 
@@ -39,11 +40,12 @@ export type {
  * It owns the view's camera, tool, next style and gestures, which never reach
  * the document; a gesture writes through the board's commands once, on
  * release. Pan with the wheel, a middle-button drag, a drag with Space held or
- * a drag with the hand tool. While the hand is picked, the board shows a grab
- * cursor, except over its toolbar and an element that sets its own cursor,
- * such as a resize handle. Zoom with Mod and the wheel. With the select tool, a
- * touch drag on empty board pans, and a mouse or pen drag there selects the
- * shapes its box holds.
+ * a drag with the hand tool. Space released with no pan while it was held
+ * starts picking shapes, as `BoardMessages`'s `picking` says. While the hand
+ * is picked, the board shows a grab cursor, except over its toolbar and an
+ * element that sets its own cursor, such as a resize handle. Zoom with Mod and
+ * the wheel. With the select tool, a touch drag on empty board pans, and a
+ * mouse or pen drag there selects the shapes its box holds.
  * `toolbar` renders over the board, where `useBoardView` and
  * `useBoardActions` reach this view. A read-only view or a preview pans and
  * selects but never writes, and a gesture under way when the view turns so

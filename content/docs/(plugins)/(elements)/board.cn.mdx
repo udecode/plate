@@ -123,7 +123,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | Tab 和 Shift+Tab | 按白板存储图形的顺序在图形之间移动，最后一个图形之后离开白板。视图外的图形会移入视图。 |
 | Mod 加方向键 | 选中该方向上最近的图形，并把它移入视图。没有选中图形时，从视图中心开始。该方向没有图形时，选区不变，白板会再播报一次选中的图形。 |
 | 双击，或在选中的便签、几何图形或箭头上按 Enter | 编辑其文字。 |
-| Escape | 结束进行中的拖动、连接或调整大小，并保留当前工具。否则，它从文字上升到所在图形。在获得焦点的白板或其选中的图形上，选择了其他工具时它选择选择工具，使用选择工具时它上升到白板。 |
+| Escape | 结束进行中的拖动、连接、调整大小或挑选，并保留当前工具。否则，它从文字上升到所在图形。在获得焦点的白板或其选中的图形上，选择了其他工具时它选择选择工具，使用选择工具时它上升到白板。 |
 | 在获得焦点的白板或其选中的图形上按 Shift+Enter | 把焦点移到工具栏。按 Escape 或 Shift+Tab，焦点回到白板。 |
 | `V`、`H`、`N`、`R`、`A`、`F`、`P`、`E` | 选择选择、抓手、便签、图形、箭头、框架、笔和橡皮擦工具。 |
 | 使用便签或图形工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选区右侧 24 px 处放置一个默认大小的图形，没有选中图形时放在视图中心，然后选中它并选择选择工具，所以下一次 Enter 会编辑它的文字。其他不是箭头的图形的左上角正好在新图形左上角要放的位置时，依次尝试向右下方 24 px、48 px，以此类推。尝试的点都不空闲，或要存储的坐标不是有限数时，Enter 不放置任何东西，并再次播报选区。 |
@@ -131,6 +131,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 使用箭头工具且选中一个不是箭头的图形时按 Enter | 开始连接这个图形。Tab 和 Shift+Tab 把箭头终点对准其他不是箭头的图形的中心并循环，Mod 加方向键从终点出发，把它对准该方向上最近的这类图形。方向键把终点移动 1 个单位，按住 Shift 时移动 10 个单位。终点绑定到它下方最前面的、既不是箭头也不是起始图形的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，终点保持自由。Enter 从起始图形的中心向终点绘制箭头，选中它并选择选择工具。按 Escape、用左键或中键在白板上按下、换用其他工具、撤销或重做、删除起始图形、视图变为只读或焦点离开白板，都会停止连接且不绘制。 |
 | 使用箭头工具且未选中任何图形时按 Enter | 开始绘制一个箭头，起点位于视图中心。方向键把起点移动 1 个单位，按住 Shift 时移动 10 个单位。在视图中心以及每次移动之后，起点都绑定到它下方最前面的、不是箭头的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，起点保持自由。Tab、Shift+Tab 和 Mod 加方向键把起点对准图形的中心。Enter 保留起点并从那里开始连接，与上一行从选中图形开始连接相同，终点可以绑定到起点所在图形以外的任何图形。同样的按键和事件会停止绘制且不写入，删除起点绑定的图形也会停止。 |
 | 选中一个不是箭头的图形时按 S | 从图形的右下角开始调整大小。Tab 按顺时针移到下一个角，Shift+Tab 移到上一个角。方向键把这个角移动 1 个单位，按住 Shift 时移动 10 个单位，每边最小 8 个单位，对角保持不动。每次按键都会显示新的方框，绑定到该图形的箭头跟随移动，但不写入。方框有变化时，Enter 把它写入，作为一步撤销。Escape、按下指针、视图变为只读、删除该图形或焦点离开白板，都会恢复原来的方框且不写入；其他任何按键也是如此，然后再执行它本来的操作。 |
+| 在获得焦点的白板上按 Space | 开始挑选图形。光标从按存储顺序的第一个选中图形开始，没有选中图形时从第一个图形开始，复制的白板用虚线环标出它。Tab 和 Shift+Tab 按存储顺序在所有图形之间移动光标并循环，Mod 加方向键把它移到该方向上最近的图形，两者都不改变选区。Space 把光标所在的图形加入选区或移出选区。Enter 或 Escape 保留选区并结束挑选。按下指针、焦点离开白板或删除光标所在的图形也会结束挑选，其他任何按键也是如此，然后再执行它本来的操作。白板在 Space 松开时才响应，而且只响应在获得焦点的白板上按下、没有按住修饰键、松开前没有按过其他键也没有按下过指针的 Space，所以按住 Space 拖动仍会平移。调整大小期间，Space 只会像其他按键一样结束调整。连接或指针手势进行期间，或白板上没有图形时，Space 不做任何事。 |
 | 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。连接期间，方向键改为移动正在放置的那一端。对于未选中任何图形时开始的箭头，Enter 保留起点之前移动起点，之后移动终点。调整大小期间，方向键移动正在调整的那个角。 |
 | `]` 和 `[` | 把选中的图形上移或下移一层。 |
 | Mod+Shift+Up 和 Mod+Shift+Down | 把选中的图形置于顶层或底层。 |
@@ -147,7 +148,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 用抓手拖动 | 从任意位置平移，在图形和正在编辑的文字上方也可以。它不会选中、移动或编辑任何内容。选中抓手时，指针显示为张开的手，自带光标的元素除外，例如调整大小的手柄。 |
 | 滚轮，或按住 Space 拖动，或用中键拖动 | 从任意位置平移，在图形上方也可以。按住 Mod 滚动滚轮会缩放。 |
 
-在只读白板上，不改变内容的按键照常可用：Tab 和 Shift+Tab、Mod 加方向键、Mod+A、在白板上按 Enter、Escape、Shift+Enter、工具字母，以及缩放、适配和平移按键。会写入的按键不做任何事，也不播报。使用便签、图形、框架或箭头工具时，Enter 的行为与使用选择工具时相同。最后一个图形之后，Tab 会清除选区，由浏览器把焦点移出白板。
+在只读白板上，不改变内容的按键照常可用：Tab 和 Shift+Tab、Mod 加方向键、Mod+A、在白板上按 Enter、用 Space 挑选、Escape、Shift+Enter、工具字母，以及缩放、适配和平移按键。会写入的按键不做任何事，也不播报。使用便签、图形、框架或箭头工具时，Enter 的行为与使用选择工具时相同。最后一个图形之后，Tab 会清除选区，由浏览器把焦点移出白板。
 
 在白板之后那个块的开头按 Backspace，或在白板之前那个块的末尾按 Delete，会选中白板。再按一次 Backspace 或 Delete 会删除白板及其所有图形，一次撤销即可恢复。
 
@@ -163,21 +164,23 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | `connecting(from)` | 使用箭头工具按 Enter 开始从 `from`（唯一选中的图形）连接时播报；在未选中图形时开始的箭头中按 Enter 保留起点时也会播报，此时 `from` 是起点绑定的图形，起点不在任何图形上时为 `null`。按键放置终点期间，在方向键或目标键放下终点之前，以及终点绑定的图形被删除之后，连接都没有终点，此时按 Enter 或按下找不到图形的目标键会再播报一次。箭头长度会为零时，例如终点回到起点的位置，按 Enter 也会再播报一次，且不绘制箭头。 |
 | `free(place, { side })` | 方向键把按键移动的箭头端点移到没有可绑定图形的位置时播报，带上该端点所在的白板坐标（取整）；Tab、Shift+Tab 或 Mod 加方向键找不到图形时再播报一次。`side` 是该端点，与 `aim` 相同。 |
 | `starting(place, { from })` | 使用箭头工具且未选中任何图形时按 Enter 开始绘制箭头时播报，起点位于 `place`，即视图中心的白板坐标（取整）。起点绑定到该点下方的图形，与方向键移动时的绑定相同；若该移动不会绑定到任何图形，起点保持自由。`from` 是起点绑定的图形，起点自由时为 `null`。 |
-| `resizing(shape, { corner, width, height })` | 按 S 从 `corner`（即右下角）开始调整 `shape` 的大小时播报，附带取整后的尺寸。按 Enter、Escape 或以其他不另行播报的方式结束调整时，白板通过 `shape` 再次播报该图形。 |
+| `resizing(shape, { corner, width, height })` | 按 S 从 `corner`（即右下角）开始调整 `shape` 的大小时播报，附带取整后的尺寸。按 Enter、Escape 或以其他不另行播报的方式结束调整时，白板通过 `shape` 再次播报该图形。指针按下结束调整时不播报，白板只播报这次按下本身的结果。 |
 | `resize({ corner, width, height })` | 调整大小期间，Tab 或 Shift+Tab 移到另一个角时，以及方向键移动这个角时播报，附带取整后的方框尺寸。 |
+| `picking(shape, { count, position, selected, total })` | 按 Space 开始挑选时播报，`shape` 是光标所在的图形。`selected` 表示该图形是否已选中，`count` 是已选中的图形数，`position` 和 `total` 给出该图形在所有图形的存储顺序中的位置。按 Enter、Escape 或以其他不另行播报的方式结束挑选时，白板通过 `shape` 或 `shapes` 再次播报选区。指针按下结束挑选时不播报，白板只播报这次按下本身的结果。 |
+| `pick(shape, { count, position, selected, total })` | Tab、Shift+Tab 或 Mod 加方向键把光标移到 `shape` 时播报，Mod 加方向键在该方向上找不到图形时再播报一次，Space 把光标所在的图形加入选区或移出选区时也会播报，状态与 `picking` 相同。 |
 | `shape(shape, { position, total })` | 选区变成一个图形时播报，带上它在存储顺序中的位置，例如 `Ship it, Shape. 3 of 5`。 |
 | `shapes(count)` | 选区变成多个图形时播报；没有选中图形而白板再次播报选区时，以 0 调用，例如在没有图形的白板上按 Mod 加方向键之后。 |
 | `tool(tool)` | 用字母键或工具栏选择工具时播报。 |
 | `zoom(percent)` | 缩放键、`zoomIn`、`zoomOut`、`resetZoom` 或 `fit` 改变缩放比例时播报。滚轮缩放不播报。 |
 | `removed(count)` | 删除完成时播报，带上从白板上移除的图形数，被删除框架中的图形也计算在内。 |
 
-`shape`、`aim`、`connecting`、`starting` 和 `resizing` 收到一个 `BoardShapeDescription`，调整大小的 `corner` 是一个 `BoardCorner`，取值为 `topLeft`、`topRight`、`bottomRight` 或 `bottomLeft`。它的 `kind` 是 `note`、`geo`、`arrow`、`frame`、`stroke`，或者表示应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。复制的白板传入：
+`shape`、`aim`、`connecting`、`starting`、`resizing`、`picking` 和 `pick` 收到一个 `BoardShapeDescription`。它的 `kind` 是 `note`、`geo`、`arrow`、`frame`、`stroke`，或者表示应用自定义图形的 `shape`；它的 `text` 是图形的文字或框架的名称。箭头的 `ends` 描述两端连接的图形，自由端为 `null`。调整大小的 `corner` 是一个 `BoardCorner`，取值为 `topLeft`、`topRight`、`bottomRight` 或 `bottomLeft`；`picking` 和 `pick` 还收到一个 `BoardPickState`。复制的白板传入：
 
 ```tsx
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -190,6 +193,9 @@ const boardMessages: BoardMessages = {
     `Resizing ${nameOf(shape)} from its ${CORNERS[corner]} corner, ${width} by ${height}. Tab picks a corner, arrow keys resize, Enter keeps it and Escape stops.`,
   resize: ({ corner, height, width }) =>
     `${CORNERS[corner]}, ${width} by ${height}`,
+  picking: (shape, state) =>
+    `Picking shapes. ${pickOf(shape, state)}. Tab moves, Space adds or removes, Enter finishes.`,
+  pick: (shape, state) => pickOf(shape, state),
   shape: (shape, { position, total }) =>
     `${nameOf(shape)}. ${position} of ${total}`,
   shapes: (count) =>
@@ -419,7 +425,7 @@ const editor = createEditor({
 - Markdown 按阅读顺序保留每个图形的文字，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含五种内置图形时，也可以持久化 HTML。
 - 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
 - 不支持便签内的白板，也不支持旋转。
-- 仅用键盘不能移动已绘制箭头的端点，不能同时调整多个图形的大小，也不能逐个把图形加入选区。
+- 仅用键盘不能移动已绘制箭头的端点，也不能同时调整多个图形的大小。
 - 在白板页面中，白板仍是文档中的一个块。选中白板时按 Delete 或 Backspace 会删除它及其图形，撤销可以恢复白板。安装了[退出块结构](/docs/exit-break)时，光标在白板上（Mod+A 可能把光标放在那里）按 Mod+Enter 会在白板后添加一个段落，它在视野之外。
 
 ## 插件
@@ -447,7 +453,7 @@ const editor = createEditor({
 | `removeFrame(id)` | `BaseBoardPlugin` | 删除框架，图形留在原处。 |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | 把 `slice` 中图形的副本以新 id 粘贴到 `board`，并返回副本的 id。 |
 | `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置，以及复制图形所携带的 slice。在 `tx.plugin(BaseBoardPlugin)` 上调用。 |
-| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡。 |
-| `BoardMessages`、`BoardShapeDescription`、`BoardCorner` | `platejs/board/react` | `messages` 的类型、`messages.shape` 所描述的图形，以及调整大小时移动的角。 |
+| `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡；挑选光标所在的图形带有 `data-board-cursor`，复制的白板会给它加上虚线环。 |
+| `BoardMessages`、`BoardShapeDescription`、`BoardCorner`、`BoardPickState` | `platejs/board/react` | `messages` 的类型、`messages.shape` 所描述的图形、调整大小时移动的角，以及播报 `picking` 或 `pick` 时的挑选状态。 |
 | `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `writable` 读取视图能否写入。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setNextStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame` 和 `focus`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中。下一个样式的 `fill` 同时用于下一个便签和下一个几何图形。 |
 | `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |

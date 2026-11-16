@@ -65,8 +65,9 @@ function AloneHandles() {
  * it has no handles. A frame takes a press only on its edge or on a child
  * marked `[data-board-frame-name]`, such as its name, and a stroke only on its
  * line, which its component draws from `useStrokePath`. A selected member
- * shows `data-selected`, and one the eraser will remove on release shows
- * `data-erasing`.
+ * shows `data-selected`, one the eraser will remove on release shows
+ * `data-erasing`, and the one under the picking cursor that Space starts
+ * shows `data-board-cursor`.
  */
 export function BoardShape({
   className,
@@ -100,6 +101,7 @@ export function BoardShape({
     readErasing,
     readErasing
   );
+  const [cursor] = React.useState(() => view.isCursor(id));
   const selected = useElementSelected({ mode: 'node' });
   const arrow = layout?.kind === 'arrow';
 
@@ -108,6 +110,7 @@ export function BoardShape({
       {...props}
       attributes={{
         ...props.attributes,
+        'data-board-cursor': cursor ? '' : undefined,
         'data-board-shape': layout?.id,
         'data-erasing': erasing || undefined,
         'data-selected': selected || undefined,

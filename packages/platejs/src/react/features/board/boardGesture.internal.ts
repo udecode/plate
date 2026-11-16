@@ -149,7 +149,11 @@ const addPenPoint = (
  * drag, resize, the pen's line, the eraser and the other tools' drags, each
  * previewed with no write and committed once on release.
  */
-export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
+export const attachBoardGestures = (
+  host: HTMLElement,
+  core: BoardViewCore,
+  spaceHeld: () => boolean
+) => {
   const { index } = core;
   const previewRank = () => index.entries().length + 1;
 
@@ -158,7 +162,6 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   let swallowClick = false;
   let clicker: number | undefined;
   let pressed: BoardShapeLayout | undefined;
-  let spaceHeld = false;
 
   const drawPen = ({ path, points }: Extract<Gesture, { kind: 'pen' }>) => {
     path.setAttribute('d', strokeOutline(points, false));
@@ -453,8 +456,9 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     );
     const draws = tool === 'arrow' || tool === 'eraser' || tool === 'pen';
     const typing = core.writable() && !!core.editedShape();
+    const spacePan = !typing && spaceHeld();
 
-    if (event.button === 1 || tool === 'hand' || (spaceHeld && !typing)) {
+    if (event.button === 1 || tool === 'hand' || spacePan) {
       if (tool === 'hand' && !inOwnText(activeElementOf(host))) {
         core.focusBoard();
       }
@@ -482,11 +486,7 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
 
       if (event.shiftKey) {
         moving = held ? [] : [...selected, shape];
-        core.select(
-          (held ? selected.filter(({ key }) => key !== shape.key) : moving).map(
-            ({ key }) => key
-          )
-        );
+        core.toggleSelected(shape.key);
       } else if (!held) {
         core.select([shape.key]);
       }
@@ -701,16 +701,6 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
     event.stopPropagation();
     core.edit(shape.key);
   };
-  const onSpace = (event: KeyboardEvent) => {
-    if (event.code !== 'Space' && event.key !== ' ') return;
-    spaceHeld =
-      event.type === 'keydown' &&
-      event.target instanceof Node &&
-      host.contains(event.target);
-  };
-  const releaseSpace = () => {
-    spaceHeld = false;
-  };
   const view = host.ownerDocument.defaultView;
 
   host.addEventListener('pointerdown', onPointerDown, true);
@@ -720,9 +710,6 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
   host.addEventListener('lostpointercapture', onLostPointerCapture);
   view?.addEventListener('click', onClick, true);
   view?.addEventListener('dblclick', onDoubleClick, true);
-  view?.addEventListener('keydown', onSpace, true);
-  view?.addEventListener('keyup', onSpace, true);
-  view?.addEventListener('blur', releaseSpace);
 
   return {
     detach: () => {
@@ -734,9 +721,6 @@ export const attachBoardGestures = (host: HTMLElement, core: BoardViewCore) => {
       host.removeEventListener('lostpointercapture', onLostPointerCapture);
       view?.removeEventListener('click', onClick, true);
       view?.removeEventListener('dblclick', onDoubleClick, true);
-      view?.removeEventListener('keydown', onSpace, true);
-      view?.removeEventListener('keyup', onSpace, true);
-      view?.removeEventListener('blur', releaseSpace);
     },
     /** Redraw the gesture's preview after the camera or the shapes moved. */
     follow,

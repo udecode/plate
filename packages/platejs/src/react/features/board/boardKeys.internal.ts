@@ -16,6 +16,7 @@ import {
   frontmostAround,
   pickInDirection,
 } from './boardPick.internal';
+import { attachBoardPicking } from './boardPicking.internal';
 import { attachBoardResize } from './boardResize.internal';
 import type {
   BoardPlaceTool,
@@ -85,6 +86,9 @@ const isTextField = (target: Element) =>
 const plainKey = (event: KeyboardEvent) =>
   !event.altKey && !event.ctrlKey && !event.metaKey;
 
+const isSpace = (event: KeyboardEvent) =>
+  event.code === 'Space' || event.key === ' ';
+
 const pickKey = (event: KeyboardEvent) =>
   !event.altKey &&
   !event.shiftKey &&
@@ -94,6 +98,8 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
   const { index } = core;
   const connect = attachBoardConnect(host, core);
   const resize = attachBoardResize(host, core);
+  const picking = attachBoardPicking(host, core);
+  let spacePress: { action: 'start' | 'toggle' | null } | null = null;
 
   const inThisBoard = (element: Element) =>
     element.closest('[data-board]') === host;
@@ -219,21 +225,28 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     );
   };
 
-  const pickSelection = (
-    shapes: readonly BoardShapeLayout[],
+  const nearestFrom = (
+    from: BoardShapeLayout | undefined,
     direction: BoardPlace
   ) => {
     const entries = index.entries();
-    const [first] = shapes;
-    const own = first && entries.find(({ key }) => key === first.key);
+    const own = from && entries.find(({ key }) => key === from.key);
     const frame = own?.kind === 'shape' ? own.frame : undefined;
-    const next = pick(
-      first?.box,
+
+    return pick(
+      from?.box,
       direction,
       entries.flatMap(({ id, key }) =>
         id === frame ? [] : (index.layout(key) ?? [])
       )
     );
+  };
+
+  const pickSelection = (
+    shapes: readonly BoardShapeLayout[],
+    direction: BoardPlace
+  ) => {
+    const next = nearestFrom(shapes[0], direction);
 
     if (!next) {
       core.voice.repeatSelection();
@@ -241,7 +254,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       return true;
     }
     if (!core.inView(next)) {
-      core.reveal([entries.findIndex(({ key }) => key === next.key)]);
+      core.reveal([index.entries().findIndex(({ key }) => key === next.key)]);
     }
     core.select([next.key]);
 
@@ -426,6 +439,33 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
+  const pickingKey = (event: KeyboardEvent) => {
+    const arrow = ARROWS[event.key];
+    const from = picking.shape();
+
+    if (!from) return false;
+    if (isSpace(event) && !event.shiftKey && plainKey(event)) return true;
+    if (event.key === 'Tab' && plainKey(event)) {
+      const entries = index.entries();
+      const { length } = entries;
+      const at = entries.findIndex(({ key }) => key === from.key);
+      const next = index.layout(
+        entries[(at + (event.shiftKey ? length - 1 : 1)) % length]?.key ?? ''
+      );
+
+      if (next) picking.moveTo(next);
+    } else if (arrow && pickKey(event)) {
+      const next = nearestFrom(from, arrow);
+
+      if (next) picking.moveTo(next);
+      else picking.sayAgain();
+    } else if (event.key === 'Enter' && !event.shiftKey && plainKey(event)) {
+      if (!event.repeat) core.cancelInteraction();
+    } else return false;
+
+    return true;
+  };
+
   const startResizeKey = (
     event: KeyboardEvent,
     selected: readonly BoardShapeLayout[]
@@ -588,8 +628,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     if (!host.contains(target)) return target.contains(host) && boardKey(event);
     if (!inThisBoard(target)) return false;
     if (event.key === 'Escape' && selectEdited()) return true;
-    if (resize.active()) {
-      if (resizeKey(event)) return true;
+    const modeKey = resize.active()
+      ? resizeKey
+      : picking.active() && pickingKey;
+
+    if (modeKey) {
+      if (modeKey(event)) return true;
       if (MODIFIER_KEYS.has(event.key)) return false;
       core.cancelInteraction();
     }
@@ -606,21 +650,74 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return !bar && boardTakes(event, target);
   };
 
+  const holdSpace = (event: KeyboardEvent) => {
+    if (!(event.target instanceof Node) || !host.contains(event.target)) {
+      spacePress = null;
+    } else if (event.repeat) {
+      spacePress ??= { action: null };
+    } else if (
+      event.target !== core.focusTarget.current ||
+      event.shiftKey ||
+      !plainKey(event)
+    ) {
+      spacePress = { action: null };
+    } else {
+      const kind = core.interactionKind();
+
+      spacePress = {
+        action:
+          kind === undefined ? 'start' : kind === 'pick' ? 'toggle' : null,
+      };
+    }
+  };
+
   const onKeyDown = (event: KeyboardEvent) => {
     const { target } = event;
 
+    if (isSpace(event)) holdSpace(event);
+    else if (spacePress) spacePress.action = null;
     if (!(target instanceof Element) || !keyTaken(event, target)) return;
     event.preventDefault();
     event.stopPropagation();
   };
+
+  const onSpaceUp = (event: KeyboardEvent) => {
+    if (!isSpace(event)) return;
+
+    const press = spacePress;
+
+    spacePress = null;
+    if (event.target !== core.focusTarget.current) return;
+    if (press?.action === 'toggle' && picking.active()) picking.toggle();
+    if (press?.action === 'start' && !picking.active()) picking.start();
+  };
+
+  const releaseSpace = () => {
+    spacePress = null;
+  };
+
+  const onPointerDown = () => {
+    if (spacePress) spacePress.action = null;
+  };
+
   const view = host.ownerDocument.defaultView;
 
   view?.addEventListener('keydown', onKeyDown, true);
+  view?.addEventListener('keyup', onSpaceUp, true);
+  view?.addEventListener('pointerdown', onPointerDown, true);
+  view?.addEventListener('blur', releaseSpace);
 
-  return () => {
-    view?.removeEventListener('keydown', onKeyDown, true);
-    connect.detach();
-    resize.detach();
+  return {
+    detach: () => {
+      view?.removeEventListener('keydown', onKeyDown, true);
+      view?.removeEventListener('keyup', onSpaceUp, true);
+      view?.removeEventListener('pointerdown', onPointerDown, true);
+      view?.removeEventListener('blur', releaseSpace);
+      connect.detach();
+      resize.detach();
+      picking.detach();
+    },
+    spaceHeld: () => !!spacePress,
   };
 };
 
