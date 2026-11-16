@@ -109,10 +109,18 @@ invalid, and read-only edits without changing the document.
 | `deleteOut({ baseVersion, direction })` | Delete across a block edge when the canonical caret is collapsed at that edge. |
 | `composition("start" \| "end")` | Join and finish Plite's composition epoch. Submit composition edits with `intent: "composition"`. |
 | `history("undo" \| "redo")` | Use the installed Plite history plugin. Returns `false` when no history action applies. |
+| `yieldKey(event)` | Offer a keydown the view declined to the `Editable`'s `onKeyDown`. Call it from the view's own keydown listener, after every local handler passed on the key. Plite drops the key when something prevents its default or stops its propagation before the editor root. It refuses keys a text input uses natively: composing and modifier keys, typing, Enter without Ctrl or Meta, Tab, navigation and deletion keys, select-all, clipboard, undo and redo, and on Apple hosts Control with a letter, the quote key or Enter. It also refuses every key while the editor or the element is read-only, during an authored preview, or while any part of the selection is outside this Text. |
 
 Versioned actions return `{ status: "applied" | "stale" | "read-only" }`.
 Adapters disable independent undo stacks and never dispatch from `mount`,
 `update`, `focus`, or `destroy` callbacks.
+
+When the view held focus as a yielded key arrived, focus follows the selection
+once React commits the handler's change, so after a shortcut that moves the
+caret out of the view, the next keystroke types there. Focus stays where the
+handler put it when the handler moved focus out of the view or blurred it while
+the view stayed mounted, and Plite leaves focus alone when the handler
+unmounted the `Editable`.
 
 ## Selection and native features
 

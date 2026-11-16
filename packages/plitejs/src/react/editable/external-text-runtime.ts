@@ -747,25 +747,34 @@ export class ExternalTextRuntime {
     if (!focused) return;
     const handlerMovedFocus = !host.contains(document.activeElement);
     if (handlerMovedFocus && entry.active) return;
-    // React queues its commit of the handler's change before this microtask.
-    this.runtime.domPhaseScheduler.schedule(
+    const settle = () => {
+      const settled = document.activeElement;
+      if (settled && settled !== document.body && !host.contains(settled)) {
+        return;
+      }
+      try {
+        this.runtime.restoreSelectionFocus();
+      } catch (error) {
+        reportEditorLifecycleError({
+          cause: error,
+          editor: this.runtime.editor,
+          source: 'external-text',
+          phase: 'focus',
+        });
+      }
+    };
+    this.afterReactCommit('external-text-yielded-key-focus', settle);
+  }
+
+  private afterReactCommit(label: string, task: () => void) {
+    const { domPhaseScheduler } = this.runtime;
+    domPhaseScheduler.schedule(
       'dom-write',
-      'external-text-yielded-key-focus',
+      `${label}-wait`,
       () => {
-        const settled = document.activeElement;
-        if (settled && settled !== document.body && !host.contains(settled)) {
-          return;
-        }
-        try {
-          this.runtime.restoreSelectionFocus();
-        } catch (error) {
-          reportEditorLifecycleError({
-            cause: error,
-            editor: this.runtime.editor,
-            source: 'external-text',
-            phase: 'focus',
-          });
-        }
+        domPhaseScheduler.schedule('dom-write', label, task, {
+          timing: 'microtask',
+        });
       },
       { timing: 'microtask' }
     );
