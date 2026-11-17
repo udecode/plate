@@ -359,13 +359,13 @@ import {
   deriveValue,
   EMPTY_RECORD_STORE,
   getValueRecords,
+  hasValueRecords,
   NO_RECORD_OPS,
   recordDrop,
   recordOpsBetween,
   recordPut,
   recordPutsOf,
   type RecordStore,
-  recordStoreFromJson,
   recordStoreToJson,
   showValueRecords,
   withValueRecords,
@@ -13574,12 +13574,12 @@ const readDirectSnapshotInput = (
     );
   }
 
-  return {
-    ...document,
-    ...(envelope.selection === undefined
+  return deriveValue(
+    document as DirectSnapshotInput,
+    envelope.selection === undefined
       ? {}
-      : { selection: envelope.selection as SnapshotSelectionInput }),
-  } as DirectSnapshotInput;
+      : { selection: envelope.selection as SnapshotSelectionInput }
+  );
 };
 
 const deserializeSnapshotMeta = (
@@ -13732,11 +13732,11 @@ export const replaceTransformedSnapshot = (
       // Records are never removed while a room is live, since content a peer
       // writes at the same time can still name them, so a replacement's
       // records add to the editor's.
-      if (snapshotInput.records !== undefined) {
+      if (hasValueRecords(snapshotInput)) {
         const records = recordPutsOf(
           recordOpsBetween(
             getEditorDocumentRecords(editor),
-            recordStoreFromJson(snapshotInput.records)
+            getValueRecords(snapshotInput)
           )
         );
 
@@ -13906,7 +13906,7 @@ export const initializeEditorSchemaSnapshot = (
         ? {}
         : { roots: fitted.document.roots }),
     },
-    recordStoreFromJson(snapshotInput.records)
+    getValueRecords(snapshotInput)
   );
 
   const admitted = admitEditorDocument(editor, document);
