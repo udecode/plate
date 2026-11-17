@@ -357,3 +357,4 @@ export {
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
 export { getRangeRoot, getReaderRange, MAIN_ROOT_KEY } from './root-location';
+export { readDocumentRange } from './document-range';

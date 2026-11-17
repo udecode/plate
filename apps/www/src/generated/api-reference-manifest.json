@@ -14762,7 +14762,7 @@
         },
         "platejs/migrations:DocumentMigrationRanges": {
           "aliases": [],
-          "documentation": "Saved ranges by thread id, each in the primary root of the input document.",
+          "documentation": "Saved ranges by thread id. A range's points name the root it covers, and a\npoint that names none is in the primary root.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
           "name": "DocumentMigrationRanges",
@@ -14773,7 +14773,7 @@
         },
         "platejs/migrations:DocumentMigrationRangesContext": {
           "aliases": [],
-          "documentation": "The ranges still mapped before a step, in order.",
+          "documentation": "The ranges still mapped before a step, in order, each in the root it names.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
           "name": "DocumentMigrationRangesContext",
@@ -14839,7 +14839,7 @@
           "kind": "type",
           "name": "DocumentMigrationStepResult",
           "runtime": false,
-          "signature": "type DocumentMigrationStepResult<ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue> = Readonly<{\n  document: ToDocument;\n  /** Legacy fields left to lift. Omitted, the step's input passes on. */\n  legacy?: DocumentMigrationLegacy;\n  /**\n   * Map every range in one call, returning one range or `null` per range in\n   * order. Omitted, every range maps to `null` when the step changes the\n   * document.\n   */\n  mapRanges?: (context: DocumentMigrationRangesContext) => ReadonlyArray<Range | null>;\n  mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;\n}>;",
+          "signature": "type DocumentMigrationStepResult<ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue> = Readonly<{\n  document: ToDocument;\n  /** Legacy fields left to lift. Omitted, the step's input passes on. */\n  legacy?: DocumentMigrationLegacy;\n  /**\n   * Map every range in one call, returning one range or `null` per range in\n   * order. A returned range keeps its input's root, or it maps to `null`.\n   * Omitted, every range maps to `null` when the step changes the document.\n   */\n  mapRanges?: (context: DocumentMigrationRangesContext) => ReadonlyArray<Range | null>;\n  mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;\n}>;",
           "source": null,
           "typeParameters": [
             "ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue"

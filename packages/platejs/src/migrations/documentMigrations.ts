@@ -21,6 +21,7 @@ import {
   type Point,
   type Range,
   RangeApi,
+  readDocumentRange,
   readDocumentRecord,
   readPersistedEnvelope,
   readStoredEditorDocument,
@@ -30,6 +31,7 @@ import {
   type Selection,
   SelectionApi,
   snapshotEditorJsonValue,
+  TextApi,
 } from '../facade';
 import type { EditorApplicationSchema } from '../lib/editor/editorApplicationSchema';
 import { compilePlateEditorTarget } from '../lib/editor/withPlite';
@@ -82,7 +84,10 @@ export type DocumentMigrationSelectionContext = Readonly<{
   selection: Exclude<Selection, null>;
 }>;
 
-/** Saved ranges by thread id, each in the primary root of the input document. */
+/**
+ * Saved ranges by thread id. A range's points name the root it covers, and a
+ * point that names none is in the primary root.
+ */
 export type DocumentMigrationRanges = Readonly<Record<string, Range>>;
 
 /**
@@ -92,7 +97,7 @@ export type DocumentMigrationRanges = Readonly<Record<string, Range>>;
  */
 export type MigratedDocumentRanges = Readonly<Record<string, Range | null>>;
 
-/** The ranges still mapped before a step, in order. */
+/** The ranges still mapped before a step, in order, each in the root it names. */
 export type DocumentMigrationRangesContext = Readonly<{
   ranges: readonly Range[];
 }>;
@@ -119,8 +124,8 @@ export type DocumentMigrationStepResult<
   legacy?: DocumentMigrationLegacy;
   /**
    * Map every range in one call, returning one range or `null` per range in
-   * order. Omitted, every range maps to `null` when the step changes the
-   * document.
+   * order. A returned range keeps its input's root, or it maps to `null`.
+   * Omitted, every range maps to `null` when the step changes the document.
    */
   mapRanges?: (
     context: DocumentMigrationRangesContext
@@ -438,7 +443,7 @@ const rangeText = (children: readonly Descendant[], range: Range) => {
       if (PathApi.isAfter(path, end.path)) return;
       if (ElementApi.isElement(node)) {
         visit(node.children, path);
-      } else {
+      } else if (TextApi.isText(node)) {
         text += node.text.slice(
           PathApi.equals(path, start.path) ? start.offset : 0,
           PathApi.equals(path, end.path) ? end.offset : node.text.length
@@ -452,9 +457,6 @@ const rangeText = (children: readonly Descendant[], range: Range) => {
   return text;
 };
 
-const coversText = (children: readonly Descendant[], range: Range) =>
-  rangeText(children, range) !== '';
-
 const isTextPoint = (children: readonly Descendant[], point: Point) => {
   const text = textAt(children, point.path);
 
@@ -466,42 +468,45 @@ const isTextPoint = (children: readonly Descendant[], point: Point) => {
   );
 };
 
-const mainRange = (value: unknown): Range | null =>
-  RangeApi.isRange(value) &&
-  (value.anchor.root ?? 'main') === 'main' &&
-  (value.focus.root ?? 'main') === 'main'
-    ? {
-        anchor: { offset: value.anchor.offset, path: [...value.anchor.path] },
-        focus: { offset: value.focus.offset, path: [...value.focus.path] },
-      }
-    : null;
-
 const readRange = (value: unknown, label: string): Range | null => {
   if (value === null) return null;
-  const range = mainRange(snapshotEditorJsonValue(value, label));
+  const range = readDocumentRange(
+    snapshotEditorJsonValue(value, label),
+    'saved'
+  );
 
   if (!range) {
-    throw new Error(`${label} must be a primary-root range or null.`);
+    throw new Error(`${label} must be a document range or null.`);
   }
 
   return range;
 };
 
-const fitsDocument = (document: EditorDocumentValue, range: Range) =>
-  isTextPoint(document.children, range.anchor) &&
-  isTextPoint(document.children, range.focus);
+const rootHolding = (document: EditorDocumentValue, range: Range) => {
+  const root = SelectionApi.root(range);
+  const roots = document.roots ?? {};
+  const children =
+    root === undefined
+      ? document.children
+      : Object.hasOwn(roots, root)
+        ? roots[root]
+        : undefined;
+
+  return children &&
+    isTextPoint(children, range.anchor) &&
+    isTextPoint(children, range.focus)
+    ? children
+    : null;
+};
 
 const savedRangeOrNull = (
   value: unknown,
   document: EditorDocumentValue
 ): Range | null => {
-  const range = mainRange(value);
+  const range = readDocumentRange(value, 'saved');
+  const children = range && rootHolding(document, range);
 
-  return range &&
-    fitsDocument(document, range) &&
-    coversText(document.children, range)
-    ? range
-    : null;
+  return range && children && rangeText(children, range) !== '' ? range : null;
 };
 
 const readCoveringRange = (
@@ -512,17 +517,21 @@ const readCoveringRange = (
   const range = readRange(value, label);
 
   if (!range) return null;
-  if (!fitsDocument(document, range)) {
+  const children = rootHolding(document, range);
+
+  if (!children) {
     throw new Error(
       `${label} ${JSON.stringify(range)} points outside the document.`
     );
   }
 
-  return coversText(document.children, range) ? range : null;
+  return rangeText(children, range) === '' ? null : range;
 };
 
 const uncrossedRange = (source: Range, range: Range | null) =>
-  range && RangeApi.isBackward(range) === RangeApi.isBackward(source)
+  range &&
+  RangeApi.isBackward(range) === RangeApi.isBackward(source) &&
+  SelectionApi.root(range) === SelectionApi.root(source)
     ? range
     : null;
 
@@ -632,7 +641,7 @@ const completeDocument = (
   const fitted =
     isConcreteSelection(selection) || live.length > 0
       ? authority.schema.fitDocumentAndMapPositions(document, {
-          mainRanges: live,
+          ranges: live,
           ...(isConcreteSelection(selection)
             ? {
                 selection: {
@@ -642,7 +651,7 @@ const completeDocument = (
               }
             : {}),
         })
-      : { document: authority.schema.fitDocument(document), mainRanges: [] };
+      : { document: authority.schema.fitDocument(document), ranges: [] };
   const fittedSelection = isConcreteSelection(selection)
     ? fitted.selection
     : selection;
@@ -668,7 +677,7 @@ const completeDocument = (
     document: completed,
     ranges:
       ranges &&
-      mapLiveRanges(ranges, fitted.mainRanges, (range, value) =>
+      mapLiveRanges(ranges, fitted.ranges, (range, value) =>
         readCoveringRange(
           uncrossedRange(range, value ?? null),
           completed,

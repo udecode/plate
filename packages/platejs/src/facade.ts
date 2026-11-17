@@ -266,6 +266,7 @@ export {
   type EditorDocumentShapeIssue,
   getEditorDocumentShapeIssueMessage,
   isEnvelopeInput,
+  readDocumentRange,
   readDocumentRecord,
   readEditorDocument,
   readPersistedEnvelope,

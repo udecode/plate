@@ -139,18 +139,18 @@ type FitSelectionInput = Readonly<{
 }>;
 
 export type FitDocumentPositions = Readonly<{
-  mainRanges: readonly Range[];
+  ranges: readonly Range[];
   selection?: FitSelectionInput;
 }>;
 
 export type FittedDocumentPositions<V extends Value = Value> = Readonly<{
   document: EditorDocumentValue<V>;
-  mainRanges: ReadonlyArray<Range | null>;
+  ranges: ReadonlyArray<Range | null>;
   selection?: NonNullable<Selection>;
 }>;
 
 type FitPositions = Readonly<{
-  mainRanges?: readonly Range[];
+  ranges?: readonly Range[];
   omitSelectionSpacers?: true;
   selection?: FitSelectionInput;
 }>;
@@ -4317,10 +4317,10 @@ export const compileSliceFitter = <V extends Value>(
       if (
         (positions?.selection &&
           !fitKeepsSelection(document, positions.selection)) ||
-        positions?.mainRanges?.some(
+        positions?.ranges?.some(
           (range) =>
             !fitKeepsSelection(document, {
-              root: 'main',
+              root: SelectionApi.root(range) ?? 'main',
               selection: SelectionApi.text(range),
             })
         ) ||
@@ -4333,7 +4333,7 @@ export const compileSliceFitter = <V extends Value>(
 
       return Object.freeze({
         document,
-        mainRanges: positions?.mainRanges,
+        ranges: positions?.ranges,
         selection:
           positions?.selection &&
           snapshotEditorJsonValue(
@@ -4442,12 +4442,19 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     let mappedSelection: NonNullable<Selection> | undefined;
-    let mappedRanges: ReadonlyArray<Range | null> | undefined =
-      positions?.mainRanges?.map(() => null);
+    const mappedRanges: Array<Range | null> =
+      positions?.ranges?.map(() => null) ?? [];
     const fitRoot = (root: string, children: readonly Descendant[]) => {
       const selectionInput = positions?.selection;
       const mapsSelection = selectionInput?.root === root;
-      const ranges = root === 'main' ? positions?.mainRanges : undefined;
+      const owned =
+        positions?.ranges?.flatMap((range, index) =>
+          (SelectionApi.root(range) ?? 'main') === root
+            ? [{ index, range }]
+            : []
+        ) ?? [];
+      const ranges =
+        owned.length > 0 ? owned.map(({ range }) => range) : undefined;
       const repairs: EditorSchemaRepair[] = [];
       const report = repairCollector
         ? { provenance: createRootFitPathProvenance(children), repairs }
@@ -4458,7 +4465,9 @@ export const compileSliceFitter = <V extends Value>(
             mapsSelection || ranges
               ? (_step, selection, _landing, rangesAfter) => {
                   if (mapsSelection) mappedSelection = selection;
-                  if (rangesAfter) mappedRanges = rangesAfter;
+                  owned.forEach(({ index }, at) => {
+                    mappedRanges[index] = rangesAfter?.[at] ?? null;
+                  });
                 }
               : undefined,
           builder,
@@ -4576,7 +4585,7 @@ export const compileSliceFitter = <V extends Value>(
 
     return Object.freeze({
       document,
-      mainRanges: mappedRanges,
+      ranges: mappedRanges,
       selection: mappedSelection,
     });
   };
@@ -4617,7 +4626,7 @@ export const compileSliceFitter = <V extends Value>(
 
     return Object.freeze({
       document: fitted.document,
-      mainRanges: fitted.mainRanges ?? [],
+      ranges: fitted.ranges ?? [],
       ...(fitted.selection ? { selection: fitted.selection } : {}),
     });
   };
