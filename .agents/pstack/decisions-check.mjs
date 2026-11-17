@@ -58,8 +58,10 @@
 //        build row whose evidence names the same proof: file and whose result starts with
 //        applied, dismissed, fixed or verified.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
-//        (exits 1 when the log is at the cap of panel rounds before a build, the
-//        maxRounds in .agents/pstack.json or 3)
+//        (exits 1 when the log is at the cap of panel rounds since its last restart, the
+//        maxRounds in .agents/pstack.json or 1, plus one round after a round that applied
+//        three or more critical findings; a built: row restarts the count only for a step
+//        the log has not built before)
 //        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
 //        (prints every open suggested task as ready, started, waiting or unmigrated,
 //        by priority, listing P0 and P1 in full and counting the rest unless chips all,
@@ -123,17 +125,32 @@ const opens = (line) => {
   return phase === 'panel' && SEATS.test(decision);
 };
 const roundCap = () => {
-  const { maxRounds: cap = 3 } = projectConfig();
+  const { maxRounds: cap = 1 } = projectConfig();
   if (!Number.isInteger(cap) || cap < 1) throw new Error(`.agents/pstack.json: maxRounds is ${JSON.stringify(cap)}, not a whole number of 1 or more`);
   return cap;
 };
-const restartsRoundCount = (line) => {
-  const [, phase, decision = '', , , result = ''] = line.split('\t');
-  if (phase === 'build') return /^built:\s*\S/u.test(decision) && /^(applied|fixed|partial|proven|recorded|verified)\b/u.test(result);
-  return phase === 'owner' && /^another round:\s*\S/u.test(decision);
-};
-const roundsSince = (lines) => lines.slice(lines.findLastIndex(restartsRoundCount) + 1).filter(opens).length;
+const EXTRA_ROUND_FIXES = 3;
 const STEP_BUILT = /^built:\s*step\s+(\d+[a-z]?)(?![a-z0-9])/iu;
+const ROUND_STEP = /^built:\s*step\s+([a-z]*\d+(?:\.\d+)*[a-z]?)(?![a-z0-9.])/iu;
+// A built: row for a step the log has built before records that step's fixes, not a new diff, so it starts no count.
+function trackRound(state, line) {
+  const [, phase, decision = '', , , result = ''] = line.split('\t');
+  if (phase === 'build' && /^built:\s*\S/u.test(decision) && /^(applied|fixed|partial|proven|recorded|verified)\b/u.test(result)) {
+    const step = decision.match(ROUND_STEP)?.[1].toLowerCase();
+    if (!step || !state.steps.has(step)) Object.assign(state, { rounds: 0, applied: 0 });
+    if (step) state.steps.add(step);
+  } else if (phase === 'owner' && /^another round:\s*\S/u.test(decision)) Object.assign(state, { rounds: 0, applied: 0 });
+  else if (opens(line)) Object.assign(state, { rounds: state.rounds + 1, applied: 0 });
+  else if (phase === 'panel' && /^critical\b/u.test(decision) && /^applied\b/u.test(result)) state.applied += 1;
+}
+const roundState = (lines) => {
+  const state = { rounds: 0, applied: 0, steps: new Set() };
+  for (const line of lines) trackRound(state, line);
+  return state;
+};
+const capMessage = ({ rounds }) =>
+  `this would be panel round ${rounds + 1} since the last restart, past the cap of ${roundCap()}, and the last round applied fewer than ${EXTRA_ROUND_FIXES} critical findings, or already was the one extra round. Stop reviewing: settle each open finding as applied, dismissed on its proof, recorded when no user can reach its case, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, then build the plan or land the step. A built: row for a step this log has not built yet, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again; a built: row for a step already built does not`;
+const pastCap = ({ rounds, applied }) => rounds >= roundCap() && !(rounds === roundCap() && applied >= EXTRA_ROUND_FIXES);
 const STEP_LANDED = /(?:^|\bstep\s+)(\d+[a-z]?)(?![a-z0-9])[^\t]*?\b(?:landed|published|dropped)\b/iu;
 const stepOf = (line, phase, pattern) => {
   const cells = line.split('\t');
@@ -541,7 +558,7 @@ function append(path, batch, run, miss = null) {
   let roster = existing.findLast(opens)?.split('\t')[2] ?? null;
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
-  let rounds = roundsSince(existing);
+  const round = roundState(existing);
   let openCriticals = existing.slice(1).filter((line) => isOpenCritical(line.split('\t').slice(1))).length;
   const redesign = { log: path, playbook: redesignPlaybook(path), redesign: false, plan: false, kinds: 0, owners: 1 };
   for (const line of existing.slice(1).filter(Boolean)) trackRedesign(redesign, line.split('\t').slice(1));
@@ -584,18 +601,14 @@ function append(path, batch, run, miss = null) {
     if (opens(row) && roster && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
-    if (opens(row) && rounds >= roundCap()) {
-      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${roundCap()}. Stop reviewing: settle each open finding as applied, dismissed on its proof, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, pivoting the run for a critical the lead must apply, then build a plan or move a diff to its next gate. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
-    }
+    if (opens(row) && pastCap(round)) found.push(`${where}: ${capMessage(round)}`);
     if (steps) {
       found.push(...stepInFlightProblems(steps, row, where));
       trackStep(steps, row);
     }
-    if (restartsRoundCount(row)) rounds = 0;
-    if (opens(row)) {
-      written = false;
-      rounds += 1;
-    } else if (isWriting(row)) written = true;
+    trackRound(round, row);
+    if (opens(row)) written = false;
+    else if (isWriting(row)) written = true;
     if (opens(row)) roster = cells[1];
     recordRow(chips, cells, stamp);
     rows.push(row);
@@ -665,10 +678,13 @@ function dispatch() {
       return 2;
     }
     const lines = readFileSync(args[1], 'utf8').split('\n');
-    const rounds = roundsSince(lines);
-    const cap = roundCap();
-    console.info(`${rounds} panel round(s) since the last restart; the cap is ${cap}`);
-    return rounds >= cap ? 1 : 0;
+    const round = roundState(lines);
+    console.info(`${round.rounds} panel round(s) since the last restart, the last applying ${round.applied} critical finding(s); the cap is ${roundCap()}, plus one round after a round that applies ${EXTRA_ROUND_FIXES} or more`);
+    if (pastCap(round)) {
+      console.error(capMessage(round));
+      return 1;
+    }
+    return 0;
   }
   if (args[0] === 'chips') {
     const fetch = args.includes('--fetch');

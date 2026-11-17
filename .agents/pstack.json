@@ -15,7 +15,6 @@
     "FAST_CHECK_SEED=random"
   ],
   "maxEffort": "xhigh",
-  "maxRounds": 3,
   "sourceless": [
     "zbeyens",
     "felixfeng33"
@@ -299,7 +298,7 @@
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
       ".agents/pstack/seats.mjs": "dfb969ef37ea689cf6538974172994050012dabc8cfad0012d3d5c839caa3b40",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
-      ".agents/pstack/decisions-check.mjs": "6c167e67f5339fc72825c6bd8c5c0bd7f0d808d603a34860ba2fa106446c52e8",
+      ".agents/pstack/decisions-check.mjs": "32c8f235ed961b10a9f6e94f12f9b3d1d3ee008f79d5b6ae1fa5d02cf19b94f7",
       ".agents/pstack/levels.mjs": "6377cf1ed1de0ddedf9d926e22203ab0e98c880add339c6611627dbadfe17044",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "a5cbac2e60f285addaa9c69b7b095586cf44cad3462146b194250c7dd976fabf",
@@ -320,14 +319,14 @@
       ".agents/pstack/rules/long-runs.md": "caaf2104f1102653aaa09970bfab9b27d2590697c9ac3637b87205f502d4a304",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "191c4a0cb993837137a0dfe4e40e80cfc00300248912865a14048e5f0ccf2a0e",
-      ".agents/pstack/rules/panel.md": "75c9ba71acb1a75ae56149881a551e34a9df6f5c7fe2141e599040c9d9242c4a",
+      ".agents/pstack/rules/panel.md": "f0e1998368346ce16e52bce0fc201afa78d05b3de7f6413a5650793853faa87c",
       ".agents/pstack/rules/reflect.md": "4096109574ae3502ce54b395ea35dd185e7c167fac0b147e251947c961b28719",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "337fec7e2ca88eb45b508905c148e9e44c6194b1ca4b81346c9b3d342c097848",
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "b964356b02c131872a3ae49e4ae151d7d4c45cdc"
+    "source": "77e48fc642db800e47428682a5e6f8a1b03f56a7"
   },
   "pageTopic": {
     "field": "review_scopes",
