@@ -40,7 +40,7 @@ export type HistoryGateAnswer =
       root: RootKey;
       status: 'refused';
     }>
-  | Readonly<{ root: RootKey; status: 'open'; view: Editor }>;
+  | Readonly<{ status: 'open'; view: Editor }>;
 
 type Reach = 'hidden' | 'reached' | 'read-only';
 
@@ -112,12 +112,12 @@ const judgeHistoryHead = (
   if (head === null) return { answer: EMPTY_GATE, owners: null };
 
   const openThroughUsedView = (root: RootKey): HistoryGateAnswer => {
-    if (from) return { root, status: 'open', view: from };
+    if (from) return { status: 'open', view: from };
 
     const { shown, view } = readLatestShownWritableView(owner, presentation);
 
     return view
-      ? { root, status: 'open', view }
+      ? { status: 'open', view }
       : { reason: shown ? 'read-only' : 'hidden', root, status: 'refused' };
   };
 

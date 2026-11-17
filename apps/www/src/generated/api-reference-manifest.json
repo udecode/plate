@@ -18499,12 +18499,12 @@
         },
         "platejs/react:EditorHistoryController": {
           "aliases": [],
-          "documentation": "Undo/redo state and command handlers for one editor root.",
+          "documentation": "Undo/redo availability and command handlers for the document's history.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditorHistoryController",
           "runtime": false,
-          "signature": "type EditorHistoryController = {\n  canRedo: boolean;\n  canUndo: boolean;\n  onKeyDown: (event: KeyboardEvent$1) => void;\n  pending: HistoryDirection | null;\n  redo: () => void;\n  /**\n   * The root the next undo changes, or waits for while no shown `Editable`\n   * can edit it. `undefined` for the primary document, for a change that\n   * touches no root and with nothing to undo. With `editor` or `root`, the\n   * root they name.\n   */\n  root: RootKey | undefined;\n  undo: () => void;\n};",
+          "signature": "type EditorHistoryController = {\n  canRedo: boolean;\n  canUndo: boolean;\n  onKeyDown: (event: KeyboardEvent$1) => void;\n  pending: HistoryDirection | null;\n  redo: () => void;\n  undo: () => void;\n};",
           "source": null,
           "typeParameters": []
         },

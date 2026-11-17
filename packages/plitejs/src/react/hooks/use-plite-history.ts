@@ -20,10 +20,10 @@ import {
   type HistoryGateAnswer,
   readHistoryGate,
 } from '../editable/mutation-history';
-import { failInvariant, toInternalRoot } from '../editable/runtime-editor-api';
+import { failInvariant } from '../editable/runtime-editor-api';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { Editor } from '../plugin/with-react';
-import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
+import { MAIN_ROOT_KEY } from '../root-key';
 import { useEditorRuntimeState } from './use-editor-runtime-state';
 import { useEditorViewState } from './use-editor-view-state';
 import { useGenericSelector } from './use-generic-selector';
@@ -47,20 +47,13 @@ export type UseEditorHistoryOptions<TRoot extends RootKey = RootKey> = {
     }
 );
 
-/** Undo/redo state and command handlers for one editor root. */
+/** Undo/redo availability and command handlers for the document's history. */
 export type EditorHistoryController = {
   canRedo: boolean;
   canUndo: boolean;
   onKeyDown: (event: KeyboardEvent) => void;
   pending: HistoryDirection | null;
   redo: () => void;
-  /**
-   * The root the next undo changes, or waits for while no shown `Editable`
-   * can edit it. `undefined` for the primary document, for a change that
-   * touches no root and with nothing to undo. With `editor` or `root`, the
-   * root they name.
-   */
-  root: RootKey | undefined;
   undo: () => void;
 };
 
@@ -82,16 +75,11 @@ const readUncheckedAnswer = (editor: Editor, direction: HistoryDirection) =>
 const isReady = (answer: HistoryAnswer | undefined) =>
   answer?.status === 'open' || answer?.status === 'unchecked';
 
+const openView = (answer: HistoryAnswer | undefined) =>
+  answer?.status === 'open' ? (answer.view as ReactRuntimeEditor) : undefined;
+
 const sameGateAnswer = (a: HistoryAnswer, b: HistoryAnswer) =>
-  a === b ||
-  (a.status === 'open' &&
-    b.status === 'open' &&
-    a.root === b.root &&
-    a.view === b.view) ||
-  (a.status === 'refused' &&
-    b.status === 'refused' &&
-    a.reason === b.reason &&
-    a.root === b.root);
+  a === b || (a.status === b.status && openView(a) === openView(b));
 
 const historyGatesEquality = (a: HistoryGates | null, b: HistoryGates | null) =>
   a === b ||
@@ -100,9 +88,6 @@ const historyGatesEquality = (a: HistoryGates | null, b: HistoryGates | null) =>
     a.presentation === b.presentation &&
     sameGateAnswer(a.redo, b.redo) &&
     sameGateAnswer(a.undo, b.undo));
-
-const openView = (answer: HistoryAnswer | undefined) =>
-  answer?.status === 'open' ? (answer.view as ReactRuntimeEditor) : undefined;
 
 const selectHistoryPending = (state: unknown): HistoryDirection | null =>
   (
@@ -190,11 +175,6 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
     };
   }, [presentation, source, updateGates]);
 
-  const root = providedEditor
-    ? toInternalRoot(providedEditor.read.view.root())
-    : (fixedRoot ??
-      (gates && 'root' in gates.undo ? gates.undo.root : MAIN_ROOT_KEY));
-  const publicRoot = toPublicRootOption(root);
   const historyEditor = follows
     ? (openView(gates?.undo) ?? openView(gates?.redo))
     : fixedView;
@@ -267,14 +247,12 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
       onKeyDown,
       pending,
       redo,
-      root: publicRoot,
       undo,
     }),
     [
       composing,
       onKeyDown,
       pending,
-      publicRoot,
       readOnly,
       redo,
       redoReady,
