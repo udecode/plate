@@ -29,6 +29,10 @@ import { getViewPresentation } from '../../editor-runtime-view';
 import { getDefined } from '../../internal/get-defined';
 import { dividesTextCell } from '../../transforms-node/split-nodes';
 import {
+  projectedHistoryRange,
+  watchProjectedHistoryRanges,
+} from '../history-step-views';
+import {
   ReactEditor,
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
@@ -39,7 +43,6 @@ import {
   createMainRootPliteViewSelection,
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
-  savePliteViewSelectionHistoryEntry,
   writePliteViewSelection,
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
@@ -294,9 +297,11 @@ const applyProjectedViewSelectionTextCommand = ({
   const { target } = resolution;
   let applied = false;
 
+  watchProjectedHistoryRanges(editor);
   editor.update(() => {
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
+    tx.annotations.set(projectedHistoryRange, viewSelection);
     if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
     deleteProjectedRangesToStart(editor, target, deleteFragmentIn(editor));
 
@@ -309,10 +314,6 @@ const applyProjectedViewSelectionTextCommand = ({
     applied = true;
   });
   if (!applied) return true;
-  savePliteViewSelectionHistoryEntry(editor, {
-    redo: null,
-    undo: viewSelection,
-  });
   writePliteViewSelection(editor, null);
 
   return true;
@@ -385,17 +386,18 @@ const applyProjectedViewSelectionDataCommand = ({
   });
   if (!pasted) return true;
 
+  watchProjectedHistoryRanges(editor);
   const landed = editor.update({ tags: 'paste' }, () => {
+    getDefined(getActiveEditorTransaction(editor)).annotations.set(
+      projectedHistoryRange,
+      viewSelection
+    );
     applyTransactionSpec(runtimeEditor, pasted);
 
     return true;
   });
 
   if (!landed || pasted.changes.empty) return landed;
-  savePliteViewSelectionHistoryEntry(editor, {
-    redo: null,
-    undo: viewSelection,
-  });
   writePliteViewSelection(editor, null);
 
   return true;
@@ -427,6 +429,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
   const { target } = resolution;
   let applied = false;
 
+  watchProjectedHistoryRanges(editor);
   editor.update(() => {
     if (
       kind !== 'soft' &&
@@ -439,6 +442,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
     }
 
     const tx = getDefined(getActiveEditorTransaction(editor));
+    tx.annotations.set(projectedHistoryRange, viewSelection);
     deleteProjectedRanges(target.ranges, deleteFragmentIn(editor));
 
     tx.selection.set({
@@ -480,10 +484,6 @@ const applyProjectedViewSelectionLineBreakCommand = ({
     });
   });
   if (!applied) return true;
-  savePliteViewSelectionHistoryEntry(editor, {
-    redo: null,
-    undo: viewSelection,
-  });
   writePliteViewSelection(editor, null);
 
   return true;

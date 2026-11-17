@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useMemo,
+  useInsertionEffect,
   useRef,
   useState,
 } from 'react';
@@ -47,9 +48,13 @@ import {
   getViewPresentation,
   type ViewPolicyTarget,
 } from '../../editor-runtime-view';
+import type { Editor } from '../../interfaces/editor';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { PliteEditableRootContext } from '../context';
-import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
+import {
+  getMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntimes,
+} from '../editable/editable-dom-runtime';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -62,6 +67,10 @@ import {
 } from '../editable/runtime-editor-api';
 import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
 import { subscribeTypedText } from '../editable/typed-text';
+import {
+  createHistoryStepViews,
+  type HistoryStepSlot,
+} from '../history-step-views';
 import {
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
@@ -93,6 +102,23 @@ export type PliteContentRootOwner = {
   childRoot: RootKey;
   ownerPath: Path;
   ownerRoot: RootKey;
+};
+
+const findPaneOfView = (runtime: ReactEditorType, view: Editor) => {
+  const key = getEditorRuntime(view);
+  const panes = getMountedEditableDOMRuntimes(runtime).filter(
+    (pane) => getEditorRuntime(pane.editor) === key
+  );
+
+  if (panes.length < 2) return panes[0] ?? null;
+
+  return (
+    panes.find((pane) =>
+      pane.rootRef.current?.contains(
+        pane.rootRef.current.ownerDocument.activeElement
+      )
+    ) ?? null
+  );
 };
 
 const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
@@ -148,8 +174,10 @@ type PliteRuntimeContextValue = {
   presentation: ViewPresentation | null;
   registerContentRootOwner: (
     editor: MountedViewEditor,
-    owner: PliteContentRootOwner
+    owner: PliteContentRootOwner,
+    slot: HistoryStepSlot
   ) => () => void;
+  registerHistoryStepView: (editor: MountedViewEditor, root: RootKey) => void;
   registerViewEditor: (editor: MountedViewEditor, root: RootKey) => () => void;
   runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
@@ -395,6 +423,9 @@ export function EditorRuntimeProvider({
     )
   );
   const reactEditor = toReactRuntimeEditor(runtime);
+  const [historyStepViews] = useState(() =>
+    createHistoryStepViews(runtime, (view) => findPaneOfView(runtime, view))
+  );
   const contentRootOwnersRef = useRef(
     new Map<typeof reactEditor, PliteContentRootOwner>()
   );
@@ -477,12 +508,17 @@ export function EditorRuntimeProvider({
     [runtime]
   );
   const registerContentRootOwner = useCallback(
-    (editor: typeof reactEditor, owner: PliteContentRootOwner) => {
+    (
+      editor: typeof reactEditor,
+      owner: PliteContentRootOwner,
+      slot: HistoryStepSlot
+    ) => {
       const ownerViewEditors = presentationMap(
         contentRootOwnerViewEditorsRef.current,
         getViewPresentation(editor)
       );
 
+      historyStepViews.registerSlot(editor, slot);
       contentRootOwnersRef.current.set(editor, owner);
       ownerViewEditors.set(getContentRootOwnerKey(owner), editor);
 
@@ -493,8 +529,11 @@ export function EditorRuntimeProvider({
         }
       };
     },
-    []
+    [historyStepViews]
   );
+  // Insertion effects survive StrictMode replays and Activity hides, so the
+  // recorder stays subscribed until the provider unmounts.
+  useInsertionEffect(() => historyStepViews.subscribe(), [historyStepViews]);
   const getContentRootOwnerViewEditor = useCallback(
     (owner: PliteContentRootOwner, presentation: ViewPresentation | null) => {
       const key = getContentRootOwnerKey(owner);
@@ -582,6 +621,7 @@ export function EditorRuntimeProvider({
       getRootTarget: readProviderRootTarget,
       getView,
       registerContentRootOwner,
+      registerHistoryStepView: historyStepViews.registerView,
       registerViewEditor,
       runtime,
       selectorContext,
@@ -592,6 +632,7 @@ export function EditorRuntimeProvider({
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getView,
+      historyStepViews,
       readProviderRootTarget,
       registerContentRootOwner,
       registerViewEditor,

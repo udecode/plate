@@ -4,16 +4,12 @@ import {
   getEditorRuntimeOwner,
   hasEditorRuntime,
 } from '../core/editor-runtime';
-import {
-  getSetSite,
-  readEditorHistoryHeadIdentity,
-} from '../core/public-state';
+import { getSetSite } from '../core/public-state';
 import {
   getPlacementGeneration,
   subscribeCommittedPlacement,
 } from '../core/view-carets';
 import { getViewPresentation } from '../editor-runtime-view';
-import type { AnyEditor } from '../interfaces/editor';
 import { failInvariant } from './editable/runtime-editor-api';
 import {
   clonePliteViewBoundaryPointWithOwner,
@@ -58,13 +54,6 @@ type PliteViewSelectionNotification = Readonly<{
 const VIEW_SELECTION_LISTENERS = new WeakMap<
   object,
   Set<(notification?: PliteViewSelectionNotification) => void>
->();
-const HISTORY_GROUP_TO_VIEW_SELECTION = new WeakMap<
-  object,
-  Readonly<{
-    redo: PliteViewSelection | null;
-    undo: PliteViewSelection | null;
-  }>
 >();
 
 const cloneBoundaryPoint = clonePliteViewBoundaryPointWithOwner;
@@ -405,46 +394,4 @@ export const subscribePliteViewSelection = (
       VIEW_SELECTION_LISTENERS.delete(key);
     }
   };
-};
-
-type HistoryDirection = 'redo' | 'undo';
-
-type EditorWithHistory = {
-  read: <T>(fn: (state: unknown) => T) => T;
-};
-
-const getHistoryGroup = (
-  editor: EditorWithHistory,
-  direction: HistoryDirection
-): object | null =>
-  readEditorHistoryHeadIdentity(editor as AnyEditor, direction);
-
-export const savePliteViewSelectionHistoryEntry = (
-  editor: EditorWithHistory,
-  entry: Readonly<{
-    redo: PliteViewSelection | null;
-    undo: PliteViewSelection | null;
-  }>
-) => {
-  const group = getHistoryGroup(editor, 'undo');
-
-  if (group) {
-    HISTORY_GROUP_TO_VIEW_SELECTION.set(group, entry);
-  }
-};
-
-export const readPliteViewSelectionHistoryGroup = (
-  group: object,
-  direction: HistoryDirection
-) => HISTORY_GROUP_TO_VIEW_SELECTION.get(group)?.[direction];
-
-export const readPliteViewSelectionHistoryEntry = (
-  editor: EditorWithHistory,
-  direction: HistoryDirection
-): PliteViewSelection | null | undefined => {
-  const group = getHistoryGroup(editor, direction);
-
-  return group
-    ? readPliteViewSelectionHistoryGroup(group, direction)
-    : undefined;
 };

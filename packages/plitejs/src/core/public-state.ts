@@ -1000,9 +1000,22 @@ export type EditorHistoryStep = Readonly<{
   id: string;
 }>;
 
+export type EditorHistoryEdge = Readonly<{
+  root: string | undefined;
+  selection: Selection;
+}>;
+
+export type EditorHistoryEntry = Readonly<{
+  after: EditorHistoryEdge;
+  before: EditorHistoryEdge;
+  entry: object;
+  how: 'merge' | 'push';
+  made: Editor;
+}>;
+
 type EditorHistoryRuntime = Readonly<{
+  entryOf: (commit: EditorCommit) => EditorHistoryEntry | null;
   forgetStep: (step: string) => boolean;
-  head: (direction: 'redo' | 'undo') => object | null;
   mintStepOf: (commit: EditorCommit) => EditorHistoryStep | null;
   replaceUndoStep: (
     step: string,
@@ -1036,12 +1049,11 @@ export const registerEditorHistoryRuntime = (
   };
 };
 
-/** Read the private logical identity of the next replay batch. */
-export const readEditorHistoryHeadIdentity = (
+export const readEditorCommitHistoryEntry = (
   editor: Editor,
-  direction: 'redo' | 'undo'
+  commit: EditorCommit
 ) =>
-  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.head(direction) ??
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.entryOf(commit) ??
   null;
 
 export const readEditorCommitHistoryStep = (

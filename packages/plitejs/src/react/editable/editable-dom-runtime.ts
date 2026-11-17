@@ -51,6 +51,7 @@ import {
 } from '../../dom/internal';
 import { isDOMNode } from '../../dom/utils/dom';
 import type { EditableViewportRuntime } from '../components/editable';
+import { readHistoryStepUndoRange } from '../history-step-views';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import {
@@ -61,7 +62,6 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
   readPliteViewSelection,
-  readPliteViewSelectionHistoryGroup,
   writePliteViewSelection,
 } from '../view-selection';
 import { isSelectionViewportBacked } from '../viewport-commands';
@@ -1409,7 +1409,7 @@ export class EditableDOMRuntime {
     this.observeHistoryReplay(direction, () =>
       writePliteViewSelection(
         this.editorValue,
-        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null,
+        direction === 'undo' ? readHistoryStepUndoRange(receipt.group) : null,
         { placedAt: watched.placedAt }
       )
     );

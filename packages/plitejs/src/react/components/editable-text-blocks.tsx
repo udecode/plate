@@ -408,6 +408,7 @@ const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
           <EditableContentRootSlot
             element={props.element}
             options={options}
+            ownerKey={props.nodeKey}
             ownerPath={props.ownerPath}
             renderers={
               {
@@ -429,12 +430,14 @@ const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
 function EditableContentRootSlot({
   element,
   options,
+  ownerKey,
   ownerPath,
   renderers,
   slot,
 }: {
   element: ElementNode;
   options: EditableContentRootSlotOptions;
+  ownerKey: string;
   ownerPath: Path;
   renderers: EditableContentRootSlotRenderers;
   slot: string;
@@ -476,6 +479,8 @@ function EditableContentRootSlot({
       >
         <EditableContentRootView
           options={options}
+          ownerEditor={ownerEditor}
+          ownerKey={ownerKey}
           ownerPath={ownerPath}
           ownerRoot={ownerRoot}
           renderers={renderers}
@@ -489,6 +494,8 @@ function EditableContentRootSlot({
 
 function EditableContentRootView({
   options,
+  ownerEditor,
+  ownerKey,
   ownerPath,
   ownerRoot,
   renderers,
@@ -496,6 +503,8 @@ function EditableContentRootView({
   slot,
 }: {
   options: EditableContentRootSlotOptions;
+  ownerEditor: Editor;
+  ownerKey: string;
   ownerPath: Path;
   ownerRoot: RootKey;
   renderers: EditableContentRootSlotRenderers;
@@ -527,14 +536,33 @@ function EditableContentRootView({
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
   const { getMountedViewEditor, registerContentRootOwner } =
     useRequiredPliteRuntimeContext();
+  const passesNodeSelectionFocus = nodeSelectionFocus !== undefined;
+  const renderedBy = useEditableDOMRuntime();
   useIsomorphicLayoutEffect(
     () =>
-      registerContentRootOwner(editor, {
-        childRoot: root,
-        ownerPath,
-        ownerRoot,
-      }),
-    [editor, ownerPath, ownerRoot, registerContentRootOwner, root]
+      registerContentRootOwner(
+        editor,
+        { childRoot: root, ownerPath, ownerRoot },
+        {
+          nodeSelectionFocus: passesNodeSelectionFocus,
+          owner: ownerKey,
+          parent: ownerEditor,
+          renderedBy,
+          slot,
+        }
+      ),
+    [
+      editor,
+      ownerEditor,
+      ownerKey,
+      ownerPath,
+      ownerRoot,
+      passesNodeSelectionFocus,
+      registerContentRootOwner,
+      renderedBy,
+      root,
+      slot,
+    ]
   );
   const externalMouseGestureRef = React.useRef(false);
   const getViewEditor = React.useCallback(

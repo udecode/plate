@@ -31,6 +31,7 @@ import {
   mergeAnchorHistoryRecovery,
   stageAnchorHistoryRecovery,
 } from '../core/anchor-state';
+import { getAuthoredUpdateView } from '../core/authored-runtime';
 import {
   type CarriedRun,
   carriesRun,
@@ -77,6 +78,7 @@ import {
   getEditorUpdateRoot,
   isBuildingTransactionSpec,
   isInTransaction,
+  type EditorHistoryEntry,
   type EditorHistoryReplayReceipt,
   type EditorHistoryStep,
   recordEditorHistoryReplayReceipt,
@@ -244,6 +246,9 @@ const COMMIT_STEPS = new WeakMap<
   EditorCommit,
   Readonly<{ how: EditorHistoryStep['how']; identity: object }>
 >();
+// Keys every saved commit. COMMIT_STEPS keys a merge only into a step sync
+// already knows, because any other merge there would mint an id sync never reads.
+const COMMIT_ENTRIES = new WeakMap<EditorCommit, EditorHistoryEntry>();
 const commitStepWith = (
   commit: EditorCommit,
   idOf: (identity: object) => string | undefined
@@ -1078,7 +1083,28 @@ const createHistoryPlugin = <
                 effectsCompatible
               )));
 
+    const savedEdges = {
+      after: {
+        root: preparedBatch.selectionAfterRoot,
+        selection: preparedBatch.selectionAfter,
+      },
+      before: {
+        root: preparedBatch.selectionBeforeRoot,
+        selection: preparedBatch.selectionBefore,
+      },
+    };
+
     if (lastEntry && merge) {
+      COMMIT_ENTRIES.set(commit, {
+        after: savedEdges.after,
+        before: {
+          root: lastEntry.batch.selectionBeforeRoot,
+          selection: lastEntry.batch.selectionBefore,
+        },
+        entry: lastEntry.identity,
+        how: 'merge',
+        made: getAuthoredUpdateView(editor),
+      });
       if (knownHistoryStepId(lastEntry.identity)) {
         COMMIT_STEPS.set(commit, {
           how: 'merge',
@@ -1163,19 +1189,24 @@ const createHistoryPlugin = <
           : {}),
       });
     } else {
-      COMMIT_STEPS.set(commit, {
+      const identity = writeHistory(editor, 'undos', preparedBatch, after, {
+        anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
+        carets,
+        clearRedos: true,
+        group:
+          settles && prepared.group
+            ? Object.freeze({ ...prepared.group, closed: true })
+            : prepared.group,
+        recovery: anchorCapture?.recovery ?? null,
+        ...(takesBackCommit ? { restores: before } : {}),
+      });
+
+      COMMIT_STEPS.set(commit, { how: 'push', identity });
+      COMMIT_ENTRIES.set(commit, {
+        ...savedEdges,
+        entry: identity,
         how: 'push',
-        identity: writeHistory(editor, 'undos', preparedBatch, after, {
-          anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
-          carets,
-          clearRedos: true,
-          group:
-            settles && prepared.group
-              ? Object.freeze({ ...prepared.group, closed: true })
-              : prepared.group,
-          recovery: anchorCapture?.recovery ?? null,
-          ...(takesBackCommit ? { restores: before } : {}),
-        }),
+        made: getAuthoredUpdateView(editor),
       });
     }
     if (explicitPush || preparedBatch.effects.length > 0) {
@@ -1536,10 +1567,8 @@ const createHistoryPlugin = <
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       context.onCleanup(
         registerEditorHistoryRuntime(editor, {
+          entryOf: (commit) => COMMIT_ENTRIES.get(commit) ?? null,
           forgetStep: (step) => forgetHistoryStep(editor, step),
-          head: (direction) =>
-            peekHistoryEntry(editor, direction === 'undo' ? 'undos' : 'redos')
-              ?.identity ?? null,
           mintStepOf: (commit) => commitStepWith(commit, historyStepId),
           replaceUndoStep: (step, change, matches) =>
             replaceUndoStep(editor, step, change, matches),

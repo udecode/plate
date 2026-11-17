@@ -306,7 +306,8 @@ export const EditorRuntimeView = <
   presentation,
 }: EditorRuntimeViewProps<E>) => {
   const runtimeContext = useRequiredPliteRuntimeContext();
-  const { getView, registerViewEditor } = runtimeContext;
+  const { getView, registerHistoryStepView, registerViewEditor } =
+    runtimeContext;
   const parentEditor = useOptionalEditorContext();
   const inheritedTextFlow = useContext(ImperativeTextFlowContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
@@ -349,6 +350,10 @@ export const EditorRuntimeView = <
   }, [directEditor, reactEditor, readOnly]);
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const { focused: isFocused } = useRuntimeFocusState(reactEditor);
+  useInsertionEffect(
+    () => registerHistoryStepView(reactEditor, viewRoot),
+    [reactEditor, registerHistoryStepView, viewRoot]
+  );
   useIsomorphicLayoutEffect(
     () => registerViewEditor(reactEditor, viewRoot),
     [reactEditor, registerViewEditor, viewRoot]
