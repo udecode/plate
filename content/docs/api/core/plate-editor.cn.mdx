@@ -26,8 +26,7 @@ description: Plate 编辑器运行时的 API 参考。
 <API name="Editor">
   <APIAttributes>
     <APIItem name="id" type="string">
-      编辑器实例 id。`createEditor` 会使用传入的 `id`、已有编辑器 id，或调用
-      `nanoid()`。
+      编辑器实例 id。`createEditor` 会使用传入的 `id`，未传入时生成一个。
     </APIItem>
     <APIItem name="read" type="Editor['read']">
       通过 `editor.read.children()` 读取当前文档子节点，通过
@@ -35,7 +34,7 @@ description: Plate 编辑器运行时的 API 参考。
       读取最近发布的 commit。
     </APIItem>
     <APIItem name="api" type="Editor['api']">
-      Core Plate API、显式编辑器级 API，以及按插件 name 推断的已安装插件 API。
+      Core Plate API，以及按插件 name 推断的已安装插件 API。
     </APIItem>
     <APIItem name="update" type="Editor['update']">
       文档、选择、历史和插件命令的事务入口。
@@ -144,8 +143,7 @@ export function useBasicEditor() {
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Runtime 状态        | 保留 Plate `editor.id`，并在构造成功后固定 `editor.userId`。                                                                   |
 | 插件访问            | 将已安装 API 发布到 `editor.api[name]`，并通过 `editor.plugin(Plugin)` 解析描述符拥有的 portal。                       |
-| Core plugins        | 解析 core plugins，用相同 name 的自定义插件替换 core plugins，并解析 root plugin。                                             |
-| Components          | 将 `components` 合并到 root-plugin component overrides。                                                                       |
+| Core plugins        | 解析 core plugins，并用相同 name 的自定义插件替换 core plugins。                                                               |
 | Normalization guard | 包装 `normalizeNode`，让 `editor.api.shouldNormalizeNode(entry)` 可以跳过一次 normalization。                                  |
 | 初始值              | 除非 `skipInitialization` 为 `true`，否则通过运行时 update 路径初始化 value 和 selection。                                     |
 
@@ -153,8 +151,8 @@ export function useBasicEditor() {
 
 ## Core API
 
-核心插件在用户插件之前解析。导航反馈是 React 编辑器的默认插件，可通过
-`navigationFeedback: false` 禁用。其 API 使用 `useEditor()` 返回的已挂载编辑器。
+核心插件在用户插件之前解析。导航反馈是 React 编辑器的默认插件，可在 `plugins` 中传入
+`NavigationFeedbackPlugin.configure({ enabled: false })` 禁用。其 API 使用 `useEditor()` 返回的已挂载编辑器。
 
 <API name="Core plugin APIs">
   <APIMethods>
@@ -217,7 +215,7 @@ export function useBasicEditor() {
 ## Core 事务
 
 mutation 通过 `editor.update` 执行。Core Plate 命令位于 transaction 对象上；
-插件通过 constructor 的 `update` 字段添加 key 对应的命令。
+插件通过 `definePlugin` 的 `update` 字段添加 key 对应的命令。
 
 <API name="Core transactions">
   <APITransforms>

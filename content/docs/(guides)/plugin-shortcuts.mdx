@@ -307,16 +307,16 @@ declaration order. The first handled route wins.
 
 ## Editor-level shortcuts
 
-`createEditor({ shortcuts })` attaches shortcuts to the root plugin. Use it for editor-wide commands that do not belong to one feature plugin.
+An editor-wide command that belongs to no feature plugin goes in a small app plugin.
 
 ```tsx title="editor.ts" showLineNumbers
 import { DebugPlugin } from 'platejs';
-import { createEditor } from 'platejs/react';
+import { createEditor, definePlugin } from 'platejs/react';
 
-export const editor = createEditor({
+const WordCountPlugin = definePlugin('wordCount', {
   shortcuts: {
     reportWordCount: {
-      keys: 'mod+shift+w',
+      keys: 'mod+shift+c',
       handler: ({ editor }) => {
         const words = editor.read.text
           .string([])
@@ -333,9 +333,11 @@ export const editor = createEditor({
     },
   },
 });
+
+export const editor = createEditor({ plugins: [WordCountPlugin] });
 ```
 
-Internally this becomes a root shortcut, so plugin-owned shortcuts are still the better fit for feature-owned behavior.
+This creates the compiled shortcut ID `wordCount.reportWordCount`.
 
 ## Default shortcuts
 

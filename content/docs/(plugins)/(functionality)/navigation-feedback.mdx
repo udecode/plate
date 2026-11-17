@@ -24,19 +24,22 @@ use the [Footnote API](/docs/footnote#navigate-between-reference-and-definition)
 
 ### React plugin
 
-`NavigationFeedbackPlugin` is included in the React editor defaults. Configure
-the default duration through `navigationFeedback`:
+`NavigationFeedbackPlugin` is included in the React editor defaults. To change
+the default duration, configure the plugin in `plugins`. The configured plugin
+replaces the default one:
 
 ```tsx
-import { createEditor } from 'platejs/react';
+import { createEditor, NavigationFeedbackPlugin } from 'platejs/react';
 
 const editor = createEditor({
-  navigationFeedback: { duration: 1200 },
+  plugins: [
+    NavigationFeedbackPlugin.configure({ initialState: { duration: 1200 } }),
+  ],
 });
 ```
 
-The default duration is `1600` milliseconds. Set `navigationFeedback: false`
-to disable the plugin.
+The default duration is `1600` milliseconds. Pass
+`NavigationFeedbackPlugin.configure({ enabled: false })` to disable the plugin.
 
 ### Flash a target
 
@@ -139,7 +142,7 @@ Clearing cancels the timer and returns whether this view had an active target.
 
 <API name="NavigationFeedbackPlugin">
 <APIOptions>
-  <APIItem name="duration" type="number">
+  <APIItem name="initialState.duration" type="number" optional>
     Default feedback duration in milliseconds.
     - **Default:** `1600`
   </APIItem>

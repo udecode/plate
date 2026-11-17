@@ -23,18 +23,21 @@ description: 在目录、脚注、搜索或自定义跳转后高亮目标元素�
 
 ### React 插件
 
-`NavigationFeedbackPlugin` 包含在 React 编辑器的默认插件中。通过
-`navigationFeedback` 配置默认时长：
+`NavigationFeedbackPlugin` 包含在 React 编辑器的默认插件中。要修改默认时长，
+在 `plugins` 中配置该插件，配置后的插件会替换默认插件：
 
 ```tsx
-import { createEditor } from 'platejs/react';
+import { createEditor, NavigationFeedbackPlugin } from 'platejs/react';
 
 const editor = createEditor({
-  navigationFeedback: { duration: 1200 },
+  plugins: [
+    NavigationFeedbackPlugin.configure({ initialState: { duration: 1200 } }),
+  ],
 });
 ```
 
-默认时长为 `1600` 毫秒。设置 `navigationFeedback: false` 可禁用插件。
+默认时长为 `1600` 毫秒。传入 `NavigationFeedbackPlugin.configure({ enabled: false })`
+可禁用插件。
 
 ### 高亮目标
 
@@ -105,7 +108,7 @@ editor.api.navigation.clear();
 
 <API name="NavigationFeedbackPlugin">
 <APIOptions>
-  <APIItem name="duration" type="number">
+  <APIItem name="initialState.duration" type="number" optional>
     默认反馈时长，单位为毫秒。
     - **默认值：** `1600`
   </APIItem>

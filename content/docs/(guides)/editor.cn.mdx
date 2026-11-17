@@ -698,17 +698,18 @@ const editor = createEditor({
 
 对于大型文档（如 playground 值），规范化可能需要几十毫秒。
 
-### 自动选择
+### 初始选区
 
-配置编辑器自动选择范围：
+设置光标的初始位置：
 
 ```ts
 const editor = createEditor({
-  autoSelect: "end", // 或 'start'，或 true
+  initialSelection: 'end', // 或 'start'、一个选区，或 null 表示不设置光标
 });
 ```
 
-自动选择可以在不聚焦编辑器的情况下选择文本。
+初始光标不会聚焦编辑器。省略 `initialSelection` 时，使用持久化 `initialValue`
+保存的光标。
 
 ### 组件
 

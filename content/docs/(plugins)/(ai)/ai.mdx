@@ -167,7 +167,7 @@ export async function POST(req: Request) {
 
   const editor = createEditor({
     plugins: BaseEditorKit,
-    selection: ctx.selection,
+    initialSelection: ctx.selection,
     initialValue: ctx.children,
   });
 

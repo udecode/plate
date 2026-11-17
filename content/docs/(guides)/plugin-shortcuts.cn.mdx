@@ -266,28 +266,37 @@ Plate 按快捷键优先级、插件应用顺序、声明顺序排列编译表�
 
 ## 编辑器级快捷键
 
-`createEditor({ shortcuts })` 把快捷键附加到根插件。仅将它用于不属于任何功能插件的编辑器级命令。
+不属于任何功能插件的编辑器级命令放在一个小的应用插件中。
 
 ```tsx title="editor.ts" showLineNumbers
-import { createEditor } from 'platejs/react';
+import { DebugPlugin } from 'platejs';
+import { createEditor, definePlugin } from 'platejs/react';
 
-export const editor = createEditor({
+const WordCountPlugin = definePlugin('wordCount', {
   shortcuts: {
     reportWordCount: {
-      keys: 'mod+shift+w',
+      keys: 'mod+shift+c',
       handler: ({ editor }) => {
-        const words = editor.read.text.string([]).trim().split(/\s+/).filter(Boolean);
+        const words = editor.read.text
+          .string([])
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
 
-        editor.api.debug.info('Word count', words.length);
+        editor
+          .plugin(DebugPlugin)
+          .api.info('Word count', undefined, words.length);
 
         return true;
       },
     },
   },
 });
+
+export const editor = createEditor({ plugins: [WordCountPlugin] });
 ```
 
-功能行为应优先由对应插件拥有快捷键。
+编译后的标识是 `wordCount.reportWordCount`。
 
 ## 默认快捷键
 

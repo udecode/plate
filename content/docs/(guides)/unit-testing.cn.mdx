@@ -89,7 +89,7 @@ it('should apply bold formatting', () => {
   const editor = createEditor({
     plugins: [BoldPlugin],
     initialValue: input.children,
-    selection: input.selection,
+    initialSelection: input.selection,
   });
 
   editor.update((tx) => {
@@ -124,12 +124,10 @@ it('should collapse selection on backspace', () => {
 
   const editor = createEditor({
     initialValue: input.children,
-    selection: input.selection,
+    initialSelection: input.selection,
   });
 
-  editor.update((tx) => {
-    tx.text.deleteBackward({ unit: 'character' });
-  });
+  editor.update.fragment.delete({ direction: 'backward' });
 
   expect(editor.read.children()).toEqual(output.children);
   expect(editor.read.selection()).toEqual(
@@ -140,12 +138,13 @@ it('should collapse selection on backspace', () => {
 
 ## 测试键盘事件
 
-当你需要直接测试键盘处理程序时：
+要测试插件的键盘处理程序会在按键时运行：
 
 ```typescript
-import { createEditor, definePlugin } from 'platejs/react';
+import { createTestEditor } from '@platejs/test/react';
+import { definePlugin } from 'platejs/react';
 
-it('should call the keyDown handler', () => {
+it('should call the keyDown handler', async () => {
   const input = (
     <editor>
       <hp>
@@ -163,24 +162,14 @@ it('should call the keyDown handler', () => {
     },
   });
 
-  const editor = createEditor({
+  const [, actions] = await createTestEditor({
     initialValue: input.children,
-    selection: input.selection,
+    initialSelection: input.selection,
     plugins: [TestPlugin],
   });
 
-  // Create the keyboard event
-  const event = new KeyboardEvent('keydown', {
-    key: 'Enter',
-  }) as any;
-
-  // 通过类型化 portal 解析已安装的描述符
-  const testPlugin = editor.plugin(TestPlugin);
-
-  testPlugin.on.keyDown?.({
-    ...testPlugin,
-    event,
-  });
+  // 在已挂载的编辑器中按下 Enter
+  await actions.triggerKeyboardEvent('Enter');
 
   // Verify the handler was called
   expect(keyDownMock).toHaveBeenCalled();
@@ -213,15 +202,15 @@ describe('Table plugin', () => {
               </hp>
             </htd>
             <htd>
-              <hp></hp>
+              <hp><htext /></hp>
             </htd>
           </htr>
           <htr>
             <htd>
-              <hp></hp>
+              <hp><htext /></hp>
             </htd>
             <htd>
-              <hp></hp>
+              <hp><htext /></hp>
             </htd>
           </htr>
         </htable>
@@ -230,12 +219,12 @@ describe('Table plugin', () => {
 
     const editor = createEditor({
       initialValue: input.children,
-      selection: input.selection,
+      initialSelection: input.selection,
       plugins: [TablePlugin],
     });
 
     editor.update((tx) => {
-      tx.insert.table({ colCount: 2, rowCount: 2 });
+      tx.table.insert({ columns: 2, rows: 2 }, { select: true });
     });
 
     expect(editor.read.children()).toEqual(output.children);
@@ -275,13 +264,14 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
     const editor = createEditor({
       plugins: [
         LinkPlugin.configure({
+          inputRules: [LinkRules.autolink({ variant: 'paste' })],
           initialState: {
             keepSelectedTextOnPaste: false,
           },
         }),
       ],
       initialValue: input.children,
-      selection: input.selection,
+      initialSelection: input.selection,
     });
 
     editor.api.dom.clipboard.insertData({

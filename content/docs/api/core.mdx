@@ -29,12 +29,13 @@ block.
 
 ### `createEditor`
 
-Creates a new `Editor` with the supplied plugins and configuration. To render an editor you already have, pass it to `EditorRoot`. An option this table does not list throws.
+Creates a new `Editor` with the supplied plugins and configuration. To render an editor you already have, pass it to `EditorRoot`. An option this table does not list throws. Behavior such as shortcuts, handlers, rendering and API methods goes on a plugin in `plugins`.
 
 <API name="createEditor">
 <APIOptions type="CreateEditorOptions">
-  <APIItem name="id" type="any" optional>
-    Unique identifier for the editor.
+  <APIItem name="id" type="string" optional>
+    Unique identifier for the editor. Without one, the editor gets a generated
+    id.
   </APIItem>
   <APIItem name="plugins" type="P[]" optional>
     An array of editor plugins.
@@ -43,38 +44,21 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
     Synchronous initial document, persisted
     `{ document, schema, selection? }` envelope, or primary-root array. A
     document holds only `children`, `roots`, `meta` and `records`; pass a
-    selection through
-    `selection`. Use the callback when decoding needs the compiled editor model.
-    Load remote data before constructing the editor.
+    starting caret through `initialSelection`. Use the callback when decoding
+    needs the compiled editor model. Load remote data before constructing the
+    editor.
   </APIItem>
-  <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
-    Select the editor after initialization.
-    - **Default:** `false`
-    - `true` | 'end': Select the end of the editor
-    - `false`: Do not select anything
-    - `'start'`: Select the start of the editor
-  </APIItem>
-  <APIItem name="affinity" type="boolean" optional>
-    Enable mark and element affinity.
-    - **Default:** `true`
+  <APIItem name="initialSelection" type="Selection | 'start' | 'end'" optional>
+    Where the caret starts.
+    - a [selection](/docs/api/selection): start there
+    - `'start'` or `'end'`: start at the start or end of the document
+    - `null`: start with no caret, even when `initialValue` is a persisted
+      envelope that saved one
+    - omitted: start at the caret a persisted `initialValue` saved, or with no
+      caret
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     Maximum character count for user-facing text, fragment, and node insertions.
-  </APIItem>
-  <APIItem name="navigationFeedback" type="object | boolean" optional>
-    Configuration for the built-in navigation feedback plugin.
-    <APISubList>
-      <APISubListItem parent="navigationFeedback" name="duration" type="number" optional>
-        Default flash duration in milliseconds.
-        - **Default:** `1600`
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="selection" type="TSelection" optional>
-    Initial selection for the editor.
-  </APIItem>
-  <APIItem name="initialSelection" type="TSelection" optional>
-    Initial model selection, used when `selection` is not set.
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
     Application schema policy and optional named persisted lineage. Omit `root`
@@ -98,34 +82,9 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
       message names its source, with the original error as `cause`. Where
       `reportError` does not exist, it goes to `console.error`.
   </APIItem>
-  <APIItem name="api" type="object" optional>
-    API methods for the editor.
-  </APIItem>
-  <APIItem name="decorate" type="function" optional>
-    Decoration function for the editor.
-  </APIItem>
-  <APIItem name="on" type="PluginChangeHandlers & DOMHandlers" optional>
-    Lifecycle and DOM events. Child names are prefixless, such as `commit`,
-    `nodeChange`, `keyDown`, and `paste`.
-  </APIItem>
-  <APIItem name="inject" type="object" optional>
-    Injection configuration for the editor.
-  </APIItem>
-  <APIItem name="initialState" type="object" optional>
-    Initial state of the editor's root plugin.
-  </APIItem>
-  <APIItem name="override" type="object" optional>
-    Override configuration for the editor.
-  </APIItem>
   <APIItem name="readOnly" type="boolean" optional>
     Editor read-only initial state. For dynamic value, use
     `EditorRoot.readOnly` prop.
-  </APIItem>
-  <APIItem name="render" type="object" optional>
-    Render functions for the editor.
-  </APIItem>
-  <APIItem name="shortcuts" type="object" optional>
-    Keyboard shortcuts for the editor.
   </APIItem>
   <APIItem name="userId" type="string" optional>
     The user this editor writes and comments as, recorded as the author of

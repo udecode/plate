@@ -156,8 +156,9 @@ target or an unmounted editor. For selection-only changes inside a transaction,
 use `tx.footnote.selectDefinition` or `tx.footnote.selectReference`; each
 returns the resolved `{ targetPath, point }` target or `null`.
 
-With `navigationFeedback: false`, footnote navigation still scrolls to the
-target, and selects and focuses it in an editable view, without a highlight.
+With `NavigationFeedbackPlugin.configure({ enabled: false })` in `plugins`,
+footnote navigation still scrolls to the target, and selects and focuses it in
+an editable view, without a highlight.
 
 In a read-only view, the `FootnoteKit` components jump on a plain click or
 Enter. A reference jumps to its note. A note's back link jumps to its reference,

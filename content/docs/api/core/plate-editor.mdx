@@ -25,7 +25,7 @@ The editor owns document reads, transactions, typed plugin access, DOM services,
   <APIAttributes>
     <APIItem name="id" type="string">
       Unique editor instance id. `createEditor` uses the provided `id` or
-      creates one with `nanoid()`.
+      creates one.
     </APIItem>
     <APIItem name="read" type="Editor['read']">
       Read current document children with `editor.read.children()`, selection
@@ -33,8 +33,8 @@ The editor owns document reads, transactions, typed plugin access, DOM services,
       `editor.read.lastCommit()`.
     </APIItem>
     <APIItem name="api" type="Editor['api']">
-      Core Plate APIs, explicit editor-wide APIs, and installed plugin APIs
-      inferred under their plugin names.
+      Core Plate APIs and installed plugin APIs inferred under their plugin
+      names.
     </APIItem>
     <APIItem name="update" type="Editor['update']">
       Transaction entrypoint for document, selection, history, and plugin
@@ -151,8 +151,7 @@ The headless `createEditor` performs the shared setup:
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Runtime state       | Preserves Plate `editor.id` and, once construction succeeds, fixes `editor.userId`.                                                                 |
 | Plugin access       | Publishes installed APIs under `editor.api[name]` and resolves descriptor-owned portals through `editor.plugin(Plugin)`.                            |
-| Core plugins        | Resolves core plugins, replaces core plugins with custom plugins that share the same name, and resolves the root plugin.                             |
-| Components          | Merges `components` into root-plugin component overrides.                                                                                            |
+| Core plugins        | Resolves core plugins and replaces core plugins with custom plugins that share the same name.                                                        |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass.                                                      |
 | Initial value       | Initializes the value and selection through the runtime update path unless `skipInitialization` is `true`.                                           |
 
@@ -163,7 +162,8 @@ decoder needs the compiled plugin model.
 ## Core APIs
 
 Core plugins are resolved before user plugins. Navigation Feedback is a React
-editor default and can be disabled with `navigationFeedback: false`. Its API
+editor default and can be disabled by passing
+`NavigationFeedbackPlugin.configure({ enabled: false })` in `plugins`. Its API
 uses the mounted editor returned by `useEditor()`.
 
 <API name="Core plugin APIs">
@@ -229,7 +229,7 @@ uses the mounted editor returned by `useEditor()`.
 
 Mutations run through `editor.update`. Core Plate commands live on the
 transaction object, and plugins contribute their keyed commands through
-the constructor's `update` field.
+the `update` field of `definePlugin`.
 
 <API name="Core transactions">
   <APITransforms>

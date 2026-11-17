@@ -21,49 +21,30 @@ description: \platejs 的 API 参考文档。
 
 ### `createEditor`
 
-生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。要渲染已有的编辑器，请将其传给 `EditorRoot`。传入此表未列出的选项会抛出错误。
+生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。要渲染已有的编辑器，请将其传给 `EditorRoot`。传入此表未列出的选项会抛出错误。快捷键、事件处理、渲染和 API 方法等行为放在 `plugins` 中的插件上。
 
 <API name="createEditor">
 <APIOptions type="CreateEditorOptions">
-  <APIItem name="id" type="any" optional>
-    编辑器的唯一标识符。
+  <APIItem name="id" type="string" optional>
+    编辑器的唯一标识符。未传入时，编辑器会生成一个 id。
   </APIItem>
   <APIItem name="plugins" type="P[]" optional>
     编辑器插件数组。
   </APIItem>
   <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
     同步初始文档、持久化的 `{ document, schema, selection? }` envelope 或主 root
-    数组。文档只包含 `children`、`roots`、`meta` 和 `records`；selection 请通过 `selection`
-    传入。
+    数组。文档只包含 `children`、`roots`、`meta` 和 `records`；初始光标请通过
+    `initialSelection` 传入。
   </APIItem>
-  <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
-    初始化后是否选中编辑器。
-    - **默认值:** `false`
-    - `true` | 'end': 选中编辑器末尾
-    - `false`: 不选中任何内容
-    - `'start'`: 选中编辑器开头
-  </APIItem>
-  <APIItem name="affinity" type="boolean" optional>
-    启用 mark 和元素的 affinity。
-    - **默认值:** `true`
+  <APIItem name="initialSelection" type="Selection | 'start' | 'end'" optional>
+    光标的初始位置。
+    - [选区](/docs/api/selection)：从该选区开始
+    - `'start'` 或 `'end'`：从文档开头或末尾开始
+    - `null`：不设置光标，即使 `initialValue` 是保存了光标的持久化 envelope
+    - 省略：使用持久化 `initialValue` 保存的光标，没有时不设置光标
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     限制用户输入、片段插入和节点插入的最大字符数。
-  </APIItem>
-  <APIItem name="navigationFeedback" type="object | boolean" optional>
-    内置导航反馈插件的配置。
-    <APISubList>
-      <APISubListItem parent="navigationFeedback" name="duration" type="number" optional>
-        默认闪烁时长，单位为毫秒。
-        - **默认值:** `1600`
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="selection" type="TSelection" optional>
-    编辑器的初始选区。
-  </APIItem>
-  <APIItem name="initialSelection" type="TSelection" optional>
-    初始模型选区，未设置 `selection` 时使用。
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
     应用 schema policy 和可选的命名持久化谱系。省略 `root` 时使用标准段落 root。
@@ -85,33 +66,8 @@ description: \platejs 的 API 参考文档。
       标明来源，`cause` 为原始错误。没有 `reportError` 的环境改用
       `console.error`。
   </APIItem>
-  <APIItem name="api" type="object" optional>
-    编辑器的 API 方法。
-  </APIItem>
-  <APIItem name="decorate" type="function" optional>
-    编辑器的装饰函数。
-  </APIItem>
-  <APIItem name="on" type="PluginChangeHandlers & DOMHandlers" optional>
-    Lifecycle 和 DOM 事件。子项名称无前缀，例如 `commit`、`nodeChange`、
-    `keyDown` 和 `paste`。
-  </APIItem>
-  <APIItem name="inject" type="object" optional>
-    编辑器的注入配置。
-  </APIItem>
-  <APIItem name="initialState" type="object" optional>
-    编辑器根插件的初始状态。
-  </APIItem>
-  <APIItem name="override" type="object" optional>
-    编辑器的覆盖配置。
-  </APIItem>
   <APIItem name="readOnly" type="boolean" optional>
     编辑器的只读初始状态。对于动态值，使用 `EditorRoot.readOnly` 属性。
-  </APIItem>
-  <APIItem name="render" type="object" optional>
-    编辑器的渲染函数。
-  </APIItem>
-  <APIItem name="shortcuts" type="object" optional>
-    编辑器的键盘快捷键。
   </APIItem>
   <APIItem name="userId" type="string" optional>
     编辑器写入和评论时使用的用户，会记录为 authored changes 的作者，并可通过 `editor.userId` 读取。
