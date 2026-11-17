@@ -265,6 +265,61 @@ const percentOf = (zoom: number) => Math.round(zoom * 100);
 const clampZoom = (zoom: number) =>
   Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
 
+const scrollsBy = (
+  delta: number,
+  overflow: string,
+  at: number,
+  shown: number,
+  total: number
+) =>
+  (overflow === 'auto' || overflow === 'scroll') &&
+  (delta > 0 ? Math.ceil(at + shown) < total : delta < 0 && at > 0);
+
+const toolbarScrollsWith = (host: HTMLElement, event: WheelEvent) => {
+  const bar = host.querySelector(':scope > [data-board-toolbar]');
+  const { target } = event;
+
+  if (
+    !bar ||
+    !(target instanceof globalThis.Element) ||
+    !bar.contains(target)
+  ) {
+    return false;
+  }
+
+  const vertical = Math.abs(event.deltaY) >= Math.abs(event.deltaX);
+
+  for (
+    let at: globalThis.Element | null = target;
+    at && at !== bar;
+    at = at.parentElement
+  ) {
+    const { overflowX, overflowY } = getComputedStyle(at);
+
+    if (
+      vertical
+        ? scrollsBy(
+            event.deltaY,
+            overflowY,
+            at.scrollTop,
+            at.clientHeight,
+            at.scrollHeight
+          )
+        : scrollsBy(
+            event.deltaX,
+            overflowX,
+            at.scrollLeft,
+            at.clientWidth,
+            at.scrollWidth
+          )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const sameKeys = (a: ReadonlySet<NodeKey>, b: ReadonlySet<NodeKey>) =>
   a.size === b.size && [...a].every((key) => b.has(key));
 
@@ -734,27 +789,41 @@ export const createBoardView = (
     y: state.camera.y + (client.y - corner.y) / state.camera.zoom,
   });
 
-  const rowsClearOfToolbar = () => {
-    const rows = { bottom: size.height, top: 0 };
+  const clearOfToolbar = () => {
+    const clear = { bottom: size.height, left: 0, right: size.width, top: 0 };
     const toolbar = surface?.querySelector(':scope > [data-board-toolbar]');
 
-    if (!surface || !toolbar) return rows;
+    if (!surface || !toolbar) return clear;
 
-    const edge = surface.getBoundingClientRect().top + surface.clientTop;
+    const rect = surface.getBoundingClientRect();
+    const edge = {
+      x: rect.left + surface.clientLeft,
+      y: rect.top + surface.clientTop,
+    };
 
     for (const child of toolbar.children) {
-      const rect = child.getBoundingClientRect();
-      const from = rect.top - edge;
-      const to = rect.bottom - edge;
+      const dock = child.getAttribute('data-board-dock');
+      const box = child.getBoundingClientRect();
+
+      if (dock === 'left' || dock === 'right') {
+        const from = box.left - edge.x;
+        const to = box.right - edge.x;
+
+        if (to <= 0 || from >= size.width) continue;
+        if (dock === 'left') clear.left = Math.max(clear.left, to);
+        else clear.right = Math.min(clear.right, from);
+        continue;
+      }
+
+      const from = box.top - edge.y;
+      const to = box.bottom - edge.y;
 
       if (to <= 0 || from >= size.height) continue;
-      if (from + to > size.height) rows.bottom = Math.min(rows.bottom, from);
-      else rows.top = Math.max(rows.top, to);
+      if (from + to > size.height) clear.bottom = Math.min(clear.bottom, from);
+      else clear.top = Math.max(clear.top, to);
     }
 
-    return rows.bottom - rows.top > 2 * FIT_PADDING
-      ? rows
-      : { bottom: size.height, top: 0 };
+    return clear;
   };
 
   const measure = () => {
@@ -846,19 +915,25 @@ export const createBoardView = (
     const minY = Math.min(...boxes.map(({ y }) => y));
     const maxX = Math.max(...boxes.map(({ width, x }) => x + width));
     const maxY = Math.max(...boxes.map(({ height, y }) => y + height));
-    const { bottom, top } = rowsClearOfToolbar();
-    const height = bottom - top;
-    const zoom = clampZoom(
-      Math.min(
-        1,
-        size.width / (maxX - minX + 2 * FIT_PADDING),
-        height / (maxY - minY + 2 * FIT_PADDING)
-      )
-    );
+    const along = (from: number, to: number, whole: number, span: number) => {
+      const [start, end] =
+        (to - from) / (span + 2 * FIT_PADDING) >= MIN_ZOOM
+          ? [from, to]
+          : [0, whole];
+
+      return {
+        center: (start + end) / 2,
+        zoom: (end - start) / (span + 2 * FIT_PADDING),
+      };
+    };
+    const clear = clearOfToolbar();
+    const horizontal = along(clear.left, clear.right, size.width, maxX - minX);
+    const vertical = along(clear.top, clear.bottom, size.height, maxY - minY);
+    const zoom = clampZoom(Math.min(1, horizontal.zoom, vertical.zoom));
 
     setCamera({
-      x: (minX + maxX) / 2 - size.width / 2 / zoom,
-      y: (minY + maxY) / 2 - (top + height / 2) / zoom,
+      x: (minX + maxX) / 2 - horizontal.center / zoom,
+      y: (minY + maxY) / 2 - vertical.center / zoom,
       zoom,
     });
     sayZoomFrom(before);
@@ -1245,12 +1320,15 @@ export const createBoardView = (
     resizeObserver.observe(host);
 
     const onWheel = (event: WheelEvent) => {
+      const zooms = event.ctrlKey || event.metaKey;
+
+      if (!zooms && toolbarScrollsWith(host, event)) return;
       event.preventDefault();
       measure();
 
       const { camera } = state;
 
-      if (event.ctrlKey || event.metaKey) {
+      if (zooms) {
         const zoom = clampZoom(
           camera.zoom * 2 ** (-event.deltaY / WHEEL_STEP_ZOOM)
         );

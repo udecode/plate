@@ -40,22 +40,33 @@ export type {
  * It owns the view's camera, tool, next style and gestures, which never reach
  * the document; a gesture writes through the board's commands once, on
  * release. Pan with the wheel, a middle-button drag, a drag with Space held or
- * a drag with the hand tool. Space released with no pan while it was held
- * starts picking shapes, as `BoardMessages`'s `picking` says. While the hand
- * is picked, the board shows a grab cursor, except over its toolbar and an
- * element that sets its own cursor, such as a resize handle. Zoom with Mod and
- * the wheel. With the select tool, a touch drag on empty board pans, and a
- * mouse or pen drag there selects the shapes its box holds.
+ * a drag with the hand tool. A plain wheel over a toolbar element that can
+ * still scroll in the wheel's main direction scrolls that element instead.
+ * Space released with no pan while it was held starts picking
+ * shapes, as `BoardMessages`'s `picking` says. While the hand is picked, the
+ * board shows a grab cursor, except over its toolbar and an element that sets
+ * its own cursor, such as a resize handle. Zoom with Mod and the wheel. With
+ * the select tool, a touch drag on empty board pans, and a mouse or pen drag
+ * there selects the shapes its box holds.
  * `toolbar` renders over the board, where `useBoardView` and
- * `useBoardActions` reach this view. A read-only view or a preview pans and
+ * `useBoardActions` reach this view. Mark an element at the top level of
+ * `toolbar` that the app docks at the board's side with
+ * `data-board-dock="left"` or `"right"`. Every other top-level toolbar
+ * element counts as a row at the board's top or bottom. `fit` and Shift+1 fit
+ * the shapes into the room the toolbar leaves clear. Where that room's width
+ * or height cannot hold them at 10 percent, they use the board's whole width
+ * or height. Both zoom between 10 and 100 percent, so shapes the board cannot
+ * hold at 10 percent run past its edges. A read-only view or a
+ * preview pans and
  * selects but never writes, and a gesture under way when the view turns so
- * ends with no write. The board shows `data-selected` while a selection of
- * its document covers it. Its focus target, `[data-board-focus]`, is its one
- * Tab stop and holds focus while shapes are selected; undo and redo run there
- * and focus follows what they restore. Shift+Enter there or on selected
- * shapes focuses the toolbar's first enabled control and keeps the selection,
- * and Escape on a toolbar control outside an open popup, or a Shift+Tab that
- * leaves the toolbar, returns focus to the focus target. The toolbar's
+ * ends with no write. The board shows `data-selected` while
+ * a selection of its document covers it. Its focus target,
+ * `[data-board-focus]`, is its one Tab stop and holds focus while shapes are
+ * selected; undo and redo run there and focus follows what they restore.
+ * Shift+Enter there or on selected shapes focuses the toolbar's first shown,
+ * enabled control and keeps the selection, and Escape on a toolbar control
+ * outside an open popup, or a Shift+Tab that leaves the toolbar, returns
+ * focus to the focus target. The toolbar's
  * controls keep every other key. On the focus target or selected shapes, `=`
  * or `+` and `-` zoom to the next of 10, 25, 50, 100, 200, 400 and 800
  * percent around the view's center, Shift+0 resets to full size, Shift+1

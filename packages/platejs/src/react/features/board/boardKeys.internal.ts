@@ -111,7 +111,12 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     [
       ...(toolbar()?.querySelectorAll<HTMLElement>(TOOLBAR_CONTROLS) ?? []),
     ].filter(
-      (control) => !control.matches(':disabled, [aria-disabled="true"]')
+      (control) =>
+        !control.matches(':disabled, [aria-disabled="true"]') &&
+        !control.closest('[hidden], [inert]') &&
+        // Safari before 17.4 has no checkVisibility.
+        (typeof control.checkVisibility !== 'function' ||
+          control.checkVisibility({ visibilityProperty: true }))
     );
 
   const focusToolbar = () => {
