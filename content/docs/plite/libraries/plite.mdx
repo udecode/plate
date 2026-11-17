@@ -146,9 +146,10 @@ context. It receives one `{ editor, root, getContributions }` object. Use
 
 Pass statically known plugins to `createEditor`. Use `editor.install` for a
 dynamic plugin; installation produces one atomic plugin commit,
-optionally with a candidate-schema document migration, and its cleanup function
-removes the plugin through another plugin commit. Use
-`tx.plugins.reconfigure` when an plugin replacement must commit with other
+optionally with a candidate-schema document migration, and its cleanup function,
+which takes the same `migrate` option, removes the plugin through another
+plugin commit. Both throw while an editor update or read is open. Use
+`tx.plugins.reconfigure` when a plugin replacement must commit with other
 document changes. A schema replacement that rejects the current document uses
 the optional `migrate` callback; Plite publishes the candidate document and
 plugin revision together or publishes nothing.

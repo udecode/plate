@@ -21,7 +21,7 @@ interface BaseEditor<
   install(
     plugin: PluginInput,
     options?: PluginReconfigureOptions
-  ): () => void;
+  ): (options?: PluginReconfigureOptions) => void;
   plugin<const TPlugin extends PluginReference>(
     plugin: TPlugin
   ): PluginPortal<TPlugin, V>;
@@ -525,13 +525,13 @@ their inferred `read`, `update`, and `api` groups.
 const editor = createEditor({ plugins: [myPlugin] as const });
 ```
 
-#### `editor.install(plugin, options?) => () => void`
+#### `editor.install(plugin, options?) => (options?) => void`
 
 Install a host-selected plugin after creation. Plite compiles and validates
 a detached plugin candidate, publishes and activates it atomically, then
 emits one commit. The commit includes the migrated document when `options`
-provides one. Calling the returned cleanup function publishes the corresponding
-removal through the same lifecycle.
+provides one. The returned function removes each plugin this call added that
+nothing else still holds, in a commit of its own.
 
 ```javascript
 const removePlugin = editor.install(myPlugin);
@@ -539,10 +539,22 @@ const removePlugin = editor.install(myPlugin);
 removePlugin();
 ```
 
+Call `editor.install` and the function it returns outside `editor.update` and
+`editor.read`. Both throw while an update or a read is open. To change plugins
+inside an update, swap a named slot with `tx.plugins.reconfigure`, as shown
+below.
+
 When the plugin introduces a schema that rejects the current document, pass
 `options.migrate`. It receives the immutable current document and candidate
 schema, and returns the complete document to publish with the configuration.
-Validation finishes before publication; failure publishes nothing.
+Validation finishes before publication; failure publishes nothing. The
+returned function takes the same `migrate` option, which runs on removal even
+when the schema stays the same, so a plugin and the content it made leave in one
+commit.
+
+```javascript
+removePlugin({ migrate: ({ document }) => withoutMyNodes(document) });
+```
 
 Use creation-time installation when TypeScript should infer the plugin's
 groups. Dynamic installation does not rewrite the editor's static type.
@@ -560,6 +572,9 @@ editor.update((tx) => {
   tx.plugins.reconfigure(feature, writeMode);
 });
 ```
+
+To remove a slot's plugin and convert its content in the same commit, empty
+the slot and pass `migrate`: `tx.plugins.reconfigure(feature, [], { migrate })`.
 
 Plugins add typed `state` and `tx` namespaces. Direct-safe transaction
 methods are also available through the matching `editor.update` group.

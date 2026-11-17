@@ -470,7 +470,9 @@ editor.update.plugins.reconfigure(articleSlot, ArticleV2, {
 The callback sees the immutable current document and the candidate schema as
 `next`. The returned document, schema, fields, APIs, and configuration
 revision publish in one commit. Compilation, migration, or validation failure
-publishes nothing. Equivalent schema configuration is a no-op.
+publishes nothing. Equivalent schema configuration is a no-op. A change that
+leaves a plugin name uninstalled also runs a given `migrate`, so removing a
+plugin can convert the content it made in the same commit.
 
 The [Schema Reconfiguration example](/examples/plite/schema-reconfiguration)
 isolates this publication and migration lifecycle. The

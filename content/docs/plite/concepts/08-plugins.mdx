@@ -259,6 +259,11 @@ const TableNavigationPlugin = definePlugin("tableNavigation", {
 });
 ```
 
+A plugin that always needs another lists it in `dependencies`. A plugin that
+adds another only on some condition calls `editor.install` from
+`context.afterPublish`. The added plugin stays installed after its parent
+leaves, unless something removes it.
+
 Plite compiles and validates a detached candidate before publication. API
 factories see the same declarative schema and descriptor-resolved dependency
 APIs. Factory results become visible together in the final candidate passed to
@@ -294,13 +299,15 @@ editor.update((tx) => {
 });
 ```
 
-When a replacement schema rejects the current document, pass a `migrate`
-callback. Compilation, migration, and validation finish before one
-document-plus-plugin commit; failure publishes nothing. See
+When a replacement schema rejects the current document, or a removal leaves
+content to convert, pass a `migrate` callback. Compilation, migration, and
+validation finish before one document-plus-plugin commit; failure publishes
+nothing. See
 [Atomic Reconfiguration](19-schema#atomic-reconfiguration).
 
-`editor.install(...)` is the host-level dynamic form. Prefer a named slot when
-the replacement must commit atomically with other model writes.
+`editor.install(...)` is the host-level dynamic form. It and the function it
+returns throw while an editor update or read is open, so a plugin change that
+must commit with other model writes goes through a named slot.
 
 ## Schema contributions
 
