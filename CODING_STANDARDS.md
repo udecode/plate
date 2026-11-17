@@ -8,6 +8,10 @@ Read this file in full before you write, review or deslop any source, test or to
 - These TypeScript bans also override `pstack:typescript-best-practices`. Plate and Plite source never repairs inference with `satisfies` on a builder result, a local helper or `Pick` type alias, or `Parameters<typeof fn>` plumbing; fix the owning API type so the call site stays inferred. A local whose initializer infers its type takes no annotation; only empty arrays, deliberate narrowing or widening, exported signatures and external boundary callbacks are annotated. Production source never uses `any`; a deliberate local test escape is the only exception. No `unknown` cast or structural guard hides a missing typed Plite or Plate API; repair the owning API type instead.
 - Prefer inline when used once; extract constants only when reused.
 
+## Stored facts
+
+- Code that guesses a fact the stored data could hold is a design finding, not a fix. Such a fact is which node this is, what an edit meant, which change came first or what state a flow is in. Matching equal subtrees to find a move, comparing two documents to tell what an edit meant and rebuilding identity to judge a merge all guess one. Before you write such code, ask whether the stored shape should hold the fact, through the method in the Redesign from First Principles section of `docs/vision/common.md`. When a second fix would guess the same missing fact, run that method on the stored shape before a third fix. A read whose source already holds the fact, such as a path computed from the tree, guesses nothing.
+
 ## Components
 
 - Inline local component prop types at the signature. Keep named prop types for real cross-file or published contracts; `docs/vision/plate.md` owns the convention and `plate-ui` applies it. Apply it during implementation and review, without a dedicated lint gate.
