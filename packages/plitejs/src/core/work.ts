@@ -36,7 +36,9 @@ export type CoreWork = {
   collapsedBoundaryVisits: number;
   composedProjectionSections: number;
   contentRootOwnerScans: number;
+  coverageCandidateChecks: number;
   coverageQueries: number;
+  coverageRootKeyBuilds: number;
   /** Sequence slots copied, each node at its width. */
   copiedSlots: number;
   encodedTokens: number;
@@ -193,7 +195,9 @@ export const coreWork: CoreWork = {
   collapsedBoundaryVisits: 0,
   composedProjectionSections: 0,
   contentRootOwnerScans: 0,
+  coverageCandidateChecks: 0,
   coverageQueries: 0,
+  coverageRootKeyBuilds: 0,
   copiedSlots: 0,
   encodedTokens: 0,
   fallbacks: 0,

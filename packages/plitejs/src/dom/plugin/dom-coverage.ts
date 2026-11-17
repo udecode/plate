@@ -329,6 +329,7 @@ const getRootKeysForPathRange = (range: DOMCoveragePathRange) => {
 };
 
 const getRootKeysForBoundary = (boundary: DOMCoverageBoundary) => {
+  countCoreWork('coverageRootKeyBuilds');
   const rootKeys = new Set<string>();
 
   if (boundary.coveredPathRanges.length === 0) {
@@ -727,9 +728,12 @@ export const createDOMCoverageSession = (
       countCoreWork('coverageQueries');
       if (registry.boundaries.size === 0) return null;
       syncRegistryToEditor(editor, registry);
-      const [boundary] = getIndexedBoundaries(registry, [
+      const candidates = getIndexedBoundaries(registry, [
         getRootKey(point.path),
-      ])
+      ]);
+
+      countCoreWork('coverageCandidateChecks', candidates.length);
+      const [boundary] = candidates
         .filter((candidate) => boundaryContainsPoint(candidate, point))
         .sort(compareBoundaries);
 
