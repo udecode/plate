@@ -14,6 +14,7 @@ docs:
 
 - A void `board` block that owns its own list of shapes. Each shape is a top-level block of that list, so sync, suggestions, undo and copy and paste work per shape.
 - Five shape types: sticky notes and geo shapes that hold rich text, arrows whose ends bind to shapes, frames that hold shapes, and pen lines.
+- Styles stored on each shape: fill, outline color, line style, outline width, opacity and text size, each with a default for its shape type. One pick restyles the selected shapes as one undo step, or the next shape while a drawing tool is picked.
 - Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
 - A camera, a tool and a next style for each mounted view, which the document never stores.
@@ -35,7 +36,8 @@ docs:
 - `BoardElement`: renders the board surface and its toolbar.
 - `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
-- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle. Its fill menu colors the selected shapes that take a fill, such as notes and geo shapes, or the next new shape when no such shape is selected. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
+- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle for the next shape. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
+- `BoardStylePanel`: docks at the board's top right and styles the selected shapes, or the next shape while a drawing tool is picked, as [Style panel](#style-panel) shows.
 
 ### Add kit
 
@@ -63,6 +65,76 @@ In this example the board is the page's only block, like a whiteboard app. It fi
 <ComponentPreview name="board-page-demo" />
 
 `BoardPageKit` draws the board with `BoardPageElement`, which passes `height="100%"` to `BoardSurface`. That `height` replaces the board's stored `height` in this view and never changes the document, so the board takes the height of the editor around it. Give the editor a height, as the example does with `<Editor className="h-full" variant="none" />` inside a container of set height. Leave out kits that wrap each block or add a paragraph after the last one, such as the drag handles and the trailing block of `EditorKit`.
+
+## Style panel
+
+Select shapes, or pick a drawing tool, and the panel at the board's top right shows a row for each style they take: Shape, which turns a geo shape into a rectangle, ellipse, diamond or triangle, then Fill, Outline, Line, Width and Text size. A pick writes every selected shape that takes the style, and the shape you are typing in, as one undo step that teammates in a shared room see. With a drawing tool picked, a pick styles only the next shape. The panel hides while no shape it targets takes a style, and in a read-only view. It has no opacity row, and a shape keeps the `opacity` it stores. On a board narrower than 36rem the panel folds behind a Styles button. A pick keeps the caret in the shape you are typing in, except in that folded panel, whose Styles button moves focus into the panel.
+
+The copied `board.tsx` renders the panel in the surface's `toolbar`, next to `BoardToolbar`, and defines the class constants it uses, such as `BOARD_COLORS`:
+
+```tsx
+const boardToolbar = (
+  <>
+    <BoardToolbar />
+    <BoardStylePanel />
+  </>
+);
+
+export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
+  return (
+    <BoardSurface
+      {...props}
+      attributes={{
+        ...props.attributes,
+        className: cn(
+          '@container my-4 rounded-lg border data-selected:ring-2 data-selected:ring-ring',
+          BOARD_COLORS,
+          BOARD_ERASING,
+          BOARD_FOCUS_RING,
+          BOARD_GRID
+        ),
+      }}
+      messages={boardMessages}
+      toolbar={boardToolbar}
+    />
+  );
+}
+```
+
+The panel needs two of those classes. Without `@container` it stays folded behind the Styles button at every width, and without `BOARD_COLORS` its named swatches show no color.
+
+`BoardStylePanel` places itself at the board's top right and marks its root with `data-board-dock="right"`. The mark tells `fit` and Shift+1 which side the panel covers, so they fit shapes into the room beside it. When that room cannot hold the shapes at 10 percent zoom, they use the board's whole width. The mark moves nothing, so place a panel of your own at a side and mark it with `"left"` or `"right"`. Every other top-level element of `toolbar` counts as a row at the board's top or bottom.
+
+To build your own row, render it inside `toolbar`, read its style from `styles` and write it with `setStyle`. A style that no target takes has no entry in `styles`, so the row hides. Prevent the default of a press on the row, so a shape being edited keeps its caret:
+
+```tsx
+import { useBoardActions, useBoardView } from 'platejs/board/react';
+
+const SIZES = ['s', 'm', 'l', 'xl'] as const;
+
+function TextSizeRow() {
+  const textSize = useBoardView((view) => view.styles.textSize);
+  const { setStyle } = useBoardActions();
+
+  if (!textSize) return null;
+
+  return (
+    <div aria-label="Text size" role="group">
+      {SIZES.map((size) => (
+        <button
+          key={size}
+          aria-pressed={!textSize.mixed && textSize.value === size}
+          type="button"
+          onClick={() => setStyle({ textSize: size })}
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          {size.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
 
 ## Manual usage
 
@@ -259,15 +331,19 @@ editor.update((tx) => {
 });
 ```
 
-A style change is a plain property write on the shape's key:
+A style change is a plain property write on the shape's key, with a style its shape type takes, as [Value shape](#value-shape) lists:
 
 ```ts
 editor.update((tx) => {
   const shape = tx.plugin(BaseBoardPlugin).shape(rectId);
 
-  if (shape) tx.nodes.set({ fill: 'blue' }, { at: shape.key });
+  if (shape) {
+    tx.nodes.set({ fill: 'blue', strokeWidth: 'l' }, { at: shape.key });
+  }
 });
 ```
+
+In a toolbar, `setStyle` writes the selected shapes, as [Style panel](#style-panel) shows.
 
 ## Add your own shape
 
@@ -337,9 +413,16 @@ const value = {
 | `size` | All but arrows | `{ width, height }`. |
 | `start`, `end` | Arrows | `{ shape, anchor, x, y }` for an end bound to a shape, or `{ x, y }` for a free end. `x` and `y` hold the point the end last drew at. |
 | `points` | Pen lines | Flat `[x, y, pressure]` triples, each a fraction of the line's box. |
-| `fill` | Notes and geo shapes | A CSS color, or `'none'` for no fill. Defaults to `'yellow'` on a note and `'none'` on a geo shape. |
+| `fill` | Notes and geo shapes | `'none'`, a color name or any CSS color. Defaults to `'yellow'` on a note and `'none'` on a geo shape. |
+| `strokeColor` | Geo shapes, arrows and pen lines | A color name or any CSS color. Defaults to `'currentColor'`, the text color. |
+| `dash` | Geo shapes and arrows | `'solid'`, `'dashed'` or `'dotted'`. Defaults to `'solid'`. |
+| `strokeWidth` | Geo shapes and arrows | `'s'`, `'m'`, `'l'` or `'xl'`. Defaults to `'m'`. |
+| `opacity` | All but frames | A number from 0.1 to 1. Defaults to 1. |
+| `textSize` | Notes, geo shapes and arrows | `'s'`, `'m'`, `'l'` or `'xl'`. Defaults to `'m'`, or `'s'` on an arrow. |
 | `geo` | Geo shapes | One of `'rectangle'`, `'ellipse'`, `'diamond'` or `'triangle'`. |
 | `name` | Frames | Shown above the frame. |
+
+The copied board paints the color names `blue`, `green`, `grey`, `orange`, `red`, `violet` and `yellow` with a light and a dark value, and any other string as a CSS color. HTML keeps each style in a `data-board-` attribute, such as `data-board-stroke-width`.
 
 The camera, the tool, the next style, the selection handles and a gesture in progress are never stored.
 
