@@ -507,8 +507,7 @@
         "fzf@0.5.2",
         "cn",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
-        "next"
+        "lucide-react"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor.json",

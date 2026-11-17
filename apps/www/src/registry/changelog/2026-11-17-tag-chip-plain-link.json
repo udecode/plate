@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-tag-chip-plain-link",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-tag-chip-plain-link.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Link read-only tag chips with a plain anchor",
+  "targets": [
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-editor.tsx",
+        "apps/www/src/registry/components/editor/tag.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-select-editor-link-tag-chips-plain-1f47adb9",
+      "kind": "fix",
+      "summary": "Link read-only tag chips with a plain `<a>` instead of `next/link`, so the item works outside Next.js and no longer adds `next` to your dependencies.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["select-editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-tag-chip-plain-link",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

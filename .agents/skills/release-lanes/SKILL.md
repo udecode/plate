@@ -207,6 +207,23 @@ Verify GitHub releases:
 gh release list --limit 10
 ```
 
+After a promotion deploys, verify that the shadcn CLI fetches the `@plate`
+files that match each project's base and style:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://platejs.org/r/base-nova/editor.json
+curl -s https://ui.shadcn.com/r/registries.json | jq -r '.[] | select(.name == "@plate") | .url'
+```
+
+The first command prints `200`, and the second prints the URL in
+`apps/www/src/lib/plate-registry-config.ts`. When the second prints
+`https://platejs.org/r/{name}.json`, the CLI installs the default `base-nova`
+files into every project, Radix projects included. Then draft a PR to
+`shadcn-ui/ui` that sets the `@plate` URL to
+`https://platejs.org/r/{style}/{name}.json` in `apps/v4/registry/directory.json`
+and `apps/v4/public/r/registries-legacy.json`, and send it as the Messages rule
+allows.
+
 ## Stale PR Cleanup
 
 Close stale `sync/main-to-next` PRs after direct sync succeeds:

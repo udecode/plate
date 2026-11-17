@@ -565,6 +565,7 @@
     ],
     "select-editor": [
       "2026-11-17-cn-package",
+      "2026-11-17-tag-chip-plain-link",
       "2026-10-17-declare-select-editor-update-methods",
       "2026-10-12-select-editor-field",
       "2026-09-07-select-command-bridge",

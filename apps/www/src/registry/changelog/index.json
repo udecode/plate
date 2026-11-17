@@ -181,6 +181,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-tag-chip-plain-link",
+      "href": "/registry/changelog/2026-11-17-tag-chip-plain-link.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Link read-only tag chips with a plain anchor",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["select-editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-ai-routes-caller-key",
       "href": "/registry/changelog/2026-11-16-ai-routes-caller-key.json",
       "status": "draft",

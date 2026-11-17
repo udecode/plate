@@ -1,8 +1,6 @@
 'use client';
 
 import { cn } from 'cn';
-import type { LinkProps } from 'next/link';
-import Link from 'next/link';
 import { BaseLinkPlugin, getLinkHref, property } from 'platejs';
 import {
   type EditorElementProps,
@@ -15,7 +13,6 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-/** The `tag` inline void: a chip with a label and an optional link. */
 export const TagPlugin = definePlugin('tag', {
   schema: {
     element: {
@@ -28,28 +25,6 @@ export const TagPlugin = definePlugin('tag', {
   },
 });
 
-// Next's development check throws on a path segment in brackets, which it
-// reads as a route pattern.
-function escapePath(pathname: string) {
-  return pathname.replaceAll('[', '%5B').replaceAll(']', '%5D');
-}
-
-// Next encodes `?` and `#` inside a pathname, so a relative href keeps its
-// search and hash in their own fields.
-function toRelativeHref(href: string): LinkProps<string>['href'] {
-  const hashIndex = href.indexOf('#');
-  const beforeHash = hashIndex === -1 ? href : href.slice(0, hashIndex);
-  const searchIndex = beforeHash.indexOf('?');
-
-  return {
-    hash: hashIndex === -1 ? '' : href.slice(hashIndex),
-    pathname: escapePath(
-      searchIndex === -1 ? beforeHash : beforeHash.slice(0, searchIndex)
-    ),
-    search: searchIndex === -1 ? '' : beforeHash.slice(searchIndex),
-  };
-}
-
 function TagLink({
   children,
   href,
@@ -58,21 +33,8 @@ function TagLink({
   href: string | undefined;
 }) {
   if (href === undefined) return children;
-  if (!URL.canParse(href)) {
-    return <Link href={toRelativeHref(href)}>{children}</Link>;
-  }
 
-  const url = new URL(href);
-
-  // Next's formatter drops `//` from a URL object with another scheme, such
-  // as `vscode://settings`.
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    return <a href={href}>{children}</a>;
-  }
-
-  url.pathname = escapePath(url.pathname);
-
-  return <Link href={url}>{children}</Link>;
+  return <a href={href}>{children}</a>;
 }
 
 function ConfiguredTagLink({

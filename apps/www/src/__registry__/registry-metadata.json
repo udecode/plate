@@ -1,5 +1,5 @@
 {
-  "generation": "421982e3d477271c9c115645b0f326b9c022fdd8015597c4b3e987f52d33a7e6",
+  "generation": "c9894db97737371d93dd85ebc6284c884f3a44798cbf9e7448742318c7abaa6f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -506,8 +506,7 @@
             "fzf@0.5.2",
             "cn",
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react",
-            "next"
+            "lucide-react"
           ],
           "description": "An editor to select tags.",
           "files": [
@@ -7610,8 +7609,7 @@
             "fzf@0.5.2",
             "cn",
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react",
-            "next"
+            "lucide-react"
           ],
           "description": "An editor to select tags.",
           "files": [
