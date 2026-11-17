@@ -17,7 +17,7 @@ type DOMTextFlowRecord = {
   bindingDirtyFrom?: number;
   nodeKey: string;
   paintEpoch?: number;
-  path: readonly number[];
+  path: readonly number[] | null;
   segments: readonly DOMTextFlowSegment[];
   shiftAfterSegment?: number;
   shiftDelta?: number;
@@ -448,8 +448,9 @@ export const resolveDOMTextFlowEntry = (
   path: readonly number[];
 } | null => {
   const binding = getSegmentBinding(node);
+  const path = binding?.record.path;
 
-  if (!binding) return null;
+  if (!binding || !path) return null;
   const localOffset = resolveDOMTextFlowOffset(binding.host, node, offset);
 
   return localOffset == null
@@ -458,7 +459,7 @@ export const resolveDOMTextFlowEntry = (
         host: binding.host,
         nodeKey: binding.record.nodeKey,
         offset: localOffset,
-        path: binding.record.path,
+        path,
       };
 };
 

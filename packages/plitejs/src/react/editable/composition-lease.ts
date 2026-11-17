@@ -1,7 +1,16 @@
 // oxlint-disable-next-line react-doctor/no-flush-sync -- A composition that starts before React drew the previous commit must snapshot that render, or its lease would restore stale text.
 import { flushSync } from 'react-dom';
 
-import { type NodeKey, PathApi, type Point, type Range, RangeApi } from '../..';
+import {
+  type Descendant,
+  type NodeKey,
+  NodeApi,
+  type Path,
+  PathApi,
+  type Point,
+  type Range,
+  RangeApi,
+} from '../..';
 import { getSelection, isDOMElement } from '../../dom';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { PliteDecorationStore } from '../decoration-context';
@@ -13,7 +22,11 @@ import {
   getPathByNodeKey,
   toInternalRoot,
 } from './runtime-editor-api';
-import { readRuntimeText } from './runtime-live-state';
+import {
+  readNodeByKey,
+  readPathByNodeKey,
+  readRuntimeText,
+} from './runtime-live-state';
 
 type ChildListSnapshot = Readonly<{
   children: readonly globalThis.ChildNode[];
@@ -31,16 +44,129 @@ export type CompositionLeaseSnapshot = Readonly<{
 
 export type CompositionLeaseVerdict = 'keep' | 'rebuild' | 'restore';
 
+export type HeldChildren = Readonly<{
+  childKeys: readonly NodeKey[];
+  children: readonly Descendant[];
+}>;
+
+const NO_CHILDREN: HeldChildren = { childKeys: [], children: [] };
+
+type HeldLine = Readonly<{
+  editor: ReactRuntimeEditor;
+  hosts: ReadonlySet<globalThis.Node>;
+  key: NodeKey;
+  node: Descendant;
+  nodes: ReadonlyMap<NodeKey, HeldChildren>;
+  refresh: () => void;
+}>;
+
 type CompositionLeaseState = {
   coveredBlockKeys: readonly NodeKey[];
   hostBlockKey: NodeKey | null;
   leafKey: NodeKey | null;
+  line: HeldLine | null;
   restoredLine: 'owed' | 'reentered' | null;
   snapshot: CompositionLeaseSnapshot | null;
   writes: Map<globalThis.Node, () => void>;
 };
 
 const TEXT_HOST_SELECTOR = '[data-editor-node="text"]';
+
+const LINE_HOST_SELECTOR = `${TEXT_HOST_SELECTOR}, [data-editor-text-flow]`;
+
+const readChildKeys = (
+  editor: ReactRuntimeEditor,
+  children: readonly Descendant[],
+  path: Path
+) => children.flatMap((_, index) => getNodeKey(editor, [...path, index]) ?? []);
+
+const captureHeldLine = (
+  editor: ReactRuntimeEditor,
+  key: NodeKey,
+  refresh: (nodeKeys: readonly NodeKey[]) => void
+): HeldLine | null => {
+  const { node, path } = readNodeByKey(editor, key);
+
+  if (!node || !path || !NodeApi.isElement(node)) return null;
+  const nodes = new Map<NodeKey, HeldChildren>();
+  const visit = (nodeKey: NodeKey, descendant: Descendant, at: Path) => {
+    if (!NodeApi.isElement(descendant)) {
+      nodes.set(nodeKey, NO_CHILDREN);
+      return;
+    }
+    const childKeys = readChildKeys(editor, descendant.children, at);
+
+    if (childKeys.length !== descendant.children.length) return;
+    nodes.set(nodeKey, { childKeys, children: descendant.children });
+    descendant.children.forEach((child, index) =>
+      visit(childKeys[index], child, [...at, index])
+    );
+  };
+
+  visit(key, node, path);
+  if (!nodes.has(key)) return null;
+  const hosts = new Set(
+    ReactEditor.resolveDOMNode(editor, key)?.querySelectorAll(
+      LINE_HOST_SELECTOR
+    )
+  );
+
+  return {
+    editor,
+    hosts,
+    key,
+    node,
+    nodes,
+    refresh: () => refresh([...nodes.keys()]),
+  };
+};
+
+const coversNative = (
+  snapshot: CompositionLeaseSnapshot | null | undefined,
+  node: globalThis.Node
+) => !!snapshot && (snapshot.host.contains(node) || snapshot.nodes.has(node));
+
+const runWrites = (writes: Iterable<() => void>) => {
+  let firstError: unknown;
+  let hasError = false;
+
+  for (const write of writes) {
+    try {
+      write();
+    } catch (error) {
+      if (!hasError) {
+        firstError = error;
+        hasError = true;
+      }
+    }
+  }
+  if (hasError) throw firstError;
+};
+
+const writesOutsideNativeHost = ({ snapshot, writes }: CompositionLeaseState) =>
+  [...writes].flatMap(([node, write]) =>
+    coversNative(snapshot, node) ? [] : [write]
+  );
+
+const lineChanged = ({ editor, key, node }: HeldLine) =>
+  readNodeByKey(editor, key).node !== node;
+
+const heldNodeRemoved = ({ editor, nodes }: HeldLine) => {
+  for (const nodeKey of nodes.keys()) {
+    if (!readPathByNodeKey(editor, nodeKey)) return true;
+  }
+  return false;
+};
+
+const drawnByLine = ({ editor, key }: HeldLine) => {
+  const linePath = readPathByNodeKey(editor, key);
+
+  return (childKey: NodeKey) => {
+    const path = readPathByNodeKey(editor, childKey);
+
+    return !path || (!!linePath && PathApi.isAncestor(linePath, path));
+  };
+};
 
 export const snapshotCompositionHost = (
   host: Element
@@ -151,35 +277,68 @@ export class CompositionLease {
     host,
     hostBlockKey,
     leafKey,
+    line = null,
   }: {
     coveredBlockKeys?: readonly NodeKey[];
     host: Element | null;
     hostBlockKey: NodeKey | null;
     leafKey: NodeKey | null;
+    line?: HeldLine | null;
   }) {
     this.state = {
       coveredBlockKeys,
       hostBlockKey,
       leafKey,
+      line,
       restoredLine: null,
       snapshot: host ? snapshotCompositionHost(host) : null,
       writes: new Map(),
     };
   }
 
-  protects(node: globalThis.Node) {
-    const snapshot = this.state?.snapshot;
+  keepsDrawn(nodeKey: NodeKey) {
+    const line = this.state?.line;
+    const held = line?.nodes.get(nodeKey);
 
-    return (
-      !!snapshot && (snapshot.host.contains(node) || snapshot.nodes.has(node))
+    if (!line || !held) return false;
+    return held.childKeys.every(drawnByLine(line));
+  }
+
+  heldChildren(nodeKey: NodeKey) {
+    const line = this.state?.line;
+    const held = line?.nodes.get(nodeKey);
+
+    if (!line || !held) return null;
+    const drawn = drawnByLine(line);
+
+    if (held.childKeys.every(drawn)) return held;
+    const kept = held.childKeys.flatMap((childKey, index) =>
+      drawn(childKey) ? [index] : []
     );
+
+    return {
+      childKeys: kept.map((index) => held.childKeys[index]),
+      children: kept.map((index) => held.children[index]),
+    };
+  }
+
+  defersWrite(node: globalThis.Node) {
+    return this.protectsNative(node) || this.protectsLineText(node);
   }
 
   protectsMutation(mutation: MutationRecord) {
     return (
-      this.protects(mutation.target) ||
-      [...mutation.removedNodes].some((node) => this.protects(node))
+      this.protectsNative(mutation.target) ||
+      [...mutation.removedNodes].some((node) => this.protectsNative(node))
     );
+  }
+
+  private protectsNative(node: globalThis.Node) {
+    return coversNative(this.state?.snapshot, node);
+  }
+
+  private protectsLineText(node: globalThis.Node) {
+    return !!this.state?.line?.hosts.has(node);
   }
 
   holdsLine(editor: ReactRuntimeEditor, node: globalThis.Node) {
@@ -201,7 +360,7 @@ export class CompositionLease {
   }
 
   queue(node: globalThis.Node, write: () => void) {
-    if (!this.state || !this.protects(node)) return false;
+    if (!this.state || !this.defersWrite(node)) return false;
 
     this.state.writes.set(node, write);
     return true;
@@ -216,8 +375,16 @@ export class CompositionLease {
   }
 
   release() {
+    const { state } = this;
+
     this.state = null;
     this.settledSinceRender = false;
+    if (!state) return;
+    try {
+      runWrites(writesOutsideNativeHost(state));
+    } finally {
+      if (state.line && lineChanged(state.line)) state.line.refresh();
+    }
   }
 
   completeRender() {
@@ -297,11 +464,13 @@ const resolveLeaseHost = (
 export const grantCompositionLease = ({
   editor,
   lease,
+  refresh,
   root,
   selection,
 }: {
   editor: ReactRuntimeEditor;
   lease: CompositionLease;
+  refresh: (nodeKeys: readonly NodeKey[]) => void;
   root: HTMLElement;
   selection: Range | null;
 }) => {
@@ -324,12 +493,17 @@ export const grantCompositionLease = ({
   }
 
   const host = resolveLeaseHost(editor, root, selection.focus);
+  const hostBlockKey = readLowestBlockKey(editor, selection.focus);
 
   lease.grant({
     host,
-    hostBlockKey: readLowestBlockKey(editor, selection.focus),
+    hostBlockKey,
     leafKey: (host?.getAttribute('data-editor-node-key') ??
       null) as NodeKey | null,
+    line:
+      host && hostBlockKey
+        ? captureHeldLine(editor, hostBlockKey, refresh)
+        : null,
   });
 };
 
@@ -404,8 +578,9 @@ export const settleCompositionLease = ({
   const state = lease.take();
 
   if (!state) return null;
-  const { snapshot } = state;
-  const verdict = state.restoredLine
+  const { line, snapshot } = state;
+  const redrawLine = !!state.restoredLine || (!!line && heldNodeRemoved(line));
+  const verdict = redrawLine
     ? 'rebuild'
     : snapshot
       ? judgeCompositionLease(
@@ -424,7 +599,7 @@ export const settleCompositionLease = ({
   };
 
   if (
-    state.restoredLine &&
+    redrawLine &&
     state.hostBlockKey &&
     root &&
     redrawRestoredLineAndCaret(editor, state.hostBlockKey, rebuild, root)
@@ -452,20 +627,11 @@ export const settleCompositionLease = ({
     rebuilt.has(state.hostBlockKey);
 
   if (!hostRebuilt) {
-    let firstError: unknown;
-    let hasError = false;
-
-    for (const write of state.writes.values()) {
-      try {
-        write();
-      } catch (error) {
-        if (!hasError) {
-          firstError = error;
-          hasError = true;
-        }
-      }
+    try {
+      runWrites(state.writes.values());
+    } finally {
+      line?.refresh();
     }
-    if (hasError) throw firstError;
   }
 
   return verdict;

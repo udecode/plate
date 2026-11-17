@@ -984,7 +984,7 @@ export class EditableDOMRuntime {
   }
 
   isCompositionDOMNodeProtected(node: globalThis.Node) {
-    if (this.compositionLease.protects(node)) return true;
+    if (this.compositionLease.defersWrite(node)) return true;
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
     const anchors = Array.isArray(epoch?.anchor)
       ? epoch.anchor

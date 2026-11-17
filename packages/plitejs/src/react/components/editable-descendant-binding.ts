@@ -7,6 +7,7 @@ import {
   type Text as TextNode,
 } from '../..';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
+import type { HeldChildren } from '../editable/composition-lease';
 import type { AnyEditor as EditorType } from '../editable/runtime-editor-api';
 import {
   getNodeKey as editorGetNodeKey,
@@ -19,12 +20,14 @@ import { readRuntimeNode } from '../editable/runtime-live-state';
 import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
+const EMPTY_CHILDREN = Object.freeze([]) as readonly Descendant[];
 const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
   []
 ) as ReadonlyArray<TextNode | null>;
 
 export type EditableDescendantBinding = {
   childNodeKeys: readonly NodeKey[];
+  drawnChildren: readonly Descendant[];
   directTextChildNodes: ReadonlyArray<TextNode | null>;
   emptyTextParentRenderKey: string | null;
   isInline: boolean;
@@ -65,12 +68,14 @@ const readEmptyTextParentRenderKey = (
 
 export const readEditableDescendantBinding = ({
   editor,
+  held,
   node,
   path,
   renderLeaf,
   renderText,
 }: {
   editor: EditorType;
+  held: HeldChildren | null;
   node: unknown;
   path: Path | null;
   renderLeaf?: unknown;
@@ -79,6 +84,7 @@ export const readEditableDescendantBinding = ({
   if (!path || !node || editorIsEditor(node)) {
     return {
       childNodeKeys: EMPTY_RUNTIME_IDS,
+      drawnChildren: EMPTY_CHILDREN,
       directTextChildNodes: EMPTY_DIRECT_TEXT_CHILD_NODES,
       emptyTextParentRenderKey: null,
       isInline: false,
@@ -93,9 +99,12 @@ export const readEditableDescendantBinding = ({
 
   const descendant = node as Descendant;
   const snapshot = editorGetSnapshot(editor);
+  const drawnChildren = isEditableTextNode(descendant)
+    ? EMPTY_CHILDREN
+    : (held?.children ?? descendant.children);
   const usesDirectTextChildren =
     !isEditableTextNode(descendant) &&
-    descendant.children.every((child) => {
+    drawnChildren.every((child) => {
       if (!isEditableTextNode(child)) return true;
 
       const { text: _text, ...marks } = child;
@@ -108,17 +117,19 @@ export const readEditableDescendantBinding = ({
 
   const childNodeKeys = isEditableTextNode(descendant)
     ? EMPTY_RUNTIME_IDS
-    : (descendant.children
-        .map((_, index) => {
-          const childPath = [...path, index] as Path;
+    : held
+      ? held.childKeys
+      : (descendant.children
+          .map((_, index) => {
+            const childPath = [...path, index] as Path;
 
-          return (
-            snapshot.index.keyAt(childPath) ??
-            editorGetNodeKey(editor, childPath) ??
-            ''
-          );
-        })
-        .filter(Boolean) as NodeKey[]);
+            return (
+              snapshot.index.keyAt(childPath) ??
+              editorGetNodeKey(editor, childPath) ??
+              ''
+            );
+          })
+          .filter(Boolean) as NodeKey[]);
   const ownNodeKey = editorGetNodeKey(editor, path);
   const isElement = !isEditableTextNode(descendant);
   const ownRenderRevision = ownNodeKey
@@ -127,10 +138,9 @@ export const readEditableDescendantBinding = ({
 
   return {
     childNodeKeys,
+    drawnChildren,
     directTextChildNodes: usesDirectTextChildren
-      ? descendant.children.map((child) =>
-          isEditableTextNode(child) ? child : null
-        )
+      ? drawnChildren.map((child) => (isEditableTextNode(child) ? child : null))
       : EMPTY_DIRECT_TEXT_CHILD_NODES,
     emptyTextParentRenderKey: readEmptyTextParentRenderKey(
       editor,

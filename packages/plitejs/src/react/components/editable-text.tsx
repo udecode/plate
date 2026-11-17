@@ -608,7 +608,6 @@ const BoundEditableText = ({
   );
   const resolvedNodeKey = boundText.nodeKey;
   const boundRef = usePliteNodeRef(resolvedNodeKey, {
-    path: boundText.path,
     editorNode: boundText.editorNode,
   });
   const decorations = usePliteDecorationEntries(resolvedNodeKey);
@@ -662,7 +661,7 @@ const DecoratedEditableText = ({
   zeroWidth?: ZeroWidthOptions;
 }) => {
   const editor = useEditorContext();
-  const boundRef = usePliteNodeRef(nodeKey, { path, editorNode });
+  const boundRef = usePliteNodeRef(nodeKey, { editorNode });
   const decorations = usePliteDecorationEntries(nodeKey);
   const { text: currentText } = readTextByKey(editor, nodeKey);
   const resolvedMarks = currentText ? getTextMarks(currentText) : marks;

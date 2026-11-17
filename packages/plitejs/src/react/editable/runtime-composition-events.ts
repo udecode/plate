@@ -1,6 +1,7 @@
 import { type CompositionEvent, useCallback, useContext, useMemo } from 'react';
 
 import { DecorationContext } from '../decoration-context';
+import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useRebuildLine } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -37,6 +38,7 @@ export const useEditableCompositionLease = ({
 }) => {
   const decorations = useContext(DecorationContext);
   const rebuildLine = useRebuildLine(editor);
+  const { invalidate } = useRequiredEditorSelectorContext();
 
   return useMemo<EditableCompositionLeaseBinding>(() => {
     const settleInput = () => ({
@@ -55,6 +57,7 @@ export const useEditableCompositionLease = ({
           grantCompositionLease({
             editor,
             lease: runtime.compositionLease,
+            refresh: invalidate,
             root,
             selection,
           });
@@ -69,7 +72,7 @@ export const useEditableCompositionLease = ({
         });
       },
     };
-  }, [decorations, editor, rebuildLine, runtime]);
+  }, [decorations, editor, invalidate, rebuildLine, runtime]);
 };
 
 export const useRuntimeCompositionEvents = ({

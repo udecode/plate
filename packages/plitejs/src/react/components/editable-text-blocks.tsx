@@ -66,7 +66,10 @@ import {
   isInline as editorIsInline,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
-import { readRuntimeNode } from '../editable/runtime-live-state';
+import {
+  readPathByNodeKey,
+  readRuntimeNode,
+} from '../editable/runtime-live-state';
 import { resolveViewBoundaryDOMPoint } from '../editable/selection-projected-dom';
 import { type ViewLines, ViewLinesContext } from '../editable/view-lines';
 import type { ExternalTextOptions } from '../external-text';
@@ -132,7 +135,7 @@ import {
   useEditableElementPlacementRef,
 } from './editable-element-placement';
 import { EditableExternalText } from './editable-external-text';
-import { sameDescendantBinding } from './editable-node-equality';
+import { sameDescendantBinding, sameNodeKeys } from './editable-node-equality';
 import { getEditableElementRenderer } from './editable-rendered-element';
 import {
   EditableText,
@@ -854,22 +857,31 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   const editableRuntime = useEditableDOMRuntime();
   const coverage = editableRuntime?.domCoverage;
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
+  const lease = editableRuntime?.compositionLease;
 
   const binding = useMountedNodeRenderSelector(
     ({ editor: editorValue, node, path }) =>
       readEditableDescendantBinding({
         editor: editorValue,
+        held: lease?.heldChildren(nodeKey) ?? null,
         node,
         path,
         renderLeaf,
         renderText,
       }),
-    sameDescendantBinding,
+    (drawn, next) =>
+      (drawn !== null &&
+        !!lease?.keepsDrawn(nodeKey) &&
+        (next.node === null ||
+          (drawn.ownRenderRevision === next.ownRenderRevision &&
+            sameNodeKeys(drawn.childNodeKeys, next.childNodeKeys)))) ||
+      sameDescendantBinding(drawn, next),
     { nodeKey }
   );
 
   const {
     childNodeKeys,
+    drawnChildren,
     directTextChildNodes,
     isInline: inline,
     isVoid: voidNode,
@@ -883,7 +895,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     React.useContext(ImperativeTextFlowContext) &&
     hasClientDOM &&
     !renderChildrenOverride;
-  const bindNodeRef = usePliteNodeRef(nodeKey, { path, editorNode: node });
+  const bindNodeRef = usePliteNodeRef(nodeKey, { editorNode: node });
   const elementRef = useEditableElementPlacementRef(
     bindNodeRef,
     node && !isEditableTextNode(node) ? path : null
@@ -957,6 +969,12 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     'data-editor-void': voidNode ? (true as const) : undefined,
     ref: elementRef,
   };
+  const held = drawnChildren !== node.children;
+  const childPathAt = (childNodeKey: NodeKey, index: number) =>
+    (held ? readPathByNodeKey(editor, childNodeKey) : null) ??
+    ([...path, index] as Path);
+  const isModelChildAt = (child: Descendant, index: number) =>
+    node.children[index] === child;
   const renderDirectTextChild = (
     childNodeKey: NodeKey,
     child: Descendant | undefined,
@@ -966,16 +984,18 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
       return null;
     }
 
-    const childPath = [...path, index] as Path;
+    const childPath = childPathAt(childNodeKey, index);
     const { text: _text, ...marks } = child;
 
-    NODE_TO_INDEX.set(child, index);
-    NODE_TO_PARENT.set(child, node);
-    IS_NODE_MAP_DIRTY.set(editor, false);
+    if (isModelChildAt(child, index)) {
+      NODE_TO_INDEX.set(child, index);
+      NODE_TO_PARENT.set(child, node);
+      IS_NODE_MAP_DIRTY.set(editor, false);
+    }
 
     return (
       <EditableText
-        isLast={index === node.children.length - 1}
+        isLast={index === drawnChildren.length - 1}
         key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [
           childNodeKey,
         ])}`}
@@ -1000,7 +1020,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   const renderChild = (childNodeKey: NodeKey, index: number) => {
     const directText = renderDirectTextChild(
       childNodeKey,
-      node.children[index],
+      drawnChildren[index],
       index
     );
     return directText ? (
@@ -1071,15 +1091,16 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
 
         if (!textNode || textNode.text.length === 0) break;
         const childNodeKey = childNodeKeys[index];
-        const childPath = [...path, index] as Path;
 
-        NODE_TO_INDEX.set(textNode, index);
-        NODE_TO_PARENT.set(textNode, node);
+        if (isModelChildAt(textNode, index)) {
+          NODE_TO_INDEX.set(textNode, index);
+          NODE_TO_PARENT.set(textNode, node);
+        }
         entries.push({
-          isLast: index === node.children.length - 1,
+          isLast: index === drawnChildren.length - 1,
           node: textNode,
           nodeKey: childNodeKey,
-          path: childPath,
+          path: childPathAt(childNodeKey, index),
         });
         index += 1;
       }

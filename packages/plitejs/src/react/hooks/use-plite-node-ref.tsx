@@ -93,9 +93,6 @@ const recordDOMTextSyncProfile = (id: string) => {
   });
 };
 
-const parsePathKey = (key: string): Path =>
-  key === '' ? [] : key.split('.').map((part) => Number.parseInt(part, 10));
-
 const getPathElementMap = (editor: Editor) => {
   const existing = EDITOR_TO_PATH_TO_ELEMENT.get(editor);
 
@@ -244,6 +241,7 @@ export const syncPliteNodePathBindingsToDOM = <V extends Value>(
           unbindPathElement(editor, previousPath, element);
         }
 
+        ELEMENT_TO_NODE.delete(element);
         ELEMENT_TO_PATH.delete(element);
         markDOMSyncMutationTarget(element, 'attributes', 'data-editor-path');
         element.removeAttribute('data-editor-path');
@@ -573,7 +571,7 @@ export const syncChangedTextToDOM = <V extends Value>(
       // commit invalidates only that leaf instead of forcing a full render.
       if (
         runtime?.adapter instanceof EditableDOMRuntime &&
-        runtime.adapter.compositionLease.protects(element)
+        runtime.adapter.compositionLease.defersWrite(element)
       ) {
         recordDOMTextSyncProfile('skip-composition');
         requiresRemount = true;
@@ -624,20 +622,15 @@ export const syncChangedTextToDOM = <V extends Value>(
 const bindPliteNodeElement = ({
   editor,
   node,
-  providedPathKey,
   providedEditorNode,
   nodeKey,
 }: {
   editor: Editor;
   node: Node;
-  providedPathKey: string | null;
   providedEditorNode: Descendant | null;
   nodeKey: NodeKey;
 }) => {
-  const path =
-    providedPathKey == null
-      ? editorGetPathByNodeKey(editor, nodeKey)
-      : parsePathKey(providedPathKey);
+  const path = editorGetPathByNodeKey(editor, nodeKey);
 
   if (!path || node.nodeType !== Node.ELEMENT_NODE) {
     return null;
@@ -836,14 +829,12 @@ const usePliteNodeRefBinding = (
   editor: Editor | null,
   nodeKey: NodeKey | null,
   options: {
-    path?: Path | null;
     editorNode?: Descendant | null;
   } = {}
 ) => {
   const editableRuntime = useContext(EditableDOMRuntimeContext);
   const nodeRef = useRef<Node | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
-  const providedPathKey = options.path == null ? null : pathKey(options.path);
   const providedEditorNode = options.editorNode ?? null;
 
   const cleanupBinding = useCallback(() => {
@@ -866,7 +857,6 @@ const usePliteNodeRefBinding = (
       const detachNode = bindPliteNodeElement({
         editor,
         node: nextNode,
-        providedPathKey,
         providedEditorNode,
         nodeKey,
       });
@@ -880,14 +870,7 @@ const usePliteNodeRefBinding = (
       };
       editableRuntime?.requestSelectionExportAfterDOMCommit();
     },
-    [
-      cleanupBinding,
-      editableRuntime,
-      editor,
-      providedPathKey,
-      providedEditorNode,
-      nodeKey,
-    ]
+    [cleanupBinding, editableRuntime, editor, providedEditorNode, nodeKey]
   );
 
   useIsomorphicLayoutEffect(() => {
@@ -904,10 +887,13 @@ const usePliteNodeRefBinding = (
     }
     editableRuntime?.externalText.assertNativeProjection(nodeKey);
     const livePath = editorGetPathByNodeKey(editor, nodeKey);
+    const boundPath = ELEMENT_TO_PATH.get(element);
 
     if (
       livePath &&
-      element.getAttribute('data-editor-path') !== livePath.join(',')
+      (!boundPath ||
+        pathKey(boundPath) !== pathKey(livePath) ||
+        element.getAttribute('data-editor-path') !== livePath.join(','))
     ) {
       syncPliteElementPath({ editor, element, path: livePath, nodeKey });
     }
@@ -930,14 +916,12 @@ const usePliteNodeRefBinding = (
 export const usePliteNodeRef = (
   nodeKey: NodeKey | null,
   options: {
-    path?: Path | null;
     editorNode?: Descendant | null;
   } = {}
 ) => {
   const editor = useContext(EditorContext);
 
   return usePliteNodeRefBinding(editor, nodeKey, {
-    path: options.path,
     editorNode: options.editorNode,
   });
 };

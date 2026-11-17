@@ -17,7 +17,10 @@ import {
   type DecorationSlice,
 } from '../decoration-source';
 import { getPureTextInsertion } from '../editable/native-text-input-delta';
-import { readNodeByKey } from '../editable/runtime-live-state';
+import {
+  readNodeByKey,
+  readPathByNodeKey,
+} from '../editable/runtime-live-state';
 import {
   EditableDOMRuntimeContext,
   useClaimEditableDOMCommit,
@@ -104,7 +107,7 @@ type TextDOMRecord = {
   isLast: boolean;
   node: TextNode;
   nodeKey: NodeKey;
-  path: Path;
+  path: Path | null;
   paintChange?: {
     before: ChildNode[];
     after: ChildNode[];
@@ -427,6 +430,24 @@ const removeExpectedAttribute = (element: HTMLElement, name: string) => {
   if (!element.hasAttribute(name)) return;
   markDOMSyncMutationTarget(element, 'attributes', name);
   element.removeAttribute(name);
+};
+
+const syncRecordAttributes = (
+  root: HTMLElement,
+  records: readonly TextDOMRecord[]
+) => {
+  const single = records.length === 1 ? records[0] : null;
+
+  if (single) {
+    setExpectedAttribute(root, 'data-editor-node-key', single.nodeKey);
+  } else {
+    removeExpectedAttribute(root, 'data-editor-node-key');
+  }
+  if (single?.path) {
+    setExpectedAttribute(root, 'data-editor-path', single.path.join(','));
+  } else {
+    removeExpectedAttribute(root, 'data-editor-path');
+  }
 };
 
 const toDOMAttributeValue = (value: unknown) => {
@@ -1514,7 +1535,7 @@ const reconcileTextFlow = ({
 
     if (!deferredInsertion) {
       const bindingChanged = !record.bound || record.node !== entry.node;
-      const pathChanged = !samePath(record.path, entry.path);
+      const pathChanged = !record.path || !samePath(record.path, entry.path);
 
       if (bindingChanged) {
         if (record.bound) binding.release(record.nodeKey, record.node);
@@ -1668,13 +1689,7 @@ const reconcileTextFlow = ({
     singleRecord.segments[0].decorationRecords.length === 0 &&
     singleRecord.segments[0].rootNode.nodeType === Node.TEXT_NODE;
 
-  if (singleRecord) {
-    setExpectedAttribute(root, 'data-editor-node-key', singleRecord.nodeKey);
-    setExpectedAttribute(root, 'data-editor-path', singleRecord.path.join(','));
-  } else {
-    removeExpectedAttribute(root, 'data-editor-node-key');
-    removeExpectedAttribute(root, 'data-editor-path');
-  }
+  syncRecordAttributes(root, next);
   if (isPlainSingleSegment) {
     setExpectedAttribute(root, 'data-editor-string', 'true');
   } else {
@@ -1786,6 +1801,14 @@ export const EditableTextFlow = ({
 
       if (!root) return;
       if (editableRuntime?.deferCompositionDOMWrite(root, () => reconcile())) {
+        if (editableRuntime.compositionLease.defersWrite(root)) {
+          const { records } = stateRef.current;
+
+          for (const record of records) {
+            record.path = readPathByNodeKey(editor, record.nodeKey);
+          }
+          syncRecordAttributes(root, records);
+        }
         return;
       }
       const liveEntries = entriesRef.current.flatMap((entry) => {
