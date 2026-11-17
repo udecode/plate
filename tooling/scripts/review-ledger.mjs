@@ -11,8 +11,13 @@ import {
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { mainCheckout } from '../../.agents/pstack/plan-page.mjs';
 import { landed, stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
-import { gitMerges } from '../../.agents/pstack/tasks.mjs';
+import {
+  gitMerges,
+  ledgerPath,
+  readTasks,
+} from '../../.agents/pstack/tasks.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import {
   changedSince,
@@ -1548,11 +1553,34 @@ const boardActivity = (root) =>
     ? gitMerges().activeAt
     : () => null;
 
+const openDecides = (root, config) => {
+  const path = join(
+    config.delivery === 'trunk' ? mainCheckout(root) : root,
+    ledgerPath(config.plans ?? 'docs/plans', config.delivery)
+  );
+  const waits = new Map();
+  if (!existsSync(path)) return waits;
+  const rows = readFileSync(path, 'utf-8').split('\n').slice(1);
+  for (const task of readTasks(rows).values()) {
+    if (
+      task.kind === 'decide' &&
+      ['offered', 'started'].includes(task.status)
+    ) {
+      waits.set(task.topic, [
+        ...(waits.get(task.topic) ?? []),
+        `task:${task.id}`,
+      ]);
+    }
+  }
+  return waits;
+};
+
 /** The scopes the audit pass has not reached, each as the task to offer. */
 export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
   const ledger = loadLedger(root);
   const plans = plansOf(root, ledger);
   const config = configOf(root, ledger);
+  const decides = openDecides(root, config);
   const { tiers = [], deferred = [] } = config.chips ?? {};
   const experimental = config.triage?.experimental ?? [];
   const scopes = dueScopes(root, ledger, plans);
@@ -1583,6 +1611,7 @@ export function due(root, { activeAt = () => null, now = Date.now() } = {}) {
         ...offer,
         finding: [offer.finding, ...notes].filter(Boolean).join(' '),
         writes: [...offer.writes, ...led],
+        waits: [...offer.waits, ...(decides.get(offer.topic) ?? [])],
       };
       const at = tierAt(tiers, item);
       const head = latest(headsOf(ledger, scope.id));
