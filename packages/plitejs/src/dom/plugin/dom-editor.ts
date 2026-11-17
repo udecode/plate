@@ -90,6 +90,7 @@ import {
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_DOM_EDITABLE,
+  EDITOR_TO_DOM_FALLBACK_SCROLL,
   EDITOR_TO_DOM_ROOT,
   EDITOR_TO_DOM_SCROLL,
   EDITOR_TO_KEY_TO_ELEMENT,
@@ -149,6 +150,7 @@ import {
   scheduleEditorDOMPhase,
 } from './dom-phase-scheduler';
 import {
+  documentOf,
   findDOMRootRuntime,
   hasMountedDOMRoot,
   hasMountedDocumentView,
@@ -1038,22 +1040,43 @@ export const setEditorDOMEditableElement = (
 
 export const setEditorDOMScrollElement = (
   editor: object,
-  element: HTMLElement | null
+  element: HTMLElement | null,
+  { fallback = false }: { fallback?: boolean } = {}
 ) => {
-  if (setWeakElement(EDITOR_TO_DOM_SCROLL, editor, element)) {
-    notifyEditorDOMScopeListeners(editor);
+  const owner = fallback ? editor : documentOf(editor);
+
+  if (
+    setWeakElement(
+      fallback ? EDITOR_TO_DOM_FALLBACK_SCROLL : EDITOR_TO_DOM_SCROLL,
+      owner,
+      element
+    )
+  ) {
+    notifyEditorDOMScopeListeners(owner);
   }
 };
+
+export const getEditorDOMHostScrollElement = (editor: object) =>
+  EDITOR_TO_DOM_SCROLL.get(documentOf(editor)) ?? null;
+
+const getRegisteredScrollElement = (editor: object) =>
+  getEditorDOMHostScrollElement(editor) ??
+  EDITOR_TO_DOM_FALLBACK_SCROLL.get(editor) ??
+  EDITOR_TO_DOM_FALLBACK_SCROLL.get(documentOf(editor));
 
 export const subscribeEditorDOMScope = (
   editor: object,
   listener: () => void
 ) => {
+  const owner = documentOf(editor);
   const stopOwn = listenEditorDOMScope(editor, listener);
+  const stopOwner =
+    owner === editor ? () => {} : listenEditorDOMScope(owner, listener);
   const stopReach = subscribeDOMReach(editor, listener);
 
   return () => {
     stopOwn();
+    stopOwner();
     stopReach();
   };
 };
@@ -2182,7 +2205,7 @@ const DOMEditorImpl: DOMEditorInterface = {
   },
 
   scroll: (editor) =>
-    EDITOR_TO_DOM_SCROLL.get(editor) ??
+    getRegisteredScrollElement(editor) ??
     DOMEditor.root(editor) ??
     DOMEditor.editable(editor) ??
     null,
@@ -2211,7 +2234,7 @@ const DOMEditorImpl: DOMEditorInterface = {
         const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
 
         if (element) {
-          const scrollElement = EDITOR_TO_DOM_SCROLL.get(editor);
+          const scrollElement = getRegisteredScrollElement(editor);
           const usesRegisteredStartAlignment =
             scrollElement &&
             requestedScrollMarginTop > 0 &&
@@ -3160,7 +3183,8 @@ export const DOMEditor: DOMEditorInterface = {
   },
   root: (editor) => DOMEditorImpl.root(reachView(editor)),
   scroll: (editor) =>
-    EDITOR_TO_DOM_SCROLL.get(editor) ?? DOMEditorImpl.scroll(reachView(editor)),
+    getRegisteredScrollElement(editor) ??
+    DOMEditorImpl.scroll(reachView(editor)),
   scrollIntoView: DOMEditorImpl.scrollIntoView,
   resolveNode: (editor, domNode) =>
     DOMEditorImpl.resolveNode(reachTarget(editor, domNode), domNode),

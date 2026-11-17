@@ -77,6 +77,7 @@ export {
   useEditorRootElement,
   useEditorRuntimeState,
   useEditorScrollElement,
+  useEditorScrollElementRef,
   useEditorViewState,
   useElementPath,
   useElementSelected,

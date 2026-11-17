@@ -3,6 +3,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import type { NamedRootKey, RootKey } from '../..';
 import type { DOMApi } from '../../dom';
 import {
+  getEditorDOMHostScrollElement,
   setEditorDOMScrollElement,
   subscribeEditorDOMScope,
 } from '../../dom/internal';
@@ -52,11 +53,25 @@ export const useEditorScrollElement = (editor: DOMScopeEditor) =>
     useCallback(() => editor.api.dom.scroll(), [editor])
   );
 
-/** Register a host scroll container for Plite DOM work. */
-export const useEditorScrollElementRef = (editor: DOMScopeEditor) =>
+export const useEditorHostScrollElement = (editor: DOMScopeEditor) =>
+  useEditorDOMScopeElement(
+    editor,
+    useCallback(() => getEditorDOMHostScrollElement(editor), [editor])
+  );
+
+/**
+ * Register the element that scrolls the editor, such as a page's scrolling
+ * `main`. Every editor of the document returns it from
+ * `editor.api.dom.scroll()`, and virtualized editables follow its scroll. A
+ * `fallback` registration applies only while no other element is registered.
+ */
+export const useEditorScrollElementRef = (
+  editor: DOMScopeEditor,
+  { fallback = false }: { fallback?: boolean } = {}
+) =>
   useCallback(
     (element: HTMLElement | null) => {
-      setEditorDOMScrollElement(editor, element);
+      setEditorDOMScrollElement(editor, element, { fallback });
     },
-    [editor]
+    [editor, fallback]
   );

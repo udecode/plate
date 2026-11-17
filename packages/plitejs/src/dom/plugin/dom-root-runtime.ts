@@ -107,7 +107,7 @@ const DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR = new WeakMap<
 >();
 const ELEMENT_NODE = 1;
 
-const documentOf = (editor: object): object =>
+export const documentOf = (editor: object): object =>
   hasEditorRuntime(editor) ? getEditorRuntimeOwner(editor) : editor;
 
 export const notifyEditorDOMScopeListeners = (editor: object) => {

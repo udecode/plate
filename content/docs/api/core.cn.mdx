@@ -250,6 +250,37 @@ const imported = migrateDocument(legacyDocument, {
   </APIReturns>
 </API>
 
+### `useEditorScrollElementRef`
+
+`useEditorScrollElementRef(editor, options?)` 返回一个 ref 回调，用来指定滚动编辑器的元素。当页面滚动的是 `EditorContainer` 之外的元素时设置它，这样目录跳转、虚拟化编辑区和 `editor.api.dom.scroll()` 都作用于该元素。不设置时，`EditorContainer` 就是滚动容器。传入 `useCreateEditor` 或 `useEditor()` 返回的编辑器都可以，注册对整个文档生效。
+
+```tsx
+const editor = useCreateEditor({ plugins });
+const scrollRef = useEditorScrollElementRef(editor);
+
+return (
+  <main ref={scrollRef} className="h-screen overflow-y-auto">
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  </main>
+);
+```
+
+<API name="useEditorScrollElementRef">
+  <APIOptions type="object">
+    <APIItem name="fallback" type="boolean" optional>
+      仅在没有注册其他元素时使用该元素，`EditorContainer` 就是这样注册的。
+      - **默认值：** `false`
+    </APIItem>
+  </APIOptions>
+  <APIReturns type="(element: HTMLElement | null) => void">
+    注册该元素的 ref 回调，卸载时清除注册。
+  </APIReturns>
+</API>
+
 ### `useEditor`
 
 `useEditor(): Editor` 返回最近 provider 所选的编辑器，没有目标时抛出错误。它在 provider 切换目标时重新渲染，不订阅文档提交。`EditorContent` 内的返回值绑定该挂载视图的根、DOM 和权限。

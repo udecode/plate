@@ -147,8 +147,9 @@ its view of `root` when given.
 
 #### `editor.api.dom.scroll(): HTMLElement | null`
 
-Return the element used as the editor scroll container. It falls back to the
-editor root when no custom scroll element is registered.
+Return the editor's scroll container. That is the element registered with
+`useEditorScrollElementRef(editor)`, else a `fallback` registration, else the
+editor root.
 
 ## DOM translation
 

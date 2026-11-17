@@ -158,8 +158,9 @@ Return the editable element of the editor's [view](#views), or of its view of
 
 #### `editor.api.dom.scroll(): HTMLElement | null`
 
-Return the element used as the editor scroll container. It falls back to the
-editor root when no custom scroll element is registered.
+Return the editor's scroll container. That is the element registered with
+`useEditorScrollElementRef(editor)`, else a `fallback` registration such as
+`EditorContainer`, else the editor root.
 
 #### `editor.api.dom.visibleRect(element: Element): { top: number; right: number; bottom: number; left: number; width: number; height: number } | null`
 

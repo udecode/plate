@@ -30,7 +30,9 @@ export const EditorContainer = ({
   const readOnly = plateReadOnly ?? editorReadOnly;
 
   const containerRef = useEditorContainerRef();
-  const scrollElementRef = useEditorScrollElementRef(editor);
+  const scrollElementRef = useEditorScrollElementRef(editor, {
+    fallback: true,
+  });
   const ref = useComposedRef(containerRef, scrollElementRef);
 
   let afterContainer: React.ReactNode = null;

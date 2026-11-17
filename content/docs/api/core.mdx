@@ -306,6 +306,43 @@ Creates a memoized Plate editor for React components.
   </APIReturns>
 </API>
 
+### `useEditorScrollElementRef`
+
+`useEditorScrollElementRef(editor, options?)` returns a ref callback that names
+the element that scrolls the editor. Set it when the page scrolls an element
+outside `EditorContainer`, so table-of-contents jumps, virtualized editables
+and `editor.api.dom.scroll()` act on that element. Without it,
+`EditorContainer` is the scroll container. Pass the editor from
+`useCreateEditor` or `useEditor()`; both register for the whole document.
+
+```tsx
+const editor = useCreateEditor({ plugins });
+const scrollRef = useEditorScrollElementRef(editor);
+
+return (
+  <main ref={scrollRef} className="h-screen overflow-y-auto">
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <Editor />
+      </EditorContainer>
+    </EditorRoot>
+  </main>
+);
+```
+
+<API name="useEditorScrollElementRef">
+  <APIOptions type="object">
+    <APIItem name="fallback" type="boolean" optional>
+      Use the element only while no other element is registered, as
+      `EditorContainer` does.
+      - **Default:** `false`
+    </APIItem>
+  </APIOptions>
+  <APIReturns type="(element: HTMLElement | null) => void">
+    A ref callback that registers the element and clears it on unmount.
+  </APIReturns>
+</API>
+
 ### `useEditor`
 
 `useEditor(): Editor` returns the nearest provider's selected editor and throws when no target exists. It rerenders when the provider changes targets without subscribing to document commits. Inside `EditorContent`, it binds commands to that mount's root, DOM, and permissions.

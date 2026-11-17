@@ -14,6 +14,7 @@ import {
   useTopLevelSelectionIndex,
 } from './editable/root-selector-sources';
 import { useEditorContext } from './hooks/use-editor-context';
+import { useEditorHostScrollElement } from './hooks/use-editor-dom-scope';
 import { useEditorReadOnly } from './hooks/use-editor-read-only';
 import {
   getVirtualizerScrollElement,
@@ -61,9 +62,10 @@ const VirtualizedEditableInner = <TElement extends Element>({
   const topLevelNodeKeys = useRootNodeKeys();
   const selectionPaths = useSelectionPaths(true);
   const selectedTopLevelIndex = useTopLevelSelectionIndex(true);
+  const hostScrollElement = useEditorHostScrollElement(useEditorContext());
   const scrollElement = React.useMemo(
-    () => getVirtualizerScrollElement(rootElement),
-    [rootElement]
+    () => hostScrollElement ?? getVirtualizerScrollElement(rootElement),
+    [hostScrollElement, rootElement]
   );
   const options = React.useMemo(
     () => ({ estimatedBlockSize, overscan }),

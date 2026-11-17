@@ -27763,6 +27763,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:useEditorScrollElementRef": {
+          "aliases": [],
+          "documentation": "Register the element that scrolls the editor, such as a page's scrolling\n`main`. Every editor of the document returns it from\n`editor.api.dom.scroll()`, and virtualized editables follow its scroll. A\n`fallback` registration applies only while no other element is registered.",
+          "entrypoint": "platejs/react",
+          "kind": "const",
+          "name": "useEditorScrollElementRef",
+          "runtime": true,
+          "signature": "useEditorScrollElementRef: (editor: DOMScopeEditor, { fallback }?: {\n  fallback?: boolean;\n}) => (element: HTMLElement | null) => void",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:useEditorSelection": {
           "aliases": [],
           "documentation": "Get the selected root's text selection.",
