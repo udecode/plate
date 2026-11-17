@@ -106,6 +106,7 @@ for (const row of rows) {
 }
 
 const [flag, target, status, note = ''] = process.argv.slice(2);
+let changed;
 
 if (flag === '--set') {
   if (!STATUSES.has(status)) {
@@ -126,6 +127,7 @@ if (flag === '--set') {
 
   row[2] = status;
   row[3] = note;
+  changed = row;
 } else if (flag) {
   console.error(
     'Usage: main-sync.mjs [--set <commit | #pr> <gap | pending | synced> [note]]'
@@ -144,7 +146,11 @@ const count = (name) => rows.filter((row) => row[2] === name).length;
 console.log(
   `main-sync: ${count('pending')} pending, ${count('gap')} gap, ${count('synced')} synced`
 );
-for (const row of open.slice(-10)) console.log(row.join('  '));
-if (open.length > 10) {
-  console.log(`...and ${open.length - 10} more in docs/plans/main-sync.tsv`);
+if (changed) {
+  console.log(changed.join('  '));
+} else {
+  for (const row of open.slice(-10)) console.log(row.join('  '));
+  if (open.length > 10) {
+    console.log(`...and ${open.length - 10} more in docs/plans/main-sync.tsv`);
+  }
 }
