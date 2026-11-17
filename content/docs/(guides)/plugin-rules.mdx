@@ -440,8 +440,8 @@ After (empty paragraph removed):
 
 An empty block in a required `schema.content.prefix` slot, such as a title, is
 the exception. When the next sibling's content fits that slot as it stands, no
-required block has to be built in its place and the update has not moved,
-replaced or edited the empty block, the merge keeps the empty block and moves
+required block has to be built in its place and the update has not moved the
+empty block into its slot or replaced it, the merge keeps the empty block and moves
 the content in, whatever `removeEmpty` returns. The next sibling may hold only
 text and inlines and may own no content root, neither block may be a void, an
 atom or read-only, and an empty next sibling must carry the empty block's text

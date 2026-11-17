@@ -11217,6 +11217,7 @@ export function retainTransactionSnapshotIndex(
   );
 
   transactionSnapshot.rootIndexes[root] = index;
+  transactionSnapshot.baseRuntimeIndexes[root] = () => index;
 
   return index;
 }

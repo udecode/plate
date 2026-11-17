@@ -19,7 +19,6 @@ import {
   above as editorAbove,
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
-  isVoid as editorIsVoid,
   levels as editorLevels,
   parent as editorParent,
   previous as editorPrevious,
@@ -159,13 +158,21 @@ const dissolvesIsolatingDescendant = (
   );
 };
 
-const hasSingleChildNest = (editor: Editor, node: Node): boolean =>
-  node !== editor &&
-  (NodeApi.isText(node) ||
-    (NodeApi.isElement(node) && editorIsVoid(editor, node)) ||
-    (!NodeApi.isText(node) &&
-      getChildren(editor, node).length === 1 &&
-      hasSingleChildNest(editor, getChildren(editor, node)[0])));
+const holdsOnly = (editor: Editor, ancestorPath: Path, path: Path) => {
+  if (ancestorPath.length === 0) return false;
+
+  for (
+    let at = PathApi.parent(path);
+    at.length >= ancestorPath.length;
+    at = PathApi.parent(at)
+  ) {
+    if (getChildren(editor, NodeApi.ancestor(editor, at)).length !== 1) {
+      return false;
+    }
+  }
+
+  return true;
+};
 
 export const mergeNodes = ((
   editor: Editor,
@@ -305,12 +312,10 @@ export const mergeNodes = ((
         .slice(0, -1)
     );
 
-    // Determine if the merge will leave an ancestor of the path empty as a
-    // result, in which case we'll want to remove it after merging.
     const emptyAncestor = readAbove(editor, {
       at: path,
       mode: 'highest',
-      match: (n) => levels.has(n) && hasSingleChildNest(editor, n),
+      match: (n, p) => levels.has(n) && holdsOnly(editor, p, path),
     });
 
     const emptyAnchor = emptyAncestor

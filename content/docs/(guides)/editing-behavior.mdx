@@ -171,7 +171,8 @@ Merge behavior decides whether two nodes can join and whether empty nodes at the
 the merge. It skips the descriptor when the previous block is empty and fills a
 required `schema.content.prefix` slot, such as a title. The next sibling's
 content must also fit that slot as it stands, with no required block left to
-build, and the update must not have moved, replaced or edited the empty block.
+build, and the update must not have moved the empty block into its slot or
+replaced it.
 The next sibling may hold only text and inlines and may own no content root,
 neither block may be a void, an atom or read-only, and an empty next sibling must
 carry the empty block's text properties. The empty block then keeps its slot and takes the content. An editor

@@ -439,7 +439,7 @@ const plugins = [
 </h1>
 ```
 
-必需的 `schema.content.prefix` 位置中的空块（例如标题）是例外。当下一个同级块的内容可以原样放入该位置、无需在其位置新建必需的块，且本次更新没有移动、替换或编辑该空块时，无论 `removeEmpty` 返回什么，合并都会保留该空块并移入内容。下一个同级块只能包含文本和行内元素，且不能拥有内容根，两个块都不能是 void、atom 或只读块；若下一个同级块为空，它的文本属性必须与该空块相同。在安装了 [`AuthoredPlugin`](/docs/authored-changes) 的编辑器中，`removeEmpty` 照常生效。因此，在必需标题的开头按 Enter 再按一次 `Backspace` 会恢复标题。
+必需的 `schema.content.prefix` 位置中的空块（例如标题）是例外。当下一个同级块的内容可以原样放入该位置、无需在其位置新建必需的块，且本次更新没有把该空块移入该位置或替换它时，无论 `removeEmpty` 返回什么，合并都会保留该空块并移入内容。下一个同级块只能包含文本和行内元素，且不能拥有内容根，两个块都不能是 void、atom 或只读块；若下一个同级块为空，它的文本属性必须与该空块相同。在安装了 [`AuthoredPlugin`](/docs/authored-changes) 的编辑器中，`removeEmpty` 照常生效。因此，在必需标题的开头按 Enter 再按一次 `Backspace` 会恢复标题。
 
 **禁用移除的 Callout：**
 

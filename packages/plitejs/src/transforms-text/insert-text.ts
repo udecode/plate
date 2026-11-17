@@ -14,6 +14,7 @@ import {
 import { isWritablePoint } from '../core/writable-text';
 import {
   elementReadOnly,
+  readOnlyInlineAt,
   refusesReadOnlyWrite,
 } from '../editor/element-read-only';
 import {
@@ -277,6 +278,32 @@ const getMarksAtNonInclusiveEnd = (
     : null;
 };
 
+const outsideReadOnlyInline = (editor: Editor, point: Point): Point => {
+  const inline = readOnlyInlineAt(editor, point);
+
+  if (!inline) return point;
+
+  const [, path] = inline;
+  const [, firstPath] = NodeApi.first(editor, path);
+
+  if (point.offset === 0 && PathApi.equals(point.path, firstPath)) {
+    const before = PathApi.previous(path);
+
+    return {
+      ...point,
+      offset: NodeApi.leaf(editor, before).text.length,
+      path: before,
+    };
+  }
+
+  const [, lastPath] = NodeApi.last(editor, path);
+
+  return PathApi.equals(point.path, lastPath) &&
+    point.offset === NodeApi.leaf(editor, lastPath).text.length
+    ? { ...point, offset: 0, path: PathApi.next(path) }
+    : point;
+};
+
 const insertTextAtPoint = (editor: Editor, at: Point, text: string) => {
   if (text.length === 0) return;
 
@@ -426,16 +453,18 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
           if (!removal) return;
 
-          const nextAt =
+          const landing =
             removal.kind === 'grid'
               ? removal.landing
               : options.at == null
                 ? (selectionPointAfterDelete ?? startPoint ?? endPoint)
                 : (removal.landing ?? startPoint ?? endPoint);
 
-          if (!nextAt) {
+          if (!landing) {
             return;
           }
+
+          const nextAt = outsideReadOnlyInline(editor, landing);
 
           at = nextAt;
 

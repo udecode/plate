@@ -4730,9 +4730,9 @@ export interface EditorStaticApi {
    * Whether a merge removes the previous node, such as an empty block, instead
    * of joining the current node into it. Returns `false` without running
    * `editorReads.nodes.shouldMergeNodesRemovePrevNode` when the previous node
-   * is an empty block in a required prefix slot, the update has not moved,
-   * replaced or edited it, and the current node, its next sibling, fits that
-   * slot as it stands without leaving a required block to build. That
+   * is an empty block in a required prefix slot, the update has not moved it
+   * into that slot or replaced it, and the current node, its next sibling, fits
+   * that slot as it stands without leaving a required block to build. That
    * exception also needs the current node to hold only text and inlines and
    * own no content root, neither node to be a void, an atom or read-only, and
    * an empty current node to carry the previous node's text properties. An

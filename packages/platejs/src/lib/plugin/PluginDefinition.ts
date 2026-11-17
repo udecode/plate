@@ -623,13 +623,12 @@ export type MergeRules<
    * required prefix slot, such as a title, keeps that node and moves the next
    * sibling's content into it whatever this returns, when that content fits
    * the slot as it stands, no required block is left to build and the update
-   * has not moved, replaced or edited the node. That exception also needs the
-   * sibling to hold only text and inlines and own no content root, neither
-   * node to be a void, an atom or read-only, and an empty sibling to carry the
-   * node's text properties. Backspace still reads
-   * this rule before that merge. With `false` it merges at once, and with
-   * `true` the sibling's delete rules run first. `AuthoredPlugin` turns this
-   * exception off.
+   * has not moved the node into its slot or replaced it. That exception also
+   * needs the sibling to hold only text and inlines and own no content root,
+   * neither node to be a void, an atom or read-only, and an empty sibling to
+   * carry the node's text properties. Backspace still reads this rule before
+   * that merge. With `false` it merges at once, and with `true` the sibling's
+   * delete rules run first. `AuthoredPlugin` turns this exception off.
    */
   removeEmpty?: RuleDecision<boolean, C>;
 };

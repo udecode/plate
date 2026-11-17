@@ -20,26 +20,21 @@ import { getPluginContributions } from './plugin-registry';
 import {
   getActiveUpdateRoot,
   getChildList,
+  getNodeKey,
   getUpdateStartSnapshot,
 } from './public-state';
 import { EditorSchemaValidationError } from './schema-validation';
 
-/**
- * An occupant the update moved into its slot, replaced or edited is not one
- * completion keeps there, so a join must not fill it. A nested command's
- * snapshot does not count, because the update's last completion compares
- * against the update's start.
- */
-const heldSlotAtUpdateStart = (
+const sameNodeAtUpdateStart = (
   editor: Editor,
   root: string,
   [occupant, path]: NodeEntry<Element>
 ) => {
-  const roots = getUpdateStartSnapshot(editor)?.roots;
+  const start = getUpdateStartSnapshot(editor);
 
-  if (!roots) return true;
+  if (!start) return true;
 
-  let siblings: NodeList<Descendant> = rootNodesOf(roots, root);
+  let siblings: NodeList<Descendant> = rootNodesOf(start.roots, root);
   let held: Descendant | undefined;
 
   for (const index of path) {
@@ -47,7 +42,11 @@ const heldSlotAtUpdateStart = (
     siblings = NodeApi.isElement(held) ? held.children : NO_NODES;
   }
 
-  return held === undefined || held === occupant;
+  if (held === undefined || held === occupant) return true;
+
+  const startKey = start.baseRuntimeIndexes[root]?.().keyAt(path);
+
+  return startKey != null && startKey === getNodeKey(editor, path);
 };
 
 const holdsOccupantText = (occupant: Element, joined: Element) =>
@@ -57,11 +56,6 @@ const holdsOccupantText = (occupant: Element, joined: Element) =>
     )
   );
 
-/**
- * True only when the join fits without building any block: the parent keeps
- * its minimum without the joined block, and the occupant takes the joined
- * children as they are.
- */
 export const joinKeepsPrefixOccupant = (
   editor: Editor,
   [occupant, path]: NodeEntry,
@@ -96,14 +90,14 @@ export const joinKeepsPrefixOccupant = (
   if (
     !content?.prefix ||
     slot >= content.prefix.length ||
-    !heldSlotAtUpdateStart(editor, root, [occupant, path])
+    !sameNodeAtUpdateStart(editor, root, [occupant, path])
   ) {
     return false;
   }
 
-  const siblings = parent
-    ? parent.children.length
-    : getChildList(editor).length;
+  const parentKeepsMin =
+    (parent ? parent.children.length : getChildList(editor).length) - 1 >=
+    (content.min ?? 0);
   const { children } = joined;
 
   if (
@@ -118,7 +112,7 @@ export const joinKeepsPrefixOccupant = (
       (child) => NodeApi.isElement(child) && editorIsBlock(editor, child)
     ) ||
     (editorIsEmpty(editor, joined) && !holdsOccupantText(occupant, joined)) ||
-    siblings - 1 < (content.min ?? 0) ||
+    !parentKeepsMin ||
     !schema.canPlaceAt(occupant, [], children, 0, { root }) ||
     !schema.canPlaceAtPath(joinedPath, [], { removing: [slot + 1], root })
   ) {
