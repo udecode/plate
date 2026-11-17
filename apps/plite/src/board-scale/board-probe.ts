@@ -65,6 +65,7 @@ type ProbeEditor = Readonly<{
     } | null;
     value: () => unknown;
   };
+  subscribeCommit: (listener: () => void) => () => void;
   update: (run: (tx: ProbeTx) => void) => void;
 }>;
 
@@ -183,13 +184,14 @@ export const prepareBoardScale = (search: string) => {
   return {
     camera,
     claim,
-    expected: flat
-      ? { blocks: claimedRead.blockCount, collaboration: false }
-      : {
-          ...expectedReadback(claim.workload),
-          arm: query.arm,
-          shapesInView: claimedRead.shapesInView,
-        },
+    claimed: {
+      blocks: claimedRead.blockCount,
+      board: {
+        ...expectedReadback(claim.workload),
+        shapesInView: claimedRead.shapesInView,
+      },
+      cohort: query.cohort,
+    },
     fixture: built,
     mountedArm,
     offset,
@@ -255,18 +257,23 @@ type KeySample = {
 
 type K2Done =
   | Readonly<{ from: string | null; kind: 'selectionMoved' }>
+  | Readonly<{ arrow?: string; id: string; kind: 'boxPreviewed' }>
+  | Readonly<{ id: string; kind: 'boxWritten' }>
   | Readonly<{ kind: 'aimMoved' }>
+  | Readonly<{ kind: 'cursorMoved' | 'selectionToggled' }>
   | Readonly<{ kind: 'shapeAdded' }>;
 
 type K2Arm = Readonly<{
+  busyMs?: number;
   done: K2Done;
-  event: 'keydown' | 'pointerdown' | 'pointerup';
+  event: 'keydown' | 'keyup' | 'pointerdown' | 'pointermove' | 'pointerup';
   key: string | null;
   planted: boolean;
   said: Readonly<{ end: string; start: string }> | null;
 }>;
 
 type K2Sample = {
+  arrowRenders?: number;
   done?: number;
   extraMs: number;
   mounts?: number;
@@ -508,6 +515,12 @@ export const installBoardProbe = (
       boardHost()?.querySelectorAll('[data-board-shape][data-selected]') ?? [],
       (element) => element.getAttribute('data-board-shape') ?? ''
     );
+  const cursorShapes = () =>
+    Array.from(
+      boardHost()?.querySelectorAll('[data-board-shape][data-board-cursor]') ??
+        [],
+      (element) => element.getAttribute('data-board-shape') ?? ''
+    );
   let k2: {
     arm: K2Arm;
     before: {
@@ -517,9 +530,42 @@ export const installBoardProbe = (
     known: ReadonlySet<string>;
     lineBefore: string | null;
     notify: (() => void) | null;
+    readBefore: string | null;
     sample: K2Sample | null;
     settled: boolean;
   } | null = null;
+  const shapeElement = (id: string) =>
+    boardHost()?.querySelector<HTMLElement>(`[data-board-shape="${id}"]`) ??
+    null;
+  const boxText = (width: number, height: number) => `${width}x${height}`;
+  const k2Read = (done: K2Done) => {
+    if (done.kind === 'boxPreviewed') {
+      const element = shapeElement(done.id);
+
+      return element
+        ? boxText(
+            Number.parseFloat(element.style.width),
+            Number.parseFloat(element.style.height)
+          )
+        : null;
+    }
+    if (done.kind === 'boxWritten') {
+      const { size } =
+        rootShapes().find((shape) => shape.shapeId === done.id) ?? {};
+
+      return size ? boxText(size.width, size.height) : null;
+    }
+    if (done.kind === 'cursorMoved') {
+      const ids = cursorShapes();
+
+      return ids.length === 1 ? ids[0] : null;
+    }
+    if (done.kind === 'selectionToggled') {
+      return selectedShapes().toSorted().join(',');
+    }
+
+    return null;
+  };
   let shapeAtLineEnd = new Map<string, string>();
   const indexLineEnds = (shapes: readonly StoredNode[]) =>
     new Map(
@@ -578,10 +624,61 @@ export const installBoardProbe = (
 
       return ids.length === 1 && ids[0] !== done.from ? ids[0] : null;
     }
-    const end = aimLineEnd();
+    if (done.kind === 'aimMoved') {
+      const end = aimLineEnd();
 
-    return end !== null && end !== k2.lineBefore ? end : null;
+      return end !== null && end !== k2.lineBefore ? end : null;
+    }
+    if (done.kind === 'boxWritten') return null;
+    const read = k2Read(done);
+
+    return read !== null && read !== k2.readBefore ? read : null;
   };
+
+  const finishK2 = (armed: NonNullable<typeof k2>, sample: K2Sample) => {
+    sample.done = Math.max(
+      sample.resultAt ?? Number.NaN,
+      sample.wordsAt ?? sample.resultAt ?? Number.NaN
+    );
+    const { done } = armed.arm;
+
+    if (done.kind === 'boxPreviewed' && done.arrow !== undefined) {
+      const before = armed.before?.renders.get(done.arrow);
+
+      if (before !== undefined) {
+        sample.arrowRenders =
+          (boardStats.renderedIds.get(done.arrow) ?? 0) - before;
+      }
+    }
+    // A second commit after the operation's own, so React cannot fold it in.
+    if (armed.arm.planted && plant === 'write-render') {
+      setTimeout(bumpShapeTick, 0);
+    }
+    requestAnimationFrame(() => k2Channel.port2.postMessage(null));
+  };
+
+  let stopBoxWrittenWatch: (() => void) | null = null;
+  const watchBoxWrittenCommits = () =>
+    editor.subscribeCommit(() => {
+      const armed = k2;
+      const sample = armed?.sample;
+
+      if (
+        !armed ||
+        !sample ||
+        sample.resultAt !== undefined ||
+        armed.arm.done.kind !== 'boxWritten'
+      ) {
+        return;
+      }
+      const now = performance.now();
+      const read = k2Read(armed.arm.done);
+
+      if (read === armed.readBefore) return;
+      sample.resultAt = now;
+      sample.result = read ?? 'no box';
+      finishK2(armed, sample);
+    });
 
   const k2Observer = new MutationObserver((records) => {
     const now = performance.now();
@@ -610,12 +707,7 @@ export const installBoardProbe = (
     }
     if (sample.resultAt === undefined) return;
     if (said && sample.wordsAt === undefined) return;
-    sample.done = Math.max(sample.resultAt, sample.wordsAt ?? sample.resultAt);
-    // A second commit after the insert's own, so React cannot fold it in.
-    if (k2.arm.planted && plant === 'write-render') {
-      setTimeout(bumpShapeTick, 0);
-    }
-    requestAnimationFrame(() => k2Channel.port2.postMessage(null));
+    finishK2(k2, sample);
   });
 
   k2Channel.port1.addEventListener('message', () => {
@@ -667,7 +759,14 @@ export const installBoardProbe = (
     armed.sample = sample;
     if (!armed.arm.planted) return;
     if (plant === 'busy') {
-      const ms = K2_BUSY_MS[armed.arm.done.kind];
+      const { busyMs, done } = armed.arm;
+      const ms =
+        busyMs ??
+        (done.kind === 'aimMoved' ||
+        done.kind === 'selectionMoved' ||
+        done.kind === 'shapeAdded'
+          ? K2_BUSY_MS[done.kind]
+          : 0);
 
       busyWait(ms);
       sample.extraMs += ms;
@@ -679,7 +778,9 @@ export const installBoardProbe = (
   // The page installs the probe before the board mounts, so these window
   // capture listeners run before the board's own.
   window.addEventListener('keydown', startK2, true);
+  window.addEventListener('keyup', startK2, true);
   window.addEventListener('pointerdown', startK2, true);
+  window.addEventListener('pointermove', startK2, true);
   window.addEventListener('pointerup', startK2, true);
 
   const readback = () => {
@@ -945,7 +1046,7 @@ export const installBoardProbe = (
       await nextFrame();
       await nextFrame();
     },
-    expected: prepared.expected,
+    claimed: prepared.claimed,
     frameInterval: measureFrameInterval,
     misplaced,
     plantWork,
@@ -1573,12 +1674,76 @@ export const installBoardProbe = (
       if (!best) {
         throw new Error('K2 found no note in view with notes on both sides');
       }
+      const boundTo = new Map<string, StoredNode[]>();
+
+      for (const shape of shapes) {
+        for (const id of [shape.start?.shape, shape.end?.shape]) {
+          if (id) boundTo.set(id, [...(boundTo.get(id) ?? []), shape]);
+        }
+      }
+      let loneArrowNote: {
+        arrow: StoredNode;
+        distance: number;
+        shape: StoredNode;
+      } | null = null;
+
+      for (const shape of shapes) {
+        const [arrow, ...more] = boundTo.get(shape.shapeId ?? '') ?? [];
+
+        if (
+          !note(shape) ||
+          !arrow ||
+          more.length > 0 ||
+          arrow.end?.shape !== shape.shapeId ||
+          !isMounted(arrow.shapeId ?? '')
+        ) {
+          continue;
+        }
+        const box = shapeBox(shape);
+        const distance = Math.hypot(
+          box.x + box.width / 2 - middle.x,
+          box.y + box.height / 2 - middle.y
+        );
+
+        if (!loneArrowNote || distance < loneArrowNote.distance) {
+          loneArrowNote = { arrow, distance, shape };
+        }
+      }
+      if (!loneArrowNote) {
+        throw new Error(
+          'K3 found no note in view whose one bound arrow ends on it'
+        );
+      }
+      const resizeBox = shapeBox(loneArrowNote.shape);
+      const z = screenRect(resizeBox, surface, camera);
       shapeAtLineEnd = indexLineEnds(shapes);
       const [left, start, right] = shapes.slice(best.at - 1, best.at + 2);
-      const s = screenRect(shapeBox(start), surface, camera);
-      const r = screenRect(shapeBox(right), surface, camera);
+      const startBox = shapeBox(start);
+      const rightBox = shapeBox(right);
+      const s = screenRect(startBox, surface, camera);
+      const r = screenRect(rightBox, surface, camera);
+      const startMiddle = {
+        x: startBox.x + startBox.width / 2,
+        y: startBox.y + startBox.height / 2,
+      };
+      const freeKeySteps = {
+        x: Math.round(
+          (startBox.x + startBox.width + rightBox.x) / 2 - startMiddle.x
+        ),
+        y: Math.round(startBox.y + ABOVE_ARROWS_PX - startMiddle.y),
+      };
+      const freePoint = {
+        x: startMiddle.x + freeKeySteps.x,
+        y: startMiddle.y + freeKeySteps.y,
+      };
 
       return {
+        freePoint,
+        freeScreen: {
+          x: surface.left + (freePoint.x - camera.x) * camera.zoom,
+          y: surface.top + (freePoint.y - camera.y) * camera.zoom,
+        },
+        freeKeySteps,
         gapAboveArrows: {
           x: (s.right + r.left) / 2,
           y: s.top + ABOVE_ARROWS_PX,
@@ -1589,12 +1754,24 @@ export const installBoardProbe = (
           [right.shapeId ?? '']: best.at + 2,
           [start.shapeId ?? '']: best.at + 1,
         },
+        resize: {
+          arrow: loneArrowNote.arrow.shapeId ?? '',
+          start: loneArrowNote.shape.shapeId ?? '',
+          startBox: resizeBox,
+          startGrab: { x: z.left + 6, y: z.top + 6 },
+        },
         right: right.shapeId ?? '',
         rightCenter: { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 },
+        rightMiddle: {
+          x: rightBox.x + rightBox.width / 2,
+          y: rightBox.y + rightBox.height / 2,
+        },
         start: start.shapeId ?? '',
+        startBox,
         startCenter: { x: (s.left + s.right) / 2, y: (s.top + s.bottom) / 2 },
         startGrab: { x: s.left + 6, y: s.top + 6 },
         total: shapes.length,
+        zoom: camera.zoom,
       };
     },
 
@@ -1604,6 +1781,9 @@ export const installBoardProbe = (
 
       return {
         aimed: end === null ? null : aimedShapeAt(end),
+        cursor: cursorShapes(),
+        onTarget:
+          document.activeElement?.hasAttribute('data-board-focus') ?? false,
         selected: selectedShapes(),
         tool: view && 'tool' in view ? (view.tool ?? null) : null,
       };
@@ -1613,18 +1793,45 @@ export const installBoardProbe = (
 
     k2Shape: (id: string) => {
       const shape = rootShapes().find((each) => each.shapeId === id);
+      const freeEnd = shape?.end && !shape.end.shape ? shape.end : null;
 
       return shape
         ? {
+            box:
+              shape.place && shape.size
+                ? { ...shape.size, x: shape.place.x, y: shape.place.y }
+                : null,
             end: shape.end?.shape ?? null,
+            endAt: freeEnd ? { x: freeEnd.x, y: freeEnd.y } : null,
             start: shape.start?.shape ?? null,
             type: shape.type ?? '',
           }
         : null;
     },
 
+    k2HandlePressPoint: (id: string, corner: string) => {
+      const shape = shapeElement(id);
+      const handle = shape?.querySelector(`[data-board-handle="${corner}"]`);
+
+      if (!shape || !handle) return null;
+      const outer = shape.getBoundingClientRect();
+      const rect = handle.getBoundingClientRect();
+      const left = Math.max(outer.left, rect.left);
+      const top = Math.max(outer.top, rect.top);
+      const point = {
+        x: (left + Math.min(outer.right, rect.right)) / 2,
+        y: (top + Math.min(outer.bottom, rect.bottom)) / 2,
+      };
+
+      return document.elementFromPoint(point.x, point.y) === handle
+        ? point
+        : null;
+    },
+
     k2Arm: (arm: K2Arm) => {
       k2Observer.disconnect();
+      stopBoxWrittenWatch?.();
+      stopBoxWrittenWatch = null;
       k2 = {
         arm,
         before: null,
@@ -1635,14 +1842,25 @@ export const installBoardProbe = (
         ),
         lineBefore: aimLineEnd(),
         notify: null,
+        readBefore: k2Read(arm.done),
         sample: null,
         settled: false,
       };
       const host = boardHost();
 
       if (!host) throw new Error('no board for K2 to watch');
+      if (arm.done.kind === 'boxWritten') {
+        stopBoxWrittenWatch = watchBoxWrittenCommits();
+      }
       k2Observer.observe(host, {
-        attributeFilter: ['data-board-shape', 'data-selected', 'x2', 'y2'],
+        attributeFilter: [
+          'data-board-shape',
+          'data-selected',
+          'x2',
+          'y2',
+          ...(arm.done.kind === 'boxPreviewed' ? ['style'] : []),
+          ...(arm.done.kind === 'cursorMoved' ? ['data-board-cursor'] : []),
+        ],
         attributes: true,
         childList: true,
         subtree: true,
@@ -1692,6 +1910,8 @@ export const installBoardProbe = (
       const arm = k2?.arm;
 
       k2 = null;
+      stopBoxWrittenWatch?.();
+      stopBoxWrittenWatch = null;
       if (!sample || !arm) return null;
 
       return { ...sample, result: k2ResultOf(arm, sample.result) };

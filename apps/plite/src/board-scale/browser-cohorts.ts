@@ -73,10 +73,19 @@ export const K2_BUSY_MS = {
   shapeAdded: 67,
 } as const;
 
+export const K3_BUSY_MS = {
+  end: 1,
+  held: 2,
+  pick: 2,
+} as const;
+
+export type K3Family = keyof typeof K3_BUSY_MS;
+
 type GateLine =
   | 'G1'
   | 'J1'
   | 'K2'
+  | 'K3'
   | 'L1'
   | 'M0'
   | 'N1'
@@ -90,9 +99,9 @@ export const PLANT_REJECTING_LINES = {
   'shape-render': ['W1'],
   'shape-selector': ['W1'],
   'view-scan': ['W1'],
-  busy: ['N1', 'K2'],
-  'aim-render': ['K2'],
-  'write-render': ['K2'],
+  busy: ['N1', 'K2', 'K3'],
+  'aim-render': ['K2', 'K3'],
+  'write-render': ['K2', 'K3'],
   slow: ['M0', 'J1'],
   defer: ['N2'],
   layout: ['N2'],

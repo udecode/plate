@@ -10,9 +10,14 @@
  *     --engine chromium|webkit --render A|W --arm <arm> --cohorts <name,...>
  *     --log-dir <dir> [--base n50|flat|same] [--assert 1] [--known-bad <fault>]
  *     [--factor <ratio>] [--slow-basis n1|n2] [--keys 120] [--warmup 20]
- *     [--ops <op,...>, required with --lane keys: aim-tab, aim-pick, write-note, write-frame, write-arrow]
+ *     [--ops <op,...>, required with --lane keys: aim-tab, aim-pick, write-note, write-frame, write-arrow,
+ *       end-arrow, resize-arrow, pick-tab, pick-space, write-free-arrow, write-resize]
  *     [--aim connect|select] [--write enter|pointer] [--samples 20]
- *     [--write-warmup 3] [--dry-job 1]
+ *     [--write-warmup 3] [--busy end|pick|held] [--dry-job 1]
+ *
+ * --write picks the keyboard (enter) or the pointer for the write ops and for
+ * resize-arrow, whose pointer form moves a corner handle. --busy gives a K3
+ * line family's busy plant in place of K2's per-result one.
  *
  * Arms: base, candidate, copy, plant-<name> (see browser-cohorts.ts).
  * --dry-job 1 prints the job this arm would run and runs nothing, so a
@@ -93,9 +98,15 @@ const lane = oneOf('lane', ['type', 'mount', 'pan', 'drag', 'guard', 'keys']);
 const K2_OPS = [
   'aim-pick',
   'aim-tab',
+  'end-arrow',
+  'pick-space',
+  'pick-tab',
+  'resize-arrow',
   'write-arrow',
   'write-frame',
+  'write-free-arrow',
   'write-note',
+  'write-resize',
 ];
 const ops = lane === 'keys' ? required('ops').split(',') : undefined;
 
@@ -138,6 +149,7 @@ const job = {
   arm,
   assert: args.get('assert') === '1',
   base: oneOf('base', ['n50', 'flat', 'same'], 'n50'),
+  busy: args.has('busy') ? oneOf('busy', ['end', 'held', 'pick']) : undefined,
   cohorts: required('cohorts').split(','),
   factor: Number(args.get('factor') ?? 1.3),
   keys: Number(args.get('keys') ?? 120),
