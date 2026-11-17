@@ -111,6 +111,7 @@ import {
   subscribeCommittedPlacement,
 } from '../core/view-carets';
 import { countCoreWork } from '../core/work';
+import { getViewAuthor } from '../editor-runtime-view';
 import type {
   AnyEditor as Editor,
   EditorDocumentValue,
@@ -1240,10 +1241,12 @@ export const createAuthoredPlugin = (
 
       return `${incarnationToken}:${incarnations}`;
     });
-  const authorOf = (editor: Editor) =>
+  const authorOf = (writing: Editor) =>
+    getViewAuthor(writing) ??
     (typeof options.authorId === 'function'
-      ? options.authorId(editor)
-      : options.authorId) ?? null;
+      ? options.authorId(writing)
+      : options.authorId) ??
+    null;
   const stateOf = (editor: Editor) => {
     const state = STATES.get(getEditorRuntimeOwner(editor));
 
@@ -1743,7 +1746,7 @@ export const createAuthoredPlugin = (
             decideCovered(decisions)
         ),
         withdraw: txStored((changes: readonly AuthoredChange[]) => {
-          const author = authorOf(editor);
+          const author = authorOf(getAuthoredUpdateView(editor));
 
           if (changes.some((change) => change.authorId !== author)) {
             return {
@@ -2090,7 +2093,7 @@ export const createAuthoredPlugin = (
           // Editing records what Suggesting records, under the writer's
           // reserved change, and accepts it in the same commit.
           const editing = !forced && updateView.intent === 'edit';
-          const writer = authorOf(editor);
+          const writer = authorOf(viewEditor);
 
           if (writer === null) {
             throw new Error('An author ID is required for authored writes.');

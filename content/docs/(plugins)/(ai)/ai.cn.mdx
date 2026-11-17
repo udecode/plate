@@ -127,9 +127,23 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。
+`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。请把复制的 `use-chat` 中的 `aiUser` 加入评论用户：
 
-已完成的生成评论直接发布为普通线程，不显示批准提示。通过 `CommentsPlugin.configure({ initialState: { mutate } })` 配置授权和规范持久化；集成等待持久化操作结果后才确认发布成功。生成文档编辑的草稿接受控件不会阻止评论发布。持久化与操作结果请参阅[评论](/docs/comment)。
+```tsx
+import { CommentsPlugin } from 'platejs/comments/react';
+import { aiUser } from '@/components/editor/use-chat';
+
+CommentsPlugin.configure({
+  initialState: {
+    initialComments: { ranges, threads },
+    users: { ...users, [aiUser.id]: aiUser },
+  },
+});
+```
+
+复制的 `AIChatTransportPlugin` 设置了 `authorId: aiUser.id`，因此 AI 评论和建议以 AI 作为作者。复制的 `use-chat` 通过带该作者的视图创建每条生成评论，`data.requestedBy` 为编辑器用户，`data.model` 为路由随该评论流式返回的模型。复制的评论卡片允许 `requestedBy` 中的用户解决、重新打开、编辑和删除 AI 的消息，就像线程创建者对自己的线程一样。
+
+已完成的生成评论直接发布为普通线程，不显示批准提示。通过 `CommentsPlugin.configure({ initialState: { mutate } })` 配置授权和规范持久化；集成等待持久化操作结果后才确认发布成功。`mutate` 收到的线程作者是 AI 的 ID，请在那里检查当前登录用户能否以 AI 身份发布。生成文档编辑的草稿接受控件不会阻止评论发布。持久化与操作结果请参阅[评论](/docs/comment)。
 
 ### 构建 API 路由
 
@@ -315,6 +329,15 @@ Markdown，因此插入和替换命令不依赖预览组件是否挂载。
 在 Suggesting 模式接受草稿会创建供后续审阅的原生建议。聊天编辑在两种视图中都是建议，
 接受它即决定该建议。流式传输不创建建议，也不切换模式。Copilot ghost text 同样在接受前保持临时状态。
 
+`authorId` 状态，例如 `'ai'`，让这些编辑以 AI 自己的名义写入。AI 写入的建议因此是该作者的 proposal，
+`accept()` 和上述撤回都通过带该作者的视图执行。
+`authorId: null` 为默认值，此时 AI 以编辑器用户的身份写入。复制的 `AIChatTransportPlugin`
+把它设为 `aiUser.id`；不使用该组件而直接安装 `AIChatPlugin` 时，请自行配置：
+
+```tsx
+AIChatPlugin.configure({ initialState: { authorId: 'ai' } });
+```
+
 ## AI Chat 能力
 
 通过已安装插件访问 AI Chat 服务、快照读取和更新：
@@ -343,6 +366,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
     <APIItem name="trigger" type="RegExp | string | string[]" optional>打开命令菜单的字符。默认为 `' '`。</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
     <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
+    <APIItem name="authorId" type="string | null" optional>AI 文档写入的作者：它的建议、插入或替换的输出，以及它对自己建议的接受和撤回。`null` 表示以编辑器用户写入。默认为 `null`。</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>`useAIChat` 发布的当前消息、状态、错误和控制器（内部管理）。</APIItem>
     <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>与编辑器作用域运行时标识配对的差异编辑建议节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>

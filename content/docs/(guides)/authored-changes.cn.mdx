@@ -19,6 +19,7 @@ Authored changes 在一个保存的文档中维护已接受内容、待处理 pr
 | 在编辑和建议模式之间切换   | `platejs/authored` 中 `AuthoredPlugin` 的 `api.setView`                |
 | 添加复制的高亮和审阅卡片   | [SuggestionKit](/docs/suggestion) 和 [DiscussionKit](/docs/discussion) |
 | 以编辑器的用户记录 change  | `platejs/authored` 的 `AuthoredPlugin`                                 |
+| 以其他作者记录 change      | [带 `authorId` 的视图](#以其他作者身份写入)                            |
 | 读取和决定 change 或卡片   | 已安装的 authored plugin portal                                        |
 | 附加对话                   | 使用 `{ type: 'change', id }` target 的 `CommentsPlugin`               |
 
@@ -61,6 +62,27 @@ editor.update((tx) => {
 ```
 
 传入 `{ changeId }` 可以为 proposal 命名，或把该 transaction 的写入加入具有该 ID 的待处理 change。若该 ID 的 change 已被决定，则开始一个新 change。以 `~edit:` 开头的 ID 属于 Editing，会被拒绝。
+
+## 以其他作者身份写入
+
+要以编辑器用户之外的身份记录 change，例如在某人的编辑器中运行的 AI，请通过指定作者的视图写入：
+
+```tsx
+import { createEditorView } from "platejs";
+
+const ai = createEditorView(editor, { authorId: "ai" });
+
+ai.update((tx) => {
+  tx.authored.propose();
+  tx.text.insert(" reviewed", {
+    at: { offset: 8, path: [0, 0] },
+  });
+});
+```
+
+通过 `ai` 记录的每个 change 的 `authorId` 都是 `'ai'`，`ai.userId` 也读取 `'ai'`。通过 `ai.plugin(CommentsPlugin)` 创建的评论记录同一作者。从 `ai` 创建或投影出的视图沿用其作者，除非自己指定作者。编辑器本身和没有 `authorId` 的视图仍使用编辑器用户。通过 `ai` 调用 `withdraw` 只能撤回作者为 `'ai'` 的 change。在同一选项中加上 `authored: { intent: "propose" }`，即可把经过该视图的每次写入都记录为 proposal。
+
+`authorId` 在视图生命周期内固定。它必须是不含 NUL 字符的非空字符串；其他值会让 `createEditorView` 抛出错误。
 
 ## 导入比较得到的版本
 
@@ -323,7 +345,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 
 ### `AuthoredPlugin`
 
-从 `platejs/authored` 导入标准描述符。它以 Plate editor 的 `userId` 记录每个 change；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。它不接受选项。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
+从 `platejs/authored` 导入标准描述符。它以写入视图的作者记录每个 change；视图没有作者时以 Plate editor 的 `userId` 记录；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。它不接受选项。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
 
 ### Transaction、读取和更新
 
@@ -340,6 +362,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.read.groupOf(changeId)`          | 读取包含某个 change 的卡片；不存在时返回 `null`。                      |
 | `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
 | `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |
+| `authored.update.withdraw(changes)`        | 移除写入视图作者自己的待处理 change，不记录决定。                      |
 | `authored.api.setView(view)`               | 修改该精确 view 的 policy。                                            |
 | `authored.api.subscribeChanges(listener)`  | 每次改变审阅的 commit 都会收到一个共享 delta。                         |
 | `authored.api.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。                       |

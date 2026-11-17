@@ -26,6 +26,8 @@ For comments alongside proposed edits, see [Discussion](/docs/discussion).
 - Overlapping threads and comments spanning text segments
 - Document-level discovery for open, resolved, and unavailable conversations
 - Thread rows in your own tables, and plain ranges saved with each document revision
+- App data on threads and messages
+- Comments under another author, such as an AI
 - Read-only review and static highlights
 
 </PackageInfo>
@@ -169,6 +171,24 @@ if (attachment?.type === "range" && attachment.status === "attached") {
 | `null` | No thread exists for that ID |
 
 An unavailable attachment does not prove deletion. It can also mean that a projection hides the target or that a historical revision has no target for the thread. Keep conversation data visible independently of inline placement.
+
+#### Attach app data
+
+A thread and each of its messages can carry `data`, a JSON object your application owns, such as reactions or the model that wrote a comment. Comments checks that it is JSON, stores a frozen copy with the record, and never reads its keys. Set it when you create a thread or reply, and change it with `setData`:
+
+```ts
+import { CommentsPlugin } from "platejs/comments/react";
+
+const comments = editor.plugin(CommentsPlugin).api;
+
+await comments.createThread({ body, data: { priority: "high" }, target });
+await comments.reply(threadId, body, { data: { reactions: [] } });
+await comments.setData(threadId, { priority: "low" });
+await comments.setData(threadId, { reactions: ["+1"] }, { messageId });
+await comments.setData(threadId, null);
+```
+
+The `data` passed to `createThread` or `createDraft` belongs to the thread; its first message gets none. `setData` replaces the data of a published thread, or of one message when you pass `messageId`, and `null` removes it. It runs through `mutate` with the operation `'setData'` and stays outside document history. Replies, message edits and resolution keep the data a record already has. A value that is not a JSON object answers `invalid`, and `createDraft` returns `null` for it. A saved row or a record `mutate` returns with `data: null` reads as one without data, such as a nullable JSON column. A saved row whose `data` is any other value that is not a JSON object drops with an `'invalid-thread'` issue.
 
 ### Discover conversations
 
@@ -317,6 +337,24 @@ Authenticate the actor, authorize the operation, and persist it in your service 
 
 Comments publishes only after commit. Rejection or a thrown error preserves the previous record and composer. Actions are serialized per thread; an editor or thread retired while work is pending can return `stale`. The default adapter commits locally. Hiding controls or setting document `readOnly` does not authorize comment writes.
 
+### Comment as another author
+
+Comments records each thread, draft, reply and resolution as the author of the editor or view the action runs through. To comment as someone other than the editor's user, such as an AI, run the action through a view that names that author:
+
+```ts
+import { createEditorView } from "platejs";
+import { CommentsPlugin } from "platejs/comments/react";
+
+const ai = createEditorView(editor, { authorId: "ai" });
+
+await ai.plugin(CommentsPlugin).api.createThread({
+  body,
+  target: { range, type: "range" },
+});
+```
+
+The new thread and its first message record `'ai'` as their `userId`. The editor and views without an `authorId` keep the editor's user. Add the author to `users` so the comment UI shows its name. A view's author is a claim the client makes. `mutate` receives it in the proposed record, so check there that the signed-in user may write as that author.
+
 ### Document history and versions
 
 Successful local thread creation joins the same session undo order as document
@@ -361,7 +399,7 @@ Saved range targets cannot be restored against a changed Yjs room baseline. A st
 | Copied `comment`, `comment-toolbar-button`, and `discussion` items | Style highlights; render forms, cards, live block triggers, Floating Discussion, and document-level discovery |
 | Your application | Store thread rows, save ranges with each document revision, supply users, and authorize mutations |
 
-Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` uses the plugin store; subscribe with `usePluginStore` and update it through `store.set`. Threads, replies and resolutions record the editor's `userId`, or the local user, `'local'`, when the editor has none.
+Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` uses the plugin store; subscribe with `usePluginStore` and update it through `store.set`. Threads, replies and resolutions record the author of the view they run through, else the editor's `userId`, or the local user, `'local'`, when the editor has none.
 
 ## Manual Usage
 
@@ -447,10 +485,11 @@ Review every report row, then save `migrated.output` with the non-null entries o
 | `api.cancel()` | Close the pending composer and release its range. A `create` already sent from it still finishes |
 | `api.create(body)` | Publish the pending thread; await `CommentMutationResult<string>` |
 | `api.createThread(input)` | Publish a range or authored-change thread; await `CommentMutationResult<string>` |
-| `api.reply(id, body)` | Append a message to an unresolved thread |
+| `api.reply(id, body, options?)` | Append a message to an unresolved thread; `{ data }` sets the new message's app data |
 | `api.edit(id, messageId, body)` | Edit a message under adapter authorization |
 | `api.removeMessage(id, messageId)` | Remove a message; remove its thread when no messages remain |
 | `api.removeThread(id)` | Delete a thread under adapter authorization |
+| `api.setData(id, data, options?)` | Replace a published thread's app data, or a message's with `{ messageId }`; `null` removes it |
 | `api.resolve(id)` | Record canonical resolution actor and time |
 | `api.reopen(id)` | Clear resolution metadata |
 | `api.publishDraft(id)` | Commit a local draft through the mutation adapter |
@@ -461,9 +500,11 @@ Review every report row, then save `migrated.output` with the non-null entries o
 
 ```ts showLineNumbers
 import type { Range, Value } from "platejs";
+import type { CommentData } from "platejs/comments";
 
 export type CreateCommentThreadInput = Readonly<{
   body: Value;
+  data?: CommentData;
   excerpt?: string;
   id?: string;
   target:
@@ -472,7 +513,7 @@ export type CreateCommentThreadInput = Readonly<{
 }>;
 ```
 
-Creation requires a current user and a nonempty body. Range creation requires a noncollapsed range in the primary document. Comments supplies actors and timestamps, or accepts canonical values from the adapter.
+`CommentData` is a JSON object of `CommentDataValue` values: strings, finite numbers, booleans, `null`, arrays and nested objects. Creation requires a current user and a nonempty body. Range creation requires a noncollapsed range in the primary document. Comments supplies actors and timestamps, or accepts canonical values from the adapter.
 
 Pass ranges from the calling view to `begin`, `createThread`, and `createDraft`. Their anchors capture that view's coordinates. Read `pendingRange()` and `attachment(id)` through the view that will consume them rather than reusing coordinates from another projection.
 

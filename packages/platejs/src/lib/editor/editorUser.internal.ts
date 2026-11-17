@@ -1,7 +1,9 @@
 import {
   getEditorRuntimeOwner,
   getInstalledPlugin,
+  getViewAuthor,
   isAuthorId,
+  type RuntimeAnyEditor,
 } from '../../facade';
 import { DebugPlugin } from '../plugins/debug/DebugPlugin';
 import type { Editor } from './Editor';
@@ -27,18 +29,21 @@ const editorUsers = new WeakMap<object, string>();
  */
 export const defineEditorUser = (editor: Editor, userId: string) => {
   editorUsers.set(editor, userId);
-  Object.defineProperty(editor, 'userId', { enumerable: true, value: userId });
+  Object.defineProperty(editor, 'userId', {
+    enumerable: true,
+    get(this: object) {
+      return getViewAuthor(this) ?? userId;
+    },
+  });
 };
 
 const warnedEditors = new WeakSet<object>();
 
-/**
- * Read the author for a write, a comment or a proposal check. The first such
- * read as the local user in an editor with a plugin keyed `yjs` warns once in
- * development, because every collaborator without a `userId` would share that
- * user.
- */
-export const readEditorAuthor = (editor: Editor): string => {
+export const readEditorAuthor = (editor: RuntimeAnyEditor): string => {
+  const viewAuthor = getViewAuthor(editor);
+
+  if (viewAuthor !== undefined) return viewAuthor;
+
   const owner = getEditorRuntimeOwner(editor);
   const userId = editorUsers.get(owner);
 

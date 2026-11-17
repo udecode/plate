@@ -26,6 +26,8 @@ docs:
 - 用于打开、已解决和目标不可用对话的文档级发现入口
 - 按记录、待提交输入和线程列表分别订阅
 - 通过复制的 Discussion UI 审阅评论和建议
+- 线程和消息上的应用数据
+- 以其他作者身份评论，例如 AI
 
 </PackageInfo>
 
@@ -133,6 +135,24 @@ if (attachment?.type === "range" && attachment.status === "attached") {
 | `null` | 线程不存在 |
 
 `unavailable` 不能证明文本已被删除；投影隐藏目标或历史版本缺少目标也会导致此状态。**所有评论**会保留线程和原始摘录，只有附着位置可用时才显示行内高亮和区块计数。
+
+### 附加应用数据
+
+线程及其每条消息都可以带 `data`，即应用自有的 JSON 对象，例如表情回应或生成评论的模型。Comments 只检查它是 JSON，随记录保存一份冻结副本，从不读取其中的键。创建线程或回复时设置它，之后用 `setData` 修改：
+
+```ts
+import { CommentsPlugin } from "platejs/comments/react";
+
+const comments = editor.plugin(CommentsPlugin).api;
+
+await comments.createThread({ body, data: { priority: "high" }, target });
+await comments.reply(threadId, body, { data: { reactions: [] } });
+await comments.setData(threadId, { priority: "low" });
+await comments.setData(threadId, { reactions: ["+1"] }, { messageId });
+await comments.setData(threadId, null);
+```
+
+传给 `createThread` 或 `createDraft` 的 `data` 属于线程，第一条消息不带数据。`setData` 替换已发布线程的数据；传入 `messageId` 时替换该消息的数据；传入 `null` 时删除数据。它经过 `mutate`，操作名为 `'setData'`，不进入文档历史。回复、编辑消息和解决线程都保留记录已有的数据。不是 JSON 对象的值返回 `invalid`，`createDraft` 对它返回 `null`。已保存行或 `mutate` 返回的记录带 `data: null` 时（例如可为空的 JSON 列），按没有数据读取。已保存行的 `data` 是其他非 JSON 对象的值时，该行不加载，并产生 `'invalid-thread'` 问题。
 
 ### 发现对话
 
@@ -242,6 +262,24 @@ export type CommentMutationDecision =
 
 Comments 只在提交后发布记录。拒绝或抛出错误时，保留原记录和输入。操作按线程串行执行；等待期间编辑器或线程失效时，可返回 `stale`。默认适配器在本地提交。隐藏控件或设置文档 `readOnly` 不能替代评论授权。
 
+### 以其他作者身份评论
+
+Comments 把每个线程、草稿、回复和解决记录为操作所经过的编辑器或视图的作者。要以编辑器用户之外的身份评论，例如 AI，就通过指定该作者的视图执行操作：
+
+```ts
+import { createEditorView } from "platejs";
+import { CommentsPlugin } from "platejs/comments/react";
+
+const ai = createEditorView(editor, { authorId: "ai" });
+
+await ai.plugin(CommentsPlugin).api.createThread({
+  body,
+  target: { range, type: "range" },
+});
+```
+
+新线程及其第一条消息的 `userId` 为 `'ai'`。编辑器本身和没有 `authorId` 的视图仍使用编辑器用户。把该作者加入 `users`，评论 UI 才能显示其名称。视图的作者只是客户端的声明。`mutate` 会在提议的记录中收到它，请在那里检查当前登录用户能否以该作者身份写入。
+
 ## 手动用法
 
 无界面插件提供相同的数据与附着位置 API，不依赖 React。此例加载纯段落文档版本，线程行来自应用的表；更丰富的文档需要安装匹配的内容插件：
@@ -274,7 +312,7 @@ const editor = createEditor({
 | 复制的 `comment` 与 `discussion` 项 | 设置高亮样式，渲染表单、卡片、区块触发器和弹出层 |
 | 应用 | 存储线程行，随每个文档版本保存范围，提供用户并授权操作 |
 
-评论消息独立于文档节点和标记。修改消息只通知该线程的订阅者，不解析锚点或刷新编辑器装饰。`users` 位于插件 store 中；用 `usePluginStore` 订阅，用 `store.set` 更新。线程、回复和解决记录使用编辑器的 `userId`；编辑器没有 `userId` 时使用本地用户 `'local'`。
+评论消息独立于文档节点和标记。修改消息只通知该线程的订阅者，不解析锚点或刷新编辑器装饰。`users` 位于插件 store 中；用 `usePluginStore` 订阅，用 `store.set` 更新。线程、回复和解决记录使用操作所经过视图的作者，否则使用编辑器的 `userId`；编辑器没有 `userId` 时使用本地用户 `'local'`。
 
 ## 编辑与历史
 
@@ -372,10 +410,11 @@ console.table(report);
 | `api.cancel()` | 关闭待提交输入并释放范围。已经发出的 `create` 仍会完成 |
 | `api.create(body)` | 发布待提交线程；等待 `CommentMutationResult<string>` |
 | `api.createThread(input)` | 发布范围或建议线程；等待 `CommentMutationResult<string>` |
-| `api.reply(id, body)` | 向未解决线程追加消息 |
+| `api.reply(id, body, options?)` | 向未解决线程追加消息；`{ data }` 设置新消息的应用数据 |
 | `api.edit(id, messageId, body)` | 在适配器授权下编辑消息 |
 | `api.removeMessage(id, messageId)` | 删除消息；没有消息时删除线程 |
 | `api.removeThread(id)` | 在适配器授权下删除线程 |
+| `api.setData(id, data, options?)` | 替换已发布线程的应用数据，或用 `{ messageId }` 替换某条消息的数据；`null` 删除数据 |
 | `api.resolve(id)` | 记录规范的解决人和时间 |
 | `api.reopen(id)` | 清空解决状态元数据 |
 | `api.publishDraft(id)` | 通过操作适配器提交本地草稿 |
@@ -386,9 +425,11 @@ console.table(report);
 
 ```ts showLineNumbers
 import type { Range, Value } from "platejs";
+import type { CommentData } from "platejs/comments";
 
 export type CreateCommentThreadInput = Readonly<{
   body: Value;
+  data?: CommentData;
   excerpt?: string;
   id?: string;
   target:
@@ -397,7 +438,7 @@ export type CreateCommentThreadInput = Readonly<{
 }>;
 ```
 
-创建需要当前用户和非空正文。范围目标必须是主文档中的非折叠范围。Comments 生成身份与时间戳，或接受适配器返回的规范值。
+`CommentData` 是由 `CommentDataValue` 组成的 JSON 对象：字符串、有限数字、布尔值、`null`、数组和嵌套对象。创建需要当前用户和非空正文。范围目标必须是主文档中的非折叠范围。Comments 生成身份与时间戳，或接受适配器返回的规范值。
 
 传给 `begin`、`createThread` 和 `createDraft` 的范围必须来自调用视图，锚点会在该视图中捕获坐标。通过消费坐标的视图读取 `pendingRange()` 和 `attachment(id)`，不要复用其他投影中的坐标。
 

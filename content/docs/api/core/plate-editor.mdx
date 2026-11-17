@@ -50,7 +50,8 @@ The editor owns document reads, transactions, typed plugin access, DOM services,
     <APIItem name="userId" type="string">
       The user this editor writes and comments as. It is the `createEditor`
       `userId`, or the local user, `'local'`, without one, and it stays fixed
-      for the editor's life.
+      for the editor's life. On a view made with
+      `createEditorView(editor, { authorId })`, it reads that author.
     </APIItem>
   </APIAttributes>
 </API>

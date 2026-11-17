@@ -4191,6 +4191,7 @@
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/settings-dialog.json",
+        "https://platejs.org/r/use-chat.json",
         "tooltip"
       ],
       "files": [

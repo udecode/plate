@@ -1,5 +1,5 @@
 {
-  "generation": "49ade53a20fdb353af03f9a246f6bf50eebc5915db410c47e8e7a7cddaf1c3a3",
+  "generation": "ad91b29c5fe3ed7a1ac0d180a0985d0243af2652cb37e8c93cb07e79411741f4",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -4214,6 +4214,7 @@
             "@plate/editor",
             "@plate/editor-plugins",
             "@plate/settings-dialog",
+            "@plate/use-chat",
             "tooltip"
           ]
         },
@@ -11181,6 +11182,7 @@
             "@plate/editor",
             "@plate/editor-plugins",
             "@plate/settings-dialog",
+            "@plate/use-chat",
             "tooltip"
           ]
         },

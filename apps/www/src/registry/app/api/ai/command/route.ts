@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
             comment: getCommentTool(editor, {
               messagesRaw,
               model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              modelId: model || 'google/gemini-2.5-flash',
               refs: refs.blocks,
               writer,
             }),
@@ -195,11 +196,13 @@ const getCommentTool = (
   {
     messagesRaw,
     model,
+    modelId,
     refs,
     writer,
   }: {
     messagesRaw: ChatMessage[];
     model: LanguageModel;
+    modelId: string;
     refs: AIChatRequestRefs['blocks'];
     writer: UIMessageStreamWriter<ChatMessage>;
   }
@@ -245,6 +248,7 @@ const getCommentTool = (
             id: commentDataId,
             data: {
               comment,
+              model: modelId,
               status: 'streaming',
             },
             type: 'data-comment',

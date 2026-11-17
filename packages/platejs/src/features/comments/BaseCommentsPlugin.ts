@@ -31,11 +31,34 @@ export type CommentUser = Readonly<{
   avatarUrl?: string;
 }>;
 
+/** A JSON value inside comment app data. */
+export type CommentDataValue =
+  | boolean
+  | null
+  | number
+  | string
+  | CommentDataList
+  | CommentData;
+
+/** A JSON array inside comment app data. */
+export interface CommentDataList extends ReadonlyArray<CommentDataValue> {}
+
+/**
+ * App-owned JSON object on a thread or message, such as reactions or the model
+ * that wrote it. Plate validates it as JSON, stores it with the record and
+ * returns it unchanged; it never reads its keys.
+ */
+export interface CommentData {
+  readonly [key: string]: CommentDataValue;
+}
+
 export type CommentMessage = Readonly<{
   body: Value;
   createdAt: string;
   id: string;
   userId: string;
+  /** App data of this message. Edits keep it; `setData` changes it. */
+  data?: CommentData;
   editedAt?: string;
 }>;
 
@@ -64,6 +87,8 @@ export type CommentThread = Readonly<{
   status: 'draft' | 'published';
   target: CommentTarget;
   userId: string;
+  /** App data of the thread. Replies, edits and resolution keep it. */
+  data?: CommentData;
 }>;
 
 type CommentCreationHistoryTransition = Readonly<{
@@ -139,6 +164,8 @@ export type CommentsLoadIssue = Readonly<{
 
 export type CreateCommentThreadInput = Readonly<{
   body: Value;
+  /** App data for the new thread; its first message gets none. */
+  data?: CommentData;
   excerpt?: string;
   id?: string;
   target:
@@ -155,7 +182,8 @@ export type CommentOperation =
   | 'reopen'
   | 'removeMessage'
   | 'removeThread'
-  | 'publishDraft';
+  | 'publishDraft'
+  | 'setData';
 
 export type CommentMutationRequest = Readonly<{
   mutationId: string;
@@ -292,6 +320,7 @@ const validateThread = (input: unknown): CommentThread => {
       : input.target.type !== 'change' ||
         !isCommentId(input.target.id) ||
         Object.keys(input.target).length !== 2) ||
+    (input.data !== undefined && !record(input.data)) ||
     (input.resolution !== null &&
       (!record(input.resolution) ||
         (input.resolution.resolvedAt !== null &&
@@ -312,6 +341,7 @@ const validateThread = (input: unknown): CommentThread => {
       !isCommentId(message.userId) ||
       !timestamp(message.createdAt) ||
       (message.editedAt !== undefined && !timestamp(message.editedAt)) ||
+      (message.data !== undefined && !record(message.data)) ||
       !NodeApi.isNodeList(message.body, { deep: true }) ||
       !(message.body as Value)
         .map((node) => NodeApi.string(node))
@@ -325,8 +355,38 @@ const validateThread = (input: unknown): CommentThread => {
   return input as CommentThread;
 };
 
-const prepareCommentThread = (input: unknown): CommentThread =>
-  validateThread(snapshotCommentData(input));
+const withoutNullData = (value: unknown) => {
+  if (!record(value) || value.data !== null) return value;
+  const { data: _data, ...rest } = value;
+  return Object.freeze(rest);
+};
+
+const prepareCommentThread = (input: unknown): CommentThread => {
+  const thread = withoutNullData(snapshotCommentData(input));
+  return validateThread(
+    record(thread) && Array.isArray(thread.messages)
+      ? Object.freeze({
+          ...thread,
+          messages: Object.freeze(thread.messages.map(withoutNullData)),
+        })
+      : thread
+  );
+};
+
+const prepareCommentData = (input: unknown): CommentData | null | undefined => {
+  if (input === undefined || input === null) return null;
+  try {
+    const data = snapshotCommentData(input);
+    return record(data) ? (data as CommentData) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const replaceCommentData = <T extends Readonly<{ data?: CommentData }>>(
+  { data: _previous, ...rest }: T,
+  data: CommentData | null
+) => (data === null ? rest : { ...rest, data });
 
 const ownValue = (value: object, key: PropertyKey) => {
   const property = Object.getOwnPropertyDescriptor(value, key);
@@ -1238,7 +1298,14 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       ) => {
         const id = input.id ?? nanoid();
         const body = normalizeBody(input.body);
-        if (!id || !body || threads.has(id) || destroyed) {
+        const data = prepareCommentData(input.data);
+        if (
+          !id ||
+          !body ||
+          data === undefined ||
+          threads.has(id) ||
+          destroyed
+        ) {
           return null;
         }
         if (input.target.type === 'range') {
@@ -1258,6 +1325,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             input.target.type === 'range' ? { type: 'range' } : input.target,
           userId,
           messages: [{ body, createdAt, id: nanoid(), userId }],
+          ...(data && { data }),
         });
         const anchor =
           input.target.type === 'range'
@@ -1512,11 +1580,19 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         /** Remove after authorization; document undo never recreates conversations. */
         removeThread: (id: string) =>
           mutateThread(id, 'removeThread', () => null),
-        /** Add the current user's reply to an unresolved thread. */
-        reply: (id: string, body: Value): Promise<CommentMutationResult> => {
+        /**
+         * Add the current user's reply to an unresolved thread, with optional
+         * app data for the new message.
+         */
+        reply: (
+          id: string,
+          body: Value,
+          options: Readonly<{ data?: CommentData }> = {}
+        ): Promise<CommentMutationResult> => {
           const value = normalizeBody(body);
+          const data = prepareCommentData(options.data);
           return mutateThread(id, 'reply', (current) =>
-            !value || current.resolution
+            !value || data === undefined || current.resolution
               ? undefined
               : {
                   ...current,
@@ -1527,9 +1603,39 @@ export const BaseCommentsPlugin = definePlugin('comments', {
                       createdAt: new Date().toISOString(),
                       id: nanoid(),
                       userId: readEditorAuthor(commandEditor),
+                      ...(data && { data }),
                     }),
                   ]),
                 }
+          );
+        },
+        /**
+         * Replace the app data of a published thread, or of one of its messages
+         * when `messageId` is given, after `mutate` commits it. `null` removes
+         * it.
+         */
+        setData: (
+          id: string,
+          data: CommentData | null,
+          options: Readonly<{ messageId?: string }> = {}
+        ): Promise<CommentMutationResult> => {
+          const next = prepareCommentData(data);
+          const { messageId } = options;
+          return mutateThread(id, 'setData', (thread) =>
+            next === undefined
+              ? undefined
+              : messageId === undefined
+                ? replaceCommentData(thread, next)
+                : thread.messages.some((message) => message.id === messageId)
+                  ? {
+                      ...thread,
+                      messages: thread.messages.map((message) =>
+                        message.id === messageId
+                          ? replaceCommentData(message, next)
+                          : message
+                      ),
+                    }
+                  : undefined
           );
         },
         /** Close a discussion outside document history. Reopen is its inverse. */

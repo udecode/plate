@@ -132,7 +132,9 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
     authored changes and read back as `editor.userId`. Without it, the editor
     writes as the local user, `'local'`. Pass one whenever more than one person
     writes the document. It stays fixed for the editor's life, and a `userId`
-    that contains a NUL character throws.
+    that contains a NUL character throws. A view made with
+    `createEditorView(editor, { authorId })` writes and comments as that author
+    instead.
   </APIItem>
 </APIOptions>
 

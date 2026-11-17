@@ -122,6 +122,13 @@ export type AIChatPluginState = {
   _changeId: string | null;
   _requestId: string | null;
   _tableCellRefs: Record<string, Readonly<{ key: NodeKey }>>;
+  /**
+   * Author of every document write the AI makes, such as `'ai'`: its
+   * suggestions, the output it inserts or replaces, and its withdrawals and
+   * acceptances of its own suggestions, so reviewers see them under its name.
+   * `null`, the default, writes them as the editor's user.
+   */
+  authorId: string | null;
   chat: AIChatAdapter | null;
   chatNodeMode: NodeSelectionMode | null;
   chatNodes: AIChatNodeSnapshot[];
@@ -186,6 +193,7 @@ const initialState: AIChatPluginState = {
   _requestId: null,
 
   _tableCellRefs: {},
+  authorId: null,
   chat: null,
   chatNodeMode: null,
   chatNodes: [],
@@ -333,6 +341,22 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     return point ? { root: point.root } : null;
   };
+  const pendingChange = () => {
+    const changeId = context.store.get('_changeId');
+
+    return changeId
+      ? editor.plugin(AuthoredPlugin).read.change(changeId)
+      : null;
+  };
+  let responseAuthor: Readonly<{
+    authorId: string;
+    requestId: string | null;
+  }> | null = null;
+  const actionAuthor = () =>
+    pendingChange()?.authorId ??
+    (responseAuthor?.requestId === context.store.get('_requestId')
+      ? responseAuthor.authorId
+      : (context.store.get('authorId') ?? undefined));
   const getActionEditor = (commandEditor: Editor, targetKey?: NodeKey) => {
     const { _blockKey, chatNodes, chatSelection } = context.store.get();
     const selection =
@@ -350,10 +374,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     if (!target) return null;
 
-    return projectEditorView(
-      commandEditor,
-      target.root ? { root: target.root } : {}
-    ) as AIActionEditor;
+    return projectEditorView(commandEditor, {
+      authorId: actionAuthor(),
+      root: target.root ?? undefined,
+    }) as AIActionEditor;
   };
   const columnGroupDescriptor = getCompiledPlatePlugin(
     editor,
@@ -415,17 +439,17 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const decideCurrentChange = (action: 'accept' | 'reject') => {
     const changeId = context.store.get('_changeId');
     if (!changeId) return null;
-    const authored = editor.plugin(AuthoredPlugin);
-    const change = authored.read.change(changeId);
+    const change = pendingChange();
+    const authored = projectEditorView(editor, {
+      authorId: change?.authorId,
+    }).plugin(AuthoredPlugin);
     const result: AuthoredResult = change
       ? action === 'reject'
         ? authored.update.withdraw([change])
         : authored.update.decide({ action, changes: [change] })
       : { ids: [changeId], status: 'unchanged' };
 
-    if (reviewSucceeded(result)) {
-      context.store.set({ _changeId: null });
-    }
+    if (reviewSucceeded(result)) context.store.set({ _changeId: null });
 
     return result;
   };
@@ -475,6 +499,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const { chat } = context.store.get();
 
     if (chat?.messages.length) chat.clear();
+    responseAuthor = null;
     context.store.set({
       _blockKey: null,
       _blockRefs: {},
@@ -1218,6 +1243,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       _changeId: publishedChangeId,
       previewValue: [],
     });
+    const published = pendingChange();
+    if (published) {
+      responseAuthor = {
+        authorId: published.authorId,
+        requestId: context.store.get('_requestId'),
+      };
+    }
 
     return publishedChangeId !== null;
   };
@@ -1227,6 +1259,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       if (result && reviewSucceeded(result)) finishCompleteAction();
       return result;
     }
+    responseAuthor = null;
     if (tableDraft.size > 0) {
       let applied = false;
       getActionEditor(commandEditor)?.update((tx) => {

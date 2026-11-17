@@ -160,6 +160,7 @@ export {
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
 export {
+  getViewAuthor,
   getViewPresentation,
   projectEditorView,
   retainViewPresentation,

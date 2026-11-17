@@ -14,8 +14,9 @@ const BaseAuthoredPlugin = definePlugin('authored', {
 });
 
 /**
- * Suggestions attributed to the editor's user, or to the local user when the
- * editor has no `userId`.
+ * Suggestions attributed to the author the writing view names with
+ * `createEditorView(editor, { authorId })`, else to the editor's user, or to
+ * the local user when the editor has no `userId`.
  */
 // The package declaration build cannot print the inferred `.extend()` type,
 // which inlines Plite's private plugin brand (TS4094), so this annotation names
@@ -24,6 +25,4 @@ export const AuthoredPlugin: InternalBasePluginRuntimeExtension<
   typeof BaseAuthoredPlugin,
   InternalPluginDefinitionOf<typeof BaseAuthoredPlugin>,
   NativeAuthoredPlugin
-> = BaseAuthoredPlugin.extend(({ editor }) =>
-  authored({ authorId: () => readEditorAuthor(editor) })
-);
+> = BaseAuthoredPlugin.extend(() => authored({ authorId: readEditorAuthor }));

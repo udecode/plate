@@ -27,6 +27,7 @@ import {
 import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
+import { aiUser } from '@/registry/components/editor/use-chat';
 
 const diagramCodeBlockPlugin = createCodeBlockPlugin(
   withDiagrams(CodeBlockElement, {
@@ -147,6 +148,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       CommentsPlugin.configure({
         initialState: {
           users: {
+            [aiUser.id]: aiUser,
             alice: {
               id: 'alice',
               name: 'Alice',

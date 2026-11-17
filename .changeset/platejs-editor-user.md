@@ -6,6 +6,7 @@ Replace `editor.runtime` with a fixed `editor.userId`. An editor created without
 
 - Rebuild the `useCreateEditor` editor when `userId` changes
 - Throw when `userId` contains a NUL character
+- Write, suggest and comment as another author through `createEditorView(editor, { authorId })`; that view's `userId` reads the author
 - Warn once in development when an editor with a Yjs plugin writes or comments as the local user
 - Install authored changes with `AuthoredPlugin` from `platejs/authored`
 - Allocate its own editor in `createEditor` and `useCreateEditor`, and throw on an `editor` option

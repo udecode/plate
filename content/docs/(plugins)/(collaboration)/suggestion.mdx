@@ -99,9 +99,9 @@ export function SuggestionEditor() {
 }
 ```
 
-Replace `'alice'` with the authenticated user's ID. The editor's `userId` attributes document changes and comments, and `users` supplies names and optional avatars. A solo editor can omit `userId`; it then suggests and comments as the local user, `'local'`.
+Replace `'alice'` with the authenticated user's ID. The editor's `userId` attributes document changes and comments, and `users` supplies names and optional avatars. A solo editor can omit `userId`; it then suggests and comments as the local user, `'local'`. To suggest or comment as another author, such as an AI, write through a view made with `createEditorView(editor, { authorId })`, as [Authored Changes](/docs/authored-changes#write-as-another-author) shows.
 
-`SuggestionPlugin` depends on `AuthoredPlugin`, which reads the editor's `userId` once per write transaction. Do not install a second authored descriptor alongside the kit.
+`SuggestionPlugin` depends on `AuthoredPlugin`, which reads the author of the writing view, else the editor's `userId`, once per write transaction. Do not install a second authored descriptor alongside the kit.
 
 </Steps>
 

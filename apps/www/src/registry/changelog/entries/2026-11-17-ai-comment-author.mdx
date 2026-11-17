@@ -1,0 +1,14 @@
+---
+id: 2026-11-17-ai-comment-author
+date: 2026-11-17
+status: draft
+kind: behavior
+summary: "Write AI comments and suggestions under the AI's own name"
+change: { 'type': 'source', 'date': '2026-11-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-17-use-chat-write-ai-comments-suggestions-8bb4a1d5","kind":"behavior","migrationNotes":["List aiUser from use-chat among the CommentsPlugin users so AI comments show its name, and let your mutate adapter accept the AI's ID as an author for the users allowed to run AI."]} -->
+
+- **`use-chat`**, **`comment`**, **`ai-api`**, **`editor-ai`**, **`ai-demo`**, **`discussion-demo`**, **`playground-demo`**: Write AI comments and suggestions under the AI's own name. `use-chat` exports `aiUser`, sets `authorId: aiUser.id` on `AIChatTransportPlugin`, creates each generated comment as `aiUser` with `data.requestedBy` naming the editor's user and `data.model` naming the model the route streamed with it, and the editor and demos list `aiUser` among the comment users. `comment` lets the user in `requestedBy` resolve, reopen, edit and delete the AI's messages, and resolve and reopen stay with the thread's creator or that requester when its first message is removed.

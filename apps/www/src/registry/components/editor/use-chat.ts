@@ -1,8 +1,9 @@
 'use client';
 
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { NodeApi } from 'platejs';
+import { createEditorView, NodeApi } from 'platejs';
 import { AIChatPlugin, useAIChat } from 'platejs/ai/react';
+import type { CommentUser } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { useEditor, usePluginStore } from 'platejs/react';
@@ -10,6 +11,12 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { createCommentValue } from '@/registry/components/editor/comment';
+
+export const aiUser: CommentUser = {
+  id: 'ai',
+  name: 'AI',
+  avatarUrl: 'https://api.dicebear.com/9.x/bottts/svg?seed=ai',
+};
 
 export type AIChatTransportPluginState = {
   chatOptions: { api: string; body: Record<string, unknown> };
@@ -19,7 +26,7 @@ const initialState: AIChatTransportPluginState = {
 };
 
 export const AIChatTransportPlugin = AIChatPlugin.extend({
-  initialState,
+  initialState: { ...initialState, authorId: aiUser.id },
 }).extend(({ store }) => {
   let api: string | undefined;
   let transport: DefaultChatTransport<UIMessage> | undefined;
@@ -50,6 +57,7 @@ export type TComment = {
     content: string;
   } | null;
   status: 'finished' | 'streaming';
+  model?: string;
 };
 
 export type TTableCellUpdate = {
@@ -75,6 +83,7 @@ const isStreamStatus = (value: unknown): value is 'finished' | 'streaming' =>
 const isComment = (value: unknown): value is TComment =>
   isRecord(value) &&
   isStreamStatus(value.status) &&
+  (value.model === undefined || typeof value.model === 'string') &&
   (value.comment === null ||
     (isRecord(value.comment) &&
       typeof value.comment.blockRef === 'string' &&
@@ -85,7 +94,15 @@ export function useEditorChat(
   editableRef: React.RefObject<HTMLElement | null>
 ) {
   const editor = useEditor();
-  const comments = editor.plugin(CommentsPlugin);
+  const authorId = usePluginStore(AIChatPlugin, 'authorId');
+  const comments = React.useMemo(
+    () =>
+      (authorId === null
+        ? editor
+        : createEditorView(editor, { authorId })
+      ).plugin(CommentsPlugin),
+    [authorId, editor]
+  );
   const { api: transportApi } = editor.plugin(AIChatTransportPlugin);
   const transport = usePluginStore(AIChatTransportPlugin, () =>
     transportApi.transport()
@@ -149,6 +166,10 @@ export function useEditorChat(
             id = comments.api.createDraft({
               target: { range, type: 'range' },
               body: createCommentValue(aiComment.comment),
+              data: {
+                requestedBy: editor.userId,
+                ...(commentData.model && { model: commentData.model }),
+              },
               excerpt: parsed.document.children
                 .map((node) => NodeApi.string(node))
                 .join('\n'),

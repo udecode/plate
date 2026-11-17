@@ -1,4 +1,5 @@
 import { createEditorAnchorApi } from './core/anchor';
+import { isAuthorId } from './core/authored-document-capability';
 import {
   configureAuthoredView,
   getAuthoredViewCommit,
@@ -121,6 +122,7 @@ import { getDefined } from './internal/get-defined';
 import { withImplicitRangeRoot } from './internal/root-location';
 
 type ViewState = {
+  authorId: string | undefined;
   editor: Editor | null;
   composing: boolean;
   document: AdmittedDocument | undefined;
@@ -249,6 +251,11 @@ const viewRuntimeOf = (editor: Editor | undefined) => {
 
   return runtime && VIEW_STATES.has(runtime) ? runtime : undefined;
 };
+
+export const getViewAuthor = (editor: object): string | undefined =>
+  hasEditorRuntime(editor)
+    ? VIEW_STATES.get(getEditorRuntime(editor))?.authorId
+    : undefined;
 
 const policySourceOf = (
   sourceRuntime: InternalEditorRuntime | undefined,
@@ -1414,8 +1421,14 @@ export const createEditorViewRuntime = <
 
     assertViewDocument(sourceEditor, document);
   }
+  if (options.authorId !== undefined && !isAuthorId(options.authorId)) {
+    throw new TypeError(
+      'createEditorView({ authorId }) must be a non-empty string without a NUL character, because authored changes store it as the author ID.'
+    );
+  }
 
   const viewState: ViewState = {
+    authorId: options.authorId ?? sourceView?.authorId,
     editor: null,
     composing: sourceEditor.read.view.isComposing(),
     document,

@@ -29,6 +29,19 @@ const reviewView = createEditorView(editor, {
 
 The author callback must return a nonempty author ID for every write. The application owns authentication.
 
+## Authors
+
+A view can name its own author with `authorId`, such as an AI that writes in a person's editor:
+
+```tsx
+const aiView = createEditorView(editor, {
+  authored: { intent: 'propose' },
+  authorId: 'ai',
+});
+```
+
+Writes through `aiView` record `'ai'` as their author, and `update.authored.withdraw` through it removes only changes by `'ai'`. A view made or projected from `aiView` keeps its author unless it names its own. A view without an `authorId` uses the plugin's `authorId` option; a callback receives the view the write runs through, or the editor when the write runs on it. A view's `authorId` is fixed for its life and must be a nonempty string without a NUL character, or `createEditorView` throws.
+
 ## Views
 
 | Policy | Content and input |
@@ -159,7 +172,7 @@ Install `yjs` from `plitejs/yjs` on every peer to synchronize marked content and
 | `read.authored.groupOf(changeId)` | Read the card that holds a change. |
 | `read.authored.reviewOf(node)` | Read a stored node's pending marks. |
 | `update.authored.decide(decision)` | Accept or reject changes or cards. |
-| `update.authored.withdraw(changes)` | Remove your own pending changes and record no decision. |
+| `update.authored.withdraw(changes)` | Remove the writing view's author's own pending changes and record no decision. |
 | `api.authored.setView(policy)` | Set one view's authored policy. |
 | `api.authored.subscribeChanges(listener)` | Receive one delta for each commit that changes the review. |
 | `api.authored.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused. |

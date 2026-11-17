@@ -189,7 +189,11 @@ export type AuthoredReview = Readonly<{
 }>;
 
 export type AuthoredOptions = Readonly<{
-  /** Resolve the author once per recorded write; Suggesting requires one. */
+  /**
+   * Author of a recorded write or a withdrawal when the view it runs through
+   * names no `authorId`. A function runs once per write with that view, or
+   * the editor when the write runs on it. Suggesting requires one.
+   */
   authorId: string | ((editor: AnyEditor) => string | null | undefined);
 }>;
 

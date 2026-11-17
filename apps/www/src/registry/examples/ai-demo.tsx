@@ -10,6 +10,7 @@ import {
   EditorFrame,
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
+import { aiUser } from '@/registry/components/editor/use-chat';
 
 import { aiValue } from './values/ai-value';
 
@@ -20,7 +21,10 @@ export default function AIDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          users: { local: { id: 'local', name: 'You' } },
+          users: {
+            local: { id: 'local', name: 'You' },
+            [aiUser.id]: aiUser,
+          },
         },
       }),
     ],

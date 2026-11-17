@@ -15,6 +15,7 @@ import {
   EditorFrame,
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
+import { aiUser } from '@/registry/components/editor/use-chat';
 
 export default function DiscussionDemo() {
   const editor = useCreateEditor({
@@ -24,6 +25,7 @@ export default function DiscussionDemo() {
       CommentsPlugin.configure({
         initialState: {
           users: {
+            [aiUser.id]: aiUser,
             alice: {
               id: 'alice',
               name: 'Alice',

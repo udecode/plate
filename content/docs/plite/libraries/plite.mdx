@@ -46,8 +46,11 @@ reads the requested root, or the primary root when `root` is omitted, and keeps
 the source view's document. It follows the source view's read-only state and
 authored view while both views exist, so it turns read-only when the source
 does. Its own `readOnly: true` keeps it read-only under an editable source, and
-its own `authored` option wins over the source's. A view of a `document`
-follows nothing, because it stays read-only and takes no authored view:
+its own `authored` option wins over the source's. It also keeps the source
+view's `authorId` unless it names its own; see
+[Plite Authored Changes](/docs/plite/libraries/plite-authored#authors). A view
+of a `document` follows nothing, because it stays read-only and takes no
+authored view:
 
 ```ts
 const caption = createEditorView(preview, { root: 'caption:1' });

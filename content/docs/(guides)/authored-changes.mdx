@@ -19,6 +19,7 @@ Authored changes keep accepted content, pending proposals, and stable change ide
 | Switch between editing and suggesting    | `AuthoredPlugin`'s `api.setView` from `platejs/authored`                |
 | Add copied highlighting and review cards | [SuggestionKit](/docs/suggestion) and [DiscussionKit](/docs/discussion) |
 | Record changes as the editor's user      | `AuthoredPlugin` from `platejs/authored`                                |
+| Record changes as another author         | [A view with `authorId`](#write-as-another-author)                      |
 | Read and decide changes or cards         | The installed authored plugin portal                                    |
 | Attach a conversation                    | `CommentsPlugin` with a `{ type: 'change', id }` target                 |
 
@@ -63,6 +64,27 @@ editor.update((tx) => {
 ```
 
 Pass `{ changeId }` to name the proposal, or to add the transaction's writes to the pending change with that ID. An ID whose change was already decided starts a new change. IDs starting with `~edit:` belong to Editing and are refused.
+
+## Write as another author
+
+Write through a view that names an author to record changes as someone other than the editor's user, such as an AI in a person's editor:
+
+```tsx
+import { createEditorView } from "platejs";
+
+const ai = createEditorView(editor, { authorId: "ai" });
+
+ai.update((tx) => {
+  tx.authored.propose();
+  tx.text.insert(" reviewed", {
+    at: { offset: 8, path: [0, 0] },
+  });
+});
+```
+
+Each change recorded through `ai` has `'ai'` as its `authorId`, and `ai.userId` reads `'ai'`. Comments made through `ai.plugin(CommentsPlugin)` record the same author. A view made or projected from `ai` keeps its author unless it names its own. The editor and views without an `authorId` keep the editor's user. `withdraw` through `ai` takes back only changes whose author is `'ai'`. Add `authored: { intent: "propose" }` to the same options to record every write through the view as a proposal.
+
+`authorId` is fixed for the life of the view. It must be a nonempty string without a NUL character; `createEditorView` throws on any other value.
 
 ## Import a compared revision
 
@@ -352,7 +374,7 @@ See [Collaboration](/docs/yjs) for setup.
 
 ### `AuthoredPlugin`
 
-Import the standard descriptor from `platejs/authored`. It records each change as the Plate editor's `userId`, or as the local user, `'local'`, when the editor has none. It takes no options. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
+Import the standard descriptor from `platejs/authored`. It records each change as the author of the view that writes it, else as the Plate editor's `userId`, or as the local user, `'local'`, when the editor has none. It takes no options. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
 
 ### Transaction, reads, and updates
 
@@ -369,6 +391,7 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.read.groupOf(changeId)`          | Read the card that holds a change, or `null`.                                          |
 | `authored.read.reviewOf(node)`             | Read a stored node's pending marks and the accepted values of the properties they format. |
 | `authored.update.decide(decision)`         | Accept or reject changes or cards; an array of decisions decides together.             |
+| `authored.update.withdraw(changes)`        | Remove the writing view's author's own pending changes and record no decision.         |
 | `authored.api.setView(view)`               | Change the policy on this exact view.                                                  |
 | `authored.api.subscribeChanges(listener)`  | Receive one shared delta for each commit that changes the review.                      |
 | `authored.api.subscribeRefusals(listener)` | Receive each proposal write or view switch the editor refused.                         |

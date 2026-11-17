@@ -12,6 +12,7 @@ import {
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { SettingsDialog } from '@/registry/components/editor/settings-dialog';
+import { aiUser } from '@/registry/components/editor/use-chat';
 
 import {
   richTextEditorComments,
@@ -26,6 +27,7 @@ export function RichTextEditor() {
       CommentsPlugin.configure({
         initialState: {
           users: {
+            [aiUser.id]: aiUser,
             alice: {
               id: 'alice',
               name: 'Alice',

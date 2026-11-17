@@ -285,6 +285,7 @@ export {
   withDocumentViewRead,
   getActiveEditorTransaction,
   getCaretOwner,
+  getViewAuthor,
   getViewPresentation,
   holdsCaret,
   projectEditorView,

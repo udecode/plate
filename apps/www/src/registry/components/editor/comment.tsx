@@ -415,6 +415,11 @@ export function CommentThreadCard({
     >
       {thread.messages.map((message, index) => (
         <CommentMessageRow
+          canResolve={
+            index === 0 &&
+            (thread.userId === editor.userId ||
+              thread.data?.requestedBy === editor.userId)
+          }
           interactionBlocked={interactions.size > 0}
           editing={editingId === message.id}
           excerpt={thread.excerpt}
@@ -434,7 +439,11 @@ export function CommentThreadCard({
             setEditingId(next);
           }}
           onInteractionChange={setInteraction}
-          mine={message.userId === editor.userId}
+          mine={
+            message.userId === editor.userId ||
+            (message.userId === thread.userId &&
+              thread.data?.requestedBy === editor.userId)
+          }
           resolved={thread.resolution !== null}
           showExcerpt={thread.target.type === 'range' && index === 0}
           status={thread.status}
@@ -461,6 +470,7 @@ export function CommentThreadCard({
 }
 
 function CommentMessageRow({
+  canResolve,
   editing,
   excerpt,
   id,
@@ -477,6 +487,7 @@ function CommentMessageRow({
   status,
   threadLength,
 }: {
+  canResolve: boolean;
   editing: boolean;
   interactionBlocked: boolean;
   excerpt: string;
@@ -548,14 +559,14 @@ function CommentMessageRow({
           )}
         </div>
 
-        {mine && !editing && (
+        {(mine || canResolve) && !editing && (
           <div
             className={cn(
               'editor-comment-actions pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
               menuOpen && 'pointer-events-auto opacity-100'
             )}
           >
-            {index === 0 && (
+            {canResolve && (
               <Button
                 aria-label={resolved ? 'Reopen thread' : 'Resolve thread'}
                 className="h-6 p-1 text-muted-foreground"
@@ -572,38 +583,40 @@ function CommentMessageRow({
               </Button>
             )}
 
-            <DropdownMenu
-              modal={false}
-              open={menuOpen}
-              onOpenChange={setMenuOpen}
-            >
-              <DropdownMenuTrigger>
-                <Button
-                  aria-label="More comment actions"
-                  className="h-6 p-1 text-muted-foreground"
-                  disabled={saving}
-                  type="button"
-                  variant="ghost"
-                >
-                  <MoreHorizontalIcon className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem disabled={saving} onClick={onEdit}>
-                    <PencilIcon className="size-4" />
-                    Edit comment
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={saving || interactionBlocked}
-                    onClick={() => void mutate('remove')}
+            {mine && (
+              <DropdownMenu
+                modal={false}
+                open={menuOpen}
+                onOpenChange={setMenuOpen}
+              >
+                <DropdownMenuTrigger>
+                  <Button
+                    aria-label="More comment actions"
+                    className="h-6 p-1 text-muted-foreground"
+                    disabled={saving}
+                    type="button"
+                    variant="ghost"
                   >
-                    <TrashIcon className="size-4" />
-                    Delete comment
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <MoreHorizontalIcon className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem disabled={saving} onClick={onEdit}>
+                      <PencilIcon className="size-4" />
+                      Edit comment
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={saving || interactionBlocked}
+                      onClick={() => void mutate('remove')}
+                    >
+                      <TrashIcon className="size-4" />
+                      Delete comment
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         )}
       </div>

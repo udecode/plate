@@ -29,6 +29,19 @@ const reviewView = createEditorView(editor, {
 
 每次写入时，author callback 都必须返回非空的作者 ID。应用负责认证。
 
+## 作者
+
+视图可以用 `authorId` 指定自己的作者，例如在某人的编辑器中写入的 AI：
+
+```tsx
+const aiView = createEditorView(editor, {
+  authored: { intent: 'propose' },
+  authorId: 'ai',
+});
+```
+
+通过 `aiView` 的写入以 `'ai'` 为作者记录；通过它调用 `update.authored.withdraw` 只会移除 `'ai'` 的 change。从 `aiView` 创建或投影出的视图沿用其作者，除非自己指定作者。没有 `authorId` 的视图使用插件的 `authorId` 选项；callback 收到写入所经过的视图，写入直接在 editor 上执行时收到 editor。视图的 `authorId` 在其生命周期内固定，必须是不含 NUL 字符的非空字符串，否则 `createEditorView` 会抛出错误。
+
 ## 视图
 
 | Policy | 内容和输入 |
@@ -159,7 +172,7 @@ if (card) {
 | `read.authored.groupOf(changeId)` | 读取包含某个 change 的卡片。 |
 | `read.authored.reviewOf(node)` | 读取存储 node 的待处理 mark。 |
 | `update.authored.decide(decision)` | 接受或拒绝 change 或卡片。 |
-| `update.authored.withdraw(changes)` | 撤回你自己的待定 change，不记录任何决定。 |
+| `update.authored.withdraw(changes)` | 撤回写入视图作者自己的待定 change，不记录任何决定。 |
 | `api.authored.setView(policy)` | 设置一个 view 的 authored policy。 |
 | `api.authored.subscribeChanges(listener)` | 每次改变审阅的 commit 都会收到一个 delta。 |
 | `api.authored.subscribeRefusals(listener)` | 接收编辑器拒绝的每个 proposal 写入或 view 切换。 |

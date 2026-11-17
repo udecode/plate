@@ -127,9 +127,23 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with `initialComments: { ranges, threads }`, the thread rows from your tables and the ranges saved with the matching revision. AI comments are ordinary threads, so `api.ranges()` saves their ranges too.
+`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with `initialComments: { ranges, threads }`, the thread rows from your tables and the ranges saved with the matching revision. AI comments are ordinary threads, so `api.ranges()` saves their ranges too. List `aiUser` from the copied `use-chat` among the comment users:
 
-Completed generated comments publish directly as ordinary threads without an approval prompt. Configure authorization and canonical persistence through `CommentsPlugin.configure({ initialState: { mutate } })`; the integration awaits the durable mutation result before treating publication as successful. The draft acceptance controls for generated document edits do not gate comment publication. See [Comments](/docs/comment) for persistence and mutation results.
+```tsx
+import { CommentsPlugin } from 'platejs/comments/react';
+import { aiUser } from '@/components/editor/use-chat';
+
+CommentsPlugin.configure({
+  initialState: {
+    initialComments: { ranges, threads },
+    users: { ...users, [aiUser.id]: aiUser },
+  },
+});
+```
+
+The copied `AIChatTransportPlugin` sets `authorId: aiUser.id`, so AI comments and suggestions name the AI as their author. The copied `use-chat` creates each generated comment through a view with that author, with `data.requestedBy` set to the editor's user and `data.model` set to the model the route streams with that comment. The copied comment card lets the user in `requestedBy` resolve, reopen, edit and delete the AI's messages, as the thread's creator can for their own thread.
+
+Completed generated comments publish directly as ordinary threads without an approval prompt. Configure authorization and canonical persistence through `CommentsPlugin.configure({ initialState: { mutate } })`; the integration awaits the durable mutation result before treating publication as successful. `mutate` receives the AI's ID as the thread's author, so check there that the signed-in user may publish as the AI. The draft acceptance controls for generated document edits do not gate comment publication. See [Comments](/docs/comment) for persistence and mutation results.
 
 ### Build API route
 
@@ -305,6 +319,18 @@ for later review. A chat edit is a suggestion in either view, and accepting it
 decides that suggestion. Streaming does not create suggestions or change the
 mode.
 
+The `authorId` state, such as `'ai'`, writes these edits under the AI's own
+name. A suggestion the AI writes is then a proposal by that author, and
+`accept()` and the
+withdrawals above run through a view with that author. With `authorId: null`,
+the default, the AI writes as the editor's user. The copied
+`AIChatTransportPlugin` sets it to `aiUser.id`; configure it yourself when you
+install `AIChatPlugin` without that item:
+
+```tsx
+AIChatPlugin.configure({ initialState: { authorId: 'ai' } });
+```
+
 Copilot ghost text also stays temporary until accepted.
 
 ## Plate Plus
@@ -322,6 +348,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="trigger" type="RegExp | string | string[]" optional>Character(s) that open the command menu. Defaults to `' '`.</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
     <APIItem name="triggerQuery" type="(editor: Editor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
+    <APIItem name="authorId" type="string | null" optional>Author of the AI's document writes: its suggestions, the output it inserts or replaces, and its acceptances and withdrawals of its own suggestions. `null` writes them as the editor's user. Defaults to `null`.</APIItem>
     <APIItem name="chat" type="AIChatAdapter" optional>Current messages, status, error, and controls published by `useAIChat` (managed internally).</APIItem>
     <APIItem name="chatNodes" type="AIChatNodeSnapshot[]" optional>Node snapshots paired with editor-scoped node keys for native authored replacements (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>

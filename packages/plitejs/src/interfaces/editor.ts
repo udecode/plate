@@ -2125,6 +2125,14 @@ export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
     | Readonly<{ intent: 'edit' | 'propose' }>
     | Readonly<{ preview: 'accepted' | 'proposed' }>;
   /**
+   * Author of every recorded write through this view, such as an AI's
+   * suggestions in a person's editor. Omit it to keep the source view's
+   * author, or the editor's when no view names one. It is fixed for the
+   * life of the view, and a non-empty string without a NUL character,
+   * because authored changes store it.
+   */
+  authorId?: string;
+  /**
    * Immutable document the view reads instead of the source editor's value.
    * Reads, plugin reads and plugin APIs resolve against it through the source
    * editor's schema and plugins. The view is read-only, has no selection or

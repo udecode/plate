@@ -13,7 +13,8 @@
 - Join successful local thread creation to document history and serialize its replay with later mutations of the same thread
 - Resolve comment attachments and discussion positions in each mounted editor's projection while retaining one conversation and target
 - Export `extractLegacyCommentRanges` from `platejs/migrations` for offline conversion of comment marks into a sanitized document, one range per thread ID and a report. Empty texts, voids and inline element edges never split a thread; a thread split by visible unmarked text gets no range and a `split-group` row that lists each part's range. Comment marks in a media caption are removed and reported at the media element's path: a thread's mark as an `invalid-range` row, and a malformed, anonymous or draft-only mark with the row it gets in the document body
-- Record threads, replies and resolutions as the editor's `userId`, or as the local user, `'local'`, when the editor has none
+- Record threads, replies and resolutions as the author of the view the action runs through, such as `createEditorView(editor, { authorId: 'ai' })`, else as the editor's `userId`, or as the local user, `'local'`, when the editor has none
+- Carry app data on threads and messages. Pass `data`, a JSON object typed `CommentData`, to `createThread`, `createDraft` and `reply(id, body, { data })`, and change it with `setData(id, data, { messageId })`, which runs through `mutate` with the operation `'setData'`; `null` removes it. A saved or committed `data: null` reads as no data; a saved row whose `data` is any other value that is not a JSON object drops with an `invalid-thread` load issue
 
 **Migration:** Supply thread rows and the ranges saved with the same document revision as the editor value:
 

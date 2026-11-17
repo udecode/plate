@@ -99,9 +99,9 @@ export function SuggestionEditor() {
 }
 ```
 
-将 `'alice'` 替换为已认证用户的 ID。编辑器的 `userId` 记录文档修改和评论的作者；`users` 提供姓名和可选头像。单人编辑器可以省略 `userId`，此时以本地用户 `'local'` 提出建议和评论。
+将 `'alice'` 替换为已认证用户的 ID。编辑器的 `userId` 记录文档修改和评论的作者；`users` 提供姓名和可选头像。单人编辑器可以省略 `userId`，此时以本地用户 `'local'` 提出建议和评论。要以其他作者身份提出建议或评论，例如 AI，请通过 `createEditorView(editor, { authorId })` 创建的视图写入，见 [Authored Changes](/cn/docs/authored-changes#以其他作者身份写入)。
 
-`SuggestionPlugin` 依赖 `AuthoredPlugin`，后者在每个写入 transaction 中读取一次 editor 的 `userId`。不要在套件旁安装第二个 authored 描述符。
+`SuggestionPlugin` 依赖 `AuthoredPlugin`，后者在每个写入 transaction 中读取一次写入视图的作者；视图没有作者时读取 editor 的 `userId`。不要在套件旁安装第二个 authored 描述符。
 
 </Steps>
 

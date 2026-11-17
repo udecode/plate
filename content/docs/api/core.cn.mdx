@@ -116,7 +116,7 @@ description: \platejs 的 API 参考文档。
   <APIItem name="userId" type="string" optional>
     编辑器写入和评论时使用的用户，会记录为 authored changes 的作者，并可通过 `editor.userId` 读取。
     未传入时，编辑器以本地用户 `'local'` 写入。多人编辑同一文档时请传入它。它在编辑器生命周期内固定；
-    包含 NUL 字符的 `userId` 会抛出错误。
+    包含 NUL 字符的 `userId` 会抛出错误。通过 `createEditorView(editor, { authorId })` 创建的视图改以该作者写入和评论。
   </APIItem>
 </APIOptions>
 

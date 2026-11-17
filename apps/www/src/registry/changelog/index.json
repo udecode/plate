@@ -2,6 +2,32 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-17-ai-comment-author",
+      "href": "/registry/changelog/2026-11-17-ai-comment-author.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Write AI comments and suggestions under the AI's own name",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "use-chat",
+        "comment",
+        "ai-api",
+        "editor-ai",
+        "ai-demo",
+        "discussion-demo",
+        "playground-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-ai-routes-caller-key",
       "href": "/registry/changelog/2026-11-16-ai-routes-caller-key.json",
       "status": "draft",
