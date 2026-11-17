@@ -249,19 +249,6 @@ export const inheritNodeKeys = (
   }
 };
 
-export const seedNodeKeys = (
-  children: readonly Descendant[],
-  editor: Editor
-) => {
-  for (const child of children) {
-    getOrCreateNodeKey(child, editor);
-
-    if ('children' in child && Array.isArray(child.children)) {
-      seedNodeKeys(child.children, editor);
-    }
-  }
-};
-
 const DEFERRED_NODE_KEYS = new WeakMap<
   Editor,
   Map<object, Map<string, { settle: () => unknown; steps: number }>>

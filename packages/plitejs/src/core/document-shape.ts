@@ -30,7 +30,7 @@ export type EditorDocumentShapeIssue =
     }>
   | Readonly<{ kind: 'root'; root: string }>;
 
-export type EditorDocumentShape = Readonly<{
+type EditorDocumentShape = Readonly<{
   children: readonly unknown[];
   meta?: Readonly<Record<string, unknown>>;
   records?: EditorDocumentRecords;
@@ -38,11 +38,19 @@ export type EditorDocumentShape = Readonly<{
 }>;
 
 /** The top-level fields one input kind admits. */
-export type EditorRecordFields = Readonly<
-  Record<string, 'optional' | 'required'>
+type EditorRecordFields = Readonly<Record<string, 'optional' | 'required'>>;
+
+type EditorRecordOf<TFields extends EditorRecordFields> = Readonly<
+  {
+    [K in keyof TFields as TFields[K] extends 'required' ? K : never]: unknown;
+  } & {
+    [K in keyof TFields as TFields[K] extends 'required' ? never : K]?: unknown;
+  }
 >;
 
-export type PersistedEnvelopeRecord = Readonly<{
+type SchemaIdentityIssue = EditorRecordIssue | Readonly<{ kind: 'identity' }>;
+
+type PersistedEnvelopeRecord = Readonly<{
   document: unknown;
   schema: EditorSchemaIdentity;
   selection?: unknown;
@@ -168,11 +176,11 @@ export const rejectEditorRecord =
  * A field holding `undefined` carries no data and counts as absent, and only
  * then is the result a copy.
  */
-export const readDocumentRecord = (
+export const readDocumentRecord = <const TFields extends EditorRecordFields>(
   value: unknown,
-  fields: EditorRecordFields,
+  fields: TFields,
   reject: (issue: EditorRecordIssue) => never
-): Readonly<Record<string, unknown>> => {
+): EditorRecordOf<TFields> => {
   const entries = getEditorJsonRecordEntries(value);
 
   if (!entries) return reject({ kind: isRecord(value) ? 'json' : 'record' });
@@ -188,9 +196,9 @@ export const readDocumentRecord = (
     }
   }
 
-  return defined.length === entries.length
-    ? (value as Readonly<Record<string, unknown>>)
-    : Object.fromEntries(defined);
+  return (
+    defined.length === entries.length ? value : Object.fromEntries(defined)
+  ) as EditorRecordOf<TFields>;
 };
 
 export function assertEditorDocumentContainers(
@@ -265,35 +273,62 @@ export const isEnvelopeInput = (
   Readonly<{ document: unknown }> =>
   isRecord(value) && Object.hasOwn(value, 'document');
 
-const readPersistedSchemaIdentity = (value: unknown): EditorSchemaIdentity => {
-  const reject = rejectEditorRecord('Persisted document schema');
+const isFilledString = (value: unknown): value is string =>
+  typeof value === 'string' && value.length > 0;
+
+/**
+ * A schema starts at version 1. An envelope's identity is a migration source,
+ * which may name version 0, before the first schema.
+ */
+export const readSchemaIdentity = (
+  value: unknown,
+  reject: (issue: SchemaIdentityIssue) => never,
+  lineage: 'schema' | 'source'
+): EditorSchemaIdentity => {
   const { kind } = readDocumentRecord(
     value,
     { ...NAMED_SCHEMA_IDENTITY_FIELDS, id: 'optional', version: 'optional' },
     reject
   );
-  const identity = readDocumentRecord(
+
+  if (kind === 'derived') {
+    const { fingerprint } = readDocumentRecord(
+      value,
+      DERIVED_SCHEMA_IDENTITY_FIELDS,
+      reject
+    );
+
+    if (!isFilledString(fingerprint)) reject({ kind: 'identity' });
+
+    return Object.freeze({ fingerprint, kind });
+  }
+  if (kind !== 'named') return reject({ kind: 'identity' });
+
+  const { fingerprint, id, version } = readDocumentRecord(
     value,
-    kind === 'named'
-      ? NAMED_SCHEMA_IDENTITY_FIELDS
-      : DERIVED_SCHEMA_IDENTITY_FIELDS,
+    NAMED_SCHEMA_IDENTITY_FIELDS,
     reject
   );
-  const { version } = identity;
 
   if (
-    typeof identity.fingerprint !== 'string' ||
-    (kind !== 'derived' &&
-      (kind !== 'named' ||
-        typeof identity.id !== 'string' ||
-        typeof version !== 'number' ||
-        !Number.isSafeInteger(version) ||
-        version < 0))
+    !isFilledString(fingerprint) ||
+    !isFilledString(id) ||
+    typeof version !== 'number' ||
+    !Number.isSafeInteger(version) ||
+    version < (lineage === 'schema' ? 1 : 0)
   ) {
+    reject({ kind: 'identity' });
+  }
+
+  return Object.freeze({ fingerprint, id, kind, version });
+};
+
+const rejectPersistedSchema = (issue: SchemaIdentityIssue): never => {
+  if (issue.kind === 'identity') {
     throw new TypeError('Persisted document schema is not a schema identity.');
   }
 
-  return identity as EditorSchemaIdentity;
+  return rejectEditorRecord('Persisted document schema')(issue);
 };
 
 /** Read a persisted envelope and its schema identity; the document stays raw. */
@@ -308,7 +343,10 @@ export const readPersistedEnvelope = (
 
   return {
     ...envelope,
-    document: envelope.document,
-    schema: readPersistedSchemaIdentity(envelope.schema),
+    schema: readSchemaIdentity(
+      envelope.schema,
+      rejectPersistedSchema,
+      'source'
+    ),
   };
 };

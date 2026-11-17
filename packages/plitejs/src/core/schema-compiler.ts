@@ -28,6 +28,7 @@ import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
 import { jsonEqual } from './change/json';
 import { cloneFrozen } from './clone';
+import { readSchemaIdentity } from './document-shape';
 import { profileCoreDuration } from './profiling';
 
 const BUILT_IN_GROUPS = [
@@ -175,79 +176,19 @@ export const areEditorSchemaIdentitiesEqual = (
         left.id === right.id &&
         left.version === right.version)));
 
-/**
- * Strict decoder for persisted editor schema identities.
- *
- * @internal
- */
+const refuseSchemaIdentity = (): never => {
+  throw new TypeError('Not a schema identity.');
+};
+
+/** @internal */
 export const readEditorSchemaIdentity = (
   value: unknown
 ): EditorSchemaIdentity | undefined => {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+  try {
+    return readSchemaIdentity(value, refuseSchemaIdentity, 'schema');
+  } catch {
     return undefined;
   }
-
-  try {
-    const prototype = Object.getPrototypeOf(value);
-
-    if (prototype !== Object.prototype && prototype !== null) return undefined;
-
-    const kind = Object.getOwnPropertyDescriptor(value, 'kind');
-    const fingerprint = Object.getOwnPropertyDescriptor(value, 'fingerprint');
-
-    if (
-      !kind ||
-      !Object.hasOwn(kind, 'value') ||
-      kind.enumerable !== true ||
-      (kind.value !== 'derived' && kind.value !== 'named') ||
-      !fingerprint ||
-      !Object.hasOwn(fingerprint, 'value') ||
-      fingerprint.enumerable !== true ||
-      typeof fingerprint.value !== 'string' ||
-      fingerprint.value.length === 0
-    ) {
-      return undefined;
-    }
-
-    if (kind.value === 'derived') {
-      if (Reflect.ownKeys(value).length !== 2) return undefined;
-
-      return Object.freeze({
-        fingerprint: fingerprint.value,
-        kind: 'derived',
-      });
-    }
-
-    if (Reflect.ownKeys(value).length !== 4) return undefined;
-    const id = Object.getOwnPropertyDescriptor(value, 'id');
-    const version = Object.getOwnPropertyDescriptor(value, 'version');
-
-    if (
-      !id ||
-      !Object.hasOwn(id, 'value') ||
-      id.enumerable !== true ||
-      typeof id.value !== 'string' ||
-      id.value.length === 0 ||
-      !version ||
-      !Object.hasOwn(version, 'value') ||
-      version.enumerable !== true ||
-      !Number.isSafeInteger(version.value) ||
-      version.value < 1
-    ) {
-      return undefined;
-    }
-
-    return Object.freeze({
-      fingerprint: fingerprint.value,
-      id: id.value,
-      kind: 'named',
-      version: version.value,
-    });
-  } catch {
-    // Invalid schema versions are omitted from the compiled metadata.
-  }
-
-  return undefined;
 };
 
 export type EditorSchemaDiagnostic = Readonly<{
@@ -295,7 +236,7 @@ export type CompiledSchemaContentPrefixSlot = Readonly<{
   type: string;
 }>;
 
-export type CompiledSchemaWrapperPlan = readonly string[];
+type CompiledSchemaWrapperPlan = readonly string[];
 
 export type CompiledSchemaContentProgram = Readonly<{
   allowedElementTypes: ReadonlySet<string>;
@@ -308,13 +249,13 @@ export type CompiledSchemaContentProgram = Readonly<{
   remainder?: CompiledSchemaContentProgram;
 }>;
 
-export type CompiledSchemaContentRoot = Readonly<{
+type CompiledSchemaContentRoot = Readonly<{
   content: CompiledSchemaContentProgram;
   ownership: SchemaContentRootOwnership;
   structure: SchemaContentRootStructure | null;
 }>;
 
-export type CompiledSchemaElementBehavior = Readonly<{
+type CompiledSchemaElementBehavior = Readonly<{
   atom: boolean;
   inline: boolean;
   isolating: boolean;
@@ -346,12 +287,12 @@ export type CompiledSchemaElement = Readonly<{
   type: string;
 }>;
 
-export type CompiledSchemaRoot = Readonly<{
+type CompiledSchemaRoot = Readonly<{
   content: CompiledSchemaContentProgram;
   name: string | null;
 }>;
 
-export type CompiledSchemaRecordSet = Readonly<{
+type CompiledSchemaRecordSet = Readonly<{
   history: 'retain' | 'undo';
 }>;
 
@@ -383,7 +324,7 @@ export type CompiledSchemaPropertyKeyPrefix = Readonly<{
   propertyIds: readonly string[];
 }>;
 
-export type CompiledSchemaPropertyLookup = Readonly<{
+type CompiledSchemaPropertyLookup = Readonly<{
   exact: ReadonlyMap<string, readonly string[]>;
   prefixes: readonly CompiledSchemaPropertyKeyPrefix[];
 }>;
@@ -430,7 +371,7 @@ export type CompiledEditorSchema = Readonly<{
   vocabulary: CompiledSchemaVocabulary;
 }>;
 
-export type StructuralPropertyValueDescriptor = Readonly<{
+type StructuralPropertyValueDescriptor = Readonly<{
   default?: unknown;
   generated?: true;
   item?: StructuralPropertyValueDescriptor;
@@ -467,7 +408,7 @@ export type CompiledSchemaTargetContext = Readonly<{
   type: string;
 }>;
 
-export const getCompiledSchemaWrapperPlanKey = (
+const getCompiledSchemaWrapperPlanKey = (
   parentProgramId: string,
   childType: string | null
 ) => `${parentProgramId}\u0000${childType ?? '\u0000text'}`;
@@ -1336,10 +1277,11 @@ function assertName(
   }
 }
 
-const canonicalJson = (
-  value: unknown,
+export const canonicalJson = <TValue>(
+  value: TValue,
+  owner = 'Schema value',
   ancestors = new Set<object>()
-): unknown => {
+): TValue => {
   if (
     value === null ||
     typeof value === 'boolean' ||
@@ -1349,29 +1291,32 @@ const canonicalJson = (
   }
   if (typeof value === 'number') {
     if (Number.isFinite(value) && !Object.is(value, -0)) return value;
-    throw new Error('JSON numbers must be finite and not -0.');
+
+    throw new Error(`${owner} must contain only finite JSON numbers, not -0.`);
   }
-  if (typeof value === 'object' && value && ancestors.has(value)) {
-    throw new Error('Values cannot be cyclic.');
+  if (typeof value !== 'object') {
+    throw new Error(`${owner} must be JSON data.`);
   }
-  if (Array.isArray(value)) {
-    ancestors.add(value);
-    try {
-      return Object.freeze(value.map((item) => canonicalJson(item, ancestors)));
-    } finally {
-      ancestors.delete(value);
-    }
-  }
+  if (ancestors.has(value)) throw new Error(`${owner} cannot be cyclic.`);
+
+  const prototype = Object.getPrototypeOf(value);
+
   if (
-    typeof value !== 'object' ||
-    (Object.getPrototypeOf(value) !== Object.prototype &&
-      Object.getPrototypeOf(value) !== null)
+    !Array.isArray(value) &&
+    prototype !== Object.prototype &&
+    prototype !== null
   ) {
-    throw new Error('Values must be plain JSON data.');
+    throw new Error(`${owner} must use plain JSON objects.`);
   }
 
   ancestors.add(value);
   try {
+    if (Array.isArray(value)) {
+      return Object.freeze(
+        Array.from(value, (item) => canonicalJson(item, owner, ancestors))
+      ) as TValue;
+    }
+
     return Object.freeze(
       Object.fromEntries(
         Object.keys(value)
@@ -1380,11 +1325,12 @@ const canonicalJson = (
             key,
             canonicalJson(
               (value as Readonly<Record<string, unknown>>)[key],
+              owner,
               ancestors
             ),
           ])
       )
-    );
+    ) as TValue;
   } finally {
     ancestors.delete(value);
   }
@@ -5542,34 +5488,6 @@ const haveEquivalentRuntimeValidationBindings = (
   );
 };
 
-/**
- * Compare only live validators; declaration keys own structure.
- *
- * @internal
- */
-export const haveEquivalentEditorSchemaRuntimeValidationBindings = (
-  leftRecords: readonly EditorSchemaContributionRecord[],
-  rightRecords: readonly EditorSchemaContributionRecord[]
-) => {
-  const left = collectRuntimePropertyDescriptors(leftRecords);
-  const right = collectRuntimePropertyDescriptors(rightRecords);
-
-  return (
-    left.size === right.size &&
-    [...left].every(([id, property]) => {
-      const candidate = right.get(id);
-
-      return Boolean(
-        candidate &&
-        haveEquivalentRuntimeValidationBindings(
-          property.descriptor,
-          candidate.descriptor
-        )
-      );
-    })
-  );
-};
-
 const replaceCompiledPropertyDescriptors = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
   descriptors: ReadonlyMap<string, PropertyValueDescriptor>,
@@ -5857,7 +5775,7 @@ export const defaultSplitOf = (descriptor: PropertyValueDescriptor) =>
   descriptor.generate ? ('drop' as const) : ('preserve' as const);
 
 /** Whether `target` holds wherever a node of its types stands. */
-export const isPlaceFreeTarget = (target: SchemaTarget | null): boolean => {
+const isPlaceFreeTarget = (target: SchemaTarget | null): boolean => {
   if (!target) return true;
 
   switch (target.kind) {

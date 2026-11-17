@@ -133,7 +133,7 @@ import { countCoreWork } from './work';
  *
  * @internal
  */
-export type CarriedPropertyHook = (
+type CarriedPropertyHook = (
   path: readonly number[],
   node: Readonly<Record<string, unknown>>,
   key: string
@@ -648,7 +648,7 @@ const contentProgramsEqual = (
     structurallyEqual(left.prefix, right.prefix) &&
     contentProgramsEqual(left.remainder ?? null, right.remainder ?? null));
 
-export const canonicalizeCompiledExclusiveTextProperties = (
+const canonicalizeCompiledExclusiveTextProperties = (
   schema: CompiledEditorSchema,
   source: Readonly<Record<string, unknown>>,
   context: CompiledSchemaTargetContext,
@@ -719,7 +719,7 @@ const getTextPropertyInParent = (
   return candidates.length === 1 ? candidates[0] : null;
 };
 
-export const getCompiledEmptyTextDrops = (
+const getCompiledEmptyTextDrops = (
   schema: CompiledEditorSchema | null,
   context: CompiledSchemaTargetContext
 ) => {
@@ -1094,7 +1094,7 @@ export const canPlaceBlocksAtPath = (
 ) => getInternalEditorSchemaFromApi(schemaApi).canPlaceAtPath(at, fit, options);
 
 /** A changed span of a root's children, in the before and the after root. */
-export type ImportedRootWindow = Readonly<{
+type ImportedRootWindow = Readonly<{
   afterFrom: number;
   afterTo: number;
   beforeFrom: number;

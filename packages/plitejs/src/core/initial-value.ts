@@ -16,7 +16,7 @@ import {
   snapshotEditorJsonValue,
 } from './value-codec';
 
-export type NormalizedInitialValue = {
+type NormalizedInitialValue = {
   children: Descendant[];
   explicit: boolean;
   meta: Record<string, unknown> | undefined;

@@ -45,6 +45,7 @@ import { getDefined } from '../internal/get-defined';
 import { normalizeSetValues } from './change/transform';
 import { cloneFrozen } from './clone';
 import {
+  canonicalJson,
   defaultSplitOf,
   getCompiledSchemaPropertyId,
   uniqueRefusalOf,
@@ -88,65 +89,6 @@ const assertOnlyKeys = (
 
   if (unknown.length > 0) {
     throw new Error(`${owner} does not support ${unknown.join(', ')}.`);
-  }
-};
-
-const cloneFrozenJson = <TValue>(
-  value: TValue,
-  owner: string,
-  ancestors = new Set<object>()
-): TValue => {
-  if (
-    value === null ||
-    typeof value === 'boolean' ||
-    typeof value === 'string'
-  ) {
-    return value;
-  }
-  if (typeof value === 'number') {
-    if (Number.isFinite(value) && !Object.is(value, -0)) return value;
-
-    throw new Error(`${owner} must contain only finite JSON numbers, not -0.`);
-  }
-  if (typeof value !== 'object') {
-    throw new Error(`${owner} must be JSON data.`);
-  }
-  if (ancestors.has(value)) throw new Error(`${owner} cannot be cyclic.`);
-
-  const prototype = Object.getPrototypeOf(value);
-
-  if (
-    !Array.isArray(value) &&
-    prototype !== Object.prototype &&
-    prototype !== null
-  ) {
-    throw new Error(`${owner} must use plain JSON objects.`);
-  }
-
-  ancestors.add(value);
-  try {
-    if (Array.isArray(value)) {
-      return Object.freeze(
-        Array.from(value, (item) => cloneFrozenJson(item, owner, ancestors))
-      ) as TValue;
-    }
-
-    return Object.freeze(
-      Object.fromEntries(
-        Object.keys(value)
-          .sort()
-          .map((key) => [
-            key,
-            cloneFrozenJson(
-              (value as Readonly<Record<string, unknown>>)[key],
-              owner,
-              ancestors
-            ),
-          ])
-      )
-    ) as TValue;
-  } finally {
-    ancestors.delete(value);
   }
 };
 
@@ -307,7 +249,7 @@ const cloneDescriptorValue = (
     }
   }
 
-  const cloned = cloneFrozenJson(value, owner);
+  const cloned = canonicalJson(value, owner);
 
   validatePropertyValue(descriptor, cloned, owner);
 
@@ -1186,7 +1128,7 @@ const freezeContentDefault = (
     ...(value.properties === undefined
       ? {}
       : {
-          properties: cloneFrozenJson(
+          properties: canonicalJson(
             value.properties,
             'Schema content default properties'
           ),
@@ -1642,7 +1584,7 @@ const schemaContent: SchemaContentApi = Object.assign(content, {
         ...(properties === undefined
           ? {}
           : {
-              properties: cloneFrozenJson(
+              properties: canonicalJson(
                 properties,
                 `Schema content prefix slot ${index} properties`
               ),

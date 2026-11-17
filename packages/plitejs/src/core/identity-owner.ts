@@ -12,7 +12,7 @@ type DirNode = { edit: object | null; size: number; slots: unknown[] };
 
 declare const directoryValue: unique symbol;
 
-export type Directory<V> = Readonly<{
+type Directory<V> = Readonly<{
   depth: number;
   root: DirNode | null;
   size: number;
@@ -25,7 +25,7 @@ const EMPTY_DIRECTORY: Directory<never> = Object.freeze({
   size: 0,
 });
 
-export const emptyDirectory = <V>() => EMPTY_DIRECTORY as Directory<V>;
+const emptyDirectory = <V>() => EMPTY_DIRECTORY as Directory<V>;
 
 const digit = (address: number, level: number) =>
   Math.floor(address / 2 ** (level * BITS)) % WIDTH;
@@ -39,10 +39,7 @@ const ownedNode = (node: DirNode | null, edit: object): DirNode => {
     : { edit, size: 0, slots: [] };
 };
 
-export const dirGet = <V>(
-  dir: Directory<V>,
-  address: number
-): V | undefined => {
+const dirGet = <V>(dir: Directory<V>, address: number): V | undefined => {
   if (address < 0 || address >= 2 ** (dir.depth * BITS)) return undefined;
   let node = dir.root;
 
@@ -54,7 +51,7 @@ export const dirGet = <V>(
   return node ? (node.slots[digit(address, 0)] as V | undefined) : undefined;
 };
 
-export const dirSet = <V>(
+const dirSet = <V>(
   dir: Directory<V>,
   address: number,
   value: V,
@@ -93,7 +90,7 @@ export const dirSet = <V>(
   return { depth, root: top, size: dir.size + (added ? 1 : 0) };
 };
 
-export const dirDelete = <V>(
+const dirDelete = <V>(
   dir: Directory<V>,
   address: number,
   edit: object
@@ -128,7 +125,7 @@ export const dirDelete = <V>(
   };
 };
 
-export const dirForEach = <V>(
+const dirForEach = <V>(
   dir: Directory<V>,
   visit: (value: V, address: number) => void
 ) => {
@@ -145,7 +142,7 @@ export const dirForEach = <V>(
   if (dir.root) walk(dir.root, dir.depth - 1, 0);
 };
 
-export const dirNodeCount = (dir: Directory<unknown>) => {
+const dirNodeCount = (dir: Directory<unknown>) => {
   let count = 0;
   const walk = (node: DirNode, level: number) => {
     count += 1;
@@ -161,7 +158,7 @@ export const dirNodeCount = (dir: Directory<unknown>) => {
 
 const LIVE_KEY = /^(r[0-9a-z]+):n(\d+)$/;
 
-export const keyAddress = (
+const keyAddress = (
   nodeKey: NodeKey
 ): Readonly<{ address: number; live: boolean }> | null => {
   const live = LIVE_KEY.exec(nodeKey);
@@ -186,21 +183,17 @@ export const keyAddress = (
 };
 
 const TYPE_ADDRESSES = new Map<string, number>();
-const TYPE_NAMES: string[] = [];
 
-export const typeAddress = (type: string) => {
+const typeAddress = (type: string) => {
   let address = TYPE_ADDRESSES.get(type);
 
   if (address === undefined) {
-    address = TYPE_NAMES.length;
-    TYPE_NAMES.push(type);
+    address = TYPE_ADDRESSES.size;
     TYPE_ADDRESSES.set(type, address);
   }
 
   return address;
 };
-
-export const typeName = (address: number) => TYPE_NAMES[address];
 
 export type KeyOf = (node: Descendant, path: Path) => NodeKey | null;
 
@@ -222,14 +215,14 @@ export const ROOT_LIST = -1;
 const NO_PARENT_PAGE = -1;
 const NO_TREE = -1;
 
-export type Cell = Readonly<{
+type Cell = Readonly<{
   children: number;
   key: NodeKey | null;
   kind: number;
   page: number;
 }>;
 
-export type Page = Readonly<{
+type Page = Readonly<{
   items: readonly number[];
   counts: readonly number[];
   leaf: boolean;
@@ -267,7 +260,7 @@ const childrenOfNode = (node: Descendant): readonly Descendant[] | null =>
     ? (node.children as readonly Descendant[])
     : null;
 
-export const elementKind = (node: Descendant) =>
+const elementKind = (node: Descendant) =>
   isText(node)
     ? TEXT_KIND
     : typeAddress(
@@ -877,8 +870,7 @@ export class TopologyBuilder {
   }
 }
 
-export const readTopology = (topology: Topology) =>
-  new TopologyBuilder(topology);
+const readTopology = (topology: Topology) => new TopologyBuilder(topology);
 
 export const topologyKeyAt = (
   topology: Topology,

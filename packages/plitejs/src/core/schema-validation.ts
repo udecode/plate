@@ -23,7 +23,7 @@ export type EditorSchemaValidationLocation = Readonly<{
  *
  * @internal
  */
-export type EditorSchemaValidationPropertyCandidate = Readonly<{
+type EditorSchemaValidationPropertyCandidate = Readonly<{
   id: string;
   owner: string;
   target: SchemaTarget | null;
@@ -34,7 +34,7 @@ export type EditorSchemaValidationPropertyCandidate = Readonly<{
  *
  * @internal
  */
-export type EditorSchemaValidationPropertyInput = Readonly<{
+type EditorSchemaValidationPropertyInput = Readonly<{
   candidates: readonly EditorSchemaValidationPropertyCandidate[];
   key: string;
   placement: 'element' | 'text';

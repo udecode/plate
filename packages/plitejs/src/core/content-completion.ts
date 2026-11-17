@@ -17,7 +17,7 @@ import { textPropertiesEqual } from './value-codec';
 type Text = Extract<Descendant, { text: string }>;
 type InlineSchema = Readonly<{ isInline: (node: Node) => boolean }>;
 
-export type ContentKind = 'block' | 'inline' | 'mixed';
+type ContentKind = 'block' | 'inline' | 'mixed';
 
 /**
  * Where completion builds an element: prefix slot `prefix`, or the `min`th
