@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { isOrderedList, ListType } from 'platejs';
 import {
   ListPlugin,
@@ -10,7 +11,6 @@ import {
 import React from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderNodeWrapper<typeof ListPlugin>;
 

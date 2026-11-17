@@ -1,4 +1,5 @@
 'use client';
+import { cn } from 'cn';
 import {
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -26,7 +27,6 @@ import {
 } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { AlignKit } from '@/registry/components/editor/align';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';

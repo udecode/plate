@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { IS_APPLE } from 'platejs';
 import { MentionPlugin } from 'platejs/mention/react';
 import {
@@ -12,7 +13,6 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { ChevronRightIcon } from 'lucide-react';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { DetailsPlugin, DetailsSummaryPlugin } from 'platejs/details/react';
@@ -12,7 +13,6 @@ import {
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { headingVariants } from '@/registry/components/editor/heading';
 
 export function DetailsElement(

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   differenceInDays,
   differenceInHours,
@@ -32,7 +33,6 @@ import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import { BaseBasicMarksKit } from '@/registry/components/editor/basic-marks-static';
 import {

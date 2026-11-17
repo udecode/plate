@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { MessageSquareTextIcon, MessagesSquareIcon } from 'lucide-react';
 import type { Range } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
@@ -21,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
 import {
   CommentThreadCard,
   useCommentThread,

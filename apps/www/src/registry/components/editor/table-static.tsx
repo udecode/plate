@@ -1,3 +1,4 @@
+import { cn } from 'cn';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import {
   BaseTableCellPlugin,
@@ -5,8 +6,6 @@ import {
   BaseTableRowPlugin,
 } from 'platejs/table';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export function TableElementStatic({
   children,

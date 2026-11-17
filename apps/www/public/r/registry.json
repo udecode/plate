@@ -36,6 +36,7 @@
       "description": "Live editor frame, scroll container, and content components.",
       "dependencies": [
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -71,6 +72,7 @@
       "description": "Server-safe static editor component.",
       "dependencies": [
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -89,6 +91,7 @@
       "description": "Structural document comparison with evidence, diagnostics, filtering, navigation, and text granularity.",
       "dependencies": [
         "platejs/diff",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -118,6 +121,7 @@
         "cmdk",
         "@ai-sdk/react@^3.0.0",
         "ai@^6.0.0",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
         "lucide-react",
@@ -368,6 +372,7 @@
       "dependencies": [
         "platejs",
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -399,6 +404,7 @@
     {
       "name": "caption-static",
       "dependencies": [
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -418,6 +424,7 @@
       "dependencies": [
         "platejs",
         "lodash",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -459,6 +466,7 @@
       "dependencies": [
         "lucide-react",
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -497,6 +505,7 @@
       "dependencies": [
         "platejs",
         "fzf@0.5.2",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
         "next"
@@ -537,6 +546,7 @@
       "dependencies": [
         "platejs",
         "frimousse@0.4.0",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -703,6 +713,7 @@
         "@ariakit/react",
         "platejs",
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -1002,6 +1013,7 @@
       "dependencies": [
         "platejs",
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -1033,6 +1045,7 @@
       "description": "A menu for table manipulation and formatting.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -1176,6 +1189,7 @@
       "description": "Provider-neutral dropdown menu behavior for Plate UI.",
       "dependencies": [
         "@base-ui/react",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -1204,6 +1218,7 @@
       "dependencies": [
         "platejs",
         "@base-ui/react",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1225,6 +1240,7 @@
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
         "platejs"
@@ -1265,6 +1281,7 @@
       "description": "A toolbar button for toggling suggestion mode in the editor.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -1294,6 +1311,7 @@
       "description": "List components.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1322,6 +1340,7 @@
       "name": "block-list-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -1464,6 +1483,7 @@
       "description": "A toolbar control for adjusting font size.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -1595,6 +1615,7 @@
       "description": "A horizontal rule component with focus states.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -1623,6 +1644,7 @@
       "name": "horizontal-rule-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -1640,6 +1662,7 @@
       "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1678,6 +1701,7 @@
       "name": "media-image-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1698,6 +1722,7 @@
       "description": "A modal component for previewing and manipulating images.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -1777,6 +1802,7 @@
       "description": "An audio player component with caption support.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1833,6 +1859,7 @@
         "platejs",
         "react-tweet",
         "react-lite-youtube-embed",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -1890,6 +1917,7 @@
       "description": "A file attachment component with download capability and caption.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -1948,6 +1976,7 @@
         "platejs",
         "react-player@3.3.1",
         "react-lite-youtube-embed",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -2004,6 +2033,7 @@
       "title": "Paragraph",
       "description": "A paragraph block with background color support.",
       "dependencies": [
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -2033,6 +2063,7 @@
     {
       "name": "paragraph-static",
       "dependencies": [
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -2090,6 +2121,7 @@
       "name": "callout-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -2174,6 +2206,7 @@
       "dependencies": [
         "platejs",
         "@excalidraw/excalidraw@0.18.0",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -2264,6 +2297,7 @@
       "dependencies": [
         "platejs",
         "katex@0.16.22",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -2301,6 +2335,7 @@
       "name": "mention-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -2316,6 +2351,7 @@
       "name": "table-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
@@ -2350,6 +2386,7 @@
       "name": "details-static",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -2592,6 +2629,7 @@
       "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -2660,6 +2698,7 @@
       "dependencies": [
         "platejs",
         "lowlight",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -2740,6 +2779,7 @@
       "title": "Code Block Diagram",
       "description": "Draw code blocks in diagram languages, with Code and Both views.",
       "dependencies": [
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
         "platejs"
@@ -2892,6 +2932,7 @@
       "description": "Resizable column components for layout.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -2932,6 +2973,7 @@
         "platejs",
         "date-fns",
         "lucide-react",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -3141,6 +3183,7 @@
       "description": "A date field component with calendar picker.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -3176,6 +3219,7 @@
       "description": "Block drag handles and drop indicators.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -3363,6 +3407,7 @@
       "title": "Fixed Toolbar",
       "description": "A set of commonly used formatting buttons.",
       "dependencies": [
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
         "platejs"
@@ -3461,6 +3506,7 @@
       "description": "Inline footnote references, definitions, and a reference picker.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -3565,6 +3611,7 @@
         "platejs",
         "@floating-ui/react",
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -3648,6 +3695,7 @@
         "platejs",
         "katex@0.16.22",
         "react-textarea-autosize",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -3723,6 +3771,7 @@
         "files-sdk@3.2.0",
         "sonner",
         "use-file-picker@2.1.2",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -3785,6 +3834,7 @@
       "description": "A mention element with customizable prefix and label, powered by a combobox.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -3906,6 +3956,7 @@
       "description": "A table component with floating toolbar and border customization.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -3982,6 +4033,7 @@
       "description": "A semantic disclosure block with an editable summary.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
@@ -4172,6 +4224,7 @@
         "platejs",
         "@ai-sdk/react@^3.0.0",
         "ai@^6.0.0",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
         "lucide-react",
@@ -5075,6 +5128,7 @@
         "platejs",
         "@platejs/test",
         "prismjs",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -5122,6 +5176,7 @@
       "name": "markdown-streaming-demo",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
         "remark-parse@^11.0.0",
@@ -5217,6 +5272,7 @@
       "dependencies": [
         "platejs",
         "@platejs/test",
+        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [

@@ -1,9 +1,9 @@
 'use client';
 
 import * as PopoverPrimitive from '@radix-ui/react-popover';
+import { cn } from 'cn';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { useToolbarScrollDismiss } from '@/registry/components/editor/toolbar-overlay';
 
 type FloatingAnchor =

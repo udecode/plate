@@ -2141,7 +2141,7 @@
     {
       "name": "utils",
       "type": "registry:lib",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": ["cn"],
       "files": [
         {
           "path": "registry/new-york-v4/lib/utils.ts",

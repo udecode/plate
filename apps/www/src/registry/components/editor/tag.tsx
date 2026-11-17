@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import type { LinkProps } from 'next/link';
 import Link from 'next/link';
 import { BaseLinkPlugin, getLinkHref, property } from 'platejs';
@@ -13,8 +14,6 @@ import {
   usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 /** The `tag` inline void: a chip with a label and an optional link. */
 export const TagPlugin = definePlugin('tag', {

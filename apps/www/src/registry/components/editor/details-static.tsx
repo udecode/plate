@@ -1,8 +1,8 @@
+import { cn } from 'cn';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { headingVariants } from '@/registry/components/editor/heading-static';
 
 export function DetailsElementStatic(

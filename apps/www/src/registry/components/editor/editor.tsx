@@ -2,6 +2,7 @@
 
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import {
   type EditorContentProps,
   type EditorPreviewProps,
@@ -12,8 +13,6 @@ import {
   EditorPreview,
 } from 'platejs/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 const editorContainerVariants = cva(
   'relative w-full cursor-text select-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none',

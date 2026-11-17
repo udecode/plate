@@ -23,6 +23,7 @@
       "title": "Editor Dropdown Menu",
       "description": "Provider-neutral dropdown menu behavior for Plate UI.",
       "dependencies": [
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
@@ -50,7 +51,8 @@
       "description": "Provider-neutral anchored floating content for Plate UI.",
       "dependencies": [
         "platejs",
-        "@radix-ui/react-popover"
+        "@radix-ui/react-popover",
+        "cn"
       ],
       "registryDependencies": [
         "@plate/toolbar-overlay"
@@ -72,6 +74,7 @@
         "@radix-ui/react-toolbar",
         "@radix-ui/react-tooltip",
         "class-variance-authority",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
         "platejs"

@@ -1,7 +1,6 @@
+import { cn } from 'cn';
 import { type Element, NodeApi } from 'platejs';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export const getMediaTextAlign = (element: object) => {
   if (!('textAlign' in element)) return 'center';

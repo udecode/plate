@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { FileUp } from 'lucide-react';
 import { FilePlugin } from 'platejs/media/react';
 import {
@@ -10,8 +11,6 @@ import {
   useElementSelected,
 } from 'platejs/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 import { Caption } from './caption';
 import { MediaToolbar } from './media-toolbar';

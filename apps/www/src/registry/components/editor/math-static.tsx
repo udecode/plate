@@ -1,12 +1,11 @@
-import katex from 'katex';
+import { cn } from 'cn';
 
 import 'katex/dist/katex.min.css';
+import katex from 'katex';
 import { RadicalIcon } from 'lucide-react';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export function EquationElementStatic(
   props: EditorElementProps<typeof BaseEquationPlugin>

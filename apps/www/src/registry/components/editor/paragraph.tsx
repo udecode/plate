@@ -1,13 +1,12 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   type EditorElementProps,
   type ParagraphPlugin,
   EditorElement,
 } from 'platejs/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export function ParagraphElement(
   props: EditorElementProps<typeof ParagraphPlugin>

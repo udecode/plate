@@ -111,7 +111,11 @@ function normalizeFeature(feature) {
     throw new Error('Every feature needs id and label.');
   }
 
-  validateState(feature.reviewState, `feature ${feature.id}`);
+  if ('reviewState' in feature) {
+    throw new Error(
+      `Feature ${feature.id} sets reviewState; delete it, because the dashboard derives it from the feature's items.`
+    );
+  }
 
   const items = ensureArray(feature.items).map((item) => {
     if (!item.id || !item.title || !item.state) {
@@ -137,7 +141,21 @@ function normalizeFeature(feature) {
     summary: '',
     ...feature,
     items,
+    reviewState: getFeatureReviewState(items),
   };
+}
+
+function getFeatureReviewState(items) {
+  const states = new Set(items.map((item) => item.state));
+
+  if (states.has('pending')) return 'pending';
+  if (states.has('defer')) return 'defer';
+  if (states.has('fork')) return 'fork';
+  if (states.has('rejected')) {
+    return states.size === 1 ? 'rejected' : 'fork';
+  }
+
+  return 'synced';
 }
 
 function normalizeScreenshots(screenshots) {

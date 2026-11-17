@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   BanIcon,
   CircleIcon,
@@ -43,7 +44,6 @@ import type { EditorElementProps } from 'platejs/react';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
 
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,

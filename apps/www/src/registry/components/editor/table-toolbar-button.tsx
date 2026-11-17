@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   ArrowDown,
   ArrowLeft,
@@ -16,7 +17,6 @@ import { useEditor, useEditorSelector } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,

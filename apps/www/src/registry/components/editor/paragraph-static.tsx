@@ -1,8 +1,7 @@
+import { cn } from 'cn';
 import type { BaseParagraphPlugin } from 'platejs';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export function ParagraphElementStatic(
   props: EditorElementProps<typeof BaseParagraphPlugin>

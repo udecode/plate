@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { ImagePlugin } from 'platejs/media/react';
 import {
   EditorElement,
@@ -11,8 +12,6 @@ import {
   type EditorElementProps,
 } from 'platejs/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 import { Caption, getMediaTextAlign } from './caption';
 import { imagePlugin } from './media-preview-dialog';

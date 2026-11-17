@@ -19,10 +19,11 @@ export function CodeCollapsiblePre({
       data-state={open ? 'open' : 'closed'}
       className={cn(
         className,
-        'relative pt-12 pr-3 data-[state=closed]:max-h-64 data-[state=closed]:overflow-y-hidden'
+        'relative data-[state=closed]:max-h-64 data-[state=closed]:overflow-y-hidden'
       )}
       {...props}
     >
+      <span aria-hidden className="float-right h-6 w-20" />
       {children}
       <Button
         aria-controls={id}

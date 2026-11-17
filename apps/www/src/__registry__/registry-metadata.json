@@ -1,5 +1,5 @@
 {
-  "generation": "94843338f7420a8f687c8098111d7a4e60b17d5df1e222db3a8141527bc545da",
+  "generation": "421982e3d477271c9c115645b0f326b9c022fdd8015597c4b3e987f52d33a7e6",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -35,6 +35,7 @@
         {
           "dependencies": [
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -70,6 +71,7 @@
         {
           "dependencies": [
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -88,6 +90,7 @@
         {
           "dependencies": [
             "platejs/diff",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -117,6 +120,7 @@
             "cmdk",
             "@ai-sdk/react@^3.0.0",
             "ai@^6.0.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
@@ -367,6 +371,7 @@
           "dependencies": [
             "platejs",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Inline caption UI for media elements.",
@@ -400,6 +405,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -417,6 +423,7 @@
           "dependencies": [
             "platejs",
             "lodash",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -458,6 +465,7 @@
           "dependencies": [
             "lucide-react",
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Toolbar controls for creating comments and discovering every published conversation.",
@@ -496,6 +504,7 @@
           "dependencies": [
             "platejs",
             "fzf@0.5.2",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "next"
@@ -536,6 +545,7 @@
           "dependencies": [
             "platejs",
             "frimousse@0.4.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -702,6 +712,7 @@
             "@ariakit/react",
             "platejs",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A combobox for inline suggestions.",
@@ -1001,6 +1012,7 @@
           "dependencies": [
             "platejs",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A resizable wrapper with resize handles.",
@@ -1032,6 +1044,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1191,6 +1204,7 @@
           "type": "registry:component",
           "dependencies": [
             "@base-ui/react",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -1203,6 +1217,7 @@
           "dependencies": [
             "platejs",
             "@base-ui/react",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Provider-neutral anchored floating content for Plate UI.",
@@ -1236,6 +1251,7 @@
           "dependencies": [
             "@base-ui/react",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "platejs"
@@ -1264,6 +1280,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1293,6 +1310,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "List components.",
@@ -1323,6 +1341,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1463,6 +1482,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1594,6 +1614,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A horizontal rule component with focus states.",
@@ -1624,6 +1645,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -1639,6 +1661,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
@@ -1679,6 +1702,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -1697,6 +1721,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1776,6 +1801,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "An audio player component with caption support.",
@@ -1832,6 +1858,7 @@
             "platejs",
             "react-tweet",
             "react-lite-youtube-embed",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A component for embedded media content with resizing and caption support.",
@@ -1889,6 +1916,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1947,6 +1975,7 @@
             "platejs",
             "react-player@3.3.1",
             "react-lite-youtube-embed",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A video player component with YouTube and file upload support.",
@@ -2003,6 +2032,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -2034,6 +2064,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -2091,6 +2122,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2173,6 +2205,7 @@
           "dependencies": [
             "platejs",
             "@excalidraw/excalidraw@0.18.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2265,6 +2298,7 @@
           "dependencies": [
             "platejs",
             "katex@0.16.22",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -2302,6 +2336,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2317,6 +2352,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2351,6 +2387,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2591,6 +2628,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -2659,6 +2697,7 @@
           "dependencies": [
             "platejs",
             "lowlight",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -2760,6 +2799,7 @@
             ]
           },
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "platejs"
@@ -2891,6 +2931,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -2931,6 +2972,7 @@
             "platejs",
             "date-fns",
             "lucide-react",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -3140,6 +3182,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -3175,6 +3218,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -3362,6 +3406,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "platejs"
@@ -3460,6 +3505,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -3564,6 +3610,7 @@
             "platejs",
             "@floating-ui/react",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -3647,6 +3694,7 @@
             "platejs",
             "katex@0.16.22",
             "react-textarea-autosize",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -3722,6 +3770,7 @@
             "files-sdk@3.2.0",
             "sonner",
             "use-file-picker@2.1.2",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -3784,6 +3833,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -3905,6 +3955,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -3981,6 +4032,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -4173,6 +4225,7 @@
             "platejs",
             "@ai-sdk/react@^3.0.0",
             "ai@^6.0.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
@@ -5076,6 +5129,7 @@
             "platejs",
             "@platejs/test",
             "prismjs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -5123,6 +5177,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "remark-parse@^11.0.0",
@@ -5218,6 +5273,7 @@
           "dependencies": [
             "platejs",
             "@platejs/test",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -7083,6 +7139,7 @@
         {
           "dependencies": [
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -7118,6 +7175,7 @@
         {
           "dependencies": [
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -7136,6 +7194,7 @@
         {
           "dependencies": [
             "platejs/diff",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -7165,6 +7224,7 @@
             "cmdk",
             "@ai-sdk/react@^3.0.0",
             "ai@^6.0.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
@@ -7415,6 +7475,7 @@
           "dependencies": [
             "platejs",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Inline caption UI for media elements.",
@@ -7448,6 +7509,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -7465,6 +7527,7 @@
           "dependencies": [
             "platejs",
             "lodash",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -7506,6 +7569,7 @@
           "dependencies": [
             "lucide-react",
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Toolbar controls for creating comments and discovering every published conversation.",
@@ -7544,6 +7608,7 @@
           "dependencies": [
             "platejs",
             "fzf@0.5.2",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "next"
@@ -7584,6 +7649,7 @@
           "dependencies": [
             "platejs",
             "frimousse@0.4.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -7750,6 +7816,7 @@
             "@ariakit/react",
             "platejs",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A combobox for inline suggestions.",
@@ -8049,6 +8116,7 @@
           "dependencies": [
             "platejs",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A resizable wrapper with resize handles.",
@@ -8080,6 +8148,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8235,6 +8304,7 @@
           "title": "Editor Dropdown Menu",
           "type": "registry:component",
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -8246,7 +8316,8 @@
         {
           "dependencies": [
             "platejs",
-            "@radix-ui/react-popover"
+            "@radix-ui/react-popover",
+            "cn"
           ],
           "description": "Provider-neutral anchored floating content for Plate UI.",
           "files": [
@@ -8280,6 +8351,7 @@
             "@radix-ui/react-toolbar",
             "@radix-ui/react-tooltip",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "platejs"
@@ -8308,6 +8380,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8337,6 +8410,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "List components.",
@@ -8367,6 +8441,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8507,6 +8582,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8638,6 +8714,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A horizontal rule component with focus states.",
@@ -8668,6 +8745,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -8683,6 +8761,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
@@ -8723,6 +8802,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -8741,6 +8821,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8820,6 +8901,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "An audio player component with caption support.",
@@ -8876,6 +8958,7 @@
             "platejs",
             "react-tweet",
             "react-lite-youtube-embed",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A component for embedded media content with resizing and caption support.",
@@ -8933,6 +9016,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8991,6 +9075,7 @@
             "platejs",
             "react-player@3.3.1",
             "react-lite-youtube-embed",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A video player component with YouTube and file upload support.",
@@ -9047,6 +9132,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -9078,6 +9164,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "platejs"
           ],
@@ -9135,6 +9222,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9217,6 +9305,7 @@
           "dependencies": [
             "platejs",
             "@excalidraw/excalidraw@0.18.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9309,6 +9398,7 @@
           "dependencies": [
             "platejs",
             "katex@0.16.22",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9346,6 +9436,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9361,6 +9452,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9395,6 +9487,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9635,6 +9728,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9703,6 +9797,7 @@
           "dependencies": [
             "platejs",
             "lowlight",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9804,6 +9899,7 @@
             ]
           },
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "platejs"
@@ -9935,6 +10031,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9975,6 +10072,7 @@
             "platejs",
             "date-fns",
             "lucide-react",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -10184,6 +10282,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -10219,6 +10318,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -10406,6 +10506,7 @@
         },
         {
           "dependencies": [
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "platejs"
@@ -10504,6 +10605,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -10608,6 +10710,7 @@
             "platejs",
             "@floating-ui/react",
             "class-variance-authority",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -10691,6 +10794,7 @@
             "platejs",
             "katex@0.16.22",
             "react-textarea-autosize",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -10766,6 +10870,7 @@
             "files-sdk@3.2.0",
             "sonner",
             "use-file-picker@2.1.2",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -10828,6 +10933,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -10949,6 +11055,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -11025,6 +11132,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -11217,6 +11325,7 @@
             "platejs",
             "@ai-sdk/react@^3.0.0",
             "ai@^6.0.0",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
             "lucide-react",
@@ -12120,6 +12229,7 @@
             "platejs",
             "@platejs/test",
             "prismjs",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -12167,6 +12277,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
             "remark-parse@^11.0.0",
@@ -12262,6 +12373,7 @@
           "dependencies": [
             "platejs",
             "@platejs/test",
+            "cn",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [

@@ -4,13 +4,14 @@
   "title": "Paragraph",
   "description": "A paragraph block with background color support.",
   "dependencies": [
+    "cn",
     "diff-match-patch-ts@^0.6.0",
     "platejs"
   ],
   "files": [
     {
       "path": "src/registry/components/editor/paragraph.tsx",
-      "content": "'use client';\n\nimport {\n  type EditorElementProps,\n  type ParagraphPlugin,\n  EditorElement,\n} from 'platejs/react';\nimport * as React from 'react';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElement(\n  props: EditorElementProps<typeof ParagraphPlugin>\n) {\n  return (\n    <EditorElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </EditorElement>\n  );\n}\n",
+      "content": "'use client';\n\nimport { cn } from 'cn';\nimport {\n  type EditorElementProps,\n  type ParagraphPlugin,\n  EditorElement,\n} from 'platejs/react';\nimport * as React from 'react';\n\nexport function ParagraphElement(\n  props: EditorElementProps<typeof ParagraphPlugin>\n) {\n  return (\n    <EditorElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </EditorElement>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/paragraph.tsx"
     }

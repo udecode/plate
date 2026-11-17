@@ -1,6 +1,7 @@
 'use client';
 
 import 'katex/dist/katex.min.css';
+import { cn } from 'cn';
 import katex, { type KatexOptions } from 'katex';
 import { CornerDownLeftIcon, RadicalIcon } from 'lucide-react';
 import { isHotkey, NodeApi } from 'platejs';
@@ -20,7 +21,6 @@ import TextareaAutosize, {
 } from 'react-textarea-autosize';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   FloatingPopover,
   FloatingPopoverContent,

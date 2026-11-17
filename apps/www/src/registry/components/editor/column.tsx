@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -30,7 +31,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import {
   HandleActionsMenu,
   startBlockDrag,

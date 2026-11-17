@@ -8,6 +8,7 @@ import {
   useInteractions,
 } from '@floating-ui/react';
 import { cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
 import { LinkRules } from 'platejs';
 import {
@@ -27,7 +28,6 @@ import * as React from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import {
   type UseFloatingRectOptions,
   useFloatingRect,

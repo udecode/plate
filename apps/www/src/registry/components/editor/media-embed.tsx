@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   parseMediaUrl,
   parseTwitterUrl,
@@ -19,8 +20,6 @@ import {
 import * as React from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import { Tweet } from 'react-tweet';
-
-import { cn } from '@/lib/utils';
 
 import { Caption, getMediaTextAlign } from './caption';
 import { MediaToolbar } from './media-toolbar';

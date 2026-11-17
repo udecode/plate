@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { createFilesClient } from 'files-sdk/client';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import {
@@ -17,7 +18,6 @@ import * as React from 'react';
 import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
-import { cn } from '@/lib/utils';
 import { useObjectUrl } from '@/registry/hooks/use-object-url';
 
 // The copied playground uses one document; applications supply their active document ID.

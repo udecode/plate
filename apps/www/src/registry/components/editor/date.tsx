@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { formatDateValue, parseCanonicalDateValue } from 'platejs/date';
 import { DatePlugin } from 'platejs/date/react';
 import {
@@ -15,7 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
 const DAY_MS = 86_400_000;
@@ -44,6 +44,7 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
   const openRef = React.useRef(false);
   const openAtPointerDownRef = React.useRef(false);
   const [open, setOpen] = React.useState(false);
+  const selectedDate = parseCanonicalDateValue(element.value);
   const setOpenState = React.useCallback((nextOpen: boolean) => {
     openRef.current = nextOpen;
     setOpen(nextOpen);
@@ -91,7 +92,8 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
           <PopoverTrigger asChild>{trigger}</PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar
-              selected={parseCanonicalDateValue(element.value)}
+              defaultMonth={selectedDate}
+              selected={selectedDate}
               onSelect={(date) => {
                 if (!date) return;
 

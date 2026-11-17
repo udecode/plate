@@ -1,6 +1,7 @@
 'use client';
 
 import { cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import {
   NodeApi,
   PathApi,
@@ -18,7 +19,6 @@ import {
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 const captionVariants = cva('max-w-full', {
   defaultVariants: {

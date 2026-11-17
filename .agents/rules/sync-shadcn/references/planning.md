@@ -293,6 +293,6 @@ status update:
    recommendation, and `evidence` with the plan path and upstream commits. Leave
    `decision` empty.
 3. Leave an item that already has the slice id unchanged.
-4. Set `reviewState` to `pending` on each feature that gained a pending item.
-5. Run `pnpm sync-shadcn dashboard --no-open`. It fails while a slice in
-   `lastPlan`'s table has no item.
+4. Run `pnpm sync-shadcn dashboard --no-open`. It fails while a slice in
+   `lastPlan`'s table has no item. The dashboard derives each feature's state
+   from its items, so a feature never stores one.

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -29,7 +30,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,

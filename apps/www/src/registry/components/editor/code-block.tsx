@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
 import { CodeBlockRules, type Element, ElementApi, NodeApi } from 'platejs';
@@ -24,7 +25,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
 import { createCodeBlockLowlight } from '@/registry/components/editor/code-block-lowlight';
 import {
   FloatingPopover,

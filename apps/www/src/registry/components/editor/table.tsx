@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   ArrowDown,
   ArrowLeft,
@@ -37,7 +38,6 @@ import {
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   HandleActionsMenu,
   startBlockDrag,

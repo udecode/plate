@@ -1,7 +1,7 @@
 'use client';
+import { cn } from 'cn';
 
 import { siteConfig } from '@/config/site';
-import { cn } from '@/lib/utils';
 
 export default function ProIframeDemo({ id }: { id: string }) {
   return (

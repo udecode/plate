@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
 import { type NodeKey, type Path, isHotkey } from 'platejs';
 import { BaseImagePlugin } from 'platejs/media';
@@ -10,7 +11,6 @@ import { createPortal } from 'react-dom';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 
 const SCROLL_SPEED = 4;
 const DEFAULT_DOWNLOAD_FILENAME = 'image';

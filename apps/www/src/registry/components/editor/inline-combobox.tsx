@@ -12,6 +12,7 @@ import {
   useStoreState,
 } from '@ariakit/react';
 import { cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import type { PluginReference } from 'platejs';
 import { filterWords } from 'platejs/combobox';
 import {
@@ -22,8 +23,6 @@ import {
 } from 'platejs/combobox/react';
 import { useEditor } from 'platejs/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 type InlineComboboxContextValue = {
   box: UseComboboxReturn;

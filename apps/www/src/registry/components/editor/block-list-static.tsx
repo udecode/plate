@@ -1,3 +1,4 @@
+import { cn } from 'cn';
 import { CheckIcon } from 'lucide-react';
 import {
   BaseListPlugin,
@@ -10,8 +11,6 @@ import {
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseImagePlugin } from 'platejs/media';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 

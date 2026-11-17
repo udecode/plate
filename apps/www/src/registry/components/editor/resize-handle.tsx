@@ -2,13 +2,12 @@
 
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import {
   Resizable as ResizablePrimitive,
   ResizeHandle as ResizeHandlePrimitive,
 } from 'platejs/resizable/react';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export const mediaResizeHandleVariants = cva(
   cn(

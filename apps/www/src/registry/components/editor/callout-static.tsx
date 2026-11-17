@@ -1,8 +1,7 @@
+import { cn } from 'cn';
 import { BaseCalloutPlugin } from 'platejs/callout';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export function CalloutElementStatic({
   children,

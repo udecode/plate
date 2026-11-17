@@ -1,8 +1,7 @@
+import { cn } from 'cn';
 import { BaseMentionPlugin } from 'platejs/mention';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export function MentionElementStatic(
   props: EditorElementProps<typeof BaseMentionPlugin> & {

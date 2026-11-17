@@ -3,11 +3,11 @@
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { type VariantProps, cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import { ChevronDown } from 'lucide-react';
 import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import {
   ToolbarOverlayProvider,
   useToolbarOverlayTrigger,

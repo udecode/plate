@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-fix-date-picker-month",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-fix-date-picker-month.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open the date picker on the selected month",
+  "targets": [
+    {
+      "name": "date",
+      "files": ["apps/www/src/registry/components/editor/date.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-date-open-picker-month-13116ba3",
+      "kind": "fix",
+      "summary": "Open the date picker on the month of the selected date instead of the current month.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-fix-date-picker-month",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

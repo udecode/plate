@@ -1,6 +1,7 @@
 'use client';
 
 import type { Menu as BaseMenuPrimitive } from '@base-ui/react/menu';
+import { cn } from 'cn';
 import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
@@ -12,7 +13,6 @@ import {
   DropdownMenuRadioItem as ShadcnDropdownMenuRadioItem,
   DropdownMenuTrigger as ShadcnDropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 import {
   type FinalFocus,
   FinalFocusContext,

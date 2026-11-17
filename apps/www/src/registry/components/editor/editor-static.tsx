@@ -1,12 +1,11 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import { cn } from 'cn';
 import {
   type EditorStaticProps,
   EditorStatic as EditorStaticPrimitive,
 } from 'platejs/static';
 import * as React from 'react';
-
-import { cn } from '@/lib/utils';
 
 export const editorVariants = cva(
   cn(

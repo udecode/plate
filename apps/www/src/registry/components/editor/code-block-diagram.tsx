@@ -1,12 +1,12 @@
 'use client';
 
+import { cn } from 'cn';
 import { DownloadIcon } from 'lucide-react';
 import { NodeApi } from 'platejs';
 import { useEditor, useEditorSelector, usePath } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import type {
   CodeBlockAddon,
   CodeBlockComponent,

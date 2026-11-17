@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   type EditorElementProps,
   definePlugin,
@@ -10,7 +11,6 @@ import {
   useElementSelected,
 } from 'platejs/react';
 
-import { cn } from '@/lib/utils';
 import {
   Editor,
   EditorContainer,

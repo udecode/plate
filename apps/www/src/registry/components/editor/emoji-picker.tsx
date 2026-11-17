@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   type EmojiPickerListCategoryHeaderProps,
   type EmojiPickerListEmojiProps,
@@ -10,7 +11,6 @@ import { LoaderIcon, SearchIcon } from 'lucide-react';
 import { useEditor } from 'platejs/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import {
   FloatingPopover,
   FloatingPopoverContent,

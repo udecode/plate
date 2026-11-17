@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import {
   BaselineIcon,
   BoldIcon,
@@ -31,7 +32,6 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
 
 import { AIToolbarButton } from './ai-toolbar-button';

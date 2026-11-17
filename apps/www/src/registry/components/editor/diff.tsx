@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import type {
   ComparedChange,
   Comparison,
@@ -12,7 +13,6 @@ import type {
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 export type DiffGranularity = 'grapheme' | 'line' | 'section' | 'word';
 

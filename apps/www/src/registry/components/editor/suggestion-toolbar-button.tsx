@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { PencilLineIcon } from 'lucide-react';
 import { AuthoredPlugin } from 'platejs/authored';
 import {
@@ -10,7 +11,6 @@ import {
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 export function SuggestionToolbarButton() {

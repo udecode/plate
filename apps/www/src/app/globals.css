@@ -359,6 +359,10 @@
     white-space: pre-wrap;
   }
 
+  pre[data-prompt] [data-line] {
+    display: inline;
+  }
+
   [data-rehype-pretty-code-title] ~ pre [data-slot='copy-button'] {
     top: calc(var(--spacing) * 1.5) !important;
   }

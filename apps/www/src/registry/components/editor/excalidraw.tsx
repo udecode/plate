@@ -6,6 +6,7 @@ import type {
   BinaryFiles,
   ExcalidrawImperativeAPI,
 } from '@excalidraw/excalidraw/types';
+import { cn } from 'cn';
 import { ExcalidrawPlugin, useExcalidrawSync } from 'platejs/excalidraw/react';
 import {
   type EditorElementProps,
@@ -15,8 +16,6 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
-
-import { cn } from '@/lib/utils';
 
 import '@excalidraw/excalidraw/index.css';
 

@@ -1,11 +1,11 @@
 'use client';
 
+import { cn } from 'cn';
 import { TextApi } from 'platejs';
 import { definePlugin, EditorRoot, useCreateEditor } from 'platejs/react';
 import Prism, { type TokenStream } from 'prismjs';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { previewMdValue } from '@/registry/examples/values/preview-md-value';

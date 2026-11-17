@@ -1,6 +1,7 @@
 'use client';
 
 import { Command as CommandPrimitive } from 'cmdk';
+import { cn } from 'cn';
 import {
   Album,
   BadgeHelp,
@@ -38,7 +39,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { cn } from '@/lib/utils';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,

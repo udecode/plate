@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import { PathApi, type Path } from 'platejs';
 import {
   FootnotePlugin,
@@ -31,7 +32,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { cn } from '@/lib/utils';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
