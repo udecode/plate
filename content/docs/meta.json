@@ -92,6 +92,7 @@
     "[Font](/docs/font)",
     "[Line Height](/docs/line-height)",
     "[Text Align](/docs/text-align)",
+    "[Clear Formatting](/docs/clear-formatting)",
     "[Indent](/docs/indent)",
     "[List](/docs/list)",
     "[Exit Break](/docs/exit-break)",
@@ -136,6 +137,7 @@
     "[Inline Combobox](/docs/components/inline-combobox)",
     "[Insert Toolbar Button](/docs/components/insert-toolbar-button)",
     "[Line Height Toolbar Button](/docs/components/line-height-toolbar-button)",
+    "[Clear Formatting Toolbar Button](/docs/components/clear-formatting-toolbar-button)",
     "[Link Floating Toolbar](/docs/components/link)",
     "[Link Toolbar Button](/docs/components/link-toolbar-button)",
     "[Mark Toolbar Button](/docs/components/mark-toolbar-button)",
@@ -225,6 +227,7 @@
     "[Indent Demo](/docs/examples/indent)",
     "[List Demo](/docs/examples/list)",
     "[Line Height Demo](/docs/examples/line-height)",
+    "[Clear Formatting Demo](/docs/examples/clear-formatting)",
     "[Link Demo](/docs/examples/link)",
     "[Media Demo](/docs/examples/media)",
     "[Mention Demo](/docs/examples/mention)",
@@ -535,6 +538,12 @@
               "href": "/docs/components/line-height-toolbar-button",
               "title": "Line Height Toolbar Button",
               "titleCn": "Line Height Toolbar Button"
+            },
+            {
+              "description": "A toolbar button that clears text and block formatting.",
+              "href": "/docs/components/clear-formatting-toolbar-button",
+              "title": "Clear Formatting Toolbar Button",
+              "titleCn": "Clear Formatting Toolbar Button"
             },
             {
               "description": "A floating interface for link editing.",
@@ -1074,6 +1083,12 @@
               "href": "/docs/examples/line-height",
               "title": "Line Height Demo",
               "titleCn": "Line Height"
+            },
+            {
+              "description": "Clear text and block styles from a selection.",
+              "href": "/docs/examples/clear-formatting",
+              "title": "Clear Formatting Demo",
+              "titleCn": "Clear Formatting"
             },
             {
               "description": "Hyperlinks with toolbar insertion and URL pasting support.",
@@ -1766,6 +1781,11 @@
                       "description": "Align your content to different positions.",
                       "href": "/docs/text-align",
                       "title": "Text Align"
+                    },
+                    {
+                      "description": "Remove text and block styles from a selection.",
+                      "href": "/docs/clear-formatting",
+                      "title": "Clear Formatting"
                     }
                   ],
                   "title": "Basic Styles",
@@ -2389,6 +2409,10 @@
         "description": "Align your content to different positions.",
         "title": "Text Align"
       },
+      "/docs/clear-formatting": {
+        "description": "Remove text and block styles from a selection.",
+        "title": "Clear Formatting"
+      },
       "/docs/indent": {
         "description": "Customize text indentation.",
         "title": "Indent",
@@ -2598,6 +2622,11 @@
         "description": "A menu for controlling text line spacing.",
         "title": "Line Height Toolbar Button",
         "titleCn": "Line Height Toolbar Button"
+      },
+      "/docs/components/clear-formatting-toolbar-button": {
+        "description": "A toolbar button that clears text and block formatting.",
+        "title": "Clear Formatting Toolbar Button",
+        "titleCn": "Clear Formatting Toolbar Button"
       },
       "/docs/components/link": {
         "description": "A link element with a floating editing interface.",
@@ -3033,6 +3062,11 @@
         "description": "Line height adjustment controls.",
         "title": "Line Height Demo",
         "titleCn": "Line Height"
+      },
+      "/docs/examples/clear-formatting": {
+        "description": "Clear text and block styles from a selection.",
+        "title": "Clear Formatting Demo",
+        "titleCn": "Clear Formatting"
       },
       "/docs/examples/link": {
         "description": "Hyperlinks with toolbar insertion and URL pasting support.",

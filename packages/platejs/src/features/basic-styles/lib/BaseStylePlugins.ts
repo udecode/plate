@@ -16,6 +16,7 @@ import {
   locateAt,
 } from '../../../core';
 import type { AnyBasePlugin } from '../../../lib/plugin/BasePlugin';
+import { formatting } from './BaseFormattingPlugin';
 
 const lineHeightRegex =
   /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:e([+-]?\d+))?(%|em)?$/i;
@@ -285,6 +286,7 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
 
 /** Enables configurable line spacing on targeted block elements. */
 export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
+  contributions: [formatting.of({ block: ['lineHeight'] })],
   schema: ({ targetElementTypes }) => ({
     properties: {
       lineHeight: schema.elementProperty(
@@ -327,6 +329,7 @@ export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
 
 /** Creates a plugin that adds alignment functionality to the editor. */
 export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
+  contributions: [formatting.of({ block: ['textAlign'] })],
   schema: ({ targetElementTypes }) => ({
     properties: {
       textAlign: schema.elementProperty(property.enum(ALIGNMENTS), {
@@ -363,6 +366,7 @@ export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
 });
 
 export const BaseTextIndentPlugin = definePlugin(PLUGINS.textIndent, {
+  contributions: [formatting.of({ block: ['textIndent'] })],
   initialState: (): TextIndentPluginState => ({
     offset: 24,
     unit: 'px',

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-16-clear-formatting",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-16-clear-formatting.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-16",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add clear formatting to the editor",
+  "targets": [
+    {
+      "name": "formatting",
+      "files": ["apps/www/src/registry/components/editor/formatting.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "clear-formatting-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/clear-formatting-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-16-formatting-clear-editor-58bf14c9",
+      "kind": "new",
+      "summary": "Add `FormattingKit`, which installs clear formatting with the `Mod+\\` shortcut, and include it in the editor kit.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["formatting", "editor-plugins"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-16",
+          "entry": "2026-11-16-clear-formatting",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-16-clear-formatting-toolbar-button",
+      "kind": "new",
+      "summary": "Add a clear formatting button to the fixed toolbar, next to the alignment button.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["clear-formatting-toolbar-button", "fixed-toolbar"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-16",
+          "entry": "2026-11-16-clear-formatting",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

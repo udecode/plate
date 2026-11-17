@@ -474,6 +474,7 @@
     "test:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes",
     "test:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes-react",
     "test:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-styles",
+    "test:partition:standard-basic-styles-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-styles-react",
     "test:partition:standard-code-block": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-code-block",
     "test:partition:standard-code-block-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-code-block-react",
     "test:partition:standard-indent": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-indent",

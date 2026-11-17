@@ -464,7 +464,18 @@ export type EditorNodesReadOptions<
 type EditorBlocksReadOptions<
   T extends Node,
   TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined,
-> = Omit<EditorNodesReadOptions<T, TType>, 'pass' | 'universal'>;
+> = Omit<EditorNodesReadOptions<T, TType>, 'pass' | 'universal'> & {
+  /**
+   * `'full'` reads only the blocks whose whole content the target covers, at
+   * every depth unless `mode` says otherwise. A path covers its block and
+   * every block inside it. A range covers a block with content when it runs
+   * from the block's start to its end, so one that ends at its start does
+   * not. An empty block counts as covered when a range reaches its start, a
+   * block that holds blocks is covered when each of them is, and a collapsed
+   * range covers none. `mode` then picks among the covered blocks.
+   */
+  coverage?: 'full';
+};
 
 export type EditorNodeGetOptions<
   T extends Node,

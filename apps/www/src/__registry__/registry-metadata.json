@@ -1,5 +1,5 @@
 {
-  "generation": "f91fa0a43142f50be0c7f7c7cbf7a73654c6a6579fc9cec50ddfd3055cbc5052",
+  "generation": "9bf3479c03057aa4812ac96f6dfe7f82f080b988cb2b264d5aa92e3ffdeda83d",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -235,6 +235,38 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
+          ],
+          "description": "A toolbar button that clears text and block formatting.",
+          "files": [
+            {
+              "path": "components/editor/clear-formatting-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/clear-formatting-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/clear-formatting"
+              }
+            ],
+            "examples": [
+              "clear-formatting-demo"
+            ]
+          },
+          "name": "clear-formatting-toolbar-button",
+          "title": "Clear Formatting Toolbar Button",
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/mark-toolbar-button",
             "@plate/toolbar"
           ]
         },
@@ -3264,6 +3296,7 @@
             "@plate/floating-toolbar",
             "@plate/font",
             "@plate/footnote",
+            "@plate/formatting",
             "@plate/line-height",
             "@plate/link",
             "@plate/list",
@@ -3353,6 +3386,7 @@
             "@plate/tailwind-scrollbar-hide",
             "@plate/ai-toolbar-button",
             "@plate/align-toolbar-button",
+            "@plate/clear-formatting-toolbar-button",
             "@plate/comment-toolbar-button",
             "@plate/details-toolbar-button",
             "@plate/emoji-toolbar-button",
@@ -3508,6 +3542,21 @@
             }
           ],
           "name": "line-height",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/formatting.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/formatting.tsx"
+            }
+          ],
+          "name": "formatting",
           "type": "registry:component"
         },
         {
@@ -6416,6 +6465,33 @@
           "dependencies": [
             "@platejs/test"
           ],
+          "description": "Clear text and block styles from a selection.",
+          "files": [
+            {
+              "path": "examples/demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/clear-formatting-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "clear-formatting-demo",
+          "registryDependencies": [
+            "@plate/formatting",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
+        },
+        {
+          "dependencies": [
+            "@platejs/test"
+          ],
           "description": "Hyperlinks with toolbar insertion and URL pasting support.",
           "files": [
             {
@@ -7207,6 +7283,38 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
+          ],
+          "description": "A toolbar button that clears text and block formatting.",
+          "files": [
+            {
+              "path": "components/editor/clear-formatting-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/clear-formatting-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/clear-formatting"
+              }
+            ],
+            "examples": [
+              "clear-formatting-demo"
+            ]
+          },
+          "name": "clear-formatting-toolbar-button",
+          "title": "Clear Formatting Toolbar Button",
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/mark-toolbar-button",
             "@plate/toolbar"
           ]
         },
@@ -10232,6 +10340,7 @@
             "@plate/floating-toolbar",
             "@plate/font",
             "@plate/footnote",
+            "@plate/formatting",
             "@plate/line-height",
             "@plate/link",
             "@plate/list",
@@ -10321,6 +10430,7 @@
             "@plate/tailwind-scrollbar-hide",
             "@plate/ai-toolbar-button",
             "@plate/align-toolbar-button",
+            "@plate/clear-formatting-toolbar-button",
             "@plate/comment-toolbar-button",
             "@plate/details-toolbar-button",
             "@plate/emoji-toolbar-button",
@@ -10476,6 +10586,21 @@
             }
           ],
           "name": "line-height",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/formatting.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/formatting.tsx"
+            }
+          ],
+          "name": "formatting",
           "type": "registry:component"
         },
         {
@@ -13371,6 +13496,33 @@
           "name": "line-height-demo",
           "registryDependencies": [
             "@plate/line-height",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
+        },
+        {
+          "dependencies": [
+            "@platejs/test"
+          ],
+          "description": "Clear text and block styles from a selection.",
+          "files": [
+            {
+              "path": "examples/demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/clear-formatting-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "clear-formatting-demo",
+          "registryDependencies": [
+            "@plate/formatting",
             "@plate/editor",
             "@plate/ai",
             "@plate/dnd"

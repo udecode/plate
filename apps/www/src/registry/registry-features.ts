@@ -881,6 +881,17 @@ export const registryFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/formatting.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'formatting',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/link.tsx',
         type: 'registry:component',
       },

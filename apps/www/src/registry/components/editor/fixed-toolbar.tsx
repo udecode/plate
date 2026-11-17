@@ -36,6 +36,7 @@ import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
+import { ClearFormattingToolbarButton } from './clear-formatting-toolbar-button';
 import {
   AllCommentsButton,
   CommentToolbarButton,
@@ -140,6 +141,7 @@ export function FixedToolbarButtons({
 
           <ToolbarGroup>
             <AlignToolbarButton />
+            <ClearFormattingToolbarButton />
 
             <NumberedListToolbarButton />
             <BulletedListToolbarButton />

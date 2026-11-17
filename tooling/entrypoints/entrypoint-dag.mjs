@@ -73,9 +73,9 @@ export const rootFeatureDependencies = Object.freeze({
   'basic-nodes': [],
   'basic-styles': [],
   'code-block': ['dom'],
-  indent: ['standard/basic-nodes'],
+  indent: ['standard/basic-nodes', 'standard/basic-styles'],
   link: [],
-  list: ['standard/basic-nodes', 'standard/indent'],
+  list: ['standard/basic-nodes', 'standard/basic-styles', 'standard/indent'],
 });
 
 export const publicFeatureDependencies = Object.freeze({

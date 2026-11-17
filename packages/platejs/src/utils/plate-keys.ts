@@ -30,6 +30,7 @@ export const PLUGINS = {
   fontSize: 'fontSize',
   footnote: 'footnote',
   footnoteDefinition: 'footnoteDefinition',
+  formatting: 'formatting',
   heading: 'heading',
   highlight: 'highlight',
   history: 'history',

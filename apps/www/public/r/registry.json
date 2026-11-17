@@ -237,6 +237,38 @@
       "type": "registry:component"
     },
     {
+      "name": "clear-formatting-toolbar-button",
+      "title": "Clear Formatting Toolbar Button",
+      "description": "A toolbar button that clears text and block formatting.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/clear-formatting-toolbar-button.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/clear-formatting-toolbar-button.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/clear-formatting"
+          }
+        ],
+        "examples": [
+          "clear-formatting-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
       "name": "import-toolbar-button",
       "title": "Import Toolbar Button",
       "description": "A toolbar button to import editor content from a file.",
@@ -3254,6 +3286,7 @@
         "https://platejs.org/r/floating-toolbar.json",
         "https://platejs.org/r/font.json",
         "https://platejs.org/r/footnote.json",
+        "https://platejs.org/r/formatting.json",
         "https://platejs.org/r/line-height.json",
         "https://platejs.org/r/link.json",
         "https://platejs.org/r/list.json",
@@ -3338,6 +3371,7 @@
         "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/ai-toolbar-button.json",
         "https://platejs.org/r/align-toolbar-button.json",
+        "https://platejs.org/r/clear-formatting-toolbar-button.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/details-toolbar-button.json",
         "https://platejs.org/r/emoji-toolbar-button.json",
@@ -3504,6 +3538,21 @@
           "path": "src/registry/components/editor/line-height.tsx",
           "type": "registry:component",
           "target": "@components/editor/line-height.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
+      "name": "formatting",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/formatting.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/formatting.tsx"
         }
       ],
       "type": "registry:component"

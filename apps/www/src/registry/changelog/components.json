@@ -118,6 +118,34 @@
       "2026-09-08-ai-session",
       "2025-11-20-biome-ultracite"
     ],
+    "formatting": ["2026-11-16-clear-formatting"],
+    "editor-plugins": [
+      "2026-11-16-clear-formatting",
+      "2026-11-07-docx-fewer-install-dependencies",
+      "2026-10-14-remove-csv-plugin",
+      "2026-09-19-files-sdk-upload-kit",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-24-keep-editor-contracts-app-owned",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-18-separate-document-migrations",
+      "2026-08-17-automatic-document-migrations",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "clear-formatting-toolbar-button": ["2026-11-16-clear-formatting"],
+    "fixed-toolbar": [
+      "2026-11-16-clear-formatting",
+      "2026-11-13-platform-shortcut-labels",
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-18-comment-discovery",
+      "2026-09-16-fixed-toolbar-caret-scroll",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-17-flat-editor-registry",
+      "2025-11-20-biome-ultracite"
+    ],
     "import-toolbar-button": [
       "2026-11-16-save-comment-ranges",
       "2026-11-07-docx-fewer-install-dependencies",
@@ -299,16 +327,6 @@
       "2026-07-26-unify-script-mark",
       "2026-07-24-feature-toolbar-plugin-portals"
     ],
-    "fixed-toolbar": [
-      "2026-11-13-platform-shortcut-labels",
-      "2026-10-19-strikethrough-shortcut-hint",
-      "2026-09-18-comment-discovery",
-      "2026-09-16-fixed-toolbar-caret-scroll",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-17-flat-editor-registry",
-      "2025-11-20-biome-ultracite"
-    ],
     "floating-toolbar": [
       "2026-11-13-platform-shortcut-labels",
       "2026-10-26-floating-toolbar-safari-menus",
@@ -431,20 +449,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "docx-source": ["2026-11-07-docx-fewer-install-dependencies"],
-    "editor-plugins": [
-      "2026-11-07-docx-fewer-install-dependencies",
-      "2026-10-14-remove-csv-plugin",
-      "2026-09-19-files-sdk-upload-kit",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-24-keep-editor-contracts-app-owned",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-18-separate-document-migrations",
-      "2026-08-17-automatic-document-migrations",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "toolbar": [
       "2026-11-07-toolbar-overlays-close-on-scroll",
       "2026-10-28-touch-menus",

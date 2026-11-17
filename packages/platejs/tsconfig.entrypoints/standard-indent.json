@@ -25,6 +25,9 @@
     },
     {
       "path": "./standard-basic-nodes.json"
+    },
+    {
+      "path": "./standard-basic-styles.json"
     }
   ]
 }

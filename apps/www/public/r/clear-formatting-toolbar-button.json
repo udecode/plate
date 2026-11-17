@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "clear-formatting-toolbar-button",
+  "title": "Clear Formatting Toolbar Button",
+  "description": "A toolbar button that clears text and block formatting.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/mark-toolbar-button.json",
+    "https://platejs.org/r/toolbar.json"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/clear-formatting-toolbar-button.tsx",
+      "content": "'use client';\n\nimport { RemoveFormattingIcon } from 'lucide-react';\nimport { FormattingPlugin, useEditor, useEditorReadOnly } from 'platejs/react';\nimport * as React from 'react';\n\nimport { useShortcutProps } from '@/registry/components/editor/mark-toolbar-button';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function ClearFormattingToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditor();\n  const readOnly = useEditorReadOnly();\n  const formatting = editor.plugin(FormattingPlugin);\n  const disabled = props.disabled || readOnly || !formatting.installed;\n  const tooltipProps = { tooltip: 'Clear formatting', ...props };\n  const shortcutProps = useShortcutProps(\n    tooltipProps,\n    disabled ? undefined : formatting.shortcuts.clear?.keys\n  );\n\n  return (\n    <ToolbarButton\n      {...tooltipProps}\n      {...shortcutProps}\n      disabled={disabled}\n      onClick={() => {\n        formatting.update.clear();\n        editor.api.dom.focus();\n      }}\n    >\n      <RemoveFormattingIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:component",
+      "target": "@components/editor/clear-formatting-toolbar-button.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/clear-formatting"
+      }
+    ],
+    "examples": [
+      "clear-formatting-demo"
+    ]
+  },
+  "type": "registry:component"
+}

@@ -16,6 +16,7 @@ import {
   type NodeMatchPredicate,
 } from '../../../core';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
+import { formatting } from '../../basic-styles';
 import {
   isNonNegativeSafeInteger,
   toIndentLevel,
@@ -83,6 +84,7 @@ const readHtmlMarginIndent = (
 };
 
 export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
+  contributions: [formatting.of({ block: ['indent'] })],
   initialState,
   schema: ({ targetElementTypes }) => ({
     properties: {

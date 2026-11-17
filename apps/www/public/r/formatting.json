@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "formatting",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/formatting.tsx",
+      "content": "'use client';\n\nimport { FormattingPlugin } from 'platejs/react';\n\nexport const FormattingKit = [FormattingPlugin] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/formatting.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

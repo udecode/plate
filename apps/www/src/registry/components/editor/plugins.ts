@@ -20,6 +20,7 @@ import { FixedToolbarKit } from './fixed-toolbar';
 import { FloatingToolbarKit } from './floating-toolbar';
 import { FontKit } from './font';
 import { FootnoteKit } from './footnote';
+import { FormattingKit } from './formatting';
 import { LineHeightKit } from './line-height';
 import { LinkKit } from './link';
 import { ListKit } from './list';
@@ -61,6 +62,7 @@ export const EditorKit = [
   ...ListKit,
   ...AlignKit,
   ...LineHeightKit,
+  ...FormattingKit,
 
   // Collaboration
   ...SuggestionKit,

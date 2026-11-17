@@ -1392,6 +1392,25 @@ export const demoExamples: Registry['items'] = (
     },
     {
       dependencies: ['@platejs/test'],
+      description: 'Clear text and block styles from a selection.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/clear-formatting-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'clear-formatting-demo',
+      registryDependencies: [
+        '@plate/formatting',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
       description: 'Hyperlinks with toolbar insertion and URL pasting support.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },

@@ -70,6 +70,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-16-clear-formatting",
+      "href": "/registry/changelog/2026-11-16-clear-formatting.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add clear formatting to the editor",
+      "change": {
+        "type": "source",
+        "date": "2026-11-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "formatting",
+        "editor-plugins",
+        "clear-formatting-toolbar-button",
+        "fixed-toolbar"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-save-comment-ranges",
       "href": "/registry/changelog/2026-11-16-save-comment-ranges.json",
       "status": "draft",

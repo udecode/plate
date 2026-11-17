@@ -9,6 +9,7 @@ import { applyInsertTextCommand } from '../editor/insert-text';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { readTextEdge } from '../editor/point';
+import { range as getRange } from '../editor/range';
 import { applyRemoveMark } from '../editor/remove-mark';
 import { applyToggleMark } from '../editor/toggle-mark';
 import type {
@@ -3171,6 +3172,94 @@ type ResolvedNodeTargetOrSpanOptions<TOptions extends NodeTargetOrSpanOptions> =
   Omit<NormalizedNodeMatchOptions<TOptions>, 'at'> & {
     at?: Location | NodeSelection | Span;
   };
+
+const rangeCoversBlock = (
+  schema: Pick<ReturnType<typeof getEditorSchema>, 'isBlock' | 'isVoid'>,
+  block: Element,
+  path: Path,
+  start: Point,
+  end: Point
+): boolean => {
+  let firstText: Path | null = null;
+  let hasContent = false;
+
+  for (const [index, child] of block.children.entries()) {
+    const childPath = path.concat(index);
+
+    if (NodeApi.isElement(child) && schema.isBlock(child)) {
+      if (!rangeCoversBlock(schema, child, childPath, start, end)) {
+        return false;
+      }
+
+      hasContent = true;
+      continue;
+    }
+
+    const texts = NodeApi.isText(child)
+      ? [[child, []] as const]
+      : NodeApi.texts(child);
+
+    for (const [text, relative] of texts) {
+      const textPath = childPath.concat(relative);
+      const parent =
+        relative.length > 0 ? NodeApi.parent(child, relative) : block;
+      const isVoid = NodeApi.isElement(parent) && schema.isVoid(parent);
+      const length = isVoid ? 1 : text.text.length;
+
+      firstText ??= textPath;
+
+      if (length === 0) continue;
+
+      hasContent = true;
+
+      const fromStart = PathApi.compare(textPath, start.path);
+      const toEnd = PathApi.compare(textPath, end.path);
+
+      if (fromStart < 0 || toEnd > 0) return false;
+      if (isVoid) continue;
+      if (fromStart === 0 && start.offset > 0) return false;
+      if (toEnd === 0 && end.offset < length) return false;
+    }
+  }
+
+  if (hasContent) return true;
+  if (firstText) {
+    const place = { offset: 0, path: firstText };
+
+    return (
+      PointApi.compare(start, place) <= 0 && PointApi.compare(end, place) >= 0
+    );
+  }
+
+  return (
+    PathApi.compare(start.path, path) < 0 && PathApi.compare(end.path, path) > 0
+  );
+};
+
+const narrowCoveredBlocks = (
+  entries: ReadonlyArray<NodeEntry<Element>>,
+  mode: 'all' | 'highest' | 'lowest' | undefined
+) => {
+  if (mode === 'highest') {
+    let top: Path | null = null;
+
+    return entries.filter(([, path]) => {
+      if (top && PathApi.isAncestor(top, path)) return false;
+
+      top = path;
+
+      return true;
+    });
+  }
+  if (mode === 'lowest') {
+    return entries.filter(
+      ([, path], index) =>
+        !entries[index + 1] || !PathApi.isAncestor(path, entries[index + 1][1])
+    );
+  }
+
+  return entries;
+};
 
 const resolveNodeTargetOrSpanOptions = <
   TOptions extends NodeTargetOrSpanOptions,
@@ -6556,25 +6645,35 @@ const getStateView = <
             ),
             () => {
               const entries: Array<NodeEntry<Element>> = [];
+              const seen = new Set<string>();
               const {
                 at: _at,
+                coverage,
                 reverse: _reverse,
                 ...queryOptions
               } = inputOptions;
+              const full = coverage === 'full';
 
               for (const path of target.paths) {
                 if (!NodeApi.has(editor, path)) continue;
 
-                const selectedBlocks = Array.from(
-                  getNodes(editor as unknown as Editor, {
-                    ...queryOptions,
-                    at: path,
-                    match: matchesBlock,
-                    mode: queryOptions.mode ?? 'lowest',
-                  })
-                ) as Array<NodeEntry<Element>>;
+                const selectedBlocks = (
+                  Array.from(
+                    getNodes(editor as unknown as Editor, {
+                      ...queryOptions,
+                      at: path,
+                      match: matchesBlock,
+                      mode: full ? 'all' : (queryOptions.mode ?? 'lowest'),
+                    })
+                  ) as Array<NodeEntry<Element>>
+                ).filter(
+                  ([, blockPath]) =>
+                    !full ||
+                    PathApi.equals(path, blockPath) ||
+                    PathApi.isAncestor(path, blockPath)
+                );
                 const fallbackBlock =
-                  selectedBlocks.length === 0
+                  selectedBlocks.length === 0 && !full
                     ? readBlock({ at: path, match: matchesBlock })
                     : undefined;
                 const blocks =
@@ -6585,44 +6684,80 @@ const getStateView = <
                       : [];
 
                 for (const block of blocks) {
-                  if (
-                    !entries.some(([, candidate]) =>
-                      PathApi.equals(candidate, block[1])
-                    )
-                  ) {
+                  const key = block[1].join(',');
+
+                  if (!seen.has(key)) {
+                    seen.add(key);
                     entries.push(block);
                   }
                 }
               }
 
+              const read = full
+                ? narrowCoveredBlocks(
+                    entries.toSorted(([, a], [, b]) => PathApi.compare(a, b)),
+                    queryOptions.mode
+                  )
+                : entries;
+
               return Object.freeze(
-                inputOptions.reverse ? entries.toReversed() : entries
+                inputOptions.reverse ? read.toReversed() : read
               );
             }
           );
         }
 
+        const { coverage, ...targetOptions } = inputOptions;
         const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, {
-          ...inputOptions,
+          ...targetOptions,
           at: target,
         });
 
         if (resolvedOptions === null) return [];
         const queryOptions = resolvedOptions ?? {};
+        const full = coverage === 'full';
+        const { at } = queryOptions;
+        const coveredPath = full && PathApi.isPath(at) ? at : null;
+        const coveredRange =
+          !full || !at || coveredPath || SelectionApi.isNode(at)
+            ? null
+            : LocationApi.isSpan(at)
+              ? getRange(editor, at[0], at[1])
+              : getRange(editor, at);
 
-        return withOptionsRootRead(editor, queryOptions, () =>
-          hasReadableNodeCollection(editor, queryOptions)
-            ? Object.freeze(
-                Array.from(
-                  getNodes(editor as unknown as Editor, {
-                    ...queryOptions,
-                    match: matchesBlock,
-                    mode: queryOptions.mode ?? 'lowest',
-                  })
-                ) as Array<NodeEntry<Element>>
-              )
-            : []
-        );
+        if (coveredRange && RangeApi.isCollapsed(coveredRange)) return [];
+
+        return withOptionsRootRead(editor, queryOptions, () => {
+          if (!hasReadableNodeCollection(editor, queryOptions)) return [];
+
+          const entries = Array.from(
+            getNodes(editor as unknown as Editor, {
+              ...queryOptions,
+              match: matchesBlock,
+              mode: full ? 'all' : (queryOptions.mode ?? 'lowest'),
+              reverse: !full && queryOptions.reverse,
+            })
+          ) as Array<NodeEntry<Element>>;
+
+          if (!full) return Object.freeze(entries);
+
+          const schema = getEditorSchema(editor);
+          const [rangeStart, rangeEnd] = coveredRange
+            ? RangeApi.edges(coveredRange)
+            : [];
+          const covered = entries.filter(([block, path]) =>
+            coveredPath
+              ? PathApi.equals(coveredPath, path) ||
+                PathApi.isAncestor(coveredPath, path)
+              : !rangeStart ||
+                !rangeEnd ||
+                rangeCoversBlock(schema, block, path, rangeStart, rangeEnd)
+          );
+
+          const read = narrowCoveredBlocks(covered, queryOptions.mode);
+
+          return Object.freeze(queryOptions.reverse ? read.toReversed() : read);
+        });
       })) as EditorStateNodesApi<V>['blocks'];
     function getStateNodeKey(node: Descendant): NodeKey;
     function getStateNodeKey(at: Location): NodeKey | null;

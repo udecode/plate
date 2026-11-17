@@ -1,0 +1,173 @@
+---
+title: Clear Formatting
+description: Remove text and block styles from a selection.
+docs:
+  - route: /docs/examples/clear-formatting
+    title: Clear Formatting Demo
+  - route: /docs/components/clear-formatting-toolbar-button
+    title: Clear Formatting Toolbar Button
+---
+
+`FormattingPlugin` removes text styles inside the selection and block styles from the blocks the selection fully covers. Headings, lists, links and quotes keep their shape.
+
+<ComponentPreview name="clear-formatting-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Removes every text style inside the selection, such as bold, color and highlight, in one undo step.
+- Resets alignment, line height, text indent and indent on blocks the selection fully covers.
+- Keeps list depth, heading levels, links, comments and suggestions.
+- At a caret, clears the styles the next typed text would get.
+- `Mod+\` shortcut and a bound `editor.update.formatting.clear` method.
+- `formatting` plugin point for block styles that other plugins add.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Add the kit
+
+`FormattingKit` adds `FormattingPlugin` with its `Mod+\` shortcut. It clears what the other style kits in the editor add, so place it next to them.
+
+<ComponentSource name="formatting" />
+
+```tsx
+import { createEditor } from "platejs/react";
+
+import { FormattingKit } from "@/components/editor/formatting";
+
+export const editor = createEditor({
+  plugins: [...FormattingKit],
+});
+```
+
+### Add the toolbar button
+
+Install `ClearFormattingToolbarButton` when the editor needs a toolbar control.
+
+```bash
+npx shadcn@latest add @plate/clear-formatting-toolbar-button
+```
+
+```tsx
+import { ClearFormattingToolbarButton } from "@/components/editor/clear-formatting-toolbar-button";
+
+export function FormattingControls() {
+  return <ClearFormattingToolbarButton />;
+}
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Install package
+
+```bash
+npm install platejs
+```
+
+### Add the plugin
+
+```tsx
+import { createEditor, FormattingPlugin } from "platejs/react";
+
+export const editor = createEditor({
+  plugins: [FormattingPlugin],
+});
+```
+
+`BaseFormattingPlugin` from `platejs` is the same plugin without the shortcut, for headless editors.
+
+### Clear formatting
+
+`clear` works on the selection, or on the range you pass as `at`.
+
+```tsx
+editor.update.formatting.clear();
+editor.update.formatting.clear({
+  at: {
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 5, path: [0, 0] },
+  },
+});
+```
+
+</Steps>
+
+## Behavior
+
+| Selection | Result |
+| --- | --- |
+| Part of a block | Removes text styles from the selected text. Block styles stay. |
+| Whole blocks | Also removes `textAlign`, `lineHeight`, `textIndent` and `indent` from each fully covered block. A block the selection covers only in part keeps its block styles. |
+| A list item | Keeps `indent`, because it is the list depth. A paragraph that continues a list item keeps it too. |
+| Headings, quotes, code blocks | Keep their type. A heading stays a heading at its level. |
+| A link | Keeps the link and its `url`. Text styles inside it go. |
+| An inline void | A mention loses its text styles. An inline void that takes no text styles, such as a date, keeps what it stores. |
+| A block selection | Clears every selected block as if its whole text were selected. |
+| A caret | Removes the pending styles, so the next typed text is plain. The document does not change and no undo step is added. |
+| Suggesting mode | Records the removed styles as suggestions. A code block refuses changes while suggesting, so a clear whose selection reaches one is refused and changes nothing. |
+
+One clear is one undo step, whatever it removes.
+
+A text style is any text property whose schema role is `content`. Comments, suggestions and other `metadata` properties are not styles, so they stay.
+
+## Block styles from other plugins
+
+A plugin adds its own block styles through the `formatting` plugin point. `block` lists the element properties clear formatting removes from a fully covered block. `keeps` lets a block keep a property when it means structure there.
+
+```tsx
+import { definePlugin, formatting } from "platejs";
+
+export const ShadePlugin = definePlugin("shade", {
+  contributions: [
+    formatting.of({
+      block: ["shade"],
+      keeps: {
+        shade: ({ node }) => node.type === "callout",
+      },
+    }),
+  ],
+});
+```
+
+The line height, text align, text indent and indent plugins contribute their keys this way. The list plugin keeps `indent` on list items.
+
+## Ownership
+
+| Surface | Owner | What It Does |
+| --- | --- | --- |
+| `BaseFormattingPlugin` | `platejs` | Headless plugin with the `clear` update method. |
+| `FormattingPlugin` | `platejs/react` | React plugin with the `Mod+\` shortcut. |
+| `formatting` | `platejs` | Plugin point for block styles and the blocks that keep them. |
+| `FormattingKit` | Registry kit | Adds `FormattingPlugin`. |
+| `ClearFormattingToolbarButton` | Registry UI | Toolbar button that calls `formatting.clear` and shows the shortcut. |
+
+## API Reference
+
+| API | Package | Use |
+| --- | --- | --- |
+| `FormattingPlugin` | `platejs/react` | React clear formatting plugin. |
+| `BaseFormattingPlugin` | `platejs` | Headless clear formatting plugin. |
+| `editor.update.formatting.clear(options?)` | `platejs` | Clears formatting in the selection or `options.at`. |
+| `tx.formatting.clear(options?)` | `platejs` | Transaction form for a larger atomic update. |
+| `formatting.of(contribution)` | `platejs` | Contributes `block` keys and `keeps` predicates from a plugin. |
+
+## Options
+
+| Option | Surface | Use |
+| --- | --- | --- |
+| `at` | `formatting.clear` | Range to clear. Defaults to the selection. |
+| `block` | `formatting.of` | Element properties to remove from fully covered blocks. |
+| `keeps` | `formatting.of` | Per property, a predicate given `{ index, node, path, siblings }` that keeps the property on that block. |
+
+| Shortcut | Action |
+| --- | --- |
+| `Mod+\` | Clear formatting. |

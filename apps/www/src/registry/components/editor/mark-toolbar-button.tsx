@@ -67,7 +67,7 @@ export function MarkToolbarButton(
   return <MountedMarkToolbarButton {...props} />;
 }
 
-function useShortcutProps(
+export function useShortcutProps(
   {
     'aria-label': ariaLabel,
     tooltip,

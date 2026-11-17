@@ -3,6 +3,7 @@ import {
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
+  BaseFormattingPlugin,
   BaseLineHeightPlugin,
   BaseTextAlignPlugin,
   BaseTextIndentPlugin,
@@ -18,3 +19,8 @@ export const FontSizePlugin = toReactPlugin(BaseFontSizePlugin);
 export const LineHeightPlugin = toReactPlugin(BaseLineHeightPlugin);
 export const TextAlignPlugin = toReactPlugin(BaseTextAlignPlugin);
 export const TextIndentPlugin = toReactPlugin(BaseTextIndentPlugin);
+
+/** Clear formatting in React editors, bound to `Mod+\`. */
+export const FormattingPlugin = toReactPlugin(BaseFormattingPlugin, {
+  shortcuts: { clear: { keys: ['mod+\\', 'mod+backslash'] } },
+});

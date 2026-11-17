@@ -88,6 +88,43 @@ export const listFamilyEnd = (
   return Math.max(index, deeperRunEnd(siblings, listDepth(node), index + 1));
 };
 
+const familyMembersBySiblings = new WeakMap<
+  readonly Descendant[],
+  readonly boolean[]
+>();
+
+export const isListFamilyMember = (
+  siblings: readonly Descendant[],
+  index: number
+) => {
+  let members = familyMembersBySiblings.get(siblings);
+
+  if (!members) {
+    const heads: number[] = [];
+
+    members = siblings.map((node) => {
+      if (!ElementApi.isElement(node)) {
+        heads.length = 0;
+
+        return false;
+      }
+
+      const depth = listDepth(node);
+
+      while (heads.length > 0 && (heads.at(-1) ?? 0) >= depth) heads.pop();
+
+      const member = isListItem(node) || heads.length > 0;
+
+      if (isListItem(node)) heads.push(depth);
+
+      return member;
+    });
+    familyMembersBySiblings.set(siblings, members);
+  }
+
+  return members[index] ?? false;
+};
+
 type FamilyMember = Readonly<{ key: NodeKey; node: Element; path: Path }>;
 
 /**

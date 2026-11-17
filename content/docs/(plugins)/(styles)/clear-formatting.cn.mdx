@@ -1,0 +1,173 @@
+---
+title: 清除格式
+description: 去掉选区里的文字样式和块样式。
+docs:
+  - route: /docs/examples/clear-formatting
+    title: 清除格式示例
+  - route: /docs/components/clear-formatting-toolbar-button
+    title: 清除格式工具栏按钮
+---
+
+`FormattingPlugin` 去掉选区内的文字样式，以及选区完整覆盖的块上的块样式。标题、列表、链接和引用保持原样。
+
+<ComponentPreview name="clear-formatting-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 一步撤销内去掉选区内所有文字样式，例如粗体、颜色和高亮。
+- 重置选区完整覆盖的块的对齐、行高、首行缩进和缩进。
+- 保留列表层级、标题级别、链接、评论和建议。
+- 光标处只清除接下来输入的文字会带上的样式。
+- `Mod+\` 快捷键和绑定的 `editor.update.formatting.clear` 方法。
+- `formatting` 插件点，用于其他插件添加的块样式。
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 添加套件
+
+`FormattingKit` 添加带 `Mod+\` 快捷键的 `FormattingPlugin`。它清除编辑器里其他样式套件添加的样式，所以和它们放在一起。
+
+<ComponentSource name="formatting" />
+
+```tsx
+import { createEditor } from "platejs/react";
+
+import { FormattingKit } from "@/components/editor/formatting";
+
+export const editor = createEditor({
+  plugins: [...FormattingKit],
+});
+```
+
+### 添加工具栏按钮
+
+编辑器需要工具栏控件时，安装 `ClearFormattingToolbarButton`。
+
+```bash
+npx shadcn@latest add @plate/clear-formatting-toolbar-button
+```
+
+```tsx
+import { ClearFormattingToolbarButton } from "@/components/editor/clear-formatting-toolbar-button";
+
+export function FormattingControls() {
+  return <ClearFormattingToolbarButton />;
+}
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+```tsx
+import { createEditor, FormattingPlugin } from "platejs/react";
+
+export const editor = createEditor({
+  plugins: [FormattingPlugin],
+});
+```
+
+`platejs` 的 `BaseFormattingPlugin` 是同一个插件，不带快捷键，用于无头编辑器。
+
+### 清除格式
+
+`clear` 作用于选区，或作用于传入的 `at` 范围。
+
+```tsx
+editor.update.formatting.clear();
+editor.update.formatting.clear({
+  at: {
+    anchor: { offset: 0, path: [0, 0] },
+    focus: { offset: 5, path: [0, 0] },
+  },
+});
+```
+
+</Steps>
+
+## 行为
+
+| 选区 | 结果 |
+| --- | --- |
+| 块的一部分 | 去掉选中文字的文字样式，块样式保留。 |
+| 整个块 | 还会去掉每个被完整覆盖的块上的 `textAlign`、`lineHeight`、`textIndent` 和 `indent`。只被部分覆盖的块保留块样式。 |
+| 列表项 | 保留 `indent`，因为它是列表层级。延续列表项的段落也保留。 |
+| 标题、引用、代码块 | 保留类型。标题仍是同级标题。 |
+| 链接 | 保留链接和它的 `url`，去掉其中的文字样式。 |
+| 行内 void | 提及去掉文字样式。不接受文字样式的行内 void（例如日期）保留它存储的内容。 |
+| 块选择 | 清除每个选中的块，效果如同选中了它的全部文字。 |
+| 光标 | 去掉待输入的样式，接下来输入的文字没有样式。文档不变，也不增加撤销步骤。 |
+| 建议模式 | 把去掉的样式记录为建议。代码块在建议模式下拒绝修改，所以选区碰到代码块的清除会被拒绝，文档不变。 |
+
+一次清除是一个撤销步骤，不论去掉了多少样式。
+
+文字样式是 schema 角色为 `content` 的文字属性。评论、建议和其他 `metadata` 属性不是样式，所以保留。
+
+## 其他插件的块样式
+
+插件通过 `formatting` 插件点添加自己的块样式。`block` 列出清除格式从完整覆盖的块上去掉的元素属性。`keeps` 让某个块在属性表示结构时保留它。
+
+```tsx
+import { definePlugin, formatting } from "platejs";
+
+export const ShadePlugin = definePlugin("shade", {
+  contributions: [
+    formatting.of({
+      block: ["shade"],
+      keeps: {
+        shade: ({ node }) => node.type === "callout",
+      },
+    }),
+  ],
+});
+```
+
+行高、文本对齐、首行缩进和缩进插件都这样提供自己的属性。列表插件让列表项保留 `indent`。
+
+## 归属
+
+| 接口 | 归属 | 作用 |
+| --- | --- | --- |
+| `BaseFormattingPlugin` | `platejs` | 带 `clear` 更新方法的无头插件。 |
+| `FormattingPlugin` | `platejs/react` | 带 `Mod+\` 快捷键的 React 插件。 |
+| `formatting` | `platejs` | 块样式及保留它们的块的插件点。 |
+| `FormattingKit` | Registry 套件 | 添加 `FormattingPlugin`。 |
+| `ClearFormattingToolbarButton` | Registry UI | 调用 `formatting.clear` 并显示快捷键的工具栏按钮。 |
+
+## API 参考
+
+| API | 包 | 用途 |
+| --- | --- | --- |
+| `FormattingPlugin` | `platejs/react` | React 清除格式插件。 |
+| `BaseFormattingPlugin` | `platejs` | 无头清除格式插件。 |
+| `editor.update.formatting.clear(options?)` | `platejs` | 清除选区或 `options.at` 中的格式。 |
+| `tx.formatting.clear(options?)` | `platejs` | 用于更大原子更新的事务形式。 |
+| `formatting.of(contribution)` | `platejs` | 从插件提供 `block` 属性和 `keeps` 判断。 |
+
+## 选项
+
+| 选项 | 接口 | 用途 |
+| --- | --- | --- |
+| `at` | `formatting.clear` | 要清除的范围，默认为选区。 |
+| `block` | `formatting.of` | 从完整覆盖的块上去掉的元素属性。 |
+| `keeps` | `formatting.of` | 按属性给出的判断，接收 `{ index, node, path, siblings }`，返回 true 时该块保留这个属性。 |
+
+| 快捷键 | 操作 |
+| --- | --- |
+| `Mod+\` | 清除格式。 |

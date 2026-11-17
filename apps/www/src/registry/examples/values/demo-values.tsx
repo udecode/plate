@@ -11,6 +11,7 @@ import { basicBlocksValue } from './basic-blocks-value';
 import { basicMarksValue } from './basic-marks-value';
 import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
+import { clearFormattingValue } from './clear-formatting-value';
 import { nodeSelectionValue } from './node-selection-value';
 import { codeBlockValue } from './code-block-value';
 import { columnValue } from './column-value';
@@ -85,6 +86,7 @@ const values = {
   // 'huge-document': hugeDocumentValue,
   iframe: iframeValue,
   indent: indentValue,
+  'clear-formatting': clearFormattingValue,
   'line-height': lineHeightValue,
   link: linkValue,
   list: listValue,

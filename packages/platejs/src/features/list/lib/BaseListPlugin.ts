@@ -44,11 +44,13 @@ import type {
 } from '../../../lib/plugin/PluginFormatContext';
 import { traverseHtmlElements } from '../../../lib/plugins/html/htmlDom';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
+import { formatting } from '../../basic-styles';
 import { BaseIndentPlugin } from '../../indent';
 import { planListConversion } from './listConversion.internal';
 import {
   deeperRunEnd,
   getListFamilies,
+  isListFamilyMember,
   moveListFamilies,
   shiftListFamilyMember,
 } from './listFamily.internal';
@@ -291,6 +293,13 @@ const isListOrdinal = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value);
 
 export const BaseListPlugin = definePlugin(PLUGINS.list, {
+  contributions: [
+    formatting.of({
+      keeps: {
+        indent: ({ index, siblings }) => isListFamilyMember(siblings, index),
+      },
+    }),
+  ],
   dependencies: [BaseIndentPlugin],
   schema: ({ targetElementTypes }) => ({
     properties: {

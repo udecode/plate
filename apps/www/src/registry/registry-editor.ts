@@ -116,6 +116,23 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['platejs'],
+    description: 'A toolbar button that clears text and block formatting.',
+    files: [
+      {
+        path: 'components/editor/clear-formatting-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/clear-formatting' }],
+      examples: ['clear-formatting-demo'],
+    },
+    name: 'clear-formatting-toolbar-button',
+    title: 'Clear Formatting Toolbar Button',
+    type: 'registry:component',
+  },
+  {
     dependencies: ['platejs', 'use-file-picker@2.1.2', 'sonner'],
     description: 'A toolbar button to import editor content from a file.',
     files: [
