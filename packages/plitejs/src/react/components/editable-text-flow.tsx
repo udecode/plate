@@ -1,9 +1,10 @@
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
-import type { NodeKey, Path, Text as TextNode } from '../..';
+import { type NodeKey, NodeApi, type Path, type Text as TextNode } from '../..';
 import {
   markDOMSyncMutationTarget,
   releaseDOMTextFlowRecordIndex,
+  resolveDOMTextFlowRecordDOMText,
   setDOMTextFlowRecordIndex,
   setDOMTextFlowRecordIndexes,
 } from '../../dom/internal';
@@ -1860,6 +1861,26 @@ export const EditableTextFlow = ({
     let active = true;
     let cancelScheduledReconcile = () => {};
     let scheduledRevision = 0;
+    const indexLagsShownInsert = () => {
+      const root = rootRef.current;
+      let inserted = false;
+      const shown =
+        !!root &&
+        stateRef.current.records.every(({ nodeKey, text }) => {
+          const { node } = readNodeByKey(editor, nodeKey);
+
+          if (!node || !NodeApi.isText(node)) return false;
+          if (node.text === text) return true;
+          inserted = true;
+
+          return (
+            !!getPureTextInsertion(text, node.text) &&
+            resolveDOMTextFlowRecordDOMText(root, nodeKey) === node.text
+          );
+        });
+
+      return shown && inserted;
+    };
     const scheduleReconcile = () => {
       scheduledRevision += 1;
       const revision = scheduledRevision;
@@ -1869,6 +1890,11 @@ export const EditableTextFlow = ({
 
       cancelScheduledReconcile();
       cancelScheduledReconcile = () => {};
+      if (indexLagsShownInsert()) {
+        requireDOMMatchRef.current = true;
+        run();
+        return;
+      }
       if (
         editableRuntime &&
         shouldDeferTextFlowReconcileForNativeInput({

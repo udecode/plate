@@ -9,7 +9,7 @@ import {
   HandIcon,
   MousePointer2Icon,
   MoveUpRightIcon,
-  PaintBucketIcon,
+  PaletteIcon,
   PencilIcon,
   ScanIcon,
   SquareIcon,
@@ -41,6 +41,7 @@ import {
 } from 'platejs/board/react';
 import type { EditorElementProps } from 'platejs/react';
 import * as React from 'react';
+import { flushSync } from 'react-dom';
 
 import { cn } from '@/lib/utils';
 import {
@@ -87,18 +88,148 @@ const GEOS: ReadonlyArray<
   { geo: 'triangle', icon: TriangleIcon, label: 'Triangle' },
 ];
 
-const FILLS: ReadonlyArray<Readonly<{ fill: string; label: string }>> = [
-  { fill: 'none', label: 'No fill' },
-  { fill: 'yellow', label: 'Yellow' },
-  { fill: 'orange', label: 'Orange' },
-  { fill: 'red', label: 'Red' },
-  { fill: 'green', label: 'Green' },
-  { fill: 'blue', label: 'Blue' },
-  { fill: 'violet', label: 'Violet' },
-];
+const COLORS = [
+  { color: 'grey', label: 'Grey' },
+  { color: 'red', label: 'Red' },
+  { color: 'orange', label: 'Orange' },
+  { color: 'yellow', label: 'Yellow' },
+  { color: 'green', label: 'Green' },
+  { color: 'blue', label: 'Blue' },
+  { color: 'violet', label: 'Violet' },
+] as const;
+
+const BOARD_COLORS =
+  '[--board-blue:#4263eb] [--board-green:#2f9e44] [--board-grey:#868e96] [--board-orange:#f76707] [--board-red:#e03131] [--board-violet:#7048e8] [--board-yellow:#fab005] dark:[--board-blue:#5c7cfa] dark:[--board-green:#51cf66] dark:[--board-grey:#adb5bd] dark:[--board-orange:#ff922b] dark:[--board-red:#ff6b6b] dark:[--board-violet:#9775fa] dark:[--board-yellow:#fcc419]';
+
+const NAMED_COLORS = new Set<string>(COLORS.map(({ color }) => color));
+
+const paint = (color: string) =>
+  NAMED_COLORS.has(color) ? `var(--board-${color})` : color;
 
 const tint = (fill: string) =>
-  `color-mix(in oklab, ${fill} 30%, var(--background))`;
+  `color-mix(in oklab, ${paint(fill)} 30%, var(--background))`;
+
+const STROKE_WIDTHS: Readonly<
+  Record<NonNullable<BoardStyle['strokeWidth']>, number>
+> = { l: 3.5, m: 2, s: 1, xl: 5 };
+
+const TEXT_SIZES: Readonly<
+  Record<NonNullable<BoardStyle['textSize']>, string>
+> = { l: '1.125rem', m: '0.875rem', s: '0.75rem', xl: '1.5rem' };
+
+const dashArray = (dash: BoardStyle['dash'], width: number) => {
+  if (dash === 'dashed') return `${width * 3} ${width * 2}`;
+  if (dash === 'dotted') return `0 ${width * 2}`;
+
+  return undefined;
+};
+
+// Headings size against the shape's text size instead of the page's.
+const SHAPE_HEADINGS =
+  '[&_h1]:text-[2.25em] [&_h2]:text-[1.5em] [&_h3]:text-[1.25em] [&_h4]:text-[1.125em] [&_h5]:text-[1.125em] [&_h6]:text-[1em]';
+
+type BoardStyleOption<TValue> = Readonly<{
+  icon: React.ReactNode;
+  label: string;
+  value: TValue;
+}>;
+
+const FILL_OPTIONS: ReadonlyArray<BoardStyleOption<string>> = [
+  { icon: <BanIcon />, label: 'None', value: 'none' },
+  ...COLORS.map(({ color, label }) => ({
+    icon: (
+      <span
+        className="size-4 rounded-full border border-foreground/20"
+        style={{ backgroundColor: paint(color) }}
+      />
+    ),
+    label,
+    value: color,
+  })),
+];
+
+const OUTLINE_OPTIONS: ReadonlyArray<BoardStyleOption<string>> = [
+  {
+    icon: <span className="size-4 rounded-full border-[3px] border-current" />,
+    label: 'Default',
+    value: 'currentColor',
+  },
+  ...COLORS.map(({ color, label }) => ({
+    icon: (
+      <span
+        className="size-4 rounded-full border-[3px]"
+        style={{ borderColor: paint(color) }}
+      />
+    ),
+    label,
+    value: color,
+  })),
+];
+
+const line = (props: React.SVGProps<SVGLineElement>) => (
+  <svg aria-hidden viewBox="0 0 16 16">
+    <line
+      stroke="currentColor"
+      strokeLinecap="round"
+      x1={2}
+      x2={14}
+      y1={8}
+      y2={8}
+      {...props}
+    />
+  </svg>
+);
+
+const DASH_OPTIONS: ReadonlyArray<
+  BoardStyleOption<NonNullable<BoardStyle['dash']>>
+> = [
+  { icon: line({ strokeWidth: 2 }), label: 'Solid', value: 'solid' },
+  {
+    icon: line({
+      strokeDasharray: '4 3',
+      strokeLinecap: 'butt',
+      strokeWidth: 2,
+    }),
+    label: 'Dashed',
+    value: 'dashed',
+  },
+  {
+    icon: line({ strokeDasharray: '0 4', strokeWidth: 2 }),
+    label: 'Dotted',
+    value: 'dotted',
+  },
+];
+
+const SIZE_LABELS = [
+  ['s', 'Small', 'S'],
+  ['m', 'Medium', 'M'],
+  ['l', 'Large', 'L'],
+  ['xl', 'Extra large', 'XL'],
+] as const;
+
+const WIDTH_OPTIONS: ReadonlyArray<
+  BoardStyleOption<NonNullable<BoardStyle['strokeWidth']>>
+> = SIZE_LABELS.map(([value, label]) => ({
+  icon: line({ strokeWidth: STROKE_WIDTHS[value] }),
+  label,
+  value,
+}));
+
+const TEXT_OPTIONS: ReadonlyArray<
+  BoardStyleOption<NonNullable<BoardStyle['textSize']>>
+> = SIZE_LABELS.map(([value, label, short]) => ({
+  icon: <span className="text-xs font-medium">{short}</span>,
+  label,
+  value,
+}));
+
+const GEO_OPTIONS: ReadonlyArray<
+  BoardStyleOption<NonNullable<BoardStyle['geo']>>
+> = GEOS.map(({ geo, icon: Icon, label }) => ({
+  icon: <Icon />,
+  label,
+  value: geo,
+}));
 
 const KINDS: Readonly<Record<BoardShapeDescription['kind'], string>> = {
   arrow: 'Arrow',
@@ -210,47 +341,6 @@ function BoardShapeMenu({ pressed }: { pressed: boolean }) {
   );
 }
 
-function BoardSwatch({ fill }: { fill: string | undefined }) {
-  if (fill === undefined) return <PaintBucketIcon />;
-  if (fill === 'none') return <BanIcon />;
-
-  return (
-    <span
-      className="size-4 rounded-full border border-foreground/20"
-      style={{ backgroundColor: fill }}
-    />
-  );
-}
-
-function BoardFillMenu() {
-  const shown = useBoardView((view) => view.styles.fill);
-  const writable = useBoardView((view) => view.writable);
-  const nextFill = useBoardView((view) => view.nextStyle.fill);
-  const { focus, setStyle } = useBoardActions();
-  const pressed = shown ? (shown.mixed ? undefined : shown.value) : nextFill;
-  const pick = (fill: string) => setStyle({ fill });
-
-  return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger disabled={!writable}>
-        <ToolbarButton isDropdown disabled={!writable} tooltip="Fill">
-          <BoardSwatch fill={pressed} />
-        </ToolbarButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="top">
-        <DropdownMenuRadioGroup value={pressed ?? ''} onValueChange={pick}>
-          {FILLS.map(({ fill, label }) => (
-            <DropdownMenuRadioItem key={fill} finalFocus={focus} value={fill}>
-              <BoardSwatch fill={fill} />
-              {label}
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
 function BoardZoomLevel() {
   const percent = useBoardView((view) => Math.round(view.camera.zoom * 100));
   const { resetZoom } = useBoardActions();
@@ -298,9 +388,6 @@ export function BoardToolbar() {
         )}
       </ToolbarGroup>
       <ToolbarGroup>
-        <BoardFillMenu />
-      </ToolbarGroup>
-      <ToolbarGroup>
         <ToolbarButton
           className="px-1.5"
           tooltip="Zoom out (-)"
@@ -337,6 +424,186 @@ export function BoardToolbar() {
   );
 }
 
+const ROW_KEYS: Readonly<Record<string, number>> = {
+  ArrowDown: 1,
+  ArrowLeft: -1,
+  ArrowRight: 1,
+  ArrowUp: -1,
+};
+
+function BoardStyleOptions<TValue extends string>({
+  label,
+  options,
+  shown,
+  onPick,
+}: {
+  label: string;
+  options: ReadonlyArray<BoardStyleOption<TValue>>;
+  shown: Readonly<{ mixed: false; value: TValue } | { mixed: true }>;
+  onPick: (value: TValue) => void;
+}) {
+  const value = shown.mixed ? undefined : shown.value;
+  const [focused, setFocused] = React.useState<number | null>(null);
+  const stop =
+    focused ??
+    Math.max(
+      0,
+      options.findIndex((option) => option.value === value)
+    );
+
+  return (
+    <div aria-label={label} className="grid grid-cols-4 gap-1" role="group">
+      {options.map((option, index) => (
+        <button
+          key={option.value}
+          className="flex size-7 items-center justify-center rounded-md outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-pressed:bg-accent [&_svg]:size-4"
+          aria-label={option.label}
+          aria-pressed={option.value === value}
+          tabIndex={index === stop ? 0 : -1}
+          title={option.label}
+          type="button"
+          onBlur={(event) => {
+            if (
+              !event.currentTarget.parentElement?.contains(event.relatedTarget)
+            ) {
+              setFocused(null);
+            }
+          }}
+          onClick={() => onPick(option.value)}
+          onFocus={() => setFocused(index)}
+          onKeyDown={(event) => {
+            const step = ROW_KEYS[event.key];
+
+            if (!step) return;
+            event.preventDefault();
+            const row =
+              event.currentTarget.parentElement?.querySelectorAll('button');
+
+            row?.[(index + step + options.length) % options.length]?.focus();
+          }}
+        >
+          {option.icon}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Styles the selected shapes, or the next shape while a drawing tool is
+ * active, with a row for each style they take other than opacity. On a board
+ * narrower than 36rem it folds behind a Styles button.
+ */
+export function BoardStylePanel({
+  className,
+  ...props
+}: React.ComponentProps<'div'>) {
+  const styles = useBoardView((view) => view.styles);
+  const writable = useBoardView((view) => view.writable);
+  const { setStyle } = useBoardActions();
+  const [open, setOpen] = React.useState(false);
+  const panel = React.useRef<HTMLDivElement>(null);
+
+  if (!writable || Object.keys(styles).length === 0) return null;
+
+  return (
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P1 local-invariant] A press anywhere on the panel keeps focus where it is, so a shape being edited keeps its caret, and the narrow-board panel closes when focus leaves the button and the panel together.
+    <div
+      {...props}
+      className={cn(
+        'absolute top-2 right-2 z-10 flex max-h-[calc(100%-5.5rem)] flex-col items-end gap-1',
+        className
+      )}
+      aria-label="Styles"
+      data-board-dock="right"
+      data-editor-root-chrome-ignore="true"
+      role="group"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+      onMouseDown={(event) => event.preventDefault()}
+    >
+      <button
+        className="flex size-8 items-center justify-center rounded-lg border bg-background shadow-sm outline-none hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-expanded:bg-accent @min-[36rem]:hidden [&_svg]:size-4"
+        aria-expanded={open}
+        aria-label="Styles"
+        title="Styles"
+        type="button"
+        onClick={(event) => {
+          const button = event.currentTarget;
+
+          flushSync(() => setOpen(!open));
+          (open
+            ? button
+            : panel.current?.querySelector<HTMLElement>('[tabindex="0"]')
+          )?.focus();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') setOpen(false);
+        }}
+      >
+        <PaletteIcon />
+      </button>
+      <div
+        className={cn(
+          open ? 'flex' : 'hidden',
+          'min-h-0 w-36 flex-col gap-2 overflow-y-auto overscroll-contain rounded-lg border bg-background p-2 shadow-sm @min-[36rem]:flex'
+        )}
+        ref={panel}
+      >
+        {styles.geo && (
+          <BoardStyleOptions
+            label="Shape"
+            options={GEO_OPTIONS}
+            shown={styles.geo}
+            onPick={(geo) => setStyle({ geo })}
+          />
+        )}
+        {styles.fill && (
+          <BoardStyleOptions
+            label="Fill"
+            options={FILL_OPTIONS}
+            shown={styles.fill}
+            onPick={(fill) => setStyle({ fill })}
+          />
+        )}
+        {styles.strokeColor && (
+          <BoardStyleOptions
+            label="Outline"
+            options={OUTLINE_OPTIONS}
+            shown={styles.strokeColor}
+            onPick={(strokeColor) => setStyle({ strokeColor })}
+          />
+        )}
+        {styles.dash && (
+          <BoardStyleOptions
+            label="Line"
+            options={DASH_OPTIONS}
+            shown={styles.dash}
+            onPick={(dash) => setStyle({ dash })}
+          />
+        )}
+        {styles.strokeWidth && (
+          <BoardStyleOptions
+            label="Width"
+            options={WIDTH_OPTIONS}
+            shown={styles.strokeWidth}
+            onPick={(strokeWidth) => setStyle({ strokeWidth })}
+          />
+        )}
+        {styles.textSize && (
+          <BoardStyleOptions
+            label="Text size"
+            options={TEXT_OPTIONS}
+            shown={styles.textSize}
+            onPick={(textSize) => setStyle({ textSize })}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 const BOARD_FOCUS_RING =
   'has-[[data-board-focus]:focus-visible]:not-has-[[data-board-shape][data-selected]]:ring-[3px] has-[[data-board-focus]:focus-visible]:not-has-[[data-board-shape][data-selected]]:ring-ring/50';
 
@@ -348,6 +615,13 @@ const CURSOR_RING =
 const BOARD_GRID =
   'bg-muted/40 bg-[radial-gradient(var(--border)_1px,transparent_1px)] bg-size-[16px_16px]';
 
+const boardToolbar = (
+  <>
+    <BoardToolbar />
+    <BoardStylePanel />
+  </>
+);
+
 export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
   return (
     <BoardSurface
@@ -355,14 +629,15 @@ export function BoardElement(props: EditorElementProps<typeof BoardPlugin>) {
       attributes={{
         ...props.attributes,
         className: cn(
-          'my-4 rounded-lg border data-selected:ring-2 data-selected:ring-ring',
+          '@container my-4 rounded-lg border data-selected:ring-2 data-selected:ring-ring',
+          BOARD_COLORS,
           BOARD_ERASING,
           BOARD_FOCUS_RING,
           BOARD_GRID
         ),
       }}
       messages={boardMessages}
-      toolbar={<BoardToolbar />}
+      toolbar={boardToolbar}
     />
   );
 }
@@ -376,7 +651,8 @@ export function BoardPageElement(
       attributes={{
         ...props.attributes,
         className: cn(
-          'ring-inset data-selected:ring-2 data-selected:ring-ring',
+          '@container ring-inset data-selected:ring-2 data-selected:ring-ring',
+          BOARD_COLORS,
           BOARD_ERASING,
           BOARD_FOCUS_RING,
           BOARD_GRID
@@ -384,7 +660,7 @@ export function BoardPageElement(
       }}
       height="100%"
       messages={boardMessages}
-      toolbar={<BoardToolbar />}
+      toolbar={boardToolbar}
     />
   );
 }
@@ -392,20 +668,34 @@ export function BoardPageElement(
 export function BoardNoteElement(
   props: EditorElementProps<typeof BoardNotePlugin>
 ) {
+  const { element } = props;
+
   return (
     <BoardShape
       {...props}
       className={cn(
         CURSOR_RING,
-        'rounded-sm p-3 text-sm shadow-md data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+        'rounded-sm p-3 leading-snug data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
       )}
-      style={{
-        backgroundColor:
-          props.element.fill === 'none'
-            ? 'var(--background)'
-            : tint(props.element.fill),
-      }}
-    />
+      style={{ fontSize: TEXT_SIZES[element.textSize] }}
+    >
+      <div
+        className="absolute inset-0 rounded-sm shadow-md"
+        contentEditable={false}
+        data-board-note-paper=""
+        style={{
+          backgroundColor:
+            element.fill === 'none' ? 'var(--background)' : tint(element.fill),
+          opacity: element.opacity,
+        }}
+      />
+      <div
+        className={cn('relative', SHAPE_HEADINGS)}
+        style={{ opacity: element.opacity }}
+      >
+        {props.children}
+      </div>
+    </BoardShape>
   );
 }
 
@@ -436,32 +726,47 @@ const GEO_OUTLINES = {
 export function BoardGeoElement(
   props: EditorElementProps<typeof BoardGeoPlugin>
 ) {
+  const { element } = props;
+  const width = STROKE_WIDTHS[element.strokeWidth];
+
   return (
     <BoardShape
       {...props}
       className={cn(
         CURSOR_RING,
-        'flex flex-col justify-center p-3 text-center text-sm data-selected:outline-2 data-selected:outline-offset-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-offset-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+        'flex flex-col justify-center p-3 text-center leading-snug data-selected:outline-2 data-selected:outline-offset-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-offset-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
       )}
+      style={{ fontSize: TEXT_SIZES[element.textSize] }}
     >
-      <div className="absolute inset-0" contentEditable={false}>
+      <div
+        className="absolute inset-0"
+        contentEditable={false}
+        style={{ opacity: element.opacity }}
+      >
         <svg
           aria-hidden
           className="pointer-events-none size-full overflow-visible"
-          data-board-geo-outline={props.element.geo}
+          data-board-geo-outline={element.geo}
           preserveAspectRatio="none"
-          stroke="currentColor"
-          strokeWidth={2}
+          strokeDasharray={dashArray(element.dash, width)}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={width}
           style={{
-            fill:
-              props.element.fill === 'none' ? 'none' : tint(props.element.fill),
+            fill: element.fill === 'none' ? 'none' : tint(element.fill),
+            stroke: paint(element.strokeColor),
           }}
           viewBox="0 0 100 100"
         >
-          {GEO_OUTLINES[props.element.geo]}
+          {GEO_OUTLINES[element.geo]}
         </svg>
       </div>
-      <div className="relative">{props.children}</div>
+      <div
+        className={cn('relative', SHAPE_HEADINGS)}
+        style={{ opacity: element.opacity }}
+      >
+        {props.children}
+      </div>
     </BoardShape>
   );
 }
@@ -490,15 +795,23 @@ export function BoardFrameElement(
 }
 
 const HEAD_LENGTH = 12;
+const BARB_TURN = 0.45;
+
+// A suggested arrow or pen line keeps the suggestion's color over its own.
+const SUGGESTED_INK =
+  'data-[editor-authored-change]:text-emerald-600 [&[data-editor-authored-change]_[data-board-ink]]:text-emerald-600!';
 
 export function BoardArrowElement(
   props: EditorElementProps<typeof BoardArrowPlugin>
 ) {
-  const drawn = useArrowPath(props.element);
+  const { element } = props;
+  const drawn = useArrowPath(element);
 
   if (!drawn) return <BoardShape {...props} />;
 
   const { end, path, start } = drawn;
+  const width = STROKE_WIDTHS[element.strokeWidth];
+  const hitWidth = Math.max(14, width + 10);
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
   const barb = (turn: number) =>
     `${end.x - HEAD_LENGTH * Math.cos(angle + turn)},${
@@ -508,7 +821,11 @@ export function BoardArrowElement(
   return (
     <BoardShape
       {...props}
-      className="text-foreground data-selected:text-ring data-[editor-authored-change]:text-emerald-600 [&[data-board-cursor]_[data-board-arrow-path]]:[stroke-dasharray:6_4]"
+      className={cn(
+        'text-foreground [&[data-board-cursor]_[data-board-arrow-halo]]:inline [&[data-selected]_[data-board-arrow-halo]]:inline',
+        SUGGESTED_INK
+      )}
+      style={{ fontSize: TEXT_SIZES[element.textSize] }}
     >
       <div className="absolute top-0 left-0" contentEditable={false}>
         <svg
@@ -521,25 +838,46 @@ export function BoardArrowElement(
             d={path}
             pointerEvents="stroke"
             stroke="transparent"
-            strokeWidth={14}
+            strokeWidth={hitWidth}
           />
           <path
+            className="hidden stroke-ring/50"
             d={path}
-            data-board-arrow-path=""
+            data-board-arrow-halo=""
             fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={width + 8}
           />
-          <polygon
-            fill="currentColor"
-            points={`${end.x},${end.y} ${barb(0.45)} ${barb(-0.45)}`}
-          />
+          <g
+            data-board-ink=""
+            opacity={element.opacity}
+            style={{ color: paint(element.strokeColor) }}
+          >
+            <path
+              d={path}
+              data-board-arrow-path=""
+              fill="none"
+              stroke="currentColor"
+              strokeDasharray={dashArray(element.dash, width)}
+              strokeLinecap="round"
+              strokeWidth={width}
+            />
+            <polygon
+              fill="currentColor"
+              points={`${end.x},${end.y} ${barb(BARB_TURN)} ${barb(-BARB_TURN)}`}
+            />
+          </g>
         </svg>
       </div>
       <div
-        className="absolute min-w-4 -translate-1/2 rounded-sm px-1 text-center text-xs whitespace-nowrap has-[[data-editor-string]]:bg-background"
+        className="absolute min-w-4 -translate-1/2 rounded-sm px-1 text-center leading-snug whitespace-nowrap has-[[data-editor-string]]:bg-background"
         data-board-arrow-label=""
-        style={{ left: (start.x + end.x) / 2, top: (start.y + end.y) / 2 }}
+        style={{
+          left: (start.x + end.x) / 2,
+          opacity: element.opacity,
+          top: (start.y + end.y) / 2,
+        }}
       >
         {props.children}
       </div>
@@ -550,18 +888,28 @@ export function BoardArrowElement(
 export function BoardStrokeElement(
   props: EditorElementProps<typeof BoardStrokePlugin>
 ) {
-  const drawn = useStrokePath(props.element);
+  const { element } = props;
+  const drawn = useStrokePath(element);
 
   return (
     <BoardShape
       {...props}
       className={cn(
         CURSOR_RING,
-        'text-foreground data-selected:outline-1 data-selected:outline-ring data-selected:outline-dashed data-[editor-authored-change]:text-emerald-600'
+        SUGGESTED_INK,
+        'text-foreground data-selected:outline-1 data-selected:outline-ring data-selected:outline-dashed'
       )}
     >
       {drawn && (
-        <div className="absolute inset-0" contentEditable={false}>
+        <div
+          className="absolute inset-0"
+          contentEditable={false}
+          data-board-ink=""
+          style={{
+            color: paint(element.strokeColor),
+            opacity: element.opacity,
+          }}
+        >
           <svg
             aria-hidden
             className="pointer-events-none size-full overflow-visible"
