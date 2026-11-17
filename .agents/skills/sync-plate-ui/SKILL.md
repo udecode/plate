@@ -1,5 +1,5 @@
 ---
-description: Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking.
+description: Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking. Not for Potion, which syncs through sync-potion.
 argument-hint: '[status | plan | review | dashboard | apply] <target> [scope]'
 name: sync-plate-ui
 metadata:
@@ -19,7 +19,8 @@ applies only accepted sync rows.
 
 This is not `sync-shadcn`. `sync-shadcn` compares upstream shadcn docs with
 Plate docs. `sync-plate-ui` compares Plate UI registry source with a target app
-that copied and customized Plate UI, such as `../potion`.
+that copied and customized Plate UI. Potion syncs through `sync-potion`
+instead, so send a Potion request there.
 
 This skill is consumer-side only. It reads generated Plate UI changelog JSON;
 it does not create upstream Plate changelog entries. Upstream Plate devs author
@@ -79,15 +80,15 @@ If the first token is a command, dispatch to that command. Otherwise treat the
 argument as planning scope. Examples:
 
 ```txt
-sync-plate-ui ../potion code-block
-sync-plate-ui plan ../potion code-block
-sync-plate-ui status ../potion
-sync-plate-ui apply ../potion
+sync-plate-ui ../app code-block
+sync-plate-ui plan ../app code-block
+sync-plate-ui status ../app
+sync-plate-ui apply ../app
 ```
 
 If the target repo is omitted and cannot be inferred from the current working
-directory, ask one focused question. Do not silently choose `../potion` unless
-the user named Potion or the active plan already names it.
+directory, ask one focused question. Do not guess a target the user did not
+name and the active plan does not name.
 
 ## Target State
 
@@ -105,8 +106,8 @@ The target repo owns its sync state:
 
 ```json
 {
-  "sourceRepo": "/Users/zbeyens/git/plate",
-  "targetRepo": "/Users/zbeyens/git/potion",
+  "sourceRepo": "<absolute path of the Plate checkout>",
+  "targetRepo": "<absolute path of the target app>",
   "lastReviewedAt": "YYYY-MM-DD",
   "components": {
     "code-block": {
@@ -177,7 +178,7 @@ Read target config before path assumptions:
 - copied registry folders, commonly `src/registry/**`
 - app-owned wrappers that import from copied registry files
 
-For Potion-like targets, expect:
+For a target like Potion, expect:
 
 - copied Plate UI under `src/registry/**`
 - app-level wrappers under `src/components/**`
@@ -324,14 +325,14 @@ Dashboard rows support these actions:
 Copied apply payload:
 
 ```md
-$sync-plate-ui apply ../potion
+$sync-plate-ui apply ../app
 
 Rows:
 - code-block/4989/language-label: Pull note: safe upstream-only render hunk
-- code-block/4989/toolbar-style: Keep Fork note: Potion toolbar owns layout
+- code-block/4989/toolbar-style: Keep Fork note: the app's toolbar owns layout
 
 Questions:
-- ai-menu/streaming: Should Potion keep its custom stream controls?
+- ai-menu/streaming: Should the app keep its custom stream controls?
 ```
 
 Rows mutate state only under `Rows`. Question rows are answered in chat and do
@@ -416,27 +417,6 @@ Verdicts:
 - `stale-target`: target files changed since the plan
 - `stale-state`: `.plate-ui-sync/status.json` contradicts the plan
 - `blocked`: a ref/file/base cannot be proven
-
-## Potion Example
-
-Potion is a good stress target because it contains copied registry files under
-`src/registry/**`, app wrappers under `src/components/**`, and pinned Plate
-packages. Its existing `sync:plate` and `sync:potion-ui` scripts must be read
-before use; do not assume they sync Plate UI into Potion.
-
-For `../potion code-block`, inspect at minimum:
-
-- `../potion/components.json`
-- `../potion/package.json`
-- `../potion/src/registry/ui/code-block-node.tsx`
-- `../potion/src/registry/ui/code-block-node-static.tsx`
-- related Potion editor imports
-- Plate `apps/www/src/registry/components/editor/code-block.tsx`
-- Plate `apps/www/src/registry/components/editor/code-block-static.tsx`
-- component changelog entries for `code-block` and related components
-
-Expected result is a plan that says which hunks to pull, which Potion hunks to
-keep, and what verification Potion owns.
 
 ## Agent-Native Requirements
 
