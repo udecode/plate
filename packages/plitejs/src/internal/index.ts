@@ -331,6 +331,7 @@ export {
   readDocumentRecord,
   readEditorDocument,
   readPersistedEnvelope,
+  readStoredEditorDocument,
   rejectEditorRecord,
 } from '../core/document-shape';
 export {

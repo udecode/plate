@@ -33,6 +33,9 @@ export const defineStateField = <
   descriptor: StateFieldDescriptor<TValue, TEncoded>
 ): EditorStateField<TValue, TEncoded> => {
   if (!descriptor.key) throw new Error('State field key cannot be empty.');
+  if (descriptor.key === '__proto__') {
+    throw new Error('State field key cannot be "__proto__".');
+  }
 
   const normalizedDescriptor = Object.freeze({
     ...descriptor,

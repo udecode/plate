@@ -20,7 +20,13 @@ export type EditorRecordIssue =
 export type EditorDocumentShapeIssue =
   | EditorRecordIssue
   | Readonly<{
-      kind: 'children' | 'meta' | 'primary-root' | 'records' | 'roots';
+      kind:
+        | 'children'
+        | 'meta'
+        | 'meta-key'
+        | 'primary-root'
+        | 'records'
+        | 'roots';
     }>
   | Readonly<{ kind: 'root'; root: string }>;
 
@@ -110,6 +116,9 @@ export const getEditorDocumentShapeIssueMessage = (
     }
     case 'meta': {
       return 'Editor document metadata must be an object.';
+    }
+    case 'meta-key': {
+      return 'Editor document metadata cannot hold the key "__proto__".';
     }
     case 'records': {
       return 'Editor document records must map each record set to an object of record objects.';
@@ -214,10 +223,11 @@ export function assertEditorDocumentContainers(
 }
 
 /**
- * Read a document's top-level fields and containers. `assertJson` runs on the
- * record before its containers, so a JSON error is reported first.
+ * Read a stored document's top-level fields and containers, keeping a `meta`
+ * key named `__proto__` so a migration step can still drop it. `assertJson`
+ * runs on the record before its containers, so a JSON error is reported first.
  */
-export const readEditorDocument = (
+export const readStoredEditorDocument = (
   input: unknown,
   reject: (issue: EditorDocumentShapeIssue) => never,
   assertJson?: (record: Readonly<Record<string, unknown>>) => void
@@ -228,6 +238,25 @@ export const readEditorDocument = (
   assertEditorDocumentContainers(record, reject);
 
   return record as EditorDocumentValue;
+};
+
+/**
+ * Read a document an editor loads: a stored document whose `meta` has no
+ * `__proto__` key, because meta writes assign by key, and an assigned
+ * `__proto__` key sets the meta object's prototype or vanishes.
+ */
+export const readEditorDocument = (
+  input: unknown,
+  reject: (issue: EditorDocumentShapeIssue) => never,
+  assertJson?: (record: Readonly<Record<string, unknown>>) => void
+): EditorDocumentValue => {
+  const document = readStoredEditorDocument(input, reject, assertJson);
+
+  if (document.meta && Object.hasOwn(document.meta, '__proto__')) {
+    reject({ kind: 'meta-key' });
+  }
+
+  return document;
 };
 
 export const isEnvelopeInput = (

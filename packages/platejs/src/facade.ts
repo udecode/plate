@@ -269,6 +269,7 @@ export {
   readDocumentRecord,
   readEditorDocument,
   readPersistedEnvelope,
+  readStoredEditorDocument,
   rejectEditorRecord,
   fitSlicePlacements,
   getReaderRange,

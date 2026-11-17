@@ -3467,11 +3467,16 @@ const setStateFieldValue = <TValue>(
   setStateValueByKey(editor, field.key, storedValue, previousValue);
 };
 
+const getOwnStateValue = (
+  state: Readonly<Record<string, unknown>> | undefined,
+  key: string
+) => (state && Object.hasOwn(state, key) ? state[key] : undefined);
+
 const setStateValueByKey = (
   editor: Editor,
   key: string,
   nextValue: unknown,
-  previousValue = getDocumentState(editor)?.[key]
+  previousValue = getOwnStateValue(getDocumentState(editor), key)
 ) => {
   const existingState = getDocumentState(editor);
   const hadKey = existingState ? Object.hasOwn(existingState, key) : false;
@@ -9699,7 +9704,7 @@ const applyTransactionSpecContents = <V extends Value>(
       ...Object.keys(previousState),
       ...Object.keys(next),
     ])) {
-      setStateValueByKey(editor, key, next[key]);
+      setStateValueByKey(editor, key, getOwnStateValue(next, key));
     }
     const snapshot = getTransactionSnapshot(editor);
 
@@ -13575,7 +13580,7 @@ export const replaceTransformedSnapshot = (
         ...Object.keys(previousMeta),
         ...Object.keys(nextMeta),
       ])) {
-        setStateValueByKey(editor, key, nextMeta[key]);
+        setStateValueByKey(editor, key, getOwnStateValue(nextMeta, key));
       }
       // Records are never removed while a room is live, since content a peer
       // writes at the same time can still name them, so a replacement's

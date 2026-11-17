@@ -44,6 +44,9 @@ const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
     case 'meta': {
       throw new Error('initialValue.meta is invalid! Expected an object.');
     }
+    case 'meta-key': {
+      throw new Error('initialValue.meta cannot hold the key "__proto__".');
+    }
     case 'records': {
       throw new Error(
         'initialValue.records is invalid! Expected each record set to map record ids to objects.'

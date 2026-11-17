@@ -4659,7 +4659,7 @@ export const createEditorSchema = <V extends Value = Value>(
         const root = issue.kind === 'root' ? issue.root : 'main';
 
         throw createEditorSchemaValidationError(
-          issue.kind === 'field'
+          issue.kind === 'field' || issue.kind === 'meta-key'
             ? 'invalid-document'
             : issue.kind === 'root' ||
                 issue.kind === 'roots' ||

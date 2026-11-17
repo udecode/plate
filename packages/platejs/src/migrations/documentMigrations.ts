@@ -22,8 +22,8 @@ import {
   type Range,
   RangeApi,
   readDocumentRecord,
-  readEditorDocument,
   readPersistedEnvelope,
+  readStoredEditorDocument,
   rejectEditorRecord,
   type RuntimePluginReference,
   type Descendant,
@@ -946,7 +946,7 @@ export const migrateDocument = <
       );
     }
     const label = `Document migration step ${to} document`;
-    document = readEditorDocument(
+    document = readStoredEditorDocument(
       snapshotEditorJsonValue(result.document, label),
       rejectDocument(label)
     );

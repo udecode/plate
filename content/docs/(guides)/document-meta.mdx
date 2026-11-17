@@ -33,7 +33,8 @@ version when loading `initialValue`. Undeclared `meta` keys are kept as plain
 JSON, so application data without a state field belongs there too.
 
 Loading refuses any other top-level field, such as `{ children, title }`; store
-it as `{ children, meta: { title } }`.
+it as `{ children, meta: { title } }`. It also refuses a `meta` key named
+`__proto__`.
 
 ## Save the document
 
