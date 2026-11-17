@@ -22868,7 +22868,7 @@
           "kind": "function",
           "name": "NodeSelectionDrag",
           "runtime": true,
-          "signature": "declare function NodeSelectionDrag({ className, style, ...props }: NodeSelectionDragProps): React$1.JSX.Element | null;",
+          "signature": "declare function NodeSelectionDrag({ className, container, style, ...props }: NodeSelectionDragProps): React$1.JSX.Element | null;",
           "source": null,
           "typeParameters": []
         },
@@ -22879,7 +22879,7 @@
           "kind": "type",
           "name": "NodeSelectionDragProps",
           "runtime": false,
-          "signature": "type NodeSelectionDragProps = Omit<React$1.ComponentProps<'div'>, 'children'>;",
+          "signature": "type NodeSelectionDragProps = Omit<React$1.ComponentProps<'div'>, 'children'> & {\n  /**\n   * An element around the editable, such as the page's scroll container. A\n   * mouse or pen drag that starts on the container itself, or on an element\n   * inside it that carries `data-node-selection-start`, becomes the same block\n   * drag once the pointer has moved 4 pixels, and its rectangle clips to the\n   * container's visible area. Only the pressed element counts, so a child of\n   * a marked element starts a drag only when it carries the attribute too,\n   * and the value `false` turns off a mark or the container's own surface. A\n   * click there still reaches the page, and the page can refuse a drag by\n   * canceling the press or the first move 4 pixels from it.\n   */\n  container?: HTMLElement | null;\n};",
           "source": null,
           "typeParameters": []
         },

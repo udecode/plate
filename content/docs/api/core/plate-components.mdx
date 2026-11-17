@@ -324,10 +324,62 @@ selectable area is smaller than its element, such as a Details header above its
 body, marks that descendant with `data-node-selection-target`, and drag
 selection measures only that descendant.
 
+A drag starts on the editable's own blank space. To start it from the page
+around the editor too, pass the element that holds the editor as `container`,
+usually the page's scroll container. A mouse or pen drag then also starts on
+the container's own blank space and on each element inside it that carries
+`data-node-selection-start`. The rectangle of such a drag clips to the
+container's visible area, and a drag that starts on the editable still clips
+to the editor.
+
+Only the pressed element counts. A child of a marked element is not marked, so
+a cover image carries the attribute itself, and a button inside a marked cover
+keeps its click. A wrapper between the container and the editor is an element
+of its own, so mark it when a drag should start from its padding. A mark hands
+that element's drag to block selection. A drag across marked text selects
+blocks instead of the text, and a marked image does not drag. Keep the
+attribute off controls and their children.
+`data-node-selection-start="false"` turns off a mark, or the container's own
+blank space.
+
+A press on one of these areas stays with the page until the pointer has moved
+4 pixels, so a click or a double-click there still reaches the page. To keep a
+drag for the page, call `preventDefault()` on the `pointerdown` or on the first
+`pointermove` that is 4 pixels away. A touch still scrolls the page, and a
+press on a scrollbar or on editable content never starts a block drag.
+
+```tsx title="components/page.tsx"
+export function Page({ cover }: { cover: string }) {
+  const editor = useCreateEditor();
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+
+  return (
+    <main ref={setContainer} className="h-full overflow-y-auto">
+      <div data-node-selection-start className="relative h-48">
+        <img data-node-selection-start alt="" src={cover} />
+        <button type="button">Change cover</button>
+      </div>
+      <EditorRoot editor={editor}>
+        <EditorContent />
+        <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
+        <NodeSelectionDrag
+          className="z-50 border border-brand/25 bg-brand/15"
+          container={container}
+        />
+      </EditorRoot>
+    </main>
+  );
+}
+```
+
+The copied `Editor` renders its own `NodeSelectionDrag` without `container`.
+To start drags from the page around the editor, compose `EditorRoot`,
+`EditorContent` and `NodeSelectionDrag` as above.
+
 | Primitive                | DOM contract                                                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | `NodeSelectionHighlight` | Accepts `div` attributes except `children`; renders `data-slot="node-selection-highlight"` with required inset positioning. |
-| `NodeSelectionDrag`      | Accepts `div` attributes except `children`; renders `data-slot="node-selection-drag"` with required fixed positioning.      |
+| `NodeSelectionDrag`      | Accepts `div` attributes except `children`, plus `container`; renders `data-slot="node-selection-drag"` with required fixed positioning. |
 
 Use the [Selection API](/docs/api/selection) for model reads
 and writes. See the [Node Selection demo](/docs/examples/node-selection) for

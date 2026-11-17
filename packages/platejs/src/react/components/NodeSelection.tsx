@@ -20,6 +20,8 @@ import { useEditor } from '../stores/plate/useEditor';
 import { useEditorSelector } from '../stores/plate/useEditorSelector';
 
 const EDITOR_ELEMENT_SELECTOR = '[data-editor-node="element"]';
+const START_ATTRIBUTE = 'data-node-selection-start';
+const DRAG_START_DISTANCE = 4;
 
 const isSelectionCandidate = (editor: Editor, element: Element) =>
   editor.read.schema.isBlockContent(element) &&
@@ -410,7 +412,20 @@ const getSelectableEntries = (
 export type NodeSelectionDragProps = Omit<
   React.ComponentProps<'div'>,
   'children'
->;
+> & {
+  /**
+   * An element around the editable, such as the page's scroll container. A
+   * mouse or pen drag that starts on the container itself, or on an element
+   * inside it that carries `data-node-selection-start`, becomes the same block
+   * drag once the pointer has moved 4 pixels, and its rectangle clips to the
+   * container's visible area. Only the pressed element counts, so a child of
+   * a marked element starts a drag only when it carries the attribute too,
+   * and the value `false` turns off a mark or the container's own surface. A
+   * click there still reaches the page, and the page can refuse a drag by
+   * canceling the press or the first move 4 pixels from it.
+   */
+  container?: HTMLElement | null;
+};
 
 /**
  * Renders a drag rectangle and updates node selection during pointer drags.
@@ -422,6 +437,7 @@ export type NodeSelectionDragProps = Omit<
  */
 export function NodeSelectionDrag({
   className,
+  container,
   style,
   ...props
 }: NodeSelectionDragProps) {
@@ -442,11 +458,15 @@ export function NodeSelectionDrag({
     let finishFrame: number | undefined;
     let frame: number | undefined;
     let suppressClick = false;
+    let areaPress:
+      | { clip: HTMLElement; down: PointerEvent; previousMove?: PointerEvent }
+      | undefined;
     let gesture:
       | {
           baseAnchor?: NodeKey;
           baseEntries: readonly SelectionEntry[];
           candidates: readonly SelectionCandidate[];
+          clip: HTMLElement;
           invalid: Invalidation;
           lastAnchorPath?: Path;
           lastFocusPath?: Path;
@@ -454,10 +474,25 @@ export function NodeSelectionDrag({
           painted: ClientPoint;
           pointer: { x: number; y: number };
           pointerId: number;
+          scale?: { x: number; y: number };
           start: MarqueeStart;
         }
       | undefined;
 
+    // A CSS scale on an element or an ancestor changes its rendered box, not
+    // its layout box. A layout size is a whole number of pixels, so a
+    // difference under one pixel is rounding.
+    const boxScale = (element: globalThis.Element) => {
+      if (!(element instanceof ownerWindow.HTMLElement)) return { x: 1, y: 1 };
+      const box = element.getBoundingClientRect();
+      const ratio = (rendered: number, layout: number) =>
+        layout && Math.abs(rendered - layout) >= 1 ? rendered / layout : 1;
+
+      return {
+        x: ratio(box.width, element.offsetWidth),
+        y: ratio(box.height, element.offsetHeight),
+      };
+    };
     const contentOrigin = (rect: DOMRect): ClientPoint => ({
       x: rect.left - editable.scrollLeft,
       y: rect.top - editable.scrollTop,
@@ -519,18 +554,30 @@ export function NodeSelectionDrag({
       const selectionElement = selectionElementRef.current;
 
       if (selectionElement) {
-        const paint = clipRect(hitRect, editor.api.dom.visibleRect(editable));
-        const placed = selectionElement.getBoundingClientRect();
+        const paint = clipRect(
+          hitRect,
+          editor.api.dom.visibleRect(gesture.clip)
+        );
 
-        // A transformed or filtered ancestor, not the viewport, can be the
-        // containing block of this fixed element.
+        // A transformed ancestor, not the viewport, can be the containing
+        // block of this fixed rectangle, which then has that ancestor's
+        // scale. The rectangle's own box at a known size gives the scale,
+        // whatever sits between the two.
+        if (!gesture.scale) {
+          selectionElement.style.height = '1000px';
+          selectionElement.style.width = '1000px';
+          gesture.scale = boxScale(selectionElement);
+        }
+        const placed = selectionElement.getBoundingClientRect();
+        const { scale } = gesture;
+
         gesture.painted = {
-          x: paint.left - (placed.left - gesture.painted.x),
-          y: paint.top - (placed.top - gesture.painted.y),
+          x: gesture.painted.x + (paint.left - placed.left) / scale.x,
+          y: gesture.painted.y + (paint.top - placed.top) / scale.y,
         };
-        selectionElement.style.height = `${paint.height}px`;
+        selectionElement.style.height = `${paint.height / scale.y}px`;
         selectionElement.style.transform = `translate3d(${gesture.painted.x}px, ${gesture.painted.y}px, 0)`;
-        selectionElement.style.width = `${paint.width}px`;
+        selectionElement.style.width = `${paint.width / scale.x}px`;
       }
       if (entries.length === 0) {
         if (gesture.lastPaths === null || gesture.lastPaths.length > 0) {
@@ -586,7 +633,8 @@ export function NodeSelectionDrag({
       }: {
         pointerId: number;
         shiftKey: boolean;
-      }
+      },
+      clip: HTMLElement
     ) => {
       if (finishFrame !== undefined) {
         ownerWindow.cancelAnimationFrame(finishFrame);
@@ -616,6 +664,7 @@ export function NodeSelectionDrag({
         baseEntries: shiftKey ? getSelectionEntries(editor, selectedKeys) : [],
         baseAnchor: baseAnchor ? editor.key(baseAnchor) : undefined,
         candidates,
+        clip,
         invalid: 'none',
         lastPaths: null,
         painted: { x: nextRect.left, y: nextRect.top },
@@ -708,6 +757,29 @@ export function NodeSelectionDrag({
         }
       });
     };
+    const isScrollbarPress = (
+      element: globalThis.Element,
+      event: PointerEvent
+    ) => {
+      let x = event.clientX;
+      let y = event.clientY;
+
+      // The root element's client box is the viewport.
+      if (element !== ownerDocument.documentElement) {
+        const box = element.getBoundingClientRect();
+        const scale = boxScale(element);
+
+        // The client box is in the element's own layout pixels.
+        x = (x - box.left) / scale.x - element.clientLeft;
+        y = (y - box.top) / scale.y - element.clientTop;
+      }
+
+      return (
+        (element.scrollHeight > element.clientHeight &&
+          (x < 0 || x >= element.clientWidth)) ||
+        (element.scrollWidth > element.clientWidth && y >= element.clientHeight)
+      );
+    };
     const onPointerDown = (event: PointerEvent) => {
       if (
         event.button === 2 &&
@@ -726,31 +798,113 @@ export function NodeSelectionDrag({
         }
       }
 
+      if (gesture || event.button !== 0 || editor.read.view.isReadOnly()) {
+        return;
+      }
+      areaPress = undefined;
+      if (event.target === editable) {
+        startGesture(
+          { x: event.clientX, y: event.clientY },
+          { pointerId: event.pointerId, shiftKey: event.shiftKey },
+          editable
+        );
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      const path = event.composedPath();
+      const [pressed] = path;
+
       if (
-        gesture ||
-        event.button !== 0 ||
-        event.target !== editable ||
-        editor.read.view.isReadOnly()
+        !(pressed instanceof ownerWindow.Element) ||
+        !container?.contains(pressed) ||
+        editable.contains(pressed) ||
+        (pressed.getAttribute(START_ATTRIBUTE) ??
+          (pressed === container ? '' : 'false')) === 'false' ||
+        event.pointerType === 'touch' ||
+        path.find((node) => node instanceof ownerWindow.HTMLElement)
+          ?.isContentEditable ||
+        isScrollbarPress(pressed, event)
       ) {
         return;
       }
 
-      startGesture(
-        { x: event.clientX, y: event.clientY },
-        { pointerId: event.pointerId, shiftKey: event.shiftKey }
-      );
-      event.preventDefault();
-      event.stopPropagation();
+      areaPress = { clip: container, down: event };
+    };
+    const pageRefused = () =>
+      areaPress?.down.defaultPrevented ||
+      areaPress?.previousMove?.defaultPrevented;
+    const claimPress = (event: PointerEvent) => {
+      if (
+        !areaPress ||
+        gesture ||
+        areaPress.down.pointerId !== event.pointerId
+      ) {
+        return;
+      }
+
+      const { clip, down, previousMove } = areaPress;
+      const taken = event.defaultPrevented;
+      const releaseMissed = event.type === 'pointermove' && event.buttons !== 1;
+
+      if (taken || pageRefused() || releaseMissed) {
+        areaPress = undefined;
+      } else if (
+        previousMove &&
+        Math.max(
+          Math.abs(previousMove.clientX - down.clientX),
+          Math.abs(previousMove.clientY - down.clientY)
+        ) >= DRAG_START_DISTANCE
+      ) {
+        startGesture(
+          { x: down.clientX, y: down.clientY },
+          { pointerId: event.pointerId, shiftKey: down.shiftKey },
+          clip
+        );
+        event.preventDefault();
+      } else if (event.type === 'pointermove') {
+        areaPress.previousMove = event;
+      } else {
+        areaPress = undefined;
+      }
+    };
+    // The press on a start area was not canceled, so the browser still runs
+    // its own selection drag and would extend a caret in the editable.
+    const clearNativeDrag = () => {
+      if (areaPress) {
+        writeDOMSelection(
+          editable.getRootNode() as Document | ShadowRoot,
+          null
+        );
+      }
     };
     const onPointerMove = (event: PointerEvent) => {
       if (gesture?.pointerId !== event.pointerId) return;
 
       event.preventDefault();
       event.stopPropagation();
+      clearNativeDrag();
       moveGesture({ x: event.clientX, y: event.clientY });
     };
+    const onDragStart = (event: Event) => {
+      if (areaPress && !pageRefused()) event.preventDefault();
+    };
     const onPointerEnd = (event: PointerEvent) => {
-      if (gesture?.pointerId !== event.pointerId) return;
+      if (event.type === 'pointerup') {
+        claimPress(event);
+      } else if (!gesture && areaPress?.down.pointerId === event.pointerId) {
+        areaPress = undefined;
+      }
+      if (
+        gesture?.pointerId !== event.pointerId ||
+        // Taking capture from the pressed element makes that element lose it.
+        (event.type === 'lostpointercapture' &&
+          event.target !== editable &&
+          editable.hasPointerCapture(event.pointerId))
+      ) {
+        return;
+      }
 
       event.preventDefault();
       event.stopPropagation();
@@ -803,17 +957,21 @@ export function NodeSelectionDrag({
       sizeObserver.disconnect();
       const pointerId = gesture?.pointerId;
       gesture = undefined;
+      areaPress = undefined;
       if (pointerId !== undefined && editable.hasPointerCapture(pointerId)) {
         editable.releasePointerCapture(pointerId);
       }
     };
 
     const onKey = (event: KeyboardEvent) => {
-      if (gesture && event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        cancelGesture();
-        return;
+      if (event.key === 'Escape') {
+        if (gesture) {
+          event.preventDefault();
+          event.stopPropagation();
+          cancelGesture();
+          return;
+        }
+        areaPress = undefined;
       }
       if (
         event.target !== editable ||
@@ -898,6 +1056,7 @@ export function NodeSelectionDrag({
     ownerDocument.addEventListener('keydown', onKey, true);
     ownerDocument.addEventListener('keyup', onKey, true);
     ownerDocument.addEventListener('click', onClick, true);
+    ownerDocument.addEventListener('dragstart', onDragStart, true);
     ownerDocument.addEventListener('lostpointercapture', onPointerEnd, true);
     ownerDocument.addEventListener('pointercancel', onPointerEnd, true);
     ownerDocument.addEventListener('pointerdown', onPointerDown, true);
@@ -906,6 +1065,11 @@ export function NodeSelectionDrag({
       passive: false,
     });
     ownerDocument.addEventListener('pointerup', onPointerEnd, true);
+    // The window sees a move before any handler of the page can stop it.
+    ownerWindow.addEventListener('pointermove', claimPress, {
+      capture: true,
+      passive: false,
+    });
     ownerDocument.addEventListener('scroll', onGeometryChange, true);
     ownerWindow.addEventListener('resize', onGeometryChange);
 
@@ -916,6 +1080,7 @@ export function NodeSelectionDrag({
       ownerDocument.removeEventListener('keydown', onKey, true);
       ownerDocument.removeEventListener('keyup', onKey, true);
       ownerDocument.removeEventListener('click', onClick, true);
+      ownerDocument.removeEventListener('dragstart', onDragStart, true);
       ownerDocument.removeEventListener(
         'lostpointercapture',
         onPointerEnd,
@@ -925,10 +1090,11 @@ export function NodeSelectionDrag({
       ownerDocument.removeEventListener('pointerdown', onPointerDown, true);
       ownerDocument.removeEventListener('pointermove', onPointerMove, true);
       ownerDocument.removeEventListener('pointerup', onPointerEnd, true);
+      ownerWindow.removeEventListener('pointermove', claimPress, true);
       ownerDocument.removeEventListener('scroll', onGeometryChange, true);
       ownerWindow.removeEventListener('resize', onGeometryChange);
     };
-  }, [editable, editor, readOnly]);
+  }, [container, editable, editor, readOnly]);
 
   if (!selectionRect || !editable || readOnly) return null;
 
