@@ -113,6 +113,7 @@
           "authored",
           "diff",
           "documents",
+          "fields",
           "ink",
           "pagination"
         ],
@@ -185,6 +186,7 @@
       "authored",
       "diff",
       "documents",
+      "fields",
       "ink",
       "pagination"
     ],
