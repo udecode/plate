@@ -39,7 +39,7 @@
     "build:www:ci": "turbo run build --filter=www... --concurrency=2",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "node tooling/scripts/check.mjs",
-    "deep-check": "node tooling/scripts/deep-check.mjs",
+    "local-ci": "node tooling/scripts/local-ci.mjs",
     "kb": "node tooling/scripts/knowledge/kb.mjs",
     "check:authored-order": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/authored-decision-order.ts",
     "check:authored-recording": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/authored-recording-order.ts",

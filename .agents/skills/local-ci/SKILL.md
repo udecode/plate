@@ -1,0 +1,68 @@
+---
+description: Run and watch Local CI, the slow check steps that run on next after landing instead of before it. Use for /local-ci, "is next green", "Local CI status", "rerun Local CI", the old name "deep check", installing or removing its launchd job on a Mac, starting the watcher session that starts a fix for a red step, being that watcher, and when a local-ci task names a red step.
+argument-hint: '[status | rerun | install | uninstall | watch]'
+name: local-ci
+metadata:
+  skiller:
+    source: .agents/rules/local-ci.mdc
+---
+
+# Local CI
+
+`pnpm check --affected`, which every landing runs, runs only the steps marked `land` in `tooling/scripts/check.mjs`: `typecheck`, the fast test files and the checks that take a second or two. Local CI runs every other step on the newest `origin/next`, the slow test files, the formal checks and the whole-repo lint included, with the steps `--build --browser` add. `tooling/scripts/local-ci.mjs` is the lane:
+
+- A launchd job runs `local-ci.mjs run` every 20 minutes on one Mac. A run exits at once when another run holds the lock or next has not moved. Once a day, the first run after 04:00 runs `--build --browser --reads` with fresh seeds instead.
+- A run moves the persistent worktree `<main checkout>/.claude/worktrees/local-ci` and its private half to the newest next, and the job runs that worktree's copy of the script, so a fix to it reaches the job when it lands. A run checks next there, through `proof.mjs` under the one-hour budget. On green it pushes `refs/pstack/local-ci-green` forward.
+- A red step reruns alone. A step that passes alone is a flake, and its second flake in a row is reported. A step still running when the hour runs out also reruns alone, and passing alone clears it, because it never failed. A step that fails alone gets its first bad commit searched for from the last green commit, while the hour lasts.
+- A report offers a P0 task under topic `local-ci` that owns the red step, and the watcher starts its fix. Nothing in the lane posts to the team channel: not the runner, the watcher or the fix run (owner's word, 2026-11-17). `status` and the board show what is red.
+- The runner keeps `state.json`, `events.jsonl` and its lock in `plate-local-ci/` in the git common directory, and its logs in `docs/plans/artifacts/local-ci/<day>/`.
+
+Run every command below from the main checkout. Each runs the Local CI worktree's copy of the script, because every run moves that copy to the newest next, while the main checkout's copy moves only when someone pulls there. Pick the mode from $ARGUMENTS. With none, or with `supervise`, run Keep watching.
+
+## status
+
+Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs status`. Report whether the job is loaded and running, the last run, the last green commit and the newest events. For a red event, also name its step, its first bad commit or the range still unsearched, and its log.
+
+## rerun
+
+1. Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs run --force` in the background. It checks next even when the last run already did, and it takes up to an hour. Use `run --full` for the daily fresh run.
+2. To check a commit other than next's tip, run `run --ref <sha> --green <last green sha> [--step <name>] --dry`. `--dry` writes the event only: no ref push or task.
+3. When it exits, run `status` and report what the run found.
+
+## install and uninstall
+
+`node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs install` writes the `dev.plate.local-ci` launchd agent and loads it, and `uninstall` removes it. When that worktree does not exist yet, run `node tooling/scripts/local-ci.mjs install` from a checkout that has the script; install makes the worktree at the newest next first. Install on one Mac only, because two Macs would check the same commits twice. Confirm with `launchctl print gui/$(id -u)/dev.plate.local-ci`.
+
+## Keep watching
+
+Make sure one watcher session is watching: a session that stays open and starts a fix for each red step. Run it after the app quits or the Claude account changes, because the watcher's background wait ends with the app. The owner chose Sonnet at medium for the watcher, as `AGENTS.md`'s Plate overrides say. The watcher works in the main checkout, which can lag next, so its prompt is "Read `<main checkout>/.claude/worktrees/local-ci/.agents/skills/local-ci/SKILL.md` in full and run its watch mode.", with the main checkout's absolute path. That copy moves with every run.
+
+1. Call `mcp__ccd_session_mgmt__get_session` with `"self"`. When this session's title is "Local CI", run `watch` here and stop.
+2. Call `mcp__ccd_session_mgmt__list_sessions` and look for an unarchived session titled "Local CI". When it is mid-turn, report it and stop. When it is idle, send it the watcher prompt with `SendMessage` (`to`: its session id), which restarts its loop unless its wait still runs, report it and stop.
+3. Otherwise start it with `mcp__ccd_session__start_session`: `initiation: "user_asked"`, `context: "fresh"`, `title: "Local CI"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `cwd` set to the main checkout, `use_worktree: false`, and the watcher prompt. Pin it with `mcp__ccd_sidebar__set_pinned`, so automatic archiving keeps it.
+
+## watch
+
+The watcher's loop. It reads events and spawns one fix subagent for each red step. It never edits, lands or fixes code itself, and it keeps each turn short.
+
+1. Unless a wait this session started is still running, run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or the current time in ISO form on the first loop. The command exits when the runner writes an event the watcher acts on and prints one JSON line per event. The session wakes when it exits.
+2. Handle each printed event:
+   - `kind: "red"` or `kind: "flake"` with `wake: true`: spawn a fix subagent with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Each such event names one step and the task offered for it, so two red steps get two subagents that work at once.
+   - `dry: true`: spawn the same subagent with the Dry brief.
+   - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-local-ci/`. When the cause is the Local CI worktree's install, run `pnpm install --frozen-lockfile` inside that worktree; the next wake retries the tip. Otherwise say the cause in this session's reply and send no message.
+3. When a fix subagent finishes, save its report to `docs/plans/artifacts/local-ci/<day>/fix-<task id or step>.md` in the main checkout, then reply with one line per task: the step and the fix commit, or why it is still open.
+4. Go back to step 1 with the newest handled event's `at`.
+
+Nothing in the lane posts to the team channel: not the runner, this watcher or a fix subagent (owner's word, 2026-11-17). The fix subagents run on Opus at high, the models sheet's bug-fix level, and each one ends with this session, so the watcher stays open and pinned.
+
+### Fix brief
+
+> Local CI found the `<step>` check step failing on Plate's `next` branch. Its event: `<the event's JSON line>`. Work from the main checkout `<main checkout path>`; read its `AGENTS.md` first and follow it, and load the `local-ci` skill for what the lane is.
+>
+> 1. Load the `chips` skill and start task `<task id>` as its Start mode says. When the event names no task, take the open task on the board whose topic is `local-ci` and whose title names `<step>`.
+> 2. Run the Bug fix playbook (`.agents/playbooks/bug-fix.md`) in a worktree cut from `origin/next`. Reproduce with `pnpm check <step>`, read the event's log, fix the cause forward and land through `node .agents/pstack/land.mjs`. A revert needs the owner's word, so never revert the first bad commit on your own.
+> 3. Send no team message. End with one line: the step and the fix commit, or why it is still open.
+
+### Dry brief
+
+> Local CI wrote a dry event for the `<step>` check step as a proof run: `<the event's JSON line>`. Read it and the log it names, and reply in one short paragraph with the step, the first bad commit or the range still unsearched, the log, and what you would fix first. Edit, land and message nothing.

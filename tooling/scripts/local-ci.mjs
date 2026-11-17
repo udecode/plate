@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Runs the deep lane: every check step on the newest origin/next, including
+// Runs Local CI: every check step on the newest origin/next, including
 // the ones a landing leaves out, one run at a time. A launchd job starts it
 // every 20 minutes; a run that finds next unchanged or another run going
 // exits at once. Once a day the first run after 04:00 is the full fresh run.
 // A red step is rerun alone, its first bad commit is searched for while the
 // hour lasts, and the result goes to events.jsonl and the suggested-task
-// ledger, never to the team channel (owner's word, 2026-11-17). The deep-check skill's supervise mode watches
-// events.jsonl and starts the fix session.
+// ledger, never to the team channel (owner's word, 2026-11-17). The local-ci
+// skill's watcher reads events.jsonl and starts a fix for each red step.
 import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
@@ -24,26 +24,26 @@ import { fileURLToPath } from 'node:url';
 import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
 import { INTERRUPTED, lockfileInstalled, STEP_LOG } from './check-steps.mjs';
 
-const USAGE = `Usage: node tooling/scripts/deep-check.mjs <command>
+const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
   run        check the newest origin/next unless it was checked
              --full     the daily fresh run with --build --browser --reads
              --ref <sha> --green <sha>   check <sha>, searching back to <sha>
-             --step <name>   run one step instead of the deep lane
+             --step <name>   run one step instead of every step
              --force    check next again although it has not moved
-             --dry      write the event only: no ref push, task or message
+             --dry      write the event only: no ref push or task
   status     the last run, the last green commit and the latest events
   wait       block until an event the watcher acts on, print it and exit
              --after <iso time>   only events written after that time
   install    start the launchd job that runs it every 20 minutes
   uninstall  stop and remove that job`;
 
-const LABEL = 'dev.plate.deep-check';
+const LABEL = 'dev.plate.local-ci';
 const INTERVAL_SECONDS = 1200;
 const BUDGET_MS = 55 * 60_000;
 const FULL_HOUR = 4;
 const FLAKE_LOAD = 20;
-const GREEN_REF = 'refs/pstack/deep-green';
-const FIX_TOPIC = 'deep-check';
+const GREEN_REF = 'refs/pstack/local-ci-green';
+const FIX_TOPIC = 'local-ci';
 const POLL_MS = 5000;
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -62,11 +62,11 @@ const common = must(here, [
   '--git-common-dir',
 ]);
 const main = dirname(common);
-const home = join(common, 'plate-deep-check');
+const home = join(common, 'plate-local-ci');
 const statePath = join(home, 'state.json');
 const eventsPath = join(home, 'events.jsonl');
 const lockDir = join(home, 'lock');
-const worktree = join(main, '.claude', 'worktrees', 'deep-check');
+const worktree = join(main, '.claude', 'worktrees', 'local-ci');
 const plist = join(homedir(), 'Library', 'LaunchAgents', `${LABEL}.plist`);
 
 const readState = () =>
@@ -83,7 +83,7 @@ const readEvents = () =>
 const emit = (event) => {
   const line = { at: new Date().toISOString(), ...event };
   appendFileSync(eventsPath, `${JSON.stringify(line)}\n`);
-  console.info(`[deep-check] ${line.kind} ${line.step ?? ''} ${line.tip}`);
+  console.info(`[local-ci] ${line.kind} ${line.step ?? ''} ${line.tip}`);
   return line;
 };
 
@@ -116,7 +116,7 @@ const node = (cwd, args, env = {}) =>
     maxBuffer: 64 << 20,
   });
 
-// Moves the deep worktree to `sha`, its private half to the commit that
+// Moves the Local CI worktree to `sha`, its private half to the commit that
 // landed with it, and installs what that commit's lockfile names.
 const checkout = (sha) => {
   if (existsSync(worktree)) {
@@ -169,7 +169,7 @@ const checkout = (sha) => {
 const runId = (sha, suffix) =>
   `${new Date().toISOString().slice(0, 16).replace(':', '')}-${sha.slice(0, 10)}${suffix ? `-${suffix}` : ''}`;
 
-// Runs check.mjs in the deep worktree through proof.mjs, so the hour's
+// Runs check.mjs in the Local CI worktree through proof.mjs, so the hour's
 // limit and the core pool apply, and reads back which steps failed.
 const check = (logs, name, args, { full = false } = {}) => {
   const result = node(
@@ -271,7 +271,6 @@ const report = (event) => {
     existsSync(ledger) &&
     [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].some(
       (task) =>
-        task.topic === FIX_TOPIC &&
         task.title?.includes(title) &&
         ['offered', 'started'].includes(task.status)
     );
@@ -285,7 +284,7 @@ const report = (event) => {
       ledger,
       'chip',
       `${id} ${title}`,
-      `The deep lane found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`,
+      `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`,
       // A check that fails on next is P0, and the ledger refuses an offer
       // that names no check it owns or paths it writes.
       `writes: packages, apps, tooling; topic: ${FIX_TOPIC}; kind: fix; priority: P0; owns: ${event.step}; via: hook; session: none`,
@@ -296,6 +295,19 @@ const report = (event) => {
   return { task: id, wake: true };
 };
 
+// Fetches next in both halves and returns its tip.
+const fetchNext = () => {
+  must(main, ['fetch', '--quiet', 'origin', 'next']);
+  node(main, [
+    'tooling/scripts/git-private.mjs',
+    'fetch',
+    '--quiet',
+    'origin',
+    'next',
+  ]);
+  return must(main, ['rev-parse', 'origin/next']);
+};
+
 const run = (args) => {
   const option = (name) => {
     const at = args.indexOf(name);
@@ -304,28 +316,20 @@ const run = (args) => {
   const dry = args.includes('--dry');
   if (option('--step') && !option('--ref')) {
     console.error(
-      '[deep-check] --step checks one step, so it needs --ref; a run on next checks every step.'
+      '[local-ci] --step checks one step, so it needs --ref; a run on next checks every step.'
     );
     return 1;
   }
   mkdirSync(home, { recursive: true });
   const holder = takeLock();
   if (holder) {
-    console.info(`[deep-check] run ${holder} is still going.`);
+    console.info(`[local-ci] run ${holder} is still going.`);
     return 0;
   }
   try {
     const started = Date.now();
     const state = readState();
-    must(main, ['fetch', '--quiet', 'origin', 'next']);
-    node(main, [
-      'tooling/scripts/git-private.mjs',
-      'fetch',
-      '--quiet',
-      'origin',
-      'next',
-    ]);
-    const tip = option('--ref') ?? must(main, ['rev-parse', 'origin/next']);
+    const tip = option('--ref') ?? fetchNext();
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
     const full =
@@ -340,10 +344,10 @@ const run = (args) => {
       !args.includes('--force') &&
       tip === state.tip
     ) {
-      console.info(`[deep-check] next is still ${tip.slice(0, 10)}.`);
+      console.info(`[local-ci] next is still ${tip.slice(0, 10)}.`);
       return 0;
     }
-    const logs = join(main, 'docs', 'plans', 'artifacts', 'deep-check', today);
+    const logs = join(main, 'docs', 'plans', 'artifacts', 'local-ci', today);
     mkdirSync(logs, { recursive: true });
     try {
       checkout(tip);
@@ -358,7 +362,7 @@ const run = (args) => {
       return 1;
     }
     const step = option('--step');
-    const name = runId(tip, step ?? (full ? 'full' : 'deep'));
+    const name = runId(tip, step ?? (full ? 'full' : 'ci'));
     const result = check(
       logs,
       name,
@@ -481,18 +485,11 @@ const status = () => {
 };
 
 const install = () => {
-  // Each run moves the deep worktree to the newest next, so the job runs that
-  // copy and a fix to this script reaches it with its landing. The main
+  // Each run moves the Local CI worktree to the newest next, so the job runs
+  // that copy and a fix to this script reaches it with its landing. The main
   // checkout's copy moves only when someone pulls there.
-  const script = [worktree, main]
-    .map((root) => join(root, 'tooling', 'scripts', 'deep-check.mjs'))
-    .find((path) => existsSync(path));
-  if (!script) {
-    console.error(
-      `[deep-check] neither ${worktree} nor ${main} has tooling/scripts/deep-check.mjs, so land this script first.`
-    );
-    return 1;
-  }
+  const script = join(worktree, 'tooling', 'scripts', 'local-ci.mjs');
+  if (!existsSync(script)) checkout(fetchNext());
   mkdirSync(home, { recursive: true });
   const escape = (text) =>
     text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
@@ -519,11 +516,11 @@ const install = () => {
     encoding: 'utf-8',
   });
   if (loaded.status !== 0) {
-    console.error(`[deep-check] launchctl bootstrap: ${loaded.stderr}`);
+    console.error(`[local-ci] launchctl bootstrap: ${loaded.stderr}`);
     return 1;
   }
   console.info(
-    `[deep-check] ${LABEL} runs ${script} every ${INTERVAL_SECONDS / 60} minutes.`
+    `[local-ci] ${LABEL} runs ${script} every ${INTERVAL_SECONDS / 60} minutes.`
   );
   return 0;
 };
@@ -531,7 +528,7 @@ const install = () => {
 const uninstall = () => {
   spawnSync('launchctl', ['bootout', `gui/${userInfo().uid}/${LABEL}`]);
   rmSync(plist, { force: true });
-  console.info(`[deep-check] removed ${LABEL}.`);
+  console.info(`[local-ci] removed ${LABEL}.`);
   return 0;
 };
 

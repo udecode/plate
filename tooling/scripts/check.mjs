@@ -282,7 +282,7 @@ const packageDiff = () =>
 // fails, so a type, lint or citation error fails a landing before any slow
 // step starts. Under --affected, which every landing runs, only the `land`
 // steps run: typecheck, the fast test files and checks that take a second or
-// two. The deep lane runs every other step on next after landing.
+// two. Local CI runs every other step on next after landing.
 let testImporters;
 /**
  * Each file the fast test files load, mapped to the test files that load it,
@@ -339,7 +339,7 @@ const importersOf = () => {
 // A landing runs the fast test files that load a changed file. A change the
 // import graph cannot place, such as a deleted file or a fixture a test reads
 // at run time, runs every fast test file. A test that loads a file through a
-// computed path is missed here, and the deep lane's full run catches it on
+// computed path is missed here, and Local CI's full run catches it on
 // next after landing. Bun ignores the www Playwright specs, so editing one
 // cannot change the tests.
 const reachesTests = (files) => {
@@ -934,8 +934,8 @@ export const manualOnly = {
   'check:plite:dev': 'Plans Plite proof from changed paths, for local use.',
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
-  'deep-check':
-    'Runs the deep lane on next after landing; its launchd job and the deep-check skill start it.',
+  'local-ci':
+    'Runs Local CI on next after landing; its launchd job and the local-ci skill start it.',
   'deps:check': 'Lists available dependency updates; it gates nothing.',
   'p:test': 'Template that each package test script calls.',
   test: 'Runs every root test file, which the test and test-slow steps split between them.',
@@ -1247,7 +1247,7 @@ const main = async () => {
     const later = chosen.filter((step) => !step.land);
     if (later.length > 0) {
       console.info(
-        `  skip ${later.map((step) => step.name).join(', ')}: the deep lane runs them on next after landing`
+        `  skip ${later.map((step) => step.name).join(', ')}: Local CI runs them on next after landing`
       );
     }
     chosen = chosen.filter((step) => step.land);
