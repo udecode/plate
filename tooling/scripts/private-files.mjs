@@ -245,21 +245,15 @@ const firstParents = (root, tips) => {
   return parents;
 };
 
+const privateHalfLags = (root, commit, landedWith) =>
+  Boolean(landedWith) &&
+  commit !== landedWith &&
+  privateGit(root, ['merge-base', '--is-ancestor', commit, landedWith])
+    .status === 0;
+
 const findPairs = (root, shas) => {
   const found = new Map();
   const pending = new Set(shas);
-  for (const args of [
-    ['rev-parse', 'HEAD'],
-    ['merge-base', 'HEAD', UPSTREAM],
-    ['rev-parse', UPSTREAM],
-  ]) {
-    if (pending.size === 0) return found;
-    const sha = run(root, args).stdout.trim();
-    if (pending.delete(sha)) {
-      found.set(sha, privateGit(root, args).stdout.trim());
-    }
-  }
-  if (pending.size === 0) return found;
   // Only landed history: a commit whose push failed, which an autosave ref
   // keeps reachable, names a public commit it never landed with.
   const landedRef = privateGit(root, [
@@ -279,6 +273,20 @@ const findPairs = (root, shas) => {
     const [commit, publicSha] = line.split(' ');
     if (publicSha && !landed.has(publicSha)) landed.set(publicSha, commit);
   }
+  for (const args of [
+    ['rev-parse', 'HEAD'],
+    ['merge-base', 'HEAD', UPSTREAM],
+    ['rev-parse', UPSTREAM],
+  ]) {
+    if (pending.size === 0) return found;
+    const sha = run(root, args).stdout.trim();
+    if (!pending.has(sha)) continue;
+    const commit = privateGit(root, args).stdout.trim();
+    if (privateHalfLags(root, commit, landed.get(sha))) continue;
+    pending.delete(sha);
+    found.set(sha, commit);
+  }
+  if (pending.size === 0) return found;
   const firstParent = firstParents(root, [...pending]);
   for (const sha of pending) {
     let ancestor = sha;
@@ -296,9 +304,9 @@ const findPairs = (root, shas) => {
 /**
  * The plate-private commit that matches each udecode/plate rev: the private
  * counterpart when the rev is this checkout's HEAD, merge base or
- * origin/next, else the commit on plate-private's next whose Lands-With line
- * names the rev or its nearest first-parent ancestor. A rev with no match is
- * absent from the map.
+ * origin/next and no newer private commit landed with it, else the commit
+ * on plate-private's next whose Lands-With line names the rev or its nearest
+ * first-parent ancestor. A rev with no match is absent from the map.
  */
 export const pairedCommits = (root, revs) => {
   const paired = new Map();
