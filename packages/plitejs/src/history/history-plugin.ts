@@ -172,7 +172,11 @@ export type HistoryStateApi<V extends Value = Value> = (() => History<V>) & {
 export type HistoryControlTx = TxOnlyMethod<() => void>;
 
 export type HistoryTxApi<V extends Value = Value> = {
-  /** Merge this transaction into the previous compatible undo batch. */
+  /**
+   * Merge this transaction into the previous compatible undo batch. Two
+   * batches whose commits change no root, such as ones that write only
+   * records, are compatible.
+   */
   merge: HistoryControlTx;
   /** Make this transaction start a fresh undo batch. */
   newBatch: HistoryControlTx;

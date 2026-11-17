@@ -14,6 +14,7 @@ export const BOARD_STROKE_THINNING = 0.5;
 /** The pen perfect-freehand draws a board line with. */
 export const BOARD_PEN = {
   size: BOARD_STROKE_WIDTH,
+  streamline: 0.5,
   thinning: BOARD_STROKE_THINNING,
 };
 

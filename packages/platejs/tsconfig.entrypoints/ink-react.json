@@ -19,5 +19,15 @@
   ],
   "extends": "../tsconfig.json",
   "include": ["../src/react/features/ink/**/*"],
-  "references": []
+  "references": [
+    {
+      "path": "./core.json"
+    },
+    {
+      "path": "./ink.json"
+    },
+    {
+      "path": "./react-core.json"
+    }
+  ]
 }

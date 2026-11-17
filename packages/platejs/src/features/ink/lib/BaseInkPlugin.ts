@@ -9,7 +9,6 @@ import {
 import {
   defineRuntimePlugin,
   getDocumentValueNode,
-  NodeApi,
   type NodeKey,
 } from '../../../facade';
 import { readEditorAuthor } from '../../../lib/editor/editorUser.internal';
@@ -23,11 +22,15 @@ import {
   idOf,
   type SavedRecords,
 } from './inkGone.internal';
+import { inkText } from './inkMatch.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
 
-/** The pen a mark was drawn with. `opacity` runs from 0 to 1. */
+/**
+ * The pen a mark was drawn with. `opacity` runs from 0 to 1. `size` is the
+ * line's width at full pressure, and a lighter press paints thinner.
+ */
 export type InkBrush = Readonly<{
   color: string;
   opacity: number;
@@ -126,9 +129,11 @@ export type InkMark = Readonly<{
 export type InkBlockInput = Omit<InkCopy, 'id'> & Omit<InkMarkBlock, 'copy'>;
 
 /**
- * What `add` saves: one pen contact, measured on the blocks it crosses. Its
- * runs hold every word its stroke touches, where a word is a run of characters
- * that are not white space.
+ * What `add` saves: one pen contact, measured on the blocks it crosses. Each
+ * block's `text` is its ink text, with each inline void as one U+FFFC, and its
+ * `runs` hold every word the stroke touches, one run per line of a word that
+ * wraps. Words split on white space, and a run of Han, Hiragana, Katakana or
+ * Thai splits into the words `Intl.Segmenter` finds.
  */
 export type InkMarkInput = Readonly<{
   at: number;
@@ -138,6 +143,20 @@ export type InkMarkInput = Readonly<{
   margin?: InkMargin;
   samples: readonly InkSample[];
 }>;
+
+/** A Draw tool: the brush its marks are drawn with. */
+export type InkTool = Readonly<{ brush: InkBrush; type: 'draw' }>;
+
+/**
+ * What one view shows and does with ink: the tool a pen draws with, or
+ * `null` when drawing is off, whether ink and signs are hidden, and the ids
+ * of the marks picked.
+ */
+export type InkViewState = {
+  hidden: boolean;
+  picked: readonly string[];
+  tool: InkTool | null;
+};
 
 /**
  * Where a deleted block's sign sits: after or before a block still in the
@@ -596,6 +615,11 @@ export const BaseInkPlugin = definePlugin('ink', {
     },
   ],
   dependencies: [inkRecords, ElementIdPlugin],
+  initialViewState: (): InkViewState => ({
+    hidden: false,
+    picked: [],
+    tool: null,
+  }),
   on: {
     transactionChange: ({ after, before, changed, editor, tx }) => {
       if (!changed.has('structure') && !changed.has('properties')) return;
@@ -714,7 +738,8 @@ export const BaseInkPlugin = definePlugin('ink', {
           if (holder && node) {
             return {
               key: holder.key,
-              kind: NodeApi.string(node) === copy.text ? 'live' : 'changed',
+              kind:
+                inkText(state.schema, node) === copy.text ? 'live' : 'changed',
             };
           }
 

@@ -199,6 +199,7 @@ export {
   getActiveEditorUpdateId,
   markRootViewUsed,
   readRootViewUse,
+  scheduleAfterCommitNotification,
   subscribeRootViewUse,
 } from 'plitejs/internal';
 export type {

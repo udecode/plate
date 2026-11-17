@@ -1,3 +1,4 @@
+import { ElementApi, type Node, TextApi } from '../../../facade';
 import type { InkCopy, InkLine, InkMark, InkMarkBlock } from './BaseInkPlugin';
 
 export type InkBox = Readonly<{
@@ -16,7 +17,7 @@ export type InkLiveBlock = Readonly<{
 
 export type InkMargins = Readonly<{ left: number; right: number }>;
 
-export type InkSignReason = 'changed' | 'deleted' | 'narrow';
+export type InkSignReason = 'changed' | 'narrow';
 
 export type InkPlacement =
   | Readonly<{ dx: number; dy: number; sign?: 'changed'; type: 'ink' }>
@@ -31,11 +32,63 @@ const sign = (reason: InkSignReason): InkPlacement => ({
   type: 'sign',
 });
 
-export const inkWords = (text: string) =>
-  Array.from(
-    text.matchAll(/\S+/g),
-    ({ 0: word, index }) => [index, index + word.length] as const
-  );
+export const INK_VOID = String.fromCodePoint(0xff_fc);
+
+const INK_RUNS = new RegExp(`[^\\s${INK_VOID}]+|${INK_VOID}`, 'gu');
+
+/**
+ * A block's text as ink reads it: its text, with each inline void as one
+ * `INK_VOID`, so a mention the copy lacks changes the text.
+ */
+export const inkText = (
+  schema: Readonly<{
+    isInline: (node: Node) => boolean;
+    isVoid: (node: Node) => boolean;
+  }>,
+  node: Node
+): string => {
+  if (TextApi.isText(node)) return node.text;
+  if (!ElementApi.isElement(node)) return '';
+
+  return node.children
+    .map((child) =>
+      ElementApi.isElement(child) &&
+      schema.isInline(child) &&
+      schema.isVoid(child)
+        ? INK_VOID
+        : inkText(schema, child)
+    )
+    .join('');
+};
+
+const SEGMENTED_SCRIPT =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Thai}]/u;
+
+let segmenter: Intl.Segmenter | undefined;
+
+export const inkWords = (text: string) => {
+  const words: Array<readonly [start: number, end: number]> = [];
+
+  for (const { 0: run, index } of text.matchAll(INK_RUNS)) {
+    if (!SEGMENTED_SCRIPT.test(run)) {
+      words.push([index, index + run.length]);
+      continue;
+    }
+    segmenter ??= new Intl.Segmenter('und', { granularity: 'word' });
+    for (const { index: at, isWordLike, segment } of segmenter.segment(run)) {
+      const start = index + at;
+      const [last] = words.slice(-1);
+
+      if (!isWordLike && last && last[0] >= index) {
+        words[words.length - 1] = [last[0], start + segment.length];
+      } else {
+        words.push([start, start + segment.length]);
+      }
+    }
+  }
+
+  return words;
+};
 
 const pointToBox = ([x, y]: Point, box: InkBox) =>
   Math.hypot(
@@ -81,7 +134,7 @@ const segmentCrossesBox = ([ax, ay]: Point, [bx, by]: Point, box: InkBox) => {
   return true;
 };
 
-const footprintEnters = (
+export const footprintEnters = (
   points: readonly Point[],
   radius: number,
   box: InkBox
@@ -164,7 +217,7 @@ const lineOf = (lines: readonly InkLine[], offset: number) => {
   return index === -1 ? lines.length - 1 : index;
 };
 
-const gapAround = (text: string, offset: number) => {
+export const gapAround = (text: string, offset: number) => {
   let start = offset;
   let end = offset;
 
@@ -280,7 +333,7 @@ export const placeMark = ({
       ? sign('changed')
       : { dx, dy, type: 'ink' };
 
-  if (blocks.length < mark.blocks.length) return sign('deleted');
+  if (blocks.length < mark.blocks.length) return sign('changed');
   if (mark.margin) {
     const [{ block, copy, now }] = blocks;
     const { reach, side } = mark.margin;

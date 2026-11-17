@@ -431,6 +431,11 @@ export const shouldMergeCompositionBatch = (
     current.scope === previous.scope
   );
 
+const changesNoRoot = ({ change }: Batch) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  getInternalDocumentChangeRootKeys(change).length === 0;
+
 export const shouldMergeExplicitBatch = (
   currentBatch: Batch,
   current: HistoryBatchGroup | null,
@@ -453,6 +458,9 @@ export const shouldMergeExplicitBatch = (
 
   if (effectsCompatible && !isNativeTextInput) return true;
 
+  if (!current && !previous) {
+    return changesNoRoot(currentBatch) && changesNoRoot(previousBatch);
+  }
   if (
     !current ||
     !previous ||
