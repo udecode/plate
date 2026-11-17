@@ -23,10 +23,11 @@ import {
   liftShownTarget,
 } from '../../core/view-carets';
 import { isDOMNode } from '../../dom';
-import type {
-  DOMPhase,
-  DOMPhaseScheduler,
-  DOMPhaseTiming,
+import {
+  type DOMPhase,
+  type DOMPhaseScheduler,
+  type DOMPhaseTiming,
+  resolveDOMTargetView,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
@@ -856,14 +857,19 @@ const getEditableRootChromeCoordinatePlacement = ({
   includeInsideString?: boolean;
 }): PliteStringCoordinatePlacement => {
   const element = mouseEventTargetToElement(event.target);
+  const isControlView = (candidate: HTMLElement) =>
+    !!resolveDOMTargetView(editor, candidate);
   const targetEditableRoot = element?.closest<HTMLElement>(
     '[data-editor="true"]'
   );
-  const currentTargetEditableRoot = event.currentTarget.matches(
-    '[data-editor="true"]'
-  )
-    ? event.currentTarget
-    : event.currentTarget.querySelector<HTMLElement>('[data-editor="true"]');
+  const findCurrentTargetEditableRoot = () =>
+    event.currentTarget.matches('[data-editor="true"]')
+      ? event.currentTarget
+      : ([
+          ...event.currentTarget.querySelectorAll<HTMLElement>(
+            '[data-editor="true"]'
+          ),
+        ].find(isControlView) ?? null);
   let mountedEditableRoot: HTMLElement | null = null;
 
   try {
@@ -876,9 +882,11 @@ const getEditableRootChromeCoordinatePlacement = ({
   }
 
   const editableRoot =
-    targetEditableRoot && event.currentTarget.contains(targetEditableRoot)
+    targetEditableRoot &&
+    event.currentTarget.contains(targetEditableRoot) &&
+    isControlView(targetEditableRoot)
       ? targetEditableRoot
-      : (mountedEditableRoot ?? currentTargetEditableRoot);
+      : (mountedEditableRoot ?? findCurrentTargetEditableRoot());
 
   if (!editableRoot) {
     return null;
@@ -1977,6 +1985,7 @@ export const useRootInteractionController = ({
         endPlacedDrag();
 
         const target = resolveRootInteractionTarget({
+          control: editor,
           currentTarget: event.currentTarget,
           target: event.target,
         });

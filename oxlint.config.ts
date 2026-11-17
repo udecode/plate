@@ -274,6 +274,8 @@ export default defineConfig({
         'apps/plite/src/app/dev/view-focus-chain/page.tsx',
         // This route proves a selection stays in one member of a set root.
         'apps/plite/src/app/dev/set-root-selection/page.tsx',
+        // This route proves a press on root chrome acts on the copy it surrounds.
+        'apps/plite/src/app/dev/root-chrome-copies/page.tsx',
         // These routes measure raw Plite against Plate on the same fixture.
         'apps/www/src/app/dev/combobox-typing/page.tsx',
         'apps/plite/src/board-scale/stub-board.ts',

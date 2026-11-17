@@ -1,4 +1,5 @@
 import type { Range } from '../..';
+import { resolveDOMTargetView } from '../../dom/internal';
 import { MAIN_ROOT_KEY } from '../root-key';
 
 const INTERACTIVE_CHROME_TARGET =
@@ -75,10 +76,12 @@ const isCurrentTargetEditableRoot = (currentTarget: HTMLElement) =>
   currentTarget.matches(EDITABLE_ROOT_TARGET);
 
 const isSameRootChromeEditableSurface = ({
+  control,
   currentTarget,
   editableRoot,
   target,
 }: {
+  control?: object;
   currentTarget: HTMLElement;
   editableRoot: HTMLElement;
   target: Element;
@@ -87,16 +90,22 @@ const isSameRootChromeEditableSurface = ({
   const editableRootKey =
     editableRoot.getAttribute('data-editor-root') ?? MAIN_ROOT_KEY;
 
-  return target === editableRoot && chromeRoot === editableRootKey;
+  return (
+    target === editableRoot &&
+    chromeRoot === editableRootKey &&
+    (!control || !!resolveDOMTargetView(control, editableRoot))
+  );
 };
 
 export const isRootInteractionEditableFocused = (target: HTMLElement) =>
   target.ownerDocument.activeElement === target;
 
 export const resolveRootInteractionTarget = ({
+  control,
   currentTarget,
   target,
 }: {
+  control?: object;
   currentTarget: HTMLElement;
   target: EventTarget | null;
 }): RootInteractionTarget => {
@@ -115,6 +124,7 @@ export const resolveRootInteractionTarget = ({
   ) {
     if (
       isSameRootChromeEditableSurface({
+        control,
         currentTarget,
         editableRoot,
         target: element,
