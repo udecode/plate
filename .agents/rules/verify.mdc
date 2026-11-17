@@ -248,9 +248,10 @@ clipboard spec below.
 Existing repository Playwright specs are executable proof owners. Run them
 through their package runner. Do not build a parallel Puppeteer, raw CDP or
 standalone Playwright driver for interactive QA. The one exception is
-`tooling/scripts/sweep-clip.mjs`, which an agent pass's lane runs to record a
-find it already made and to check dark mode; a find that shows only in its
-replay stays open for a person. Browser emulation does not prove raw
+`tooling/scripts/sweep-clip.mjs`. An agent pass's lane runs it to record a find
+it already made and to check dark mode, and a find that shows only in its
+replay stays open for a person. A retest also runs it to replay a reporter's
+steps that no agent browser delivers, such as Cmd+Z in a text input. Browser emulation does not prove raw
 Android/iOS input.
 
 Copied UI runs through the React Compiler only in www. Its dev and production
