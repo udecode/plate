@@ -11399,17 +11399,15 @@ export function retainTransactionSnapshotIndex(
   return index;
 }
 
-const getTransactionRootSnapshot = (
+const getTransactionBeforeRootSnapshot = (
   editor: Editor,
   transactionSnapshot: TransactionSnapshot,
   root: string
 ): EditorSnapshot => {
   const children = transactionSnapshot.roots[root] ?? [];
-  const index = retainTransactionSnapshotIndex(
-    editor,
-    transactionSnapshot,
-    root
-  );
+  const index =
+    transactionSnapshot.baseRuntimeIndexes[root]?.() ??
+    retainTransactionSnapshotIndex(editor, transactionSnapshot, root);
 
   return Object.freeze({
     children: isImmutable(children) ? children : cloneFrozen(children),
@@ -13141,7 +13139,11 @@ export const runEditorTransaction = <R>(
             const beforeSnapshot =
               snapshot.childrenRoot === MAIN_ROOT_KEY
                 ? previousSnapshot
-                : getTransactionRootSnapshot(editor, snapshot, MAIN_ROOT_KEY);
+                : getTransactionBeforeRootSnapshot(
+                    editor,
+                    snapshot,
+                    MAIN_ROOT_KEY
+                  );
             const mainRootChanged =
               !!getInternalDocumentRootChange(
                 canonicalChanges,
