@@ -287,7 +287,7 @@ Before returning a generated file, export checks the written package against the
 
 ### Source-aware export
 
-With a valid `source`, an unchanged `review` export returns the admitted file byte for byte. Exact reuse requires the same compiled schema, an unchanged review document, unchanged or omitted comments, and no `title`, `margins`, `orientation`, `pageSize`, `stylesheet`, or `fontFamily` option. `component` and `presentation` do not apply on this path, because export regenerates nothing.
+With a valid `source`, an unchanged `review` export returns the admitted file byte for byte. Exact reuse requires the same compiled schema, an unchanged review document, unchanged or omitted comments, no `title`, `margins`, `orientation`, `pageSize`, `stylesheet`, or `fontFamily` option, and no `pageNumber: true`. `component` and `presentation` do not apply on this path, because export regenerates nothing.
 
 If an exact check fails, `exportDocx` regenerates the complete document body. It keeps these source units when their internal relationships are closed, reachable, and nonconflicting:
 
@@ -461,6 +461,7 @@ exportDocx(
 | `lossPolicy`            | `'allow' \| 'reject'`                    | Fail on dropped content, or return it as warnings; defaults to `'reject'` |
 | `margins`               | `Margins`                                | Page margins in twentieths of a point              |
 | `orientation`           | `'landscape' \| 'portrait'`              | Page orientation                                   |
+| `pageNumber`            | `boolean`                                | Number the pages in a footer; defaults to `false`. With `true`, rebuilds an unchanged `source`, replaces its default footer and fills its empty first-page and even-page footers |
 | `pageSize`              | `PageSize`                               | Page dimensions in twentieths of a point           |
 | `presentation`          | `readonly BasePluginInput[]`             | Static plugins that draw the body and comment bodies, matched by plugin name |
 | `signal`                | `AbortSignal`                            | Cooperative cancellation signal                    |

@@ -723,9 +723,8 @@ type RunAttributes = {
   strike?: boolean;
   strong?: boolean | string;
   lookKeys?: ReadonlySet<StyleRunKey>;
-  sub?: boolean;
-  sup?: boolean;
   u?: boolean;
+  vertAlign?: 'subscript' | 'superscript';
   verticalAlign?: string;
   width?: number | string;
 };
@@ -794,6 +793,7 @@ type FormattingOptions = {
   color?: string;
   font?: string;
   fontSize?: number;
+  vertAlign?: 'subscript' | 'superscript';
 };
 
 const parseColorCode = (colorCodeString: string): string | undefined => {
@@ -946,10 +946,12 @@ const buildUnderline = (type = 'single'): XMLBuilderType =>
     .att('@w', 'val', type)
     .up();
 
-const buildLineBreak = (type = 'textWrapping'): XMLBuilderType =>
+// Word writes a Shift+Enter break as a `w:br` with no type. Word for Mac shows
+// one typed `textWrapping`, the spec's default, as a labelled text wrapping
+// break instead.
+const buildLineBreak = (): XMLBuilderType =>
   fragment({ namespaceAlias: { w: namespaces.w } })
     .ele('@w', 'br')
-    .att('@w', 'type', type)
     .up();
 
 const buildBorder = (
@@ -1427,6 +1429,9 @@ const buildFormatting = (
     case 'sup': {
       return buildVertAlign('superscript');
     }
+    case 'vertAlign': {
+      return buildVertAlign(options?.vertAlign);
+    }
     case 'mark': {
       return buildHighlight();
     }
@@ -1511,6 +1516,9 @@ const buildRunProperties = (
       ) {
         options.color = value as string;
       }
+      if (key === 'vertAlign') {
+        options.vertAlign = value as FormattingOptions['vertAlign'];
+      }
 
       if (key === 'fontSize' || key === 'font') {
         (options as Record<string, string | number>)[key] = value as
@@ -1538,13 +1546,12 @@ const buildRunProperties = (
 
 const buildRun = async (
   vNode: VNodeType | VTextType | null,
-  initialAttributes: ParagraphAttributes,
+  attributes: ParagraphAttributes,
   docxDocumentInstance?: DocxDocumentInstance
 ): Promise<XMLBuilderType | XMLBuilderType[]> => {
   if (isVNode(vNode) && (vNode as VNodeType).tagName === 'math') {
     return buildMath(vNode as VNodeType);
   }
-  let attributes = initialAttributes;
   const trackedRevision = (() => {
     if (!isVNode(vNode)) return null;
     const tag = (vNode as VNodeType).tagName;
@@ -1623,32 +1630,24 @@ const buildRun = async (
   ) {
     const runFragmentsArray: XMLBuilderType[] = [];
 
-    let vNodes: Array<VNodeType | VTextType> = [vNode as VNodeType];
-    // create temp run fragments to split the paragraph into different runs
-    let tempAttributes: RunAttributes = cloneDeep(attributes);
-    let tempRunFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
-      '@w',
-      'r'
-    );
+    let vNodes: Array<{
+      attributes: ParagraphAttributes;
+      vNode: VNodeType | VTextType;
+    }> = [{ attributes: cloneDeep(attributes), vNode: vNode as VNodeType }];
     while (vNodes.length) {
-      const tempVNode =
+      const queued =
         vNodes.shift() ?? failInvariant('Expected value to be defined');
+      const tempVNode = queued.vNode;
+      let tempAttributes = queued.attributes;
       if (isVText(tempVNode)) {
-        const textFragment = buildTextElement((tempVNode as VTextType).text);
-        const tempRunPropertiesFragment = buildRunProperties(
-          { ...attributes, ...tempAttributes },
-          docxDocumentInstance?.wordStyles
+        const tempRunFragment = fragment({
+          namespaceAlias: { w: namespaces.w },
+        }).ele('@w', 'r');
+        tempRunFragment.import(
+          buildRunProperties(tempAttributes, docxDocumentInstance?.wordStyles)
         );
-        tempRunFragment.import(tempRunPropertiesFragment);
-        tempRunFragment.import(textFragment);
+        tempRunFragment.import(buildTextElement((tempVNode as VTextType).text));
         runFragmentsArray.push(tempRunFragment);
-
-        // re initialize temp run fragments with new fragment
-        tempAttributes = cloneDeep(attributes);
-        tempRunFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
-          '@w',
-          'r'
-        );
       } else if (isVNode(tempVNode)) {
         const tempVn = tempVNode as VNodeType;
         if (nestedRunTagSet.has(tempVn.tagName || '')) {
@@ -1681,11 +1680,11 @@ const buildRun = async (
               break;
             }
             case 'sub': {
-              tempAttributes.sub = true;
+              tempAttributes.vertAlign = 'subscript';
               break;
             }
             case 'sup': {
-              tempAttributes.sup = true;
+              tempAttributes.vertAlign = 'superscript';
               break;
             }
             case 'mark': {
@@ -1711,7 +1710,7 @@ const buildRun = async (
         } else if (tempVn.tagName === 'span') {
           const spanFragment = await buildRunOrRuns(
             tempVn,
-            { ...attributes, ...tempAttributes },
+            tempAttributes,
             docxDocumentInstance
           );
 
@@ -1731,11 +1730,9 @@ const buildRun = async (
 
       const tempVn = tempVNode as VNodeType;
       if (tempVn.children?.length) {
-        if (tempVn.children.length > 1) {
-          attributes = Object.assign({}, attributes, tempAttributes);
-        }
-
-        vNodes = tempVn.children.slice().concat(vNodes);
+        vNodes = tempVn.children
+          .map((child) => ({ attributes: tempAttributes, vNode: child }))
+          .concat(vNodes);
       }
     }
     if (runFragmentsArray.length) {

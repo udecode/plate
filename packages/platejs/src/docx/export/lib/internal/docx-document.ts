@@ -11,6 +11,7 @@ import {
   defaultLang,
   defaultOrientation,
   documentFileName,
+  footerFileName,
   footerType as footerFileType,
   headerType as headerFileType,
   hyperlinkType,
@@ -42,7 +43,7 @@ import generateThemeXML from './schemas/theme';
 import webSettingsXMLString from './schemas/web-settings';
 import { WordStyles } from './word-styles';
 
-const QUOTED_FONT_PATTERN = /(["'])(.*?)\1/;
+const QUOTED_FONT_PATTERN = /(["'])((?:(?!\1)[^\\]|\\.)*)\1/;
 
 const fontFamilyToTableObject = (
   fontFamily: string | null | undefined,
@@ -51,10 +52,11 @@ const fontFamilyToTableObject = (
   const fonts = fontFamily
     ? fontFamily.split(',').map((font) => {
         const trimmed = font.trim();
+        const quoted = trimmed.match(QUOTED_FONT_PATTERN)?.[2];
 
-        if (!QUOTED_FONT_PATTERN.test(trimmed)) return trimmed;
-
-        return trimmed.match(QUOTED_FONT_PATTERN)?.[2] ?? trimmed;
+        return quoted === undefined
+          ? trimmed
+          : quoted.replaceAll(/\\(.)/g, '$1');
       })
     : [fallbackFont];
 
@@ -378,15 +380,15 @@ function generateContentTypesFragments(
 ): void {
   if (objects && Array.isArray(objects)) {
     objects.forEach((object) => {
-      const id =
+      const part =
         type === 'header'
-          ? (object as HeaderObject).headerId
-          : (object as FooterObject).footerId;
+          ? `${type}${(object as HeaderObject).headerId}`
+          : footerFileName;
       const contentTypesFragment = fragment({
         defaultNamespace: { ele: namespaces.contentTypes },
       })
         .ele('Override')
-        .att('PartName', `/word/${type}${id}.xml`)
+        .att('PartName', `/word/${part}.xml`)
         .att(
           'ContentType',
           `application/vnd.openxmlformats-officedocument.wordprocessingml.${type}+xml`

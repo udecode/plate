@@ -77,6 +77,15 @@ export type DocxExportOptions = Readonly<{
   margins?: Margins;
   /** Page orientation. @default 'portrait' */
   orientation?: 'landscape' | 'portrait';
+  /**
+   * Number the pages in a footer, left-aligned in the document font. Setting
+   * it to `true` rebuilds an unchanged `source`. The page-number footer
+   * replaces the source's default footer and fills its empty first-page and
+   * even-page footers.
+   *
+   * @default false
+   */
+  pageNumber?: boolean;
   /** Page size in twentieths of a point. */
   pageSize?: PageSize;
   /**
@@ -577,6 +586,7 @@ const resolveSourceExport = (
     options.title !== undefined ||
     options.margins !== undefined ||
     options.orientation !== undefined ||
+    options.pageNumber ||
     options.pageSize !== undefined ||
     options.stylesheet !== undefined ||
     options.fontFamily !== undefined

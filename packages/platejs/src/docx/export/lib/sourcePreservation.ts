@@ -22,6 +22,7 @@ import {
   isDocxHyperlinkTarget,
 } from '../../internal/sourceEligibility';
 import type { DocxDiagnostic } from '../../internal/types';
+import { footerFileName } from './internal/constants';
 
 const DOCX_MIME =
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -296,13 +297,17 @@ const copyEvenOddFlag = (
   const source = sourceEntries.get('word/settings.xml');
   const generated = generatedEntries.get('word/settings.xml');
 
-  if (!(source && generated)) return;
+  if (!(source && generated)) return false;
   const sourceDocument = parseDocxXml(decodeXml(source));
 
-  if (wordElements(sourceDocument, 'evenAndOddHeaders').length === 0) return;
+  if (wordElements(sourceDocument, 'evenAndOddHeaders').length === 0) {
+    return false;
+  }
   const generatedDocument = parseDocxXml(decodeXml(generated));
 
-  if (wordElements(generatedDocument, 'evenAndOddHeaders').length > 0) return;
+  if (wordElements(generatedDocument, 'evenAndOddHeaders').length > 0) {
+    return true;
+  }
   generatedDocument.documentElement.append(
     generatedDocument.createElementNS(WORD_NAMESPACE, 'w:evenAndOddHeaders')
   );
@@ -310,6 +315,63 @@ const copyEvenOddFlag = (
     'word/settings.xml',
     encodeXml(new XMLSerializer().serializeToString(generatedDocument))
   );
+
+  return true;
+};
+
+const yieldFooterNameToSource = (
+  sourceEntries: ReadonlyMap<string, Uint8Array>,
+  generatedEntries: Map<string, Uint8Array>,
+  generatedZip: JSZip
+) => {
+  const from = `${footerFileName}.xml`;
+  // Package part names match without regard to case.
+  const sourceNames = new Set(
+    [...sourceEntries.keys()].map((name) => name.toLowerCase())
+  );
+  const taken = new Set([
+    ...sourceNames,
+    ...[...generatedEntries.keys()].map((name) => name.toLowerCase()),
+  ]);
+
+  if (
+    !(
+      generatedEntries.has(`word/${from}`) &&
+      sourceNames.has(`word/${from}`.toLowerCase())
+    )
+  ) {
+    return;
+  }
+  let index = 1;
+
+  while (taken.has(`word/${footerFileName}${index}.xml`.toLowerCase())) {
+    index += 1;
+  }
+  const to = `${footerFileName}${index}.xml`;
+  const rename = (part: string, find: string, replace: string) => {
+    const source = decodeXml(generatedEntries.get(part) ?? new Uint8Array());
+
+    if (source.split(find).length !== 2) {
+      throw new Error(`Generated DOCX part ${part} must name ${from} once.`);
+    }
+    const value = encodeXml(source.replace(find, replace));
+
+    generatedEntries.set(part, value);
+    generatedZip.file(part, value);
+  };
+
+  rename('word/_rels/document.xml.rels', `Target="${from}"`, `Target="${to}"`);
+  rename(
+    '[Content_Types].xml',
+    `PartName="/word/${from}"`,
+    `PartName="/word/${to}"`
+  );
+  const value = generatedEntries.get(`word/${from}`) ?? new Uint8Array();
+
+  generatedEntries.delete(`word/${from}`);
+  generatedEntries.set(`word/${to}`, value);
+  generatedZip.remove(`word/${from}`);
+  generatedZip.file(`word/${to}`, value);
 };
 
 export const preserveDocxSource = async (
@@ -335,6 +397,11 @@ export const preserveDocxSource = async (
       throwIfDocxAborted(signal);
     }
   }
+  yieldFooterNameToSource(
+    sourcePackage.entries,
+    generatedEntries,
+    generatedZip
+  );
   throwIfDocxAborted(signal);
   const sourceContentTypesSource = sourcePackage.entries.get(
     '[Content_Types].xml'
@@ -478,11 +545,30 @@ export const preserveDocxSource = async (
         ])
       );
       const acceptedReferences: Element[] = [];
+      const isReference = (element: Element) =>
+        element.localName === 'headerReference' ||
+        element.localName === 'footerReference';
+      const slotOf = (reference: Element) =>
+        `${reference.localName} ${
+          reference.getAttributeNS(WORD_NAMESPACE, 'type') ??
+          reference.getAttribute('w:type') ??
+          'default'
+        }`;
+      // A section holds one header and one footer of each type, so a
+      // generated footer, such as the page-number one, keeps its slot.
+      const generatedSlots = new Set(
+        Array.from(generatedSections[0].children)
+          .filter(isReference)
+          .map(slotOf)
+      );
+      const displacedParts = new Set<string>();
+      const generatedFooter = Array.from(generatedSections[0].children).find(
+        (element) =>
+          isReference(element) && slotOf(element) === 'footerReference default'
+      );
 
       for (const reference of Array.from(sourceSections[0].children).filter(
-        (element) =>
-          element.localName === 'headerReference' ||
-          element.localName === 'footerReference'
+        isReference
       )) {
         const sourceId =
           reference.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, 'id') ??
@@ -496,6 +582,10 @@ export const preserveDocxSource = async (
             relationship?.target ?? sourceId ?? 'word/document.xml',
             'unreachable'
           );
+          continue;
+        }
+        if (generatedSlots.has(slotOf(reference))) {
+          displacedParts.add(relationship.targetPart);
           continue;
         }
         const candidate = collectCandidate(
@@ -533,6 +623,9 @@ export const preserveDocxSource = async (
         acceptedReferences.push(clone);
       }
 
+      for (const part of displacedParts) {
+        if (!copiedParts.has(part)) diagnose(part, 'conflict');
+      }
       for (const reference of acceptedReferences.reverse()) {
         generatedSections[0].insertBefore(
           reference,
@@ -541,7 +634,50 @@ export const preserveDocxSource = async (
       }
       if (acceptedReferences.length > 0) {
         copyTitlePageFlag(sourceSections[0], generatedSections[0]);
-        copyEvenOddFlag(sourcePackage.entries, generatedEntries, replacements);
+        const evenAndOdd = copyEvenOddFlag(
+          sourcePackage.entries,
+          generatedEntries,
+          replacements
+        );
+
+        if (generatedFooter) {
+          const section = generatedSections[0];
+          const slots = new Set(
+            Array.from(section.children).filter(isReference).map(slotOf)
+          );
+          const titlePage = Array.from(section.children).some(
+            (element) => element.localName === 'titlePg'
+          );
+
+          // With titlePg or evenAndOddHeaders on, Word shows the first-page or
+          // even-page footer instead of the default one, so a slot the source
+          // leaves empty also gets the generated footer.
+          for (const type of [
+            ...(titlePage ? ['first'] : []),
+            ...(evenAndOdd ? ['even'] : []),
+          ]) {
+            if (slots.has(`footerReference ${type}`)) continue;
+            const reference = generatedDocument.createElementNS(
+              WORD_NAMESPACE,
+              'w:footerReference'
+            );
+
+            reference.setAttributeNS(WORD_NAMESPACE, 'w:type', type);
+            const id =
+              generatedFooter.getAttributeNS(
+                OFFICE_RELATIONSHIPS_NAMESPACE,
+                'id'
+              ) ?? generatedFooter.getAttribute('r:id');
+
+            if (!id) throw new Error('Generated DOCX footer has no r:id.');
+            reference.setAttributeNS(
+              OFFICE_RELATIONSHIPS_NAMESPACE,
+              'r:id',
+              id
+            );
+            generatedFooter.before(reference);
+          }
+        }
         replacements.set(
           'word/document.xml',
           encodeXml(new XMLSerializer().serializeToString(generatedDocument))

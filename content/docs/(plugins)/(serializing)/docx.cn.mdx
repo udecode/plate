@@ -285,7 +285,7 @@ blockquote 中的标题、列表、表格或其他块会在原位置导出，但
 
 ### 使用源文件导出
 
-传入有效 `source` 时，未改动的 `review` 导出会逐字节返回导入的文件。精确复用要求使用同一个编译 schema、review 文档未改动、批注未传入或完全相同，并且没有传入 `title`、`margins`、`orientation`、`pageSize`、`stylesheet` 或 `fontFamily`。该路径不会重新生成内容，因此 `component` 和 `presentation` 不起作用。
+传入有效 `source` 时，未改动的 `review` 导出会逐字节返回导入的文件。精确复用要求使用同一个编译 schema、review 文档未改动、批注未传入或完全相同，没有传入 `title`、`margins`、`orientation`、`pageSize`、`stylesheet` 或 `fontFamily`，也没有传入 `pageNumber: true`。该路径不会重新生成内容，因此 `component` 和 `presentation` 不起作用。
 
 精确检查不通过时，`exportDocx` 会重新生成完整正文。内部关系闭合、可达且无名称冲突时，会保留下列 source 单元：
 
@@ -434,6 +434,7 @@ exportDocx(
 | `lossPolicy`            | `'allow' \| 'reject'`                    | 内容被省略时失败，或以警告返回；默认 `'reject'` |
 | `margins`               | `Margins`                                | 以二十分之一磅为单位的页边距     |
 | `orientation`           | `'landscape' \| 'portrait'`              | 页面方向                         |
+| `pageNumber`            | `boolean`                                | 在页脚中显示页码；默认 `false`。为 `true` 时会重新生成未改动的 `source`，替换其默认页脚，并填补其空的首页和偶数页页脚 |
 | `pageSize`              | `PageSize`                               | 以二十分之一磅为单位的页面尺寸   |
 | `presentation`          | `readonly BasePluginInput[]`             | 绘制正文和批注正文的 static 插件，按插件名匹配 |
 | `signal`                | `AbortSignal`                            | 协作式取消信号                   |

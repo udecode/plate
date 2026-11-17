@@ -54,15 +54,25 @@ const unwrapListRecords = (body: HTMLElement) => {
   }
 };
 
+// A double-quoted CSS string serializes as `&quot;`, and html-to-vdom splits a
+// style attribute at every `;` without decoding entities. A style no
+// stylesheet rule matches skips juice's own requoting.
+const singleQuoteStrings = (css: string) =>
+  css.replace(
+    /"((?:[^"\\]|\\.)*)"|'(?:[^'\\]|\\.)*'/g,
+    (match, double: string | undefined) =>
+      double === undefined ? match : `'${double.replaceAll("'", "\\'")}'`
+  );
+
 const stampOwnStyles = (html: string) => {
   const { body } = parseDocxHtml(html);
 
   unwrapListRecords(body);
   for (const element of Array.from(body.querySelectorAll('[style]'))) {
-    element.setAttribute(
-      'data-docx-own-style',
-      element.getAttribute('style') ?? ''
-    );
+    const style = singleQuoteStrings(element.getAttribute('style') ?? '');
+
+    element.setAttribute('style', style);
+    element.setAttribute('data-docx-own-style', style);
   }
 
   return body.innerHTML;
@@ -87,6 +97,7 @@ export const exportHtmlToDocx = async (
     fontFamily,
     margins,
     orientation = 'portrait',
+    pageNumber,
     pageSize,
     stylesheet,
     title,
@@ -103,9 +114,11 @@ export const exportHtmlToDocx = async (
     preserveMarkedWhitespace(page(stampOwnStyles(bodyHtml))),
     {
       font: fontFamily,
+      footer: pageNumber,
       margins: { ...DEFAULT_DOCX_MARGINS, ...margins },
       namedStyleHtml: page(NAMED_STYLE_HTML),
       orientation,
+      pageNumber,
       pageSize,
       title,
     }

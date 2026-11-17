@@ -380,7 +380,7 @@ async function addFilesToContainer(
     docxDocument.relationshipFilename = footerFileName;
     const { footerId, footerXML } = await docxDocument.generateFooterXML(vTree);
     docxDocument.relationshipFilename = documentFileName;
-    const fileNameWithExt = `${footerType}${footerId}.xml`;
+    const fileNameWithExt = `${footerFileName}.xml`;
 
     const relationshipId = docxDocument.createDocumentRelationships(
       docxDocument.relationshipFilename,
