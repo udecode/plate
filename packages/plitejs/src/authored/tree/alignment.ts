@@ -25,7 +25,8 @@ import {
   type PropertyModification,
 } from '../../core/change/transform';
 import { deriveValue } from '../../core/record-store';
-import { survivalUnder } from '../../core/survival';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import { gridPartsOf, type Survival, survivalUnder } from '../../core/survival';
 import { marksOf, type ReviewFacts } from '../facts/facts';
 import { countLedgerWork } from '../ledger/work';
 import {
@@ -35,7 +36,7 @@ import {
   readAuthoredMarks,
   readMembers,
 } from './marks';
-import { proposedSurvival } from './proposed';
+import { proposedSurvivalOf } from './proposed';
 import {
   acceptedOwnShape,
   failInTests,
@@ -50,21 +51,23 @@ export type AlignmentOptions = Readonly<{
   isSetValued?: DocumentSetPropertyResolver;
 }>;
 
-const { survives } = proposedSurvival;
+const withoutStruck = (
+  value: JsonEditorValue,
+  schema: CompiledEditorSchema
+): JsonEditorValue => {
+  const { survives } = proposedSurvivalOf(schema);
+  const withoutStruckChildren = (
+    children: readonly JsonNode[]
+  ): readonly JsonNode[] =>
+    children
+      .filter(survives)
+      .map((node) =>
+        node.children
+          ? { ...node, children: withoutStruckChildren(node.children) }
+          : node
+      );
 
-const withoutStruckChildren = (
-  children: readonly JsonNode[]
-): readonly JsonNode[] =>
-  children
-    .filter(survives)
-    .map((node) =>
-      node.children
-        ? { ...node, children: withoutStruckChildren(node.children) }
-        : node
-    );
-
-const withoutStruck = (value: JsonEditorValue): JsonEditorValue =>
-  deriveValue(value, {
+  return deriveValue(value, {
     children: withoutStruckChildren(value.children),
     ...(value.roots
       ? {
@@ -77,6 +80,7 @@ const withoutStruck = (value: JsonEditorValue): JsonEditorValue =>
         }
       : {}),
   });
+};
 
 const UNSET_MARKS = Object.freeze([
   Object.freeze({ key: AUTHORED_MARKS_KEY, type: 'unset' as const }),
@@ -423,23 +427,21 @@ const structuralChange = (
   }
 };
 
-// The characters of the leaves `removed` keeps, at their token positions. It
-// walks the nodes, not the index's tokens, because an index copies the marks
-// it reads and `removed` matches marks by identity.
 const liveCharacters = (
   index: DocumentIndex,
   nodes: readonly JsonNode[],
-  removed: (node: unknown) => boolean
+  settledBy: Pick<SettledBy, 'removes' | 'wholeWhenRemoved'>
 ) => {
   const positions: number[] = [];
   let text = '';
   const visit = (list: readonly JsonNode[], path: readonly number[]) => {
     list.forEach((node, at) => {
       if (typeof node.text !== 'string') {
+        if (settledBy.wholeWhenRemoved(node) && settledBy.removes(node)) return;
         visit(node.children ?? [], [...path, at]);
         return;
       }
-      if (removed(node)) return;
+      if (settledBy.removes(node)) return;
 
       const { from } = index.nodeRange([...path, at]);
 
@@ -485,7 +487,14 @@ const propertyDelta = (before: JsonRecord, after: JsonRecord) => {
 export type SettledBy = Readonly<{
   joins: (node: unknown) => boolean;
   removes: (node: unknown) => boolean;
+  wholeWhenRemoved: (node: object) => boolean;
 }>;
+
+const NOTHING_REMOVED: SettledBy = {
+  joins: () => false,
+  removes: () => false,
+  wholeWhenRemoved: () => false,
+};
 
 const acceptingRemoves = (node: unknown) =>
   readAuthoredMarks(node).some((mark) => mark.kind === 'delete');
@@ -502,17 +511,26 @@ export const characterAlignedChange = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
   settledBy: SettledBy
+): DocumentChange | null =>
+  alignedByCharacters(
+    stored,
+    accepted,
+    settledBy,
+    survivalUnder<JsonNode>(settledBy.removes, settledBy.wholeWhenRemoved)
+  );
+
+const alignedByCharacters = (
+  stored: JsonEditorValue,
+  accepted: JsonEditorValue,
+  settledBy: SettledBy,
+  settled: Survival<JsonNode>
 ): DocumentChange | null => {
   if (stored.roots || accepted.roots) return null;
 
-  const settled =
-    settledBy.removes === acceptingRemoves
-      ? proposedSurvival
-      : survivalUnder<JsonNode>(settledBy.removes);
   const before = DocumentIndex.fromValue(stored.children);
   const after = DocumentIndex.fromValue(accepted.children);
-  const kept = liveCharacters(before, stored.children, settledBy.removes);
-  const target = liveCharacters(after, accepted.children, () => false);
+  const kept = liveCharacters(before, stored.children, settledBy);
+  const target = liveCharacters(after, accepted.children, NOTHING_REMOVED);
 
   if (kept.text !== target.text) return null;
 
@@ -718,6 +736,7 @@ type Outcome = 'accept' | 'reject';
 export type Decision = Readonly<{
   facts: ReviewFacts;
   outcomes: Outcome | ReadonlyMap<string, Outcome>;
+  schema: CompiledEditorSchema;
 }>;
 
 /**
@@ -729,7 +748,7 @@ export type Decision = Readonly<{
 export const decidedAlignment = (
   stored: JsonEditorValue,
   decided: JsonEditorValue,
-  { facts, outcomes }: Decision
+  { facts, outcomes, schema }: Decision
 ): DocumentChange | null => {
   const outcomeOf = (mark: AuthoredMark) =>
     typeof outcomes === 'string' ? outcomes : outcomes.get(mark.change);
@@ -747,6 +766,7 @@ export const decidedAlignment = (
         marksOf(node, facts).some((mark) => mergesUp(mark, outcomeOf(mark))),
       removes: (node) =>
         marksOf(node, facts).some((mark) => removes(mark, outcomeOf(mark))),
+      wholeWhenRemoved: gridPartsOf(schema),
     })
   );
 };
@@ -820,13 +840,20 @@ export const decidedContentChange = (
 export const acceptedAlignment = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
-  facts: ReviewFacts
+  facts: ReviewFacts,
+  schema: CompiledEditorSchema
 ): DocumentChange | null =>
   structuralAcceptedChange(stored, accepted) ??
-  characterAlignedChange(stored, accepted, {
-    joins: (node) => hasLiveJoinMark(node, facts),
-    removes: acceptingRemoves,
-  });
+  alignedByCharacters(
+    stored,
+    accepted,
+    {
+      joins: (node) => hasLiveJoinMark(node, facts),
+      removes: acceptingRemoves,
+      wholeWhenRemoved: gridPartsOf(schema),
+    },
+    proposedSurvivalOf(schema)
+  );
 
 /**
  * The accept-all change as two diffs, struck nodes first, so a kept leaf
@@ -835,9 +862,10 @@ export const acceptedAlignment = (
 export const diffedAcceptedChange = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
+  schema: CompiledEditorSchema,
   options: AlignmentOptions
 ): DocumentChange => {
-  const unstruck = deepFreeze(withoutStruck(stored));
+  const unstruck = deepFreeze(withoutStruck(stored, schema));
 
   return DocumentChange.between(stored, unstruck, options).compose(
     DocumentChange.between(unstruck, accepted, options)

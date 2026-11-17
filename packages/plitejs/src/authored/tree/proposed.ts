@@ -1,6 +1,7 @@
 import type { NodeList } from '../../core/change/document-index';
 import type { JsonNode } from '../../core/change/tokens';
-import { survivalUnder } from '../../core/survival';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import { gridPartsOf, type Survival, survivalUnder } from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { type AuthoredMark, readAuthoredMarks } from './marks';
@@ -20,10 +21,22 @@ const isText = (node: Node) => typeof node.text === 'string';
 const hasMark = (node: unknown, kind: AuthoredMark['kind']) =>
   readAuthoredMarks(node).some((mark) => mark.kind === kind);
 
+const PROPOSED = new WeakMap<CompiledEditorSchema, Survival<Node>>();
+
 /** @internal */
-export const proposedSurvival = survivalUnder<Node>((node) =>
-  hasMark(node, 'delete')
-);
+export const proposedSurvivalOf = (schema: CompiledEditorSchema) => {
+  let survival = PROPOSED.get(schema);
+
+  if (!survival) {
+    survival = survivalUnder<Node>(
+      (node) => hasMark(node, 'delete'),
+      gridPartsOf(schema)
+    );
+    PROPOSED.set(schema, survival);
+  }
+
+  return survival;
+};
 
 type ReachableBlock = Readonly<{
   path: Path;
@@ -37,9 +50,10 @@ type ReachableBlock = Readonly<{
  */
 export const proposedHost = (
   children: NodeList,
-  path: readonly number[]
+  path: readonly number[],
+  schema: CompiledEditorSchema
 ): readonly number[] | null => {
-  const { survives } = proposedSurvival;
+  const { survives } = proposedSurvivalOf(schema);
   const chain: Node[] = [];
   let level = children;
 
@@ -84,13 +98,15 @@ export const proposedChildren = (
     removesTarget = (target) =>
       !isText(target) &&
       (target.children ?? []).every((child) => isText(child) && !child.text),
+    schema,
   }: Readonly<{
     joinAside: (mark: AuthoredMark) => boolean;
     limit?: number;
     removesTarget?: (target: Node, path: Path, joined: Node) => boolean;
+    schema: CompiledEditorSchema;
   }>
 ): Readonly<{ children: ProposedChild[]; keptJoins: ReadonlySet<Node> }> => {
-  const { liveContent, survives } = proposedSurvival;
+  const { liveContent, survives } = proposedSurvivalOf(schema);
   const out: ProposedChild[] = [];
   const keptJoins = new Set<Node>();
   const landings = new Map<string, Readonly<{ node: Node; path: Path }>>();

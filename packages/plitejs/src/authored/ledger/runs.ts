@@ -38,7 +38,7 @@ import {
   readAuthoredMarks,
   readMembers,
 } from '../tree/marks';
-import { proposedSurvival } from '../tree/proposed';
+import { proposedSurvivalOf } from '../tree/proposed';
 import {
   type AuthoredHiddenBlock,
   type AuthoredPlacement,
@@ -78,7 +78,6 @@ export type BlockFacts = Readonly<{
   keepsLine: Readonly<Record<AuthoredFormatProjection, boolean>>;
   /** It carries an insertion claim of its own, so it holds no prefix slot at the start. */
   inserted: boolean;
-  removedProposed: boolean;
 }>;
 
 const FACTS = new WeakMap<JsonNode, BlockFacts>();
@@ -126,11 +125,14 @@ const followKey = (mark: AuthoredMark) => {
   return link === undefined ? undefined : incarnationOfLink(link);
 };
 
-const SURVIVAL = {
-  accepted: survivalUnder<JsonNode>((node) =>
-    readAuthoredMarks(node).some((mark) => mark.kind === 'insert')
-  ),
-  proposed: proposedSurvival,
+const markedBy = (kind: AuthoredMark['kind']) => (node: JsonNode) =>
+  readAuthoredMarks(node).some((mark) => mark.kind === kind);
+
+const holdsNoGridPart = () => false;
+
+const TEXT_BLOCK_SURVIVAL = {
+  accepted: survivalUnder<JsonNode>(markedBy('insert'), holdsNoGridPart),
+  proposed: survivalUnder<JsonNode>(markedBy('delete'), holdsNoGridPart),
 };
 
 const childFactsOf = (node: JsonNode): ChildFacts => {
@@ -219,8 +221,8 @@ export const combineFacts = (
   const follows = fold(followKey, children.follows);
   const keepsLine = textBlock
     ? {
-        accepted: SURVIVAL.accepted.survives(node),
-        proposed: SURVIVAL.proposed.survives(node),
+        accepted: TEXT_BLOCK_SURVIVAL.accepted.survives(node),
+        proposed: TEXT_BLOCK_SURVIVAL.proposed.survives(node),
       }
     : {
         accepted: children.kept.accepted > 0,
@@ -237,7 +239,6 @@ export const combineFacts = (
     inserted: marks.some((mark) => mark.kind === 'insert'),
     keepsLine,
     opensWithStructure,
-    removedProposed: !proposedSurvival.survives(node) && !boundary,
     settles,
     ownsFirstLine:
       opensWithStructure ||
@@ -279,15 +280,19 @@ const UNMARKED: BlockFacts = Object.freeze({
   joins: [],
   keepsLine: { accepted: true, proposed: true },
   opensWithStructure: false,
-  removedProposed: false,
   settles: true,
   ownsFirstLine: true,
 });
 
 export const removesBlock = (
-  mode: AuthoredFormatProjection,
+  context: RunContext,
+  node: JsonNode,
   facts: BlockFacts
-) => mode === 'proposed' && facts.removedProposed;
+) =>
+  context.mode === 'proposed' &&
+  !facts.unmarked &&
+  !hasBoundaryMark(node) &&
+  !proposedSurvivalOf(context.schema.ownership).survives(node);
 
 /**
  * Where a run's output shows stored subtrees away from their stored place,
@@ -408,7 +413,7 @@ export type RunContext = Readonly<{
   isSetValued: DocumentSetPropertyResolver;
   mode: AuthoredFormatProjection;
   root: string;
-  schema: AuthoredResolveSchema | null;
+  schema: AuthoredResolveSchema;
   /** The containers the run's list sits in, nearest first; none at a root. */
   site?: readonly JsonNode[];
   spares: RecordSetVersion;
@@ -430,17 +435,18 @@ const localChange = (
     settledChange(stored, decided, (from, to) => {
       const alignment =
         context.mode === 'proposed'
-          ? acceptedAlignment(from, to, context.facts)
+          ? acceptedAlignment(from, to, context.facts, context.schema.ownership)
           : decidedAlignment(from, to, {
               facts: context.facts,
               outcomes: 'reject',
+              schema: context.schema.ownership,
             });
 
       if (alignment) return alignment;
       aligned = false;
 
       return context.mode === 'proposed'
-        ? diffedAcceptedChange(from, to, {
+        ? diffedAcceptedChange(from, to, context.schema.ownership, {
             isSetValued: context.isSetValued,
           })
         : DocumentChange.between(from, to, {
@@ -676,7 +682,7 @@ export const resolveRun = (
     kept.length === 0 ||
     (tail &&
       context.mode === 'proposed' &&
-      !kept.some(proposedSurvival.survives))
+      !kept.some(proposedSurvivalOf(context.schema.ownership).survives))
       ? null
       : deepFreeze(
           resolveAuthoredChildren(
@@ -826,7 +832,7 @@ const inputOf = (
   const tail = !part.head && part.min === 0;
   const removed = new Set(
     tail
-      ? nodes.filter((node) => removesBlock(context.mode, blockFactsOf(node)))
+      ? nodes.filter((node) => removesBlock(context, node, blockFactsOf(node)))
       : []
   );
   const kept = nodes.filter((node) => !removed.has(node));

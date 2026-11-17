@@ -25,7 +25,10 @@ import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { executeEditorRead } from '../../core/read-registry';
 import { completeChildrenAt, joinedAway } from '../../core/representation';
-import { uniquePropertiesOf } from '../../core/schema-compiler';
+import {
+  type CompiledEditorSchema,
+  uniquePropertiesOf,
+} from '../../core/schema-compiler';
 import {
   type AnyEditor as Editor,
   isEmpty as editorIsEmpty,
@@ -50,7 +53,7 @@ import {
   type ProposedChild,
   proposedChildren,
   proposedHost,
-  proposedSurvival,
+  proposedSurvivalOf,
 } from './proposed';
 import { type SpareSite, storesSpares } from './reserves';
 import { slotFate } from './resolve';
@@ -222,7 +225,8 @@ const changedHosts = (
   rootChange: RootChange,
   before: DocumentIndex,
   after: DocumentIndex,
-  afterChildren: NodeList
+  afterChildren: NodeList,
+  schema: CompiledEditorSchema
 ) => {
   const hosts = new Map<
     string,
@@ -246,7 +250,7 @@ const changedHosts = (
         .filter((range) => range.kind !== 'text');
 
       opened.forEach((range, depth) => {
-        const path = proposedHost(afterChildren, range.path);
+        const path = proposedHost(afterChildren, range.path, schema);
 
         if (!path) return;
 
@@ -335,7 +339,13 @@ export const completeProposed = (
       after: hostPath,
       before: beforeHostPath,
       lifted,
-    } of changedHosts(rootChange, beforeIndex, index, afterChildren)) {
+    } of changedHosts(
+      rootChange,
+      beforeIndex,
+      index,
+      afterChildren,
+      compiled
+    )) {
       const host =
         hostPath.length === 0 ? null : nodeAt(afterChildren, hostPath);
       const content = host
@@ -367,12 +377,12 @@ export const completeProposed = (
       const { children: after, keptJoins } = proposedChildren(
         afterChildren,
         hostPath,
-        { joinAside, limit, removesTarget }
+        { joinAside, limit, removesTarget, schema: compiled }
       );
       const { children: beforeEntries } = proposedChildren(
         beforeChildren,
         beforeHostPath,
-        { joinAside, limit }
+        { joinAside, limit, schema: compiled }
       );
       const before = beforeEntries.map(({ node }) => node);
       // Where each proposed element now starts, or null once the change
@@ -512,6 +522,7 @@ export const completeProposed = (
       const holdsJoinedLine = (shell: Placed) =>
         proposedChildren(afterChildren, shell.path, {
           joinAside,
+          schema: compiled,
         }).children.some(({ path }) => !PathApi.isAncestor(shell.path, path));
       const keeps = (shell: Placed, node: Descendant) =>
         !holdsJoinedLine(shell) &&
@@ -584,7 +595,8 @@ export const completeProposed = (
             entryOf,
             hostPath,
             hostChildren.length,
-            prefix && ((path) => pastFolds(afterChildren, keptJoins, path))
+            prefix &&
+              ((path) => pastFolds(afterChildren, keptJoins, path, compiled))
           ),
         });
       }
@@ -757,7 +769,8 @@ const insertionPath = (
 const pastFolds = (
   children: NodeList,
   folded: ReadonlySet<JsonNode>,
-  path: readonly number[]
+  path: readonly number[],
+  schema: CompiledEditorSchema
 ) => {
   const parent = path.slice(0, -1);
   const siblings =
@@ -768,7 +781,7 @@ const pastFolds = (
     const sibling = getDefined(siblings.at(at));
 
     if (folded.has(sibling)) end = at + 1;
-    else if (proposedSurvival.survives(sibling)) break;
+    else if (proposedSurvivalOf(schema).survives(sibling)) break;
   }
 
   return [...parent, end];

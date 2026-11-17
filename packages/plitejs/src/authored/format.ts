@@ -57,7 +57,9 @@ const projectionRefusal = (
 /**
  * Read a stored document with every pending change accepted (`proposed`) or
  * rejected (`accepted`). An editor's schema completes containers a decision
- * empties; without one, the pure resolver leaves them as the decision did.
+ * empties and takes a removed table, row or cell whole; without one, the pure
+ * resolver leaves containers as the decision did and decides grid parts like
+ * any other element.
  * With pending changes under a schema that generates a property value a
  * suggestion cannot store, it builds nothing and reports why.
  */

@@ -100,7 +100,7 @@ type Synced = {
   readonly dropped: ReadonlySet<string>;
   readonly records: unknown;
   readonly roots: ReadonlyMap<string, RootState>;
-  readonly schema: AuthoredResolveSchema | null;
+  readonly schema: AuthoredResolveSchema;
   readonly stored: Roots;
   readonly value: JsonEditorValue;
   preview: JsonEditorValue | null;
@@ -189,7 +189,7 @@ const droppedRoots = (
       })
     );
 
-  if (!last || last.schema?.ownership !== ownership) return full();
+  if (!last || last.schema.ownership !== ownership) return full();
 
   const indexOf = (root: string, document: DocumentIndex | null) => {
     if (!document) return null;
@@ -484,7 +484,7 @@ const matches = (
   synced: Synced | null | undefined,
   value: JsonEditorValue,
   stored: Roots,
-  schema: AuthoredResolveSchema | null
+  schema: AuthoredResolveSchema
 ) =>
   !!synced &&
   synced.records === getValueRecords(value) &&
@@ -524,7 +524,7 @@ class ModeProjection {
    */
   sync(
     value: JsonEditorValue,
-    schema: AuthoredResolveSchema | null,
+    schema: AuthoredResolveSchema,
     write: FrameWrite | null = null
   ): Synced {
     const content = contentRootsOf(value);
@@ -688,7 +688,7 @@ class ModeProjection {
     );
     const next: Synced = back ?? {
       dropped: droppedRoots(
-        schema?.ownership ?? null,
+        schema.ownership,
         last,
         content,
         new Map([...roots].map(([root, { index }]) => [root, index])),
@@ -728,15 +728,12 @@ class ModeProjection {
    */
   peek(
     values: readonly JsonEditorValue[],
-    schema: AuthoredResolveSchema | null,
+    schema: AuthoredResolveSchema,
     read: (view: PeekedView, at: number) => void
   ) {
     const { history, spares, verdicts } = this;
     const known = new Map(this.roots);
-    const syncTo = (
-      value: JsonEditorValue,
-      to: AuthoredResolveSchema | null
-    ) => {
+    const syncTo = (value: JsonEditorValue, to: AuthoredResolveSchema) => {
       const content = contentRootsOf(value);
 
       // A root a sync left out is as that sync found it, so a later one moves
@@ -823,11 +820,11 @@ class ModeProjection {
     return change && from ? { change, from: from.index } : null;
   }
 
-  value(stored: JsonEditorValue, schema: AuthoredResolveSchema | null) {
+  value(stored: JsonEditorValue, schema: AuthoredResolveSchema) {
     return valueOf(this.sync(stored, schema));
   }
 
-  lens(stored: JsonEditorValue, schema: AuthoredResolveSchema | null) {
+  lens(stored: JsonEditorValue, schema: AuthoredResolveSchema) {
     this.sync(stored, schema);
 
     return this.lastLens();
@@ -860,7 +857,7 @@ class ModeProjection {
   step(
     before: JsonEditorValue,
     after: JsonEditorValue,
-    schema: AuthoredResolveSchema | null,
+    schema: AuthoredResolveSchema,
     selections: Readonly<{ after: RootedSelection; before: RootedSelection }>,
     leans = false
   ) {
@@ -1131,12 +1128,12 @@ export class ReviewLedger {
   }> | null = null;
 
   private readonly owner: Editor;
-  private readonly schemaOf: () => AuthoredResolveSchema | null;
+  private readonly schemaOf: () => AuthoredResolveSchema;
   private readonly marks: MarksValidator;
 
   constructor(
     owner: Editor,
-    schemaOf: () => AuthoredResolveSchema | null,
+    schemaOf: () => AuthoredResolveSchema,
     marks: MarksValidator
   ) {
     this.owner = owner;
@@ -1623,7 +1620,7 @@ const LEDGERS = new WeakMap<object, ReviewLedger>();
 /** @internal */
 export const createReviewLedger = (
   owner: Editor,
-  schemaOf: () => AuthoredResolveSchema | null,
+  schemaOf: () => AuthoredResolveSchema,
   marks: MarksValidator
 ) => {
   const ledger = new ReviewLedger(owner, schemaOf, marks);

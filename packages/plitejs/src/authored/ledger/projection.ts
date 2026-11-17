@@ -134,7 +134,7 @@ const sharesNothing = (
 
 /** @internal */
 export class RootProjection extends Level {
-  private schema: AuthoredResolveSchema | null;
+  private schema: AuthoredResolveSchema;
 
   constructor(
     mode: AuthoredFormatProjection,

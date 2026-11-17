@@ -12,6 +12,7 @@ import type {
 } from '../../core/command-document';
 import type { ChangedRange } from '../../core/measured-sequence';
 import type { ListPart } from '../../core/representation';
+import { gridHoldersOf } from '../../core/survival';
 import { countCoreWork } from '../../core/work';
 import { getDefined } from '../../internal/get-defined';
 import type { AuthoredFormatProjection } from '../format';
@@ -338,7 +339,7 @@ const resolveWindow = (
       group.length === 1 &&
       !head &&
       min === 0 &&
-      removesBlock(context.mode, first.facts)
+      removesBlock(context, first.node, first.facts)
         ? removedRun(first.node, context)
         : resolveRun(
             group.map((slot) => slot.node),
@@ -368,6 +369,22 @@ export const settles = (
       context.facts.insertedIncarnations().has(incarnation)
     ));
 
+const keepsGridPart = (
+  node: JsonNode,
+  holdsParts: (node: object) => boolean
+): boolean =>
+  (node.children ?? []).some(
+    (child) =>
+      readMembers(child).every((member) => member.kind === 'format') &&
+      (!holdsParts(child) || keepsGridPart(child, holdsParts))
+  );
+
+const resolvesWithParent = (node: JsonNode, context: RunContext) => {
+  const holdsParts = gridHoldersOf(context.schema.ownership);
+
+  return holdsParts(node) && !keepsGridPart(node, holdsParts);
+};
+
 const unsettled = (window: readonly BlockSlot[], context: RunContext) =>
   window.some((slot) => slot.built || !settles(slot.facts, context));
 
@@ -387,7 +404,12 @@ const writtenWindow = (
   part: WindowPart,
   output: readonly JsonNode[]
 ) => {
-  if (unsettled(window, context)) return null;
+  if (
+    unsettled(window, context) ||
+    window.some((slot) => resolvesWithParent(slot.node, context))
+  ) {
+    return null;
+  }
 
   const groups = groupsOf(window, joinsPrevious);
   const before = groups.findIndex((group) => !isUnmarked(group));
@@ -472,7 +494,7 @@ const typeOf = (node: JsonNode | undefined) =>
   typeof node?.type === 'string' ? node.type : null;
 
 const contentOf = (context: RunContext) =>
-  context.schema?.content(typeOf(context.site?.[0]), context.root) ?? null;
+  context.schema.content(typeOf(context.site?.[0]), context.root);
 
 // A container's children complete apart from the rest of their list only
 // when its content has no prefix and no maximum. A text block passes, so
@@ -488,7 +510,9 @@ const completesApart = (node: JsonNode, context: RunContext) => {
     return false;
   }
 
-  const content = context.schema?.content(node.type, context.root);
+  if (resolvesWithParent(node, context)) return false;
+
+  const content = context.schema.content(node.type, context.root);
 
   return !content || (content.prefix === 0 && content.max === null);
 };
@@ -1089,8 +1113,7 @@ export class Level {
       const node = this.outputBlock(slot);
 
       return (
-        !node ||
-        (context.schema?.fitsPrefix?.(node, slot, context.root) ?? true)
+        !node || (context.schema.fitsPrefix?.(node, slot, context.root) ?? true)
       );
     };
 

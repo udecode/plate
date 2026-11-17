@@ -159,7 +159,8 @@ export const storedDecisionSiteOf = (
 const windowedValue = (
   value: JsonEditorValue,
   { records, windows }: NonNullable<ReturnType<typeof resolveAuthoredWindows>>,
-  actions: ReadonlyMap<string, Verdict>
+  actions: ReadonlyMap<string, Verdict>,
+  schema: CompiledEditorSchema
 ): WindowedDecision => {
   const facts = factsOf(value);
   const changes = new Map<string, RootChange>();
@@ -170,7 +171,7 @@ const windowedValue = (
       decidedContentChange(
         { children: before },
         { children: after },
-        { facts, outcomes: actions }
+        { facts, outcomes: actions, schema }
       ),
       'main'
     );
@@ -396,6 +397,25 @@ const withVerdicts = (
 ): JsonEditorValue =>
   verdicts.length === 0 ? value : deriveValue(value, {}, putVerdicts(verdicts));
 
+const insideTaken = (
+  value: JsonEditorValue,
+  root: string,
+  path: readonly number[],
+  takenWhole: (original: unknown) => boolean
+) => {
+  let nodes = root === 'main' ? value.children : (value.roots?.[root] ?? []);
+
+  for (const at of path) {
+    const node = nodes[at];
+
+    if (!node) return false;
+    if (takenWhole(node)) return true;
+    nodes = node.children ?? [];
+  }
+
+  return false;
+};
+
 export const decide = (
   value: JsonEditorValue,
   { actions, token, withdraws }: DecisionRequest,
@@ -472,7 +492,9 @@ export const decide = (
     ),
     resolution.resolvedOf
   );
-  const decided = windowed && windowedValue(value, windowed, actions);
+  const decided =
+    windowed &&
+    windowedValue(value, windowed, actions, resolveSchema.ownership);
   const written = verdicts.map((record) =>
     record.verdict === 'accept'
       ? {
@@ -497,18 +519,23 @@ export const decide = (
   const inDroppedRoots = windowed
     ? new Set<string>()
     : insertionsInDroppedRoots(value, decidedValue);
-  const insertsText = ({
+  const losesText = ({
     mark,
     node,
+    path,
+    root,
   }: ReturnType<typeof book.occurrences>[number]) =>
-    mark.kind === 'insert' && typeof node.text === 'string' && node.text !== '';
+    mark.kind === 'insert' &&
+    typeof node.text === 'string' &&
+    node.text !== '' &&
+    !insideTaken(value, root, path, resolution.takenWhole);
   const undecidedLosingText = book
     .pendingInOrder(new Set([...candidates, ...inDroppedRoots]))
     .filter(
       (id) =>
         !actions.has(id) &&
         (inDroppedRoots.has(id) ||
-          (!remains(id) && book.occurrences(id).some(insertsText)))
+          (!remains(id) && book.occurrences(id).some(losesText)))
     );
 
   if (undecidedLosingText.length > 0) {
@@ -527,6 +554,7 @@ export const decide = (
         : decidedContentChange(value, decidedValue, {
             facts: factsOf(value),
             outcomes: actions,
+            schema: resolveSchema.ownership,
           }),
       records
     ),

@@ -27,7 +27,12 @@ import {
   handoverKeysOf,
   splitDroppedKeysOf,
 } from '../../core/schema-compiler';
-import { survivalUnder } from '../../core/survival';
+import {
+  gridHoldersOf,
+  gridPartsOf,
+  leftWithNoGridPart,
+  survivalUnder,
+} from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { createDependencies, type Dependencies } from '../facts/dependencies';
@@ -208,6 +213,7 @@ export type AuthoredResolution = Readonly<{
    * completion rewrote it.
    */
   resolvedOf: (original: unknown) => JsonNode | null;
+  takenWhole: (original: unknown) => boolean;
   /**
    * Content no level of the schema accepts, such as text an unwrap leaves
    * among blocks.
@@ -1428,7 +1434,10 @@ const resolveIn = (
 
     return value;
   };
-  const { survives } = survivalUnder(ownMarkRemoves);
+  const gridPart = schema ? gridPartsOf(schema.ownership) : () => false;
+  const takesWhole = (node: Node) => ownMarkRemoves(node) && gridPart(node);
+  const gridHolder = schema ? gridHoldersOf(schema.ownership) : () => false;
+  const { survives } = survivalUnder(ownMarkRemoves, gridPart);
   const reading: KeyReading = {
     accepted: (member) => isAccepted(facts, member),
     landed: facts.landed,
@@ -1651,7 +1660,9 @@ const resolveIn = (
     return { editingJoin, join, unwrap };
   };
 
-  const blocks = textBlocksOf(children);
+  const outsideTakenPart = ({ ancestors }: TextBlock) =>
+    !ancestors.some(takesWhole);
+  const blocks = textBlocksOf(children).filter(outsideTakenPart);
 
   // Phase one: where each decided join lands.
   const mergedInto = new Map<Node, Node>();
@@ -1671,12 +1682,14 @@ const resolveIn = (
   const finalOf = lastIn(mergedInto);
   const standingOf = lastIn(standsFor);
   const keepsContent = (target: Node, join: JoinMoment) => {
-    const { liveContent: liveAt } = survivalUnder<Node>((node) =>
-      pending(node).some(
-        (mark) =>
-          removes(mark, resultOf(mark)) &&
-          (mark.kind !== 'delete' || deletesBeforeJoin(mark, join))
-      )
+    const { liveContent: liveAt } = survivalUnder<Node>(
+      (node) =>
+        pending(node).some(
+          (mark) =>
+            removes(mark, resultOf(mark)) &&
+            (mark.kind !== 'delete' || deletesBeforeJoin(mark, join))
+        ),
+      gridPart
     );
 
     return (
@@ -1686,13 +1699,15 @@ const resolveIn = (
       )
     );
   };
-  const { liveContent: keptContent } = survivalUnder<Node>((node) =>
-    pending(node).some(
-      (mark) =>
-        removes(mark, decisionOf(mark)) ||
-        ((mark.kind === 'insert' || mark.kind === 'delete') &&
-          decisionOf(mark) === 'keep')
-    )
+  const { liveContent: keptContent } = survivalUnder<Node>(
+    (node) =>
+      pending(node).some(
+        (mark) =>
+          removes(mark, decisionOf(mark)) ||
+          ((mark.kind === 'insert' || mark.kind === 'delete') &&
+            decisionOf(mark) === 'keep')
+      ),
+    gridPart
   );
   const joinOf = (node: Node) => {
     const marks = pending(node).filter((mark) =>
@@ -2434,6 +2449,7 @@ const resolveIn = (
   const shown = new WeakSet<Node>();
   const unwrapped = new WeakSet<Node>();
   const hidden = new Set<Node>();
+  const takenWhole = new Set<unknown>();
   const pieceSubtrees = new WeakMap<Node, WeakSet<Node>>();
   const inPiece = (piece: Node, node: Node) => {
     let nodes = pieceSubtrees.get(piece);
@@ -2641,17 +2657,17 @@ const resolveIn = (
             isEditingChange(mark.change) &&
             resultOf(mark) === 'accept'
         );
-      // Deciding a block's own removal decides with the content pending
-      // inside it, which keeps the block or lets it go.
+      const whole = takesWhole(node);
       const inner =
-        !isText(node) && (ownMarkRemoves(node) || unwrapsLine)
+        !isText(node) && !whole && (ownMarkRemoves(node) || unwrapsLine)
           ? (node.children ?? []).flatMap(contentMarksIn)
           : [];
 
       wait(inner);
       if (ownMarkRemoves(node) && !survives(node)) {
         // Its pending cuts would have nothing to join, so they decide with it.
-        wait(cutsOf(node));
+        if (whole) takenWhole.add(original);
+        else wait(cutsOf(node));
         // Corrections derive values from elements, not from text runs.
         if (isText(node)) changed = true;
         else {
@@ -2859,8 +2875,19 @@ const resolveIn = (
 
       const emptied = resolved.length === 0 && (node.children ?? []).length > 0;
 
-      // A block a decision empties stays, as it does in Editing, so its own
-      // pending marks decide with that decision.
+      if (
+        emptied &&
+        leftWithNoGridPart(gridHolder, node, node.children ?? [], (child) =>
+          takenWhole.has(child)
+        )
+      ) {
+        shown.delete(node);
+        shown.delete(original);
+        takenWhole.add(original);
+        hidden.add(original);
+        restructured = true;
+        continue;
+      }
       if (emptied) {
         wait(pending({ [AUTHORED_MARKS_KEY]: formatted.kept }));
         restructured = true;
@@ -3333,6 +3360,7 @@ const resolveIn = (
     placements,
     resolvedOf: (original) => resolvedOf(original) as JsonNode | null,
     spares,
+    takenWhole: (original) => takenWhole.has(original),
     unplaceable,
     unstored: shownAll(unstored, resolvedChildren),
   };
@@ -3690,6 +3718,8 @@ const resolveValueIn = (
         (found, resolution) => found ?? resolution.resolvedOf(original),
         null
       ),
+    takenWhole: (original: unknown) =>
+      all.some((resolution) => resolution.takenWhole(original)),
     unplaceable: live.some((resolution) => resolution.unplaceable),
     value: deriveValue(
       base,
@@ -3813,6 +3843,8 @@ export const resolveAuthoredWindows = (
             (found, resolution) => found ?? resolution.resolvedOf(original),
             null
           ),
+        takenWhole: (original: unknown) =>
+          all.some((resolution) => resolution.takenWhole(original)),
         unplaceable: all.some((resolution) => resolution.unplaceable),
         windows: resolved.map(({ before, resolution, ...window }) => ({
           ...window,

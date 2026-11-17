@@ -25,8 +25,13 @@ type Direction = 'backward' | 'forward';
 type Edge = Point | 'blocked' | null;
 type RootChildren = NodeList<Descendant>;
 
+// A struck grid part that still holds live text keeps the caret, because that
+// text stays on screen until a reviewer decides.
 const contentSurvival = (editor: Editor): Survives =>
-  survivalUnder<Node>((node) => !isEditorContent(editor, node)).survives;
+  survivalUnder<Node>(
+    (node) => !isEditorContent(editor, node),
+    () => false
+  ).survives;
 
 /** @internal */
 export const nodeAt = (document: RootChildren, path: Path) => {

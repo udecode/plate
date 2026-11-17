@@ -42,6 +42,7 @@ import {
   stampFrame,
   takeCompositionStamp,
 } from './composition-stamp';
+import { isEditorContent } from './content';
 import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
 import {
   getEditorDocumentRecorder,
@@ -49,6 +50,7 @@ import {
   runEditorDraftGuards,
 } from './document-recorder';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
+import { getCompiledEditorSchema } from './plugin-registry';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
@@ -85,6 +87,7 @@ import {
   mapSnapshotIndexThroughChange,
   snapshotIndexOf,
 } from './snapshot-index';
+import { gridPartsOf } from './survival';
 import { mapEffect } from './transaction-values';
 import {
   type CarriedCarets,
@@ -638,6 +641,25 @@ const createFramePlace = (
       ? { ...point, offset: placed.offset, path: [...placed.path] }
       : point;
   };
+  const gridPart = gridPartsOf(getCompiledEditorSchema(editor));
+  const inStruckGridPart = (
+    point: Point,
+    root: string,
+    document: NodeList<Descendant>
+  ) => {
+    for (let depth = 1; depth < point.path.length; depth += 1) {
+      const node = nodeAt(document, point.path.slice(0, depth));
+
+      if (node && gridPart(node) && !isEditorContent(editor, node)) {
+        return projected.map.hides(
+          root,
+          valueRootIndex(stored, root).positionAt(point)
+        );
+      }
+    }
+
+    return false;
+  };
   // A caret no surviving line can take, as in a container whose every line
   // is gone, stays in what replaces its line, such as the line completion
   // gives that container.
@@ -646,6 +668,7 @@ const createFramePlace = (
     const document = valueRootNodes(stored, root) as NodeList<Descendant>;
     const landed = landTextWrite(editor, point, document);
 
+    if (inStruckGridPart(landed, root, document)) onRefuse('unaligned');
     if (projected.map.reorders(root)) {
       const at = valueRootIndex(stored, root).positionAt(landed);
       const placement = projected.map.projectRange(root, at, at);

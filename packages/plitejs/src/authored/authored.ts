@@ -98,6 +98,7 @@ import {
   rootsDeletedByName,
 } from '../core/root-ownership';
 import { tracksPlaces, uniquePropertiesOf } from '../core/schema-compiler';
+import { gridHoldersOf } from '../core/survival';
 import {
   type TxDeclaredMethod,
   txOnly,
@@ -460,12 +461,26 @@ const framedLawCheck = () => {
   return env?.NODE_ENV === 'test' ? env.PLITE_LAW_CHECK : '0';
 };
 
+const isEmptiedGrid = (
+  node: JsonNode,
+  holdsParts: (node: object) => boolean
+): boolean =>
+  holdsParts(node) &&
+  (node.children ?? []).every(
+    (child) => holdsParts(child) && isEmptiedGrid(child, holdsParts)
+  );
+
 // Accepting drops lines completion built that end their list as the commands
 // left them, since nothing written needs them.
 const listAcceptsTo = (
-  accepted: readonly JsonNode[],
-  wrote: readonly JsonNode[]
+  acceptedList: readonly JsonNode[],
+  wroteList: readonly JsonNode[],
+  holdsParts: (node: object) => boolean
 ): boolean => {
+  const withoutEmptiedGrids = (list: readonly JsonNode[]) =>
+    list.filter((node) => !isEmptiedGrid(node, holdsParts));
+  const accepted = withoutEmptiedGrids(acceptedList);
+  const wrote = withoutEmptiedGrids(wroteList);
   let end = wrote.length;
 
   while (end > accepted.length && isBuilt(getDefined(wrote[end - 1]))) {
@@ -482,13 +497,17 @@ const listAcceptsTo = (
         (!!node.children &&
           !!other.children &&
           jsonEqual(nodePropsOf(node), nodePropsOf(other)) &&
-          listAcceptsTo(node.children, other.children))
+          listAcceptsTo(node.children, other.children, holdsParts))
       );
     })
   );
 };
 
-const acceptsTo = (accepted: JsonEditorValue, wrote: JsonEditorValue) => {
+const acceptsTo = (
+  accepted: JsonEditorValue,
+  wrote: JsonEditorValue,
+  holdsParts: (node: object) => boolean
+) => {
   const { children, records: _records, roots = {}, ...fields } = accepted;
   const {
     children: wroteChildren,
@@ -500,10 +519,14 @@ const acceptsTo = (accepted: JsonEditorValue, wrote: JsonEditorValue) => {
 
   return (
     jsonEqual(fields, wroteFields) &&
-    listAcceptsTo(children, wroteChildren) &&
+    listAcceptsTo(children, wroteChildren, holdsParts) &&
     jsonEqual(names.toSorted(), Object.keys(wroteRoots).toSorted()) &&
     names.every((name) =>
-      listAcceptsTo(getDefined(roots[name]), getDefined(wroteRoots[name]))
+      listAcceptsTo(
+        getDefined(roots[name]),
+        getDefined(wroteRoots[name]),
+        holdsParts
+      )
     )
   );
 };
@@ -520,7 +543,13 @@ const assertFramedLaw = (
     projectAuthoredValue(stored.value, 'proposed', schema).value
   );
 
-  if (!acceptsTo(accepted, contentOf(frame.value))) {
+  if (
+    !acceptsTo(
+      accepted,
+      contentOf(frame.value),
+      gridHoldersOf(schema.ownership)
+    )
+  ) {
     throw new Error(
       `A framed recording does not accept to what its commands wrote: ${JSON.stringify(
         { accepted: accepted.children, wrote: frame.value.children }
@@ -993,7 +1022,11 @@ const acceptOwn = (
           mark.kind === kind && isEditingChange(mark.change) && !kept.has(mark)
       );
 
-    return { joins: own('join'), removes: own('delete') };
+    return {
+      joins: own('join'),
+      removes: own('delete'),
+      wholeWhenRemoved: () => false,
+    };
   };
   const changes = new Map<string, RootChange>();
   const accepted = new Map(indexes);

@@ -35,7 +35,12 @@ import {
   type RecordOps,
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
-import { survivalUnder } from '../../core/survival';
+import {
+  gridHoldersOf,
+  gridPartsOf,
+  leftWithNoGridPart,
+  survivalUnder,
+} from '../../core/survival';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { rootOf } from '../ledger/roots';
@@ -480,17 +485,31 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
     : withMembers(next, kept);
 };
 
+const deletionAccepted = (node: Node, pass: Pass) =>
+  readAuthoredMarks(node).some(
+    (mark) => mark.kind === 'delete' && outcomeOf(pass.facts, mark) === 'accept'
+  );
+
 const goesWhenSettled = (
   element: Node,
   children: readonly Node[],
   pass: Pass
-) =>
-  readAuthoredMarks(element).some(
-    (mark) => mark.kind === 'delete' && outcomeOf(pass.facts, mark) === 'accept'
-  ) &&
-  children.every(
-    (child) => pass.gone.has(child) || (isText(child) && child.text === '')
+) => {
+  const gridPart = gridPartsOf(pass.schema);
+
+  return (
+    (deletionAccepted(element, pass) &&
+      children.every(
+        (child) => pass.gone.has(child) || (isText(child) && child.text === '')
+      )) ||
+    leftWithNoGridPart(
+      gridHoldersOf(pass.schema),
+      element,
+      children,
+      (child) => pass.gone.has(child) && gridPart(child)
+    )
   );
+};
 
 const dropDeletionWhenContentStays = (
   element: Node,
@@ -512,7 +531,8 @@ const dropDeletionWhenContentStays = (
         node,
         pass.facts,
         (mark) => mark.kind === 'insert' || mark.kind === 'delete'
-      )
+      ),
+    gridPartsOf(pass.schema)
   );
 
   return children.some(liveContent) ? withMembers(element, live) : element;
@@ -810,6 +830,13 @@ const settleChild = (
   inline: boolean
 ): Node | null => {
   const path = [...site.parentPath, at];
+
+  if (gridPartsOf(pass.schema)(node) && deletionAccepted(node, pass)) {
+    pass.gone.add(node);
+
+    return node;
+  }
+
   const edits = editsOf(pass, site.root);
   const settled = settleNode(node, pass, site);
 
