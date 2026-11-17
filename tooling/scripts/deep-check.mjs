@@ -4,8 +4,8 @@
 // every 20 minutes; a run that finds next unchanged or another run going
 // exits at once. Once a day the first run after 04:00 is the full fresh run.
 // A red step is rerun alone, its first bad commit is searched for while the
-// hour lasts, and the result goes to events.jsonl, the suggested-task ledger
-// and the team channel. The deep-check skill's supervise mode watches
+// hour lasts, and the result goes to events.jsonl and the suggested-task
+// ledger, never to the team channel (owner's word, 2026-11-17). The deep-check skill's supervise mode watches
 // events.jsonl and starts the fix session.
 import { spawnSync } from 'node:child_process';
 import {
@@ -44,7 +44,6 @@ const FULL_HOUR = 4;
 const FLAKE_LOAD = 20;
 const GREEN_REF = 'refs/pstack/deep-green';
 const FIX_TOPIC = 'deep-check';
-const STUCK_MS = 3 * 3_600_000;
 const POLL_MS = 5000;
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -240,13 +239,9 @@ const where = (event) =>
       ? `since ${event.culprit.slice(0, 10)} (${event.subject})`
       : `somewhere in ${event.range}`;
 
-const send = (text) =>
-  node(main, ['tooling/scripts/notify.mjs', 'send', '--to', 'dev', text]);
-
-// Offers one suggested task per failing step while none is open; the watcher
-// starts its fix, so the team channel hears only of a step still red after
-// STUCK_MS (owner's word, 2026-11-17). Returns what the event records:
-// whether the watcher wakes for it and the task it offered.
+// Offers one suggested task per failing step while none is open, for the
+// watcher to start its fix. Returns what the event records: whether the
+// watcher wakes for it and the task it offered.
 const report = (event) => {
   const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
   const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
@@ -259,23 +254,7 @@ const report = (event) => {
         task.title?.includes(title) &&
         ['offered', 'started'].includes(task.status)
     );
-  if (open) {
-    const events = readEvents();
-    const since = events.findLastIndex((entry) => entry.kind === 'green');
-    const reds = events
-      .slice(since + 1)
-      .filter((entry) => entry.step === event.step);
-    const stuck =
-      reds.length > 0 &&
-      Date.now() - Date.parse(reds[0].at) >= STUCK_MS &&
-      !reds.some((entry) => entry.stuck);
-    if (stuck) {
-      send(
-        `Deep check: ${event.step} has been red on next for ${STUCK_MS / 3_600_000} hours, ${where(event)}.`
-      );
-    }
-    return { stuck, wake: false };
-  }
+  if (open) return { wake: false };
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
