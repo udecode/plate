@@ -82,7 +82,12 @@ export const createBrowserUploadKit = () => {
 
       reportProgress(1, 'success');
 
-      return { key, lastModified: file.lastModified, size: file.size, type };
+      return {
+        contentType: type,
+        key,
+        lastModified: file.lastModified,
+        size: file.size,
+      };
     },
   };
 

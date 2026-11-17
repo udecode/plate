@@ -31,7 +31,7 @@ const getLocalGateway = () => {
       if (!localUploadKey.test(key)) return undefined;
 
       const file = await adapter.head(`documents/local/${documentId}/${key}`);
-      return file.type;
+      return file.contentType;
     },
   });
 
