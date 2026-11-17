@@ -243,10 +243,10 @@ const where = (event) =>
 const send = (text) =>
   node(main, ['tooling/scripts/notify.mjs', 'send', '--to', 'dev', text]);
 
-// Offers one suggested task per failing step while none is open, and tells
-// the team channel. While the task stays open it says nothing more, except
-// once when the step has been red for STUCK_MS. Returns what the event
-// records: whether the watcher wakes for it and the task it offered.
+// Offers one suggested task per failing step while none is open; the watcher
+// starts its fix, so the team channel hears only of a step still red after
+// STUCK_MS (owner's word, 2026-11-17). Returns what the event records:
+// whether the watcher wakes for it and the task it offered.
 const report = (event) => {
   const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
   const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
@@ -293,9 +293,6 @@ const report = (event) => {
     ]);
     if (added.status !== 0) id = null;
   }
-  send(
-    `Deep check: ${event.step} fails on next ${where(event)}.${id ? ` Task ${id}.` : ''}`
-  );
   return { task: id, wake: true };
 };
 

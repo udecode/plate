@@ -14,7 +14,7 @@ metadata:
 - A launchd job runs `deep-check.mjs run` every 20 minutes on one Mac. A run exits at once when another run holds the lock or next has not moved. Once a day, the first run after 04:00 runs `--build --browser --reads` with fresh seeds instead.
 - A run moves the persistent worktree `<main checkout>/.claude/worktrees/deep-check` and its private half to the newest next, and the job runs that worktree's copy of the script, so a fix to it reaches the job when it lands. A run checks next there, through `proof.mjs` under the one-hour budget. On green it pushes `refs/pstack/deep-green` forward.
 - A red step reruns alone. A step that passes alone is a flake, and its second flake in a row is reported. A step that fails alone gets its first bad commit searched for from the last green commit, while the hour lasts.
-- A report offers a P0 task under topic `deep-check` that owns the red step and posts one line to the dev role. While that task is open the runner stays quiet, except for one post when the step has been red for 3 hours.
+- A report offers a P0 task under topic `deep-check` that owns the red step, and the watcher starts its fix. The dev role hears nothing of a red step until it has been red for 3 hours, when the runner posts one line (owner's word, 2026-11-17).
 - The runner keeps `state.json`, `events.jsonl` and its lock in `plate-deep-check/` in the git common directory, and its logs in `docs/plans/artifacts/deep-check/<day>/`.
 
 Run every command below from the main checkout. Pick the mode from $ARGUMENTS, and use `status` when it names none.
