@@ -285,6 +285,7 @@ import {
 const BaseCardPlugin = defineBoardShape('card', {
   properties: { status: property.enum(['todo', 'doing', 'done'], { default: 'todo' }) },
   size: { height: 160, width: 240 },
+  styles: { fill: 'blue', opacity: 1, textSize: 'm' },
 });
 
 const plugins = [
@@ -448,7 +449,7 @@ const editor = createEditor({
 | API | 包 | 用途 |
 | --- | --- | --- |
 | `BaseBoardPlugin`、`BaseBoardNotePlugin`、`BaseBoardGeoPlugin`、`BaseBoardArrowPlugin`、`BaseBoardFramePlugin`、`BaseBoardStrokePlugin` | `platejs/board` | 无头白板和图形插件。 |
-| `defineBoardShape(name, { properties, size })` | `platejs/board` | 定义一种容纳文字的应用图形。 |
+| `defineBoardShape(name, { properties, size, styles })` | `platejs/board` | 定义一种容纳文字的应用图形，`styles` 给出它所用每种样式的默认值。 |
 | `tx.plugin(BaseBoardPlugin).insert(props?, options?)` | `BaseBoardPlugin` | 在 `options.at` 或选中块之后添加一个带空根的白板，并返回其 key。 |
 | `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | 各图形插件 | 在 `board` 所有图形之上添加图形并返回其 id。箭头接收 `{ start, end }`，每个端点是图形 id、`{ shape, anchor }` 或白板上的点，并加入其绑定端点所在的白板。 |
 | `move(ids, delta)` | `BaseBoardPlugin` | 移动图形。图形会加入其中点下方最上层的框架，或离开所在框架。 |

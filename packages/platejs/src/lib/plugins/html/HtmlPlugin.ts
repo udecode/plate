@@ -1731,12 +1731,17 @@ const EMBEDDED_HTML_CONTENT = new Set([
  */
 export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-board',
+  'data-board-dash',
   'data-board-fill',
   'data-board-geo',
   'data-board-height',
+  'data-board-opacity',
   'data-board-place',
   'data-board-shape-id',
   'data-board-size',
+  'data-board-stroke-color',
+  'data-board-stroke-width',
+  'data-board-text-size',
   'data-board-z-index',
   'data-checked',
   'data-code-trailing-newlines',

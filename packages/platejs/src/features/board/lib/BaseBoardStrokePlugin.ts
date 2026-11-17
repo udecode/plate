@@ -12,6 +12,7 @@ import { boardFramesIn, boardLayerOf, placeAmong } from './boardFrame.internal';
 import {
   appendBoardMember,
   boardShapesRootOf,
+  definedProps,
   stackingKeyAboveLayer,
 } from './boardShape.internal';
 import {
@@ -20,6 +21,11 @@ import {
   type BoardInkPoint,
   isBoardStrokePoints,
 } from './boardStroke.internal';
+import {
+  BOARD_STROKE_STYLES,
+  type BoardStyles,
+  boardStyleProperties,
+} from './boardStyle.internal';
 
 const toFraction = (value: number, from: number, length: number) =>
   length > 0 ? Math.round(((value - from) / length) * 10_000) / 10_000 : 0.5;
@@ -39,6 +45,7 @@ export const BaseBoardStrokePlugin = definePlugin(BOARD_STROKE_TYPE, {
           validate: isBoardStrokePoints,
           validationVersion: 1,
         }),
+        ...boardStyleProperties(BOARD_STROKE_STYLES),
       },
       void: 'block',
     },
@@ -46,15 +53,20 @@ export const BaseBoardStrokePlugin = definePlugin(BOARD_STROKE_TYPE, {
   update: ({ tx }) => ({
     /**
      * Add a line drawn through `points` above every shape of the board block
-     * `board`, and return its id. Its box holds the line at full pressure, and
-     * it joins the frontmost frame under its middle. One point adds a dot.
+     * `board`, with the styles given and the default of each other style, and
+     * return its id. Its box holds the line at full pressure, and it joins the
+     * frontmost frame under its middle. One point adds a dot.
      * Return undefined when `board` is no board, or when `points` is empty or
      * holds a number that is not finite.
      */
     insert: txLocate(
       locateAt(1, 'board'),
       (
-        { points }: Readonly<{ points: readonly BoardInkPoint[] }>,
+        {
+          points,
+          ...styles
+        }: Readonly<{ points: readonly BoardInkPoint[] }> &
+          Partial<Pick<BoardStyles, keyof typeof BOARD_STROKE_STYLES>>,
         { board }: Readonly<{ board: NodeKey }>
       ) => {
         const root = boardShapesRootOf(tx, board);
@@ -87,6 +99,7 @@ export const BaseBoardStrokePlugin = definePlugin(BOARD_STROKE_TYPE, {
           tx,
           root,
           tx.schema.create(BOARD_STROKE_TYPE, {
+            ...definedProps(styles),
             place: placeAmong(boardFramesIn(shapes).values(), { place, size }),
             points: points.flatMap(([x, y, pressure]) => [
               toFraction(x, from.x, extent.width),

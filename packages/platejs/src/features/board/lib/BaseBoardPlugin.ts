@@ -88,6 +88,15 @@ import {
   restackKeys,
   shapeSelectionMode,
 } from './boardShape.internal';
+import {
+  BOARD_ARROW_STYLES,
+  BOARD_GEO_STYLES,
+  BOARD_NOTE_STYLES,
+  BOARD_STROKE_STYLES,
+  decodeBoardStyleAttributes,
+  encodeBoardStyleAttributes,
+  reportInvalidBoardAttribute,
+} from './boardStyle.internal';
 
 export type { BoardFramePlace, BoardShapePlace } from './boardFrame.internal';
 export type {
@@ -273,23 +282,31 @@ export const BaseBoardPlugin = definePlugin('board', {
     return {
       formats: defineFormats(BaseBoardNotePlugin, {
         html: {
-          decode: ({ element, preserve }) => {
+          decode: ({ element, preserve, report }) => {
             const shape = decodeBoardShapeAttributes(element);
 
             if (!shape) return undefined;
-            preserve(...BOARD_SHAPE_ATTRIBUTES, 'data-board-fill');
+            preserve(...BOARD_SHAPE_ATTRIBUTES);
 
-            const fill = element.getAttribute('data-board-fill');
-
-            return { ...shape, ...(fill === null ? {} : { fill }) };
+            return {
+              ...shape,
+              ...decodeBoardStyleAttributes(element, BOARD_NOTE_STYLES, {
+                preserve,
+                report,
+              }),
+            };
           },
           encode: ({ node, preserve }) => {
-            preserve('fill', 'place', 'size', 'zIndex');
+            preserve('place', 'size', 'zIndex');
 
             return {
               attributes: {
                 ...encodeBoardShapeAttributes(node),
-                'data-board-fill': node.fill,
+                ...encodeBoardStyleAttributes(
+                  node,
+                  BOARD_NOTE_STYLES,
+                  preserve
+                ),
                 'data-board': 'note',
               },
               tag: 'div',
@@ -373,37 +390,39 @@ export const BaseBoardPlugin = definePlugin('board', {
     return {
       formats: defineFormats(BaseBoardGeoPlugin, {
         html: {
-          decode: ({ element, preserve }) => {
+          decode: ({ element, preserve, report }) => {
             const shape = decodeBoardShapeAttributes(element);
 
             if (!shape) return undefined;
-            preserve(
-              ...BOARD_SHAPE_ATTRIBUTES,
-              'data-board-fill',
-              'data-board-geo'
-            );
+            preserve(...BOARD_SHAPE_ATTRIBUTES, 'data-board-geo');
 
-            const fill = element.getAttribute('data-board-fill');
             const geo = element.getAttribute('data-board-geo');
+            const known =
+              geo === 'diamond' ||
+              geo === 'ellipse' ||
+              geo === 'rectangle' ||
+              geo === 'triangle';
+
+            if (geo !== null && !known) {
+              reportInvalidBoardAttribute(report, 'data-board-geo', geo);
+            }
 
             return {
               ...shape,
-              ...(fill === null ? {} : { fill }),
-              ...(geo === 'diamond' ||
-              geo === 'ellipse' ||
-              geo === 'rectangle' ||
-              geo === 'triangle'
-                ? { geo }
-                : {}),
+              ...decodeBoardStyleAttributes(element, BOARD_GEO_STYLES, {
+                preserve,
+                report,
+              }),
+              ...(known ? { geo } : {}),
             };
           },
           encode: ({ node, preserve }) => {
-            preserve('fill', 'geo', 'place', 'size', 'zIndex');
+            preserve('geo', 'place', 'size', 'zIndex');
 
             return {
               attributes: {
                 ...encodeBoardShapeAttributes(node),
-                'data-board-fill': node.fill,
+                ...encodeBoardStyleAttributes(node, BOARD_GEO_STYLES, preserve),
                 'data-board-geo': node.geo,
                 'data-board': 'geo',
               },
@@ -903,13 +922,19 @@ export const BaseBoardPlugin = definePlugin('board', {
   .extend(({ defineFormats }) => ({
     formats: defineFormats(BaseBoardArrowPlugin, {
       html: {
-        decode: ({ element, preserve }) => {
+        decode: ({ element, preserve, report }) => {
           const arrow = decodeBoardArrowAttributes(element);
 
           if (!arrow) return undefined;
           preserve(...BOARD_ARROW_ATTRIBUTES);
 
-          return arrow;
+          return {
+            ...arrow,
+            ...decodeBoardStyleAttributes(element, BOARD_ARROW_STYLES, {
+              preserve,
+              report,
+            }),
+          };
         },
         encode: ({ node, preserve }) => {
           preserve('end', 'start', 'zIndex');
@@ -917,6 +942,7 @@ export const BaseBoardPlugin = definePlugin('board', {
           return {
             attributes: {
               ...encodeBoardArrowAttributes(node),
+              ...encodeBoardStyleAttributes(node, BOARD_ARROW_STYLES, preserve),
               'data-board': 'arrow',
             },
             tag: 'div',
@@ -955,13 +981,19 @@ export const BaseBoardPlugin = definePlugin('board', {
   .extend(({ defineFormats }) => ({
     formats: defineFormats(BaseBoardStrokePlugin, {
       html: {
-        decode: ({ element, preserve }) => {
+        decode: ({ element, preserve, report }) => {
           const stroke = decodeBoardStrokeAttributes(element);
 
           if (!stroke) return undefined;
           preserve(...BOARD_STROKE_ATTRIBUTES);
 
-          return stroke;
+          return {
+            ...stroke,
+            ...decodeBoardStyleAttributes(element, BOARD_STROKE_STYLES, {
+              preserve,
+              report,
+            }),
+          };
         },
         encode: ({ node, preserve }) => {
           preserve('place', 'points', 'size', 'zIndex');
@@ -969,6 +1001,11 @@ export const BaseBoardPlugin = definePlugin('board', {
           return {
             attributes: {
               ...encodeBoardStrokeAttributes(node),
+              ...encodeBoardStyleAttributes(
+                node,
+                BOARD_STROKE_STYLES,
+                preserve
+              ),
               'data-board': 'stroke',
             },
             tag: 'div',

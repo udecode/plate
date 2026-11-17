@@ -31,6 +31,12 @@ import {
 import type { TxDeclaredMethod } from '../../../facade';
 import { boardFramesIn, boardLayerOf, placeAmong } from './boardFrame.internal';
 import type { BoardMemberEntry, BoardMembers } from './boardMember.internal';
+import {
+  type BoardStyleDefaults,
+  type BoardStyles,
+  boardStyleProperties,
+  isBoardStyleKey,
+} from './boardStyle.internal';
 
 /** A point on a board, in board coordinates. */
 export type BoardPlace = Readonly<{ x: number; y: number }>;
@@ -66,6 +72,11 @@ export const shapeSelectionMode = (
 
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
+
+export const definedProps = (props: Readonly<Record<string, unknown>>) =>
+  Object.fromEntries(
+    Object.entries(props).filter(([, value]) => value !== undefined)
+  );
 
 const hasOnlyKeys = (value: object, keys: readonly string[]) =>
   Object.keys(value).every((key) => keys.includes(key));
@@ -353,7 +364,7 @@ function boardShapeStage(size: BoardSize): unknown {
 
           const shapeId = nanoid();
           const shape = tx.schema.create(type, {
-            ...own,
+            ...definedProps(own),
             place,
             shapeId,
             size: { height, width },
@@ -375,14 +386,35 @@ function boardShapeStage(size: BoardSize): unknown {
   return stage;
 }
 
+/**
+ * A board shape kind named `name`: an object block of paragraphs and
+ * headings with `properties`, a default `size`, and `styles`, the default of
+ * each board style it takes. A style is declared only in `styles`.
+ */
 export const defineBoardShape = <
   const TName extends string,
-  const TProperties extends SchemaElementProperties = {},
+  const TProperties extends SchemaElementProperties &
+    Readonly<{ [K in keyof BoardStyles]?: never }> = {},
+  const TStyles extends object & BoardStyleDefaults<TStyles> = {},
 >(
   name: TName,
-  { properties, size }: Readonly<{ properties: TProperties; size: BoardSize }>
-) =>
-  definePlugin(name, {
+  {
+    properties,
+    size,
+    styles,
+  }: Readonly<{ properties: TProperties; size: BoardSize; styles: TStyles }>
+) => {
+  const style = Object.keys(properties).find(isBoardStyleKey);
+
+  if (style !== undefined) {
+    throw new Error(
+      `Board shape "${name}" declares the style "${style}" in its properties; declare it in its styles.`
+    );
+  }
+
+  const own = { ...properties, ...boardStyleProperties(styles) };
+
+  return definePlugin(name, {
     schema: ({ targetElementTypes }) => ({
       element: {
         blockContent: false,
@@ -391,12 +423,15 @@ export const defineBoardShape = <
           min: 1,
         }),
         object: true,
-        properties,
+        properties: own,
       },
     }),
     targetPlugins: [BaseParagraphPlugin, PLUGINS.heading],
   }).extend(
-    boardShapeStage<{
-      [K in keyof TProperties]: PropertyValueOf<TProperties[K]>;
-    }>(size)
+    boardShapeStage<
+      {
+        [K in keyof TProperties]: PropertyValueOf<TProperties[K]>;
+      } & { [K in keyof TStyles & keyof BoardStyles]: BoardStyles[K] }
+    >(size)
   );
+};

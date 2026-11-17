@@ -658,8 +658,7 @@
       "BoardFrameElement",
       "BoardGeoElement",
       "BoardNoteElement",
-      "BoardStrokeElement",
-      "defineBoardShape"
+      "BoardStrokeElement"
     ],
     "platejs/board/react": [
       "BoardArrowPlugin",

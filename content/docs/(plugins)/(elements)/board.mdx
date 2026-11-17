@@ -285,6 +285,7 @@ import {
 const BaseCardPlugin = defineBoardShape('card', {
   properties: { status: property.enum(['todo', 'doing', 'done'], { default: 'todo' }) },
   size: { height: 160, width: 240 },
+  styles: { fill: 'blue', opacity: 1, textSize: 'm' },
 });
 
 const plugins = [
@@ -448,7 +449,7 @@ The shape types: `boardNote`, `boardGeo`, `boardArrow`, `boardFrame` and `boardS
 | API | Package | Use |
 | --- | --- | --- |
 | `BaseBoardPlugin`, `BaseBoardNotePlugin`, `BaseBoardGeoPlugin`, `BaseBoardArrowPlugin`, `BaseBoardFramePlugin`, `BaseBoardStrokePlugin` | `platejs/board` | Headless board and shape plugins. |
-| `defineBoardShape(name, { properties, size })` | `platejs/board` | Defines an app shape that holds text. |
+| `defineBoardShape(name, { properties, size, styles })` | `platejs/board` | Defines an app shape that holds text, with the default of each board style it takes. |
 | `tx.plugin(BaseBoardPlugin).insert(props?, options?)` | `BaseBoardPlugin` | Adds a board with an empty root at `options.at` or after the selected block, and returns its key. |
 | `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | Each shape plugin | Adds a shape above every shape of `board` and returns its id. An arrow takes `{ start, end }`, each a shape id, `{ shape, anchor }` or a board point, and joins the board its bound ends name. |
 | `move(ids, delta)` | `BaseBoardPlugin` | Moves shapes. A shape joins the frontmost frame under its middle or leaves its frame. |

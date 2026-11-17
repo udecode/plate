@@ -29,8 +29,14 @@ import {
   appendBoardMember,
   type BoardPlace,
   boardShapesRootOf,
+  definedProps,
   stackingKeyAboveLayer,
 } from './boardShape.internal';
+import {
+  BOARD_ARROW_STYLES,
+  type BoardStyles,
+  boardStyleProperties,
+} from './boardStyle.internal';
 
 export type {
   BoardArrowAnchor,
@@ -73,6 +79,7 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
           validate: isBoardArrowEnd,
           validationVersion: 1,
         }),
+        ...boardStyleProperties(BOARD_ARROW_STYLES),
       },
     },
   }),
@@ -123,9 +130,10 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
 
     return {
       /**
-       * Add an arrow above every shape of its board and return its id. The
-       * arrow joins the board its bound ends name; `board` names it when both
-       * ends are free. Each bound end saves the point it draws at. Return
+       * Add an arrow above every shape of its board and return its id, with
+       * the styles given and the default of each other style. The arrow joins
+       * the board its bound ends name; `board` names it when both ends are
+       * free. Each bound end saves the point it draws at. Return
        * undefined when an end names a missing shape, an arrow or a shape of
        * another board.
        */
@@ -136,11 +144,13 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
             children,
             end,
             start,
+            ...styles
           }: Readonly<{
             children?: readonly Descendant[];
             end: BoardArrowEndInput;
             start: BoardArrowEndInput;
-          }>,
+          }> &
+            Partial<Pick<BoardStyles, keyof typeof BOARD_ARROW_STYLES>>,
           { board }: Readonly<{ board?: NodeKey }> = {}
         ): string | undefined => {
           const ends = { end: storedOf(end), start: storedOf(start) };
@@ -159,6 +169,7 @@ export const BaseBoardArrowPlugin = definePlugin(BOARD_ARROW_TYPE, {
 
           const shapeId = nanoid();
           const arrow = tx.schema.create(type, {
+            ...definedProps(styles),
             ...written,
             shapeId,
             zIndex: stackingKeyAboveLayer(tx.root(root), boardLayerOf(type)),
