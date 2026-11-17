@@ -21,79 +21,69 @@ export type PlateRegistryStyle =
 export const PLATE_DEFAULT_REGISTRY_BASE: PlateRegistryBase = 'base';
 export const PLATE_DEFAULT_REGISTRY_STYLE = 'base-nova';
 
-const unsupportedBases = PLATE_REGISTRY_BASES.filter(
-  (base) => !PRESET_BASES.includes(base)
-);
-const unsupportedStyles = PLATE_REGISTRY_STYLE_NAMES.filter(
-  (style) => !PRESET_STYLES.includes(style)
-);
-const unreviewedStyles = PRESET_STYLES.filter(
-  (style) => !PLATE_REGISTRY_STYLE_NAMES.includes(style)
-);
+const REVIEWED_UNSERVED_BASES = new Set(['aria']);
 
-if (unsupportedBases.length > 0) {
-  throw new Error(
-    `Plate registry bases are missing upstream: ${unsupportedBases.join(', ')}`
-  );
+const upstreamDrift: Array<[message: string, names: readonly string[]]> = [
+  [
+    'Plate registry bases are missing upstream',
+    PLATE_REGISTRY_BASES.filter((base) => !PRESET_BASES.includes(base)),
+  ],
+  [
+    'Upstream registry bases require Plate review',
+    PRESET_BASES.filter(
+      (base) =>
+        !PLATE_REGISTRY_BASES.some((served) => served === base) &&
+        !REVIEWED_UNSERVED_BASES.has(base)
+    ),
+  ],
+  [
+    'Plate registry styles are missing upstream',
+    PLATE_REGISTRY_STYLE_NAMES.filter(
+      (style) => !PRESET_STYLES.includes(style)
+    ),
+  ],
+  [
+    'Upstream registry styles require Plate review',
+    PRESET_STYLES.filter(
+      (style) => !PLATE_REGISTRY_STYLE_NAMES.includes(style)
+    ),
+  ],
+];
+const upstreamProblems = upstreamDrift
+  .filter(([, names]) => names.length > 0)
+  .map(([message, names]) => `${message}: ${names.join(', ')}`);
+
+if (upstreamProblems.length > 0) {
+  throw new Error(upstreamProblems.join('. '));
 }
 
-if (unsupportedStyles.length > 0 || unreviewedStyles.length > 0) {
-  throw new Error(
-    [
-      unsupportedStyles.length > 0
-        ? `Plate registry styles are missing upstream: ${unsupportedStyles.join(', ')}`
-        : null,
-      unreviewedStyles.length > 0
-        ? `Upstream registry styles require Plate review: ${unreviewedStyles.join(', ')}`
-        : null,
-    ]
-      .filter(Boolean)
-      .join('. ')
-  );
-}
+const BASE_DEFAULT_STYLES: Record<PlateRegistryBase, PlateRegistryStyleName> = {
+  base: 'nova',
+  radix: 'nova',
+};
 
-const LEGACY_RADIX_STYLES = ['new-york', 'new-york-v4'] as const;
+// shadcn keeps its pre-preset styles on Radix.
+const LEGACY_RADIX_STYLES = new Set(['default', 'new-york', 'new-york-v4']);
 
-export const PLATE_REGISTRY_STYLES = [
-  ...PLATE_REGISTRY_BASES.flatMap((base) =>
-    PLATE_REGISTRY_STYLE_NAMES.map((style) => `${base}-${style}`)
-  ),
-  ...LEGACY_RADIX_STYLES,
-] as const;
-
-const plateRegistryStyleBases = new Map<string, PlateRegistryBase>([
-  ...PLATE_REGISTRY_BASES.flatMap((base) =>
-    PLATE_REGISTRY_STYLE_NAMES.map(
-      (style) => [`${base}-${style}`, base] as const
-    )
-  ),
-  ...LEGACY_RADIX_STYLES.map((style) => [style, 'radix'] as const),
-]);
-
-export function getPlateRegistryStyleBase(style: string) {
-  return plateRegistryStyleBases.get(style) ?? null;
-}
+const PRESET_STYLE_REGEX = /^([^-]+)-([a-z0-9]+)$/;
 
 export function getPlateRegistryStyle(style: string): {
   base: PlateRegistryBase;
   style: PlateRegistryStyleName;
 } | null {
-  if (
-    LEGACY_RADIX_STYLES.includes(style as (typeof LEGACY_RADIX_STYLES)[number])
-  ) {
-    return { base: 'radix', style: 'nova' };
+  if (LEGACY_RADIX_STYLES.has(style)) {
+    return { base: 'radix', style: BASE_DEFAULT_STYLES.radix };
   }
 
-  const separatorIndex = style.indexOf('-');
-  const base = style.slice(0, separatorIndex) as PlateRegistryBase;
-  const styleName = style.slice(separatorIndex + 1) as PlateRegistryStyleName;
+  const [, baseName, styleName] = PRESET_STYLE_REGEX.exec(style) ?? [];
+  const base = PLATE_REGISTRY_BASES.find((name) => name === baseName);
 
-  if (
-    !PLATE_REGISTRY_BASES.includes(base) ||
-    !PLATE_REGISTRY_STYLE_NAMES.includes(styleName)
-  ) {
-    return null;
-  }
+  if (!base) return null;
 
-  return { base, style: styleName };
+  return {
+    base,
+    style:
+      PLATE_REGISTRY_STYLE_NAMES.find((name) => name === styleName) ??
+      BASE_DEFAULT_STYLES[base],
+  };
 }
