@@ -127,7 +127,7 @@ const checkout = (sha) => {
   }
   for (const args of [
     ['tooling/scripts/git-private.mjs', 'attach'],
-    ['.agents/pstack/setup.mjs', '--install', 'pnpm install --offline'],
+    ['.agents/pstack/setup.mjs'],
   ]) {
     const result = node(worktree, args);
     if (result.status !== 0) {
@@ -146,6 +146,29 @@ const checkout = (sha) => {
         '--quiet',
         '--hard',
       ]);
+    }
+  }
+  // setup.mjs installs once per worktree, and this one moves to every new
+  // tip, so it installs here when the lockfile differs from the installed one.
+  const installed = join(worktree, 'node_modules', '.pnpm', 'lock.yaml');
+  if (
+    existsSync(installed) &&
+    readFileSync(installed, 'utf-8') ===
+      readFileSync(join(worktree, 'pnpm-lock.yaml'), 'utf-8')
+  ) {
+    return;
+  }
+  for (const offline of [true, false]) {
+    const result = spawnSync(
+      'pnpm',
+      ['install', '--frozen-lockfile', ...(offline ? ['--offline'] : [])],
+      { cwd: worktree, encoding: 'utf-8' }
+    );
+    if (result.status === 0) return;
+    if (!offline) {
+      throw new Error(
+        `pnpm install at ${sha}: ${result.stdout}${result.stderr}`
+      );
     }
   }
 };
@@ -359,6 +382,12 @@ const run = (args) => {
         tip,
         wake: readEvents().at(-1)?.kind !== 'broken',
       });
+      // A run that checked nothing leaves the tip unchecked, so the next
+      // wake tries it again instead of reading it as done.
+      if (!option('--ref')) {
+        writeState({ ...state, lastRun: name, lastRunAt: now.toISOString() });
+      }
+      return 1;
     }
     for (const failed of result.failed) {
       const alone = check(logs, runId(tip, `${failed}-alone`), [failed], {

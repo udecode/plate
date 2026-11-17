@@ -45,7 +45,7 @@ The watcher's loop. It reads events and spawns one fix subagent for each red ste
 2. Handle each printed event:
    - `kind: "red"` or `kind: "flake"` with `wake: true`: spawn a fix subagent with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Each such event names one step and the task offered for it, so two red steps get two subagents that work at once.
    - `dry: true`: spawn the same subagent with the Dry brief.
-   - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-deep-check/`. When the cause is the deep worktree's install, run `node .agents/pstack/setup.mjs --install 'pnpm install'` inside that worktree. Otherwise say the cause in this session's reply and send no message.
+   - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-deep-check/`. When the cause is the deep worktree's install, run `pnpm install --frozen-lockfile` inside that worktree; the next wake retries the tip. Otherwise say the cause in this session's reply and send no message.
 3. When a fix subagent finishes, save its report to `docs/plans/artifacts/deep-check/<day>/fix-<task id or step>.md` in the main checkout, then reply with one line per task: the step and the fix commit, or why it is still open.
 4. Go back to step 1 with the newest handled event's `at`.
 
