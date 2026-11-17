@@ -342,10 +342,13 @@ editor root before running. Pass `focus: 'none'` to leave focus alone. The
 default is `focus: 'preserve'`. Pass `root` when the command should target a
 known root instead of the editable or active root.
 
-With no `root` and outside an `Editable`, the hook reads the active root when
-it renders. So a dispatcher called in the same event that moves the caret to
-another root, such as that root's focus handler, runs the command in the root
-the caret left.
+With no `root` and outside an `Editable`, the command runs in the root the
+caret is in when the dispatcher is called. A focus that no press started puts
+back the caret an `Editable` last held before the focus handlers passed to that
+`Editable` run, so a call from such a handler runs in its root. A handler of a
+press, of a first focus or a capture handler on a wrapper element runs while
+the caret is still in the root it left, so pass `root` when a handler must
+write in its own root.
 
 The dispatcher runs the command in the view that `useRootEditor` follows for
 the target root. While that view is read-only, a command that updates the

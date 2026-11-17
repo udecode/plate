@@ -78,13 +78,6 @@ import {
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
-const rootKeyEquality = (
-  a: RootKey | null | undefined,
-  b: RootKey | undefined
-) => a === b;
-const selectionChanged = (change?: EditorCommit) =>
-  Boolean(change?.selectionChanged);
-
 const selectActiveRoot = (state: ReactEditorState): RootKey => {
   const selection = state.selection();
 
@@ -804,20 +797,6 @@ export type UseCommandOptions<TRoot extends RootKey = RootKey> = {
   root?: NamedRootKey<TRoot>;
 };
 
-const usePliteResolvedRoot = (root: NamedRootKey | undefined): RootKey => {
-  if (root === MAIN_ROOT_KEY) {
-    throw new Error('Omit root to target the primary document.');
-  }
-
-  const editableRoot = useContext(PliteEditableRootContext);
-  const activeRoot = useRuntimeState(selectActiveRoot, {
-    equalityFn: rootKeyEquality,
-    shouldUpdate: selectionChanged,
-  });
-
-  return root ?? editableRoot ?? activeRoot;
-};
-
 type CommandArgs<TCommand extends EditorCommandDescriptor> = [
   EditorCommandInput<TCommand>,
 ] extends [void]
@@ -835,6 +814,8 @@ export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
  * Command input belongs to the returned dispatcher, so event-time data never
  * becomes hook configuration. Pass `root` for a known root and use
  * `focus: 'restore-root'` when the command should first restore editor focus.
+ * Without `root`, the command runs in the root of the `Editable` around the
+ * hook, or else in the caret's root when the dispatcher runs.
  * The command runs on the mounted view that shows the root, and on the view
  * around the hook while none shows it, so a read-only one refuses its writes.
  */
@@ -846,15 +827,43 @@ export function useCommand<
   options: UseCommandOptions<TRoot> = {}
 ): CommandDispatcher<TCommand> {
   const { focus = 'preserve', root } = options;
-  const resolvedRoot = usePliteResolvedRoot(root);
-  const publicRoot = toPublicRootOption(resolvedRoot);
+
+  if (root === MAIN_ROOT_KEY) {
+    throw new Error('Omit root to target the primary document.');
+  }
+
+  const editableRoot = useContext(PliteEditableRootContext);
+  const fixedRoot = root ?? editableRoot;
   const context = useRequiredPliteRuntimeContext();
-  const rootEditor = useRootEditor(publicRoot);
+  const rootEditorRef = useRef<{
+    context: PliteRuntimeContextValue;
+    editor: ReactEditorType;
+    root: RootKey;
+  } | null>(null);
 
   return useCallback(
     (...input: CommandArgs<TCommand>) => {
+      // A focus moves the caret's root before this hook renders again, so a
+      // command called from it reads the root when it runs.
+      const commandRoot = fixedRoot ?? context.runtime.read(selectActiveRoot);
+      const readRootEditor = () => {
+        const cached = rootEditorRef.current;
+
+        if (cached?.context === context && cached.root === commandRoot) {
+          return cached.editor;
+        }
+
+        const editor = createPliteRootEditor(
+          context,
+          toPublicRootOption(commandRoot)
+        );
+
+        rootEditorRef.current = { context, editor, root: commandRoot };
+
+        return editor;
+      };
       const commandEditor =
-        context.getMountedViewEditor(resolvedRoot) ?? rootEditor;
+        context.getMountedViewEditor(commandRoot) ?? readRootEditor();
 
       if (focus === 'restore-root' && !commandEditor.read.view.isReadOnly()) {
         focusPliteEditable(commandEditor);
@@ -862,6 +871,6 @@ export function useCommand<
 
       return dispatchCommand(commandEditor, command, ...input);
     },
-    [command, context, focus, resolvedRoot, rootEditor]
+    [command, context, fixedRoot, focus]
   );
 }
