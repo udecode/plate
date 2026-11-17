@@ -197,6 +197,9 @@ export { sameResult } from 'plitejs/internal';
 export {
   afterActiveTransactionEnds,
   getActiveEditorUpdateId,
+  markRootViewUsed,
+  readRootViewUse,
+  subscribeRootViewUse,
 } from 'plitejs/internal';
 export type {
   EditorDirectUpdate,

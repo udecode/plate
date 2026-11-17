@@ -536,14 +536,16 @@ function EditableContentRootView({
       }),
     [editor, ownerPath, ownerRoot, registerContentRootOwner, root]
   );
-  const activateRootView = React.useCallback(() => {
-    markRootViewUsed(editor);
-  }, [editor]);
   const externalMouseGestureRef = React.useRef(false);
+  const getViewEditor = React.useCallback(
+    (target: RootKey) =>
+      target === root ? editor : getMountedViewEditor(target),
+    [editor, getMountedViewEditor, root]
+  );
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
-    getMountedViewEditor,
+    getMountedViewEditor: getViewEditor,
     root,
     selection: 'restore',
   });
@@ -554,23 +556,22 @@ function EditableContentRootView({
       externalMouseGestureRef.current = event.defaultPrevented;
 
       if (!externalMouseGestureRef.current) {
-        activateRootView();
+        markRootViewUsed(editor);
         rootInteraction.onMouseDownCapture(event);
       }
     },
-    [activateRootView, rootInteraction]
+    [editor, rootInteraction]
   );
   const onMouseUpCapture = React.useCallback<
     React.MouseEventHandler<HTMLDivElement>
   >(
     (event) => {
       if (!externalMouseGestureRef.current) {
-        activateRootView();
         rootInteraction.onMouseUpCapture(event);
       }
       externalMouseGestureRef.current = false;
     },
-    [activateRootView, rootInteraction]
+    [rootInteraction]
   );
   const onMouseMoveCapture = React.useCallback<
     React.MouseEventHandler<HTMLDivElement>
@@ -585,8 +586,8 @@ function EditableContentRootView({
   const onFocusCapture = React.useCallback<
     React.FocusEventHandler<HTMLDivElement>
   >(() => {
-    activateRootView();
-  }, [activateRootView]);
+    markRootViewUsed(editor);
+  }, [editor]);
   const editableProps: EditableProps = {
     ...ownerHandlers,
     'aria-label': ariaLabel,

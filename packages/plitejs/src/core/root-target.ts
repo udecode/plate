@@ -35,6 +35,7 @@ const VIEW_ENTRIES = new WeakMap<object, Entry>();
 // Kept while the view is unmounted: a use can arrive before its view mounts,
 // and StrictMode unmounts a view between its first use and its second mount.
 const USED_AT = new WeakMap<object, number>();
+const USE_LISTENERS = new WeakMap<object, Set<() => void>>();
 let lastUse = 0;
 const PENDING = new Set<Entry>();
 
@@ -148,7 +149,20 @@ const invalidate = (entry: Entry | undefined) => {
   if (PENDING.size === 1) queueMicrotask(announce);
 };
 
-const usedAt = (view: Editor) => USED_AT.get(getEditorRuntime(view)) ?? 0;
+export const readRootViewUse = (view: Editor) =>
+  USED_AT.get(getEditorRuntime(view)) ?? 0;
+
+export const subscribeRootViewUse = (view: Editor, listener: () => void) => {
+  const runtime = getEditorRuntime(view);
+  const listeners = USE_LISTENERS.get(runtime) ?? new Set<() => void>();
+
+  USE_LISTENERS.set(runtime, listeners);
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
+  };
+};
 
 export const mountRootView = (
   owner: object,
@@ -164,7 +178,7 @@ export const mountRootView = (
   VIEW_ENTRIES.set(runtime, entry);
   if (USED_AT.has(runtime)) {
     entry.usedLatestFirst = [...entry.usedLatestFirst, view].sort(
-      (left, right) => usedAt(right) - usedAt(left)
+      (left, right) => readRootViewUse(right) - readRootViewUse(left)
     );
   }
   invalidate(entry);
@@ -186,13 +200,14 @@ export const markRootViewUsed = (view: Editor) => {
   const entry = VIEW_ENTRIES.get(runtime);
 
   USED_AT.set(runtime, (lastUse += 1));
-  if (!entry?.views.has(view) || entry.usedLatestFirst[0] === view) return;
-
-  entry.usedLatestFirst = [
-    view,
-    ...entry.usedLatestFirst.filter((used) => used !== view),
-  ];
-  invalidate(entry);
+  if (entry?.views.has(view) && entry.usedLatestFirst[0] !== view) {
+    entry.usedLatestFirst = [
+      view,
+      ...entry.usedLatestFirst.filter((used) => used !== view),
+    ];
+    invalidate(entry);
+  }
+  USE_LISTENERS.get(runtime)?.forEach((listener) => listener());
 };
 
 export const reportShownChange = <T>(view: Editor, change: () => T): T => {

@@ -35,6 +35,11 @@ export {
   type AnchorStateWork,
 } from '../core/anchor-state';
 export { readCoreWork, type CoreWork } from '../core/work';
+export {
+  markRootViewUsed,
+  readRootViewUse,
+  subscribeRootViewUse,
+} from '../core/root-target';
 export { sameResult } from '../core/same-result';
 export { getNodeKeyDOMValue } from '../utils/node-keys';
 export { getTextSearchScope } from './text-run';

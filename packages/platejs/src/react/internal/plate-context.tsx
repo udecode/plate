@@ -1,10 +1,16 @@
 import React from 'react';
 
-import type { EditorViewOptions } from '../../facade';
+import { getEditorDOMRoot } from '../../dom/plite-dom.internal';
+import {
+  type EditorViewOptions,
+  markRootViewUsed,
+  readRootViewUse,
+  subscribeRootViewUse,
+} from '../../facade';
 import type { Editor } from '../editor/Editor';
 import { useEditorRootElement, useEditorViewState } from '../plite-react';
 import { bindDocumentFocus } from '../stores/plate-controller/document-focus.internal';
-import type { createPlateTargetScope } from './createPlateTargetScope';
+import { createPlateTargetScope } from './createPlateTargetScope';
 import { useEditorContext, useOptionalEditorContext } from './plite-components';
 
 export type PlateTarget = {
@@ -13,9 +19,12 @@ export type PlateTarget = {
   editableRef: React.RefObject<HTMLDivElement | null>;
 };
 
-export type PlateTargetScope = ReturnType<
-  typeof createPlateTargetScope<PlateTarget>
->;
+export const createPlateScope = () =>
+  createPlateTargetScope<PlateTarget>((target) =>
+    readRootViewUse(target.editor)
+  );
+
+export type PlateTargetScope = ReturnType<typeof createPlateScope>;
 
 const targets = new WeakMap<object, PlateTarget>();
 export const getPlateTarget = (editor: Editor) => targets.get(editor);
@@ -178,15 +187,22 @@ export function PlateMountedView({
   }, [editableRef, editor, model.containerRef]);
   const { primary } = model;
   React.useLayoutEffect(() => {
-    if (!element) return undefined;
+    const root = getEditorDOMRoot(editor);
+    if (!root) return undefined;
     const removeLocal = model.scope.register(target, true);
     const removeController = controller?.register(target, false);
-    const removeFocus = bindDocumentFocus(editor, element, () => {
-      model.scope.focus(target);
-      controller?.focus(target);
+    const removeUse = subscribeRootViewUse(editor, () => {
+      model.scope.used(target);
+      controller?.used(target);
     });
+    // A focus inside a portal from outside the Editable reaches only this
+    // native listener.
+    const removeFocus = bindDocumentFocus(editor, root, () =>
+      markRootViewUsed(editor)
+    );
     return () => {
       removeFocus();
+      removeUse();
       removeController?.();
       removeLocal();
     };

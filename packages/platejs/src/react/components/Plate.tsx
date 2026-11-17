@@ -14,12 +14,11 @@ import { failInvariant } from '../../internal/failInvariant';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import type { Editor } from '../editor/Editor';
-import { createPlateTargetScope } from '../internal/createPlateTargetScope';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import {
+  createPlateScope,
   PlateModelContext,
   PlateScopeProvider,
-  type PlateTarget,
 } from '../internal/plate-context';
 import { EditorRoot as RuntimeEditorRoot } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
@@ -94,7 +93,7 @@ function PlateInner({
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const currentEditor = editor ?? failInvariant('Expected value to be defined');
-  const [scope] = React.useState(() => createPlateTargetScope<PlateTarget>());
+  const [scope] = React.useState(createPlateScope);
   const editableRef = React.useRef<HTMLDivElement>(null);
   const fallback = React.useMemo(
     () => ({ editor: currentEditor, containerRef, editableRef }),

@@ -1,6 +1,13 @@
 import React, { useCallback, useContext, useSyncExternalStore } from 'react';
 
-import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
+import {
+  NodeApi,
+  type Path,
+  type Range,
+  RangeApi,
+  type NodeKey,
+  type RootKey,
+} from '../..';
 import { markRootViewUsed } from '../../core/root-target';
 import { type DOMRange, isDOMNode } from '../../dom';
 import {
@@ -359,6 +366,11 @@ export const EditableDOMRoot = (
   const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const hasViewSelection = usePliteViewSelectionPresence(editor);
   const { getMountedViewEditor } = useRequiredPliteRuntimeContext();
+  const getViewEditor = useCallback(
+    (root: RootKey) =>
+      root === editorRoot ? editor : getMountedViewEditor(root),
+    [editor, editorRoot, getMountedViewEditor]
+  );
   const activateRootView = useCallback(() => {
     markRootViewUsed(editor);
   }, [editor]);
@@ -397,7 +409,7 @@ export const EditableDOMRoot = (
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
-    getMountedViewEditor,
+    getMountedViewEditor: getViewEditor,
     ignoreBlankEditableRootClicks:
       ignoreBlankEditableRootClicks || viewportRuntime !== null,
     root: editorRoot,
@@ -516,7 +528,6 @@ export const EditableDOMRoot = (
     onMouseUpCapture: (event: React.MouseEvent<HTMLDivElement>) => {
       runtime.duringEditableMouseUp(() => {
         if (!runtime.externalMouseGestureActive) {
-          activateRootView();
           onRootMouseUpCapture(event);
         }
         propsOnMouseUpCapture?.(event);

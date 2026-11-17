@@ -122,6 +122,7 @@ export const createViewHandlerBinder = (context: EditableHandlerContext) => {
 
 type GuardedEvent = Readonly<{
   currentTarget: HTMLElement;
+  defaultPrevented: boolean;
   relatedTarget?: EventTarget | null;
   target: EventTarget | null;
 }>;
@@ -186,7 +187,9 @@ export const guardExternalTextEvents = <T extends object>(
             route.focus();
           } else if (name === 'onBlurCapture') {
             route.blur(event.relatedTarget ?? null);
-          } else if (name === 'onMouseDownCapture') activate();
+          } else if (name === 'onMouseDownCapture' && !event.defaultPrevented) {
+            activate();
+          }
           return undefined;
         },
       ];

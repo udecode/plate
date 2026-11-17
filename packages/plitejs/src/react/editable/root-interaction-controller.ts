@@ -320,6 +320,16 @@ const attachProjectedDragReleaseListeners = (
   };
 };
 
+const onNextPress = (rootElement: HTMLElement, run: () => void) => {
+  const document = rootElement.ownerDocument;
+  const next = () => {
+    document.removeEventListener('mousedown', next, true);
+    run();
+  };
+
+  document.addEventListener('mousedown', next, true);
+};
+
 const attachPlacedDragListeners = (
   rootElement: HTMLElement,
   {
@@ -2309,6 +2319,14 @@ export const useRootInteractionController = ({
 
           return;
         }
+
+        const armedInteraction = pendingInteractionRef.current;
+
+        onNextPress(event.currentTarget, () => {
+          if (pendingInteractionRef.current === armedInteraction) {
+            pendingInteractionRef.current = ignoreInteraction();
+          }
+        });
 
         if (
           ('preventDefault' in action && action.preventDefault) ||
