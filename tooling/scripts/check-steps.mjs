@@ -13,6 +13,18 @@ export const INTERRUPTED = 'interrupted';
 const CACHE = join('plate-check', 'v2');
 const DAY_MS = 86_400_000;
 
+/**
+ * Whether node_modules holds `root`'s pnpm-lock.yaml, read from the copy pnpm
+ * writes to node_modules/.pnpm/lock.yaml; null when pnpm never installed there.
+ */
+export const lockfileInstalled = (root) => {
+  const installed = join(root, 'node_modules', '.pnpm', 'lock.yaml');
+  return existsSync(installed)
+    ? readFileSync(installed, 'utf-8') ===
+        readFileSync(join(root, 'pnpm-lock.yaml'), 'utf-8')
+    : null;
+};
+
 export const commonDir = (root) => {
   const result = spawnSync(
     'git',

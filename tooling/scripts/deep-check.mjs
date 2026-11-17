@@ -22,7 +22,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
 import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
-import { INTERRUPTED, STEP_LOG } from './check-steps.mjs';
+import { INTERRUPTED, lockfileInstalled, STEP_LOG } from './check-steps.mjs';
 
 const USAGE = `Usage: node tooling/scripts/deep-check.mjs <command>
   run        check the newest origin/next unless it was checked
@@ -150,24 +150,17 @@ const checkout = (sha) => {
   }
   // setup.mjs installs once per worktree, and this one moves to every new
   // tip, so it installs here when the lockfile differs from the installed one.
-  const installed = join(worktree, 'node_modules', '.pnpm', 'lock.yaml');
-  if (
-    existsSync(installed) &&
-    readFileSync(installed, 'utf-8') ===
-      readFileSync(join(worktree, 'pnpm-lock.yaml'), 'utf-8')
-  ) {
-    return;
-  }
+  if (lockfileInstalled(worktree) === true) return;
   for (const offline of [true, false]) {
     const result = spawnSync(
       'pnpm',
       ['install', '--frozen-lockfile', ...(offline ? ['--offline'] : [])],
-      { cwd: worktree, encoding: 'utf-8' }
+      { cwd: worktree, encoding: 'utf-8', maxBuffer: 64 << 20 }
     );
     if (result.status === 0) return;
     if (!offline) {
       throw new Error(
-        `pnpm install at ${sha}: ${result.stdout}${result.stderr}`
+        `pnpm install at ${sha}: ${result.error?.message ?? `${result.stdout}${result.stderr}`}`
       );
     }
   }
