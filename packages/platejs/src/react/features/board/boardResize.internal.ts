@@ -5,6 +5,7 @@ import {
   type BoardCorner,
   type BoardShapeLayout,
   MIN_SHAPE_SIZE,
+  NO_BOX_MODIFIERS,
   resized,
   sameBox,
 } from './boardIndex.internal';
@@ -160,7 +161,7 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       if (!moving) return;
       moving.resize.edges = edgesBetween(
         moving.layout.box,
-        resized(moving.box, moving.resize.corner, by.x, by.y)
+        resized(moving.box, moving.resize.corner, by.x, by.y, NO_BOX_MODIFIERS)
       );
 
       const shown = show();

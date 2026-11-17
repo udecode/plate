@@ -49,6 +49,8 @@ export const BOARD_GEO_TYPE = 'boardGeo';
 
 export const BOARD_GEO_SIZE: BoardSize = { height: 100, width: 160 };
 
+export const BOARD_GEO_DEFAULT = 'rectangle';
+
 /**
  * How a selection of board members selects them. Plite takes an object
  * selection only of one object that is not void, so a frame, a void, takes a

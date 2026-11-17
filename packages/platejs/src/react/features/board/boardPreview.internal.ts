@@ -1,5 +1,7 @@
-import type { BoardPlace } from '../../../features/board/lib';
+import type { BoardGeo, BoardPlace } from '../../../features/board/lib';
+import { BOARD_GEO_DEFAULT } from '../../../features/board/lib/boardShape.internal';
 import type { BoardBox } from './boardIndex.internal';
+import type { BoardPlaceTool } from './boardView.internal';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -113,14 +115,15 @@ export const previewArrowMark = (line: SVGLineElement, at: BoardPlace) => {
 const previewOutline = (
   layer: HTMLElement | null,
   name: string,
+  value: string,
   from: BoardPlace,
   rank: number,
-  style: Readonly<{ background?: string; border: string }>
+  style?: Readonly<{ background?: string; border: string }>
 ) => {
   const outline = (layer?.ownerDocument ?? document).createElement('div');
 
   outline.setAttribute('aria-hidden', 'true');
-  outline.setAttribute(name, '');
+  outline.setAttribute(name, value);
   outline.setAttribute('data-editor-root-chrome-ignore', 'true');
   Object.assign(outline.style, {
     ...style,
@@ -135,15 +138,72 @@ const previewOutline = (
   return outline;
 };
 
-/** The dashed outline a frame drag shows in `layer` from board point `from`. */
-export const previewFrameOutline = (
+const SHAPE_OUTLINES: Readonly<
+  Record<BoardGeo, readonly [string, Readonly<Record<string, string>>]>
+> = {
+  diamond: ['polygon', { points: '50,0 100,50 50,100 0,50' }],
+  ellipse: ['ellipse', { cx: '50', cy: '50', rx: '50', ry: '50' }],
+  rectangle: ['rect', { height: '100', width: '100' }],
+  triangle: ['polygon', { points: '50,0 100,100 0,100' }],
+};
+
+const previewShapeOutline = (
   layer: HTMLElement | null,
   from: BoardPlace,
-  rank: number
-) =>
-  previewOutline(layer, 'data-board-frame-preview', from, rank, {
-    border: '1px dashed currentColor',
-  });
+  rank: number,
+  kind: BoardGeo | 'note'
+) => {
+  const outline = previewOutline(
+    layer,
+    'data-board-shape-preview',
+    kind,
+    from,
+    rank
+  );
+  const { ownerDocument } = outline;
+  const svg = ownerDocument.createElementNS(SVG_NS, 'svg');
+  const [tag, attributes] =
+    SHAPE_OUTLINES[kind === 'note' ? 'rectangle' : kind];
+  const shape = ownerDocument.createElementNS(SVG_NS, tag);
+
+  for (const [name, value] of [
+    ['fill', 'none'],
+    ['height', '100%'],
+    ['preserveAspectRatio', 'none'],
+    ['stroke', 'currentColor'],
+    ['stroke-width', '2'],
+    ['viewBox', '0 0 100 100'],
+    ['width', '100%'],
+  ] as const) {
+    svg.setAttribute(name, value);
+  }
+  svg.style.display = 'block';
+  svg.style.overflow = 'visible';
+  for (const [name, value] of Object.entries(attributes)) {
+    shape.setAttribute(name, value);
+  }
+  shape.setAttribute('vector-effect', 'non-scaling-stroke');
+  svg.append(shape);
+  outline.append(svg);
+
+  return outline;
+};
+
+export const previewPlaceOutline = (
+  layer: HTMLElement | null,
+  from: BoardPlace,
+  rank: number,
+  tool: BoardPlaceTool,
+  geo: BoardGeo = BOARD_GEO_DEFAULT
+) => {
+  if (tool === 'frame') {
+    return previewOutline(layer, 'data-board-frame-preview', '', from, rank, {
+      border: '1px dashed currentColor',
+    });
+  }
+
+  return previewShapeOutline(layer, from, rank, tool === 'note' ? tool : geo);
+};
 
 /** The box a selection drag shows in `layer` from board point `from`. */
 export const previewSelectBox = (
@@ -151,7 +211,7 @@ export const previewSelectBox = (
   from: BoardPlace,
   rank: number
 ) =>
-  previewOutline(layer, 'data-board-select-box', from, rank, {
+  previewOutline(layer, 'data-board-select-box', '', from, rank, {
     background: 'color-mix(in oklab, currentColor 8%, transparent)',
     border: '1px solid currentColor',
   });

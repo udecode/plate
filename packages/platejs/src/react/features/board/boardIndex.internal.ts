@@ -120,16 +120,84 @@ export const CORNERS_CLOCKWISE: readonly BoardCorner[] = [
 
 export const MIN_SHAPE_SIZE = 8;
 
+export type BoardBoxModifiers = Readonly<{
+  center: boolean;
+  keepRatio: boolean;
+}>;
+
+export const NO_BOX_MODIFIERS: BoardBoxModifiers = {
+  center: false,
+  keepRatio: false,
+};
+
+export const draggedBox = (
+  press: BoardPlace,
+  pointer: BoardPlace,
+  { center, keepRatio }: BoardBoxModifiers
+): BoardBox => {
+  const dx = pointer.x - press.x;
+  const dy = pointer.y - press.y;
+  const side = Math.max(Math.abs(dx), Math.abs(dy));
+  const sides = center ? 2 : 1;
+  const width = Math.max(
+    MIN_SHAPE_SIZE,
+    (keepRatio ? side : Math.abs(dx)) * sides
+  );
+  const height = Math.max(
+    MIN_SHAPE_SIZE,
+    (keepRatio ? side : Math.abs(dy)) * sides
+  );
+  const from = (at: number, by: number, length: number) => {
+    if (center) return at - length / 2;
+
+    return by < 0 ? at - length : at;
+  };
+
+  return {
+    height,
+    width,
+    x: from(press.x, dx, width),
+    y: from(press.y, dy, height),
+  };
+};
+
 export const resized = (
   start: BoardBox,
   corner: BoardCorner,
   dx: number,
-  dy: number
+  dy: number,
+  { center, keepRatio }: BoardBoxModifiers
 ): BoardBox => {
   const left = corner === 'bottomLeft' || corner === 'topLeft';
   const top = corner === 'topLeft' || corner === 'topRight';
-  const width = Math.max(MIN_SHAPE_SIZE, start.width + (left ? -dx : dx));
-  const height = Math.max(MIN_SHAPE_SIZE, start.height + (top ? -dy : dy));
+  const sides = center ? 2 : 1;
+  let width = start.width + (left ? -dx : dx) * sides;
+  let height = start.height + (top ? -dy : dy) * sides;
+
+  if (keepRatio && start.width > 0 && start.height > 0) {
+    const across = width / start.width;
+    const down = height / start.height;
+    const scale = Math.max(
+      Math.abs(across - 1) > Math.abs(down - 1) ? across : down,
+      MIN_SHAPE_SIZE / start.width,
+      MIN_SHAPE_SIZE / start.height
+    );
+
+    width = start.width * scale;
+    height = start.height * scale;
+  } else {
+    width = Math.max(MIN_SHAPE_SIZE, width);
+    height = Math.max(MIN_SHAPE_SIZE, height);
+  }
+
+  if (center) {
+    return {
+      height,
+      width,
+      x: start.x + (start.width - width) / 2,
+      y: start.y + (start.height - height) / 2,
+    };
+  }
 
   return {
     height,

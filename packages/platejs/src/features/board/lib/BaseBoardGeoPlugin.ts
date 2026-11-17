@@ -1,5 +1,6 @@
 import { type ElementOf, property } from '../../../core';
 import {
+  BOARD_GEO_DEFAULT,
   BOARD_GEO_SIZE,
   BOARD_GEO_TYPE,
   defineBoardShape,
@@ -14,7 +15,7 @@ export type BoardGeo = (typeof BOARD_GEOS)[number];
 export const BaseBoardGeoPlugin = defineBoardShape(BOARD_GEO_TYPE, {
   properties: {
     fill: property.string({ default: 'none' }),
-    geo: property.enum(BOARD_GEOS, { default: 'rectangle' }),
+    geo: property.enum(BOARD_GEOS, { default: BOARD_GEO_DEFAULT }),
   },
   size: BOARD_GEO_SIZE,
 }).extend(({ defineFormats }) => ({

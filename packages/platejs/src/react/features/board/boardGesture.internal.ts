@@ -5,14 +5,14 @@ import {
   type BoardArrowEndInput,
   type BoardPlace,
 } from '../../../features/board/lib';
-import { BOARD_FRAME_SIZE } from '../../../features/board/lib/boardFrame.internal';
 import type { BoardInkPoint } from '../../../features/board/lib/boardStroke.internal';
 import {
   CORNERS_CLOCKWISE,
   type BoardBox,
+  type BoardBoxModifiers,
   type BoardCorner,
   type BoardShapeLayout,
-  MIN_SHAPE_SIZE,
+  draggedBox,
   resized,
   sameBox,
   spanOf,
@@ -24,11 +24,15 @@ import {
   placeElement,
   previewArrowLine,
   previewCopy,
-  previewFrameOutline,
+  previewPlaceOutline,
   previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
-import { type BoardViewCore, SHAPES_EDITABLE } from './boardView.internal';
+import {
+  type BoardPlaceTool,
+  type BoardViewCore,
+  SHAPES_EDITABLE,
+} from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
 type Gesture = Readonly<{ pointerId: number }> &
@@ -53,11 +57,13 @@ type Gesture = Readonly<{ pointerId: number }> &
         pointer: BoardPlace;
       }
     | {
-        kind: 'frame';
+        kind: 'place';
         from: BoardPlace;
+        modifiers: BoardBoxModifiers;
         outline: HTMLElement;
         pointer: BoardPlace;
         press: BoardPlace;
+        tool: BoardPlaceTool;
       }
     | {
         kind: 'move';
@@ -85,6 +91,7 @@ type Gesture = Readonly<{ pointerId: number }> &
         element: HTMLElement;
         grab: BoardPlace;
         id: string;
+        modifiers: BoardBoxModifiers;
         pointer: BoardPlace;
         rect: BoardBox;
         start: BoardBox;
@@ -96,24 +103,25 @@ const CLICK_SLOP_PX = 8;
 const dragged = (press: BoardPlace, pointer: BoardPlace) =>
   Math.hypot(pointer.x - press.x, pointer.y - press.y) >= CLICK_SLOP_PX;
 
-const frameToolBox = (
-  from: BoardPlace,
-  to: BoardPlace,
-  drag: boolean
+const modifiersOf = (
+  event: KeyboardEvent | PointerEvent
+): BoardBoxModifiers => ({ center: event.altKey, keepRatio: event.shiftKey });
+
+const placedBox = (
+  {
+    from,
+    modifiers,
+    pointer,
+    press,
+    tool,
+  }: Extract<Gesture, { kind: 'place' }>,
+  at: BoardPlace
 ): BoardBox => {
-  if (!drag) {
-    const { height, width } = BOARD_FRAME_SIZE;
+  if (dragged(press, pointer)) return draggedBox(from, at, modifiers);
 
-    return { height, width, x: to.x - width / 2, y: to.y - height / 2 };
-  }
+  const { height, width } = BOARD_PLACE_SIZE[tool];
 
-  const span = spanOf({ end: to, start: from });
-
-  return {
-    ...span,
-    height: Math.max(MIN_SHAPE_SIZE, span.height),
-    width: Math.max(MIN_SHAPE_SIZE, span.width),
-  };
+  return { height, width, x: at.x - width / 2, y: at.y - height / 2 };
 };
 
 const holds = (outer: BoardBox, inner: BoardBox) =>
@@ -240,8 +248,13 @@ export const attachBoardGestures = (
       return;
     }
 
-    if (gesture.kind === 'frame') {
-      placeElement(gesture.outline, spanOf({ end: at, start: gesture.from }));
+    if (gesture.kind === 'place') {
+      placeElement(
+        gesture.outline,
+        dragged(gesture.press, gesture.pointer)
+          ? placedBox(gesture, at)
+          : { ...gesture.from, height: 0, width: 0 }
+      );
 
       return;
     }
@@ -270,7 +283,7 @@ export const attachBoardGestures = (
       }
     } else {
       const { element, id, start } = gesture;
-      const rect = resized(start, gesture.corner, dx, dy);
+      const rect = resized(start, gesture.corner, dx, dy, gesture.modifiers);
 
       gesture.rect = rect;
       if (sameBox(rect, start)) {
@@ -308,7 +321,7 @@ export const attachBoardGestures = (
       placeAtModel(done.element, done.id);
     } else if (done.kind === 'arrow') {
       done.line.ownerSVGElement?.remove();
-    } else if (done.kind === 'box' || done.kind === 'frame') {
+    } else if (done.kind === 'box' || done.kind === 'place') {
       done.outline.remove();
     } else if (done.kind === 'pen') {
       done.path.ownerSVGElement?.remove();
@@ -367,15 +380,8 @@ export const attachBoardGestures = (
             .insert({ end, start: done.start }, { board: core.board })
         );
       }
-    } else if (done.kind === 'frame') {
-      core.place(
-        'frame',
-        frameToolBox(
-          done.from,
-          core.boardPointAt(done.pointer),
-          dragged(done.press, done.pointer)
-        )
-      );
+    } else if (done.kind === 'place') {
+      core.place(done.tool, placedBox(done, core.boardPointAt(done.pointer)));
     } else if (done.kind === 'move') {
       const { carried, copy, delta, ids } = done;
 
@@ -454,7 +460,7 @@ export const attachBoardGestures = (
       at,
       !!handle
     );
-    const draws = tool === 'arrow' || tool === 'eraser' || tool === 'pen';
+    const selecting = tool === 'select';
     const typing = core.writable() && !!core.editedShape();
     const spacePan = !typing && spaceHeld();
 
@@ -463,7 +469,7 @@ export const attachBoardGestures = (
         core.focusBoard();
       }
       gesture = pan(pointer, pointerId);
-    } else if (!draws && shapeElement && shape && handle) {
+    } else if (selecting && shapeElement && shape && handle) {
       if (!core.writable()) return;
       gesture = {
         corner: handle,
@@ -471,12 +477,13 @@ export const attachBoardGestures = (
         grab: at,
         id: shape.id,
         kind: 'resize',
+        modifiers: modifiersOf(event),
         pointer,
         pointerId,
         rect: shape.box,
         start: shape.box,
       };
-    } else if (!draws && shapeElement && shape) {
+    } else if (selecting && shapeElement && shape) {
       pressed = shape;
       if (core.editedShape()?.key === shape.key) return;
 
@@ -545,21 +552,26 @@ export const attachBoardGestures = (
           erase(pointer, pointer);
           break;
         }
-        case 'frame': {
+        case 'frame':
+        case 'geo':
+        case 'note': {
           if (!core.writable()) return;
           gesture = {
             from: at,
-            kind: 'frame',
-            outline: previewFrameOutline(core.zoomLayer(), at, previewRank()),
+            kind: 'place',
+            modifiers: modifiersOf(event),
+            outline: previewPlaceOutline(
+              core.zoomLayer(),
+              at,
+              previewRank(),
+              tool,
+              core.state().nextStyle.geo
+            ),
             pointer,
             pointerId,
             press: pointer,
+            tool,
           };
-          break;
-        }
-        case 'geo':
-        case 'note': {
-          core.place(tool, { ...at, ...BOARD_PLACE_SIZE[tool] });
           break;
         }
         case 'pen': {
@@ -612,8 +624,8 @@ export const attachBoardGestures = (
         kind:
           kind === 'arrow' ||
           kind === 'erase' ||
-          kind === 'frame' ||
-          kind === 'pen'
+          kind === 'pen' ||
+          kind === 'place'
             ? 'draw'
             : 'drag',
       });
@@ -625,11 +637,19 @@ export const attachBoardGestures = (
     // A middle press ends in auxclick, not click.
     clicker = event.button === 0 ? pointerId : undefined;
   };
+  const takeModifiers = (event: KeyboardEvent | PointerEvent) => {
+    if (gesture?.kind !== 'place' && gesture?.kind !== 'resize') return false;
+    gesture.modifiers = modifiersOf(event);
+
+    return true;
+  };
   const owns = (event: PointerEvent) => gesture?.pointerId === event.pointerId;
   const onPointerMove = (event: PointerEvent) => {
     if (!gesture || !owns(event)) return;
 
     const previous = gesture.pointer;
+
+    takeModifiers(event);
 
     gesture.pointer = { x: event.clientX, y: event.clientY };
     if (gesture.kind === 'pen') {
@@ -701,9 +721,19 @@ export const attachBoardGestures = (
     event.stopPropagation();
     core.edit(shape.key);
   };
+  const onModifierKey = (event: KeyboardEvent) => {
+    if (
+      (event.key === 'Alt' || event.key === 'Shift') &&
+      takeModifiers(event)
+    ) {
+      follow();
+    }
+  };
   const view = host.ownerDocument.defaultView;
 
   host.addEventListener('pointerdown', onPointerDown, true);
+  view?.addEventListener('keydown', onModifierKey, true);
+  view?.addEventListener('keyup', onModifierKey, true);
   host.addEventListener('pointermove', onPointerMove);
   host.addEventListener('pointerup', onPointerUp);
   host.addEventListener('pointercancel', onPointerCancel);
@@ -715,6 +745,8 @@ export const attachBoardGestures = (
     detach: () => {
       cancel();
       host.removeEventListener('pointerdown', onPointerDown, true);
+      view?.removeEventListener('keydown', onModifierKey, true);
+      view?.removeEventListener('keyup', onModifierKey, true);
       host.removeEventListener('pointermove', onPointerMove);
       host.removeEventListener('pointerup', onPointerUp);
       host.removeEventListener('pointercancel', onPointerCancel);

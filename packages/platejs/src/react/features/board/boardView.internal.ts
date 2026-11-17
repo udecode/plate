@@ -59,11 +59,13 @@ export type BoardCamera = Readonly<{ x: number; y: number; zoom: number }>;
  * dot at a click, and stays the tool after it draws. `eraser` marks every note,
  * shape, arrow and pen line a click or drag passes over, but never a frame, and
  * removes them as one undo step on release, and stays the tool. A marked shape
- * shows `data-erasing`. The other tools act on an empty part of the board,
- * which includes the inside of a frame. `frame` draws a frame over a drag, or
- * adds one of the frame's default size centered at a click. `select` selects
- * the shapes a mouse or pen drag's box holds wholly, adding them to the
- * selection with Shift, and pans on a touch drag.
+ * shows `data-erasing`. `frame`, `geo` and `note` draw a frame, a shape of the
+ * next style's geo kind or a note over a drag, or add one of the tool's
+ * default size centered at a click, over empty board or over other shapes.
+ * During the drag Shift keeps the sides equal and Alt centers the box on the
+ * press point. `select` acts on an empty part of the board, which includes the
+ * inside of a frame: it selects the shapes a mouse or pen drag's box holds
+ * wholly, adding them to the selection with Shift, and pans on a touch drag.
  */
 export type BoardTool =
   | 'arrow'
