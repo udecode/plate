@@ -211,13 +211,23 @@ export const createRuntimeSelectionChangeHandler = ({
       endSelectionImport(inputController);
       return;
     }
+    const domSelection = getSelection(
+      rootRef.current.getRootNode() as Document | ShadowRoot
+    );
+    const domSelectionExpanded = domSelection?.isCollapsed === false;
+
+    // A repair writes only a collapsed caret, so an expanded range inside its
+    // guard window is the user's, such as an Android long press.
+    if (
+      inputController.state.selectionChangeOrigin === 'repair-induced' &&
+      domSelectionExpanded
+    ) {
+      beginEditableNativeSelectionImport(inputController);
+    }
     const selectionChangeOrigin =
       inputController.state.selectionChangeOrigin ?? 'native-user';
     const modelSelectionPreferred =
       isEditableModelSelectionPreferred(inputController);
-    const domSelection = getSelection(
-      rootRef.current.getRootNode() as Document | ShadowRoot
-    );
 
     if (
       domSelection &&
@@ -231,7 +241,7 @@ export const createRuntimeSelectionChangeHandler = ({
     if (
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: inputController.state.activeIntent,
-        domSelectionExpanded: domSelection?.isCollapsed === false,
+        domSelectionExpanded,
         modelSelectionPreferred,
         pendingNativeTextInputRepairPathKey:
           inputController.state.pendingNativeTextInputRepairPathKey,
