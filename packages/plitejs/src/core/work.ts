@@ -102,6 +102,8 @@ export type CoreWork = {
   reconciles: number;
   /** Runs of tokens a step recorded as relocated from another place. */
   relocations: number;
+  /** Mapping segments whose change was scanned for slices that may relocate nodes. */
+  relocationReads: number;
   /** Nodes a mapping bound as they landed. */
   landedNodeBinds: number;
   /** Spans of typed letters a draft carried through one of its steps. */
@@ -225,6 +227,7 @@ export const coreWork: CoreWork = {
   projectionChanges: 0,
   reconciles: 0,
   relocations: 0,
+  relocationReads: 0,
   landedNodeBinds: 0,
   letterMarks: 0,
   rootSnapshots: 0,

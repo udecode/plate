@@ -595,14 +595,25 @@ const getSegmentMove = (segment: MappingSegment) => {
   return move;
 };
 
-const segmentMayRelocate = (segment: MappingSegment) =>
-  segment.change.data.some(
-    (data) =>
-      data instanceof PreparedTokenSlice &&
-      !getPreparedDocumentSlice(data) &&
-      !isDeferredPreparedDocumentSlice(data) &&
-      data.tokens.some((token) => token.kind === 'open')
-  );
+const SEGMENT_MAY_RELOCATE = new WeakMap<MappingSegment, boolean>();
+
+const segmentMayRelocate = (segment: MappingSegment) => {
+  let mayRelocate = SEGMENT_MAY_RELOCATE.get(segment);
+
+  if (mayRelocate === undefined) {
+    countCoreWork('relocationReads');
+    mayRelocate = segment.change.data.some(
+      (data) =>
+        data instanceof PreparedTokenSlice &&
+        !getPreparedDocumentSlice(data) &&
+        !isDeferredPreparedDocumentSlice(data) &&
+        data.tokens.some((token) => token.kind === 'open')
+    );
+    SEGMENT_MAY_RELOCATE.set(segment, mayRelocate);
+  }
+
+  return mayRelocate;
+};
 
 const keepsNodeInPlace = (
   before: DocumentIndex,

@@ -709,10 +709,7 @@ export const changedChildrenOf = (
   return rootOf(before, root).changedChildren(after);
 };
 
-const DECIDED = new WeakMap<
-  object,
-  Readonly<{ before: Value; decided: readonly string[] }>
->();
+const DECIDED = new WeakMap<object, WeakMap<object, readonly string[]>>();
 
 /**
  * The incarnations a commit from `before` to `after` decides: each one a
@@ -728,9 +725,9 @@ export const decidedIn = (
   change: DocumentChange,
   indexOf: (root: string) => DocumentIndex
 ): readonly string[] => {
-  const known = DECIDED.get(after);
+  const known = DECIDED.get(after)?.get(before);
 
-  if (known?.before === before) return known.decided;
+  if (known) return known;
 
   const previous = insertionsOf(before);
   const roots = contentRootsOf(after);
@@ -783,7 +780,7 @@ export const decidedIn = (
     ...flipped,
   ];
 
-  DECIDED.set(after, { before, decided });
+  DECIDED.set(after, new WeakMap([[before, decided]]));
 
   return decided;
 };
