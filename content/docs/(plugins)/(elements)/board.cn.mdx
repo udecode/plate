@@ -122,10 +122,10 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 使用便签、图形或框架工具点击 | 在点击位置居中放置一个默认大小的该图形，在白板空白处或其他图形上方都可以。然后选中新图形并选择选择工具。 |
 | 使用便签、图形或框架工具拖动 | 按拖出的方框绘制该图形，在白板空白处或其他图形上方都可以，拖动时显示所选图形的轮廓。按住 Shift 保持正方形，按住 Alt 从拖动起点向四周扩展。然后选中新图形并选择选择工具。 |
 | 拖动选中图形的角手柄 | 调整图形大小，每边最小 8 个单位，对角保持不动。按住 Shift 保持比例，按住 Alt 围绕中心调整。 |
-| 在被选中的白板上，或没有选中图形、使用便签、图形和框架以外的任何工具时在获得焦点的白板上按 Enter | 选中它的第一个图形。在被选中的空白板上，它让白板获得焦点，这样工具字母就能用。 |
+| 在被选中的白板上，或没有选中图形、使用便签、图形、框架和箭头以外的任何工具时在获得焦点的白板上按 Enter | 选中它的第一个图形。在被选中的空白板上，它让白板获得焦点，这样工具字母就能用。 |
 | Tab 和 Shift+Tab | 按白板存储图形的顺序在图形之间移动，最后一个图形之后离开白板。视图外的图形会移入视图。 |
 | Mod 加方向键 | 选中该方向上最近的图形，并把它移入视图。没有选中图形时，从视图中心开始。该方向没有图形时，选区不变，白板会再播报一次选中的图形。 |
-| 双击，或在选中的便签、几何图形或箭头上按 Enter | 编辑其文字。 |
+| 使用选择工具时双击；或使用便签、图形、框架和箭头以外的任何工具时，在选中的一个便签、几何图形或箭头上按 Enter；或使用箭头工具时，在选中的一个箭头上按 Enter | 编辑其文字。 |
 | Escape | 结束进行中的拖动、连接、调整大小或挑选，并保留当前工具。否则，它从文字上升到所在图形。在获得焦点的白板或其选中的图形上，选择了其他工具时它选择选择工具，使用选择工具时它上升到白板。 |
 | 在获得焦点的白板或其选中的图形上按 Shift+Enter | 把焦点移到工具栏。按 Escape 或 Shift+Tab，焦点回到白板。 |
 | `V`、`H`、`N`、`R`、`A`、`F`、`P`、`E` | 选择选择、抓手、便签、图形、箭头、框架、笔和橡皮擦工具。 |
@@ -133,6 +133,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 | 使用框架工具时，在获得焦点的白板或其选中的图形上按 Enter | 在选中的图形周围放置一个外扩 24 px 的框架，框架会收纳完全位于其中、不在任何框架里、也没有被建议删除的每个图形（箭头和框架除外）。没有选中图形时，在视图中心放置一个默认大小的框架。框架要存储的坐标不是有限数，或围绕选区的框架不会收纳任何图形时，Enter 不放置任何东西，并再次播报选区。 |
 | 使用箭头工具且选中一个不是箭头的图形时按 Enter | 开始连接这个图形。Tab 和 Shift+Tab 把箭头终点对准其他不是箭头的图形的中心并循环，Mod 加方向键从终点出发，把它对准该方向上最近的这类图形。方向键把终点移动 1 个单位，按住 Shift 时移动 10 个单位。终点绑定到它下方最前面的、既不是箭头也不是起始图形的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，终点保持自由。Enter 从起始图形的中心向终点绘制箭头，选中它并选择选择工具。按 Escape、用左键或中键在白板上按下、换用其他工具、撤销或重做、删除起始图形、视图变为只读或焦点离开白板，都会停止连接且不绘制。 |
 | 使用箭头工具且未选中任何图形时按 Enter | 开始绘制一个箭头，起点位于视图中心。方向键把起点移动 1 个单位，按住 Shift 时移动 10 个单位。在视图中心以及每次移动之后，起点都绑定到它下方最前面的、不是箭头的图形，绑定在它所在的位置；框架只在边框上可绑定，画笔线只在线条上可绑定；不在任何这类图形上时，起点保持自由。Tab、Shift+Tab 和 Mod 加方向键把起点对准图形的中心。Enter 保留起点并从那里开始连接，与上一行从选中图形开始连接相同，终点可以绑定到起点所在图形以外的任何图形。同样的按键和事件会停止绘制且不写入，删除起点绑定的图形也会停止。 |
+| 使用箭头工具且选中多个图形时按 Enter | 通过 `shapes` 再播报一次选择，不绘制任何内容。 |
 | 选中一个不是箭头的图形时按 S | 从图形的右下角开始调整大小。Tab 按顺时针移到下一个角，Shift+Tab 移到上一个角。方向键把这个角移动 1 个单位，按住 Shift 时移动 10 个单位，每边最小 8 个单位，对角保持不动。每次按键都会显示新的方框，绑定到该图形的箭头跟随移动，但不写入。方框有变化时，Enter 把它写入，作为一步撤销。Escape、按下指针、视图变为只读、删除该图形或焦点离开白板，都会恢复原来的方框且不写入；其他任何按键也是如此，然后再执行它本来的操作。 |
 | 在获得焦点的白板上按 Space | 开始挑选图形。光标从按存储顺序的第一个选中图形开始，没有选中图形时从第一个图形开始，复制的白板用虚线环标出它。Tab 和 Shift+Tab 按存储顺序在所有图形之间移动光标并循环，Mod 加方向键把它移到该方向上最近的图形，两者都不改变选区。Space 把光标所在的图形加入选区或移出选区。Enter 或 Escape 保留选区并结束挑选。按下指针、焦点离开白板或删除光标所在的图形也会结束挑选，其他任何按键也是如此，然后再执行它本来的操作。白板在 Space 松开时才响应，而且只响应在获得焦点的白板上按下、没有按住修饰键、松开前没有按过其他键也没有按下过指针的 Space，所以按住 Space 拖动仍会平移。调整大小期间，Space 只会像其他按键一样结束调整。连接或指针手势进行期间，或白板上没有图形时，Space 不做任何事。 |
 | 方向键 | 把选中的图形移动 1 个单位，按住 Shift 时移动 10 个单位。连接期间，方向键改为移动正在放置的那一端。对于未选中任何图形时开始的箭头，Enter 保留起点之前移动起点，之后移动终点。调整大小期间，方向键移动正在调整的那个角。 |
@@ -183,7 +184,7 @@ Mod 在 Mac 上是 Command，在其他系统上是 Control。白板只有一个 
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool, Enter connects the selected shape to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -428,7 +429,8 @@ const editor = createEditor({
 - Markdown 按阅读顺序保留每个图形的文字，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含五种内置图形时，也可以持久化 HTML。
 - 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
 - 不支持便签内的白板，也不支持旋转。
-- 仅用键盘不能移动已绘制箭头的端点，也不能同时调整多个图形的大小。
+- 用画笔绘制需要指针。用键盘调整大小时不能保持比例，也不能围绕中心调整，而拖动角时按住 Shift 和 Alt 可以做到。
+- 任何按键或指针手势都不能把箭头已绑定的端点移离它的图形，也不能同时调整多个图形的大小。移动选中的箭头会移动它的自由端点，每个已绑定的端点仍留在它的图形上。
 - 在白板页面中，白板仍是文档中的一个块。选中白板时按 Delete 或 Backspace 会删除它及其图形，撤销可以恢复白板。安装了[退出块结构](/docs/exit-break)时，光标在白板上（Mod+A 可能把光标放在那里）按 Mod+Enter 会在白板后添加一个段落，它在视野之外。
 
 ## 插件
