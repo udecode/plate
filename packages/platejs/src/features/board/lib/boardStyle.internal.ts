@@ -1,8 +1,9 @@
 import {
   type HtmlMappingDiagnosticInput,
   property,
-  type PropertyValueDescriptor,
-  type PropertyValueKind,
+  type PropertyEnumDescriptor,
+  type PropertyNumberDescriptor,
+  type PropertyStringDescriptor,
 } from '../../../core';
 
 const BOARD_DASHES = ['dashed', 'dotted', 'solid'] as const;
@@ -27,16 +28,35 @@ export type BoardStyles = Readonly<{
 
 type BoardStyleKey = keyof BoardStyles;
 
-type BoardStyleDescriptor<TValue> = PropertyValueDescriptor<
-  TValue,
-  PropertyValueKind,
-  Readonly<{ default: TValue }>
->;
+type BoardStyleDefault<K extends BoardStyleKey> = Readonly<{
+  default: BoardStyles[K];
+}>;
+
+// Each style names its own descriptor kind, because TypeScript 5 rejects a
+// generic-kind descriptor where a plugin's schema reads its properties.
+type BoardStyleDescriptors = Readonly<{
+  dash: PropertyEnumDescriptor<typeof BOARD_DASHES, BoardStyleDefault<'dash'>>;
+  fill: PropertyStringDescriptor<BoardStyleDefault<'fill'>>;
+  opacity: PropertyNumberDescriptor<
+    BoardStyleDefault<'opacity'> &
+      Readonly<{
+        validate: (value: unknown) => value is number;
+        validationVersion: 1;
+      }>
+  >;
+  strokeColor: PropertyStringDescriptor<BoardStyleDefault<'strokeColor'>>;
+  strokeWidth: PropertyEnumDescriptor<
+    typeof BOARD_STYLE_SIZES,
+    BoardStyleDefault<'strokeWidth'>
+  >;
+  textSize: PropertyEnumDescriptor<
+    typeof BOARD_STYLE_SIZES,
+    BoardStyleDefault<'textSize'>
+  >;
+}>;
 
 export type BoardStyleProperties<TStyles> = {
-  readonly [K in keyof TStyles]: BoardStyleDescriptor<
-    BoardStyles[K & BoardStyleKey]
-  >;
+  readonly [K in keyof TStyles]: BoardStyleDescriptors[K & BoardStyleKey];
 };
 
 export type BoardStyleDefaults<TStyles> = {
@@ -59,7 +79,7 @@ const BOARD_STYLES: {
   readonly [K in BoardStyleKey]: Readonly<{
     attribute: string;
     parse: (raw: unknown) => BoardStyles[K] | undefined;
-    property: (value: BoardStyles[K]) => BoardStyleDescriptor<BoardStyles[K]>;
+    property: (value: BoardStyles[K]) => BoardStyleDescriptors[K];
   }>;
 } = {
   dash: {

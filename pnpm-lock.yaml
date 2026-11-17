@@ -190,6 +190,9 @@ importers:
       typescript:
         specifier: 7.0.2
         version: 7.0.2
+      typescript5:
+        specifier: npm:typescript@5.9.3
+        version: typescript@5.9.3
       ultracite:
         specifier: 7.10.6
         version: 7.10.6(oxfmt@0.64.0)(oxlint@1.79.0(oxlint-tsgolint@7.0.2001))
@@ -841,6 +844,9 @@ importers:
       saxes:
         specifier: 6.0.0
         version: 6.0.0
+      scroll-into-view-if-needed:
+        specifier: ^3.1.0
+        version: 3.1.0
       unist-util-visit:
         specifier: 5.0.0
         version: 5.0.0
@@ -11484,6 +11490,11 @@ packages:
 
   typed-query-selector@2.12.1:
     resolution: {integrity: sha512-uzR+FzI8qrUEIu96oaeBJmd9E7CFEiQ3goA5qCVgc4s5llSubcfGHq9yUstZx/k4s9dXHVKsE35YWoFyvEqEHA==}
+
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@6.0.2:
     resolution: {integrity: sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==}
@@ -23402,6 +23413,8 @@ snapshots:
       is-typed-array: 1.1.15
 
   typed-query-selector@2.12.1: {}
+
+  typescript@5.9.3: {}
 
   typescript@6.0.2: {}
 
