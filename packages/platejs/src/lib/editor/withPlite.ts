@@ -85,12 +85,8 @@ import {
   isNominalPluginDescriptor,
   isNominalPluginReference,
 } from '../../internal/utils/mergePlugins';
-import type {
-  AnyBasePlugin,
-  BasePluginDefinitionInput,
-} from '../plugin/BasePlugin';
+import type { AnyBasePlugin } from '../plugin/BasePlugin';
 import { createPlatePluginPortal } from '../plugin/createPluginContext.internal';
-import { createBasePlugin } from '../plugin/defineBasePlugin.internal';
 import type { PluginReference } from '../plugin/PluginDefinition';
 import {
   type CorePluginDefinition,
@@ -127,12 +123,6 @@ const hasPlateSchemaDescriptorShape = (
   value: unknown
 ): value is PlateSchemaDescriptor =>
   typeof value === 'object' && value !== null && 'name' in value;
-
-const isBasePluginDescriptor = (value: unknown): value is AnyBasePlugin =>
-  isNominalPluginDescriptor(value) &&
-  ['configure', 'extend'].every(
-    (method) => typeof Reflect.get(value, method) === 'function'
-  );
 
 const resolvePlateSchemaDescriptor = (
   editor: Editor,
@@ -740,12 +730,6 @@ export type EditorOptions<
    */
   userId?: string;
   /**
-   * Enable mark/element affinity.
-   *
-   * @default true
-   */
-  affinity?: boolean;
-  /**
    * Select the editor after initialization.
    *
    * @default false
@@ -803,33 +787,6 @@ export type EditorOptions<
   skipInitialization?: boolean;
 };
 
-type BaseEditorOptions<
-  P extends BasePluginInput = CorePlugins[number],
-  TPlugins extends readonly RuntimePluginReference[] = readonly [],
-> = Omit<EditorOptions<TPlugins>, 'id'> &
-  Partial<
-    Pick<AnyBasePlugin, 'decorate' | 'initialState' | 'inject' | 'override'>
-  > & {
-    /** Root editor API declarations for the synthetic root plugin. */
-    api?: BasePluginDefinitionInput['api'];
-    /**
-     * Complete editor document, persisted document envelope, or primary-root
-     * array shorthand. Persisted envelopes must match the compiled current
-     * schema identity.
-     *
-     * Omit this option to start from the schema's default primary-root child.
-     */
-    initialValue?:
-      | ((context: {
-          editor: InternalBaseEditorWithInstalledPlugins<
-            Value,
-            InferBaseEditorPlugins<P[]>,
-            InferBaseEditorSchemaPlugins<P[]>
-          >;
-        }) => EditorValueInput<Value>)
-      | EditorValueInput<Value>;
-  };
-
 const partitionPluginInputs = (
   plugins: readonly RuntimePluginReference[]
 ): Readonly<{
@@ -856,32 +813,15 @@ const partitionPluginInputs = (
 const prepareInitialPlatePlugins = (
   editor: Editor,
   {
-    affinity,
     plugins = [],
     schema,
-  }: Omit<
-    Pick<EditorOptions<readonly BasePluginInput[]>, 'affinity' | 'schema'>,
-    'plugins'
-  > & {
+  }: Pick<EditorOptions<readonly BasePluginInput[]>, 'schema'> & {
     plugins?: readonly BasePluginInput[];
-  },
-  rootPluginConfig: object = {}
+  }
 ) => {
   const identity = getEditorSchemaIdentity(schema);
-  const baseCorePlugins = getCorePlugins({ affinity });
-
-  const internalRootCandidate = createBasePlugin('root', rootPluginConfig);
-
-  if (!isBasePluginDescriptor(internalRootCandidate)) {
-    throw new Error(
-      'Plate root plugin construction returned an invalid descriptor.'
-    );
-  }
-  const internalRootDescriptor = internalRootCandidate;
-
   const sourcePlugins = snapshotPlatePluginSources({
-    baseCore: baseCorePlugins,
-    internalRoot: internalRootDescriptor,
+    baseCore: getCorePlugins(),
     reactCore: [],
     user: plugins,
   });
@@ -967,49 +907,17 @@ const prepareInitialPlatePlugins = (
   }
 };
 
-// A proxy can answer `in` and own-property checks differently, so a key either one sees counts.
-const hasOption = (options: object, key: string) => {
-  if (key in options) return true;
-  for (
-    let object: object | null = options;
-    object !== null;
-    object = Object.getPrototypeOf(object)
-  ) {
-    if (Object.hasOwn(object, key)) return true;
-  }
-
-  return false;
-};
-
 /** @internal */
-export const assertConstructorOptions = (
-  options: object,
-  keys: Readonly<Record<string, true>>
-) => {
-  if (hasOption(options, 'editor')) {
-    throw new Error(
-      'Plate editor constructors always create a new editor and take no `editor` option. Pass the document as `initialValue`, and render an existing editor with `EditorRoot`.'
-    );
-  }
-  if (hasOption(options, 'migrations')) {
-    throw new Error(
-      'Plate editor `migrations` is unsupported. Convert persisted documents with migrateDocument before creating or replacing an editor value.'
-    );
-  }
-  assertEditorOptions(options, keys);
-};
+export { assertEditorOptions };
 
 /** @internal */
 export const readConstructorOptions = <TOptions extends object>(
   options: TOptions,
   keys: Readonly<Record<string, true>>
 ): Partial<TOptions> => {
-  assertConstructorOptions(options, keys);
-  const read = readEditorOptions(options, keys);
-  // A getter the copy runs can add `editor`.
-  assertConstructorOptions(options, keys);
+  assertEditorOptions(options, keys);
 
-  return read;
+  return readEditorOptions(options, keys);
 };
 
 type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
@@ -1026,7 +934,6 @@ export const buildEditor = <TEditor extends Editor = Editor>(
   dormant = false
 ): Editor => {
   const {
-    affinity,
     autoSelect,
     id,
     initialValue,
@@ -1040,7 +947,6 @@ export const buildEditor = <TEditor extends Editor = Editor>(
     shouldNormalizeEditor,
     skipInitialization,
     userId,
-    ...rootPluginConfig
   } = options;
   const editorUserId = resolveEditorUserId(userId);
   const runtimeOptions = { id, lifecycleErrorSink, maxLength, readOnly };
@@ -1053,11 +959,10 @@ export const buildEditor = <TEditor extends Editor = Editor>(
   let prepared: ReturnType<typeof prepareInitialPlatePlugins> | undefined;
 
   try {
-    prepared = prepareInitialPlatePlugins(
-      editor,
-      { affinity, plugins: pluginInputs.plate, schema },
-      rootPluginConfig satisfies Record<string, never>
-    );
+    prepared = prepareInitialPlatePlugins(editor, {
+      plugins: pluginInputs.plate,
+      schema,
+    });
     const { identity, userPlugins } = prepared;
 
     prepared.withSchemaCandidate(() => {
@@ -1374,11 +1279,25 @@ export type CreateEditorOptions<
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
-> = Partial<
-  Omit<BaseEditorOptions<BasePluginInput, TPlugins>, 'plugins' | 'schema'>
-> & {
+> = Partial<Omit<EditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>> & {
   /** Stable logical identity for the created editor. */
   id?: string;
+  /**
+   * Complete editor document, persisted document envelope, or primary-root
+   * array shorthand. Persisted envelopes must match the compiled current
+   * schema identity.
+   *
+   * Omit this option to start from the schema's default primary-root child.
+   */
+  initialValue?:
+    | ((context: {
+        editor: InternalBaseEditorWithInstalledPlugins<
+          Value,
+          InferBaseEditorPlugins<BasePluginInput[]>,
+          InferBaseEditorSchemaPlugins<BasePluginInput[]>
+        >;
+      }) => EditorValueInput<Value>)
+    | EditorValueInput<Value>;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -1389,18 +1308,12 @@ export type CreateEditorOptions<
 
 /** @internal */
 export const EDITOR_OPTION_KEYS = {
-  affinity: true,
-  api: true,
   autoSelect: true,
-  decorate: true,
   id: true,
   initialSelection: true,
-  initialState: true,
   initialValue: true,
-  inject: true,
   lifecycleErrorSink: true,
   maxLength: true,
-  override: true,
   plugins: true,
   readOnly: true,
   schema: true,

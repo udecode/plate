@@ -215,10 +215,6 @@ const intentionalRuntimeNegativeDefinitionFields = new Map([
     new Set(['invalidApi:api']),
   ],
 ]);
-const packageConfigureInstallationOwners = new Set([
-  'packages/platejs/src/lib/plugins/getCorePlugins.internal.ts',
-  'packages/platejs/src/react/editor/getPlateCorePlugins.internal.ts',
-]);
 const packagePluginSourcePattern =
   /^packages\/[^/]+\/src\/.*\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx)$/;
 const packageTestSourcePattern =
@@ -4401,9 +4397,7 @@ const isForeignStoreSelectorPlugin = (node, file) =>
       node.callee.object.name === 'store'));
 
 const isPackagePluginDefinitionSource = (file) =>
-  packagePluginSourcePattern.test(file) &&
-  !packageTestSourcePattern.test(file) &&
-  !packageConfigureInstallationOwners.has(file);
+  packagePluginSourcePattern.test(file) && !packageTestSourcePattern.test(file);
 
 const isPluginTypeReference = (node) => {
   if (node?.type !== 'MemberExpression') return false;

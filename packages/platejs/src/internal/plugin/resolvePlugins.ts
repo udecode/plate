@@ -348,14 +348,12 @@ const snapshotPluginDescriptorValue = (
 /** Capture the immutable descriptor graph used by every Plate projection. */
 export type PlatePluginSourceGroups = Readonly<{
   baseCore?: readonly BasePluginInput[];
-  internalRoot?: BasePluginInput;
   reactCore?: readonly BasePluginInput[];
   user?: readonly BasePluginInput[];
 }>;
 
 type NormalizedPlatePluginSourceGroups = Readonly<{
   baseCore: readonly AnyBasePlugin[];
-  internalRoot?: AnyBasePlugin;
   reactCore: readonly AnyBasePlugin[];
   user: readonly AnyBasePlugin[];
 }>;
@@ -397,9 +395,6 @@ const normalizePlatePluginSources = (
 
   return {
     baseCore: normalizePlatePluginSourceList(sources.baseCore),
-    internalRoot: sources.internalRoot
-      ? normalizePlatePluginSourceList([sources.internalRoot])[0]
-      : undefined,
     reactCore: normalizePlatePluginSourceList(sources.reactCore),
     user: normalizePlatePluginSourceList(sources.user),
   };
@@ -420,9 +415,6 @@ export const snapshotPlatePluginSources = (
 
   return Object.freeze({
     baseCore: Object.freeze(normalized.baseCore.map(snapshot)),
-    internalRoot: normalized.internalRoot
-      ? snapshot(normalized.internalRoot)
-      : undefined,
     reactCore: Object.freeze(normalized.reactCore.map(snapshot)),
     user: Object.freeze(normalized.user.map(snapshot)),
   });
@@ -1909,7 +1901,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
   return resolvedMeta;
 };
 
-type PluginRootRole = 'baseCore' | 'internalRoot' | 'reactCore' | 'user';
+type PluginRootRole = 'baseCore' | 'reactCore' | 'user';
 
 type PluginRootOrigin = Readonly<{
   descriptor: AnyBasePlugin;
@@ -1936,7 +1928,6 @@ type PluginGraphNode = {
 
 const rootRolePrecedence: Readonly<Record<PluginRootRole, number>> = {
   baseCore: 1,
-  internalRoot: 4,
   reactCore: 2,
   user: 3,
 };
@@ -1960,11 +1951,6 @@ const assertPluginReference = (
   if (!reference.name) {
     throw new Error(
       `Plate plugin "${ownerName}" has an empty dependency name at "${path}".`
-    );
-  }
-  if (reference.name === 'root') {
-    throw new Error(
-      `Plate plugin name "root" is reserved for the internal editor root (${path}).`
     );
   }
 
@@ -2001,7 +1987,6 @@ export const collectPlatePluginSourceCandidates = (
   const candidates: AnyBasePlugin[] = [];
   const visited = new WeakSet<object>();
   const queue: unknown[] = [
-    ...(sources.internalRoot ? [sources.internalRoot] : []),
     ...sources.baseCore,
     ...sources.reactCore,
     ...sources.user,
@@ -2147,11 +2132,6 @@ const applyWeakPluginOverrides = (
       if (!overrides) continue;
 
       for (const targetName of Object.keys(overrides)) {
-        if (targetName === 'root') {
-          throw new Error(
-            `Plate plugin "${contributor.resolved.name}" cannot weakly override the internal root plugin.`
-          );
-        }
         if (targetName === contributor.resolved.name) {
           throw new Error(
             `Plate plugin "${contributor.resolved.name}" cannot weakly override itself. Configure the descriptor directly.`
@@ -2249,16 +2229,6 @@ const resolveAndSortPluginsCandidate = (
     if (!isNominalPluginDescriptor(descriptor) || !descriptor.name) {
       throw new Error(`Plate plugin at "${path}" must have a non-empty name.`);
     }
-    if (descriptor.name === 'root' && role !== 'internalRoot') {
-      throw new Error(
-        `Plate plugin name "root" is reserved for the internal editor root (${path}).`
-      );
-    }
-    if (role === 'internalRoot' && descriptor.name !== 'root') {
-      throw new Error(
-        `The internal editor root must use the reserved plugin name "root".`
-      );
-    }
 
     const origins = rootOriginsByName.get(descriptor.name) ?? [];
     const sameDescriptor = origins.find(
@@ -2279,7 +2249,7 @@ const resolveAndSortPluginsCandidate = (
   };
   const indexRoots = (
     plugins: readonly AnyBasePlugin[],
-    role: Exclude<PluginRootRole, 'internalRoot'>
+    role: PluginRootRole
   ) => {
     plugins.forEach((plugin, index) => {
       indexDescriptor(plugin);
@@ -2287,10 +2257,6 @@ const resolveAndSortPluginsCandidate = (
     });
   };
 
-  if (sources.internalRoot) {
-    indexDescriptor(sources.internalRoot);
-    addRoot(sources.internalRoot, 'internalRoot', 'internalRoot.root');
-  }
   indexRoots(sources.baseCore, 'baseCore');
   indexRoots(sources.reactCore, 'reactCore');
   indexRoots(sources.user, 'user');

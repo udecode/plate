@@ -1230,7 +1230,7 @@
           "kind": "type",
           "name": "CreateEditorOptions",
           "runtime": false,
-          "signature": "type CreateEditorOptions<TPlugins extends readonly PluginReference$1[] = readonly [], TSchema extends EditorApplicationSchema | undefined = EditorApplicationSchema | undefined> = Partial<Omit<BaseEditorOptions<BasePluginInput, TPlugins>, 'plugins' | 'schema'>> & {\n  /** Stable logical identity for the created editor. */\n  id?: string;\n  /**\n   * Array of plugins to be loaded into the editor. Plugins extend the editor's\n   * functionality and define custom behavior.\n   */\n  plugins?: TPlugins;\n  schema?: TSchema;\n};",
+          "signature": "type CreateEditorOptions<TPlugins extends readonly PluginReference$1[] = readonly [], TSchema extends EditorApplicationSchema | undefined = EditorApplicationSchema | undefined> = Partial<Omit<EditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>> & {\n  /** Stable logical identity for the created editor. */\n  id?: string;\n  /**\n   * Complete editor document, persisted document envelope, or primary-root\n   * array shorthand. Persisted envelopes must match the compiled current\n   * schema identity.\n   *\n   * Omit this option to start from the schema's default primary-root child.\n   */\n  initialValue?: ((context: {\n    editor: InternalBaseEditorWithInstalledPlugins<Value, InferBaseEditorPlugins$1<BasePluginInput[]>, InferBaseEditorSchemaPlugins<BasePluginInput[]>>;\n  }) => EditorValueInput<Value>) | EditorValueInput<Value>;\n  /**\n   * Array of plugins to be loaded into the editor. Plugins extend the editor's\n   * functionality and define custom behavior.\n   */\n  plugins?: TPlugins;\n  schema?: TSchema;\n};",
           "source": null,
           "typeParameters": [
             "TPlugins extends readonly PluginReference$1[] = readonly []",
@@ -14679,7 +14679,7 @@
           "kind": "type",
           "name": "ClosedMigrationDocument",
           "runtime": false,
-          "signature": "type ClosedMigrationDocument<TDocument> = { readonly [TKey in keyof TDocument]: TKey extends keyof EditorDocumentValue ? TDocument[TKey] : `Read top-level field \"${TKey & string}\" from legacy`; };",
+          "signature": "type ClosedMigrationDocument<TDocument> = { readonly [TKey in keyof TDocument]: TKey extends keyof EditorDocumentValue ? TDocument[TKey] : `Return top-level field \"${TKey & string}\" in legacy`; };",
           "source": null,
           "typeParameters": [
             "TDocument"
@@ -17063,7 +17063,7 @@
         },
         "platejs/react:createEditor": {
           "aliases": [],
-          "documentation": "Creates a Plate editor (React version).\n\nThis function creates a fully configured Plate editor instance with\nReact-specific enhancements including component rendering, event handlers,\nand hooks integration. It applies all specified plugins and configurations to\ncreate a functional editor.\n\nExamples:\n\n```ts\nconst editor = createEditor({\n  plugins: [ParagraphPlugin, HeadingPlugin],\n  initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],\n});\n\n// Editor with custom components\nconst editor = createEditor({\n  plugins: [\n    ParagraphPlugin.configure({ component: ParagraphElement }),\n    CodePlugin.configure({ component: CodeLeaf }),\n  ],\n});\n\n// Editor with React-specific options\nconst editor = createEditor({\n  plugins: [ParagraphPlugin],\n  on: { keyDown: customKeyHandler },\n});\n\n// Name the schema only when persisted or collaborative state needs lineage.\nconst persistedEditor = createEditor({\n  schema: { id: 'acme-document', version: 1 },\n});\n```",
+          "documentation": "Creates a Plate editor (React version).\n\nThis function creates a fully configured Plate editor instance with\nReact-specific enhancements including component rendering, event handlers,\nand hooks integration. It applies all specified plugins and configurations to\ncreate a functional editor.\n\nExamples:\n\n```ts\nconst editor = createEditor({\n  plugins: [ParagraphPlugin, HeadingPlugin],\n  initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],\n});\n\n// Editor with custom components\nconst editor = createEditor({\n  plugins: [\n    ParagraphPlugin.configure({ component: ParagraphElement }),\n    CodePlugin.configure({ component: CodeLeaf }),\n  ],\n});\n\n// Editor-wide React behavior, such as a key handler, goes in an app plugin\nconst AppPlugin = definePlugin('app', {\n  on: { keyDown: customKeyHandler },\n});\nconst editor = createEditor({\n  plugins: [AppPlugin, ParagraphPlugin],\n});\n\n// Name the schema only when persisted or collaborative state needs lineage.\nconst persistedEditor = createEditor({\n  schema: { id: 'acme-document', version: 1 },\n});\n```",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "createEditor",
@@ -17081,7 +17081,7 @@
           "kind": "type",
           "name": "CreateEditorOptions",
           "runtime": false,
-          "signature": "type CreateEditorOptions<TPlugins extends readonly PluginReference[] = readonly PluginInput[], TSchema extends EditorApplicationSchema | undefined = EditorApplicationSchema | undefined> = Partial<Omit<ReactEditorOptions<TPlugins, TSchema>, 'plugins'>> & {\n  /** Stable logical identity for the created editor. */\n  id?: string;\n  plugins?: TPlugins;\n};",
+          "signature": "type CreateEditorOptions<TPlugins extends readonly PluginReference[] = readonly PluginInput[], TSchema extends EditorApplicationSchema | undefined = EditorApplicationSchema | undefined> = Partial<Omit<EditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>> & {\n  /** Stable logical identity for the created editor. */\n  id?: string;\n  initialValue?: ((context: {\n    editor: Editor<Value, TPlugins, PlatePluginsFromTuple<TPlugins>, TSchema>;\n  }) => EditorValueInput<Value>) | EditorValueInput<Value>;\n  plugins?: TPlugins;\n  schema?: TSchema;\n};",
           "source": null,
           "typeParameters": [
             "TPlugins extends readonly PluginReference[] = readonly PluginInput[]",

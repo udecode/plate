@@ -8,7 +8,7 @@ import {
 import type { EditorApplicationSchema } from '../../lib';
 import { resolveEditorUserId } from '../../lib/editor/editorUser.internal';
 import {
-  assertConstructorOptions,
+  assertEditorOptions,
   type PlatePluginsFromTuple,
   readConstructorOptions,
   type RuntimePluginsFromTuple,
@@ -103,7 +103,7 @@ export function useCreateEditor(
 ): unknown {
   const hookOptions = options as CreateEditorOptions & { enabled?: boolean };
 
-  assertConstructorOptions(hookOptions, USE_CREATE_EDITOR_OPTION_KEYS);
+  assertEditorOptions(hookOptions, USE_CREATE_EDITOR_OPTION_KEYS);
   const { enabled, id, userId } = hookOptions;
   const userKey = resolveEditorUserId(userId);
 

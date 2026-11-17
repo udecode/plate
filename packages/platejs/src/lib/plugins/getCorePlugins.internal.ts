@@ -10,11 +10,6 @@ import { InputRulesPlugin } from './input-rules/InputRulesPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import { TransferPlugin } from './TransferPlugin';
 
-export type GetCorePluginsOptions = {
-  /** Enable mark/element affinity. */
-  affinity?: boolean;
-};
-
 export type CorePlugins = readonly [
   typeof DebugPlugin,
   typeof ElementStatePlugin,
@@ -24,13 +19,11 @@ export type CorePlugins = readonly [
   typeof InputRulesPlugin,
   typeof OverridePlugin,
   typeof HtmlPlugin,
-  ReturnType<typeof AffinityPlugin.configure>,
+  typeof AffinityPlugin,
   typeof BaseParagraphPlugin,
 ];
 
-export const getCorePlugins = ({
-  affinity,
-}: GetCorePluginsOptions): CorePlugins => [
+export const getCorePlugins = (): CorePlugins => [
   DebugPlugin,
   ElementStatePlugin,
   DOMPlugin,
@@ -39,7 +32,7 @@ export const getCorePlugins = ({
   InputRulesPlugin,
   OverridePlugin,
   HtmlPlugin,
-  AffinityPlugin.configure({ enabled: affinity }),
+  AffinityPlugin,
   BaseParagraphPlugin,
 ];
 

@@ -8,8 +8,6 @@ import {
   readConstructorOptions,
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
-import type { Shortcuts, PluginDefinitionInput } from '../plugin';
-import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 import type { Editor } from './Editor';
 import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
 
@@ -17,76 +15,33 @@ type PluginInput = RuntimePluginReference;
 
 export type { InferEditorPlugins } from './Editor';
 
-type ReactEditorOptions<
-  TPlugins extends readonly RuntimePluginReference[] = readonly PluginInput[],
-  TSchema extends EditorApplicationSchema | undefined =
-    | EditorApplicationSchema
-    | undefined,
-> = Omit<HeadlessEditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'> &
-  Omit<
-    Partial<
-      Pick<
-        PluginDefinitionInput,
-        | 'decorate'
-        | 'inject'
-        | 'on'
-        | 'initialState'
-        | 'override'
-        | 'render'
-        | 'shortcuts'
-      >
-    >,
-    'shortcuts'
-  > & {
-    /** Root editor API declarations for the synthetic root plugin. */
-    api?: PluginDefinitionInput['api'];
-    /**
-     * Configuration for the built-in navigation feedback plugin.
-     *
-     * This React plugin flashes the landed target after navigation jumps such as
-     * TOC, footnote, search, or custom outline movement.
-     *
-     * @default { duration: 1600 }
-     */
-    navigationFeedback?: Partial<NavigationFeedbackPluginState> | boolean;
-    shortcuts?: Shortcuts;
-    initialValue?:
-      | ((context: {
-          editor: Editor<
-            Value,
-            TPlugins,
-            PlatePluginsFromTuple<TPlugins>,
-            TSchema
-          >;
-        }) => EditorValueInput<Value>)
-      | EditorValueInput<Value>;
-    plugins?: TPlugins;
-    schema?: TSchema;
-  };
-
 export type CreateEditorOptions<
   TPlugins extends readonly RuntimePluginReference[] = readonly PluginInput[],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
-> = Partial<Omit<ReactEditorOptions<TPlugins, TSchema>, 'plugins'>> & {
+> = Partial<
+  Omit<HeadlessEditorOptions<TPlugins>, 'id' | 'plugins' | 'schema'>
+> & {
   /** Stable logical identity for the created editor. */
   id?: string;
+  initialValue?:
+    | ((context: {
+        editor: Editor<
+          Value,
+          TPlugins,
+          PlatePluginsFromTuple<TPlugins>,
+          TSchema
+        >;
+      }) => EditorValueInput<Value>)
+    | EditorValueInput<Value>;
   plugins?: TPlugins;
+  schema?: TSchema;
 };
 
 /** @internal */
-export const REACT_EDITOR_OPTION_KEYS = {
-  ...EDITOR_OPTION_KEYS,
-  navigationFeedback: true,
-  on: true,
-  render: true,
-  shortcuts: true,
-} satisfies Record<keyof CreateEditorOptions, true>;
-
-/** @internal */
 export const USE_CREATE_EDITOR_OPTION_KEYS = {
-  ...REACT_EDITOR_OPTION_KEYS,
+  ...EDITOR_OPTION_KEYS,
   enabled: true,
 } satisfies Record<keyof CreateEditorOptions | 'enabled', true>;
 
@@ -114,10 +69,12 @@ export const USE_CREATE_EDITOR_OPTION_KEYS = {
  *   ],
  * });
  *
- * // Editor with React-specific options
- * const editor = createEditor({
- *   plugins: [ParagraphPlugin],
+ * // Editor-wide React behavior, such as a key handler, goes in an app plugin
+ * const AppPlugin = definePlugin('app', {
  *   on: { keyDown: customKeyHandler },
+ * });
+ * const editor = createEditor({
+ *   plugins: [AppPlugin, ParagraphPlugin],
  * });
  *
  * // Name the schema only when persisted or collaborative state needs lineage.
@@ -155,19 +112,13 @@ export const createDormantPlateEditor = (options: unknown) =>
   createPlateEditor(options, true);
 
 const createPlateEditor = (options: unknown, dormant: boolean) => {
-  const resolvedOptions = options as CreateEditorOptions;
-
-  const {
-    navigationFeedback,
-    plugins = [],
-    ...rest
-  } = readConstructorOptions(resolvedOptions, REACT_EDITOR_OPTION_KEYS);
+  const { plugins = [], ...rest } = readConstructorOptions(
+    options as CreateEditorOptions,
+    EDITOR_OPTION_KEYS
+  );
 
   return buildEditor(
-    {
-      ...rest,
-      plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
-    },
+    { ...rest, plugins: [...getPlateCorePlugins(), ...plugins] },
     dormant
   );
 };

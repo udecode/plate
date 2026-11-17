@@ -4,7 +4,6 @@ import { react, type ReactPlugin as RuntimeReactPlugin } from '../plite-react';
 import { toReactPlugin } from '../plugin/toReactPlugin';
 import { ParagraphPlugin } from '../plugins';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
-import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 
 const ReactDOMPlugin = toReactPlugin(DOMPlugin);
 const plateReactPlugin: RuntimeReactPlugin = react({
@@ -19,21 +18,13 @@ const ReactPlugin = toReactPlugin(
 export type ReactCorePlugins = readonly [
   typeof ReactDOMPlugin,
   typeof ReactPlugin,
-  ReturnType<typeof NavigationFeedbackPlugin.configure>,
+  typeof NavigationFeedbackPlugin,
   typeof ParagraphPlugin,
 ];
 
-export const getPlateCorePlugins = ({
-  navigationFeedback,
-}: {
-  navigationFeedback?: Partial<NavigationFeedbackPluginState> | boolean;
-} = {}): ReactCorePlugins => [
+export const getPlateCorePlugins = (): ReactCorePlugins => [
   ReactDOMPlugin,
   ReactPlugin,
-  NavigationFeedbackPlugin.configure({
-    enabled: navigationFeedback !== false,
-    initialState:
-      typeof navigationFeedback === 'boolean' ? undefined : navigationFeedback,
-  }),
+  NavigationFeedbackPlugin,
   ParagraphPlugin,
 ];
