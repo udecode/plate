@@ -1,27 +1,32 @@
 import {
   type KeyboardEvent,
   useCallback,
+  useEffect,
   useMemo,
   useSyncExternalStore,
 } from 'react';
 
-import {
-  type EditorStateView,
-  type NamedRootKey,
-  type RootKey,
-  SelectionApi,
-} from '../..';
+import type { NamedRootKey, RootKey } from '../..';
+import { readEditorHistoryHeadRoots } from '../../core/public-state';
+import { subscribeRootViewPresentation } from '../../core/root-target';
+import type { ViewPresentation } from '../../core/view-presentation';
 import type { EditorHistoryFocusPolicy as EditableEditorHistoryFocusPolicy } from '../editable/editable-dom-runtime';
 import {
   getHistoryDirectionFromNativeEvent,
   type HistoryDirection,
 } from '../editable/history-keyboard';
-import { applyModelOwnedHistoryIntent } from '../editable/mutation-history';
+import {
+  applyModelOwnedHistoryIntent,
+  type HistoryGateAnswer,
+  readHistoryGate,
+} from '../editable/mutation-history';
 import { failInvariant, toInternalRoot } from '../editable/runtime-editor-api';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { Editor } from '../plugin/with-react';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { useEditorRuntimeState } from './use-editor-runtime-state';
 import { useEditorViewState } from './use-editor-view-state';
+import { useGenericSelector } from './use-generic-selector';
 import { useOptionalPliteRuntimeContext } from './use-plite-runtime';
 
 /** Focus behavior after mounted undo or redo applies a history batch. */
@@ -49,69 +54,71 @@ export type EditorHistoryController = {
   onKeyDown: (event: KeyboardEvent) => void;
   pending: HistoryDirection | null;
   redo: () => void;
+  /**
+   * The root the next undo changes, or waits for while no shown `Editable`
+   * can edit it. `undefined` for the primary document, for a change that
+   * touches no root and with nothing to undo. With `editor` or `root`, the
+   * root they name.
+   */
   root: RootKey | undefined;
   undo: () => void;
 };
 
-type HistoryAvailability = {
-  canRedo: boolean;
-  canUndo: boolean;
-  pending: HistoryDirection | null;
-};
+type HistoryAnswer = HistoryGateAnswer | Readonly<{ status: 'unchecked' }>;
 
-const historyAvailabilityEquality = (
-  a: HistoryAvailability | null,
-  b: HistoryAvailability
-) =>
-  a?.canRedo === b.canRedo &&
-  a.canUndo === b.canUndo &&
-  a.pending === b.pending;
+type HistoryGates = Readonly<{
+  presentation: ViewPresentation | null;
+  redo: HistoryAnswer;
+  undo: HistoryAnswer;
+}>;
 
-const nullableRootKeyEquality = (a: RootKey | null, b: RootKey | null) =>
-  a === b;
+const EMPTY: HistoryAnswer = Object.freeze({ status: 'empty' });
 
-const selectSelectionRoot = (
-  state: EditorStateView<any, any>
-): RootKey | null => {
-  const selection = state.selection();
+const UNCHECKED: HistoryAnswer = Object.freeze({ status: 'unchecked' });
 
-  return selection ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY) : null;
-};
+const readUncheckedAnswer = (editor: Editor, direction: HistoryDirection) =>
+  readEditorHistoryHeadRoots(editor, direction) === null ? EMPTY : UNCHECKED;
 
-const createHistoryRootSelector = (initialRoot: RootKey) => {
-  let lastRoot = initialRoot;
+const isReady = (answer: HistoryAnswer | undefined) =>
+  answer?.status === 'open' || answer?.status === 'unchecked';
 
-  return (state: EditorStateView<any, any>): RootKey => {
-    const selectionRoot = selectSelectionRoot(state);
+const sameGateAnswer = (a: HistoryAnswer, b: HistoryAnswer) =>
+  a === b ||
+  (a.status === 'open' &&
+    b.status === 'open' &&
+    a.root === b.root &&
+    a.view === b.view) ||
+  (a.status === 'refused' &&
+    b.status === 'refused' &&
+    a.reason === b.reason &&
+    a.root === b.root);
 
-    if (selectionRoot) lastRoot = selectionRoot;
+const historyGatesEquality = (a: HistoryGates | null, b: HistoryGates | null) =>
+  a === b ||
+  (a !== null &&
+    b !== null &&
+    a.presentation === b.presentation &&
+    sameGateAnswer(a.redo, b.redo) &&
+    sameGateAnswer(a.undo, b.undo));
 
-    return selectionRoot ?? lastRoot;
-  };
-};
+const openView = (answer: HistoryAnswer | undefined) =>
+  answer?.status === 'open' ? (answer.view as ReactRuntimeEditor) : undefined;
 
-const selectHistoryAvailability = (state: unknown): HistoryAvailability => {
-  const { history } = state as {
-    history?: {
-      hasRedo?: () => boolean;
-      hasUndo?: () => boolean;
-      pending?: () => HistoryDirection | null;
-    };
-  };
-
-  return {
-    canRedo: history?.hasRedo?.() ?? false,
-    canUndo: history?.hasUndo?.() ?? false,
-    pending: history?.pending?.() ?? null,
-  };
-};
+const selectHistoryPending = (state: unknown): HistoryDirection | null =>
+  (
+    state as { history?: { pending?: () => HistoryDirection | null } }
+  ).history?.pending?.() ?? null;
 
 /**
- * Create undo/redo commands and keyboard handling for the active or fixed root.
- * Without `editor`, they run through the view of that root the user focused or
- * pressed most recently among those an `Editable` shows, or the first one
- * mounted while the user has used none. They are off while that view is
- * read-only or composes text, and while no `Editable` shows the root.
+ * Create undo/redo commands and keyboard handling.
+ *
+ * Without `editor` or `root`, they run through the shown writable view used
+ * last, and are on only while a shown writable `Editable` reaches every root
+ * the next undo or redo changes. With `editor` or `root`, they replay the next
+ * batch whatever roots it changes. With `root`, they are off while no view of
+ * it is shown. With `editor`, they can stay on while no `Editable` runs that
+ * editor, and a click then does nothing. They are off while their view is
+ * read-only or composes text.
  */
 export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   editor: providedEditor,
@@ -127,66 +134,105 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
     providedEditor ??
     context?.runtime ??
     failInvariant('useEditorHistory requires an editor or an EditorRoot.');
-  const historyRootSelector = useMemo(
-    () => createHistoryRootSelector(toInternalRoot(source.read.view.root())),
-    [source]
-  );
-  const historyRoot = useEditorRuntimeState(source, historyRootSelector, {
-    equalityFn: nullableRootKeyEquality,
-    shouldUpdate: (change) => Boolean(change?.selectionChanged),
-  });
-  const root = providedEditor
-    ? toInternalRoot(providedEditor.read.view.root())
-    : (fixedRoot ?? historyRoot);
-  const publicRoot = toPublicRootOption(root);
-  const targetContext = providedEditor ? null : context;
+  const follows = !providedEditor && !fixedRoot;
+  const targetContext = fixedRoot ? context : null;
   const subscribeTarget = useCallback(
     (listener: () => void) =>
-      targetContext
-        ? targetContext.subscribeRootTarget(root, listener)
+      targetContext && fixedRoot
+        ? targetContext.subscribeRootTarget(fixedRoot, listener)
         : () => {},
-    [root, targetContext]
+    [fixedRoot, targetContext]
   );
   const readTarget = useCallback(
-    () => targetContext?.getRootTarget(root) ?? null,
-    [root, targetContext]
+    () =>
+      targetContext && fixedRoot
+        ? targetContext.getRootTarget(fixedRoot)
+        : null,
+    [fixedRoot, targetContext]
   );
   const target = useSyncExternalStore(subscribeTarget, readTarget, readTarget);
-  const historyEditor = providedEditor ?? target?.view;
-  const shown = providedEditor ? true : (target?.shown ?? false);
+  const fixedView = providedEditor ?? target?.view;
+  const contextScope = context?.historyScope;
+  const readGates = useCallback((): HistoryGates | null => {
+    if (!follows) {
+      return {
+        presentation: null,
+        redo: readUncheckedAnswer(source, 'redo'),
+        undo: readUncheckedAnswer(source, 'undo'),
+      };
+    }
+
+    return contextScope
+      ? {
+          presentation: contextScope.presentation,
+          redo: readHistoryGate(contextScope, 'redo'),
+          undo: readHistoryGate(contextScope, 'undo'),
+        }
+      : null;
+  }, [contextScope, follows, source]);
+  const [gates, updateGates] = useGenericSelector(
+    readGates,
+    historyGatesEquality
+  );
+  const presentation = gates?.presentation;
+
+  useEffect(() => {
+    const stopCommits = source.subscribeCommit(() => updateGates());
+    const stopNotice = presentation
+      ? subscribeRootViewPresentation(presentation, updateGates)
+      : undefined;
+
+    updateGates();
+
+    return () => {
+      stopCommits();
+      stopNotice?.();
+    };
+  }, [presentation, source, updateGates]);
+
+  const root = providedEditor
+    ? toInternalRoot(providedEditor.read.view.root())
+    : (fixedRoot ??
+      (gates && 'root' in gates.undo ? gates.undo.root : MAIN_ROOT_KEY));
+  const publicRoot = toPublicRootOption(root);
+  const historyEditor = follows
+    ? (openView(gates?.undo) ?? openView(gates?.redo))
+    : fixedView;
+  const shown = providedEditor || follows ? true : (target?.shown ?? false);
   const readOnly = useEditorViewState(historyEditor ?? source, (view) =>
     view.isReadOnly()
   );
   const composing = useEditorViewState(historyEditor ?? source, (view) =>
     view.isComposing()
   );
-  const availability = useEditorRuntimeState(
-    source,
-    selectHistoryAvailability,
-    { equalityFn: historyAvailabilityEquality }
-  );
+  const pending = useEditorRuntimeState(source, selectHistoryPending);
+  const undoReady = isReady(gates?.undo);
+  const redoReady = isReady(gates?.redo);
 
   const applyHistory = useCallback(
     (direction: HistoryDirection) => {
-      // A focus moves the caret's root and a press moves the store's answer
-      // before this hook renders again, so a command called from either reads
-      // both when it runs.
-      const editor =
-        providedEditor ??
-        targetContext?.getRootTarget(
-          fixedRoot ?? source.read(historyRootSelector)
-        )?.view;
+      const editor = follows
+        ? contextScope && openView(readHistoryGate(contextScope, direction))
+        : (providedEditor ??
+          (targetContext && fixedRoot
+            ? targetContext.getRootTarget(fixedRoot)?.view
+            : undefined));
 
       return editor
-        ? applyModelOwnedHistoryIntent({ direction, editor, focusPolicy })
+        ? applyModelOwnedHistoryIntent({
+            direction,
+            editor,
+            focusPolicy,
+            rootCheck: follows ? 'check' : 'skip',
+          })
         : false;
     },
     [
+      contextScope,
       fixedRoot,
       focusPolicy,
-      historyRootSelector,
+      follows,
       providedEditor,
-      source,
       targetContext,
     ]
   );
@@ -201,10 +247,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
       const direction = getHistoryDirectionFromNativeEvent(event.nativeEvent);
 
       if (!direction || readOnly || composing) return;
-      if (
-        !availability.pending &&
-        (direction === 'undo' ? !availability.canUndo : !availability.canRedo)
-      ) {
+      if (!pending && (direction === 'undo' ? !undoReady : !redoReady)) {
         return;
       }
       if (!applyHistory(direction)) return;
@@ -212,47 +255,32 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
       event.preventDefault();
       event.stopPropagation();
     },
-    [
-      applyHistory,
-      availability.canRedo,
-      availability.canUndo,
-      availability.pending,
-      composing,
-      readOnly,
-    ]
+    [applyHistory, composing, pending, readOnly, redoReady, undoReady]
   );
 
   return useMemo(
     () => ({
       canRedo:
-        shown &&
-        !readOnly &&
-        !composing &&
-        availability.pending === null &&
-        availability.canRedo,
+        shown && !readOnly && !composing && pending === null && redoReady,
       canUndo:
-        shown &&
-        !readOnly &&
-        !composing &&
-        availability.pending === null &&
-        availability.canUndo,
+        shown && !readOnly && !composing && pending === null && undoReady,
       onKeyDown,
-      pending: availability.pending,
+      pending,
       redo,
       root: publicRoot,
       undo,
     }),
     [
-      availability.canRedo,
-      availability.canUndo,
-      availability.pending,
       composing,
       onKeyDown,
+      pending,
       publicRoot,
       readOnly,
       redo,
+      redoReady,
       shown,
       undo,
+      undoReady,
     ]
   );
 }

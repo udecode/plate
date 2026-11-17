@@ -17790,7 +17790,7 @@
           "kind": "type",
           "name": "EditableHistoryReplayResult",
           "runtime": false,
-          "signature": "type EditableHistoryReplayResult = HistoryOutcome | Readonly<{\n  reason: 'composing' | 'not-installed' | 'unmounted';\n  status: 'unavailable';\n}>;",
+          "signature": "type EditableHistoryReplayResult = HistoryOutcome | Readonly<{\n  reason: 'composing' | 'not-installed' | 'unmounted';\n  status: 'unavailable';\n}> | Readonly<{\n  /** No shown `Editable` of the presentation can edit `root`. */\n  reason: 'hidden' | 'read-only';\n  /** The root the replay would change, `undefined` for the primary document. */\n  root: RootKey | undefined;\n  status: 'unavailable';\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -18482,7 +18482,7 @@
           "kind": "type",
           "name": "EditorHistoryController",
           "runtime": false,
-          "signature": "type EditorHistoryController = {\n  canRedo: boolean;\n  canUndo: boolean;\n  onKeyDown: (event: KeyboardEvent$1) => void;\n  pending: HistoryDirection | null;\n  redo: () => void;\n  root: RootKey | undefined;\n  undo: () => void;\n};",
+          "signature": "type EditorHistoryController = {\n  canRedo: boolean;\n  canUndo: boolean;\n  onKeyDown: (event: KeyboardEvent$1) => void;\n  pending: HistoryDirection | null;\n  redo: () => void;\n  /**\n   * The root the next undo changes, or waits for while no shown `Editable`\n   * can edit it. `undefined` for the primary document, for a change that\n   * touches no root and with nothing to undo. With `editor` or `root`, the\n   * root they name.\n   */\n  root: RootKey | undefined;\n  undo: () => void;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -27656,7 +27656,7 @@
         },
         "platejs/react:useEditorHistory": {
           "aliases": [],
-          "documentation": "Create undo/redo commands and keyboard handling for the active or fixed root.\nWithout `editor`, they run through the view of that root the user focused or\npressed most recently among those an `Editable` shows, or the first one\nmounted while the user has used none. They are off while that view is\nread-only or composes text, and while no `Editable` shows the root.",
+          "documentation": "Create undo/redo commands and keyboard handling.\n\nWithout `editor` or `root`, they run through the shown writable view used\nlast, and are on only while a shown writable `Editable` reaches every root\nthe next undo or redo changes. With `editor` or `root`, they replay the next\nbatch whatever roots it changes. With `root`, they are off while no view of\nit is shown. With `editor`, they can stay on while no `Editable` runs that\neditor, and a click then does nothing. They are off while their view is\nread-only or composes text.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useEditorHistory",

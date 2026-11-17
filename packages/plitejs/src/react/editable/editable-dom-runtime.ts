@@ -11,6 +11,7 @@ import {
   PointApi,
   type Range,
   RangeApi,
+  type RootKey,
   type TransferOutcome,
   type Value,
 } from '../..';
@@ -59,6 +60,7 @@ import {
   isPliteNodeFlowRootBound,
 } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import { toPublicRootOption } from '../root-key';
 import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
   readPliteViewSelection,
@@ -91,6 +93,7 @@ import {
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
 import type { DeferredMutation } from './model-input-strategy';
+import { type HistoryGateScope, readHistoryGate } from './mutation-history';
 import { RenderContractMonitor } from './render-contract-monitor';
 import {
   getEditorRuntimeOwner,
@@ -112,8 +115,9 @@ import {
 
 type MutableCell<T> = { current: T };
 
-/** Focus behavior after mounted undo or redo applies a history batch. */
 export type EditorHistoryFocusPolicy = 'none' | 'preserve' | 'restore-root';
+
+export type HistoryRootCheck = 'check' | 'skip';
 
 export type NodeSelectionFocus = RefObject<HTMLElement | null>;
 
@@ -126,6 +130,13 @@ export type EditableHistoryReplayResult =
   | HistoryOutcome
   | Readonly<{
       reason: 'composing' | 'not-installed' | 'unmounted';
+      status: 'unavailable';
+    }>
+  | Readonly<{
+      /** No shown `Editable` of the presentation can edit `root`. */
+      reason: 'hidden' | 'read-only';
+      /** The root the replay would change, `undefined` for the primary document. */
+      root: RootKey | undefined;
       status: 'unavailable';
     }>;
 
@@ -438,6 +449,8 @@ export class EditableDOMRuntime {
   private selectionFocusHandler: SelectionFocusHandler = () => {};
 
   private historySettleHandler: () => void = () => {};
+
+  historyScope: HistoryGateScope | null = null;
 
   private historyReplayHandler: (event: EditableHistoryReplayEvent) => void =
     () => {};
@@ -1316,6 +1329,10 @@ export class EditableDOMRuntime {
     this.historySettleHandler = handler;
   }
 
+  updateHistoryScope(scope: HistoryGateScope | null) {
+    this.historyScope = scope;
+  }
+
   settleInput(): boolean {
     const root = this.rootElement;
 
@@ -1344,7 +1361,8 @@ export class EditableDOMRuntime {
 
   private async replayHistory(
     direction: 'redo' | 'undo',
-    focusPolicy: EditorHistoryFocusPolicy = 'restore-root'
+    focusPolicy: EditorHistoryFocusPolicy,
+    rootCheck: HistoryRootCheck
   ): Promise<EditableHistoryReplayResult> {
     const root = this.rootElement;
 
@@ -1368,6 +1386,19 @@ export class EditableDOMRuntime {
 
     if (!history) {
       return { reason: 'not-installed', status: 'unavailable' };
+    }
+
+    const gate =
+      rootCheck === 'check' && this.historyScope
+        ? readHistoryGate(this.historyScope, direction, this.editorValue)
+        : null;
+
+    if (gate?.status === 'refused') {
+      return {
+        reason: gate.reason,
+        root: toPublicRootOption(gate.root),
+        status: 'unavailable',
+      };
     }
 
     const run = () => history[direction]();
@@ -1446,7 +1477,8 @@ export class EditableDOMRuntime {
   dispatchHistory(
     direction: 'redo' | 'undo',
     focusPolicy: EditorHistoryFocusPolicy = 'restore-root',
-    onOutcome?: (result: EditableHistoryReplayResult) => void
+    onOutcome?: (result: EditableHistoryReplayResult) => void,
+    rootCheck: HistoryRootCheck = 'check'
   ): void {
     const deliver = (result: EditableHistoryReplayResult) => {
       this.observeHistoryReplay(direction, () =>
@@ -1455,7 +1487,7 @@ export class EditableDOMRuntime {
       this.observeHistoryReplay(direction, () => onOutcome?.(result));
     };
 
-    void this.replayHistory(direction, focusPolicy).then(
+    void this.replayHistory(direction, focusPolicy, rootCheck).then(
       deliver,
       (error: unknown) => {
         this.reportHistoryReplayError(direction, 'replay', error);

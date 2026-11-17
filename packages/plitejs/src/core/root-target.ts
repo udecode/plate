@@ -1,6 +1,7 @@
 import type { Editor, RootKey } from '../interfaces/editor';
 import { getEditorRuntime } from './editor-runtime';
 import { notifyObservers } from './lifecycle-error';
+import { subscribeEditorViewState } from './public-state';
 import type { ViewPresentation } from './view-presentation';
 import { countCoreWork } from './work';
 
@@ -16,10 +17,18 @@ type Subscriber = {
 type Entry = {
   answer: RootTarget | null;
   owner: Editor;
+  presentation: ViewPresentation;
   stale: boolean;
   subscribers: Set<Subscriber>;
   usedLatestFirst: Editor[];
   views: Set<Editor>;
+};
+
+type Notice = {
+  latestUsed: Editor | null;
+  listeners: Set<() => void>;
+  queued: boolean;
+  revision: number;
 };
 
 type Key = readonly [
@@ -40,6 +49,40 @@ const USED_AT = new WeakMap<object, number>();
 const USE_LISTENERS = new WeakMap<object, Set<() => void>>();
 let lastUse = 0;
 const PENDING = new Set<Entry>();
+const NOTICES = new WeakMap<ViewPresentation, Notice>();
+
+const noticeOf = (presentation: ViewPresentation) => {
+  let notice = NOTICES.get(presentation);
+
+  if (!notice) {
+    notice = {
+      latestUsed: null,
+      listeners: new Set(),
+      queued: false,
+      revision: 0,
+    };
+    NOTICES.set(presentation, notice);
+  }
+
+  return notice;
+};
+
+const notifyOncePerMicrotask = (notice: Notice) => {
+  if (notice.queued || notice.listeners.size === 0) return;
+
+  notice.queued = true;
+  queueMicrotask(() => {
+    notice.queued = false;
+    for (const listener of [...notice.listeners]) listener();
+  });
+};
+
+const announcePresentation = (presentation: ViewPresentation) => {
+  const notice = noticeOf(presentation);
+
+  notice.revision += 1;
+  notifyOncePerMicrotask(notice);
+};
 
 const findEntry = ([owner, presentation, root]: Key) =>
   ENTRIES.get(owner)?.get(presentation)?.get(root);
@@ -55,6 +98,7 @@ const ensureEntry = (key: Key): Entry => {
   const entry: Entry = {
     answer: null,
     owner,
+    presentation,
     stale: false,
     subscribers: new Set(),
     usedLatestFirst: [],
@@ -182,6 +226,10 @@ export const mountRootView = (
   const entry = ensureEntry(key);
   const runtime = getEditorRuntime(view);
 
+  const stopReadOnly = subscribeEditorViewState(view, (change) => {
+    if (change === 'readOnly') announcePresentation(presentation);
+  });
+
   entry.views.add(view);
   VIEW_ENTRIES.set(runtime, entry);
   if (USED_AT.has(runtime)) {
@@ -190,8 +238,10 @@ export const mountRootView = (
     );
   }
   invalidate(entry);
+  announcePresentation(presentation);
 
   return () => {
+    stopReadOnly();
     entry.views.delete(view);
     entry.usedLatestFirst = entry.usedLatestFirst.filter(
       (used) => used !== view
@@ -199,6 +249,7 @@ export const mountRootView = (
     if (VIEW_ENTRIES.get(runtime) === entry) VIEW_ENTRIES.delete(runtime);
 
     invalidate(entry);
+    announcePresentation(presentation);
     dropUnusedEntry(key, entry);
   };
 };
@@ -215,6 +266,14 @@ export const markRootViewUsed = (view: Editor) => {
     ];
     invalidate(entry);
   }
+  if (entry?.views.has(view)) {
+    const notice = noticeOf(entry.presentation);
+
+    if (notice.latestUsed !== view) {
+      notice.latestUsed = view;
+      announcePresentation(entry.presentation);
+    }
+  }
   notifyObservers(
     view,
     USE_LISTENERS.get(runtime),
@@ -229,7 +288,10 @@ export const reportShownChange = <T>(view: Editor, change: () => T): T => {
   const result = change();
 
   if ((runtime.hasSurface?.() ?? false) !== wasShown) {
-    invalidate(VIEW_ENTRIES.get(runtime));
+    const entry = VIEW_ENTRIES.get(runtime);
+
+    invalidate(entry);
+    if (entry) announcePresentation(entry.presentation);
   }
 
   return result;
@@ -261,4 +323,106 @@ export const subscribeRootTarget = (
     entry.subscribers.delete(subscriber);
     dropUnusedEntry(key, entry);
   };
+};
+
+export const readRootViewPresentationRevision = (
+  presentation: ViewPresentation
+) => NOTICES.get(presentation)?.revision ?? 0;
+
+/**
+ * Hear, once per microtask, that a view of the presentation mounted,
+ * unmounted, gained or lost its surface, changed its read-only state, or that
+ * the user used another of its views.
+ */
+export const subscribeRootViewPresentation = (
+  presentation: ViewPresentation,
+  listener: () => void
+) => {
+  const { listeners } = noticeOf(presentation);
+
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+const readViewState = (view: Editor): 'hidden' | 'read-only' | 'writable' => {
+  countCoreWork('shownWritableViewChecks');
+
+  if (!(getEditorRuntime(view).hasSurface?.() ?? false)) return 'hidden';
+
+  return view.read.view.isReadOnly() ? 'read-only' : 'writable';
+};
+
+export type ShownWritableViews = Readonly<{
+  shown: boolean;
+  views: readonly Editor[];
+}>;
+
+export const readShownWritableRootViews = (
+  owner: Editor,
+  presentation: ViewPresentation,
+  root: RootKey
+): ShownWritableViews => {
+  let shown = false;
+  const views: Editor[] = [];
+
+  for (const view of findEntry([owner, presentation, root])?.views ?? []) {
+    const state = readViewState(view);
+
+    if (state === 'hidden') continue;
+    shown = true;
+    if (state === 'writable') views.push(view);
+  }
+
+  return { shown, views };
+};
+
+export const readLatestShownWritableRootView = (
+  owner: Editor,
+  presentation: ViewPresentation,
+  root: RootKey
+): Editor | null => {
+  let latest: Editor | null = null;
+
+  for (const view of findEntry([owner, presentation, root])?.views ?? []) {
+    if (
+      readViewState(view) === 'writable' &&
+      (!latest || readRootViewUse(view) > readRootViewUse(latest))
+    ) {
+      latest = view;
+    }
+  }
+
+  return latest;
+};
+
+/**
+ * The shown writable view of the presentation the user used most recently,
+ * and whether the presentation shows any view.
+ */
+export const readLatestShownWritableView = (
+  owner: Editor,
+  presentation: ViewPresentation
+): Readonly<{ shown: boolean; view: Editor | null }> => {
+  let shown = false;
+  let latest: Editor | null = null;
+
+  for (const entry of ENTRIES.get(owner)?.get(presentation)?.values() ?? []) {
+    for (const view of entry.views) {
+      const state = readViewState(view);
+
+      if (state === 'hidden') continue;
+      shown = true;
+      if (
+        state === 'writable' &&
+        (!latest || readRootViewUse(view) > readRootViewUse(latest))
+      ) {
+        latest = view;
+      }
+    }
+  }
+
+  return { shown, view: latest };
 };

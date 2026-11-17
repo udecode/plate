@@ -83,7 +83,7 @@
       "const editorElement = ReactEditor.editable(editor);"
     ],
     "packages/plitejs/src/react/editable/mutation-history.ts": [
-      "runtime = getMountedEditableDOMRuntime(editor),"
+      "const picked = getMountedEditableDOMRuntime(editor);"
     ],
     "packages/plitejs/src/react/editable/native-input-strategy.ts": [
       "const window = ReactEditor.getWindow(editor);"

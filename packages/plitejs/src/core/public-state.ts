@@ -1013,9 +1013,18 @@ export type EditorHistoryEntry = Readonly<{
   made: Editor;
 }>;
 
+/**
+ * The roots the next undo or redo writes or deletes, without the roots it
+ * creates: `null` with nothing to replay, and `'broken'` when the head's
+ * entry cannot be read, so its replay fails and drops it. The same batch
+ * answers the same array.
+ */
+export type EditorHistoryHeadRoots = readonly RootKey[] | 'broken' | null;
+
 type EditorHistoryRuntime = Readonly<{
   entryOf: (commit: EditorCommit) => EditorHistoryEntry | null;
   forgetStep: (step: string) => boolean;
+  headRoots: (direction: 'redo' | 'undo') => EditorHistoryHeadRoots;
   mintStepOf: (commit: EditorCommit) => EditorHistoryStep | null;
   replaceUndoStep: (
     step: string,
@@ -1055,6 +1064,14 @@ export const readEditorCommitHistoryEntry = (
 ) =>
   EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.entryOf(commit) ??
   null;
+
+export const readEditorHistoryHeadRoots = (
+  editor: Editor,
+  direction: 'redo' | 'undo'
+): EditorHistoryHeadRoots =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.headRoots(
+    direction
+  ) ?? null;
 
 export const readEditorCommitHistoryStep = (
   editor: Editor,

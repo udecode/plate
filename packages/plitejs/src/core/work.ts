@@ -144,6 +144,11 @@ export type CoreWork = {
   rootOwnerChecks: number;
   /** Mounted views a root's target pick asked whether an `Editable` shows them. */
   rootTargetChecks: number;
+  historyHeadRootReads: number;
+  ownershipIndexVisits: number;
+  ownerPathWalks: number;
+  shownWritableViewChecks: number;
+  historyGateRootComparisons: number;
   /** Yjs children a collaboration binding enumerated. */
   yjsChildrenRead: number;
   yjsItemSteps: number;
@@ -255,6 +260,11 @@ export const coreWork: CoreWork = {
   wholeReadNodes: 0,
   rootOwnerChecks: 0,
   rootTargetChecks: 0,
+  historyHeadRootReads: 0,
+  ownershipIndexVisits: 0,
+  ownerPathWalks: 0,
+  shownWritableViewChecks: 0,
+  historyGateRootComparisons: 0,
   yjsChildrenRead: 0,
   yjsItemSteps: 0,
   yjsJoinSiblingsRead: 0,

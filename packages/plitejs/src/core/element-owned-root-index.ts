@@ -719,6 +719,7 @@ export const findElementOwnedRootOwnerPath = (
   children: readonly Descendant[],
   input: ElementOwnedRootBinding | ElementOwnedRootIssue
 ) => {
+  countCoreWork('ownerPathWalks');
   const visit = (
     nodes: readonly Descendant[],
     path: readonly number[]

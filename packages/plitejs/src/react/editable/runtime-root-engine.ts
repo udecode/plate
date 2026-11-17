@@ -6,6 +6,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 
+import { readLatestShownWritableRootView } from '../../core/root-target';
 import type { DOMRange } from '../../dom';
 import { IS_READ_ONLY } from '../../dom/internal';
 import type {
@@ -243,6 +244,14 @@ export const useEditableRootRuntime = ({
       getContentRootOwnerViewEditor:
         pliteRuntimeContext?.getContentRootOwnerViewEditor,
       getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
+      getWritableViewEditor: (root) =>
+        runtime.historyScope
+          ? (readLatestShownWritableRootView(
+              runtime.historyScope.owner,
+              runtime.historyScope.presentation,
+              root
+            ) as ReactRuntimeEditor | null)
+          : null,
       replayChanges,
     });
     if (!next.repair) return;
@@ -348,6 +357,7 @@ export const useEditableRootRuntime = ({
   runtime.updateHistorySettleHandler(
     eventRuntime.flushPendingNativeTextInput ?? (() => {})
   );
+  runtime.updateHistoryScope(pliteRuntimeContext?.historyScope ?? null);
 
   const callbackRef = useEditableRootRef({
     forwardedRef,

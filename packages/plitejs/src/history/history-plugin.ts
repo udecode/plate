@@ -10,6 +10,7 @@ import {
   type EditorSchemaIdentity,
   type Plugin,
   type PluginTypeProvider,
+  type RootKey,
   type EditorUpdateTransaction,
   type HistoryApi,
   type HistoryOutcome,
@@ -40,6 +41,7 @@ import {
 import {
   collapseDocumentElementPropertyWrites,
   getInternalDocumentChangeRecords,
+  getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
   isInternalDocumentChangeNoop,
   valueRootIndex,
@@ -79,6 +81,7 @@ import {
   isBuildingTransactionSpec,
   isInTransaction,
   type EditorHistoryEntry,
+  type EditorHistoryHeadRoots,
   type EditorHistoryReplayReceipt,
   type EditorHistoryStep,
   recordEditorHistoryReplayReceipt,
@@ -158,6 +161,44 @@ import {
   withHistoryProgram,
   writeHistory,
 } from './history-state';
+
+const HEAD_ROOTS = new WeakMap<object, readonly RootKey[]>();
+
+const readHeadRoots = <V extends Value>(
+  editor: Editor<V>,
+  direction: HistoryAction
+): EditorHistoryHeadRoots =>
+  withPublishedHistoryState(editor, () => {
+    let entry: ReturnType<typeof peekHistoryEntry>;
+
+    try {
+      entry = peekHistoryEntry(
+        editor,
+        direction === 'undo' ? 'undos' : 'redos'
+      );
+    } catch {
+      return 'broken';
+    }
+    if (!entry) return null;
+
+    const known = HEAD_ROOTS.get(entry.batch);
+
+    if (known) return known;
+    countCoreWork('historyHeadRootReads');
+    const { change } = entry.batch;
+    const roots = Object.freeze(
+      [
+        ...new Set([
+          ...getInternalDocumentChangeRootKeys(change),
+          ...change.deleteRoots,
+        ]),
+      ].filter((root) => !change.createRoots.has(root))
+    );
+
+    HEAD_ROOTS.set(entry.batch, roots);
+
+    return roots;
+  });
 
 const failInvariant = (message: string): never => {
   throw new Error(message);
@@ -1569,6 +1610,7 @@ const createHistoryPlugin = <
         registerEditorHistoryRuntime(editor, {
           entryOf: (commit) => COMMIT_ENTRIES.get(commit) ?? null,
           forgetStep: (step) => forgetHistoryStep(editor, step),
+          headRoots: (direction) => readHeadRoots(editor, direction),
           mintStepOf: (commit) => commitStepWith(commit, historyStepId),
           replaceUndoStep: (step, change, matches) =>
             replaceUndoStep(editor, step, change, matches),

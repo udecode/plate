@@ -55,6 +55,7 @@ import {
   getMountedEditableDOMRuntime,
   getMountedEditableDOMRuntimes,
 } from '../editable/editable-dom-runtime';
+import type { HistoryGateScope } from '../editable/mutation-history';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -165,6 +166,7 @@ type PliteRuntimeContextValue = {
   ) => MountedViewEditor | null;
   getMountedViewEditor: (root: RootKey) => MountedViewEditor | null;
   getRootTarget: (root: RootKey) => MountedRootTarget | null;
+  historyScope: HistoryGateScope | null;
   getView: (
     options?: EditorViewOptions,
     presentation?: ViewPresentation,
@@ -210,7 +212,7 @@ type PresentationLookups = {
 
 type PliteRuntimeProviderValue = Omit<
   PliteRuntimeContextValue,
-  keyof PresentationLookups | 'mountedEditor' | 'presentation'
+  keyof PresentationLookups | 'historyScope' | 'mountedEditor' | 'presentation'
 > &
   PresentationLookups;
 
@@ -227,6 +229,9 @@ const scopeRuntimeContext = (
   getMountedViewEditor: (root) =>
     provider.getMountedViewEditor(root, presentation),
   getRootTarget: (root) => provider.getRootTarget(root, presentation),
+  historyScope: presentation
+    ? Object.freeze({ owner: provider.runtime, presentation })
+    : null,
   mountedEditor,
   presentation,
   subscribeRootTarget: (root, listener) =>

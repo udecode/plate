@@ -510,6 +510,9 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root: RootKey,
       value: EditorDocumentValue
     ) => Readonly<{ path: Path; root: RootKey }> | null;
+    readContentRootOwnerRoots: (
+      value: EditorDocumentValue
+    ) => ReadonlyMap<RootKey, readonly RootKey[]>;
     indexConstructedRoot: (
       input: Readonly<{
         after: DocumentIndex;
@@ -1749,6 +1752,30 @@ export const createEditorSchema = <V extends Value = Value>(
 
     return path ? Object.freeze({ path, root: owner.ownerRoot }) : null;
   };
+
+  const readContentRootOwnerRoots: InternalEditorSchemaApi['readContentRootOwnerRoots'] =
+    (value) => {
+      const schema = getDeclarativeSchema();
+
+      if (!schema || !hasContentRoots()) return new Map();
+
+      const ownerRoots = new Map<RootKey, RootKey[]>();
+
+      for (const { index, root } of getDocumentOwnershipIndexes(
+        schema,
+        value
+      )) {
+        countCoreWork('ownershipIndexVisits');
+        for (const childRoot of getElementOwnedRootKeys(index)) {
+          const owners = ownerRoots.get(childRoot) ?? [];
+
+          owners.push(root);
+          ownerRoots.set(childRoot, owners);
+        }
+      }
+
+      return ownerRoots;
+    };
 
   const getOrphanedElementOwnedRoots: InternalEditorSchemaApi['getOrphanedElementOwnedRoots'] =
     (input) => {
@@ -5340,6 +5367,7 @@ export const createEditorSchema = <V extends Value = Value>(
     holdsSetRoot,
     declaresSetRoots,
     findRootOwner,
+    readContentRootOwnerRoots,
     getElementOwnedRoots,
     getProperty,
     getElementSlicePolicy,

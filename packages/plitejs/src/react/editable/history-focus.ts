@@ -27,6 +27,7 @@ export type HistoryFocusOwnerApi = {
     owner: HistoryContentRootOwner
   ) => ReactRuntimeEditor | null;
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
+  getWritableViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
 };
 
 export const resolveHistoryFocusEditor = ({
@@ -35,6 +36,7 @@ export const resolveHistoryFocusEditor = ({
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
+  getWritableViewEditor,
   historyRoot,
   selectionRoot,
 }: HistoryFocusOwnerApi & {
@@ -48,10 +50,18 @@ export const resolveHistoryFocusEditor = ({
 
     return owner?.childRoot === root ? owner : null;
   };
-  const viewOf = (root: RootKey, owner: HistoryContentRootOwner | null) =>
-    (owner ? getContentRootOwnerViewEditor?.(owner) : null) ??
-    getMountedViewEditor?.(root) ??
-    editor;
+  const viewOf = (root: RootKey, owner: HistoryContentRootOwner | null) => {
+    const view =
+      (owner ? getContentRootOwnerViewEditor?.(owner) : null) ??
+      getMountedViewEditor?.(root) ??
+      editor;
+
+    if (!getWritableViewEditor || view === editor) return view;
+
+    return view.read.view.isReadOnly()
+      ? (getWritableViewEditor(root) ?? editor)
+      : view;
+  };
 
   if (selectionRoot) return viewOf(selectionRoot, ownerOf(selectionRoot));
   if (!historyRoot) return viewOf(currentRoot ?? MAIN_ROOT_KEY, null);
@@ -88,6 +98,7 @@ export const getModelOwnedHistoryFocusRepair = ({
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
+  getWritableViewEditor,
   replayChanges,
 }: {
   editor: ReactRuntimeEditor;
@@ -107,6 +118,7 @@ export const getModelOwnedHistoryFocusRepair = ({
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
+    getWritableViewEditor,
     historyRoot: replayChanges ? getChangedRoot(replayChanges) : null,
     selectionRoot,
   });
