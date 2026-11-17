@@ -43,16 +43,18 @@ function ActiveEditorLabel() {
 }
 ```
 
-`primary` 在 `EditorRoot` 上设置，默认为 `true`。`primary={false}` 的视图仍可在聚焦后成为活动视图。ID 是应用标签；同一模型和 ID 可以拥有多个挂载视图。
+`primary` 在 `EditorRoot` 上设置，默认为 `true`。`primary={false}` 的视图仍可在用户聚焦或按下后成为活动视图。ID 是应用标签；同一模型和 ID 可以拥有多个挂载视图。
 
 ## 编辑器查找
 
 `useEditor()` 返回最近 provider 所选的编辑器，没有目标时抛出错误。`useOptionalEditor()` 使用相同规则，没有 provider 或没有目标时返回 `null`。
 
 - `EditorContent` 内的 hook 使用该可编辑视图，包括其根、DOM 和当前只读状态。
-- `EditorRoot` 内、content 外的 UI 跟随该 Plate 中最近聚焦的视图，首次聚焦前使用第一个已挂载视图。没有 content 时使用模型。
-- 控制器下的共享 UI 使用最近聚焦且仍挂载的视图；首次聚焦前或目标卸载后，使用第一个已挂载的主视图。
+- `EditorRoot` 内、content 外的 UI 跟随该 Plate 中用户最近聚焦或按下的视图，此前使用第一个已挂载视图。没有 content 时使用模型。
+- 控制器下的共享 UI 跟随用户最近聚焦或按下的已挂载视图，此前使用第一个已挂载的主视图。
 - 嵌套的 `EditorRoot` 和 `EditorController` 为后代提供自己的作用域。
+
+按下只读视图同样计入，即使它不获得焦点。最近使用的视图卸载后，UI 跟随在它之前使用的视图。
 
 失焦保留活动视图，供工具栏使用。`EditorContent` 管理注册和清理；只有带可编辑 DOM 的视图才参与控制器选择。
 

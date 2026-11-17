@@ -44,16 +44,18 @@ function ActiveEditorLabel() {
 }
 ```
 
-Set `primary` on `EditorRoot`; it defaults to `true`. A view with `primary={false}` can become active when focused. IDs are application labels; one model and ID can have several mounted views.
+Set `primary` on `EditorRoot`; it defaults to `true`. A view with `primary={false}` can become active when the user focuses or presses it. IDs are application labels; one model and ID can have several mounted views.
 
 ## Editor lookup
 
 `useEditor()` returns the nearest provider’s selected editor and throws when no target exists. `useOptionalEditor()` uses the same selection and returns `null` without a provider or target.
 
 - Inside `EditorContent`, hooks use that exact editable view, including its root, DOM, and current read-only state.
-- Inside `EditorRoot`, outside its content, UI follows that Plate’s last focused view, then its first mounted view. A Plate without content provides its model.
-- Shared UI under the controller uses the last focused mounted view, then the first mounted primary view before focus or after target removal.
+- Inside `EditorRoot`, outside its content, UI follows the view of that Plate the user focused or pressed last, then its first mounted view. A Plate without content provides its model.
+- Shared UI under the controller follows the mounted view the user focused or pressed last, then the first mounted primary view.
 - Nested `EditorRoot` and `EditorController` components scope their descendants independently.
+
+A press on a read-only view counts, though it takes no focus. When the view used last unmounts, UI follows the view used before it.
 
 Blur retains the active view for toolbar interaction. `EditorContent` owns registration and cleanup; only views with editable DOM participate in controller selection.
 
