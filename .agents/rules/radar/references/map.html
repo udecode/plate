@@ -228,7 +228,7 @@ tr.is-selected td { background: var(--tint-hot); }
 const RADAR = /*RADAR_DATA*/null;
 const { sectors: SECTORS, features: FEATURES, ideas: IDEAS } = RADAR;
 const TIER_NAME = { 1: "Explore first", 2: "Next", 3: "Later", 4: "Near miss" };
-const LEAN_NAME = { free: "Free", plus: "Free core, Plus kit", pro: "Free core, Pro rules", near: "Not graded" };
+const LEAN_NAME = { free: "Free", plus: "Free core, Plus kit", pro: "Free core, Pro rules", near: "Near miss" };
 IDEAS.forEach(d => { d.total = d.s.reach + d.s.pro + d.s.ai + d.s.reuse + d.s.lanes + d.s.hosted; });
 const RANKED = IDEAS.filter(d => d.rank).length;
 document.getElementById("eyebrow").textContent = "Plate · product radar · ranked " + RADAR.ranked;
@@ -273,7 +273,7 @@ function chip(d) {
 
 function drawGrid() {
   const grid = document.getElementById("grid");
-  grid.append(mk("div"), mk("div", "axis-x", "Medium reach"), mk("div", "axis-x", "High reach"), mk("div", "axis-y", "Revenue, from the Pro score"));
+  grid.append(mk("div"), mk("div", "axis-x", "Medium reach"), mk("div", "axis-x", "High reach"), mk("div", "axis-y", "Revenue, from the Paid score"));
   const rowNames = { 3: "high revenue", 2: "medium revenue", 1: "low revenue" };
   [3, 2, 1].forEach(pro => [2, 3].forEach(reach => {
     const cell = mk("div", "cell" + (pro === 3 && reach === 3 ? " hot" : ""));
@@ -321,7 +321,7 @@ function renderDetail() {
 
   const score = mk("div", "block"); score.append(mk("div", "k", "Score"));
   const bars = mk("div", "bars");
-  [["Reach", d.s.reach], ["Pro", d.s.pro], ["AI fit", d.s.ai, "ai"], ["Reuse", d.s.reuse], ["Lanes", d.s.lanes]].forEach(([label, v, cls]) => bars.append(mk("span", null, label), dots(v, cls), mk("span", "v", v)));
+  [["Reach", d.s.reach], ["Paid", d.s.pro], ["AI fit", d.s.ai, "ai"], ["Reuse", d.s.reuse], ["Lanes", d.s.lanes]].forEach(([label, v, cls]) => bars.append(mk("span", null, label), dots(v, cls), mk("span", "v", v)));
   const hd = mk("div", "dots"); hd.append(mk("i", "dot" + (d.s.hosted < 0 ? " minus" : "")));
   bars.append(mk("span", null, "Hosted"), hd, mk("span", "v", d.s.hosted < 0 ? "−1" : "0"));
   const total = mk("div", "total"); total.append(mk("b", null, d.total), mk("span", "v", "of 15"));
