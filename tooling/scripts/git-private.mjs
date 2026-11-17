@@ -745,6 +745,23 @@ const main = async (argv) => {
     return command ? 0 : 1;
   }
   const root = checkoutRoot();
+  if (
+    [
+      'attach',
+      'check',
+      'detach',
+      'migrate',
+      'restore',
+      'status',
+      'sync',
+    ].includes(command) &&
+    rest.length > 0
+  ) {
+    console.error(
+      `[git-private] ${command} takes no arguments and works on the checkout it runs in, ${root}; run it from inside the checkout you mean`
+    );
+    return 1;
+  }
   const sessionRoot = () =>
     rest.includes('--hook') ? sessionCheckout(hookPayload().cwd).root : root;
   const report = (note) => {
