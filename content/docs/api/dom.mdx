@@ -28,11 +28,14 @@ view, picked by the editor you call it on:
   view's DOM node or event, so pass it only its own view's DOM. A lookup of
   the DOM of a node, point or range in a root the view does not show returns
   `null`. Inside an `EditorContent`, `useEditor()` returns that view's editor.
-  Elsewhere inside an `EditorRoot`, it returns the editor of the view that
-  last held focus, else of the first one mounted, and the editor passed to
-  `EditorRoot` until one mounts.
-- An editor from `useRootEditor(root)` runs in its own `EditorRoot`'s view of
-  `root`.
+  Elsewhere inside an `EditorRoot`, it returns the editor of the view the user
+  last focused or pressed, else of the first one mounted, and the editor
+  passed to `EditorRoot` until one mounts.
+- An editor from `useRootEditor(root)` runs in the view of `root` it follows,
+  as [`useRootEditor`](/docs/api/react-hooks) describes, so its DOM calls and
+  its commands reach the same view, even after focus moves to a button. While
+  no `EditorContent` of its `EditorRoot` shows `root`, its DOM calls run in
+  no view.
 - The editor `createEditor` returns runs in a view that shows the root the
   call is about: its target's root, else the caret's root, else the primary
   document. When the caret was placed in that root from an `EditorRoot`,
@@ -45,12 +48,12 @@ view, picked by the editor you call it on:
   renders it, when that view belongs to the editor. `resolveRange` and
   `assertRange` run on the editor you call instead, so resolve a DOM range in
   one view with that view's own editor.
-- On the editor `createEditor` returns, a block or files drop that
-  `resolveDropTarget` finds from coordinates alone, and `drag.autoScroll`,
-  hit-test the pointer in the document of the view picked as above. They run in
-  the editor's view found there, else in the picked view. The hit test enters shadow roots but
-  not iframes, so a pointer over an iframe finds the view that holds the
-  iframe, if any.
+- On the editor `createEditor` returns and on an editor from `useRootEditor`,
+  a block or files drop that `resolveDropTarget` finds from coordinates alone,
+  and `drag.autoScroll`, hit-test the pointer in the document of the view
+  picked as above. They run in the editor's view found there, else in the
+  picked view. The hit test enters shadow roots but not iframes, so a pointer
+  over an iframe finds the view that holds the iframe, if any.
 
 When no view is picked, a lookup of DOM, such as `root()`, `editable()` or
 `resolveDOMNode`, returns `null`, its `assert*` twin throws, `focus()` does

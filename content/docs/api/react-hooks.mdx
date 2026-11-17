@@ -342,14 +342,20 @@ follows, so it records its edits as proposals in suggesting mode.
 A nested `EditorRoot` is a view of its own. An editor from a hook outside it
 does not follow it.
 
-Its `editor.api.dom` calls run in its own `EditorRoot`'s view of `root`, so it
-can focus the view it edits:
+Its `editor.api.dom` calls run in the view it follows, so it can focus the
+view it edits, even after focus moves to the button:
 
 ```tsx
 const note = useRootEditor("note");
 
 return <button onClick={() => note.api.dom.focus()}>Edit note</button>;
 ```
+
+While no `EditorContent` of its `EditorRoot` shows the root, its DOM lookups
+return `null` and `focus()` does nothing. A call given a DOM node, an event or
+pointer coordinates runs in the view of the root that holds them, when that
+view belongs to the same `EditorRoot`, as [Views](/docs/api/dom#views)
+describes.
 
 #### `useRootChrome(root?, options?): RootChromeController`
 

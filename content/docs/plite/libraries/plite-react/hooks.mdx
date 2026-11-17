@@ -291,6 +291,13 @@ suggesting mode.
 A nested `EditorRoot` is a view of its own. An editor from a hook outside it
 does not follow it.
 
+Its `editor.api.dom` calls run in the view it follows, so a toolbar button can
+focus or measure the view its commands edit. A call given a DOM node, an
+event or pointer coordinates runs instead in the view of the root that holds
+them, when that view belongs to the same `EditorRoot`. While
+no `Editable` of its `EditorRoot` shows the root, the calls find no DOM and
+`focus()` does nothing.
+
 #### `useRootChrome(root?, options?): RootChromeController`
 
 Create root chrome props for mouse interaction outside the editable content,

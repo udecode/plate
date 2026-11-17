@@ -39,8 +39,11 @@ runs in one view, picked by the editor you call it on:
   view, runs every call in that view, even one given another view's DOM node
   or event, so pass it only its own view's DOM. A lookup of the DOM of a node,
   point or range in a root the view does not show returns `null`.
-- An editor from `useRootEditor(root)` runs in its own `EditorRoot`'s view of
-  `root`.
+- An editor from `useRootEditor(root)` runs in the view of `root` it follows,
+  as [`useRootEditor`](/docs/plite/libraries/plite-react/hooks) describes, so
+  its DOM calls and its commands reach the same view, even after focus moves
+  to a button. While no `Editable` of its `EditorRoot` shows `root`, its DOM
+  calls run in no view.
 - The editor `createEditor` returns runs in a view that shows the root the
   call is about: its target's root, else the caret's root, else the primary
   document. When the caret was placed in that root from an `EditorRoot`,
@@ -50,7 +53,9 @@ runs in one view, picked by the editor you call it on:
   the only one, else the focused one, also when that view sits in an iframe or
   a shadow root.
 - The other editors run a call given a DOM node or an event in the view that
-  renders it, when that view belongs to the editor. `resolveRange` and
+  renders it, and a call given pointer coordinates, such as
+  `drag.autoScroll`, in the view under the pointer, when that view belongs to
+  the editor. `resolveRange` and
   `assertRange` run on the editor you call instead, so resolve a DOM range in
   one view with that view's own editor.
 
