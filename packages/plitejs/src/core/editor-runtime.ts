@@ -140,10 +140,7 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
 };
 
 export type InternalPluginRuntime<V extends Value = Value> = {
-  install: (
-    plugin: PluginInput,
-    options?: PluginReconfigureOptions
-  ) => () => void;
+  install: Editor['install'];
   preparePluginPublication: (
     entries: readonly InternalPluginPublicationEntry[],
     options?: PluginReconfigureOptions
@@ -177,7 +174,7 @@ export type InternalCompiledPluginPublicationEntry = Readonly<{
 
 export type StagedPluginInstall = Readonly<{
   input: PluginInput;
-  onPublished?: (uninstall: () => void) => void;
+  onPublished?: (uninstall: ReturnType<Editor['install']>) => void;
 }>;
 
 export type InternalPluginPublicationEntry =

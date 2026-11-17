@@ -715,9 +715,10 @@ export type PluginReconfigureOptions = Readonly<{
   /**
    * Return the complete structural document to publish with the candidate.
    *
-   * Omit this callback only when the current document already validates under
-   * the candidate schema. Live reconfiguration never fills schema defaults
-   * implicitly.
+   * Runs when the change alters the schema or leaves a plugin name
+   * uninstalled. Omit it only when the current document already validates
+   * under the candidate schema. Live reconfiguration never fills schema
+   * defaults implicitly.
    */
   migrate?: (context: PluginMigrationContext) => EditorSchemaDocumentValue;
 }>;
@@ -2082,10 +2083,17 @@ export interface BaseEditor<
   read: EditorRead<V, TPlugins>;
   subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
   update: EditorUpdate<V, TPlugins>;
+  /**
+   * Add plugins to this live editor in a commit of their own, and return a
+   * function that removes, in another commit, each plugin this call added that
+   * nothing else still holds. Both throw while an editor update or read is
+   * open; inside an update, change plugins with `tx.plugins.reconfigure` on a
+   * plugin slot.
+   */
   install: (
     plugin: PluginInput,
     options?: PluginReconfigureOptions
-  ) => () => void;
+  ) => (options?: PluginReconfigureOptions) => void;
   /**
    * End this editor's runtime: release every plugin's acquired resources
    * and run every plugin cleanup with reason `remove`. Afterwards `update`
@@ -4623,7 +4631,7 @@ export interface EditorStaticApi {
     editor: AnyEditor,
     plugin: PluginInput,
     options?: PluginReconfigureOptions
-  ) => () => void;
+  ) => (options?: PluginReconfigureOptions) => void;
 
   replace: <V extends Value>(
     editor: AnyEditor<V>,

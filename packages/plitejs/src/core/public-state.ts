@@ -562,7 +562,7 @@ type TransactionSnapshot = {
       editor?: Editor;
       input: PluginInput;
       migrate?: PluginReconfigureOptions['migrate'];
-      onPublished?: (uninstall: () => void) => void;
+      onPublished?: (uninstall: ReturnType<Editor['install']>) => void;
     }>
   >;
   rootIndexes: Record<string, SnapshotIndex>;
@@ -3765,7 +3765,7 @@ export const stagePluginCandidate = (
   editor: Editor,
   key: string,
   input: PluginInput,
-  onPublished?: (uninstall: () => void) => void,
+  onPublished?: (uninstall: ReturnType<Editor['install']>) => void,
   pluginEditor?: Editor,
   options: PluginReconfigureOptions = {}
 ) => {
@@ -9313,7 +9313,7 @@ export const disposeTransactionSpecContext = (
 
 const AFTER_OPEN_DRAFTS = new WeakMap<Editor, Array<() => void>>();
 
-const hasOpenDraft = (owner: Editor) =>
+export const hasOpenDraft = (owner: Editor) =>
   (TRANSACTION_SPEC_CONTEXTS.get(owner)?.length ?? 0) > 0 ||
   (TRANSACTION_DEPTH.get(owner) ?? 0) > 0 ||
   getEditorReadDepth(owner) > 0;

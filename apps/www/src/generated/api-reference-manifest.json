@@ -7141,7 +7141,7 @@
           "kind": "type",
           "name": "PluginReconfigureOptions",
           "runtime": false,
-          "signature": "type PluginReconfigureOptions = Readonly<{\n  /**\n   * Return the complete structural document to publish with the candidate.\n   *\n   * Omit this callback only when the current document already validates under\n   * the candidate schema. Live reconfiguration never fills schema defaults\n   * implicitly.\n   */\n  migrate?: (context: PluginMigrationContext) => EditorSchemaDocumentValue;\n}>;",
+          "signature": "type PluginReconfigureOptions = Readonly<{\n  /**\n   * Return the complete structural document to publish with the candidate.\n   *\n   * Runs when the change alters the schema or leaves a plugin name\n   * uninstalled. Omit it only when the current document already validates\n   * under the candidate schema. Live reconfiguration never fills schema\n   * defaults implicitly.\n   */\n  migrate?: (context: PluginMigrationContext) => EditorSchemaDocumentValue;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -23903,7 +23903,7 @@
           "kind": "type",
           "name": "PluginReconfigureOptions",
           "runtime": false,
-          "signature": "type PluginReconfigureOptions = Readonly<{\n  /**\n   * Return the complete structural document to publish with the candidate.\n   *\n   * Omit this callback only when the current document already validates under\n   * the candidate schema. Live reconfiguration never fills schema defaults\n   * implicitly.\n   */\n  migrate?: (context: PluginMigrationContext) => EditorSchemaDocumentValue;\n}>;",
+          "signature": "type PluginReconfigureOptions = Readonly<{\n  /**\n   * Return the complete structural document to publish with the candidate.\n   *\n   * Runs when the change alters the schema or leaves a plugin name\n   * uninstalled. Omit it only when the current document already validates\n   * under the candidate schema. Live reconfiguration never fills schema\n   * defaults implicitly.\n   */\n  migrate?: (context: PluginMigrationContext) => EditorSchemaDocumentValue;\n}>;",
           "source": null,
           "typeParameters": []
         },

@@ -95,6 +95,7 @@ import { toPublicRoot } from './public-root';
 import {
   activateStateField,
   getEditorDocumentValue,
+  hasOpenDraft,
   runTrustedUpdate,
   stagePluginCandidate,
   withTransactionSpecDraftRead,
@@ -2362,8 +2363,11 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
     }
 
     const currentDocument = getEditorDocumentValue(editor);
+    const removesPlugin = [...previousRegistry.plugins.keys()].some(
+      (name) => !registry.plugins.has(name)
+    );
 
-    if (!declarativeSchemaChanged) {
+    if (!declarativeSchemaChanged && !(options.migrate && removesPlugin)) {
       schema.assertDocument(currentDocument);
     } else {
       const inputDocument = options.migrate
@@ -2596,14 +2600,8 @@ const createInstallUninstall = (
   let liveRootNames = rootNames;
   let running = false;
 
-  return () => {
-    if (
-      liveRootNames.length === 0 ||
-      running ||
-      getEditorLifetime(editor) === 'destroyed'
-    ) {
-      return;
-    }
+  return (options?: PluginReconfigureOptions | null) => {
+    if (liveRootNames.length === 0 || running) return;
     running = true;
 
     try {
@@ -2639,13 +2637,16 @@ const createInstallUninstall = (
       const removalKey = `editor.unextend:${(nextDynamicPluginPublication += 1)}`;
 
       runTrustedUpdate(editor, () => {
-        stagePluginCandidate(editor, removalKey, removalInput, () => {
-          liveRootNames = currentRootNames.filter(
-            (name) =>
-              isInstalledRecord(name) &&
-              currentState.records.get(name)?.explicit
-          );
-        });
+        stagePluginCandidate(
+          editor,
+          removalKey,
+          removalInput,
+          () => {
+            liveRootNames = [];
+          },
+          undefined,
+          options ?? {}
+        );
       });
     } finally {
       running = false;
@@ -3375,12 +3376,23 @@ export const prepareInitialPluginPublication = (
       : { initialPublication: true, initializeDocument }
   );
 
+const INSTALL_REFUSAL =
+  'editor.install cannot run while an editor update or read is open. Call it after the update or read returns, change a plugin slot inside an update with tx.plugins.reconfigure, or list a plugin another plugin needs in its dependencies.';
+const UNINSTALL_REFUSAL =
+  'The uninstall that editor.install returned cannot run while an editor update or read is open. Call it after the update or read returns, and pass migrate to convert the content the plugin leaves in the commit that removes it.';
+
+const assertNoOpenDraft = (editor: Editor, message: string) => {
+  if (hasOpenDraft(getEditorRuntimeOwner(editor))) throw new Error(message);
+};
+
 export const extendEditor = (
   editor: Editor,
   input: PluginInput,
   options: PluginReconfigureOptions = {}
-): (() => void) => {
-  let cleanup = () => {};
+): ReturnType<Editor['install']> => {
+  assertNoOpenDraft(editor, INSTALL_REFUSAL);
+
+  let cleanup: ReturnType<Editor['install']> = () => {};
   const key = `editor.install:${(nextDynamicPluginPublication += 1)}`;
 
   runTrustedUpdate(editor, () => {
@@ -3396,7 +3408,9 @@ export const extendEditor = (
     );
   });
 
-  return () => {
-    cleanup();
+  return (uninstallOptions) => {
+    if (getEditorLifetime(editor) === 'destroyed') return;
+    assertNoOpenDraft(editor, UNINSTALL_REFUSAL);
+    cleanup(uninstallOptions);
   };
 };
