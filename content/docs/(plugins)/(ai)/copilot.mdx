@@ -59,13 +59,11 @@ Copilot requires a server-side API endpoint to communicate with the AI model. Ad
 
 <ComponentSource name="copilot-api" />
 
-### Configure environment
+### Configure credentials
 
-Set your AI Gateway key in the environment:
+For bring-your-own-key (BYOK) usage, enter your AI Gateway key in the editor settings or pass it as `apiKey` in `completeOptions.body`. The browser sends the caller's own key to the API route, which uses it for that request.
 
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
+For a shared application credential, authenticate and authorize each request, enforce per-user usage limits, and load the key on the server. Keep that shared key out of client code and request bodies.
 
 </Steps>
 
@@ -150,7 +148,7 @@ Create an API route handler at `app/api/ai/copilot/route.ts` to process AI reque
 
 <ComponentSource name="copilot-api" />
 
-Then, set your `AI_GATEWAY_API_KEY` in `.env.local`.
+Pass the caller's key as `apiKey` in `completeOptions.body`.
 
 ### System prompt
 
@@ -230,21 +228,27 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 
 export async function POST(req: NextRequest) {
   const {
+    apiKey: key,
     model = 'gpt-4o-mini',
     provider = 'openai',
     prompt,
     system
   } = await req.json();
+  const apiKey = typeof key === 'string' ? key.trim() : '';
+
+  if (!apiKey) {
+    return NextResponse.json({ error: 'Missing API key.' }, { status: 401 });
+  }
 
   let aiProvider;
 
   switch (provider) {
     case 'anthropic':
-      aiProvider = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      aiProvider = createAnthropic({ apiKey });
       break;
     case 'openai':
     default:
-      aiProvider = createOpenAI({ apiKey: process.env.AI_GATEWAY_API_KEY });
+      aiProvider = createOpenAI({ apiKey });
       break;
   }
 

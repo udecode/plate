@@ -78,13 +78,11 @@ Expose a streaming command endpoint that proxies your model provider:
 
 <ComponentSource name="ai-api" />
 
-### Configure environment
+### Configure credentials
 
-Set your AI Gateway key locally (replace with your provider secret if you are not using a gateway):
+For bring-your-own-key (BYOK) usage, enter your AI Gateway key in the editor settings or pass it as `apiKey` in the request body. The browser sends the caller's own key to the API route, which uses it for that request.
 
-```bash title=".env.local"
-AI_GATEWAY_API_KEY="your-api-key"
-```
+For a shared application credential, authenticate and authorize each request, enforce per-user usage limits, and load the key on the server. Keep that shared key out of client code and request bodies.
 
 </Steps>
 
@@ -146,7 +144,12 @@ import { createEditor } from 'platejs';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 export async function POST(req: Request) {
-  const { apiKey, ctx, messages, model } = await req.json();
+  const { apiKey: key, ctx, messages, model } = await req.json();
+  const apiKey = typeof key === 'string' ? key.trim() : '';
+
+  if (!apiKey) {
+    return Response.json({ error: 'Missing AI Gateway API key.' }, { status: 401 });
+  }
 
   const editor = createEditor({
     plugins: BaseEditorKit,
@@ -154,9 +157,7 @@ export async function POST(req: Request) {
     initialValue: ctx.children,
   });
 
-  const gateway = createGateway({
-    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY,
-  });
+  const gateway = createGateway({ apiKey });
 
   const result = streamText({
     messages: await convertToModelMessages(messages),
@@ -169,8 +170,8 @@ export async function POST(req: Request) {
 ```
 
 - `ctx.children` and `ctx.selection` are rehydrated into a Plate editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
-- Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload and can be read before calling `createGateway`.
-- Always read secrets from the server. The client should only send opaque identifiers or short-lived tokens.
+- Forward model settings through `chatOptions.body`. In the BYOK flow shown above, include the caller's own key as `apiKey`; the browser sends it in the JSON payload.
+- For a shared application key, the client sends session credentials or a short-lived authorization token. Authorize the request and load the shared provider key on the server instead of accepting it from the browser.
 - Return a streaming response so the kit can apply chunks incrementally.
 
 ### Own the chat lifecycle

@@ -36,6 +36,14 @@ const toolNameSchema = z.enum(['comment', 'edit', 'generate']);
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
+  const apiKey = typeof key === 'string' ? key.trim() : '';
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'Missing AI Gateway API key.' },
+      { status: 401 }
+    );
+  }
 
   const {
     children,
@@ -52,15 +60,6 @@ export async function POST(req: NextRequest) {
     selection: request.selection,
     initialValue: children,
   });
-
-  const apiKey = key || process.env.AI_GATEWAY_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'Missing AI Gateway API key.' },
-      { status: 401 }
-    );
-  }
 
   const gatewayProvider = createGateway({
     apiKey,

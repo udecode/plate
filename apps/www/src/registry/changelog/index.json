@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-16-ai-routes-caller-key",
+      "href": "/registry/changelog/2026-11-16-ai-routes-caller-key.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Use only the caller's own AI Gateway key in the AI routes",
+      "change": {
+        "type": "source",
+        "date": "2026-11-16",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-api", "copilot-api"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-save-comment-ranges",
       "href": "/registry/changelog/2026-11-16-save-comment-ranges.json",
       "status": "draft",

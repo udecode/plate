@@ -1,0 +1,14 @@
+---
+id: 2026-11-16-ai-routes-caller-key
+date: 2026-11-16
+status: draft
+kind: fix
+summary: "Use only the caller's own AI Gateway key in the AI routes"
+change: { 'type': 'source', 'date': '2026-11-16', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-16-ai-api-caller-s-own-gateway-788e97a5","kind":"fix","migrationNotes":["Send the caller's AI Gateway key as apiKey in the request body, or authorize each request and load a shared key on the server."]} -->
+
+- **`ai-api`**, **`copilot-api`**: Use only the AI Gateway key the caller sends as `apiKey`. A request without one gets a 401, even when the server sets `AI_GATEWAY_API_KEY`. To use a shared key, authenticate and authorize each request in your route and load the key on the server.

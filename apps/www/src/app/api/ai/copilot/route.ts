@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
   const body = (await request.clone().json()) as { apiKey?: string };
-  if (body.apiKey || process.env.AI_GATEWAY_API_KEY) {
+  if (body.apiKey) {
     const { POST: complete } =
       await import('@/registry/app/api/ai/copilot/route');
     return complete(request);

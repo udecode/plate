@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     apiKey?: string;
     ctx?: AIChatRequestContext;
   };
-  if (body.apiKey || process.env.AI_GATEWAY_API_KEY) {
+  if (body.apiKey) {
     const { POST: command } =
       await import('@/registry/app/api/ai/command/route');
     return command(request);
