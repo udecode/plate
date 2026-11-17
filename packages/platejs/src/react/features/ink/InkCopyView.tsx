@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { useEditor, useEditorSelector } from '../../core';
 import { inkOutline } from './inkPaint.internal';
 import { InkPlugin } from './InkPlugin';
