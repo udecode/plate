@@ -10,6 +10,7 @@ import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import {
   applyUnnamedDocumentChange,
   createEditorDocumentChangeBuilder,
+  forgetEditorHistoryStep,
   isEditorHistoryRestore,
   mintEditorCommitHistoryStep,
   readEditorCommitHistoryStep,
@@ -17,7 +18,12 @@ import {
 } from '../../core/public-state';
 import { REMOTE_UPDATE } from '../../core/update-policy';
 import type { AnyEditor } from '../../interfaces/editor';
-import { documentOf, schemaFingerprintOf, setValuedIn } from '../protocol';
+import {
+  documentOf,
+  sameDocument,
+  schemaFingerprintOf,
+  setValuedIn,
+} from '../protocol';
 import { type Fits, shownValue } from './chain';
 import {
   type ClaimedOutbox,
@@ -102,13 +108,33 @@ const showsIn = (editor: AnyEditor) => {
       ? 'exact'
       : 'rewritten';
   };
+  let rewrote: Readonly<{
+    asked: JsonEditorValue;
+    shown: JsonEditorValue;
+  }> | null = null;
   const showDocument = (document: JsonEditorValue) => {
-    const change = DocumentChange.between(
-      documentOf(editor.read.value()),
-      document
-    );
+    const current = documentOf(editor.read.value());
 
-    return change.empty ? 'exact' : show(change, true);
+    if (
+      rewrote &&
+      sameDocument(rewrote.asked, document) &&
+      sameDocument(rewrote.shown, current)
+    ) {
+      return 'rewritten';
+    }
+
+    const change = DocumentChange.between(current, document);
+
+    if (change.empty) return 'exact';
+
+    const shown = show(change, true);
+
+    rewrote =
+      shown === 'rewritten'
+        ? { asked: document, shown: documentOf(editor.read.value()) }
+        : null;
+
+    return shown;
   };
 
   return { show, showDocument };
@@ -173,15 +199,19 @@ const startClient = (
       logged.invert(before),
       getCompiledEditorSchema(editor).recordSets
     );
-  const rebuild = ({ base, step, takeBack }: StepRebuild) => {
-    const blocks = blocksOf(base);
+  const rebuild = (entry: StepRebuild) => {
+    if ('forget' in entry) {
+      forgetEditorHistoryStep(editor, entry.step);
+    } else {
+      const blocks = blocksOf(entry.base);
 
-    replaceEditorUndoStep(
-      editor,
-      step,
-      DocumentChange.fromJSON(takeBack),
-      (stepBase) => jsonEqual(blocksOf(stepBase), blocks)
-    );
+      replaceEditorUndoStep(
+        editor,
+        entry.step,
+        DocumentChange.fromJSON(entry.takeBack),
+        (stepBase) => jsonEqual(blocksOf(stepBase), blocks)
+      );
+    }
   };
 
   const draining = new Map<Writer, SyncRelease>();

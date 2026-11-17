@@ -30,6 +30,7 @@ import {
   type ShownBatch,
   shownValue,
   superseded,
+  takeBackGroups,
   withConflictsOfTeammate,
   withdrawn,
 } from './chain';
@@ -164,7 +165,52 @@ const queueWrites = (
 const replaced = (
   before: readonly SavedBatch[],
   after: readonly SavedBatch[]
-) => after.filter((batch, index) => batch !== before[index]);
+) => {
+  const was = new Map(before.map((batch) => [batch.seq, batch]));
+
+  return after.filter((batch) => batch !== was.get(batch.seq));
+};
+
+/**
+ * Steps a save leaves on the wrong history stack. Each batch of a step moves it
+ * between the stacks, so once every batch of a step still on the device has
+ * ended kept, an odd number of them leaves it out of place: a kept decision
+ * alone leaves an undo that takes it back a second time, while a kept decision
+ * and its kept undo leave a redo that applies it once.
+ */
+const misplacedSteps = (
+  before: readonly SavedBatch[],
+  after: readonly SavedBatch[]
+): StepRebuild[] => {
+  const now = new Map(after.map((batch) => [batch.seq, batch]));
+  const merged = new Set(
+    after.flatMap((batch) =>
+      batch.state !== 'kept' && batch.mergedInto ? [batch.mergedInto] : []
+    )
+  );
+  const steps = new Set(
+    before.flatMap((batch) => {
+      const step = batch.decision?.step;
+      const state = now.get(batch.seq)?.state;
+
+      return step &&
+        batch.state !== 'kept' &&
+        (state === undefined || state === 'kept')
+        ? [step]
+        : [];
+    })
+  );
+
+  return [...steps].flatMap((step) => {
+    const ofStep = after.filter((batch) => batch.decision?.step === step);
+
+    return ofStep.length % 2 === 1 &&
+      ofStep.every((batch) => batch.state === 'kept') &&
+      !merged.has(step)
+      ? [{ forget: true, step }]
+      : [];
+  });
+};
 
 type Shown = 'exact' | 'rewritten';
 
@@ -234,9 +280,23 @@ export const createWriter = ({
   });
 
   const save = (write: OutboxWrite) => {
+    const before = record.batches;
+
     record = applyWrite(record, write);
 
-    return writes.add(write);
+    const forgets = misplacedSteps(before, record.batches);
+
+    if (forgets.length === 0) return writes.add(write);
+
+    const rebuilds = [...record.rebuilds, ...forgets];
+
+    record = { ...record, rebuilds };
+
+    const queued = writes.add({ ...write, rebuilds });
+
+    for (const entry of forgets) rebuild?.(entry);
+
+    return queued;
   };
 
   const forgetRebuilds = () =>
@@ -308,10 +368,15 @@ export const createWriter = ({
       : decided;
   };
 
-  const redecidedIn = (batches: readonly SavedBatch[]): CrossAs => {
+  const redecidedIn = (
+    batches: readonly SavedBatch[],
+    groups: ReadonlyMap<number, number>
+  ): CrossAs => {
     const takenBack = new Set(
       batches.flatMap((batch) =>
-        batch.state === 'saved' && batch.takesBackSeq !== undefined
+        batch.state === 'saved' &&
+        batch.takesBackSeq !== undefined &&
+        !groups.has(batch.seq)
           ? [batch.takesBackSeq]
           : []
       )
@@ -339,7 +404,10 @@ export const createWriter = ({
         drifted = true;
       }
 
-      return replaced(batches, crossed.batches);
+      return {
+        drop: crossed.dropped,
+        put: replaced(batches, crossed.batches),
+      };
     };
 
     try {
@@ -350,7 +418,7 @@ export const createWriter = ({
       } catch {
         drifted = showDocument(document) === 'rewritten';
 
-        return replaced(batches, withdrawn(batches, keepAs));
+        return { drop: [], put: replaced(batches, withdrawn(batches, keepAs)) };
       }
     }
   };
@@ -411,38 +479,44 @@ export const createWriter = ({
     const tail = record.batches.flatMap((other) =>
       other.seq === batch.seq ? [] : [marked.get(other.seq) ?? other]
     );
-    const entry =
-      rebuild && logged
-        ? rebuildOf(batch, logged, before, document, tail)
-        : null;
     const carried = DocumentChange.between(shown, document);
-    const crossAs = redecidedIn(tail);
     const takesThisBack = (other: SavedBatch): other is UnsentBatch =>
       other.state === 'saved' && other.takesBackSeq === batch.seq;
     const roomTakeBack =
       batch.state === 'sent' && logged && tail.some(takesThisBack)
         ? takeBack(logged, before)
         : null;
+    const groups = takeBackGroups(tail);
+    const crossAs = redecidedIn(tail, groups);
+    const crossed = crossOrWithdraw(
+      tail,
+      document,
+      (fitting) =>
+        crossChain(carried, shown, tail, {
+          cancels: groups,
+          crossAs: (other, at, moved) =>
+            roomTakeBack && takesThisBack(other)
+              ? takenBackAt(other, roomTakeBack, document, moved.apply(at))
+              : crossAs(other, at, moved),
+          fits: fitting,
+        }),
+      movedDecision
+    );
+    const entry =
+      rebuild && logged
+        ? rebuildOf(
+            batch,
+            logged,
+            before,
+            document,
+            tail.filter((other) => !crossed.drop.includes(other.seq))
+          )
+        : null;
 
     save({
       confirmed: { document, version },
-      drop: [batch.seq],
-      put: [
-        ...marks,
-        ...crossOrWithdraw(
-          tail,
-          document,
-          (fitting) =>
-            crossChain(carried, shown, tail, {
-              crossAs: (other, at, moved) =>
-                roomTakeBack && takesThisBack(other)
-                  ? takenBackAt(other, roomTakeBack, document, moved.apply(at))
-                  : crossAs(other, at, moved),
-              fits: fitting,
-            }),
-          movedDecision
-        ),
-      ],
+      drop: [batch.seq, ...crossed.drop],
+      put: [...marks, ...crossed.put],
       ...(entry ? { rebuilds: [...record.rebuilds, entry] } : {}),
     });
     showExactly();
@@ -464,6 +538,7 @@ export const createWriter = ({
             ...provenanceOf(batch),
             change: frameChangeOf(batch.frame).toJSON(),
             frame: batch.frame,
+            ...(batch.origin ? { origin: batch.origin } : {}),
             reason: conflicted ? conflictOn(batch.records) : reason,
             state: 'kept',
           },
@@ -471,22 +546,24 @@ export const createWriter = ({
       });
     } else {
       const at = record.confirmed.document;
-      const crossAs = redecidedIn(record.batches);
+      const groups = takeBackGroups(record.batches);
+      const crossAs = redecidedIn(record.batches, groups);
       const refused: CrossAs = (other, before, carried) =>
         other.seq === batch.seq ? reason : crossAs(other, before, carried);
 
-      save({
-        put: crossOrWithdraw(
+      save(
+        crossOrWithdraw(
           record.batches,
           at,
           (fitting) =>
             crossChain(DocumentChange.between(at, at), at, record.batches, {
+              cancels: groups,
               crossAs: refused,
               fits: fitting,
             }),
           (other) => (other.seq === batch.seq ? reason : movedDecision(other))
-        ),
-      });
+        )
+      );
       showExactly();
     }
     stalled = false;
@@ -497,22 +574,23 @@ export const createWriter = ({
     const at = record.confirmed.document;
     const document = change.apply(at);
     const batches = withConflictsOfTeammate(record.batches, change);
+    const groups = takeBackGroups(batches);
+    const crossed = crossOrWithdraw(
+      batches,
+      document,
+      (fitting) =>
+        crossChain(change, at, batches, {
+          cancels: groups,
+          crossAs: redecidedIn(batches, groups),
+          fits: fitting,
+        }),
+      movedDecision
+    );
 
     save({
       confirmed: { document, version },
-      put: [
-        ...replaced(record.batches, batches),
-        ...crossOrWithdraw(
-          batches,
-          document,
-          (fitting) =>
-            crossChain(change, at, batches, {
-              crossAs: redecidedIn(batches),
-              fits: fitting,
-            }),
-          movedDecision
-        ),
-      ],
+      drop: crossed.drop,
+      put: [...replaced(record.batches, batches), ...crossed.put],
       ...forgetRebuilds(),
     });
     showExactly();
@@ -546,16 +624,19 @@ export const createWriter = ({
       return;
     }
 
-    const batches = record.batches.map((batch): SavedBatch => {
-      if (batch.state === 'saved') return leaving(batch, { kind: 'expired' });
-      if (batch.state === 'sent') return leaving(batch, movedDecision(batch));
+    const groups = takeBackGroups(record.batches);
+    const batches = record.batches.flatMap((batch): SavedBatch[] => {
+      if (groups.has(batch.seq)) return [];
+      if (batch.state === 'saved') return [leaving(batch, { kind: 'expired' })];
+      if (batch.state === 'sent') return [leaving(batch, movedDecision(batch))];
 
-      return batch;
+      return [batch];
     });
 
     drifted = showDocument(document) === 'rewritten';
     save({
       confirmed: { document, version },
+      drop: [...groups.keys()],
       put: replaced(record.batches, batches),
       ...forgetRebuilds(),
     });

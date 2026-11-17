@@ -277,7 +277,10 @@ head. A document replay that throws while it resolves or applies its batch,
 for example because the schema rejects the restored document, reports the
 error the same way, drops that batch and returns `{ status: "failed" }`, so
 the next call replays the batch below. A batch below the head that can no
-longer map onto the document is dropped and reported the same way. An error
+longer map onto the document is dropped and reported the same way. The batch
+right below a dropped batch maps by comparing documents, so it can drop too
+when the comparison cannot place it, such as a letter typed beside an equal
+letter that another change deleted. An error
 raised when the replay commits, such as a Yjs admission error, also reports and
 returns `{ status: "failed" }`, but the batch stays at the head. Errors in the call itself, such as a replay
 inside `editor.update(...)`, still throw.

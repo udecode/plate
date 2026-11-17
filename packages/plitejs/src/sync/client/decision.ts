@@ -43,7 +43,7 @@ export type SyncJudge = (
 ) => SyncVerdict;
 
 const failed = (
-  check: 'judge' | 'moved' | 'stale' | 'structure'
+  check: Extract<KeptReason, { kind: 'decision' }>['check']
 ): KeptReason => ({ check, kind: 'decision' });
 
 export const MOVED = failed('moved');
@@ -129,7 +129,7 @@ export const syncDecider = (
 
       return decision ? decideAgain(decision, origin, head, judge) : MOVED;
     } catch {
-      return MOVED;
+      return failed('threw');
     }
   };
 };

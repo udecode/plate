@@ -130,6 +130,7 @@ import {
   dropHistoryHead,
   attachKeptHistoryRedo,
   dropPendingHistoryReplayEntry,
+  forgetHistoryStep,
   getHistory,
   getWorkingHistory,
   historyFactsOf,
@@ -1535,6 +1536,7 @@ const createHistoryPlugin = <
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       context.onCleanup(
         registerEditorHistoryRuntime(editor, {
+          forgetStep: (step) => forgetHistoryStep(editor, step),
           head: (direction) =>
             peekHistoryEntry(editor, direction === 'undo' ? 'undos' : 'redos')
               ?.identity ?? null,

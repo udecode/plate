@@ -1398,6 +1398,20 @@ const shownBatches = <V extends Value>(
   return Object.freeze(batches.toReversed());
 };
 
+const resolvedEntryOf = <V extends Value>(
+  current: HistoryBranch<V>
+): ResolvedHistoryEntry<V> => ({
+  anchorCeiling: current.anchorCeiling,
+  base: current.base,
+  batch: current.batch,
+  carets: current.carets,
+  group: current.group,
+  identity: current.identity,
+  kept: current.kept,
+  recovery: current.recovery,
+  replay: current.replay,
+});
+
 const resolveAll = <V extends Value>(
   editor: Editor<V>,
   drops: DropSink,
@@ -1409,17 +1423,7 @@ const resolveAll = <V extends Value>(
   while (current) {
     current = resolveTop(editor, drops, current);
     if (!current) break;
-    newest.push({
-      anchorCeiling: current.anchorCeiling,
-      base: current.base,
-      batch: current.batch,
-      carets: current.carets,
-      group: current.group,
-      identity: current.identity,
-      kept: current.kept,
-      recovery: current.recovery,
-      replay: current.replay,
-    });
+    newest.push(resolvedEntryOf(current));
     current = current.next;
   }
 
@@ -1451,9 +1455,10 @@ const resolveAll = <V extends Value>(
 
 const rebuildBranch = <V extends Value>(
   entries: ReadonlyArray<ResolvedHistoryEntry<V>>,
-  maxDepth: number
+  maxDepth: number,
+  tail: HistoryBranch<V> | null = null
 ) => {
-  let value: HistoryBranch<V> | null = null;
+  let value = tail;
 
   for (
     let index = Math.min(entries.length, maxDepth) - 1;
@@ -2207,6 +2212,57 @@ export const replaceHistoryHead = <V extends Value>(
   });
 };
 
+const resolveDownTo = <V extends Value>(
+  editor: Editor<V>,
+  drops: DropSink,
+  value: HistoryBranch<V> | null,
+  id: string
+) => {
+  const above: Array<ResolvedHistoryEntry<V>> = [];
+  const causes: unknown[] = [];
+  let onto: EditorDocumentValue<V> | null = null;
+
+  for (let entry = value; entry;) {
+    const attemptDrops: DropSink = [];
+    let current: HistoryBranch<V> | null = null;
+
+    try {
+      const top = resolveTop(editor, attemptDrops, entry);
+
+      current =
+        top && onto
+          ? resolveTop(
+              editor,
+              attemptDrops,
+              mappedOnto(editor, top, top.base, onto)
+            )
+          : top;
+    } catch (error) {
+      causes.push(error);
+      onto =
+        above.at(-1)?.replay.record().after ?? getEditorDocumentValue(editor);
+      entry = entry.next;
+      continue;
+    }
+    if (!current) break;
+
+    drops.push(...attemptDrops);
+    onto = null;
+    if (STEP_IDS.get(current.identity) === id) {
+      return {
+        above,
+        causes,
+        entry: resolvedEntryOf(current),
+        tail: current.next,
+      };
+    }
+    above.push(resolvedEntryOf(current));
+    entry = current.next;
+  }
+
+  return null;
+};
+
 export const replaceUndoStep = <V extends Value>(
   editor: Editor<V>,
   id: string,
@@ -2218,40 +2274,85 @@ export const replaceUndoStep = <V extends Value>(
   if (store.pendingReplay) return false;
 
   const drops: DropSink = [];
-  const { entries } = resolveAll(editor, drops, store.undos);
-  const entry = entries.find((item) => STEP_IDS.get(item.identity) === id);
+  const found = resolveDownTo(editor, drops, store.undos, id);
 
-  if (!entry || !matches(entry.base)) return false;
+  if (!found || !matches(found.entry.base)) return false;
 
+  const { above, entry, tail } = found;
   const {
     carried: _carried,
     rest: _rest,
     unsettle: _unsettle,
     ...plain
   } = entry.batch;
-  const replaced: ResolvedHistoryEntry<V> = {
-    ...entry,
-    batch: { ...plain, change },
-    kept: null,
-    replay: recordHistoryReplay(
-      historyReplaySchemaOf(editor),
-      entry.base,
-      change,
-      'undo'
-    ),
-  };
+  const replay = recordHistoryReplay(
+    historyReplaySchemaOf(editor),
+    entry.base,
+    change,
+    'undo'
+  );
 
   publish(editor, withDrops(store, drops), {
     undos: rebuildBranch(
-      entries.map((item) => (item === entry ? replaced : item)),
-      store.maxDepth
+      [...above, { ...entry, batch: { ...plain, change }, kept: null, replay }],
+      store.maxDepth,
+      mappedOnto(
+        editor,
+        tail,
+        entry.replay.record().after,
+        replay.record().after
+      )
     ),
   });
+  for (const cause of found.causes) recordDroppedCause(editor, cause);
 
   return true;
 };
 
+export const forgetHistoryStep = <V extends Value>(
+  editor: Editor<V>,
+  id: string
+) => {
+  const store = getStore(editor);
+
+  if (store.pendingReplay) return false;
+
+  for (const stack of ['undos', 'redos'] as const) {
+    const drops: DropSink = [];
+    const found = resolveDownTo(editor, drops, store[stack], id);
+
+    if (!found) continue;
+
+    const { above, entry, tail } = found;
+    const below =
+      above.length === 0
+        ? tail
+        : mappedOnto(editor, tail, entry.replay.record().after, entry.base);
+    const remaining = rebaseOnto(
+      editor,
+      drops,
+      rebuildBranch(above, store.maxDepth, below),
+      getEditorDocumentValue(editor)
+    );
+
+    publish(editor, withDrops(store, drops), { [stack]: remaining });
+    for (const cause of found.causes) recordDroppedCause(editor, cause);
+
+    return true;
+  }
+
+  return false;
+};
+
 const DROPPED_HISTORY_CAUSES = new WeakMap<AnyEditor, unknown[]>();
+
+const recordDroppedCause = (editor: AnyEditor, cause: unknown) => {
+  const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
+
+  causes.push(cause);
+  DROPPED_HISTORY_CAUSES.set(editor, causes);
+  countCoreWork('carriedFallbacks');
+};
 
 export const takeDroppedHistoryCauses = (editor: AnyEditor) => {
   const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
@@ -2276,15 +2377,32 @@ const resolveSurvivingTop = <V extends Value>(
 
       return head;
     } catch (error) {
-      const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
-
-      causes.push(error);
-      DROPPED_HISTORY_CAUSES.set(editor, causes);
-      countCoreWork('carriedFallbacks');
+      recordDroppedCause(editor, error);
     }
   }
 
   return null;
+};
+
+const mappedOnto = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null,
+  from: EditorDocumentValue<V>,
+  to: EditorDocumentValue<V>
+) => {
+  if (!value) return null;
+
+  const change = DocumentChange.between(from, to, {
+    isSetValued: historyReplaySchemaOf(editor).isSetValued,
+  });
+
+  return change.empty
+    ? value
+    : addMapping(value, {
+        after: to,
+        change,
+        textOnly: isTextOnlyMapping(change),
+      });
 };
 
 const rebaseOnto = <V extends Value>(
@@ -2295,19 +2413,7 @@ const rebaseOnto = <V extends Value>(
 ) => {
   const head = resolveSurvivingTop(editor, drops, value);
 
-  if (!head) return null;
-
-  const correction = DocumentChange.between(head.base, current, {
-    isSetValued: historyReplaySchemaOf(editor).isSetValued,
-  });
-
-  return correction.empty
-    ? head
-    : addMapping(head, {
-        after: current,
-        change: correction,
-        textOnly: isTextOnlyMapping(correction),
-      });
+  return head && mappedOnto(editor, head, head.base, current);
 };
 
 export const dropHistoryHead = <V extends Value>(

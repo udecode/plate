@@ -26,7 +26,7 @@ export const conflictOn = (records?: ConflictRecords): KeptReason =>
 
 export type KeptReason =
   | Readonly<{
-      check: 'judge' | 'moved' | 'stale' | 'structure';
+      check: 'judge' | 'moved' | 'stale' | 'structure' | 'threw';
       kind: 'decision';
     }>
   | Readonly<{ kind: 'conflict'; records?: ConflictRecords }>
@@ -51,11 +51,13 @@ export type Decision =
   | (Extract<CommitDecision, { step: string }> &
       Readonly<{ superseded?: true; unrebased: DocumentChangeJson }>);
 
-export type StepRebuild = Readonly<{
-  base: JsonEditorValue;
-  step: string;
-  takeBack: DocumentChangeJson;
-}>;
+export type StepRebuild =
+  | Readonly<{
+      base: JsonEditorValue;
+      step: string;
+      takeBack: DocumentChangeJson;
+    }>
+  | Readonly<{ forget: true; step: string }>;
 
 export type SavedBatch = Readonly<{
   decision: Decision | null;
@@ -77,6 +79,7 @@ export type SavedBatch = Readonly<{
       }>
     | Readonly<{
         frame: string;
+        origin?: BatchOrigin;
         records?: ConflictRecords;
         state: 'withheld';
       }>

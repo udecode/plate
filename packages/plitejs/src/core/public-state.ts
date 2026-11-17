@@ -1000,6 +1000,7 @@ export type EditorHistoryStep = Readonly<{
 }>;
 
 type EditorHistoryRuntime = Readonly<{
+  forgetStep: (step: string) => boolean;
   head: (direction: 'redo' | 'undo') => object | null;
   mintStepOf: (commit: EditorCommit) => EditorHistoryStep | null;
   replaceUndoStep: (
@@ -1072,6 +1073,11 @@ export const replaceEditorUndoStep = (
     step,
     change,
     matches
+  ) ?? false;
+
+export const forgetEditorHistoryStep = (editor: Editor, step: string) =>
+  EDITOR_HISTORY_RUNTIMES.get(getEditorRuntimeOwner(editor))?.forgetStep(
+    step
   ) ?? false;
 
 /** Attach private mounted-view metadata to an applied replay result. */

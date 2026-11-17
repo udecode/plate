@@ -1,6 +1,7 @@
 import {
   type ConflictRecords,
   DocumentChange,
+  type DocumentChangeJson,
   getInternalDocumentChangeRecords,
   rebaseDocumentChange,
   unequalRecordPuts,
@@ -47,6 +48,7 @@ export const leaving = (
       : {
           ...provenanceOf(batch),
           frame: batch.frame,
+          ...(batch.origin ? { origin: batch.origin } : {}),
           ...(records ? { records } : {}),
           state: 'withheld',
         };
@@ -86,6 +88,54 @@ export const superseded = (
       ? [{ ...batch, decision: { ...batch.decision, superseded: true } }]
       : []
   );
+};
+
+const mergedBetween = (
+  batches: readonly SavedBatch[],
+  step: string | null,
+  from: number,
+  to: number
+) =>
+  step === null
+    ? []
+    : batches.filter(
+        (other) =>
+          other.mergedInto === step && other.seq > from && other.seq < to
+      );
+
+export const takeBackGroups = (batches: readonly SavedBatch[]) => {
+  const bySeq = new Map(batches.map((batch) => [batch.seq, batch]));
+  const groups = new Map<number, number>();
+
+  for (const batch of batches.toReversed()) {
+    if (
+      batch.state !== 'saved' ||
+      batch.takesBackSeq === undefined ||
+      groups.has(batch.seq)
+    ) {
+      continue;
+    }
+
+    const target = bySeq.get(batch.takesBackSeq);
+
+    if (!target) continue;
+
+    const group = [
+      target,
+      ...mergedBetween(batches, stepOf(target), target.seq, batch.seq),
+      batch,
+    ];
+
+    if (
+      group.every(
+        (member) => member.state === 'saved' && !groups.has(member.seq)
+      )
+    ) {
+      for (const member of group) groups.set(member.seq, batch.seq);
+    }
+  }
+
+  return groups;
 };
 
 export type KeepAs = (batch: SavedBatch) => KeptReason | null;
@@ -160,38 +210,70 @@ export const withConflictsOfTeammate = (
     : batches.map((batch) => withConflictsOfLaterEntry(batch, entry));
 
 const crossedOrigin = (
-  batch: ShownBatch,
+  { origin }: Readonly<{ origin?: BatchOrigin }>,
+  change: DocumentChangeJson,
   before: JsonEditorValue,
   carried: DocumentChange
 ): BatchOrigin =>
-  batch.origin
-    ? { ...batch.origin, since: [...batch.origin.since, carried.toJSON()] }
-    : { before, change: batch.change, since: [carried.toJSON()] };
+  origin
+    ? { ...origin, since: [...origin.since, carried.toJSON()] }
+    : { before, change, since: [carried.toJSON()] };
 
 export const crossChain = (
   change: DocumentChange,
   at: JsonEditorValue,
   batches: readonly SavedBatch[],
   {
+    cancels,
     crossAs = () => null,
     fits,
-  }: Readonly<{ crossAs?: CrossAs; fits?: Fits }> = {}
+  }: Readonly<{
+    cancels?: ReadonlyMap<number, number>;
+    crossAs?: CrossAs;
+    fits?: Fits;
+  }> = {}
 ) => {
   let carried = change;
   let before = at;
   const next: SavedBatch[] = [];
+  const dropped: number[] = [];
+  const groupDrops = new Map<number, boolean>();
   const out = new Set(
     batches.flatMap((batch) => (isShown(batch) ? [] : [batch.seq]))
   );
 
   for (const batch of batches) {
     if (!isShown(batch)) {
-      next.push(batch);
+      next.push(
+        batch.state === 'withheld' && !carried.empty
+          ? {
+              ...batch,
+              origin: crossedOrigin(
+                batch,
+                frameChangeOf(batch.frame).toJSON(),
+                before,
+                carried
+              ),
+            }
+          : batch
+      );
       continue;
     }
 
     const own = DocumentChange.fromJSON(batch.change);
     const after = own.apply(before);
+    const group = cancels?.get(batch.seq);
+
+    if (group !== undefined && !groupDrops.has(group)) {
+      groupDrops.set(group, !carried.empty);
+    }
+    if (group !== undefined && groupDrops.get(group)) {
+      dropped.push(batch.seq);
+      carried = own.invert(before).compose(carried, after);
+      before = after;
+      continue;
+    }
+
     const crossed =
       batch.state === 'saved' &&
       batch.takesBackSeq !== undefined &&
@@ -228,14 +310,19 @@ export const crossChain = (
           : {
               ...batch,
               change: moved,
-              origin: crossedOrigin(batch, before, carried),
+              origin: crossedOrigin(batch, batch.change, before, carried),
             }
       );
       carried = rebase.a;
     } else {
       next.push(
         leaving(
-          batch,
+          carried.empty
+            ? batch
+            : {
+                ...batch,
+                origin: crossedOrigin(batch, batch.change, before, carried),
+              },
           crossed ?? (unfit && batch.state === 'saved' ? INVALID : null),
           rebase && rebase.kind !== 'pair' ? rebase.records : undefined
         )
@@ -246,5 +333,5 @@ export const crossChain = (
     before = after;
   }
 
-  return { batches: next, carried };
+  return { batches: next, carried, dropped };
 };
