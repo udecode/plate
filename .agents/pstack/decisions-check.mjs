@@ -244,7 +244,7 @@ function recordedProblems(severity, [, , , evidence, result], where) {
   const labels = proofLabels(evidence, plansDir(), onDisk).filter((label) => label.path);
   const found = labels.filter((label) => !label.exists).map((label) => `${where}: proof: ${label.path} names no file`);
   if (labels.length === 0) found.push(`${where}: a recorded critical finding names the seat's saved case as "proof: <file under ${plansDir()}/artifacts/>" in its evidence`);
-  if (!/(?:^|[\s;,(])step:\s*\S/u.test(result)) found.push(`${where}: a recorded critical finding names the plan step that fixes it as "step: <n>" in its result, a step that lands before the plan's reach step`);
+  if (!/(?:^|[\s;,(])step:\s*\S/u.test(result)) found.push(`${where}: a recorded critical finding names the plan step that fixes it as "step: <n>" in its result, a step that lands no later than the plan's reach step`);
   return found;
 }
 
@@ -574,9 +574,9 @@ function append(path, batch, run, miss = null) {
       if (openCriticals > 0 && !(redesign.playbook && redesign.redesign)) found.push(...designQuestionProblems(path, cells, where, openCriticals));
       openCriticals += 1;
     }
+    trackRecorded(recorded, cells);
     found.push(...redesignProblems(redesign, cells, where), ...reachProblems(recorded, cells, where));
     trackRedesign(redesign, cells);
-    trackRecorded(recorded, cells);
     if (plans) {
       found.push(...secondPlanProblems(plans, cells, where), ...priorArtProblems(plans, cells, where));
       trackPlans(plans, cells);
