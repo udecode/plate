@@ -57,11 +57,14 @@
 //        starts with "built:" and holds reach: <text> while such a row has no later panel or
 //        build row whose evidence names the same proof: file and whose result starts with
 //        applied, dismissed, fixed or verified.
-//        node .agents/pstack/decisions-check.mjs rounds <log>
+//        node .agents/pstack/decisions-check.mjs rounds <log> [--patch <file>]
 //        (exits 1 when the log is at the cap of panel rounds since its last restart, the
 //        maxRounds in .agents/pstack.json or 1, plus one round after a round that applied
 //        three or more critical findings; a built: row restarts the count only for a step
-//        the log has not built before)
+//        the log has not built before; with --patch, also exits 1 when the patch
+//        changes more product lines than stepBudget.lines in .agents/pstack.json, 400 by
+//        default, not counting tests, specs, fixtures, Markdown or stepBudget.exclude
+//        globs, unless an owner row starting "big step:" follows the last seats row)
 //        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
 //        (prints every open suggested task as ready, started, waiting or unmigrated,
 //        by priority, listing P0 and P1 in full and counting the rest unless chips all,
@@ -114,7 +117,7 @@ import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
-import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STAGE_PHASES, stageOfRow, STATUSES, statusOf, tidy } from './status.mjs';
+import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, globMatcher, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STAGE_PHASES, stageOfRow, STATUSES, statusOf, tidy } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -131,7 +134,7 @@ const roundCap = () => {
 };
 const EXTRA_ROUND_FIXES = 3;
 const STEP_BUILT = /^built:\s*step\s+(\d+[a-z]?)(?![a-z0-9])/iu;
-const ROUND_STEP = /^built:\s*step\s+([a-z]*\d+(?:\.\d+)*[a-z]?)(?![a-z0-9.])/iu;
+const ROUND_STEP = /^built:\s*step\s+([a-z0-9]+(?:\.[a-z0-9]+)*)(?![a-z0-9]|\.[a-z0-9])/iu;
 // A built: row for a step the log has built before records that step's fixes, not a new diff, so it starts no count.
 function trackRound(state, line) {
   const [, phase, decision = '', , , result = ''] = line.split('\t');
@@ -148,6 +151,30 @@ const roundState = (lines) => {
   for (const line of lines) trackRound(state, line);
   return state;
 };
+const STEP_EXCLUDE = ['**/*.test.*', '**/*.spec.*', '**/__tests__/**', '**/fixtures/**', '**/*.md', '**/*.mdx'];
+const stepBudget = () => {
+  const { stepBudget: { lines = 400, exclude = [] } = {} } = projectConfig();
+  if (!Number.isInteger(lines) || lines < 1) throw new Error(`.agents/pstack.json: stepBudget.lines is ${JSON.stringify(lines)}, not a whole number of 1 or more`);
+  return { lines, excluded: globMatcher([...STEP_EXCLUDE, ...exclude]) };
+};
+function patchLines(patch, excluded) {
+  const count = { product: 0, other: 0 };
+  let file = null;
+  let inHunk = false;
+  for (const line of patch.split('\n')) {
+    const header = line.match(/^diff --git a\/.+ b\/(.+)$/u);
+    if (header) [file, inHunk] = [header[1], false];
+    else if (line.startsWith('@@')) inHunk = true;
+    else if (file && inHunk && /^[+-]/u.test(line)) count[excluded(file) ? 'other' : 'product'] += 1;
+  }
+  return count;
+}
+// An owner's "big step:" row lifts the step budget for the next round only, so a seats row after it ends the lift.
+const bigStep = (lines) => lines.reduce((lifted, line) => {
+  const [, phase, decision = ''] = line.split('\t');
+  if (phase === 'owner' && /^big step:\s*\S/u.test(decision)) return true;
+  return opens(line) ? false : lifted;
+}, false);
 const capMessage = ({ rounds }) =>
   `this would be panel round ${rounds + 1} since the last restart, past the cap of ${roundCap()}, and the last round applied fewer than ${EXTRA_ROUND_FIXES} critical findings, or already was the one extra round. Stop reviewing: settle each open finding as applied, dismissed on its proof, recorded when no user can reach its case, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, then build the plan or land the step. A built: row for a step this log has not built yet, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again; a built: row for a step already built does not`;
 const pastCap = ({ rounds, applied }) => rounds >= roundCap() && !(rounds === roundCap() && applied >= EXTRA_ROUND_FIXES);
@@ -674,17 +701,32 @@ function dispatch() {
   }
   if (args[0] === 'rounds') {
     if (!args[1] || !existsSync(args[1])) {
-      console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv>');
+      console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv> [--patch <file>]');
       return 2;
     }
     const lines = readFileSync(args[1], 'utf8').split('\n');
     const round = roundState(lines);
     console.info(`${round.rounds} panel round(s) since the last restart, the last applying ${round.applied} critical finding(s); the cap is ${roundCap()}, plus one round after a round that applies ${EXTRA_ROUND_FIXES} or more`);
+    let status = 0;
     if (pastCap(round)) {
       console.error(capMessage(round));
-      return 1;
+      status = 1;
     }
-    return 0;
+    const patchFile = args[args.indexOf('--patch') + 1];
+    if (args.includes('--patch')) {
+      if (!patchFile || !existsSync(patchFile)) {
+        console.error(patchFile ? `no patch at ${patchFile}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv> --patch <file>');
+        return 2;
+      }
+      const budget = stepBudget();
+      const { product, other } = patchLines(readFileSync(patchFile, 'utf8'), budget.excluded);
+      console.info(`the patch changes ${product} product line(s), and ${other} more in tests, fixtures, Markdown and stepBudget.exclude globs; the step budget is ${budget.lines}`);
+      if (product > budget.lines && !bigStep(lines)) {
+        console.error(`the patch changes ${product} product lines, past the step budget of ${budget.lines}. Split the step into lettered steps that land one by one, such as step 4a and step 4b, each with its own diff round, or log an owner row whose decision starts "big step:" and quotes the owner, which lifts the budget for one round`);
+        status = 1;
+      }
+    }
+    return status;
   }
   if (args[0] === 'chips') {
     const fetch = args.includes('--fetch');

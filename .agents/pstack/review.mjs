@@ -50,6 +50,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { globMatcher } from './status.mjs';
 import { verbatim } from './writing-check.mjs';
 
 const REF = 'refs/pstack/reviewed';
@@ -57,7 +58,6 @@ const FIRST = 20;
 const TIERS = ['public', 'internal'];
 const USAGE =
   'Usage: node .agents/pstack/review.mjs [--tier public|internal|all] [--net <session>] | --mark | --done <session> | --revert <session> [--stage] [--check <command>]...';
-const GLOB = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
 const STOP = /^(?:(?:Session|Plan|Introduced-by|Beyond the ask|Picks|Not checked): |Shipped fast, no review\.$)/u;
 
 const labeled = (body, label) => {
@@ -125,11 +125,7 @@ const reviewedShas = new Set(existsSync(store) ? readFileSync(store, 'utf8').spl
 const [{ reviewed }] = repos;
 const PLAN = new RegExp(`${plans.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}/[^\\s)\\]\`'"<>]+?\\.md`, 'u');
 
-const matcher = (globs = []) => {
-  const patterns = globs.map((glob) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/gu, '\\$&').replace(/\*\*\/|\*\*|\*|\?/gu, (token) => GLOB[token])}$`, 'u'));
-  return (path) => patterns.some((pattern) => pattern.test(path));
-};
-const classes = ['skip', 'tests', 'public'].map((name) => [name, matcher(reviewPaths?.[name])]);
+const classes = ['skip', 'tests', 'public'].map((name) => [name, globMatcher(reviewPaths?.[name])]);
 const some = (paths) => `${paths.slice(0, 3).join(', ')}${paths.length > 3 ? `, and ${paths.length - 3} more` : ''}`;
 const diffOf = (sha, ...rest) => ['diff-tree', '-r', '-M', '--no-commit-id', '--root', '--diff-merges=first-parent', ...rest, sha];
 

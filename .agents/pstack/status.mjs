@@ -6,6 +6,13 @@ import { spawnSync } from 'node:child_process';
 import { closeSync, existsSync, lstatSync, openSync, readdirSync, readSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
+const GLOB = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
+// ** matches dot directories such as .agents too, which node:path's matchesGlob skips.
+export const globMatcher = (globs = []) => {
+  const patterns = globs.map((glob) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/gu, '\\$&').replace(/\*\*\/|\*\*|\*|\?/gu, (token) => GLOB[token])}$`, 'u'));
+  return (path) => patterns.some((pattern) => pattern.test(path));
+};
+
 const LANDED = ['done', 'complete', 'completed', 'shipped', 'executed', 'implemented', 'fixed', 'released', 'merged', 'verified', 'landed'];
 
 export const STATES = {
