@@ -435,6 +435,36 @@ symlink the base tracks or the helper's own `node_modules` link. The helper
 does not guard git metadata: a `--with` under `.git`, in any letter case, can
 point the worktree's git commands at another checkout.
 
+## Open a DOCX in Word
+
+Checking that Word opens an exported `.docx`, with no repair prompt and the
+right header and footer on each page, is not a manual test. In Claude Code an
+agent drives it through Word for the web in the built-in browser. Render the
+file with LibreOffice first (`soffice --headless --convert-to pdf`) for a quick
+check, then:
+
+1. Open `https://onedrive.live.com/my` in the built-in browser. The owner's
+   Microsoft sign-in persists in its profile. When OneDrive shows a sign-in
+   page, ask the owner once to sign in in the pane.
+2. Upload without the file picker, which the pane cannot drive. In
+   `javascript_tool`, decode the file from base64, wrap it in a `File`, add it
+   to a `DataTransfer` and dispatch `dragenter`, `dragover` and `drop` on the
+   file list. A drop on a folder row uploads into that folder. When the
+   base64 runs past about 10,000 characters, gzip the file first, unpack it in
+   the page with `DecompressionStream('gzip')` and compare its SHA-256 with the
+   local file's.
+3. Clicking a file opens Word in a new tab, which the pane blocks. Replace
+   `window.open` with a function that records its URL, click the file again,
+   and navigate to the recorded `Doc.aspx` URL with `action=view`.
+4. Word takes about 15 seconds to render. Scroll page by page and read each
+   footer inside the page. The number outside the page's right edge is Word's
+   page marker, not the footer.
+5. Tell the owner which files the run left in their OneDrive.
+
+This proves Word for the web only, so the limits name desktop Word as
+unchecked. A Codex session, or an expired sign-in with no owner to renew it,
+falls back to `AGENTS.md`'s Manual tests rule.
+
 ## Local install recovery
 
 When a local-only typecheck/build/dev/test failure does not match the change and
