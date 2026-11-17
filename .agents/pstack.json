@@ -15,6 +15,24 @@
     "FAST_CHECK_SEED=random"
   ],
   "maxEffort": "xhigh",
+  "planBoxes": {
+    "2026-10-08-authored-review.md": {
+      "max": 32,
+      "owner": "zbeyens"
+    },
+    "2026-11-06-native-sync.md": {
+      "max": 21,
+      "owner": "zbeyens"
+    },
+    "2026-11-10-undo-restore-names.md": {
+      "max": 10,
+      "owner": "zbeyens"
+    },
+    "2026-11-17-editor-options-next-step.md": {
+      "max": 11,
+      "owner": "zbeyens"
+    }
+  },
   "sourceless": [
     "zbeyens",
     "felixfeng33"
@@ -304,7 +322,7 @@
       ".agents/pstack/levels.mjs": "6377cf1ed1de0ddedf9d926e22203ab0e98c880add339c6611627dbadfe17044",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "a5cbac2e60f285addaa9c69b7b095586cf44cad3462146b194250c7dd976fabf",
-      ".agents/pstack/plan-page.mjs": "be986ea62f72e1e9e995ddd237b451b276f038f138f887dbb5ed017bf6b9d784",
+      ".agents/pstack/plan-page.mjs": "a46ec2ee76f60f69515039dd66d793731dcc069556eb49e8f1c3f693cdffcd8c",
       ".agents/pstack/status.mjs": "2a9bc535502de8621c002ddc227ffb0e5393cddbab96de331be4832c679a87a1",
       ".agents/pstack/tasks.mjs": "3f096db8e20b4bf08ee12c00ffea2a7477a25646b6c3b9933f7fbda03489e7c6",
       ".agents/pstack/scorecard.mjs": "88c90555a404e561d26e3c81b5ac92254eafaf832bc85f52ac524659f73fb079",
@@ -328,7 +346,7 @@
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "2d581ce845467a5ff32d1c6dd6416aff5f35e395"
+    "source": "49c9719a27ff58bca36ed4386907b1fcfe5225c9"
   },
   "pageTopic": {
     "field": "review_scopes",

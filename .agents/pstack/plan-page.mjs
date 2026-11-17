@@ -248,7 +248,7 @@ function pageConfig(root) {
           };
         })
     : [];
-  return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {}, branch: config.branch ?? 'main' };
+  return { playbooks, plans: config.plans ?? 'docs/plans', topic: config.pageTopic ?? {}, branch: config.branch ?? 'main', planBoxes: config.planBoxes ?? {} };
 }
 
 export const gitOrNull = (root, ...args) => {
@@ -504,6 +504,16 @@ const isDefaultsHead = (head) => DEFAULTS_HEAD.every((cell, index) => headCell(h
 const IMPACTS = new Set(['big', 'small']);
 const RETIRED_IMPACTS = new Set(['detail']);
 const impactColumn = (head) => head.findIndex((cell) => headCell(cell) === 'impact');
+
+const OPEN_BOXES = 8;
+// A plan written before the cap keeps its count as a ceiling in planBoxes, so it can only shrink.
+function assertBoxes(plan, where, baselines) {
+  const open = stepChecks(plan).filter((done) => !done).length;
+  const max = baselines[basename(where)]?.max ?? OPEN_BOXES;
+  if (open <= max) return;
+  const cap = max === OPEN_BOXES ? `the cap of ${OPEN_BOXES}` : `its planBoxes baseline of ${max} in .agents/pstack.json`;
+  throw new Error(`${where} has ${open} unticked step boxes under ## Steps, past ${cap}; give only the next phase step boxes and cut each later phase to one paragraph`);
+}
 
 function assertDefaults(plan, where) {
   for (const section of sectionsNamed(plan, 'Defaults')) {
@@ -1449,7 +1459,7 @@ function contextOf(planPath) {
     encoding: 'utf-8',
   }).trim();
   const repoPath = relative(root, planPath);
-  const { playbooks, topic, branch } = pageConfig(root);
+  const { playbooks, topic, branch, planBoxes } = pageConfig(root);
   const plansDir = dirname(planPath);
   const named = subjectOf(plan, topic);
   const namedPath = named && join(plansDir, 'topics', `${named}.md`);
@@ -1458,7 +1468,7 @@ function contextOf(planPath) {
   const subjectPath = subject && namedPath;
   const doc = subjectPath ? parsePlan(readFileSync(subjectPath, 'utf-8')) : plan;
   const iterations = subject ? iterationsOf(plansDir, subject, topic) : [];
-  return { plan, root, repoPath, playbooks, topic, branch, plansDir, subject, subjectPath, doc, iterations, missingSubject };
+  return { plan, root, repoPath, playbooks, topic, branch, planBoxes, plansDir, subject, subjectPath, doc, iterations, missingSubject };
 }
 
 function stagesOf(planPath) {
@@ -1510,7 +1520,7 @@ export const blobFacts = (root, paths) => {
 
 // With run, the result is that run's body: its own questions, inputs named by its key, pictures linked as shots/ files, and History.
 function page(planPath, { folded = false, run = null } = {}) {
-  const { plan, root, repoPath, playbooks, topic, plansDir, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
+  const { plan, root, repoPath, playbooks, topic, planBoxes, plansDir, subject, subjectPath, doc, iterations, missingSubject } = contextOf(planPath);
   const shot = shotRenderer(framesOrMainCheckout(dirname(planPath), root, plansDir), run?.shots ?? null);
   if (missingSubject) {
     if (plan.fields.topic) throw new Error(`${repoPath} belongs to topic ${missingSubject.subject}; ${missingSubject.hint}`);
@@ -1539,6 +1549,7 @@ function page(planPath, { folded = false, run = null } = {}) {
     pageSections(playbooks, entry.plan.meta.playbook, where);
     assertPairs(entry.plan.sections, pairs, where);
     if (!finished(entry.plan.meta.status ?? '')) assertDefaults(entry.plan, where);
+    if (!finished(entry.plan.meta.status ?? '')) assertBoxes(entry.plan, where, planBoxes);
     if (!finished(entry.plan.meta.status ?? '') && owesBrief(entry)) assertBrief(entry.plan, where);
     assertDemo(entry.plan, where);
     if (stateOf(entry.plan.meta.status ?? '') && !finished(entry.plan.meta.status ?? '')) {
