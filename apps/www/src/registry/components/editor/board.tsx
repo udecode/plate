@@ -39,7 +39,7 @@ import {
   useBoardView,
   useStrokePath,
 } from 'platejs/board/react';
-import { type EditorElementProps, useEditor } from 'platejs/react';
+import type { EditorElementProps } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -177,7 +177,7 @@ const boardMessages: BoardMessages = {
 
 function BoardShapeMenu({ pressed }: { pressed: boolean }) {
   const geo = useBoardView((view) => view.nextStyle.geo ?? 'rectangle');
-  const { setNextStyle, setTool } = useBoardActions();
+  const { setStyle, setTool } = useBoardActions();
   const Icon = GEOS.find((item) => item.geo === geo)?.icon ?? SquareIcon;
 
   return (
@@ -194,8 +194,8 @@ function BoardShapeMenu({ pressed }: { pressed: boolean }) {
             const picked = GEOS.find((item) => item.geo === value);
 
             if (!picked) return;
-            setNextStyle({ geo: picked.geo });
             setTool('geo');
+            setStyle({ geo: picked.geo });
           }}
         >
           {GEOS.map(({ geo: itemGeo, icon: ItemIcon, label }) => (
@@ -223,34 +223,12 @@ function BoardSwatch({ fill }: { fill: string | undefined }) {
 }
 
 function BoardFillMenu() {
-  const editor = useEditor();
-  const selected = useBoardView((view) => view.selectedShapes);
+  const shown = useBoardView((view) => view.styles.fill);
   const writable = useBoardView((view) => view.writable);
   const nextFill = useBoardView((view) => view.nextStyle.fill);
-  const { focus, setNextStyle } = useBoardActions();
-  const filled = selected.flatMap(({ key, node }) =>
-    typeof node.fill === 'string' ? [{ fill: node.fill, key }] : []
-  );
-  const shared = new Set(filled.map(({ fill }) => fill));
-  const pressed =
-    filled.length === 0
-      ? nextFill
-      : shared.size === 1
-        ? filled[0].fill
-        : undefined;
-
-  const pick = (fill: string) => {
-    if (filled.length === 0) {
-      setNextStyle({ fill });
-
-      return;
-    }
-
-    editor.update((tx) => {
-      tx.history.newBatch();
-      for (const { key } of filled) tx.nodes.set({ fill }, { at: key });
-    });
-  };
+  const { focus, setStyle } = useBoardActions();
+  const pressed = shown ? (shown.mixed ? undefined : shown.value) : nextFill;
+  const pick = (fill: string) => setStyle({ fill });
 
   return (
     <DropdownMenu modal={false}>

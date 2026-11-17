@@ -3,11 +3,10 @@ import {
   BOARD_GEO_DEFAULT,
   BOARD_GEO_SIZE,
   BOARD_GEO_TYPE,
+  BOARD_GEOS,
   defineBoardShape,
 } from './boardShape.internal';
 import { BOARD_GEO_STYLES } from './boardStyle.internal';
-
-const BOARD_GEOS = ['diamond', 'ellipse', 'rectangle', 'triangle'] as const;
 
 /** The outline a geo shape draws. */
 export type BoardGeo = (typeof BOARD_GEOS)[number];

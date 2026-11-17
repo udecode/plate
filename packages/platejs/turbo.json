@@ -4750,7 +4750,8 @@
         "source-hash:partition:math",
         "source-hash:partition:proxies",
         "source-hash:partition:react-core",
-        "source-hash:partition:suggestion-react"
+        "source-hash:partition:suggestion-react",
+        "source-hash:partition:yjs-react"
       ],
       "inputs": [
         "src/react/features/board/**",

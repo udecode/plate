@@ -13,7 +13,7 @@ import {
 } from './boardIndex.internal';
 import { anchorIn } from './boardPick.internal';
 import { previewArrowLine, previewArrowMark } from './boardPreview.internal';
-import type { BoardViewCore } from './boardView.internal';
+import type { BoardStyle, BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
 type ConnectEnd = Readonly<{
@@ -27,6 +27,7 @@ type Connect = {
   mark: SVGCircleElement;
   side: BoardArrowSide;
   start: ConnectEnd;
+  style: BoardStyle;
 };
 
 const MIDDLE: BoardArrowAnchor = [0.5, 0.5];
@@ -187,6 +188,7 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
       mark: previewArrowMark(line, start.keyPoint),
       side,
       start,
+      style: core.state().nextStyle,
     };
 
     core.replaceInteraction({
@@ -220,7 +222,7 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
         return;
       }
 
-      const { end, start } = connect;
+      const { end, start, style } = connect;
       const drawn =
         end &&
         index.resolveArrow({ end: resolvedOf(end), start: resolvedOf(start) });
@@ -232,12 +234,14 @@ export const attachBoardConnect = (host: HTMLElement, core: BoardViewCore) => {
       }
       core.cancelInteraction();
       core.insertAndSelect((tx) =>
-        tx
-          .plugin(BaseBoardArrowPlugin)
-          .insert(
-            { end: writtenOf(end), start: writtenOf(start) },
-            { board: core.board }
-          )
+        tx.plugin(BaseBoardArrowPlugin).insert(
+          {
+            ...core.styleFor(BaseBoardArrowPlugin.name, style),
+            end: writtenOf(end),
+            start: writtenOf(start),
+          },
+          { board: core.board }
+        )
       );
     },
     move: (by: BoardPlace) => {

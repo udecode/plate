@@ -300,7 +300,10 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       : centeredOnView(size);
     const point = freePointFrom(start, size, index.entries());
 
-    return !!point && core.place(tool, { ...point, ...size });
+    return (
+      !!point &&
+      core.place(tool, { ...point, ...size }, { style: core.state().nextStyle })
+    );
   };
 
   const placeFrame = (around?: BoardBox) =>
@@ -313,9 +316,11 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
             x: around.x - PLACE_GAP,
             y: around.y - PLACE_GAP,
           },
-          { takesShapes: true }
+          { style: core.state().nextStyle, takesShapes: true }
         )
-      : core.place('frame', centeredOnView(BOARD_PLACE_SIZE.frame));
+      : core.place('frame', centeredOnView(BOARD_PLACE_SIZE.frame), {
+          style: core.state().nextStyle,
+        });
 
   const placeWith = (tool: BoardPlaceTool) => {
     core.cancelInteraction();

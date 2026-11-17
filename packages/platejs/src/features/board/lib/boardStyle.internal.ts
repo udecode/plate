@@ -50,13 +50,15 @@ const isOpacity = (value: unknown): value is number =>
 
 const oneOf =
   <const TValue extends string>(values: readonly TValue[]) =>
-  (raw: string) =>
+  (raw: unknown) =>
     values.find((value) => value === raw);
+
+const isString = (value: unknown): value is string => typeof value === 'string';
 
 const BOARD_STYLES: {
   readonly [K in BoardStyleKey]: Readonly<{
     attribute: string;
-    parse: (raw: string) => BoardStyles[K] | undefined;
+    parse: (raw: unknown) => BoardStyles[K] | undefined;
     property: (value: BoardStyles[K]) => BoardStyleDescriptor<BoardStyles[K]>;
   }>;
 } = {
@@ -67,13 +69,13 @@ const BOARD_STYLES: {
   },
   fill: {
     attribute: 'data-board-fill',
-    parse: (raw) => raw,
+    parse: (raw) => (isString(raw) ? raw : undefined),
     property: (value) => property.string({ default: value }),
   },
   opacity: {
     attribute: 'data-board-opacity',
     parse: (raw) => {
-      const value = Number(raw);
+      const value = isString(raw) ? Number(raw) : raw;
 
       return isOpacity(value) ? value : undefined;
     },
@@ -86,7 +88,7 @@ const BOARD_STYLES: {
   },
   strokeColor: {
     attribute: 'data-board-stroke-color',
-    parse: (raw) => raw,
+    parse: (raw) => (isString(raw) ? raw : undefined),
     property: (value) => property.string({ default: value }),
   },
   strokeWidth: {
@@ -100,6 +102,11 @@ const BOARD_STYLES: {
     property: (value) => property.enum(BOARD_STYLE_SIZES, { default: value }),
   },
 };
+
+export const parseBoardStyle = <K extends BoardStyleKey>(
+  key: K,
+  value: unknown
+): BoardStyles[K] | undefined => BOARD_STYLES[key].parse(value);
 
 export const BOARD_NOTE_STYLES = {
   fill: 'yellow',
@@ -132,7 +139,8 @@ export const BOARD_STROKE_STYLES = {
 export const isBoardStyleKey = (key: string): key is BoardStyleKey =>
   Object.hasOwn(BOARD_STYLES, key);
 
-const BOARD_STYLE_KEYS = Object.keys(BOARD_STYLES).filter(isBoardStyleKey);
+export const BOARD_STYLE_KEYS =
+  Object.keys(BOARD_STYLES).filter(isBoardStyleKey);
 
 const boardStyleKeys = <const TStyles extends Partial<BoardStyles>>(
   styles: TStyles

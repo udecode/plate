@@ -13,10 +13,12 @@ import {
 } from '../../../core';
 import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
 import {
+  BaseBoardArrowPlugin,
   BaseBoardFramePlugin,
   BaseBoardGeoPlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
+  BaseBoardStrokePlugin,
   type BoardGeo,
   type BoardMemberEntry,
   type BoardPlace,
@@ -27,8 +29,14 @@ import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
 import { frameTakes } from '../../../features/board/lib/boardFrame.internal';
 import {
   BOARD_SHAPES_SLOT,
+  isBoardGeo,
   shapeSelectionMode,
 } from '../../../features/board/lib/boardShape.internal';
+import {
+  BOARD_STYLE_KEYS,
+  type BoardStyles,
+  parseBoardStyle,
+} from '../../../features/board/lib/boardStyle.internal';
 import type { Editor, EditorHistoryController } from '../../core';
 import { attachBoardClipboard } from './boardClipboard.internal';
 import { attachBoardGestures } from './boardGesture.internal';
@@ -80,13 +88,15 @@ export type BoardTool =
 export type BoardPlaceTool = Extract<BoardTool, 'frame' | 'geo' | 'note'>;
 
 /**
- * The style the next shape a board view adds gets. Its `fill` goes to both the
- * next note and the next geo shape.
+ * Board styles by name, as a pick sets them or as the next shape a board view
+ * adds gets them. A shape takes the styles its kind stores, and `geo`, the
+ * outline kind, goes only to geo shapes.
  */
-export type BoardStyle = Readonly<{
-  fill?: string;
-  geo?: BoardGeo;
-}>;
+export type BoardStyle = Readonly<Partial<BoardStyles> & { geo?: BoardGeo }>;
+
+type ShownStyle<T> = Readonly<
+  { mixed: false; value: NonNullable<T> } | { mixed: true }
+>;
 
 /**
  * One mounted view's state. It lives in the view and never in the document, so
@@ -94,7 +104,20 @@ export type BoardStyle = Readonly<{
  */
 export type BoardViewState = Readonly<{
   camera: BoardCamera;
+  /** The style the next shape this view adds gets, merged from every pick. */
   nextStyle: BoardStyle;
+  /**
+   * Each style a pick would set, with the value its targets share, or `mixed`
+   * when they differ. With the select tool the targets are the selected shapes
+   * and the shape whose text is being edited; with a drawing tool, the next
+   * shape, which shows its next style or its kind's default. A style no
+   * target takes is absent, so the select tool with nothing to style shows
+   * none. The object stays the same until a target, the tool or the next
+   * style changes.
+   */
+  styles: Readonly<{
+    [K in keyof BoardStyle]?: ShownStyle<BoardStyle[K]>;
+  }>;
   /**
    * The selected shapes of this view's board in stored order, each with its
    * node as this view shows it, or none when the selection holds no shape of
@@ -116,8 +139,15 @@ export type BoardViewActions = Readonly<{
   removeFrame: (id: string) => void;
   /** Zoom to 100 percent around the view's center, as Shift+0 does. A focused board says the new zoom when it changes. */
   resetZoom: () => void;
-  /** Merge `style` into the style the next added shape gets. */
-  setNextStyle: (style: BoardStyle) => void;
+  /**
+   * Merge `style` into the style the next added shape gets. With the select
+   * tool, also write each of its styles to every selected shape that takes it
+   * and to the shape whose text is being edited, as one undo step that keeps
+   * the caret and the edit. A drawing tool's pick styles only the next shape.
+   * It skips a value outside the board's values for a style, such as an
+   * opacity outside 0.1 to 1. A read-only view or a preview changes nothing.
+   */
+  setStyle: (style: BoardStyle) => void;
   setTool: (tool: BoardTool) => void;
   /** Zoom in to the next of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `+` does, and do nothing at 800. A focused board says the new zoom. */
   zoomIn: () => void;
@@ -181,7 +211,7 @@ export type BoardViewCore = Readonly<{
   place: (
     tool: BoardPlaceTool,
     box: BoardBox,
-    options?: Readonly<{ takesShapes?: boolean }>
+    options: Readonly<{ style: BoardStyle; takesShapes?: boolean }>
   ) => boolean;
   redo: () => void;
   resetZoom: () => void;
@@ -195,6 +225,7 @@ export type BoardViewCore = Readonly<{
   shapesAlong: (from: BoardPlace, to: BoardPlace) => readonly string[];
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
+  styleFor: (type: string, style: BoardStyle) => BoardStyle;
   toggleSelected: (key: NodeKey) => void;
   undo: () => void;
   voice: Pick<
@@ -258,6 +289,59 @@ const sameShapes = (
       entry.node === previous[at].node && sameValue(entry, previous[at])
   );
 
+const parseStyle: {
+  readonly [K in keyof BoardStyle]-?: (value: unknown) => BoardStyle[K];
+} = {
+  dash: (value) => parseBoardStyle('dash', value),
+  fill: (value) => parseBoardStyle('fill', value),
+  geo: (value) => (isBoardGeo(value) ? value : undefined),
+  opacity: (value) => parseBoardStyle('opacity', value),
+  strokeColor: (value) => parseBoardStyle('strokeColor', value),
+  strokeWidth: (value) => parseBoardStyle('strokeWidth', value),
+  textSize: (value) => parseBoardStyle('textSize', value),
+};
+
+const STYLE_KEYS = [...BOARD_STYLE_KEYS, 'geo' as const];
+
+// Under a union key, such as a loop over STYLE_KEYS, TypeScript requires a
+// written value to fit every key's type at once (microsoft/TypeScript#30769),
+// so each write goes through a helper generic over K. showAs also types its
+// target as a mapped type over K, because the full styles map rejects a
+// ShownStyle<BoardStyle[K]> write even under a generic K.
+const setDefined = <K extends keyof BoardStyle>(
+  style: { [P in K]?: BoardStyle[P] },
+  key: K,
+  value: BoardStyle[K]
+) => {
+  if (value !== undefined) style[key] = value;
+};
+
+const validStyle = (style: BoardStyle) => {
+  const valid: { -readonly [K in keyof BoardStyle]?: BoardStyle[K] } = {};
+
+  for (const key of STYLE_KEYS) {
+    setDefined(valid, key, parseStyle[key](style[key]));
+  }
+
+  return valid;
+};
+
+const showAs = <K extends keyof BoardStyle>(
+  styles: { [P in K]?: ShownStyle<BoardStyle[P]> },
+  key: K,
+  shown: ShownStyle<BoardStyle[K]>
+) => {
+  styles[key] = shown;
+};
+
+const TOOL_SHAPES: Readonly<Partial<Record<BoardTool, string>>> = {
+  arrow: BaseBoardArrowPlugin.name,
+  frame: BaseBoardFramePlugin.name,
+  geo: BaseBoardGeoPlugin.name,
+  note: BaseBoardNotePlugin.name,
+  pen: BaseBoardStrokePlugin.name,
+};
+
 const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
   listeners.add(listener);
 
@@ -302,6 +386,7 @@ export const createBoardView = (
     camera: { x: 0, y: 0, zoom: 1 },
     nextStyle: {},
     selectedShapes: [],
+    styles: {},
     tool: 'select',
     writable: writable(),
   };
@@ -317,9 +402,125 @@ export const createBoardView = (
     }
   };
 
-  const setState = (next: Partial<BoardViewState>) => {
-    state = { ...state, ...next };
+  const takes = (type: string, key: keyof BoardStyle) =>
+    key === 'geo'
+      ? type === BaseBoardGeoPlugin.name
+      : editor.read.schema.property({ key, placement: 'element', type }) !==
+        null;
+
+  let storedStylesSchema = editor.read.schema.identity();
+  let storedStylesByNode = new WeakMap<
+    Element,
+    Partial<Record<keyof BoardStyle, unknown>>
+  >();
+  const storedStylesOf = (node: Element) => {
+    const schema = editor.read.schema.identity();
+
+    if (schema !== storedStylesSchema) {
+      storedStylesSchema = schema;
+      storedStylesByNode = new WeakMap();
+    }
+
+    let stored = storedStylesByNode.get(node);
+
+    if (!stored) {
+      stored = {};
+      for (const key of STYLE_KEYS) {
+        if (takes(node.type, key)) {
+          stored[key] = editor.read.schema.getProperty(node, key);
+        }
+      }
+      storedStylesByNode.set(node, stored);
+    }
+
+    return stored;
+  };
+
+  const styleFor = (type: string, style: BoardStyle) => {
+    const taken: { -readonly [K in keyof BoardStyle]?: BoardStyle[K] } = {};
+    const take = <K extends keyof BoardStyle>(key: K) => {
+      if (style[key] !== undefined && takes(type, key)) taken[key] = style[key];
+    };
+
+    for (const key of STYLE_KEYS) take(key);
+
+    return taken;
+  };
+
+  const styleTargets = (selected: readonly BoardMemberEntry[]) => {
+    const edited = editedShape();
+    const node = edited ? mounted.read.nodes.get(edited.key)?.[0] : undefined;
+
+    if (
+      !edited ||
+      !ElementApi.isElement(node) ||
+      selected.some(({ id }) => id === edited.id)
+    ) {
+      return selected;
+    }
+
+    return [...selected, { id: edited.id, node }];
+  };
+
+  const stylesOf = ({
+    nextStyle,
+    selectedShapes,
+    tool,
+  }: BoardViewState): BoardViewState['styles'] => {
+    const next = TOOL_SHAPES[tool];
+    const targets =
+      tool === 'select'
+        ? styleTargets(selectedShapes).map(({ node }) => storedStylesOf(node))
+        : [];
+    const styles: {
+      -readonly [K in keyof BoardStyle]?: ShownStyle<BoardStyle[K]>;
+    } = {};
+    const valuesOf = <K extends keyof BoardStyle>(key: K) => {
+      if (!next) {
+        return targets.flatMap((stored) =>
+          Object.hasOwn(stored, key) ? [parseStyle[key](stored[key])] : []
+        );
+      }
+      if (!takes(next, key)) return [];
+
+      const declared = editor.read.schema.property({
+        key,
+        placement: 'element',
+        type: next,
+      });
+
+      return [nextStyle[key] ?? parseStyle[key](declared?.value.default)];
+    };
+    const show = <K extends keyof BoardStyle>(key: K) => {
+      const [first, ...rest] = valuesOf(key).filter(
+        (value): value is NonNullable<BoardStyle[K]> => value !== undefined
+      );
+
+      if (first === undefined) return;
+
+      showAs(
+        styles,
+        key,
+        rest.every((value) => value === first)
+          ? { mixed: false, value: first }
+          : { mixed: true }
+      );
+    };
+
+    for (const key of STYLE_KEYS) show(key);
+
+    return sameValue(styles, state.styles) ? state.styles : styles;
+  };
+
+  const publish = (next: BoardViewState) => {
+    state = next;
     for (const listener of stateListeners) listener();
+  };
+
+  const setState = (next: Partial<Omit<BoardViewState, 'styles'>>) => {
+    const merged = { ...state, ...next };
+
+    publish({ ...merged, styles: stylesOf(merged) });
   };
 
   let shownView = createEditorView(mounted, { root });
@@ -427,9 +628,19 @@ export const createBoardView = (
       ? state.selectedShapes
       : listed;
     const canWrite = writable();
+    const styles = stylesOf({ ...state, selectedShapes: selected });
 
-    if (selected !== state.selectedShapes || canWrite !== state.writable) {
-      setState({ selectedShapes: selected, writable: canWrite });
+    if (
+      selected !== state.selectedShapes ||
+      canWrite !== state.writable ||
+      styles !== state.styles
+    ) {
+      publish({
+        ...state,
+        selectedShapes: selected,
+        styles,
+        writable: canWrite,
+      });
     }
   };
 
@@ -479,7 +690,7 @@ export const createBoardView = (
   // 4,000 shapes in view. An additive identity animation keeps the camera's
   // own transform and lets Blink update the compositor's copy directly.
   const setCamera = (camera: BoardCamera) => {
-    setState({ camera });
+    publish({ ...state, camera });
     paintCamera();
     moved = true;
     frame ||= requestAnimationFrame(tick);
@@ -653,17 +864,21 @@ export const createBoardView = (
     sayZoomFrom(before);
   };
 
-  const editedShape = () => {
+  const editedKey = () => {
     const range = editor.read.selection();
 
     if (
       editor.read.selection.nodeMode() !== null ||
       range?.anchor.root !== root
     ) {
-      return null;
+      return undefined;
     }
 
-    const key = rootView.key([range.anchor.path[0]]);
+    return rootView.key([range.anchor.path[0]]);
+  };
+
+  const editedShape = () => {
+    const key = editedKey();
 
     return key ? (index.layout(key) ?? null) : null;
   };
@@ -787,7 +1002,7 @@ export const createBoardView = (
   const placeShape: BoardViewCore['place'] = (
     tool,
     box,
-    { takesShapes = false } = {}
+    { style, takesShapes = false }
   ) => {
     if (tool === 'frame' && takesShapes) {
       const at = {
@@ -810,9 +1025,6 @@ export const createBoardView = (
       }
     }
 
-    const { fill, geo } = state.nextStyle;
-    const style = fill === undefined ? {} : { fill };
-
     return insertAndSelect((tx) => {
       if (tool === 'frame') {
         return tx.plugin(BaseBoardFramePlugin).insert(box, { board });
@@ -820,13 +1032,16 @@ export const createBoardView = (
       if (tool === 'note') {
         return tx
           .plugin(BaseBoardNotePlugin)
-          .insert({ ...box, ...style }, { board });
+          .insert(
+            { ...box, ...styleFor(BaseBoardNotePlugin.name, style) },
+            { board }
+          );
       }
 
       return tx
         .plugin(BaseBoardGeoPlugin)
         .insert(
-          { ...box, ...style, ...(geo === undefined ? {} : { geo }) },
+          { ...box, ...styleFor(BaseBoardGeoPlugin.name, style) },
           { board }
         );
     });
@@ -991,6 +1206,7 @@ export const createBoardView = (
     shapesAlong: (from, to) => index.shapesAlong(from, to, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
+    styleFor,
     toggleSelected: (key) => {
       const keys = selectedShapes().map((shape) => shape.key);
 
@@ -1090,8 +1306,38 @@ export const createBoardView = (
     },
     removeFrame: (id) => commit({ id, kind: 'removeFrame' }),
     resetZoom: core.resetZoom,
-    setNextStyle: (style) =>
-      setState({ nextStyle: { ...state.nextStyle, ...style } }),
+    setStyle: (style) => {
+      if (!writable()) return;
+
+      const valid = validStyle(style);
+
+      if (Object.keys(valid).length === 0) return;
+
+      const edited = editedKey();
+      const keys = edited ? new Set([edited]) : selectedKeys();
+      const picks =
+        state.tool === 'select'
+          ? boards.read
+              .shapes(board)
+              .filter(({ key }) => keys.has(key))
+              .flatMap(({ id, node }) => {
+                const taken = styleFor(node.type, valid);
+
+                return Object.keys(taken).length > 0 ? [{ id, taken }] : [];
+              })
+          : [];
+
+      if (picks.length > 0) {
+        write((tx) => {
+          for (const { id, taken } of picks) {
+            const key = tx.unique.holder('shapeId', id)?.key;
+
+            if (key) tx.nodes.set(taken, { at: key });
+          }
+        });
+      }
+      setState({ nextStyle: { ...state.nextStyle, ...valid } });
+    },
     setTool: core.setTool,
     zoomIn: core.zoomIn,
     zoomOut: core.zoomOut,
@@ -1106,15 +1352,23 @@ export const createBoardView = (
     },
     attach,
     connect: () => {
+      let schema = editor.read.schema.identity();
       const unsubscribe = editor.subscribeCommit(({ changed }) => {
-        if (
+        const reshaped =
           changed.hasAny('properties') ||
           changed.hasAny('structure') ||
-          changed.hasAny('replace')
+          changed.hasAny('replace');
+        const nextSchema = editor.read.schema.identity();
+        const reschemed = nextSchema !== schema;
+
+        schema = nextSchema;
+        if (reshaped) follow();
+        if (
+          reshaped ||
+          reschemed ||
+          changed.hasAny('selection') ||
+          editor.read.selection.nodeMode()
         ) {
-          follow();
-        }
-        if (changed.hasAny('selection') || editor.read.selection.nodeMode()) {
           showSelection();
         }
         if (changed.hasAny('selection')) voice.selectionChanged();

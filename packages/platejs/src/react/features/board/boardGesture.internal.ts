@@ -36,6 +36,7 @@ import {
 } from './boardPreview.internal';
 import {
   type BoardPlaceTool,
+  type BoardStyle,
   type BoardViewCore,
   SHAPES_EDITABLE,
 } from './boardView.internal';
@@ -50,6 +51,7 @@ type Gesture = Readonly<{ pointerId: number }> &
         pointer: BoardPlace;
         press: BoardPlace;
         start: BoardArrowEndInput;
+        style: BoardStyle;
       }
     | {
         kind: 'box';
@@ -69,6 +71,7 @@ type Gesture = Readonly<{ pointerId: number }> &
         outline: HTMLElement;
         pointer: BoardPlace;
         press: BoardPlace;
+        style: BoardStyle;
         tool: BoardPlaceTool;
       }
     | {
@@ -86,6 +89,7 @@ type Gesture = Readonly<{ pointerId: number }> &
         path: SVGPathElement;
         points: BoardInkPoint[];
         pointer: BoardPlace;
+        style: BoardStyle;
       }
     | {
         kind: 'pan';
@@ -372,22 +376,33 @@ export const attachBoardGestures = (
     }
     if (done.kind === 'pen') {
       core.write((tx) =>
-        tx
-          .plugin(BaseBoardStrokePlugin)
-          .insert({ points: done.points }, { board: core.board })
+        tx.plugin(BaseBoardStrokePlugin).insert(
+          {
+            ...core.styleFor(BaseBoardStrokePlugin.name, done.style),
+            points: done.points,
+          },
+          { board: core.board }
+        )
       );
     } else if (done.kind === 'arrow') {
       if (dragged(done.press, done.pointer)) {
         const end = arrowEndAt(core.boardPointAt(done.pointer));
 
         core.insertAndSelect((tx) =>
-          tx
-            .plugin(BaseBoardArrowPlugin)
-            .insert({ end, start: done.start }, { board: core.board })
+          tx.plugin(BaseBoardArrowPlugin).insert(
+            {
+              ...core.styleFor(BaseBoardArrowPlugin.name, done.style),
+              end,
+              start: done.start,
+            },
+            { board: core.board }
+          )
         );
       }
     } else if (done.kind === 'place') {
-      core.place(done.tool, placedBox(done, core.boardPointAt(done.pointer)));
+      core.place(done.tool, placedBox(done, core.boardPointAt(done.pointer)), {
+        style: done.style,
+      });
     } else if (done.kind === 'move') {
       const { carried, copy, delta, ids } = done;
 
@@ -548,6 +563,7 @@ export const attachBoardGestures = (
             pointerId,
             press: pointer,
             start: arrowEndAt(at),
+            style: core.state().nextStyle,
           };
           break;
         }
@@ -562,6 +578,9 @@ export const attachBoardGestures = (
         case 'geo':
         case 'note': {
           if (!core.writable()) return;
+
+          const style = core.state().nextStyle;
+
           gesture = {
             from: at,
             kind: 'place',
@@ -571,11 +590,12 @@ export const attachBoardGestures = (
               at,
               previewRank(),
               tool,
-              core.state().nextStyle.geo
+              style.geo
             ),
             pointer,
             pointerId,
             press: pointer,
+            style,
             tool,
           };
           break;
@@ -593,6 +613,7 @@ export const attachBoardGestures = (
             pointerId,
             points,
             pointer,
+            style: core.state().nextStyle,
           };
           drawPen(gesture);
           break;
