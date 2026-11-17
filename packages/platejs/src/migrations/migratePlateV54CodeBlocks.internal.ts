@@ -21,7 +21,7 @@ const pointMappingKey = (root: string, path: readonly number[]) =>
 
 type PlateV54CodeBlockMigrationResult = Readonly<{
   document: EditorDocumentValue;
-  mapSelection?: (selection: Selection, mapped: Selection) => Selection;
+  mapSelection?: (selection: Selection, mapped: () => Selection) => Selection;
 }>;
 
 /** Flatten legacy code-block lines inside the Plate v54 migration. */
@@ -196,6 +196,6 @@ export const migratePlateV54CodeBlocks = ({
             anchor: mapPoint(selection.anchor),
             focus: mapPoint(selection.focus),
           }
-        : mapped,
+        : mapped(),
   };
 };

@@ -162,6 +162,8 @@ await repository.put(revision, { ifMatch: previousRevision });
 
 加载时，用 `revision.document` 和相同的内容插件创建新编辑器，把 `{ threads, ranges: revision.commentRanges }` 传给 `initialComments`，其中 `threads` 从应用的表读取。这对数据的类型是 `SavedComments`。
 
+文档 schema 升级时，把版本的范围作为 `ranges` 传给迁移该文档的同一次 `migrateDocument` 调用，并保存结果中的范围，参见[迁移评论范围](/cn/docs/editor#迁移评论范围)。
+
 #### 加载问题
 
 Comments 逐行接收数据。格式错误或未发布的线程、重复的线程 ID，以及超出文档的范围各自单独丢弃。`getSnapshot().issues` 以 `CommentsLoadIssue` 值 `{ code, id }` 列出它们，并为每个当前孤立范围列出一条 `'orphan-range'`：
@@ -313,23 +315,31 @@ const initialComments: SavedComments = {
 
 ## 旧文档迁移
 
-加载包含 `comment`、`comment_*`、`comment_draft` 或 `commentTransient` 属性的文档前，运行 `extractLegacyCommentRanges`。
+加载包含 `comment`、`comment_*`、`comment_draft` 或 `commentTransient` 属性的文档前，运行 `extractLegacyCommentRanges`，并把它返回的文档和范围传给同一次 `migrateDocument` 调用：
 
 ```ts
-import { extractLegacyCommentRanges } from "platejs/migrations";
+import {
+  extractLegacyCommentRanges,
+  migrateDocument,
+} from "platejs/migrations";
 
 const {
-  comments,
-  diagnostics,
   document: cleanDocument,
-} = extractLegacyCommentRanges(document, {
+  ranges,
+  report,
+} = extractLegacyCommentRanges(legacyDocument, {
   threadIds: storedThreads.map((thread) => thread.id),
 });
+const migrated = migrateDocument(cleanDocument, {
+  migrations: EditorMigrations,
+  ranges,
+  source: 53,
+});
 
-console.table(diagnostics);
+console.table(report);
 ```
 
-检查全部诊断后，持久化 `cleanDocument`，并通过你的存储层导入 `comments`。提取器不会编造缺失的线程 ID。请离线运行迁移；运行时插件不提供旧格式回退。
+检查每一行报告后，保存 `migrated.output`，并把 `migrated.ranges` 中非 `null` 的条目作为它的 `commentRanges`。被没有该标记的可见文字拆开的线程没有范围，会以 `split-group` 报告，其中列出每一段的范围。提取器不会编造缺失的线程 ID。请离线运行迁移；运行时插件不提供旧格式回退。参见[迁移评论范围](/cn/docs/editor#迁移评论范围)。
 
 ## 插件
 

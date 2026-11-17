@@ -133,5 +133,6 @@ export const migrateListIdentity: DocumentMigration = ({
 
   return {
     document: { ...source, children, ...(roots ? { roots } : {}) },
+    mapRanges: ({ ranges }) => ranges,
   };
 };

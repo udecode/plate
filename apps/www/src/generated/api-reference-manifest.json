@@ -14659,16 +14659,40 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/migrations:DocumentMigrationRanges": {
+          "aliases": [],
+          "documentation": "Saved ranges by thread id, each in the primary root of the input document.",
+          "entrypoint": "platejs/migrations",
+          "kind": "type",
+          "name": "DocumentMigrationRanges",
+          "runtime": false,
+          "signature": "type DocumentMigrationRanges = Readonly<Record<string, Range>>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/migrations:DocumentMigrationRangesContext": {
+          "aliases": [],
+          "documentation": "The ranges still mapped before a step, in order.",
+          "entrypoint": "platejs/migrations",
+          "kind": "type",
+          "name": "DocumentMigrationRangesContext",
+          "runtime": false,
+          "signature": "type DocumentMigrationRangesContext = Readonly<{\n  ranges: readonly Range[];\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/migrations:DocumentMigrationResult": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "The migrated envelope, plus the mapped ranges when `ranges` was passed.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
           "name": "DocumentMigrationResult",
           "runtime": false,
-          "signature": "type DocumentMigrationResult = Readonly<{\n  applied: readonly number[];\n  output: PersistedDocumentInput;\n  source: number;\n}>;",
+          "signature": "type DocumentMigrationResult<TRanges extends DocumentMigrationRanges | undefined = undefined> = Readonly<{\n  applied: readonly number[];\n  output: PersistedDocumentInput;\n  source: number;\n}> & (undefined extends TRanges ? unknown : Readonly<{\n  ranges: MigratedDocumentRanges;\n}>);",
           "source": null,
-          "typeParameters": []
+          "typeParameters": [
+            "TRanges extends DocumentMigrationRanges | undefined = undefined"
+          ]
         },
         "platejs/migrations:DocumentMigrations": {
           "aliases": [],
@@ -14714,7 +14738,7 @@
           "kind": "type",
           "name": "DocumentMigrationStepResult",
           "runtime": false,
-          "signature": "type DocumentMigrationStepResult<ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue> = Readonly<{\n  document: ToDocument;\n  /** Legacy fields left to lift. Omitted, the step's input passes on. */\n  legacy?: DocumentMigrationLegacy;\n  mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;\n}>;",
+          "signature": "type DocumentMigrationStepResult<ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue> = Readonly<{\n  document: ToDocument;\n  /** Legacy fields left to lift. Omitted, the step's input passes on. */\n  legacy?: DocumentMigrationLegacy;\n  /**\n   * Map every range in one call, returning one range or `null` per range in\n   * order. Omitted, every range maps to `null` when the step changes the\n   * document.\n   */\n  mapRanges?: (context: DocumentMigrationRangesContext) => ReadonlyArray<Range | null>;\n  mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;\n}>;",
           "source": null,
           "typeParameters": [
             "ToDocument extends EditorDocumentValue & ClosedMigrationDocument<ToDocument> = EditorDocumentValue"
@@ -14733,7 +14757,7 @@
         },
         "platejs/migrations:extractLegacyCommentRanges": {
           "aliases": [],
-          "documentation": "Extracts legacy document comment marks for an offline application migration.\nThe returned document contains no live comment compatibility properties.",
+          "documentation": "Extracts legacy document comment marks for an offline application migration.\nThe returned document contains no live comment compatibility properties, and\neach range points into it, so pass both to one `migrateDocument` call.",
           "entrypoint": "platejs/migrations",
           "kind": "const",
           "name": "extractLegacyCommentRanges",
@@ -14744,7 +14768,7 @@
         },
         "platejs/migrations:ExtractLegacyCommentRangesOptions": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Stored thread ids, so a marked id without a thread is reported.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
           "name": "ExtractLegacyCommentRangesOptions",
@@ -14755,45 +14779,45 @@
         },
         "platejs/migrations:ExtractLegacyCommentRangesResult": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "The sanitized document, one range per thread id into it, ready for\n`migrateDocument`'s `ranges`, and every mark problem found.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
           "name": "ExtractLegacyCommentRangesResult",
           "runtime": false,
-          "signature": "type ExtractLegacyCommentRangesResult = Readonly<{\n  comments: readonly LegacyCommentRangeGroup[];\n  diagnostics: readonly LegacyCommentDiagnostic[];\n  document: readonly Descendant[];\n}>;",
+          "signature": "type ExtractLegacyCommentRangesResult = Readonly<{\n  document: readonly Descendant[];\n  ranges: Readonly<Record<string, Range>>;\n  report: readonly LegacyCommentReportRow[];\n}>;",
           "source": null,
           "typeParameters": []
         },
-        "platejs/migrations:LegacyCommentDiagnostic": {
+        "platejs/migrations:LegacyCommentReportRow": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "One problem the extractor found in a thread's legacy comment marks.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
-          "name": "LegacyCommentDiagnostic",
+          "name": "LegacyCommentReportRow",
           "runtime": false,
-          "signature": "type LegacyCommentDiagnostic = Readonly<{\n  code: 'anonymous-comment';\n  path: Path;\n}> | Readonly<{\n  code: 'discontinuous-group';\n  id: string;\n  rangeCount: number;\n}> | Readonly<{\n  code: 'invalid-range';\n  id: string;\n  path: Path;\n  reason: 'empty-text' | 'non-boolean-mark' | 'non-text-node';\n}> | Readonly<{\n  code: 'missing-thread';\n  id: string;\n}> | Readonly<{\n  code: 'orphan-id';\n  id: string;\n  path: Path;\n}> | Readonly<{\n  code: 'draft-only';\n  path: Path;\n}>;",
+          "signature": "type LegacyCommentReportRow = Readonly<{\n  code: 'anonymous-comment';\n  path: Path;\n}> | Readonly<{\n  code: 'draft-only';\n  path: Path;\n}> | Readonly<{\n  code: 'invalid-range';\n  id: string;\n  path: Path;\n  reason: 'caption-text' | 'empty-text' | 'non-boolean-mark' | 'non-text-node';\n}> | Readonly<{\n  code: 'missing-thread';\n  id: string;\n}> | Readonly<{\n  code: 'orphan-id';\n  id: string;\n  path: Path;\n}> |\n/** Unmarked visible text split the thread into these ranges, in order. */\nReadonly<{\n  code: 'split-group';\n  id: string;\n  ranges: readonly Range[];\n}>;",
           "source": null,
           "typeParameters": []
         },
-        "platejs/migrations:LegacyCommentRangeGroup": {
+        "platejs/migrations:MigratedDocumentRanges": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Migrated ranges by thread id; `null` when the text a range covered is gone,\na step put its ends in the opposite order, or the range collapsed, covers no\ntext or points outside the input document.",
           "entrypoint": "platejs/migrations",
           "kind": "type",
-          "name": "LegacyCommentRangeGroup",
+          "name": "MigratedDocumentRanges",
           "runtime": false,
-          "signature": "type LegacyCommentRangeGroup = Readonly<{\n  id: string;\n  ranges: readonly Range[];\n}>;",
+          "signature": "type MigratedDocumentRanges = Readonly<Record<string, Range | null>>;",
           "source": null,
           "typeParameters": []
         },
         "platejs/migrations:migrateDocument": {
           "aliases": [],
-          "documentation": "Convert one external document into the definition's exact current envelope.",
+          "documentation": "Convert one external document into the definition's exact current envelope,\nmapping `ranges`, keyed by thread id, through every step and the final fit.",
           "entrypoint": "platejs/migrations",
           "kind": "const",
           "name": "migrateDocument",
           "runtime": true,
-          "signature": "migrateDocument: <const TInput>(input: TInput, options: MigrationOptions<NoInfer<TInput>>) => DocumentMigrationResult",
+          "signature": "migrateDocument: <const TInput, TRanges extends DocumentMigrationRanges | undefined = undefined>(input: TInput, options: MigrationOptions<NoInfer<TInput>, TRanges>) => DocumentMigrationResult<TRanges>",
           "source": null,
           "typeParameters": []
         },

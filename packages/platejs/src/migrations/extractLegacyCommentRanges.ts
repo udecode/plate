@@ -1,42 +1,46 @@
 import type { Descendant, Path, Range } from '../core';
+import { V53_VOID_ELEMENT_TYPES } from './v53-manifest.internal';
 
-export type LegacyCommentRangeGroup = Readonly<{
-  id: string;
-  ranges: readonly Range[];
-}>;
-
-export type LegacyCommentDiagnostic =
+/** One problem the extractor found in a thread's legacy comment marks. */
+export type LegacyCommentReportRow =
   | Readonly<{ code: 'anonymous-comment'; path: Path }>
-  | Readonly<{
-      code: 'discontinuous-group';
-      id: string;
-      rangeCount: number;
-    }>
+  | Readonly<{ code: 'draft-only'; path: Path }>
   | Readonly<{
       code: 'invalid-range';
       id: string;
       path: Path;
-      reason: 'empty-text' | 'non-boolean-mark' | 'non-text-node';
+      reason:
+        | 'caption-text'
+        | 'empty-text'
+        | 'non-boolean-mark'
+        | 'non-text-node';
     }>
   | Readonly<{ code: 'missing-thread'; id: string }>
   | Readonly<{ code: 'orphan-id'; id: string; path: Path }>
-  | Readonly<{ code: 'draft-only'; path: Path }>;
+  /** Unmarked visible text split the thread into these ranges, in order. */
+  | Readonly<{ code: 'split-group'; id: string; ranges: readonly Range[] }>;
 
+/** Stored thread ids, so a marked id without a thread is reported. */
 export type ExtractLegacyCommentRangesOptions = Readonly<{
   threadIds?: readonly string[] | ReadonlySet<string>;
 }>;
 
+/**
+ * The sanitized document, one range per thread id into it, ready for
+ * `migrateDocument`'s `ranges`, and every mark problem found.
+ */
 export type ExtractLegacyCommentRangesResult = Readonly<{
-  comments: readonly LegacyCommentRangeGroup[];
-  diagnostics: readonly LegacyCommentDiagnostic[];
   document: readonly Descendant[];
+  ranges: Readonly<Record<string, Range>>;
+  report: readonly LegacyCommentReportRow[];
 }>;
 
 type LegacySegment = Readonly<{
   id: string;
-  index: number;
   path: Path;
   textLength: number;
+  visibleAfter: number;
+  visibleBefore: number;
 }>;
 
 const COMMENT_PREFIX = 'comment_';
@@ -46,19 +50,25 @@ const TRANSIENT_KEY = 'commentTransient';
 const isLegacyCommentProperty = (key: string) =>
   key === 'comment' || key === TRANSIENT_KEY || key.startsWith(COMMENT_PREFIX);
 
+const withoutLegacyProperties = (record: Readonly<Record<string, unknown>>) =>
+  Object.fromEntries(
+    Object.entries(record).filter(([key]) => !isLegacyCommentProperty(key))
+  ) as Record<string, unknown>;
+
 /**
  * Extracts legacy document comment marks for an offline application migration.
- * The returned document contains no live comment compatibility properties.
+ * The returned document contains no live comment compatibility properties, and
+ * each range points into it, so pass both to one `migrateDocument` call.
  */
 export const extractLegacyCommentRanges = (
   document: readonly Descendant[],
   options: ExtractLegacyCommentRangesOptions = {}
 ): ExtractLegacyCommentRangesResult => {
-  const diagnostics: LegacyCommentDiagnostic[] = [];
+  const report: LegacyCommentReportRow[] = [];
   const firstSeenIds: string[] = [];
   const seenIds = new Set<string>();
   const segments: LegacySegment[] = [];
-  let textIndex = 0;
+  let visibleTextCount = 0;
 
   const recordId = (id: string) => {
     if (seenIds.has(id)) return;
@@ -66,7 +76,12 @@ export const extractLegacyCommentRanges = (
     seenIds.add(id);
     firstSeenIds.push(id);
   };
-  const sanitizeNode = (node: Descendant, path: Path): Descendant => {
+  const sanitizeNode = (
+    node: Descendant,
+    path: Path,
+    insideVoid: boolean,
+    inCaption = false
+  ): Descendant => {
     const record = node as unknown as Readonly<Record<string, unknown>>;
     const idEntries = Object.entries(record).filter(
       ([key]) => key.startsWith(COMMENT_PREFIX) && key !== DRAFT_KEY
@@ -76,7 +91,7 @@ export const extractLegacyCommentRanges = (
 
       if (value !== true) {
         if (value !== false && value !== undefined) {
-          diagnostics.push({
+          report.push({
             code: 'invalid-range',
             id,
             path,
@@ -96,8 +111,11 @@ export const extractLegacyCommentRanges = (
     const hasDraftMark = record[DRAFT_KEY] === true;
 
     if (text !== null) {
+      const visibleBefore = visibleTextCount;
+
+      if (!insideVoid && !inCaption && text.length > 0) visibleTextCount += 1;
       if (hasBaseMark && validIds.length === 0) {
-        diagnostics.push({
+        report.push({
           code: hasDraftMark ? 'draft-only' : 'anonymous-comment',
           path,
         });
@@ -105,30 +123,29 @@ export const extractLegacyCommentRanges = (
 
       for (const id of validIds) {
         if (!hasBaseMark) {
-          diagnostics.push({ code: 'orphan-id', id, path });
+          report.push({ code: 'orphan-id', id, path });
         }
-        if (text.length === 0) {
-          diagnostics.push({
+        if (inCaption || text.length === 0) {
+          report.push({
             code: 'invalid-range',
             id,
             path,
-            reason: 'empty-text',
+            reason: inCaption ? 'caption-text' : 'empty-text',
           });
           continue;
         }
 
         segments.push({
           id,
-          index: textIndex,
           path,
           textLength: text.length,
+          visibleAfter: visibleTextCount,
+          visibleBefore,
         });
       }
-
-      textIndex += 1;
     } else {
       for (const id of validIds) {
-        diagnostics.push({
+        report.push({
           code: 'invalid-range',
           id,
           path,
@@ -137,39 +154,52 @@ export const extractLegacyCommentRanges = (
       }
     }
 
-    const sanitized = Object.fromEntries(
-      Object.entries(record).filter(([key]) => !isLegacyCommentProperty(key))
-    ) as Record<string, unknown>;
+    const sanitized = withoutLegacyProperties(record);
 
+    if (Array.isArray(record.caption)) {
+      sanitized.caption = record.caption.map((captionNode) =>
+        sanitizeNode(captionNode as Descendant, path, insideVoid, true)
+      );
+    }
     if (Array.isArray(record.children)) {
+      const childrenInsideVoid =
+        insideVoid ||
+        (typeof record.type === 'string' &&
+          V53_VOID_ELEMENT_TYPES.has(record.type));
+
       sanitized.children = record.children.map((child, index) =>
-        sanitizeNode(child as Descendant, [...path, index])
+        sanitizeNode(
+          child as Descendant,
+          inCaption ? path : [...path, index],
+          childrenInsideVoid,
+          inCaption
+        )
       );
     }
 
     return sanitized as Descendant;
   };
   const sanitizedDocument = document.map((node, index) =>
-    sanitizeNode(node, [index])
+    sanitizeNode(node, [index], false)
   );
   const rangesById = new Map<
     string,
-    Array<{ lastTextIndex: number; range: Range }>
+    Array<{ range: Range; visibleAfter: number }>
   >();
 
   for (const segment of segments) {
     const groups = rangesById.get(segment.id) ?? [];
     const previous = groups.at(-1);
 
-    if (previous && previous.lastTextIndex + 1 === segment.index) {
-      previous.lastTextIndex = segment.index;
+    if (previous && previous.visibleAfter === segment.visibleBefore) {
+      previous.visibleAfter = segment.visibleAfter;
       previous.range = {
         anchor: previous.range.anchor,
         focus: { offset: segment.textLength, path: segment.path },
       };
     } else {
       groups.push({
-        lastTextIndex: segment.index,
+        visibleAfter: segment.visibleAfter,
         range: {
           anchor: { offset: 0, path: segment.path },
           focus: { offset: segment.textLength, path: segment.path },
@@ -180,31 +210,31 @@ export const extractLegacyCommentRanges = (
     rangesById.set(segment.id, groups);
   }
 
-  const comments = firstSeenIds.flatMap((id) => {
+  // A null prototype keeps a thread id such as "__proto__" as its own key.
+  const ranges: Record<string, Range> = Object.create(null);
+
+  for (const id of firstSeenIds) {
     const groups = rangesById.get(id);
 
-    if (!groups || groups.length === 0) return [];
+    if (!groups) continue;
     if (groups.length > 1) {
-      diagnostics.push({
-        code: 'discontinuous-group',
+      report.push({
+        code: 'split-group',
         id,
-        rangeCount: groups.length,
+        ranges: groups.map((group) => group.range),
       });
+    } else {
+      ranges[id] = groups[0].range;
     }
+  }
 
-    return [{ id, ranges: groups.map(({ range }) => range) }];
-  });
   const threadIds = options.threadIds ? new Set(options.threadIds) : undefined;
 
   if (threadIds) {
     firstSeenIds.forEach((id) => {
-      if (!threadIds.has(id)) diagnostics.push({ code: 'missing-thread', id });
+      if (!threadIds.has(id)) report.push({ code: 'missing-thread', id });
     });
   }
 
-  return {
-    comments,
-    diagnostics,
-    document: sanitizedDocument,
-  };
+  return { document: sanitizedDocument, ranges, report };
 };

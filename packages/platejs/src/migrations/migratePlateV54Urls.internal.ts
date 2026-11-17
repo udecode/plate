@@ -21,7 +21,7 @@ const pointMappingKey = (root: string, path: readonly number[]) =>
 
 type PlateV54UrlMigrationResult = Readonly<{
   document: EditorDocumentValue;
-  mapSelection?: (selection: Selection, mapped: Selection) => Selection;
+  mapSelection?: (selection: Selection, mapped: () => Selection) => Selection;
 }>;
 
 /**
@@ -220,14 +220,18 @@ export const migratePlateV54Urls = ({
   return {
     document: { ...document, children, ...(roots ? { roots } : {}) },
     mapSelection: (selection, mapped) => {
-      if (!RangeApi.isRange(selection)) return mapped;
+      if (!RangeApi.isRange(selection)) return mapped();
 
       const anchor = mapPoint(selection.anchor);
       const focus = mapPoint(selection.focus);
 
-      if (!mapped && (!anchor || !focus)) return mapped;
+      if (anchor && focus) return { ...selection, anchor, focus };
 
-      const fallback = RangeApi.isRange(mapped) ? mapped : selection;
+      const diff = mapped();
+
+      if (!diff) return diff;
+
+      const fallback = RangeApi.isRange(diff) ? diff : selection;
 
       return {
         ...fallback,

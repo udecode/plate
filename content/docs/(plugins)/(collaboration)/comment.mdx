@@ -198,6 +198,8 @@ In this example, `repository` is your application's storage adapter. It checks t
 
 To load, create a fresh editor from `revision.document` with the same content plugins, and pass `{ threads, ranges: revision.commentRanges }` as `initialComments`, with `threads` read from your table. The pair has the type `SavedComments`.
 
+When a schema migration upgrades the document, pass the revision's ranges as `ranges` to the same `migrateDocument` call and save the ranges it returns, as [Migrate comment ranges](/docs/editor#migrate-comment-ranges) shows.
+
 #### Load issues
 
 Comments admits each row on its own. A malformed or unpublished thread, a duplicate thread ID and a range outside the document each drop alone. `getSnapshot().issues` lists them as `CommentsLoadIssue` values, `{ code, id }`, with one `'orphan-range'` for each current orphan:
@@ -385,6 +387,34 @@ const editor = createEditor({
 ```
 
 For stored documents with inline comment properties, see [Import comment annotations](/docs/editor#import-comment-annotations).
+
+## Legacy documents
+
+Before loading documents that contain `comment`, `comment_*`, `comment_draft`, or `commentTransient` properties, run `extractLegacyCommentRanges` and pass its document and ranges to one `migrateDocument` call:
+
+```ts
+import {
+  extractLegacyCommentRanges,
+  migrateDocument,
+} from "platejs/migrations";
+
+const {
+  document: cleanDocument,
+  ranges,
+  report,
+} = extractLegacyCommentRanges(legacyDocument, {
+  threadIds: storedThreads.map((thread) => thread.id),
+});
+const migrated = migrateDocument(cleanDocument, {
+  migrations: EditorMigrations,
+  ranges,
+  source: 53,
+});
+
+console.table(report);
+```
+
+Review every report row, then save `migrated.output` with the non-null entries of `migrated.ranges` as its `commentRanges`. A thread split by visible text without its mark gets no range and a `split-group` row that lists each part's range. The extractor never invents missing thread IDs. Run the migration offline; the runtime plugin has no legacy fallback. See [Migrate comment ranges](/docs/editor#migrate-comment-ranges).
 
 ## API Reference
 

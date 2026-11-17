@@ -104,6 +104,8 @@ import {
 } from './schema-validation';
 import {
   createCompiledSliceFitterDelegate,
+  type FitDocumentPositions,
+  type FittedDocumentPositions,
   type InternalSliceFitOptions,
   type SliceFitRuntimeTargetOptions,
 } from './slice-fit/compiled-slice-fitter';
@@ -343,6 +345,10 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       document: EditorDocumentValue<V>;
       selection: NonNullable<Selection>;
     }>;
+    fitDocumentAndMapPositions: <TValue extends Value>(
+      value: EditorDocumentValue<TValue>,
+      options: FitDocumentPositions
+    ) => FittedDocumentPositions<V>;
     /** Fit an external document and retain its committed semantic repairs. */
     fitDocumentWithReport: <TValue extends Value>(
       value: EditorDocumentValue<TValue>
@@ -2720,6 +2726,8 @@ export const createEditorSchema = <V extends Value = Value>(
   ): EditorDocumentValue<V> => sliceFitter.fitDocument(input);
   const fitDocumentWithReport: InternalEditorSchemaApi<V>['fitDocumentWithReport'] =
     (input) => sliceFitter.fitDocumentWithReport(input);
+  const fitDocumentAndMapPositions: InternalEditorSchemaApi<V>['fitDocumentAndMapPositions'] =
+    (input, options) => sliceFitter.fitDocumentAndMapPositions(input, options);
   const fitDocumentWithSelection: InternalEditorSchemaApi<V>['fitDocumentWithSelection'] =
     (input, options) => sliceFitter.fitDocumentWithSelection(input, options);
   const findWrapping: InternalEditorSchemaApi<V>['findWrapping'] =
@@ -5320,6 +5328,7 @@ export const createEditorSchema = <V extends Value = Value>(
     fit,
     fitContent,
     fitDocument,
+    fitDocumentAndMapPositions,
     fitDocumentWithReport,
     fitDocumentWithSelection,
     findWrapping,

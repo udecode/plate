@@ -127,15 +127,40 @@ export type InternalSliceFitTarget =
         provenance: RootFitPathProvenance;
         repairs: EditorSchemaRepair[];
       }>;
+      ranges?: readonly Range[];
       root: RootKey;
       selection?: NonNullable<Selection>;
+      omitSelectionSpacers?: true;
     }>;
+
+type FitSelectionInput = Readonly<{
+  root: RootKey;
+  selection: NonNullable<Selection>;
+}>;
+
+export type FitDocumentPositions = Readonly<{
+  mainRanges: readonly Range[];
+  selection?: FitSelectionInput;
+}>;
+
+export type FittedDocumentPositions<V extends Value = Value> = Readonly<{
+  document: EditorDocumentValue<V>;
+  mainRanges: ReadonlyArray<Range | null>;
+  selection?: NonNullable<Selection>;
+}>;
+
+type FitPositions = Readonly<{
+  mainRanges?: readonly Range[];
+  omitSelectionSpacers?: true;
+  selection?: FitSelectionInput;
+}>;
 
 export type InternalSliceFitOptions = Readonly<{
   apply?: (
     step: DocumentChangeStep,
     selection?: NonNullable<Selection>,
-    landing?: Range | null
+    landing?: Range | null,
+    ranges?: ReadonlyArray<Range | null>
   ) => void;
   builder: ChangeDraft;
   target: InternalSliceFitTarget;
@@ -180,6 +205,10 @@ export type CompiledSliceFitter<V extends Value = Value> = Readonly<{
     document: EditorDocumentValue<V>;
     selection: NonNullable<Selection>;
   }>;
+  fitDocumentAndMapPositions: <TValue extends Value>(
+    input: EditorDocumentValue<TValue>,
+    options: FitDocumentPositions
+  ) => FittedDocumentPositions<V>;
   findWrapping: (
     parent: Element,
     child: Descendant
@@ -300,6 +329,7 @@ export type SliceFitterDelegate<V extends Value = Value> = Pick<
   | 'fitContent'
   | 'fitDocument'
   | 'fitDocumentWithReport'
+  | 'fitDocumentAndMapPositions'
   | 'fitDocumentWithSelection'
   | 'findWrapping'
 >;
@@ -2020,16 +2050,15 @@ export const compileSliceFitter = <V extends Value>(
       : null;
   };
 
-  const mapExternalRootSelection = (
-    selection: NonNullable<Selection>,
+  const createExternalRootMapper = (
     source: readonly Descendant[],
+    sourceDocument: DocumentIndex,
     provenance: RootFitPathProvenance,
     constructionChange: DocumentChange,
     root: RootKey,
     rawDocument: DocumentIndex,
     canonicalDocument: DocumentIndex
-  ): NonNullable<Selection> | null => {
-    const sourceDocument = DocumentIndex.fromValue(source);
+  ) => {
     const resolveSourcePoint = (point: Point) =>
       resolveExternalDocumentPoint(source, sourceDocument, point);
     const getCanonicalAssociation = (point: Point, fallback: -1 | 1) => {
@@ -2049,6 +2078,20 @@ export const compileSliceFitter = <V extends Value>(
         api.isInline(previous)
         ? 1
         : fallback;
+    };
+    let textAlignedChange: DocumentChange | undefined;
+    const getTextAlignedChange = () => {
+      if (!textAlignedChange) {
+        const aligned = constructionChange.empty
+          ? null
+          : RootChange.aligned(rawDocument, canonicalDocument);
+
+        textAlignedChange = aligned
+          ? createInternalDocumentChange(new Map([[root, aligned]]))
+          : constructionChange;
+      }
+
+      return textAlignedChange;
     };
     const mapPoint: EditorSelectionMapContext['mapPoint'] = (
       point,
@@ -2076,7 +2119,7 @@ export const compileSliceFitter = <V extends Value>(
             getEditor(),
             rawDocument,
             canonicalDocument,
-            constructionChange,
+            getTextAlignedChange(),
             root,
             { offset: rawPoint.offset, path: [...rawPoint.path] },
             association
@@ -2105,7 +2148,7 @@ export const compileSliceFitter = <V extends Value>(
 
       if (!rawNode) return null;
       const mappedPosition = mapInternalDocumentChangePosition(
-        constructionChange,
+        getTextAlignedChange(),
         root,
         rawNode.from,
         association,
@@ -2159,9 +2202,10 @@ export const compileSliceFitter = <V extends Value>(
       root: toPublicRoot(root),
     }) satisfies EditorSelectionMapContext;
 
-    return mapSelectionWithContext(selection, context, {
-      association: 'backward',
-    });
+    return (
+      selection: NonNullable<Selection>,
+      association: 'backward' | 'inward'
+    ) => mapSelectionWithContext(selection, context, { association });
   };
 
   const fit = (
@@ -2175,7 +2219,7 @@ export const compileSliceFitter = <V extends Value>(
     const rootPathProvenance =
       options.target.kind === 'root'
         ? (options.target.report?.provenance ??
-          (options.target.selection
+          (options.target.selection || options.target.ranges
             ? createRootFitPathProvenance(sourceSlice.content)
             : null))
         : null;
@@ -3955,7 +3999,7 @@ export const compileSliceFitter = <V extends Value>(
       : candidateChange;
     const rootFitProvenance =
       options.target.kind === 'root' &&
-      options.target.selection &&
+      (options.target.selection || options.target.ranges) &&
       rootPathProvenance
         ? Object.freeze({
             paths: rootPathProvenance,
@@ -3968,6 +4012,7 @@ export const compileSliceFitter = <V extends Value>(
     let fittedDocument: ReturnType<typeof prepareFittedDocument>;
     const protectedInlineSpacerPaths =
       options.target.kind === 'root' &&
+      !options.target.omitSelectionSpacers &&
       options.target.selection &&
       RangeApi.isRange(options.target.selection) &&
       rootFitProvenance
@@ -4093,20 +4138,35 @@ export const compileSliceFitter = <V extends Value>(
       }
     }
 
-    const externalSelection =
-      options.target.kind === 'root' && options.target.selection
-        ? rootFitProvenance && rawIndex && canonicalIndex
-          ? mapExternalRootSelection(
-              options.target.selection,
-              sourceSlice.content,
-              rootFitProvenance.paths,
-              constructionChange,
-              root,
-              rawIndex,
-              canonicalIndex
-            )
-          : null
+    const mapExternal =
+      options.target.kind === 'root' &&
+      rootFitProvenance &&
+      rawIndex &&
+      canonicalIndex
+        ? createExternalRootMapper(
+            sourceSlice.content,
+            rootFitProvenance.sourceDocument,
+            rootFitProvenance.paths,
+            constructionChange,
+            root,
+            rawIndex,
+            canonicalIndex
+          )
         : null;
+    const externalSelection =
+      options.target.kind === 'root' && options.target.selection && mapExternal
+        ? mapExternal(options.target.selection, 'backward')
+        : null;
+    const externalRanges =
+      options.target.kind === 'root'
+        ? options.target.ranges?.map((range) => {
+            const mapped = mapExternal?.(SelectionApi.text(range), 'inward');
+
+            return mapped && RangeApi.isRange(mapped)
+              ? { anchor: mapped.anchor, focus: mapped.focus }
+              : null;
+          })
+        : undefined;
 
     if (
       options.target.kind === 'root' &&
@@ -4150,7 +4210,7 @@ export const compileSliceFitter = <V extends Value>(
       throw new Error('Prepared slice fit does not match its transaction.');
     }
 
-    options.apply?.(step, selection, landing);
+    options.apply?.(step, selection, landing, externalRanges);
 
     return true;
   };
@@ -4242,10 +4302,7 @@ export const compileSliceFitter = <V extends Value>(
 
   const reuseCanonicalDocument = (
     raw: EditorDocumentValue,
-    selectionInput?: Readonly<{
-      root: RootKey;
-      selection: NonNullable<Selection>;
-    }>
+    positions?: FitPositions
   ) => {
     if (!placesEachNodeOnce(raw)) return null;
 
@@ -4258,7 +4315,15 @@ export const compileSliceFitter = <V extends Value>(
       const document = ownDocument(raw);
 
       if (
-        (selectionInput && !fitKeepsSelection(document, selectionInput)) ||
+        (positions?.selection &&
+          !fitKeepsSelection(document, positions.selection)) ||
+        positions?.mainRanges?.some(
+          (range) =>
+            !fitKeepsSelection(document, {
+              root: 'main',
+              selection: SelectionApi.text(range),
+            })
+        ) ||
         !withoutGeneration(() =>
           isLoadedDocumentCanonical(getEditor(), document, api)
         )
@@ -4268,9 +4333,13 @@ export const compileSliceFitter = <V extends Value>(
 
       return Object.freeze({
         document,
+        mainRanges: positions?.mainRanges,
         selection:
-          selectionInput &&
-          snapshotEditorJsonValue(selectionInput.selection, 'Editor selection'),
+          positions?.selection &&
+          snapshotEditorJsonValue(
+            positions.selection.selection,
+            'Editor selection'
+          ),
       });
     } catch {
       return null;
@@ -4279,10 +4348,7 @@ export const compileSliceFitter = <V extends Value>(
 
   const fitDocumentInput = <TValue extends Value>(
     rawInput: EditorDocumentValue<TValue>,
-    selectionInput?: Readonly<{
-      root: RootKey;
-      selection: NonNullable<Selection>;
-    }>,
+    positions?: FitPositions,
     repairCollector?: EditorSchemaFitRepairCollector
   ) => {
     const innerInput2 = readEditorDocument(
@@ -4319,7 +4385,7 @@ export const compileSliceFitter = <V extends Value>(
 
     const reused = repairCollector
       ? null
-      : reuseCanonicalDocument(innerInput2, selectionInput);
+      : reuseCanonicalDocument(innerInput2, positions);
 
     if (reused) return reused;
 
@@ -4376,25 +4442,35 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     let mappedSelection: NonNullable<Selection> | undefined;
+    let mappedRanges: ReadonlyArray<Range | null> | undefined =
+      positions?.mainRanges?.map(() => null);
     const fitRoot = (root: string, children: readonly Descendant[]) => {
+      const selectionInput = positions?.selection;
       const mapsSelection = selectionInput?.root === root;
+      const ranges = root === 'main' ? positions?.mainRanges : undefined;
       const repairs: EditorSchemaRepair[] = [];
       const report = repairCollector
         ? { provenance: createRootFitPathProvenance(children), repairs }
         : undefined;
       const run = () =>
         fit(ContentSliceValue.closed(children), {
-          apply: mapsSelection
-            ? (_step, selection) => {
-                mappedSelection = selection;
-              }
-            : undefined,
+          apply:
+            mapsSelection || ranges
+              ? (_step, selection, _landing, rangesAfter) => {
+                  if (mapsSelection) mappedSelection = selection;
+                  if (rangesAfter) mappedRanges = rangesAfter;
+                }
+              : undefined,
           builder,
           target: {
             kind: 'root' as const,
             ...(report ? { report } : {}),
+            ...(ranges ? { ranges } : {}),
             root,
             ...(mapsSelection ? { selection: selectionInput.selection } : {}),
+            ...(positions?.omitSelectionSpacers
+              ? { omitSelectionSpacers: true as const }
+              : {}),
           },
         });
       const observed = report
@@ -4492,13 +4568,17 @@ export const compileSliceFitter = <V extends Value>(
     ) as EditorDocumentValue<V>;
 
     validateDocument(document);
-    if (selectionInput && !mappedSelection) {
+    if (positions?.selection && !mappedSelection) {
       throw new Error(
         'Initial selection cannot be mapped through schema fitting.'
       );
     }
 
-    return Object.freeze({ document, selection: mappedSelection });
+    return Object.freeze({
+      document,
+      mainRanges: mappedRanges,
+      selection: mappedSelection,
+    });
   };
 
   const fitDocument = <TValue extends Value>(
@@ -4516,12 +4596,9 @@ export const compileSliceFitter = <V extends Value>(
 
   const fitDocumentWithSelection = <TValue extends Value>(
     innerInput4: EditorDocumentValue<TValue>,
-    options: Readonly<{
-      root: RootKey;
-      selection: NonNullable<Selection>;
-    }>
+    options: FitSelectionInput
   ) => {
-    const fitted = fitDocumentInput(innerInput4, options);
+    const fitted = fitDocumentInput(innerInput4, { selection: options });
 
     return Object.freeze({
       document: fitted.document,
@@ -4529,10 +4606,27 @@ export const compileSliceFitter = <V extends Value>(
     });
   };
 
+  const fitDocumentAndMapPositions = <TValue extends Value>(
+    rawValue: EditorDocumentValue<TValue>,
+    options: FitDocumentPositions
+  ): FittedDocumentPositions<V> => {
+    const fitted = fitDocumentInput(rawValue, {
+      ...options,
+      omitSelectionSpacers: true,
+    });
+
+    return Object.freeze({
+      document: fitted.document,
+      mainRanges: fitted.mainRanges ?? [],
+      ...(fitted.selection ? { selection: fitted.selection } : {}),
+    });
+  };
+
   return Object.freeze({
     fit,
     fitContent,
     fitDocument,
+    fitDocumentAndMapPositions,
     fitDocumentWithReport,
     fitDocumentWithSelection,
     findWrapping,
@@ -4564,6 +4658,8 @@ export const createCompiledSliceFitterDelegate = <V extends Value>(
     fitDocument: (input) => getCompiled().fitDocument(input),
     fitDocumentWithReport: (input) =>
       getCompiled().fitDocumentWithReport(input),
+    fitDocumentAndMapPositions: (input, options) =>
+      getCompiled().fitDocumentAndMapPositions(input, options),
     fitDocumentWithSelection: (input, options) =>
       getCompiled().fitDocumentWithSelection(input, options),
     findWrapping: (parent, child) => getCompiled().findWrapping(parent, child),

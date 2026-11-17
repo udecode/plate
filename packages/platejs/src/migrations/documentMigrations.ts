@@ -17,11 +17,16 @@ import {
   mapDetachedSelectionThroughChange,
   type NativeAuthoredDocumentCapability,
   type PersistedDocumentInput,
+  PathApi,
+  type Point,
+  type Range,
+  RangeApi,
   readDocumentRecord,
   readEditorDocument,
   readPersistedEnvelope,
   rejectEditorRecord,
   type RuntimePluginReference,
+  type Descendant,
   type Selection,
   SelectionApi,
   snapshotEditorJsonValue,
@@ -37,6 +42,7 @@ import {
 import {
   historicalSelectionGeometry,
   landSelectionMarks,
+  textAt,
 } from './documentMigrationSelection.internal';
 import {
   getMigrationBinding,
@@ -76,6 +82,21 @@ export type DocumentMigrationSelectionContext = Readonly<{
   selection: Exclude<Selection, null>;
 }>;
 
+/** Saved ranges by thread id, each in the primary root of the input document. */
+export type DocumentMigrationRanges = Readonly<Record<string, Range>>;
+
+/**
+ * Migrated ranges by thread id; `null` when the text a range covered is gone,
+ * a step put its ends in the opposite order, or the range collapsed, covers no
+ * text or points outside the input document.
+ */
+export type MigratedDocumentRanges = Readonly<Record<string, Range | null>>;
+
+/** The ranges still mapped before a step, in order. */
+export type DocumentMigrationRangesContext = Readonly<{
+  ranges: readonly Range[];
+}>;
+
 /** Stored top-level fields outside `children`, `meta`, `roots` and `records`. */
 export type DocumentMigrationLegacy = Readonly<Record<string, EditorJsonValue>>;
 
@@ -96,6 +117,14 @@ export type DocumentMigrationStepResult<
   document: ToDocument;
   /** Legacy fields left to lift. Omitted, the step's input passes on. */
   legacy?: DocumentMigrationLegacy;
+  /**
+   * Map every range in one call, returning one range or `null` per range in
+   * order. Omitted, every range maps to `null` when the step changes the
+   * document.
+   */
+  mapRanges?: (
+    context: DocumentMigrationRangesContext
+  ) => ReadonlyArray<Range | null>;
   mapSelection?: (context: DocumentMigrationSelectionContext) => Selection;
 }>;
 
@@ -143,11 +172,17 @@ export type DocumentMigrations<
   version: TVersion;
 }>;
 
-export type DocumentMigrationResult = Readonly<{
+/** The migrated envelope, plus the mapped ranges when `ranges` was passed. */
+export type DocumentMigrationResult<
+  TRanges extends DocumentMigrationRanges | undefined = undefined,
+> = Readonly<{
   applied: readonly number[];
   output: PersistedDocumentInput;
   source: number;
-}>;
+}> &
+  (undefined extends TRanges
+    ? unknown
+    : Readonly<{ ranges: MigratedDocumentRanges }>);
 
 type MigrationInput<TMigration> =
   TMigration extends DocumentMigration<infer TInput> ? TInput : never;
@@ -289,6 +324,7 @@ const assertVersion = (version: number, owner: string) => {
 const STEP_RESULT_FIELDS = Object.freeze({
   document: 'required',
   legacy: 'optional',
+  mapRanges: 'optional',
   mapSelection: 'optional',
 } satisfies Record<keyof DocumentMigrationStepResult, 'optional' | 'required'>);
 
@@ -347,6 +383,7 @@ const assertHistoricalSelection = (
 const mapSelection = (
   authority: MigrationAuthority,
   selection: Exclude<Selection, null>,
+  change: DocumentChange,
   before: EditorDocumentValue,
   after: EditorDocumentValue
 ): Selection => {
@@ -354,7 +391,7 @@ const mapSelection = (
   const mapped = mapDetachedSelectionThroughChange(
     authority.schema,
     geometry,
-    DocumentChange.between(before, after),
+    change,
     before,
     after,
     SelectionApi.root(selection) ?? 'main',
@@ -368,6 +405,156 @@ const mapSelection = (
     mapped,
     SelectionApi.isText(selection) ? selection.marks : undefined,
     after
+  );
+};
+
+const rangeText = (children: readonly Descendant[], range: Range) => {
+  const [start, end] = RangeApi.edges(range);
+  let text = '';
+  const visit = (nodes: readonly Descendant[], parent: readonly number[]) => {
+    const first = PathApi.isCommon(parent, start.path)
+      ? (start.path[parent.length] ?? 0)
+      : 0;
+
+    for (let index = first; index < nodes.length; index += 1) {
+      const node = nodes[index];
+      const path = [...parent, index];
+
+      if (PathApi.isAfter(path, end.path)) return;
+      if (ElementApi.isElement(node)) {
+        visit(node.children, path);
+      } else {
+        text += node.text.slice(
+          PathApi.equals(path, start.path) ? start.offset : 0,
+          PathApi.equals(path, end.path) ? end.offset : node.text.length
+        );
+      }
+    }
+  };
+
+  visit(children, []);
+
+  return text;
+};
+
+const coversText = (children: readonly Descendant[], range: Range) =>
+  rangeText(children, range) !== '';
+
+const isTextPoint = (children: readonly Descendant[], point: Point) => {
+  const text = textAt(children, point.path);
+
+  return (
+    text !== undefined &&
+    Number.isInteger(point.offset) &&
+    point.offset >= 0 &&
+    point.offset <= text.text.length
+  );
+};
+
+const mainRange = (value: unknown): Range | null =>
+  RangeApi.isRange(value) &&
+  (value.anchor.root ?? 'main') === 'main' &&
+  (value.focus.root ?? 'main') === 'main'
+    ? {
+        anchor: { offset: value.anchor.offset, path: [...value.anchor.path] },
+        focus: { offset: value.focus.offset, path: [...value.focus.path] },
+      }
+    : null;
+
+const readRange = (value: unknown, label: string): Range | null => {
+  if (value === null) return null;
+  const range = mainRange(snapshotEditorJsonValue(value, label));
+
+  if (!range) {
+    throw new Error(`${label} must be a primary-root range or null.`);
+  }
+
+  return range;
+};
+
+const fitsDocument = (document: EditorDocumentValue, range: Range) =>
+  isTextPoint(document.children, range.anchor) &&
+  isTextPoint(document.children, range.focus);
+
+const savedRangeOrNull = (
+  value: unknown,
+  document: EditorDocumentValue
+): Range | null => {
+  const range = mainRange(value);
+
+  return range &&
+    fitsDocument(document, range) &&
+    coversText(document.children, range)
+    ? range
+    : null;
+};
+
+const readCoveringRange = (
+  value: unknown,
+  document: EditorDocumentValue,
+  label: string
+): Range | null => {
+  const range = readRange(value, label);
+
+  if (!range) return null;
+  if (!fitsDocument(document, range)) {
+    throw new Error(
+      `${label} ${JSON.stringify(range)} points outside the document.`
+    );
+  }
+
+  return coversText(document.children, range) ? range : null;
+};
+
+const uncrossedRange = (source: Range, range: Range | null) =>
+  range && RangeApi.isBackward(range) === RangeApi.isBackward(source)
+    ? range
+    : null;
+
+const mapLiveRanges = <T>(
+  ranges: ReadonlyArray<Range | null>,
+  values: readonly T[],
+  map: (range: Range, value: T | undefined) => Range | null
+) => {
+  let next = 0;
+
+  return ranges.map((range) => {
+    if (!range) return null;
+    const value = values[next];
+
+    next += 1;
+
+    return map(range, value);
+  });
+};
+
+const mapStepRanges = (
+  to: number,
+  ranges: ReadonlyArray<Range | null>,
+  mapRanges: DocumentMigrationStepResult['mapRanges'],
+  change: () => DocumentChange,
+  after: EditorDocumentValue
+): ReadonlyArray<Range | null> => {
+  const live = ranges.flatMap((range) => (range ? [range] : []));
+
+  if (live.length === 0) return ranges;
+  if (!mapRanges) return change().empty ? ranges : ranges.map(() => null);
+
+  const mapped: unknown = mapRanges(
+    Object.freeze({ ranges: Object.freeze(live) })
+  );
+
+  if (!Array.isArray(mapped) || mapped.length !== live.length) {
+    throw new Error(
+      `Document migration step ${to} mapRanges must return one range or null per range.`
+    );
+  }
+
+  return mapLiveRanges(ranges, mapped, (range, value) =>
+    uncrossedRange(
+      range,
+      readCoveringRange(value, after, `Document migration step ${to} range`)
+    )
   );
 };
 
@@ -423,20 +610,27 @@ const completeDocument = (
   authority: MigrationAuthority,
   document: EditorDocumentValue,
   selection: SnapshotSelectionInput | undefined,
-  hasSelection: boolean
+  hasSelection: boolean,
+  ranges: ReadonlyArray<Range | null> | undefined
 ) => {
-  const root = isConcreteSelection(selection)
-    ? (SelectionApi.root(selection) ?? 'main')
-    : 'main';
-  const fitted = isConcreteSelection(selection)
-    ? authority.schema.fitDocumentWithSelection(document, {
-        root,
-        selection,
-      })
-    : {
-        document: authority.schema.fitDocument(document),
-        selection,
-      };
+  const live = ranges?.flatMap((range) => (range ? [range] : [])) ?? [];
+  const fitted =
+    isConcreteSelection(selection) || live.length > 0
+      ? authority.schema.fitDocumentAndMapPositions(document, {
+          mainRanges: live,
+          ...(isConcreteSelection(selection)
+            ? {
+                selection: {
+                  root: SelectionApi.root(selection) ?? 'main',
+                  selection,
+                },
+              }
+            : {}),
+        })
+      : { document: authority.schema.fitDocument(document), mainRanges: [] };
+  const fittedSelection = isConcreteSelection(selection)
+    ? fitted.selection
+    : selection;
   const assertTarget = (value: EditorDocumentValue) => {
     authority.schema.assertDocument(value);
     if (authority.ownsElementIds) assertElementIds(value);
@@ -448,7 +642,7 @@ const completeDocument = (
       fitted.document
     ) ?? fitted.document;
   const completed = completePersistedDocumentFields(repaired, authority.fields);
-  const resolved = resolveSelection(fitted.selection, completed);
+  const resolved = resolveSelection(fittedSelection, completed);
 
   assertTarget(completed);
   if (resolved !== undefined) {
@@ -457,6 +651,15 @@ const completeDocument = (
 
   return Object.freeze({
     document: completed,
+    ranges:
+      ranges &&
+      mapLiveRanges(ranges, fitted.mainRanges, (range, value) =>
+        readCoveringRange(
+          uncrossedRange(range, value ?? null),
+          completed,
+          'Migrated range'
+        )
+      ),
     ...(hasSelection ? { selection: resolved } : {}),
   });
 };
@@ -625,8 +828,12 @@ type IsEnvelopeInput<TInput> =
       : true
     : false;
 
-type MigrationOptions<TInput> = Readonly<{
+type MigrationOptions<
+  TInput,
+  TRanges extends DocumentMigrationRanges | undefined = undefined,
+> = Readonly<{
   migrations: DocumentMigrations;
+  ranges?: TRanges;
 }> &
   (IsAny<TInput> extends true
     ? Readonly<{ source?: number | 'current' }>
@@ -634,11 +841,17 @@ type MigrationOptions<TInput> = Readonly<{
       ? Readonly<{ source?: never }>
       : Readonly<{ source: number | 'current' }>);
 
-/** Convert one external document into the definition's exact current envelope. */
-export const migrateDocument = <const TInput>(
+/**
+ * Convert one external document into the definition's exact current envelope,
+ * mapping `ranges`, keyed by thread id, through every step and the final fit.
+ */
+export const migrateDocument = <
+  const TInput,
+  TRanges extends DocumentMigrationRanges | undefined = undefined,
+>(
   input: TInput,
-  options: MigrationOptions<NoInfer<TInput>>
-): DocumentMigrationResult => {
+  options: MigrationOptions<NoInfer<TInput>, TRanges>
+): DocumentMigrationResult<TRanges> => {
   const authority = readDefinition(options.migrations);
   const { migrations } = options;
   const current = authority.schema.identity();
@@ -699,6 +912,10 @@ export const migrateDocument = <const TInput>(
   }
 
   assertHistoricalSelection(authority, selection, document);
+  const rangeEntries = options.ranges && Object.entries(options.ranges);
+  let ranges: ReadonlyArray<Range | null> | undefined = rangeEntries?.map(
+    ([, range]) => savedRangeOrNull(range, document)
+  );
 
   for (const [to, migration] of chain) {
     const before = document;
@@ -720,6 +937,14 @@ export const migrateDocument = <const TInput>(
         `Document migration step ${to} mapSelection must be a function.`
       );
     }
+    if (
+      result.mapRanges !== undefined &&
+      typeof result.mapRanges !== 'function'
+    ) {
+      throw new Error(
+        `Document migration step ${to} mapRanges must be a function.`
+      );
+    }
     const label = `Document migration step ${to} document`;
     document = readEditorDocument(
       snapshotEditorJsonValue(result.document, label),
@@ -739,11 +964,16 @@ export const migrateDocument = <const TInput>(
       legacy = nextLegacy as DocumentMigrationLegacy;
     }
 
+    let change: DocumentChange | undefined;
+    const after = document;
+    const changeOf = () => (change ??= DocumentChange.between(before, after));
+
     if (isConcreteSelection(selection)) {
       const original = selection;
       const mappedSelection = mapSelection(
         authority,
         original,
+        changeOf(),
         before,
         document
       );
@@ -764,6 +994,15 @@ export const migrateDocument = <const TInput>(
       );
       assertHistoricalSelection(authority, selection, document);
     }
+    if (ranges) {
+      ranges = mapStepRanges(
+        to,
+        ranges,
+        result.mapRanges as DocumentMigrationStepResult['mapRanges'],
+        changeOf,
+        document
+      );
+    }
   }
 
   const [unlifted] = Object.keys(legacy);
@@ -780,7 +1019,8 @@ export const migrateDocument = <const TInput>(
     authority,
     document,
     selection,
-    hasSelection
+    hasSelection,
+    ranges
   );
   const output = snapshotEditorJsonValue(
     {
@@ -791,9 +1031,17 @@ export const migrateDocument = <const TInput>(
     'Migrated document output'
   ) as PersistedDocumentInput;
 
+  // A null prototype keeps a thread id such as "__proto__" as its own key.
+  const migratedRanges: Record<string, Range | null> = Object.create(null);
+
+  rangeEntries?.forEach(([id], index) => {
+    migratedRanges[id] = completed.ranges?.[index] ?? null;
+  });
+
   return Object.freeze({
     applied: Object.freeze(chain.map(([to]) => to)),
     output,
     source,
-  });
+    ...(rangeEntries ? { ranges: Object.freeze(migratedRanges) } : {}),
+  }) as DocumentMigrationResult<TRanges>;
 };

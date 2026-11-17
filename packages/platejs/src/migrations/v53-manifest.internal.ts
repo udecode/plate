@@ -63,6 +63,29 @@ export const V53_FIRST_PARTY_IDENTITIES = [
   { identity: 'video', kind: 'element-unchanged' },
 ] as const;
 
+export const V53_VOID_ELEMENT_TYPES: ReadonlySet<string> = new Set([
+  'audio',
+  'code_drawing',
+  'date',
+  'emoji_input',
+  'equation',
+  'excalidraw',
+  'file',
+  'footnoteInput',
+  'footnoteReference',
+  'hr',
+  'img',
+  'inline_equation',
+  'media_embed',
+  'mention',
+  'mention_input',
+  'placeholder',
+  'slash_input',
+  'tag',
+  'toc',
+  'video',
+]);
+
 export const V53_STRUCTURAL_PROPERTIES = [
   { key: 'align', kind: 'property-rename', to: 'textAlign' },
   { key: 'caption', kind: 'property-structural' },

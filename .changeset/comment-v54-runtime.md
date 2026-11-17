@@ -12,7 +12,7 @@
 - Report a throwing comment listener or decoration refresher to `lifecycleErrorSink`, so later listeners still run and a saved action still answers `applied`; a listener may call any action
 - Join successful local thread creation to document history and serialize its replay with later mutations of the same thread
 - Resolve comment attachments and discussion positions in each mounted editor's projection while retaining one conversation and target
-- Export `extractLegacyCommentRanges` from `platejs/migrations` for offline conversion of comment marks into ordered range groups and a sanitized document
+- Export `extractLegacyCommentRanges` from `platejs/migrations` for offline conversion of comment marks into a sanitized document, one range per thread ID and a report. Empty texts, voids and inline element edges never split a thread; a thread split by visible unmarked text gets no range and a `split-group` row that lists each part's range. Comment marks in a media caption are removed and reported at the media element's path: a thread's mark as an `invalid-range` row, and a malformed, anonymous or draft-only mark with the row it gets in the document body
 - Record threads, replies and resolutions as the editor's `userId`, or as the local user, `'local'`, when the editor has none
 
 **Migration:** Supply thread rows and the ranges saved with the same document revision as the editor value:
@@ -37,4 +37,11 @@ const revision = {
 };
 ```
 
-Run `extractLegacyCommentRanges` before loading persisted documents that contain legacy comment properties.
+Run `extractLegacyCommentRanges` before loading persisted documents that contain legacy comment properties, and pass its document and ranges to one `migrateDocument` call:
+
+```ts
+const { document, ranges, report } = extractLegacyCommentRanges(legacy, {
+  threadIds,
+});
+const migrated = migrateDocument(document, { migrations, ranges, source: 53 });
+```

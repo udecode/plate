@@ -255,25 +255,76 @@ const liftTitle: DocumentMigration = ({
   from different schema versions.
 </Callout>
 
-### Import comment annotations
+### Migrate comment ranges
 
-Run `extractLegacyCommentRanges` before loading documents that contain `comment`, `comment_*`, `comment_draft`, or `commentTransient` properties.
+Comment ranges saved with a revision point into that revision's document. Pass
+them as `ranges` to the call that migrates the document, and save the result's
+`ranges` with its `output`. Here `readCommentRanges` reads the ranges your
+storage layer saved with the document:
 
 ```ts
-import { extractLegacyCommentRanges } from "platejs/migrations";
-
-const {
-  comments,
-  diagnostics,
-  document: cleanDocument,
-} = extractLegacyCommentRanges(document, {
-  threadIds: storedThreads.map((thread) => thread.id),
+const { output, ranges } = migrateDocument(await readDocument(id), {
+  migrations: EditorMigrations,
+  ranges: await readCommentRanges(id),
 });
-
-console.table(diagnostics);
 ```
 
-Persist `cleanDocument` and import `comments` through your storage layer after reviewing every diagnostic. The extractor never invents missing thread IDs. Run it offline; the runtime plugin has no legacy fallback.
+`ranges` is a record keyed by thread ID. Each range maps through every step and
+the final fit and keeps covering the same words. A range comes back `null` when
+the text it covered is gone or a step reverses its ends, and when the saved
+entry is not a range in the primary root, covers no text or points outside the
+document. Save no entry for it; its thread loads without a highlight.
+
+A step that changes the document carries ranges only through the `mapRanges`
+it returns. It receives the ranges still mapped, in order, and returns one
+range or `null` for each. A step that changes the document without `mapRanges`
+returns `null` for every range, even when it returns `mapSelection`, so no
+range lands on another block's words. A step that returns the document
+unchanged keeps every range. `migrateV54` and `migrateListIdentity` map ranges
+exactly. A step that changes only element properties, and leaves every block
+and text in place, keeps its ranges with `mapRanges: ({ ranges }) => ranges`.
+
+### Import comment annotations
+
+Run `extractLegacyCommentRanges` before loading documents that contain
+`comment`, `comment_*`, `comment_draft`, or `commentTransient` properties. Its
+ranges point into the cleaned document, so pass both to one `migrateDocument`
+call:
+
+```ts
+import {
+  extractLegacyCommentRanges,
+  migrateDocument,
+} from "platejs/migrations";
+
+const {
+  document: cleanDocument,
+  ranges,
+  report,
+} = extractLegacyCommentRanges(legacyDocument, {
+  threadIds: storedThreads.map((thread) => thread.id),
+});
+const migrated = migrateDocument(cleanDocument, {
+  migrations: EditorMigrations,
+  ranges,
+  source: 53,
+});
+
+console.table(report);
+```
+
+Review every report row, then save `migrated.output` with the non-null entries
+of `migrated.ranges` as its comment ranges. Each thread gets one range. Empty
+texts, voids and inline element edges never split it; visible text without the
+mark does, and that thread gets no range and a `split-group` row that lists
+each part's range in order. To keep such a thread, add one range for its ID to
+`ranges` before the `migrateDocument` call, such as from the first part's
+`anchor` to the last part's `focus`. Comment marks in a media caption are
+removed and reported at the media element's path. A thread's mark there is an
+`invalid-range` row whose `reason` is `caption-text`, and a malformed,
+anonymous or draft-only mark gets the row it gets in the document body. The
+extractor never invents missing thread IDs. Run it offline; the runtime plugin
+has no legacy fallback.
 
 ### Remote initial value
 

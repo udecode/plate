@@ -230,6 +230,67 @@ const liftTitle: DocumentMigration = ({
   版本的协作节点。
 </Callout>
 
+### 迁移评论范围
+
+随版本保存的评论范围指向该版本的文档。把它们作为 `ranges` 传给迁移该文档的同一次调用，
+再把结果的 `ranges` 与 `output` 一起保存。这里的 `readCommentRanges` 读取存储层随文档
+保存的范围：
+
+```ts
+const { output, ranges } = migrateDocument(await readDocument(id), {
+  migrations: EditorMigrations,
+  ranges: await readCommentRanges(id),
+});
+```
+
+`ranges` 是以线程 ID 为键的记录。每个范围都会经过每个步骤和最终 fit 映射，并继续覆盖
+同样的文字。范围覆盖的文字被删除，或某个步骤颠倒了它的两端时，结果为 `null`；保存的条目
+不是主根中的范围、不覆盖任何文字或指向文档之外时也是如此。不要为它保存条目，它的线程加载后
+没有高亮。
+
+改动了文档的步骤，只通过它返回的 `mapRanges` 携带范围。`mapRanges` 按顺序接收仍在映射
+中的范围，并为每个范围返回一个范围或 `null`。改动了文档却没有返回 `mapRanges` 的步骤，
+即使返回了 `mapSelection`，每个范围也都返回 `null`，因此范围不会落到别的块的文字上。原样
+返回文档的步骤保留全部范围。`migrateV54` 和 `migrateListIdentity` 会精确映射范围。只改动
+元素属性、每个块和文字都留在原处的步骤，用 `mapRanges: ({ ranges }) => ranges` 保留范围。
+
+### 导入评论标注
+
+加载包含 `comment`、`comment_*`、`comment_draft` 或 `commentTransient` 属性的文档前，运行
+`extractLegacyCommentRanges`。它返回的范围指向清理后的文档，所以把两者传给同一次
+`migrateDocument` 调用：
+
+```ts
+import {
+  extractLegacyCommentRanges,
+  migrateDocument,
+} from "platejs/migrations";
+
+const {
+  document: cleanDocument,
+  ranges,
+  report,
+} = extractLegacyCommentRanges(legacyDocument, {
+  threadIds: storedThreads.map((thread) => thread.id),
+});
+const migrated = migrateDocument(cleanDocument, {
+  migrations: EditorMigrations,
+  ranges,
+  source: 53,
+});
+
+console.table(report);
+```
+
+检查每一行报告后，把 `migrated.output` 与 `migrated.ranges` 中非 `null` 的条目一起保存为
+评论范围。每个线程得到一个范围。空文本、void 和行内元素边界不会拆分它；没有该标记的可见
+文字会拆分它，这个线程不会得到范围，并产生一行 `split-group` 报告，按顺序列出每一段的
+范围。要保留这样的线程，在调用 `migrateDocument` 之前为它的 ID 往 `ranges` 里加一个范围，
+例如从第一段的 `anchor` 到最后一段的 `focus`。媒体题注里的评论标记会被移除，并在媒体元素
+的路径上报告。线程的标记报告为 `reason` 是 `caption-text` 的 `invalid-range` 行；格式
+错误、匿名或仅草稿的标记，报告方式与正文中相同。提取器不会编造缺失的线程 ID。请离线运行；
+运行时插件不提供旧格式回退。
+
 ### 异步初始值
 
 如果需要异步获取初始值（例如从 API），可以使用 `skipInitialization` 选项，并在数据就绪后用一次 `editor.update(...)` 初始化内容：

@@ -913,14 +913,9 @@
     "platejs/migrations": [
       "DocumentMigration",
       "DocumentMigrationContext",
-      "DocumentMigrationResult",
       "DocumentMigrationSchema",
       "DocumentMigrationSelectionContext",
       "DocumentMigrationStepResult",
-      "ExtractLegacyCommentRangesOptions",
-      "ExtractLegacyCommentRangesResult",
-      "LegacyCommentDiagnostic",
-      "LegacyCommentRangeGroup",
       "PlateV54Migration"
     ],
     "platejs/pagination": [

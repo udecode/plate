@@ -1,9 +1,26 @@
 import {
+  type Descendant,
   type EditorDocumentValue,
+  ElementApi,
   type InternalEditorSchemaApi,
+  type Path,
   type Selection,
   SelectionApi,
+  TextApi,
 } from '../facade';
+
+export const textAt = (children: readonly Descendant[], path: Path) => {
+  let node: Descendant | undefined;
+  let nodes = children;
+
+  for (const index of path) {
+    node = nodes[index];
+    if (!node) return undefined;
+    nodes = ElementApi.isElement(node) ? node.children : [];
+  }
+
+  return node && TextApi.isText(node) ? node : undefined;
+};
 
 export const historicalSelectionGeometry = (
   selection: Exclude<Selection, null>

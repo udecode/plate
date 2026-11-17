@@ -1,8 +1,14 @@
 import {
+  type Descendant,
   DocumentChange,
   type EditorDocumentValue,
+  ElementApi,
   type InternalEditorSchemaApi,
+  MAIN_ROOT_KEY,
   mapDetachedSelectionThroughChange,
+  type Path,
+  type Point,
+  RangeApi,
   type Selection,
   SelectionApi,
 } from '../facade';
@@ -14,6 +20,7 @@ import type {
 import {
   historicalSelectionGeometry,
   landSelectionMarks,
+  textAt,
 } from './documentMigrationSelection.internal';
 import { migratePlateV54Ast } from './migratePlateV54Ast.internal';
 import { migratePlateV54CodeBlocks } from './migratePlateV54CodeBlocks.internal';
@@ -35,23 +42,94 @@ type PlateV54Shape = Readonly<{
   urls: ReturnType<typeof migratePlateV54Urls>;
 }>;
 
-const mapBetween = (
+type StageAssociation = 'backward' | 'inward';
+
+const rootEntries = (document: EditorDocumentValue) => [
+  [MAIN_ROOT_KEY, document.children] as const,
+  ...Object.entries(document.roots ?? {}),
+];
+
+const freezeDeep = (value: unknown) => {
+  if (value === null || typeof value !== 'object' || Object.isFrozen(value)) {
+    return;
+  }
+  Object.freeze(value);
+  Object.values(value).forEach(freezeDeep);
+};
+
+const createStageMapper = (
   schema: InternalEditorSchemaApi,
-  selection: Selection,
   before: EditorDocumentValue,
   after: EditorDocumentValue
-): Selection => {
-  if (!selection) return selection;
+) => {
+  let change: DocumentChange | undefined;
+  let kept: Map<Descendant, Readonly<{ path: Path; root: string }>> | undefined;
+  const keptTexts = () => {
+    if (kept) return kept;
+    const texts = new Map<Descendant, Readonly<{ path: Path; root: string }>>();
+    const repeated = new Set<Descendant>();
+    const visit = (nodes: readonly Descendant[], root: string, parent: Path) =>
+      nodes.forEach((node, index) => {
+        const path = [...parent, index];
 
-  return mapDetachedSelectionThroughChange(
-    schema,
-    selection,
-    DocumentChange.between(before, after),
-    before,
-    after,
-    SelectionApi.root(selection) ?? 'main',
-    { association: 'backward', preferPositionMapping: true }
-  );
+        if (ElementApi.isElement(node)) visit(node.children, root, path);
+        else if (texts.has(node)) repeated.add(node);
+        else texts.set(node, { path, root });
+      });
+
+    for (const [root, children] of rootEntries(after)) {
+      visit(children, root, []);
+    }
+    repeated.forEach((node) => texts.delete(node));
+    kept = texts;
+
+    return texts;
+  };
+  const followText = (point: Point): Point | null => {
+    const root = point.root ?? MAIN_ROOT_KEY;
+    const children =
+      root === MAIN_ROOT_KEY ? before.children : before.roots?.[root];
+    const text = children && textAt(children, point.path);
+    const target = text && keptTexts().get(text);
+
+    return target?.root === root ? { ...point, path: target.path } : null;
+  };
+
+  return (selection: Selection, association: StageAssociation): Selection => {
+    if (!selection || before === after) return selection;
+    const anchor = RangeApi.isRange(selection)
+      ? followText(selection.anchor)
+      : null;
+    const focus = RangeApi.isRange(selection)
+      ? followText(selection.focus)
+      : null;
+
+    if (anchor && focus && RangeApi.isRange(selection)) {
+      return { ...selection, anchor, focus };
+    }
+    if (!change) {
+      freezeDeep(before);
+      freezeDeep(after);
+      change = DocumentChange.between(before, after);
+    }
+    const mapped = mapDetachedSelectionThroughChange(
+      schema,
+      selection,
+      change,
+      before,
+      after,
+      SelectionApi.root(selection) ?? 'main',
+      { association, preferPositionMapping: true }
+    );
+
+    if ((!anchor && !focus) || !RangeApi.isRange(mapped)) return mapped;
+
+    return {
+      ...mapped,
+      anchor: anchor ?? mapped.anchor,
+      focus: focus ?? mapped.focus,
+    };
+  };
 };
 
 const shapeDocument = (
@@ -96,53 +174,84 @@ export const migrateV54: PlateV54Migration = (context) => {
   const schema = context.target.schema as InternalEditorSchemaApi;
   const legacy = migratePlateV54Suggestions(context.document);
   const shapedSource = shapeDocument(context, context.document);
-  // One diff across stages that rename some blocks and restructure others
-  // replaces everything between them, so the selection follows each stage.
+  const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
+  const toProfile = createStageMapper(schema, inputs.document, profile);
+  const toAst = createStageMapper(schema, profile, ast);
+  const toUrls = createStageMapper(schema, ast, urls.document);
+  const toCodeBlocks = createStageMapper(
+    schema,
+    urls.document,
+    codeBlocks.document
+  );
   const mapThroughStages = (
-    original: Exclude<Selection, null>,
-    document: EditorDocumentValue
-  ) => {
-    const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
-    const selection = historicalSelectionGeometry(original);
-    const inputSelection = inputs.mapSelection?.(selection) ?? selection;
-    const astSelection = mapBetween(
-      schema,
-      mapBetween(schema, inputSelection, inputs.document, profile),
-      profile,
-      ast
-    );
-    const urlDiff = mapBetween(schema, astSelection, ast, urls.document);
-    const urlSelection = urls.mapSelection?.(astSelection, urlDiff) ?? urlDiff;
-    const codeDiff = mapBetween(
-      schema,
-      urlSelection,
-      urls.document,
-      codeBlocks.document
-    );
+    document: EditorDocumentValue,
+    toDocument: (
+      selection: Selection,
+      association: StageAssociation
+    ) => Selection
+  ): Pick<DocumentMigrationStepResult, 'mapRanges' | 'mapSelection'> => {
+    const mapStages = (
+      inputSelection: Exclude<Selection, null>,
+      association: StageAssociation
+    ) => {
+      const astSelection = toAst(
+        toProfile(inputSelection, association),
+        association
+      );
+      const urlDiff = () => toUrls(astSelection, association);
+      const urlSelection = urls.mapSelection
+        ? urls.mapSelection(astSelection, urlDiff)
+        : urlDiff();
+      const codeDiff = () => toCodeBlocks(urlSelection, association);
 
-    const staged =
-      codeBlocks.mapSelection?.(urlSelection, codeDiff) ?? codeDiff;
-    const mapped =
-      document === shapedSource.document
-        ? staged
-        : mapBetween(schema, staged, shapedSource.document, document);
-    const marks = retainedSelectionMarks(context.target, original);
-    const unmoved = mapped === selection;
+      return toDocument(
+        codeBlocks.mapSelection
+          ? codeBlocks.mapSelection(urlSelection, codeDiff)
+          : codeDiff(),
+        association
+      );
+    };
 
-    if (unmoved) {
-      return SelectionApi.isText(original) && marks !== original.marks
-        ? { ...original, marks }
-        : original;
-    }
+    return {
+      mapRanges: ({ ranges }) =>
+        ranges.map((range) => {
+          const mapped = mapStages(
+            SelectionApi.text(inputs.mapRange?.(range) ?? range),
+            'inward'
+          );
 
-    return landSelectionMarks(schema, mapped, marks, document);
+          return RangeApi.isRange(mapped)
+            ? { anchor: mapped.anchor, focus: mapped.focus }
+            : null;
+        }),
+      mapSelection: ({ selection: original }) => {
+        const selection = historicalSelectionGeometry(original);
+        const mapped = mapStages(
+          inputs.mapSelection?.(selection) ?? selection,
+          'backward'
+        );
+        const marks = retainedSelectionMarks(context.target, original);
+        const unmoved =
+          mapped === selection ||
+          (RangeApi.isRange(mapped) &&
+            RangeApi.isRange(selection) &&
+            RangeApi.equals(mapped, selection));
+
+        if (unmoved) {
+          return SelectionApi.isText(original) && marks !== original.marks
+            ? { ...original, marks }
+            : original;
+        }
+
+        return landSelectionMarks(schema, mapped, marks, document);
+      },
+    };
   };
 
   if (!legacy) {
     return Object.freeze({
       document: shapedSource.document,
-      mapSelection: ({ selection }) =>
-        mapThroughStages(selection, shapedSource.document),
+      ...mapThroughStages(shapedSource.document, (selection) => selection),
     });
   }
 
@@ -173,6 +282,9 @@ export const migrateV54: PlateV54Migration = (context) => {
 
   return Object.freeze({
     document,
-    mapSelection: ({ selection }) => mapThroughStages(selection, document),
+    ...mapThroughStages(
+      document,
+      createStageMapper(schema, shapedSource.document, document)
+    ),
   });
 };
