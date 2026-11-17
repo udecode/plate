@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-17-ai-api-initial-selection",
+      "href": "/registry/changelog/2026-11-17-ai-api-initial-selection.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Pass the caret to createEditor as initialSelection in the AI command route",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-api"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-17-ai-comment-author",
       "href": "/registry/changelog/2026-11-17-ai-comment-author.json",
       "status": "draft",

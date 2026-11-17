@@ -13154,7 +13154,7 @@
           "kind": "type",
           "name": "HistoryTxApi",
           "runtime": false,
-          "signature": "type HistoryTxApi<V extends Value = Value> = {\n  /** Merge this transaction into the previous compatible undo batch. */\n  merge: HistoryControlTx;\n  /** Make this transaction start a fresh undo batch. */\n  newBatch: HistoryControlTx;\n  /** Replace both history branches when the surrounding transaction commits. */\n  restore: TxDeclaredMethod<(history: History<V>) => void>;\n  /** Do not save this transaction to history. */\n  skip: HistoryControlTx;\n};",
+          "signature": "type HistoryTxApi<V extends Value = Value> = {\n  /**\n   * Merge this transaction into the previous compatible undo batch. Two\n   * batches whose commits change no root, such as ones that write only\n   * records, are compatible.\n   */\n  merge: HistoryControlTx;\n  /** Make this transaction start a fresh undo batch. */\n  newBatch: HistoryControlTx;\n  /** Replace both history branches when the surrounding transaction commits. */\n  restore: TxDeclaredMethod<(history: History<V>) => void>;\n  /** Do not save this transaction to history. */\n  skip: HistoryControlTx;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value"

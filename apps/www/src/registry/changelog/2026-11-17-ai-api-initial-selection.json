@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-ai-api-initial-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-ai-api-initial-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Pass the caret to createEditor as initialSelection in the AI command route",
+  "targets": [
+    {
+      "name": "ai-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-ai-api-pass-caret-createeditor-initialselection-8fb4644c",
+      "kind": "wiring",
+      "summary": "Pass the request's caret to `createEditor` as `initialSelection`, the one caret option Plate's editor makers keep.",
+      "details": [],
+      "migrationNotes": [
+        "A copied AI command route passes `initialSelection: request.selection` to `createEditor`, because Plate's makers drop the `selection` option."
+      ],
+      "targets": ["ai-api"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-ai-api-initial-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

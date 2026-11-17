@@ -1,0 +1,14 @@
+---
+id: 2026-11-17-ai-api-initial-selection
+date: 2026-11-17
+status: draft
+kind: wiring
+summary: 'Pass the caret to createEditor as initialSelection in the AI command route'
+change: { 'type': 'source', 'date': '2026-11-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-17-ai-api-pass-caret-createeditor-initialselection-8fb4644c","kind":"wiring","migrationNotes":["A copied AI command route passes `initialSelection: request.selection` to `createEditor`, because Plate's makers drop the `selection` option."]} -->
+
+- **`ai-api`**: Pass the request's caret to `createEditor` as `initialSelection`, the one caret option Plate's editor makers keep.
