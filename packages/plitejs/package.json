@@ -154,7 +154,7 @@
     "@chenglou/pretext": "^0.0.7",
     "@cloudflare/vitest-plugin": "1.4.10",
     "@cloudflare/workers-types": "5.20261028.1",
-    "@happy-dom/global-registrator": "20.0.10",
+    "@happy-dom/global-registrator": "20.11.15",
     "@tanstack/react-virtual": "^3.13.25",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",

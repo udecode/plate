@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+overrides:
+  happy-dom: 20.11.15
+
 patchedDependencies:
   mdast-util-find-and-replace@3.0.2:
     hash: ewimfvsv36p72fygig33i2mi6q
@@ -26,8 +29,8 @@ importers:
         specifier: 0.8.0
         version: 0.8.0
       '@happy-dom/global-registrator':
-        specifier: 20.0.10
-        version: 20.0.10
+        specifier: 20.11.15
+        version: 20.11.15
       '@hocuspocus/extension-logger':
         specifier: 3.4.4
         version: 3.4.4(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30)
@@ -997,8 +1000,8 @@ importers:
         specifier: 5.20261028.1
         version: 5.20261028.1
       '@happy-dom/global-registrator':
-        specifier: 20.0.10
-        version: 20.0.10
+        specifier: 20.11.15
+        version: 20.11.15
       '@tanstack/react-virtual':
         specifier: ^3.13.25
         version: 3.14.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1046,7 +1049,7 @@ importers:
         version: 19.2.8(react@19.2.8)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.11.15)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       yjs:
         specifier: 13.6.30
         version: 13.6.30
@@ -1092,7 +1095,7 @@ importers:
         version: 7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+        version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.11.15)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
 
 packages:
 
@@ -2408,8 +2411,8 @@ packages:
       tailwindcss:
         optional: true
 
-  '@happy-dom/global-registrator@20.0.10':
-    resolution: {integrity: sha512-GU0UBt9lJKhZlY/U0Bivj9ZVepDIQoAUupAAl/90THG4/urkzXNglkVYETsnt2pGBDgQ+4vBjMAbLu6XzcKcQA==}
+  '@happy-dom/global-registrator@20.11.15':
+    resolution: {integrity: sha512-pr1k24oG6T+tTnc+axwaexmuteylDIjAex/1bH2Tm2eaKUIXmg4sGKlCIAPUtBQOOaL2cXU1NbPxiu5V158VFA==}
     engines: {node: '>=20.0.0'}
 
   '@hocuspocus/common@3.4.4':
@@ -2870,6 +2873,7 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
+      zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       '@cfworker/json-schema':
         optional: true
@@ -5961,9 +5965,6 @@ packages:
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
 
-  '@types/node@20.19.37':
-    resolution: {integrity: sha512-8kzdPJ3FsNsVIurqBs7oodNnCEVbni9yUEkaHbgptDACOPW04jimGagZ51E6+lXUwJjgnBw+hyko/lkFWCldqw==}
-
   '@types/node@24.12.0':
     resolution: {integrity: sha512-GYDxsZi3ChgmckRT9HPU0WEhKLP08ev/Yfcq2AstjrDASOYCSXeyjDsHg4v5t4jOj7cyDX3vmprafKlWIG9MXQ==}
 
@@ -6652,6 +6653,10 @@ packages:
   buffer-crc32@0.2.13:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
 
+  buffer-image-size@0.6.4:
+    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
+    engines: {node: '>=4.0'}
+
   buffer-xor@1.0.3:
     resolution: {integrity: sha512-571s0T7nZWK6vB67HI5dyUF7wXiNcfaPPPTl6zYCNApANjIvYJTg7hlud/+cJpdAhS7dVzqMLmfhfHR3rAcOjQ==}
 
@@ -6666,7 +6671,6 @@ packages:
 
   bun@1.4.4:
     resolution: {integrity: sha512-hj0ASdG6PNjLZGFAXktWb3Uaj/dcv/1wCsIttoEXADNIQBsGjTr+5uLKYbrDkuc7NT0Tkj4yPIqJI2jDxXdvVg==}
-    cpu: [arm64, x64]
     os: [darwin, linux, android, freebsd, win32]
     hasBin: true
 
@@ -8350,8 +8354,8 @@ packages:
   hachure-fill@0.5.2:
     resolution: {integrity: sha512-3GKBOn+m2LX9iq+JC1064cSFprJY4jL1jCXTcpnfER5HYE2l/4EfWSGzkPa/ZDBmYI0ZOEj5VHV/eKnPGkHuOg==}
 
-  happy-dom@20.8.3:
-    resolution: {integrity: sha512-lMHQRRwIPyJ70HV0kkFT7jH/gXzSI7yDkQFe07E2flwmNDFoWUTRMKpW2sglsnpeA7b6S2TJPp98EbQxai8eaQ==}
+  happy-dom@20.11.15:
+    resolution: {integrity: sha512-bj2gQIKzOYB6GAAJ/jrN/IFHQe79MhEOiMAspRRWiKebRoegvGDv2B6eUt8KiZMTEDvx6ri0fAF7Xh/umAUUZA==}
     engines: {node: '>=20.0.0'}
 
   has-flag@3.0.0:
@@ -11489,9 +11493,6 @@ packages:
   underscore@1.13.8:
     resolution: {integrity: sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ==}
 
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
@@ -11765,7 +11766,7 @@ packages:
       '@vitest/coverage-istanbul': 4.1.9
       '@vitest/coverage-v8': 4.1.9
       '@vitest/ui': 4.1.9
-      happy-dom: '*'
+      happy-dom: 20.11.15
       jsdom: '*'
     peerDependenciesMeta:
       '@edge-runtime/vm':
@@ -12898,7 +12899,7 @@ snapshots:
       cjs-module-lexer: 1.2.3
       esbuild: 0.28.2
       miniflare: 5.20261023.2-beta(@types/node@24.12.0)
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.11.15)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       wrangler: 4.155.0(@cloudflare/workers-types@5.20261028.1)(@types/node@24.12.0)
       zod: 4.6.6
     transitivePeerDependencies:
@@ -13624,10 +13625,10 @@ snapshots:
       '@tailwindcss/oxide': 4.1.8
       tailwindcss: 4.1.8
 
-  '@happy-dom/global-registrator@20.0.10':
+  '@happy-dom/global-registrator@20.11.15':
     dependencies:
-      '@types/node': 20.19.37
-      happy-dom: 20.8.3
+      '@types/node': 24.12.0
+      happy-dom: 20.11.15
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -14127,7 +14128,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.30.0':
+  '@modelcontextprotocol/sdk@1.30.0(zod@3.25.61)':
     dependencies:
       '@hono/node-server': 1.19.11(hono@4.12.5)
       ajv: 8.18.0
@@ -14144,8 +14145,31 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.1.12
-      zod-to-json-schema: 3.25.1(zod@4.1.12)
+      zod: 3.25.61
+      zod-to-json-schema: 3.25.1(zod@3.25.61)
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
+  '@modelcontextprotocol/sdk@1.30.0(zod@4.6.6)':
+    dependencies:
+      '@hono/node-server': 1.19.11(hono@4.12.5)
+      ajv: 8.18.0
+      ajv-formats: 3.0.1
+      content-type: 1.0.5
+      cors: 2.8.6
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.0.6
+      express: 5.2.1
+      express-rate-limit: 8.3.0(express@5.2.1)
+      hono: 4.12.5
+      jose: 6.2.0
+      json-schema-typed: 8.0.2
+      pkce-challenge: 5.0.1
+      raw-body: 3.0.2
+      zod: 4.6.6
+      zod-to-json-schema: 3.25.1(zod@4.6.6)
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -17019,10 +17043,6 @@ snapshots:
 
   '@types/node@12.20.55': {}
 
-  '@types/node@20.19.37':
-    dependencies:
-      undici-types: 6.21.0
-
   '@types/node@24.12.0':
     dependencies:
       undici-types: 7.16.0
@@ -17165,7 +17185,7 @@ snapshots:
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
       playwright: 1.61.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.11.15)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -17181,7 +17201,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
+      vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.11.15)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0)
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
@@ -17629,6 +17649,10 @@ snapshots:
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
   buffer-crc32@0.2.13: {}
+
+  buffer-image-size@0.6.4:
+    dependencies:
+      '@types/node': 24.12.0
 
   buffer-xor@1.0.3: {}
 
@@ -18978,7 +19002,7 @@ snapshots:
       '@aws-sdk/lib-storage': 3.1136.0(@aws-sdk/client-s3@3.1136.0)
       '@aws-sdk/s3-presigned-post': 3.1136.0
       '@aws-sdk/s3-request-presigner': 3.1136.0
-      '@modelcontextprotocol/sdk': 1.30.0
+      '@modelcontextprotocol/sdk': 1.30.0(zod@3.25.61)
       '@opentelemetry/api': 1.9.0
       ai: 6.0.116(zod@3.25.61)
       hono: 4.12.5
@@ -19005,7 +19029,7 @@ snapshots:
       '@aws-sdk/lib-storage': 3.1136.0(@aws-sdk/client-s3@3.1136.0)
       '@aws-sdk/s3-presigned-post': 3.1136.0
       '@aws-sdk/s3-request-presigner': 3.1136.0
-      '@modelcontextprotocol/sdk': 1.30.0
+      '@modelcontextprotocol/sdk': 1.30.0(zod@4.6.6)
       '@opentelemetry/api': 1.9.0
       ai: 6.0.116(zod@4.6.6)
       hono: 4.12.5
@@ -19389,14 +19413,15 @@ snapshots:
 
   hachure-fill@0.5.2: {}
 
-  happy-dom@20.8.3:
+  happy-dom@20.11.15:
     dependencies:
       '@types/node': 24.12.0
       '@types/whatwg-mimetype': 3.0.2
       '@types/ws': 8.18.1
+      buffer-image-size: 0.6.4
       entities: 7.0.1
       whatwg-mimetype: 3.0.0
-      ws: 8.19.0
+      ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -23410,8 +23435,6 @@ snapshots:
 
   underscore@1.13.8: {}
 
-  undici-types@6.21.0: {}
-
   undici-types@7.16.0: {}
 
   undici@6.23.0: {}
@@ -23672,7 +23695,7 @@ snapshots:
       tsx: 4.20.1
       yaml: 2.9.0
 
-  vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0):
+  vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.11.15)(jiti@2.6.1)(jsdom@20.0.3)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0):
     dependencies:
       '@vitest/expect': 4.1.9
       '@vitest/mocker': 4.1.9(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
@@ -23698,7 +23721,7 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/node': 24.12.0
       '@vitest/browser-playwright': 4.1.9(playwright@1.61.0)(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.33.0)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))(vitest@4.1.9)
-      happy-dom: 20.8.3
+      happy-dom: 20.11.15
       jsdom: 20.0.3
     transitivePeerDependencies:
       - jiti
@@ -23982,9 +24005,9 @@ snapshots:
     dependencies:
       zod: 3.25.61
 
-  zod-to-json-schema@3.25.1(zod@4.1.12):
+  zod-to-json-schema@3.25.1(zod@4.6.6):
     dependencies:
-      zod: 4.1.12
+      zod: 4.6.6
     optional: true
 
   zod@3.25.61: {}

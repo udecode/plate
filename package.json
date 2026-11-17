@@ -151,7 +151,7 @@
     "@babel/parser": "7.29.0",
     "@changesets/cli": "2.30.0",
     "@changesets/get-github-info": "0.8.0",
-    "@happy-dom/global-registrator": "20.0.10",
+    "@happy-dom/global-registrator": "20.11.15",
     "@hocuspocus/extension-logger": "3.4.4",
     "@hocuspocus/extension-redis": "3.4.4",
     "@hocuspocus/provider": "3.4.4",
@@ -216,6 +216,9 @@
   },
   "packageManager": "pnpm@9.15.0",
   "pnpm": {
+    "overrides": {
+      "happy-dom": "20.11.15"
+    },
     "patchedDependencies": {
       "mdast-util-find-and-replace@3.0.2": "patches/mdast-util-find-and-replace@3.0.2.patch"
     }
