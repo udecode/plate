@@ -1,6 +1,6 @@
 ---
 description: Run and watch the deep lane, the slow check steps that run on next after landing instead of before it. Use for /deep-check, "is next green", "deep check status", "rerun the deep check", installing or removing its launchd job on a Mac, starting the watcher session that starts a fix for a red step, being that watcher, and when a deep-check task or a "Deep check:" team message names a red step.
-argument-hint: status | rerun | install | uninstall | supervise | watch
+argument-hint: '[status | rerun | install | uninstall | watch]'
 name: deep-check
 metadata:
   skiller:
@@ -17,7 +17,7 @@ metadata:
 - A report offers a P0 task under topic `deep-check` that owns the red step, and the watcher starts its fix. Nothing in the lane posts to the team channel: not the runner, the watcher or the fix run (owner's word, 2026-11-17). `status` and the board show what is red.
 - The runner keeps `state.json`, `events.jsonl` and its lock in `plate-deep-check/` in the git common directory, and its logs in `docs/plans/artifacts/deep-check/<day>/`.
 
-Run every command below from the main checkout. Pick the mode from $ARGUMENTS, and use `status` when it names none.
+Run every command below from the main checkout. Pick the mode from $ARGUMENTS. With none, or with `supervise`, run Keep watching.
 
 ## status
 
@@ -33,13 +33,13 @@ Run `node tooling/scripts/deep-check.mjs status`. Report whether the job is load
 
 `node tooling/scripts/deep-check.mjs install` writes the `dev.plate.deep-check` launchd agent and loads it, and `uninstall` removes it. Install on one Mac only, because two Macs would check the same commits twice. Confirm with `launchctl print gui/$(id -u)/dev.plate.deep-check`.
 
-## supervise
+## Keep watching
 
-Start the watcher, a session that stays open and starts a fix for each red step. The owner chose Sonnet at medium for it, as `AGENTS.md`'s Plate overrides say.
+Make sure one watcher session is watching: a session that stays open and starts a fix for each red step. Run it after the app quits or the Claude account changes, because the watcher's background wait ends with the app. The owner chose Sonnet at medium for the watcher, as `AGENTS.md`'s Plate overrides say.
 
-1. Call `mcp__ccd_session_mgmt__list_sessions` and look for a running session titled "Deep check watcher". When one exists, report it and stop.
-2. Start it with `mcp__ccd_session__start_session`: `initiation: "user_asked"`, `context: "fresh"`, `title: "Deep check watcher"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `cwd` set to the main checkout, `use_worktree: false`, and the prompt `/deep-check watch`.
-3. Pin it with `mcp__ccd_sidebar__set_pinned`, so automatic archiving keeps it.
+1. Call `mcp__ccd_session_mgmt__get_session` with `"self"`. When this session's title contains "Deep check watcher", run `watch` here and stop.
+2. Call `mcp__ccd_session_mgmt__list_sessions` and look for an unarchived session whose title contains "Deep check watcher". When it is mid-turn, report it and stop. When it is idle, send it `/deep-check watch` with `SendMessage` (`to`: its session id), which restarts its loop unless its wait still runs, report it and stop.
+3. Otherwise start it with `mcp__ccd_session__start_session`: `initiation: "user_asked"`, `context: "fresh"`, `title: "Deep check watcher"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `cwd` set to the main checkout, `use_worktree: false`, and the prompt `/deep-check watch`. Pin it with `mcp__ccd_sidebar__set_pinned`, so automatic archiving keeps it.
 
 ## watch
 
