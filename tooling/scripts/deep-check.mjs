@@ -134,6 +134,20 @@ const checkout = (sha) => {
     if (result.status !== 0) {
       throw new Error(`${args[0]} at ${sha}: ${result.stdout}${result.stderr}`);
     }
+    // attach keeps the private files a worktree already has, as a session's
+    // own work, so this worktree's private files would stay at the commit it
+    // was first made for. Nobody works here, so they move with the commit.
+    if (args[0] === 'tooling/scripts/git-private.mjs') {
+      must(worktree, [
+        `--git-dir=${readFileSync(join(worktree, '.git-private'), 'utf-8')
+          .replace(/^gitdir: /u, '')
+          .trim()}`,
+        `--work-tree=${worktree}`,
+        'reset',
+        '--quiet',
+        '--hard',
+      ]);
+    }
   }
 };
 
@@ -174,7 +188,10 @@ const check = (logs, name, args, { full = false } = {}) => {
     .map((line) => line.step);
   return {
     failed,
-    log: join(logs, `${name}.log`),
+    // proof.mjs numbers each attempt's log and prints its path last.
+    log:
+      /^log: (.+) exit=/mu.exec(result.stdout)?.[1] ??
+      join(logs, `${name}-a1.log`),
     ok: result.status === 0,
     output: `${result.stdout}${result.stderr}`.trim().split('\n').slice(-5),
   };
@@ -269,7 +286,9 @@ const report = (event) => {
       'chip',
       `${id} ${title}`,
       `The deep lane found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`,
-      `topic: ${FIX_TOPIC}; kind: fix; priority: P1; via: hook; session: none`,
+      // A check that fails on next is P0, and the ledger refuses an offer
+      // that names no check it owns or paths it writes.
+      `writes: packages, apps, tooling; topic: ${FIX_TOPIC}; kind: fix; priority: P0; owns: ${event.step}; via: hook; session: none`,
       'offered',
     ]);
     if (added.status !== 0) id = null;
@@ -458,10 +477,15 @@ const status = () => {
 };
 
 const install = () => {
-  const script = join(main, 'tooling', 'scripts', 'deep-check.mjs');
-  if (!existsSync(script)) {
+  // Each run moves the deep worktree to the newest next, so the job runs that
+  // copy and a fix to this script reaches it with its landing. The main
+  // checkout's copy moves only when someone pulls there.
+  const script = [worktree, main]
+    .map((root) => join(root, 'tooling', 'scripts', 'deep-check.mjs'))
+    .find((path) => existsSync(path));
+  if (!script) {
     console.error(
-      `[deep-check] ${script} is missing; the job runs the main checkout's copy, so land this script first.`
+      `[deep-check] neither ${worktree} nor ${main} has tooling/scripts/deep-check.mjs, so land this script first.`
     );
     return 1;
   }
