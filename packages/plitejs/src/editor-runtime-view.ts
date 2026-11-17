@@ -7,7 +7,12 @@ import {
   withAuthoredViewRead,
 } from './core/authored-runtime';
 import { copyFields } from './core/change/lazy-root';
-import { isOwnedJsonValue } from './core/clone';
+import {
+  freezeOwnedJsonValue,
+  isImmutable,
+  isOwnedJsonValue,
+  ownJsonValue,
+} from './core/clone';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
 import { ContentSlice } from './core/content-slice';
@@ -16,6 +21,7 @@ import {
   admitEditorDocument,
 } from './core/document-admission';
 import {
+  EDITOR_DOCUMENT_FIELDS,
   EDITOR_ROOT_SNAPSHOT_FIELDS,
   type EditorDocumentShapeIssue,
   getEditorDocumentShapeIssueMessage,
@@ -77,6 +83,11 @@ import {
   withEditorUpdateRootChildren,
 } from './core/public-state';
 import { defineSemanticUpdateMethod } from './core/semantic-update-method';
+import {
+  getEditorJsonArrayItems,
+  getEditorJsonRecordEntries,
+  isEditorJsonValue,
+} from './core/value-codec';
 import {
   createViewPresentation,
   getBaseViewPresentation,
@@ -149,6 +160,91 @@ const MOUNTED_PRESENTATIONS = new WeakMap<object, ViewPresentation>();
 
 // Keyed by compiled schema: a schema change validates each document once more.
 const VALIDATED_DOCUMENTS = new WeakMap<object, WeakSet<EditorDocumentValue>>();
+
+const STABLE_FROZEN_COPIES = new WeakMap<object, object>();
+
+const unchangedCopy = (
+  value: object,
+  members: ReadonlyArray<readonly [PropertyKey, unknown]>
+) => {
+  const previous = STABLE_FROZEN_COPIES.get(value);
+
+  return previous &&
+    Object.keys(previous).length === members.length &&
+    members.every(
+      ([key, item]) =>
+        Object.hasOwn(previous, key) && Reflect.get(previous, key) === item
+    )
+    ? previous
+    : undefined;
+};
+
+const adoptViewJson = (
+  value: unknown,
+  refuseAsAssertDocument: () => never,
+  seen: WeakSet<object>
+): unknown => {
+  if (value === null || typeof value !== 'object') {
+    return isEditorJsonValue(value) ? value : refuseAsAssertDocument();
+  }
+  if (isOwnedJsonValue(value)) return value;
+  if (seen.has(value)) refuseAsAssertDocument();
+  seen.add(value);
+
+  try {
+    const entries: ReadonlyArray<readonly [PropertyKey, unknown]> =
+      (Array.isArray(value)
+        ? getEditorJsonArrayItems(value)?.map(
+            (item, index) => [index, item] as const
+          )
+        : getEditorJsonRecordEntries(value)) ?? refuseAsAssertDocument();
+    const adopted = entries.map(
+      ([key, item]) =>
+        [key, adoptViewJson(item, refuseAsAssertDocument, seen)] as const
+    );
+
+    if (
+      isImmutable(value) &&
+      adopted.every(([, item], index) => item === entries[index][1])
+    ) {
+      ownJsonValue(value);
+
+      return value;
+    }
+
+    const previous = unchangedCopy(value, adopted);
+
+    if (previous) return previous;
+
+    const copy = freezeOwnedJsonValue(
+      Array.isArray(value)
+        ? adopted.map(([, item]) => item)
+        : Object.fromEntries(adopted)
+    );
+
+    STABLE_FROZEN_COPIES.set(value, copy);
+
+    return copy;
+  } finally {
+    seen.delete(value);
+  }
+};
+
+const readViewDocument = (
+  editor: Editor,
+  input: EditorDocumentValue
+): EditorDocumentValue => {
+  const refuseAsAssertDocument = (): never => {
+    editor.read.schema.assertDocument(input);
+    throw new TypeError(getEditorDocumentShapeIssueMessage({ kind: 'json' }));
+  };
+
+  return adoptViewJson(
+    readDocumentRecord(input, EDITOR_DOCUMENT_FIELDS, refuseAsAssertDocument),
+    refuseAsAssertDocument,
+    new WeakSet()
+  ) as EditorDocumentValue;
+};
 
 const assertViewDocument = (editor: Editor, document: EditorDocumentValue) => {
   const schema = getCompiledEditorSchema(editor);
@@ -1411,8 +1507,10 @@ export const createEditorViewRuntime = <
   const sourceRuntime = viewRuntimeOf(sourceEditor);
   const sourceView = sourceRuntime && VIEW_STATES.get(sourceRuntime);
   const document = options.document
-    ? admitEditorDocument(getEditorRuntimeOwner(sourceEditor), options.document)
-        .document
+    ? admitEditorDocument(
+        getEditorRuntimeOwner(sourceEditor),
+        readViewDocument(sourceEditor, options.document)
+      ).document
     : sourceView?.document;
 
   if (document) {

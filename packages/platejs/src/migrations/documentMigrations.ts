@@ -107,7 +107,7 @@ export type DocumentMigrationLegacy = Readonly<Record<string, EditorJsonValue>>;
 export type ClosedMigrationDocument<TDocument> = {
   readonly [TKey in keyof TDocument]: TKey extends keyof EditorDocumentValue
     ? TDocument[TKey]
-    : `Read top-level field "${TKey & string}" from legacy`;
+    : `Return top-level field "${TKey & string}" in legacy`;
 };
 
 export type DocumentMigrationStepResult<
@@ -282,10 +282,25 @@ type IncompatibleMigrationVersion<TSteps extends DocumentMigrationSteps> = {
     : never;
 }[keyof TSteps];
 
+// keyof a union keeps only shared keys; distributing sees each returned
+// document's own.
+type ExtraField<TDocument> = TDocument extends unknown
+  ? Exclude<keyof TDocument, keyof EditorDocumentValue>
+  : never;
+
+// Inferring `document` straight from a union of results merges the branches
+// into their common supertype, so infer the whole result and distribute.
+type ExtraResultField<TResult> =
+  TResult extends Readonly<{
+    document: infer TDocument;
+  }>
+    ? ExtraField<TDocument>
+    : never;
+
 type ExtraDocumentField<TMigration> = TMigration extends (
   ...args: never[]
-) => Readonly<{ document: infer TDocument }>
-  ? Exclude<keyof TDocument, keyof EditorDocumentValue>
+) => infer TResult
+  ? ExtraResultField<TResult>
   : never;
 
 /** Close an inferred step's returned document, which no generic argument checks. */
@@ -294,7 +309,7 @@ type MigrationClosure<TSteps extends DocumentMigrationSteps> = [
 ] extends [never]
   ? unknown
   : Readonly<{
-      __migrationStepDocument: `Read top-level field "${ExtraDocumentField<TSteps[keyof TSteps]> & string}" from legacy`;
+      __migrationStepDocument: `Return top-level field "${ExtraDocumentField<TSteps[keyof TSteps]> & string}" in legacy`;
     }>;
 
 type MigrationContinuity<TSteps extends DocumentMigrationSteps> = [
@@ -822,7 +837,7 @@ const readEnvelopeSource = (
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
 type IsEnvelopeInput<TInput> =
-  TInput extends Readonly<{ document: unknown }>
+  TInput extends Readonly<{ document: unknown; schema: unknown }>
     ? 'children' extends keyof TInput
       ? false
       : true
@@ -859,9 +874,9 @@ export const migrateDocument = <
     throw new Error('Document migrations require a named current schema.');
   }
   const owned = snapshotEditorJsonValue(input, 'Document migration input');
-  // A raw document can hold a legacy top-level "document" field; only a record
-  // without children is read as an envelope.
-  const envelope = isEnvelopeInput(owned) && !Object.hasOwn(owned, 'children');
+  // A legacy raw value can hold a top-level "document" without children; only
+  // a record that also names its schema reads as an envelope.
+  const envelope = isEnvelopeInput(owned) && owned.schema !== undefined;
   let historical: unknown;
   let selection: SnapshotSelectionInput | undefined;
   let hasSelection = false;
@@ -880,7 +895,7 @@ export const migrateDocument = <
   } else {
     if (envelope) {
       throw new Error(
-        'A persisted document envelope carries its own source; omit source intent.'
+        'A persisted document envelope carries its own source version; migrate it without source.'
       );
     }
     source = options.source === 'current' ? current.version : options.source;

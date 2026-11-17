@@ -267,11 +267,26 @@ export const readEditorDocument = (
   return document;
 };
 
+// Reads the descriptor so no getter runs here; an accessor, such as a lazy
+// root's children, counts as present, and the record reader judges it later.
+const holds = (value: Record<string, unknown>, field: string) => {
+  const descriptor = Object.getOwnPropertyDescriptor(value, field);
+
+  return (
+    descriptor !== undefined &&
+    (descriptor.get !== undefined || descriptor.value !== undefined)
+  );
+};
+
+/**
+ * A raw document may keep a legacy `document` beside its children, and a field
+ * holding `undefined` is absent, as `readDocumentRecord` reads it.
+ */
 export const isEnvelopeInput = (
   value: unknown
 ): value is Readonly<Record<string, unknown>> &
   Readonly<{ document: unknown }> =>
-  isRecord(value) && Object.hasOwn(value, 'document');
+  isRecord(value) && holds(value, 'document') && !holds(value, 'children');
 
 const isFilledString = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0;

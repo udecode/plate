@@ -4354,7 +4354,7 @@ export const compileSliceFitter = <V extends Value>(
     const innerInput2 = readEditorDocument(
       rawInput,
       (issue) => {
-        if (issue.kind === 'json') {
+        if (issue.kind === 'json' || issue.kind === 'record') {
           assertEditorJsonValue(rawInput, 'Editor schema document');
         }
         throw new EditorSchemaValidationError(
