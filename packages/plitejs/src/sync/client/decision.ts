@@ -9,8 +9,8 @@ import {
 } from '../../core/change/effect-ledger';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
-import { rebaseOver, sameDocument } from '../protocol';
-import type { DecisionOrigin, KeptReason } from './outbox';
+import { rebaseOver, type SyncVerdict, sameDocument } from '../protocol';
+import type { BatchOrigin, KeptReason } from './outbox';
 
 export type SyncDecision = Readonly<{
   /** The change at `head`, or null when a change it decides reads otherwise. */
@@ -33,9 +33,14 @@ export type SyncDecisionOf = (
 
 /** A decision batch at `head`, rebuilt from its origin or kept on the device. */
 export type SyncDecide = (
-  origin: DecisionOrigin,
+  origin: BatchOrigin,
   head: JsonEditorValue
 ) => DocumentChange | KeptReason;
+
+export type SyncJudge = (
+  origin: BatchOrigin,
+  merged: DocumentChange
+) => SyncVerdict;
 
 const failed = (
   check: 'judge' | 'moved' | 'stale' | 'structure'
@@ -43,14 +48,33 @@ const failed = (
 
 export const MOVED = failed('moved');
 
+const TOKENS_PER_CHANGE = 8000;
+
+export const syncJudge =
+  (isSetValued: SetValued): SyncJudge =>
+  ({ before, change, since }, merged) =>
+    judgeSpan({
+      accepted: since.map((json) =>
+        viewOfChange(DocumentChange.fromJSON(json))
+      ),
+      base: before,
+      budget: TOKENS_PER_CHANGE * (since.length + 2),
+      head: null,
+      isSetValued,
+      merged: [viewOfChange(merged)],
+      own: [viewOfChange(DocumentChange.fromJSON(change))],
+    }).kind;
+
 const rebasedAt = (
-  accepted: readonly DocumentChange[],
-  own: DocumentChange,
-  before: JsonEditorValue,
+  { before, change, since }: BatchOrigin,
   head: JsonEditorValue
 ) => {
   try {
-    const rebase = rebaseOver(accepted, own, before);
+    const rebase = rebaseOver(
+      since.map((json) => DocumentChange.fromJSON(json)),
+      DocumentChange.fromJSON(change),
+      before
+    );
 
     return rebase.kind === 'rebased' ? rebase.change.apply(head) : null;
   } catch {
@@ -60,28 +84,19 @@ const rebasedAt = (
 
 const decideAgain = (
   decision: SyncDecision,
-  { before, change, since }: DecisionOrigin,
+  origin: BatchOrigin,
   head: JsonEditorValue,
-  isSetValued: SetValued
+  judge: SyncJudge
 ): DocumentChange | KeptReason => {
   const rebuilt = decision.atHead(head);
 
   if (!rebuilt) return failed('stale');
 
-  const own = DocumentChange.fromJSON(change);
-  const accepted = since.map((json) => DocumentChange.fromJSON(json));
-  const { kind } = judgeSpan({
-    accepted: accepted.map(viewOfChange),
-    base: before,
-    head: null,
-    isSetValued,
-    merged: [viewOfChange(rebuilt)],
-    own: [viewOfChange(own)],
-  });
+  const kind = judge(origin, rebuilt);
 
   if (kind === 'lost' || kind === 'unjudged') return failed('judge');
   if (decision.decidesStructure) {
-    const rebased = rebasedAt(accepted, own, before, head);
+    const rebased = rebasedAt(origin, head);
 
     if (!rebased || !sameDocument(rebased, rebuilt.apply(head))) {
       return failed('structure');
@@ -93,7 +108,7 @@ const decideAgain = (
 
 export const syncDecider = (
   decisionOf: (step: SyncDecisionStep) => SyncDecision | null,
-  isSetValued: SetValued
+  judge: SyncJudge
 ): SyncDecide => {
   const decisions = new WeakMap<DocumentChangeJson, SyncDecision | null>();
 
@@ -112,9 +127,7 @@ export const syncDecider = (
         decisions.set(origin.change, decision);
       }
 
-      return decision
-        ? decideAgain(decision, origin, head, isSetValued)
-        : MOVED;
+      return decision ? decideAgain(decision, origin, head, judge) : MOVED;
     } catch {
       return MOVED;
     }

@@ -9,6 +9,7 @@ import { notifyObservers } from '../../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import {
   applyUnnamedDocumentChange,
+  createEditorDocumentChangeBuilder,
   isEditorHistoryRestore,
   mintEditorCommitHistoryStep,
   readEditorCommitHistoryStep,
@@ -17,7 +18,7 @@ import {
 import { REMOTE_UPDATE } from '../../core/update-policy';
 import type { AnyEditor } from '../../interfaces/editor';
 import { documentOf, schemaFingerprintOf, setValuedIn } from '../protocol';
-import { shownValue } from './chain';
+import { type Fits, shownValue } from './chain';
 import {
   type ClaimedOutbox,
   claimOutboxes,
@@ -25,7 +26,7 @@ import {
   type SyncLocks,
   type SyncRelease,
 } from './claim';
-import { type SyncDecisionOf, syncDecider } from './decision';
+import { type SyncDecisionOf, syncDecider, syncJudge } from './decision';
 import type {
   CommitDecision,
   OutboxRecord,
@@ -61,10 +62,56 @@ type ClientOptions = Readonly<{
   transport: SyncTransport;
 }>;
 
+const fitsIn =
+  (editor: AnyEditor): Fits =>
+  (before, change) => {
+    try {
+      editor.read.schema.assertDocument(before);
+      createEditorDocumentChangeBuilder(editor, before).applyCanonical(change);
+
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
 const blocksOf = (value: JsonEditorValue) => {
   const { records: _records, ...blocks } = documentOf(value);
 
   return blocks;
+};
+
+const showsIn = (editor: AnyEditor) => {
+  const show = (change: DocumentChange, diffed = false) => {
+    const committed: DocumentChange[] = [];
+    const stop = editor.subscribeCommit((commit) => {
+      committed.push(commit.changes);
+    });
+
+    try {
+      editor.update(REMOTE_UPDATE, (tx) => {
+        if (diffed) tx.changes.apply(change);
+        else applyUnnamedDocumentChange(getEditorRuntimeOwner(editor), change);
+      });
+    } finally {
+      stop();
+    }
+
+    return committed.length === 1 &&
+      jsonEqual(committed[0].toJSON(), change.toJSON())
+      ? 'exact'
+      : 'rewritten';
+  };
+  const showDocument = (document: JsonEditorValue) => {
+    const change = DocumentChange.between(
+      documentOf(editor.read.value()),
+      document
+    );
+
+    return change.empty ? 'exact' : show(change, true);
+  };
+
+  return { show, showDocument };
 };
 
 const startClient = (
@@ -113,42 +160,14 @@ const startClient = (
       listener()
     );
   };
-  const show = (change: DocumentChange, diffed = false) => {
-    const committed: DocumentChange[] = [];
-    const stop = editor.subscribeCommit((commit) => {
-      committed.push(commit.changes);
-    });
-
-    try {
-      editor.update(REMOTE_UPDATE, (tx) => {
-        if (diffed) tx.changes.apply(change);
-        else applyUnnamedDocumentChange(getEditorRuntimeOwner(editor), change);
-      });
-    } finally {
-      stop();
-    }
-
-    return committed.length === 1 &&
-      jsonEqual(committed[0].toJSON(), change.toJSON())
-      ? 'exact'
-      : 'rewritten';
-  };
-  const showDocument = (document: JsonEditorValue) => {
-    const change = DocumentChange.between(
-      documentOf(editor.read.value()),
-      document
-    );
-
-    return change.empty ? 'exact' : show(change, true);
-  };
-
-  showDocument(shownValue(record.confirmed.document, record.batches));
-
+  const { show, showDocument } = showsIn(editor);
+  const judge = syncJudge(setValuedIn(editor));
   const decide = syncDecider(
     (step) =>
       decisions.decisionOf(step, actor, getCompiledEditorSchema(editor)),
-    setValuedIn(editor)
+    judge
   );
+  const fits = fitsIn(editor);
   const roomTakeBackOf = (logged: DocumentChange, before: JsonEditorValue) =>
     withoutRetainedRecordSets(
       logged.invert(before),
@@ -194,7 +213,9 @@ const startClient = (
       changed();
     },
     decide,
+    fits,
     fresh: !opened,
+    judge,
     rebuild,
     record,
     schema,
@@ -217,7 +238,9 @@ const startClient = (
         changed();
       },
       decide,
+      fits,
       fresh: false,
+      judge,
       record: claimed.record,
       schema,
       show: () => 'exact',
@@ -302,7 +325,22 @@ export const openSyncClient = async (
   const held = claimed.map(({ release }) => release);
 
   try {
-    const [opened, ...adopted] = claimed;
+    const { showDocument } = showsIn(editor);
+    const shows = ({ record }: ClaimedOutbox) => {
+      try {
+        showDocument(shownValue(record.confirmed.document, record.batches));
+
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    const [oldest] = claimed;
+    const opened =
+      oldest && !oldest.record.head.adoptOnly && shows(oldest)
+        ? oldest
+        : undefined;
+    const adopted = claimed.filter((claim) => claim !== opened);
     const writerId = opened?.record.head.writer ?? crypto.randomUUID();
     const release =
       opened?.release ?? (await locks.holdIfFree(lockOf(writerId)));

@@ -76,6 +76,7 @@ vitest.config.*
 /packages/platejs/scripts/markdown-round-trip*
 /packages/plitejs/scripts/check-harness.ts
 /packages/plitejs/scripts/letter-commands.ts
+/packages/plitejs/scripts/sync-drive*
 /packages/platejs/scripts/table-grid-commands*
 /packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts
 /packages/plitejs/scripts/tsconfig.json

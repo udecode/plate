@@ -395,16 +395,22 @@ export const intentOf = (
   }
   const typed = new Map<Origin, ReadonlySet<Origin>>();
   for (const { after } of steps) {
+    const linesOf = new Map<Origin, ReadonlySet<Origin>>();
     for (const [id, letter] of after.letters) {
       if (B.letters.has(id) || typed.has(id)) continue;
-      const lines = new Set(
-        (after.blocks.get(letter.block) ?? []).flatMap((held) => {
-          const line = B.letters.get(held)?.block;
-          return line === undefined ? [] : [line];
-        })
-      );
-      if (lines.size === 0 && B.elements.has(letter.block)) {
-        lines.add(letter.block);
+      let lines = linesOf.get(letter.block);
+      if (lines === undefined) {
+        const held = new Set(
+          (after.blocks.get(letter.block) ?? []).flatMap((token) => {
+            const line = B.letters.get(token)?.block;
+            return line === undefined ? [] : [line];
+          })
+        );
+        if (held.size === 0 && B.elements.has(letter.block)) {
+          held.add(letter.block);
+        }
+        lines = held;
+        linesOf.set(letter.block, lines);
       }
       typed.set(id, lines);
     }

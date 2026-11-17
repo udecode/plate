@@ -3,6 +3,7 @@ import type { JsonEditorValue } from '../../core/change/tokens';
 
 export type OutboxHead = Readonly<{
   actor: string;
+  adoptOnly?: true;
   epoch: string | null;
   nextSeq: number;
   offline: boolean;
@@ -24,11 +25,12 @@ export type KeptReason =
     }>
   | Readonly<{ kind: 'conflict' }>
   | Readonly<{ kind: 'expired' }>
+  | Readonly<{ kind: 'invalid' }>
+  | Readonly<{ kind: 'judged'; verdict: 'contested' | 'lost' | 'unjudged' }>
   | Readonly<{ kind: 'refused'; reason: string }>
   | Readonly<{ kind: 'size' }>;
 
-/** The document the reviewer decided on, their change and what landed since. */
-export type DecisionOrigin = Readonly<{
+export type BatchOrigin = Readonly<{
   before: JsonEditorValue;
   change: DocumentChangeJson;
   since: readonly DocumentChangeJson[];
@@ -57,15 +59,21 @@ export type SavedBatch = Readonly<{
   (
     | Readonly<{
         change: DocumentChangeJson;
-        origin?: DecisionOrigin;
+        origin?: BatchOrigin;
         state: 'saved';
         takesBackSeq?: number;
       }>
-    | Readonly<{ change: DocumentChangeJson; frame: string; state: 'sent' }>
+    | Readonly<{
+        change: DocumentChangeJson;
+        frame: string;
+        origin?: BatchOrigin;
+        state: 'sent';
+      }>
     | Readonly<{ frame: string; state: 'withheld' }>
     | Readonly<{
         change: DocumentChangeJson;
         frame?: string;
+        origin?: BatchOrigin;
         reason: KeptReason;
         state: 'kept';
       }>

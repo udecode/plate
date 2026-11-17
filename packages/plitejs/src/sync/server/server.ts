@@ -27,6 +27,7 @@ import {
   SYNC_MAX_MESSAGE_BYTES,
   SYNC_PROTOCOL,
   digestOf,
+  dispositionOf,
   documentOf,
   measureMessage,
   rebaseOver,
@@ -687,10 +688,8 @@ export const createSyncServer = <
         writer,
       };
     }
-    if (gap.length > 0) {
-      const verdict = judge();
-
-      if (verdict === 'lost' || verdict === 'unjudged') return refuse('lost');
+    if (gap.length > 0 && dispositionOf(judge(), 'live') !== 'send') {
+      return refuse('lost');
     }
 
     const admission = admit(room, covered);

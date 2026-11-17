@@ -17,6 +17,11 @@ import {
 import { usesMockModule } from './import-graph.mjs';
 import { runTraced } from './load-trace.mjs';
 
+// Bun gives a module its test globals when it transpiles it, and reuses a
+// transpile a plain `bun` run cached for a file over 4 KB, so a test helper a
+// script imported first throws `describe is not defined` under `bun test`.
+process.env.BUN_RUNTIME_TRANSPILER_CACHE_PATH = '0';
+
 const [command, packageName, partitionName] = process.argv.slice(2);
 const definition = entrypointDags[packageName];
 

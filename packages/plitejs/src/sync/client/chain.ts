@@ -5,7 +5,12 @@ import {
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { SYNC_REBASE, sameDocument } from '../protocol';
 import { MOVED } from './decision';
-import { type KeptReason, provenanceOf, type SavedBatch } from './outbox';
+import {
+  type BatchOrigin,
+  type KeptReason,
+  provenanceOf,
+  type SavedBatch,
+} from './outbox';
 
 export type ShownBatch = Extract<SavedBatch, { state: 'saved' | 'sent' }>;
 
@@ -37,6 +42,7 @@ export const leaving = (
   return {
     ...provenanceOf(batch),
     change: batch.change,
+    ...(batch.origin ? { origin: batch.origin } : {}),
     reason: reason ?? { kind: 'conflict' },
     state: 'kept',
   };
@@ -89,11 +95,27 @@ export const withdrawn = (
     isShown(batch) ? leaving(batch, keepAs(batch)) : batch
   );
 
+export type Fits = (before: JsonEditorValue, change: DocumentChange) => boolean;
+
+const INVALID: KeptReason = { kind: 'invalid' };
+
+const crossedOrigin = (
+  batch: ShownBatch,
+  before: JsonEditorValue,
+  carried: DocumentChange
+): BatchOrigin =>
+  batch.origin
+    ? { ...batch.origin, since: [...batch.origin.since, carried.toJSON()] }
+    : { before, change: batch.change, since: [carried.toJSON()] };
+
 export const crossChain = (
   change: DocumentChange,
   at: JsonEditorValue,
   batches: readonly SavedBatch[],
-  crossAs: CrossAs = () => null
+  {
+    crossAs = () => null,
+    fits,
+  }: Readonly<{ crossAs?: CrossAs; fits?: Fits }> = {}
 ) => {
   let carried = change;
   let before = at;
@@ -132,12 +154,31 @@ export const crossChain = (
     const rebase = crossed
       ? null
       : rebaseDocumentChange(carried, own, before, SYNC_REBASE);
+    const unfit =
+      rebase?.kind === 'pair' &&
+      fits !== undefined &&
+      !fits(carried.apply(before), rebase.b);
 
-    if (rebase?.kind === 'pair') {
-      next.push({ ...batch, change: rebase.b.toJSON() });
+    if (rebase?.kind === 'pair' && !unfit) {
+      const moved = rebase.b.toJSON();
+
+      next.push(
+        carried.empty
+          ? { ...batch, change: moved }
+          : {
+              ...batch,
+              change: moved,
+              origin: crossedOrigin(batch, before, carried),
+            }
+      );
       carried = rebase.a;
     } else {
-      next.push(leaving(batch, crossed));
+      next.push(
+        leaving(
+          batch,
+          crossed ?? (unfit && batch.state === 'saved' ? INVALID : null)
+        )
+      );
       out.add(batch.seq);
       carried = own.invert(before).compose(carried, after);
     }

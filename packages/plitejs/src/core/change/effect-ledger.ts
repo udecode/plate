@@ -1049,8 +1049,54 @@ const findFrom = <T>(
   }
   return undefined;
 };
+type Nearest = Readonly<{
+  after: ReadonlyArray<string | undefined>;
+  before: ReadonlyArray<string | undefined>;
+}>;
+const nearestAround = (
+  list: readonly string[],
+  test: (item: string) => boolean
+): Nearest => {
+  const passes = list.map(test);
+  const behind: Array<string | undefined> = [];
+  const ahead: Array<string | undefined> = [];
+  let last: string | undefined;
+  for (let at = 0; at < list.length; at += 1) {
+    behind.push(last);
+    if (passes[at]) last = list[at];
+  }
+  last = undefined;
+  for (let at = list.length - 1; at >= 0; at -= 1) {
+    ahead[at] = last;
+    if (passes[at]) last = list[at];
+  }
+  return { after: ahead, before: behind };
+};
+type RowIndex = Readonly<{
+  at: ReadonlyMap<string, number>;
+  cutFrom: readonly string[];
+  row: readonly string[];
+  standing: Nearest;
+  unborn: Nearest;
+}>;
 const rootOf = (facts: Facts, id: string) =>
   facts.letters.get(id)?.root ?? facts.elements.get(id)?.root;
+const rootsHoldingBlocks = (facts: Facts) => {
+  const roots = new Set<string>();
+  for (const element of facts.elements.values()) {
+    if (element.block && element.parent === `${ROOT}${element.root}`) {
+      roots.add(element.root);
+    }
+  }
+  return roots;
+};
+const rootsEmptiedByMerge = (A: Facts, O: Facts, M: Facts) => {
+  const own = rootsHoldingBlocks(O);
+  const merged = rootsHoldingBlocks(M);
+  return [...rootsHoldingBlocks(A)].filter(
+    (root) => own.has(root) && !merged.has(root)
+  );
+};
 const blockOf = (facts: Facts, id: string) => facts.letters.get(id)?.block;
 const ancestorsIn = (facts: Facts, id: string) => {
   const chain: string[] = [];
@@ -2578,6 +2624,39 @@ const ledgerAt = (
         }
         return found;
       };
+      const standing = (held: string) =>
+        onBase(held) && other.facts.letters.has(held) && present(M, held);
+      const rows = new Map<string, RowIndex>();
+      const rowOf = (block: string) => {
+        let known = rows.get(block);
+        if (known === undefined) {
+          const row = facts.blocks.get(block) ?? [];
+          // A half this side cut off a base line takes the other side's
+          // change to that line's properties, as a split copies them, the way
+          // a born letter takes a mark by following the letters around it
+          // (Defaults, "Whether a property one side sets on a line reaches a
+          // half the other side cuts off that line").
+          const cutFrom = isBase(block)
+            ? []
+            : continuesOf(fold, block).filter(
+                (line) =>
+                  isBase(line) &&
+                  other.facts.elements.has(line) &&
+                  row.some(
+                    (held) => B.letters.has(held) && blockOf(B, held) === line
+                  )
+              );
+          known = {
+            at: new Map(row.map((held, at) => [held, at])),
+            cutFrom,
+            row,
+            standing: nearestAround(row, standing),
+            unborn: nearestAround(row, unborn),
+          };
+          rows.set(block, known);
+        }
+        return known;
+      };
       for (const [id, letter] of facts.letters) {
         if (unborn(id)) continue;
         const into = translate(id);
@@ -2588,7 +2667,9 @@ const ledgerAt = (
           report.push(`the merge drops ${name()}`);
           continue;
         }
-        const row = facts.blocks.get(letter.block) ?? [];
+        const inRow = rowOf(letter.block);
+        const { cutFrom, row } = inRow;
+        const at = inRow.at.get(id) as number;
         // A letter goes with the lines it was typed in when the other side
         // deletes them all.
         const typedIn = [...(fold.intent.typed.get(id) ?? [])].filter(
@@ -2634,21 +2715,6 @@ const ledgerAt = (
             report.push(`the merge changes ${key} of ${name()}`);
           }
         }
-        // A half this side cut off a base line takes the other side's change
-        // to that line's properties, as a split copies them, the way a born
-        // letter takes a mark by following the letters around it (Defaults,
-        // "Whether a property one side sets on a line reaches a half the
-        // other side cuts off that line").
-        const cutFrom = isBase(letter.block)
-          ? []
-          : continuesOf(fold, letter.block).filter(
-              (line) =>
-                isBase(line) &&
-                other.facts.elements.has(line) &&
-                row.some(
-                  (held) => B.letters.has(held) && blockOf(B, held) === line
-                )
-            );
         const unprefixed = (
           facets: ReadonlyMap<string, string>,
           prefix: string
@@ -2677,15 +2743,12 @@ const ledgerAt = (
             }
           }
         }
-        const at = row.indexOf(id);
         // A letter typed between letters of the base follows what the other
         // side did to the nearest of them it kept, such as a bold over the run
         // it was typed in, whatever its own side did to them later.
-        const standing = (held: string) =>
-          onBase(held) && other.facts.letters.has(held) && present(M, held);
         const baseAround = [
-          row.slice(0, at).findLast(standing),
-          row.slice(at + 1).find(standing),
+          inRow.standing.before[at],
+          inRow.standing.after[at],
         ].filter((held) => held !== undefined);
         const followsAround = (
           readFact: (facts: Facts, held: string) => string | undefined
@@ -2723,12 +2786,7 @@ const ledgerAt = (
         // whose base letters around it are gone stays on its line too, as a
         // letter whose neighbors are gone does (Defaults, "Placements the loss
         // rule does not name").
-        const pastRun = (step: -1 | 1) => {
-          let spot = at + step;
-          while (row[spot] !== undefined && !unborn(row[spot])) spot += step;
-          return row[spot];
-        };
-        const anchored = [pastRun(-1), pastRun(1)].some(
+        const anchored = [inRow.unborn.before[at], inRow.unborn.after[at]].some(
           (held) => held !== undefined && present(M, translate(held))
         );
         if (
@@ -3961,6 +4019,9 @@ const ledgerAt = (
         A.roots.has(root),
         M.roots.has(root)
       );
+    }
+    for (const root of rootsEmptiedByMerge(A, O, M)) {
+      losses.push(`the merge leaves root ${root} without a block`);
     }
 
     for (const ownStep of ownFold.steps) {

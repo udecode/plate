@@ -3,7 +3,7 @@ import {
   type DocumentChangeJson,
   rebaseDocumentChange,
 } from '../core/change/document-change';
-import type { SetValued } from '../core/change/effect-ledger';
+import type { SetValued, SpanVerdict } from '../core/change/effect-ledger';
 import { jsonEqual } from '../core/change/json';
 import { hasRootNames } from '../core/change/lazy-root';
 import type { JsonEditorValue } from '../core/change/tokens';
@@ -15,7 +15,7 @@ import type { AnyEditor } from '../interfaces/editor';
 export const SYNC_PROTOCOL = 1;
 
 /** Raised whenever either end changes how it rebases or judges a batch. */
-export const SYNC_RULES = 2;
+export const SYNC_RULES = 3;
 
 /** Both ends rebase with these settings, the accepted change first. */
 export const SYNC_REBASE = {
@@ -213,6 +213,16 @@ export const setValuedIn = (editor: AnyEditor): SetValued => {
 
 export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
   jsonEqual(documentOf(left), documentOf(right));
+
+export type SyncVerdict = SpanVerdict<unknown>['kind'];
+
+export const dispositionOf = (
+  verdict: SyncVerdict,
+  stretch: 'live' | 'offline'
+): 'send' | Exclude<SyncVerdict, 'held'> =>
+  verdict === 'held' || (verdict === 'contested' && stretch === 'live')
+    ? 'send'
+    : verdict;
 
 /**
  * Rebases `change` over the accepted changes one at a time, from the value
