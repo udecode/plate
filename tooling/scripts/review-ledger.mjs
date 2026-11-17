@@ -2492,7 +2492,9 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
   if (
     !linksOf(plan.path, evidence).some((target) => !target.startsWith('..'))
   ) {
-    problems.push('## Evidence links no repository file');
+    problems.push(
+      '## Evidence links no repository file; write at least one source path as a relative Markdown link, such as [file.ts](../../packages/<package>/src/file.ts), because a path in backticks is not a link'
+    );
   }
   if (added(plan.path)) {
     problems.push(...dependentProblems(ledger, plan, evidence));
