@@ -34,7 +34,14 @@ export type SyncCover =
        */
       structure?: true;
     }>
-  | Readonly<{ kind: 'refused' }>
+  | Readonly<{
+      kind: 'refused';
+      /**
+       * `uncovered` only for a batch that writes no verdict record, which the
+       * room may still admit as its own take-back of the writer's entry.
+       */
+      why: Readonly<{ kind: 'uncovered' | 'unreadable' | 'unreplayed' }>;
+    }>
   /** A decided change changed between the batch's base and the head. */
   | Readonly<{ kind: 'stale' }>
   | SyncTakeBack;

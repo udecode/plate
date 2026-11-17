@@ -93,6 +93,7 @@ type TakenGridParts = Readonly<{
 }>;
 
 type Judge = Readonly<{
+  cutHalves: () => ReadonlySet<string>;
   grant: SyncGrant;
   head: ReviewFacts;
   headCutHalves: () => ReadonlySet<string>;
@@ -255,6 +256,18 @@ const joinsOtherHalfOfCut = (
   );
 };
 
+const joinsOwnCut = ({ taker, under }: WriteOf<'removed'>, judge: Judge) =>
+  !!taker &&
+  under.some((half) => halfKeyOf(half) !== null && isOwn(half, judge));
+
+const otherCutsCanRejoin = (write: WriteOf<'removed'>, judge: Judge) =>
+  !joinsOwnCut(write, judge) ||
+  write.under.every((half) => {
+    const key = halfKeyOf(half);
+
+    return key === null || isOwn(half, judge) || judge.cutHalves().has(key);
+  });
+
 const isOwnEditingReserve = (base: MarkBase, judge: Judge) =>
   isOwn(base, judge) && base.change === editingChangeOf(judge.grant.actor);
 
@@ -314,10 +327,12 @@ const RULES: { [K in OrdinaryKind]: Rule<K> } = {
             joinsOtherHalfOfCut(write, judge)),
   },
   removed: {
-    editing: ({ carrier, under }, judge) =>
-      underNoForeignDeletion(under, judge) ||
-      insideTakenGridPart(carrier, judge.takenGridParts()),
-    own: underOwnStructure,
+    editing: (write, judge) =>
+      otherCutsCanRejoin(write, judge) &&
+      (underNoForeignDeletion(write.under, judge) ||
+        insideTakenGridPart(write.carrier, judge.takenGridParts())),
+    own: (write, judge) =>
+      otherCutsCanRejoin(write, judge) && underOwnStructure(write, judge),
   },
   reserve: {
     editing: (write, judge) =>
@@ -655,9 +670,15 @@ const ordinaryCover = (
 ): Cover => {
   const writes = authoredWritesOf(step);
   const claims = changeClaimsOf(writes.claims);
+  let cutHalves: ReadonlySet<string> | undefined;
   let headCutHalves: ReadonlySet<string> | undefined;
   let takenGridParts: TakenGridParts | undefined;
   const judge: Judge = {
+    cutHalves: () => {
+      cutHalves ??= cutHalvesIn(step.after);
+
+      return cutHalves;
+    },
     grant,
     head: factsOf(step.before),
     headCutHalves: () => {

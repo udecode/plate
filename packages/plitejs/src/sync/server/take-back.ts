@@ -11,6 +11,8 @@ import {
   deriveValue,
   getRecordText,
   getValueRecords,
+  type RecordOps,
+  recordOpsBetween,
   showValueRecords,
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
@@ -149,4 +151,145 @@ export const takeBack = (
   return entry.change.createRoots.size > 0 || entry.change.deleteRoots.size > 0
     ? null
     : blocksBack(entry, head, inverse);
+};
+
+const resultOf = (change: DocumentChange, head: JsonEditorValue) => {
+  try {
+    return change.apply(head);
+  } catch {
+    return null;
+  }
+};
+
+type Blocks = Readonly<{
+  added: readonly JsonNode[];
+  dropped: readonly JsonNode[];
+}>;
+
+type Changed = Readonly<{
+  blocks: ReadonlyMap<string, Blocks>;
+  records: RecordOps;
+}>;
+
+const rootsOf = (value: JsonEditorValue) => [
+  'main',
+  ...Object.keys(value.roots ?? {}),
+];
+
+const changedBlocks = (
+  from: readonly JsonNode[],
+  to: readonly JsonNode[]
+): Blocks => {
+  let start = 0;
+  let fromEnd = from.length;
+  let toEnd = to.length;
+
+  while (
+    start < fromEnd &&
+    start < toEnd &&
+    jsonEqual(from[start], to[start])
+  ) {
+    start += 1;
+  }
+  while (
+    fromEnd > start &&
+    toEnd > start &&
+    jsonEqual(from[fromEnd - 1], to[toEnd - 1])
+  ) {
+    fromEnd -= 1;
+    toEnd -= 1;
+  }
+
+  return {
+    added: to.slice(start, toEnd),
+    dropped: from.slice(start, fromEnd),
+  };
+};
+
+const changedBetween = (
+  head: JsonEditorValue,
+  after: JsonEditorValue
+): Changed | 'roots' => {
+  const roots = rootsOf(head);
+  const afterRoots = new Set(rootsOf(after));
+
+  if (
+    roots.length !== afterRoots.size ||
+    roots.some((root) => !afterRoots.has(root))
+  ) {
+    return 'roots';
+  }
+
+  return {
+    blocks: new Map(
+      roots.map((root) => [
+        root,
+        changedBlocks(valueRoot(head, root), valueRoot(after, root)),
+      ])
+    ),
+    records: recordOpsBetween(getValueRecords(head), getValueRecords(after)),
+  };
+};
+
+const holds = (nodes: readonly JsonNode[], block: JsonNode) =>
+  nodes.some((node) => jsonEqual(node, block));
+
+const couldRestore = (entry: PutEntry, { blocks, records }: Changed) => {
+  const written = getInternalDocumentChangeRecords(entry.change);
+  const windows = new Map(
+    windowsOf(entry).map((window) => [window.before.root, window])
+  );
+
+  return (
+    [...records].every(([set, ids]) =>
+      [...ids.keys()].every((id) => written.get(set)?.has(id) === true)
+    ) &&
+    [...blocks].every(([root, { added, dropped }]) => {
+      if (added.length === 0 && dropped.length === 0) return true;
+
+      const window = windows.get(root);
+
+      if (!window) return false;
+
+      const { after, before } = window;
+      const putBack = valueRoot(entry.before, root).slice(
+        before.start,
+        before.end
+      );
+      const takenOut = valueRoot(entry.after, root).slice(
+        after.start,
+        after.end
+      );
+
+      return (
+        added.every((block) => holds(putBack, block)) &&
+        dropped.every((block) => holds(takenOut, block))
+      );
+    })
+  );
+};
+
+export const ownTakeBack = (
+  entries: readonly LaterEntry[],
+  writer: string,
+  head: JsonEditorValue,
+  after: JsonEditorValue,
+  schema: CompiledEditorSchema
+): DocumentChange | null => {
+  const changed = changedBetween(head, after);
+
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    if (entries[index].writer !== writer) continue;
+
+    const entry = putEntryAt(entries, index);
+
+    if (changed !== 'roots' && !couldRestore(entry, changed)) continue;
+
+    const change = takeBack(entry, head, schema);
+    const result = change && resultOf(change, head);
+
+    if (result && sameDocument(result, after)) return change;
+  }
+
+  return null;
 };

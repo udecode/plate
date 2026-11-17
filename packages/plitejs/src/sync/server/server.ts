@@ -37,6 +37,7 @@ import {
 } from '../protocol';
 import { type MalformedSubmit, readClientMessage } from './client-message';
 import {
+  type ChangeClaim,
   readSyncGrant,
   type SyncAuthored,
   type SyncCover,
@@ -48,6 +49,7 @@ import { ownersToBind, seedOwnersOf } from './owners';
 import type { ChangeOwner, StoredEntry, SyncStorage } from './storage';
 import {
   type LaterEntry,
+  ownTakeBack,
   putAllIndexOf,
   putEntryAt,
   takeBack,
@@ -430,6 +432,45 @@ export const createSyncServer = <
     );
   };
 
+  const recentEntries = async (room: LoadedRoom) => {
+    const from = Math.max(room.floor, room.head - TAKE_BACK_SCAN);
+    const { baseValue, gap } = await storedHistory(room.name, from);
+    const entries: LaterEntry[] = [];
+    let value = baseValue;
+
+    for (const { change, writer } of gap) {
+      const after = change.apply(value);
+
+      entries.push({ after, before: value, change, writer });
+      value = after;
+    }
+
+    return entries;
+  };
+
+  const takenBackStep = async (
+    room: LoadedRoom,
+    change: DocumentChange,
+    after: JsonEditorValue,
+    claims: readonly ChangeClaim[],
+    actor: string
+  ): Promise<CoveredStep | 'grant'> => {
+    const changes = [...new Set(claims.map((claim) => claim.change))];
+    const bound =
+      changes.length === 0 ? [] : await storage.owners(room.name, changes);
+    const owners = ownersToBind(claims, bound, actor);
+
+    return owners
+      ? ({
+          after,
+          before: room.value,
+          change,
+          owners,
+          structure: false,
+        } as CoveredStep)
+      : 'grant';
+  };
+
   const takenBackStepOf = async (
     room: LoadedRoom,
     cover: SyncTakeBack,
@@ -444,25 +485,14 @@ export const createSyncServer = <
       return 'grant';
     }
 
-    const from = Math.max(room.floor, room.head - TAKE_BACK_SCAN);
-    const { baseValue, gap } = await storedHistory(room.name, from);
+    const entries = await recentEntries(room);
     const index = putAllIndexOf(
-      gap.map(({ change }) => change),
+      entries.map(({ change }) => change),
       cover.set,
       cover.verdicts
     );
 
-    if (index === null || gap[index].writer !== writer) return 'grant';
-
-    const entries: LaterEntry[] = [];
-    let value = baseValue;
-
-    for (const { change, writer: by } of gap) {
-      const after = change.apply(value);
-
-      entries.push({ after, before: value, change, writer: by });
-      value = after;
-    }
+    if (index === null || entries[index].writer !== writer) return 'grant';
 
     const change = takeBack(
       putEntryAt(entries, index),
@@ -476,20 +506,38 @@ export const createSyncServer = <
 
     if (!after || !sameDocument(after, batch.after)) return 'grant';
 
-    const changes = [...new Set(cover.claims.map((claim) => claim.change))];
-    const bound =
-      changes.length === 0 ? [] : await storage.owners(room.name, changes);
-    const owners = ownersToBind(cover.claims, bound, grant.actor);
+    return takenBackStep(room, change, after, cover.claims, grant.actor);
+  };
 
-    return owners
-      ? ({
-          after,
-          before: room.value,
-          change,
-          owners,
-          structure: false,
-        } as CoveredStep)
-      : 'grant';
+  const ownTakenBackStepOf = async (
+    room: LoadedRoom,
+    batch: SyncStep,
+    grant: SyncGrant,
+    writer: string
+  ): Promise<CoveredStep | 'grant'> => {
+    const change = ownTakeBack(
+      await recentEntries(room),
+      writer,
+      room.value,
+      batch.after,
+      getCompiledEditorSchema(room.editor)
+    );
+
+    const after = change && attempt(() => change.apply(room.value));
+
+    if (!change || !after) return 'grant';
+
+    const held = new Set(
+      authored.claimsIn(room.value).map((claim) => claim.change)
+    );
+
+    return takenBackStep(
+      room,
+      change,
+      after,
+      authored.claimsIn(batch.after).filter((claim) => !held.has(claim.change)),
+      grant.actor
+    );
   };
 
   const admit = (
@@ -635,18 +683,18 @@ export const createSyncServer = <
 
     if (typeof judged === 'string') return refuse(judged);
 
+    const judgedCover =
+      cover?.kind === 'at-head'
+        ? attempt(() => authored.covers(judged, member.grant, schema))
+        : cover;
     const covered =
-      cover?.kind === 'takes-back'
-        ? await takenBackStepOf(room, cover, judged, member.grant, writer)
-        : await coveredStepOf(
-            room,
-            judged,
-            member.grant,
-            cover?.kind === 'at-head'
-              ? attempt(() => authored.covers(judged, member.grant, schema))
-              : cover,
-            head
-          );
+      judgedCover?.kind === 'takes-back'
+        ? await takenBackStepOf(room, judgedCover, judged, member.grant, writer)
+        : judgedCover?.kind === 'refused' &&
+            judgedCover.why.kind === 'uncovered' &&
+            member.grant.access === 'edit'
+          ? await ownTakenBackStepOf(room, judged, member.grant, writer)
+          : await coveredStepOf(room, judged, member.grant, judgedCover, head);
 
     if (typeof covered === 'string') return refuse(covered);
     if (covered.structure && gap.length > 0) {
