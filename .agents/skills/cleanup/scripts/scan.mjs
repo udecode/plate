@@ -48,6 +48,9 @@
 // companion repository's uncommitted work there; a failed detach keeps it.
 // --repos runs the scan, or --delete, on each checkout directly in a folder
 // that has linked worktrees.
+// It also judges the databases of each local Postgres server in Docker that an
+// env file of a checkout points at, as databases.mjs says, and --delete drops
+// the safe ones.
 // In a pstack project the scan also judges each run folder in
 // <plans>/artifacts/, and in any checkout each folder in an ignored .tmp/:
 // --delete strips its installs and builds once nothing wrote it for a day and
@@ -84,6 +87,8 @@ import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'nod
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
+
+import { databaseItems, dropDatabase } from './databases.mjs';
 
 const HOUR = 3_600_000;
 const WEEK = 7 * 24;
@@ -805,6 +810,7 @@ export function scan({ repo, sessions = [], sizes = true, now = Date.now() }) {
     const [verdict, reason] = classifyCache(cacheFacts(path, now));
     items.push({ kind: 'cache', path, verdict, reason, bytes: sizes ? sizeOf(path) : null });
   }
+  items.push(...databaseItems({ main, worktrees: context.worktrees, now }));
   return { main, items };
 }
 
@@ -925,6 +931,20 @@ export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
         for (const path of action === 'strip' ? facts.builds : [item.path]) rmSync(path, { force: true, recursive: true });
       } catch (error) {
         Object.assign(item, { verdict: 'ask', reason: `removal failed: ${String(error.message).split('\n')[0]}` });
+        continue;
+      }
+      removed.push(item);
+      continue;
+    }
+    if (item.kind === 'database') {
+      try {
+        const kept = dropDatabase(item);
+        if (kept) {
+          Object.assign(item, { verdict: kept[0], reason: `kept at removal: ${kept[1]}` });
+          continue;
+        }
+      } catch (error) {
+        Object.assign(item, { verdict: 'ask', reason: `drop failed: ${String(error.message).split('\n')[0]}` });
         continue;
       }
       removed.push(item);
