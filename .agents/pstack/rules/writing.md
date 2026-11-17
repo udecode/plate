@@ -11,7 +11,7 @@ This file says how an agent's writing reads, what each reader and kind of text a
   - Put a condition before the action it governs and a limit beside the claim it qualifies.
   - Write steps a reader follows as numbered commands, one action each.
   - Keep names, commands, numbers and scope exact when you simplify.
-  - Never estimate how long work will take, such as in hours, days or weeks, because agents do the work (owner's word, 2026-11-17). Size work by its steps, cost or risk, and give a date only when quoting someone who set it.
+  - Never estimate how long work will take, such as in hours, days or weeks, because agents do the work (owner's word, 2026-11-17). Size work by its steps, cost or risk, and give a date only when quoting someone who set it. The rule covers work, not a command's run time, which the Time budget rule bounds and the lead judges by timing a sample.
   - Keep humor and swearing for the owner's own chats.
 - **Readers.** The voice stays the same for every reader, and the shape follows the reader.
   - The owner, in a reply, gets the Links in replies and Closing summary rules below.
