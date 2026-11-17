@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   openSync,
   readFileSync,
+  realpathSync,
   rmSync,
 } from 'node:fs';
 import {
@@ -22,8 +23,12 @@ import {
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
-import { stepLogger } from './check-steps.mjs';
-import { mentionsOutsideComments, runtimeClosure } from './import-graph.mjs';
+import { commonDir, stepLogger } from './check-steps.mjs';
+import {
+  mentionsOutsideComments,
+  runtimeClosure,
+  storedGraph,
+} from './import-graph.mjs';
 import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
 
@@ -273,34 +278,101 @@ const packageDiff = () =>
 // step starts. Under --affected, which every landing runs, only the `land`
 // steps run: typecheck, the fast test files and checks that take a second or
 // two. The deep lane runs every other step on next after landing.
-// Bun ignores the www Playwright specs, so editing one cannot change the tests.
-const reachesTests = (files) =>
-  touches(
-    '.agents/rules/',
-    '.github/workflows/',
-    'apps/',
-    'benchmarks/',
-    'content/',
-    'packages/',
-    'tooling/'
-  )(
-    files.filter(
-      (file) =>
-        reachesProduct(file) && !file.startsWith('apps/www/tests/browser/')
-    )
-  ) ||
-  [
-    ...new Set(
-      files.flatMap((file) =>
+let testImporters;
+/**
+ * Each file the fast test files load, mapped to the test files that load it,
+ * from the clone's stored import graph, so a repeat scan resolves only what
+ * changed.
+ */
+const importersOf = () => {
+  if (testImporters) return testImporters;
+  const real = realpathSync(root);
+  const { moduleSpecifiers, resolveImport, save } = storedGraph(
+    join(commonDir(root), 'plate-imports'),
+    real
+  );
+  const edges = new Map();
+  const edgesOf = (file) => {
+    if (!edges.has(file)) {
+      let specifiers = [];
+      try {
+        specifiers = moduleSpecifiers(file);
+      } catch {
+        // A file that does not parse has no imports to follow; typecheck and
+        // the test that loads it report the parse error.
+      }
+      edges.set(
+        file,
+        specifiers
+          .map((specifier) => resolveImport(file, specifier))
+          .filter(Boolean)
+      );
+    }
+    return edges.get(file);
+  };
+  testImporters = new Map();
+  for (const test of trackedFiles(root, { untracked: true }).filter(
+    inTestSuite
+  )) {
+    const seen = new Set();
+    const pending = [join(real, test)];
+    while (pending.length > 0) {
+      const file = pending.pop();
+      if (seen.has(file)) continue;
+      seen.add(file);
+      pending.push(...edgesOf(file));
+    }
+    for (const file of seen) {
+      const loaded = relative(real, file);
+      if (!testImporters.has(loaded)) testImporters.set(loaded, new Set());
+      testImporters.get(loaded).add(test);
+    }
+  }
+  save();
+  return testImporters;
+};
+// A landing runs the fast test files that load a changed file. A change the
+// import graph cannot place, such as a deleted file or a fixture a test reads
+// at run time, runs every fast test file. A test that loads a file through a
+// computed path is missed here, and the deep lane's full run catches it on
+// next after landing. Bun ignores the www Playwright specs, so editing one
+// cannot change the tests.
+const reachesTests = (files) => {
+  const product = files.filter(
+    (file) =>
+      touches(
+        '.agents/rules/',
+        '.github/workflows/',
+        'apps/',
+        'benchmarks/',
+        'content/',
+        'packages/',
+        'tooling/'
+      )([file]) &&
+      reachesProduct(file) &&
+      !file.startsWith('apps/www/tests/browser/')
+  );
+  const placed = (file) => {
+    const tests = importersOf().get(file);
+    if (tests) return [...tests];
+    return CODE.test(file) && existsSync(join(root, file)) ? [] : null;
+  };
+  const loading = product.map(placed);
+  if (loading.some((tests) => !tests)) return true;
+  return [
+    ...new Set([
+      ...loading.flat(),
+      ...files.flatMap((file) =>
         [
           ...(toolingReach(file)?.tests ?? []),
           ...(CHECK_SCRIPT.test(file)
             ? ['tooling/scripts/ci-workflow.test.mjs']
             : []),
         ].filter(inTestSuite)
-      )
-    ),
+      ),
+    ]),
   ].filter((test) => existsSync(join(root, test)));
+};
 
 export const steps = [
   {

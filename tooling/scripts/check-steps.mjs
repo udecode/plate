@@ -12,7 +12,7 @@ export const STEP_LOG = 'plate-check-steps.jsonl';
 const CACHE = join('plate-check', 'v2');
 const DAY_MS = 86_400_000;
 
-const commonDir = (root) => {
+export const commonDir = (root) => {
   const result = spawnSync(
     'git',
     ['rev-parse', '--path-format=absolute', '--git-common-dir'],

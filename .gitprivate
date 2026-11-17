@@ -122,6 +122,7 @@ vitest.config.*
 /tooling/scripts/test-deferred.*
 /tooling/scripts/test-slowest.*
 /tooling/scripts/test-suite.*
+/tooling/scripts/test-times.*
 /tooling/scripts/type-probe.*
 /tooling/scripts/knowledge/baseline.json
 /tooling/scripts/plate-schema-adoption-baseline.json

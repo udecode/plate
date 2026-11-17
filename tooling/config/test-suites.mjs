@@ -72,16 +72,6 @@ export const TEST_FAST_IGNORE_PATTERNS = [
   'packages/plitejs/**',
 ];
 
-// Test files that take over 2 seconds on a loaded machine (`pnpm
-// test:slowest --profile`, 2026-11-17). Landings run `pnpm test:fast`, which
-// leaves them out, and the deep lane runs them with `pnpm test:slow` on next
-// after landing.
-export const TEST_SLOW_FILE_PATTERNS = [
-  'tooling/scripts/check-cache.test.mjs',
-  'tooling/scripts/entrypoint-turbo.task-graph.test.mjs',
-  'tooling/scripts/triage.test.mjs',
-];
-
 const isCI = !!process.env.CI;
 
 // Budget the feedback loop, not file topology. A coherent file with many cheap
