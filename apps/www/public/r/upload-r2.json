@@ -8,7 +8,7 @@
     "@aws-sdk/lib-storage",
     "@aws-sdk/s3-presigned-post",
     "@aws-sdk/s3-request-presigner",
-    "files-sdk@2.6.0"
+    "files-sdk@3.2.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/upload.json",

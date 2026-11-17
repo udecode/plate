@@ -1,5 +1,5 @@
 {
-  "generation": "ad91b29c5fe3ed7a1ac0d180a0985d0243af2652cb37e8c93cb07e79411741f4",
+  "generation": "f91fa0a43142f50be0c7f7c7cbf7a73654c6a6579fc9cec50ddfd3055cbc5052",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -870,7 +870,7 @@
             "use-file-picker@2.1.2",
             "sonner",
             "diff-match-patch-ts@^0.6.0",
-            "files-sdk@^2.6.0",
+            "files-sdk@^3.2.0",
             "lucide-react"
           ],
           "description": "Toolbar button for inserting and managing media.",
@@ -2345,7 +2345,7 @@
           "name": "editor-plugins-static",
           "type": "registry:component",
           "dependencies": [
-            "files-sdk@^2.6.0",
+            "files-sdk@^3.2.0",
             "platejs"
           ],
           "registryDependencies": [
@@ -3670,7 +3670,7 @@
         {
           "dependencies": [
             "platejs",
-            "files-sdk@2.6.0",
+            "files-sdk@3.2.0",
             "sonner",
             "use-file-picker@2.1.2",
             "diff-match-patch-ts@^0.6.0",
@@ -3705,7 +3705,7 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "files-sdk@^2.6.0"
+            "files-sdk@^3.2.0"
           ],
           "description": "Browser-local uploads for demos and disposable editors.",
           "files": [
@@ -4045,7 +4045,7 @@
         },
         {
           "dependencies": [
-            "files-sdk@2.6.0"
+            "files-sdk@3.2.0"
           ],
           "files": [
             {
@@ -4063,7 +4063,7 @@
             "@aws-sdk/lib-storage",
             "@aws-sdk/s3-presigned-post",
             "@aws-sdk/s3-request-presigner",
-            "files-sdk@2.6.0"
+            "files-sdk@3.2.0"
           ],
           "description": "Files SDK upload gateway backed by Cloudflare R2.",
           "files": [
@@ -4094,7 +4094,7 @@
             "@aws-sdk/lib-storage",
             "@aws-sdk/s3-presigned-post",
             "@aws-sdk/s3-request-presigner",
-            "files-sdk@2.6.0"
+            "files-sdk@3.2.0"
           ],
           "description": "Files SDK upload gateway backed by Amazon S3.",
           "files": [
@@ -7842,7 +7842,7 @@
             "use-file-picker@2.1.2",
             "sonner",
             "diff-match-patch-ts@^0.6.0",
-            "files-sdk@^2.6.0",
+            "files-sdk@^3.2.0",
             "lucide-react"
           ],
           "description": "Toolbar button for inserting and managing media.",
@@ -9313,7 +9313,7 @@
           "name": "editor-plugins-static",
           "type": "registry:component",
           "dependencies": [
-            "files-sdk@^2.6.0",
+            "files-sdk@^3.2.0",
             "platejs"
           ],
           "registryDependencies": [
@@ -10638,7 +10638,7 @@
         {
           "dependencies": [
             "platejs",
-            "files-sdk@2.6.0",
+            "files-sdk@3.2.0",
             "sonner",
             "use-file-picker@2.1.2",
             "diff-match-patch-ts@^0.6.0",
@@ -10673,7 +10673,7 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "files-sdk@^2.6.0"
+            "files-sdk@^3.2.0"
           ],
           "description": "Browser-local uploads for demos and disposable editors.",
           "files": [
@@ -11013,7 +11013,7 @@
         },
         {
           "dependencies": [
-            "files-sdk@2.6.0"
+            "files-sdk@3.2.0"
           ],
           "files": [
             {
@@ -11031,7 +11031,7 @@
             "@aws-sdk/lib-storage",
             "@aws-sdk/s3-presigned-post",
             "@aws-sdk/s3-request-presigner",
-            "files-sdk@2.6.0"
+            "files-sdk@3.2.0"
           ],
           "description": "Files SDK upload gateway backed by Cloudflare R2.",
           "files": [
@@ -11062,7 +11062,7 @@
             "@aws-sdk/lib-storage",
             "@aws-sdk/s3-presigned-post",
             "@aws-sdk/s3-request-presigner",
-            "files-sdk@2.6.0"
+            "files-sdk@3.2.0"
           ],
           "description": "Files SDK upload gateway backed by Amazon S3.",
           "files": [

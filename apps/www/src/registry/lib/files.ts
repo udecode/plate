@@ -231,6 +231,12 @@ export const createFilesGateway = (options: FilesGatewayOptions) => {
         if (error.code === 'ReadOnly') {
           return errorResponse(403, 'Forbidden', error.message);
         }
+        if (error.code === 'Invalid') {
+          return errorResponse(422, 'Validation', error.message);
+        }
+        if (error.code === 'Unsupported') {
+          return errorResponse(422, 'Unsupported', error.message);
+        }
       }
       return errorResponse(500, 'Provider', 'Files gateway failed');
     }

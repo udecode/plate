@@ -101,7 +101,7 @@
     "dedent": "1.7.0",
     "diff-match-patch-ts": "^0.6.0",
     "dotenv": "16.5.0",
-    "files-sdk": "2.6.0",
+    "files-sdk": "3.2.0",
     "flowchart.js": "1.18.0",
     "framer-motion": "12.17.0",
     "frimousse": "0.4.0",

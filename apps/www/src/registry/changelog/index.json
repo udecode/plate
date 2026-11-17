@@ -28,6 +28,30 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-files-sdk-3",
+      "href": "/registry/changelog/2026-11-17-files-sdk-3.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install Files SDK 3 with the upload kit and gateway",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "upload",
+        "upload-browser",
+        "upload-r2",
+        "upload-s3",
+        "files-api"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-ai-routes-caller-key",
       "href": "/registry/changelog/2026-11-16-ai-routes-caller-key.json",
       "status": "draft",

@@ -5,7 +5,7 @@ import ts from '@typescript/typescript6';
 const packageRoot = process.env.FILES_SDK_PACKAGE_ROOT;
 if (!packageRoot) {
   throw new Error(
-    'Set FILES_SDK_PACKAGE_ROOT to the installed files-sdk 2.6.0 package'
+    'Set FILES_SDK_PACKAGE_ROOT to the installed files-sdk 3.x package'
   );
 }
 

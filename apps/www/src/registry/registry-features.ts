@@ -966,7 +966,7 @@ export const registryFeatures: Registry['items'] = [
   {
     dependencies: [
       'platejs',
-      'files-sdk@2.6.0',
+      'files-sdk@3.2.0',
       'sonner',
       'use-file-picker@2.1.2',
     ],

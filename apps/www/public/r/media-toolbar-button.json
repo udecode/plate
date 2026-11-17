@@ -8,7 +8,7 @@
     "use-file-picker@2.1.2",
     "sonner",
     "diff-match-patch-ts@^0.6.0",
-    "files-sdk@^2.6.0",
+    "files-sdk@^3.2.0",
     "lucide-react"
   ],
   "registryDependencies": [

@@ -426,8 +426,8 @@ importers:
         specifier: 16.5.0
         version: 16.5.0
       files-sdk:
-        specifier: 2.6.0
-        version: 2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@3.25.61))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61)
+        specifier: 3.2.0
+        version: 3.2.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@3.25.61))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61)
       flowchart.js:
         specifier: 1.18.0
         version: 1.18.0
@@ -906,8 +906,8 @@ importers:
         specifier: 1.0.16
         version: 1.0.16
       files-sdk:
-        specifier: 2.6.0
-        version: 2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@4.6.6))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.6)
+        specifier: 3.2.0
+        version: 3.2.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@4.6.6))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.6)
       html-to-vdom:
         specifier: ^0.7.0
         version: 0.7.0
@@ -6221,111 +6221,133 @@ packages:
     resolution: {integrity: sha512-hbssEr7iLNCWWdUbEt8cuOjUQ9loI+U/BVmdhNQ4CV1wAFGvWDO3niK9JD2WwTC9iib7E498qgZ3L/xJnoSb3A==}
     cpu: [arm64]
     os: [darwin]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-darwin-x64@0.7.3':
     resolution: {integrity: sha512-WqwST3vVcNBTd1zaT1vP6pU8NkjJlLWN37Kqomc2c6TG9eky6sbAfHIhZEjSSyqFrMqsAt3mIu0jQZAODi401g==}
     cpu: [x64]
     os: [darwin]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-freebsd-x64@0.7.3':
     resolution: {integrity: sha512-mCci4UPkZXYflXuHnPGl5sDsotBPLaBryFylDwZcqposktmumoOBIKp2gpzEmxQL/XlGdVWksmpYw9IRY43FNQ==}
     cpu: [x64]
     os: [freebsd]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-linux-arm-gnu@0.7.3':
     resolution: {integrity: sha512-F1QIaRH5SeahrYjZVrVvIb5nHCZQMF7+YWAy6yTJh0Y2r2wLgqOQuhbOWcoKk+AyBiTOO2nAsFHNpVqRq2GjGw==}
     cpu: [arm]
     os: [linux]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-linux-arm-musl@0.7.3':
     resolution: {integrity: sha512-JvkWNmN8MFbboX/5grRsAldGaB8ArRFgAaUYfQoohsqcuJZee8SLtc6itvwuntPbN9MGStn4GzdWk2lmSURqbA==}
     cpu: [arm]
     os: [linux]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-linux-arm64-gnu@0.7.3':
     resolution: {integrity: sha512-DUnMTE/HCA7j1BAipWclGZCYfLZ/4SV5lldmV2kDmVMIywcw4PhtQ4Rfd/tO1K82JkjhQ+4a8XApcOIksOacnQ==}
     cpu: [arm64]
     os: [linux]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-linux-arm64-musl@0.7.3':
     resolution: {integrity: sha512-pNnXMnm9dlqd3V8C7nHaXgZnMLwP/CyM8B4mSAnkqVlhj2t3b8CMjesEV85SCbFlagzJk8FapfSghfxcXKuBow==}
     cpu: [arm64]
     os: [linux]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-linux-x64-gnu@0.7.3':
     resolution: {integrity: sha512-o5GRppYvYvPl4UJbgRSZpXXDh6rOWQzX0yLB+tDzv31T7mOuLitU6zgQZxzw5rwhPJDffCt/AVKMbtizEo+UtA==}
     cpu: [x64]
     os: [linux]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-linux-x64-musl@0.7.3':
     resolution: {integrity: sha512-GdiyLD1bM3lhTUeGkA9ZZLjqU+xt5uVihgPm0e6TdBjCi6DMZORWe02oDlRbn9OZaV7AZosngXAq2jLk3TrBEw==}
     cpu: [x64]
     os: [linux]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-win32-arm64@0.7.3':
     resolution: {integrity: sha512-uQrxQDBQFIAUgHJIxcB/FAAUk0Wkyj3xGpHrp/C258nXnCTAH0KDaqyK5RN/TCkVYrpH+uCl+rGnwDLSGnPBkQ==}
     cpu: [arm64]
     os: [win32]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-codegen/binding-win32-x64@0.7.3':
     resolution: {integrity: sha512-UoF7tqMnVMUmIXPgDjFLhRezea6HaypwLDWNenCFxfJCzQNEa41lcHpxq1AN2Xl6GLzIDfAb+lQDi/O+zPCfyg==}
     cpu: [x64]
     os: [win32]
+    deprecated: yuku-codegen is pure JavaScript since 0.14
 
   '@yuku-parser/binding-darwin-arm64@0.7.3':
     resolution: {integrity: sha512-JcFQSNEnjtyHQRjXO0G5rQt5xHq5MR+9nHqh+wt5MP30XIiccUYlcMIa3s7CBmj8E8WPGZC08k7LNGrA1OISTA==}
     cpu: [arm64]
     os: [darwin]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-darwin-x64@0.7.3':
     resolution: {integrity: sha512-U0kNeI3VygP/+8sTOLTeLTjUyTYZfl9Wuq6xVKWPXHb2K7oI0sm8JXJ5xlhAbkUDQRi0N6yK5TKxS0sQT5M6UQ==}
     cpu: [x64]
     os: [darwin]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-freebsd-x64@0.7.3':
     resolution: {integrity: sha512-Xc08FQTvxovy6pX+Co9fgv3N1H0OpLpph/ClbwnJkcdphY3kzN2GgIfir35kpPp8mOzlQgtAVQdeDyAYyjwx4w==}
     cpu: [x64]
     os: [freebsd]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-linux-arm-gnu@0.7.3':
     resolution: {integrity: sha512-6bHeDiUd+0bmoJJ5wZVG+PcJkXQUdjy/AzHsOVcOSUtHtRTX2H3Z5RIHyPAh5OveLtT4RHyqaO3fEQGnHGX5/Q==}
     cpu: [arm]
     os: [linux]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-linux-arm-musl@0.7.3':
     resolution: {integrity: sha512-trGERNLJGvXkkyvdWBKspTOBATd4lcmpPFPcy5HI5kC3rC3ZMHQDJ356OMSVUsR2NQnl++F0ZTZQucao9hrbeQ==}
     cpu: [arm]
     os: [linux]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-linux-arm64-gnu@0.7.3':
     resolution: {integrity: sha512-p1ELmzhqAX7SFUvH/tR5zSb8NsWZQ8ulw7PqatfXNmJMy34bkivtL0z2jPpVoMJXf5o2+TwBN29Z31CLL0wvkA==}
     cpu: [arm64]
     os: [linux]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-linux-arm64-musl@0.7.3':
     resolution: {integrity: sha512-dZ79SrJ002ZXfBDmpQ47SF+06Q5bGOjFeoSK8xO97ter/bjLBgxSO4d7i9hhf+uj4xkrTPc/OFNVaeBAF3L4dA==}
     cpu: [arm64]
     os: [linux]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-linux-x64-gnu@0.7.3':
     resolution: {integrity: sha512-LjT64hVGWWbOmOYS+Fd8qScgyRxgUbudhFJbw8aeUVnhiNR1np36KnE0VFWrJeu7rTdNxuzVyV5o9JLqhBDTVQ==}
     cpu: [x64]
     os: [linux]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-linux-x64-musl@0.7.3':
     resolution: {integrity: sha512-5Nw3v5BqYbOi0ZdV+SImgVYa0KDBVAY/ZNPilTsJJU4phqa2cqEW4+aMgyieE/4bqpojt/B931kM+7pipazP9g==}
     cpu: [x64]
     os: [linux]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-win32-arm64@0.7.3':
     resolution: {integrity: sha512-lFYXgHiq8tJKa6/e1/q8Su+IJVV4/CjoXbIJ7/GdPXPp9Hx0gh/8HqmGSsrwlY2w8/ohBcar9wxjm1rQ8D16bg==}
     cpu: [arm64]
     os: [win32]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-parser/binding-win32-x64@0.7.3':
     resolution: {integrity: sha512-wy/fs4OrHBhKW8LDyZJRMyMQ3QOfbSQDp0WtMbtzWCVui/vTQEUJMGnwvRCppjchS/qIQfbWzIw/HSjogJqZFA==}
     cpu: [x64]
     os: [win32]
+    deprecated: yuku-parser runs on yuku-core since 0.14
 
   '@yuku-toolchain/types@0.7.3':
     resolution: {integrity: sha512-ezarjq3dcl8Nx3iJ9VeAc7vhzvHyRoSvr7bLX76T+ljRq73IbZ11X2RFCblfK6YxW2DsjkzU6MPnr3JWDYqYYQ==}
@@ -7833,8 +7855,9 @@ packages:
     resolution: {integrity: sha512-ZDsQNbrv6qRi1YTDOEWzf5J2KjZ9KMI1Q2SGeTkCJmNNW25Jg4TW4UMcmoqcg4WrAyKRcpBXdbWRxkfrOzVRbA==}
     engines: {node: '>= 10'}
 
-  files-sdk@2.6.0:
-    resolution: {integrity: sha512-gu7l0ZIb4EJYaeWI6e4Eya3wgweN1xq9hEgvHyxtUUHmMl3g7XQYwVtm2WnKqMFKExaeNOPT1Dv5hNbZfULY/g==}
+  files-sdk@3.2.0:
+    resolution: {integrity: sha512-AtAGpBAS/0Kh/MMTyynjXVvtVbdGji1VmSOkzoRTtJIrWh1IrvYLOOJwk3Dc3I7kPXfpp5pAQvQ929IITawPXw==}
+    engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
       '@anthropic-ai/claude-agent-sdk': ^0.3.0
@@ -7847,14 +7870,14 @@ packages:
       '@azure/storage-blob': ^12.26.0
       '@bunny.net/storage-sdk': ^0.3.1
       '@google-cloud/storage': ^7.19.0 || ^8.0.0
-      '@googleapis/drive': ^20.0.0 || ^21.0.0 || ^22.0.0
+      '@googleapis/drive': ^20.0.0 || ^21.0.0 || ^22.0.0 || ^25.0.0 || ^26.0.0
       '@microsoft/microsoft-graph-client': ^3.0.7
       '@nestjs/common': ^10.0.0 || ^11.0.0 || ^12.0.0
       '@netlify/blobs': ^10.7.4 || ^11.0.0
       '@openai/agents': '>=0.11.0 <1.0.0'
       '@opentelemetry/api': ^1.9.0
       '@supabase/storage-js': ^2.105.4
-      '@sveltejs/kit': ^2.0.0
+      '@sveltejs/kit': ^2.0.0 || ^3.0.0
       '@tanstack/react-start': ^1.0.0
       '@vercel/blob': ^2.4.0
       ai: ^6.0.0 || ^7.0.0
@@ -7865,10 +7888,11 @@ packages:
       convex: ^1.16.0
       disk: ^0.8.18 || ^1.0.0
       dropbox: ^10.34.0
+      effect: ^4.0.0
       fastify: ^4.0.0 || ^5.0.0
       firebase-admin: ^14.1.0
       google-auth-library: ^10.0.0 || ^11.0.0
-      h3: ^1.0.0
+      h3: ^1.0.0 || ^2.0.0
       hono: ^4.0.0
       koa: ^2.0.0 || ^3.0.0
       next: ^14.0.0 || ^15.0.0 || ^16.0.0
@@ -7939,6 +7963,8 @@ packages:
       disk:
         optional: true
       dropbox:
+        optional: true
+      effect:
         optional: true
       fastify:
         optional: true
@@ -18988,7 +19014,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  files-sdk@2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@3.25.61))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61):
+  files-sdk@3.2.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@3.25.61))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61):
     dependencies:
       aws4fetch: 1.0.20
       commander: 15.0.0
@@ -19015,7 +19041,7 @@ snapshots:
       - '@cfworker/json-schema'
       - supports-color
 
-  files-sdk@2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@4.6.6))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.6):
+  files-sdk@3.2.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@4.6.6))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.21.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@4.6.6):
     dependencies:
       aws4fetch: 1.0.20
       commander: 15.0.0

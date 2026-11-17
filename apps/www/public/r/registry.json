@@ -871,7 +871,7 @@
         "use-file-picker@2.1.2",
         "sonner",
         "diff-match-patch-ts@^0.6.0",
-        "files-sdk@^2.6.0",
+        "files-sdk@^3.2.0",
         "lucide-react"
       ],
       "registryDependencies": [
@@ -2335,7 +2335,7 @@
     {
       "name": "editor-plugins-static",
       "dependencies": [
-        "files-sdk@^2.6.0",
+        "files-sdk@^3.2.0",
         "platejs"
       ],
       "registryDependencies": [
@@ -3671,7 +3671,7 @@
       "description": "Files SDK upload client, draft slots, progress and cancellation.",
       "dependencies": [
         "platejs",
-        "files-sdk@2.6.0",
+        "files-sdk@3.2.0",
         "sonner",
         "use-file-picker@2.1.2",
         "diff-match-patch-ts@^0.6.0",
@@ -3706,7 +3706,7 @@
       "dependencies": [
         "platejs",
         "diff-match-patch-ts@^0.6.0",
-        "files-sdk@^2.6.0"
+        "files-sdk@^3.2.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/upload.json"
@@ -4045,7 +4045,7 @@
       "name": "files-api",
       "title": "Files Gateway",
       "dependencies": [
-        "files-sdk@2.6.0"
+        "files-sdk@3.2.0"
       ],
       "files": [
         {
@@ -4064,7 +4064,7 @@
         "@aws-sdk/lib-storage",
         "@aws-sdk/s3-presigned-post",
         "@aws-sdk/s3-request-presigner",
-        "files-sdk@2.6.0"
+        "files-sdk@3.2.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/upload.json",
@@ -4095,7 +4095,7 @@
         "@aws-sdk/lib-storage",
         "@aws-sdk/s3-presigned-post",
         "@aws-sdk/s3-request-presigner",
-        "files-sdk@2.6.0"
+        "files-sdk@3.2.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/upload.json",

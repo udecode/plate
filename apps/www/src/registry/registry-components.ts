@@ -70,7 +70,7 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['files-sdk@2.6.0'],
+    dependencies: ['files-sdk@3.2.0'],
     files: [{ path: 'lib/files.ts', type: 'registry:lib' }],
     name: 'files-api',
     type: 'registry:lib',
@@ -82,7 +82,7 @@ const registryApi: Registry['items'] = [
       '@aws-sdk/lib-storage',
       '@aws-sdk/s3-presigned-post',
       '@aws-sdk/s3-request-presigner',
-      'files-sdk@2.6.0',
+      'files-sdk@3.2.0',
     ],
     description: 'Files SDK upload gateway backed by Cloudflare R2.',
     files: [
@@ -104,7 +104,7 @@ const registryApi: Registry['items'] = [
       '@aws-sdk/lib-storage',
       '@aws-sdk/s3-presigned-post',
       '@aws-sdk/s3-request-presigner',
-      'files-sdk@2.6.0',
+      'files-sdk@3.2.0',
     ],
     description: 'Files SDK upload gateway backed by Amazon S3.',
     files: [

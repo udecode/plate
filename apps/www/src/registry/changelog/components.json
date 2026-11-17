@@ -93,6 +93,26 @@
       "2026-08-14-author-editor-runtime",
       "2026-07-23-explicit-editor-kit-composition"
     ],
+    "upload": [
+      "2026-11-17-files-sdk-3",
+      "2026-11-06-upload-completion-error",
+      "2026-10-15-upload-refusal-toast",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-native-block-drag",
+      "2026-09-21-upload-provider-items",
+      "2026-09-19-files-sdk-upload-kit"
+    ],
+    "upload-browser": [
+      "2026-11-17-files-sdk-3",
+      "2026-09-21-upload-provider-items"
+    ],
+    "upload-r2": ["2026-11-17-files-sdk-3", "2026-09-21-upload-provider-items"],
+    "upload-s3": ["2026-11-17-files-sdk-3", "2026-09-21-upload-provider-items"],
+    "files-api": [
+      "2026-11-17-files-sdk-3",
+      "2026-09-21-upload-provider-items",
+      "2026-09-19-files-sdk-upload-kit"
+    ],
     "copilot-api": [
       "2026-11-16-ai-routes-caller-key",
       "2026-09-08-ai-session",
@@ -475,14 +495,6 @@
       "2026-11-07-toolbar-overlays-close-on-scroll",
       "2026-10-28-touch-menus",
       "2026-10-21-floating-toolbar-menu-press"
-    ],
-    "upload": [
-      "2026-11-06-upload-completion-error",
-      "2026-10-15-upload-refusal-toast",
-      "2026-10-14-block-void-selection",
-      "2026-10-01-native-block-drag",
-      "2026-09-21-upload-provider-items",
-      "2026-09-19-files-sdk-upload-kit"
     ],
     "ai": [
       "2026-11-05-remove-ai-leaf",
@@ -1202,13 +1214,6 @@
       "2026-09-24-export-menu-projection",
       "2026-09-02-comments-ownership",
       "2026-08-18-isolate-docx-file-io"
-    ],
-    "upload-browser": ["2026-09-21-upload-provider-items"],
-    "upload-r2": ["2026-09-21-upload-provider-items"],
-    "upload-s3": ["2026-09-21-upload-provider-items"],
-    "files-api": [
-      "2026-09-21-upload-provider-items",
-      "2026-09-19-files-sdk-upload-kit"
     ],
     "media": [
       "2026-09-19-files-sdk-upload-kit",

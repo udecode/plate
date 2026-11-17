@@ -1,0 +1,14 @@
+---
+id: 2026-11-17-files-sdk-3
+date: 2026-11-17
+status: draft
+kind: wiring
+summary: 'Install Files SDK 3 with the upload kit and gateway'
+change: { 'type': 'source', 'date': '2026-11-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-17-upload-install-files-sdk-3-2f5fcaf1","kind":"wiring","migrationNotes":["Update files-sdk to 3.2.0 or newer together with a copied lib/files.ts."]} -->
+
+- **`upload`**, **`upload-browser`**, **`upload-r2`**, **`upload-s3`**, **`files-api`**: Install `files-sdk` 3.2.0, and answer an `Invalid` or `Unsupported` error from the access check with a 422 instead of a 500.

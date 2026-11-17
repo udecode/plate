@@ -5,7 +5,7 @@
   "description": "Files SDK upload client, draft slots, progress and cancellation.",
   "dependencies": [
     "platejs",
-    "files-sdk@2.6.0",
+    "files-sdk@3.2.0",
     "sonner",
     "use-file-picker@2.1.2",
     "diff-match-patch-ts@^0.6.0",

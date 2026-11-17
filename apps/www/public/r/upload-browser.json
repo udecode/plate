@@ -6,7 +6,7 @@
   "dependencies": [
     "platejs",
     "diff-match-patch-ts@^0.6.0",
-    "files-sdk@^2.6.0"
+    "files-sdk@^3.2.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/upload.json"
