@@ -11,4 +11,4 @@ Replace `editor.runtime` with a fixed `editor.userId`. An editor created without
 - Install authored changes with `AuthoredPlugin` from `platejs/authored`
 - Allocate its own editor in `createEditor` and `useCreateEditor`, and throw on an `editor` option
 
-**Migration:** Read `editor.userId` instead of `editor.runtime.userId`. To switch users, create a new editor from the old editor's document and comments instead of assigning a new user. Instead of passing a prebuilt editor as `editor`, pass its document as `initialValue` and its selection as `selection`, and render an editor you already have with `EditorRoot`.
+**Migration:** Read `editor.userId` instead of `editor.runtime.userId`. To switch users, create a new editor from the old editor's document and comments instead of assigning a new user. Instead of passing a prebuilt editor as `editor`, pass its document as `initialValue` and its selection as `initialSelection`, and render an editor you already have with `EditorRoot`.

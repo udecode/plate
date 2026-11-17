@@ -42,7 +42,6 @@ import {
   type PersistedDocumentInput,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
-  type Selection,
   type Value,
   getCompiledEditorSchemaFromApi,
   mapSemanticUpdateMethodArguments,
@@ -322,7 +321,7 @@ const readPlateInitialValue = (
         : issue.kind !== 'field'
           ? EMPTY_INITIAL_VALUE
           : issue.field === 'selection'
-            ? 'Plate initialValue field "selection" is not supported. Pass the selection option instead.'
+            ? 'Plate initialValue field "selection" is not supported. Pass the initialSelection option instead.'
             : `Plate initialValue field "${issue.field}" is not supported. Store application data in meta.`
     );
   };
@@ -371,36 +370,26 @@ const normalizeBaseInitialValue = (
 const resolveBaseInitialValue = (
   editor: Editor,
   {
-    autoSelect,
+    initialSelection,
     initialValue,
-    selection,
   }: {
-    autoSelect?: boolean | 'end' | 'start';
+    initialSelection?: PersistedDocumentInput['selection'];
     initialValue?:
       | ((context: { editor: Editor }) => EditorValueInput<Value>)
       | EditorValueInput<Value>;
-    selection?: Selection;
   }
 ) => {
   const nextValue = normalizeBaseInitialValue(
     editor,
     typeof initialValue === 'function' ? initialValue({ editor }) : initialValue
   );
-  const autoSelection =
-    autoSelect === true
-      ? 'end'
-      : autoSelect === 'start' || autoSelect === 'end'
-        ? autoSelect
-        : undefined;
-  const selectionInput =
-    selection ??
-    autoSelection ??
-    ('document' in nextValue ? nextValue.selection : undefined) ??
-    null;
 
   return {
     ...nextValue,
-    selection: selectionInput,
+    selection:
+      initialSelection === undefined && 'document' in nextValue
+        ? (nextValue.selection ?? null)
+        : (initialSelection ?? null),
   };
 };
 
@@ -730,16 +719,6 @@ export type EditorOptions<
    */
   userId?: string;
   /**
-   * Select the editor after initialization.
-   *
-   * @default false
-   *
-   * - `true` | 'end': Select the end of the editor
-   * - `false`: Do not select anything
-   * - `'start'`: Select the start of the editor
-   */
-  autoSelect?: boolean | 'end' | 'start';
-  /**
    * Specifies the maximum number of characters allowed in the editor. When the
    * limit is reached, further input will be prevented.
    */
@@ -759,12 +738,11 @@ export type EditorOptions<
   /** Application-owned schema policy and optional persisted lineage. */
   schema?: EditorApplicationSchema;
   /**
-   * Initial selection state for the editor. Defines where the cursor should be
-   * positioned when the editor loads.
+   * Where the caret starts: a selection, the document's `'start'` or `'end'`,
+   * or `null` for no caret. When omitted, the editor starts at the caret a
+   * persisted `initialValue` saved, or with no caret.
    */
-  selection?: Selection;
-  /** Initial model selection. */
-  initialSelection?: Selection;
+  initialSelection?: PersistedDocumentInput['selection'];
   /**
    * When `true`, normalizes the `initialValue` passed to the editor. This is
    * useful when adding normalization rules to already existing content or when
@@ -934,7 +912,6 @@ export const buildEditor = <TEditor extends Editor = Editor>(
   dormant = false
 ): Editor => {
   const {
-    autoSelect,
     id,
     initialValue,
     initialSelection,
@@ -943,7 +920,6 @@ export const buildEditor = <TEditor extends Editor = Editor>(
     plugins = [],
     readOnly,
     schema,
-    selection,
     shouldNormalizeEditor,
     skipInitialization,
     userId,
@@ -984,12 +960,11 @@ export const buildEditor = <TEditor extends Editor = Editor>(
                 : undefined,
               initialValue: () =>
                 resolveBaseInitialValue(editor, {
-                  autoSelect,
+                  initialSelection,
                   initialValue:
                     typeof initialValue === 'function'
                       ? () => initialValue({ editor: editor as TEditor })
                       : initialValue,
-                  selection: selection ?? initialSelection,
                 }),
             },
         schema
@@ -1308,7 +1283,6 @@ export type CreateEditorOptions<
 
 /** @internal */
 export const EDITOR_OPTION_KEYS = {
-  autoSelect: true,
   id: true,
   initialSelection: true,
   initialValue: true,
@@ -1317,7 +1291,6 @@ export const EDITOR_OPTION_KEYS = {
   plugins: true,
   readOnly: true,
   schema: true,
-  selection: true,
   shouldNormalizeEditor: true,
   skipInitialization: true,
   userId: true,
@@ -1373,7 +1346,7 @@ export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
  * const editor = createEditor({
  *   plugins: [ParagraphPlugin, ElementIdPlugin],
  *   maxLength: 1000,
- *   autoSelect: 'end',
+ *   initialSelection: 'end',
  * });
  *
  * // Server-side editor with feature-owned HTML conversion
@@ -1394,7 +1367,7 @@ export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
  * });
  * ```
  *
- * @see {@link createEditor} for a React-specific version of editor creation.
+ * @see `createEditor` from `platejs/react` for the React version.
  * @see {@link useCreateEditor} for a memoized React version.
  */
 export function createEditor<
