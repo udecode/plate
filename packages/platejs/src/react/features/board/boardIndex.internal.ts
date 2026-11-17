@@ -24,19 +24,20 @@ import {
 } from '../../../features/board/lib/boardCopy.internal';
 import { BOARD_GEO_TYPE } from '../../../features/board/lib/boardShape.internal';
 import {
+  BOARD_PEN,
   BOARD_STROKE_REACH,
   BOARD_STROKE_TYPE,
   type BoardInkPoint,
   boardInkIn,
   type BoardStrokePoints,
 } from '../../../features/board/lib/boardStroke.internal';
+import { strokeOutline } from '../../internal/penStroke.internal';
 import {
   type BoardStrokePath,
   INK_SLOP_PX,
   onInk,
   lineSide,
   segmentGap,
-  strokeOutline,
 } from './boardInk.internal';
 
 export type BoardBox = BoardPlace & BoardSize;
@@ -747,6 +748,7 @@ export const createBoardIndex = ({
         height,
         path: strokeOutline(
           boardInkIn(ink, { height, width, x: 0, y: 0 }),
+          BOARD_PEN,
           true
         ),
         width,

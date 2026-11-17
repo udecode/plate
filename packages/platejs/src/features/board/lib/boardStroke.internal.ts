@@ -11,6 +11,12 @@ export const BOARD_STROKE_WIDTH = 8;
 /** How much thinner perfect-freehand draws a pen line as its pressure falls. */
 export const BOARD_STROKE_THINNING = 0.5;
 
+/** The pen perfect-freehand draws a board line with. */
+export const BOARD_PEN = {
+  size: BOARD_STROKE_WIDTH,
+  thinning: BOARD_STROKE_THINNING,
+};
+
 /** perfect-freehand's radius of a pen line at a point of `pressure`. */
 export const boardStrokeRadius = (pressure: number) =>
   BOARD_STROKE_WIDTH * (0.5 - BOARD_STROKE_THINNING * (0.5 - pressure));

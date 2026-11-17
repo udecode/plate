@@ -5,7 +5,14 @@ import {
   type BoardArrowEndInput,
   type BoardPlace,
 } from '../../../features/board/lib';
-import type { BoardInkPoint } from '../../../features/board/lib/boardStroke.internal';
+import {
+  BOARD_PEN,
+  type BoardInkPoint,
+} from '../../../features/board/lib/boardStroke.internal';
+import {
+  simulatedPressure,
+  strokeOutline,
+} from '../../internal/penStroke.internal';
 import {
   CORNERS_CLOCKWISE,
   type BoardBox,
@@ -17,7 +24,6 @@ import {
   sameBox,
   spanOf,
 } from './boardIndex.internal';
-import { simulatedPressure, strokeOutline } from './boardInk.internal';
 import { arrowEndOn, BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
   elementOf,
@@ -147,7 +153,7 @@ const addPenPoint = (
   if (event.pointerType === 'pen') {
     pressure = Math.min(1, Math.max(0, event.pressure));
   } else if (last) {
-    pressure = simulatedPressure(last[2], distance);
+    pressure = simulatedPressure(last[2], distance, BOARD_PEN.size);
   }
   points.push([at.x, at.y, pressure]);
 };
@@ -172,7 +178,7 @@ export const attachBoardGestures = (
   let pressed: BoardShapeLayout | undefined;
 
   const drawPen = ({ path, points }: Extract<Gesture, { kind: 'pen' }>) => {
-    path.setAttribute('d', strokeOutline(points, false));
+    path.setAttribute('d', strokeOutline(points, BOARD_PEN, false));
   };
 
   // Both client points go through the current camera, so a pan mid-drag
