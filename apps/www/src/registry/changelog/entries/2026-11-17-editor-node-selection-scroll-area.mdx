@@ -1,0 +1,14 @@
+---
+id: 2026-11-17-editor-node-selection-scroll-area
+date: 2026-11-17
+status: draft
+kind: behavior
+summary: 'Start a block drag from the page area that scrolls the editor'
+change: { 'type': 'source', 'date': '2026-11-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-17-editor-start-block-drag-from-40cf97c9","kind":"behavior","migrationNotes":[]} -->
+
+- **`editor`**: Pass the editor's scroll element to `NodeSelectionDrag` as its `container`, so a block drag also starts from that element's blank space and from elements marked `data-node-selection-start`, such as a page cover, once the page registers its scroller with `useEditorScrollElementRef`.

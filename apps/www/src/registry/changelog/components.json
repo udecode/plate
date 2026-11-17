@@ -277,6 +277,7 @@
     ],
     "editor": [
       "2026-11-17-cn-package",
+      "2026-11-17-editor-node-selection-scroll-area",
       "2026-11-13-ios-keyboard-menus-comment",
       "2026-10-26-editor-frame-narrow-hosts",
       "2026-10-13-editor-width-padding",

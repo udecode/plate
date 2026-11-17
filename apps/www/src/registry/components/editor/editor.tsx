@@ -11,6 +11,8 @@ import {
   EditorContainer as EditorContainerPrimitive,
   EditorContent,
   EditorPreview,
+  useEditor,
+  useEditorScrollElement,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -120,6 +122,8 @@ export function Editor({
 }: (EditorContentProps & VariantProps<typeof editorVariants>) & {
   ref?: React.Ref<HTMLDivElement>;
 }) {
+  const scrollElement = useEditorScrollElement(useEditor());
+
   return (
     <>
       <EditorContent
@@ -137,7 +141,10 @@ export function Editor({
         {...props}
       />
       <NodeSelectionHighlight className="z-1 bg-(--node-selection-tint)" />
-      <NodeSelectionDrag className="z-50 border border-brand/25 bg-brand/15" />
+      <NodeSelectionDrag
+        className="z-50 border border-brand/25 bg-brand/15"
+        container={scrollElement}
+      />
     </>
   );
 }

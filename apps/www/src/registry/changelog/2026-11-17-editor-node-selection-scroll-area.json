@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-editor-node-selection-scroll-area",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-editor-node-selection-scroll-area.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Start a block drag from the page area that scrolls the editor",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-editor-start-block-drag-from-40cf97c9",
+      "kind": "behavior",
+      "summary": "Pass the editor's scroll element to `NodeSelectionDrag` as its `container`, so a block drag also starts from that element's blank space and from elements marked `data-node-selection-start`, such as a page cover, once the page registers its scroller with `useEditorScrollElementRef`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-editor-node-selection-scroll-area",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

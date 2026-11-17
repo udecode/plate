@@ -121,6 +121,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-editor-node-selection-scroll-area",
+      "href": "/registry/changelog/2026-11-17-editor-node-selection-scroll-area.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Start a block drag from the page area that scrolls the editor",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-17-files-sdk-3",
       "href": "/registry/changelog/2026-11-17-files-sdk-3.json",
       "status": "draft",
