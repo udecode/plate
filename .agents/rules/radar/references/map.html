@@ -1,0 +1,381 @@
+<title>Plate product radar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #F1EEE6;
+  --surface: #FFFDF8;
+  --ink: #1D2328;
+  --muted: #5E666C;
+  --line: #DCD5C6;
+  --tint: #F4EFE3;
+  --tint-hot: #E9E2CF;
+  --free: #11806A;
+  --pro: #B0650A;
+  --ai: #7A4BD8;
+  --ai-soft: #EFE9FC;
+  --gray: #8A949D;
+  --gold: #E3B341;
+  --on-fill: #FFFFFF;
+  --focus: #1F5FD1;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171B; --surface: #1A2126; --ink: #E7E9E6; --muted: #9AA3A9; --line: #2F3940;
+    --tint: #161D22; --tint-hot: #22302F;
+    --free: #3AC3A0; --pro: #EFA23B; --ai: #A98CFF; --ai-soft: #251E3A; --gray: #6E7A84; --gold: #E9BF55;
+    --on-fill: #12171B; --focus: #82A9FF; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171B; --surface: #1A2126; --ink: #E7E9E6; --muted: #9AA3A9; --line: #2F3940;
+  --tint: #161D22; --tint-hot: #22302F;
+  --free: #3AC3A0; --pro: #EFA23B; --ai: #A98CFF; --ai-soft: #251E3A; --gray: #6E7A84; --gold: #E9BF55;
+  --on-fill: #12171B; --focus: #82A9FF; color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; display: grid; gap: 22px; }
+
+header { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.lede { margin: 0; max-width: 72ch; color: var(--muted); }
+.picks { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+.picks strong { font-weight: 600; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 500 14px var(--font-body); color: var(--muted); background: transparent; border: 0; padding: 7px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.switch { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.track { width: 38px; height: 22px; border-radius: 11px; background: var(--line); position: relative; transition: background .2s; flex: none; }
+.track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); transition: transform .2s; }
+.switch input:checked + .track { background: var(--ai); }
+.switch input:checked + .track::after { transform: translateX(16px); }
+.switch input:focus-visible + .track { outline: 2px solid var(--focus); outline-offset: 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+.sw.free { background: var(--free); }
+.sw.pro { background: var(--pro); }
+.sw.both { background: linear-gradient(90deg, var(--free) 50%, var(--pro) 50%); }
+.sw.near { border: 1.5px dashed var(--gray); background: transparent; }
+.sw.halo { border: 3px solid var(--ai); background: transparent; opacity: .8; }
+.sw.gold { border: 3px solid var(--gold); background: transparent; }
+
+.main { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1040px) { .main { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; min-width: 0; }
+
+.sea { overflow-x: auto; border-radius: 10px; }
+.isles { position: relative; aspect-ratio: 3 / 2; min-width: 680px; background: #3E8C93 url("art/map.jpg") center / cover no-repeat; border-radius: 10px; overflow: hidden; }
+.isle-label { position: absolute; transform: translate(-50%, -50%); font: 600 11px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: #3A2C17; background: rgba(250, 241, 219, .92); border: 1px solid rgba(110, 82, 40, .35); border-radius: 4px; padding: 3px 8px; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 2px rgba(40, 30, 10, .25); }
+.isle-label.home { background: rgba(29, 35, 40, .82); color: #F6EEDC; border-color: transparent; }
+.pin { position: absolute; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 3px; background: none; border: 0; padding: 0; cursor: pointer; color: inherit; }
+.pin:focus-visible { outline: none; }
+.pin:focus-visible .dot-pin { outline: 3px solid var(--focus); outline-offset: 3px; }
+.dot-pin { position: relative; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 600 13px var(--font-mono); color: #fff; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); transition: transform .15s; }
+.pin.t1 .dot-pin { width: 38px; height: 38px; font-size: 15px; box-shadow: 0 0 0 4px var(--gold), 0 3px 10px rgba(0, 0, 0, .4); }
+.pin.t3 .dot-pin { width: 26px; height: 26px; font-size: 12px; }
+.dot-pin.free { background: #11806A; }
+.dot-pin.pro { background: #B0650A; }
+.dot-pin.both { background: linear-gradient(90deg, #11806A 50%, #B0650A 50%); }
+.dot-pin.near { background: rgba(255, 255, 255, .55); border: 2px dashed #5E666C; box-shadow: none; }
+.dot-pin::before { content: ""; position: absolute; inset: calc(-6px - var(--ai-w, 0px)); border-radius: 50%; border: var(--ai-w, 0px) solid #9B76F0; opacity: .85; transition: opacity .25s; pointer-events: none; }
+.ai-off .dot-pin::before { opacity: 0; }
+.pin:hover .dot-pin { transform: scale(1.08); }
+.pin-label { position: relative; z-index: 1; font: 600 12px var(--font-body); color: #1D2328; background: rgba(255, 253, 248, .93); border-radius: 4px; padding: 1px 6px; white-space: nowrap; box-shadow: 0 1px 2px rgba(0, 0, 0, .25); }
+.pin.near .pin-label { font-weight: 500; color: #4A5157; font-style: italic; }
+.pin.is-selected .pin-label { background: #1D2328; color: #FFFDF8; }
+.pin.is-selected .dot-pin { transform: scale(1.12); }
+.pin.edge-r { justify-items: end; transform: translate(calc(-100% + 18px), -50%); }
+.pin.edge-l { justify-items: start; transform: translate(-18px, -50%); }
+.hint { font-size: 12.5px; color: var(--muted); margin: 8px 4px 2px; }
+
+.grid-view { display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 6px; }
+.axis-y { grid-row: 2 / span 3; writing-mode: vertical-rl; transform: rotate(180deg); font: 500 12px var(--font-mono); color: var(--muted); text-align: center; letter-spacing: .05em; text-transform: uppercase; }
+.axis-x { font: 500 12px var(--font-mono); color: var(--muted); text-align: center; letter-spacing: .05em; text-transform: uppercase; padding-bottom: 2px; }
+.cell { background: var(--tint); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; align-content: start; min-height: 110px; min-width: 0; }
+.cell.hot { background: var(--tint-hot); }
+.cell-title { font-size: 12px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font: 500 13px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px 4px 4px; cursor: pointer; text-align: left; }
+.chip.near { border-style: dashed; }
+.chip[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.badge { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; font: 600 12px var(--font-mono); color: var(--on-fill); flex: none; }
+.badge.free { background: var(--free); }
+.badge.pro { background: var(--pro); }
+.badge.both { background: linear-gradient(90deg, var(--free) 50%, var(--pro) 50%); }
+.badge.near { background: transparent; border: 1.5px dashed var(--gray); }
+
+.detail { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; min-width: 0; }
+@media (min-width: 1040px) { .detail { position: sticky; top: max(16px, env(safe-area-inset-top, 0px)); max-height: calc(100vh - 32px); overflow-y: auto; } }
+.scene { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--tint); border-bottom: 1px solid var(--line); }
+.scene.fog { aspect-ratio: 16 / 5; background: url("art/map.jpg") 4% 4% / 420% auto no-repeat; filter: saturate(.6) brightness(1.05); }
+.d-body { padding: 18px 20px 20px; display: grid; gap: 14px; }
+.d-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.d-rank { font: 600 13px var(--font-mono); color: var(--muted); }
+.tier-pill { font: 500 12px var(--font-mono); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.tier-pill.t1 { background: var(--gold); color: #2A2109; border-color: var(--gold); }
+.detail h2 { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-size: 12.5px; padding: 3px 9px; border-radius: 6px; background: var(--tint); border: 1px solid var(--line); display: inline-flex; gap: 6px; align-items: center; }
+.job { margin: 0; }
+.apps { color: var(--muted); font-size: 14px; display: block; margin-top: 2px; }
+.layers { display: grid; gap: 8px; }
+.layer { border-radius: 10px; padding: 10px 12px; border: 1px solid var(--line); }
+.layer p { margin: 2px 0 0; }
+.layer.ai { background: var(--ai-soft); border-color: color-mix(in srgb, var(--ai) 35%, transparent); transition: opacity .25s; }
+.layer.ai.off { opacity: .55; }
+.k { font: 500 11.5px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.layer.ai .k { color: var(--ai); }
+.block p { margin: 2px 0 0; }
+.grows { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.grow { font-size: 13px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); display: inline-flex; gap: 6px; align-items: baseline; }
+.grow .n { font: 500 11.5px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.fine { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+.bars { display: grid; grid-template-columns: max-content 1fr max-content; gap: 6px 10px; align-items: center; margin-top: 6px; font-size: 13px; }
+.dots { display: flex; gap: 4px; }
+.dot { width: 22px; height: 8px; border-radius: 4px; background: var(--tint); border: 1px solid var(--line); }
+.dot.on { background: var(--ink); border-color: var(--ink); }
+.dot.on.ai { background: var(--ai); border-color: var(--ai); }
+.dot.minus { background: var(--pro); border-color: var(--pro); }
+.v { font: 500 12.5px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.total { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.total b { font: 700 22px var(--font-display); }
+
+section.list { display: grid; gap: 10px; }
+section.list h3, .method h3 { font-family: var(--font-display); font-size: 18px; margin: 0; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 720px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font: 500 11.5px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--tint); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+tr.is-selected td { background: var(--tint-hot); }
+.rowbtn { font: 600 14px var(--font-body); color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; text-align: left; }
+.rowbtn:hover { text-decoration: underline; }
+.rowbtn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.near-row td { color: var(--muted); }
+
+.method { display: grid; gap: 8px; font-size: 14px; color: var(--muted); max-width: 80ch; }
+.method p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="eyebrow"></div>
+    <h1>Plate product radar</h1>
+    <p class="lede" id="lede"></p>
+    <div class="picks"><strong>My picks to explore:</strong> <span id="pick-chips" class="chips"></span></div>
+  </header>
+
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" data-view="map" aria-pressed="true">Map</button>
+      <button type="button" id="view-grid" data-view="grid" aria-pressed="false">Reach and revenue</button>
+    </div>
+    <label class="switch" for="ai-toggle"><input type="checkbox" id="ai-toggle" checked><span class="track"></span><span>AI layer</span></label>
+    <div class="legend" aria-label="Legend">
+      <span><i class="sw gold"></i>Explore first</span>
+      <span><i class="sw free"></i>Free</span>
+      <span><i class="sw pro"></i>Pro</span>
+      <span><i class="sw both"></i>Free core, Pro kit</span>
+      <span><i class="sw near"></i>Near miss</span>
+      <span><i class="sw halo"></i>AI layer, thicker means a bigger AI demo</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <div id="map-view">
+        <div class="sea"><div class="isles" id="isles" role="group" aria-label="Map of ideas by domain"></div></div>
+        <p class="hint">Click a pin to open its card. Bigger pins are sooner. Illustrations made with an image model.</p>
+      </div>
+      <div id="grid-view" hidden>
+        <div class="grid-view" id="grid"></div>
+      </div>
+    </div>
+    <aside class="detail" id="detail" aria-live="polite"></aside>
+  </div>
+
+  <section class="list">
+    <h3>All ideas</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Idea</th><th>Domain</th><th>When</th><th>Lean</th><th>Cost</th><th>AI fit</th><th>Score</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="method" id="method">
+    <h3>How it was ranked</h3>
+  </section>
+</div>
+
+<script>
+const RADAR = /*RADAR_DATA*/null;
+const { sectors: SECTORS, features: FEATURES, ideas: IDEAS } = RADAR;
+const TIER_NAME = { 1: "Explore first", 2: "Next", 3: "Later", 4: "Near miss" };
+const LEAN_NAME = { free: "Free", pro: "Pro", both: "Free core, Pro kit", near: "Not graded" };
+IDEAS.forEach(d => { d.total = d.s.reach + d.s.pro + d.s.ai + d.s.reuse + d.s.lanes + d.s.hosted; });
+const RANKED = IDEAS.filter(d => d.rank).length;
+document.getElementById("eyebrow").textContent = "Plate · product radar · ranked " + RADAR.ranked;
+document.getElementById("lede").textContent = RADAR.lede;
+RADAR.method.forEach(t => { const p = document.createElement("p"); p.textContent = t; document.getElementById("method").append(p); });
+const byId = Object.fromEntries(IDEAS.map(d => [d.id, d]));
+const fmtNpm = n => n >= 1e6 ? (n / 1e6).toFixed(2).replace(/0$/, "") + "M" : Math.round(n / 1e3) + "k";
+const mk = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+let selected = "requests";
+let aiOn = true;
+
+function drawMap() {
+  const box = document.getElementById("isles");
+  Object.values(SECTORS).forEach(s => {
+    const l = mk("div", "isle-label", s.name); l.style.left = s.x + "%"; l.style.top = s.y + "%"; box.append(l);
+  });
+  const home = mk("div", "isle-label home", "Plate today"); home.style.left = RADAR.map.home.x + "%"; home.style.top = RADAR.map.home.y + "%"; box.append(home);
+  IDEAS.forEach(d => {
+    const b = mk("button", "pin t" + d.tier + (d.lean === "near" ? " near" : ""));
+    b.type = "button"; b.dataset.id = d.id;
+    if (d.at[0] > 88) b.classList.add("edge-r");
+    if (d.at[0] < 12) b.classList.add("edge-l");
+    b.style.left = d.at[0] + "%"; b.style.top = d.at[1] + "%";
+    b.setAttribute("aria-label", `${d.rank ? "#" + d.rank + " " : "Near miss: "}${d.name}. ${SECTORS[d.sector].name}. ${LEAN_NAME[d.lean]}.`);
+    const dot = mk("span", "dot-pin " + d.lean, d.rank || "");
+    dot.style.setProperty("--ai-w", (d.s.ai + 1) + "px");
+    b.append(dot, mk("span", "pin-label", d.short));
+    b.addEventListener("click", () => select(d.id, true));
+    box.append(b);
+  });
+}
+
+function badge(d) { return mk("span", "badge " + d.lean, d.rank || ""); }
+function chip(d) {
+  const c = mk("button", "chip" + (d.lean === "near" ? " near" : ""));
+  c.type = "button"; c.dataset.id = d.id; c.setAttribute("aria-pressed", "false");
+  c.append(badge(d), document.createTextNode(d.name));
+  c.addEventListener("click", () => select(d.id, true));
+  return c;
+}
+
+function drawGrid() {
+  const grid = document.getElementById("grid");
+  grid.append(mk("div"), mk("div", "axis-x", "Medium reach"), mk("div", "axis-x", "High reach"), mk("div", "axis-y", "Revenue, from the Pro score"));
+  const rowNames = { 3: "high revenue", 2: "medium revenue", 1: "low revenue" };
+  [3, 2, 1].forEach(pro => [2, 3].forEach(reach => {
+    const cell = mk("div", "cell" + (pro === 3 && reach === 3 ? " hot" : ""));
+    const chips = mk("div", "chips");
+    IDEAS.filter(d => d.s.pro === pro && d.s.reach === reach).forEach(d => chips.append(chip(d)));
+    cell.append(mk("div", "cell-title", (reach === 3 ? "High reach, " : "Medium reach, ") + rowNames[pro]), chips);
+    grid.append(cell);
+  }));
+}
+
+function dots(n, cls) {
+  const w = mk("div", "dots");
+  for (let i = 0; i < 3; i++) w.append(mk("i", "dot" + (i < n ? " on" + (cls ? " " + cls : "") : "")));
+  return w;
+}
+function block(title, text) { const b = mk("div", "block"); b.append(mk("div", "k", title), mk("p", null, text)); return b; }
+
+function renderDetail() {
+  const d = byId[selected];
+  const box = document.getElementById("detail");
+  box.replaceChildren();
+  let scene;
+  if (d.rank) { scene = mk("img", "scene"); scene.src = "art/" + d.id + ".jpg"; scene.alt = ""; scene.onerror = () => { scene.hidden = true; }; }
+  else scene = mk("div", "scene fog");
+  const body = mk("div", "d-body");
+
+  const top = mk("div", "d-top");
+  top.append(mk("span", "d-rank", d.rank ? "#" + d.rank + " of " + RANKED : "Near miss"), mk("span", "tier-pill t" + d.tier, TIER_NAME[d.tier]));
+  const meta = mk("div", "meta");
+  const p1 = mk("span", "pill"); p1.append(mk("i", "sw " + d.lean), document.createTextNode(LEAN_NAME[d.lean]));
+  meta.append(p1, mk("span", "pill", "Cost " + d.cost + (d.costNote ? ", " + d.costNote : "") + " (guess)"), mk("span", "pill", SECTORS[d.sector].name));
+
+  const job = mk("p", "job", d.job); job.append(mk("span", "apps", "Done today by " + d.apps));
+
+  const layers = mk("div", "layers");
+  const core = mk("div", "layer"); core.append(mk("div", "k", "Core, without AI"), mk("p", null, d.core));
+  const ai = mk("div", "layer ai" + (aiOn ? "" : " off"));
+  ai.append(mk("div", "k", "AI layer adds"), mk("p", null, aiOn ? d.ai : "AI layer is off. The core above works on its own."));
+  layers.append(core, ai);
+
+  const grows = mk("div", "block"); grows.append(mk("div", "k", "Grows from"));
+  const gl = mk("div", "grows");
+  d.grows.forEach(f => { const ft = FEATURES[f]; const g = mk("span", "grow", ft.label); if (ft.npm) g.append(mk("span", "n", fmtNpm(ft.npm) + "/mo")); gl.append(g); });
+  grows.append(gl, mk("p", "fine", "npm downloads last month for the v1 package, read " + RADAR.npmRead + ". They include installs that other packages pull in."));
+
+  const score = mk("div", "block"); score.append(mk("div", "k", "Score"));
+  const bars = mk("div", "bars");
+  [["Reach", d.s.reach], ["Pro", d.s.pro], ["AI fit", d.s.ai, "ai"], ["Reuse", d.s.reuse], ["Lanes", d.s.lanes]].forEach(([label, v, cls]) => bars.append(mk("span", null, label), dots(v, cls), mk("span", "v", v)));
+  const hd = mk("div", "dots"); hd.append(mk("i", "dot" + (d.s.hosted < 0 ? " minus" : "")));
+  bars.append(mk("span", null, "Hosted"), hd, mk("span", "v", d.s.hosted < 0 ? "−1" : "0"));
+  const total = mk("div", "total"); total.append(mk("b", null, d.total), mk("span", "v", "of 15"));
+  score.append(bars, total);
+
+  body.append(top, mk("h2", null, d.name), meta, job, layers, block("First slice", d.slice), block("Why it sits here", d.why), block("Free or Pro", d.leanText), grows, score);
+  box.append(scene, body);
+}
+
+function drawTable() {
+  const tbody = document.getElementById("rows");
+  IDEAS.forEach(d => {
+    const tr = mk("tr", d.lean === "near" ? "near-row" : ""); tr.dataset.id = d.id;
+    [d.rank || "", null, SECTORS[d.sector].name, TIER_NAME[d.tier], LEAN_NAME[d.lean], d.cost, d.s.ai, d.total].forEach((c, i) => {
+      const td = mk("td");
+      if (i === 1) { const b = mk("button", "rowbtn"); b.type = "button"; b.append(badge(d), document.createTextNode(d.name)); b.addEventListener("click", () => select(d.id, true)); td.append(b); }
+      else { td.textContent = c; if (i === 0 || i >= 6) td.className = "num"; }
+      tr.append(td);
+    });
+    tbody.append(tr);
+  });
+}
+
+function select(id, reveal) {
+  selected = id;
+  document.querySelectorAll(".pin").forEach(p => p.classList.toggle("is-selected", p.dataset.id === id));
+  document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c.dataset.id === id)));
+  document.querySelectorAll("#rows tr").forEach(r => r.classList.toggle("is-selected", r.dataset.id === id));
+  renderDetail();
+  if (reveal && window.innerWidth < 1040) {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("detail").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  }
+}
+
+function setView(v) {
+  document.getElementById("map-view").hidden = v !== "map";
+  document.getElementById("grid-view").hidden = v !== "grid";
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === v)));
+}
+const viewFromHash = () => location.hash === "#grid" ? "grid" : "map";
+
+drawMap();
+drawGrid();
+drawTable();
+IDEAS.filter(d => d.tier === 1).forEach(d => document.getElementById("pick-chips").append(chip(d)));
+select(selected);
+setView(viewFromHash());
+
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => { setView(b.dataset.view); history.replaceState(null, "", "#" + b.dataset.view); }));
+window.addEventListener("hashchange", () => setView(viewFromHash()));
+document.getElementById("ai-toggle").addEventListener("change", e => {
+  aiOn = e.target.checked;
+  document.getElementById("isles").classList.toggle("ai-off", !aiOn);
+  renderDetail();
+});
+</script>
