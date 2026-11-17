@@ -248,6 +248,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:AuthoredTouch": {
+          "aliases": [],
+          "documentation": "How a change touches an element that a veto reads:\n\n- `'content'`: it edits only what the element holds.\n- `'whole'`: the element is the outermost one the change inserts or removes.\n- `'inside'`: the change inserts or removes the element inside a `'whole'`\n  one.\n- `'properties'`: it sets or unsets the element's properties, a retype\n  included.\n- `'boundary'`: it splits, joins, wraps or unwraps the element, or cuts\n  through it.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "AuthoredTouch",
+          "runtime": false,
+          "signature": "type AuthoredTouch = 'boundary' | 'content' | 'inside' | 'properties' | 'whole';",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:authoredVeto": {
           "aliases": [],
           "documentation": "Contribute a reason Suggesting refuses a change that touches an element.",
@@ -261,12 +272,12 @@
         },
         "platejs:AuthoredVeto": {
           "aliases": [],
-          "documentation": "The reason Suggesting cannot hold a change that touches `element`, such as\n`'table'`, or null. A feature whose blocks review marks cannot hold yet\ncontributes one, and drops it once they can.\n\n`touch` is `'content'` when the change edits only what the element holds,\nand `'element'` when it inserts, removes, splits or joins the element or\nedits its properties.",
+          "documentation": "The reason Suggesting cannot hold a change that touches `element`, such as\n`'table'`, or null. A feature whose blocks review marks cannot hold yet\ncontributes one, and drops it once they can. A `'properties'` touch reads\nthe element's properties both before and after the change.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "AuthoredVeto",
           "runtime": false,
-          "signature": "type AuthoredVeto = (element: Readonly<Record<string, unknown>>, touch: 'content' | 'element') => string | null;",
+          "signature": "type AuthoredVeto = (element: Readonly<Record<string, unknown>>, touch: AuthoredTouch) => string | null;",
           "source": null,
           "typeParameters": []
         },
@@ -15974,6 +15985,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:AuthoredTouch": {
+          "aliases": [],
+          "documentation": "How a change touches an element that a veto reads:\n\n- `'content'`: it edits only what the element holds.\n- `'whole'`: the element is the outermost one the change inserts or removes.\n- `'inside'`: the change inserts or removes the element inside a `'whole'`\n  one.\n- `'properties'`: it sets or unsets the element's properties, a retype\n  included.\n- `'boundary'`: it splits, joins, wraps or unwraps the element, or cuts\n  through it.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "AuthoredTouch",
+          "runtime": false,
+          "signature": "type AuthoredTouch = 'boundary' | 'content' | 'inside' | 'properties' | 'whole';",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:authoredVeto": {
           "aliases": [],
           "documentation": "Contribute a reason Suggesting refuses a change that touches an element.",
@@ -15987,12 +16009,12 @@
         },
         "platejs/react:AuthoredVeto": {
           "aliases": [],
-          "documentation": "The reason Suggesting cannot hold a change that touches `element`, such as\n`'table'`, or null. A feature whose blocks review marks cannot hold yet\ncontributes one, and drops it once they can.\n\n`touch` is `'content'` when the change edits only what the element holds,\nand `'element'` when it inserts, removes, splits or joins the element or\nedits its properties.",
+          "documentation": "The reason Suggesting cannot hold a change that touches `element`, such as\n`'table'`, or null. A feature whose blocks review marks cannot hold yet\ncontributes one, and drops it once they can. A `'properties'` touch reads\nthe element's properties both before and after the change.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "AuthoredVeto",
           "runtime": false,
-          "signature": "type AuthoredVeto = (element: Readonly<Record<string, unknown>>, touch: 'content' | 'element') => string | null;",
+          "signature": "type AuthoredVeto = (element: Readonly<Record<string, unknown>>, touch: AuthoredTouch) => string | null;",
           "source": null,
           "typeParameters": []
         },

@@ -1,4 +1,4 @@
-import type { AuthoredVeto } from '../core/authored-veto';
+import type { AuthoredTouch, AuthoredVeto } from '../core/authored-veto';
 import { type DraftStep, UNSCOPED_ORIGINS } from '../core/change/builder';
 import {
   type DocumentChange,
@@ -91,6 +91,196 @@ const enclosedSpanOf = (change: RootChange) => {
   return { from, to };
 };
 
+type Touched = {
+  props: Readonly<Record<string, unknown>>;
+  propsAfter?: Readonly<Record<string, unknown>>;
+  touch: AuthoredTouch;
+};
+
+const cutEnclosedElements = (
+  change: RootChange,
+  before: DocumentIndex,
+  cut: (entry: IndexedNodeRange) => void
+) => {
+  const span = enclosedSpanOf(change);
+
+  for (const entry of before.nodeRangesTouching(span.from, span.to)) {
+    if (
+      entry.kind === 'element' &&
+      span.from <= entry.from &&
+      entry.to <= span.to
+    ) {
+      cut(entry);
+    }
+  }
+};
+
+const elementTouches = (
+  change: RootChange,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  { cutEnclosed }: { cutEnclosed: boolean }
+): ReadonlyArray<Readonly<Touched>> => {
+  const removed: Array<[number, number]> = [];
+  let position = 0;
+
+  for (let section = 0; section < change.sections.length; section += 2) {
+    const length = change.sections[section];
+    const from = position;
+
+    position += length;
+    if (change.sections[section + 1] < 0 || length === 0) continue;
+
+    const last = removed.at(-1);
+
+    if (last?.[1] === from) last[1] = position;
+    else removed.push([from, position]);
+  }
+
+  const removing = (from: number, to: number) =>
+    removed.find(([start, end]) => start <= from && to <= end);
+  const touchOf = (entry: IndexedNodeRange): AuthoredTouch => {
+    const span = removing(entry.from, entry.to);
+
+    if (span) {
+      return before
+        .openContextAt(entry.from)
+        .some(
+          (around) =>
+            around.kind === 'element' &&
+            around.from < entry.from &&
+            span[0] <= around.from &&
+            around.to <= span[1]
+        )
+        ? 'inside'
+        : 'whole';
+    }
+
+    const open = change.mapPos(entry.from, 1, 'after');
+    const close = change.mapPos(entry.contentTo, 1, 'after');
+    const paired = open === null ? undefined : after.nodeStartingAt(open);
+
+    return paired?.kind === 'element' &&
+      paired.from === open &&
+      paired.contentTo === close
+      ? 'content'
+      : 'boundary';
+  };
+  const touched: Touched[] = [];
+  const checked = new Map<number, Touched>();
+  const collect = (entry: IndexedNodeRange) => {
+    let element = checked.get(entry.from);
+
+    if (!element) {
+      element = {
+        props: nodeProps(before.node(entry.path)),
+        touch: touchOf(entry),
+      };
+      checked.set(entry.from, element);
+      touched.push(element);
+    }
+
+    return element;
+  };
+  const cut = (entry: IndexedNodeRange) => {
+    const element = collect(entry);
+
+    if (element.touch === 'content') element.touch = 'boundary';
+  };
+
+  if (cutEnclosed) cutEnclosedElements(change, before, cut);
+
+  const opens: Array<{
+    closedInSlice: boolean;
+    parent?: number;
+    props?: Readonly<Record<string, unknown>>;
+  }> = [];
+
+  position = 0;
+  for (let section = 0; section < change.sections.length; section += 2) {
+    const length = change.sections[section];
+    const inserted = change.sections[section + 1];
+    const value = change.data[section / 2];
+    const from = position;
+
+    position += length;
+    if (inserted === -1) continue;
+    if (inserted === -2) {
+      for (let at = from; at < position; at++) {
+        const entry = before.nodeStartingAt(at);
+
+        if (entry?.from === at && entry.kind === 'element') {
+          const props = nodeProps(before.node(entry.path));
+
+          touched.push({
+            props,
+            propsAfter: applyPropertyModifications(
+              props,
+              value as readonly PropertyModification[]
+            ),
+            touch: 'properties',
+          });
+        }
+        for (const holder of before.openContextAt(at)) {
+          if (holds(holder, at)) collect(holder);
+        }
+      }
+      continue;
+    }
+
+    const open = before
+      .openContextAt(from)
+      .filter((entry) => entry.from < from && from < entry.to);
+
+    for (const entry of open) {
+      if (entry.kind === 'element') collect(entry);
+    }
+    if (length > 0) {
+      for (const entry of before.nodeRangesTouching(from, position)) {
+        if (
+          entry.kind === 'element' &&
+          entry.from < position &&
+          from < entry.to
+        ) {
+          collect(entry);
+        }
+      }
+    }
+    if (!(value instanceof PreparedTokenSlice)) continue;
+
+    const stack: number[] = [];
+
+    for (const token of value.tokens) {
+      if (token.kind === 'open') {
+        stack.push(opens.length);
+        opens.push({
+          closedInSlice: false,
+          parent: stack.at(-2),
+          props: token.nodeKind === 'element' ? token.props : undefined,
+        });
+      } else if (token.kind === 'close') {
+        const index = stack.pop();
+
+        if (index !== undefined) opens[index].closedInSlice = true;
+      }
+    }
+  }
+  for (const { closedInSlice, parent, props } of opens) {
+    if (!props) continue;
+
+    touched.push({
+      props,
+      touch: closedInSlice
+        ? parent !== undefined && opens[parent].closedInSlice
+          ? 'inside'
+          : 'whole'
+        : 'boundary',
+    });
+  }
+
+  return touched;
+};
+
 export const proposalRefusal = (
   steps: readonly DraftStep[],
   vetoes: readonly AuthoredVeto[]
@@ -102,112 +292,18 @@ export const proposalRefusal = (
     for (const [root, change] of getInternalDocumentChangeEntries(
       step.change
     )) {
-      const before = getDefined(step.indexedBefore.get(root));
-      const after = getDefined(step.indexedAfter.get(root));
-      const elements: Array<{
-        props: Readonly<Record<string, unknown>>;
-        touch: 'content' | 'element';
-      }> = [];
-      const checked = new Map<number, (typeof elements)[number]>();
-      const collect = (entry: IndexedNodeRange) => {
-        let element = checked.get(entry.from);
+      for (const { props, propsAfter, touch } of elementTouches(
+        change,
+        getDefined(step.indexedBefore.get(root)),
+        getDefined(step.indexedAfter.get(root)),
+        { cutEnclosed: step.origin === 'wrap' || step.origin === 'unwrap' }
+      )) {
+        for (const element of propsAfter ? [props, propsAfter] : [props]) {
+          for (const veto of vetoes) {
+            const reason = veto(element, touch);
 
-        if (!element) {
-          const open = change.mapPos(entry.from, 1, 'after');
-          const close = change.mapPos(entry.contentTo, 1, 'after');
-          const paired = open === null ? undefined : after.nodeStartingAt(open);
-
-          element = {
-            props: nodeProps(before.node(entry.path)),
-            touch:
-              open !== null &&
-              close !== null &&
-              paired?.kind === 'element' &&
-              paired.from === open &&
-              paired.contentTo === close
-                ? 'content'
-                : 'element',
-          };
-          checked.set(entry.from, element);
-          elements.push(element);
-        }
-
-        return element;
-      };
-      let position = 0;
-
-      // A wrap or an unwrap keeps the elements it encloses, but suggesting
-      // it moves them as a deletion does, so they read as deleted.
-      if (step.origin === 'wrap' || step.origin === 'unwrap') {
-        const span = enclosedSpanOf(change);
-
-        for (const entry of before.nodeRangesTouching(span.from, span.to)) {
-          if (
-            entry.kind === 'element' &&
-            span.from <= entry.from &&
-            entry.to <= span.to
-          ) {
-            collect(entry).touch = 'element';
+            if (reason !== null) reasons.add(reason);
           }
-        }
-      }
-      for (let section = 0; section < change.sections.length; section += 2) {
-        const length = change.sections[section];
-        const inserted = change.sections[section + 1];
-        const value = change.data[section / 2];
-        const from = position;
-
-        position += length;
-        if (inserted === -1) continue;
-        if (inserted === -2) {
-          for (let at = from; at < position; at++) {
-            const entry = before.nodeStartingAt(at);
-
-            if (entry?.from === at && entry.kind === 'element') {
-              const element = collect(entry);
-
-              element.touch = 'element';
-              elements.push({
-                props: applyPropertyModifications(
-                  element.props,
-                  value as readonly PropertyModification[]
-                ),
-                touch: 'element',
-              });
-            }
-            for (const holder of before.openContextAt(at)) {
-              if (holds(holder, at)) collect(holder);
-            }
-          }
-          continue;
-        }
-        for (const entry of before.openContextAt(from)) {
-          if (holds(entry, from)) collect(entry);
-        }
-        if (length > 0) {
-          for (const entry of before.nodeRangesTouching(from, position)) {
-            if (
-              entry.kind === 'element' &&
-              entry.from < position &&
-              from < entry.to
-            ) {
-              collect(entry);
-            }
-          }
-        }
-        if (value instanceof PreparedTokenSlice) {
-          for (const token of value.tokens) {
-            if (token.kind === 'open' && token.nodeKind === 'element') {
-              elements.push({ props: token.props, touch: 'element' });
-            }
-          }
-        }
-      }
-      for (const { props, touch } of elements) {
-        for (const veto of vetoes) {
-          const reason = veto(props, touch);
-
-          if (reason !== null) reasons.add(reason);
         }
       }
     }

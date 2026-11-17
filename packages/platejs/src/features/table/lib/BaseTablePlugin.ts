@@ -1206,7 +1206,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           editor.plugin(BaseTableCellPlugin).schema.type,
         ];
 
-        return touch === 'element' &&
+        return touch !== 'content' &&
           gridTypes.some((gridType) => gridType === element.type)
           ? 'table'
           : null;
