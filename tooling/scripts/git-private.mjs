@@ -297,6 +297,11 @@ export const start = (root, { remote = REMOTE } = {}) => {
   } else if (isTeamClone(main)) {
     pointAtOwnList(main);
   }
+  privateMust(main, [
+    'config',
+    'merge.main-sync.driver',
+    'node tooling/scripts/main-sync.mjs --merge %O %A %B',
+  ]);
   if (main === root) return null;
   if (isSplit(root)) followBranch(root);
   return attach(root);

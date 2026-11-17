@@ -35,6 +35,40 @@ const AGENT_WORKFLOW = [
   /^docs\/(plans|development)\//,
 ];
 
+// git merges the ledger through this, as .gitattributes says, because a line
+// merge conflicts when two sessions set neighboring rows.
+if (process.argv[2] === '--merge') {
+  const [base, ours, theirs] = process.argv.slice(3, 6).map(
+    (file) =>
+      new Map(
+        readFileSync(file, 'utf-8')
+          .trimEnd()
+          .split('\n')
+          .map((line) => [line.split('\t')[0], line])
+      )
+  );
+  let conflicted = false;
+  const lines = [...new Set([...ours.keys(), ...theirs.keys()])].flatMap(
+    (commit) => {
+      const [was, mine, other] = [base, ours, theirs].map((side) =>
+        side.get(commit)
+      );
+      if (mine === other || other === was) return mine ?? [];
+      if (mine === was) return other ?? [];
+      conflicted = true;
+      return [
+        '<<<<<<< ours',
+        mine ?? '',
+        '=======',
+        other ?? '',
+        '>>>>>>> theirs',
+      ];
+    }
+  );
+  writeFileSync(process.argv[4], `${lines.join('\n')}\n`);
+  process.exit(conflicted ? 1 : 0);
+}
+
 const git = (...args) =>
   execFileSync('git', args, { encoding: 'utf-8' }).trimEnd();
 

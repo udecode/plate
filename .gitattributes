@@ -1,1 +1,2 @@
 docs/triage/*.tsv merge=union
+docs/plans/main-sync.tsv merge=main-sync
