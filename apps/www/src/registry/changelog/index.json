@@ -52,6 +52,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-table-toolbar-single-cell-selection",
+      "href": "/registry/changelog/2026-11-17-table-toolbar-single-cell-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the table toolbar's row and column controls when text is selected inside one cell",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-ai-routes-caller-key",
       "href": "/registry/changelog/2026-11-16-ai-routes-caller-key.json",
       "status": "draft",

@@ -434,20 +434,17 @@ function TableFloatingToolbar({
     (editor) => editor.plugin(TablePlugin).read.selection()?.cells.length ?? 0
   );
   const selected = useElementSelected();
-  const collapsedInside = useEditorSelector(
-    (editor) => selected && editor.read.selection.isCollapsed()
-  );
   const isFocusedLast = useFocusedLast();
-  const isCollapsedToolbarOpen = isFocusedLast && collapsedInside;
-  const isExpandedSelectionPending =
-    isFocusedLast && !collapsedInside && selectedCellCount > 1;
-  const isToolbarOpen = isCollapsedToolbarOpen || isExpandedSelectionPending;
+  const isSingleCellToolbarOpen =
+    isFocusedLast && selected && selectedCellCount === 1;
+  const isExpandedSelectionPending = isFocusedLast && selectedCellCount > 1;
+  const isToolbarOpen = isSingleCellToolbarOpen || isExpandedSelectionPending;
 
   return (
     <FloatingPopover open={isToolbarOpen} modal={false}>
       <FloatingPopoverAnchor element={children as React.ReactElement} />
-      {isCollapsedToolbarOpen && (
-        <TableFloatingToolbarContent {...props} collapsedInside />
+      {isSingleCellToolbarOpen && (
+        <TableFloatingToolbarContent {...props} singleCell />
       )}
       {isExpandedSelectionPending && (
         <DelayedExpandedSelectionTableFloatingToolbarContent {...props} />
@@ -477,10 +474,10 @@ function DelayedExpandedSelectionTableFloatingToolbarContent(
 }
 
 function TableFloatingToolbarContent({
-  collapsedInside = false,
+  singleCell = false,
   ...props
 }: React.ComponentProps<typeof FloatingPopoverContent> & {
-  collapsedInside?: boolean;
+  singleCell?: boolean;
 }) {
   const editor = useEditor();
   const element = useElement(TablePlugin);
@@ -490,10 +487,10 @@ function TableFloatingToolbarContent({
   const canSplitSelection = useEditorSelector((innerEditor) =>
     innerEditor.plugin(TablePlugin).read.canSplit()
   );
-  const canMerge = !collapsedInside && canMergeSelection;
+  const canMerge = !singleCell && canMergeSelection;
   const canSplit = canSplitSelection;
 
-  if (!collapsedInside && !canMerge && !canSplit) return null;
+  if (!singleCell && !canMerge && !canSplit) return null;
 
   return (
     <FloatingPopoverContent
@@ -545,7 +542,7 @@ function TableFloatingToolbarContent({
             </DropdownMenuPortal>
           </DropdownMenu>
 
-          {collapsedInside && (
+          {singleCell && (
             <ToolbarGroup>
               <ToolbarButton
                 onClick={() => {
@@ -560,7 +557,7 @@ function TableFloatingToolbarContent({
           )}
         </ToolbarGroup>
 
-        {collapsedInside && (
+        {singleCell && (
           <ToolbarGroup>
             <ToolbarButton
               onClick={() => {
@@ -589,7 +586,7 @@ function TableFloatingToolbarContent({
           </ToolbarGroup>
         )}
 
-        {collapsedInside && (
+        {singleCell && (
           <ToolbarGroup>
             <ToolbarButton
               onClick={() => {

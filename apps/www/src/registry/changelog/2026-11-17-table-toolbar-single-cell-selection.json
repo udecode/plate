@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-table-toolbar-single-cell-selection",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-table-toolbar-single-cell-selection.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the table toolbar's row and column controls when text is selected inside one cell",
+  "targets": [
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-table-keep-toolbar-s-row-135ed67b",
+      "kind": "fix",
+      "summary": "Keep the table toolbar's row and column controls when text is selected inside one cell",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-table-toolbar-single-cell-selection",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
