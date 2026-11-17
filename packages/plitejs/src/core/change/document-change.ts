@@ -1711,9 +1711,18 @@ export const documentChangeBetween = (
 };
 
 /** @internal */
+export type ConflictRecords = ReadonlyArray<
+  Readonly<{ id: string; set: string }>
+>;
+
+/** @internal */
 export type DocumentChangeConflict =
-  | Readonly<{ id: string; kind: 'record'; set: string }>
-  | Readonly<{ kind: 'root-lifecycle'; root: string }>;
+  | Readonly<{ kind: 'record'; records: ConflictRecords }>
+  | Readonly<{
+      kind: 'root-lifecycle';
+      records?: ConflictRecords;
+      root: string;
+    }>;
 
 type RebasedPair = Readonly<{
   a: DocumentChange;
@@ -1772,6 +1781,12 @@ const recordsRebasedOf = (a: DocumentChange, b: DocumentChange) =>
     getInternalDocumentChangeRecords(a),
     getInternalDocumentChangeRecords(b)
   );
+
+/** @internal */
+export const unequalRecordPuts = (
+  a: DocumentChange,
+  b: DocumentChange
+): ConflictRecords => recordsRebasedOf(a, b).unequal;
 
 const rebasedPair = (
   a: DocumentChange,
@@ -1851,13 +1866,17 @@ export const rebaseDocumentChange = (
   value: JsonEditorValue,
   options: RebaseOptions = {}
 ): DocumentRebase => {
+  const records = recordsRebasedOf(a, b);
   const lifecycle = lifecycleConflictOf(a, b);
 
-  if (lifecycle) return lifecycle;
-
-  const records = recordsRebasedOf(a, b);
-
-  if (records.unequal) return { kind: 'record', ...records.unequal };
+  if (lifecycle) {
+    return records.unequal.length > 0
+      ? { ...lifecycle, records: records.unequal }
+      : lifecycle;
+  }
+  if (records.unequal.length > 0) {
+    return { kind: 'record', records: records.unequal };
+  }
 
   return { kind: 'pair', ...rebasedPair(a, b, value, options, records) };
 };

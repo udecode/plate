@@ -1,4 +1,7 @@
-import type { DocumentChangeJson } from '../../core/change/document-change';
+import type {
+  ConflictRecords,
+  DocumentChangeJson,
+} from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 
 export type OutboxHead = Readonly<{
@@ -18,12 +21,15 @@ export type Confirmed = Readonly<{
   version: number | null;
 }>;
 
+export const conflictOn = (records?: ConflictRecords): KeptReason =>
+  records ? { kind: 'conflict', records } : { kind: 'conflict' };
+
 export type KeptReason =
   | Readonly<{
       check: 'judge' | 'moved' | 'stale' | 'structure';
       kind: 'decision';
     }>
-  | Readonly<{ kind: 'conflict' }>
+  | Readonly<{ kind: 'conflict'; records?: ConflictRecords }>
   | Readonly<{ kind: 'expired' }>
   | Readonly<{ kind: 'invalid' }>
   | Readonly<{ kind: 'judged'; verdict: 'contested' | 'lost' | 'unjudged' }>
@@ -69,7 +75,11 @@ export type SavedBatch = Readonly<{
         origin?: BatchOrigin;
         state: 'sent';
       }>
-    | Readonly<{ frame: string; state: 'withheld' }>
+    | Readonly<{
+        frame: string;
+        records?: ConflictRecords;
+        state: 'withheld';
+      }>
     | Readonly<{
         change: DocumentChangeJson;
         frame?: string;

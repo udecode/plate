@@ -24,11 +24,13 @@ import {
   type CrossAs,
   crossChain,
   type Fits,
+  frameChangeOf,
   type KeepAs,
   leaving,
   type ShownBatch,
   shownValue,
   superseded,
+  withConflictsOfTeammate,
   withdrawn,
 } from './chain';
 import { MOVED, type SyncDecide, type SyncJudge } from './decision';
@@ -36,6 +38,7 @@ import {
   applyWrite,
   type BatchOrigin,
   type CommitDecision,
+  conflictOn,
   type KeptReason,
   mergeWrites,
   type OutboxRecord,
@@ -157,9 +160,6 @@ const queueWrites = (
       }),
   };
 };
-
-const frameChangeOf = (frame: string) =>
-  DocumentChange.fromJSON(JSON.parse(frame).change);
 
 const replaced = (
   before: readonly SavedBatch[],
@@ -453,13 +453,18 @@ export const createWriter = ({
 
   const keep = (batch: InFlight | UnsentBatch, reason: KeptReason) => {
     if (batch.state === 'withheld') {
+      const conflicted =
+        reason.kind === 'conflict' ||
+        (reason.kind === 'refused' &&
+          (reason.reason === 'record' || reason.reason === 'root-lifecycle'));
+
       save({
         put: [
           {
             ...provenanceOf(batch),
             change: frameChangeOf(batch.frame).toJSON(),
             frame: batch.frame,
-            reason,
+            reason: conflicted ? conflictOn(batch.records) : reason,
             state: 'kept',
           },
         ],
@@ -491,19 +496,23 @@ export const createWriter = ({
   const cross = (change: DocumentChange, version: number) => {
     const at = record.confirmed.document;
     const document = change.apply(at);
+    const batches = withConflictsOfTeammate(record.batches, change);
 
     save({
       confirmed: { document, version },
-      put: crossOrWithdraw(
-        record.batches,
-        document,
-        (fitting) =>
-          crossChain(change, at, record.batches, {
-            crossAs: redecidedIn(record.batches),
-            fits: fitting,
-          }),
-        movedDecision
-      ),
+      put: [
+        ...replaced(record.batches, batches),
+        ...crossOrWithdraw(
+          batches,
+          document,
+          (fitting) =>
+            crossChain(change, at, batches, {
+              crossAs: redecidedIn(batches),
+              fits: fitting,
+            }),
+          movedDecision
+        ),
+      ],
       ...forgetRebuilds(),
     });
     showExactly();

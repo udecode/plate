@@ -664,6 +664,7 @@ export type BookView = Readonly<{
   /** Whether a change sits in the card holding `group`, without summaries. */
   inCard: (group: string) => (id: string) => boolean;
   idsFrom: (from: IdsFrom) => Generator<string>;
+  idsAuthoredBy: (authorId: string) => Set<string>;
   idsIn: (root: string, from: number, to: number) => Set<string>;
   idsShown: (
     root: string,
@@ -917,6 +918,15 @@ export class ChangeBook {
       has: fresh((id: string) => this.entries.has(id)),
       inCard: fresh((group: string) => this.inCard(group)),
       idsFrom: fresh((from: IdsFrom) => this.idsFrom(from)),
+      idsAuthoredBy: fresh((authorId: string) => {
+        const ids = new Set<string>();
+
+        for (const entry of this.entries.values()) {
+          if (entry.authorId === authorId) ids.add(entry.id);
+        }
+
+        return ids;
+      }),
       idsIn: fresh((root: string, from: number, to: number) =>
         this.idsIn(root, from, to)
       ),

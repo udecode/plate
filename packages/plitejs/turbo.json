@@ -681,6 +681,7 @@
       "dependsOn": [
         "source-hash:partition:authored",
         "source-hash:partition:core",
+        "source-hash:partition:diff",
         "source-hash:partition:dom",
         "source-hash:partition:history",
         "source-hash:partition:testing",

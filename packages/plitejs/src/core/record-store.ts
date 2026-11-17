@@ -305,7 +305,7 @@ const withoutIds = (
 export const transformRecordOps = (first: RecordOps, second: RecordOps) => {
   const firstLost = new Map<string, Set<string>>();
   const secondLost = new Map<string, Set<string>>();
-  let unequal: Readonly<{ id: string; set: string }> | null = null;
+  const unequal: Array<Readonly<{ id: string; set: string }>> = [];
 
   for (const [set, secondWrites] of second) {
     const firstWrites = first.get(set);
@@ -316,7 +316,9 @@ export const transformRecordOps = (first: RecordOps, second: RecordOps) => {
       const firstWrite = firstWrites.get(id);
 
       if (firstWrite === undefined || firstWrite === secondWrite) continue;
-      if (firstWrite !== null && secondWrite !== null) unequal ??= { id, set };
+      if (firstWrite !== null && secondWrite !== null) {
+        unequal.push({ id, set });
+      }
 
       const lost = firstWrite === null ? firstLost : secondLost;
       const ids = lost.get(set) ?? new Set();

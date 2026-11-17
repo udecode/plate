@@ -1,16 +1,23 @@
 import {
+  type ConflictRecords,
   DocumentChange,
+  getInternalDocumentChangeRecords,
   rebaseDocumentChange,
+  unequalRecordPuts,
 } from '../../core/change/document-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { SYNC_REBASE, sameDocument } from '../protocol';
 import { MOVED } from './decision';
 import {
   type BatchOrigin,
+  conflictOn,
   type KeptReason,
   provenanceOf,
   type SavedBatch,
 } from './outbox';
+
+export const frameChangeOf = (frame: string) =>
+  DocumentChange.fromJSON(JSON.parse(frame).change);
 
 export type ShownBatch = Extract<SavedBatch, { state: 'saved' | 'sent' }>;
 
@@ -31,19 +38,25 @@ export const shownValue = (
 /** What a shown batch becomes when it leaves the chain. */
 export const leaving = (
   batch: ShownBatch,
-  reason: KeptReason | null
+  reason: KeptReason | null,
+  records?: ConflictRecords
 ): SavedBatch => {
   if (batch.state === 'sent') {
     return reason
       ? { ...batch, reason, state: 'kept' }
-      : { ...provenanceOf(batch), frame: batch.frame, state: 'withheld' };
+      : {
+          ...provenanceOf(batch),
+          frame: batch.frame,
+          ...(records ? { records } : {}),
+          state: 'withheld',
+        };
   }
 
   return {
     ...provenanceOf(batch),
     change: batch.change,
     ...(batch.origin ? { origin: batch.origin } : {}),
-    reason: reason ?? { kind: 'conflict' },
+    reason: reason ?? conflictOn(records),
     state: 'kept',
   };
 };
@@ -98,6 +111,53 @@ export const withdrawn = (
 export type Fits = (before: JsonEditorValue, change: DocumentChange) => boolean;
 
 const INVALID: KeptReason = { kind: 'invalid' };
+
+const crossedRecords = (
+  own: DocumentChange,
+  entry: DocumentChange,
+  held: ConflictRecords = []
+) => {
+  const added = unequalRecordPuts(entry, own).filter(
+    ({ id, set }) =>
+      !held.some((record) => record.id === id && record.set === set)
+  );
+
+  return added.length > 0 ? [...held, ...added] : null;
+};
+
+const withConflictsOfLaterEntry = (
+  batch: SavedBatch,
+  entry: DocumentChange
+): SavedBatch => {
+  if (batch.state === 'withheld') {
+    const records = crossedRecords(
+      frameChangeOf(batch.frame),
+      entry,
+      batch.records
+    );
+
+    return records ? { ...batch, records } : batch;
+  }
+  if (batch.state === 'kept' && batch.reason.kind === 'conflict') {
+    const records = crossedRecords(
+      DocumentChange.fromJSON(batch.change),
+      entry,
+      batch.reason.records
+    );
+
+    return records ? { ...batch, reason: conflictOn(records) } : batch;
+  }
+
+  return batch;
+};
+
+export const withConflictsOfTeammate = (
+  batches: readonly SavedBatch[],
+  entry: DocumentChange
+) =>
+  getInternalDocumentChangeRecords(entry).size === 0
+    ? batches
+    : batches.map((batch) => withConflictsOfLaterEntry(batch, entry));
 
 const crossedOrigin = (
   batch: ShownBatch,
@@ -176,7 +236,8 @@ export const crossChain = (
       next.push(
         leaving(
           batch,
-          crossed ?? (unfit && batch.state === 'saved' ? INVALID : null)
+          crossed ?? (unfit && batch.state === 'saved' ? INVALID : null),
+          rebase && rebase.kind !== 'pair' ? rebase.records : undefined
         )
       );
       out.add(batch.seq);

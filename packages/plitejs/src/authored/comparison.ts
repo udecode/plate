@@ -21,9 +21,11 @@ import type {
   Value,
 } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
+import { authoredProposerOf } from './authored';
+import { factsOf, membersOf, type ReviewFacts } from './facts/facts';
 import { unrepresentable } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
-import { AUTHORED_MARKS_KEY } from './tree/marks';
+import { AUTHORED_MARKS_KEY, readMembers } from './tree/marks';
 import { resolveAuthoredValue } from './tree/resolve';
 
 export type AuthoredComparisonImportResult =
@@ -93,9 +95,12 @@ const validComparison = (comparison: TwoWayComparison): boolean => {
 
 /**
  * Publish the selected groups of a validated fixed-revision comparison as one
- * native proposal. Returns `applied` only when accepting the proposal alone
- * gives the selection's document and rejecting it alone gives the document it
- * started from, with every other suggestion left pending. Otherwise it writes
+ * native proposal. Returns `unchanged`, writing nothing, when accepting the
+ * importer's own pending changes that the selection's document no longer marks,
+ * and keeping every other pending change, already gives that document.
+ * Otherwise returns `applied` only when accepting the proposal alone gives the
+ * selection's document and rejecting it alone gives the document it started
+ * from, with every other suggestion left pending. When it cannot, it writes
  * nothing and returns `blocked`. Review can still hold the proposal's decision
  * until a pending change it waits on is decided. An error that escapes the
  * update after the proposal commits propagates.
@@ -147,17 +152,6 @@ export const proposeAuthoredComparison = <V extends Value>(
     return { reason: 'ambiguous-selection', status: 'blocked' };
   }
 
-  const changeId = `comparison-import:${comparison.id}:${fingerprintEditorJson(
-    selectedIds
-  )}`;
-  const mappings = selectedIds.map((groupId) => ({ changeId, groupId }));
-  const authoredRead = editor.read.authored as {
-    change: (id: string) => unknown;
-  };
-  if (authoredRead.change(changeId)) {
-    return { ids: [changeId], mappings, status: 'unchanged' };
-  }
-
   if (!plan) {
     return { reason: 'schema', status: 'stale' };
   }
@@ -190,7 +184,36 @@ export const proposeAuthoredComparison = <V extends Value>(
   if (change.empty) {
     return { ids: [], mappings: [], status: 'unchanged' };
   }
+  const proposer = authoredProposerOf(editor);
+  if (!proposer) {
+    return { reason: 'actor', status: 'unavailable' };
+  }
+  const compare = compareDecided(
+    editor,
+    current,
+    comparison.before.document,
+    target
+  );
+  const { authorId, pending } = proposer;
+  const draftRestatesOwnChanges = () => {
+    try {
+      const marked = changesMarkedIn(target, factsOf(current));
+      const restated = (id: string) => pending.has(id) && !marked.has(id);
 
+      return (
+        [...pending].some(restated) &&
+        compare(current).acceptGivesTarget(restated)
+      );
+    } catch {
+      return false;
+    }
+  };
+  if (draftRestatesOwnChanges()) {
+    return { ids: [], mappings: [], status: 'unchanged' };
+  }
+
+  const changeId = `comparison-import:${authorId}:${proposer.createChangeId()}`;
+  const mappings = selectedIds.map((groupId) => ({ changeId, groupId }));
   const exact = () => change;
   const wholeBase = () =>
     DocumentChange.between(
@@ -199,13 +222,17 @@ export const proposeAuthoredComparison = <V extends Value>(
     );
   const wholeBlocks = () => plan.select(ids, 'blocks');
   const forms = all ? [exact, wholeBase, wholeBlocks] : [exact, wholeBlocks];
-  const guard = readsExactly(
-    editor,
-    current,
-    comparison.before.document,
-    target,
-    changeId
-  );
+  const guard = (written: JsonEditorValue) => {
+    const read = compare(written);
+    const imported = (id: string) => id === changeId;
+
+    if (!read.acceptGivesTarget(imported) || !read.rejectGivesLive(imported)) {
+      throw unrepresentable(
+        'The review marks cannot hold this comparison import.',
+        'diverged'
+      );
+    }
+  };
   let refusal: Readonly<{ value: unknown }> | null = null;
   const tried: unknown[] = [];
 
@@ -226,12 +253,6 @@ export const proposeAuthoredComparison = <V extends Value>(
       );
     } catch (error) {
       if (trial.committed) throw error;
-      if (
-        error instanceof Error &&
-        error.message === 'An author ID is required for authored writes.'
-      ) {
-        return { reason: 'actor', status: 'unavailable' };
-      }
       continue;
     }
     if (trial.committed) {
@@ -242,6 +263,25 @@ export const proposeAuthoredComparison = <V extends Value>(
   if (refusal) publishEditorRefusal(editor, refusal.value);
 
   return { reason: 'dependency', status: 'blocked' };
+};
+
+const changesMarkedIn = (value: JsonEditorValue, facts: ReviewFacts) => {
+  const ids = new Set<string>();
+  const visit = (node: JsonNode) => {
+    for (const member of readMembers(node)) {
+      if ('change' in member) {
+        ids.add(member.change);
+      } else if (member.kind === 'in') {
+        for (const { change } of membersOf(facts, member.ctx)) ids.add(change);
+      }
+    }
+    node.children?.forEach(visit);
+  };
+
+  value.children.forEach(visit);
+  for (const nodes of Object.values(value.roots ?? {})) nodes.forEach(visit);
+
+  return ids;
 };
 
 const readsAlone = (node: JsonNode, schema: CompiledEditorSchema): boolean =>
@@ -323,12 +363,11 @@ const droppedQuietBlocks = (
   return dropped;
 };
 
-const readsExactly = (
+const compareDecided = (
   editor: AnyEditor,
   live: JsonEditorValue,
   copy: JsonEditorValue,
-  target: JsonEditorValue,
-  changeId: string
+  target: JsonEditorValue
 ) => {
   const schema = authoredResolveSchemaOf(editor);
   const liveRecords = getValueRecords(live);
@@ -337,16 +376,25 @@ const readsExactly = (
     root?.max == null ? Math.max(root?.prefix ?? 0, root?.min ?? 0) : Infinity;
   const read = (
     value: JsonEditorValue,
-    action: 'accept' | 'keep' | 'reject'
+    drop: ReadonlySet<number>,
+    records: ReturnType<typeof getValueRecords>,
+    outcome: (change: string) => 'accept' | 'keep' | 'reject'
   ) => {
     const { children, roots } = resolveAuthoredValue(
-      value,
-      (change) => (change === changeId ? action : 'keep'),
+      withValueRecords(
+        {
+          ...value,
+          children: value.children.filter((_node, index) => !drop.has(index)),
+        },
+        records
+      ),
+      outcome,
       schema
     ).value;
 
     return { children, roots: roots ?? {} };
   };
+  const keep = () => 'keep' as const;
 
   return (written: JsonEditorValue) => {
     const dropped = droppedQuietBlocks(
@@ -357,34 +405,25 @@ const readsExactly = (
       mustKeep,
       schema.ownership
     );
-    const kept = (
-      value: JsonEditorValue,
-      drop: ReadonlySet<number>,
-      records: ReturnType<typeof getValueRecords>
+    const decided = (
+      mine: (change: string) => boolean,
+      action: 'accept' | 'reject'
     ) =>
-      withValueRecords(
-        {
-          ...value,
-          children: value.children.filter((_node, index) => !drop.has(index)),
-        },
-        records
+      read(written, dropped.written, getValueRecords(written), (change) =>
+        mine(change) ? action : 'keep'
       );
-    const recording = kept(written, dropped.written, getValueRecords(written));
 
-    if (
-      !jsonEqual(
-        read(recording, 'accept'),
-        read(kept(target, dropped.target, liveRecords), 'keep')
-      ) ||
-      !jsonEqual(
-        read(recording, 'reject'),
-        read(kept(live, dropped.live, liveRecords), 'keep')
-      )
-    ) {
-      throw unrepresentable(
-        'The review marks cannot hold this comparison import.',
-        'diverged'
-      );
-    }
+    return {
+      acceptGivesTarget: (mine: (change: string) => boolean) =>
+        jsonEqual(
+          decided(mine, 'accept'),
+          read(target, dropped.target, liveRecords, keep)
+        ),
+      rejectGivesLive: (mine: (change: string) => boolean) =>
+        jsonEqual(
+          decided(mine, 'reject'),
+          read(live, dropped.live, liveRecords, keep)
+        ),
+    };
   };
 };
