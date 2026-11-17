@@ -415,6 +415,7 @@ import {
   valueSite,
 } from './set-root';
 import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
+import { renewContentSlice } from './slice-identities';
 import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
@@ -4728,7 +4729,8 @@ export const setRootCopyScope = (editor: Editor, scope: RootCopyScope) => {
   rootCopyScopes.set(getEditorRuntimeOwner(editor), scope);
 };
 
-const nextCopiedRootName = (
+/** @internal */
+export const nextCopiedRootName = (
   editor: Editor,
   root: string,
   taken: Set<string>
@@ -4750,7 +4752,8 @@ const nextCopiedRootName = (
   return name;
 };
 
-const takenRootNames = (editor: Editor) =>
+/** @internal */
+export const takenRootNames = (editor: Editor) =>
   new Set([
     ...Object.keys(
       (getActiveDocumentChangeBuilder(editor).value as EditorDocumentValue)
@@ -4759,42 +4762,6 @@ const takenRootNames = (editor: Editor) =>
     ...(getTransactionSpecContext(editor)?.snapshot.reservedRoots ??
       NO_RESERVED_ROOTS),
   ]);
-
-const remapContentSliceRoots = <V extends Value>(
-  editor: Editor<V>,
-  slice: import('../interfaces/editor').ContentSlice<V>
-) => {
-  if (!slice.roots || Object.keys(slice.roots).length === 0) return slice;
-
-  const existingRoots = takenRootNames(editor);
-  const remapped = new Map<string, string>();
-
-  for (const root of Object.keys(slice.roots).sort()) {
-    remapped.set(root, nextCopiedRootName(editor, root, existingRoots));
-  }
-
-  const rewrite = (children: readonly Descendant[]) =>
-    rewriteContentRootReferences(
-      editor,
-      children,
-      (root) => remapped.get(root) ?? root
-    );
-  const roots = Object.freeze(
-    Object.fromEntries(
-      [...remapped].map(([source, target]) => [
-        target,
-        rewrite(getDefined(slice.roots)[source]),
-      ])
-    )
-  );
-
-  return ContentSlice.fromJSON<V>({
-    content: rewrite(slice.content),
-    openEnd: slice.openEnd,
-    openStart: slice.openStart,
-    roots,
-  });
-};
 
 const materializeContentSliceRoots = (
   editor: Editor,
@@ -5690,10 +5657,7 @@ export const fitSliceAtSite = (
   const landings: DraftTrack[] = [];
   const spec = createCheckedSliceSpec(owner, (transaction) =>
     runWithMutationRoot(owner, place.root, () => {
-      const remapped = remapContentSliceRoots(
-        owner,
-        ContentSlice.fromJSON(slice)
-      );
+      const remapped = renewContentSlice(owner, ContentSlice.fromJSON(slice));
 
       materializeContentSliceRoots(owner, remapped);
       return landSlice(owner, transaction, place, remapped, {
@@ -5784,7 +5748,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       const sourceSlice = ContentSlice.fromJSON<V>(slice);
       const inputSlice = internal?.rootsPrepared
         ? sourceSlice
-        : remapContentSliceRoots(editor, sourceSlice);
+        : renewContentSlice(editor, sourceSlice);
       const limitedSlice = limitSliceToLength(
         internal?.drop
           ? inputSlice
@@ -8127,7 +8091,7 @@ export const getUpdateView = <
       source: copy,
       target: { kind: 'beside', ...scope },
     });
-    const slice = remapContentSliceRoots(
+    const slice = renewContentSlice(
       editor,
       ContentSlice.fromJSON<V>(landed.slice)
     );
