@@ -1,11 +1,13 @@
 import type { DocumentChange } from '../../core/change/document-change';
-import type { JsonEditorValue } from '../../core/change/tokens';
+import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
+import { rootsOwnedOnlyWithin } from '../../core/element-owned-root-index';
 import {
   getRecordText,
   getRecordEntries,
   getValueRecords,
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import { gridHoldersOf } from '../../core/survival';
 import type { SyncDecision } from '../../sync/client/decision';
 import type {
   ChangeClaim,
@@ -18,6 +20,7 @@ import {
   type DecisionSite,
   storedDecisionSiteOf,
 } from '../decision';
+import { rootOf } from '../ledger/roots';
 import { type FormatTag, keyTips, sameValue } from '../tree/layers';
 import {
   type AuthoredMember,
@@ -26,7 +29,7 @@ import {
   readMembers,
 } from '../tree/marks';
 import { editingChangeOf, isEditingChange } from './editing';
-import { contentRootsOf, factsOf, type ReviewFacts } from './facts';
+import { claimsOf, contentRootsOf, factsOf, type ReviewFacts } from './facts';
 import {
   CONTEXTS,
   incarnationOf,
@@ -52,6 +55,7 @@ import {
   authoredWritesOf,
   type Carrier,
   type Claim,
+  claimKeyOf,
   type HeadClaim,
   type SetKey,
 } from './writes';
@@ -81,10 +85,18 @@ type Kind = AuthoredWrite['kind'];
 type OrdinaryKind = Exclude<Kind, 'verdict'>;
 type WriteOf<K extends Kind> = Extract<AuthoredWrite, Readonly<{ kind: K }>>;
 
+type Span = Readonly<{ from: number; root: string; to: number }>;
+
+type TakenGridParts = Readonly<{
+  roots: ReadonlySet<string>;
+  spans: readonly Span[];
+}>;
+
 type Judge = Readonly<{
   grant: SyncGrant;
   head: ReviewFacts;
   headCutHalves: () => ReadonlySet<string>;
+  takenGridParts: () => TakenGridParts;
   writes: AuthoredWrites;
 }>;
 
@@ -113,6 +125,16 @@ const isForeignDeletion = (claim: Claim, judge: Judge) =>
 
 const underNoForeignDeletion = (under: readonly Claim[], judge: Judge) =>
   !under.some((claim) => isForeignDeletion(claim, judge));
+
+const NO_TAKEN_PARTS: TakenGridParts = { roots: new Set(), spans: [] };
+
+const inSpan = ({ at, root }: Carrier, span: Span) =>
+  span.root === root && span.from <= at && at < span.to;
+
+const insideTakenGridPart = (
+  carrier: Carrier,
+  { roots, spans }: TakenGridParts
+) => roots.has(carrier.root) || spans.some((span) => inSpan(carrier, span));
 
 const underOwnInsertion = (under: readonly Claim[], judge: Judge) =>
   under.some((claim) => claim.kind === 'insert' && isOwnPending(claim, judge));
@@ -292,7 +314,9 @@ const RULES: { [K in OrdinaryKind]: Rule<K> } = {
             joinsOtherHalfOfCut(write, judge)),
   },
   removed: {
-    editing: ({ under }, judge) => underNoForeignDeletion(under, judge),
+    editing: ({ carrier, under }, judge) =>
+      underNoForeignDeletion(under, judge) ||
+      insideTakenGridPart(carrier, judge.takenGridParts()),
     own: underOwnStructure,
   },
   reserve: {
@@ -535,6 +559,95 @@ const decisionCover = (
   };
 };
 
+type GridPart = Readonly<{
+  above: ReadonlySet<string>;
+  node: JsonNode;
+  span: Span;
+}>;
+
+const gridPartsTakenWhole = (
+  step: AuthoredStep,
+  judge: Judge,
+  schema: CompiledEditorSchema
+): TakenGridParts => {
+  const holdsParts = gridHoldersOf(schema);
+  const removals = [...judge.writes.writes, ...judge.writes.moved].filter(
+    (write): write is WriteOf<'removed'> => write.kind === 'removed'
+  );
+  const parts: GridPart[] = [];
+
+  for (const write of removals) {
+    if (
+      write.carrier.node !== 'element' ||
+      !write.whole ||
+      !underNoForeignDeletion(write.under, judge)
+    ) {
+      continue;
+    }
+
+    const { at, root } = write.carrier;
+    const index = rootOf(step.before, root);
+    const entry = index.nodeStartingAt(at);
+
+    if (!entry) continue;
+
+    const node = index.node(entry.path);
+
+    if (!holdsParts(node)) continue;
+    parts.push({
+      above: new Set(
+        entry.path
+          .slice(0, -1)
+          .flatMap((_, depth) =>
+            claimsOf(index.node(entry.path.slice(0, depth + 1)), judge.head)
+          )
+          .filter((claim) => claim.kind === 'insert' || claim.kind === 'delete')
+          .map(claimKeyOf)
+      ),
+      node,
+      span: { from: at, root, to: entry.to },
+    });
+  }
+
+  const claimOutlives = ({ above, span }: GridPart) => {
+    const claimed = new Set(
+      removals
+        .filter((write) => inSpan(write.carrier, span))
+        .flatMap((write) => write.under.map(claimKeyOf))
+        .filter((key) => !above.has(key))
+    );
+    const holdsClaimed = (under: readonly Claim[]) =>
+      under.some((claim) => claimed.has(claimKeyOf(claim)));
+
+    return (
+      judge.writes.moved.some(
+        (write) =>
+          write.kind === 'removed' &&
+          inSpan(write.carrier, span) &&
+          holdsClaimed(write.under)
+      ) ||
+      judge.writes.writes.some(
+        (write) => write.kind === 'born' && holdsClaimed(write.under)
+      )
+    );
+  };
+  const taken = parts.filter((part) => !claimOutlives(part));
+
+  if (taken.length === 0) return NO_TAKEN_PARTS;
+
+  const nodes = new Set(taken.map((part) => part.node));
+  const kept = step.after.roots ?? {};
+
+  return {
+    roots: new Set(
+      [
+        ...rootsOwnedOnlyWithin(schema, step.before, (node) => nodes.has(node)),
+      ].filter((root) => !Object.hasOwn(kept, root))
+    ),
+    spans: taken.map((part) => part.span),
+  };
+};
+
 const ordinaryCover = (
   step: AuthoredStep,
   grant: SyncGrant,
@@ -543,7 +656,8 @@ const ordinaryCover = (
   const writes = authoredWritesOf(step);
   const claims = changeClaimsOf(writes.claims);
   let headCutHalves: ReadonlySet<string> | undefined;
-  const uncovered = firstUncovered(writes, {
+  let takenGridParts: TakenGridParts | undefined;
+  const judge: Judge = {
     grant,
     head: factsOf(step.before),
     headCutHalves: () => {
@@ -551,8 +665,14 @@ const ordinaryCover = (
 
       return headCutHalves;
     },
+    takenGridParts: () => {
+      takenGridParts ??= gridPartsTakenWhole(step, judge, schema);
+
+      return takenGridParts;
+    },
     writes,
-  });
+  };
+  const uncovered = firstUncovered(writes, judge);
 
   if (!uncovered) return { claims, kind: 'covered' };
 

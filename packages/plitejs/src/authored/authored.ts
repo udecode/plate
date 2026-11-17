@@ -2230,6 +2230,7 @@ export const createAuthoredPlugin = (
             forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
             projection: input.projection,
             inc: forced?.inc ?? null,
+            holdsGridParts: gridHoldersOf(compiled),
             isInline: (props) =>
               getEditorSchema(editor).isInline(elementOf(props)),
             emptyTextKeeps: (key, value, parents, root) => {

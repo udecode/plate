@@ -275,6 +275,59 @@ export const ownedRootsOf = (
   return owned;
 };
 
+/** @internal */
+export const rootsOwnedOnlyWithin = (
+  schema: CompiledEditorSchema,
+  value: Readonly<{
+    children: readonly JsonNode[];
+    roots?: Readonly<Record<string, readonly JsonNode[]>>;
+  }>,
+  within: (element: JsonNode) => boolean
+): ReadonlySet<string> => {
+  const owners = new Map<string, Array<{ inside: boolean; root: string }>>();
+  const visit = (node: JsonNode, root: string, inside: boolean) => {
+    if (!ElementApi.isElement(node)) return;
+
+    const here = inside || within(node);
+
+    for (const owned of ownedRootsOf(schema, node)) {
+      const list = owners.get(owned) ?? [];
+
+      list.push({ inside: here, root });
+      owners.set(owned, list);
+    }
+    for (const child of node.children) visit(child, root, here);
+  };
+
+  for (const child of value.children) visit(child, 'main', false);
+  for (const [root, children] of Object.entries(value.roots ?? {})) {
+    for (const child of children) visit(child, root, false);
+  }
+
+  const known = new Map<string, boolean>();
+  const leavesWithOwners = (root: string): boolean => {
+    const answer = known.get(root);
+
+    if (answer !== undefined) return answer;
+    known.set(root, false);
+
+    const list = owners.get(root);
+    const leaves =
+      list !== undefined &&
+      list.every(
+        (owner) =>
+          owner.inside ||
+          (owner.root !== 'main' && leavesWithOwners(owner.root))
+      );
+
+    known.set(root, leaves);
+
+    return leaves;
+  };
+
+  return new Set([...owners.keys()].filter(leavesWithOwners));
+};
+
 const readOwnerDeclaration = (
   schema: CompiledEditorSchema,
   ownerRoot: RootKey,

@@ -90,6 +90,7 @@ export type AuthoredWrite =
       kind: 'removed';
       taker: Carrier | null;
       under: readonly Claim[];
+      whole: boolean;
     }>
   | Readonly<{
       carrier: Carrier;
@@ -135,6 +136,7 @@ export type AuthoredWrite =
 
 export type AuthoredWrites = Readonly<{
   claims: readonly MarkBase[];
+  moved: readonly AuthoredWrite[];
   writes: readonly AuthoredWrite[];
 }>;
 
@@ -833,6 +835,7 @@ export const authoredWritesOf = ({
           taker:
             entry.kind === 'element' ? takerOf(entry.from, entry.path) : null,
           under: [...was.values()],
+          whole: minus([entry.from, entry.to], removedAt).length === 0,
         });
       }
 
@@ -1197,6 +1200,9 @@ export const authoredWritesOf = ({
 
   return {
     claims: [...resultClaims.values(), ...recordedBases],
+    moved: [...removed].flatMap(([key, writes]) =>
+      writes.slice(0, born.get(key)?.length ?? 0)
+    ),
     writes: [
       ...minted,
       ...verdicts,

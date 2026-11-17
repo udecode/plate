@@ -106,6 +106,11 @@ export type AuthoredRecordInput = Readonly<{
   /** Whether an element with `props` is inline, so a split of it records a cut. */
   isInline: (props: Readonly<JsonRecord>) => boolean;
   /**
+   * Whether an element is a table or row, which an Editing removal takes with
+   * every pending change inside it.
+   */
+  holdsGridParts: (node: Readonly<JsonRecord>) => boolean;
+  /**
    * Whether the element a split of `source` continues into, written as
    * `continuation`, keeps property `key` with `value`; an `undefined` value
    * asks about the key alone.
@@ -382,14 +387,15 @@ const reviewed = (token: JsonToken) =>
 const innermostInsert = (marks: readonly AuthoredMark[]) =>
   marks.findLast((mark) => mark.kind === 'insert');
 
+const othersDelete = (member: AuthoredMember) =>
+  member.kind === 'delete' && !isEditingChange(member.change);
+
 const struckWhole = (node: JsonNode): boolean => {
   const members = readMembers(node);
 
   return (
     members.length > 0 &&
-    members.every(
-      (member) => member.kind === 'delete' && !isEditingChange(member.change)
-    ) &&
+    members.every(othersDelete) &&
     (node.children ?? []).every(struckWhole)
   );
 };
@@ -1735,6 +1741,7 @@ export const recordAuthoredSteps = (
             framed: input.projection !== undefined,
             fill: (site) => input.fill(site, root),
             frameIndex: fold.frameIndex,
+            holdsGridParts: input.holdsGridParts,
             holdsWithdrawal,
             isInline: input.isInline,
             isOwn,
@@ -1946,6 +1953,7 @@ type RecorderOptions = Readonly<{
   fill: (site: readonly Props[]) => readonly JsonNode[];
   frameIndex: DocumentIndex | null;
   framed: boolean;
+  holdsGridParts: (node: JsonNode) => boolean;
   holdsWithdrawal: (props: Props) => boolean;
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
@@ -2117,7 +2125,7 @@ class RootRecorder {
    * The ranges an Editing write removes outright when accepting the claims it
    * would record for this group gives, under every outcome of the pending
    * changes, the plain group or the plain group with the blocks other changes
-   * strike whole left in place. Null when it gives neither.
+   * strike left in place. Null when it gives neither.
    */
   private plainRemovals(group: Extract<Group, { kind: 'replace' }>) {
     if (this.settlesPlain(group)) {
@@ -2130,10 +2138,10 @@ class RootRecorder {
   }
 
   /**
-   * A removal of whole blocks whose every block either holds nothing pending
-   * but insertions, so it goes in every outcome, or is struck whole by other
-   * changes, which still decide it. A pending join goes only with the whole
-   * root, so no follower outside the removal loses its join.
+   * A removal of whole siblings whose every sibling either goes in every
+   * outcome or is struck by other changes, which still decide it. A table or
+   * row goes with every pending change inside it. A pending join goes only
+   * with the whole root, so no follower outside the removal loses its join.
    */
   private removalKeepingStruck({
     before,
@@ -2142,12 +2150,18 @@ class RootRecorder {
     removed,
     slice,
   }: Extract<Group, { kind: 'replace' }>) {
-    const { changeId, frameIndex, moveRole, origin } = this.options;
+    const { changeId, frameIndex, holdsGridParts, moveRole, origin } =
+      this.options;
     const to = before + removed;
-    const first = this.index.childBoundaryAt(before);
-    const last = this.index.childBoundaryAt(to);
-    const topLevel = (index: DocumentIndex, position: number) =>
-      index.childBoundaryAt(position)?.parentPath.length === 0;
+    const parentOf = (index: DocumentIndex, from: number, end: number) => {
+      const first = index.childBoundaryAt(from);
+      const last = index.childBoundaryAt(end);
+
+      return first && last && jsonEqual(first.parentPath, last.parentPath)
+        ? { first: first.index, last: last.index, path: first.parentPath }
+        : null;
+    };
+    const siblings = parentOf(this.index, before, to);
 
     if (
       !isEditingChange(changeId) ||
@@ -2156,13 +2170,10 @@ class RootRecorder {
       origin === 'wrap' ||
       origin === 'unwrap' ||
       removed === 0 ||
-      first?.parentPath.length !== 0 ||
-      last?.parentPath.length !== 0 ||
+      !siblings ||
       (frameIndex &&
-        !(
-          topLevel(frameIndex, plainFrom) &&
-          topLevel(frameIndex, plainFrom + plainRemoved)
-        )) ||
+        parentOf(frameIndex, plainFrom, plainFrom + plainRemoved)?.path
+          .length !== siblings.path.length) ||
       slice.tokens.some(reviewed)
     ) {
       return null;
@@ -2170,21 +2181,32 @@ class RootRecorder {
 
     const whole = before === 0 && to === this.index.length;
     const goes = (node: JsonNode): boolean =>
-      readMembers(node).every(
-        (member) =>
-          member.kind === 'insert' ||
-          member.kind === 'in' ||
-          member.kind === 'as' ||
-          (whole && member.kind === 'join')
-      ) && (node.children ?? []).every(goes);
+      holdsGridParts(node)
+        ? !readMembers(node).some(othersDelete)
+        : readMembers(node).every(
+            (member) =>
+              member.kind === 'insert' ||
+              member.kind === 'in' ||
+              member.kind === 'as' ||
+              (whole && member.kind === 'join')
+          ) && (node.children ?? []).every(goes);
+    const onlyGridPartsGo = siblings.path.length > 0;
     const removals: Array<readonly [number, number]> = [];
 
-    for (let rank = first.index; rank < last.index; rank += 1) {
-      const node = getDefined(this.index.child(rank));
-      const { from, to: end } = this.index.nodeRange([rank]);
+    for (let rank = siblings.first; rank < siblings.last; rank += 1) {
+      const path = [...siblings.path, rank];
+      const node = this.index.node(path);
+      const { from, to: end } = this.index.nodeRange(path);
 
-      if (struckWhole(node)) continue;
-      if (!goes(node)) return null;
+      if (holdsGridParts(node)) {
+        if (readMembers(node).some(othersDelete)) continue;
+      } else if (onlyGridPartsGo) {
+        return null;
+      } else if (struckWhole(node)) {
+        continue;
+      } else if (!goes(node)) {
+        return null;
+      }
 
       const previous = removals.at(-1);
 

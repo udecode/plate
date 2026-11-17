@@ -16,6 +16,7 @@ import {
   ElementGenerationMaskedError,
   type InternalEditorSchemaApi,
 } from '../core/editor-schema';
+import { rootsOwnedOnlyWithin } from '../core/element-owned-root-index';
 import {
   deriveValue,
   getValueRecords,
@@ -214,7 +215,8 @@ const windowedValue = (
 
 const insertionsInDroppedRoots = (
   value: JsonEditorValue,
-  decided: JsonEditorValue
+  decided: JsonEditorValue,
+  rootsTaken: () => ReadonlySet<string>
 ) => {
   const facts = factsOf(value);
   const stranded = new Set<string>();
@@ -233,7 +235,9 @@ const insertionsInDroppedRoots = (
   };
 
   for (const [root, children] of Object.entries(value.roots ?? {})) {
-    if (Object.hasOwn(decided.roots ?? {}, root)) continue;
+    if (Object.hasOwn(decided.roots ?? {}, root) || rootsTaken().has(root)) {
+      continue;
+    }
     for (const child of children) visit(child, false);
   }
 
@@ -516,9 +520,19 @@ export const decide = (
     book,
     resolution.resolvedIn
   );
+  let takenRoots: ReadonlySet<string> | undefined;
+  const rootsTaken = () => {
+    takenRoots ??= rootsOwnedOnlyWithin(
+      resolveSchema.ownership,
+      value,
+      resolution.takenWhole
+    );
+
+    return takenRoots;
+  };
   const inDroppedRoots = windowed
     ? new Set<string>()
-    : insertionsInDroppedRoots(value, decidedValue);
+    : insertionsInDroppedRoots(value, decidedValue, rootsTaken);
   const losesText = ({
     mark,
     node,
@@ -528,7 +542,8 @@ export const decide = (
     mark.kind === 'insert' &&
     typeof node.text === 'string' &&
     node.text !== '' &&
-    !insideTaken(value, root, path, resolution.takenWhole);
+    !insideTaken(value, root, path, resolution.takenWhole) &&
+    (root === MAIN_ROOT_KEY || !rootsTaken().has(root));
   const undecidedLosingText = book
     .pendingInOrder(new Set([...candidates, ...inDroppedRoots]))
     .filter(
