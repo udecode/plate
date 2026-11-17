@@ -349,6 +349,13 @@ export function FigureElement({
       包括因放不下而由更简单的 format 插入时遗漏的内容。
     </APIItem>
     <APIItem
+      name="onPointerSelectionEnd"
+      type="(selection: Range, context: EditableHandlerContext) => void"
+      optional
+    >
+      编辑器文字里的每次鼠标选区结束时调用一次，参数是最终的范围，在浏览器和编辑器写完选区之后调用。它在插件的 `on.pointerSelectionEnd` 处理函数之后运行。
+    </APIItem>
+    <APIItem
       name="scrollSelectionIntoView"
       type="(editor, domRange) => void"
       optional

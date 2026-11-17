@@ -482,6 +482,15 @@ Editable surface for an `EditorRoot` editor.
       that did not fit where it lands when a simpler format inserted instead.
     </APIItem>
     <APIItem
+      name="onPointerSelectionEnd"
+      type="(selection: Range, context: EditableHandlerContext) => void"
+      optional
+    >
+      Called once per mouse selection made in the editor's own text, with the
+      final range, after the browser and the editor finish writing it. It runs
+      after the plugins' `on.pointerSelectionEnd` handlers.
+    </APIItem>
+    <APIItem
       name="scrollSelectionIntoView"
       type="(editor, domRange) => void"
       optional

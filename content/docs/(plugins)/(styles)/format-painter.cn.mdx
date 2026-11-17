@@ -1,0 +1,230 @@
+---
+title: 格式刷
+description: 把一段文字的样式复制到另一段文字上。
+docs:
+  - route: /docs/examples/format-painter
+    title: 格式刷示例
+  - route: /docs/components/format-painter-toolbar-button
+    title: 格式刷工具栏按钮
+---
+
+`FormatPainterPlugin` 复制文字的样式，不复制文字内容。在有样式的文字上拿起格式刷，再拖过另一段文字，那段文字就换成同样的样式。它建立在[清除格式](/docs/clear-formatting)之上，由清除格式决定哪些属性算样式。
+
+<ComponentPreview name="format-painter-demo" />
+
+<PackageInfo>
+
+## 功能特性
+
+- 单击格式刷刷一次。双击后一直可以刷，直到按 `Escape` 或再点一次格式刷。
+- 拖选会刷拖过的文字。不拖动的单击会刷光标所在的词。
+- `Mod+Alt+C` 复制样式，`Mod+Alt+V` 把样式粘贴到选区，不需要拿起格式刷。
+- 复制文字样式，例如粗体、颜色和高亮。整段段落或标题还会把类型、标题级别和块样式带到整段段落或标题上。
+- 每刷一次是一个撤销步骤。
+
+</PackageInfo>
+
+## 套件使用
+
+<Steps>
+
+### 添加套件
+
+`FormatPainterKit` 添加 `FormatPainterPlugin`。格式刷依赖 `FormattingPlugin`，所以先添加 [`FormattingKit`](/docs/clear-formatting#kit-usage)。
+
+<ComponentSource name="format-painter" />
+
+```tsx
+import { createEditor } from "platejs/react";
+
+import { FormatPainterKit } from "@/components/editor/format-painter";
+import { FormattingKit } from "@/components/editor/formatting";
+
+export const editor = createEditor({
+  plugins: [...FormattingKit, ...FormatPainterKit],
+});
+```
+
+### 添加工具栏按钮
+
+安装 `FormatPainterToolbarButton` 得到格式刷按钮。格式刷拿起时按钮显示为按下状态。
+
+```bash
+npx shadcn@latest add @plate/format-painter-toolbar-button
+```
+
+```tsx
+import { FormatPainterToolbarButton } from "@/components/editor/format-painter-toolbar-button";
+
+export function FormattingControls() {
+  return <FormatPainterToolbarButton />;
+}
+```
+
+</Steps>
+
+## 手动使用
+
+<Steps>
+
+### 安装包
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+```tsx
+import { FormatPainterPlugin } from "platejs/format-painter/react";
+import { createEditor, FormattingPlugin } from "platejs/react";
+
+export const editor = createEditor({
+  plugins: [FormattingPlugin, FormatPainterPlugin],
+});
+```
+
+### 控制格式刷
+
+每个编辑器视图有自己的格式刷。从视图 store 读取 `armed` 显示状态，调用插件 API 改变它。
+
+```tsx
+import { FormatPainterPlugin } from "platejs/format-painter/react";
+import { useEditor, useViewStore } from "platejs/react";
+
+export function PainterButton() {
+  const painter = useEditor().plugin(FormatPainterPlugin);
+  const armed = useViewStore(FormatPainterPlugin, (state) => state.armed);
+
+  return (
+    <button
+      aria-pressed={armed !== "off"}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() =>
+        armed === "off" ? painter.api.arm() : painter.api.disarm()
+      }
+      type="button"
+    >
+      Paint format
+    </button>
+  );
+}
+```
+
+`onMouseDown` 保住编辑器的选区，所以 `arm` 复制的是用户选中文字的样式。
+
+</Steps>
+
+## 行为
+
+| 情形 | 结果 |
+| --- | --- |
+| 拿起格式刷 | 复制选区起点处的样式。只读视图或不含文字的选区不会拿起格式刷。 |
+| 拖选 | 刷拖过的文字，在编辑器外松开鼠标也一样。单次格式刷刷完后放下。 |
+| 不拖动的单击 | 刷光标所在的词。点在任何词之外什么也不刷，格式刷保持拿起。 |
+| 在选中文字里单击 | 等浏览器放好光标，再刷光标所在的词。 |
+| 双击或三击 | 刷第一次单击所在的词。单次格式刷刷完后放下，持续格式刷每次单击都刷一次。 |
+| 再刷被复制的那段文字 | 什么也不刷，格式刷保持拿起。 |
+| 块的一部分 | 目标换成文字样式，所在块保留自己的类型和块样式。 |
+| 整段段落或标题刷到整段段落或标题 | 目标还会换成来源的类型、标题级别，以及 `textAlign`、`lineHeight`、`textIndent` 和 `indent`。 |
+| 标题里的词刷到段落里的词 | 段落仍是段落，只换文字样式。 |
+| 列表项 | 保留类型、项目符号和层级，换成文字样式和块样式。 |
+| 代码块或其他块类型 | 保留类型。在代码块里刷会刷整个文字段，和清除格式一样。 |
+| 链接 | 不复制来源的链接。被刷的链接保留它的 `url`。 |
+| 目标放不下部分样式 | 每段文字和每个块按所在位置接收它能放下的样式，跳过其余的。 |
+| 建议模式 | 把改动记录为建议。 |
+| 触摸或手写笔 | 什么也不刷，格式刷保持拿起。 |
+| 只读视图 | 什么也不刷，`Mod+Alt+V` 和 `Escape` 都不起作用。只有点格式刷按钮能放下拿起的格式刷。 |
+| `Escape` | 在可编辑视图里放下拿起的格式刷。格式刷放下时，`Escape` 交给其他处理函数。 |
+
+只有段落和标题会换类型，所以刷格式不会增删列表符号、引用或代码块。编辑器的每个视图有自己的格式刷和复制的样式。
+
+## 用代码刷格式
+
+无头代码用 `BaseFormattingPlugin` 的 capture 和 apply 方法。`capture` 读取范围起点处的样式，`apply` 清除目标并在一个撤销步骤里换成这个样式。复制的格式不透明，只能传回 `apply`，不要读取它。
+
+```tsx
+const format = editor.read.formatting.capture({ at: source });
+
+if (format) {
+  editor.update.formatting.apply(format, { at: target });
+}
+```
+
+格式不是 `capture` 返回的，或者目标是折叠选区或块选择时，`apply` 不改变文档。
+
+## 其他插件的块类型
+
+当某个 `formatting` 插件点为块保留 `type` 时，刷格式不改变这个块的类型。列表插件就这样保留每个列表项的类型。
+
+```tsx
+import { definePlugin, formatting } from "platejs";
+
+export const CalloutPlugin = definePlugin("callout", {
+  contributions: [
+    formatting.of({
+      keeps: {
+        type: ({ node }) => node.type === "callout",
+      },
+    }),
+  ],
+});
+```
+
+## 鼠标选区结束
+
+格式刷在一次鼠标选区结束时刷格式。Plate 插件通过 `on.pointerSelectionEnd` 得到同一时刻。编辑器文字里的每次鼠标选区都调用它一次，在浏览器和编辑器写完选区之后，参数是最终的范围。它不是 DOM 事件处理函数，所以没有事件对象，也不能取消任何东西。
+
+```tsx
+import { definePlugin } from "platejs/react";
+
+export const SelectionLogPlugin = definePlugin("selectionLog", {
+  on: {
+    pointerSelectionEnd: ({ selection }) => {
+      console.info(selection);
+    },
+  },
+});
+```
+
+## 归属
+
+| 接口 | 归属 | 作用 |
+| --- | --- | --- |
+| `FormatPainterPlugin` | `platejs/format-painter/react` | 带格式刷、视图 store 和快捷键的 React 插件。 |
+| `BaseFormattingPlugin` | `platejs` | `capture` 和 `apply`，格式刷的无头部分。 |
+| `formatting` | `platejs` | 插件点，它的 `keeps.type` 让块在刷格式时保留类型。 |
+| `FormatPainterKit` | Registry 套件 | 添加 `FormatPainterPlugin`。 |
+| `FormatPainterToolbarButton` | Registry UI | 拿起格式刷、拿起时显示按下状态的格式刷按钮。 |
+
+## API 参考
+
+| API | 包 | 用途 |
+| --- | --- | --- |
+| `FormatPainterPlugin` | `platejs/format-painter/react` | React 格式刷插件。 |
+| `editor.api.formatPainter.arm(options?)` | `platejs/format-painter/react` | 复制选区的样式并拿起格式刷。什么也没做时返回 `false`。 |
+| `editor.api.formatPainter.disarm()` | `platejs/format-painter/react` | 放下拿起的格式刷。格式刷已放下时返回 `false`。 |
+| `editor.api.formatPainter.copy()` | `platejs/format-painter/react` | 复制选区的样式，不拿起格式刷。选区不含文字时返回 `false`。 |
+| `editor.api.formatPainter.paste()` | `platejs/format-painter/react` | 把复制的样式应用到选区。没有复制样式或选区折叠时返回 `false`。 |
+| `editor.read.formatting.capture(options?)` | `platejs` | 返回选区或 `options.at` 起点处的样式。 |
+| `editor.update.formatting.apply(format, options?)` | `platejs` | 在一个撤销步骤里清除选区或 `options.at` 并应用 `format`。 |
+| `tx.formatting.apply(format, options?)` | `platejs` | 用于更大原子更新的事务形式。 |
+| `on.pointerSelectionEnd` | `platejs/react` | 每次鼠标选区结束时调用一次的插件处理函数。 |
+
+## 选项
+
+| 选项 | 接口 | 用途 |
+| --- | --- | --- |
+| `sticky` | `formatPainter.arm` | 刷完后格式刷保持拿起，默认为 `false`。 |
+| `at` | `formatting.capture`、`formatting.apply` | 要读取或刷的范围，默认为选区。 |
+| `keeps.type` | `formatting.of` | 判断函数，接收 `{ index, node, path, siblings }`，返回 true 时块在刷格式时保留类型。 |
+
+| 视图状态 | 取值 |
+| --- | --- |
+| `armed` | `'off'`、`'once'` 或 `'sticky'`。 |
+
+| 快捷键 | 操作 |
+| --- | --- |
+| `Mod+Alt+C` | 复制选区的样式。 |
+| `Mod+Alt+V` | 把复制的样式粘贴到选区。 |
+| `Escape` | 在可编辑视图里放下拿起的格式刷。 |

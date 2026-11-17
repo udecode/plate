@@ -51,7 +51,10 @@ import {
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
 import { isDOMNode } from '../../dom/utils/dom';
-import type { EditableViewportRuntime } from '../components/editable';
+import type {
+  EditableHandlerContext,
+  EditableViewportRuntime,
+} from '../components/editable';
 import { readHistoryStepUndoRange } from '../history-step-views';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
@@ -94,6 +97,7 @@ import {
 import { getEditableInteractionOwner } from './interaction-owner';
 import type { DeferredMutation } from './model-input-strategy';
 import { type HistoryGateScope, readHistoryGate } from './mutation-history';
+import { PressFence } from './press-fence';
 import { RenderContractMonitor } from './render-contract-monitor';
 import {
   getEditorRuntimeOwner,
@@ -145,6 +149,12 @@ export type EditableHistoryReplayEvent = Readonly<{
   result: EditableHistoryReplayResult;
 }>;
 
+/** Hears the final range of a mouse selection made in an Editable's own text. */
+export type EditablePointerSelectionEndHandler = (
+  selection: Range,
+  context: EditableHandlerContext
+) => void;
+
 /** Outcome of one paste that an editable's built-in insertion handled. */
 export type EditablePasteResult = Readonly<{
   /**
@@ -182,6 +192,12 @@ const EDITABLE_FOCUS_SUBSCRIBERS_BY_RUNTIME = new WeakMap<
   Set<() => void>
 >();
 const MODEL_SELECTION_DOM_PREFERENCE_TTL_MS = 5000;
+const MODIFIER_KEYS: ReadonlySet<string> = new Set([
+  'Alt',
+  'Control',
+  'Meta',
+  'Shift',
+]);
 
 const runAllRuntimeSteps = (steps: ReadonlyArray<() => void>) => {
   let firstError: unknown;
@@ -390,6 +406,7 @@ type EditableDOMRuntimeUpdate = {
   onHistoryReplay: (event: EditableHistoryReplayEvent) => void;
   onDropResult: (result: EditableDropResult) => void;
   onPasteResult: (result: EditablePasteResult) => void;
+  onPointerSelectionEnd: EditablePointerSelectionEndHandler | undefined;
   onViewportBackedSelectionChange: (nextValue: boolean) => void;
   readOnly: boolean;
 };
@@ -435,6 +452,8 @@ export class EditableDOMRuntime {
 
   readonly unreadPress: UnreadPress;
 
+  readonly pressFence: PressFence;
+
   private integrityRepairHandler: (
     evidence: DOMIntegrityRepairEvidence
   ) => void = () => {};
@@ -457,6 +476,9 @@ export class EditableDOMRuntime {
 
   private pasteResultHandler: (result: EditablePasteResult) => void = () => {};
   private dropResultHandler: (result: EditableDropResult) => void = () => {};
+  private pointerSelectionEndHandler:
+    | EditablePointerSelectionEndHandler
+    | undefined;
 
   private externalMouseGesture = false;
   private nextClickSelected = false;
@@ -517,6 +539,7 @@ export class EditableDOMRuntime {
     onHistoryReplay = () => {},
     onDropResult = () => {},
     onPasteResult = () => {},
+    onPointerSelectionEnd,
     onViewportBackedSelectionChange = () => {},
     readOnly = false,
     testRootFacts,
@@ -531,6 +554,7 @@ export class EditableDOMRuntime {
     this.historyReplayHandler = onHistoryReplay;
     this.pasteResultHandler = onPasteResult;
     this.dropResultHandler = onDropResult;
+    this.pointerSelectionEndHandler = onPointerSelectionEnd;
     this.onViewportBackedSelectionChange = onViewportBackedSelectionChange;
     this.readOnlyValue = readOnly;
     this.rootRuntime = new DOMRootRuntime({
@@ -641,6 +665,7 @@ export class EditableDOMRuntime {
             this.disconnectVerticalGoalOwner();
           },
           () => this.unreadPress.markRead(),
+          () => this.pressFence.cancel(),
         ]);
       },
       onRepair: (evidence) => {
@@ -681,6 +706,11 @@ export class EditableDOMRuntime {
       editor,
       () => this.rootRef.current,
       this.domPhaseScheduler.schedule
+    );
+    this.pressFence = new PressFence(
+      this.domPhaseScheduler.schedule,
+      () => readRuntimeSelection(editor),
+      () => this.publishPointerSelectionEnd()
     );
     this.inputController = createEditableInputController({
       domInputRuntime: this.domInputRuntime,
@@ -1530,6 +1560,24 @@ export class EditableDOMRuntime {
       drop
     );
 
+  private publishPointerSelectionEnd() {
+    const editor = this.editorValue;
+    const selection = readRuntimeSelection(editor);
+
+    if (
+      !this.connected ||
+      !this.pointerSelectionEndHandler ||
+      selection?.kind !== 'text' ||
+      readPliteViewSelection(editor)
+    ) {
+      return;
+    }
+    this.pointerSelectionEndHandler(
+      Object.freeze({ anchor: selection.anchor, focus: selection.focus }),
+      { editor }
+    );
+  }
+
   update(update: EditableDOMRuntimeUpdate) {
     const readOnlyChanged = this.readOnlyValue !== update.readOnly;
     this.viewportRuntimeValue = update.viewportRuntime;
@@ -1538,6 +1586,8 @@ export class EditableDOMRuntime {
     this.historyReplayHandler = update.onHistoryReplay;
     this.pasteResultHandler = update.onPasteResult;
     this.dropResultHandler = update.onDropResult;
+    this.pointerSelectionEndHandler = update.onPointerSelectionEnd;
+    if (!update.onPointerSelectionEnd) this.pressFence.cancel();
     this.onViewportBackedSelectionChange =
       update.onViewportBackedSelectionChange;
     this.readOnlyValue = update.readOnly;
@@ -1592,6 +1642,7 @@ export class EditableDOMRuntime {
     const handleCompositionStart = (event: CompositionEvent) => {
       const owner = getEditableInteractionOwner(node, event.target);
 
+      this.pressFence.cancel();
       compositionTookViewCaret =
         owner !== 'external-text' && takesViewCaret(owner);
     };
@@ -1639,6 +1690,17 @@ export class EditableDOMRuntime {
           getEditableInteractionOwner(node, event.target) === 'editor'
       );
       if (inRoot) this.beginMousePress();
+      if (
+        this.pointerSelectionEndHandler &&
+        event.pointerType === 'mouse' &&
+        event.button === 0 &&
+        getEditableInteractionOwner(node, event.target) === 'editor' &&
+        !isInteractiveInternalTarget(this.editorValue, event.target)
+      ) {
+        this.pressFence.open();
+      } else {
+        this.pressFence.cancel();
+      }
       this.nonMousePressHeld =
         event.pointerType !== 'mouse' &&
         inRoot &&
@@ -1646,6 +1708,11 @@ export class EditableDOMRuntime {
     };
     const endPress = () => {
       this.nonMousePressHeld = false;
+    };
+    const releasePress = () => this.pressFence.release();
+    const cancelPress = () => this.pressFence.cancel();
+    const cancelPressOnKey = (event: KeyboardEvent) => {
+      if (!MODIFIER_KEYS.has(event.key)) cancelPress();
     };
     const ownerWindow = node.ownerDocument.defaultView;
     const claims = new SelectionClaims(
@@ -1679,12 +1746,21 @@ export class EditableDOMRuntime {
     node.addEventListener('beforeinput', handleBeforeInput);
     node.addEventListener('input', handleInput);
     node.addEventListener('pointerdown', clearCaret, true);
+    node.addEventListener('keydown', cancelPressOnKey, true);
+    node.addEventListener('dragstart', cancelPress, true);
+    node.addEventListener('blur', cancelPress);
     ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
     ownerWindow?.addEventListener('pointerup', endPress, true);
     ownerWindow?.addEventListener('pointercancel', endPress, true);
+    ownerWindow?.addEventListener('pointercancel', cancelPress, true);
+    ownerWindow?.addEventListener('mouseup', releasePress, true);
+    ownerWindow?.addEventListener('blur', cancelPress);
     this.nativeInputListenersCleanup = () => {
       releaseCommits();
       node.removeEventListener('pointerdown', clearCaret, true);
+      node.removeEventListener('keydown', cancelPressOnKey, true);
+      node.removeEventListener('dragstart', cancelPress, true);
+      node.removeEventListener('blur', cancelPress);
       claims.destroy();
       this.selectionClaimsValue = null;
       detachSelectionChangeListener();
@@ -1694,6 +1770,10 @@ export class EditableDOMRuntime {
       ownerWindow?.removeEventListener('pointerdown', notePointerPress, true);
       ownerWindow?.removeEventListener('pointerup', endPress, true);
       ownerWindow?.removeEventListener('pointercancel', endPress, true);
+      ownerWindow?.removeEventListener('pointercancel', cancelPress, true);
+      ownerWindow?.removeEventListener('mouseup', releasePress, true);
+      ownerWindow?.removeEventListener('blur', cancelPress);
+      this.pressFence.cancel();
       this.nonMousePressHeld = false;
     };
   }

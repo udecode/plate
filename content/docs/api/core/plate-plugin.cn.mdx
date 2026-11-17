@@ -191,6 +191,9 @@ handler 使用 `keyDownCapture` 等名称。
 <APISubListItem parent="on" name="paste" type="DOMHandler" optional>
 处理 React `paste` 事件。
 </APISubListItem>
+<APISubListItem parent="on" name="pointerSelectionEnd" type="(ctx: PluginContext & { selection: Range }) => void" optional>
+编辑器文字里的每次鼠标选区结束时调用一次，参数是最终的范围，在浏览器和编辑器写完选区之后调用，在编辑器外松开鼠标也一样。插件按插件顺序调用，每个插件拿到的范围都在前一个插件之后重新解析。它不是 DOM 事件处理函数，没有事件对象，也不能取消任何东西。只读视图会跳过只在编辑时生效的插件。
+</APISubListItem>
 </APISubList>
 </APIItem>
 

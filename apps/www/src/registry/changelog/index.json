@@ -181,6 +181,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-format-painter",
+      "href": "/registry/changelog/2026-11-17-format-painter.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add the format painter to the editor",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "format-painter",
+        "editor-plugins",
+        "format-painter-toolbar-button",
+        "fixed-toolbar"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-17-table-toolbar-single-cell-selection",
       "href": "/registry/changelog/2026-11-17-table-toolbar-single-cell-selection.json",
       "status": "draft",

@@ -47,6 +47,7 @@ import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
+  EditablePointerSelectionEndHandler,
   NodeSelectionFocus,
 } from '../editable/editable-dom-runtime';
 import { assertExternalTextElement } from '../editable/external-text-binding';
@@ -829,6 +830,17 @@ export type EditableProps<
    * insertion's result.
    */
   onPasteResult?: (result: EditablePasteResult) => void;
+  /**
+   * Called once after a primary mouse press that began on this editable's own
+   * text has its final text range: after the mouseup's import and every later
+   * write of that press, such as a drag released outside the editable or a
+   * click inside selected text that collapses it. Not called for a press on a
+   * control, an external text host or a nested editor, for touch or pen, when
+   * the press ends in a node selection, or when a key other than a modifier,
+   * a composition, a native drag, a blur, another press or an unmount comes
+   * first.
+   */
+  onPointerSelectionEnd?: EditablePointerSelectionEndHandler;
   /** Reports a drop this Editable lands: the transfer outcome, or the data it inserted. */
   onDropResult?: (result: EditableDropResult) => void;
   placeholder?: ReactNode;
@@ -1308,6 +1320,7 @@ const EditableInner = <TElement extends ElementNode>({
   onHistoryReplay,
   onDropResult,
   onPasteResult,
+  onPointerSelectionEnd,
   readOnly = false,
   placeholder,
   renderElement,
@@ -1623,6 +1636,7 @@ const EditableInner = <TElement extends ElementNode>({
               onPaste={onPaste}
               onDropResult={onDropResult}
               onPasteResult={onPasteResult}
+              onPointerSelectionEnd={onPointerSelectionEnd}
               readOnly={effectiveReadOnly}
               ref={editableRootRef}
               scrollSelectionIntoView={scrollSelectionIntoView}

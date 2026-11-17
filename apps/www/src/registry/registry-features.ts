@@ -892,6 +892,17 @@ export const registryFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/format-painter.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'format-painter',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/link.tsx',
         type: 'registry:component',
       },

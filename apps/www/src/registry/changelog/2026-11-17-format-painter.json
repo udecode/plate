@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-format-painter",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-format-painter.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add the format painter to the editor",
+  "targets": [
+    {
+      "name": "format-painter",
+      "files": ["apps/www/src/registry/components/editor/format-painter.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "format-painter-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/format-painter-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-format-painter-editor-1ee5ba2a",
+      "kind": "new",
+      "summary": "Add `FormatPainterKit`, which installs the format painter with `Mod+Alt+C` to copy a look, `Mod+Alt+V` to paste it and `Escape` to put the brush down, and include it in the editor kit.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["format-painter", "editor-plugins"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-format-painter",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-17-format-painter-toolbar-button",
+      "kind": "new",
+      "summary": "Add a paintbrush button to the fixed toolbar, next to the clear formatting button. A click paints once, a double click keeps painting until `Escape`, and a click on the armed button puts it down.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["format-painter-toolbar-button", "fixed-toolbar"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-format-painter",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

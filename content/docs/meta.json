@@ -93,6 +93,7 @@
     "[Line Height](/docs/line-height)",
     "[Text Align](/docs/text-align)",
     "[Clear Formatting](/docs/clear-formatting)",
+    "[Format Painter](/docs/format-painter)",
     "[Indent](/docs/indent)",
     "[List](/docs/list)",
     "[Exit Break](/docs/exit-break)",
@@ -138,6 +139,7 @@
     "[Insert Toolbar Button](/docs/components/insert-toolbar-button)",
     "[Line Height Toolbar Button](/docs/components/line-height-toolbar-button)",
     "[Clear Formatting Toolbar Button](/docs/components/clear-formatting-toolbar-button)",
+    "[Format Painter Toolbar Button](/docs/components/format-painter-toolbar-button)",
     "[Link Floating Toolbar](/docs/components/link)",
     "[Link Toolbar Button](/docs/components/link-toolbar-button)",
     "[Mark Toolbar Button](/docs/components/mark-toolbar-button)",
@@ -228,6 +230,7 @@
     "[List Demo](/docs/examples/list)",
     "[Line Height Demo](/docs/examples/line-height)",
     "[Clear Formatting Demo](/docs/examples/clear-formatting)",
+    "[Format Painter Demo](/docs/examples/format-painter)",
     "[Link Demo](/docs/examples/link)",
     "[Media Demo](/docs/examples/media)",
     "[Mention Demo](/docs/examples/mention)",
@@ -544,6 +547,12 @@
               "href": "/docs/components/clear-formatting-toolbar-button",
               "title": "Clear Formatting Toolbar Button",
               "titleCn": "Clear Formatting Toolbar Button"
+            },
+            {
+              "description": "A toolbar button that copies the look of the selection onto the next text you select.",
+              "href": "/docs/components/format-painter-toolbar-button",
+              "title": "Format Painter Toolbar Button",
+              "titleCn": "Format Painter Toolbar Button"
             },
             {
               "description": "A floating interface for link editing.",
@@ -1089,6 +1098,12 @@
               "href": "/docs/examples/clear-formatting",
               "title": "Clear Formatting Demo",
               "titleCn": "Clear Formatting"
+            },
+            {
+              "description": "Copy the look of one piece of text onto another.",
+              "href": "/docs/examples/format-painter",
+              "title": "Format Painter Demo",
+              "titleCn": "Format Painter"
             },
             {
               "description": "Hyperlinks with toolbar insertion and URL pasting support.",
@@ -1786,6 +1801,11 @@
                       "description": "Remove text and block styles from a selection.",
                       "href": "/docs/clear-formatting",
                       "title": "Clear Formatting"
+                    },
+                    {
+                      "description": "Copy the look of one piece of text onto another.",
+                      "href": "/docs/format-painter",
+                      "title": "Format Painter"
                     }
                   ],
                   "title": "Basic Styles",
@@ -2413,6 +2433,10 @@
         "description": "Remove text and block styles from a selection.",
         "title": "Clear Formatting"
       },
+      "/docs/format-painter": {
+        "description": "Copy the look of one piece of text onto another.",
+        "title": "Format Painter"
+      },
       "/docs/indent": {
         "description": "Customize text indentation.",
         "title": "Indent",
@@ -2627,6 +2651,11 @@
         "description": "A toolbar button that clears text and block formatting.",
         "title": "Clear Formatting Toolbar Button",
         "titleCn": "Clear Formatting Toolbar Button"
+      },
+      "/docs/components/format-painter-toolbar-button": {
+        "description": "A toolbar button that copies the look of the selection onto the next text you select.",
+        "title": "Format Painter Toolbar Button",
+        "titleCn": "Format Painter Toolbar Button"
       },
       "/docs/components/link": {
         "description": "A link element with a floating editing interface.",
@@ -3067,6 +3096,11 @@
         "description": "Clear text and block styles from a selection.",
         "title": "Clear Formatting Demo",
         "titleCn": "Clear Formatting"
+      },
+      "/docs/examples/format-painter": {
+        "description": "Copy the look of one piece of text onto another.",
+        "title": "Format Painter Demo",
+        "titleCn": "Format Painter"
       },
       "/docs/examples/link": {
         "description": "Hyperlinks with toolbar insertion and URL pasting support.",

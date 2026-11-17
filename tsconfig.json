@@ -48,6 +48,9 @@
       "platejs/footnote/react": [
         "./packages/platejs/src/react/features/footnote/index.ts"
       ],
+      "platejs/format-painter/react": [
+        "./packages/platejs/src/react/features/format-painter/index.ts"
+      ],
       "platejs/history": ["./packages/platejs/src/history/index.ts"],
       "platejs/html": ["./packages/platejs/src/html/index.ts"],
       "platejs/html/server": ["./packages/platejs/src/html/server/index.ts"],

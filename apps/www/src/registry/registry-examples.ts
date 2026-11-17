@@ -1411,6 +1411,25 @@ export const demoExamples: Registry['items'] = (
     },
     {
       dependencies: ['@platejs/test'],
+      description: 'Copy the look of one piece of text onto another.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/format-painter-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'format-painter-demo',
+      registryDependencies: [
+        '@plate/format-painter',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
+      dependencies: ['@platejs/test'],
       description: 'Hyperlinks with toolbar insertion and URL pasting support.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },

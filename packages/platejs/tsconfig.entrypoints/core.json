@@ -87,6 +87,7 @@
     "../src/react/features/table/**/*",
     "../src/react/features/toc/**/*",
     "../src/react/features/combobox/**/*",
+    "../src/react/features/format-painter/**/*",
     "../src/react/features/resizable/**/*",
     "../src/tabbable/**/*",
     "../src/tabbable/react/**/*",

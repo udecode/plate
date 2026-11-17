@@ -32,13 +32,14 @@ export type NodeWriteVeto = (input: NodeWriteVetoInput) => boolean;
 export const nodeWriteVeto =
   definePluginPoint<NodeWriteVeto>('node.write.veto');
 
+export const vetoesWrite = (editor: AnyEditor, input: NodeWriteVetoInput) =>
+  getPluginContributions(editor, nodeWriteVeto).some((veto) => veto(input));
+
 export const refuseVetoedWrite = (
   editor: AnyEditor,
   input: NodeWriteVetoInput
 ) => {
-  for (const veto of getPluginContributions(editor, nodeWriteVeto)) {
-    if (!veto(input)) continue;
-
+  if (vetoesWrite(editor, input)) {
     throw new EditorRefusalError(
       {
         kind: input.kind,

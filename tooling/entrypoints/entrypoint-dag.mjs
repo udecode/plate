@@ -115,12 +115,14 @@ export const publicFeatureReactEntrypoints = Object.freeze([
 
 export const publicReactOnlyEntrypoints = Object.freeze([
   'combobox',
+  'format-painter',
   'resizable',
 ]);
 
 const standardReactDependencies = {
   board: ['dom'],
   combobox: ['combobox'],
+  'format-painter': ['standard/basic-styles'],
   suggestion: ['authored'],
   table: ['dom'],
 };
@@ -129,6 +131,7 @@ const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
   board: ['react'],
   combobox: ['react'],
+  'format-painter': ['react'],
   list: ['react'],
   resizable: ['react'],
   suggestion: ['react'],

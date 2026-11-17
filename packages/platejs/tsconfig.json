@@ -33,6 +33,9 @@
       "platejs/find": ["./src/features/find/index.ts"],
       "platejs/footnote": ["./src/features/footnote/index.ts"],
       "platejs/footnote/react": ["./src/react/features/footnote/index.ts"],
+      "platejs/format-painter/react": [
+        "./src/react/features/format-painter/index.ts"
+      ],
       "platejs/history": ["./src/history/index.ts"],
       "platejs/html": ["./src/html/index.ts"],
       "platejs/html/server": ["./src/html/server/index.ts"],

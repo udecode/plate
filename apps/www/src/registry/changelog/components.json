@@ -318,6 +318,7 @@
     ],
     "fixed-toolbar": [
       "2026-11-17-cn-package",
+      "2026-11-17-format-painter",
       "2026-11-16-clear-formatting",
       "2026-11-13-platform-shortcut-labels",
       "2026-10-19-strikethrough-shortcut-hint",
@@ -676,13 +677,9 @@
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
     ],
-    "copilot-api": [
-      "2026-11-16-ai-routes-caller-key",
-      "2026-09-08-ai-session",
-      "2025-11-20-biome-ultracite"
-    ],
-    "formatting": ["2026-11-16-clear-formatting"],
+    "format-painter": ["2026-11-17-format-painter"],
     "editor-plugins": [
+      "2026-11-17-format-painter",
       "2026-11-16-clear-formatting",
       "2026-11-07-docx-fewer-install-dependencies",
       "2026-10-14-remove-csv-plugin",
@@ -697,6 +694,13 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
+    "format-painter-toolbar-button": ["2026-11-17-format-painter"],
+    "copilot-api": [
+      "2026-11-16-ai-routes-caller-key",
+      "2026-09-08-ai-session",
+      "2025-11-20-biome-ultracite"
+    ],
+    "formatting": ["2026-11-16-clear-formatting"],
     "clear-formatting-toolbar-button": ["2026-11-16-clear-formatting"],
     "import-toolbar-button": [
       "2026-11-16-save-comment-ranges",

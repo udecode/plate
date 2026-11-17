@@ -25,6 +25,7 @@ import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
+  EditablePointerSelectionEndHandler,
   NodeSelectionFocus,
 } from './editable-dom-runtime';
 import { getModelOwnedHistoryFocusRepair } from './history-focus';
@@ -110,6 +111,7 @@ export const useEditableRootRuntime = ({
   onDropResult,
   onKeyDown,
   onPasteResult,
+  onPointerSelectionEnd,
   readOnly: readOnlyProp,
   scrollSelectionIntoView,
 }: {
@@ -125,6 +127,7 @@ export const useEditableRootRuntime = ({
   onDropResult?: (result: EditableDropResult) => void;
   onKeyDown?: EditableKeyDownHandler;
   onPasteResult?: (result: EditablePasteResult) => void;
+  onPointerSelectionEnd?: EditablePointerSelectionEndHandler;
   readOnly: boolean;
   scrollSelectionIntoView: (
     editor: ReactRuntimeEditor,
@@ -151,6 +154,7 @@ export const useEditableRootRuntime = ({
     onDropResult,
     onHistoryReplay,
     onPasteResult,
+    onPointerSelectionEnd,
     readOnly,
   });
   const {

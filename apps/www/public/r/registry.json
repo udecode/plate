@@ -273,6 +273,37 @@
       "type": "registry:component"
     },
     {
+      "name": "format-painter-toolbar-button",
+      "title": "Format Painter Toolbar Button",
+      "description": "A toolbar button that copies the look of the selection onto the next text you select.",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/format-painter-toolbar-button.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/format-painter-toolbar-button.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/format-painter"
+          }
+        ],
+        "examples": [
+          "format-painter-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
       "name": "import-toolbar-button",
       "title": "Import Toolbar Button",
       "description": "A toolbar button to import editor content from a file.",
@@ -3329,6 +3360,7 @@
         "https://platejs.org/r/floating-toolbar.json",
         "https://platejs.org/r/font.json",
         "https://platejs.org/r/footnote.json",
+        "https://platejs.org/r/format-painter.json",
         "https://platejs.org/r/formatting.json",
         "https://platejs.org/r/line-height.json",
         "https://platejs.org/r/link.json",
@@ -3421,6 +3453,7 @@
         "https://platejs.org/r/emoji-toolbar-button.json",
         "https://platejs.org/r/font-color-toolbar-button.json",
         "https://platejs.org/r/font-size-toolbar-button.json",
+        "https://platejs.org/r/format-painter-toolbar-button.json",
         "https://platejs.org/r/history-toolbar-button.json",
         "https://platejs.org/r/indent-toolbar-button.json",
         "https://platejs.org/r/insert-toolbar-button.json",
@@ -3598,6 +3631,21 @@
           "path": "src/registry/components/editor/formatting.tsx",
           "type": "registry:component",
           "target": "@components/editor/formatting.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
+      "name": "format-painter",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/format-painter.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/format-painter.tsx"
         }
       ],
       "type": "registry:component"

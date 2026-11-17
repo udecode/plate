@@ -133,6 +133,24 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['platejs'],
+    description:
+      'A toolbar button that copies the look of the selection onto the next text you select.',
+    files: [
+      {
+        path: 'components/editor/format-painter-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: {
+      docs: [{ route: '/docs/format-painter' }],
+      examples: ['format-painter-demo'],
+    },
+    name: 'format-painter-toolbar-button',
+    title: 'Format Painter Toolbar Button',
+    type: 'registry:component',
+  },
+  {
     dependencies: ['platejs', 'use-file-picker@2.1.2', 'sonner'],
     description: 'A toolbar button to import editor content from a file.',
     files: [

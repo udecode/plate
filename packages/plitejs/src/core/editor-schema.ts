@@ -463,6 +463,14 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       properties: Readonly<Record<string, unknown>>,
       at: TextLandingPlace
     ) => Readonly<Record<string, unknown>>;
+    landNodePropertiesAt: (
+      change: Readonly<{
+        properties: Readonly<Record<string, unknown>>;
+        retype?: Readonly<{ type: string } & Record<string, unknown>>;
+      }>,
+      path: Path,
+      root?: RootKey
+    ) => Readonly<Record<string, unknown>>;
     /**
      * The properties, `type` included, that reset gives `element` at `at`
      * when it converts it to its slot's default: what the type change keeps,
@@ -1095,6 +1103,19 @@ export const canPlaceBlocksAtPath = (
   fit: readonly Descendant[],
   options: Readonly<{ removing?: readonly number[]; root?: RootKey }> = {}
 ) => getInternalEditorSchemaFromApi(schemaApi).canPlaceAtPath(at, fit, options);
+
+/** @internal */
+export const landNodePropertiesAt = (
+  schemaApi: EditorStateSchemaApi,
+  change: Parameters<InternalEditorSchemaApi['landNodePropertiesAt']>[0],
+  path: Path,
+  options: Readonly<{ root?: RootKey }> = {}
+) =>
+  getInternalEditorSchemaFromApi(schemaApi).landNodePropertiesAt(
+    change,
+    path,
+    options.root
+  );
 
 /** A changed span of a root's children, in the before and the after root. */
 type ImportedRootWindow = Readonly<{
@@ -3762,6 +3783,223 @@ export const createEditorSchema = <V extends Value = Value>(
         : marks;
     };
 
+  const landNodeProperties: InternalEditorSchemaApi<V>['landNodePropertiesAt'] =
+    ({ properties, retype }, path, root = 'main') => {
+      const schema = getDeclarativeSchema();
+
+      if (!schema) return { ...properties, ...retype };
+      const children = getDocumentRootNodes(getDocument(), root);
+      const node = getDescendant(children, path);
+
+      if (!node) return {};
+      const ancestors = getElementAncestors(children, path);
+      const lands = (
+        placement: 'element' | 'text',
+        key: string,
+        value: unknown,
+        context: CompiledSchemaTargetContext
+      ) => {
+        const property = resolveCompiledSchemaProperty(
+          schema,
+          placement,
+          key,
+          context
+        );
+
+        return property
+          ? acceptsPropertyValue(property.descriptor, value)
+          : schema.unknown !== 'reject' &&
+              getCompiledPropertyCandidates(schema, placement, key).length ===
+                0;
+      };
+      const survivors = (
+        wanted: Readonly<Record<string, unknown>>,
+        canonical: Readonly<Record<string, unknown>>
+      ) =>
+        Object.fromEntries(
+          Object.entries(wanted).filter(
+            ([key, value]) =>
+              Object.hasOwn(canonical, key) &&
+              structurallyEqual(canonical[key], value)
+          )
+        );
+
+      if (NodeApi.isText(node)) {
+        if (ancestors.length === 0) return {};
+        const context = toCompiledNodeContext({ text: '' }, ancestors, root);
+        const activeId = (key: string, value: unknown) => {
+          const property = resolveCompiledSchemaProperty(
+            schema,
+            'text',
+            key,
+            context
+          );
+
+          return property &&
+            unwrittenAs(property.descriptor, value) !== 'left-out'
+            ? property.id
+            : null;
+        };
+        const own = getTextProperties(node);
+        const rank = ({ id, key }: { id: string | null; key: string }) => {
+          if (id === null) return 0;
+
+          return Object.hasOwn(own, key) ? 1 : 2;
+        };
+        const incoming = Object.entries(properties)
+          .filter(([key, value]) => lands('text', key, value, context))
+          .map(([key, value]) => ({ id: activeId(key, value), key, value }))
+          .toSorted(
+            (left, right) =>
+              rank(left) - rank(right) ||
+              (left.id ?? '').localeCompare(right.id ?? '') ||
+              left.key.localeCompare(right.key)
+          );
+        const occupied = new Map(
+          Object.entries(own).flatMap(([key, value]) => {
+            const id = activeId(key, value);
+
+            return id ? [[key, id] as const] : [];
+          })
+        );
+        const accepted: Record<string, unknown> = {};
+
+        for (const { id, key, value } of incoming) {
+          if (
+            id &&
+            [...occupied].some(
+              ([other, taken]) =>
+                other !== key &&
+                schema.properties.conflictsByPropertyId.get(taken)?.has(id)
+            )
+          ) {
+            continue;
+          }
+          accepted[key] = value;
+          if (id) occupied.set(key, id);
+          else occupied.delete(key);
+        }
+
+        const held = Object.entries(own).filter(
+          ([key]) => !Object.hasOwn(accepted, key)
+        );
+
+        try {
+          return survivors(
+            accepted,
+            canonicalizeDeclarativePropertyRecord(
+              { ...Object.fromEntries(held), ...accepted },
+              schema,
+              'text',
+              context,
+              new Set(),
+              true
+            )
+          );
+        } catch (error) {
+          if (error instanceof EditorSchemaValidationError) return {};
+          throw error;
+        }
+      }
+
+      if (!ElementApi.isElement(node)) return {};
+      const index = getDefined(path.at(-1));
+      const options = { ancestors, root };
+      const [parent] = ancestors;
+      const content = parent
+        ? getCompiledElement(parent)?.content
+        : getRootContent(root);
+      const slotFixed = content?.prefix?.[index]?.properties ?? {};
+      const landAs = (
+        type: string,
+        element: Element,
+        identity: Readonly<Record<string, unknown>>
+      ) => {
+        const context = toCompiledTargetContext(
+          getElementType({ type }) ?? '',
+          options
+        );
+        const accepted = Object.fromEntries(
+          Object.entries(properties).filter(
+            ([key, value]) =>
+              lands('element', key, value, context) &&
+              (!Object.hasOwn(slotFixed, key) ||
+                structurallyEqual(slotFixed[key], value))
+          )
+        );
+
+        try {
+          const canonical = canonicalizeDeclarativePropertyRecord(
+            {
+              ...NodeApi.extractProps(element),
+              ...accepted,
+              ...identity,
+              type,
+            },
+            schema,
+            'element',
+            context,
+            new Set([
+              'type',
+              ...((schema.elements.byType.get(type)?.contentRoots.size ?? 0) > 0
+                ? ['childRoots']
+                : []),
+            ]),
+            true
+          );
+          const landed = survivors(accepted, canonical);
+
+          if (
+            Object.keys(survivors(identity, canonical)).length !==
+            Object.keys(identity).length
+          ) {
+            return null;
+          }
+          if (type !== node.type || Object.keys(identity).length > 0) {
+            const final = { ...canonical, children: element.children, type };
+
+            validateDeclarativeChildren(
+              canonicalizeDeclarativeChildren(
+                [final],
+                schema,
+                root,
+                ancestors,
+                false
+              ),
+              schema,
+              root,
+              ancestors,
+              path.slice(0, -1)
+            );
+            if (
+              content &&
+              !contentAllowsAt(schema, content, final, index, options)
+            ) {
+              return null;
+            }
+          }
+
+          return landed;
+        } catch (error) {
+          if (error instanceof EditorSchemaValidationError) return null;
+          throw error;
+        }
+      };
+
+      if (retype) {
+        const { type, ...identity } = retype;
+        const landed = landAs(
+          type,
+          elementForTypeChangeAt(node, type, path, root),
+          identity
+        );
+
+        if (landed) return { ...landed, ...retype };
+      }
+
+      return landAs(node.type, node, {}) ?? {};
+    };
+
   const elementPropertiesForResetAt: InternalEditorSchemaApi<V>['elementPropertiesForResetAt'] =
     (element, at, root = 'main') => {
       const slot = resolveDefaultSlot(at, root);
@@ -5339,6 +5577,7 @@ export const createEditorSchema = <V extends Value = Value>(
     elementSplitKeepsAt,
     elementForTypeChangeAt,
     landTextPropertiesAt,
+    landNodePropertiesAt: landNodeProperties,
     elementPropertyLanding,
     assertContentSliceForSchema,
     assertDocument,

@@ -177,6 +177,11 @@
       "import": "./dist/react/features/footnote/index.js",
       "default": "./dist/react/features/footnote/index.js"
     },
+    "./format-painter/react": {
+      "types": "./dist/react/features/format-painter/index.d.ts",
+      "import": "./dist/react/features/format-painter/index.js",
+      "default": "./dist/react/features/format-painter/index.js"
+    },
     "./authored": {
       "types": "./dist/authored/index.d.ts",
       "import": "./dist/authored/index.js",
@@ -382,6 +387,7 @@
     "lint:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find",
     "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
     "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",
+    "lint:partition:format-painter-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs format-painter-react",
     "lint:partition:html": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs html",
     "lint:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs html-server",
     "lint:partition:ink": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ink",
@@ -457,6 +463,7 @@
     "test:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find",
     "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
     "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",
+    "test:partition:format-painter-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs format-painter-react",
     "test:partition:html": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs html",
     "test:partition:html-server": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs html-server",
     "test:partition:ink": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ink",

@@ -9,6 +9,7 @@ import {
   type EditableDropResult,
   type EditableHistoryReplayEvent,
   type EditablePasteResult,
+  type EditablePointerSelectionEndHandler,
   isEditableDOMSelectionPartial,
   type NodeSelectionFocus,
 } from './editable-dom-runtime';
@@ -21,6 +22,7 @@ export const useEditableRootRuntimeState = ({
   onDropResult,
   onHistoryReplay,
   onPasteResult,
+  onPointerSelectionEnd,
   readOnly,
 }: {
   viewportRuntime: EditableViewportRuntime | null;
@@ -29,6 +31,7 @@ export const useEditableRootRuntimeState = ({
   onDropResult?: (result: EditableDropResult) => void;
   onHistoryReplay?: (event: EditableHistoryReplayEvent) => void;
   onPasteResult?: (result: EditablePasteResult) => void;
+  onPointerSelectionEnd?: EditablePointerSelectionEndHandler;
   readOnly: boolean;
 }) => {
   const [isComposing, setIsComposing] = useState(false);
@@ -44,6 +47,7 @@ export const useEditableRootRuntimeState = ({
         onDropResult,
         onHistoryReplay,
         onPasteResult,
+        onPointerSelectionEnd,
         onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
         readOnly,
       }),
@@ -59,6 +63,7 @@ export const useEditableRootRuntimeState = ({
       onDropResult: onDropResult ?? (() => {}),
       onHistoryReplay: onHistoryReplay ?? (() => {}),
       onPasteResult: onPasteResult ?? (() => {}),
+      onPointerSelectionEnd,
       onViewportBackedSelectionChange: setExplicitViewportBackedSelection,
       readOnly,
     });
@@ -68,6 +73,7 @@ export const useEditableRootRuntimeState = ({
     onDropResult,
     onHistoryReplay,
     onPasteResult,
+    onPointerSelectionEnd,
     readOnly,
     runtime,
   ]);

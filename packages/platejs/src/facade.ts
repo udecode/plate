@@ -224,7 +224,9 @@ export type {
 } from 'plitejs';
 export {
   canPlaceBlocksAtPath,
+  landNodePropertiesAt,
   placeElementAt,
+  vetoesWrite,
   containsCompleteEditorSchema,
   createEditorOwner,
   type EditorOwner,

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "format-painter",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/format-painter.tsx",
+      "content": "'use client';\n\nimport { FormatPainterPlugin } from 'platejs/format-painter/react';\n\nexport const FormatPainterKit = [FormatPainterPlugin] as const;\n",
+      "type": "registry:component",
+      "target": "@components/editor/format-painter.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

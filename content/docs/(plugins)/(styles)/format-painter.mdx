@@ -1,0 +1,230 @@
+---
+title: Format Painter
+description: Copy the look of one piece of text onto another.
+docs:
+  - route: /docs/examples/format-painter
+    title: Format Painter Demo
+  - route: /docs/components/format-painter-toolbar-button
+    title: Format Painter Toolbar Button
+---
+
+`FormatPainterPlugin` copies how text looks, not what it says. Arm the brush on styled text, then drag over other text, and that text takes the same look. It builds on [clear formatting](/docs/clear-formatting), which decides which properties count as a look.
+
+<ComponentPreview name="format-painter-demo" />
+
+<PackageInfo>
+
+## Features
+
+- One click on the brush paints once. A double click keeps painting until `Escape` or another click on the brush.
+- A drag paints the dragged text. A click without a drag paints the word under the caret.
+- `Mod+Alt+C` copies a look and `Mod+Alt+V` pastes it onto the selection, without arming the brush.
+- Copies text styles, such as bold, color and highlight. A whole paragraph or heading also carries its type, heading level and block styles onto a whole paragraph or heading.
+- Each paint is one undo step.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Add the kit
+
+`FormatPainterKit` adds `FormatPainterPlugin`. The painter needs `FormattingPlugin`, so add [`FormattingKit`](/docs/clear-formatting#kit-usage) before it.
+
+<ComponentSource name="format-painter" />
+
+```tsx
+import { createEditor } from "platejs/react";
+
+import { FormatPainterKit } from "@/components/editor/format-painter";
+import { FormattingKit } from "@/components/editor/formatting";
+
+export const editor = createEditor({
+  plugins: [...FormattingKit, ...FormatPainterKit],
+});
+```
+
+### Add the toolbar button
+
+Install `FormatPainterToolbarButton` for the paintbrush button. It shows as pressed while the brush is armed.
+
+```bash
+npx shadcn@latest add @plate/format-painter-toolbar-button
+```
+
+```tsx
+import { FormatPainterToolbarButton } from "@/components/editor/format-painter-toolbar-button";
+
+export function FormattingControls() {
+  return <FormatPainterToolbarButton />;
+}
+```
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Install package
+
+```bash
+npm install platejs
+```
+
+### Add the plugin
+
+```tsx
+import { FormatPainterPlugin } from "platejs/format-painter/react";
+import { createEditor, FormattingPlugin } from "platejs/react";
+
+export const editor = createEditor({
+  plugins: [FormattingPlugin, FormatPainterPlugin],
+});
+```
+
+### Drive the brush
+
+The brush lives in each editor view. Read `armed` from the view store to show its state, and call the plugin API to change it.
+
+```tsx
+import { FormatPainterPlugin } from "platejs/format-painter/react";
+import { useEditor, useViewStore } from "platejs/react";
+
+export function PainterButton() {
+  const painter = useEditor().plugin(FormatPainterPlugin);
+  const armed = useViewStore(FormatPainterPlugin, (state) => state.armed);
+
+  return (
+    <button
+      aria-pressed={armed !== "off"}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() =>
+        armed === "off" ? painter.api.arm() : painter.api.disarm()
+      }
+      type="button"
+    >
+      Paint format
+    </button>
+  );
+}
+```
+
+`onMouseDown` keeps the editor's selection, so `arm` copies the look of the text the user selected.
+
+</Steps>
+
+## Behavior
+
+| Case | Result |
+| --- | --- |
+| Arm | Copies the look at the start of the selection. A read-only view or a selection with no text leaves the brush down. |
+| A drag | Paints the dragged text, including a drag released outside the editor. A once brush goes down after the paint. |
+| A click without a drag | Paints the word under the caret. A click outside any word paints nothing and the brush stays armed. |
+| A click inside selected text | Waits for the browser to place the caret, then paints the word under it. |
+| A double or triple click | Paints the word under the first click. A once brush goes down after it, and a sticky brush paints once for each click. |
+| The copied text again | Paints nothing and the brush stays armed. |
+| Part of a block | The target takes the text styles. Its block keeps its own type and block styles. |
+| Whole paragraph or heading onto a whole paragraph or heading | The target also takes the type, the heading level and `textAlign`, `lineHeight`, `textIndent` and `indent`. |
+| A heading word onto a paragraph word | The paragraph stays a paragraph. Only the text styles move. |
+| A list item | Keeps its type, bullet and depth, and takes the text styles and block styles. |
+| A code block or any other block type | Keeps its type. A paint inside a code block paints its whole run, as clear formatting clears it. |
+| A link | The source's link is not copied. A painted link keeps its `url`. |
+| A target that cannot hold part of the look | Each text and block takes every copied style it can hold where it sits, and skips the rest. |
+| Suggesting mode | Records the change as suggestions. |
+| Touch or pen | Paints nothing. The brush stays armed. |
+| A read-only view | Paints nothing, and `Mod+Alt+V` and `Escape` do nothing. Only the brush button puts an armed brush down. |
+| `Escape` | Puts an armed brush down in an editable view. With the brush down, `Escape` reaches other handlers. |
+
+Only paragraphs and headings change type, so a paint never adds or removes a list bullet, a quote or a code block. Each view of the editor keeps its own brush and copied look.
+
+## Paint from code
+
+Headless code uses the capture and apply methods of `BaseFormattingPlugin`. `capture` takes the look at the start of a range, and `apply` clears the target and gives it that look in one undo step. The captured format is opaque, so pass it back to `apply` and never read it.
+
+```tsx
+const format = editor.read.formatting.capture({ at: source });
+
+if (format) {
+  editor.update.formatting.apply(format, { at: target });
+}
+```
+
+`apply` changes nothing when the format did not come from `capture`, or when the target is collapsed or a block selection.
+
+## Block types from other plugins
+
+A block keeps its type through a paint when a `formatting` contribution keeps `type` on it. The list plugin keeps the type of every list item this way.
+
+```tsx
+import { definePlugin, formatting } from "platejs";
+
+export const CalloutPlugin = definePlugin("callout", {
+  contributions: [
+    formatting.of({
+      keeps: {
+        type: ({ node }) => node.type === "callout",
+      },
+    }),
+  ],
+});
+```
+
+## Mouse selection end
+
+The painter paints when a mouse selection ends. A Plate plugin hears the same moment through `on.pointerSelectionEnd`, which runs once per mouse selection made in the editor's text, after the browser and the editor finish writing it. It receives the final range. It is not a DOM handler, so it has no event and cannot cancel anything.
+
+```tsx
+import { definePlugin } from "platejs/react";
+
+export const SelectionLogPlugin = definePlugin("selectionLog", {
+  on: {
+    pointerSelectionEnd: ({ selection }) => {
+      console.info(selection);
+    },
+  },
+});
+```
+
+## Ownership
+
+| Surface | Owner | What It Does |
+| --- | --- | --- |
+| `FormatPainterPlugin` | `platejs/format-painter/react` | React plugin with the brush, its view store and its shortcuts. |
+| `BaseFormattingPlugin` | `platejs` | `capture` and `apply`, the headless half of the painter. |
+| `formatting` | `platejs` | Plugin point whose `keeps.type` keeps a block's type through a paint. |
+| `FormatPainterKit` | Registry kit | Adds `FormatPainterPlugin`. |
+| `FormatPainterToolbarButton` | Registry UI | Paintbrush button that arms the brush and shows it pressed while armed. |
+
+## API Reference
+
+| API | Package | Use |
+| --- | --- | --- |
+| `FormatPainterPlugin` | `platejs/format-painter/react` | React format painter plugin. |
+| `editor.api.formatPainter.arm(options?)` | `platejs/format-painter/react` | Copies the look of the selection and arms the brush. Returns `false` when it does nothing. |
+| `editor.api.formatPainter.disarm()` | `platejs/format-painter/react` | Puts an armed brush down. Returns `false` when the brush is down. |
+| `editor.api.formatPainter.copy()` | `platejs/format-painter/react` | Copies the look of the selection without arming. Returns `false` when the selection has no text. |
+| `editor.api.formatPainter.paste()` | `platejs/format-painter/react` | Applies the copied look to the selection. Returns `false` when nothing is copied or the selection is collapsed. |
+| `editor.read.formatting.capture(options?)` | `platejs` | Returns the look at the start of the selection or `options.at`. |
+| `editor.update.formatting.apply(format, options?)` | `platejs` | Clears the selection or `options.at` and applies `format` in one undo step. |
+| `tx.formatting.apply(format, options?)` | `platejs` | Transaction form for a larger atomic update. |
+| `on.pointerSelectionEnd` | `platejs/react` | Plugin handler that runs once per finished mouse selection. |
+
+## Options
+
+| Option | Surface | Use |
+| --- | --- | --- |
+| `sticky` | `formatPainter.arm` | Keeps the brush up after a paint. Defaults to `false`. |
+| `at` | `formatting.capture`, `formatting.apply` | Range to read or paint. Defaults to the selection. |
+| `keeps.type` | `formatting.of` | A predicate given `{ index, node, path, siblings }` that keeps the block's type through a paint. |
+
+| View state | Values |
+| --- | --- |
+| `armed` | `'off'`, `'once'` or `'sticky'`. |
+
+| Shortcut | Action |
+| --- | --- |
+| `Mod+Alt+C` | Copy the look of the selection. |
+| `Mod+Alt+V` | Paste the copied look onto the selection. |
+| `Escape` | Put an armed brush down in an editable view. |

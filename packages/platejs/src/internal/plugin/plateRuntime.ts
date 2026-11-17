@@ -28,6 +28,7 @@ export type PlatePluginCache = Readonly<{
   decorate: readonly string[];
   on: Readonly<{
     nodeChange: readonly string[];
+    pointerSelectionEnd: readonly string[];
     textChange: readonly string[];
   }>;
   inject: Readonly<{

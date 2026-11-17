@@ -47,6 +47,10 @@ type EditableProps = {
     context: EditableDOMBeforeInputContext
   ) => EditableHandlerResult;
   onKeyDown?: EditableKeyDownHandler;
+  onPointerSelectionEnd?: (
+    selection: Range,
+    context: EditableHandlerContext
+  ) => void;
   placeholder?: React.ReactNode;
   readOnly?: boolean;
   ref?: React.Ref<HTMLDivElement>;
@@ -373,6 +377,13 @@ const markdown = definePlugin("markdown", {
   ],
 });
 ```
+
+`onPointerSelectionEnd` runs once per primary mouse press that began on this
+editable's own text, with the final range, after the mouseup's import and every
+later write of that press, such as a drag released outside the editable or a
+click inside selected text that collapses it. It does not run for touch or pen,
+for a press on a control or a nested editor, or when a key other than a
+modifier, a composition, a native drag, a blur or another press comes first.
 
 `onBeforeInput` is React's synthetic `beforeinput` handler on the editable root. Use
 `onDOMBeforeInput` only when you need the raw native `InputEvent`. Returning

@@ -1,0 +1,16 @@
+---
+id: 2026-11-17-format-painter
+date: 2026-11-17
+status: draft
+kind: new
+summary: 'Add the format painter to the editor'
+change: { 'type': 'source', 'date': '2026-11-17', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-17-format-painter-editor-1ee5ba2a","kind":"new","migrationNotes":[]} -->
+
+- **`format-painter`**, **`editor-plugins`**: Add `FormatPainterKit`, which installs the format painter with `Mod+Alt+C` to copy a look, `Mod+Alt+V` to paste it and `Escape` to put the brush down, and include it in the editor kit.
+<!-- entry: {"id":"2026-11-17-format-painter-toolbar-button","kind":"new","migrationNotes":[]} -->
+- **`format-painter-toolbar-button`**, **`fixed-toolbar`**: Add a paintbrush button to the fixed toolbar, next to the clear formatting button. A click paints once, a double click keeps painting until `Escape`, and a click on the armed button puts it down.

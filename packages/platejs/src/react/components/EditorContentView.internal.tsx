@@ -22,6 +22,7 @@ import { useComposedRef } from '../internal/react-helpers';
 import { PlateRenderedAttributeProvider } from '../internal/rendered-attributes';
 import { useDeepCompareMemo } from '../internal/useDeepCompareMemo';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { createPluginContext } from '../plugin/createPluginContext.internal';
 import { useEditor } from '../stores';
 import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut.internal';
 import { DOM_HANDLERS } from '../utils/dom-attributes.internal';
@@ -158,6 +159,7 @@ function EditorContentBranch<TExtra extends object>({
   };
   const modelRevision = usePlateModelRevision(editor);
   const { pluginCache, shortcutTable } = getPlateRuntime(editor);
+  const pointerSelectionEndListeners = pluginCache.on.pointerSelectionEnd;
   const contentAttributes =
     pluginCache.contentAttributes[plateReadOnly ? 'readOnly' : 'editable'];
   const renderElement = React.useMemo(() => {
@@ -222,6 +224,43 @@ function EditorContentBranch<TExtra extends object>({
       };
     }
 
+    const propsListener = editableInput.onPointerSelectionEnd;
+
+    if (pointerSelectionEndListeners.length > 0 || propsListener) {
+      nextProps.onPointerSelectionEnd = (selection, context) => {
+        const view = getHandlerView(context);
+        const readOnly = view.read.view.isReadOnly();
+        const anchor = view.anchor(selection, {
+          association: 'inward',
+          deletion: 'nearest',
+        });
+
+        try {
+          pointerSelectionEndListeners.forEach((name) => {
+            const plugin =
+              getCompiledPlatePlugin(editor, name) ??
+              failInvariant('Expected value to be defined');
+            const listener = plugin.on?.pointerSelectionEnd;
+            const range = anchor.resolve();
+
+            if (!listener || !range || isEditOnly(readOnly, plugin, 'on')) {
+              return;
+            }
+
+            Reflect.apply(listener, undefined, [
+              { ...createPluginContext(view, plugin), selection: range },
+            ]);
+          });
+
+          const range = anchor.resolve();
+
+          if (range) propsListener?.(range, context);
+        } finally {
+          anchor.release();
+        }
+      };
+    }
+
     const pipedKeyDown = nextProps.onKeyDown;
 
     nextProps.onKeyDown = (event, context) =>
@@ -231,6 +270,7 @@ function EditorContentBranch<TExtra extends object>({
   }, [
     editableInput,
     editor,
+    pointerSelectionEndListeners,
     renderElement,
     renderLeaf,
     renderText,
@@ -239,7 +279,11 @@ function EditorContentBranch<TExtra extends object>({
   const editableProps = useDeepCompareMemo(() => {
     const attributes = mergePlateRenderedAttributes(
       contentAttributes,
-      omit(editableInput, [...DOM_HANDLERS, 'scrollSelectionIntoView'])
+      omit(editableInput, [
+        ...DOM_HANDLERS,
+        'onPointerSelectionEnd',
+        'scrollSelectionIntoView',
+      ])
     );
 
     return {

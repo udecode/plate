@@ -29,6 +29,7 @@ export const plateAdditionalEntries = [
   'src/react/features/details/index.ts',
   'src/react/features/upload/index.ts',
   'src/react/features/footnote/index.ts',
+  'src/react/features/format-painter/index.ts',
   'src/react/features/layout/index.ts',
   'src/react/features/media/index.ts',
   'src/react/features/mention/index.ts',

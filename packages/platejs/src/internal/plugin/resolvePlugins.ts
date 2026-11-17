@@ -226,6 +226,7 @@ const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
   decorate: [],
   on: {
     nodeChange: [],
+    pointerSelectionEnd: [],
     textChange: [],
   },
   inject: { nodeProps: { element: [], text: [] } },
@@ -933,6 +934,9 @@ export const createPlateModelPublication = (
     if (plugin.on?.nodeChange) {
       pluginCache.on.nodeChange.push(plugin.name);
     }
+    if (plugin.on?.pointerSelectionEnd) {
+      pluginCache.on.pointerSelectionEnd.push(plugin.name);
+    }
     if (plugin.on?.textChange) {
       pluginCache.on.textChange.push(plugin.name);
     }
@@ -947,6 +951,7 @@ export const createPlateModelPublication = (
     decorate: freezeList(pluginCache.decorate),
     on: Object.freeze({
       nodeChange: freezeList(pluginCache.on.nodeChange),
+      pointerSelectionEnd: freezeList(pluginCache.on.pointerSelectionEnd),
       textChange: freezeList(pluginCache.on.textChange),
     }),
     inject: Object.freeze({

@@ -13,6 +13,7 @@ import type {
   NodeKey,
   TxMethodDeclarations,
   Path,
+  Range,
   Text,
   Value,
   EditorSchemaSourceProvider,
@@ -365,6 +366,16 @@ export type PluginOn<C extends AnyBasePluginDefinition = BasePluginDefinition> =
     DOMHandlers<C> & {
       commit?: (context: LifecycleContext<C, EditorCommitContext>) => void;
       nodeChange?: OnNodeChange<C>;
+      /**
+       * Hears the final range of a mouse selection made in this view's own
+       * text, once every write of that press has finished. Plugins hear it in
+       * plugin order, each with the range mapped through the writes of the
+       * plugins before it. An edit-only plugin does not hear it in a
+       * read-only view.
+       */
+      pointerSelectionEnd?: (
+        context: PluginContext<C> & { selection: Range }
+      ) => void;
       textChange?: OnTextChange<C>;
       transactionChange?: (
         context: LifecycleContext<C, EditorTransactionChangeContext>

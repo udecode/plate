@@ -1,5 +1,5 @@
 {
-  "generation": "f2fd437afb1940940710cb6cdd293798ceae9476b7b0f897ec6a146d6eed154c",
+  "generation": "74bae1d4ba87519ff6b22439906c6f740e9a7415fb2dfed99dd66c1416b0d684",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -271,6 +271,37 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/mark-toolbar-button",
+            "@plate/toolbar"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
+          ],
+          "description": "A toolbar button that copies the look of the selection onto the next text you select.",
+          "files": [
+            {
+              "path": "components/editor/format-painter-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/format-painter-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/format-painter"
+              }
+            ],
+            "examples": [
+              "format-painter-demo"
+            ]
+          },
+          "name": "format-painter-toolbar-button",
+          "title": "Format Painter Toolbar Button",
+          "type": "registry:component",
+          "registryDependencies": [
             "@plate/toolbar"
           ]
         },
@@ -3339,6 +3370,7 @@
             "@plate/floating-toolbar",
             "@plate/font",
             "@plate/footnote",
+            "@plate/format-painter",
             "@plate/formatting",
             "@plate/line-height",
             "@plate/link",
@@ -3436,6 +3468,7 @@
             "@plate/emoji-toolbar-button",
             "@plate/font-color-toolbar-button",
             "@plate/font-size-toolbar-button",
+            "@plate/format-painter-toolbar-button",
             "@plate/history-toolbar-button",
             "@plate/indent-toolbar-button",
             "@plate/insert-toolbar-button",
@@ -3602,6 +3635,21 @@
             }
           ],
           "name": "formatting",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/format-painter.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/format-painter.tsx"
+            }
+          ],
+          "name": "format-painter",
           "type": "registry:component"
         },
         {
@@ -6547,6 +6595,33 @@
           "dependencies": [
             "@platejs/test"
           ],
+          "description": "Copy the look of one piece of text onto another.",
+          "files": [
+            {
+              "path": "examples/demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/format-painter-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "format-painter-demo",
+          "registryDependencies": [
+            "@plate/format-painter",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
+        },
+        {
+          "dependencies": [
+            "@platejs/test"
+          ],
           "description": "Hyperlinks with toolbar insertion and URL pasting support.",
           "files": [
             {
@@ -7374,6 +7449,37 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/mark-toolbar-button",
+            "@plate/toolbar"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
+          ],
+          "description": "A toolbar button that copies the look of the selection onto the next text you select.",
+          "files": [
+            {
+              "path": "components/editor/format-painter-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/format-painter-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/format-painter"
+              }
+            ],
+            "examples": [
+              "format-painter-demo"
+            ]
+          },
+          "name": "format-painter-toolbar-button",
+          "title": "Format Painter Toolbar Button",
+          "type": "registry:component",
+          "registryDependencies": [
             "@plate/toolbar"
           ]
         },
@@ -10438,6 +10544,7 @@
             "@plate/floating-toolbar",
             "@plate/font",
             "@plate/footnote",
+            "@plate/format-painter",
             "@plate/formatting",
             "@plate/line-height",
             "@plate/link",
@@ -10535,6 +10642,7 @@
             "@plate/emoji-toolbar-button",
             "@plate/font-color-toolbar-button",
             "@plate/font-size-toolbar-button",
+            "@plate/format-painter-toolbar-button",
             "@plate/history-toolbar-button",
             "@plate/indent-toolbar-button",
             "@plate/insert-toolbar-button",
@@ -10701,6 +10809,21 @@
             }
           ],
           "name": "formatting",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/format-painter.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/format-painter.tsx"
+            }
+          ],
+          "name": "format-painter",
           "type": "registry:component"
         },
         {
@@ -13633,6 +13756,33 @@
           "name": "clear-formatting-demo",
           "registryDependencies": [
             "@plate/formatting",
+            "@plate/editor",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
+        },
+        {
+          "dependencies": [
+            "@platejs/test"
+          ],
+          "description": "Copy the look of one piece of text onto another.",
+          "files": [
+            {
+              "path": "examples/demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/format-painter-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "format-painter-demo",
+          "registryDependencies": [
+            "@plate/format-painter",
             "@plate/editor",
             "@plate/ai",
             "@plate/dnd"

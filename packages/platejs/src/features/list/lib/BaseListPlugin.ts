@@ -297,6 +297,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
     formatting.of({
       keeps: {
         indent: ({ index, siblings }) => isListFamilyMember(siblings, index),
+        type: ({ index, siblings }) => isListFamilyMember(siblings, index),
       },
     }),
   ],

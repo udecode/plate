@@ -12,6 +12,7 @@ import { basicMarksValue } from './basic-marks-value';
 import { basicNodesValue } from './basic-nodes-value';
 import { blockMenuValue } from './block-menu-value';
 import { clearFormattingValue } from './clear-formatting-value';
+import { formatPainterValue } from './format-painter-value';
 import { nodeSelectionValue } from './node-selection-value';
 import { codeBlockValue } from './code-block-value';
 import { columnValue } from './column-value';
@@ -87,6 +88,7 @@ const values = {
   iframe: iframeValue,
   indent: indentValue,
   'clear-formatting': clearFormattingValue,
+  'format-painter': formatPainterValue,
   'line-height': lineHeightValue,
   link: linkValue,
   list: listValue,

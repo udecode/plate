@@ -27,6 +27,7 @@ export type {
   EditableHistoryReplayResult,
   EditableDropResult,
   EditablePasteResult,
+  EditablePointerSelectionEndHandler,
 } from './editable/editable-dom-runtime';
 export { installBrowserHandle } from './editable/install-browser-handle';
 export type {

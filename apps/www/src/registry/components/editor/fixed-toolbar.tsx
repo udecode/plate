@@ -48,6 +48,7 @@ import {
   FontColorToolbarButton,
 } from './font-color-toolbar-button';
 import { FontSizeToolbarButton } from './font-size-toolbar-button';
+import { FormatPainterToolbarButton } from './format-painter-toolbar-button';
 import { RedoToolbarButton, UndoToolbarButton } from './history-toolbar-button';
 import {
   IndentToolbarButton,
@@ -142,6 +143,7 @@ export function FixedToolbarButtons({
           <ToolbarGroup>
             <AlignToolbarButton />
             <ClearFormattingToolbarButton />
+            <FormatPainterToolbarButton />
 
             <NumberedListToolbarButton />
             <BulletedListToolbarButton />

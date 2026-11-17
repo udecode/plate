@@ -1463,6 +1463,35 @@ export const useRootInteractionController = ({
     },
     [editor, getMountedViewEditor, root, rootRuntime]
   );
+  const scheduleHeldFrame = useCallback(
+    (
+      label: string,
+      callback: () => void,
+      target: HTMLElement,
+      phase: DOMPhase = 'selection-repair'
+    ) => {
+      const release =
+        (
+          rootRuntime ?? findMountedEditableDOMRuntime(target)
+        )?.pressFence.hold() ?? (() => {});
+      const scheduled = scheduleInteractionFrame(
+        label,
+        () => {
+          try {
+            callback();
+          } finally {
+            release();
+          }
+        },
+        { phase, target }
+      );
+
+      if (!scheduled) release();
+
+      return scheduled;
+    },
+    [rootRuntime, scheduleInteractionFrame]
+  );
   const focusRoot = useCallback(
     ({
       fallbackSelection,
@@ -2374,7 +2403,7 @@ export const useRootInteractionController = ({
 
         const receipt = getPlacementGeneration(focusEditor);
 
-        scheduleInteractionFrame(
+        scheduleHeldFrame(
           'root-interaction-mouse-down',
           () => {
             applyInteractionAction(
@@ -2386,7 +2415,8 @@ export const useRootInteractionController = ({
               { receipt }
             );
           },
-          { phase: 'model', target: event.currentTarget }
+          event.currentTarget,
+          'model'
         );
       });
     },
@@ -2402,7 +2432,7 @@ export const useRootInteractionController = ({
       pendingInteractionRef,
       root,
       rootRuntime,
-      scheduleInteractionFrame,
+      scheduleHeldFrame,
       selection,
       selectionBridge,
       startPlacedDrag,
@@ -2561,6 +2591,46 @@ export const useRootInteractionController = ({
       const pointerMoved = hasPointerMoved(pendingInteraction, event);
 
       if (
+        pendingInteraction.nativeSelectedTextClick &&
+        !pointerMoved &&
+        event.button === 0 &&
+        event.detail === 1 &&
+        !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      ) {
+        const pressFence = (
+          rootRuntime ?? findMountedEditableDOMRuntime(currentTarget)
+        )?.pressFence;
+
+        if (pressFence?.isOpen) {
+          const focusEditor = getMountedViewEditor(root) ?? editor;
+          const placement = getEditableRootChromeCoordinatePlacement({
+            editor,
+            event,
+            includeInsideString: true,
+          });
+          const caret = placement
+            ? resolveCoordinatePlacementTarget({
+                editor: focusEditor,
+                event,
+                placement,
+              })
+            : {
+                placementDOMPoint: null,
+                range: focusEditor.api.dom.resolveEventRange(event.nativeEvent),
+              };
+
+          pressFence.awaitCollapse(() => {
+            if (caret.range) {
+              applyInteractionAction(
+                { range: caret.range, type: 'set-selection' },
+                { placementDOMPoint: caret.placementDOMPoint }
+              );
+            }
+          });
+        }
+      }
+
+      if (
         pointerMoved &&
         ((projectedDrag && !projectedDrag.browserOwned) ||
           canApplyCoordinateDragSelection(pendingInteraction, root)) &&
@@ -2593,7 +2663,7 @@ export const useRootInteractionController = ({
           const replaySnapshot = editor.read.runtime.snapshot();
           const replayInteractionEpoch = interactionEpochRef.current;
 
-          const scheduled = scheduleInteractionFrame(
+          const scheduled = scheduleHeldFrame(
             'root-interaction-selection-replay',
             () => {
               const currentSnapshot = editor.read.runtime.snapshot();
@@ -2629,7 +2699,7 @@ export const useRootInteractionController = ({
 
               selectionBridge?.importDOMSelection();
             },
-            { target: currentTarget }
+            currentTarget
           );
 
           if (!scheduled) {
@@ -2678,14 +2748,14 @@ export const useRootInteractionController = ({
             if (expandedSelectionImport === 'none') {
               selectionBridge?.importDOMSelection();
             }
-            scheduleInteractionFrame(
+            scheduleHeldFrame(
               'root-interaction-selection-import',
               () => {
                 if (!readPliteViewSelection(editor)) {
                   selectionBridge?.importDOMSelection();
                 }
               },
-              { target: currentTarget }
+              currentTarget
             );
           }
         }
@@ -2807,7 +2877,7 @@ export const useRootInteractionController = ({
       releasePlacedDrag,
       root,
       rootRuntime,
-      scheduleInteractionFrame,
+      scheduleHeldFrame,
       selection,
       selectionBridge,
     ]

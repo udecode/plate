@@ -20,6 +20,7 @@ import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
   EditablePasteResult,
+  EditablePointerSelectionEndHandler,
   NodeSelectionFocus,
 } from '../editable/editable-dom-runtime';
 import type {
@@ -326,6 +327,7 @@ export const EditableDOMRoot = (
     onKeyDown?: EditableKeyDownHandler;
     onDropResult?: (result: EditableDropResult) => void;
     onPasteResult?: (result: EditablePasteResult) => void;
+    onPointerSelectionEnd?: EditablePointerSelectionEndHandler;
     readOnly?: boolean;
     scrollSelectionIntoView?: (
       editor: ReactRuntimeEditor,
@@ -350,6 +352,7 @@ export const EditableDOMRoot = (
     onHistoryReplay,
     onDropResult,
     onPasteResult,
+    onPointerSelectionEnd,
     readOnly: readOnlyProp = false,
     scrollSelectionIntoView = defaultScrollSelectionIntoView,
     style: userStyle = {},
@@ -387,6 +390,7 @@ export const EditableDOMRoot = (
     onDropResult,
     onKeyDown: propsOnKeyDown,
     onPasteResult,
+    onPointerSelectionEnd,
     readOnly: readOnlyProp,
     scrollSelectionIntoView,
   });

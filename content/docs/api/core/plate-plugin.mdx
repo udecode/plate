@@ -206,6 +206,14 @@ capture handlers use names such as `keyDownCapture`.
 <APISubListItem parent="on" name="paste" type="DOMHandler" optional>
 Handles a React `paste` event.
 </APISubListItem>
+<APISubListItem parent="on" name="pointerSelectionEnd" type="(ctx: PluginContext & { selection: Range }) => void" optional>
+Called once per mouse selection made in the editor's own text, with the final
+range, after the browser and the editor finish writing it, including a press
+released outside the editor. Plugins run in plugin order, each with the range
+resolved again after the previous one. It is not a DOM handler, so it has no
+event and cannot cancel anything. An edit-only plugin is skipped in a read-only
+view.
+</APISubListItem>
 </APISubList>
 </APIItem>
 
