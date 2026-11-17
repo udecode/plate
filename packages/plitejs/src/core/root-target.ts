@@ -1,5 +1,6 @@
 import type { Editor, RootKey } from '../interfaces/editor';
 import { getEditorRuntime } from './editor-runtime';
+import { notifyObservers } from './lifecycle-error';
 import type { ViewPresentation } from './view-presentation';
 import { countCoreWork } from './work';
 
@@ -14,6 +15,7 @@ type Subscriber = {
 
 type Entry = {
   answer: RootTarget | null;
+  owner: Editor;
   stale: boolean;
   subscribers: Set<Subscriber>;
   usedLatestFirst: Editor[];
@@ -21,13 +23,13 @@ type Entry = {
 };
 
 type Key = readonly [
-  owner: object,
+  owner: Editor,
   presentation: ViewPresentation,
   root: RootKey,
 ];
 
 const ENTRIES = new WeakMap<
-  object,
+  Editor,
   Map<ViewPresentation, Map<RootKey, Entry>>
 >();
 // Keyed by view runtime, which a mounted React view editor shares with its view.
@@ -52,6 +54,7 @@ const ensureEntry = (key: Key): Entry => {
   const roots = presentations.get(presentation) ?? new Map();
   const entry: Entry = {
     answer: null,
+    owner,
     stale: false,
     subscribers: new Set(),
     usedLatestFirst: [],
@@ -126,12 +129,17 @@ const announce = () => {
   for (const entry of entries) {
     const answer = readEntry(entry);
 
-    for (const subscriber of entry.subscribers) {
-      if (isSameTarget(answer, subscriber.heard)) continue;
+    notifyObservers(
+      entry.owner,
+      entry.subscribers,
+      'commit-listener',
+      (subscriber) => {
+        if (isSameTarget(answer, subscriber.heard)) return;
 
-      subscriber.heard = answer;
-      subscriber.listener();
-    }
+        subscriber.heard = answer;
+        subscriber.listener();
+      }
+    );
   }
 };
 
@@ -165,7 +173,7 @@ export const subscribeRootViewUse = (view: Editor, listener: () => void) => {
 };
 
 export const mountRootView = (
-  owner: object,
+  owner: Editor,
   presentation: ViewPresentation,
   root: RootKey,
   view: Editor
@@ -207,7 +215,12 @@ export const markRootViewUsed = (view: Editor) => {
     ];
     invalidate(entry);
   }
-  USE_LISTENERS.get(runtime)?.forEach((listener) => listener());
+  notifyObservers(
+    view,
+    USE_LISTENERS.get(runtime),
+    'commit-listener',
+    (listener) => listener()
+  );
 };
 
 export const reportShownChange = <T>(view: Editor, change: () => T): T => {
@@ -223,7 +236,7 @@ export const reportShownChange = <T>(view: Editor, change: () => T): T => {
 };
 
 export const readRootTarget = (
-  owner: object,
+  owner: Editor,
   presentation: ViewPresentation,
   root: RootKey
 ): RootTarget | null => {
@@ -233,7 +246,7 @@ export const readRootTarget = (
 };
 
 export const subscribeRootTarget = (
-  owner: object,
+  owner: Editor,
   presentation: ViewPresentation,
   root: RootKey,
   listener: () => void

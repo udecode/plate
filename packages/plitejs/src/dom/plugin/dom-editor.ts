@@ -91,7 +91,6 @@ import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_DOM_EDITABLE,
   EDITOR_TO_DOM_ROOT,
-  EDITOR_TO_DOM_SCOPE_LISTENERS,
   EDITOR_TO_DOM_SCROLL,
   EDITOR_TO_KEY_TO_ELEMENT,
   EDITOR_TO_RUNTIME_ID_TO_KEY,
@@ -153,6 +152,7 @@ import {
   findDOMRootRuntime,
   hasMountedDOMRoot,
   hasMountedDocumentView,
+  listenEditorDOMScope,
   notifyEditorDOMScopeListeners,
   resolveDOMReach,
   resolveDOMTargetView,
@@ -1049,20 +1049,12 @@ export const subscribeEditorDOMScope = (
   editor: object,
   listener: () => void
 ) => {
-  const listeners = EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor) ?? new Set();
-
-  listeners.add(listener);
-  EDITOR_TO_DOM_SCOPE_LISTENERS.set(editor, listeners);
-
+  const stopOwn = listenEditorDOMScope(editor, listener);
   const stopReach = subscribeDOMReach(editor, listener);
 
   return () => {
-    listeners.delete(listener);
+    stopOwn();
     stopReach();
-
-    if (listeners.size === 0) {
-      EDITOR_TO_DOM_SCOPE_LISTENERS.delete(editor);
-    }
   };
 };
 

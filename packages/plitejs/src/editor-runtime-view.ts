@@ -127,6 +127,7 @@ type ViewState = {
   composing: boolean;
   document: AdmittedDocument | undefined;
   focused: boolean;
+  follows: ViewPolicyTarget | undefined;
   policySource: ViewPolicySource | undefined;
   presentation: ViewPresentation;
   readOnly: boolean;
@@ -1433,6 +1434,7 @@ export const createEditorViewRuntime = <
     composing: sourceEditor.read.view.isComposing(),
     document,
     focused: sourceEditor.read.view.isFocused(),
+    follows: document ? undefined : policyTarget,
     policySource: document
       ? undefined
       : policySourceOf(sourceRuntime, policyTarget),
@@ -1576,6 +1578,9 @@ export const projectEditorView: CreateEditorView = <
 
 export const getOwnViewPresentation = (editor: Editor) =>
   VIEW_STATES.get(getEditorRuntime(editor))?.presentation;
+
+export const getViewFollowTarget = (editor: Editor) =>
+  VIEW_STATES.get(getEditorRuntime(editor))?.follows;
 
 export const getViewPresentation = (editor: Editor) =>
   getOwnViewPresentation(editor) ??

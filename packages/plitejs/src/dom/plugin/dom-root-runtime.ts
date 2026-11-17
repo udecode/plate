@@ -8,7 +8,11 @@ import { toInternalRoot } from '../../core/public-root';
 import { getBaseCallRoot, setEditorFocused } from '../../core/public-state';
 import { getCaretOwner, subscribeCaretOwner } from '../../core/view-carets';
 import type { ViewPresentation } from '../../core/view-presentation';
-import { getOwnViewPresentation } from '../../editor-runtime-view';
+import {
+  getOwnViewPresentation,
+  getViewFollowTarget,
+  type ViewPolicyTarget,
+} from '../../editor-runtime-view';
 import type { AnyEditor, Editor, RootKey } from '../../interfaces/editor';
 import {
   type DOMRootFactOverrides,
@@ -115,7 +119,77 @@ export const notifyEditorDOMScopeListeners = (editor: object) => {
   });
 };
 
+export const listenEditorDOMScope = (editor: object, listener: () => void) => {
+  const listeners = EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor) ?? new Set();
+
+  listeners.add(listener);
+  EDITOR_TO_DOM_SCOPE_LISTENERS.set(editor, listeners);
+
+  return () => {
+    listeners.delete(listener);
+
+    if (
+      listeners.size === 0 &&
+      EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor) === listeners
+    ) {
+      EDITOR_TO_DOM_SCOPE_LISTENERS.delete(editor);
+    }
+  };
+};
+
+const subscribeFollowedReach = (
+  root: RootKey,
+  target: ViewPolicyTarget,
+  listener: () => void
+) => {
+  let view: Editor | undefined;
+  let stopView = () => {};
+  let stopTarget = () => {};
+  const resubscribeAtCurrentAnswer = () => {
+    const stopPreviousTarget = stopTarget;
+
+    stopTarget = target.subscribe(moved);
+    stopPreviousTarget();
+  };
+  const followCurrentView = () => {
+    stopView();
+    view = target.current();
+    stopView =
+      view && getEditorRuntimeRoot(view) === root
+        ? listenEditorDOMScope(view, viewChanged)
+        : () => {};
+    resubscribeAtCurrentAnswer();
+  };
+  const moved = () => {
+    followCurrentView();
+    listener();
+  };
+  const viewChanged = () => {
+    if (target.current() !== view) followCurrentView();
+    listener();
+  };
+
+  followCurrentView();
+
+  return () => {
+    stopView();
+    stopTarget();
+  };
+};
+
 export const subscribeDOMReach = (handle: object, listener: () => void) => {
+  if (hasEditorRuntime(handle)) {
+    const follows = getViewFollowTarget(handle);
+
+    if (follows) {
+      return subscribeFollowedReach(
+        getEditorRuntimeRoot(handle),
+        follows,
+        listener
+      );
+    }
+  }
+
   const documentEditor = documentOf(handle);
   const reached = () => {
     if (!hasMountedDOMRoot(handle)) listener();
@@ -365,6 +439,22 @@ const reachOwnView = (
   );
 };
 
+const reachFollowedView = (
+  handle: Editor,
+  target: ViewPolicyTarget,
+  request: DOMReachRequest
+) => {
+  const root = getEditorRuntimeRoot(handle);
+
+  if (request.root !== undefined && request.root !== root) return null;
+
+  const view = target.current();
+
+  return view && hasMountedDOMRoot(view) && getEditorRuntimeRoot(view) === root
+    ? view
+    : null;
+};
+
 const reachDocumentView = (
   mounted: MountedViews,
   handle: Editor,
@@ -394,10 +484,16 @@ export const resolveDOMReach = (
       : null;
   }
 
+  if (!hasEditorRuntime(handle)) return null;
+
+  const follows = getViewFollowTarget(handle);
+
+  if (follows) return reachFollowedView(handle, follows, request);
+
   const owner = documentOf(handle);
   const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(owner);
 
-  if (!mounted || !hasEditorRuntime(handle)) return null;
+  if (!mounted) return null;
 
   const presentation = getOwnViewPresentation(handle);
 
