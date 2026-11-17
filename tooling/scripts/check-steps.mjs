@@ -25,6 +25,24 @@ export const lockfileInstalled = (root) => {
     : null;
 };
 
+/**
+ * Installs `root`'s pnpm-lock.yaml, from the store first and then from the
+ * network, and returns null, or pnpm's output when both installs fail.
+ */
+export const installLockfile = (root) => {
+  let output = '';
+  for (const offline of [true, false]) {
+    const result = spawnSync(
+      'pnpm',
+      ['install', '--frozen-lockfile', ...(offline ? ['--offline'] : [])],
+      { cwd: root, encoding: 'utf-8', maxBuffer: 64 << 20 }
+    );
+    if (result.status === 0) return null;
+    output = result.error?.message ?? `${result.stdout}${result.stderr}`;
+  }
+  return output;
+};
+
 export const commonDir = (root) => {
   const result = spawnSync(
     'git',

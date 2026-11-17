@@ -25,6 +25,7 @@ import {
 import { freshRun, openCache } from './check-cache.mjs';
 import {
   commonDir,
+  installLockfile,
   INTERRUPTED,
   lockfileInstalled,
   stepLogger,
@@ -1230,10 +1231,16 @@ const main = async () => {
   }
 
   if (lockfileInstalled(root) === false) {
-    console.error(
-      `[check] ${LOCKFILE} differs from the lockfile pnpm last installed, so the steps would run against stale node_modules. Run pnpm install --offline, or pnpm install when the store lacks a package, then run the check again.`
+    console.info(
+      `[check] ${LOCKFILE} differs from the lockfile pnpm last installed; installing it.`
     );
-    return 1;
+    const failure = installLockfile(root);
+    if (failure !== null) {
+      console.error(
+        `[check] pnpm install failed, so the steps would run against stale node_modules:\n${failure}`
+      );
+      return 1;
+    }
   }
 
   let chosen = affected
