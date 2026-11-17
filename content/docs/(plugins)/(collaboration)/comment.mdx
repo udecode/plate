@@ -471,7 +471,7 @@ Review every report row, then save `migrated.output` with the non-null entries o
 | `api.getSnapshot()` | Read stable thread IDs, visible IDs, draft IDs, pending input, and `issues` |
 | `api.discardOrphan(id)` | Remove a saved range with no loaded thread; return `'discarded'` or `'not-orphan'` |
 | `api.attachment(id)` | Read `CommentAttachment` in the calling view, or `null` when the thread is absent |
-| `api.idsAt(location)` | Read unresolved IDs overlapping this view's location, in record order |
+| `api.idsAt(location)` | Read unresolved IDs overlapping a location in the calling view, in record order. A location without a root is in the view's root |
 | `api.setActive(ids)` | Select an ordered group; use `[]` to clear it |
 | `api.subscribeAttachments(listener)` | Observe attachment mapping and projection changes in the calling view |
 | `api.subscribeRanges(listener)` | Observe a thread gaining, losing or replacing its saved range |

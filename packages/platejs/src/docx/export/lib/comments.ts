@@ -41,7 +41,7 @@ const textHost = (document: Document, point: Point) =>
     document.querySelectorAll<HTMLElement>('[data-editor-node="text"]')
   ).find(
     (element) =>
-      (element.dataset.editorRoot ?? 'main') === 'main' &&
+      (element.dataset.editorRoot ?? 'main') === (point.root ?? 'main') &&
       element.dataset.editorPath === point.path.join(',')
   );
 

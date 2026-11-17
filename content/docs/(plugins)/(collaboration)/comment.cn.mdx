@@ -396,7 +396,7 @@ console.table(report);
 | `api.getSnapshot()` | 读取稳定的线程 ID、可见 ID、草稿 ID、待提交输入与 `issues` |
 | `api.discardOrphan(id)` | 删除没有已加载线程的保存范围；返回 `'discarded'` 或 `'not-orphan'` |
 | `api.attachment(id)` | 读取调用视图中的 `CommentAttachment`；线程不存在时返回 `null` |
-| `api.idsAt(location)` | 按记录顺序读取调用视图中该位置未解决的重叠评论 ID |
+| `api.idsAt(location)` | 按记录顺序读取调用视图中该位置未解决的重叠评论 ID；未指定根的位置属于该视图的根 |
 | `api.setActive(ids)` | 选择有序 ID 组；`[]` 清空选择 |
 | `api.subscribeAttachments(listener)` | 观察调用视图中的附着位置映射和投影变化 |
 | `api.subscribeRanges(listener)` | 观察线程获得、失去或替换保存的范围 |

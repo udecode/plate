@@ -6,7 +6,10 @@ import {
   getEditorRuntimeOwner,
   nanoid,
   NodeApi,
+  PathApi,
+  PointApi,
   RangeApi,
+  SelectionApi,
   TextApi,
   type Anchor,
   type Editor,
@@ -17,7 +20,11 @@ import {
   type Range,
   type Value,
 } from '../../core';
-import { notifyObservers, runEditorObserver } from '../../facade';
+import {
+  notifyObservers,
+  readDocumentRange,
+  runEditorObserver,
+} from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
   createAnnotationStore,
@@ -451,7 +458,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const orphans = new Map<string, Anchor<Range>>();
   const rangesAwaitingMutate = new Map<string, Anchor<Range>>();
   const unsettledDrafts = new Set<string>();
-  let source: ReadonlyArray<{ id: string; anchor: AnnotationAnchor }> = [];
+  let sourcesByRoot = new Map<
+    Anchor<Range>['root'],
+    Array<{ id: string; anchor: AnnotationAnchor }>
+  >();
   let sourceOrder = new Map<string, number>();
   let composer: { anchor: Anchor<Range>; excerpt: string; id: string } | null =
     null;
@@ -541,9 +551,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (observed) return observed.annotations;
     let annotations = passiveIndexes.get(view);
     if (!annotations) {
-      annotations = createAnnotationStore(view, () => source, {
-        id: 'comments',
-      });
+      annotations = createAnnotationStore(
+        view,
+        () => sourcesByRoot.get(view.read.view.root()) ?? [],
+        { id: 'comments' }
+      );
       passiveIndexes.set(view, annotations);
     }
     return annotations;
@@ -693,10 +705,13 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     store.set({ activeIds: Object.freeze([...new Set(ids)]) });
   };
   const syncSource = () => {
-    source = Object.freeze(
-      [...anchors].map(([id, anchor]) => ({ id, anchor }))
-    );
-    sourceOrder = new Map(source.map(({ id }, index) => [id, index]));
+    sourcesByRoot = new Map();
+    anchors.forEach((anchor, id) => {
+      const group = sourcesByRoot.get(anchor.root) ?? [];
+      group.push({ id, anchor });
+      sourcesByRoot.set(anchor.root, group);
+    });
+    sourceOrder = new Map([...anchors.keys()].map((id, index) => [id, index]));
     passiveIndexes = new WeakMap();
   };
   const retainIds = (previous: readonly string[], next: string[]) =>
@@ -726,23 +741,34 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         .map((thread) => thread.id)
     ),
   });
-  const isInNamedRoot = (range: Range) =>
-    range.anchor.root !== undefined || range.focus.root !== undefined;
-  const validateRange = (range: Range, children = editor.read.children()) => {
+  const assertTextRange = (reader: Editor, range: Range | null) => {
+    if (!range) throw new Error('Invalid comment range');
+    const root = SelectionApi.root(range);
+    const children =
+      root === undefined ? reader.read.children() : reader.read.root(root);
     for (const point of [range.anchor, range.focus]) {
-      if (point.root !== undefined) {
-        throw new Error('Comment ranges must address the primary document');
-      }
       const node = NodeApi.getIf({ type: '', children }, point.path);
-      if (
-        !TextApi.isText(node) ||
-        !Number.isInteger(point.offset) ||
-        point.offset < 0 ||
-        point.offset > node.text.length
-      ) {
+      if (!TextApi.isText(node) || point.offset > node.text.length) {
         throw new Error('Invalid comment range');
       }
     }
+    return range;
+  };
+  const commandRange = (view: Editor, value: Range) =>
+    assertTextRange(
+      view,
+      readDocumentRange(value, { view: view.read.view.root() })
+    );
+  const resolveIn = (view: Editor, anchor: Anchor<Range>) => {
+    const root = view.read.view.root();
+    const isPageView = root === undefined;
+    return anchor.root === root || isPageView ? anchor.resolve(view) : null;
+  };
+  const locationRoot = (location: Location) => {
+    if (PathApi.isPath(location)) return undefined;
+    return PointApi.isPoint(location)
+      ? location.root
+      : SelectionApi.root(location);
   };
   const anchorAt = (range: Range) =>
     editor.anchor(range, { association: 'inward', deletion: 'nearest' });
@@ -756,10 +782,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     for (const id of Object.keys(ranges)) {
       let range: Range;
       try {
-        const value = snapshotCommentData(ownValue(ranges, id));
-        if (!RangeApi.isRange(value)) throw new Error('Invalid comment range');
-        range = value;
-        validateRange(range);
+        range = assertTextRange(
+          editor,
+          readDocumentRange(snapshotCommentData(ownValue(ranges, id)), 'saved')
+        );
       } catch {
         rangeIssues.push({ code: 'invalid-range', id });
         continue;
@@ -1265,7 +1291,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     initialComments = null;
     queues.clear();
     generations.clear();
-    source = [];
+    sourcesByRoot = new Map();
     sourceOrder.clear();
     snapshot = Object.freeze({
       draftThreadIds: Object.freeze([]),
@@ -1308,10 +1334,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         ) {
           return null;
         }
+        let range: Range | undefined;
         if (input.target.type === 'range') {
-          if (isInNamedRoot(input.target.range)) return null;
-          validateRange(input.target.range, commandEditor.read.children());
-          if (RangeApi.isCollapsed(input.target.range)) return null;
+          range = commandRange(commandEditor, input.target.range);
+          if (RangeApi.isCollapsed(range)) return null;
         } else if (!input.target.id) return null;
         const createdAt = new Date().toISOString();
         const userId = readEditorAuthor(commandEditor);
@@ -1328,13 +1354,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           ...(data && { data }),
         });
         const anchor =
-          input.target.type === 'range'
-            ? (pending ??
-              commandEditor.anchor(input.target.range, {
-                association: 'inward',
-                deletion: 'nearest',
-              }))
-            : undefined;
+          range &&
+          (pending ??
+            commandEditor.anchor(range, {
+              association: 'inward',
+              deletion: 'nearest',
+            }));
         return { thread, anchor };
       };
       const submit = async (
@@ -1382,20 +1407,19 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       };
       return {
         /**
-         * Start a comment at a range, or expand a caret to its text block.
-         * Returns false for a range in a named root, such as a board note.
+         * Start a comment at a range, or expand a caret to its text block. A
+         * range without a root is in this view's root.
          */
         begin: (at: Range | null = commandEditor.read.selection()) => {
-          let range = at;
-          if (!range || destroyed || isInNamedRoot(range)) return false;
+          if (!at || destroyed) return false;
+          let range: Range | null = commandRange(commandEditor, at);
           if (RangeApi.isCollapsed(range)) {
             const block = commandEditor.read.nodes.block({ at: range });
             range = block
-              ? (commandEditor.read.ranges.get(block[1]) ?? null)
+              ? (commandEditor.read.ranges.get(block[0]) ?? null)
               : null;
           }
           if (!range || RangeApi.isCollapsed(range)) return false;
-          validateRange(range, commandEditor.read.children());
           const anchor = commandEditor.anchor(range, {
             association: 'inward',
             deletion: 'nearest',
@@ -1419,7 +1443,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         /** Publish from the pending selection; failure preserves the composer. */
         create: async (body: Value): Promise<CommentMutationResult<string>> => {
           const claimed = composer;
-          const range = claimed?.anchor.resolve(commandEditor);
+          const range = claimed && resolveIn(commandEditor, claimed.anchor);
           return claimed && range
             ? submit(
                 {
@@ -1433,14 +1457,14 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             : { status: 'invalid' };
         },
         /**
-         * Persist and publish at an explicit primary range or authored change
-         * ID. A range in a named root resolves `invalid`.
+         * Persist and publish at an explicit range or authored change ID. A
+         * range without a root is in this view's root.
          */
         createThread: (input: CreateCommentThreadInput) => submit(input),
         /**
          * Allocate a local draft; only publishDraft invokes durable storage.
-         * Returns null for a range in a named root, or for an ID that holds an
-         * orphan or has an action in flight.
+         * Returns null for an ID that holds an orphan or has an action in
+         * flight.
          */
         createDraft: (input: CreateCommentThreadInput) => {
           const prepared = prepareCreation(input, 'draft');
@@ -1555,7 +1579,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         /** Resolve the pending selection without exposing its native handle. */
         pendingRange: () =>
           freezeComment(
-            structuredClone(composer?.anchor.resolve(commandEditor) ?? null)
+            structuredClone(
+              composer ? resolveIn(commandEditor, composer.anchor) : null
+            )
           ),
         /** Persist a local draft; discard during the request fences late completion. */
         publishDraft: (id: string) =>
@@ -1693,12 +1719,19 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         },
         idsAt: (location: Location) => {
           if (destroyed) return Object.freeze([]);
-          const annotations = viewIndexes.get(commandEditor)?.annotations;
+          const viewRoot = commandEditor.read.view.root();
+          const root = locationRoot(location) ?? viewRoot;
+          const annotations =
+            root === viewRoot
+              ? viewIndexes.get(commandEditor)?.annotations
+              : undefined;
           if (!annotations) {
             return Object.freeze(
               [...anchors].flatMap(([id, anchor]) => {
-                if (threads.get(id)?.resolution) return [];
-                const range = anchor.resolve(commandEditor);
+                if (anchor.root !== root || threads.get(id)?.resolution) {
+                  return [];
+                }
+                const range = resolveIn(commandEditor, anchor);
                 return range && RangeApi.includes(range, location) ? [id] : [];
               })
             );
@@ -1732,7 +1765,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           const thread = threads.get(id);
           if (!thread) return null;
           if (thread.target.type === 'change') return thread.target;
-          const range = anchors.get(id)?.resolve(commandEditor);
+          const anchor = anchors.get(id);
+          const range = anchor && resolveIn(commandEditor, anchor);
           return range && !RangeApi.isCollapsed(range)
             ? freezeComment({
                 type: 'range',
@@ -1770,34 +1804,33 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         if (destroyed || !TextApi.isText(node)) return [];
         const key = view.key(path);
         if (!key) return [];
-        const textRange = {
-          anchor: { offset: 0, path },
-          focus: { offset: node.text.length, path },
-        };
+        const annotations = getAnnotations(view).getAnnotationsAt(key);
+        const textRange = annotations.length
+          ? view.read.ranges.get(path)
+          : undefined;
+        if (!textRange) return [];
         const activeIds = store.get('activeIds');
-        return getAnnotations(view)
-          .getAnnotationsAt(key)
-          .flatMap(({ id, range }) => {
-            if (threads.get(id)?.resolution) return [];
-            const intersection = range
-              ? RangeApi.intersection(range, textRange)
-              : null;
-            return !intersection || RangeApi.isCollapsed(intersection)
-              ? []
-              : [
-                  {
-                    attributes: {
-                      'data-comment-active': activeIds.includes(id)
-                        ? ''
-                        : undefined,
-                      'data-comment-id': id,
-                      className: 'editor-comments',
-                    },
-                    key: `${id}:${key}`,
-                    range: intersection,
+        return annotations.flatMap(({ id, range }) => {
+          if (threads.get(id)?.resolution) return [];
+          const intersection = range
+            ? RangeApi.intersection(range, textRange)
+            : null;
+          return !intersection || RangeApi.isCollapsed(intersection)
+            ? []
+            : [
+                {
+                  attributes: {
+                    'data-comment-active': activeIds.includes(id)
+                      ? ''
+                      : undefined,
+                    'data-comment-id': id,
+                    className: 'editor-comments',
                   },
-                ];
-          });
+                  key: `${id}:${key}`,
+                  range: intersection,
+                },
+              ];
+        });
       },
     },
   };

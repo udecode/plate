@@ -104,12 +104,15 @@ const SAVED_RANGES = new WeakMap<
 const RELEASED_RANGES = new WeakSet<Anchor<Range>>();
 
 const assertAnchorView = (editor: Editor, root: string, view?: Editor) => {
+  if (!view) return;
+  const viewRoot = getEditorRuntimeRoot(view);
   if (
-    view &&
-    (getEditorRuntimeOwner(view) !== getEditorRuntimeOwner(editor) ||
-      getEditorRuntimeRoot(view) !== root)
+    getEditorRuntimeOwner(view) !== getEditorRuntimeOwner(editor) ||
+    (viewRoot !== root && viewRoot !== 'main')
   ) {
-    throw new Error('Resolve an anchor in a view of the same editor and root.');
+    throw new Error(
+      "Resolve an anchor in a view of the same editor, in the anchor's root or the page."
+    );
   }
 };
 
@@ -305,7 +308,10 @@ export interface Anchor<TValue extends AnchorValue> {
       : 'path';
   readonly root: NamedRootKey | undefined;
   release(): TValue | null;
-  /** Resolve in the capture view by default, or another view of the same model/root. */
+  /**
+   * Resolve in the stored document, or as `view` reads it. `view` must be a
+   * view of the same editor whose root is the anchor's root or the page.
+   */
   resolve(view?: Editor): TValue | null;
 }
 
