@@ -121,6 +121,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-discussion-board-note-threads",
+      "href": "/registry/changelog/2026-11-17-discussion-board-note-threads.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show a comment on board note text on its board's block",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-17-editor-node-selection-scroll-area",
       "href": "/registry/changelog/2026-11-17-editor-node-selection-scroll-area.json",
       "status": "draft",

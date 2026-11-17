@@ -7,7 +7,13 @@ import {
   PencilLineIcon,
   XIcon,
 } from 'lucide-react';
-import { ElementApi, type NodeKey, type Range, RangeApi } from 'platejs';
+import {
+  ElementApi,
+  type NodeKey,
+  type Point,
+  type Range,
+  RangeApi,
+} from 'platejs';
 import type {
   AuthoredChange,
   AuthoredChangeDetails,
@@ -26,6 +32,7 @@ import {
   useEditorRootElement,
   useEditorSelector,
   useEditorViewState,
+  useModelEditor,
   usePath,
   usePluginStore,
 } from 'platejs/react';
@@ -58,7 +65,7 @@ type RuntimeEditor = ReturnType<typeof useEditor>;
 
 type DiscussionItem =
   | Readonly<{
-      blockIndices: readonly number[];
+      blockKeys: readonly NodeKey[];
       createdAt: Date;
       id: string;
       kind: 'comment';
@@ -168,19 +175,29 @@ const blockThreadCount = (
   return count;
 };
 
-const blockIndicesOf = (ranges: readonly Range[]) => [
-  ...new Set(
-    ranges.flatMap((range) => {
-      const [start, end] = RangeApi.edges(range);
-      if (start.root || end.root) return [];
-      const firstBlock = start.path[0] ?? 0;
-      return Array.from(
-        { length: (end.path[0] ?? firstBlock) - firstBlock + 1 },
-        (_, offset) => firstBlock + offset
-      );
-    })
-  ),
-];
+type RootTops = ReadonlyMap<string, number | undefined>;
+
+const rootTops = (editor: RuntimeEditor): RootTops =>
+  new Map(editor.read.roots().map(({ root, top }) => [root, top?.[0]]));
+
+const pageIndexOf = (tops: RootTops, point: Point) =>
+  point.root === undefined ? (point.path[0] ?? 0) : tops.get(point.root);
+
+const discussionBlocks = (
+  editor: RuntimeEditor,
+  tops: RootTops,
+  range: Range
+) => {
+  const [start, end] = RangeApi.edges(range);
+  const first = pageIndexOf(tops, start);
+  const last = pageIndexOf(tops, end);
+
+  if (first === undefined || last === undefined) return [];
+
+  return Array.from({ length: last - first + 1 }).flatMap(
+    (_, offset) => editor.key([first + offset]) ?? []
+  );
+};
 
 const sameBlockSnapshot = (
   left: DiscussionBlockSnapshot | undefined,
@@ -319,7 +336,6 @@ const createDiscussionStore = () => {
       }
     },
     update(
-      currentEditor: RuntimeEditor,
       items: readonly CommentItem[],
       threads: ReadonlyMap<string, readonly string[]>
     ) {
@@ -328,9 +344,7 @@ const createDiscussionStore = () => {
 
       commentsById = new Map(items.map((item) => [item.id, item]));
       items.forEach((item) => {
-        item.blockIndices.forEach((blockIndex) => {
-          const blockKey = currentEditor.key([blockIndex]);
-          if (!blockKey) return;
+        item.blockKeys.forEach((blockKey) => {
           const block = nextBlocks.get(blockKey);
 
           if (block) block.push(item);
@@ -372,7 +386,11 @@ const useDiscussionController = () => {
   const [store] = React.useState(createDiscussionStore);
   React.useEffect(() => {
     const { api } = editor.plugin(CommentsPlugin);
-    const locate = (id: string, thread = comments.getThread(id)) => {
+    const locate = (
+      id: string,
+      thread: ReturnType<typeof comments.getThread>,
+      tops: RootTops
+    ) => {
       if (!thread || thread.resolution) return null;
       const attachment = api.attachment(id);
       if (thread.target.type === 'change') return null;
@@ -380,7 +398,7 @@ const useDiscussionController = () => {
         return null;
       }
       return {
-        blockIndices: blockIndicesOf([attachment.range]),
+        blockKeys: discussionBlocks(editor, tops, attachment.range),
         createdAt: new Date(thread.createdAt),
         id,
         kind: 'comment' as const,
@@ -390,6 +408,7 @@ const useDiscussionController = () => {
       const suggestionThreads = new Map<string, string[]>();
       const commentItems: CommentItem[] = [];
       const visible = new Set(visibleThreadIds);
+      const tops = rootTops(editor);
 
       comments.getThreads().forEach((thread) => {
         if (thread.resolution) return;
@@ -401,10 +420,10 @@ const useDiscussionController = () => {
           return;
         }
         if (!visible.has(thread.id)) return;
-        const item = locate(thread.id, thread);
+        const item = locate(thread.id, thread, tops);
         if (item) commentItems.push(item);
       });
-      store.update(editor, commentItems, suggestionThreads);
+      store.update(commentItems, suggestionThreads);
     };
     const unsubscribeAttachments = api.subscribeAttachments(publish);
     const unsubscribeThreads = api.subscribeThreads(publish);
@@ -990,6 +1009,7 @@ function DiscussionPopover({
   snapshot: DiscussionSnapshot;
 }) {
   const editor = useEditor();
+  const model = useModelEditor();
   const rootElement = useEditorRootElement(editor);
   const store = useDiscussionStore();
   const popoverRef = React.useRef<HTMLDivElement>(null);
@@ -1138,11 +1158,14 @@ function DiscussionPopover({
     ? null
     : (pendingRange ?? commentAnchor?.range ?? activeSuggestionRange ?? null);
   const anchorRangeJson = anchorRange ? JSON.stringify(anchorRange) : null;
+  const anchorIndex = anchorRange
+    ? pageIndexOf(rootTops(editor), RangeApi.start(anchorRange))
+    : undefined;
   const anchorBlockKey = previewHidesRange
     ? shownTrigger
-    : anchorRange
-      ? editor.key([RangeApi.start(anchorRange).path[0] ?? 0])
-      : null;
+    : anchorIndex === undefined
+      ? null
+      : editor.key([anchorIndex]);
   const virtualAnchor = React.useMemo(() => {
     const currentAnchorRange = anchorRangeJson
       ? (JSON.parse(anchorRangeJson) as Range)
@@ -1164,7 +1187,12 @@ function DiscussionPopover({
         const blockRect = anchorBlockKey
           ? store.getBlockTrigger(anchorBlockKey)?.getBoundingClientRect()
           : null;
-        const domRange = editor.api.dom.resolveDOMRange(currentAnchorRange);
+        const { root } = RangeApi.start(currentAnchorRange);
+        const domRange = (
+          root === undefined || root === editor.read.view.root()
+            ? editor
+            : model
+        ).api.dom.resolveDOMRange(currentAnchorRange);
 
         if (!domRange) return blockRect ?? new DOMRect();
 
@@ -1181,7 +1209,7 @@ function DiscussionPopover({
           : (blockRect ?? rangeRect);
       },
     };
-  }, [anchorBlockKey, anchorRangeJson, editor, rootElement, store]);
+  }, [anchorBlockKey, anchorRangeJson, editor, model, rootElement, store]);
   const anchorElement =
     target?.anchor ?? (anchorRange || anchorBlockKey ? virtualAnchor : null);
   const open = Boolean(

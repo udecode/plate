@@ -17,6 +17,7 @@ import {
   type EditorEffectHistoryReplayResult,
   type Location,
   type NodeKey,
+  type Path,
   type Range,
   type Value,
 } from '../../core';
@@ -24,6 +25,7 @@ import {
   notifyObservers,
   readDocumentRange,
   runEditorObserver,
+  subscribeEditorViewState,
 } from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
@@ -472,15 +474,14 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     threadIds: Object.freeze([]),
     visibleThreadIds: Object.freeze([]),
   });
-  const viewIndexes = new Map<
-    Editor,
-    {
-      annotations: ReturnType<typeof createAnnotationStore>;
-      listeners: Set<(change: AnnotationChange) => void>;
-      refreshers: Set<(input: { nodeKeys: readonly NodeKey[] }) => void>;
-      unsubscribe: () => void;
-    }
-  >();
+  type ViewIndex = {
+    annotations: ReturnType<typeof createAnnotationStore>;
+    listeners: Set<(change: AnnotationChange) => void>;
+    named: ReturnType<typeof watchNamedRoots> | null;
+    refreshers: Set<(input: { nodeKeys: readonly NodeKey[] }) => void>;
+    unsubscribe: () => void;
+  };
+  const viewIndexes = new Map<Editor, ViewIndex>();
   let passiveIndexes = new WeakMap<
     Editor,
     ReturnType<typeof createAnnotationStore>
@@ -546,6 +547,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     );
   };
 
+  const isPageView = (view: Editor) => view.read.view.root() === undefined;
   const getAnnotations = (view: Editor) => {
     const observed = viewIndexes.get(view);
     if (observed) return observed.annotations;
@@ -569,31 +571,127 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       const refreshers = new Set<
         (input: { nodeKeys: readonly NodeKey[] }) => void
       >();
-      const unsubscribe = annotations.subscribeChanges((change) => {
-        const announce = () => {
+      const unsubscribe = annotations.subscribeChanges((change) =>
+        queueChange(() => {
           if (change.reason !== 'editor' && change.nodeKeys.length) {
             deliver(refreshers, 'commit-listener', {
               nodeKeys: change.nodeKeys,
             });
           }
           deliver(listeners, 'commit-listener', change);
-        };
-        if (heldChanges) heldChanges.push(announce);
-        else announce();
-      });
-      index = { annotations, listeners, refreshers, unsubscribe };
+        })
+      );
+      const created: ViewIndex = {
+        annotations,
+        listeners,
+        named: null,
+        refreshers,
+        unsubscribe: () => {
+          unsubscribe();
+          created.named?.unsubscribe();
+        },
+      };
+      index = created;
       viewIndexes.set(view, index);
     }
     return index;
+  };
+  const watchNamedRoots = (
+    view: Editor,
+    listeners: Set<(change: AnnotationChange) => void>
+  ) => {
+    const ranges = new Map<string, Range | null>();
+    const places = new Map<string, string | null>();
+    const changedIds = (
+      changed?: (root: NonNullable<Anchor<Range>['root']>) => boolean,
+      moved = !changed
+    ) => {
+      const ids = new Set<string>();
+      const present = new Set<string>();
+      let tops: Map<string, Path | null> | undefined;
+      sourcesByRoot.forEach((group, root) => {
+        if (root === undefined) return;
+        if (moved) {
+          tops ??= new Map(
+            view.read.roots().map((entry) => [entry.root, entry.top])
+          );
+          const top = tops.get(root);
+          const place = top ? `${top.join('.')}:${view.key(top)}` : null;
+          if (places.get(root) !== place) {
+            places.set(root, place);
+            group.forEach(({ id }) => ids.add(id));
+          }
+        }
+        if (changed && !changed(root)) return;
+        group.forEach(({ anchor, id }) => {
+          present.add(id);
+          const range = anchor.resolve(view);
+          if (ranges.has(id) && isEqual(ranges.get(id), range)) return;
+          ranges.set(id, range);
+          ids.add(id);
+        });
+      });
+      if (!changed) {
+        ranges.forEach((_, id) => {
+          if (present.has(id)) return;
+          ranges.delete(id);
+          ids.add(id);
+        });
+        places.forEach((_, root) => {
+          if (!sourcesByRoot.has(root)) places.delete(root);
+        });
+      }
+      return [...ids];
+    };
+    const announce = (
+      ids: readonly string[],
+      reason: AnnotationChange['reason']
+    ) => {
+      if (!ids.length) return;
+      const change = Object.freeze({
+        ids: Object.freeze([...ids]),
+        nodeKeys: Object.freeze([]),
+        reason,
+      });
+      queueChange(() => deliver(listeners, 'commit-listener', change));
+    };
+    changedIds();
+    const stopCommits = view.subscribeCommit((commit) => {
+      if (commit && !commit.changed.hasAny('document')) return;
+      announce(
+        changedIds(
+          commit && ((root) => commit.changed.has('document', root)),
+          !commit ||
+            commit.changed.hasAny('structure') ||
+            commit.changed.hasAny('properties')
+        ),
+        'editor'
+      );
+    });
+    const stopProjection = subscribeEditorViewState(view, (change) => {
+      if (change === 'authored') announce(changedIds(), 'editor');
+    });
+    return {
+      reread: () => announce(changedIds(), 'external'),
+      unsubscribe: () => {
+        stopCommits();
+        stopProjection();
+      },
+    };
+  };
+  const queueChange = (announce: () => void) => {
+    if (heldChanges) heldChanges.push(announce);
+    else announce();
   };
   // No listener runs until every view has refreshed, so a listener reading
   // another view finds the new locations.
   const refreshViews = (ids?: readonly string[]) => {
     const changes: Array<() => void> = [];
     heldChanges = changes;
-    viewIndexes.forEach(({ annotations }) =>
-      annotations.refresh(ids && { ids, reason: 'external' })
-    );
+    viewIndexes.forEach(({ annotations, named }) => {
+      annotations.refresh(ids && { ids, reason: 'external' });
+      named?.reread();
+    });
     heldChanges = null;
     return () => changes.forEach((announce) => announce());
   };
@@ -759,11 +857,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       view,
       readDocumentRange(value, { view: view.read.view.root() })
     );
-  const resolveIn = (view: Editor, anchor: Anchor<Range>) => {
-    const root = view.read.view.root();
-    const isPageView = root === undefined;
-    return anchor.root === root || isPageView ? anchor.resolve(view) : null;
-  };
+  const resolveIn = (view: Editor, anchor: Anchor<Range>) =>
+    anchor.root === view.read.view.root() || isPageView(view)
+      ? anchor.resolve(view)
+      : null;
   const locationRoot = (location: Location) => {
     if (PathApi.isPath(location)) return undefined;
     return PointApi.isPoint(location)
@@ -1783,8 +1880,15 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           if (destroyed) return () => {};
           const index = observeView(commandEditor);
           index.listeners.add(listener);
+          if (!index.named && isPageView(commandEditor)) {
+            index.named = watchNamedRoots(commandEditor, index.listeners);
+          }
           return () => {
             index.listeners.delete(listener);
+            if (!index.listeners.size) {
+              index.named?.unsubscribe();
+              index.named = null;
+            }
             releaseView(commandEditor);
           };
         },

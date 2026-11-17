@@ -666,6 +666,24 @@
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
     ],
+    "discussion": [
+      "2026-11-17-discussion-board-note-threads",
+      "2026-11-10-discussion-safari-taps",
+      "2026-10-18-discussion-preview-block-reads",
+      "2026-10-13-suggestions-review-tree",
+      "2026-09-18-comment-discovery",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
     "upload-browser": [
       "2026-11-17-files-sdk-3",
       "2026-09-21-upload-provider-items"
@@ -850,23 +868,6 @@
     ],
     "docs-meta": ["2026-11-13-remove-docs-items"],
     "board-page-demo": ["2026-11-12-add-board"],
-    "discussion": [
-      "2026-11-10-discussion-safari-taps",
-      "2026-10-18-discussion-preview-block-reads",
-      "2026-10-13-suggestions-review-tree",
-      "2026-09-18-comment-discovery",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-14-fix-comments-selection-visibility",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry"
-    ],
     "docx": [
       "2026-11-07-docx-fewer-install-dependencies",
       "2026-10-08-registry-install-dependencies",

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-discussion-board-note-threads",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-discussion-board-note-threads.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show a comment on board note text on its board's block",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-discussion-comment-board-note-text-bde536ae",
+      "kind": "fix",
+      "summary": "Count a comment on board note text on the board's block in the sidebar, and open its popover on the note text. The count goes away when someone deletes the note text.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-discussion-board-note-threads",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
