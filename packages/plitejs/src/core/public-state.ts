@@ -377,6 +377,7 @@ import {
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
 } from './representation';
+import { readRootEntries } from './root-entries';
 import { changedRootsOf } from './root-ownership';
 import { reportShownChange } from './root-target';
 import {
@@ -1125,7 +1126,7 @@ export const readEditorHistoryReplayReceipt = (result: object) =>
 export const getTransactionSpecContext = (editor: Editor) =>
   TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(-1);
 
-const getReadProjection = (editor: Editor) => {
+export const getReadProjection = (editor: Editor) => {
   const owner = getEditorRuntimeOwner(editor);
   // A finalized draft cannot be edited; reads can use its prepared view projection.
   return !getTransactionSpecContext(owner) || PREPARING_COMMIT.has(owner)
@@ -7215,6 +7216,7 @@ const getStateView = <
           V[number]
         >;
       },
+      roots: () => readRootEntries(editor),
       runtime: Object.freeze({
         snapshot: () => getSnapshot(editor) as EditorSnapshot<V>,
       }),
@@ -13979,6 +13981,7 @@ export const toEditorCoreStateView = <V extends Value>(
     points: state.points,
     ranges: state.ranges,
     root: state.root,
+    roots: state.roots,
     runtime: state.runtime,
     schema: state.schema,
     selection: state.selection,

@@ -242,6 +242,7 @@ export const createEditorReadApi = <
     points: createGroup('points'),
     ranges: createGroup('ranges'),
     root: (...args) => read((state) => state.root(...args)),
+    roots: (...args) => read((state) => state.roots(...args)),
     runtime: createGroup('runtime'),
     schema: createGroup('schema'),
     selection: createCallableGroup('selection'),

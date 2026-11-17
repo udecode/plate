@@ -381,6 +381,27 @@ export type NamedRootKey<TRoot extends RootKey = RootKey> = TRoot extends 'main'
   ? never
   : TRoot;
 
+/** An element that owns a named root, at its place in the document. */
+export type EditorRootOwner = Readonly<{
+  path: Path;
+  /** The owner's root, absent when the owner is on the page. */
+  root?: NamedRootKey;
+  /** The owner's `contentRoots` slot that names the root. */
+  slot: string;
+}>;
+
+/** A named root with the elements that own it, as `read.roots()` lists it. */
+export type EditorRootEntry = Readonly<{
+  /** The elements that own the root, in reading order. */
+  owners: readonly EditorRootOwner[];
+  root: NamedRootKey;
+  /**
+   * The path of the page element that holds the root through its first
+   * owners, or `null` when no chain of owners reaches the page.
+   */
+  top: Path | null;
+}>;
+
 /**
  * Keyed data a plugin keeps beside the document's children, by record set and
  * then by record id. Records have no position, so no read of `children` or
@@ -1795,6 +1816,14 @@ export type EditorCoreStateView<
   root: <TRoot extends RootKey>(
     root: NamedRootKey<TRoot>
   ) => ReadonlyArray<V[number]>;
+  /**
+   * List every named root in reading order, a root right after its first
+   * owner's place, with the elements that own it. Roots no chain of owners
+   * reaches from the page come last: each root no other root owns, in key
+   * order, then the roots it owns. Any root left, which only a ring of owners
+   * reaches, follows the same way.
+   */
+  roots: () => readonly EditorRootEntry[];
   runtime: EditorStateRuntimeApi<V>;
   schema: EditorStateSchemaApi<V>;
   selection: EditorStateSelectionApi<TSelection, V>;
@@ -1831,7 +1860,7 @@ export type EditorCoreUpdateTransaction<
   TSelection extends SelectionValue = SelectionValue,
 > = Omit<
   EditorCoreStateView<V, TSelection>,
-  'marks' | 'nodes' | 'selection' | 'slice' | 'text' | 'value'
+  'marks' | 'nodes' | 'roots' | 'selection' | 'slice' | 'text' | 'value'
 > & {
   /** Track a location from the current draft until this transaction ends. */
   anchor: EditorTransactionAnchorApi;

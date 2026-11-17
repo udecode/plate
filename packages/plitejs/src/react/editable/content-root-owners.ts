@@ -9,12 +9,12 @@ import {
   type RootKey,
   type Value,
 } from '../..';
-import { type NodeList, rootNodesOf } from '../../core/change/document-index';
+import type { NodeList } from '../../core/change/document-index';
 import { getSetSite } from '../../core/public-state';
 import { countCoreWork } from '../../core/work';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
 import { matchesPresentationOf } from '../../editor-runtime-view';
-import type { AnyEditor } from '../../interfaces/editor';
+import type { AnyEditor, EditorRootOwner } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
@@ -26,7 +26,6 @@ import {
   type PliteViewBoundaryGraphNodeInput,
 } from '../view-boundary-graph';
 import {
-  getEditorRuntimeElementEntries,
   getEditorRuntime,
   getEditorRuntimeOwner,
   hasEditorRuntime,
@@ -155,51 +154,42 @@ export const findContentRootOwners = <V extends Value>(
   ) {
     return [];
   }
-  const runtimeOwner = getEditorRuntimeOwner(runtimeEditor);
-
   countCoreWork('contentRootOwnerScans');
 
   return editor.read((state) => {
-    const owners: ContentRootOwner[] = [];
-    const value: Readonly<{
-      children: readonly Descendant[];
-      roots?: Readonly<Record<string, readonly Descendant[]>>;
-    }> = state.value();
-    const roots = value.roots ?? {};
-    const ownerTypes = state.schema
-      .getVocabulary()
-      .elementTypes.filter(
-        (type) =>
-          Object.keys(state.schema.element(type)?.contentRoots ?? {}).length > 0
+    const entries = state.roots();
+    const rootRank = new Map(entries.map(({ root }, index) => [root, index]));
+    const rankOf = (owner: EditorRootOwner) =>
+      rootRank.get(owner.root ?? MAIN_ROOT_KEY) ?? -1;
+    const slotRank = (owner: EditorRootOwner) => {
+      const element = getPliteDescendantAtPath(
+        readRootChildren(state, owner.root ?? MAIN_ROOT_KEY),
+        owner.path
       );
 
-    for (const ownerRoot of [MAIN_ROOT_KEY, ...Object.keys(roots)]) {
-      const children =
-        ownerRoot === MAIN_ROOT_KEY
-          ? rootNodesOf(value, 'children')
-          : rootNodesOf(roots, ownerRoot);
+      return NodeApi.isElement(element)
+        ? Object.keys(state.schema.getElementContentRoots(element)).indexOf(
+            owner.slot
+          )
+        : 0;
+    };
+    const byOwnerPlace = (
+      left: { owner: EditorRootOwner },
+      right: { owner: EditorRootOwner }
+    ) =>
+      rankOf(left.owner) - rankOf(right.owner) ||
+      PathApi.compare(left.owner.path, right.owner.path) ||
+      left.owner.path.length - right.owner.path.length ||
+      slotRank(left.owner) - slotRank(right.owner);
 
-      for (const { path } of getEditorRuntimeElementEntries(
-        runtimeOwner,
-        ownerTypes,
-        ownerRoot
-      )) {
-        const node = getPliteDescendantAtPath(children, path);
-
-        if (!node || !NodeApi.isElement(node)) continue;
-        for (const childRoot of Object.values(
-          state.schema.getElementContentRoots(node)
-        )) {
-          owners.push({
-            childRoot,
-            ownerPath: [...path],
-            ownerRoot,
-          });
-        }
-      }
-    }
-
-    return owners;
+    return entries
+      .flatMap(({ owners, root }) => owners.map((owner) => ({ owner, root })))
+      .sort(byOwnerPlace)
+      .map(({ owner, root }) => ({
+        childRoot: root,
+        ownerPath: [...owner.path],
+        ownerRoot: owner.root ?? MAIN_ROOT_KEY,
+      }));
   });
 };
 

@@ -303,6 +303,8 @@ export type {
   HistoryResult,
   HistorySettlement,
   EditorNodeUnsetOptions,
+  EditorRootEntry,
+  EditorRootOwner,
   EditorValueFromPlugins,
   EditorView,
   EditorViewOptions,

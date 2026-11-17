@@ -2123,7 +2123,7 @@
           "kind": "type",
           "name": "EditorCoreStateView",
           "runtime": false,
-          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadonlyArray<V[number]>;\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection, V>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  unique: EditorStateUniqueApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
+          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadonlyArray<V[number]>;\n  /**\n   * List every named root in reading order, a root right after its first\n   * owner's place, with the elements that own it. Roots no chain of owners\n   * reaches from the page come last: each root no other root owns, in key\n   * order, then the roots it owns. Any root left, which only a ring of owners\n   * reaches, follows the same way.\n   */\n  roots: () => readonly EditorRootEntry[];\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection, V>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  unique: EditorStateUniqueApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -2151,7 +2151,7 @@
           "kind": "type",
           "name": "EditorCoreUpdateTransaction",
           "runtime": false,
-          "signature": "type EditorCoreUpdateTransaction<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = Omit<EditorCoreStateView<V, TSelection>, 'marks' | 'nodes' | 'selection' | 'slice' | 'text' | 'value'> & {\n  /** Track a location from the current draft until this transaction ends. */\n  anchor: EditorTransactionAnchorApi;\n  annotations: EditorTransactionAnnotationsApi;\n  blocks: EditorTransactionBlocksApi<V>;\n  break: EditorTransactionBreakApi;\n  changes: EditorTransactionChangesApi;\n  effects: EditorTransactionEffectsApi;\n  plugins: EditorTransactionPluginsApi;\n  fragment: EditorTransactionFragmentApi<V>;\n  marks: EditorTransactionMarksApi<V>;\n  nodes: EditorTransactionNodesApi<V>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorTransactionRootsApi<V>;\n  slice: EditorTransactionSliceApi<V>;\n  selection: EditorTransactionSelectionApi<TSelection, V>;\n  setField: <TValue>(field: EditorStateField<TValue>, value: StateFieldValueInput<TValue>) => void;\n  tags: EditorTransactionTagsApi;\n  text: EditorTransactionTextApi;\n  value: EditorTransactionValueApi<V>;\n};",
+          "signature": "type EditorCoreUpdateTransaction<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = Omit<EditorCoreStateView<V, TSelection>, 'marks' | 'nodes' | 'roots' | 'selection' | 'slice' | 'text' | 'value'> & {\n  /** Track a location from the current draft until this transaction ends. */\n  anchor: EditorTransactionAnchorApi;\n  annotations: EditorTransactionAnnotationsApi;\n  blocks: EditorTransactionBlocksApi<V>;\n  break: EditorTransactionBreakApi;\n  changes: EditorTransactionChangesApi;\n  effects: EditorTransactionEffectsApi;\n  plugins: EditorTransactionPluginsApi;\n  fragment: EditorTransactionFragmentApi<V>;\n  marks: EditorTransactionMarksApi<V>;\n  nodes: EditorTransactionNodesApi<V>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorTransactionRootsApi<V>;\n  slice: EditorTransactionSliceApi<V>;\n  selection: EditorTransactionSelectionApi<TSelection, V>;\n  setField: <TValue>(field: EditorStateField<TValue>, value: StateFieldValueInput<TValue>) => void;\n  tags: EditorTransactionTagsApi;\n  text: EditorTransactionTextApi;\n  value: EditorTransactionValueApi<V>;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -2765,6 +2765,28 @@
           "name": "EditorReplaceNodeOptions",
           "runtime": false,
           "signature": "type EditorReplaceNodeOptions = {\n  at: Descendant | NodeKey | Path;\n  select?: boolean;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:EditorRootEntry": {
+          "aliases": [],
+          "documentation": "A named root with the elements that own it, as `read.roots()` lists it.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorRootEntry",
+          "runtime": false,
+          "signature": "type EditorRootEntry = Readonly<{\n  /** The elements that own the root, in reading order. */\n  owners: readonly EditorRootOwner[];\n  root: NamedRootKey;\n  /**\n   * The path of the page element that holds the root through its first\n   * owners, or `null` when no chain of owners reaches the page.\n   */\n  top: Path | null;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:EditorRootOwner": {
+          "aliases": [],
+          "documentation": "An element that owns a named root, at its place in the document.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorRootOwner",
+          "runtime": false,
+          "signature": "type EditorRootOwner = Readonly<{\n  path: Path;\n  /** The owner's root, absent when the owner is on the page. */\n  root?: NamedRootKey;\n  /** The owner's `contentRoots` slot that names the root. */\n  slot: string;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -18237,7 +18259,7 @@
           "kind": "type",
           "name": "EditorCoreStateView",
           "runtime": false,
-          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadonlyArray<V[number]>;\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection, V>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  unique: EditorStateUniqueApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
+          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadonlyArray<V[number]>;\n  /**\n   * List every named root in reading order, a root right after its first\n   * owner's place, with the elements that own it. Roots no chain of owners\n   * reaches from the page come last: each root no other root owns, in key\n   * order, then the roots it owns. Any root left, which only a ring of owners\n   * reaches, follows the same way.\n   */\n  roots: () => readonly EditorRootEntry[];\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection, V>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  unique: EditorStateUniqueApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -18265,7 +18287,7 @@
           "kind": "type",
           "name": "EditorCoreUpdateTransaction",
           "runtime": false,
-          "signature": "type EditorCoreUpdateTransaction<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = Omit<EditorCoreStateView<V, TSelection>, 'marks' | 'nodes' | 'selection' | 'slice' | 'text' | 'value'> & {\n  /** Track a location from the current draft until this transaction ends. */\n  anchor: EditorTransactionAnchorApi;\n  annotations: EditorTransactionAnnotationsApi;\n  blocks: EditorTransactionBlocksApi<V>;\n  break: EditorTransactionBreakApi;\n  changes: EditorTransactionChangesApi;\n  effects: EditorTransactionEffectsApi;\n  plugins: EditorTransactionPluginsApi;\n  fragment: EditorTransactionFragmentApi<V>;\n  marks: EditorTransactionMarksApi<V>;\n  nodes: EditorTransactionNodesApi<V>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorTransactionRootsApi<V>;\n  slice: EditorTransactionSliceApi<V>;\n  selection: EditorTransactionSelectionApi<TSelection, V>;\n  setField: <TValue>(field: EditorStateField<TValue>, value: StateFieldValueInput<TValue>) => void;\n  tags: EditorTransactionTagsApi;\n  text: EditorTransactionTextApi;\n  value: EditorTransactionValueApi<V>;\n};",
+          "signature": "type EditorCoreUpdateTransaction<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = Omit<EditorCoreStateView<V, TSelection>, 'marks' | 'nodes' | 'roots' | 'selection' | 'slice' | 'text' | 'value'> & {\n  /** Track a location from the current draft until this transaction ends. */\n  anchor: EditorTransactionAnchorApi;\n  annotations: EditorTransactionAnnotationsApi;\n  blocks: EditorTransactionBlocksApi<V>;\n  break: EditorTransactionBreakApi;\n  changes: EditorTransactionChangesApi;\n  effects: EditorTransactionEffectsApi;\n  plugins: EditorTransactionPluginsApi;\n  fragment: EditorTransactionFragmentApi<V>;\n  marks: EditorTransactionMarksApi<V>;\n  nodes: EditorTransactionNodesApi<V>;\n  records: EditorTransactionRecordsApi;\n  roots: EditorTransactionRootsApi<V>;\n  slice: EditorTransactionSliceApi<V>;\n  selection: EditorTransactionSelectionApi<TSelection, V>;\n  setField: <TValue>(field: EditorStateField<TValue>, value: StateFieldValueInput<TValue>) => void;\n  tags: EditorTransactionTagsApi;\n  text: EditorTransactionTextApi;\n  value: EditorTransactionValueApi<V>;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -19026,6 +19048,28 @@
           "typeParameters": [
             "E = Editor"
           ]
+        },
+        "platejs/react:EditorRootEntry": {
+          "aliases": [],
+          "documentation": "A named root with the elements that own it, as `read.roots()` lists it.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorRootEntry",
+          "runtime": false,
+          "signature": "type EditorRootEntry = Readonly<{\n  /** The elements that own the root, in reading order. */\n  owners: readonly EditorRootOwner[];\n  root: NamedRootKey;\n  /**\n   * The path of the page element that holds the root through its first\n   * owners, or `null` when no chain of owners reaches the page.\n   */\n  top: Path | null;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/react:EditorRootOwner": {
+          "aliases": [],
+          "documentation": "An element that owns a named root, at its place in the document.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorRootOwner",
+          "runtime": false,
+          "signature": "type EditorRootOwner = Readonly<{\n  path: Path;\n  /** The owner's root, absent when the owner is on the page. */\n  root?: NamedRootKey;\n  /** The owner's `contentRoots` slot that names the root. */\n  slot: string;\n}>;",
+          "source": null,
+          "typeParameters": []
         },
         "platejs/react:EditorRootProps": {
           "aliases": [],

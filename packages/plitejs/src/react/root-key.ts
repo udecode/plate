@@ -1,4 +1,5 @@
 import type { Descendant, EditorStateView, Point, RootKey } from '..';
+import { readViewPage } from '../editor-runtime-view';
 
 export const MAIN_ROOT_KEY = 'main' as RootKey;
 
@@ -19,7 +20,7 @@ export const readRootChildren = (
   }
 
   if (root === MAIN_ROOT_KEY) {
-    return state.value().children;
+    return readViewPage(state) ?? state.value().children;
   }
 
   return state.root(root);
