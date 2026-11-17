@@ -1,7 +1,7 @@
 import type * as React from 'react';
 
 import { Hotkeys } from '../../../core';
-import { usesAppleDOMHotkeys } from '../../../dom/plite-dom.internal';
+import { isHotkey, usesAppleDOMHotkeys } from '../../../dom/plite-dom.internal';
 import type {
   BoardPlace,
   BoardRestackDirection,
@@ -596,6 +596,23 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
     return true;
   };
 
+  const duplicate = (
+    event: KeyboardEvent,
+    selected: readonly BoardShapeLayout[]
+  ) => {
+    if (event.repeat || !core.writable()) return;
+    if (selected.length === 0) {
+      core.voice.repeatSelection();
+
+      return;
+    }
+    core.cancelInteraction();
+
+    const slice = core.slice(selected.map(({ id }) => id));
+
+    if (slice) core.land(slice);
+  };
+
   const boardKey = (event: KeyboardEvent) =>
     event.key === 'Enter' &&
     plainKey(event) &&
@@ -631,6 +648,11 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     if ((onTarget || selected.length > 0) && arrow && pickKey(event)) {
       return pickSelection(selected, arrow);
+    }
+    if ((onTarget || selected.length > 0) && isHotkey('mod+d', event)) {
+      duplicate(event, selected);
+
+      return true;
     }
     if ((onTarget || selected.length > 0) && cameraKey(event)) return true;
     if (selected.length > 0) return shapeKey(event, selected);
