@@ -19,7 +19,10 @@
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is. With --dry it checks
 // the message, its source and the Defaults table of each open dated plan the
-// task changes, then exits without committing.
+// task changes, runs each of the config's `landChecks` on the working tree and
+// names every one that fails, then exits without committing. Those checks run
+// without PSTACK_LAND_CHECK, and one that reads commit messages sees only the
+// commits already made. A --dry check stopped at 55 minutes exits 1, not 75.
 // When every path a rebase of this checkout conflicts on matches the globs of
 // a `generated` entry in the config, it takes <branch>'s side of those paths,
 // runs each matching entry's command to rebuild them from the merged sources,
@@ -878,7 +881,14 @@ if (dry) {
   ];
   if (paths.length === 0) fail(`nothing to land: the task changes nothing against ${target}`);
   refuseEarly(message, paths, planOf(paths));
-  console.log('land.mjs --dry: the message, its source and the Defaults of each open plan it changes pass; nothing was committed.');
+  const failed = [];
+  for (const command of landChecks) {
+    const run = await runCheck(command, { asLanding: false });
+    if (run.stopped) fail(`land.mjs --dry stopped ${command} at ${DEADLINE / 60_000} minutes into the run; nothing was committed`);
+    if (run.status !== 0) failed.push(command);
+  }
+  if (failed.length > 0) fail(`land checks failed on the working tree, and nothing was committed:\n${failed.map((command) => `  ${command}`).join('\n')}`);
+  console.log("land.mjs --dry: the message, its source, the Defaults of each open plan it changes and the config's landChecks pass; nothing was committed.");
   process.exit(0);
 }
 const landing = squash(message);
@@ -898,11 +908,16 @@ const stamp = () =>
   });
 
 // The check gets a process group of its own, so the deadline stops every step it started. A signal to land.mjs passes on to that group, then ends land.mjs as it would have, so the run log counts the run as stopped.
-function runCheck(command) {
+function runCheck(command, { asLanding = true } = {}) {
   if (elapsed() >= DEADLINE) return Promise.resolve({ stopped: true });
   return new Promise((resolve) => {
-    const env = { ...process.env, [LAND_CHECK]: '1' };
-    delete env.PSTACK_SLOT;
+    const env = { ...process.env };
+    if (asLanding) {
+      env[LAND_CHECK] = '1';
+      delete env.PSTACK_SLOT;
+    } else {
+      delete env[LAND_CHECK];
+    }
     const child = spawn(command, { shell: true, stdio: ['ignore', 'inherit', 'inherit'], detached: true, env });
     const killGroup = (signal) => {
       try {
