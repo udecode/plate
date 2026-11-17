@@ -1494,21 +1494,67 @@ function passStart(root, ledger) {
   return at;
 }
 
+const logOf = (page) => page.path?.replace(/\.md$/, '.decisions.tsv');
+
+function firstRowAt(log, date) {
+  const first = log
+    ? Date.parse(log.split('\n')[1]?.split('\t')[0])
+    : Number.NaN;
+  return Number.isNaN(first) ? Date.parse(`${date}T00:00:00Z`) : first;
+}
+
 function beganAt(root, page) {
-  const log = page.path?.replace(/\.md$/, '.decisions.tsv');
-  const first =
-    log && existsSync(join(root, log))
-      ? Date.parse(read(root, log).split('\n')[1]?.split('\t')[0])
-      : Number.NaN;
-  return Number.isNaN(first) ? Date.parse(`${page.date}T00:00:00Z`) : first;
+  const log = logOf(page);
+  return firstRowAt(
+    log && existsSync(join(root, log)) ? read(root, log) : null,
+    page.date
+  );
+}
+
+/**
+ * A worktree keeps the plans it was cut with until land.mjs rebases it, so the
+ * pass also reads each review page that has landed on origin/next since, or it
+ * offers a scope one of those pages already ranked.
+ */
+function pagesLandedSinceFork(root, ledger) {
+  const pageGit = isSplit(root)
+    ? (args) => privateGit(root, args).stdout
+    : (args) => git(root, args) ?? '';
+  const at = (path) => pageGit(['show', `${UPSTREAM}:${path}`]);
+  return pageGit([
+    'diff',
+    '--name-only',
+    '-z',
+    '--no-renames',
+    '--diff-filter=AM',
+    `HEAD...${UPSTREAM}`,
+    '--',
+    'docs/plans',
+  ])
+    .split('\0')
+    .filter((path) => path.endsWith('.md'))
+    .flatMap((path) => {
+      const page = pageOf(ledger.scopes, path, at(path));
+      return page
+        ? [{ page, began: firstRowAt(at(logOf(page)), page.date) }]
+        : [];
+    });
 }
 
 function dueScopes(root, ledger, plans) {
   const start = passStart(root, ledger);
-  const counted = [...ledger.pages.values()].filter(
-    (page) =>
-      ['ranked', 'unread'].includes(page.jobs) && beganAt(root, page) >= start
-  );
+  const counted = [
+    ...[...ledger.pages.values()].map((page) => ({
+      page,
+      began: beganAt(root, page),
+    })),
+    ...pagesLandedSinceFork(root, ledger),
+  ]
+    .filter(
+      ({ page, began }) =>
+        ['ranked', 'unread'].includes(page.jobs) && began >= start
+    )
+    .map(({ page }) => page);
   const ranked = new Set(
     counted.filter((page) => page.jobs === 'ranked').map(leadScope)
   );
