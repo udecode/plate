@@ -39,13 +39,26 @@ Start the watcher, a session that stays open and starts a fix for each red step.
 
 ## watch
 
-The watcher's loop. It reads events and starts sessions. It never edits, lands or fixes code itself, and it keeps each turn short.
+The watcher's loop. It reads events and spawns one fix subagent for each red step. It never edits, lands or fixes code itself, and it keeps each turn short.
 
-1. Run `node tooling/scripts/deep-check.mjs wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or the current time in ISO form on the first loop. The command exits when the runner writes an event the watcher acts on and prints one JSON line per event. The session wakes when it exits.
+1. Unless a wait this session started is still running, run `node tooling/scripts/deep-check.mjs wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or the current time in ISO form on the first loop. The command exits when the runner writes an event the watcher acts on and prints one JSON line per event. The session wakes when it exits.
 2. Handle each printed event:
-   - `kind: "red"` or `kind: "flake"` with `wake: true`: run the `plate-fix-red` scheduled task with `mcp__scheduled-tasks__run_scheduled_task`. When the call is refused because a run is already going, do nothing more, because that run takes every open deep-check task. When it is refused for another reason, the task already waits on the board as a card, so send nothing.
-   - `dry: true`: run `plate-fix-red` the same way. That run reports without landing.
+   - `kind: "red"` or `kind: "flake"` with `wake: true`: spawn a fix subagent with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Each such event names one step and the task offered for it, so two red steps get two subagents that work at once.
+   - `dry: true`: spawn the same subagent with the Dry brief.
    - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-deep-check/`. When the cause is the deep worktree's install, run `node .agents/pstack/setup.mjs --install 'pnpm install'` inside that worktree. Otherwise say the cause in this session's reply and send no message.
-3. Go back to step 1 with the newest handled event's `at`.
+3. When a fix subagent finishes, save its report to `docs/plans/artifacts/deep-check/<day>/fix-<task id or step>.md` in the main checkout, then reply with one line per task: the step and the fix commit, or why it is still open.
+4. Go back to step 1 with the newest handled event's `at`.
 
-The `plate-fix-red` run starts on Opus 5.5 at xhigh. A scheduled task cannot set its own model or effort, and xhigh is the level a scheduled run starts at.
+Nothing in the lane posts to the team channel: not the runner, this watcher or a fix subagent (owner's word, 2026-11-17). The fix subagents run on Opus at high, the models sheet's bug-fix level, and each one ends with this session, so the watcher stays open and pinned.
+
+### Fix brief
+
+> The deep lane found the `<step>` check step failing on Plate's `next` branch. Its event: `<the event's JSON line>`. Work from the main checkout `<main checkout path>`; read its `AGENTS.md` first and follow it, and load the `deep-check` skill for what the lane is.
+>
+> 1. Load the `chips` skill and start task `<task id>` as its Start mode says. When the event names no task, take the open task on the board whose topic is `deep-check` and whose title names `<step>`.
+> 2. Run the Bug fix playbook (`.agents/playbooks/bug-fix.md`) in a worktree cut from `origin/next`. Reproduce with `pnpm check <step>`, read the event's log, fix the cause forward and land through `node .agents/pstack/land.mjs`. A revert needs the owner's word, so never revert the first bad commit on your own.
+> 3. Send no team message. End with one line: the step and the fix commit, or why it is still open.
+
+### Dry brief
+
+> The deep lane wrote a dry event for the `<step>` check step as a proof run: `<the event's JSON line>`. Read it and the log it names, and reply in one short paragraph with the step, the first bad commit or the range still unsearched, the log, and what you would fix first. Edit, land and message nothing.
