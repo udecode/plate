@@ -32,6 +32,7 @@ import { cloneValue } from './clone';
 import {
   type CommandProjection,
   type EditorDocumentState,
+  type FrameRefusalReason,
   getEditorCommandDocument,
   refusedIn,
   unplacedIn,
@@ -42,15 +43,18 @@ import {
   stampFrame,
   takeCompositionStamp,
 } from './composition-stamp';
-import { isEditorContent } from './content';
-import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
+import {
+  isInRemovedContent,
+  landTextWrite,
+  nodeAt,
+  struckGridPartAt,
+} from './content-landing';
 import {
   getEditorDocumentRecorder,
   type PositionMap,
   runEditorDraftGuards,
 } from './document-recorder';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
-import { getCompiledEditorSchema } from './plugin-registry';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
@@ -87,7 +91,6 @@ import {
   mapSnapshotIndexThroughChange,
   snapshotIndexOf,
 } from './snapshot-index';
-import { gridPartsOf } from './survival';
 import { mapEffect } from './transaction-values';
 import {
   type CarriedCarets,
@@ -473,7 +476,7 @@ const enterFrameDraft = (
   countCoreWork('anchorScopes');
 };
 
-type Refuse = (reason: 'crosses' | 'unaligned') => void;
+type Refuse = (reason: FrameRefusalReason) => void;
 const keepWhereHeld: Refuse = () => {};
 
 /**
@@ -490,9 +493,10 @@ const createFramePlace = (
   stored: EditorDocumentValue,
   selectionRoot: string,
   refuse: Refuse,
-  stamp: CompositionStamp | null = null
+  stamp: CompositionStamp | null = null,
+  refusesStruckTargets = true
 ) => {
-  let heldRefusal: 'crosses' | 'unaligned' | null = null;
+  let heldRefusal: FrameRefusalReason | null = null;
   let located = false;
   const compositionRoot = stamp && (stamp.place.root ?? selectionRoot);
   const compositionElement =
@@ -641,24 +645,36 @@ const createFramePlace = (
       ? { ...point, offset: placed.offset, path: [...placed.path] }
       : point;
   };
-  const gridPart = gridPartsOf(getCompiledEditorSchema(editor));
   const inStruckGridPart = (
-    point: Point,
+    path: Path,
     root: string,
     document: NodeList<Descendant>
   ) => {
-    for (let depth = 1; depth < point.path.length; depth += 1) {
-      const node = nodeAt(document, point.path.slice(0, depth));
+    const part = struckGridPartAt(editor, path, document);
 
-      if (node && gridPart(node) && !isEditorContent(editor, node)) {
-        return projected.map.hides(
-          root,
-          valueRootIndex(stored, root).positionAt(point)
-        );
-      }
+    return (
+      part !== null &&
+      projected.map.hides(
+        root,
+        valueRootIndex(stored, root).nodeRange(part).from + 1
+      )
+    );
+  };
+  const refusesStruck = (
+    paths: readonly Path[],
+    root: string,
+    onRefuse: Refuse = refuse
+  ) => {
+    if (!refusesStruckTargets) return false;
+
+    const document = valueRootNodes(stored, root) as NodeList<Descendant>;
+
+    if (!paths.some((at) => inStruckGridPart(at, root, document))) {
+      return false;
     }
+    onRefuse('grid');
 
-    return false;
+    return true;
   };
   // A caret no surviving line can take, as in a container whose every line
   // is gone, stays in what replaces its line, such as the line completion
@@ -668,7 +684,12 @@ const createFramePlace = (
     const document = valueRootNodes(stored, root) as NodeList<Descendant>;
     const landed = landTextWrite(editor, point, document);
 
-    if (inStruckGridPart(landed, root, document)) onRefuse('unaligned');
+    if (
+      inStruckGridPart(point.path, root, document) ||
+      inStruckGridPart(landed.path, root, document)
+    ) {
+      onRefuse('grid');
+    }
     if (projected.map.reorders(root)) {
       const at = valueRootIndex(stored, root).positionAt(landed);
       const placement = projected.map.projectRange(root, at, at);
@@ -718,6 +739,9 @@ const createFramePlace = (
     }
 
     const root = SelectionApi.root(range) ?? fallbackRoot;
+
+    refusesStruck([range.anchor.path, range.focus.path], root, onRefuse);
+
     const backward = RangeApi.isBackward(range);
     const [start, end] = backward
       ? [range.focus, range.anchor]
@@ -817,6 +841,10 @@ const createFramePlace = (
   ): NodeTarget | NodeSelection | Span | null {
     located = true;
     if (SelectionApi.isNode(at)) {
+      const root = SelectionApi.root(at) ?? getEditorUpdateRoot(editor);
+
+      if (refusesStruck(at.paths, root)) return null;
+
       const mapped = map(at, getEditorUpdateRoot(editor));
 
       return mapped?.kind === 'node' ? mapped : null;
@@ -825,6 +853,8 @@ const createFramePlace = (
       return caret(at, getEditorUpdateRoot(editor), refuse);
     }
     if (LocationApi.isSpan(at)) {
+      if (refusesStruck(at, getEditorUpdateRoot(editor))) return null;
+
       const from = path(at[0]);
       const to = path(at[1]);
 
@@ -837,7 +867,13 @@ const createFramePlace = (
     }
 
     const resolved = resolveNodeTargetLocation(editor, at);
-    const placed = resolved && PathApi.isPath(resolved) ? path(resolved) : null;
+    const target = resolved && PathApi.isPath(resolved) ? resolved : null;
+
+    if (target && refusesStruck([target], getEditorUpdateRoot(editor))) {
+      return null;
+    }
+
+    const placed = target ? path(target) : null;
 
     return placed && (typeof at === 'string' || NodeApi.isDescendant(at))
       ? at
@@ -850,7 +886,17 @@ const createFramePlace = (
     root: string,
     onRefuse: Refuse
   ): Selection => {
-    if (selection?.kind !== 'text') return map(selection, root);
+    if (selection?.kind !== 'text') {
+      if (selection) {
+        refusesStruck(
+          selection.paths,
+          SelectionApi.root(selection) ?? root,
+          onRefuse
+        );
+      }
+
+      return map(selection, root);
+    }
 
     const placed = span(selection, root, onRefuse);
 
@@ -963,6 +1009,7 @@ export const runInEditorCommandFrame = (
   {
     framedOn,
     ignoresSelection = false,
+    refusesStruckTargets = true,
     targetRoot,
   }: Readonly<{
     framedOn?: FramedOn;
@@ -971,6 +1018,11 @@ export const runInEditorCommandFrame = (
      * leaves it be, even though it places its locations as it runs.
      */
     ignoresSelection?: boolean;
+    /**
+     * False when the body places the paths a change touched, not targets a
+     * caller named, so a path inside a struck table or row maps as any other.
+     */
+    refusesStruckTargets?: boolean;
     targetRoot?: () => string;
   }> = {}
 ): boolean | null => {
@@ -1010,7 +1062,8 @@ export const runInEditorCommandFrame = (
     (reason) => {
       throw refusedIn(editor, reason);
     },
-    stamp
+    stamp,
+    refusesStruckTargets
   );
   const stamped = stamp && stampFrame(stamp, placed.place);
   const selection = placed.held(outer.caret.selection);

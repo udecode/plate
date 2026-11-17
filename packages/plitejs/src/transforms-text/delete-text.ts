@@ -1,5 +1,6 @@
 import { createAnchor } from '../core/anchor';
 import { jsonEqual } from '../core/change/json';
+import { refuseTextWriteInStruckGrid } from '../core/content-landing';
 import { getEditorSchema } from '../core/editor-runtime';
 import { joinKeepsPrefixOccupant } from '../core/prefix-occupant-join';
 import {
@@ -1791,6 +1792,9 @@ export const deleteText: TextMutationMethods['delete'] = (
       hasEdgeInReadOnlyInline(editor, site.at)
     ) {
       return null;
+    }
+    if (RangeApi.isRange(site.at) && RangeApi.isExpanded(site.at)) {
+      refuseTextWriteInStruckGrid(editor, site.at, getChildList(editor));
     }
 
     const prepared = prepareAt(editor, options, site.at, false);

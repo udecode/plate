@@ -6,7 +6,7 @@ import { canonicalJsonKey } from '../../core/change/transform';
 import type { ChangedRange } from '../../core/measured-sequence';
 import { getDefined } from '../../internal/get-defined';
 import type { AuthoredFormatProjection } from '../format';
-import { movedRefusal } from '../refusal';
+import { unrepresentableFor } from '../refusal';
 import type { AuthoredResolveSchema } from '../tree/resolve';
 import {
   compose,
@@ -73,7 +73,7 @@ const assertShowsWritten = (
     const left = blocksOf(wroteNodes).toSorted();
     const right = blocksOf(shownNodes).toSorted();
 
-    throw movedRefusal(jsonEqual(left, right) ? 'reordered' : 'diverged');
+    throw unrepresentableFor(jsonEqual(left, right) ? 'reordered' : 'diverged');
   };
   const met: Array<{ range: ChangedRange; window: ResolvedWindow }> = [];
 

@@ -15,9 +15,12 @@ import {
   type NodeList,
   childAtPathIndex,
 } from './change/document-index';
+import { refusedIn } from './command-document';
 import { hasEditorContent, isEditorContent } from './content';
 import { getEditorSchema } from './editor-runtime';
-import { survivalUnder } from './survival';
+import { getCompiledEditorSchema } from './plugin-registry';
+import { getActiveEditorUpdateTags } from './public-state';
+import { gridPartsOf, survivalUnder } from './survival';
 
 type Survives = (node: Node) => boolean;
 type Enters = (element: Node) => boolean;
@@ -137,6 +140,55 @@ const writeLanding = (editor: Editor, document: RootChildren) => {
     nearestFrom(document, point, 'forward', survives, writable);
 };
 
+/**
+ * The outermost table, row or cell whose deletion is pending around `path`,
+ * the node there included, or null.
+ *
+ * @internal
+ */
+export const struckGridPartAt = (
+  editor: Editor,
+  path: Path,
+  document: RootChildren
+): Path | null => {
+  if (!hasEditorContent(editor)) return null;
+
+  const gridPart = gridPartsOf(getCompiledEditorSchema(editor));
+
+  for (let depth = 1; depth <= path.length; depth += 1) {
+    const at = path.slice(0, depth);
+    const node = nodeAt(document, at);
+
+    if (!node) return null;
+    if (gridPart(node) && !isEditorContent(editor, node)) return at;
+  }
+
+  return null;
+};
+
+const isReplayedWrite = (editor: Editor) => {
+  const tags = getActiveEditorUpdateTags(editor);
+
+  return tags.includes('collaboration') || tags.includes('historic');
+};
+
+/** @internal */
+export const refuseTextWriteInStruckGrid = (
+  editor: Editor,
+  at: Point | Range,
+  document: RootChildren
+) => {
+  if (isReplayedWrite(editor)) return;
+
+  const paths = PointApi.isPoint(at)
+    ? [at.path]
+    : [at.anchor.path, at.focus.path];
+
+  if (paths.some((path) => struckGridPartAt(editor, path, document))) {
+    throw refusedIn(editor, 'grid');
+  }
+};
+
 // A command frame passes the stored root's children, because the editor's own
 // reads there see the frame's.
 
@@ -189,4 +241,30 @@ export function landTextWrite(
   return PointApi.isAfter(start, end)
     ? { ...at, anchor: start, focus: start }
     : { ...at, anchor, focus };
+}
+
+/** @internal */
+export function landTextWriteOutsideStruckGrid(
+  editor: Editor,
+  at: Point,
+  document: RootChildren
+): Point;
+export function landTextWriteOutsideStruckGrid(
+  editor: Editor,
+  at: Range,
+  document: RootChildren
+): Range;
+export function landTextWriteOutsideStruckGrid(
+  editor: Editor,
+  at: Point | Range,
+  document: RootChildren
+): Point | Range;
+export function landTextWriteOutsideStruckGrid(
+  editor: Editor,
+  at: Point | Range,
+  document: RootChildren
+): Point | Range {
+  refuseTextWriteInStruckGrid(editor, at, document);
+
+  return landTextWrite(editor, at, document);
 }

@@ -241,7 +241,7 @@ import {
   getEditorCommitValue,
 } from './commit';
 import { isEditorContent } from './content';
-import { landTextWrite } from './content-landing';
+import { landTextWriteOutsideStruckGrid } from './content-landing';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
 import {
   namesContentRoot,
@@ -4902,7 +4902,7 @@ const placeSliceFitRange = (
 
   if (crossesMembers(site, range, rangeRoot)) return false;
   if (!insertionBoundary && childrenAt === undefined) {
-    range = landTextWrite(editor, range, getChildren(editor));
+    range = landTextWriteOutsideStruckGrid(editor, range, getChildren(editor));
   }
 
   if (!insertionBoundary && !options?.hanging) {
@@ -12790,7 +12790,7 @@ export const runEditorTransaction = <R>(
                   return true;
                 };
               },
-              { ignoresSelection: true }
+              { ignoresSelection: true, refusesStruckTargets: false }
             );
 
             if (framed === null) {

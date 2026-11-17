@@ -49,7 +49,7 @@ import { isEditingChange } from '../facts/editing';
 import { factsOf, isJoinAside } from '../facts/facts';
 import { incarnationOf, incarnationOfLink, linkOf } from '../facts/records';
 import { countLedgerWork } from '../ledger/work';
-import { movedRefusal, unrepresentable } from '../refusal';
+import { unrepresentableFor, unrepresentable } from '../refusal';
 import { carriedJudge, type MovedCopy } from './carried';
 import { isCut } from './cuts';
 import { type FormatTag, recordFormats, type Standing } from './layers';
@@ -632,7 +632,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
           );
 
     if (inserted === 0 && length > 0 && mappedEnd < reviewBefore) {
-      throw movedRefusal('crosses');
+      throw unrepresentableFor('crosses');
     }
 
     const reviewEnd = Math.max(reviewBefore, mappedEnd);
@@ -1122,6 +1122,93 @@ type SubStep = Readonly<{
   role: 'landing' | 'source' | null;
 }>;
 
+const joinsLines = (tokens: readonly JsonToken[]) => {
+  const opensElement: boolean[] = [];
+  let closesOuter = false;
+
+  for (const token of tokens) {
+    if (token.kind === 'open') opensElement.push(token.nodeKind === 'element');
+    else if (token.kind === 'close') {
+      if (opensElement.length > 0) opensElement.pop();
+      else closesOuter ||= token.nodeKind === 'element';
+    }
+  }
+
+  return closesOuter && opensElement.includes(true);
+};
+
+const refuseWriteInStruckGrid = (
+  step: RootChange,
+  frame: DocumentIndex,
+  stored: DocumentIndex,
+  toStored: (position: number, assoc: -1 | 1) => number,
+  holdsGridParts: (node: JsonNode) => boolean,
+  changeId: string
+) => {
+  const strikingChanges = (range: IndexedNodeRange) =>
+    range.kind === 'element'
+      ? readMembers(stored.node(range.path)).flatMap((member) =>
+          member.kind === 'delete' && !isEditingChange(member.change)
+            ? [member.change]
+            : []
+        )
+      : [];
+  const struckByOtherChange = (range: IndexedNodeRange) =>
+    strikingChanges(range).some((change) => change !== changeId);
+  const struckByThisChange = (range: IndexedNodeRange) =>
+    strikingChanges(range).includes(changeId);
+  const struckPart = (range: IndexedNodeRange) =>
+    struckByOtherChange(range) && holdsGridParts(stored.node(range.path));
+  const struckAround = (from: number, to: number) =>
+    stored
+      .openContextAt(from)
+      .some((range) => range.from < from && to < range.to && struckPart(range));
+  let position = 0;
+
+  for (let pair = 0; pair < step.data.length; pair += 1) {
+    const length = step.sections[pair * 2];
+    const inserted = step.sections[pair * 2 + 1];
+
+    if (inserted < 0 || (length === 0 && inserted === 0)) {
+      position += length;
+      continue;
+    }
+
+    const start = toStored(position, 1);
+    const end = toStored(position + length, -1);
+    const from = Math.min(start, end);
+    const to = Math.max(start, end);
+
+    if (
+      length === 0
+        ? struckAround(from, to)
+        : struckAround(from, from) || struckAround(to, to)
+    ) {
+      throw unrepresentableFor('grid');
+    }
+    if (
+      length > 0 &&
+      joinsLines(frame.slice(position, position + length).tokens)
+    ) {
+      const taken: IndexedNodeRange[] = [];
+
+      for (const range of stored.nodeRangesTouching(from, to)) {
+        if (range.from < from || range.to > to) continue;
+        if (struckByThisChange(range)) taken.push(range);
+        if (
+          struckPart(range) &&
+          !taken.some(
+            (around) => around.from <= range.from && range.to <= around.to
+          )
+        ) {
+          throw unrepresentableFor('grid');
+        }
+      }
+    }
+    position += length;
+  }
+};
+
 /**
  * Splits a frame step that crosses a break into sub-steps that each map in
  * stored order, or returns null when it crosses none. It keeps a text
@@ -1170,7 +1257,7 @@ const lowerAcrossBreaks = (
         line &&
         breaks.some(({ at }) => line.contentFrom <= at && at < position)
       ) {
-        throw movedRefusal('reordered');
+        throw unrepresentableFor('reordered');
       }
     }
     position += length;
@@ -1265,17 +1352,17 @@ const lowerAcrossBreaks = (
       to < right.contentFrom ||
       to > right.contentTo
     ) {
-      throw movedRefusal('crosses');
+      throw unrepresentableFor('crosses');
     }
     if (edges.some(({ at }) => to < at && at <= right.contentTo)) {
-      throw movedRefusal('crosses');
+      throw unrepresentableFor('crosses');
     }
 
     remove(right.contentFrom, to);
     remove(left.to, right.from);
     const rightAt = lineAt(left.to, 1);
 
-    if (!rightAt) throw movedRefusal('crosses');
+    if (!rightAt) throw unrepresentableFor('crosses');
     const children = index.slice(rightAt.contentFrom, rightAt.contentTo);
     const landing = emit(
       left.contentTo,
@@ -1679,6 +1766,18 @@ export const recordAuthoredSteps = (
               input.isInline
             )
           : rootChange;
+      if (!properties && !fold.created && step.origin !== 'migration') {
+        const toStored = fold.map;
+
+        refuseWriteInStruckGrid(
+          written,
+          fold.frameIndex ?? getDefined(step.indexedBefore.get(root)),
+          fold.index,
+          (position, assoc) => toStored(position, assoc, false),
+          input.holdsGridParts,
+          changeId
+        );
+      }
       const lowered =
         fold.frameIndex && !properties
           ? lowerAcrossBreaks(

@@ -176,7 +176,7 @@ import {
   type AuthoredRefusal,
   storesGeneratedValues,
   GENERATED_VALUES_REFUSAL,
-  movedRefusal,
+  unrepresentableFor,
   proposalRefusal,
   splitOneTextRefusal,
   unplaced,
@@ -2001,7 +2001,7 @@ export const createAuthoredPlugin = (
 
             return ledger.frame(value);
           },
-          refuse: movedRefusal,
+          refuse: unrepresentableFor,
           unplaced,
         })
       );

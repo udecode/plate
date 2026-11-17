@@ -24,6 +24,14 @@ export type ProjectionBreak = Readonly<{
   after: number;
 }>;
 
+/**
+ * Why a frame refuses a command: `grid` when it acts inside a table or row
+ * whose deletion is pending, else why its range has no faithful place.
+ *
+ * @internal
+ */
+export type FrameRefusalReason = 'crosses' | 'grid' | 'unaligned';
+
 /** @internal */
 export type RangePlacement =
   | Readonly<{ from: number; kind: 'placed'; to: number }>
@@ -131,8 +139,8 @@ export type EditorCommandDocument = Readonly<{
    */
   recorded?: (input: EditorFrameRecording) => void;
   project: (value: EditorDocumentValue) => CommandProjection | null;
-  /** The error a command meets when its range has no faithful place. */
-  refuse?: (reason: 'crosses' | 'unaligned') => Error;
+  /** The error a command meets when the frame refuses it, for `reason`. */
+  refuse?: (reason: FrameRefusalReason) => Error;
   unplaced?: () => Error;
 }>;
 
@@ -283,7 +291,7 @@ export const getEditorCommandDocument = (editor: Editor) =>
   COMMAND_DOCUMENTS.get(getEditorRuntimeOwner(editor));
 
 /** @internal */
-export const refusedIn = (editor: Editor, reason: 'crosses' | 'unaligned') =>
+export const refusedIn = (editor: Editor, reason: FrameRefusalReason) =>
   getEditorCommandDocument(editor)?.refuse?.(reason) ??
   new Error(`The command frame refuses a range that ${reason}.`);
 
