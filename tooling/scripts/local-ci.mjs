@@ -390,11 +390,11 @@ const run = (args) => {
         full,
       });
       if (alone.ok && result.interrupted.includes(failed)) continue;
+      const load = loadavg()[0];
       if (alone.ok) {
         // A step that passes alone has no bad commit to find. The daily
         // check's rule stands: a flake gets a task on its second run in a row.
         const last = readEvents().findLast((event) => event.step === failed);
-        const load = loadavg()[0];
         const event = {
           kind: 'flake',
           load,
@@ -416,6 +416,10 @@ const run = (args) => {
       const event = {
         kind: 'red',
         green,
+        // A loaded host can time a step out alone too, so the fix run reads
+        // the load the alone rerun ended under.
+        load,
+        loaded: load > FLAKE_LOAD,
         log: alone.log,
         step: failed,
         tip,
