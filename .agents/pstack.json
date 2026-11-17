@@ -304,7 +304,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "e56eee2e557df3813f24d81f6a72ab1a9541b8072f143f271465dca520bbe2be",
+    "block": "02907e2b82f11be88456b0f21455f77d5eac934bc840c63f7b8014204089a9c7",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -346,7 +346,7 @@
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af"
     },
-    "source": "2fecfa916f0ac693a5df638d7762ea8a93640f4d"
+    "source": "e8dbb58acb2628f26fae5b82064b295e23db9da4"
   },
   "pageTopic": {
     "field": "review_scopes",
