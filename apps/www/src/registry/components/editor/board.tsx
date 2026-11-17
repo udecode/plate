@@ -301,6 +301,7 @@ const boardMessages: BoardMessages = {
   shapes: (count) =>
     count === 0 ? 'No shapes selected' : `${count} shapes selected`,
   tool: (tool) => TOOL_NAMES[tool],
+  toolLock: (locked) => (locked ? 'Tool lock on' : 'Tool lock off'),
   zoom: (percent) => `Zoom ${percent}%`,
   removed: (count) =>
     count === 1 ? 'Shape deleted' : `${count} shapes deleted`,

@@ -71,6 +71,7 @@ const MESSAGES: BoardMessages = {
     `${text || kind}. ${position} of ${total}`,
   shapes: (count) => `${count} shapes`,
   tool: (tool) => tool,
+  toolLock: (locked) => (locked ? 'tool lock on' : 'tool lock off'),
   zoom: (percent) => `${percent}%`,
 };
 

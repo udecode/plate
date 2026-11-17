@@ -549,6 +549,8 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
         ids,
         kind: 'move',
       });
+    } else if (event.key === 'q' && !event.shiftKey) {
+      if (!event.repeat) core.setToolLocked(!core.state().toolLocked);
     } else if (TOOL_KEYS[event.key]) {
       core.setTool(TOOL_KEYS[event.key]);
     } else if (RESTACK_KEYS[event.key]) {
@@ -578,6 +580,8 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       return selectFirst();
     } else if (event.key === 'Escape') {
       stepOut(event);
+    } else if (event.key === 'q' && !event.shiftKey) {
+      if (!event.repeat) core.setToolLocked(!core.state().toolLocked);
     } else if (TOOL_KEYS[event.key]) {
       core.setTool(TOOL_KEYS[event.key]);
     } else if (
@@ -686,7 +690,13 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
 
     if (isSpace(event)) holdSpace(event);
     else if (spacePress) spacePress.action = null;
-    if (!(target instanceof Element) || !keyTaken(event, target)) return;
+    if (
+      isImeConfirmKeyEvent(event) ||
+      !(target instanceof Element) ||
+      !keyTaken(event, target)
+    ) {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
   };

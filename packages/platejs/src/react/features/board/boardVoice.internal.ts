@@ -168,6 +168,11 @@ export type BoardMessages = Readonly<{
   /** Called when a tool is picked, by its key or from the toolbar. */
   tool: (tool: BoardTool) => string;
   /**
+   * Called when Q or `setToolLocked` turns the tool lock on or off, with
+   * whether it is now on.
+   */
+  toolLock: (locked: boolean) => string;
+  /**
    * Called when a zoom key, `zoomIn`, `zoomOut`, `resetZoom` or `fit` changes
    * the view's zoom, with the new zoom in whole percent. A zoom with the wheel
    * says nothing.
@@ -226,6 +231,7 @@ type BoardUtterance =
   | Readonly<{ kind: 'resize'; size: ResizeSize }>
   | Readonly<{ kind: 'resizing'; key: NodeKey; size: ResizeSize }>
   | Readonly<{ kind: 'tool'; tool: BoardTool }>
+  | Readonly<{ kind: 'toolLock'; locked: boolean }>
   | Readonly<{ kind: 'zoom'; percent: number }>;
 
 const KINDS: ReadonlyMap<
@@ -330,6 +336,7 @@ export const createBoardVoice = ({
     if (utterance.kind === 'quiet') return '';
     if (utterance.kind === 'removed') return said.removed(utterance.count);
     if (utterance.kind === 'tool') return said.tool(utterance.tool);
+    if (utterance.kind === 'toolLock') return said.toolLock(utterance.locked);
     if (utterance.kind === 'zoom') return said.zoom(utterance.percent);
     if (utterance.kind === 'resize') {
       return said.resize(inWholeUnits(utterance.size));
@@ -448,6 +455,7 @@ export const createBoardVoice = ({
       say({ kind: 'selection' });
     },
     tool: (tool: BoardTool) => say({ kind: 'tool', tool }),
+    toolLock: (locked: boolean) => say({ kind: 'toolLock', locked }),
     zoom: (percent: number) => say({ kind: 'zoom', percent }),
   };
 };

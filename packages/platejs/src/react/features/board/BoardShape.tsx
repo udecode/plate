@@ -18,6 +18,7 @@ import type {
   BoardNotePlugin,
   BoardStrokePlugin,
 } from './BoardPlugin';
+import { useBoardView } from './BoardSurface';
 import { type BoardArrowPath, useBoardViewContext } from './boardView.internal';
 
 export type { BoardStrokePath } from './boardInk.internal';
@@ -31,6 +32,10 @@ const CORNERS: ReadonlyArray<readonly [BoardCorner, React.CSSProperties]> = [
 ];
 
 function Handles() {
+  const resizes = useBoardView((view) => view.tool === 'select');
+
+  if (!resizes) return null;
+
   return CORNERS.map(([corner, place]) => (
     <div
       contentEditable={false}
@@ -59,15 +64,15 @@ function AloneHandles() {
 /**
  * One member of a board, painted at its stacking rank while the DOM keeps the
  * board's stored order. A shape, frame or stroke sits at its box and,
- * selected alone, shows four resize handles, `[data-board-handle]`, each
- * valued with its `BoardCorner`. An arrow sits at the board's origin with no
- * size, so its component draws in board coordinates from `useArrowPath`, and
- * it has no handles. A frame takes a press only on its edge or on a child
- * marked `[data-board-frame-name]`, such as its name, and a stroke only on its
- * line, which its component draws from `useStrokePath`. A selected member
- * shows `data-selected`, one the eraser will remove on release shows
- * `data-erasing`, and the one under the picking cursor that Space starts
- * shows `data-board-cursor`.
+ * selected alone while the view's tool is `select`, shows four resize
+ * handles, `[data-board-handle]`, each valued with its `BoardCorner`. An
+ * arrow sits at the board's origin with no size, so its component draws in
+ * board coordinates from `useArrowPath`, and it has no handles. A frame takes
+ * a press only on its edge or on a child marked `[data-board-frame-name]`,
+ * such as its name, and a stroke only on its line, which its component draws
+ * from `useStrokePath`. A selected member shows `data-selected`, one the
+ * eraser will remove on release shows `data-erasing`, and the one under the
+ * picking cursor that Space starts shows `data-board-cursor`.
  */
 export function BoardShape({
   className,

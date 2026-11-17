@@ -126,6 +126,12 @@ export type BoardViewState = Readonly<{
    */
   selectedShapes: readonly BoardMemberEntry[];
   tool: BoardTool;
+  /**
+   * Whether the note, shape, frame and arrow tools stay picked after they add
+   * a shape. Off when the view mounts, kept per view and never stored. The
+   * pen and eraser stay picked either way.
+   */
+  toolLocked: boolean;
   /** Whether the view can write: false when it is read-only or a preview. */
   writable: boolean;
 }>;
@@ -149,6 +155,11 @@ export type BoardViewActions = Readonly<{
    */
   setStyle: (style: BoardStyle) => void;
   setTool: (tool: BoardTool) => void;
+  /**
+   * Turn the tool lock on or off, as Q does. It changes neither the tool nor
+   * the selection, and the focused view says `toolLock` when it changes.
+   */
+  setToolLocked: (locked: boolean) => void;
   /** Zoom in to the next of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `+` does, and do nothing at 800. A focused board says the new zoom. */
   zoomIn: () => void;
   /** Zoom out to the next lower of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `-` does, and do nothing at 10. A focused board says the new zoom. */
@@ -221,6 +232,7 @@ export type BoardViewCore = Readonly<{
   selectedShapes: () => BoardShapeLayout[];
   setCamera: (camera: BoardCamera) => void;
   setTool: (tool: BoardTool) => void;
+  setToolLocked: (locked: boolean) => void;
   shapeAt: (at: BoardPlace, except?: string) => BoardShapeLayout | undefined;
   shapesAlong: (from: BoardPlace, to: BoardPlace) => readonly string[];
   slice: (ids: readonly string[]) => ContentSlice | null;
@@ -443,6 +455,7 @@ export const createBoardView = (
     selectedShapes: [],
     styles: {},
     tool: 'select',
+    toolLocked: false,
     writable: writable(),
   };
   const stateListeners = new Set<() => void>();
@@ -1068,7 +1081,7 @@ export const createBoardView = (
     const inserted = id && boards.read.shape(id);
 
     if (!inserted) return false;
-    setState({ tool: 'select' });
+    if (!state.toolLocked) setState({ tool: 'select' });
     select([inserted.key]);
 
     return true;
@@ -1277,6 +1290,11 @@ export const createBoardView = (
       setState({ tool });
       voice.tool(tool);
     },
+    setToolLocked: (locked) => {
+      if (locked === state.toolLocked) return;
+      setState({ toolLocked: locked });
+      voice.toolLock(locked);
+    },
     shapeAt: (at, except) => index.shapeAt(at, state.camera.zoom, except),
     shapesAlong: (from, to) => index.shapesAlong(from, to, state.camera.zoom),
     slice: (ids) => boards.read.slice(ids),
@@ -1417,6 +1435,7 @@ export const createBoardView = (
       setState({ nextStyle: { ...state.nextStyle, ...valid } });
     },
     setTool: core.setTool,
+    setToolLocked: core.setToolLocked,
     zoomIn: core.zoomIn,
     zoomOut: core.zoomOut,
   };

@@ -45,9 +45,9 @@ export type {
  * Space released with no pan while it was held starts picking
  * shapes, as `BoardMessages`'s `picking` says. While the hand is picked, the
  * board shows a grab cursor, except over its toolbar and an element that sets
- * its own cursor, such as a resize handle. Zoom with Mod and the wheel. With
- * the select tool, a touch drag on empty board pans, and a mouse or pen drag
- * there selects the shapes its box holds.
+ * its own cursor. Zoom with Mod and the wheel. With the select tool, a touch
+ * drag on empty board pans, and a mouse or pen drag there selects the shapes
+ * its box holds.
  * `toolbar` renders over the board, where `useBoardView` and
  * `useBoardActions` reach this view. Mark an element at the top level of
  * `toolbar` that the app docks at the board's side with
