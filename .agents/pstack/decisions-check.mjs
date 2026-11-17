@@ -51,7 +51,12 @@
 //        the first one included, unless the first path under <plans>/artifacts/ in any
 //        prior-art: of its evidence or result is an existing file there, read without a
 //        :line suffix, quotes, asterisks or trailing punctuation and with its .. segments
-//        resolved.
+//        resolved. Both append forms take a "recorded" result on a row whose decision starts
+//        with "critical", in any phase, only with step: <n> in it and proof: <existing file
+//        under <plans>/artifacts/> in its evidence, and refuse a build row whose decision
+//        starts with "built:" and holds reach: <text> while such a row has no later panel or
+//        build row whose evidence names the same proof: file and whose result starts with
+//        applied, dismissed, fixed or verified.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build, the
 //        maxRounds in .agents/pstack.json or 3)
@@ -234,6 +239,32 @@ function unnamedSeats(decision, seatsRow, where) {
   return [`${where}: a critical panel finding opens "critical [<seat>, ...]: <finding>" and names each seat that raised it at any severity, from its round's seats row: ${models.length ? `${models.join(', ')} or lead` : 'lead'}`];
 }
 
+function recordedProblems(severity, [, , , evidence, result], where) {
+  if (severity !== 'critical') return [`${where}: only a critical finding is recorded; a warning or nit is applied, dismissed or deferred with its owner:`];
+  const labels = proofLabels(evidence, plansDir(), onDisk).filter((label) => label.path);
+  const found = labels.filter((label) => !label.exists).map((label) => `${where}: proof: ${label.path} names no file`);
+  if (labels.length === 0) found.push(`${where}: a recorded critical finding names the seat's saved case as "proof: <file under ${plansDir()}/artifacts/>" in its evidence`);
+  if (!/(?:^|[\s;,(])step:\s*\S/u.test(result)) found.push(`${where}: a recorded critical finding names the plan step that fixes it as "step: <n>" in its result, a step that lands before the plan's reach step`);
+  return found;
+}
+
+// A recorded finding waits in code no user can reach, so the step that lets users reach that code waits for it.
+const REACH = /(?:^|[\s;,(])reach:\s*\S/u;
+const isRecorded = ([, decision = '', , , result = '']) => /^critical\b/u.test(decision) && /^recorded\b/u.test(result);
+const settlesRecorded = ([phase, , , , result = '']) => ['panel', 'build'].includes(phase) && /^(applied|dismissed|fixed|verified)\b/u.test(result);
+const caseKeys = (evidence) => proofLabels(evidence, plansDir(), onDisk).filter((label) => label.path).map((label) => label.key);
+
+function trackRecorded(recorded, cells) {
+  if (isRecorded(cells)) for (const key of caseKeys(cells[3])) recorded.set(key, cells[1]);
+  else if (settlesRecorded(cells)) for (const key of caseKeys(cells[3])) recorded.delete(key);
+}
+
+function reachProblems(recorded, [phase, decision = ''], where) {
+  if (phase !== 'build' || !/^built:/u.test(decision) || !REACH.test(decision) || recorded.size === 0) return [];
+  const count = recorded.size === 1 ? 'a recorded critical finding is' : `${recorded.size} recorded critical findings are`;
+  return [`${where}: this built: row names its step's reach:, and ${count} not settled: ${[...recorded.values()].join('; ')}. Before users can reach that code, fix each in the step its row's step: names, and log a panel or build row whose evidence names the same proof: file with a result that starts applied, dismissed, fixed or verified`];
+}
+
 function rowProblems(line, where, roster, chips) {
   const cells = line.split('\t');
   if (cells.length !== 6) return [`${where}: ${cells.length} cells, expected 6`];
@@ -257,14 +288,16 @@ function rowProblems(line, where, roster, chips) {
     if (!severity) found.push(`${where}: a panel row's decision starts with "seats" or a severity: critical, warning or nit; any other phase, such as build or trail, takes a row that is neither`);
     else if (!roster) found.push(`${where}: a panel finding needs a "seats" row before it`);
     else if (severity === 'critical') found.push(...unnamedSeats(rest[1], roster, where));
-    if (!/^(applied|dismissed|deferred|open)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed", "deferred" or "open" and gives the reason`);
+    if (!/^(applied|dismissed|deferred|open|recorded)\b\W+\w/u.test(rest[4])) found.push(`${where}: a panel finding's result starts with "applied", "dismissed", "deferred", "open" or, for a critical finding no user can reach yet, "recorded", and gives the reason`);
+    else if (/^recorded\b/u.test(rest[4])) found.push(...recordedProblems(severity, rest, where));
     else if (/^deferred\b/u.test(rest[4])) {
-      if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is never deferred: apply it or pivot the run to it, dismiss it on proof that it is no defect or is rare, or, when its own case fails the same way on the run's base, this run neither causes, worsens nor increases exposure to it, it breaks no outcome or property the typed ask states and it shows no requirement of this run's design unmet, log it open with patch: none, owner:, stop: and each line it limits in the result, and proof: none and the base run in the evidence`);
+      if (rest[1].startsWith('critical')) found.push(`${where}: a critical panel finding is never deferred: apply it or pivot the run to it, record it when no user can reach its case yet, dismiss it on proof that it is no defect or is rare, or, when its own case fails the same way on the run's base, log it open with patch: none, owner:, stop: and each line it limits in the result, and proof: none and the base run in the evidence`);
       else if (!/\bowner:\s*\S/u.test(rest[4])) found.push(`${where}: a deferred panel finding names its owner:`);
     } else if (/^open\b/u.test(rest[4]) && !(/\bpatch:\s*\S/u.test(rest[4]) && /\bowner:\s*\S/u.test(rest[4]))) {
       found.push(`${where}: an open panel finding names its patch: and owner:`);
     }
   }
+  if (rest[0] !== 'panel' && isRecorded(rest)) found.push(...recordedProblems('critical', rest, where));
   if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) {
     found.push(`${where}: ${/^[aeiou]/u.test(status) ? 'an' : 'a'} ${status} result belongs only in a chip row; a run's log records the same step as applied, decided, fixed or verified`);
   }
@@ -512,6 +545,8 @@ function append(path, batch, run, miss = null) {
   let openCriticals = existing.slice(1).filter((line) => isOpenCritical(line.split('\t').slice(1))).length;
   const redesign = { log: path, playbook: redesignPlaybook(path), redesign: false, plan: false, kinds: 0, owners: 1 };
   for (const line of existing.slice(1).filter(Boolean)) trackRedesign(redesign, line.split('\t').slice(1));
+  const recorded = new Map();
+  for (const line of existing.slice(1).filter(Boolean)) trackRecorded(recorded, line.split('\t').slice(1));
   const steps = trunk() ? { built: new Set(), unlanded: new Set(), landing: false } : null;
   if (steps) for (const line of existing.slice(1)) trackStep(steps, line);
   const plans = batch.some((cells) => pivotPlanOf(cells)) ? runPlanState(path, existing) : null;
@@ -539,8 +574,9 @@ function append(path, batch, run, miss = null) {
       if (openCriticals > 0 && !(redesign.playbook && redesign.redesign)) found.push(...designQuestionProblems(path, cells, where, openCriticals));
       openCriticals += 1;
     }
-    found.push(...redesignProblems(redesign, cells, where));
+    found.push(...redesignProblems(redesign, cells, where), ...reachProblems(recorded, cells, where));
     trackRedesign(redesign, cells);
+    trackRecorded(recorded, cells);
     if (plans) {
       found.push(...secondPlanProblems(plans, cells, where), ...priorArtProblems(plans, cells, where));
       trackPlans(plans, cells);

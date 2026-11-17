@@ -299,7 +299,7 @@
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
       ".agents/pstack/seats.mjs": "dfb969ef37ea689cf6538974172994050012dabc8cfad0012d3d5c839caa3b40",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
-      ".agents/pstack/decisions-check.mjs": "da453f0eb9bbda730865dfd6c1ce962cd4e0a7f858b61f67d966d38fbe428d64",
+      ".agents/pstack/decisions-check.mjs": "d379e1672e20b6c90ef406c6ab591c4c3b3931757d606f1ed4e54671b53aaa01",
       ".agents/pstack/levels.mjs": "6377cf1ed1de0ddedf9d926e22203ab0e98c880add339c6611627dbadfe17044",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "a5cbac2e60f285addaa9c69b7b095586cf44cad3462146b194250c7dd976fabf",
@@ -327,7 +327,7 @@
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "52db38daea27ce6cc4d427341646105d083e1447"
+    "source": "7f6e96ffcabea765391ba5a6865e26528f2782de"
   },
   "pageTopic": {
     "field": "review_scopes",
