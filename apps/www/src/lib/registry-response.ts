@@ -33,7 +33,11 @@ const sha256 = (value: string) =>
 
 async function readText(filePath: string) {
   try {
-    return await fs.readFile(filePath, 'utf-8');
+    return await fs.readFile(
+      /* turbopackIgnore: true */
+      filePath,
+      'utf-8'
+    );
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw error;

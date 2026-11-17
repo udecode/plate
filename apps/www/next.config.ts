@@ -93,6 +93,7 @@ const nextConfig = (_phase: string) => {
 
     experimental: {
       externalDir: isDev,
+      turbopackSharedRuntime: false,
       instantInsights: {
         validationLevel: 'manual-warning',
       },

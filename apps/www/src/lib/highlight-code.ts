@@ -1,9 +1,8 @@
 import { createHash } from 'node:crypto';
 
 import { LRUCache } from 'lru-cache';
-import type { registryItemFileSchema } from 'shadcn/schema';
+import type { RegistryItemFile } from 'shadcn/schema';
 import { codeToHtml } from 'shiki';
-import type { z } from 'zod';
 
 const highlightCache = new LRUCache<string, string>({
   max: 500,
@@ -67,9 +66,7 @@ export async function highlightCode(code: string, language = 'tsx') {
   return html;
 }
 
-export async function highlightFiles(
-  files?: Array<z.infer<typeof registryItemFileSchema>>
-) {
+export async function highlightFiles(files?: RegistryItemFile[]) {
   if (!files) {
     return null;
   }

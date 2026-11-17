@@ -18,7 +18,11 @@ import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getDocsSidebar, getPagerForDoc } from '@/lib/docs-page-tree';
 import { selectDocsSidebar } from '@/lib/docs-sidebar';
 import { registryExampleSlug } from '@/lib/docs-routes';
-import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
+import {
+  getDocsNavMeta,
+  normalizeDocsHref,
+  slugToCategory,
+} from '@/lib/docs-nav-metadata';
 import { getAbsoluteUrl, getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
 import {
   getCachedDependencies,
@@ -76,7 +80,10 @@ async function getDocFromParams({ params }: DocPageProps, locale: DocsLocale) {
   return source.getPage(slugParam ?? [], locale) ?? null;
 }
 
-function getDocsPath(slug: string[] | undefined, locale: DocsLocale) {
+export function getDocsPath(
+  slug: string[] | undefined,
+  locale: DocsLocale
+) {
   const path = slug?.join('/') || '';
   const base = locale === 'cn' ? '/cn/docs' : '/docs';
 
@@ -139,10 +146,12 @@ export async function generateDocMetadata(
   let title: string;
   let description: string | undefined;
   let slug: string;
+  let enPath: string;
   let nestedRootTitle: string | undefined;
 
   if (doc) {
     slug = localizeDocsUrl(doc.url, locale);
+    enPath = normalizeDocsHref(doc.url);
     ({ title } = doc.data);
     description = doc.data.description ?? getDocsNavMeta(slug)?.description;
     nestedRootTitle = selectDocsSidebar(getDocsSidebar(locale), doc.url).nested
@@ -158,11 +167,19 @@ export async function generateDocMetadata(
     }
 
     slug = getDocsPath(slugParam, locale);
+    enPath = getDocsPath(slugParam, 'en');
     title = file.title || docName;
     ({ description } = file);
   }
 
   return {
+    alternates: {
+      canonical: slug,
+      languages: {
+        en: enPath,
+        'zh-CN': localizeDocsUrl(enPath, 'cn'),
+      },
+    },
     description,
     openGraph: {
       description,

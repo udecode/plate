@@ -103,8 +103,16 @@ export type RegistryChangelogComponents = {
 };
 
 const registryChangelogDirCandidates = [
-  path.join(process.cwd(), 'src/registry/changelog'),
-  path.join(process.cwd(), 'apps/www/src/registry/changelog'),
+  path.join(
+    /* turbopackIgnore: true */
+    process.cwd(),
+    'src/registry/changelog'
+  ),
+  path.join(
+    /* turbopackIgnore: true */
+    process.cwd(),
+    'apps/www/src/registry/changelog'
+  ),
 ];
 
 function getRegistryChangelogDir() {
@@ -121,7 +129,11 @@ function getRegistryChangelogDir() {
 
 function readRegistryChangelogJson(fileName: string): unknown {
   return JSON.parse(
-    fs.readFileSync(path.join(getRegistryChangelogDir(), fileName), 'utf-8')
+    fs.readFileSync(
+      /* turbopackIgnore: true */
+      path.join(getRegistryChangelogDir(), fileName),
+      'utf-8'
+    )
   );
 }
 

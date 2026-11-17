@@ -350,6 +350,15 @@
     @apply md:-mx-4;
   }
 
+  pre[data-prompt] {
+    padding-inline: calc(var(--spacing) * 3) calc(var(--spacing) * 10);
+  }
+
+  pre[data-prompt] code {
+    display: block;
+    white-space: pre-wrap;
+  }
+
   [data-rehype-pretty-code-title] ~ pre [data-slot='copy-button'] {
     top: calc(var(--spacing) * 1.5) !important;
   }

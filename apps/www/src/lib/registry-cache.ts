@@ -1,6 +1,5 @@
 import * as React from 'react';
-import type { registryItemFileSchema } from 'shadcn/schema';
-import type { z } from 'zod';
+import type { RegistryItemFile } from 'shadcn/schema';
 
 import { highlightFiles } from './highlight-code';
 import {
@@ -20,8 +19,7 @@ export const getCachedFileTree = React.cache(
 );
 
 export const getCachedHighlightedFiles = React.cache(
-  (files: Array<z.infer<typeof registryItemFileSchema>>) =>
-    highlightFiles(files)
+  (files: RegistryItemFile[]) => highlightFiles(files)
 );
 
 export const getCachedDependencies = React.cache((name: string) =>

@@ -4,10 +4,9 @@ import path from 'node:path';
 import {
   type Registry,
   type RegistryItem,
-  type registryItemFileSchema,
+  type RegistryItemFile,
   registryItemSchema,
 } from 'shadcn/schema';
-import type { z } from 'zod';
 
 import type { UnistNode } from '@/types/unist';
 
@@ -449,8 +448,12 @@ export function resolveRegistrySourceFile(appRoot: string, filePath: string) {
   return path.join(appRoot, 'src/registry', relativePath);
 }
 
-async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
-  const filePath = resolveRegistrySourceFile(process.cwd(), file.path);
+async function getFileContent(file: RegistryItemFile) {
+  const filePath = resolveRegistrySourceFile(
+    /* turbopackIgnore: true */
+    process.cwd(),
+    file.path
+  );
 
   // Next config explicitly traces this subtree for every runtime consumer.
   const raw = await fs.readFile(
@@ -462,7 +465,7 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   return fixImport(raw);
 }
 
-function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
+function getFileTarget(file: RegistryItemFile) {
   let { target } = file;
 
   if (!target || target === '') {
@@ -488,7 +491,7 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
   return target ?? '';
 }
 
-function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {
+function fixFilePaths(files: RegistryItem['files']) {
   if (!files?.length) {
     return [];
   }

@@ -27,6 +27,11 @@ import {
   getLocalizedNavTitle,
   normalizeDocsHref,
 } from '@/lib/docs-nav-metadata';
+import {
+  DOCS_NAV_SCROLL_KEY,
+  restoreDocsNavScroll,
+  saveDocsNavScroll,
+} from '@/lib/docs-nav-scroll';
 import { type DocsSidebar, selectDocsSidebar } from '@/lib/docs-sidebar';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
@@ -181,14 +186,24 @@ export function DocsNav({ sidebar }: { sidebar: DocsSidebar }) {
       ? openSection.key
       : activeSectionKey;
 
+  React.useLayoutEffect(() => {
+    restoreDocsNavScroll(DOCS_NAV_SCROLL_KEY);
+    saveDocsNavScroll();
+  }, [pathname]);
+
   return navSections.length > 0 ? (
     <Sidebar
       aria-label={locale === 'cn' ? '文档导航' : 'Docs navigation'}
+      data-docs-nav=""
+      onScrollCapture={saveDocsNavScroll}
       className="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
       collapsible="none"
     >
       <div className="h-9" />
-      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) gap-0 overflow-x-hidden px-2.5">
+      <SidebarContent
+        data-docs-nav-scroll=""
+        className="no-scrollbar w-(--sidebar-menu-width) gap-0 overflow-x-hidden px-2.5"
+      >
         {navSections.map((section, index) => {
           const sectionKey = getSectionKey(section, index);
 
@@ -277,6 +292,7 @@ function DocsNavGroup({
             )}
           >
             <SidebarGroupContent
+              data-docs-nav-scroll={scrollable ? '' : undefined}
               className={cn(
                 scrollable
                   ? 'no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain'

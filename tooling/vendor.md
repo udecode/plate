@@ -5,7 +5,7 @@
 - `jest@29.7.0`: jest 30.0.0 is failing parallel tests while it succeeds individually
 - `jotai@2.8`: https://github.com/pmndrs/jotai/discussions/2725
 - `juice@8`: Jest encountered an unexpected token
-- `react-day-picker@8.10.1`: shadcn
+- `react-day-picker@9`: shadcn
 - `rehype@12.0.1`: shadcn
 - `rehype-autolink-headings@6.1.0`: shadcn
 - `rehype-pretty-code@0.6.0`: shadcn

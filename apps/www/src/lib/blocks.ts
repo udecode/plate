@@ -1,12 +1,11 @@
 import registry from 'registry';
 import { registryItemSchema } from 'shadcn/schema';
-import { z } from 'zod';
 
 const REGISTRY_BLOCK_TYPES = new Set(['registry:block']);
 
 export function getAllBlocks() {
   // Parse and validate the registry items
-  const items = z.array(registryItemSchema).parse(registry.items);
+  const items = registryItemSchema.array().parse(registry.items);
 
   return items.filter(
     (block) =>

@@ -13,8 +13,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import * as React from 'react';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
-import type { registryItemFileSchema, registryItemSchema } from 'shadcn/schema';
-import type { z } from 'zod';
+import type { RegistryItem, RegistryItemFile } from 'shadcn/schema';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -39,12 +38,12 @@ export type BlockViewerContext = {
   activeFile: string | null;
   dependencies: string[];
   highlightedFiles: Array<
-    z.infer<typeof registryItemFileSchema> & {
+    RegistryItemFile & {
       highlightedContent: string;
     }
   > | null;
   isLoading: boolean;
-  item: z.infer<typeof registryItemSchema> & {
+  item: RegistryItem & {
     meta?: {
       descriptionSrc?: string;
       iframeMinWidth?: number;

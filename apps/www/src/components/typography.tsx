@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { CodeBlockCommand } from '@/components/code-block-command';
+import { CodeCollapsiblePre } from '@/components/code-collapsible-pre';
 import type { Event } from '@/lib/events';
 import { getNpmCommands } from '@/lib/npm-command';
 import { cn } from '@/lib/utils';
@@ -294,8 +295,10 @@ export const Pre = ({
       })
     : props.children;
 
+  const Comp = 'data-collapsible' in props ? CodeCollapsiblePre : 'pre';
+
   return (
-    <pre
+    <Comp
       className={cn(
         'max-h-[650px] overflow-x-auto bg-code py-4 text-code-foreground *:[code]:bg-inherit',
         __withMeta__ ? 'mb-0 rounded-none' : 'relative mt-6 mb-4 rounded-lg',
@@ -317,7 +320,7 @@ export const Pre = ({
           src={__src__}
         />
       )}
-    </pre>
+    </Comp>
   );
 };
 

@@ -21,7 +21,7 @@ export function Callout({
     <Alert
       data-variant={variant}
       className={cn(
-        'md:-mx-1 mt-6 w-auto rounded-xl border-surface bg-surface text-surface-foreground **:[code]:border',
+        'md:-mx-1 mt-6 w-auto rounded-xl border-surface bg-surface text-surface-foreground **:[a]:font-medium **:[a]:underline **:[a]:decoration-current/30 **:[a]:hover:decoration-current **:[code]:border',
         getCalloutVariantClassName(variant),
         className
       )}

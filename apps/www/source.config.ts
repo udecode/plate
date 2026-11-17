@@ -26,6 +26,7 @@ const typeTableGenerator = createGenerator();
 const EVENT_META_REGEX = /event="([^"]*)"/;
 const COMMAND_CODE_REGEX = /^(bun|npm|npx|pnpm|yarn)\s/;
 const WHITESPACE_REGEX = /\s+/;
+const PROMPT_COLLAPSE_LINES = 12;
 const shouldCompileDocsDynamically = process.env.PLATE_WWW_DYNAMIC_DOCS === '1';
 const shouldLoadDocsAsync = process.env.PLATE_WWW_ASYNC_DOCS === '1';
 const shouldHighlightCode =
@@ -123,9 +124,12 @@ export default defineConfig({
               }
 
               const rawString = codeEl.children?.[0].value ?? '';
+              const metaTokens = codeMeta?.split(WHITESPACE_REGEX) ?? [];
+              const isPrompt = metaTokens.includes('prompt');
               const showLineNumbers =
-                codeMeta?.split(WHITESPACE_REGEX).includes('showLineNumbers') ||
-                (rawString.includes('\n') &&
+                metaTokens.includes('showLineNumbers') ||
+                (!isPrompt &&
+                  rawString.includes('\n') &&
                   !COMMAND_CODE_REGEX.test(rawString.trimStart()));
 
               if (showLineNumbers) {
@@ -137,6 +141,10 @@ export default defineConfig({
               node.__rawString__ = rawString;
               node.__src__ = node.properties?.__src__;
               node.__style__ = node.properties?.__style__;
+              node.__prompt__ = isPrompt;
+              node.__collapsible__ =
+                isPrompt &&
+                rawString.split('\n').length > PROMPT_COLLAPSE_LINES;
               node.properties.__rawString__ = rawString;
               node.properties.__showLineNumbers__ = showLineNumbers;
 
@@ -231,6 +239,12 @@ export default defineConfig({
                       }
                       if (node.__style__) {
                         preElement.properties.__style__ = node.__style__;
+                      }
+                      if (node.__prompt__) {
+                        preElement.properties['data-prompt'] = '';
+                      }
+                      if (node.__collapsible__) {
+                        preElement.properties['data-collapsible'] = '';
                       }
                     }
                   }

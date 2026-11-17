@@ -10,6 +10,7 @@ import { DriveStamp } from '@/components/drive-stamp';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { Toaster } from '@/components/ui/sonner';
 import { META_THEME_COLORS, siteConfig } from '@/config/site';
+import { DOCS_NAV_SCROLL_RESTORE_SCRIPT } from '@/lib/docs-nav-scroll';
 import { driveDirectory } from '@/lib/drive-directory';
 import { fontMono, fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
@@ -106,6 +107,10 @@ export default function RootLayout({
           }}
         />
         <meta name="theme-color" content={META_THEME_COLORS.light} />
+        <script
+          // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] This repository-owned bootstrap is a fixed script built from a module function and a constant key, and it must run while the HTML parses.
+          dangerouslySetInnerHTML={{ __html: DOCS_NAV_SCROLL_RESTORE_SCRIPT }}
+        />
       </head>
       <body
         className={cn(
