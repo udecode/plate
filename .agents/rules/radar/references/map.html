@@ -66,7 +66,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 
 .sw { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
 .sw.free { background: var(--free); }
 .sw.pro { background: var(--pro); }
-.sw.both { background: linear-gradient(90deg, var(--free) 50%, var(--pro) 50%); }
+.sw.plus { background: linear-gradient(90deg, var(--free) 50%, var(--pro) 50%); }
 .sw.near { border: 1.5px dashed var(--gray); background: transparent; }
 .sw.halo { border: 3px solid var(--ai); background: transparent; opacity: .8; }
 .sw.gold { border: 3px solid var(--gold); background: transparent; }
@@ -87,7 +87,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 
 .pin.t3 .dot-pin { width: 26px; height: 26px; font-size: 12px; }
 .dot-pin.free { background: #11806A; }
 .dot-pin.pro { background: #B0650A; }
-.dot-pin.both { background: linear-gradient(90deg, #11806A 50%, #B0650A 50%); }
+.dot-pin.plus { background: linear-gradient(90deg, #11806A 50%, #B0650A 50%); }
 .dot-pin.near { background: rgba(255, 255, 255, .55); border: 2px dashed #5E666C; box-shadow: none; }
 .dot-pin::before { content: ""; position: absolute; inset: calc(-6px - var(--ai-w, 0px)); border-radius: 50%; border: var(--ai-w, 0px) solid #9B76F0; opacity: .85; transition: opacity .25s; pointer-events: none; }
 .ai-off .dot-pin::before { opacity: 0; }
@@ -114,7 +114,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 
 .badge { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; font: 600 12px var(--font-mono); color: var(--on-fill); flex: none; }
 .badge.free { background: var(--free); }
 .badge.pro { background: var(--pro); }
-.badge.both { background: linear-gradient(90deg, var(--free) 50%, var(--pro) 50%); }
+.badge.plus { background: linear-gradient(90deg, var(--free) 50%, var(--pro) 50%); }
 .badge.near { background: transparent; border: 1.5px dashed var(--gray); }
 
 .detail { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; min-width: 0; }
@@ -189,8 +189,8 @@ tr.is-selected td { background: var(--tint-hot); }
     <div class="legend" aria-label="Legend">
       <span><i class="sw gold"></i>Explore first</span>
       <span><i class="sw free"></i>Free</span>
-      <span><i class="sw pro"></i>Pro</span>
-      <span><i class="sw both"></i>Free core, Pro kit</span>
+      <span><i class="sw plus"></i>Free core, Plus kit</span>
+      <span><i class="sw pro"></i>Free core, Pro rules</span>
       <span><i class="sw near"></i>Near miss</span>
       <span><i class="sw halo"></i>AI layer, thicker means a bigger AI demo</span>
     </div>
@@ -228,7 +228,7 @@ tr.is-selected td { background: var(--tint-hot); }
 const RADAR = /*RADAR_DATA*/null;
 const { sectors: SECTORS, features: FEATURES, ideas: IDEAS } = RADAR;
 const TIER_NAME = { 1: "Explore first", 2: "Next", 3: "Later", 4: "Near miss" };
-const LEAN_NAME = { free: "Free", pro: "Pro", both: "Free core, Pro kit", near: "Not graded" };
+const LEAN_NAME = { free: "Free", plus: "Free core, Plus kit", pro: "Free core, Pro rules", near: "Not graded" };
 IDEAS.forEach(d => { d.total = d.s.reach + d.s.pro + d.s.ai + d.s.reuse + d.s.lanes + d.s.hosted; });
 const RANKED = IDEAS.filter(d => d.rank).length;
 document.getElementById("eyebrow").textContent = "Plate · product radar · ranked " + RADAR.ranked;
@@ -327,7 +327,7 @@ function renderDetail() {
   const total = mk("div", "total"); total.append(mk("b", null, d.total), mk("span", "v", "of 15"));
   score.append(bars, total);
 
-  body.append(top, mk("h2", null, d.name), meta, job, layers, block("First slice", d.slice), block("Why it sits here", d.why), block("Free or Pro", d.leanText), grows, score);
+  body.append(top, mk("h2", null, d.name), meta, job, layers, block("First slice", d.slice), block("Why it sits here", d.why), block("Free, Plus or Pro", d.leanText), grows, score);
   box.append(scene, body);
 }
 
