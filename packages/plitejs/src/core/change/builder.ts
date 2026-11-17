@@ -49,7 +49,10 @@ import {
 import {
   type Carry,
   type ChangeFacts,
+  type Cut,
   type Heir,
+  historyFollowsAllFacts,
+  type Mend,
   type Merge,
   NO_FACTS,
   recordedFacts,
@@ -81,42 +84,89 @@ import {
   type JsonPoint,
 } from './tokens';
 
-const holdsWholeNodes = (slice: PreparedTokenSlice) => {
+type SliceShape = 'letters' | 'nodes' | 'part';
+
+const shapeOf = (slice: PreparedTokenSlice): SliceShape => {
   let depth = 0;
+  let nodes = false;
 
   for (const token of slice.tokens) {
-    if (token.kind === 'open') depth += 1;
+    if (token.kind === 'open') {
+      depth += 1;
+      nodes = true;
+    }
     if (token.kind === 'close') depth -= 1;
-    if (depth < 0) return false;
+    if (depth < 0) return 'part';
   }
 
-  return depth === 0;
+  return depth !== 0 ? 'part' : nodes ? 'nodes' : 'letters';
 };
 
-const rewritesPartOfANode = (
+const isLeafJoin = (slice: PreparedTokenSlice) => {
+  const { tokens } = slice;
+
+  return (
+    tokens.length % 2 === 0 &&
+    tokens.length > 0 &&
+    tokens.every((token, index) =>
+      index % 2 === 0
+        ? token.kind === 'close' && token.nodeKind === 'text'
+        : token.kind === 'open' && token.nodeKind === 'text'
+    )
+  );
+};
+
+type Unnamed = Readonly<{
+  drops: boolean;
+  merges: Merge[];
+  nodes: boolean;
+  writes: boolean;
+}>;
+
+const readUnnamed = (
   change: RootChange,
-  before: () => DocumentIndex
-) => {
+  before: () => DocumentIndex,
+  joinsLeaves: boolean
+): Unnamed | null => {
+  const merges: Merge[] = [];
+  const joinedInto = new Map<number, number>();
   let position = 0;
+  let drops = false;
+  let nodes = false;
+  let writes = false;
 
   for (let pair = 0; pair < change.sections.length; pair += 2) {
     const removed = getDefined(change.sections[pair]);
     const inserted = getDefined(change.sections[pair + 1]);
 
-    if (
-      inserted >= 0 &&
-      !(
-        holdsWholeNodes(before().slice(position, position + removed)) &&
-        (inserted === 0 ||
-          holdsWholeNodes(change.data[pair >> 1] as PreparedTokenSlice))
-      )
-    ) {
-      return true;
+    if (inserted >= 0) {
+      const out = before().slice(position, position + removed);
+
+      if (joinsLeaves && inserted === 0 && isLeafJoin(out)) {
+        const left = getDefined(before().openContextAt(position).at(-1));
+        const into =
+          joinedInto.get(left.from) ?? getDefined(change.mapPos(left.from, 1));
+        const at = position + removed - 1;
+
+        joinedInto.set(at, into);
+        merges.push([at, into]);
+      } else {
+        const written = change.data[pair >> 1] as PreparedTokenSlice | null;
+
+        for (const side of inserted > 0 && written ? [out, written] : [out]) {
+          const shape = shapeOf(side);
+
+          if (shape === 'part') return null;
+          nodes ||= shape === 'nodes';
+        }
+        drops ||= removed > 0;
+        writes ||= inserted > 0;
+      }
     }
     position += removed;
   }
 
-  return false;
+  return { drops, merges, nodes, writes };
 };
 
 export type DocumentChangeStep = Readonly<{
@@ -493,14 +543,50 @@ export class ChangeDraft {
       : UNKNOWN_FACTS;
   }
 
-  private diffFacts(change: DocumentChange): ChangeFacts {
+  /**
+   * Facts of a change no command wrote. A change that opens or closes a node
+   * apart from its other end reads unknown. Otherwise it claims nothing, until
+   * history follows every recorded change. Then a change that drops and
+   * writes, in one root or across roots, where either side holds a whole
+   * node, reads unknown, because that pair may be a move, a split or a join no
+   * fact connects. So does a change that touches no whole node when its
+   * source says it touched nodes. With `joinsLeaves`, a section that joins two
+   * text leaves writes their merge.
+   *
+   * @internal
+   */
+  unnamedFacts(
+    change: DocumentChange,
+    options: Readonly<{ joinsLeaves?: boolean; touchesNodes?: boolean }> = {}
+  ): ChangeFacts {
+    const all = historyFollowsAllFacts();
+    const roots: Array<
+      readonly [string, { carries: Carry[]; heirs: Heir[]; merges: Merge[] }]
+    > = [];
+    let drops = false;
+    let nodes = false;
+    let writes = false;
+
     for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
-      if (rewritesPartOfANode(rootChange, () => this.getIndex(root))) {
-        return UNKNOWN_FACTS;
+      const read = readUnnamed(
+        rootChange,
+        () => this.getIndex(root),
+        all && options.joinsLeaves === true
+      );
+
+      if (!read) return UNKNOWN_FACTS;
+      drops ||= read.drops;
+      nodes ||= read.nodes;
+      writes ||= read.writes;
+      if (read.merges.length > 0) {
+        roots.push([root, { carries: [], heirs: [], merges: read.merges }]);
       }
     }
+    if (all && (nodes ? drops && writes : options.touchesNodes === true)) {
+      return UNKNOWN_FACTS;
+    }
 
-    return NO_FACTS;
+    return roots.length > 0 ? recordedFacts(roots) : NO_FACTS;
   }
 
   private landedAsUnknown(facts: ChangeFacts) {
@@ -1376,7 +1462,9 @@ export class ChangeDraft {
         ? this.apply(constructionChange, {
             ...options,
             drops,
-            facts: this.diffFacts(constructionChange),
+            facts: this.unnamedFacts(constructionChange, {
+              joinsLeaves: true,
+            }),
             origin: options.origin ?? 'canonical',
           })
         : null;
@@ -1538,10 +1626,12 @@ export class ChangeDraft {
     const document = this.getIndex(root);
     const change = mergeNodeChange(document, path);
     const previous = [...path.slice(0, -1), getDefined(path.at(-1)) - 1];
-    const merge: Merge = [
-      document.nodeRange(path).from,
-      document.nodeRange(previous).from,
-    ];
+    const { from } = document.nodeRange(path);
+    const merge: Merge = [from, document.nodeRange(previous).from];
+    const mends: Mend[] =
+      historyFollowsAllFacts() && !isTextNode(document.node(path))
+        ? [[from - 1]]
+        : [];
 
     return this.applyRoot(
       root,
@@ -1551,7 +1641,7 @@ export class ChangeDraft {
       undefined,
       undefined,
       undefined,
-      { carries: [], heirs: [], merges: [merge] }
+      { carries: [], heirs: [], mends, merges: [merge] }
     );
   }
 
@@ -1791,6 +1881,10 @@ export class ChangeDraft {
     const document = this.getIndex(root);
     const change = splitNodeChange(document, path, position, properties);
     const heir = this.splitHeir(document, path, position);
+    const cuts: Cut[] =
+      historyFollowsAllFacts() && !isTextNode(document.node(path))
+        ? [[heir[0] - 1]]
+        : [];
 
     return this.applyRoot(
       root,
@@ -1802,7 +1896,7 @@ export class ChangeDraft {
         : undefined,
       undefined,
       undefined,
-      { carries: [], heirs: [heir], merges: [] }
+      { carries: [], cuts, heirs: [heir], merges: [] }
     );
   }
 
@@ -1918,7 +2012,13 @@ export class ChangeDraft {
     relocations?: readonly Relocation[],
     letters?: readonly LetterSpan[],
     carried?: readonly CarriedRun[],
-    facts?: Readonly<{ carries: Carry[]; heirs: Heir[]; merges: Merge[] }>
+    facts?: Readonly<{
+      carries: Carry[];
+      cuts?: Cut[];
+      heirs: Heir[];
+      mends?: Mend[];
+      merges: Merge[];
+    }>
   ) {
     return this.apply(
       createInternalDocumentChange(
@@ -1946,7 +2046,7 @@ export class ChangeDraft {
     );
 
     return this.apply(documentChange, {
-      facts: this.diffFacts(documentChange),
+      facts: this.unnamedFacts(documentChange),
       origin,
     });
   }

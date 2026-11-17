@@ -4,9 +4,11 @@ import {
 } from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue } from '../../core/change/tokens';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { notifyObservers } from '../../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import {
+  applyUnnamedDocumentChange,
   isEditorHistoryRestore,
   mintEditorCommitHistoryStep,
   readEditorCommitHistoryStep,
@@ -111,7 +113,7 @@ const startClient = (
       listener()
     );
   };
-  const show = (change: DocumentChange) => {
+  const show = (change: DocumentChange, diffed = false) => {
     const committed: DocumentChange[] = [];
     const stop = editor.subscribeCommit((commit) => {
       committed.push(commit.changes);
@@ -119,7 +121,8 @@ const startClient = (
 
     try {
       editor.update(REMOTE_UPDATE, (tx) => {
-        tx.changes.apply(change);
+        if (diffed) tx.changes.apply(change);
+        else applyUnnamedDocumentChange(getEditorRuntimeOwner(editor), change);
       });
     } finally {
       stop();
@@ -136,7 +139,7 @@ const startClient = (
       document
     );
 
-    return change.empty ? 'exact' : show(change);
+    return change.empty ? 'exact' : show(change, true);
   };
 
   showDocument(shownValue(record.confirmed.document, record.batches));

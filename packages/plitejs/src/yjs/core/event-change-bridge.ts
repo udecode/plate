@@ -887,6 +887,23 @@ const changedEventKeys = (event: Y.YEvent<Y.AbstractType<unknown>>) => {
   return [...event.keys.keys()];
 };
 
+/**
+ * Whether a batch wrote or dropped a node, or hid or showed one, rather than
+ * only changing letters in text it kept.
+ */
+export const batchTouchesNodes = (batch: CapturedYjsEventBatch) =>
+  batch.deletedCuts.length > 0 ||
+  batch.deletedChildren.size > 0 ||
+  batch.visibilityBefore.size > 0 ||
+  batch.events.some(
+    ({ childListChanged, delta, target }) =>
+      childListChanged &&
+      (!(target instanceof Y.XmlText) ||
+        delta.some(
+          ({ insert }) => insert !== undefined && typeof insert !== 'string'
+        ))
+  );
+
 export const captureYjsEventBatch = (
   events: ReadonlyArray<Y.YEvent<Y.AbstractType<unknown>>>,
   transaction: Y.Transaction

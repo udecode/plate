@@ -14,6 +14,7 @@ import {
   type Heir,
   type Merge,
   NO_FACTS,
+  NO_ROOT_FACTS,
   type RootFacts,
   recordedFacts,
 } from './record';
@@ -50,8 +51,6 @@ export type Crossing = Readonly<{
 const fail = (why: string): never => {
   throw new Error(`crossRecord: ${why}.`);
 };
-
-const NO_ROOT_FACTS: RootFacts = { carries: [], heirs: [], merges: [] };
 
 const writtenRoot = (change: DocumentChange) => {
   let written: Readonly<{ change: RootChange; root: string }> | null = null;

@@ -6,7 +6,9 @@ import {
 import {
   type Carry,
   type ChangeFacts,
+  type Cut,
   type Heir,
+  type Mend,
   type Merge,
   NO_FACTS,
   type RootFacts,
@@ -20,9 +22,11 @@ const DROPPED = 1;
 const FRESH = 2;
 const CARRY = 3;
 const HEIR = 4;
+const CUT = 5;
 
 type Kind =
   | typeof CARRY
+  | typeof CUT
   | typeof DROPPED
   | typeof FRESH
   | typeof HEIR
@@ -151,7 +155,12 @@ const piecesOf = (piece: Piece | null, into: Piece[] = []) => {
   return into;
 };
 
-const sourcesIn = (root: Piece | null, from: number, to: number) => {
+const sourcesIn = (
+  root: Piece | null,
+  from: number,
+  to: number,
+  withCuts = false
+) => {
   const found: Source[] = [];
   const visit = (piece: Piece | null, out: number, input: number) => {
     if (!piece || out >= to || out + piece.outputTotal <= from) return;
@@ -162,7 +171,11 @@ const sourcesIn = (root: Piece | null, from: number, to: number) => {
     const start = Math.max(from, at);
     const end = Math.min(to, at + outOf(piece));
 
-    if (start < end && piece.kind !== FRESH) {
+    if (
+      start < end &&
+      piece.kind !== FRESH &&
+      (withCuts || piece.kind !== CUT)
+    ) {
       found.push({
         at: start,
         kind: piece.kind,
@@ -198,9 +211,11 @@ const whereStepPut = (position: number, facts: RootFacts) => {
 
 class RootRuns {
   private root: Piece | null;
+  private readonly mends: number[];
 
-  constructor(root: Piece | null) {
+  constructor(root: Piece | null, mends: number[] = []) {
     this.root = root;
+    this.mends = mends;
   }
 
   static of(prefix: RootChange | undefined, length: number) {
@@ -232,21 +247,26 @@ class RootRuns {
         right: copy(piece.right),
       };
 
-    return new RootRuns(copy(this.root));
+    return new RootRuns(copy(this.root), [...this.mends]);
   }
 
   add(change: RootChange, facts: RootFacts) {
     const carries: Carry[] = [];
+    const cuts: Cut[] = [...facts.cuts];
     const heirs: Heir[] = [];
     const merges: Merge[] = [];
 
     for (const [at, from, length] of facts.carries) {
       countCoreWork('factPositions');
-      for (const source of sourcesIn(this.root, from, from + length)) {
+      for (const source of sourcesIn(this.root, from, from + length, true)) {
         const written = at + source.at - from;
 
         if (source.kind === HEIR) heirs.push([written, source.source]);
-        else carries.push([written, source.source, source.length]);
+        else if (source.kind === CUT) {
+          for (let offset = 0; offset < source.length; offset++) {
+            cuts.push([written + offset]);
+          }
+        } else carries.push([written, source.source, source.length]);
       }
     }
     for (const [at, of] of facts.heirs) {
@@ -261,12 +281,21 @@ class RootRuns {
 
       if (source && source.kind !== HEIR) merges.push([source.source, into]);
     }
+    for (const [at] of facts.mends) {
+      countCoreWork('factPositions');
+      const [source] = sourcesIn(this.root, at, at + 1);
+
+      if (source?.kind === KEPT || source?.kind === CARRY) {
+        this.mends.push(source.source);
+      }
+    }
 
     merges.push(...this.replace(change, facts));
     for (const [at, from, length] of carries) {
       this.writeIfFresh(at, pieceOf(CARRY, length, from));
     }
     for (const [at, of] of heirs) this.writeIfFresh(at, pieceOf(HEIR, 1, of));
+    for (const [at] of cuts) this.writeIfFresh(at, pieceOf(CUT, 1));
     for (const [from, into] of merges) this.attach(into, from);
   }
 
@@ -348,6 +377,7 @@ class RootRuns {
 
   tables() {
     const carries: Carry[] = [];
+    const cuts: Cut[] = [];
     const heirs: Heir[] = [];
     const merges: Merge[] = [];
     let at = 0;
@@ -355,11 +385,14 @@ class RootRuns {
     for (const piece of piecesOf(this.root)) {
       if (piece.kind === CARRY) carries.push([at, piece.source, piece.length]);
       if (piece.kind === HEIR) heirs.push([at, piece.source]);
+      if (piece.kind === CUT) cuts.push([at]);
       for (const source of piece.merges ?? []) merges.push([source, at]);
       at += outOf(piece);
     }
 
-    return { carries, heirs, merges };
+    const mends = this.mends.map((each): Mend => [each]);
+
+    return { carries, cuts, heirs, mends, merges };
   }
 }
 
@@ -458,7 +491,7 @@ export class DraftFacts {
       }
       record.add(
         rootChange,
-        rootFacts ?? { carries: [], heirs: [], merges: [] }
+        rootFacts ?? { carries: [], cuts: [], heirs: [], mends: [], merges: [] }
       );
       this.composed = null;
     }

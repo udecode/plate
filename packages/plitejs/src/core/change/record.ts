@@ -31,11 +31,33 @@ export type Heir = readonly [at: number, of: number];
  */
 export type Merge = readonly [at: number, into: number];
 
+/**
+ * The element close token a change writes at output position `at` ends the
+ * first half of a split: the element goes on past it as the second half.
+ */
+export type Cut = readonly [at: number];
+
+/**
+ * The element close token at input position `at`, which a change drops, ended
+ * the first half of a join. A mend is the flip of a cut.
+ */
+export type Mend = readonly [at: number];
+
 /** One root's facts, each table sorted by its first number. */
 export type RootFacts = Readonly<{
   carries: readonly Carry[];
+  cuts: readonly Cut[];
   heirs: readonly Heir[];
+  mends: readonly Mend[];
   merges: readonly Merge[];
+}>;
+
+type RootFactsDraft = Readonly<{
+  carries: Carry[];
+  cuts?: Cut[];
+  heirs: Heir[];
+  mends?: Mend[];
+  merges: Merge[];
 }>;
 
 /**
@@ -71,7 +93,9 @@ export type FactFault = Readonly<{
 
 export type RootFactsJson = Readonly<{
   carries?: readonly Carry[];
+  cuts?: readonly Cut[];
   heirs?: readonly Heir[];
+  mends?: readonly Mend[];
   merges?: readonly Merge[];
 }>;
 
@@ -86,11 +110,19 @@ export class FactsJsonError extends Error {
   override name = 'FactsJsonError';
 }
 
-const TABLES: readonly FactTable[] = ['carries', 'heirs', 'merges'];
+const TABLES: readonly FactTable[] = [
+  'carries',
+  'cuts',
+  'heirs',
+  'mends',
+  'merges',
+];
 
-const NO_ROOT_FACTS: RootFacts = Object.freeze({
+export const NO_ROOT_FACTS: RootFacts = Object.freeze({
   carries: Object.freeze([]),
+  cuts: Object.freeze([]),
   heirs: Object.freeze([]),
+  mends: Object.freeze([]),
   merges: Object.freeze([]),
 });
 
@@ -102,10 +134,24 @@ export const NO_FACTS: RecordedFacts = Object.freeze({
 
 export const UNKNOWN_FACTS: ChangeFacts = Object.freeze({ kind: 'unknown' });
 
+let followsAllFacts = false;
+
+/**
+ * Whether every writer records the facts of what it moved, split and joined,
+ * and history follows them over every recorded change. Off until it is the
+ * only path.
+ *
+ * @internal
+ */
+export const historyFollowsAllFacts = () => followsAllFacts;
+
+/** @internal */
+export const setHistoryFollowsAllFacts = (on: boolean) => {
+  followsAllFacts = on;
+};
+
 const isEmptyRoot = (facts: RootFacts) =>
-  facts.carries.length === 0 &&
-  facts.heirs.length === 0 &&
-  facts.merges.length === 0;
+  TABLES.every((table) => facts[table].length === 0);
 
 const byFirst = (left: readonly number[], right: readonly number[]) =>
   left[0] - right[0];
@@ -113,11 +159,13 @@ const byFirst = (left: readonly number[], right: readonly number[]) =>
 const continues = (last: Carry | undefined, [at, from]: Carry): last is Carry =>
   last !== undefined && last[0] + last[2] === at && last[1] + last[2] === from;
 
-const sortedRootFacts = (
-  carries: Carry[],
-  heirs: Heir[],
-  merges: Merge[]
-): RootFacts => {
+const sortedRootFacts = ({
+  carries,
+  cuts = [],
+  heirs,
+  mends = [],
+  merges,
+}: RootFactsDraft): RootFacts => {
   const runs: Carry[] = [];
 
   for (const carry of carries.sort(byFirst)) {
@@ -132,7 +180,9 @@ const sortedRootFacts = (
 
   return {
     carries: runs,
+    cuts: cuts.sort(byFirst),
     heirs: heirs.sort(byFirst),
+    mends: mends.sort(byFirst),
     merges: merges.sort(byFirst),
   };
 };
@@ -153,23 +203,14 @@ const recorded = (
 
 /** @internal */
 export const recordedFacts = (
-  roots: Iterable<
-    readonly [
-      string,
-      Readonly<{ carries: Carry[]; heirs: Heir[]; merges: Merge[] }>,
-    ]
-  >
+  roots: Iterable<readonly [string, RootFactsDraft]>
 ): ChangeFacts =>
-  recorded(
-    [...roots].map(([root, { carries, heirs, merges }]) => [
-      root,
-      sortedRootFacts(carries, heirs, merges),
-    ])
-  );
+  recorded([...roots].map(([root, facts]) => [root, sortedRootFacts(facts)]));
 
 /**
  * The facts of the inverse change. A carry swaps its ends, and heirs and
- * merges trade tables, because the inverse drops what the change wrote.
+ * merges trade tables, as cuts and mends do, because the inverse drops what
+ * the change wrote.
  *
  * @internal
  */
@@ -177,14 +218,18 @@ export const flipFacts = (facts: ChangeFacts): ChangeFacts =>
   facts.kind === 'unknown'
     ? facts
     : recorded(
-        [...facts.roots].map(([root, { carries, heirs, merges }]) => [
-          root,
-          sortedRootFacts(
-            carries.map(([at, from, length]) => [from, at, length]),
-            [...merges],
-            [...heirs]
-          ),
-        ])
+        [...facts.roots].map(
+          ([root, { carries, cuts, heirs, mends, merges }]) => [
+            root,
+            sortedRootFacts({
+              carries: carries.map(([at, from, length]) => [from, at, length]),
+              cuts: [...mends],
+              heirs: [...merges],
+              mends: [...cuts],
+              merges: [...heirs],
+            }),
+          ]
+        )
       );
 
 /** @internal */
@@ -345,7 +390,9 @@ const composeRoot = (
   const sources = sourcesOf(a, aFacts);
   const targets = targetsOf(b, bFacts);
   const carries: Carry[] = [];
+  const cuts: Cut[] = [...bFacts.cuts];
   const heirs: Heir[] = [];
+  const mends: Mend[] = [...aFacts.mends];
   const merges: Merge[] = [];
 
   for (const [at, from, length] of bFacts.carries) {
@@ -383,8 +430,22 @@ const composeRoot = (
 
     if (piece && piece.kind !== 'heir') merges.push([piece.other, into]);
   }
+  for (const [at] of aFacts.cuts) {
+    const [piece] = piecesOf(targets, at, at + 1);
 
-  return sortedRootFacts(carries, heirs, merges);
+    if (piece?.kind === 'kept' || piece?.kind === 'carry') {
+      cuts.push([piece.other]);
+    }
+  }
+  for (const [at] of bFacts.mends) {
+    const [piece] = piecesOf(sources, at, at + 1);
+
+    if (piece?.kind === 'kept' || piece?.kind === 'carry') {
+      mends.push([piece.other]);
+    }
+  }
+
+  return sortedRootFacts({ carries, cuts, heirs, mends, merges });
 };
 
 /**
@@ -457,6 +518,12 @@ const kindFault = (
   if (!kind || !source) return 'not-open';
 
   return kind === source ? null : 'kind';
+};
+
+const isElementClose = (document: DocumentIndex, position: number) => {
+  const [token] = document.slice(position, position + 1).tokens;
+
+  return token?.kind === 'close' && token.nodeKind === 'element';
 };
 
 const sameShape = (left: JsonToken, right: JsonToken) =>
@@ -549,6 +616,18 @@ const checkRoot = (
 
       return kindFault(output, into, input, at);
     }),
+    cuts: facts.cuts.map(([at]) => {
+      if (!inside(at, 1, change.newLength)) return 'outside';
+      if (!writes(at, 1)) return 'kept';
+
+      return isElementClose(output, at) ? null : 'kind';
+    }),
+    mends: facts.mends.map(([at]) => {
+      if (!inside(at, 1, change.length)) return 'outside';
+      if (piecesOf(liveInput, at, at + 1).length > 0) return 'kept';
+
+      return isElementClose(input, at) ? null : 'kind';
+    }),
   };
 
   markOverlaps(
@@ -564,6 +643,12 @@ const checkRoot = (
         length: 1,
         start: at,
         table: 'heirs',
+      })),
+      ...facts.cuts.map(([at], index): Claim => ({
+        index,
+        length: 1,
+        start: at,
+        table: 'cuts',
       })),
     ],
     reasons
@@ -582,6 +667,12 @@ const checkRoot = (
         start: at,
         table: 'merges',
       })),
+      ...facts.mends.map(([at], index): Claim => ({
+        index,
+        length: 1,
+        start: at,
+        table: 'mends',
+      })),
     ],
     reasons
   );
@@ -596,9 +687,10 @@ const checkRoot = (
 /**
  * The facts a change cannot hold against the value it applies to: a position
  * outside its sequence, a fact on a token the change keeps, an heir or merge
- * that names no open token or joins an element and a text, a carry whose copy
- * differs from its source in more than its opens' properties, two facts that
- * claim one token, or facts on a root the change does not write.
+ * that names no open token or joins an element and a text, a cut or mend on
+ * a token other than an element close, a carry whose copy differs from its
+ * source in more than its opens' properties, two facts that claim one token,
+ * or facts on a root the change does not write.
  *
  * @internal
  */
@@ -629,9 +721,15 @@ export const factsToJSON = (facts: ChangeFacts): ChangeFactsJson => {
   if (facts.kind === 'unknown') return { kind: 'unknown' };
 
   const canonical = recorded(
-    [...facts.roots].map(([root, { carries, heirs, merges }]) => [
+    [...facts.roots].map(([root, { carries, cuts, heirs, mends, merges }]) => [
       root,
-      sortedRootFacts([...carries], [...heirs], [...merges]),
+      sortedRootFacts({
+        carries: [...carries],
+        cuts: [...cuts],
+        heirs: [...heirs],
+        mends: [...mends],
+        merges: [...merges],
+      }),
     ])
   );
 
@@ -679,6 +777,12 @@ const readPair = (fact: readonly unknown[]): Heir | Merge | null => {
   return fact.length === 2 && isPosition(at) && isPosition(other)
     ? ([at, other] as const)
     : null;
+};
+
+const readMark = (fact: readonly unknown[]): Cut | null => {
+  const [at] = fact;
+
+  return fact.length === 1 && isPosition(at) ? ([at] as const) : null;
 };
 
 const readTable = <T extends readonly number[]>(
@@ -772,10 +876,17 @@ export const factsFromJSON = (json: unknown): ChangeFacts => {
 
       const facts: RootFacts = {
         carries: readCarries(value.carries, `${root}.carries`),
+        cuts: readTable(value.cuts, `${root}.cuts`, readMark, ([at]) => at + 1),
         heirs: readTable(
           value.heirs,
           `${root}.heirs`,
           readPair,
+          ([at]) => at + 1
+        ),
+        mends: readTable(
+          value.mends,
+          `${root}.mends`,
+          readMark,
           ([at]) => at + 1
         ),
         merges: readTable(

@@ -28,11 +28,13 @@ import {
 } from '../change/document-change';
 import { decodeNodes, DocumentIndex } from '../change/document-index';
 import type { Relocation } from '../change/lineage';
+import { historyFollowsAllFacts } from '../change/record';
 import {
   RootChange,
   reconcileChildrenStep,
   type DocumentPropertyContext,
 } from '../change/root-change';
+import { sliceFacts } from '../change/slice-facts';
 import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
@@ -356,6 +358,11 @@ const landedMove = (builder: ChangeDraft, change: DocumentChange) => {
 
   return relocations.length > 0 ? { indexedAfter, relocations } : {};
 };
+
+const fittedFacts = (builder: ChangeDraft, change: DocumentChange) =>
+  historyFollowsAllFacts()
+    ? sliceFacts(change, (root) => builder.getIndex(root))
+    : undefined;
 
 export const compileSliceFitter = <V extends Value>(
   input: SliceFitterDependencies<V>
@@ -1828,6 +1835,7 @@ export const compileSliceFitter = <V extends Value>(
   const prepareFittedDocument = (
     builder: ChangeDraft,
     rawChange: DocumentChange,
+    diffsWholeValue: boolean,
     fitPreparation?: CanonicalFitPreparation,
     trustedCanonical?: Readonly<{
       createIndexes: () => ReadonlyMap<string, DocumentIndex>;
@@ -1837,6 +1845,8 @@ export const compileSliceFitter = <V extends Value>(
       >;
     }>
   ) => {
+    const facts = diffsWholeValue ? undefined : fittedFacts(builder, rawChange);
+
     if (trustedCanonical) {
       const indexedAfter = profileCoreDuration(
         'slice-fit-changeset-apply',
@@ -1866,6 +1876,7 @@ export const compileSliceFitter = <V extends Value>(
         })
       );
       const step = builder.applyTrustedCanonical(rawChange, {
+        facts,
         indexedAfter,
         origin: 'slice',
         runtimeCandidates,
@@ -1885,6 +1896,7 @@ export const compileSliceFitter = <V extends Value>(
     const rawStep = profileCoreDuration('slice-fit-changeset-apply', () =>
       builder.apply(rawChange, {
         classify: false,
+        facts,
         origin: 'slice',
         ...landedMove(builder, rawChange),
       })
@@ -4007,6 +4019,7 @@ export const compileSliceFitter = <V extends Value>(
         prepareFittedDocument(
           options.builder.fork(),
           rawChange,
+          options.target.kind === 'root',
           fitPreparation,
           candidate.trustedCanonical
             ? {

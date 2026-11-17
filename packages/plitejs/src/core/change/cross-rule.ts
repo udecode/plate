@@ -6,7 +6,7 @@ import {
   valueRootIndex,
 } from './document-change';
 import type { DocumentIndex, IndexedNodeRange } from './document-index';
-import type { ChangeFacts, RootFacts } from './record';
+import { type ChangeFacts, NO_ROOT_FACTS, type RootFacts } from './record';
 import type { RootChange } from './root-change';
 import {
   type JsonEditorValue,
@@ -164,12 +164,6 @@ const changesRootsOrRecords = (change: DocumentChange) =>
   change.createRoots.size > 0 ||
   change.deleteRoots.size > 0 ||
   getInternalDocumentChangeRecords(change).size > 0;
-
-const NO_ROOT_FACTS: RootFacts = {
-  carries: [],
-  heirs: [],
-  merges: [],
-};
 
 const factsOf = (facts: ChangeFacts & { kind: 'recorded' }, root: string) =>
   facts.roots.get(root) ?? NO_ROOT_FACTS;

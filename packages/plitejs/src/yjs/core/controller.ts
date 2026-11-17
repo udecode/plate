@@ -15,6 +15,7 @@ import {
 import type { NodeList } from '../../core/change/document-index';
 import { visitRootNames } from '../../core/change/lazy-root';
 import { letterOriginsOfChange } from '../../core/change/new-letters';
+import { historyFollowsAllFacts } from '../../core/change/record';
 import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
 import { getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
@@ -101,6 +102,7 @@ import {
 import { EditorOnlyRoots } from './editor-only-roots';
 import type { YjsEditor } from './editor-types';
 import {
+  batchTouchesNodes,
   type CapturedYjsEventBatch,
   captureYjsEventBatch,
   mergeYjsEventBatches,
@@ -2381,6 +2383,7 @@ export class YjsController<
         ...remote,
         change: result.import.change,
         selection: this.currentSelection(),
+        touchesNodes: historyFollowsAllFacts() && batchTouchesNodes(events),
       },
       (outcome) => {
         result.import.accept(

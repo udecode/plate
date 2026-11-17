@@ -219,7 +219,7 @@ import {
   mergeSpans,
   type NewLetters,
 } from './change/new-letters';
-import type { ChangeFacts } from './change/record';
+import { type ChangeFacts, historyFollowsAllFacts } from './change/record';
 import { keptRunsOf, type RootChange } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
 import {
@@ -12325,6 +12325,31 @@ export const applyDocumentChange = (
   const step = snapshot.builder.applyCanonical(change, facts);
 
   applyTransactionSpecDocumentChangeStep(editor, step, options);
+};
+
+/**
+ * Apply a change no command wrote, such as a peer's, with the facts its
+ * shape allows once history follows every recorded change, and unknown facts
+ * until then. `touchesNodes` says the change's source wrote or dropped a
+ * node, which a change that shows letters alone cannot then claim.
+ *
+ * @internal
+ */
+export const applyUnnamedDocumentChange = (
+  editor: Editor,
+  change: DocumentChange,
+  touchesNodes?: boolean
+) => {
+  const builder = getTransactionSnapshot(editor)?.builder;
+
+  applyDocumentChange(
+    editor,
+    change,
+    {},
+    builder && historyFollowsAllFacts()
+      ? builder.unnamedFacts(change, { touchesNodes })
+      : undefined
+  );
 };
 
 export const notifyListeners = (editor: Editor, change: EditorCommit) => {

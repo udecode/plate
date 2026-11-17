@@ -7,11 +7,15 @@ import {
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
 import { withoutRepairOrphans } from '../../core/document-admission';
-import { getEditorSchema } from '../../core/editor-runtime';
+import {
+  getEditorRuntimeOwner,
+  getEditorSchema,
+} from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import {
   type AdmittedRepair,
+  applyUnnamedDocumentChange,
   getCurrentSelection,
   runTrustedUpdate,
 } from '../../core/public-state';
@@ -38,6 +42,13 @@ type YjsRemoteImport = Readonly<{
   /** Record writes applied before the content change, in the same commit. */
   records?: DocumentChange | null;
   selection?: Range | Selection;
+  /**
+   * Whether the Yjs events the change was read from wrote or dropped a node.
+   * Once history follows every recorded change, an import read from its
+   * events claims the facts its change shows; one that leaves this out
+   * diffed two values and commits unknown facts.
+   */
+  touchesNodes?: boolean;
 }>;
 
 export type YjsImportOutcome = Readonly<{
@@ -173,7 +184,7 @@ export const createYjsEditorAdapter = (
     return root === 'main' ? value.children : (value.roots?.[root] ?? []);
   };
   const applyRemote: YjsEditorAdapter['applyRemote'] = (
-    { replacement, change, effects, records, selection },
+    { replacement, change, effects, records, selection, touchesNodes },
     beforeListeners
   ) => {
     const currentValue = readValue();
@@ -253,7 +264,14 @@ export const createYjsEditorAdapter = (
           if (records) tx.changes.apply(records);
           if (replacement) tx.value.replace(replacement);
           if (publishable && !publishable.empty) {
-            tx.changes.apply(publishable);
+            if (touchesNodes === undefined) tx.changes.apply(publishable);
+            else {
+              applyUnnamedDocumentChange(
+                getEditorRuntimeOwner(editor),
+                publishable,
+                touchesNodes
+              );
+            }
           }
           if (selection !== undefined) {
             const nextSelection = selectionAfter(tx.value(), () =>
