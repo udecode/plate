@@ -23,7 +23,7 @@ import {
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
-import { commonDir, stepLogger } from './check-steps.mjs';
+import { commonDir, INTERRUPTED, stepLogger } from './check-steps.mjs';
 import {
   mentionsOutsideComments,
   runtimeClosure,
@@ -1340,7 +1340,7 @@ const main = async () => {
     results.set(step.name, result);
     logStep({
       cores: Math.min(step.cores ?? 1, budget),
-      exit: interrupted ? 'interrupted' : result.status,
+      exit: interrupted ? INTERRUPTED : result.status,
       seconds: result.seconds,
       step: step.name,
     });

@@ -22,7 +22,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
 import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
-import { STEP_LOG } from './check-steps.mjs';
+import { INTERRUPTED, STEP_LOG } from './check-steps.mjs';
 
 const USAGE = `Usage: node tooling/scripts/deep-check.mjs <command>
   run        check the newest origin/next unless it was checked
@@ -205,11 +205,16 @@ const check = (logs, name, args, { full = false } = {}) => {
         .filter((line) => line.includes(`"run":"${name}"`))
         .map((line) => JSON.parse(line))
     : [];
-  const failed = lines
-    .filter((line) => line.seconds !== undefined && line.exit !== 0)
-    .map((line) => line.step);
+  const ended = lines.filter(
+    (line) => line.seconds !== undefined && line.exit !== 0
+  );
   return {
-    failed,
+    failed: ended
+      .filter((line) => line.exit !== INTERRUPTED)
+      .map((line) => line.step),
+    interrupted: ended
+      .filter((line) => line.exit === INTERRUPTED)
+      .map((line) => line.step),
     // proof.mjs numbers each attempt's log and prints its path last.
     log:
       /^log: (.+) exit=/mu.exec(result.stdout)?.[1] ??
@@ -374,7 +379,7 @@ const run = (args) => {
       emit({ kind: 'green', log: result.log, tip });
       if (!option('--ref')) next.green = tip;
       if (!dry && !option('--ref')) pushGreen(tip);
-    } else if (result.failed.length === 0) {
+    } else if (result.failed.length === 0 && result.interrupted.length === 0) {
       emit({
         kind: 'broken',
         log: result.log,
@@ -389,10 +394,11 @@ const run = (args) => {
       }
       return 1;
     }
-    for (const failed of result.failed) {
+    for (const failed of [...result.failed, ...result.interrupted]) {
       const alone = check(logs, runId(tip, `${failed}-alone`), [failed], {
         full,
       });
+      if (alone.ok && result.interrupted.includes(failed)) continue;
       if (alone.ok) {
         // A step that passes alone has no bad commit to find. The daily
         // check's rule stands: a flake gets a task on its second run in a row.

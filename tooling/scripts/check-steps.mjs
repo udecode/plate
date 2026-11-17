@@ -9,6 +9,7 @@ import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const STEP_LOG = 'plate-check-steps.jsonl';
+export const INTERRUPTED = 'interrupted';
 const CACHE = join('plate-check', 'v2');
 const DAY_MS = 86_400_000;
 
