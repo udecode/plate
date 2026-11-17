@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { parse } from '@babel/parser';
@@ -15,11 +15,7 @@ const compareStrings = (left, right) => {
 };
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const editorConstructorNames = new Set([
-  'createEditor',
-  'useCreateEditor',
-  'useEditor',
-]);
+const makerNamePattern = /\b(?:createEditor|useCreateEditor|useEditor)\b/;
 const codeFenceLanguages = new Set([
   'javascript',
   'js',
@@ -115,13 +111,182 @@ const staleCapabilityFactoryContextBindings = new Set([
   'pluginReads',
   'pluginTransforms',
 ]);
-const removedEditorConstructorKeys = new Set(['onReady', 'value']);
+const makerOptionKeySources = {
+  plate: {
+    exportName: 'EDITOR_OPTION_KEYS',
+    file: 'packages/platejs/src/lib/editor/withPlite.ts',
+    label: "Plate's createEditor",
+  },
+  plateHook: {
+    exportName: 'USE_CREATE_EDITOR_OPTION_KEYS',
+    file: 'packages/platejs/src/react/editor/withPlate.ts',
+    label: "Plate's useCreateEditor",
+  },
+  plite: {
+    exportName: 'EDITOR_OPTION_KEYS',
+    file: 'packages/plitejs/src/internal/editor-options.ts',
+    label: "Plite's headless createEditor",
+  },
+  pliteReact: {
+    exportName: 'REACT_EDITOR_OPTION_KEYS',
+    file: 'packages/plitejs/src/react/plugin/with-react.ts',
+    label: "Plite's React createEditor or useEditor",
+  },
+};
+const importedMakers = [
+  { exportedName: 'createEditor', modulePattern: /^platejs$/, set: 'plate' },
+  {
+    exportedName: 'createEditor',
+    modulePattern: /^platejs\/react$/,
+    set: 'plate',
+  },
+  {
+    exportedName: 'useCreateEditor',
+    modulePattern: /^platejs\/react$/,
+    set: 'plateHook',
+  },
+  { exportedName: 'createEditor', modulePattern: /^plitejs$/, set: 'plite' },
+  {
+    exportedName: 'createEditor',
+    modulePattern: /^plitejs\/react$/,
+    set: 'pliteReact',
+  },
+  {
+    exportedName: 'useEditor',
+    modulePattern: /^plitejs\/react$/,
+    set: 'pliteReact',
+  },
+];
+const importedOptionlessContextHooks = [
+  { exportedName: 'useEditor', modulePattern: /^platejs\/react$/ },
+];
+const unknownBinding =
+  'the check cannot tell which binding of this maker name the call reads, so its options are unchecked';
+const loadsMakerModule = (node) => {
+  const source = node.arguments?.[0];
+
+  return (
+    node.type === 'CallExpression' &&
+    (node.callee.type === 'Import' ||
+      (node.callee.type === 'Identifier' && node.callee.name === 'require')) &&
+    source?.type === 'StringLiteral' &&
+    importedMakers.some(({ modulePattern }) => modulePattern.test(source.value))
+  );
+};
+const editorMakingUseEditorSet = 'pliteReact';
+const widestSetByPageLibrary = {
+  plate: {
+    createEditor: 'plate',
+    useCreateEditor: 'plateHook',
+    useEditor: editorMakingUseEditorSet,
+  },
+  plite: {
+    createEditor: 'pliteReact',
+    useCreateEditor: 'plateHook',
+    useEditor: editorMakingUseEditorSet,
+  },
+};
+const plitePagePattern =
+  /^(?:content\/docs\/plite\/|packages\/plitejs\/README\.md$)/;
+const sourceModuleExtensions = ['.ts', '/index.ts'];
+
+const parseSourceModule = (path) =>
+  parse(readFileSync(path, 'utf-8'), {
+    plugins: ['jsx', 'typescript'],
+    sourceType: 'module',
+  });
+
+const readOptionKeys = (path, exportName) => {
+  const file = toPosixPath(relative(repoRoot, path));
+  const fail = (reason) => {
+    throw new Error(
+      `cannot read editor option keys ${exportName} from ${file}: ${reason}`
+    );
+  };
+  const ast = parseSourceModule(path);
+  const declarator = ast.program.body
+    .filter((statement) => statement.type === 'ExportNamedDeclaration')
+    .flatMap((statement) => statement.declaration?.declarations ?? [])
+    .find((candidate) => candidate.id?.name === exportName);
+  const keys = unwrapTypedExpression(declarator?.init);
+
+  if (keys?.type !== 'ObjectExpression') {
+    fail('no exported object literal by that name');
+  }
+
+  return keys.properties.flatMap((property) => {
+    if (property.type !== 'SpreadElement') {
+      const key = property.computed ? undefined : getPropertyName(property.key);
+
+      return key ?? fail('a key is not a plain name');
+    }
+
+    const { name } = property.argument;
+    const imported = ast.program.body
+      .filter((statement) => statement.type === 'ImportDeclaration')
+      .flatMap((statement) =>
+        statement.specifiers.map((specifier) => ({ specifier, statement }))
+      )
+      .find(
+        ({ specifier }) =>
+          specifier.type === 'ImportSpecifier' && specifier.local.name === name
+      );
+
+    if (!imported?.statement.source.value.startsWith('.')) {
+      fail(`its spread of ${name} is not a relative import`);
+    }
+
+    const base = resolve(dirname(path), imported.statement.source.value);
+    const target = sourceModuleExtensions
+      .map((extension) => base + extension)
+      .find(existsSync);
+
+    if (!target) fail(`cannot find the module ${name} comes from`);
+
+    return readOptionKeys(target, getPropertyName(imported.specifier.imported));
+  });
+};
+
+let makerOptionKeys;
+
+const getMakerOptionKeys = () => {
+  makerOptionKeys ??= Object.fromEntries(
+    Object.entries(makerOptionKeySources).map(
+      ([set, { exportName, file, label }]) => [
+        set,
+        {
+          keys: new Set(readOptionKeys(join(repoRoot, file), exportName)),
+          label,
+        },
+      ]
+    )
+  );
+
+  return makerOptionKeys;
+};
 
 const toPosixPath = (path) => path.split(sep).join('/');
 
 const getPropertyName = (node) => {
   if (node?.type === 'Identifier') return node.name;
   if (node?.type === 'StringLiteral') return node.value;
+
+  return undefined;
+};
+
+const getMemberPropertyName = (member) =>
+  member.computed
+    ? member.property?.type === 'StringLiteral'
+      ? member.property.value
+      : undefined
+    : getPropertyName(member.property);
+
+const readStaticKey = (property) => {
+  const { computed, key } = property;
+
+  if (key?.type === 'StringLiteral') return key.value;
+  if (key?.type === 'NumericLiteral') return String(key.value);
+  if (key?.type === 'Identifier' && !computed) return key.name;
 
   return undefined;
 };
@@ -184,7 +349,7 @@ const isDirectDefinitionOfDescriptor = (node) => {
   );
 };
 
-const parseCodeFence = (code) =>
+const parseCodeFence = (code, { jsx = true } = {}) =>
   parse(code, {
     allowAwaitOutsideFunction: true,
     allowReturnOutsideFunction: true,
@@ -193,11 +358,22 @@ const parseCodeFence = (code) =>
       'decorators-legacy',
       'explicitResourceManagement',
       'importAttributes',
-      'jsx',
+      ...(jsx ? ['jsx'] : []),
       'typescript',
     ],
     sourceType: 'unambiguous',
   });
+
+// TypeScript reads `<Type>value` as an assertion only when JSX is off.
+const parseFence = ({ code, language }) => {
+  try {
+    return parseCodeFence(code);
+  } catch (error) {
+    if (language !== 'ts' && language !== 'typescript') throw error;
+
+    return parseCodeFence(code, { jsx: false });
+  }
+};
 
 export const extractJavaScriptCodeFences = (source) => {
   const fences = [];
@@ -366,11 +542,7 @@ const getStaticExpressionPath = (node) => {
   }
 
   const object = getStaticExpressionPath(value.object);
-  const property = value.computed
-    ? value.property?.type === 'StringLiteral'
-      ? value.property.value
-      : undefined
-    : getPropertyName(value.property);
+  const property = getMemberPropertyName(value);
 
   return object && property ? `${object}.${property}` : undefined;
 };
@@ -481,7 +653,7 @@ const collectLocalPlitePluginCreatorNames = (ast) => {
       (current?.type === 'Identifier' && creators.has(current.name)) ||
       ((current?.type === 'MemberExpression' ||
         current?.type === 'OptionalMemberExpression') &&
-        getPropertyName(current.property) === 'definePlugin' &&
+        getMemberPropertyName(current) === 'definePlugin' &&
         isNamespace(current.object))
     );
   };
@@ -497,7 +669,7 @@ const collectLocalPlitePluginCreatorNames = (ast) => {
     for (const property of pattern.properties) {
       if (
         property.type !== 'ObjectProperty' ||
-        getPropertyName(property.key) !== 'definePlugin'
+        readStaticKey(property) !== 'definePlugin'
       ) {
         continue;
       }
@@ -597,6 +769,7 @@ const collectLocalModuleCallableNames = (
   const callableCandidates = [];
   const namespaceCandidates = [];
   const destructuredCandidates = [];
+  const unnamedCandidates = [];
   const isNamespace = (value) => {
     const current = unwrapTypedExpression(value);
 
@@ -609,7 +782,7 @@ const collectLocalModuleCallableNames = (
       (current?.type === 'Identifier' && callables.has(current.name)) ||
       ((current?.type === 'MemberExpression' ||
         current?.type === 'OptionalMemberExpression') &&
-        getPropertyName(current.property) === exportedName &&
+        getMemberPropertyName(current) === exportedName &&
         isNamespace(current.object))
     );
   };
@@ -644,12 +817,11 @@ const collectLocalModuleCallableNames = (
     if (node.id?.type !== 'ObjectPattern') return;
 
     for (const property of node.id.properties) {
-      if (
-        property.type !== 'ObjectProperty' ||
-        getPropertyName(property.key) !== exportedName
-      ) {
-        continue;
-      }
+      if (property.type !== 'ObjectProperty') continue;
+
+      const key = readStaticKey(property);
+
+      if (key !== undefined && key !== exportedName) continue;
 
       const value = unwrapTypedExpression(property.value);
       const identifier =
@@ -661,7 +833,7 @@ const collectLocalModuleCallableNames = (
             : undefined;
 
       if (identifier) {
-        destructuredCandidates.push({
+        (key === undefined ? unnamedCandidates : destructuredCandidates).push({
           name: identifier.name,
           source: node.init,
         });
@@ -694,14 +866,29 @@ const collectLocalModuleCallableNames = (
     }
   }
 
+  const unnamed = new Set(
+    unnamedCandidates
+      .filter((candidate) => isNamespace(candidate.source))
+      .map((candidate) => candidate.name)
+  );
+  const isUnnamed = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return (
+      (current?.type === 'Identifier' && unnamed.has(current.name)) ||
+      ((current?.type === 'MemberExpression' ||
+        current?.type === 'OptionalMemberExpression') &&
+        getMemberPropertyName(current) === undefined &&
+        isNamespace(current.object))
+    );
+  };
+  const isCall = (node) =>
+    node.type === 'CallExpression' || node.type === 'OptionalCallExpression';
+
   return {
-    hasCall(node) {
-      return (
-        (node.type === 'CallExpression' ||
-          node.type === 'OptionalCallExpression') &&
-        isCallable(node.callee)
-      );
-    },
+    hasCall: (node) => isCall(node) && isCallable(node.callee),
+    hasUnnamedCall: (node) => isCall(node) && isUnnamed(node.callee),
+    names: new Set([...callables, ...namespaces]),
   };
 };
 
@@ -868,20 +1055,203 @@ const getStaticPliteElementMap = (node) => {
   return elements?.type === 'ObjectExpression' ? elements : undefined;
 };
 
-export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
+const functionNodeTypes = new Set([
+  'ArrowFunctionExpression',
+  'ClassMethod',
+  'ClassPrivateMethod',
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ObjectMethod',
+  'TSDeclareFunction',
+]);
+const namedBindingNodeTypes = new Set([
+  'ClassDeclaration',
+  'ClassExpression',
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'TSEnumDeclaration',
+  'TSImportEqualsDeclaration',
+  'TSModuleDeclaration',
+]);
+
+const collectPatternNames = (pattern, names) => {
+  const value =
+    pattern?.type === 'TSParameterProperty' ? pattern.parameter : pattern;
+
+  if (value?.type === 'Identifier') names.push(value.name);
+  if (value?.type === 'AssignmentPattern') {
+    collectPatternNames(value.left, names);
+  }
+  if (value?.type === 'RestElement') collectPatternNames(value.argument, names);
+  if (value?.type === 'ArrayPattern') {
+    for (const element of value.elements) collectPatternNames(element, names);
+  }
+  if (value?.type === 'ObjectPattern') {
+    for (const property of value.properties) {
+      collectPatternNames(
+        property.type === 'RestElement' ? property.argument : property.value,
+        names
+      );
+    }
+  }
+};
+
+const isTopLevelStatement = (ancestors) => {
+  const parent = ancestors.at(-1);
+  const container =
+    parent?.type === 'ExportNamedDeclaration' ||
+    parent?.type === 'ExportDefaultDeclaration'
+      ? ancestors.at(-2)
+      : parent;
+
+  return container?.type === 'Program';
+};
+
+const collectFenceNames = (ast) => {
+  const bindings = new Map();
+  const topLevelBindings = new Map();
+  const mentions = new Map();
+  const topLevelConstObjects = new Map();
+  let hidesBindings = false;
+  const count = (map, name) => map.set(name, (map.get(name) ?? 0) + 1);
+  const bind = (pattern, topLevel = false) => {
+    const names = [];
+
+    collectPatternNames(pattern, names);
+
+    for (const name of names) {
+      count(bindings, name);
+      if (topLevel) count(topLevelBindings, name);
+    }
+  };
+
+  visit(ast, (node, ancestors) => {
+    if (node.type === 'Identifier') {
+      count(mentions, node.name);
+      if (node.name === 'eval' || node.name === 'Function') {
+        hidesBindings = true;
+      }
+    }
+    if (node.type === 'WithStatement') hidesBindings = true;
+    if (node.type === 'VariableDeclarator') {
+      const topLevel = isTopLevelStatement(ancestors.slice(0, -1));
+
+      bind(node.id, topLevel);
+
+      if (
+        node.id?.type === 'Identifier' &&
+        ancestors.at(-1)?.kind === 'const' &&
+        topLevel &&
+        unwrapTypedExpression(node.init)?.type === 'ObjectExpression'
+      ) {
+        topLevelConstObjects.set(node.id.name, node.init);
+      }
+    }
+    if (functionNodeTypes.has(node.type)) {
+      for (const param of node.params) bind(param);
+    }
+    if (namedBindingNodeTypes.has(node.type)) {
+      bind(
+        node.id,
+        !node.type.endsWith('Expression') && isTopLevelStatement(ancestors)
+      );
+    }
+    if (node.type === 'CatchClause') bind(node.param);
+    if (node.type === 'ImportDeclaration') {
+      for (const specifier of node.specifiers) bind(specifier.local, true);
+    }
+  });
+
+  const spelledOnlyAtDeclarationAndOneUse = (name) => mentions.get(name) === 2;
+
+  return {
+    bindingCount: (name) => bindings.get(name) ?? 0,
+    bindsOnceAtTopLevel: (name) =>
+      bindings.get(name) === 1 && topLevelBindings.get(name) === 1,
+    hidesBindings,
+    readConstObject: (name) =>
+      !hidesBindings && spelledOnlyAtDeclarationAndOneUse(name)
+        ? topLevelConstObjects.get(name)
+        : undefined,
+  };
+};
+
+// A plain `__proto__: value` entry sets the object's prototype and adds no own key.
+const setsPrototype = (property) =>
+  property.type === 'ObjectProperty' &&
+  !property.computed &&
+  !property.shorthand &&
+  readStaticKey(property) === '__proto__';
+
+const readMakerOptionProperties = (node, fenceNames, seen = new Set()) => {
+  const value = unwrapTypedExpression(node);
+
+  if (value?.type === 'ObjectExpression') {
+    if (
+      value.properties.some(
+        (property) => property.kind === 'get' || property.kind === 'set'
+      )
+    ) {
+      return { complete: false, entries: [] };
+    }
+
+    const entries = [];
+    let complete = true;
+
+    for (const property of value.properties) {
+      if (property.type !== 'SpreadElement') {
+        const key = setsPrototype(property)
+          ? undefined
+          : readStaticKey(property);
+
+        if (key === undefined) complete = false;
+        else entries.push({ key, property });
+        continue;
+      }
+
+      const spread = readMakerOptionProperties(
+        property.argument,
+        fenceNames,
+        seen
+      );
+
+      complete &&= spread.complete;
+      entries.push(...spread.entries);
+    }
+
+    return { complete, entries };
+  }
+  if (value?.type === 'Identifier' && !seen.has(value.name)) {
+    const init = fenceNames.readConstObject(value.name);
+
+    if (init) {
+      return readMakerOptionProperties(
+        init,
+        fenceNames,
+        new Set([...seen, value.name])
+      );
+    }
+  }
+
+  return { complete: false, entries: [] };
+};
+
+export function auditPlateDocCode(
+  source,
+  file = 'content/docs/example.mdx',
+  uncheckedMakerCalls = []
+) {
   const issues = [];
+  const unimportedMakers =
+    widestSetByPageLibrary[plitePagePattern.test(file) ? 'plite' : 'plate'];
 
   for (const fence of extractJavaScriptCodeFences(source)) {
     let ast;
 
     try {
-      ast = parseCodeFence(fence.code);
+      ast = parseFence(fence);
     } catch (error) {
-      if (
-        [...editorConstructorNames].some((name) =>
-          fence.code.includes(`${name}(`)
-        )
-      ) {
+      if (makerNamePattern.test(fence.code)) {
         issues.push({
           column: (error.loc?.column ?? 0) + 1,
           file,
@@ -894,6 +1264,59 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
     }
 
     const staticValueBindings = collectStaticDocValueBindings(ast);
+    const fenceNames = collectFenceNames(ast);
+    const withCalls = (entries) =>
+      entries.map((entry) => ({
+        ...entry,
+        calls: collectLocalModuleCallableNames(ast, entry),
+      }));
+    const makerImports = withCalls(importedMakers);
+    const contextHookImports = withCalls(importedOptionlessContextHooks);
+    const isRebound = ({ calls }) =>
+      [...calls.names].some((name) => fenceNames.bindingCount(name) > 1);
+    const resolveMaker = (node) => {
+      const maker = makerImports.find(({ calls }) => calls.hasCall(node));
+
+      if (maker) {
+        return isRebound(maker) ? { unchecked: unknownBinding } : maker;
+      }
+
+      const hook = contextHookImports.find(({ calls }) => calls.hasCall(node));
+
+      if (hook) {
+        return isRebound(hook) ? { unchecked: unknownBinding } : { hook };
+      }
+      if (makerImports.some(({ calls }) => calls.hasUnnamedCall(node))) {
+        return {
+          unchecked:
+            'the fence picks a maker module export by a computed key, so the call is unchecked',
+        };
+      }
+      if (loadsMakerModule(node)) {
+        return {
+          unchecked:
+            'the fence loads a maker module at runtime, so the check does not follow its makers',
+        };
+      }
+      if (
+        (node.type !== 'CallExpression' &&
+          node.type !== 'OptionalCallExpression') ||
+        node.callee.type !== 'Identifier' ||
+        !Object.hasOwn(unimportedMakers, node.callee.name)
+      ) {
+        return undefined;
+      }
+
+      const { name } = node.callee;
+
+      if (fenceNames.bindingCount(name) === 0 && !fenceNames.hidesBindings) {
+        return { set: unimportedMakers[name] };
+      }
+
+      return fenceNames.bindsOnceAtTopLevel(name)
+        ? undefined
+        : { unchecked: unknownBinding };
+    };
     const localPlitePluginCreatorNames =
       collectLocalPlitePluginCreatorNames(ast);
     const localHeadlessPluginCreatorNames = collectLocalModuleCallableNames(
@@ -1636,52 +2059,96 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         }
       }
 
-      if (
-        node.type === 'CallExpression' &&
-        node.callee.type === 'Identifier' &&
-        editorConstructorNames.has(node.callee.name)
-      ) {
-        const argument = unwrapTypedExpression(node.arguments[0]);
+      const maker = resolveMaker(node);
 
-        if (!argument) return;
+      if (maker?.unchecked) {
+        uncheckedMakerCalls.push(
+          createIssue(file, fence, node.callee, maker.unchecked)
+        );
 
-        if (
-          argument.type === 'Identifier' ||
-          argument.type === 'SpreadElement'
-        ) {
-          return;
-        }
+        return;
+      }
+      if (maker?.hook) {
+        const argument = node.arguments.find(
+          ({ type }) => type !== 'SpreadElement'
+        );
 
-        if (argument.type !== 'ObjectExpression') {
+        if (argument) {
           issues.push(
             createIssue(
               file,
               fence,
               argument,
-              `${node.callee.name} requires object options or a typed options pass-through`
+              "Plate's useEditor takes no options; build the editor with useCreateEditor"
+            )
+          );
+        } else if (node.arguments.length > 0) {
+          uncheckedMakerCalls.push(
+            createIssue(
+              file,
+              fence,
+              node.arguments[0],
+              'the fence spreads values into this call, so the check cannot tell whether it passes options'
+            )
+          );
+        }
+
+        return;
+      }
+      if (maker) {
+        const argument = unwrapTypedExpression(node.arguments[0]);
+
+        if (!argument) return;
+
+        if (
+          argument.type !== 'Identifier' &&
+          argument.type !== 'SpreadElement' &&
+          argument.type !== 'ObjectExpression'
+        ) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              argument,
+              `${getStaticExpressionPath(node.callee)} requires object options or a typed options pass-through`
             )
           );
 
           return;
         }
 
-        const options = argument;
+        const { keys, label } = getMakerOptionKeys()[maker.set];
+        const { complete, entries } =
+          argument.type === 'SpreadElement'
+            ? { complete: false, entries: [] }
+            : readMakerOptionProperties(argument, fenceNames);
 
-        for (const property of options.properties) {
-          if (
-            property.type !== 'SpreadElement' &&
-            removedEditorConstructorKeys.has(getPropertyName(property.key))
-          ) {
+        if (!complete) {
+          uncheckedMakerCalls.push(
+            createIssue(
+              file,
+              fence,
+              argument,
+              'the fence does not pin down every key of these options, so they are unchecked'
+            )
+          );
+        }
+        for (const { key, property } of entries) {
+          if (!keys.has(key)) {
             issues.push(
               createIssue(
                 file,
                 fence,
                 property,
-                `editor construction does not accept ${getPropertyName(property.key)}`
+                `${label} does not accept ${key}`
               )
             );
           }
         }
+
+        if (argument.type !== 'ObjectExpression') return;
+
+        const options = argument;
         const initialValueProperty = getObjectProperty(options, 'initialValue');
         const invalidInitialValueReason =
           readInvalidInitialValueReason(initialValueProperty);
@@ -1770,17 +2237,29 @@ const collectCurrentDocs = () => [
 
 export function auditPlateDocCodeContracts() {
   const files = collectCurrentDocs();
+  const uncheckedMakerCalls = [];
   const issues = files.flatMap((path) => {
     const file = toPosixPath(relative(repoRoot, path));
 
-    return auditPlateDocCode(readFileSync(path, 'utf-8'), file);
+    return auditPlateDocCode(
+      readFileSync(path, 'utf-8'),
+      file,
+      uncheckedMakerCalls
+    );
   });
 
-  return { fileCount: files.length, issues };
+  return { fileCount: files.length, issues, uncheckedMakerCalls };
 }
 
 function runAudit() {
-  const { fileCount, issues } = auditPlateDocCodeContracts();
+  const { fileCount, issues, uncheckedMakerCalls } =
+    auditPlateDocCodeContracts();
+
+  for (const call of uncheckedMakerCalls) {
+    console.log(
+      `note ${call.file}:${call.line}:${call.column}: ${call.reason}`
+    );
+  }
 
   if (issues.length > 0) {
     console.error('Plate docs code contract audit failed:');
