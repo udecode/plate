@@ -49,6 +49,7 @@ import type {
   EditorTransactionBlocksApi,
   EditorTransactionBreakApi,
   EditorTransactionChanged,
+  EditorTransactionRemoved,
   EditorTransactionFragmentApi,
   EditorTransactionMarksApi,
   EditorTransactionNodesApi,
@@ -181,6 +182,7 @@ import {
   classifyRootChangeWithRuntimeCandidates,
   type DocumentChangeRootClassification,
   getDocumentChangeAfterPaths,
+  getDocumentChangeRemovedNodes,
   getDocumentChangeTopLevelRanges,
 } from './change/classification';
 import {
@@ -11609,40 +11611,37 @@ const createTransactionChanged = ({
   after,
   before,
   change,
-  indexedAfter = new Map(),
-  indexedBefore = new Map(),
+  indexedAfter,
+  indexedBefore,
+  keys,
 }: Readonly<{
   after: EditorDocumentValue;
   before: EditorDocumentValue;
   change: DocumentChange;
-  indexedAfter?: ReadonlyMap<string, DocumentIndex>;
-  indexedBefore?: ReadonlyMap<string, DocumentIndex>;
+  indexedAfter: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore: ReadonlyMap<string, DocumentIndex>;
+  keys: (root: string) => StepNodeKeys;
 }>): EditorTransactionChanged => {
-  const afterIndexes = new Map(indexedAfter);
-  const beforeIndexes = new Map(indexedBefore);
   const classifications = new Map<
     string,
     ReturnType<typeof classifyDocumentChangeRoot>
   >();
   const changedPaths = new Map<string, readonly Path[]>();
+  const removedNodes = new Map<string, readonly EditorTransactionRemoved[]>();
   const topLevelRanges = new Map<
     string,
     ReturnType<typeof getDocumentChangeTopLevelRanges>
   >();
 
-  const getRootChildren = (value: EditorDocumentValue, root: string) =>
-    (root === MAIN_ROOT_KEY
-      ? value.children
-      : (value.roots?.[root] ?? [])) as readonly Descendant[];
+  const afterIndexes = new Map(indexedAfter);
+  const beforeIndexes = new Map(indexedBefore);
   const getIndex = (phase: 'after' | 'before', root: string): DocumentIndex => {
     const indexes = phase === 'after' ? afterIndexes : beforeIndexes;
     const cached = indexes.get(root);
 
     if (cached) return cached;
 
-    const index = DocumentIndex.fromValue(
-      getRootChildren(phase === 'after' ? after : before, root)
-    );
+    const index = valueRootIndex(phase === 'after' ? after : before, root);
 
     indexes.set(root, index);
 
@@ -11695,6 +11694,30 @@ const createTransactionChanged = ({
 
     return paths;
   };
+  const getRemoved = (root: string): readonly EditorTransactionRemoved[] => {
+    const cached = removedNodes.get(root);
+
+    if (cached) return cached;
+
+    const rootChange = getInternalDocumentRootChange(change, root);
+    let removed: readonly EditorTransactionRemoved[] = Object.freeze([]);
+
+    if (rootChange) {
+      const indexes = keys(root);
+
+      removed = getDocumentChangeRemovedNodes(
+        rootChange,
+        { document: getIndex('before', root), keys: indexes.before },
+        change.deleteRoots.has(root)
+          ? null
+          : { document: getIndex('after', root), keys: indexes.after }
+      ) as readonly EditorTransactionRemoved[];
+    }
+
+    removedNodes.set(root, removed);
+
+    return removed;
+  };
   const getTopLevelRanges = (root: string) => {
     const cached = topLevelRanges.get(root);
 
@@ -11728,61 +11751,9 @@ const createTransactionChanged = ({
         : (classification?.[kind] ?? false);
     },
     paths: (root) => getPaths(toInternalRoot(root)),
+    removed: (root) => getRemoved(toInternalRoot(root)),
     topLevelRanges: (root) => getTopLevelRanges(toInternalRoot(root)),
   });
-};
-
-export const recordTransactionDocumentChange = (
-  editor: Editor,
-  change: DocumentChange,
-  context?: {
-    after: EditorDocumentValue;
-    before: EditorDocumentValue;
-  }
-) => {
-  if (change.empty) return;
-
-  const snapshot = getTransactionSnapshot(editor);
-
-  if (!snapshot) {
-    throw new Error('Document changes require an active transaction.');
-  }
-
-  snapshot.activeChange = {
-    change: snapshot.activeChange.change.compose(
-      change,
-      getChangeValue(snapshot.roots, snapshot.records)
-    ),
-  };
-
-  if (context) {
-    const listeners = [
-      ...(getTransactionSpecContext(editor)?.kind === 'spec'
-        ? snapshot.transactionChangeObservers
-        : [
-            ...getPluginRegistry(editor).transactionChangeListeners,
-            ...snapshot.transactionChangeObservers,
-          ]),
-    ];
-
-    if (listeners.length > 0) {
-      const changeContext = {
-        ...context,
-        change,
-        changed: createTransactionChanged({ ...context, change }),
-        editor,
-        selectionAfter: getCurrentSelection(editor),
-        selectionAfterRoot: toPublicRoot(getCurrentSelectionRoot(editor)),
-        selectionBefore: getCurrentSelection(editor),
-        selectionBeforeRoot: toPublicRoot(getCurrentSelectionRoot(editor)),
-        tx: getActiveUpdateView(editor),
-      };
-
-      for (const listener of listeners) {
-        listener(changeContext);
-      }
-    }
-  }
 };
 
 /** Observe document changes only for the duration of the active transaction. */
@@ -11835,6 +11806,8 @@ const getDocumentRootChildren = (
     ? value.children
     : (value.roots?.[root] ?? [])) as readonly Descendant[];
 
+type StepNodeKeys = Readonly<{ after: SnapshotIndex; before: SnapshotIndex }>;
+
 const inheritDocumentChangeStepNodeKeys = (
   editor: Editor,
   snapshot: TransactionSnapshot,
@@ -11843,10 +11816,7 @@ const inheritDocumentChangeStepNodeKeys = (
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const publishNodeKeys = getTransactionSpecContext(editor)?.kind !== 'spec';
-  const indexes = new Map<
-    string,
-    Readonly<{ after: SnapshotIndex; before: SnapshotIndex }>
-  >();
+  const indexes = new Map<string, StepNodeKeys>();
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(
     step.change
@@ -12314,6 +12284,17 @@ const applyTransactionSpecDocumentChangeStep = (
         change: step.change,
         indexedAfter: step.indexedAfter,
         indexedBefore: step.indexedBefore,
+        keys: (root) => {
+          const indexes = runtimeIndexes.get(root);
+
+          if (!indexes) {
+            throw new Error(
+              `changed.removed() cannot read root "${root}" while its node keys are deferred inside a frame.`
+            );
+          }
+
+          return indexes;
+        },
       }),
       editor,
       selectionAfter: getCurrentSelection(editor),

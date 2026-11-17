@@ -194,6 +194,10 @@ export {
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';
 export { sameResult } from 'plitejs/internal';
+export {
+  afterActiveTransactionEnds,
+  getActiveEditorUpdateId,
+} from 'plitejs/internal';
 export type {
   EditorDirectUpdate,
   EditorGenericMethod,
@@ -225,6 +229,7 @@ export {
   getCompiledEditorSchemaFromApi,
   getCompiledPropertyCandidates,
   getEditorAuthoredDocumentCapability,
+  getDocumentValueNode,
   getEditorCommitNode,
   getEditorCommitSnapshot,
   getEditorCommitValue,

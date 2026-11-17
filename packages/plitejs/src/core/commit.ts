@@ -21,7 +21,10 @@ import { SelectionApi } from '../interfaces/selection';
 import { failInvariant } from '../internal/fail-invariant';
 import type { CompletedTextDeletion } from './change/builder';
 import type { CarriedRun } from './change/carried-run';
-import { getDocumentChangeAfterPaths } from './change/classification';
+import {
+  getDocumentChangeAfterPaths,
+  getDocumentChangeTouchedKeys,
+} from './change/classification';
 import {
   bindDocumentChangeNodeKeys,
   type DocumentChange,
@@ -248,17 +251,21 @@ export const getEditorCommitNode = (
 ): NodeEntry<Descendant> | null => {
   const path = getEditorCommitSnapshot(commit, root).index.pathOf(nodeKey);
   const node =
-    path &&
-    getDescendantAtPath(
-      valueRootNodes(
-        getEditorCommitValue(commit),
-        root
-      ) as NodeList<Descendant>,
-      path
-    );
+    path && getDocumentValueNode(getEditorCommitValue(commit), path, root);
 
   return path && node ? [node, path] : null;
 };
+
+/** @internal */
+export const getDocumentValueNode = (
+  value: EditorDocumentValue,
+  path: Path,
+  root: RootKey = 'main'
+): Descendant | null =>
+  getDescendantAtPath(
+    valueRootNodes(value, root) as NodeList<Descendant>,
+    path
+  );
 
 /**
  * Return a commit's whole document value, its named roots included.
@@ -1167,27 +1174,19 @@ const createCommitChanged = ({
     const change = getInternalDocumentRootChange(changes, root);
 
     if (change) {
-      const beforeRootIndex = getIndex('before', root);
-      const afterRootIndex = getIndex('after', root);
-      const beforeDocument = valueRootIndex(before, root);
-      const afterDocument = valueRootIndex(after, root);
-
-      change.iterChangedRanges((fromBefore, toBefore, fromAfter, toAfter) => {
-        for (const { path } of beforeDocument.nodeRangesTouching(
-          fromBefore,
-          toBefore
+      for (const [phase, keys, value] of [
+        ['before', beforeKeys, before],
+        ['after', afterKeys, after],
+      ] as const) {
+        for (const [key, { path }] of getDocumentChangeTouchedKeys(
+          change,
+          phase,
+          valueRootIndex(value, root),
+          getIndex(phase, root).keyAt
         )) {
-          const key = beforeRootIndex.keyAt(path);
-          if (key) beforeKeys.set(key, [...path]);
+          keys.set(key, [...path]);
         }
-        for (const { path } of afterDocument.nodeRangesTouching(
-          fromAfter,
-          toAfter
-        )) {
-          const key = afterRootIndex.keyAt(path);
-          if (key) afterKeys.set(key, [...path]);
-        }
-      });
+      }
     } else if (changes.createRoots.has(root) || changes.deleteRoots.has(root)) {
       for (const [phase, keys] of [
         ['before', beforeKeys],

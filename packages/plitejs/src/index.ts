@@ -280,6 +280,7 @@ export type {
   EditorTransactionChangeHandler,
   EditorTransactionChanged,
   EditorTransactionDocumentChangeKind,
+  EditorTransactionRemoved,
   EditorTransactionTopLevelRange,
   EditorTransactionTextApi,
   EditorTransactionValueApi,

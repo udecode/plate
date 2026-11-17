@@ -11,6 +11,7 @@ import { getPluginRegistry } from '../core/plugin-registry';
 import { toPublicRoot } from '../core/public-root';
 import {
   getActiveTransactionDocumentChange,
+  getChildList,
   getEditorUpdateRoot,
   getNodeKey,
   getPathByNodeKey,
@@ -28,7 +29,6 @@ import type {
   EditorTransactionChanged,
   NodeKey,
 } from '../interfaces/editor';
-import { getChildren as getEditorChildren } from '../interfaces/editor';
 import { NodeApi, type NodeEntry } from '../interfaces/node';
 import { PathApi, type Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
@@ -137,7 +137,7 @@ const readTargetState = (editor: Editor, root: string, entry: NodeEntry) => {
 
   if (path.length === 0) {
     return {
-      childCount: getEditorChildren(editor).length,
+      childCount: getChildList(editor).length,
       root,
     };
   }

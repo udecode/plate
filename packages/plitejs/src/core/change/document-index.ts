@@ -645,6 +645,24 @@ export class DocumentIndex {
     return starts;
   }
 
+  childrenBefore(parentPath: readonly number[], position: number) {
+    let children = this.tree;
+    let contentFrom = 0;
+
+    for (const index of parentPath) {
+      const parent = children.at(index);
+
+      if (!parent?.children) {
+        throw new Error(`Node at [${parentPath}] is not an element.`);
+      }
+
+      contentFrom += children.startOf(index) + 1;
+      ({ children } = parent);
+    }
+
+    return children.locate(position - contentFrom - 1) + 1;
+  }
+
   childBoundaryAt(position: number) {
     return this.cursor().childBoundaryAt(position);
   }

@@ -3623,7 +3623,7 @@
           "kind": "type",
           "name": "EditorTransactionChanged",
           "runtime": false,
-          "signature": "type EditorTransactionChanged = {\n  has: <TRoot extends RootKey>(kind: EditorTransactionDocumentChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  /** Bounded before/after top-level windows for each changed range. */\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly EditorTransactionTopLevelRange[];\n};",
+          "signature": "type EditorTransactionChanged = {\n  has: <TRoot extends RootKey>(kind: EditorTransactionDocumentChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  /** The nodes the step took out of one document root. */\n  removed: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly EditorTransactionRemoved[];\n  /** Bounded before/after top-level windows for each changed range. */\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly EditorTransactionTopLevelRange[];\n};",
           "source": null,
           "typeParameters": []
         },
@@ -3731,6 +3731,17 @@
           "name": "EditorTransactionRecordsApi",
           "runtime": false,
           "signature": "type EditorTransactionRecordsApi = {\n  /** Drop `id` from `set`; a set without `id` stays as it is. */\n  drop: (set: string, id: string) => void;\n  /**\n   * Put `record` under `id` in `set`. Putting equal content again changes\n   * nothing, and an id that holds other content refuses the put.\n   */\n  put: (set: string, id: string, record: Readonly<Record<string, unknown>>) => void;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:EditorTransactionRemoved": {
+          "aliases": [],
+          "documentation": "One node a step took out of a root: its key is in the root's index before\nthe step and not after it. A node the step moves, splits or wraps keeps its\nkey, and so do the children of a node it unwraps or merges into another. A\nstep with no structure change can remove a node too, as `replace` does when\nit gives the new node a new key.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorTransactionRemoved",
+          "runtime": false,
+          "signature": "type EditorTransactionRemoved = Readonly<{\n  key: NodeKey;\n  /** The node as it stood before the step. Each descendant that left has its\n   *  own entry. */\n  node: Descendant;\n  /** Where the node's start lands in the step's result, as a child index of\n   *  its nearest ancestor the step kept: right after the nearest earlier\n   *  sibling the step kept, of the node or of an ancestor the step removed,\n   *  when that sibling is still a child of that ancestor; else the count of\n   *  that ancestor's children that start before where the node's start\n   *  lands. The last index may equal the ancestor's child count. */\n  path: Path;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -19819,7 +19830,7 @@
           "kind": "type",
           "name": "EditorTransactionChanged",
           "runtime": false,
-          "signature": "type EditorTransactionChanged = {\n  has: <TRoot extends RootKey>(kind: EditorTransactionDocumentChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  /** Bounded before/after top-level windows for each changed range. */\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly EditorTransactionTopLevelRange[];\n};",
+          "signature": "type EditorTransactionChanged = {\n  has: <TRoot extends RootKey>(kind: EditorTransactionDocumentChangeKind, root?: NamedRootKey<TRoot>) => boolean;\n  /** Final-coordinate paths touching changed ranges in one document root. */\n  paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];\n  /** The nodes the step took out of one document root. */\n  removed: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly EditorTransactionRemoved[];\n  /** Bounded before/after top-level windows for each changed range. */\n  topLevelRanges: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly EditorTransactionTopLevelRange[];\n};",
           "source": null,
           "typeParameters": []
         },
@@ -19927,6 +19938,17 @@
           "name": "EditorTransactionRecordsApi",
           "runtime": false,
           "signature": "type EditorTransactionRecordsApi = {\n  /** Drop `id` from `set`; a set without `id` stays as it is. */\n  drop: (set: string, id: string) => void;\n  /**\n   * Put `record` under `id` in `set`. Putting equal content again changes\n   * nothing, and an id that holds other content refuses the put.\n   */\n  put: (set: string, id: string, record: Readonly<Record<string, unknown>>) => void;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/react:EditorTransactionRemoved": {
+          "aliases": [],
+          "documentation": "One node a step took out of a root: its key is in the root's index before\nthe step and not after it. A node the step moves, splits or wraps keeps its\nkey, and so do the children of a node it unwraps or merges into another. A\nstep with no structure change can remove a node too, as `replace` does when\nit gives the new node a new key.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "EditorTransactionRemoved",
+          "runtime": false,
+          "signature": "type EditorTransactionRemoved = Readonly<{\n  key: NodeKey;\n  /** The node as it stood before the step. Each descendant that left has its\n   *  own entry. */\n  node: Descendant;\n  /** Where the node's start lands in the step's result, as a child index of\n   *  its nearest ancestor the step kept: right after the nearest earlier\n   *  sibling the step kept, of the node or of an ancestor the step removed,\n   *  when that sibling is still a child of that ancestor; else the count of\n   *  that ancestor's children that start before where the node's start\n   *  lands. The last index may equal the ancestor's child count. */\n  path: Path;\n}>;",
           "source": null,
           "typeParameters": []
         },

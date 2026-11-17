@@ -1,8 +1,28 @@
 import { nanoid } from 'nanoid';
 
-import { definePlugin, ElementIdPlugin, txLocate } from '../../../core';
-import { defineRuntimePlugin } from '../../../facade';
+import {
+  definePlugin,
+  type EditorUniqueHolder,
+  ElementIdPlugin,
+  txLocate,
+} from '../../../core';
+import {
+  defineRuntimePlugin,
+  getDocumentValueNode,
+  NodeApi,
+  type NodeKey,
+} from '../../../facade';
 import { readEditorAuthor } from '../../../lib/editor/editorUser.internal';
+import {
+  addGone,
+  captureGone,
+  flushGone,
+  GONE,
+  goneIn,
+  hasPendingGone,
+  idOf,
+  type SavedRecords,
+} from './inkGone.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
@@ -105,7 +125,11 @@ export type InkMark = Readonly<{
  */
 export type InkBlockInput = Omit<InkCopy, 'id'> & Omit<InkMarkBlock, 'copy'>;
 
-/** What `add` saves: one pen contact, measured on the blocks it crosses. */
+/**
+ * What `add` saves: one pen contact, measured on the blocks it crosses. Its
+ * runs hold every word its stroke touches, where a word is a run of characters
+ * that are not white space.
+ */
 export type InkMarkInput = Readonly<{
   at: number;
   blocks: readonly InkBlockInput[];
@@ -115,9 +139,25 @@ export type InkMarkInput = Readonly<{
   samples: readonly InkSample[];
 }>;
 
+/**
+ * Where a deleted block's sign sits: after or before a block still in the
+ * document, or on the document-start rail when none is left.
+ */
+export type InkSignPlace =
+  | Readonly<{ at: 'after' | 'before'; key: NodeKey }>
+  | Readonly<{ at: 'start' }>;
+
+/**
+ * Where a copy's block stands now. `live` while the block that holds the
+ * copy's id holds its text, `changed` while it holds other text, and `gone`
+ * when no block holds the id.
+ */
+export type InkCopyPlace =
+  | Readonly<{ key: NodeKey; kind: 'changed' | 'live' }>
+  | Readonly<{ beside: InkSignPlace; kind: 'gone' }>;
+
 const MARKS = 'ink-marks';
 const COPIES = 'ink-copies';
-const GONE = 'ink-gone';
 
 const inkRecords = defineRuntimePlugin('ink-records', {
   schema: {
@@ -127,7 +167,50 @@ const inkRecords = defineRuntimePlugin('ink-records', {
       [MARKS]: {},
     },
   },
+  update: ({ editor, tx }) => ({
+    flush: txLocate(false, () => {
+      flushGone(editor, tx, (id) => isNamed(tx.value().records, id));
+    }),
+  }),
 });
+
+const NO_RECORDS: SavedRecords[string] = {};
+const namedCache = new WeakMap<object, ReadonlySet<string>>();
+
+const namedBy = (set: SavedRecords[string], fields: readonly string[]) => {
+  let ids = namedCache.get(set);
+
+  if (!ids) {
+    const found = new Set<string>();
+
+    for (const record of Object.values(set)) {
+      for (const field of fields) {
+        const id = record[field];
+
+        if (typeof id === 'string') found.add(id);
+      }
+    }
+    ids = found;
+    namedCache.set(set, ids);
+  }
+
+  return ids;
+};
+
+const isNamed = (records: SavedRecords | undefined, id: string) =>
+  namedBy(records?.[COPIES] ?? NO_RECORDS, ['block']).has(id) ||
+  namedBy(records?.[GONE] ?? NO_RECORDS, ['next', 'previous']).has(id);
+
+const decodedCopies = new WeakMap<object, Map<string, InkCopy | undefined>>();
+
+const placeCache = new WeakMap<
+  object,
+  Readonly<{
+    chains: Map<string, string | null>;
+    holders: Map<string, EditorUniqueHolder | null>;
+    places: Map<string, InkCopyPlace | undefined>;
+  }>
+>();
 
 class InkRefusalError extends TypeError {
   override name = 'InkRefusalError';
@@ -490,20 +573,58 @@ const decodeMark = (
 
 /**
  * Pen marks on a document's text, saved as records of the document value.
- * Its updates add and remove marks, and its reads return them decoded. It
- * turns on block ids, because a mark names its blocks by id.
+ * Its updates add and remove marks, and its reads return them decoded and say
+ * where each copy's block stands. It turns on block ids, because a mark names
+ * its blocks by id, and saves where a deleted block stood in the update that
+ * deletes it.
  */
 export const BaseInkPlugin = definePlugin('ink', {
+  corrections: [
+    {
+      event: 'children',
+      query: 'root',
+      correct: ({ editor, tx }) => {
+        if (hasPendingGone(editor)) tx['ink-records'].flush();
+      },
+    },
+    {
+      event: 'properties',
+      query: 'root',
+      correct: ({ editor, tx }) => {
+        if (hasPendingGone(editor)) tx['ink-records'].flush();
+      },
+    },
+  ],
   dependencies: [inkRecords, ElementIdPlugin],
+  on: {
+    transactionChange: ({ after, before, changed, editor, tx }) => {
+      if (!changed.has('structure') && !changed.has('properties')) return;
+      for (const { node, path } of changed.removed()) {
+        const id = idOf(node);
+
+        if (id) captureGone(editor, tx.tags, after, { gap: path, id });
+      }
+      if (changed.has('structure')) return;
+      for (const path of changed.paths()) {
+        const id = idOf(getDocumentValueNode(before, path));
+
+        if (id && id !== idOf(getDocumentValueNode(after, path))) {
+          captureGone(editor, tx.tags, after, { gap: path, id });
+        }
+      }
+    },
+  },
   read: ({ state }) => {
     const set = (name: string) => state.value().records?.[name];
-    const copyReader = () => {
-      const saved = set(COPIES);
-      const decoded = new Map<string, InkCopy | undefined>();
+    const copyReader = (saved = set(COPIES) ?? NO_RECORDS) => {
+      const decoded =
+        decodedCopies.get(saved) ?? new Map<string, InkCopy | undefined>();
+
+      decodedCopies.set(saved, decoded);
 
       return (id: string) => {
         if (!decoded.has(id)) {
-          const record = saved?.[id];
+          const record = saved[id];
 
           decoded.set(id, record && decodeCopy(id, record));
         }
@@ -529,18 +650,109 @@ export const BaseInkPlugin = definePlugin('ink', {
           .flatMap(([id, record]) => decodeMark(id, record, copyOf) ?? [])
           .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1));
       },
+      /**
+       * Where the block of the copy saved under `copyId` stands now, or
+       * `undefined` for a copy that is not saved. A deleted block's place
+       * follows the saved places of deleted blocks to the nearest block left
+       * before it, then after it.
+       */
+      place: (copyId: string): InkCopyPlace | undefined => {
+        const value = state.value();
+        let cache = placeCache.get(value);
+
+        if (!cache) {
+          cache = { chains: new Map(), holders: new Map(), places: new Map() };
+          placeCache.set(value, cache);
+        }
+        if (cache.places.has(copyId)) return cache.places.get(copyId);
+
+        const { chains, holders } = cache;
+        const { records } = value;
+        const holderOf = (id: string) => {
+          let holder = holders.get(id);
+
+          if (holder === undefined) {
+            holder = state.unique.holder('id', id);
+            holders.set(id, holder);
+          }
+
+          return holder;
+        };
+        const follow = (id: string, side: 'next' | 'previous') => {
+          const visited = new Set([id]);
+          let at = goneIn(records, id)?.[side];
+          let found: string | null = null;
+
+          while (at !== undefined && !visited.has(at)) {
+            const known = chains.get(`${side}:${at}`);
+
+            if (known !== undefined) {
+              found = known;
+              break;
+            }
+            if (holderOf(at)) {
+              found = at;
+              break;
+            }
+            visited.add(at);
+            at = goneIn(records, at)?.[side];
+          }
+          for (const chained of visited) {
+            chains.set(`${side}:${chained}`, found);
+          }
+
+          return found;
+        };
+        const placeOf = (): InkCopyPlace | undefined => {
+          const copy = copyReader(records?.[COPIES] ?? NO_RECORDS)(copyId);
+
+          if (!copy) return undefined;
+
+          const holder = holderOf(copy.block);
+          const [node] = (holder && state.nodes.get(holder.key)) || [];
+
+          if (holder && node) {
+            return {
+              key: holder.key,
+              kind: NodeApi.string(node) === copy.text ? 'live' : 'changed',
+            };
+          }
+
+          const previous = follow(copy.block, 'previous');
+          const next = previous === null ? follow(copy.block, 'next') : null;
+          const neighbor = previous ?? next;
+          const beside = neighbor === null ? null : holderOf(neighbor);
+
+          return {
+            beside: beside
+              ? { at: previous === null ? 'before' : 'after', key: beside.key }
+              : { at: 'start' },
+            kind: 'gone',
+          };
+        };
+        const place = placeOf();
+
+        cache.places.set(copyId, place);
+
+        return place;
+      },
     };
   },
   update: ({ editor, tx }) => ({
     /**
      * Save one mark and each copy not saved yet, as one undo step, and
-     * return the mark's id. Refuses malformed input, writing nothing.
+     * return the mark's id. Refuses malformed input, writing nothing. A copy's
+     * block deleted by this update, or by one of the last four updates that
+     * deleted blocks, gets its place saved too.
      */
     add: txLocate(false, (input: InkMarkInput) => {
       const { copies, mark } = encodeMark(input, readEditorAuthor(editor));
       const id = `m_${nanoid()}`;
 
-      for (const copy of copies) tx.records.put(COPIES, copy.id, copy.record);
+      for (const copy of copies) {
+        tx.records.put(COPIES, copy.id, copy.record);
+        addGone(editor, tx, copy.record.block);
+      }
       tx.records.put(MARKS, id, mark);
 
       return id;

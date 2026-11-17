@@ -1,8 +1,10 @@
 import type {
   EditorTransactionTopLevelRange,
+  NodeKey,
+  SnapshotIndex,
   TopLevelRuntimeRange,
 } from '../../interfaces/editor';
-import type { DocumentIndex } from './document-index';
+import type { DocumentIndex, IndexedNodeRange } from './document-index';
 import { jsonEqual } from './json';
 import type { RootChange } from './root-change';
 import { isTextNode, type JsonNode, nodeProps, pathKey } from './tokens';
@@ -318,4 +320,134 @@ export const getDocumentChangeTopLevelRanges = (
   });
 
   return Object.freeze(ranges);
+};
+
+type IndexedRoot = Readonly<{ document: DocumentIndex; keys: SnapshotIndex }>;
+
+/** @internal */
+export const getDocumentChangeTouchedKeys = (
+  change: RootChange,
+  side: 'after' | 'before',
+  document: DocumentIndex,
+  keyAt: (path: readonly number[]) => NodeKey | null
+) => {
+  const touched = new Map<NodeKey, IndexedNodeRange>();
+
+  change.iterChangedRanges((fromBefore, toBefore, fromAfter, toAfter) => {
+    const entries =
+      side === 'before'
+        ? document.nodeRangesTouching(fromBefore, toBefore)
+        : document.nodeRangesTouching(fromAfter, toAfter);
+
+    for (const entry of entries) {
+      const key = keyAt(entry.path);
+
+      if (key) touched.set(key, entry);
+    }
+  });
+
+  return touched;
+};
+
+type RemovedSlots = Map<string, readonly number[] | null>;
+
+const removedGap = (
+  change: RootChange,
+  entry: IndexedNodeRange,
+  before: SnapshotIndex,
+  after: IndexedRoot,
+  slots: RemovedSlots
+) => {
+  let parent: readonly number[] = [];
+  let depth = entry.path.length - 1;
+
+  for (; depth > 0; depth -= 1) {
+    const key = before.keyAt(entry.path.slice(0, depth));
+    const kept = key ? after.keys.pathOf(key) : null;
+
+    if (kept) {
+      parent = kept;
+      break;
+    }
+  }
+
+  const slot = slotAfterKeptPrevious(
+    entry.path,
+    depth,
+    parent,
+    before,
+    after,
+    slots
+  );
+
+  slots.set(pathKey(entry.path), slot);
+
+  return Object.freeze(
+    slot ?? [
+      ...parent,
+      after.document.childrenBefore(parent, change.mapPos(entry.from) ?? 0),
+    ]
+  );
+};
+
+const slotAfterKeptPrevious = (
+  path: readonly number[],
+  depth: number,
+  parent: readonly number[],
+  before: SnapshotIndex,
+  after: IndexedRoot,
+  slots: RemovedSlots
+) => {
+  for (let level = path.length; level > depth; level -= 1) {
+    for (let index = path[level - 1] - 1; index >= 0; index -= 1) {
+      const sibling = [...path.slice(0, level - 1), index];
+      const key = before.keyAt(sibling);
+      const previous = key ? after.keys.pathOf(key) : null;
+
+      if (previous) {
+        return previous.length === parent.length + 1 &&
+          parent.every((part, at) => previous[at] === part)
+          ? [...parent, previous[parent.length] + 1]
+          : null;
+      }
+
+      const slot = slots.get(pathKey(sibling));
+
+      if (slot !== undefined) return slot;
+    }
+  }
+
+  return null;
+};
+
+/** @internal */
+export const getDocumentChangeRemovedNodes = (
+  change: RootChange,
+  before: IndexedRoot,
+  after: IndexedRoot | null
+) => {
+  const removed: Array<
+    Readonly<{ key: NodeKey; node: JsonNode; path: readonly number[] }>
+  > = [];
+  const slots: RemovedSlots = new Map();
+
+  for (const [key, entry] of getDocumentChangeTouchedKeys(
+    change,
+    'before',
+    before.document,
+    before.keys.keyAt
+  )) {
+    if (after?.keys.pathOf(key)) continue;
+    removed.push(
+      Object.freeze({
+        key,
+        node: before.document.node(entry.path),
+        path: after
+          ? removedGap(change, entry, before.keys, after, slots)
+          : Object.freeze([0]),
+      })
+    );
+  }
+
+  return Object.freeze(removed);
 };

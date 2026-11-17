@@ -6351,7 +6351,8 @@
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:authored",
         "source-hash:partition:core",
-        "source-hash:partition:ink"
+        "source-hash:partition:ink",
+        "source-hash:partition:yjs-react"
       ],
       "inputs": [
         "src/features/ink/**",

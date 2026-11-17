@@ -24,6 +24,7 @@ export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
 export {
+  getDocumentValueNode,
   getEditorCommitNode,
   getEditorCommitSnapshot,
   getEditorCommitValue,
@@ -265,7 +266,9 @@ export {
   type StructuralPlainTextResult,
 } from '../core/plain-text';
 export {
+  afterActiveTransactionEnds,
   applyBuiltDocumentChange,
+  getActiveEditorUpdateId,
   getActiveEditorTransaction,
   getCollabEffectTypes,
   getCurrentMarks as getEditorCurrentMarks,

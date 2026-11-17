@@ -3906,6 +3906,27 @@ export type EditorTransactionTopLevelRange = Readonly<{
   before: TopLevelRuntimeRange | null;
 }>;
 
+/**
+ * One node a step took out of a root: its key is in the root's index before
+ * the step and not after it. A node the step moves, splits or wraps keeps its
+ * key, and so do the children of a node it unwraps or merges into another. A
+ * step with no structure change can remove a node too, as `replace` does when
+ * it gives the new node a new key.
+ */
+export type EditorTransactionRemoved = Readonly<{
+  key: NodeKey;
+  /** The node as it stood before the step. Each descendant that left has its
+   *  own entry. */
+  node: Descendant;
+  /** Where the node's start lands in the step's result, as a child index of
+   *  its nearest ancestor the step kept: right after the nearest earlier
+   *  sibling the step kept, of the node or of an ancestor the step removed,
+   *  when that sibling is still a child of that ancestor; else the count of
+   *  that ancestor's children that start before where the node's start
+   *  lands. The last index may equal the ancestor's child count. */
+  path: Path;
+}>;
+
 /** Lazy semantic queries over one transaction-local document change. */
 export type EditorTransactionChanged = {
   has: <TRoot extends RootKey>(
@@ -3914,6 +3935,10 @@ export type EditorTransactionChanged = {
   ) => boolean;
   /** Final-coordinate paths touching changed ranges in one document root. */
   paths: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>) => readonly Path[];
+  /** The nodes the step took out of one document root. */
+  removed: <TRoot extends RootKey>(
+    root?: NamedRootKey<TRoot>
+  ) => readonly EditorTransactionRemoved[];
   /** Bounded before/after top-level windows for each changed range. */
   topLevelRanges: <TRoot extends RootKey>(
     root?: NamedRootKey<TRoot>
