@@ -188,12 +188,11 @@ While no `Editable` shows that root, they are off and do nothing.
 Without `options.editor` and `options.root`, the controls follow the change
 their next undo or redo takes back. History is document-wide, so an undo takes
 back the document's latest change in whichever root that change is, through the
-writable `Editable` the user used most recently. `history.root` names the root
-the next undo changes. It is `undefined` for the primary document, for a change
-that touches no root and when nothing is left to undo. Read
-`editor.read.history.hasUndo()` to tell an empty history from a refused change
-in the primary document. With `options.editor` or `options.root`,
-`history.root` is the root they name.
+writable `Editable` the user used most recently. `canUndo` and `canRedo` each
+answer for their own direction, so undo can be on while redo is off because its
+change edits a root no `Editable` shows. `editor.read.history.hasUndo()` and
+`hasRedo()` read the whole document's history, so they tell an empty history
+from a change the control cannot reach.
 
 A control without `options.editor` and `options.root` is off while no shown,
 writable `Editable` reaches a root its next undo or redo changes. That happens
