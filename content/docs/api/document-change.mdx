@@ -97,6 +97,46 @@ answers `false` without reading any index. A key that left the root, or whose
 root the commit deleted, reports `"presence"` there, not `"path"`, so a view
 that rereads a moved key checks both kinds.
 
+## Removed nodes
+
+Each step of an update calls every plugin's `on.transactionChange` handler
+before the commit publishes. The handler's `changed` queries read that one step.
+`changed.removed(root)` lists the nodes the step took out of a document root,
+with the gap each one left:
+
+```javascript
+import { definePlugin } from "platejs";
+
+const removedAt = new Map();
+
+const RemovedPlacesPlugin = definePlugin("removedPlaces", {
+  on: {
+    transactionChange: ({ changed }) => {
+      for (const { key, node, path } of changed.removed()) {
+        removedAt.set(key, { node, path });
+      }
+    },
+  },
+});
+```
+
+A node counts as removed when its key is in the root before the step and not
+after it. A move, split or wrap keeps the node's key, and so do the children of
+a node the step unwraps or merges into another. A `replace` that gives the new
+node a new key removes the old one.
+
+- `node` is the node as it stood before the step. Each descendant that left has
+  its own entry.
+- `path` is the gap the node left in the step's result, as a child index of its
+  nearest ancestor the step kept. It counts from the nearest earlier sibling
+  the step kept, among the node's siblings or a removed ancestor's. When that
+  sibling is still a child of the kept ancestor, `path` sits right after it.
+  The last index may equal the ancestor's child count.
+
+Omit `root` for the primary document, or pass a named root. Each step reports
+only its own removals. Use `commit.changed.nodeKeys("presence")` for the keys a
+whole commit added or removed.
+
 ## Fit external content
 
 Parsing, paste, and import boundaries carry open content as an

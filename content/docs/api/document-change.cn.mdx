@@ -46,5 +46,10 @@ editor.update({ tags: 'remote-import' }, (tx) => {
 `primary` 和 `roots` 字段。提交中的 `changes`、`inverseChanges`、`effects`、
 `tags`、`selectionBefore`、`selectionAfter` 和 `changed` 共同描述原子更新。
 
+更新的每个步骤都会在提交发布前调用插件的 `on.transactionChange` 处理器。
+`changed.removed(root)` 列出该步骤从文档根中移除的节点：`key`、步骤前的 `node`，以及节点在步骤结果中留下的空位 `path`。
+移动、拆分或包裹会保留节点的 key，被解包或合并的节点的子节点也会保留。
+每个步骤只报告自己的移除；整个提交新增或移除的 key 用 `commit.changed.nodeKeys("presence")` 查询。
+
 适配器在同一更新中导入变更与共享 effect。运行时 `NodeKey` 不作为远程
 身份；并发、传输、持久化与在线状态由[协作适配器](/docs/yjs)负责。
