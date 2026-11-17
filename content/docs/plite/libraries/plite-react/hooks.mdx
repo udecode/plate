@@ -157,7 +157,7 @@ const documentVersion = useEditorSelector(
 
 #### `useEditorHistory(options?): EditorHistoryController`
 
-Create undo/redo commands and keyboard handling for the active root.
+Create undo/redo commands and keyboard handling.
 
 ```tsx
 const history = useEditorHistory();
@@ -177,23 +177,37 @@ Pass `options.root` to bind history controls to one root in the current
 provider. Pass `options.editor` to use an existing command view, including
 outside a Plite provider; omit `root` with an explicit editor. Explicit controls
 read the view's current read-only permission and restore focus to that exact
-view. Pass
-`focusPolicy: 'preserve'` when undo/redo is controlled from external UI and
-DOM focus should stay outside the editor. `history.root` is `undefined` for the
-primary document and the root key for an extra root.
+view. Pass `focusPolicy: 'preserve'` when undo/redo is controlled from external
+UI and DOM focus should stay outside the editor.
 
-Without `options.editor`, the controls follow the view that `useRootEditor`
-follows for their root, and `history.undo()` and `history.redo()` run in that
-view wherever DOM focus is. Each reads its root and that root's view when it
-runs. While that view is read-only, and while no `Editable` shows the root,
-`canUndo` and `canRedo` are `false`, and `history.undo()` and `history.redo()`
-do nothing. While that view composes text, `canUndo` and `canRedo` are
+With `options.root`, the controls follow the view that `useRootEditor` follows
+for that root, and `history.undo()` and `history.redo()` run in that view
+wherever DOM focus is. Each reads its root and that root's view when it runs.
+While no `Editable` shows that root, they are off and do nothing.
+
+Without `options.editor` and `options.root`, the controls follow the change
+their next undo or redo takes back. History is document-wide, so an undo takes
+back the document's latest change in whichever root that change is, through the
+writable `Editable` the user used most recently. `history.root` names the root
+the next undo changes. It is `undefined` for the primary document, for a change
+that touches no root and when nothing is left to undo. Read
+`editor.read.history.hasUndo()` to tell an empty history from a refused change
+in the primary document. With `options.editor` or `options.root`,
+`history.root` is the root they name.
+
+A control without `options.editor` and `options.root` is off while no shown,
+writable `Editable` reaches a root its next undo or redo changes. That happens
+when no `Editable` shows the root or every one that shows it is read-only. While
+the control is off, its commands do nothing. A content root that an element
+owns, such as a footnote's body, counts through its own `Editable` while one is
+shown, and otherwise through a root that holds its owner, because a windowed
+page unmounts the body with its owner. The undo and redo shortcuts inside an
+`Editable` follow the same rule. A control with `options.editor` or
+`options.root` skips the rule and takes back the next change wherever it is, as
+`editor.api.history.undo()` does. With `options.editor`, it can stay on while no
+`Editable` runs that editor, and its commands then do nothing. While any
+control's view is read-only or composes text, `canUndo` and `canRedo` are
 `false`.
-
-Without `options.root`, the controls follow the root the caret is in or was
-last in, and the primary document until a caret lands in a root. History is
-document-wide, so an undo takes back the document's latest change in whichever
-root that change is.
 
 Pass `history.onKeyDown` as the `onKeyDown` of a control beside the editor,
 such as a title input, to give it the undo and redo shortcuts. The handler
@@ -205,9 +219,9 @@ the browser.
 `canRedo` are both `false` while a live-session replay is pending. A repeated
 shortcut during that wait is consumed and reports a `busy` result.
 
-Use the model service when application code needs the outcome itself. It
-returns synchronously; only a live-session replay returns `pending` with a
-`settled` promise:
+Use the model service when application code needs the outcome itself. It skips
+the rule above, so it replays a change no view shows. It returns synchronously;
+only a live-session replay returns `pending` with a `settled` promise:
 
 ```typescript
 const result = editor.api.history.undo();
@@ -215,8 +229,8 @@ const outcome = result.status === "pending" ? await result.settled : result;
 ```
 
 Mounted controls deliver every final outcome to the exact initiating editor
-surface. Handle expected outcomes such as `blocked`, `busy`, `empty`, and
-`failed` on `Editable`:
+surface. Handle expected outcomes such as `blocked`, `busy`, `empty`,
+`failed`, and `unavailable` on `Editable`:
 
 ```tsx
 <Editable
@@ -224,9 +238,19 @@ surface. Handle expected outcomes such as `blocked`, `busy`, `empty`, and
     if (result.status === "blocked") {
       showHistoryConflict(direction, result);
     }
+    if (result.status === "unavailable" && result.reason === "hidden") {
+      showHiddenChangeHint(direction, result.root);
+    }
   }}
 />
 ```
+
+When the rule above refuses the undo shortcut or a native history input, the
+outcome is `unavailable` with the `root` that stopped it, `undefined` for the
+primary document. Its reason is `hidden` when no `Editable` reaches that root
+and `read-only` when only read-only ones do. A refused shortcut stays consumed,
+so the browser's own undo does not run. A click on a control that is off runs
+nothing and reports no outcome.
 
 A `failed` outcome means the replay, its owner or its settlement threw; the editor
 reports that error to its `lifecycleErrorSink`. With no sink, it uses

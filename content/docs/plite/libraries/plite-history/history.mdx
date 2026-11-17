@@ -34,8 +34,14 @@ const result = editor.api.history.undo();
 const outcome = result.status === "pending" ? await result.settled : result;
 ```
 
-Use `hasUndo()`, `hasRedo()`, and `pending()` for controls. Inspect
-`editor.read.history()` when you need the full immutable stacks.
+Use [`useEditorHistory`](/docs/plite/libraries/plite-react/hooks) for undo and
+redo controls in the interface. A control that names no editor or root is off
+while its next undo changes a root that no shown, writable view can edit, and
+the undo shortcut inside an editor refuses that change. A control that names an editor or a root skips that
+check. So do a button that calls `editor.api.history.undo()` and a live-session
+owner's own writes while it replays. Read `hasUndo()`, `hasRedo()`, and
+`pending()` for the history's own state. Inspect `editor.read.history()` when
+you need the full immutable stacks.
 
 ## History object
 
