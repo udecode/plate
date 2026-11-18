@@ -198,6 +198,7 @@ export type BoardViewCore = Readonly<{
   /** Unmark every shape the eraser marked, and return their ids. */
   clearErasing: () => readonly string[];
   viewCenter: () => BoardPlace;
+  viewBox: () => BoardBox;
   commit: (change: BoardWrite) => void;
   edit: (key: NodeKey) => void;
   editedShape: () => BoardShapeLayout | null;
@@ -655,15 +656,21 @@ export const createBoardView = (
     return true;
   };
 
-  const refresh = () => {
+  const viewBox = () => {
     const { x, y, zoom } = state.camera;
+
+    return { height: size.height / zoom, width: size.width / zoom, x, y };
+  };
+
+  const refresh = () => {
+    const shown = viewBox();
     const found = new Set(
       index
         .search({
-          maxX: x + size.width / zoom,
-          maxY: y + size.height / zoom,
-          minX: x,
-          minY: y,
+          maxX: shown.x + shown.width,
+          maxY: shown.y + shown.height,
+          minX: shown.x,
+          minY: shown.y,
         })
         .flatMap((box) => renderedKeyOf.get(box.key) ?? [])
     );
@@ -854,12 +861,9 @@ export const createBoardView = (
   };
 
   const viewCenter = () => {
-    const { x, y, zoom } = state.camera;
+    const { height, width, x, y } = viewBox();
 
-    return {
-      x: x + size.width / 2 / zoom,
-      y: y + size.height / 2 / zoom,
-    };
+    return { x: x + width / 2, y: y + height / 2 };
   };
 
   const selectedKeys = (): ReadonlySet<NodeKey> =>
@@ -1200,6 +1204,7 @@ export const createBoardView = (
       return ids;
     },
     viewCenter,
+    viewBox,
     commit,
     edit: (key) => {
       focusRoot();
@@ -1218,13 +1223,13 @@ export const createBoardView = (
     insertAndSelect,
     interactionKind: () => interaction?.kind,
     inView: ({ box }) => {
-      const { x, y, zoom } = state.camera;
+      const shown = viewBox();
 
       return (
-        box.x >= x &&
-        box.y >= y &&
-        box.x + box.width <= x + size.width / zoom &&
-        box.y + box.height <= y + size.height / zoom
+        box.x >= shown.x &&
+        box.y >= shown.y &&
+        box.x + box.width <= shown.x + shown.width &&
+        box.y + box.height <= shown.y + shown.height
       );
     },
     deselectOnBoard,

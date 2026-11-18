@@ -724,6 +724,29 @@ export const createBoardIndex = ({
 
       return shown;
     },
+    snapTargets: (area: BoardBox, except: ReadonlySet<string>) => {
+      const boxes: BoardBox[] = [];
+
+      for (const { key } of tree.search({
+        maxX: area.x + area.width,
+        maxY: area.y + area.height,
+        minX: area.x,
+        minY: area.y,
+      })) {
+        const layout = layouts.get(key);
+
+        if (
+          layout &&
+          layout.kind !== 'arrow' &&
+          !layout.ink &&
+          !except.has(layout.id)
+        ) {
+          boxes.push(layout.box);
+        }
+      }
+
+      return boxes;
+    },
     /**
      * Where the stroke `key` draws its line within its box. The path is
      * computed once per points and size, so a write that keeps both, such as
