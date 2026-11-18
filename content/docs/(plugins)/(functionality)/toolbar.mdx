@@ -82,7 +82,7 @@ const fixedToolbarPlugin = definePlugin('fixedToolbar', {
 
 const floatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
-    afterEditable: FloatingToolbar,
+    afterEditable: () => <FloatingToolbar />,
   },
 });
 

@@ -902,6 +902,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     "    'useOptionalEditorContext',",
     "    'useOptionalEditorReadOnly',",
     "    'useOptionalElement',",
+    "    'useSelectionView',",
     "    'useTextSelector',",
     '  ],',
     '});',

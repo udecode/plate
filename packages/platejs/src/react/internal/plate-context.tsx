@@ -9,14 +9,14 @@ import {
 } from '../../facade';
 import type { Editor } from '../editor/Editor';
 import { useEditorRootElement, useEditorViewState } from '../plite-react';
-import { bindDocumentFocus } from '../stores/plate-controller/document-focus.internal';
+import { trackEditableFocus } from '../stores/plate-controller/document-focus.internal';
 import { createPlateTargetScope } from './createPlateTargetScope';
 import { useEditorContext, useOptionalEditorContext } from './plite-components';
 
 export type PlateTarget = {
   editor: Editor;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  editableRef: React.RefObject<HTMLDivElement | null>;
+  editableRef: React.RefObject<HTMLElement | null>;
 };
 
 export const createPlateScope = () =>
@@ -197,7 +197,7 @@ export function PlateMountedView({
     });
     // A focus inside a portal from outside the Editable reaches only this
     // native listener.
-    const removeFocus = bindDocumentFocus(editor, root, () =>
+    const removeFocus = trackEditableFocus(root, () =>
       markRootViewUsed(editor)
     );
     return () => {

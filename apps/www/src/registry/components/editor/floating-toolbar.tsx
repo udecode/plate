@@ -13,12 +13,15 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import {
   BoldPlugin,
   CodePlugin,
-  type EditableSiblingProps,
+  type Editor,
+  EditorSelectionView,
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
   definePlugin,
   useComposedRef,
+  useEditableRef,
+  useEditor,
   useEditorFocused,
   useEditorReadOnly,
   useEditorSelector,
@@ -40,8 +43,20 @@ import { MoreToolbarButton } from './more-toolbar-button';
 import { SuggestionToolbarButton } from './suggestion-toolbar-button';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
+const NestedViewContext = React.createContext(false);
+
 export function FloatingToolbarButtons() {
+  const nested = React.useContext(NestedViewContext);
   const readOnly = useEditorReadOnly();
+
+  if (nested) {
+    return (
+      <ToolbarGroup>
+        {!readOnly && <StyleButtons />}
+        <CommentToolbarButton />
+      </ToolbarGroup>
+    );
+  }
 
   return (
     <>
@@ -56,32 +71,8 @@ export function FloatingToolbarButtons() {
 
           <ToolbarGroup>
             <TurnIntoToolbarButton />
-
-            <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
-              <BoldIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
-              <ItalicIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
-              <UnderlineIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton
-              plugin={StrikethroughPlugin}
-              tooltip="Strikethrough"
-            >
-              <StrikethroughIcon />
-            </MarkToolbarButton>
-
-            <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
-              <Code2Icon />
-            </MarkToolbarButton>
-
+            <StyleButtons />
             <InlineEquationToolbarButton />
-
             <LinkToolbarButton />
           </ToolbarGroup>
         </>
@@ -97,10 +88,52 @@ export function FloatingToolbarButtons() {
   );
 }
 
-export function FloatingToolbar({
+function StyleButtons() {
+  return (
+    <>
+      <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
+        <BoldIcon />
+      </MarkToolbarButton>
+
+      <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
+        <ItalicIcon />
+      </MarkToolbarButton>
+
+      <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
+        <UnderlineIcon />
+      </MarkToolbarButton>
+
+      <MarkToolbarButton plugin={StrikethroughPlugin} tooltip="Strikethrough">
+        <StrikethroughIcon />
+      </MarkToolbarButton>
+
+      <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
+        <Code2Icon />
+      </MarkToolbarButton>
+    </>
+  );
+}
+
+export function FloatingToolbar({ children }: { children?: React.ReactNode }) {
+  const editor = useEditor();
+
+  return (
+    <EditorSelectionView>
+      <SelectionFloatingToolbar slotEditor={editor}>
+        {children}
+      </SelectionFloatingToolbar>
+    </EditorSelectionView>
+  );
+}
+
+function SelectionFloatingToolbar({
   children,
-  ...props
-}: React.PropsWithChildren<EditableSiblingProps>) {
+  slotEditor,
+}: {
+  children?: React.ReactNode;
+  slotEditor: Editor;
+}) {
+  const nested = useEditor() !== slotEditor;
   const hasNodeSelection = useEditorSelector(
     (editor) => editor.read.selection.nodes().length > 0
   );
@@ -108,16 +141,16 @@ export function FloatingToolbar({
   if (hasNodeSelection) return null;
 
   return (
-    <TextFloatingToolbar {...props}>
-      {children === undefined ? <FloatingToolbarButtons /> : children}
-    </TextFloatingToolbar>
+    <NestedViewContext.Provider value={nested}>
+      <TextFloatingToolbar>
+        {children === undefined ? <FloatingToolbarButtons /> : children}
+      </TextFloatingToolbar>
+    </NestedViewContext.Provider>
   );
 }
 
-function TextFloatingToolbar({
-  children,
-  editableRef,
-}: React.PropsWithChildren<EditableSiblingProps>) {
+function TextFloatingToolbar({ children }: { children: React.ReactNode }) {
+  const editableRef = useEditableRef();
   const editorFocused = useEditorFocused();
   const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
   const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
@@ -206,7 +239,6 @@ function TextFloatingToolbar({
 
   return (
     <PositionedFloatingToolbar
-      editableRef={editableRef}
       onOpenChange={(nextOpen) => {
         setDismissedSelection(nextOpen ? null : selectionRange);
       }}
@@ -219,13 +251,14 @@ function TextFloatingToolbar({
 
 function PositionedFloatingToolbar({
   children,
-  editableRef,
   onOpenChange,
   onOverlayOpenChange,
-}: React.PropsWithChildren<EditableSiblingProps> & {
+}: {
+  children: React.ReactNode;
   onOpenChange: (open: boolean) => void;
   onOverlayOpenChange: (open: boolean) => void;
 }) {
+  const editableRef = useEditableRef();
   const geometry = useSelectionGeometry({ editableRef });
   const floating = useFloatingRect(geometry?.boundingRect ?? null, {
     open: true,
@@ -274,7 +307,7 @@ function PositionedFloatingToolbar({
 
 export const FloatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
-    afterEditable: FloatingToolbar,
+    afterEditable: () => <FloatingToolbar />,
   },
 });
 

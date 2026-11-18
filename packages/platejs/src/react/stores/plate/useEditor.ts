@@ -72,6 +72,16 @@ export function useEditorContainerRef(): React.RefObject<HTMLDivElement | null> 
   return target?.containerRef ?? emptyRef;
 }
 
+/**
+ * Get the selected view's Editable ref; its value is null before mount. Inside
+ * `EditorSelectionView` it is the Editable of the view holding the selection.
+ */
+export function useEditableRef(): React.RefObject<HTMLElement | null> {
+  const target = React.useContext(PlateEditorContext);
+  const emptyRef = React.useRef<HTMLElement>(null);
+  return target?.editableRef ?? emptyRef;
+}
+
 /** Get the selected root's text selection. */
 export const useEditorSelection = (): Range | null =>
   useEditorRuntimeState(useEditor(), (state) => state.selection(), {

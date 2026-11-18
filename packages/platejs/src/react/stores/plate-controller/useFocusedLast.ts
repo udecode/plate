@@ -2,23 +2,26 @@ import { useCallback, useSyncExternalStore } from 'react';
 
 import { useEditorRootElement } from '../../plite-react';
 import { useEditor } from '../plate/useEditor';
-import { getDocumentFocus } from './document-focus.internal';
+import { getLastEditableTracker } from './document-focus.internal';
 
 /** Whether this editor was last focused in its owning document, including toolbar focus. */
 export function useFocusedLast(): boolean {
-  const editor = useEditor();
-  const element = useEditorRootElement(editor);
-  const document = element?.ownerDocument;
+  const element = useEditorRootElement(useEditor());
 
   return useSyncExternalStore(
     useCallback(
       (listener) =>
-        document
-          ? getDocumentFocus(document).subscribe(editor, listener)
+        element
+          ? getLastEditableTracker(element.ownerDocument).subscribe(
+              element,
+              listener
+            )
           : () => {},
-      [document, editor]
+      [element]
     ),
-    () => !!document && getDocumentFocus(document).isLast(editor),
+    () =>
+      !!element &&
+      getLastEditableTracker(element.ownerDocument).isLast(element),
     () => false
   );
 }

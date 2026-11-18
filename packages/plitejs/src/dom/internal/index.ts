@@ -77,6 +77,8 @@ export {
   findDOMRootRuntime,
   resolveDOMReach,
   resolveDOMTargetView,
+  resolveSelectionView,
+  subscribeSelectionView,
 } from '../plugin/dom-root-runtime';
 export {
   getDOMHostLanguage,

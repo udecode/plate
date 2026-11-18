@@ -111,6 +111,7 @@ export {
   useRootState,
   useRuntimeState,
   useSelectionGeometry,
+  useSelectionView,
   useSetStateField,
   useStateFieldValue,
   react,

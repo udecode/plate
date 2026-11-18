@@ -86,6 +86,7 @@ const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
 );
 
 type MountedViews = {
+  lastFocused: AnyEditor | null;
   readonly topDocuments: Map<Document, Set<DOMRootRuntime>>;
   readonly views: Set<AnyEditor>;
 };
@@ -264,6 +265,15 @@ const activateDOMRootRuntimeSteps = (steps: ReadonlyArray<() => void>) => {
 };
 
 /** Resolve the private root runtime that owns a DOM interaction target. */
+const composedParent = (element: Element) => {
+  const rootNode = element.getRootNode();
+
+  return (
+    element.parentElement ??
+    ('host' in rootNode ? (rootNode.host as Element) : null)
+  );
+};
+
 export const findDOMRootRuntime = (node: Node): DOMRootRuntime | null => {
   let element = asElement(node);
 
@@ -272,11 +282,7 @@ export const findDOMRootRuntime = (node: Node): DOMRootRuntime | null => {
 
     if (runtime) return runtime;
 
-    const rootNode = element.getRootNode();
-
-    element =
-      element.parentElement ??
-      ('host' in rootNode ? (rootNode.host as Element) : null);
+    element = composedParent(element);
   }
 
   return null;
@@ -500,6 +506,61 @@ export const resolveDOMReach = (
   if (presentation) return reachOwnView(mounted, handle, presentation, request);
 
   return handle === owner ? reachDocumentView(mounted, handle, request) : null;
+};
+
+export const resolveSelectionView = <TView extends object>(
+  view: TView
+): TView | null => {
+  if (!hasEditorRuntime(view)) return null;
+
+  const owner = getEditorRuntimeOwner(view);
+  const root = getBaseCallRoot(owner);
+
+  if (getEditorRuntimeRoot(view) === root) return view;
+
+  const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(owner);
+
+  if (!mounted) return null;
+
+  const element = findEditorDOMRootRuntime(view)?.rootRef.current;
+
+  if (!element) return null;
+
+  const presentation = getOwnViewPresentation(view);
+  const inside = (candidate: AnyEditor) => {
+    let inner: Element | null | undefined =
+      findEditorDOMRootRuntime(candidate)?.rootRef.current;
+
+    if (
+      getEditorRuntimeRoot(candidate) !== root ||
+      getOwnViewPresentation(candidate) !== presentation ||
+      inner === element
+    ) {
+      return false;
+    }
+    while (inner && inner !== element) inner = composedParent(inner);
+
+    return inner === element;
+  };
+  const last = mounted.lastFocused;
+
+  return (pickView(mounted, inside) ??
+    (last && mounted.views.has(last) && inside(last)
+      ? last
+      : null)) as TView | null;
+};
+
+export const subscribeSelectionView = (view: object, listener: () => void) => {
+  let mounted = hasMountedDOMRoot(view);
+
+  // Unmounting releases the presentation from a React insertion effect after
+  // this view's Editable has gone, and React forbids updates there.
+  return subscribeDOMReach(documentOf(view), () => {
+    const wasMounted = mounted;
+
+    mounted = hasMountedDOMRoot(view);
+    if (mounted || wasMounted) listener();
+  });
 };
 
 export const resolveDOMTargetView = (
@@ -1108,6 +1169,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       DOM_ROOT_RUNTIMES_BY_EDITOR.set(this.editor, editorRuntimes);
       const documentEditor = documentOf(this.editor);
       const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(documentEditor) ?? {
+        lastFocused: null,
         topDocuments: new Map(),
         views: new Set(),
       };
@@ -1120,8 +1182,15 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       MOUNTED_VIEWS_BY_DOCUMENT.set(documentEditor, mounted);
       this.registeredTopDocument = top;
       DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR.delete(this.editor);
-      const markInputRuntimeActive = () => {
+      const markInputRuntimeActive = (event?: Event) => {
         LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
+        if (
+          !event ||
+          (event.type === 'focusin' &&
+            findDOMRootRuntime(event.target as Node) === runtime)
+        ) {
+          mounted.lastFocused = this.editor;
+        }
         notifyEditorDOMScopeListeners(this.editor);
       };
       const publishRootFocus = () => notifyEditorDOMScopeListeners(this.editor);
@@ -1185,6 +1254,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     if (editorRuntimes?.size === 0) {
       DOM_ROOT_RUNTIMES_BY_EDITOR.delete(this.editor);
       mounted?.views.delete(this.editor);
+      if (mounted?.lastFocused === this.editor) mounted.lastFocused = null;
       if (mounted?.views.size === 0) {
         MOUNTED_VIEWS_BY_DOCUMENT.delete(documentEditor);
       }

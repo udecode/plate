@@ -1,0 +1,18 @@
+---
+id: 2026-11-18-toolbars-act-on-board-note-text
+date: 2026-11-18
+status: draft
+kind: behavior
+summary: 'Toolbars act on board note text'
+change: { 'type': 'source', 'date': '2026-11-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-18-floating-toolbar-toolbars-act-board-note-56322007","kind":"behavior","migrationNotes":["`FloatingToolbar` reads its Editable from `useEditableRef()` and no longer takes an `editableRef` prop. Render it from a slot as `afterEditable: () => <FloatingToolbar />`."]} -->
+
+- **`floating-toolbar`**: Open beside selected board note text. In a note it shows the mark buttons and Comment.
+
+<!-- entry: {"id":"2026-11-18-fixed-toolbar-marks-board-note-text","kind":"behavior","migrationNotes":[]} -->
+
+- **`fixed-toolbar`**: Apply the mark, color, highlight and comment buttons to board note text when the selection is in a note. Undo, Insert, Turn into, All comments and Mode keep acting on the page.

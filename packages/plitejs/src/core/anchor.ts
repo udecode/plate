@@ -1219,7 +1219,9 @@ export function createAnchor<TValue extends AnchorValue>(
     nodeKey: NodeKey | null,
     context: AnchorChangeContext | undefined
   ) =>
-    nodeKey && context?.runtimePaths !== false
+    nodeKey &&
+    context?.runtimePaths !== false &&
+    (!context || hasRoot(context.after, root))
       ? pathOfNodeKey(runtimeEditor, root, nodeKey)
       : null;
 
