@@ -3,10 +3,11 @@
 // the ones a landing leaves out, one run at a time. A launchd job starts it
 // every 20 minutes; a run that finds next unchanged or another run going
 // exits at once. Once a day the first run after 04:00 is the full fresh run.
-// A red step is rerun alone, its first bad commit is searched for while the
-// hour lasts, and the result goes to events.jsonl and the suggested-task
-// ledger, never to the team channel (owner's word, 2026-11-17). The local-ci
-// skill's watcher reads events.jsonl and starts a fix for each red step.
+// A red step is rerun alone, its first bad commit is searched for from the
+// last commit that step passed on while the hour lasts, and the result goes to
+// events.jsonl and the suggested-task ledger, never to the team channel
+// (owner's word, 2026-11-17). The local-ci skill's watcher reads events.jsonl
+// and runs one fix at a time for the red steps.
 import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
@@ -196,6 +197,14 @@ const check = (logs, name, args, { full = false } = {}) => {
     (line) => line.seconds !== undefined && line.exit !== 0
   );
   return {
+    // A step skipped on an earlier pass of the same files passes here too.
+    passed: lines
+      .filter(
+        (line) =>
+          line.covered !== undefined ||
+          (line.seconds !== undefined && line.exit === 0)
+      )
+      .map((line) => line.step),
     failed: ended
       .filter((line) => line.exit !== INTERRUPTED)
       .map((line) => line.step),
@@ -254,21 +263,24 @@ const where = (event) =>
       ? `since ${event.culprit.slice(0, 10)} (${event.subject})`
       : `somewhere in ${event.range}`;
 
+const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
+const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
+const fixTitle = (step) => `Fix the ${step} check that fails on next`;
+const openTask = (step) =>
+  existsSync(ledger)
+    ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].find(
+        (task) =>
+          task.title?.includes(fixTitle(step)) &&
+          ['offered', 'started'].includes(task.status)
+      )
+    : undefined;
+
 // Offers one suggested task per failing step while none is open, for the
 // watcher to start its fix. Returns what the event records: whether the
 // watcher wakes for it and the task it offered.
 const report = (event) => {
-  const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
-  const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
-  const title = `Fix the ${event.step} check that fails on next`;
-  const open =
-    existsSync(ledger) &&
-    [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].some(
-      (task) =>
-        task.title?.includes(title) &&
-        ['offered', 'started'].includes(task.status)
-    );
-  if (open) return { wake: false };
+  const title = fixTitle(event.step);
+  if (openTask(event.step)) return { wake: false };
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
@@ -287,6 +299,26 @@ const report = (event) => {
     if (added.status !== 0) id = null;
   }
   return { task: id, wake: true };
+};
+
+// Dismisses a step's offered task once a run on next passes the step, so a
+// fix that already landed for another step queues no second fix. A started
+// task stays with the session working on it.
+const settle = (step, tip) => {
+  const task = openTask(step);
+  if (!task) return {};
+  if (task.status === 'started') return { task: task.id };
+  const dismissed = node(main, [
+    ledgerHelper,
+    'append',
+    ledger,
+    'chip',
+    `${task.id} ${task.title}`,
+    `Local CI passed ${step} on next at ${tip.slice(0, 10)}, so a fix already landed`,
+    `the run on ${tip} passed ${step}; ${eventsPath} holds its passed event`,
+    'dismissed done',
+  ]);
+  return { dismissed: dismissed.status === 0, task: task.id };
 };
 
 // Fetches next in both halves and returns its tip.
@@ -343,6 +375,13 @@ const run = (args) => {
     }
     const logs = join(main, 'docs', 'plans', 'artifacts', 'local-ci', today);
     mkdirSync(logs, { recursive: true });
+    // Each run on next reports every step still red, so the last run's red
+    // events name the steps a landed fix may have cleared since.
+    const wasRed = new Set(
+      readEvents()
+        .filter((event) => event.kind === 'red' && event.tip === state.tip)
+        .map((event) => event.step)
+    );
     try {
       checkout(tip);
     } catch (error) {
@@ -385,10 +424,12 @@ const run = (args) => {
       }
       return 1;
     }
+    const passing = new Set(result.passed);
     for (const failed of [...result.failed, ...result.interrupted]) {
       const alone = check(logs, runId(tip, `${failed}-alone`), [failed], {
         full,
       });
+      if (alone.ok) passing.add(failed);
       if (alone.ok && result.interrupted.includes(failed)) continue;
       const load = loadavg()[0];
       if (alone.ok) {
@@ -409,13 +450,16 @@ const run = (args) => {
         });
         continue;
       }
+      // The search starts from the last commit this step passed on, so a
+      // step can find its culprit while other steps keep next from going green.
+      const from = option('--green') ?? state.passed?.[failed] ?? green;
       const found =
-        green && green !== tip
-          ? firstBad(logs, failed, green, tip, started + BUDGET_MS)
+        from && from !== tip
+          ? firstBad(logs, failed, from, tip, started + BUDGET_MS)
           : { culprit: null, range: tip };
       const event = {
         kind: 'red',
-        green,
+        green: from,
         // A loaded host can time a step out alone too, so the fix run reads
         // the load the alone rerun ended under.
         load,
@@ -427,7 +471,24 @@ const run = (args) => {
       };
       emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
     }
-    if (!option('--ref')) writeState(next);
+    if (!option('--ref')) {
+      for (const cleared of wasRed) {
+        if (passing.has(cleared) && !dry) {
+          emit({
+            kind: 'passed',
+            step: cleared,
+            tip,
+            wake: true,
+            ...settle(cleared, tip),
+          });
+        }
+      }
+      next.passed = {
+        ...state.passed,
+        ...Object.fromEntries([...passing].map((ok) => [ok, tip])),
+      };
+      writeState(next);
+    }
     return 0;
   } finally {
     rmSync(lockDir, { force: true, recursive: true });

@@ -833,6 +833,7 @@ export const steps = [
   },
   {
     name: 'knowledge',
+    land: true,
     quick: true,
     private: true,
     run: 'node tooling/scripts/knowledge/kb.mjs check',
@@ -901,6 +902,23 @@ export const steps = [
     write: 'pnpm brl',
     affected: source,
     key: [],
+  },
+  {
+    // The manifest records the types platejs re-exports, so a package type
+    // change that lands without it leaves the www step red after landing.
+    name: 'api-reference',
+    land: true,
+    run: 'pnpm --filter www api-reference:check',
+    fix: 'pnpm --filter www api-reference',
+    affected: (files) =>
+      touches(
+        'apps/www/api-reference-baseline.json',
+        'apps/www/scripts/build-api-reference.mts',
+        'apps/www/src/generated/api-reference-manifest.json'
+      )(files) ||
+      files.some(
+        (file) => /^packages\/[^/]+\/src\//u.test(file) && !TEST.test(file)
+      ),
   },
   {
     name: 'www',
