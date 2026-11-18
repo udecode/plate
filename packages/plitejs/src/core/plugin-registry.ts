@@ -1001,6 +1001,12 @@ export const registerPluginContributionInRegistry = <TEditor extends Editor>(
   };
 };
 
+const DEFINED_STATE_FIELDS = new WeakSet<EditorStateField<any>>();
+
+export const markDefinedStateField = (field: EditorStateField<any>) => {
+  DEFINED_STATE_FIELDS.add(field);
+};
+
 export const registerStateFieldDescriptorInRegistry = <TEditor extends Editor>(
   registry: PluginRegistry<TEditor>,
   pluginName: string,
@@ -1019,7 +1025,7 @@ export const registerStateFieldDescriptorInRegistry = <TEditor extends Editor>(
       `Editor plugin "${pluginName}" cannot install a state field keyed "__proto__".`
     );
   }
-  if (!Object.isFrozen(field) || typeof field.compare !== 'function') {
+  if (!DEFINED_STATE_FIELDS.has(field)) {
     throw new Error(
       `State field "${field.key}" from "${pluginName}" must be created with defineStateField().`
     );

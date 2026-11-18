@@ -209,9 +209,19 @@ editor.update((tx) => {
 });
 ```
 
-Keep large shared values outside state fields or define a compact custom effect
-and reducer. The default field effect carries the previous and next value so
-history can invert it exactly.
+Set a shared field with `tx.setField`, and collaborators and late joiners
+receive its value. `defineStateField` throws for a shared field that defines
+`reduce`, because the room never receives a reduced value. Only a local field
+may compute its value from other effects. The field effect carries the previous
+and next value so history can invert it exactly. Keep a large shared value in
+the app or collaboration service, and store only its id in a field.
+
+Some changes still leave collaborators on different values. Two collaborators
+who set the field at the same time can each end on the other's value. A change
+from `tx.value.replace`, a value loaded when the field installs after the
+editor joined the room, and the result of a transaction whose final value
+`compare` calls equal to its first value are not sent. Mutating a value read
+from a field, such as a `Date`, changes it only in your editor.
 
 ## Comments
 

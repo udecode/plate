@@ -7,6 +7,7 @@ import type { EditorJsonValue } from '../interfaces/json';
 import { getDefined } from '../internal/get-defined';
 import { cloneFrozen } from './clone';
 import { compilePlugin } from './plugin';
+import { markDefinedStateField } from './plugin-registry';
 import { defineEffect } from './transaction-values';
 import {
   decodeVersionedValue,
@@ -55,6 +56,11 @@ export const defineStateField = <
   ) {
     throw new Error(
       `Shared state field "${normalizedDescriptor.key}" requires persistence.`
+    );
+  }
+  if (normalizedDescriptor.collab === 'shared' && normalizedDescriptor.reduce) {
+    throw new Error(
+      `Shared state field "${normalizedDescriptor.key}" cannot define reduce. Set it with tx.setField so every peer receives the value.`
     );
   }
   const transitionCodec = normalizedDescriptor.persist
@@ -198,6 +204,7 @@ export const defineStateField = <
     TValue,
     TEncoded
   >;
+  markDefinedStateField(field);
 
   return field;
 };
