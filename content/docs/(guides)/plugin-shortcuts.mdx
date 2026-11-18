@@ -38,6 +38,15 @@ uses a later stage. Custom handlers do not need a linked method.
 | `priority` | Shortcut-local priority. Defaults to `0`. |
 | `null` | Removes that named shortcut from the plugin. |
 
+A single digit bound with `mod` matches that digit's key on a US layout,
+whatever character Shift or the layout gives it. So `mod+shift+0` fires on
+Windows, where Shift makes the key report `)`, and `mod+1` fires on a French
+keyboard, where the key reports `&`. On Windows and Linux, where `mod` is
+Control, a binding that adds `alt` matches only when the key types the digit.
+Windows reads Control with Alt as AltGr, which types characters on many
+layouts. To bind a key by its position whatever it types, write its code,
+such as `mod+alt+digit1`.
+
 ## Linked update shortcuts
 
 Use a linked update method when the shortcut and plugin update method share a
@@ -304,6 +313,10 @@ export const PriorityPlugin = definePlugin('commandMenu', {
 
 Plate orders the compiled table by shortcut priority, plugin application order, then
 declaration order. The first handled route wins.
+
+A digit and a symbol on the same key can match one press. On a French keyboard,
+Control with the 6 key reports `-`, so it matches both `mod+6` and `mod+-`. An
+app that binds both gives the symbol's shortcut a higher `priority`.
 
 ## Editor-level shortcuts
 

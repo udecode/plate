@@ -37,6 +37,14 @@ and virtualized same-root coverage metadata.
 `TRIPLE_CLICK` is the click count Plite uses for block-level triple-click
 handling.
 
+A single digit bound with Command, or with Control and no Alt or AltGr,
+matches that digit's key on a US layout. Shift or the layout can change the
+character that key gives, so `mod+shift+0` still fires when the key reports
+`)` and `mod+1` when it reports `&`. Any other digit binding matches only when
+the key types that digit, so Option, Alt or AltGr with a digit still types its
+character. To bind a key by its position whatever it types, write its code,
+such as `alt+digit5`.
+
 Framework adapters can use `DOMEditor`, `getEditorDOMRoot`,
 `createCompiledHotkeyMatcher`, `isGeckoDOMHost`, and
 `usesAppleDOMHotkeys` for explicit host integration without importing private
