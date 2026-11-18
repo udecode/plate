@@ -1,8 +1,7 @@
 import * as React from 'react';
 
 import type { NodeKey } from '../../../facade';
-import type { InkCopy, InkCopyPlace, InkMark } from '../../../features/ink/lib';
-import { placeMark } from '../../../features/ink/lib/inkMatch.internal';
+import type { InkMark } from '../../../features/ink/lib';
 import {
   type EditableSiblingProps,
   type Editor,
@@ -18,9 +17,15 @@ import {
   type InkMeasuredBlock,
   inkBoxOf,
   inkTextBlocks,
-  inkWordBoxes,
 } from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
+import {
+  type InkPlaced,
+  inkInputs,
+  NOTHING_PLACED,
+  placeInkMarks,
+  placeOnInputs,
+} from './inkPlacement.internal';
 import { InkPlugin } from './InkPlugin';
 import { observeInkLayout, stackInkSigns } from './inkWatch.internal';
 
@@ -34,27 +39,14 @@ export type InkSign = Readonly<{
   state: 'changed' | 'deleted' | 'narrow';
 }>;
 
-type Placed = Readonly<{
-  bottom: number;
-  ink: ReadonlyArray<Readonly<{ dx: number; dy: number; mark: InkMark }>>;
-  signs: ReadonlyArray<
-    Readonly<{ id: string; left: number; sign: InkSign; top: number }>
-  >;
-}>;
-
-const NOTHING_PLACED: Placed = { bottom: 0, ink: [], signs: [] };
-
-const DELETED = { reason: 'deleted', type: 'sign' } as const;
-
 const placeAll = (
   view: Editor,
   layer: HTMLElement,
   editable: HTMLElement,
   layouts: ReturnType<typeof createInkLayouts>
-): Placed => {
+): InkPlaced => {
   const { left, top, width } = layer.getBoundingClientRect();
   const origin = { left, top };
-  const { read } = view.plugin(InkPlugin);
   const boxes = inkTextBlocks(view).map((block) => ({
     block,
     box: inkBoxOf(block.element, origin),
@@ -80,140 +72,20 @@ const placeAll = (
 
     return measured.get(key);
   };
-  const editableBox = inkBoxOf(editable, origin);
-  const style = getComputedStyle(editable);
-  const rails = {
-    ltr:
-      editableBox.left +
-      editableBox.width -
-      (Number.parseFloat(style.paddingRight) || 0),
-    rtl: editableBox.left,
-  };
-  const startTop = editableBox.top + (Number.parseFloat(style.paddingTop) || 0);
-  const anchorOf = (place: InkCopyPlace | undefined) => {
-    if (place?.kind === 'live' || place?.kind === 'changed') {
-      const element = view.api.dom.resolveDOMNode(place.key);
 
-      return {
-        id: place.key,
-        top: element ? inkBoxOf(element, origin).top : startTop,
-      };
-    }
-
-    const beside = place?.kind === 'gone' ? place.beside : undefined;
-
-    if (!beside || beside.at === 'start') return { id: 'start', top: startTop };
-
-    const element = view.api.dom.resolveDOMNode(beside.key);
-    const box = element ? inkBoxOf(element, origin) : undefined;
-
-    return {
-      id: `${beside.at}:${beside.key}`,
-      top: box ? box.top + (beside.at === 'after' ? box.height : 0) : startTop,
-    };
-  };
-  const placeOnPage = (
-    mark: InkMark,
-    copies: readonly InkCopy[],
-    places: ReadonlyArray<InkCopyPlace | undefined>
-  ) => {
-    const live = places.map((place) =>
-      place && place.kind !== 'gone' ? measure(place.key) : undefined
-    );
-    const at = live.findIndex((block) => block !== undefined);
-    const first = live[at];
-    const reach =
-      mark.brush.size / 2 +
-      Math.max(
-        0,
-        ...copies.flatMap((copy) => copy.lines.map((line) => line.height))
-      );
-    const shift = first ? first.box.top - mark.blocks[at].top : 0;
-    const ys = mark.samples.map(([, y]) => y + shift);
-    const low = Math.min(...ys) - reach;
-    const high = Math.max(...ys) + reach;
-    const marked = new Set(
-      places.flatMap((place) =>
-        place && place.kind !== 'gone' ? [place.key] : []
+  return placeInkMarks(
+    view,
+    editable,
+    origin,
+    view.plugin(InkPlugin).read.marks(),
+    (mark, copies, places) =>
+      placeOnInputs(
+        mark,
+        copies,
+        inkInputs(mark, copies, places, measure, () => boxes),
+        width
       )
-    );
-    const nearby = boxes.flatMap(({ box, key }) => {
-      if (marked.has(key) || box.top > high || box.top + box.height < low) {
-        return [];
-      }
-
-      const block = measure(key);
-
-      return block ? inkWordBoxes(block) : [];
-    });
-    return placeMark({
-      copies,
-      live,
-      margins: first
-        ? {
-            left: first.box.left,
-            right: width - first.box.left - first.box.width,
-          }
-        : { left: 0, right: 0 },
-      mark,
-      nearby,
-    });
-  };
-  const ink: Array<Placed['ink'][number]> = [];
-  const signs = new Map<
-    string,
-    Readonly<{
-      left: number;
-      marks: string[];
-      state: InkSign['state'];
-      top: number;
-    }>
-  >();
-
-  for (const mark of read.marks()) {
-    const copies = mark.blocks.flatMap((block) => read.copy(block.copy) ?? []);
-
-    if (copies.length !== mark.blocks.length) continue;
-
-    const places = copies.map((copy) => read.place(copy.id));
-    const placement = places.some((place) => place?.kind === 'gone')
-      ? DELETED
-      : placeOnPage(mark, copies, places);
-
-    if (placement.type === 'ink') {
-      ink.push({ dx: placement.dx, dy: placement.dy, mark });
-    }
-
-    const state = placement.type === 'sign' ? placement.reason : placement.sign;
-
-    if (!state) continue;
-
-    const signAt = Math.max(
-      0,
-      places.findIndex((place) => place?.kind !== 'live')
-    );
-    const anchor = anchorOf(places[signAt]);
-    const id = `${mark.direction}|${anchor.id}|${state}`;
-    const sign = signs.get(id) ?? {
-      left: rails[mark.direction],
-      marks: [],
-      state,
-      top: anchor.top,
-    };
-
-    sign.marks.push(mark.id);
-    signs.set(id, sign);
-  }
-
-  return {
-    bottom: editable.offsetTop + editable.offsetHeight,
-    ink,
-    signs: [...signs].map(([id, { marks, state, ...place }]) => ({
-      ...place,
-      id,
-      sign: { marks, state },
-    })),
-  };
+  );
 };
 
 /**

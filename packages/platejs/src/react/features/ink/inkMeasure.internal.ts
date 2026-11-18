@@ -1,4 +1,10 @@
-import { type NodeKey, type Path, TextApi } from '../../../facade';
+import {
+  ElementApi,
+  type Node,
+  type NodeKey,
+  type Path,
+  TextApi,
+} from '../../../facade';
 import type { InkLine } from '../../../features/ink/lib';
 import {
   INK_VOID,
@@ -22,28 +28,33 @@ export type InkTextBlock = Readonly<{
   text: string;
 }>;
 
+export const inkTextBlockOf = (
+  schema: Editor['read']['schema'],
+  node: Node
+): Readonly<{ id: string; text: string }> | undefined =>
+  ElementApi.isElement(node) &&
+  typeof node.id === 'string' &&
+  !schema.isVoid(node) &&
+  node.children.every(
+    (child) => TextApi.isText(child) || schema.isInline(child)
+  )
+    ? { id: node.id, text: inkText(schema, node) }
+    : undefined;
+
 export const inkTextBlocks = (view: Editor): InkTextBlock[] => {
   const { schema } = view.read;
 
   return view.read.nodes
     .blocks({ at: [], mode: 'lowest' })
     .flatMap(([node, path]) => {
-      if (
-        typeof node.id !== 'string' ||
-        schema.isVoid(node) ||
-        !node.children.every(
-          (child) => TextApi.isText(child) || schema.isInline(child)
-        )
-      ) {
-        return [];
-      }
+      const block = inkTextBlockOf(schema, node);
+
+      if (!block) return [];
 
       const key = view.key(node);
       const element = view.api.dom.resolveDOMNode(key);
 
-      return element
-        ? [{ element, id: node.id, key, path, text: inkText(schema, node) }]
-        : [];
+      return element ? [{ element, key, path, ...block }] : [];
     });
 };
 
