@@ -36,12 +36,15 @@ export const INK_VOID = String.fromCodePoint(0xff_fc);
 
 const INK_RUNS = new RegExp(`[^\\s${INK_VOID}]+|${INK_VOID}`, 'gu');
 
+const textsBySchema = new WeakMap<object, WeakMap<Node, string>>();
+
 /**
  * A block's text as ink reads it: its text, with each inline void as one
  * `INK_VOID`, so a mention the copy lacks changes the text.
  */
 export const inkText = (
   schema: Readonly<{
+    identity: () => object;
     isInline: (node: Node) => boolean;
     isVoid: (node: Node) => boolean;
   }>,
@@ -50,15 +53,30 @@ export const inkText = (
   if (TextApi.isText(node)) return node.text;
   if (!ElementApi.isElement(node)) return '';
 
-  return node.children
-    .map((child) =>
-      ElementApi.isElement(child) &&
-      schema.isInline(child) &&
-      schema.isVoid(child)
-        ? INK_VOID
-        : inkText(schema, child)
-    )
-    .join('');
+  const identity = schema.identity();
+  let texts = textsBySchema.get(identity);
+
+  if (!texts) {
+    texts = new WeakMap();
+    textsBySchema.set(identity, texts);
+  }
+
+  let text = texts.get(node);
+
+  if (text === undefined) {
+    text = node.children
+      .map((child) =>
+        ElementApi.isElement(child) &&
+        schema.isInline(child) &&
+        schema.isVoid(child)
+          ? INK_VOID
+          : inkText(schema, child)
+      )
+      .join('');
+    texts.set(node, text);
+  }
+
+  return text;
 };
 
 const SEGMENTED_SCRIPT =

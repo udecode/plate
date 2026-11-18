@@ -222,13 +222,27 @@ const isNamed = (records: SavedRecords | undefined, id: string) =>
 
 const decodedCopies = new WeakMap<object, Map<string, InkCopy | undefined>>();
 
+const decodedMarks = new WeakMap<object, WeakMap<object, readonly InkMark[]>>();
+
+const frozen = <T extends object>(value: T) => {
+  for (const field of Object.values(value)) {
+    if (typeof field === 'object' && field !== null) frozen(field);
+  }
+  Object.freeze(value);
+
+  return value;
+};
+
 const placeCache = new WeakMap<
   object,
-  Readonly<{
-    chains: Map<string, string | null>;
-    holders: Map<string, EditorUniqueHolder | null>;
-    places: Map<string, InkCopyPlace | undefined>;
-  }>
+  WeakMap<
+    object,
+    Readonly<{
+      chains: Map<string, string | null>;
+      holders: Map<string, EditorUniqueHolder | null>;
+      places: Map<string, InkCopyPlace | undefined>;
+    }>
+  >
 >();
 
 class InkRefusalError extends TypeError {
@@ -500,7 +514,7 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       'copy'
     );
 
-    return { block, height, id, lines, text, width };
+    return frozen({ block, height, id, lines, text, width });
   });
 
 const decodeMark = (
@@ -587,7 +601,7 @@ const decodeMark = (
       refuse('a saved mark must be what add writes');
     }
 
-    return { ...mark, author, blocks, id };
+    return frozen({ ...mark, author, blocks, id });
   });
 
 /**
@@ -666,13 +680,34 @@ export const BaseInkPlugin = definePlugin('ink', {
 
         return record && decodeMark(id, record, copyReader());
       },
-      /** Every saved mark, oldest first. */
+      /**
+       * Every saved mark, oldest first, frozen, as the same list while the
+       * saved marks and copies stay the same.
+       */
       marks: () => {
-        const copyOf = copyReader();
+        const saved = set(MARKS) ?? NO_RECORDS;
+        const copies = set(COPIES) ?? NO_RECORDS;
+        let byCopies = decodedMarks.get(saved);
 
-        return Object.entries(set(MARKS) ?? {})
-          .flatMap(([id, record]) => decodeMark(id, record, copyOf) ?? [])
-          .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1));
+        if (!byCopies) {
+          byCopies = new WeakMap();
+          decodedMarks.set(saved, byCopies);
+        }
+
+        let marks = byCopies.get(copies);
+
+        if (!marks) {
+          const copyOf = copyReader(copies);
+
+          marks = Object.freeze(
+            Object.entries(saved)
+              .flatMap(([id, record]) => decodeMark(id, record, copyOf) ?? [])
+              .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1))
+          );
+          byCopies.set(copies, marks);
+        }
+
+        return marks;
       },
       /**
        * Where the block of the copy saved under `copyId` stands now, or
@@ -682,11 +717,19 @@ export const BaseInkPlugin = definePlugin('ink', {
        */
       place: (copyId: string): InkCopyPlace | undefined => {
         const value = state.value();
-        let cache = placeCache.get(value);
+        const identity = state.schema.identity();
+        let byIdentity = placeCache.get(value);
+
+        if (!byIdentity) {
+          byIdentity = new WeakMap();
+          placeCache.set(value, byIdentity);
+        }
+
+        let cache = byIdentity.get(identity);
 
         if (!cache) {
           cache = { chains: new Map(), holders: new Map(), places: new Map() };
-          placeCache.set(value, cache);
+          byIdentity.set(identity, cache);
         }
         if (cache.places.has(copyId)) return cache.places.get(copyId);
 

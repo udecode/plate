@@ -236,22 +236,36 @@ const useStackedSignTops = (
   hidden: boolean
 ) => {
   React.useLayoutEffect(() => {
-    if (!layer || hidden) return;
+    if (!layer || hidden) return undefined;
 
     const elements = layer.querySelectorAll<HTMLElement>(
       ':scope > [data-ink-sign]'
     );
-    const bottoms = new Map<number, number>();
     const byTop = signs
       .map(({ left, top }, index) => ({ element: elements[index], left, top }))
       .sort((a, b) => a.top - b.top);
+    const stack = () => {
+      const bottoms = new Map<number, number>();
 
-    for (const { element, left, top } of byTop) {
-      const at = Math.max(top, bottoms.get(left) ?? top);
+      for (const { element, left, top } of byTop) {
+        const at = Math.max(top, bottoms.get(left) ?? top);
 
-      element.style.top = `${at}px`;
-      bottoms.set(left, at + element.getBoundingClientRect().height);
+        element.style.top = `${at}px`;
+        bottoms.set(left, at + element.getBoundingClientRect().height);
+      }
+    };
+
+    stack();
+
+    if (elements.length < 2) return undefined;
+
+    const resize = new ResizeObserver(stack);
+
+    for (const element of elements) {
+      resize.observe(element, { box: 'border-box' });
     }
+
+    return () => resize.disconnect();
   });
 };
 
