@@ -9,6 +9,7 @@ import type { Editor } from '../../core';
 import type { InkSign } from './InkLayer';
 import { createInkLayouts } from './inkLayout.internal';
 import {
+  type InkBand,
   type InkLayerOrigin,
   type InkMeasuredBlock,
   inkBoxOf,
@@ -41,6 +42,7 @@ const DELETED = { reason: 'deleted', type: 'sign' } as const;
 const WORDS_CHANGED = { reason: 'changed', type: 'sign' } as const;
 
 type InkInputs = Readonly<{
+  band: InkBand;
   first: InkMeasuredBlock | undefined;
   live: ReadonlyArray<InkMeasuredBlock | undefined>;
   near: readonly InkMeasuredBlock[];
@@ -84,7 +86,7 @@ const inkInputs = (
     return measure(key) ?? [];
   });
 
-  return { first, live, near };
+  return { band: { from, to }, first, live, near };
 };
 
 const placeInkMarks = (
@@ -460,7 +462,7 @@ export const createInkPlacer = ({
         return { ...placement, dy: placement.dy + top - kept.top };
       }
 
-      const { first, live, near } = inputs;
+      const { band, first, live, near } = inputs;
       const placement = placeMark({
         copies,
         live,
@@ -471,7 +473,7 @@ export const createInkPlacer = ({
             }
           : { left: 0, right: 0 },
         mark,
-        nearby: near.flatMap(inkWordBoxes),
+        nearby: near.flatMap((block) => inkWordBoxes(block, band)),
       });
 
       held.set(mark, { key, placement, top });

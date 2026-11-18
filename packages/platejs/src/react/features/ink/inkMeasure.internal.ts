@@ -18,7 +18,12 @@ import type { Editor } from '../../core';
 export type InkLayerOrigin = Readonly<{ left: number; top: number }>;
 
 export type InkMeasuredBlock = InkLiveBlock &
-  Readonly<{ lines: readonly InkLine[] }>;
+  Readonly<{
+    lines: readonly InkLine[];
+    movedTo: (box: InkBox, origin: InkLayerOrigin) => InkMeasuredBlock;
+  }>;
+
+export type InkBand = Readonly<{ from: number; to: number }>;
 
 export type InkTextBlock = Readonly<{
   element: HTMLElement;
@@ -158,88 +163,201 @@ export const measureInkBlock = (
 
   if (rendered !== text) return undefined;
 
-  const box = inkBoxOf(element, origin);
-  const inBlock = (rect: DOMRectReadOnly): InkBox => {
-    const inner = boxIn(rect, origin);
-
-    return { ...inner, left: inner.left - box.left, top: inner.top - box.top };
-  };
-  const chars: InkBox[] = [];
-  const range = element.ownerDocument.createRange();
+  const spans: Array<Readonly<{ end: number; piece: Piece; start: number }>> =
+    [];
 
   for (const piece of pieces) {
-    if (piece instanceof Element) {
-      chars.push(inBlock(piece.getBoundingClientRect()));
-    } else {
-      for (let at = 0; at < piece.length; at++) {
-        range.setStart(piece.node, at);
-        range.setEnd(piece.node, at + 1);
-        chars.push(inBlock(range.getBoundingClientRect()));
+    const start = spans.at(-1)?.end ?? 0;
+    const end = start + (piece instanceof Element ? 1 : piece.length);
+
+    if (end > start) spans.push({ end, piece, start });
+  }
+
+  const range = element.ownerDocument.createRange();
+  const blockBoxesBySpanRange = new Map<string, InkBox>();
+  const readerAt = (client: InkLayerOrigin) => {
+    const spanBox = (
+      span: (typeof spans)[number],
+      from: number,
+      to: number
+    ) => {
+      const key = `${from}:${to}`;
+      let found = blockBoxesBySpanRange.get(key);
+
+      if (!found) {
+        const { piece } = span;
+
+        if (!(piece instanceof Element)) {
+          range.setStart(piece.node, from - span.start);
+          range.setEnd(piece.node, to - span.start);
+        }
+
+        const rect = (
+          piece instanceof Element ? piece : range
+        ).getBoundingClientRect();
+
+        found = boxIn(rect, client);
+        blockBoxesBySpanRange.set(key, found);
       }
-    }
-  }
 
+      return found;
+    };
+
+    return {
+      char: (at: number) => {
+        const span = spans.find((each) => at < each.end);
+
+        return span ? spanBox(span, at, at + 1) : undefined;
+      },
+      run: (start: number, end: number) =>
+        union(
+          spans
+            .filter((span) => span.start < end && span.end > start)
+            .map((span) =>
+              spanBox(
+                span,
+                Math.max(start, span.start),
+                Math.min(end, span.end)
+              )
+            )
+        ),
+    };
+  };
+  const rect = element.getBoundingClientRect();
+  const box = boxIn(rect, origin);
+  const { char, run } = readerAt(rect);
+  const size = text.length;
+  // A character with no box at all, as a browser gives one that lays out
+  // nothing, never starts a line and joins the line around it.
+  const shownFrom = (offset: number) => {
+    let at = offset;
+
+    while (at < size) {
+      const { height = 0, width = 0 } = char(at) ?? {};
+
+      if (height > 0 || width > 0) break;
+      at += 1;
+    }
+
+    return at;
+  };
+  const firstOffsetBelowByHalving = (
+    from: number,
+    isBelow: (offset: number) => boolean
+  ) => {
+    let low = from;
+    let high = size;
+
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+
+      if (isBelow(middle)) high = middle;
+      else low = middle + 1;
+    }
+
+    return low;
+  };
   const lines: InkLine[] = [];
-  const lineOfChar: number[] = [];
-  let first = 0;
 
-  for (const [at, char] of chars.entries()) {
-    const head = chars[first];
+  for (let first = 0; first < size;) {
+    const headAt = shownFrom(first);
+    let end = size;
 
-    if (at > first && char.top >= head.top + head.height / 2) {
-      lines.push({ end: at, ...union(chars.slice(first, at)) });
-      first = at;
+    if (headAt < size) {
+      const head = char(headAt);
+      const threshold = (head?.top ?? 0) + (head?.height ?? 0) / 2;
+      const below = (offset: number) => {
+        const at = shownFrom(offset);
+
+        return at < size && (char(at)?.top ?? 0) >= threshold;
+      };
+
+      end = shownFrom(firstOffsetBelowByHalving(headAt + 1, below));
     }
-    lineOfChar.push(lines.length);
+    lines.push({ end, ...run(first, end) });
+    first = end;
   }
-  if (chars.length > 0) {
-    lines.push({ end: chars.length, ...union(chars.slice(first)) });
-  } else {
+  if (size === 0) {
     const caret = element.querySelector('[data-editor-node="text"]');
 
     lines.push({
       end: 0,
       ...(caret
-        ? inBlock(caret.getBoundingClientRect())
+        ? boxIn(caret.getBoundingClientRect(), rect)
         : { ...box, left: 0, top: 0 }),
       width: 0,
     });
   }
 
-  const indexAt = (offset: number) =>
-    offset < chars.length ? lineOfChar[offset] : lines.length - 1;
+  const indexAt = (offset: number) => {
+    if (offset >= size) return lines.length - 1;
 
-  return {
-    box,
+    let low = 0;
+    let high = lines.length - 1;
+
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+
+      if (offset < lines[middle].end) high = middle;
+      else low = middle + 1;
+    }
+
+    return low;
+  };
+  const blockAt = (
+    where: InkBox,
+    reader: ReturnType<typeof readerAt>
+  ): InkMeasuredBlock => ({
+    box: where,
     line: (offset) => lines[indexAt(offset)],
     lines,
+    movedTo: (next, layer) =>
+      blockAt(
+        next,
+        readerAt({ left: next.left + layer.left, top: next.top + layer.top })
+      ),
     measure: (start, end) => {
       const index = indexAt(start);
       const { height, top } = lines[index];
 
       if (start === end) {
-        const after = indexAt(start - 1) === index ? chars[start - 1] : null;
+        const after =
+          start > 0 && indexAt(start - 1) === index
+            ? reader.char(start - 1)
+            : undefined;
         const left = after
           ? after.left + after.width
-          : (chars[start]?.left ?? lines[index].left);
+          : (reader.char(start)?.left ?? lines[index].left);
 
         return { height, left, top, width: 0 };
       }
       if (indexAt(end - 1) !== index) return undefined;
 
-      const { left, width } = union(chars.slice(start, end));
+      const { left, width } = reader.run(start, end);
 
       return { height, left, top, width };
     },
     text,
-  };
+  });
+
+  return blockAt(box, { char, run });
 };
 
-/** The box of each word's part on each line, in layer space. */
-export const inkWordBoxes = (live: InkMeasuredBlock): InkBox[] =>
-  inkWords(live.text).flatMap(([start, end]) =>
-    live.lines.flatMap((line, index) => {
-      const from = Math.max(start, index === 0 ? 0 : live.lines[index - 1].end);
+export const inkWordBoxes = (
+  live: InkMeasuredBlock,
+  band?: InkBand
+): InkBox[] => {
+  const lines = live.lines.flatMap((line, index) => {
+    const top = live.box.top + line.top;
+
+    return band && (top > band.to || top + line.height < band.from)
+      ? []
+      : [{ end: line.end, start: index === 0 ? 0 : live.lines[index - 1].end }];
+  });
+
+  return inkWords(live.text).flatMap(([start, end]) =>
+    lines.flatMap((line) => {
+      const from = Math.max(start, line.start);
       const to = Math.min(end, line.end);
       const box = from < to ? live.measure(from, to) : undefined;
 
@@ -254,6 +372,7 @@ export const inkWordBoxes = (live: InkMeasuredBlock): InkBox[] =>
         : [];
     })
   );
+};
 
 /** Whether two measurements of one block place every word the same: equal box, lines and word boxes. */
 export const sameInkLayout = (

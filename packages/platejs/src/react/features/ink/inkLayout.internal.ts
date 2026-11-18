@@ -40,7 +40,7 @@ export const createInkLayouts = () => {
         near(layout.box.width, box.width) &&
         near(layout.box.height, box.height)
       ) {
-        return { ...layout, box };
+        return layout.movedTo(box, origin);
       }
 
       const measured = measureInkBlock(element, text, origin);

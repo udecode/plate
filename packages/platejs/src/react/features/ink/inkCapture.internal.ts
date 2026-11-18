@@ -24,6 +24,7 @@ import {
   type InkTextBlock,
   inkBoxOf,
   inkTextBlocks,
+  inkWordBoxes,
   measureInkBlock,
   sameInkBox,
   sameInkLayout,
@@ -83,27 +84,44 @@ const runsOf = (
 
   if (index === -1) return [];
 
-  const start = lineStart(live, index);
-  const { end } = live.lines[index];
   const middle =
     points.reduce((sum, [x]) => sum + x, 0) / points.length - live.box.left;
-  let offset = start;
+  let offset = lineStart(live, index);
 
-  for (const [from, to] of inkWords(live.text)) {
-    const box =
-      from >= start && from < end
-        ? live.measure(from, Math.min(to, end))
-        : undefined;
-
-    if (box && box.left + box.width / 2 < middle) offset = Math.min(to, end);
+  for (const { offset: after, word } of placesOnLine(live, index)) {
+    if (word && word.left + word.width / 2 < middle) offset = after;
   }
 
-  const gap = live.measure(...gapAround(live.text, offset));
-  const place = gap ?? live.measure(offset, offset);
+  const place = placeAt(live, offset);
 
   return place
     ? [{ end: offset, left: place.left, start: offset, width: place.width }]
     : [];
+};
+
+const placesOnLine = (live: InkMeasuredBlock, index: number) => {
+  const start = lineStart(live, index);
+  const { end } = live.lines[index];
+
+  return [
+    { offset: start, word: undefined },
+    ...inkWords(live.text)
+      .filter(([from]) => from >= start && from < end)
+      .map(([from, to]) => ({
+        offset: Math.min(to, end),
+        word: live.measure(from, Math.min(to, end)),
+      })),
+  ];
+};
+
+const placeAt = (live: InkMeasuredBlock, offset: number) =>
+  live.measure(...gapAround(live.text, offset)) ?? live.measure(offset, offset);
+
+const readSealBoxes = (live: InkMeasuredBlock) => {
+  inkWordBoxes(live);
+  for (const index of live.lines.keys()) {
+    for (const { offset } of placesOnLine(live, index)) placeAt(live, offset);
+  }
 };
 
 const marginOf = (
@@ -188,6 +206,8 @@ export const attachInkCapture = ({
     origin: InkLayerOrigin
   ): Entered | undefined => {
     const live = measureInkBlock(block.element, block.text, origin);
+
+    if (live) readSealBoxes(live);
 
     return (
       live && {
