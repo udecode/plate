@@ -83,18 +83,15 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
-      // oxlint-disable-next-line unicorn/no-document-cookie
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
     },
     [setOpenProp, open]
   );
 
   // Helper to toggle the sidebar.
-  const toggleSidebar = React.useCallback(
-    () =>
-      isMobile ? setOpenMobile((value) => !value) : setOpen((value) => !value),
-    [isMobile, setOpen, setOpenMobile]
-  );
+  const toggleSidebar = React.useCallback(() => {
+    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+  }, [isMobile, setOpen, setOpenMobile]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -287,7 +284,6 @@ function SidebarRail({ className, ...props }: React.ComponentProps<'button'>) {
 
   return (
     <button
-      type="button"
       data-sidebar="rail"
       data-slot="sidebar-rail"
       aria-label="Toggle Sidebar"
@@ -504,7 +500,7 @@ function SidebarMenuButton({
   isActive = false,
   variant = 'default',
   size = 'default',
-  tooltip: initialTooltip,
+  tooltip,
   className,
   ...props
 }: React.ComponentProps<'button'> & {
@@ -514,7 +510,6 @@ function SidebarMenuButton({
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot.Root : 'button';
   const { isMobile, state } = useSidebar();
-  let tooltip = initialTooltip;
 
   const button = (
     <Comp
@@ -604,14 +599,6 @@ function SidebarMenuBadge({
   );
 }
 
-function getSkeletonWidth(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  }
-  return `${50 + (Math.abs(hash) % 40)}%`;
-}
-
 function SidebarMenuSkeleton({
   className,
   showIcon = false,
@@ -619,7 +606,10 @@ function SidebarMenuSkeleton({
 }: React.ComponentProps<'div'> & {
   showIcon?: boolean;
 }) {
-  const width = getSkeletonWidth(React.useId());
+  // Random width between 50 to 90%.
+  const width = React.useMemo(() => {
+    return `${Math.floor(Math.random() * 40) + 50}%`;
+  }, []);
 
   return (
     <div

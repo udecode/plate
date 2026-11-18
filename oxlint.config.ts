@@ -26,6 +26,8 @@ const plateOxlintIgnorePatterns = [
   'apps/plite/tests/**/donor/**',
   // Synced byte-for-byte from shadcn; provenance.json holds their hashes.
   'apps/www/src/registry/bases/*/ui/**',
+  // Copied from shadcn new-york-v4.
+  'apps/www/src/components/ui/**',
   'benchmarks/slate-v2/donor/**',
   'tooling/plite/donor/**',
   // The load-trace fixtures hold the CommonJS and computed load forms the

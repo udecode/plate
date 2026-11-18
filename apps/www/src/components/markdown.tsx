@@ -7,7 +7,7 @@ import { Link } from '@/components/link';
 import * as Typography from '@/components/typography';
 import { cn } from '@/lib/utils';
 
-import { CodeBlock } from './ui/codeblock';
+import { CodeBlock } from './markdown-codeblock';
 
 const LANGUAGE_REGEX = /language-(\w+)/;
 const TRAILING_NEWLINE_REGEX = /\n$/;

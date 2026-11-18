@@ -63,7 +63,6 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
-    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] Pointer activation transfers focus to the group's keyboard-accessible input; making the addon another control would add a duplicate tab stop.
     <div
       role="group"
       data-slot="input-group-addon"
