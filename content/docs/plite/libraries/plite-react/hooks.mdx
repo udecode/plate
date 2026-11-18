@@ -321,6 +321,16 @@ them, when that view belongs to the same `EditorRoot`. While
 no `Editable` of its `EditorRoot` shows the root, the calls find no DOM and
 `focus()` does nothing.
 
+#### `useSelectionView(editor): Editor`
+
+Get the mounted view whose root holds the selection when that view's
+`Editable` sits inside the `Editable` of `editor`, such as a board note's view
+inside the page. A view of another `EditorRoot` rendered inside it does not
+count. Otherwise it returns `editor`. When several views show that
+root, the focused one wins, then the document's last focused view if it is one
+of them. A toolbar outside a nested `Editable` runs its commands on the view
+this returns. See [Roots](../../concepts/13-roots#rendering-roots).
+
 #### `useRootChrome(root?, options?): RootChromeController`
 
 Create root chrome props for mouse interaction outside the editable content,

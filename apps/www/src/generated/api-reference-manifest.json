@@ -11765,7 +11765,7 @@
         },
         "platejs/comments:CommentRanges": {
           "aliases": [],
-          "documentation": "Primary-document ranges keyed by thread ID. Save them with the exact document\nrevision they address; the record has a null prototype.",
+          "documentation": "Ranges keyed by thread ID. A range in a named root carries that root on both\npoints. Save them with the exact document revision they address.",
           "entrypoint": "platejs/comments",
           "kind": "type",
           "name": "CommentRanges",

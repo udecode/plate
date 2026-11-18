@@ -147,7 +147,7 @@ Completed generated comments publish directly as ordinary threads without an app
 
 ### Build API route
 
-Handle `editor.plugin(AIChatPlugin).api.submit` requests on the server. Each request includes the chat `messages` from `@ai-sdk/react` and a `ctx` payload that contains the editor `children`, current `selection`, and last `toolName`.
+Handle `editor.plugin(AIChatPlugin).api.submit` requests on the server. Each request includes the chat `messages` from `@ai-sdk/react` and a `ctx` payload with `children`, `selection` and the last `toolName`. `ctx.children` holds the editor's children. A request from text in a [board](/docs/board) note holds only the note's blocks instead, with `ctx.selection` relative to the note, so a server editor without the board plugins loads it. A request made with a whole note selected still holds the board's shapes. Every request drops review marks from its blocks, so a pending change reaches the model as plain text.
 [Complete API example](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"

@@ -122,6 +122,34 @@ const editor = createEditor({
 
 <ComponentSource name="floating-toolbar" />
 
+### 作用于持有选区的视图
+
+嵌套视图（例如[白板](/docs/board)便签的文字）是页面 Editable 内部的独立 Editable。
+由页面 slot 渲染的工具栏通过 `useEditor()` 得到页面编辑器。把应作用于嵌套视图的按钮包在
+`EditorSelectionView` 中：
+
+```tsx
+import { EditorSelectionView } from 'platejs/react';
+
+<ToolbarGroup>
+  <EditorSelectionView>
+    <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
+      <HighlighterIcon />
+    </MarkToolbarButton>
+    <CommentToolbarButton />
+  </EditorSelectionView>
+  <AllCommentsButton />
+</ToolbarGroup>
+```
+
+在它内部，`useEditor()`、`useEditableRef()`、`useEditorFocused()` 和
+`useFocusedLast()` 对应根中持有选区的视图。选区在页面中，或页面 Editable 内没有挂载该根的视图时，
+子组件保留页面编辑器。包装之外的按钮（例如这里的“所有评论”）作用于页面。
+
+复制的 `FloatingToolbar` 包住整个工具栏，并根据 `useEditableRef()` 定位，所以会在选中的便签文字旁打开，
+并在那里显示 Ask AI、标记按钮和评论按钮。复制的 `FixedToolbarButtons` 包住标记、颜色、高亮和评论按钮。
+撤销、插入和转换在包装之外，作用于页面。复制的 AI 菜单也以同样方式包住自身。
+
 ### 创建自定义按钮
 
 这个示例展示了一个向编辑器插入自定义文本的按钮。

@@ -172,6 +172,8 @@ if (attachment?.type === "range" && attachment.status === "attached") {
 
 An unavailable attachment does not prove deletion. It can also mean that a projection hides the target or that a historical revision has no target for the thread. Keep conversation data visible independently of inline placement.
 
+A thread can sit in a named root, such as the text of a [board](/docs/board) note. The page's view reads it with the note's root on both points of its range. A note's view reads a thread in any other root, the page's included, as unavailable.
+
 #### Attach app data
 
 A thread and each of its messages can carry `data`, a JSON object your application owns, such as reactions or the model that wrote a comment. Comments checks that it is JSON, stores a frozen copy with the record, and never reads its keys. Set it when you create a thread or reply, and change it with `setData`:
@@ -194,7 +196,7 @@ The `data` passed to `createThread` or `createDraft` belongs to the thread; its 
 
 Render `AllCommentsButton` inside a toolbar whenever the editor installs Comments. It opens a lazy, paginated dialog over published records and works without a document selection, in read-only views, and without Suggestions. The **All**, **Open**, and **Resolved** filters use conversation state; target availability does not remove a record from those filters.
 
-Only the mounted page resolves targets. **Show in document** reads the attachment again before selecting and scrolling the exact current-view range. Unavailable targets remain readable with the neutral label **Target unavailable in this view**. Dirty reply or edit input and pending actions keep their page mounted and block dismissal, filtering, paging, navigation, and destructive deletion until the action succeeds or the user cancels.
+Only the mounted page resolves targets. **Show in document** reads the attachment again before selecting and scrolling the exact current-view range. For a thread in a board note, it selects the note's text, focuses the note and pans the board when part of the note is out of view. Unavailable targets remain readable with the neutral label **Target unavailable in this view**. Dirty reply or edit input and pending actions keep their page mounted and block dismissal, filtering, paging, navigation, and destructive deletion until the action succeeds or the user cancels.
 
 ### Save and load
 
@@ -214,7 +216,23 @@ await repository.put(revision, { ifMatch: previousRevision });
 
 In this example, `repository` is your application's storage adapter. It checks the expected revision before it commits.
 
-`ranges()` returns `CommentRanges`, a record of plain primary-document `Range` values keyed by thread ID. It includes published threads, creates and draft publishes still waiting on `mutate`, drafts whose publish threw, and orphans. Other local drafts, unavailable ranges and threads on a suggestion have no entry; a suggestion's thread row keeps the change's ID instead. A range matches only the revision it was saved with.
+`ranges()` returns `CommentRanges`, a record of plain `Range` values keyed by thread ID. It includes published threads, creates and draft publishes still waiting on `mutate`, drafts whose publish threw, and orphans. Other local drafts, unavailable ranges and threads on a suggestion have no entry; a suggestion's thread row keeps the change's ID instead. A range matches only the revision it was saved with.
+
+A range in a named root, such as the text of a board note, carries that root on both points. A page range carries none:
+
+```ts
+editor.plugin(CommentsPlugin).api.ranges();
+// {
+//   t1: {
+//     anchor: { path: [0, 0], offset: 0 },
+//     focus: { path: [0, 0], offset: 5 },
+//   },
+//   t2: {
+//     anchor: { path: [0, 0, 0], offset: 0, root: "board:demo" },
+//     focus: { path: [0, 0, 0], offset: 4, root: "board:demo" },
+//   },
+// }
+```
 
 To load, create a fresh editor from `revision.document` with the same content plugins, and pass `{ threads, ranges: revision.commentRanges }` as `initialComments`, with `threads` read from your table. The pair has the type `SavedComments`.
 
@@ -228,7 +246,7 @@ Comments admits each row on its own. A malformed or unpublished thread, a duplic
 | --- | --- |
 | `'invalid-thread'` | The thread row was malformed or unpublished and did not load |
 | `'duplicate-thread'` | A second row reused a thread ID; the first row loaded |
-| `'invalid-range'` | The range was malformed, outside the document or on a suggestion's thread |
+| `'invalid-range'` | The range was malformed, outside the document, across two roots or on a suggestion's thread |
 | `'orphan-range'` | A saved range has no loaded thread; it leaves `issues` when the orphan attaches or is discarded |
 
 A load throws only when `threads` is not an array or `ranges` is not a record. Comments cannot tell a foreign document whose coordinates happen to be valid.
@@ -333,7 +351,7 @@ export type CommentMutationDecision =
   | Readonly<{ code?: string; status: 'reject' }>;
 ```
 
-Authenticate the actor, authorize the operation, and persist it in your service before returning `{ status: 'commit', thread }`. Return the canonical approved record, or `thread: null` for deletion. The committed record preserves the proposed thread ID and target identity. Return `{ status: 'reject' }` with an optional `code` to deny a write. A create or draft publish also receives `range`, the primary-document range that `ranges()` saves for it. Use `mutationId` for idempotency and enforce cross-client compare-and-swap in your storage layer.
+Authenticate the actor, authorize the operation, and persist it in your service before returning `{ status: 'commit', thread }`. Return the canonical approved record, or `thread: null` for deletion. The committed record preserves the proposed thread ID and target identity. Return `{ status: 'reject' }` with an optional `code` to deny a write. A create or draft publish also receives `range`, the range that `ranges()` saves for it. Use `mutationId` for idempotency and enforce cross-client compare-and-swap in your storage layer.
 
 Comments publishes only after commit. Rejection or a thrown error preserves the previous record and composer. Actions are serialized per thread; an editor or thread retired while work is pending can return `stale`. The default adapter commits locally. Hiding controls or setting document `readOnly` does not authorize comment writes.
 
@@ -513,9 +531,9 @@ export type CreateCommentThreadInput = Readonly<{
 }>;
 ```
 
-`CommentData` is a JSON object of `CommentDataValue` values: strings, finite numbers, booleans, `null`, arrays and nested objects. Creation requires a current user and a nonempty body. Range creation requires a noncollapsed range in the primary document. Comments supplies actors and timestamps, or accepts canonical values from the adapter.
+`CommentData` is a JSON object of `CommentDataValue` values: strings, finite numbers, booleans, `null`, arrays and nested objects. Creation requires a current user and a nonempty body. Range creation requires a noncollapsed range within one root. Comments supplies actors and timestamps, or accepts canonical values from the adapter.
 
-Pass ranges from the calling view to `begin`, `createThread`, and `createDraft`. Their anchors capture that view's coordinates. Read `pendingRange()` and `attachment(id)` through the view that will consume them rather than reusing coordinates from another projection.
+Pass ranges from the calling view to `begin`, `createThread`, and `createDraft`. A range without a root is in that view's root, and the page's view also takes a range that names a note's root, as `ranges()` returns it. Their anchors capture that view's coordinates. Read `pendingRange()` and `attachment(id)` through the view that will consume them rather than reusing coordinates from another projection.
 
 `create` and `createThread` return `Promise<CommentMutationResult<string>>`. All other durable methods return `Promise<CommentMutationResult<undefined>>`. `begin`, `cancel`, `createDraft`, and `discardDraft` stay local.
 

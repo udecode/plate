@@ -147,7 +147,7 @@ CommentsPlugin.configure({
 
 ### 构建 API 路由
 
-在服务器上处理 `editor.plugin(AIChatPlugin).api.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
+在服务器上处理 `editor.plugin(AIChatPlugin).api.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含 `children`、`selection` 和最后的 `toolName`。`ctx.children` 是编辑器的 children。来自[白板](/docs/board)便签文字的请求只包含便签的区块，`ctx.selection` 相对于便签，因此没有白板插件的服务端编辑器也能加载它。选中整张便签时发出的请求仍包含白板的图形。每个请求都会去掉区块中的审阅标记，因此待处理的更改以纯文本形式交给模型。
 [完整 API 示例](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"

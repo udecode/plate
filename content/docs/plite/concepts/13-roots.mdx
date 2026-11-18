@@ -99,6 +99,31 @@ Use `useRootState(root, selector)` for UI that reads one root without
 subscribing to every editor change. Use `useRootEditor(root)` for commands
 that must run against a specific root.
 
+A content root's view, such as a board note's text, is an `Editable` of its
+own inside the page's `Editable`. UI outside it, such as a page toolbar, gets
+that view from `useSelectionView(editor)` while the selection is in its root,
+and `editor` otherwise. Plate wraps this as
+[`EditorSelectionView`](/docs/toolbar#act-on-the-view-that-holds-the-selection).
+
+```tsx
+import { useEditorContext, useSelectionView } from "plitejs/react";
+
+const BoldButton = () => {
+  const view = useSelectionView(useEditorContext());
+
+  return (
+    <button
+      onMouseDown={(event) => {
+        event.preventDefault();
+        view.update.marks.toggle("bold");
+      }}
+    >
+      Bold
+    </button>
+  );
+};
+```
+
 ## Content roots
 
 Content roots attach a separately addressed editable root to an element in
@@ -162,6 +187,31 @@ a separately mounted document that belongs to exactly one element, such as an
 element-owned annotation surface. Moving an owner preserves its root key.
 Removing, retargeting, or changing the type of an exclusive owner removes the
 root only when it becomes orphaned.
+
+### List roots and their owners
+
+`editor.read.roots()` lists every named root with the elements that own it, in
+reading order: a root comes right after its first owner's place. Here a board
+on the page holds a note, and the note holds a second board.
+
+```tsx
+editor.read.roots();
+// [
+//   { root: "board:a", owners: [{ path: [0], slot: "shapes" }], top: [0] },
+//   {
+//     root: "board:b",
+//     owners: [{ path: [0, 1], root: "board:a", slot: "shapes" }],
+//     top: [0],
+//   },
+// ]
+```
+
+Each owner gives its `path` and `slot`, and its `root` when the owner sits in
+another named root rather than on the page. A shared root lists every owner.
+`top` is the path of the page block that holds the root through its first
+owners. A root that no chain of owners reaches from the page, such as a
+`header` root the page renders with `<Editable root="header" />`, comes last,
+with `top: null`.
 
 ### Set roots
 

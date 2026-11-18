@@ -129,6 +129,40 @@ Similarly, you can customize the floating toolbar by editing `components/editor/
 
 <ComponentSource name="floating-toolbar" />
 
+### Act on the view that holds the selection
+
+A nested view, such as the text of a [board](/docs/board) note, is an Editable
+of its own inside the page's Editable. A toolbar that a page slot renders gets
+the page editor from `useEditor()`. Wrap the buttons that should act on the
+nested view in `EditorSelectionView`:
+
+```tsx
+import { EditorSelectionView } from 'platejs/react';
+
+<ToolbarGroup>
+  <EditorSelectionView>
+    <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
+      <HighlighterIcon />
+    </MarkToolbarButton>
+    <CommentToolbarButton />
+  </EditorSelectionView>
+  <AllCommentsButton />
+</ToolbarGroup>
+```
+
+Inside it, `useEditor()`, `useEditableRef()`, `useEditorFocused()` and
+`useFocusedLast()` answer for the view whose root holds the selection. Children
+keep the page editor when the selection is on the page or no view of its root
+is mounted inside the page's Editable. A button outside the wrapper, such as
+All comments here, acts on the page.
+
+The copied `FloatingToolbar` wraps its whole body and positions itself against
+`useEditableRef()`, so it opens beside selected note text. There it shows Ask
+AI, the mark buttons and Comment. The copied `FixedToolbarButtons` wraps its
+mark, color, highlight and comment buttons. Undo, Insert and Turn into sit
+outside the wrapper and act on the page. The copied AI menu wraps itself the
+same way.
+
 ### Creating custom button
 
 This example shows a button that inserts custom text into the editor.

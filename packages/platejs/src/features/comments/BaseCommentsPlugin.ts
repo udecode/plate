@@ -143,8 +143,8 @@ const commentCreationHistoryEffect =
 export type PendingComment = Readonly<{ excerpt: string }>;
 
 /**
- * Primary-document ranges keyed by thread ID. Save them with the exact document
- * revision they address; the record has a null prototype.
+ * Ranges keyed by thread ID. A range in a named root carries that root on both
+ * points. Save them with the exact document revision they address.
  */
 export type CommentRanges = Readonly<Record<string, Range>>;
 

@@ -136,6 +136,8 @@ if (attachment?.type === "range" && attachment.status === "attached") {
 
 `unavailable` 不能证明文本已被删除；投影隐藏目标或历史版本缺少目标也会导致此状态。**所有评论**会保留线程和原始摘录，只有附着位置可用时才显示行内高亮和区块计数。
 
+线程可以位于命名根中，例如[白板](/docs/board)便签的文字。页面视图读取它时，范围的两端都带有便签的根。便签视图会把其他根中的线程（包括页面中的线程）读取为 `unavailable`。
+
 ### 附加应用数据
 
 线程及其每条消息都可以带 `data`，即应用自有的 JSON 对象，例如表情回应或生成评论的模型。Comments 只检查它是 JSON，随记录保存一份冻结副本，从不读取其中的键。创建线程或回复时设置它，之后用 `setData` 修改：
@@ -158,7 +160,7 @@ await comments.setData(threadId, null);
 
 编辑器安装 Comments 时，在工具栏中渲染 `AllCommentsButton`。它按需打开分页 dialog，无需文档选区，也可用于只读视图或未安装 Suggestions 的编辑器。**全部**、**打开**和**已解决**按对话状态筛选；目标是否可用不会移除记录。
 
-只有当前挂载页会解析目标。**在文档中显示**会在选择和滚动前重新读取当前位置。不可用目标显示中性的 **此视图中目标不可用**。有未保存的回复或编辑内容，或操作仍在等待时，dialog 会保留当前页，并阻止关闭、筛选、翻页、导航和破坏性删除，直到操作成功或用户明确取消。
+只有当前挂载页会解析目标。**在文档中显示**会在选择和滚动前重新读取当前位置。对于白板便签中的线程，它会选中便签文字、聚焦便签，并在便签有部分位于视野外时平移白板。不可用目标显示中性的 **此视图中目标不可用**。有未保存的回复或编辑内容，或操作仍在等待时，dialog 会保留当前页，并阻止关闭、筛选、翻页、导航和破坏性删除，直到操作成功或用户明确取消。
 
 ### 保存和加载
 
@@ -178,7 +180,23 @@ await repository.put(revision, { ifMatch: previousRevision });
 
 此例中的 `repository` 是应用的存储适配器，它在提交前检查预期版本。
 
-`ranges()` 返回 `CommentRanges`：以线程 ID 为键、值为主文档普通 `Range` 的记录。它包含已发布线程、仍在等待 `mutate` 的创建和草稿发布、发布时抛出错误的草稿，以及孤立范围。其他本地草稿、不可用的范围和建议上的线程没有条目；建议线程的记录保存 change ID。范围只与保存时的文档版本对应。
+`ranges()` 返回 `CommentRanges`：以线程 ID 为键、值为普通 `Range` 的记录。它包含已发布线程、仍在等待 `mutate` 的创建和草稿发布、发布时抛出错误的草稿，以及孤立范围。其他本地草稿、不可用的范围和建议上的线程没有条目；建议线程的记录保存 change ID。范围只与保存时的文档版本对应。
+
+命名根中的范围（例如白板便签文字中的范围）在两端都带有该根，页面范围不带根：
+
+```ts
+editor.plugin(CommentsPlugin).api.ranges();
+// {
+//   t1: {
+//     anchor: { path: [0, 0], offset: 0 },
+//     focus: { path: [0, 0], offset: 5 },
+//   },
+//   t2: {
+//     anchor: { path: [0, 0, 0], offset: 0, root: "board:demo" },
+//     focus: { path: [0, 0, 0], offset: 4, root: "board:demo" },
+//   },
+// }
+```
 
 加载时，用 `revision.document` 和相同的内容插件创建新编辑器，把 `{ threads, ranges: revision.commentRanges }` 传给 `initialComments`，其中 `threads` 从应用的表读取。这对数据的类型是 `SavedComments`。
 
@@ -192,7 +210,7 @@ Comments 逐行接收数据。格式错误或未发布的线程、重复的线�
 | --- | --- |
 | `'invalid-thread'` | 线程行格式错误或未发布，未加载 |
 | `'duplicate-thread'` | 后一行重复使用线程 ID；第一行已加载 |
-| `'invalid-range'` | 范围格式错误、超出文档，或属于建议上的线程 |
+| `'invalid-range'` | 范围格式错误、超出文档、跨越两个根，或属于建议上的线程 |
 | `'orphan-range'` | 保存的范围没有已加载的线程；孤立范围重新附着或被丢弃后，它离开 `issues` |
 
 只有 `threads` 不是数组或 `ranges` 不是记录时，加载才会抛出错误。Comments 无法识别坐标恰好有效的其他文档。
@@ -258,7 +276,7 @@ export type CommentMutationDecision =
   | Readonly<{ code?: string; status: 'reject' }>;
 ```
 
-服务端验证身份、授权并持久化后，返回 `{ status: 'commit', thread }`，其中 `thread` 是规范记录；删除时为 `null`。提交的记录保留提案中的线程 ID 和目标身份。拒绝写入时返回 `{ status: 'reject' }`，可附带 `code`。创建和草稿发布还会收到 `range`，即 `ranges()` 为它保存的主文档范围。用 `mutationId` 保证重试幂等，并在存储层执行跨客户端的比较并交换检查。
+服务端验证身份、授权并持久化后，返回 `{ status: 'commit', thread }`，其中 `thread` 是规范记录；删除时为 `null`。提交的记录保留提案中的线程 ID 和目标身份。拒绝写入时返回 `{ status: 'reject' }`，可附带 `code`。创建和草稿发布还会收到 `range`，即 `ranges()` 为它保存的范围。用 `mutationId` 保证重试幂等，并在存储层执行跨客户端的比较并交换检查。
 
 Comments 只在提交后发布记录。拒绝或抛出错误时，保留原记录和输入。操作按线程串行执行；等待期间编辑器或线程失效时，可返回 `stale`。默认适配器在本地提交。隐藏控件或设置文档 `readOnly` 不能替代评论授权。
 
@@ -438,9 +456,9 @@ export type CreateCommentThreadInput = Readonly<{
 }>;
 ```
 
-`CommentData` 是由 `CommentDataValue` 组成的 JSON 对象：字符串、有限数字、布尔值、`null`、数组和嵌套对象。创建需要当前用户和非空正文。范围目标必须是主文档中的非折叠范围。Comments 生成身份与时间戳，或接受适配器返回的规范值。
+`CommentData` 是由 `CommentDataValue` 组成的 JSON 对象：字符串、有限数字、布尔值、`null`、数组和嵌套对象。创建需要当前用户和非空正文。范围目标必须是同一个根中的非折叠范围。Comments 生成身份与时间戳，或接受适配器返回的规范值。
 
-传给 `begin`、`createThread` 和 `createDraft` 的范围必须来自调用视图，锚点会在该视图中捕获坐标。通过消费坐标的视图读取 `pendingRange()` 和 `attachment(id)`，不要复用其他投影中的坐标。
+传给 `begin`、`createThread` 和 `createDraft` 的范围必须来自调用视图。未指定根的范围属于该视图的根；页面视图也接受指明便签根的范围，即 `ranges()` 返回的形式。锚点会在该视图中捕获坐标。通过消费坐标的视图读取 `pendingRange()` 和 `attachment(id)`，不要复用其他投影中的坐标。
 
 `create` 和 `createThread` 返回 `Promise<CommentMutationResult<string>>`。其他持久化操作返回 `Promise<CommentMutationResult<undefined>>`。`begin`、`cancel`、`createDraft` 和 `discardDraft` 仅在本地执行。
 

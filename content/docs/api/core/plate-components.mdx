@@ -182,6 +182,7 @@ The frame does not impose a fixed height by itself.
 | `EditorElement`           | Default element renderer for block and inline elements.                                          |
 | `EditorLeaf`              | Default persisted-mark renderer for a text segment.                                               |
 | `EditorText`              | Default wrapper around every rendered segment of one text node.                                  |
+| `EditorSelectionView`     | Hooks of its children read the nested view that holds the selection, such as a board note's text. |
 
 ## Render pipeline
 
@@ -570,6 +571,24 @@ for minimal, scrollable, and fixed-toolbar compositions.
     >
       HTML props passed to the container `div`. Sibling slots receive
       `containerRef`, not these props.
+    </APIItem>
+  </APIProps>
+</API>
+
+### `EditorSelectionView`
+
+Gives its children the mounted view whose root holds the selection, such as a
+board note's view inside the page, as their editor. Inside it `useEditor()`,
+`useEditableRef()`, `useEditorFocused()` and `useFocusedLast()` answer for that
+view. Children keep the current editor when the selection is in that editor's root, when
+no view of the selection's root is mounted inside its Editable, or when several
+are and none is focused or was focused last. See
+[Toolbar](/docs/toolbar#act-on-the-view-that-holds-the-selection).
+
+<API name="EditorSelectionView">
+  <APIProps>
+    <APIItem name="children" type="React.ReactNode">
+      UI that acts on the view holding the selection.
     </APIItem>
   </APIProps>
 </API>

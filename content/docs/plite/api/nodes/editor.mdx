@@ -305,6 +305,10 @@ const body = editor.read.children();
 const footer = editor.read.root("footer");
 ```
 
+`editor.read.roots()` lists every named root with the elements that own it, as
+[List roots and their owners](../../concepts/13-roots#list-roots-and-their-owners)
+shows.
+
 Create, replace, or delete extra roots with `tx.roots`.
 
 ```javascript

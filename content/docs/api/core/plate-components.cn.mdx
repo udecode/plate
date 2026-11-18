@@ -176,6 +176,7 @@ frame 本身不会强制指定一个固定高度。
 | `EditorElement`   | block 和 inline 元素的默认 renderer。                                               |
 | `EditorLeaf`      | 文本片段的默认持久 mark renderer。                                                    |
 | `EditorText`      | 单个文本节点全部渲染片段的默认外层 wrapper。                                         |
+| `EditorSelectionView` | 子组件的 hook 读取持有选区的嵌套视图，例如白板便签的文字。                         |
 
 ## 渲染管线
 
@@ -433,6 +434,22 @@ export function FigureElement({
       optional
     >
       传给容器 `div` 的 HTML props。兄弟 slot 接收 `containerRef`，不接收这些 props。
+    </APIItem>
+  </APIProps>
+</API>
+
+### `EditorSelectionView`
+
+把根中持有选区的已挂载视图（例如页面内白板便签的视图）作为编辑器交给子组件。在它内部，
+`useEditor()`、`useEditableRef()`、`useEditorFocused()` 和 `useFocusedLast()`
+对应该视图。选区在当前编辑器的根中、它的 Editable 内没有挂载选区所在根的视图，
+或挂载了多个但都没有焦点且都不是最近获得焦点的视图时，子组件保留当前编辑器。见
+[工具栏](/docs/toolbar#act-on-the-view-that-holds-the-selection)。
+
+<API name="EditorSelectionView">
+  <APIProps>
+    <APIItem name="children" type="React.ReactNode">
+      作用于持有选区的视图的 UI。
     </APIItem>
   </APIProps>
 </API>

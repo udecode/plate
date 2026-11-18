@@ -40,6 +40,11 @@ export function EditorStatus() {
 `useEditorContainerRef()` 返回匹配的 `EditorContainer` 引用。挂载前和卸载后，
 其 `current` 值为 `null`。使用它将编辑器 UI 锚定到容器；它不代表可编辑 DOM 元素。
 
+`useEditableRef()` 返回匹配视图的 `Editable` 元素引用，其 `current` 值在挂载前为 `null`。用它读取 DOM 选区，
+或根据文字定位 UI，复制的浮动工具栏就是这样做的。在
+[`EditorSelectionView`](/docs/api/core/plate-components#editorselectionview) 内部，
+它是持有选区的视图的 `Editable`。
+
 `EditorRoot` 和 `EditorContent` 管理编辑器注册及挂载状态。通过 `EditorRoot` 的 `primary`
 prop 设置主编辑器资格，通过它们的 `readOnly` prop 传入只读状态。
 
