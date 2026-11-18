@@ -841,7 +841,7 @@ const correspondence = (
   };
 
   for (let position = 0; position < plain.length; position += 1) {
-    const from = map(position, 1);
+    const from = map(position, 1, false);
     const to = map(position + 1, -1);
 
     if (to - from === 1 && from >= reviewAt) {
@@ -2306,7 +2306,13 @@ class RootRecorder {
         this.pieces.findLast((piece) => piece.kind === 'removed')?.leftward ??
         this.options.leftward,
       mapPosition: (position: number, assoc: -1 | 1, caret?: boolean) =>
-        this.mapPosition(recorded, position, assoc, caret === true),
+        this.mapPosition(
+          recorded,
+          position,
+          assoc,
+          caret === true,
+          caret === false
+        ),
       writtenPlain: groups.every((group) =>
         group.kind === 'replace' ? plain.has(group) : !group.data
       ),
@@ -5254,12 +5260,23 @@ class RootRecorder {
     recorded: RootChange,
     position: number,
     assoc: -1 | 1,
-    caret: boolean
+    caret: boolean,
+    atContent: boolean
   ) {
     let removed: Extract<Piece, { kind: 'removed' }> | null = null;
+    const startsInserted =
+      atContent &&
+      assoc === 1 &&
+      this.pieces.some(
+        (piece) =>
+          piece.kind === 'inserted' &&
+          piece.afterFrom === position &&
+          piece.afterTo > position
+      );
 
     for (const piece of this.pieces) {
       if (
+        !startsInserted &&
         piece.kind === 'removed' &&
         (piece.after === position ||
           (caret && this.besideRemoval(piece, position)))
