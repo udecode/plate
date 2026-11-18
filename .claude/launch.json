@@ -38,6 +38,24 @@
       "port": 3520
     },
     {
+      "name": "www-drive-spare-2",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "-C",
+        "apps/www",
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "node",
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "--port",
+        "3521"
+      ],
+      "port": 3521
+    },
+    {
       "name": "www-dev-frozen",
       "runtimeExecutable": "env",
       "runtimeArgs": [
