@@ -56,6 +56,15 @@ const boxIn = (rect: DOMRectReadOnly, origin: InkLayerOrigin): InkBox => ({
 export const inkBoxOf = (element: Element, origin: InkLayerOrigin) =>
   boxIn(element.getBoundingClientRect(), origin);
 
+/** Below one layout unit in every engine (1/64px, and 1/60px in Firefox), above float drift. */
+export const INK_MOVE_TOLERANCE = 0.01;
+
+export const sameInkBox = (a: InkBox, b: InkBox) =>
+  Math.abs(a.left - b.left) <= INK_MOVE_TOLERANCE &&
+  Math.abs(a.top - b.top) <= INK_MOVE_TOLERANCE &&
+  Math.abs(a.width - b.width) <= INK_MOVE_TOLERANCE &&
+  Math.abs(a.height - b.height) <= INK_MOVE_TOLERANCE;
+
 const isInlineVoid = (element: Element) =>
   element.getAttribute('data-editor-node') === 'element' &&
   element.getAttribute('data-editor-inline') === 'true' &&

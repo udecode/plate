@@ -25,6 +25,7 @@ import {
 } from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
 import { InkPlugin } from './InkPlugin';
+import { observeInkLayout, stackInkSigns } from './inkWatch.internal';
 
 /**
  * Marks whose ink is not on the page, shown as one sign: `changed` when their
@@ -230,45 +231,6 @@ const placeAll = (
   };
 };
 
-const useStackedSignTops = (
-  layer: HTMLDivElement | null,
-  signs: Placed['signs'],
-  hidden: boolean
-) => {
-  React.useLayoutEffect(() => {
-    if (!layer || hidden) return undefined;
-
-    const elements = layer.querySelectorAll<HTMLElement>(
-      ':scope > [data-ink-sign]'
-    );
-    const byTop = signs
-      .map(({ left, top }, index) => ({ element: elements[index], left, top }))
-      .sort((a, b) => a.top - b.top);
-    const stack = () => {
-      const bottoms = new Map<number, number>();
-
-      for (const { element, left, top } of byTop) {
-        const at = Math.max(top, bottoms.get(left) ?? top);
-
-        element.style.top = `${at}px`;
-        bottoms.set(left, at + element.getBoundingClientRect().height);
-      }
-    };
-
-    stack();
-
-    if (elements.length < 2) return undefined;
-
-    const resize = new ResizeObserver(stack);
-
-    for (const element of elements) {
-      resize.observe(element, { box: 'border-box' });
-    }
-
-    return () => resize.disconnect();
-  });
-};
-
 /**
  * The ink of a mounted Editable, drawn over it and its margins. Each mark
  * draws on its words while they stand as they were when it was drawn, and
@@ -342,27 +304,23 @@ export function InkLayer({
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
       if (changed.hasAny('document')) schedule();
     });
-    const resize = new ResizeObserver(schedule);
-    // jsdom and happy-dom have no FontFaceSet.
-    const fonts = layer.ownerDocument.fonts as FontFaceSet | undefined;
+    const stopLayout = observeInkLayout(editable, layer, schedule);
 
     capture.current = attached;
-    resize.observe(editable);
-    resize.observe(layer);
-    fonts?.addEventListener('loadingdone', schedule);
     schedule();
 
     return () => {
       cancelAnimationFrame(frame);
       unsubscribe();
-      resize.disconnect();
-      fonts?.removeEventListener('loadingdone', schedule);
+      stopLayout();
       attached.detach();
       capture.current = null;
     };
   }, [editableRef, editor, layer, view]);
 
-  useStackedSignTops(layer, placed.signs, hidden);
+  React.useLayoutEffect(() =>
+    layer && !hidden ? stackInkSigns(layer, placed.signs) : undefined
+  );
 
   const outlineOf = (mark: InkMark) => {
     let outline = outlines.get(mark.id);
