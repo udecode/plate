@@ -8,6 +8,8 @@ import {
   EraserIcon,
   FrameIcon,
   HandIcon,
+  LockIcon,
+  LockOpenIcon,
   MousePointer2Icon,
   MoveUpRightIcon,
   PaletteIcon,
@@ -280,7 +282,7 @@ const pickOf = (
 const boardMessages: BoardMessages = {
   label: 'Board',
   instructions:
-    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Shift+Enter reaches the toolbar.',
+    'Enter selects the first shape. Tab moves between shapes and leaves them after the last. Command with an arrow on a Mac, or Control with an arrow elsewhere, picks the nearest shape. With the note, shape or frame tool, Enter places one, and with the arrow tool and one shape selected that is not an arrow, Enter connects it to another, whose end the arrow keys then move. With the arrow tool and nothing selected, Enter starts an arrow whose start the arrow keys move until a second Enter keeps it. With one shape selected that is not an arrow, S resizes it: Tab picks a corner, the arrow keys move it and Enter keeps the new size. Space starts picking shapes: Tab moves, Space adds or removes the shape and Enter keeps the selection. Q keeps the drawing tool picked after each shape until a second Q, and Command+D on a Mac, or Control+D elsewhere, copies the selected shapes. Shift+Enter reaches the toolbar.',
   aim: (shape, { anchor, position, side, total }) =>
     `${side === 'start' ? 'From' : 'To'} ${nameOf(shape)}${anchor.across === 50 && anchor.down === 50 ? '' : `, ${anchor.across}% across, ${anchor.down}% down`}. ${position} of ${total}`,
   connecting: (from) =>
@@ -342,6 +344,22 @@ function BoardShapeMenu({ pressed }: { pressed: boolean }) {
   );
 }
 
+function BoardToolLock() {
+  const locked = useBoardView((view) => view.toolLocked);
+  const { setToolLocked } = useBoardActions();
+
+  return (
+    <ToolbarButton
+      className="px-1.5"
+      pressed={locked}
+      tooltip="Keep the tool after drawing (Q)"
+      onClick={() => setToolLocked(!locked)}
+    >
+      {locked ? <LockIcon /> : <LockOpenIcon />}
+    </ToolbarButton>
+  );
+}
+
 function BoardZoomLevel() {
   const percent = useBoardView((view) => Math.round(view.camera.zoom * 100));
   const { resetZoom } = useBoardActions();
@@ -387,6 +405,9 @@ export function BoardToolbar() {
             </ToolbarButton>
           )
         )}
+      </ToolbarGroup>
+      <ToolbarGroup>
+        <BoardToolLock />
       </ToolbarGroup>
       <ToolbarGroup>
         <ToolbarButton
