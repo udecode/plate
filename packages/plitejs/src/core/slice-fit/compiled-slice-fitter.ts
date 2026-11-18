@@ -55,7 +55,7 @@ import {
   getEditorDocumentShapeIssueMessage,
   readEditorDocument,
 } from '../document-shape';
-import { getReplaceableEmptyBlock } from '../is-empty-element';
+import { getReplaceableEmptyBlock, holdsNoContent } from '../is-empty-element';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
 import { recordStoreFromJson, showValueRecords } from '../record-store';
@@ -103,7 +103,6 @@ import { FitOriginLog, type FitSource, sliceOrigins } from './origin';
 import {
   createRootFitPathProvenance,
   getTextEdge,
-  isEmptyDescendant,
   isLandingMove,
   landedRelocations,
   pointsEqual,
@@ -432,6 +431,7 @@ export const compileSliceFitter = <V extends Value>(
     withoutGeneration,
   } = input;
   const getDeclarativeSchema = () => schema;
+  const contentSchema = { getElementBehavior, getElementContentRoots };
   const isGridCell = (element: Element) => {
     const structure = getCompiledElement(element)?.structure;
 
@@ -1708,7 +1708,7 @@ export const compileSliceFitter = <V extends Value>(
       if (collapsed && endEdge && pointsEqual(start, endEdge)) {
         add({ cost, from: range.to, to: range.to });
       }
-      if (collapsed && isEmptyDescendant(node)) {
+      if (collapsed && holdsNoContent(node, contentSchema)) {
         add({ cost: cost - 2, from: range.from, to: range.to });
       }
       if (preserveContext) break;
@@ -2391,6 +2391,27 @@ export const compileSliceFitter = <V extends Value>(
       start.path.length === end.path.length &&
       start.path.every((part, index) => part === end.path[index]);
     const targetText = start.path.length > 0 ? document.node(start.path) : null;
+    const targetParentPath = start.path.slice(0, -1);
+    const targetParent = getDescendant(rootChildren, targetParentPath);
+    const caretSplitsBlockContent = (() => {
+      if (
+        !collapsed ||
+        !ElementApi.isElement(targetParent) ||
+        getElementBehavior(targetParent).inline
+      ) {
+        return false;
+      }
+
+      const startEdge = getTextEdge(targetParent, targetParentPath, 'start');
+      const endEdge = getTextEdge(targetParent, targetParentPath, 'end');
+
+      return Boolean(
+        startEdge &&
+        endEdge &&
+        !pointsEqual(start, startEdge) &&
+        !pointsEqual(end, endEdge)
+      );
+    })();
     const endText = sameTextPath
       ? targetText
       : end.path.length > 0
@@ -2662,8 +2683,8 @@ export const compileSliceFitter = <V extends Value>(
         variant.openStart === 0 &&
         variant.openEnd === 0 &&
         start.path.length === 2 &&
-        start.offset === 0 &&
-        targetText.text.length === 0 &&
+        ElementApi.isElement(targetParent) &&
+        holdsNoContent(targetParent, contentSchema) &&
         getPreparedDocumentSlice(encoded) &&
         variant.content.every(rootCanContain)
       ) {
@@ -2686,10 +2707,6 @@ export const compileSliceFitter = <V extends Value>(
         start.offset === 0 &&
         start.offset === end.offset
       ) {
-        const targetParent = getDescendant(
-          rootChildren,
-          start.path.slice(0, -1)
-        );
         const terminal = variant.content.at(-1);
 
         if (
@@ -2886,12 +2903,35 @@ export const compileSliceFitter = <V extends Value>(
 
         return openFitted(token);
       };
+      const openEndContextFor = (child: Descendant) => {
+        if (
+          !collapsed ||
+          stack.length > 0 ||
+          !ElementApi.isElement(child) ||
+          !getElementBehavior(child).inline
+        ) {
+          return true;
+        }
+
+        for (const token of localEndContext) {
+          if (token.nodeKind === 'text') return true;
+          if (!openFitted(token)) return false;
+          if (canCurrentContain(child)) return true;
+        }
+
+        return true;
+      };
       const process = (
         token: FitToken,
         kind: 'document' | 'slice',
         sourceAt = 0
       ) => {
-        if (token.kind === 'open') return openFitted(token, kind, sourceAt);
+        if (token.kind === 'open') {
+          return (
+            openEndContextFor(openTokenNode(token)) &&
+            openFitted(token, kind, sourceAt)
+          );
+        }
         if (token.kind === 'close') {
           const top = stack.at(-1);
 
@@ -3041,7 +3081,6 @@ export const compileSliceFitter = <V extends Value>(
       });
     };
 
-    const targetParent = getDescendant(rootChildren, start.path.slice(0, -1));
     const sourceEdges = [inputSlice.content[0], inputSlice.content.at(-1)];
     const sourceSharesTargetContent =
       ElementApi.isElement(targetParent) &&
@@ -3086,6 +3125,9 @@ export const compileSliceFitter = <V extends Value>(
         (!collapsed && targetHasInlineAncestor) ||
         (inputSlice.openStart === 0 &&
           inputSlice.openEnd === 0 &&
+          caretSplitsBlockContent) ||
+        (inputSlice.openStart === 0 &&
+          inputSlice.openEnd === 0 &&
           Boolean(
             targetText &&
             NodeApi.isText(targetText) &&
@@ -3103,6 +3145,7 @@ export const compileSliceFitter = <V extends Value>(
           targetText &&
           NodeApi.isText(targetText) &&
           start.offset < targetText.text.length) ||
+        caretSplitsBlockContent ||
         sourceSharesTargetContent);
 
     const getInsertionContent = (variant: ContentSlice) => {

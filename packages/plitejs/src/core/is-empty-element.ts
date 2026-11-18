@@ -16,6 +16,26 @@ export const isEmptyElement = (
   !behavior.object &&
   element.children.every((child) => NodeApi.isText(child) && child.text === '');
 
+export const holdsNoContent = (
+  element: Element,
+  schema: Pick<
+    EditorStateSchemaApi,
+    'getElementBehavior' | 'getElementContentRoots'
+  >
+): boolean =>
+  element.children.every((child) => {
+    if (NodeApi.isText(child)) return child.text === '';
+    const behavior = schema.getElementBehavior(child);
+
+    return (
+      !behavior.void &&
+      !behavior.atom &&
+      !behavior.object &&
+      Object.keys(schema.getElementContentRoots(child)).length === 0 &&
+      holdsNoContent(child, schema)
+    );
+  });
+
 export const getReplaceableEmptyBlock = (
   range: Range,
   getNode: (path: Path) => Node | null | undefined,

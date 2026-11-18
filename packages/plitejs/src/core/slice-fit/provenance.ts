@@ -396,8 +396,3 @@ export const pointsEqual = (left: Point, right: Point) =>
   left.offset === right.offset &&
   left.path.length === right.path.length &&
   left.path.every((part, index) => part === right.path[index]);
-
-export const isEmptyDescendant = (node: Descendant): boolean =>
-  NodeApi.isText(node)
-    ? node.text.length === 0
-    : node.children.every(isEmptyDescendant);
