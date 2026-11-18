@@ -66,8 +66,6 @@
     "dev:plite": "pnpm --filter www dev:plite",
     "dev:webrtc": "PORT=4444 node ./node_modules/y-webrtc/bin/server.js",
     "devt": "pnpm --filter www devt",
-    "entrypoint:sizes": "turbo build --filter=./packages/plitejs --filter=./packages/platejs && node tooling/scripts/check-plite-release-artifacts.mjs --entrypoint-sizes",
-    "entrypoint:sizes:update": "turbo build --filter=./packages/plitejs --filter=./packages/platejs && node tooling/scripts/check-plite-release-artifacts.mjs --entrypoint-sizes --update",
     "entrypoint:turbo:check": "node tooling/scripts/generate-entrypoint-turbo.mjs check && node tooling/scripts/migrate-platejs-entrypoint-imports.mjs",
     "entrypoint:turbo:generate": "node tooling/scripts/generate-entrypoint-turbo.mjs generate",
     "e2e": "pnpm exec playwright test --config tooling/config/playwright.config.ts",

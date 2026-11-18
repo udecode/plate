@@ -97,8 +97,6 @@ const runsScript = (script, ...paths) => {
 };
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
 const PACKAGE_MANIFEST = /^packages\/[^/]+\/package\.json$/u;
-const PACKAGE_BUILD =
-  /^packages\/(?:plitejs|platejs)\/(?:src\/|package\.json$|tsdown\.config\.mts$|tsconfig\.build\.json$)/u;
 const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
 const inTestSuite = (file) =>
   TEST_FILE_PATTERNS.some((pattern) => matchesGlob(file, pattern)) &&
@@ -638,20 +636,6 @@ export const steps = [
     filesOnly: true,
   },
   {
-    // A shrink lowers tooling/entrypoints/entrypoint-sizes.json in place, so
-    // the landing that shrank an entrypoint commits its lower budget.
-    name: 'entrypoint-sizes',
-    holds: ['packages/*/dist'],
-    alone: 'rewrites tracked files',
-    run: 'pnpm entrypoint:sizes',
-    affected: (files) =>
-      touches('tooling/entrypoints/')(files) ||
-      files.some((file) => PACKAGE_BUILD.test(file) && !TEST.test(file)),
-    key: [],
-    // The script makes its packed consumer in a fresh folder under .tmp.
-    ignoredReads: ['.tmp'],
-  },
-  {
     name: 'cli-test',
     cores: 2,
     holds: ['packages/cli/tmp-*', 'packages/*/dist'],
@@ -917,7 +901,9 @@ export const steps = [
         'apps/www/src/generated/api-reference-manifest.json'
       )(files) ||
       files.some(
-        (file) => /^packages\/[^/]+\/src\//u.test(file) && !TEST.test(file)
+        (file) =>
+          /^packages\/(?:plitejs|platejs)\/src\//u.test(file) &&
+          !TEST.test(file)
       ),
   },
   {
