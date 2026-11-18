@@ -258,6 +258,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-toolbar-project-toggle-tooltip",
+      "href": "/registry/changelog/2026-11-17-toolbar-project-toggle-tooltip.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Use your project's toggle and tooltip in the toolbar",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toolbar", "font-color-toolbar-button"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-16-ai-routes-caller-key",
       "href": "/registry/changelog/2026-11-16-ai-routes-caller-key.json",
       "status": "draft",

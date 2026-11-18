@@ -1431,6 +1431,18 @@ function getProviderVariantPattern({ path: filePath, target }) {
   return new RegExp(`(?:^|/)bases/[^/]+/${escapeRegExp(variantPath)}$`);
 }
 
+function readVendoredShadcnFiles(registryRoot) {
+  const provenancePath = path.join(registryRoot, 'styles/provenance.json');
+
+  if (!fs.existsSync(provenancePath)) return new Set();
+
+  return new Set(
+    Object.keys(JSON.parse(fs.readFileSync(provenancePath, 'utf-8')).files).map(
+      (filePath) => path.join(registryRoot, filePath)
+    )
+  );
+}
+
 export function inferRegistryHints(
   itemName,
   {
@@ -1443,6 +1455,7 @@ export function inferRegistryHints(
     `(?:^|/)${escapeRegExp(itemName)}\\.(?:ts|tsx|mts)$`
   );
   const namePattern = new RegExp(`name:\\s*['"]${escapeRegExp(itemName)}['"]`);
+  const vendoredShadcnFiles = readVendoredShadcnFiles(registryRoot);
   const explicitItemFiles = registryDefinitions.flatMap(
     ({ content }) => extractRegistryItemFiles(content).get(itemName) ?? []
   );
@@ -1464,6 +1477,7 @@ export function inferRegistryHints(
   ])
     .filter((filePath) => SOURCE_EXTENSIONS.has(path.extname(filePath)))
     .filter((filePath) => !SPEC_OR_TEST_FILE_PATTERN.test(filePath))
+    .filter((filePath) => !vendoredShadcnFiles.has(filePath))
     .map((filePath) => relativePath(filePath))
     .sort();
   const definitionFiles = registryDefinitions

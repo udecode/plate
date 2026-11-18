@@ -6,6 +6,8 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@/registry/bases/base/lib/utils": ["./src/lib/utils"],
+      "@/registry/bases/radix/lib/utils": ["./src/lib/utils"],
       "@/registry/components/editor/context-menu": [
         "./src/components/site-registry/context-menu"
       ],

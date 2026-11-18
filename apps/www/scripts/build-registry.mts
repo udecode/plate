@@ -43,10 +43,11 @@ import {
 import { createRegistryIndexSource } from './registry-index.mts';
 import { deriveRegistryDependencies } from './registry-package-dependencies.mts';
 import { materializeRegistryStyles } from './registry-style-materializer.mts';
+import { loadRegistryStyleMaps } from './registry-style-transform.mts';
 import {
-  loadRegistryStyleMaps,
   SHADCN_STYLE_SOURCE_COMMIT,
-} from './registry-style-transform.mts';
+  verifyVendoredShadcn,
+} from './vendored-shadcn.mts';
 
 const REGISTRY_SOURCE_PREFIX = 'src/';
 const root = process.cwd();
@@ -333,6 +334,7 @@ if (recoverToken !== null) {
 }
 
 const checkOnly = process.argv.includes('--check');
+await verifyVendoredShadcn();
 const derivedRegistries = Object.fromEntries(
   PLATE_REGISTRY_BASES.map((base) => [
     base,

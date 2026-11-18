@@ -470,44 +470,42 @@ function ColorDropdownMenuItem({
 }: {
   isBrightColor: boolean;
   isSelected: boolean;
+  name: string;
   value: string;
   updateColor: (color: string) => void;
-  name?: string;
   ref?: React.Ref<HTMLDivElement>;
 } & React.ComponentProps<typeof DropdownMenuItem>) {
-  const content = (
-    <DropdownMenuItem
-      aria-label={name ?? value}
-      aria-selected={isSelected}
-      className={cn(
-        buttonVariants({
-          size: 'icon',
-          variant: 'outline',
-        }),
-        'my-1 flex size-6 items-center justify-center rounded-full border border-muted border-solid p-0 transition-all hover:scale-125',
-        !isBrightColor && 'border-transparent text-white',
-        className
-      )}
-      ref={ref}
-      role="gridcell"
-      style={{ backgroundColor: value }}
-      onSelect={(event) => {
-        event.preventDefault();
-        updateColor(value);
-      }}
-      {...props}
-    >
-      {isSelected ? <CheckIcon className="!size-3" strokeWidth={3} /> : null}
-    </DropdownMenuItem>
-  );
-
-  return name ? (
+  return (
     <Tooltip>
-      <TooltipTrigger asChild>{content}</TooltipTrigger>
+      <TooltipTrigger asChild>
+        <DropdownMenuItem
+          aria-label={name}
+          aria-selected={isSelected}
+          className={cn(
+            buttonVariants({
+              size: 'icon',
+              variant: 'outline',
+            }),
+            'my-1 flex size-6 items-center justify-center rounded-full border border-muted border-solid p-0 transition-all hover:scale-125',
+            !isBrightColor && 'border-transparent text-white',
+            className
+          )}
+          ref={ref}
+          role="gridcell"
+          style={{ backgroundColor: value }}
+          onSelect={(event) => {
+            event.preventDefault();
+            updateColor(value);
+          }}
+          {...props}
+        >
+          {isSelected ? (
+            <CheckIcon className="!size-3" strokeWidth={3} />
+          ) : null}
+        </DropdownMenuItem>
+      </TooltipTrigger>
       <TooltipContent className="mb-1 capitalize">{name}</TooltipContent>
     </Tooltip>
-  ) : (
-    content
   );
 }
 

@@ -52,6 +52,14 @@
     @apply border-input hover:bg-muted border bg-transparent;
   }
   
+  :where(.style-nova) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px];
+  }
+  
+  :where(.style-nova) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2;
+  }
+  
   :where(.style-nova) :where(.cn-tooltip-content) {
     @apply data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm;
   }
@@ -110,6 +118,14 @@
   
   :where(.style-vega) :where(.cn-toggle-variant-outline) {
     @apply border-input hover:bg-muted border bg-transparent shadow-xs;
+  }
+  
+  :where(.style-vega) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px];
+  }
+  
+  :where(.style-vega) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2;
   }
   
   :where(.style-vega) :where(.cn-tooltip-content) {
@@ -172,6 +188,14 @@
     @apply border-input hover:bg-muted border bg-transparent;
   }
   
+  :where(.style-maia) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=left]:translate-x-[-1.5px] data-[side=right]:translate-x-[1.5px];
+  }
+  
+  :where(.style-maia) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:translate-x-[1.5px] data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:translate-x-[-1.5px] data-[side=inline-start]:-translate-y-1/2;
+  }
+  
   :where(.style-maia) :where(.cn-tooltip-content) {
     @apply data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 inline-flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-4xl;
   }
@@ -230,6 +254,14 @@
   
   :where(.style-lyra) :where(.cn-toggle-variant-outline) {
     @apply border-input hover:bg-muted border bg-transparent;
+  }
+  
+  :where(.style-lyra) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-none;
+  }
+  
+  :where(.style-lyra) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2;
   }
   
   :where(.style-lyra) :where(.cn-tooltip-content) {
@@ -292,6 +324,14 @@
     @apply border-input hover:bg-muted border bg-transparent;
   }
   
+  :where(.style-mira) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px];
+  }
+  
+  :where(.style-mira) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2;
+  }
+  
   :where(.style-mira) :where(.cn-tooltip-content) {
     @apply data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm;
   }
@@ -350,6 +390,14 @@
   
   :where(.style-luma) :where(.cn-toggle-variant-outline) {
     @apply border-input hover:bg-muted border bg-transparent;
+  }
+  
+  :where(.style-luma) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=left]:translate-x-[-1.5px] data-[side=right]:translate-x-[1.5px];
+  }
+  
+  :where(.style-luma) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:translate-x-[1.5px] data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:translate-x-[-1.5px] data-[side=inline-start]:-translate-y-1/2;
   }
   
   :where(.style-luma) :where(.cn-tooltip-content) {
@@ -412,6 +460,14 @@
     @apply border-input hover:bg-muted border bg-transparent;
   }
   
+  :where(.style-sera) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-none;
+  }
+  
+  :where(.style-sera) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:translate-x-[1.5px] data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:translate-x-[-1.5px] data-[side=inline-start]:-translate-y-1/2;
+  }
+  
   :where(.style-sera) :where(.cn-tooltip-content) {
     @apply data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 inline-flex items-center gap-1.5 rounded-none px-3 py-1.5 text-xs has-data-[slot=kbd]:pr-1.5 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-none;
   }
@@ -470,6 +526,14 @@
   
   :where(.style-rhea) :where(.cn-toggle-variant-outline) {
     @apply border-input hover:bg-muted border bg-transparent;
+  }
+  
+  :where(.style-rhea) :where(.cn-tooltip-arrow) {
+    @apply size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=left]:translate-x-[-1.5px] data-[side=right]:translate-x-[1.5px];
+  }
+  
+  :where(.style-rhea) :where(.cn-tooltip-arrow-logical) {
+    @apply data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:translate-x-[1.5px] data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:translate-x-[-1.5px] data-[side=inline-start]:-translate-y-1/2;
   }
   
   :where(.style-rhea) :where(.cn-tooltip-content) {

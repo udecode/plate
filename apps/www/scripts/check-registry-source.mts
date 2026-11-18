@@ -15,6 +15,7 @@ import {
   parseModuleImports,
 } from './registry-imports.mts';
 import { createRegistryInstalledTargetResolver } from './registry-installed-targets.mts';
+import { getShadcnRegistryName } from './vendored-shadcn.mts';
 
 const ABSOLUTE_URL_REGEX = /^https?:\/\//;
 const JSON_SUFFIX_REGEX = /\.json$/;
@@ -393,7 +394,7 @@ for (const item of normalizedRegistry.items) {
     const imports = getRegistryFileImportSources(file.path);
 
     for (const specifier of imports) {
-      if (specifier.startsWith('@/components/ui/')) continue;
+      if (getShadcnRegistryName(specifier, file.path)) continue;
 
       if (HOST_PROVIDED_ALIASES.has(specifier)) continue;
 

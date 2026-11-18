@@ -33,6 +33,8 @@ const projectIgnorePatterns = [
   'apps/plite/tests/**/donor/**',
   'apps/www/src/app/(app)/examples/slate/_examples/**',
   'apps/www/src/registry/**/*.schema.json',
+  // Synced byte-for-byte from shadcn; provenance.json holds their hashes.
+  'apps/www/src/registry/bases/*/ui/**',
   'apps/www/src/registry/styles/**',
   'apps/www/tests/slate-browser/donor/**',
   'benchmarks/slate-v2/donor/**',

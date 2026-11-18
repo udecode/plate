@@ -1276,7 +1276,9 @@
         "platejs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar-overlay.json"
+        "https://platejs.org/r/toolbar-overlay.json",
+        "toggle",
+        "tooltip"
       ],
       "files": [
         {

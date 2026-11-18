@@ -1,5 +1,5 @@
 {
-  "generation": "74bae1d4ba87519ff6b22439906c6f740e9a7415fb2dfed99dd66c1416b0d684",
+  "generation": "a99ac8a77cf2548a5419341546a7ee8502aa5b38735b4e3d7615a35d0c639b8f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1287,7 +1287,9 @@
             "platejs"
           ],
           "registryDependencies": [
-            "@plate/toolbar-overlay"
+            "@plate/toolbar-overlay",
+            "toggle",
+            "tooltip"
           ]
         },
         {
@@ -8453,7 +8455,6 @@
           "type": "registry:component",
           "dependencies": [
             "@radix-ui/react-toolbar",
-            "@radix-ui/react-tooltip",
             "class-variance-authority",
             "cn",
             "diff-match-patch-ts@^0.6.0",
@@ -8461,7 +8462,9 @@
             "platejs"
           ],
           "registryDependencies": [
-            "@plate/toolbar-overlay"
+            "@plate/toolbar-overlay",
+            "toggle",
+            "tooltip"
           ]
         },
         {

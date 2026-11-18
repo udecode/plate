@@ -341,6 +341,7 @@
     ],
     "font-color-toolbar-button": [
       "2026-11-17-cn-package",
+      "2026-11-17-toolbar-project-toggle-tooltip",
       "2026-08-27-self-contained-editor-utilities",
       "2026-08-25-base-first-registry",
       "2026-08-24-react-compiler-owned-editor-state",
@@ -640,6 +641,7 @@
     ],
     "toolbar": [
       "2026-11-17-cn-package",
+      "2026-11-17-toolbar-project-toggle-tooltip",
       "2026-11-07-toolbar-overlays-close-on-scroll",
       "2026-10-28-touch-menus",
       "2026-10-21-floating-toolbar-menu-press",

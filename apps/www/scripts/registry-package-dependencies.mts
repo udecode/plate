@@ -15,6 +15,10 @@ import {
   intersectPackageVersionRanges,
   packageVersionRangesIntersect,
 } from './registry-package-version.mts';
+import {
+  getShadcnRegistryName,
+  isShadcnCopySource,
+} from './vendored-shadcn.mts';
 
 type Entrypoint = {
   dependencies?: readonly string[];
@@ -299,6 +303,13 @@ export function deriveRegistryDependencies(
   const targetResolver = createRegistryInstalledTargetResolver(registry);
 
   for (const item of registry.items) {
+    for (const file of item.files ?? []) {
+      if (isShadcnCopySource(file.path)) {
+        throw new Error(
+          `${item.name}:${file.path}: a copied shadcn component is never served; import it so the install uses the project's own.`
+        );
+      }
+    }
     for (const dependency of item.registryDependencies ?? []) {
       if (
         dependency.startsWith('@plate/') &&
@@ -409,12 +420,11 @@ export function deriveRegistryDependencies(
         })) {
           const context = formatContext(item.name, file.path, imported);
           const { specifier } = imported;
+          const shadcnName = getShadcnRegistryName(specifier, file.path);
 
-          if (specifier.startsWith('@/components/ui/')) {
-            const dependencyName = specifier.slice('@/components/ui/'.length);
-
-            if (!requiredShadcn.has(dependencyName)) {
-              requiredShadcn.set(dependencyName, context);
+          if (shadcnName) {
+            if (!requiredShadcn.has(shadcnName)) {
+              requiredShadcn.set(shadcnName, context);
             }
             continue;
           }

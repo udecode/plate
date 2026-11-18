@@ -11,9 +11,9 @@ import {
 import {
   getCommonRegistryStyleMarkers,
   type RegistryStyleMaps,
-  SHADCN_STYLE_SOURCE_COMMIT,
   transformRegistryStyleSource,
 } from './registry-style-transform.mts';
+import { SHADCN_STYLE_SOURCE_COMMIT } from './vendored-shadcn.mts';
 
 type RegistryFilePayload = {
   content?: string;

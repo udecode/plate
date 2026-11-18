@@ -13,7 +13,10 @@ cannot express.
 `apps/www/scripts/registry-package-dependencies.mts` derives every registry
 edge a copied import needs: `@plate/<item>` from a relative or other `@/`
 import of another item's file, and the shadcn name from
-`@/components/ui/<name>`. It also derives each npm package and the version
+`@/components/ui/<name>` or, in a file under `bases/<base>/`, from that base's
+shadcn copy `@/registry/bases/<base>/ui/<name>`, which the CLI installs as the
+project's own component. An import of the other base's copy fails the build.
+It also derives each npm package and the version
 range the package DAG gives it. Never list a registry edge an import already
 gives, or a bare package name whose derived version has a range; the build
 rejects both and names the import. Author `registryDependencies` only for what

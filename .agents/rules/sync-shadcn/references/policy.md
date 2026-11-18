@@ -123,7 +123,13 @@ Read these before making decisions:
 - [Plate Docs MDX and routes](../../plate-docs/references/mdx.md) for the page tree's `meta.json` and `_plate.items` metadata
 
 - When an accepted sync changes upstream registry style inputs, set
-  `SHADCN_STYLE_SOURCE_COMMIT` to the exact reviewed upstream SHA, then run
+  `SHADCN_STYLE_SOURCE_COMMIT` in `apps/www/scripts/vendored-shadcn.mts` to the
+  exact reviewed upstream SHA, then run
   `pnpm --filter www exec tsx scripts/sync-shadcn-registry-styles.mts` from the
-  repo root. Verify the style-transform suite before registry generation. Never
-  copy style CSS or edit provenance and preview-class output by hand.
+  repo root. It reads every file at that commit in `../shadcn`, so local edits
+  there never reach Plate, and writes the style CSS, the preview classes, the
+  provenance hashes and each base's `toggle` and `tooltip` copies under
+  `apps/www/src/registry/bases/<base>/ui/`; `--check` fails when any of them
+  differs. Verify the style-transform suite before registry generation. Never
+  copy style CSS or a shadcn component, or edit provenance and preview-class
+  output, by hand.

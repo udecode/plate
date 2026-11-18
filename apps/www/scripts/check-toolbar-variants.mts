@@ -8,6 +8,8 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 
+import { getShadcnCopyPath, SHADCN_UI_COPIES } from './vendored-shadcn.mts';
+
 const appRoot = process.cwd();
 const repoRoot = path.resolve(appRoot, '../..');
 const cacheRoot = path.join(
@@ -25,6 +27,9 @@ for (const variant of variants) {
   mkdirSync(path.join(sourceRoot, 'registry/components/editor'), {
     recursive: true,
   });
+  mkdirSync(path.join(sourceRoot, `registry/bases/${variant}/ui`), {
+    recursive: true,
+  });
   mkdirSync(path.join(sourceRoot, 'lib'), { recursive: true });
 
   const toolbarSource = path.join(
@@ -36,6 +41,12 @@ for (const variant of variants) {
     toolbarSource,
     path.join(sourceRoot, 'components/editor/toolbar.tsx')
   );
+  for (const name of SHADCN_UI_COPIES) {
+    copyFileSync(
+      path.join(appRoot, 'src/registry', getShadcnCopyPath(variant, name)),
+      path.join(sourceRoot, 'registry', getShadcnCopyPath(variant, name))
+    );
+  }
   copyFileSync(
     path.join(appRoot, 'src/registry/components/editor/toolbar-overlay.tsx'),
     path.join(sourceRoot, 'registry/components/editor/toolbar-overlay.tsx')
@@ -61,7 +72,10 @@ for (const variant of variants) {
           module: 'ESNext',
           moduleResolution: 'Bundler',
           noEmit: true,
-          paths: { '@/*': ['./src/*'] },
+          paths: {
+            '@/*': ['./src/*'],
+            [`@/registry/bases/${variant}/lib/utils`]: ['./src/lib/utils'],
+          },
           skipLibCheck: true,
           strict: true,
           target: 'ES2024',
@@ -82,7 +96,7 @@ function App() {
   return (
     <Toolbar aria-label="Formatting">
       <ToolbarButton aria-label="Bold" pressed>Bold</ToolbarButton>
-      <ToolbarButton aria-label="Italic">Italic</ToolbarButton>
+      <ToolbarButton tooltip="Italic">Italic</ToolbarButton>
       <ToolbarButton aria-label="Underline">Underline</ToolbarButton>
     </Toolbar>
   );

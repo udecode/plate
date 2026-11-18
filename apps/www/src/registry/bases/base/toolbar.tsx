@@ -1,13 +1,18 @@
 'use client';
 
 import { Toolbar as ToolbarPrimitive } from '@base-ui/react/toolbar';
-import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from 'cn';
 import { ChevronDown } from 'lucide-react';
 import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
+import { toggleVariants } from '@/registry/bases/base/ui/toggle';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/registry/bases/base/ui/tooltip';
 import {
   ToolbarOverlayProvider,
   useToolbarOverlayTrigger,
@@ -39,43 +44,14 @@ export function Toolbar({
   );
 }
 
-const toolbarButtonVariants = cva(
-  'cn-toggle group/toggle inline-flex cursor-pointer items-center justify-center whitespace-nowrap outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
-  {
-    defaultVariants: {
-      size: 'default',
-      variant: 'default',
-    },
-    variants: {
-      size: {
-        default: 'cn-toggle-size-default',
-        lg: 'cn-toggle-size-lg',
-        sm: 'cn-toggle-size-sm',
-      },
-      variant: {
-        default: 'cn-toggle-variant-default',
-        outline: 'cn-toggle-variant-outline',
-      },
-    },
-  }
-);
-
 const dropdownArrowVariants = cva(
-  'cn-toggle inline-flex items-center justify-center rounded-r-md text-foreground disabled:pointer-events-none disabled:opacity-50',
+  'min-w-0 rounded-l-none px-0 text-foreground',
   {
-    defaultVariants: {
-      size: 'sm',
-      variant: 'default',
-    },
     variants: {
       size: {
-        default: 'h-9 w-6',
-        lg: 'h-10 w-8',
-        sm: 'h-8 w-4',
-      },
-      variant: {
-        default: 'cn-toggle-variant-default',
-        outline: 'cn-toggle-variant-outline border-l-0',
+        default: 'w-6',
+        lg: 'w-8',
+        sm: 'w-4',
       },
     },
   }
@@ -101,20 +77,24 @@ export function ToolbarButton({
   isDropdown?: boolean;
   pressed?: boolean;
   tooltip?: React.ReactNode;
-  tooltipContentProps?: Omit<TooltipPrimitive.Popup.Props, 'children'>;
-  tooltipProps?: Omit<TooltipPrimitive.Root.Props, 'children'>;
+  tooltipContentProps?: Omit<
+    React.ComponentProps<typeof TooltipContent>,
+    'children'
+  >;
+  tooltipProps?: Omit<React.ComponentProps<typeof Tooltip>, 'children'>;
   tooltipTriggerProps?: Omit<
-    TooltipPrimitive.Trigger.Props,
+    React.ComponentProps<typeof TooltipTrigger>,
     'render' | 'children'
   >;
 } & Omit<ToolbarPrimitive.Button.Props, 'render'> &
-  VariantProps<typeof toolbarButtonVariants>) {
+  VariantProps<typeof toggleVariants>) {
   const overlayTrigger = useToolbarOverlayTrigger(props);
 
   const button = (
     <ToolbarPrimitive.Button
       className={cn(
-        toolbarButtonVariants({ size, variant }),
+        toggleVariants({ size, variant }),
+        'cursor-pointer',
         isDropdown && 'justify-between gap-1 pr-1',
         className
       )}
@@ -164,23 +144,10 @@ export function ToolbarButton({
   if (!tooltip) return button;
 
   return (
-    <TooltipPrimitive.Root {...tooltipProps}>
-      <TooltipPrimitive.Trigger render={button} {...tooltipTriggerProps} />
-
-      <TooltipPrimitive.Portal>
-        <TooltipPrimitive.Positioner sideOffset={4}>
-          <TooltipPrimitive.Popup
-            {...tooltipContentProps}
-            className={cn(
-              'cn-tooltip-content cn-tooltip-content-logical z-50 w-fit origin-(--transform-origin) bg-primary text-balance text-primary-foreground',
-              tooltipContentProps?.className
-            )}
-          >
-            {tooltip}
-          </TooltipPrimitive.Popup>
-        </TooltipPrimitive.Positioner>
-      </TooltipPrimitive.Portal>
-    </TooltipPrimitive.Root>
+    <Tooltip {...tooltipProps}>
+      <TooltipTrigger render={button} {...tooltipTriggerProps} />
+      <TooltipContent {...tooltipContentProps}>{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -213,17 +180,14 @@ export function ToolbarSplitButtonPrimary({
   React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button>,
   'size'
 > &
-  VariantProps<typeof toolbarButtonVariants>) {
+  VariantProps<typeof toggleVariants>) {
   const overlayTrigger = useToolbarOverlayTrigger(props);
 
   return (
     <ToolbarPrimitive.Button
       className={cn(
-        toolbarButtonVariants({
-          size,
-          variant,
-        }),
-        'rounded-r-none',
+        toggleVariants({ size, variant }),
+        'cursor-pointer rounded-r-none',
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}
@@ -266,20 +230,19 @@ export function ToolbarSplitButtonSecondary({
   onMouseDown,
   onPointerCancel,
   onPointerDown,
-  size,
+  size = 'sm',
   variant,
   ...props
 }: React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button> &
-  VariantProps<typeof dropdownArrowVariants>) {
+  VariantProps<typeof toggleVariants>) {
   const overlayTrigger = useToolbarOverlayTrigger(props);
 
   return (
     <ToolbarPrimitive.Button
       className={cn(
-        dropdownArrowVariants({
-          size,
-          variant,
-        }),
+        toggleVariants({ size, variant }),
+        dropdownArrowVariants({ size }),
+        variant === 'outline' && 'border-l-0',
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}

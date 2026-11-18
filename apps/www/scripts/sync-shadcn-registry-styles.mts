@@ -7,43 +7,64 @@ import { promisify } from 'node:util';
 
 import { createStyleMap } from 'shadcn/utils';
 
-import { PLATE_REGISTRY_STYLE_NAMES } from '@/lib/plate-registry-styles';
+import {
+  PLATE_REGISTRY_BASES,
+  PLATE_REGISTRY_STYLE_NAMES,
+} from '@/lib/plate-registry-styles';
 
 import {
   createPreviewStyleCss,
   type RegistryStyleMaps,
-  SHADCN_STYLE_SOURCE_COMMIT,
 } from './registry-style-transform.mts';
+import {
+  getShadcnCopyPath,
+  SHADCN_PROVENANCE_PATH,
+  SHADCN_STYLE_SOURCE_COMMIT,
+  SHADCN_UI_COPIES,
+} from './vendored-shadcn.mts';
 
 const execFileAsync = promisify(execFile);
 
+const checkOnly = process.argv.includes('--check');
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-const upstreamRoot = path.resolve(scriptDir, '../../../../shadcn');
-const targetRoot = path.resolve(scriptDir, '../src/registry/styles');
+const registryRoot = path.resolve(scriptDir, '../src/registry');
+const targetRoot = path.join(registryRoot, 'styles');
+const { stdout: gitCommonDir } = await execFileAsync(
+  'git',
+  ['rev-parse', '--path-format=absolute', '--git-common-dir'],
+  { cwd: scriptDir }
+);
+const upstreamRoot = path.resolve(
+  path.dirname(gitCommonDir.trim()),
+  '../shadcn'
+);
+const sha256 = (source: string) =>
+  createHash('sha256').update(source).digest('hex');
+const stale: string[] = [];
+
+async function readUpstream(relativePath: string) {
+  const { stdout } = await execFileAsync('git', [
+    '-C',
+    upstreamRoot,
+    'show',
+    `${SHADCN_STYLE_SOURCE_COMMIT}:apps/v4/registry/${relativePath}`,
+  ]);
+
+  return stdout;
+}
 
 async function writeIfChanged(target: string, content: string) {
   const current = await fs.readFile(target, 'utf-8').catch(() => null);
 
-  if (current !== content) {
-    await fs.writeFile(target, content);
+  if (current === content) return;
+  if (checkOnly) {
+    stale.push(path.relative(process.cwd(), target));
+    return;
   }
+
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.writeFile(target, content);
 }
-
-const { stdout } = await execFileAsync('git', [
-  '-C',
-  upstreamRoot,
-  'rev-parse',
-  'HEAD',
-]);
-const upstreamCommit = stdout.trim();
-
-if (upstreamCommit !== SHADCN_STYLE_SOURCE_COMMIT) {
-  throw new Error(
-    `Expected shadcn ${SHADCN_STYLE_SOURCE_COMMIT}, received ${upstreamCommit}`
-  );
-}
-
-await fs.mkdir(targetRoot, { recursive: true });
 
 const files: Record<string, string> = {};
 const previewMarkers = [
@@ -60,6 +81,8 @@ const previewMarkers = [
   'cn-toggle-size-sm',
   'cn-toggle-variant-default',
   'cn-toggle-variant-outline',
+  'cn-tooltip-arrow',
+  'cn-tooltip-arrow-logical',
   'cn-tooltip-content',
   'cn-tooltip-content-logical',
 ] as const;
@@ -68,13 +91,10 @@ const previewStyles = Object.fromEntries(
 ) as RegistryStyleMaps;
 
 for (const style of PLATE_REGISTRY_STYLE_NAMES) {
-  const fileName = `style-${style}.css`;
-  const source = await fs.readFile(
-    path.join(upstreamRoot, 'apps/v4/registry/styles', fileName),
-    'utf-8'
-  );
+  const relativePath = `styles/style-${style}.css`;
+  const source = await readUpstream(relativePath);
 
-  files[fileName] = createHash('sha256').update(source).digest('hex');
+  files[relativePath] = sha256(source);
   const styleMap = createStyleMap(source);
   previewStyles[style] = Object.fromEntries(
     previewMarkers.map((marker) => {
@@ -82,14 +102,24 @@ for (const style of PLATE_REGISTRY_STYLE_NAMES) {
 
       if (!classes) {
         throw new Error(
-          `Missing preview style marker ${marker} in ${fileName}`
+          `Missing preview style marker ${marker} in ${relativePath}`
         );
       }
 
       return [marker, classes];
     })
   );
-  await writeIfChanged(path.join(targetRoot, fileName), source);
+  await writeIfChanged(path.join(registryRoot, relativePath), source);
+}
+
+for (const base of PLATE_REGISTRY_BASES) {
+  for (const name of SHADCN_UI_COPIES) {
+    const relativePath = getShadcnCopyPath(base, name);
+    const source = await readUpstream(relativePath);
+
+    files[relativePath] = sha256(source);
+    await writeIfChanged(path.join(registryRoot, relativePath), source);
+  }
 }
 
 await writeIfChanged(
@@ -107,18 +137,25 @@ await writeIfChanged(
 );
 
 await writeIfChanged(
-  path.join(targetRoot, 'provenance.json'),
+  SHADCN_PROVENANCE_PATH,
   `${JSON.stringify(
     {
       commit: SHADCN_STYLE_SOURCE_COMMIT,
       files,
-      source: 'shadcn-ui/ui/apps/v4/registry/styles',
+      source: 'shadcn-ui/ui/apps/v4/registry',
     },
     null,
     2
   )}\n`
 );
 
+if (stale.length > 0) {
+  console.error(
+    `Vendored shadcn files differ from ${SHADCN_STYLE_SOURCE_COMMIT}:\n- ${stale.join('\n- ')}\nRun scripts/sync-shadcn-registry-styles.mts without --check.`
+  );
+  process.exit(1);
+}
+
 console.info(
-  `Synced ${PLATE_REGISTRY_STYLE_NAMES.length} shadcn registry styles from ${SHADCN_STYLE_SOURCE_COMMIT}`
+  `${checkOnly ? 'Checked' : 'Synced'} ${PLATE_REGISTRY_STYLE_NAMES.length} shadcn registry styles and ${SHADCN_UI_COPIES.length * PLATE_REGISTRY_BASES.length} components at ${SHADCN_STYLE_SOURCE_COMMIT}`
 );

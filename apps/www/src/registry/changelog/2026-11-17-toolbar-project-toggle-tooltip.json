@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-toolbar-project-toggle-tooltip",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-toolbar-project-toggle-tooltip.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use your project's toggle and tooltip in the toolbar",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-toolbar-your-project-s-toggle-50fd83dd",
+      "kind": "behavior",
+      "summary": "Build toolbar buttons from your project's `toggle` and `tooltip` components, so the toolbar follows your edits to them and its tooltips look like the rest of your app, arrow and colors included.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-toolbar-project-toggle-tooltip",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-17-toolbar-split-button-arrow-7a3e91c4",
+      "kind": "fix",
+      "summary": "Fix the split button's arrow half so it matches the main half's height and joins it on a square edge in every style.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-toolbar-project-toggle-tooltip",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-17-font-color-swatch-tooltip-2c4f1d7e",
+      "kind": "fix",
+      "summary": "Fix the color swatch tooltip trigger in Base UI projects.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-color-toolbar-button"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-toolbar-project-toggle-tooltip",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
