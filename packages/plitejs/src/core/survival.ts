@@ -1,4 +1,8 @@
-import type { CompiledEditorSchema } from './schema-compiler';
+import { readsAt } from './default-storage';
+import {
+  type CompiledEditorSchema,
+  toCompiledTargetContext,
+} from './schema-compiler';
 
 type TreeNode = Readonly<{
   children?: readonly TreeNode[];
@@ -51,26 +55,31 @@ export const leftWithNoGridPart = <N extends object>(
   goneGridPart: (child: N) => boolean
 ) => holdsParts(element) && children.length > 0 && children.every(goneGridPart);
 
-type GridRoles = Readonly<{
+/** @internal */
+export type GridRoles = Readonly<{
   holdsParts: (node: object) => boolean;
   isPart: (node: object) => boolean;
+  roleOf: (node: object) => 'cell' | 'grid' | 'row' | null;
+  spansOf: (node: object) => readonly unknown[];
 }>;
 
 const GRID_ROLES = new WeakMap<CompiledEditorSchema, GridRoles>();
 
-const gridRolesOf = (schema: CompiledEditorSchema) => {
+/** @internal */
+export const gridRolesOf = (schema: CompiledEditorSchema): GridRoles => {
   let roles = GRID_ROLES.get(schema);
 
   if (!roles) {
-    const roleOf = (node: object) => {
+    const gridOf = (node: object) => {
       const { type } = node as TreeNode;
       const structure =
         typeof type === 'string'
           ? schema.elements.byType.get(type)?.structure
           : undefined;
 
-      return structure?.kind === 'grid' ? structure.role : null;
+      return structure?.kind === 'grid' ? structure : null;
     };
+    const roleOf = (node: object) => gridOf(node)?.role ?? null;
 
     roles = {
       holdsParts: (node) => {
@@ -79,6 +88,16 @@ const gridRolesOf = (schema: CompiledEditorSchema) => {
         return role === 'grid' || role === 'row';
       },
       isPart: (node) => roleOf(node) !== null,
+      roleOf,
+      spansOf: (node) => {
+        const grid = gridOf(node);
+        const props = node as Readonly<Record<string, unknown>>;
+        const context = toCompiledTargetContext(String(props.type));
+
+        return [grid?.columnSpan?.key, grid?.rowSpan?.key].map((key) =>
+          key === undefined ? undefined : readsAt(schema, props, key, context)
+        );
+      },
     };
     GRID_ROLES.set(schema, roles);
   }

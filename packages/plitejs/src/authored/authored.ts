@@ -98,7 +98,7 @@ import {
   rootsDeletedByName,
 } from '../core/root-ownership';
 import { tracksPlaces, uniquePropertiesOf } from '../core/schema-compiler';
-import { gridHoldersOf } from '../core/survival';
+import { gridHoldersOf, gridRolesOf } from '../core/survival';
 import {
   type TxDeclaredMethod,
   txOnly,
@@ -319,8 +319,9 @@ export type AuthoredTestOptions = AuthoredOptions &
     intent?: 'edit' | 'propose';
     now?: () => number;
     /**
-     * Record what Suggesting refuses, such as a change in a table, as content
-     * loaded from elsewhere can hold it.
+     * Record what a feature's veto refuses in Suggesting, such as a new table
+     * row, as content loaded from elsewhere can hold it. A write review cannot
+     * show in a table, such as a lone new cell, still refuses.
      */
     vetoes?: false;
   }>;
@@ -2233,7 +2234,7 @@ export const createAuthoredPlugin = (
             forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
             projection: input.projection,
             inc: forced?.inc ?? null,
-            holdsGridParts: gridHoldersOf(compiled),
+            gridRoles: gridRolesOf(compiled),
             isInline: (props) =>
               getEditorSchema(editor).isInline(elementOf(props)),
             emptyTextKeeps: (key, value, parents, root) => {

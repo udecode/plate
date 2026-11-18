@@ -34,7 +34,9 @@ import { getDefined } from '../internal/get-defined';
  * is accepted. `diverged`: it would show other content than the edit wrote.
  * `unaligned`: the preview there has no map to the saved content. `grid`: the
  * edit acts inside a table or row whose deletion is pending, or joins two
- * lines across one.
+ * lines across one, or a suggestion would add or remove single cells, change
+ * a span, split or join a table part, or add a row beside a pending column
+ * change.
  */
 export type UnrepresentableReason =
   | 'crosses'
@@ -92,6 +94,8 @@ const enclosedSpanOf = (change: RootChange) => {
 };
 
 type Touched = {
+  at: number;
+  inserted: boolean;
   props: Readonly<Record<string, unknown>>;
   propsAfter?: Readonly<Record<string, unknown>>;
   touch: AuthoredTouch;
@@ -115,7 +119,7 @@ const cutEnclosedElements = (
   }
 };
 
-const elementTouches = (
+export const elementTouches = (
   change: RootChange,
   before: DocumentIndex,
   after: DocumentIndex,
@@ -173,6 +177,8 @@ const elementTouches = (
 
     if (!element) {
       element = {
+        at: entry.from,
+        inserted: false,
         props: nodeProps(before.node(entry.path)),
         touch: touchOf(entry),
       };
@@ -191,6 +197,7 @@ const elementTouches = (
   if (cutEnclosed) cutEnclosedElements(change, before, cut);
 
   const opens: Array<{
+    at: number;
     closedInSlice: boolean;
     parent?: number;
     props?: Readonly<Record<string, unknown>>;
@@ -213,6 +220,8 @@ const elementTouches = (
           const props = nodeProps(before.node(entry.path));
 
           touched.push({
+            at,
+            inserted: false,
             props,
             propsAfter: applyPropertyModifications(
               props,
@@ -254,6 +263,7 @@ const elementTouches = (
       if (token.kind === 'open') {
         stack.push(opens.length);
         opens.push({
+          at: from,
           closedInSlice: false,
           parent: stack.at(-2),
           props: token.nodeKind === 'element' ? token.props : undefined,
@@ -265,10 +275,12 @@ const elementTouches = (
       }
     }
   }
-  for (const { closedInSlice, parent, props } of opens) {
+  for (const { at, closedInSlice, parent, props } of opens) {
     if (!props) continue;
 
     touched.push({
+      at,
+      inserted: true,
       props,
       touch: closedInSlice
         ? parent !== undefined && opens[parent].closedInSlice

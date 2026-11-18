@@ -43,6 +43,7 @@ import type {
 } from '../../core/command-document';
 import type { ResolvedTokenEntry } from '../../core/resolved-token-cursor';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import type { GridRoles } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
@@ -52,6 +53,7 @@ import { countLedgerWork } from '../ledger/work';
 import { unrepresentableFor, unrepresentable } from '../refusal';
 import { carriedJudge, type MovedCopy } from './carried';
 import { isCut } from './cuts';
+import { refuseUnplacedGridWrite } from './grid';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
   AUTHORED_MARKS_KEY,
@@ -105,11 +107,7 @@ export type AuthoredRecordInput = Readonly<{
   projection?: CommandProjection;
   /** Whether an element with `props` is inline, so a split of it records a cut. */
   isInline: (props: Readonly<JsonRecord>) => boolean;
-  /**
-   * Whether an element is a table or row, which an Editing removal takes with
-   * every pending change inside it.
-   */
-  holdsGridParts: (node: Readonly<JsonRecord>) => boolean;
+  gridRoles: GridRoles;
   /**
    * Whether the element a split of `source` continues into, written as
    * `continuation`, keeps property `key` with `value`; an `undefined` value
@@ -1478,6 +1476,11 @@ export const recordAuthoredSteps = (
     input.forcedChangeId
       ? incarnationOf(mark) === own
       : mark.author === input.writer;
+  const ownInsertion = (node: JsonNode) => {
+    const inserted = innermostInsert(input.dependencies.marks(node));
+
+    return inserted !== undefined && isOwn(inserted);
+  };
   const base = {
     at: input.now,
     author: input.writer,
@@ -1512,11 +1515,6 @@ export const recordAuthoredSteps = (
         (input.before.roots?.[root]
           ? valueRootIndex(input.before, root)
           : null);
-      const ownInsertion = (node: JsonNode) => {
-        const inserted = innermostInsert(input.dependencies.marks(node));
-
-        return inserted !== undefined && isOwn(inserted);
-      };
       const holds = (nodes: readonly JsonNode[]): boolean =>
         nodes.some(
           (node) =>
@@ -1766,17 +1764,35 @@ export const recordAuthoredSteps = (
               input.isInline
             )
           : rootChange;
-      if (!properties && !fold.created && step.origin !== 'migration') {
+      if (!fold.created && step.origin !== 'migration') {
         const toStored = fold.map;
+        const frame =
+          fold.frameIndex ?? getDefined(step.indexedBefore.get(root));
+        const map = (position: number, assoc: -1 | 1) =>
+          toStored(position, assoc, false);
 
-        refuseWriteInStruckGrid(
-          written,
-          fold.frameIndex ?? getDefined(step.indexedBefore.get(root)),
-          fold.index,
-          (position, assoc) => toStored(position, assoc, false),
-          input.holdsGridParts,
-          changeId
-        );
+        if (!properties) {
+          refuseWriteInStruckGrid(
+            written,
+            frame,
+            fold.index,
+            map,
+            input.gridRoles.holdsParts,
+            changeId
+          );
+        }
+        if (!isEditingChange(changeId)) {
+          refuseUnplacedGridWrite({
+            claims: input.dependencies.marks,
+            frame,
+            frameAfter: applyReusingStep(step, root, frame, written),
+            gridRoles: input.gridRoles,
+            ownInsertion,
+            stored: fold.index,
+            toStored: map,
+            written,
+          });
+        }
       }
       const lowered =
         fold.frameIndex && !properties
@@ -1840,7 +1856,7 @@ export const recordAuthoredSteps = (
             framed: input.projection !== undefined,
             fill: (site) => input.fill(site, root),
             frameIndex: fold.frameIndex,
-            holdsGridParts: input.holdsGridParts,
+            holdsGridParts: input.gridRoles.holdsParts,
             holdsWithdrawal,
             isInline: input.isInline,
             isOwn,
