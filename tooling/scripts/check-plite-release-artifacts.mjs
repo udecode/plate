@@ -47,6 +47,14 @@ const entrypointSizeBudgetPath = join(
   'tooling/entrypoints/entrypoint-sizes.json'
 );
 const temporaryRoot = join(repoRoot, '.tmp');
+const typescriptCompiler = join(repoRoot, 'node_modules', '.bin', 'tsc');
+const typescript5Compiler = join(
+  repoRoot,
+  'node_modules',
+  'typescript5',
+  'bin',
+  'tsc'
+);
 const localImportPattern =
   /\b(?:import|export)\s+(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 const namedExportBlockPattern = /\bexport\s*\{([^}]*)\}/g;
@@ -780,6 +788,7 @@ export function createConsumerSources(packages) {
 
   if (consumesPlateRoot) {
     typeImports.push(createPlateSchemaConsumerSource({ typed: true }));
+    typeImports.push(createPlatePortalConsumerSource());
     runtimeImports.push(createPlateSchemaConsumerSource({ typed: false }));
     runtimeImports.push(createPlateRuntimeIdentityConsumerSource());
   }
@@ -1154,6 +1163,41 @@ function createPlateSchemaConsumerSource({ typed }) {
   ].join('\n');
 }
 
+function createPlatePortalConsumerSource() {
+  return [
+    'import {',
+    '  BoldPlugin as ReleasePortalBoldPlugin,',
+    '  IndentPlugin as ReleasePortalIndentPlugin,',
+    '  LineHeightPlugin as ReleasePortalLineHeightPlugin,',
+    '  ListPlugin as ReleasePortalListPlugin,',
+    '  ParagraphPlugin as ReleasePortalParagraphPlugin,',
+    '  TextAlignPlugin as ReleasePortalTextAlignPlugin,',
+    '  useEditor as useReleasePortalEditor,',
+    "} from 'platejs/react';",
+    '',
+    'const readReleasePortalNames = () => {',
+    '  const editor = useReleasePortalEditor();',
+    '  const names: readonly [',
+    "    'paragraph',",
+    "    'bold',",
+    "    'textAlign',",
+    "    'list',",
+    "    'indent',",
+    "    'lineHeight',",
+    '  ] = [',
+    '    editor.plugin(ReleasePortalParagraphPlugin).name,',
+    '    editor.plugin(ReleasePortalBoldPlugin).name,',
+    '    editor.plugin(ReleasePortalTextAlignPlugin).name,',
+    '    editor.plugin(ReleasePortalListPlugin).name,',
+    '    editor.plugin(ReleasePortalIndentPlugin).name,',
+    '    editor.plugin(ReleasePortalLineHeightPlugin).name,',
+    '  ];',
+    '  return names;',
+    '};',
+    'void readReleasePortalNames;',
+  ].join('\n');
+}
+
 function packConsumer(workDirectory, packageContracts) {
   const consumerDirectory = join(workDirectory, 'consumer');
   const tarballDirectory = join(workDirectory, 'tarballs');
@@ -1413,6 +1457,11 @@ export function checkPliteReleaseArtifacts({
     });
     captureProof(errors, 'Bundler declaration consumer', () => {
       runTypeScriptConsumer(consumerDirectory, 'tsconfig.bundler.json');
+    });
+    captureProof(errors, 'TypeScript 5 Bundler declaration consumer', () => {
+      runTypeScriptConsumer(consumerDirectory, 'tsconfig.bundler.json', {
+        command: typescript5Compiler,
+      });
     });
     captureProof(errors, 'Node import consumer', () =>
       runCommand(process.execPath, ['runtime.mjs'], { cwd: consumerDirectory })
@@ -2184,9 +2233,8 @@ function writeTypeScriptConfigs(consumerDirectory) {
 export function runTypeScriptConsumer(
   consumerDirectory,
   configName,
-  { packageNames } = {}
+  { command = typescriptCompiler, packageNames } = {}
 ) {
-  const command = join(repoRoot, 'node_modules', '.bin', 'tsc');
   const args = ['-p', configName, '--pretty', 'false', '--noErrorTruncation'];
   const result = spawnSync(command, args, {
     cwd: consumerDirectory,
@@ -2204,6 +2252,13 @@ export function runTypeScriptConsumer(
   const output = [result.stdout.trim(), result.stderr.trim()]
     .filter(Boolean)
     .join('\n');
+
+  if (!output.split('\n').some((line) => diagnosticStartPattern.test(line))) {
+    throw new Error(
+      `${command} ${args.join(' ')} exited with ${result.status ?? result.signal} before printing a diagnostic\n${truncateOutput(output)}`
+    );
+  }
+
   const ownedDiagnostics = filterTypeScriptConsumerDiagnostics(
     output,
     consumerDirectory,

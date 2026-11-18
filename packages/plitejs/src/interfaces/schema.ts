@@ -273,24 +273,32 @@ export type SchemaTextProperty<
   value: TDescriptor;
 }>;
 
+type AnySchemaPropertyReferences = Readonly<{
+  key: string;
+  map: (value: never, renamed: (name: string) => string | undefined) => unknown;
+}>;
+
+type SchemaPropertyReferencesOf<TDescriptor extends PropertyValueDescriptor> =
+  PropertyValueDescriptor extends TDescriptor
+    ? AnySchemaPropertyReferences
+    : SchemaPropertyReferences<PropertyValueOf<TDescriptor>>;
+
+// `TReferences` is its own parameter, not derived from `TDescriptor` in the
+// body: TypeScript 5 relates two instantiations by each parameter's measured
+// variance, and a `map` over the value would make `TDescriptor` invariant, so
+// a property with a specific descriptor would stop widening to the general one.
 export type SchemaElementProperty<
   TKey extends SchemaPropertyKey = SchemaPropertyKey,
   TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor,
   TTarget extends SchemaTarget = SchemaTarget,
+  TReferences extends SchemaPropertyReferencesOf<TDescriptor> =
+    SchemaPropertyReferencesOf<TDescriptor>,
 > = Readonly<{
   copy: SchemaPropertyCopyPolicy;
   key: TKey;
   landing: SchemaPropertyLandingPolicy;
   placement: 'element';
-  references?: PropertyValueDescriptor extends TDescriptor
-    ? Readonly<{
-        key: string;
-        map: (
-          value: never,
-          renamed: (name: string) => string | undefined
-        ) => unknown;
-      }>
-    : SchemaPropertyReferences<PropertyValueOf<TDescriptor>>;
+  references?: TReferences;
   role: SchemaPropertyRole;
   split: SchemaPropertySplitPolicy;
   target: TTarget;
@@ -305,7 +313,12 @@ export type SchemaProperty = SchemaElementProperty | SchemaTextProperty;
 export type SchemaElementPropertyDefinition<
   TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor,
   TTarget extends SchemaTarget = SchemaTarget,
-> = Omit<SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget>, 'key'>;
+  TReferences extends SchemaPropertyReferencesOf<TDescriptor> =
+    SchemaPropertyReferencesOf<TDescriptor>,
+> = Omit<
+  SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget, TReferences>,
+  'key'
+>;
 
 /** Text-property law before a keyed owner assigns persisted identity. */
 export type SchemaTextPropertyDefinition<
