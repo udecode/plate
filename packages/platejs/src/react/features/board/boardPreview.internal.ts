@@ -225,22 +225,33 @@ export const drawGuides = (
   guides: readonly BoardGuide[],
   zoom: number
 ) => {
-  svg.replaceChildren(
-    ...guides.map(({ from, to }) => {
-      const line = svg.ownerDocument.createElementNS(SVG_NS, 'line');
+  const tick = 4 / zoom;
 
-      for (const [name, value] of [
-        ['stroke', 'currentColor'],
-        ['stroke-width', 1 / zoom],
-        ['x1', from.x],
-        ['x2', to.x],
-        ['y1', from.y],
-        ['y2', to.y],
-      ] as const) {
-        line.setAttribute(name, String(value));
+  svg.replaceChildren(
+    ...guides.map(({ from, gap, to }) => {
+      const mark = svg.ownerDocument.createElementNS(
+        SVG_NS,
+        gap ? 'path' : 'line'
+      );
+      const across = from.y === to.y ? { x: 0, y: tick } : { x: tick, y: 0 };
+      const ticked = ({ x, y }: BoardPlace) =>
+        `M${x - across.x} ${y - across.y}L${x + across.x} ${y + across.y}`;
+      const shape: Record<string, number | string> = gap
+        ? {
+            d: `${ticked(from)}M${from.x} ${from.y}L${to.x} ${to.y}${ticked(to)}`,
+            fill: 'none',
+          }
+        : { x1: from.x, x2: to.x, y1: from.y, y2: to.y };
+
+      for (const [name, value] of Object.entries({
+        stroke: 'currentColor',
+        'stroke-width': 1 / zoom,
+        ...shape,
+      })) {
+        mark.setAttribute(name, String(value));
       }
 
-      return line;
+      return mark;
     })
   );
 };

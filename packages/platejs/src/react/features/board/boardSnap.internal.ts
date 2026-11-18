@@ -11,7 +11,11 @@ export const SNAP_PX = 8;
 
 type Axis = 'x' | 'y';
 
-export type BoardGuide = Readonly<{ from: BoardPlace; to: BoardPlace }>;
+export type BoardGuide = Readonly<{
+  from: BoardPlace;
+  gap?: true;
+  to: BoardPlace;
+}>;
 
 type SnapField = Readonly<{
   boxesIn: (area: BoardBox) => readonly BoardBox[];
@@ -32,6 +36,15 @@ const startOf = (box: BoardBox, axis: Axis) => (axis === 'x' ? box.x : box.y);
 
 const lengthOf = (box: BoardBox, axis: Axis) =>
   axis === 'x' ? box.width : box.height;
+
+const endOf = (box: BoardBox, axis: Axis) =>
+  startOf(box, axis) + lengthOf(box, axis);
+
+const overlap = (a: BoardBox, b: BoardBox, axis: Axis) =>
+  startOf(a, axis) < endOf(b, axis) && startOf(b, axis) < endOf(a, axis);
+
+const spaceBetween = (a: BoardBox, b: BoardBox, axis: Axis) =>
+  startOf(b, axis) - endOf(a, axis);
 
 const valuesOf = (box: BoardBox, axis: Axis) => {
   const start = startOf(box, axis);
@@ -132,6 +145,138 @@ const guidesAt = (
   return guides;
 };
 
+const besideOf = (
+  of: BoardBox,
+  row: readonly BoardBox[],
+  axis: Axis,
+  after: boolean
+) => {
+  const across = acrossOf(axis);
+  let found: BoardBox | undefined;
+
+  for (const box of row) {
+    if (!overlap(box, of, across)) continue;
+    if (after) {
+      if (
+        startOf(box, axis) > endOf(of, axis) &&
+        (!found || startOf(box, axis) < startOf(found, axis))
+      ) {
+        found = box;
+      }
+    } else if (
+      endOf(box, axis) < startOf(of, axis) &&
+      (!found || endOf(box, axis) > endOf(found, axis))
+    ) {
+      found = box;
+    }
+  }
+
+  return found;
+};
+
+const neighborsOf = (
+  box: BoardBox,
+  targets: readonly BoardBox[],
+  axis: Axis
+) => {
+  const across = acrossOf(axis);
+  const beforeRow: BoardBox[] = [];
+  const afterRow: BoardBox[] = [];
+
+  for (const target of targets) {
+    if (!overlap(target, box, across)) continue;
+    if (endOf(target, axis) < startOf(box, axis)) beforeRow.push(target);
+    else if (startOf(target, axis) > endOf(box, axis)) afterRow.push(target);
+  }
+
+  const before = besideOf(box, beforeRow, axis, false);
+  const after = besideOf(box, afterRow, axis, true);
+
+  return {
+    after,
+    afterNext: after && besideOf(after, afterRow, axis, true),
+    before,
+    beforeNext: before && besideOf(before, beforeRow, axis, false),
+  };
+};
+
+const evenStarts = (
+  moved: BoardBox,
+  targets: readonly BoardBox[],
+  axis: Axis
+) => {
+  const { after, afterNext, before, beforeNext } = neighborsOf(
+    moved,
+    targets,
+    axis
+  );
+  const length = lengthOf(moved, axis);
+  const starts: number[] = [];
+
+  if (before && after) {
+    starts.push(
+      endOf(before, axis) + (spaceBetween(before, after, axis) - length) / 2
+    );
+  }
+  if (before && beforeNext) {
+    starts.push(endOf(before, axis) + spaceBetween(beforeNext, before, axis));
+  }
+  if (after && afterNext) {
+    starts.push(
+      startOf(after, axis) - spaceBetween(after, afterNext, axis) - length
+    );
+  }
+
+  return starts;
+};
+
+const evenGuidesAt = (
+  landed: BoardBox,
+  targets: readonly BoardBox[],
+  axis: Axis
+) => {
+  const across = acrossOf(axis);
+  const { after, afterNext, before, beforeNext } = neighborsOf(
+    landed,
+    targets,
+    axis
+  );
+  const even = (a: BoardBox, b: BoardBox, c: BoardBox) =>
+    Math.abs(spaceBetween(a, b, axis) - spaceBetween(b, c, axis)) <= ALIGNED;
+  const pairs: Array<readonly [BoardBox, BoardBox]> = [];
+  const add = (a: BoardBox, b: BoardBox) => {
+    if (!pairs.some(([p, q]) => p === a && q === b)) pairs.push([a, b]);
+  };
+
+  if (before && after && even(before, landed, after)) {
+    add(before, landed);
+    add(landed, after);
+  }
+  if (beforeNext && before && even(beforeNext, before, landed)) {
+    add(beforeNext, before);
+    add(before, landed);
+  }
+  if (after && afterNext && even(landed, after, afterNext)) {
+    add(landed, after);
+    add(after, afterNext);
+  }
+
+  return pairs.map(([a, b]): BoardGuide => {
+    const at =
+      (Math.max(startOf(a, across), startOf(b, across)) +
+        Math.min(endOf(a, across), endOf(b, across))) /
+      2;
+
+    return axis === 'x'
+      ? { from: { x: endOf(a, axis), y: at }, gap: true, to: { x: b.x, y: at } }
+      : {
+          from: { x: at, y: endOf(a, axis) },
+          gap: true,
+          to: { x: at, y: b.y },
+        };
+  });
+};
+
 export const snapMove = (
   held: BoardBox,
   delta: BoardPlace,
@@ -140,19 +285,40 @@ export const snapMove = (
   const reach = SNAP_PX / field.zoom;
   const moved = { ...held, x: held.x + delta.x, y: held.y + delta.y };
   const targets = targetsAround(moved, reach, field);
+  const shown = (axis: Axis) => bandOf(moved, axis, reach, field.view) !== null;
   const snapped = { ...delta };
 
   for (const axis of AXES) {
-    const best = nearest(targets[axis], axis, valuesOf(moved, axis), reach);
+    const point = nearest(targets[axis], axis, valuesOf(moved, axis), reach);
+    let even: { gap: number; value: number } | undefined;
 
-    if (best) snapped[axis] = best.value - valuesOf(held, axis)[best.at];
+    if (shown(axis)) {
+      for (const start of evenStarts(moved, targets[acrossOf(axis)], axis)) {
+        const gap = start - startOf(moved, axis);
+
+        if (Math.abs(gap) <= reach && closer(gap, even)) {
+          even = { gap, value: start };
+        }
+      }
+    }
+
+    if (even && (!point || Math.abs(even.gap) < Math.abs(point.gap))) {
+      snapped[axis] = even.value - startOf(held, axis);
+    } else if (point) {
+      snapped[axis] = point.value - valuesOf(held, axis)[point.at];
+    }
   }
 
   const landed = { ...held, x: held.x + snapped.x, y: held.y + snapped.y };
 
   return {
     delta: snapped,
-    guides: guidesAt(landed, targets, (axis) => valuesOf(landed, axis)),
+    guides: [
+      ...guidesAt(landed, targets, (axis) => valuesOf(landed, axis)),
+      ...AXES.flatMap((axis) =>
+        shown(axis) ? evenGuidesAt(landed, targets[acrossOf(axis)], axis) : []
+      ),
+    ],
   };
 };
 
