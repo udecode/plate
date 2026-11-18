@@ -16,8 +16,14 @@ import {
   hasUsableDOMRect,
   scheduleEditorDOMPhase,
 } from '../dom/internal';
+import {
+  type ClipChain,
+  intersectClipChain,
+  walkClipChain,
+} from '../dom/plugin/dom-drag-scroll';
 import { subscribeEditorDOMScope } from '../dom/plugin/dom-editor';
 import { findDOMRootRuntime } from '../dom/plugin/dom-root-runtime';
+import { getFlatTreeParentElement } from '../dom/utils/dom';
 import { useIsomorphicLayoutEffect } from './hooks/use-isomorphic-layout-effect';
 
 type GeometryEditor = Editor<any, any>;
@@ -34,12 +40,30 @@ export type ViewportRect = Readonly<{
   y: number;
 }>;
 
-/** Immutable DOM geometry for one range in one mounted Editable. */
-export type RangeGeometry = Readonly<{
+/** The boxes of one range in viewport coordinates. */
+export type RangeRects = Readonly<{
   boundingRect: ViewportRect;
   focusRect: ViewportRect | null;
   rects: readonly ViewportRect[];
 }>;
+
+/** Immutable DOM geometry for one range in one mounted Editable. */
+export type RangeGeometry = RangeRects &
+  Readonly<{
+    /**
+     * The part of the Editable anyone can see: the viewport cut by every box
+     * that clips the Editable, its own box included when its overflow clips.
+     * Every range of one Editable shares it in a frame. `null` when none shows.
+     */
+    clipRect: ViewportRect | null;
+    /**
+     * The range's boxes cut to `clipRect`, each line outside it dropped. A
+     * line that only touches the edge is outside; a caret on the edge is
+     * inside. `null` when nothing of the range is inside. Show or hide by it,
+     * and draw inside `clipRect`.
+     */
+    visible: RangeRects | null;
+  }>;
 
 type RangeGeometrySource = Readonly<
   {
@@ -50,7 +74,7 @@ type RangeGeometrySource = Readonly<
         measure: (
           view: GeometryEditor,
           editable: HTMLElement
-        ) => RangeGeometry | null;
+        ) => RangeRects | null;
       }
   )
 >;
@@ -75,46 +99,13 @@ const toViewportRect = (rect: DOMRect | DOMRectReadOnly): ViewportRect =>
     y: rect.y,
   });
 
-const isRectEqual = (left: ViewportRect, right: ViewportRect) =>
-  left.bottom === right.bottom &&
-  left.height === right.height &&
-  left.left === right.left &&
-  left.right === right.right &&
-  left.top === right.top &&
-  left.width === right.width &&
-  left.x === right.x &&
-  left.y === right.y;
-
-const isGeometryEqual = (
-  left: RangeGeometry | null,
-  right: RangeGeometry | null
-) => {
-  if (left === right) return true;
-  if (!left || !right) return false;
-  if (!isRectEqual(left.boundingRect, right.boundingRect)) return false;
-  if (left.focusRect && right.focusRect) {
-    if (!isRectEqual(left.focusRect, right.focusRect)) return false;
-  } else if (left.focusRect !== right.focusRect) {
-    return false;
-  }
-  if (left.rects.length !== right.rects.length) return false;
-
-  return left.rects.every((rect, index) => {
-    const rightRect = right.rects[index];
-
-    return Boolean(rightRect && isRectEqual(rect, rightRect));
-  });
-};
-
-const unionRects = (rects: readonly ViewportRect[]): ViewportRect | null => {
-  if (rects.length === 0) return null;
-
-  const left = Math.min(...rects.map((rect) => rect.left));
-  const right = Math.max(...rects.map((rect) => rect.right));
-  const top = Math.min(...rects.map((rect) => rect.top));
-  const bottom = Math.max(...rects.map((rect) => rect.bottom));
-
-  return Object.freeze({
+const boxRect = (
+  left: number,
+  top: number,
+  right: number,
+  bottom: number
+): ViewportRect =>
+  Object.freeze({
     bottom,
     height: bottom - top,
     left,
@@ -123,6 +114,96 @@ const unionRects = (rects: readonly ViewportRect[]): ViewportRect | null => {
     width: right - left,
     x: left,
     y: top,
+  });
+
+const isRectEqual = (left: ViewportRect | null, right: ViewportRect | null) =>
+  left === right ||
+  (!!left &&
+    !!right &&
+    left.bottom === right.bottom &&
+    left.height === right.height &&
+    left.left === right.left &&
+    left.right === right.right &&
+    left.top === right.top &&
+    left.width === right.width &&
+    left.x === right.x &&
+    left.y === right.y);
+
+const isRangeRectsEqual = (
+  left: RangeRects | null,
+  right: RangeRects | null
+): boolean =>
+  left === right ||
+  (!!left &&
+    !!right &&
+    isRectEqual(left.boundingRect, right.boundingRect) &&
+    isRectEqual(left.focusRect, right.focusRect) &&
+    left.rects.length === right.rects.length &&
+    left.rects.every((rect, index) =>
+      isRectEqual(rect, right.rects[index] ?? null)
+    ));
+
+const isGeometryEqual = (
+  left: RangeGeometry | null,
+  right: RangeGeometry | null
+) =>
+  left === right ||
+  (!!left &&
+    !!right &&
+    isRangeRectsEqual(left, right) &&
+    isRectEqual(left.clipRect, right.clipRect) &&
+    isRangeRectsEqual(left.visible, right.visible));
+
+const unionRects = (rects: readonly ViewportRect[]): ViewportRect | null =>
+  rects.length === 0
+    ? null
+    : boxRect(
+        Math.min(...rects.map((rect) => rect.left)),
+        Math.min(...rects.map((rect) => rect.top)),
+        Math.max(...rects.map((rect) => rect.right)),
+        Math.max(...rects.map((rect) => rect.bottom))
+      );
+
+const isOutside = (
+  start: number,
+  end: number,
+  clipStart: number,
+  clipEnd: number
+) => {
+  if (clipEnd <= clipStart) return true;
+  if (start === end) return start < clipStart || start > clipEnd;
+
+  return end <= clipStart || start >= clipEnd;
+};
+
+const cutRect = (rect: ViewportRect, clip: ViewportRect) =>
+  isOutside(rect.top, rect.bottom, clip.top, clip.bottom) ||
+  isOutside(rect.left, rect.right, clip.left, clip.right)
+    ? null
+    : boxRect(
+        Math.max(rect.left, clip.left),
+        Math.max(rect.top, clip.top),
+        Math.min(rect.right, clip.right),
+        Math.min(rect.bottom, clip.bottom)
+      );
+
+const withClip = (
+  range: RangeRects,
+  clipRect: ViewportRect | null
+): RangeGeometry => {
+  const rects = clipRect
+    ? range.rects.flatMap((rect) => cutRect(rect, clipRect) ?? [])
+    : [];
+  const focusRect =
+    clipRect && range.focusRect ? cutRect(range.focusRect, clipRect) : null;
+  const boundingRect = unionRects(rects) ?? focusRect;
+
+  return Object.freeze({
+    ...range,
+    clipRect,
+    visible: boundingRect
+      ? Object.freeze({ boundingRect, focusRect, rects: Object.freeze(rects) })
+      : null,
   });
 };
 
@@ -157,15 +238,21 @@ type GeometryCoordinatorScope = Readonly<{
 }>;
 
 type GeometryRootLease = {
+  area?: ViewportRect | null;
+  // A stale chain stays until the next walk so its boxes stay watched, because
+  // a ResizeObserver reports a box again each time observing it starts.
+  chain: ClipChain | null;
   count: number;
   generation: number;
   runtime: ReturnType<typeof findDOMRootRuntime>;
+  stale: boolean;
   stopBinding: (() => void) | null;
   stopLayout: (() => void) | null;
   view: GeometryEditor | null;
 };
 
 type GeometryCoordinator = Readonly<{
+  readArea: (editable: HTMLElement) => ViewportRect | null;
   register: (
     scope: GeometryCoordinatorScope,
     editable: HTMLElement
@@ -173,6 +260,19 @@ type GeometryCoordinator = Readonly<{
   request: (scope: GeometryCoordinatorScope) => void;
   syncBinding: (editable: HTMLElement) => void;
 }>;
+
+const readVisibleArea = (editable: HTMLElement, chain: ClipChain | null) => {
+  const rect = chain
+    ? intersectClipChain(chain, editable.getBoundingClientRect())
+    : null;
+
+  return rect ? boxRect(rect.left, rect.top, rect.right, rect.bottom) : null;
+};
+
+const hasMoved = (chain: ClipChain) =>
+  chain.visited.some(
+    ({ element, parent }) => getFlatTreeParentElement(element) !== parent
+  );
 
 const EDITOR_TO_GEOMETRY_COORDINATORS = new WeakMap<
   GeometryEditor,
@@ -188,10 +288,110 @@ const createGeometryCoordinator = (
   const rootLeases = new Map<HTMLElement, GeometryRootLease>();
   const window = document.defaultView;
   const resizeObserver = window?.ResizeObserver
-    ? new window.ResizeObserver(() => requestAll())
+    ? new window.ResizeObserver(rewalk)
     : null;
+  const attributeObserver = window?.MutationObserver
+    ? new window.MutationObserver(rewalk)
+    : null;
+  const resized = new Set<Element>();
+  const shadowRoots = new Set<ShadowRoot>();
   let cancelScheduled: (() => void) | null = null;
+  let expiring = false;
   let scheduledEditable: HTMLElement | null = null;
+
+  function forgetAreas() {
+    rootLeases.forEach((lease) => {
+      lease.area = undefined;
+    });
+  }
+
+  function rewalk() {
+    rootLeases.forEach((lease) => {
+      lease.area = undefined;
+      lease.stale = true;
+    });
+    requestAll();
+  }
+
+  function syncWatches() {
+    const resizeTargets = new Set<Element>();
+    const roots = new Set<ShadowRoot>();
+    // disconnect() drops the records still queued, which can belong to a box
+    // of another Editable.
+    const missed = attributeObserver?.takeRecords().length ?? 0;
+
+    attributeObserver?.disconnect();
+    rootLeases.forEach((lease, editable) => {
+      resizeTargets.add(editable);
+      lease.chain?.boxes.forEach(({ element }) => resizeTargets.add(element));
+      lease.chain?.visited.forEach(({ element }) => {
+        const root = element.getRootNode();
+
+        attributeObserver?.observe(element, {
+          attributeFilter: ['class', 'style'],
+        });
+        if (window && root instanceof window.ShadowRoot) roots.add(root);
+      });
+    });
+    resized.forEach((target) => {
+      if (resizeTargets.has(target)) return;
+
+      resizeObserver?.unobserve(target);
+      resized.delete(target);
+    });
+    resizeTargets.forEach((target) => {
+      if (resized.has(target)) return;
+
+      resizeObserver?.observe(target);
+      resized.add(target);
+    });
+    // A scroll inside a shadow root never reaches the document's listener.
+    shadowRoots.forEach((root) => {
+      if (roots.has(root)) return;
+
+      root.removeEventListener('scroll', onScroll, true);
+      shadowRoots.delete(root);
+    });
+    roots.forEach((root) => {
+      if (shadowRoots.has(root)) return;
+
+      root.addEventListener('scroll', onScroll, {
+        capture: true,
+        passive: true,
+      });
+      shadowRoots.add(root);
+    });
+    if (missed > 0) rewalk();
+  }
+
+  function readArea(editable: HTMLElement) {
+    const lease = rootLeases.get(editable);
+
+    if (!lease) {
+      return readVisibleArea(editable, walkClipChain(editable, { self: true }));
+    }
+    if (lease.chain && hasMoved(lease.chain)) lease.stale = true;
+    if (lease.stale) {
+      lease.chain = walkClipChain(editable, { self: true });
+      lease.area = undefined;
+      lease.stale = false;
+      syncWatches();
+    }
+    if (lease.area !== undefined) return lease.area;
+
+    lease.area = readVisibleArea(editable, lease.chain);
+    // A box can move with no event, such as when content above it grows, so
+    // an area serves the reads of one task at most.
+    if (!expiring) {
+      expiring = true;
+      queueMicrotask(() => {
+        expiring = false;
+        forgetAreas();
+      });
+    }
+
+    return lease.area;
+  }
 
   const scopesFor = (editable: HTMLElement) =>
     [...scopes].filter((scope) => scope.getEditable() === editable);
@@ -288,6 +488,8 @@ const createGeometryCoordinator = (
     lease.stopBinding = null;
     lease.stopLayout = null;
     cancelScheduledFor(editable);
+    lease.area = undefined;
+    lease.stale = true;
     lease.view = view;
     lease.runtime = runtime;
     lease.generation = generation;
@@ -309,6 +511,7 @@ const createGeometryCoordinator = (
         ) {
           return;
         }
+        lease.area = undefined;
         scopesFor(editable).forEach((scope) => dirtyScopes.add(scope));
         schedule();
       });
@@ -316,27 +519,33 @@ const createGeometryCoordinator = (
     schedule();
   }
 
-  const onViewportChange = () => requestAll();
+  function onScroll() {
+    forgetAreas();
+    requestAll();
+  }
 
-  document.addEventListener('scroll', onViewportChange, {
+  document.addEventListener('scroll', onScroll, {
     capture: true,
     passive: true,
   });
-  window?.addEventListener('resize', onViewportChange, { passive: true });
-  window?.visualViewport?.addEventListener('resize', onViewportChange, {
+  window?.addEventListener('resize', rewalk, { passive: true });
+  window?.visualViewport?.addEventListener('resize', rewalk, {
     passive: true,
   });
-  window?.visualViewport?.addEventListener('scroll', onViewportChange, {
+  window?.visualViewport?.addEventListener('scroll', onScroll, {
     passive: true,
   });
 
   return {
+    readArea,
     register(scope, editable) {
       scopes.add(scope);
       const lease = rootLeases.get(editable) ?? {
+        chain: null,
         count: 0,
         generation: -1,
         runtime: null,
+        stale: true,
         stopBinding: null,
         stopLayout: null,
         view: null,
@@ -344,7 +553,7 @@ const createGeometryCoordinator = (
 
       lease.count += 1;
       rootLeases.set(editable, lease);
-      if (lease.count === 1) resizeObserver?.observe(editable);
+      if (lease.count === 1) syncWatches();
       syncRootBinding(editable);
       let active = true;
 
@@ -359,8 +568,8 @@ const createGeometryCoordinator = (
           lease.stopBinding?.();
           lease.stopLayout?.();
           cancelScheduledFor(editable);
-          resizeObserver?.unobserve(editable);
           rootLeases.delete(editable);
+          syncWatches();
         } else {
           syncRootBinding(editable);
         }
@@ -373,10 +582,11 @@ const createGeometryCoordinator = (
         cancelScheduled = null;
         scheduledEditable = null;
         resizeObserver?.disconnect();
-        document.removeEventListener('scroll', onViewportChange, true);
-        window?.removeEventListener('resize', onViewportChange);
-        window?.visualViewport?.removeEventListener('resize', onViewportChange);
-        window?.visualViewport?.removeEventListener('scroll', onViewportChange);
+        attributeObserver?.disconnect();
+        document.removeEventListener('scroll', onScroll, true);
+        window?.removeEventListener('resize', rewalk);
+        window?.visualViewport?.removeEventListener('resize', rewalk);
+        window?.visualViewport?.removeEventListener('scroll', onScroll);
         onEmpty();
       };
     },
@@ -415,7 +625,7 @@ export const resolveRangeGeometry = (
   editor: GeometryEditor,
   editable: HTMLElement,
   range: Range
-): RangeGeometry | null => {
+): RangeRects | null => {
   const rangeRoot = range.anchor.root ?? range.focus.root;
 
   if (rangeRoot && getEditorRuntimeRoot(editor) !== rangeRoot) return null;
@@ -450,7 +660,7 @@ export const resolveDOMRangeGeometry = (
   domRange: globalThis.Range,
   focusDOMRange: globalThis.Range,
   collapsed: boolean
-): RangeGeometry | null => {
+): RangeRects | null => {
   if (
     !isWithinEditable(editable, domRange.startContainer) ||
     !isWithinEditable(editable, domRange.endContainer) ||
@@ -522,13 +732,17 @@ export function createRangeGeometryOwner(
       range = view && 'read' in source ? source.read(view) : null;
       rangeDirty = false;
     }
-    const next =
+    const rects =
       view && editable?.isConnected && EDITOR_TO_ELEMENT.get(view) === editable
         ? 'measure' in source
           ? source.measure(view, editable)
           : range
             ? resolveRangeGeometry(view, editable, range)
             : null
+        : null;
+    const next =
+      rects && editable
+        ? withClip(rects, coordinator?.readArea(editable) ?? null)
         : null;
 
     if (isGeometryEqual(snapshot, next)) return;

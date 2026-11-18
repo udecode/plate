@@ -132,7 +132,7 @@ const Collaboration = CollaborationPlugin.create({
 `CollaborationPlugin` 会为创建的每个 Yjs descriptor 添加选区样式和 `afterEditable` 光标覆盖层。
 颜色、透明度和标签都可以在复制的文件中调整。
 
-如需自定义光标 UI，`platejs/yjs/react` 导出复制组件所用的 hooks：`useYjsRemoteCursorIds(editor)` 读取稳定的成员列表，`useYjsRemoteCursor(editor, clientId)` 读取单个光标，`useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` 在该视图中读取其几何信息。
+如需自定义光标 UI，`platejs/yjs/react` 导出复制组件所用的 hooks：`useYjsRemoteCursorIds(editor)` 读取稳定的成员列表，`useYjsRemoteCursor(editor, clientId)` 读取单个光标，`useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` 在该视图中读取其几何信息。光标滚出编辑器的可见区域 `clipRect` 时，其 `visible` 字段为 `null`，详见 [`useSelectionGeometry`](/docs/api/react-hooks#geometry-hooks)。
 
 如需自行绘制远程选区，用 `editor.api.yjs.remoteCursors()` 读取当前快照，并用 `editor.api.yjs.subscribeRemoteCursors(listener)` 让绘制失效；它只在解析后的远程光标变化时触发。它的清理函数是幂等的，随所属视图一起释放。
 

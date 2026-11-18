@@ -340,7 +340,10 @@ set `aria-busy` while it waits.
 Remote cursor UI reads stable membership with
 `useYjsRemoteCursorIds`, one cursor with `useYjsRemoteCursor`, and exact-view
 geometry with `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })`.
-These hooks require a binding configured with awareness.
+These hooks require a binding configured with awareness. The geometry's
+`visible` field is `null` while the cursor is scrolled out of the Editable's
+visible area, `clipRect`. Draw the caret and its label only while `visible` is
+set, and cut their paint to `clipRect` with `clip-path`.
 
 ## Observe remote selections
 

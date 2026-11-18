@@ -144,7 +144,7 @@ const Collaboration = CollaborationPlugin.create({
 onto each Yjs descriptor that it creates. Edit the copied file to customize
 colors, opacity, and labels.
 
-For custom cursor UI, `platejs/yjs/react` exports the hooks the copied component uses: `useYjsRemoteCursorIds(editor)` reads stable membership, `useYjsRemoteCursor(editor, clientId)` reads one cursor, and `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` reads its geometry in that exact view.
+For custom cursor UI, `platejs/yjs/react` exports the hooks the copied component uses: `useYjsRemoteCursorIds(editor)` reads stable membership, `useYjsRemoteCursor(editor, clientId)` reads one cursor, and `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` reads its geometry in that exact view. Its `visible` field is `null` while the cursor is scrolled out of the editor's visible area, `clipRect`, as [`useSelectionGeometry`](/docs/api/react-hooks#geometry-hooks) describes.
 
 To paint remote selections yourself, read the current snapshot with `editor.api.yjs.remoteCursors()` and invalidate that paint with `editor.api.yjs.subscribeRemoteCursors(listener)`, which fires only when resolved remote cursors change. Its cleanup is idempotent; retire it with the owning view.
 

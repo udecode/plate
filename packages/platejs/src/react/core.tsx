@@ -65,6 +65,7 @@ export type {
   ReactPluginOptions,
   ReactPlugin as RuntimeReactPlugin,
   RangeGeometry,
+  RangeRects,
   ViewportRect,
   UseSelectionGeometryOptions,
   ViewSourceError,

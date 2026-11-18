@@ -25069,7 +25069,7 @@
           "kind": "type",
           "name": "RangeGeometry",
           "runtime": false,
-          "signature": "type RangeGeometry = Readonly<{\n  boundingRect: ViewportRect;\n  focusRect: ViewportRect | null;\n  rects: readonly ViewportRect[];\n}>;",
+          "signature": "type RangeGeometry = RangeRects & Readonly<{\n  /**\n   * The part of the Editable anyone can see: the viewport cut by every box\n   * that clips the Editable, its own box included when its overflow clips.\n   * Every range of one Editable shares it in a frame. `null` when none shows.\n   */\n  clipRect: ViewportRect | null;\n  /**\n   * The range's boxes cut to `clipRect`, each line outside it dropped. A\n   * line that only touches the edge is outside; a caret on the edge is\n   * inside. `null` when nothing of the range is inside. Show or hide by it,\n   * and draw inside `clipRect`.\n   */\n  visible: RangeRects | null;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -25092,6 +25092,17 @@
           "name": "RangeMode",
           "runtime": false,
           "signature": "type RangeMode = 'highest' | 'lowest';",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/react:RangeRects": {
+          "aliases": [],
+          "documentation": "The boxes of one range in viewport coordinates.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "RangeRects",
+          "runtime": false,
+          "signature": "type RangeRects = Readonly<{\n  boundingRect: ViewportRect;\n  focusRect: ViewportRect | null;\n  rects: readonly ViewportRect[];\n}>;",
           "source": null,
           "typeParameters": []
         },

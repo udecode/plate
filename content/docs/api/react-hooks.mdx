@@ -527,9 +527,37 @@ const geometry = useSelectionGeometry({ editableRef });
 const referenceRect = geometry?.boundingRect ?? null;
 ```
 
-`RangeGeometry` contains `boundingRect`, `focusRect`, and `rects`. Use
-`boundingRect` to place a toolbar and `focusRect` to place a caret or label.
-Every rectangle uses viewport coordinates.
+`RangeGeometry` contains `boundingRect`, `focusRect`, `rects`, `clipRect` and
+`visible`. Every rectangle uses viewport coordinates.
+
+- `boundingRect`, `focusRect` and `rects` cover the whole range, scrolled out
+  of view or not. Use `boundingRect` to place a toolbar and `focusRect` to
+  place a caret or label.
+- `clipRect` is the part of the `EditorContent` anyone can see: the viewport
+  cut by every box that clips it, its own box included when it scrolls itself.
+  It is `null` when no part of the `EditorContent` shows.
+- `visible` holds the same three boxes cut to `clipRect`. A line that only
+  touches the edge is dropped, and a caret on the edge stays. It is `null`
+  when no part of the range shows.
+
+Hide a popup or caret while `visible` is `null`. Cut a caret's paint to
+`clipRect` with `clip-path`, or place it with `position: absolute`, offset by
+`clipRect`'s top-left corner, inside a box at `clipRect` that clips its
+overflow. Either way it never paints over controls outside the editor. A
+`position: fixed` caret escapes that box.
+
+```tsx
+const geometry = useSelectionGeometry({ editableRef });
+const caret = geometry?.visible?.focusRect;
+
+if (!caret || !geometry.clipRect) return null;
+```
+
+The geometry updates on scroll, resize and layout changes, and when a `class`
+or `style` attribute changes on a box around the `EditorContent`. When a
+stylesheet change starts or stops clipping, or a box around the
+`EditorContent` moves to another parent, the geometry shows it at its next
+update.
 
 ## Selector results
 

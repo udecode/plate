@@ -492,6 +492,13 @@ Read the current editor selection geometry.
 Use this direct domain hook for toolbars, link controls, and retained carets.
 Pass the exact Editable ref received by the render slot.
 
+`clipRect` is the part of the Editable anyone can see, cut by every box that
+clips it, and `visible` holds the selection's boxes cut to it. Both are `null`
+when nothing shows. Hide a popup or caret while `visible` is `null`. Cut a
+caret's paint to `clipRect` with `clip-path`, or place it with
+`position: absolute`, offset by `clipRect`'s top-left corner, inside a box at
+`clipRect` that clips its overflow.
+
 ## Selector results
 
 A selector hook runs its selector again after each commit it listens to. When

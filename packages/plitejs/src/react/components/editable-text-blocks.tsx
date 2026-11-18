@@ -104,6 +104,7 @@ import {
 } from '../inactive-selection';
 import {
   createRangeGeometryOwner,
+  type ViewportRect,
   useRangeGeometryOwner,
 } from '../range-geometry';
 import {
@@ -1783,7 +1784,7 @@ const ViewSelectionCaretGeometry = ({
   );
   const geometry = useRangeGeometryOwner(owner);
   const rect = geometry?.focusRect;
-  if (!rect) return null;
+  if (!rect || !geometry.visible?.focusRect || !geometry.clipRect) return null;
   return (
     <span
       aria-hidden="true"
@@ -1792,6 +1793,7 @@ const ViewSelectionCaretGeometry = ({
       data-editor-root-chrome-ignore="true"
       style={{
         backgroundColor: 'currentColor',
+        clipPath: clipToArea(rect, geometry.clipRect),
         height: rect.height,
         left: rect.left,
         pointerEvents: 'none',
@@ -1802,6 +1804,12 @@ const ViewSelectionCaretGeometry = ({
     />
   );
 };
+
+const clipToArea = (
+  origin: Readonly<{ left: number; top: number }>,
+  area: ViewportRect
+) =>
+  `inset(${area.top - origin.top}px calc(100% - ${area.right - origin.left}px) calc(100% - ${area.bottom - origin.top}px) ${area.left - origin.left}px)`;
 
 const InactiveSelectionCaretSelection = ({
   editableRef,
@@ -1821,10 +1829,9 @@ const InactiveSelectionCaretGeometry = ({
   editableRef: React.RefObject<HTMLDivElement | null>;
 }) => {
   const geometry = useSelectionGeometry({ editableRef });
+  const rect = geometry?.focusRect;
 
-  if (!geometry?.focusRect) return null;
-
-  const rect = geometry.focusRect;
+  if (!rect || !geometry.visible?.focusRect || !geometry.clipRect) return null;
 
   return (
     <span
@@ -1833,6 +1840,7 @@ const InactiveSelectionCaretGeometry = ({
       data-editor-inactive-selection-caret=""
       data-editor-root-chrome-ignore="true"
       style={{
+        clipPath: clipToArea(rect, geometry.clipRect),
         height: Math.max(rect.height, 1),
         left: rect.left,
         pointerEvents: 'none',
