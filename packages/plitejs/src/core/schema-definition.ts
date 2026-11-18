@@ -1015,7 +1015,9 @@ function textProperty(
 
 function elementProperty<
   TDescriptor extends PropertyValueDescriptor,
-  const TOptions extends SchemaElementPropertyOptions,
+  const TOptions extends SchemaElementPropertyOptions<
+    PropertyValueOf<TDescriptor>
+  >,
 >(
   value: TDescriptor,
   options: TOptions &
@@ -1025,7 +1027,9 @@ function elementProperty<
 function elementProperty<
   const TKey extends SchemaPropertyKey,
   TDescriptor extends PropertyValueDescriptor,
-  const TOptions extends SchemaElementPropertyOptions,
+  const TOptions extends SchemaElementPropertyOptions<
+    PropertyValueOf<TDescriptor>
+  >,
 >(
   key: TKey,
   value: TDescriptor,
@@ -1053,7 +1057,16 @@ function elementProperty(
   if (key) assertPropertyKey(key);
   assertOnlyKeys(
     options,
-    ['copy', 'landing', 'role', 'split', 'target', 'typeChange', 'unique'],
+    [
+      'copy',
+      'landing',
+      'references',
+      'role',
+      'split',
+      'target',
+      'typeChange',
+      'unique',
+    ],
     'schema.elementProperty options'
   );
   assertPropertyCopyPolicy(value, options.copy, 'schema.elementProperty');
@@ -1064,6 +1077,9 @@ function elementProperty(
     ...(key ? { key } : {}),
     landing: options.landing ?? 'preserve',
     placement: 'element' as const,
+    ...(options.references === undefined
+      ? {}
+      : { references: options.references }),
     role: options.role ?? 'content',
     split: options.split ?? (unique ? 'drop' : defaultSplitOf(value)),
     target: options.target,

@@ -298,6 +298,10 @@ type CompiledSchemaRecordSet = Readonly<{
 
 export type CompiledSchemaPropertyMergeStrategy = 'replace' | 'set';
 
+type CompiledPropertyReferences = NonNullable<
+  SchemaElementProperty['references']
+>;
+
 export type CompiledSchemaProperty = Readonly<{
   descriptor: PropertyValueDescriptor;
   exclusiveGroupIds: readonly string[];
@@ -315,6 +319,7 @@ export type CompiledSchemaProperty = Readonly<{
   merge: CompiledSchemaPropertyMergeStrategy;
   owner: string;
   placement: 'element' | 'text';
+  references?: CompiledPropertyReferences;
   role: 'content' | 'metadata';
   target: SchemaTarget | null;
 }>;
@@ -384,9 +389,12 @@ type StructuralPropertyValueDescriptor = Readonly<{
 
 export type StructuralCompiledSchemaProperty = Omit<
   CompiledSchemaProperty,
-  'descriptor'
+  'descriptor' | 'references'
 > &
-  Readonly<{ descriptor: StructuralPropertyValueDescriptor }>;
+  Readonly<{
+    descriptor: StructuralPropertyValueDescriptor;
+    references?: Readonly<{ key: string }>;
+  }>;
 
 /** Structural cache payload with no live validator closure. */
 export type StructuralCompiledEditorSchema = Omit<
@@ -615,6 +623,26 @@ const freezeSetMap = (
         .map(([key, values]) => [key, freezeSet(values)] as const)
     )
   );
+
+const referencesOf = (
+  { references }: Readonly<{ references?: CompiledPropertyReferences }>,
+  { path, pluginName }: Readonly<{ path: string; pluginName: string }>
+) => {
+  if (!references) return undefined;
+
+  const { key, map } = references;
+
+  if (typeof key !== 'string' || typeof map !== 'function') {
+    compileFailure(
+      'invalid-schema-declaration',
+      `Schema declaration at ${path}.references must have a string key and a map function.`,
+      [pluginName],
+      `${path}.references`
+    );
+  }
+
+  return Object.freeze({ key, map });
+};
 
 const compileFailure = (
   code: string,
@@ -1134,6 +1162,7 @@ const collectSchemaKeyDiagnostics = (
                   'key',
                   'landing',
                   'placement',
+                  'references',
                   'role',
                   'split',
                   'target',
@@ -1180,6 +1209,14 @@ const collectSchemaKeyDiagnostics = (
             !Array.isArray(property.key)
           ) {
             check(property.key, ['kind', 'prefix'], pluginName, `${path}.key`);
+          }
+          if (property.references !== undefined) {
+            check(
+              property.references,
+              ['key', 'map'],
+              pluginName,
+              `${path}.references`
+            );
           }
           visitDescriptor(property.value, pluginName, `${path}.value`);
           if (property.target !== undefined) {
@@ -1430,7 +1467,7 @@ const canonicalDeclaration = (
     const record = value as Readonly<Record<PropertyKey, unknown>>;
     const result = Object.fromEntries(
       Object.keys(record)
-        .filter((property) => property !== 'validate')
+        .filter((property) => key === 'references' || property !== 'validate')
         .sort()
         .map((property) => {
           const descriptor = Object.getOwnPropertyDescriptor(record, property);
@@ -1445,7 +1482,7 @@ const canonicalDeclaration = (
     ) as Record<string, unknown>;
     const exceptionalKeys = Reflect.ownKeys(record)
       .filter((property) => {
-        if (property === 'validate') return false;
+        if (property === 'validate' && key !== 'references') return false;
         if (typeof property === 'symbol') return true;
         const descriptor = Object.getOwnPropertyDescriptor(record, property);
 
@@ -4539,6 +4576,10 @@ const compileEditorSchemaInternal = (
       source
     );
     const role = 'value' in raw ? raw.role : 'content';
+    const references =
+      'value' in raw && raw.placement === 'element'
+        ? referencesOf(raw, source)
+        : undefined;
     const semanticId =
       overriddenPropertyIds.get(raw) ??
       Reflect.get(raw, compiledSchemaPropertyIdentity);
@@ -4631,6 +4672,7 @@ const compileEditorSchemaInternal = (
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
       owner: source.pluginName,
       placement,
+      ...(references ? { references } : {}),
       role,
       ...(semanticId ? { semanticId } : {}),
       source,
@@ -4780,6 +4822,33 @@ const compileEditorSchemaInternal = (
 
   assertPropertyAgreesAcrossPlaces(mutableProperties);
 
+  for (const { lifecycle, references, source } of mutableProperties) {
+    if (references && lifecycle.unique) {
+      compileFailure(
+        'invalid-property-references',
+        `Schema property at ${source.path} is unique, so it cannot reference "${references.key}".`,
+        [source],
+        source.path
+      );
+    }
+    if (
+      references &&
+      !mutableProperties.some(
+        (property) =>
+          property.key === references.key &&
+          property.lifecycle.unique &&
+          property.descriptor.kind === 'string'
+      )
+    ) {
+      compileFailure(
+        'invalid-property-references',
+        `Schema property at ${source.path} references "${references.key}", which names no unique string element property.`,
+        [source],
+        source.path
+      );
+    }
+  }
+
   const compiledProperties = mutableProperties
     .map((property) => {
       const id = property.semanticId ?? getCompiledSchemaPropertyId(property);
@@ -4793,6 +4862,7 @@ const compileEditorSchemaInternal = (
         merge: property.merge,
         owner: property.owner,
         placement: property.placement,
+        ...(property.references ? { references: property.references } : {}),
         role: property.role,
         target: property.target,
       }) satisfies CompiledSchemaProperty;
@@ -5284,6 +5354,9 @@ const compileEditorSchemaInternal = (
       lifecycle: property.lifecycle,
       merge: property.merge,
       placement: property.placement,
+      ...(property.references
+        ? { references: { key: property.references.key } }
+        : {}),
       role: property.role,
       target: canonicalTarget(property.target),
     })),
@@ -5383,6 +5456,7 @@ export const compileEditorSchemaContributions = (
 
 type RuntimePropertyDescriptor = Readonly<{
   descriptor: PropertyValueDescriptor;
+  references?: CompiledPropertyReferences;
   source: Source<SchemaProperty | PropertyValueDescriptor>;
 }>;
 
@@ -5419,15 +5493,22 @@ const collectRuntimePropertyDescriptors = (
     for (const [index, property] of (
       record.contribution.properties ?? []
     ).entries()) {
+      const source = {
+        pluginName: record.pluginName,
+        path: `properties.${index}`,
+        value: property,
+      };
+      const references =
+        property.placement === 'element'
+          ? referencesOf(property, source)
+          : undefined;
+
       descriptors.set(
         getCompiledSchemaPropertyId(property),
         Object.freeze({
           descriptor: property.value,
-          source: {
-            pluginName: record.pluginName,
-            path: `properties.${index}`,
-            value: property,
-          },
+          ...(references ? { references } : {}),
+          source,
         })
       );
     }
@@ -5490,18 +5571,26 @@ const haveEquivalentRuntimeValidationBindings = (
 
 const replaceCompiledPropertyDescriptors = (
   schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
-  descriptors: ReadonlyMap<string, PropertyValueDescriptor>,
+  descriptors: ReadonlyMap<string, RuntimePropertyDescriptor>,
   revision: number
 ): CompiledEditorSchema => {
   const byId = new Map<string, CompiledSchemaProperty>();
 
-  for (const [id, property] of schema.properties.byId) {
-    const descriptor = descriptors.get(id);
+  for (const [id, { references: _references, ...property }] of schema.properties
+    .byId) {
+    const runtime = descriptors.get(id);
 
-    if (!descriptor) {
+    if (!runtime) {
       throw new Error(`Missing runtime schema property descriptor "${id}".`);
     }
-    byId.set(id, Object.freeze({ ...property, descriptor }));
+    byId.set(
+      id,
+      Object.freeze({
+        ...property,
+        descriptor: runtime.descriptor,
+        ...(runtime.references ? { references: runtime.references } : {}),
+      })
+    );
   }
 
   const compiled: CompiledEditorSchema = Object.freeze({
@@ -5564,11 +5653,14 @@ export const stripCompiledEditorSchemaRuntimeValidations = (
   const byId = new Map<string, StructuralCompiledSchemaProperty>();
 
   for (const [id, property] of schema.properties.byId) {
+    const { references, ...structural } = property;
+
     byId.set(
       id,
       Object.freeze({
-        ...property,
+        ...structural,
         descriptor: toStructuralPropertyDescriptor(property.descriptor),
+        ...(references ? { references: { key: references.key } } : {}),
       })
     );
   }
@@ -5582,6 +5674,29 @@ export const stripCompiledEditorSchemaRuntimeValidations = (
   });
 };
 
+const isBoundTo = (
+  schema: CompiledEditorSchema | StructuralCompiledEditorSchema,
+  current: ReadonlyMap<string, RuntimePropertyDescriptor>,
+  revision: number
+): schema is CompiledEditorSchema =>
+  schema.revision === revision &&
+  schema.properties.byId.size === current.size &&
+  [...schema.properties.byId].every(([id, property]) => {
+    const runtime = current.get(id);
+
+    return Boolean(
+      runtime &&
+      (property.references === undefined
+        ? runtime.references === undefined
+        : 'map' in property.references &&
+          property.references.map === runtime.references?.map) &&
+      haveEquivalentRuntimeValidationBindings(
+        property.descriptor,
+        runtime.descriptor
+      )
+    );
+  });
+
 /**
  * Bind one reused structural schema to the current configuration.
  *
@@ -5594,25 +5709,9 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
 ): CompiledEditorSchema => {
   const current = collectRuntimePropertyDescriptors(records);
 
-  if (
-    schema.revision === revision &&
-    schema.properties.byId.size === current.size &&
-    [...schema.properties.byId].every(([id, property]) => {
-      const runtime = current.get(id);
+  if (isBoundTo(schema, current, revision)) return schema;
 
-      return Boolean(
-        runtime &&
-        haveEquivalentRuntimeValidationBindings(
-          property.descriptor,
-          runtime.descriptor
-        )
-      );
-    })
-  ) {
-    return schema;
-  }
-
-  const descriptors = new Map<string, PropertyValueDescriptor>();
+  const descriptors = new Map<string, RuntimePropertyDescriptor>();
 
   for (const id of schema.properties.byId.keys()) {
     const runtime = current.get(id);
@@ -5620,10 +5719,10 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
     if (!runtime) {
       throw new Error(`Missing current schema property descriptor "${id}".`);
     }
-    descriptors.set(
-      id,
-      clonePropertyDescriptor(runtime.descriptor, runtime.source)
-    );
+    descriptors.set(id, {
+      ...runtime,
+      descriptor: clonePropertyDescriptor(runtime.descriptor, runtime.source),
+    });
   }
 
   return replaceCompiledPropertyDescriptors(schema, descriptors, revision);
@@ -6486,6 +6585,11 @@ const isContractProperty = (value: unknown) =>
   (value.merge === 'replace' || value.merge === 'set') &&
   typeof value.owner === 'string' &&
   (value.placement === 'element' || value.placement === 'text') &&
+  (value.references === undefined ||
+    (value.placement === 'element' &&
+      isRecord(value.references) &&
+      Object.keys(value.references).length === 1 &&
+      typeof value.references.key === 'string')) &&
   (value.role === 'content' || value.role === 'metadata') &&
   (value.target === null || isContractTarget(value.target));
 
@@ -6609,6 +6713,9 @@ const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
         lifecycle: property.lifecycle,
         merge: property.merge,
         placement: property.placement,
+        ...(property.references
+          ? { references: { key: property.references.key } }
+          : {}),
         role: property.role,
         target: canonicalTarget(property.target),
       })),
@@ -7303,6 +7410,9 @@ const canonicalCompiledProperty = (property: CompiledSchemaProperty | null) =>
         lifecycle: property.lifecycle,
         merge: property.merge,
         placement: property.placement,
+        ...(property.references
+          ? { references: { key: property.references.key } }
+          : {}),
         role: property.role,
         target: canonicalTarget(property.target),
       }

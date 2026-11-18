@@ -214,10 +214,26 @@ export type SchemaTextPropertyOptions = Readonly<{
   unique?: never;
 }>;
 
-export type SchemaElementPropertyOptions = Readonly<{
+/**
+ * How an element property names elements by the values of a unique element
+ * property.
+ */
+export type SchemaPropertyReferences<TValue> = Readonly<{
+  /** The unique element property whose values this property names. */
+  key: string;
+  /**
+   * The value with each name it holds replaced by `renamed(name)` where that
+   * is defined. `renamed` returns the new value of a holder the same copy
+   * carried, and `undefined` for any other name.
+   */
+  map: (value: TValue, renamed: (name: string) => string | undefined) => TValue;
+}>;
+
+export type SchemaElementPropertyOptions<TValue = unknown> = Readonly<{
   copy?: SchemaPropertyCopyPolicy;
   /** Defaults to `preserve`. */
   landing?: SchemaPropertyLandingPolicy;
+  references?: SchemaPropertyReferences<TValue>;
   role?: SchemaPropertyRole;
   /** Defaults to `drop` for a generated value, and `preserve` otherwise. */
   split?: SchemaPropertySplitPolicy;
@@ -266,6 +282,15 @@ export type SchemaElementProperty<
   key: TKey;
   landing: SchemaPropertyLandingPolicy;
   placement: 'element';
+  references?: PropertyValueDescriptor extends TDescriptor
+    ? Readonly<{
+        key: string;
+        map: (
+          value: never,
+          renamed: (name: string) => string | undefined
+        ) => unknown;
+      }>
+    : SchemaPropertyReferences<PropertyValueOf<TDescriptor>>;
   role: SchemaPropertyRole;
   split: SchemaPropertySplitPolicy;
   target: TTarget;
