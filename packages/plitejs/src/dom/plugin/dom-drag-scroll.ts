@@ -46,62 +46,135 @@ const clipsAxes = (style: CSSStyleDeclaration) => {
   };
 };
 
-export const getVisibleRect = (element: Element): DOMGeometryRect | null => {
+type ClipBox = Readonly<{
+  clientHeight: number;
+  clientLeft: number;
+  clientTop: number;
+  clientWidth: number;
+  element: Element;
+  offsetHeight: number | undefined;
+  offsetWidth: number | undefined;
+  x: boolean;
+  y: boolean;
+}>;
+
+type VisitedBox = Readonly<{ element: Element; parent: Element | null }>;
+
+export type ClipChain = Readonly<{
+  boxes: readonly ClipBox[];
+  element: Element;
+  visited: readonly VisitedBox[];
+}>;
+
+const readClipBox = (
+  element: Element,
+  axes: { x: boolean; y: boolean }
+): ClipBox => {
+  const { offsetHeight, offsetWidth } = element as Partial<HTMLElement>;
+
+  return {
+    clientHeight: element.clientHeight,
+    clientLeft: element.clientLeft,
+    clientTop: element.clientTop,
+    clientWidth: element.clientWidth,
+    element,
+    offsetHeight,
+    offsetWidth,
+    ...axes,
+  };
+};
+
+export const walkClipChain = (
+  element: Element,
+  { self = false }: { self?: boolean } = {}
+): ClipChain | null => {
   const document = element.ownerDocument;
   const view = document.defaultView;
 
   if (!view) return null;
 
-  const { clientHeight, clientWidth } = document.documentElement;
-  const rect = element.getBoundingClientRect();
+  const boxes: ClipBox[] = [];
+  const ownStyle = view.getComputedStyle(element);
+  let { position } = ownStyle;
+  let parent = getFlatTreeParentElement(element);
+  const visited: VisitedBox[] = [{ element, parent }];
+
+  if (self) {
+    const axes = clipsAxes(ownStyle);
+
+    if (axes.x || axes.y) boxes.push(readClipBox(element, axes));
+  }
+
+  while (
+    parent &&
+    parent !== document.body &&
+    parent !== document.documentElement
+  ) {
+    const next = getFlatTreeParentElement(parent);
+    const style = view.getComputedStyle(parent);
+
+    const escapes =
+      (position === 'fixed' ||
+        (position === 'absolute' &&
+          !POSITIONED_PATTERN.test(style.position))) &&
+      !isContainingBlock(style);
+
+    visited.push({ element: parent, parent: next });
+    if (!escapes) {
+      const axes = clipsAxes(style);
+
+      if (axes.x || axes.y) boxes.push(readClipBox(parent, axes));
+      ({ position } = style);
+    }
+    parent = next;
+  }
+
+  return { boxes, element, visited };
+};
+
+export const intersectClipChain = (
+  chain: ClipChain,
+  rect: Readonly<DOMGeometryRect>
+): DOMGeometryRect | null => {
+  const { clientHeight, clientWidth } =
+    chain.element.ownerDocument.documentElement;
   let left = Math.max(rect.left, 0);
   let top = Math.max(rect.top, 0);
   let right = Math.min(rect.right, clientWidth);
   let bottom = Math.min(rect.bottom, clientHeight);
-  let { position } = view.getComputedStyle(element);
 
-  for (
-    let parent = getFlatTreeParentElement(element);
-    parent && parent !== document.body && parent !== document.documentElement;
-    parent = getFlatTreeParentElement(parent)
-  ) {
-    const style = view.getComputedStyle(parent);
+  for (const box of chain.boxes) {
+    const clip =
+      box.element === chain.element
+        ? rect
+        : box.element.getBoundingClientRect();
+    const scaleX = box.offsetWidth ? clip.width / box.offsetWidth : 1;
+    const scaleY = box.offsetHeight ? clip.height / box.offsetHeight : 1;
 
-    if (
-      (position === 'fixed' ||
-        (position === 'absolute' &&
-          !POSITIONED_PATTERN.test(style.position))) &&
-      !isContainingBlock(style)
-    ) {
-      continue;
+    if (box.x) {
+      const clipLeft = clip.left + box.clientLeft * scaleX;
+
+      left = Math.max(left, clipLeft);
+      right = Math.min(right, clipLeft + box.clientWidth * scaleX);
     }
-    const axes = clipsAxes(style);
+    if (box.y) {
+      const clipTop = clip.top + box.clientTop * scaleY;
 
-    if (axes.x || axes.y) {
-      const clip = parent.getBoundingClientRect();
-      const { offsetHeight, offsetWidth } = parent as Partial<HTMLElement>;
-      const scaleX = offsetWidth ? clip.width / offsetWidth : 1;
-      const scaleY = offsetHeight ? clip.height / offsetHeight : 1;
-
-      if (axes.x) {
-        const clipLeft = clip.left + parent.clientLeft * scaleX;
-
-        left = Math.max(left, clipLeft);
-        right = Math.min(right, clipLeft + parent.clientWidth * scaleX);
-      }
-      if (axes.y) {
-        const clipTop = clip.top + parent.clientTop * scaleY;
-
-        top = Math.max(top, clipTop);
-        bottom = Math.min(bottom, clipTop + parent.clientHeight * scaleY);
-      }
+      top = Math.max(top, clipTop);
+      bottom = Math.min(bottom, clipTop + box.clientHeight * scaleY);
     }
-
-    ({ position } = style);
   }
 
   return right > left && bottom > top
     ? { bottom, height: bottom - top, left, right, top, width: right - left }
+    : null;
+};
+
+export const getVisibleRect = (element: Element): DOMGeometryRect | null => {
+  const chain = walkClipChain(element);
+
+  return chain
+    ? intersectClipChain(chain, element.getBoundingClientRect())
     : null;
 };
 
