@@ -1536,6 +1536,52 @@ const noInlineHydrationFlag = {
   },
 };
 
+const BASE_UI_DATA_VARIANT =
+  /(?:^|[\s:])data-(checked|closed|ending-style|indeterminate|open|popup-open|pressed|starting-style|unchecked)(?=[:/])/;
+
+const radixStateVariant = {
+  create(context) {
+    let radix = false;
+    const hits = [];
+    const check = (node, text) => {
+      const match = BASE_UI_DATA_VARIANT.exec(text);
+      if (match) hits.push({ name: match[1], node });
+    };
+
+    return {
+      ImportDeclaration(node) {
+        const source = node.source.value;
+        if (source === 'radix-ui' || source.startsWith('@radix-ui/')) {
+          radix = true;
+        }
+      },
+      Literal(node) {
+        if (typeof node.value === 'string') check(node, node.value);
+      },
+      'Program:exit'() {
+        if (!radix) return;
+        for (const { name, node } of hits) {
+          context.report({ data: { name }, messageId: 'baseUi', node });
+        }
+      },
+      TemplateElement(node) {
+        check(node, node.value.cooked ?? node.value.raw);
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'A Radix component styles its state through data-state variants.',
+    },
+    messages: {
+      baseUi:
+        '`data-{{name}}:` matches a Base UI attribute that Radix never sets, so this class never applies. Write the Radix form, such as `data-[state=checked]:`, as the upstream new-york-v4 component does.',
+    },
+    type: 'problem',
+  },
+};
+
 const PLITE_REACT_EDITOR_FACTORIES = new Set([
   'createReactEditor',
   'useEditor',
@@ -2558,5 +2604,6 @@ export default {
       noWallClockBound
     ),
     'plite-example-history': pliteExampleHistory,
+    'radix-state-variant': radixStateVariant,
   },
 };

@@ -53,6 +53,17 @@
       "2025-11-20-biome-ultracite"
     ],
     "board-demo": ["2026-11-18-ai-menu-acts-on-board-note-text"],
+    "find": [
+      "2026-11-18-find-tooltip-provider",
+      "2026-11-18-registry-icon-library",
+      "2026-09-09-find-controls",
+      "2026-09-09-find-view-ownership",
+      "2026-09-08-find-session",
+      "2026-09-06-editor-subscriptions",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry"
+    ],
     "use-floating-rect": ["2026-11-18-floating-rect-hides-clipped-text"],
     "link": [
       "2026-11-18-floating-rect-hides-clipped-text",
@@ -373,16 +384,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
-    ],
-    "find": [
-      "2026-11-18-registry-icon-library",
-      "2026-09-09-find-controls",
-      "2026-09-09-find-view-ownership",
-      "2026-09-08-find-session",
-      "2026-09-06-editor-subscriptions",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry"
     ],
     "fixed-toolbar": [
       "2026-11-18-registry-icon-library",

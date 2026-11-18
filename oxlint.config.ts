@@ -742,6 +742,12 @@ export default defineConfig({
       },
     },
     {
+      files: ['apps/www/src/**/*.tsx'],
+      rules: {
+        'plate/radix-state-variant': 'error',
+      },
+    },
+    {
       files: [
         'packages/*/src/**/*.{cts,mts,ts,tsx}',
         'apps/www/src/registry/**/*.{ts,tsx}',

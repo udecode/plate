@@ -1,7 +1,7 @@
 'use client';
 
-import type { DialogProps } from '@radix-ui/react-dialog';
 import { usePathname } from 'next/navigation';
+import type { Dialog as DialogPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 import { CommandMenuDialog } from '@/components/command-menu-dialog';
@@ -30,7 +30,7 @@ const i18n = {
 export function CommandMenu({
   navItems,
   ...props
-}: Omit<DialogProps, 'onOpenChange' | 'open'> & {
+}: Omit<DialogPrimitive.DialogProps, 'onOpenChange' | 'open'> & {
   navItems: MainNavItem[];
 }) {
   const locale = useLocale();

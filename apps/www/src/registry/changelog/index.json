@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-18-find-tooltip-provider",
+      "href": "/registry/changelog/2026-11-18-find-tooltip-provider.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open the find bar in Radix apps with no root TooltipProvider",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-floating-rect-hides-clipped-text",
       "href": "/registry/changelog/2026-11-18-floating-rect-hides-clipped-text.json",
       "status": "draft",

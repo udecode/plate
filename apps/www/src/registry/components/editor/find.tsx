@@ -22,6 +22,7 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
@@ -207,44 +208,46 @@ function FindBar({
           >
             {error?.message ?? countLabel}
           </span>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <InputGroupButton
-                aria-label="Previous match"
-                disabled={count === 0}
-                onClick={() => api.move(-1)}
-                size="icon-xs"
-              >
-                <ChevronUp aria-hidden data-icon="" />
-              </InputGroupButton>
-            </TooltipTrigger>
-            <TooltipContent>Previous match</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <InputGroupButton
-                aria-label="Next match"
-                disabled={count === 0}
-                onClick={() => api.move(1)}
-                size="icon-xs"
-              >
-                <ChevronDown aria-hidden data-icon="" />
-              </InputGroupButton>
-            </TooltipTrigger>
-            <TooltipContent>Next match</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <InputGroupButton
-                aria-label="Close find"
-                onClick={close}
-                size="icon-xs"
-              >
-                <X aria-hidden data-icon="" />
-              </InputGroupButton>
-            </TooltipTrigger>
-            <TooltipContent>Close find</TooltipContent>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InputGroupButton
+                  aria-label="Previous match"
+                  disabled={count === 0}
+                  onClick={() => api.move(-1)}
+                  size="icon-xs"
+                >
+                  <ChevronUp aria-hidden data-icon="" />
+                </InputGroupButton>
+              </TooltipTrigger>
+              <TooltipContent>Previous match</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InputGroupButton
+                  aria-label="Next match"
+                  disabled={count === 0}
+                  onClick={() => api.move(1)}
+                  size="icon-xs"
+                >
+                  <ChevronDown aria-hidden data-icon="" />
+                </InputGroupButton>
+              </TooltipTrigger>
+              <TooltipContent>Next match</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <InputGroupButton
+                  aria-label="Close find"
+                  onClick={close}
+                  size="icon-xs"
+                >
+                  <X aria-hidden data-icon="" />
+                </InputGroupButton>
+              </TooltipTrigger>
+              <TooltipContent>Close find</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </InputGroupAddon>
       </InputGroup>
     </div>

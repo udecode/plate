@@ -1,6 +1,5 @@
 'use client';
 
-import type { DialogProps } from '@radix-ui/react-dialog';
 import { createMarkdownRenderer } from 'fumadocs-core/content/md';
 import { useDocsSearch as useFumadocsSearch } from 'fumadocs-core/search/client';
 import {
@@ -14,6 +13,7 @@ import {
 import type { Route } from 'next';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import type { Dialog as DialogPrimitive } from 'radix-ui';
 import * as React from 'react';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
@@ -534,7 +534,7 @@ export function CommandMenuDialog({
 }: {
   isPlateDocsHref: IsPlateDocsHref;
   navItems: MainNavItem[];
-  onOpenChange: NonNullable<DialogProps['onOpenChange']>;
+  onOpenChange: NonNullable<DialogPrimitive.DialogProps['onOpenChange']>;
   onReady?: () => void;
   open: boolean;
   sidebarNav: SidebarNavItem[];

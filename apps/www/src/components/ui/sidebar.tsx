@@ -1,8 +1,8 @@
 'use client';
 
-import { Slot } from '@radix-ui/react-slot';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
+import { Slot } from 'radix-ui';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -418,7 +418,7 @@ function SidebarGroupLabel({
   className,
   ...props
 }: React.ComponentProps<'div'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'div';
+  const Comp = asChild ? Slot.Root : 'div';
 
   return (
     <Comp
@@ -439,7 +439,7 @@ function SidebarGroupAction({
   className,
   ...props
 }: React.ComponentProps<'button'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'button';
+  const Comp = asChild ? Slot.Root : 'button';
 
   return (
     <Comp
@@ -532,7 +532,7 @@ function SidebarMenuButton({
   tooltip?: React.ComponentProps<typeof TooltipContent> | string;
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   let tooltip = initialTooltip;
-  const Comp = asChild ? Slot : 'button';
+  const Comp = asChild ? Slot.Root : 'button';
   const { isMobile, state } = useSidebar();
 
   const button = (
@@ -578,7 +578,7 @@ function SidebarMenuAction({
   asChild?: boolean;
   showOnHover?: boolean;
 }) {
-  const Comp = asChild ? Slot : 'button';
+  const Comp = asChild ? Slot.Root : 'button';
 
   return (
     <Comp
@@ -699,7 +699,7 @@ function SidebarMenuSubButton({
   isActive?: boolean;
   size?: 'md' | 'sm';
 }) {
-  const Comp = asChild ? Slot : 'a';
+  const Comp = asChild ? Slot.Root : 'a';
 
   return (
     <Comp
