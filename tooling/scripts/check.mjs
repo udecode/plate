@@ -29,6 +29,7 @@ import {
   INTERRUPTED,
   lockfileInstalled,
   stepLogger,
+  typicalSeconds,
 } from './check-steps.mjs';
 import {
   mentionsOutsideComments,
@@ -1155,11 +1156,17 @@ const runStep = (step, command, { cores, fresh, log, running, writing }) => {
   });
 };
 
-const schedule = async (entries, budget, start, stopped) => {
+// The longest steps start first, because a half-hour step that waits for
+// free cores behind short ones runs past Local CI's hour and reports nothing.
+const schedule = async (entries, budget, start, stopped, seconds) => {
   const slots = ({ step }) => Math.min(step.cores ?? 1, budget);
   const pending = entries
     .filter(({ step }) => !step.alone)
-    .toSorted((a, b) => (b.step.cores ?? 1) - (a.step.cores ?? 1));
+    .toSorted(
+      (a, b) =>
+        (seconds.get(b.step.name) ?? 0) - (seconds.get(a.step.name) ?? 0) ||
+        (b.step.cores ?? 1) - (a.step.cores ?? 1)
+    );
   const unfinished = new Set(pending.map(({ step }) => step.name));
   const held = new Set();
   const active = new Set();
@@ -1343,6 +1350,7 @@ const main = async () => {
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();
   const share = Math.ceil(availableParallelism() / 2);
+  const typical = typicalSeconds(root);
   // Writers can read each other's output, so --write keeps one step at a time.
   let budget = 1;
   const { reserve } = await import('../../.agents/pstack/proof.mjs');
@@ -1426,7 +1434,7 @@ const main = async () => {
         );
         const release = reserve(budget, 'pnpm check');
         try {
-          await schedule(tier, budget, start, stopped);
+          await schedule(tier, budget, start, stopped, typical);
         } finally {
           release();
         }

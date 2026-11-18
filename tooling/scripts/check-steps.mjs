@@ -73,12 +73,19 @@ export const stepLogger = (root, fields) => {
     );
 };
 
+// Every run of every worktree appends to one log, so a torn line is skipped
+// instead of failing the check that reads it.
 const readLines = (file) =>
   existsSync(file)
     ? readFileSync(file, 'utf-8')
         .split('\n')
-        .filter(Boolean)
-        .map((line) => JSON.parse(line))
+        .flatMap((line) => {
+          try {
+            return line ? [JSON.parse(line)] : [];
+          } catch {
+            return [];
+          }
+        })
     : [];
 
 const cachedPasses = (common) => {
@@ -124,6 +131,21 @@ export const summarize = (lines) => {
       };
     })
     .sort((a, b) => (b.p90 ?? -1) - (a.p90 ?? -1));
+};
+
+/** Each logged step's median seconds over the last `days` of `root`'s clone. */
+export const typicalSeconds = (root, days = 14) => {
+  const common = commonDir(root);
+  if (!common) return new Map();
+  const since = Date.now() - days * DAY_MS;
+  const lines = readLines(join(common, STEP_LOG)).filter(
+    (line) => Date.parse(line.at) >= since
+  );
+  return new Map(
+    summarize(lines)
+      .filter((row) => row.p50 !== null)
+      .map((row) => [row.step, row.p50])
+  );
 };
 
 const main = (argv) => {
