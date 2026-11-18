@@ -1852,6 +1852,46 @@ function git(root, args) {
   }
 }
 
+function assertScope(root, ledger, scope) {
+  for (const field of ['title', 'question']) {
+    assert.ok(isText(scope[field]), `Missing ${field}`);
+  }
+  for (const path of entriesOf(scope)) {
+    repoPath(path);
+    assert.equal(
+      entryOf(root, path),
+      path,
+      `A directory entry ends with "/": ${path}`
+    );
+  }
+  assert.ok(
+    scope.owners?.length ||
+      scope.members?.length ||
+      scope.consumers?.length ||
+      scope.evidenceInputs?.length,
+    'A scope names owners, members, consumers or evidence inputs'
+  );
+  assert.ok(
+    scope.proof?.length || isText(scope.gaps),
+    'An empty proof list needs gaps saying why'
+  );
+  for (const id of [
+    ...(scope.dependsOn ?? []),
+    ...(scope.relatedScopes ?? []),
+  ]) {
+    assert.ok(id !== scope.id && ledger.scopes.has(id), `Unknown scope: ${id}`);
+  }
+  if (scope.dependsOn?.length) {
+    assert.ok(
+      isText(scope.prerequisiteReason),
+      'dependsOn needs prerequisiteReason'
+    );
+  }
+  if (scope.group) {
+    assert.ok(ledger.groups.has(scope.group), `Unknown group: ${scope.group}`);
+  }
+}
+
 export function check(root, { base = 'HEAD' } = {}) {
   const ledger = loadLedger(root);
   const errors = [...ledger.warnings];
@@ -1864,50 +1904,9 @@ export function check(root, { base = 'HEAD' } = {}) {
     }
   };
   for (const scope of ledger.scopes.values()) {
-    attempt(`${scopesDir}/${scope.id}.json`, () => {
-      for (const field of ['title', 'question']) {
-        assert.ok(isText(scope[field]), `Missing ${field}`);
-      }
-      for (const path of entriesOf(scope)) {
-        repoPath(path);
-        assert.equal(
-          entryOf(root, path),
-          path,
-          `A directory entry ends with "/": ${path}`
-        );
-      }
-      assert.ok(
-        scope.owners?.length ||
-          scope.members?.length ||
-          scope.consumers?.length,
-        'A scope names owners, members or consumers'
-      );
-      assert.ok(
-        scope.proof?.length || isText(scope.gaps),
-        'An empty proof list needs gaps saying why'
-      );
-      for (const id of [
-        ...(scope.dependsOn ?? []),
-        ...(scope.relatedScopes ?? []),
-      ]) {
-        assert.ok(
-          id !== scope.id && ledger.scopes.has(id),
-          `Unknown scope: ${id}`
-        );
-      }
-      if (scope.dependsOn?.length) {
-        assert.ok(
-          isText(scope.prerequisiteReason),
-          'dependsOn needs prerequisiteReason'
-        );
-      }
-      if (scope.group) {
-        assert.ok(
-          ledger.groups.has(scope.group),
-          `Unknown group: ${scope.group}`
-        );
-      }
-    });
+    attempt(`${scopesDir}/${scope.id}.json`, () =>
+      assertScope(root, ledger, scope)
+    );
   }
   for (const [id, group] of ledger.groups) {
     attempt(`${groupsPath} ${id}`, () => {
@@ -2110,6 +2109,23 @@ export function checkLanding(root, { base }) {
   }
   const plans = paths.filter((path) => existsSync(join(root, path)));
   const errors = planErrors(root, ledger, plans, base, pairing);
+  const scopePaths = new Set(
+    landing.filter((path) => path.startsWith(`${scopesDir}/`))
+  );
+  errors.push(
+    ...ledger.warnings.filter((warning) =>
+      scopePaths.has(warning.split(':')[0])
+    )
+  );
+  for (const scope of ledger.scopes.values()) {
+    const path = `${scopesDir}/${scope.id}.json`;
+    if (!scopePaths.has(path)) continue;
+    try {
+      assertScope(root, ledger, scope);
+    } catch (error) {
+      errors.push(`${path}: ${error.message.split('\n')[0]}`);
+    }
+  }
   const holdsLedger = ledger.scopes.size > 0;
   const unnamed = holdsLedger
     ? landing.filter(
