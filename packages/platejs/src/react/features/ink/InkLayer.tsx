@@ -13,12 +13,12 @@ import {
 } from '../../core';
 import { attachInkCapture } from './inkCapture.internal';
 import { INK_TOUCH_ACTION } from './inkInput.internal';
+import { createInkLayouts } from './inkLayout.internal';
 import {
   type InkMeasuredBlock,
   inkBoxOf,
   inkTextBlocks,
   inkWordBoxes,
-  measureInkBlock,
 } from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
 import { InkPlugin } from './InkPlugin';
@@ -49,25 +49,32 @@ const DELETED = { reason: 'deleted', type: 'sign' } as const;
 const placeAll = (
   view: Editor,
   layer: HTMLElement,
-  editable: HTMLElement
+  editable: HTMLElement,
+  layouts: ReturnType<typeof createInkLayouts>
 ): Placed => {
   const { left, top, width } = layer.getBoundingClientRect();
   const origin = { left, top };
   const { read } = view.plugin(InkPlugin);
-  const blocks = inkTextBlocks(view);
-  const byKey = new Map(blocks.map((block) => [block.key, block]));
-  const boxes = blocks.map((block) => ({
+  const boxes = inkTextBlocks(view).map((block) => ({
+    block,
     box: inkBoxOf(block.element, origin),
     key: block.key,
   }));
+  const byKey = new Map(boxes.map((entry) => [entry.key, entry]));
   const measured = new Map<NodeKey, InkMeasuredBlock | undefined>();
   const measure = (key: NodeKey) => {
     if (!measured.has(key)) {
-      const block = byKey.get(key);
+      const entry = byKey.get(key);
 
       measured.set(
         key,
-        block && measureInkBlock(block.element, block.text, origin)
+        entry &&
+          layouts.measure(
+            entry.block.element,
+            entry.block.text,
+            entry.box,
+            origin
+          )
       );
     }
 
@@ -270,10 +277,11 @@ export function InkLayer({
       tool: () => currentTool.current,
       view,
     });
+    const layouts = createInkLayouts();
     let frame = 0;
     const paint = () => {
       frame = 0;
-      setPlaced(placeAll(view, layer, editable));
+      setPlaced(placeAll(view, layer, editable, layouts));
     };
     const schedule = () => {
       frame ||= requestAnimationFrame(paint);
@@ -281,7 +289,8 @@ export function InkLayer({
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
       if (changed.hasAny('document')) schedule();
     });
-    const stopLayout = observeInkLayout(editable, layer, (change) => {
+    const stopLayout = observeInkLayout(editable, layer, (change, within) => {
+      layouts.changed(change, within);
       attached.layoutChanged(change);
       schedule();
     });

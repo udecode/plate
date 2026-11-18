@@ -6,16 +6,17 @@ import {
 } from './inkMeasure.internal';
 
 /**
- * What may have changed for the words in the layer, for a reason outside the
- * document.
+ * What may have changed for the words in the layer.
  *
  * - `boxes`: blocks may sit elsewhere in the layer or have another size. A line
  *   layout measured for a block whose size is the same still holds.
  * - `words`: words may sit elsewhere inside blocks whose boxes are all the
  *   same. No measured layout holds, or, when the report names an element, no
  *   layout of a block that holds it.
+ * - `styles`: the named element's class, `dir`, `lang` or `style` changed. No
+ *   layout holds of a block that holds it or that it holds.
  */
-export type InkLayoutChange = 'boxes' | 'words';
+export type InkLayoutChange = 'boxes' | 'styles' | 'words';
 
 export const INK_LAYOUT_ATTRIBUTES = ['class', 'dir', 'lang', 'style'];
 
@@ -128,16 +129,20 @@ const isStyleSheet = (target: EventTarget | null) =>
   target instanceof HTMLLinkElement && target.relList.contains('stylesheet');
 
 /**
- * Calls `report` when something outside the document may have moved the
- * Editable's words in the layer: a move or resize of the Editable, the layer
- * or the layer's offset parent, a scroll, a load or a failed load, a class,
- * `dir`, `lang` or `style` change on the Editable or an ancestor, a style
- * sheet link that loads, or a web font. A report from inside the Editable
- * names the element it came from. Moves under {@link INK_MOVE_TOLERANCE} add
- * up until they report. Unseen: a style sheet edit that resizes nothing, a
- * neighbor's class or a CSS state selector that restyles the words with every
- * box the same, and the move check of an Editable in a shadow root whose
- * layer's offset parent sits outside it.
+ * Calls `report` when something may have moved the Editable's words in the
+ * layer: a move or resize of the Editable, the layer or the layer's offset
+ * parent, a scroll, a load or a failed load, a class, `dir`, `lang` or `style`
+ * change on the Editable, an ancestor or an element inside it, a change to the
+ * text or children inside it, a style sheet link that loads, or a web font. A
+ * report from inside the Editable names the element it came from, the parent
+ * for a text change, and is `styles` for an attribute change and `words`
+ * otherwise. Changes the browser delivers together report once per element, as
+ * `styles` when any of them is an attribute change. Moves under
+ * {@link INK_MOVE_TOLERANCE} add up until they report. Unseen: a style sheet
+ * edit that resizes nothing, and the move check of an Editable in a shadow root
+ * whose layer's offset parent sits outside it. Also unseen when every box stays
+ * the same: a neighbor's class, a CSS state selector, and a class inside the
+ * Editable that restyles another block through a sibling or `:has()` selector.
  */
 export const observeInkLayout = (
   editable: HTMLElement,
@@ -292,6 +297,22 @@ export const observeInkLayout = (
     fit();
     emit('words');
   });
+  const mutated = new MutationObserver((records) => {
+    const named = new Map<Element, InkLayoutChange>();
+
+    for (const { target, type } of records) {
+      const element = target instanceof Element ? target : target.parentElement;
+
+      if (!element) continue;
+      if (type !== 'attributes') {
+        if (!named.has(element)) named.set(element, 'words');
+      } else if (element !== editable) {
+        // `restyle` reports the Editable's own attributes.
+        named.set(element, 'styles');
+      }
+    }
+    for (const [element, change] of named) emit(change, element);
+  });
 
   // happy-dom has no FontFaceSet. WebKit fires no `loadingdone`, so a font
   // reports once the set is ready again after `loading`.
@@ -323,6 +344,12 @@ export const observeInkLayout = (
 
     node = parent instanceof ShadowRoot ? parent.host : node.parentElement;
   }
+  mutated.observe(editable, {
+    attributeFilter: INK_LAYOUT_ATTRIBUTES,
+    characterData: true,
+    childList: true,
+    subtree: true,
+  });
   if (fonts) {
     fonts.addEventListener('loading', onLoading);
     if (fonts.status === 'loading') onLoading();
@@ -339,6 +366,7 @@ export const observeInkLayout = (
     layerSize.disconnect();
     rootSize.disconnect();
     restyle.disconnect();
+    mutated.disconnect();
     for (const target of targets) {
       target.removeEventListener('scroll', onScroll, { capture: true });
       target.removeEventListener('load', onLoad, true);
