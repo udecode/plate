@@ -8462,12 +8462,13 @@
           "kind": "type",
           "name": "SchemaElementProperty",
           "runtime": false,
-          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  landing: SchemaPropertyLandingPolicy;\n  placement: 'element';\n  references?: PropertyValueDescriptor extends TDescriptor ? Readonly<{\n    key: string;\n    map: (value: never, renamed: (name: string) => string | undefined) => unknown;\n  }> : SchemaPropertyReferences<PropertyValueOf<TDescriptor>>;\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  unique?: true;\n  value: TDescriptor;\n}>;",
+          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget, TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  landing: SchemaPropertyLandingPolicy;\n  placement: 'element';\n  references?: TReferences;\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  unique?: true;\n  value: TDescriptor;\n}>;",
           "source": null,
           "typeParameters": [
             "TKey extends SchemaPropertyKey = SchemaPropertyKey",
             "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
-            "TTarget extends SchemaTarget = SchemaTarget"
+            "TTarget extends SchemaTarget = SchemaTarget",
+            "TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>"
           ]
         },
         "platejs:SchemaElementPropertyDefinition": {
@@ -8477,11 +8478,12 @@
           "kind": "type",
           "name": "SchemaElementPropertyDefinition",
           "runtime": false,
-          "signature": "type SchemaElementPropertyDefinition<TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Omit<SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget>, 'key'>;",
+          "signature": "type SchemaElementPropertyDefinition<TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget, TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>> = Omit<SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget, TReferences>, 'key'>;",
           "source": null,
           "typeParameters": [
             "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
-            "TTarget extends SchemaTarget = SchemaTarget"
+            "TTarget extends SchemaTarget = SchemaTarget",
+            "TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>"
           ]
         },
         "platejs:SchemaElementPropertyKeys": {
@@ -10783,7 +10785,7 @@
           "kind": "type",
           "name": "AuthoredMark",
           "runtime": false,
-          "signature": "type AuthoredMark = (MarkBase & Readonly<{\n  cut?: undefined;\n  follows?: undefined;\n  /**\n   * The join's identity within its incarnation, minted once when the\n   * recorder writes the join. A `joined` claim keeps it. Absent only on a\n   * join stored before keys.\n   */\n  key?: string;\n  kind: 'join' | 'joined';\n}>) | (MarkBase & Readonly<{\n  cut?: undefined;\n  follows?: undefined;\n  key?: undefined;\n  kind: Exclude<AuthoredMarkKind, 'format' | 'insert' | 'join' | 'joined' | 'split'>;\n}>) | (MarkBase & Readonly<{\n  cut?: undefined;\n  /**\n   * The link of the pending join this block goes with, `linkOf` of that\n   * join: for a split, the one the source line carried, or followed, when\n   * the split cut it; for an inserted block, the one the block before it\n   * carries or goes with, or else the one whose target and line it was\n   * written between. Where that join takes its line, such as into a\n   * quote, the block lands right after it, in document order among the\n   * join's other followers, and the join never merges into it. A keyed\n   * link that names a `joined` claim or no block does nothing, and so\n   * does a keyless one whose nearest keyless holder is a `joined` claim.\n   */\n  follows?: string;\n  key?: undefined;\n  kind: 'insert' | 'split';\n}>) | CutTag | FormatTag;",
+          "signature": "type AuthoredMark = (MarkBase & Readonly<{\n  cut?: undefined;\n  follows?: undefined;\n  /**\n   * The join's identity within its incarnation, minted once when the\n   * recorder writes the join. A `joined` claim keeps it. Absent only on a\n   * join stored before keys.\n   */\n  key?: string;\n  kind: 'join' | 'joined';\n}> & NoGave) | (MarkBase & NoGave & Readonly<{\n  cut?: undefined;\n  follows?: undefined;\n  key?: undefined;\n  kind: Exclude<AuthoredMarkKind, 'format' | 'insert' | 'join' | 'joined' | 'split'>;\n}>) | (MarkBase & Follows & NoGave & Readonly<{\n  kind: 'insert';\n}>) | (MarkBase & Follows & Readonly<{\n  /**\n   * On a block split, what the split gave its new line: for each key a\n   * join compares, and `type`, whose value the split did not copy from\n   * the line it split, the value the new line holds, the default its\n   * place fills in, or its removal. A split saved before splits recorded\n   * this has none, and so does a split an Editing change records or one\n   * whose line the recorder cannot pair with a line the document held\n   * before the step.\n   */\n  gave?: SplitGave;\n  kind: 'split';\n}>) | (CutTag & NoGave) | (FormatTag & NoGave);",
           "source": null,
           "typeParameters": []
         },
@@ -25599,12 +25601,13 @@
           "kind": "type",
           "name": "SchemaElementProperty",
           "runtime": false,
-          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  landing: SchemaPropertyLandingPolicy;\n  placement: 'element';\n  references?: PropertyValueDescriptor extends TDescriptor ? Readonly<{\n    key: string;\n    map: (value: never, renamed: (name: string) => string | undefined) => unknown;\n  }> : SchemaPropertyReferences<PropertyValueOf<TDescriptor>>;\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  unique?: true;\n  value: TDescriptor;\n}>;",
+          "signature": "type SchemaElementProperty<TKey extends SchemaPropertyKey = SchemaPropertyKey, TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget, TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>> = Readonly<{\n  copy: SchemaPropertyCopyPolicy;\n  key: TKey;\n  landing: SchemaPropertyLandingPolicy;\n  placement: 'element';\n  references?: TReferences;\n  role: SchemaPropertyRole;\n  split: SchemaPropertySplitPolicy;\n  target: TTarget;\n  typeChange: SchemaPropertyTypeChangePolicy;\n  unique?: true;\n  value: TDescriptor;\n}>;",
           "source": null,
           "typeParameters": [
             "TKey extends SchemaPropertyKey = SchemaPropertyKey",
             "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
-            "TTarget extends SchemaTarget = SchemaTarget"
+            "TTarget extends SchemaTarget = SchemaTarget",
+            "TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>"
           ]
         },
         "platejs/react:SchemaElementPropertyDefinition": {
@@ -25614,11 +25617,12 @@
           "kind": "type",
           "name": "SchemaElementPropertyDefinition",
           "runtime": false,
-          "signature": "type SchemaElementPropertyDefinition<TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget> = Omit<SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget>, 'key'>;",
+          "signature": "type SchemaElementPropertyDefinition<TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor, TTarget extends SchemaTarget = SchemaTarget, TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>> = Omit<SchemaElementProperty<SchemaPropertyKey, TDescriptor, TTarget, TReferences>, 'key'>;",
           "source": null,
           "typeParameters": [
             "TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor",
-            "TTarget extends SchemaTarget = SchemaTarget"
+            "TTarget extends SchemaTarget = SchemaTarget",
+            "TReferences extends SchemaPropertyReferencesOf<TDescriptor> = SchemaPropertyReferencesOf<TDescriptor>"
           ]
         },
         "platejs/react:SchemaElementPropertyKeys": {
