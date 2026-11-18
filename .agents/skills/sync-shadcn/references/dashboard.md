@@ -14,6 +14,7 @@ Purpose:
 Dashboard mode may:
 
 - read `docs/sync/shadcn/status.json`
+- read the upstream clone at `status.json`'s `uiSyncedCommit`
 - read and update `docs/sync/shadcn/deltas.json`
 - write `docs/sync/shadcn/dashboard.json`
 - write `docs/sync/shadcn/dashboard.html`
@@ -22,8 +23,8 @@ Dashboard mode must not:
 
 - patch `apps/www`
 - write `docs/sync/shadcn/runs/**`
-- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`, or
-  `partialSyncs`
+- change `lastSyncedCommit`, `lastPlannedCommit`, `lastPlan`,
+  `uiSyncedCommit` or `partialSyncs`
 - treat a dashboard item as user acceptance to implement
 
 State meanings:
@@ -42,6 +43,17 @@ Dashboard source:
 - Planning adds each slice of its plan as a `pending` item, as
   [Planning](./planning.md) step 6 says. The build fails while a slice in
   `lastPlan`'s `## Recommended Merge Slices` table has no item.
+- Planning sees only what upstream changed in a range, so the build also
+  compares each file in `apps/www/src/components/ui` with
+  `apps/v4/registry/new-york-v4/ui` at `uiSyncedCommit`. The comparison
+  ignores formatting, imports, comments and the orders Plate's formatter and
+  lint rewrite, such as class, prop and key order. The build fails while a
+  file differs and no `pending`, `defer`, `fork` or `rejected` item lists it
+  in `files`. A `synced` item does not cover a file that still differs, and a
+  file that matches needs no item.
+- All site ui files compare against one commit. To take a file from a newer
+  upstream commit, move `uiSyncedCommit` to that commit, rebuild, and give
+  each file that then differs an item.
 - `docs/sync/shadcn/dashboard.json` and
   `docs/sync/shadcn/dashboard.html` are generated views.
 - When adding a landed implementation slice, update `status.json` first, then
@@ -64,3 +76,12 @@ pnpm sync-shadcn dashboard
 
 This regenerates `dashboard.html` and opens it in the local browser. Use
 `--no-open` or `SYNC_SHADCN_NO_OPEN=1` when running in a non-GUI check.
+
+```bash
+pnpm sync-shadcn drift
+pnpm sync-shadcn drift <component>
+```
+
+The first lists each site ui file that differs from upstream, with its count
+of differing lines and the items that list it. The second prints one file's
+difference, such as `pnpm sync-shadcn drift card`. Neither writes a file.

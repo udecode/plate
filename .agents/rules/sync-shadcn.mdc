@@ -1,6 +1,6 @@
 ---
 description: Sync upstream shadcn docs into Plate with source inventory, fork-aware apply and baseline accounting, or match shadcn's registry and install protocol source by source.
-argument-hint: '[status | apply | dashboard | review | parity <surface> | <range or surface>]'
+argument-hint: '[status | apply | dashboard | drift [component] | review | parity <surface> | <range or surface>]'
 ---
 
 # Sync Shadcn
@@ -23,6 +23,7 @@ MCP, Plate Plus hooks, GA and intentional forks. Keep that ownership explicit.
 | `status` | [Incremental status and discovery](./references/status.md) |
 | `apply` | [Accepted slice application](./references/apply.md) |
 | `dashboard` | [Review board](./references/dashboard.md) |
+| `drift [component]` | Site ui drift against upstream, in the [review board](./references/dashboard.md) |
 | `review` | [Re-audit the current plan](./references/review.md) |
 | `parity <surface>`, or a request to mirror shadcn | [Registry and install protocol parity](./references/parity.md) |
 

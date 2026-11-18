@@ -5,6 +5,8 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { readUiDrift } from './ui-drift.mjs';
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '../../../..');
 const syncDir = path.join(repoRoot, 'docs/sync/shadcn');
@@ -15,10 +17,18 @@ const dashboardHtmlPath = path.join(syncDir, 'dashboard.html');
 
 const args = process.argv.slice(2);
 const shouldOpenDashboard = !args.includes('--no-open');
-const commandArgs = args.filter((arg) => arg !== '--no-open');
+const [command = 'dashboard', ...commandRest] = args.filter(
+  (arg) => arg !== '--no-open'
+);
 
-if (commandArgs.length > 0 && commandArgs[0] !== 'dashboard') {
-  console.error('Usage: pnpm sync-shadcn dashboard [--no-open]');
+const isKnownCommand =
+  (command === 'dashboard' && commandRest.length === 0) ||
+  (command === 'drift' && commandRest.length <= 1);
+
+if (!isKnownCommand) {
+  console.error(
+    'Usage: pnpm sync-shadcn dashboard [--no-open]\n       pnpm sync-shadcn drift [component]'
+  );
   process.exit(1);
 }
 
@@ -1031,6 +1041,7 @@ function renderHtml(dashboard) {
           <span>Baseline ${escapeHtml(shortSha(dashboard.status.lastSyncedCommit))}</span>
           <span>Planned ${escapeHtml(shortSha(dashboard.status.lastPlannedCommit))}</span>
           <span>Plan ${escapeHtml(dashboard.status.lastPlan || 'none')}</span>
+          <span>UI ${escapeHtml(shortSha(dashboard.uiDrift.commit))}: ${dashboard.uiDrift.files.length} files differ</span>
         </div>
       </header>
 
@@ -1389,8 +1400,68 @@ function findPlanSlicesWithoutRows(features, planPath) {
   return missing;
 }
 
+function readDriftRows(features, status) {
+  const items = features.flatMap((feature) => feature.items);
+  const uiDrift = readUiDrift(repoRoot, status);
+
+  return {
+    commit: uiDrift.commit,
+    files: uiDrift.files,
+    drifting: uiDrift.files
+      .filter((entry) => entry.lines.length > 0)
+      .map((entry) => ({
+        file: entry.file,
+        lines: entry.lines.length,
+        items: items.filter((item) => item.files.includes(entry.file)),
+      })),
+  };
+}
+
+function printDrift(drift, component) {
+  if (component) {
+    const entry = drift.files.find(
+      (file) => path.basename(file.file, '.tsx') === component
+    );
+    if (!entry) {
+      throw new Error(`No apps/www/src/components/ui/${component}.tsx.`);
+    }
+
+    if (!entry.upstream) {
+      console.log(`${entry.file} has no upstream copy.`);
+    } else if (entry.lines.length === 0) {
+      console.log(`${entry.file} matches upstream ${shortSha(drift.commit)}.`);
+    } else {
+      console.log(
+        `${entry.file} against ${entry.upstream} at ${shortSha(drift.commit)}: - upstream only, + Plate only`
+      );
+      console.log(entry.lines.join('\n'));
+    }
+    return;
+  }
+
+  console.log(`Site ui against upstream ${shortSha(drift.commit)}`);
+  console.log('');
+  console.log('| File | Lines | Items |');
+  console.log('| --- | ---: | --- |');
+  for (const row of drift.drifting) {
+    const items = row.items.map((item) => `${item.id} (${item.state})`);
+    console.log(
+      `| ${row.file} | ${row.lines} | ${items.join(', ') || 'none'} |`
+    );
+  }
+}
+
 const deltas = readJson(deltasPath);
 const status = readJson(statusPath);
+
+if (command === 'drift') {
+  printDrift(
+    readDriftRows(ensureArray(deltas.features).map(normalizeFeature), status),
+    commandRest[0]
+  );
+  process.exit(0);
+}
+
 const deletedScreenshotFiles = cleanupDoneScreenshots(deltas);
 const features = ensureArray(deltas.features).map(normalizeFeature);
 const slicesWithoutRows = findPlanSlicesWithoutRows(features, status.lastPlan);
@@ -1398,6 +1469,17 @@ const slicesWithoutRows = findPlanSlicesWithoutRows(features, status.lastPlan);
 if (slicesWithoutRows.length > 0) {
   throw new Error(
     `${status.lastPlan} recommends slices with no deltas.json item: ${slicesWithoutRows.join(', ')}. Add each as a pending item whose id is the slice id, then rebuild.`
+  );
+}
+
+const drift = readDriftRows(features, status);
+const unrecordedDrift = drift.drifting.filter(
+  (row) => !row.items.some((item) => item.state !== 'synced')
+);
+
+if (unrecordedDrift.length > 0) {
+  throw new Error(
+    `Site ui files differ from upstream ${shortSha(drift.commit)} with no pending, defer, fork or rejected deltas.json item listing them: ${unrecordedDrift.map((row) => row.file).join(', ')}. Run pnpm sync-shadcn drift <component> to see each difference, then sync the file or add an item whose files list it.`
   );
 }
 
@@ -1419,6 +1501,14 @@ const dashboard = {
   featureCounts: countByState(features, 'feature'),
   itemCounts: countByState(features, 'item'),
   itemTotal: features.reduce((sum, feature) => sum + feature.items.length, 0),
+  uiDrift: {
+    commit: drift.commit,
+    files: drift.drifting.map((row) => ({
+      file: row.file,
+      lines: row.lines,
+      items: row.items.map((item) => item.id),
+    })),
+  },
   features,
 };
 

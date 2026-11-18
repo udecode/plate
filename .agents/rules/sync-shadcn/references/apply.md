@@ -18,6 +18,10 @@ Apply mode may:
   targets `synced` or `fork`
 - remove screenshot refs for rows applied to `synced` or `rejected`
 - delete unreferenced local screenshot files under `docs/sync/shadcn/runs/**`
+- move `status.json`'s `uiSyncedCommit` when a row applied as `synced` takes a
+  file in `apps/www/src/components/ui` from a newer upstream commit, then add a
+  `pending` item for each site ui file that differs at the new commit and no
+  item lists, as the [review board](./dashboard.md) says
 - run `pnpm sync-shadcn dashboard` after any JSON mutation
 
 Apply mode must not:
