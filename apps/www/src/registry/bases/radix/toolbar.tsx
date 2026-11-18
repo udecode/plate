@@ -1,10 +1,10 @@
 'use client';
 
-import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from 'cn';
 import { ChevronDown } from 'lucide-react';
 import { useComposedRef } from 'platejs/react';
+import { Toolbar as ToolbarPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 import { toggleVariants } from '@/registry/bases/radix/ui/toggle';

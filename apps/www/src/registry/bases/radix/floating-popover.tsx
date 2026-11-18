@@ -1,7 +1,7 @@
 'use client';
 
-import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cn } from 'cn';
+import { Popover as PopoverPrimitive } from 'radix-ui';
 import * as React from 'react';
 
 import { useToolbarScrollDismiss } from '@/registry/components/editor/toolbar-overlay';

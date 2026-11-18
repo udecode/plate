@@ -51,8 +51,8 @@
       "description": "Provider-neutral anchored floating content for Plate UI.",
       "dependencies": [
         "platejs",
-        "@radix-ui/react-popover",
-        "cn"
+        "cn",
+        "radix-ui"
       ],
       "registryDependencies": [
         "@plate/toolbar-overlay"
@@ -71,12 +71,12 @@
       "title": "Toolbar",
       "description": "A customizable toolbar component with various button styles and group",
       "dependencies": [
-        "@radix-ui/react-toolbar",
         "class-variance-authority",
         "cn",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react",
-        "platejs"
+        "platejs",
+        "radix-ui"
       ],
       "registryDependencies": [
         "@plate/toolbar-overlay",

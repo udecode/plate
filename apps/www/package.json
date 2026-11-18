@@ -87,7 +87,6 @@
     "@radix-ui/react-tabs": "1.1.12",
     "@radix-ui/react-toggle": "1.1.9",
     "@radix-ui/react-toggle-group": "1.1.10",
-    "@radix-ui/react-toolbar": "1.1.10",
     "@shikijs/core": "1.10.1",
     "@tabler/icons-react": "3.34.0",
     "ai": "^6.0.0",

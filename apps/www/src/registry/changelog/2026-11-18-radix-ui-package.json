@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-radix-ui-package",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-radix-ui-package.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use the radix-ui package in Radix projects",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-toolbar-import-radix-popover-from-f42a4e84",
+      "kind": "wiring",
+      "summary": "Import Radix's toolbar and popover from the `radix-ui` package that shadcn's own Radix components use, so installing them in a Radix project no longer adds `@radix-ui/react-toolbar` or `@radix-ui/react-popover`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar", "floating-popover"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-radix-ui-package",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,5 +1,5 @@
 {
-  "generation": "e491f2f3bc7926f61089cd23c9e6c3905f0f8367b90b848758099d6e8dd20b3b",
+  "generation": "5cf72c5e992a8ab29193e5edbb2daa753fad1079c7bb48c6938e4e7127bd3f39",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -8422,8 +8422,8 @@
         {
           "dependencies": [
             "platejs",
-            "@radix-ui/react-popover",
-            "cn"
+            "cn",
+            "radix-ui"
           ],
           "description": "Provider-neutral anchored floating content for Plate UI.",
           "files": [
@@ -8454,12 +8454,12 @@
           "title": "Toolbar",
           "type": "registry:component",
           "dependencies": [
-            "@radix-ui/react-toolbar",
             "class-variance-authority",
             "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
-            "platejs"
+            "platejs",
+            "radix-ui"
           ],
           "registryDependencies": [
             "@plate/toolbar-overlay",

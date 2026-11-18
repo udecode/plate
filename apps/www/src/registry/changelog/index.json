@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-18-radix-ui-package",
+      "href": "/registry/changelog/2026-11-18-radix-ui-package.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use the radix-ui package in Radix projects",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toolbar", "floating-popover"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-17-ai-api-initial-selection",
       "href": "/registry/changelog/2026-11-17-ai-api-initial-selection.json",
       "status": "draft",
