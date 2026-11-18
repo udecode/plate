@@ -720,6 +720,17 @@ export const steps = [
     key: [],
   },
   {
+    name: 'position-inference',
+    land: true,
+    run: 'node tooling/scripts/check-position-inference.mjs',
+    affected: touches(
+      'packages/plitejs/src/core/change/',
+      'packages/plitejs/src/history/',
+      'tooling/scripts/check-position-inference',
+      'tooling/scripts/position-inference.json'
+    ),
+  },
+  {
     name: 'hook-generics',
     run: 'node tooling/scripts/check-hook-generics.mjs --check',
     fix: 'node tooling/scripts/check-hook-generics.mjs',

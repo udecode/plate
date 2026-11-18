@@ -1,0 +1,26 @@
+{
+  "why": "These files work out from positions what a change moved, split, joined or wrapped, and which restored letters an undo step typed. Element ids replace the block guesses and the letter guesses wait for a design of their own, so this code never grows in net.",
+  "files": [
+    "packages/plitejs/src/core/change/carried-projection.ts",
+    "packages/plitejs/src/core/change/carried-run.ts",
+    "packages/plitejs/src/core/change/carry-program.ts",
+    "packages/plitejs/src/core/change/cross-rule.ts",
+    "packages/plitejs/src/core/change/cross.ts",
+    "packages/plitejs/src/core/change/effect-ledger-identity.ts",
+    "packages/plitejs/src/core/change/effect-ledger-window.ts",
+    "packages/plitejs/src/core/change/effect-ledger.ts",
+    "packages/plitejs/src/core/change/enclosure.ts",
+    "packages/plitejs/src/core/change/join.ts",
+    "packages/plitejs/src/core/change/lineage.ts",
+    "packages/plitejs/src/core/change/mapping.ts",
+    "packages/plitejs/src/core/change/new-letters.ts",
+    "packages/plitejs/src/core/change/root-change.ts",
+    "packages/plitejs/src/core/change/slice-facts.ts",
+    "packages/plitejs/src/core/change/transform.ts",
+    "packages/plitejs/src/core/change/wrap-fidelity.ts",
+    "packages/plitejs/src/history/history-character-map.ts",
+    "packages/plitejs/src/history/history-replay.ts",
+    "packages/plitejs/src/history/history-state.ts"
+  ],
+  "uncounted": {}
+}
