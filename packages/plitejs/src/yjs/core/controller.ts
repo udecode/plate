@@ -2170,7 +2170,12 @@ export class YjsController<
         this.importSpareRecords(root, room.records)
       );
 
-      return room.children;
+      return getEditorSchema(this.editor).canonicalizeChildren(
+        room.children,
+        root,
+        [],
+        true
+      );
     };
 
     for (const root of changed.named) {
