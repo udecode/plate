@@ -1,6 +1,7 @@
 import type { BoardGeo, BoardPlace } from '../../../features/board/lib';
 import { BOARD_GEO_DEFAULT } from '../../../features/board/lib/boardShape.internal';
 import type { BoardBox } from './boardIndex.internal';
+import type { BoardGuide } from './boardSnap.internal';
 import type { BoardPlaceTool } from './boardView.internal';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -215,6 +216,34 @@ export const previewSelectBox = (
     background: 'color-mix(in oklab, currentColor 8%, transparent)',
     border: '1px solid currentColor',
   });
+
+export const previewGuides = (layer: HTMLElement | null, rank: number) =>
+  previewSvg(layer, 'data-board-guides', rank);
+
+export const drawGuides = (
+  svg: SVGSVGElement,
+  guides: readonly BoardGuide[],
+  zoom: number
+) => {
+  svg.replaceChildren(
+    ...guides.map(({ from, to }) => {
+      const line = svg.ownerDocument.createElementNS(SVG_NS, 'line');
+
+      for (const [name, value] of [
+        ['stroke', 'currentColor'],
+        ['stroke-width', 1 / zoom],
+        ['x1', from.x],
+        ['x2', to.x],
+        ['y1', from.y],
+        ['y2', to.y],
+      ] as const) {
+        line.setAttribute(name, String(value));
+      }
+
+      return line;
+    })
+  );
+};
 
 /** The line a pen drag shows in `layer`, drawn in board coordinates. */
 export const previewStroke = (layer: HTMLElement | null, rank: number) => {

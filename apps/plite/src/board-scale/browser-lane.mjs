@@ -13,11 +13,12 @@
  *     [--ops <op,...>, required with --lane keys: aim-tab, aim-pick, write-note, write-frame, write-arrow,
  *       end-arrow, resize-arrow, pick-tab, pick-space, write-free-arrow, write-resize]
  *     [--aim connect|select] [--write enter|pointer] [--samples 20]
- *     [--write-warmup 3] [--busy end|pick|held] [--dry-job 1]
+ *     [--write-warmup 3] [--busy end|pick|held] [--snap 1] [--dry-job 1]
  *
  * --write picks the keyboard (enter) or the pointer for the write ops and for
  * resize-arrow, whose pointer form moves a corner handle. --busy gives a K3
- * line family's busy plant in place of K2's per-result one.
+ * line family's busy plant in place of K2's per-result one. --snap 1 has the
+ * drag lane snap, which it otherwise turns off by holding Meta.
  *
  * Arms: base, candidate, copy, plant-<name> (see browser-cohorts.ts).
  * --dry-job 1 prints the job this arm would run and runs nothing, so a
@@ -135,7 +136,8 @@ const dry = args.get('dry-job') === '1';
 
 if (!dry) mkdirSync(logDir, { recursive: true });
 const keysPart = ops ? `-${ops.join('+')}-${write}` : '';
-const stem = `${lane}${keysPart}-${arm}-${engine}-${render}${knownBad ? `-bad-${knownBad}` : ''}`;
+const snap = lane === 'drag' && args.get('snap') === '1';
+const stem = `${lane}${keysPart}${snap ? '-snap' : ''}-${arm}-${engine}-${render}${knownBad ? `-bad-${knownBad}` : ''}`;
 let attempt = 1;
 
 while (existsSync(path.join(logDir, `${stem}-a${attempt}.json`))) attempt += 1;
@@ -160,6 +162,7 @@ const job = {
   render,
   samples: Number(args.get('samples') ?? 20),
   slowBasis: oneOf('slow-basis', ['n1', 'n2'], 'n1'),
+  snap: lane === 'drag' ? snap : undefined,
   warmup: Number(args.get('warmup') ?? 20),
   write,
   writeWarmup: Number(args.get('write-warmup') ?? 3),
@@ -212,7 +215,7 @@ if (!existsSync(manifest)) {
 
 process.stdout.write(
   `${JSON.stringify({
-    label: `${lane} ${arm} ${engine} arm ${render}${knownBad ? ` known-bad ${knownBad}` : ''}`,
+    label: `${lane}${snap ? ' snap' : ''} ${arm} ${engine} arm ${render}${knownBad ? ` known-bad ${knownBad}` : ''}`,
     loaded: [
       fileURLToPath(import.meta.url),
       path.join(appRoot, SPEC),

@@ -62,20 +62,21 @@ export const snapMove = (
 
     const from = valuesOf(moved, axis);
     const kept = valuesOf(held, axis);
-    let best: { gap: number; to: number } | undefined;
+    let best: { gap: number; size: number; to: number } | undefined;
 
     for (const target of targets[axis]) {
       for (const value of valuesOf(target, axis)) {
-        for (const [at, start] of from.entries()) {
-          const gap = value - start;
+        for (let at = 0; at < 3; at++) {
+          const gap = value - from[at];
+          const size = Math.abs(gap);
 
           if (
-            Math.abs(gap) <= reach &&
+            size <= reach &&
             (!best ||
-              Math.abs(gap) < Math.abs(best.gap) ||
-              (Math.abs(gap) === Math.abs(best.gap) && gap > best.gap))
+              size < best.size ||
+              (size === best.size && gap > best.gap))
           ) {
-            best = { gap, to: value - kept[at] };
+            best = { gap, size, to: value - kept[at] };
           }
         }
       }

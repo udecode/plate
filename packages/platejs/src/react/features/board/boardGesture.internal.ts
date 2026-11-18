@@ -26,14 +26,17 @@ import {
 } from './boardIndex.internal';
 import { arrowEndOn, BOARD_PLACE_SIZE } from './boardPick.internal';
 import {
+  drawGuides,
   elementOf,
   placeElement,
   previewArrowLine,
   previewCopy,
+  previewGuides,
   previewPlaceOutline,
   previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
+import { snapMove } from './boardSnap.internal';
 import {
   type BoardPlaceTool,
   type BoardStyle,
@@ -77,12 +80,17 @@ type Gesture = Readonly<{ pointerId: number }> &
     | {
         kind: 'move';
         carried: ReadonlySet<string>;
+        copied: BoardBox | null;
         copy: boolean;
         delta: BoardPlace;
         elements: readonly HTMLElement[];
+        free: boolean;
         grab: BoardPlace;
+        guides: SVGSVGElement;
         ids: readonly string[];
+        left: boolean;
         pointer: BoardPlace;
+        press: BoardPlace;
       }
     | {
         kind: 'pen';
@@ -110,8 +118,31 @@ type Gesture = Readonly<{ pointerId: number }> &
 
 const CLICK_SLOP_PX = 8;
 
+const MODIFIER_KEYS: ReadonlySet<string> = new Set([
+  'Alt',
+  'Control',
+  'Meta',
+  'Shift',
+]);
+
 const dragged = (press: BoardPlace, pointer: BoardPlace) =>
   Math.hypot(pointer.x - press.x, pointer.y - press.y) >= CLICK_SLOP_PX;
+
+const NOTHING: ReadonlySet<string> = new Set();
+
+const unionOf = (boxes: readonly BoardBox[]): BoardBox | null => {
+  if (boxes.length === 0) return null;
+
+  const x = Math.min(...boxes.map((box) => box.x));
+  const y = Math.min(...boxes.map((box) => box.y));
+
+  return {
+    height: Math.max(...boxes.map((box) => box.y + box.height)) - y,
+    width: Math.max(...boxes.map((box) => box.x + box.width)) - x,
+    x,
+    y,
+  };
+};
 
 const modifiersOf = (
   event: KeyboardEvent | PointerEvent
@@ -205,6 +236,15 @@ export const attachBoardGestures = (
     if (layout) placeElement(element, layout.box);
   };
 
+  const heldBox = (ids: Iterable<string>) =>
+    unionOf(
+      [...ids].flatMap((id) => {
+        const layout = index.byId(id);
+
+        return layout && layout.kind !== 'arrow' ? [layout.box] : [];
+      })
+    );
+
   const pick = (keys: readonly NodeKey[]) => {
     if (keys.length > 0) core.select(keys);
     else core.deselectOnBoard();
@@ -273,12 +313,27 @@ export const attachBoardGestures = (
     const dy = at.y - gesture.grab.y;
 
     if (gesture.kind === 'move') {
-      const { carried, copy } = gesture;
-      const delta = { x: dx, y: dy };
+      const { carried, copied, copy } = gesture;
+
+      gesture.left ||= dragged(gesture.press, gesture.pointer);
+
+      const raw = gesture.left ? { x: dx, y: dy } : { x: 0, y: 0 };
+      const held = copy ? copied : heldBox(gesture.ids);
+      const { zoom } = core.state().camera;
+      const { delta, guides } =
+        gesture.left && !gesture.free && held
+          ? snapMove(held, raw, {
+              boxesIn: (area) =>
+                index.snapTargets(area, copy ? NOTHING : carried),
+              view: core.viewBox(),
+              zoom,
+            })
+          : { delta: raw, guides: [] };
 
       gesture.delta = delta;
+      drawGuides(gesture.guides, guides, zoom);
       for (const shape of gesture.elements) {
-        shape.style.translate = `${dx}px ${dy}px`;
+        shape.style.translate = `${delta.x}px ${delta.y}px`;
       }
       if (!copy) {
         index.previewArrows(
@@ -286,7 +341,7 @@ export const attachBoardGestures = (
           (id) => {
             const box = carried.has(id) ? index.byId(id)?.box : undefined;
 
-            return box && { ...box, x: box.x + dx, y: box.y + dy };
+            return box && { ...box, x: box.x + delta.x, y: box.y + delta.y };
           },
           delta
         );
@@ -323,6 +378,7 @@ export const attachBoardGestures = (
     free?.();
     core.voice.release();
     if (done.kind === 'move') {
+      done.guides.remove();
       for (const shape of done.elements) {
         if (done.copy) shape.remove();
         else shape.style.translate = '';
@@ -404,10 +460,11 @@ export const attachBoardGestures = (
         style: done.style,
       });
     } else if (done.kind === 'move') {
-      const { carried, copy, delta, ids } = done;
+      const { carried, copy, delta, ids, left } = done;
 
-      if (delta.x === 0 && delta.y === 0) return;
+      if (!left) return;
       if (!copy) {
+        if (delta.x === 0 && delta.y === 0) return;
         core.commit({ delta, ids, kind: 'move' });
 
         return;
@@ -527,6 +584,7 @@ export const attachBoardGestures = (
       }
 
       if (ids.size > 0 && core.writable()) {
+        const copying = event.altKey;
         const elements = [
           ...host.querySelectorAll<HTMLElement>('[data-board-shape]'),
         ].filter((candidate) =>
@@ -537,18 +595,23 @@ export const attachBoardGestures = (
 
         gesture = {
           carried,
-          copy: event.altKey,
+          copied: copying ? heldBox(ids) : null,
+          copy: copying,
           delta: { x: 0, y: 0 },
-          elements: event.altKey
+          elements: copying
             ? elements.map((element) =>
                 previewCopy(element, core.zoomLayer(), previewRank())
               )
             : elements.filter(boxesOnly),
+          free: event.ctrlKey || event.metaKey,
           grab: at,
+          guides: previewGuides(core.zoomLayer(), previewRank()),
           ids: [...ids],
           kind: 'move',
+          left: false,
           pointer,
           pointerId,
+          press: pointer,
         };
       }
     } else {
@@ -665,6 +728,11 @@ export const attachBoardGestures = (
     clicker = event.button === 0 ? pointerId : undefined;
   };
   const takeModifiers = (event: KeyboardEvent | PointerEvent) => {
+    if (gesture?.kind === 'move') {
+      gesture.free = event.ctrlKey || event.metaKey;
+
+      return true;
+    }
     if (gesture?.kind !== 'place' && gesture?.kind !== 'resize') return false;
     gesture.modifiers = modifiersOf(event);
 
@@ -749,12 +817,7 @@ export const attachBoardGestures = (
     core.edit(shape.key);
   };
   const onModifierKey = (event: KeyboardEvent) => {
-    if (
-      (event.key === 'Alt' || event.key === 'Shift') &&
-      takeModifiers(event)
-    ) {
-      follow();
-    }
+    if (MODIFIER_KEYS.has(event.key) && takeModifiers(event)) follow();
   };
   const view = host.ownerDocument.defaultView;
 

@@ -237,7 +237,67 @@ type DragMove = {
   membersMissing: number;
   membersOff: number;
   ms: number;
+  snapped: boolean;
 };
+
+const SNAP_SCREEN_PX = 8;
+const SNAP_TARGET_SCREEN_PX = 100;
+
+const lined = (shape: StoredNode) =>
+  shape.type !== 'boardArrow' && shape.type !== 'boardStroke';
+
+const snapOracle = (
+  held: ShapeBox,
+  raw: BoardPoint,
+  targets: readonly ShapeBox[],
+  view: ShapeBox,
+  zoom: number
+): BoardPoint => {
+  const reach = SNAP_SCREEN_PX / zoom;
+  const moved = { ...held, x: held.x + raw.x, y: held.y + raw.y };
+  const out = { ...raw };
+
+  for (const [axis, size] of [
+    ['x', 'width'],
+    ['y', 'height'],
+  ] as const) {
+    if (
+      moved[axis] - reach > view[axis] + view[size] ||
+      view[axis] > moved[axis] + moved[size] + reach
+    ) {
+      continue;
+    }
+
+    let best: { gap: number; to: number } | undefined;
+
+    for (const box of targets) {
+      for (const along of [0, 0.5, 1]) {
+        for (const at of [0, 0.5, 1]) {
+          const value = box[axis] + box[size] * along;
+          const gap = value - (moved[axis] + moved[size] * at);
+
+          if (
+            Math.abs(gap) <= reach &&
+            (!best ||
+              Math.abs(gap) < Math.abs(best.gap) ||
+              (Math.abs(gap) === Math.abs(best.gap) && gap > best.gap))
+          ) {
+            best = { gap, to: value - (held[axis] + held[size] * at) };
+          }
+        }
+      }
+    }
+    if (best) out[axis] = best.to;
+  }
+
+  return out;
+};
+
+const boxesMeet = (a: ShapeBox, b: ShapeBox) =>
+  a.x <= b.x + b.width &&
+  b.x <= a.x + a.width &&
+  a.y <= b.y + b.height &&
+  b.y <= a.y + a.height;
 
 type ScreenRect = Readonly<{
   bottom: number;
@@ -1413,7 +1473,80 @@ export const installBoardProbe = (
       };
     },
 
-    startDrag: (frameId: string, interval: number) => {
+    placeSnapTargets: async (frameId: string) => {
+      const surface = surfaceRect();
+      const shapes = storedBoard() ?? [];
+      const frame = shapes.find((shape) => shape.shapeId === frameId);
+
+      if (!surface || !frame) throw new Error(`no frame ${frameId}`);
+      const camera = readCamera();
+      const view = viewRect(camera);
+      const box = shapeBox(frame);
+      const past = SNAP_TARGET_SCREEN_PX / camera.zoom;
+      const places = [
+        { x: box.x + box.width + past, y: box.y + past },
+        { x: box.x + past, y: box.y + box.height + past },
+      ];
+      const bound = new Set(
+        shapes.flatMap(({ end, start }) => [start?.shape, end?.shape])
+      );
+      const outOfView = (shape: StoredNode) => {
+        const { height, width, x, y } = shapeBox(shape);
+
+        return (
+          x > view.right ||
+          x + width < view.left ||
+          y > view.bottom ||
+          y + height < view.top
+        );
+      };
+      const spare = shapes
+        .flatMap((shape, index) =>
+          shape.place &&
+          !shape.frame &&
+          shape.shapeId !== frameId &&
+          shape.shapeId !== prepared.typedShapeId &&
+          lined(shape) &&
+          !bound.has(shape.shapeId) &&
+          outOfView(shape)
+            ? [index]
+            : []
+        )
+        .slice(0, places.length);
+
+      if (spare.length < places.length) {
+        throw new Error(`only ${spare.length} spare shapes to line up with`);
+      }
+      rootUpdate((tx) => {
+        for (const [at, index] of spare.entries()) {
+          tx.nodes.set({ place: places[at] }, { at: [index] });
+        }
+      });
+      await nextFrame();
+      await nextFrame();
+      const placed = spare.map((index) => shapes[index].shapeId ?? '');
+      const unseen = placed.filter((shapeId) => {
+        const rect = document
+          .querySelector(`[data-shape-id="${shapeId}"]`)
+          ?.getBoundingClientRect();
+
+        return (
+          !rect ||
+          rect.left >= surface.right ||
+          rect.right <= surface.left ||
+          rect.top >= surface.bottom ||
+          rect.bottom <= surface.top
+        );
+      });
+
+      if (unseen.length > 0) {
+        throw new Error(`snap targets ${unseen.join(', ')} are out of view`);
+      }
+
+      return placed;
+    },
+
+    startDrag: (frameId: string, interval: number, snap: boolean) => {
       const surface = surfaceRect();
 
       if (!surface) throw new Error('no board surface to drag on');
@@ -1424,7 +1557,8 @@ export const installBoardProbe = (
         rect.top < surface.bottom;
       const shapes = storedBoard() ?? [];
       const byId = shapesById(shapes);
-      const { zoom } = readCamera();
+      const camera = readCamera();
+      const { zoom } = camera;
       const carried = new Set(
         shapes.flatMap((shape) =>
           shape.shapeId === frameId || shape.frame === frameId
@@ -1449,6 +1583,25 @@ export const installBoardProbe = (
       const own = dragged.find(({ id }) => id === frameId);
 
       if (!own) throw new Error(`no frame ${frameId}`);
+      const frame = byId.get(frameId);
+
+      if (!frame) throw new Error(`no frame ${frameId}`);
+      const held = shapeBox(frame);
+      const view = {
+        height: surface.height / zoom,
+        width: surface.width / zoom,
+        x: camera.x,
+        y: camera.y,
+      };
+      const targets = shapes.flatMap((shape) => {
+        const box = shapeBox(shape);
+
+        return !carried.has(shape.shapeId ?? '') &&
+          lined(shape) &&
+          boxesMeet(box, view)
+          ? [box]
+          : [];
+      });
       const members = dragged.filter((each) => each !== own);
       const membersInView = members.filter(({ origin }) =>
         meets(origin)
@@ -1501,8 +1654,13 @@ export const installBoardProbe = (
         'message',
         (event: MessageEvent<{ stamp: number; started: number }>) => {
           if (!pending || !down || event.data.stamp <= pending.after) return;
-          const dx = pending.x - down.x;
-          const dy = pending.y - down.y;
+          const raw = {
+            x: (pending.x - down.x) / zoom,
+            y: (pending.y - down.y) / zoom,
+          };
+          const step = snap ? snapOracle(held, raw, targets, view, zoom) : raw;
+          const dx = step.x * zoom;
+          const dy = step.y * zoom;
           const shifted = ({ origin }: (typeof dragged)[number]) => ({
             bottom: origin.bottom + dy,
             left: origin.left + dx,
@@ -1561,6 +1719,7 @@ export const installBoardProbe = (
             membersMissing,
             membersOff,
             ms: performance.now() - pending.stamp,
+            snapped: step.x !== raw.x || step.y !== raw.y,
           });
           pending = null;
         }
