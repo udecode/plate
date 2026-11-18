@@ -3,16 +3,24 @@ id: 2026-11-18-floating-rect-hides-clipped-text
 date: 2026-11-18
 status: draft
 kind: behavior
-summary: 'Hide floating popups whose text scrolls out of view'
+summary: 'Hide popups and remote carets whose text scrolls out of the editor'
 change: { 'type': 'source', 'date': '2026-11-18', 'commits': [] }
 release: { 'status': 'unresolved' }
 diagnostics: []
 ---
 
-<!-- entry: {"id":"2026-11-18-use-floating-rect-popups-whose-text-scrolls-410fc4f1","kind":"behavior","migrationNotes":["Read `shown` in place of `isPositioned`, and spread `style` in place of `floatingStyles`."]} -->
+<!-- entry: {"id":"2026-11-18-use-floating-rect-popups-whose-text-scrolls-410fc4f1","kind":"behavior","migrationNotes":["Pass the whole geometry from `useSelectionGeometry` in place of `geometry.boundingRect`.","Read `shown` in place of `isPositioned`, and spread `style` in place of `floatingStyles`."]} -->
 
-- **`use-floating-rect`**: Hide a popup once its text scrolls fully out of the popup's clipping area, and return `shown` to say whether it is drawn. Pass `hideWhenClipped: false` to keep a popup shown, such as a form someone is typing in.
+- **`use-floating-rect`**: Take the whole `RangeGeometry`, hide the popup once no line of its text is in the editor's visible area, and return `shown`, which says whether the popup is drawn. Pass `hideWhenClipped: false` to keep a popup shown, such as a form someone is typing in.
+
+<!-- entry: {"id":"2026-11-18-floating-toolbar-hides-with-text-5c1e8b37","kind":"behavior","migrationNotes":[]} -->
+
+- **`floating-toolbar`**: Hide the floating toolbar once its selection leaves the editor's visible area, including when the editor scrolls itself or the toolbar sits outside the box that scrolls the text.
 
 <!-- entry: {"id":"2026-11-18-link-popovers-hide-with-text-7d2e91a4","kind":"behavior","migrationNotes":[]} -->
 
-- **`link`**: Hide the link popovers once the cursor or selected text they point to scrolls out of the popover's clipping area, and keep an open link form shown, so typing goes into it while its text is out of view.
+- **`link`**: Hide the link popovers once the cursor or selected text they point to leaves the editor's visible area. An open link form stays shown, so typing still goes into it while its text is out of view.
+
+<!-- entry: {"id":"2026-11-18-remote-cursor-clips-to-editor-9a4f2d60","kind":"behavior","migrationNotes":["Read the name label from `[data-remote-cursor-label]` beside the caret, not inside `[data-remote-caret]`. Both now sit in one `[data-remote-cursor-clip]` box."]} -->
+
+- **`remote-cursor-overlay`**: Draw a collaborator's caret and name label only inside the editor's visible area, and put the label below its caret when it does not fit above.

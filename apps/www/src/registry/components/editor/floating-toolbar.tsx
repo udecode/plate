@@ -260,7 +260,7 @@ function PositionedFloatingToolbar({
 }) {
   const editableRef = useEditableRef();
   const geometry = useSelectionGeometry({ editableRef });
-  const floating = useFloatingRect(geometry?.boundingRect ?? null, {
+  const floating = useFloatingRect(geometry, {
     open: true,
     middleware: [
       offset(12),

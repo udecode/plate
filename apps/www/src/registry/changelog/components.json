@@ -30,6 +30,7 @@
     ],
     "floating-toolbar": [
       "2026-11-18-ai-menu-acts-on-board-note-text",
+      "2026-11-18-floating-rect-hides-clipped-text",
       "2026-11-18-registry-icon-library",
       "2026-11-18-toolbars-act-on-board-note-text",
       "2026-11-13-platform-shortcut-labels",
@@ -122,6 +123,18 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
+    ],
+    "remote-cursor-overlay": [
+      "2026-11-18-floating-rect-hides-clipped-text",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-14-collaboration-plugin-factory",
+      "2026-09-04-yjs-cursor-presentation",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
     ],
     "import-toolbar-button": [
       "2026-11-18-html-markdown-import-keeps-the-rest",
@@ -1413,17 +1426,6 @@
       "2026-10-08-emoji-frimousse",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "remote-cursor-overlay": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-14-collaboration-plugin-factory",
-      "2026-09-04-yjs-cursor-presentation",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-24-collaboration-runtime",
-      "2025-11-20-biome-ultracite"
     ],
     "link-static": [
       "2026-10-08-registry-install-dependencies",

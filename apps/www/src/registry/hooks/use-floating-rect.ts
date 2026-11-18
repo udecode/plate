@@ -1,21 +1,20 @@
 'use client';
 
 import {
-  type Middleware,
   type UseFloatingOptions,
   type UseFloatingReturn,
   type VirtualElement,
   getOverflowAncestors,
   useFloating,
 } from '@floating-ui/react';
-import { type ViewportRect, useIsomorphicLayoutEffect } from 'platejs/react';
+import { type RangeGeometry, useIsomorphicLayoutEffect } from 'platejs/react';
 import * as React from 'react';
 
 export type UseFloatingRectOptions = Omit<
   UseFloatingOptions,
   'elements' | 'whileElementsMounted'
 > & {
-  /** Hide the popup while its text is outside its clipping area. Default: true. */
+  /** Hide the popup while none of its text is in view. Default: true. */
   hideWhenClipped?: boolean;
 };
 
@@ -38,62 +37,19 @@ const HIDDEN_RECT = Object.freeze({
   y: -9999,
 });
 
-// Floating UI commits every finished calculation, so an older one can finish
-// last. Its rects.reference holds the text from when it started, so this last
-// step reads the reference again, after the clip, to judge the newest text.
-const textClipped: Middleware = {
-  name: 'textClipped',
-  async fn({ elements, platform, strategy }) {
-    const clip = await platform.getClippingRect({
-      boundary: 'clippingAncestors',
-      element: elements.floating,
-      rootBoundary: 'viewport',
-      strategy,
-    });
-    const text = elements.reference.getBoundingClientRect();
-
-    return {
-      data: {
-        hidden:
-          outside(text.top, text.bottom, clip.y, clip.y + clip.height) ||
-          outside(text.left, text.right, clip.x, clip.x + clip.width),
-      },
-    };
-  },
-};
-
-function outside(
-  start: number,
-  end: number,
-  clipStart: number,
-  clipEnd: number
-) {
-  const collapsed = start === end;
-
-  if (clipEnd <= clipStart) return true;
-  if (collapsed) return start < clipStart || start > clipEnd;
-
-  return end <= clipStart || start >= clipEnd;
-}
-
-/** Position copied UI from one immutable viewport rectangle. */
+/** Position copied UI beside one range. */
 export function useFloatingRect(
-  rect: ViewportRect | null,
+  geometry: RangeGeometry | null,
   { hideWhenClipped = true, ...options }: UseFloatingRectOptions = {}
 ): UseFloatingRectReturn {
+  const rect = geometry?.boundingRect ?? null;
   const rectRef = React.useRef(rect ?? HIDDEN_RECT);
   const virtualRef = React.useRef<VirtualElement>({
     getBoundingClientRect: () => rectRef.current,
   });
   const open = options.open !== false && rect !== null;
-  // A calculation started before hideWhenClipped changed can finish last, so
-  // every calculation runs the check and the option only decides its use.
   const { floatingStyles, isPositioned, ...floating } =
-    useFloating<VirtualElement>({
-      ...options,
-      middleware: [...(options.middleware ?? []), textClipped],
-      open,
-    });
+    useFloating<VirtualElement>({ ...options, open });
   const { elements, middlewareData, refs, update } = floating;
 
   useIsomorphicLayoutEffect(() => {
@@ -103,10 +59,10 @@ export function useFloatingRect(
     if (open) update();
   }, [open, rect, refs, update]);
 
-  useClipChanges(elements.floating, update, rectRef);
+  useContainerMoves(elements.floating, update, rectRef);
 
   const textHidden =
-    (hideWhenClipped && middlewareData.textClipped?.hidden === true) ||
+    (hideWhenClipped && !geometry?.visible) ||
     middlewareData.hide?.referenceHidden === true;
   const shown = open && isPositioned && !textHidden;
 
@@ -121,7 +77,10 @@ export function useFloatingRect(
   };
 }
 
-function useClipChanges(
+// A scroll or resize of the popup's own container can move the popup while its
+// text stays put, so the geometry publishes nothing and the popup is placed
+// again here.
+function useContainerMoves(
   popup: HTMLElement | null,
   update: () => void,
   rectRef: React.RefObject<unknown>

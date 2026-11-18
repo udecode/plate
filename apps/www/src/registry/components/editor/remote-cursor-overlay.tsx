@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from 'cn';
 import type { EditableSiblingProps } from 'platejs/react';
 import {
   YjsPlugin,
@@ -52,6 +53,8 @@ export const CollaborationPlugin = YjsPlugin.require('awareness').map(
   })
 );
 
+const LABEL_INSET = 4;
+
 function RemoteCursor({
   clientId,
   editableRef,
@@ -65,56 +68,83 @@ function RemoteCursor({
     editableRef,
   });
   const labelRef = React.useRef<HTMLSpanElement>(null);
-  const [labelOffset, setLabelOffset] = React.useState(0);
-  const focusLeft = geometry?.focusRect?.left ?? null;
+  const [labelSize, setLabelSize] = React.useState({ height: 0, width: 0 });
   const name = cursorName(clientId, cursor?.data);
+  const clipRect =
+    cursor?.selection && geometry?.visible?.focusRect
+      ? geometry.clipRect
+      : null;
 
   React.useLayoutEffect(() => {
     const label = labelRef.current;
 
-    if (!label || focusLeft === null) return;
+    if (!label) return;
 
-    const inset = 4;
-    const viewportWidth = label.ownerDocument.documentElement.clientWidth;
-    const labelWidth = label.getBoundingClientRect().width;
-    const maxLeft = Math.max(inset, viewportWidth - labelWidth - inset);
-    const nextLeft = Math.min(Math.max(focusLeft, inset), maxLeft);
-    const nextOffset = nextLeft - focusLeft;
+    const { height, width } = label.getBoundingClientRect();
 
-    setLabelOffset((current) =>
-      current === nextOffset ? current : nextOffset
+    setLabelSize((current) =>
+      current.height === height && current.width === width
+        ? current
+        : { height, width }
     );
-  }, [focusLeft, name]);
+  }, [name, clipRect?.width]);
 
-  if (!cursor?.selection || !geometry?.focusRect) return null;
+  if (!cursor || !clipRect || !geometry?.focusRect) return null;
 
-  const color = cursorColor(clientId, cursor.data);
   const { focusRect } = geometry;
+  const color = cursorColor(clientId, cursor.data);
+  const caretTop = focusRect.top - clipRect.top;
+  const caretLeft = focusRect.left - clipRect.left;
+  const caretHeight = Math.max(focusRect.height, 16);
+  const labelAbove = caretTop >= labelSize.height;
+  const labelLeft = Math.min(
+    Math.max(caretLeft, LABEL_INSET),
+    Math.max(LABEL_INSET, clipRect.width - labelSize.width - LABEL_INSET)
+  );
 
   return (
-    <span
-      className="pointer-events-none fixed w-0.5"
-      data-client-id={clientId}
-      data-remote-caret=""
+    <div
+      className="pointer-events-none fixed overflow-hidden"
+      data-remote-cursor-clip=""
       style={{
-        backgroundColor: color,
-        height: Math.max(focusRect.height, 16),
-        left: focusRect.left,
-        top: focusRect.top,
+        height: clipRect.height,
+        left: clipRect.left,
+        top: clipRect.top,
+        width: clipRect.width,
       }}
     >
       <span
+        className="absolute w-0.5"
+        data-client-id={clientId}
+        data-remote-caret=""
+        style={{
+          backgroundColor: color,
+          height: caretHeight,
+          left: caretLeft,
+          top: caretTop,
+        }}
+      />
+      <span
         ref={labelRef}
-        className="absolute top-0 left-0 max-w-[calc(100vw-0.5rem)] truncate rounded-t-sm rounded-br-sm px-1.5 py-0.5 text-xs text-white"
+        className={cn(
+          'absolute truncate px-1.5 py-0.5 text-xs text-white',
+          labelAbove
+            ? 'rounded-t-sm rounded-br-sm'
+            : 'rounded-b-sm rounded-tr-sm'
+        )}
         data-remote-cursor-label=""
         style={{
           backgroundColor: color,
-          transform: `translate(${labelOffset}px, -100%)`,
+          left: labelLeft,
+          maxWidth: clipRect.width - 2 * LABEL_INSET,
+          top: labelAbove
+            ? caretTop - labelSize.height
+            : caretTop + caretHeight,
         }}
       >
         {name}
       </span>
-    </span>
+    </div>
   );
 }
 

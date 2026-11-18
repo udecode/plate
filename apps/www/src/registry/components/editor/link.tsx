@@ -340,7 +340,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const geometry = useSelectionGeometry({ editableRef });
   const editOpen =
     !readOnly && open && mode === 'edit' && selectedLinkKey !== null;
-  const editFloating = useFloatingRect(geometry?.boundingRect ?? null, {
+  const editFloating = useFloatingRect(geometry, {
     hideWhenClipped: !isEditing,
     onOpenChange: (nextOpen) => {
       if (!nextOpen) api.closeForm();
@@ -348,7 +348,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     open: editOpen,
     ...linkFloatingOptions,
   });
-  const insertFloating = useFloatingRect(geometry?.boundingRect ?? null, {
+  const insertFloating = useFloatingRect(geometry, {
     hideWhenClipped: false,
     onOpenChange: (nextOpen) => {
       if (nextOpen) return;

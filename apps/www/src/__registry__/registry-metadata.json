@@ -1,5 +1,5 @@
 {
-  "generation": "36e9066a7aa1517e61c8a69db728eb3b3ebec376c8c548f6c4b4be6b9a88ea32",
+  "generation": "c2dc2051546a6752375d071b78102cbfcbc36441ca434f1e0ccefc56dd13316a",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1215,6 +1215,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "yjs@>=13.6.30"
           ],
@@ -8503,6 +8504,7 @@
         {
           "dependencies": [
             "platejs",
+            "cn",
             "diff-match-patch-ts@^0.6.0",
             "yjs@>=13.6.30"
           ],

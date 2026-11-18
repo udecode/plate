@@ -1148,6 +1148,7 @@
       "description": "Copied Yjs selection highlights, carets, and labels.",
       "dependencies": [
         "platejs",
+        "cn",
         "diff-match-patch-ts@^0.6.0",
         "yjs@>=13.6.30"
       ],

@@ -60,7 +60,7 @@
       "href": "/registry/changelog/2026-11-18-floating-rect-hides-clipped-text.json",
       "status": "draft",
       "kind": "behavior",
-      "summary": "Hide floating popups whose text scrolls out of view",
+      "summary": "Hide popups and remote carets whose text scrolls out of the editor",
       "change": {
         "type": "source",
         "date": "2026-11-18",
@@ -69,8 +69,13 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["use-floating-rect", "link"],
-      "entries": 2,
+      "targets": [
+        "use-floating-rect",
+        "floating-toolbar",
+        "link",
+        "remote-cursor-overlay"
+      ],
+      "entries": 4,
       "diagnostics": []
     },
     {

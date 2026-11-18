@@ -15,7 +15,7 @@
     "status": "unresolved"
   },
   "kind": "behavior",
-  "summary": "Hide floating popups whose text scrolls out of view",
+  "summary": "Hide popups and remote carets whose text scrolls out of the editor",
   "targets": [
     {
       "name": "use-floating-rect",
@@ -24,9 +24,23 @@
       "diagnostics": []
     },
     {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
       "name": "link",
       "files": ["apps/www/src/registry/components/editor/link.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
     }
   ],
@@ -34,9 +48,10 @@
     {
       "id": "2026-11-18-use-floating-rect-popups-whose-text-scrolls-410fc4f1",
       "kind": "behavior",
-      "summary": "Hide a popup once its text scrolls fully out of the popup's clipping area, and return `shown` to say whether it is drawn. Pass `hideWhenClipped: false` to keep a popup shown, such as a form someone is typing in.",
+      "summary": "Take the whole `RangeGeometry`, hide the popup once no line of its text is in the editor's visible area, and return `shown`, which says whether the popup is drawn. Pass `hideWhenClipped: false` to keep a popup shown, such as a form someone is typing in.",
       "details": [],
       "migrationNotes": [
+        "Pass the whole geometry from `useSelectionGeometry` in place of `geometry.boundingRect`.",
         "Read `shown` in place of `isPositioned`, and spread `style` in place of `floatingStyles`."
       ],
       "targets": ["use-floating-rect"],
@@ -51,15 +66,51 @@
       }
     },
     {
+      "id": "2026-11-18-floating-toolbar-hides-with-text-5c1e8b37",
+      "kind": "behavior",
+      "summary": "Hide the floating toolbar once its selection leaves the editor's visible area, including when the editor scrolls itself or the toolbar sits outside the box that scrolls the text.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-floating-rect-hides-clipped-text",
+          "section": null
+        }
+      }
+    },
+    {
       "id": "2026-11-18-link-popovers-hide-with-text-7d2e91a4",
       "kind": "behavior",
-      "summary": "Hide the link popovers once the cursor or selected text they point to scrolls out of the popover's clipping area, and keep an open link form shown, so typing goes into it while its text is out of view.",
+      "summary": "Hide the link popovers once the cursor or selected text they point to leaves the editor's visible area. An open link form stays shown, so typing still goes into it while its text is out of view.",
       "details": [],
       "migrationNotes": [],
       "targets": ["link"],
       "source": {
-        "line": 18,
-        "row": 2,
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-floating-rect-hides-clipped-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-remote-cursor-clips-to-editor-9a4f2d60",
+      "kind": "behavior",
+      "summary": "Draw a collaborator's caret and name label only inside the editor's visible area, and put the label below its caret when it does not fit above.",
+      "details": [],
+      "migrationNotes": [
+        "Read the name label from `[data-remote-cursor-label]` beside the caret, not inside `[data-remote-caret]`. Both now sit in one `[data-remote-cursor-clip]` box."
+      ],
+      "targets": ["remote-cursor-overlay"],
+      "source": {
+        "line": 26,
+        "row": 4,
         "legacyRelease": {
           "date": "2026-11-18",
           "entry": "2026-11-18-floating-rect-hides-clipped-text",
