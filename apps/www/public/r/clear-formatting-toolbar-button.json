@@ -5,8 +5,7 @@
   "description": "A toolbar button that clears text and block formatting.",
   "dependencies": [
     "platejs",
-    "diff-match-patch-ts@^0.6.0",
-    "lucide-react"
+    "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/mark-toolbar-button.json",
@@ -15,7 +14,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/clear-formatting-toolbar-button.tsx",
-      "content": "'use client';\n\nimport { RemoveFormattingIcon } from 'lucide-react';\nimport { FormattingPlugin, useEditor, useEditorReadOnly } from 'platejs/react';\nimport * as React from 'react';\n\nimport { useShortcutProps } from '@/registry/components/editor/mark-toolbar-button';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function ClearFormattingToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditor();\n  const readOnly = useEditorReadOnly();\n  const formatting = editor.plugin(FormattingPlugin);\n  const disabled = props.disabled || readOnly || !formatting.installed;\n  const tooltipProps = { tooltip: 'Clear formatting', ...props };\n  const shortcutProps = useShortcutProps(\n    tooltipProps,\n    disabled ? undefined : formatting.shortcuts.clear?.keys\n  );\n\n  return (\n    <ToolbarButton\n      {...tooltipProps}\n      {...shortcutProps}\n      disabled={disabled}\n      onClick={() => {\n        formatting.update.clear();\n        editor.api.dom.focus();\n      }}\n    >\n      <RemoveFormattingIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "content": "'use client';\n\nimport { IconPlaceholder } from '@/components/icon-placeholder';\nimport { FormattingPlugin, useEditor, useEditorReadOnly } from 'platejs/react';\nimport * as React from 'react';\n\nimport { useShortcutProps } from '@/registry/components/editor/mark-toolbar-button';\nimport { ToolbarButton } from '@/registry/components/editor/toolbar';\n\nexport function ClearFormattingToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditor();\n  const readOnly = useEditorReadOnly();\n  const formatting = editor.plugin(FormattingPlugin);\n  const disabled = props.disabled || readOnly || !formatting.installed;\n  const tooltipProps = { tooltip: 'Clear formatting', ...props };\n  const shortcutProps = useShortcutProps(\n    tooltipProps,\n    disabled ? undefined : formatting.shortcuts.clear?.keys\n  );\n\n  return (\n    <ToolbarButton\n      {...tooltipProps}\n      {...shortcutProps}\n      disabled={disabled}\n      onClick={() => {\n        formatting.update.clear();\n        editor.api.dom.focus();\n      }}\n    >\n      <IconPlaceholder lucide=\"RemoveFormattingIcon\" tabler=\"IconClearFormatting\" hugeicons=\"TextClearIcon\" phosphor=\"TextTSlashIcon\" remixicon=\"RiFormatClear\" />\n    </ToolbarButton>\n  );\n}\n",
       "type": "registry:component",
       "target": "@components/editor/clear-formatting-toolbar-button.tsx"
     }

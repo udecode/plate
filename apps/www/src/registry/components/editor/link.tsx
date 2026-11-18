@@ -525,7 +525,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       <Separator orientation="vertical" />
 
       <Button size="sm" type="button" variant="ghost" {...unlinkButtonProps}>
-        <Unlink width={18} />
+        <Unlink />
       </Button>
     </div>
   );
@@ -583,7 +583,7 @@ function LinkOpenButton() {
       aria-label="Open link in a new tab"
       target="_blank"
     >
-      <ExternalLink width={18} />
+      <ExternalLink />
     </a>
   );
 }

@@ -67,6 +67,10 @@ const LEGACY_RADIX_STYLES = new Set(['default', 'new-york', 'new-york-v4']);
 
 const PRESET_STYLE_REGEX = /^([^-]+)-([a-z0-9]+)$/;
 
+export function servesLucideIcons(style: string) {
+  return LEGACY_RADIX_STYLES.has(style);
+}
+
 export function getPlateRegistryStyle(style: string): {
   base: PlateRegistryBase;
   style: PlateRegistryStyleName;

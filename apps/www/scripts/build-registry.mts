@@ -26,6 +26,7 @@ import { createRegistryResponse } from '@/lib/registry-response';
 import { createPlateRegistry } from '@/registry/registry';
 import { PLATE_REGISTRY_VARIANT_ITEM_NAMES } from '@/registry/registry-variants';
 
+import { serveIconPlaceholders, toServedIcons } from './icon-placeholders.mts';
 import {
   acquireRegistryBuildLock,
   createRegistryGeneration,
@@ -41,7 +42,10 @@ import {
   REGISTRY_PUBLIC_TARGETS,
 } from './registry-build-targets.mts';
 import { createRegistryIndexSource } from './registry-index.mts';
-import { deriveRegistryDependencies } from './registry-package-dependencies.mts';
+import {
+  type DeriveRegistryDependenciesOptions,
+  deriveRegistryDependencies,
+} from './registry-package-dependencies.mts';
 import { materializeRegistryStyles } from './registry-style-materializer.mts';
 import { loadRegistryStyleMaps } from './registry-style-transform.mts';
 import {
@@ -335,18 +339,24 @@ if (recoverToken !== null) {
 
 const checkOnly = process.argv.includes('--check');
 await verifyVendoredShadcn();
-const derivedRegistries = Object.fromEntries(
-  PLATE_REGISTRY_BASES.map((base) => [
-    base,
-    deriveRegistryDependencies(
-      createPlateRegistry(REGISTRY_HOMEPAGE, { base }),
-      { sourceRoot }
-    ),
-  ])
-) as Record<PlateRegistryBase, Registry>;
+const deriveRegistries = (
+  transformSource?: DeriveRegistryDependenciesOptions['transformSource']
+) =>
+  Object.fromEntries(
+    PLATE_REGISTRY_BASES.map((base) => [
+      base,
+      deriveRegistryDependencies(
+        createPlateRegistry(REGISTRY_HOMEPAGE, { base }),
+        { sourceRoot, transformSource }
+      ),
+    ])
+  ) as Record<PlateRegistryBase, Registry>;
+const sourceRegistries = deriveRegistries();
+const servedRegistries = deriveRegistries(toServedIcons);
 const sourceIdentity = sha256(
   JSON.stringify({
-    registries: derivedRegistries,
+    registries: sourceRegistries,
+    servedRegistries,
     shadcnStyleCommit: SHADCN_STYLE_SOURCE_COMMIT,
   })
 );
@@ -358,13 +368,14 @@ try {
 
   for (const target of buildTargets) {
     const rawRegistry = createRawRegistry(
-      derivedRegistries[target.base],
+      servedRegistries[target.base],
       target.kind
     );
 
     console.info(`Building neutral ${target.base} registry source...`);
     await writeJson(target.registryFile, rawRegistry);
     await buildShadcn(target.registryFile, target.outputDir);
+    await serveIconPlaceholders(target.outputDir);
   }
 
   console.info('Materializing neutral provider and style overlays...');
@@ -388,12 +399,12 @@ try {
   const generation = createRegistryGeneration(payloads, sourceIdentity);
   await writeJson(stage.metadataFile, {
     generation,
-    registries: derivedRegistries,
+    registries: sourceRegistries,
   });
   await mkdir(path.dirname(stage.previewIndexFile), { recursive: true });
   await writeFile(
     stage.previewIndexFile,
-    createRegistryIndexSource(derivedRegistries.base, generation)
+    createRegistryIndexSource(sourceRegistries.base, generation)
   );
 
   const manifestPath = path.join(stage.overlayDir, 'manifest.json');

@@ -1,15 +1,6 @@
-/** The icon libraries the shadcn CLI installs, as its IconPlaceholder props name them. */
-export const ICON_LIBRARIES = [
-  'hugeicons',
-  'lucide',
-  'phosphor',
-  'remixicon',
-  'tabler',
-] as const;
+import type { IconLibrary } from '../src/lib/registry-icon-placeholder.ts';
 
-export type IconLibrary = (typeof ICON_LIBRARIES)[number];
-
-export type IconNames = Record<IconLibrary, string>;
+type IconNames = Record<IconLibrary, string>;
 
 const ICON_NAMES: Record<string, IconNames> = {
   Album: {
@@ -930,6 +921,12 @@ const ICON_NAMES: Record<string, IconNames> = {
     tabler: 'IconZoomOut',
   },
 };
+
+export function getLibraryIconNames(library: IconLibrary) {
+  return [
+    ...new Set(Object.values(ICON_NAMES).map((names) => names[library])),
+  ].sort();
+}
 
 export function getIconNames(imported: string) {
   // lucide-react exports each icon as Name, NameIcon and LucideName.

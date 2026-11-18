@@ -52,6 +52,8 @@ const PLATE_REGISTRY_MARKDOWN = `## Registry URLs
 
 Any \`<ComponentSource name="..." />\` or \`<ComponentPreview name="..." />\` in this page can be resolved at \`${PLATE_REGISTRY_URL}/{name}.json\`.
 
+Install a component with \`npx shadcn@latest add @plate/{name}\` rather than copying its content. The shadcn CLI turns each \`<IconPlaceholder />\` into an icon from the project's icon library and removes its \`@/components/icon-placeholder\` import.
+
 ---
 
 `;

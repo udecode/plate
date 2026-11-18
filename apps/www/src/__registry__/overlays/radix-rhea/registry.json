@@ -74,7 +74,6 @@
         "class-variance-authority",
         "cn",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs",
         "radix-ui"
       ],

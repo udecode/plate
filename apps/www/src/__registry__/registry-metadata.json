@@ -1,5 +1,5 @@
 {
-  "generation": "86b12e1ce42db10af1ca43548bb74d6354b26fea92601bf2f1d775789a2c7935",
+  "generation": "04d340a62df40b50292d86e93bfd8d730823b73ed3653a755ae67d0642371fef",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -350,7 +350,6 @@
         {
           "dependencies": [
             "platejs",
-            "lucide-react",
             "sonner",
             "color-name@^2.0.0",
             "diff-match-patch-ts@^0.6.0",
@@ -358,6 +357,7 @@
             "jszip@^3.10.1",
             "juice@^11.0.1",
             "katex@0.16.22",
+            "lucide-react",
             "mime-types@^2.1.35",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -494,10 +494,10 @@
         },
         {
           "dependencies": [
-            "lucide-react",
             "platejs",
             "cn",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "description": "Toolbar controls for creating comments and discovering every published conversation.",
           "files": [
@@ -3003,9 +3003,9 @@
           "dependencies": [
             "platejs",
             "date-fns",
-            "lucide-react",
             "cn",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -3077,8 +3077,8 @@
         {
           "dependencies": [
             "platejs",
-            "lucide-react",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -3150,8 +3150,8 @@
         {
           "dependencies": [
             "platejs",
-            "lucide-react",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -6740,8 +6740,7 @@
         },
         {
           "dependencies": [
-            "@platejs/test",
-            "lucide-react"
+            "@platejs/test"
           ],
           "description": "Copy paste from DOCX to Plate.",
           "files": [
@@ -7530,7 +7529,6 @@
         {
           "dependencies": [
             "platejs",
-            "lucide-react",
             "sonner",
             "color-name@^2.0.0",
             "diff-match-patch-ts@^0.6.0",
@@ -7538,6 +7536,7 @@
             "jszip@^3.10.1",
             "juice@^11.0.1",
             "katex@0.16.22",
+            "lucide-react",
             "mime-types@^2.1.35",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
@@ -7674,10 +7673,10 @@
         },
         {
           "dependencies": [
-            "lucide-react",
             "platejs",
             "cn",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "description": "Toolbar controls for creating comments and discovering every published conversation.",
           "files": [
@@ -10178,9 +10177,9 @@
           "dependencies": [
             "platejs",
             "date-fns",
-            "lucide-react",
             "cn",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -10252,8 +10251,8 @@
         {
           "dependencies": [
             "platejs",
-            "lucide-react",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -10325,8 +10324,8 @@
         {
           "dependencies": [
             "platejs",
-            "lucide-react",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -13915,8 +13914,7 @@
         },
         {
           "dependencies": [
-            "@platejs/test",
-            "lucide-react"
+            "@platejs/test"
           ],
           "description": "Copy paste from DOCX to Plate.",
           "files": [

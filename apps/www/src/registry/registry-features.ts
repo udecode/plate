@@ -530,7 +530,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'date-fns', 'lucide-react'],
+    dependencies: ['platejs', 'date-fns'],
     files: [
       {
         path: 'components/editor/comment.tsx',
@@ -576,7 +576,7 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'lucide-react'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/discussion.tsx',
@@ -621,7 +621,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['platejs', 'lucide-react'],
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/find.tsx',

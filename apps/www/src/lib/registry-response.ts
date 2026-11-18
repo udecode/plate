@@ -2,7 +2,11 @@ import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import { getPlateRegistryStyle } from './plate-registry-styles';
+import {
+  getPlateRegistryStyle,
+  servesLucideIcons,
+} from './plate-registry-styles';
+import { restoreLucideIcons } from './registry-icon-placeholder';
 import {
   mergeRegistryOverlay,
   normalizeRegistryPayload,
@@ -238,7 +242,10 @@ export async function createRegistryResponse({
 
   const sourceBaseUrl =
     directory === 'r' ? 'https://platejs.org/r' : 'http://localhost:3000/rd';
-  const neutral = normalizeRegistryPayload(payload, sourceBaseUrl);
+  const neutral = normalizeRegistryPayload(
+    servesLucideIcons(style) ? restoreLucideIcons(payload) : payload,
+    sourceBaseUrl
+  );
 
   return serializeRegistryPayload(neutral, `${origin}/${directory}/${style}`);
 }

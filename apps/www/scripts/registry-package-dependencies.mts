@@ -2,9 +2,10 @@ import { readFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
 import { isAbsolute, relative, resolve } from 'node:path';
 
-import type { Registry } from 'shadcn/schema';
+import type { Registry, RegistryItemFile } from 'shadcn/schema';
 
 import { entrypointDags as defaultEntrypointDags } from '../../../tooling/entrypoints/entrypoint-dag.mjs';
+import { ICON_PLACEHOLDER_MODULE } from '../src/lib/registry-icon-placeholder.ts';
 import {
   isImportableRegistrySource,
   parseModuleImports,
@@ -49,6 +50,11 @@ export type DeriveRegistryDependenciesOptions = {
   hostProvidedAliases?: readonly string[];
   hostProvidedPackages?: readonly string[];
   packageManifests?: Record<string, PackageManifest>;
+  transformSource?: (file: {
+    content: string;
+    path: string;
+    type: RegistryItemFile['type'];
+  }) => string;
 };
 
 const DEFAULT_HOST_PROVIDED_ALIASES = ['@/lib/utils'] as const;
@@ -415,11 +421,22 @@ export function deriveRegistryDependencies(
           );
         }
 
-        for (const imported of parseModuleImports(source, {
+        const served = options.transformSource
+          ? options.transformSource({
+              content: source,
+              path: file.path,
+              type: file.type,
+            })
+          : source;
+
+        for (const imported of parseModuleImports(served, {
           filePath: file.path,
         })) {
           const context = formatContext(item.name, file.path, imported);
           const { specifier } = imported;
+
+          if (specifier === ICON_PLACEHOLDER_MODULE) continue;
+
           const shadcnName = getShadcnRegistryName(specifier, file.path);
 
           if (shadcnName) {

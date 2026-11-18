@@ -1,9 +1,15 @@
 import { parse } from '@babel/parser';
 
-import { getIconNames, ICON_LIBRARIES } from './icon-names.mts';
+import {
+  ICON_PLACEHOLDER_LIBRARIES,
+  LUCIDE_PACKAGE,
+} from '../src/lib/registry-icon-placeholder.ts';
+import { getIconNames } from './icon-names.mts';
 import { type AstNode, getLocation, isAstNode } from './registry-imports.mts';
 
 export type SourceLocation = ReturnType<typeof getLocation>;
+
+export type SourceRange = { end: number; start: number };
 
 export type LucideImport = {
   imported: string;
@@ -14,6 +20,7 @@ export type LucideImport = {
 export type LucideElement = {
   imported: string;
   location: SourceLocation;
+  tagRange: SourceRange;
 };
 
 export type LucideStray = {
@@ -22,15 +29,19 @@ export type LucideStray = {
 };
 
 export type LucideUses = {
+  importRanges: SourceRange[];
   elements: LucideElement[];
+  otherNames: Set<string>;
   imports: LucideImport[];
   strays: LucideStray[];
 };
 
-const LUCIDE_PACKAGE = 'lucide-react';
 const ICON_NAMES_FILE = 'apps/www/scripts/icon-names.mts';
 const ELEMENT_FIX =
   'import each icon by name and write it as a self-closing JSX element, such as `icon: <Name className="..." />`';
+const ICON_ATTRIBUTE_REGEX = /^(className|key|strokeWidth|aria-.+|data-.+)$/;
+const ATTRIBUTE_FIX =
+  'the CLI keeps it on the icon of every library, and only className, key, strokeWidth, aria-* and data-* typecheck in all of them; size an icon with className';
 const TYPE_FIX =
   "type an icon value as React.ReactNode and an SVG component's props as React.ComponentProps<'svg'>";
 
@@ -77,6 +88,14 @@ function getLoadedLucideModule(node: AstNode) {
   }
 }
 
+function getRange(node: Pick<AstNode, 'end' | 'start'>): SourceRange {
+  if (typeof node.start !== 'number' || typeof node.end !== 'number') {
+    throw new TypeError('Babel parsed a node without a source range');
+  }
+
+  return { end: node.end, start: node.start };
+}
+
 function parseProgram(source: string, filePath: string) {
   try {
     return parse(source, {
@@ -97,7 +116,13 @@ export function collectLucideUses(
   filePath: string
 ): LucideUses {
   const program = parseProgram(source, filePath);
-  const uses: LucideUses = { elements: [], imports: [], strays: [] };
+  const uses: LucideUses = {
+    importRanges: [],
+    elements: [],
+    otherNames: new Set(),
+    imports: [],
+    strays: [],
+  };
   const importedByLocal = new Map<string, string>();
   const strayKeys = new Set<string>();
   // Babel clones a shorthand property's or export specifier's identifier, so
@@ -125,13 +150,16 @@ export function collectLucideUses(
       );
       continue;
     }
-    if (
-      statement.type !== 'ImportDeclaration' ||
-      !isLucideModule(statement.source.value)
-    ) {
+    if (statement.type !== 'ImportDeclaration') continue;
+    if (!isLucideModule(statement.source.value)) {
+      for (const specifier of statement.specifiers) {
+        uses.otherNames.add(specifier.local.name);
+      }
       continue;
     }
-    if (statement.source.value !== LUCIDE_PACKAGE) {
+    if (statement.source.value === LUCIDE_PACKAGE) {
+      uses.importRanges.push(getRange(statement));
+    } else {
       addStray(
         statement,
         `imports ${statement.source.value}; import each icon from ${LUCIDE_PACKAGE} itself`
@@ -203,13 +231,41 @@ export function collectLucideUses(
         : null;
     const imported = name === null ? undefined : importedByLocal.get(name);
 
+    if (name !== null && imported === undefined) uses.otherNames.add(name);
     if (name !== null && imported !== undefined && parent) {
       if (
         parent.type === 'JSXOpeningElement' &&
         parent.selfClosing === true &&
         key === 'name'
       ) {
-        uses.elements.push({ imported, location: getLocation(value) });
+        uses.elements.push({
+          imported,
+          location: getLocation(value),
+          tagRange: getRange(value),
+        });
+
+        for (const attribute of Array.isArray(parent.attributes)
+          ? parent.attributes
+          : []) {
+          if (!isAstNode(attribute)) continue;
+
+          const attributeName =
+            attribute.type === 'JSXAttribute' &&
+            isAstNode(attribute.name) &&
+            attribute.name.type === 'JSXIdentifier' &&
+            typeof attribute.name.name === 'string'
+              ? attribute.name.name
+              : null;
+
+          if (attributeName && ICON_ATTRIBUTE_REGEX.test(attributeName)) {
+            continue;
+          }
+
+          addStray(
+            attribute,
+            `passes ${attributeName ?? 'spread props'} to ${name}; ${ATTRIBUTE_FIX}`
+          );
+        }
       } else if (parent.type !== 'JSXMemberExpression' || key !== 'property') {
         addStray(
           value,
@@ -234,10 +290,12 @@ export function collectLucideUses(
   return uses;
 }
 
-export function findMissingIconNames(imports: LucideImport[]): LucideStray[] {
+function findMissingIconNames(imports: LucideImport[]): LucideStray[] {
   return imports.flatMap(({ imported, location }) => {
     const names = getIconNames(imported);
-    const missing = ICON_LIBRARIES.filter((library) => !names?.[library]);
+    const missing = ICON_PLACEHOLDER_LIBRARIES.filter(
+      (library) => !names?.[library]
+    );
 
     if (missing.length === 0) return [];
 
@@ -250,4 +308,14 @@ export function findMissingIconNames(imports: LucideImport[]): LucideStray[] {
       },
     ];
   });
+}
+
+export function getIconProblems(
+  filePath: string,
+  { imports, strays }: LucideUses
+) {
+  return [...strays, ...findMissingIconNames(imports)].map(
+    ({ location, message }) =>
+      `${filePath}:${location.line}:${location.column}: ${message}`
+  );
 }

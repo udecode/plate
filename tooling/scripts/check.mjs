@@ -764,6 +764,7 @@ export const steps = [
       'apps/www/scripts/icon-names.mts',
       'apps/www/scripts/lucide-icons.mts',
       'apps/www/scripts/registry-imports.mts',
+      'apps/www/src/lib/registry-icon-placeholder.ts',
       'apps/www/src/registry/'
     ),
     key: [],

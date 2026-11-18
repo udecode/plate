@@ -124,7 +124,6 @@
         "cn",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
-        "lucide-react",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"
@@ -214,8 +213,7 @@
       "description": "A dropdown menu for text alignment controls.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -246,8 +244,7 @@
       "description": "A toolbar button that clears text and block formatting.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/mark-toolbar-button.json",
@@ -278,8 +275,7 @@
       "description": "A toolbar button that copies the look of the selection onto the next text you select.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar.json"
@@ -313,7 +309,6 @@
         "sonner",
         "diff-match-patch-ts@^0.6.0",
         "jszip@^3.10.1",
-        "lucide-react",
         "mammoth@^1.13.0",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
@@ -351,7 +346,6 @@
       "description": "A toolbar button for exporting editor content as HTML, Markdown, or Word.",
       "dependencies": [
         "platejs",
-        "lucide-react",
         "sonner",
         "color-name@^2.0.0",
         "diff-match-patch-ts@^0.6.0",
@@ -456,8 +450,7 @@
         "platejs",
         "lodash",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "devDependencies": [
         "@types/lodash"
@@ -495,7 +488,6 @@
       "title": "Comment Toolbar Button",
       "description": "Toolbar controls for creating comments and discovering every published conversation.",
       "dependencies": [
-        "lucide-react",
         "platejs",
         "cn",
         "diff-match-patch-ts@^0.6.0"
@@ -537,8 +529,7 @@
         "platejs",
         "fzf@0.5.2",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor.json",
@@ -577,8 +568,7 @@
         "platejs",
         "frimousse@0.4.0",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/emoji-data.json",
@@ -610,7 +600,6 @@
       "description": "An emoji picker toolbar button.",
       "dependencies": [
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs"
       ],
       "registryDependencies": [
@@ -646,7 +635,6 @@
       "description": "Toolbar buttons for undo and redo operations.",
       "dependencies": [
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs"
       ],
       "registryDependencies": [
@@ -678,8 +666,7 @@
       "description": "Toolbar controls for bulleted, numbered, and todo lists.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -710,8 +697,7 @@
       "description": "Toolbar controls for block indentation.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar.json"
@@ -776,7 +762,6 @@
       "description": "A menu for inserting different types of blocks.",
       "dependencies": [
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs"
       ],
       "registryDependencies": [
@@ -804,8 +789,7 @@
       "description": "A menu for controlling text line spacing.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -836,8 +820,7 @@
       "description": "A toolbar control for link management.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/link.json",
@@ -904,8 +887,7 @@
       "description": "A toolbar interface for media settings.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/media-preview-dialog.json",
@@ -944,8 +926,7 @@
         "use-file-picker@2.1.2",
         "sonner",
         "diff-match-patch-ts@^0.6.0",
-        "files-sdk@^3.2.0",
-        "lucide-react"
+        "files-sdk@^3.2.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/upload.json",
@@ -981,8 +962,7 @@
       "dependencies": [
         "platejs",
         "sonner",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/suggestion.json",
@@ -1009,8 +989,7 @@
       "description": "A menu for additional text formatting options.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -1076,8 +1055,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -1108,8 +1086,7 @@
       "description": "A toolbar button for wrapping or unwrapping Details blocks.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar.json"
@@ -1139,8 +1116,7 @@
       "description": "A menu for converting between different block types.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -1272,7 +1248,6 @@
         "class-variance-authority",
         "cn",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs"
       ],
       "registryDependencies": [
@@ -1314,8 +1289,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/suggestion.json",
@@ -1373,8 +1347,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
         {
@@ -1482,8 +1455,7 @@
       "description": "A toolbar button for inserting and editing equations.",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar.json"
@@ -1516,8 +1488,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/floating-popover.json",
@@ -1755,8 +1726,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "button",
@@ -1950,8 +1920,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/resize-handle.json",
@@ -1985,8 +1954,7 @@
       "name": "media-file-static",
       "dependencies": [
         "platejs",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/caption-static.json"
@@ -2330,8 +2298,7 @@
         "platejs",
         "katex@0.16.22",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "files": [
         {
@@ -2662,8 +2629,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -2731,8 +2697,7 @@
         "platejs",
         "lowlight",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/floating-popover.json",
@@ -2813,7 +2778,6 @@
       "dependencies": [
         "cn",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs"
       ],
       "registryDependencies": [
@@ -2965,8 +2929,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/dnd.json",
@@ -3004,7 +2967,6 @@
       "dependencies": [
         "platejs",
         "date-fns",
-        "lucide-react",
         "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
@@ -3078,7 +3040,6 @@
       "description": "A Floating Discussion surface that combines each block's comment threads and authored-change reviews.",
       "dependencies": [
         "platejs",
-        "lucide-react",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -3151,7 +3112,6 @@
       "description": "A search bar over the editor’s current text matches.",
       "dependencies": [
         "platejs",
-        "lucide-react",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -3252,8 +3212,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
@@ -3442,7 +3401,6 @@
       "dependencies": [
         "cn",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "platejs"
       ],
       "registryDependencies": [
@@ -3495,7 +3453,6 @@
         "ai@^6.0.0",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
-        "lucide-react",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"
@@ -3661,8 +3618,7 @@
         "@floating-ui/react",
         "class-variance-authority",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/link-toolbar-button.json",
@@ -3745,8 +3701,7 @@
         "katex@0.16.22",
         "react-textarea-autosize",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/equation-toolbar-button.json",
@@ -3821,8 +3776,7 @@
         "sonner",
         "use-file-picker@2.1.2",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/use-object-url.json"
@@ -3923,7 +3877,6 @@
         "ai@^6.0.0",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
-        "lucide-react",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"
@@ -4006,8 +3959,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/tailwind-scrollbar-hide.json",
@@ -4083,8 +4035,7 @@
       "dependencies": [
         "platejs",
         "cn",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/details-toolbar-button.json",
@@ -4276,7 +4227,6 @@
         "cn",
         "diff-match-patch-ts@^0.6.0",
         "fastest-levenshtein@1.0.16",
-        "lucide-react",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"
@@ -5021,8 +4971,7 @@
       "dependencies": [
         "@hookform/resolvers",
         "react-hook-form",
-        "zod",
-        "lucide-react"
+        "zod"
       ],
       "registryDependencies": [
         "https://platejs.org/r/select-editor.json",
@@ -5227,7 +5176,6 @@
         "platejs",
         "cn",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"
@@ -5272,7 +5220,6 @@
       "dependencies": [
         "platejs",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
         "yjs@>=13.6.30"
       ],
       "registryDependencies": [

@@ -1519,7 +1519,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@platejs/test', 'lucide-react'],
+      dependencies: ['@platejs/test'],
       description: 'Copy paste from DOCX to Plate.',
       files: [
         { path: 'examples/docx-demo.tsx', type: 'registry:example' },

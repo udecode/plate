@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { collectLucideUses, findMissingIconNames } from './lucide-icons.mts';
+import { collectLucideUses, getIconProblems } from './lucide-icons.mts';
 import { isImportableRegistrySource } from './registry-imports.mts';
 
 function listSourceFiles(directory: string): string[] {
@@ -20,14 +20,10 @@ const files =
     : listSourceFiles(path.join(import.meta.dirname, '../src/registry'));
 const errors = files.flatMap((filePath) => {
   const relativePath = path.relative(process.cwd(), filePath);
-  const { imports, strays } = collectLucideUses(
-    readFileSync(filePath, 'utf-8'),
-    relativePath
-  );
 
-  return [...strays, ...findMissingIconNames(imports)].map(
-    ({ location, message }) =>
-      `${relativePath}:${location.line}:${location.column}: ${message}`
+  return getIconProblems(
+    relativePath,
+    collectLucideUses(readFileSync(filePath, 'utf-8'), relativePath)
   );
 });
 

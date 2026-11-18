@@ -1,8 +1,16 @@
 const PLATE_PREFIX = '@plate/';
 const SHADCN_PREFIX = '@shadcn/';
 
+export type RegistryPayloadFile = {
+  content?: string;
+  path: string;
+  type: string;
+  [key: string]: unknown;
+};
+
 export type RegistryPayload = {
-  files?: Array<Record<string, unknown>>;
+  dependencies?: string[];
+  files?: RegistryPayloadFile[];
   items?: RegistryPayload[];
   name?: string;
   registryDependencies?: string[];

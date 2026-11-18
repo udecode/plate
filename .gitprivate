@@ -101,7 +101,7 @@ vitest.config.*
 /apps/www/scripts/autoformat-input-rules*
 /apps/www/scripts/*-probe.mts
 /apps/www/scripts/run-*-perf.mts
-/apps/www/scripts/registry-create-install-e2e.mts
+/apps/www/scripts/registry-create-install-e2e*
 /config/plite-source-test-setup.ts
 /config/plite-test-jsx*
 /tooling/e2e/

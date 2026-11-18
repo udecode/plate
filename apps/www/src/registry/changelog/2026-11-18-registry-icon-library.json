@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-registry-icon-library",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-registry-icon-library.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Install icons from the project's icon library",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/align-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board",
+      "files": ["apps/www/src/registry/components/editor/board.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "clear-formatting-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/clear-formatting-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-diagram",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-diagram.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details",
+      "files": ["apps/www/src/registry/components/editor/details.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/details-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "equation-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/equation-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "format-painter-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/format-painter-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "history-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/history-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/indent-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/link-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/list-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file",
+      "files": ["apps/www/src/registry/components/editor/media-file.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-file-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar",
+      "files": ["apps/www/src/registry/components/editor/media-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/media-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "more-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-editor.tsx",
+        "apps/www/src/registry/components/editor/tag.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor-demo",
+      "files": ["apps/www/src/registry/examples/select-editor-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "settings-dialog",
+      "files": ["apps/www/src/registry/components/editor/settings-dialog.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "upload",
+      "files": ["apps/www/src/registry/components/editor/upload.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-ai-menu-install-icons-from-project-d8d602f9",
+      "kind": "behavior",
+      "summary": "Install each icon from the project's icon library, Lucide, Tabler, Hugeicons, Phosphor or Remix, instead of always adding `lucide-react`. The `default`, `new-york` and `new-york-v4` styles keep Lucide icons.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-menu",
+        "align-toolbar-button",
+        "block-list-static",
+        "board",
+        "clear-formatting-toolbar-button",
+        "code-block",
+        "code-block-diagram",
+        "collaboration-demo",
+        "column",
+        "comment",
+        "comment-toolbar-button",
+        "details",
+        "details-toolbar-button",
+        "discussion",
+        "dnd",
+        "emoji-picker",
+        "emoji-toolbar-button",
+        "equation-toolbar-button",
+        "export-toolbar-button",
+        "find",
+        "fixed-toolbar",
+        "floating-toolbar",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "format-painter-toolbar-button",
+        "history-toolbar-button",
+        "import-toolbar-button",
+        "indent-toolbar-button",
+        "insert-toolbar-button",
+        "line-height-toolbar-button",
+        "link",
+        "link-toolbar-button",
+        "list-toolbar-button",
+        "markdown-streaming-demo",
+        "math",
+        "math-static",
+        "media-file",
+        "media-file-static",
+        "media-preview-dialog",
+        "media-toolbar",
+        "media-toolbar-button",
+        "mode-toolbar-button",
+        "more-toolbar-button",
+        "select-editor",
+        "select-editor-demo",
+        "settings-dialog",
+        "slash",
+        "suggestion-toolbar-button",
+        "table",
+        "table-toolbar-button",
+        "toolbar",
+        "turn-into-toolbar-button",
+        "upload"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-registry-icon-library",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -169,7 +169,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'lucide-react', 'sonner'],
+    dependencies: ['platejs', 'sonner'],
     description:
       'A toolbar button for exporting editor content as HTML, Markdown, or Word.',
     files: [
@@ -246,7 +246,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['lucide-react', 'platejs'],
+    dependencies: ['platejs'],
     description:
       'Toolbar controls for creating comments and discovering every published conversation.',
     files: [
