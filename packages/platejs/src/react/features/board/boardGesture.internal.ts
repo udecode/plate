@@ -36,7 +36,7 @@ import {
   previewSelectBox,
   previewStroke,
 } from './boardPreview.internal';
-import { snapMove } from './boardSnap.internal';
+import { snapMove, snapResize } from './boardSnap.internal';
 import {
   type BoardPlaceTool,
   type BoardStyle,
@@ -107,10 +107,14 @@ type Gesture = Readonly<{ pointerId: number }> &
         kind: 'resize';
         corner: BoardCorner;
         element: HTMLElement;
+        free: boolean;
         grab: BoardPlace;
+        guides: SVGSVGElement;
         id: string;
+        left: boolean;
         modifiers: BoardBoxModifiers;
         pointer: BoardPlace;
+        press: BoardPlace;
         rect: BoardBox;
         start: BoardBox;
       }
@@ -347,10 +351,25 @@ export const attachBoardGestures = (
         );
       }
     } else {
-      const { element, id, start } = gesture;
-      const rect = resized(start, gesture.corner, dx, dy, gesture.modifiers);
+      const { corner, element, id, modifiers, start } = gesture;
+
+      gesture.left ||= dragged(gesture.press, gesture.pointer);
+
+      const { zoom } = core.state().camera;
+      const snapped =
+        gesture.left && !gesture.free
+          ? snapResize(start, corner, { x: dx, y: dy }, modifiers, {
+              boxesIn: (area) => index.snapTargets(area, new Set([id])),
+              view: core.viewBox(),
+              zoom,
+            })
+          : null;
+      const rect =
+        snapped?.rect ??
+        (gesture.left ? resized(start, corner, dx, dy, modifiers) : start);
 
       gesture.rect = rect;
+      drawGuides(gesture.guides, snapped?.guides ?? [], zoom);
       if (sameBox(rect, start)) {
         placeAtModel(element, id);
         index.clearPreview();
@@ -384,6 +403,7 @@ export const attachBoardGestures = (
         else shape.style.translate = '';
       }
     } else if (done.kind === 'resize') {
+      done.guides.remove();
       placeAtModel(done.element, done.id);
     } else if (done.kind === 'arrow') {
       done.line.ownerSVGElement?.remove();
@@ -552,12 +572,16 @@ export const attachBoardGestures = (
       gesture = {
         corner: handle,
         element: shapeElement,
+        free: event.ctrlKey || event.metaKey,
         grab: at,
+        guides: previewGuides(core.zoomLayer(), previewRank()),
         id: shape.id,
         kind: 'resize',
+        left: false,
         modifiers: modifiersOf(event),
         pointer,
         pointerId,
+        press: pointer,
         rect: shape.box,
         start: shape.box,
       };
@@ -728,11 +752,10 @@ export const attachBoardGestures = (
     clicker = event.button === 0 ? pointerId : undefined;
   };
   const takeModifiers = (event: KeyboardEvent | PointerEvent) => {
-    if (gesture?.kind === 'move') {
+    if (gesture?.kind === 'move' || gesture?.kind === 'resize') {
       gesture.free = event.ctrlKey || event.metaKey;
-
-      return true;
     }
+    if (gesture?.kind === 'move') return true;
     if (gesture?.kind !== 'place' && gesture?.kind !== 'resize') return false;
     gesture.modifiers = modifiersOf(event);
 
