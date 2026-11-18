@@ -341,6 +341,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const editOpen =
     !readOnly && open && mode === 'edit' && selectedLinkKey !== null;
   const editFloating = useFloatingRect(geometry?.boundingRect ?? null, {
+    hideWhenClipped: !isEditing,
     onOpenChange: (nextOpen) => {
       if (!nextOpen) api.closeForm();
     },
@@ -348,6 +349,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     ...linkFloatingOptions,
   });
   const insertFloating = useFloatingRect(geometry?.boundingRect ?? null, {
+    hideWhenClipped: false,
     onOpenChange: (nextOpen) => {
       if (nextOpen) return;
       api.hide();
@@ -467,8 +469,8 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     !readOnly &&
     open &&
     !!geometry &&
-    ((mode === 'insert' && insertFloating.isPositioned) ||
-      (mode === 'edit' && isEditing && editFloating.isPositioned));
+    ((mode === 'insert' && insertFloating.shown) ||
+      (mode === 'edit' && isEditing && editFloating.shown));
 
   React.useEffect(() => {
     if (shouldFocusUrlInput) {

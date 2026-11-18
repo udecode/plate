@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-floating-rect-hides-clipped-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-floating-rect-hides-clipped-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Hide floating popups whose text scrolls out of view",
+  "targets": [
+    {
+      "name": "use-floating-rect",
+      "files": ["apps/www/src/registry/hooks/use-floating-rect.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-use-floating-rect-popups-whose-text-scrolls-410fc4f1",
+      "kind": "behavior",
+      "summary": "Hide a popup once its text scrolls fully out of the popup's clipping area, and return `shown` to say whether it is drawn. Pass `hideWhenClipped: false` to keep a popup shown, such as a form someone is typing in.",
+      "details": [],
+      "migrationNotes": [
+        "Read `shown` in place of `isPositioned`, and spread `style` in place of `floatingStyles`."
+      ],
+      "targets": ["use-floating-rect"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-floating-rect-hides-clipped-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-link-popovers-hide-with-text-7d2e91a4",
+      "kind": "behavior",
+      "summary": "Hide the link popovers once the cursor or selected text they point to scrolls out of the popover's clipping area, and keep an open link form shown, so typing goes into it while its text is out of view.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-floating-rect-hides-clipped-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

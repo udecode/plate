@@ -1,6 +1,28 @@
 {
   "schemaVersion": 1,
   "components": {
+    "use-floating-rect": ["2026-11-18-floating-rect-hides-clipped-text"],
+    "link": [
+      "2026-11-18-floating-rect-hides-clipped-text",
+      "2026-11-17-cn-package",
+      "2026-11-13-ime-confirm-enter",
+      "2026-11-04-fix-popovers-sandboxed-frame",
+      "2026-10-22-edit-link-text",
+      "2026-10-12-link-code-block-form",
+      "2026-10-12-link-draft-addresses",
+      "2026-10-12-link-shortcut-view",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-07-link-submission",
+      "2026-09-04-decouple-link-floating-ui",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-consolidate-platejs-dependencies",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-link-popover-rows",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
     "import-toolbar-button": [
       "2026-11-18-html-markdown-import-keeps-the-rest",
       "2026-11-16-save-comment-ranges",
@@ -537,26 +559,6 @@
       "2025-12-15-add-option-editor-collaborative-features",
       "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
       "2025-11-20-biome-ultracite"
-    ],
-    "link": [
-      "2026-11-17-cn-package",
-      "2026-11-13-ime-confirm-enter",
-      "2026-11-04-fix-popovers-sandboxed-frame",
-      "2026-10-22-edit-link-text",
-      "2026-10-12-link-code-block-form",
-      "2026-10-12-link-draft-addresses",
-      "2026-10-12-link-shortcut-view",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-07-link-submission",
-      "2026-09-04-decouple-link-floating-ui",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-consolidate-platejs-dependencies",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-link-popover-rows",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
     ],
     "markdown-streaming-demo": [
       "2026-11-17-cn-package",

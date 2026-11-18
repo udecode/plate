@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-18-floating-rect-hides-clipped-text",
+      "href": "/registry/changelog/2026-11-18-floating-rect-hides-clipped-text.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Hide floating popups whose text scrolls out of view",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["use-floating-rect", "link"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-html-markdown-import-keeps-the-rest",
       "href": "/registry/changelog/2026-11-18-html-markdown-import-keeps-the-rest.json",
       "status": "draft",

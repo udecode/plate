@@ -1,0 +1,18 @@
+---
+id: 2026-11-18-floating-rect-hides-clipped-text
+date: 2026-11-18
+status: draft
+kind: behavior
+summary: 'Hide floating popups whose text scrolls out of view'
+change: { 'type': 'source', 'date': '2026-11-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-18-use-floating-rect-popups-whose-text-scrolls-410fc4f1","kind":"behavior","migrationNotes":["Read `shown` in place of `isPositioned`, and spread `style` in place of `floatingStyles`."]} -->
+
+- **`use-floating-rect`**: Hide a popup once its text scrolls fully out of the popup's clipping area, and return `shown` to say whether it is drawn. Pass `hideWhenClipped: false` to keep a popup shown, such as a form someone is typing in.
+
+<!-- entry: {"id":"2026-11-18-link-popovers-hide-with-text-7d2e91a4","kind":"behavior","migrationNotes":[]} -->
+
+- **`link`**: Hide the link popovers once the cursor or selected text they point to scrolls out of the popover's clipping area, and keep an open link form shown, so typing goes into it while its text is out of view.

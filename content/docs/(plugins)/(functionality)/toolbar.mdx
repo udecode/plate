@@ -109,6 +109,12 @@ container then occupy separate rows inside the same bounded layout.
 </EditorFrame>
 ```
 
+The floating toolbar hides when its text scrolls out of view in the window or
+in a scroll area that clips the toolbar, and shows again when the text scrolls
+back. A scroll area that does not clip the toolbar does not hide it, such as a
+wide code block or a static scroll panel when the toolbar is positioned against
+an element outside the panel.
+
 ### Customizing fixed toolbar buttons
 
 The `FixedToolbarButtons` component contains the default set of buttons for the fixed toolbar.

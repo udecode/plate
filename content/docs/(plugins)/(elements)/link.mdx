@@ -138,6 +138,8 @@ You can add [`LinkToolbarButton`](/docs/components/link-toolbar-button) to your 
 
 The floating toolbar saves a new or changed address that starts with `http://` or `https://`, has another scheme such as `mailto:`, or starts with `/`, `./`, `../`, `#` or `?`. It stays open on any other draft, such as `www.example.com` or `https:www.example.com`, and when `allowedSchemes` refuses the address. Editing only the link text keeps the stored address, even one `allowedSchemes` no longer allows.
 
+The floating toolbar hides when the cursor or selected text it points to scrolls out of view in the window or in a scroll area that clips the toolbar. On a link, it points to the cursor, not the whole link. While its link form is open, for a new link or an existing one, it does not hide, so a draft you are typing stays open, but it still moves with the text it points to. A scroll area that does not clip the toolbar, such as a static scroll panel when the toolbar is positioned against an element outside the panel, does not hide it.
+
 </Steps>
 
 ## Keyboard shortcuts
