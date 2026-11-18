@@ -6,7 +6,6 @@ import {
   ArrowUpIcon,
   Columns2Icon,
   GripVertical,
-  type LucideIcon,
   ScissorsIcon,
 } from 'lucide-react';
 import { type Element, type NodeKey, PathApi } from 'platejs';
@@ -111,6 +110,8 @@ export const cutBlocks = async (editor: Editor, keys: readonly NodeKey[]) => {
   });
 };
 
+type HandleAction = { icon: React.ReactNode; label: string; run: () => void };
+
 /**
  * A drag handle's actions. The handle opens it on click, which a drag never
  * fires, so the anchor stays out of pointer events.
@@ -122,7 +123,7 @@ export function HandleActionsMenu({
   open,
   style,
 }: {
-  actions: ReadonlyArray<{ icon: LucideIcon; label: string; run: () => void }>;
+  actions: readonly HandleAction[];
   className?: string;
   onOpenChange: (open: boolean) => void;
   open: boolean;
@@ -140,13 +141,13 @@ export function HandleActionsMenu({
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" side="left">
-        {actions.map(({ icon: Icon, label, run }) => (
+        {actions.map(({ icon, label, run }) => (
           <DropdownMenuItem
             key={label}
             finalFocus={() => editor.api.dom.focus()}
             onSelect={run}
           >
-            <Icon />
+            {icon}
             {label}
           </DropdownMenuItem>
         ))}
@@ -162,9 +163,7 @@ function Draggable(props: RenderNodeWrapperProps) {
   const [buttonTop, setButtonTop] = React.useState(0);
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const [tooltipOpen, setTooltipOpen] = React.useState(false);
-  const [besideActions, setBesideActions] = React.useState<
-    Array<{ icon: LucideIcon; label: string; run: () => void }>
-  >([]);
+  const [besideActions, setBesideActions] = React.useState<HandleAction[]>([]);
   const selected = useElementSelected();
   // A drag node-selects the handle's blocks, so their gutter stays laid out.
   // Mode 'node' matches those blocks only, so with hover the blocks nested
@@ -213,7 +212,7 @@ function Draggable(props: RenderNodeWrapperProps) {
       return editor.read.transfer.check({ nodes: keys, to }).admitted
         ? [
             {
-              icon: Columns2Icon,
+              icon: <Columns2Icon />,
               label,
               run: () => {
                 editor.api.transfer.move({
@@ -315,18 +314,18 @@ function Draggable(props: RenderNodeWrapperProps) {
             <HandleActionsMenu
               actions={[
                 {
-                  icon: ArrowUpIcon,
+                  icon: <ArrowUpIcon />,
                   label: 'Move up',
                   run: () => move('previous', 'Moved up'),
                 },
                 {
-                  icon: ArrowDownIcon,
+                  icon: <ArrowDownIcon />,
                   label: 'Move down',
                   run: () => move('next', 'Moved down'),
                 },
                 ...besideActions,
                 {
-                  icon: ScissorsIcon,
+                  icon: <ScissorsIcon />,
                   label: 'Cut',
                   run: () => {
                     void cutBlocks(editor, nodes());

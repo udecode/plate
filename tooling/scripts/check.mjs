@@ -745,6 +745,18 @@ export const steps = [
     key: [],
   },
   {
+    name: 'registry-icons',
+    land: true,
+    run: 'node apps/www/scripts/check-registry-icons.mts',
+    affected: touches(
+      'apps/www/scripts/check-registry-icons.mts',
+      'apps/www/scripts/lucide-icons.mts',
+      'apps/www/scripts/registry-imports.mts',
+      'apps/www/src/registry/'
+    ),
+    key: [],
+  },
+  {
     name: 'registry-changelog',
     land: true,
     run: 'node tooling/scripts/generate-ui-changelog-entries.mjs --check',

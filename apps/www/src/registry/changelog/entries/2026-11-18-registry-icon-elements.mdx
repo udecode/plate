@@ -1,0 +1,14 @@
+---
+id: 2026-11-18-registry-icon-elements
+date: 2026-11-18
+status: draft
+kind: behavior
+summary: 'Write registry icons as JSX elements'
+change: { 'type': 'source', 'date': '2026-11-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-18-dnd-write-registry-icons-jsx-ae51a7fa","kind":"behavior","migrationNotes":["Pass each `HandleActionsMenu` action icon as an element, such as `icon: <ArrowUpIcon />` instead of `icon: ArrowUpIcon`."]} -->
+
+- **`dnd`**, **`table`**, **`column`**, **`align-toolbar-button`**, **`board`**, **`discussion`**: Render each icon as a JSX element instead of passing an icon component, and type `HandleActionsMenu`'s action `icon` as a React node.

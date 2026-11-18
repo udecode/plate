@@ -2,7 +2,7 @@ import { parse } from '@babel/parser';
 
 const IMPORTABLE_SOURCE_FILE_REGEX = /\.[cm]?[jt]sx?$/;
 
-type AstNode = {
+export type AstNode = {
   [key: string]: unknown;
   end?: number | null;
   loc?: {
@@ -21,7 +21,7 @@ export type ModuleImport = {
   specifier: string;
 };
 
-function isAstNode(value: unknown): value is AstNode {
+export function isAstNode(value: unknown): value is AstNode {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -156,7 +156,7 @@ function isScopeNode(node: AstNode) {
   );
 }
 
-function getLocation(node: AstNode) {
+export function getLocation(node: Pick<AstNode, 'loc'>) {
   return {
     column: (node.loc?.start.column ?? 0) + 1,
     line: node.loc?.start.line ?? 1,

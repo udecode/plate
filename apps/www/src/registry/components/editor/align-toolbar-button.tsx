@@ -25,23 +25,23 @@ import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const items = [
   {
-    icon: AlignLeftIcon,
+    icon: <AlignLeftIcon />,
     value: 'left',
   },
   {
-    icon: AlignCenterIcon,
+    icon: <AlignCenterIcon />,
     value: 'center',
   },
   {
-    icon: AlignRightIcon,
+    icon: <AlignRightIcon />,
     value: 'right',
   },
   {
-    icon: AlignJustifyIcon,
+    icon: <AlignJustifyIcon />,
     value: 'justify',
   },
 ] as const satisfies ReadonlyArray<{
-  icon: React.ComponentType;
+  icon: React.ReactNode;
   value: Alignment;
 }>;
 
@@ -53,14 +53,14 @@ export function AlignToolbarButton() {
   });
 
   const [open, setOpen] = React.useState(false);
-  const IconValue =
-    items.find((item) => item.value === value)?.icon ?? AlignLeftIcon;
+  const icon =
+    items.find((item) => item.value === value)?.icon ?? items[0].icon;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton pressed={open} tooltip="Align" isDropdown>
-          <IconValue />
+          {icon}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
@@ -77,14 +77,14 @@ export function AlignToolbarButton() {
             editor.plugin(TextAlignPlugin).update.set(alignment);
           }}
         >
-          {items.map(({ icon: Icon, value: itemValue }) => (
+          {items.map(({ icon: itemIcon, value: itemValue }) => (
             <DropdownMenuRadioItem
               key={itemValue}
               className="pl-2 data-[state=checked]:bg-accent *:first:[span]:hidden"
               finalFocus={() => editor.api.dom.focus()}
               value={itemValue}
             >
-              <Icon />
+              {itemIcon}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

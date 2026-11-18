@@ -61,33 +61,33 @@ import {
 
 const TOOLS: ReadonlyArray<
   Readonly<{
-    icon: React.ComponentType;
+    icon: React.ReactNode;
     key: string;
     label: string;
     tool: BoardTool;
   }>
 > = [
-  { icon: MousePointer2Icon, key: 'V', label: 'Select', tool: 'select' },
-  { icon: HandIcon, key: 'H', label: 'Hand', tool: 'hand' },
-  { icon: StickyNoteIcon, key: 'N', label: 'Note', tool: 'note' },
-  { icon: SquareIcon, key: 'R', label: 'Shape', tool: 'geo' },
-  { icon: MoveUpRightIcon, key: 'A', label: 'Arrow', tool: 'arrow' },
-  { icon: FrameIcon, key: 'F', label: 'Frame', tool: 'frame' },
-  { icon: PencilIcon, key: 'P', label: 'Pen', tool: 'pen' },
-  { icon: EraserIcon, key: 'E', label: 'Eraser', tool: 'eraser' },
+  { icon: <MousePointer2Icon />, key: 'V', label: 'Select', tool: 'select' },
+  { icon: <HandIcon />, key: 'H', label: 'Hand', tool: 'hand' },
+  { icon: <StickyNoteIcon />, key: 'N', label: 'Note', tool: 'note' },
+  { icon: <SquareIcon />, key: 'R', label: 'Shape', tool: 'geo' },
+  { icon: <MoveUpRightIcon />, key: 'A', label: 'Arrow', tool: 'arrow' },
+  { icon: <FrameIcon />, key: 'F', label: 'Frame', tool: 'frame' },
+  { icon: <PencilIcon />, key: 'P', label: 'Pen', tool: 'pen' },
+  { icon: <EraserIcon />, key: 'E', label: 'Eraser', tool: 'eraser' },
 ];
 
 const GEOS: ReadonlyArray<
   Readonly<{
     geo: NonNullable<BoardStyle['geo']>;
-    icon: React.ComponentType;
+    icon: React.ReactNode;
     label: string;
   }>
 > = [
-  { geo: 'rectangle', icon: SquareIcon, label: 'Rectangle' },
-  { geo: 'ellipse', icon: CircleIcon, label: 'Ellipse' },
-  { geo: 'diamond', icon: DiamondIcon, label: 'Diamond' },
-  { geo: 'triangle', icon: TriangleIcon, label: 'Triangle' },
+  { geo: 'rectangle', icon: <SquareIcon />, label: 'Rectangle' },
+  { geo: 'ellipse', icon: <CircleIcon />, label: 'Ellipse' },
+  { geo: 'diamond', icon: <DiamondIcon />, label: 'Diamond' },
+  { geo: 'triangle', icon: <TriangleIcon />, label: 'Triangle' },
 ];
 
 const COLORS = [
@@ -227,8 +227,8 @@ const TEXT_OPTIONS: ReadonlyArray<
 
 const GEO_OPTIONS: ReadonlyArray<
   BoardStyleOption<NonNullable<BoardStyle['geo']>>
-> = GEOS.map(({ geo, icon: Icon, label }) => ({
-  icon: <Icon />,
+> = GEOS.map(({ geo, icon, label }) => ({
+  icon,
   label,
   value: geo,
 }));
@@ -312,13 +312,13 @@ const boardMessages: BoardMessages = {
 function BoardShapeMenu({ pressed }: { pressed: boolean }) {
   const geo = useBoardView((view) => view.nextStyle.geo ?? 'rectangle');
   const { setStyle, setTool } = useBoardActions();
-  const Icon = GEOS.find((item) => item.geo === geo)?.icon ?? SquareIcon;
+  const icon = GEOS.find((item) => item.geo === geo)?.icon ?? GEOS[0].icon;
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton isDropdown pressed={pressed} tooltip="Shape (R)">
-          <Icon />
+          {icon}
         </ToolbarButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="top">
@@ -332,9 +332,9 @@ function BoardShapeMenu({ pressed }: { pressed: boolean }) {
             setStyle({ geo: picked.geo });
           }}
         >
-          {GEOS.map(({ geo: itemGeo, icon: ItemIcon, label }) => (
+          {GEOS.map(({ geo: itemGeo, icon: itemIcon, label }) => (
             <DropdownMenuRadioItem key={itemGeo} value={itemGeo}>
-              <ItemIcon />
+              {itemIcon}
               {label}
             </DropdownMenuRadioItem>
           ))}
@@ -390,7 +390,7 @@ export function BoardToolbar() {
   return (
     <Toolbar className="absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap justify-center gap-y-0.5 rounded-lg border bg-background p-1 shadow-sm">
       <ToolbarGroup>
-        {TOOLS.map(({ icon: Icon, key, label, tool: itemTool }) =>
+        {TOOLS.map(({ icon, key, label, tool: itemTool }) =>
           itemTool === 'geo' ? (
             <BoardShapeMenu key={itemTool} pressed={tool === 'geo'} />
           ) : (
@@ -401,7 +401,7 @@ export function BoardToolbar() {
               tooltip={`${label} (${key})`}
               onClick={() => setTool(itemTool)}
             >
-              <Icon />
+              {icon}
             </ToolbarButton>
           )
         )}

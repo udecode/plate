@@ -846,7 +846,7 @@ function RowDragHandle() {
       <HandleActionsMenu
         actions={[
           {
-            icon: Rows3Icon,
+            icon: <Rows3Icon />,
             label: 'Select row',
             run: () => {
               const range = editor.read.ranges.get(element);
@@ -855,12 +855,12 @@ function RowDragHandle() {
             },
           },
           {
-            icon: ArrowUp,
+            icon: <ArrowUp />,
             label: 'Move up',
             run: () => move('previous', 'Moved up'),
           },
           {
-            icon: ArrowDown,
+            icon: <ArrowDown />,
             label: 'Move down',
             run: () => move('next', 'Moved down'),
           },

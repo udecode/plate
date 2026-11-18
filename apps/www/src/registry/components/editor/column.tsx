@@ -4,7 +4,6 @@ import { cn } from 'cn';
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  type LucideProps,
   Trash2Icon,
   GripHorizontal,
 } from 'lucide-react';
@@ -127,12 +126,12 @@ function ColumnDragHandle({ element }: { element: Element }) {
       <HandleActionsMenu
         actions={[
           {
-            icon: ArrowLeftIcon,
+            icon: <ArrowLeftIcon />,
             label: 'Move left',
             run: () => move('previous', 'Moved left'),
           },
           {
-            icon: ArrowRightIcon,
+            icon: <ArrowRightIcon />,
             label: 'Move right',
             run: () => move('next', 'Moved right'),
           },
@@ -254,14 +253,13 @@ function ColumnFloatingToolbar({ children }: { children: React.ReactElement }) {
   );
 }
 
-const DoubleColumnOutlined = (props: LucideProps) => (
+const DoubleColumnOutlined = () => (
   <svg
     fill="none"
     height="16"
     viewBox="0 0 16 16"
     width="16"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       clipRule="evenodd"
@@ -272,14 +270,13 @@ const DoubleColumnOutlined = (props: LucideProps) => (
   </svg>
 );
 
-const ThreeColumnOutlined = (props: LucideProps) => (
+const ThreeColumnOutlined = () => (
   <svg
     fill="none"
     height="16"
     viewBox="0 0 16 16"
     width="16"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       clipRule="evenodd"
@@ -290,14 +287,13 @@ const ThreeColumnOutlined = (props: LucideProps) => (
   </svg>
 );
 
-const RightSideDoubleColumnOutlined = (props: LucideProps) => (
+const RightSideDoubleColumnOutlined = () => (
   <svg
     fill="none"
     height="16"
     viewBox="0 0 16 16"
     width="16"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       clipRule="evenodd"
@@ -308,14 +304,13 @@ const RightSideDoubleColumnOutlined = (props: LucideProps) => (
   </svg>
 );
 
-const LeftSideDoubleColumnOutlined = (props: LucideProps) => (
+const LeftSideDoubleColumnOutlined = () => (
   <svg
     fill="none"
     height="16"
     viewBox="0 0 16 16"
     width="16"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       clipRule="evenodd"
@@ -326,14 +321,13 @@ const LeftSideDoubleColumnOutlined = (props: LucideProps) => (
   </svg>
 );
 
-const DoubleSideDoubleColumnOutlined = (props: LucideProps) => (
+const DoubleSideDoubleColumnOutlined = () => (
   <svg
     fill="none"
     height="16"
     viewBox="0 0 16 16"
     width="16"
     xmlns="http://www.w3.org/2000/svg"
-    {...props}
   >
     <path
       clipRule="evenodd"

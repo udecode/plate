@@ -958,12 +958,14 @@ function DiscussionBlockContent({
   const isActive = block.active;
   const hasComments = block.comments > 0 || threads > 0;
   const totalCount = block.comments + cards + threads;
-  const Icon =
-    hasComments && cards > 0
-      ? MessagesSquareIcon
-      : cards > 0
-        ? PencilLineIcon
-        : MessageSquareTextIcon;
+  const icon =
+    hasComments && cards > 0 ? (
+      <MessagesSquareIcon aria-hidden="true" className="size-4 shrink-0" />
+    ) : cards > 0 ? (
+      <PencilLineIcon aria-hidden="true" className="size-4 shrink-0" />
+    ) : (
+      <MessageSquareTextIcon aria-hidden="true" className="size-4 shrink-0" />
+    );
   const itemLabel = totalCount === 1 ? 'item' : 'items';
 
   return (
@@ -993,7 +995,7 @@ function DiscussionBlockContent({
             type="button"
             variant="ghost"
           >
-            <Icon aria-hidden="true" className="size-4 shrink-0" />
+            {icon}
             <span
               aria-hidden="true"
               className="text-xs font-semibold after:content-[attr(data-count)]"
