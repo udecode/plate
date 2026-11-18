@@ -216,7 +216,7 @@ for (const part of details?.parts ?? []) {
 }
 ```
 
-`details(id)` 返回该 change 及其 part。Content part 包含修改前后的 slice；boundary part 区分段落拆分和合并；enclosure part 指明包裹和解除包裹；property part 保留准确的前后值。
+`details(id)` 返回该 change 及其 part。Content part 包含修改前后的 slice。一个删除和紧随其后的插入在当前文档中相邻时，content part 的 `action` 为 `replace`；相隔的删除和插入，例如移动段落的两份副本，分别是一个 `delete` part 和一个 `insert` part。Boundary part 区分段落拆分和合并；enclosure part 指明包裹和解除包裹；property part 保留准确的前后值。
 
 ### 审阅卡片
 

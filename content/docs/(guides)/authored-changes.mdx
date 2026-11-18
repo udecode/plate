@@ -218,7 +218,7 @@ for (const part of details?.parts ?? []) {
 }
 ```
 
-`details(id)` returns the change and its parts. Content parts include before and after slices. Boundary parts distinguish paragraph splits from joins. Enclosure parts name wraps and unwraps. Property parts preserve exact before and after values.
+`details(id)` returns the change and its parts. Content parts include before and after slices. A content part's `action` is `replace` for a deletion and the insertion right after it that touch in the document as it stands. A deletion and an insertion apart, such as a moved paragraph's two copies, are a `delete` part and an `insert` part. Boundary parts distinguish paragraph splits from joins. Enclosure parts name wraps and unwraps. Property parts preserve exact before and after values.
 
 ### Review cards
 

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-17-discussion-replacement-pairs",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-17-discussion-replacement-pairs.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-17",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Suggestion cards read a deletion and an addition apart as two edits",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-17-discussion-suggestion-cards-deletion-an-06f4d180",
+      "kind": "fix",
+      "summary": "Fix a suggestion card that showed \"Replace\" for text deleted in one place and added in another, such as a moved paragraph. It now lists the deletion and the addition, and still shows \"Replace\" when you type after your own pending deletion.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-17",
+          "entry": "2026-11-17-discussion-replacement-pairs",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

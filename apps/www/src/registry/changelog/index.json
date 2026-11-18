@@ -157,6 +157,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-17-discussion-replacement-pairs",
+      "href": "/registry/changelog/2026-11-17-discussion-replacement-pairs.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Suggestion cards read a deletion and an addition apart as two edits",
+      "change": {
+        "type": "source",
+        "date": "2026-11-17",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-17-editor-node-selection-scroll-area",
       "href": "/registry/changelog/2026-11-17-editor-node-selection-scroll-area.json",
       "status": "draft",

@@ -126,9 +126,7 @@ export const touches = (left: Occurrence, right: Occurrence) => {
 const isContent = (mark: AuthoredMark) =>
   mark.kind === 'insert' || mark.kind === 'delete';
 
-// A proposed Enter under a slotted container tags its tail's type even when
-// the type stays, so rejecting reads it back. Readers show no such write.
-const keepsValue = (mark: AuthoredMark) =>
+const writesNothing = (mark: AuthoredMark) =>
   mark.kind === 'format' &&
   mark.write.kind === 'set' &&
   jsonEqual(mark.write.value, mark.before);
@@ -335,7 +333,7 @@ export const changeOf = (
   list: readonly Occurrence[]
 ): AuthoredChange => {
   const kinds = new Set(
-    list.flatMap(({ mark }) => (keepsValue(mark) ? [] : [KINDS[mark.kind]]))
+    list.flatMap(({ mark }) => (writesNothing(mark) ? [] : [KINDS[mark.kind]]))
   );
   const ranges: Range[] = [];
   const covered = covering(list);
@@ -522,17 +520,18 @@ export const readAuthoredDetails = (
   if (!change) return null;
 
   const parts: AuthoredChangePart[] = [];
-  // A run of touching content occurrences with one action becomes one part.
   const open: {
+    deletionEnd: Occurrence | null;
     run: {
       action: 'delete' | 'insert';
+      first: Occurrence;
       last: Occurrence;
       nodes: Node[];
       range: Range;
     } | null;
-  } = { run: null };
+  } = { deletionEnd: null, run: null };
   const flush = () => {
-    const { run } = open;
+    const { deletionEnd, run } = open;
 
     if (!run) return;
 
@@ -542,7 +541,9 @@ export const readAuthoredDetails = (
     if (
       run.action === 'insert' &&
       previous?.kind === 'content' &&
-      previous.action === 'delete'
+      previous.action === 'delete' &&
+      deletionEnd &&
+      touches(deletionEnd, run.first)
     ) {
       parts[parts.length - 1] = {
         ...previous,
@@ -559,13 +560,14 @@ export const readAuthoredDetails = (
         range: run.range,
       });
     }
+    open.deletionEnd = run.action === 'delete' ? run.last : null;
     open.run = null;
   };
 
   for (const occurrence of covering(index.occurrences.get(id) ?? [])) {
     const { mark, node, path } = occurrence;
 
-    if (keepsValue(mark)) continue;
+    if (writesNothing(mark)) continue;
     if (mark.kind === 'insert' || mark.kind === 'delete') {
       const range = rangeOf(occurrence);
 
@@ -578,7 +580,13 @@ export const readAuthoredDetails = (
         continue;
       }
       flush();
-      open.run = { action: mark.kind, last: occurrence, nodes: [node], range };
+      open.run = {
+        action: mark.kind,
+        first: occurrence,
+        last: occurrence,
+        nodes: [node],
+        range,
+      };
       continue;
     }
     flush();

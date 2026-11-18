@@ -10,6 +10,7 @@ import {
 import {
   ElementApi,
   type NodeKey,
+  PathApi,
   type Point,
   type Range,
   RangeApi,
@@ -600,24 +601,37 @@ const describeSuggestion = (
   details: ReadonlyArray<AuthoredChangeDetails | null>,
   fallback: AuthoredChange['kind']
 ) => {
-  const parts = details.flatMap((detail) => detail?.parts ?? []);
+  const parts = details.flatMap((detail) =>
+    (detail?.parts ?? []).map((part, index, list) => ({
+      endsChange: index === list.length - 1,
+      part,
+      startsChange: index === 0,
+    }))
+  );
   const descriptions: string[] = [];
 
   for (let index = 0; index < parts.length; index++) {
-    const part = parts[index];
+    const { endsChange, part } = parts[index];
     const next = parts[index + 1];
 
     if (
+      endsChange &&
+      next?.startsChange &&
       part.kind === 'content' &&
       part.action === 'delete' &&
-      next?.kind === 'content' &&
-      next.action === 'insert'
+      next.part.kind === 'content' &&
+      next.part.action === 'insert' &&
+      part.range.focus.root === next.part.range.anchor.root &&
+      PathApi.equals(
+        PathApi.next(part.range.focus.path),
+        next.part.range.anchor.path
+      )
     ) {
       descriptions.push(
         ...describeSuggestionPart({
           ...part,
           action: 'replace',
-          after: next.after,
+          after: next.part.after,
         })
       );
       index += 1;
