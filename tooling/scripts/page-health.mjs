@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { PLITE_EXAMPLES_DIR, readSources } from './docs-sources.mjs';
 
-const { registryExampleSlug } =
+const { hasComponentDocsPage, registryExampleSlug } =
   await import('../../apps/www/src/lib/docs-routes.ts');
 const { getOlderReleaseMajorGroups, getReleaseMajorPath } =
   await import('../../apps/www/src/lib/releases.ts');
@@ -201,9 +201,7 @@ export async function healthRoutes(root) {
       .flatMap(([, routes]) => routes)
   );
   const routes = new Map(pages.map((page) => [page, editorPages.has(page)]));
-  for (const item of items.filter(
-    (each) => each.type === 'registry:component'
-  )) {
+  for (const item of items.filter(hasComponentDocsPage)) {
     routes.set(
       `/docs/components/${item.name}`,
       (item.meta?.examples ?? []).some((name) => !name.endsWith('-pro'))

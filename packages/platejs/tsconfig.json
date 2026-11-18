@@ -40,6 +40,8 @@
       "platejs/html": ["./src/html/index.ts"],
       "platejs/html/server": ["./src/html/server/index.ts"],
       "platejs/hyperscript": ["./src/hyperscript/index.ts"],
+      "platejs/ink": ["./src/features/ink/index.ts"],
+      "platejs/ink/react": ["./src/react/features/ink/index.ts"],
       "platejs/layout": ["./src/features/layout/index.ts"],
       "platejs/layout/react": ["./src/react/features/layout/index.ts"],
       "platejs/lint": ["./src/features/lint/index.ts"],

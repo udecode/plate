@@ -1,8 +1,6 @@
 import { BaseInkPlugin, type InkTool } from '../../../features/ink/lib';
 import { toReactPlugin } from '../../core';
 
-export type { InkTool } from '../../../features/ink/lib';
-
 /**
  * Pen markup on a document's text, with each view's Draw tool. A view keeps
  * its own tool, whether it hides ink and signs, and which marks are picked.

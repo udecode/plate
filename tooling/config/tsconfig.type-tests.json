@@ -90,6 +90,10 @@
       "platejs/hyperscript": [
         "../../packages/platejs/src/hyperscript/index.ts"
       ],
+      "platejs/ink": ["../../packages/platejs/src/features/ink/index.ts"],
+      "platejs/ink/react": [
+        "../../packages/platejs/src/react/features/ink/index.ts"
+      ],
       "platejs/layout": ["../../packages/platejs/src/features/layout/index.ts"],
       "platejs/layout/react": [
         "../../packages/platejs/src/react/features/layout/index.ts"

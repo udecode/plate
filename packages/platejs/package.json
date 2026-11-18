@@ -207,6 +207,16 @@
       "import": "./dist/hyperscript/index.js",
       "default": "./dist/hyperscript/index.js"
     },
+    "./ink": {
+      "types": "./dist/features/ink/index.d.ts",
+      "import": "./dist/features/ink/index.js",
+      "default": "./dist/features/ink/index.js"
+    },
+    "./ink/react": {
+      "types": "./dist/react/features/ink/index.d.ts",
+      "import": "./dist/react/features/ink/index.js",
+      "default": "./dist/react/features/ink/index.js"
+    },
     "./layout": {
       "types": "./dist/features/layout/index.d.ts",
       "import": "./dist/features/layout/index.js",

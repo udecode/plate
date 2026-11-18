@@ -17,7 +17,7 @@ import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getDocsSidebar, getPagerForDoc } from '@/lib/docs-page-tree';
 import { selectDocsSidebar } from '@/lib/docs-sidebar';
-import { registryExampleSlug } from '@/lib/docs-routes';
+import { hasComponentDocsPage, registryExampleSlug } from '@/lib/docs-routes';
 import {
   getDocsNavMeta,
   normalizeDocsHref,
@@ -63,9 +63,7 @@ export type DocPageProps = {
 
 const registry = getRegistryMetadata();
 const registryNames = new Set(registry.items.map((item) => item.name));
-const componentDocs = registry.items.filter(
-  (item) => item.type === 'registry:component'
-);
+const componentDocs = registry.items.filter(hasComponentDocsPage);
 const packageInfo: PackageInfoType = {
   gzip: '',
   name: '',

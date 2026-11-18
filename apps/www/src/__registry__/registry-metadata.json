@@ -1,5 +1,5 @@
 {
-  "generation": "6100c195a0cf40579c69457f45c8c8bcbf967280170166e10bf0e1f7babb3a9a",
+  "generation": "75cd0a2caa9d989a27303dab2426c3674a5240e3d5c085ae61b3357660f79caa",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1004,6 +1004,44 @@
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
+        },
+        {
+          "dependencies": [
+            "platejs"
+          ],
+          "description": "A toolbar toggle for the ink Draw tool.",
+          "files": [
+            {
+              "path": "components/editor/draw-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/draw-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "registry": false
+          },
+          "name": "draw-toolbar-button",
+          "title": "Draw Toolbar Button",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs"
+          ],
+          "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes the marks.",
+          "files": [
+            {
+              "path": "components/editor/ink-sign-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/ink-sign-button.tsx"
+            }
+          ],
+          "meta": {
+            "registry": false
+          },
+          "name": "ink-sign-button",
+          "title": "Ink Sign Button",
+          "type": "registry:component"
         },
         {
           "dependencies": [
@@ -2690,6 +2728,25 @@
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
+        },
+        {
+          "dependencies": [
+            "platejs"
+          ],
+          "description": "Pen markup on document text, drawn over the Editable, with a sign for ink that no longer sits on its words: words that changed, a deleted block or a margin too narrow for a note.",
+          "files": [
+            {
+              "path": "components/editor/ink.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/ink.tsx"
+            }
+          ],
+          "meta": {
+            "registry": false
+          },
+          "name": "ink",
+          "title": "Ink",
+          "type": "registry:component"
         },
         {
           "dependencies": [
@@ -8212,6 +8269,44 @@
         },
         {
           "dependencies": [
+            "platejs"
+          ],
+          "description": "A toolbar toggle for the ink Draw tool.",
+          "files": [
+            {
+              "path": "components/editor/draw-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/draw-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "registry": false
+          },
+          "name": "draw-toolbar-button",
+          "title": "Draw Toolbar Button",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs"
+          ],
+          "description": "The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes the marks.",
+          "files": [
+            {
+              "path": "components/editor/ink-sign-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/ink-sign-button.tsx"
+            }
+          ],
+          "meta": {
+            "registry": false
+          },
+          "name": "ink-sign-button",
+          "title": "Ink Sign Button",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
@@ -9890,6 +9985,25 @@
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
+        },
+        {
+          "dependencies": [
+            "platejs"
+          ],
+          "description": "Pen markup on document text, drawn over the Editable, with a sign for ink that no longer sits on its words: words that changed, a deleted block or a margin too narrow for a note.",
+          "files": [
+            {
+              "path": "components/editor/ink.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/ink.tsx"
+            }
+          ],
+          "meta": {
+            "registry": false
+          },
+          "name": "ink",
+          "title": "Ink",
+          "type": "registry:component"
         },
         {
           "dependencies": [

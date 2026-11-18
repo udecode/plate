@@ -5,7 +5,11 @@ import { getTableOfContents } from 'fumadocs-core/content/toc';
 import matter from 'gray-matter';
 
 import { apiItemAnchor, apiListAnchor } from '@/lib/docs-anchors';
-import { registryExampleSlug, sourcePathToDocsRoute } from '@/lib/docs-routes';
+import {
+  hasComponentDocsPage,
+  registryExampleSlug,
+  sourcePathToDocsRoute,
+} from '@/lib/docs-routes';
 import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { hrefWithLocale } from '@/lib/withLocale';
 import { registryExamples } from '@/registry/registry-examples';
@@ -470,7 +474,7 @@ async function getFrontmatterTitle(filePath: string) {
 function checkNavRoutes(meta: DocsMeta, sourceUrls: Set<string>) {
   const registryFallbackUrls = new Set([
     ...registry.items
-      .filter((item) => item.type === 'registry:component')
+      .filter(hasComponentDocsPage)
       .map((item) => `/docs/components/${item.name}`),
     ...registryExamples.map(
       (item) => `/docs/examples/${registryExampleSlug(item.name)}`

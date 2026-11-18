@@ -1,3 +1,5 @@
+import type { RegistryItem } from 'shadcn/schema';
+
 const MDX_EXTENSION_REGEX = /\.mdx$/;
 const CN_EXTENSION_REGEX = /\.cn$/;
 const ROUTE_GROUP_REGEX = /^\(.+\)$/;
@@ -28,4 +30,10 @@ export function sourcePathToDocsRoute(sourcePath: string) {
  */
 export function registryExampleSlug(name: string) {
   return name.replace(DEMO_SUFFIX_REGEX, '');
+}
+
+export function hasComponentDocsPage(
+  item: Pick<RegistryItem, 'meta' | 'type'>
+) {
+  return item.type === 'registry:component' && item.meta?.registry !== false;
 }

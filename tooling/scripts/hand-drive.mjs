@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 import { readSources } from './docs-sources.mjs';
 
-const { registryExampleSlug, sourcePathToDocsRoute } =
+const { hasComponentDocsPage, registryExampleSlug, sourcePathToDocsRoute } =
   await import('../../apps/www/src/lib/docs-routes.ts');
 
 const ROOT = path.resolve(
@@ -71,7 +71,7 @@ const primaryPage = (item) =>
   item.type === 'registry:example' || item.type === 'registry:block'
     ? `/blocks/${item.name}`
     : (docsRoutes(item)[0] ??
-      (item.type === 'registry:component'
+      (hasComponentDocsPage(item)
         ? `/docs/components/${item.name}`
         : undefined));
 
@@ -100,7 +100,7 @@ function itemPages(item, sources) {
   ];
 
   if (item.type === 'registry:component') {
-    pages.push(`/docs/components/${item.name}`);
+    if (hasComponentDocsPage(item)) pages.push(`/docs/components/${item.name}`);
     for (const example of examplesOf(item, sources)) {
       pages.push(...itemPages(example, sources));
     }
@@ -109,7 +109,10 @@ function itemPages(item, sources) {
   if (item.type === 'registry:example') {
     pages.push(`/docs/examples/${registryExampleSlug(item.name)}`);
     for (const component of sources.items) {
-      if (component.meta?.examples?.includes(item.name)) {
+      if (
+        hasComponentDocsPage(component) &&
+        component.meta?.examples?.includes(item.name)
+      ) {
         pages.push(`/docs/components/${component.name}`);
       }
     }

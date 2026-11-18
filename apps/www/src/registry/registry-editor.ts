@@ -532,6 +532,35 @@ export const editorComponents: Registry['items'] = [
   },
   {
     dependencies: ['platejs'],
+    description: 'A toolbar toggle for the ink Draw tool.',
+    files: [
+      {
+        path: 'components/editor/draw-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { registry: false },
+    name: 'draw-toolbar-button',
+    title: 'Draw Toolbar Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    description:
+      'The sign of ink that no longer sits on its words, because they changed, their block was deleted or the margin is too narrow for a note, with a popover that shows the words as they were and deletes the marks.',
+    files: [
+      {
+        path: 'components/editor/ink-sign-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { registry: false },
+    name: 'ink-sign-button',
+    title: 'Ink Sign Button',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
     description: 'A menu for additional text formatting options.',
     files: [
       {

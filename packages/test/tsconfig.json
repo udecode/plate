@@ -56,6 +56,8 @@
       "platejs/html": ["../platejs/src/html/index.ts"],
       "platejs/html/server": ["../platejs/src/html/server/index.ts"],
       "platejs/hyperscript": ["../platejs/src/hyperscript/index.ts"],
+      "platejs/ink": ["../platejs/src/features/ink/index.ts"],
+      "platejs/ink/react": ["../platejs/src/react/features/ink/index.ts"],
       "platejs/layout": ["../platejs/src/features/layout/index.ts"],
       "platejs/layout/react": ["../platejs/src/react/features/layout/index.ts"],
       "platejs/lint": ["../platejs/src/features/lint/index.ts"],

@@ -88,6 +88,7 @@ export const publicFeatureDependencies = Object.freeze({
   upload: ['dom'],
   find: [],
   footnote: ['combobox'],
+  ink: [],
   layout: [],
   lint: [],
   media: ['dom'],
@@ -105,6 +106,7 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'details',
   'upload',
   'footnote',
+  'ink',
   'layout',
   'media',
   'mention',
@@ -132,6 +134,7 @@ const standardReactPeerDependencies = {
   board: ['react'],
   combobox: ['react'],
   'format-painter': ['react'],
+  ink: ['react'],
   list: ['react'],
   resizable: ['react'],
   suggestion: ['react'],
@@ -356,17 +359,6 @@ export const entrypointDags = {
       hyperscript: headless(
         directory('hyperscript', [], ['plitejs/hyperscript'])
       ),
-      ink: headless(privateDirectory('features/ink', ['core'])),
-      'ink/react': client(
-        privateDirectory(
-          'react/features/ink',
-          ['core', 'ink', 'react-core'],
-          [],
-          {
-            peerDependencies: ['react'],
-          }
-        )
-      ),
       markdown: headless(
         directory('markdown', ['authored', 'core', 'standard/list'], [], {
           peerDependencies: ['remark-parse', 'remark-stringify', 'unified'],
@@ -522,8 +514,6 @@ export const entrypointDags = {
         'excalidraw/react',
         'html',
         'html/server',
-        'ink',
-        'ink/react',
         'markdown',
         'math',
         'math/react',

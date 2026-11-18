@@ -48,6 +48,10 @@
       "bytes": 705205,
       "gzip": 220544
     },
+    "platejs/ink": {
+      "bytes": 707178,
+      "gzip": 221816
+    },
     "platejs/layout": {
       "bytes": 701852,
       "gzip": 219638
@@ -103,6 +107,10 @@
     "platejs/footnote/react": {
       "bytes": 853414,
       "gzip": 269858
+    },
+    "platejs/ink/react": {
+      "bytes": 882689,
+      "gzip": 281008
     },
     "platejs/layout/react": {
       "bytes": 704063,

@@ -349,6 +349,21 @@ export const registryFeatures: Registry['items'] = [
   },
   {
     dependencies: ['platejs'],
+    description:
+      'Pen markup on document text, drawn over the Editable, with a sign for ink that no longer sits on its words: words that changed, a deleted block or a margin too narrow for a note.',
+    files: [
+      {
+        path: 'components/editor/ink.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { registry: false },
+    name: 'ink',
+    title: 'Ink',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
     files: [
       {
         path: 'components/editor/callout.tsx',

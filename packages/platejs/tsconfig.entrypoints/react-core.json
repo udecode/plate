@@ -12,7 +12,6 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/react-core.tsbuildinfo"
   },
   "exclude": [
-    "../src/react/features/ink/**/*",
     "../src/react/virtualized.*",
     "../src/react/index.*",
     "../src/react/features/basic-nodes/**/*",
@@ -28,6 +27,7 @@
     "../src/react/features/details/**/*",
     "../src/react/features/upload/**/*",
     "../src/react/features/footnote/**/*",
+    "../src/react/features/ink/**/*",
     "../src/react/features/layout/**/*",
     "../src/react/features/media/**/*",
     "../src/react/features/mention/**/*",
