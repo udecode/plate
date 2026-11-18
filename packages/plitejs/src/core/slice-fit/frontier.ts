@@ -4,6 +4,7 @@ import type { PreparedTokenSlice } from '../change/tokens';
 import { prepareContentSliceVariant } from '../content-slice';
 import { profileCoreDuration } from '../profiling';
 import type { CanonicalFitPreparation } from '../representation';
+import type { FitOrigins } from './origin';
 
 export type SliceBoundaryCandidate = Readonly<{
   cost: number;
@@ -50,6 +51,7 @@ export type MaterializedSliceFitCandidate = SliceFitCandidateBase &
   Readonly<{
     content: SliceFitContent;
     insert: PreparedTokenSlice;
+    origins: FitOrigins;
     runtimeCandidatePaths?: ReadonlyArray<readonly number[]>;
     semanticChange?: Readonly<{
       from: number;
@@ -65,6 +67,7 @@ export type SliceFitCandidate = SliceFitCandidateBase &
     | Readonly<{
         content: SliceFitContent;
         insert: PreparedTokenSlice;
+        origins: FitOrigins;
         selectionOffset: number;
       }>
     | Readonly<{

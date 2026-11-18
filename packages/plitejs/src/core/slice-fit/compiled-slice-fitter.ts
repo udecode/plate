@@ -99,6 +99,7 @@ import {
   type SliceVariant,
   type SliceVariantFamily,
 } from './frontier';
+import { FitOriginLog, type FitSource, sliceOrigins } from './origin';
 import {
   createRootFitPathProvenance,
   getTextEdge,
@@ -1854,10 +1855,16 @@ export const compileSliceFitter = <V extends Value>(
       prefix.length === 0 && suffix.length === 0
         ? insert
         : PreparedTokenSlice.concat([prefix, insert, suffix]);
+    const origins = new FitOriginLog();
+
+    origins.add(prefix.length, 'fit');
+    origins.add(insert.length, 'slice');
+    origins.add(suffix.length, 'fit');
 
     return {
       content: { from: prefix.length, to: prefix.length + insert.length },
       insert: restored,
+      origins: origins.seal(restored),
       selectionOffset: prefix.length + getContentEndOffset(insert),
     };
   };
@@ -2667,6 +2674,7 @@ export const compileSliceFitter = <V extends Value>(
           cost,
           from: targetRange.from,
           insert: encoded,
+          origins: sliceOrigins(encoded),
           selectionOffset:
             encoded.length - getSliceEdgeOpenDepth(variant.content, 'end') - 1,
           to: targetRange.to,
@@ -2725,20 +2733,28 @@ export const compileSliceFitter = <V extends Value>(
         return null;
       }
       const stack = [...localStartContext];
+      const origins = new FitOriginLog();
       let outputPosition = 0;
       let selectionPosition: number | null = null;
       let contentStart: number | null = null;
-      const append = (token: FitToken) => {
+      const append = (
+        token: FitToken,
+        kind: FitSource['kind'] = 'fit',
+        sourceAt = 0
+      ) => {
+        const length = tokenLength(token);
+
         output.push(token);
-        outputPosition += tokenLength(token);
+        origins.add(length, kind, sourceAt);
+        outputPosition += length;
       };
-      const closeTop = () => {
+      const closeTop = (kind: FitSource['kind'] = 'fit', sourceAt = 0) => {
         if (stack.length <= protectedDepth) return false;
         const top = stack.pop();
 
         if (!top) return false;
 
-        append({ kind: 'close', nodeKind: top.nodeKind });
+        append({ kind: 'close', nodeKind: top.nodeKind }, kind, sourceAt);
 
         return true;
       };
@@ -2779,7 +2795,11 @@ export const compileSliceFitter = <V extends Value>(
 
         return canContain(parent, child);
       };
-      const openFitted = (token: FitOpenToken) => {
+      const openFitted = (
+        token: FitOpenToken,
+        kind: FitSource['kind'] = 'fit',
+        sourceAt = 0
+      ) => {
         const child = openTokenNode(token);
 
         while (!canCurrentContain(child)) {
@@ -2788,7 +2808,7 @@ export const compileSliceFitter = <V extends Value>(
           }
         }
 
-        append(token);
+        append(token, kind, sourceAt);
         stack.push(token);
 
         return true;
@@ -2866,16 +2886,24 @@ export const compileSliceFitter = <V extends Value>(
 
         return openFitted(token);
       };
-      const process = (token: FitToken) => {
-        if (token.kind === 'open') return openFitted(token);
+      const process = (
+        token: FitToken,
+        kind: 'document' | 'slice',
+        sourceAt = 0
+      ) => {
+        if (token.kind === 'open') return openFitted(token, kind, sourceAt);
         if (token.kind === 'close') {
-          if (stack.length === 0) return true;
+          const top = stack.at(-1);
 
-          return closeTop();
+          if (!top) return true;
+
+          return kind === 'document' && top.nodeKind !== token.nodeKind
+            ? closeTop()
+            : closeTop(kind, sourceAt);
         }
         if (!ensureTextContext()) return false;
 
-        append(token);
+        append(token, kind, sourceAt);
 
         return true;
       };
@@ -2888,7 +2916,7 @@ export const compileSliceFitter = <V extends Value>(
       for (const token of encoded.tokens) {
         const appended = output.length;
 
-        if (!process(token)) return null;
+        if (!process(token, 'slice')) return null;
         if (output.length > appended) {
           contentStart ??= outputPosition - tokenLength(token);
         }
@@ -2938,9 +2966,12 @@ export const compileSliceFitter = <V extends Value>(
       }
 
       if (!sourceAlreadyAtSync) {
+        let tailPosition = exactTo;
+
         for (const token of document.tokens.slice(exactTo, syncPosition)
           .tokens) {
-          if (!process(token)) return null;
+          if (!process(token, 'document', tailPosition)) return null;
+          tailPosition += tokenLength(token);
         }
       }
 
@@ -2987,8 +3018,11 @@ export const compileSliceFitter = <V extends Value>(
         candidateFrom = boundary.from;
         removedPrefixLength = opened.length;
         candidateOutput = output.slice(opened.length);
+        origins.dropStart(opened.length);
         break;
       }
+
+      const insert = PreparedTokenSlice.fromTokens(candidateOutput);
 
       return Object.freeze({
         content: {
@@ -2997,7 +3031,8 @@ export const compileSliceFitter = <V extends Value>(
         },
         cost,
         from: candidateFrom,
-        insert: PreparedTokenSlice.fromTokens(candidateOutput),
+        insert,
+        origins: origins.seal(insert),
         ...(selectionFollowsInlineVoid
           ? { selectionAssociation: 1 as const }
           : {}),
@@ -3383,20 +3418,23 @@ export const compileSliceFitter = <V extends Value>(
       }
       Object.freeze(runtimeCandidatePaths);
 
-      const selectionOffset =
-        insert.length -
-        suffix.length -
-        getSliceEdgeOpenDepth(preparedContent, 'end') -
-        1;
+      const textBlockEdge = 2;
+      const selectionOffset = insert.length - suffix.length - textBlockEdge;
+      const content = {
+        from: prefix.length + textBlockEdge,
+        to: selectionOffset,
+      };
+      const origins = new FitOriginLog();
+
+      origins.add(content.from, 'document', base.from);
+      origins.add(content.to - content.from, 'slice');
+      origins.add(insert.length - content.to, 'document', exactTo);
 
       return Object.freeze({
         ...base,
-        content: {
-          from:
-            getSliceEdgeOpenDepth(preparedContent, 'start') + 1 + prefix.length,
-          to: selectionOffset,
-        },
+        content,
         insert,
+        origins: origins.seal(insert),
         runtimeCandidatePaths,
         semanticChange: Object.freeze({
           from: exactFrom,
@@ -3703,6 +3741,7 @@ export const compileSliceFitter = <V extends Value>(
               {
                 content: { from: 0, to: encoded.length },
                 insert: encoded,
+                origins: sliceOrigins(encoded),
                 selectionOffset: getContentEndOffset(encoded),
               },
             ];
@@ -3721,34 +3760,48 @@ export const compileSliceFitter = <V extends Value>(
         const openTarget = PreparedTokenSlice.fromJSON([
           { kind: 'open', nodeKind: 'text', props: properties },
         ]);
+        const insert = PreparedTokenSlice.concat([
+          closeTarget,
+          encoded,
+          openTarget,
+        ]);
+        const origins = new FitOriginLog();
 
+        origins.add(closeTarget.length, 'fit');
+        origins.add(encoded.length, 'slice');
+        origins.add(openTarget.length, 'fit');
         inserts.unshift({
           content: {
             from: closeTarget.length,
             to: closeTarget.length + encoded.length,
           },
-          insert: PreparedTokenSlice.concat([closeTarget, encoded, openTarget]),
+          insert,
+          origins: origins.seal(insert),
           selectionOffset: closeTarget.length + getContentEndOffset(encoded),
         });
       }
 
       return (
         endsInInlineVoid(variant.slice)
-          ? inserts.map(({ content, insert }) => ({
+          ? inserts.map(({ content, insert, origins }) => ({
               content,
               insert,
+              origins,
               selectionAssociation: 1 as const,
               selectionOffset: insert.length,
             }))
           : inserts
-      ).map(({ content, insert, selectionOffset }): SliceFitCandidate => ({
-        content,
-        cost,
-        from: boundary.from,
-        insert,
-        selectionOffset,
-        to: boundary.to,
-      }));
+      ).map(
+        ({ content, insert, origins, selectionOffset }): SliceFitCandidate => ({
+          content,
+          cost,
+          from: boundary.from,
+          insert,
+          origins,
+          selectionOffset,
+          to: boundary.to,
+        })
+      );
     };
 
     const directLocalCandidate =
@@ -3786,6 +3839,11 @@ export const compileSliceFitter = <V extends Value>(
       if (boundary === null) return null;
       const retained = document.tokens.slice(exactTo, boundary);
       const incoming = encodeContentSlice(inputSlice);
+      const insert = PreparedTokenSlice.concat([retained, incoming]);
+      const origins = new FitOriginLog();
+
+      origins.add(retained.length, 'document', exactTo);
+      origins.add(incoming.length, 'slice');
 
       return {
         content: {
@@ -3794,7 +3852,8 @@ export const compileSliceFitter = <V extends Value>(
         },
         cost: -1,
         from: exactFrom,
-        insert: PreparedTokenSlice.concat([retained, incoming]),
+        insert,
+        origins: origins.seal(insert),
         selectionOffset: retained.length + getContentEndOffset(incoming),
         to: boundary,
         ...(preparedInput ? { preparation: preparedInput.preparation } : {}),
@@ -3834,6 +3893,7 @@ export const compileSliceFitter = <V extends Value>(
         cost: boundary.cost,
         from: boundary.from,
         insert,
+        origins: sliceOrigins(insert),
         selectionOffset: getContentEndOffset(insert),
         to: boundary.to,
         ...(preparedInput ? { preparation: preparedInput.preparation } : {}),
@@ -3851,6 +3911,7 @@ export const compileSliceFitter = <V extends Value>(
               cost: 0,
               from: 0,
               insert,
+              origins: sliceOrigins(insert),
               selectionOffset: getContentEndOffset(insert),
               to: document.length,
             });
