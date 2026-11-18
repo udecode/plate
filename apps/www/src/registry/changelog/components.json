@@ -684,6 +684,24 @@
       "2026-09-19-files-sdk-upload-kit"
     ],
     "slash-command-items-demo": ["2026-11-18-slash-app-items"],
+    "suggestion": [
+      "2026-11-18-suggestion-whole-tables",
+      "2026-10-29-paged-suggestion-lines",
+      "2026-10-18-discussion-preview-block-reads",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-07-editor-user",
+      "2026-09-14-suggestion-author-colors",
+      "2026-09-14-suggestion-content-attributes",
+      "2026-09-13-suggestion-examples",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
     "ai-api": [
       "2026-11-17-ai-api-initial-selection",
       "2026-11-17-ai-comment-author",
@@ -1149,23 +1167,6 @@
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
-    ],
-    "suggestion": [
-      "2026-10-29-paged-suggestion-lines",
-      "2026-10-18-discussion-preview-block-reads",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-07-editor-user",
-      "2026-09-14-suggestion-author-colors",
-      "2026-09-14-suggestion-content-attributes",
-      "2026-09-13-suggestion-examples",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-30-fix-annotation-hover-scroll",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
     "pagination-demo": [
       "2026-10-28-pagination-demo-list-callout",

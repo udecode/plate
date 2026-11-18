@@ -1154,14 +1154,17 @@ const joinsLines = (tokens: readonly JsonToken[]) => {
   return closesOuter && opensElement.includes(true);
 };
 
-const refuseWriteInStruckGrid = (
+type StruckGridWrite = 'nothing' | 'other' | 'struck-parts';
+
+const judgeStruckGridWrite = (
   step: RootChange,
   frame: DocumentIndex,
   stored: DocumentIndex,
   toStored: (position: number, assoc: -1 | 1) => number,
   holdsGridParts: (node: JsonNode) => boolean,
-  changeId: string
-) => {
+  changeId: string,
+  moves: boolean
+): StruckGridWrite => {
   const strikingChanges = (range: IndexedNodeRange) =>
     range.kind === 'element'
       ? readMembers(stored.node(range.path)).flatMap((member) =>
@@ -1180,7 +1183,20 @@ const refuseWriteInStruckGrid = (
     stored
       .openContextAt(from)
       .some((range) => range.from < from && to < range.to && struckPart(range));
+  const removesOnlyStruckParts = (from: number, to: number) => {
+    let at = from;
+
+    while (at < to) {
+      const removed = stored.nodeStartingAt(at);
+
+      if (!removed || removed.to > to || !struckPart(removed)) return false;
+      at = removed.to;
+    }
+    return at > from;
+  };
   let position = 0;
+  let takesStruckParts = false;
+  let writesOther = false;
 
   for (let pair = 0; pair < step.data.length; pair += 1) {
     const length = step.sections[pair * 2];
@@ -1221,9 +1237,23 @@ const refuseWriteInStruckGrid = (
           throw unrepresentableFor('grid');
         }
       }
+    } else if (
+      length > 0 &&
+      !(moves && isEditingChange(changeId)) &&
+      removesOnlyStruckParts(from, to)
+    ) {
+      if (moves) throw unrepresentableFor('grid');
+      takesStruckParts = true;
+      position += length;
+      continue;
     }
+    writesOther = true;
     position += length;
   }
+
+  if (writesOther) return 'other';
+
+  return takesStruckParts ? 'struck-parts' : 'nothing';
 };
 
 /**
@@ -1707,6 +1737,9 @@ export const recordAuthoredSteps = (
     }
   }
 
+  let removesStruckParts = false;
+  let writesOther = false;
+
   for (const { changes, step } of stepChanges) {
     for (const [root, rootChange] of changes) {
       const fold = foldOf(root);
@@ -1783,6 +1816,7 @@ export const recordAuthoredSteps = (
               input.isInline
             )
           : rootChange;
+      if (fold.created) writesOther = true;
       if (!fold.created && step.origin !== 'migration') {
         const toStored = fold.map;
         const frame =
@@ -1790,22 +1824,28 @@ export const recordAuthoredSteps = (
         const map = (position: number, assoc: -1 | 1) =>
           toStored(position, assoc, false);
 
-        if (!properties) {
-          refuseWriteInStruckGrid(
-            written,
-            frame,
-            fold.index,
-            map,
-            input.gridRoles.holdsParts,
-            changeId
-          );
-        }
+        const moves = step.origin === 'move' || step.move?.role === 'source';
+        const writes = properties
+          ? 'other'
+          : judgeStruckGridWrite(
+              written,
+              frame,
+              fold.index,
+              map,
+              input.gridRoles.holdsParts,
+              changeId,
+              moves
+            );
+
+        removesStruckParts ||= writes === 'struck-parts';
+        writesOther ||= writes === 'other';
         if (!isEditingChange(changeId)) {
           refuseUnplacedGridWrite({
             claims: input.dependencies.marks,
             frame,
             frameAfter: applyReusingStep(step, root, frame, written),
             gridRoles: input.gridRoles,
+            moves,
             ownInsertion,
             stored: fold.index,
             toStored: map,
@@ -1927,6 +1967,8 @@ export const recordAuthoredSteps = (
       }
     }
   }
+
+  if (removesStruckParts && !writesOther) throw unrepresentableFor('grid');
 
   if (carried) {
     for (const [root, fold] of folds) {

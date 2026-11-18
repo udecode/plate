@@ -1436,6 +1436,15 @@ const resolveIn = (
   };
   const gridPart = schema ? gridPartsOf(schema.ownership) : () => false;
   const takesWhole = (node: Node) => ownMarkRemoves(node) && gridPart(node);
+  const decidedWholeByGridPart = (mark: AuthoredMark, above: readonly Node[]) =>
+    (mark.kind === 'insert' || mark.kind === 'delete') &&
+    above.some(
+      (ancestor) =>
+        gridPart(ancestor) &&
+        pending(ancestor).some(
+          (outer) => outer.kind === mark.kind && outer.change === mark.change
+        )
+    );
   const gridHolder = schema ? gridHoldersOf(schema.ownership) : () => false;
   const { survives } = survivalUnder(ownMarkRemoves, gridPart);
   const reading: KeyReading = {
@@ -1584,34 +1593,41 @@ const resolveIn = (
       ].filter((name) => !fromLeft(name))
     );
   };
-  /**
-   * The verdict on a rejected cut, or 'wait' once its touching changes join
-   * this run's waits. `left` is the left half as the stored tree holds it.
-   */
   const cutVerdict = (
     key: string | Node,
-    left: Node,
+    storedLeft: Node,
     halves: Halves,
     around: Around
   ): Verdict | 'wait' => {
     let rightKeys: ReadonlySet<string> | undefined;
-    const result = verdictOf(schema?.ownership ?? null, halves, around, {
-      pendingOf,
-      probe: probe
-        ? null
-        : (assignment) =>
-            probeUnder(
-              assignment,
-              key,
-              left,
-              (rightKeys ??= rightKeysOf(halves))
-            ),
-      survives,
+    const undecided = (mark: AuthoredMark) =>
+      !decidedWholeByGridPart(mark, around.place);
+    const unheld = (half: Half) => ({
+      ...half,
+      pending: half.pending.filter(undecided),
     });
+    const result = verdictOf(
+      schema?.ownership ?? null,
+      { ...halves, left: unheld(halves.left), right: unheld(halves.right) },
+      around,
+      {
+        pendingOf: pendingOf && ((node) => pendingOf(node).filter(undecided)),
+        probe: probe
+          ? null
+          : (assignment) =>
+              probeUnder(
+                assignment,
+                key,
+                storedLeft,
+                (rightKeys ??= rightKeysOf(halves))
+              ),
+        survives,
+      }
+    );
 
     if (probe?.key === key) {
       probe.settled =
-        probe.left !== left
+        probe.left !== storedLeft
           ? { verdict: 'apart' }
           : 'verdict' in result &&
               result.verdict === 'together' &&
@@ -1946,16 +1962,17 @@ const resolveIn = (
     const { editingJoin, join } = structureOf(node);
 
     if (!join) return;
-    // A join on a block the decision removes has nothing to merge, so the
-    // block's pending content decides with the join, unless content that
-    // stays whatever is pending keeps the block.
     const waited =
       editingJoin || (node.children ?? []).some(keptContent)
         ? []
         : contentMarksIn(node);
     const land = (effect?: () => void) => {
+      const waiting = waited.filter(
+        (mark) => !decidedWholeByGridPart(mark, ancestors)
+      );
+
       if (
-        waited.some((mark) => decisionOf(mark) === 'keep') &&
+        waiting.some((mark) => decisionOf(mark) === 'keep') &&
         pending(node).some(
           (mark) => mark.kind === 'join' && isEditingChange(mark.change)
         )
@@ -1963,7 +1980,7 @@ const resolveIn = (
         retainedJoins.add(node);
         return;
       }
-      wait(waited);
+      wait(waiting);
       effect?.();
     };
 
@@ -2889,7 +2906,11 @@ const resolveIn = (
         continue;
       }
       if (emptied) {
-        wait(pending({ [AUTHORED_MARKS_KEY]: formatted.kept }));
+        wait(
+          pending({ [AUTHORED_MARKS_KEY]: formatted.kept }).filter(
+            (mark) => !decidedWholeByGridPart(mark, above)
+          )
+        );
         restructured = true;
       }
       out.push(track(element, original));

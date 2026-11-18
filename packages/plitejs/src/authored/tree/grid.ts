@@ -48,7 +48,7 @@ const holdsPendingColumn = (
 
 const unplacedInGrid = () =>
   unrepresentable(
-    'Review cannot show this table change yet: it adds or removes single cells, changes a span, splits or joins a table part, or adds a row beside a pending column change.',
+    'Review cannot show this table change yet: it adds or removes single cells, changes a span, splits or joins a table part, adds a row beside a pending column change, or moves a block out of a table or row another suggestion adds.',
     'grid'
   );
 
@@ -57,6 +57,7 @@ export const refuseUnplacedGridWrite = ({
   frame,
   frameAfter,
   gridRoles,
+  moves,
   ownInsertion,
   stored,
   toStored,
@@ -66,6 +67,7 @@ export const refuseUnplacedGridWrite = ({
   frame: DocumentIndex;
   frameAfter: DocumentIndex;
   gridRoles: GridRoles;
+  moves: boolean;
   ownInsertion: (node: JsonNode) => boolean;
   stored: DocumentIndex;
   toStored: (position: number, assoc: -1 | 1) => number;
@@ -77,17 +79,47 @@ export const refuseUnplacedGridWrite = ({
       .filter(
         (range) =>
           range.kind === 'element' && range.from < place && place < range.to
-      )
-      .map((range) => stored.node(range.path));
+      );
   const partAround = (at: number) =>
-    holders(toStored(at, 1)).findLast((node) => gridRoles.isPart(node));
+    holders(toStored(at, 1))
+      .map((range) => stored.node(range.path))
+      .findLast((node) => gridRoles.isPart(node));
+  const suggestedPartAround = (place: number) =>
+    holders(place).find((range) => {
+      const part = stored.node(range.path);
 
-  for (const { at, inserted, props, propsAfter, touch } of elementTouches(
-    written,
-    frame,
-    frameAfter,
-    { cutEnclosed: false }
-  )) {
+      return (
+        gridRoles.isPart(part) &&
+        !ownInsertion(part) &&
+        claims(part).some(
+          (mark) => mark.kind === 'insert' && !isEditingChange(mark.change)
+        )
+      );
+    });
+  const touches = elementTouches(written, frame, frameAfter, {
+    cutEnclosed: false,
+  });
+
+  if (moves) {
+    const landings = touches.flatMap(({ at, inserted, touch }) =>
+      inserted && touch === 'whole' ? [toStored(at, 1)] : []
+    );
+
+    for (const { at, inserted, touch } of touches) {
+      if (inserted || touch !== 'whole') continue;
+
+      const source = suggestedPartAround(toStored(at, 1));
+
+      if (
+        source &&
+        !landings.some((place) => source.from < place && place < source.to)
+      ) {
+        throw unplacedInGrid();
+      }
+    }
+  }
+
+  for (const { at, inserted, props, propsAfter, touch } of touches) {
     const role = gridRoles.roleOf(props);
     const changesPart =
       propsAfter !== undefined &&

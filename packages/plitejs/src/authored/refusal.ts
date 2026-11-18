@@ -35,8 +35,9 @@ import { getDefined } from '../internal/get-defined';
  * `unaligned`: the preview there has no map to the saved content. `grid`: the
  * edit acts inside a table or row whose deletion is pending, or joins two
  * lines across one, or a suggestion would add or remove single cells, change
- * a span, split or join a table part, or add a row beside a pending column
- * change.
+ * a span, split or join a table part, add a row beside a pending column
+ * change, or move a block out of a table or row another author's suggestion
+ * adds.
  */
 export type UnrepresentableReason =
   | 'crosses'

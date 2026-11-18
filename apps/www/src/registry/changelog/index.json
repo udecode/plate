@@ -207,6 +207,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-18-suggestion-whole-tables",
+      "href": "/registry/changelog/2026-11-18-suggestion-whole-tables.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Suggesting adds or deletes a whole table: its cells tint instead of showing a bar beside each one, and the refusal toast names what still refuses in a table: its rows, columns, cells and sizes, a block that holds a table, and a table that holds a code block.",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-toolbars-act-on-board-note-text",
       "href": "/registry/changelog/2026-11-18-toolbars-act-on-board-note-text.json",
       "status": "draft",

@@ -1200,14 +1200,16 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
   .extend(({ editor, schema: { type }, store }) => ({
     contributions: [
       authoredVeto.of((element, touch) => {
-        const gridTypes = [
-          type,
-          editor.plugin(BaseTableRowPlugin).schema.type,
-          editor.plugin(BaseTableCellPlugin).schema.type,
-        ];
+        const part =
+          element.type === editor.plugin(BaseTableRowPlugin).schema.type ||
+          element.type === editor.plugin(BaseTableCellPlugin).schema.type;
 
-        return touch !== 'content' &&
-          gridTypes.some((gridType) => gridType === element.type)
+        if (element.type !== type && !part) return null;
+
+        return touch === 'properties' ||
+          touch === 'boundary' ||
+          (touch === 'whole' && part) ||
+          (touch === 'inside' && !part)
           ? 'table'
           : null;
       }),
