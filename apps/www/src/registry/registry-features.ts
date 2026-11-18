@@ -357,7 +357,7 @@ export const registryFeatures: Registry['items'] = [
         type: 'registry:component',
       },
     ],
-    meta: { registry: false },
+    meta: { examples: ['ink-demo'], registry: false },
     name: 'ink',
     title: 'Ink',
     type: 'registry:component',

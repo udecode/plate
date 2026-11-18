@@ -1,5 +1,5 @@
 {
-  "generation": "aa323a4bc140fac2aa0248f8a8089d765ef6527e553609642c0d63d052ae36f0",
+  "generation": "36e9066a7aa1517e61c8a69db728eb3b3ebec376c8c548f6c4b4be6b9a88ea32",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1018,6 +1018,9 @@
             }
           ],
           "meta": {
+            "examples": [
+              "ink-demo"
+            ],
             "registry": false
           },
           "name": "draw-toolbar-button",
@@ -1037,6 +1040,9 @@
             }
           ],
           "meta": {
+            "examples": [
+              "ink-demo"
+            ],
             "registry": false
           },
           "name": "ink-sign-button",
@@ -2742,6 +2748,9 @@
             }
           ],
           "meta": {
+            "examples": [
+              "ink-demo"
+            ],
             "registry": false
           },
           "name": "ink",
@@ -5528,6 +5537,22 @@
             "@plate/list"
           ],
           "title": "Board page",
+          "type": "registry:example"
+        },
+        {
+          "description": "Pen markup on a document saved to local storage, with a second user and a second view of the same document.",
+          "files": [
+            {
+              "path": "examples/ink-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "containerClassName": "h-dvh",
+            "registry": false
+          },
+          "name": "ink-demo",
+          "title": "Ink",
           "type": "registry:example"
         },
         {
@@ -8281,6 +8306,9 @@
             }
           ],
           "meta": {
+            "examples": [
+              "ink-demo"
+            ],
             "registry": false
           },
           "name": "draw-toolbar-button",
@@ -8300,6 +8328,9 @@
             }
           ],
           "meta": {
+            "examples": [
+              "ink-demo"
+            ],
             "registry": false
           },
           "name": "ink-sign-button",
@@ -10000,6 +10031,9 @@
             }
           ],
           "meta": {
+            "examples": [
+              "ink-demo"
+            ],
             "registry": false
           },
           "name": "ink",
@@ -12786,6 +12820,22 @@
             "@plate/list"
           ],
           "title": "Board page",
+          "type": "registry:example"
+        },
+        {
+          "description": "Pen markup on a document saved to local storage, with a second user and a second view of the same document.",
+          "files": [
+            {
+              "path": "examples/ink-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "containerClassName": "h-dvh",
+            "registry": false
+          },
+          "name": "ink-demo",
+          "title": "Ink",
           "type": "registry:example"
         },
         {

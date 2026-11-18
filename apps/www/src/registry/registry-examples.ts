@@ -483,6 +483,22 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'Pen markup on a document saved to local storage, with a second user and a second view of the same document.',
+      files: [
+        {
+          path: 'examples/ink-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        containerClassName: 'h-dvh',
+      },
+      name: 'ink-demo',
+      title: 'Ink',
+      type: 'registry:example',
+    },
+    {
       description: 'Restrict the editor to a single block.',
       files: [
         {
