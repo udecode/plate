@@ -20,7 +20,9 @@
     "packages/plitejs/src/core/change/wrap-fidelity.ts",
     "packages/plitejs/src/history/history-character-map.ts",
     "packages/plitejs/src/history/history-replay.ts",
-    "packages/plitejs/src/history/history-state.ts"
+    "packages/plitejs/src/history/history-state.ts",
+    "packages/plitejs/src/sync/server/take-back.ts",
+    "packages/plitejs/src/sync/server/window.ts"
   ],
   "uncounted": {}
 }
