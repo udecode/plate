@@ -2,11 +2,7 @@ import * as React from 'react';
 
 import type { NodeKey } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from '../../../features/ink/lib';
-import {
-  type InkBox,
-  inkWords,
-  placeMark,
-} from '../../../features/ink/lib/inkMatch.internal';
+import { placeMark } from '../../../features/ink/lib/inkMatch.internal';
 import {
   type EditableSiblingProps,
   type Editor,
@@ -21,6 +17,7 @@ import {
   type InkMeasuredBlock,
   inkBoxOf,
   inkTextBlocks,
+  inkWordBoxes,
   measureInkBlock,
 } from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
@@ -48,25 +45,6 @@ type Placed = Readonly<{
 const NOTHING_PLACED: Placed = { bottom: 0, ink: [], signs: [] };
 
 const DELETED = { reason: 'deleted', type: 'sign' } as const;
-
-const wordBoxes = (live: InkMeasuredBlock): InkBox[] =>
-  inkWords(live.text).flatMap(([start, end]) =>
-    live.lines.flatMap((line, index) => {
-      const from = Math.max(start, index === 0 ? 0 : live.lines[index - 1].end);
-      const to = Math.min(end, line.end);
-      const box = from < to ? live.measure(from, to) : undefined;
-
-      return box
-        ? [
-            {
-              ...box,
-              left: live.box.left + box.left,
-              top: live.box.top + box.top,
-            },
-          ]
-        : [];
-    })
-  );
 
 const placeAll = (
   view: Editor,
@@ -159,7 +137,7 @@ const placeAll = (
 
       const block = measure(key);
 
-      return block ? wordBoxes(block) : [];
+      return block ? inkWordBoxes(block) : [];
     });
     return placeMark({
       copies,
@@ -286,7 +264,6 @@ export function InkLayer({
     if (!layer || !editable || !path) return undefined;
 
     const attached = attachInkCapture({
-      editable,
       editor,
       layer,
       preview: path,
@@ -304,7 +281,10 @@ export function InkLayer({
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
       if (changed.hasAny('document')) schedule();
     });
-    const stopLayout = observeInkLayout(editable, layer, schedule);
+    const stopLayout = observeInkLayout(editable, layer, (change) => {
+      attached.layoutChanged(change);
+      schedule();
+    });
 
     capture.current = attached;
     schedule();

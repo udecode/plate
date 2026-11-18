@@ -5,6 +5,7 @@ import {
   type InkBox,
   type InkLiveBlock,
   inkText,
+  inkWords,
 } from '../../../features/ink/lib/inkMatch.internal';
 import type { Editor } from '../../core';
 
@@ -221,4 +222,50 @@ export const measureInkBlock = (
     },
     text,
   };
+};
+
+/** The box of each word's part on each line, in layer space. */
+export const inkWordBoxes = (live: InkMeasuredBlock): InkBox[] =>
+  inkWords(live.text).flatMap(([start, end]) =>
+    live.lines.flatMap((line, index) => {
+      const from = Math.max(start, index === 0 ? 0 : live.lines[index - 1].end);
+      const to = Math.min(end, line.end);
+      const box = from < to ? live.measure(from, to) : undefined;
+
+      return box
+        ? [
+            {
+              ...box,
+              left: live.box.left + box.left,
+              top: live.box.top + box.top,
+            },
+          ]
+        : [];
+    })
+  );
+
+/** Whether two measurements of one block place every word the same: equal box, lines and word boxes. */
+export const sameInkLayout = (
+  a: InkMeasuredBlock,
+  b: InkMeasuredBlock | undefined
+) => {
+  if (
+    !b ||
+    !sameInkBox(a.box, b.box) ||
+    a.lines.length !== b.lines.length ||
+    a.lines.some(
+      (line, index) =>
+        line.end !== b.lines[index].end || !sameInkBox(line, b.lines[index])
+    )
+  ) {
+    return false;
+  }
+
+  const before = inkWordBoxes(a);
+  const after = inkWordBoxes(b);
+
+  return (
+    before.length === after.length &&
+    before.every((box, index) => sameInkBox(box, after[index]))
+  );
 };

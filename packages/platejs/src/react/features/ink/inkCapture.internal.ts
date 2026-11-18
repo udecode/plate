@@ -25,12 +25,19 @@ import {
   inkBoxOf,
   inkTextBlocks,
   measureInkBlock,
+  sameInkBox,
+  sameInkLayout,
 } from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
+import type { InkLayoutChange } from './inkWatch.internal';
 
 type Point = readonly [x: number, y: number];
 
-type Entered = Readonly<{ block: InkTextBlock; live: InkMeasuredBlock }>;
+type Entered = Readonly<{
+  block: InkTextBlock;
+  direction: InkMarkInput['direction'];
+  live: InkMeasuredBlock;
+}>;
 
 type Epoch = {
   readonly at: number;
@@ -121,29 +128,31 @@ const marginOf = (
  * A stroke whose first sample enters no block is a margin note for the
  * nearest block, picked and measured then, until the line enters a block. A
  * commit that changes a crossed block or a margin note's block, or the
- * structure or layout at or above it, a resize that moves or resizes one of
- * those blocks in `layer`, and a web font that finishes loading seal the epoch
- * at its last sample and drop the browser's held samples from before the
- * change, so the next sample starts a new mark. While no mark is open, any
- * resize or web font load drops the held samples from before it. Any other
- * commit or resize during the contact leaves the mark whole until the line
- * enters a block that commit changed, where a new mark starts with the first
- * sample from after that commit, and a later commit to another block still
- * splits the mark there. A sealed mark saves through `editor` in an update of
- * its own once the commit's handlers have run, so `add` sees the blocks that
- * commit deleted. A contact's later marks join its first mark's undo step
- * while nothing else enters the undo history between their saves. A press on
- * a `[data-ink-sign]` element is left to the sign.
+ * structure or layout at or above it, and a report to the returned
+ * `layoutChanged` under which one of those blocks moved in `layer`, its box
+ * for `boxes` and its box, lines or words for `words`, seal the epoch at its
+ * last sample and drop the browser's held samples from before that commit or
+ * report, so the next sample starts a new mark. A pointer move that finds one
+ * of those blocks' boxes moved with no report seals the epoch the same way,
+ * dropping its own samples. While no mark is open, any report drops the held
+ * samples from before it. Any other report leaves the mark whole. Any other
+ * commit during the contact leaves the mark whole until the line enters a
+ * block that commit changed, where a new mark starts with the first sample
+ * from after that commit, and a later commit to another block still splits
+ * the mark there. A mark saves the direction of the first block it holds, as
+ * read when the stroke measured that block. A sealed mark saves through
+ * `editor` in an update of its own once the commit's handlers have run, so
+ * `add` sees the blocks that commit deleted. A contact's later marks join its
+ * first mark's undo step while nothing else enters the undo history between
+ * their saves. A press on a `[data-ink-sign]` element is left to the sign.
  */
 export const attachInkCapture = ({
-  editable,
   editor,
   layer,
   preview,
   tool,
   view,
 }: Readonly<{
-  editable: HTMLElement;
   editor: Editor;
   layer: HTMLElement;
   preview: SVGPathElement;
@@ -174,6 +183,22 @@ export const attachInkCapture = ({
     return blocks;
   };
 
+  const enter = (
+    block: InkTextBlock,
+    origin: InkLayerOrigin
+  ): Entered | undefined => {
+    const live = measureInkBlock(block.element, block.text, origin);
+
+    return (
+      live && {
+        block,
+        direction:
+          getComputedStyle(block.element).direction === 'rtl' ? 'rtl' : 'ltr',
+        live,
+      }
+    );
+  };
+
   const draw = () => {
     if (!contact || !epoch) {
       preview.setAttribute('d', '');
@@ -202,11 +227,8 @@ export const attachInkCapture = ({
         ),
       }))
       .sort((a, b) => a.distance - b.distance);
-    const live =
-      nearest &&
-      measureInkBlock(nearest.block.element, nearest.block.text, origin);
 
-    return nearest && live ? { block: nearest.block, live } : undefined;
+    return nearest && enter(nearest.block, origin);
   };
 
   const inputOf = (done: Epoch, brush: InkBrush): InkMarkInput | undefined => {
@@ -235,10 +257,7 @@ export const attachInkCapture = ({
         width: live.box.width,
       })),
       brush,
-      direction:
-        getComputedStyle(first.block.element).direction === 'rtl'
-          ? 'rtl'
-          : 'ltr',
+      direction: first.direction,
       ...(margin ? { margin } : {}),
       samples: done.samples,
     };
@@ -278,6 +297,20 @@ export const attachInkCapture = ({
     cutAt(performance.now());
     draw();
   };
+
+  const heldMoved = (
+    open: Epoch,
+    origin: InkLayerOrigin,
+    change: InkLayoutChange
+  ) =>
+    heldBy(open).some(({ block, live }) =>
+      change === 'boxes'
+        ? !sameInkBox(live.box, inkBoxOf(block.element, origin))
+        : !sameInkLayout(
+            live,
+            measureInkBlock(block.element, block.text, origin)
+          )
+    );
 
   const changedAt = (block: InkTextBlock) =>
     block.path.flatMap((_, at) => {
@@ -330,9 +363,9 @@ export const attachInkCapture = ({
 
     epoch = open;
     for (const { block } of entering(segment)) {
-      const live = measureInkBlock(block.element, block.text, origin);
+      const entered = enter(block, origin);
 
-      if (live) open.blocks.push({ block, live });
+      if (entered) open.blocks.push(entered);
     }
     if (open.samples.length === 0 && open.blocks.length === 0) {
       open.note = nearestTo(point, origin);
@@ -384,6 +417,10 @@ export const attachInkCapture = ({
 
     const origin = originOf();
 
+    if (epoch && heldMoved(epoch, origin, 'boxes')) {
+      blocks = null;
+      sealOnChange();
+    }
     for (const sample of inkSamplesOf(event)) take(sample, origin);
     draw();
   };
@@ -427,37 +464,6 @@ export const attachInkCapture = ({
       }
     }
   });
-  const resize = new ResizeObserver(() => {
-    const open = epoch;
-    const origin = originOf();
-
-    blocks = null;
-    if (
-      !open ||
-      heldBy(open).some(({ block, live }) => {
-        const { height, left, top, width } = inkBoxOf(block.element, origin);
-
-        return (
-          left !== live.box.left ||
-          top !== live.box.top ||
-          width !== live.box.width ||
-          height !== live.box.height
-        );
-      })
-    ) {
-      sealOnChange();
-    }
-  });
-  // jsdom and happy-dom have no FontFaceSet.
-  const fonts = layer.ownerDocument.fonts as FontFaceSet | undefined;
-  const onFontsLoaded = () => {
-    blocks = null;
-    sealOnChange();
-  };
-
-  resize.observe(editable);
-  resize.observe(layer);
-  fonts?.addEventListener('loadingdone', onFontsLoaded);
   layer.addEventListener('pointerdown', onPointerDown);
   layer.addEventListener('pointermove', onPointerMove);
   layer.addEventListener('pointerup', onPointerUp);
@@ -468,12 +474,14 @@ export const attachInkCapture = ({
     detach: () => {
       cancel();
       unsubscribe();
-      resize.disconnect();
-      fonts?.removeEventListener('loadingdone', onFontsLoaded);
       layer.removeEventListener('pointerdown', onPointerDown);
       layer.removeEventListener('pointermove', onPointerMove);
       layer.removeEventListener('pointerup', onPointerUp);
       layer.removeEventListener('pointercancel', onPointerCancel);
+    },
+    layoutChanged: (change: InkLayoutChange) => {
+      blocks = null;
+      if (!epoch || heldMoved(epoch, originOf(), change)) sealOnChange();
     },
   };
 };
