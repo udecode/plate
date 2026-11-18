@@ -19,10 +19,18 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import { definePlugin, ElementApi, isHotkey, NodeApi, TextApi } from 'platejs';
+import {
+  definePlugin,
+  ElementApi,
+  isHotkey,
+  NodeApi,
+  RangeApi,
+  TextApi,
+} from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
+  EditorSelectionView,
   useCreateEditor,
   useEditorSelector,
   useFocusedLast,
@@ -173,6 +181,22 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
 }
 
 export function AIMenu() {
+  return (
+    <EditorSelectionView>
+      <SelectionAIMenu />
+    </EditorSelectionView>
+  );
+}
+
+const resolveSelectionAnchor = (editor: ReturnType<typeof useEditor>) => {
+  const block = editor.read.nodes.blocks().at(-1) ?? editor.read.nodes.block();
+
+  return block && ElementApi.isElement(block[0])
+    ? editor.api.dom.resolveDOMNode(block[0])
+    : null;
+};
+
+function SelectionAIMenu() {
   const editor = useEditor();
   const { api, read } = useEditor().plugin(AIChatPlugin);
   const mode = usePluginStore(AIChatPlugin, 'mode');
@@ -242,12 +266,7 @@ export function AIMenu() {
       };
     }
 
-    let nextAnchor: HTMLElement | null = null;
-    const block =
-      editor.read.nodes.blocks().at(-1) ?? editor.read.nodes.block();
-    if (block && ElementApi.isElement(block[0])) {
-      nextAnchor = editor.api.dom.resolveDOMNode(block[0]);
-    }
+    const nextAnchor = resolveSelectionAnchor(editor);
 
     if (!nextAnchor) return undefined;
     const animationFrame = window.requestAnimationFrame(() => {
@@ -258,6 +277,26 @@ export function AIMenu() {
       window.cancelAnimationFrame(animationFrame);
     };
   }, [chatOpen, editor]);
+
+  const children = useEditorSelector((innerEditor) =>
+    chatOpen ? innerEditor.read.children() : null
+  );
+
+  React.useEffect(() => {
+    if (!chatOpen || !anchorElement) return undefined;
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      if (anchorElement.isConnected) return;
+
+      const nextAnchor = resolveSelectionAnchor(editor);
+
+      if (nextAnchor) setAnchorElement(nextAnchor);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [anchorElement, chatOpen, children, editor]);
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
@@ -662,11 +701,11 @@ export const AIMenuItems = ({
   const comments = editor.plugin(CommentsPlugin);
   const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
   const mode = usePluginStore(AIChatPlugin, 'mode');
-  const isSelecting = useEditorSelector(
-    (innerEditor2) =>
-      innerEditor2.read.selection.nodes().length > 0 ||
-      innerEditor2.read.selection.isExpanded()
-  );
+  const chatNodeMode = usePluginStore(AIChatPlugin, 'chatNodeMode');
+  const chatSelection = usePluginStore(AIChatPlugin, 'chatSelection');
+  const isSelecting =
+    chatNodeMode !== null ||
+    (!!chatSelection && RangeApi.isExpanded(chatSelection));
 
   const menuState: EditorChatState =
     (messages?.length ?? 0) > 0

@@ -31,6 +31,7 @@ export type AIChatRequestNodeSelection = Readonly<{
 
 /** Self-contained editor snapshot for one AI chat request. */
 export type AIChatRequestContext = Readonly<{
+  /** The blocks the request covers, without review marks. */
   children: Value;
   nodeSelection: AIChatRequestNodeSelection | null;
   refs: AIChatRequestRefs;

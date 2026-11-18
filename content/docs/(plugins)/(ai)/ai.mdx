@@ -431,6 +431,9 @@ or accepts a chat edit's suggestion.
 ### `editor.plugin(AIChatPlugin).api.insertBelow(options?)`
 
 Inserts the draft below the captured selection in one history batch.
+After a chat edit's suggestion, it first withdraws the suggestion in a batch of
+its own, then inserts the response below its target, so undo takes two steps.
+After a table-cell edit, it inserts nothing.
 
 <API name="insertBelow">
 <APIParameters>

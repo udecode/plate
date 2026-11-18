@@ -10,8 +10,12 @@ export const boardValue = {
       level: 2,
       type: 'heading',
     },
+    {
+      children: [paragraph('A board is a block of the document.')],
+      type: 'blockquote',
+    },
     paragraph(
-      'A board is a block of the document. Double click a note or a shape to type in it, and pick a tool from the toolbar or with its letter.'
+      'Double click a note or a shape to type in it, and pick a tool from the toolbar or with its letter.'
     ),
     {
       childRoots: { shapes: 'board:demo' },

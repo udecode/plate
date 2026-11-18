@@ -49,41 +49,41 @@ export function FloatingToolbarButtons() {
   const nested = React.useContext(NestedViewContext);
   const readOnly = useEditorReadOnly();
 
-  if (nested) {
-    return (
-      <ToolbarGroup>
-        {!readOnly && <StyleButtons />}
-        <CommentToolbarButton />
-      </ToolbarGroup>
-    );
-  }
-
   return (
     <>
       {!readOnly && (
+        <ToolbarGroup>
+          <AIToolbarButton tooltip="AI commands">
+            <WandSparklesIcon />
+            Ask AI
+          </AIToolbarButton>
+        </ToolbarGroup>
+      )}
+
+      {nested ? (
+        <ToolbarGroup>
+          {!readOnly && <StyleButtons />}
+          <CommentToolbarButton />
+        </ToolbarGroup>
+      ) : (
         <>
-          <ToolbarGroup>
-            <AIToolbarButton tooltip="AI commands">
-              <WandSparklesIcon />
-              Ask AI
-            </AIToolbarButton>
-          </ToolbarGroup>
+          {!readOnly && (
+            <ToolbarGroup>
+              <TurnIntoToolbarButton />
+              <StyleButtons />
+              <InlineEquationToolbarButton />
+              <LinkToolbarButton />
+            </ToolbarGroup>
+          )}
 
           <ToolbarGroup>
-            <TurnIntoToolbarButton />
-            <StyleButtons />
-            <InlineEquationToolbarButton />
-            <LinkToolbarButton />
+            <CommentToolbarButton />
+            <SuggestionToolbarButton />
+
+            {!readOnly && <MoreToolbarButton />}
           </ToolbarGroup>
         </>
       )}
-
-      <ToolbarGroup>
-        <CommentToolbarButton />
-        <SuggestionToolbarButton />
-
-        {!readOnly && <MoreToolbarButton />}
-      </ToolbarGroup>
     </>
   );
 }

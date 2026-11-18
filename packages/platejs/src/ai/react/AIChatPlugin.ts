@@ -154,6 +154,15 @@ const aiChatShowEffect = defineEffect<NodeKey>({ key: 'ai.chat.show' });
 const aiChatCommandEditors = new WeakMap<object, Editor>();
 export const getAIChatCommandEditor = (editor: Editor) =>
   aiChatCommandEditors.get(editor) ?? editor;
+const withoutReviewMarks = <N extends Descendant>(node: N): N => {
+  const { authored: _marks, ...plain } = node as N & { authored?: unknown };
+
+  return (
+    ElementApi.isElement(plain)
+      ? { ...plain, children: plain.children.map(withoutReviewMarks) }
+      : plain
+  ) as N;
+};
 const plateDependencies = [MarkdownPlugin] as const;
 const dependencies = [
   ...plateDependencies,
@@ -225,7 +234,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     | undefined;
   // The stored blocks a draft chunk left, so the next chunk can tell whether
   // anyone wrote since.
-  let suggestion: Readonly<{ children: readonly unknown[] }> | null = null;
+  let suggestion: Readonly<{
+    children: readonly unknown[];
+    response: Element[];
+  }> | null = null;
   let suggestionTarget: AISuggestionTarget | null = null;
   const tableDraft = new Map<NodeKey, { children: Value }>();
   const captureSelection = (commandEditor: Editor, selection: Range | null) => {
@@ -449,9 +461,39 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         : authored.update.decide({ action, changes: [change] })
       : { ids: [changeId], status: 'unchanged' };
 
-    if (reviewSucceeded(result)) context.store.set({ _changeId: null });
+    if (reviewSucceeded(result)) {
+      context.store.set({ _changeId: null });
+      if (action === 'reject' && change) retargetChatNodesAfterWithdraw();
+    }
 
     return result;
+  };
+  const retargetChatNodesAfterWithdraw = () => {
+    if (suggestionTarget?.kind !== 'blocks') return;
+    const root = SelectionApi.root(suggestionTarget.range);
+    const view = projectEditorView(editor, root ? { root } : {});
+    const { chatNodes } = context.store.get();
+    const restored = suggestionTarget.paths.map(
+      (path) => view.read.nodes.get(path, { match: ElementApi.isElement })?.[0]
+    );
+
+    if (
+      restored.length !== chatNodes.length ||
+      !restored.every(
+        (node, index): node is Element =>
+          node !== undefined &&
+          node.type === chatNodes[index].node.type &&
+          NodeApi.string(node) === NodeApi.string(chatNodes[index].node)
+      )
+    ) {
+      return;
+    }
+    context.store.set({
+      chatNodes: chatNodes.map((chatNode, index) => ({
+        ...chatNode,
+        nodeKey: view.key(restored[index]),
+      })),
+    });
   };
   const withReviewRecords = (blocks: readonly Element[]) => {
     const { records } = editor.read.value();
@@ -546,12 +588,73 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       result.diagnostics.map(({ message }) => message).join('\n')
     );
   };
+  const scopeBlocks = (view: Editor, scope: Path) =>
+    (scope.length
+      ? (view.read.nodes.get(scope, { match: ElementApi.isElement })?.[0]
+          .children ?? [])
+      : view.read.children()
+    ).filter((node): node is Element => ElementApi.isElement(node));
+  const admitsAsDocument = (
+    view: Editor,
+    blocks: readonly Element[],
+    removing: number[]
+  ) =>
+    blocks.length > 0 &&
+    view.read((state) =>
+      canPlaceBlocksAtPath(state.schema, [0], blocks, { removing })
+    );
+  const shallowestDocumentScope = (
+    view: Editor,
+    selectedPaths: readonly Path[],
+    at: Range | null
+  ): Path => {
+    const targetPaths =
+      selectedPaths.length || !at
+        ? selectedPaths
+        : [at.anchor.path, at.focus.path].flatMap((path) => {
+            const block = view.read.nodes.block({ at: path, mode: 'lowest' });
+
+            return block ? [block[1]] : [];
+          });
+    if (!targetPaths.length) return [];
+    const around = targetPaths
+      .map((path) => PathApi.parent(path))
+      .reduce(PathApi.common);
+    const documentIndexes = editor.read.children().map((_, index) => index);
+
+    for (let depth = 0; depth <= around.length; depth++) {
+      const scope = around.slice(0, depth);
+
+      if (admitsAsDocument(view, scopeBlocks(view, scope), documentIndexes)) {
+        return scope;
+      }
+    }
+
+    return [];
+  };
   const serializeMarkdown = (
     view: Editor,
     state: AIChatPluginReadState,
     { type }: { type: MarkdownType }
   ) => {
     if (type === 'editor') {
+      const root = state.view.root() ?? SelectionApi.root(state.selection());
+
+      if (root) {
+        const rootView = projectEditorView(view, { root });
+        const selection = rootView.read.selection();
+        const scope = shallowestDocumentScope(
+          rootView,
+          rootView.read.selection.nodes().map(([, path]) => path),
+          selection
+        );
+
+        return promptMarkdown({
+          document: withReviewRecords(scopeBlocks(rootView, scope)),
+          projection: 'proposed',
+        });
+      }
+
       const document = state.value();
 
       return promptMarkdown({
@@ -699,16 +802,29 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       commandEditor,
       root ? { root } : {}
     );
-    const requestAt = at
+    const viewAt = at
       ? {
           ...at,
           anchor: { offset: at.anchor.offset, path: at.anchor.path },
           focus: { offset: at.focus.offset, path: at.focus.path },
         }
       : null;
-    const [firstSelectedNodePath, ...remainingSelectedNodePaths] =
+    const selectedPaths =
       selectedNodePaths ??
       requestEditor.read.selection.nodes().map(([, path]) => [...path]);
+    const scope = root
+      ? shallowestDocumentScope(requestEditor, selectedPaths, viewAt)
+      : [];
+    const inScope = (path: Path) => PathApi.relative(path, scope);
+    const requestAt = viewAt
+      ? {
+          ...viewAt,
+          anchor: { ...viewAt.anchor, path: inScope(viewAt.anchor.path) },
+          focus: { ...viewAt.focus, path: inScope(viewAt.focus.path) },
+        }
+      : null;
+    const [firstSelectedNodePath, ...remainingSelectedNodePaths] =
+      selectedPaths.map(inScope);
     const isNodeSelecting = !!firstSelectedNodePath;
     const nodeSelection = (() => {
       if (!firstSelectedNodePath || !requestAt) return null;
@@ -744,7 +860,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       isNodeSelecting
         ? requestEditor.read.nodes.blocks()
         : requestEditor.read.nodes.blocks({
-            at: requestAt && RangeApi.isExpanded(requestAt) ? requestAt : [],
+            at: viewAt && RangeApi.isExpanded(viewAt) ? viewAt : scope,
           })
     ).flatMap(([, path], index) => {
       const key = requestEditor.key(path);
@@ -755,14 +871,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
       blockRefs[ref] = { key };
 
-      return [{ path: [...path], ref }];
+      return [{ path: inScope(path), ref }];
     });
     const tableCellRefs: AIChatPluginState['_tableCellRefs'] = {};
     const tableCells = tablePlugin.installed
       ? (
           requestEditor
             .plugin(BaseTablePlugin)
-            .read.selection({ at: requestAt ?? undefined })?.cells ?? []
+            .read.selection({ at: viewAt ?? undefined })?.cells ?? []
         ).flatMap(([, path], index) => {
           const key = requestEditor.key(path);
 
@@ -772,7 +888,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
           tableCellRefs[ref] = { key };
 
-          return [{ path: [...path], ref }];
+          return [{ path: inScope(path), ref }];
         })
       : [];
 
@@ -782,7 +898,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     });
 
     return {
-      children: [...requestEditor.read.children()],
+      children: scopeBlocks(requestEditor, scope).map(withoutReviewMarks),
       nodeSelection,
       refs: { blocks, tableCells },
       selection: requestAt,
@@ -1238,7 +1354,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       if (writeSuggestion(tx, target, nextNodes)) publishedChangeId = changeId;
     });
 
-    suggestion = { children: actionEditor.read.children() };
+    suggestion = {
+      children: actionEditor.read.children(),
+      response: parsed.slice.content.filter((node): node is Element =>
+        ElementApi.isElement(node)
+      ),
+    };
     context.store.set({
       _changeId: publishedChangeId,
       previewValue: [],
@@ -1345,12 +1466,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const completeDetachedOutput = (
     commandEditor: Editor,
     action: 'insertBelow' | 'replaceSelection',
-    format: 'all' | 'none' | 'single'
+    format: 'all' | 'none' | 'single',
+    response?: Element[]
   ) => {
     let applied = false;
 
     getActionEditor(commandEditor)?.update((tx) => {
-      const source = getActionPreviewSource();
+      const source = response ?? getActionPreviewSource();
 
       if (!source) return;
       const capturedSelection = context.store.get('chatSelection');
@@ -1567,7 +1689,15 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       }: {
         format?: 'all' | 'none' | 'single';
       } = {}) => {
-        completeDetachedOutput(commandEditor, 'insertBelow', format);
+        const response = suggestion?.response;
+        if (
+          response &&
+          context.store.get('_changeId') &&
+          (!pendingChange() || !reviewSucceeded(decideCurrentChange('reject')))
+        ) {
+          return;
+        }
+        completeDetachedOutput(commandEditor, 'insertBelow', format, response);
       },
       /** Cancel the request, discard its draft, and request a new response. */
       reload: () => {
@@ -1595,7 +1725,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             ctx: {
               ...getRequestContext(
                 commandEditor,
-                commandEditor.read.selection()
+                commandEditor.read.selection() ?? editor.read.selection()
               ),
               toolName,
             },

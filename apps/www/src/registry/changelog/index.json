@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-18-ai-menu-acts-on-board-note-text",
+      "href": "/registry/changelog/2026-11-18-ai-menu-acts-on-board-note-text.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "AI menu acts on board note text",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu", "floating-toolbar", "board-demo"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-floating-rect-hides-clipped-text",
       "href": "/registry/changelog/2026-11-18-floating-rect-hides-clipped-text.json",
       "status": "draft",

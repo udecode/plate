@@ -447,6 +447,7 @@ aiChat.api.setPreview(accumulatedMarkdown);
 ### `editor.plugin(AIChatPlugin).api.insertBelow(options?)`
 
 在捕获的选择下方插入草稿，作为一个新的历史批次提交。
+聊天编辑生成建议后，它先在单独的历史批次中撤回该建议，再把响应插入目标下方，因此撤销需要两步。表格单元格编辑后，它不插入任何内容。
 
 <API name="insertBelow">
 <APIParameters>

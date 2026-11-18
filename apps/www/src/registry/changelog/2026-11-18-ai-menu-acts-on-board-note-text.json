@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-ai-menu-acts-on-board-note-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-ai-menu-acts-on-board-note-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "AI menu acts on board note text",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-ai-menu-acts-board-note-text-576327ed",
+      "kind": "behavior",
+      "summary": "Open under selected board note text and offer the selection commands. An accepted edit changes the note, not the page text at the same path. When a change replaces the block the menu sits beside, the menu moves to the block that now holds the selection.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-ai-menu-acts-on-board-note-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-floating-toolbar-ask-ai-board-note",
+      "kind": "behavior",
+      "summary": "Show Ask AI over selected board note text.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-ai-menu-acts-on-board-note-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-board-demo-intro",
+      "kind": "behavior",
+      "summary": "Open with a short quote, then the intro paragraph right before the board.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board-demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-ai-menu-acts-on-board-note-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

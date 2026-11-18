@@ -4634,6 +4634,7 @@
         "source-hash:partition:ai",
         "source-hash:partition:ai-react",
         "source-hash:partition:authored",
+        "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:details",
         "source-hash:partition:markdown",
