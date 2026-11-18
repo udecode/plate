@@ -123,7 +123,7 @@ const spent = Number(process.env.PSTACK_LAND_SPENT_MS) || 0;
 const elapsed = () => spent + performance.now();
 const STOPS = ['SIGINT', 'SIGTERM', 'SIGHUP'];
 const EX_TEMPFAIL = 75;
-const MOVED = /\[rejected\]|fetch first|non-fast-forward/u;
+const MOVED = /\[rejected\]|fetch first|non-fast-forward|cannot lock ref/u;
 const FRICTION_TOPIC = 'land-friction';
 const FRICTION_BOUND_MINUTES = 60;
 const FRICTION_WINDOW = 24 * 60 * 60_000;
@@ -307,28 +307,38 @@ async function restartOnRebasedHelpers(before) {
   process.exit(code ?? 1);
 }
 
+async function fetchPastRaces(prefix, remote, ref, where) {
+  const args = [...prefix, 'fetch', '--quiet', remote, `+refs/heads/${branch}:${ref}`];
+  for (let attempt = 1; ; attempt += 1) {
+    const run = await gitAsync(args);
+    if (run.status === 0 || attempt === 3 || !/cannot lock ref/u.test(run.stderr)) return run;
+    console.log(`another fetch moved ${where} while land.mjs fetched it; fetching again (retry ${attempt} of 2)`);
+  }
+}
+
+const fetchTheirs = () => fetchPastRaces(side, 'origin', cupstream, `${pair.dir}'s origin/${branch}`);
+const fetchOwn = () => fetchPastRaces([], canonical, upstream, target);
+
 async function fetchCompanionFirst() {
-  const own = ['fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`];
-  const theirs = ['fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`];
-  const crun = pair ? await gitAsync([...side, ...theirs]) : null;
-  const run = await gitAsync(own);
-  if (run.status !== 0) fail(`git ${own.join(' ')} failed: ${run.stderr.trim()}`);
-  if (crun && crun.status !== 0) fail(`git ${theirs.join(' ')} in ${pair.dir} failed: ${crun.stderr.trim()}`);
+  const crun = pair ? await fetchTheirs() : null;
+  const run = await fetchOwn();
+  if (run.status !== 0) fail(`git fetch --quiet ${canonical} +refs/heads/${branch}:${upstream} failed: ${run.stderr.trim()}`);
+  if (crun && crun.status !== 0) fail(`git fetch --quiet origin +refs/heads/${branch}:${cupstream} in ${pair.dir} failed: ${crun.stderr.trim()}`);
   // FETCH_HEAD is per worktree. Every worktree shares the upstream refs, and another session's push moves them.
   fetched = { own: must('rev-parse', 'FETCH_HEAD'), theirs: pair ? cmust('rev-parse', 'FETCH_HEAD') : null };
 }
 
 // A failed fetch reads as no move, because a flaky fetch of the other repository should not stop a push that its own origin accepts.
-function fetchedPastHead(run, remote, ref) {
-  if (run('fetch', '--quiet', remote, `+refs/heads/${branch}:${ref}`).status !== 0) return false;
+async function fetchedPastHead(fetch, run) {
+  if ((await fetch()).status !== 0) return false;
   return run('merge-base', '--is-ancestor', 'FETCH_HEAD', 'HEAD').status !== 0;
 }
 
-const companionMoved = () => fetchedPastHead(cgit, 'origin', cupstream);
-const publicMoved = () => fetchedPastHead(git, canonical, upstream);
+const companionMoved = () => fetchedPastHead(fetchTheirs, cgit);
+const publicMoved = () => fetchedPastHead(fetchOwn, git);
 
-function lateCompanionHalf() {
-  if (!pair || cgit('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`).status !== 0) return undefined;
+async function lateCompanionHalf() {
+  if (!pair || (await fetchTheirs()).status !== 0) return undefined;
   const commits = cmust('log', '--format=%B%x00', `${fetched.theirs}..FETCH_HEAD`).split('\0');
   const halves = commits.map((text) => [text.trim().split('\n')[0], text.match(/^Lands-With: (\S+)$/mu)?.[1]]);
   return halves.find(([subject, sha]) => sha && git('log', '-1', '--format=%s', sha).stdout.trim() === subject && git('merge-base', '--is-ancestor', sha, fetched.own).status === 0)?.[1];
@@ -479,7 +489,7 @@ async function pushCompanion(lead, publicLanded) {
     cmust('commit', '--quiet', '--amend', '--only', '--file', file);
   }
   for (;;) {
-    if (!publicLanded && publicMoved()) {
+    if (!publicLanded && (await publicMoved())) {
       await retry(target);
       continue;
     }
@@ -979,7 +989,7 @@ async function check(rebased = false) {
       );
     }
     if (run.status === 0) continue;
-    const late = lateCompanionHalf();
+    const late = await lateCompanionHalf();
     if (late) {
       console.log(`check failed: ${command}; it ran on ${late} without that commit's ${pair.dir} half, which reached origin/${branch} after land.mjs read it, so land.mjs checks both halves again.`);
       checkedMs += performance.now() - started;
@@ -1024,7 +1034,7 @@ if (fresh) {
 if (mode === 'push') {
   const pushesPublic = landing.own;
   while (landing.own) {
-    if (pair && companionMoved()) {
+    if (pair && (await companionMoved())) {
       await retry(`${pair.dir}'s origin/${branch}`);
       continue;
     }

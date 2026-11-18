@@ -134,7 +134,7 @@ const roundCap = () => {
 };
 const EXTRA_ROUND_FIXES = 3;
 const STEP_BUILT = /^built:\s*step\s+(\d+[a-z]?)(?![a-z0-9])/iu;
-const ROUND_STEP = /^built:\s*step\s+([a-z0-9]+(?:\.[a-z0-9]+)*)(?![a-z0-9]|\.[a-z0-9])/iu;
+const ROUND_STEP = /^built:\s*step\s+([a-z0-9]+(?:[.-][a-z0-9]+)*)(?![a-z0-9]|[.-][a-z0-9])/iu;
 // A built: row for a step the log has built before records that step's fixes, not a new diff, so it starts no count.
 function trackRound(state, line) {
   const [, phase, decision = '', , , result = ''] = line.split('\t');

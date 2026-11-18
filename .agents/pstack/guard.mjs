@@ -385,8 +385,15 @@ function companionDenial(words, cwd, companion) {
 const globMatches = (pattern, name) =>
   new RegExp(`^${pattern.split('*').map((part) => part.replace(/[.+?^${}()|[\]\\]/gu, '\\$&')).join('.*')}$`, 'u').test(name);
 
+// Claude Code kills a hook at its settings entry's timeout, 10 seconds in Plate,
+// and a killed hook lets the edit through. So the git calls share one budget
+// that ends 8 seconds after the process starts, instead of a short limit per
+// call, which refused valid edits on a loaded host.
+const GIT_DEADLINE = performance.timeOrigin + 8000;
 const git = (dir, ...args) => {
-  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout: 1000, killSignal: 'SIGKILL' });
+  const timeout = Math.floor(GIT_DEADLINE - Date.now());
+  if (timeout <= 0) return null;
+  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout, killSignal: 'SIGKILL' });
   return run.error || run.status !== 0 ? null : run.stdout.replace(/\n$/u, '');
 };
 const sameDir = (a, b) => {
