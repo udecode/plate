@@ -1,6 +1,25 @@
 {
   "schemaVersion": 1,
   "components": {
+    "import-toolbar-button": [
+      "2026-11-18-html-markdown-import-keeps-the-rest",
+      "2026-11-16-save-comment-ranges",
+      "2026-11-07-docx-fewer-install-dependencies",
+      "2026-10-29-name-lost-word-formatting",
+      "2026-10-29-word-import-keeps-the-rest",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-12-neutral-stored-names",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-07-editor-user",
+      "2026-09-29-word-export-loss-and-source-reuse",
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "toolbar": [
       "2026-11-18-radix-ui-package",
       "2026-11-17-cn-package",
@@ -762,24 +781,6 @@
     ],
     "formatting": ["2026-11-16-clear-formatting"],
     "clear-formatting-toolbar-button": ["2026-11-16-clear-formatting"],
-    "import-toolbar-button": [
-      "2026-11-16-save-comment-ranges",
-      "2026-11-07-docx-fewer-install-dependencies",
-      "2026-10-29-name-lost-word-formatting",
-      "2026-10-29-word-import-keeps-the-rest",
-      "2026-10-12-fix-list-import-export",
-      "2026-10-12-neutral-stored-names",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-07-editor-user",
-      "2026-09-29-word-export-loss-and-source-reuse",
-      "2026-09-27-document-conversion-contracts",
-      "2026-09-24-export-menu-projection",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
-    ],
     "comment-persistence-demo": [
       "2026-11-16-save-comment-ranges",
       "2026-10-13-editor-width-padding",

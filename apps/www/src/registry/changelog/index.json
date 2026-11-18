@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-18-html-markdown-import-keeps-the-rest",
+      "href": "/registry/changelog/2026-11-18-html-markdown-import-keeps-the-rest.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Import the rest of an HTML or Markdown file that holds content the editor cannot show, and name what was not imported",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["import-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-radix-ui-package",
       "href": "/registry/changelog/2026-11-18-radix-ui-package.json",
       "status": "draft",

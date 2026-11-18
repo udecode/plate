@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-html-markdown-import-keeps-the-rest",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-html-markdown-import-keeps-the-rest.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Import the rest of an HTML or Markdown file that holds content the editor cannot show, and name what was not imported",
+  "targets": [
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-import-toolbar-rest-an-html-markdown-84a985c5",
+      "kind": "fix",
+      "summary": "Import the rest of an HTML or Markdown file that holds content the editor cannot show, and name what was not imported",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["import-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-html-markdown-import-keeps-the-rest",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

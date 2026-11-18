@@ -28,47 +28,32 @@ import {
 } from '@/registry/components/editor/dropdown-menu';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-const toastWarnings = (
-  diagnostics: ReadonlyArray<Readonly<{ impact?: string; severity: string }>>
-) => {
-  const warningCount = diagnostics.filter(
-    ({ impact, severity }) => severity === 'warning' && impact !== 'lossless'
-  ).length;
-
-  if (warningCount > 0) {
-    toast.warning(
-      `Imported with ${warningCount} warning${warningCount === 1 ? '' : 's'}.`
-    );
-  }
-};
-
 const plural = (count: number, noun: string) =>
   `${count} ${noun}${count === 1 ? '' : 's'}`;
 
-const COUNTED_BY_COMMENT_TOASTS = new Set(['comment-range']);
-
-const toastDocxLosses = (
-  diagnostics: ReadonlyArray<
-    Readonly<{
-      code: string;
-      feature?: string;
-      impact?: string;
-      severity: string;
-    }>
-  >
+const toastLosses = <D extends Readonly<{ impact?: string; severity: string }>>(
+  diagnostics: readonly D[],
+  nameLoss: (
+    diagnostic: D
+  ) => Readonly<{ format?: boolean; name: string }> | undefined
 ) => {
   const dropped = new Set<string>();
   const formats = new Set<string>();
   let other = 0;
 
-  for (const { code, feature, impact, severity } of diagnostics) {
-    if (severity !== 'warning' || impact === 'lossless') continue;
-    if (!feature) {
-      other += 1;
-    } else if (!COUNTED_BY_COMMENT_TOASTS.has(feature)) {
-      (code === 'property-dropped' ? formats : dropped).add(
-        feature.replaceAll('-', ' ')
+  for (const diagnostic of diagnostics) {
+    if (diagnostic.severity !== 'warning' || diagnostic.impact === 'lossless') {
+      continue;
+    }
+
+    const loss = nameLoss(diagnostic);
+
+    if (loss) {
+      (loss.format ? formats : dropped).add(
+        loss.name.replaceAll(/-|(?=[A-Z])/g, ' ').toLowerCase()
       );
+    } else {
+      other += 1;
     }
   }
 
@@ -249,7 +234,7 @@ export function ImportToolbarButton({
     multiple: false,
     onFilesSelected: async ({ plainFiles }: { plainFiles: File[] }) => {
       const text = await plainFiles[0].text();
-      const result = markdownApi.parse(text);
+      const result = markdownApi.parse(text, { lossPolicy: 'allow' });
 
       if (!result.ok) {
         toast.error(
@@ -262,7 +247,12 @@ export function ImportToolbarButton({
 
       onImport(createImportedEditor(result.document));
       docxSource?.replaceSource(null);
-      toastWarnings(result.diagnostics);
+      toastLosses(result.diagnostics, (diagnostic) =>
+        diagnostic.code === 'markdown-unsupported-node' ||
+        diagnostic.code === 'markdown-unsafe-content'
+          ? { name: diagnostic.nodeType }
+          : undefined
+      );
     },
   });
 
@@ -271,7 +261,7 @@ export function ImportToolbarButton({
     multiple: false,
     onFilesSelected: async ({ plainFiles }: { plainFiles: File[] }) => {
       const text = await plainFiles[0].text();
-      const result = editor.api.html.parse(text);
+      const result = editor.api.html.parse(text, { lossPolicy: 'allow' });
 
       if (!result.ok) {
         toast.error(
@@ -284,7 +274,15 @@ export function ImportToolbarButton({
 
       onImport(createImportedEditor(result.document));
       docxSource?.replaceSource(null);
-      toastWarnings(result.diagnostics);
+      toastLosses(result.diagnostics, (diagnostic) =>
+        (diagnostic.code === 'html-unsafe-content' ||
+          diagnostic.code === 'html-unsupported-content') &&
+        diagnostic.kind === 'element' &&
+        diagnostic.source?.kind === 'tree' &&
+        diagnostic.source.tag
+          ? { name: diagnostic.source.tag }
+          : undefined
+      );
     },
   });
 
@@ -341,7 +339,19 @@ export function ImportToolbarButton({
         docxSource.replaceSource(result.source);
       }
 
-      toastDocxLosses(result.diagnostics);
+      toastLosses(
+        result.diagnostics.filter(
+          (diagnostic) =>
+            !('feature' in diagnostic) || diagnostic.feature !== 'comment-range'
+        ),
+        (diagnostic) =>
+          'feature' in diagnostic && diagnostic.feature
+            ? {
+                format: diagnostic.code === 'property-dropped',
+                name: diagnostic.feature,
+              }
+            : undefined
+      );
       const imported = adopted?.imported ?? 0;
       const skipped = commentsInstalled
         ? (adopted?.skipped ?? result.comments.length)
