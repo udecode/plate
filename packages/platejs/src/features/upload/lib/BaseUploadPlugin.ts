@@ -27,6 +27,7 @@ import {
   configureAuthoredView,
   getActiveEditorTransaction,
   getAuthoredUpdateView,
+  getViewAuthor,
   readAuthoredView,
   reportEditorLifecycleError,
   withStoredAuthoredRead,
@@ -740,9 +741,8 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           },
           (input: File[] | FileList, options: UploadSubmitOptions = {}) => {
             const files = Array.from(input);
-            const authored = readAuthoredView(
-              getAuthoredUpdateView(updateEditor)
-            );
+            const writer = getAuthoredUpdateView(updateEditor);
+            const authored = readAuthoredView(writer);
 
             if (
               files.length === 0 ||
@@ -889,10 +889,12 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               prepared.push(...prepareInserted(elements));
             }
 
+            const authorId = getViewAuthor(writer);
+
             afterCommit(() => {
-              // A task keeps the intent that admitted it, so its view can turn
-              // read-only, unmount or preview while the task runs.
-              const owner = createEditorView(editor);
+              // A task keeps the author and intent that admitted it, so its
+              // view can turn read-only, unmount or preview while the task runs.
+              const owner = createEditorView(editor, { authorId });
 
               configureAuthoredView(owner, authored);
 

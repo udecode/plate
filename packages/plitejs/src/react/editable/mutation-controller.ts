@@ -9,6 +9,7 @@ import {
   type TransactionSpec,
   type Value,
 } from '../..';
+import { withAuthoredUpdateView } from '../../core/authored-runtime';
 import { withCompositionStamp } from '../../core/composition-stamp';
 import {
   type NativeGroupingInput,
@@ -345,45 +346,53 @@ const applyProjectedViewSelectionDataCommand = ({
 
   const { target } = resolution;
 
-  const pasted = editor.read((state) => {
-    const deletion = state.transaction(() => {
-      deleteProjectedRangesToStart(editor, target, (range) => {
-        applyInProjectedRoot(
-          editor,
-          rootOfRange(range),
-          (tx) =>
-            evaluateCommandWithState(
-              editor,
-              editorCommands.deleteFragment,
-              tx,
-              {
-                at: range,
-                direction: 'forward',
-              }
-            ).result
-        );
-      });
-    });
-
-    return continueTransactionSpecOrDiscardPrefix(
-      runtimeEditor,
-      deletion,
-      () => {
-        const evaluation: { result?: false | TransactionSpec } = {};
-        const insertion = state.transaction(() => {
-          evaluation.result = applyInProjectedRoot(
+  // The paste's commands evaluate outside an update, so they bind the view
+  // as an update does, and read its author, intent and draft setting.
+  const pasted = withAuthoredUpdateView(editor, editor, () =>
+    editor.read((state) => {
+      const deletion = state.transaction(() => {
+        deleteProjectedRangesToStart(editor, target, (range) => {
+          applyInProjectedRoot(
             editor,
-            target.start.root,
+            rootOfRange(range),
             (tx) =>
-              evaluateCommandWithState(editor, domCommands.insertData, tx, data)
-                .result
+              evaluateCommandWithState(
+                editor,
+                editorCommands.deleteFragment,
+                tx,
+                {
+                  at: range,
+                  direction: 'forward',
+                }
+              ).result
           );
         });
+      });
 
-        return evaluation.result ? insertion : false;
-      }
-    );
-  });
+      return continueTransactionSpecOrDiscardPrefix(
+        runtimeEditor,
+        deletion,
+        () => {
+          const evaluation: { result?: false | TransactionSpec } = {};
+          const insertion = state.transaction(() => {
+            evaluation.result = applyInProjectedRoot(
+              editor,
+              target.start.root,
+              (tx) =>
+                evaluateCommandWithState(
+                  editor,
+                  domCommands.insertData,
+                  tx,
+                  data
+                ).result
+            );
+          });
+
+          return evaluation.result ? insertion : false;
+        }
+      );
+    })
+  );
   if (!pasted) return true;
 
   watchProjectedHistoryRanges(editor);
