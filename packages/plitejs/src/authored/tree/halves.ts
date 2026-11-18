@@ -4,9 +4,16 @@ import {
   type CompiledEditorSchema,
   getCompiledPropertyCandidates,
 } from '../../core/schema-compiler';
+import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 import { elementContextAt, type Place, STRUCTURE } from './holds';
-import { type AuthoredMark, isBetweenChange, isPlaceChange } from './marks';
+import type { FormatWrite } from './layers';
+import {
+  type AuthoredMark,
+  isBetweenChange,
+  isPlaceChange,
+  type SplitGave,
+} from './marks';
 
 type Node = JsonRecord & { children?: readonly Node[]; text?: string };
 
@@ -72,7 +79,10 @@ const isText = (node: Node) => typeof node.text === 'string';
 const typeOf = (props: Readonly<JsonRecord>) =>
   typeof props.type === 'string' ? props.type : null;
 
-const compares = (schema: CompiledEditorSchema | null, key: string) =>
+export const joinCompares = (
+  schema: CompiledEditorSchema | null,
+  key: string
+) =>
   !STRUCTURE.has(key) &&
   !(
     schema &&
@@ -86,6 +96,43 @@ const dropsOnSplit = (schema: CompiledEditorSchema | null, key: string) =>
   getCompiledPropertyCandidates(schema, 'element', key).some(
     (property) => property.lifecycle.split === 'drop'
   );
+
+export const ownOf = (record: Readonly<JsonRecord>, key: string) =>
+  Object.hasOwn(record, key) ? record[key] : undefined;
+
+const writeOf = (value: unknown): FormatWrite =>
+  value === undefined
+    ? { kind: 'remove' }
+    : { kind: 'set', value: value as EditorJsonValue };
+
+export const gaveBy = (
+  source: Readonly<JsonRecord>,
+  tail: Readonly<JsonRecord>,
+  compares: (key: string) => boolean,
+  keeps: (key: string) => boolean,
+  dropped: ReadonlySet<string>,
+  declared: ReadonlyMap<string, unknown>
+): SplitGave => {
+  const copied = (key: string) =>
+    keeps(key) &&
+    !dropped.has(key) &&
+    jsonEqual(ownOf(source, key), ownOf(tail, key));
+  const heldOrFilled = (key: string) =>
+    Object.hasOwn(tail, key) ? tail[key] : declared.get(key);
+
+  return Object.fromEntries(
+    [
+      ...new Set([
+        ...Object.keys(source),
+        ...Object.keys(tail),
+        ...dropped,
+        ...declared.keys(),
+      ]),
+    ]
+      .filter((key) => (key === 'type' || compares(key)) && !copied(key))
+      .map((key) => [key, writeOf(heldOrFilled(key))])
+  );
+};
 
 /**
  * Whether the right half reads `key` as its split's output, which the left
@@ -148,7 +195,7 @@ const halvesDiffer = (
     ...Object.keys(left.props),
     ...Object.keys(right.props),
   ])) {
-    if (!compares(schema, key)) continue;
+    if (!joinCompares(schema, key)) continue;
     const value = reads(left.props, key);
     const rightValue = readsSplitOutput(schema, right, key)
       ? value
@@ -189,7 +236,7 @@ const touchingOf = (
           ? (half === halves.left
               ? !readsLeft(schema, halves.right, mark.key)
               : !half.splitHistory.has(mark)) &&
-            (mark.key === 'type' || compares(schema, mark.key))
+            (mark.key === 'type' || joinCompares(schema, mark.key))
           : mark.kind === 'insert' || mark.kind === 'delete'
       )
     );

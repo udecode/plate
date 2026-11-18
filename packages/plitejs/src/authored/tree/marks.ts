@@ -7,7 +7,7 @@ import type { Element } from '../../interfaces/element';
 import type { EditorJsonValue } from '../../interfaces/json';
 import type { Path } from '../../interfaces/path';
 import { isEditingChange } from '../facts/editing';
-import type { FormatTag } from './layers';
+import type { FormatTag, FormatWrite } from './layers';
 
 export const AUTHORED_MARKS_KEY = 'authored';
 
@@ -100,8 +100,10 @@ export type AuthoredMark =
          */
         key?: string;
         kind: 'join' | 'joined';
-      }>)
+      }> &
+      NoGave)
   | (MarkBase &
+      NoGave &
       Readonly<{
         cut?: undefined;
         follows?: undefined;
@@ -111,26 +113,45 @@ export type AuthoredMark =
           'format' | 'insert' | 'join' | 'joined' | 'split'
         >;
       }>)
+  | (MarkBase & Follows & NoGave & Readonly<{ kind: 'insert' }>)
   | (MarkBase &
+      Follows &
       Readonly<{
-        cut?: undefined;
         /**
-         * The link of the pending join this block goes with, `linkOf` of that
-         * join: for a split, the one the source line carried, or followed, when
-         * the split cut it; for an inserted block, the one the block before it
-         * carries or goes with, or else the one whose target and line it was
-         * written between. Where that join takes its line, such as into a
-         * quote, the block lands right after it, in document order among the
-         * join's other followers, and the join never merges into it. A keyed
-         * link that names a `joined` claim or no block does nothing, and so
-         * does a keyless one whose nearest keyless holder is a `joined` claim.
+         * On a block split, what the split gave its new line: for each key a
+         * join compares, and `type`, whose value the split did not copy from
+         * the line it split, the value the new line holds, the default its
+         * place fills in, or its removal. A split saved before splits recorded
+         * this has none, and so does a split an Editing change records or one
+         * whose line the recorder cannot pair with a line the document held
+         * before the step.
          */
-        follows?: string;
-        key?: undefined;
-        kind: 'insert' | 'split';
+        gave?: SplitGave;
+        kind: 'split';
       }>)
-  | CutTag
-  | FormatTag;
+  | (CutTag & NoGave)
+  | (FormatTag & NoGave);
+
+type Follows = Readonly<{
+  cut?: undefined;
+  /**
+   * The link of the pending join this block goes with, `linkOf` of that join:
+   * for a split, the one the source line carried, or followed, when the split
+   * cut it; for an inserted block, the one the block before it carries or
+   * goes with, or else the one whose target and line it was written between.
+   * Where that join takes its line, such as into a quote, the block lands
+   * right after it, in document order among the join's other followers, and
+   * the join never merges into it. A keyed link that names a `joined` claim or
+   * no block does nothing, and so does a keyless one whose nearest keyless
+   * holder is a `joined` claim.
+   */
+  follows?: string;
+  key?: undefined;
+}>;
+
+type NoGave = Readonly<{ gave?: undefined }>;
+
+export type SplitGave = Readonly<Record<string, FormatWrite>>;
 
 /** @internal */
 export const isContextInsertion = (mark: AuthoredMark) =>
@@ -453,11 +474,23 @@ export const parseMember = (value: unknown): AuthoredMember | null => {
   const follows =
     kind === 'split' || kind === 'insert' ? value.follows : undefined;
   const key = kind === 'join' || kind === 'joined' ? value.key : undefined;
+  const gave = kind === 'split' ? value.gave : undefined;
 
   if (
     (follows !== undefined &&
       (typeof follows !== 'string' || follows.length === 0)) ||
-    (key !== undefined && (typeof key !== 'string' || key.length === 0))
+    (key !== undefined && (typeof key !== 'string' || key.length === 0)) ||
+    (gave !== undefined &&
+      !(
+        isRecord(gave) &&
+        Object.entries(gave).every(
+          ([field, write]) =>
+            field !== AUTHORED_MARKS_KEY &&
+            field !== 'children' &&
+            field !== 'text' &&
+            isFormatWrite(write)
+        )
+      ))
   ) {
     return null;
   }
@@ -466,6 +499,7 @@ export const parseMember = (value: unknown): AuthoredMember | null => {
     4 +
       (inc === undefined ? 0 : 1) +
       (follows === undefined ? 0 : 1) +
+      (gave === undefined ? 0 : 1) +
       (key === undefined ? 0 : 1)
     ? (value as AuthoredMark | HeldDeletion)
     : null;

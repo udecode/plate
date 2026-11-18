@@ -190,6 +190,7 @@ import {
 import { characterAlignedChange } from './tree/alignment';
 import { closeCommandValues, generatedOf } from './tree/command-values';
 import { relinkCuts } from './tree/cuts';
+import { joinCompares } from './tree/halves';
 import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
 import {
   type AuthoredMark,
@@ -2259,6 +2260,25 @@ export const createAuthoredPlugin = (
             slotted: (type, root) =>
               (authoredResolveSchemaOf(editor).content(type, root)?.prefix ??
                 0) > 0,
+            declaredIn: (element, ancestors, root) =>
+              getEditorSchema(editor).elementDeclaredPropertiesIn(
+                elementOf(element),
+                { ancestors: ancestors.map(elementOf), root }
+              ),
+            splitKeepsIn: (source, continuation, place, root) =>
+              getEditorSchema(editor).elementSplitKeepsIn(
+                elementOf(source),
+                elementOf(continuation),
+                {
+                  continuationAncestors:
+                    place.continuationAncestors.map(elementOf),
+                  continuationIndex: place.continuationIndex,
+                  root,
+                  sourceAncestors: place.sourceAncestors.map(elementOf),
+                }
+              ),
+            joinCompares: (key) =>
+              joinCompares(getCompiledEditorSchema(editor), key),
             now: at,
             oneText,
             ownedRoots: (props) => {

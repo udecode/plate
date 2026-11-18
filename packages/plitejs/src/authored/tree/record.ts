@@ -54,6 +54,7 @@ import { unrepresentableFor, unrepresentable } from '../refusal';
 import { carriedJudge, type MovedCopy } from './carried';
 import { isCut } from './cuts';
 import { refuseUnplacedGridWrite } from './grid';
+import { gaveBy, ownOf } from './halves';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
   AUTHORED_MARKS_KEY,
@@ -123,6 +124,18 @@ export type AuthoredRecordInput = Readonly<{
    * slot forces.
    */
   slotted: (type: string | null, root: string) => boolean;
+  declaredIn: (
+    element: Props,
+    ancestors: readonly Props[],
+    root: string
+  ) => ReadonlyMap<string, unknown>;
+  splitKeepsIn: (
+    source: Props,
+    continuation: Props,
+    place: SplitPlace,
+    root: string
+  ) => (key: string, value: unknown) => boolean;
+  joinCompares: (key: string) => boolean;
   now: number;
   /** Element types that hold exactly one text, which marks must not split. */
   oneText?: (type: string) => boolean;
@@ -185,6 +198,12 @@ type OwnedRoot = Readonly<{ exclusive: boolean; root: string }>;
  * deletion moved away from, as the selection after Backspace or Delete does.
  */
 type PosMap = (position: number, assoc: -1 | 1, caret?: boolean) => number;
+
+type SplitPlace = Readonly<{
+  continuationAncestors: readonly Props[];
+  continuationIndex: number;
+  sourceAncestors: readonly Props[];
+}>;
 
 type SplitContinuation = Readonly<{
   continuation: Props;
@@ -1862,6 +1881,11 @@ export const recordAuthoredSteps = (
             isOwn,
             keepsOnSplit: (split) => input.keepsOnSplit(split, root),
             slotted: (type) => input.slotted(type, root),
+            declaredIn: (element, ancestors) =>
+              input.declaredIn(element, ancestors, root),
+            splitKeepsIn: (source, continuation, place) =>
+              input.splitKeepsIn(source, continuation, place, root),
+            joinCompares: input.joinCompares,
             leftward: fold.leftward,
             markOf,
             moveRole: sub.role,
@@ -2076,6 +2100,16 @@ type RecorderOptions = Readonly<{
     split: SplitContinuation
   ) => (key: string, value: unknown) => boolean;
   slotted: (type: string | null) => boolean;
+  declaredIn: (
+    element: Props,
+    ancestors: readonly Props[]
+  ) => ReadonlyMap<string, unknown>;
+  splitKeepsIn: (
+    source: Props,
+    continuation: Props,
+    place: SplitPlace
+  ) => (key: string, value: unknown) => boolean;
+  joinCompares: (key: string) => boolean;
   leftward: boolean;
   markOf: (kind: Exclude<AuthoredMark['kind'], 'format'>) => AuthoredMark;
   moveRole: 'landing' | 'source' | null;
@@ -2097,6 +2131,7 @@ class RootRecorder {
     Readonly<{ at: number; from: number; offset: number; to: number }>
   > = [];
   private readonly ops: Op[] = [];
+  private readonly propsWrittenAtStart = new Map<number, Props>();
   private readonly pieces: Piece[] = [];
   private readonly freshened = new WeakSet<Op>();
   private readonly splitHalves = new WeakSet<JsonToken>();
@@ -3233,6 +3268,7 @@ class RootRecorder {
 
     const props = this.formattedProps(previous, next);
 
+    this.propsWrittenAtStart.set(at, next);
     if (props) this.ops.push({ at, kind: 'props', props });
     const frameText =
       frameAt === null
@@ -4425,7 +4461,15 @@ class RootRecorder {
             ...(suggested && !rightCuts
               ? [
                   closedElement
-                    ? this.splitOf(continued, claim)
+                    ? this.splitOf(
+                        continued,
+                        claim,
+                        token.props,
+                        dropped,
+                        stack
+                          .slice(0, -1)
+                          .filter((context) => context.kind === 'element')
+                      )
                     : this.options.markOf('wrap'),
                 ]
               : []),
@@ -4691,10 +4735,17 @@ class RootRecorder {
 
   private splitOf(
     source: Context | undefined,
-    claim: AuthoredMark
+    claim: AuthoredMark,
+    tail: Props,
+    dropped: ReadonlySet<string> | null,
+    openElements: readonly Context[]
   ): AuthoredMark {
     const { at, author, change, inc } = claim;
     const follows = source ? this.followedBy(source.props) : undefined;
+    const place =
+      source && source.path.length > 0 && !isEditingChange(change)
+        ? this.splitPlace(source.path, openElements)
+        : null;
 
     return {
       at,
@@ -4702,8 +4753,68 @@ class RootRecorder {
       change,
       ...(inc === undefined ? {} : { inc }),
       ...(follows === undefined ? {} : { follows }),
+      ...(source && place
+        ? { gave: this.gaveOf(source.props, tail, dropped, place) }
+        : {}),
       kind: 'split',
     };
+  }
+
+  private splitPlace(
+    path: readonly number[],
+    openElements: readonly Context[]
+  ): SplitPlace {
+    const parent = openElements.at(-1);
+
+    return {
+      continuationAncestors: openElements
+        .map((context) =>
+          context.path.length === 0
+            ? context.props
+            : (this.propsWrittenAtStart.get(context.contentFrom - 1) ??
+              context.props)
+        )
+        .reverse(),
+      continuationIndex:
+        parent?.path.length === 0
+          ? 0
+          : getDefined(path[parent?.path.length ?? 0]) + 1,
+      sourceAncestors: path
+        .slice(1)
+        .map((_, depth) => propsOf(this.index.node(path.slice(0, depth + 1))))
+        .reverse(),
+    };
+  }
+
+  private gaveOf(
+    source: Props,
+    tail: Props,
+    dropped: ReadonlySet<string> | null,
+    place: SplitPlace
+  ) {
+    const keeps = this.options.splitKeepsIn(source, tail, place);
+
+    return gaveBy(
+      source,
+      tail,
+      this.options.joinCompares,
+      (key) => keeps(key, ownOf(source, key)),
+      dropped ?? new Set(),
+      this.declaredAtEitherPlace(source, tail, place)
+    );
+  }
+
+  private declaredAtEitherPlace(
+    source: Props,
+    tail: Props,
+    place: SplitPlace
+  ): ReadonlyMap<string, unknown> {
+    return new Map([
+      ...[...this.options.declaredIn(source, place.sourceAncestors).keys()].map(
+        (key) => [key, undefined] as const
+      ),
+      ...this.options.declaredIn(tail, place.continuationAncestors),
+    ]);
   }
 
   private containerType(path: readonly number[]) {

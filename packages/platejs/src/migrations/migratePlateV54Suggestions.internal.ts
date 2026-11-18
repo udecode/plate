@@ -380,7 +380,9 @@ export const migratePlateV54Suggestions = (
     const base = { at: data.createdAt, author: data.userId, change: data.id };
 
     if (data.type === 'insert') {
-      return { ...base, kind: data.isLineBreak ? 'split' : 'insert' };
+      return data.isLineBreak
+        ? { ...base, kind: 'split' }
+        : { ...base, kind: 'insert' };
     }
 
     return { ...base, kind: data.isLineBreak ? 'join' : 'delete' };
