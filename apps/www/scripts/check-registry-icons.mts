@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { collectLucideUses } from './lucide-icons.mts';
+import { collectLucideUses, findMissingIconNames } from './lucide-icons.mts';
 import { isImportableRegistrySource } from './registry-imports.mts';
 
 function listSourceFiles(directory: string): string[] {
@@ -20,11 +20,12 @@ const files =
     : listSourceFiles(path.join(import.meta.dirname, '../src/registry'));
 const errors = files.flatMap((filePath) => {
   const relativePath = path.relative(process.cwd(), filePath);
-
-  return collectLucideUses(
+  const { imports, strays } = collectLucideUses(
     readFileSync(filePath, 'utf-8'),
     relativePath
-  ).strays.map(
+  );
+
+  return [...strays, ...findMissingIconNames(imports)].map(
     ({ location, message }) =>
       `${relativePath}:${location.line}:${location.column}: ${message}`
   );
@@ -32,7 +33,7 @@ const errors = files.flatMap((filePath) => {
 
 if (errors.length > 0) {
   console.error(
-    `Registry icon check failed: every Lucide icon must be a JSX element so the registry build can swap it for the project's icon library.\n${errors.join('\n')}`
+    `Registry icon check failed: the registry build swaps each Lucide icon for the project's icon library, so every icon must be a JSX element with a name in each library.\n${errors.join('\n')}`
   );
   process.exit(1);
 }

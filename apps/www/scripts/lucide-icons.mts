@@ -1,5 +1,6 @@
 import { parse } from '@babel/parser';
 
+import { getIconNames, ICON_LIBRARIES } from './icon-names.mts';
 import { type AstNode, getLocation, isAstNode } from './registry-imports.mts';
 
 export type SourceLocation = ReturnType<typeof getLocation>;
@@ -27,6 +28,7 @@ export type LucideUses = {
 };
 
 const LUCIDE_PACKAGE = 'lucide-react';
+const ICON_NAMES_FILE = 'apps/www/scripts/icon-names.mts';
 const ELEMENT_FIX =
   'import each icon by name and write it as a self-closing JSX element, such as `icon: <Name className="..." />`';
 const TYPE_FIX =
@@ -230,4 +232,22 @@ export function collectLucideUses(
   visit(program, null, '');
 
   return uses;
+}
+
+export function findMissingIconNames(imports: LucideImport[]): LucideStray[] {
+  return imports.flatMap(({ imported, location }) => {
+    const names = getIconNames(imported);
+    const missing = ICON_LIBRARIES.filter((library) => !names?.[library]);
+
+    if (missing.length === 0) return [];
+
+    return [
+      {
+        location,
+        message: names
+          ? `imports ${imported}, whose row in ${ICON_NAMES_FILE} has no ${missing.join(', ')} name`
+          : `imports ${imported}, which has no row in ${ICON_NAMES_FILE}; add its ${missing.join(', ')} names`,
+      },
+    ];
+  });
 }

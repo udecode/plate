@@ -750,6 +750,7 @@ export const steps = [
     run: 'node apps/www/scripts/check-registry-icons.mts',
     affected: touches(
       'apps/www/scripts/check-registry-icons.mts',
+      'apps/www/scripts/icon-names.mts',
       'apps/www/scripts/lucide-icons.mts',
       'apps/www/scripts/registry-imports.mts',
       'apps/www/src/registry/'
