@@ -31,7 +31,7 @@ Run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs status`. Repor
 
 ## Keep watching
 
-Make sure one watcher session is watching: a session that stays open and starts a fix for each red step. Run it after the app quits or the Claude account changes, because the watcher's background wait ends with the app. The owner chose Sonnet at medium for the watcher, as `AGENTS.md`'s Plate overrides say. The watcher works in the main checkout, which can lag next, so its prompt is "Read `<main checkout>/.claude/worktrees/local-ci/.agents/skills/local-ci/SKILL.md` in full and run its watch mode.", with the main checkout's absolute path. That copy moves with every run.
+Make sure one watcher session is watching: a session that stays open and starts a fix for each red step, one at a time. Run it after the app quits or the Claude account changes, because the watcher's background wait ends with the app. The owner chose Sonnet at medium for the watcher, as `AGENTS.md`'s Plate overrides say. The watcher works in the main checkout, which can lag next, so its prompt is "Read `<main checkout>/.claude/worktrees/local-ci/.agents/skills/local-ci/SKILL.md` in full and run its watch mode.", with the main checkout's absolute path. That copy moves with every run.
 
 1. Call `mcp__ccd_session_mgmt__get_session` with `"self"`. When this session's title is "Local CI", run `watch` here and stop.
 2. Call `mcp__ccd_session_mgmt__list_sessions` and look for an unarchived session titled "Local CI". When it is mid-turn, report it and stop. When it is idle, send it the watcher prompt with `SendMessage` (`to`: its session id), which restarts its loop unless its wait still runs, report it and stop.
@@ -39,14 +39,14 @@ Make sure one watcher session is watching: a session that stays open and starts 
 
 ## watch
 
-The watcher's loop. It reads events and spawns one fix subagent for each red step. It never edits, lands or fixes code itself, and it keeps each turn short.
+The watcher's loop. It reads events and runs one fix subagent at a time, each for one red step. It never edits, lands or fixes code itself, and it keeps each turn short.
 
 1. Unless a wait this session started is still running, run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or the current time in ISO form on the first loop. The command exits when the runner writes an event the watcher acts on and prints one JSON line per event. The session wakes when it exits.
 2. Handle each printed event:
-   - `kind: "red"` or `kind: "flake"` with `wake: true`: spawn a fix subagent with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Each such event names one step and the task offered for it, so two red steps get two subagents that work at once.
-   - `dry: true`: spawn the same subagent with the Dry brief.
+   - `kind: "red"` or `kind: "flake"` with `wake: true`: when no fix subagent is running, spawn one with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Otherwise add the event to the end of the queue. Each such event names one step and the task offered for it. Only one fix subagent runs at a time (owner's word, 2026-11-18), because each one runs heavy checks, and two at once slow the host until steps time out.
+   - `dry: true`: spawn the same subagent with the Dry brief. It only reads, so it starts even while a fix runs.
    - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-local-ci/`. When the cause is the Local CI worktree's install, run `pnpm install --frozen-lockfile` inside that worktree; the next wake retries the tip. Otherwise say the cause in this session's reply and send no message.
-3. When a fix subagent finishes, save its report to `docs/plans/artifacts/local-ci/<day>/fix-<task id or step>.md` in the main checkout, then reply with one line per task: the step and the fix commit, or why it is still open.
+3. When a fix subagent finishes, save its report to `docs/plans/artifacts/local-ci/<day>/fix-<task id or step>.md` in the main checkout. Then go through the queue in order. Drop an event when `status` shows a green run after it, because that run passed its step, and spawn a fix subagent for the first event left, as step 2 says. Reply with one line per finished task: the step and the fix commit, or why it is still open. Add one line that lists the steps still queued, so the queue survives a compaction.
 4. Go back to step 1 with the newest handled event's `at`.
 
 Nothing in the lane posts to the team channel: not the runner, this watcher or a fix subagent (owner's word, 2026-11-17). The fix subagents run on Opus at high, the models sheet's bug-fix level, and each one ends with this session, so the watcher stays open and pinned.
