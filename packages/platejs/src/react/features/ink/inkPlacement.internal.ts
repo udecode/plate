@@ -46,7 +46,7 @@ type InkInputs = Readonly<{
   near: readonly InkMeasuredBlock[];
 }>;
 
-export const inkInputs = (
+const inkInputs = (
   mark: InkMark,
   copies: readonly InkCopy[],
   places: Places,
@@ -87,26 +87,7 @@ export const inkInputs = (
   return { first, live, near };
 };
 
-export const placeOnInputs = (
-  mark: InkMark,
-  copies: readonly InkCopy[],
-  { first, live, near }: InkInputs,
-  width: number
-) =>
-  placeMark({
-    copies,
-    live,
-    margins: first
-      ? {
-          left: first.box.left,
-          right: width - first.box.left - first.box.width,
-        }
-      : { left: 0, right: 0 },
-    mark,
-    nearby: near.flatMap(inkWordBoxes),
-  });
-
-export const placeInkMarks = (
+const placeInkMarks = (
   view: Editor,
   editable: HTMLElement,
   origin: InkLayerOrigin,
@@ -479,7 +460,19 @@ export const createInkPlacer = ({
         return { ...placement, dy: placement.dy + top - kept.top };
       }
 
-      const placement = placeOnInputs(mark, copies, inputs, rect.width);
+      const { first, live, near } = inputs;
+      const placement = placeMark({
+        copies,
+        live,
+        margins: first
+          ? {
+              left: first.box.left,
+              right: rect.width - first.box.left - first.box.width,
+            }
+          : { left: 0, right: 0 },
+        mark,
+        nearby: near.flatMap(inkWordBoxes),
+      });
 
       held.set(mark, { key, placement, top });
 

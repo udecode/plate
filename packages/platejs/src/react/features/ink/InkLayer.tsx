@@ -1,10 +1,8 @@
 import * as React from 'react';
 
-import type { NodeKey } from '../../../facade';
 import type { InkMark } from '../../../features/ink/lib';
 import {
   type EditableSiblingProps,
-  type Editor,
   useEditor,
   useEditorViewState,
   useModelEditor,
@@ -12,19 +10,11 @@ import {
 } from '../../core';
 import { attachInkCapture } from './inkCapture.internal';
 import { INK_TOUCH_ACTION } from './inkInput.internal';
-import { createInkLayouts } from './inkLayout.internal';
-import {
-  type InkMeasuredBlock,
-  inkBoxOf,
-  inkTextBlocks,
-} from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
 import {
+  createInkPlacer,
   type InkPlaced,
-  inkInputs,
   NOTHING_PLACED,
-  placeInkMarks,
-  placeOnInputs,
 } from './inkPlacement.internal';
 import { InkPlugin } from './InkPlugin';
 import { observeInkLayout, stackInkSigns } from './inkWatch.internal';
@@ -39,54 +29,21 @@ export type InkSign = Readonly<{
   state: 'changed' | 'deleted' | 'narrow';
 }>;
 
-const placeAll = (
-  view: Editor,
-  layer: HTMLElement,
-  editable: HTMLElement,
-  layouts: ReturnType<typeof createInkLayouts>
-): InkPlaced => {
-  const { left, top, width } = layer.getBoundingClientRect();
-  const origin = { left, top };
-  const boxes = inkTextBlocks(view).map((block) => ({
-    block,
-    box: inkBoxOf(block.element, origin),
-    key: block.key,
-  }));
-  const byKey = new Map(boxes.map((entry) => [entry.key, entry]));
-  const measured = new Map<NodeKey, InkMeasuredBlock | undefined>();
-  const measure = (key: NodeKey) => {
-    if (!measured.has(key)) {
-      const entry = byKey.get(key);
-
-      measured.set(
-        key,
-        entry &&
-          layouts.measure(
-            entry.block.element,
-            entry.block.text,
-            entry.box,
-            origin
-          )
-      );
-    }
-
-    return measured.get(key);
-  };
-
-  return placeInkMarks(
-    view,
-    editable,
-    origin,
-    view.plugin(InkPlugin).read.marks(),
-    (mark, copies, places) =>
-      placeOnInputs(
-        mark,
-        copies,
-        inkInputs(mark, copies, places, measure, () => boxes),
-        width
-      )
+const samePlaced = (a: InkPlaced, b: InkPlaced) =>
+  a.bottom === b.bottom &&
+  a.ink.length === b.ink.length &&
+  a.signs.length === b.signs.length &&
+  a.ink.every(
+    ({ dx, dy, mark }, at) =>
+      mark === b.ink[at].mark && dx === b.ink[at].dx && dy === b.ink[at].dy
+  ) &&
+  a.signs.every(
+    ({ id, left, sign, top }, at) =>
+      id === b.signs[at].id &&
+      left === b.signs[at].left &&
+      top === b.signs[at].top &&
+      sign.marks.join(',') === b.signs[at].sign.marks.join(',')
   );
-};
 
 /**
  * The ink of a mounted Editable, drawn over it and its margins. Each mark
@@ -98,14 +55,16 @@ const placeAll = (
  * marked block is gone, or on the document's start when none is left. A place
  * shows one sign per state, and a sign that would cover the one above it on its
  * side of the Editable moves down below it. A press on a sign is the sign's
- * own. With the Draw tool on, a pen or the primary
- * mouse button draws a mark, which saves when the contact ends and keeps the
- * Editable's focus and caret. A finger still scrolls, and other mouse buttons
- * keep their own behavior. The view's `hidden` hides ink and signs, and picked
- * marks paint with a halo. Turning the view read-only turns the tool off. The
- * layer fills the nearest positioned ancestor of the Editable, which should
- * hold the Editable and its margins, and reaches at least to the Editable's
- * bottom, so it covers the whole content of a scrolling ancestor.
+ * own. The layer draws the marks of the blocks within a screen of the view,
+ * and every mark once the page is about to print. With the Draw tool on, a pen
+ * or the primary mouse button draws a mark, which saves when the contact ends
+ * and keeps the Editable's focus and caret. A finger still scrolls, and other
+ * mouse buttons keep their own behavior. The view's `hidden` hides ink and
+ * signs, and picked marks paint with a halo. Turning the view read-only turns
+ * the tool off. The layer fills the nearest positioned ancestor of the
+ * Editable, which should hold the Editable and its margins, and reaches at
+ * least to the Editable's bottom, so it covers the whole content of a
+ * scrolling ancestor.
  */
 export function InkLayer({
   editableRef,
@@ -120,7 +79,32 @@ export function InkLayer({
   const picked = useViewStore(InkPlugin, (state) => state.picked);
   const readOnly = useEditorViewState(view, (state) => state.isReadOnly());
   const [layer, setLayer] = React.useState<HTMLDivElement | null>(null);
-  const [placed, setPlaced] = React.useState(NOTHING_PLACED);
+  const [shown] = React.useState(() => {
+    let current = NOTHING_PLACED;
+    const listeners = new Set<() => void>();
+
+    return {
+      get: () => current,
+      set: (next: InkPlaced) => {
+        current = next;
+        for (const listener of listeners) listener();
+      },
+      subscribe: (listener: () => void) => {
+        listeners.add(listener);
+
+        return () => {
+          listeners.delete(listener);
+        };
+      },
+    };
+  });
+  // React renders a store change in the microtask after the listener that
+  // made it, so the marks a `beforeprint` listener places print.
+  const placed = React.useSyncExternalStore(
+    shown.subscribe,
+    shown.get,
+    shown.get
+  );
   const [outlines] = React.useState(() => new Map<string, string>());
   const preview = React.useRef<SVGPathElement>(null);
   const currentTool = React.useRef(tool);
@@ -149,24 +133,44 @@ export function InkLayer({
       tool: () => currentTool.current,
       view,
     });
-    const layouts = createInkLayouts();
+    const placer = createInkPlacer({ editable, layer, view });
+    const page = layer.ownerDocument;
+    const win = page.defaultView;
     let frame = 0;
+    const show = (next: InkPlaced) => {
+      if (!samePlaced(next, shown.get())) shown.set(next);
+    };
     const paint = () => {
       frame = 0;
-      setPlaced(placeAll(view, layer, editable, layouts));
+      show(placer.place());
     };
     const schedule = () => {
       frame ||= requestAnimationFrame(paint);
     };
+    const onPrint = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      show(placer.placeEvery());
+    };
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
-      if (changed.hasAny('document')) schedule();
+      if (!changed.hasAny('document')) return;
+      if (
+        changed.nodeKeysAll('presence').length > 0 ||
+        changed.hasAny('properties')
+      ) {
+        placer.nodesChanged();
+      }
+      schedule();
     });
     const stopLayout = observeInkLayout(editable, layer, (change, within) => {
-      layouts.changed(change, within);
+      placer.layoutChanged(change, within);
       attached.layoutChanged(change);
       schedule();
     });
 
+    page.addEventListener('scroll', schedule, { capture: true, passive: true });
+    win?.addEventListener('resize', schedule);
+    win?.addEventListener('beforeprint', onPrint);
     capture.current = attached;
     schedule();
 
@@ -174,10 +178,13 @@ export function InkLayer({
       cancelAnimationFrame(frame);
       unsubscribe();
       stopLayout();
+      page.removeEventListener('scroll', schedule, { capture: true });
+      win?.removeEventListener('resize', schedule);
+      win?.removeEventListener('beforeprint', onPrint);
       attached.detach();
       capture.current = null;
     };
-  }, [editableRef, editor, layer, view]);
+  }, [editableRef, editor, layer, shown, view]);
 
   React.useLayoutEffect(() =>
     layer && !hidden ? stackInkSigns(layer, placed.signs) : undefined
