@@ -308,20 +308,19 @@ const matchKey = (event: KeyboardEventLike, expectedKey: string) => {
   return event.code === `Key${expectedKey.toUpperCase()}`;
 };
 
-// With Command held nothing is typed, yet Option still turns the digit into a
-// symbol, such as '¡', or '[' on some layouts.
-const matchCommandOptionDigit = (
-  event: KeyboardEventLike,
-  expectedKey: string
-) =>
-  Boolean(event.altKey && event.metaKey) &&
-  SINGLE_DIGIT_RE.test(expectedKey) &&
-  !SINGLE_DIGIT_RE.test(event.key) &&
-  event.code === `Digit${expectedKey}`;
-
 const isAltGraphEvent = (event: KeyboardEventLike) =>
   typeof event.getModifierState === 'function' &&
   event.getModifierState('AltGraph');
+
+// Command, or Control without AltGr, types nothing, yet Shift, Option or the
+// layout still names the digit key by another character, such as ')' or '&'.
+const matchDigitCode = (event: KeyboardEventLike, expectedKey: string) =>
+  SINGLE_DIGIT_RE.test(expectedKey) &&
+  Boolean(
+    event.metaKey || (event.ctrlKey && !event.altKey && !isAltGraphEvent(event))
+  ) &&
+  !SINGLE_DIGIT_RE.test(event.key) &&
+  event.code === `Digit${expectedKey}`;
 
 const matchHotkey = (
   compiled: CompiledHotkey,
@@ -345,22 +344,27 @@ const matchHotkey = (
     matchModifier(event, 'ctrlKey', compiled.ctrlKey) &&
     matchModifier(event, 'metaKey', compiled.metaKey) &&
     matchModifier(event, 'shiftKey', compiled.shiftKey) &&
-    (matchKey(event, compiled.key) ||
-      matchCommandOptionDigit(event, compiled.key))
+    (matchKey(event, compiled.key) || matchDigitCode(event, compiled.key))
   );
 };
+
+const snapshotHotkeyOptions = (
+  options?: HotkeyMatchOptions
+): Required<HotkeyMatchOptions> => ({
+  ignoreModifiers: Boolean(options?.ignoreModifiers),
+  platform: isApplePlatform(options?.platform) ? 'apple' : 'other',
+});
 
 /** Compiles one or more hotkey specs into a reusable event predicate. */
 export const createCompiledHotkeyMatcher = (
   hotkey: HotkeySpec,
   options?: HotkeyMatchOptions
 ): HotkeyMatcher => {
-  const compiled = compileHotkeys(hotkey, options);
+  const { ignoreModifiers, platform } = snapshotHotkeyOptions(options);
+  const compiled = compileHotkeys(hotkey, { platform });
 
   return (event: KeyboardEventLike) =>
-    compiled.some((entry) =>
-      matchHotkey(entry, event, options?.ignoreModifiers ?? false)
-    );
+    compiled.some((entry) => matchHotkey(entry, event, ignoreModifiers));
 };
 
 const MATCHER_CACHE = new Map<string, HotkeyMatcher>();
@@ -369,13 +373,14 @@ const getCachedHotkeyMatcher = (
   hotkey: HotkeySpec,
   options?: HotkeyMatchOptions
 ) => {
-  const cacheKey = `${options?.platform ?? 'default'}:${JSON.stringify(
-    hotkey
-  )}`;
+  const snapshot = snapshotHotkeyOptions(options);
+  const cacheKey = `${snapshot.platform}:${
+    snapshot.ignoreModifiers
+  }:${JSON.stringify(hotkey)}`;
   let matcher = MATCHER_CACHE.get(cacheKey);
 
   if (!matcher) {
-    matcher = createCompiledHotkeyMatcher(hotkey, options);
+    matcher = createCompiledHotkeyMatcher(hotkey, snapshot);
     MATCHER_CACHE.set(cacheKey, matcher);
   }
 
