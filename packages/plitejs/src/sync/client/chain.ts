@@ -39,16 +39,21 @@ export const shownValue = (
 /** What a shown batch becomes when it leaves the chain. */
 export const leaving = (
   batch: ShownBatch,
+  before: JsonEditorValue | undefined,
   reason: KeptReason | null,
   records?: ConflictRecords
 ): SavedBatch => {
+  const origin =
+    batch.origin ?? (before && { before, change: batch.change, since: [] });
+  const withOrigin = origin ? { origin } : {};
+
   if (batch.state === 'sent') {
     return reason
-      ? { ...batch, reason, state: 'kept' }
+      ? { ...batch, ...withOrigin, reason, state: 'kept' }
       : {
           ...provenanceOf(batch),
           frame: batch.frame,
-          ...(batch.origin ? { origin: batch.origin } : {}),
+          ...withOrigin,
           ...(records ? { records } : {}),
           state: 'withheld',
         };
@@ -57,7 +62,7 @@ export const leaving = (
   return {
     ...provenanceOf(batch),
     change: batch.change,
-    ...(batch.origin ? { origin: batch.origin } : {}),
+    ...withOrigin,
     reason: reason ?? conflictOn(records),
     state: 'kept',
   };
@@ -150,13 +155,39 @@ export type CrossAs = (
   carried: DocumentChange
 ) => KeptReason | ShownBatch | null;
 
+export const shownAt = (
+  batches: readonly SavedBatch[],
+  at: JsonEditorValue
+) => {
+  const positions = new Map<number, JsonEditorValue>();
+  let before: JsonEditorValue | undefined = at;
+
+  for (const batch of batches) {
+    if (!isShown(batch) || !before) continue;
+    positions.set(batch.seq, before);
+    try {
+      before = DocumentChange.fromJSON(batch.change).apply(before);
+    } catch {
+      before = undefined;
+    }
+  }
+
+  return positions;
+};
+
 export const withdrawn = (
   batches: readonly SavedBatch[],
+  at: JsonEditorValue,
   keepAs: KeepAs = () => null
-) =>
-  batches.map((batch) =>
-    isShown(batch) ? leaving(batch, keepAs(batch)) : batch
+) => {
+  const positions = shownAt(batches, at);
+
+  return batches.map((batch) =>
+    isShown(batch)
+      ? leaving(batch, positions.get(batch.seq), keepAs(batch))
+      : batch
   );
+};
 
 export type Fits = (before: JsonEditorValue, change: DocumentChange) => boolean;
 
@@ -219,6 +250,20 @@ const crossedOrigin = (
     ? { ...origin, since: [...origin.since, carried.toJSON()] }
     : { before, change, since: [carried.toJSON()] };
 
+export const hiddenPast = (
+  batch: SavedBatch,
+  carried: DocumentChange
+): SavedBatch =>
+  isShown(batch) || carried.empty || !batch.origin
+    ? batch
+    : {
+        ...batch,
+        origin: {
+          ...batch.origin,
+          since: [...batch.origin.since, carried.toJSON()],
+        },
+      };
+
 export const crossChain = (
   change: DocumentChange,
   at: JsonEditorValue,
@@ -244,19 +289,7 @@ export const crossChain = (
 
   for (const batch of batches) {
     if (!isShown(batch)) {
-      next.push(
-        batch.state === 'withheld' && !carried.empty
-          ? {
-              ...batch,
-              origin: crossedOrigin(
-                batch,
-                frameChangeOf(batch.frame).toJSON(),
-                before,
-                carried
-              ),
-            }
-          : batch
-      );
+      next.push(hiddenPast(batch, carried));
       continue;
     }
 
@@ -323,6 +356,7 @@ export const crossChain = (
                 ...batch,
                 origin: crossedOrigin(batch, batch.change, before, carried),
               },
+          before,
           crossed ?? (unfit && batch.state === 'saved' ? INVALID : null),
           rebase && rebase.kind !== 'pair' ? rebase.records : undefined
         )

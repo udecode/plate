@@ -989,6 +989,11 @@ type EditorTransactionGuard = (context: {
 const TRANSACTION_GUARDS = new WeakMap<Editor, Set<EditorTransactionGuard>>();
 const LETTER_TRACKERS = new WeakMap<Editor, number>();
 const PREPARING_COMMIT = new WeakSet<Editor>();
+const PUBLISHING_COMMITS = new WeakMap<Editor, number>();
+const EDITED_VERSIONS = new WeakMap<Editor, number>();
+
+export const isEditorPublishingCommit = (editor: Editor) =>
+  (PUBLISHING_COMMITS.get(getEditorRuntimeOwner(editor)) ?? 0) > 0;
 
 export type EditorHistoryReplayReceipt = Readonly<{
   /** Version of the claim commit when the replay waited on an effect owner. */
@@ -13278,6 +13283,9 @@ export const runEditorTransaction = <R>(
           profileCoreDuration('set-version', () => {
             setVersion(editor, snapshot.previousVersion + 1);
           });
+          if (!change.changes.empty) {
+            EDITED_VERSIONS.set(editor, snapshot.previousVersion + 1);
+          }
 
           profileCoreDuration('transaction-commit-snapshot', () => {
             setCachedSnapshot(editor, afterSnapshot, MAIN_ROOT_KEY);
@@ -13317,24 +13325,38 @@ export const runEditorTransaction = <R>(
           });
 
           committed = change;
-          options.onAdmission?.(admitted);
-          anchorPublication?.publish();
-          let publishError: Readonly<{ value: unknown }> | null = null;
+          const owner = getEditorRuntimeOwner(editor);
 
-          for (const publishPrepared of publications) {
-            if (
-              publishError &&
-              getVersion(editor) !== snapshot.previousVersion + 1
-            ) {
-              break;
+          PUBLISHING_COMMITS.set(
+            owner,
+            (PUBLISHING_COMMITS.get(owner) ?? 0) + 1
+          );
+          try {
+            options.onAdmission?.(admitted);
+            anchorPublication?.publish();
+            let publishError: Readonly<{ value: unknown }> | null = null;
+
+            for (const publishPrepared of publications) {
+              if (
+                publishError &&
+                (EDITED_VERSIONS.get(editor) ?? 0) >
+                  snapshot.previousVersion + 1
+              ) {
+                break;
+              }
+              try {
+                publishPrepared();
+              } catch (error) {
+                publishError ??= { value: error };
+              }
             }
-            try {
-              publishPrepared();
-            } catch (error) {
-              publishError ??= { value: error };
-            }
+            if (publishError) throw publishError.value;
+          } finally {
+            PUBLISHING_COMMITS.set(
+              owner,
+              (PUBLISHING_COMMITS.get(owner) ?? 1) - 1
+            );
           }
-          if (publishError) throw publishError.value;
           pluginPublication?.finalize();
           if (pluginPublication) {
             seedUniqueIndex(editor);

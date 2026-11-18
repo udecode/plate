@@ -25,8 +25,11 @@ import {
   crossChain,
   type Fits,
   frameChangeOf,
+  hiddenPast,
+  isShown,
   type KeepAs,
   leaving,
+  shownAt,
   type ShownBatch,
   shownValue,
   superseded,
@@ -72,6 +75,12 @@ export type SyncClientState = Readonly<{
 
 type SentBatch = Extract<SavedBatch, { state: 'sent' }>;
 type UnsentBatch = Extract<SavedBatch, { state: 'saved' }>;
+
+export type PreparedLand = Readonly<{
+  drop: number;
+  nextSeq: number;
+  put: UnsentBatch;
+}>;
 type InFlight = Extract<SavedBatch, { state: 'sent' | 'withheld' }>;
 
 const queueWrites = (
@@ -311,6 +320,13 @@ export const createWriter = ({
   const batchAt = (seq: number) =>
     record.batches.find((batch) => batch.seq === seq);
 
+  const caughtUp = () =>
+    joined &&
+    target !== null &&
+    record.confirmed.version !== null &&
+    record.confirmed.version >= target &&
+    !record.head.offline;
+
   let savedFrame = inFlight()?.frame ?? null;
 
   if (fresh) save({ confirmed: record.confirmed, head: record.head });
@@ -395,6 +411,7 @@ export const createWriter = ({
 
   const crossOrWithdraw = (
     batches: readonly SavedBatch[],
+    at: JsonEditorValue,
     document: JsonEditorValue,
     crossing: (fitting?: Fits) => ReturnType<typeof crossChain>,
     keepAs?: KeepAs
@@ -418,7 +435,10 @@ export const createWriter = ({
       } catch {
         drifted = showDocument(document) === 'rewritten';
 
-        return { drop: [], put: replaced(batches, withdrawn(batches, keepAs)) };
+        return {
+          drop: [],
+          put: replaced(batches, withdrawn(batches, at, keepAs)),
+        };
       }
     }
   };
@@ -490,6 +510,7 @@ export const createWriter = ({
     const crossAs = redecidedIn(tail, groups);
     const crossed = crossOrWithdraw(
       tail,
+      shown,
       document,
       (fitting) =>
         crossChain(carried, shown, tail, {
@@ -512,11 +533,22 @@ export const createWriter = ({
             tail.filter((other) => !crossed.drop.includes(other.seq))
           )
         : null;
+    const ahead = new Map(
+      tail.flatMap((other) =>
+        other.seq < batch.seq && !isShown(other)
+          ? [[other.seq, logged ? hiddenPast(other, logged) : other] as const]
+          : []
+      )
+    );
 
     save({
       confirmed: { document, version },
       drop: [batch.seq, ...crossed.drop],
-      put: [...marks, ...crossed.put],
+      put: [
+        ...marks,
+        ...crossed.put.filter((other) => !ahead.has(other.seq)),
+        ...ahead.values(),
+      ],
       ...(entry ? { rebuilds: [...record.rebuilds, entry] } : {}),
     });
     showExactly();
@@ -555,6 +587,7 @@ export const createWriter = ({
         crossOrWithdraw(
           record.batches,
           at,
+          at,
           (fitting) =>
             crossChain(DocumentChange.between(at, at), at, record.batches, {
               cancels: groups,
@@ -577,6 +610,7 @@ export const createWriter = ({
     const groups = takeBackGroups(batches);
     const crossed = crossOrWithdraw(
       batches,
+      at,
       document,
       (fitting) =>
         crossChain(change, at, batches, {
@@ -625,12 +659,18 @@ export const createWriter = ({
     }
 
     const groups = takeBackGroups(record.batches);
+    const positions = shownAt(record.batches, record.confirmed.document);
     const batches = record.batches.flatMap((batch): SavedBatch[] => {
+      if (!isShown(batch)) return [batch];
       if (groups.has(batch.seq)) return [];
-      if (batch.state === 'saved') return [leaving(batch, { kind: 'expired' })];
-      if (batch.state === 'sent') return [leaving(batch, movedDecision(batch))];
 
-      return [batch];
+      return [
+        leaving(
+          batch,
+          positions.get(batch.seq),
+          batch.state === 'saved' ? { kind: 'expired' } : movedDecision(batch)
+        ),
+      ];
     });
 
     drifted = showDocument(document) === 'rewritten';
@@ -879,6 +919,41 @@ export const createWriter = ({
       link?.close();
       link = null;
     },
+    discard: (seq: number) => {
+      save({ drop: [seq] });
+    },
+    halt: () => stop({ kind: 'invalid' }),
+    land: ({ drop, nextSeq, put }: PreparedLand) => {
+      if (destroyed) return false;
+      if (caughtUp()) savedLive.add(put.seq);
+      save({
+        drop: [drop],
+        head: { ...record.head, nextSeq },
+        put: [put],
+        ...forgetRebuilds(),
+      });
+
+      return true;
+    },
+    outbox: () => record,
+    prepareLand: (seq: number, change: DocumentChange): PreparedLand => {
+      if (batchAt(seq)?.state !== 'kept') {
+        throw new Error(`The outbox keeps no batch ${seq}.`);
+      }
+
+      const { nextSeq } = record.head;
+
+      return {
+        drop: seq,
+        nextSeq: nextSeq + 1,
+        put: {
+          change: change.toJSON(),
+          decision: null,
+          seq: nextSeq,
+          state: 'saved',
+        },
+      };
+    },
     rebuilds: () => record.rebuilds,
     retrySaves: writes.retrySaves,
     saveCommit: (
@@ -891,15 +966,7 @@ export const createWriter = ({
       const { batches, confirmed, head } = record;
       const json = change.toJSON();
 
-      if (
-        joined &&
-        target !== null &&
-        confirmed.version !== null &&
-        confirmed.version >= target &&
-        !head.offline
-      ) {
-        savedLive.add(head.nextSeq);
-      }
+      if (caughtUp()) savedLive.add(head.nextSeq);
       const mergedInto =
         merged !== null &&
         batches.some(
@@ -938,7 +1005,8 @@ export const createWriter = ({
         ],
         ...forgetRebuilds(),
       });
-      changed();
+    },
+    send: () => {
       void freeze();
     },
     setOffline: (offline: boolean) => {

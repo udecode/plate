@@ -3,6 +3,7 @@ import {
   getInternalDocumentChangeRecords,
 } from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
+import type { RootChangeJson } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getValueRecords, recordStoreToJson } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
@@ -19,8 +20,17 @@ import {
   decide,
   storedDecisionSiteOf,
 } from '../decision';
+import { AUTHORED_MARKS_KEY, readMembers } from '../tree/marks';
 import { isEditingChange } from './editing';
-import { incarnationOf, parseVerdict, type Verdict, VERDICTS } from './records';
+import {
+  CONTEXTS,
+  incarnationOf,
+  LANDED,
+  parseVerdict,
+  RESERVES,
+  type Verdict,
+  VERDICTS,
+} from './records';
 import type { AuthoredStep } from './writes';
 
 export type VerdictBatch = Readonly<{
@@ -46,6 +56,34 @@ const documentOf = (value: JsonEditorValue) => ({
 
 export const sameDocument = (left: JsonEditorValue, right: JsonEditorValue) =>
   jsonEqual(documentOf(left), documentOf(right));
+
+const AUTHORED_RECORD_SETS = new Set([CONTEXTS, LANDED, RESERVES, VERDICTS]);
+
+const writesMarks = (ops: RootChangeJson) =>
+  ops.some(
+    ({ properties, replacement = [] }) =>
+      replacement.some(
+        (token) => token.kind === 'open' && readMembers(token.props).length > 0
+      ) ||
+      (properties?.operations ?? []).some(
+        (operation) =>
+          operation.key === AUTHORED_MARKS_KEY &&
+          (operation.type === 'add'
+            ? operation.values.length > 0
+            : operation.type === 'set' &&
+              readMembers({ [AUTHORED_MARKS_KEY]: operation.value }).length > 0)
+      )
+  );
+
+export const writesAuthored = (change: DocumentChange) => {
+  const { primary, roots = {} } = change.toJSON();
+
+  return (
+    [...getInternalDocumentChangeRecords(change).keys()].some((set) =>
+      AUTHORED_RECORD_SETS.has(set)
+    ) || [primary ?? [], ...Object.values(roots)].some(writesMarks)
+  );
+};
 
 /**
  * `null` when the batch writes no verdict record, and the ids it drops when it

@@ -1,9 +1,11 @@
+import { readAuthoredView } from '../../core/authored-runtime';
 import {
   DocumentChange,
   withoutRetainedRecordSets,
 } from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue } from '../../core/change/tokens';
+import { getEditorLifetime } from '../../core/editor-lifetime';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { notifyObservers } from '../../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
@@ -12,12 +14,15 @@ import {
   createEditorDocumentChangeBuilder,
   forgetEditorHistoryStep,
   isEditorHistoryRestore,
+  isEditorPublishingCommit,
   mintEditorCommitHistoryStep,
   readEditorCommitHistoryStep,
   replaceEditorUndoStep,
 } from '../../core/public-state';
+import { publishEditorRefusal } from '../../core/refusal';
+import { withoutUpdateTagContext } from '../../core/update-context';
 import { REMOTE_UPDATE } from '../../core/update-policy';
-import type { AnyEditor } from '../../interfaces/editor';
+import type { AnyEditor, EditorCommit } from '../../interfaces/editor';
 import {
   documentOf,
   sameDocument,
@@ -33,21 +38,34 @@ import {
   type SyncRelease,
 } from './claim';
 import { type SyncDecisionOf, syncDecider, syncJudge } from './decision';
+import { type Landing, openLandingGate } from './landing';
 import type {
   CommitDecision,
   OutboxRecord,
   OutboxStore,
   StepRebuild,
 } from './outbox';
+import {
+  rebasedKept,
+  refused,
+  type SyncKeptAction,
+  type SyncKeptResult,
+} from './recovery';
 import { type Clock, type SyncTransport, systemClock } from './transport';
 import { createWriter, type SyncClientState } from './writer';
 
 export type SyncClientDecisions = Readonly<{
+  writesAuthored: (change: DocumentChange) => boolean;
   changesVerdicts: (change: DocumentChange) => boolean;
   decisionOf: SyncDecisionOf;
 }>;
 
 export type SyncClient = Readonly<{
+  decide: (
+    seq: number,
+    action: SyncKeptAction,
+    view: AnyEditor
+  ) => Promise<SyncKeptResult>;
   destroy: () => void;
   setOnline: (online: boolean) => void;
   state: () => SyncClientState & Readonly<{ draining: number }>;
@@ -140,6 +158,32 @@ const showsIn = (editor: AnyEditor) => {
   return { show, showDocument };
 };
 
+const noticeOutsideUpdate = (editor: AnyEditor, tell: () => void) => {
+  let pending = false;
+  let closed = false;
+  const flush = () => {
+    if (!pending) return;
+    pending = false;
+    withoutUpdateTagContext(editor, tell);
+  };
+
+  return {
+    close: () => {
+      closed = true;
+      pending = false;
+    },
+    flush,
+    flushOutermost: () => {
+      if (!isEditorPublishingCommit(editor)) flush();
+    },
+    mark: () => {
+      if (pending || closed) return;
+      pending = true;
+      queueMicrotask(flush);
+    },
+  };
+};
+
 const startClient = (
   {
     actor,
@@ -181,7 +225,17 @@ const startClient = (
   };
 
   const listeners = new Set<() => void>();
+  let destroyed = false;
+  const notice = noticeOutsideUpdate(editor, () => {
+    writerChanged();
+    writer.send();
+  });
   const changed = () => {
+    if (destroyed) return;
+    if (isEditorPublishingCommit(editor)) {
+      notice.mark();
+      return;
+    }
     notifyObservers(editor, listeners, 'snapshot-listener', (listener) =>
       listener()
     );
@@ -215,7 +269,6 @@ const startClient = (
   };
 
   const draining = new Map<Writer, SyncRelease>();
-  let destroyed = false;
   const finish = (done: Writer, free: SyncRelease) => {
     done.destroy();
     void done.retrySaves().then(free);
@@ -237,11 +290,12 @@ const startClient = (
       else other.connect();
     }
   };
+  const writerChanged = () => {
+    gateDrainsOnEditor();
+    changed();
+  };
   const writer = createWriter({
-    changed: () => {
-      gateDrainsOnEditor();
-      changed();
-    },
+    changed: writerChanged,
     decide,
     fits,
     fresh: !opened,
@@ -285,12 +339,7 @@ const startClient = (
 
   for (const entry of writer.rebuilds()) rebuild(entry);
 
-  const stop = editor.subscribeCommit((commit) => {
-    if (isEditorHistoryRestore(editor, commit)) {
-      for (const entry of writer.rebuilds()) rebuild(entry);
-    }
-    if (commit.tags.includes('collaboration') || commit.changes.empty) return;
-
+  const save = (commit: EditorCommit) => {
     const verdicts = decisions.changesVerdicts(commit.changes);
     const step = (
       verdicts ? mintEditorCommitHistoryStep : readEditorCommitHistoryStep
@@ -306,17 +355,162 @@ const startClient = (
       decision,
       step?.how === 'merge' ? step.id : null
     );
+    notice.mark();
+  };
+  const gate = openLandingGate({
+    capture: (commit, change) => {
+      const rebuilds = isEditorHistoryRestore(editor, commit)
+        ? writer.rebuilds()
+        : [];
+
+      if (change.empty && rebuilds.length === 0) return undefined;
+
+      return () => {
+        if (!change.empty) save(commit);
+        for (const entry of rebuilds) rebuild(entry);
+      };
+    },
+    editor,
+    install: (prepared) => {
+      if (!writer.land(prepared)) return false;
+      notice.mark();
+
+      return true;
+    },
+    keptAt: (seq) => writer.outbox().batches.find((batch) => batch.seq === seq),
+    prepare: writer.prepareLand,
+    stop: () => {
+      notice.mark();
+      writer.halt();
+    },
   });
+  const stop = editor.subscribeCommit(notice.flushOutermost);
+
+  const teardown = () => {
+    stop();
+    gate.release();
+    finish(writer, release);
+    finishDrains();
+  };
+  let landing = false;
+  const landNow = (next: Landing, view: AnyEditor) => {
+    landing = true;
+    try {
+      return gate.land(next, view);
+    } finally {
+      landing = false;
+      if (destroyed) teardown();
+    }
+  };
+
+  const viewOf = (view: AnyEditor) =>
+    getEditorRuntimeOwner(view) === getEditorRuntimeOwner(editor) &&
+    getEditorLifetime(view) !== 'destroyed';
+
+  const proposing = (view: AnyEditor) => {
+    const authored = readAuthoredView(view);
+
+    return (
+      authored !== undefined &&
+      'intent' in authored &&
+      authored.intent === 'propose'
+    );
+  };
+
+  const decideNow = (
+    seq: number,
+    action: SyncKeptAction,
+    view: AnyEditor
+  ): SyncKeptResult => {
+    const kept = writer.outbox().batches.find((batch) => batch.seq === seq);
+
+    if (destroyed || writer.state().stopped) return refused('stopped');
+    if (kept?.state !== 'kept') return refused('missing');
+    if (!viewOf(view)) return refused('view');
+    if (action === 'discard') {
+      writer.discard(seq);
+      notice.mark();
+
+      return { status: 'discarded' };
+    }
+    if (kept.decision) return refused('decision');
+    if (proposing(view)) return refused('suggesting');
+
+    const rebased = rebasedKept(
+      writer.outbox(),
+      kept,
+      decisions.writesAuthored
+    );
+
+    if ('refused' in rebased) return refused(rebased.refused);
+    if (rebased.authored) return refused('suggesting');
+    if (sameDocument(rebased.draft, rebased.view)) return refused('unchanged');
+    if (!sameDocument(editor.read.value(), rebased.view)) {
+      return refused('stale');
+    }
+
+    const { landedSeq, refusal, thrown, verdict } = landNow(
+      {
+        change: rebased.change,
+        draft: rebased.draft,
+        head: rebased.view,
+        kept,
+        seq,
+      },
+      view
+    );
+
+    if (landedSeq !== undefined) {
+      return {
+        seq: landedSeq,
+        status: 'applied',
+        ...(thrown ? { threw: true } : {}),
+      };
+    }
+    if (
+      verdict === 'failed' ||
+      verdict === 'rewritten' ||
+      verdict === 'stopped'
+    ) {
+      return refused(verdict);
+    }
+    if (verdict === null && refusal === undefined && !thrown) {
+      return refused('rewritten');
+    }
+    if (refusal !== undefined) {
+      try {
+        publishEditorRefusal(editor, refusal);
+      } catch {
+        return refused('blocked', true);
+      }
+    }
+
+    return refused('blocked', thrown !== null);
+  };
+
+  let deciding: Promise<unknown> = Promise.resolve();
 
   writer.connect();
 
   return {
+    decide: (seq, action, view) => {
+      const decided = deciding.then(() => {
+        try {
+          return decideNow(seq, action, view);
+        } finally {
+          notice.flush();
+        }
+      });
+
+      deciding = decided.catch(() => {});
+
+      return decided;
+    },
     destroy: () => {
       if (destroyed) return;
       destroyed = true;
-      stop();
-      finish(writer, release);
-      finishDrains();
+      notice.close();
+      if (!landing) teardown();
     },
     setOnline: (online) => {
       writer.setOffline(!online);
