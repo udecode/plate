@@ -227,7 +227,10 @@ export type BoardViewCore = Readonly<{
   ) => boolean;
   redo: () => void;
   resetZoom: () => void;
-  reveal: (path: readonly number[]) => boolean;
+  reveal: (
+    path: readonly number[],
+    align?: 'auto' | 'center' | 'end' | 'start'
+  ) => boolean;
   select: (keys: readonly NodeKey[]) => void;
   selectBoard: () => void;
   selectedShapes: () => BoardShapeLayout[];
@@ -784,17 +787,34 @@ export const createBoardView = (
     gestures?.follow();
   };
 
-  function reveal(path: readonly number[]) {
+  function reveal(
+    path: readonly number[],
+    align?: 'auto' | 'center' | 'end' | 'start'
+  ) {
     const layout = index.layout(index.entries()[path[0] ?? -1]?.key ?? '');
 
     if (!layout) return false;
 
     const { box } = layout;
-    const { zoom } = state.camera;
+    const { x, y, zoom } = state.camera;
+    const clear =
+      align === 'auto'
+        ? clearOfToolbar()
+        : { bottom: size.height, left: 0, right: size.width, top: 0 };
+
+    if (
+      align === 'auto' &&
+      box.x >= x + clear.left / zoom &&
+      box.y >= y + clear.top / zoom &&
+      box.x + box.width <= x + clear.right / zoom &&
+      box.y + box.height <= y + clear.bottom / zoom
+    ) {
+      return true;
+    }
 
     setCamera({
-      x: box.x + box.width / 2 - size.width / 2 / zoom,
-      y: box.y + box.height / 2 - size.height / 2 / zoom,
+      x: box.x + box.width / 2 - (clear.left + clear.right) / 2 / zoom,
+      y: box.y + box.height / 2 - (clear.top + clear.bottom) / 2 / zoom,
       zoom,
     });
     refresh();

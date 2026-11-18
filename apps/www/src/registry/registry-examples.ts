@@ -441,6 +441,7 @@ export const demoExamples: Registry['items'] = (
         '@plate/board',
         '@plate/editor',
         '@plate/ai',
+        '@plate/discussion',
         '@plate/dnd',
       ],
       title: 'Board',

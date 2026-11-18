@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-comments-on-board-note-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-comments-on-board-note-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Comment on board note text",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-comment-toolbar-comments-board-note-text-649ae228",
+      "kind": "behavior",
+      "summary": "In All comments, Show in document on a thread in a board note selects the note text, not the page text at the same path, and leaves focus in the note.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-comments-on-board-note-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-all-comments-show-in-document-fixes",
+      "kind": "fix",
+      "summary": "Fix Show in document leaving focus on the All comments button in an editable view, throwing in a read-only view, dropping the selection after a quick click in a read-only view, and selecting the wrong text in an Accepted preview that hides a suggestion before the thread.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-comments-on-board-note-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-discussion-note-comment-cancel-focus",
+      "kind": "fix",
+      "summary": "Fix Escape or Cancel in a new comment on board note text moving focus to the page. Focus goes back to the note.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-comments-on-board-note-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-18-board-demo-comments",
+      "kind": "behavior",
+      "summary": "Add comments and discussions, so a note's text takes comments like the page text.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board-demo"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-comments-on-board-note-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

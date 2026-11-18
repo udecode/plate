@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-18-comments-on-board-note-text",
+      "href": "/registry/changelog/2026-11-18-comments-on-board-note-text.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Comment on board note text",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment-toolbar-button", "discussion", "board-demo"],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-find-tooltip-provider",
       "href": "/registry/changelog/2026-11-18-find-tooltip-provider.json",
       "status": "draft",

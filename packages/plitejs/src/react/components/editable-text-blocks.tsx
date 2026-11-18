@@ -30,6 +30,7 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
+  setEditableRootReveal,
 } from '../../dom/internal';
 import {
   ElementContext,
@@ -215,8 +216,11 @@ type EditableContentRootViewport = {
   mountedKeys: ReadonlySet<NodeKey>;
   /**
    * Brings `path` into view, such as when the selection moves into a block
-   * outside `mountedKeys`. It adds the block at `path[0]` to `mountedKeys`
-   * before or on the next render, and returns false when it cannot.
+   * outside `mountedKeys`. `editor.api.dom.scrollIntoView` calls it with
+   * `align` `'auto'` for a mounted path, point or range in this root, and
+   * `'auto'` leaves a block already in view where it is. It adds the block at
+   * `path[0]` to `mountedKeys` before or on the next render, and returns false
+   * when it cannot.
    */
   reveal: (path: Path, align?: 'auto' | 'center' | 'end' | 'start') => boolean;
 };
@@ -688,6 +692,7 @@ function EditableContentRootWindow({
         topLevelNodeKeys,
         totalSize: 0,
       }),
+      revealMounted: reveal,
       shownTopLevelNodeKeys: mountedKeys,
     }),
     [mountedKeys, reveal, selectionPaths, topLevelNodeKeys]
@@ -1413,6 +1418,15 @@ const EditableInner = <TElement extends ElementNode>({
     },
     [viewportPlan]
   );
+  const revealMounted = viewportPlan?.revealMounted;
+
+  useIsomorphicLayoutEffect(() => {
+    const root = inactiveSelectionEditableRef.current;
+
+    if (!root || !revealMounted) return undefined;
+
+    return setEditableRootReveal(root, revealMounted);
+  }, [revealMounted]);
   const materializeViewportBoundary = React.useCallback(
     (boundary: DOMCoverageBoundary, targetRange?: ModelRange) => {
       const path = targetRange?.anchor.path;

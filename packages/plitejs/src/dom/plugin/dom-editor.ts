@@ -1056,6 +1056,29 @@ export const setEditorDOMScrollElement = (
   }
 };
 
+type EditableRootReveal = (path: Path, align: 'auto') => void;
+
+const ELEMENT_TO_ROOT_REVEAL = new WeakMap<Element, EditableRootReveal>();
+
+export const setEditableRootReveal = (
+  element: Element,
+  reveal: EditableRootReveal
+) => {
+  ELEMENT_TO_ROOT_REVEAL.set(element, reveal);
+
+  return () => {
+    if (ELEMENT_TO_ROOT_REVEAL.get(element) === reveal) {
+      ELEMENT_TO_ROOT_REVEAL.delete(element);
+    }
+  };
+};
+
+const revealInEditableRoot = (element: Element, path: Path) => {
+  const root = element.closest('[data-editor-root]');
+
+  if (root) ELEMENT_TO_ROOT_REVEAL.get(root)?.(path, 'auto');
+};
+
 export const getEditorDOMHostScrollElement = (editor: object) =>
   EDITOR_TO_DOM_SCROLL.get(documentOf(editor)) ?? null;
 
@@ -2234,6 +2257,7 @@ const DOMEditorImpl: DOMEditorInterface = {
         const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
 
         if (element) {
+          revealInEditableRoot(element, target);
           const scrollElement = getRegisteredScrollElement(editor);
           const usesRegisteredStartAlignment =
             scrollElement &&
@@ -2278,6 +2302,12 @@ const DOMEditorImpl: DOMEditorInterface = {
       ) as HTMLElement | null;
 
       if (!leafElement) return;
+
+      if (PointApi.isPoint(target)) {
+        revealInEditableRoot(leafElement, target.path);
+      } else if (RangeApi.isRange(target)) {
+        revealInEditableRoot(leafElement, RangeApi.start(target).path);
+      }
 
       const hadOwnRect = Object.hasOwn(leafElement, 'getBoundingClientRect');
       // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] The original own method is restored on the same element after the temporary range-backed call; rebinding would change its identity.

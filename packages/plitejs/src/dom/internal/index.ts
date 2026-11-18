@@ -33,6 +33,7 @@ export {
   DOMEditor,
   getEditorDOMHostScrollElement,
   getOrCreateDOMNodeKey,
+  setEditableRootReveal,
   setEditorDOMEditableElement,
   setEditorDOMRootElement,
   setEditorDOMScrollElement,

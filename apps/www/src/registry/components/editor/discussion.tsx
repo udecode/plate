@@ -858,8 +858,11 @@ function SuggestionDiscussionCard({
 
 function NewComment({
   autoFocus,
-  editableRef,
-}: EditableSiblingProps & { autoFocus: boolean }) {
+  focusEditor,
+}: {
+  autoFocus: boolean;
+  focusEditor: () => void;
+}) {
   const { api: comments } = useEditor().plugin(CommentsPlugin);
 
   return (
@@ -868,7 +871,7 @@ function NewComment({
       autoFocus={autoFocus}
       onCancel={() => {
         comments.cancel();
-        editableRef.current?.focus();
+        focusEditor();
       }}
       onSubmit={async (body) => {
         const result = await comments.create(body);
@@ -1174,14 +1177,24 @@ function DiscussionPopover({
     ? null
     : (pendingRange ?? commentAnchor?.range ?? activeSuggestionRange ?? null);
   const anchorRangeJson = anchorRange ? JSON.stringify(anchorRange) : null;
-  const anchorIndex = anchorRange
-    ? pageIndexOf(rootTops(editor), RangeApi.start(anchorRange))
-    : undefined;
-  const anchorBlockKey = previewHidesRange
-    ? shownTrigger
-    : anchorIndex === undefined
-      ? null
-      : editor.key([anchorIndex]);
+  const focusEditor = () => {
+    const selection = model.read.selection();
+    const root = selection ? RangeApi.start(selection).root : undefined;
+
+    if (root === undefined || root === editor.read.view.root()) {
+      editableRef.current?.focus();
+    } else {
+      model.api.dom.focus();
+    }
+  };
+  const anchorRangeKey = useEditorSelector((current) => {
+    if (!anchorRange) return null;
+
+    const index = pageIndexOf(rootTops(current), RangeApi.start(anchorRange));
+
+    return index === undefined ? null : current.key([index]);
+  });
+  const anchorBlockKey = previewHidesRange ? shownTrigger : anchorRangeKey;
   const virtualAnchor = React.useMemo(() => {
     const currentAnchorRange = anchorRangeJson
       ? (JSON.parse(anchorRangeJson) as Range)
@@ -1292,7 +1305,7 @@ function DiscussionPopover({
                 active === document?.body ||
                 popoverRef.current?.contains(active))
             ) {
-              editableRef.current?.focus();
+              focusEditor();
             }
           }}
           onInitialFocus={(event) => event.preventDefault()}
@@ -1305,7 +1318,7 @@ function DiscussionPopover({
             <div className="p-4">
               <NewComment
                 autoFocus={placedPending === pending}
-                editableRef={editableRef}
+                focusEditor={focusEditor}
               />
             </div>
           ) : (

@@ -2,11 +2,12 @@
 
 import { cn } from 'cn';
 import { MessageSquareTextIcon, MessagesSquareIcon } from 'lucide-react';
-import type { Range } from 'platejs';
+import { getEditorRuntimeOwner, type Range } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   type Editor,
+  EditorSelectionView,
   useEditor,
   useEditorHasSelection,
   useEditorReadOnly,
@@ -32,7 +33,7 @@ import { ToolbarButton } from '@/registry/components/editor/toolbar';
 const PAGE_SIZE = 20;
 type CommentFilter = 'all' | 'open' | 'resolved';
 type CommentTarget =
-  | Readonly<{ range: Range; status: 'attached' }>
+  | Readonly<{ range: Range; status: 'attached'; type: 'change' | 'range' }>
   | Readonly<{ status: 'unavailable' }>;
 
 const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
@@ -40,7 +41,7 @@ const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
   const attachment = comments.attachment(id);
   if (attachment?.type === 'range') {
     return attachment.status === 'attached'
-      ? { range: attachment.range, status: 'attached' }
+      ? { range: attachment.range, status: 'attached', type: 'range' }
       : { status: 'unavailable' };
   }
   if (attachment?.type === 'change') {
@@ -48,9 +49,18 @@ const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
     const range = authored.installed
       ? authored.read.change(attachment.id)?.ranges[0]
       : undefined;
-    return range ? { range, status: 'attached' } : { status: 'unavailable' };
+    return range
+      ? { range, status: 'attached', type: 'change' }
+      : { status: 'unavailable' };
   }
   return { status: 'unavailable' };
+};
+
+const readStoredRange = (editor: Editor, id: string) => {
+  const target = readCommentTarget(editor, id);
+  if (target.status === 'unavailable') return undefined;
+  if (target.type === 'change') return target.range;
+  return editor.plugin(CommentsPlugin).api.ranges()[id];
 };
 
 export function CommentToolbarButton() {
@@ -87,6 +97,8 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
   const [open, setOpen] = React.useState(false);
   const [blocked, setBlocked] = React.useState(false);
   const [message, setMessage] = React.useState<string | null>(null);
+  const [revealing, setRevealing] = React.useState(false);
+  const navigatingRef = React.useRef(false);
   const navigate = React.useCallback(
     (id: string) => {
       const target = readCommentTarget(editor, id);
@@ -95,17 +107,19 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
         return;
       }
       setMessage(null);
+      navigatingRef.current = true;
       setOpen(false);
       requestAnimationFrame(() => {
-        const current = readCommentTarget(editor, id);
-        if (current.status === 'unavailable') {
+        const range = readStoredRange(editor, id);
+        if (!range) {
+          navigatingRef.current = false;
           setMessage('Target unavailable in this view');
           setOpen(true);
           return;
         }
-        editor.update.selection.set(current.range);
-        editor.api.dom.focus();
-        editor.api.dom.scrollIntoView(current.range);
+        const model = getEditorRuntimeOwner(editor) as Editor;
+        model.update.selection.set(range);
+        setRevealing(true);
       });
     },
     [editor]
@@ -117,37 +131,68 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger asChild>
-        <ToolbarButton
-          aria-label="All comments"
-          disabled={Boolean(pending)}
-          data-editor-prevent-overlay
-          tooltip={
-            pending ? 'Finish or cancel your new comment' : 'All comments'
-          }
-        >
-          <MessagesSquareIcon />
-        </ToolbarButton>
-      </DialogTrigger>
-      {open && (
-        <AllCommentsDialog
-          message={message}
-          onBlockedChange={setBlocked}
-          onNavigate={navigate}
-        />
+    <>
+      <Dialog open={open} onOpenChange={changeOpen}>
+        <DialogTrigger asChild>
+          <ToolbarButton
+            aria-label="All comments"
+            disabled={Boolean(pending)}
+            data-editor-prevent-overlay
+            tooltip={
+              pending ? 'Finish or cancel your new comment' : 'All comments'
+            }
+          >
+            <MessagesSquareIcon />
+          </ToolbarButton>
+        </DialogTrigger>
+        {open && (
+          <AllCommentsDialog
+            message={message}
+            onBlockedChange={setBlocked}
+            onCloseAutoFocus={(event) => {
+              const navigating = navigatingRef.current;
+              navigatingRef.current = false;
+              if (navigating && document.activeElement !== document.body) {
+                event.preventDefault();
+              }
+            }}
+            onNavigate={navigate}
+          />
+        )}
+      </Dialog>
+      {revealing && (
+        <EditorSelectionView>
+          <RevealSelection onRevealed={() => setRevealing(false)} />
+        </EditorSelectionView>
       )}
-    </Dialog>
+    </>
   );
+}
+
+function RevealSelection({ onRevealed }: { onRevealed: () => void }) {
+  const editor = useEditor();
+
+  React.useEffect(() => {
+    const selection = editor.read.selection();
+    if (selection) {
+      editor.api.dom.focus();
+      editor.api.dom.scrollIntoView(selection);
+    }
+    onRevealed();
+  }, [editor, onRevealed]);
+
+  return null;
 }
 
 function AllCommentsDialog({
   message,
   onBlockedChange,
+  onCloseAutoFocus,
   onNavigate,
 }: {
   message: string | null;
   onBlockedChange: (blocked: boolean) => void;
+  onCloseAutoFocus: (event: Event) => void;
   onNavigate: (id: string) => void;
 }) {
   const editor = useEditor();
@@ -214,6 +259,7 @@ function AllCommentsDialog({
     <DialogContent
       className="max-h-[min(760px,calc(100dvh-2rem))] gap-0 overflow-hidden p-0 sm:max-w-xl"
       data-all-comments=""
+      onCloseAutoFocus={onCloseAutoFocus}
     >
       <DialogHeader className="border-b p-5 pr-12">
         <DialogTitle>All comments</DialogTitle>
@@ -358,6 +404,8 @@ function AllCommentsRow({
         <Button
           disabled={blocked || targetStatus === 'unavailable'}
           onClick={onNavigate}
+          onMouseDown={(event) => event.preventDefault()}
+          onPointerDown={(event) => event.preventDefault()}
           size="sm"
           variant="outline"
         >
