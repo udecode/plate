@@ -31,6 +31,28 @@ With Plate UI's core installed, proceed to the guide specific to your framework:
 
 </Steps>
 
+## Styles and icons
+
+Plate UI items match the style and icon library in your `components.json`, as shadcn's own components do.
+
+Base and style matching needs a Plate registry URL that holds `{style}`, because the CLI puts your style only into such a URL. Set it in `components.json`:
+
+```json title="components.json"
+{
+  "registries": {
+    "@plate": "https://platejs.org/r/{style}/{name}.json"
+  }
+}
+```
+
+- A `base-*` style, such as `base-nova`, installs Base UI files, and a `radix-*` style, such as `radix-luma`, installs Radix files. Each file uses your style's classes.
+- A `base-*` or `radix-*` style that Plate does not serve yet installs the Nova files of its base.
+- In a `base-*` or `radix-*` style, icons come from your icon library: Lucide, Tabler, Hugeicons, Phosphor or Remix Icon.
+- The older styles `new-york`, `new-york-v4` and Tailwind v3's `default` install the Radix Nova files with Lucide icons.
+- Toolbar buttons use your project's own `toggle` and `tooltip` components.
+
+Plate serves no files for shadcn's React Aria base, so an item fails to install in an `aria-*` style.
+
 ## Manual installation
 
 If you prefer a step-by-step approach or are not using the shadcn CLI, follow these steps:

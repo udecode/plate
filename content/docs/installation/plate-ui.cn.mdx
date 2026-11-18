@@ -30,6 +30,28 @@ npx shadcn@latest add @plate/plate-ui
 
 </Steps>
 
+## 样式与图标
+
+Plate UI 组件会匹配 `components.json` 中的样式和图标库，与 shadcn 自己的组件一致。
+
+base 和样式的匹配需要包含 `{style}` 的 Plate 注册表地址，因为 CLI 只会把您的样式填入这样的地址。请在 `components.json` 中设置：
+
+```json title="components.json"
+{
+  "registries": {
+    "@plate": "https://platejs.org/r/{style}/{name}.json"
+  }
+}
+```
+
+- `base-*` 样式（如 `base-nova`）安装 Base UI 文件，`radix-*` 样式（如 `radix-luma`）安装 Radix 文件。每个文件都使用您的样式的类名。
+- Plate 尚未提供的 `base-*` 或 `radix-*` 样式会安装其 base 的 Nova 文件。
+- 在 `base-*` 或 `radix-*` 样式中，图标来自您的图标库：Lucide、Tabler、Hugeicons、Phosphor 或 Remix Icon。
+- 旧样式 `new-york`、`new-york-v4` 和 Tailwind v3 的 `default` 会安装 Radix Nova 文件，并使用 Lucide 图标。
+- 工具栏按钮使用您项目自己的 `toggle` 和 `tooltip` 组件。
+
+Plate 不提供 shadcn React Aria base 的文件，因此在 `aria-*` 样式中安装组件会失败。
+
 ## 手动安装
 
 如果您偏好逐步安装或不使用 shadcn CLI，请按照以下步骤操作：
