@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-slash-app-items",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-slash-app-items.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Let apps add their own slash menu items",
+  "targets": [
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash-command-items-demo",
+      "files": ["apps/www/src/registry/examples/slash-command-items-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-slash-let-apps-their-own-0f9e075d",
+      "kind": "new",
+      "summary": "Add app items to the slash menu through `SlashPlugin.configure({ initialState: { items } })`; each item joins the group it names, or starts a new group after the built-in ones.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["slash", "slash-command-items-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-slash-app-items",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

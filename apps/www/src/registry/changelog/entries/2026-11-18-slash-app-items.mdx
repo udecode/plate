@@ -1,0 +1,14 @@
+---
+id: 2026-11-18-slash-app-items
+date: 2026-11-18
+status: draft
+kind: new
+summary: 'Let apps add their own slash menu items'
+change: { 'type': 'source', 'date': '2026-11-18', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-18-slash-let-apps-their-own-0f9e075d","kind":"new","migrationNotes":[]} -->
+
+- **`slash`**, **`slash-command-items-demo`**: Add app items to the slash menu through `SlashPlugin.configure({ initialState: { items } })`; each item joins the group it names, or starts a new group after the built-in ones.

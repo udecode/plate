@@ -43,6 +43,7 @@ import {
   type Editor,
   definePlugin,
   useEditor,
+  usePluginStore,
 } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
@@ -66,12 +67,21 @@ type Item = {
   onClick?: (editor: Editor) => void;
   onSelect?: (editor: Editor, tx: PluginTransaction) => boolean | void;
   focusEditor?: boolean;
-  keywords?: string[];
+  keywords?: readonly string[];
 };
 
 type Group = {
   group: string;
-  items: Item[];
+  items: readonly Item[];
+};
+
+/**
+ * A slash menu item an app adds through `SlashPlugin`'s `items` state. It joins
+ * the group with the same name, or starts a new group after the built-in ones.
+ */
+export type SlashItem = Omit<Item, 'icon'> & {
+  group: string;
+  icon: () => React.ReactNode;
 };
 
 const isTitle = (editor: Editor, tx: PluginTransaction) => {
@@ -297,7 +307,22 @@ export function SlashCombobox({ editableRef }: EditableSiblingProps) {
 function SlashComboboxContent() {
   const editor = useEditor();
   const query = useInlineComboboxQuery();
-  const availableGroups = groups
+  const appItems = usePluginStore(SlashPlugin, 'items');
+  const allGroups = [
+    ...new Set([
+      ...groups.map(({ group }) => group),
+      ...appItems.map(({ group }) => group),
+    ]),
+  ].map((group) => ({
+    group,
+    items: [
+      ...(groups.find((each) => each.group === group)?.items ?? []),
+      ...appItems
+        .filter((item) => item.group === group)
+        .map(({ icon: Icon, ...item }) => ({ ...item, icon: <Icon /> })),
+    ],
+  }));
+  const availableGroups = allGroups
     .map(({ group, items }) => ({
       group,
       items: items.filter((item) => item.isAvailable(editor)),
@@ -344,7 +369,8 @@ function SlashComboboxContent() {
 
 export const SlashPlugin = definePlugin('slashCommand', {
   editOnly: true,
-  initialState: (): ComboboxState => ({
+  initialState: (): ComboboxState & { items: readonly SlashItem[] } => ({
+    items: [],
     maxQueryLength: 75,
     queryPattern: null,
     trigger: '/',

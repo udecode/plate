@@ -1,5 +1,5 @@
 {
-  "generation": "337715c72fe85f403a69c734309432b24284b4bf55225570d387fe76f7472b67",
+  "generation": "77dfdadc3db6ea876832e107609997447e73cfe6432c44cd093d68eaff5aa695",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3950,6 +3950,7 @@
             ],
             "examples": [
               "slash-command-demo",
+              "slash-command-items-demo",
               "slash-command-pro"
             ]
           },
@@ -6857,6 +6858,31 @@
             "@plate/editor",
             "@plate/ai",
             "@plate/dnd"
+          ],
+          "type": "registry:example"
+        },
+        {
+          "description": "Slash menu items that the app adds through SlashPlugin.",
+          "files": [
+            {
+              "path": "examples/slash-command-items-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/slash-command",
+                "title": "Slash Command"
+              }
+            ],
+            "registry": false
+          },
+          "name": "slash-command-items-demo",
+          "registryDependencies": [
+            "@plate/slash",
+            "@plate/basic-blocks",
+            "@plate/editor"
           ],
           "type": "registry:example"
         },
@@ -11124,6 +11150,7 @@
             ],
             "examples": [
               "slash-command-demo",
+              "slash-command-items-demo",
               "slash-command-pro"
             ]
           },
@@ -14031,6 +14058,31 @@
             "@plate/editor",
             "@plate/ai",
             "@plate/dnd"
+          ],
+          "type": "registry:example"
+        },
+        {
+          "description": "Slash menu items that the app adds through SlashPlugin.",
+          "files": [
+            {
+              "path": "examples/slash-command-items-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/slash-command",
+                "title": "Slash Command"
+              }
+            ],
+            "registry": false
+          },
+          "name": "slash-command-items-demo",
+          "registryDependencies": [
+            "@plate/slash",
+            "@plate/basic-blocks",
+            "@plate/editor"
           ],
           "type": "registry:example"
         },

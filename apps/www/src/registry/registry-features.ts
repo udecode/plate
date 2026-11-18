@@ -1060,7 +1060,11 @@ export const registryFeatures: Registry['items'] = [
           route: 'https://pro.platejs.org/docs/components/slash',
         },
       ],
-      examples: ['slash-command-demo', 'slash-command-pro'],
+      examples: [
+        'slash-command-demo',
+        'slash-command-items-demo',
+        'slash-command-pro',
+      ],
     },
   },
   {

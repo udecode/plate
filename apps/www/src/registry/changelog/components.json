@@ -624,6 +624,7 @@
     ],
     "slash": [
       "2026-11-18-registry-icon-library",
+      "2026-11-18-slash-app-items",
       "2026-11-13-rank-menu-matches",
       "2026-10-19-slash-local-plugin",
       "2026-10-18-layout-style-values",
@@ -682,6 +683,7 @@
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
     ],
+    "slash-command-items-demo": ["2026-11-18-slash-app-items"],
     "ai-api": [
       "2026-11-17-ai-api-initial-selection",
       "2026-11-17-ai-comment-author",

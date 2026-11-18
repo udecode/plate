@@ -3903,6 +3903,7 @@
         ],
         "examples": [
           "slash-command-demo",
+          "slash-command-items-demo",
           "slash-command-pro"
         ]
       },

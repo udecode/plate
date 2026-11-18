@@ -63,7 +63,7 @@ npx shadcn@latest add @plate/slash
 
 ### Add plugins
 
-The copied `slash` file defines `SlashPlugin`, which holds only the trigger policy. Mount the popup in its `afterEditable` slot:
+The copied `slash` file defines `SlashPlugin`, which holds the trigger policy and the items your app adds. Mount the popup in its `afterEditable` slot:
 
 ```tsx
 import { createEditor } from 'platejs/react';
@@ -78,9 +78,47 @@ const editor = createEditor({
 });
 ```
 
-Its state is a [`ComboboxState`](/docs/combobox#comboboxstate). A `/` opens the menu at the start of a line or after a space, and `triggerQuery` keeps a `/` typed in a code block as plain text. Edit `SlashPlugin` in the copied file to change either.
+Its state is a [`ComboboxState`](/docs/combobox#comboboxstate) plus `items`. A `/` opens the menu at the start of a line or after a space, and `triggerQuery` keeps a `/` typed in a code block as plain text. Edit `SlashPlugin` in the copied file to change either.
 
 </Steps>
+
+## Add app items
+
+<ComponentPreview name="slash-command-items-demo" />
+
+Pass your own items through `initialState.items` instead of editing the copied file. Each item names a `group`. It joins the built-in group with that name, such as `Basic blocks`, or starts a new group after the built-in ones.
+
+```tsx
+import { PenLineIcon } from 'lucide-react';
+import { createEditor } from 'platejs/react';
+
+import { SlashCombobox, SlashPlugin } from '@/components/editor/slash';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    SlashPlugin.configure({
+      initialState: {
+        items: [
+          {
+            group: 'Basic blocks',
+            icon: () => <PenLineIcon />,
+            isAvailable: () => true,
+            keywords: ['sign'],
+            label: 'Signature',
+            onSelect: (_editor, tx) => {
+              tx.text.insert('Signed by the review team.');
+            },
+          },
+        ],
+      },
+      slots: { afterEditable: SlashCombobox },
+    }),
+  ],
+});
+```
+
+An item takes the fields a built-in one does: `label`, `icon`, `isAvailable`, optional `keywords`, and `onSelect` or `onClick`. Its `icon` is a function that returns the icon, such as `() => <PenLineIcon />`, because plugin state holds data and functions but not elements. `onSelect` runs inside the menu's transaction and replaces the typed `/` and query; return `false` to keep them.
 
 ## Usage
 
@@ -109,6 +147,7 @@ Available options include:
 
 | API | Source | Use |
 |-----|--------|-----|
-| `SlashPlugin` | `slash` registry | Edit-only plugin whose state holds the `/` trigger policy and the code-block check. |
+| `SlashPlugin` | `slash` registry | Edit-only plugin whose state holds the `/` trigger policy, the code-block check and the app's `items`. |
+| `SlashItem` | `slash` registry | One app item: a built-in item's fields, with `icon` as a function, plus the `group` it joins. |
 | `SlashKit` | `slash` registry | `SlashPlugin` with `SlashCombobox` in its `afterEditable` slot. |
-| `SlashCombobox` | `slash` registry | The slash menu, built from the file's `groups` list. Edit that list to add, remove or reorder options. While you type, the menu lists matches best first and keeps the list's order only between equal matches. |
+| `SlashCombobox` | `slash` registry | The slash menu, built from the file's `groups` list and then the plugin's `items`. Edit `groups` to remove or reorder built-in options. While you type, the menu lists matches best first and keeps the list's order only between equal matches. |

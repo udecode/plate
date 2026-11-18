@@ -1608,6 +1608,30 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description: 'Slash menu items that the app adds through SlashPlugin.',
+      files: [
+        {
+          path: 'examples/slash-command-items-demo.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/slash-command',
+            title: 'Slash Command',
+          },
+        ],
+      },
+      name: 'slash-command-items-demo',
+      registryDependencies: [
+        '@plate/slash',
+        '@plate/basic-blocks',
+        '@plate/editor',
+      ],
+      type: 'registry:example',
+    },
+    {
       dependencies: ['@platejs/test'],
       description:
         'Use plugin rules to customize the common editing behaviors.',
