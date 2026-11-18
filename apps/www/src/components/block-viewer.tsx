@@ -12,7 +12,7 @@ import {
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import * as React from 'react';
-import type { ImperativePanelHandle } from 'react-resizable-panels';
+import type { PanelImperativeHandle } from 'react-resizable-panels';
 import type { RegistryItem, RegistryItemFile } from 'shadcn/schema';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -52,7 +52,7 @@ export type BlockViewerContext = {
     };
   };
   iframeKey: number;
-  resizablePanelRef: React.RefObject<ImperativePanelHandle | null> | null;
+  resizablePanelRef: React.RefObject<PanelImperativeHandle | null> | null;
   tree: ReturnType<typeof createFileTreeForRegistryItemFiles> | null;
   view: 'code' | 'preview';
   setActiveFile: (file: string) => void;
@@ -135,7 +135,7 @@ export function BlockViewerProvider({
     BlockViewerContext['activeFile']
   >(files[0]?.target ?? null);
   const [isLoading, setIsLoading] = React.useState(false);
-  const resizablePanelRef = React.useRef<ImperativePanelHandle>(null);
+  const resizablePanelRef = React.useRef<PanelImperativeHandle>(null);
   const [iframeKey, setIframeKey] = React.useState(0);
 
   const activeFile =
@@ -295,7 +295,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
                 setView('preview');
 
                 if (resizablePanelRef?.current) {
-                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
+                  resizablePanelRef.current.resize(`${value}%`);
                 }
               }}
               type="single"
@@ -432,13 +432,13 @@ function BlockViewerView({
         <div className="absolute inset-0 right-4 [background-image:radial-gradient(#d4d4d4_1px,transparent_1px)] [background-size:20px_20px] dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]" />
         <ResizablePanelGroup
           className="relative z-10 after:pointer-events-none after:absolute after:inset-0 after:right-3 after:z-0 after:rounded-xl after:bg-surface/50"
-          direction="horizontal"
+          orientation="horizontal"
         >
           <ResizablePanel
-            ref={resizablePanelRef}
+            panelRef={resizablePanelRef}
             className="relative z-10 aspect-[4/2.5] overflow-hidden rounded-lg border bg-background md:aspect-auto md:rounded-xl"
-            defaultSize={100}
-            minSize={30}
+            defaultSize="100%"
+            minSize="30%"
           >
             {/* <Image
               className="absolute left-0 top-0 z-20 w-[970px] max-w-none bg-background data-[block=sidebar-10]:left-auto data-[block=sidebar-10]:right-0 data-[block=sidebar-11]:-top-1/3 data-[block=sidebar-14]:left-auto data-[block=sidebar-14]:right-0 data-[block=login-01]:max-w-full data-[block=sidebar-13]:max-w-full data-[block=sidebar-15]:max-w-full dark:hidden sm:w-[1280px] md:hidden md:dark:hidden"
@@ -489,7 +489,7 @@ function BlockViewerView({
             )}
           </ResizablePanel>
           <ResizableHandle className="relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-[height] hover:after:h-10 md:block" />
-          <ResizablePanel defaultSize={0} minSize={0} />
+          <ResizablePanel defaultSize="0%" minSize="0%" />
         </ResizablePanelGroup>
       </div>
     </div>

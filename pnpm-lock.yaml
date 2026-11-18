@@ -459,8 +459,8 @@ importers:
         specifier: 2.16.0
         version: 2.16.0(react@19.2.8)
       react-resizable-panels:
-        specifier: 3.0.2
-        version: 3.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 4.5.8
+        version: 4.5.8(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-syntax-highlighter:
         specifier: 15.6.1
         version: 15.6.1(react@19.2.8)
@@ -9619,11 +9619,11 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@3.0.2:
-    resolution: {integrity: sha512-j4RNII75fnHkLnbsTb5G5YsDvJsSEZrJK2XSF2z0Tc2jIonYlIVir/Yh/5LvcUFCfs1HqrMAoiBFmIrRjC4XnA==}
+  react-resizable-panels@4.5.8:
+    resolution: {integrity: sha512-X2S5YoYWbjd7Ove6e6T/kzOrjiUD6ccz55a+XW0H3JXbrPb+Gmz7YRAJy4ysOkua/U5jSOG9SoySbebMBjtQJQ==}
     peerDependencies:
-      react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
   react-style-singleton@2.2.3:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
@@ -20413,7 +20413,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  react-resizable-panels@3.0.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-resizable-panels@4.5.8(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
