@@ -269,6 +269,7 @@ export type DraftStep = Readonly<{
   composition?: CompositionStamp;
   /** Letters this step's author wrote, in its after document. */
   letters?: NewLetters;
+  fit?: Readonly<{ lookAlike?: RootChange; paste: object }>;
   facts: ChangeFacts;
 }>;
 
@@ -991,6 +992,7 @@ export class ChangeDraft {
       classify?: boolean;
       drops?: readonly CarriedDrop[];
       facts?: ChangeFacts;
+      fit?: DraftStep['fit'];
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
       letters?: NewLetters;
       origin?: DraftStepOrigin;
@@ -1124,6 +1126,7 @@ export class ChangeDraft {
             ...(carried?.length ? { carried } : {}),
             ...(options.drops?.length ? { drops: options.drops } : {}),
             ...(options.letters ? { letters: options.letters } : {}),
+            ...(options.fit ? { fit: options.fit } : {}),
             facts,
           })
         );
@@ -1212,6 +1215,7 @@ export class ChangeDraft {
     change: DocumentChange,
     options: Readonly<{
       facts?: ChangeFacts;
+      fit?: DraftStep['fit'];
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
       origin?: DraftStepOrigin;
       runtimeCandidates?: ReadonlyMap<
@@ -1226,6 +1230,7 @@ export class ChangeDraft {
       const step = this.apply(change, {
         classify: false,
         facts,
+        fit: options.fit,
         origin: options.origin,
       });
 
@@ -1400,6 +1405,7 @@ export class ChangeDraft {
           move: this.stepMove,
           origin: this.originOf(options.origin),
           source: this.stepSource,
+          ...(options.fit ? { fit: options.fit } : {}),
           facts,
         })
       );

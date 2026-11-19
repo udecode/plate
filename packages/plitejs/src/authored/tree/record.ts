@@ -41,6 +41,7 @@ import type {
   CommandProjection,
   ProjectionBreak,
 } from '../../core/command-document';
+import { EditorRefusalError } from '../../core/refusal';
 import type { ResolvedTokenEntry } from '../../core/resolved-token-cursor';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import type { GridRoles } from '../../core/survival';
@@ -480,6 +481,53 @@ const bothUnclaimed = (
 ) =>
   !Object.hasOwn(before, AUTHORED_MARKS_KEY) &&
   !Object.hasOwn(after, AUTHORED_MARKS_KEY);
+
+const containersAt = (document: DocumentIndex, position: number) =>
+  document
+    .openContextAt(position)
+    .map(({ kind, path }) =>
+      kind === 'text' ? kind : String(document.node(path).type)
+    )
+    .join(' ');
+
+const marksCannotHoldKeptRuns = (
+  change: RootChange,
+  before: DocumentIndex,
+  after: DocumentIndex
+) => {
+  let position = 0;
+  let afterPosition = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+
+    if (inserted >= 0) {
+      afterPosition += inserted;
+    } else if (
+      containersAt(before, position) !== containersAt(after, afterPosition)
+    ) {
+      return true;
+    } else {
+      afterPosition += length;
+    }
+    position += length;
+  }
+
+  return false;
+};
+
+const changesAlone = (
+  steps: readonly DraftStep[],
+  step: DraftStep,
+  root: string
+) =>
+  steps.every(
+    (other) =>
+      other.origin === 'canonical' ||
+      other.fit?.paste === step.fit?.paste ||
+      !getInternalDocumentRootChange(other.change, root)
+  );
 
 const changesOnlyProperties = (step: RootChange) =>
   step.sections.every((value, index) => index % 2 === 0 || value < 0);
@@ -1526,8 +1574,9 @@ const applyReusingStep = (
  * step's origin and move link, intent and writer, so it imports no plugin or
  * command module.
  */
-export const recordAuthoredSteps = (
-  input: AuthoredRecordInput
+const recordSteps = (
+  input: AuthoredRecordInput,
+  reading: 'lookAlike' | 'written'
 ): AuthoredRecordResult => {
   const facts = factsOf(input.before);
   const changeId = input.forcedChangeId ?? input.changeId;
@@ -1669,28 +1718,39 @@ export const recordAuthoredSteps = (
       ([root, written]) => {
         if (input.followed.has(root)) return [];
         const plain = getDefined(step.indexedBefore.get(root));
-        // A fitted slice writes anew the open tokens of the blocks it lands in.
-        const aligned =
-          step.origin === 'slice'
-            ? written.alignOpens(plain, bothUnclaimed)
+        const fitAlone =
+          reading === 'written' &&
+          step.fit?.lookAlike !== undefined &&
+          changesAlone(input.steps, step, root);
+        const after = getDefined(step.indexedAfter.get(root));
+        const aligned = fitAlone
+          ? !isEditingChange(changeId) &&
+            marksCannotHoldKeptRuns(written, plain, after)
+            ? RootChange.betweenWhole(plain, after)
+            : written
+          : step.origin === 'slice'
+            ? (step.fit?.lookAlike ?? written).alignOpens(plain, bothUnclaimed)
             : written;
         const starts = new Set<number>();
+
+        const rootChange = replaceRetyped(
+          aligned,
+          plain,
+          replaces,
+          ownedRootsOf,
+          () => doubledIn(root),
+          (start) => {
+            loweredRoots.add(root);
+            starts.add(start);
+          }
+        );
 
         return [
           [
             root,
-            replaceRetyped(
-              aligned,
-              plain,
-              replaces,
-              ownedRootsOf,
-              () => doubledIn(root),
-              (start) => {
-                loweredRoots.add(root);
-                starts.add(start);
-              }
-            ),
+            rootChange,
             starts,
+            fitAlone && rootChange === aligned,
           ] as const,
         ];
       }
@@ -1779,7 +1839,7 @@ export const recordAuthoredSteps = (
   let writesOther = false;
 
   for (const { changes, step } of stepChanges) {
-    for (const [root, rootChange, retypedStarts] of changes) {
+    for (const [root, rootChange, retypedStarts, recordsAlone] of changes) {
       const fold = foldOf(root);
 
       // The review draft runs its own canonical pass, so canonical
@@ -1950,6 +2010,7 @@ export const recordAuthoredSteps = (
             createTagId: input.createTagId,
             emptyTextKeeps: (key, value, parents) =>
               input.emptyTextKeeps(key, value, parents, root),
+            findsEnclosures: !recordsAlone,
             framed: input.projection !== undefined,
             fill: (site) => input.fill(site, root),
             frameIndex: fold.frameIndex,
@@ -2120,6 +2181,17 @@ export const recordAuthoredSteps = (
   };
 };
 
+export const recordAuthoredSteps = (input: AuthoredRecordInput) => {
+  try {
+    return recordSteps(input, 'written');
+  } catch (error) {
+    if (!(error instanceof EditorRefusalError)) throw error;
+    if (!input.steps.some((step) => step.fit?.lookAlike)) throw error;
+
+    return recordSteps(input, 'lookAlike');
+  }
+};
+
 // A reject can land any write under the tag, since each can stand by landing.
 const restoredBy = (tag: FormatTag) => [
   tag.before,
@@ -2229,6 +2301,7 @@ type RecorderOptions = Readonly<{
     value: unknown,
     parents: readonly Props[]
   ) => boolean;
+  findsEnclosures: boolean;
   fill: (site: readonly Props[]) => readonly JsonNode[];
   frameIndex: DocumentIndex | null;
   framed: boolean;
@@ -2751,7 +2824,9 @@ class RootRecorder {
   private enclosureOf(group: Extract<Group, { kind: 'replace' }>) {
     const { removed, slice } = group;
 
-    if (removed === 0 || slice.length === 0) return null;
+    if (!this.options.findsEnclosures || removed === 0 || slice.length === 0) {
+      return null;
+    }
 
     return enclosureOf(
       this.index.slice(group.before, group.before + removed),
@@ -4117,6 +4192,14 @@ class RootRecorder {
         }
 
         const boundary = boundaryMark(previous);
+
+        if (
+          boundary.kind === 'join' &&
+          !isEditingChange(changeId) &&
+          !isTextBlock(this.index.node(context.path))
+        ) {
+          throw unrepresentable('Suggesting cannot join a container block.');
+        }
         const joins =
           boundary.kind === 'join' ? marks.filter(this.isLiveJoin) : [];
 

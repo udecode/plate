@@ -1,3 +1,4 @@
+import type { RootChangeSection } from '../change/root-change';
 import type { PreparedTokenSlice } from '../change/tokens';
 
 export type FitSource =
@@ -96,4 +97,60 @@ export const sliceOrigins = (insert: PreparedTokenSlice) => {
   log.add(insert.length, 'slice');
 
   return log.seal(insert);
+};
+
+export const fitSections = ({
+  from,
+  insert,
+  origins,
+  to,
+}: Readonly<{
+  from: number;
+  insert: PreparedTokenSlice;
+  origins: FitOrigins;
+  to: number;
+}>): RootChangeSection[] => {
+  const kept: Array<
+    Readonly<{ at: number; insertAt: number; length: number }>
+  > = [];
+  let unclaimedTo = to;
+  let end = insert.length;
+
+  for (let index = origins.runs.length - 1; index >= 0; index -= 1) {
+    const { length, source } = origins.runs[index];
+    const start = end - length;
+
+    end = start;
+    if (source.kind !== 'document') continue;
+
+    const keepFrom = Math.max(source.at, from);
+    const keepTo = Math.min(source.at + length, unclaimedTo);
+
+    if (keepTo <= keepFrom) continue;
+    kept.push({
+      at: keepFrom,
+      insertAt: start + keepFrom - source.at,
+      length: keepTo - keepFrom,
+    });
+    unclaimedTo = keepFrom;
+  }
+
+  const sections: RootChangeSection[] = [];
+  let cursor = from;
+  let written = 0;
+
+  for (let index = kept.length - 1; index >= 0; index -= 1) {
+    const run = kept[index];
+
+    sections.push({
+      from: cursor,
+      insert: insert.slice(written, run.insertAt),
+      to: run.at,
+    });
+    cursor = run.at + run.length;
+    written = run.insertAt + run.length;
+  }
+  sections.push({ from: cursor, insert: insert.slice(written), to });
+
+  return sections;
 };

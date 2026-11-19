@@ -49,6 +49,7 @@ import {
   registerEditorDocumentRecorder,
   registerEditorDraftGuard,
   registerEditorDraftView,
+  registerEditorFitsByLook,
 } from '../core/document-recorder';
 import {
   getEditorRuntime,
@@ -182,7 +183,7 @@ import {
   type ViewPlaces,
 } from './ledger/ledger';
 import { contentRootsOf, rootOf } from './ledger/roots';
-import { blockFactsOf, isBuilt } from './ledger/runs';
+import { blockFactsOf, holdsMembers, isBuilt } from './ledger/runs';
 import {
   type AuthoredRefusal,
   storesGeneratedValues,
@@ -2059,6 +2060,7 @@ export const createAuthoredPlugin = (
           );
         })
       );
+      onCleanup(registerEditorFitsByLook(editor, holdsMembers));
       // Every frame of one update records under the same change.
       const minted = new WeakMap<object, { at: number; changeId: string }>();
       onCleanup(

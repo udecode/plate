@@ -1,9 +1,11 @@
 import {
   DocumentChange,
   getInternalDocumentRootChange,
+  valueRootNodes,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { deepFreeze, jsonEqual } from '../../core/change/json';
+import { visitRootNames } from '../../core/change/lazy-root';
 import {
   addSection,
   type DocumentSetPropertyResolver,
@@ -261,6 +263,18 @@ export const blockFactsOf = (node: JsonNode): BlockFacts => {
 
   return facts;
 };
+
+/** Whether a block of any root of `value` holds an authored mark. @internal */
+export const holdsMembers = (value: JsonEditorValue) =>
+  ['main', ...visitRootNames(value.roots)].some((root) => {
+    const blocks = valueRootNodes(value, root);
+
+    for (let index = 0; index < blocks.length; index += 1) {
+      if (!blockFactsOf(getDefined(blocks.at(index))).unmarked) return true;
+    }
+
+    return false;
+  });
 
 /** Keep `facts`, derived elsewhere, as the facts of `node`. @internal */
 export const primeFacts = (node: JsonNode, facts: BlockFacts) => {

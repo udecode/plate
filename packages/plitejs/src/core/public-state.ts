@@ -261,6 +261,7 @@ import {
 import {
   type EditorDocumentRecorder,
   getEditorDocumentRecorder,
+  getEditorFitsByLook,
   type PositionMap,
   endEditorTransactionDraftGuards,
   isEditorDraftView,
@@ -5324,12 +5325,33 @@ const removeGridForSlice = (
   return (removed && finalizeBeforeSliceFit(editor, removed)) ?? 'refused';
 };
 
+const fitReadingFor = (
+  editor: Editor,
+  builder: ChangeDraft
+): 'carry' | 'commit' | undefined => {
+  const fitsByLook = getEditorFitsByLook(editor);
+
+  if (!fitsByLook) return undefined;
+  // A command frame runs on the document with every suggestion accepted,
+  // which shows no marks, so a fit inside one reads as marked.
+  if (COMMAND_FRAMES.has(editor)) return 'commit';
+
+  const snapshot = getTransactionSnapshot(editor);
+  const stored = snapshot
+    ? (RECORDING_FRONTIERS.get(snapshot)?.value ??
+      getChangeValue(snapshot.roots, snapshot.records))
+    : builder.value;
+
+  return fitsByLook(stored as EditorDocumentValue) ? 'commit' : 'carry';
+};
+
 const writeSliceAtRange = <V extends Value>(
   editor: Editor<V>,
   place: Extract<SliceFitPlace, { kind: 'range' }>,
   slice: import('../interfaces/editor').ContentSlice<V>,
   options: Readonly<{
     landed?: (track: DraftTrack) => void;
+    paste: object;
     replaceEmptyBlock?: true;
     rootsPrepared?: boolean;
     selection?: 'keep';
@@ -5401,7 +5423,9 @@ const writeSliceAtRange = <V extends Value>(
       target: {
         at: range,
         ...(bounds ? { contentBounds: bounds, exactBounds: bounds } : {}),
+        byLook: fitReadingFor(editor, builder),
         kind: 'range',
+        paste: options.paste,
         ...(emptyBlock ? { replaceEmptyBlock: true } : {}),
         ...(options.landed || builder.marksLetters
           ? { reportLanding: true }
@@ -5598,6 +5622,7 @@ const landSlice = (
     rootsPrepared?: boolean;
   }> = {}
 ): boolean => {
+  const paste = {};
   const write = (
     target: SliceFitPlace,
     content: import('../interfaces/editor').ContentSlice
@@ -5605,7 +5630,9 @@ const landSlice = (
     if (target.kind === 'blocks') {
       return replaceBlocksAtSite(editor, transaction, target, content);
     }
-    if (!writeSliceAtRange(editor, target, content, options)) return false;
+    if (!writeSliceAtRange(editor, target, content, { ...options, paste })) {
+      return false;
+    }
     for (const key of target.removals.toReversed()) {
       transaction.nodes.remove({ at: key });
     }
@@ -5694,7 +5721,7 @@ const landSlice = (
       editor,
       end,
       createContentSliceFromFragment(endMatter, 0, 0, slice.roots),
-      { rootsPrepared: true, selection: 'keep' }
+      { paste, rootsPrepared: true, selection: 'keep' }
     )
   ) {
     return false;

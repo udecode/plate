@@ -34,6 +34,7 @@ import {
   keptRunsOf,
   RootChange,
   reconcileChildrenStep,
+  type SectionData,
 } from './change/root-change';
 import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
@@ -879,7 +880,7 @@ export type CanonicalFitPreparation = Readonly<{
 type CanonicalFitPreparationDescriptor = Readonly<{
   currentSchema: () => object | null;
   forceRoots?: ReadonlySet<string>;
-  insert?: PreparedTokenSlice;
+  inserts?: ReadonlySet<SectionData>;
   protectedInlineSpacerPaths?: ReadonlyMap<string, readonly Path[]>;
   schema: object | null;
   trustedNodes: WeakSet<object>;
@@ -1018,13 +1019,13 @@ export const prepareCanonicalRootFit = (
 };
 
 /**
- * Bind a canonical slice proof to the exact lowerer insertion.
+ * Bind a canonical slice proof to the exact lowerer insertions.
  *
  * @internal
  */
 export const bindCanonicalFitPreparation = (
   preparation: CanonicalFitPreparation,
-  insert: PreparedTokenSlice
+  inserts: readonly PreparedTokenSlice[]
 ): CanonicalFitPreparation => {
   const source = CANONICAL_FIT_PREPARATIONS.get(preparation);
 
@@ -1032,7 +1033,10 @@ export const bindCanonicalFitPreparation = (
 
   const bound = Object.freeze({}) as CanonicalFitPreparation;
 
-  CANONICAL_FIT_PREPARATIONS.set(bound, { ...source, insert });
+  CANONICAL_FIT_PREPARATIONS.set(bound, {
+    ...source,
+    inserts: new Set(inserts),
+  });
 
   return bound;
 };
@@ -1619,10 +1623,10 @@ export const constructCanonicalDocumentChange = (
     ([, rootChange]) => rootChange
   );
   const trustedFitNodes =
-    fitPreparation?.insert &&
+    fitPreparation?.inserts &&
     preparationIsCurrent &&
     fitChanges.length === 1 &&
-    fitChanges[0].data.some((value) => value === fitPreparation.insert)
+    fitChanges[0].data.some((value) => fitPreparation.inserts?.has(value))
       ? fitPreparation.trustedNodes
       : undefined;
 

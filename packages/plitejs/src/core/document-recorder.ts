@@ -89,6 +89,8 @@ type DraftGuard = (
 ) => void;
 
 const DOCUMENT_RECORDERS = new WeakMap<object, EditorDocumentRecorder>();
+type FitsByLook = (stored: EditorDocumentValue) => boolean;
+const BY_LOOK_FITS = new WeakMap<object, FitsByLook>();
 const DRAFT_GUARDS = new WeakMap<
   object,
   Record<EditorDraftGuardPhase, Set<DraftGuard>> & {
@@ -118,6 +120,24 @@ export const registerEditorDocumentRecorder = (
 /** @internal */
 export const getEditorDocumentRecorder = (editor: Editor) =>
   DOCUMENT_RECORDERS.get(getEditorRuntimeOwner(editor));
+
+/** @internal */
+export const registerEditorFitsByLook = (
+  editor: Editor,
+  fitsByLook: FitsByLook
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  BY_LOOK_FITS.set(owner, fitsByLook);
+
+  return () => {
+    if (BY_LOOK_FITS.get(owner) === fitsByLook) BY_LOOK_FITS.delete(owner);
+  };
+};
+
+/** @internal */
+export const getEditorFitsByLook = (editor: Editor) =>
+  BY_LOOK_FITS.get(getEditorRuntimeOwner(editor));
 
 const DRAFT_VIEWS = new WeakMap<object, () => boolean>();
 

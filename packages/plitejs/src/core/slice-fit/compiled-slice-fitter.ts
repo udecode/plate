@@ -18,7 +18,11 @@ import type {
 } from '../../interfaces';
 import { ElementApi, NodeApi, RangeApi, SelectionApi } from '../../interfaces';
 import { getDefined } from '../../internal/get-defined';
-import { ChangeDraft, type DocumentChangeStep } from '../change/builder';
+import {
+  ChangeDraft,
+  type DocumentChangeStep,
+  type DraftStep,
+} from '../change/builder';
 import {
   DocumentChange,
   assertNamedDocumentRootKey,
@@ -99,7 +103,12 @@ import {
   type SliceVariant,
   type SliceVariantFamily,
 } from './frontier';
-import { FitOriginLog, type FitSource, sliceOrigins } from './origin';
+import {
+  FitOriginLog,
+  type FitSource,
+  fitSections,
+  sliceOrigins,
+} from './origin';
 import {
   createRootFitPathProvenance,
   getTextEdge,
@@ -116,8 +125,11 @@ export type InternalSliceFitTarget =
   | Readonly<{
       at: Range;
       contentBounds?: Readonly<{ from: number; to: number }>;
+      byLook?: 'carry' | 'commit';
       exactBounds?: Readonly<{ from: number; to: number }>;
       kind: 'range';
+      /** The paste this fit writes part of, which may write several fits. */
+      paste?: object;
       replaceEmptyBlock?: true;
       reportLanding?: true;
     }>
@@ -367,6 +379,22 @@ const withoutUnchangedTail = (
         insert: candidate.insert.slice(0, candidate.insert.length - tail),
         to: candidate.to - tail,
       });
+};
+
+const lookAlikeChange = (
+  document: DocumentIndex,
+  candidate: MaterializedSliceFitCandidate
+) => {
+  const trimmed = withoutUnchangedTail(document, candidate);
+
+  return RootChange.create(
+    document,
+    trimmed.semanticChange ?? {
+      from: trimmed.from,
+      insert: trimmed.insert,
+      to: trimmed.to,
+    }
+  );
 };
 
 /**
@@ -1873,6 +1901,7 @@ export const compileSliceFitter = <V extends Value>(
     builder: ChangeDraft,
     rawChange: DocumentChange,
     diffsWholeValue: boolean,
+    stepFit: DraftStep['fit'],
     fitPreparation?: CanonicalFitPreparation,
     trustedCanonical?: Readonly<{
       createIndexes: () => ReadonlyMap<string, DocumentIndex>;
@@ -1914,6 +1943,7 @@ export const compileSliceFitter = <V extends Value>(
       );
       const step = builder.applyTrustedCanonical(rawChange, {
         facts,
+        fit: stepFit,
         indexedAfter,
         origin: 'slice',
         runtimeCandidates,
@@ -1934,6 +1964,7 @@ export const compileSliceFitter = <V extends Value>(
       builder.apply(rawChange, {
         classify: false,
         facts,
+        fit: stepFit,
         origin: 'slice',
         ...landedMove(builder, rawChange),
       })
@@ -2476,17 +2507,19 @@ export const compileSliceFitter = <V extends Value>(
 
       return allowed;
     };
+    const openTokenAt = new WeakMap<FitOpenToken, number>();
     const getOpenContext = (position: number): FitOpenToken[] =>
       profileCoreDuration('slice-fit-open-context', () =>
         document
           .openContextAt(position)
           .filter(({ from, to }) => from < position && position < to)
-          .map(({ path }) => {
+          .map(({ from, path }) => {
             const token = encodeNodes([document.node(path)]).slice.tokens[0];
 
             if (token?.kind !== 'open') {
               throw new Error(`Missing open token at document path [${path}].`);
             }
+            openTokenAt.set(token, from);
 
             return token;
           })
@@ -2754,15 +2787,59 @@ export const compileSliceFitter = <V extends Value>(
       let outputPosition = 0;
       let selectionPosition: number | null = null;
       let contentStart: number | null = null;
+      let startBlock:
+        | Readonly<{ from: number; length: number }>
+        | null
+        | undefined;
+      const findStartBlock = () => {
+        for (const boundary of boundaries) {
+          if (boundary.from >= exactFrom || boundary.to !== exactTo) continue;
+          const opened = document.tokens.slice(boundary.from, exactFrom).tokens;
+
+          if (
+            opened.length > 0 &&
+            opened.every((token, index) => {
+              const close = output[opened.length - 1 - index];
+
+              return (
+                token.kind === 'open' &&
+                close?.kind === 'close' &&
+                close.nodeKind === token.nodeKind
+              );
+            })
+          ) {
+            return { from: boundary.from, length: opened.length };
+          }
+        }
+
+        return null;
+      };
+      const documentElementReopenedAt = (token: FitToken) => {
+        const openAt =
+          token.kind === 'open' ? openTokenAt.get(token) : undefined;
+
+        return openAt !== undefined && startBlock && openAt >= startBlock.from
+          ? openAt
+          : undefined;
+      };
       const append = (
         token: FitToken,
         kind: FitSource['kind'] = 'fit',
         sourceAt = 0
       ) => {
+        if (startBlock === undefined && token.kind !== 'close') {
+          startBlock = findStartBlock();
+        }
         const length = tokenLength(token);
+        const documentAt =
+          kind === 'fit' ? documentElementReopenedAt(token) : undefined;
 
         output.push(token);
-        origins.add(length, kind, sourceAt);
+        if (documentAt === undefined) {
+          origins.add(length, kind, sourceAt);
+        } else {
+          origins.add(length, 'document', documentAt);
+        }
         outputPosition += length;
       };
       const closeTop = (kind: FitSource['kind'] = 'fit', sourceAt = 0) => {
@@ -3030,37 +3107,12 @@ export const compileSliceFitter = <V extends Value>(
         stack.push(expected[index]);
       }
 
-      let candidateFrom = exactFrom;
-      let candidateOutput = output;
-      let removedPrefixLength = 0;
+      if (startBlock === undefined) startBlock = findStartBlock();
+      const candidateFrom = startBlock?.from ?? exactFrom;
+      const removedPrefixLength = startBlock?.length ?? 0;
+      const candidateOutput = output.slice(removedPrefixLength);
 
-      for (const boundary of boundaries) {
-        if (boundary.from >= exactFrom || boundary.to !== exactTo) continue;
-        const opened = document.tokens.slice(boundary.from, exactFrom).tokens;
-
-        if (
-          opened.length === 0 ||
-          !opened.every((token) => token.kind === 'open') ||
-          !opened.every((_token, index) => {
-            const close = output[index];
-            const open = opened.at(-(index + 1));
-
-            return (
-              close?.kind === 'close' &&
-              open?.kind === 'open' &&
-              close.nodeKind === open.nodeKind
-            );
-          })
-        ) {
-          continue;
-        }
-
-        candidateFrom = boundary.from;
-        removedPrefixLength = opened.length;
-        candidateOutput = output.slice(opened.length);
-        origins.dropStart(opened.length);
-        break;
-      }
+      origins.dropStart(removedPrefixLength);
 
       const insert = PreparedTokenSlice.fromTokens(candidateOutput);
 
@@ -4045,8 +4097,14 @@ export const compileSliceFitter = <V extends Value>(
       'slice-fit-candidate-materialize',
       () => materializeCandidate(selectedCandidate)
     );
+    const sections =
+      options.target.kind === 'range' &&
+      !exactBounds &&
+      options.target.byLook !== 'commit'
+        ? fitSections(fittedCandidate)
+        : null;
     const materializedCandidate =
-      options.target.kind === 'range' && !exactBounds
+      options.target.kind === 'range' && !exactBounds && !sections
         ? withoutUnchangedTail(document, fittedCandidate)
         : fittedCandidate;
     const candidate = materializedCandidate.preparation
@@ -4054,7 +4112,9 @@ export const compileSliceFitter = <V extends Value>(
           ...materializedCandidate,
           preparation: bindCanonicalFitPreparation(
             materializedCandidate.preparation,
-            materializedCandidate.insert
+            sections?.flatMap(({ insert }) =>
+              insert && insert.length > 0 ? [insert] : []
+            ) ?? [materializedCandidate.insert]
           ),
         })
       : materializedCandidate;
@@ -4078,9 +4138,20 @@ export const compileSliceFitter = <V extends Value>(
               to: candidate.to,
             })
     );
-    const rootChange = candidate.semanticChange
-      ? RootChange.create(document, candidate.semanticChange)
-      : canonicalRootChange;
+    const rootChange = sections
+      ? RootChange.create(document, sections)
+      : candidate.semanticChange
+        ? RootChange.create(document, candidate.semanticChange)
+        : canonicalRootChange;
+    const stepFit =
+      options.target.kind === 'range' && options.target.byLook === 'carry'
+        ? Object.freeze({
+            ...(sections
+              ? { lookAlike: lookAlikeChange(document, fittedCandidate) }
+              : {}),
+            paste: options.target.paste ?? {},
+          })
+        : undefined;
 
     if (
       options.target.kind === 'range' &&
@@ -4169,6 +4240,7 @@ export const compileSliceFitter = <V extends Value>(
           options.builder.fork(),
           rawChange,
           options.target.kind === 'root',
+          stepFit,
           fitPreparation,
           candidate.trustedCanonical
             ? {
