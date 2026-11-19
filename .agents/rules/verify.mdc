@@ -157,8 +157,9 @@ its `exit N` line; after an interruption or resume, only those logs count.
   default when the tree changes a package the page renders, so the server
   serves source instead of built output. A dev server builds into
   `.next-<port>`, or `.next-plite-<port>` with `PLATE_WWW_PLITE=1`, because
-  Next lets only one server hold a build folder. It keeps no disk cache, so a
-  restart compiles from scratch on any port. When a server already holds that
+  Next lets only one server hold a build folder. In a worktree it keeps no disk
+  cache, so a restart compiles from scratch on any port; only the main
+  checkout keeps Turbopack's dev disk cache. When a server already holds that
   port, pick another port, and leave `PLATE_WWW_DIST_DIR` unset.
 - www browser specs: with `PLAYWRIGHT_BASE_URL` unset, `test:www-browser:*`
   starts `pnpm dev:plite` itself, which sets `PLATE_WWW_PLITE=1`,

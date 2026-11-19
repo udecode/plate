@@ -4,6 +4,8 @@ import path from 'node:path';
 
 import type { NextConfig } from 'next';
 
+import { isMainCheckout } from '../../config/main-checkout.mjs';
+
 const APP_ROOT = import.meta.dirname;
 const REPO_ROOT = path.resolve(APP_ROOT, '../..');
 const WWW_ROOT = path.join(REPO_ROOT, 'apps/www');
@@ -148,9 +150,10 @@ const nextConfig: NextConfig = {
     instantInsights: {
       validationLevel: 'manual-warning',
     },
-    // Turbopack's dev disk cache pays back only on a restart in the same
-    // worktree, and it rewrites gigabytes per worktree meanwhile.
-    turbopackFileSystemCacheForDev: false,
+    // Turbopack's dev disk cache pays back mostly when a server restarts on the
+    // same folder, which happens in the main checkout. In a worktree it
+    // rewrites gigabytes that a restart rarely reads back.
+    turbopackFileSystemCacheForDev: isMainCheckout(REPO_ROOT),
     turbopackRustReactCompiler: true,
   },
   logging: {

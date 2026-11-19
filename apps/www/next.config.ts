@@ -5,6 +5,7 @@ import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
+import { isMainCheckout } from '../../config/main-checkout.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import docsRedirects from './docs-redirects.json';
 
@@ -93,9 +94,10 @@ const nextConfig = (_phase: string) => {
 
     experimental: {
       externalDir: isDev,
-      // Turbopack's dev disk cache pays back only on a restart in the same
-      // worktree and port, and it rewrites gigabytes per folder meanwhile.
-      turbopackFileSystemCacheForDev: false,
+      // Turbopack's dev disk cache pays back mostly when a server restarts on
+      // the same folder, which happens in the main checkout. In a worktree it
+      // rewrites gigabytes that a restart rarely reads back.
+      turbopackFileSystemCacheForDev: isMainCheckout(REPO_ROOT),
       turbopackSharedRuntime: false,
       instantInsights: {
         validationLevel: 'manual-warning',
