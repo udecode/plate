@@ -8762,7 +8762,7 @@
         },
         "platejs:SchemaPropertyReferences": {
           "aliases": [],
-          "documentation": "How an element property names elements by the values of a unique element\nproperty.",
+          "documentation": "How an element property names elements by the values of a unique element\nproperty. The property must have an exact key, target element types alone,\nhave no default value and not be unique itself, and `key` must be the key\nof a unique string element property. No content slot or content default\nmay fix either property. The compiler refuses any other declaration.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "SchemaPropertyReferences",
@@ -26176,7 +26176,7 @@
         },
         "platejs/react:SchemaPropertyReferences": {
           "aliases": [],
-          "documentation": "How an element property names elements by the values of a unique element\nproperty.",
+          "documentation": "How an element property names elements by the values of a unique element\nproperty. The property must have an exact key, target element types alone,\nhave no default value and not be unique itself, and `key` must be the key\nof a unique string element property. No content slot or content default\nmay fix either property. The compiler refuses any other declaration.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "SchemaPropertyReferences",

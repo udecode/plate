@@ -216,7 +216,10 @@ export type SchemaTextPropertyOptions = Readonly<{
 
 /**
  * How an element property names elements by the values of a unique element
- * property.
+ * property. The property must have an exact key, target element types alone,
+ * have no default value and not be unique itself, and `key` must be the key
+ * of a unique string element property. No content slot or content default
+ * may fix either property. The compiler refuses any other declaration.
  */
 export type SchemaPropertyReferences<TValue> = Readonly<{
   /** The unique element property whose values this property names. */

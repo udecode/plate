@@ -1466,9 +1466,14 @@ const canonicalDeclaration = (
     }
 
     const record = value as Readonly<Record<PropertyKey, unknown>>;
+    const isRuntimeValidation = (property: PropertyKey) =>
+      property === 'validate' &&
+      key !== 'references' &&
+      typeof Object.getOwnPropertyDescriptor(record, property)?.value ===
+        'function';
     const result = Object.fromEntries(
       Object.keys(record)
-        .filter((property) => key === 'references' || property !== 'validate')
+        .filter((property) => !isRuntimeValidation(property))
         .sort()
         .map((property) => {
           const descriptor = Object.getOwnPropertyDescriptor(record, property);
@@ -1483,7 +1488,7 @@ const canonicalDeclaration = (
     ) as Record<string, unknown>;
     const exceptionalKeys = Reflect.ownKeys(record)
       .filter((property) => {
-        if (property === 'validate' && key !== 'references') return false;
+        if (isRuntimeValidation(property)) return false;
         if (typeof property === 'symbol') return true;
         const descriptor = Object.getOwnPropertyDescriptor(record, property);
 
@@ -4823,17 +4828,23 @@ const compileEditorSchemaInternal = (
 
   assertPropertyAgreesAcrossPlaces(mutableProperties);
 
-  for (const { lifecycle, references, source } of mutableProperties) {
-    if (references && lifecycle.unique) {
-      compileFailure(
-        'invalid-property-references',
-        `Schema property at ${source.path} is unique, so it cannot reference "${references.key}".`,
-        [source],
-        source.path
-      );
+  const referencesRefusalOf = (
+    { descriptor, key, lifecycle, target }: MutableProperty,
+    references: CompiledPropertyReferences
+  ) => {
+    if (lifecycle.unique) {
+      return `is unique, so it cannot reference "${references.key}"`;
+    }
+    if (typeof key !== 'string') {
+      return 'references elements, so it needs an exact key';
+    }
+    if (!isPlaceFreeTarget(target)) {
+      return 'references elements, so it must target element types alone';
+    }
+    if (Object.hasOwn(descriptor, 'default')) {
+      return 'references elements, so it cannot have a default value';
     }
     if (
-      references &&
       !mutableProperties.some(
         (property) =>
           property.key === references.key &&
@@ -4841,9 +4852,20 @@ const compileEditorSchemaInternal = (
           property.descriptor.kind === 'string'
       )
     ) {
+      return `references "${references.key}", which names no unique string element property`;
+    }
+
+    return null;
+  };
+
+  for (const property of mutableProperties) {
+    const { references, source } = property;
+    const refusal = references && referencesRefusalOf(property, references);
+
+    if (refusal) {
       compileFailure(
         'invalid-property-references',
-        `Schema property at ${source.path} references "${references.key}", which names no unique string element property.`,
+        `Schema property at ${source.path} ${refusal}.`,
         [source],
         source.path
       );
@@ -4944,7 +4966,50 @@ const compileEditorSchemaInternal = (
     }
   }
 
+  const referencedKeys = new Set(
+    mutableProperties.flatMap(({ references }) =>
+      references ? [references.key] : []
+    )
+  );
+  const namesThroughReference = (property: CompiledSchemaProperty) =>
+    property.references !== undefined ||
+    (property.lifecycle.unique === true &&
+      typeof property.key === 'string' &&
+      referencedKeys.has(property.key));
+  const refuseFixedReference = (
+    program: MutableContentProgram,
+    holder: 'default' | 'slot',
+    path: string,
+    key: string
+  ) =>
+    compileFailure(
+      'invalid-property-references',
+      `Schema content ${holder} at ${path} cannot fix "${key}", because a reference names elements through it.`,
+      [program.source],
+      `${path}.properties.${key}`
+    );
+
   for (const program of mutablePrograms.values()) {
+    const plan = program.defaultPlan;
+
+    if (plan?.kind === 'element') {
+      const path = `${program.source.path}.default`;
+
+      for (const key of Object.keys(plan.properties ?? {})) {
+        for (const id of propertyIdsByElement.get(plan.type) ?? []) {
+          const property = byId.get(id);
+
+          if (
+            property?.placement === 'element' &&
+            property.key === key &&
+            namesThroughReference(property)
+          ) {
+            refuseFixedReference(program, 'default', path, key);
+          }
+        }
+      }
+    }
+
     for (const [index, slot] of (program.prefix ?? []).entries()) {
       const path = `${program.source.path}.prefix.${index}`;
       const allowedIds =
@@ -4972,6 +5037,10 @@ const compileEditorSchemaInternal = (
           path: `${path}.properties.${key}`,
           value,
         };
+
+        if (namesThroughReference(candidate)) {
+          refuseFixedReference(program, 'slot', path, key);
+        }
         const canonical = canonicalizePropertyValue(
           candidate.descriptor,
           value,
