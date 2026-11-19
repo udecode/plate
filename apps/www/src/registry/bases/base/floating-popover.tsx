@@ -195,6 +195,7 @@ export function FloatingPopoverTrigger({
 export function FloatingPopoverContent({
   align = 'center',
   alignOffset,
+  anchorHidden = false,
   className,
   onFinalFocus,
   onEscapeKeyDown,
@@ -208,6 +209,8 @@ export function FloatingPopoverContent({
 }: React.ComponentProps<'div'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
+  /** Hides the open popover and lets clicks through, without closing it. */
+  anchorHidden?: boolean;
   onFinalFocus?: (event: Event) => void;
   onEscapeKeyDown?: (event: KeyboardEvent) => void;
   onInitialFocus?: (event: Event) => void;
@@ -236,7 +239,10 @@ export function FloatingPopoverContent({
         align={align}
         alignOffset={alignOffset}
         anchor={anchor}
-        className="isolate z-50"
+        className={cn(
+          'isolate z-50',
+          anchorHidden && 'pointer-events-none invisible'
+        )}
         side={side}
         sideOffset={sideOffset}
       >
@@ -245,7 +251,10 @@ export function FloatingPopoverContent({
           data-state={open ? 'open' : 'closed'}
           className={cn(
             'cn-popover-content cn-popover-content-logical z-50 w-72 origin-(--transform-origin) outline-hidden',
-            className
+            className,
+            // Visibility is transitionable, so each element inside waits out its
+            // own transition duration before the inherited hide stops its paint.
+            anchorHidden && 'transition-none **:transition-none!'
           )}
           finalFocus={
             scrollDismissed

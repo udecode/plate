@@ -17,6 +17,7 @@ import {
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
+import { useVisibleAnchor } from '@/registry/hooks/use-visible-anchor';
 
 export const isProse = (editor: Editor, block: Element) => {
   const codeBlock = editor.plugin(BaseCodeBlockPlugin);
@@ -106,32 +107,31 @@ export function LintPopover({ editableRef }: EditableSiblingProps) {
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
   const id = finding?.id;
-  // A new anchor per finding moves the popover; it sits under the finding's
-  // first painted segment, or under the caret before the paint catches up.
-  const anchor = React.useMemo(
+  const measure = React.useMemo(
     () =>
       id === undefined
         ? null
-        : {
-            get contextElement() {
-              return editableRef.current ?? undefined;
-            },
-            getBoundingClientRect: () => {
-              const painted = editableRef.current?.querySelector(
-                `[data-lint-id="${CSS.escape(id)}"]`
-              );
+        : () => {
+            const painted = editableRef.current?.querySelectorAll(
+              `[data-lint-id="${CSS.escape(id)}"]`
+            );
+            const lines = Array.from(painted ?? [], (segment) =>
+              Array.from(segment.getClientRects())
+            ).flat();
 
-              if (painted) return painted.getBoundingClientRect();
+            if (lines.length > 0) return lines;
 
-              const selection = editor.read.selection();
-              const range =
-                selection && editor.api.dom.resolveDOMRange(selection);
+            const selection = editor.read.selection();
+            const caretUntilPainted =
+              selection && editor.api.dom.resolveDOMRange(selection);
 
-              return range?.getBoundingClientRect() ?? new DOMRect();
-            },
+            return caretUntilPainted
+              ? [caretUntilPainted.getBoundingClientRect()]
+              : [];
           },
     [editableRef, editor, id]
   );
+  const { anchor, hidden } = useVisibleAnchor({ editableRef, measure });
 
   if (!finding || !focused || readOnly) return null;
 
@@ -140,6 +140,7 @@ export function LintPopover({ editableRef }: EditableSiblingProps) {
       <FloatingPopoverAnchor element={anchor} />
       <FloatingPopoverContent
         align="start"
+        anchorHidden={hidden}
         className="flex w-auto max-w-80 flex-col gap-2 p-3"
         data-severity={finding.severity}
         data-slot="lint-popover"

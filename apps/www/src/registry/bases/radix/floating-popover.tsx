@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from 'cn';
+import { useComposedRef } from 'platejs/react';
 import { Popover as PopoverPrimitive } from 'radix-ui';
 import * as React from 'react';
 
@@ -17,9 +18,10 @@ type FloatingAnchor =
 
 const PopoverContentWithPlaced =
   PopoverPrimitive.Content as React.ForwardRefExoticComponent<
-    React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> & {
-      onPlaced?: () => void;
-    }
+    React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> &
+      React.RefAttributes<HTMLDivElement> & {
+        onPlaced?: () => void;
+      }
   >;
 
 const FloatingPopoverRefsContext = React.createContext<{
@@ -139,11 +141,13 @@ export function FloatingPopoverTrigger({
 export function FloatingPopoverContent({
   align = 'center',
   alignOffset,
+  anchorHidden = false,
   className,
   onFinalFocus,
   onEscapeKeyDown,
   onInitialFocus,
   onPlaced,
+  ref,
   side,
   sideOffset = 4,
   style,
@@ -151,6 +155,8 @@ export function FloatingPopoverContent({
 }: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
+  /** Hides the open popover and lets clicks through, without closing it. */
+  anchorHidden?: boolean;
   onFinalFocus?: (event: Event) => void;
   onEscapeKeyDown?: (event: KeyboardEvent) => void;
   onInitialFocus?: (event: Event) => void;
@@ -161,6 +167,20 @@ export function FloatingPopoverContent({
 }) {
   const refs = React.useContext(FloatingPopoverRefsContext);
   const scrollDismissedRef = refs?.scrollDismissedRef;
+  // Radix positions the content inside a wrapper, which still takes clicks
+  // while only the content is hidden.
+  const hideWrapper = React.useCallback(
+    (content: HTMLDivElement | null) => {
+      const wrapper = content?.parentElement;
+
+      if (!wrapper) return;
+
+      wrapper.style.visibility = anchorHidden ? 'hidden' : '';
+      wrapper.style.pointerEvents = anchorHidden ? 'none' : '';
+    },
+    [anchorHidden]
+  );
+  const contentRef = useComposedRef(ref, hideWrapper);
 
   return (
     <PopoverPrimitive.Portal>
@@ -170,7 +190,10 @@ export function FloatingPopoverContent({
         alignOffset={alignOffset}
         className={cn(
           'cn-popover-content z-50 w-72 origin-(--radix-popover-content-transform-origin) outline-hidden',
-          className
+          className,
+          // Visibility is transitionable, so each element inside waits out its
+          // own transition duration before the inherited hide stops its paint.
+          anchorHidden && 'transition-none **:transition-none!'
         )}
         onCloseAutoFocus={(event) => {
           if (scrollDismissedRef?.current) {
@@ -188,6 +211,7 @@ export function FloatingPopoverContent({
         }}
         onOpenAutoFocus={onInitialFocus}
         onPlaced={onPlaced}
+        ref={contentRef}
         side={side}
         sideOffset={sideOffset}
         style={

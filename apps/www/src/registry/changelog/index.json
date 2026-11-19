@@ -2,6 +2,29 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-19-popovers-hide-with-text",
+      "href": "/registry/changelog/2026-11-19-popovers-hide-with-text.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Hide the comment and lint popovers whose text scrolls out of the editor",
+      "change": {
+        "type": "source",
+        "date": "2026-11-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "discussion",
+        "lint",
+        "floating-popover",
+        "use-visible-anchor"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-ai-menu-acts-on-board-note-text",
       "href": "/registry/changelog/2026-11-18-ai-menu-acts-on-board-note-text.json",
       "status": "draft",

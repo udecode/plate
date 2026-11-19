@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-popovers-hide-with-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-popovers-hide-with-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Hide the comment and lint popovers whose text scrolls out of the editor",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "lint",
+      "files": ["apps/www/src/registry/components/editor/lint.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-visible-anchor",
+      "files": ["apps/www/src/registry/hooks/use-visible-anchor.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-hooks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-discussion-popover-hides-with-text-3f81c0a2",
+      "kind": "behavior",
+      "summary": "Hide the comment popover once none of its lines is in the editor's visible area, and show it again when they scroll back. A comment box someone types in, and a new comment waiting for its box, stay shown.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-popovers-hide-with-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-lint-popover-hides-with-text-a6d2e94b",
+      "kind": "behavior",
+      "summary": "Hide the lint popover once its finding leaves the editor's visible area, and show it again when the finding scrolls back.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["lint"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-popovers-hide-with-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-floating-popover-anchor-hidden-5b07c3de",
+      "kind": "behavior",
+      "summary": "Take `anchorHidden` on `FloatingPopoverContent`, which hides the open popover and lets clicks reach the page under it without closing it.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-popover"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-popovers-hide-with-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-use-visible-anchor-new-hook-c94e1f70",
+      "kind": "new",
+      "summary": "Build a popover anchor from boxes you measure, and read `hidden`, which turns true once none of them is in the editor's visible area.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["use-visible-anchor"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-popovers-hide-with-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

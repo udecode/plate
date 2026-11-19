@@ -1,6 +1,43 @@
 {
   "schemaVersion": 1,
   "components": {
+    "discussion": [
+      "2026-11-19-popovers-hide-with-text",
+      "2026-11-18-comments-on-board-note-text",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-discussion-board-note-threads",
+      "2026-11-17-discussion-replacement-pairs",
+      "2026-11-10-discussion-safari-taps",
+      "2026-10-18-discussion-preview-block-reads",
+      "2026-10-13-suggestions-review-tree",
+      "2026-09-18-comment-discovery",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "lint": ["2026-11-19-popovers-hide-with-text", "2026-10-13-lint"],
+    "floating-popover": [
+      "2026-11-19-popovers-hide-with-text",
+      "2026-11-18-radix-ui-package",
+      "2026-11-17-cn-package",
+      "2026-11-10-discussion-safari-taps",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-07-provider-lifetimes",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry"
+    ],
+    "use-visible-anchor": ["2026-11-19-popovers-hide-with-text"],
     "ai-menu": [
       "2026-11-18-ai-menu-acts-on-board-note-text",
       "2026-11-18-registry-icon-library",
@@ -68,28 +105,6 @@
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
-    ],
-    "discussion": [
-      "2026-11-18-comments-on-board-note-text",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-discussion-board-note-threads",
-      "2026-11-17-discussion-replacement-pairs",
-      "2026-11-10-discussion-safari-taps",
-      "2026-10-18-discussion-preview-block-reads",
-      "2026-10-13-suggestions-review-tree",
-      "2026-09-18-comment-discovery",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-14-fix-comments-selection-visibility",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry"
     ],
     "find": [
       "2026-11-18-find-tooltip-provider",
@@ -177,17 +192,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-07-24-configurable-color-controls",
       "2025-11-20-biome-ultracite"
-    ],
-    "floating-popover": [
-      "2026-11-18-radix-ui-package",
-      "2026-11-17-cn-package",
-      "2026-11-10-discussion-safari-taps",
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-07-provider-lifetimes",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry"
     ],
     "dnd": [
       "2026-11-18-registry-icon-elements",
@@ -1377,7 +1381,6 @@
       "2026-10-13-suggestions-review-tree",
       "2026-09-13-suggestion-examples"
     ],
-    "lint": ["2026-10-13-lint"],
     "lint-demo": ["2026-10-13-lint"],
     "version-history-demo": [
       "2026-10-13-suggestions-review-tree",

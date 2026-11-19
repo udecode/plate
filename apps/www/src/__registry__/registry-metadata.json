@@ -1,5 +1,5 @@
 {
-  "generation": "d5170585e5f1b9c39249a3a473ae07c639344908dba0567f9bd127be194cb676",
+  "generation": "c81624459b38f70ae1e7aa90d7a7ce1b1f04410f5c484fd92b1da24b94591bf4",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3172,6 +3172,7 @@
             "@plate/suggestion",
             "@plate/comment",
             "@plate/floating-popover",
+            "@plate/use-visible-anchor",
             "avatar",
             "button",
             "separator"
@@ -3275,6 +3276,7 @@
           },
           "registryDependencies": [
             "@plate/floating-popover",
+            "@plate/use-visible-anchor",
             "button"
           ]
         },
@@ -4674,6 +4676,20 @@
             }
           ],
           "name": "use-floating-rect",
+          "type": "registry:hook"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "hooks/use-visible-anchor.ts",
+              "type": "registry:hook"
+            }
+          ],
+          "name": "use-visible-anchor",
           "type": "registry:hook"
         },
         {
@@ -8577,6 +8593,7 @@
           "dependencies": [
             "platejs",
             "cn",
+            "diff-match-patch-ts@^0.6.0",
             "radix-ui"
           ],
           "description": "Provider-neutral anchored floating content for Plate UI.",
@@ -10456,6 +10473,7 @@
             "@plate/suggestion",
             "@plate/comment",
             "@plate/floating-popover",
+            "@plate/use-visible-anchor",
             "avatar",
             "button",
             "separator"
@@ -10559,6 +10577,7 @@
           },
           "registryDependencies": [
             "@plate/floating-popover",
+            "@plate/use-visible-anchor",
             "button"
           ]
         },
@@ -11958,6 +11977,20 @@
             }
           ],
           "name": "use-floating-rect",
+          "type": "registry:hook"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "hooks/use-visible-anchor.ts",
+              "type": "registry:hook"
+            }
+          ],
+          "name": "use-visible-anchor",
           "type": "registry:hook"
         },
         {

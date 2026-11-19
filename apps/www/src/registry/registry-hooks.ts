@@ -13,6 +13,17 @@ export const registryHooks: Registry['items'] = [
     type: 'registry:hook',
   },
   {
+    dependencies: ['platejs'],
+    files: [
+      {
+        path: 'hooks/use-visible-anchor.ts',
+        type: 'registry:hook',
+      },
+    ],
+    name: 'use-visible-anchor',
+    type: 'registry:hook',
+  },
+  {
     files: [
       {
         path: 'hooks/use-object-url.ts',

@@ -1,0 +1,26 @@
+---
+id: 2026-11-19-popovers-hide-with-text
+date: 2026-11-19
+status: draft
+kind: behavior
+summary: 'Hide the comment and lint popovers whose text scrolls out of the editor'
+change: { 'type': 'source', 'date': '2026-11-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-19-discussion-popover-hides-with-text-3f81c0a2","kind":"behavior","migrationNotes":[]} -->
+
+- **`discussion`**: Hide the comment popover once none of its lines is in the editor's visible area, and show it again when they scroll back. A comment box someone types in, and a new comment waiting for its box, stay shown.
+
+<!-- entry: {"id":"2026-11-19-lint-popover-hides-with-text-a6d2e94b","kind":"behavior","migrationNotes":[]} -->
+
+- **`lint`**: Hide the lint popover once its finding leaves the editor's visible area, and show it again when the finding scrolls back.
+
+<!-- entry: {"id":"2026-11-19-floating-popover-anchor-hidden-5b07c3de","kind":"behavior","migrationNotes":[]} -->
+
+- **`floating-popover`**: Take `anchorHidden` on `FloatingPopoverContent`, which hides the open popover and lets clicks reach the page under it without closing it.
+
+<!-- entry: {"id":"2026-11-19-use-visible-anchor-new-hook-c94e1f70","kind":"new","migrationNotes":[]} -->
+
+- **`use-visible-anchor`**: Build a popover anchor from boxes you measure, and read `hidden`, which turns true once none of them is in the editor's visible area.

@@ -3047,6 +3047,7 @@
         "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/comment.json",
         "https://platejs.org/r/floating-popover.json",
+        "https://platejs.org/r/use-visible-anchor.json",
         "avatar",
         "button",
         "separator"
@@ -3149,6 +3150,7 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/floating-popover.json",
+        "https://platejs.org/r/use-visible-anchor.json",
         "button"
       ],
       "files": [
@@ -4553,6 +4555,20 @@
       "files": [
         {
           "path": "src/registry/hooks/use-floating-rect.ts",
+          "type": "registry:hook"
+        }
+      ],
+      "type": "registry:hook"
+    },
+    {
+      "name": "use-visible-anchor",
+      "dependencies": [
+        "platejs",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "files": [
+        {
+          "path": "src/registry/hooks/use-visible-anchor.ts",
           "type": "registry:hook"
         }
       ],

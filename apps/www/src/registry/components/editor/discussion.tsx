@@ -61,6 +61,7 @@ import {
   FloatingPopoverAnchor,
   FloatingPopoverContent,
 } from '@/registry/components/editor/floating-popover';
+import { useVisibleAnchor } from '@/registry/hooks/use-visible-anchor';
 
 type RuntimeEditor = ReturnType<typeof useEditor>;
 
@@ -1034,6 +1035,10 @@ function DiscussionPopover({
   const popoverRef = React.useRef<HTMLDivElement>(null);
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const pending = usePendingComment();
+  // React focus events bubble out of portals, so a menu opened from the
+  // popover counts as a control inside it.
+  const focusedControlRef = React.useRef<EventTarget | null>(null);
+  const releasedPendingRef = React.useRef<typeof pending>(null);
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
   const suggestions = React.useContext(SuggestionsInstalledContext);
@@ -1195,52 +1200,60 @@ function DiscussionPopover({
     return index === undefined ? null : current.key([index]);
   });
   const anchorBlockKey = previewHidesRange ? shownTrigger : anchorRangeKey;
-  const virtualAnchor = React.useMemo(() => {
-    const currentAnchorRange = anchorRangeJson
+  const targetElement = target?.anchor ?? null;
+  const measureAnchor = React.useMemo(() => {
+    if (targetElement) return () => [targetElement.getBoundingClientRect()];
+
+    const range = anchorRangeJson
       ? (JSON.parse(anchorRangeJson) as Range)
       : null;
 
-    return {
-      contextElement: rootElement ?? undefined,
-      getBoundingClientRect: () => {
-        if (!currentAnchorRange) {
-          return (
-            (anchorBlockKey &&
-              editor.api.dom
-                .resolveDOMNode(anchorBlockKey)
-                ?.getBoundingClientRect()) ||
-            new DOMRect()
-          );
-        }
+    if (!range) {
+      if (!anchorBlockKey) return null;
 
-        const blockRect = anchorBlockKey
-          ? store.getBlockTrigger(anchorBlockKey)?.getBoundingClientRect()
-          : null;
-        const { root } = RangeApi.start(currentAnchorRange);
-        const domRange = (
-          root === undefined || root === editor.read.view.root()
-            ? editor
-            : model
-        ).api.dom.resolveDOMRange(currentAnchorRange);
+      return () => {
+        const block = editor.api.dom.resolveDOMNode(anchorBlockKey);
 
-        if (!domRange) return blockRect ?? new DOMRect();
+        return block ? [block.getBoundingClientRect()] : [];
+      };
+    }
 
-        const clientRect = Array.from(domRange.getClientRects()).findLast(
-          ({ height, width }) => height > 0 || width > 0
-        );
+    return () => {
+      const { root } = RangeApi.start(range);
+      const domRange = (
+        root === undefined || root === editor.read.view.root() ? editor : model
+      ).api.dom.resolveDOMRange(range);
+      const lines = domRange
+        ? Array.from(domRange.getClientRects()).filter(
+            ({ height, width }) => height > 0 || width > 0
+          )
+        : [];
 
-        if (clientRect) return clientRect;
+      if (lines.length > 0) return lines.reverse();
 
-        const rangeRect = domRange.getBoundingClientRect();
+      const rangeRect = domRange?.getBoundingClientRect();
 
-        return rangeRect.height > 0 || rangeRect.width > 0
-          ? rangeRect
-          : (blockRect ?? rangeRect);
-      },
+      if (rangeRect && (rangeRect.height > 0 || rangeRect.width > 0)) {
+        return [rangeRect];
+      }
+
+      const trigger = anchorBlockKey
+        ? store.getBlockTrigger(anchorBlockKey)
+        : null;
+
+      if (trigger) return [trigger.getBoundingClientRect()];
+
+      return rangeRect ? [rangeRect] : [];
     };
-  }, [anchorBlockKey, anchorRangeJson, editor, model, rootElement, store]);
-  const anchorElement =
-    target?.anchor ?? (anchorRange || anchorBlockKey ? virtualAnchor : null);
+  }, [anchorBlockKey, anchorRangeJson, editor, model, store, targetElement]);
+  const { anchor: anchorElement, hidden } = useVisibleAnchor({
+    editableRef,
+    keepShown: () =>
+      focusedControlRef.current ===
+        editableRef.current?.ownerDocument.activeElement ||
+      (Boolean(pending) && releasedPendingRef.current !== pending),
+    measure: measureAnchor,
+  });
   const open = Boolean(
     anchorElement &&
     (pending || activeItems.length > 0 || targetItems.length > 0)
@@ -1289,6 +1302,7 @@ function DiscussionPopover({
         {anchorElement && <FloatingPopoverAnchor element={anchorElement} />}
         <FloatingPopoverContent
           align="center"
+          anchorHidden={hidden}
           aria-label={pending ? 'New comment' : 'Discussion items'}
           className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] gap-0 overflow-y-auto p-0 data-[state=closed]:opacity-0"
           data-discussion-popover=""
@@ -1307,6 +1321,12 @@ function DiscussionPopover({
             ) {
               focusEditor();
             }
+          }}
+          onFocus={(event) => {
+            const onControl = event.target !== event.currentTarget;
+
+            focusedControlRef.current = onControl ? event.target : null;
+            if (onControl && pending) releasedPendingRef.current = pending;
           }}
           onInitialFocus={(event) => event.preventDefault()}
           onPlaced={() => {
