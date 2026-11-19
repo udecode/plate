@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-mode-per-editor-root",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-mode-per-editor-root.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Switch Viewing for the whole editor root",
+  "targets": [
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-mode-toolbar-switch-viewing-whole-editor-c9bedfbd",
+      "kind": "behavior",
+      "summary": "Viewing now turns every part of the editor root read-only, board notes included, through `setEditorViewing`. A read-only note no longer shows the button as Viewing while the page around it stays writable. When the toolbar controls no editing area, such as under `EditorProvider` or while no `EditorContent` is mounted, Viewing still locks the editor.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["mode-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-mode-per-editor-root",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

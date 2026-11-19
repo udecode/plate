@@ -17,7 +17,6 @@ import {
   type Range as ModelRange,
   type Text as TextNode,
 } from '../..';
-import { readAuthoredView } from '../../core/authored-runtime';
 import { markRootViewUsed } from '../../core/root-target';
 import {
   type DOMCoverageBoundary,
@@ -454,16 +453,7 @@ function EditableContentRootSlot({
     ownerEditor.read((state) => state.view.root())
   );
   const { root } = useContentRoot(element, { slot });
-  const inheritedReadOnly = useEditorReadOnly();
-  const readOnly = Boolean(options.readOnly || inheritedReadOnly);
-  // The owned root paints the owner's sources through its own view and keeps
-  // editing in the owner's authored mode, including after a mode switch.
   const ownerSources = React.useContext(DecorationSourcesContext);
-  const readOwnerAuthored = React.useCallback(
-    () => readAuthoredView(ownerEditor),
-    [ownerEditor]
-  );
-  const ownerAuthored = useEditorViewState(ownerEditor, readOwnerAuthored);
   const contentRootOwner = React.useMemo(
     () => ({
       childRoot: root,
@@ -476,12 +466,10 @@ function EditableContentRootSlot({
   return (
     <PliteContentRootOwnerContext value={contentRootOwner}>
       <SurfaceRoot
-        // The owner's runtime policy is authoritative even when the owner's
-        // static editor type does not declare authored changes.
-        authored={ownerAuthored as never}
         decorations={ownerSources}
         editor={ownerEditor}
-        readOnly={readOnly}
+        nested
+        readOnly={Boolean(options.readOnly)}
         root={root}
       >
         <EditableContentRootView
@@ -539,8 +527,8 @@ function EditableContentRootView({
   } = renderers;
   const editor = useEditorContext();
   const ownerHandlers = React.useContext(OwnerHandlersContext);
-  const inheritedReadOnly = useEditorReadOnly();
-  const readOnly = Boolean(options.readOnly || inheritedReadOnly);
+  const viewReadOnly = useEditorViewState(editor, (view) => view.isReadOnly());
+  const readOnly = Boolean(options.readOnly || viewReadOnly);
   const { getMountedViewEditor, registerContentRootOwner } =
     useRequiredPliteRuntimeContext();
   const passesNodeSelectionFocus = nodeSelectionFocus !== undefined;

@@ -36,10 +36,11 @@ import {
   type ViewPresentation,
 } from '../../core/view-presentation';
 import {
-  getCarriedPresentation,
+  getCarriedMount,
   getViewPresentation,
   withMountedPresentation,
 } from '../../editor-runtime-view';
+import type { AnyEditor } from '../../interfaces/editor';
 import { PliteContentRootOwnerContext } from '../context';
 import {
   DecorationContext,
@@ -200,6 +201,7 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   onValueChange?: (
     context: EditorCommitContext<E> & { value: ValueOf<E> }
   ) => void;
+  mountedIn?: AnyEditor;
   presentation?: ViewPresentation;
   readOnly?: boolean;
   root?: NamedRootKey;
@@ -234,10 +236,16 @@ export const EditorRoot = <
   props: EditorRootProps<E, TRoot>
 ) => <EditorRootContent key={getRuntimeKey(props.editor)} {...props} />;
 
-export const SurfaceRoot = ({ editor, ...props }: EditorRootProps) => {
+export const SurfaceRoot = ({
+  editor,
+  nested = false,
+  ...props
+}: EditorRootProps & {
+  nested?: boolean;
+}) => {
   const surfaceEditor = useMemo(
-    () => withMountedPresentation(editor, editor),
-    [editor]
+    () => withMountedPresentation(editor, editor, nested),
+    [editor, nested]
   );
 
   return <EditorRoot {...props} editor={surfaceEditor} />;
@@ -271,12 +279,15 @@ const EditorRootContent = <
       root: initialRoot === 'main' ? undefined : initialRoot,
     };
   }, [editor]);
+  const carried = getCarriedMount(editor);
   const content = (
     <EditorRuntimeView
       {...viewProps}
-      authored={props.authored ?? defaults.authored}
+      // A carried presentation already holds its editor root's mode.
+      authored={carried ? undefined : (props.authored ?? defaults.authored)}
       lifetime={editor}
-      presentation={getCarriedPresentation(editor)}
+      mountedIn={carried?.mountedIn}
+      presentation={carried?.presentation}
       readOnly={props.readOnly ?? defaults.readOnly}
       root={props.root ?? defaults.root}
     />
@@ -303,6 +314,7 @@ export const EditorRuntimeView = <
   root,
   directEditor,
   lifetime,
+  mountedIn,
   presentation,
 }: EditorRuntimeViewProps<E>) => {
   const runtimeContext = useRequiredPliteRuntimeContext();
@@ -318,12 +330,12 @@ export const EditorRuntimeView = <
     }
 
     return createReactRuntimeViewEditor(
-      getView({ authored, readOnly, root }, presentation)
+      getView({ authored, readOnly, root }, presentation, undefined, mountedIn)
     ) as unknown as E;
     // Authored and read-only policy updates reconcile below without replacing
     // the view. Their current values seed only a new input/root lifetime.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [directEditor, getView, lifetime, presentation, root]);
+  }, [directEditor, getView, lifetime, mountedIn, presentation, root]);
   const reactEditor = editor;
   const viewPresentation = getViewPresentation(reactEditor);
   // Insertion effects survive StrictMode replays and Activity hides, so a

@@ -74,9 +74,9 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getActiveEditorUpdateTags,
-  isEditorCompositionPending,
-  notifyEditorViewState,
-  subscribeEditorViewState,
+  isPresentationComposing,
+  notifyPresentationViewState,
+  subscribePresentationComposition,
   withEditorDocumentProjection,
 } from '../core/public-state';
 import {
@@ -115,8 +115,12 @@ import {
   nextMintedGeneration,
   subscribeCommittedPlacement,
 } from '../core/view-carets';
+import {
+  getBaseViewPresentation,
+  type ViewPresentation,
+} from '../core/view-presentation';
 import { countCoreWork } from '../core/work';
-import { getViewAuthor } from '../editor-runtime-view';
+import { getViewAuthor, getViewPresentation } from '../editor-runtime-view';
 import type {
   AnyEditor as Editor,
   EditorDocumentValue,
@@ -353,11 +357,10 @@ type AuthoredState = {
   marks: ReturnType<typeof createDocumentMarksValidator>;
   /** Updates that decide changes and record nothing, by update id. */
   passThrough: WeakSet<object>;
-  /** A view switch asked for mid-composition, by view runtime. */
-  pending: WeakMap<object, AuthoredView>;
+  pending: WeakMap<ViewPresentation, AuthoredView>;
   /** Updates refused, by update id, so a refusal caught inside one holds. */
   refused: WeakMap<object, AuthoredRefusal>;
-  views: WeakMap<object, AuthoredView>;
+  views: WeakMap<ViewPresentation, AuthoredView>;
 };
 
 const STATES = new WeakMap<object, AuthoredState>();
@@ -1280,59 +1283,61 @@ export const createAuthoredPlugin = (
       runtime;
       runtime = runtime.policySource?.current()
     ) {
-      const view = views.get(runtime);
+      const view = runtime.presentation && views.get(runtime.presentation);
 
       if (view) return view;
     }
 
     return (
-      views.get(getEditorRuntime(getEditorRuntimeOwner(editor))) ?? {
+      views.get(getBaseViewPresentation(getEditorRuntimeOwner(editor))) ?? {
         intent: 'edit',
       }
     );
   };
-  const owesWord = (editor: Editor) =>
-    editor.read.view.isComposing() || isEditorCompositionPending(editor);
   const applyView = (editor: Editor, view: AuthoredView) => {
-    const runtime = getEditorRuntime(editor);
+    const presentation = getViewPresentation(editor);
     const state = stateOf(editor);
 
-    state.pending.delete(runtime);
-    state.views.set(runtime, view);
-    notifyEditorViewState(editor, 'authored');
+    state.pending.delete(presentation);
+    state.views.set(presentation, view);
+    notifyPresentationViewState(editor, 'authored');
   };
-  // Composed text records under the intent its composition began in.
-  const requestView = (editor: Editor, view: AuthoredView) => {
-    const runtime = getEditorRuntime(editor);
-    const state = stateOf(editor);
-    const waiting = state.pending.has(runtime);
-
-    if (!owesWord(editor)) {
-      const current = state.views.get(runtime);
-      const modeOf = (value: AuthoredView) =>
-        'intent' in value ? value.intent : value.preview;
-
-      if (waiting || !current || modeOf(current) !== modeOf(view)) {
-        applyView(editor, view);
-      }
-      return;
-    }
-
-    state.pending.set(runtime, view);
-    if (waiting) return;
-
-    const stop = subscribeEditorViewState(editor, () => {
-      const next = state.pending.get(runtime);
-
-      if (owesWord(editor)) return;
+  const applyOnceWordsAreComposed = (editor: Editor) => {
+    const presentation = getViewPresentation(editor);
+    const stop = subscribePresentationComposition(editor, () => {
+      if (isPresentationComposing(editor)) return;
       stop();
+
+      const next = stateOf(editor).pending.get(presentation);
+
       if (next) applyView(editor, next);
     });
   };
-  const settleWaitingView = (editor: Editor) => {
-    const waiting = stateOf(editor).pending.get(getEditorRuntime(editor));
+  const requestView = (editor: Editor, view: AuthoredView) => {
+    const presentation = getViewPresentation(editor);
+    const state = stateOf(editor);
+    const waiting = state.pending.has(presentation);
 
-    if (waiting && !owesWord(editor)) applyView(editor, waiting);
+    if (isPresentationComposing(editor)) {
+      state.pending.set(presentation, view);
+      if (!waiting) applyOnceWordsAreComposed(editor);
+      return;
+    }
+
+    const current = state.views.get(presentation);
+    const modeOf = (value: AuthoredView) =>
+      'intent' in value ? value.intent : value.preview;
+
+    if (waiting || !current || modeOf(current) !== modeOf(view)) {
+      applyView(editor, view);
+    }
+  };
+  const settleWaitingView = (editor: Editor) => {
+    const waiting = stateOf(editor).pending.get(getViewPresentation(editor));
+
+    if (waiting && !isPresentationComposing(editor)) {
+      applyView(editor, waiting);
+    }
   };
   const previewModeOf = (editor: Editor) => {
     const view = viewOf(editor);
@@ -1838,7 +1843,9 @@ export const createAuthoredPlugin = (
       };
 
       if (options.intent) {
-        state.views.set(getEditorRuntime(owner), { intent: options.intent });
+        state.views.set(getBaseViewPresentation(owner), {
+          intent: options.intent,
+        });
       }
       STATES.set(owner, state);
       onCleanup(() => STATES.delete(owner));
@@ -1935,7 +1942,7 @@ export const createAuthoredPlugin = (
           },
           requestView,
           setView: (view, value) => {
-            state.views.set(getEditorRuntime(view), value);
+            state.views.set(getViewPresentation(view), value);
           },
           toStored: (view, root, target) => {
             const preview = previewModeOf(view);

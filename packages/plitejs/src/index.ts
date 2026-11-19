@@ -104,7 +104,11 @@ export {
   type EditorSchemaContractElement,
   type EditorSchemaContractRoot,
 } from './core/schema-compiler';
-export { documentReplacement, setEditorReadOnly } from './core/public-state';
+export {
+  documentReplacement,
+  setEditorReadOnly,
+  setEditorViewing,
+} from './core/public-state';
 export { defineStateField } from './core/state-field';
 export { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 export {

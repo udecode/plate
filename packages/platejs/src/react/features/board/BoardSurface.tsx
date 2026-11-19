@@ -8,6 +8,7 @@ import {
   useEditorHistory,
   useModelEditor,
   useElementSelected,
+  useRootEditor,
 } from '../../core';
 import { keepToolbarArrowFromBrowser } from './boardKeys.internal';
 import type { BoardPlugin } from './BoardPlugin';
@@ -90,9 +91,12 @@ export function BoardSurface({
   const { element } = props;
   const editor = useModelEditor();
   const mounted = useEditor();
+  const shapes = useRootEditor(
+    editor.read.schema.getElementContentRoots(element)[BOARD_SHAPES_SLOT]
+  );
   const selected = useElementSelected();
   const [view] = React.useState(() =>
-    createBoardView(editor, mounted, element, messages)
+    createBoardView(editor, mounted, element, messages, shapes)
   );
   const viewport = React.useSyncExternalStore(
     view.subscribeViewport,

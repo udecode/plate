@@ -10,6 +10,41 @@ type PresentationLife = {
 const LIVES = new WeakMap<ViewPresentation, PresentationLife>();
 const BASE_PRESENTATIONS = new WeakMap<object, ViewPresentation>();
 const STATE_PRESENTATIONS = new WeakMap<object, ViewPresentation>();
+const VIEWING = new WeakSet<ViewPresentation>();
+const COMPOSING = new WeakMap<ViewPresentation, Set<object>>();
+
+export const isPresentationViewing = (presentation: ViewPresentation) =>
+  VIEWING.has(presentation);
+
+export const isPresentationComposing = (presentation: ViewPresentation) =>
+  COMPOSING.has(presentation);
+
+export const setPresentationComposing = (
+  presentation: ViewPresentation,
+  view: object,
+  composing: boolean
+) => {
+  const views = COMPOSING.get(presentation) ?? new Set<object>();
+  const was = views.size > 0;
+
+  if (composing) views.add(view);
+  else views.delete(view);
+  if (views.size > 0) COMPOSING.set(presentation, views);
+  else COMPOSING.delete(presentation);
+
+  return was !== views.size > 0;
+};
+
+export const setPresentationViewing = (
+  presentation: ViewPresentation,
+  viewing: boolean
+) => {
+  if (VIEWING.has(presentation) === viewing) return false;
+  if (viewing) VIEWING.add(presentation);
+  else VIEWING.delete(presentation);
+
+  return true;
+};
 
 export const setStatePresentation = (
   state: object,

@@ -91,6 +91,7 @@ import {
 import {
   createViewPresentation,
   getBaseViewPresentation,
+  isPresentationViewing,
   retainPresentation,
   type ViewPresentation,
 } from './core/view-presentation';
@@ -139,6 +140,7 @@ type ViewState = {
   document: AdmittedDocument | undefined;
   focused: boolean;
   follows: ViewPolicyTarget | undefined;
+  mountedIn: InternalEditorRuntime | undefined;
   policySource: ViewPolicySource | undefined;
   presentation: ViewPresentation;
   readOnly: boolean;
@@ -156,7 +158,10 @@ type LayeredEditorView<TEditor> = Omit<TEditor, 'blur' | 'focus' | 'root'> &
 
 // Keyed by view runtime, which mounted React view editors share with their view.
 const VIEW_STATES = new WeakMap<object, ViewState>();
-const MOUNTED_PRESENTATIONS = new WeakMap<object, ViewPresentation>();
+const MOUNTED_PRESENTATIONS = new WeakMap<
+  object,
+  { mountedIn: Editor | undefined; presentation: ViewPresentation }
+>();
 
 // Keyed by compiled schema: a schema change validates each document once more.
 const VALIDATED_DOCUMENTS = new WeakMap<object, WeakSet<EditorDocumentValue>>();
@@ -303,11 +308,13 @@ type CreateEditorView = {
 type WithMountedPresentation = {
   <const TEditor extends EditorStateViewProvider<() => unknown>>(
     editor: TEditor,
-    view: Editor
+    view: Editor,
+    nested?: boolean
   ): LayeredEditorView<TEditor>;
   <V extends Value, TPlugins extends readonly unknown[] = readonly []>(
     editor: Editor<V, TPlugins>,
-    view: Editor
+    view: Editor,
+    nested?: boolean
   ): EditorView<V, TPlugins>;
 };
 
@@ -334,13 +341,48 @@ type ViewStateTransformInput<V extends Value> = Pick<
 const shownOnlyReadOnly = ({ readOnly, writable }: ViewState['surfaces']) =>
   readOnly > 0 && writable === 0;
 
-const isViewReadOnly = (state: ViewState): boolean => {
-  if (state.readOnly || shownOnlyReadOnly(state.surfaces)) return true;
+const isOwnLock = (state: ViewState) =>
+  state.readOnly || shownOnlyReadOnly(state.surfaces);
 
+const mountingState = (state: ViewState) =>
+  state.mountedIn && VIEW_STATES.get(state.mountedIn);
+
+const isLocked = (state: ViewState): boolean => {
+  const mounting = mountingState(state);
+
+  return isOwnLock(state) || (mounting ? isLocked(mounting) : false);
+};
+
+const followedState = (state: ViewState) => {
   const source = state.policySource?.current();
-  const followed = source && VIEW_STATES.get(source);
+
+  return source && VIEW_STATES.get(source);
+};
+
+const isViewReadOnly = (state: ViewState): boolean => {
+  if (isPresentationViewing(state.presentation) || isLocked(state)) return true;
+
+  const followed = followedState(state);
 
   return followed ? isViewReadOnly(followed) : false;
+};
+
+// A nested view's own lock is not Viewing: only the outermost view's lock
+// puts its editor root in Viewing.
+const isViewing = (state: ViewState): boolean => {
+  if (isPresentationViewing(state.presentation)) return true;
+
+  const followed = followedState(state);
+
+  if (followed) return isViewing(followed);
+
+  let outermost = state;
+
+  for (let next = mountingState(state); next; next = mountingState(next)) {
+    outermost = next;
+  }
+
+  return isOwnLock(outermost);
 };
 
 const viewRuntimeOf = (editor: Editor | undefined) => {
@@ -348,6 +390,9 @@ const viewRuntimeOf = (editor: Editor | undefined) => {
 
   return runtime && VIEW_STATES.has(runtime) ? runtime : undefined;
 };
+
+const isLockedModelEditor = (editor: Editor) =>
+  !viewRuntimeOf(editor) && editor.read.view.isReadOnly();
 
 export const getViewAuthor = (editor: object): string | undefined =>
   hasEditorRuntime(editor)
@@ -377,6 +422,7 @@ const createViewApi = (state: ViewState): EditorStateViewApi =>
     isComposing: () => state.composing,
     isFocused: () => state.focused,
     isReadOnly: () => isViewReadOnly(state),
+    isViewing: () => isViewing(state),
     root: () => toPublicRoot(state.root),
   });
 
@@ -1370,7 +1416,9 @@ const createViewRuntime = <V extends Value>(
       ),
     hasSurface: () =>
       viewState.surfaces.readOnly > 0 || viewState.surfaces.writable > 0,
+    mountedIn: viewState.mountedIn,
     policySource: viewState.policySource,
+    presentation: viewState.presentation,
     registerSurface: (readOnly) => {
       const kind = readOnly ? 'readOnly' : 'writable';
 
@@ -1517,7 +1565,8 @@ export const createEditorViewRuntime = <
   sourceEditor: Editor<V, TPlugins>,
   options: EditorViewOptions<TRoot> = {},
   presentation?: ViewPresentation,
-  policyTarget?: ViewPolicyTarget
+  policyTarget?: ViewPolicyTarget,
+  mountedIn?: Editor
 ): EditorView<V, TPlugins> => {
   const runtimeEditor = getEditorRuntimeOwner(sourceEditor) as Editor<
     V,
@@ -1539,6 +1588,9 @@ export const createEditorViewRuntime = <
 
     assertViewDocument(sourceEditor, document);
   }
+  if (presentation && options.authored) {
+    throw new Error('A view that joins a presentation cannot set its Mode.');
+  }
   if (options.authorId !== undefined && !isAuthorId(options.authorId)) {
     throw new TypeError(
       'createEditorView({ authorId }) must be a non-empty string without a NUL character, because authored changes store it as the author ID.'
@@ -1552,11 +1604,16 @@ export const createEditorViewRuntime = <
     document,
     focused: sourceEditor.read.view.isFocused(),
     follows: document ? undefined : policyTarget,
+    mountedIn: mountedIn && getEditorRuntime(mountedIn),
     policySource: document
       ? undefined
       : policySourceOf(sourceRuntime, policyTarget),
     presentation:
-      presentation ?? sourceView?.presentation ?? createViewPresentation(),
+      presentation ??
+      (options.authored || options.document
+        ? undefined
+        : sourceView?.presentation) ??
+      createViewPresentation(),
     readOnly: Boolean(document || options.readOnly),
     root: toInternalRoot(options.root),
     surfaces: { readOnly: 0, writable: 0 },
@@ -1773,7 +1830,8 @@ export const withMountedPresentation: WithMountedPresentation = <
   TPlugins extends readonly unknown[] = readonly [],
 >(
   editor: Editor<V, TPlugins>,
-  view: Editor
+  view: Editor,
+  nested = false
 ): EditorView<V, TPlugins> => {
   if (getEditorRuntimeOwner(view) !== getEditorRuntimeOwner(editor)) {
     throw new TypeError(
@@ -1782,18 +1840,24 @@ export const withMountedPresentation: WithMountedPresentation = <
   }
 
   const presentation = getViewPresentation(view);
+  const mountedIn = nested ? view : undefined;
   const mounted = createEditorViewRuntime(
     editor,
-    { readOnly: editor.read.view.isReadOnly(), root: editor.read.view.root() },
-    presentation
+    {
+      readOnly: !nested && isLockedModelEditor(editor),
+      root: editor.read.view.root(),
+    },
+    presentation,
+    undefined,
+    mountedIn
   );
 
-  MOUNTED_PRESENTATIONS.set(mounted, presentation);
+  MOUNTED_PRESENTATIONS.set(mounted, { mountedIn, presentation });
 
   return mounted;
 };
 
-export const getCarriedPresentation = (editor: object) =>
+export const getCarriedMount = (editor: object) =>
   MOUNTED_PRESENTATIONS.get(editor);
 
 export const buildPluginRootTransaction = (

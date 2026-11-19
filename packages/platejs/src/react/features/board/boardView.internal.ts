@@ -11,7 +11,11 @@ import {
   type PluginTransaction,
   SelectionApi,
 } from '../../../core';
-import { readAuthoredView, subscribeEditorViewState } from '../../../facade';
+import {
+  readAuthoredView,
+  type Editor as RuntimeEditor,
+  subscribeEditorViewState,
+} from '../../../facade';
 import {
   BaseBoardArrowPlugin,
   BaseBoardFramePlugin,
@@ -440,7 +444,10 @@ export const createBoardView = (
   editor: Editor,
   mounted: Editor,
   element: Element,
-  initialMessages: BoardMessages
+  initialMessages: BoardMessages,
+  // The shapes root's editor reads the lock of the view that shows the
+  // shapes, which can differ from the page's.
+  shapes: RuntimeEditor
 ) => {
   const keyOf = (node: Descendant) => editor.read((state) => state.key(node));
   const board = keyOf(element);
@@ -451,10 +458,10 @@ export const createBoardView = (
   const shownBoards = mounted.plugin(BaseBoardPlugin);
 
   const writable = () => {
-    const authored = readAuthoredView(mounted);
+    const authored = readAuthoredView(shapes);
 
     return (
-      !mounted.read.view.isReadOnly() && !(authored && 'preview' in authored)
+      !shapes.read.view.isReadOnly() && !(authored && 'preview' in authored)
     );
   };
 
@@ -1542,7 +1549,7 @@ export const createBoardView = (
         if (changed.hasAny('selection')) voice.selectionChanged();
       });
 
-      const unsubscribeViewState = subscribeEditorViewState(mounted, () => {
+      const unsubscribeViewState = subscribeEditorViewState(shapes, () => {
         gestures?.refuseWrites();
         shownView = createEditorView(mounted, { root });
         follow();

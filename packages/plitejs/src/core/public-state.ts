@@ -495,6 +495,10 @@ import {
   withPlacement,
 } from './view-carets';
 import {
+  getBaseViewPresentation,
+  isPresentationComposing as isComposingPresentation,
+  setPresentationComposing,
+  setPresentationViewing,
   setStatePresentation,
   type ViewPresentation,
 } from './view-presentation';
@@ -7271,6 +7275,7 @@ const getStateView = <
         isComposing: () => EDITOR_COMPOSING.get(editor) ?? false,
         isFocused: () => EDITOR_FOCUSED.get(editor) ?? false,
         isReadOnly: () => EDITOR_READ_ONLY.get(editor) ?? false,
+        isViewing: () => EDITOR_READ_ONLY.get(editor) ?? false,
         root: () => undefined,
       }),
     } satisfies EditorCoreStateView<V>;
@@ -10764,15 +10769,42 @@ const setEditorViewStateFlag = (
   return changed;
 };
 
+export const isEditorCompositionPending = (editor: AnyPluginEditor) =>
+  (EDITOR_COMPOSITION_PENDING.get(getEditorRuntime(editor))?.size ?? 0) > 0;
+
+const recordPresentationComposing = (editor: AnyPluginEditor) => {
+  const composing =
+    editor.read.view.isComposing() || isEditorCompositionPending(editor);
+
+  if (
+    setPresentationComposing(
+      presentationOf(editor),
+      getEditorRuntime(editor),
+      composing
+    )
+  ) {
+    notifyPresentationViewState(editor, 'composition');
+  }
+};
+
+export const isPresentationComposing = (editor: AnyPluginEditor) =>
+  isComposingPresentation(presentationOf(editor));
+
+export const subscribePresentationComposition = (
+  editor: AnyPluginEditor,
+  listener: () => void
+) =>
+  listenToViewState(presentationOf(editor), (change) => {
+    if (change === 'composition') listener();
+  });
+
 export const setEditorComposing = (
   editor: AnyPluginEditor,
   composing: boolean
 ) => {
   setEditorViewStateFlag(editor, 'composing', composing, EDITOR_COMPOSING);
+  recordPresentationComposing(editor);
 };
-
-export const isEditorCompositionPending = (editor: AnyPluginEditor) =>
-  (EDITOR_COMPOSITION_PENDING.get(getEditorRuntime(editor))?.size ?? 0) > 0;
 
 export const setEditorCompositionPending = (
   editor: AnyPluginEditor,
@@ -10787,6 +10819,7 @@ export const setEditorCompositionPending = (
   else inputs.delete(input);
   EDITOR_COMPOSITION_PENDING.set(runtime, inputs);
   if (was !== inputs.size > 0) notifyEditorViewState(editor, 'composition');
+  recordPresentationComposing(editor);
 };
 
 export const setEditorFocused = (editor: AnyPluginEditor, focused: boolean) => {
@@ -10841,6 +10874,31 @@ export const setEditorReadOnly = (
   );
 };
 
+const presentationOf = (editor: AnyPluginEditor) =>
+  getEditorRuntime(editor).presentation ??
+  getBaseViewPresentation(getEditorRuntimeOwner(editor));
+
+/**
+ * Put the editor root that shows this view in Viewing, or take it out. Every
+ * view of that editor root, nested ones included, turns read-only at once,
+ * while another editor root of the same editor keeps its own Mode. A lock
+ * from `setEditorReadOnly` stays on its view and the views nested in it.
+ * Throws for an editor that no editor root shows, such as the one
+ * `createEditor` returns; pass a mounted view instead.
+ */
+export const setEditorViewing = (editor: AnyPluginEditor, viewing: boolean) => {
+  const { presentation } = getEditorRuntime(editor);
+
+  if (!presentation) {
+    throw new Error(
+      'setEditorViewing() takes a view that an EditorRoot mounts, not the editor createEditor() returns, because Viewing belongs to the editor root that shows it.'
+    );
+  }
+  if (setPresentationViewing(presentation, viewing)) {
+    notifyPresentationViewState(editor, 'readOnly');
+  }
+};
+
 export const registerEditorSurface = (
   editor: AnyPluginEditor,
   readOnly: boolean
@@ -10859,19 +10917,43 @@ export const registerEditorSurface = (
 export const hasEditorSurface = (editor: AnyPluginEditor): boolean =>
   getEditorRuntime(editor).hasSurface?.() ?? false;
 
-export const notifyEditorViewState = (
+const notifyViewStateChannel = (
   editor: AnyPluginEditor,
+  channel: object,
   change: EditorViewStateChange
 ) => {
-  const runtime = getEditorRuntime(editor);
   scheduleMicrotask(() => {
     notifyObservers(
       editor,
-      EDITOR_VIEW_STATE_LISTENERS.get(runtime),
+      EDITOR_VIEW_STATE_LISTENERS.get(channel),
       'commit-listener',
       (listener) => listener(change)
     );
   });
+};
+
+export const notifyEditorViewState = (
+  editor: AnyPluginEditor,
+  change: EditorViewStateChange
+) => notifyViewStateChannel(editor, getEditorRuntime(editor), change);
+
+export const notifyPresentationViewState = (
+  editor: AnyPluginEditor,
+  change: EditorViewStateChange
+) => notifyViewStateChannel(editor, presentationOf(editor), change);
+
+const policyChannels = (
+  runtime: Pick<InternalEditorRuntime, 'mountedIn' | 'presentation'>,
+  presentation = runtime.presentation
+) => {
+  const channels = new Set<object>(presentation ? [presentation] : []);
+
+  for (let next = runtime.mountedIn; next; next = next.mountedIn) {
+    channels.add(next);
+    if (next.presentation) channels.add(next.presentation);
+  }
+
+  return channels;
 };
 
 const isPolicyChange = (change: EditorViewStateChange) =>
@@ -10914,12 +10996,14 @@ const followViewPolicy = (
       if (source.current() === target) hearPolicyChange(change);
       else hearSwitch();
     };
-    const stopTarget = listenToViewState(target, hearTarget);
-    const stopChain = followViewPolicy(target, hearTarget, hearSwitch);
+    const stops = [target, ...policyChannels(target)].map((channel) =>
+      listenToViewState(channel, hearTarget)
+    );
+
+    stops.push(followViewPolicy(target, hearTarget, hearSwitch));
 
     return () => {
-      stopTarget();
-      stopChain();
+      for (const stop of stops) stop();
     };
   };
   let followed = source.current();
@@ -10945,11 +11029,11 @@ const listenToOwnerAuthoredView = <V extends Value>(
   editor: Editor<V>,
   listener: (change: EditorViewStateChange) => void
 ) => {
-  const owner: object = getEditorRuntime(getEditorRuntimeOwner(editor));
+  const base = getBaseViewPresentation(getEditorRuntimeOwner(editor));
 
-  if (owner === getEditorRuntime(editor)) return () => {};
+  if (base === presentationOf(editor)) return () => {};
 
-  return listenToViewState(owner, (change) => {
+  return listenToViewState(base, (change) => {
     if (change === 'authored') listener(change);
   });
 };
@@ -10980,8 +11064,14 @@ export const subscribeEditorViewState = <V extends Value>(
       }
     });
   };
+  const hearOwnPolicy = (change: EditorViewStateChange) => {
+    if (isPolicyChange(change)) listener(change);
+  };
   const stops = [
     listenToViewState(runtime, listener),
+    ...[...policyChannels(runtime, presentationOf(editor))].map((channel) =>
+      listenToViewState(channel, hearOwnPolicy)
+    ),
     followViewPolicy(runtime, hearPolicyChange, hearSwitch),
     listenToOwnerAuthoredView(editor, listener),
   ];

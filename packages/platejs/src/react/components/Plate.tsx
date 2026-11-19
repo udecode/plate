@@ -111,14 +111,13 @@ function PlateInner({
   const plateReadOnly = readOnly ?? editorReadOnly;
   const model = React.useMemo(
     () => ({
-      authored,
       editor: currentEditor,
       containerRef,
       primary: primary ?? true,
       readOnly: plateReadOnly,
       scope,
     }),
-    [authored, containerRef, currentEditor, plateReadOnly, primary, scope]
+    [containerRef, currentEditor, plateReadOnly, primary, scope]
   );
   const observerBaselineVersion = React.useMemo(
     () => editor?.read.lastCommit()?.version ?? 0,

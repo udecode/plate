@@ -7,13 +7,14 @@ import {
   PenIcon,
   XIcon,
 } from 'lucide-react';
-import { setEditorReadOnly } from 'platejs';
+import { setEditorReadOnly, setEditorViewing } from 'platejs';
 import {
   type AuthoredChange,
   AuthoredPlugin,
   type AuthoredView,
 } from 'platejs/authored';
 import {
+  useEditableRef,
   useEditor,
   useEditorSelector,
   useEditorViewState,
@@ -79,10 +80,16 @@ function ModeToolbarButtonContent({
   isSuggesting: boolean | null;
 }) {
   const editor = useEditor();
+  const editableRef = useEditableRef();
+  const viewing = useEditorViewState(editor, (view) => view.isViewing());
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
+  const setViewing = (next: boolean) =>
+    editableRef.current
+      ? setEditorViewing(editor, next)
+      : setEditorReadOnly(editor, next);
   const suggestionsInstalled = isSuggesting !== null;
-  const value = readOnly ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
+  const value = viewing ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
@@ -102,7 +109,7 @@ function ModeToolbarButtonContent({
         <DropdownMenuRadioGroup
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
-              setEditorReadOnly(editor, true);
+              setViewing(true);
 
               return;
             }
@@ -111,12 +118,12 @@ function ModeToolbarButtonContent({
 
               authored.api.setView({ intent: 'propose' });
               if (proposes(authored.read.view())) {
-                setEditorReadOnly(editor, false);
+                setViewing(false);
               }
 
               return;
             }
-            setEditorReadOnly(editor, false);
+            setViewing(false);
             if (suggestionsInstalled) {
               editor.plugin(AuthoredPlugin).api.setView({ intent: 'edit' });
             }

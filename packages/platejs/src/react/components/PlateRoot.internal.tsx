@@ -31,7 +31,7 @@ export function PlateRoot({
 }) {
   const emptyEditableRef = React.useRef<HTMLDivElement | null>(null);
   const editableRef = providedEditableRef ?? emptyEditableRef;
-  const { authored, editor, readOnly: modelReadOnly } = usePlateModel();
+  const { editor, readOnly: modelReadOnly } = usePlateModel();
   const rootView = useEditorContext();
   const surfaceEditor = React.useMemo(
     () => withMountedPresentation(editor, rootView),
@@ -58,7 +58,6 @@ export function PlateRoot({
 
   return (
     <EditorRoot
-      authored={authored}
       editor={surfaceEditor}
       key={`${getPlateEditorInstanceKey(editor)}:${root ?? 'main'}`}
       decorations={decorations}

@@ -2,7 +2,6 @@ import React from 'react';
 
 import { getEditorDOMRoot } from '../../dom/plite-dom.internal';
 import {
-  type EditorViewOptions,
   markRootViewUsed,
   readRootViewUse,
   subscribeRootViewUse,
@@ -32,7 +31,6 @@ export const PlateEditorContext = React.createContext<PlateTarget | null>(null);
 export const PlateControllerContext =
   React.createContext<PlateTargetScope | null>(null);
 export const PlateModelContext = React.createContext<{
-  authored?: EditorViewOptions['authored'];
   editor: Editor;
   containerRef: React.RefObject<HTMLDivElement | null>;
   primary: boolean;

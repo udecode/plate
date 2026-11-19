@@ -887,6 +887,12 @@ export type EditorStateViewApi = {
   isComposing: () => boolean;
   isFocused: () => boolean;
   isReadOnly: () => boolean;
+  /**
+   * Whether this view's editor root is in Viewing, set through
+   * `setEditorViewing` or by a lock on the outermost view. A nested view's own
+   * lock makes it read-only without putting its editor root in Viewing.
+   */
+  isViewing: () => boolean;
   /** Named view root, or `undefined` for the primary document. */
   root: () => NamedRootKey | undefined;
 };

@@ -131,7 +131,10 @@ const isShown = (view: Editor) => {
   return getEditorRuntime(view).hasSurface?.() ?? false;
 };
 
-const pickTarget = ({ usedLatestFirst, views }: Entry): RootTarget | null => {
+const pickTarget = (
+  usedLatestFirst: readonly Editor[],
+  views: Iterable<Editor>
+): RootTarget | null => {
   for (const view of usedLatestFirst) {
     if (isShown(view)) return { shown: true, view };
   }
@@ -155,7 +158,7 @@ const isSameTarget = (left: RootTarget | null, right: RootTarget | null) =>
 
 const readEntry = (entry: Entry) => {
   if (entry.stale) {
-    const next = pickTarget(entry);
+    const next = pickTarget(entry.usedLatestFirst, entry.views);
 
     if (!isSameTarget(next, entry.answer)) entry.answer = next;
 
@@ -305,6 +308,29 @@ export const readRootTarget = (
   const entry = findEntry([owner, presentation, root]);
 
   return entry ? readEntry(entry) : null;
+};
+
+export const readNestedRootView = (
+  owner: Editor,
+  presentation: ViewPresentation,
+  root: RootKey,
+  mountedIn: Editor
+): Editor | null => {
+  const entry = findEntry([owner, presentation, root]);
+
+  if (!entry) return null;
+
+  if (entry.views.has(mountedIn) && isShown(mountedIn)) return mountedIn;
+
+  const host = getEditorRuntime(mountedIn);
+  const isNested = (view: Editor) => getEditorRuntime(view).mountedIn === host;
+
+  return (
+    pickTarget(
+      entry.usedLatestFirst.filter(isNested),
+      [...entry.views].filter(isNested)
+    )?.view ?? null
+  );
 };
 
 export const subscribeRootTarget = (

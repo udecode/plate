@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-19-mode-per-editor-root",
+      "href": "/registry/changelog/2026-11-19-mode-per-editor-root.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Switch Viewing for the whole editor root",
+      "change": {
+        "type": "source",
+        "date": "2026-11-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["mode-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-19-popovers-hide-with-text",
       "href": "/registry/changelog/2026-11-19-popovers-hide-with-text.json",
       "status": "draft",

@@ -44,6 +44,7 @@ import type { NodeList } from './change/document-index';
 import type { InternalEditorSchemaApi } from './editor-schema';
 import type { EditorSchemaContract } from './schema-compiler';
 import type { InternalEditorUpdateOptions } from './update-policy';
+import type { ViewPresentation } from './view-presentation';
 
 type BindEditorMethod<T> = T extends (
   editor: Editor,
@@ -201,7 +202,9 @@ export type InternalEditorRuntime<V extends Value = Value> =
       ) => boolean;
       registerSurface?: (readOnly: boolean) => () => void;
       hasSurface?: () => boolean;
+      mountedIn?: InternalEditorRuntime;
       policySource?: ViewPolicySource;
+      presentation?: ViewPresentation;
     };
 
 const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>();

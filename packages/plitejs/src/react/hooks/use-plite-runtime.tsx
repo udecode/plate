@@ -37,8 +37,10 @@ import { toPublicRoot } from '../../core/public-root';
 import { getBaseCallRoot, subscribeCaretTarget } from '../../core/public-state';
 import {
   mountRootView,
+  readNestedRootView,
   readRootTarget,
   subscribeRootTarget,
+  subscribeRootViewPresentation,
 } from '../../core/root-target';
 import type { ViewPresentation } from '../../core/view-presentation';
 import type { DOMApi } from '../../dom';
@@ -173,7 +175,8 @@ type PliteRuntimeContextValue = {
   getView: (
     options?: EditorViewOptions,
     presentation?: ViewPresentation,
-    policyTarget?: ViewPolicyTarget
+    policyTarget?: ViewPolicyTarget,
+    mountedIn?: Editor
   ) => EditorView<Value, PluginsOf<ReactEditorType>>;
   mountedEditor: MountedViewEditor | null;
   presentation: ViewPresentation | null;
@@ -455,8 +458,16 @@ export function EditorRuntimeProvider({
     (
       options: EditorViewOptions = {},
       presentation?: ViewPresentation,
-      policyTarget?: ViewPolicyTarget
-    ) => createEditorViewRuntime(runtime, options, presentation, policyTarget),
+      policyTarget?: ViewPolicyTarget,
+      mountedIn?: Editor
+    ) =>
+      createEditorViewRuntime(
+        runtime,
+        options,
+        presentation,
+        policyTarget,
+        mountedIn
+      ),
     [runtime]
   );
   // The store types a view as a core editor. `registerViewEditor` is the one
@@ -782,31 +793,44 @@ export type UseRootEditorOptions = {
   readOnly?: boolean;
 };
 
-export function createPliteRootEditor(
+// The store types a view as a core editor, as `readProviderRootTarget` says.
+const findShownViewEditor = (
   {
     getMountedViewEditor,
-    getView,
     mountedEditor,
     presentation,
-    subscribeRootTarget: subscribeTarget,
-  }: Pick<
-    PliteRuntimeContextValue,
-    | 'getMountedViewEditor'
-    | 'getView'
-    | 'mountedEditor'
-    | 'presentation'
-    | 'subscribeRootTarget'
-  >,
+    runtime,
+  }: PliteRuntimeContextValue,
+  root: RootKey
+) =>
+  ((mountedEditor && presentation
+    ? readNestedRootView(runtime, presentation, root, mountedEditor)
+    : null) as MountedViewEditor | null) ?? getMountedViewEditor(root);
+
+export function createPliteRootEditor(
+  context: PliteRuntimeContextValue,
   root?: NamedRootKey,
   readOnly?: boolean
 ): ReactEditorType {
+  const { getView, mountedEditor, presentation } = context;
   const shownRoot = root ?? MAIN_ROOT_KEY;
 
   return createReactRuntimeViewEditor(
     getView({ readOnly, root }, presentation ?? undefined, {
       current: () =>
-        getMountedViewEditor(shownRoot) ?? mountedEditor ?? undefined,
-      subscribe: (listener) => subscribeTarget(shownRoot, listener),
+        findShownViewEditor(context, shownRoot) ?? mountedEditor ?? undefined,
+      subscribe: (listener) => {
+        const stopTarget = context.subscribeRootTarget(shownRoot, listener);
+        const stopNested =
+          mountedEditor && presentation
+            ? subscribeRootViewPresentation(presentation, listener)
+            : undefined;
+
+        return () => {
+          stopTarget();
+          stopNested?.();
+        };
+      },
     })
   );
 }
@@ -816,10 +840,11 @@ export function createPliteRootEditor(
  *
  * The returned object is stable for the requested root and read-only option.
  * It obeys the read-only state and the authored view of the mounted view that
- * shows its root, and of the view around the hook while none shows it. Use
- * it for root-specific toolbar/sidebar commands. Pass
- * `readOnly: true` when UI only needs read APIs. Exact plugin capability
- * comes from `editor.plugin(Plugin)`.
+ * shows its root, and of the view around the hook while none shows it. Inside
+ * a view, that mounted view is the one this view mounts for the root, such as
+ * its own board when two editing areas show the same board. Use it for
+ * root-specific toolbar/sidebar commands. Pass `readOnly: true` when UI only
+ * needs read APIs. Exact plugin capability comes from `editor.plugin(Plugin)`.
  */
 export function useRootEditor<const TRoot extends RootKey = RootKey>(
   root?: NamedRootKey<TRoot>,
@@ -933,7 +958,7 @@ export function useCommand<
         return editor;
       };
       const commandEditor =
-        context.getMountedViewEditor(commandRoot) ?? readRootEditor();
+        findShownViewEditor(context, commandRoot) ?? readRootEditor();
 
       if (focus === 'restore-root' && !commandEditor.read.view.isReadOnly()) {
         focusPliteEditable(commandEditor);
