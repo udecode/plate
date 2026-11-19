@@ -133,7 +133,11 @@ editor.plugin(UploadPlugin).api.cancel(draftKey);
 ```
 
 `submit` accepts `File[]` or `FileList`. It validates the whole batch before
-changing the document and starts one SDK upload per file after commit. A slot
+changing the document and starts one SDK upload per file after commit. Each
+upload starts once every commit listener has heard the commit that added its
+draft. A cancel, a removal of the draft, a later update that replaces the whole
+document, or a destroyed editor before then sends no request, and an undo that
+brings the draft back does not restart it. A slot
 option fills an existing draft; block placement options insert new drafts.
 Without a placement option, `submit` inserts at the selection and replaces the
 selection's block when it is empty, as a paste does.
@@ -196,6 +200,43 @@ export const MyFileDropPlugin = definePlugin('myFileDrop', {
   },
 });
 ```
+
+## Pasted pictures
+
+An editor whose `UploadPlugin` has a `client`, a `getUrl`, and a rule with
+`kind: 'image'` uploads the pictures whose bytes come with a paste. These are
+raster `data` addresses in pasted HTML or in the editor's own clipboard, and the
+pictures that [Word paste](/docs/docx#paste-from-word) rebuilds from the RTF
+copy. Each picture becomes an upload draft where it landed, so the document
+never stores its `data` address. Its upload starts after the paste commits, and
+the finished image keeps the picture's alt text, width, and caption. Without
+those three settings, pasted pictures stay as pasted. The copied `UploadKit`
+sets all three.
+
+The paste checks its pictures as one batch against `rules` and `maxFiles`, as
+`submit` does. When those rules refuse the batch, every picture stays as pasted with
+its `data` address, so saves and collaborators still get its bytes, and
+`onError` runs once. The kit's image rule allows three files, so a paste of four
+or more pictures keeps them all as pasted. A picture whose address does not
+decode, or whose draft cannot sit where the picture landed, also stays as
+pasted while the other pictures upload.
+
+One undo removes the paste and its drafts and stops their uploads. Redo brings
+back the drafts without starting an upload. In a Suggesting view, the drafts and
+the finished images are the view author's suggestion.
+
+A paste does not upload:
+
+- A picture with an `http` or `https` address. It keeps linking to that
+  address, and the image plugin turns a plain-text picture link into such an
+  image.
+- A picture that was in the document before the paste.
+- A picture from Word in Safari. Its `blob` address works only in the tab that
+  pasted it.
+
+An HTML drop uploads its pictures the same way. With the React `UploadPlugin`,
+a drop that carries files uploads those files instead, as
+[Dropped files](#dropped-files) describes.
 
 ## API reference
 
