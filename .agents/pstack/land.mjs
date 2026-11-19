@@ -108,7 +108,7 @@ const TRAILER = /^(?:Session|Plan|Lands-With): \S/u;
 const STAMP_LINES = /^(?:Session|Plan|Lead|Lands-With): .*$/gmu;
 const ISSUE = /(?<![\w#/.-])(?:([\w.-]+)\/)?([\w.-]+)#\d+\b|https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/gu;
 const INTRODUCED = /^Introduced-by:(.*)$/gmu;
-const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-]+\/([\w.-]+)#\d+|#\d+|GH-\d+|https?:\/\/github\.com\/[^/\s]+\/([^/\s]+)\/(?:issues|pull)\/\d+)(?!\w)/iu;
+const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-]+\/([\w.-]+)#\d+|#\d+|GH-\d+|https?:\/\/github\.com\/[^/\s]+\/([^/\s]+)\/(?:issues|pull)\/\d+)(?!\w)/giu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
 const PR_SECTIONS = ['Why', 'Verification'];
 const RETRIES = 3;
@@ -514,25 +514,26 @@ function repo(remote) {
 }
 
 function validate(text) {
-  const [subject, gap, ...rest] = text.trim().split('\n');
+  const [subject, ...after] = text.trim().split('\n');
+  const problems = [];
   if (!SUBJECT.test(subject) || subject.endsWith('.')) {
-    fail(`the subject "${subject}" is not one Conventional Commit, \`type(scope): subject\` with type feat, fix, docs, refactor, test, chore or perf and no trailing period`);
+    problems.push(`the subject "${subject}" is not one Conventional Commit, \`type(scope): subject\` with type feat, fix, docs, refactor, test, chore or perf and no trailing period`);
   }
-  if (rest.length > 0 && gap !== '') fail('a blank line must separate the subject from the body');
-  const body = rest.join('\n');
+  if (after.length > 0 && after[0] !== '') problems.push('a blank line must separate the subject from the body');
+  const body = after.join('\n');
   for (const [label, what] of REQUIRED) {
-    if (!new RegExp(`^${label}: \\S`, 'mu').test(withoutHtmlComments(body))) fail(`the body has no \`${label}:\` line; ${what}, or write \`${label}: none\`, then run land.mjs again with --message`);
+    if (!new RegExp(`^${label}: \\S`, 'mu').test(withoutHtmlComments(body))) problems.push(`the body has no \`${label}:\` line; ${what}, or write \`${label}: none\``);
   }
   const broken = findings(text.replace(STAMP_LINES, ''));
   if (broken.length > 0) {
-    fail(`the message breaks the Writing rule, as writing-check.mjs reads it:\n${broken.map(({ line, rule, match, text: shown }) => `  line ${line}, ${rule} "${match}": ${shown}`).join('\n')}\nReword each line, or put literal text in backticks, then run land.mjs again with --message.`);
+    problems.push(`the message breaks the Writing rule, as writing-check.mjs reads it; reword each line, or put literal text in backticks:\n${broken.map(({ line, rule, match, text: shown }) => `  line ${line}, ${rule} "${match}": ${shown}`).join('\n')}`);
   }
-  const closing = text.match(CLOSING);
-  if (closing) {
-    const name = closing[1] ?? closing[2] ?? must('remote', 'get-url', canonical).match(/([^/:]+?)(?:\.git)?\/?$/u)[1];
-    fail(`${JSON.stringify(closing[0])} closes an issue once it reaches the default branch, because a form of close, fix or resolve comes right before its reference; write \`${name}#<N>\`, which links nothing`);
+  for (const closing of text.matchAll(CLOSING)) {
+    const name = closing[1] ?? closing[2] ?? git('remote', 'get-url', canonical).stdout.trim().match(/([^/:]+?)(?:\.git)?\/*$/u)?.[1] ?? '<repo>';
+    problems.push(`${JSON.stringify(closing[0])} closes an issue once it reaches the default branch, because a form of close, fix or resolve comes right before its reference; write \`${name}#<N>\`, which links nothing`);
   }
-  if (SUBJECT.exec(subject)[1] === 'fix') introduced(rest.join('\n'));
+  if (SUBJECT.exec(subject)?.[1] === 'fix') problems.push(...introduced(body));
+  if (problems.length > 0) fail(`fix every problem below in the message, then run land.mjs again with --message:\n- ${problems.join('\n- ')}`);
   return { subject, body: body.trim() };
 }
 
@@ -541,25 +542,29 @@ function introduced(body) {
     `Trace the cause with \`git log -L <start>,<end>:<file> ${target}\`, \`git blame ${target} -- <file>\` or \`git bisect\`. ` +
     '`none` fits only a cause older than the history or outside the repository, such as a dependency or the platform; code that was broken when it landed names the commit that landed it.';
   const lines = [...body.matchAll(INTRODUCED)].map((match) => match[1]);
-  if (lines.some((rest) => rest.trim() !== '' && !rest.startsWith(' '))) fail('write each line as `Introduced-by: <value>`, with a space after the colon');
+  const problems = [];
+  if (lines.some((rest) => rest.trim() !== '' && !rest.startsWith(' '))) problems.push('write each line as `Introduced-by: <value>`, with a space after the colon');
   const values = lines.map((rest) => rest.trim());
-  if (values.length === 0) fail(`the fix names no commit that introduced its bug; add an \`Introduced-by: <sha>\` line for each commit on ${target} that did, or one \`Introduced-by: none\`, to the message file and run land.mjs again with --message. ${trace}`);
-  if (values.includes('none')) {
-    if (values.length > 1) fail(`\`Introduced-by: none\` cannot stand beside another \`Introduced-by:\` line; keep the commits or write \`none\` alone. ${trace}`);
-    return;
-  }
-  for (const value of values) {
-    if (value === '') fail(`an \`Introduced-by:\` line has no value; name a commit on ${target} or write \`none\`. ${trace}`);
-    if (!/^[0-9a-f]{7,40}$/u.test(value)) fail(`Introduced-by: ${value} is not a lowercase sha of 7 to 40 characters; write the commit's sha alone. ${trace}`);
-    const landed = [[git, upstream], ...(pair ? [[cgit, cupstream]] : [])].map(([run, onto]) => {
-      const sha = run('rev-parse', '--verify', '--quiet', `${value}^{commit}`).stdout.trim();
-      return sha ? run('merge-base', '--is-ancestor', sha, onto).status === 0 : null;
-    });
-    if (landed.every((known) => known === null)) fail(`Introduced-by: ${value} names no commit this clone knows; name it by its sha. ${trace}`);
-    if (!landed.includes(true)) {
-      fail(`Introduced-by: ${value} names a commit ${target}${pair ? ` or ${pair.dir}'s origin/${branch}` : ''} does not contain; name the landed commit that introduced the bug. ${trace}`);
+  if (values.length === 0) {
+    problems.push(`the fix names no commit that introduced its bug; add an \`Introduced-by: <sha>\` line for each commit on ${target} that did, or one \`Introduced-by: none\``);
+  } else if (values.includes('none')) {
+    if (values.length > 1) problems.push('`Introduced-by: none` cannot stand beside another `Introduced-by:` line; keep the commits or write `none` alone');
+  } else {
+    for (const value of values) {
+      if (value === '') problems.push(`an \`Introduced-by:\` line has no value; name a commit on ${target} or write \`none\``);
+      else if (!/^[0-9a-f]{7,40}$/u.test(value)) problems.push(`Introduced-by: ${value} is not a lowercase sha of 7 to 40 characters; write the commit's sha alone`);
+      else {
+        const landed = [[git, upstream], ...(pair ? [[cgit, cupstream]] : [])].map(([run, onto]) => {
+          const sha = run('rev-parse', '--verify', '--quiet', `${value}^{commit}`).stdout.trim();
+          return sha ? run('merge-base', '--is-ancestor', sha, onto).status === 0 : null;
+        });
+        if (landed.every((known) => known === null)) problems.push(`Introduced-by: ${value} names no commit this clone knows; name it by its sha`);
+        else if (!landed.includes(true)) problems.push(`Introduced-by: ${value} names a commit ${target}${pair ? ` or ${pair.dir}'s origin/${branch}` : ''} does not contain; name the landed commit that introduced the bug`);
+      }
     }
   }
+  if (problems.length > 0) problems.push(trace);
+  return problems;
 }
 
 const isPlan = (path) => path.startsWith(`${plans}/`) && DATED.test(path.slice(plans.length + 1)) && statSync(path, { throwIfNoEntry: false })?.isFile() === true;
