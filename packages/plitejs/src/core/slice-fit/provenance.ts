@@ -3,6 +3,7 @@ import { ElementApi, NodeApi } from '../../interfaces';
 import type { DocumentIndex } from '../change/document-index';
 import type { Relocation } from '../change/lineage';
 import type { RootChange } from '../change/root-change';
+import { canonicalJsonKey } from '../change/transform';
 
 /**
  * Where a moved payload's node came from: `payload` is the node as the
@@ -16,14 +17,10 @@ export type LandingSource = Readonly<{
   payload: string;
 }>;
 
-export const payloadKeyOf = (node: object) =>
-  JSON.stringify(
-    Object.fromEntries(
-      Object.entries(node)
-        .filter(([key]) => key !== 'children')
-        .sort(([left], [right]) => left.localeCompare(right))
-    )
-  );
+export const payloadKeyOf = ({
+  children: _children,
+  ...props
+}: object & { children?: unknown }) => canonicalJsonKey(props);
 
 let landingSources: readonly LandingSource[] | null = null;
 

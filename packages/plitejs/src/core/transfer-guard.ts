@@ -6,6 +6,7 @@ import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import type { DraftStep } from './change/builder';
 import type { DocumentIndex } from './change/document-index';
+import { canonicalJsonKey } from './change/transform';
 import {
   type DraftGuardFrame,
   registerEditorDraftGuard,
@@ -137,7 +138,7 @@ export const sameContent = (
 ): boolean => {
   if (NodeApi.isText(a) || NodeApi.isText(b)) {
     return (
-      JSON.stringify(withoutDropped(a, b, dropped(a))) === JSON.stringify(b)
+      canonicalJsonKey(withoutDropped(a, b, dropped(a))) === canonicalJsonKey(b)
     );
   }
 
@@ -152,7 +153,10 @@ export const sameContent = (
     ...bProps
   } = b as Element & { childRoots?: Record<string, string> };
 
-  if (stable(withoutDropped(aProps, bProps, dropped(a))) !== stable(bProps)) {
+  if (
+    canonicalJsonKey(withoutDropped(aProps, bProps, dropped(a))) !==
+    canonicalJsonKey(bProps)
+  ) {
     return false;
   }
   if (aChildren.length !== bChildren.length) return false;
@@ -192,9 +196,8 @@ export const textTokens = (fragment: readonly Descendant[]) => {
       const isFirst = index === 0;
       const isLast = index === nodes.length - 1;
 
-      // An empty text holds no content, whatever properties it carries.
       if (NodeApi.isText(node)) {
-        if (node.text !== '') tokens.push(JSON.stringify(node));
+        if (node.text !== '') tokens.push(canonicalJsonKey(node));
         return;
       }
 
@@ -204,7 +207,7 @@ export const textTokens = (fragment: readonly Descendant[]) => {
       if (!open) {
         const { children: _children, ...props } = element;
 
-        tokens.push(`<${JSON.stringify(props)}>`);
+        tokens.push(`<${canonicalJsonKey(props)}>`);
       }
       visit(element.children, openStart && isFirst, openEnd && isLast);
       if (!open) tokens.push('</>');
@@ -215,17 +218,6 @@ export const textTokens = (fragment: readonly Descendant[]) => {
 
   return tokens.join('\u0000');
 };
-
-export const stable = (value: unknown): string =>
-  JSON.stringify(value, (_key, item: unknown) =>
-    item && typeof item === 'object' && !Array.isArray(item)
-      ? Object.fromEntries(
-          Object.entries(item).sort(([left], [right]) =>
-            left.localeCompare(right)
-          )
-        )
-      : item
-  );
 
 type LandedKind = (element: Element) => 'block' | 'inline' | 'void';
 
@@ -330,7 +322,7 @@ const belowCarried = (
 const shellOf = (element: Element, skip: (key: string) => boolean) => {
   const { children: _children, ...props } = element;
 
-  return stable(
+  return canonicalJsonKey(
     Object.fromEntries(Object.entries(props).filter(([key]) => !skip(key)))
   );
 };
@@ -395,7 +387,7 @@ export const landsMoved = (
     isHead &&
     !!inherited &&
     Object.hasOwn(inherited, key) &&
-    stable(element[key]) === stable(inherited[key]);
+    canonicalJsonKey(element[key]) === canonicalJsonKey(inherited[key]);
 
   return (
     below.items.length === items.length &&
@@ -409,9 +401,9 @@ export const landsMoved = (
         if (!('text' in item) || !('text' in expected)) return false;
 
         return (
-          stable(
+          canonicalJsonKey(
             withoutDropped(expected.text, item.text, droppedFrom(expected.text))
-          ) === stable(item.text)
+          ) === canonicalJsonKey(item.text)
         );
       }
 
