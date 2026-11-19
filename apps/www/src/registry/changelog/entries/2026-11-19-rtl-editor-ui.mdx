@@ -1,0 +1,20 @@
+---
+id: 2026-11-19-rtl-editor-ui
+date: 2026-11-19
+status: draft
+kind: behavior
+summary: 'Mirror the editor UI in right-to-left text'
+change: { 'type': 'source', 'date': '2026-11-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-19-ai-menu-mirror-editor-ui-right-bf5c6b52","kind":"behavior","migrationNotes":[]} -->
+
+- **`ai-menu`**, **`align-toolbar-button`**, **`block-list`**, **`block-list-static`**, **`blockquote`**, **`blockquote-static`**, **`board`**, **`callout`**, **`callout-static`**, **`code-block`**, **`code-block-static`**, **`column`**, **`column-static`**, **`comment`**, **`comment-toolbar-button`**, **`details`**, **`discussion`**, **`dnd`**, **`emoji-picker`**, **`find`**, **`font-color-toolbar-button`**, **`history-toolbar-button`**, **`indent-toolbar-button`**, **`ink-sign-button`**, **`insert-toolbar-button`**, **`line-height-toolbar-button`**, **`link`**, **`math`**, **`math-static`**, **`media-embed`**, **`media-preview-dialog`**, **`media-toolbar`**, **`media-video`**, **`mode-toolbar-button`**, **`remote-cursor-overlay`**, **`settings-dialog`**, **`slash`**, **`suggestion`**, **`table`**, **`table-static`**, **`table-toolbar-button`**, **`toc`**, **`toc-static`**, **`toolbar`**, **`turn-into-toolbar-button`**, **`upload`**: Mirror the editor UI in right-to-left text
+- **`dnd`**, **`table`**: Open the block handle menu and the cell borders menu on the mirrored side in right-to-left text
+- **`table`**: Point Left Border and Right Border at the side they name in right-to-left tables
+- **`column`**: Move a column toward the side its menu item names in right-to-left text
+- **`details`**, **`history-toolbar-button`**, **`indent-toolbar-button`**, **`insert-toolbar-button`**, **`math`**, **`media-preview-dialog`**, **`slash`**, **`table`**, **`table-toolbar-button`**, **`turn-into-toolbar-button`**: Mirror directional icons in right-to-left text
+- **`emoji-picker`**, **`font-color-toolbar-button`**, **`table-toolbar-button`**: Move through emoji, color and table size grids in the arrow key's visual direction
+- **`table`**, **`table-static`**: Render a table's leading margin on its start side

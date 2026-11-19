@@ -153,7 +153,7 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
         className={cn(
           '[&_[data-editor-string]]:border-b-2 [&_[data-editor-string]]:border-b-purple-100 [&_[data-editor-string]]:bg-purple-50 [&_[data-editor-string]]:text-purple-800',
           streaming &&
-            '[&_[data-editor-ai-end]]:after:ml-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
+            '[&_[data-editor-ai-end]]:after:ms-1.5 [&_[data-editor-ai-end]]:after:inline-block [&_[data-editor-ai-end]]:after:size-3 [&_[data-editor-ai-end]]:after:rounded-full [&_[data-editor-ai-end]]:after:bg-purple-600 [&_[data-editor-ai-end]]:after:align-middle [&_[data-editor-ai-end]]:after:content-[""]'
         )}
       />
     ),
@@ -769,7 +769,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          'fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
+          'fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
@@ -790,7 +790,7 @@ export function AILoadingBar() {
         >
           <PauseIcon className="h-4 w-4" />
           Stop
-          <kbd className="ml-1 rounded bg-border px-1 font-mono text-[10px] text-muted-foreground shadow-sm">
+          <kbd className="ms-1 rounded bg-border px-1 font-mono text-[10px] text-muted-foreground shadow-sm">
             Esc
           </kbd>
         </Button>
@@ -801,7 +801,7 @@ export function AILoadingBar() {
   if (toolName === 'comment' && status === 'error') {
     return (
       <div
-        className="fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center gap-2 rounded-lg border bg-popover p-2 text-sm shadow-lg"
+        className="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit max-w-[calc(100vw-2rem)] flex-wrap items-center gap-2 rounded-lg border bg-popover p-2 text-sm shadow-lg"
         data-ai-comment-error=""
         data-editor-keep-selection-visible
       >

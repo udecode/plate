@@ -27,7 +27,7 @@ export function InkSignButton({ sign }: { sign: InkSign }) {
       <FloatingPopoverTrigger>
         <Button
           aria-label={`${label}: ${sign.marks.length}`}
-          className="ml-1 text-muted-foreground"
+          className="ms-1 text-muted-foreground"
           size="icon-xs"
           variant="outline"
         >

@@ -289,7 +289,7 @@ function AllCommentsDialog({
       data-all-comments=""
       onCloseAutoFocus={onCloseAutoFocus}
     >
-      <DialogHeader className="border-b p-5 pr-12">
+      <DialogHeader className="border-b p-5 pe-12">
         <DialogTitle>All comments</DialogTitle>
         <DialogDescription>
           Review open, resolved, and unavailable document conversations.

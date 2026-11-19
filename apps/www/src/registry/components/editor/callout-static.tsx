@@ -9,7 +9,7 @@ export function CalloutElementStatic({
 }: EditorElementProps<typeof BaseCalloutPlugin>) {
   return (
     <EditorElement
-      className={cn('my-1 flex rounded-sm bg-muted p-4 pl-3')}
+      className={cn('my-1 flex rounded-sm bg-muted p-4 ps-3')}
       style={{
         backgroundColor: props.element.backgroundColor,
       }}

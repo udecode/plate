@@ -15,11 +15,11 @@ export function TableElementStatic({
     <EditorElement
       {...props}
       className="overflow-x-auto py-5"
-      style={{ paddingLeft: props.element.marginLeft }}
+      style={{ paddingInlineStart: props.element.marginLeft }}
     >
       <div className="group/table relative w-fit">
         <table
-          className="mr-0 ml-px table h-px table-fixed border-collapse"
+          className="ms-px me-0 table h-px table-fixed border-collapse"
           style={{ borderCollapse: 'collapse', width: '100%' }}
         >
           <tbody className="min-w-full">{children}</tbody>
@@ -59,14 +59,14 @@ export function TableCellElementStatic(
       className={cn(
         'h-full overflow-visible border-none bg-background p-0',
         element.backgroundColor ? 'bg-(--cellBackground)' : 'bg-background',
-        isHeader && 'text-left font-normal *:m-0',
+        isHeader && 'text-start font-normal *:m-0',
         'before:size-full',
         "before:absolute before:box-border before:select-none before:content-['']",
         borders &&
           cn(
             borders.bottom?.width && 'before:border-b before:border-b-border',
-            borders.right?.width && 'before:border-r before:border-r-border',
-            borders.left?.width && 'before:border-l before:border-l-border',
+            borders.right?.width && 'before:border-e before:border-e-border',
+            borders.left?.width && 'before:border-s before:border-s-border',
             borders.top?.width && 'before:border-t before:border-t-border'
           )
       )}

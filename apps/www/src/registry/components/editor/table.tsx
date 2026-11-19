@@ -352,8 +352,8 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
         ...props.attributes,
         'data-node-selection-highlight': 'self',
       }}
-      className={cn('overflow-x-auto py-5', hasControls && '-ml-4')}
-      style={{ paddingLeft: marginLeft }}
+      className={cn('overflow-x-auto py-5', hasControls && '-ms-4')}
+      style={{ paddingInlineStart: marginLeft }}
     >
       <TableResizeContext value={tableResizeContext}>
         <div
@@ -362,19 +362,19 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
         >
           <div
             ref={dragIndicatorRef}
-            className="pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] -translate-x-[1.5px] bg-ring/70"
+            className="pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] [translate:-1.5px_0] bg-ring/70"
             contentEditable={false}
           />
           <div
             ref={hoverIndicatorRef}
-            className="pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] -translate-x-[1.5px] bg-ring/80"
+            className="pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] [translate:-1.5px_0] bg-ring/80"
             contentEditable={false}
           />
           {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- [P0 behavior-boundary] A new table interaction collapses the prior expanded cell selection. */}
           <table
             ref={tableRef}
             className={cn(
-              'mr-0 ml-px table h-px table-fixed border-collapse',
+              'me-0 ms-px table h-px table-fixed border-collapse',
               blockSelected &&
                 '[&_:is(td,th)[data-editor-node-key]]:before:z-10 [&_:is(td,th)[data-editor-node-key]]:before:bg-(--node-selection-tint)',
               hasExpandedCellSelection && '[&_*::selection]:bg-transparent'
@@ -489,6 +489,7 @@ function TableFloatingToolbarContent({
   );
   const canMerge = !singleCell && canMergeSelection;
   const canSplit = canSplitSelection;
+  const [bordersRtl, setBordersRtl] = React.useState(false);
 
   if (!singleCell && !canMerge && !canSplit) return null;
 
@@ -530,7 +531,18 @@ function TableFloatingToolbarContent({
             </ToolbarButton>
           )}
 
-          <DropdownMenu modal={false}>
+          <DropdownMenu
+            modal={false}
+            onOpenChange={(open) => {
+              if (!open) return;
+
+              const table = editor.api.dom.resolveDOMNode(element);
+
+              setBordersRtl(
+                !!table && getComputedStyle(table).direction === 'rtl'
+              );
+            }}
+          >
             <DropdownMenuTrigger>
               <ToolbarButton tooltip="Cell borders">
                 <Grid2X2Icon />
@@ -538,7 +550,7 @@ function TableFloatingToolbarContent({
             </DropdownMenuTrigger>
 
             <DropdownMenuPortal>
-              <TableBordersDropdownMenuContent />
+              <TableBordersDropdownMenuContent rtl={bordersRtl} />
             </DropdownMenuPortal>
           </DropdownMenu>
 
@@ -596,7 +608,7 @@ function TableFloatingToolbarContent({
               }}
               tooltip="Insert column before"
             >
-              <ArrowLeft />
+              <ArrowLeft className="rtl:rotate-180" />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => {
@@ -604,7 +616,7 @@ function TableFloatingToolbarContent({
               }}
               tooltip="Insert column after"
             >
-              <ArrowRight />
+              <ArrowRight className="rtl:rotate-180" />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => {
@@ -621,10 +633,13 @@ function TableFloatingToolbarContent({
   );
 }
 
-function TableBordersDropdownMenuContent(
-  props: React.ComponentProps<typeof DropdownMenuContent>
-) {
+function TableBordersDropdownMenuContent({
+  rtl,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuContent> & { rtl: boolean }) {
   const editor = useEditor();
+  const left = rtl ? 'right' : 'left';
+  const right = rtl ? 'left' : 'right';
   const borderStates = useEditorSelector((innerEditor) =>
     innerEditor.plugin(TablePlugin).read.borders()
   );
@@ -639,7 +654,7 @@ function TableBordersDropdownMenuContent(
         editor.api.dom.focus();
       }}
       align="start"
-      side="right"
+      side={rtl ? 'left' : 'right'}
       sideOffset={0}
       {...props}
     >
@@ -654,11 +669,9 @@ function TableBordersDropdownMenuContent(
           <div>Top Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={borderStates.right === true}
+          checked={borderStates[right] === true}
           onCheckedChange={() => {
-            editor
-              .plugin(TablePlugin)
-              .update.toggleBorders({ border: 'right' });
+            editor.plugin(TablePlugin).update.toggleBorders({ border: right });
           }}
         >
           <BorderIcon side="right" />
@@ -676,9 +689,9 @@ function TableBordersDropdownMenuContent(
           <div>Bottom Border</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
-          checked={borderStates.left === true}
+          checked={borderStates[left] === true}
           onCheckedChange={() => {
-            editor.plugin(TablePlugin).update.toggleBorders({ border: 'left' });
+            editor.plugin(TablePlugin).update.toggleBorders({ border: left });
           }}
         >
           <BorderIcon side="left" />
@@ -812,6 +825,7 @@ function RowDragHandle() {
   const element = useElement(TableRowPlugin);
   const selected = useElementSelected();
   const [open, setOpen] = React.useState(false);
+  const [rtl, setRtl] = React.useState(false);
   const move = (to: 'next' | 'previous', announce: string) => {
     editor.api.transfer.move({
       announce,
@@ -831,12 +845,13 @@ function RowDragHandle() {
         className={cn(
           // Any overflow past the control column would cover the first cell's
           // block handle and keep this column hovered.
-          '-translate-y-1/2 absolute top-1/2 left-0 h-6 w-4 overflow-hidden p-0 has-[>svg]:px-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+          '-translate-y-1/2 absolute top-1/2 start-0 h-6 w-4 overflow-hidden p-0 has-[>svg]:px-0 focus-visible:ring-0 focus-visible:ring-offset-0',
           'cursor-grab active:cursor-grabbing',
           'editor-row-drag-handle opacity-0 transition-opacity duration-100',
           selected && '[@media(hover:none)]:opacity-100'
         )}
-        onClick={() => {
+        onClick={(event) => {
+          setRtl(getComputedStyle(event.currentTarget).direction === 'rtl');
           setOpen(true);
         }}
         onDragStart={(event) => startBlockDrag(editor, event, element)}
@@ -865,8 +880,9 @@ function RowDragHandle() {
             run: () => move('next', 'Moved down'),
           },
         ]}
-        className="top-1/2 left-0 h-6 w-4 -translate-y-1/2"
+        className="start-0 top-1/2 h-6 w-4 -translate-y-1/2"
         open={open}
+        rtl={rtl}
         onOpenChange={setOpen}
       />
     </>
@@ -907,14 +923,14 @@ export function TableCellElement(
       className={cn(
         'relative h-full overflow-visible border-none bg-background p-0',
         element.backgroundColor ? 'bg-(--cellBackground)' : 'bg-background',
-        isHeader && 'text-left font-normal *:m-0',
+        isHeader && 'text-start font-normal *:m-0',
         'before:size-full',
         'data-[table-cell-selected=true]:before:z-10',
         'data-[table-cell-selected=true]:before:bg-brand/5',
         "before:absolute before:box-border before:select-none before:content-['']",
         borders?.bottom.width && 'before:border-b before:border-b-border',
-        borders?.right.width && 'before:border-r before:border-r-border',
-        borders?.left?.width && 'before:border-l before:border-l-border',
+        borders?.right.width && 'before:border-e before:border-e-border',
+        borders?.left?.width && 'before:border-s before:border-s-border',
         borders?.top?.width && 'before:border-t before:border-t-border'
       )}
       style={
@@ -966,7 +982,7 @@ function TableCellResizeControls({
       suppressContentEditableWarning={true}
     >
       <div
-        className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+        className="pointer-events-auto absolute -end-1 -top-2 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
         data-table-resize-handle="column-end"
         onPointerEnter={(event) => {
           showResizePreview(event, {
@@ -997,7 +1013,7 @@ function TableCellResizeControls({
         }}
       />
       <div
-        className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
+        className="pointer-events-auto absolute start-0 -bottom-1 z-40 h-2 w-full cursor-row-resize touch-none"
         data-table-resize-handle="row-end"
         onPointerEnter={(event) => {
           showResizePreview(event, {

@@ -121,12 +121,14 @@ export function HandleActionsMenu({
   className,
   onOpenChange,
   open,
+  rtl,
   style,
 }: {
   actions: readonly HandleAction[];
   className?: string;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  rtl: boolean;
   style?: React.CSSProperties;
 }) {
   const editor = useEditor();
@@ -140,7 +142,7 @@ export function HandleActionsMenu({
           style={style}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="left">
+      <DropdownMenuContent align="start" side={rtl ? 'right' : 'left'}>
         {actions.map(({ icon, label, run }) => (
           <DropdownMenuItem
             key={label}
@@ -162,6 +164,7 @@ function Draggable(props: RenderNodeWrapperProps) {
   const { children, editor, element, renderPath } = props;
   const [buttonTop, setButtonTop] = React.useState(0);
   const [actionsOpen, setActionsOpen] = React.useState(false);
+  const [actionsRtl, setActionsRtl] = React.useState(false);
   const [tooltipOpen, setTooltipOpen] = React.useState(false);
   const [besideActions, setBesideActions] = React.useState<HandleAction[]>([]);
   const selected = useElementSelected();
@@ -237,8 +240,9 @@ function Draggable(props: RenderNodeWrapperProps) {
     }
     return keys;
   };
-  const openActions = () => {
+  const openActions = (event: React.MouseEvent<HTMLElement>) => {
     const keys = selectBlocks();
+    setActionsRtl(getComputedStyle(event.currentTarget).direction === 'rtl');
     setBesideActions(besideOf(keys));
     setActionsOpen(true);
   };
@@ -293,7 +297,7 @@ function Draggable(props: RenderNodeWrapperProps) {
                 aria-expanded={actionsOpen}
                 aria-haspopup="menu"
                 aria-label="Drag block"
-                className="pointer-events-auto absolute -left-0 flex h-6 w-4.5 cursor-grab items-center justify-center p-0 text-muted-foreground [:is(td,th)_&]:w-3"
+                className="pointer-events-auto absolute start-0 flex h-6 w-4.5 cursor-grab items-center justify-center p-0 text-muted-foreground [:is(td,th)_&]:w-3"
                 data-editor-prevent-deselect
                 data-editor-selectable
                 draggable
@@ -332,8 +336,9 @@ function Draggable(props: RenderNodeWrapperProps) {
                   },
                 },
               ]}
-              className="-left-0 h-6 w-4.5"
+              className="start-0 h-6 w-4.5"
               open
+              rtl={actionsRtl}
               style={{ top: `${buttonTop + 3}px` }}
               onOpenChange={setActionsOpen}
             />
@@ -356,7 +361,7 @@ function Gutter({
       {...props}
       className={cn(
         'editor-gutterLeft',
-        '-translate-x-full absolute top-0 z-50 flex h-full w-[22px] cursor-text select-none opacity-0 hover:opacity-100 [:is(td,th)_&]:w-3',
+        'absolute end-full top-0 z-50 flex h-full w-[22px] cursor-text select-none opacity-0 hover:opacity-100 [:is(td,th)_&]:w-3',
         'focus-within:opacity-100',
         className
       )}
@@ -388,7 +393,7 @@ function DropIndicator() {
   return createPortal(
     <div
       aria-hidden
-      className="pointer-events-none fixed top-0 left-0 z-50 rounded-full bg-brand/50"
+      className="pointer-events-none fixed top-0 [left:0] z-50 rounded-full bg-brand/50"
       data-drop-indicator={axis}
       style={
         axis === 'y'

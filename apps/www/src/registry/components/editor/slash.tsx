@@ -158,7 +158,7 @@ const groups: Group[] = [
         onSelect: (editor, tx) => upsertHeading(editor, tx, 3),
       },
       {
-        icon: <ListIcon />,
+        icon: <ListIcon className="rtl:-scale-x-100" />,
         isAvailable: (editor) => editor.plugin(BaseListPlugin).installed,
         keywords: ['unordered', 'ul', '-'],
         label: 'Bulleted list',
@@ -186,7 +186,7 @@ const groups: Group[] = [
           tx.plugin(BaseListPlugin).upsert({ type: 'task' }, { select: true }),
       },
       {
-        icon: <ChevronRightIcon />,
+        icon: <ChevronRightIcon className="rtl:rotate-180" />,
         isAvailable: (editor) => editor.plugin(BaseDetailsPlugin).installed,
         keywords: ['collapsible', 'expandable'],
         label: 'Details',
@@ -357,7 +357,7 @@ function SlashComboboxContent() {
               onSelect={(tx) => onSelect?.(editor, tx)}
               focusEditor={focusEditor}
             >
-              <div className="mr-2 text-muted-foreground">{icon}</div>
+              <div className="me-2 text-muted-foreground">{icon}</div>
               {label}
             </InlineComboboxItem>
           ))}

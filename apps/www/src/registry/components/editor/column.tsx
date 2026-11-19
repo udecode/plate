@@ -59,7 +59,7 @@ export function ColumnElement({
         <div
           contentEditable={false}
           className={cn(
-            '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
+            '-translate-y-1/2 absolute inset-x-0 top-2 z-50 mx-auto w-fit',
             'pointer-events-auto flex items-center',
             'editor-column-drag-handle opacity-0 transition-opacity',
             selected && '[@media(hover:none)]:opacity-100'
@@ -73,7 +73,7 @@ export function ColumnElement({
         {...props}
         ref={ref}
         element={element}
-        className="h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0"
+        className="h-full px-2 pt-2 group-first/column:ps-0 group-last/column:pe-0"
       >
         <div
           className={cn(
@@ -92,6 +92,7 @@ export function ColumnElement({
 function ColumnDragHandle({ element }: { element: Element }) {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
+  const [rtl, setRtl] = React.useState(false);
   const move = (to: 'next' | 'previous', announce: string) => {
     editor.api.transfer.move({
       announce,
@@ -113,6 +114,7 @@ function ColumnDragHandle({ element }: { element: Element }) {
             draggable
             onClick={(event) => {
               event.preventDefault();
+              setRtl(getComputedStyle(event.currentTarget).direction === 'rtl');
               setOpen(true);
             }}
             onDragStart={(event) => startBlockDrag(editor, event, element)}
@@ -128,16 +130,17 @@ function ColumnDragHandle({ element }: { element: Element }) {
           {
             icon: <ArrowLeftIcon />,
             label: 'Move left',
-            run: () => move('previous', 'Moved left'),
+            run: () => move(rtl ? 'next' : 'previous', 'Moved left'),
           },
           {
             icon: <ArrowRightIcon />,
             label: 'Move right',
-            run: () => move('next', 'Moved right'),
+            run: () => move(rtl ? 'previous' : 'next', 'Moved right'),
           },
         ]}
         className="inset-0"
         open={open}
+        rtl={rtl}
         onOpenChange={setOpen}
       />
     </TooltipProvider>

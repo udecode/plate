@@ -160,14 +160,14 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
         {(!loading || !isImage) && (
           <button
             className={cn(
-              'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 text-left hover:bg-primary/10 data-[selected=true]:bg-primary/10'
+              'flex w-full cursor-pointer select-none items-center rounded-sm bg-muted p-3 pe-9 text-start hover:bg-primary/10 data-[selected=true]:bg-primary/10'
             )}
             data-selected={selected}
             disabled={loading || readOnly}
             onClick={() => openFilePicker()}
             type="button"
           >
-            <div className="relative mr-3 flex text-muted-foreground/80 [&_svg]:size-6">
+            <div className="relative me-3 flex text-muted-foreground/80 [&_svg]:size-6">
               {currentContent.icon}
             </div>
             <div className="text-sm whitespace-nowrap text-muted-foreground">
@@ -178,7 +178,7 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
                   <div>{formatBytes(currentFile.size)}</div>
                   <div>–</div>
                   <div className="flex items-center">
-                    <Loader2Icon className="mr-1 size-3.5 animate-spin text-muted-foreground" />
+                    <Loader2Icon className="me-1 size-3.5 animate-spin text-muted-foreground" />
                     {progress}%
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
         {loading && !readOnly && (
           <button
             aria-label="Cancel upload"
-            className="absolute top-2 right-2 rounded-sm bg-background/80 p-1 text-xs text-foreground"
+            className="absolute end-2 top-2 rounded-sm bg-background/80 p-1 text-xs text-foreground"
             onClick={() => api.cancel(nodeKey)}
             type="button"
           >
@@ -230,7 +230,7 @@ export function ImageProgress({
         alt={file.name}
         src={previewUrl}
       />
-      <div className="absolute right-1 bottom-1 flex items-center gap-2 rounded-full bg-black/50 px-1 py-0.5">
+      <div className="absolute end-1 bottom-1 flex items-center gap-2 rounded-full bg-black/50 px-1 py-0.5">
         <Loader2Icon className="size-3.5 animate-spin text-muted-foreground" />
         <span className="text-xs font-medium text-white">
           {Math.round(progress)}%

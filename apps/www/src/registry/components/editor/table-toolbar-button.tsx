@@ -174,7 +174,7 @@ export function TableToolbarButton() {
                   });
                 }}
               >
-                <ArrowLeft />
+                <ArrowLeft className="rtl:rotate-180" />
                 Insert column before
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -184,7 +184,7 @@ export function TableToolbarButton() {
                   editor.plugin(TablePlugin).update.insertColumn();
                 }}
               >
-                <ArrowRight />
+                <ArrowRight className="rtl:rotate-180" />
                 Insert column after
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -260,6 +260,10 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
     colIndex: number
   ) => {
     const nextCell = { colIndex, rowIndex };
+    const forward =
+      getComputedStyle(event.currentTarget).direction === 'rtl' ? -1 : 1;
+    const column = (step: number) =>
+      Math.max(0, Math.min(colIndex + step, TABLE_PICKER_DIMENSION - 1));
 
     switch (event.key) {
       case 'ArrowDown': {
@@ -267,11 +271,11 @@ function TablePicker({ onInsert }: { onInsert: () => void }) {
         break;
       }
       case 'ArrowLeft': {
-        nextCell.colIndex = Math.max(colIndex - 1, 0);
+        nextCell.colIndex = column(-forward);
         break;
       }
       case 'ArrowRight': {
-        nextCell.colIndex = Math.min(colIndex + 1, TABLE_PICKER_DIMENSION - 1);
+        nextCell.colIndex = column(forward);
         break;
       }
       case 'ArrowUp': {

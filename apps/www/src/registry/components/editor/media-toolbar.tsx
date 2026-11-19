@@ -41,7 +41,7 @@ function MediaToolbarContent({
     return (
       <div className="flex w-[330px] flex-col">
         <div className="flex items-center">
-          <div className="flex items-center pr-1 pl-2 text-muted-foreground">
+          <div className="flex items-center ps-2 pe-1 text-muted-foreground">
             <Link className="size-4" />
           </div>
 

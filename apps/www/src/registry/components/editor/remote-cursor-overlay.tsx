@@ -129,8 +129,8 @@ function RemoteCursor({
         className={cn(
           'absolute truncate px-1.5 py-0.5 text-xs text-white',
           labelAbove
-            ? 'rounded-t-sm rounded-br-sm'
-            : 'rounded-b-sm rounded-tr-sm'
+            ? 'rounded-t-sm [border-bottom-right-radius:var(--radius-sm)]'
+            : 'rounded-b-sm [border-top-right-radius:var(--radius-sm)]'
         )}
         data-remote-cursor-label=""
         style={{

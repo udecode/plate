@@ -397,7 +397,7 @@ export function BoardToolbar() {
   const { fit, removeFrame, setTool, zoomIn, zoomOut } = useBoardActions();
 
   return (
-    <Toolbar className="absolute bottom-2 left-1/2 z-10 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 flex-wrap justify-center gap-y-0.5 rounded-lg border bg-background p-1 shadow-sm">
+    <Toolbar className="absolute inset-x-0 bottom-2 z-10 mx-auto w-max max-w-[calc(100%-1rem)] flex-wrap justify-center gap-y-0.5 rounded-lg border bg-background p-1 shadow-sm">
       <ToolbarGroup>
         {TOOLS.map(({ icon, key, label, tool: itemTool }) =>
           itemTool === 'geo' ? (
@@ -542,7 +542,7 @@ export function BoardStylePanel({
     <div
       {...props}
       className={cn(
-        'absolute top-2 right-2 z-10 flex max-h-[calc(100%-5.5rem)] flex-col items-end gap-1',
+        'absolute top-2 end-2 z-10 flex max-h-[calc(100%-5.5rem)] flex-col items-end gap-1',
         className
       )}
       aria-label="Styles"
@@ -814,7 +814,7 @@ export function BoardFrameElement(
       )}
     >
       <div
-        className="absolute bottom-full left-0 max-w-full cursor-default truncate pb-1 text-xs text-muted-foreground select-none"
+        className="absolute bottom-full [left:0] max-w-full cursor-default truncate pb-1 text-xs text-muted-foreground select-none"
         contentEditable={false}
         data-board-frame-name=""
       >
@@ -858,7 +858,7 @@ export function BoardArrowElement(
       )}
       style={{ fontSize: TEXT_SIZES[element.textSize] }}
     >
-      <div className="absolute top-0 left-0" contentEditable={false}>
+      <div className="absolute top-0 [left:0]" contentEditable={false}>
         <svg
           aria-hidden
           className="pointer-events-none overflow-visible"

@@ -84,7 +84,7 @@ export function EquationElement(
             className={cn(
               'group flex w-full cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
               props.element.latex.length === 0
-                ? 'bg-muted p-3 pr-9'
+                ? 'bg-muted p-3 pe-9'
                 : 'px-2 py-1'
             )}
             data-selected={selected}
@@ -174,7 +174,7 @@ export function InlineEquationElement(
               element.latex.length > 0 ? 'Edit equation' : 'Add equation'
             }
             className={cn(
-              'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
+              'after:-top-0.5 after:-start-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
               inlineSuggestionVariants({ on: 'parent' }),
               ((element.latex.length > 0 && open) || selected) &&
@@ -203,7 +203,7 @@ export function InlineEquationElement(
             />
             {element.latex.length === 0 && (
               <span>
-                <RadicalIcon className="mr-1 inline-block h-[19px] w-4 py-[1.5px] align-text-bottom" />
+                <RadicalIcon className="me-1 inline-block h-[19px] w-4 py-[1.5px] align-text-bottom" />
                 New equation
               </span>
             )}
@@ -342,7 +342,7 @@ function EquationPopoverContent({
         {...props}
       />
       <Button variant="secondary" className="px-3" onClick={() => close(true)}>
-        Done <CornerDownLeftIcon className="size-3.5" />
+        Done <CornerDownLeftIcon className="size-3.5 rtl:-scale-x-100" />
       </Button>
     </FloatingPopoverContent>
   );

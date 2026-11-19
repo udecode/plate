@@ -170,7 +170,7 @@ export function CodeBlockElement({
       elementProps={props}
       showLanguageLabel={showLanguageLabel}
     >
-      <pre className="overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
+      <pre className="overflow-x-auto p-8 pe-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
         <code className="[&>[data-editor-node=text]]:contents">
           {props.children}
         </code>
@@ -222,7 +222,7 @@ export function CodeBlockContainer({
         {addon?.wrapSource ? addon.wrapSource(children) : children}
 
         <div
-          className="absolute top-1 right-1 z-10 flex gap-0.5 select-none"
+          className="absolute end-1 top-1 z-10 flex gap-0.5 select-none"
           contentEditable={false}
         >
           {addon?.toolbar}

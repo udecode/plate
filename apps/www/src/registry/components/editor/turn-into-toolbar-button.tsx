@@ -316,7 +316,7 @@ function TurnIntoLeafItem({
 }>) {
   return (
     <DropdownMenuRadioItem
-      className="min-w-[180px] pl-2 *:first:[span]:hidden"
+      className="min-w-[180px] ps-2 *:first:[span]:hidden"
       value={value}
     >
       {icon}
@@ -410,7 +410,12 @@ export function TurnIntoToolbarButton() {
   if (list.installed) {
     (
       [
-        ['disc', 'Bulleted list', <ListIcon key="disc" />, 'bulleted'],
+        [
+          'disc',
+          'Bulleted list',
+          <ListIcon key="disc" className="rtl:-scale-x-100" />,
+          'bulleted',
+        ],
         [
           'decimal',
           'Numbered list',
@@ -467,7 +472,7 @@ export function TurnIntoToolbarButton() {
       ? [
           {
             ...structural.details,
-            icon: <ChevronRightIcon />,
+            icon: <ChevronRightIcon className="rtl:rotate-180" />,
             label: 'Details',
             onSelect: () => {
               const current = getStructuralState(editor).details;

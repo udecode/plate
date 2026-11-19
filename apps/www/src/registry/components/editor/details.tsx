@@ -30,15 +30,15 @@ export function DetailsElement(
   const { titleRef, toggleRef } = useToggleOnFirstLine();
 
   return (
-    <EditorElement {...props} className="relative my-1 pl-6">
+    <EditorElement {...props} className="relative my-1 ps-6">
       <div
         ref={titleRef}
-        className="relative -ml-6 pl-6"
+        className="relative -ms-6 ps-6"
         data-node-selection-target
       >
         <span
           ref={toggleRef}
-          className="absolute top-3 -left-0.5 flex h-6 -translate-y-1/2 items-center"
+          className="absolute -start-0.5 top-3 flex h-6 -translate-y-1/2 items-center"
           contentEditable={false}
         >
           <Button
@@ -61,7 +61,7 @@ export function DetailsElement(
             <ChevronRightIcon
               className={cn(
                 'transition-transform duration-75',
-                open && 'rotate-90'
+                open ? 'rotate-90' : 'rtl:rotate-180'
               )}
               data-icon
             />

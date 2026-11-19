@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-rtl-editor-ui",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-rtl-editor-ui.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Mirror the editor UI in right-to-left text",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "align-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/align-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "blockquote",
+      "files": ["apps/www/src/registry/components/editor/blockquote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "blockquote-static",
+      "files": [
+        "apps/www/src/registry/components/editor/blockquote-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board",
+      "files": ["apps/www/src/registry/components/editor/board.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout",
+      "files": ["apps/www/src/registry/components/editor/callout.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-static",
+      "files": ["apps/www/src/registry/components/editor/callout-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column",
+      "files": ["apps/www/src/registry/components/editor/column.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-static",
+      "files": ["apps/www/src/registry/components/editor/column-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "details",
+      "files": ["apps/www/src/registry/components/editor/details.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-color-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-color-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "history-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/history-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/indent-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ink-sign-button",
+      "files": ["apps/www/src/registry/components/editor/ink-sign-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed",
+      "files": ["apps/www/src/registry/components/editor/media-embed.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-preview-dialog",
+      "files": [
+        "apps/www/src/registry/components/editor/media-preview-dialog.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-toolbar",
+      "files": ["apps/www/src/registry/components/editor/media-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-video",
+      "files": ["apps/www/src/registry/components/editor/media-video.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": [
+        "apps/www/src/registry/components/editor/remote-cursor-overlay.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "settings-dialog",
+      "files": ["apps/www/src/registry/components/editor/settings-dialog.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash",
+      "files": ["apps/www/src/registry/components/editor/slash.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-static",
+      "files": ["apps/www/src/registry/components/editor/table-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/table-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-static",
+      "files": ["apps/www/src/registry/components/editor/toc-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "upload",
+      "files": ["apps/www/src/registry/components/editor/upload.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-ai-menu-mirror-editor-ui-right-bf5c6b52",
+      "kind": "behavior",
+      "summary": "Mirror the editor UI in right-to-left text",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-menu",
+        "align-toolbar-button",
+        "block-list",
+        "block-list-static",
+        "blockquote",
+        "blockquote-static",
+        "board",
+        "callout",
+        "callout-static",
+        "code-block",
+        "code-block-static",
+        "column",
+        "column-static",
+        "comment",
+        "comment-toolbar-button",
+        "details",
+        "discussion",
+        "dnd",
+        "emoji-picker",
+        "find",
+        "font-color-toolbar-button",
+        "history-toolbar-button",
+        "indent-toolbar-button",
+        "ink-sign-button",
+        "insert-toolbar-button",
+        "line-height-toolbar-button",
+        "link",
+        "math",
+        "math-static",
+        "media-embed",
+        "media-preview-dialog",
+        "media-toolbar",
+        "media-video",
+        "mode-toolbar-button",
+        "remote-cursor-overlay",
+        "settings-dialog",
+        "slash",
+        "suggestion",
+        "table",
+        "table-static",
+        "table-toolbar-button",
+        "toc",
+        "toc-static",
+        "toolbar",
+        "turn-into-toolbar-button",
+        "upload"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-2",
+      "kind": "behavior",
+      "summary": "Open the block handle menu and the cell borders menu on the mirrored side in right-to-left text",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd", "table"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-3",
+      "kind": "behavior",
+      "summary": "Point Left Border and Right Border at the side they name in right-to-left tables",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-4",
+      "kind": "behavior",
+      "summary": "Move a column toward the side its menu item names in right-to-left text",
+      "details": [],
+      "migrationNotes": [
+        "Move a column toward the side its menu item names in right-to-left text"
+      ],
+      "targets": ["column"],
+      "source": {
+        "line": 17,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-5",
+      "kind": "behavior",
+      "summary": "Mirror directional icons in right-to-left text",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "details",
+        "history-toolbar-button",
+        "indent-toolbar-button",
+        "insert-toolbar-button",
+        "math",
+        "media-preview-dialog",
+        "slash",
+        "table",
+        "table-toolbar-button",
+        "turn-into-toolbar-button"
+      ],
+      "source": {
+        "line": 18,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-6",
+      "kind": "behavior",
+      "summary": "Move through emoji, color and table size grids in the arrow key's visual direction",
+      "details": [],
+      "migrationNotes": [
+        "Move through emoji, color and table size grids in the arrow key's visual direction"
+      ],
+      "targets": [
+        "emoji-picker",
+        "font-color-toolbar-button",
+        "table-toolbar-button"
+      ],
+      "source": {
+        "line": 19,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-7",
+      "kind": "behavior",
+      "summary": "Render a table's leading margin on its start side",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table", "table-static"],
+      "source": {
+        "line": 20,
+        "row": 7,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

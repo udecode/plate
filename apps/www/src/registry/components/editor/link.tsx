@@ -483,7 +483,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const input = (
     <div className="flex w-[330px] max-w-[calc(100vw-16px)] flex-col">
       <div className="flex items-center">
-        <div className="flex items-center pr-1 pl-2 text-muted-foreground">
+        <div className="flex items-center ps-2 pe-1 text-muted-foreground">
           <Link className="size-4" />
         </div>
 
@@ -497,7 +497,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       </div>
       <Separator className="my-1" />
       <div className="flex items-center">
-        <div className="flex items-center pr-1 pl-2 text-muted-foreground">
+        <div className="flex items-center ps-2 pe-1 text-muted-foreground">
           <Text className="size-4" />
         </div>
         <FloatingLinkTextInput

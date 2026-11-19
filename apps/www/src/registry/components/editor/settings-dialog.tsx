@@ -279,7 +279,7 @@ export function SettingsDialog() {
           asChild
           size="icon"
           variant="ghost"
-          className="absolute top-0 right-[28px] h-full"
+          className="absolute end-[28px] top-0 h-full"
         >
           <a
             className="flex items-center"
@@ -295,7 +295,7 @@ export function SettingsDialog() {
 
       <Input
         id={label}
-        className="pr-10"
+        className="pe-10"
         value={tempKeys[service]}
         onChange={(e) => {
           setTempKeys((prev) => ({ ...prev, [service]: e.target.value }));
@@ -307,7 +307,7 @@ export function SettingsDialog() {
       <Button
         size="icon"
         variant="ghost"
-        className="absolute top-0 right-0 h-full"
+        className="absolute end-0 top-0 h-full"
         onClick={() => {
           toggleKeyVisibility(service);
         }}
@@ -332,10 +332,9 @@ export function SettingsDialog() {
           size="icon"
           variant="default"
           className={cn(
-            'group fixed right-4 bottom-4 z-50 size-10 overflow-hidden',
+            'group fixed end-4 bottom-4 z-50 size-10 overflow-hidden',
             'rounded-full shadow-md hover:shadow-lg'
           )}
-          // data-block-hide
         >
           <Settings className="size-4" />
         </Button>
@@ -379,7 +378,7 @@ export function SettingsDialog() {
                       role="combobox"
                     >
                       <code>{tempModel.label}</code>
-                      <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                      <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -402,7 +401,7 @@ export function SettingsDialog() {
                             >
                               <Check
                                 className={cn(
-                                  'mr-2 size-4',
+                                  'me-2 size-4',
                                   tempModel.value === m.value
                                     ? 'opacity-100'
                                     : 'opacity-0'

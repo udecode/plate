@@ -6,16 +6,16 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 
 const headingItemVariants = cva(
-  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
+  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-start font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
   {
     variants: {
       level: {
-        1: 'pl-0.5',
-        2: 'pl-[26px]',
-        3: 'pl-[50px]',
-        4: 'pl-[74px]',
-        5: 'pl-[98px]',
-        6: 'pl-[122px]',
+        1: 'ps-0.5',
+        2: 'ps-[26px]',
+        3: 'ps-[50px]',
+        4: 'ps-[74px]',
+        5: 'ps-[98px]',
+        6: 'ps-[122px]',
       },
     },
   }

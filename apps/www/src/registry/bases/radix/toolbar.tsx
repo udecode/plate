@@ -44,7 +44,7 @@ export function Toolbar({
 }
 
 const dropdownArrowVariants = cva(
-  'min-w-0 rounded-l-none px-0 text-foreground',
+  'min-w-0 rounded-s-none px-0 text-foreground',
   {
     variants: {
       size: {
@@ -97,7 +97,7 @@ export function ToolbarButton({
       className={cn(
         toggleVariants({ size, variant }),
         'cursor-pointer',
-        isDropdown && 'justify-between gap-1 pr-1',
+        isDropdown && 'justify-between gap-1 pe-1',
         className
       )}
       aria-label={typeof tooltip === 'string' ? tooltip : undefined}
@@ -193,7 +193,7 @@ export function ToolbarSplitButtonPrimary({
     <ToolbarPrimitive.Button
       className={cn(
         toggleVariants({ size, variant }),
-        'cursor-pointer rounded-r-none',
+        'cursor-pointer rounded-e-none',
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}
@@ -248,7 +248,7 @@ export function ToolbarSplitButtonSecondary({
       className={cn(
         toggleVariants({ size, variant }),
         dropdownArrowVariants({ size }),
-        variant === 'outline' && 'border-l-0',
+        variant === 'outline' && 'border-s-0',
         'group-data-[pressed=true]:bg-accent group-data-[pressed=true]:text-accent-foreground',
         className
       )}

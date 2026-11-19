@@ -281,7 +281,7 @@ export function MediaPreviewDialog() {
   // Portal to the body so no ancestor stacking context or overlay covers it.
   return createPortal(
     <div
-      className="fixed top-0 left-0 z-50 h-screen w-screen select-none"
+      className="fixed start-0 top-0 z-50 h-screen w-screen select-none"
       onContextMenu={(e) => {
         e.stopPropagation();
       }}
@@ -299,7 +299,7 @@ export function MediaPreviewDialog() {
               'mx-auto block max-h-[calc(100vh-10rem)] w-auto object-contain transition-transform'
             )}
           />
-          <div className="pointer-events-auto fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
+          <div className="pointer-events-auto fixed inset-x-0 bottom-6 z-40 mx-auto flex w-fit items-center gap-1 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
             <Button
               aria-label="Previous image"
               disabled={prevDisabled}
@@ -307,7 +307,7 @@ export function MediaPreviewDialog() {
               size="icon-sm"
               variant="ghost"
             >
-              <ArrowLeft />
+              <ArrowLeft className="rtl:rotate-180" />
             </Button>
             <span className="min-w-10 text-center text-sm text-muted-foreground tabular-nums">
               {(currentPreviewIndex ?? 0) + 1} / {previewList.length}
@@ -319,7 +319,7 @@ export function MediaPreviewDialog() {
               size="icon-sm"
               variant="ghost"
             >
-              <ArrowRight />
+              <ArrowRight className="rtl:rotate-180" />
             </Button>
             <Separator
               className="mx-1 data-[orientation=vertical]:h-5"

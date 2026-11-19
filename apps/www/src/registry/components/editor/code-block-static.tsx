@@ -123,14 +123,14 @@ export function CodeBlockElementStatic({
       <div className="relative rounded-md bg-muted/50">
         {showLanguageLabel && languageLabel && (
           <div
-            className="absolute top-1 right-1 z-10 flex h-6 items-center px-2 text-xs text-muted-foreground select-none"
+            className="absolute end-1 top-1 z-10 flex h-6 items-center px-2 text-xs text-muted-foreground select-none"
             contentEditable={false}
           >
             {languageLabel}
           </div>
         )}
 
-        <pre className="overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
+        <pre className="overflow-x-auto p-8 pe-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
           <code>{props.children}</code>
         </pre>
       </div>

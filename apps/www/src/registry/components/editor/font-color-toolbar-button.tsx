@@ -583,6 +583,10 @@ export function ColorDropdownMenuItems({
                   }}
                   onKeyDown={(event) => {
                     let nextIndex: number | undefined;
+                    const forward =
+                      getComputedStyle(event.currentTarget).direction === 'rtl'
+                        ? -1
+                        : 1;
 
                     switch (event.key) {
                       case 'ArrowDown': {
@@ -590,11 +594,11 @@ export function ColorDropdownMenuItems({
                         break;
                       }
                       case 'ArrowLeft': {
-                        nextIndex = index - 1;
+                        nextIndex = index - forward;
                         break;
                       }
                       case 'ArrowRight': {
-                        nextIndex = index + 1;
+                        nextIndex = index + forward;
                         break;
                       }
                       case 'ArrowUp': {

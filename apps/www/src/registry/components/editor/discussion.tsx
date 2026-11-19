@@ -771,7 +771,7 @@ function SuggestionDiscussionCard({
         <span className="text-xs leading-none text-muted-foreground/80">
           {formatCommentDate(createdAt)}
         </span>
-        <span className="editor-suggestion-actions pointer-events-none absolute top-0 right-0 flex gap-2 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
+        <span className="editor-suggestion-actions pointer-events-none absolute end-0 top-0 flex gap-2 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
           <Button
             aria-label="Accept suggestion"
             className="size-6 p-1 text-muted-foreground"
@@ -791,7 +791,7 @@ function SuggestionDiscussionCard({
         </span>
       </header>
 
-      <div className="relative mt-1 mb-4 flex flex-col gap-2 pl-[32px] text-sm">
+      <div className="relative mt-1 mb-4 flex flex-col gap-2 ps-[32px] text-sm">
         {descriptions.map((description, index) => (
           <p className="text-muted-foreground" key={`${index}:${description}`}>
             {description}
@@ -976,7 +976,7 @@ function DiscussionBlockContent({
     <div className="flex w-full justify-between">
       <div className="w-full min-w-0">{children}</div>
       <div
-        className="relative left-0 size-0 select-none"
+        className="relative start-0 size-0 select-none"
         contentEditable={false}
       >
         {totalCount > 0 && (
@@ -985,7 +985,7 @@ function DiscussionBlockContent({
             aria-label={`${isActive ? 'Close' : 'Open'} ${
               totalCount
             } discussion ${itemLabel} for this block`}
-            className="mt-1 ml-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+            className="ms-1 mt-1 flex h-6 gap-1 !px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
             contentEditable={false}
             data-active={isActive}
             data-discussion-block-trigger

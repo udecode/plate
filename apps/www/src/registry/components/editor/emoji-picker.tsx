@@ -140,10 +140,12 @@ function EmojiPickerPanel({
       return;
     }
 
+    const forward =
+      getComputedStyle(event.currentTarget).direction === 'rtl' ? -1 : 1;
     const step = {
       ArrowDown: COLUMNS,
-      ArrowLeft: -1,
-      ArrowRight: 1,
+      ArrowLeft: -forward,
+      ArrowRight: forward,
       ArrowUp: -COLUMNS,
     }[event.key];
 
@@ -369,7 +371,7 @@ function EmojiPickerFooter({ emoji, label }: Partial<EmojiPick>) {
           </span>
         </>
       ) : (
-        <span className="ml-1.5 truncate text-xs text-muted-foreground">
+        <span className="ms-1.5 truncate text-xs text-muted-foreground">
           Select an emoji…
         </span>
       )}

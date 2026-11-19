@@ -131,7 +131,7 @@ function ModeToolbarButtonContent({
           value={value}
         >
           <DropdownMenuRadioItem
-            className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
+            className="ps-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
             finalFocus={() => editor.api.dom.focus()}
             value="editing"
           >
@@ -140,7 +140,7 @@ function ModeToolbarButtonContent({
           </DropdownMenuRadioItem>
 
           <DropdownMenuRadioItem
-            className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
+            className="ps-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
             value="viewing"
           >
             {MODE_ITEMS.viewing.icon}
@@ -149,7 +149,7 @@ function ModeToolbarButtonContent({
 
           {suggestionsInstalled && (
             <DropdownMenuRadioItem
-              className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
+              className="ps-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
               value="suggestion"
             >
               {MODE_ITEMS.suggestion.icon}

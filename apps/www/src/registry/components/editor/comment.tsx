@@ -224,7 +224,7 @@ function CommentInput({
       }}
     >
       {showAvatar && (
-        <div className="mt-2 mr-1 shrink-0">
+        <div className="me-1 mt-2 shrink-0">
           <Avatar className="size-5">
             <AvatarImage alt={currentUser?.name} src={currentUser?.avatarUrl} />
             <AvatarFallback>{currentUser?.name?.[0] ?? '?'}</AvatarFallback>
@@ -250,7 +250,7 @@ function CommentInput({
               enterKeyHint="send"
               className={cn(
                 'min-h-[25px] grow pt-0.5',
-                showAvatar ? 'pr-8' : 'pr-16'
+                showAvatar ? 'pe-8' : 'pe-16'
               )}
               onKeyDown={(event) => {
                 if (event.key === 'Escape' && onCancel && !submitting.current) {
@@ -276,7 +276,7 @@ function CommentInput({
             />
 
             {!showAvatar && onCancel && (
-              <div className="ml-auto flex shrink-0 gap-1">
+              <div className="ms-auto flex shrink-0 gap-1">
                 <Button
                   aria-label="Cancel comment"
                   className="size-[28px]"
@@ -305,7 +305,7 @@ function CommentInput({
             )}
 
             {showAvatar && (
-              <div className="absolute right-0.5 bottom-0.5 ml-auto flex items-center gap-1">
+              <div className="absolute end-0.5 bottom-0.5 ms-auto flex items-center gap-1">
                 {canSubmit && onCancel && (
                   <Button
                     aria-label={cancelLabel}
@@ -549,20 +549,20 @@ function CommentMessageRow({
           {user?.name ?? 'Unknown'}
         </h4>
         <div className="text-xs leading-none text-muted-foreground/80">
-          <span className="mr-1">
+          <span className="me-1">
             {formatCommentDate(message.editedAt ?? message.createdAt)}
           </span>
           {message.editedAt && <span>(edited)</span>}
-          {resolved && index === 0 && <span className="ml-1">Resolved</span>}
+          {resolved && index === 0 && <span className="ms-1">Resolved</span>}
           {status === 'draft' && index === 0 && (
-            <span className="ml-1">AI draft</span>
+            <span className="ms-1">AI draft</span>
           )}
         </div>
 
         {(mine || canResolve) && !editing && (
           <div
             className={cn(
-              'editor-comment-actions pointer-events-none absolute top-0 right-0 flex gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
+              'editor-comment-actions pointer-events-none absolute top-0 end-0 flex gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100',
               menuOpen && 'pointer-events-auto opacity-100'
             )}
           >
@@ -623,20 +623,20 @@ function CommentMessageRow({
 
       {showExcerpt && (
         <div
-          className="text-subtle-foreground relative mt-1 flex pl-[32px] text-sm"
+          className="text-subtle-foreground relative mt-1 flex ps-[32px] text-sm"
           data-comment-excerpt=""
         >
           {threadLength > 1 && (
-            <div className="absolute top-[5px] left-3 h-full w-0.5 shrink-0 bg-muted" />
+            <div className="absolute start-3 top-[5px] h-full w-0.5 shrink-0 bg-muted" />
           )}
           <div className="my-px w-0.5 shrink-0 bg-highlight" />
-          {excerpt && <div className="ml-2">{excerpt}</div>}
+          {excerpt && <div className="ms-2">{excerpt}</div>}
         </div>
       )}
 
-      <div className="relative my-1 pl-[26px]">
+      <div className="relative my-1 ps-[26px]">
         {!isLast && (
-          <div className="absolute top-0 left-3 h-full w-0.5 shrink-0 bg-muted" />
+          <div className="absolute start-3 top-0 h-full w-0.5 shrink-0 bg-muted" />
         )}
         {editing ? (
           <CommentInput

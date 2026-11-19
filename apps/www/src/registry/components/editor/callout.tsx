@@ -22,7 +22,7 @@ export function CalloutElement(
   return (
     <EditorElement
       {...props}
-      className="my-1 flex rounded-sm bg-muted p-4 pl-3"
+      className="my-1 flex rounded-sm bg-muted p-4 ps-3"
       style={{
         backgroundColor: props.element.backgroundColor,
       }}

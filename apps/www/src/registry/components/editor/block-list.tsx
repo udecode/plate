@@ -96,7 +96,7 @@ function TodoMarker(
     <div contentEditable={false}>
       <Checkbox
         className={cn(
-          '-left-6 absolute top-1',
+          '-start-6 absolute top-1',
           readOnly && 'pointer-events-none'
         )}
         checked={props.element.checked === true}
