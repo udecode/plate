@@ -1072,7 +1072,7 @@ const mapChangedNodeKeys = (
   available: KeyAvailability,
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[]
 ) => {
-  const publishNodeKeys = binding === 'publish';
+  const publishNodeKeys = binding !== 'inherited';
   const sourcePaths = new Map<string, Path>();
   const targetPaths = new Map<string, Path>();
   const addTouching = (
@@ -1330,7 +1330,7 @@ const mapChangedNodeKeys = (
   return { assignments, usedNodeKeys };
 };
 
-export type NodeKeyBinding = 'inherited' | 'publish';
+export type NodeKeyBinding = 'inherited' | 'projection' | 'publish';
 
 type Window = Readonly<{
   hiAfter: number;
@@ -1635,7 +1635,7 @@ export const mapSnapshotIndexThroughChange = (
   }
   sequenceOf(index, before);
   countCoreWork('identityTransitions');
-  const publishNodeKeys = binding === 'publish';
+  const publishNodeKeys = binding !== 'inherited';
   const bindNodeKey = publishNodeKeys ? setNodeKey : bindNodeKeyOnce;
   const sourceTopology = topologyOf(index, before, editor);
   const source = TOPOLOGIES.has(index)
@@ -1913,13 +1913,20 @@ export const mapSnapshotIndexThroughChange = (
   for (const path of [...ancestors.values(), ...retyped.values()]) {
     const cell = getDefined(builder.cellAt(path));
     const node = after.node(path) as unknown as Descendant;
+    const own = getNodeKeyForNode(node, editor);
 
     builder.retype(cell, node);
+    if (
+      binding === 'projection' &&
+      own &&
+      !discardedNodeKeys.has(own) &&
+      builder.cellOfKey(own) === undefined
+    ) {
+      builder.rekey(cell, own);
+    }
     const nodeKey = builder.cell(cell).key;
 
-    if (nodeKey && getNodeKeyForNode(node, editor) !== nodeKey) {
-      bindNodeKey(node, editor, nodeKey);
-    }
+    if (nodeKey && own !== nodeKey) bindNodeKey(node, editor, nodeKey);
   }
 
   const mapped = versionOf(builder.finish(), editor, after);
@@ -1992,7 +1999,7 @@ export const advancePathStableSnapshotIndex = (
       binding
     );
   }
-  const bindNodeKey = binding === 'publish' ? setNodeKey : bindNodeKeyOnce;
+  const bindNodeKey = binding === 'inherited' ? bindNodeKeyOnce : setNodeKey;
 
   for (const { node, nodeKey } of keyed) {
     if (nodeKey) bindNodeKey(node, editor, nodeKey);
@@ -2018,7 +2025,8 @@ export const advancePathStableSnapshotIndex = (
     }
   });
 
-  const advanced = binding === 'publish' ? source : versionOf(topology, editor);
+  const advanced =
+    binding === 'inherited' ? versionOf(topology, editor) : source;
   const movedFrom =
     (advanced === index ? VERSION_DOCUMENTS.get(index)?.movedFrom : null) ??
     new WeakSet<DocumentIndex>();

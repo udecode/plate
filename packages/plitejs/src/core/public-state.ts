@@ -798,7 +798,7 @@ export const inheritEditorProjectionIndexes = (
         rootChange,
         snapshotIndexOf(owner, previous),
         {
-          binding: 'publish',
+          binding: 'projection',
           classification: getInternalDocumentChangeClassification(change, root),
           discardedNodeKeys,
         }
