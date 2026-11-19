@@ -2717,9 +2717,11 @@ const resolveIn = (
       );
 
       for (const change of formats?.waits ?? []) waits.add(change);
-      for (const tag of formats?.landed ?? []) {
-        if (!facts.landed(tag.id)) landings.set(tag.id, landedOf(tag));
-      }
+      const landFormats = () => {
+        for (const tag of formats?.landed ?? []) {
+          if (!facts.landed(tag.id)) landings.set(tag.id, landedOf(tag));
+        }
+      };
       // The proposed view shows the values an element's command gave it;
       // admission's settle stage stores them once nothing they wait on is
       // pending.
@@ -2813,6 +2815,7 @@ const resolveIn = (
       shown.add(node);
       shown.add(original);
       if (isText(node)) {
+        landFormats();
         out.push(
           track(
             withMarks({ ...formatted.props, text: node.text }, formatted.kept),
@@ -2884,6 +2887,7 @@ const resolveIn = (
             )
           )
         );
+        landFormats();
         for (const at of childDirty) dirty.push(out.length + at);
         out.push(...resolved);
         land(node);
@@ -2905,6 +2909,7 @@ const resolveIn = (
         restructured = true;
         continue;
       }
+      landFormats();
       if (emptied) {
         wait(
           pending({ [AUTHORED_MARKS_KEY]: formatted.kept }).filter(

@@ -11,6 +11,7 @@ import {
   useEditor,
   useEditorHasSelection,
   useEditorReadOnly,
+  useEditorViewState,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -34,9 +35,30 @@ const PAGE_SIZE = 20;
 type CommentFilter = 'all' | 'open' | 'resolved';
 type CommentTarget =
   | Readonly<{ range: Range; status: 'attached'; type: 'change' | 'range' }>
-  | Readonly<{ status: 'unavailable' }>;
+  | Readonly<{
+      status: 'accepted' | 'contested' | 'deleted' | 'rejected' | 'unavailable';
+    }>;
 
-const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
+const TARGET_LABELS: Record<CommentTarget['status'], string> = {
+  accepted: 'Suggestion accepted',
+  attached: 'Attached to document',
+  contested: 'Suggestion accepted and rejected',
+  deleted: 'Suggestion deleted',
+  rejected: 'Suggestion rejected',
+  unavailable: 'Target unavailable in this view',
+};
+
+const isPreviewing = (editor: Editor) => {
+  const authored = editor.plugin(AuthoredPlugin);
+
+  return authored.installed && 'preview' in authored.read.view();
+};
+
+const readCommentTarget = (
+  editor: Editor,
+  id: string,
+  previewing = isPreviewing(editor)
+): CommentTarget => {
   const comments = editor.plugin(CommentsPlugin).api;
   const attachment = comments.attachment(id);
   if (attachment?.type === 'range') {
@@ -46,9 +68,11 @@ const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
   }
   if (attachment?.type === 'change') {
     const authored = editor.plugin(AuthoredPlugin);
-    const range = authored.installed
-      ? authored.read.change(attachment.id)?.ranges[0]
-      : undefined;
+    if (!authored.installed) return { status: 'unavailable' };
+    const outcome = authored.read.outcome(attachment.id);
+    if (outcome !== 'pending') return { status: outcome ?? 'deleted' };
+    if (previewing) return { status: 'unavailable' };
+    const range = authored.read.change(attachment.id)?.ranges[0];
     return range
       ? { range, status: 'attached', type: 'change' }
       : { status: 'unavailable' };
@@ -56,9 +80,8 @@ const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
   return { status: 'unavailable' };
 };
 
-const readStoredRange = (editor: Editor, id: string) => {
-  const target = readCommentTarget(editor, id);
-  if (target.status === 'unavailable') return undefined;
+const readStoredRange = (editor: Editor, id: string, target: CommentTarget) => {
+  if (target.status !== 'attached') return undefined;
   if (target.type === 'change') return target.range;
   return editor.plugin(CommentsPlugin).api.ranges()[id];
 };
@@ -102,18 +125,23 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
   const navigate = React.useCallback(
     (id: string) => {
       const target = readCommentTarget(editor, id);
-      if (target.status === 'unavailable') {
-        setMessage('Target unavailable in this view');
+      if (target.status !== 'attached') {
+        setMessage(TARGET_LABELS[target.status]);
         return;
       }
       setMessage(null);
       navigatingRef.current = true;
       setOpen(false);
       requestAnimationFrame(() => {
-        const range = readStoredRange(editor, id);
+        const current = readCommentTarget(editor, id);
+        const range = readStoredRange(editor, id, current);
         if (!range) {
           navigatingRef.current = false;
-          setMessage('Target unavailable in this view');
+          setMessage(
+            TARGET_LABELS[
+              current.status === 'attached' ? 'unavailable' : current.status
+            ]
+          );
           setOpen(true);
           return;
         }
@@ -370,9 +398,10 @@ function AllCommentsRow({
     },
     [comments, editor]
   );
+  const previewing = useEditorViewState(editor, () => isPreviewing(editor));
   const getSnapshot = React.useCallback(
-    () => readCommentTarget(editor, id).status,
-    [editor, id]
+    () => readCommentTarget(editor, id, previewing).status,
+    [editor, id, previewing]
   );
   const targetStatus = React.useSyncExternalStore(
     subscribe,
@@ -395,14 +424,10 @@ function AllCommentsRow({
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{thread.resolution ? 'Resolved' : 'Open'}</span>
           <span aria-hidden="true">·</span>
-          <span>
-            {targetStatus === 'attached'
-              ? 'Attached to document'
-              : 'Target unavailable in this view'}
-          </span>
+          <span>{TARGET_LABELS[targetStatus]}</span>
         </div>
         <Button
-          disabled={blocked || targetStatus === 'unavailable'}
+          disabled={blocked || targetStatus !== 'attached'}
           onClick={onNavigate}
           onMouseDown={(event) => event.preventDefault()}
           onPointerDown={(event) => event.preventDefault()}

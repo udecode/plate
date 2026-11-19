@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-18-comment-suggestion-outcome",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-18-comment-suggestion-outcome.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "In All comments, a suggestion's thread says what the review did with the suggestion: Suggestion accepted, Suggestion rejected, Suggestion accepted and rejected, or Suggestion deleted, also after a reload. Show in document opens only a suggestion that is still pending, and not while a preview shows the document.",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-18-comment-toolbar-all-comments-says-what-873ba638",
+      "kind": "behavior",
+      "summary": "In All comments, a suggestion's thread says what the review did with the suggestion: Suggestion accepted, Suggestion rejected, Suggestion accepted and rejected, or Suggestion deleted, also after a reload. Show in document opens only a suggestion that is still pending, and not while a preview shows the document.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-18",
+          "entry": "2026-11-18-comment-suggestion-outcome",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

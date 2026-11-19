@@ -170,6 +170,9 @@ export type AuthoredResult =
 
 export type AuthoredView = NonNullable<EditorViewOptions['authored']>;
 
+/** How a change id stands in the review, as `read.authored.outcome` returns it. */
+export type AuthoredOutcome = 'accepted' | 'contested' | 'pending' | 'rejected';
+
 export type AuthoredReview = Readonly<{
   /**
    * The accepted value of each property a pending suggestion formats, with

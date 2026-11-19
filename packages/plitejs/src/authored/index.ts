@@ -27,6 +27,7 @@ export type {
   AuthoredDecision,
   AuthoredDocumentProjection,
   AuthoredOptions,
+  AuthoredOutcome,
   AuthoredPage,
   AuthoredProjectionDiagnostic,
   AuthoredProjectionRefusal,

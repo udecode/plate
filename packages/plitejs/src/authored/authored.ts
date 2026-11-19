@@ -226,6 +226,7 @@ import type {
   AuthoredChangesDelta,
   AuthoredDecision,
   AuthoredOptions,
+  AuthoredOutcome,
   AuthoredPage,
   AuthoredQuery,
   AuthoredResult,
@@ -254,6 +255,16 @@ type AuthoredRead = {
   ) => readonly AuthoredChangeGroup[];
   /** The card holding a pending change. */
   groupOf: (changeId: string) => AuthoredChangeGroup | null;
+  /**
+   * How a change id stands in the review of the stored document, the same in
+   * every view, on every peer and after a reload. Pending while the stored
+   * document holds any of its marks. Otherwise the verdict on its decided
+   * incarnation proposed last, or contested when that incarnation holds both
+   * an accept and a reject. Null when the change left with no verdict, as when
+   * a decided table or row took it, an Editing removal deleted it or its
+   * author withdrew it, or when the document never held the id.
+   */
+  outcome: (id: string) => AuthoredOutcome | null;
   /** What review reads on a node of the stored document. */
   reviewOf: (node: unknown) => AuthoredReview;
 };
@@ -1678,6 +1689,13 @@ export const createAuthoredPlugin = (
       },
       groupOf: (changeId: string) =>
         changesOf(editor, storedValue(editor)).groupOf(changeId),
+      outcome: (id: string) => {
+        const value = storedValue(editor);
+
+        return changesOf(editor, value).change(id)
+          ? 'pending'
+          : factsOf(value).verdictOf(id);
+      },
       groups: ({ at }: Readonly<{ at: Location | NodeKey }>) => {
         const book = changesOf(editor, storedValue(editor));
 
@@ -1782,7 +1800,7 @@ export const createAuthoredPlugin = (
           const decided =
             !claim &&
             (state.marks.authorOf(changeId) !== null ||
-              factsOf(value).decides(changeId));
+              factsOf(value).verdictOf(changeId) !== null);
 
           // A pending change takes more writes; an id decided before starts a
           // new incarnation, so its old claims and verdicts never touch it.

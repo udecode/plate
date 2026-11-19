@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-18-comment-suggestion-outcome",
+      "href": "/registry/changelog/2026-11-18-comment-suggestion-outcome.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "In All comments, a suggestion's thread says what the review did with the suggestion: Suggestion accepted, Suggestion rejected, Suggestion accepted and rejected, or Suggestion deleted, also after a reload. Show in document opens only a suggestion that is still pending, and not while a preview shows the document.",
+      "change": {
+        "type": "source",
+        "date": "2026-11-18",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-comments-on-board-note-text",
       "href": "/registry/changelog/2026-11-18-comments-on-board-note-text.json",
       "status": "draft",

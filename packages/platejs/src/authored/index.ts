@@ -15,6 +15,7 @@ export {
   type AuthoredFormatProjection,
   type AuthoredMark,
   type AuthoredOptions,
+  type AuthoredOutcome,
   type AuthoredPage,
   type AuthoredProjectionDiagnostic,
   type AuthoredProjectionRefusal,

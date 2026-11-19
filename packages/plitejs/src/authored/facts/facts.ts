@@ -36,6 +36,7 @@ import {
   readAuthoredMarks,
   readRestsOn,
 } from '../tree/marks';
+import type { AuthoredOutcome } from '../types';
 import { isEditingChange } from './editing';
 import {
   CONTEXTS,
@@ -62,8 +63,7 @@ import {
 export type ReviewFacts = Readonly<{
   completedJoin: (link: string) => boolean;
   contexts: ContextLookup['contexts'];
-  /** Whether a verdict names any incarnation of `change`. */
-  decides: (change: string) => boolean;
+  verdictOf: (change: string) => Exclude<AuthoredOutcome, 'pending'> | null;
   /** Whether any verdict is stored. */
   hasVerdicts: boolean;
   /** Whether a verdict, or one with `verdict`, names `incarnation`. */
@@ -288,10 +288,10 @@ const RECORD_FACTS = new WeakMap<object, RecordFacts>();
 const NO_RECORD_FACTS: RecordFacts = Object.freeze({
   completedJoin: () => false,
   contexts: Object.freeze({ get: () => undefined, has: () => false }),
-  decides: () => {
+  verdictOf: () => {
     countLedgerWork('verdictLookups');
 
-    return false;
+    return null;
   },
   hasVerdict: () => {
     countLedgerWork('verdictLookups');
@@ -361,14 +361,31 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
         get: (ctx: string) => readContext(store, ctx),
         has: (ctx: string) => hasRecord(store, CONTEXTS, ctx),
       }),
-      decides: (change: string) => {
+      verdictOf: (change: string) => {
         countLedgerWork('verdictLookups');
 
-        return hasRecordWithPrefix(
+        let latest = Number.NEGATIVE_INFINITY;
+        const verdicts = new Set<Verdict>();
+
+        for (const [id, json] of getRecordsWithPrefix(
           store,
           VERDICTS,
           changeVerdictProbeOf(change)
-        );
+        )) {
+          const record = parseVerdict(id, json);
+
+          if (!record || record.member.at < latest) continue;
+          if (record.member.at > latest) {
+            latest = record.member.at;
+            verdicts.clear();
+          }
+          verdicts.add(record.verdict);
+        }
+
+        if (verdicts.size === 0) return null;
+        if (verdicts.size > 1) return 'contested';
+
+        return verdicts.has('accept') ? 'accepted' : 'rejected';
       },
       hasVerdict,
       hasVerdicts: getRecordCount(store, VERDICTS) > 0,

@@ -420,6 +420,58 @@ const insideTaken = (
   return false;
 };
 
+const takenWithoutVerdict = (
+  value: JsonEditorValue,
+  actions: ReadonlyMap<string, Verdict>,
+  takenWhole: (original: unknown) => boolean,
+  ownership: CompiledEditorSchema
+) => {
+  const facts = factsOf(value);
+  const removes = (mark: AuthoredMark) => {
+    const verdict = actions.get(mark.change);
+
+    return (
+      (mark.kind === 'delete' && verdict === 'accept') ||
+      (mark.kind === 'insert' && verdict === 'reject')
+    );
+  };
+  const removedByMark = (node: unknown) =>
+    takenWhole(node) && marksOf(node, facts).some(removes);
+  const partsOn = ({ path, root }: Occurrence) => {
+    let nodes =
+      root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
+    let taken = false;
+
+    for (const at of path) {
+      const node = nodes[at];
+
+      if (!node) break;
+      if (removedByMark(node)) return { remover: node, taken: true };
+      taken ||= takenWhole(node);
+      nodes = node.children ?? [];
+    }
+
+    return { remover: null, taken };
+  };
+  let goneRoots: ReadonlySet<string> | undefined;
+
+  return (change: string, occurrences: readonly Occurrence[]) =>
+    occurrences.length > 0 &&
+    occurrences.every((occurrence) => {
+      if (occurrence.root !== MAIN_ROOT_KEY) {
+        goneRoots ??= rootsOwnedOnlyWithin(ownership, value, takenWhole);
+        if (goneRoots.has(occurrence.root)) return true;
+      }
+      const { remover, taken } = partsOn(occurrence);
+
+      return remover
+        ? !marksOf(remover, facts).some(
+            (mark) => mark.change === change && removes(mark)
+          )
+        : taken;
+    });
+};
+
 export const decide = (
   value: JsonEditorValue,
   { actions, token, withdraws }: DecisionRequest,
@@ -479,8 +531,17 @@ export const decide = (
           ({ after }) => claimIn(after, getDefined(facts), id) !== null
         )
       : !!claimOf(getDefined(whole).value, id);
+  const taken = takenWithoutVerdict(
+    value,
+    actions,
+    resolution.takenWhole,
+    resolveSchema.ownership
+  );
   const verdicts = [...actions]
-    .filter(([id]) => !withdraws || markStaysStored(id))
+    .filter(
+      ([id]) =>
+        (!withdraws || markStaysStored(id)) && !taken(id, book.occurrences(id))
+    )
     .flatMap(([id, verdict]) =>
       [...incarnationsOf(book.occurrences(id))].map(
         ({ at, change, inc }): VerdictRecord => ({
