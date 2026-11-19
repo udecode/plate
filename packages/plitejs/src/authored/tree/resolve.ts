@@ -213,7 +213,7 @@ export type AuthoredResolution = Readonly<{
    * completion rewrote it.
    */
   resolvedOf: (original: unknown) => JsonNode | null;
-  takenWhole: (original: unknown) => boolean;
+  takenWhole: ReadonlySet<unknown>;
   /**
    * Content no level of the schema accepts, such as text an unwrap leaves
    * among blocks.
@@ -3386,7 +3386,7 @@ const resolveIn = (
     placements,
     resolvedOf: (original) => resolvedOf(original) as JsonNode | null,
     spares,
-    takenWhole: (original) => takenWhole.has(original),
+    takenWhole,
     unplaceable,
     unstored: shownAll(unstored, resolvedChildren),
   };
@@ -3744,8 +3744,9 @@ const resolveValueIn = (
         (found, resolution) => found ?? resolution.resolvedOf(original),
         null
       ),
-    takenWhole: (original: unknown) =>
-      all.some((resolution) => resolution.takenWhole(original)),
+    takenWhole: new Set(
+      all.flatMap((resolution) => [...resolution.takenWhole])
+    ),
     unplaceable: live.some((resolution) => resolution.unplaceable),
     value: deriveValue(
       base,
@@ -3869,8 +3870,9 @@ export const resolveAuthoredWindows = (
             (found, resolution) => found ?? resolution.resolvedOf(original),
             null
           ),
-        takenWhole: (original: unknown) =>
-          all.some((resolution) => resolution.takenWhole(original)),
+        takenWhole: new Set(
+          all.flatMap((resolution) => [...resolution.takenWhole])
+        ),
         unplaceable: all.some((resolution) => resolution.unplaceable),
         windows: resolved.map(({ before, resolution, ...window }) => ({
           ...window,

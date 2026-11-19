@@ -17,6 +17,12 @@
       "file": "packages/platejs/src/react/features/format-painter/FormatPainterPlugin.tsx",
       "test": "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api, on] -> [shortcuts, slots]",
       "owner": "t_80872a40"
+    },
+    {
+      "step": "plite-test",
+      "file": "packages/plitejs/test/authored-tree-record.test.ts",
+      "test": "authored review tree recording laws > records one update that pastes a link over a letter and types over the link and the next letter in Suggesting with the typed letter after both struck letters",
+      "owner": "t_81a59868"
     }
   ]
 }

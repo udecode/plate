@@ -405,7 +405,7 @@ const insideTaken = (
   value: JsonEditorValue,
   root: string,
   path: readonly number[],
-  takenWhole: (original: unknown) => boolean
+  takenWhole: ReadonlySet<unknown>
 ) => {
   let nodes = root === 'main' ? value.children : (value.roots?.[root] ?? []);
 
@@ -413,7 +413,7 @@ const insideTaken = (
     const node = nodes[at];
 
     if (!node) return false;
-    if (takenWhole(node)) return true;
+    if (takenWhole.has(node)) return true;
     nodes = node.children ?? [];
   }
 
@@ -423,9 +423,11 @@ const insideTaken = (
 const takenWithoutVerdict = (
   value: JsonEditorValue,
   actions: ReadonlyMap<string, Verdict>,
-  takenWhole: (original: unknown) => boolean,
+  takenWhole: ReadonlySet<unknown>,
   ownership: CompiledEditorSchema
 ) => {
+  if (takenWhole.size === 0) return () => false;
+
   const facts = factsOf(value);
   const removes = (mark: AuthoredMark) => {
     const verdict = actions.get(mark.change);
@@ -436,7 +438,7 @@ const takenWithoutVerdict = (
     );
   };
   const removedByMark = (node: unknown) =>
-    takenWhole(node) && marksOf(node, facts).some(removes);
+    takenWhole.has(node) && marksOf(node, facts).some(removes);
   const partsOn = ({ path, root }: Occurrence) => {
     let nodes =
       root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
@@ -447,7 +449,7 @@ const takenWithoutVerdict = (
 
       if (!node) break;
       if (removedByMark(node)) return { remover: node, taken: true };
-      taken ||= takenWhole(node);
+      taken ||= takenWhole.has(node);
       nodes = node.children ?? [];
     }
 
@@ -459,7 +461,9 @@ const takenWithoutVerdict = (
     occurrences.length > 0 &&
     occurrences.every((occurrence) => {
       if (occurrence.root !== MAIN_ROOT_KEY) {
-        goneRoots ??= rootsOwnedOnlyWithin(ownership, value, takenWhole);
+        goneRoots ??= rootsOwnedOnlyWithin(ownership, value, (node) =>
+          takenWhole.has(node)
+        );
         if (goneRoots.has(occurrence.root)) return true;
       }
       const { remover, taken } = partsOn(occurrence);
@@ -586,7 +590,7 @@ export const decide = (
     takenRoots ??= rootsOwnedOnlyWithin(
       resolveSchema.ownership,
       value,
-      resolution.takenWhole
+      (node) => resolution.takenWhole.has(node)
     );
 
     return takenRoots;
