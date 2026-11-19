@@ -1,11 +1,15 @@
 'use client';
 
+import { ImagePlugin } from 'platejs/media/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { AutoformatKit } from '@/registry/components/editor/autoformat';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
-import { BoardPageKit } from '@/registry/components/editor/board';
+import {
+  BoardImageKit,
+  BoardPageKit,
+} from '@/registry/components/editor/board';
 import {
   Editor,
   EditorContainer,
@@ -24,6 +28,8 @@ export default function BoardPageDemo() {
       ...LinkKit,
       ...AutoformatKit,
       ...BoardPageKit,
+      ImagePlugin,
+      ...BoardImageKit,
     ],
     initialValue: {
       children: [

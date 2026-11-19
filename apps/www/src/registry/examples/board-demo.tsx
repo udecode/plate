@@ -3,7 +3,7 @@
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 
-import { BoardKit } from '@/registry/components/editor/board';
+import { BoardImageKit, BoardKit } from '@/registry/components/editor/board';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import {
   Editor,
@@ -19,6 +19,7 @@ export default function BoardDemo() {
     plugins: [
       ...EditorKit,
       ...BoardKit,
+      ...BoardImageKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {

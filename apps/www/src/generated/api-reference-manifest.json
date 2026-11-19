@@ -11361,6 +11361,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/board/react:BoardImagePlugin": {
+          "aliases": [],
+          "documentation": "A picture on a board, holding at most one image element or upload draft. The\nboard keeps it selected as an object, since it holds no text a caret can\nenter.",
+          "entrypoint": "platejs/board/react",
+          "kind": "const",
+          "name": "BoardImagePlugin",
+          "runtime": true,
+          "signature": "BoardImagePlugin: Plugin<Readonly<{\n  readonly __pluginWritableProperties: never;\n  readonly schema: {\n    readonly element: {\n      readonly blockContent: false;\n      readonly content: Readonly<{\n        allowed: Readonly<{\n          kind: 'types';\n          types: readonly string[];\n        }>;\n        prefix?: readonly Readonly<{\n          element: string | Readonly<{\n            source: string;\n            type: string;\n          }>;\n          properties?: Readonly<Record<string, EditorJsonValue>>;\n        }>[] | undefined;\n      } & {\n        readonly max: 1;\n        readonly min: 0;\n      } & Readonly<{\n        '~schema.content.rule'?: Readonly<{\n          kind: 'types';\n          types: readonly string[];\n        }> | undefined;\n      }>>;\n      readonly object: true;\n    };\n  };\n  readonly targetPlugins: readonly [\"image\", \"upload\"];\n  readonly name: \"boardImage\";\n  readonly formats: true;\n  readonly update: {\n    readonly insert: TxDeclaredMethod<({ children, frame, height, width, x, y }: Readonly<{\n      children: readonly [Descendant];\n      frame?: string;\n      height?: number;\n      width?: number;\n      x: number;\n      y: number;\n    }>, { board }: Readonly<{\n      board: NodeKey;\n    }>) => string | undefined>;\n  };\n}>>",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/board/react:BoardMessages": {
           "aliases": [],
           "documentation": "Every word a board says. The view whose surface holds focus puts one\nmessage per action into the editor's status region, read from the latest\n`messages` it rendered with. A member that returns an empty string says\nnothing.",
@@ -11412,7 +11423,7 @@
           "kind": "function",
           "name": "BoardShape",
           "runtime": true,
-          "signature": "declare function BoardShape({ className, style, ...props }: EditorElementProps<typeof BoardArrowPlugin | typeof BoardFramePlugin | typeof BoardGeoPlugin | typeof BoardNotePlugin | typeof BoardStrokePlugin> & {\n  className?: string;\n  style?: React$1.CSSProperties;\n}): React$1.JSX.Element;",
+          "signature": "declare function BoardShape({ className, style, ...props }: EditorElementProps<typeof BoardArrowPlugin | typeof BoardFramePlugin | typeof BoardGeoPlugin | typeof BoardImagePlugin | typeof BoardNotePlugin | typeof BoardStrokePlugin> & {\n  className?: string;\n  style?: React$1.CSSProperties;\n}): React$1.JSX.Element;",
           "source": null,
           "typeParameters": []
         },

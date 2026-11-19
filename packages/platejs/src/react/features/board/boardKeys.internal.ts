@@ -561,7 +561,7 @@ export const attachBoardKeys = (host: HTMLElement, core: BoardViewCore) => {
       if (
         !event.repeat &&
         shapes.length === 1 &&
-        shapes[0].holdsText &&
+        shapes[0].takesText &&
         core.writable()
       ) {
         core.edit(shapes[0].key);

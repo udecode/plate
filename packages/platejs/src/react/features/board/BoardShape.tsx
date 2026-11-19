@@ -15,6 +15,7 @@ import type {
   BoardArrowPlugin,
   BoardFramePlugin,
   BoardGeoPlugin,
+  BoardImagePlugin,
   BoardNotePlugin,
   BoardStrokePlugin,
 } from './BoardPlugin';
@@ -82,6 +83,7 @@ export function BoardShape({
   | typeof BoardArrowPlugin
   | typeof BoardFramePlugin
   | typeof BoardGeoPlugin
+  | typeof BoardImagePlugin
   | typeof BoardNotePlugin
   | typeof BoardStrokePlugin
 > & {

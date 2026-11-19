@@ -22,11 +22,13 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from 'lucide-react';
+import { ElementApi } from 'platejs';
 import {
   BoardArrowPlugin,
   type BoardCorner,
   BoardFramePlugin,
   BoardGeoPlugin,
+  BoardImagePlugin,
   type BoardMessages,
   BoardNotePlugin,
   type BoardPickState,
@@ -42,7 +44,14 @@ import {
   useBoardView,
   useStrokePath,
 } from 'platejs/board/react';
-import type { EditorElementProps } from 'platejs/react';
+import type { ImageElement } from 'platejs/media';
+import { ImagePlugin } from 'platejs/media/react';
+import {
+  type EditorElementProps,
+  useEditor,
+  useEditorSelector,
+  usePath,
+} from 'platejs/react';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
 
@@ -951,6 +960,62 @@ export function BoardStrokeElement(
   );
 }
 
+export function BoardImageElement(
+  props: EditorElementProps<typeof BoardImagePlugin>
+) {
+  const { element, slots } = props;
+  const editor = useEditor();
+  const path = usePath();
+  const image = editor.plugin(ImagePlugin);
+  const [stored] = element.children;
+  const childKey = stored ? editor.key(stored) : undefined;
+  const child = useEditorSelector(
+    (current) => current.read.nodes.get([...path, 0])?.[0],
+    {
+      shouldUpdate: (change) =>
+        !change ||
+        (!!childKey &&
+          change.changed.hasNodeKey(childKey, 'node', editor.read.view.root())),
+    }
+  );
+  const picture =
+    image.installed &&
+    ElementApi.isElement(child) &&
+    child.type === image.schema.type
+      ? (child as ImageElement)
+      : undefined;
+
+  return (
+    <BoardShape
+      {...props}
+      className={cn(
+        CURSOR_RING,
+        'data-selected:outline-2 data-selected:outline-ring data-[editor-authored-change]:outline-2 data-[editor-authored-change]:outline-emerald-600 data-[editor-authored-change]:outline-dashed'
+      )}
+    >
+      {picture
+        ? slots.contentBoundary({
+            children: (
+              // oxlint-disable-next-line nextjs/no-img-element -- [P1 local-invariant] The shape draws the document-owned runtime URL across its box, outside any Next loader.
+              <img
+                alt={picture.alt}
+                className="absolute inset-0 size-full object-contain select-none"
+                decoding="async"
+                draggable={false}
+                src={picture.url}
+              />
+            ),
+            copyPolicy: 'model',
+            mounted: false,
+            reason: 'app-hidden',
+            scope: { from: 0, type: 'children' },
+            selectionPolicy: 'skip',
+          })
+        : props.children}
+    </BoardShape>
+  );
+}
+
 const BoardShapeKit = [
   BoardNotePlugin.configure({ component: BoardNoteElement }),
   BoardGeoPlugin.configure({ component: BoardGeoElement }),
@@ -967,4 +1032,8 @@ export const BoardKit = [
 export const BoardPageKit = [
   BoardPlugin.configure({ component: BoardPageElement }),
   ...BoardShapeKit,
+];
+
+export const BoardImageKit = [
+  BoardImagePlugin.configure({ component: BoardImageElement }),
 ];

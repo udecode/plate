@@ -599,8 +599,15 @@ export const createBoardView = (
   let renderedKeyOf = new Map<NodeKey, NodeKey>();
   const index = createBoardIndex({
     children: () => shownView.read.children(),
+    takesText: ({ type }) =>
+      editor.read.schema
+        .element(type)
+        ?.content?.allowedElementTypes.some((childType) => {
+          const behavior = editor.read.schema.element(childType)?.behavior;
+
+          return !!behavior && !behavior.object && !behavior.void;
+        }) ?? false,
     isEmpty: (block) => editor.read.nodes.isEmpty(block),
-    isVoid: (node) => editor.read.schema.isVoid(node),
     members: () => {
       const shown = new Map(
         shownView.read

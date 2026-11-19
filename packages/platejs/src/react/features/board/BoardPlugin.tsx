@@ -2,6 +2,7 @@ import {
   BaseBoardArrowPlugin,
   BaseBoardFramePlugin,
   BaseBoardGeoPlugin,
+  BaseBoardImagePlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
   BaseBoardStrokePlugin,
@@ -19,3 +20,10 @@ export const BoardArrowPlugin = toReactPlugin(BaseBoardArrowPlugin);
 export const BoardFramePlugin = toReactPlugin(BaseBoardFramePlugin);
 
 export const BoardStrokePlugin = toReactPlugin(BaseBoardStrokePlugin);
+
+/**
+ * A picture on a board, holding at most one image element or upload draft. The
+ * board keeps it selected as an object, since it holds no text a caret can
+ * enter.
+ */
+export const BoardImagePlugin = toReactPlugin(BaseBoardImagePlugin);

@@ -44,8 +44,7 @@ export type BoardBox = BoardPlace & BoardSize;
 
 export type BoardShapeLayout = Readonly<{
   box: BoardBox;
-  /** Whether the member holds text a caret can edit, so it is no void. */
-  holdsText: boolean;
+  takesText: boolean;
   id: string;
   /** A stroke's stored points, which a press must reach to hit it. */
   ink?: BoardStrokePoints;
@@ -308,16 +307,16 @@ const reaches = (layout: BoardShapeLayout, at: BoardPlace, zoom: number) => {
  */
 export const createBoardIndex = ({
   children: childrenOf,
+  takesText: takesTextIn,
   isEmpty,
-  isVoid,
   members: membersRead,
   nodeOf,
   previewCleared,
 }: Readonly<{
   /** The board root's top-level blocks, whose identity changes with them. */
   children: () => readonly unknown[];
+  takesText: (node: BoardMemberEntry['node']) => boolean;
   isEmpty: (block: Element) => boolean;
-  isVoid: (node: BoardMemberEntry['node']) => boolean;
   members: () => readonly BoardMemberEntry[];
   /** A member's current node, which a text commit changes without an update. */
   nodeOf: (key: NodeKey) => Element | undefined;
@@ -470,7 +469,7 @@ export const createBoardIndex = ({
         stored && previous?.ink && sameInk(previous.ink, stored)
           ? previous.ink
           : stored;
-      const holdsText = !isVoid(entry.node);
+      const takesText = takesTextIn(entry.node);
 
       if (!box) continue;
       if (entry.kind === 'shape' && entry.frame !== undefined) {
@@ -485,13 +484,13 @@ export const createBoardIndex = ({
           previous.rank === rank &&
           previous.id === entry.id &&
           previous.kind === entry.kind &&
-          previous.holdsText === holdsText &&
+          previous.takesText === takesText &&
           previous.ink === ink &&
           sameBox(previous.box, box)
           ? previous
           : {
               box,
-              holdsText,
+              takesText,
               id: entry.id,
               ...(ink ? { ink } : {}),
               key: entry.key,

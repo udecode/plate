@@ -525,7 +525,7 @@ export const attachBoardGestures = (
 
     // A line reaches past its element, so it can take a press on the shape
     // under it.
-    if (shape?.holdsText && !(under?.ink && under.rank > shape.rank)) {
+    if (shape?.takesText && !(under?.ink && under.rank > shape.rank)) {
       return { element: hit, shape };
     }
 
@@ -832,7 +832,7 @@ export const attachBoardGestures = (
 
     const shape = pressed;
 
-    if (!shape?.holdsText || core.editedShape()?.key === shape.key) {
+    if (!shape?.takesText || core.editedShape()?.key === shape.key) {
       return;
     }
     event.preventDefault();
