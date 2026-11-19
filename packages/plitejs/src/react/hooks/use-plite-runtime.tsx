@@ -7,6 +7,7 @@ import React, {
   useInsertionEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import ReactDOM from 'react-dom';
 
@@ -32,6 +33,8 @@ import {
 } from '../../core/commit-publication';
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
+import { toPublicRoot } from '../../core/public-root';
+import { getBaseCallRoot, subscribeCaretTarget } from '../../core/public-state';
 import {
   mountRootView,
   readRootTarget,
@@ -832,6 +835,27 @@ export function useRootEditor<const TRoot extends RootKey = RootKey>(
     () => createPliteRootEditor(context, root, options.readOnly),
     [context, options.readOnly, root]
   );
+}
+
+/**
+ * Return a command-capable editor for the root that holds the caret, such as
+ * a board note, or for the primary root while nothing is selected.
+ *
+ * Use it for UI outside every `Editable`, such as a toolbar, that acts where
+ * the caret is. The editor works as the one `useRootEditor` returns for that
+ * root, and the hook renders again only when the caret moves to another root.
+ */
+export function useCaretEditor(): ReactEditorType {
+  const context = useRequiredPliteRuntimeContext();
+  const owner = getEditorRuntimeOwner(context.runtime);
+  const readRoot = () => toPublicRoot(getBaseCallRoot(owner));
+  const root = useSyncExternalStore(
+    useCallback((listener) => subscribeCaretTarget(owner, listener), [owner]),
+    readRoot,
+    readRoot
+  );
+
+  return useMemo(() => createPliteRootEditor(context, root), [context, root]);
 }
 
 /** Focus behavior before or after root command callbacks. */

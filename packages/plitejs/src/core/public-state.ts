@@ -481,6 +481,7 @@ import {
   carryCarets,
   commitCarets,
   currentPlacement,
+  type CaretPair,
   getCommittedCarets,
   hasBookmarksIn,
   landCarets,
@@ -488,6 +489,8 @@ import {
   type Placement,
   placeInDraft,
   recordCommitCarets,
+  samePair,
+  subscribeCaretOwner,
   withoutPlacement,
   withPlacement,
 } from './view-carets';
@@ -10652,6 +10655,60 @@ export const getBaseCallRoot = (editor: Editor): string =>
     ? getCurrentSelectionRoot(editor)
     : MAIN_ROOT_KEY;
 
+type CaretTarget = Readonly<{ root: string; view: CaretPair | null }>;
+
+type CaretTargetWatch = {
+  readonly listeners: Set<() => void>;
+  readonly stopOwner: () => void;
+  target: CaretTarget;
+};
+
+const CARET_TARGET_WATCHES = new WeakMap<Editor, CaretTargetWatch>();
+
+const readCaretTarget = (owner: Editor): CaretTarget => ({
+  root: getBaseCallRoot(owner),
+  view: getCommittedCarets(owner).owner,
+});
+
+const publishCaretTarget = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const watch = CARET_TARGET_WATCHES.get(owner);
+
+  if (!watch) return;
+
+  const previous = watch.target;
+  const target = readCaretTarget(owner);
+
+  if (previous.root === target.root && samePair(previous.view, target.view)) {
+    return;
+  }
+  watch.target = target;
+  notifyObservers(owner, watch.listeners, 'commit-listener', (listener) =>
+    listener()
+  );
+};
+
+export const subscribeCaretTarget = (editor: Editor, listener: () => void) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const watch = CARET_TARGET_WATCHES.get(owner) ?? {
+    listeners: new Set<() => void>(),
+    stopOwner: subscribeCaretOwner(owner, () => publishCaretTarget(owner)),
+    target: readCaretTarget(owner),
+  };
+
+  CARET_TARGET_WATCHES.set(owner, watch);
+  watch.listeners.add(listener);
+
+  return () => {
+    watch.listeners.delete(listener);
+    if (watch.listeners.size > 0 || CARET_TARGET_WATCHES.get(owner) !== watch) {
+      return;
+    }
+    watch.stopOwner();
+    CARET_TARGET_WATCHES.delete(owner);
+  };
+};
+
 const selectionPositionEquals = (left: Selection, right: Selection) => {
   const withoutPendingMarks = (selection: Selection) => {
     if (!SelectionApi.isText(selection)) return selection;
@@ -12613,6 +12670,7 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
         });
       }
     }
+    publishCaretTarget(editor);
   } finally {
     const depth = (COMMIT_NOTIFICATION_DEPTH.get(editor) ?? 1) - 1;
 

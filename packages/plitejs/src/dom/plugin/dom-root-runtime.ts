@@ -3,10 +3,13 @@ import {
   getEditorRuntimeRoot,
   hasEditorRuntime,
 } from '../../core/editor-runtime';
-import { subscribeSource } from '../../core/listener-state';
 import { toInternalRoot } from '../../core/public-root';
-import { getBaseCallRoot, setEditorFocused } from '../../core/public-state';
-import { getCaretOwner, subscribeCaretOwner } from '../../core/view-carets';
+import {
+  getBaseCallRoot,
+  setEditorFocused,
+  subscribeCaretTarget,
+} from '../../core/public-state';
+import { getCaretOwner } from '../../core/view-carets';
 import type { ViewPresentation } from '../../core/view-presentation';
 import {
   getOwnViewPresentation,
@@ -207,20 +210,11 @@ export const subscribeDOMReach = (handle: object, listener: () => void) => {
     };
   }
 
-  let root = getBaseCallRoot(handle);
-  const stopCaret = subscribeCaretOwner(handle, reached);
-  const stopSelection = subscribeSource(handle, 'selection', () => {
-    const next = getBaseCallRoot(handle);
-
-    if (next === root) return;
-    root = next;
-    reached();
-  });
+  const stopTarget = subscribeCaretTarget(handle, reached);
 
   return () => {
     listeners.delete(reached);
-    stopCaret();
-    stopSelection();
+    stopTarget();
   };
 };
 

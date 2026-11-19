@@ -166,6 +166,7 @@ export {
   type CommandDispatcher,
   type UseCommandOptions,
   type UseRootEditorOptions,
+  useCaretEditor,
   useCommand,
   useRootEditor,
   useRootState,

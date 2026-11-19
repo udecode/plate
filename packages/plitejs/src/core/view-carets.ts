@@ -178,7 +178,7 @@ const SCOPED_PLACEMENTS = new WeakMap<
   Readonly<{ context: object | undefined; placement: Placement | null }>
 >();
 
-const samePair = (left: CaretPair | null, right: CaretPair | null) =>
+export const samePair = (left: CaretPair | null, right: CaretPair | null) =>
   left === right ||
   (!!left &&
     !!right &&
