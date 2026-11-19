@@ -186,7 +186,10 @@ jobs:
           find .changeset -maxdepth 1 -name '*.md' ! -name README.md -print -delete
 
       - name: 🧩 Prepare release changesets
-        run: node tooling/scripts/prepare-release-changesets.mjs
+        run: |
+          # changeset status compares against the config's baseBranch, main, which a checkout of next has only as origin/main.
+          git rev-parse --verify --quiet refs/heads/main >/dev/null || git branch main origin/main
+          node tooling/scripts/prepare-release-changesets.mjs
 
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets
