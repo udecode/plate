@@ -29,6 +29,15 @@ import {
   lockfileInstalled,
   STEP_LOG,
 } from './check-steps.mjs';
+import {
+  clearedHeader,
+  EXPECTED_PATH,
+  expectedVerdict,
+  failureKey,
+  failuresOf,
+  openExpectedFailures,
+  stepOutput,
+} from './step-failures.mjs';
 
 const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
   run        check the newest origin/next unless it was checked
@@ -86,7 +95,7 @@ const readEvents = () =>
         .filter(Boolean)
         .map((line) => JSON.parse(line))
     : [];
-const emit = (event) => {
+const appendEvent = (event) => {
   const line = { at: new Date().toISOString(), ...event };
   appendFileSync(eventsPath, `${JSON.stringify(line)}\n`);
   console.info(`[local-ci] ${line.kind} ${line.step ?? ''} ${line.tip}`);
@@ -230,9 +239,80 @@ const commitInfo = (sha) => {
   return { culprit: sha, session: session || null, subject };
 };
 
+const shell = (logs, name, line) => {
+  const result = node(worktree, [
+    '.agents/pstack/proof.mjs',
+    '--dir',
+    logs,
+    '--name',
+    name,
+    '--cores',
+    '8',
+    '--',
+    'bash',
+    '-o',
+    'pipefail',
+    '-c',
+    line,
+  ]);
+  return {
+    log:
+      /^log: (.+) exit=/mu.exec(result.stdout)?.[1] ??
+      join(logs, `${name}-a1.log`),
+    ok: result.status === 0,
+  };
+};
+
+const stepLog = (log, step) =>
+  stepOutput(existsSync(log) ? readFileSync(log, 'utf-8') : '', step);
+const readFailures = (log, step) => {
+  const output = stepLog(log, step);
+  const failures = failuresOf(output, worktree);
+  const listed = new Set(
+    openExpectedFailures(worktree)
+      .filter((entry) => entry.step === step)
+      .map(failureKey)
+  );
+  return {
+    failures,
+    listedPassing: output.includes(clearedHeader(step)),
+    unexpected: [...failures.keys()].filter((key) => !listed.has(key)),
+  };
+};
+const passes = (run, step, onlyFiles) =>
+  run.ok ||
+  expectedVerdict({
+    onlyFiles,
+    output: stepLog(run.log, step),
+    root: worktree,
+    status: 1,
+    step,
+  }).status === 0;
+const sameRed = (lastRed, { interrupted, unexpected }) =>
+  Array.isArray(lastRed?.failures) &&
+  (interrupted || unexpected.every((key) => lastRed.failures.includes(key)));
+
+const rerunCommand = (step, files) => {
+  const quoted = (list) => list.map((file) => `'${file}'`).join(' ');
+  if (['test', 'test-slow'].includes(step)) return `pnpm test ${quoted(files)}`;
+  if (
+    ['package-tests', 'plite-test'].includes(step) &&
+    files.every((file) => /^packages\/(?:platejs|plitejs|test)\//u.test(file))
+  ) {
+    return `node tooling/scripts/package-tests.mjs ${quoted(files)}`;
+  }
+  if (
+    step === 'plite-browser' &&
+    files.every((file) => file.startsWith('apps/plite/'))
+  ) {
+    return `pnpm --filter plite test:plite-browser:chromium ${quoted(files.map((file) => file.slice('apps/plite/'.length)))}`;
+  }
+  return null;
+};
+
 // Binary search over next's first-parent commits after `green`, while the
 // hour lasts; returns the first bad commit or the range still unsearched.
-const firstBad = (logs, step, green, tip, deadline) => {
+const firstBad = (logs, step, green, tip, deadline, target) => {
   const commits = must(main, [
     'rev-list',
     '--first-parent',
@@ -245,8 +325,14 @@ const firstBad = (logs, step, green, tip, deadline) => {
     const mid = Math.floor((good + bad) / 2);
     checkout(commits[mid]);
     const probe = check(logs, runId(commits[mid], step), [step]);
-    if (probe.ok) good = mid;
-    else bad = mid;
+    const failed =
+      !probe.ok &&
+      (target.length === 0 ||
+        [...readFailures(probe.log, step).failures.keys()].some((key) =>
+          target.includes(key)
+        ));
+    if (failed) bad = mid;
+    else good = mid;
   }
   return bad - good === 1
     ? commitInfo(commits[bad])
@@ -281,6 +367,9 @@ const openTask = (step) =>
 const report = (event) => {
   const title = fixTitle(event.step);
   if (openTask(event.step)) return { wake: false };
+  const found = event.cleared
+    ? `Local CI found ${event.step} no longer failing on next with failures ${EXPECTED_PATH} lists. Log: ${event.log}, which names them. Remove their lines from the list and land through land.mjs.`
+    : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
@@ -290,7 +379,7 @@ const report = (event) => {
       ledger,
       'chip',
       `${id} ${title}`,
-      `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`,
+      found,
       // A check that fails on next is P0, and the ledger refuses an offer
       // that names no check it owns or paths it writes.
       `writes: packages, apps, tooling; topic: ${FIX_TOPIC}; kind: fix; priority: P0; owns: ${event.step}; via: hook; session: none`,
@@ -340,6 +429,8 @@ const run = (args) => {
     return at === -1 ? undefined : args[at + 1];
   };
   const dry = args.includes('--dry');
+  const emit = (event) =>
+    appendEvent(option('--ref') ? { ...event, offNext: true } : event);
   if (option('--step') && !option('--ref')) {
     console.error(
       '[local-ci] --step checks one step, so it needs --ref; a run on next checks every step.'
@@ -377,10 +468,10 @@ const run = (args) => {
     mkdirSync(logs, { recursive: true });
     // Each run on next reports every step still red, so the last run's red
     // events name the steps a landed fix may have cleared since.
-    const wasRed = new Set(
+    const wasRed = new Map(
       readEvents()
         .filter((event) => event.kind === 'red' && event.tip === state.tip)
-        .map((event) => event.step)
+        .map((event) => [event.step, event])
     );
     try {
       checkout(tip);
@@ -426,18 +517,60 @@ const run = (args) => {
     }
     const passing = new Set(result.passed);
     for (const failed of [...result.failed, ...result.interrupted]) {
-      const alone = check(logs, runId(tip, `${failed}-alone`), [failed], {
-        full,
-      });
-      if (alone.ok) passing.add(failed);
-      if (alone.ok && result.interrupted.includes(failed)) continue;
+      const interrupted = result.interrupted.includes(failed);
+      const { failures, listedPassing, unexpected } = interrupted
+        ? { failures: new Map(), listedPassing: false, unexpected: [] }
+        : readFailures(result.log, failed);
+      if (listedPassing && unexpected.length === 0) {
+        const event = {
+          cleared: true,
+          kind: 'red',
+          log: result.log,
+          step: failed,
+          tip,
+        };
+        emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
+        continue;
+      }
+      const before = wasRed.get(failed);
+      if (sameRed(before, { interrupted, unexpected })) {
+        const event = {
+          culprit: before.culprit ?? null,
+          failures: interrupted ? before.failures : unexpected,
+          green: before.green ?? null,
+          kind: 'red',
+          known: true,
+          log: result.log,
+          range: before.range,
+          session: before.session,
+          step: failed,
+          subject: before.subject,
+          tip,
+        };
+        emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
+        continue;
+      }
+      const files = [
+        ...new Set(unexpected.map((key) => failures.get(key).file)),
+      ];
+      const line =
+        files.length > 0 && files.every(Boolean)
+          ? rerunCommand(failed, files)
+          : null;
+      const alone = line
+        ? shell(logs, runId(tip, `${failed}-failed`), line)
+        : check(logs, runId(tip, `${failed}-alone`), [failed], { full });
+      const ok = passes(alone, failed, line ? files : undefined);
+      if (ok) passing.add(failed);
+      if (ok && interrupted) continue;
       const load = loadavg()[0];
-      if (alone.ok) {
-        // A step that passes alone has no bad commit to find. The daily
-        // check's rule stands: a flake gets a task on its second run in a row.
+      if (ok) {
+        // The daily check's rule stands: a flake gets a task on its second run
+        // in a row.
         const last = readEvents().findLast((event) => event.step === failed);
         const event = {
           kind: 'flake',
+          failures: unexpected,
           load,
           loaded: load > FLAKE_LOAD,
           log: result.log,
@@ -453,12 +586,14 @@ const run = (args) => {
       // The search starts from the last commit this step passed on, so a
       // step can find its culprit while other steps keep next from going green.
       const from = option('--green') ?? state.passed?.[failed] ?? green;
+      const target = readFailures(alone.log, failed).unexpected;
       const found =
         from && from !== tip
-          ? firstBad(logs, failed, from, tip, started + BUDGET_MS)
+          ? firstBad(logs, failed, from, tip, started + BUDGET_MS, target)
           : { culprit: null, range: tip };
       const event = {
         kind: 'red',
+        failures: target.length > 0 ? target : unexpected,
         green: from,
         // A loaded host can time a step out alone too, so the fix run reads
         // the load the alone rerun ended under.
@@ -472,7 +607,7 @@ const run = (args) => {
       emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
     }
     if (!option('--ref')) {
-      for (const cleared of wasRed) {
+      for (const cleared of wasRed.keys()) {
         if (passing.has(cleared) && !dry) {
           emit({
             kind: 'passed',
@@ -516,6 +651,52 @@ const pushGreen = (tip) => {
   ]);
 };
 
+const streaks = (events) => {
+  const runs = [];
+  for (const event of events.filter((entry) => !entry.dry && !entry.offNext)) {
+    if (runs.at(-1)?.tip !== event.tip) {
+      runs.push({ events: [], tip: event.tip });
+    }
+    runs.at(-1).events.push(event);
+  }
+  const open = new Map();
+  const closed = [];
+  for (const { events: reported } of runs) {
+    if (reported.every((event) => event.kind === 'broken')) continue;
+    const red = new Map(
+      reported
+        .filter((event) => event.kind === 'red')
+        .map((event) => [event.step, event.at])
+    );
+    for (const [step, since] of [...open]) {
+      if (red.has(step)) continue;
+      closed.push({ at: reported[0].at, since, step });
+      open.delete(step);
+    }
+    for (const [step, at] of red) if (!open.has(step)) open.set(step, at);
+  }
+  return { closed, open };
+};
+const hoursBetween = (from, to) =>
+  (Date.parse(to) - Date.parse(from)) / 3_600_000;
+const redFor = (events, now) => {
+  const { closed, open } = streaks(events);
+  const recent = closed
+    .filter(({ at }) => Date.parse(at) > Date.parse(now) - 14 * 86_400_000)
+    .map(({ at, since }) => hoursBetween(since, at))
+    .toSorted((a, b) => a - b);
+  return [
+    open.size === 0 ? 'red now: nothing' : 'red now:',
+    ...[...open].map(
+      ([step, since]) =>
+        `  ${step} since ${since} (${hoursBetween(since, now).toFixed(1)}h)`
+    ),
+    recent.length === 0
+      ? 'time to green, last 14 days: no red step cleared'
+      : `time to green, last 14 days: ${recent.length} cleared, median ${recent[Math.floor(recent.length / 2)].toFixed(1)}h, longest ${recent.at(-1).toFixed(1)}h`,
+  ];
+};
+
 const status = () => {
   const state = readState();
   const lock = existsSync(join(lockDir, 'pid'))
@@ -531,6 +712,7 @@ const status = () => {
       `running: ${lock && alive(lock) ? `pid ${lock}` : 'no'}`,
       `last run: ${state.lastRun ?? 'none'} at ${state.lastRunAt ?? '-'}`,
       `last green: ${state.green ?? 'none'}`,
+      ...redFor(readEvents(), new Date().toISOString()),
       `events: ${eventsPath}`,
       ...readEvents()
         .slice(-5)

@@ -249,6 +249,31 @@ export const getPackageRuntimeTestFiles = (packageName, partitionName) =>
     )
     .sort(compareStrings);
 
+export const packageTestFiles = () => {
+  const files = new Map();
+  for (const [packageName, definition] of Object.entries(entrypointDags)) {
+    for (const partitionName of Object.keys(definition.taskPartitions)) {
+      for (const file of getPackageRuntimeTestFiles(
+        packageName,
+        partitionName
+      )) {
+        files.set(path.relative(repoRoot, file), {
+          browser: Boolean(
+            vitestSuiteOf(
+              packageName,
+              partitionName,
+              packageRelativePath(packageName, file)
+            )?.browser
+          ),
+          packageName,
+          partitionName,
+        });
+      }
+    }
+  }
+  return files;
+};
+
 export const getTypecheckedExternalTestFiles = (packageName) =>
   (typecheckedExternalTestFiles[packageName] ?? []).map((filename) =>
     path.join(packageRoot(packageName), filename)

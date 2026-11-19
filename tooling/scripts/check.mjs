@@ -22,6 +22,7 @@ import {
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
+import { packageTestFiles } from '../entrypoints/entrypoint-turbo.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
 import {
   commonDir,
@@ -38,6 +39,7 @@ import {
 } from './import-graph.mjs';
 import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
+import { expectedVerdict } from './step-failures.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -281,16 +283,10 @@ const packageDiff = () =>
 // start only once every one of them passes, and no step starts after one
 // fails, so a type, lint or citation error fails a landing before any slow
 // step starts. Under --affected, which every landing runs, only the `land`
-// steps run: typecheck, the fast test files and checks that take a second or
-// two. Local CI runs every other step on next after landing.
-let testImporters;
-/**
- * Each file the fast test files load, mapped to the test files that load it,
- * from the clone's stored import graph, so a repeat scan resolves only what
- * changed.
- */
-const importersOf = () => {
-  if (testImporters) return testImporters;
+// steps run. Local CI runs every other step on next after landing.
+let imports;
+const importGraph = () => {
+  if (imports) return imports;
   const real = realpathSync(root);
   const { moduleSpecifiers, resolveImport, save } = storedGraph(
     join(commonDir(root), 'plate-imports'),
@@ -315,6 +311,13 @@ const importersOf = () => {
     }
     return edges.get(file);
   };
+  imports = { edgesOf, real, save };
+  return imports;
+};
+let testImporters;
+const fastTestImporters = () => {
+  if (testImporters) return testImporters;
+  const { edgesOf, real, save } = importGraph();
   testImporters = new Map();
   for (const test of trackedFiles(root, { untracked: true }).filter(
     inTestSuite
@@ -358,7 +361,7 @@ const reachesTests = (files) => {
       !file.startsWith('apps/www/tests/browser/')
   );
   const placed = (file) => {
-    const tests = importersOf().get(file);
+    const tests = fastTestImporters().get(file);
     if (tests) return [...tests];
     return CODE.test(file) && existsSync(join(root, file)) ? [] : null;
   };
@@ -377,6 +380,32 @@ const reachesTests = (files) => {
       ),
     ]),
   ].filter((test) => existsSync(join(root, test)));
+};
+
+let packageTestImports;
+const directPackageTestImporters = (files) => {
+  if (!packageTestImports) {
+    const { edgesOf, real, save } = importGraph();
+    packageTestImports = new Map();
+    for (const [test, { browser }] of packageTestFiles()) {
+      if (browser) continue;
+      for (const file of [
+        test,
+        ...edgesOf(join(real, test)).map((loaded) => relative(real, loaded)),
+      ]) {
+        if (!packageTestImports.has(file)) {
+          packageTestImports.set(file, new Set());
+        }
+        packageTestImports.get(file).add(test);
+      }
+    }
+    save();
+  }
+  return [
+    ...new Set(
+      files.flatMap((file) => [...(packageTestImports.get(file) ?? [])])
+    ),
+  ].sort((a, b) => a.localeCompare(b));
 };
 
 export const steps = [
@@ -484,6 +513,17 @@ export const steps = [
       'tooling/entrypoints/'
     ),
     key: [],
+  },
+  {
+    name: 'package-tests',
+    land: true,
+    partOf: 'plite-test',
+    onlyAffectedFiles: true,
+    cores: 2,
+    private: true,
+    run: 'node tooling/scripts/package-tests.mjs',
+    key: [],
+    affected: directPackageTestImporters,
   },
   {
     name: 'authored-order',
@@ -1062,7 +1102,7 @@ const needs = (files, retargeted, versions) => {
   return (step) => {
     if (!step.affected) return true;
     if (files.length === 0 || step.affected === never) return null;
-    if (everything || calls(step)) return true;
+    if ((everything || calls(step)) && !step.onlyAffectedFiles) return true;
     const hit = step.affected(reached, retargeted);
     if (!Array.isArray(hit)) return hit ? true : null;
     return hit.length > 0 ? hit : null;
@@ -1295,6 +1335,9 @@ const main = async () => {
     }
     chosen = chosen.filter((step) => step.land);
   }
+  chosen = chosen.filter(
+    (step) => !chosen.some((other) => other.name === step.partOf)
+  );
   if (!hasPrivateHalf(root)) {
     const asked = chosen.filter(
       (step) =>
@@ -1380,6 +1423,18 @@ const main = async () => {
       writing,
     });
     const reason = cache.end(step.name);
+    if (!interrupted && !writing) {
+      const verdict = expectedVerdict({
+        onlyFiles: scope.tests,
+        output: readFileSync(log, 'utf-8'),
+        root,
+        status: result.status,
+        step: step.name,
+      });
+      if (verdict.message) appendFileSync(log, verdict.message);
+      result.status = verdict.status;
+      result.heldByList = verdict.heldByList;
+    }
     results.set(step.name, result);
     logStep({
       cores: Math.min(step.cores ?? 1, budget),
@@ -1389,10 +1444,10 @@ const main = async () => {
     });
     // pnpm exits 0 when an interrupt stops its script, so a step that ends
     // after one never counts as passed.
-    if (result.status === 0 && !interrupted) {
-      cache.record(scope, result.seconds, reason);
-    } else if (!interrupted) {
+    if (!interrupted && result.status !== 0) {
       firstFailure ??= step.name;
+    } else if (!interrupted && !result.heldByList) {
+      cache.record(scope, result.seconds, reason);
     }
     if (group) console.info(`::group::${step.name}`);
     console.info(`${group ? '' : '\n'}[check] ${step.name}: ${command}`);

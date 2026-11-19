@@ -33,6 +33,7 @@ export const vitestSuites = {
   '@platejs/test': [
     {
       args: ['--project', 'browser'],
+      browser: true,
       config: 'vitest.config.ts',
       includes: (partitionName) => partitionName === 'browser',
     },

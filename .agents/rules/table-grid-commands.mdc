@@ -29,7 +29,7 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate. `deep` runs `--all` a
 
 Run every command from the repository root.
 
-- `pnpm check:table-grid` checks the gate: 13,590 cases on 411 layouts. It used 231 CPU-seconds and took 93 s at a load average of 110; on a quiet machine with 16 workers that CPU time predicts about 15 s. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check table-grid` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/platejs/src/` or `packages/plitejs/src/`, to the script, `packages/plitejs/scripts/check-harness.ts`, `config/plite-source-aliases.ts` or `tooling/scripts/finding-baseline.mjs`.
+- `pnpm check:table-grid` checks the gate: 13,590 cases on 411 layouts. It used 231 CPU-seconds and took 93 s at a load average of 110; on a quiet machine with 16 workers that CPU time predicts about 15 s. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check table-grid` runs the same step through the check runner, and Local CI runs it on next after each landing.
 - `--all` runs every command at every cell and pair, 48,206 cases, which took 359 s at a load average near 100. `--rows` and `--cols` raise the layout bound. A bound other than the gate's, `--all` or `--case` skips the baseline and exits 1 on any failure.
 - `--case='<identity or part of one>'` runs only the cases whose identity contains it and prints each failure's stack, such as `'--case=a b | c d :: pick a delete'`.
 - `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default.

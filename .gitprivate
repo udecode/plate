@@ -117,6 +117,7 @@ vitest.config.*
 /tooling/scripts/check-plite.*
 /tooling/scripts/check-plite-release-artifacts.test.mjs
 /tooling/scripts/measure-browser-handle.*
+/tooling/scripts/package-tests.*
 /tooling/scripts/playtest.*
 /tooling/scripts/proof-worktree.*
 /tooling/scripts/serving-fingerprint.*
