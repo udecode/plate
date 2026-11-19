@@ -1,0 +1,63 @@
+---
+title: Right-to-left
+description: Edit Hebrew, Arabic and other right-to-left documents.
+---
+
+<ComponentPreview name="rtl-demo" />
+
+Plate lays out each block by its own text. A Hebrew or Arabic paragraph starts at the right, an English paragraph in the same document starts at the left, and the editor UI mirrors with the page.
+
+## Setup
+
+Set `dir="rtl"` on the `html` element, or on a container around the editor when only the editor runs right-to-left. Then wrap the same tree in the direction provider from shadcn's `direction` component, so toolbars and menus run right-to-left too.
+
+```bash
+npx shadcn@latest add direction
+```
+
+```tsx title="app/layout.tsx"
+import { DirectionProvider } from '@/components/ui/direction';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="he" dir="rtl">
+      <body>
+        <DirectionProvider direction="rtl">{children}</DirectionProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+Plate's editor UI uses start and end classes, so it needs no `rtl` setting in `components.json` and works the same with one. shadcn's [RTL guide](https://ui.shadcn.com/docs/rtl) covers fonts and the rest of your app.
+
+## Text direction
+
+Each text block, such as a paragraph, heading or list item, takes its direction from its first Hebrew, Arabic or Latin letter. A block without one, such as an empty line or a line of digits, follows the editor. Typing a first letter in the other script flips the block.
+
+Arrow keys follow the block's direction, so in a right-to-left block ArrowLeft moves forward through the text.
+
+Code blocks, equations and the equation's TeX source always run left-to-right.
+
+## Indent and lists
+
+Indent pushes from the start side of each block, so nested items in a right-to-left list indent from the right. The editor renders indent as `margin-inline-start`.
+
+## Media
+
+Media aligned left or right keep that side in any direction. Media aligned to the start or end follow the text direction, and file captions align to the start.
+
+## Editor UI
+
+Block handles and the table's row handles sit on the mirrored side, and their menus open on that side too. Directional icons, such as Undo, indent and the arrows, mirror where their toolbar or menu runs right-to-left.
+
+## Limits
+
+- Plate stores no direction on a block. Copied HTML, static HTML and DOCX export carry none, so a right-to-left paragraph pastes left-to-right, and its indent stays on the left.
+- Resizing a table column in right-to-left text moves the wrong edge.
+- Without the direction provider, toolbars and menus keep their left-to-right order.
+- Directional icons mirror through the CSS `:dir()` selector, which Chrome supports from version 120.

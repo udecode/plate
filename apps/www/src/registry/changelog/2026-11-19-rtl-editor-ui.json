@@ -329,6 +329,15 @@
       "files": ["apps/www/src/registry/components/editor/upload.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "rtl-demo",
+      "files": [
+        "apps/www/src/registry/examples/rtl-demo.tsx",
+        "apps/www/src/registry/examples/values/rtl-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -527,6 +536,23 @@
       "source": {
         "line": 21,
         "row": 8,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-9",
+      "kind": "behavior",
+      "summary": "Add an example of a Hebrew document edited from right to left",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["rtl-demo"],
+      "source": {
+        "line": 22,
+        "row": 9,
         "legacyRelease": {
           "date": "2026-11-19",
           "entry": "2026-11-19-rtl-editor-ui",

@@ -36,6 +36,7 @@
     "[HTML](/docs/html)",
     "[Markdown](/docs/markdown)",
     "[Form](/docs/form)",
+    "[Right-to-left](/docs/rtl)",
     "[TypeScript](/docs/typescript)",
     "[Debugging](/docs/debugging)",
     "[Unit Testing](/docs/unit-testing)",
@@ -1362,6 +1363,18 @@
               "titleCn": "表单"
             },
             {
+              "href": "/docs/rtl",
+              "keywords": [
+                "rtl",
+                "hebrew",
+                "arabic",
+                "direction",
+                "bidi"
+              ],
+              "title": "Right-to-left",
+              "titleCn": "从右到左"
+            },
+            {
               "href": "/docs/typescript",
               "title": "TypeScript",
               "titleCn": "TypeScript"
@@ -2119,6 +2132,10 @@
       "/docs/static": {
         "title": "Static Rendering",
         "titleCn": "静态渲染"
+      },
+      "/docs/rtl": {
+        "title": "Right-to-left",
+        "titleCn": "从右到左"
       },
       "/docs/performance": {
         "label": "New",

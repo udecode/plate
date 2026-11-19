@@ -620,6 +620,7 @@
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
     ],
+    "rtl-demo": ["2026-11-19-rtl-editor-ui"],
     "caption": [
       "2026-11-19-rtl-media-align",
       "2026-11-17-cn-package",

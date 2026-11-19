@@ -138,9 +138,10 @@
         "toc-static",
         "toolbar",
         "turn-into-toolbar-button",
-        "upload"
+        "upload",
+        "rtl-demo"
       ],
-      "entries": 8,
+      "entries": 9,
       "diagnostics": []
     },
     {

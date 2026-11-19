@@ -1845,6 +1845,28 @@ export const internalExamples: Registry['items'] = (
       ],
       type: 'registry:example',
     },
+    {
+      dependencies: ['@platejs/test'],
+      description: 'Edit a Hebrew document from right to left.',
+      files: [
+        { path: 'examples/rtl-demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/rtl-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [{ route: '/docs/rtl', title: 'Right-to-left' }],
+      },
+      name: 'rtl-demo',
+      registryDependencies: [
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
     // Editor (not used?)
     {
       files: [

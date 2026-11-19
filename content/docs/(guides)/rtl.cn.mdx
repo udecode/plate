@@ -1,0 +1,63 @@
+---
+title: 从右到左
+description: 编辑希伯来语、阿拉伯语等从右到左书写的文档。
+---
+
+<ComponentPreview name="rtl-demo" />
+
+Plate 按每个块自身的文字排版。希伯来语或阿拉伯语段落从右侧开始，同一文档中的英文段落从左侧开始，编辑器界面随页面一起镜像。
+
+## 设置
+
+在 `html` 元素上设置 `dir="rtl"`；如果只有编辑器从右到左，就设在包住编辑器的容器上。然后用 shadcn `direction` 组件提供的方向 provider 包住同一棵树，让工具栏和菜单也从右到左排列。
+
+```bash
+npx shadcn@latest add direction
+```
+
+```tsx title="app/layout.tsx"
+import { DirectionProvider } from '@/components/ui/direction';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="he" dir="rtl">
+      <body>
+        <DirectionProvider direction="rtl">{children}</DirectionProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+Plate 的编辑器界面使用 start 和 end 类，所以不需要在 `components.json` 中设置 `rtl`，设置了也照常工作。字体和应用其余部分见 shadcn 的 [RTL 指南](https://ui.shadcn.com/docs/rtl)。
+
+## 文字方向
+
+每个文本块，例如段落、标题或列表项，都按其第一个希伯来、阿拉伯或拉丁字母决定方向。没有这类字母的块，例如空行或只有数字的行，跟随编辑器的方向。在块开头输入另一种文字的字母会翻转该块的方向。
+
+方向键跟随块的方向，所以在从右到左的块中，ArrowLeft 在文字中向前移动。
+
+代码块、公式和公式的 TeX 源码始终从左到右。
+
+## 缩进和列表
+
+缩进从每个块的起始侧推入，所以从右到左列表中的嵌套项从右侧缩进。编辑器把缩进渲染为 `margin-inline-start`。
+
+## 媒体
+
+左对齐或右对齐的媒体在任何方向下都保持在该侧。对齐到起始或末尾的媒体跟随文字方向，文件标题对齐到起始侧。
+
+## 编辑器界面
+
+块手柄和表格的行手柄位于镜像的一侧，它们的菜单也在那一侧打开。方向性图标，例如撤销、缩进和箭头，在其所在工具栏或菜单从右到左排列时镜像。
+
+## 限制
+
+- Plate 不在块上存储方向。复制的 HTML、静态 HTML 和 DOCX 导出都不带方向，所以从右到左的段落粘贴后变为从左到右，其缩进留在左侧。
+- 在从右到左的文字中调整表格列宽时，移动的是错误的边。
+- 没有方向 provider 时，工具栏和菜单保持从左到右的顺序。
+- 方向性图标通过 CSS `:dir()` 选择器镜像，Chrome 从 120 版起支持该选择器。
