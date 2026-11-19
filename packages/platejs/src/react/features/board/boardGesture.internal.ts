@@ -590,6 +590,7 @@ export const attachBoardGestures = (
       gesture = pan(pointer, pointerId);
     } else if (selecting && shapeElement && shape && handle) {
       if (!core.writable()) return;
+      core.focusBoard();
       gesture = {
         corner: handle,
         element: shapeElement,
@@ -618,7 +619,9 @@ export const attachBoardGestures = (
       if (event.shiftKey) {
         moving = held ? [] : [...selected, shape];
         core.toggleSelected(shape.key);
-      } else if (!held) {
+      } else if (held) {
+        core.focusBoard();
+      } else {
         core.select([shape.key]);
       }
 
