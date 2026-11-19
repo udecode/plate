@@ -1,6 +1,19 @@
 {
   "schemaVersion": 1,
   "components": {
+    "board": [
+      "2026-11-19-board-images",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-12-add-board"
+    ],
+    "board-demo": [
+      "2026-11-19-board-images",
+      "2026-11-18-ai-menu-acts-on-board-note-text",
+      "2026-11-18-comments-on-board-note-text"
+    ],
+    "board-page-demo": ["2026-11-19-board-images", "2026-11-12-add-board"],
     "discussion": [
       "2026-11-19-popovers-hide-with-text",
       "2026-11-18-comments-on-board-note-text",
@@ -116,10 +129,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
-    ],
-    "board-demo": [
-      "2026-11-18-ai-menu-acts-on-board-note-text",
-      "2026-11-18-comments-on-board-note-text"
     ],
     "comment-toolbar-button": [
       "2026-11-18-comment-suggestion-outcome",
@@ -289,12 +298,6 @@
       "2026-10-18-layout-style-values",
       "2026-09-18-item-focus-block-upsert",
       "2026-08-17-flat-editor-registry"
-    ],
-    "board": [
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-12-add-board"
     ],
     "block-list-static": [
       "2026-11-18-registry-icon-library",
@@ -1146,7 +1149,6 @@
       "2026-08-25-base-first-registry"
     ],
     "docs-meta": ["2026-11-13-remove-docs-items"],
-    "board-page-demo": ["2026-11-12-add-board"],
     "docx": [
       "2026-11-07-docx-fewer-install-dependencies",
       "2026-10-08-registry-install-dependencies",

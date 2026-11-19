@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-19-board-images",
+      "href": "/registry/changelog/2026-11-19-board-images.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Put pictures on the board",
+      "change": {
+        "type": "source",
+        "date": "2026-11-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board", "board-demo", "board-page-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-19-popovers-hide-with-text",
       "href": "/registry/changelog/2026-11-19-popovers-hide-with-text.json",
       "status": "draft",

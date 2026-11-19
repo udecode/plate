@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-board-images",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-board-images.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Put pictures on the board",
+  "targets": [
+    {
+      "name": "board",
+      "files": ["apps/www/src/registry/components/editor/board.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "board-page-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-page-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-board-put-pictures-68e47941",
+      "kind": "new",
+      "summary": "Add `BoardImageKit`, an image shape that draws its picture and alt text across its box without stretching it. Add it beside `BoardKit` in an editor that installs the image plugin. Paste an image link, or a picture copied from a web page, on the board, and it lands at the pointer at its own proportions, which every resize keeps. Enter and a double-click keep an image shape selected and put no caret in it.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-board-images",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-board-demos-pictures-5b1c0e2a",
+      "kind": "wiring",
+      "summary": "Add `BoardImageKit`, and install `ImagePlugin` in the board page demo, so a pasted image link lands on both boards.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board-demo", "board-page-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-board-images",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

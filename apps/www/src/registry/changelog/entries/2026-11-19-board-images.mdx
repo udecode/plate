@@ -1,0 +1,18 @@
+---
+id: 2026-11-19-board-images
+date: 2026-11-19
+status: draft
+kind: new
+summary: 'Put pictures on the board'
+change: { 'type': 'source', 'date': '2026-11-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-19-board-put-pictures-68e47941","kind":"new","migrationNotes":[]} -->
+
+- **`board`**: Add `BoardImageKit`, an image shape that draws its picture and alt text across its box without stretching it. Add it beside `BoardKit` in an editor that installs the image plugin. Paste an image link, or a picture copied from a web page, on the board, and it lands at the pointer at its own proportions, which every resize keeps. Enter and a double-click keep an image shape selected and put no caret in it.
+
+<!-- entry: {"id":"2026-11-19-board-demos-pictures-5b1c0e2a","kind":"wiring","migrationNotes":[]} -->
+
+- **`board-demo`**, **`board-page-demo`**: Add `BoardImageKit`, and install `ImagePlugin` in the board page demo, so a pasted image link lands on both boards.
