@@ -98,7 +98,7 @@ const editor = createEditor({
       ],
       inject: {
         nodeProps: {
-          styleKey: "marginLeft",
+          styleKey: "marginInlineStart",
         },
       },
       initialState: {
@@ -111,7 +111,7 @@ const editor = createEditor({
 });
 ```
 
-- `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
+- `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginInlineStart` property, so indentation starts from the right in right-to-left text.
 - `targetPlugins`: Element plugin descriptors or dynamic names whose nodes can store indentation.
 - `initialState.offset`: Indentation offset in pixels (default: `24`).
 - `initialState.unit`: Unit for indentation values (default: `'px'`).
@@ -127,12 +127,12 @@ You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to y
 
 ### `IndentPlugin`
 
-Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPlugins` and applies `marginLeft` styling.
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPlugins` and applies `marginInlineStart` styling.
 
 <API name="IndentPlugin">
   <APIOptions type="object">
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
-      CSS property name for styling. - **Default:** `'marginLeft'`
+      CSS property name for styling. - **Default:** `'marginInlineStart'`
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
       Element plugin descriptors or dynamic names targeted for indent storage and injection. -

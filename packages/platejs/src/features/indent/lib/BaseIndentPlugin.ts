@@ -64,12 +64,10 @@ const initialState: IndentPluginState = {
   unit: 'px',
 };
 
-const readHtmlMarginIndent = (
-  element: HTMLElement,
+const readMarginLevel = (
+  styleValue: string,
   { offset = 24, unit = 'px' }: Readonly<IndentPluginState>
 ) => {
-  const styleValue = element.style.marginLeft;
-
   if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
     return undefined;
   }
@@ -82,6 +80,18 @@ const readHtmlMarginIndent = (
     )
   );
 };
+
+const readHtmlMarginIndent = (
+  element: HTMLElement,
+  state: Readonly<IndentPluginState>
+) =>
+  readMarginLevel(element.style.marginInlineStart, state) ??
+  readMarginLevel(
+    element.closest('[dir]')?.getAttribute('dir') === 'rtl'
+      ? element.style.marginRight
+      : element.style.marginLeft,
+    state
+  );
 
 export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   contributions: [formatting.of({ block: ['indent'] })],
@@ -105,7 +115,7 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   inject: {
     isBlock: true,
     nodeProps: {
-      styleKey: 'marginLeft',
+      styleKey: 'marginInlineStart',
       transformNodeValue: ({ store, nodeValue }) => {
         const { offset = 24, unit = 'px' } = store.get();
 
@@ -182,6 +192,8 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         encode: ({ pluginState, value }) => {
           const { offset = 24, unit = 'px' } = pluginState;
 
+          // Word and Outlook ignore margin-inline-start, so copied and
+          // serialized HTML keeps a physical margin.
           return {
             attributes: { 'data-indent': value },
             style: { marginLeft: value * offset + unit },
@@ -190,7 +202,9 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         match: [
           { attributes: { 'aria-level': true } },
           { attributes: { 'data-indent': true } },
+          { style: { marginInlineStart: '*' } },
           { style: { marginLeft: '*' } },
+          { style: { marginRight: '*' } },
         ],
       },
     }),

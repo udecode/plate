@@ -478,6 +478,16 @@ type VNodeObject = {
 const INDENT_CLASS_REGEX = /\beditor-indent-(\d+)\b/;
 const MARGIN_NUMBER_REGEX = /(\d+)/;
 
+const leftIndentMargin = (style?: Record<string, string>) =>
+  style?.['margin-inline-start'] || style?.['margin-left'];
+
+export const isIndented = (vNode: VNodeType) =>
+  !['ol', 'ul'].includes(vNode.tagName || '') &&
+  Boolean(
+    leftIndentMargin(vNode.properties?.style) ||
+    INDENT_CLASS_REGEX.test(vNode.properties?.attributes?.class ?? '')
+  );
+
 // Plate indent 1 maps to Word level 0. The host's indent class holds the exact
 // indent; a margin alone assumes BaseIndentPlugin's default 24px offset.
 const getIndentLevel = (vNode: VNodeType, hostVNode?: VNodeType) => {
@@ -486,10 +496,10 @@ const getIndentLevel = (vNode: VNodeType, hostVNode?: VNodeType) => {
 
   if (indent) return Math.max(0, Number(indent[1]) - 1);
 
-  const marginLeft =
-    vNode.properties?.style?.['margin-left'] ||
-    hostVNode?.properties?.style?.['margin-left'];
-  const match = marginLeft?.match(MARGIN_NUMBER_REGEX);
+  const match = (
+    leftIndentMargin(vNode.properties?.style) ||
+    leftIndentMargin(hostVNode?.properties?.style)
+  )?.match(MARGIN_NUMBER_REGEX);
 
   return match
     ? Math.max(0, Math.round(Number.parseInt(match[1], 10) / 24) - 1)
@@ -1270,13 +1280,13 @@ const modifiedStyleAttributesBuilder = (
     if (style['line-height']) {
       modifiedAttributes.lineHeight = fixupLineHeight(style['line-height']);
     }
-    if (style['margin-left'] || style['margin-right']) {
-      const leftMargin = style['margin-left']
-        ? fixupMargin(style['margin-left'])
-        : undefined;
-      const rightMargin = style['margin-right']
-        ? fixupMargin(style['margin-right'])
-        : undefined;
+    const indentMargin = leftIndentMargin(style);
+    const leftMargin = indentMargin ? fixupMargin(indentMargin) : undefined;
+    const rightMargin = style['margin-right']
+      ? fixupMargin(style['margin-right'])
+      : undefined;
+
+    if (leftMargin || rightMargin) {
       const indentation: Indentation = {};
       if (leftMargin) {
         indentation.left = leftMargin;
@@ -1284,9 +1294,7 @@ const modifiedStyleAttributesBuilder = (
       if (rightMargin) {
         indentation.right = rightMargin;
       }
-      if (leftMargin || rightMargin) {
-        modifiedAttributes.indentation = indentation;
-      }
+      modifiedAttributes.indentation = indentation;
     }
     if (style.display) {
       modifiedAttributes.display = style.display;

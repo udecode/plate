@@ -31,6 +31,7 @@ import {
   buildTable,
   defineNamedStyles,
   inheritParagraphStyle,
+  isIndented,
   narrowedWidth,
   quoteScope,
   type RenderBlocks,
@@ -349,15 +350,6 @@ type ContentGroup = {
   node?: VNodeType | VTextType;
   type: 'block' | 'inline';
 };
-
-const INDENT_CLASS_REGEX = /\beditor-indent-\d+\b/;
-
-const isIndented = (vNode: VNodeType) =>
-  !['ol', 'ul'].includes(vNode.tagName || '') &&
-  Boolean(
-    vNode.properties?.style?.['margin-left'] ||
-    INDENT_CLASS_REGEX.test(vNode.properties?.attributes?.class ?? '')
-  );
 
 // A cell's blocks take no indented host from outside the table.
 const renderCellBlocks =

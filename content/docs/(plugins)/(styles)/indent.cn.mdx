@@ -97,7 +97,7 @@ const editor = createEditor({
       ],
       inject: {
         nodeProps: {
-          styleKey: "marginLeft",
+          styleKey: "marginInlineStart",
         },
       },
       initialState: {
@@ -110,7 +110,7 @@ const editor = createEditor({
 });
 ```
 
-- `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
+- `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginInlineStart` 属性，因此在从右到左的文本中缩进从右侧开始。
 - `targetPlugins`：可存储缩进属性的元素插件 descriptor 或动态 name。
 - `initialState.offset`：缩进偏移量（像素）（默认：`24`）。
 - `initialState.unit`：缩进值的单位（默认：`'px'`）。
@@ -126,12 +126,12 @@ const editor = createEditor({
 
 ### `IndentPlugin`
 
-用于缩进块级元素的插件。它向 `targetPlugins` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
+用于缩进块级元素的插件。它向 `targetPlugins` 指定的元素注入 `indent` 属性并应用 `marginInlineStart` 样式。
 
 <API name="IndentPlugin">
   <APIOptions type="object">
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
-      用于样式的 CSS 属性名称。 - **默认值：** `'marginLeft'`
+      用于样式的 CSS 属性名称。 - **默认值：** `'marginInlineStart'`
     </APIItem>
     <APIItem name="targetPlugins" type="readonly (PluginReference | string)[]" optional>
       用于缩进存储和注入的元素插件 descriptor 或动态 name。 - **默认值：**

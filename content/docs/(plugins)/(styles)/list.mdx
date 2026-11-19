@@ -184,7 +184,8 @@ An item's later blocks, such as a second paragraph, a code block or an image,
 parse in both formats as blocks one level under the item, with no listType:
 `{ type: 'codeBlock', indent: 2 }` after an item at indent 1. Plate HTML writes
 them after the list. When HTML nests them inside the `li`, an item's
-`margin-left` counts as its level. A style that the `li` or a wrapper sets,
+`margin-inline-start` or `margin-left` counts as its level, or its
+`margin-right` in right-to-left HTML. A style that the `li` or a wrapper sets,
 such as bold, does not reach the content that moves out of that element, and
 the parse warns once with an `html-unsupported-content` diagnostic that names
 the first such style. That includes `white-space`, so a line break that
