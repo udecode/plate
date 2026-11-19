@@ -1156,7 +1156,11 @@ const FRESH_ENV = {
   PLITE_PROOF_FORCE_BUILD: '1',
 };
 
-const runStep = (step, command, { cores, fresh, log, running, writing }) => {
+const runStep = (
+  step,
+  command,
+  { cores, fresh, log, running, watchMemory, writing }
+) => {
   const started = Date.now();
   const watch = !writing && step.unchangedFiles;
   const before = watch && step.unchangedFiles();
@@ -1172,9 +1176,13 @@ const runStep = (step, command, { cores, fresh, log, running, writing }) => {
   });
   closeSync(output);
   running.add(child);
+  const unwatch = watchMemory(child.pid, {
+    stopped: (text) => appendFileSync(log, `\n[check] ${step.name} ${text}\n`),
+  });
   return new Promise((resolveStep) => {
     const finish = (code) => {
       if (!running.delete(child)) return;
+      unwatch();
       let status = code;
       if (status === 0 && watch && step.unchangedFiles() !== before) {
         appendFileSync(
@@ -1396,7 +1404,8 @@ const main = async () => {
   const typical = typicalSeconds(root);
   // Writers can read each other's output, so --write keeps one step at a time.
   let budget = 1;
-  const { reserve } = await import('../../.agents/pstack/proof.mjs');
+  const { reserve, watchMemory } =
+    await import('../../.agents/pstack/proof.mjs');
   const logs = mkdtempSync(join(tmpdir(), 'plate-check-'));
   const running = new Set();
   let interrupted = 0;
@@ -1420,6 +1429,7 @@ const main = async () => {
       fresh,
       log,
       running,
+      watchMemory,
       writing,
     });
     const reason = cache.end(step.name);

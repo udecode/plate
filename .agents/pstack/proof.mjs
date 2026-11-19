@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/proof.mjs --dir <run-dir> --name <name> [--cwd <dir>] [--timeout <seconds>] [--cores <n>] [--stress] -- <command> [arg...]
-// Runs one proof command and writes its command line, its output and its exit
-// status to <run-dir>/<name>-a<N>.log, N one past the highest attempt logged, so
-// a log that a decision row cites is never rewritten. One command argument runs
-// in bash with pipefail; several run directly. Exits with the command's status,
-// or 1 when a timeout, signal or spawn error ended it. Without --stress,
-// --timeout defaults to 3,600 seconds and a longer one is refused. A run its
-// timeout stopped logs that before `exit=ETIMEDOUT`, whatever the command
-// returned, and stops every process still in the command's process group.
+// Usage: node .agents/pstack/proof.mjs --dir <run-dir> --name <name> [--cwd <dir>] [--timeout <seconds>] [--cores <n>] [--stress] [--force] -- <command> [arg...]
+// Runs one proof command and writes its command line, the time the machine
+// last started, its output and its exit status to <run-dir>/<name>-a<N>.log, N
+// one past the highest attempt logged, so a log that a decision row cites is
+// never rewritten. One command argument runs in bash with pipefail; several run
+// directly. Exits with the command's status, or 1 when a timeout, memory stop,
+// signal or spawn error ended it. Without --stress, --timeout defaults to 3,600
+// seconds and a longer one is refused. A run its timeout stopped logs that
+// before `exit=ETIMEDOUT`, whatever the command returned, and stops every
+// process still in the command's process group. On macOS it stops a command
+// the same way once the command's processes use more than a quarter of the
+// machine's memory, or more than a tenth while under 8% of memory is free, and
+// logs the largest processes before `exit=EMEMORY`. It refuses a run whose last
+// attempt logged no exit and ran before the machine last started, unless
+// --force, because that attempt may have taken the machine down.
 // Before it starts, it asks this machine's core pool for half a core for each
 // of its --cores (default 1) workers. A --stress run asks for a whole core for
 // each, and is refused when its --cores is over half the machine's cores.
@@ -28,11 +34,15 @@ import { fileURLToPath } from 'node:url';
 
 const quote = (arg) => (/^[\w@%+=:,./-]+$/u.test(arg) ? arg : `'${arg.replaceAll("'", "'\\''")}'`);
 
+function lastAttempt(folder, name) {
+  const pattern = new RegExp(`^${basename(name).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}-a(\\d+)\\.log$`, 'u');
+  return Math.max(0, ...(existsSync(folder) ? readdirSync(folder) : []).map((file) => Number(file.match(pattern)?.[1] ?? 0)));
+}
+
 function claim(dir, name) {
   const folder = dirname(join(dir, name));
   mkdirSync(folder, { recursive: true });
-  const pattern = new RegExp(`^${basename(name).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}-a(\\d+)\\.log$`, 'u');
-  let attempt = Math.max(0, ...readdirSync(folder).map((file) => Number(file.match(pattern)?.[1] ?? 0))) + 1;
+  let attempt = lastAttempt(folder, name) + 1;
   for (;;) {
     const path = join(folder, `${basename(name)}-a${attempt}.log`);
     try {
@@ -81,13 +91,13 @@ export const alive = (pid) => {
 
 // macOS counts its file cache as used, so os.freemem() reads near zero on an
 // idle Mac; the kernel's own free-memory percentage is what its pressure uses.
-function freeMemory() {
-  if (process.platform === 'darwin') {
-    const level = Number(spawnSync('sysctl', ['-n', 'kern.memorystatus_level'], { encoding: 'utf8' }).stdout);
-    if (level > 0) return level / 100;
-  }
-  return freemem() / totalmem();
+function memoryLevel() {
+  if (process.platform !== 'darwin') return null;
+  const level = Number(spawnSync('sysctl', ['-n', 'kern.memorystatus_level'], { encoding: 'utf8' }).stdout);
+  return level > 0 ? level / 100 : null;
 }
+
+const freeMemory = () => memoryLevel() ?? freemem() / totalmem();
 
 function lockPool() {
   try {
@@ -243,7 +253,120 @@ export const TIME_BUDGET_SECONDS = 3600;
 const SUPERVISE_GROUP = '--supervise-group';
 const KILL_GRACE_MS = 5000;
 
-export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores = 1, stress = false }) {
+const MEMORY_SHARE = 0.25;
+// While the machine runs short, the lower limit stops its large commands and
+// keeps its small ones running.
+const SHORT_FREE = 0.08;
+const SHORT_MEMORY_SHARE = 0.1;
+// ps reads resident memory, which leaves out compressed and swapped pages.
+// footprint counts them as the kernel's memory pressure does, so the watch
+// reads footprint for a tree that could be near a limit, or for any tree while
+// memory runs short.
+const FOOTPRINT_FROM_SHARE = 0.05;
+const FOOTPRINT_UNDER_FREE = 0.25;
+const GB = 1024 ** 3;
+
+const gb = (bytes) => `${(bytes / GB).toFixed(1)} GB`;
+
+function processes() {
+  const { stdout } = spawnSync('ps', ['-A', '-o', 'pid=', '-o', 'ppid=', '-o', 'pgid=', '-o', 'rss=', '-o', 'comm='], { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' }, timeout: 10_000 });
+  return (stdout ?? '').split('\n').flatMap((line) => {
+    const fields = line.match(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/u);
+    return fields ? [{ pid: Number(fields[1]), parent: Number(fields[2]), group: Number(fields[3]), bytes: Number(fields[4]) * 1024, name: basename(fields[5].trim()) }] : [];
+  });
+}
+
+function tree(root, withGroup) {
+  const all = processes();
+  const children = new Map();
+  for (const entry of all) {
+    if (!children.has(entry.parent)) children.set(entry.parent, []);
+    children.get(entry.parent).push(entry);
+  }
+  const found = new Map(all.filter((entry) => entry.pid === root || (withGroup && entry.group === root)).map((entry) => [entry.pid, entry]));
+  for (const queue = [...found.values()]; queue.length > 0; ) {
+    for (const child of children.get(queue.pop().pid) ?? []) {
+      if (found.has(child.pid)) continue;
+      found.set(child.pid, child);
+      queue.push(child);
+    }
+  }
+  return [...found.values()];
+}
+
+function footprints(pids) {
+  const { stdout } = spawnSync('footprint', ['-f', 'bytes', '--noCategories', ...pids.flatMap((pid) => ['-p', String(pid)])], { encoding: 'utf8', timeout: 30_000 });
+  return new Map([...(stdout ?? '').matchAll(/\[(\d+)\]: .*Footprint: (\d+) B/gu)].map(([, pid, bytes]) => [Number(pid), Number(bytes)]));
+}
+
+const signalAll = (pids, leader, signal) => {
+  for (const pid of leader ? [-leader, ...pids] : pids) {
+    try {
+      process.kill(pid, signal);
+    } catch (error) {
+      if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error;
+    }
+  }
+};
+
+/**
+ * Every two seconds, adds up the memory of the process `pid` and every process
+ * under it (with `group`, also every process in its process group). Past the
+ * limit it stops them, this process excepted, with SIGTERM and, after a grace,
+ * SIGKILL, and calls `stopped` once with a sentence that names the use, the
+ * limit and the largest processes. Returns the function that ends the watch.
+ * It watches nothing where the system gives no free-memory level.
+ * @param {number} pid
+ * @param {{ group?: boolean, stopped: (text: string) => void }} options
+ * @returns {() => void}
+ */
+export function watchMemory(pid, { group = false, stopped }) {
+  if (memoryLevel() === null) return () => {};
+  const total = totalmem();
+  const timer = setInterval(() => {
+    const free = memoryLevel() ?? 1;
+    const found = tree(pid, group);
+    if (found.reduce((sum, entry) => sum + entry.bytes, 0) >= total * FOOTPRINT_FROM_SHARE || free < FOOTPRINT_UNDER_FREE) {
+      const exact = footprints(found.map((entry) => entry.pid));
+      for (const entry of found) entry.bytes = exact.get(entry.pid) ?? entry.bytes;
+    }
+    const used = found.reduce((sum, entry) => sum + entry.bytes, 0);
+    const short = free < SHORT_FREE;
+    const limit = total * (short ? SHORT_MEMORY_SHARE : MEMORY_SHARE);
+    if (used <= limit) return;
+    clearInterval(timer);
+    const pids = found.map((entry) => entry.pid).filter((entry) => entry !== process.pid);
+    const leader = group ? pid : null;
+    signalAll(pids, leader, 'SIGTERM');
+    setTimeout(() => signalAll(pids, leader, 'SIGKILL'), KILL_GRACE_MS);
+    const largest = found
+      .toSorted((a, b) => b.bytes - a.bytes)
+      .slice(0, 5)
+      .map((entry) => `${entry.name} (${entry.pid}) ${gb(entry.bytes)}`);
+    const when = short ? ` while ${Math.round(free * 100)}% of its memory was free` : '';
+    stopped(`used ${gb(used)} of this machine's ${gb(total)}${when}, over the ${gb(limit)} one command may use, so its processes were stopped; the largest: ${largest.join(', ')}`);
+  }, 2000);
+  timer.unref();
+  return () => clearInterval(timer);
+}
+
+function bootTime() {
+  const seconds =
+    process.platform === 'darwin'
+      ? spawnSync('sysctl', ['-n', 'kern.boottime'], { encoding: 'utf8' }).stdout?.match(/sec = (\d+)/u)?.[1]
+      : existsSync('/proc/stat') && readFileSync('/proc/stat', 'utf8').match(/^btime (\d+)$/mu)?.[1];
+  return seconds ? new Date(Number(seconds) * 1000).toISOString() : null;
+}
+
+const HEAD_BYTES = 64 * 1024;
+
+function unfinishedBoot(path) {
+  const { size } = statSync(path);
+  if (/^exit=\S+$/mu.test(readAt(path, Math.max(0, size - HEAD_BYTES), Math.min(size, HEAD_BYTES)))) return null;
+  return readAt(path, 0, Math.min(size, HEAD_BYTES)).match(/^boot=(\S+)$/mu)?.[1] ?? null;
+}
+
+export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores = 1, stress = false, force = false }) {
   if (!dir || !name || command.length === 0 || name.split('/').includes('..')) throw new Error('prove needs a run directory, a name without "..", and a command');
   if (timeout !== undefined && !(Number.isFinite(timeout) && timeout > 0)) throw new Error(`--timeout takes a positive number of seconds, got ${timeout}`);
   if (!(Number.isInteger(cores) && cores > 0)) throw new Error(`--cores takes a positive whole number, got ${cores}`);
@@ -256,10 +379,19 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
       throw new Error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the proof, or offer it as a suggested task whose session passes --stress`);
     timeout ??= TIME_BUDGET_SECONDS;
   }
+  const boot = bootTime();
+  const folder = dirname(join(resolve(dir), name));
+  const last = lastAttempt(folder, name);
+  if (boot && last > 0 && !force) {
+    const previous = join(folder, `${basename(name)}-a${last}.log`);
+    const ran = unfinishedBoot(previous);
+    if (ran && ran !== boot)
+      throw new Error(`${previous} logged no exit, and this machine has started again since that run (${ran}), so the run may have taken the machine down; read its log and fix the cause, or pass --force to run it again`);
+  }
   const shell = command.length === 1;
   const line = shell ? command[0] : command.map(quote).join(' ');
   const { fd, path } = claim(resolve(dir), name);
-  const header = `$ (${resolve(cwd)}) ${line}\n`;
+  const header = `$ (${resolve(cwd)}) ${line}\n${boot ? `boot=${boot}\n` : ''}`;
   writeSync(fd, header);
   const [file, args] = shell ? ['bash', ['-o', 'pipefail', '-c', command[0]]] : [command[0], command.slice(1)];
   const release = reserve(cores, `proof.mjs ${name}`, { perWorker: stress ? STRESS_CORES_PER_WORKER : CORES_PER_WORKER });
@@ -272,12 +404,12 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
   release();
   closeSync(fd);
   const report = JSON.parse(result.output?.[3]?.toString() || 'null') ?? { timedOut: result.error?.code === 'ETIMEDOUT', error: result.error?.code ?? 'error' };
-  const exit = report.timedOut ? 'ETIMEDOUT' : (report.code ?? report.signal ?? report.error ?? 'error');
+  const exit = report.timedOut ? 'ETIMEDOUT' : report.memory ? 'EMEMORY' : (report.code ?? report.signal ?? report.error ?? 'error');
   const { size } = statSync(path);
   const stopped = report.timedOut ? `timed out after ${timeout} seconds\n` : '';
-  if (!report.logged) appendFileSync(path, `${size > Buffer.byteLength(header) && tail(path, size, 1) !== '\n' ? '\n' : ''}${stopped}exit=${exit}\n`);
+  if (!report.logged) appendFileSync(path, `${size > Buffer.byteLength(header) && readAt(path, size - 1, 1) !== '\n' ? '\n' : ''}${stopped}exit=${exit}\n`);
   const shown = Math.min(size - Buffer.byteLength(header), OUTPUT_TAIL_BYTES);
-  return { exit, path, output: tail(path, size, shown) };
+  return { exit, path, output: readAt(path, size - shown, shown) };
 }
 
 function superviseGroup([seconds, file, ...args]) {
@@ -310,6 +442,14 @@ function superviseGroup([seconds, file, ...args]) {
     process.exit(0);
   };
   let timedOut = false;
+  let memory = false;
+  watchMemory(child.pid, {
+    group: true,
+    stopped: (text) => {
+      memory = true;
+      writeSync(1, `\nproof.mjs: the command ${text}\n`);
+    },
+  });
   if (Number(seconds) > 0) {
     setTimeout(() => {
       timedOut = true;
@@ -330,18 +470,18 @@ function superviseGroup([seconds, file, ...args]) {
   }
   child.on('error', (error) => report({ error: error.code }));
   child.on('exit', (code, signal) => {
-    if (timedOut) killGroup('SIGKILL');
+    if (timedOut || memory) killGroup('SIGKILL');
     if (stopped) logExit(`proof.mjs stopped by ${stopped}`, code ?? signal);
-    report({ code, signal, timedOut });
+    report({ code, signal, timedOut, memory });
   });
 }
 
 const OUTPUT_TAIL_BYTES = 16 * 1024 * 1024;
 
-function tail(path, size, length) {
+function readAt(path, position, length) {
   const fd = openSync(path, 'r');
   const buffer = Buffer.alloc(length);
-  readSync(fd, buffer, 0, length, size - length);
+  readSync(fd, buffer, 0, length, position);
   closeSync(fd);
   return buffer.toString('utf8');
 }
@@ -352,8 +492,8 @@ function parse(argv) {
   const flags = split === -1 ? argv : argv.slice(0, split);
   for (let index = 0; index < flags.length; index++) {
     const key = flags[index].replace(/^--/u, '');
-    if (key === 'stress') {
-      options.stress = true;
+    if (key === 'stress' || key === 'force') {
+      options[key] = true;
       continue;
     }
     if (!['dir', 'name', 'cwd', 'timeout', 'cores'].includes(key)) throw new Error(`unknown option ${flags[index]}`);
@@ -377,7 +517,7 @@ else if (main) {
     console.log(`log: ${path} exit=${exit}`);
     process.exit(typeof exit === 'number' ? exit : 1);
   } catch (error) {
-    console.error(`${error.message}\nUsage: node .agents/pstack/proof.mjs --dir <run-dir> --name <name> [--cwd <dir>] [--timeout <seconds>] [--cores <n>] [--stress] -- <command> [arg...]`);
+    console.error(`${error.message}\nUsage: node .agents/pstack/proof.mjs --dir <run-dir> --name <name> [--cwd <dir>] [--timeout <seconds>] [--cores <n>] [--stress] [--force] -- <command> [arg...]`);
     process.exit(2);
   }
 }
