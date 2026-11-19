@@ -154,11 +154,26 @@ authored.api.setView({ preview: "proposed" });
 
 Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存储文档，例如带决定的 update、撤销和重做，以及远程协作变更。显示 preview 的 `Editable` 保留光标和选区，但会忽略输入、删除、粘贴、剪切和拖放。撤销和重做仍然可用。
 
-在被划掉的文本中输入或粘贴时，新文本落在待处理删除之后。用输入法确认的词则会把待处理删除拆到它的两侧。`edit` view 按原样应用新文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如表格内的修改，或在内容只有一个 text 的元素内的部分编辑，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
+在被划掉的文本中输入或粘贴时，新文本落在待处理删除之后。用输入法确认的词则会把待处理删除拆到它的两侧。`edit` view 按原样应用新文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如向表格添加一行，或在内容只有一个 text 的元素内的部分编辑，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
 
 在只生成 text 属性的 schema 下，或者生成的属性都是具有精确键、值不是集合、target 不取决于元素位置、角色不是 `content` 的 element 属性时（例如 `ElementIdPlugin` 的 `id`），`propose` view 和两种 preview 都可以使用。`content` 是默认角色，因此请声明 `role: 'metadata'`。建议会在记录时生成之后构建所需的元素值。建议的 Enter 把新元素的 id 存放在该元素上。决定可能移除容器子元素（例如删除引用块中唯一的一行）或改变容器类型的建议，还会把该决定将在那里构建的 block 作为备用 block 存放在文档的审阅 mark 和 `records` 中。之后 preview、projection 和决定都显示这些已存储的值，不调用 element 属性的生成器。当已存储的 block（例如建议之后写入的 block）重复备用 block 所持的唯一值时，构建该备用 block 的决定会给它一个新值，与 preview 显示的值不同。在其他生成属性下，或在同时生成 element 属性和 text 属性的 schema 下，`setView` 保留当前 view，proposal 不写入任何内容，两者都报告拒绝代码 `generated-values`。
 
 在 `propose` view 中删除一个拥有 [content root](/cn/docs/roots#content-roots) 的 block 时，该 block 会被划掉，root 的内容保持原样且不带审阅标记，因此请在 block 的组件中把 root 显示为已删除。在该 root 中输入或粘贴不会写入任何内容，直到有人决定这个删除。接受删除会移除该 block 及其 root；若 root 中有另一个待处理 change 插入的文本，结果为 `blocked`。拒绝删除会保留两者。拒绝一个拥有 content root 的待处理插入 block 时，root 也会一并移除。`propose` view 仍会拒绝删除没有任何元素拥有的 named root。
+
+接受被划掉的表格或行，或拒绝建议添加的表格或行，会移除它及其中的每个待处理 change，包括其他作者的 change。移除表格最后一行的决定会移除整个表格。`edit` view 移除整个表格或行时，也会带走其中的待处理 change。在有人决定被划掉的表格或行之前，两种 view 都会以原因 `grid` 拒绝以下写入：
+
+- 移除它的写入，或在其中、覆盖其部分内容的写入
+- 针对它的命令
+- 会跨越被划掉的表格合并两行的 Backspace 或 Delete
+
+在 `propose` view 中，删除包含被划掉行的未划掉表格仍会记录，并连同该行一起移除。来自 `propose` view 或 `tx.authored.propose()` 的 proposal 还会以 `grid` 拒绝以下写入：
+
+- 单独添加或移除单元格，或修改 span
+- 拆分或合并表格或行
+- 在待处理的列变更旁添加行
+- 把区块移出另一位作者的待处理建议所添加的表格
+
+Plate 的表格插件在 `propose` view 中还会拒绝更多编辑，code 为 `veto`，原因为 `table`，见 [Suggestions](/cn/docs/suggestion#格式和区块)。
 
 待处理的合并可能让一个段落显示在其存储位置之外。`proposed` preview 会把从被合并行拆出的段落，或插入到合并两半之间的段落，显示在被合并行之后。`edit` view 和 `propose` view 会把跨越被移动段落边缘的 Backspace 或 Delete，以及跨越被移动段落的删除，记录为它们造成的合并。当被移动的行包含某个 content root 的 owner 时，`propose` view 会拒绝这次 Backspace，因为提议的合并会让该 root 有两个 owner；`edit` view 会记录它。全选会覆盖 preview 显示的每个段落，包括被移动的最后一个段落。两种 view 都会拒绝以下编辑，并给出所列原因：
 
@@ -246,6 +261,26 @@ if (card) {
 | `stale`     | 读取后 change 或卡片已变化。请重新读取。       |
 | `blocked`   | 需与 `with` 列出的 change 一起决定。未应用任何内容。 |
 | `invalid`   | 多个决定互相矛盾，或 schema 拒绝决定结果。     |
+
+### Change 如何离开审阅
+
+change 不再待处理后，无论发生了什么，`read.change(id)` 都返回 `null`。要知道发生了什么，例如为某个建议上的评论 thread，请读取 `outcome(id)`：
+
+```tsx
+const outcome = authored.read.outcome(changeId);
+```
+
+| 结果 | 含义 |
+| --- | --- |
+| `'pending'` | 文档仍包含该 change。 |
+| `'accepted'` | 审阅者接受了它。 |
+| `'rejected'` | 审阅者拒绝了它。 |
+| `'contested'` | 它同时带有接受和拒绝，顺序不限。 |
+| `null` | 它在没有裁决的情况下离开了审阅，或文档从未包含该 ID。 |
+
+该读取在每个 view、每个 peer 上以及重新加载后都给出相同结果，因为它读取的是存储文档的审阅 mark 和记录。在已决定的 ID 下写入会以该 ID 开始一个新 change，`outcome` 读取审阅者决定过的最新那个的裁决。两位审阅者在编辑器同步之前以不同方式决定同一建议时，结果为 `'contested'`。审阅者在作者仍在补充某个建议时拒绝它、随后又接受作者补充的内容时，结果也是如此。被决定的表格或行带走 change 时、`edit` view 的移除删除 change 时，或作者撤回 change 时，change 会在没有裁决的情况下离开审阅。撤回可能存储一个拒绝，此时读取为 `'rejected'`。
+
+裁决之后再次提议的 ID（例如 DOCX 重新导入时根据 Word 的修订编号再次生成的 ID），在新 change 没有裁决地离开审阅后，会读取之前的裁决。
 
 ## 保存文档
 
@@ -360,6 +395,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.read.changes(query?)`            | 按文档顺序分页读取待处理 change。                                      |
 | `authored.read.groups({ at })`             | 读取与 view 所显示文档某个位置相交的卡片摘要。                         |
 | `authored.read.groupOf(changeId)`          | 读取包含某个 change 的卡片；不存在时返回 `null`。                      |
+| `authored.read.outcome(id)`                | 读取 change 是待处理、已接受、已拒绝还是 `'contested'`；没有裁决地离开审阅时返回 `null`。 |
 | `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
 | `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |
 | `authored.update.withdraw(changes)`        | 移除写入视图作者自己的待处理 change，不记录决定。                      |
@@ -371,7 +407,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 
 ### 类型和格式辅助函数
 
-`platejs/authored` 导出 authored plugin 描述符，`AuthoredPlaceError`，change、卡片、query、page、delta、decision 和 result 类型，`proposeAuthoredComparison`，以及下面的格式辅助函数。
+`platejs/authored` 导出 authored plugin 描述符，`AuthoredPlaceError`，change、卡片、query、page、delta、decision、result 和 outcome 类型，`proposeAuthoredComparison`，以及下面的格式辅助函数。
 
 `projectAuthoredDocument(document, { projection })` 为 `accepted` 或 `proposed` projection 返回 `{ ok, document, diagnostics, pending }`。它是纯 document operation：不会构造、激活或订阅 editor runtime。同时传入 `editor` 时，会用该 editor 的 schema 补全结果，因此被决定清空的容器会得到默认内容。传入 `editor` 时，若 schema 的生成属性会让 `propose` view 拒绝，含有待处理 change 的 document 会改为返回代码为 `authored-generated-values` 的 `AuthoredProjectionRefusal`。若 projection 需要构建一个带生成值的元素，而 document 没有为它存储备用 block（例如由其他工具写入的 document），也会返回代码为 `authored-uncovered` 的拒绝。
 

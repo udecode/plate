@@ -156,11 +156,26 @@ authored.api.setView({ preview: "proposed" });
 
 A preview throws on a plain edit, but some other writes still change the stored document, such as an update that makes a decision, undo and redo, and remote collaboration changes. An `Editable` that shows a preview keeps its caret and selection, and drops typing, deleting, pasting, cutting and dropping. Undo and redo still work there.
 
-Typing or pasting inside struck text lands after the pending deletion. A word confirmed with an input method splits the deletion around it instead. An `edit` view applies the new text as written, and a `propose` view records it as an insertion. A `propose` view refuses a write it cannot record as a proposal, such as a change inside a table or a partial edit inside an element whose content holds one text, and rolls it back; `api.subscribeRefusals(listener)` reports each refusal.
+Typing or pasting inside struck text lands after the pending deletion. A word confirmed with an input method splits the deletion around it instead. An `edit` view applies the new text as written, and a `propose` view records it as an insertion. A `propose` view refuses a write it cannot record as a proposal, such as a row added to a table or a partial edit inside an element whose content holds one text, and rolls it back; `api.subscribeRefusals(listener)` reports each refusal.
 
 A `propose` view and both previews work when the schema's generated properties are all text properties, or all element properties with an exact key, a value that is not a set, a target that does not depend on the element's place, and a role other than `content`. `content` is the default role, so declare `role: 'metadata'`. `ElementIdPlugin`'s `id` is such a property. When it records, a suggestion generates the element values that a later build needs. A suggested Enter stores the new element's id on that element. A suggestion whose decision could remove a container's child, such as deleting a quote's only line, or change the container's type also stores the block that decision would build there, as a spare block in the document's review marks and `records`. Previews, projections and decisions show those stored values and call no element property's generator. When a stored block, such as one written after the suggestion, repeats a unique value that a spare block holds, the decision that builds that spare block gives it a fresh value, which differs from the value the preview showed. Under any other generated property, or a schema that generates both an element property and a text property, `setView` keeps the current view and a proposal writes nothing. Each reports the refusal code `generated-values`.
 
 Deleting a block that owns a [content root](/docs/roots#content-roots) in a `propose` view strikes the block and leaves the root's content unchanged and unmarked, so style the root as deleted in the block's component. Typing or pasting inside that root writes nothing until someone decides the deletion. Accepting it removes the block and its root, and returns `blocked` while the root holds text another pending change inserted. Rejecting it keeps both. Rejecting a proposed block that owns a content root removes the root too. A `propose` view still refuses deleting a named root that no element owns.
+
+Accepting a struck table or row, or rejecting a suggested one, removes it with every pending change inside it, another author's included. A decision that removes a table's last row removes the table. An `edit` view's removal of a whole table or row takes the pending changes inside it too. Until someone decides a struck table or row, both views refuse these writes with reason `grid`:
+
+- a write that removes it, or writes inside it or over part of it
+- a command aimed at it
+- Backspace or Delete that would join two lines across a struck table
+
+In a `propose` view, deleting a live table that holds a struck row still records, and takes the row with it. A proposal, from a `propose` view or from `tx.authored.propose()`, also refuses with `grid` a write that:
+
+- adds or removes single cells, or changes a span
+- splits or joins a table or row
+- adds a row beside a pending column change
+- moves a block out of a table that another author's pending suggestion adds
+
+Plate's table plugin refuses more in a `propose` view, with code `veto` and reason `table`, as [Suggestions](/docs/suggestion#formatting-and-blocks) lists.
 
 A pending join can show a paragraph away from where it is saved. The `proposed` preview shows a paragraph split off the joined line, or inserted between the join's halves, after the joined line. An `edit` view and a `propose` view record Backspace or Delete across a moved paragraph's edge, and a deletion over moved paragraphs, as the merges they make. A `propose` view refuses that Backspace when the moved line holds the owner of a content root, because the proposed merge would give the root two owners; an `edit` view records it. Select-all covers every paragraph the preview shows, a moved last paragraph included. Both views refuse these edits, each with the reason shown:
 
@@ -248,6 +263,26 @@ Always inspect the result of `decide`:
 | `stale`     | A change or card moved since it was read. Read it again.     |
 | `blocked`   | Decide the changes `with` names with it. Nothing applied.    |
 | `invalid`   | The decisions contradict, or the schema refuses the result.  |
+
+### How a change left the review
+
+`read.change(id)` returns `null` once a change is no longer pending, whatever happened to it. Read `outcome(id)` to learn what happened, such as to label a comment thread on a suggestion:
+
+```tsx
+const outcome = authored.read.outcome(changeId);
+```
+
+| Result | Meaning |
+| --- | --- |
+| `'pending'` | The document still holds the change. |
+| `'accepted'` | A reviewer accepted it. |
+| `'rejected'` | A reviewer rejected it. |
+| `'contested'` | It holds both an accept and a reject, in either order. |
+| `null` | It left with no verdict, or the document never held the ID. |
+
+The read gives the same result in every view, on every peer and after a reload, because it reads the stored document's review marks and records. Writing under a decided ID starts a new change with that ID, and `outcome` reads the verdict on the latest one a reviewer decided. Two reviewers who decide one suggestion both ways before their editors sync leave it `'contested'`. So does a reviewer who rejects a suggestion while its author is still adding to it, then accepts what the author added. A change leaves with no verdict when a decided table or row takes it, when an `edit` view's removal deletes it, or when its author withdraws it. A withdraw can store a reject, and then reads `'rejected'`.
+
+An ID proposed again after its verdict, such as one that a DOCX re-import mints again from Word's revision numbers, reads that earlier verdict once its new change leaves with no verdict.
 
 ## Save the document
 
@@ -389,6 +424,7 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.read.changes(query?)`            | Read a page of pending changes in document order.                                      |
 | `authored.read.groups({ at })`             | Read summaries of the cards touching a place of the document the view shows.           |
 | `authored.read.groupOf(changeId)`          | Read the card that holds a change, or `null`.                                          |
+| `authored.read.outcome(id)`                | Read whether a change is pending, accepted, rejected or `'contested'`, or `null` when it left with no verdict. |
 | `authored.read.reviewOf(node)`             | Read a stored node's pending marks and the accepted values of the properties they format. |
 | `authored.update.decide(decision)`         | Accept or reject changes or cards; an array of decisions decides together.             |
 | `authored.update.withdraw(changes)`        | Remove the writing view's author's own pending changes and record no decision.         |
@@ -401,7 +437,7 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 ### Types and format helpers
 
 `platejs/authored` exports the authored plugin descriptor, `AuthoredPlaceError`,
-the change, card, query, page, delta, decision, and result types,
+the change, card, query, page, delta, decision, result and outcome types,
 `proposeAuthoredComparison`, and the format helpers below.
 
 `projectAuthoredDocument(document, { projection })` returns

@@ -186,10 +186,11 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。表格单元格内的文本编辑也会记录。列表编辑同样会记录，例如在列表项中按 Enter 或 Tab，或在其开头按 Backspace。建议模式目前仍会拒绝以下编辑：
+为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。表格单元格内的文本编辑也会记录。添加或删除整个表格会记录为一个 change，例如 **Delete table** 或粘贴到段落之间的表格。列表编辑同样会记录，例如在列表项中按 Enter 或 Tab，或在其开头按 Backspace。建议模式目前仍会拒绝以下编辑：
 
-- 修改表格本身，例如添加行或合并单元格
-- 粘贴表格，或在跨越多个表格单元格的选区上粘贴
+- 修改表格的行、列、单元格或尺寸，例如添加行或合并单元格
+- 添加或删除包含另一个表格或代码块的表格，或包含表格的区块
+- 把表格粘贴到单元格中，或在跨越多个单元格的选区上粘贴
 - 代码块内的任何编辑
 
 `propose` view 会拒绝无法记录为 proposal 的写入并将其回滚，两种模式也都会拒绝某些位于段落旁的编辑，这些段落被待处理的合并显示在其存储位置之外；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。在编辑模式下对待处理的格式 suggestion 再设置格式会直接应用，并保留该 suggestion 待处理，因此之后拒绝它仍会保留这次直接编辑。如果协作者在这次编辑同步期间决定或撤回该 suggestion，这次直接编辑可能丢失。
@@ -268,6 +269,12 @@ const result = authored.update.decide({ action: 'accept', changes });
 
 一次调用会同时决定所有 change，因此不会返回 `blocked`。应用成功时，它得到的文档与按任意顺序逐个决定这些 change 相同，其中每个返回 `blocked` 的步骤都会加入其 `with` 列出的 change。有一种情况仍取决于顺序。当建议的 Enter 将链接切成多个片段，而其他建议删除或解除包裹某个片段或片段之间的节点时，拒绝该 Enter 后，逐个决定与一次调用决定可能以不同方式重新合并这些片段。一次撤销会恢复它决定的每个 change。请在同一个事件处理函数中读取并决定，因为两者之间的编辑可能使 change 变为 `stale`。当 schema 拒绝决定后的文档时，结果为 `invalid`，且不会有任何修改。复制的 `ModeToolbarButton` 在其菜单中以 **Accept all suggestions** 和 **Reject all suggestions** 提供此操作。
 
+### 决定表格
+
+接受被划掉的表格，或拒绝建议添加的表格，会移除整个表格及其中的每个待处理 change，包括其他作者的文本。一次撤销会恢复该表格，其中的 change 仍待处理。完全位于表格内的 change 会在没有裁决的情况下离开审阅，因此它的卡片消失，`authored.read.outcome(id)` 对它返回 `null`，见 [Authored Changes](/cn/docs/authored-changes#change-如何离开审阅)。划掉或添加该表格的 change 保留自己的裁决。
+
+在有人决定被划掉的表格之前，两种模式都会拒绝在其中输入、针对它的表格命令，以及会合并其两侧段落的 Backspace 或 Delete。`authored.api.subscribeRefusals` 以 code `unrepresentable` 和原因 `grid` 报告每次拒绝，`SuggestionKit` 会显示 toast。
+
 ## 保存和重新加载
 
 保存 `editor.read.value()` 返回的完整值。待处理审阅 mark 位于每个 node 的 `authored` 属性中，审阅记录位于文档的 `records` 中；两者都交由编辑器管理。
@@ -327,7 +334,7 @@ if (result.status === 'applied') {
 }
 ```
 
-结果不是 `applied` 或抛出异常时保留输入。Comments 通过 `initialState.mutate` 授权持久化写入，只发布已提交的规范记录。接受或拒绝 change 是可撤销的文档操作；它隐藏审阅卡片，但不删除或解决讨论。Undo 恢复待处理 change，并保留消息与解决状态。解决或重新打开 thread 不进入文档 undo。
+结果不是 `applied` 或抛出异常时保留输入。Comments 通过 `initialState.mutate` 授权持久化写入，只发布已提交的规范记录。接受或拒绝 change 是可撤销的文档操作；它隐藏审阅卡片，但不删除或解决讨论。之后 **All comments** 会用审阅结果标注该 thread，例如 **Suggestion accepted**；见[评论](/cn/docs/comment#发现对话)。Undo 恢复待处理 change，并保留消息与解决状态。解决或重新打开 thread 不进入文档 undo。
 
 ## API 参考
 

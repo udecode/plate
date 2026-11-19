@@ -172,6 +172,8 @@ if (attachment?.type === "range" && attachment.status === "attached") {
 
 An unavailable attachment does not prove deletion. It can also mean that a projection hides the target or that a historical revision has no target for the thread. Keep conversation data visible independently of inline placement.
 
+A thread on a suggestion keeps its `{ type: 'change', id }` target after the change stops being pending. Read `editor.plugin(AuthoredPlugin).read.outcome(id)` to tell whether the change is still pending, was accepted, rejected or both, or left with no verdict, as [Authored Changes](/docs/authored-changes#how-a-change-left-the-review) describes.
+
 A thread can sit in a named root, such as the text of a [board](/docs/board) note. The page's view reads it with the note's root on both points of its range. A note's view reads a thread in any other root, the page's included, as unavailable.
 
 #### Attach app data
@@ -196,7 +198,9 @@ The `data` passed to `createThread` or `createDraft` belongs to the thread; its 
 
 Render `AllCommentsButton` inside a toolbar whenever the editor installs Comments. It opens a lazy, paginated dialog over published records and works without a document selection, in read-only views, and without Suggestions. The **All**, **Open**, and **Resolved** filters use conversation state; target availability does not remove a record from those filters.
 
-Only the mounted page resolves targets. **Show in document** reads the attachment again before selecting and scrolling the exact current-view range. For a thread in a board note, it selects the note's text, focuses the note and pans the board when part of the note is out of view. Unavailable targets remain readable with the neutral label **Target unavailable in this view**. Dirty reply or edit input and pending actions keep their page mounted and block dismissal, filtering, paging, navigation, and destructive deletion until the action succeeds or the user cancels.
+Each row labels its target. A target the current view can show reads **Attached to document**, and a range it cannot show reads **Target unavailable in this view**. A thread on a suggestion says what the review did once the suggestion is no longer pending: **Suggestion accepted**, **Suggestion rejected**, **Suggestion accepted and rejected** when it holds both verdicts, or **Suggestion deleted** when it left with no verdict, such as when accepting a struck table took it. These labels read the same after a reload. A pending suggestion reads **Target unavailable in this view** under a preview, because its ranges name places of the stored document.
+
+Only the mounted page resolves targets. **Show in document** works only for an attached target. It reads the target again when clicked and on the next frame, then selects and scrolls the exact current-view range. For a thread in a board note, it selects the note's text, focuses the note and pans the board when part of the note is out of view. Dirty reply or edit input and pending actions keep their page mounted and block dismissal, filtering, paging, navigation, and destructive deletion until the action succeeds or the user cancels.
 
 ### Save and load
 

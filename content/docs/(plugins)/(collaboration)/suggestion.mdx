@@ -186,10 +186,11 @@ The first proposal makes a sentence bold; the second inserts a paragraph. Open e
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. Text edits inside a table cell record too. So do list edits, such as Enter or Tab in a list item, or Backspace at its start. Suggesting still refuses these edits for now:
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Editor commands record text, mark, and node operations as proposals while the view is in suggesting mode. Text edits inside a table cell record too. Adding or deleting a whole table records as one change, such as **Delete table** or a table pasted between paragraphs. So do list edits, such as Enter or Tab in a list item, or Backspace at its start. Suggesting still refuses these edits for now:
 
-- a change to a table itself, such as adding a row or merging cells
-- pasting a table, or pasting over a selection across table cells
+- a change to a table's rows, columns, cells or sizes, such as adding a row or merging cells
+- adding or deleting a table that holds another table or a code block, or a block that holds a table
+- pasting a table into a cell, or pasting over a selection across cells
 - any edit inside a code block
 
 A `propose` view refuses a write it cannot record as a proposal and rolls it back, and both modes refuse some edits beside a paragraph a pending join shows away from where it is saved; see [Authored Changes](/docs/authored-changes#configure-a-view). Formatting in Editing mode over a pending format suggestion applies directly and leaves the suggestion pending, so rejecting it later keeps the direct edit. If a collaborator decides or withdraws that suggestion while the edit syncs, the direct edit can be lost.
@@ -268,6 +269,12 @@ const result = authored.update.decide({ action: 'accept', changes });
 
 One call decides every change together, so it never returns `blocked`. When it applies, it leaves the same document as deciding the changes one at a time in any order, where each `blocked` step adds the changes its `with` names. One case still depends on order. When a suggested Enter cut a link into pieces and other suggestions remove or unwrap a piece or a node between them, rejecting the Enter can rejoin the pieces differently one at a time than in one call. One undo restores every change it decided. Read and decide in the same event handler, because an edit between them can make a change `stale`. When the schema refuses the decided document, the result is `invalid` and nothing changes. The copied `ModeToolbarButton` offers this as **Accept all suggestions** and **Reject all suggestions** in its menu.
 
+### Decide a table
+
+Accepting a struck table, or rejecting a suggested one, removes the whole table with every pending change inside it, another author's text included. One undo brings back the table with those changes pending. A change that lies wholly inside the table leaves the review with no verdict, so its card disappears and `authored.read.outcome(id)` returns `null` for it, as [Authored Changes](/docs/authored-changes#how-a-change-left-the-review) describes. The change that struck or added the table keeps its verdict.
+
+Until someone decides a struck table, both modes refuse typing in it, a table command aimed at it, and Backspace or Delete that would join the paragraphs on either side of it. `authored.api.subscribeRefusals` reports each with code `unrepresentable` and reason `grid`, and `SuggestionKit` shows a toast.
+
 ## Save and reload
 
 Save the complete value returned by `editor.read.value()`. Pending review marks live in each node's `authored` property and review records in the document's `records`; leave both to the editor.
@@ -330,7 +337,7 @@ if (result.status === 'applied') {
 }
 ```
 
-Preserve input for non-applied results and thrown errors. Comments authorizes durable writes through `initialState.mutate` and publishes only the canonical committed record. Accepting or rejecting a change is a document action that can be undone; it hides the review card without deleting or resolving its discussion. Undo restores the pending change with its messages and resolution intact. Resolving or reopening the thread stays outside document undo.
+Preserve input for non-applied results and thrown errors. Comments authorizes durable writes through `initialState.mutate` and publishes only the canonical committed record. Accepting or rejecting a change is a document action that can be undone; it hides the review card without deleting or resolving its discussion. **All comments** then labels the thread with what the review did, such as **Suggestion accepted**; see [Comments](/docs/comment#discover-conversations). Undo restores the pending change with its messages and resolution intact. Resolving or reopening the thread stays outside document undo.
 
 ## API Reference
 
