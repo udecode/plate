@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "bench:docx": "BENCH_MEASURE=1 bun tooling/scripts/test-suite.mjs benchmarks/editor/benchmarks/plate-docx-retained-source-benchmark.test.ts benchmarks/editor/benchmarks/plate-docx-revision-import-benchmark.test.ts",
+    "bench:markdown": "BENCH_MEASURE=1 bun test ./packages/platejs/src/markdown/lib/markdownTable.benchmark.spec.ts",
     "bench:relocation": "BENCH_MEASURE=1 pnpm --filter plitejs test:bun ./test/document-change-relocation-scale.spec.ts",
     "bench:table": "BENCH_MEASURE=1 bun test ./packages/platejs/src/features/table/lib/internal/mutation.benchmark.spec.ts ./packages/platejs/src/features/table/lib/internal/paste.benchmark.spec.ts",
     "bench:editor:bench": "cd benchmarks/editor && npm run bench:evidence",
