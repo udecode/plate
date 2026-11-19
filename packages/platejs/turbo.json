@@ -8566,10 +8566,15 @@
         "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:details",
+        "source-hash:partition:docx-paste",
         "source-hash:partition:layout",
         "source-hash:partition:media",
         "source-hash:partition:proxies",
+        "source-hash:partition:standard-code-block",
+        "source-hash:partition:standard-list",
         "source-hash:partition:static",
+        "source-hash:partition:table",
+        "source-hash:partition:testing",
         "source-hash:partition:upload"
       ],
       "inputs": [

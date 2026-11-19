@@ -275,6 +275,7 @@ export {
 export {
   afterActiveTransactionEnds,
   applyBuiltDocumentChange,
+  attachTransactionSpecAfterCommit,
   getActiveEditorUpdateId,
   getActiveEditorTransaction,
   getCollabEffectTypes,

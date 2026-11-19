@@ -9,14 +9,22 @@ import {
   defineEffect,
   definePlugin,
   documentReplacement,
+  EditorSchemaValidationError,
   ElementApi,
   type Node,
   NodeApi,
+  PathApi,
   PLUGINS,
+  TextApi,
   type BlockInsertOptions,
+  type Descendant,
+  type EditorCommit,
+  type EditorCommitHandler,
+  type EditorViewOptions,
   type Element,
   type ElementOf,
   type NodeKey,
+  type Path,
   property,
   transferVeto,
   txLocate,
@@ -24,9 +32,14 @@ import {
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import {
+  attachTransactionSpecAfterCommit,
+  canPlaceBlocksAtPath,
   configureAuthoredView,
   getActiveEditorTransaction,
   getAuthoredUpdateView,
+  getEditorCommitNode,
+  getEditorRuntimeRootKeys,
+  getSnapshotVersion,
   getViewAuthor,
   readAuthoredView,
   reportEditorLifecycleError,
@@ -190,6 +203,12 @@ const uploadAdmissionEffect = defineEffect({
   history: 'skip',
   key: 'upload.admission',
 });
+
+type PastedPicture = PreparedUpload &
+  Readonly<{
+    caption: readonly Descendant[];
+    properties: Readonly<Record<string, unknown>>;
+  }>;
 
 const isUploadFileType = (value: string): value is UploadFileType =>
   (UPLOAD_FILE_TYPES as readonly string[]).includes(value);
@@ -366,6 +385,7 @@ const validateFiles = (
 };
 
 type InternalTask = {
+  admittedVersion: number;
   controller: AbortController;
   kind: UploadKind;
   state: ReturnType<typeof createZustandStore<UploadTaskState>>;
@@ -416,6 +436,16 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       store,
     } = context;
     const tasks = new Map<NodeKey, InternalTask>();
+    const pastedPictures = new Map<NodeKey, PastedPicture>();
+    // Removing, retagging or cancelling a draft revokes its start for good, so
+    // a history restore of the draft cannot bring the request back.
+    type PendingStart = { readonly kind: UploadKind; revoked: boolean };
+    const pending = new Map<NodeKey, Set<PendingStart>>();
+    let cancelAllCount = 0;
+    const revokePending = (key: NodeKey) => {
+      for (const start of pending.get(key) ?? []) start.revoked = true;
+      pending.delete(key);
+    };
 
     const currentSlot = (key: NodeKey, kind?: UploadKind) => {
       // A draft a preview hides still exists, so read the stored document.
@@ -431,6 +461,14 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         ? ([entry[0], entry[1]] as const)
         : undefined;
     };
+    const slotIn = (commit: EditorCommit, key: NodeKey, kind: UploadKind) =>
+      getEditorRuntimeRootKeys(editor).some((root) => {
+        const node = getEditorCommitNode(commit, key, root)?.[0];
+
+        return (
+          NodeApi.isElement(node) && node.type === type && node.kind === kind
+        );
+      });
     const removeTaskResource = (key: NodeKey, task?: InternalTask) => {
       const current = tasks.get(key);
       if (task && current && current !== task) return;
@@ -439,16 +477,31 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       delete next[key];
       store.set({ tasks: next });
     };
-    const cancel = (key: NodeKey, expected?: InternalTask) => {
+    const stopTask = (key: NodeKey, expected?: InternalTask) => {
       const task = tasks.get(key);
-      if (!task || (expected && task !== expected)) return;
+      if (!task || (expected && task !== expected)) return false;
       tasks.delete(key);
       task.controller.abort();
       removeTaskResource(key, task);
+      return true;
+    };
+    const cancel = (key: NodeKey, expected?: InternalTask) => {
+      if (stopTask(key, expected)) pastedPictures.delete(key);
+    };
+    const createOwnerView = (
+      authorId: string | undefined,
+      authored: EditorViewOptions['authored']
+    ) => {
+      const owner = createEditorView(editor, { authorId });
+
+      configureAuthoredView(owner, authored);
+      return owner;
     };
     const cancelAll = () => {
       const active = [...tasks.values()];
+      cancelAllCount += 1;
       tasks.clear();
+      pastedPictures.clear();
       active.forEach(({ controller }) => controller.abort());
       if (Object.keys(store.get('tasks')).length > 0) store.set({ tasks: {} });
     };
@@ -507,14 +560,27 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       };
     };
     const startTask = (
-      upload: PreparedUpload,
+      upload: PreparedUpload | PastedPicture,
       client: UploadClient,
       getUrl: (file: UploadOutcome) => string,
-      owner: typeof editor
+      owner: typeof editor,
+      revoked: () => boolean,
+      admittedVersion: number
     ) => {
       if (!currentSlot(upload.key, upload.kind)) return;
 
-      cancel(upload.key);
+      stopTask(upload.key);
+      // Stopping the older request runs its abort listeners, which may cancel
+      // this slot or close the editor.
+      if (revoked()) {
+        if (!tasks.has(upload.key)) pastedPictures.delete(upload.key);
+        return;
+      }
+      if ('caption' in upload) {
+        pastedPictures.set(upload.key, upload);
+      } else if (pastedPictures.get(upload.key)?.file !== upload.file) {
+        pastedPictures.delete(upload.key);
+      }
       const controller = new AbortController();
       const state = createZustandStore<UploadTaskState>(
         Object.freeze({
@@ -528,6 +594,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         subscribe: state.subscribe,
       };
       const task: InternalTask = {
+        admittedVersion,
         controller,
         kind: upload.kind,
         state,
@@ -669,11 +736,20 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               return;
             }
 
-            tx.nodes.set(normalized, {
-              at: upload.key,
-              voids: true,
-            });
+            const kept = pastedPictures.get(upload.key);
+
+            tx.nodes.set(
+              { ...kept?.properties, ...normalized },
+              { at: upload.key, voids: true }
+            );
             tx.nodes.unset('kind', { at: upload.key, voids: true });
+            if (
+              kept?.caption.some(
+                (child) => !TextApi.isText(child) || child.text !== ''
+              )
+            ) {
+              tx.nodes.replaceChildren(kept.caption, { at: upload.key });
+            }
           });
 
           // A write the editor refuses or drops leaves the draft in place.
@@ -702,14 +778,283 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       })();
     };
 
+    // A task keeps the author and intent that admitted it, so its view can
+    // turn read-only, unmount or preview while the task runs.
+    const admit = (
+      afterCommit: (handler: EditorCommitHandler) => void,
+      admission: Readonly<{
+        authored: EditorViewOptions['authored'];
+        authorId: string | undefined;
+        client: UploadClient;
+        getUrl: (file: UploadOutcome) => string;
+        uploads: ReadonlyArray<PreparedUpload | PastedPicture>;
+      }>
+    ) => {
+      const cancelledBefore = cancelAllCount;
+      let owner: typeof editor | undefined;
+
+      for (const upload of admission.uploads) {
+        const start: PendingStart = { kind: upload.kind, revoked: false };
+        const starts = pending.get(upload.key) ?? new Set();
+        pending.set(upload.key, starts.add(start));
+
+        afterCommit(({ commit }) => {
+          // `on.commit` already counted this commit's own replacement.
+          const own = commit.annotations[documentReplacement.key] === true;
+          const revoked = () =>
+            start.revoked || cancelAllCount !== cancelledBefore + (own ? 1 : 0);
+          if (revoked()) return;
+          // The newest file for a slot wins, so an older start still waiting
+          // for its commit stops here.
+          for (const older of starts) {
+            if (older === start) break;
+            older.revoked = true;
+            starts.delete(older);
+          }
+          owner ??= createOwnerView(admission.authorId, admission.authored);
+          startTask(
+            upload,
+            admission.client,
+            admission.getUrl,
+            owner,
+            revoked,
+            commit.version
+          );
+          starts.delete(start);
+          if (starts.size === 0 && pending.get(upload.key) === starts) {
+            pending.delete(upload.key);
+          }
+        });
+      }
+    };
+
     return {
       activate({ beforePublish, onCleanup }) {
         beforePublish(() => validateConfiguration(store.get()));
         onCleanup(cancelAll);
       },
       api: () => ({
-        cancel: (key: NodeKey) => cancel(key),
+        cancel: (key: NodeKey) => {
+          revokePending(key);
+          cancel(key);
+        },
       }),
+      commands: ({ around }) => [
+        around(domCommands.insertData, ({ input, next, state }) => {
+          const { client, getUrl, rules } = store.get();
+          const pictureType = destination('image')?.schema.type;
+          const hasDataUrl = (picture: Element) =>
+            typeof picture.url === 'string' && /^data:/iu.test(picture.url);
+          const stringsCarryPicture = () =>
+            Array.from(input.types ?? []).some((format) => {
+              // happy-dom's DataTransfer returns a pasted file from getData under its MIME type.
+              const data: unknown = input.getData(format);
+
+              return (
+                typeof data === 'string' &&
+                (/data:image\//iu.test(data) || data.includes('\\pict'))
+              );
+            });
+          const editorSliceCarriesPicture = () => {
+            const read = editor.api.dom.clipboard.readSlice(input);
+
+            return (
+              read.kind === 'slice' &&
+              [read.slice.content, ...Object.values(read.slice.roots ?? {})]
+                .flat()
+                .some((node) =>
+                  [...NodeApi.elements(node)].some(
+                    ([element]) =>
+                      element.type === pictureType && hasDataUrl(element)
+                  )
+                )
+            );
+          };
+
+          if (
+            !client ||
+            !getUrl ||
+            !pictureType ||
+            !Object.values(rules).some((rule) => rule?.kind === 'image') ||
+            !(stringsCarryPicture() || editorSliceCarriesPicture())
+          ) {
+            return next();
+          }
+
+          const known = new Set<NodeKey>();
+
+          for (const [picture, path] of state.nodes.entries({
+            at: [],
+            type: pictureType,
+          })) {
+            const key = hasDataUrl(picture) ? state.key(path) : null;
+            if (key) known.add(key);
+          }
+          const before = new Set(state.nodes.children([]));
+          const writer = getAuthoredUpdateView(editor);
+          const pasted = next();
+
+          if (pasted === false) return false;
+
+          const handlers: EditorCommitHandler[] = [];
+          const result = state.transaction.extend(pasted, (tx) => {
+            const allowedTypes = new Set(
+              Object.keys(rules).filter(isUploadFileType)
+            );
+            const decodeDataUrl = (url: string) => {
+              const mime = url.slice(5, url.indexOf(';')).toLowerCase();
+
+              try {
+                const bytes = Uint8Array.from(
+                  atob(url.slice(url.indexOf(',') + 1)),
+                  (char) => char.charCodeAt(0)
+                );
+
+                return new File([bytes], `image.${mime.slice(6)}`, {
+                  type: mime,
+                });
+              } catch {
+                return undefined;
+              }
+            };
+            const captionOwnsContentRoot = (picture: Element) =>
+              [...NodeApi.elements(picture)].some(
+                ([element]) =>
+                  Object.keys(tx.schema.getElementContentRoots(element))
+                    .length > 0
+              );
+            const createDraft = (properties: Record<string, unknown>) => {
+              try {
+                return tx.schema.create(type, {
+                  ...properties,
+                  kind: 'image',
+                });
+              } catch (error) {
+                if (error instanceof EditorSchemaValidationError) {
+                  return undefined;
+                }
+                throw error;
+              }
+            };
+            const candidates: Array<[Element, Path]> = [];
+
+            tx.nodes.children([]).forEach((block, index) => {
+              if (before.has(block)) return;
+              for (const [picture, path] of tx.nodes.entries({
+                at: [index],
+                type: pictureType,
+              })) {
+                const key = hasDataUrl(picture) ? tx.key(path) : null;
+                if (key && !known.has(key)) candidates.push([picture, path]);
+              }
+            });
+
+            const pictures = candidates.flatMap(([node, path]) => {
+              const file = decodeDataUrl(String(node.url));
+              const fileType = file && classifyFile(file, allowedTypes);
+              if (!file || !fileType || rules[fileType]?.kind !== 'image') {
+                return [];
+              }
+
+              const properties: Record<string, unknown> = {};
+              const draftProperties: Record<string, unknown> = {};
+
+              for (const [key, value] of Object.entries(node)) {
+                if (key === 'children' || key === 'type' || key === 'url') {
+                  continue;
+                }
+                if (
+                  [
+                    'alt',
+                    'naturalHeight',
+                    'naturalWidth',
+                    'title',
+                    'width',
+                  ].includes(key)
+                ) {
+                  properties[key] = value;
+                } else {
+                  draftProperties[key] = value;
+                }
+              }
+
+              const draft = createDraft(draftProperties);
+
+              if (
+                !draft ||
+                !canPlaceBlocksAtPath(tx.schema, path, [draft], {
+                  removing: path.slice(-1),
+                  root: tx.view.root(),
+                }) ||
+                captionOwnsContentRoot(node)
+              ) {
+                return [];
+              }
+
+              return [
+                { caption: node.children, draft, file, path, properties },
+              ];
+            });
+
+            if (pictures.length === 0) return;
+
+            const validation = validateFiles(
+              pictures.map(({ file }) => file),
+              store.get()
+            );
+
+            if (validation.error) {
+              const failure: UploadFailure = {
+                ...validation.error,
+                phase: 'admission',
+              };
+
+              handlers.push(() => notifyFailure(failure));
+              return;
+            }
+
+            const selection = tx.selection();
+            const caretPicture = pictures.find(
+              ({ path }) =>
+                selection &&
+                (PathApi.isAncestor(path, selection.anchor.path) ||
+                  PathApi.isAncestor(path, selection.focus.path))
+            );
+            const swapped = pictures.flatMap(
+              ({ caption, draft, file, path, properties }) => {
+                if (!tx.nodes.replace(draft, { at: path })) return [];
+                const key = tx.key(path);
+                if (!key) {
+                  throw new Error(
+                    'Upload insertion did not retain its node identity.'
+                  );
+                }
+
+                return [
+                  { caption, file, key, kind: 'image' as const, properties },
+                ];
+              }
+            );
+
+            if (caretPicture) {
+              const start = tx.points.start(caretPicture.path);
+              if (start) tx.selection.set(start);
+            }
+            admit((handler) => handlers.push(handler), {
+              authored: readAuthoredView(writer),
+              authorId: getViewAuthor(writer),
+              client,
+              getUrl,
+              uploads: swapped,
+            });
+          });
+
+          for (const handler of handlers) {
+            attachTransactionSpecAfterCommit(result, handler);
+          }
+          return result;
+        }),
+      ],
       on: {
         commit({ commit }) {
           if (commit.annotations[documentReplacement.key] === true) {
@@ -718,8 +1063,33 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           }
           if (!commit.changed.hasAny('document')) return;
 
+          const isLatest = commit.version >= getSnapshotVersion(editor);
+          const survives = (
+            key: NodeKey,
+            kind: UploadKind,
+            admittedVersion?: number
+          ) => {
+            if (!currentSlot(key, kind)) return false;
+
+            const admittedSinceCommit =
+              admittedVersion !== undefined &&
+              admittedVersion >= commit.version;
+
+            return isLatest || admittedSinceCommit || slotIn(commit, key, kind);
+          };
+
           for (const [key, task] of tasks) {
-            if (!currentSlot(key, task.kind)) cancel(key, task);
+            if (!survives(key, task.kind, task.admittedVersion)) {
+              cancel(key, task);
+            }
+          }
+          for (const [key, starts] of pending) {
+            for (const start of starts) {
+              if (survives(key, start.kind)) continue;
+              start.revoked = true;
+              starts.delete(start);
+            }
+            if (starts.size === 0) pending.delete(key);
           }
         },
       },
@@ -889,18 +1259,12 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               prepared.push(...prepareInserted(elements));
             }
 
-            const authorId = getViewAuthor(writer);
-
-            afterCommit(() => {
-              // A task keeps the author and intent that admitted it, so its
-              // view can turn read-only, unmount or preview while the task runs.
-              const owner = createEditorView(editor, { authorId });
-
-              configureAuthoredView(owner, authored);
-
-              for (const upload of prepared) {
-                startTask(upload, client, getUrl, owner);
-              }
+            admit(afterCommit, {
+              authored,
+              authorId: getViewAuthor(writer),
+              client,
+              getUrl,
+              uploads: prepared,
             });
             return true;
           }
