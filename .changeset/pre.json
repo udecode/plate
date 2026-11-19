@@ -9,7 +9,5 @@
     "plitejs": "0.0.1",
     "www": "0.0.1"
   },
-  "changesets": [
-    "plate-v2-beta"
-  ]
+  "changesets": ["plate-v2-beta"]
 }
