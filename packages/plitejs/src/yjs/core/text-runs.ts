@@ -65,10 +65,8 @@ export type YjsSegment =
 export type PliteSegment =
   | Readonly<{ kind: 'text'; leaves: readonly Text[]; from: number }>
   | Readonly<{ kind: 'element'; node: Element; from: number }>;
-export type YjsRunEncoder = (
-  leaf: Text,
-  childIndex: number
-) => YjsAttributeRecord;
+type YjsLeafEncoder = (leaf: Text, childIndex: number) => YjsAttributeRecord;
+export type YjsRunEncoder = YjsLeafEncoder & Readonly<{ oneText: boolean }>;
 
 export const segmentYjsChildren = (
   children: readonly YjsNode[]
@@ -205,7 +203,10 @@ export const fillYjsTextGaps = (
       write,
       stored,
       next,
-      createYjsTextChain([{ text: '' }], () => ({}))
+      createYjsTextChain(
+        [{ text: '' }],
+        Object.assign(() => ({}), { oneText: false })
+      )
     );
   }
 };
@@ -458,33 +459,41 @@ export const elementOnlySpliceEdits = (
   return next === kept.length ? { inserted, removed, updated } : null;
 };
 
-export const createYjsRunEncoder =
-  (
-    isSetValued: YjsSetPropertyResolver,
-    location: YjsPropertyLocation
-  ): YjsRunEncoder =>
-  (leaf, childIndex) => {
-    const result: YjsAttributeRecord = {};
-    const context = createYjsPropertyContext(leaf, {
-      ...location,
-      path: [...location.path, (location.offset ?? 0) + childIndex],
-    });
-    for (const [key, value] of Object.entries(leaf)) {
-      if (key === 'text' || value === undefined) continue;
-      assertPublicYjsAttributeCanBeSet(key);
-      if (isSetValued(leaf, key, context)) {
-        if (!Array.isArray(value)) {
-          throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
-        }
-        for (const [member, item] of Object.entries(
-          encodeYjsSetValueAttributes(key, value)
-        )) {
-          result[member] = [item];
-        }
-      } else result[key] = [value];
+export const createYjsRunEncoder = (
+  isSetValued: YjsSetPropertyResolver,
+  location: YjsPropertyLocation
+): YjsRunEncoder =>
+  Object.assign(
+    (leaf: Text, childIndex: number) => {
+      const result: YjsAttributeRecord = {};
+      const context = createYjsPropertyContext(leaf, {
+        ...location,
+        path: [...location.path, (location.offset ?? 0) + childIndex],
+      });
+      for (const [key, value] of Object.entries(leaf)) {
+        if (key === 'text' || value === undefined) continue;
+        assertPublicYjsAttributeCanBeSet(key);
+        if (isSetValued(leaf, key, context)) {
+          if (!Array.isArray(value)) {
+            throw new Error(
+              `Set-valued Yjs property "${key}" must be an array.`
+            );
+          }
+          for (const [member, item] of Object.entries(
+            encodeYjsSetValueAttributes(key, value)
+          )) {
+            result[member] = [item];
+          }
+        } else result[key] = [value];
+      }
+      return result;
+    },
+    {
+      oneText:
+        location.ancestors[0] !== undefined &&
+        isSetValued.holdsOneText(location.ancestors[0]),
     }
-    return result;
-  };
+  );
 
 export const decodeRunAttributes = (
   attributes: Readonly<YjsAttributeRecord>
@@ -594,6 +603,15 @@ const higherMark = (left: Mark, right: Mark) =>
   left.record.l > right.record.l ||
   (left.record.l === right.record.l && left.client > right.client);
 
+const frontierOf = (marks: readonly Mark[]) =>
+  marks.filter(
+    (mark) =>
+      !marks.some(
+        (other) =>
+          other !== mark && mark.clock < (other.record.seen[mark.client] ?? 0)
+      )
+  );
+
 const resolveLetterKey = (letter: Letter, key: string) => {
   const covering = [...letter.marks.values()].filter((mark) => {
     countCoreWork('yjsMarkRecordsVisited');
@@ -602,14 +620,7 @@ const resolveLetterKey = (letter: Letter, key: string) => {
   const known = covering.filter(
     (mark) => letter.id[1] < (mark.record.seen[letter.id[0]] ?? 0)
   );
-  const candidates = known.length > 0 ? known : covering;
-  const frontier = candidates.filter(
-    (mark) =>
-      !candidates.some(
-        (other) =>
-          other !== mark && mark.clock < (other.record.seen[mark.client] ?? 0)
-      )
-  );
+  const frontier = frontierOf(known.length > 0 ? known : covering);
   const own =
     known.length === 0
       ? frontier.filter((mark) => mark.client === letter.id[0])
@@ -622,7 +633,9 @@ const resolveLetterKey = (letter: Letter, key: string) => {
   else delete letter.attributes[key];
 };
 
-const markSpan = (index: MarkIndex, record: MarkRecord) => {
+type MarkSpan = Readonly<{ from: number; to: number }>;
+
+const markSpan = (index: MarkIndex, record: MarkRecord): MarkSpan | null => {
   countCoreWork('yjsMarkRecordsVisited');
   const start = index.byId.get(letterKey(record.s));
   const end = record.e && index.byId.get(letterKey(record.e));
@@ -786,13 +799,30 @@ const markIndexOf = (text: Y.XmlText): MarkIndex => {
   return index;
 };
 
+const spanBackToSeenCut = (
+  index: MarkIndex,
+  mark: Mark,
+  span: MarkSpan
+): MarkSpan => {
+  for (let at = index.cuts.length - 1; at >= 0; at--) {
+    const { id, slot } = index.live[index.cuts[at]];
+    if (slot <= span.from && id[1] < (mark.record.seen[id[0]] ?? 0)) {
+      return { from: slot, to: span.to };
+    }
+  }
+  return { from: 0, to: span.to };
+};
+
 const writeMarkRecord = (
   text: Y.XmlText,
   from: number,
   length: number,
   k: string,
   v: unknown,
-  anchor = true
+  {
+    anchor = true,
+    priority,
+  }: Readonly<{ anchor?: boolean; priority?: number }> = {}
 ) => {
   const index = markIndexOf(text);
   const { doc } = text;
@@ -809,7 +839,7 @@ const writeMarkRecord = (
     v: v === null ? null : [Array.isArray(v) ? v[0] : v],
     s: start.id,
     e: end?.id ?? null,
-    l: index.maxPriority + 1,
+    l: priority ?? index.maxPriority + 1,
     seen: Object.fromEntries(Y.decodeStateVector(Y.encodeStateVector(doc))),
   };
   const client = doc.clientID;
@@ -828,10 +858,11 @@ const writeMarkRecord = (
   for (const mark of covered.values()) {
     countCoreWork('yjsMarkRecordsVisited');
     const previous = markSpan(index, mark.record);
+    const reach = previous && spanBackToSeenCut(index, mark, previous);
     if (
-      previous &&
-      previous.from >= span.from &&
-      previous.to <= span.to &&
+      reach &&
+      reach.from >= span.from &&
+      reach.to <= span.to &&
       mark.clock < (record.seen[mark.client] ?? 0) &&
       Object.entries(mark.record.seen).every(
         ([author, seen]) => seen <= (record.seen[author] ?? 0)
@@ -1287,7 +1318,9 @@ export const cutTextAt = (
         ...Object.keys(next),
       ])) {
         if (!areJsonLikeValuesEqual(embed.attributes[key], next[key])) {
-          writeMarkRecord(source, position, 1, key, next[key] ?? null, false);
+          writeMarkRecord(source, position, 1, key, next[key] ?? null, {
+            anchor: false,
+          });
         }
       }
       const view = new Y.XmlText();
@@ -1305,6 +1338,75 @@ export const cutTextAt = (
     rest -= length;
   }
   return { at: chain.length, view: null };
+};
+
+const seenTextLetterOf = (index: MarkIndex, mark: Mark, span: MarkSpan) => {
+  let seen: 'deleted' | 'live' | null = null;
+  for (let slot = span.from; slot < span.to; slot++) {
+    const { cut, id, live } = index.order[slot];
+    if (cut || id[1] >= (mark.record.seen[id[0]] ?? 0)) continue;
+    if (live) return 'live';
+    seen = 'deleted';
+  }
+  return seen;
+};
+
+const oneTextWinners = (chain: YjsTextChain): ReadonlyMap<string, Mark> => {
+  const counted = new Map<string, { deleted: Set<Mark>; live: Set<Mark> }>();
+  for (const text of chain) {
+    const piece = textPieceOf(text);
+    if (piece.from === piece.to) continue;
+    const index = markIndexOf(piece.source);
+    const first = piece.from === 0 ? 0 : index.live[piece.from - 1].slot + 1;
+    const last =
+      piece.to < index.live.length
+        ? index.live[piece.to].slot
+        : index.order.length;
+    for (const mark of index.records.values()) {
+      const span = markSpan(index, mark.record);
+      if (!span) continue;
+      const reach = spanBackToSeenCut(index, mark, span);
+      if (reach.to <= first || reach.from >= last) continue;
+      const seen = seenTextLetterOf(index, mark, span);
+      if (!seen) continue;
+      const marks = counted.get(mark.record.k) ?? {
+        deleted: new Set(),
+        live: new Set(),
+      };
+      marks[seen].add(mark);
+      counted.set(mark.record.k, marks);
+    }
+  }
+  const winners = new Map<string, Mark>();
+  for (const [key, { deleted, live }] of counted) {
+    const marks = live.size > 0 ? live : deleted;
+    countCoreWork('yjsMarkRecordsVisited', marks.size);
+    let winner: Mark | undefined;
+    for (const mark of frontierOf([...marks])) {
+      if (!winner || higherMark(mark, winner)) winner = mark;
+    }
+    if (winner) winners.set(key, winner);
+  }
+  return winners;
+};
+
+const restatementPriority = (
+  winners: ReadonlyMap<string, Mark> | null,
+  key: string,
+  value: unknown
+) => {
+  const record = winners?.get(key)?.record;
+  return record && areJsonLikeValuesEqual(record.v, value)
+    ? record.l
+    : undefined;
+};
+
+const oneTextAttributes = (chain: YjsTextChain): YjsAttributeRecord => {
+  const attributes: YjsAttributeRecord = {};
+  for (const [key, { record }] of oneTextWinners(chain)) {
+    if (record.v != null) attributes[key] = record.v;
+  }
+  return attributes;
 };
 
 const readEncodedRuns = (text: Y.XmlText) => {
@@ -1340,7 +1442,7 @@ const readEncodedRuns = (text: Y.XmlText) => {
   return runs;
 };
 
-export const readTextRuns = (chain: YjsTextChain): Text[] => {
+export const readTextRuns = (chain: YjsTextChain, oneText: boolean): Text[] => {
   const pending = chain.length === 1 && pendingRuns.get(chain[0]);
   if (pending) return pending.map((leaf) => ({ ...leaf }));
   for (const text of chain) {
@@ -1356,6 +1458,14 @@ export const readTextRuns = (chain: YjsTextChain): Text[] => {
   }
   if (chain.every((text) => yjsTextLength(text) === 0)) {
     return [{ ...decodeRunAttributes(getYjsAttributes(chain[0])), text: '' }];
+  }
+  if (oneText) {
+    return [
+      {
+        ...decodeRunAttributes(oneTextAttributes(chain)),
+        text: chain.map(yjsTextContent).join(''),
+      },
+    ];
   }
   const leaves: Text[] = [];
   for (const text of chain) {
@@ -1416,8 +1526,15 @@ export const createYjsTextChain = (
       pendingRuns.delete(text);
       pendingAttributes.delete(text);
       const plainLeaf = { text: plain };
-      writeTextRuns([text], [plainLeaf], leaves, (leaf, index) =>
-        leaf === plainLeaf ? {} : encoded[index]
+      writeTextRuns(
+        [text],
+        [plainLeaf],
+        leaves,
+        Object.assign(
+          (leaf: Text, index: number) =>
+            leaf === plainLeaf ? {} : encoded[index],
+          { oneText: encode.oneText }
+        )
       );
     });
   }
@@ -1952,7 +2069,7 @@ export const writeTextRuns = (
     letters,
   }: Readonly<{
     diff?: readonly Diff[];
-    encodeBefore?: YjsRunEncoder;
+    encodeBefore?: YjsLeafEncoder;
     letters?: readonly RunStretch[];
   }> = {}
 ): void => {
@@ -2003,6 +2120,7 @@ export const writeTextRuns = (
           next.slice(fromAfter, fromAfter + length)
         );
         refreshLetters(position.source, index);
+        const winners = encode.oneText ? oneTextWinners(chain) : null;
         for (let inserted = position.at; inserted < position.at + length;) {
           const inherited = index.live[inserted].attributes;
           let end = inserted + 1;
@@ -2017,12 +2135,14 @@ export const writeTextRuns = (
               ...Object.keys(inherited),
               ...Object.keys(attributes),
             ])) {
+              const markValue = attributes[key] ?? null;
               writeMarkRecord(
                 position.source,
                 inserted,
                 end - inserted,
                 key,
-                attributes[key] ?? null
+                markValue,
+                { priority: restatementPriority(winners, key, markValue) }
               );
             }
           }

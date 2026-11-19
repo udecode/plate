@@ -98,11 +98,18 @@ export type YjsSetPropertyResolver = ((
   key: string,
   context: YjsPropertyContext
 ) => boolean) &
-  Readonly<{ isPlaceDependent: (key: string) => boolean }>;
+  Readonly<{
+    /**
+     * Whether an element of `type` holds one text, so each of the text's
+     * properties has one value for all its letters.
+     */
+    holdsOneText: (type: string) => boolean;
+    isPlaceDependent: (key: string) => boolean;
+  }>;
 
 export const noSetProperties: YjsSetPropertyResolver = Object.assign(
   () => false,
-  { isPlaceDependent: () => false }
+  { holdsOneText: () => false, isPlaceDependent: () => false }
 );
 
 export type YjsKeyStorage =
@@ -2158,7 +2165,7 @@ export const readPliteValueFromYjs = (
   const children = segmentYjsChildren(projection.children(root)).flatMap(
     (segment) =>
       segment.kind === 'text'
-        ? readTextRuns(segment.chain)
+        ? readTextRuns(segment.chain, false)
         : [
             readPliteNodeThrough(
               projection,
@@ -2367,7 +2374,7 @@ const readPliteNodeThrough = (
   admitsText: YjsTextAdmission,
   isSetValued: YjsSetPropertyResolver
 ): Descendant => {
-  if (node instanceof Y.XmlText) return readTextRuns([node])[0];
+  if (node instanceof Y.XmlText) return readTextRuns([node], false)[0];
 
   const type = getYjsElementType(node);
   const attributes = getPublicYjsElementAttributes(
@@ -2377,7 +2384,7 @@ const readPliteNodeThrough = (
   const children = segmentYjsChildren(projection.children(node)).flatMap(
     (segment) =>
       segment.kind === 'text'
-        ? readTextRuns(segment.chain)
+        ? readTextRuns(segment.chain, isSetValued.holdsOneText(type))
         : [
             readPliteNodeThrough(
               projection,

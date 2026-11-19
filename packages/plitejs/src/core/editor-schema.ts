@@ -5755,3 +5755,12 @@ export const createDetachedEditorSchema = <V extends Value = Value>(
     }
   );
 };
+
+export const holdsOneText = (
+  schema: Pick<InternalEditorSchemaApi, 'getElementContent'>,
+  type: string
+): boolean => {
+  const content = schema.getElementContent(type);
+
+  return content?.max === 1 && content.allowsText;
+};

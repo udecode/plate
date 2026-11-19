@@ -58,6 +58,7 @@ import {
   type InternalEditorRuntime,
 } from '../core/editor-runtime';
 import {
+  holdsOneText,
   type InternalEditorSchemaApi,
   withoutGeneration,
 } from '../core/editor-schema';
@@ -2234,11 +2235,8 @@ export const createAuthoredPlugin = (
             landed: landedHere,
           };
           const compiled = getCompiledEditorSchema(editor);
-          const oneText = (type: string) => {
-            const content = getEditorSchema(editor).getElementContent(type);
-
-            return content?.max === 1 && content.allowsText;
-          };
+          const oneText = (type: string) =>
+            holdsOneText(getEditorSchema(editor), type);
           const recorded = recordAuthoredSteps({
             before,
             changeId,

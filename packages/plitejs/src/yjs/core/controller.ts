@@ -19,7 +19,11 @@ import { historyFollowsAllFacts } from '../../core/change/record';
 import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
 import { getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
-import { holdsImportedRoot, readEmptyText } from '../../core/editor-schema';
+import {
+  holdsImportedRoot,
+  holdsOneText,
+  readEmptyText,
+} from '../../core/editor-schema';
 import {
   notifyObservers,
   reportEditorLifecycleError,
@@ -378,6 +382,8 @@ export class YjsController<
         );
       },
       {
+        holdsOneText: (type: string) =>
+          holdsOneText(getEditorSchema(this.editor), type),
         isPlaceDependent: (key: string) => {
           const schema = getCompiledEditorSchema(this.editor);
 
