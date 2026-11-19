@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import type { InkMark } from '../../../features/ink/lib';
 import {
-  type EditableSiblingProps,
+  useEditableRef,
   useEditor,
   useEditorViewState,
   useModelEditor,
@@ -64,14 +64,22 @@ const samePlaced = (a: InkPlaced, b: InkPlaced) =>
  * the tool off. The layer fills the nearest positioned ancestor of the
  * Editable, which should hold the Editable and its margins, and reaches at
  * least to the Editable's bottom, so it covers the whole content of a
- * scrolling ancestor.
+ * scrolling ancestor. Render it after the content from the plugin's
+ * `wrapContent` slot, so it comes after the Editable and before every
+ * `afterEditable` slot. It sits at z-index 50, so a press on a control inside
+ * the content at that level or below, such as a block's drag handle, reaches
+ * the layer, while a toolbar or menu at that level from an `afterEditable`
+ * slot or a portal stays above it. When page chrome at or below that level,
+ * such as a sticky header, can sit over the editor, give the positioned
+ * ancestor its own stacking context, such as with `isolation: isolate`, so the
+ * layer stays below that chrome.
  */
 export function InkLayer({
-  editableRef,
   sign: Sign,
-}: EditableSiblingProps & {
+}: {
   sign: React.ComponentType<{ sign: InkSign }>;
 }) {
+  const editableRef = useEditableRef();
   const view = useEditor();
   const editor = useModelEditor();
   const tool = useViewStore(InkPlugin, (state) => state.tool);
@@ -137,11 +145,22 @@ export function InkLayer({
     const page = layer.ownerDocument;
     const win = page.defaultView;
     let frame = 0;
+    let kept: readonly InkMark[] = [];
     const show = (next: InkPlaced) => {
       if (!samePlaced(next, shown.get())) shown.set(next);
     };
     const paint = () => {
       frame = 0;
+      const marks = view.plugin(InkPlugin).read.marks();
+
+      if (marks !== kept) {
+        const saved = new Set(marks.map((mark) => mark.id));
+
+        kept = marks;
+        for (const id of outlines.keys()) {
+          if (!saved.has(id)) outlines.delete(id);
+        }
+      }
       show(placer.place());
     };
     const schedule = () => {
@@ -184,7 +203,7 @@ export function InkLayer({
       attached.detach();
       capture.current = null;
     };
-  }, [editableRef, editor, layer, shown, view]);
+  }, [editableRef, editor, layer, outlines, shown, view]);
 
   React.useLayoutEffect(() =>
     layer && !hidden ? stackInkSigns(layer, placed.signs) : undefined
@@ -212,6 +231,7 @@ export function InkLayer({
         pointerEvents: tool && !readOnly ? 'auto' : 'none',
         position: 'absolute',
         touchAction: INK_TOUCH_ACTION,
+        zIndex: 50,
       }}
     >
       <svg
