@@ -1,6 +1,6 @@
 ---
 title: Board
-description: A whiteboard block whose notes, shapes, arrows, frames and pen lines are blocks of the document.
+description: A whiteboard block whose notes, shapes, pictures, arrows, frames and pen lines are blocks of the document.
 docs:
   - route: /docs/components/board
     title: Board Element
@@ -13,10 +13,11 @@ docs:
 ## Features
 
 - A void `board` block that owns its own list of shapes. Each shape is a top-level block of that list, so sync, suggestions, undo and copy and paste work per shape.
-- Five shape types: sticky notes and geo shapes that hold rich text, arrows whose ends bind to shapes, frames that hold shapes, and pen lines.
+- Six shape types: sticky notes and geo shapes that hold rich text, image shapes that hold a picture, arrows whose ends bind to shapes, frames that hold shapes, and pen lines.
 - Styles stored on each shape: fill, outline color, line style, outline width, opacity and text size, each with a default for its shape type. One pick restyles the selected shapes as one undo step, or the next shape while a drawing tool is picked.
 - Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
+- Paste an image link or a picture copied from a web page, and it lands as an image shape at the pointer, at the picture's proportions.
 - A camera, a tool, a tool lock and a next style for each mounted view, which the document never stores.
 - Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. Enter places a note, shape or frame, and connects two shapes with an arrow. A screen reader hears the selected shape, the picked tool, the zoom, each removal and each step of a connect, in words your app passes.
 - Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
@@ -29,13 +30,14 @@ docs:
 
 ### Installation
 
-`BoardKit` installs `BoardPlugin` and the five shape plugins with the copied board UI: the board surface with its toolbar and one renderer per shape type.
+`BoardKit` installs `BoardPlugin` and the five shape plugins with the copied board UI: the board surface with its toolbar and a renderer for each of those five shape types.
 
 <ComponentSource name="board" />
 
 - `BoardElement`: renders the board surface and its toolbar.
 - `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
+- `BoardImageElement`: renders an image shape. `BoardImageKit` installs it apart from `BoardKit`, as [Images](#images) shows.
 - `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle for the next shape. The lock button after them turns the tool lock on or off, as Q does, and shows pressed while the lock is on. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
 - `BoardStylePanel`: docks at the board's top right and styles the selected shapes, or the next shape while a drawing tool is picked, as [Style panel](#style-panel) shows.
 
@@ -64,7 +66,7 @@ In this example the board is the page's only block, like a whiteboard app. It fi
 
 <ComponentPreview name="board-page-demo" />
 
-`BoardPageKit` draws the board with `BoardPageElement`, which passes `height="100%"` to `BoardSurface`. That `height` replaces the board's stored `height` in this view and never changes the document, so the board takes the height of the editor around it. Give the editor a height, as the example does with `<Editor className="h-full" variant="none" />` inside a container of set height. Leave out kits that wrap each block or add a paragraph after the last one, such as the drag handles and the trailing block of `EditorKit`.
+`BoardPageKit` draws the board with `BoardPageElement`, which passes `height="100%"` to `BoardSurface`. That `height` replaces the board's stored `height` in this view and never changes the document, so the board takes the height of the editor around it. Give the editor a height, as the example does with `<Editor className="h-full" variant="none" />` inside a container of set height. Leave out kits that wrap each block or add a paragraph after the last one, such as the drag handles and the trailing block of `EditorKit`. The example installs `ImagePlugin` and `BoardImageKit`, so a pasted picture lands on its board as [Images](#images) describes.
 
 ## Style panel
 
@@ -136,6 +138,60 @@ function TextSizeRow() {
 }
 ```
 
+## Images
+
+`BoardImageKit` adds the image shape, a box that holds one picture. Its one child is the document's own image element, so `ImagePlugin` keeps the picture's link, alt text, HTML and Markdown. Install the kit in an editor that installs `ImagePlugin`, such as one with the [media kit](/docs/media). The demo at the top of this page gets it from `EditorKit`.
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BoardImageKit, BoardKit } from '@/components/editor/board';
+import { MediaKit } from '@/components/editor/media';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MediaKit,
+    ...BoardKit,
+    ...BoardImageKit,
+  ],
+});
+```
+
+Paste an image link, or a picture copied from a web page, while the board has focus, such as after a click on its empty space. With the caret in the page's text, the page takes the paste at the caret, even while the pointer is over the board. A link counts as an image link when `ImagePlugin` would embed it, such as one whose path ends in `.png` or `.jpg`. Pasted HTML counts when every block in it that is not empty is a picture.
+
+- The pictures of one paste land as image shapes in a row 16px apart, centered on the pointer, or on the view's center when the pointer is off the board. They land as one undo step, and the board selects them.
+- Each shape keeps its picture's proportions, shrunk so its longest side is at most 480px and never enlarged. A picture that fails to load lands at 320 by 240.
+- The paste waits for each picture to load. Any of these drops a waiting paste: a key or a press on the board, another paste, focus leaving the board, an edit or selection change such as an undo, or the view turning read-only.
+- While a shape's text is being edited, a paste goes into that text, and no image shape appears.
+
+Every resize of an image shape keeps its proportions, with or without Shift. A shrink stops when the short edge reaches 8px, and a shape whose short edge is already under 8px can only grow. An image shape has no text to edit, so Enter and a double-click keep it selected. It takes no style, so the style panel hides while the select tool is picked and only image shapes are selected. With a drawing tool picked, the panel targets the next shape that tool draws instead, as [Style panel](#style-panel) says. The copied `BoardImageElement` fits the picture to the shape's box and draws no caption.
+
+To add a picture from code, pass the image element as the shape's one child. The shape is 320 by 240 unless `width` and `height` say otherwise.
+
+```ts
+import { BaseBoardImagePlugin } from 'platejs/board';
+
+editor.update((tx) => {
+  tx.plugin(BaseBoardImagePlugin).insert(
+    {
+      children: [
+        {
+          children: [{ text: '' }],
+          type: 'image',
+          url: 'https://example.com/plan.png',
+        },
+      ],
+      height: 320,
+      width: 480,
+      x: 300,
+      y: 40,
+    },
+    { board }
+  );
+});
+```
+
 ## Manual usage
 
 <Steps>
@@ -182,6 +238,8 @@ const editor = createEditor({
 });
 ```
 
+For pictures, also install `ImagePlugin` and `BoardImagePlugin.configure({ component: BoardImageElement })`.
+
 </Steps>
 
 ## Keyboard and pointer
@@ -193,11 +251,11 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | A press on a shape with the select tool | Selects it. Shift adds it to the selection. |
 | A click with the note, shape or frame tool | Places that shape at its default size, centered on the click, over empty board or over another shape. It selects the new shape and picks the select tool, or keeps the tool while the tool lock is on. |
 | A drag with the note, shape or frame tool | Draws that shape over the dragged box, over empty board or over another shape, and shows the picked outline while you drag. Shift keeps a square, and Alt centers the box where the drag started. It selects the new shape and picks the select tool, or keeps the tool while the tool lock is on. |
-| A drag on a selected shape's corner handle, which shows only with the select tool | Resizes the shape once the pointer has gone 8 px, down to 8 a side, with the opposite corner in place. Shift keeps its proportions, and Alt resizes it around its center. Each edge the drag moves lines up with the nearest edge or center of another shape or frame in view within 8 screen px, and a line shows each edge that lines up. The shape never lines up with arrows or pen lines. Hold Control or Command to resize it freely. |
+| A drag on a selected shape's corner handle, which shows only with the select tool | Resizes the shape once the pointer has gone 8 px, down to 8 a side, with the opposite corner in place. Shift keeps its proportions, and Alt resizes it around its center. An image shape keeps its proportions with or without Shift. A resize that keeps proportions stops when the short edge reaches 8, and a shape whose short edge is already under 8 can only grow. Each edge the drag moves lines up with the nearest edge or center of another shape or frame in view within 8 screen px, and a line shows each edge that lines up. The shape never lines up with arrows or pen lines. Hold Control or Command to resize it freely. |
 | Enter on the selected board, or on the focused board with nothing selected and any tool but the note, shape, frame and arrow tools | Selects its first shape. On an empty selected board, it focuses the board, so the tool letters work. |
 | Tab and Shift+Tab | Move between shapes in the order the board stores them, and leave the board after the last one. A shape outside the view comes into it. |
 | Mod with an arrow | Selects the nearest shape in that direction and brings it into view. With nothing selected, it starts from the view's center. With no shape that way, the selection stays and the board says it again. |
-| Double click with the select tool, or Enter on one selected note, shape or arrow with any tool but the note, shape, frame and arrow tools, or on one selected arrow with the arrow tool | Edits its text. |
+| Double click with the select tool, or Enter on one selected note, shape or arrow with any tool but the note, shape, frame and arrow tools, or on one selected arrow with the arrow tool | Edits its text. An image shape has no text, so both keep it selected. |
 | Escape | Ends a drag, a connect, a resize or picking in flight and keeps the tool. Otherwise it climbs from the text to its shape. On the focused board or its selected shapes, it then picks the select tool when another tool is picked, or climbs to the board when the select tool is picked. |
 | Shift+Enter on the focused board or its selected shapes | Moves focus to the toolbar. Escape or Shift+Tab moves it back. |
 | `V`, `H`, `N`, `R`, `A`, `F`, `P`, `E` | Pick the select, hand, note, shape, arrow, frame, pen and eraser tools. |
@@ -207,7 +265,7 @@ Mod is Command on a Mac and Control elsewhere. The board has one Tab stop, its f
 | Enter with the arrow tool and one shape selected that is not an arrow | Starts connecting that shape. Tab and Shift+Tab aim the arrow's end at the middle of the other shapes that are not arrows, wrapping at either end, and Mod with an arrow aims it at the nearest one that way from the end. The arrow keys move the end by 1, or 10 with Shift. It binds where it sits in the frontmost shape under it that is not an arrow or the start, counting a frame only on its edge and a pen line only on its line, and stays free off every such shape. Enter draws the arrow from the start's middle to the end, selects it and picks the select tool, or keeps the arrow tool while the tool lock is on. Escape, a left or middle press on the board, another tool, an undo or redo, Mod+D, removing the shape it started from, the view turning read-only, or focus leaving the board ends the connect without drawing. |
 | Enter with the arrow tool and nothing selected | Starts an arrow at the view's center. The arrow keys move its start by 1, or 10 with Shift. At the center and after each move, the start binds where it sits in the frontmost shape under it that is not an arrow, counting a frame only on its edge and a pen line only on its line, and stays free off every such shape. Tab, Shift+Tab and Mod with an arrow aim it at a shape's middle. Enter keeps the start and connects from there, as the row above does from a selected shape, and the end can bind to any shape but the start's. The same keys and events end it without drawing, and removing the shape the start binds to ends it too. |
 | Enter with the arrow tool and several shapes selected | Says the selection again through `shapes` and draws nothing. |
-| S with one shape selected that is not an arrow | Starts resizing the shape from its bottom-right corner. Tab moves to the next corner clockwise and Shift+Tab to the one before. The arrow keys move the corner by 1, or 10 with Shift, down to 8 a side, and the opposite corner stays where it is. Each key shows the new box, with the arrows bound to the shape following it, and writes nothing. Enter writes the box as one undo step when it changed. Escape, a pointer press, the view turning read-only, removing the shape or focus leaving the board puts the box back and writes nothing, and so does any other key, which then does what it does. |
+| S with one shape selected that is not an arrow | Starts resizing the shape from its bottom-right corner. Tab moves to the next corner clockwise and Shift+Tab to the one before. The arrow keys move the corner by 1, or 10 with Shift, down to 8 a side, and the opposite corner stays where it is. An image shape keeps its proportions, so it stops when the short edge reaches 8, and one whose short edge is already under 8 can only grow. Each key shows the new box, with the arrows bound to the shape following it, and writes nothing. Enter writes the box as one undo step when it changed. Escape, a pointer press, the view turning read-only, removing the shape or focus leaving the board puts the box back and writes nothing, and so does any other key, which then does what it does. |
 | Space on the focused board | Starts picking shapes. The cursor starts on the first selected shape in stored order, or on the first shape with nothing selected, and the copied board rings it with a dashed line. Tab and Shift+Tab move the cursor through every shape in stored order and wrap, and Mod with an arrow moves it to the nearest shape that way. Neither changes the selection. Space adds the cursor's shape to the selection or takes it out. Enter or Escape keeps the selection and ends picking. A pointer press, focus leaving the board or removing the cursor's shape ends it too, and so does any other key, which then does what it does. The board acts when Space comes up, and only for a press that went down on the focused board with no modifier and met no other key or pointer press before it came up, so a drag with Space held still pans. During a resize, Space only ends it, as any other key does. During a connect or a pointer gesture, or on a board with no shapes, Space does nothing. |
 | Arrow keys | Nudge the selected shapes by 1 point, or 10 with Shift. During a connect they move the end being placed instead. For an arrow begun with nothing selected, that is the start until Enter keeps it, then the end. During a resize they move its corner. |
 | `]` and `[` | Bring the selected shapes forward or send them backward one step. |
@@ -254,7 +312,7 @@ The board says what happens through the editor's one status region, in the words
 | `zoom(percent)` | Said when a zoom key, `zoomIn`, `zoomOut`, `resetZoom` or `fit` changes the zoom. A wheel zoom says nothing. |
 | `removed(count)` | Said when a removal lands, with the number of shapes it took off the board, a removed frame's shapes included. |
 
-`shape`, `aim`, `connecting`, `starting`, `resizing`, `picking` and `pick` get a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. A resize's `corner` is a `BoardCorner`, one of `topLeft`, `topRight`, `bottomRight` and `bottomLeft`, and `picking` and `pick` also get a `BoardPickState`. The copied board passes:
+`shape`, `aim`, `connecting`, `starting`, `resizing`, `picking` and `pick` get a `BoardShapeDescription`. Its `kind` is `note`, `geo`, `arrow`, `frame`, `stroke`, or `shape` for an image shape or a shape your app defines, and its `text` is the shape's text or a frame's name. An arrow's `ends` describe the shapes its ends attach to, or `null` for a free end. A resize's `corner` is a `BoardCorner`, one of `topLeft`, `topRight`, `bottomRight` and `bottomLeft`, and `picking` and `pick` also get a `BoardPickState`. The copied board passes:
 
 ```tsx
 const boardMessages: BoardMessages = {
@@ -422,10 +480,11 @@ const value = {
 | `strokeColor` | Geo shapes, arrows and pen lines | A color name or any CSS color. Defaults to `'currentColor'`, the text color. |
 | `dash` | Geo shapes and arrows | `'solid'`, `'dashed'` or `'dotted'`. Defaults to `'solid'`. |
 | `strokeWidth` | Geo shapes and arrows | `'s'`, `'m'`, `'l'` or `'xl'`. Defaults to `'m'`. |
-| `opacity` | All but frames | A number from 0.1 to 1. Defaults to 1. |
+| `opacity` | All but frames and image shapes | A number from 0.1 to 1. Defaults to 1. |
 | `textSize` | Notes, geo shapes and arrows | `'s'`, `'m'`, `'l'` or `'xl'`. Defaults to `'m'`, or `'s'` on an arrow. |
 | `geo` | Geo shapes | One of `'rectangle'`, `'ellipse'`, `'diamond'` or `'triangle'`. |
 | `name` | Frames | Shown above the frame. |
+| `children` | Image shapes | At most one `image` element, whose `url` and `alt` `ImagePlugin` keeps, or an upload draft when the editor installs `UploadPlugin`. |
 
 The copied board paints the color names `blue`, `green`, `grey`, `orange`, `red`, `violet` and `yellow` with a light and a dark value, and any other string as a CSS color. HTML keeps each style in a `data-board-` attribute, such as `data-board-stroke-width`.
 
@@ -516,10 +575,11 @@ Every other peer joins the new room with the new plugins and schema, and without
 - Undo of a move puts back your old place, even over a teammate's later move of the same shape.
 - A long note gets slower, because a note's lines sync as one unit.
 - Each keystroke does some work for every board in the document, so keep a document to 100 boards or fewer.
-- Markdown keeps the text of each shape in reading order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only the five built-in shape types, to keep a board whole.
+- Markdown keeps the text and pictures of the shapes in stored order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only built-in shape types, to keep a board whole.
+- A picture file pasted or dropped on a board does not become an image shape. Paste the picture's link, or insert it from code.
 - A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
-- A board inside a note, and rotation, are not supported.
-- Drawing with the pen needs a pointer. A keyboard resize cannot keep proportions or resize around the center, which Shift and Alt do on a corner drag.
+- A board inside a note, rotation and cropping a picture are not supported, and the copied board draws no caption under a picture.
+- Drawing with the pen needs a pointer. A keyboard resize keeps the proportions of an image shape only, and cannot resize around the center, which Shift and Alt do on a corner drag.
 - No key or pointer gesture moves a bound arrow end off its shape, or resizes several shapes at once. Moving a selected arrow moves its free ends, and each bound end stays on its shape.
 - On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Undo brings it back. With [exit break](/docs/exit-break) installed, Mod+Enter with the caret on the board, where Mod+A can put it, adds a paragraph after the board, out of sight.
 
@@ -527,22 +587,26 @@ Every other peer joins the new room with the new plugins and schema, and without
 
 ### `BoardPlugin`
 
-The board block, a void element that owns a content root of shapes. `targetPlugins` lists the shape types the board holds, by default the five below.
+The board block, a void element that owns a content root of shapes. `targetPlugins` lists the shape types the board holds, by default the six below.
 
 ### `BoardNotePlugin`, `BoardGeoPlugin`, `BoardArrowPlugin`, `BoardFramePlugin`, `BoardStrokePlugin`
 
 The shape types: `boardNote`, `boardGeo`, `boardArrow`, `boardFrame` and `boardStroke`. Frames and pen lines are voids; notes, geo shapes and arrows hold blocks.
 
+### `BoardImagePlugin`
+
+The image shape, `boardImage`: an object block that holds at most one `image` element or upload draft. Install `ImagePlugin` with it. An editor that installs it with neither `ImagePlugin` nor `UploadPlugin` throws an error naming both.
+
 ## API Reference
 
 | API | Package | Use |
 | --- | --- | --- |
-| `BaseBoardPlugin`, `BaseBoardNotePlugin`, `BaseBoardGeoPlugin`, `BaseBoardArrowPlugin`, `BaseBoardFramePlugin`, `BaseBoardStrokePlugin` | `platejs/board` | Headless board and shape plugins. |
+| `BaseBoardPlugin`, `BaseBoardNotePlugin`, `BaseBoardGeoPlugin`, `BaseBoardImagePlugin`, `BaseBoardArrowPlugin`, `BaseBoardFramePlugin`, `BaseBoardStrokePlugin` | `platejs/board` | Headless board and shape plugins. |
 | `defineBoardShape(name, { properties, size, styles })` | `platejs/board` | Defines an app shape that holds text, with the default of each board style it takes. |
 | `tx.plugin(BaseBoardPlugin).insert(props?, options?)` | `BaseBoardPlugin` | Adds a board with an empty root at `options.at` or after the selected block, and returns its key. |
-| `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | Each shape plugin | Adds a shape above every shape of `board` and returns its id. An arrow takes `{ start, end }`, each a shape id, `{ shape, anchor }` or a board point, and joins the board its bound ends name. |
+| `tx.plugin(BaseBoardNotePlugin).insert(props, { board })` | Each shape plugin | Adds a shape above every shape of `board` and returns its id. An arrow takes `{ start, end }`, each a shape id, `{ shape, anchor }` or a board point, and joins the board its bound ends name. An image shape takes `{ children: [image] }` and is 320 by 240 unless `width` and `height` say otherwise. |
 | `move(ids, delta)` | `BaseBoardPlugin` | Moves shapes. A shape joins the frontmost frame under its middle or leaves its frame. |
-| `resize(id, { x, y, width, height })` | `BaseBoardPlugin` | Sets a shape's place and size together. |
+| `resize(id, { x, y, width, height })` | `BaseBoardPlugin` | Sets a shape's place and size together. On an image shape the height follows `width`. A shrink stops at a short edge of 8, and one whose short edge is already under 8 can only grow. |
 | `restack(ids, direction)` | `BaseBoardPlugin` | `'front'`, `'back'`, `'forward'` or `'backward'`, in paint order only. |
 | `remove(ids)` | `BaseBoardPlugin` | Removes shapes, each frame with its shapes. An arrow bound to a removed shape keeps a loose end where it drew it. |
 | `removeFrame(id)` | `BaseBoardPlugin` | Removes a frame and keeps its shapes where they are. |
