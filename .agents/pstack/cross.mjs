@@ -3,22 +3,22 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { constants, homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
-import { capEffort, claudeSessionRun, maxEffort } from './lead.mjs';
+import { capEffort, claudeSessionRun, claudeTranscript, maxEffort } from './lead.mjs';
 
-export const MODELS = { claude: 'opus', codex: 'gpt-6.1-sol' };
+export const MODELS = { claude: 'opus', codex: 'gpt-6.2-sol', agy: 'gemini-4-neon' };
 
 export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : 'claude');
 
 const DASHED_WORD = /^-\S+$/u;
-const TIME_BUDGET_SECONDS = 3600;
-// A --bypass run is a Codex worker writing code, and stopping a long fix wastes its work.
-const CODING_BUDGET_SECONDS = 21_600;
+// A seat or a Codex worker has no time limit, so a run stops only once it shows no sign of
+// work for this long. One xhigh reasoning step can pass ten minutes with no output.
+export const IDLE_SECONDS = 1200;
 const VALUE_FLAGS = new Map([
   ['--to', 'to'],
   ['--timeout', 'timeout'],
@@ -132,6 +132,45 @@ function loggedError(sessions, id, startedAt) {
   return null;
 }
 
+const scratchBrief = (project, browser, prompt) =>
+  `Your working directory is a scratch folder you may write. The project is ${project}: read it by absolute path and never write it. ${browser} For each probe that needs a browser, put its full script and commands in your answer so the lead can run it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder, and it is deleted when you finish, so for each file you wrote there that your answer cites or runs, paste its full source and the commands that create any fixture it reads.`;
+
+// An agy print run that reaches a permission it would ask for ends with no answer,
+// so each action a seat must not take that a rule can name is denied, which fails
+// only that call. A personal account ignores an unsandboxed(*) rule, so only the
+// brief keeps a seat from asking to run a command outside the sandbox.
+// Auto mode runs a command it judges safe outside the sandbox, so the seat runs in
+// default mode with every command in the sandbox. agy checks the real path a tool
+// touches, such as /private/var for macOS's /var.
+const realPath = (path) => {
+  try {
+    return realpathSync(path);
+  } catch {
+    return path;
+  }
+};
+const agySettings = (scratch, readOnly, offline) => ({
+  agentMode: '',
+  toolPermission: 'proceed-in-sandbox',
+  permissions: {
+    allow: ['read_file(*)', `write_file(${realPath(scratch)})`, ...(offline ? [] : ['read_url(*)', 'mcp(*)'])],
+    deny: [...[...new Set(readOnly.map(realPath))].map((dir) => `write_file(${dir})`), 'execute_url(*)', ...(offline ? ['read_url(*)', 'mcp(*)'] : [])],
+  },
+});
+
+// agy prints a Gemini filter block as its answer and exits 0.
+const GEMINI_FILTERED = /^This request was blocked by Gemini's filters\b/u;
+// agy streams one JSON event a line and ends with a result event that holds the answer.
+const agyAnswer = (stdout) => {
+  for (const line of stdout.split('\n').reverse()) {
+    try {
+      const event = JSON.parse(line);
+      if (event.event === 'result') return event.result?.response ?? '';
+    } catch {}
+  }
+  return '';
+};
+
 export const onStop = (cleanup) => {
   cleanups.add(cleanup);
   stopOnSignals();
@@ -143,14 +182,16 @@ export const onStop = (cleanup) => {
 // killed and abandoned at the deadline.
 // Every run but --bypass sets PSTACK_READ_ONLY=1, so setup.mjs skips its writes there; another
 // project hook, such as a Stop hook that stages files, would still write from a read-only run.
-export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout = 900, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
+export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
   const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
-  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : reach ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
+  const scratch = reach || runtime === 'agy';
+  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
   // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
-  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it. Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool. For each probe that needs a browser, put its full script and commands in your answer so the lead can run it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder, and it is deleted when you finish, so for each file you wrote there that your answer cites or runs, paste its full source and the commands that create any fixture it reads.`;
+  if (reach) prompt = scratchBrief(cwd, 'Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool.', prompt);
+  if (runtime === 'agy') prompt = scratchBrief(cwd, "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer. Never start or drive a browser, through Playwright, your browser tools or any other tool.", prompt);
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -159,12 +200,14 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   stopOnSignals();
   const answerDir = mkdtempSync(join(tmpdir(), 'pstack-cross-'));
   folders.add(answerDir);
-  if (reach) folders.add(runCwd);
+  if (scratch) folders.add(runCwd);
   const answerFile = join(answerDir, 'answer.txt');
   const sessionId = randomUUID();
   const [command, args] =
     runtime === 'claude'
       ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), ...readDirs.flatMap((dir) => ['--add-dir', dir]), ...(offline ? ['--disallowed-tools', 'WebFetch,WebSearch', '--strict-mcp-config'] : []), '--permission-mode', 'plan', '--', prompt]]
+      : runtime === 'agy'
+      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, '--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), '--sandbox', '--output-format', 'stream-json']]
       : [
           'codex',
           [
@@ -190,7 +233,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   const codexHome = resolve(runCwd, env.CODEX_HOME || join(homedir(), '.codex'));
   return new Promise((resolve) => {
     let settled = false;
-    let late = false;
+    let late = null;
     const timers = [];
     const done = (answer) => {
       if (settled || stopping) return;
@@ -198,7 +241,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       running.delete(signalSeat);
       for (const timer of timers) clearTimeout(timer);
       removeFolder(answerDir);
-      if (reach) removeFolder(runCwd);
+      if (scratch) removeFolder(runCwd);
       resolve(answer);
     };
     const startedAt = new Date();
@@ -214,18 +257,43 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       return alive;
     };
     running.add(signalSeat);
-    timers.push(
-      setTimeout(() => {
-        late = child.exitCode === null && child.signalCode === null;
-        signalSeat('SIGTERM');
-      }, timeout * 1000),
-      setTimeout(() => signalSeat('SIGKILL'), timeout * 1000 + 2000),
-      setTimeout(() => done({ runtime, ok: false, text: `no answer within ${timeout} seconds` }), timeout * 1000 + GIVE_UP_MS),
-    );
+    const stop = (reason) => {
+      if (late !== null) return;
+      late = child.exitCode === null && child.signalCode === null ? reason : '';
+      signalSeat('SIGTERM');
+      timers.push(
+        setTimeout(() => signalSeat('SIGKILL'), 2000),
+        setTimeout(() => done({ runtime, ok: false, text: reason }), GIVE_UP_MS),
+      );
+    };
     let stdout = '';
     let stderr = '';
-    child.stdout.on('data', (chunk) => (stdout += chunk));
-    child.stderr.on('data', (chunk) => (stderr += chunk));
+    let workedAt = Date.now();
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+      workedAt = Date.now();
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+      workedAt = Date.now();
+    });
+    // A Claude run prints nothing until it answers, but writes its transcript as it works.
+    let transcript = null;
+    const lastWork = () => {
+      if (runtime !== 'claude') return workedAt;
+      transcript ??= claudeTranscript(sessionId);
+      try {
+        return Math.max(workedAt, transcript ? statSync(transcript).mtimeMs : 0);
+      } catch {
+        return workedAt;
+      }
+    };
+    if (timeout) timers.push(setTimeout(() => stop(`no answer within ${timeout} seconds`), timeout * 1000));
+    timers.push(
+      setInterval(() => {
+        if (Date.now() - lastWork() > idle * 1000) stop(`no sign of work for ${idle} seconds`);
+      }, Math.min(30_000, idle * 250)),
+    );
     child.on('error', (error) => done({ runtime, ok: false, text: error.message }));
     child.on('close', async (code, signal) => {
       if (signalSeat('SIGTERM')) {
@@ -234,16 +302,17 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       }
       try {
         if (computerUse) writeFileSync(computerUse.events, stdout);
-        const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
-        const ok = code === 0 && text && !late;
+        const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : runtime === 'agy' ? agyAnswer(stdout) : stdout).trim();
+        const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
+        const ok = code === 0 && text && !late && !filtered;
         const codex = runtime === 'codex' && !ok ? codexFailure(stdout, stderr, codexHome, startedAt) : null;
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
         const detail = codex?.message ?? (stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n');
-        const failure = `${late ? `no answer within ${timeout} seconds` : code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${detail}`;
+        const failure = `${late || (code === 0 ? 'no answer' : `exit ${code ?? signal}`)}: ${detail}`;
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
-        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }) });
+        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(filtered && { refused: 'safety' }) });
       } catch (error) {
         done({ runtime, ok: false, text: error.message });
       }
@@ -257,7 +326,6 @@ async function main(argv) {
   let isolated = false;
   let bypass = false;
   let reach = false;
-  let stress = false;
   let help = false;
   let refusal;
   const positional = [];
@@ -272,7 +340,6 @@ async function main(argv) {
     else if (arg === '--ignore-user-config') isolated = true;
     else if (arg === '--bypass') bypass = true;
     else if (arg === '--reach') reach = true;
-    else if (arg === '--stress') stress = true;
     else if (arg === '--help' || arg === '-h') help = true;
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
     else positional.push(arg);
@@ -280,8 +347,8 @@ async function main(argv) {
   const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
   const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
   let prompt = sources[0] ?? '';
-  const timeout = Number(values.timeout ?? 900);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--stress] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
+  const timeout = values.timeout === undefined ? undefined : Number(values.timeout);
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -312,16 +379,8 @@ async function main(argv) {
     return 2;
   }
   if (promptFile) prompt = readFileSync(promptFile, 'utf8');
-  if (!prompt.trim() || !['claude', 'codex'].includes(to) || !(timeout > 0)) {
+  if (!prompt.trim() || !Object.hasOwn(MODELS, to) || !(timeout === undefined || timeout > 0)) {
     console.error(usage);
-    return 2;
-  }
-  if (!stress && bypass && timeout > CODING_BUDGET_SECONDS) {
-    console.error(`--timeout ${timeout} is over the ${CODING_BUDGET_SECONDS}-second budget of a --bypass coding run; split the task, or run it from a suggested task's session with --stress\n${usage}`);
-    return 2;
-  }
-  if (!stress && !bypass && timeout > TIME_BUDGET_SECONDS) {
-    console.error(`--timeout ${timeout} is over the ${TIME_BUDGET_SECONDS}-second time budget; split the task, or run it from a suggested task's session with --stress\n${usage}`);
     return 2;
   }
   if ((events || chromeProfile) && (to !== 'codex' || !events || !chromeProfile)) {

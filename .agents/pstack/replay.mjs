@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/replay.mjs --dir <run dir> --seat <name>=<claude|codex>:<model>@<effort>... [--case <introducing sha>:<fix sha>]... [--limit <n>] [--clean <n>] [--timeout <seconds>] [--dry-run]
+// Usage: node .agents/pstack/replay.mjs --dir <run dir> --seat <name>=<claude|codex|agy>:<model>@<effort>... [--case <introducing sha>:<fix sha>]... [--limit <n>] [--clean <n>] [--timeout <seconds>] [--dry-run]
 // Replays panel seats on bugs that landed, to measure which seat would have
 // caught each one. A case pairs a fix commit on <branch>, the branch
 // .agents/pstack.json names, fetched from the remote land.mjs rebases onto,
@@ -40,11 +40,11 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync,
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ask, GIVE_UP_MS, onStop, STOP_GRACE_MS } from './cross.mjs';
+import { ask, onStop, STOP_GRACE_MS } from './cross.mjs';
 
 const USAGE =
-  'Usage: node .agents/pstack/replay.mjs --dir <run dir> --seat <name>=<claude|codex>:<model>@<effort>... [--case <introducing sha>:<fix sha>]... [--limit <n>] [--clean <n>] [--timeout <seconds>] [--dry-run]';
-const SEAT = /^([\w-]+)=(claude|codex):([^@\s]+)@(\w+)$/u;
+  'Usage: node .agents/pstack/replay.mjs --dir <run dir> --seat <name>=<claude|codex|agy>:<model>@<effort>... [--case <introducing sha>:<fix sha>]... [--limit <n>] [--clean <n>] [--timeout <seconds>] [--dry-run]';
+const SEAT = /^([\w-]+)=(claude|codex|agy):([^@\s]+)@(\w+)$/u;
 const PAIR = /^([\da-f]{7,40}):([\da-f]{7,40})$/iu;
 const FIX = /^fix(\([^()\s]+\))?!?: /u;
 const REVERT = /^(?:revert(\([^()\s]+\))?!?: |Revert ")/u;
@@ -58,13 +58,7 @@ const MAX_CLEAN = 2;
 const CLEAN_AGE = 30 * 86_400_000;
 const CLEAN_SEARCH = 200;
 const SHOW_LIMIT = 200_000;
-const TIME_BUDGET = 3600;
 const FETCH_TIMEOUT = 120;
-const COPY_SECONDS = 60;
-const SETUP_ALLOWANCE = (MAX_CASES + MAX_CLEAN) * COPY_SECONDS;
-const JUDGE_TIMEOUT = 600;
-const REPORT_SECONDS = 14;
-const SEAT_TIMEOUT_MAX = TIME_BUDGET - FETCH_TIMEOUT - SETUP_ALLOWANCE - JUDGE_TIMEOUT - (2 * GIVE_UP_MS) / 1000 - REPORT_SECONDS;
 const ROUND_STOP_MS = STOP_GRACE_MS + 5000;
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -83,7 +77,7 @@ const short = (sha) => sha.slice(0, 10);
 const squash = (text) => text.replace(/\s+/gu, ' ').trim();
 
 function parse(argv) {
-  const options = { seats: [], pairs: [], limit: MAX_CASES, clean: MAX_CLEAN, timeout: 1800, dryRun: false };
+  const options = { seats: [], pairs: [], limit: MAX_CASES, clean: MAX_CLEAN, dryRun: false };
   const count = (value, max) => (/^\d+$/u.test(value ?? '') && Number(value) <= max ? Number(value) : NaN);
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -110,11 +104,9 @@ function parse(argv) {
     else throw new Refusal(USAGE);
   }
   if (!options.dir || options.seats.length === 0) throw new Refusal(USAGE);
-  if (!(options.limit >= 1)) throw new Refusal(`--limit takes 1 to ${MAX_CASES}, so a run fits the hour\n${USAGE}`);
+  if (!(options.limit >= 1)) throw new Refusal(`--limit takes 1 to ${MAX_CASES}\n${USAGE}`);
   if (!(options.clean >= 0)) throw new Refusal(`--clean takes 0 to ${MAX_CLEAN}\n${USAGE}`);
-  if (!(options.timeout > 0 && options.timeout <= SEAT_TIMEOUT_MAX)) {
-    throw new Refusal(`--timeout takes 1 to ${SEAT_TIMEOUT_MAX} seconds, so the fetch, the copies, the seats and the judge fit the hour\n${USAGE}`);
-  }
+  if (!(options.timeout === undefined || options.timeout > 0)) throw new Refusal(`--timeout takes a number of seconds\n${USAGE}`);
   return options;
 }
 
@@ -304,7 +296,7 @@ function leaked(packet, text) {
 // A stopped round never resolves, so no judge starts after a stop.
 function seatRound(root, packet, options) {
   return new Promise((done) => {
-    const args = [join(HERE, 'seats.mjs'), '--dir', packet.answers, '--prompt-file', packet.prompt, '--timeout', String(options.timeout), '--offline', '--effort-root', root, ...options.seats.map((seat) => seat.spec)];
+    const args = [join(HERE, 'seats.mjs'), '--dir', packet.answers, '--prompt-file', packet.prompt, ...(options.timeout ? ['--timeout', String(options.timeout)] : []), '--offline', '--effort-root', root, ...options.seats.map((seat) => seat.spec)];
     const child = spawn(process.execPath, args, { cwd: packet.tree, stdio: ['ignore', 'pipe', 'pipe'] });
     rounds.add(child);
     let output = '';
@@ -342,7 +334,7 @@ async function replay(root, packet, options, paths) {
   const settled = Object.fromEntries(answers.flatMap(({ name, text }) => (!text ? [[name, 'failed']] : leaked(packet, text) ? [[name, 'leaked']] : [])));
   const judged = answers.filter(({ name }) => !settled[name]).map((answer, index) => ({ ...answer, label: `cand-${index + 1}` }));
   if (judged.length === 0) return settled;
-  const judge = await ask('claude', judgePrompt(root, packet, judged, paths), { cwd: root, model: 'opus', timeout: JUDGE_TIMEOUT }).catch((error) => ({ ok: false, text: error.message }));
+  const judge = await ask('claude', judgePrompt(root, packet, judged, paths), { cwd: root, model: 'opus' }).catch((error) => ({ ok: false, text: error.message }));
   writeFileSync(join(packet.dir, 'judge.md'), `${judge.ok ? '' : 'judge failed: '}${judge.text}\n${judged.map(({ name, label }) => `${label}: ${name}`).join('\n')}\n`);
   return { ...verdicts(packet, judged, judge.ok ? judge.text : null), ...settled };
 }
@@ -407,7 +399,7 @@ async function main(argv) {
     const cases = selection.packets.filter((packet) => packet.kind === 'case').length;
     console.info(
       [
-        `Dry run on ${branch.name} at ${short(branch.tip)}: cases ${cases}, clean commits ${selection.packets.length - cases}, seats ${options.seats.map((seat) => seat.spec).join(', ')}, ${options.timeout} s per seat round. No copy was built and no seat or judge ran.`,
+        `Dry run on ${branch.name} at ${short(branch.tip)}: cases ${cases}, clean commits ${selection.packets.length - cases}, seats ${options.seats.map((seat) => seat.spec).join(', ')}, ${options.timeout ? `${options.timeout} s per seat round` : 'no seat time limit'}. No copy was built and no seat or judge ran.`,
         ...lines,
         ...(selection.left ? [`Cases left past --limit: ${selection.left}.`] : []),
         ...selection.skipped.map((text) => `skipped: ${text}`),

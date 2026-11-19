@@ -1,5 +1,5 @@
 {
-  "tag": "v0.9.138",
+  "tag": "v0.9.143",
   "branch": "next",
   "protected": "main",
   "delivery": "trunk",
@@ -16,7 +16,10 @@
   ],
   "maxEffort": "xhigh",
   "stepBudget": {
-    "exclude": ["apps/www/src/generated/**", "apps/www/src/registry/changelog/*.json"]
+    "exclude": [
+      "apps/www/src/generated/**",
+      "apps/www/src/registry/changelog/*.json"
+    ]
   },
   "planBoxes": {
     "2026-10-08-authored-review.md": {
@@ -219,7 +222,8 @@
     "focus": "next",
     "floor": [
       "claude-opus-5 @xhigh",
-      "gpt-6.1-sol @xhigh"
+      "gpt-6.1-sol @xhigh",
+      "gpt-6.2-sol @xhigh"
     ],
     "gated": [
       "zbeyens-bot[bot]"
@@ -307,28 +311,28 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "0087d6b18035321971da8c7d3b6b0168794236e9d223271b32fb171c0c7aecb9",
+    "block": "2d2fd6abf2ff196cf7127680a76c72311c521f041a1a2b11f28b2af9463ae5f0",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
       ".agents/pstack/checkout.mjs": "958527cc3d2bbc0ea435ed100ff81ff1fc1d44170e73e5dc14cbf765116fa1f7",
-      ".agents/pstack/cross.mjs": "78e6c2adc060960006d252eed73d0a722afb0e581ca51958886e355c26291812",
+      ".agents/pstack/cross.mjs": "1bb445534579a99c5160653f4417bd62cd6fbb9e7d6ddd82181cd30e0eaaf4bb",
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/head.mjs": "8cb69ac6a2090a87986809f6bfac422aee7a7f10c07e335f7e08d195ae627f48",
-      ".agents/pstack/lead.mjs": "8e7f653a0a197cf6e4bafd9a6efeea8cff5a28455424b392927b79481df1105a",
+      ".agents/pstack/lead.mjs": "6668a6a903355a986232de98e29351bb755b65719f756cd5c42edfd430c4fed9",
       ".agents/pstack/proof.mjs": "78a66ec12760bb56718c772921b6d2014ca21310d2332c53d85b928719fc8a32",
-      ".agents/pstack/replay.mjs": "9846917f3955eed59ff025e6a42eb1d748942e05a768c5fe74d671e31269e7c5",
+      ".agents/pstack/replay.mjs": "2c41dcca9a4d3a9b8d7ddad38b6803d7a4fc5abe72a27e72abc015de7f0a266a",
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
-      ".agents/pstack/seats.mjs": "3d43fb4c91627bf4f596351572a0023c0a98d895550163c1c58bb0956f03618f",
+      ".agents/pstack/seats.mjs": "24f319f57f0c1f081e932dfe3f94f5c8c32a942dc4a947069f58a0f2b0bd9ef6",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
       ".agents/pstack/decisions-check.mjs": "0331d3cddb94ecb27b8c1e74e30c85330c692f40fac215b6fb91883723c23067",
-      ".agents/pstack/levels.mjs": "1e18ea561e61dea41981e2fa55f09be906d6835add235d91c5dd1bbde6c22b23",
+      ".agents/pstack/levels.mjs": "54d2b8f7cc5f3a6fc81958c14f0b331350fa4c877c52d55886bc7109c42459e4",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "a5cbac2e60f285addaa9c69b7b095586cf44cad3462146b194250c7dd976fabf",
-      ".agents/pstack/plan-page.mjs": "ae5707e2c357fe6ce62fc378d8ff99fc5f2acd46291e81f25892a0a1a0a0d02a",
-      ".agents/pstack/status.mjs": "ebd033fe7d09c6959211cad384f9867291f02e1d7331c6ad85f6006146d335da",
+      ".agents/pstack/plan-page.mjs": "560bfb9caefc05f599b3014f049fc964952d5df4d44c0d48070d19eeb458080e",
+      ".agents/pstack/status.mjs": "547e5a65ef990df37139553d4ecaeb5a11808590492ed2e27ddb247ea9abdebc",
       ".agents/pstack/tasks.mjs": "3f096db8e20b4bf08ee12c00ffea2a7477a25646b6c3b9933f7fbda03489e7c6",
-      ".agents/pstack/scorecard.mjs": "31d6c140e974d068709561a4dcf4338b56de4f7dbd4da2732e44b8ceb004928c",
+      ".agents/pstack/scorecard.mjs": "2d421afbff204f9d4b927a66d2e068a4a3d1f1c8bcbf8d5e520b6c3a77ceaa93",
       ".agents/pstack/guard.mjs": "851d8b88b732ac0c29d29b6705a83a50b1070aa818face7544adefed2a6cd5be",
       ".agents/pstack/land.mjs": "ef8ae79d4e7cb6693308dbe3e5e9d64773f00029b0033826105e4403e92dce2c",
       ".agents/pstack/review.mjs": "ba8dd9b26dd9668a17c3187866fbb83f28ec098492b5e6d67039e5353e06a067",
@@ -338,18 +342,18 @@
       ".agents/pstack/rules/chips.md": "87777fca20f183972874af2428c3d49ac938f4dbcee7b8f45578151fbde5f84b",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
       ".agents/pstack/rules/land.md": "d872f0294172ec3af5b1a14e124e692dacfc797d459613435f0d5c1f608c9a4a",
-      ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
+      ".agents/pstack/rules/linked.md": "d80a9985fbd2e3c33f095f3f1cf30f2774030d999b76a3f6c3a5e7ad1786b6df",
       ".agents/pstack/rules/long-runs.md": "88aeff4dde51f3c56b877892ca131bfee3ad4b22bd2398c51ba88e7abbce6ee2",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
-      ".agents/pstack/rules/pages.md": "191c4a0cb993837137a0dfe4e40e80cfc00300248912865a14048e5f0ccf2a0e",
-      ".agents/pstack/rules/panel.md": "e892bf6ac53c03e0bbbaae11cda41e97591994b35be01ba5a7ed42218ebb788f",
-      ".agents/pstack/rules/reflect.md": "4096109574ae3502ce54b395ea35dd185e7c167fac0b147e251947c961b28719",
+      ".agents/pstack/rules/pages.md": "62678c32149d88b1735d1273e7b83202d985d6df7733df38bdad2655452bd22a",
+      ".agents/pstack/rules/panel.md": "82b2c7a7ea788ca401142300e819dc30de27ae039407c011af6abfde095a4e60",
+      ".agents/pstack/rules/reflect.md": "be6aa4ed8699ac07c027ff739f7f71770ad23f4e451f3fa7102548b33b54ff22",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
-      ".agents/pstack/rules/time.md": "337fec7e2ca88eb45b508905c148e9e44c6194b1ca4b81346c9b3d342c097848",
+      ".agents/pstack/rules/time.md": "ac8fd215d707c03830abd0a5df2678611bff986eaccc44cb5d37cd3eea46a35b",
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af"
     },
-    "source": "5a8e174775958fddbcce8fee7c773e3f8f954e5f"
+    "source": "4486bd45ca340dcc31c207aac02b04d9b8615680"
   },
   "pageTopic": {
     "field": "review_scopes",

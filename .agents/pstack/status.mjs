@@ -50,8 +50,8 @@ export const waitsOnOwner = (status) =>
 export const SEATS = /^seats\s/u;
 export const CRITICAL_SEATS = /^critical \[([^\]]*)\]:\s*\S/u;
 
-export const SEAT_MODEL = /(?<![\w.:-])(?:codex:)?(?:claude-[\w.-]*\w|gpt-[\w.-]*\w|opus|sonnet|haiku|fable)(?![\w-])/gu;
-export const seatName = (name) => name.trim().replace(/^codex:/u, '').replace(/\s+missing$/u, '').replace(/\s+@\w+$/u, '');
+export const SEAT_MODEL = /(?<![\w.:-])(?:codex:|agy:)?(?:claude-[\w.-]*\w|gpt-[\w.-]*\w|gemini-[\w.-]*\w|opus|sonnet|haiku|fable)(?![\w-])/gu;
+export const seatName = (name) => name.trim().replace(/^(?:codex|agy):/u, '').replace(/\s+missing$/u, '').replace(/\s+@\w+$/u, '');
 export const seatKey = (name) => seatName(name.toLowerCase()).replace(/^claude-([a-z]+)-.*$/u, '$1');
 
 function modelForSeatWord(key, models) {

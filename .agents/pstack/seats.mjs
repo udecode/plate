@@ -7,9 +7,9 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ask } from './cross.mjs';
 
-const SEAT = /^([\w-]+)=(claude|codex):([^@\s]+)(?:@(\w+))?$/u;
+const SEAT = /^([\w-]+)=(claude|codex|agy):([^@\s]+)(?:@(\w+))?$/u;
 const CLAUDE_SEAT_NOTE = 'You run in plan mode and cannot leave it. Read-only commands work, and expect every write to be refused, a scratch copy included. Prove what a read-only command can prove, and name each probe that needs a write, with its commands, so the lead can run it.';
-const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... [--offline] [--effort-root <dir>] <name>=<claude|codex>:<model>[@<effort>]...';
+const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... [--offline] [--effort-root <dir>] <name>=<claude|codex|agy>:<model>[@<effort>]...';
 
 function mainCheckout() {
   try {
@@ -24,7 +24,7 @@ export async function main(argv) {
   const readDirs = [];
   let dir;
   let prompt;
-  let timeout = 1800;
+  let timeout;
   let offline = false;
   let effortRoot;
   for (let index = 0; index < argv.length; index += 1) {
@@ -64,16 +64,15 @@ export async function main(argv) {
       seats.push({ name: match[1], runtime: match[2], model: match[3], effort: match[4] });
     }
   }
-  if (!dir || !prompt?.trim() || seats.length === 0 || !(timeout > 0 && timeout <= 3300)) {
+  if (!dir || !prompt?.trim() || seats.length === 0 || !(timeout === undefined || timeout > 0)) {
     console.error(usage);
     return 2;
   }
   mkdirSync(dir, { recursive: true });
-  // A claude seat in plan mode may read only its cwd and these folders.
-  const claudeDirs = [...new Set([mainCheckout(), ...readDirs].filter(Boolean))];
+  const seatDirs = [...new Set([mainCheckout(), ...readDirs].filter(Boolean))];
   const answers = await Promise.all(
     seats.map(async (seat) => {
-      const answer = await ask(seat.runtime, seat.runtime === 'claude' ? `${CLAUDE_SEAT_NOTE}\n\n${prompt}` : prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'claude' ? claudeDirs : [] }).catch((error) => ({ ok: false, text: error.message }));
+      const answer = await ask(seat.runtime, seat.runtime === 'claude' ? `${CLAUDE_SEAT_NOTE}\n\n${prompt}` : prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'codex' ? [] : seatDirs }).catch((error) => ({ ok: false, text: error.message }));
       try {
         writeFileSync(join(dir, `${seat.name}.err`), `${answer.ok ? '' : `${answer.text}\n`}${answer.refused ? `refused: ${answer.refused}\n` : ''}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
         writeFileSync(join(dir, `${seat.name}.md`), answer.ok ? `${answer.text}\n` : '');

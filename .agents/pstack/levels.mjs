@@ -18,10 +18,12 @@ import { join } from 'node:path';
 import { capEffort, EFFORTS, findLead, maxEffort } from './lead.mjs';
 
 const rank = (effort) => EFFORTS.indexOf(effort);
-const MODEL = /^(?:codex:[\w.-]+|claude-[\w.-]+|gpt-[\w.-]+|opus|sonnet|haiku|fable)$/u;
-const family = (model) => (/^(?:claude-|opus|sonnet|haiku|fable)/u.test(model) ? 'claude' : 'codex');
+const MODEL = /^(?:(?:codex|agy):[\w.-]+|claude-[\w.-]+|gpt-[\w.-]+|gemini-[\w.-]+|opus|sonnet|haiku|fable)$/u;
+const family = (model) => (/^(?:claude-|opus|sonnet|haiku|fable)/u.test(model) ? 'claude' : /^(?:agy:|gemini-)/u.test(model) ? 'gemini' : 'codex');
+// cross.mjs marks a seat refused only for a Codex or Gemini provider, so a Claude seat marked skipped is missing.
+const REFUSING = new Set(['codex', 'gemini']);
 // A sheet names `opus` where a row may name `claude-opus-5-5`; both are the Opus seat.
-const seatKey = (model) => model.replace(/^codex:/u, '').replace(/^claude-([a-z]+)-.*$/u, '$1');
+const seatKey = (model) => model.replace(/^(?:codex|agy):/u, '').replace(/^claude-([a-z]+)-.*$/u, '$1');
 const ROUNDS = {
   panel: { opens: /^seats\b/u, role: 'interrogate reviewers' },
   architect: { opens: /^runners\b/u, role: 'architect runners' },
@@ -34,12 +36,12 @@ function seatOf(entry) {
   const at = words.findIndex((word) => MODEL.test(word));
   if (at === -1) return null;
   const model = words[at];
-  const codexSkipped = words.includes('skipped') && family(model) === 'codex';
-  const missing = !codexSkipped && (words.includes('missing') || words.includes('skipped'));
+  const refused = words.includes('skipped') && REFUSING.has(family(model));
+  const missing = !refused && (words.includes('missing') || words.includes('skipped'));
   return {
     name: seatKey(model),
     effort: words[at + 1]?.match(/^@(\w+)$/u)?.[1] ?? null,
-    status: codexSkipped ? 'skipped' : missing ? 'missing' : entry.includes('same-family') ? 'same-family' : 'answered',
+    status: refused ? 'skipped' : missing ? 'missing' : entry.includes('same-family') ? 'same-family' : 'answered',
   };
 }
 

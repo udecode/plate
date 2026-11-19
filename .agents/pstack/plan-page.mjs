@@ -1130,7 +1130,7 @@ const seatName = (seat) =>
     .replace(/@\w+/, '')
     .replace(/\b(?:missing|skipped)\b/i, '')
     .replace(/^.*:\s+/, '')
-    .replace(/^codex:/i, '')
+    .replace(/^(?:codex|agy):/i, '')
     .trim()
     .split(/\s+/)[0];
 

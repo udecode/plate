@@ -6,7 +6,7 @@
 // seats row: per model, the rounds it sat, the criticals it raised, how each
 // was settled and the applied ones it alone raised, then the rows it could not
 // place. A row names its seats as `critical [<seat>, ...]:`; older rows are
-// read best effort, by model name, by the aliases opus, astra and sol, or by
+// read best effort, by model name, by the aliases opus, astra, sol and neon, or by
 // seat letter or number in roster order. A seat the seats row marks missing or skipped
 // keeps its place in that order and is never credited. The escape table reads
 // the fix commits on origin/<branch> as last fetched, merged ones included, by
@@ -27,7 +27,7 @@ const USAGE = 'Usage: node .agents/pstack/scorecard.mjs [--since <YYYY-MM-DD>] [
 const DAY = 24 * 60 * 60 * 1000;
 const WEEKS = 8;
 const SETTLED = ['applied', 'dismissed', 'open'];
-const NAME = /(?<![\w.:-])(?:codex:)?(?:claude-[\w.-]*\w|gpt-[\w.-]*\w|opus|sonnet|haiku|fable|astra|sol|lead)(?![\w-])/giu;
+const NAME = /(?<![\w.:-])(?:codex:|agy:)?(?:claude-[\w.-]*\w|gpt-[\w.-]*\w|gemini-[\w.-]*\w|opus|sonnet|haiku|fable|astra|sol|neon|lead)(?![\w-])/giu;
 const ONE_NAME = new RegExp(`^${NAME.source}$`, 'iu');
 const ATTRIBUTION_FILLER = new Set(['a', 'all', 'also', 'and', 'as', 'both', 'by', 'critical', 'fallback', 'from', 'nit', 'raised', 'round', 'seat', 'seats', 'three', 'warning', 'warnings', 'with']);
 const RAISED_BY = /\b(?:raised|flagged|found|caught|reported) by\b(.*)$/iu;
@@ -39,7 +39,7 @@ const git = (...args) => spawnSync('git', args, { encoding: 'utf8', maxBuffer: 1
 function resolveName(name, roster) {
   const word = name.toLowerCase();
   if (word === 'lead') return 'lead';
-  if (!['astra', 'sol'].includes(word)) return seatKey(word);
+  if (!['astra', 'sol', 'neon'].includes(word)) return seatKey(word);
   return roster?.models.find((model) => model.split('-').includes(word)) ?? null;
 }
 
