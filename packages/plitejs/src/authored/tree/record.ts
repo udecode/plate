@@ -4841,9 +4841,13 @@ class RootRecorder {
     place: SplitPlace
   ) {
     const keeps = this.options.splitKeepsIn(source, tail, place);
+    const split = this.marks(source).find(
+      (mark) => mark.kind === 'split' && mark.cut === undefined
+    );
 
     return gaveBy(
       source,
+      split?.gave && { gave: split.gave, incarnation: incarnationOf(split) },
       tail,
       this.options.joinCompares,
       (key) => keeps(key, ownOf(source, key)),

@@ -124,7 +124,11 @@ export type AuthoredMark =
          * place fills in, or its removal. A split saved before splits recorded
          * this has none, and so does a split an Editing change records or one
          * whose line the recorder cannot pair with a line the document held
-         * before the step.
+         * before the step. A key the split copied gets an entry too when the
+         * line it split holds that key exactly as that line's own pending split
+         * gave it. The entry's `from` names that split's incarnation, because
+         * that split's verdict decides whether the copy stands for the line
+         * before.
          */
         gave?: SplitGave;
         kind: 'split';
@@ -151,7 +155,9 @@ type Follows = Readonly<{
 
 type NoGave = Readonly<{ gave?: undefined }>;
 
-export type SplitGave = Readonly<Record<string, FormatWrite>>;
+export type GaveWrite = FormatWrite & Readonly<{ from?: string }>;
+
+export type SplitGave = Readonly<Record<string, GaveWrite>>;
 
 /** @internal */
 export const isContextInsertion = (mark: AuthoredMark) =>
@@ -405,7 +411,7 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
   );
 };
 
-const isLinkText = (follows: string) => {
+const isLinkText = (follows: string, lengths: readonly number[] = [2, 3]) => {
   let link: unknown;
 
   try {
@@ -414,7 +420,7 @@ const isLinkText = (follows: string) => {
     return false;
   }
 
-  if (!Array.isArray(link) || (link.length !== 2 && link.length !== 3)) {
+  if (!Array.isArray(link) || !lengths.includes(link.length)) {
     return false;
   }
 
@@ -427,6 +433,16 @@ const isLinkText = (follows: string) => {
       (typeof at === 'string' && at.length > 0)) &&
     (link.length === 2 || (typeof key === 'string' && key.length > 0)) &&
     JSON.stringify(link) === follows
+  );
+};
+
+const isGaveWrite = (write: unknown) => {
+  if (!isRecord(write) || write.from === undefined) return isFormatWrite(write);
+
+  const { from, ...rest } = write;
+
+  return (
+    typeof from === 'string' && isLinkText(from, [2]) && isFormatWrite(rest)
   );
 };
 
@@ -488,7 +504,7 @@ export const parseMember = (value: unknown): AuthoredMember | null => {
             field !== AUTHORED_MARKS_KEY &&
             field !== 'children' &&
             field !== 'text' &&
-            isFormatWrite(write)
+            isGaveWrite(write)
         )
       ))
   ) {

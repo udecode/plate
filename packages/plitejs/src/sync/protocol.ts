@@ -15,7 +15,7 @@ import type { AnyEditor } from '../interfaces/editor';
 export const SYNC_PROTOCOL = 1;
 
 /** Raised whenever either end changes how it rebases or judges a batch. */
-export const SYNC_RULES = 4;
+export const SYNC_RULES = 5;
 
 /** Both ends rebase with these settings, the accepted change first. */
 export const SYNC_REBASE = {

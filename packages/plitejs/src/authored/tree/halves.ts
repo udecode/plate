@@ -10,6 +10,7 @@ import { elementContextAt, type Place, STRUCTURE } from './holds';
 import type { FormatWrite } from './layers';
 import {
   type AuthoredMark,
+  type GaveWrite,
   isBetweenChange,
   isPlaceChange,
   type SplitGave,
@@ -105,8 +106,11 @@ const writeOf = (value: unknown): FormatWrite =>
     ? { kind: 'remove' }
     : { kind: 'set', value: value as EditorJsonValue };
 
+export type SourceSplit = Readonly<{ gave: SplitGave; incarnation: string }>;
+
 export const gaveBy = (
   source: Readonly<JsonRecord>,
+  sourceSplit: SourceSplit | undefined,
   tail: Readonly<JsonRecord>,
   compares: (key: string) => boolean,
   keeps: (key: string) => boolean,
@@ -119,6 +123,16 @@ export const gaveBy = (
     jsonEqual(ownOf(source, key), ownOf(tail, key));
   const heldOrFilled = (key: string) =>
     Object.hasOwn(tail, key) ? tail[key] : declared.get(key);
+  const holdsAsGiven = (key: string) => {
+    const given = sourceSplit?.gave[key];
+
+    return (
+      given !== undefined &&
+      (given.kind === 'remove'
+        ? !Object.hasOwn(source, key)
+        : Object.hasOwn(source, key) && jsonEqual(source[key], given.value))
+    );
+  };
 
   return Object.fromEntries(
     [
@@ -127,10 +141,21 @@ export const gaveBy = (
         ...Object.keys(tail),
         ...dropped,
         ...declared.keys(),
+        ...Object.keys(sourceSplit?.gave ?? {}),
       ]),
     ]
-      .filter((key) => (key === 'type' || compares(key)) && !copied(key))
-      .map((key) => [key, writeOf(heldOrFilled(key))])
+      .filter((key) => key === 'type' || compares(key))
+      .flatMap((key): Array<[string, GaveWrite]> => {
+        if (!copied(key)) return [[key, writeOf(heldOrFilled(key))]];
+        if (!sourceSplit || !holdsAsGiven(key)) return [];
+
+        return [
+          [
+            key,
+            { ...writeOf(ownOf(tail, key)), from: sourceSplit.incarnation },
+          ],
+        ];
+      })
   );
 };
 

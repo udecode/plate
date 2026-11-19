@@ -15,7 +15,7 @@ export {
   projectAuthoredRange,
   type AuthoredFormatProjection,
 } from './format';
-export type { AuthoredMark, SplitGave } from './tree/marks';
+export type { AuthoredMark, GaveWrite, SplitGave } from './tree/marks';
 export type { AuthoredRefusal } from './refusal';
 export type {
   AuthoredChange,
