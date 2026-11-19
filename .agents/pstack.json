@@ -311,7 +311,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "cef6720159aed75c1f843671acef3df751680f48b12790049339615cc6cc392a",
+    "block": "9ebc640900d7f5b08da664262df5739c6c34e85f40ce697097cac492e579fd53",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -346,14 +346,14 @@
       ".agents/pstack/rules/long-runs.md": "88aeff4dde51f3c56b877892ca131bfee3ad4b22bd2398c51ba88e7abbce6ee2",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "62678c32149d88b1735d1273e7b83202d985d6df7733df38bdad2655452bd22a",
-      ".agents/pstack/rules/panel.md": "82b2c7a7ea788ca401142300e819dc30de27ae039407c011af6abfde095a4e60",
+      ".agents/pstack/rules/panel.md": "42c7989e320151d7553b3229a0bd0c91b397af6aa4244954d263235a91c2446f",
       ".agents/pstack/rules/reflect.md": "be6aa4ed8699ac07c027ff739f7f71770ad23f4e451f3fa7102548b33b54ff22",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "ac8fd215d707c03830abd0a5df2678611bff986eaccc44cb5d37cd3eea46a35b",
       ".agents/pstack/rules/title.md": "7c8e8845b40705054fce7dfa458db32f71e40080b8384b7e1e626ac835b25577",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af"
     },
-    "source": "ac51ce41d57a768893520a9bddd617c5c80508ed"
+    "source": "9007ce44f5cd98732fb761d3ba6af955a68877bf"
   },
   "pageTopic": {
     "field": "review_scopes",
