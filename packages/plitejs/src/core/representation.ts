@@ -81,6 +81,7 @@ type CanonicalizeOptions = Readonly<{
   displacement?: 'change' | 'none';
   document?: import('../interfaces/editor').EditorDocumentValue;
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
+  rebuilt?: Map<Descendant, Descendant>;
   report?: RepresentationRepairSink;
   schema?: RepresentationSchema;
   carried?: CarriedWindowHook;
@@ -428,6 +429,7 @@ const canonicalizeNode = (
       : ({ ...candidate, children } as Element);
 
   inheritNodeKey(canonical, node, editor);
+  options.rebuilt?.set(canonical, node);
   options.report?.({
     from: candidate === node ? [node] : [node, candidate],
     rebuilt: canonical,
@@ -477,6 +479,13 @@ export const fitImportedBlock = (
   return jsonEqual(children, block.children) ? block : { ...block, children };
 };
 
+const sameChildren = (
+  left: readonly Descendant[],
+  right: readonly Descendant[]
+) =>
+  left.length === right.length &&
+  left.every((child, index) => child === right[index]);
+
 /** Full-root canonicalization for explicit snapshot replacement/maintenance. */
 export const canonicalizeRootChildren = (
   editor: Editor,
@@ -499,10 +508,7 @@ export const canonicalizeRootChildren = (
     options
   );
 
-  return canonical.length === current.length &&
-    canonical.every((child, index) => child === current[index])
-    ? current
-    : canonical;
+  return sameChildren(canonical, current) ? current : canonical;
 };
 
 const getRootChildren = (value: JsonEditorValue, root: string) =>
@@ -1154,6 +1160,113 @@ const positionsAfterJoins = (
   };
 };
 
+const writePropertiesFirst = (
+  draft: CanonicalRootDraft,
+  path: readonly number[],
+  from: number,
+  current: readonly Descendant[],
+  propertyCanonical: readonly Descendant[]
+) => {
+  if (sameChildren(propertyCanonical, current)) return current;
+
+  addDraftStep(
+    draft,
+    reconcileChildrenStep(
+      draft.document,
+      path,
+      from,
+      current.length,
+      propertyCanonical
+    )
+  );
+
+  return propertyCanonical;
+};
+
+// The representation pass hands back each element it keeps as the same
+// object, and `rebuilt` names the source of each element it rebuilt with new
+// children, so the changes replace only the runs between those elements, and
+// a later write in the same update that maps back through them still lands
+// inside the element it targets.
+const writeKeepingElements = (
+  draft: CanonicalRootDraft,
+  path: readonly number[],
+  from: number,
+  written: readonly Descendant[],
+  canonical: readonly Descendant[],
+  rebuilt?: ReadonlyMap<Descendant, Descendant>
+) => {
+  const { document } = draft;
+  let { length } = document;
+  const writeRuns = (
+    parent: readonly number[],
+    start: number,
+    before: readonly Descendant[],
+    after: readonly Descendant[]
+  ) => {
+    const indexes = new Map(before.map((child, index) => [child, index]));
+    const kept: Array<readonly [number, number]> = [[-1, -1]];
+
+    after.forEach((child, index) => {
+      const found = ElementApi.isElement(child)
+        ? indexes.get(rebuilt?.get(child) ?? child)
+        : undefined;
+
+      if (found !== undefined && found > getDefined(kept.at(-1))[0]) {
+        kept.push([found, index]);
+      }
+    });
+    kept.push([before.length, after.length]);
+
+    for (let pair = kept.length - 1; pair > 0; pair -= 1) {
+      const [beforeTo, afterTo] = getDefined(kept[pair]);
+      const [beforeFrom, afterFrom] = getDefined(kept[pair - 1]);
+      const source = before[beforeTo];
+      const target = after[afterTo];
+
+      if (
+        source !== target &&
+        ElementApi.isElement(source) &&
+        ElementApi.isElement(target)
+      ) {
+        writeRuns(
+          [...parent, start + beforeTo],
+          0,
+          source.children,
+          target.children
+        );
+      }
+
+      const removed = before.slice(beforeFrom + 1, beforeTo);
+      const inserted = after.slice(afterFrom + 1, afterTo);
+
+      if (sameChildren(removed, inserted)) continue;
+
+      const change = RootChange.betweenWhole(
+        DocumentIndex.fromValue(removed),
+        DocumentIndex.fromValue(inserted)
+      ).embed(length, document.childPosition(parent, start + beforeFrom + 1));
+
+      if (change.empty) continue;
+      draft.pending.push(change);
+      length = change.newLength;
+    }
+  };
+
+  const pending = draft.pending.length;
+
+  writeRuns(path, from, written, canonical);
+
+  if (draft.pending.length > pending) {
+    draft.document = document.withSplicedNodes(
+      path,
+      from,
+      written.length,
+      canonical
+    );
+  }
+};
+
 const replaceCanonicalChildWindow = (
   draft: CanonicalRootDraft,
   editor: Editor,
@@ -1351,6 +1464,14 @@ const replaceCanonicalChildWindow = (
     return;
   }
 
+  const written = writePropertiesFirst(
+    draft,
+    path,
+    from,
+    selected,
+    propertyCanonical
+  );
+
   const preserveInlineSpacersAdjacentTo = carryProtectedInlineNodes(
     selected,
     propertyCanonical,
@@ -1399,20 +1520,7 @@ const replaceCanonicalChildWindow = (
     baselineAt(from)
   );
 
-  if (
-    canonical.length !== selected.length ||
-    canonical.some((child, index) => child !== selected[index])
-  ) {
-    const step = reconcileChildrenStep(
-      draft.document,
-      path,
-      from,
-      selected.length,
-      canonical
-    );
-
-    addDraftStep(draft, step);
-  }
+  writeKeepingElements(draft, path, from, written, canonical);
 
   if (!contentSpec) return;
 
@@ -1477,15 +1585,7 @@ const replaceCanonicalChildWindow = (
 
   if (completed === current) return;
 
-  const step = reconcileChildrenStep(
-    draft.document,
-    path,
-    0,
-    current.length,
-    completed
-  );
-
-  addDraftStep(draft, step);
+  writeKeepingElements(draft, path, 0, current, completed);
 };
 
 const fitRootChildren = (
@@ -1521,10 +1621,12 @@ const fitRootChildren = (
       ? propertyCanonical
       : schema.canonicalizeChildren(representationCanonical, root, [], false);
 
-  return canonical.length === current.length &&
-    canonical.every((child, index) => child === current[index])
-    ? current
-    : canonical;
+  return {
+    canonical: sameChildren(canonical, current) ? current : canonical,
+    propertyCanonical: sameChildren(propertyCanonical, current)
+      ? current
+      : propertyCanonical,
+  };
 };
 
 const loadedRoots = (document: JsonEditorValue) => [
@@ -1543,7 +1645,8 @@ export const isLoadedDocumentCanonical = (
     const current = getRootChildren(document, root);
 
     return (
-      fitRootChildren(editor, current, root, { document, schema }) === current
+      fitRootChildren(editor, current, root, { document, schema }).canonical ===
+      current
     );
   });
 };
@@ -1560,7 +1663,7 @@ export const constructLoadedDocumentChange = (
 
   for (const root of loadedRoots(document)) {
     const current = getRootChildren(document, root);
-    const canonical = fitRootChildren(editor, current, root, {
+    const { canonical } = fitRootChildren(editor, current, root, {
       document,
       schema,
     });
@@ -1723,22 +1826,29 @@ export const constructCanonicalDocumentChange = (
 
     if (fitPreparation?.forceRoots?.has(root)) {
       const current = getRootChildren(after, root);
-      const canonical = fitRootChildren(editor, current, root, {
-        document: after as EditorDocumentValue,
-        preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
-        schema,
-      });
+      const rebuilt = new Map<Descendant, Descendant>();
+      const { canonical, propertyCanonical } = fitRootChildren(
+        editor,
+        current,
+        root,
+        {
+          document: after as EditorDocumentValue,
+          preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
+          rebuilt,
+          schema,
+        }
+      );
 
-      if (canonical !== current) {
-        const step = reconcileChildrenStep(
-          draft.document,
-          [],
-          0,
-          current.length,
-          canonical
-        );
+      const written = writePropertiesFirst(
+        draft,
+        [],
+        0,
+        current,
+        propertyCanonical
+      );
 
-        addDraftStep(draft, step);
+      if (canonical !== written) {
+        writeKeepingElements(draft, [], 0, written, canonical, rebuilt);
       }
 
       const fitted = draftChange(draft);

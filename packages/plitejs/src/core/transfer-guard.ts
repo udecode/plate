@@ -1,5 +1,6 @@
 import type { AnyEditor, ContentSlice, RootKey } from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
+import type { EditorJsonValue } from '../interfaces/json';
 import { NodeApi, type Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
@@ -17,6 +18,12 @@ import {
   readDraftTrackAt,
 } from './draft-track';
 import { type JsonValue, TransferRefusalError } from './landing';
+import {
+  type CompiledEditorSchema,
+  resolveCompiledSchemaProperty,
+  toCompiledNodeContext,
+  uniquePropertiesOf,
+} from './schema-compiler';
 import type { TransferDiagnostic } from './transfer-types';
 
 export const rootChildren = (value: JsonValue, root: RootKey) =>
@@ -218,6 +225,16 @@ export const closedEdges = ({
   start: edgeDepth(content, firstOf) - openStart,
 });
 
+const openAtEdge = (
+  node: Element,
+  atStart: boolean,
+  atEnd: boolean,
+  closed: ClosedEdges | undefined
+) =>
+  !!closed &&
+  ((atStart && edgeDepth([node], firstOf) > closed.start) ||
+    (atEnd && edgeDepth([node], lastOf) > closed.end));
+
 export const textTokens = (
   fragment: readonly Descendant[],
   closed: ClosedEdges,
@@ -239,9 +256,7 @@ export const textTokens = (
 
       const atStart = onStart && index === 0;
       const atEnd = onEnd && index === list.length - 1;
-      const open =
-        (atStart && edgeDepth([node], firstOf) > closed.start) ||
-        (atEnd && edgeDepth([node], lastOf) > closed.end);
+      const open = openAtEdge(node, atStart, atEnd, closed);
 
       if (!open) {
         const { children: _children, ...props } = node;
@@ -507,6 +522,7 @@ export type LandingExpectation =
       content: readonly Descendant[];
       kind: 'range-copy';
       landedKind: LandedKind;
+      roots: JsonValue['roots'];
     }>
   | Readonly<{ kind: 'range-move'; moved: MovedPayload }>;
 
@@ -515,15 +531,192 @@ export type DraftLanding = Readonly<{
   track: DraftTrack;
 }>;
 
-/** How a copy normalizes what it lands, so both sides compare as copied. */
-export type CopyNormalizer = Readonly<{
-  children: (nodes: readonly Descendant[]) => readonly Descendant[];
-  node: (
-    node: Descendant,
-    children: readonly Descendant[],
-    path: Path
-  ) => Descendant;
+type Copied = Readonly<{
+  nodes: readonly Descendant[];
+  roots: JsonValue['roots'];
+  inputOf: (node: object) => object;
 }>;
+
+export type CopyNormalizer = (
+  nodes: readonly Descendant[],
+  roots: JsonValue['roots'],
+  of?: Readonly<{
+    closed?: ClosedEdges;
+    nearestAncestorsOf?: (index: number) => readonly Element[];
+  }>
+) => Copied;
+
+const childRootNames = (element: Element) => {
+  const { childRoots } = element as Element & {
+    childRoots?: Record<string, string>;
+  };
+
+  return childRoots
+    ? Object.keys(childRoots)
+        .sort()
+        .map((slot) => childRoots[slot])
+    : [];
+};
+
+const PLACE_MARK = '\u0000';
+
+const apartFromPlaces = (name: string) =>
+  name.startsWith(PLACE_MARK) ? `${PLACE_MARK}${name}` : undefined;
+
+export const copyNormalizer = (
+  schema: CompiledEditorSchema,
+  copyChildren: (
+    children: readonly Descendant[],
+    root: RootKey,
+    ancestors?: readonly Element[]
+  ) => readonly Descendant[],
+  root: RootKey
+): CopyNormalizer => {
+  const unique = uniquePropertiesOf(schema);
+  const referenced = new Set(
+    [...schema.properties.byId.values()].flatMap(({ references }) =>
+      references && unique.has(references.key) ? [references.key] : []
+    )
+  );
+
+  return (nodes, roots, { closed, nearestAncestorsOf = () => [] } = {}) => {
+    const places = new Map<string, Map<string, string>>();
+    const walked = new Set<string>();
+    const inputs = new WeakMap<object, object>();
+    const placeHolders = (
+      list: readonly Descendant[],
+      rootPlace: string,
+      edges?: ClosedEdges
+    ) => {
+      let carried = 0;
+      const visit = (
+        children: readonly Descendant[],
+        onStart: boolean,
+        onEnd: boolean
+      ) => {
+        const kept = nonEmpty(children);
+
+        kept.forEach((node, index) => {
+          if (!ElementApi.isElement(node)) return;
+          const atStart = onStart && index === 0;
+          const atEnd = onEnd && index === kept.length - 1;
+
+          if (!openAtEdge(node, atStart, atEnd, edges)) {
+            const place = `${rootPlace}.${(carried += 1)}`;
+
+            for (const key of referenced) {
+              if (node[key] === undefined) continue;
+              const byValue = places.get(key) ?? new Map<string, string>();
+              const value = canonicalJsonKey(node[key]);
+
+              places.set(key, byValue);
+              if (!byValue.has(value)) byValue.set(value, place);
+            }
+          }
+          visit(node.children, atStart, atEnd);
+          for (const name of childRootNames(node)) {
+            if (walked.has(name)) continue;
+            walked.add(name);
+            placeHolders(roots?.[name] ?? [], `${PLACE_MARK}${walked.size}`);
+          }
+        });
+      };
+
+      visit(list, true, true);
+    };
+
+    placeHolders(nodes, `${PLACE_MARK}0`, closed);
+
+    const nameByPlace = (
+      list: readonly Descendant[],
+      ancestors: readonly Element[],
+      at: RootKey
+    ): readonly Descendant[] => {
+      const out = list.map((node) => {
+        if (!ElementApi.isElement(node)) return node;
+        const context = toCompiledNodeContext(node, ancestors, at);
+        const renamed: Record<string, EditorJsonValue> = {};
+
+        for (const [key, value] of Object.entries(node)) {
+          const references = resolveCompiledSchemaProperty(
+            schema,
+            'element',
+            key,
+            context
+          )?.references;
+          const byValue = references && places.get(references.key);
+
+          if (!references || !byValue) continue;
+          const mapped = references.map(
+            value as EditorJsonValue,
+            (name) =>
+              byValue.get(canonicalJsonKey(name)) ?? apartFromPlaces(name)
+          );
+
+          if (canonicalJsonKey(mapped) !== canonicalJsonKey(value)) {
+            renamed[key] = mapped;
+          }
+        }
+        const element =
+          Object.keys(renamed).length === 0 ? node : { ...node, ...renamed };
+        const children = nameByPlace(
+          node.children,
+          [element, ...ancestors],
+          at
+        );
+
+        return element === node && children === node.children
+          ? node
+          : { ...element, children };
+      });
+
+      return out.every((node, index) => node === list[index]) ? list : out;
+    };
+    const copyRecordingInputs = (
+      list: readonly Descendant[],
+      ancestors: readonly Element[],
+      at: RootKey
+    ) => {
+      const renamed =
+        places.size === 0 ? list : nameByPlace(list, ancestors, at);
+      const result = copyChildren(renamed, at, ancestors);
+      const trace = (
+        out: readonly Descendant[],
+        input: readonly Descendant[]
+      ) => {
+        out.forEach((node, index) => {
+          const from = input[index];
+
+          if (node === from) return;
+          inputs.set(node, from);
+          if (ElementApi.isElement(node) && ElementApi.isElement(from)) {
+            trace(node.children, from.children);
+          }
+        });
+      };
+
+      trace(result, list);
+
+      return result;
+    };
+
+    return {
+      nodes: nodes.flatMap((node, index) =>
+        copyRecordingInputs([node], nearestAncestorsOf(index), root)
+      ),
+      roots: roots && {
+        ...roots,
+        ...Object.fromEntries(
+          [...walked].map((name) => [
+            name,
+            copyRecordingInputs(roots[name] ?? [], [], name),
+          ])
+        ),
+      },
+      inputOf: (node) => inputs.get(node) ?? node,
+    };
+  };
+};
 
 const fragmentOf = (children: readonly Descendant[], range: Range) =>
   NodeApi.fragment({ children, type: '' }, range);
@@ -553,26 +746,33 @@ export const landingHolds = (
   { children, dropped, index, roots, spans }: LandingSample,
   copy: CopyNormalizer | null
 ) => {
+  const asCopied: CopyNormalizer = (nodes, from, of) =>
+    copy
+      ? copy(nodes, from, of)
+      : { inputOf: (node) => node, nodes, roots: from };
+
   if (expected.kind === 'nodes') {
     const paths = trackedPaths(index, spans);
+    const nodes = paths.map((path) => path && nodeAt(children, path));
 
-    return (
-      paths.length === expected.content.length &&
-      paths.every((path, i) => {
-        const node = path ? nodeAt(children, path) : null;
+    if (
+      paths.length !== expected.content.length ||
+      nodes.some((node) => !node)
+    ) {
+      return false;
+    }
 
-        return (
-          !!path &&
-          !!node &&
-          sameContent(
-            expected.content[i],
-            expected.roots,
-            copy ? copy.node(node, children, path) : node,
-            roots,
-            dropped
-          )
-        );
-      })
+    const of = {
+      nearestAncestorsOf: (at: number) =>
+        ancestorsAt(children, paths[at] as Path),
+    };
+    const want = asCopied(expected.content, expected.roots, of);
+    const landed = asCopied(nodes as Descendant[], roots, of);
+
+    return landed.nodes.every((node, i) =>
+      sameContent(want.nodes[i], want.roots, node, landed.roots, (source) =>
+        dropped(want.inputOf(source))
+      )
     );
   }
 
@@ -583,13 +783,24 @@ export const landingHolds = (
 
   const landed = fragmentOf(children, range);
 
-  return expected.kind === 'range-move'
-    ? landsMoved(landed, expected.moved, dropped)
-    : textTokens(
-        copy ? copy.children(landed) : landed,
-        expected.closed,
-        expected.landedKind
-      ) === textTokens(expected.content, expected.closed, expected.landedKind);
+  if (expected.kind === 'range-move') {
+    return landsMoved(landed, expected.moved, dropped);
+  }
+
+  const { closed, landedKind } = expected;
+
+  return (
+    textTokens(
+      asCopied(landed, roots, { closed }).nodes,
+      closed,
+      landedKind
+    ) ===
+    textTokens(
+      asCopied(expected.content, expected.roots, { closed }).nodes,
+      closed,
+      landedKind
+    )
+  );
 };
 
 /**
@@ -600,8 +811,7 @@ export const landingHolds = (
 export const rebaseLanding = (
   { expected, track }: DraftLanding,
   frame: DraftGuardFrame,
-  root: RootKey,
-  copy: CopyNormalizer | null
+  root: RootKey
 ): LandingExpectation | null => {
   const start = readDraftTrackAt(track, frame);
 
@@ -617,7 +827,7 @@ export const rebaseLanding = (
       const node = path && nodeAt(children, path);
 
       if (!path || !node) return null;
-      content.push(copy ? copy.node(node, children, path) : node);
+      content.push(node);
     }
 
     return { content, kind: 'nodes', roots: value.roots };
@@ -631,10 +841,7 @@ export const rebaseLanding = (
   const started = fragmentOf(children, range);
 
   if (expected.kind === 'range-copy') {
-    return {
-      ...expected,
-      content: copy ? copy.children(started) : started,
-    };
+    return { ...expected, content: started, roots: value.roots };
   }
 
   const { moved } = expected;

@@ -299,9 +299,17 @@ type CompiledSchemaRecordSet = Readonly<{
 
 export type CompiledSchemaPropertyMergeStrategy = 'replace' | 'set';
 
-type CompiledPropertyReferences = NonNullable<
+type DeclaredPropertyReferences = NonNullable<
   SchemaElementProperty['references']
 >;
+
+type CompiledPropertyReferences = Readonly<{
+  key: string;
+  map: (
+    value: EditorJsonValue,
+    renamed: (name: string) => string | undefined
+  ) => EditorJsonValue;
+}>;
 
 export type CompiledSchemaProperty = Readonly<{
   descriptor: PropertyValueDescriptor;
@@ -626,9 +634,9 @@ const freezeSetMap = (
   );
 
 const referencesOf = (
-  { references }: Readonly<{ references?: CompiledPropertyReferences }>,
+  { references }: Readonly<{ references?: DeclaredPropertyReferences }>,
   { path, pluginName }: Readonly<{ path: string; pluginName: string }>
-) => {
+): CompiledPropertyReferences | undefined => {
   if (!references) return undefined;
 
   const { key, map } = references;
@@ -642,7 +650,7 @@ const referencesOf = (
     );
   }
 
-  return Object.freeze({ key, map });
+  return Object.freeze({ key, map: map as CompiledPropertyReferences['map'] });
 };
 
 const compileFailure = (

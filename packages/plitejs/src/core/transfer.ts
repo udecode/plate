@@ -45,7 +45,10 @@ import {
   transferVeto,
 } from './landing';
 import { definePlugin } from './plugin';
-import { getConfiguredPluginRegistry } from './plugin-registry';
+import {
+  getCompiledEditorSchema,
+  getConfiguredPluginRegistry,
+} from './plugin-registry';
 import {
   applyTransactionSpec,
   finalizeTransactionRepresentation,
@@ -66,10 +69,10 @@ import {
 } from './slice-fit/provenance';
 import { planPaste, writePaste } from './slice-landing';
 import {
-  ancestorsAt,
   carryMove,
   closedEdges,
   type CopyNormalizer,
+  copyNormalizer,
   type DraftLanding,
   droppedKeysOf,
   eachFragmentNode,
@@ -623,15 +626,11 @@ const runTransfer = (
       : [];
   const schema = getEditorSchema(editor);
   const normalize: CopyNormalizer | null = copy
-    ? {
-        children: (nodes) => schema.copyChildren(nodes, targetRoot),
-        node: (node, children, path) =>
-          schema.copyChildren(
-            [node],
-            targetRoot,
-            ancestorsAt(children, path)
-          )[0],
-      }
+    ? copyNormalizer(
+        getCompiledEditorSchema(editor),
+        schema.copyChildren,
+        targetRoot
+      )
     : null;
   const draft: { current: DraftLanding | null } = { current: null };
   const runtime = getEditorRuntimeOwner(editor);
@@ -671,7 +670,7 @@ const runTransfer = (
       if (!builder || !spans) return false;
 
       const expected = frame
-        ? rebaseLanding(drafted, frame, targetRoot, normalize)
+        ? rebaseLanding(drafted, frame, targetRoot)
         : drafted.expected;
 
       return (
@@ -893,6 +892,7 @@ const runTransfer = (
               content: written.written.content,
               kind: 'range-copy',
               landedKind,
+              roots: written.written.roots,
             }
           : {
               kind: 'range-move',
