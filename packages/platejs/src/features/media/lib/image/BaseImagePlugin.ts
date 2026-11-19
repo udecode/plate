@@ -10,6 +10,7 @@ import {
   TextApi,
 } from '../../../../core';
 import { domCommands } from '../../../../dom/plite-dom.internal';
+import { imageLink } from '../../../../internal/plugin/imageLink';
 import { getMarkdownParagraphType } from '../../../../internal/plugin/markdownParagraph';
 import { isScriptUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
 import {
@@ -428,32 +429,52 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
       url: options.transformUrl?.(url) ?? url,
     }))
   )
-  .extend(({ editor, store }) => ({
-    commands: ({ around }) => [
-      around(domCommands.insertData, ({ input, next, state }) => {
-        const text = input.getData('text/plain');
-        const imageExtension = isUrl(text)
-          ? new URL(text).pathname.split('.').pop()?.toLowerCase()
-          : undefined;
+  .extend(({ api, editor, schema: { type }, store }) => {
+    const embedsUrl = (text: string) => {
+      const extension = isUrl(text)
+        ? new URL(text).pathname.split('.').pop()?.toLowerCase()
+        : undefined;
 
-        if (
-          !store.get().disableEmbedInsert &&
-          imageExtension &&
-          imageExtensions.has(imageExtension) &&
-          editor.api.dom.clipboard.readSlice(input).kind !== 'slice'
-        ) {
+      return (
+        !store.get().disableEmbedInsert &&
+        extension !== undefined &&
+        imageExtensions.has(extension)
+      );
+    };
+
+    return {
+      commands: ({ around }) => [
+        around(domCommands.insertData, ({ input, next, state }) => {
+          const text = input.getData('text/plain');
+
+          if (
+            !embedsUrl(text) ||
+            editor.api.dom.clipboard.readSlice(input).kind === 'slice'
+          ) {
+            return next();
+          }
+
           let inserted = false;
           const transaction = state.transaction((tx) => {
             inserted = tx.image.insert({ url: text });
           });
 
           return inserted ? transaction : next();
-        }
+        }),
+      ],
+      contributions: [
+        imageLink.of((text) => {
+          const properties = embedsUrl(text)
+            ? api.normalizeUrl(text)
+            : undefined;
 
-        return next();
-      }),
-    ],
-  }));
+          return (
+            properties && { ...properties, children: [{ text: '' }], type }
+          );
+        }),
+      ],
+    };
+  });
 
 export type ImageDefinition = DefinitionOf<typeof BaseImagePlugin>;
 export type ImageElement = ElementOf<typeof BaseImagePlugin>;

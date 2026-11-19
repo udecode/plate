@@ -1,4 +1,9 @@
-import type { BoardPlace } from '../../../features/board/lib';
+import { ElementApi } from '../../../core';
+import {
+  BaseBoardImagePlugin,
+  type BoardPlace,
+} from '../../../features/board/lib';
+import { readImageLink } from '../../../internal/plugin/imageLink';
 import type { BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
@@ -60,6 +65,36 @@ export const attachBoardClipboard = (
     editor.api.dom.clipboard.writeSelection(event.clipboardData);
     core.commit({ ids: shapes.map(({ id }) => id), kind: 'remove' });
   };
+  const picturesIn = (data: DataTransfer) => {
+    const link = readImageLink(editor, data.getData('text/plain'));
+
+    if (link) return [link];
+
+    const html = data.getData('text/html');
+    const parsed = html ? editor.api.html.parseSlice(html) : undefined;
+
+    if (!parsed?.ok) return undefined;
+
+    const holds =
+      editor.read.schema.element(
+        editor.plugin(BaseBoardImagePlugin).schema.type
+      )?.content?.allowedElementTypes ?? [];
+    const blocks = parsed.slice.content.filter(
+      (block) =>
+        !(ElementApi.isElement(block) && editor.read.nodes.isEmpty(block))
+    );
+    const pictures = blocks.flatMap((block) =>
+      ElementApi.isElement(block) &&
+      holds.includes(block.type) &&
+      typeof block.url === 'string'
+        ? [block]
+        : []
+    );
+
+    return pictures.length > 0 && pictures.length === blocks.length
+      ? pictures
+      : undefined;
+  };
   const onPaste = (event: ClipboardEvent) => {
     const target = clipboardTarget(event);
     const onTarget = !!target && target === core.focusTarget.current;
@@ -74,6 +109,25 @@ export const attachBoardClipboard = (
     const read = editor.api.dom.clipboard.readSlice(event.clipboardData);
 
     core.measure();
+
+    const pictures =
+      read.kind !== 'slice' &&
+      !core.editedShape() &&
+      core.writable() &&
+      editor.plugin(BaseBoardImagePlugin).installed
+        ? picturesIn(event.clipboardData)
+        : undefined;
+
+    if (pictures) {
+      event.preventDefault();
+      event.stopPropagation();
+      core.landPictures(
+        pictures,
+        hover ? core.boardPointAt(hover) : core.viewCenter()
+      );
+
+      return;
+    }
 
     const pasted =
       read.kind === 'slice'

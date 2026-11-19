@@ -16,6 +16,7 @@ import {
   BaseBoardArrowPlugin,
   BaseBoardFramePlugin,
   BaseBoardGeoPlugin,
+  BaseBoardImagePlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
   BaseBoardStrokePlugin,
@@ -47,6 +48,7 @@ import {
   createBoardIndex,
 } from './boardIndex.internal';
 import { attachBoardKeys, takeTextTab } from './boardKeys.internal';
+import { createPendingPictures } from './boardPictures.internal';
 import {
   type BoardMessages,
   type BoardVoice,
@@ -213,6 +215,7 @@ export type BoardViewCore = Readonly<{
   ) => boolean;
   deselectOnBoard: () => boolean;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
+  landPictures: (images: readonly Element[], point: BoardPlace) => void;
   leaveBoard: (backward: boolean) => boolean;
   /** Mark the shapes `ids` as ones the eraser will remove. */
   markErasing: (ids: readonly string[]) => void;
@@ -275,6 +278,7 @@ const MAX_ZOOM = 8;
 const ZOOM_STEPS = [MIN_ZOOM, 0.25, 0.5, 1, 2, 4, MAX_ZOOM];
 const WHEEL_STEP_ZOOM = 100;
 const FIT_PADDING = 32;
+const PICTURE_GAP = 16;
 
 const percentOf = (zoom: number) => Math.round(zoom * 100);
 
@@ -1166,14 +1170,7 @@ export const createBoardView = (
     });
   };
 
-  const land = (slice: ContentSlice, place?: BoardPlace) => {
-    const ids = write((tx) =>
-      tx
-        .plugin(BaseBoardPlugin)
-        .insertCopy(slice, { board, ...(place ? { place } : {}) })
-    );
-
-    if (!ids) return false;
+  const selectIds = (ids: readonly string[]) =>
     select(
       ids.flatMap((id) => {
         const shape = boards.read.shape(id);
@@ -1182,7 +1179,45 @@ export const createBoardView = (
       })
     );
 
+  const land = (slice: ContentSlice, place?: BoardPlace) => {
+    const ids = write((tx) =>
+      tx
+        .plugin(BaseBoardPlugin)
+        .insertCopy(slice, { board, ...(place ? { place } : {}) })
+    );
+
+    if (!ids) return false;
+    selectIds(ids);
+
     return true;
+  };
+
+  const pendingPictures = createPendingPictures({ editor, mounted, writable });
+
+  const landPictures = (images: readonly Element[], point: BoardPlace) => {
+    if (!surface) return;
+    pendingPictures.load(surface, images, (loaded) => {
+      const width =
+        loaded.reduce((total, { size: box }) => total + box.width, 0) +
+        PICTURE_GAP * (loaded.length - 1);
+      let x = point.x - width / 2;
+      const ids = write((tx) =>
+        loaded.flatMap(({ element: image, size: box }) => {
+          const id = tx
+            .plugin(BaseBoardImagePlugin)
+            .insert(
+              { children: [image], ...box, x, y: point.y - box.height / 2 },
+              { board }
+            );
+
+          x += box.width + PICTURE_GAP;
+
+          return id ?? [];
+        })
+      );
+
+      if (ids) selectIds(ids);
+    });
   };
 
   const paste = (data: DataTransfer) => {
@@ -1261,6 +1296,7 @@ export const createBoardView = (
     },
     deselectOnBoard,
     land,
+    landPictures,
     leaveBoard: (backward) => {
       if (!writable()) {
         editor.update((tx) => tx.selection.set(null));
@@ -1420,6 +1456,7 @@ export const createBoardView = (
       host.removeEventListener('wheel', onWheel);
       keys.detach();
       detachClipboard();
+      pendingPictures.cancel();
     };
   };
 
@@ -1516,6 +1553,7 @@ export const createBoardView = (
       return () => {
         unsubscribe();
         unsubscribeViewState();
+        pendingPictures.cancel();
       };
     },
     erasing: (id: string) => erasing.has(id),
