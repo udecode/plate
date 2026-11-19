@@ -1038,6 +1038,9 @@ function DiscussionPopover({
   // React focus events bubble out of portals, so a menu opened from the
   // popover counts as a control inside it.
   const focusedControlRef = React.useRef<EventTarget | null>(null);
+  // Safari focuses the popover itself, not a pressed button, so a press holds
+  // the popover until the pointer is released.
+  const pressingRef = React.useRef(false);
   const releasedPendingRef = React.useRef<typeof pending>(null);
   const activeCommentIds = usePluginStore(CommentsPlugin, 'activeIds');
   const activeOrder = new Map(activeCommentIds.map((id, index) => [id, index]));
@@ -1249,6 +1252,7 @@ function DiscussionPopover({
   const { anchor: anchorElement, hidden } = useVisibleAnchor({
     editableRef,
     keepShown: () =>
+      pressingRef.current ||
       focusedControlRef.current ===
         editableRef.current?.ownerDocument.activeElement ||
       (Boolean(pending) && releasedPendingRef.current !== pending),
@@ -1329,6 +1333,21 @@ function DiscussionPopover({
             if (onControl && pending) releasedPendingRef.current = pending;
           }}
           onInitialFocus={(event) => event.preventDefault()}
+          onPointerDown={(event) => {
+            const release = new AbortController();
+            const end = () => {
+              pressingRef.current = false;
+              release.abort();
+            };
+
+            pressingRef.current = true;
+            for (const type of ['pointerup', 'pointercancel']) {
+              event.currentTarget.ownerDocument.addEventListener(type, end, {
+                capture: true,
+                signal: release.signal,
+              });
+            }
+          }}
           onPlaced={() => {
             if (pending) setPlacedPending(pending);
           }}

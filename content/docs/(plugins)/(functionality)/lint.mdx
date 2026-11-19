@@ -223,6 +223,12 @@ message, the rule id, one button per fix and **Fix and next**, which applies the
 first fix and selects the next finding. Its buttons keep focus in the editor,
 so typing continues after the fixed text.
 
+While the finding is scrolled out of the editor's visible part, the popover
+stays open but hidden, and clicks reach the text under it. It shows again once
+the finding scrolls back. If a scroll area inside the document, such as a wide
+table or code block, scrolls the finding out of view, the popover stays shown.
+The copied `useVisibleAnchor` hook does this with `useEditableClip`.
+
 ## Keyboard behavior
 
 | Key | Behavior |

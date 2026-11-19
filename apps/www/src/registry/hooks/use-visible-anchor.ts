@@ -17,7 +17,7 @@ const notHidden = () => false;
  * popover, so `hidden` follows every scroll it hears. `measure` lists the boxes
  * the popover may sit under, best first, and a new function makes a new anchor.
  * While `keepShown` returns true the popover stays shown; the hook checks it
- * again after each render and each focus change.
+ * again after each render, each focus change and each pointer release.
  */
 export function useVisibleAnchor({
   editableRef,
@@ -127,18 +127,22 @@ export function useVisibleAnchor({
     if (!state || !ownerDocument) return undefined;
 
     let frame = 0;
-    const onFocusChange = () => {
+    const onChange = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(state.sync);
     };
 
-    ownerDocument.addEventListener('focusin', onFocusChange);
-    ownerDocument.addEventListener('focusout', onFocusChange);
+    ownerDocument.addEventListener('focusin', onChange);
+    ownerDocument.addEventListener('focusout', onChange);
+    ownerDocument.addEventListener('pointerup', onChange);
+    ownerDocument.addEventListener('pointercancel', onChange);
 
     return () => {
       cancelAnimationFrame(frame);
-      ownerDocument.removeEventListener('focusin', onFocusChange);
-      ownerDocument.removeEventListener('focusout', onFocusChange);
+      ownerDocument.removeEventListener('focusin', onChange);
+      ownerDocument.removeEventListener('focusout', onChange);
+      ownerDocument.removeEventListener('pointerup', onChange);
+      ownerDocument.removeEventListener('pointercancel', onChange);
     };
   }, [editableRef, state]);
 
