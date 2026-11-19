@@ -78,6 +78,10 @@ import {
   type BoardShapeEntry,
 } from './boardMember.internal';
 import {
+  keepsBoardRatio,
+  flooredSizeKeepingRatio,
+} from './boardRatio.internal';
+import {
   BOARD_SHAPES_SLOT,
   type BoardPlace,
   type BoardRestackDirection,
@@ -607,6 +611,7 @@ export const BaseBoardPlugin = definePlugin('board', {
       ],
       update: ({ tx }) => {
         const members = boardMembersOf(tx, properties);
+        const keepsRatio = keepsBoardRatio(editor);
         const entriesOf = (ids: readonly string[]) =>
           ids.flatMap((id) => members.member(id) ?? []);
         const membersOf = (frame: BoardFrameEntry) =>
@@ -848,7 +853,9 @@ export const BaseBoardPlugin = definePlugin('board', {
            * Set a shape's place and size together, as a resize from any edge.
            * A frame keeps its origin, so its members stay put, and lets go of
            * each member it no longer overlaps. Any other shape joins the
-           * frontmost frame under its middle, or leaves its frame.
+           * frontmost frame under its middle, or leaves its frame. An image
+           * shape keeps its ratio: its height follows the given width, and a
+           * shrink stops at a short edge of 8, so it can store another width.
            */
           resize: txLocate(
             false,
@@ -860,15 +867,26 @@ export const BaseBoardPlugin = definePlugin('board', {
               };
 
               if (entry?.kind === 'shape') {
+                const shape = keepsRatio(entry.node)
+                  ? {
+                      ...box,
+                      size: flooredSizeKeepingRatio(
+                        entry.size,
+                        'width',
+                        rect.width
+                      ),
+                    }
+                  : box;
+
                 tx.nodes.set(
                   {
-                    place: placeAmong(members.framesIn(entry.root), box, {
+                    place: placeAmong(members.framesIn(entry.root), shape, {
                       current: tx.schema.getProperty(
                         entry.node,
                         properties.place
                       ),
                     }),
-                    size: box.size,
+                    size: shape.size,
                   },
                   { at: entry.key }
                 );

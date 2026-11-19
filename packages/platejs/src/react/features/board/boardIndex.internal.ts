@@ -22,6 +22,10 @@ import {
   paintKeyOf,
   paintOrder,
 } from '../../../features/board/lib/boardCopy.internal';
+import {
+  MIN_SHAPE_SIZE,
+  flooredSizeKeepingRatio,
+} from '../../../features/board/lib/boardRatio.internal';
 import { BOARD_GEO_TYPE } from '../../../features/board/lib/boardShape.internal';
 import {
   BOARD_PEN,
@@ -46,6 +50,7 @@ export type BoardShapeLayout = Readonly<{
   box: BoardBox;
   takesText: boolean;
   id: string;
+  keepsRatio: boolean;
   /** A stroke's stored points, which a press must reach to hit it. */
   ink?: BoardStrokePoints;
   key: NodeKey;
@@ -118,17 +123,10 @@ export const CORNERS_CLOCKWISE: readonly BoardCorner[] = [
   'topRight',
 ];
 
-export const MIN_SHAPE_SIZE = 8;
-
 export type BoardBoxModifiers = Readonly<{
   center: boolean;
   keepRatio: boolean;
 }>;
-
-export const NO_BOX_MODIFIERS: BoardBoxModifiers = {
-  center: false,
-  keepRatio: false,
-};
 
 export const draggedBox = (
   press: BoardPlace,
@@ -177,14 +175,11 @@ export const resized = (
   if (keepRatio && start.width > 0 && start.height > 0) {
     const across = width / start.width;
     const down = height / start.height;
-    const scale = Math.max(
-      Math.abs(across - 1) > Math.abs(down - 1) ? across : down,
-      MIN_SHAPE_SIZE / start.width,
-      MIN_SHAPE_SIZE / start.height
-    );
 
-    width = start.width * scale;
-    height = start.height * scale;
+    ({ height, width } =
+      Math.abs(across - 1) > Math.abs(down - 1)
+        ? flooredSizeKeepingRatio(start, 'width', width)
+        : flooredSizeKeepingRatio(start, 'height', height));
   } else {
     width = Math.max(MIN_SHAPE_SIZE, width);
     height = Math.max(MIN_SHAPE_SIZE, height);
@@ -202,8 +197,8 @@ export const resized = (
   return {
     height,
     width,
-    x: left ? start.x + start.width - width : start.x,
-    y: top ? start.y + start.height - height : start.y,
+    x: left ? start.x + (start.width - width) : start.x,
+    y: top ? start.y + (start.height - height) : start.y,
   };
 };
 
@@ -309,6 +304,7 @@ export const createBoardIndex = ({
   children: childrenOf,
   takesText: takesTextIn,
   isEmpty,
+  keepsRatio: keepsRatioIn,
   members: membersRead,
   nodeOf,
   previewCleared,
@@ -317,6 +313,7 @@ export const createBoardIndex = ({
   children: () => readonly unknown[];
   takesText: (node: BoardMemberEntry['node']) => boolean;
   isEmpty: (block: Element) => boolean;
+  keepsRatio: (node: BoardMemberEntry['node']) => boolean;
   members: () => readonly BoardMemberEntry[];
   /** A member's current node, which a text commit changes without an update. */
   nodeOf: (key: NodeKey) => Element | undefined;
@@ -470,6 +467,7 @@ export const createBoardIndex = ({
           ? previous.ink
           : stored;
       const takesText = takesTextIn(entry.node);
+      const keepsRatio = keepsRatioIn(entry.node);
 
       if (!box) continue;
       if (entry.kind === 'shape' && entry.frame !== undefined) {
@@ -485,6 +483,7 @@ export const createBoardIndex = ({
           previous.id === entry.id &&
           previous.kind === entry.kind &&
           previous.takesText === takesText &&
+          previous.keepsRatio === keepsRatio &&
           previous.ink === ink &&
           sameBox(previous.box, box)
           ? previous
@@ -492,6 +491,7 @@ export const createBoardIndex = ({
               box,
               takesText,
               id: entry.id,
+              keepsRatio,
               ...(ink ? { ink } : {}),
               key: entry.key,
               kind: entry.kind,

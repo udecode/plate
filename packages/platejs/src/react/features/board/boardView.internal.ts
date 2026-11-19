@@ -28,6 +28,7 @@ import {
 } from '../../../features/board/lib';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
 import { frameTakes } from '../../../features/board/lib/boardFrame.internal';
+import { keepsBoardRatio } from '../../../features/board/lib/boardRatio.internal';
 import {
   BOARD_SHAPES_SLOT,
   isBoardGeo,
@@ -612,6 +613,7 @@ export const createBoardView = (
           return !!behavior && !behavior.object && !behavior.void;
         }) ?? false,
     isEmpty: (block) => editor.read.nodes.isEmpty(block),
+    keepsRatio: keepsBoardRatio(editor),
     members: () => {
       const shown = new Map(
         shownView.read

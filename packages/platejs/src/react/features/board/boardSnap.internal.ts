@@ -1,9 +1,9 @@
 import type { BoardPlace } from '../../../features/board/lib';
+import { MIN_SHAPE_SIZE } from '../../../features/board/lib/boardRatio.internal';
 import {
   type BoardBox,
   type BoardBoxModifiers,
   type BoardCorner,
-  MIN_SHAPE_SIZE,
   resized,
 } from './boardIndex.internal';
 

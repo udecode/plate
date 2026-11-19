@@ -4,8 +4,6 @@ import {
   type BoardBox,
   type BoardCorner,
   type BoardShapeLayout,
-  MIN_SHAPE_SIZE,
-  NO_BOX_MODIFIERS,
   resized,
   sameBox,
 } from './boardIndex.internal';
@@ -29,26 +27,27 @@ type Resize = {
 
 const UNMOVED: EdgeOffsets = { bottom: 0, left: 0, right: 0, top: 0 };
 
-const withEdges = (
-  box: BoardBox,
-  edges: EdgeOffsets,
+const resizedByEdges = (
+  layout: BoardShapeLayout,
+  { bottom, left, right, top }: EdgeOffsets,
   corner: BoardCorner
 ): BoardBox => {
-  const { bottom, left, right, top } = edges;
+  const { box } = layout;
 
   if (bottom === 0 && left === 0 && right === 0 && top === 0) return box;
 
-  const width = box.width - left + right;
-  const height = box.height - top + bottom;
-  const fromLeft = corner === 'bottomLeft' || corner === 'topLeft';
-  const fromTop = corner === 'topLeft' || corner === 'topRight';
-
-  return {
-    height: Math.max(MIN_SHAPE_SIZE, height),
-    width: Math.max(MIN_SHAPE_SIZE, width),
-    x: box.x + left + (fromLeft ? Math.min(0, width - MIN_SHAPE_SIZE) : 0),
-    y: box.y + top + (fromTop ? Math.min(0, height - MIN_SHAPE_SIZE) : 0),
-  };
+  return resized(
+    {
+      height: box.height - top + bottom,
+      width: box.width - left + right,
+      x: box.x + left,
+      y: box.y + top,
+    },
+    corner,
+    0,
+    0,
+    { center: false, keepRatio: layout.keepsRatio }
+  );
 };
 
 const withoutFloatDrift = (offset: number) => {
@@ -79,7 +78,7 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
 
     return resize && layout && layout.kind !== 'arrow'
       ? {
-          box: withEdges(layout.box, resize.edges, resize.corner),
+          box: resizedByEdges(layout, resize.edges, resize.corner),
           layout,
           resize,
         }
@@ -161,7 +160,10 @@ export const attachBoardResize = (host: HTMLElement, core: BoardViewCore) => {
       if (!moving) return;
       moving.resize.edges = edgesBetween(
         moving.layout.box,
-        resized(moving.box, moving.resize.corner, by.x, by.y, NO_BOX_MODIFIERS)
+        resized(moving.box, moving.resize.corner, by.x, by.y, {
+          center: false,
+          keepRatio: moving.layout.keepsRatio,
+        })
       );
 
       const shown = show();

@@ -111,6 +111,7 @@ type Gesture = Readonly<{ pointerId: number }> &
         grab: BoardPlace;
         guides: SVGSVGElement;
         id: string;
+        keepsRatio: boolean;
         left: boolean;
         modifiers: BoardBoxModifiers;
         pointer: BoardPlace;
@@ -351,7 +352,10 @@ export const attachBoardGestures = (
         );
       }
     } else {
-      const { corner, element, id, modifiers, start } = gesture;
+      const { corner, element, id, keepsRatio, start } = gesture;
+      const modifiers = keepsRatio
+        ? { ...gesture.modifiers, keepRatio: true }
+        : gesture.modifiers;
 
       gesture.left ||= dragged(gesture.press, gesture.pointer);
 
@@ -537,6 +541,15 @@ export const attachBoardGestures = (
 
   const inOwnText = (element: Element | null) =>
     !!element && element === host.querySelector(SHAPES_EDITABLE);
+  const buttonOwnsPress = (target: Element) => {
+    const owner = target
+      .closest('button')
+      ?.closest<HTMLElement>('[data-board-shape]');
+
+    return (
+      !!owner && index.byId(owner.dataset.boardShape ?? '')?.takesText === false
+    );
+  };
   const onPointerDown = (event: PointerEvent) => {
     if (gesture) return;
     pressed = undefined;
@@ -562,6 +575,14 @@ export const attachBoardGestures = (
     const typing = core.writable() && !!core.editedShape();
     const spacePan = !typing && spaceHeld();
 
+    if (
+      selecting &&
+      event.button === 0 &&
+      !spacePan &&
+      buttonOwnsPress(event.target)
+    ) {
+      return;
+    }
     if (event.button === 1 || tool === 'hand' || spacePan) {
       if (tool === 'hand' && !inOwnText(activeElementOf(host))) {
         core.focusBoard();
@@ -576,6 +597,7 @@ export const attachBoardGestures = (
         grab: at,
         guides: previewGuides(core.zoomLayer(), previewRank()),
         id: shape.id,
+        keepsRatio: shape.keepsRatio,
         kind: 'resize',
         left: false,
         modifiers: modifiersOf(event),
