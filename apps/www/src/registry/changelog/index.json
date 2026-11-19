@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-19-all-comments-from-note",
+      "href": "/registry/changelog/2026-11-19-all-comments-from-note.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix All comments after you edit a board note",
+      "change": {
+        "type": "source",
+        "date": "2026-11-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-19-board-images",
       "href": "/registry/changelog/2026-11-19-board-images.json",
       "status": "draft",

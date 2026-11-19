@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-all-comments-from-note",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-all-comments-from-note.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix All comments after you edit a board note",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-comment-toolbar-all-comments-reads-page-62f67850",
+      "kind": "fix",
+      "summary": "Fix All comments marking page comments as unavailable after you edit a board note or another nested root. The dialog reads every comment through the page, in the preview you see.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-all-comments-from-note",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

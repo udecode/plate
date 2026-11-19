@@ -2,7 +2,7 @@
 
 import { cn } from 'cn';
 import { MessageSquareTextIcon, MessagesSquareIcon } from 'lucide-react';
-import { getEditorRuntimeOwner, type Range } from 'platejs';
+import { createEditorView, getEditorRuntimeOwner, type Range } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
@@ -107,7 +107,17 @@ export function CommentToolbarButton() {
 }
 
 export function AllCommentsButton() {
-  const editor = useEditor();
+  const current = useEditor();
+  // A nested root's view, such as a board note's, reads the page's threads as
+  // unavailable, so the dialog reads every thread through the page in the
+  // same presentation.
+  const editor = React.useMemo(
+    () =>
+      current.read.view.root() === undefined
+        ? current
+        : createEditorView(current, { readOnly: true }),
+    [current]
+  );
   const comments = editor.plugin(CommentsPlugin);
 
   if (!comments.installed) return null;
@@ -175,6 +185,7 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
         </DialogTrigger>
         {open && (
           <AllCommentsDialog
+            editor={editor}
             message={message}
             onBlockedChange={setBlocked}
             onCloseAutoFocus={(event) => {
@@ -213,17 +224,18 @@ function RevealSelection({ onRevealed }: { onRevealed: () => void }) {
 }
 
 function AllCommentsDialog({
+  editor,
   message,
   onBlockedChange,
   onCloseAutoFocus,
   onNavigate,
 }: {
+  editor: Editor;
   message: string | null;
   onBlockedChange: (blocked: boolean) => void;
   onCloseAutoFocus: (event: Event) => void;
   onNavigate: (id: string) => void;
 }) {
-  const editor = useEditor();
   const { api: comments } = editor.plugin(CommentsPlugin);
   const [filter, setFilter] = React.useState<CommentFilter>('all');
   const [page, setPage] = React.useState(0);
@@ -333,6 +345,7 @@ function AllCommentsDialog({
           displayedIds.map((id) => (
             <AllCommentsRow
               blocked={blocked}
+              editor={editor}
               id={id}
               key={id}
               onInteractionChange={setRowBlocked}
@@ -375,16 +388,17 @@ function AllCommentsDialog({
 
 function AllCommentsRow({
   blocked,
+  editor,
   id,
   onInteractionChange,
   onNavigate,
 }: {
   blocked: boolean;
+  editor: Editor;
   id: string;
   onInteractionChange: (id: string, blocked: boolean) => void;
   onNavigate: () => void;
 }) {
-  const editor = useEditor();
   const { api: comments } = editor.plugin(CommentsPlugin);
   const thread = useCommentThread(id);
   const subscribe = React.useCallback(

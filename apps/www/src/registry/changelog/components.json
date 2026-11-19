@@ -1,6 +1,20 @@
 {
   "schemaVersion": 1,
   "components": {
+    "comment-toolbar-button": [
+      "2026-11-19-all-comments-from-note",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-comment-suggestion-outcome",
+      "2026-11-18-comments-on-board-note-text",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-27-fix-all-comments-target-status",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-comment-discovery",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
     "board": [
       "2026-11-19-board-images",
       "2026-11-19-rtl-editor-ui",
@@ -225,19 +239,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
-    ],
-    "comment-toolbar-button": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-comment-suggestion-outcome",
-      "2026-11-18-comments-on-board-note-text",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-27-fix-all-comments-target-status",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-comment-discovery",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies"
     ],
     "details": [
       "2026-11-19-rtl-editor-ui",
