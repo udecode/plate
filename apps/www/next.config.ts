@@ -74,8 +74,8 @@ const withMDX = createMDX({ outDir: docsSourceDir });
 const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const baseDistDir = isPliteMode ? '.next-plite' : '.next';
-  // next dev sets PORT before it loads this file and locks its distDir, so
-  // each port gets its own cache that the next server on that port reuses.
+  // next dev sets PORT before it loads this file, and Next lets only one
+  // server hold a distDir, so each port gets its own folder.
   const devDistDir =
     isDev && process.env.PORT
       ? `${baseDistDir}-${process.env.PORT}`
@@ -93,6 +93,9 @@ const nextConfig = (_phase: string) => {
 
     experimental: {
       externalDir: isDev,
+      // Turbopack's dev disk cache pays back only on a restart in the same
+      // worktree and port, and it rewrites gigabytes per folder meanwhile.
+      turbopackFileSystemCacheForDev: false,
       turbopackSharedRuntime: false,
       instantInsights: {
         validationLevel: 'manual-warning',

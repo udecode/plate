@@ -66,7 +66,7 @@ function fixture() {
   writeFileSync(join(unlanded, 'a.txt'), 'three\n');
   const orphan = worktree('orphan');
   const caches = join(main, 'apps', 'www');
-  const ages = { '.next': 5, '.next-plite': 5, '.next-3000': 5, '.next-3001': 5, '.next-3002': 10, '.next-chip-a1': 5, '.next-s5': 3 };
+  const ages = { '.next': 5, '.next-plite': 5, '.next-3000': 5, '.next-3001': 5, '.next-chip-a1': 5, '.next-s5': 3 };
   const lock = join(caches, '.next-3001', 'dev', 'lock');
   for (const [name, days] of Object.entries(ages)) {
     const dev = join(caches, name, 'dev');
@@ -118,9 +118,8 @@ test('only folders no open session, process or server uses are marked safe', asy
     assert.equal(byPath[join(f.caches, '.next-plite', 'dev')], 'keep', 'a dev folder whose manifests changed today');
     assert.equal(byPath[join(f.caches, '.next-plite', 'cache')], 'safe', 'a build cache no server holds and nothing used for a day');
     assert.equal(byPath[join(f.caches, '.next-s5')], 'keep', 'a production build used this week');
-    assert.equal(byPath[join(f.caches, '.next-3000')], 'keep', 'a port cache used this week');
+    assert.equal(byPath[join(f.caches, '.next-3000')], 'safe', 'a port folder used this week that no server holds');
     assert.equal(byPath[join(f.caches, '.next-3001')], 'keep', 'a cache whose lock a running server holds');
-    assert.equal(byPath[join(f.caches, '.next-3002')], 'safe', 'a port cache unused for a week');
     assert.equal(byPath[join(f.caches, '.next-chip-a1')], 'safe', 'a cache named for one session, no server holds it');
     assert.equal(byPath[f.keptCache], 'safe', 'an unused cache inside a worktree the scan keeps');
     const unclaimed = f.sessions.filter((session) => session.cwd !== f.orphan);
@@ -579,10 +578,10 @@ test('delete removes the safe set and leaves every other folder', () => {
   const { removed } = deleteSafe({ repo: f.main, sessions: f.sessions });
   assert.deepEqual(
     removed.map((item) => item.path).sort(),
-    [f.archived, f.landed, f.unlanded, f.keptCache, join(f.caches, '.next-3002'), join(f.caches, '.next-chip-a1'), join(f.caches, '.next', 'dev'), join(f.caches, '.next', 'cache'), join(f.caches, '.next-plite', 'cache')].sort()
+    [f.archived, f.landed, f.unlanded, f.keptCache, join(f.caches, '.next-3000'), join(f.caches, '.next-3001'), join(f.caches, '.next-chip-a1'), join(f.caches, '.next', 'dev'), join(f.caches, '.next', 'cache'), join(f.caches, '.next-plite', 'cache')].sort()
   );
   assert.ok(removed.every((item) => item.bytes !== null), 'each removed folder was measured');
-  for (const kept of [f.open, f.orphan, join(f.caches, '.next', 'server'), join(f.caches, '.next-plite', 'dev'), join(f.caches, '.next-3000')]) assert.ok(existsSync(kept), `${kept} stays`);
+  for (const kept of [f.open, f.orphan, join(f.caches, '.next', 'server'), join(f.caches, '.next-plite', 'dev')]) assert.ok(existsSync(kept), `${kept} stays`);
   const listed = execFileSync('git', ['worktree', 'list'], { cwd: f.main, encoding: 'utf8' });
   assert.ok(![f.archived, f.landed, f.unlanded].some((path) => listed.includes(path)), 'git no longer lists the removed worktrees');
   const savedOf = (path) => removed.find((item) => item.path === path).saved;
@@ -735,7 +734,7 @@ test('the session-start hint counts only folders with no writes for three days t
   const f = fixture();
   assert.equal(
     brief({ repo: f.main, now: Date.now() }),
-    'cleanup: 0 worktrees and 5 Next cache folders here show no git or cache writes for 3 days; /cleanup removes the ones nothing uses and lists the rest.'
+    'cleanup: 0 worktrees and 6 Next cache folders here show no git or cache writes for 3 days; /cleanup removes the ones nothing uses and lists the rest.'
   );
 });
 

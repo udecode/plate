@@ -148,6 +148,9 @@ const nextConfig: NextConfig = {
     instantInsights: {
       validationLevel: 'manual-warning',
     },
+    // Turbopack's dev disk cache pays back only on a restart in the same
+    // worktree, and it rewrites gigabytes per worktree meanwhile.
+    turbopackFileSystemCacheForDev: false,
     turbopackRustReactCompiler: true,
   },
   logging: {

@@ -9,10 +9,10 @@
     },
     "cleanup": {
       "source": "udecode/dotai",
-      "commit": "28837a1d699fd8aaa7b1d9823db564efe0991f7d",
+      "commit": "db5a3f5fac581013b449e55eb8f32e15ba2cea6e",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "8f1b5f2b390f6d92ffc52a0630a76f509c7939143c6abccff7801e3a973a989e"
+      "computedHash": "8aa03e2e05024dbe8b036bff4b51293a6e3edab4fb9d7f69f8dd712ce0caf42e"
     },
     "plan-page": {
       "source": "udecode/dotai",

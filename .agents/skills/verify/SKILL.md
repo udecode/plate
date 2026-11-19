@@ -159,10 +159,11 @@ its `exit N` line; after an interruption or resume, only those logs count.
   `PLATE_WWW_DYNAMIC_DOCS=1 next dev --port <port>` from `apps/www` with the
   same env. Set `PLATE_WWW_DEV_SOURCE=1` by
   default when the tree changes a package the page renders, so the server
-  serves source instead of built output. A dev server keeps its cache in
-  `.next-<port>`, or `.next-plite-<port>` with `PLATE_WWW_PLITE=1`, so a rerun
-  on the same port reuses it; when a server already holds that port, pick
-  another port, and leave `PLATE_WWW_DIST_DIR` unset.
+  serves source instead of built output. A dev server builds into
+  `.next-<port>`, or `.next-plite-<port>` with `PLATE_WWW_PLITE=1`, because
+  Next lets only one server hold a build folder. It keeps no disk cache, so a
+  restart compiles from scratch on any port. When a server already holds that
+  port, pick another port, and leave `PLATE_WWW_DIST_DIR` unset.
 - www browser specs: with `PLAYWRIGHT_BASE_URL` unset, `test:www-browser:*`
   starts `pnpm dev:plite` itself, which sets `PLATE_WWW_PLITE=1`,
   `PLATE_WWW_DEV_SOURCE=1` and `PLATE_WWW_DYNAMIC_DOCS=1`. A server you start

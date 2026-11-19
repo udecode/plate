@@ -94,7 +94,6 @@ const HOUR = 3_600_000;
 const WEEK = 7 * 24;
 const BUILD_OUTPUT = /^\.next(-plite)?$/u;
 const BUILD_PARTS = ['dev', 'cache'];
-const PORT_CACHE = /^\.next(-plite)?-\d+$/u;
 const CACHE = /^\.next(-|$)/u;
 const SKIP_DIRS = new Set(['node_modules', '.git', '.claude', '.turbo']);
 const RECREATED = new Set(['node_modules', '.turbo', '.DS_Store']);
@@ -240,12 +239,10 @@ function landedVerdict(facts) {
 export const classifyWorktree = (facts) => usageVerdict(facts) ?? cleanupVerdict(facts);
 
 export function classifyCache(facts) {
-  const name = basename(facts.path);
   if (facts.held === null) return ['keep', 'lsof could not tell whether a server holds it'];
   if (facts.held) return ['keep', 'a running server holds its lock'];
   if (isBuildPart(facts.path)) return facts.hoursIdle < 24 ? ['keep', 'used in the last day'] : ['safe', 'next dev or next build recreates it, and nothing used it for a day'];
   if (facts.production && facts.hoursIdle < WEEK) return ['keep', 'a production build used this week, which next start may serve'];
-  if (PORT_CACHE.test(name) && facts.hoursIdle < WEEK) return ['keep', 'the next dev server on its port reuses it'];
   if (facts.hoursIdle < 1) return ['keep', 'written in the last hour'];
   return ['safe', 'no server holds it'];
 }
