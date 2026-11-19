@@ -8,7 +8,7 @@ import { replaceArtifacts } from './generate';
 
 const CSS_FILE_PATTERN = /\.css$/;
 const ANY_FILE_PATTERN = /.*/;
-const MIGRATION_ENTRY_PATTERN = /^plate-migration-entry$/;
+const MIGRATION_ENTRY_PATTERN = /^plate-migration:entry$/;
 
 const JSON_EQUAL_SOURCE = `
 const jsonEqual = (left, right) => {
@@ -147,7 +147,7 @@ const readRequest = async () => {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 };
 const request = await readRequest();
-const { EditorMigrations: migrations } = await import('plate-migration-entry');
+const { EditorMigrations: migrations } = await import('plate-migration:entry');
 const { migrateDocument } = await import('platejs/migrations');
 const holds = (value, field) => Object.hasOwn(value, field) && value[field] !== undefined;
 const isEnvelope = (value) =>
