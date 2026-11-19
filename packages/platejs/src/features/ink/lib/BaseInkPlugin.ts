@@ -1,11 +1,6 @@
 import { nanoid } from 'nanoid';
 
-import {
-  definePlugin,
-  type EditorUniqueHolder,
-  ElementIdPlugin,
-  txLocate,
-} from '../../../core';
+import { definePlugin, ElementIdPlugin, txLocate } from '../../../core';
 import {
   defineRuntimePlugin,
   getDocumentValueNode,
@@ -17,12 +12,11 @@ import {
   captureGone,
   flushGone,
   GONE,
-  goneIn,
   hasPendingGone,
   idOf,
   type SavedRecords,
 } from './inkGone.internal';
-import { inkText } from './inkMatch.internal';
+import { readInkPlace } from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
@@ -232,18 +226,6 @@ const frozen = <T extends object>(value: T) => {
 
   return value;
 };
-
-const placeCache = new WeakMap<
-  object,
-  WeakMap<
-    object,
-    Readonly<{
-      chains: Map<string, string | null>;
-      holders: Map<string, EditorUniqueHolder | null>;
-      places: Map<string, InkCopyPlace | undefined>;
-    }>
-  >
->();
 
 class InkRefusalError extends TypeError {
   override name = 'InkRefusalError';
@@ -670,10 +652,11 @@ export const BaseInkPlugin = definePlugin('ink', {
         return decoded.get(id);
       };
     };
+    const copy = (id: string) => copyReader()(id);
 
     return {
       /** The copy saved under `id`, or `undefined`. */
-      copy: (id: string) => copyReader()(id),
+      copy,
       /** The mark saved under `id`, or `undefined`. */
       mark: (id: string) => {
         const record = set(MARKS)?.[id];
@@ -715,95 +698,8 @@ export const BaseInkPlugin = definePlugin('ink', {
        * follows the saved places of deleted blocks to the nearest block left
        * before it, then after it.
        */
-      place: (copyId: string): InkCopyPlace | undefined => {
-        const value = state.value();
-        const identity = state.schema.identity();
-        let byIdentity = placeCache.get(value);
-
-        if (!byIdentity) {
-          byIdentity = new WeakMap();
-          placeCache.set(value, byIdentity);
-        }
-
-        let cache = byIdentity.get(identity);
-
-        if (!cache) {
-          cache = { chains: new Map(), holders: new Map(), places: new Map() };
-          byIdentity.set(identity, cache);
-        }
-        if (cache.places.has(copyId)) return cache.places.get(copyId);
-
-        const { chains, holders } = cache;
-        const { records } = value;
-        const holderOf = (id: string) => {
-          let holder = holders.get(id);
-
-          if (holder === undefined) {
-            holder = state.unique.holder('id', id);
-            holders.set(id, holder);
-          }
-
-          return holder;
-        };
-        const follow = (id: string, side: 'next' | 'previous') => {
-          const visited = new Set([id]);
-          let at = goneIn(records, id)?.[side];
-          let found: string | null = null;
-
-          while (at !== undefined && !visited.has(at)) {
-            const known = chains.get(`${side}:${at}`);
-
-            if (known !== undefined) {
-              found = known;
-              break;
-            }
-            if (holderOf(at)) {
-              found = at;
-              break;
-            }
-            visited.add(at);
-            at = goneIn(records, at)?.[side];
-          }
-          for (const chained of visited) {
-            chains.set(`${side}:${chained}`, found);
-          }
-
-          return found;
-        };
-        const placeOf = (): InkCopyPlace | undefined => {
-          const copy = copyReader(records?.[COPIES] ?? NO_RECORDS)(copyId);
-
-          if (!copy) return undefined;
-
-          const holder = holderOf(copy.block);
-          const [node] = (holder && state.nodes.get(holder.key)) || [];
-
-          if (holder && node) {
-            return {
-              key: holder.key,
-              kind:
-                inkText(state.schema, node) === copy.text ? 'live' : 'changed',
-            };
-          }
-
-          const previous = follow(copy.block, 'previous');
-          const next = previous === null ? follow(copy.block, 'next') : null;
-          const neighbor = previous ?? next;
-          const beside = neighbor === null ? null : holderOf(neighbor);
-
-          return {
-            beside: beside
-              ? { at: previous === null ? 'before' : 'after', key: beside.key }
-              : { at: 'start' },
-            kind: 'gone',
-          };
-        };
-        const place = placeOf();
-
-        cache.places.set(copyId, place);
-
-        return place;
-      },
+      place: (copyId: string): InkCopyPlace | undefined =>
+        readInkPlace({ copy, state }, copyId),
     };
   },
   update: ({ editor, tx }) => ({
