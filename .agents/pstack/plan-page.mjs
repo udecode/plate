@@ -159,7 +159,7 @@ details.iteration[open] > summary { margin-bottom: 4px; }
 .tone { color: var(--hue); font-weight: 600; }
 .seats { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .seat { display: inline-flex; gap: 3px; align-items: center; border: 1.5px solid var(--hue); color: var(--hue); border-radius: 999px; padding: 0 8px; font: 600 0.74rem var(--mono); }
-.seat.missing { --hue: var(--c-red); }
+.seat.missing { --hue: var(--c-red); } .seat.skipped { --hue: var(--c-grey); }
 .round-tag { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .card { border: 1px solid var(--rule); border-top: 3px solid var(--hue, var(--rule)); border-radius: 10px; padding: 10px 14px 12px; min-width: 0; }
 .brief.card { display: grid; gap: 0; padding: 2px 14px; border-top: 1px solid var(--rule); }
@@ -1128,7 +1128,7 @@ const seatName = (seat) =>
   seat
     .replace(/\([^)]*\)?/g, '')
     .replace(/@\w+/, '')
-    .replace(/\bmissing\b/i, '')
+    .replace(/\b(?:missing|skipped)\b/i, '')
     .replace(/^.*:\s+/, '')
     .replace(/^codex:/i, '')
     .trim()
@@ -1137,11 +1137,11 @@ const seatName = (seat) =>
 const seatList = (seats) =>
   seats
     .split(/,\s*(?![^(]*\))/)
-    .map((seat) => ({ name: seatName(seat), effort: seat.match(/@(\w+)/)?.[1] ?? '', missing: /\bmissing\b/i.test(seat) }))
+    .map((seat) => ({ name: seatName(seat), effort: seat.match(/@(\w+)/)?.[1] ?? '', mark: seat.match(/\b(missing|skipped)\b/i)?.[1].toLowerCase() ?? '' }))
     .filter((seat) => seat.name);
 
-const seatChip = ({ name, effort, missing }, count = 1) =>
-  `<span class="seat hue-${modelHue(name)}${missing ? ' missing' : ''}">${escapeHtml(name)}${effort ? ` <span class="effort">${escapeHtml(effort)}</span>` : ''}${missing ? ' <span class="effort">missing</span>' : ''}${count > 1 ? ` <span class="effort">×${count}</span>` : ''}</span>`;
+const seatChip = ({ name, effort, mark }, count = 1) =>
+  `<span class="seat hue-${modelHue(name)}${mark ? ` ${mark}` : ''}">${escapeHtml(name)}${effort ? ` <span class="effort">${escapeHtml(effort)}</span>` : ''}${mark ? ` <span class="effort">${mark}</span>` : ''}${count > 1 ? ` <span class="effort">×${count}</span>` : ''}</span>`;
 
 function seatsHtml(seats) {
   return `<span class="seats">${seatList(seats)
@@ -1160,7 +1160,7 @@ function leadSeats(entries) {
       if (row.phase !== 'panel' || !SEATS.test(row.decision)) continue;
       const seats = byLead.get(lead);
       for (const seat of seatList(row.decision.replace(SEATS, ''))) {
-        const key = `${seat.name}@${seat.effort}${seat.missing ? ' missing' : ''}`;
+        const key = `${seat.name}@${seat.effort}${seat.mark ? ` ${seat.mark}` : ''}`;
         seats.set(key, { seat, count: (seats.get(key)?.count ?? 0) + 1 });
       }
     }
@@ -2195,7 +2195,7 @@ const PR_START = '<!-- plan-page:start -->';
 const PR_END = '<!-- plan-page:end -->';
 const FRAME_NOTE = /^<!-- frame: (\S+) -->$/;
 
-const seatMd = ({ name, effort, missing }) => `\`${name}\`${effort ? ` \`${effort}\`` : ''}${missing ? ' missing' : ''}`;
+const seatMd = ({ name, effort, mark }) => `\`${name}\`${effort ? ` \`${effort}\`` : ''}${mark ? ` ${mark}` : ''}`;
 
 function githubOf(root) {
   try {

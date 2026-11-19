@@ -4,8 +4,8 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
-import { constants, tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { constants, homedir, tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
@@ -91,6 +91,47 @@ const stopOnSignals = () => {
   }
 };
 
+const UUID = '[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}';
+// Codex prints the provider's error as an `ERROR:` line, among any its tools
+// printed and before its shutdown warnings, and only the session log names the
+// error's kind.
+export function codexFailure(stdout, stderr, codexHome, startedAt = new Date()) {
+  const text = `${stderr}\n${stdout}`.replace(/\u001b\[[\d;]*m/gu, '');
+  const id = text.match(new RegExp(`^(?:thread|session) id: (${UUID})$`, 'mu'))?.[1] ?? text.match(new RegExp(`"thread_id":"(${UUID})"`, 'u'))?.[1];
+  const errors = [...text.matchAll(/^ERROR: (.+)$/gmu)].map((match) => match[1]);
+  for (const line of text.split('\n')) {
+    try {
+      const event = JSON.parse(line);
+      if (event.type === 'turn.failed' && event.error?.message) errors.push(event.error.message);
+    } catch {}
+  }
+  const logged = id ? loggedError(join(codexHome, 'sessions'), id, startedAt) : null;
+  return { message: logged?.message ?? errors.at(-1) ?? null, kind: logged?.kind ?? null };
+}
+
+function loggedError(sessions, id, startedAt) {
+  const day = (date) => join(String(date.getFullYear()), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0'));
+  for (const folder of new Set([day(startedAt), day(new Date())])) {
+    let name;
+    try {
+      name = readdirSync(join(sessions, folder)).find((entry) => entry.endsWith(`-${id}.jsonl`));
+    } catch {}
+    if (!name) continue;
+    for (const line of readFileSync(join(sessions, folder, name), 'utf8').split('\n').reverse()) {
+      if (!line.includes('"codex_error_info"')) continue;
+      try {
+        const { payload } = JSON.parse(line);
+        const error = payload?.error ?? payload;
+        return { kind: error?.codex_error_info ?? null, message: error?.message ?? null };
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+  return null;
+}
+
 export const onStop = (cleanup) => {
   cleanups.add(cleanup);
   stopOnSignals();
@@ -108,7 +149,8 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
   const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : reach ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
-  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder, and it is deleted when you finish, so for each file you wrote there that your answer cites or runs, paste its full source and the commands that create any fixture it reads.`;
+  // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
+  if (reach) prompt = `Your working directory is a scratch folder you may write. The project is ${cwd}: read it by absolute path and never write it. Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool. For each probe that needs a browser, put its full script and commands in your answer so the lead can run it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder, and it is deleted when you finish, so for each file you wrote there that your answer cites or runs, paste its full source and the commands that create any fixture it reads.`;
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -144,6 +186,8 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, PSTACK_READ_ONLY: ___, ...env } = process.env;
   if (!bypass) env.PSTACK_READ_ONLY = '1';
   env[SEAT_MARK] = sessionId;
+  // Codex resolves a relative CODEX_HOME against its own working directory.
+  const codexHome = resolve(runCwd, env.CODEX_HOME || join(homedir(), '.codex'));
   return new Promise((resolve) => {
     let settled = false;
     let late = false;
@@ -157,6 +201,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       if (reach) removeFolder(runCwd);
       resolve(answer);
     };
+    const startedAt = new Date();
     const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
     const signalSeat = (signal) => {
       let alive = false;
@@ -190,12 +235,15 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       try {
         if (computerUse) writeFileSync(computerUse.events, stdout);
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
+        const ok = code === 0 && text && !late;
+        const codex = runtime === 'codex' && !ok ? codexFailure(stdout, stderr, codexHome, startedAt) : null;
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
-        const failure = `${late ? `no answer within ${timeout} seconds` : code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${(stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n')}`;
+        const detail = codex?.message ?? (stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n');
+        const failure = `${late ? `no answer within ${timeout} seconds` : code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${detail}`;
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
-        done(code === 0 && text && !late ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat });
+        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }) });
       } catch (error) {
         done({ runtime, ok: false, text: error.message });
       }
@@ -282,6 +330,7 @@ async function main(argv) {
   }
   const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile } });
   (answer.ok ? console.info : console.error)(answer.text);
+  if (answer.refused) console.error(`refused: ${answer.refused}`);
   if (answer.seat) console.error(`seat: ${answer.seat}`);
   return answer.ok ? 0 : 1;
 }

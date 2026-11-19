@@ -71,7 +71,7 @@ export function seatRoster(decision) {
     .replace(/\([^)]*\)/gu, ' ')
     .split(/[,;]/u)
     .flatMap((entry) => {
-      const [named, ...after] = entry.split(/\bmissing\b/u);
+      const [named, ...after] = entry.split(/\b(?:missing|skipped)\b/u);
       const seat = named.match(SEAT_MODEL)?.[0];
       if (after.length === 0) return seat ? [seatKey(seat)] : [];
       if (seat) marked.add(seatKey(seat));

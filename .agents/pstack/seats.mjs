@@ -75,18 +75,19 @@ export async function main(argv) {
     seats.map(async (seat) => {
       const answer = await ask(seat.runtime, seat.runtime === 'claude' ? `${CLAUDE_SEAT_NOTE}\n\n${prompt}` : prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'claude' ? claudeDirs : [] }).catch((error) => ({ ok: false, text: error.message }));
       try {
-        writeFileSync(join(dir, `${seat.name}.err`), `${answer.ok ? '' : `${answer.text}\n`}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
+        writeFileSync(join(dir, `${seat.name}.err`), `${answer.ok ? '' : `${answer.text}\n`}${answer.refused ? `refused: ${answer.refused}\n` : ''}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
         writeFileSync(join(dir, `${seat.name}.md`), answer.ok ? `${answer.text}\n` : '');
         return { ...seat, ...answer };
       } catch (error) {
-        return { ...seat, ...answer, ok: false, text: error.message };
+        return { ...seat, ...answer, ok: false, refused: null, text: error.message };
       }
     }),
   );
   for (const answer of answers) {
-    console.info(`${answer.name}: ${answer.ok ? 'ok' : `failed, ${answer.text.split('\n')[0]}`}${answer.seat ? `, seat: ${answer.seat}` : ''}`);
+    const outcome = answer.ok ? 'ok' : answer.refused ? `skipped, its provider refused the prompt for ${answer.refused}` : `failed, ${answer.text.split('\n')[0]}`;
+    console.info(`${answer.name}: ${outcome}${answer.seat ? `, seat: ${answer.seat}` : ''}`);
   }
-  return answers.every((answer) => answer.ok) ? 0 : 1;
+  return answers.every((answer) => answer.ok || answer.refused) && answers.some((answer) => answer.ok) ? 0 : 1;
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {

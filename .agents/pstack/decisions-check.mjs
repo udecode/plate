@@ -275,6 +275,13 @@ function missingPaths(evidence, where) {
     .map((path) => `${where}: evidence cites ${path}, which does not exist; write it first or cite the path it was saved to`);
 }
 
+function skippedClaudeSeats(decision, where) {
+  return decision
+    .split(/[,;]/u)
+    .filter((entry) => /\bskipped\b/u.test(entry) && /(?<![\w.:-])(?:claude-|opus|sonnet|haiku|fable)/u.test(entry))
+    .map((entry) => `${where}: only a Codex seat is marked skipped, after its provider refused it for security; mark ${entry.replace(/^seats\s+/u, '').trim()} missing`);
+}
+
 function unnamedSeats(decision, seatsRow, where) {
   const { models } = seatRoster(seatsRow);
   const names = bracketSeats(decision, models);
@@ -341,6 +348,7 @@ function rowProblems(line, where, roster, chips) {
       found.push(`${where}: an open panel finding names its patch: and owner:`);
     }
   }
+  if (rest[0] === 'panel' && SEATS.test(rest[1])) found.push(...skippedClaudeSeats(rest[1], where));
   if (rest[0] !== 'panel' && isRecorded(rest)) found.push(...recordedProblems('critical', rest, where));
   if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) {
     found.push(`${where}: ${/^[aeiou]/u.test(status) ? 'an' : 'a'} ${status} result belongs only in a chip row; a run's log records the same step as applied, decided, fixed or verified`);

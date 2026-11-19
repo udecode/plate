@@ -7,7 +7,7 @@
 // was settled and the applied ones it alone raised, then the rows it could not
 // place. A row names its seats as `critical [<seat>, ...]:`; older rows are
 // read best effort, by model name, by the aliases opus, astra and sol, or by
-// seat letter or number in roster order. A seat the seats row marks missing
+// seat letter or number in roster order. A seat the seats row marks missing or skipped
 // keeps its place in that order and is never credited. The escape table reads
 // the fix commits on origin/<branch> as last fetched, merged ones included, by
 // ISO week since --since or over the last 8 weeks: how many name the commit

@@ -34,10 +34,12 @@ function seatOf(entry) {
   const at = words.findIndex((word) => MODEL.test(word));
   if (at === -1) return null;
   const model = words[at];
+  const codexSkipped = words.includes('skipped') && family(model) === 'codex';
+  const missing = !codexSkipped && (words.includes('missing') || words.includes('skipped'));
   return {
     name: seatKey(model),
     effort: words[at + 1]?.match(/^@(\w+)$/u)?.[1] ?? null,
-    status: words.includes('missing') ? 'missing' : entry.includes('same-family') ? 'same-family' : 'answered',
+    status: codexSkipped ? 'skipped' : missing ? 'missing' : entry.includes('same-family') ? 'same-family' : 'answered',
   };
 }
 
@@ -85,6 +87,7 @@ function leadGap(label, lead) {
 
 function roundGap(seats, wanted) {
   const gaps = wanted.flatMap((target) => {
+    if (seats.some((candidate) => candidate.name === target.name && candidate.status === 'skipped')) return [];
     const seat = seats.find((candidate) => candidate.name === target.name && candidate.status === 'answered');
     if (!seat) return [`${target.name} missing`];
     if (rank(seat.effort) === -1) return [`${seat.name} has no effort`];
