@@ -193,6 +193,12 @@ export {
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';
+export {
+  getRecordSetVersion,
+  getValueRecords,
+  type RecordSetVersion,
+  recordSetChanges,
+} from 'plitejs/internal';
 export { sameResult } from 'plitejs/internal';
 export {
   afterActiveTransactionEnds,
@@ -202,6 +208,7 @@ export {
   getSnapshotVersion,
   markRootViewUsed,
   readRootViewUse,
+  readShownDocument,
   scheduleAfterCommitNotification,
   subscribeRootViewUse,
 } from 'plitejs/internal';

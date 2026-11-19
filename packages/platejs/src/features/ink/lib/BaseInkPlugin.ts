@@ -16,7 +16,7 @@ import {
   idOf,
   type SavedRecords,
 } from './inkGone.internal';
-import { readInkPlace } from './inkPlaces.internal';
+import { advanceInkPlaces, COPIES, readInkPlace } from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
@@ -170,7 +170,6 @@ export type InkCopyPlace =
   | Readonly<{ beside: InkSignPlace; kind: 'gone' }>;
 
 const MARKS = 'ink-marks';
-const COPIES = 'ink-copies';
 
 const inkRecords = defineRuntimePlugin('ink-records', {
   schema: {
@@ -617,6 +616,9 @@ export const BaseInkPlugin = definePlugin('ink', {
     tool: null,
   }),
   on: {
+    commit: ({ commit, editor }) => {
+      advanceInkPlaces(editor, commit);
+    },
     transactionChange: ({ after, before, changed, editor, tx }) => {
       if (!changed.has('structure') && !changed.has('properties')) return;
       for (const { node, path } of changed.removed()) {
@@ -634,7 +636,7 @@ export const BaseInkPlugin = definePlugin('ink', {
       }
     },
   },
-  read: ({ state }) => {
+  read: ({ editor, state }) => {
     const set = (name: string) => state.value().records?.[name];
     const copyReader = (saved = set(COPIES) ?? NO_RECORDS) => {
       const decoded =
@@ -699,7 +701,7 @@ export const BaseInkPlugin = definePlugin('ink', {
        * before it, then after it.
        */
       place: (copyId: string): InkCopyPlace | undefined =>
-        readInkPlace({ copy, state }, copyId),
+        readInkPlace({ copy, editor, state }, copyId),
     };
   },
   update: ({ editor, tx }) => ({

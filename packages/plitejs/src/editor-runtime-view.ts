@@ -65,6 +65,7 @@ import {
   doesSelectionIntersect,
   getCurrentSelection,
   getCurrentSelectionRoot,
+  getReadProjection,
   getUpdateView,
   withEditorViewSelectionRead,
   getSelectionNodeEntries,
@@ -1755,6 +1756,13 @@ export const getOwnViewPresentation = (editor: Editor) =>
 
 export const getViewFollowTarget = (editor: Editor) =>
   VIEW_STATES.get(getEditorRuntime(editor))?.follows;
+
+export const readShownDocument = (editor: Editor) => {
+  const viewState = VIEW_STATES.get(getEditorRuntime(editor));
+  const shown = () => getReadProjection(editor) ?? null;
+
+  return viewState ? withRootRead(editor, viewState, shown) : shown();
+};
 
 export const getViewPresentation = (editor: Editor) =>
   getOwnViewPresentation(editor) ??

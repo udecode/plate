@@ -36,6 +36,12 @@ export {
 } from '../core/anchor-state';
 export { readCoreWork, type CoreWork } from '../core/work';
 export {
+  getRecordSetVersion,
+  getValueRecords,
+  type RecordSetVersion,
+  recordSetChanges,
+} from '../core/record-store';
+export {
   markRootViewUsed,
   readRootViewUse,
   subscribeRootViewUse,
@@ -163,6 +169,7 @@ export {
   getViewAuthor,
   getViewPresentation,
   projectEditorView,
+  readShownDocument,
   retainViewPresentation,
   withMountedPresentation,
 } from '../editor-runtime-view';
