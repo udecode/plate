@@ -19,7 +19,7 @@ export function RedoToolbarButton(
       onClick={redo}
       tooltip="Redo"
     >
-      <Redo2Icon className="rtl:-scale-x-100" />
+      <Redo2Icon className="[&:dir(rtl)]:-scale-x-100" />
     </ToolbarButton>
   );
 }
@@ -37,7 +37,7 @@ export function UndoToolbarButton(
       onClick={undo}
       tooltip="Undo"
     >
-      <Undo2Icon className="rtl:-scale-x-100" />
+      <Undo2Icon className="[&:dir(rtl)]:-scale-x-100" />
     </ToolbarButton>
   );
 }

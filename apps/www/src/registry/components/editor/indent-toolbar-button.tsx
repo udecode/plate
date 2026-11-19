@@ -19,7 +19,7 @@ export function IndentToolbarButton(
         update.increase();
       }}
     >
-      <IndentIcon className="rtl:-scale-x-100" />
+      <IndentIcon className="[&:dir(rtl)]:-scale-x-100" />
     </ToolbarButton>
   );
 }
@@ -37,7 +37,7 @@ export function OutdentToolbarButton(
         update.decrease();
       }}
     >
-      <OutdentIcon className="rtl:-scale-x-100" />
+      <OutdentIcon className="[&:dir(rtl)]:-scale-x-100" />
     </ToolbarButton>
   );
 }

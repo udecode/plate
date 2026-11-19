@@ -92,7 +92,7 @@ export function EquationElement(
             type="button"
           >
             {props.element.latex.length > 0 ? (
-              <span ref={katexRef} />
+              <span ref={katexRef} dir="ltr" />
             ) : (
               <span className="flex h-7 w-full items-center gap-2 text-sm whitespace-nowrap text-muted-foreground">
                 <RadicalIcon className="size-6 text-muted-foreground/80" />
@@ -200,6 +200,7 @@ export function InlineEquationElement(
                 element.latex.length === 0 && 'hidden',
                 'font-mono leading-none'
               )}
+              dir="ltr"
             />
             {element.latex.length === 0 && (
               <span>
@@ -303,6 +304,7 @@ function EquationPopoverContent({
       <TextareaAutosize
         ref={ref}
         className={cn('max-h-[50vh] grow resize-none p-2 text-sm', className)}
+        dir="ltr"
         value={value}
         onChange={(event) =>
           setDraft({
@@ -321,20 +323,21 @@ function EquationPopoverContent({
             close(false);
           } else if (isInline) {
             const { selectionEnd, selectionStart } = event.currentTarget;
-            if (
+            const atLeftEdge =
               selectionStart === 0 &&
               selectionEnd === 0 &&
-              isHotkey('ArrowLeft')(event)
-            ) {
-              event.preventDefault();
-              close(true, 'before');
-            } else if (
+              isHotkey('ArrowLeft')(event);
+            const atRightEdge =
               selectionStart === value.length &&
               selectionEnd === value.length &&
-              isHotkey('ArrowRight')(event)
-            ) {
+              isHotkey('ArrowRight')(event);
+
+            if (atLeftEdge || atRightEdge) {
               event.preventDefault();
-              close(true);
+              const node = editor.api.dom.resolveDOMNode(element);
+              const rtl = !!node && getComputedStyle(node).direction === 'rtl';
+
+              close(true, atLeftEdge === rtl ? 'after' : 'before');
             }
           }
         }}
@@ -342,7 +345,8 @@ function EquationPopoverContent({
         {...props}
       />
       <Button variant="secondary" className="px-3" onClick={() => close(true)}>
-        Done <CornerDownLeftIcon className="size-3.5 rtl:-scale-x-100" />
+        Done{' '}
+        <CornerDownLeftIcon className="size-3.5 [&:dir(rtl)]:-scale-x-100" />
       </Button>
     </FloatingPopoverContent>
   );

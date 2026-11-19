@@ -61,7 +61,7 @@ export function DetailsElement(
             <ChevronRightIcon
               className={cn(
                 'transition-transform duration-75',
-                open ? 'rotate-90' : 'rtl:rotate-180'
+                open ? 'rotate-90' : '[&:dir(rtl)]:rotate-180'
               )}
               data-icon
             />

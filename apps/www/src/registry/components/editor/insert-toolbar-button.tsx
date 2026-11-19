@@ -230,7 +230,7 @@ function getGroups(editor: Editor): Group[] {
         [
           'disc',
           'Bulleted list',
-          <ListIcon key="disc" className="rtl:-scale-x-100" />,
+          <ListIcon key="disc" className="[&:dir(rtl)]:-scale-x-100" />,
           'bulleted',
         ],
         [
@@ -264,7 +264,7 @@ function getGroups(editor: Editor): Group[] {
 
   if (details.installed) {
     lists.push({
-      icon: <ChevronRightIcon className="rtl:rotate-180" />,
+      icon: <ChevronRightIcon className="[&:dir(rtl)]:rotate-180" />,
       label: 'Details',
       value: PLUGINS.details,
       onSelect: () => {

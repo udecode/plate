@@ -42,11 +42,26 @@ export function TableToolbarButton() {
 
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
+  const [tableRtl, setTableRtl] = React.useState(false);
   const canMerge = canMergeSelection;
   const canSplit = canSplitSelection;
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+    <DropdownMenu
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) return;
+
+        const table = editor.plugin(TablePlugin).read.selection()?.table[0];
+        const tableNode = table && editor.api.dom.resolveDOMNode(table);
+
+        setTableRtl(
+          !!tableNode && getComputedStyle(tableNode).direction === 'rtl'
+        );
+      }}
+      modal={false}
+    >
       <DropdownMenuTrigger>
         <ToolbarButton
           className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
@@ -174,7 +189,7 @@ export function TableToolbarButton() {
                   });
                 }}
               >
-                <ArrowLeft className="rtl:rotate-180" />
+                {tableRtl ? <ArrowRight /> : <ArrowLeft />}
                 Insert column before
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -184,7 +199,7 @@ export function TableToolbarButton() {
                   editor.plugin(TablePlugin).update.insertColumn();
                 }}
               >
-                <ArrowRight className="rtl:rotate-180" />
+                {tableRtl ? <ArrowLeft /> : <ArrowRight />}
                 Insert column after
               </DropdownMenuItem>
               <DropdownMenuItem

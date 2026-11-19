@@ -489,7 +489,11 @@ function TableFloatingToolbarContent({
   );
   const canMerge = !singleCell && canMergeSelection;
   const canSplit = canSplitSelection;
-  const [bordersRtl, setBordersRtl] = React.useState(false);
+  const [tableRtl] = React.useState(() => {
+    const table = editor.api.dom.resolveDOMNode(element);
+
+    return !!table && getComputedStyle(table).direction === 'rtl';
+  });
 
   if (!singleCell && !canMerge && !canSplit) return null;
 
@@ -531,18 +535,7 @@ function TableFloatingToolbarContent({
             </ToolbarButton>
           )}
 
-          <DropdownMenu
-            modal={false}
-            onOpenChange={(open) => {
-              if (!open) return;
-
-              const table = editor.api.dom.resolveDOMNode(element);
-
-              setBordersRtl(
-                !!table && getComputedStyle(table).direction === 'rtl'
-              );
-            }}
-          >
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger>
               <ToolbarButton tooltip="Cell borders">
                 <Grid2X2Icon />
@@ -550,7 +543,7 @@ function TableFloatingToolbarContent({
             </DropdownMenuTrigger>
 
             <DropdownMenuPortal>
-              <TableBordersDropdownMenuContent rtl={bordersRtl} />
+              <TableBordersDropdownMenuContent rtl={tableRtl} />
             </DropdownMenuPortal>
           </DropdownMenu>
 
@@ -608,7 +601,7 @@ function TableFloatingToolbarContent({
               }}
               tooltip="Insert column before"
             >
-              <ArrowLeft className="rtl:rotate-180" />
+              {tableRtl ? <ArrowRight /> : <ArrowLeft />}
             </ToolbarButton>
             <ToolbarButton
               onClick={() => {
@@ -616,7 +609,7 @@ function TableFloatingToolbarContent({
               }}
               tooltip="Insert column after"
             >
-              <ArrowRight className="rtl:rotate-180" />
+              {tableRtl ? <ArrowLeft /> : <ArrowRight />}
             </ToolbarButton>
             <ToolbarButton
               onClick={() => {

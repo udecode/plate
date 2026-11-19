@@ -452,7 +452,7 @@
     {
       "id": "2026-11-19-rtl-editor-ui-5",
       "kind": "behavior",
-      "summary": "Mirror directional icons in right-to-left text",
+      "summary": "Mirror directional icons where their toolbar, menu or text runs right-to-left",
       "details": [],
       "migrationNotes": [],
       "targets": [
@@ -480,16 +480,10 @@
     {
       "id": "2026-11-19-rtl-editor-ui-6",
       "kind": "behavior",
-      "summary": "Move through emoji, color and table size grids in the arrow key's visual direction",
+      "summary": "Render equations and their TeX source left-to-right in right-to-left text",
       "details": [],
-      "migrationNotes": [
-        "Move through emoji, color and table size grids in the arrow key's visual direction"
-      ],
-      "targets": [
-        "emoji-picker",
-        "font-color-toolbar-button",
-        "table-toolbar-button"
-      ],
+      "migrationNotes": [],
+      "targets": ["math", "math-static"],
       "source": {
         "line": 19,
         "row": 6,
@@ -503,13 +497,36 @@
     {
       "id": "2026-11-19-rtl-editor-ui-7",
       "kind": "behavior",
+      "summary": "Move through emoji, color and table size grids in the arrow key's visual direction",
+      "details": [],
+      "migrationNotes": [
+        "Move through emoji, color and table size grids in the arrow key's visual direction"
+      ],
+      "targets": [
+        "emoji-picker",
+        "font-color-toolbar-button",
+        "table-toolbar-button"
+      ],
+      "source": {
+        "line": 20,
+        "row": 7,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-editor-ui",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-editor-ui-8",
+      "kind": "behavior",
       "summary": "Render a table's leading margin on its start side",
       "details": [],
       "migrationNotes": [],
       "targets": ["table", "table-static"],
       "source": {
-        "line": 20,
-        "row": 7,
+        "line": 21,
+        "row": 8,
         "legacyRelease": {
           "date": "2026-11-19",
           "entry": "2026-11-19-rtl-editor-ui",

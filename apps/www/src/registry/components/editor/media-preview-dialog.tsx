@@ -307,7 +307,7 @@ export function MediaPreviewDialog() {
               size="icon-sm"
               variant="ghost"
             >
-              <ArrowLeft className="rtl:rotate-180" />
+              <ArrowLeft className="[&:dir(rtl)]:rotate-180" />
             </Button>
             <span className="min-w-10 text-center text-sm text-muted-foreground tabular-nums">
               {(currentPreviewIndex ?? 0) + 1} / {previewList.length}
@@ -319,7 +319,7 @@ export function MediaPreviewDialog() {
               size="icon-sm"
               variant="ghost"
             >
-              <ArrowRight className="rtl:rotate-180" />
+              <ArrowRight className="[&:dir(rtl)]:rotate-180" />
             </Button>
             <Separator
               className="mx-1 data-[orientation=vertical]:h-5"

@@ -34,6 +34,7 @@ export function EquationElementStatic(
       >
         {element.latex.length > 0 ? (
           <span
+            dir="ltr"
             // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] KaTeX generates this HTML with trust disabled from the adjacent equation source.
             dangerouslySetInnerHTML={{
               __html: html,
@@ -81,6 +82,7 @@ export function InlineEquationElementStatic(
             props.element.latex.length === 0 && 'hidden',
             'font-mono leading-none'
           )}
+          dir="ltr"
           // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] KaTeX generates this HTML with trust disabled from the adjacent equation source.
           dangerouslySetInnerHTML={{ __html: html }}
         />

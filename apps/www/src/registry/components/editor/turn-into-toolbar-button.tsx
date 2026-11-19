@@ -413,7 +413,7 @@ export function TurnIntoToolbarButton() {
         [
           'disc',
           'Bulleted list',
-          <ListIcon key="disc" className="rtl:-scale-x-100" />,
+          <ListIcon key="disc" className="[&:dir(rtl)]:-scale-x-100" />,
           'bulleted',
         ],
         [
@@ -472,7 +472,7 @@ export function TurnIntoToolbarButton() {
       ? [
           {
             ...structural.details,
-            icon: <ChevronRightIcon className="rtl:rotate-180" />,
+            icon: <ChevronRightIcon className="[&:dir(rtl)]:rotate-180" />,
             label: 'Details',
             onSelect: () => {
               const current = getStructuralState(editor).details;
