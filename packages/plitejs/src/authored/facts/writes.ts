@@ -15,6 +15,7 @@ import {
 } from '../../core/record-store';
 import type { Path } from '../../interfaces/path';
 import { contentRootsOf } from '../ledger/roots';
+import { heldGift } from '../tree/halves';
 import type { FormatTag, LayerValue } from '../tree/layers';
 import {
   AUTHORED_MARKS_KEY,
@@ -331,6 +332,36 @@ const nodesWithin = (node: unknown): readonly unknown[] => [
 ];
 
 const typeOf = (node: unknown) => (node as { type?: unknown }).type;
+
+const valueKeyOf = (node: unknown, key: string) => {
+  const props = propsOf(node);
+
+  return canonicalJsonKey(Object.hasOwn(props, key) ? [props[key]] : []);
+};
+
+// This check reads no link or verdict, so a linked value reads as given.
+const givenBySplit = (node: unknown, key: string, facts: ReviewFacts) => {
+  const split = ownClaimsOf(node, facts).find(
+    (claim): claim is Extract<Claim, { kind: 'split' }> =>
+      claim.kind === 'split' && claim.cut === undefined
+  );
+
+  return !!split?.gave && heldGift(split.gave, propsOf(node), key);
+};
+
+const takesFormats = (
+  node: unknown,
+  carrier: unknown,
+  facts: Readonly<{ born: ReviewFacts; carrier: ReviewFacts }>
+) =>
+  typeOf(node) === typeOf(carrier) &&
+  ownClaimsOf(carrier, facts.carrier).every(
+    (claim) =>
+      claim.kind !== 'format' ||
+      givenBySplit(node, claim.key, facts.born) ||
+      (!givenBySplit(carrier, claim.key, facts.carrier) &&
+        valueKeyOf(carrier, claim.key) === valueKeyOf(node, claim.key))
+  );
 
 const strikersOfEveryLetter = (
   node: unknown,
@@ -774,7 +805,11 @@ export const authoredWritesOf = ({
         runs.map(({ at, from, to }) => [at, at + to - from] as const)
       );
       const lostElements: Array<
-        Readonly<{ claims: readonly string[]; key: string; type: unknown }>
+        Readonly<{
+          claims: ReadonlyMap<string, Claim>;
+          key: string;
+          node: unknown;
+        }>
       > = [];
 
       for (const entry of head?.index.nodeRangesTouching(fromA, toA) ?? []) {
@@ -824,9 +859,9 @@ export const authoredWritesOf = ({
         if (entry.kind === 'element') {
           removedElements.push(entry.path);
           lostElements.push({
-            claims: [...was.keys()],
+            claims: was,
             key,
-            type: typeOf(node),
+            node,
           });
         }
         tally(removed, key, {
@@ -1057,15 +1092,28 @@ export const authoredWritesOf = ({
       const { around, lostElements } = headSides[each.range];
       const within = nodesWithin(each.node);
       const types = new Set(within.map(typeOf));
+      const facts = { born: resultFacts, carrier: headFacts };
       const held = new Set([
         ...around,
         ...each.continued,
         ...(each.carrier.node === 'element'
-          ? lostElements.flatMap((lost) =>
-              types.has(lost.type) && !bornKeys.has(lost.key) ? lost.claims : []
-            )
+          ? lostElements.flatMap((lost) => {
+              if (bornKeys.has(lost.key) || !types.has(typeOf(lost.node))) {
+                return [];
+              }
+
+              const takes = takesFormats(each.node, lost.node, facts);
+
+              return [...lost.claims].flatMap(([key, claim]) =>
+                takes || claim.kind !== 'format' ? [key] : []
+              );
+            })
           : []),
-        ...within.flatMap((node) => vouchedFor(node, each.under)),
+        ...vouchedFor(each.node, each.under),
+        ...within
+          .slice(1)
+          .flatMap((node) => vouchedFor(node, each.under))
+          .filter((key) => resultClaims.get(key)?.kind !== 'format'),
         ...(head
           ? keptRuns(...each.within).flatMap((run) => {
               const keptTo = run.at + run.to - run.from;
@@ -1076,10 +1124,16 @@ export const authoredWritesOf = ({
                   const keepsNoLetter =
                     kept.kind === 'text' &&
                     !overlaps([[run.at, keptTo]], kept.from + 1, kept.to - 1);
+                  const keepsFormats =
+                    kept.kind !== 'element' ||
+                    takesFormats(each.node, head.index.node(kept.path), facts);
 
                   return [...governingOf(head, kept.path)].flatMap(
                     ([key, claim]) =>
-                      keepsNoLetter && claim.kind === 'delete' ? [] : [key]
+                      (keepsNoLetter && claim.kind === 'delete') ||
+                      (!keepsFormats && claim.kind === 'format')
+                        ? []
+                        : [key]
                   );
                 });
             })

@@ -98,13 +98,28 @@ const dropsOnSplit = (schema: CompiledEditorSchema | null, key: string) =>
     (property) => property.lifecycle.split === 'drop'
   );
 
-export const ownOf = (record: Readonly<JsonRecord>, key: string) =>
+export const ownOf = <T>(record: Readonly<Record<string, T>>, key: string) =>
   Object.hasOwn(record, key) ? record[key] : undefined;
 
 const writeOf = (value: unknown): FormatWrite =>
   value === undefined
     ? { kind: 'remove' }
     : { kind: 'set', value: value as EditorJsonValue };
+
+export const heldGift = (
+  gave: SplitGave,
+  record: Readonly<JsonRecord>,
+  key: string
+) => {
+  const write = ownOf(gave, key);
+
+  return (
+    !!write &&
+    (write.kind === 'remove'
+      ? !Object.hasOwn(record, key)
+      : Object.hasOwn(record, key) && jsonEqual(record[key], write.value))
+  );
+};
 
 export type SourceSplit = Readonly<{ gave: SplitGave; incarnation: string }>;
 
@@ -123,16 +138,6 @@ export const gaveBy = (
     jsonEqual(ownOf(source, key), ownOf(tail, key));
   const heldOrFilled = (key: string) =>
     Object.hasOwn(tail, key) ? tail[key] : declared.get(key);
-  const holdsAsGiven = (key: string) => {
-    const given = sourceSplit?.gave[key];
-
-    return (
-      given !== undefined &&
-      (given.kind === 'remove'
-        ? !Object.hasOwn(source, key)
-        : Object.hasOwn(source, key) && jsonEqual(source[key], given.value))
-    );
-  };
 
   return Object.fromEntries(
     [
@@ -147,7 +152,7 @@ export const gaveBy = (
       .filter((key) => key === 'type' || compares(key))
       .flatMap((key): Array<[string, GaveWrite]> => {
         if (!copied(key)) return [[key, writeOf(heldOrFilled(key))]];
-        if (!sourceSplit || !holdsAsGiven(key)) return [];
+        if (!sourceSplit || !heldGift(sourceSplit.gave, source, key)) return [];
 
         return [
           [
