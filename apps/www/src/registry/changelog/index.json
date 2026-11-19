@@ -25,6 +25,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-19-text-block-direction",
+      "href": "/registry/changelog/2026-11-19-text-block-direction.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep code blocks left-to-right in right-to-left documents",
+      "change": {
+        "type": "source",
+        "date": "2026-11-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block", "code-block-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-18-ai-menu-acts-on-board-note-text",
       "href": "/registry/changelog/2026-11-18-ai-menu-acts-on-board-note-text.json",
       "status": "draft",

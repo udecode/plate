@@ -25260,7 +25260,7 @@
           "kind": "type",
           "name": "RenderElementProps",
           "runtime": false,
-          "signature": "type RenderElementProps<TElement extends Element$1 = Element$1> = TElement extends Element$1 ? {\n  attributes: {\n    'data-editor-inline'?: true;\n    'data-editor-node': 'element';\n    'data-editor-path': string;\n    'data-editor-node-key': string;\n    'data-editor-void'?: true;\n    /**\n     * Binds and places the element. It changes when the node or its page\n     * placement changes, so a ref merge must change with it and pass a\n     * detach on as a call with `null`.\n     */\n    ref: React$1.RefCallback<HTMLElement>;\n  };\n  children: ReactNode;\n  element: TElement;\n  isInline: boolean;\n  slots: EditableElementSlots;\n} : never;",
+          "signature": "type RenderElementProps<TElement extends Element$1 = Element$1> = TElement extends Element$1 ? {\n  attributes: {\n    'data-editor-inline'?: true;\n    'data-editor-node': 'element';\n    'data-editor-path': string;\n    'data-editor-node-key': string;\n    'data-editor-void'?: true;\n    /** The direction of a text block's first letter, absent when none decides. */\n    dir?: 'ltr' | 'rtl';\n    /**\n     * Binds and places the element. It changes when the node or its page\n     * placement changes, so a ref merge must change with it and pass a\n     * detach on as a call with `null`.\n     */\n    ref: React$1.RefCallback<HTMLElement>;\n  };\n  children: ReactNode;\n  element: TElement;\n  isInline: boolean;\n  slots: EditableElementSlots;\n} : never;",
           "source": null,
           "typeParameters": [
             "TElement extends Element$1 = Element$1"

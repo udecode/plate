@@ -68,6 +68,7 @@ import {
   getSelectableOwnerNodeSelection,
 } from './selection-void-target';
 import { isSetHolderPoint, isSetRootOf } from './set-root-endpoints';
+import { RTL_SCRIPT_MATCHER } from './text-direction';
 import { claimPageSelection } from './unread-press';
 
 export type EditableCaretMovementResult = {
@@ -75,75 +76,10 @@ export type EditableCaretMovementResult = {
   repair?: EditableRepairRequest | null;
 };
 
-type TextDirection = 'ltr' | 'neutral' | 'rtl';
-
 const BIDI_CONTROL_MATCHER = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/u;
-const LETTER_MATCHER = /\p{L}/u;
-const RTL_SCRIPT_MATCHERS = [
-  'Adlam',
-  'Arabic',
-  'Avestan',
-  'Chorasmian',
-  'Elymaic',
-  'Hanifi_Rohingya',
-  'Hatran',
-  'Hebrew',
-  'Imperial_Aramaic',
-  'Inscriptional_Pahlavi',
-  'Inscriptional_Parthian',
-  'Lydian',
-  'Mandaic',
-  'Manichaean',
-  'Mende_Kikakui',
-  'Meroitic_Cursive',
-  'Meroitic_Hieroglyphs',
-  'Nabataean',
-  'Nko',
-  'Old_Hungarian',
-  'Old_North_Arabian',
-  'Old_Sogdian',
-  'Old_South_Arabian',
-  'Old_Uyghur',
-  'Palmyrene',
-  'Phoenician',
-  'Psalter_Pahlavi',
-  'Samaritan',
-  'Sogdian',
-  'Syriac',
-  'Thaana',
-  'Yezidi',
-]
-  .map((script) => {
-    try {
-      return new RegExp(`\\p{Script=${script}}`, 'u');
-    } catch {
-      return null;
-    }
-  })
-  .filter((matcher): matcher is RegExp => matcher !== null);
 
 const hasVisualBidiText = (value: string) =>
-  BIDI_CONTROL_MATCHER.test(value) ||
-  Array.from(value).some((character) =>
-    RTL_SCRIPT_MATCHERS.some((matcher) => matcher.test(character))
-  );
-
-export const getTextDirection = (value: string): TextDirection => {
-  for (const character of value) {
-    if (
-      LETTER_MATCHER.test(character) &&
-      RTL_SCRIPT_MATCHERS.some((matcher) => matcher.test(character))
-    ) {
-      return 'rtl';
-    }
-
-    if (LETTER_MATCHER.test(character)) {
-      return 'ltr';
-    }
-  }
-
-  return 'neutral';
-};
+  BIDI_CONTROL_MATCHER.test(value) || RTL_SCRIPT_MATCHER.test(value);
 
 export const selectionSyncRepair = ({
   forceRender = true,

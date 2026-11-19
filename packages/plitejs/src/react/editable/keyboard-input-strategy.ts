@@ -39,7 +39,6 @@ import {
   applyEditableCaretMovement,
   getSelectableOwnerHorizontalNavigationTarget,
   getSelectableOwnerVerticalNavigationTarget,
-  getTextDirection,
 } from './caret-engine';
 import {
   type EditableCompositionLeaseBinding,
@@ -93,6 +92,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { getTextDirection } from './text-direction';
 import { moveByViewLines, type ViewLines } from './view-lines';
 
 export type EditableKeyDownResult = {

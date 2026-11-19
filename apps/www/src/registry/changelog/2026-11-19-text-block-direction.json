@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-text-block-direction",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-text-block-direction.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep code blocks left-to-right in right-to-left documents",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-code-block-keep-blocks-left-right-cf274a8b",
+      "kind": "behavior",
+      "summary": "Keep code blocks left-to-right in right-to-left documents",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block", "code-block-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-text-block-direction",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

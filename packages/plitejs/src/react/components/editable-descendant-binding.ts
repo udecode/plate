@@ -17,6 +17,7 @@ import {
   isVoid as editorIsVoid,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
+import { getTextBlockDirection } from '../editable/text-direction';
 import { getDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 
 const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly NodeKey[];
@@ -27,6 +28,7 @@ const EMPTY_DIRECT_TEXT_CHILD_NODES = Object.freeze(
 
 export type EditableDescendantBinding = {
   childNodeKeys: readonly NodeKey[];
+  direction: 'ltr' | 'rtl' | undefined;
   drawnChildren: readonly Descendant[];
   directTextChildNodes: ReadonlyArray<TextNode | null>;
   emptyTextParentRenderKey: string | null;
@@ -84,6 +86,7 @@ export const readEditableDescendantBinding = ({
   if (!path || !node || editorIsEditor(node)) {
     return {
       childNodeKeys: EMPTY_RUNTIME_IDS,
+      direction: undefined,
       drawnChildren: EMPTY_CHILDREN,
       directTextChildNodes: EMPTY_DIRECT_TEXT_CHILD_NODES,
       emptyTextParentRenderKey: null,
@@ -138,6 +141,9 @@ export const readEditableDescendantBinding = ({
 
   return {
     childNodeKeys,
+    direction: isEditableTextNode(descendant)
+      ? undefined
+      : getTextBlockDirection(editor, descendant),
     drawnChildren,
     directTextChildNodes: usesDirectTextChildren
       ? drawnChildren.map((child) => (isEditableTextNode(child) ? child : null))

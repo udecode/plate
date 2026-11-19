@@ -38,6 +38,33 @@
       "2026-08-25-base-first-registry"
     ],
     "use-visible-anchor": ["2026-11-19-popovers-hide-with-text"],
+    "code-block": [
+      "2026-11-19-text-block-direction",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-26-remove-code-block-auto-language",
+      "2026-10-16-code-block-diagrams",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-bound-editor-selection-styles",
+      "2026-09-05-code-control-paths",
+      "2026-09-04-code-block-editing-and-syntax",
+      "2026-09-03-code-block-text-flow",
+      "2026-09-01-plugin-decoration-highlights",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "code-block-static": [
+      "2026-11-19-text-block-direction",
+      "2026-10-26-remove-code-block-auto-language",
+      "2026-09-03-code-block-text-flow",
+      "2026-09-02-comments-ownership",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-flat-editor-registry"
+    ],
     "ai-menu": [
       "2026-11-18-ai-menu-acts-on-board-note-text",
       "2026-11-18-registry-icon-library",
@@ -286,24 +313,6 @@
     "clear-formatting-toolbar-button": [
       "2026-11-18-registry-icon-library",
       "2026-11-16-clear-formatting"
-    ],
-    "code-block": [
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-26-remove-code-block-auto-language",
-      "2026-10-16-code-block-diagrams",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-bound-editor-selection-styles",
-      "2026-09-05-code-control-paths",
-      "2026-09-04-code-block-editing-and-syntax",
-      "2026-09-03-code-block-text-flow",
-      "2026-09-01-plugin-decoration-highlights",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "code-block-diagram": [
       "2026-11-18-registry-icon-library",
@@ -1210,13 +1219,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-24-single-selection-authority",
       "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "code-block-static": [
-      "2026-10-26-remove-code-block-auto-language",
-      "2026-09-03-code-block-text-flow",
-      "2026-09-02-comments-ownership",
-      "2026-08-31-inline-component-props",
       "2026-08-17-flat-editor-registry"
     ],
     "code-block-diagram-mermaid": [

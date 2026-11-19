@@ -70,6 +70,7 @@ export const sameDescendantBinding = (
 ) =>
   left != null &&
   left.schemaElement === right.schemaElement &&
+  left.direction === right.direction &&
   left.renderRevision === right.renderRevision &&
   left.emptyTextParentRenderKey === right.emptyTextParentRenderKey &&
   left.isInline === right.isInline &&

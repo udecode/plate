@@ -40,7 +40,10 @@ import {
   hasPath as editorHasPath,
   getEditorRuntime,
   getNodeKeyDOMValue,
+  isInline as editorIsInline,
 } from '../editable/runtime-editor-api';
+import { readRuntimeNode } from '../editable/runtime-live-state';
+import { getTextBlockDirection } from '../editable/text-direction';
 import { recordPliteReactRender } from '../render-profiler';
 import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
 import { useRequiredEditorSelectorContext } from './use-editor-selector';
@@ -61,6 +64,10 @@ const EDITOR_TO_TEXT_RENDER_REVISIONS = new WeakMap<
   Map<NodeKey, number>
 >();
 const ELEMENT_TO_PATH = new WeakMap<HTMLElement, Path>();
+const EDITOR_TO_DRAWN_BLOCK_DIRECTIONS = new WeakMap<
+  object,
+  Map<NodeKey, 'ltr' | 'rtl' | undefined>
+>();
 export type ElementRenderBind = Readonly<{ node: ElementNode }>;
 
 export const ELEMENT_TO_RENDER_BIND = new WeakMap<
@@ -334,6 +341,54 @@ export const bumpDOMTextRenderRevision = (editor: Editor, nodeKey: NodeKey) => {
   EDITOR_TO_TEXT_RENDER_REVISIONS.set(owner, revisions);
 };
 
+export const recordDrawnBlockDirection = (
+  editor: Editor,
+  nodeKey: NodeKey,
+  direction: 'ltr' | 'rtl' | undefined
+) => {
+  const owner = getEditorRuntime(editor);
+  const directions =
+    EDITOR_TO_DRAWN_BLOCK_DIRECTIONS.get(owner) ??
+    new Map<NodeKey, 'ltr' | 'rtl' | undefined>();
+
+  directions.set(nodeKey, direction);
+  EDITOR_TO_DRAWN_BLOCK_DIRECTIONS.set(owner, directions);
+};
+
+const readStaleDirectionBlockKey = (
+  editor: Editor,
+  textPath: Path,
+  checkedBlockKeys: Set<NodeKey>
+) => {
+  for (
+    let path = textPath.slice(0, -1) as Path;
+    path.length > 0;
+    path = path.slice(0, -1) as Path
+  ) {
+    const node = readRuntimeNode(editor, path);
+
+    if (!node || !NodeApi.isElement(node)) return null;
+    if (editorIsInline(editor, node)) continue;
+
+    const nodeKey = editorGetNodeKey(editor, path);
+
+    if (!nodeKey || checkedBlockKeys.has(nodeKey)) return null;
+
+    checkedBlockKeys.add(nodeKey);
+
+    const drawn = EDITOR_TO_DRAWN_BLOCK_DIRECTIONS.get(
+      getEditorRuntime(editor)
+    );
+
+    return drawn?.has(nodeKey) &&
+      drawn.get(nodeKey) !== getTextBlockDirection(editor, node)
+      ? nodeKey
+      : null;
+  }
+
+  return null;
+};
+
 /** Remounts a line element from the model after the browser removed DOM that React still owns. */
 export const useRebuildLine = (editor: Editor) => {
   const { invalidate } = useRequiredEditorSelectorContext();
@@ -504,6 +559,7 @@ export const syncChangedTextToDOM = <V extends Value>(
   const owner = getEditorRuntime(editor);
   const synced = new Set<string>();
   const invalidatedNodeKeys = new Set<NodeKey>();
+  const checkedBlockKeys = new Set<NodeKey>();
   let requiresGlobalRender = false;
   const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(owner);
   const flowElementMap = EDITOR_TO_FLOW_RUNTIME_ID_TO_ELEMENTS.get(owner);
@@ -598,6 +654,13 @@ export const syncChangedTextToDOM = <V extends Value>(
       }
     }
 
+    const staleDirectionBlockKey = readStaleDirectionBlockKey(
+      editor,
+      path,
+      checkedBlockKeys
+    );
+
+    if (staleDirectionBlockKey) invalidatedNodeKeys.add(staleDirectionBlockKey);
     if (didSyncEveryElement) {
       synced.add(key);
     } else {

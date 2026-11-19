@@ -90,6 +90,7 @@ import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
 import { useContentRoot } from '../hooks/use-plite-content-root';
 import {
   getDOMTextRenderRevision,
+  recordDrawnBlockDirection,
   usePliteNodeKeyDOMValue,
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
@@ -711,6 +712,8 @@ export type RenderElementProps<TElement extends ElementNode = ElementNode> =
           'data-editor-path': string;
           'data-editor-node-key': string;
           'data-editor-void'?: true;
+          /** The direction of a text block's first letter, absent when none decides. */
+          dir?: 'ltr' | 'rtl';
           /**
            * Binds and places the element. It changes when the node or its page
            * placement changes, so a ref merge must change with it and pass a
@@ -928,6 +931,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
 
   const {
     childNodeKeys,
+    direction,
     drawnChildren,
     directTextChildNodes,
     isInline: inline,
@@ -1008,12 +1012,15 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     );
   }
 
+  recordDrawnBlockDirection(editor, nodeKey, direction);
+
   const attributes = {
     'data-editor-inline': inline ? (true as const) : undefined,
     'data-editor-node': 'element' as const,
     'data-editor-path': path.join(','),
     'data-editor-node-key': nodeKeyDOMValue,
     'data-editor-void': voidNode ? (true as const) : undefined,
+    dir: direction,
     ref: elementRef,
   };
   const held = drawnChildren !== node.children;
@@ -1273,6 +1280,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
       <EditorElement
         style={{ position: 'relative' }}
         as={inline ? 'span' : 'div'}
+        dir={direction}
         isInline={inline}
       >
         {renderChildren()}
