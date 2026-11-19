@@ -318,7 +318,11 @@ about twelve minutes:
 
 ## Base worktree for a HEAD comparison
 
-Run `node tooling/scripts/proof-worktree.mjs <path> <sha>`. It adds a detached
+Run `node tooling/scripts/proof-worktree.mjs <path> <sha>`. When a long gate,
+such as a timing gate, needs the tree, put `<path>` under the main checkout's
+`.tmp/`, not in the session scratchpad under `/private/tmp`, which a reboot or
+a resume can wipe mid-run. Keep the drafts, patches and edit lists that rebuild
+the tree in the run directory. The helper adds a detached
 worktree at the base, links this checkout's root and workspace `node_modules`
 and copies each package's untracked `.env` files, as `AGENTS.md`'s Git rule
 says. In a split clone it also attaches the private half, the way a session's
