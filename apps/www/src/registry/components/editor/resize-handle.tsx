@@ -17,8 +17,9 @@ export const mediaResizeHandleVariants = cva(
   {
     variants: {
       direction: {
-        left: '-left-3 -ml-3 pl-3',
-        right: '-right-3 -mr-3 items-end pr-3',
+        left: '[left:--spacing(-3)] [margin-left:--spacing(-3)] [padding-left:--spacing(3)] after:[margin-right:auto]',
+        right:
+          '[right:--spacing(-3)] [margin-right:--spacing(-3)] [padding-right:--spacing(3)] after:[margin-left:auto]',
       },
     },
   }
@@ -55,8 +56,10 @@ const resizableVariants = cva('', {
   variants: {
     align: {
       center: 'mx-auto',
-      left: 'mr-auto',
-      right: 'ml-auto',
+      end: 'ms-auto',
+      left: '[margin-right:auto]',
+      right: '[margin-left:auto]',
+      start: 'me-auto',
     },
   },
 });

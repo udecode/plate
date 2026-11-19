@@ -27,8 +27,10 @@ const captionVariants = cva('max-w-full', {
   variants: {
     align: {
       center: 'mx-auto justify-center text-center',
-      left: 'mr-auto justify-start text-left',
-      right: 'ml-auto justify-end text-right',
+      end: 'ms-auto justify-end text-end',
+      left: '[margin-right:auto] [justify-content:left] [text-align:left]',
+      right: '[margin-left:auto] [justify-content:right] [text-align:right]',
+      start: 'me-auto justify-start text-start',
     },
   },
 });
@@ -37,14 +39,14 @@ export const getMediaTextAlign = (element: object) => {
   if (!('textAlign' in element)) return 'center';
 
   switch (element.textAlign) {
-    case 'justify':
-    case 'left':
-    case 'start': {
-      return 'left';
-    }
     case 'end':
+    case 'left':
     case 'right': {
-      return 'right';
+      return element.textAlign;
+    }
+    case 'justify':
+    case 'start': {
+      return 'start';
     }
     default: {
       return 'center';
@@ -77,7 +79,7 @@ export function Caption({
   style,
   ...props
 }: React.ComponentProps<'figcaption'> & {
-  align?: 'center' | 'left' | 'right';
+  align?: ReturnType<typeof getMediaTextAlign>;
   element: Element;
   placeholder?: string;
   slots: RenderElementProps['slots'];

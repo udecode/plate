@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-19-rtl-media-align",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-19-rtl-media-align.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-19",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Place media by its alignment in right-to-left text",
+  "targets": [
+    {
+      "name": "caption",
+      "files": ["apps/www/src/registry/components/editor/caption.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "caption-static",
+      "files": ["apps/www/src/registry/components/editor/caption-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "resize-handle",
+      "files": ["apps/www/src/registry/components/editor/resize-handle.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-embed-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-embed-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-image-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-image-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file",
+      "files": ["apps/www/src/registry/components/editor/media-file.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-file-static",
+      "files": [
+        "apps/www/src/registry/components/editor/media-file-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-19-caption-place-media-by-its-72cd7602",
+      "kind": "behavior",
+      "summary": "Place media aligned `start` or `end` on the text's start or end side, and keep media aligned `left` or `right` on that side in any direction",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["caption", "caption-static", "resize-handle"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-media-align",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-media-align-2",
+      "kind": "behavior",
+      "summary": "Center an unaligned image or embed in static rendering, as the editor does",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-embed-static", "media-image-static"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-media-align",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-media-align-3",
+      "kind": "behavior",
+      "summary": "Align a file's caption to the text's start side",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-file", "media-file-static"],
+      "source": {
+        "line": 16,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-media-align",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-19-rtl-media-align-4",
+      "kind": "behavior",
+      "summary": "Keep each resize handle on its own side in right-to-left text, with arrow keys that follow the text direction",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["resize-handle"],
+      "source": {
+        "line": 17,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-19",
+          "entry": "2026-11-19-rtl-media-align",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

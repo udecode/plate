@@ -30,7 +30,7 @@ export function FileElement(props: EditorElementProps<typeof FilePlugin>) {
       placement="top"
     >
       <EditorElement {...props} className="rounded-sm">
-        <figure className="group relative m-0 [&>figcaption]:text-left">
+        <figure className="group relative m-0 [&>figcaption]:text-start">
           <div className="py-1" contentEditable={false}>
             <a
               className={cn(
@@ -53,7 +53,7 @@ export function FileElement(props: EditorElementProps<typeof FilePlugin>) {
               </div>
             </a>
           </div>
-          <Caption align="left" element={props.element} slots={props.slots}>
+          <Caption align="start" element={props.element} slots={props.slots}>
             {props.children}
           </Caption>
         </figure>

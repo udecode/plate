@@ -1,0 +1,17 @@
+---
+id: 2026-11-19-rtl-media-align
+date: 2026-11-19
+status: draft
+kind: behavior
+summary: 'Place media by its alignment in right-to-left text'
+change: { 'type': 'source', 'date': '2026-11-19', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-19-caption-place-media-by-its-72cd7602","kind":"behavior","migrationNotes":[]} -->
+
+- **`caption`**, **`caption-static`**, **`resize-handle`**: Place media aligned `start` or `end` on the text's start or end side, and keep media aligned `left` or `right` on that side in any direction
+- **`media-embed-static`**, **`media-image-static`**: Center an unaligned image or embed in static rendering, as the editor does
+- **`media-file`**, **`media-file-static`**: Align a file's caption to the text's start side
+- **`resize-handle`**: Keep each resize handle on its own side in right-to-left text, with arrow keys that follow the text direction

@@ -28889,7 +28889,7 @@
           "kind": "type",
           "name": "ResizableProps",
           "runtime": false,
-          "signature": "type ResizableProps = Omit<React$1.ComponentPropsWithRef<'div'>, 'onResize'> & {\n  /** Node alignment. */\n  align?: 'center' | 'left' | 'right';\n  maxWidth?: ResizeLength;\n  minWidth?: ResizeLength;\n  onResizeEnd?: (width: ResizeLength) => void;\n  width?: ResizeLength;\n};",
+          "signature": "type ResizableProps = Omit<React$1.ComponentPropsWithRef<'div'>, 'onResize'> & {\n  /** A `center` node grows on both sides as it resizes; any other alignment grows on one side. */\n  align?: 'center' | 'end' | 'left' | 'right' | 'start';\n  maxWidth?: ResizeLength;\n  minWidth?: ResizeLength;\n  onResizeEnd?: (width: ResizeLength) => void;\n  width?: ResizeLength;\n};",
           "source": null,
           "typeParameters": []
         },

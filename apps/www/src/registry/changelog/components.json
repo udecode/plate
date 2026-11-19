@@ -66,6 +66,56 @@
       "2026-08-25-base-first-registry"
     ],
     "use-visible-anchor": ["2026-11-19-popovers-hide-with-text"],
+    "caption": [
+      "2026-11-19-rtl-media-align",
+      "2026-11-17-cn-package",
+      "2026-11-09-pass-view-root-to-key-questions",
+      "2026-10-18-layout-style-values",
+      "2026-10-13-media-caption-preview",
+      "2026-08-31-stabilize-hidden-media-captions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "caption-static": [
+      "2026-11-19-rtl-media-align",
+      "2026-11-17-cn-package",
+      "2026-10-18-layout-style-values",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "resize-handle": [
+      "2026-11-19-rtl-media-align",
+      "2026-11-17-cn-package",
+      "2026-09-08-media-resize-lifetime",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-embed-static": [
+      "2026-11-19-rtl-media-align",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-image-static": [
+      "2026-11-19-rtl-media-align",
+      "2026-11-17-cn-package",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-file": [
+      "2026-11-19-rtl-media-align",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-file-static": [
+      "2026-11-19-rtl-media-align",
+      "2026-11-18-registry-icon-library",
+      "2026-08-17-flat-editor-registry"
+    ],
     "code-block": [
       "2026-11-19-text-block-direction",
       "2026-11-18-registry-icon-library",
@@ -577,17 +627,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "media-file": [
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-file-static": [
-      "2026-11-18-registry-icon-library",
-      "2026-08-17-flat-editor-registry"
-    ],
     "media-preview-dialog": [
       "2026-11-18-registry-icon-library",
       "2026-11-17-cn-package",
@@ -827,21 +866,6 @@
       "2026-11-17-cn-package",
       "2026-08-17-flat-editor-registry"
     ],
-    "caption-static": [
-      "2026-11-17-cn-package",
-      "2026-10-18-layout-style-values",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "caption": [
-      "2026-11-17-cn-package",
-      "2026-11-09-pass-view-root-to-key-questions",
-      "2026-10-18-layout-style-values",
-      "2026-10-13-media-caption-preview",
-      "2026-08-31-stabilize-hidden-media-captions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-23-rich-media-caption-children"
-    ],
     "date": [
       "2026-11-17-cn-package",
       "2026-11-17-fix-date-picker-month",
@@ -966,10 +990,6 @@
       "2026-08-20-improve-editor-control-accessibility",
       "2026-08-17-flat-editor-registry"
     ],
-    "media-image-static": [
-      "2026-11-17-cn-package",
-      "2026-08-17-flat-editor-registry"
-    ],
     "media-image": [
       "2026-11-17-cn-package",
       "2026-10-18-layout-style-values",
@@ -1013,15 +1033,6 @@
     "preview-markdown-demo": [
       "2026-11-17-cn-package",
       "2026-09-01-plugin-decoration-highlights",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-11-20-biome-ultracite"
-    ],
-    "resize-handle": [
-      "2026-11-17-cn-package",
-      "2026-09-08-media-resize-lifetime",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
       "2026-08-13-fix-registry-install-dependencies",
       "2025-11-20-biome-ultracite"
     ],
@@ -1584,10 +1595,6 @@
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
-    ],
-    "media-embed-static": [
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry"
     ],
     "potion-iframe-demo": ["2026-08-20-improve-editor-control-accessibility"],
     "pro-iframe-demo": [

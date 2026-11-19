@@ -6,14 +6,14 @@ export const getMediaTextAlign = (element: object) => {
   if (!('textAlign' in element)) return 'center';
 
   switch (element.textAlign) {
-    case 'justify':
-    case 'left':
-    case 'start': {
-      return 'left';
-    }
     case 'end':
+    case 'left':
     case 'right': {
-      return 'right';
+      return element.textAlign;
+    }
+    case 'justify':
+    case 'start': {
+      return 'start';
     }
     default: {
       return 'center';
@@ -28,7 +28,7 @@ export function CaptionStatic({
   element,
   ...props
 }: React.ComponentProps<'figcaption'> & {
-  align?: 'center' | 'left' | 'right';
+  align?: ReturnType<typeof getMediaTextAlign>;
   element: Element;
 }) {
   if (NodeApi.string(element).length === 0) return null;
@@ -39,8 +39,10 @@ export function CaptionStatic({
       className={cn(
         'mt-2 min-h-6 max-w-full',
         align === 'center' && 'mx-auto text-center',
-        align === 'left' && 'mr-auto text-left',
-        align === 'right' && 'ml-auto text-right',
+        align === 'start' && 'me-auto text-start',
+        align === 'end' && 'ms-auto text-end',
+        align === 'left' && '[margin-right:auto] [text-align:left]',
+        align === 'right' && '[margin-left:auto] [text-align:right]',
         className
       )}
     >

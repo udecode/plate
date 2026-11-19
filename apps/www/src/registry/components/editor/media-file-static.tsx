@@ -12,7 +12,7 @@ export function FileElementStatic(
 
   return (
     <EditorElement className="my-px rounded-sm" {...props}>
-      <figure className="group relative m-0 [&>figcaption]:text-left">
+      <figure className="group relative m-0 [&>figcaption]:text-start">
         <a
           className="flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
           download={name}
@@ -25,7 +25,7 @@ export function FileElementStatic(
             <div>{name}</div>
           </div>
         </a>
-        <CaptionStatic align="left" element={props.element}>
+        <CaptionStatic align="start" element={props.element}>
           {props.children}
         </CaptionStatic>
       </figure>

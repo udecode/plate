@@ -61,6 +61,32 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-19-rtl-media-align",
+      "href": "/registry/changelog/2026-11-19-rtl-media-align.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Place media by its alignment in right-to-left text",
+      "change": {
+        "type": "source",
+        "date": "2026-11-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "caption",
+        "caption-static",
+        "resize-handle",
+        "media-embed-static",
+        "media-image-static",
+        "media-file",
+        "media-file-static"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-19-text-block-direction",
       "href": "/registry/changelog/2026-11-19-text-block-direction.json",
       "status": "draft",

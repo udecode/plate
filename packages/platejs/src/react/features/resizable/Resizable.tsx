@@ -23,8 +23,8 @@ export type ResizableProps = Omit<
   React.ComponentPropsWithRef<'div'>,
   'onResize'
 > & {
-  /** Node alignment. */
-  align?: 'center' | 'left' | 'right';
+  /** A `center` node grows on both sides as it resizes; any other alignment grows on one side. */
+  align?: 'center' | 'end' | 'left' | 'right' | 'start';
   maxWidth?: ResizeLength;
   minWidth?: ResizeLength;
   onResizeEnd?: (width: ResizeLength) => void;
