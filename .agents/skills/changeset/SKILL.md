@@ -12,6 +12,10 @@ Release notes document user-visible changes: package changesets for published pa
 
 **Core principle:** one action verb + one impact statement = one bullet.
 
+## No package changesets on `next`
+
+While Plate v2 is in beta, a change on `next` gets no package changeset, whatever package it changes. On each push to `next` with no changeset pending, the release workflow adds one entry that links every commit since the last published beta, so the beta Version Packages PR always has a beta to publish. The v2 stable release gets one hand-written entry. Registry changelog entries still follow rule 4. The package rules below apply to changes on `main`.
+
 ## Critical Rules
 
 ### 1. Core packages: no `minor`
@@ -37,12 +41,8 @@ Use `patch` instead. `minor` on those explodes version bumps across dependents.
 
 Only real breaking changes get `major`.
 
-Target branch by bump:
-
-- Major changesets target `next` for beta before stable promotion.
-- Minor changesets target `main`, not `next`.
-- Patch changes may target `main`; use `next` patch changes only for active
-  beta-lane fixes or direct-sync beta metadata.
+Minor and patch changesets target `main`. A breaking change belongs on `next`,
+which takes no changeset during the v2 beta.
 
 ### 2. One package per file
 

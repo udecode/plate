@@ -164,6 +164,7 @@ jobs:
           link-workspace-packages: 'true'
 
       - name: ⏸️ Hold back changesets until the beta is published
+        id: hold_back
         if: ${{ steps.release_channel.outputs.channel == 'beta' }}
         run: |
           set -euo pipefail
@@ -173,6 +174,7 @@ jobs:
 
           if lookup="$(npm view "platejs@${fixed_group_version}" version --json 2>/dev/null)"; then
             echo "platejs@${fixed_group_version} is on npm, so pending changesets stay."
+            echo "published_version=${fixed_group_version}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -184,6 +186,33 @@ jobs:
 
           echo "platejs@${fixed_group_version} is not on npm yet, so this run holds back these changesets and publishes it:"
           find .changeset -maxdepth 1 -name '*.md' ! -name README.md -print -delete
+
+      - name: 📝 Add this beta's changelog entry
+        if: ${{ steps.hold_back.outputs.published_version != '' }}
+        env:
+          PUBLISHED_VERSION: ${{ steps.hold_back.outputs.published_version }}
+        run: |
+          set -euo pipefail
+
+          # changesets/action opens the version PR only while a changeset is pending.
+          consumed="$(jq -r '.changesets[]' .changeset/pre.json)"
+          for changeset in .changeset/*.md; do
+            id="$(basename "$changeset" .md)"
+            if [[ "$id" != README ]] && ! grep -qxF "$id" <<<"$consumed"; then
+              echo "${changeset} is pending, so this beta needs no entry of its own."
+              exit 0
+            fi
+          done
+
+          entry=".changeset/beta-${GITHUB_SHA::10}.md"
+          cat > "$entry" <<EOF
+          ---
+          'platejs': patch
+          ---
+
+          Ship [every change on \`next\` since \`${PUBLISHED_VERSION}\`](https://github.com/${GITHUB_REPOSITORY}/compare/platejs@${PUBLISHED_VERSION}...${GITHUB_SHA}).
+          EOF
+          echo "Added ${entry} for the changes since platejs@${PUBLISHED_VERSION}."
 
       - name: 🧩 Prepare release changesets
         run: |
