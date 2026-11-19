@@ -1,3 +1,4 @@
+import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getChildren,
@@ -21,6 +22,7 @@ import {
   type Value,
 } from '../interfaces';
 import type { NodeReplaceChildrenOptions } from '../interfaces/transforms/node';
+import { getNodeKeyForNode } from '../utils/node-keys';
 
 const getParentChildren = <V extends Value>(
   editor: AnyEditor<V>,
@@ -61,6 +63,32 @@ const findNodeReferencePath = (
   }
 
   return null;
+};
+
+const findNewNodes = (
+  owner: Editor,
+  children: readonly Node[],
+  at: Path,
+  index: number
+) => {
+  const found: Array<{ path: Path; source: Descendant }> = [];
+  const seen = new Set<Node>();
+  const collect = (node: Node, path: Path) => {
+    if (seen.has(node)) return;
+    seen.add(node);
+    if (getNodeKeyForNode(node, owner) === null) {
+      found.push({ path, source: node as Descendant });
+    }
+    if (ElementApi.isElement(node)) {
+      node.children.forEach((child, childIndex) =>
+        collect(child, [...path, childIndex])
+      );
+    }
+  };
+
+  children.forEach((child, offset) => collect(child, [...at, index + offset]));
+
+  return found;
 };
 
 export const replaceChildren = <
@@ -162,6 +190,12 @@ export const replaceChildren = <
       : undefined;
   const selectionAfter =
     newSelection === undefined ? retainedSelection : newSelection;
+  const storedCopies = findNewNodes(
+    getEditorRuntimeOwner(editor),
+    children,
+    at,
+    index
+  );
 
   const apply = () =>
     applyBuiltDocumentChange(
@@ -179,6 +213,7 @@ export const replaceChildren = <
                 source: replacedChildren[childIndex],
               }))
           : undefined,
+        storedCopies,
         ...(selectionAfter === undefined
           ? {}
           : { selection: { root: updateRoot, value: selectionAfter } }),

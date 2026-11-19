@@ -199,6 +199,26 @@ export const bindNodeKeyOnce = (
   return currentNodeKey === null || currentNodeKey === nodeKey;
 };
 
+const STORED_COPIES = new WeakMap<Editor, WeakMap<object, object>>();
+
+export const recordStoredCopy = (
+  node: object,
+  editor: Editor,
+  copy: object
+) => {
+  let copies = STORED_COPIES.get(editor);
+
+  if (!copies) {
+    copies = new WeakMap();
+    STORED_COPIES.set(editor, copies);
+  }
+
+  copies.set(node, copy);
+};
+
+export const getStoredCopy = (node: object, editor: Editor) =>
+  STORED_COPIES.get(editor)?.get(node);
+
 export const assignFreshNodeKey = (node: object, editor: Editor): NodeKey => {
   const nodeKey = allocateNodeKey(editor);
 

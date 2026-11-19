@@ -151,8 +151,10 @@ import {
   dropDeferredNodeKeys,
   getNodeKeyForNode,
   getOrCreateNodeKey,
+  getStoredCopy,
   inheritNodeKey,
   inheritNodeKeys,
+  recordStoredCopy,
   setNodeKey,
 } from '../utils/node-keys';
 import { normalizeNodeMatch } from '../utils/node-match';
@@ -4237,17 +4239,60 @@ export const resolveEditorNodeKeyForNode = (
 
   if (resolvesIn(index)) return getDefined(nodeKey);
   const currentRoot = getCurrentChildrenRoot(owner);
+
+  for (const root of getEditorRuntimeRootKeys(owner)) {
+    if (root === currentRoot) continue;
+    if (resolvesIn(runtimeRootIndex(owner, root))) return getDefined(nodeKey);
+  }
+
+  const copy = getStoredCopy(node, owner);
+
+  return copy ? resolveLiveCopyKey(owner, copy) : null;
+};
+
+const runtimeRootIndex = (owner: Editor, root: string): SnapshotIndex => {
+  if (root === getCurrentChildrenRoot(owner)) {
+    return getCurrentRuntimeIndex(owner);
+  }
+
   const transactionSnapshot = getReadProjection(owner)
     ? undefined
     : getTransactionSnapshot(owner);
 
-  for (const root of getEditorRuntimeRootKeys(owner)) {
-    if (root === currentRoot) continue;
-    const rootIndex = transactionSnapshot
-      ? retainTransactionSnapshotIndex(owner, transactionSnapshot, root)
-      : currentRootIndex(owner, root);
+  return transactionSnapshot
+    ? retainTransactionSnapshotIndex(owner, transactionSnapshot, root)
+    : currentRootIndex(owner, root);
+};
 
-    if (resolvesIn(rootIndex)) return getDefined(nodeKey);
+const nodeAtPath = (
+  children: readonly Descendant[] | undefined,
+  path: Path
+): Descendant | undefined => {
+  let node: Descendant | undefined;
+  let nodes = children;
+
+  for (const index of path) {
+    node = nodes?.[index];
+    nodes = node && ElementApi.isElement(node) ? node.children : undefined;
+  }
+
+  return node;
+};
+
+const resolveLiveCopyKey = (owner: Editor, copy: object) => {
+  const roots = getEditorDocumentRoots(owner);
+
+  for (const root of Object.keys(roots)) {
+    const index = runtimeRootIndex(owner, root);
+    let nodeKey = getNodeKeyForNode(copy, owner);
+    let path = nodeKey ? index.pathOf(nodeKey) : null;
+
+    if (!path) {
+      index.entries();
+      nodeKey = getNodeKeyForNode(copy, owner);
+      path = nodeKey ? index.pathOf(nodeKey) : null;
+    }
+    if (path && nodeAtPath(roots[root], path) === copy) return nodeKey;
   }
 
   return null;
@@ -11906,13 +11951,38 @@ export const applyBuiltDocumentChange = (
           source: Descendant;
         }>
       >;
+      storedCopies?: ReadonlyArray<
+        Readonly<{
+          path: Path;
+          source: Descendant;
+        }>
+      >;
     }> = {}
 ) => {
   const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
   const step = profileCoreDuration('document-change-build', () =>
     build(getActiveDocumentChangeBuilder(editor), root)
   );
-  const { nodeKeyTransfers, ...applyOptions } = options;
+  const { nodeKeyTransfers, storedCopies, ...applyOptions } = options;
+
+  if (storedCopies?.length) {
+    const before = getDocumentRootChildren(step.before, root);
+    const after = getDocumentRootChildren(step.after, root);
+    const owner = getEditorRuntimeOwner(editor);
+
+    for (const { path, source } of storedCopies) {
+      const copy = nodeAtPath(after, path);
+      const earlier = getStoredCopy(source, owner);
+
+      if (
+        copy &&
+        copy !== nodeAtPath(before, path) &&
+        !(earlier && resolveLiveCopyKey(owner, earlier))
+      ) {
+        recordStoredCopy(source, owner, copy);
+      }
+    }
+  }
 
   if (nodeKeyTransfers) {
     const after = valueRootIndex(step.after, root);
