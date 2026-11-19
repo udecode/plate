@@ -3,7 +3,9 @@ import {
   type Descendant,
   type Element,
   ElementApi,
+  NodeApi,
   type Path,
+  PathApi,
   type Point,
   TextApi,
 } from '../interfaces';
@@ -616,6 +618,11 @@ const getTextOffsetWithin = (
       const isVoid = resolveRepresentationSchema(editor).isVoid(node);
 
       offset += edgeWidth;
+      if (isVoid && edgeWidth && PathApi.isAncestor(nodePath, point.path)) {
+        result = offset;
+
+        return true;
+      }
       if (!isVoid && visit(node.children, nodePath)) return true;
       offset += edgeWidth;
     }
@@ -679,6 +686,12 @@ const getPointAtTextOffset = (
       const isVoid = resolveRepresentationSchema(editor).isVoid(node);
 
       offset += edgeWidth;
+      if (isVoid && edgeWidth && targetOffset === offset) {
+        return {
+          offset: 0,
+          path: [...nodePath, ...NodeApi.first(node, [])[1]],
+        };
+      }
       const nested = isVoid ? null : visit(node.children, nodePath);
 
       if (nested) return nested;

@@ -185,31 +185,74 @@ export const sameContent = (
   );
 };
 
-export const textTokens = (fragment: readonly Descendant[]) => {
+export type ClosedEdges = Readonly<{ end: number; start: number }>;
+
+type Edge = <T>(list: readonly T[]) => T | undefined;
+
+const firstOf: Edge = (list) => list[0];
+const lastOf: Edge = (list) => list.at(-1);
+
+const nonEmpty = (nodes: readonly Descendant[]) =>
+  nodes.filter((node) => !NodeApi.isText(node) || node.text !== '');
+
+const edgeDepth = (nodes: readonly Descendant[], edge: Edge) => {
+  let depth = 0;
+
+  for (
+    let node = edge(nonEmpty(nodes));
+    node && ElementApi.isElement(node);
+    node = edge(nonEmpty(node.children))
+  ) {
+    depth += 1;
+  }
+
+  return depth;
+};
+
+export const closedEdges = ({
+  content,
+  openEnd,
+  openStart,
+}: ContentSlice): ClosedEdges => ({
+  end: edgeDepth(content, lastOf) - openEnd,
+  start: edgeDepth(content, firstOf) - openStart,
+});
+
+export const textTokens = (
+  fragment: readonly Descendant[],
+  closed: ClosedEdges,
+  kind: LandedKind
+) => {
   const tokens: string[] = [];
   const visit = (
     nodes: readonly Descendant[],
-    openStart: boolean,
-    openEnd: boolean
+    onStart: boolean,
+    onEnd: boolean
   ) => {
-    nodes.forEach((node, index) => {
-      const isFirst = index === 0;
-      const isLast = index === nodes.length - 1;
+    const list = nonEmpty(nodes);
 
+    list.forEach((node, index) => {
       if (NodeApi.isText(node)) {
-        if (node.text !== '') tokens.push(canonicalJsonKey(node));
+        tokens.push(canonicalJsonKey(node));
         return;
       }
 
-      const element = node;
-      const open = (openStart && isFirst) || (openEnd && isLast);
+      const atStart = onStart && index === 0;
+      const atEnd = onEnd && index === list.length - 1;
+      const open =
+        (atStart && edgeDepth([node], firstOf) > closed.start) ||
+        (atEnd && edgeDepth([node], lastOf) > closed.end);
 
       if (!open) {
-        const { children: _children, ...props } = element;
+        const { children: _children, ...props } = node;
 
         tokens.push(`<${canonicalJsonKey(props)}>`);
       }
-      visit(element.children, openStart && isFirst, openEnd && isLast);
+      if (kind(node) === 'void') {
+        for (const child of node.children) tokens.push(canonicalJsonKey(child));
+      } else {
+        visit(node.children, atStart, atEnd);
+      }
       if (!open) tokens.push('</>');
     });
   };
@@ -459,7 +502,12 @@ export type LandingExpectation =
       kind: 'nodes';
       roots: JsonValue['roots'];
     }>
-  | Readonly<{ content: readonly Descendant[]; kind: 'range-copy' }>
+  | Readonly<{
+      closed: ClosedEdges;
+      content: readonly Descendant[];
+      kind: 'range-copy';
+      landedKind: LandedKind;
+    }>
   | Readonly<{ kind: 'range-move'; moved: MovedPayload }>;
 
 export type DraftLanding = Readonly<{
@@ -537,8 +585,11 @@ export const landingHolds = (
 
   return expected.kind === 'range-move'
     ? landsMoved(landed, expected.moved, dropped)
-    : textTokens(copy ? copy.children(landed) : landed) ===
-        textTokens(expected.content);
+    : textTokens(
+        copy ? copy.children(landed) : landed,
+        expected.closed,
+        expected.landedKind
+      ) === textTokens(expected.content, expected.closed, expected.landedKind);
 };
 
 /**
@@ -581,8 +632,8 @@ export const rebaseLanding = (
 
   if (expected.kind === 'range-copy') {
     return {
+      ...expected,
       content: copy ? copy.children(started) : started,
-      kind: 'range-copy',
     };
   }
 

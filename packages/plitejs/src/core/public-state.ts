@@ -1409,9 +1409,21 @@ const trackLandedRange = (editor: Editor, range: Range) => {
   const snapshot = getDefined(getTransactionSnapshot(editor));
   const root = range.anchor.root ?? MAIN_ROOT_KEY;
   const index = snapshot.builder.getIndex(root);
+  const schema = getEditorSchema(editor);
+  // An edge inside a void tracks the void's outer edge, so the landing holds
+  // the whole void with its text, even after a later step rewrites it.
+  const edgeOf = (point: Point, side: 'from' | 'to') => {
+    const atVoid = PathApi.ancestors(point.path).find((at) => {
+      const node = index.find(at) as Descendant | undefined;
+
+      return !!node && schema.isVoid(node);
+    });
+
+    return atVoid ? index.nodeRange(atVoid)[side] : index.positionAt(point);
+  };
 
   return trackDraftSpans(snapshot, snapshot.builder, root, [
-    { from: index.positionAt(range.anchor), to: index.positionAt(range.focus) },
+    { from: edgeOf(range.anchor, 'from'), to: edgeOf(range.focus, 'to') },
   ]);
 };
 

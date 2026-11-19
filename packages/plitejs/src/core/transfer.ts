@@ -68,6 +68,7 @@ import { planPaste, writePaste } from './slice-landing';
 import {
   ancestorsAt,
   carryMove,
+  closedEdges,
   type CopyNormalizer,
   type DraftLanding,
   droppedKeysOf,
@@ -887,7 +888,12 @@ const runTransfer = (
         applyTransactionSpec(getEditorRuntimeOwner(editor), written.spec);
 
         const expected: LandingExpectation = copy
-          ? { content: written.written.content, kind: 'range-copy' }
+          ? {
+              closed: closedEdges(written.written),
+              content: written.written.content,
+              kind: 'range-copy',
+              landedKind,
+            }
           : {
               kind: 'range-move',
               moved:
@@ -943,10 +949,32 @@ const runTransfer = (
         const track = getAppliedSpecLanding(pasted.spec) ?? refuse('schema');
         const { builder } = getDefined(getTransactionSnapshot(runtime));
         const [span] = readDraftTrack(track, builder.value) ?? [];
+        const index = builder.getIndex(targetRoot);
+        const range = (span && trackedRange(index, span)) ?? refuse('schema');
+        const nodeAtPath = (path: Path) =>
+          index.find(path) as Descendant | undefined;
+        // An edge inside an inline void selects from the text beside it, which
+        // a recorder that rewrites the void keeps.
+        const beside = (edge: Point, step: -1 | 1): Point => {
+          const at = edge.path.slice(0, -1);
+          const node = nodeAtPath(at);
+          const behavior =
+            node &&
+            ElementApi.isElement(node) &&
+            schema.getElementBehavior(node);
+          const path = [...at.slice(0, -1), (at.at(-1) as number) + step];
+          const text =
+            behavior && behavior.void && behavior.inline && nodeAtPath(path);
 
-        landed =
-          (span && trackedRange(builder.getIndex(targetRoot), span)) ??
-          refuse('schema');
+          return text && NodeApi.isText(text)
+            ? { offset: step < 0 ? text.text.length : 0, path }
+            : edge;
+        };
+
+        landed = selectionRange(
+          beside(range.anchor, -1),
+          beside(range.focus, 1)
+        );
         draft.current = { expected: pasted.expected, track };
         hold(landed);
         if (select) tx.selection.set(landed);
