@@ -50,7 +50,7 @@ export const BaseBoardStrokePlugin = definePlugin(BOARD_STROKE_TYPE, {
       void: 'block',
     },
   },
-  update: ({ tx }) => ({
+  update: ({ schema: { type }, tx }) => ({
     /**
      * Add a line drawn through `points` above every shape of the board block
      * `board`, with the styles given and the default of each other style, and
@@ -98,7 +98,7 @@ export const BaseBoardStrokePlugin = definePlugin(BOARD_STROKE_TYPE, {
         appendBoardMember(
           tx,
           root,
-          tx.schema.create(BOARD_STROKE_TYPE, {
+          tx.schema.create(type, {
             ...definedProps(styles),
             place: placeAmong(boardFramesIn(shapes).values(), { place, size }),
             points: points.flatMap(([x, y, pressure]) => [
@@ -108,10 +108,7 @@ export const BaseBoardStrokePlugin = definePlugin(BOARD_STROKE_TYPE, {
             ]),
             shapeId,
             size,
-            zIndex: stackingKeyAboveLayer(
-              shapes,
-              boardLayerOf(BOARD_STROKE_TYPE)
-            ),
+            zIndex: stackingKeyAboveLayer(shapes, boardLayerOf(type)),
           })
         );
 

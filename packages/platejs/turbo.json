@@ -4762,9 +4762,12 @@
         "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:markdown",
+        "source-hash:partition:media",
         "source-hash:partition:react",
         "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:standard-link",
         "source-hash:partition:standard-list",
+        "source-hash:partition:upload",
         "source-hash:partition:yjs",
         "source-hash:partition:yjs-react"
       ],

@@ -5,6 +5,7 @@
 export * from './BaseBoardArrowPlugin';
 export * from './BaseBoardFramePlugin';
 export * from './BaseBoardGeoPlugin';
+export * from './BaseBoardImagePlugin';
 export * from './BaseBoardNotePlugin';
 export * from './BaseBoardPlugin';
 export * from './BaseBoardStrokePlugin';

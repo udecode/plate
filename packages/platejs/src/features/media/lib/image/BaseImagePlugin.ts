@@ -428,7 +428,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
       url: options.transformUrl?.(url) ?? url,
     }))
   )
-  .extend(({ store }) => ({
+  .extend(({ editor, store }) => ({
     commands: ({ around }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
         const text = input.getData('text/plain');
@@ -439,7 +439,8 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
         if (
           !store.get().disableEmbedInsert &&
           imageExtension &&
-          imageExtensions.has(imageExtension)
+          imageExtensions.has(imageExtension) &&
+          editor.api.dom.clipboard.readSlice(input).kind !== 'slice'
         ) {
           let inserted = false;
           const transaction = state.transaction((tx) => {

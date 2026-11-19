@@ -30,6 +30,7 @@ import { getResolvedPluginTargetBinding } from '../../../internal/plugin/compile
 import { BaseBoardArrowPlugin } from './BaseBoardArrowPlugin';
 import { BaseBoardFramePlugin } from './BaseBoardFramePlugin';
 import { BaseBoardGeoPlugin } from './BaseBoardGeoPlugin';
+import { BaseBoardImagePlugin } from './BaseBoardImagePlugin';
 import { BaseBoardNotePlugin } from './BaseBoardNotePlugin';
 import { BaseBoardStrokePlugin } from './BaseBoardStrokePlugin';
 import {
@@ -250,6 +251,7 @@ export const BaseBoardPlugin = definePlugin('board', {
   targetPlugins: [
     BaseBoardNotePlugin,
     BaseBoardGeoPlugin,
+    BaseBoardImagePlugin,
     BaseBoardArrowPlugin,
     BaseBoardFramePlugin,
     BaseBoardStrokePlugin,
@@ -1012,6 +1014,32 @@ export const BaseBoardPlugin = definePlugin('board', {
           };
         },
         match: [{ attributes: { 'data-board': 'stroke' }, tag: 'div' }],
+      },
+    }),
+  }))
+  .extend(({ defineFormats }) => ({
+    formats: defineFormats(BaseBoardImagePlugin, {
+      html: {
+        decode: ({ element, preserve }) => {
+          const shape = decodeBoardShapeAttributes(element);
+
+          if (!shape) return undefined;
+          preserve(...BOARD_SHAPE_ATTRIBUTES);
+
+          return shape;
+        },
+        encode: ({ node, preserve }) => {
+          preserve('place', 'size', 'zIndex');
+
+          return {
+            attributes: {
+              ...encodeBoardShapeAttributes(node),
+              'data-board': 'image',
+            },
+            tag: 'div',
+          };
+        },
+        match: [{ attributes: { 'data-board': 'image' }, tag: 'div' }],
       },
     }),
   }));

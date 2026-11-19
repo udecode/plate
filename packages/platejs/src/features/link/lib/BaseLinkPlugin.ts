@@ -695,11 +695,11 @@ const pasteAutolinkRule = (
         text
       );
 
-      if (url === undefined) return undefined;
-
+      if (url === undefined || editor.read.selection.nodes().length > 0) {
+        return undefined;
+      }
       if (
         editor.read.nodes.above({ at: selection, type: BaseLinkPlugin }) ||
-        editor.read.selection.nodes().length > 0 ||
         (editor.read.selection.isCollapsed() &&
           isUnfinishedLinkSource(context.getBlockTextBeforeSelection()))
       ) {
