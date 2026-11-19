@@ -3,7 +3,7 @@
 // cited proof is a path under <plans>/artifacts/.
 
 import { spawnSync } from 'node:child_process';
-import { closeSync, existsSync, lstatSync, openSync, readdirSync, readSync, realpathSync } from 'node:fs';
+import { closeSync, existsSync, lstatSync, openSync, readdirSync, readFileSync, readSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const GLOB = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
@@ -12,6 +12,86 @@ export const globMatcher = (globs = []) => {
   const patterns = globs.map((glob) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/gu, '\\$&').replace(/\*\*\/|\*\*|\*|\?/gu, (token) => GLOB[token])}$`, 'u'));
   return (path) => patterns.some((pattern) => pattern.test(path));
 };
+
+const STEP_EXCLUDE = ['**/*.test.*', '**/*.spec.*', '**/__tests__/**', '**/fixtures/**', '**/*.md', '**/*.mdx'];
+export const stepBudget = (config) => {
+  const { stepBudget: { lines = 400, exclude = [] } = {}, generated = [], plans = 'docs/plans' } = config;
+  if (!Number.isInteger(lines) || lines < 1) throw new Error(`.agents/pstack.json: stepBudget.lines is ${JSON.stringify(lines)}, not a whole number of 1 or more`);
+  return { lines, excluded: globMatcher([...STEP_EXCLUDE, `${plans}/**`, ...generated.flatMap((entry) => entry.paths ?? []), ...exclude]) };
+};
+export const BIG_STEP = /^big step:\s*\S/u;
+const LANDED_ROW = /^(?:step \S+ )?landed as \S/u;
+export const liftsStep = (text) =>
+  text.split('\n').reduce((lifted, line) => {
+    const [, phase, decision = ''] = line.split('\t');
+    if (phase === 'owner' && BIG_STEP.test(decision)) return true;
+    return LANDED_ROW.test(decision) ? false : lifted;
+  }, false);
+export const overBudget = (product, lines) =>
+  `changes ${product} product lines, past the step budget of ${lines}. Split the step into lettered steps that land one by one, such as step 4a and step 4b, each with its own diff round, or log an owner row whose decision starts "big step:" and quotes the owner`;
+
+const countLines = (path) => {
+  let text;
+  try {
+    text = readFileSync(path);
+  } catch {
+    return 0;
+  }
+  if (text.includes(0)) return 0;
+  const lines = text.toString('utf8').split('\n').length;
+  return text.at(-1) === 10 ? lines - 1 : lines;
+};
+
+const baseOf = (git, branch) => {
+  const ref = ['upstream', 'origin'].map((remote) => `${remote}/${branch}`).find((name) => git('rev-parse', '--verify', '--quiet', `${name}^{commit}`) !== null);
+  const sha = ref && git('merge-base', 'HEAD', ref);
+  return sha ? { ref, sha } : null;
+};
+const must = (output, what) => {
+  if (output === null) throw new Error(`git ${what} failed`);
+  return output.split('\0').filter(Boolean);
+};
+
+export function stepLines(top, config, gitAt) {
+  const { excluded } = stepBudget(config);
+  const git = (...args) => gitAt(top, ...args);
+  const base = baseOf(git, config.branch);
+  if (!base) return null;
+  const step = { product: 0, base: `${base.ref} at ${base.sha.slice(0, 10)}`, sha: base.sha.slice(0, 10), files: [] };
+  const fields = must(git('diff', '--numstat', '-z', base.sha), `diff --numstat ${base.sha} in ${top}`);
+  for (let at = 0; at < fields.length; at += 1) {
+    const [added, deleted, path] = fields[at].split('\t');
+    // A rename's numstat leaves the path empty and names the old and new paths in the next two fields.
+    const file = path === '' ? fields[(at += 2)] : path;
+    step.files.push(file);
+    if (added !== '-' && !excluded(file)) step.product += Number(added) + Number(deleted);
+  }
+  for (const file of must(git('ls-files', '--others', '--exclude-standard', '-z'), `ls-files --others in ${top}`)) {
+    step.files.push(file);
+    if (!excluded(file)) step.product += countLines(join(top, file));
+  }
+  return step;
+}
+
+const companionPlanFiles = (top, config, gitAt, plans) => {
+  const companion = (...args) => gitAt(top, `--git-dir=${join(top, config.companion.dir)}`, `--work-tree=${top}`, ...args);
+  const from = baseOf(companion, config.branch);
+  const changed = from ? must(companion('diff', '--name-only', '-z', from.sha), `diff --name-only through ${config.companion.dir} in ${top}`) : [];
+  return [...changed, ...must(companion('ls-files', '--others', '-z', '--', `:(glob)${plans}*`), `ls-files --others through ${config.companion.dir} in ${top}`)];
+};
+
+export function stepRecords(top, config, gitAt, files) {
+  const plans = `${config.plans || 'docs/plans'}/`;
+  const all = config.companion?.dir && existsSync(join(top, config.companion.dir)) ? [...files, ...companionPlanFiles(top, config, gitAt, plans)] : files;
+  const records = { logs: [], planned: false };
+  for (const file of all) {
+    const name = file.startsWith(plans) ? file.slice(plans.length) : '/';
+    if (name.includes('/')) continue;
+    if (name.endsWith('.decisions.tsv')) records.logs.push(join(top, file));
+    if (/^\d{4}-\d{2}-\d{2}-.+\.(?:md|decisions\.tsv)$/u.test(name)) records.planned = true;
+  }
+  return records;
+}
 
 const LANDED = ['done', 'complete', 'completed', 'shipped', 'executed', 'implemented', 'fixed', 'released', 'merged', 'verified', 'landed'];
 
