@@ -439,12 +439,27 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
     const pastedPictures = new Map<NodeKey, PastedPicture>();
     // Removing, retagging or cancelling a draft revokes its start for good, so
     // a history restore of the draft cannot bring the request back.
-    type PendingStart = { readonly kind: UploadKind; revoked: boolean };
+    type PendingStart = {
+      readonly admittedVersion: number;
+      readonly kind: UploadKind;
+      revoked: boolean;
+    };
+    type Admitted = Readonly<{ admittedVersion: number; kind: UploadKind }>;
     const pending = new Map<NodeKey, Set<PendingStart>>();
-    let cancelAllCount = 0;
+    let closed = () => true;
     const revokePending = (key: NodeKey) => {
       for (const start of pending.get(key) ?? []) start.revoked = true;
       pending.delete(key);
+    };
+    const releaseStart = (
+      key: NodeKey,
+      starts: Set<PendingStart>,
+      start: PendingStart
+    ) => {
+      starts.delete(start);
+      if (starts.size === 0 && pending.get(key) === starts) {
+        pending.delete(key);
+      }
     };
 
     const currentSlot = (key: NodeKey, kind?: UploadKind) => {
@@ -497,14 +512,6 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       configureAuthoredView(owner, authored);
       return owner;
     };
-    const cancelAll = () => {
-      const active = [...tasks.values()];
-      cancelAllCount += 1;
-      tasks.clear();
-      pastedPictures.clear();
-      active.forEach(({ controller }) => controller.abort());
-      if (Object.keys(store.get('tasks')).length > 0) store.set({ tasks: {} });
-    };
     const notifyFailure = (failure: UploadFailure) => {
       store.get('onError')?.(failure);
     };
@@ -515,6 +522,33 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         phase: 'after-commit',
         pluginName: PLUGINS.upload,
       });
+    };
+    const revokeWhere = (
+      matches: (key: NodeKey, work: Admitted) => boolean
+    ) => {
+      for (const [key, held] of pending) {
+        for (const start of held) {
+          if (!matches(key, start)) continue;
+          start.revoked = true;
+          releaseStart(key, held, start);
+        }
+      }
+      const stopped = [...tasks].filter(([key, task]) => matches(key, task));
+
+      for (const [key] of stopped) {
+        tasks.delete(key);
+        pastedPictures.delete(key);
+      }
+      for (const [, task] of stopped) task.controller.abort();
+      const current = store.get('tasks');
+      const gone = (Object.keys(current) as NodeKey[]).filter(
+        (key) => !tasks.has(key)
+      );
+
+      if (gone.length === 0) return;
+      const next = { ...current };
+      for (const key of gone) delete next[key];
+      store.set({ tasks: next });
     };
     const destination = (kind: UploadKind) => {
       const name =
@@ -630,6 +664,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       };
 
       void (async () => {
+        if (closed() || !owns()) return;
         let result: UploadOutcome;
 
         try {
@@ -790,20 +825,24 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         uploads: ReadonlyArray<PreparedUpload | PastedPicture>;
       }>
     ) => {
-      const cancelledBefore = cancelAllCount;
+      const admittedVersion = getSnapshotVersion(editor);
       let owner: typeof editor | undefined;
 
       for (const upload of admission.uploads) {
-        const start: PendingStart = { kind: upload.kind, revoked: false };
+        const start: PendingStart = {
+          admittedVersion,
+          kind: upload.kind,
+          revoked: false,
+        };
         const starts = pending.get(upload.key) ?? new Set();
         pending.set(upload.key, starts.add(start));
 
-        afterCommit(({ commit }) => {
-          // `on.commit` already counted this commit's own replacement.
-          const own = commit.annotations[documentReplacement.key] === true;
-          const revoked = () =>
-            start.revoked || cancelAllCount !== cancelledBefore + (own ? 1 : 0);
-          if (revoked()) return;
+        afterCommit(() => {
+          const revoked = () => start.revoked || closed();
+          if (revoked()) {
+            releaseStart(upload.key, starts, start);
+            return;
+          }
           // The newest file for a slot wins, so an older start still waiting
           // for its commit stops here.
           for (const older of starts) {
@@ -818,20 +857,26 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             admission.getUrl,
             owner,
             revoked,
-            commit.version
+            admittedVersion
           );
-          starts.delete(start);
-          if (starts.size === 0 && pending.get(upload.key) === starts) {
-            pending.delete(upload.key);
-          }
+          releaseStart(upload.key, starts, start);
         });
       }
     };
 
     return {
-      activate({ beforePublish, onCleanup }) {
+      activate({ acquire, beforePublish, onCleanup }) {
+        let taken = false;
+
+        acquire(() => {
+          taken = true;
+          return () => {
+            taken = false;
+          };
+        });
+        closed = () => !taken;
         beforePublish(() => validateConfiguration(store.get()));
-        onCleanup(cancelAll);
+        onCleanup(() => revokeWhere(() => true));
       },
       api: () => ({
         cancel: (key: NodeKey) => {
@@ -872,6 +917,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           };
 
           if (
+            closed() ||
             !client ||
             !getUrl ||
             !pictureType ||
@@ -1057,40 +1103,22 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       ],
       on: {
         commit({ commit }) {
-          if (commit.annotations[documentReplacement.key] === true) {
-            cancelAll();
-            return;
-          }
-          if (!commit.changed.hasAny('document')) return;
+          const replaces = commit.annotations[documentReplacement.key] === true;
+          if (!replaces && !commit.changed.hasAny('document')) return;
 
           const isLatest = commit.version >= getSnapshotVersion(editor);
-          const survives = (
-            key: NodeKey,
-            kind: UploadKind,
-            admittedVersion?: number
-          ) => {
-            if (!currentSlot(key, kind)) return false;
 
-            const admittedSinceCommit =
-              admittedVersion !== undefined &&
-              admittedVersion >= commit.version;
-
-            return isLatest || admittedSinceCommit || slotIn(commit, key, kind);
-          };
-
-          for (const [key, task] of tasks) {
-            if (!survives(key, task.kind, task.admittedVersion)) {
-              cancel(key, task);
+          revokeWhere((key, { admittedVersion, kind }) => {
+            if (admittedVersion >= commit.version) return false;
+            if (replaces && admittedVersion < commit.previousVersion) {
+              return true;
             }
-          }
-          for (const [key, starts] of pending) {
-            for (const start of starts) {
-              if (survives(key, start.kind)) continue;
-              start.revoked = true;
-              starts.delete(start);
-            }
-            if (starts.size === 0) pending.delete(key);
-          }
+
+            return !(
+              currentSlot(key, kind) &&
+              (isLatest || slotIn(commit, key, kind))
+            );
+          });
         },
       },
       update: ({ context: { afterCommit }, editor: updateEditor, tx }) => ({
@@ -1115,6 +1143,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             const authored = readAuthoredView(writer);
 
             if (
+              closed() ||
               files.length === 0 ||
               updateEditor.read.view.isReadOnly() ||
               (authored && 'preview' in authored)
