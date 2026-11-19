@@ -83,9 +83,14 @@ export type RangeGeometryOwner = Readonly<{
   activate: () => () => void;
   getServerSnapshot: () => null;
   getSnapshot: () => RangeGeometry | null;
+  readArea: () => ViewportRect | null;
   refresh: () => void;
   subscribe: (listener: () => void) => () => void;
 }>;
+
+type EdgeBox = Readonly<
+  Pick<ViewportRect, 'bottom' | 'left' | 'right' | 'top'>
+>;
 
 const toViewportRect = (rect: DOMRect | DOMRectReadOnly): ViewportRect =>
   Object.freeze({
@@ -176,7 +181,7 @@ const isOutside = (
   return end <= clipStart || start >= clipEnd;
 };
 
-const cutRect = (rect: ViewportRect, clip: ViewportRect) =>
+const cutRect = (rect: EdgeBox, clip: ViewportRect) =>
   isOutside(rect.top, rect.bottom, clip.top, clip.bottom) ||
   isOutside(rect.left, rect.right, clip.left, clip.right)
     ? null
@@ -187,13 +192,23 @@ const cutRect = (rect: ViewportRect, clip: ViewportRect) =>
         Math.min(rect.bottom, clip.bottom)
       );
 
+export const cutRects = (rects: Iterable<EdgeBox>, clip: ViewportRect) => {
+  const visible: ViewportRect[] = [];
+
+  for (const rect of rects) {
+    const cut = cutRect(rect, clip);
+
+    if (cut) visible.push(cut);
+  }
+
+  return visible;
+};
+
 const withClip = (
   range: RangeRects,
   clipRect: ViewportRect | null
 ): RangeGeometry => {
-  const rects = clipRect
-    ? range.rects.flatMap((rect) => cutRect(rect, clipRect) ?? [])
-    : [];
+  const rects = clipRect ? cutRects(range.rects, clipRect) : [];
   const focusRect =
     clipRect && range.focusRect ? cutRect(range.focusRect, clipRect) : null;
   const boundingRect = unionRects(rects) ?? focusRect;
@@ -857,6 +872,19 @@ export function createRangeGeometryOwner(
     },
     getServerSnapshot: () => null,
     getSnapshot: () => snapshot,
+    readArea() {
+      const target = editableRef.current;
+
+      if (!target?.isConnected) return null;
+      if (activeLeases === 0) {
+        return resolveViewEditor(editor, target)
+          ? readVisibleArea(target, walkClipChain(target, { self: true }))
+          : null;
+      }
+      if (target !== editable) syncBinding();
+
+      return coordinator ? coordinator.readArea(target) : null;
+    },
     refresh,
     subscribe(listener) {
       listeners.add(listener);

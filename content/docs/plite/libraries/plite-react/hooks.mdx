@@ -509,6 +509,19 @@ caret's paint to `clipRect` with `clip-path`, or place it with
 `position: absolute`, offset by `clipRect`'s top-left corner, inside a box at
 `clipRect` that clips its overflow.
 
+#### `useEditableClip({ editableRef }): (rects) => readonly ViewportRect[]`
+
+Cut boxes your UI measured itself, such as the lines a popover anchors to, to
+the Editable's `clipRect` by the rule of `visible`. The function returns `[]`
+when no part of the boxes shows, and stays the same across renders. Call it
+while measuring. Cuts made before the next `await` share one read of the
+visible area.
+
+```tsx
+const clip = useEditableClip({ editableRef });
+const hidden = clip(element.getClientRects()).length === 0;
+```
+
 ## Selector results
 
 A selector hook runs its selector again after each commit it listens to. When

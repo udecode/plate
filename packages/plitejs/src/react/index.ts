@@ -139,6 +139,10 @@ export {
 } from './hooks/use-plite-content-root';
 export { type UseEditorOptions, useEditor } from './hooks/use-editor';
 export { useDropIndicator } from './hooks/use-drop-indicator';
+export {
+  type UseEditableClipOptions,
+  useEditableClip,
+} from './hooks/use-editable-clip';
 export { useClaimEditableDOMCommit } from './hooks/use-claim-editable-dom-commit';
 export {
   type DOMTextSyncRendererCapabilityContext,

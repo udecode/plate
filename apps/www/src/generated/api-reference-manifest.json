@@ -28018,6 +28018,28 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:useEditableClip": {
+          "aliases": [],
+          "documentation": "Cuts viewport boxes to `RangeGeometry.clipRect` of one Editable, with the\nedge rule of `RangeGeometry.visible`. Returns [] when no part shows or no\nEditable is mounted. It reads layout, so call it where you measure. The\nreturned function is stable.",
+          "entrypoint": "platejs/react",
+          "kind": "function",
+          "name": "useEditableClip",
+          "runtime": true,
+          "signature": "declare function useEditableClip({ editableRef }: UseEditableClipOptions): EditableClip;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/react:UseEditableClipOptions": {
+          "aliases": [],
+          "documentation": "Identifies the exact mounted Editable whose visible part cuts the boxes.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "UseEditableClipOptions",
+          "runtime": false,
+          "signature": "type UseEditableClipOptions = Readonly<{\n  editableRef: RefObject<HTMLElement | null>;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/react:useEditableRef": {
           "aliases": [],
           "documentation": "Get the selected view's Editable ref; its value is null before mount. Inside\n`EditorSelectionView` it is the Editable of the view holding the selection.",

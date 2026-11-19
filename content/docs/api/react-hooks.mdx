@@ -559,6 +559,23 @@ stylesheet change starts or stops clipping, or a box around the
 `EditorContent` moves to another parent, the geometry shows it at its next
 update.
 
+#### `useEditableClip({ editableRef }): (rects) => readonly ViewportRect[]`
+
+Cut boxes your UI measured itself, such as the lines a popover anchors to, to
+the `clipRect` of one mounted `EditorContent`, by the rule of `visible`. It
+returns `[]` when no part of the boxes shows or the ref is unmounted. Call the
+function while measuring, such as inside a virtual anchor's
+`getBoundingClientRect`. The function is stable.
+
+```tsx
+const clip = useEditableClip({ editableRef });
+const lines = clip(element.getClientRects());
+const hidden = lines.length === 0;
+```
+
+Cuts made before the next `await` share one read of the visible area, and the
+hook reads no layout until you cut.
+
 ## Selector results
 
 A selector hook runs its selector again when the state it reads changes. When
