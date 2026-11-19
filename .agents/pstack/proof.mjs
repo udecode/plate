@@ -10,8 +10,8 @@
 // seconds and a longer one is refused. A run its timeout stopped logs that
 // before `exit=ETIMEDOUT`, whatever the command returned, and stops every
 // process still in the command's process group. On macOS it stops a command
-// the same way once the command's processes use more than a quarter of the
-// machine's memory, or more than a tenth while under 8% of memory is free, and
+// the same way once the command's processes use more than half of the
+// machine's memory, or more than a tenth while under 15% of memory is free, and
 // logs the largest processes before `exit=EMEMORY`. It refuses a run whose last
 // attempt logged no exit and ran before the machine last started, unless
 // --force, because that attempt may have taken the machine down.
@@ -253,10 +253,7 @@ export const TIME_BUDGET_SECONDS = 3600;
 const SUPERVISE_GROUP = '--supervise-group';
 const KILL_GRACE_MS = 5000;
 
-const MEMORY_SHARE = 0.25;
-// While the machine runs short, the lower limit stops its large commands and
-// keeps its small ones running.
-const SHORT_FREE = 0.08;
+const MEMORY_SHARE = 0.5;
 const SHORT_MEMORY_SHARE = 0.1;
 // ps reads resident memory, which leaves out compressed and swapped pages.
 // footprint counts them as the kernel's memory pressure does, so the watch
@@ -331,7 +328,7 @@ export function watchMemory(pid, { group = false, stopped }) {
       for (const entry of found) entry.bytes = exact.get(entry.pid) ?? entry.bytes;
     }
     const used = found.reduce((sum, entry) => sum + entry.bytes, 0);
-    const short = free < SHORT_FREE;
+    const short = free < MIN_FREE_MEMORY;
     const limit = total * (short ? SHORT_MEMORY_SHARE : MEMORY_SHARE);
     if (used <= limit) return;
     clearInterval(timer);
