@@ -1667,6 +1667,22 @@ type PlainDraft = Readonly<{
 const nodeKind = (node: object) =>
   'children' in node ? (node as { type?: unknown }).type : null;
 
+const KEYS_READ = new WeakMap<TransactionSnapshot, Set<NodeKey>>();
+
+const noteKeyRead = (editor: Editor, key: NodeKey) => {
+  for (const { snapshot } of TRANSACTION_SPEC_CONTEXTS.get(
+    getEditorRuntimeOwner(editor)
+  ) ?? []) {
+    const read = KEYS_READ.get(snapshot);
+
+    if (read) read.add(key);
+    else KEYS_READ.set(snapshot, new Set([key]));
+  }
+};
+
+export const keysReadIn = (snapshot: TransactionSnapshot) =>
+  KEYS_READ.get(snapshot) ?? new Set<NodeKey>();
+
 /**
  * Binds each node the plain draft inserted to its draft key in the recorded
  * draft, where the recorder kept that node's open token, so a key read while
@@ -1674,15 +1690,16 @@ const nodeKind = (node: object) =>
  * the draft took over from a node it removed stays with the stored node, which
  * the recorder may keep, struck.
  */
-const carryDraftNodeKeys = (
+export const carryDraftNodeKeys = (
   editor: Editor,
   snapshot: TransactionSnapshot,
   recorded: RecordedDraft,
-  plain: PlainDraft
+  plain: PlainDraft,
+  only?: ReadonlySet<NodeKey>
 ) => {
   const { indexedAfter, mapPosition } = recorded;
 
-  if (!indexedAfter || !mapPosition) return;
+  if (!indexedAfter || !mapPosition || only?.size === 0) return;
   const written = snapshot.builder.value as EditorDocumentValue;
   const carried: Array<
     Readonly<{ key: NodeKey; node: object; position: number; root: string }>
@@ -1703,7 +1720,7 @@ const carryDraftNodeKeys = (
         draft ??= retainTransactionSnapshotIndex(editor, snapshot, root);
         const key = draft.keyAt(entry.path);
 
-        if (key) {
+        if (key && (!only || only.has(key))) {
           carried.push({
             key,
             node: after.node(entry.path),
@@ -6761,15 +6778,17 @@ const getStateView = <
     function getStateNodeKey(node: Descendant): NodeKey;
     function getStateNodeKey(at: Location): NodeKey | null;
     function getStateNodeKey(target: Descendant | Location): NodeKey | null {
-      if (NodeApi.isDescendant(target)) {
-        return getEditorNodeKeyForNode(editor, target);
-      }
+      const key = NodeApi.isDescendant(target)
+        ? getEditorNodeKeyForNode(editor, target)
+        : withLocationRootRead(editor, target, () => {
+            const path = readNodePath(editor, target);
 
-      return withLocationRootRead(editor, target, () => {
-        const path = readNodePath(editor, target);
+            return path ? getNodeKey(editor, path) : null;
+          });
 
-        return path ? getNodeKey(editor, path) : null;
-      });
+      if (key) noteKeyRead(editor, key);
+
+      return key;
     }
 
     const coreState = {

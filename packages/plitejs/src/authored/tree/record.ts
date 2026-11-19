@@ -5260,6 +5260,15 @@ class RootRecorder {
     return sections;
   }
 
+  private insertionStartingAt(position: number) {
+    return this.pieces.find(
+      (piece): piece is Extract<Piece, { kind: 'inserted' }> =>
+        piece.kind === 'inserted' &&
+        piece.afterFrom === position &&
+        piece.afterTo > position
+    );
+  }
+
   private mapPosition(
     recorded: RootChange,
     position: number,
@@ -5287,6 +5296,17 @@ class RootRecorder {
       ) {
         removed = piece;
       }
+    }
+    const replacing =
+      removed && !caret && assoc === 1
+        ? this.insertionStartingAt(position)
+        : undefined;
+
+    if (replacing) {
+      return (
+        (recorded.mapPos(replacing.at, -1) ?? position) +
+        (replacing.offsets[0] ?? 0)
+      );
     }
     for (const piece of this.pieces) {
       if (piece.kind === 'removed') continue;

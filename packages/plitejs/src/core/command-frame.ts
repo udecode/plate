@@ -59,7 +59,9 @@ import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
   assertRootPlaced,
+  carryDraftNodeKeys,
   commitRecordedDraft,
+  keysReadIn,
   type DraftRun,
   draftRunsOf,
   createEditorDocumentChangeBuilder,
@@ -1181,6 +1183,13 @@ export const runInEditorCommandFrame = (
         if (!recorded) {
           throw new Error('A command frame needs a recorder that records it.');
         }
+        carryDraftNodeKeys(
+          editor,
+          snapshot,
+          recorded,
+          { before: projected.value, change: wrote },
+          keysReadIn(snapshot)
+        );
         letters = snapshot.builder.newLetters;
 
         const converted = recordedCarets(framed, recorded);

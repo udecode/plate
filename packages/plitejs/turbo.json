@@ -1066,6 +1066,7 @@
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
         "$TURBO_ROOT$/tooling/config/vitest-load-trace.mjs",
         "$TURBO_ROOT$/tsconfig.json",
+        "test/support/authored.ts",
         "test/support/schema.ts",
         "test/yjs/support/collaboration.ts",
         "test/yjs/support/provider.ts",
