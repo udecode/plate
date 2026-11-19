@@ -15,6 +15,9 @@
     "FAST_CHECK_SEED=random"
   ],
   "maxEffort": "xhigh",
+  "stepBudget": {
+    "exclude": ["apps/www/src/generated/**", "apps/www/src/registry/changelog/*.json"]
+  },
   "planBoxes": {
     "2026-10-08-authored-review.md": {
       "max": 32,
