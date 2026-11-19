@@ -246,12 +246,24 @@ export type SchemaElementPropertyOptions<TValue = unknown> = Readonly<{
    * read the value back from the landed node. A peer's concurrent repair can
    * change it again. Requires a generator that never repeats a value, an
    * exact key, a value other than a set, the `metadata` role, a target that
-   * holds wherever its types stand and on every type that can take a held
-   * type's place, so no retype drops the value, `landing: 'preserve'` and
-   * `typeChange: 'preserve-if-allowed'`. Sets `copy` and `split` to `drop`.
-   * The key takes no other element declaration, since every holder's fresh
-   * value comes from this one's generator.
-   * Suggesting writes the value in place, with no suggestion.
+   * holds wherever its types stand, `landing: 'preserve'` and
+   * `typeChange: 'preserve-if-allowed'`. Where the target holds on a type that
+   * is not a void, it holds on every type that can take that type's place, so
+   * a retype keeps the value. A void may hold it alone: a retype between a
+   * type that holds it and one that does not replaces the element. Editing
+   * drops the value and undo brings it back; Suggesting records a deletion and
+   * an insertion, so a rejection keeps the element and its value. Where the
+   * two cannot stand side by side, such as in a slot at its maximum or under
+   * one exclusive content root, Suggesting refuses the retype and changes
+   * nothing. A format tag that a writer without this rule saved for such a
+   * retype holds no value, so rejecting a tag that dropped the value returns
+   * `invalid`. Only a holder of a declared type keeps its value this way; an
+   * undeclared type that `unknown: 'preserve'` keeps does not. Sets `copy` and
+   * `split` to `drop`. The key takes no other element declaration, since every
+   * holder's fresh value comes from this one's generator.
+   * Suggesting writes the value in place, with no suggestion, except that a
+   * suggested split that drops the value parks it in the split's history,
+   * where no element holds it until someone decides.
    */
   unique?: true;
 }>;

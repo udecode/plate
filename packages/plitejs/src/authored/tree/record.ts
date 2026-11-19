@@ -44,6 +44,7 @@ import type {
 import type { ResolvedTokenEntry } from '../../core/resolved-token-cursor';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import type { GridRoles } from '../../core/survival';
+import { countCoreWork } from '../../core/work';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
@@ -136,6 +137,11 @@ export type AuthoredRecordInput = Readonly<{
     root: string
   ) => (key: string, value: unknown) => boolean;
   joinCompares: (key: string) => boolean;
+  /**
+   * The most children the content of the element `type` names, or of the
+   * root when it is null, admits, or null when it admits any number.
+   */
+  maxChildren: (type: string | null, root: string) => number | null;
   now: number;
   /** Element types that hold exactly one text, which marks must not split. */
   oneText?: (type: string) => boolean;
@@ -164,6 +170,12 @@ export type AuthoredRecordInput = Readonly<{
     position: number;
     root: string;
   }> | null;
+  /**
+   * Whether one of the types holds a unique key the other does not, so a
+   * retype between them records as a replacement of the element.
+   */
+  crossesUnique: (from: string, to: string) => boolean;
+  holdsUnique: (type: string, key: string) => boolean;
   standing: Standing;
   steps: readonly DraftStep[];
   commitWriteId: () => string;
@@ -1636,6 +1648,22 @@ export const recordAuthoredSteps = (
     fold.composed = fold.composed ? fold.composed.compose(change) : change;
   };
 
+  // Editing drops a unique value a retype cannot keep, as a plain editor does,
+  // so only Suggesting replaces an element whose retype crosses a unique target.
+  const replaces = (from: Props, to: Props) =>
+    (!isEditingChange(changeId) &&
+      typeof from.type === 'string' &&
+      typeof to.type === 'string' &&
+      from.type !== to.type &&
+      input.crossesUnique(from.type, to.type)) ||
+    (input.followed.size > 0 &&
+      ownedRootsOf(from).some(
+        ({ root }) =>
+          input.followed.has(root) &&
+          !ownedRootsOf(to).some((kept) => kept.root === root)
+      ));
+  const loweredRoots = new Set<string>();
+
   const stepChanges = input.steps.map((step) => ({
     changes: [...getInternalDocumentChangeEntries(step.change)].flatMap(
       ([root, written]) => {
@@ -1646,15 +1674,25 @@ export const recordAuthoredSteps = (
           step.origin === 'slice'
             ? written.alignOpens(plain, bothUnclaimed)
             : written;
+        const starts = new Set<number>();
 
-        const rootChange =
-          input.followed.size > 0
-            ? strikeRetyped(aligned, plain, input.followed, ownedRootsOf, () =>
-                doubledIn(root)
-              )
-            : aligned;
-
-        return [[root, rootChange] as const];
+        return [
+          [
+            root,
+            replaceRetyped(
+              aligned,
+              plain,
+              replaces,
+              ownedRootsOf,
+              () => doubledIn(root),
+              (start) => {
+                loweredRoots.add(root);
+                starts.add(start);
+              }
+            ),
+            starts,
+          ] as const,
+        ];
       }
     ),
     step,
@@ -1741,7 +1779,7 @@ export const recordAuthoredSteps = (
   let writesOther = false;
 
   for (const { changes, step } of stepChanges) {
-    for (const [root, rootChange] of changes) {
+    for (const [root, rootChange, retypedStarts] of changes) {
       const fold = foldOf(root);
 
       // The review draft runs its own canonical pass, so canonical
@@ -1938,6 +1976,7 @@ export const recordAuthoredSteps = (
                 ? input.selectionBefore.position
                 : null,
             source: step.source,
+            holdsUnique: input.holdsUnique,
             unique: input.unique,
           }).record(groups);
 
@@ -1964,6 +2003,21 @@ export const recordAuthoredSteps = (
         fold.breaks = advanceBreaks(fold.breaks, sub.change, recorded);
         fold.map = (position, assoc, caret) =>
           mapRecorded(afterMap(position, assoc, caret), assoc, caret);
+      }
+      if (retypedStarts.size > 0) {
+        const mapped = fold.map;
+
+        // The plain step kept a retyped node in place, so a point at its start
+        // is the start of its new form, not a point beside the content the
+        // replacement strikes.
+        fold.map = (position, assoc, caret) =>
+          mapped(
+            position,
+            assoc,
+            caret !== true && assoc === 1 && retypedStarts.has(position)
+              ? false
+              : caret
+          );
       }
     }
   }
@@ -1999,6 +2053,35 @@ export const recordAuthoredSteps = (
     };
 
     count(getDefined(folds.get(root)).index.value);
+  }
+
+  if (!isEditingChange(changeId)) {
+    const inline = (node: JsonNode | undefined) =>
+      node?.children !== undefined && input.isInline(propsOf(node));
+
+    for (const root of loweredRoots) {
+      const fits = (type: string | null, nodes: readonly JsonNode[]) => {
+        const max = input.maxChildren(type, root);
+        const missingTexts =
+          nodes.filter(
+            (node, index) =>
+              inline(node) && (index === 0 || inline(nodes[index - 1]))
+          ).length + (inline(nodes.at(-1)) ? 1 : 0);
+
+        if (max !== null && nodes.length + missingTexts > max) {
+          throw unrepresentable(
+            'Suggesting cannot keep an element beside the element that replaces it where their content admits no more children.'
+          );
+        }
+        for (const node of nodes) {
+          if (node.children !== undefined && typeof node.type === 'string') {
+            fits(node.type, node.children);
+          }
+        }
+      };
+
+      fits(null, getDefined(folds.get(root)).index.value);
+    }
   }
 
   const changes = new Map<string, RootChange>();
@@ -2061,14 +2144,22 @@ const exclusiveRootsIn = (
   return roots;
 };
 
-const strikeRetyped = (
+/**
+ * A retype the review marks cannot hold as a format change, lowered to a
+ * replacement of the node: one whose old and new properties `replaces`, such
+ * as a retype that drops a followed root the node owned or one that crosses a
+ * unique target. Each step lowers against the plain draft it wrote on, so a
+ * later retype of the node replaces the replacement an earlier one inserted.
+ */
+const replaceRetyped = (
   change: RootChange,
   before: DocumentIndex,
-  followed: ReadonlySet<string>,
+  replaces: (from: Props, to: Props) => boolean,
   ownedRoots: (props: Props) => readonly OwnedRoot[],
-  doubled: () => Set<string>
+  doubled: () => Set<string>,
+  lowered: (start: number) => void
 ): RootChange => {
-  const after = change.apply(before);
+  let after: DocumentIndex | null = null;
   const replaced: RootChangeSection[] = [];
   let at = 0;
   let covered = 0;
@@ -2080,40 +2171,47 @@ const strikeRetyped = (
       at += length;
       continue;
     }
+    const modifications = change.data[pair] as readonly PropertyModification[];
+
     for (let offset = 0; offset < length; offset += 1) {
       const from = before.nodeStartingAt(at + offset);
+
+      if (!from) continue;
+      const node = before.node(from.path);
+      const props = propsOf(node);
+
+      if (!replaces(props, applyPropertyModifications(props, modifications))) {
+        continue;
+      }
+      if (!after) {
+        countCoreWork('retypeLoweringApplies');
+        after = change.apply(before);
+      }
       const mapped = change.mapPos(at + offset, 1);
       const to = mapped === null ? null : after.nodeStartingAt(mapped);
 
-      if (!from || !to) continue;
-      const kept = new Set(
-        ownedRoots(propsOf(after.node(to.path))).map(({ root }) => root)
-      );
+      if (!to) continue;
       const range = after.nodeRange(to.path);
 
-      if (
-        range.from >= covered &&
-        ownedRoots(propsOf(before.node(from.path))).some(
-          ({ root }) => followed.has(root) && !kept.has(root)
-        )
-      ) {
-        const struck = exclusiveRootsIn(before.node(from.path), ownedRoots);
+      if (range.from < covered) continue;
+      const struck = exclusiveRootsIn(node, ownedRoots);
 
-        for (const root of exclusiveRootsIn(after.node(to.path), ownedRoots)) {
-          if (struck.has(root)) doubled().add(root);
-        }
-        replaced.push({
-          from: range.from,
-          insert: after.slice(range.from, range.to),
-          to: range.to,
-        });
-        covered = range.to;
+      for (const root of exclusiveRootsIn(after.node(to.path), ownedRoots)) {
+        if (struck.has(root)) doubled().add(root);
       }
+      countCoreWork('retypeLowerings');
+      lowered(range.from);
+      replaced.push({
+        from: range.from,
+        insert: after.slice(range.from, range.to),
+        to: range.to,
+      });
+      covered = range.to;
     }
     at += length;
   }
 
-  return replaced.length === 0
+  return after === null || replaced.length === 0
     ? change
     : change.compose(RootChange.create(after, replaced));
 };
@@ -2135,6 +2233,7 @@ type RecorderOptions = Readonly<{
   frameIndex: DocumentIndex | null;
   framed: boolean;
   holdsGridParts: (node: JsonNode) => boolean;
+  holdsUnique: (type: string, key: string) => boolean;
   holdsWithdrawal: (props: Props) => boolean;
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
@@ -3390,11 +3489,16 @@ class RootRecorder {
       if (formatted.length === keys.length) return null;
 
       const inPlace = { ...previous };
+      const retyped = previous.type !== next.type;
+      const typeHolds = (props: Props, key: string) =>
+        typeof props.type === 'string' &&
+        this.options.holdsUnique(props.type, key);
 
       for (const key of keys) {
         if (!unique?.has(key)) continue;
-        if (Object.hasOwn(next, key)) inPlace[key] = next[key];
-        else delete inPlace[key];
+        if (Object.hasOwn(next, key)) {
+          if (!retyped || typeHolds(previous, key)) inPlace[key] = next[key];
+        } else if (!retyped || typeHolds(next, key)) delete inPlace[key];
       }
 
       return this.withMarks(inPlace, marks);

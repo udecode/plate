@@ -97,7 +97,12 @@ import {
   orphanedValueRoots,
   rootsDeletedByName,
 } from '../core/root-ownership';
-import { tracksPlaces, uniquePropertiesOf } from '../core/schema-compiler';
+import {
+  crossesUniqueTarget,
+  holdsUniqueKey,
+  tracksPlaces,
+  uniquePropertiesOf,
+} from '../core/schema-compiler';
 import { gridHoldersOf, gridRolesOf } from '../core/survival';
 import {
   type TxDeclaredMethod,
@@ -2244,6 +2249,9 @@ export const createAuthoredPlugin = (
                 : null,
             createRoots,
             createTagId,
+            crossesUnique: (from, to) =>
+              crossesUniqueTarget(compiled, from, to),
+            holdsUnique: (type, key) => holdsUniqueKey(compiled, type, key),
             deleteRoots: byName,
             dependencies,
             fill: (site, root) =>
@@ -2297,6 +2305,8 @@ export const createAuthoredPlugin = (
               ),
             joinCompares: (key) =>
               joinCompares(getCompiledEditorSchema(editor), key),
+            maxChildren: (type, root) =>
+              authoredResolveSchemaOf(editor).content(type, root)?.max ?? null,
             now: at,
             oneText,
             ownedRoots: (props) => {

@@ -30,6 +30,7 @@ import { jsonEqual } from './change/json';
 import { cloneFrozen } from './clone';
 import { readSchemaIdentity } from './document-shape';
 import { profileCoreDuration } from './profiling';
+import { countCoreWork } from './work';
 
 const BUILT_IN_GROUPS = [
   'all',
@@ -5391,7 +5392,11 @@ const compileEditorSchemaInternal = (
 
   for (const property of mutableProperties) {
     const refusal = property.lifecycle.unique
-      ? retypeDropOf({ elements, unknown: unknownPolicy }, property)
+      ? retypeDropOf(
+          { elements, unknown: unknownPolicy },
+          property,
+          (type) => !compiledElements.get(type)?.behavior.void
+        )
       : null;
 
     if (refusal) {
@@ -5960,16 +5965,17 @@ const contentPlaceOf = (programId: string) => {
  * null when it meets them all: metadata under an exact key whose target holds
  * wherever its types stand and on every type that can take a held type's
  * place. A retype keeps a node's place, so each content, a root's included,
- * that admits a held type admits only held types, counting an undeclared type
- * wherever the schema preserves one, and an undeclared element admits every
- * type.
+ * that admits a held type that `binds` admits only held types, counting an
+ * undeclared type wherever the schema preserves one, and an undeclared element
+ * admits every type.
  */
 const retypeDropOf = (
   schema: Pick<CompiledEditorSchema, 'elements' | 'unknown'>,
   property: Pick<
     CompiledSchemaProperty,
     'key' | 'placement' | 'role' | 'target'
-  >
+  >,
+  binds: (type: string) => boolean = () => true
 ) => {
   if (
     property.placement !== 'element' ||
@@ -6003,7 +6009,7 @@ const retypeDropOf = (
     ]);
   }
   for (const [place, types] of places) {
-    const held = types.find(holds);
+    const held = types.find((type) => holds(type) && binds(type));
     const missed = types.find((type) => !holds(type));
 
     if (held !== undefined && missed !== undefined) {
@@ -6096,6 +6102,67 @@ export const uniquePropertiesOf = (schema: CompiledEditorSchema) => {
   }
 
   return byKey;
+};
+
+const UNIQUE_CROSSINGS = new WeakMap<
+  CompiledEditorSchema,
+  Map<string, boolean>
+>();
+
+/**
+ * Whether one of the types `from` and `to` holds a unique key the other does
+ * not, so a retype between them replaces the element the value names.
+ */
+export const crossesUniqueTarget = (
+  schema: CompiledEditorSchema,
+  from: string,
+  to: string
+) => {
+  let crossings = UNIQUE_CROSSINGS.get(schema);
+
+  if (!crossings) {
+    crossings = new Map();
+    UNIQUE_CROSSINGS.set(schema, crossings);
+  }
+
+  const pair = JSON.stringify([from, to]);
+  let crosses = crossings.get(pair);
+
+  if (crosses === undefined) {
+    crosses = false;
+    for (const property of uniquePropertiesOf(schema).values()) {
+      countCoreWork('uniqueCrossingChecks');
+      if (
+        matchesCompiledSchemaTarget(schema, property.target, {
+          root: null,
+          type: from,
+        }) !==
+        matchesCompiledSchemaTarget(schema, property.target, {
+          root: null,
+          type: to,
+        })
+      ) {
+        crosses = true;
+        break;
+      }
+    }
+    crossings.set(pair, crosses);
+  }
+
+  return crosses;
+};
+
+export const holdsUniqueKey = (
+  schema: CompiledEditorSchema,
+  type: string,
+  key: string
+) => {
+  const property = uniquePropertiesOf(schema).get(key);
+
+  return (
+    property !== undefined &&
+    matchesCompiledSchemaTarget(schema, property.target, { root: null, type })
+  );
 };
 
 const storageRevisionOf = (

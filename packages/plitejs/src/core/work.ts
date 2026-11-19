@@ -166,6 +166,12 @@ export type CoreWork = {
   recordTexts: number;
   /** Changed lines a Yjs import diffed by value, since the letters could not place them. */
   yjsValueDiffLines: number;
+  /** Retypes the authored recorder lowered to a replacement of the node. */
+  retypeLowerings: number;
+  /** Changes the authored recorder applied to lower a retype to a replacement. */
+  retypeLoweringApplies: number;
+  /** Unique properties read to judge whether a retype crosses a unique target. */
+  uniqueCrossingChecks: number;
   /** Changed nodes a commit read to move the index of unique values. */
   uniqueHolderReads: number;
   /** Elements the index of unique values was built from. */
@@ -278,6 +284,9 @@ export const coreWork: CoreWork = {
   yjsMarkRecordsVisited: 0,
   recordTexts: 0,
   yjsValueDiffLines: 0,
+  retypeLowerings: 0,
+  retypeLoweringApplies: 0,
+  uniqueCrossingChecks: 0,
   uniqueHolderReads: 0,
   uniqueIndexedNodes: 0,
   valueGroupReads: 0,
