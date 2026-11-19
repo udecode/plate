@@ -965,6 +965,14 @@ export default defineConfig({
       },
     },
     {
+      files: ['apps/*/src/app/dev/**/proof/**'],
+      rules: {
+        // [P1 measurement-order] Proof scripts await each browser step in order because that order is the measurement; react-doctor skips these test-noise rules under scripts, benchmarks and tooling but reads this path as app code, since it matches only the part after the last /app/ or /src/.
+        'react-doctor/async-defer-await': 'off',
+        'react-doctor/server-sequential-independent-await': 'off',
+      },
+    },
+    {
       files: ['**/*.config.{cjs,js}', '.changeset/**/*.js'],
       rules: {
         // [P1 compatibility] Tool loaders may require CommonJS configuration even in an ESM repository.
