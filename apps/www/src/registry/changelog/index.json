@@ -128,6 +128,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "href": "/registry/changelog/2026-11-20-toolbar-history-and-mode-follow-editor-root.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep Mode on the editor root while the caret is in a nested editing area",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["mode-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-upload-pick-one-file",
       "href": "/registry/changelog/2026-11-20-upload-pick-one-file.json",
       "status": "draft",

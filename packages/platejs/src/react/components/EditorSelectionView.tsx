@@ -4,7 +4,6 @@ import {
   getPlateTarget,
   PlateScopeContext,
   useFixedScope,
-  usePlateTarget,
 } from '../internal/plate-context';
 import { useEditorEditableElement, useSelectionView } from '../plite-react';
 import { useEditor, useEditorContainerRef } from '../stores/plate/useEditor';
@@ -23,8 +22,6 @@ export function EditorSelectionView({
 }: {
   children: React.ReactNode;
 }) {
-  const surrounding = React.useContext(PlateScopeContext);
-  const current = usePlateTarget();
   const editor = useEditor();
   const containerRef = useEditorContainerRef();
   const view = useSelectionView(editor);
@@ -43,10 +40,7 @@ export function EditorSelectionView({
       },
     [containerRef, editable, mountedTarget, view]
   );
-  const scope = useFixedScope(
-    target,
-    view === editor && current === surrounding.fallback
-  );
+  const scope = useFixedScope(target);
 
   return <PlateScopeContext value={scope}>{children}</PlateScopeContext>;
 }

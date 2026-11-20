@@ -1,5 +1,5 @@
 import type { Editor, RootKey } from '../interfaces/editor';
-import { getEditorRuntime } from './editor-runtime';
+import { getEditorRuntime, getEditorRuntimeOwner } from './editor-runtime';
 import { notifyObservers } from './lifecycle-error';
 import { subscribeEditorViewState } from './public-state';
 import type { ViewPresentation } from './view-presentation';
@@ -46,7 +46,7 @@ const VIEW_ENTRIES = new WeakMap<object, Entry>();
 // Kept while the view is unmounted: a use can arrive before its view mounts,
 // and StrictMode unmounts a view between its first use and its second mount.
 const USED_AT = new WeakMap<object, number>();
-const USE_LISTENERS = new WeakMap<object, Set<() => void>>();
+const USE_LISTENERS = new WeakMap<Editor, Set<() => void>>();
 let lastUse = 0;
 const PENDING = new Set<Entry>();
 const NOTICES = new WeakMap<ViewPresentation, Notice>();
@@ -213,11 +213,41 @@ export const flushRootTargets = () => {
 export const readRootViewUse = (view: Editor) =>
   USED_AT.get(getEditorRuntime(view)) ?? 0;
 
-export const subscribeRootViewUse = (view: Editor, listener: () => void) => {
-  const runtime = getEditorRuntime(view);
-  const listeners = USE_LISTENERS.get(runtime) ?? new Set<() => void>();
+/**
+ * The newest use among the views the presentation shows, 0 while the user has
+ * used none of them, and null while it shows none.
+ */
+export const readShownViewUse = (
+  owner: Editor,
+  presentation: ViewPresentation
+): number | null => {
+  let newest: number | null = null;
 
-  USE_LISTENERS.set(runtime, listeners);
+  for (const entry of ENTRIES.get(owner)?.get(presentation)?.values() ?? []) {
+    for (const view of entry.views) {
+      if (isShown(view)) newest = Math.max(newest ?? 0, readRootViewUse(view));
+    }
+  }
+
+  return newest;
+};
+
+const tellViewUse = (owner: Editor) =>
+  notifyObservers(
+    owner,
+    USE_LISTENERS.get(owner),
+    'commit-listener',
+    (listener) => listener()
+  );
+
+/**
+ * Hear, in the same turn, each use of a view of the editor, and each of its
+ * views that mounts, unmounts, or gains or loses its surface.
+ */
+export const subscribeShownViewUse = (owner: Editor, listener: () => void) => {
+  const listeners = USE_LISTENERS.get(owner) ?? new Set<() => void>();
+
+  USE_LISTENERS.set(owner, listeners);
   listeners.add(listener);
 
   return () => {
@@ -248,6 +278,7 @@ export const mountRootView = (
   }
   invalidate(entry);
   announcePresentation(presentation);
+  tellViewUse(owner);
 
   return () => {
     stopReadOnly();
@@ -260,6 +291,7 @@ export const mountRootView = (
     invalidate(entry);
     announcePresentation(presentation);
     dropUnusedEntry(key, entry);
+    tellViewUse(owner);
   };
 };
 
@@ -283,12 +315,7 @@ export const markRootViewUsed = (view: Editor) => {
       announcePresentation(entry.presentation);
     }
   }
-  notifyObservers(
-    view,
-    USE_LISTENERS.get(runtime),
-    'commit-listener',
-    (listener) => listener()
-  );
+  tellViewUse(getEditorRuntimeOwner(view));
 };
 
 export const reportShownChange = <T>(view: Editor, change: () => T): T => {
@@ -300,7 +327,10 @@ export const reportShownChange = <T>(view: Editor, change: () => T): T => {
     const entry = VIEW_ENTRIES.get(runtime);
 
     invalidate(entry);
-    if (entry) announcePresentation(entry.presentation);
+    if (entry) {
+      announcePresentation(entry.presentation);
+      tellViewUse(entry.owner);
+    }
   }
 
   return result;

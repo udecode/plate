@@ -16,12 +16,9 @@ import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChange
 import type { Editor } from '../editor/Editor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import {
-  createPlateScope,
-  PlateControllerContext,
+  PlateCaretScope,
   PlateModelContext,
   PlateReadOnlyContext,
-  PlateScopeContext,
-  useLastUsedViewScope,
 } from '../internal/plate-context';
 import { EditorRoot as RuntimeEditorRoot } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
@@ -96,8 +93,6 @@ function PlateInner({
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const currentEditor = editor ?? failInvariant('Expected value to be defined');
-  const [scope] = React.useState(createPlateScope);
-  const editableRef = React.useRef<HTMLDivElement>(null);
   const modelRevision = usePlateModelRevision(currentEditor);
   const decorations = React.useMemo(() => {
     void modelRevision;
@@ -108,25 +103,9 @@ function PlateInner({
     view.isReadOnly()
   );
   const plateReadOnly = readOnly ?? editorReadOnly;
-  const fallback = React.useMemo(
-    () => ({ editor: currentEditor, containerRef, editableRef }),
-    [containerRef, currentEditor]
-  );
-  const outside = useLastUsedViewScope(scope, fallback);
   const model = React.useMemo(
-    () => ({ editor: currentEditor, containerRef, scope }),
-    [containerRef, currentEditor, scope]
-  );
-  const entry = React.useMemo(
-    () => ({ model, scope: outside }),
-    [model, outside]
-  );
-  const controller = React.use(PlateControllerContext);
-  const isPrimary = primary ?? true;
-
-  React.useLayoutEffect(
-    () => controller?.join(entry, isPrimary),
-    [controller, entry, isPrimary]
+    () => ({ editor: currentEditor, containerRef }),
+    [containerRef, currentEditor]
   );
   const observerBaselineVersion = React.useMemo(
     () => editor?.read.lastCommit()?.version ?? 0,
@@ -268,7 +247,9 @@ function PlateInner({
       <EditorReadOnlyProvider readOnly={plateReadOnly}>
         <PlateReadOnlyContext value={plateReadOnly}>
           <PlateModelContext value={model}>
-            <PlateScopeContext value={outside}>{children}</PlateScopeContext>
+            <PlateCaretScope primary={primary ?? true}>
+              {children}
+            </PlateCaretScope>
           </PlateModelContext>
         </PlateReadOnlyContext>
       </EditorReadOnlyProvider>

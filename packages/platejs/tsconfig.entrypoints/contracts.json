@@ -68,6 +68,9 @@
       "path": "./root.json"
     },
     {
+      "path": "./standard-basic-nodes-react.json"
+    },
+    {
       "path": "./static.json"
     },
     {

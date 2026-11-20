@@ -11,7 +11,6 @@ import {
 import type { Editor } from '../../editor';
 import {
   outsideEveryProvider,
-  PlateReadOnlyContext,
   readBoolean,
   subscribeNothing,
   PlateModelContext,
@@ -82,17 +81,12 @@ export const useEditorComposing = (): boolean =>
   useTargetViewState(usePlateTarget(), 'composing', false);
 
 /** Whether the selected command view rejects editing, including after unmount. */
-export const useEditorReadOnly = (): boolean => {
-  const scope = usePlateScope();
-  const target = usePlateTarget();
-  const rootAnswer = target !== null && target === scope.fallback;
-  const readOnly = useTargetViewState(
-    rootAnswer ? null : target,
+export const useEditorReadOnly = (): boolean =>
+  useTargetViewState(
+    usePlateTarget(),
     'readOnly',
-    scope !== outsideEveryProvider
+    usePlateScope() !== outsideEveryProvider
   );
-  return rootAnswer ? React.use(PlateReadOnlyContext) : readOnly;
-};
 
 /** Get the selected Plate container ref; its value is null before mount. */
 export function useEditorContainerRef(): React.RefObject<HTMLDivElement | null> {

@@ -45,7 +45,8 @@ export {
 export {
   markRootViewUsed,
   readRootViewUse,
-  subscribeRootViewUse,
+  readShownViewUse,
+  subscribeShownViewUse,
 } from '../core/root-target';
 export { sameResult } from '../core/same-result';
 export { getNodeKeyDOMValue } from '../utils/node-keys';

@@ -1,0 +1,14 @@
+---
+id: 2026-11-20-toolbar-history-and-mode-follow-editor-root
+date: 2026-11-20
+status: draft
+kind: behavior
+summary: 'Keep Mode on the editor root while the caret is in a nested editing area'
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-20-fixed-toolbar-keep-undo-redo-mode-cbfe5bd9","kind":"behavior","migrationNotes":[]} -->
+
+- **`mode-toolbar-button`**: Viewing chosen while no `EditorContent` is mounted now puts the editor root in Viewing through `setEditorViewing`, so choosing Editing after an `EditorContent` mounts makes it writable again. Under an `EditorProvider` that holds an editor view, Viewing writes that view's Mode, and Editing also clears the view's own lock.

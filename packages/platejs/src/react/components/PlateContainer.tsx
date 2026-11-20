@@ -6,6 +6,12 @@ import {
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
+import {
+  PlateScopeContext,
+  useAreaScope,
+  usePlateScope,
+  useScopeTarget,
+} from '../internal/plate-context';
 import { useComposedRef } from '../internal/react-helpers';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import {
@@ -13,13 +19,15 @@ import {
   useEditorScrollElementRef,
   useOptionalEditorReadOnly,
 } from '../plite-react';
-import { useEditor, useEditorContainerRef } from '../stores';
 
 export const EditorContainer = ({
   children,
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
-  const editor = useEditor();
+  const area = useAreaScope(usePlateScope());
+  const { containerRef, editor } =
+    useScopeTarget(area) ??
+    failInvariant('EditorContainer requires an active Plate editor.');
 
   usePlateModelRevision(editor);
 
@@ -29,7 +37,6 @@ export const EditorContainer = ({
   );
   const readOnly = plateReadOnly ?? editorReadOnly;
 
-  const containerRef = useEditorContainerRef();
   const scrollElementRef = useEditorScrollElementRef(editor, {
     fallback: true,
   });
@@ -40,7 +47,7 @@ export const EditorContainer = ({
 
   const mainContainer = (
     <div ref={ref} {...props}>
-      {children}
+      <PlateScopeContext value={area}>{children}</PlateScopeContext>
     </div>
   );
 
