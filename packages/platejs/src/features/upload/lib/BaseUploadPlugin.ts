@@ -23,6 +23,7 @@ import {
   type EditorCommitHandler,
   type EditorEffect,
   type EditorTransactionEffectsApi,
+  type EditorUpdateTransaction,
   type EditorViewOptions,
   type Element,
   type ElementOf,
@@ -594,6 +595,11 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       draftKind(
         withStoredAuthoredRead(editor, () => editor.read.nodes.get(key))?.[0]
       ) === kind;
+    const placeAfter = (
+      tx: Pick<EditorUpdateTransaction, 'blocks'>,
+      slot: NodeKey,
+      drafts: readonly Element[]
+    ) => tx.blocks.insert(drafts, { after: slot, replaceEmpty: false });
     const slotIn = (commit: EditorCommit, key: NodeKey, kind: UploadKind) =>
       getEditorRuntimeRootKeys(editor).some((root) => {
         const node = getEditorCommitNode(commit, key, root)?.[0];
@@ -1104,6 +1110,28 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           if (active) markAdmission(active.effects, 'cancel', [key]);
           pending.delete(key);
           cancel(key);
+        },
+        /**
+         * Whether another draft of the same kind fits after the upload draft
+         * at `key`, where a slot submit lands the draft of a second file. It
+         * writes nothing, and it is false when `key` names no upload draft.
+         */
+        fitsAfter: (key: NodeKey): boolean => {
+          let fits = false;
+
+          withStoredAuthoredRead(editor, () =>
+            editor.read((state) =>
+              state.transaction((tx) => {
+                const kind = draftKind(tx.nodes.get(key)?.[0]);
+
+                fits =
+                  !!kind &&
+                  !!placeAfter(tx, key, [tx.schema.create(type, { kind })]);
+              })
+            )
+          );
+
+          return fits;
         },
       }),
       commands: ({ around }) => [
@@ -1630,9 +1658,10 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               }));
 
               if (additional.length > 0) {
-                const inserted = tx.blocks.insert(
-                  additional.map(({ element }) => element),
-                  { after: slot, replaceEmpty: false }
+                const inserted = placeAfter(
+                  tx,
+                  slot,
+                  additional.map(({ element }) => element)
                 );
                 if (!inserted) return refuseDoesNotFit();
                 tx.tags.add('history-push');

@@ -147,6 +147,9 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
     accept: currentContent.accept,
     multiple: true,
     readFilesContent: false,
+    initializeWithCustomParameters: (input) => {
+      input.multiple = api.fitsAfter(nodeKey);
+    },
     onFilesSelected: ({ plainFiles }) => {
       if (readOnly) return;
 

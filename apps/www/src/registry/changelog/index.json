@@ -110,6 +110,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-upload-pick-one-file",
+      "href": "/registry/changelog/2026-11-20-upload-pick-one-file.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open an upload placeholder's file picker for one file where a second placeholder does not fit",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["upload"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-19-all-comments-from-note",
       "href": "/registry/changelog/2026-11-19-all-comments-from-note.json",
       "status": "draft",

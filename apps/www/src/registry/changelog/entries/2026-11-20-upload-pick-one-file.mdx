@@ -1,0 +1,14 @@
+---
+id: 2026-11-20-upload-pick-one-file
+date: 2026-11-20
+status: draft
+kind: fix
+summary: "Open an upload placeholder's file picker for one file where a second placeholder does not fit"
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-20-upload-open-an-draft-s-f869c080","kind":"fix","migrationNotes":[]} -->
+
+- **`upload`**: Open an upload placeholder's file picker for one file where a second placeholder does not fit after it, such as in a board's image shape. The picker asks the upload plugin's `fitsAfter(key)` whether a second placeholder fits. Picking several files there used to upload none and report that they cannot be added. A placeholder in the document still takes several files.

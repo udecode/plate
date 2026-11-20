@@ -78,6 +78,19 @@
       "2026-11-20-markdown-cjk-emphasis",
       "2026-09-28-markdown-registered-tags"
     ],
+    "upload": [
+      "2026-11-20-upload-pick-one-file",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-17-files-sdk-3",
+      "2026-11-06-upload-completion-error",
+      "2026-10-15-upload-refusal-toast",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-native-block-drag",
+      "2026-09-21-upload-provider-items",
+      "2026-09-19-files-sdk-upload-kit"
+    ],
     "comment-toolbar-button": [
       "2026-11-19-all-comments-from-note",
       "2026-11-19-rtl-editor-ui",
@@ -671,18 +684,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-28-add-code-drawing-node"
-    ],
-    "upload": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-17-files-sdk-3",
-      "2026-11-06-upload-completion-error",
-      "2026-10-15-upload-refusal-toast",
-      "2026-10-14-block-void-selection",
-      "2026-10-01-native-block-drag",
-      "2026-09-21-upload-provider-items",
-      "2026-09-19-files-sdk-upload-kit"
     ],
     "rtl-demo": ["2026-11-19-rtl-editor-ui"],
     "caption": [
