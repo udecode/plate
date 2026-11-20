@@ -12,6 +12,7 @@ export const plateAdditionalEntries = [
   'src/features/date/index.ts',
   'src/features/details/index.ts',
   'src/features/upload/index.ts',
+  'src/features/field/index.ts',
   'src/features/find/index.ts',
   'src/features/footnote/index.ts',
   'src/features/ink/index.ts',

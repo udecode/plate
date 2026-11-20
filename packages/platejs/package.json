@@ -162,6 +162,11 @@
       "import": "./dist/react/features/upload/index.js",
       "default": "./dist/react/features/upload/index.js"
     },
+    "./field": {
+      "types": "./dist/features/field/index.d.ts",
+      "import": "./dist/features/field/index.js",
+      "default": "./dist/features/field/index.js"
+    },
     "./find": {
       "types": "./dist/features/find/index.d.ts",
       "import": "./dist/features/find/index.js",
@@ -394,6 +399,7 @@
     "lint:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-paste",
     "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
     "lint:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw-react",
+    "lint:partition:field": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs field",
     "lint:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find",
     "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
     "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",
@@ -470,6 +476,7 @@
     "test:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-paste",
     "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
     "test:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw-react",
+    "test:partition:field": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs field",
     "test:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find",
     "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
     "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",

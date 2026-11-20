@@ -147,6 +147,7 @@
           "packages/plitejs/src/pagination/",
           "packages/platejs/src/authored/",
           "packages/platejs/src/diff/",
+          "packages/platejs/src/features/field/",
           "packages/platejs/src/pagination/"
         ],
         "checks": [

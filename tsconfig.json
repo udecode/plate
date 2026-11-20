@@ -43,6 +43,7 @@
       "platejs/excalidraw/react": [
         "./packages/platejs/src/excalidraw/react/index.ts"
       ],
+      "platejs/field": ["./packages/platejs/src/features/field/index.ts"],
       "platejs/find": ["./packages/platejs/src/features/find/index.ts"],
       "platejs/footnote": ["./packages/platejs/src/features/footnote/index.ts"],
       "platejs/footnote/react": [

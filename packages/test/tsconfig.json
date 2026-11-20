@@ -44,6 +44,7 @@
       "platejs/dom": ["../platejs/src/dom/index.ts"],
       "platejs/excalidraw": ["../platejs/src/excalidraw/index.ts"],
       "platejs/excalidraw/react": ["../platejs/src/excalidraw/react/index.ts"],
+      "platejs/field": ["../platejs/src/features/field/index.ts"],
       "platejs/find": ["../platejs/src/features/find/index.ts"],
       "platejs/footnote": ["../platejs/src/features/footnote/index.ts"],
       "platejs/footnote/react": [

@@ -86,6 +86,7 @@ export const publicFeatureDependencies = Object.freeze({
   date: [],
   details: ['standard/basic-nodes'],
   upload: ['dom'],
+  field: [],
   find: [],
   footnote: ['combobox'],
   ink: [],

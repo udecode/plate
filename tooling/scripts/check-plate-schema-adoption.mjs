@@ -305,6 +305,10 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   ['packages/platejs/src/features/date/lib/BaseDatePlugin.ts', [[['update']]]],
   [
+    'packages/platejs/src/features/field/lib/BaseFieldPlugin.ts',
+    [[['read', 'update']]],
+  ],
+  [
     'packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts',
     [[['update']]],
   ],

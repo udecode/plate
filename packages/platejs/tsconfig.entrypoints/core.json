@@ -62,6 +62,7 @@
     "../src/features/date/**/*",
     "../src/features/details/**/*",
     "../src/features/upload/**/*",
+    "../src/features/field/**/*",
     "../src/features/find/**/*",
     "../src/features/footnote/**/*",
     "../src/features/ink/**/*",
