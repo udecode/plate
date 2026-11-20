@@ -167,6 +167,7 @@ import {
   hasScopedAnchorListeners,
   notifyAnchorChanges,
   prepareAnchorPublication,
+  rebuildUnderAnchors,
   suspendAnchorScopes,
 } from './anchor-state';
 import { withAuthoredViewRead } from './authored-runtime';
@@ -1971,15 +1972,22 @@ export const commitRecordedDraft = (
 
   if (plain) carryDraftNodeKeys(editor, snapshot, recorded, plain);
 
-  // Anchors made while commands ran sit in the plain draft: they move to the
-  // recorded draft, and the recorded change then applies from the base in a
-  // fresh scope.
-  if (recorded.anchorChange && hasScopedAnchorListeners(editor)) {
+  const base = getChangeValue(
+    snapshot.roots,
+    snapshot.records
+  ) as EditorDocumentValue;
+  const inFrame = storedToWritten !== undefined;
+  const anchorChange =
+    inFrame || !hasScopedAnchorListeners(editor)
+      ? undefined
+      : recorded.anchorChange;
+
+  if (anchorChange) {
     const written = snapshot.builder.value;
 
     notifyAnchorChanges(
       editor,
-      recorded.anchorChange((root) =>
+      anchorChange((root) =>
         DocumentIndex.fromValue(
           root === MAIN_ROOT_KEY
             ? written.children
@@ -1989,12 +1997,10 @@ export const commitRecordedDraft = (
       recorded.indexedAfter,
       { runtimePaths: false }
     );
+  } else {
+    context.exitAnchorScope();
+    context.exitAnchorScope = enterAnchorScope(editor, base);
   }
-  context.exitAnchorScope();
-  context.exitAnchorScope = enterAnchorScope(
-    editor,
-    getChangeValue(snapshot.roots, snapshot.records) as EditorDocumentValue
-  );
   for (const restore of snapshot.runtimeIndexRollbacks.values()) restore();
   snapshot.runtimeIndexRollbacks.clear();
   snapshot.rootIndexes = {};
@@ -2012,7 +2018,8 @@ export const commitRecordedDraft = (
     root: snapshot.selectionRoot,
     selection: null,
   };
-  if (!change.empty) {
+  const applyRecorded = () => {
+    if (change.empty) return;
     applyTransactionSpecDocumentChangeStep(
       editor,
       snapshot.builder.apply(change, {
@@ -2024,7 +2031,10 @@ export const commitRecordedDraft = (
       }),
       { notifyTransactionListeners: false }
     );
-  }
+  };
+
+  if (anchorChange) rebuildUnderAnchors(editor, base, applyRecorded);
+  else applyRecorded();
   snapshot.builder.beginSpan();
   moveDraftTracks(snapshot, plainBuilder, snapshot.builder, plainToRecorded);
   context.caret = {

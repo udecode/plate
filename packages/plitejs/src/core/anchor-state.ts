@@ -396,6 +396,25 @@ export const enterAnchorScope = (editor: Editor, value: EditorDocumentValue) =>
     state: createActiveAnchorState(value),
   });
 
+export const rebuildUnderAnchors = (
+  editor: Editor,
+  from: EditorDocumentValue,
+  rebuild: () => void
+) => {
+  const held = getActiveAnchorState(editor);
+  const rebuilt = createActiveAnchorState(from);
+  const close = pushAnchorScope(editor, { kind: 'draft', state: rebuilt });
+
+  try {
+    rebuild();
+  } finally {
+    close();
+  }
+  if (held) {
+    Object.assign(held, { indexes: rebuilt.indexes, value: rebuilt.value });
+  }
+};
+
 export const hasScopedAnchorListeners = (editor: object) =>
   (getActiveAnchorState(editor)?.listeners.size ?? 0) > 0;
 
