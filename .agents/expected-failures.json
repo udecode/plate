@@ -1,24 +1,6 @@
 {
   "expected": [
     {
-      "step": "core-audits",
-      "file": "packages/platejs/src/features/basic-styles/lib/BaseFormattingPlugin.ts",
-      "test": "raw schema query is outside the intentional runtime/context contract allowlist",
-      "owner": "t_80872a40"
-    },
-    {
-      "step": "core-audits",
-      "file": "packages/platejs/src/react/features/board/BoardSurface.spec.tsx",
-      "test": "persisted key must use a schema identity, not a plugin capability name",
-      "owner": "t_80872a40"
-    },
-    {
-      "step": "core-audits",
-      "file": "packages/platejs/src/react/features/format-painter/FormatPainterPlugin.tsx",
-      "test": "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api, on] -> [shortcuts, slots]",
-      "owner": "t_80872a40"
-    },
-    {
       "step": "plite-test",
       "file": "packages/plitejs/test/authored-tree-record.test.ts",
       "test": "authored review tree recording laws > records one update that pastes a link over a letter and types over the link and the next letter in Suggesting with the typed letter after both struck letters",

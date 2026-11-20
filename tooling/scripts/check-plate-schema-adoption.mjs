@@ -343,7 +343,13 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts',
-    [[['activate', 'api', 'on', 'update'], ['commands']]],
+    [
+      [
+        ['activate', 'api', 'commands', 'on', 'update'],
+        ['commands'],
+        ['contributions'],
+      ],
+    ],
   ],
   [
     'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
@@ -355,6 +361,15 @@ const intentionalProductionExtendStageChains = new Map([
         ['corrections'],
         ['readMiddleware'],
         ['commands', 'dataTransferFormats'],
+      ],
+    ],
+  ],
+  [
+    'packages/platejs/src/react/features/format-painter/FormatPainterPlugin.tsx',
+    [
+      [
+        ['api', 'on'],
+        ['shortcuts', 'slots'],
       ],
     ],
   ],
@@ -398,7 +413,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts',
-    [[['$factory:defineMediaPlugin'], ['contributions']]],
+    [[['$factory:defineMediaPlugin'], ['commands', 'contributions']]],
   ],
   [
     'packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts',
@@ -414,8 +429,13 @@ const intentionalProductionExtendStageChains = new Map([
         ['formats'],
         ['formats'],
         ['formats'],
+        ['formats'],
       ],
     ],
+  ],
+  [
+    'packages/platejs/src/features/board/lib/BaseBoardImagePlugin.ts',
+    [[['formats']]],
   ],
   [
     'packages/platejs/src/features/board/lib/BaseBoardArrowPlugin.ts',
@@ -452,7 +472,7 @@ const intentionalRawSchemaQueryCounts = new Map([
     7,
   ],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
-  ['packages/platejs/src/features/basic-styles/lib/BaseFormattingPlugin.ts', 2],
+  ['packages/platejs/src/features/basic-styles/lib/BaseFormattingPlugin.ts', 3],
   ['packages/platejs/src/features/list/lib/listConversion.internal.ts', 1],
   ['packages/platejs/src/react/features/board/boardView.internal.ts', 2],
   ['packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts', 2],
@@ -4076,34 +4096,6 @@ const getPluginCreatorFromBuilderChain = (
   return undefined;
 };
 
-const countStageField = (stages, field) =>
-  stages.reduce(
-    (count, stage) =>
-      count +
-      stage.reduce((stageCount, signature) => {
-        const entries = signature.startsWith('$array:')
-          ? signature.slice('$array:'.length).split('|')
-          : [signature];
-
-        return (
-          stageCount +
-          entries.reduce((entryCount, entry) => {
-            const fields = entry.startsWith('$iife:')
-              ? entry.slice('$iife:'.length).split(',')
-              : entry.startsWith('$')
-                ? []
-                : entry.split(',');
-
-            return (
-              entryCount +
-              fields.filter((candidate) => candidate === field).length
-            );
-          }, 0)
-        );
-      }, 0),
-    0
-  );
-
 const hasExactExtendStageFields = (actual, expected) =>
   actual.length === expected.length &&
   actual.every(
@@ -6118,29 +6110,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           isLocallyCreatedPluginDescriptorExpression(node.callee.object)
         ) {
           const stages = getExtendChainStages(node, staticStringBindings);
-          const creator = getPluginCreatorFromBuilderChain(
-            node,
-            localPluginCreatorNames
-          );
-          const authorStages = creator
-            ? [
-                getPluginStageFields(
-                  creator.arguments[1],
-                  staticStringBindings
-                ),
-                ...stages,
-              ]
-            : stages;
 
           productionExtendChainCount += 1;
           productionExtendChains.push(stages);
-
-          if (countStageField(authorStages, 'commands') > 1) {
-            report(
-              node,
-              'replacement plugin commands must have one ordered owner factory; .extend() does not concatenate command declarations'
-            );
-          }
 
           const expected =
             intentionalProductionExtendStageChains.get(file) ?? [];

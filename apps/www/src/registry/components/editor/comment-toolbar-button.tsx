@@ -11,6 +11,7 @@ import {
   useEditor,
   useEditorHasSelection,
   useEditorReadOnly,
+  useEditorSelector,
   useEditorViewState,
 } from 'platejs/react';
 import * as React from 'react';
@@ -108,15 +109,15 @@ export function CommentToolbarButton() {
 
 export function AllCommentsButton() {
   const current = useEditor();
+  const readsPage = useEditorSelector(
+    (viewed) => viewed.read.view.root() === undefined
+  );
   // A nested root's view, such as a board note's, reads the page's threads as
   // unavailable, so the dialog reads every thread through the page in the
   // same presentation.
   const editor = React.useMemo(
-    () =>
-      current.read.view.root() === undefined
-        ? current
-        : createEditorView(current, { readOnly: true }),
-    [current]
+    () => (readsPage ? current : createEditorView(current, { readOnly: true })),
+    [current, readsPage]
   );
   const comments = editor.plugin(CommentsPlugin);
 
