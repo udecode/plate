@@ -11,6 +11,7 @@ import {
   recordStoresEqual,
   type RecordOps,
   type RecordOpsJson,
+  type RecordStore,
   recordOpsBetween,
   recordOpsFromJson,
   recordOpsToJson,
@@ -1953,7 +1954,8 @@ export const transformInternalDocumentChange = (
 export const applyDocumentChangeValue = <T extends JsonEditorValue>(
   change: DocumentChange,
   value: T,
-  indexedAfter: ReadonlyMap<string, DocumentIndex> = new Map()
+  indexedAfter: ReadonlyMap<string, DocumentIndex> = new Map(),
+  recordsAfter?: RecordStore
 ) => {
   let children: DocumentIndex | readonly JsonNode[] =
     lazyRootOf(value, 'children') ?? value.children;
@@ -2000,7 +2002,7 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
   if (records.size > 0 || hasValueRecords(value)) {
     withValueRecords(
       nextValue,
-      applyRecordOps(getValueRecords(value), records)
+      recordsAfter ?? applyRecordOps(getValueRecords(value), records)
     );
   }
 
@@ -2015,9 +2017,15 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
 export const applyDocumentChangeWithIndexes = <T extends JsonEditorValue>(
   change: DocumentChange,
   value: T,
-  indexedAfter: ReadonlyMap<string, DocumentIndex>
+  indexedAfter: ReadonlyMap<string, DocumentIndex>,
+  recordsAfter?: RecordStore
 ): T => {
-  const nextValue = applyDocumentChangeValue(change, value, indexedAfter);
+  const nextValue = applyDocumentChangeValue(
+    change,
+    value,
+    indexedAfter,
+    recordsAfter
+  );
 
   if (nextValue.roots) Object.freeze(nextValue.roots);
 

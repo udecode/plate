@@ -78,6 +78,28 @@ export const getEditorJsonArrayItems = (
   return items;
 };
 
+const LAZY_JSON_FIELDS = new WeakMap<
+  object,
+  Map<string, { readonly value: unknown }>
+>();
+
+/** @internal */
+export const setLazyJsonField = (
+  target: object,
+  key: string,
+  field: { readonly value: unknown }
+) => {
+  Object.defineProperty(target, key, {
+    enumerable: true,
+    get: () => field.value,
+  });
+
+  const fields = LAZY_JSON_FIELDS.get(target) ?? new Map();
+
+  fields.set(key, field);
+  LAZY_JSON_FIELDS.set(target, fields);
+};
+
 /**
  * Read one strict JSON record without traversing its values.
  *
@@ -108,7 +130,8 @@ export const getEditorJsonRecordEntries = (
       continue;
     }
 
-    const lazy = lazyRootOf(value, key);
+    const lazy =
+      lazyRootOf(value, key) ?? LAZY_JSON_FIELDS.get(value)?.get(key);
 
     if (!lazy) return null;
     entries.push([key, lazy.value]);

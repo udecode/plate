@@ -1,5 +1,5 @@
 import type { EditorDocumentRecords } from '../interfaces/editor';
-import { deepFreeze, isRecord, jsonEqual } from './change/json';
+import { deepFreeze, isRecord } from './change/json';
 import { copyFields } from './change/lazy-root';
 import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
 import {
@@ -15,18 +15,15 @@ import {
 } from './persistent-map';
 import {
   assertEditorJsonValue,
+  getEditorJsonArrayItems,
   getEditorJsonRecordEntries,
-  snapshotEditorJsonValue,
+  setLazyJsonField,
 } from './value-codec';
 import { countCoreWork } from './work';
 
 type RecordJson = Readonly<Record<string, unknown>>;
 
-/**
- * One record as its owned JSON, its canonical text or both. A load keeps the
- * JSON and a put keeps the text, and each side is filled on its first read.
- */
-type StoredRecord = { json: RecordJson | undefined; text: string | undefined };
+type StoredRecord = { json: RecordJson | undefined; readonly text: string };
 
 type RecordTree = PersistentMapNode<StoredRecord>;
 
@@ -86,29 +83,83 @@ export const canonicalRecordJson = (value: unknown): string => {
   return JSON.stringify(value);
 };
 
-const textOf = (record: StoredRecord) => {
-  if (record.text === undefined) {
-    countCoreWork('recordTexts');
-    record.text = canonicalRecordJson(record.json);
-  }
-
-  return record.text;
-};
-
 const jsonOf = (record: StoredRecord) => {
   record.json ??= freezeOwnedJsonValue(
-    deepFreeze(JSON.parse(record.text as string) as RecordJson)
+    deepFreeze(JSON.parse(record.text) as RecordJson)
   );
 
   return record.json;
 };
 
-// Two records that hold JSON compare as JSON, so neither builds its text.
 const sameRecord = (a: StoredRecord, b: StoredRecord) =>
-  a === b ||
-  (a.json !== undefined && b.json !== undefined
-    ? jsonEqual(a.json, b.json)
-    : textOf(a) === textOf(b));
+  a === b || a.text === b.text;
+
+// A key that may be an array index, which every object lists first, in number
+// order.
+const INDEX_KEY = /^(?:0|[1-9]\d*)$/;
+
+const NOT_JSON = new Error('Not JSON.');
+
+const notJson = (): never => {
+  throw NOT_JSON;
+};
+
+// `JSON.stringify` reads through getters, `toJSON` and proxy traps, so the text
+// is written from a plain copy of the own values the walk checked.
+const recordTextOf = (record: RecordJson): string | undefined => {
+  const open = new WeakSet<object>();
+  let indexKeys = false;
+  const copy = (value: unknown): unknown => {
+    switch (typeof value) {
+      case 'boolean':
+      case 'string': {
+        return value;
+      }
+      case 'number': {
+        return Number.isFinite(value) && !Object.is(value, -0)
+          ? value
+          : notJson();
+      }
+      case 'object': {
+        break;
+      }
+      default: {
+        return notJson();
+      }
+    }
+    if (value === null) return null;
+    if (open.has(value)) notJson();
+    open.add(value);
+    try {
+      if (Array.isArray(value)) {
+        return (getEditorJsonArrayItems(value) ?? notJson()).map(copy);
+      }
+
+      const entries = (getEditorJsonRecordEntries(value) ?? notJson())
+        .map(([key, item]) => {
+          indexKeys ||= INDEX_KEY.test(key);
+
+          return [key, copy(item)] as const;
+        })
+        .sort(([a], [b]) => (a < b ? -1 : 1));
+
+      return Object.fromEntries(entries);
+    } finally {
+      open.delete(value);
+    }
+  };
+  let plain: unknown;
+
+  try {
+    plain = copy(record);
+  } catch (error) {
+    if (error === NOT_JSON) return undefined;
+    throw error;
+  }
+  countCoreWork('recordTexts');
+
+  return indexKeys ? canonicalRecordJson(plain) : JSON.stringify(plain);
+};
 
 /**
  * One put, checked as a JSON object and stored as its canonical text. An id
@@ -121,12 +172,19 @@ export const recordPut = (
   id: string,
   record: unknown
 ): RecordOps => {
-  assertEditorJsonValue(record, `Record ${id} in record set ${set}`);
+  const label = `Record ${id} in record set ${set}`;
+
   if (!isRecord(record)) {
-    throw new TypeError(`Record ${id} in record set ${set} must be an object.`);
+    assertEditorJsonValue(record, label);
+    throw new TypeError(`${label} must be an object.`);
   }
 
-  const json = canonicalRecordJson(record);
+  const json = recordTextOf(record);
+
+  if (json === undefined) {
+    throw new Error(`${label} must encode to JSON-compatible data.`);
+  }
+
   const existing = getRecordText(store, set, id);
 
   if (existing !== undefined && existing !== json) {
@@ -147,7 +205,7 @@ export const hasRecord = (store: RecordStore, set: string, id: string) =>
 export const getRecordText = (store: RecordStore, set: string, id: string) => {
   const record = persistentMapGet(treeOf(store, set), id);
 
-  return record === undefined ? undefined : textOf(record);
+  return record?.text;
 };
 
 /** Whether some id in the set starts with `prefix`, in one ceiling lookup. */
@@ -170,7 +228,7 @@ export function* getRecordsWithPrefix(
   let found = persistentMapCeiling(tree, prefix);
 
   while (found !== undefined && found[0].startsWith(prefix)) {
-    yield [found[0], textOf(found[1])] as const;
+    yield [found[0], found[1].text] as const;
     found = persistentMapCeiling(tree, `${found[0]}\u0000`);
   }
 }
@@ -207,7 +265,7 @@ export function* getRecordEntries(
   set: string
 ): Generator<readonly [string, string]> {
   for (const [id, record] of persistentMapEntries(treeOf(store, set))) {
-    yield [id, textOf(record)] as const;
+    yield [id, record.text] as const;
   }
 }
 
@@ -241,16 +299,26 @@ export const applyRecordOps = (
     const before = treeOf(store, set);
     let tree = before;
 
-    for (const [id, json] of writes) {
-      if (json === null) {
-        tree = persistentMapDelete(tree, id);
-      } else {
-        const held = persistentMapGet(tree, id);
+    countCoreWork('recordWrites', writes.size);
+    if (before) {
+      for (const [id, json] of writes) {
+        if (json === null) {
+          tree = persistentMapDelete(tree, id);
+        } else {
+          const held = persistentMapGet(tree, id);
 
-        if (held === undefined || textOf(held) !== json) {
-          tree = persistentMapSet(tree, id, { json: undefined, text: json });
+          if (held === undefined || held.text !== json) {
+            tree = persistentMapSet(tree, id, { json: undefined, text: json });
+          }
         }
       }
+    } else {
+      tree = persistentMapFromSorted(
+        [...writes]
+          .filter((write): write is [string, string] => write[1] !== null)
+          .sort(([a], [b]) => (a < b ? -1 : 1))
+          .map(([id, text]) => [id, { json: undefined, text }] as const)
+      );
     }
 
     if (tree !== before) {
@@ -346,7 +414,7 @@ export const invertRecordOps = (
 
     for (const [id, json] of writes) {
       const held = persistentMapGet(tree, id);
-      const prior = held === undefined ? null : textOf(held);
+      const prior = held === undefined ? null : held.text;
 
       if (prior !== json) undo.set(id, prior);
     }
@@ -399,7 +467,7 @@ export const recordOpsBetween = (
     for (const id of persistentMapChanges(beforeTree, afterTree, sameRecord)) {
       const record = persistentMapGet(afterTree, id);
 
-      writes.set(id, record === undefined ? null : textOf(record));
+      writes.set(id, record === undefined ? null : record.text);
     }
 
     if (writes.size > 0) ops.set(set, writes);
@@ -413,13 +481,32 @@ export const recordOpsToJson = (ops: RecordOps): RecordOpsJson =>
     [...ops].map(([set, writes]) => [set, Object.fromEntries(writes)])
   );
 
+const keysSorted = (value: unknown): boolean => {
+  if (typeof value !== 'object' || value === null) return true;
+  if (Array.isArray(value)) return value.every(keysSorted);
+
+  let last: string | undefined;
+
+  for (const [key, item] of Object.entries(value)) {
+    if ((last !== undefined && last >= key) || !keysSorted(item)) return false;
+    last = key;
+  }
+
+  return true;
+};
+
 const isCanonicalRecordJson = (write: unknown) => {
   if (typeof write !== 'string') return false;
 
   try {
     const record: unknown = JSON.parse(write);
 
-    return isRecord(record) && canonicalRecordJson(record) === write;
+    return (
+      isRecord(record) &&
+      (keysSorted(record)
+        ? JSON.stringify(record)
+        : canonicalRecordJson(record)) === write
+    );
   } catch {
     return false;
   }
@@ -454,6 +541,7 @@ const invalidRecords = (): never => {
 const parseRecordStore = (json: Readonly<Record<string, unknown>>) => {
   const sets: Array<readonly [string, RecordTree]> = [];
 
+  countCoreWork('recordLoads');
   for (const [set, records] of getEditorJsonRecordEntries(json) ??
     invalidRecords()) {
     if (!isRecord(records)) {
@@ -470,10 +558,7 @@ const parseRecordStore = (json: Readonly<Record<string, unknown>>) => {
 
           return [
             id,
-            {
-              json: snapshotEditorJsonValue(record, 'Document records'),
-              text: undefined,
-            },
+            { json: undefined, text: recordTextOf(record) ?? invalidRecords() },
           ] as const;
         })
     );
@@ -484,10 +569,6 @@ const parseRecordStore = (json: Readonly<Record<string, unknown>>) => {
   return Object.freeze(Object.fromEntries(sets));
 };
 
-/**
- * Parse a document's records, keeping each as owned JSON. JSON this module
- * serialized, or owned JSON it parsed before, returns its store as is.
- */
 export const recordStoreFromJson = (json: unknown): RecordStore => {
   if (json === undefined) return EMPTY_RECORD_STORE;
   if (typeof json === 'object' && json !== null) {
@@ -504,22 +585,38 @@ export const recordStoreFromJson = (json: unknown): RecordStore => {
   return store;
 };
 
-const setJsonOf = (tree: RecordTree) =>
-  freezeOwnedJsonValue(
-    Object.fromEntries(
-      Array.from(persistentMapEntries(tree), ([id, record]) => [
-        id,
-        jsonOf(record),
-      ])
-    )
-  );
+const setTableOf = (tree: RecordTree) => {
+  let table: Readonly<Record<string, RecordJson>> | undefined;
+
+  return {
+    tree,
+    get value() {
+      table ??= freezeOwnedJsonValue(
+        Object.fromEntries(
+          Array.from(persistentMapEntries(tree), ([id, record]) => [
+            id,
+            jsonOf(record),
+          ])
+        )
+      );
+
+      return table;
+    },
+  };
+};
 
 // Only the latest store's set tables stay, so the store versions that history
 // keeps hold no table. A set the next store shares with it keeps its table.
 let latestJson: Readonly<{
   json: EditorDocumentRecords;
   store: RecordStore;
+  tables: ReadonlyMap<string, ReturnType<typeof setTableOf>>;
 }> | null = null;
+
+const BUILT_JSON = new WeakSet<object>();
+
+export const isBuiltRecordsJson = (json: unknown) =>
+  typeof json === 'object' && json !== null && BUILT_JSON.has(json);
 
 export const recordStoreToJson = (
   store: RecordStore
@@ -527,19 +624,20 @@ export const recordStoreToJson = (
   if (latestJson?.store === store) return latestJson.json;
 
   const latest = latestJson;
-  const json = freezeOwnedJsonValue(
-    Object.fromEntries(
-      Object.entries(store).map(([set, tree]) => [
-        set,
-        latest && treeOf(latest.store, set) === tree
-          ? latest.json[set]
-          : setJsonOf(tree),
-      ])
-    )
-  );
+  const json: EditorDocumentRecords = {};
+  const tables = new Map<string, ReturnType<typeof setTableOf>>();
 
+  for (const [set, tree] of Object.entries(store)) {
+    const shared = latest?.tables.get(set);
+    const table = shared?.tree === tree ? shared : setTableOf(tree);
+
+    tables.set(set, table);
+    setLazyJsonField(json, set, table);
+  }
+  freezeOwnedJsonValue(json);
   STORE_OF_JSON.set(json, store);
-  latestJson = { json, store };
+  BUILT_JSON.add(json);
+  latestJson = { json, store, tables };
 
   return json;
 };

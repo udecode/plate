@@ -1,5 +1,6 @@
 import { getDefined } from '../../internal/get-defined';
 import type { CompositionStamp } from '../composition-stamp';
+import { getValueRecords, type RecordStore } from '../record-store';
 import { countCoreWork } from '../work';
 import {
   type CarriedRun,
@@ -1198,6 +1199,7 @@ export class ChangeDraft {
     return this.applyTrustedCanonical(candidate.change, {
       facts,
       indexedAfter: candidate.indexedAfter,
+      recordsAfter: getValueRecords(candidate.after),
       runtimeCandidates: candidate.runtimeCandidates,
     });
   }
@@ -1218,6 +1220,7 @@ export class ChangeDraft {
       fit?: DraftStep['fit'];
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
       origin?: DraftStepOrigin;
+      recordsAfter?: RecordStore;
       runtimeCandidates?: ReadonlyMap<
         string,
         readonly DocumentChangeRuntimeCandidate[]
@@ -1380,7 +1383,8 @@ export class ChangeDraft {
     const current = applyDocumentChangeWithIndexes(
       canonicalChange,
       this.current,
-      indexedAfter
+      indexedAfter,
+      options.recordsAfter
     );
 
     for (const [root, afterRoot] of indexedAfter) {

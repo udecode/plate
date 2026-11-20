@@ -11,6 +11,7 @@ import type {
   NamedEditorSchemaIdentity,
 } from '../interfaces/schema';
 import { isDocumentRootKey } from './change/document-change';
+import { isBuiltRecordsJson } from './record-store';
 import { getEditorJsonRecordEntries } from './value-codec';
 
 /** A record reader's refusal; `json` marks an object that is not plain JSON. */
@@ -218,6 +219,7 @@ export function assertEditorDocumentContainers(
   }
   if (
     input.records !== undefined &&
+    !isBuiltRecordsJson(input.records) &&
     (!isRecord(input.records) ||
       !Object.values(input.records).every(
         (records) => isRecord(records) && Object.values(records).every(isRecord)
