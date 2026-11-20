@@ -34,9 +34,10 @@ import {
 import type { ViewPolicyTarget } from '../../core/editor-runtime';
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
-import { toPublicRoot } from '../../core/public-root';
+import { toInternalRoot, toPublicRoot } from '../../core/public-root';
 import {
   getBaseCallRoot,
+  getEditorRuntimeRootKeys,
   hasEditorSurface,
   subscribeCaretTarget,
 } from '../../core/public-state';
@@ -44,10 +45,15 @@ import {
   mountRootView,
   readNestedRootView,
   readRootTarget,
+  showsRootView,
   subscribeRootTarget,
   subscribeRootViewPresentation,
 } from '../../core/root-target';
-import type { ViewPresentation } from '../../core/view-presentation';
+import { getCaretOwner } from '../../core/view-carets';
+import {
+  isViewPresentationRetained,
+  type ViewPresentation,
+} from '../../core/view-presentation';
 import type { DOMApi } from '../../dom';
 import {
   createDOMEditorCapability,
@@ -55,6 +61,7 @@ import {
 } from '../../dom/internal';
 import {
   createEditorViewRuntime,
+  getOwnViewReadOnly,
   getViewPresentation,
 } from '../../editor-runtime-view';
 import type { Editor } from '../../interfaces/editor';
@@ -254,17 +261,44 @@ const scopeRuntimeContext = (
 const withRootEditors = (
   lookups: RuntimeScopeLookups
 ): PliteRuntimeContextValue => {
-  const rootEditors = new Map<string, ReactEditorType>();
+  const rootEditors = new Map<
+    string,
+    Readonly<{ editor: ReactEditorType; readOnly: boolean; root: RootKey }>
+  >();
+  const departed = new Map<string, WeakRef<ReactEditorType>>();
+  const releaseDeparted = () => {
+    const inDocument = new Set(getEditorRuntimeRootKeys(lookups.runtime));
+
+    for (const [key, held] of departed) {
+      if (!held.deref()) departed.delete(key);
+    }
+    for (const [key, { editor, readOnly, root }] of rootEditors) {
+      const lockChanged = getOwnViewReadOnly(editor) !== readOnly;
+
+      if (inDocument.has(root) || lockChanged) continue;
+
+      rootEditors.delete(key);
+      departed.set(key, new WeakRef(editor));
+    }
+  };
   const context: PliteRuntimeContextValue = {
     ...lookups,
     rootEditor: (root, readOnly = false) => {
-      const key = `${readOnly}\u0000${root ?? MAIN_ROOT_KEY}`;
-      let editor = rootEditors.get(key);
+      const internalRoot = root ?? MAIN_ROOT_KEY;
+      const key = `${readOnly}\u0000${internalRoot}`;
+      const cached = rootEditors.get(key);
 
-      if (!editor) {
+      if (cached) return cached.editor;
+
+      let editor = departed.get(key)?.deref();
+
+      if (editor) {
+        departed.delete(key);
+      } else {
+        releaseDeparted();
         editor = createPliteRootEditor(lookups, root, readOnly);
-        rootEditors.set(key, editor);
       }
+      rootEditors.set(key, { editor, readOnly, root: internalRoot });
 
       return editor;
     },
@@ -844,23 +878,100 @@ function createPliteRootEditor(
   root?: NamedRootKey,
   readOnly?: boolean
 ): ReactEditorType {
-  const { getView, mountedEditor, presentation } = lookups;
+  const { getView, mountedEditor, presentation, runtime } = lookups;
   const shownRoot = root ?? MAIN_ROOT_KEY;
+  const owner = getEditorRuntimeOwner(runtime);
+  const caretPresentation = () => {
+    const caret = getCaretOwner(owner);
+    const holdsRootElsewhere =
+      caret &&
+      presentation &&
+      caret.presentation !== presentation &&
+      toInternalRoot(caret.root) === shownRoot;
+
+    return holdsRootElsewhere && !showsRootView(runtime, presentation)
+      ? caret.presentation
+      : undefined;
+  };
+  const caretArea = () => {
+    const shownIn = caretPresentation();
+    const target = shownIn && readRootTarget(runtime, shownIn, shownRoot);
+
+    return target?.shown ? (target.view as MountedViewEditor) : undefined;
+  };
+  const subscribeCaretArea = (listener: () => void) => {
+    let area: { shownIn?: ViewPresentation; stop: () => void } = {
+      stop: () => {},
+    };
+    const follow = () => {
+      const shownIn = caretPresentation();
+
+      if (shownIn === area.shownIn) return false;
+
+      area.stop();
+      area = {
+        shownIn,
+        stop: shownIn
+          ? subscribeRootTarget(runtime, shownIn, shownRoot, () => {
+              follow();
+              listener();
+            })
+          : () => {},
+      };
+
+      return true;
+    };
+
+    follow();
+
+    const stopCaret = subscribeCaretTarget(owner, () => {
+      // The caret also leaves while React releases the presentation that
+      // holds it, in a commit that takes no update. The notice of that
+      // presentation's area follows the commit.
+      const released =
+        area.shownIn && !isViewPresentationRetained(area.shownIn);
+
+      if (!released && follow()) listener();
+    });
+
+    return () => {
+      stopCaret();
+      area.stop();
+    };
+  };
 
   return createReactRuntimeViewEditor(
     getView({ readOnly, root }, presentation ?? undefined, {
       current: () =>
-        findRootViewEditor(lookups, shownRoot) ?? mountedEditor ?? undefined,
+        caretArea() ??
+        findRootViewEditor(lookups, shownRoot) ??
+        mountedEditor ??
+        undefined,
       subscribe: (listener) => {
         const stopTarget = lookups.subscribeRootTarget(shownRoot, listener);
-        const stopNested =
-          mountedEditor && presentation
-            ? subscribeRootViewPresentation(presentation, listener)
-            : undefined;
+
+        if (!mountedEditor || !presentation) return stopTarget;
+
+        let stopCaretArea: (() => void) | undefined;
+        const followCaretArea = () => {
+          if (showsRootView(runtime, presentation)) {
+            stopCaretArea?.();
+            stopCaretArea = undefined;
+          } else {
+            stopCaretArea ??= subscribeCaretArea(listener);
+          }
+        };
+        const stopOwn = subscribeRootViewPresentation(presentation, () => {
+          followCaretArea();
+          listener();
+        });
+
+        followCaretArea();
 
         return () => {
           stopTarget();
-          stopNested?.();
+          stopOwn();
+          stopCaretArea?.();
         };
       },
     })
@@ -874,7 +985,9 @@ function createPliteRootEditor(
  * It obeys the read-only state and the authored view of the mounted view that
  * shows its root, and of the view around the hook while none shows it. Inside
  * a view, that mounted view is the one this view mounts for the root, such as
- * its own board when two editing areas show the same board. Use it for
+ * its own board when two editing areas show the same board. While its
+ * `EditorRoot` shows no editing area and the caret is in its root, it follows
+ * the editing area that holds the caret. Use it for
  * root-specific toolbar/sidebar commands. Pass `readOnly: true` when UI only
  * needs read APIs. Exact plugin capability comes from `editor.plugin(Plugin)`.
  */

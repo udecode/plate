@@ -238,7 +238,9 @@ export interface DOMApi {
    * The DOM document or shadow root holding the Editable of the view this
    * editor's calls run in. A view's own editor runs in its own view. A
    * `useRootEditor` editor runs in a view of its root from its `EditorRoot`.
-   * The editor `createEditor` returns runs in a view of the selection's root,
+   * While that `EditorRoot` shows no editing area and the caret is in the
+   * editor's root, it runs in the view that holds the caret. The editor
+   * `createEditor` returns runs in a view of the selection's root,
    * else of main. When the caret was placed in that root from an
    * `EditorRoot`, only that `EditorRoot`'s views of the root count, even
    * after this editor moves the caret within it. Of the views that count, it

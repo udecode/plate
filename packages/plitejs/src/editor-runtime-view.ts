@@ -1792,6 +1792,9 @@ export const getOwnViewPresentation = (editor: Editor) =>
 export const getViewFollowTarget = (editor: Editor) =>
   VIEW_STATES.get(getEditorRuntime(editor))?.policySource?.follows;
 
+export const getOwnViewReadOnly = (editor: Editor) =>
+  VIEW_STATES.get(getEditorRuntime(editor))?.readOnly;
+
 export const readShownDocument = (editor: Editor) => {
   const viewState = VIEW_STATES.get(getEditorRuntime(editor));
   const shown = () => getReadProjection(editor) ?? null;
