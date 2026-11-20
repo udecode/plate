@@ -26,6 +26,7 @@ import type {
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
+import { isDocumentRootKey } from './change/document-change';
 import { jsonEqual } from './change/json';
 import { cloneFrozen } from './clone';
 import { readSchemaIdentity } from './document-shape';
@@ -4146,6 +4147,14 @@ const compileEditorSchemaInternal = (
           source.path
         );
       }
+      if (!isDocumentRootKey(name)) {
+        compileFailure(
+          'invalid-root-name',
+          `Invalid document root key ${name}.`,
+          [source],
+          source.path
+        );
+      }
       const known = rootsByName.get(name);
 
       if (known) {
@@ -4456,7 +4465,11 @@ const compileEditorSchemaInternal = (
         if (joinable !== undefined || innerProgram.allowsUnknownElements) {
           compileFailure(
             'invalid-content-root-structure',
-            `Schema content root at ${root.path} declares a set, whose members must each be an object or a void element, and ${joinable === undefined ? 'an unknown element' : `"${joinable}"`} is neither.`,
+            `Schema content root at ${
+              root.path
+            } declares a set, whose members must each be an object or a void element, and ${
+              joinable === undefined ? 'an unknown element' : `"${joinable}"`
+            } is neither.`,
             [root],
             `${root.path}.structure`
           );

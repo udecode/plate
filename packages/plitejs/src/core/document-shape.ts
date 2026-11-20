@@ -10,6 +10,7 @@ import type {
   EditorSchemaIdentity,
   NamedEditorSchemaIdentity,
 } from '../interfaces/schema';
+import { isDocumentRootKey } from './change/document-change';
 import { getEditorJsonRecordEntries } from './value-codec';
 
 /** A record reader's refusal; `json` marks an object that is not plain JSON. */
@@ -28,7 +29,7 @@ export type EditorDocumentShapeIssue =
         | 'records'
         | 'roots';
     }>
-  | Readonly<{ kind: 'root'; root: string }>;
+  | Readonly<{ kind: 'root' | 'root-key'; root: string }>;
 
 type EditorDocumentShape = Readonly<{
   children: readonly unknown[];
@@ -140,6 +141,9 @@ export const getEditorDocumentShapeIssueMessage = (
     case 'root': {
       return `Editor document root "${issue.root}" must be an array.`;
     }
+    case 'root-key': {
+      return `Invalid document root key ${issue.root}.`;
+    }
   }
 
   throw new Error('Unknown editor document shape issue.');
@@ -232,8 +236,9 @@ export function assertEditorDocumentContainers(
 
 /**
  * Read a stored document's top-level fields and containers, keeping a `meta`
- * key named `__proto__` so a migration step can still drop it. `assertJson`
- * runs on the record before its containers, so a JSON error is reported first.
+ * key named `__proto__` and a root named after an `Object.prototype` member so
+ * a migration step can still drop or rename them. `assertJson` runs on the
+ * record before its containers, so a JSON error is reported first.
  */
 export const readStoredEditorDocument = (
   input: unknown,
@@ -251,7 +256,8 @@ export const readStoredEditorDocument = (
 /**
  * Read a document an editor loads: a stored document whose `meta` has no
  * `__proto__` key, because meta writes assign by key, and an assigned
- * `__proto__` key sets the meta object's prototype or vanishes.
+ * `__proto__` key sets the meta object's prototype or vanishes. No root name is
+ * empty, `prototype` or an `Object.prototype` member either.
  */
 export const readEditorDocument = (
   input: unknown,
@@ -262,6 +268,9 @@ export const readEditorDocument = (
 
   if (document.meta && Object.hasOwn(document.meta, '__proto__')) {
     reject({ kind: 'meta-key' });
+  }
+  for (const root of Object.keys(document.roots ?? {})) {
+    if (!isDocumentRootKey(root)) reject({ kind: 'root-key', root });
   }
 
   return document;

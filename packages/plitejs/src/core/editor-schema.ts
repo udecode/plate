@@ -4996,12 +4996,16 @@ export const createEditorSchema = <V extends Value = Value>(
     profileCoreDuration('schema-validation-full-document-boundary', () => {
       const location = toSchemaValidationLocation('main', []);
       const rejectShape = (issue: EditorDocumentShapeIssue): never => {
-        const root = issue.kind === 'root' ? issue.root : 'main';
+        const root =
+          issue.kind === 'root' || issue.kind === 'root-key'
+            ? issue.root
+            : 'main';
 
         throw createEditorSchemaValidationError(
           issue.kind === 'field' || issue.kind === 'meta-key'
             ? 'invalid-document'
             : issue.kind === 'root' ||
+                issue.kind === 'root-key' ||
                 issue.kind === 'roots' ||
                 issue.kind === 'primary-root'
               ? 'invalid-root'

@@ -25,8 +25,8 @@ import {
 } from '../change/builder';
 import {
   DocumentChange,
-  assertNamedDocumentRootKey,
   createInternalDocumentChange,
+  isDocumentRootKey,
   getInternalDocumentChangeEntries,
   mapInternalDocumentChangePosition,
 } from '../change/document-change';
@@ -4474,8 +4474,6 @@ export const compileSliceFitter = <V extends Value>(
         )) as unknown as EditorDocumentValue<V>;
   };
 
-  const fullFitFailsOnRoot = (root: string) => root in Object.prototype;
-
   const reuseCanonicalDocument = (
     raw: EditorDocumentValue,
     positions?: FitPositions
@@ -4483,11 +4481,6 @@ export const compileSliceFitter = <V extends Value>(
     if (!placesEachNodeOnce(raw)) return null;
 
     try {
-      for (const root of Object.keys(raw.roots ?? {})) {
-        if (fullFitFailsOnRoot(root)) return null;
-        assertNamedDocumentRootKey(root);
-      }
-
       const document = ownDocument(raw);
 
       if (
@@ -4606,7 +4599,13 @@ export const compileSliceFitter = <V extends Value>(
         if (!ElementApi.isElement(node)) continue;
 
         for (const root of Object.values(getElementContentRoots(node))) {
-          if (!roots.has(root)) roots.set(root, inputRoots[root] ?? []);
+          if (roots.has(root)) continue;
+          if (!isDocumentRootKey(root)) {
+            throw new EditorSchemaValidationError(
+              `Invalid document root key ${root}.`
+            );
+          }
+          roots.set(root, []);
         }
         collectProjectedRoots(node.children);
       }

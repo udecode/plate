@@ -189,6 +189,7 @@ import {
   getDocumentChangeTopLevelRanges,
 } from './change/classification';
 import {
+  assertDocumentRootKey,
   createInternalDocumentChange,
   documentChangeWritesOnlyElementProperties,
   getInternalDocumentChangeClassification,
@@ -7296,6 +7297,7 @@ const getStateView = <
             'editor.read.root("main") is invalid. Use editor.read.children().'
           );
         }
+        assertDocumentRootKey(root);
 
         return (getEditorDocumentRoots(editor)[root] ?? []) as ReadonlyArray<
           V[number]

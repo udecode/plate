@@ -1,4 +1,4 @@
-import { unsafeDocumentRootKeys } from '../core/change/document-change';
+import { isDocumentRootKey } from '../core/change/document-change';
 import type { NamedRootKey } from '../interfaces/editor';
 import type { Point } from '../interfaces/point';
 import { RangeApi, type Range } from '../interfaces/range';
@@ -21,7 +21,7 @@ const readPointRoot = (point: Point, source: DocumentRangeSource) => {
   if (point.root === undefined) {
     return source === 'saved' ? MAIN_ROOT_KEY : (source.view ?? MAIN_ROOT_KEY);
   }
-  if (point.root === '' || unsafeDocumentRootKeys.has(point.root)) return null;
+  if (!isDocumentRootKey(point.root)) return null;
   if (point.root === MAIN_ROOT_KEY) {
     return source === 'saved' ? MAIN_ROOT_KEY : null;
   }

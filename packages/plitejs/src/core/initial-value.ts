@@ -3,6 +3,7 @@ import { MAIN_ROOT_KEY } from '../internal/root-location';
 import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
 import {
   type EditorDocumentShapeIssue,
+  getEditorDocumentShapeIssueMessage,
   readEditorDocument,
 } from './document-shape';
 import {
@@ -64,6 +65,9 @@ const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
       throw new Error(
         `initialValue.roots.${issue.root} is invalid! Expected a list of elements.`
       );
+    }
+    case 'root-key': {
+      throw new Error(getEditorDocumentShapeIssueMessage(issue));
     }
   }
 };

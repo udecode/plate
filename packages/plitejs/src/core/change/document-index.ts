@@ -437,7 +437,11 @@ const updateIndexedNodes = (
 /** @internal */
 export const rootIndexOf = <K extends string>(source: Roots<K>, key: K) =>
   lazyRootOf(source, key) ??
-  DocumentIndex.fromValue((source[key] ?? []) as readonly JsonNode[]);
+  DocumentIndex.fromValue(
+    (Object.hasOwn(source, key)
+      ? (source[key] ?? [])
+      : []) as readonly JsonNode[]
+  );
 
 export const NO_NODES: NodeList<never> = Object.freeze([]);
 

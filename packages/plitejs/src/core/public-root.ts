@@ -6,6 +6,7 @@ import {
   getCommonLocationRoot,
   MAIN_ROOT_KEY,
 } from '../internal/root-location';
+import { assertDocumentRootKey } from './change/document-change';
 
 export { MAIN_ROOT_KEY } from '../internal/root-location';
 
@@ -13,6 +14,7 @@ export const assertPublicRootKey = (root: string | undefined) => {
   if (root === MAIN_ROOT_KEY) {
     throw new Error('Omit root to target the primary document.');
   }
+  if (root !== undefined) assertDocumentRootKey(root);
 };
 
 export const assertPublicLocationRoot = (
@@ -99,9 +101,9 @@ export const requireMutableRoot = (root: RootKey) => {
   if (root === MAIN_ROOT_KEY) {
     throw new Error('Cannot mutate the primary editor root through tx.roots.');
   }
+  assertDocumentRootKey(root);
 };
 
-/** Project an internal root without exposing the primary-root sentinel. */
 export const toPublicRoot = (root: RootKey): NamedRootKey | undefined =>
   root === MAIN_ROOT_KEY ? undefined : root;
 

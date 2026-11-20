@@ -73,19 +73,46 @@ export type DocumentChangeJson = {
   version: 3;
 };
 
-export const unsafeDocumentRootKeys = new Set([
+// Listed rather than read from Object.prototype, so a polyfill or a host
+// flag such as --disable-proto cannot change which root names pass.
+const unsafeDocumentRootKeys: ReadonlySet<string> = new Set([
+  '__defineGetter__',
+  '__defineSetter__',
+  '__lookupGetter__',
+  '__lookupSetter__',
+  '__proto__',
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'prototype',
+  'toLocaleString',
+  'toString',
+  'valueOf',
+]);
+
+const unsafeOwnKeyNames: ReadonlySet<string> = new Set([
   '__proto__',
   'constructor',
   'prototype',
 ]);
 
+export const isDocumentRootKey = (root: string) =>
+  root.length > 0 && !unsafeDocumentRootKeys.has(root);
+
 export function assertDocumentRootKey(root: unknown): asserts root is string {
-  if (
-    typeof root !== 'string' ||
-    root.length === 0 ||
-    unsafeDocumentRootKeys.has(root)
-  ) {
+  if (typeof root !== 'string' || !isDocumentRootKey(root)) {
     throw new Error(`Invalid document root key ${String(root)}.`);
+  }
+}
+
+function assertOwnKeyName(key: unknown): asserts key is string {
+  if (
+    typeof key !== 'string' ||
+    key.length === 0 ||
+    unsafeOwnKeyNames.has(key)
+  ) {
+    throw new Error(`Invalid document root key ${String(key)}.`);
   }
 }
 
@@ -97,6 +124,14 @@ export function assertNamedDocumentRootKey(
   if (root === 'main') {
     throw new Error('Omit root to target the primary document.');
   }
+}
+
+function assertDeletableRoot(root: string) {
+  if (root === 'main') {
+    throw new Error('Omit root to target the primary document.');
+  }
+
+  assertOwnKeyName(root);
 }
 
 export const hasFunctions = (
@@ -1156,9 +1191,16 @@ export class DocumentChange {
   >;
 
   private constructor(input: DocumentChangeInput = {}) {
-    for (const root of input.roots?.keys() ?? []) {
-      assertNamedDocumentRootKey(root);
-    }
+    this.deleteRoots = freezeReadonlySet(input.deleteRoots ?? []);
+    const assertChangedRoot = (root: string) => {
+      if (this.deleteRoots.has(root)) {
+        assertDeletableRoot(root);
+      } else {
+        assertNamedDocumentRootKey(root);
+      }
+    };
+
+    for (const root of input.roots?.keys() ?? []) assertChangedRoot(root);
 
     const primary = input.primary?.empty ? null : (input.primary ?? null);
     const roots = freezeReadonlyMap(
@@ -1171,7 +1213,7 @@ export class DocumentChange {
     this.rootClassifications = freezeReadonlyMap(
       [...(input.rootClassifications ?? [])]
         .map(([root, classification]) => {
-          assertNamedDocumentRootKey(root);
+          assertChangedRoot(root);
 
           return [root, classification] as const;
         })
@@ -1182,10 +1224,9 @@ export class DocumentChange {
         ])
     );
     this.createRoots = freezeReadonlySet(input.createRoots ?? []);
-    this.deleteRoots = freezeReadonlySet(input.deleteRoots ?? []);
 
     for (const root of this.createRoots) assertNamedDocumentRootKey(root);
-    for (const root of this.deleteRoots) assertNamedDocumentRootKey(root);
+    for (const root of this.deleteRoots) assertDeletableRoot(root);
 
     for (const root of this.createRoots) {
       if (this.deleteRoots.has(root)) {
@@ -1197,7 +1238,7 @@ export class DocumentChange {
       [...(input.records ?? NO_RECORD_OPS)]
         .filter(([, writes]) => writes.size > 0)
         .map(([set, writes]) => {
-          assertDocumentRootKey(set);
+          assertOwnKeyName(set);
 
           return [set, freezeReadonlyMap(writes)] as const;
         })
@@ -1305,7 +1346,8 @@ export class DocumentChange {
       const seenClassifications = new Set<string>();
 
       for (const [root, classification] of rootClassifications) {
-        assertNamedDocumentRootKey(root);
+        if (typeof root !== 'string') return false;
+        if (!decoded.deleteRoots.has(root)) assertNamedDocumentRootKey(root);
 
         if (
           seenClassifications.has(root) ||
@@ -1378,11 +1420,9 @@ export class DocumentChange {
           ? NO_RECORD_OPS
           : recordOpsFromJson(json.records),
       roots: new Map(
-        Object.entries(json.roots ?? {}).map(([root, change]) => {
-          assertNamedDocumentRootKey(root);
-
-          return [root, RootChange.fromJSON(change)] as const;
-        })
+        Object.entries(json.roots ?? {}).map(
+          ([root, change]) => [root, RootChange.fromJSON(change)] as const
+        )
       ),
     });
   }
