@@ -120,9 +120,9 @@ Annotation labels, captions and the final handoff follow `unslop`. They also:
 
 ## Final Handoff
 
-In a project with plan pages, put the annotated images on the plan page, which
-is published with them, and keep the reply to the page link. Otherwise show every
-annotated image inline with an absolute local path. Give each image one short
+When the work publishes a plan page, put the annotated images on that page,
+which is published with them. Otherwise show
+every annotated image inline with an absolute local path. Give each image one short
 caption stating what to notice. Name the related test, browser,
 external, or source proof.
 
@@ -142,5 +142,6 @@ Close only when:
   contradiction as a blocker;
 - originals and annotated copies are saved;
 - every annotation matches its original;
-- annotated images appear on the plan page, or inline when the project has none;
+- annotated images appear on the published plan page, or inline when the work
+  publishes none;
 - the owning proof is named.

@@ -17,7 +17,7 @@ Infer the mode when it is omitted. Do not invent more modes for workflow stages 
 - `review`: judge one current or proposed API, diff or plan, recommend the better target and rank its findings on the architecture reference's P0 to P3 scale (`.agents/playbooks/references/architecture.md#priority`), which the Babysit playbook's P0 and P1 gate reads.
 - `repair`: edit the rule's one owner, then fix every example, recipe, check and doc that still teaches the rejected shape. See [Repair](#repair).
 
-A `design` or `review` verdict goes on a page, per `AGENTS.md`'s Plan pages: the active plan's, or a one-off plan's.
+A `design` or `review` verdict goes in the active plan when one exists, which publishes its page only when it is page work, as `AGENTS.md`'s Plan pages says, and otherwise hands back in the reply.
 
 ## Inputs
 

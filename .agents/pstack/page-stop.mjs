@@ -145,7 +145,7 @@ export function hook(input) {
   return {
     hookSpecificOutput: {
       hookEventName: 'PostToolUseFailure',
-      additionalContext: `This publish went to the plan page of ${run.plan}. That page no longer opens, because it was deleted or another claude.ai account owns it. Do not ask the user. Run the page-stop command that printed this publish again with --new, which is \`node .agents/pstack/page-stop.mjs stop ${run.plan} --new\` at a hand-back and \`stage\` otherwise. Send what it prints, and say in the hand-back what it says about the old link.`,
+      additionalContext: `This publish went to the plan page of ${run.plan}. That page no longer opens, because it was deleted or another claude.ai account owns it. Do not ask the user. Run the page-stop command that printed this publish again with --new, which is \`node .agents/pstack/page-stop.mjs stop ${run.plan} --new\`. Send what it prints, and say in the hand-back what it says about the old link.`,
     },
   };
 }

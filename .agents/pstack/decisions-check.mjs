@@ -12,11 +12,6 @@
 //        (each line holds the five cells; writes every row only when all pass)
 //        Both append forms open the batch with a lead row naming the session's model
 //        and effort, read by lead.mjs, when they differ from the log's last lead row.
-//        Both append forms print the stage a written batch moves the log into, so
-//        the lead renames the session as the Session title rule asks, and in Claude
-//        Code, outside trunk delivery, print what page-stop.mjs stage prints for
-//        the plan beside the log. They also warn, without refusing, when a batch
-//        writes the first review or ship row of a babysit plan that has no Page: line.
 //        Both append forms, unlike the <log> and --all checks, refuse a partial, open, gap,
 //        blocked or inconclusive row without proof: <existing file under <plans>/artifacts/>
 //        or proof: none, and an accepted row unless its proof: names files an earlier row
@@ -128,10 +123,9 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
-import { cli as pageStop } from './page-stop.mjs';
-import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
+import { parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
-import { acceptedWord, BIG_STEP, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, liftsStep, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STAGE_PHASES, stageOfRow, STATUSES, statusOf, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
+import { acceptedWord, BIG_STEP, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, liftsStep, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STATUSES, statusOf, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -738,46 +732,6 @@ function append(path, batch, run, miss = null) {
   return [];
 }
 
-function stageMoves(path) {
-  const phases = existsSync(path)
-    ? readFileSync(path, 'utf8').split('\n').slice(1).filter((line) => line.trim()).map((line) => line.split('\t')[1])
-    : [];
-  const stages = phases.map((_, index) => stageOfRow(phases, index)).filter(Boolean);
-  return stages.filter((stage, index) => stage !== stages[index - 1]);
-}
-
-function stagePage(log) {
-  const plan = log.replace(/\.decisions\.tsv$/u, '.md');
-  if (trunk() || process.env.CLAUDECODE !== '1' || plan === log || !existsSync(plan)) return;
-  try {
-    const { error, lines = [] } = pageStop(['stage', plan], process.env);
-    if (error) console.error(`No page publish: ${error}`);
-    if (lines.length) console.info(lines.join('\n'));
-  } catch (error) {
-    console.error(`No page publish: ${error.message}`);
-  }
-}
-
-const pageDue = (phase) => [...STAGE_PHASES.Review, ...STAGE_PHASES.Ship, 'quality'].includes(phase) || /^(review|deliver)/iu.test(phase ?? '');
-const pageDueRows = (path) =>
-  existsSync(path) ? readFileSync(path, 'utf8').split('\n').slice(1).filter((line) => pageDue(line.split('\t')[1])).length : 0;
-
-function warnUnpublishedBabysit(log) {
-  const plan = log.replace(/\.decisions\.tsv$/u, '.md');
-  if (plan === log || !existsSync(plan)) return;
-  try {
-    const { plan: parsed, root, playbooks, subjectPath } = contextOf(resolve(plan));
-    const name = parsed.meta.playbook;
-    const babysit = name === 'babysit' || playbooks.some((entry) => entry.name === name && entry.extends.includes('babysit'));
-    const target = subjectPath ?? resolve(plan);
-    if (babysit && !pageUrlOf(root, target).url) {
-      console.error(`Warning: ${relative(process.cwd(), target)} has no Page: line, and the babysit playbook publishes the plan page before its first review round. Publish it now, before the next public action, as the plan-page skill says.`);
-    }
-  } catch (error) {
-    console.error(`No page check: ${error.message}`);
-  }
-}
-
 const args = process.argv.slice(2);
 const invokedFrom = process.cwd();
 runLedgerCommandFromMainCheckout(args);
@@ -1012,8 +966,6 @@ function dispatch() {
             .filter((line) => line.trim())
             .map((line) => line.split('\t'))
         : [args.slice(2)];
-    const before = stageMoves(args[1] ?? '').length;
-    const dueBefore = pageDueRows(args[1] ?? '');
     const lead = findLead();
     const run = lead.run ?? null;
     if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
@@ -1024,10 +976,6 @@ function dispatch() {
     }
     console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
     if (run) console.info(`Lead: ${leadLabel(run)}.`);
-    const entered = stageMoves(args[1]).slice(before);
-    if (entered.length) console.info(`Stage: ${entered.join(', then ')}.${existsSync(new URL('rules/title.md', import.meta.url)) ? ' Rename the session now, as .agents/pstack/rules/title.md says.' : ''}`);
-    stagePage(args[1]);
-    if (dueBefore === 0 && pageDueRows(args[1]) > 0) warnUnpublishedBabysit(args[1]);
     return 0;
   }
   const paths = args[0] === '--all' ? decisionLogs(plansDir()) : args;

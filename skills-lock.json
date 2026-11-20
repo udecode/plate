@@ -16,10 +16,10 @@
     },
     "plan-page": {
       "source": "udecode/dotai",
-      "commit": "dfe44bf64c0ff3d6a8b060788bd201f2adafe8cb",
+      "commit": "ab401de78179dadea708fb3c3af5cc0d7349d66c",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "48f7b013465419b4f319d84c4443b0a5fc9e7ce6591b4c465e7336ef813e6611"
+      "computedHash": "0a324d8fd153d5964166108c3568946ba9cbff66815e727f4d7a64cafbcef0bc"
     },
     "redo": {
       "source": "udecode/dotai",
@@ -56,9 +56,10 @@
     },
     "walkthrough": {
       "source": "udecode/dotai",
+      "commit": "ab401de78179dadea708fb3c3af5cc0d7349d66c",
       "sourceType": "github",
       "skillPath": "skills/walkthrough/SKILL.md",
-      "computedHash": "72795b89c7ef9cce3ec88e6ce7b1473baff1c8135325d658a65afeeb25e9e4b9"
+      "computedHash": "9db82eaf8d7cb6ded3914d9059b6c7e2de7f4c339e1fdbc59ef1bb17f1ee3ee5"
     }
   }
 }

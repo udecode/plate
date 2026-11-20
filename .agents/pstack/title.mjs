@@ -52,6 +52,6 @@ const title = transcript ? lastTitle(transcript) : undefined;
 
 if (typeof title === 'string' && title.startsWith(CLOSED)) {
   console.info(
-    `This session's title is still "${title}", the mark of a closed run. Before your first step, retitle it with this request's first stage, or with its bare name for an answer that needs no work, as .agents/pstack/rules/title.md says.`
+    `This session's title is still "${title}", the mark of a closed run. Before your first step, retitle it 🚧 with its name for work, or with its bare name for an answer that needs no work, as .agents/pstack/rules/title.md says.`
   );
 }
