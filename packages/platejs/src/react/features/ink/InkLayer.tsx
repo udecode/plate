@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import type { InkMark } from '../../../features/ink/lib';
 import {
   useEditableRef,
   useEditor,
@@ -10,7 +9,7 @@ import {
 } from '../../core';
 import { attachInkCapture } from './inkCapture.internal';
 import { INK_TOUCH_ACTION } from './inkInput.internal';
-import { inkOutline } from './inkPaint.internal';
+import { createInkSurface } from './inkPaint.internal';
 import {
   createInkPlacer,
   type InkPlaced,
@@ -29,14 +28,11 @@ export type InkSign = Readonly<{
   state: 'changed' | 'deleted' | 'narrow';
 }>;
 
-const samePlaced = (a: InkPlaced, b: InkPlaced) =>
+type InkSigns = Omit<InkPlaced, 'ink'>;
+
+const sameSigns = (a: InkSigns, b: InkSigns) =>
   a.bottom === b.bottom &&
-  a.ink.length === b.ink.length &&
   a.signs.length === b.signs.length &&
-  a.ink.every(
-    ({ dx, dy, mark }, at) =>
-      mark === b.ink[at].mark && dx === b.ink[at].dx && dy === b.ink[at].dy
-  ) &&
   a.signs.every(
     ({ id, left, sign, top }, at) =>
       id === b.signs[at].id &&
@@ -87,13 +83,19 @@ export function InkLayer({
   const picked = useViewStore(InkPlugin, (state) => state.picked);
   const readOnly = useEditorViewState(view, (state) => state.isReadOnly());
   const [layer, setLayer] = React.useState<HTMLDivElement | null>(null);
+  const [surface, setSurface] = React.useState<ReturnType<
+    typeof createInkSurface
+  > | null>(null);
+  const mountInk = React.useCallback((into: SVGGElement | null) => {
+    setSurface(into && createInkSurface(into));
+  }, []);
   const [shown] = React.useState(() => {
-    let current = NOTHING_PLACED;
+    let current: InkSigns = NOTHING_PLACED;
     const listeners = new Set<() => void>();
 
     return {
       get: () => current,
-      set: (next: InkPlaced) => {
+      set: (next: InkSigns) => {
         current = next;
         for (const listener of listeners) listener();
       },
@@ -107,13 +109,12 @@ export function InkLayer({
     };
   });
   // React renders a store change in the microtask after the listener that
-  // made it, so the marks a `beforeprint` listener places print.
+  // made it, so the signs a `beforeprint` listener places print.
   const placed = React.useSyncExternalStore(
     shown.subscribe,
     shown.get,
     shown.get
   );
-  const [outlines] = React.useState(() => new Map<string, string>());
   const preview = React.useRef<SVGPathElement>(null);
   const currentTool = React.useRef(tool);
   const capture = React.useRef<ReturnType<typeof attachInkCapture>>(null);
@@ -132,7 +133,7 @@ export function InkLayer({
     const editable = editableRef.current;
     const path = preview.current;
 
-    if (!layer || !editable || !path) return undefined;
+    if (!layer || !editable || !path || !surface) return undefined;
 
     const attached = attachInkCapture({
       editor,
@@ -145,22 +146,12 @@ export function InkLayer({
     const page = layer.ownerDocument;
     const win = page.defaultView;
     let frame = 0;
-    let kept: readonly InkMark[] = [];
-    const show = (next: InkPlaced) => {
-      if (!samePlaced(next, shown.get())) shown.set(next);
+    const show = ({ ink, ...signs }: InkPlaced) => {
+      surface.paint(view.plugin(InkPlugin).read.marks(), ink);
+      if (!sameSigns(signs, shown.get())) shown.set(signs);
     };
     const paint = () => {
       frame = 0;
-      const marks = view.plugin(InkPlugin).read.marks();
-
-      if (marks !== kept) {
-        const saved = new Set(marks.map((mark) => mark.id));
-
-        kept = marks;
-        for (const id of outlines.keys()) {
-          if (!saved.has(id)) outlines.delete(id);
-        }
-      }
       show(placer.place());
     };
     const schedule = () => {
@@ -203,22 +194,15 @@ export function InkLayer({
       attached.detach();
       capture.current = null;
     };
-  }, [editableRef, editor, layer, outlines, shown, view]);
+  }, [editableRef, editor, layer, shown, surface, view]);
+
+  React.useLayoutEffect(() => {
+    surface?.setLook(hidden, picked);
+  }, [hidden, picked, surface]);
 
   React.useLayoutEffect(() =>
     layer && !hidden ? stackInkSigns(layer, placed.signs) : undefined
   );
-
-  const outlineOf = (mark: InkMark) => {
-    let outline = outlines.get(mark.id);
-
-    if (outline === undefined) {
-      outline = inkOutline(mark.samples, mark.brush);
-      outlines.set(mark.id, outline);
-    }
-
-    return outline;
-  };
 
   return (
     <div
@@ -246,25 +230,7 @@ export function InkLayer({
           width: '100%',
         }}
       >
-        {!hidden &&
-          placed.ink.map(({ dx, dy, mark }) => {
-            const halo = picked.includes(mark.id);
-
-            return (
-              <path
-                d={outlineOf(mark)}
-                data-ink-mark={mark.id}
-                data-picked={halo || undefined}
-                fill={mark.brush.color}
-                key={mark.id}
-                opacity={mark.brush.opacity}
-                stroke={halo ? mark.brush.color : undefined}
-                strokeOpacity={halo ? 0.35 : undefined}
-                strokeWidth={halo ? mark.brush.size * 2 : undefined}
-                transform={`translate(${dx} ${dy})`}
-              />
-            );
-          })}
+        <g ref={mountInk} />
         <path data-ink-stroke="" ref={preview} />
       </svg>
       {!hidden &&
