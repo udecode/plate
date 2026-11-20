@@ -636,9 +636,11 @@ function readFencePair(lines, start) {
 const codeHtml = ({ lang, body }) =>
   `<div class="scroll"><pre><code${lang ? ` class="language-${lang}"` : ''}>${escapeHtml(body)}</code></pre></div>`;
 
+const bodyLines = (body) => (body.trim() ? body.split('\n') : []);
+
 function lineDiff(before, after) {
-  const a = before.split('\n');
-  const b = after.split('\n');
+  const a = bodyLines(before);
+  const b = bodyLines(after);
   const common = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
   for (let i = a.length - 1; i >= 0; i -= 1) {
     for (let j = b.length - 1; j >= 0; j -= 1) {
@@ -2248,8 +2250,8 @@ function unifiedDiff(before, after) {
   const [beforeHead, ...beforeRest] = before.split('\n');
   const [afterHead, ...afterRest] = after.split('\n');
   if (PATH_NOTE.test(beforeHead) && PATH_NOTE.test(afterHead)) return [` ${afterHead}`, ...unifiedDiff(beforeRest.join('\n'), afterRest.join('\n'))];
-  if (!before.trim()) return after.split('\n').map((line) => `+${line}`);
-  if (!after.trim()) return before.split('\n').map((line) => `-${line}`);
+  if (!before.trim()) return bodyLines(after).map((line) => `+${line}`);
+  if (!after.trim()) return bodyLines(before).map((line) => `-${line}`);
   const out = [];
   let removed = [];
   let added = [];
