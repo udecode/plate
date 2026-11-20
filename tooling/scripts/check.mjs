@@ -636,7 +636,7 @@ export const steps = [
     name: 'markdown-round-trip',
     cores: 4,
     private: true,
-    run: 'pnpm check:markdown-round-trip',
+    run: 'pnpm check:markdown-round-trip && bun test ./packages/platejs/scripts/markdown-round-trip-previews.spec.ts',
     affected: runsScript(
       'packages/platejs/scripts/markdown-round-trip.ts',
       'packages/platejs/scripts/markdown-round-trip',
