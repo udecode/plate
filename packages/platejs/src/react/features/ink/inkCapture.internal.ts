@@ -30,7 +30,7 @@ import {
   sameInkLayout,
 } from './inkMeasure.internal';
 import { inkOutline } from './inkPaint.internal';
-import type { InkLayoutChange } from './inkWatch.internal';
+import { type InkLayoutChange, keepsLayouts } from './inkWatch.internal';
 
 type Point = readonly [x: number, y: number];
 
@@ -324,7 +324,7 @@ export const attachInkCapture = ({
     change: InkLayoutChange
   ) =>
     heldBy(open).some(({ block, live }) =>
-      change === 'boxes'
+      keepsLayouts(change)
         ? !sameInkBox(live.box, inkBoxOf(block.element, origin))
         : !sameInkLayout(
             live,

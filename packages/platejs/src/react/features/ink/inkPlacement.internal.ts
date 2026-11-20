@@ -26,15 +26,30 @@ import {
 import { InkPlugin } from './InkPlugin';
 import type { InkLayoutChange } from './inkWatch.internal';
 
+type InkPin = Readonly<{ at: InkLayerOrigin; element: Element }>;
+
 export type InkPlaced = Readonly<{
   bottom: number;
-  ink: ReadonlyArray<Readonly<{ dx: number; dy: number; mark: InkMark }>>;
+  contentOrigin: InkLayerOrigin;
+  ink: ReadonlyArray<
+    Readonly<{ dx: number; dy: number; mark: InkMark; pin?: InkPin }>
+  >;
   signs: ReadonlyArray<
     Readonly<{ id: string; left: number; sign: InkSign; top: number }>
   >;
 }>;
 
-export const NOTHING_PLACED: InkPlaced = { bottom: 0, ink: [], signs: [] };
+export const NOTHING_PLACED: InkPlaced = {
+  bottom: 0,
+  contentOrigin: { left: 0, top: 0 },
+  ink: [],
+  signs: [],
+};
+
+export type InkArrival = Readonly<{
+  placed: InkPlaced;
+  undecided: 'band' | 'screen' | undefined;
+}>;
 
 type Places = ReadonlyArray<InkCopyPlace | undefined>;
 
@@ -45,6 +60,7 @@ type Witness = Readonly<{
 }>;
 
 type Decided = Readonly<{
+  pin: Element | undefined;
   place: InkCopyPlace | undefined;
   placement: InkPlacement;
 }>;
@@ -85,10 +101,7 @@ const inkInputs = (
   copies: readonly InkCopy[],
   places: Places,
   measure: (key: NodeKey) => InkMeasuredBlock | undefined,
-  candidatesBetween: (
-    from: number,
-    to: number
-  ) => ReadonlyArray<Readonly<{ box: InkBox; key: NodeKey }>>
+  candidatesBetween: (from: number, to: number) => readonly NearBlock[]
 ): InkInputs => {
   const live = places.map((place) =>
     place && place.kind !== 'gone' ? measure(place.key) : undefined
@@ -131,7 +144,7 @@ const placeInkMarks = (
   marks: readonly InkMark[],
   entryOf: (mark: InkMark) => InkIndexedMark | undefined,
   signOf: (mark: InkMark) => InkMarkSign | undefined,
-  decide: Decide
+  decide: (...of: Parameters<Decide>) => Decided | undefined
 ): InkPlaced => {
   const editableBox = inkBoxOf(editable, origin);
   const style = getComputedStyle(editable);
@@ -143,6 +156,19 @@ const placeInkMarks = (
     rtl: editableBox.left,
   };
   const startTop = editableBox.top + (Number.parseFloat(style.paddingTop) || 0);
+  const pins = new Map<Element, InkPin>();
+  const pinAt = (element: Element) => {
+    let pin = pins.get(element);
+
+    if (!pin) {
+      const { left, top } = inkBoxOf(element, origin);
+
+      pin = { at: { left, top }, element };
+      pins.set(element, pin);
+    }
+
+    return pin;
+  };
   const anchors = new Map<NodeKey, InkBox | undefined>();
   const anchorBox = (key: NodeKey) => {
     if (!anchors.has(key)) {
@@ -186,10 +212,18 @@ const placeInkMarks = (
 
     if (!kept) {
       const decided = decide(mark, entry);
-      const { placement } = decided;
+
+      if (!decided) continue;
+
+      const { pin, placement } = decided;
 
       if (placement.type === 'ink') {
-        ink.push({ dx: placement.dx, dy: placement.dy, mark });
+        ink.push({
+          dx: placement.dx,
+          dy: placement.dy,
+          mark,
+          ...(pin && { pin: pinAt(pin) }),
+        });
       }
       state = placement.type === 'sign' ? placement.reason : placement.sign;
       ({ place } = decided);
@@ -211,6 +245,10 @@ const placeInkMarks = (
 
   return {
     bottom: editable.offsetTop + editable.offsetHeight,
+    contentOrigin: {
+      left: editableBox.left - editable.scrollLeft,
+      top: editableBox.top - editable.scrollTop,
+    },
     ink,
     signs: [...signs].map(([id, { marks: ofSign, state, ...place }]) => ({
       ...place,
@@ -288,6 +326,8 @@ export const createInkPlacer = ({
   const held = new Map<string, Held>();
   let index: MarkIndex | null = null;
   let gone: readonly InkMark[] | null = null;
+  let heading = 1;
+  let contentTop: number | undefined;
 
   const entryOf = (mark: InkMark) =>
     view.read((state) =>
@@ -463,6 +503,30 @@ export const createInkPlacer = ({
 
       return band;
     };
+    const pinsOf = new Map<Element, Element | undefined>();
+    const pinOf = (element: Element) => {
+      if (!pinsOf.has(element)) {
+        let pin: Element | null = element;
+
+        while (
+          pin &&
+          pin !== editable &&
+          !/sticky|fixed/.test(getComputedStyle(pin).position)
+        ) {
+          pin = pin.parentElement;
+        }
+        pinsOf.set(element, pin && pin !== editable ? pin : undefined);
+      }
+
+      return pinsOf.get(element);
+    };
+    const candidatesMovingWith = (pin: Element | undefined) =>
+      pin
+        ? (from: number, to: number) =>
+            candidatesBetween(from, to).filter(
+              ({ element }) => pinOf(element) === pin
+            )
+        : candidatesBetween;
 
     const stillHeld = (
       mark: InkMark,
@@ -482,9 +546,10 @@ export const createInkPlacer = ({
         from: kept.bandFromFirst.from + top,
         to: kept.bandFromFirst.to + top,
       };
-      const crossing = candidatesBetween(band.from, band.to).filter(({ box }) =>
-        crosses(box, band)
-      ).length;
+      const crossing = candidatesMovingWith(kept.pin)(
+        band.from,
+        band.to
+      ).filter(({ box }) => crosses(box, band)).length;
 
       if (
         crossing !== kept.crossing ||
@@ -501,9 +566,10 @@ export const createInkPlacer = ({
         return undefined;
       }
 
-      const { place, placement } = kept;
+      const { pin, place, placement } = kept;
 
       return {
+        pin,
         place,
         placement:
           placement.type === 'ink'
@@ -519,12 +585,17 @@ export const createInkPlacer = ({
 
       const { copies } = entry;
       const places = copies.map((copy) => read.place(copy.id));
+      const [start] = places.flatMap((at) =>
+        at && at.kind !== 'gone' ? [at.key] : []
+      );
+      const anchor = start === undefined ? undefined : blockAt(start)?.element;
+      const pin = anchor && pinOf(anchor);
       const { band, crossing, first, keys, live, near } = inkInputs(
         mark,
         copies,
         places,
         measure,
-        candidatesBetween
+        candidatesMovingWith(pin)
       );
       const placement = placeMark({
         copies,
@@ -565,6 +636,7 @@ export const createInkPlacer = ({
           entry,
           firstKey: keys[0],
           firstTop,
+          pin,
           place,
           placement,
           width: rect.width,
@@ -574,7 +646,7 @@ export const createInkPlacer = ({
         held.delete(mark.id);
       }
 
-      return { place, placement };
+      return { pin, place, placement };
     };
 
     gone ??= marks.filter((mark) => signOf(mark)?.state === 'deleted');
@@ -585,7 +657,14 @@ export const createInkPlacer = ({
       for (const mark of markIndex.byBlock.get(block.id) ?? []) shown.add(mark);
     }
 
-    return { decide, origin, shown: marks.filter((mark) => shown.has(mark)) };
+    return {
+      blocks,
+      decide,
+      marksOn: (block: string) => markIndex.byBlock.get(block) ?? [],
+      origin,
+      shown: marks.filter((mark) => shown.has(mark)),
+      stillHeld,
+    };
   };
 
   const placeWithin = (span: Span): InkPlaced => {
@@ -602,13 +681,75 @@ export const createInkPlacer = ({
           pass.decide
         )
       : {
+          ...NOTHING_PLACED,
           bottom: editable.offsetTop + editable.offsetHeight,
-          ink: [],
-          signs: [],
         };
   };
 
   return {
+    arrive: (
+      shown: InkPlaced,
+      expired: (onScreen: boolean) => boolean
+    ): InkArrival => {
+      const pass = openPass(nearView, false);
+
+      if (!pass) {
+        return { placed: placeWithin(nearView), undecided: undefined };
+      }
+
+      const screen = layer.ownerDocument.defaultView?.innerHeight ?? 0;
+      const ranks = new Map<InkMark, number>();
+
+      for (const { box, id } of pass.blocks) {
+        const top = box.top + pass.origin.top;
+        const ahead = top >= screen === heading > 0 ? 1 : 2;
+        const rank = top < screen && top + box.height > 0 ? 0 : ahead;
+
+        for (const mark of pass.marksOn(id)) {
+          ranks.set(mark, Math.min(rank, ranks.get(mark) ?? rank));
+        }
+      }
+
+      const shownBefore = new Set([
+        ...shown.ink.map(({ mark }) => mark.id),
+        ...shown.signs.flatMap(({ sign }) => sign.marks),
+      ]);
+      const decided = new Map<InkMark, Decided>();
+      let undecided: InkArrival['undecided'];
+      let arrivalsDecided = 0;
+
+      for (const [mark, rank] of [...ranks].sort(([, a], [, b]) => a - b)) {
+        const entry = entryOf(mark);
+
+        if (!entry || signOf(mark)) continue;
+
+        const kept = pass.stillHeld(mark, entry);
+
+        const arriving = !kept && !shownBefore.has(mark.id);
+
+        if (arriving) {
+          if (undecided || (arrivalsDecided > 0 && expired(rank === 0))) {
+            undecided ??= rank === 0 ? 'screen' : 'band';
+            continue;
+          }
+          arrivalsDecided += 1;
+        }
+        decided.set(mark, kept ?? pass.decide(mark, entry));
+      }
+
+      return {
+        placed: placeInkMarks(
+          view,
+          editable,
+          pass.origin,
+          pass.shown,
+          entryOf,
+          signOf,
+          (mark) => decided.get(mark)
+        ),
+        undecided,
+      };
+    },
     audit: (): InkAudit => {
       const pass = openPass(nearView, true);
       let at = 0;
@@ -626,6 +767,45 @@ export const createInkPlacer = ({
 
         return at < pass.shown.length;
       };
+    },
+    follow: ({ contentOrigin, ink }: InkPlaced): InkPlaced['ink'] => {
+      const rect = layer.getBoundingClientRect();
+      const box = inkBoxOf(editable, rect);
+      const top = box.top - editable.scrollTop;
+      const moved = new Map<Element | undefined, InkLayerOrigin>([
+        [
+          undefined,
+          {
+            left: box.left - editable.scrollLeft - contentOrigin.left,
+            top: top - contentOrigin.top,
+          },
+        ],
+      ]);
+
+      if (contentTop !== undefined && top + rect.top !== contentTop) {
+        heading = top + rect.top < contentTop ? 1 : -1;
+      }
+      contentTop = top + rect.top;
+
+      const next = ink.map((each) => {
+        let by = moved.get(each.pin?.element);
+
+        if (!by && each.pin) {
+          const now = inkBoxOf(each.pin.element, rect);
+
+          by = {
+            left: now.left - each.pin.at.left,
+            top: now.top - each.pin.at.top,
+          };
+          moved.set(each.pin.element, by);
+        }
+
+        return by && (by.left !== 0 || by.top !== 0)
+          ? { ...each, dx: each.dx + by.left, dy: each.dy + by.top }
+          : each;
+      });
+
+      return next.every((each, n) => each === ink[n]) ? ink : next;
     },
     layoutChanged: (change: InkLayoutChange, within?: Element) => {
       layouts.changed(change, within);

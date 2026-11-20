@@ -29,14 +29,19 @@ export type InkSign = Readonly<{
   state: 'changed' | 'deleted' | 'narrow';
 }>;
 
-type InkSigns = Omit<InkPlaced, 'ink'>;
+type InkSigns = Pick<InkPlaced, 'bottom' | 'signs'>;
 
+const ARRIVE_MS = 50;
 const SETTLE_MS = 250;
 const SLICE_MS = 3;
 
-const whenIdle = (run: () => void) => {
+const whenIdle = (run: () => void, timeoutMs?: number) => {
   if (typeof requestIdleCallback === 'function') {
-    const id = requestIdleCallback(run);
+    const id = requestIdleCallback(
+      run,
+      // A timeout of 0 is no timeout.
+      timeoutMs === undefined ? undefined : { timeout: Math.max(1, timeoutMs) }
+    );
 
     return () => cancelIdleCallback(id);
   }
@@ -162,16 +167,60 @@ export function InkLayer({
     const page = layer.ownerDocument;
     const win = page.defaultView;
     let frame = 0;
+    let moveFrame = 0;
     let settle: ReturnType<typeof setTimeout> | undefined;
     let stopSlice: (() => void) | undefined;
     let audit: InkAudit | undefined;
-    const show = ({ ink, ...signs }: InkPlaced) => {
+    let painted = NOTHING_PLACED;
+    let scrollStartedAt: number | undefined;
+    let stopArrival: (() => void) | undefined;
+    const show = (next: InkPlaced) => {
+      const { bottom, ink, signs } = next;
+
+      painted = next;
       surface.paint(view.plugin(InkPlugin).read.marks(), ink);
-      if (!sameSigns(signs, shown.get())) shown.set(signs);
+      if (!sameSigns(next, shown.get())) shown.set({ bottom, signs });
+    };
+    const stopArriving = () => {
+      stopArrival?.();
+      stopArrival = undefined;
+      scrollStartedAt = undefined;
     };
     const paint = () => {
       frame = 0;
       show(placer.place());
+    };
+    const arrive = () => {
+      const start = performance.now();
+      const { placed: next, undecided } = placer.arrive(painted, (onScreen) => {
+        const now = performance.now();
+        const sliceSpent = now - start >= SLICE_MS;
+        const screenOverdue =
+          onScreen &&
+          scrollStartedAt !== undefined &&
+          now >= scrollStartedAt + ARRIVE_MS;
+
+        return sliceSpent && !screenOverdue;
+      });
+
+      show(next);
+      if (undecided !== 'screen') scrollStartedAt = undefined;
+      stopArrival = undecided
+        ? whenIdle(
+            arrive,
+            scrollStartedAt === undefined
+              ? undefined
+              : scrollStartedAt + ARRIVE_MS - performance.now()
+          )
+        : undefined;
+    };
+    const move = () => {
+      const ink = placer.follow(painted);
+
+      moveFrame = 0;
+      if (ink !== painted.ink) {
+        surface.paint(view.plugin(InkPlugin).read.marks(), ink);
+      }
     };
     const stopAudit = () => {
       clearTimeout(settle);
@@ -196,17 +245,39 @@ export function InkLayer({
     // A change that moves words and reports nothing, such as a style rule on
     // a neighbor, leaves a held decision stale, so the audit decides again
     // once the page has gone quiet.
-    const schedule = () => {
-      frame ||= requestAnimationFrame(paint);
+    const settleLater = () => {
       stopAudit();
       settle = setTimeout(() => {
         stopSlice = whenIdle(slice);
       }, SETTLE_MS);
     };
+    const schedule = () => {
+      frame ||= requestAnimationFrame(paint);
+      settleLater();
+    };
+    const onScroll = ({ target }: Event) => {
+      if (
+        target instanceof Element &&
+        target !== editable &&
+        editable.contains(target)
+      ) {
+        return;
+      }
+      if (scrollStartedAt === undefined) {
+        scrollStartedAt = performance.now();
+        stopArrival?.();
+        stopArrival = whenIdle(arrive, ARRIVE_MS);
+      }
+      moveFrame ||= requestAnimationFrame(move);
+      settleLater();
+    };
     const onPrint = () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(moveFrame);
       frame = 0;
+      moveFrame = 0;
       stopAudit();
+      stopArriving();
       show(placer.placeEvery());
     };
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
@@ -222,10 +293,10 @@ export function InkLayer({
     const stopLayout = observeInkLayout(editable, layer, (change, within) => {
       placer.layoutChanged(change, within);
       attached.layoutChanged(change);
-      schedule();
+      if (change !== 'scroll') schedule();
     });
 
-    page.addEventListener('scroll', schedule, { capture: true, passive: true });
+    page.addEventListener('scroll', onScroll, { capture: true, passive: true });
     win?.addEventListener('resize', schedule);
     win?.addEventListener('beforeprint', onPrint);
     capture.current = attached;
@@ -233,10 +304,12 @@ export function InkLayer({
 
     return () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(moveFrame);
       stopAudit();
+      stopArriving();
       unsubscribe();
       stopLayout();
-      page.removeEventListener('scroll', schedule, { capture: true });
+      page.removeEventListener('scroll', onScroll, { capture: true });
       win?.removeEventListener('resize', schedule);
       win?.removeEventListener('beforeprint', onPrint);
       attached.detach();

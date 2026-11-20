@@ -10,13 +10,18 @@ import {
  *
  * - `boxes`: blocks may sit elsewhere in the layer or have another size. A line
  *   layout measured for a block whose size is the same still holds.
+ * - `scroll`: a scroll moved blocks, as `boxes` does.
  * - `words`: words may sit elsewhere inside blocks whose boxes are all the
  *   same. No measured layout holds, or, when the report names an element, no
  *   layout of a block that holds it.
  * - `styles`: the named element's class, `dir`, `lang` or `style` changed. No
  *   layout holds of a block that holds it or that it holds.
  */
-export type InkLayoutChange = 'boxes' | 'styles' | 'words';
+export type InkLayoutChange = 'boxes' | 'scroll' | 'styles' | 'words';
+
+/** Whether every line layout measured before the change still holds. */
+export const keepsLayouts = (change: InkLayoutChange) =>
+  change === 'boxes' || change === 'scroll';
 
 export const INK_LAYOUT_ATTRIBUTES = ['class', 'dir', 'lang', 'style'];
 
@@ -165,7 +170,7 @@ export const observeInkLayout = (
     if (!stopped) report(change, within);
   };
 
-  const look = (sure: boolean) => {
+  const look = (sure: boolean, change: InkLayoutChange = 'boxes') => {
     if (stopped) return false;
     looks += 1;
 
@@ -174,7 +179,7 @@ export const observeInkLayout = (
     if (!sure && samePlace(place, next)) return false;
     place = next;
     fit();
-    emit('boxes');
+    emit(change);
 
     return true;
   };
@@ -280,10 +285,12 @@ export const observeInkLayout = (
   const layerSize = sizeCheck('border-box', sized);
 
   const onScroll = ({ target }: Event) => {
-    if (target === editable) emit('boxes');
+    if (target === editable) emit('scroll');
     else if (target instanceof Element && editable.contains(target)) {
       emit('words', target);
-    } else if (target instanceof Node && root?.contains(target)) look(false);
+    } else if (target instanceof Node && root?.contains(target)) {
+      look(false, 'scroll');
+    }
   };
   const onLoad = ({ target, type }: Event) => {
     if (target instanceof Element && editable.contains(target)) {

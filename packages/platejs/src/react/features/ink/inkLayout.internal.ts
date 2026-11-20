@@ -5,7 +5,7 @@ import {
   type InkMeasuredBlock,
   measureInkBlock,
 } from './inkMeasure.internal';
-import type { InkLayoutChange } from './inkWatch.internal';
+import { type InkLayoutChange, keepsLayouts } from './inkWatch.internal';
 
 const near = (a: number, b: number) => Math.abs(a - b) <= INK_MOVE_TOLERANCE;
 
@@ -14,7 +14,7 @@ export const createInkLayouts = () => {
 
   return {
     changed: (change: InkLayoutChange, within?: Element) => {
-      if (change === 'boxes') return;
+      if (keepsLayouts(change)) return;
       if (!within) {
         kept = new WeakMap();
 
