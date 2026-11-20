@@ -3,6 +3,6 @@
  */
 
 export * from './convertNodesSerialize';
-export * from './convertTextsSerialize';
+export * from './convertPhrasingSerialize';
 export * from './listToMdastTree';
 export * from './mdastContent';

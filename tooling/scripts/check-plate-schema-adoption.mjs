@@ -472,7 +472,10 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/platejs/src/markdown/lib/internal/markdownAttributes.ts', 2],
   ['packages/platejs/src/markdown/lib/internal/markdownConversion.ts', 1],
   ['packages/platejs/src/markdown/lib/internal/markdownMappings.ts', 1],
-  ['packages/platejs/src/markdown/lib/serializer/convertTextsSerialize.ts', 1],
+  [
+    'packages/platejs/src/markdown/lib/serializer/convertPhrasingSerialize.ts',
+    1,
+  ],
   [
     'packages/platejs/src/markdown/lib/serializer/reportOmittedProperties.ts',
     1,

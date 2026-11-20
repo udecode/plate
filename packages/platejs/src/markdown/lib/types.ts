@@ -14,6 +14,7 @@ import type {
   EditorSchemaRepairCode,
   EditorSchemaValidationDiagnostic,
   RootKey,
+  Text,
   Value,
 } from '../../core';
 import type {
@@ -301,6 +302,7 @@ export type SerializeMdContext = Readonly<
 > &
   MarkdownConversionContext & {
     document: EditorDocumentValue;
+    enclosedMarks?: WeakMap<Text, ReadonlySet<string>>;
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;
     modelLocation: (node: Descendant) => MarkdownModelLocation | undefined;

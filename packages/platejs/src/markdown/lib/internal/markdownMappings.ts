@@ -1459,11 +1459,18 @@ export const runMarkdownDecoders = (
       );
     }
 
+    const value =
+      'value' in node && typeof node.value === 'string' ? node.value : '';
+
     return [
       {
         ...marked,
+        // CommonMark reads a code span's line endings as spaces, but
+        // mdast-util-from-markdown keeps them in `value`.
         text:
-          'value' in node && typeof node.value === 'string' ? node.value : '',
+          node.type === 'inlineCode'
+            ? value.replaceAll(/\r\n?|\n/g, ' ')
+            : value,
       },
     ];
   }

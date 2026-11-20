@@ -1,10 +1,4 @@
-import {
-  type Descendant,
-  type Element,
-  type Text,
-  TextApi,
-  PLUGINS,
-} from '../../../core';
+import { type Descendant, type Element, TextApi, PLUGINS } from '../../../core';
 import type { ListElement } from '../../../features/list';
 import { listItemDepth } from '../../../features/list/lib/listIndex.internal';
 import {
@@ -18,7 +12,7 @@ import {
 import type { MarkdownEncoded } from '../internal/markdownMappings';
 import type { MdList, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
-import { convertTextsSerialize } from './convertTextsSerialize';
+import { convertPhrasingSerialize } from './convertPhrasingSerialize';
 import {
   continueMarkdownList,
   isSameMarkdownList,
@@ -30,10 +24,11 @@ const NO_CLAIMS: ReadonlySet<string> = new Set();
 
 export const convertNodesSerialize = (
   nodes: readonly Descendant[],
-  options: SerializeMdContext
+  options: SerializeMdContext,
+  { hardBreaks = false }: Readonly<{ hardBreaks?: boolean }> = {}
 ): MdRootContent[] => {
   const mdastNodes: MdRootContent[] = [];
-  let textQueue: Text[] = [];
+  let phrasing: Descendant[] = [];
 
   const listBlock: Element[] = [];
   let restartedFrom: MdList | undefined;
@@ -41,13 +36,20 @@ export const convertNodesSerialize = (
   for (let i = 0; i <= nodes.length; i++) {
     const node = nodes[i];
 
-    if (node && TextApi.isText(node)) {
-      textQueue.push(node);
+    if (node && (TextApi.isText(node) || options.isInline(node))) {
+      phrasing.push(node);
     } else {
-      if (textQueue.length > 0) {
-        mdastNodes.push(...convertTextsSerialize(textQueue, options));
+      if (phrasing.length > 0) {
+        mdastNodes.push(
+          ...convertPhrasingSerialize(
+            phrasing,
+            options,
+            buildMdastNodes,
+            hardBreaks
+          )
+        );
       }
-      textQueue = [];
+      phrasing = [];
       if (!node) continue;
 
       if (isListElement(node, options) || isListContinuation(listBlock, node)) {

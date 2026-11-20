@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
 import { visit } from 'unist-util-visit';
 
-import type { Element } from '../../../core';
+import { type Element, TextApi } from '../../../core';
 import { getDocumentListOrdinal } from '../../../features/list/lib/listIndex.internal';
 import { failInvariant } from '../../../internal/failInvariant';
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
@@ -479,6 +479,17 @@ export const listToMdastTree = (
     }
 
     openNestedList(listItem, stackTop, currentIndent, nextNode);
+    // An empty item's paragraph would be written as a placeholder, which a
+    // nested list starting at a number other than 1 cannot interrupt, so the
+    // nested list starts on the item's own line instead.
+    if (
+      listItem.checked === null &&
+      listItem.children[1]?.type === 'list' &&
+      node.type === paragraphType &&
+      node.children.every((child) => TextApi.isText(child) && !child.text)
+    ) {
+      listItem.children.shift();
+    }
   }
 
   return root;

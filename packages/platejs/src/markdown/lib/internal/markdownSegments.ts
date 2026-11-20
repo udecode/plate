@@ -16,8 +16,11 @@ const RAW_HTML_END: Readonly<Record<string, RegExp>> = {
   textarea: /<\/textarea>/i,
 };
 
-/** Link and footnote definitions resolve across the whole source. */
-export const MARKDOWN_DEFINITION = /(?:^|\n) {0,3}\[[^\]\n]+\]:/;
+/**
+ * Link and footnote definitions resolve across the whole source, also from
+ * inside a quote or a list item, so the line may start with their markers.
+ */
+export const MARKDOWN_DEFINITION = /(?:^|\n)[ \t>*+\-.)\d]*\[[^\]\n]+\]:/;
 
 type ScanState = {
   fence: Readonly<{ char: string; length: number }> | null;

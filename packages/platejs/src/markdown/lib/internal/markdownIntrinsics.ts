@@ -256,6 +256,44 @@ const writtenStart = (node: Nodes): string => {
 
 type MdParent = { children: Parent['children']; type: string };
 
+const writtenEnd = (node: Nodes): string => {
+  switch (node.type) {
+    case 'break': {
+      return '\n';
+    }
+    case 'delete': {
+      return '~';
+    }
+    case 'emphasis':
+    case 'strong': {
+      return '*';
+    }
+    case 'html':
+    case 'text': {
+      return node.value;
+    }
+    default: {
+      return JOINS_URL;
+    }
+  }
+};
+
+// micromark-extension-gfm-autolink-literal links a bare scheme URL unless an
+// ASCII letter comes right before it (previousProtocol in lib/syntax.js).
+const ENDS_IN_LETTER = /[a-z]$/i;
+
+const writtenBefore = (parent: MdParent, index: number) => {
+  for (let previous = index - 1; previous >= 0; previous -= 1) {
+    const written = writtenEnd(parent.children[previous]);
+
+    if (written) return written;
+  }
+
+  return parent.type === 'link' || parent.type.startsWith('mdxJsx')
+    ? JOINS_URL
+    : '';
+};
+
 const writtenAfter = (parent: MdParent, index: number) => {
   let written = '';
 
@@ -308,7 +346,8 @@ export const writeBareUrlsSafely = (parent: MdParent) => {
     if (
       child.type !== 'html' ||
       !BARE_URL_HTML.test(child.value) ||
-      staysBare(child.value, writtenAfter(parent, index))
+      (!ENDS_IN_LETTER.test(writtenBefore(parent, index)) &&
+        staysBare(child.value, writtenAfter(parent, index)))
     ) {
       return;
     }
@@ -389,50 +428,27 @@ export const encodeMarkdownParagraph = (
   node: Element,
   options: SerializeMdContext
 ): Paragraph => {
-  const lines: Descendant[][] = [[]];
-  // Split leaves report diagnostics at the leaf they came from.
-  const origins = new WeakMap<Descendant, Descendant>();
-  const part = (child: Descendant, text: string) => {
-    const copy = { ...child, text };
-
-    origins.set(copy, child);
-
-    return copy;
-  };
-  const isEmpty =
+  const [only] = node.children;
+  const placeholder =
     node.children.length === 1 &&
-    TextApi.isText(node.children[0]) &&
-    node.children[0].text === '';
+    TextApi.isText(only) &&
+    only.text === '' &&
+    options.preserveEmptyParagraphs !== false
+      ? { ...only, text: EMPTY_PARAGRAPH_TEXT }
+      : undefined;
+  const children = convertNodesSerialize(
+    placeholder ? [placeholder] : node.children,
+    placeholder
+      ? {
+          ...options,
+          modelLocation: (child) =>
+            options.modelLocation(child === placeholder ? only : child),
+        }
+      : options,
+    { hardBreaks: true }
+  );
 
-  for (const child of node.children) {
-    if (!TextApi.isText(child) || !child.text.includes('\n')) {
-      lines
-        .at(-1)
-        ?.push(
-          isEmpty && options.preserveEmptyParagraphs !== false
-            ? part(child, EMPTY_PARAGRAPH_TEXT)
-            : child
-        );
-      continue;
-    }
-    child.text.split(/\r?\n/).forEach((text, index) => {
-      if (index > 0) lines.push([]);
-      if (text) lines.at(-1)?.push(part(child, text));
-    });
-  }
-
-  const lineOptions: SerializeMdContext = {
-    ...options,
-    modelLocation: (child) =>
-      options.modelLocation(origins.get(child) ?? child),
-  };
-  const children = lines.flatMap((line, index): MdRootContent[] => {
-    const nodes = convertNodesSerialize(line, lineOptions);
-
-    return [...(index > 0 ? [{ type: 'break' } as const] : []), ...nodes];
-  });
-
-  if (lines.length > 1 && lines.at(-1)?.length === 0) {
+  if (children.at(-1)?.type === 'break') {
     for (let index = children.length - 2; index >= 0; index -= 1) {
       if (children[index].type !== 'break') break;
       children[index] = { type: 'html', value: '<br />' };
