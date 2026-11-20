@@ -5932,6 +5932,7 @@
         "source-hash:partition:docx-export",
         "source-hash:partition:docx-import",
         "source-hash:partition:docx-internal",
+        "source-hash:partition:field",
         "source-hash:partition:footnote",
         "source-hash:partition:layout",
         "source-hash:partition:math",
@@ -6276,6 +6277,7 @@
         "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:field",
+        "source-hash:partition:markdown",
         "source-hash:partition:yjs-react"
       ],
       "inputs": [
@@ -6545,6 +6547,7 @@
         "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:details",
+        "source-hash:partition:field",
         "source-hash:partition:footnote",
         "source-hash:partition:html",
         "source-hash:partition:math",

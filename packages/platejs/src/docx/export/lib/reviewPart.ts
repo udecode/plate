@@ -211,7 +211,7 @@ const writeRun = (marker: Element, review: ReviewRun) => {
     }
     outer = wrap(outer, revisionElement(document, 'del', review.deletion));
   }
-  for (const insertion of review.insertions.toReversed()) {
+  for (const insertion of review.insertionsOuterFirst.toReversed()) {
     outer = wrap(outer, revisionElement(document, 'ins', insertion));
   }
 };

@@ -119,6 +119,7 @@ export type {
   TransformOptions,
 } from './lib/plugin/BasePlugin';
 export type { HandlerReturnType } from './lib/plugin/HandlerReturnType';
+export type * from './lib/plugin/DocxNodeMapping';
 export type * from './lib/plugin/MarkdownNodeMapping';
 export type * from './lib/plugin/PlainTextNodeMapping';
 export type {

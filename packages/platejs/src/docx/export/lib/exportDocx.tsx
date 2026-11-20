@@ -15,6 +15,7 @@ import {
   type Range,
 } from '../../../core';
 import { BaseBlockquotePlugin } from '../../../features/basic-nodes';
+import { getPlateNodeMappingContributions } from '../../../internal/plugin/collectPlateNodeMappings';
 import { projectPlateFormatDocument } from '../../../lib/editor/withPlite';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
@@ -32,7 +33,10 @@ import {
   anchorDocxComments,
   joinDocxCommentBodies,
 } from './comments';
-import { docxStaticOverrides } from './docxStaticComponents';
+import {
+  type DocxTextFormat,
+  docxStaticOverrides,
+} from './docxStaticComponents';
 import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
 import { toWordLevelRules } from './internal/docx-document';
 import type { Margins, PageSize } from './internal/types';
@@ -206,8 +210,11 @@ const captureExport = (
   const snapshot = captureExportSnapshot(editor, options.projection);
 
   if (options.projection === 'review') {
-    const review = createReviewProjection(snapshot.stored, (node) =>
-      editor.plugin(AuthoredPlugin).read.reviewOf(node)
+    const review = createReviewProjection(
+      snapshot.stored,
+      (node) => editor.plugin(AuthoredPlugin).read.reviewOf(node),
+      (node) =>
+        editor.read.schema.isVoid(node) && editor.read.schema.isInline(node)
     );
 
     return Object.freeze({
@@ -275,6 +282,60 @@ const nativeOnlyDiagnostics = (
 
   return diagnostics;
 };
+
+const docxTextFormatsOf = (editor: Editor): readonly DocxTextFormat[] =>
+  getPlateNodeMappingContributions(editor, 'docx').map(
+    ({ declaration, owner, targetPlugin, targetType }) => {
+      if (
+        typeof declaration.dropped !== 'string' ||
+        typeof declaration.text !== 'function' ||
+        targetType === null
+      ) {
+        throw new Error(
+          `DOCX node mapping "${owner}" must define dropped and text for an element.`
+        );
+      }
+
+      return {
+        dropped: declaration.dropped,
+        plugin: targetPlugin,
+        text: declaration.text as DocxTextFormat['text'],
+        type: targetType,
+      };
+    }
+  );
+
+const countElements = (nodes: readonly Descendant[], type: string): number =>
+  nodes.reduce(
+    (count, node) =>
+      ElementApi.isElement(node)
+        ? count +
+          (node.type === type ? 1 : 0) +
+          countElements(node.children, type)
+        : count,
+    0
+  );
+
+const textFormatDiagnostics = (
+  textFormats: readonly DocxTextFormat[],
+  document: EditorDocumentValue
+): readonly DocxDiagnostic[] =>
+  textFormats.flatMap(({ dropped, plugin, type }) => {
+    const count = countElements(document.children, type);
+
+    return count > 0
+      ? [
+          {
+            code: 'property-dropped' as const,
+            count,
+            feature: plugin,
+            impact: 'lossy' as const,
+            message: dropped,
+            severity: 'warning' as const,
+          },
+        ]
+      : [];
+  });
 
 const isNumberedOrTask = (node: Element) =>
   node.listType === 'numbered' || node.listType === 'task';
@@ -474,6 +535,7 @@ const renderDocxHtml = async (
   editor: Editor,
   document: EditorDocumentValue,
   story: string,
+  textFormats: readonly DocxTextFormat[],
   { component, fontFamily, presentation, signal }: DocxExportOptions
 ) => {
   const rendered = await renderStaticHtmlWithOverrides(
@@ -486,7 +548,7 @@ const renderDocxHtml = async (
         style: { padding: '0', ...(fontFamily ? { fontFamily } : {}) },
       },
     },
-    docxStaticOverrides(story)
+    docxStaticOverrides(story, textFormats)
   );
 
   throwIfDocxAborted(signal);
@@ -690,9 +752,11 @@ export async function exportDocx(
       ok: true,
     });
   }
+  const textFormats = docxTextFormatsOf(editor);
   const diagnostics: DocxDiagnostic[] = [
     ...sourceResolution.diagnostics,
     ...nativeOnly,
+    ...textFormatDiagnostics(textFormats, capture.document),
     ...listDiagnostics(capture.document),
     ...quoteDiagnostics(editor, capture.document.children),
     ...capture.comments.flatMap(({ body, id, target }) =>
@@ -704,7 +768,7 @@ export async function exportDocx(
 
   try {
     const [main, commentRenders] = await Promise.all([
-      renderDocxHtml(editor, capture.document, 'body', options),
+      renderDocxHtml(editor, capture.document, 'body', textFormats, options),
       Promise.all(
         capture.comments.map(async ({ body, id }) => ({
           id,
@@ -712,6 +776,7 @@ export async function exportDocx(
             editor,
             { children: body },
             `comment:${id}`,
+            textFormats,
             options
           )),
         }))

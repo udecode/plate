@@ -108,7 +108,7 @@ export type DocxDiagnostic =
     }>
   | Readonly<{
       code: 'property-dropped';
-      /** How many runs, paragraphs or cells lost the property. */
+      /** How many runs, paragraphs, cells or elements lost the property. */
       count: number;
       feature: string;
       impact: 'lossy';

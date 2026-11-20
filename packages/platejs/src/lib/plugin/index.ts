@@ -3,6 +3,7 @@
  */
 
 export * from './BasePlugin';
+export * from './DocxNodeMapping';
 export * from './HandlerReturnType';
 export * from './MarkdownNodeMapping';
 export * from './PlainTextNodeMapping';

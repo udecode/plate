@@ -233,7 +233,7 @@ const applyFormats = (
   const { html: htmlMapping, ...productMappings } = formats;
 
   for (const format of Object.keys(productMappings)) {
-    if (format !== 'markdown' && format !== 'plainText') {
+    if (format !== 'docx' && format !== 'markdown' && format !== 'plainText') {
       throw new Error(
         `Plate plugin "${plugin.name}" declares unknown format "${format}".`
       );

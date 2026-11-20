@@ -55,7 +55,7 @@ const collect = (editor: object) => {
     if (!isRecord(owner.formats)) return;
     const { formats } = owner;
 
-    (['markdown', 'plainText'] as const).forEach((format) => {
+    (['docx', 'markdown', 'plainText'] as const).forEach((format) => {
       const value = formats[format];
 
       if (value === undefined) return;

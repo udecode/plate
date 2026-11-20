@@ -111,9 +111,167 @@ const isFieldCondition = (value: unknown): value is FieldCondition => {
   );
 };
 
+const isFieldKind = (value: unknown): value is FieldKind =>
+  FIELD_KINDS.some((kind) => kind === value);
+
+const fieldText = ({
+  node: { label, options, value },
+}: Readonly<{
+  node: Readonly<{
+    label?: string;
+    options?: readonly FieldOption[];
+    value?: FieldValue;
+  }>;
+}>) => {
+  const answer =
+    options?.find((option) => option.value === value)?.label ??
+    String(value ?? '');
+
+  return answer || `[${label ?? ''}]`;
+};
+
 const FIELD_TYPE = 'field';
 
 const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
+  formats: ({ defineFormats, schema: { type } }) =>
+    defineFormats({
+      docx: {
+        dropped: 'Word keeps each field answer and drops its settings.',
+        text: fieldText,
+      },
+      html: {
+        decode: ({ element, preserve }) => {
+          const kind = element.getAttribute('data-field-kind');
+          const label = element.getAttribute('data-field-label');
+          const role = element.getAttribute('data-field-role');
+
+          if (!isFieldKind(kind) || label === null || role === null) {
+            return undefined;
+          }
+
+          const fieldId = element.getAttribute('data-field-id');
+          const claimIfValid = <T>(
+            attribute: string,
+            is: (value: unknown) => value is T
+          ) => {
+            let value: unknown;
+
+            try {
+              value = JSON.parse(element.getAttribute(attribute) ?? '');
+            } catch {
+              return undefined;
+            }
+            if (!is(value)) return undefined;
+
+            preserve(attribute);
+
+            return value;
+          };
+          const condition = claimIfValid(
+            'data-field-condition',
+            isFieldCondition
+          );
+          const defaultValue = claimIfValid(
+            'data-field-default-value',
+            isFieldValue
+          );
+          const options = claimIfValid('data-field-options', isFieldOptions);
+          const required = claimIfValid(
+            'data-field-required',
+            (value): value is boolean => typeof value === 'boolean'
+          );
+          const value = claimIfValid('data-field-value', isFieldValue);
+
+          preserve(
+            'data-field-id',
+            'data-field-kind',
+            'data-field-label',
+            'data-field-role'
+          );
+
+          return {
+            children: [{ text: '' }],
+            ...(condition === undefined ? {} : { condition }),
+            ...(defaultValue === undefined ? {} : { defaultValue }),
+            ...(fieldId === null ? {} : { fieldId }),
+            kind,
+            label,
+            ...(options === undefined ? {} : { options }),
+            ...(required === undefined ? {} : { required }),
+            role,
+            ...(value === undefined ? {} : { value }),
+          };
+        },
+        encode: ({ content, node, preserve }) => {
+          const json = (value: unknown) =>
+            value === undefined ? undefined : JSON.stringify(value);
+
+          preserve(
+            'condition',
+            'defaultValue',
+            'fieldId',
+            'kind',
+            'label',
+            'options',
+            'required',
+            'role',
+            'value'
+          );
+
+          return {
+            attributes: {
+              'data-field-condition': json(node.condition),
+              'data-field-default-value': json(node.defaultValue),
+              'data-field-id': node.fieldId,
+              'data-field-kind': node.kind,
+              'data-field-label': node.label,
+              'data-field-options': json(node.options),
+              'data-field-required': json(node.required),
+              'data-field-role': node.role,
+              'data-field-value': json(node.value),
+            },
+            children: [content, { text: fieldText({ node }) }],
+            tag: 'span',
+          };
+        },
+        match: [{ attributes: { 'data-field-kind': true }, tag: 'span' }],
+      },
+      markdown: {
+        tag: type,
+        decode: ({ readTagAttributes, refuse }) => {
+          const { attributes, properties } = readTagAttributes();
+
+          if (
+            !(
+              'kind' in properties &&
+              'label' in properties &&
+              'role' in properties
+            )
+          ) {
+            return refuse('A field tag needs a kind, a label and a role.');
+          }
+
+          return {
+            ...properties,
+            ...(typeof attributes.fieldId === 'string'
+              ? { fieldId: attributes.fieldId }
+              : {}),
+            children: [{ text: '' }],
+            type,
+          };
+        },
+        encode: ({ encodeAttributes, encodeNodeAttributes, node }) => ({
+          attributes: [
+            ...encodeNodeAttributes(),
+            ...encodeAttributes({ fieldId: node.fieldId }),
+          ],
+          children: [],
+          name: type,
+          type: 'mdxJsxTextElement',
+        }),
+      },
+      plainText: { encode: fieldText },
+    }),
   schema: {
     element: {
       properties: {

@@ -13,17 +13,12 @@ import type { DocxDiagnostic } from '../../internal/types';
 /** A change as Word stores it; `id` numbers the change across the file. */
 export type DocxRevision = Readonly<{ at: number; author: string; id: number }>;
 
-/**
- * What a text leaf's run writes as Word revisions: its pending insertions,
- * outer to inner, one deletion inside them, and its formatting suggestion
- * with each formatted key's accepted value.
- */
 export type ReviewRun = Readonly<{
   deletion: DocxRevision | null;
   format:
     | (DocxRevision & Readonly<{ previous: AuthoredReview['accepted'] }>)
     | null;
-  insertions: readonly DocxRevision[];
+  insertionsOuterFirst: readonly DocxRevision[];
 }>;
 
 export type ReviewProjection = Readonly<{
@@ -63,7 +58,8 @@ const holdsMarks = (node: Descendant): boolean =>
  */
 export const createReviewProjection = (
   stored: EditorDocumentValue,
-  reviewOf: (node: Descendant) => AuthoredReview
+  reviewOf: (node: Descendant) => AuthoredReview,
+  isInlineVoid: (node: Descendant) => boolean
 ): ReviewProjection => {
   const revisionIds = new Map<string, number>();
   const runs = new Map<string, ReviewRun>();
@@ -91,25 +87,27 @@ export const createReviewProjection = (
       };
       const review = authored ? reviewOf(node) : null;
       const marks = review?.marks ?? [];
+      const isText = !ElementApi.isElement(node);
 
-      if (!ElementApi.isElement(node)) {
+      if (isText || isInlineVoid(node)) {
         const insertions = marks.filter(({ kind }) => kind === 'insert');
         const deletion = marks.find(({ kind }) => kind === 'delete');
-        const format = marks.find(({ kind }) => kind === 'format');
+        const format = isText
+          ? marks.find(({ kind }) => kind === 'format')
+          : undefined;
 
         if (insertions.length > 0 || deletion || format) {
-          runs.set(renderKey('text', root, key), {
+          runs.set(renderKey(isText ? 'text' : 'element', root, key), {
             deletion: deletion ? revisionOf(deletion) : null,
             format:
               format && review
                 ? { ...revisionOf(format), previous: review.accepted }
                 : null,
-            insertions: insertions.map(revisionOf),
+            insertionsOuterFirst: insertions.map(revisionOf),
           });
         }
-
-        return plain;
       }
+      if (!ElementApi.isElement(node)) return plain;
       const structure = marks.find(
         (mark) =>
           mark.kind !== 'insert' &&
@@ -161,6 +159,9 @@ const setStructureAttributes = (element: Element, revision: DocxRevision) => {
     );
   }
 };
+
+const MISSING_ELEMENT_HOST =
+  'A configured static element renderer omitted its Plate path attributes.';
 
 const missingHost = (
   feature: string,
@@ -217,11 +218,13 @@ export const applyReviewProjection = (
 
     if (!host) {
       diagnostics.push(
-        missingHost(
-          'review-text-wrapper',
-          key,
-          'A configured static text renderer omitted its Plate path attributes.'
-        )
+        key.startsWith('text:')
+          ? missingHost(
+              'review-text-wrapper',
+              key,
+              'A configured static text renderer omitted its Plate path attributes.'
+            )
+          : missingHost('review-structure-wrapper', key, MISSING_ELEMENT_HOST)
       );
       continue;
     }
@@ -237,11 +240,7 @@ export const applyReviewProjection = (
 
     if (!host) {
       diagnostics.push(
-        missingHost(
-          'review-structure-wrapper',
-          key,
-          'A configured static element renderer omitted its Plate path attributes.'
-        )
+        missingHost('review-structure-wrapper', key, MISSING_ELEMENT_HOST)
       );
       continue;
     }

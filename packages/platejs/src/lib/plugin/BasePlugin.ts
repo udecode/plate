@@ -64,6 +64,7 @@ import type {
   BasePluginInstalledCapabilityWitness,
   LowerBasePlugin,
 } from './basePluginCompiler.internal';
+import type { DocxNodeMapping } from './DocxNodeMapping';
 import type { HandlerReturnType } from './HandlerReturnType';
 import type { MarkdownNodeMappingInput } from './MarkdownNodeMapping';
 import type { PlainTextNodeMappingInput } from './PlainTextNodeMapping';
@@ -855,6 +856,7 @@ export type PluginDataTransferFormatDeclaration<
 export interface PluginProductNodeMappingRegistry<
   C extends AnyBasePluginDefinition,
 > {
+  docx: DocxNodeMapping<C>;
   plainText: PlainTextNodeMappingInput<C>;
   markdown: MarkdownNodeMappingInput<C>;
 }
@@ -968,6 +970,7 @@ type PluginTargetedHtmlMixedMappingMap<C extends AnyBasePluginDefinition> =
 type PluginSelfHtmlProductNodeMappingMap<C extends AnyBasePluginDefinition> =
   PluginSelfHtmlMappingMap<C> &
     Readonly<{
+      docx?: DocxNodeMapping<C>;
       plainText?: PlainTextNodeMappingInput<C>;
       markdown: MarkdownNodeMappingInput<C>;
     }>;

@@ -1,7 +1,7 @@
 import katex from 'katex';
 import React from 'react';
 
-import type { Editor, Path } from '../../../core';
+import type { Editor, Element, Path } from '../../../core';
 import { BaseHeadingPlugin } from '../../../features/basic-nodes';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import { BaseCodeBlockPlugin } from '../../../features/code-block';
@@ -19,6 +19,8 @@ import {
   ListType,
 } from '../../../features/list';
 import { BaseTocPlugin, type Heading } from '../../../features/toc';
+import { getDefaultElementTag } from '../../../internal/plugin/defaultElementTag';
+import type { RenderElementProps } from '../../../lib/types/RenderElementProps';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
@@ -261,9 +263,39 @@ const listItemOf = (
   }
 };
 
-export const docxStaticOverrides = (story: string): StaticOverrides =>
+export type DocxTextFormat = Readonly<{
+  dropped: string;
+  plugin: string;
+  text: (context: Readonly<{ node: Element }>) => string;
+  type: string;
+}>;
+
+const textComponent = (text: DocxTextFormat['text']) =>
+  function DocxText(
+    props: Omit<RenderElementProps, 'attributes'> & {
+      attributes: Record<string, unknown>;
+      path: Path;
+    }
+  ) {
+    return (
+      <EditorElement {...props} as={getDefaultElementTag(props.attributes)}>
+        {text({ node: props.element })}
+        {props.children}
+      </EditorElement>
+    );
+  };
+
+export const docxStaticOverrides = (
+  story: string,
+  textFormats: readonly DocxTextFormat[]
+): StaticOverrides =>
   Object.freeze({
-    components: DOCX_STATIC_COMPONENTS,
+    components: {
+      ...DOCX_STATIC_COMPONENTS,
+      ...Object.fromEntries(
+        textFormats.map(({ plugin, text }) => [plugin, textComponent(text)])
+      ),
+    },
     slots: { [BaseListPlugin.name]: { wrapNodeChildren: null } },
     wrapElement: ({ attributes, children, editor, element, path }) => {
       const item = editor.plugin(BaseListPlugin).installed
