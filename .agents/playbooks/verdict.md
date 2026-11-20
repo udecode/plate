@@ -117,7 +117,7 @@ Explore is for a direction that one pass judges badly, because the owner holds t
 **Rounds.** From round 1, each round runs these steps:
 
 1. Save the owner's answer in the previous round's file, and in `goal.md` when it changes the goal, the use case or a constraint.
-2. List the open questions that evidence can settle and whose answer can move the ranking. Run one research lane for each, as many as the questions need, all at once. Each lane is an evidence seat on the models sheet's `how explorer` line, run as `AGENTS.md`'s Extraction rule says. Its brief quotes `goal.md`, names what earlier lanes found so the seat repeats none of it, asks for the source, the date read and the grade of each claim, and asks for "not found" in place of a guess.
+2. List the open questions that evidence can settle and whose answer can move the ranking. Run one research lane for each, as many as the questions need, all at once. Each lane is an evidence seat, run as `AGENTS.md`'s Extraction rule says. Its brief quotes `goal.md`, names what earlier lanes found so the seat repeats none of it, asks for the source, the date read and the grade of each claim, and asks for "not found" in place of a guess.
 3. Rank the steps again by what a user gains for the cost, as Next step's step 3 ranks lanes, under the goal in `goal.md`.
 4. Put the round's prior art on the research pages as the `research` skill's Promotion says, and land those pages through `land.mjs`, so they outlive a loop the owner never locks.
 5. Send the reply below, save it as `round-<n>.md`, and stop.

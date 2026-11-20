@@ -248,7 +248,6 @@
   },
   "proof": "verify",
   "skiller": true,
-  "codexLanes": true,
   "regen": "pnpm run prepare",
   "generated": [
     {
@@ -315,7 +314,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "28ec2c0f993a2286a954b6112d617bbe9e3eb82e69c6b30fe6cc805098c85faf",
+    "block": "e2d7f00ac908f4b8f56f85424b1a7250d0a0ed25263e1891b446e431d459e9e9",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -351,13 +350,13 @@
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "2fa3014e78ab176422673a1f53a455f6675652b5aa221b5aebdbfd9b792931d8",
       ".agents/pstack/rules/panel.md": "9787d5067d1ca0d9aa1fc89ed7784e71500ab9890dd35bce2b7beee739636ede",
-      ".agents/pstack/rules/reflect.md": "d70056891b22257fafb3d0306acf8ab2d15ae3c7ec8f9d9132fb135a1fae3ffc",
+      ".agents/pstack/rules/reflect.md": "c7f61ee2966b290b3f78cec98198465fccdd660ae24c53c78ccae7b2bc3d804f",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "ac8fd215d707c03830abd0a5df2678611bff986eaccc44cb5d37cd3eea46a35b",
       ".agents/pstack/rules/title.md": "21f35700a51d41ea370fd5b80f7c33d2f81b8ccf4747d8f5aaa9e63c4a81f711",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af"
     },
-    "source": "3b4cb64d2a96ae3f16c4794b01c542d0fc8088c8"
+    "source": "912db52564118e3a78b11ea8eea6b21f92a7fa8a"
   },
   "pageTopic": {
     "field": "review_scopes",

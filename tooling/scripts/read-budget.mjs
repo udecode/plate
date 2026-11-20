@@ -61,7 +61,7 @@ export function readKind(tool, input = {}) {
 }
 
 const reason = (count) =>
-  `Wide reading: this is the lead's read number ${count} since its last edit or subagent dispatch. Send the rest of the exploration to a subagent, such as an Agent with subagent_type Explore or the how explorer through node .agents/pstack/cross.mjs --reach, with the question it must answer, then read in full only the code you change and the callers it can break. If you will edit this exact file next, run the same call again unchanged and it goes through.`;
+  `Wide reading: this is the lead's read number ${count} since its last edit or subagent dispatch. Send the rest of the exploration to a subagent, such as an Agent with subagent_type Explore, with the question it must answer, then read in full only the code you change and the callers it can break. If you will edit this exact file next, run the same call again unchanged and it goes through.`;
 
 function main(argv) {
   let event;
