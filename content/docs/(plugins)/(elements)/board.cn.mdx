@@ -17,7 +17,7 @@ docs:
 - 每个图形存储自己的样式：填充、轮廓颜色、线型、轮廓粗细、不透明度和文字大小，每种图形类型各有默认值。一次选取把选中的图形改为新样式，作为一步撤销；选中绘制工具时，只设置下一个图形的样式。
 - 插入、移动、缩放、调整层级和删除图形的命令。撤销不会拆开一次调用，在建议模式下每次调用是一条建议。
 - 复制、粘贴和创建副本时图形获得新 id。复制的箭头绑定到复制出的图形。副本落在最上层，框架仍在其他图形之后。指针位于白板上时，副本落在指针处。若该位置已有图形，副本每次向右下方错开 24px，直到所在位置没有图形。
-- 粘贴图片链接或从网页复制的图片，它会作为图片图形落在指针处，并保持图片的比例。
+- 粘贴图片链接或从网页复制的图片，它会作为图片图形落在指针处，并保持图片的比例。安装了 [`UploadPlugin`](/cn/docs/upload) 后，粘贴、拖放或从工具栏选取的图片文件也会作为图片图形落下，每个文件在自己的图形中上传。
 - 每个挂载的视图各自拥有相机、工具、工具锁定和下一个样式，文档从不存储它们。
 - Tab 和 Mod 加方向键在图形之间移动，Shift+Enter 进入工具栏，按键可以缩放、平移和适配视图。Enter 可以放置便签、图形或框架，也可以用箭头连接两个图形。屏幕阅读器会听到选中的图形、选择的工具、缩放比例、每次删除和连接的每一步，使用你的应用传入的文字。
 - 只挂载相机附近的图形，因此每次按键的工作量不会随白板变大而增加。
@@ -38,7 +38,7 @@ docs:
 - `BoardPageElement`：渲染填满容器的白板。`BoardPageKit` 用它代替 `BoardElement`。
 - `BoardNoteElement`、`BoardGeoElement`、`BoardArrowElement`、`BoardFrameElement` 和 `BoardStrokeElement`：渲染各类图形。
 - `BoardImageElement`：渲染图片图形。`BoardImageKit` 在 `BoardKit` 之外单独安装它，见[图片](#图片)。
-- `BoardToolbar`：选择选择、抓手、便签、图形、箭头、框架、笔或橡皮擦工具，图形菜单为下一个图形选择矩形、椭圆、菱形或三角形。其后的锁定按钮像 Q 一样开启或关闭工具锁定，锁定开启时显示为按下状态。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
+- `BoardToolbar`：选择选择、抓手、便签、图形、箭头、框架、笔或橡皮擦工具，图形菜单为下一个图形选择矩形、椭圆、菱形或三角形。其后的锁定按钮像 Q 一样开启或关闭工具锁定，锁定开启时显示为按下状态。锁定按钮之后的图片按钮打开文件选择器，并把选取的图片放到白板上，见[图片文件](#图片文件)；在不接收图片文件的白板上，它是禁用的。缩小和放大按钮各缩放一级，两者之间的缩放比例以百分比显示，点击它会回到 100%；适应按钮让所有图形进入视图。选中框架时，一个图标按钮可以删除框架并保留其中的图形。
 - `BoardStylePanel`：停靠在白板右上角，为选中的图形设置样式；选中绘制工具时，为下一个图形设置样式，见[样式面板](#样式面板)。
 
 ### 添加套件
@@ -66,7 +66,7 @@ const editor = createEditor({
 
 <ComponentPreview name="board-page-demo" />
 
-`BoardPageKit` 用 `BoardPageElement` 绘制白板，它向 `BoardSurface` 传入 `height="100%"`。这个 `height` 在此视图中替代白板存储的 `height`，且不会改变文档，因此白板取其外层编辑器的高度。请给编辑器设置高度，就像示例在一个设定了高度的容器中使用 `<Editor className="h-full" variant="none" />` 那样。去掉包裹每个块或在最后一个块后添加段落的套件，例如 `EditorKit` 的拖动手柄和末尾块。示例安装了 `ImagePlugin` 和 `BoardImageKit`，因此粘贴的图片会按[图片](#图片)一节所述落在白板上。
+`BoardPageKit` 用 `BoardPageElement` 绘制白板，它向 `BoardSurface` 传入 `height="100%"`。这个 `height` 在此视图中替代白板存储的 `height`，且不会改变文档，因此白板取其外层编辑器的高度。请给编辑器设置高度，就像示例在一个设定了高度的容器中使用 `<Editor className="h-full" variant="none" />` 那样。去掉包裹每个块或在最后一个块后添加段落的套件，例如 `EditorKit` 的拖动手柄和末尾块。示例安装了 `ImagePlugin` 和 `BoardImageKit`，因此粘贴的图片链接或网页图片会按[图片](#图片)一节所述落在白板上。它没有安装 `UploadPlugin`，因此它的白板不接收[图片文件](#图片文件)，图片按钮也是禁用的。
 
 ## 样式面板
 
@@ -192,6 +192,47 @@ editor.update((tx) => {
 });
 ```
 
+### 图片文件
+
+在 `ImagePlugin` 之外再安装 `UploadPlugin`，白板就会接收图片文件。每个文件落在自己的图片图形中：文件上传完成之前，图形容纳一个上传草稿，之后容纳图片。[上传文件](/cn/docs/upload)说明如何配置这个插件、它的客户端和规则。`EditorKit` 包含这两个插件，因此本页顶部的示例接收文件。该示例把每个上传的文件保存在浏览器标签页中。
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { BoardImageKit, BoardKit } from '@/components/editor/board';
+import { MediaKit } from '@/components/editor/media';
+import { UploadKit } from '@/components/editor/upload';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    ...MediaKit,
+    ...UploadKit,
+    ...BoardKit,
+    ...BoardImageKit,
+  ],
+});
+```
+
+| 操作 | 图片落在哪里 |
+| --- | --- |
+| 白板获得焦点时粘贴复制的文件 | 以指针为中心；指针不在白板上时，以视图中心为中心。 |
+| 把文件拖放到白板上 | 以放下的位置为中心。 |
+| 点击工具栏的图片按钮并选取文件 | 以视图中心为中心。 |
+
+- 一次粘贴、拖放或选取的文件作为图片图形排成一行，按文件顺序排列，间隔 16px。它们作为一步撤销落下，白板会选中它们。
+- 白板在文件落下前测量每个文件，并像确定粘贴链接的图形大小那样确定它的图形大小。无法作为图片加载的文件以 320 × 240 落下。
+- 文件落下前会等待每个文件加载完成。另一次落下开始、在白板上按键或按下指针、又一次粘贴、焦点离开白板、文档或选区改变，或视图不再可写时，白板会放弃这些文件。
+- 文件上传期间，图形绘制你的上传元素。复制的 `UploadElement` 显示图片、上传进度和取消按钮。上传失败后，它显示文件名和 "Upload failed. Try again."，点击它会打开文件选择器。
+- 取消会停止上传并保留图形。图形随后显示上传元素的 Add an image 按钮。它的文件选择器只接受一个文件，该文件在同一个图形中上传。Delete 删除图形。
+- 撤销一次会移除一次粘贴、拖放或选取落下的图形，并停止它们的上传。撤销之后才完成的上传不会带来任何变化。重做会恢复已上传完成的图片；其余图形恢复为空草稿，在你选取文件之前不会上传任何内容。
+- 不是图片的文件（例如 PDF）不会落下图形。`UploadPlugin` 以 `unsupported-file-type` 把它传给 `onError`，复制的 `UploadKit` 会用提示消息显示它。同一批中的图片照常落下。
+- `UploadPlugin` 按 `rules` 和 `maxFiles` 把一次粘贴、拖放或选取的图片作为一个批次检查。被它拒绝的批次不会落下任何图形，`onError` 会收到原因。
+- 从网页复制的图片可能同时带有链接和文件。白板按链接落下图片，只有链接无法加载时才上传文件。
+- 正在编辑图形的文字时，白板把粘贴和拖放的文件留给页面处理。粘贴到便签文字中的文件不会落下图形，`UploadPlugin` 会报告它放不进那里。
+
+只有在可写入的视图中，且编辑器同时安装了 `UploadPlugin` 和 `ImagePlugin` 时，白板才接收图片文件。在其他白板上，图片按钮是禁用的，粘贴或拖放的文件不会落下图形。复制的按钮通过 `useBoardView` 的 `takesPictureFiles` 读取这项检查，并用 `useBoardActions` 的 `upload(files)` 落下文件。
+
 ## 手动用法
 
 <Steps>
@@ -238,7 +279,7 @@ const editor = createEditor({
 });
 ```
 
-如需图片，还要安装 `ImagePlugin` 和 `BoardImagePlugin.configure({ component: BoardImageElement })`。
+如需图片，还要安装 `ImagePlugin` 和 `BoardImagePlugin.configure({ component: BoardImageElement })`。如需[图片文件](#图片文件)，还要安装 `UploadPlugin`。
 
 </Steps>
 
@@ -576,7 +617,8 @@ const editor = createEditor({
 - 便签很长时会变慢，因为一个便签的所有行作为一个单元同步。
 - 每次按键都要为文档中的每个白板做一些工作，因此一个文档最好不超过 100 个白板。
 - Markdown 按存储顺序保留图形的文字和图片，并报告它丢弃的内容，例如位置和箭头端点。要完整保存白板，请持久化 Plate 值；白板只含内置图形时，也可以持久化 HTML。
-- 粘贴或拖放到白板上的图片文件不会成为图片图形。请粘贴图片的链接，或用代码插入。
+- 没有安装 `UploadPlugin` 时，粘贴或拖放到白板上的图片文件不会落下图形，白板也不会报告任何内容，复制的工具栏中的图片按钮是禁用的。请粘贴图片的链接，或用代码插入。
+- 一次粘贴、拖放或选取的图片超过 `UploadPlugin` 一个批次接受的数量时，一张也不会落下，`onError` 会收到带有该上限的 `too-many-files` 失败。复制的 `UploadKit` 一个批次接受三张图片。
 - 图形属性若与样式标记的键同名，例如 `color`、`backgroundColor`、`fontSize` 或 `fontFamily`，安装该标记的插件后也会改变图形文字的样式。请给属性换个名字，就像便签用 `fill` 一样。
 - 不支持便签内的白板、旋转和裁剪图片，复制的白板也不会在图片下方绘制图注。
 - 用画笔绘制需要指针。用键盘调整大小时只有图片图形保持比例，也不能围绕中心调整，而拖动角时按住 Shift 和 Alt 可以做到。
@@ -595,7 +637,7 @@ const editor = createEditor({
 
 ### `BoardImagePlugin`
 
-图片图形 `boardImage`：最多容纳一个 `image` 元素或上传草稿的对象块。请同时安装 `ImagePlugin`。编辑器安装它却既没有 `ImagePlugin` 也没有 `UploadPlugin` 时，会抛出一个同时提到两者的错误。
+图片图形 `boardImage`：最多容纳一个 `image` 元素或上传草稿的对象块。请同时安装 `ImagePlugin`；如需[图片文件](#图片文件)，还要安装 `UploadPlugin`。编辑器安装它却既没有 `ImagePlugin` 也没有 `UploadPlugin` 时，会抛出一个同时提到两者的错误。
 
 ## API 参考
 
@@ -615,5 +657,5 @@ const editor = createEditor({
 | `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡；挑选光标所在的图形带有 `data-board-cursor`，复制的白板会给它加上虚线环。在可以朝滚轮的主要方向继续滚动的工具栏元素上使用普通滚轮会滚动该元素，而不是平移白板。 |
 | `data-board-dock` | `platejs/board/react` | 标记白板表面 `toolbar` 顶层中停靠在白板一侧的元素，取值为 `"left"` 或 `"right"`。其他顶层工具栏元素视为白板顶部或底部的一行。通过 `fit` 或 Shift+1 适应视图时，图形会放进工具栏未遮挡的空间；如果这块空间的宽度或高度在 10% 缩放下放不下这些图形，就改用白板在该方向上的整个宽度或高度。两者的缩放都在 10% 到 100% 之间，因此白板在 10% 缩放下也放不下的图形会超出白板边缘。 |
 | `BoardMessages`、`BoardShapeDescription`、`BoardCorner`、`BoardPickState` | `platejs/board/react` | `messages` 的类型、`messages.shape` 所描述的图形、调整大小时移动的角，以及播报 `picking` 或 `pick` 时的挑选状态。 |
-| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`toolLocked`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `styles` 读取一次选取会设置的各个样式，以 `writable` 读取视图能否写入。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setToolLocked`、`setStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame` 和 `focus`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`toolLocked` 表示便签、图形、框架和箭头工具在添加图形后是否保持选中；视图挂载时它是关闭的，也从不存储。`setToolLocked` 像 Q 一样开启或关闭它，不改变工具或选区。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中。`setStyle` 合并到下一个样式。使用选择工具时，它还会把每个样式写入接受该样式的每个选中形状，以及正在编辑文字的形状，作为一个撤销步骤，并保留光标。使用绘制工具时，它只设置下一个形状的样式。`styles` 的每一项在目标的值相同时为 `{ mixed: false, value }`，不同时为 `{ mixed: true }`；没有目标接受的样式没有对应项。只读视图中的 `setStyle` 不做任何更改。 |
+| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`toolLocked`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `styles` 读取一次选取会设置的各个样式，以 `writable` 读取视图能否写入，以 `takesPictureFiles` 读取白板是否接收图片文件。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setToolLocked`、`setStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame`、`focus` 和 `upload`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`toolLocked` 表示便签、图形、框架和箭头工具在添加图形后是否保持选中；视图挂载时它是关闭的，也从不存储。`setToolLocked` 像 Q 一样开启或关闭它，不改变工具或选区。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中。`setStyle` 合并到下一个样式。使用选择工具时，它还会把每个样式写入接受该样式的每个选中形状，以及正在编辑文字的形状，作为一个撤销步骤，并保留光标。使用绘制工具时，它只设置下一个形状的样式。`styles` 的每一项在目标的值相同时为 `{ mixed: false, value }`，不同时为 `{ mixed: true }`；没有目标接受的样式没有对应项。只读视图中的 `setStyle` 不做任何更改。`upload(files)` 把图片文件作为图片图形排成一行落下，以视图中心为中心，见[图片文件](#图片文件)。文件列表为空或 `takesPictureFiles` 为 false 时，它不做任何更改。 |
 | `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |

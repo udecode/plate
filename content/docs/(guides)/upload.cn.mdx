@@ -59,7 +59,7 @@ R2 配方会配置 `/api/files`。设置 `FILES_R2_BUCKET`、
 `FILES_API_SECRET`，以及大于零的 `FILES_MAX_UPLOAD_SIZE`。
 在复制的 `lib/files.ts` 中实现 `resolveFilesAccess`，按会话和文档 ACL
 检查读写权限，包括代理上传的 `PUT` 请求。路由中的 `documentId` 是应用的
-文档 ID，不是授权凭证。ID 长度为 1–128 个字符，只能包含字母、数字、下划线
+文档 ID，不是授权凭证。ID 长度为 1 到 128 个字符，只能包含字母、数字、下划线
 和连字符。返回经授权协作者共享的稳定租户/文档命名空间。
 
 S3 配方使用 `FILES_S3_BUCKET` 和 `FILES_S3_REGION`，凭证由 AWS 凭证链提供。
@@ -120,10 +120,11 @@ export function createDocumentEditor(documentId: string, appOrigin: string) {
 editor.plugin(UploadPlugin).update.submit(files, { after: blockKey });
 editor.plugin(UploadPlugin).update.submit(files, { slot: draftKey });
 editor.plugin(UploadPlugin).api.cancel(draftKey);
+editor.plugin(UploadPlugin).api.fitsAfter(draftKey);
 ```
 
 `submit` 接受 `File[]` 或 `FileList`。它在修改文档前验证整个批次，在提交后
-为每个文件启动一次 SDK 上传。每个上传在所有提交监听器都收到添加其草稿的提交后才开始。在此之前取消、移除草稿、之后的更新替换整个文档或销毁编辑器，都不会发出请求；撤销恢复草稿也不会重新开始上传。`slot` 填充现有草稿位；块位置选项插入新草稿。不传位置选项时，`submit` 插入到选区处；选区所在区块为空时会被替换，与粘贴一致。
+为每个文件启动一次 SDK 上传。每个上传在所有提交监听器都收到添加其草稿的提交后才开始。在此之前取消、移除草稿、之后的更新替换整个文档或销毁编辑器，都不会发出请求；撤销恢复草稿也不会重新开始上传。`slot` 填充现有草稿位；块位置选项插入新草稿。用 `slot` 提交多个文件时，第一个文件填充该草稿，其余每个文件各有一个新草稿插入到它之后；这些草稿放不进那里时，`submit` 以 `does-not-fit` 拒绝整个批次。不传位置选项时，`submit` 插入到选区处；选区所在区块为空时会被替换，与粘贴一致。
 取消任务会保留空闲草稿。失败的实时任务保留 `File`，可显式重试；重新加载的
 草稿需要重新选择文件。
 
@@ -131,6 +132,51 @@ editor.plugin(UploadPlugin).api.cancel(draftKey);
 `editor.plugin(UploadPlugin).store.get('task', key)`，并通过任务的
 `getSnapshot` 和 `subscribe` 订阅。进度使用 SDK 的 `AggregateProgress`：
 `loaded`、`total` 和 `fraction`（`0` 到 `1`）。组件卸载不会重启上传。
+
+`api.fitsAfter(draftKey)` 返回同类的第二个草稿能否放在该草稿之后，也就是 `slot` 提交为第二个文件放置草稿的位置。它不写入任何内容；key 不是上传草稿时返回 `false`。它读取已提交的文档，因此在更新内部看不到该更新插入的草稿。复制的 `UploadElement` 每次打开文件选择器时都会调用它，只有结果为 `true` 时才允许选取多个文件。因此，如果草稿是其容器中唯一的块，例如白板[图片图形](/cn/docs/board#图片文件)中的草稿，文件选择器只接受一个文件。
+
+## 自行插入草稿
+
+`submit` 把草稿作为块插入。如果容器要把每个草稿包在自己的元素中，例如图库卡片或白板的[图片图形](/cn/docs/board#图片文件)，就由容器自己插入草稿。在同一次更新中，先用 `admit` 检查批次，插入它返回的草稿，再用 `fill` 指明每个文件的草稿：
+
+```ts
+import { BaseUploadPlugin } from 'platejs/upload';
+
+editor.update((tx) => {
+  const batch = tx.plugin(BaseUploadPlugin).admit(files, { kind: 'image' });
+
+  if (!batch || 'failure' in batch) return;
+
+  tx.blocks.insert(
+    batch.drafts.map((draft) => ({ children: [draft], type: 'card' })),
+    { at: [0] }
+  );
+  batch.fill(
+    batch.drafts.flatMap((_draft, index) => tx.key([index, 0]) ?? [])
+  );
+});
+```
+
+这里的 `card` 是你的应用中的一个元素，其内容接受一个 `image` 或 `upload` 元素。示例把每个草稿放进文档顶部的一张卡片，然后从草稿所在的位置读取它的 key。
+
+`admit(files, { kind })` 不写入任何内容，并返回以下三种值之一：
+
+| 返回值 | 情况 |
+| --- | --- |
+| `undefined` | 无事可做：列表为空、视图是预览，或编辑器只读或已销毁。 |
+| `{ failure }` | 上传拒绝了这个批次。更新提交后，它把 `failure` 传给 `onError` 一次。 |
+| `{ drafts, fill }` | 批次通过检查。`drafts` 按文件顺序为每个文件提供一个新草稿。 |
+
+传入 `kind` 时，只要批次中有其他上传类型的文件，它就会在其他所有检查之前被拒绝。失败的 code 是 `unsupported-file-type`，它的 `files` 只包含其他类型的文件，`allowedTypes` 包含 `kind` 的文件类型，因此可以去掉这些文件后再次调用 `admit`。这项检查之后，`admit` 执行 `submit` 所做的检查：`rules`、`maxFiles`、`client` 和 `getUrl`，以及每种类型的媒体插件是否已安装。
+
+上传不会跟踪 `admit` 返回的草稿。在同一次更新中把它们插入任意位置，然后按文件顺序，用每个文件的草稿的节点 key 调用 `fill(keys)`。`fill` 在把任何文件交给草稿之前检查每个 key：
+
+- 每个文件对应一个 key，且 key 不重复。
+- 每个 key 指向一个仍在文档中、类型与文件相符的上传草稿，且该草稿不在只读元素内。
+- 被指向的草稿在同一次更新中尚未通过 `submit` 或 `fill` 得到文件。
+- 这个批次尚未被填充过。
+
+检查失败时会抛出一个提到 `fill` 的错误，任何文件都不会得到草稿；捕获错误后可以再次正确调用 `fill`。与 `submit` 一样，每个上传在更新提交后才开始。没有被任何 `fill` 指向的草稿保持为空闲草稿，不会上传任何内容。批次只在接收它的那次更新中有效，因此要在该更新内调用 `fill`。
 
 ## 拖入的文件
 
@@ -204,7 +250,10 @@ export const MyFileDropPlugin = definePlugin('myFileDrop', {
 | `platejs/upload/react` 的 `UploadPlugin` | React 适配器，把拖入的文件放在指针所在区块的边缘。 |
 | `UploadPlugin.configure({ initialState })` | 配置 `client: UploadClient`、同步 `getUrl: (file: UploadOutcome) => string`、`rules`、`maxFiles` 和 `onError`。 |
 | `editor.plugin(UploadPlugin).update.submit(files, options)` | 插入已验证批次或填充草稿；`slot` 与块位置选项不能混用。 |
+| `tx.plugin(BaseUploadPlugin).admit(files, { kind? })` | 为调用方自行插入的草稿检查批次。不写入任何内容，返回 `undefined`、`UploadRefusal` 或 `UploadAdmission`。 |
+| `UploadAdmission` 的 `fill(keys)` | 按文件顺序把每个文件交给其节点 key 指向的草稿；有 key 未通过检查时抛出错误。 |
 | `editor.plugin(UploadPlugin).api.cancel(key)` | 中止一个草稿的实时任务。 |
+| `editor.plugin(UploadPlugin).api.fitsAfter(key)` | 返回同类的第二个草稿能否放在 `key` 处的草稿之后。不写入任何内容。 |
 
 草稿持久化类型是 `upload`，并且需要 `kind`。`File`、进度和错误只留在
 编辑器状态中。已完成的媒体保存 URL 和普通媒体字段。JSON 保留未完成草稿；

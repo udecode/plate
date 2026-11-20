@@ -63,7 +63,7 @@ characters, and a positive `FILES_MAX_UPLOAD_SIZE`. Implement
 `resolveFilesAccess` in the copied `lib/files.ts` for your session and document
 ACL before accepting requests. It checks read and write access, including on
 the proxy upload `PUT`. The route's `documentId` is an application document ID,
-not an authorization token. Use 1–128 letters, digits, underscores, or hyphens
+not an authorization token. Use 1 to 128 letters, digits, underscores, or hyphens
 for that ID. Return a stable tenant/document namespace shared by authorized
 collaborators.
 
@@ -130,6 +130,7 @@ the active `documentId`, as in the configuration above.
 editor.plugin(UploadPlugin).update.submit(files, { after: blockKey });
 editor.plugin(UploadPlugin).update.submit(files, { slot: draftKey });
 editor.plugin(UploadPlugin).api.cancel(draftKey);
+editor.plugin(UploadPlugin).api.fitsAfter(draftKey);
 ```
 
 `submit` accepts `File[]` or `FileList`. It validates the whole batch before
@@ -139,6 +140,9 @@ draft. A cancel, a removal of the draft, a later update that replaces the whole
 document, or a destroyed editor before then sends no request, and an undo that
 brings the draft back does not restart it. A slot
 option fills an existing draft; block placement options insert new drafts.
+A slot submit of several files gives the draft the first file and inserts a
+draft for each other file after it. When those drafts do not fit there,
+`submit` refuses the batch as `does-not-fit`.
 Without a placement option, `submit` inserts at the selection and replaces the
 selection's block when it is empty, as a paste does.
 Cancellation leaves an idle draft. A failed live task keeps its `File` for
@@ -150,6 +154,76 @@ element. A custom renderer can read
 `getSnapshot` and `subscribe` methods. Its progress is the SDK's
 `AggregateProgress` with `loaded`, `total`, and `fraction` (`0` to `1`).
 Unmounting a renderer does not restart an upload.
+
+`api.fitsAfter(draftKey)` says whether a second draft of the same kind fits
+after the draft, where a slot submit puts the draft of a second file. It writes
+nothing and returns `false` for a key that names no upload draft. It reads the
+committed document, so inside an update it does not see the drafts that update
+inserted. The copied `UploadElement` asks it each time its file picker opens, and
+the picker takes several files only when the answer is `true`. So a draft that is
+the only block its container holds, such as the draft in a board's
+[image shape](/docs/board#picture-files), picks one file.
+
+## Insert drafts yourself
+
+`submit` inserts its drafts as blocks. A container that wraps each draft in an
+element of its own, such as a gallery card or a board's
+[image shape](/docs/board#picture-files), inserts the drafts itself. In one
+update, check the batch with `admit`, insert the drafts it returns, then name
+each file's draft with `fill`:
+
+```ts
+import { BaseUploadPlugin } from 'platejs/upload';
+
+editor.update((tx) => {
+  const batch = tx.plugin(BaseUploadPlugin).admit(files, { kind: 'image' });
+
+  if (!batch || 'failure' in batch) return;
+
+  tx.blocks.insert(
+    batch.drafts.map((draft) => ({ children: [draft], type: 'card' })),
+    { at: [0] }
+  );
+  batch.fill(
+    batch.drafts.flatMap((_draft, index) => tx.key([index, 0]) ?? [])
+  );
+});
+```
+
+Here `card` is an element of your app whose content takes one `image` or
+`upload` element. The sample puts each draft in a card at the top of the
+document, then reads each draft's key from the place where it sits.
+
+`admit(files, { kind })` writes nothing and returns one of three values:
+
+| Value | When |
+| --- | --- |
+| `undefined` | There is nothing to do: the list is empty, the view is a preview, or the editor is read-only or destroyed. |
+| `{ failure }` | Upload refuses the batch. It passes `failure` to `onError` once, after the update commits. |
+| `{ drafts, fill }` | The batch passed. `drafts` holds one new draft per file, in file order. |
+
+With `kind`, a file of another upload kind refuses the batch before every other
+check. The failure is `unsupported-file-type`. Its `files` hold only the files
+of another kind and its `allowedTypes` hold the file types of `kind`, so you
+can call `admit` again without those files. After that check, `admit` runs the
+checks that `submit` runs: `rules`, `maxFiles`, the `client` and `getUrl`, and
+an installed media plugin for each kind.
+
+Upload does not track the drafts that `admit` returns. Insert them anywhere in
+the same update, then call `fill(keys)` with the node key of each file's draft,
+in file order. `fill` checks every key before it gives any file a draft:
+
+- It takes one key per file, and no key twice.
+- Each key names a live upload draft of its file's kind, outside a read-only
+  element.
+- No named draft got a file earlier in the same update, from `submit` or `fill`.
+- The batch has not been filled yet.
+
+A failed check throws an error that names `fill` and gives no file a draft, and
+a correct `fill` can follow a caught error. Each upload starts after the update
+commits, as with `submit`. A draft that no `fill` names stays an idle draft and
+uploads nothing. The batch lives for the update that admitted it, so call
+`fill` inside that update.
 
 ## Dropped files
 
@@ -258,7 +332,10 @@ a drop that carries files uploads those files instead, as
 | `UploadPlugin` from `platejs/upload/react` | React adapter that lands dropped files at the block edge under the pointer. |
 | `UploadPlugin.configure({ initialState })` | Set `client: UploadClient`, synchronous `getUrl: (file: UploadOutcome) => string`, `rules`, `maxFiles`, and `onError`. |
 | `editor.plugin(UploadPlugin).update.submit(files, options)` | Insert a validated batch or fill a draft slot. Slot and block placement options are mutually exclusive. |
+| `tx.plugin(BaseUploadPlugin).admit(files, { kind? })` | Check a batch for drafts the caller inserts itself. It writes nothing and returns `undefined`, an `UploadRefusal` or an `UploadAdmission`. |
+| `fill(keys)` of an `UploadAdmission` | Give each file the draft its node key names, in file order. It throws when a key fails a check. |
 | `editor.plugin(UploadPlugin).api.cancel(key)` | Abort the live task for one draft. |
+| `editor.plugin(UploadPlugin).api.fitsAfter(key)` | Say whether a second draft of the same kind fits after the draft at `key`. It writes nothing. |
 
 The draft has persisted type `upload` and a required `kind`, while its
 `File`, progress, and failure stay in editor state. Completed media stores a
