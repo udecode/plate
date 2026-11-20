@@ -27,6 +27,7 @@ export const createInkLayouts = () => {
         for (const inner of within.querySelectorAll('*')) kept.delete(inner);
       }
     },
+    lines: (element: Element) => kept.get(element)?.lines,
     measure: (
       element: Element,
       text: string,

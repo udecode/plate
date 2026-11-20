@@ -6,7 +6,9 @@ import {
   placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
 import {
+  type InkIndexedMark,
   type InkMarkSign,
+  readInkIndexedMark,
   readInkSign,
 } from '../../../features/ink/lib/inkPlaces.internal';
 import type { Editor } from '../../core';
@@ -19,6 +21,7 @@ import {
   inkBoxOf,
   inkTextBlockOf,
   inkWordBoxes,
+  sameInkBox,
 } from './inkMeasure.internal';
 import { InkPlugin } from './InkPlugin';
 import type { InkLayoutChange } from './inkWatch.internal';
@@ -35,18 +38,45 @@ export const NOTHING_PLACED: InkPlaced = { bottom: 0, ink: [], signs: [] };
 
 type Places = ReadonlyArray<InkCopyPlace | undefined>;
 
-type Decide = (
-  mark: InkMark,
-  copies: readonly InkCopy[],
-  places: Places
-) => InkPlacement;
+type Witness = Readonly<{
+  boxFromFirst: InkBox;
+  key: NodeKey;
+  lines: InkMeasuredBlock['lines'];
+}>;
+
+type Decided = Readonly<{
+  place: InkCopyPlace | undefined;
+  placement: InkPlacement;
+}>;
+
+type Held = Decided &
+  Readonly<{
+    bandFromFirst: InkBand;
+    crossing: number;
+    entry: InkIndexedMark;
+    firstKey: NodeKey;
+    firstTop: number;
+    width: number;
+    witnesses: readonly Witness[];
+  }>;
+
+type Decide = (mark: InkMark, entry: InkIndexedMark) => Decided;
 
 type InkInputs = Readonly<{
   band: InkBand;
+  crossing: number;
   first: InkMeasuredBlock | undefined;
+  keys: readonly NodeKey[];
   live: ReadonlyArray<InkMeasuredBlock | undefined>;
   near: readonly InkMeasuredBlock[];
 }>;
+
+const metrics = { decided: 0 };
+
+export const getInkPlacementMetrics = () => Object.freeze({ ...metrics });
+
+const crosses = (box: InkBox, { from, to }: InkBand) =>
+  box.top <= to && box.top + box.height >= from;
 
 const inkInputs = (
   mark: InkMark,
@@ -71,22 +101,25 @@ const inkInputs = (
     );
   const shift = first ? first.box.top - mark.blocks[at].top : 0;
   const ys = mark.samples.map(([, y]) => y + shift);
-  const from = Math.min(...ys) - reach;
-  const to = Math.max(...ys) + reach;
+  const band = { from: Math.min(...ys) - reach, to: Math.max(...ys) + reach };
   const marked = new Set(
     places.flatMap((place) =>
       place && place.kind !== 'gone' ? [place.key] : []
     )
   );
-  const near = candidatesBetween(from, to).flatMap(({ box, key }) => {
-    if (marked.has(key) || box.top > to || box.top + box.height < from) {
-      return [];
-    }
+  const crossing = candidatesBetween(band.from, band.to).filter(({ box }) =>
+    crosses(box, band)
+  );
+  const others = crossing.flatMap(({ key }) => (marked.has(key) ? [] : [key]));
 
-    return measure(key) ?? [];
-  });
-
-  return { band: { from, to }, first, live, near };
+  return {
+    band,
+    crossing: crossing.length,
+    first,
+    keys: [...marked, ...others],
+    live,
+    near: others.flatMap((key) => measure(key) ?? []),
+  };
 };
 
 const placeInkMarks = (
@@ -94,10 +127,10 @@ const placeInkMarks = (
   editable: HTMLElement,
   origin: InkLayerOrigin,
   marks: readonly InkMark[],
+  entryOf: (mark: InkMark) => InkIndexedMark | undefined,
   signOf: (mark: InkMark) => InkMarkSign | undefined,
   decide: Decide
 ): InkPlaced => {
-  const { read } = view.plugin(InkPlugin);
   const editableBox = inkBoxOf(editable, origin);
   const style = getComputedStyle(editable);
   const rails = {
@@ -141,23 +174,23 @@ const placeInkMarks = (
   >();
 
   for (const mark of marks) {
-    const copies = mark.blocks.flatMap((block) => read.copy(block.copy) ?? []);
+    const entry = entryOf(mark);
 
-    if (copies.length !== mark.blocks.length) continue;
+    if (!entry) continue;
 
     const kept = signOf(mark);
     let state: InkSign['state'] | undefined = kept?.state;
     let place = kept?.place;
 
     if (!kept) {
-      const places = copies.map((copy) => read.place(copy.id));
-      const placement = decide(mark, copies, places);
+      const decided = decide(mark, entry);
+      const { placement } = decided;
 
       if (placement.type === 'ink') {
         ink.push({ dx: placement.dx, dy: placement.dy, mark });
       }
       state = placement.type === 'sign' ? placement.reason : placement.sign;
-      place = places.find((at) => at?.kind !== 'live') ?? places[0];
+      ({ place } = decided);
     }
     if (!state) continue;
 
@@ -238,8 +271,6 @@ type NearBlock = Readonly<{
   text: string;
 }>;
 
-type Held = Readonly<{ key: string; placement: InkPlacement; top: number }>;
-
 export const createInkPlacer = ({
   editable,
   layer,
@@ -252,28 +283,18 @@ export const createInkPlacer = ({
     object,
     WeakMap<object, Readonly<{ id: string; text: string }> | undefined>
   >();
-  const held = new WeakMap<InkMark, Held>();
-  const ids = new WeakMap<object, number>();
-  let nextId = 0;
+  const held = new Map<string, Held>();
   let index: MarkIndex | null = null;
   let gone: readonly InkMark[] | null = null;
 
+  const entryOf = (mark: InkMark) =>
+    view.read((state) =>
+      readInkIndexedMark({ copy: read.copy, editor: view, state }, mark)
+    );
   const signOf = (mark: InkMark) =>
     view.read((state) =>
       readInkSign({ copy: read.copy, editor: view, state }, mark)
     );
-
-  const idOf = (value: object) => {
-    let id = ids.get(value);
-
-    if (id === undefined) {
-      id = nextId;
-      nextId += 1;
-      ids.set(value, id);
-    }
-
-    return id;
-  };
 
   const textBlock = (key: NodeKey) => {
     const node = view.read.nodes.get(key)?.[0];
@@ -312,9 +333,13 @@ export const createInkPlacer = ({
     if (index?.marks === marks) return index;
 
     const byBlock = new Map<string, InkMark[]>();
+    const saved = new Set(marks.map((mark) => mark.id));
     let reachAbove = 0;
     let reachBelow = 0;
 
+    for (const id of held.keys()) {
+      if (!saved.has(id)) held.delete(id);
+    }
     for (const mark of marks) {
       for (const block of mark.blocks) {
         const copy = read.copy(block.copy);
@@ -396,19 +421,29 @@ export const createInkPlacer = ({
     };
 
     const blocks = blocksBetween(viewportLow, viewportHigh);
-    const byKey = new Map(blocks.map((block) => [block.key, block]));
+    const byKey = new Map<
+      NodeKey,
+      Pick<NearBlock, 'box' | 'element' | 'text'> | undefined
+    >(blocks.map((block) => [block.key, block]));
     const measured = new Map<NodeKey, InkMeasuredBlock | undefined>();
-    const resolve = (key: NodeKey) => {
-      const element = view.api.dom.resolveDOMNode(key);
-      const found = textBlock(key);
+    const blockAt = (key: NodeKey) => {
+      if (!byKey.has(key)) {
+        const element = view.api.dom.resolveDOMNode(key);
+        const found = textBlock(key);
 
-      return element && found
-        ? { box: inkBoxOf(element, origin), element, text: found.text }
-        : undefined;
+        byKey.set(
+          key,
+          element && found
+            ? { box: inkBoxOf(element, origin), element, text: found.text }
+            : undefined
+        );
+      }
+
+      return byKey.get(key);
     };
     const measure = (key: NodeKey) => {
       if (!measured.has(key)) {
-        const block = byKey.get(key) ?? resolve(key);
+        const block = blockAt(key);
 
         measured.set(
           key,
@@ -432,35 +467,68 @@ export const createInkPlacer = ({
       return band;
     };
 
-    const decide: Decide = (mark, copies, places) => {
-      const inputs = inkInputs(
+    const stillHeld = (
+      mark: InkMark,
+      entry: InkIndexedMark
+    ): Decided | undefined => {
+      const kept = held.get(mark.id);
+
+      if (kept?.entry !== entry || kept.width !== rect.width) {
+        return undefined;
+      }
+
+      const top = blockAt(kept.firstKey)?.box.top;
+
+      if (top === undefined) return undefined;
+
+      const band = {
+        from: kept.bandFromFirst.from + top,
+        to: kept.bandFromFirst.to + top,
+      };
+      const crossing = candidatesBetween(band.from, band.to).filter(({ box }) =>
+        crosses(box, band)
+      ).length;
+
+      if (
+        crossing !== kept.crossing ||
+        !kept.witnesses.every(({ boxFromFirst, key, lines }) => {
+          const now = blockAt(key);
+
+          return (
+            now !== undefined &&
+            layouts.lines(now.element) === lines &&
+            sameInkBox({ ...now.box, top: now.box.top - top }, boxFromFirst)
+          );
+        })
+      ) {
+        return undefined;
+      }
+
+      const { place, placement } = kept;
+
+      return {
+        place,
+        placement:
+          placement.type === 'ink'
+            ? { ...placement, dy: placement.dy + top - kept.firstTop }
+            : placement,
+      };
+    };
+
+    const decide: Decide = (mark, entry) => {
+      const kept = stillHeld(mark, entry);
+
+      if (kept) return kept;
+
+      const { copies } = entry;
+      const places = copies.map((copy) => read.place(copy.id));
+      const { band, crossing, first, keys, live, near } = inkInputs(
         mark,
         copies,
         places,
         measure,
         candidatesBetween
       );
-      const top = inputs.first?.box.top ?? 0;
-      const part = (block: InkMeasuredBlock | undefined) =>
-        block
-          ? [idOf(block.lines), block.box.left, block.box.top - top].join(':')
-          : '-';
-      const key = [
-        rect.width,
-        inputs.live.map(part).join(','),
-        inputs.near.map(part).join(','),
-      ].join('|');
-      const kept = held.get(mark);
-
-      if (kept?.key === key) {
-        const { placement } = kept;
-
-        if (placement.type !== 'ink') return placement;
-
-        return { ...placement, dy: placement.dy + top - kept.top };
-      }
-
-      const { band, first, live, near } = inputs;
       const placement = placeMark({
         copies,
         live,
@@ -473,10 +541,43 @@ export const createInkPlacer = ({
         mark,
         nearby: near.flatMap((block) => inkWordBoxes(block, band)),
       });
+      const place = places.find((at) => at?.kind !== 'live') ?? places[0];
+      const firstTop = first?.box.top ?? 0;
+      const witnesses = keys.flatMap((key): Witness[] => {
+        const block = blockAt(key);
+        const lines = measure(key)?.lines;
 
-      held.set(mark, { key, placement, top });
+        return block && lines
+          ? [
+              {
+                boxFromFirst: { ...block.box, top: block.box.top - firstTop },
+                key,
+                lines,
+              },
+            ]
+          : [];
+      });
+      const everyBlockMeasured =
+        live[0] !== undefined && witnesses.length === keys.length;
 
-      return placement;
+      metrics.decided += 1;
+      if (everyBlockMeasured) {
+        held.set(mark.id, {
+          bandFromFirst: { from: band.from - firstTop, to: band.to - firstTop },
+          crossing,
+          entry,
+          firstKey: keys[0],
+          firstTop,
+          place,
+          placement,
+          width: rect.width,
+          witnesses,
+        });
+      } else {
+        held.delete(mark.id);
+      }
+
+      return { place, placement };
     };
 
     gone ??= marks.filter((mark) => signOf(mark)?.state === 'deleted');
@@ -492,6 +593,7 @@ export const createInkPlacer = ({
       editable,
       origin,
       marks.filter((mark) => shown.has(mark)),
+      entryOf,
       signOf,
       decide
     );

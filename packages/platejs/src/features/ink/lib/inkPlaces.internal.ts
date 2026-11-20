@@ -337,10 +337,19 @@ export const readInkPlace = (read: InkPlaceRead, copyId: string) => {
   return copy && placeOfTracked(places, read.state, copy);
 };
 
+export type InkIndexedMark = Readonly<{ copies: readonly InkCopy[] }>;
+
+const indexedMark = (places: InkPlaces, read: InkPlaceRead, mark: InkMark) =>
+  places.signs.get(mark.id) ?? keepSign(places, read, mark);
+
+export const readInkIndexedMark = (
+  read: InkPlaceRead,
+  mark: InkMark
+): InkIndexedMark | undefined => indexedMark(placesOf(read), read, mark);
+
 export const readInkSign = (read: InkPlaceRead, mark: InkMark) => {
   const places = placesOf(read);
-  const shown = (places.signs.get(mark.id) ?? keepSign(places, read, mark))
-    ?.shown;
+  const shown = indexedMark(places, read, mark)?.shown;
 
   if (!shown) return undefined;
 
