@@ -31,8 +31,9 @@ if (result.ok) {
 showDiagnostics(result.diagnostics);
 ```
 
-`parse` returns one complete `EditorDocumentValue`, including roots and metadata
-that Markdown can represent. Use `parseSlice` for block insertion and
+`parse` returns one complete `EditorDocumentValue`, including the roots that
+mappings read and a leading [front matter](#front-matter) block in `meta`. Use
+`parseSlice` for block insertion and
 `parseInline` for inline insertion. Both return a closed, rootless
 `ContentSlice`.
 
@@ -114,7 +115,8 @@ in a [table cell](#table-cells), warns under every policy.
 ## Syntax
 
 Plate reads and writes CommonMark plus the tags that installed feature plugins
-register. GFM, math, emoji, and [CJK emphasis](#cjk-emphasis) come from the
+register, after a leading [front matter](#front-matter) block. GFM, math,
+emoji, and [CJK emphasis](#cjk-emphasis) come from the
 [remark plugins](#remark-plugins) configured on `MarkdownPlugin`. Registered
 tags look like HTML, but only registered names are tags and nothing is
 evaluated.
@@ -160,6 +162,9 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
   `&quot;`, a newline as `&#10;`, and `|` as `&#124;`.
 - Footnote labels that CommonMark would merge, such as `A` and `a`, are written
   as distinct labels.
+- A file without front matter whose opening lines would read back as a block,
+  such as two `---` rules written with `rule: '-'`, opens with a line ending so
+  it reads back as written.
 
 ### Reading rules
 
@@ -240,6 +245,106 @@ Markdown does not carry element IDs, and serialization writes none. Parsing
 reads a `<block id="…">` wrapper around one block: with `ElementIdPlugin`
 installed, the block keeps that `id`; otherwise the wrapper is removed with a
 `markdown-unsupported-node` warning. Mappings cannot claim the `block` tag.
+
+### Front matter
+
+`parse` reads one leading YAML or TOML block, as Obsidian, Jekyll, and Hugo
+notes open with, into the document's metadata instead of a rule and a heading:
+
+```md
+---
+title: Hello
+tags: [a, b]
+---
+
+# Body
+```
+
+```ts
+import { getMarkdownFrontmatter } from 'platejs/markdown';
+
+const result = editor.api.markdown.parse(source);
+
+if (result.ok) {
+  getMarkdownFrontmatter(result.document);
+  // { format: 'yaml', value: 'title: Hello\ntags: [a, b]' }
+}
+```
+
+The block is stored at `meta['markdown.frontmatter']` as
+`{ format: 'yaml' | 'toml', value: string }`, where `value` is the text between
+the fences with LF line endings. `serialize` writes it first, then the body
+right after the closing line. A note with no other content exports as the
+block alone.
+
+- The file opens with the fence, after at most one byte-order mark: `---` for
+  YAML or `+++` for TOML, with optional trailing spaces or tabs. A YAML block
+  closes on a `---` or `...` line, a TOML block on a `+++` line.
+- The first line inside that is not blank or a `#` comment must be a setting,
+  such as `title: Hello` in YAML, or `title = 'Hello'` or `[params]` in TOML.
+  A note that opens with a rule and plain text keeps them.
+- Two fence lines with nothing between are an empty block.
+- An unclosed block, a JSON block, and a block whose text is not well-formed
+  Unicode read as CommonMark.
+- Only `parse` reads front matter. `parseSlice`, `parseInline`, paste, and AI
+  streaming read the same lines as CommonMark.
+
+Parse `value` with a parser for its format. Add a line ending to a non-empty
+value first, because the last line of a YAML block scalar keeps its line break
+only when one follows:
+
+```ts
+import { parse as parseToml } from 'smol-toml';
+import { parse as parseYaml } from 'yaml';
+
+const frontmatter = getMarkdownFrontmatter(result.document);
+const text = frontmatter?.value ? `${frontmatter.value}\n` : '';
+const data = frontmatter?.format === 'toml' ? parseToml(text) : parseYaml(text);
+```
+
+To change the block, change it on the copy of the document you pass to
+`serialize`. Replacing a live editor's value with new `meta` resets its caret,
+undo history, and local fields. Edit YAML with `yaml`'s `parseDocument` and
+`set`, which keep the quoting the reader needs, and store the result minus
+exactly one final line ending. Never trim it, because a `|+` block scalar keeps
+its trailing line breaks:
+
+```ts
+import { getMarkdownFrontmatter } from 'platejs/markdown';
+import { parseDocument } from 'yaml';
+
+const document = editor.read.value();
+const frontmatter = getMarkdownFrontmatter(document);
+
+if (frontmatter?.format === 'yaml') {
+  const yaml = parseDocument(frontmatter.value ? `${frontmatter.value}\n` : '');
+
+  yaml.set('draft', false);
+
+  const text = yaml.toString();
+  const value = text.endsWith('\n') ? text.slice(0, -1) : text;
+
+  const result = editor.api.markdown.serialize({
+    document: {
+      ...document,
+      meta: {
+        ...document.meta,
+        'markdown.frontmatter': { format: 'yaml', value },
+      },
+    },
+  });
+}
+```
+
+A document replaced with only its `children` has no `meta`, so it loses the
+block. In a collaborative editor, Yjs does not sync `meta`, so a peer that did
+not import the file exports the note without its front matter.
+
+Two rules around text read as front matter when the first line between them
+that is not blank or a comment reads as a YAML setting. That includes a line of
+text holding `: `, such as `_Note_: read this`, and a line that opens with `{`.
+Export writes those lines back unchanged. A block of only blank lines or
+comments reads as CommonMark.
 
 ## Streaming previews
 
@@ -557,6 +662,16 @@ Remark plugins must be synchronous. An attacher or transformer that returns a
 Promise is a configuration error and throws. The synchronous functions never
 return `Result | Promise<Result>`.
 
+### remark-frontmatter
+
+Files need no `remark-frontmatter` for their [front matter](#front-matter).
+When the list still holds it, it reads every slice and every block Plate's
+reader refuses. Unless a mapping decodes the `yaml` or `toml` node it makes,
+that node is a lossy `markdown-unsupported-node`, which fails the parse under
+the default policy. A [streaming preview](#streaming-previews) that continues
+its previous result also reads a block at the start of each later piece of the
+stream, so that preview can differ from a fresh parse of the same text.
+
 ### CJK emphasis
 
 CommonMark leaves `**` literal when punctuation ends the bold text and a letter
@@ -615,7 +730,8 @@ reportWarnings(result.diagnostics);
 | `markdown-inline-blocks` | Error | `parseInline` input that produced blocks. |
 | `markdown-schema-repair` | Warning; error when lossy under `'reject'` | A schema repair applied to the parsed document. |
 | `markdown-schema-invalid` | Error | Parsed content the schema rejects. |
-| `markdown-unsupported-root`, `markdown-unsupported-metadata` | Warning | A named root that no mapping read through [`contentRoot`](#content-roots), or document metadata, omitted on export. |
+| `markdown-unsupported-root`, `markdown-unsupported-metadata` | Warning | A named root that no mapping read through [`contentRoot`](#content-roots), or document metadata other than [front matter](#front-matter), omitted on export. |
+| `markdown-frontmatter-omitted` | Lossy: error under `'reject'`, warning under `'allow'` | Stored [front matter](#front-matter) that export cannot write back. Its `reason` is `shape` for a value that is not `{ format, value }` strings, `format` for a format other than `yaml` or `toml`, or `unreadable` for a value that holds a CR, is not well-formed Unicode, or would not read back the same. Under the default policy the export fails; `lossPolicy: 'allow'` exports the file without the block. |
 
 Authored projection diagnostics use the same result. Configuration failures and
 mapping contract violations throw.

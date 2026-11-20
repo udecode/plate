@@ -31,7 +31,8 @@ if (result.ok) {
 showDiagnostics(result.diagnostics);
 ```
 
-`parse` 返回完整 `EditorDocumentValue`，包括 Markdown 能表示的 root 与 metadata。
+`parse` 返回完整 `EditorDocumentValue`，包括 mapping 读取的 root，以及 `meta`
+中开头的 [front matter](#front-matter) block。
 Block insertion 使用 `parseSlice`，inline insertion 使用 `parseInline`。两者都返回
 闭合、无 root 的 `ContentSlice`。
 
@@ -101,7 +102,8 @@ warning。
 
 ## 语法
 
-Plate 读写 CommonMark，以及已安装 feature plugin 注册的 tag。GFM、math、emoji 与
+Plate 先读取开头的 [front matter](#front-matter) block，再读写 CommonMark，以及已安装
+feature plugin 注册的 tag。GFM、math、emoji 与
 [CJK 强调](#cjk-强调)来自 `MarkdownPlugin` 上配置的 [remark plugin](#remark-plugin)。注册 tag 的写法
 类似 HTML，但只有注册过的名称才是 tag，且不会执行任何内容。
 
@@ -143,6 +145,8 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 - Attribute value 使用双引号。`&` 写为 `&amp;`，`"` 写为 `&quot;`，换行写为
   `&#10;`，`|` 写为 `&#124;`。
 - CommonMark 会合并的 footnote label（例如 `A` 与 `a`）会写成不同的 label。
+- 没有 front matter 的文件，如果其开头几行会被读回为 block，例如用
+  `rule: '-'` 写出的两条 `---` rule，文件以一个换行开头，从而按原样读回。
 
 ### 读取规则
 
@@ -215,6 +219,100 @@ Hello [Jane Smith](mention:user_123).
 Markdown 不携带 element ID，序列化也不会写出 ID。解析时会读取包裹单个 block 的
 `<block id="…">`：安装 `ElementIdPlugin` 时，该 block 保留这个 `id`；否则移除
 wrapper 并报告 `markdown-unsupported-node` warning。Mapping 不能占用 `block` tag。
+
+### Front matter
+
+`parse` 把开头的一个 YAML 或 TOML block（Obsidian、Jekyll 与 Hugo 笔记以它开头）
+读入 document 的 metadata，而不是读成一条 rule 和一个 heading：
+
+```md
+---
+title: Hello
+tags: [a, b]
+---
+
+# Body
+```
+
+```ts
+import { getMarkdownFrontmatter } from 'platejs/markdown';
+
+const result = editor.api.markdown.parse(source);
+
+if (result.ok) {
+  getMarkdownFrontmatter(result.document);
+  // { format: 'yaml', value: 'title: Hello\ntags: [a, b]' }
+}
+```
+
+Block 存放在 `meta['markdown.frontmatter']`，形状为
+`{ format: 'yaml' | 'toml', value: string }`，其中 `value` 是两条 fence 之间的文本，
+使用 LF 换行。`serialize` 先写出它，再在结束行之后紧接着写出 body。没有其他内容的
+笔记只导出这个 block。
+
+- 文件以 fence 开头，前面最多有一个 byte-order mark：YAML 为 `---`，TOML 为
+  `+++`，后面可以有空格或 tab。YAML block 在 `---` 或 `...` 行结束，TOML block
+  在 `+++` 行结束。
+- 其中第一个既不是空行也不是 `#` comment 的行必须是一个 setting，例如 YAML 的
+  `title: Hello`，或 TOML 的 `title = 'Hello'` 与 `[params]`。以 rule 和普通文本
+  开头的笔记会保留它们。
+- 两条 fence 行之间没有内容时是空 block。
+- 未闭合的 block、JSON block，以及文本不是 well-formed Unicode 的 block 按
+  CommonMark 读取。
+- 只有 `parse` 读取 front matter。`parseSlice`、`parseInline`、paste 与 AI
+  streaming 把同样的行按 CommonMark 读取。
+
+使用对应格式的 parser 解析 `value`。非空的 value 先补一个换行，因为 YAML block
+scalar 的最后一行只有在后面有换行时才保留它的换行：
+
+```ts
+import { parse as parseToml } from 'smol-toml';
+import { parse as parseYaml } from 'yaml';
+
+const frontmatter = getMarkdownFrontmatter(result.document);
+const text = frontmatter?.value ? `${frontmatter.value}\n` : '';
+const data = frontmatter?.format === 'toml' ? parseToml(text) : parseYaml(text);
+```
+
+修改 block 时，在传给 `serialize` 的 document 副本上修改。用新的 `meta` 替换 live
+editor 的 value 会重置它的 caret、undo history 与 local field。用 `yaml` 的
+`parseDocument` 与 `set` 编辑 YAML，它们会保留 reader 需要的引号；存储结果时去掉
+恰好一个末尾换行。不要 trim，因为 `|+` block scalar 会保留末尾的换行：
+
+```ts
+import { getMarkdownFrontmatter } from 'platejs/markdown';
+import { parseDocument } from 'yaml';
+
+const document = editor.read.value();
+const frontmatter = getMarkdownFrontmatter(document);
+
+if (frontmatter?.format === 'yaml') {
+  const yaml = parseDocument(frontmatter.value ? `${frontmatter.value}\n` : '');
+
+  yaml.set('draft', false);
+
+  const text = yaml.toString();
+  const value = text.endsWith('\n') ? text.slice(0, -1) : text;
+
+  const result = editor.api.markdown.serialize({
+    document: {
+      ...document,
+      meta: {
+        ...document.meta,
+        'markdown.frontmatter': { format: 'yaml', value },
+      },
+    },
+  });
+}
+```
+
+只用 `children` 替换的 document 没有 `meta`，因此会丢失 block。在协作 editor 中，
+Yjs 不同步 `meta`，所以没有导入该文件的 peer 导出笔记时不带 front matter。
+
+两条 rule 之间第一个既不是空行也不是 comment 的行能读作 YAML setting 时，这两条
+rule 及其间的文本会被读成 front matter。这包括含有 `: ` 的文本行，例如
+`_Note_: read this`，以及以 `{` 开头的行。导出时会原样写回这些行。只有空行或
+comment 的 block 按 CommonMark 读取。
 
 ## 流式预览
 
@@ -500,6 +598,15 @@ Standalone function 从 `plugins` 中读取已配置的 `MarkdownPlugin`。Remar
 必须是同步的。Attacher 或 transformer 返回 Promise 属于配置错误，会直接抛出。
 同步 function 不会返回 `Result | Promise<Result>`。
 
+### remark-frontmatter
+
+文件的 [front matter](#front-matter) 不需要 `remark-frontmatter`。如果列表中仍有
+它，它会读取每个 slice，以及 Plate reader 拒绝的每个 block。除非某个 mapping
+decode 它生成的 `yaml` 或 `toml` node，该 node 是有损的
+`markdown-unsupported-node`，在默认 policy 下会使 parse 失败。接续上一次 result
+的[流式预览](#流式预览)还会读取 stream 中每个后续片段开头的 block，因此该预览可能与
+对同一文本的全新 parse 不同。
+
 ### CJK 强调
 
 当标点结束粗体文本、后面紧跟文字时，CommonMark 会把 `**` 保留为字面字符，因此
@@ -555,7 +662,8 @@ reportWarnings(result.diagnostics);
 | `markdown-inline-blocks` | Error | `parseInline` 输入产生了 block。 |
 | `markdown-schema-repair` | Warning；`'reject'` 下有损时为 error | 对解析结果应用的 schema repair。 |
 | `markdown-schema-invalid` | Error | Schema 拒绝的解析内容。 |
-| `markdown-unsupported-root`、`markdown-unsupported-metadata` | Warning | 导出时省略的、没有任何 mapping 通过 [`contentRoot`](#content-root) 读取的 named root，或 document metadata。 |
+| `markdown-unsupported-root`、`markdown-unsupported-metadata` | Warning | 导出时省略的、没有任何 mapping 通过 [`contentRoot`](#content-root) 读取的 named root，或 [front matter](#front-matter) 以外的 document metadata。 |
+| `markdown-frontmatter-omitted` | 有损：`'reject'` 下为 error，`'allow'` 下为 warning | 导出时无法写回的已存储 [front matter](#front-matter)。`reason` 为 `shape`（value 不是由字符串组成的 `{ format, value }`）、`format`（format 不是 `yaml` 或 `toml`）或 `unreadable`（value 含 CR、不是 well-formed Unicode，或读回后不相同）。默认 policy 下导出失败；`lossPolicy: 'allow'` 导出不带该 block 的文件。 |
 
 Authored projection diagnostics 使用同一种 result。配置错误与 mapping contract
 violation 会抛出。
