@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-isolate-editor-container",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-isolate-editor-container.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep a sticky header over the editor above the editor's overlays",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-editor-keep-page-chrome-above-8fc2f73a",
+      "kind": "behavior",
+      "summary": "Give `EditorContainer` its own stacking context with `isolate`, so page chrome that sits over the editor, such as a sticky header, stays above ink and every popup inside the container that is not portaled. Such a popup no longer paints over a positioned element that comes after the container.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-isolate-editor-container",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

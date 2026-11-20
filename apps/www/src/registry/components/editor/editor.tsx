@@ -17,7 +17,7 @@ import {
 import * as React from 'react';
 
 const editorContainerVariants = cva(
-  'relative w-full cursor-text select-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none',
+  'relative isolate w-full cursor-text select-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none',
   {
     defaultVariants: {
       variant: 'default',

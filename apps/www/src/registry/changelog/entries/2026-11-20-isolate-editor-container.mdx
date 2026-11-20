@@ -1,0 +1,14 @@
+---
+id: 2026-11-20-isolate-editor-container
+date: 2026-11-20
+status: draft
+kind: behavior
+summary: "Keep a sticky header over the editor above the editor's overlays"
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-20-editor-keep-page-chrome-above-8fc2f73a","kind":"behavior","migrationNotes":[]} -->
+
+- **`editor`**: Give `EditorContainer` its own stacking context with `isolate`, so page chrome that sits over the editor, such as a sticky header, stays above ink and every popup inside the container that is not portaled. Such a popup no longer paints over a positioned element that comes after the container.

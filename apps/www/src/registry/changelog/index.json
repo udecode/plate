@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-isolate-editor-container",
+      "href": "/registry/changelog/2026-11-20-isolate-editor-container.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep a sticky header over the editor above the editor's overlays",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-markdown-cjk-emphasis",
       "href": "/registry/changelog/2026-11-20-markdown-cjk-emphasis.json",
       "status": "draft",

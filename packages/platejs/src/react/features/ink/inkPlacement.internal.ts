@@ -12,7 +12,7 @@ import {
   readInkSign,
 } from '../../../features/ink/lib/inkPlaces.internal';
 import type { Editor } from '../../core';
-import type { InkSign } from './InkLayer';
+import type { InkSign } from './InkContent';
 import { createInkLayouts } from './inkLayout.internal';
 import {
   type InkBand,

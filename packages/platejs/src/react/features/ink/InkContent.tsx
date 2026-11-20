@@ -6,6 +6,7 @@ import {
   useEditorViewState,
   useModelEditor,
   useViewStore,
+  type WrapContentProps,
 } from '../../core';
 import { attachInkCapture } from './inkCapture.internal';
 import { INK_TOUCH_ACTION } from './inkInput.internal';
@@ -62,8 +63,17 @@ const sameSigns = (a: InkSigns, b: InkSigns) =>
       sign.marks.join(',') === b.signs[at].sign.marks.join(',')
   );
 
+const firstElementAfter = (element: Element) => {
+  for (let at: Element | null = element; at; at = at.parentElement) {
+    if (at.nextElementSibling) return at.nextElementSibling;
+  }
+
+  return null;
+};
+
 /**
- * The ink of a mounted Editable, drawn over it and its margins. Each mark
+ * The ink plugin's `wrapContent` slot: the slot's content, then a layer with
+ * the ink of its Editable, drawn over it and its margins. Each mark
  * draws on its words while they stand as they were when it was drawn, and
  * otherwise shows as a `sign` in the Editable's padding where the mark's lines
  * end, the left padding for a mark drawn in right-to-left text: at its
@@ -81,17 +91,35 @@ const sameSigns = (a: InkSigns, b: InkSigns) =>
  * the tool off. The layer fills the nearest positioned ancestor of the
  * Editable, which should hold the Editable and its margins, and reaches at
  * least to the Editable's bottom, so it covers the whole content of a
- * scrolling ancestor. Render it after the content from the plugin's
- * `wrapContent` slot, so it comes after the Editable and before every
- * `afterEditable` slot. It sits at z-index 50, so a press on a control inside
- * the content at that level or below, such as a block's drag handle, reaches
- * the layer, while a toolbar or menu at that level from an `afterEditable`
- * slot or a portal stays above it. When page chrome at or below that level,
- * such as a sticky header, can sit over the editor, give the positioned
- * ancestor its own stacking context, such as with `isolation: isolate`, so the
- * layer stays below that chrome.
+ * scrolling ancestor. Pass the slot's props on with a `sign`, as in
+ * `wrapContent: (props) => <InkContent {...props} sign={Sign} />`, so the
+ * layer comes right after the Editable and before every `afterEditable` slot.
+ * In development, the mount throws unless the layer is the first element after
+ * the Editable, so a mount from `wrapRoot`, `beforeEditable` or
+ * `afterEditable` that puts the layer elsewhere, such as after a toolbar,
+ * fails. The layer sits at z-index 50, so a press on a control inside the
+ * content at that level or below, such as a block's drag handle, reaches the
+ * layer, while a toolbar or menu at that level from an `afterEditable` slot or
+ * a portal stays above it. When page chrome at or below that level, such as a
+ * sticky header, can sit over the editor, give the positioned ancestor its own
+ * stacking context, such as with `isolation: isolate`, so the layer stays
+ * below that chrome.
  */
-export function InkLayer({
+export function InkContent({
+  children,
+  sign,
+}: WrapContentProps & {
+  sign: React.ComponentType<{ sign: InkSign }>;
+}) {
+  return (
+    <>
+      {children}
+      <InkLayer sign={sign} />
+    </>
+  );
+}
+
+function InkLayer({
   sign: Sign,
 }: {
   sign: React.ComponentType<{ sign: InkSign }>;
@@ -155,6 +183,14 @@ export function InkLayer({
     const path = preview.current;
 
     if (!layer || !editable || !path || !surface) return undefined;
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      firstElementAfter(editable) !== layer
+    ) {
+      throw new Error(
+        'InkContent must be the `wrapContent` slot of its plugin, so its ink layer is the first element after the Editable. Mounted elsewhere, the layer can cover what comes after the Editable, such as a toolbar.'
+      );
+    }
 
     const attached = attachInkCapture({
       editor,

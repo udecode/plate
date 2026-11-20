@@ -38,6 +38,9 @@
       "path": "./html-server.json"
     },
     {
+      "path": "./ink-react.json"
+    },
+    {
       "path": "./markdown.json"
     },
     {
