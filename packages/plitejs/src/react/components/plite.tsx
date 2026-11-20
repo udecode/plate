@@ -361,11 +361,6 @@ export const EditorRuntimeView = <
     setEditorReadOnly(reactEditor, readOnly);
     return () => setEditorReadOnly(reactEditor, true);
   }, [directEditor, reactEditor, readOnly]);
-  // An insertion effect may not schedule updates, so the lock's notice goes
-  // out here, before the commit that wrote it ends.
-  useIsomorphicLayoutEffect(() => {
-    flushEditorViewState(reactEditor);
-  }, [reactEditor, readOnly]);
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const { focused: isFocused } = useRuntimeFocusState(reactEditor);
   useInsertionEffect(
@@ -376,6 +371,11 @@ export const EditorRuntimeView = <
     () => registerViewEditor(reactEditor, viewRoot),
     [reactEditor, registerViewEditor, viewRoot]
   );
+  // An insertion effect may not schedule updates, so the lock's notice goes
+  // out here, before the commit that wrote it ends.
+  useIsomorphicLayoutEffect(() => {
+    flushEditorViewState(reactEditor);
+  }, [reactEditor, readOnly]);
   const hasViewSelection = usePliteViewSelectionPresence(reactEditor);
   const viewSelectionDecoration = useMemo(
     () =>

@@ -206,6 +206,10 @@ const invalidate = (entry: Entry | undefined) => {
   if (PENDING.size === 1) queueMicrotask(announce);
 };
 
+export const flushRootTargets = () => {
+  if (PENDING.size > 0) announce();
+};
+
 export const readRootViewUse = (view: Editor) =>
   USED_AT.get(getEditorRuntime(view)) ?? 0;
 

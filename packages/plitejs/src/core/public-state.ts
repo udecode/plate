@@ -396,7 +396,7 @@ import {
 } from './representation';
 import { readRootEntries } from './root-entries';
 import { changedRootsOf } from './root-ownership';
-import { reportShownChange } from './root-target';
+import { flushRootTargets, reportShownChange } from './root-target';
 import {
   areEditorSchemaIdentitiesEqual,
   tracksPlaces,
@@ -11140,12 +11140,20 @@ const notifyViewStateChannel = (
   scheduleMicrotask(() => deliverViewStateNotice(channel, notice));
 };
 
+const PENDING_SWITCH_NOTICES = new Set<() => void>();
+
 export const flushEditorViewState = (editor: AnyPluginEditor) => {
   const channel = getEditorRuntime(editor);
 
-  for (const notice of [...(PENDING_VIEW_STATE_NOTICES.get(channel) ?? [])]) {
-    deliverViewStateNotice(channel, notice);
-  }
+  flushRootTargets();
+
+  const notices = [...(PENDING_VIEW_STATE_NOTICES.get(channel) ?? [])];
+
+  for (const notice of notices) deliverViewStateNotice(channel, notice);
+
+  if (notices.length === 0) return;
+
+  for (const tell of [...PENDING_SWITCH_NOTICES]) tell();
 };
 
 export const notifyEditorViewState = (
@@ -11334,7 +11342,6 @@ export const subscribeEditorViewState = <V extends Value>(
 ) => {
   const runtime = getEditorRuntime(editor);
   let subscribed = true;
-  let switching = false;
   // A switch sends a focus and a composition notice whether or not the answer
   // changed, and the followed view sends its own, so only a changed answer
   // reaches the listener.
@@ -11351,23 +11358,24 @@ export const subscribeEditorViewState = <V extends Value>(
   const hearPolicy = (change: EditorViewStateChange) => {
     // A pending switch notice already has the listener read both policies
     // of the view it now follows, so that view's own notice would repeat it.
-    if (!subscribed || switching) return;
+    if (!subscribed || PENDING_SWITCH_NOTICES.has(tellSwitch)) return;
 
     runEditorObserver(editor, 'commit-listener', () => listener(change));
   };
+  const tellSwitch = () => {
+    if (!PENDING_SWITCH_NOTICES.delete(tellSwitch)) return;
+
+    for (const change of ['readOnly', 'authored'] as const) {
+      if (!subscribed) return;
+
+      runEditorObserver(editor, 'commit-listener', () => listener(change));
+    }
+  };
   const hearSwitch = () => {
-    if (switching) return;
+    if (PENDING_SWITCH_NOTICES.has(tellSwitch)) return;
 
-    switching = true;
-    scheduleMicrotask(() => {
-      switching = false;
-
-      for (const change of ['readOnly', 'authored'] as const) {
-        if (!subscribed) return;
-
-        runEditorObserver(editor, 'commit-listener', () => listener(change));
-      }
-    });
+    PENDING_SWITCH_NOTICES.add(tellSwitch);
+    scheduleMicrotask(tellSwitch);
   };
   const hearOwnPolicy = (change: EditorViewStateChange) => {
     if (isPolicyChange(change)) listener(change);
