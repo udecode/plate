@@ -57,6 +57,6 @@ Arguments:
 2. Read the rest of the report:
    - A missing `@/registry/ui/*` is a shadcn component Potion lacks. Add it to `src/registry/ui` with the shadcn CLI.
    - Delete a file Plate no longer ships once nothing imports it. Keep Potion's own files: its tools in hooks and lib, and the files in `plate-sync.mdc`'s table of registry components only Potion has.
-3. Run `bun typecheck`, then drive the editor in a browser as Potion's `verify` skill says. Read it at `.claude/skills/verify/SKILL.md` in Potion's main checkout; Plate's `verify` is a different skill.
+3. Run `bun typecheck`, then drive the editor in a browser as `verify`'s Potion stack recipe (`.agents/rules/verify/references/potion/stack.md`) says.
 4. An error in `src/registry` or in a Plate package is Plate's problem. Never fix it or work around it in Potion. Handle it as the "Plate v54 migration blockers" section of Potion's `AGENTS.md` says. When Plate has no API for what Potion needs, file a `udecode/plate-private` issue through `maintainer`'s issue-draft mode. Fix an error in Potion's own code, such as `src/components` or `src/server`, as usual.
 5. Report the size of the change from `git diff --stat` and the Plate commit range. Then commit in the Potion worktree and merge it into Potion's current branch with `git merge --ff-only`, without pushing.

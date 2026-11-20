@@ -4,8 +4,8 @@ Potion, the `potion` checkout beside Plate's main checkout, runs Plate's
 packages and registry UI inside a real app with a server, a database and Yjs.
 This lane reproduces a bug reported in Potion and proves a Plate fix there. It
 runs locally. A detached Potion worktree takes the Plate checkout under test
-through `sync-potion`'s command, and Potion's own `verify` skill starts the app,
-signs in a test user and drives it. No deploy is involved.
+through `sync-potion`'s command, and [the Potion stack recipe](./potion/stack.md)
+starts the app, signs in a test user and drives it. No deploy is involved.
 
 ## When
 
@@ -28,8 +28,8 @@ Potion under its own rules, not here.
 Run from the Plate worktree under test. `$POTION` is Potion's main checkout,
 `$PW` a proof worktree in a temp folder and `$RUN` the run directory.
 
-1. Read Potion's `.claude/skills/verify/SKILL.md` in full, and its `features/`
-   recipe for the path under test.
+1. Read [the Potion stack recipe](./potion/stack.md) in full, and the
+   [feature recipe](./potion/features/README.md) for the path under test.
 2. Cut the proof worktree, detached at Potion's current commit:
    `git -C $POTION worktree add --detach $PW HEAD`.
 3. Copy `tmp/plate-local/*.tgz` and `.env.local` from `$POTION` into `$PW`.
@@ -44,26 +44,24 @@ Run from the Plate worktree under test. `$POTION` is Potion's main checkout,
    version and did not take the Plate change. For a fix in such a file, apply
    its `tmp/plate-sync/review/<plate commit>/<path>.diff` to `$PW` by hand,
    leave it uncommitted and say so in the evidence.
-7. From `$PW`, run `.claude/skills/verify/scripts/stack.sh up`, then `doctor`
-   and `login`. Other sessions often hold the default ports. When `up` says a
-   port is taken, find free ones with `lsof -nP -iTCP:<port> -sTCP:LISTEN` and
-   pass every `VERIFY_*` port and container override that Potion's skill lists,
-   to `down` as well.
-8. Drive the report's steps as Potion's `verify` skill says.
+7. Run `export VERIFY_POTION=$PW`, set `STACK=.agents/skills/verify/scripts/potion-stack.sh`,
+   then run `"$STACK" up`, `doctor` and `login`, with the port and container
+   overrides the stack recipe's Launch section gives when a port is taken.
+8. Drive the report's steps as the stack recipe says.
 9. Copy `$PW/tmp/verify/evidence/<run>/` into `$RUN/potion/`. Record the Plate
    commit from `$PW/.plate-ui-sync/last-sync.json` and the tarball names from
    `$PW/package.json` beside it.
-10. Run `stack.sh down` from `$PW` before the next sync.
+10. Run `"$STACK" down` with the same variables before the next sync.
 
 The red runs on code without the fix. That is the session's worktree before
 its first edit, or a [base worktree](./commands.md#base-worktree-for-a-head-comparison)
 once it has edits. The green repeats steps 4 to 10 from the fixed worktree with
-the same drive. Potion's proof standards ask for five warm runs of
+the same drive. The stack recipe's proof standards ask for five warm runs of
 timing-prone behavior.
 
 ## Cleanup and limits
 
-- Nothing commits or pushes in `$PW`. After the last `stack.sh down`, remove it
+- Nothing commits or pushes in `$PW`. After the last `"$STACK" down`, remove it
   with `git -C $POTION worktree remove --force $PW`. Bringing a landed fix into
   Potion is `sync-potion`'s job.
 - The proof covers the synced Plate checkout on this Potion commit, on a local
