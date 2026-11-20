@@ -73,7 +73,7 @@ On a PR someone else opened, leave their description alone. One comment from you
 
 ## Change
 
-The renderer source is `skills/sync-pstack/assets/pstack/plan-page.mjs` in the dotai checkout, with `status.mjs` beside it. Its tests are the `plan-page` tests in `skills/sync-pstack/scripts/sync-pstack.test.mjs`. A section that only one project's plans write belongs in that project's playbook frontmatter, never in the renderer.
+The renderer source is `skills/sync-pstack/assets/pstack/plan-page.mjs` in the dotai checkout, with `status.mjs` beside it. Its tests are in `skills/sync-pstack/scripts/plan-page.test.mjs`. A section that only one project's plans write belongs in that project's playbook frontmatter, never in the renderer.
 
 Run sync-pstack's Lesson mode, which owns the gates, the corpus rules and the delivery. This mode adds the renderer's specifics inside its steps:
 

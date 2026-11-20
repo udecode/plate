@@ -410,10 +410,25 @@ const deltaKeys = (source) =>
       .flatMap((table) => table.rows.map((row) => `${sameText(section.title)}\n${sameText(row[1] ?? '')}`))
   );
 
+const showsAfter =({ first, after }, shown, held) => {
+  const before = blockLines(first.body);
+  const next = blockLines(after.body);
+  if (sameBlock(before, next)) return false;
+  const changed = [...next.filter((line) => !before.includes(line)), ...before.filter((line) => !next.includes(line))];
+  if (changed.length > 0 && changed.every((line) => held.has(line))) return false;
+  const beforeShown = before.length > 0 && !holds(next, before) && shown.some((lines) => holds(lines, before));
+  return shown.some((lines) => holds(lines, next)) && !beforeShown;
+};
+
+const fenceBlocks = (source, title) => fencesOf(sectionNamed(source, title)?.lines ?? []).map((fence) => blockLines(fence.body));
+
+const builds = (plan) => !plan.meta['built by'];
+
 // A later iteration may rewrite a call this plan folded, so a line another iteration's before fence holds is not checked.
 function assertFolded(plan, doc, { isChange, others, paired, where }) {
-  const fail = (what) => {
-    throw new Error(`${where} ${what}; fold the plan's delta into it before its Status says executed`);
+  const builder = plan.meta['built by'];
+  const fail = (what, hint = "fold the plan's delta into it before the plan closes") => {
+    throw new Error(`${where} ${what}; ${hint}`);
   };
   const touched = new Set(others.flatMap(deltaKeys));
   for (const section of plan.sections.filter(isChange)) {
@@ -430,6 +445,7 @@ function assertFolded(plan, doc, { isChange, others, paired, where }) {
       }
     }
   }
+  const builders = others.filter(builds);
   for (const section of plan.sections.filter((entry) => paired.includes(entry.title.toLowerCase()))) {
     const linesOf = (sources, side, read = codeLines) =>
       new Set(
@@ -438,15 +454,26 @@ function assertFolded(plan, doc, { isChange, others, paired, where }) {
           return match ? fencePairs(match.lines).pairs.flatMap((pair) => read(pair[side].body)) : [];
         })
       );
-    const rewritten = linesOf(others, 'first');
-    const kept = linesOf([plan, ...others], 'after');
+    const rewritten = linesOf(builders, 'first');
+    const kept = linesOf([plan, ...builders], 'after');
     const current = sectionNamed(doc, section.title);
     const shown = new Set(current ? fencesOf(current.lines).flatMap((fence) => codeLines(fence.body)) : []);
-    const blocks = current ? fencesOf(current.lines).map((fence) => blockLines(fence.body)) : [];
-    const rewrittenExact = linesOf(others, 'first', blockLines);
-    for (const { first, after } of fencePairs(section.lines).pairs) {
+    const blocks = fenceBlocks(doc, section.title);
+    const rewrittenExact = linesOf(builders, 'first', blockLines);
+    const held = new Set(builders.flatMap((source) => fenceBlocks(source, section.title)).flat());
+    for (const pair of fencePairs(section.lines).pairs) {
+      if (builder) {
+        if (showsAfter(pair, blocks, held)) fail(`already shows the after side of a ## ${section.title} pair`, `keep the plan's calls on its page until ${builder} builds them`);
+        continue;
+      }
+      const { first, after } = pair;
       const missing = codeLines(after.body).find((line) => !rewritten.has(line) && !shown.has(line));
-      if (missing) fail(`does not show the after line "${missing.slice(0, 60)}" in ## ${section.title}`);
+      if (missing) {
+        fail(
+          `does not show the after line "${missing.slice(0, 60)}" in ## ${section.title}`,
+          "fold the plan's delta into it before the plan closes, or, when another task builds these calls, name it in a Built by: line under Status"
+        );
+      }
       const stale = codeLines(first.body).find((line) => !kept.has(line) && shown.has(line));
       if (stale) fail(`still shows the before line "${stale.slice(0, 60)}" in ## ${section.title}`);
       const next = blockLines(after.body);
@@ -480,18 +507,10 @@ function assertUnfolded(plan, doc, { name, others, paired, where }) {
     }
   }
   for (const section of plan.sections.filter((entry) => paired.includes(entry.title.toLowerCase()))) {
-    const fences = (source) => fencesOf(sectionNamed(source, section.title)?.lines ?? []).map((fence) => blockLines(fence.body));
-    const shown = fences(doc);
-    const held = new Set(others.flatMap(fences).flat());
-    for (const { first, after } of fencePairs(section.lines).pairs) {
-      const before = blockLines(first.body);
-      const next = blockLines(after.body);
-      // A deleted call proves nothing: the subject may never have listed it.
-      if (next.length === 0 || sameBlock(before, next)) continue;
-      const changed = [...next.filter((line) => !before.includes(line)), ...before.filter((line) => !next.includes(line))];
-      if (changed.length > 0 && changed.every((line) => held.has(line))) continue;
-      const beforeShown = before.length > 0 && !holds(next, before) && shown.some((lines) => holds(lines, before));
-      if (shown.some((lines) => holds(lines, next)) && !beforeShown) {
+    const shown = fenceBlocks(doc, section.title);
+    const held = new Set(others.filter(builds).flatMap((source) => fenceBlocks(source, section.title)).flat());
+    for (const pair of fencePairs(section.lines).pairs) {
+      if (showsAfter(pair, shown, held)) {
         fail(`already shows the after side of a ## ${section.title} pair`, '; when the before call is a current call site the subject does not list, add it to the subject');
       }
     }
@@ -1403,7 +1422,7 @@ function parsePlan(source) {
   const sections = [];
   const outside = outsideFences(lines);
   for (const [index, line] of lines.entries()) {
-    const field = outside[index] && line.match(/^(Status|Page|Topic|Playbook|Plans):\s*(.*)$/);
+    const field = outside[index] && line.match(/^(Status|Page|Topic|Playbook|Plans|Built by):\s*(.*)$/);
     if (field && sections.length === 0) {
       meta[field[1].toLowerCase()] = field[2].trim();
       fields[field[1].toLowerCase()] = field[2].trim();
@@ -1541,7 +1560,7 @@ function page(planPath, { folded = false, run = null } = {}) {
   const { lead, pairs, require } = pageSections(playbooks, known ? plan.meta.playbook : null, repoPath);
   const isChange = (section) => {
     const role = roleOf(section, lead);
-    return ['api', 'lead', 'main'].includes(role) || (role === 'idea' && Boolean(sectionNamed(doc, section.title)));
+    return ['api', 'lead', 'main'].includes(role) || (role === 'idea' && (Boolean(sectionNamed(doc, section.title)) || tablesOf(section.lines).some((table) => isDelta(table.head))));
   };
   const owesBrief = (entry) => Boolean(briefOf(entry.plan)) || (entry.path === planPath && Boolean(stateOf(entry.plan.meta.status ?? '')));
   for (const entry of doc === plan ? [self] : iterations.filter(isOpen)) {

@@ -16,9 +16,10 @@
     },
     "plan-page": {
       "source": "udecode/dotai",
+      "commit": "dfe44bf64c0ff3d6a8b060788bd201f2adafe8cb",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "5aae8f7662649dc34168142ed1beaa570b21b2eea02e2d15159fa72a7098964d"
+      "computedHash": "48f7b013465419b4f319d84c4443b0a5fc9e7ce6591b4c465e7336ef813e6611"
     },
     "redo": {
       "source": "udecode/dotai",
