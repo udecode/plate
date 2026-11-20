@@ -13,10 +13,10 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 
 ## What it checks
 
-`packages/platejs/scripts/markdown-round-trip.ts` runs the real codec of `createTestEditor` in `packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx`, with `BaseIndentPlugin` given the indent targets of `apps/www/src/registry/components/editor/indent-static.tsx`. That editor has the plugins the Markdown stress cases use, and a block that the parse indents keeps its indent as it does in the shipped kit. The script checks the TypeScript code itself, not a model of it.
+`packages/platejs/scripts/markdown-round-trip.ts` runs the real codec of `createTestEditor` in `packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx`, with `BaseIndentPlugin` given the indent targets of `apps/www/src/registry/components/editor/indent-static.tsx`. That editor has the plugins the Markdown stress cases use, and its remark plugins are math, GFM, the two CJK-friendly plugins and emoji. A block that the parse indents keeps its indent as it does in the shipped kit. The script checks the TypeScript code itself, not a model of it.
 
 1. **Inline contents.** Every string of up to `--inline` tokens from 22 tokens: `a`, a space, `*`, `**`, `_`, a backtick, `~~`, `[a](b)`, `<br/>`, `<u>`, `</u>`, a backslash, a newline, `$`, `!`, `#`, `<`, `&`, `https://a.b`, `[^1]`, `|` and `:+1:`.
-2. **Block forms.** 21 forms: paragraph, ATX heading, setext heading, quote, bullet, ordered and task items, table, fenced and indented code, math, div, callout, link reference, link definition, footnote definition, a lazy list item, thematic break, bold, link and a trailing break. 15 forms take every inline content. The setext heading, lazy list item, thematic break, bold, link and trailing break are fixed sources. Eight more fixed sources hold a URL that cannot stay a bare URL or that the parse keeps as text. `https://a.b.\na` and `https://a.b)\na` put a bare URL before a line break, and `<https://a.b'> a`, `<https://a.b"> a` and `<https://a.b;> a` end a URL in a character that GFM trims from a bare URL. The link plugin refuses the URL of `<https://a.b]> a`, so the parse keeps it as text. The parse also keeps `<div>www.a.b </div>` and `<div>a@b.cd </div>` as text. Each must parse again as text, though GFM finds an autolink literal in it. They run alone and join no sequence, because as block forms they would almost double the 902 round-trip sequences. Two more forms leave a tag open that a count of tag names reads as closed, `<callout>` with `</callout>` in a code span and `</callout> <callout>`. They join only the streamed sequences.
+2. **Block forms.** 21 forms: paragraph, ATX heading, setext heading, quote, bullet, ordered and task items, table, fenced and indented code, math, div, callout, link reference, link definition, footnote definition, a lazy list item, thematic break, bold, link and a trailing break. 15 forms take every inline content. The setext heading, lazy list item, thematic break, bold, link and trailing break are fixed sources. Eight more fixed sources hold a URL that cannot stay a bare URL or that the parse keeps as text. `https://a.b.\na` and `https://a.b)\na` put a bare URL before a line break, and `<https://a.b'> a`, `<https://a.b"> a` and `<https://a.b;> a` end a URL in a character that GFM trims from a bare URL. The link plugin refuses the URL of `<https://a.b]> a`, so the parse keeps it as text. The parse also keeps `<div>www.a.b </div>` and `<div>a@b.cd </div>` as text. Each must parse again as text, though GFM finds an autolink literal in it. They run alone and join no sequence, because as block forms they would almost double the 902 round-trip sequences. Seven more fixed sources hold emphasis whose reading depends on the CJK plugins. `这是**重点。**然后`, `日本語の**「強調」**です`, `这是~~删除。~~文字`, `这是*斜体。*文字` and `한국어 **강조.**다음` end bold, strike or italic in punctuation beside a CJK letter, which CommonMark alone keeps as text. `这是\*\*重点。\*\*然后` escapes its asterisks and `a**"b"**c` holds no CJK character, so both parse as text and must parse again as text. No inline token holds a CJK character, so these seven are fixed sources, and they run alone for the reason the URL sources do. Two more forms leave a tag open that a count of tag names reads as closed, `<callout>` with `</callout>` in a code span and `</callout> <callout>`. They join only the streamed sequences.
 3. **Sequences.** Every list of up to `--blocks` forms, each holding `a`, joined by one or two newlines. The round trip runs 902 sequences at the gate and the stream 1,080.
 4. **Spec examples.** Every example of CommonMark 0.31.2, read from the `commonmark-spec` package with each `→` as a tab, and the 41 examples of GFM 0.29.0.gfm.13 that CommonMark lacks, kept in `packages/platejs/scripts/markdown-round-trip-gfm.ts`. Each example runs the round trip at every bound. The `spec-stream` part also streams each one as `a\n\n<example>\n\na`, one character at a time. It continues the preview of each prefix to the next character, as a preview and as a strict parse, and compares each with a fresh parse of that prefix. A finding's detail starts with its example, such as `CommonMark 0.31.2 example 218`.
 5. **Round trip.** Each form with each inline content, each sequence and each spec example goes through parse, serialize and parse again under the default policy. A parse that refuses the source counts in the summary's `refused` and is not a failure. The script compares documents after `nameDocumentListIds`, because each parse gives every list a new id. A source that holds a line ending is also parsed with each one written as CRLF and then as CR, and each parse must give the document of the LF form.
@@ -34,11 +34,11 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 
 Run every command from the repository root.
 
-- `pnpm check:markdown-round-trip` checks the gate bound: two inline tokens and two blocks. It compares 10,872 cases: 9,099 round trips, 679 of them spec examples that parse, 1,080 streamed sequences and 693 streamed spec examples. On a machine whose load average stood near 130, it took 19 to 30 s and 120 to 132 CPU-s. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check markdown-round-trip` runs the same step through the check runner, and Local CI runs it on next after each landing.
-- `--inline` and `--blocks` raise one part of the bound, and `--part=round-trip`, `--part=stream` or `--part=spec-stream` runs one part. `--inline=3 --part=round-trip` compares 166,272 cases in 303 to 437 CPU-s, and `--blocks=3` compares 95,036 cases. Its stream half, `--blocks=3 --part=stream`, compares 49,656 cases in 1,771 CPU-s on a loaded machine. A bound other than the gate's, `--part` or `--case` skips the baseline and exits 1 on any failure.
-- `--case='<identity or part of one>'` prints the full diff and stack of each failure whose identity contains it, such as `--case='"# a<br/>"'`.
+- `pnpm check:markdown-round-trip` checks the gate bound: two inline tokens and two blocks. It compares 10,879 cases: 9,106 round trips, 679 of them spec examples that parse, 1,080 streamed sequences and 693 streamed spec examples. On a machine whose load average stood near 130, it took 19 to 30 s and 120 to 132 CPU-s. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check markdown-round-trip` runs the same step through the check runner, and Local CI runs it on next after each landing.
+- `--inline` and `--blocks` raise one part of the bound, and `--part=round-trip`, `--part=stream` or `--part=spec-stream` runs one part. `--inline=3 --part=round-trip` compares 166,957 cases in 436 CPU-s on a loaded machine, and `--blocks=3` compares 96,415 cases. Its stream half, `--blocks=3 --part=stream`, compares 49,656 cases in 1,771 CPU-s on a loaded machine. A bound other than the gate's, `--part` or `--case` skips the baseline and exits 1 on any failure.
+- `--case='<identity or part of one>'` prints the full diff and stack of each failure whose identity contains it, such as `--case='"<br/><br/>"'`.
 - `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default. Findings do not depend on it.
-- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag, a crashed worker or a checkpoint the script cannot read. At the gate the run also fails when it compares other than 10,872 cases, the `GATE_CASES` constant, so a change that makes parse refuse more sources cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
+- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag, a crashed worker or a checkpoint the script cannot read. At the gate the run also fails when it compares other than 10,879 cases, the `GATE_CASES` constant, so a change that makes parse refuse more sources cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
 - After a fix removes a known finding, the gate fails until you run `pnpm check:markdown-round-trip --lower`. The baseline never grows past the base commit's copy. `--init` seeds only a rule the baseline lacks, and `--lower` and `--init` write nothing when the case count misses `GATE_CASES`.
 
 ## Read a failure
@@ -46,14 +46,14 @@ Run every command from the repository root.
 A finding prints its rule, identity and the first line of its detail:
 
 ```text
-markdown-round-trip "# a<br/>"
-  serialized "a\n\n"; the parse again differs at .children.0: {"type":"paragraph","children":[{"text":"a"}]}, not {"level":1,"type":"heading","children":[{"text":"a\n"}]}
+markdown-round-trip "<br/><br/>"
+  serialized "<br />\n<br />\n"; the parse again differs at .children.0.children.0.text: "\n\n\n", not "\n\n"
 
 markdown-stream "1. a\na\n\n1. a"
   chunked at 1,9,10, the continued result differs at .slice.content.1.listId: "b", not "a"
 ```
 
-The first is a known finding, a heading that ends in a break and serializes as a paragraph. The second is what the gate prints when `findMarkdownSegmentBoundaries` stops keeping a list open, as What a pass proves says. The preview of the first 9 characters ends in `1`, which is not a list marker yet. So the segment scanner commits a boundary after the lazy line, and the continuation splits one list in two. Run `--case` on the identity for the full documents.
+The first is a known finding, two breaks in a row that come back as three line endings. The second is what the gate prints when `findMarkdownSegmentBoundaries` stops keeping a list open, as What a pass proves says. The preview of the first 9 characters ends in `1`, which is not a list marker yet. So the segment scanner commits a boundary after the lazy line, and the continuation splits one list in two. Run `--case` on the identity for the full documents.
 
 Tell a real bug from a modeling error before you change code:
 
@@ -63,14 +63,12 @@ Tell a real bug from a modeling error before you change code:
 
 ## Findings
 
-The gate finds 157: 156 `markdown-round-trip` and 1 `markdown-throws`. Read by their examples, the round-trip entries fall into these classes. No log proves that each class has a single cause:
+The gate finds 72: 71 `markdown-round-trip` and 1 `markdown-throws`. It found 157 at the sync before this one. Measured on 7bc3175013, the lockfile's move from mdast-util-to-markdown 2.1.2 to 2.2.3 cleared 79 round-trip entries, 42 headings and 37 callouts whose text starts or ends with a break. The CJK plugins' writer cleared 6 more, a break before a bare URL in a paragraph, a quote, a list item or a footnote definition. Read by their examples, the round-trip entries that remain fall into these classes. No log proves that each class has a single cause:
 
 - **An emoji shortcode inside a div.** `<div>:+1:</div>` comes back with the emoji glyph and escaped tags.
-- **A callout whose text starts or ends with a break.** `<callout>\na<br/>\n</callout>` loses its break.
-- **A heading that ends in a break.** `# a<br/>` serializes as a paragraph, and so does a setext heading over `a<br/>`.
-- **A heading that starts with a break.** `# <br/>a` serializes as a setext heading and loses the break.
-- **An autolink before a shortcode.** `https://a.b:+1:` gives a link whose URL holds the glyph.
-- **A break before an autolink.** `<br/>https://a.b` serializes the break as a backslash and a space.
+- **A bare URL before a shortcode.** `https://a.b:+1:` comes back as text that holds the emoji glyph in place of the shortcode.
+- **A bare URL before a trailing break.** `# https://a.b<br/>` serializes the break as `&#xA;`, which the parse again reads into the URL, and so does a callout that holds `https://a.b<br/>`.
+- **A break before a bare URL in a callout.** `<callout>\n<br/>https://a.b\n</callout>` serializes the break as a space.
 - **An unclosed `<u>`.** The serializer closes it around the text after it, and `<br/><u>` loses its break.
 - **A task item that starts with a break.** `- [ ] <br/>` loses its checkbox.
 - **Two breaks in a row.** `- <br/><br/>` gains a third newline.
@@ -79,7 +77,7 @@ The other entry has one cause:
 
 - **A footnote definition in a quote.** `> [^1]:+1:` throws `Markdown node mapping "blockquote" expected block content.` during serialize. 1 `markdown-throws` entry.
 
-`--inline=3 --part=round-trip` fails 4,875 round trips and 24 throws, and every throw is a footnote definition in a quote. `--blocks=3` fails 232 round trips and 1 throw, and no streamed source fails. Neither run finds a `markdown-line-endings` case. The deep runs read no baseline.
+`--inline=3 --part=round-trip` fails 2,496 round trips and 24 throws, and every throw is a footnote definition in a quote. `--blocks=3` fails the gate's 71 round trips and 1 throw, and no streamed source fails. Neither run finds a `markdown-line-endings` case. The deep runs read no baseline.
 
 ## What a pass proves
 
@@ -94,11 +92,11 @@ Bugs planted on this tree showed where the gate holds:
 - Keeping a segment that ends inside an unclosed tag in `markdownConversion.ts` gives 40 `markdown-stream` and 40 `markdown-stream-final` findings, such as `</callout> <callout>\n\n---` chunked at 1,24, a body that falls out of its tag.
 - Running the codec of 7bc3175013, before `fix(markdown): round-trip every CommonMark and GFM spec example`, gives 22 new `markdown-round-trip` findings and 1 `markdown-stream` finding, all spec examples. CommonMark example 335 splits its code span into three at its line endings, example 404 closes its emphasis before the link it holds, and example 218 streams `[foo]` as text, though the quote below it defines `foo`.
 
-Each run used the gate bound and restored the product files byte for byte. The 7bc3175013 run used this sync's script. The `remarkSeparateEscapes` run used this sync's script. The `openList` and 0cfbdc701a runs used the script of `fix(markdown): read CR line endings as LF and keep a bare URL a link`, and the others ran at the earlier sync, `test(platejs): check Markdown round trips and streamed parses on every small document`.
+Each run used the gate bound and restored the product files byte for byte. Each also ran before the lockfile moved to mdast-util-to-markdown 2.2.3, so its round-trip counts are those of the 2.1.2 writer. The 7bc3175013 run used the script of `fix(markdown): round-trip every CommonMark and GFM spec example`, the unclosed tag run the script of `fix(markdown): keep a streamed tag open until its real closer`, and the `remarkSeparateEscapes` run the script of `fix(markdown): read an escaped URL as text`. The `openList` and 0cfbdc701a runs used the script of `fix(markdown): read CR line endings as LF and keep a bare URL a link`, and the others ran at the first sync, `test(platejs): check Markdown round trips and streamed parses on every small document`.
 
 ## Coverage record
 
-Synced at `fix(markdown): round-trip every CommonMark and GFM spec example`. The verification describes these files as they stand there:
+Synced at `test(markdown): read CJK emphasis before punctuation in the test editor`. The verification describes these files as they stand there:
 
 | File | What the check exercises |
 | --- | --- |
@@ -115,7 +113,7 @@ Synced at `fix(markdown): round-trip every CommonMark and GFM spec example`. The
 | `packages/platejs/src/markdown/lib/__tests__/nameListIds.ts` | comparing documents up to list ids |
 | `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate the formal checks share |
 
-To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "round-trip every CommonMark"`, then run `git log --oneline <that commit>..HEAD --` with the table's paths and `packages/platejs/scripts/markdown-round-trip.ts`. For each commit it lists, read the diff and confirm four things. A continuation still reads its previous result only through the checkpoint's segments and the `startsWith` test on its source, so merging previews by segment ends stays sound. New Markdown syntax the codec supports has an inline token or a block form. A new plugin in the test editor that changes what a source parses to is in the gate. The check's indent targets still match the kit's. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:markdown-round-trip`.
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "read CJK emphasis before punctuation"`, then run `git log --oneline <that commit>..HEAD --` with the table's paths and `packages/platejs/scripts/markdown-round-trip.ts`. For each commit it lists, read the diff and confirm four things. A continuation still reads its previous result only through the checkpoint's segments and the `startsWith` test on its source, so merging previews by segment ends stays sound. New Markdown syntax the codec supports has an inline token or a block form. A new plugin in the test editor that changes what a source parses to is in the gate. The check's indent targets still match the kit's. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:markdown-round-trip`.
 
 ## What it does not cover
 
@@ -125,7 +123,8 @@ To see whether the verification needs another look, find the sync commit with `g
 - Sources longer than the bound, other than the spec examples, and containers nested inside one another.
 - Plugins outside the test editor and the kit's indent, MDX components and custom rules.
 - A serialized form that is not the source the user wrote. The check compares documents, not Markdown text.
-- A round trip of the two unbalanced tag forms. Their round trips find the known callout break class and one bug of their own: under CR-only line endings, `<callout>\r    a` loses its indented text. That bug is in the `markdown` subject's Open work. A round trip of these forms joins the gate once that bug is fixed.
+- What a CJK source parses to. An editor without the CJK plugins reads the CJK sources as text and still round-trips them, so `packages/platejs/src/markdown/lib/cjkEmphasis.spec.ts` asserts their marks and exported bytes.
+- A round trip of the two unbalanced tag forms. Their round trips find one bug: under CR-only line endings, `<callout>\r    a` loses its indented text. That bug is in the `markdown` subject's Open work. A round trip of these forms joins the gate once that bug is fixed.
 - A second failure on a known source. A case records its first failure per rule, and its identity names only the source, so a known source that starts to fail in a new way, or on another chunking, still matches its baseline entry.
 - A parse that refuses a source under the default policy. Such a source counts in `refused` and gets no round trip.
 - The editor surface: pasting, AI streaming into a document, and the browser.
