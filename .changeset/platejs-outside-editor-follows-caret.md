@@ -2,7 +2,7 @@
 'platejs': patch
 ---
 
-Make `useEditor()` outside every editing area of an `EditorRoot`, such as in a fixed toolbar, return the editor of the root that holds the caret. A toolbar command such as `editor.plugin(BoldPlugin).update.toggle()` then changes a board's note while the caret is in it. With nothing selected it returns the editor of the primary root. `useEditorSelector`, `useEditorReadOnly`, `useEditorFocused` and the other hooks that read the editor `useEditor()` returns read the same editor. Inside an `EditorContainer`, these hooks read the `EditorContent` it holds that the user used last.
+Make `useEditor()` outside every editing area of an `EditorRoot`, such as in a fixed toolbar, return the editor of the root that holds the caret. A toolbar command such as `editor.plugin(BoldPlugin).update.toggle()` then changes a board's note while the caret is in it. With nothing selected it returns the editor of the primary root. `useEditorSelector`, `useEditorReadOnly`, `useEditorFocused` and the other hooks that read the editor `useEditor()` returns read the same editor. A `useEditorSelector` selector that keeps its identity between renders runs once per commit, and once more when the caret moves to another root. A component whose selected value stays equal no longer renders when the caret moves. Inside an `EditorContainer`, these hooks read the `EditorContent` it holds that the user used last.
 
 **Migration:** A lock set through the editor that `useEditor()` returns outside every editing area refuses the commands sent through that editor and no longer locks an `EditorContent`. To lock one `EditorContent`, call `useEditor()` inside its `EditorContainer`:
 

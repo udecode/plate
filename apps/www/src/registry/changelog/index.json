@@ -132,7 +132,7 @@
       "href": "/registry/changelog/2026-11-20-toolbar-history-and-mode-follow-editor-root.json",
       "status": "draft",
       "kind": "behavior",
-      "summary": "Keep Mode on the editor root while the caret is in a nested editing area",
+      "summary": "Keep Undo, Redo and Mode on the editor root while the caret is in a nested editing area",
       "change": {
         "type": "source",
         "date": "2026-11-20",
@@ -141,8 +141,12 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["mode-toolbar-button"],
-      "entries": 1,
+      "targets": [
+        "fixed-toolbar",
+        "history-toolbar-button",
+        "mode-toolbar-button"
+      ],
+      "entries": 2,
       "diagnostics": []
     },
     {

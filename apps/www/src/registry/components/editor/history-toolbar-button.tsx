@@ -1,7 +1,7 @@
 'use client';
 
 import { Redo2Icon, Undo2Icon } from 'lucide-react';
-import { useEditor, useEditorHistory } from 'platejs/react';
+import { useEditorHistory } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
@@ -9,7 +9,7 @@ import { ToolbarButton } from '@/registry/components/editor/toolbar';
 export function RedoToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const { canRedo, pending, redo } = useEditorHistory({ editor: useEditor() });
+  const { canRedo, pending, redo } = useEditorHistory();
 
   return (
     <ToolbarButton
@@ -27,7 +27,7 @@ export function RedoToolbarButton(
 export function UndoToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const { canUndo, pending, undo } = useEditorHistory({ editor: useEditor() });
+  const { canUndo, pending, undo } = useEditorHistory();
 
   return (
     <ToolbarButton

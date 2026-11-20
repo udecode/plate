@@ -87,6 +87,32 @@
       "2026-11-20-markdown-cjk-emphasis",
       "2026-09-28-markdown-registered-tags"
     ],
+    "fixed-toolbar": [
+      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "2026-11-18-registry-icon-library",
+      "2026-11-18-toolbars-act-on-board-note-text",
+      "2026-11-17-cn-package",
+      "2026-11-17-format-painter",
+      "2026-11-16-clear-formatting",
+      "2026-11-13-platform-shortcut-labels",
+      "2026-10-19-strikethrough-shortcut-hint",
+      "2026-09-18-comment-discovery",
+      "2026-09-16-fixed-toolbar-caret-scroll",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-17-flat-editor-registry",
+      "2025-11-20-biome-ultracite"
+    ],
+    "history-toolbar-button": [
+      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-23-history-replay-lifecycle",
+      "2026-09-15-history-actions",
+      "2026-09-08-multi-editor-toolbar",
+      "2026-08-17-flat-editor-registry"
+    ],
     "mode-toolbar-button": [
       "2026-11-20-toolbar-history-and-mode-follow-editor-root",
       "2026-11-19-mode-per-editor-root",
@@ -408,15 +434,6 @@
       "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
       "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
       "2025-11-20-biome-ultracite"
-    ],
-    "history-toolbar-button": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-23-history-replay-lifecycle",
-      "2026-09-15-history-actions",
-      "2026-09-08-multi-editor-toolbar",
-      "2026-08-17-flat-editor-registry"
     ],
     "indent-toolbar-button": [
       "2026-11-19-rtl-editor-ui",
@@ -853,21 +870,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
-    ],
-    "fixed-toolbar": [
-      "2026-11-18-registry-icon-library",
-      "2026-11-18-toolbars-act-on-board-note-text",
-      "2026-11-17-cn-package",
-      "2026-11-17-format-painter",
-      "2026-11-16-clear-formatting",
-      "2026-11-13-platform-shortcut-labels",
-      "2026-10-19-strikethrough-shortcut-hint",
-      "2026-09-18-comment-discovery",
-      "2026-09-16-fixed-toolbar-caret-scroll",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-17-flat-editor-registry",
-      "2025-11-20-biome-ultracite"
     ],
     "font-size-toolbar-button": [
       "2026-11-18-registry-icon-library",

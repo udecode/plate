@@ -90,7 +90,6 @@ export {
   useContentRoot,
   useDropIndicator,
   installBrowserHandle,
-  useEditorHistory,
   useRootChrome,
   useRootEditor,
   useRootState,
@@ -185,6 +184,7 @@ export {
   useOptionalEditor,
 } from './stores/plate/useEditor';
 export type { UseEditorStateOptions } from './stores/plate/useEditor';
+export * from './stores/plate/useEditorHistory';
 export * from './stores/plate/useEditorSelector';
 export {
   usePluginStore,

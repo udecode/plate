@@ -28,7 +28,9 @@ import {
   FontBackgroundColorPlugin,
   FontColorPlugin,
   EditorSelectionView,
+  useEditor,
   useEditorReadOnly,
+  useEditorViewState,
   definePlugin,
 } from 'platejs/react';
 import * as React from 'react';
@@ -75,17 +77,21 @@ export function FixedToolbarButtons({
 }: {
   children?: React.ReactNode;
 } = {}) {
+  const editor = useEditor();
+  const viewing = useEditorViewState(editor, (view) => view.isViewing());
   const readOnly = useEditorReadOnly();
 
   return (
     <div className="flex w-full">
+      {!viewing && (
+        <ToolbarGroup>
+          <UndoToolbarButton />
+          <RedoToolbarButton />
+        </ToolbarGroup>
+      )}
+
       {!readOnly && (
         <>
-          <ToolbarGroup>
-            <UndoToolbarButton />
-            <RedoToolbarButton />
-          </ToolbarGroup>
-
           <ToolbarGroup>
             <AIToolbarButton tooltip="AI commands">
               <WandSparklesIcon />

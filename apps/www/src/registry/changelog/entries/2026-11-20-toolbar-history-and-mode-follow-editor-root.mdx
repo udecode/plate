@@ -3,12 +3,14 @@ id: 2026-11-20-toolbar-history-and-mode-follow-editor-root
 date: 2026-11-20
 status: draft
 kind: behavior
-summary: 'Keep Mode on the editor root while the caret is in a nested editing area'
+summary: 'Keep Undo, Redo and Mode on the editor root while the caret is in a nested editing area'
 change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
 release: { 'status': 'unresolved' }
 diagnostics: []
 ---
 
 <!-- entry: {"id":"2026-11-20-fixed-toolbar-keep-undo-redo-mode-cbfe5bd9","kind":"behavior","migrationNotes":[]} -->
+
+- **`fixed-toolbar`**, **`history-toolbar-button`**: Undo and Redo call `useEditorHistory()` with no editor, so they run through the editor root instead of the editing area that holds the caret. With the caret in a read-only note they stay in the toolbar and undo a page edit. The toolbar hides them only while the editor root is in Viewing. They refuse to undo an edit made in a note that was locked afterward, as the keyboard shortcut does.
 
 - **`mode-toolbar-button`**: Viewing chosen while no `EditorContent` is mounted now puts the editor root in Viewing through `setEditorViewing`, so choosing Editing after an `EditorContent` mounts makes it writable again. Under an `EditorProvider` that holds an editor view, Viewing writes that view's Mode, and Editing also clears the view's own lock.

@@ -3,6 +3,7 @@
  */
 
 export * from './useEditor';
+export * from './useEditorHistory';
 export * from './useEditorSelector';
 export * from './usePluginStore';
 export * from './useViewStore';

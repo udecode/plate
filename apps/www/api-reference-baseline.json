@@ -1688,7 +1688,6 @@
       "UpsertLinkOptions",
       "useComposedRef",
       "useEditorPluginStore",
-      "useEditorSelector",
       "UseEditorSelectorOptions",
       "UseEditorStateOptions",
       "useElement",

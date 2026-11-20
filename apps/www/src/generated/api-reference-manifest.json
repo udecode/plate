@@ -28332,12 +28332,12 @@
         },
         "platejs/react:useEditorHistory": {
           "aliases": [],
-          "documentation": "Create undo/redo commands and keyboard handling.\n\nWithout `editor` or `root`, they run through the shown writable view used\nlast, and are on only while a shown writable `Editable` reaches every root\nthe next undo or redo changes. With `editor` or `root`, they replay the next\nbatch whatever roots it changes. With `root`, they are off while no view of\nit is shown. With `editor`, they can stay on while no `Editable` runs that\neditor, and a click then does nothing. They are off while their view is\nread-only or composes text.",
+          "documentation": "Create undo/redo commands and keyboard handling.\n\nWithout `editor` or `root`, while the editor `useEditor()` returns belongs to\nthe `EditorRoot` around the hook, they run through that `EditorRoot`'s shown\nwritable view used last, and are on only while a shown writable `Editable`\nreaches every root the next undo or redo changes. When no provider gives an\neditor, they do the same and need an `EditorRoot` around the hook.\nOtherwise, such as under `EditorController` or under an `EditorProvider`\ngiven another editor, they bind to that editor, as with `editor`. With\n`editor` or `root`, they replay the next batch whatever roots it changes.\nWith `root`, they are off while no view of it is shown. With `editor`, they\ncan stay on while no `Editable` runs that editor, and a click then does\nnothing. They are off while their view is read-only or composes text.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "useEditorHistory",
           "runtime": true,
-          "signature": "declare function useEditorHistory<const TRoot extends RootKey = RootKey>({ editor: providedEditor, focusPolicy, root: fixedRoot }?: UseEditorHistoryOptions<TRoot>): EditorHistoryController;",
+          "signature": "declare function useEditorHistory<const TRoot extends RootKey = RootKey>(options?: UseEditorHistoryOptions<TRoot>): EditorHistoryController;",
           "source": null,
           "typeParameters": [
             "const TRoot extends RootKey = RootKey"
@@ -28463,7 +28463,7 @@
         },
         "platejs/react:useEditorSelector": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Subscribe to a value derived from the selected editor. A selector that\nkeeps its identity between renders runs at most once per commit, and once\nmore when the selected editor changes, such as when the caret moves to\nanother root. A selector written inline gets a new identity each render, so\nit also runs on every render of its component. A change that leaves the\nvalue equal renders nothing.",
           "entrypoint": "platejs/react",
           "kind": "const",
           "name": "useEditorSelector",
