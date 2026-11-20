@@ -273,6 +273,7 @@ export function PromptEditor({
         MentionPlugin.configure({
           component: MentionElement,
           initialState: {
+            insertSpaceAfterMention: true,
             triggerPreviousCharPattern: /^$|^[\s"']$/,
             triggerQuery: (current) =>
               current.plugin(PromptEditorPlugin).store.get().items.length > 0,

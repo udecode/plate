@@ -1808,6 +1808,16 @@ export const internalExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'A chat form whose message field holds @ chips and sends through the AI SDK.',
+      files: [
+        { path: 'examples/prompt-editor-demo.tsx', type: 'registry:example' },
+      ],
+      name: 'prompt-editor-demo',
+      title: 'Prompt Editor',
+      type: 'registry:example',
+    },
+    {
       files: [
         {
           path: 'examples/installation-next-01-editor-demo.tsx',

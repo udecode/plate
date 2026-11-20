@@ -1,5 +1,5 @@
 {
-  "generation": "c3269b33573ad5a5a1be01220d988d75254d2f376f50a96579232b6cb5c47912",
+  "generation": "dd12eb542548ee420607a4788ec822c56d20a937344562bc842f3173576ba0c3",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -7214,6 +7214,21 @@
             }
           ],
           "name": "potion-iframe-demo",
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
+        },
+        {
+          "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
+          "files": [
+            {
+              "path": "examples/prompt-editor-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "prompt-editor-demo",
+          "title": "Prompt Editor",
           "type": "registry:example",
           "meta": {
             "registry": false
@@ -14579,6 +14594,21 @@
             }
           ],
           "name": "potion-iframe-demo",
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
+        },
+        {
+          "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
+          "files": [
+            {
+              "path": "examples/prompt-editor-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "prompt-editor-demo",
+          "title": "Prompt Editor",
           "type": "registry:example",
           "meta": {
             "registry": false

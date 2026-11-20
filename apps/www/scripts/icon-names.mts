@@ -297,6 +297,13 @@ const ICON_NAMES: Record<string, IconNames> = {
     remixicon: 'RiFileCodeLine',
     tabler: 'IconFileCode',
   },
+  FileText: {
+    hugeicons: 'File01Icon',
+    lucide: 'FileTextIcon',
+    phosphor: 'FileTextIcon',
+    remixicon: 'RiFileTextLine',
+    tabler: 'IconFileText',
+  },
   FileUp: {
     hugeicons: 'FileUploadIcon',
     lucide: 'FileUp',
