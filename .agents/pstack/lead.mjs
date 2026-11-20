@@ -297,6 +297,49 @@ export function findLead() {
 
 export const leadLabel = (run) => `${run.model} @${run.effort}`;
 
+const PSTACK = 'pstack@pstack-claude';
+const MARKETPLACE = 'pstack-claude';
+const REPO = 'michael-denyer/pstack-claude';
+const versionOrder = (a, b) => {
+  const [x, y] = [a, b].map((version) => version.split('.').map(Number));
+  return x.reduce((order, part, index) => order || part - (y[index] ?? 0), 0);
+};
+const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
+const mainCheckout = (root) => {
+  try {
+    return execFileSync('git', ['-C', root, 'rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim().replace(/\/\.git$/u, '');
+  } catch {
+    return root;
+  }
+};
+
+/**
+ * How this runtime's installed pstack falls behind the tag the project's .claude/settings.json pins, with the
+ * command that updates it and the folder it runs from, or null. Claude Code loads the main checkout's project-scope
+ * install in every worktree, whatever stale record a worktree's own path keeps, else the user-scope one; Codex loads
+ * its cache folder for the tag.
+ */
+export function pluginLag(runtime, root = process.cwd(), env = process.env) {
+  const ref = readJson(join(root, '.claude/settings.json'))?.extraKnownMarketplaces?.[MARKETPLACE]?.source?.ref;
+  const pin = ref?.replace(/^v/u, '');
+  if (!pin || !runtime) return null;
+  const home = env.HOME ?? homedir();
+  if (runtime === 'codex') {
+    const cache = join(env.CODEX_HOME ?? join(home, '.codex'), 'plugins/cache', MARKETPLACE, 'pstack');
+    if (existsSync(join(cache, pin))) return null;
+    const installed = existsSync(cache) ? readdirSync(cache).filter((name) => /^\d+(?:\.\d+)*$/u.test(name)).sort(versionOrder).at(-1) ?? null : null;
+    return { pin, installed, cwd: home, command: `codex plugin marketplace remove ${MARKETPLACE} && codex plugin marketplace add ${REPO} --ref v${pin} && codex plugin add ${PSTACK}` };
+  }
+  const entries = readJson(join(env.CLAUDE_CONFIG_DIR ?? join(home, '.claude'), 'plugins/installed_plugins.json'))?.plugins?.[PSTACK] ?? [];
+  const main = mainCheckout(root);
+  const entry = entries.find((each) => each.scope === 'project' && each.projectPath === main) ?? entries.find((each) => each.scope === 'user');
+  if (entry && versionOrder(entry.version, pin) >= 0) return null;
+  // Claude Code hides a marketplace whose settings entry and registry disagree, so only adding it at the pin
+  // lets the update reach the pinned tag.
+  const install = entry ? `update ${PSTACK} --scope ${entry.scope}` : `install ${PSTACK} --scope project`;
+  return { pin, installed: entry?.version ?? null, cwd: main, command: `claude plugin marketplace add ${REPO}#v${pin} && claude plugin ${install}` };
+}
+
 export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
 
 export function maxEffort(root = process.cwd()) {

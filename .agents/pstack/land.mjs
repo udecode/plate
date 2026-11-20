@@ -87,7 +87,7 @@ import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readF
 import { devNull, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findLead, leadLabel, maxEffort, modelsSheet, runtimeFromEnv, sheetMisses } from './lead.mjs';
+import { findLead, leadLabel, maxEffort, modelsSheet, pluginLag, runtimeFromEnv, sheetMisses } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
 import { alive, LAND_CHECK, reserve } from './proof.mjs';
 import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
@@ -223,6 +223,11 @@ if (runtime) {
   if (misses.length) {
     fail(`${sheet} runs panels on models or efforts this project does not allow, so this PR's panel ran weaker than the project asks. Fix the sheet, run the panel on the diff again, then run land.mjs again:\n${misses.map((miss) => `- ${miss}`).join('\n')}`);
   }
+}
+// A session on older pstack than the pin follows rules the project has moved past, so its work does not land.
+const lag = pluginLag(runtimeFromEnv(process.env));
+if (lag) {
+  fail(`pstack ${lag.installed ?? 'is not installed'}${lag.installed ? ' is older than' : ', and'} .claude/settings.json pins v${lag.pin}, so this session ran older pstack rules. Run \`cd ${lag.cwd} && ${lag.command}\`, restart the session, then run land.mjs again`);
 }
 if (companion?.dir && !pair && mode === 'push') {
   fail(`this checkout has no ${companion.dir}, so landing would push ${branch} without its companion half or that half's checks; attach the companion repository first, then run land.mjs again`);

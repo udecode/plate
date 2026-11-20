@@ -17,6 +17,9 @@
 // suggested-tasks.refused.tsv beside it. On the branch
 // .agents/pstack.json names it fast-forwards only when no other local edit,
 // staged, unstaged or untracked, touches a path the incoming commits change.
+// When the session's pstack install is older than the tag .claude/settings.json
+// pins, a --hook run updates a Claude Code install and says to restart, and
+// prints the update command for a Codex one.
 // It prints one line per action for the session. In a session cross.mjs starts
 // read-only, which sets PSTACK_READ_ONLY, it does nothing.
 
@@ -24,6 +27,7 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { hookPayload, sessionCheckout } from './checkout.mjs';
+import { pluginLag, runtimeFromEnv } from './lead.mjs';
 import { LEDGER, LEDGER_REF, ledgerPath, lockLedger, REFUSED, syncLedger } from './tasks.mjs';
 
 // The ledger outgrows spawnSync's 1 MB default buffer, which cuts its output off without failing.
@@ -59,6 +63,19 @@ process.chdir(checkout.root);
 const gitDir = out('rev-parse', '--path-format=absolute', '--git-dir');
 const commonDir = out('rev-parse', '--path-format=absolute', '--git-common-dir');
 const linked = gitDir !== commonDir;
+
+const runtime = runtimeFromEnv(process.env) ?? (hook ? 'claude' : null);
+const lag = pluginLag(runtime);
+if (lag) {
+  const behind = `pstack ${lag.installed ?? 'is not installed'}${lag.installed ? ' is older than' : ', and'} .claude/settings.json pins v${lag.pin}`;
+  const run = hook && runtime === 'claude' ? spawnSync(lag.command, { shell: true, cwd: lag.cwd, encoding: 'utf8', timeout: 180_000 }) : null;
+  const tail = run ? `${run.stdout}${run.stderr}`.trim().split('\n').at(-1) : '';
+  console.log(
+    run?.status === 0
+      ? `setup.mjs: ${behind}, so it ran ${lag.command}; restart this session to load v${lag.pin}`
+      : `setup.mjs: ${behind}${run ? `, and the update failed: ${tail}` : ''}; run \`cd ${lag.cwd} && ${lag.command}\`, then restart this session`
+  );
+}
 
 if (linked) {
   const main = out('worktree', 'list', '--porcelain')?.match(/^worktree (.+)$/mu)?.[1];

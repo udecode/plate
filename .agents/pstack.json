@@ -322,7 +322,7 @@
       ".agents/pstack/cross.mjs": "d59f997c52937d67440b3863a77a9228ce008b2f7f40d5406ad0fd8c16cf7614",
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/head.mjs": "8cb69ac6a2090a87986809f6bfac422aee7a7f10c07e335f7e08d195ae627f48",
-      ".agents/pstack/lead.mjs": "ac9ba5c04a44afbab1fc019eef25471e389bb0de17e1a7387935aeb0f8e1c0e4",
+      ".agents/pstack/lead.mjs": "4af1257b7b5e573f760df90ebfa4b64288d777bb91d0395541460351e8f3c1ef",
       ".agents/pstack/proof.mjs": "6df99d9c8059a4d9e7b42c7457b3ad92a7d3427f2f819b4487655fd4f1627a8c",
       ".agents/pstack/replay.mjs": "2c41dcca9a4d3a9b8d7ddad38b6803d7a4fc5abe72a27e72abc015de7f0a266a",
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
@@ -337,9 +337,9 @@
       ".agents/pstack/tasks.mjs": "5cd9355ced194a4548fc32a262be568d883a2e07c01ece2bd1d79896dd2074ae",
       ".agents/pstack/scorecard.mjs": "2d421afbff204f9d4b927a66d2e068a4a3d1f1c8bcbf8d5e520b6c3a77ceaa93",
       ".agents/pstack/guard.mjs": "75b1568f0b92081b064f095b52d67e66405365fe46f9febb56328648e09674cd",
-      ".agents/pstack/land.mjs": "d1b1d5de102b1412f7b3ba200e3e1d527ea2558788c2b66e69109f79f3dc8b19",
+      ".agents/pstack/land.mjs": "be28c50bd8150dc2940265e3affcabfb8a1097a3e9ca2ec7d819ad0bb46d73b1",
       ".agents/pstack/review.mjs": "ba8dd9b26dd9668a17c3187866fbb83f28ec098492b5e6d67039e5353e06a067",
-      ".agents/pstack/setup.mjs": "9f28d0167141f31fe5371d060d80198b3475769b6486f23d482242e3fa9a6674",
+      ".agents/pstack/setup.mjs": "0d9be1dd1131b7d5b4782849fde7c69258a8c37ee81a5d3444a8cd5f064911f6",
       ".agents/pstack/writing-check.mjs": "41195c0691cacf072dbd9bacf7c74110f9acb2ec50424391f48abe3051e79853",
       ".agents/pstack/rules/browser.md": "38d06d2bbceeb611a4be078420f136e641dd74496acc5d181b2d7da23f7cd83a",
       ".agents/pstack/rules/chips.md": "a2f97fade5459eb74c54aadc542d5c29d62f16be59b90cbc8a623f8e55400503",
@@ -356,7 +356,7 @@
       ".agents/pstack/rules/title.md": "21f35700a51d41ea370fd5b80f7c33d2f81b8ccf4747d8f5aaa9e63c4a81f711",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af"
     },
-    "source": "219fc3b6968be7567d27debd7abff2777b2473f8"
+    "source": "d54dc17ca5e2babc8c6e1178e0c84e53893e82fe"
   },
   "pageTopic": {
     "field": "review_scopes",
