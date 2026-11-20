@@ -1,22 +1,37 @@
 import React from 'react';
 
 import {
-  createPlateScope,
+  createPlateController,
   PlateControllerContext,
   PlateModelContext,
+  PlatePickedContext,
   PlateScopeContext,
-  useLastUsedViewScope,
+  underController,
 } from '../internal/plate-context';
 
-/** Share the mounted editor the user focused or pressed last with controls outside individual Plate providers. */
+const pickNothing = () => null;
+
+/**
+ * Give controls outside every `EditorRoot` what the `EditorRoot` used last gives
+ * its own controls outside its editing areas. Until one is used, that is the
+ * first `primary` one with a mounted `EditorContent`.
+ */
 export function EditorController({ children }: { children: React.ReactNode }) {
-  const [scope] = React.useState(createPlateScope);
-  const outside = useLastUsedViewScope(scope, null);
+  const [controller] = React.useState(createPlateController);
+  const picked = React.useSyncExternalStore(
+    controller.subscribe,
+    controller.getSnapshot,
+    pickNothing
+  );
   return (
-    <PlateControllerContext value={scope}>
-      <PlateModelContext value={null}>
-        <PlateScopeContext value={outside}>{children}</PlateScopeContext>
-      </PlateModelContext>
+    <PlateControllerContext value={controller}>
+      <PlatePickedContext value={picked}>
+        <PlateModelContext value={null}>
+          <PlateScopeContext value={underController}>
+            {children}
+          </PlateScopeContext>
+        </PlateModelContext>
+      </PlatePickedContext>
     </PlateControllerContext>
   );
 }

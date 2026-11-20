@@ -89,9 +89,9 @@ export type PlateTargetScope = ReturnType<typeof createPlateScope>;
 
 export const useLastUsedViewScope = (
   picker: PlateTargetScope,
-  fallback: PlateTarget | null
+  fallback: PlateTarget
 ): PlateScope => {
-  const [server] = React.useState(() => fallback && readServerFacts(fallback));
+  const [server] = React.useState(() => readServerFacts(fallback));
   return React.useMemo(
     () => ({
       fallback,
@@ -115,15 +115,77 @@ export const outsideEveryProvider: PlateScope = {
 const targets = new WeakMap<object, PlateTarget>();
 export const getPlateTarget = (editor: Editor) => targets.get(editor);
 export const PlateScopeContext = React.createContext(outsideEveryProvider);
-export const PlateControllerContext =
-  React.createContext<PlateTargetScope | null>(null);
-export const PlateModelContext = React.createContext<{
+type PlateModel = Readonly<{
   editor: Editor;
   containerRef: React.RefObject<HTMLDivElement | null>;
-  primary: boolean;
-  readOnly: boolean;
   scope: PlateTargetScope;
-} | null>(null);
+}>;
+export const PlateModelContext = React.createContext<PlateModel | null>(null);
+export const PlateReadOnlyContext = React.createContext(false);
+
+export type PlateRootOutside = Readonly<{
+  model: PlateModel;
+  scope: PlateScope;
+}>;
+
+export const createPlateController = () => {
+  const primaryOf = new Map<PlateRootOutside, boolean>();
+  const listeners = new Set<() => void>();
+  const notify = () => listeners.forEach((listener) => listener());
+  const pickLastUsedRoot = () => {
+    let picked: PlateRootOutside | null = null;
+    let pickedAt = 0;
+
+    for (const [entry, isPrimary] of primaryOf) {
+      const view = entry.model.scope.getSnapshot();
+      if (!view) continue;
+      const usedAt = readRootViewUse(view.editor);
+
+      if (usedAt > pickedAt) {
+        picked = entry;
+        pickedAt = usedAt;
+      } else if (!picked && isPrimary) picked = entry;
+    }
+
+    return picked;
+  };
+
+  return {
+    getSnapshot: pickLastUsedRoot,
+    join(entry: PlateRootOutside, isPrimary: boolean) {
+      primaryOf.set(entry, isPrimary);
+      const stop = entry.model.scope.subscribeEverySelect(notify);
+      notify();
+      return () => {
+        stop();
+        primaryOf.delete(entry);
+        notify();
+      };
+    },
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+};
+
+export const PlateControllerContext = React.createContext<ReturnType<
+  typeof createPlateController
+> | null>(null);
+export const PlatePickedContext = React.createContext<PlateRootOutside | null>(
+  null
+);
+export const underController: PlateScope = { ...noTarget };
+
+export const usePickedRoot = () =>
+  React.use(PlateScopeContext) === underController
+    ? React.use(PlatePickedContext)
+    : null;
+
+export const usePlateScope = () =>
+  usePickedRoot()?.scope ?? React.use(PlateScopeContext);
 
 export function usePlateModel() {
   const model = React.useContext(PlateModelContext);
@@ -132,7 +194,7 @@ export function usePlateModel() {
 }
 
 export function usePlateTarget() {
-  const scope = React.useContext(PlateScopeContext);
+  const scope = usePlateScope();
   return React.useSyncExternalStore(
     scope.subscribe,
     scope.getSnapshot,
@@ -170,7 +232,7 @@ export const useTargetViewState = (
   fact: ViewFact,
   withoutEditor: boolean
 ) => {
-  const { server } = React.useContext(PlateScopeContext);
+  const { server } = usePlateScope();
   const editor = target?.editor;
   const readFact = React.useCallback(
     () => (editor ? readViewFact[fact](editor) : withoutEditor),
@@ -227,37 +289,47 @@ export function PlateMountedView({
   const model = usePlateModel();
   const editor = useEditorContext();
   const element = useEditorRootElement(editor);
-  const controller = React.useContext(PlateControllerContext);
   const target = React.useMemo(() => {
     const value = { editor, containerRef: model.containerRef, editableRef };
     targets.set(editor, value);
     return value;
   }, [editableRef, editor, model.containerRef]);
   const scope = useFixedScope(target);
-  const { primary } = model;
+  const mounted = React.useRef<{ root: HTMLElement; stop: () => void } | null>(
+    null
+  );
+  // An `<Activity>` reveal runs this again with the `element` of the hidden
+  // render, so the registration follows the DOM root itself.
   React.useLayoutEffect(() => {
-    const root = getEditorDOMRoot(editor);
-    if (!root) return undefined;
-    const removeLocal = model.scope.register(target, true);
-    const removeController = controller?.register(target, false);
-    const removeUse = subscribeRootViewUse(editor, () => {
-      model.scope.used(target);
-      controller?.used(target);
-    });
+    const root = getEditorDOMRoot(editor) ?? null;
+    if (root === (mounted.current?.root ?? null)) return;
+    mounted.current?.stop();
+    mounted.current = null;
+    if (!root) return;
+    const remove = model.scope.register(target);
+    const removeUse = subscribeRootViewUse(editor, () =>
+      model.scope.used(target)
+    );
     // A focus inside a portal from outside the Editable reaches only this
     // native listener.
     const removeFocus = trackEditableFocus(root, () =>
       markRootViewUsed(editor)
     );
-    return () => {
-      removeFocus();
-      removeUse();
-      removeController?.();
-      removeLocal();
+    mounted.current = {
+      root,
+      stop() {
+        removeFocus();
+        removeUse();
+        remove();
+      },
     };
-  }, [controller, editor, element, model.scope, target]);
-  React.useLayoutEffect(() => {
-    controller?.setPrimary(target, primary);
-  }, [controller, element, primary, target]);
+  }, [editor, element, model.scope, target]);
+  React.useLayoutEffect(
+    () => () => {
+      mounted.current?.stop();
+      mounted.current = null;
+    },
+    [editor, model.scope, target]
+  );
   return <PlateScopeContext value={scope}>{children}</PlateScopeContext>;
 }

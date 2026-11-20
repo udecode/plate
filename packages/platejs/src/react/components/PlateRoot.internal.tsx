@@ -8,7 +8,11 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
-import { PlateMountedView, usePlateModel } from '../internal/plate-context';
+import {
+  PlateMountedView,
+  PlateReadOnlyContext,
+  usePlateModel,
+} from '../internal/plate-context';
 import { EditorRoot, useEditorContext } from '../internal/plite-components';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 
@@ -31,7 +35,8 @@ export function PlateRoot({
 }) {
   const emptyEditableRef = React.useRef<HTMLDivElement | null>(null);
   const editableRef = providedEditableRef ?? emptyEditableRef;
-  const { editor, readOnly: modelReadOnly } = usePlateModel();
+  const { editor } = usePlateModel();
+  const modelReadOnly = React.use(PlateReadOnlyContext);
   const rootView = useEditorContext();
   const surfaceEditor = React.useMemo(
     () => withMountedPresentation(editor, rootView),

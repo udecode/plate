@@ -18623,7 +18623,7 @@
         },
         "platejs/react:EditorController": {
           "aliases": [],
-          "documentation": "Share the mounted editor the user focused or pressed last with controls outside individual Plate providers.",
+          "documentation": "Give controls outside every `EditorRoot` what the `EditorRoot` used last gives\nits own controls outside its editing areas. Until one is used, that is the\nfirst `primary` one with a mounted `EditorContent`.",
           "entrypoint": "platejs/react",
           "kind": "function",
           "name": "EditorController",

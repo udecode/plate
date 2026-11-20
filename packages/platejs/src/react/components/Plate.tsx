@@ -17,7 +17,9 @@ import type { Editor } from '../editor/Editor';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import {
   createPlateScope,
+  PlateControllerContext,
   PlateModelContext,
+  PlateReadOnlyContext,
   PlateScopeContext,
   useLastUsedViewScope,
 } from '../internal/plate-context';
@@ -112,14 +114,19 @@ function PlateInner({
   );
   const outside = useLastUsedViewScope(scope, fallback);
   const model = React.useMemo(
-    () => ({
-      editor: currentEditor,
-      containerRef,
-      primary: primary ?? true,
-      readOnly: plateReadOnly,
-      scope,
-    }),
-    [containerRef, currentEditor, plateReadOnly, primary, scope]
+    () => ({ editor: currentEditor, containerRef, scope }),
+    [containerRef, currentEditor, scope]
+  );
+  const entry = React.useMemo(
+    () => ({ model, scope: outside }),
+    [model, outside]
+  );
+  const controller = React.use(PlateControllerContext);
+  const isPrimary = primary ?? true;
+
+  React.useLayoutEffect(
+    () => controller?.join(entry, isPrimary),
+    [controller, entry, isPrimary]
   );
   const observerBaselineVersion = React.useMemo(
     () => editor?.read.lastCommit()?.version ?? 0,
@@ -259,9 +266,11 @@ function PlateInner({
       readOnly={plateReadOnly}
     >
       <EditorReadOnlyProvider readOnly={plateReadOnly}>
-        <PlateModelContext value={model}>
-          <PlateScopeContext value={outside}>{children}</PlateScopeContext>
-        </PlateModelContext>
+        <PlateReadOnlyContext value={plateReadOnly}>
+          <PlateModelContext value={model}>
+            <PlateScopeContext value={outside}>{children}</PlateScopeContext>
+          </PlateModelContext>
+        </PlateReadOnlyContext>
       </EditorReadOnlyProvider>
     </RuntimeEditorRoot>
   );

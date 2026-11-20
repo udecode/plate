@@ -8,14 +8,15 @@ import {
   RangeApi,
   type ValueOf,
 } from '../../../facade';
-import { failInvariant } from '../../../internal/failInvariant';
 import type { Editor } from '../../editor';
 import {
   outsideEveryProvider,
-  PlateModelContext,
-  PlateScopeContext,
+  PlateReadOnlyContext,
   readBoolean,
   subscribeNothing,
+  PlateModelContext,
+  usePickedRoot,
+  usePlateScope,
   usePlateTarget,
   useTargetViewState,
 } from '../../internal/plate-context';
@@ -40,7 +41,8 @@ export function useEditor(): Editor {
 
 /** Get the complete document editor owned by the nearest EditorRoot. */
 export function useModelEditor(): Editor {
-  const editor = React.useContext(PlateModelContext)?.editor;
+  const editor = (usePickedRoot()?.model ?? React.use(PlateModelContext))
+    ?.editor;
   if (!editor) {
     throw new Error('useModelEditor() requires an active EditorRoot.');
   }
@@ -61,7 +63,7 @@ const noEditorDOM = {
 
 /** Whether the selected command view has a mounted editable. */
 export const useEditorMounted = (): boolean => {
-  const { server } = React.useContext(PlateScopeContext);
+  const { server } = usePlateScope();
   const mounted =
     useEditorRootElement(useOptionalEditor() ?? noEditorDOM) != null;
   return React.useSyncExternalStore(
@@ -81,7 +83,7 @@ export const useEditorComposing = (): boolean =>
 
 /** Whether the selected command view rejects editing, including after unmount. */
 export const useEditorReadOnly = (): boolean => {
-  const scope = React.useContext(PlateScopeContext);
+  const scope = usePlateScope();
   const target = usePlateTarget();
   const rootAnswer = target !== null && target === scope.fallback;
   const readOnly = useTargetViewState(
@@ -89,10 +91,7 @@ export const useEditorReadOnly = (): boolean => {
     'readOnly',
     scope !== outsideEveryProvider
   );
-  return rootAnswer
-    ? (React.use(PlateModelContext) ?? failInvariant('Expected an EditorRoot'))
-        .readOnly
-    : readOnly;
+  return rootAnswer ? React.use(PlateReadOnlyContext) : readOnly;
 };
 
 /** Get the selected Plate container ref; its value is null before mount. */

@@ -13,7 +13,7 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
-import { usePlateModel } from '../internal/plate-context';
+import { PlateReadOnlyContext, usePlateModel } from '../internal/plate-context';
 import {
   getHandlerView,
   type EditableProps as RuntimeEditableProps,
@@ -81,7 +81,8 @@ export function EditorContentView<TExtra extends object>({
   editable: EditorContentEditable<TExtra>;
   editableExtra: TExtra;
 }) {
-  const { editor, readOnly: plateReadOnly } = usePlateModel();
+  const { editor } = usePlateModel();
+  const plateReadOnly = React.use(PlateReadOnlyContext);
   const editableRef = useRef<HTMLDivElement | null>(null);
   const previousElementRef = useRef<{
     element: HTMLDivElement;
@@ -107,7 +108,7 @@ export function EditorContentView<TExtra extends object>({
 
   const readOnly = getPlateContentReadOnly({
     disabled: props.disabled,
-    plateReadOnly: plateReadOnly ?? editor.read.view.isReadOnly(),
+    plateReadOnly,
     readOnly: readOnlyProp,
   });
 
