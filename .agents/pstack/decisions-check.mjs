@@ -10,6 +10,11 @@
 //        (stamps the row, checks it, and writes it only when it passes)
 //        node .agents/pstack/decisions-check.mjs append <log> --from <rows.tsv>
 //        (each line holds the five cells; writes every row only when all pass)
+//        In trunk delivery, when the ledger's repository has an origin, both append forms to the
+//        project's ledger wait up to 60 s for the ledger lock, bring the ledger to
+//        refs/pstack/ledger's order first, and push the new rows at once; they exit 1 when a row
+//        the ref got first refuses a new row, and keep the rows locally until the next sync when
+//        origin cannot be reached or the ref moves on every try.
 //        Both append forms open the batch with a lead row naming the session's model
 //        and effort, read by lead.mjs, when they differ from the log's last lead row.
 //        Both append forms, unlike the <log> and --all checks, refuse a partial, open, gap,
@@ -124,7 +129,7 @@ import { appendFileSync, existsSync, readdirSync, readFileSync, realpathSync, st
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { parsePlan } from './plan-page.mjs';
-import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
+import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, LEDGER_REF, ledgerPath, lockLedger, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, REFUSED, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, syncLedger, withoutPlannedWrites } from './tasks.mjs';
 import { acceptedWord, BIG_STEP, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, liftsStep, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STATUSES, statusOf, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -724,12 +729,55 @@ function append(path, batch, run, miss = null) {
     rows.push(row);
   }
   if (found.length === 0) found.push(...buildBudgetProblems(path, existing, rows, (at) => (count > 1 ? `${path} (new row ${at + 1 - attribution.length})` : `${path} (new row)`)));
-  if (found.length > 0) return found;
+  if (found.length > 0) return { found, rows: [] };
   const added = rows.map((row) => `${row}\n`).join('');
   if (text !== null) {
     appendFileSync(path, `${text === '' || text.endsWith('\n') ? '' : '\n'}${added}`);
   } else writeFileSync(path, `${HEADER}\n${added}`);
-  return [];
+  return { found: [], rows };
+}
+
+function sharedLedgerGit(log) {
+  if (!trunk() || resolve(log) !== resolve(ledgerFile())) return null;
+  const dir = projectConfig().companion?.dir;
+  const via = dir ? ['--git-dir', join(mainCheckout(), dir)] : [];
+  if (dir && !existsSync(via[1])) return null;
+  return spawnSync('git', [...via, 'remote', 'get-url', 'origin'], { stdio: 'ignore' }).status === 0 ? via : null;
+}
+
+const reportRefused = (refused) => {
+  for (const { problem } of refused) console.error(`Refused ${problem}, because a row on ${LEDGER_REF} came first; the row moved to ${REFUSED}.`);
+};
+
+function appendShared(log, batch, run, miss, via) {
+  let held = null;
+  const lock = lockLedger(execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { encoding: 'utf8' }).trim(), {
+    waitMs: 60_000,
+    onWait: (path) => {
+      held = path;
+      console.error(`Waiting for the ledger lock ${path}, which another run holds.`);
+    },
+  });
+  if (!lock) return { found: [`another run held the ledger lock ${held} for 60 s; run append again`], rows: [] };
+  try {
+    const pulled = syncLedger(log, via, lock, { push: false });
+    reportRefused(pulled.refused);
+    const written = append(log, batch, run, miss);
+    const keptLocally = (why) => console.error(`${log} keeps the new rows locally until the next sync, because ${why}.`);
+    if (written.found.length > 0) return written;
+    if (!pulled.reachable) {
+      keptLocally('origin cannot be reached');
+      return written;
+    }
+    const pushed = syncLedger(log, via, lock, { checked: pulled.tip });
+    const lost = pushed.refused.filter(({ line }) => written.rows.includes(line));
+    reportRefused(pushed.refused.filter((entry) => !lost.includes(entry)));
+    if (lost.length > 0) return { found: lost.map(({ problem }) => `${problem}; the row moved to ${REFUSED}`), rows: [], heading: `Refused, because a row on ${LEDGER_REF} came first` };
+    if (pushed.pending > 0) keptLocally(pushed.reachable ? `${LEDGER_REF} moved on each try` : 'origin cannot be reached');
+    return written;
+  } finally {
+    lock.release();
+  }
 }
 
 const args = process.argv.slice(2);
@@ -969,9 +1017,10 @@ function dispatch() {
     const lead = findLead();
     const run = lead.run ?? null;
     if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
-    const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run, lead.miss);
+    const via = sharedLedgerGit(args[1] ?? '');
+    const { found, heading } = batch.length === 0 ? { found: [`${args[3]} holds no rows`] } : via ? appendShared(args[1], batch, run, lead.miss, via) : append(args[1] ?? '', batch, run, lead.miss);
     if (found.length > 0) {
-      console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);
+      console.error(`${heading ?? (batch.length > 1 ? 'No row written' : 'Row not written')}:\n${found.join('\n')}`);
       return 1;
     }
     console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);

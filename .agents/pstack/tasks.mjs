@@ -1,8 +1,8 @@
 // Installed by the sync-pstack skill.
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
 import { parsePlan } from './plan-page.mjs';
@@ -328,7 +328,8 @@ export function recordRow(tasks, cells, ts = null) {
     tasks.set(row.id, created);
     return;
   }
-  if (!task) return;
+  // A row the write check refuses for its decision or the task's state changes nothing, so the state is a function of row order alone.
+  if (!task || task.decision !== row.decision || !FROM[row.move].includes(taskState(task))) return;
   if (row.move === 'started' || row.move === 'folded') {
     task.writes = joined(task.writes, given.writes ?? []);
     task.keys = task.writes.map(writeKey);
@@ -419,6 +420,115 @@ export function readTasks(lines) {
   markDeferred(tasks);
   liftPriorities(tasks);
   return tasks;
+}
+
+const LOCK_STALE_MS = 120_000;
+const pause = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+// Each run that syncs the ledger with LEDGER_REF holds this lock, a directory in the git common
+// dir that every worktree shares. A holder refreshes its time at each sync attempt, so a lock untouched for
+// LOCK_STALE_MS belongs to a run that died and is taken over. Returns null when another run holds
+// it past waitMs.
+export function lockLedger(commonDir, { waitMs = 0, onWait = () => {} } = {}) {
+  const path = join(commonDir, 'pstack-ledger.lock');
+  const until = Date.now() + waitMs;
+  let waiting = false;
+  for (;;) {
+    try {
+      mkdirSync(path);
+      break;
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+    const held = statSync(path, { throwIfNoEntry: false });
+    if (!held) continue;
+    if (Date.now() - held.mtimeMs >= LOCK_STALE_MS) break;
+    if (Date.now() >= until) return null;
+    if (!waiting) onWait(path);
+    waiting = true;
+    pause(50);
+  }
+  const lock = { path, touch: () => utimesSync(path, new Date(), new Date()), release: () => rmSync(path, { recursive: true, force: true }) };
+  lock.touch();
+  return lock;
+}
+
+export const REFUSED = 'suggested-tasks.refused.tsv';
+const completeRows = (text) => text.slice(0, text.lastIndexOf('\n') + 1).split('\n').filter(Boolean);
+
+function checkPending(theirs, pending) {
+  const state = readTasks(theirs);
+  const kept = [];
+  const refused = [];
+  for (const line of pending) {
+    const [ts, ...cells] = line.split('\t');
+    const row = cells[0] === 'chip' ? parseRow(cells) : null;
+    const problem = cells[0] === 'chip' ? chipRowProblems(cells, state, row ? `${row.id} ${row.move}` : cells[1])[0] : undefined;
+    if (problem) refused.push({ line, problem });
+    else {
+      kept.push(line);
+      recordRow(state, cells, ts);
+    }
+  }
+  return { kept, refused };
+}
+
+// Puts the ledger file in LEDGER_REF's order on origin: the ref's rows, then the rows only this
+// file holds that the ref's state allows, then a row another session is still writing. Each row
+// the ref's state forbids moves to REFUSED beside the ledger. With push, the kept rows go to the
+// ref as a commit on the fetched tip, never forced, so they land only on the head they were checked
+// against, and a refused push fetches and checks again. checked names a tip whose state the
+// caller already checked every pending row against, so that tip needs no second check.
+export function syncLedger(ledger, via, lock, { push = true, checked = null } = {}) {
+  const git = (args, options = {}) => spawnSync('git', [...via, ...args], { encoding: 'utf8', maxBuffer: 1 << 30, timeout: 30_000, ...options });
+  const refRows = (tip) => (tip ? git(['show', `${tip}:${LEDGER}`]).stdout.split('\n').filter(Boolean) : []);
+  const localTip = () => git(['rev-parse', '--verify', '--quiet', `${LEDGER_REF}^{commit}`]).stdout.trim();
+  const outcome = { reachable: true, tip: '', pulled: 0, pushed: 0, refused: [], pending: 0 };
+  for (let attempt = 0; attempt < (push ? 3 : 1); attempt += 1) {
+    lock.touch();
+    const file = existsSync(ledger) ? readFileSync(ledger, 'utf8') : '';
+    const local = completeRows(file);
+    const current = (attempt === 0 && checked && localTip() === checked) || git(['fetch', '--quiet', 'origin', `+${LEDGER_REF}:${LEDGER_REF}`]).status === 0;
+    // ls-remote exits 2 when origin answers without the ref, which the first push creates.
+    if (!current && git(['ls-remote', '--exit-code', 'origin', LEDGER_REF]).status !== 2) {
+      const known = new Set(refRows(localTip()));
+      outcome.reachable = false;
+      outcome.pending = new Set(local.filter((row) => !known.has(row))).size;
+      return outcome;
+    }
+    const tip = current ? localTip() : '';
+    outcome.tip = tip;
+    const theirs = refRows(tip);
+    const known = new Set(theirs);
+    const mine = new Set(local);
+    outcome.pulled += theirs.filter((row) => !mine.has(row)).length;
+    const pending = [...new Set(local.filter((row) => !known.has(row)))];
+    // A first push skips the check: append checked each row, and checking one costs a copy of the task map.
+    const { kept, refused } = tip && tip !== checked && pending.length > 0 ? checkPending(theirs, pending) : { kept: pending, refused: [] };
+    if (refused.length > 0) appendFileSync(join(dirname(ledger), REFUSED), refused.map(({ line, problem }) => `${line}\t${problem}\n`).join(''));
+    outcome.refused.push(...refused);
+    const content = [...theirs, ...kept].map((row) => `${row}\n`).join('');
+    const rewritten = `${content}${file.slice(file.lastIndexOf('\n') + 1)}`;
+    if (rewritten !== file) {
+      const temp = `${ledger}.${process.pid}.tmp`;
+      mkdirSync(dirname(ledger), { recursive: true });
+      writeFileSync(temp, rewritten);
+      renameSync(temp, ledger);
+    }
+    outcome.pending = kept.length;
+    if (!push || kept.length === 0) return outcome;
+    const blob = git(['hash-object', '-w', '--stdin'], { input: content }).stdout.trim();
+    const tree = git(['mktree'], { input: `100644 blob ${blob}\t${LEDGER}\n` }).stdout.trim();
+    const head = git(['commit-tree', tree, ...(tip ? ['-p', tip] : []), '-m', `${kept.length} suggested-task ledger row(s)`]).stdout.trim();
+    if (!head) return outcome;
+    lock.touch();
+    if (git(['push', '--quiet', 'origin', `${head}:${LEDGER_REF}`], { timeout: 60_000 }).status !== 0) continue;
+    git(['update-ref', LEDGER_REF, head]);
+    outcome.pushed = kept.length;
+    outcome.pending = 0;
+    return outcome;
+  }
+  return outcome;
 }
 
 const tokenProblems = (given, where) => {
