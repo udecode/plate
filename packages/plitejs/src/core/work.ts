@@ -185,6 +185,14 @@ export type CoreWork = {
   uniqueHolderReads: number;
   /** Elements the index of unique values was built from. */
   uniqueIndexedNodes: number;
+  /** Entries, bucket entries included, a comparison of two unique-value map versions read where they differ. */
+  uniqueMapEntriesExamined: number;
+  /** Unique-value map trie nodes built or copied; a collision bucket's tree nodes are not counted. */
+  uniqueMapNodesAllocated: number;
+  /** Unique-value map trie nodes and collision buckets a read, a write, a walk or a comparison opened. */
+  uniqueMapNodesVisited: number;
+  /** Unique-value map trie slots a read, a write, a walk or a comparison looked at, and the bucket entries a key lookup or a walk read. */
+  uniqueMapSlotsInspected: number;
   /** Groups of generated values a settlement read. */
   valueGroupReads: number;
   /** Elements read for the generated values they hold or show. */
@@ -301,6 +309,10 @@ export const coreWork: CoreWork = {
   uniqueHolderQueries: 0,
   uniqueHolderReads: 0,
   uniqueIndexedNodes: 0,
+  uniqueMapEntriesExamined: 0,
+  uniqueMapNodesAllocated: 0,
+  uniqueMapNodesVisited: 0,
+  uniqueMapSlotsInspected: 0,
   valueGroupReads: 0,
   valueHolderReads: 0,
   subscriberVisits: 0,
