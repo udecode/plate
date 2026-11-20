@@ -12,6 +12,7 @@ export type {
   MarkdownDocumentParseResult,
   MarkdownEditorSerializeOptions,
   MarkdownErrorDiagnostic,
+  MarkdownFrontmatter,
   MarkdownModelLocation,
   MarkdownParseLimits,
   MarkdownParseOptions,

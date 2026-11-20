@@ -63,8 +63,30 @@ type PolicyDiagnostic<T extends object> =
   | Readonly<T & { severity: 'error' }>
   | Readonly<T & { severity: 'warning' }>;
 
+/**
+ * A Markdown file's leading front matter block, stored at
+ * `meta['markdown.frontmatter']`: its format and the text between its fences,
+ * with LF line endings.
+ */
+export type MarkdownFrontmatter = Readonly<{
+  format: 'toml' | 'yaml';
+  value: string;
+}>;
+
 export type MarkdownDiagnostic =
   | AuthoredProjectionDiagnostic
+  | PolicyDiagnostic<{
+      code: 'markdown-frontmatter-omitted';
+      impact: 'lossy';
+      message: string;
+      /**
+       * `shape` when the stored block is not an object whose keys are exactly
+       * a string `format` and a string `value`, `format` when the format is
+       * neither `yaml` nor `toml`, and `unreadable` when the written block
+       * would not read back as the same value.
+       */
+      reason: 'format' | 'shape' | 'unreadable';
+    }>
   | Readonly<{
       actual: number;
       code: 'markdown-inline-blocks';

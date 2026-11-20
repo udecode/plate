@@ -1,3 +1,4 @@
+import { dequal } from 'dequal';
 import type {
   Nodes,
   Paragraph,
@@ -67,6 +68,13 @@ import {
   ReportedMarkdownFailureError,
 } from './markdownDiagnostics';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
+import {
+  BYTE_ORDER_MARK,
+  hasMarkdownFrontmatterShape,
+  isMarkdownFrontmatter,
+  MARKDOWN_FRONTMATTER_KEY,
+  writeMarkdownFrontmatter,
+} from './markdownFrontmatter';
 import {
   getMarkdownParagraphLanding,
   remarkSeparateEscapes,
@@ -388,27 +396,13 @@ const remarkEscapeDollars: UnifiedPlugin<[], Root> = function () {
   }
 };
 
-export const serializeMdWithRuntime = (
-  runtime: MarkdownRuntime,
-  options: MarkdownSerializePolicy = {},
-  document?: MarkdownSerializeDocumentValue,
-  diagnostics = new MarkdownDiagnostics(),
-  readRoots?: Set<RootKey>
-) => {
-  const mergedOptions = getMergedOptionsSerialize(
-    runtime,
-    options,
-    document,
-    diagnostics,
-    readRoots
-  );
-  const { remarkPlugins, value } = mergedOptions;
-  const unwritable: MarkdownWriterExtension & {
-    handlers: Record<string, (node: { type: string }) => string>;
-  } = { handlers: {} };
-  const toRemarkProcessor = unified()
+const createMarkdownStringifier = (
+  context: SerializeMdContext,
+  unwritable: MarkdownWriterExtension
+) =>
+  unified()
     .use(remarkMarkdownTagWriter)
-    .use(remarkPlugins ?? [])
+    .use(context.remarkPlugins)
     .use(remarkEscapeDollars)
     .use(function remarkUnwritableNodeWriter(this: Processor) {
       const data = this.data() as { toMarkdownExtensions?: unknown[] };
@@ -419,21 +413,32 @@ export const serializeMdWithRuntime = (
     .use(remarkStringify, {
       emphasis: '_',
       resourceLink: false,
-      ...mergedOptions.remarkStringifyOptions,
+      ...context.remarkStringifyOptions,
     });
+
+const emptyRootStartsWithByteOrderMark = (context: SerializeMdContext) =>
+  createMarkdownStringifier(context, {})
+    .stringify({ children: [], type: 'root' })
+    .startsWith(BYTE_ORDER_MARK);
+
+const writeMarkdownBody = (context: SerializeMdContext) => {
+  const unwritable: MarkdownWriterExtension & {
+    handlers: Record<string, (node: { type: string }) => string>;
+  } = { handlers: {} };
+  const toRemarkProcessor = createMarkdownStringifier(context, unwritable);
   const tree: Root = {
-    children: convertNodesSerialize(value, mergedOptions),
+    children: convertNodesSerialize(context.value, context),
     type: 'root',
   };
 
-  finishMarkdownLists(tree, mergedOptions);
+  finishMarkdownLists(tree, context);
   cleanMarkdownDestinations(tree, {
-    lossPolicy: mergedOptions.lossPolicy,
+    lossPolicy: context.lossPolicy,
     phase: 'serialize',
-    report: diagnostics.report,
+    report: context.report,
   });
   allocateMarkdownFootnoteLabels(tree, (label) =>
-    diagnostics.report({
+    context.report({
       action: 'replaced',
       code: 'markdown-unsupported-node',
       impact: 'lossy',
@@ -453,13 +458,13 @@ export const serializeMdWithRuntime = (
   [
     ...(toRemarkProcessor.data('toMarkdownExtensions') ?? []),
     toRemarkProcessor.data('settings'),
-    mergedOptions.remarkStringifyOptions,
+    context.remarkStringifyOptions,
   ].forEach((extension) =>
     addMarkdownWriterKinds(configuredWriters, extension)
   );
   const writable = new Set([...COMMONMARK_WRITER_KINDS, ...configuredWriters]);
   const reportUnwritable = (nodeType: string) =>
-    diagnostics.report({
+    context.report({
       action: 'dropped',
       code: 'markdown-unsupported-node',
       impact: 'lossy',
@@ -467,7 +472,7 @@ export const serializeMdWithRuntime = (
       nodeType,
       owner: 'markdown',
       phase: 'serialize',
-      severity: mergedOptions.lossPolicy === 'allow' ? 'warning' : 'error',
+      severity: context.lossPolicy === 'allow' ? 'warning' : 'error',
     });
 
   // mdast-util-to-markdown's own writers write every child and read its
@@ -1261,6 +1266,81 @@ export const parseMarkdownInlineWithRuntime = (
   });
 };
 
+type MarkdownFrontmatterOmitted = Extract<
+  MarkdownDiagnostic,
+  { code: 'markdown-frontmatter-omitted' }
+>;
+
+const writeStoredMarkdownFrontmatter = (
+  document: EditorDocumentValue
+):
+  | Readonly<{ block: string }>
+  | Readonly<{ reason: MarkdownFrontmatterOmitted['reason'] }>
+  | null => {
+  const stored = document.meta?.[MARKDOWN_FRONTMATTER_KEY];
+
+  if (stored === undefined) return null;
+  if (!hasMarkdownFrontmatterShape(stored)) return { reason: 'shape' };
+  if (!isMarkdownFrontmatter(stored)) return { reason: 'format' };
+
+  const block = writeMarkdownFrontmatter(stored);
+
+  return block === null ? { reason: 'unreadable' } : { block };
+};
+
+const FRONTMATTER_OMITTED_MESSAGES: Record<
+  MarkdownFrontmatterOmitted['reason'],
+  string
+> = {
+  format: 'its format is neither "yaml" nor "toml"',
+  shape:
+    'it is not an object of exactly a string "format" and a string "value"',
+  unreadable: 'the written block would not read back as the same value',
+};
+
+const withoutElementIds = (nodes: readonly Descendant[]): Descendant[] =>
+  nodes.map((node) => {
+    if (!ElementApi.isElement(node)) return node;
+
+    const { id: _id, ...kept } = node;
+
+    return { ...kept, children: withoutElementIds(node.children) };
+  });
+
+const isFittedEmptyDocument = (
+  runtime: MarkdownRuntime,
+  document: EditorDocumentValue
+) => {
+  const fitted = runtime.state.schema.fitDocument({ children: [] }).children;
+
+  if (document.children.length !== fitted.length) return false;
+
+  const comparable = (children: readonly Descendant[]) =>
+    runtime.elementId ? withoutElementIds(children) : children;
+
+  return dequal(comparable(document.children), comparable(fitted));
+};
+
+const writeMarkdownDocument = (
+  runtime: MarkdownRuntime,
+  context: SerializeMdContext,
+  frontmatter: string | null
+) => {
+  if (frontmatter === null) return writeMarkdownBody(context);
+  if (isFittedEmptyDocument(runtime, context.document)) {
+    return `${emptyRootStartsWithByteOrderMark(context) ? BYTE_ORDER_MARK : ''}${frontmatter}`;
+  }
+
+  const data = writeMarkdownBody(context);
+  const rootMarkLength =
+    data.startsWith(BYTE_ORDER_MARK) &&
+    emptyRootStartsWithByteOrderMark(context)
+      ? 1
+      : 0;
+
+  return `${data.slice(0, rootMarkLength)}${frontmatter}${data.slice(rootMarkLength)}`;
+};
+
 export const serializeMarkdownWithRuntime = (
   runtime: MarkdownRuntime,
   document: EditorDocumentValue,
@@ -1270,12 +1350,17 @@ export const serializeMarkdownWithRuntime = (
   runtime.state.schema.assertDocument(document);
   const readRoots = new Set<RootKey>();
   const serialized = new MarkdownDiagnostics();
-  const data = serializeMdWithRuntime(
+  const frontmatter = writeStoredMarkdownFrontmatter(document);
+  const data = writeMarkdownDocument(
     runtime,
-    options,
-    document,
-    serialized,
-    readRoots
+    getMergedOptionsSerialize(
+      runtime,
+      options,
+      document,
+      serialized,
+      readRoots
+    ),
+    frontmatter && 'block' in frontmatter ? frontmatter.block : null
   );
   const diagnostics = new MarkdownDiagnostics(initialDiagnostics);
 
@@ -1290,8 +1375,17 @@ export const serializeMarkdownWithRuntime = (
         severity: 'warning',
       });
     });
+  if (frontmatter && 'reason' in frontmatter) {
+    diagnostics.report({
+      code: 'markdown-frontmatter-omitted',
+      impact: 'lossy',
+      message: `Markdown omits the front matter block at document metadata "${MARKDOWN_FRONTMATTER_KEY}": ${FRONTMATTER_OMITTED_MESSAGES[frontmatter.reason]}.`,
+      reason: frontmatter.reason,
+      severity: options.lossPolicy === 'allow' ? 'warning' : 'error',
+    });
+  }
   Object.keys(document.meta ?? {})
-    .filter((key) => key !== 'authored')
+    .filter((key) => key !== 'authored' && key !== MARKDOWN_FRONTMATTER_KEY)
     .sort()
     .forEach((key) => {
       diagnostics.report({
@@ -1314,11 +1408,13 @@ export const serializeMarkdownSliceWithRuntime = (
   const diagnostics = new MarkdownDiagnostics();
 
   return finishMarkdownSerialize(
-    serializeMdWithRuntime(
-      runtime,
-      {},
-      createContentFormatDocument({ content: children, roots }),
-      diagnostics
+    writeMarkdownBody(
+      getMergedOptionsSerialize(
+        runtime,
+        {},
+        createContentFormatDocument({ content: children, roots }),
+        diagnostics
+      )
     ),
     diagnostics
   );
