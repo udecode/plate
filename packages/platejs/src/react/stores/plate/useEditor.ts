@@ -8,14 +8,20 @@ import {
   RangeApi,
   type ValueOf,
 } from '../../../facade';
+import { failInvariant } from '../../../internal/failInvariant';
 import type { Editor } from '../../editor';
 import {
-  PlateEditorContext,
+  outsideEveryProvider,
   PlateModelContext,
-  PlateViewFactsContext,
+  PlateScopeContext,
+  readBoolean,
+  subscribeNothing,
+  usePlateTarget,
+  useTargetViewState,
 } from '../../internal/plate-context';
 import {
   type EditorRuntimeStateSelectorOptions,
+  useEditorRootElement,
   useEditorRuntimeState,
 } from '../../plite-react';
 
@@ -43,31 +49,55 @@ export function useModelEditor(): Editor {
 
 /** Get the provider's selected editor, or null when no editor is available. */
 export function useOptionalEditor(): Editor | null {
-  return React.useContext(PlateEditorContext)?.editor ?? null;
+  return usePlateTarget()?.editor ?? null;
 }
 
 /** Get the selected editor's application ID. */
 export const useEditorId = (): string => useEditor().id;
 
+const noEditorDOM = {
+  api: { dom: { editable: () => null, root: () => null, scroll: () => null } },
+};
+
 /** Whether the selected command view has a mounted editable. */
-export const useEditorMounted = (): boolean =>
-  React.useContext(PlateViewFactsContext).mounted;
+export const useEditorMounted = (): boolean => {
+  const { server } = React.useContext(PlateScopeContext);
+  const mounted =
+    useEditorRootElement(useOptionalEditor() ?? noEditorDOM) != null;
+  return React.useSyncExternalStore(
+    subscribeNothing,
+    readBoolean(mounted),
+    readBoolean(server?.mounted ?? false)
+  );
+};
 
 /** Whether the selected command view is currently focused. */
 export const useEditorFocused = (): boolean =>
-  React.useContext(PlateViewFactsContext).focused;
+  useTargetViewState(usePlateTarget(), 'focused', false);
 
 /** Whether the selected command view is composing text. */
 export const useEditorComposing = (): boolean =>
-  React.useContext(PlateViewFactsContext).composing;
+  useTargetViewState(usePlateTarget(), 'composing', false);
 
 /** Whether the selected command view rejects editing, including after unmount. */
-export const useEditorReadOnly = (): boolean =>
-  React.useContext(PlateViewFactsContext).readOnly;
+export const useEditorReadOnly = (): boolean => {
+  const scope = React.useContext(PlateScopeContext);
+  const target = usePlateTarget();
+  const rootAnswer = target !== null && target === scope.fallback;
+  const readOnly = useTargetViewState(
+    rootAnswer ? null : target,
+    'readOnly',
+    scope !== outsideEveryProvider
+  );
+  return rootAnswer
+    ? (React.use(PlateModelContext) ?? failInvariant('Expected an EditorRoot'))
+        .readOnly
+    : readOnly;
+};
 
 /** Get the selected Plate container ref; its value is null before mount. */
 export function useEditorContainerRef(): React.RefObject<HTMLDivElement | null> {
-  const target = React.useContext(PlateEditorContext);
+  const target = usePlateTarget();
   const emptyRef = React.useRef<HTMLDivElement>(null);
   return target?.containerRef ?? emptyRef;
 }
@@ -77,7 +107,7 @@ export function useEditorContainerRef(): React.RefObject<HTMLDivElement | null> 
  * `EditorSelectionView` it is the Editable of the view holding the selection.
  */
 export function useEditableRef(): React.RefObject<HTMLElement | null> {
-  const target = React.useContext(PlateEditorContext);
+  const target = usePlateTarget();
   const emptyRef = React.useRef<HTMLElement>(null);
   return target?.editableRef ?? emptyRef;
 }

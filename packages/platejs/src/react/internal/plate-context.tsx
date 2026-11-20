@@ -4,10 +4,11 @@ import { getEditorDOMRoot } from '../../dom/plite-dom.internal';
 import {
   markRootViewUsed,
   readRootViewUse,
+  subscribeEditorViewState,
   subscribeRootViewUse,
 } from '../../facade';
 import type { Editor } from '../editor/Editor';
-import { useEditorRootElement, useEditorViewState } from '../plite-react';
+import { useEditorRootElement } from '../plite-react';
 import { trackEditableFocus } from '../stores/plate-controller/document-focus.internal';
 import { createPlateTargetScope } from './createPlateTargetScope';
 import { useEditorContext, useOptionalEditorContext } from './plite-components';
@@ -18,6 +19,67 @@ export type PlateTarget = {
   editableRef: React.RefObject<HTMLElement | null>;
 };
 
+export type ViewFact = 'composing' | 'focused' | 'readOnly';
+
+type ServerFacts = Readonly<Record<ViewFact | 'mounted', boolean>>;
+
+export type PlateScope = Readonly<{
+  getServerSnapshot: () => PlateTarget | null;
+  getSnapshot: () => PlateTarget | null;
+  server: ServerFacts | null;
+  subscribe: (listener: () => void) => () => void;
+  fallback?: PlateTarget | null;
+  fixed?: PlateTarget | null;
+}>;
+
+const stopNothing = () => {};
+export const subscribeNothing = () => stopNothing;
+
+const readNothing = () => null;
+const readTrue = () => true;
+const readFalse = () => false;
+export const readBoolean = (value: boolean) => (value ? readTrue : readFalse);
+
+const readViewFact: Record<ViewFact, (editor: Editor) => boolean> = {
+  composing: (editor) => editor.read.view.isComposing(),
+  focused: (editor) => editor.read.view.isFocused(),
+  readOnly: (editor) => editor.read.view.isReadOnly(),
+};
+
+const readServerFacts = ({ editor }: PlateTarget): ServerFacts => ({
+  composing: readViewFact.composing(editor),
+  focused: readViewFact.focused(editor),
+  mounted: editor.api.dom.root() != null,
+  readOnly: readViewFact.readOnly(editor),
+});
+
+const noTarget: PlateScope = {
+  fixed: null,
+  getServerSnapshot: readNothing,
+  getSnapshot: readNothing,
+  server: null,
+  subscribe: subscribeNothing,
+};
+
+export const useFixedScope = (
+  target: PlateTarget | null,
+  answersForRoot = false
+): PlateScope => {
+  const [server] = React.useState(() => target && readServerFacts(target));
+  return React.useMemo(() => {
+    if (!target) return noTarget;
+    const read = () => target;
+    return {
+      fallback: answersForRoot ? target : null,
+      fixed: target,
+      getServerSnapshot: read,
+      getSnapshot: read,
+      server,
+      subscribe: subscribeNothing,
+    };
+  }, [answersForRoot, server, target]);
+};
+
 export const createPlateScope = () =>
   createPlateTargetScope<PlateTarget>((target) =>
     readRootViewUse(target.editor)
@@ -25,9 +87,34 @@ export const createPlateScope = () =>
 
 export type PlateTargetScope = ReturnType<typeof createPlateScope>;
 
+export const useLastUsedViewScope = (
+  picker: PlateTargetScope,
+  fallback: PlateTarget | null
+): PlateScope => {
+  const [server] = React.useState(() => fallback && readServerFacts(fallback));
+  return React.useMemo(
+    () => ({
+      fallback,
+      getServerSnapshot: () => fallback,
+      getSnapshot: () => picker.getSnapshot() ?? fallback,
+      server,
+      subscribe: picker.subscribe,
+    }),
+    [fallback, picker, server]
+  );
+};
+
+export const outsideEveryProvider: PlateScope = {
+  fixed: null,
+  getServerSnapshot: readNothing,
+  getSnapshot: readNothing,
+  server: null,
+  subscribe: subscribeNothing,
+};
+
 const targets = new WeakMap<object, PlateTarget>();
 export const getPlateTarget = (editor: Editor) => targets.get(editor);
-export const PlateEditorContext = React.createContext<PlateTarget | null>(null);
+export const PlateScopeContext = React.createContext(outsideEveryProvider);
 export const PlateControllerContext =
   React.createContext<PlateTargetScope | null>(null);
 export const PlateModelContext = React.createContext<{
@@ -37,12 +124,6 @@ export const PlateModelContext = React.createContext<{
   readOnly: boolean;
   scope: PlateTargetScope;
 } | null>(null);
-export const PlateViewFactsContext = React.createContext({
-  composing: false,
-  focused: false,
-  mounted: false,
-  readOnly: false,
-});
 
 export function usePlateModel() {
   const model = React.useContext(PlateModelContext);
@@ -50,18 +131,72 @@ export function usePlateModel() {
   return model;
 }
 
-type PlateViewFacts = React.ContextType<typeof PlateViewFactsContext>;
+export function usePlateTarget() {
+  const scope = React.useContext(PlateScopeContext);
+  return React.useSyncExternalStore(
+    scope.subscribe,
+    scope.getSnapshot,
+    scope.getServerSnapshot
+  );
+}
+
+const viewStateReaders = new WeakMap<
+  Editor,
+  { listeners: Set<() => void>; stop: () => void }
+>();
+
+const subscribeSharedViewState = (editor: Editor, listener: () => void) => {
+  let readers = viewStateReaders.get(editor);
+  if (!readers) {
+    const listeners = new Set<() => void>();
+    const stop = subscribeEditorViewState(editor, () => {
+      for (const notify of listeners) notify();
+    });
+    readers = { listeners, stop };
+    viewStateReaders.set(editor, readers);
+  }
+  const shared = readers;
+  shared.listeners.add(listener);
+  return () => {
+    shared.listeners.delete(listener);
+    if (shared.listeners.size > 0) return;
+    shared.stop();
+    viewStateReaders.delete(editor);
+  };
+};
+
+export const useTargetViewState = (
+  target: PlateTarget | null,
+  fact: ViewFact,
+  withoutEditor: boolean
+) => {
+  const { server } = React.useContext(PlateScopeContext);
+  const editor = target?.editor;
+  const readFact = React.useCallback(
+    () => (editor ? readViewFact[fact](editor) : withoutEditor),
+    [editor, fact, withoutEditor]
+  );
+  return React.useSyncExternalStore(
+    React.useCallback(
+      (listener: () => void) =>
+        editor ? subscribeSharedViewState(editor, listener) : stopNothing,
+      [editor]
+    ),
+    readFact,
+    readBoolean(server?.[fact] ?? withoutEditor)
+  );
+};
 
 /** Bind node renderers to the native view that owns their snapshot. */
 export function usePlateRenderContext(fallbackEditor: Editor) {
   const nativeEditor = useOptionalEditorContext();
   const editor = nativeEditor ?? fallbackEditor;
-  const inherited = React.useContext(PlateEditorContext);
+  const inherited = React.useContext(PlateScopeContext).fixed ?? null;
   const emptyRef = React.useRef<HTMLDivElement | null>(null);
   const target = React.useMemo(
     () =>
       inherited?.editor === editor
-        ? inherited
+        ? null
         : {
             editor,
             containerRef: inherited?.containerRef ?? emptyRef,
@@ -69,102 +204,17 @@ export function usePlateRenderContext(fallbackEditor: Editor) {
           },
     [editor, inherited]
   );
+  const scope = useFixedScope(target);
 
   return {
     editor,
     wrap: (children: React.ReactNode) =>
-      !nativeEditor || inherited?.editor === editor ? (
+      !nativeEditor || !target ? (
         children
       ) : (
-        <PlateTargetProvider target={target}>{children}</PlateTargetProvider>
+        <PlateScopeContext value={scope}>{children}</PlateScopeContext>
       ),
   };
-}
-
-export function PlateTargetProvider({
-  children,
-  readOnly,
-  target,
-}: {
-  children: React.ReactNode;
-  readOnly?: boolean;
-  target: PlateTarget | null;
-}) {
-  const [snapshot, setSnapshot] = React.useState<{
-    target: PlateTarget;
-    facts: PlateViewFacts;
-  } | null>(null);
-  const observedFacts = React.useMemo(
-    () =>
-      snapshot?.target === target
-        ? snapshot.facts
-        : {
-            composing: target?.editor.read.view.isComposing() ?? false,
-            focused: target?.editor.read.view.isFocused() ?? false,
-            mounted: target?.editor.api.dom.root() != null,
-            readOnly: target?.editor.read.view.isReadOnly() ?? true,
-          },
-    [snapshot, target]
-  );
-  const facts = React.useMemo(
-    () =>
-      readOnly === undefined ? observedFacts : { ...observedFacts, readOnly },
-    [observedFacts, readOnly]
-  );
-  return (
-    <PlateEditorContext value={target}>
-      <PlateViewFactsContext value={facts}>
-        {target && <PlateTargetFacts target={target} onChange={setSnapshot} />}
-        {children}
-      </PlateViewFactsContext>
-    </PlateEditorContext>
-  );
-}
-
-function PlateTargetFacts({
-  onChange,
-  target,
-}: {
-  onChange: (snapshot: { target: PlateTarget; facts: PlateViewFacts }) => void;
-  target: PlateTarget;
-}) {
-  const facts = useEditorViewState(target.editor, (view) => ({
-    composing: view.isComposing(),
-    focused: view.isFocused(),
-    readOnly: view.isReadOnly(),
-  }));
-  const element = useEditorRootElement(target.editor);
-  React.useLayoutEffect(() => {
-    // oxlint-disable-next-line react-doctor/no-prop-callback-in-effect -- [P1 local-invariant] Bridge Plite's non-null view selectors into a nullable provider without remounting its editor descendants.
-    onChange({ target, facts: { ...facts, mounted: element !== null } });
-  }, [element, facts, onChange, target]);
-  return null;
-}
-
-export function PlateScopeProvider({
-  children,
-  fallback = null,
-  fallbackReadOnly,
-  scope,
-}: {
-  children: React.ReactNode;
-  fallback?: PlateTarget | null;
-  fallbackReadOnly?: boolean;
-  scope: PlateTargetScope;
-}) {
-  const target = React.useSyncExternalStore(
-    scope.subscribe,
-    scope.getSnapshot,
-    () => null
-  );
-  return (
-    <PlateTargetProvider
-      target={target ?? fallback}
-      readOnly={target ? undefined : fallbackReadOnly}
-    >
-      {children}
-    </PlateTargetProvider>
-  );
 }
 
 export function PlateMountedView({
@@ -183,6 +233,7 @@ export function PlateMountedView({
     targets.set(editor, value);
     return value;
   }, [editableRef, editor, model.containerRef]);
+  const scope = useFixedScope(target);
   const { primary } = model;
   React.useLayoutEffect(() => {
     const root = getEditorDOMRoot(editor);
@@ -208,5 +259,5 @@ export function PlateMountedView({
   React.useLayoutEffect(() => {
     controller?.setPrimary(target, primary);
   }, [controller, element, primary, target]);
-  return <PlateTargetProvider target={target}>{children}</PlateTargetProvider>;
+  return <PlateScopeContext value={scope}>{children}</PlateScopeContext>;
 }

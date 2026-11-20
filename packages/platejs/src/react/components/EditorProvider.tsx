@@ -1,7 +1,11 @@
 import React from 'react';
 
 import type { Editor } from '../editor/Editor';
-import { getPlateTarget, PlateTargetProvider } from '../internal/plate-context';
+import {
+  getPlateTarget,
+  PlateScopeContext,
+  useFixedScope,
+} from '../internal/plate-context';
 
 /** Provide an existing editor to controls without creating a model or mounted view. */
 export function EditorProvider({
@@ -20,5 +24,6 @@ export function EditorProvider({
         : null,
     [editor]
   );
-  return <PlateTargetProvider target={target}>{children}</PlateTargetProvider>;
+  const scope = useFixedScope(target);
+  return <PlateScopeContext value={scope}>{children}</PlateScopeContext>;
 }

@@ -18,7 +18,8 @@ import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey
 import {
   createPlateScope,
   PlateModelContext,
-  PlateScopeProvider,
+  PlateScopeContext,
+  useLastUsedViewScope,
 } from '../internal/plate-context';
 import { EditorRoot as RuntimeEditorRoot } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
@@ -95,10 +96,6 @@ function PlateInner({
   const currentEditor = editor ?? failInvariant('Expected value to be defined');
   const [scope] = React.useState(createPlateScope);
   const editableRef = React.useRef<HTMLDivElement>(null);
-  const fallback = React.useMemo(
-    () => ({ editor: currentEditor, containerRef, editableRef }),
-    [containerRef, currentEditor]
-  );
   const modelRevision = usePlateModelRevision(currentEditor);
   const decorations = React.useMemo(() => {
     void modelRevision;
@@ -109,6 +106,11 @@ function PlateInner({
     view.isReadOnly()
   );
   const plateReadOnly = readOnly ?? editorReadOnly;
+  const fallback = React.useMemo(
+    () => ({ editor: currentEditor, containerRef, editableRef }),
+    [containerRef, currentEditor]
+  );
+  const outside = useLastUsedViewScope(scope, fallback);
   const model = React.useMemo(
     () => ({
       editor: currentEditor,
@@ -258,13 +260,7 @@ function PlateInner({
     >
       <EditorReadOnlyProvider readOnly={plateReadOnly}>
         <PlateModelContext value={model}>
-          <PlateScopeProvider
-            scope={scope}
-            fallback={fallback}
-            fallbackReadOnly={plateReadOnly}
-          >
-            {children}
-          </PlateScopeProvider>
+          <PlateScopeContext value={outside}>{children}</PlateScopeContext>
         </PlateModelContext>
       </EditorReadOnlyProvider>
     </RuntimeEditorRoot>
