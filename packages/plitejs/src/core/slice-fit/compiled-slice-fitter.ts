@@ -65,6 +65,7 @@ import { toPublicRoot } from '../public-root';
 import { recordStoreFromJson, showValueRecords } from '../record-store';
 import {
   bindCanonicalFitPreparation,
+  canonicalizeElement,
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
   isLoadedDocumentCanonical,
@@ -1307,7 +1308,7 @@ export const compileSliceFitter = <V extends Value>(
       });
     }
 
-    const [start] = RangeApi.edges(at);
+    const [start, end] = RangeApi.edges(at);
     const nestedStructuralVariant = (() => {
       if (
         slice.openStart !== 0 ||
@@ -1374,14 +1375,73 @@ export const compileSliceFitter = <V extends Value>(
         return null;
       }
 
-      return children;
+      const last = children.at(-1);
+      let endBlockPath = end.path.slice(0, -1);
+
+      while (endBlockPath.length > 0) {
+        const node = getDescendant(rootChildren, endBlockPath);
+
+        if (!ElementApi.isElement(node) || !getElementBehavior(node).inline) {
+          break;
+        }
+
+        endBlockPath = endBlockPath.slice(0, -1);
+      }
+
+      const endBlock = getDescendant(rootChildren, endBlockPath);
+      const joinFitsLeafMax = (joined: Element, block: Element) => {
+        const content = getCompiledElement(block)?.content;
+
+        if (!content?.allowsText || content.max === null) return true;
+        const endText = getDescendant(rootChildren, end.path);
+
+        if (
+          endBlockPath.length !== end.path.length - 1 ||
+          !NodeApi.isText(endText)
+        ) {
+          return false;
+        }
+        const ancestors = endBlockPath
+          .slice(0, -1)
+          .map((_part, index) =>
+            getDescendant(rootChildren, endBlockPath.slice(0, index + 1))
+          )
+          .filter((node): node is Element => ElementApi.isElement(node))
+          .reverse();
+        const canonical = canonicalizeElement(
+          getEditor(),
+          {
+            ...joined,
+            children: [
+              ...joined.children,
+              { ...endText, text: endText.text.slice(end.offset) },
+              ...block.children.slice(getDefined(end.path.at(-1)) + 1),
+            ],
+          },
+          root,
+          ancestors
+        );
+
+        return canonical.children.length <= content.max;
+      };
+      const lastJoinsEndBlock =
+        ElementApi.isElement(last) &&
+        ElementApi.isElement(endBlock) &&
+        getElementType(last) === getElementType(endBlock) &&
+        endBlockPath.length === targetPath.length &&
+        endBlockPath
+          .slice(0, -1)
+          .every((part, index) => part === targetPath[index]) &&
+        joinFitsLeafMax(last, endBlock);
+
+      return { children, openEnd: lastJoinsEndBlock ? 1 : 0 };
     })();
 
     if (nestedStructuralVariant) {
       contents.push({
-        content: nestedStructuralVariant,
+        content: nestedStructuralVariant.children,
         cost: 0,
-        openEnd: 0,
+        openEnd: nestedStructuralVariant.openEnd,
         openStart: 1,
         priority: -1,
       });
@@ -3051,12 +3111,15 @@ export const compileSliceFitter = <V extends Value>(
       };
 
       const syncPosition = getLocalSyncPosition();
+      const tail = document.tokens.slice(exactTo, syncPosition).tokens;
+      const tailOnlyCloses = tail.every((token) => token.kind === 'close');
       const expected =
         syncPosition === exactTo
           ? localEndContext
           : getOpenContext(syncPosition);
       const sourceAlreadyAtSync =
         allowAsymmetric &&
+        tailOnlyCloses &&
         stack.length === expected.length &&
         stack.every((token, index) =>
           openContextsMatch(token, expected[index])
@@ -3085,8 +3148,7 @@ export const compileSliceFitter = <V extends Value>(
       if (!sourceAlreadyAtSync) {
         let tailPosition = exactTo;
 
-        for (const token of document.tokens.slice(exactTo, syncPosition)
-          .tokens) {
+        for (const token of tail) {
           if (!process(token, 'document', tailPosition)) return null;
           tailPosition += tokenLength(token);
         }

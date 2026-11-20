@@ -511,6 +511,15 @@ export const canonicalizeRootChildren = (
   return sameChildren(canonical, current) ? current : canonical;
 };
 
+/** @internal */
+export const canonicalizeElement = (
+  editor: Editor,
+  element: Element,
+  root: string,
+  ancestorsNearestFirst: readonly Element[]
+) =>
+  canonicalizeNode(editor, element, root, {}, ancestorsNearestFirst) as Element;
+
 const getRootChildren = (value: JsonEditorValue, root: string) =>
   (root === 'main'
     ? value.children
