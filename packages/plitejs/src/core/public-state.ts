@@ -8235,15 +8235,15 @@ export const getUpdateView = <
     const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
     const schema = getEditorSchema(editor);
     const source = entries.map(([node, path]) =>
-      schema.copyNodeAt(node, path, root)
+      schema.carryNodeAt(node, path, root)
     );
 
     collect(source);
     for (const [name, children] of Object.entries(roots)) {
-      roots[name] = schema.copyChildren(children, name);
+      roots[name] = schema.carryChildren(children, name);
     }
     const scope = root === MAIN_ROOT_KEY ? {} : { root };
-    const copy = projectEditorExportSlice(
+    const exported = projectEditorExportSlice(
       editor,
       ContentSlice.fromJSON({
         content: source,
@@ -8258,6 +8258,8 @@ export const getUpdateView = <
         ),
       }
     );
+    const renewed = renewCopy(editor, exported);
+    const copy = renewed?.slice ?? exported;
     const limited = limitSliceToLength(
       copy,
       getInsertRemainingLength(getStateView(editor), { at: insertPath })
@@ -8289,22 +8291,28 @@ export const getUpdateView = <
 
     const insertOptions = { ...options, at: insertPath };
 
-    if (!slice.roots && !namesContentRoot(editor, slice.content)) {
+    if (!renewed && !slice.roots && !namesContentRoot(editor, slice.content)) {
       txRecord.nodes.insert(
         content as Array<ElementOrTextIn<V>>,
         insertOptions
       );
       return;
     }
-    const spec = createCheckedSliceSpec(editor, (transaction) => {
-      transaction.nodes.insert(
-        content as Array<ElementOrTextIn<V>>,
-        insertOptions
-      );
-      materializeContentSliceRoots(editor, slice);
+    const spec = createCheckedSliceSpec(
+      editor,
+      (transaction) => {
+        transaction.nodes.insert(
+          content as Array<ElementOrTextIn<V>>,
+          insertOptions
+        );
+        materializeContentSliceRoots(editor, slice);
 
-      return true;
-    });
+        return true;
+      },
+      () => {
+        if (renewed) restoreDroppedNames(editor, renewed);
+      }
+    );
 
     if (spec) applyTransactionSpec(editor, spec);
   };
