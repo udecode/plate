@@ -5904,7 +5904,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       );
 
       if (!place) return false;
-      const copy = internal?.rootsPrepared ? null : renewCopy(editor, slice);
+      const copy = renewCopy(editor, slice);
       const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
       const inputSlice = internal?.rootsPrepared
         ? sourceSlice
@@ -5975,7 +5975,8 @@ type GroupedSliceParent = Readonly<{
 const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   sourceTile: import('../interfaces/editor').ContentSlice,
-  placements: ReadonlyArray<InternalSlicePlacement<V>>
+  placements: ReadonlyArray<InternalSlicePlacement<V>>,
+  copies: 'each' | 'tile'
 ) => {
   const state = getStateView(editor);
   const schema: InternalEditorSchemaApi<V> = getEditorSchema(editor);
@@ -6018,14 +6019,15 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   const usedRoots = takenRootNames(editor);
   const ownership = new Map<string, 'exclusive' | 'shared'>();
   const sharedRoots = new Map<string, string>();
-  const copiedRoots = new Map<string, readonly Descendant[]>();
+  const sharedCopyRoots = new Map<string, readonly Descendant[]>();
   const prepareChildren = (
     children: readonly Descendant[],
     childrenRoot: string,
-    exclusiveRoots: Map<string, string>
+    exclusiveRoots: Map<string, string>,
+    ownRoots: Map<string, readonly Descendant[]>
   ): readonly Descendant[] | null => {
     const copied = ContentSlice.closed(
-      schema.copyChildren(children, childrenRoot)
+      schema.carryChildren(children, childrenRoot)
     ).content;
     const collect = (nodes: readonly Descendant[]): boolean => {
       for (const node of nodes) {
@@ -6052,10 +6054,17 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
 
           remapped.set(owned.root, name);
 
-          const prepared = prepareChildren(content, owned.root, exclusiveRoots);
+          const rootsOfCopy =
+            owned.ownership === 'shared' ? sharedCopyRoots : ownRoots;
+          const prepared = prepareChildren(
+            content,
+            owned.root,
+            exclusiveRoots,
+            rootsOfCopy
+          );
 
           if (!prepared) return false;
-          copiedRoots.set(name, prepared);
+          rootsOfCopy.set(name, prepared);
         }
         if (!collect(node.children)) return false;
       }
@@ -6069,20 +6078,42 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
       getDefined(sharedRoots.get(name) ?? exclusiveRoots.get(name))
     );
   };
+  const closed = (
+    content: readonly Descendant[],
+    roots: ReadonlyMap<string, readonly Descendant[]>
+  ) =>
+    ContentSlice.fromJSON<V>({
+      content,
+      openEnd: 0,
+      openStart: 0,
+      roots: Object.fromEntries(roots),
+    });
   const copied: Array<readonly Descendant[]> = [];
+  const cells: Array<import('../interfaces/editor').ContentSlice> = [];
 
   for (const placement of placements) {
-    const content = prepareChildren(placement.content, root, new Map());
+    const ownRoots =
+      copies === 'tile'
+        ? sharedCopyRoots
+        : new Map<string, readonly Descendant[]>();
+    const content = prepareChildren(
+      placement.content,
+      root,
+      new Map(),
+      ownRoots
+    );
 
     if (!content) return false;
     copied.push(content);
+    if (copies === 'each') cells.push(closed(content, ownRoots));
   }
-  const prepared = ContentSlice.fromJSON<V>({
-    content: copied.flat(),
-    openEnd: 0,
-    openStart: 0,
-    ...(copiedRoots.size > 0 ? { roots: Object.fromEntries(copiedRoots) } : {}),
-  });
+  const whole = closed(copies === 'tile' ? copied.flat() : [], sharedCopyRoots);
+  const copy = renewCopy(editor, whole, cells);
+  const renewed = [copy?.slice ?? whole, ...(copy?.separateCopies ?? cells)];
+  const prepared = closed(
+    renewed.flatMap(({ content }) => content),
+    new Map(renewed.flatMap(({ roots }) => Object.entries(roots ?? {})))
+  );
 
   materializeContentSliceRoots(editor, prepared);
 
@@ -6107,7 +6138,9 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
     offset += childCount;
     if (!parent) return false;
     if (
-      !fitSliceIntoActiveDraft(
+      !withRenewalOff(
+        editor,
+        fitSliceIntoActiveDraft<V>,
         editor,
         ContentSlice.fromJSON({
           content,
@@ -6179,6 +6212,7 @@ const fitSlicePlacementsIntoActiveDraft = <V extends Value>(
   }
 
   finalizeTransactionRepresentation(editor);
+  if (copy) restoreDroppedNames(editor, copy);
   if (parents.some((parent) => !verifyParent(parent))) return false;
   schema.assertDocument(getActiveDocumentChangeBuilder(editor).value);
 
@@ -6190,6 +6224,14 @@ export const fitSlicePlacements = <V extends Value>(
   editor: Editor<V>,
   sourceTile: import('../interfaces/editor').ContentSlice,
   options: Readonly<{
+    /**
+     * What one copy is when a placement carries a unique value a `references`
+     * names: `tile` when the placements together are one copy, and `each`
+     * when each placement is a copy of its own. Under `each`, the content
+     * roots the placements share are one more copy, whose holders a
+     * placement's references can name.
+     */
+    copies: 'each' | 'tile';
     placements: ReadonlyArray<InternalSlicePlacement<V>>;
   }>
 ) => {
@@ -6211,7 +6253,8 @@ export const fitSlicePlacements = <V extends Value>(
         fitSlicePlacementsIntoActiveDraft(
           editor,
           sourceTile,
-          options.placements
+          options.placements,
+          options.copies
         )
       );
     });

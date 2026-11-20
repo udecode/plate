@@ -2580,6 +2580,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             let fitted = false;
             const transaction = state.transaction(() => {
               fitted = fitSlicePlacements(context.editor, slice, {
+                copies: 'each',
                 placements: view.cellEntries.map(([, path]) => ({
                   at: path,
                   content: slice.content,
@@ -2636,6 +2637,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             for (const group of plan.placementGroups) {
               if (
                 !fitSlicePlacements(context.editor, group.source, {
+                  copies: 'tile',
                   placements: group.placements,
                 })
               ) {

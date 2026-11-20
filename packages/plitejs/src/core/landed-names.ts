@@ -56,11 +56,13 @@ const referringOf = (schema: CompiledEditorSchema) => {
   );
   const of = (node: Holder) =>
     properties.filter((property) => holds(schema, node, property));
-  const mapped = (node: Holder, names: Renames) =>
+  const mapped = (node: Holder, names: Renames, sharedNames?: Renames) =>
     of(node).map(({ key, references }) => {
       let renamed = false;
       const value = references.map(node[key] as EditorJsonValue, (name) => {
-        const to = names.get(references.key)?.get(name);
+        const to =
+          names.get(references.key)?.get(name) ??
+          sharedNames?.get(references.key)?.get(name);
 
         renamed ||= to !== undefined;
 
@@ -128,47 +130,69 @@ export const withRenewalOff = <A extends unknown[], T>(
   }
 };
 
-export const renewCopy = (editor: Editor, slice: ContentSlice) => {
+export const renewCopy = (
+  editor: Editor,
+  slice: ContentSlice,
+  separateCopies: readonly ContentSlice[] = []
+) => {
   const schema = getCompiledEditorSchema(editor);
   const referring = referringOf(schema);
   const unique = uniquePropertiesOf(schema);
-  const fresh = new Map<string, Map<string, string>>(
-    referring.properties.map(({ references }) => [references.key, new Map()])
+  const keys = new Set(
+    referring.properties.map(({ references }) => references.key)
   );
 
-  if (fresh.size === 0 || RENEWAL_OFF.has(getEditorRuntimeOwner(editor))) {
+  if (keys.size === 0 || RENEWAL_OFF.has(getEditorRuntimeOwner(editor))) {
     return null;
   }
 
   const sources = new Map<string, Map<unknown, string>>();
-  const naming: Array<Record<string, unknown>> = [];
-  const renewed = rebuild(ContentSliceValue.fromJSON(slice), (node, copied) => {
-    countCoreWork('renewalVisits');
-    for (const [key, byName] of fresh) {
-      const name = node[key];
-      const property = getDefined(unique.get(key));
+  const renew = (copy: ContentSlice, sharedNames?: Renames) => {
+    const fresh = new Map<string, Map<string, string>>();
+    const naming: Array<Record<string, unknown>> = [];
+    const renewed = rebuild(
+      ContentSliceValue.fromJSON(copy),
+      (node, copied) => {
+        countCoreWork('renewalVisits');
+        for (const key of keys) {
+          const name = node[key];
+          const property = getDefined(unique.get(key));
 
-      if (typeof name !== 'string' || !holds(schema, node, property)) {
-        continue;
+          if (typeof name !== 'string' || !holds(schema, node, property)) {
+            continue;
+          }
+
+          const value = generateElementPropertyValue(property) as string;
+          const byName = fresh.get(key) ?? new Map<string, string>();
+
+          if (!byName.has(name)) byName.set(name, value);
+          fresh.set(key, byName);
+          sources.set(key, (sources.get(key) ?? new Map()).set(value, name));
+          copied[key] = value;
+        }
+        if (referring.of(node).length > 0) naming.push(copied);
       }
+    );
 
-      const value = generateElementPropertyValue(property) as string;
-
-      if (!byName.has(name)) byName.set(name, value);
-      sources.set(key, (sources.get(key) ?? new Map()).set(value, name));
-      copied[key] = value;
+    if (fresh.size === 0 && !sharedNames) return { slice: copy };
+    for (const copied of naming) {
+      for (const { key, value } of referring.mapped(
+        copied,
+        fresh,
+        sharedNames
+      )) {
+        copied[key] = snapshotEditorJsonValue(value, 'Content slice');
+      }
     }
-    if (referring.of(node).length > 0) naming.push(copied);
-  });
 
-  if (sources.size === 0) return null;
-  for (const copied of naming) {
-    for (const { key, value } of referring.mapped(copied, fresh)) {
-      copied[key] = snapshotEditorJsonValue(value, 'Content slice');
-    }
-  }
+    return { names: fresh.size > 0 ? fresh : undefined, slice: renewed() };
+  };
+  const whole = renew(slice);
+  const renewed = separateCopies.map((copy) => renew(copy, whole.names).slice);
 
-  return { slice: renewed(), sources };
+  return sources.size === 0
+    ? null
+    : { separateCopies: renewed, slice: whole.slice, sources };
 };
 
 export const restoreDroppedNames = (
