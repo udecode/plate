@@ -19,7 +19,7 @@ Potion's own `.claude/skills/sync-plate` has the same method for a session that 
 
 ## Before you run it
 
-- By default the command reads Plate's main checkout beside Potion, which must be on `next` with a clean tree. To use a Plate fix that has not landed, pass the current Plate worktree's path and `--no-pull`.
+- By default the command reads Plate's main checkout beside Potion, which must be on `next` with a clean tree. To use a Plate fix that has not landed, pass the current Plate worktree's path and `--no-pull`. To reproduce a bug or prove a fix in Potion without syncing it, follow `verify`'s Potion proof lane (`.agents/rules/verify/references/potion.md`) instead.
 - The Potion worktree needs no `bun install` first. The command syncs the packages, which writes `tmp/plate-local/*.tgz` and runs `bun install`, then syncs the UI. `--ui-only` needs `node_modules/.bin/biome` to exist already.
 - Copy into the Potion worktree, from Potion's main checkout, the tarballs in `tmp/plate-local/`, which `package.json` names through `file:` specs, and the env files git ignores.
 
