@@ -2,4 +2,4 @@
 'platejs': patch
 ---
 
-Speed up typing and scrolling in documents with many ink marks
+Speed up typing, scrolling and deleting many marked blocks in documents with many ink marks

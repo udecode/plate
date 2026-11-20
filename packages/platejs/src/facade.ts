@@ -194,6 +194,7 @@ export {
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';
 export {
+  canonicalRecordJson,
   getRecordSetVersion,
   getValueRecords,
   type RecordSetVersion,

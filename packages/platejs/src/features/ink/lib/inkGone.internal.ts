@@ -1,6 +1,8 @@
 import type { EditorUniqueHolder } from '../../../core';
 import {
   afterActiveTransactionEnds,
+  canonicalRecordJson,
+  DocumentChange,
   type EditorDocumentValue,
   ElementApi,
   getActiveEditorUpdateId,
@@ -20,10 +22,7 @@ export type SavedRecords = Readonly<
 export const GONE = 'ink-gone';
 
 type GoneTx = Readonly<{
-  records: Readonly<{
-    drop: (set: string, id: string) => void;
-    put: (set: string, id: string, record: InkGone) => void;
-  }>;
+  changes: Readonly<{ apply: (change: DocumentChange) => void }>;
   unique: Readonly<{
     holder: (field: 'id', id: string) => EditorUniqueHolder | null;
   }>;
@@ -162,6 +161,7 @@ const writeGone = (
   const { records } = tx.value();
   const queue = [...ids];
   const done = new Set<string>();
+  const texts = new Map<string, string>();
 
   for (const id of queue) {
     if (done.has(id)) continue;
@@ -174,12 +174,18 @@ const writeGone = (
     const saved = goneIn(records, id);
 
     if (!writes(saved, place)) continue;
-    if (saved) tx.records.drop(GONE, id);
-    tx.records.put(GONE, id, place);
+    texts.set(id, canonicalRecordJson(place));
     for (const neighbor of [place.next, place.previous]) {
       if (neighbor !== undefined && !done.has(neighbor)) queue.push(neighbor);
     }
   }
+  if (texts.size === 0) return;
+  tx.changes.apply(
+    DocumentChange.fromJSON({
+      records: { [GONE]: Object.fromEntries(texts) },
+      version: 3,
+    })
+  );
 };
 
 export const flushGone = (

@@ -36,6 +36,7 @@ export {
 } from '../core/anchor-state';
 export { readCoreWork, type CoreWork } from '../core/work';
 export {
+  canonicalRecordJson,
   getRecordSetVersion,
   getValueRecords,
   type RecordSetVersion,
