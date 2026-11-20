@@ -367,12 +367,27 @@ const openTask = (step) =>
       )
     : undefined;
 
-// Offers one suggested task per failing step while none is open, for the
-// watcher to start its fix. Returns what the event records: whether the
-// watcher wakes for it and the task it offered.
+// A fix that dies with its session, such as in an app restart, leaves its
+// task open with nobody on it.
+const CLAIM_MS = 6 * 60 * 60_000;
+const claimLive = (task) => {
+  const rows = readFileSync(ledger, 'utf-8')
+    .split('\n')
+    .filter((line) => line.split('\t')[2]?.startsWith(`${task.id} `))
+    .map((line) => line.split('\t')[0]);
+  const wakes = readEvents()
+    .filter((event) => event.wake && event.task === task.id)
+    .map((event) => event.at);
+  const newest = Math.max(...[...rows, ...wakes].map(Date.parse));
+  return Date.now() - newest < CLAIM_MS;
+};
+
 const report = (event) => {
   const title = fixTitle(event.step);
-  if (openTask(event.step)) return { wake: false };
+  const open = openTask(event.step);
+  if (open) {
+    return claimLive(open) ? { wake: false } : { task: open.id, wake: true };
+  }
   const found = event.cleared
     ? `Local CI found ${event.step} no longer failing on next with failures ${EXPECTED_PATH} lists. Log: ${event.log}, which names them. Remove their lines from the list and land through land.mjs.`
     : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
