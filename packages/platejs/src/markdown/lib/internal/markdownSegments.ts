@@ -4,10 +4,12 @@ import type { MarkdownTagRegistry } from './markdownTags';
 const LIST = /^ {0,3}(?:[*+-]|\d{1,9}[.)])(?:[ \t]|$)/;
 const INDENTED = /^(?: {4}|\t)/;
 const LEADING_WHITESPACE = /^[ \t]/;
-const FENCE = /^ {0,3}(`{3,}|~{3,})/;
-const MATH = /^ {0,3}\$\$/;
-const MATH_ON_ONE_LINE = /\$\$.*\$\$/;
-const RAW_HTML = /^ {0,3}<(!--|pre|script|style|textarea)(?=[\s>]|$)/i;
+// CommonMark whitespace is spaces and tabs only, not a no-break space.
+const BLANK = /^[ \t]*$/;
+const LINE_END = /\r\n?|\n/g;
+// A math block opens and closes like a code fence, with two or more dollars.
+const FENCE = /^ {0,3}(`{3,}|~{3,}|\${2,})/;
+const RAW_HTML = /^ {0,3}<(!--|pre|script|style|textarea)(?=[ \t>]|$)/i;
 const RAW_HTML_END: Readonly<Record<string, RegExp>> = {
   '!--': /-->/,
   pre: /<\/pre>/i,
@@ -15,17 +17,19 @@ const RAW_HTML_END: Readonly<Record<string, RegExp>> = {
   style: /<\/style>/i,
   textarea: /<\/textarea>/i,
 };
+const BYTE_ORDER_MARK = '\uFEFF';
 
 /**
- * Link and footnote definitions resolve across the whole source, also from
- * inside a quote or a list item, so the line may start with their markers.
+ * Link and footnote definitions resolve across the whole source. A definition
+ * can sit in a quote or list item, escape a bracket or break its label across
+ * lines.
  */
-export const MARKDOWN_DEFINITION = /(?:^|\n)[ \t>*+\-.)\d]*\[[^\]\n]+\]:/;
+export const MARKDOWN_DEFINITION =
+  /(?:^|[\n\r])(?:[ \t>]|[*+-][ \t]|\d{1,9}[.)][ \t])*\[(?:[^[\]\\]|\\[\s\S])+\]:/;
 
 type ScanState = {
   fence: Readonly<{ char: string; length: number }> | null;
   openList: boolean;
-  math: boolean;
   previousNonBlank: string | null;
   rawEnd: RegExp | null;
   tagDepth: number;
@@ -58,15 +62,10 @@ const scanLine = (
     if (
       close?.[1][0] === state.fence.char &&
       close[1].length >= state.fence.length &&
-      line.trim() === close[1]
+      BLANK.test(line.slice(close[0].length))
     ) {
       state.fence = null;
     }
-
-    return;
-  }
-  if (state.math) {
-    if (MATH.test(line)) state.math = false;
 
     return;
   }
@@ -78,13 +77,13 @@ const scanLine = (
   if (LIST.test(line)) state.openList = true;
   const fence = FENCE.exec(line);
 
-  if (fence) {
+  // The info string of a backtick or dollar fence never holds its own marker.
+  if (
+    fence &&
+    (fence[1].startsWith('~') ||
+      !line.slice(fence[0].length).includes(fence[1][0]))
+  ) {
     state.fence = { char: fence[1][0], length: fence[1].length };
-
-    return;
-  }
-  if (MATH.test(line) && !MATH_ON_ONE_LINE.test(line.trim())) {
-    state.math = true;
 
     return;
   }
@@ -129,7 +128,6 @@ export const findMarkdownSegmentBoundaries = (
   const state: ScanState = {
     fence: null,
     openList: false,
-    math: false,
     previousNonBlank: null,
     rawEnd: null,
     tagDepth: 0,
@@ -139,10 +137,10 @@ export const findMarkdownSegmentBoundaries = (
   let offset = from;
 
   while (offset < source.length) {
-    const newline = source.indexOf('\n', offset);
-    const end = newline === -1 ? source.length : newline + 1;
-    const line = source.slice(offset, end).replace(/\r?\n$/, '');
-    const blank = line.trim() === '';
+    LINE_END.lastIndex = offset;
+    const lineEnd = LINE_END.exec(source);
+    const line = source.slice(offset, lineEnd?.index ?? source.length);
+    const blank = BLANK.test(line);
 
     if (
       !blank &&
@@ -151,18 +149,22 @@ export const findMarkdownSegmentBoundaries = (
       !LIST.test(line) &&
       state.previousNonBlank !== null &&
       !state.fence &&
-      !state.math &&
       !state.rawEnd &&
       state.tagDepth === 0
     ) {
-      if (!state.openList && !INDENTED.test(state.previousNonBlank)) {
+      if (
+        !state.openList &&
+        !INDENTED.test(state.previousNonBlank) &&
+        // A segment's parse drops a byte order mark that starts it.
+        !line.startsWith(BYTE_ORDER_MARK)
+      ) {
         boundaries.push(offset);
       }
       state.openList = false;
     }
     pendingBlank = blank;
     if (!blank) scanLine(state, line, tagPatterns);
-    offset = end;
+    offset = lineEnd ? LINE_END.lastIndex : source.length;
   }
 
   return boundaries;
@@ -205,14 +207,5 @@ export const shiftMarkdownDiagnostic = (
   } as MarkdownDiagnostic;
 };
 
-/** Lines before `offset`. */
-export const countMarkdownLines = (source: string, offset: number) => {
-  let lines = 0;
-
-  for (let index = source.indexOf('\n'); index !== -1 && index < offset;) {
-    lines += 1;
-    index = source.indexOf('\n', index + 1);
-  }
-
-  return lines;
-};
+export const countMarkdownLines = (source: string, offset: number) =>
+  source.slice(0, offset).match(LINE_END)?.length ?? 0;
