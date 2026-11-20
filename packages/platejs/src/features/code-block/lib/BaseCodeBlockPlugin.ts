@@ -214,7 +214,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
     element: {
       content: schema.content.text({ default: 'text', min: 1, max: 1 }),
       ownsExit: true,
-      properties: { language: property.string() },
+      properties: { language: property.string(), meta: property.string() },
       slice: { preserveContext: true },
     },
   },
@@ -243,22 +243,24 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             ?.className.match(CODE_LANGUAGE_CLASS_RE)?.[1];
           const language =
             element.dataset.language || languageClass || undefined;
+          const { meta } = element.dataset;
           const text = restoreTrailingNewlines(
             readCodeDomText(element),
             element
           );
 
-          preserve('data-code-trailing-newlines', 'data-language');
+          preserve('data-code-trailing-newlines', 'data-language', 'data-meta');
 
           return {
             children: [{ text }],
             ...(language ? { language } : {}),
+            ...(meta ? { meta } : {}),
           };
         },
         encode: ({ content, node, preserve }) => {
           const trailingNewlines = countTrailingNewlines(NodeApi.string(node));
 
-          preserve('language');
+          preserve('language', 'meta');
 
           return {
             attributes: {
@@ -266,6 +268,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
                 ? { 'data-code-trailing-newlines': trailingNewlines }
                 : {}),
               'data-language': node.language,
+              'data-meta': node.meta,
             },
             children: [{ children: content, tag: 'code' }],
             tag: 'pre',
@@ -281,14 +284,18 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         node: 'code',
         decode: ({ node }) => ({
           ...(node.lang ? { language: node.lang } : {}),
+          ...(node.meta ? { meta: node.meta } : {}),
           children: [{ text: node.value || '' }],
           type,
         }),
         encode: ({ node, preserve }) => {
           preserve('language');
+          // A fence writes its meta only after a language.
+          if (node.language) preserve('meta');
 
           return {
             lang: node.language,
+            meta: node.meta,
             type: 'code',
             value: NodeApi.string(node),
           };

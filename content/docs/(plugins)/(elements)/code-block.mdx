@@ -368,6 +368,8 @@ const editor = createEditor({
 
 Each `codeBlock` contains one text child. Newline characters define physical lines; editing and highlighting derive their line behavior from text offsets.
 
+A code block stores a Markdown fence's language as `language` and the rest of its info string, such as `title="a.ts" {3-5}`, as `meta`. Markdown and HTML keep both. A fence writes `meta` only after a language, so Markdown export reports a `meta` without a `language` as `markdown-property-omitted`.
+
 Inside a code block no [input rule](/docs/plugin-input-rules#where-rules-run) runs, so `# `, `**x**`, `->` and URLs stay as typed. Neither Markdown nor an input rule converts pasted plain text.
 
 For plain code blocks, omit `CodeHighlightPlugin`:
