@@ -350,7 +350,7 @@ const firstBad = (logs, step, green, tip, deadline, target) => {
 
 const where = (event) =>
   event.kind === 'flake'
-    ? `twice in a row, passing alone each time${event.loaded ? ' under load' : ''}`
+    ? `once and passing its rerun${event.loaded ? ' under load' : ''}`
     : event.culprit
       ? `since ${event.culprit.slice(0, 10)} (${event.subject})`
       : `somewhere in ${event.range}`;
@@ -390,7 +390,9 @@ const report = (event) => {
   }
   const found = event.cleared
     ? `Local CI found ${event.step} no longer failing on next with failures ${EXPECTED_PATH} lists. Log: ${event.log}, which names them. Remove their lines from the list and land through land.mjs.`
-    : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
+    : event.kind === 'flake'
+      ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}. The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.`
+      : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
@@ -537,6 +539,7 @@ const run = (args) => {
       return 1;
     }
     const passing = new Set(result.passed);
+    const flaked = new Set();
     for (const failed of [...result.failed, ...result.interrupted]) {
       const interrupted = result.interrupted.includes(failed);
       const { failures, listedPassing, unexpected } = interrupted
@@ -582,13 +585,12 @@ const run = (args) => {
         ? shell(logs, runId(tip, `${failed}-failed`), line)
         : check(logs, runId(tip, `${failed}-alone`), [failed], { full });
       const ok = passes(alone, failed, line ? files : undefined);
-      if (ok) passing.add(failed);
-      if (ok && interrupted) continue;
+      if (ok && interrupted) {
+        passing.add(failed);
+        continue;
+      }
       const load = loadavg()[0];
       if (ok) {
-        // The daily check's rule stands: a flake gets a task on its second run
-        // in a row.
-        const last = readEvents().findLast((event) => event.step === failed);
         const event = {
           kind: 'flake',
           failures: unexpected,
@@ -598,10 +600,8 @@ const run = (args) => {
           step: failed,
           tip,
         };
-        emit({
-          ...event,
-          ...(last?.kind === 'flake' && !dry ? report(event) : {}),
-        });
+        flaked.add(failed);
+        emit({ ...event, ...(dry ? {} : report(event)) });
         continue;
       }
       // The search starts from the last commit this step passed on, so a
@@ -641,7 +641,7 @@ const run = (args) => {
       }
       next.passed = {
         ...state.passed,
-        ...Object.fromEntries([...passing].map((ok) => [ok, tip])),
+        ...Object.fromEntries([...passing, ...flaked].map((ok) => [ok, tip])),
       };
       writeState(next);
     }
