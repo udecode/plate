@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-20-ai-comment-excerpt-slice",
+      "href": "/registry/changelog/2026-11-20-ai-comment-excerpt-slice.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep every line of an AI comment's quote that opens like front matter",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["use-chat"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-board-demo-browser-uploads",
       "href": "/registry/changelog/2026-11-20-board-demo-browser-uploads.json",
       "status": "draft",

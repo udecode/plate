@@ -69,10 +69,13 @@ import {
 } from './markdownDiagnostics';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
 import {
+  blankMarkdownFrontmatter,
   BYTE_ORDER_MARK,
   hasMarkdownFrontmatterShape,
   isMarkdownFrontmatter,
   MARKDOWN_FRONTMATTER_KEY,
+  opensMarkdownFrontmatterFence,
+  readMarkdownFrontmatter,
   writeMarkdownFrontmatter,
 } from './markdownFrontmatter';
 import {
@@ -290,30 +293,37 @@ type MarkdownSegmentHooks = Pick<
   'onRootChildren' | 'onSyntaxNodes' | 'previousRootSibling'
 >;
 
+const createMarkdownParser = (
+  runtime: MarkdownRuntime,
+  remarkPlugins: DeserializeMdContext['remarkPlugins']
+) =>
+  unified()
+    .use(remarkParse)
+    .use(remarkSeparateEscapes)
+    .use(remarkMarkdownTags, { tags: runtime.formats.tags })
+    .use(remarkResolveMarkdownReferences)
+    .use(remarkPlugins);
+
 export const markdownToSlateNodesWithRuntime = (
   runtime: MarkdownRuntime,
-  data: string,
+  text: string,
   options: MarkdownParsePolicy = {},
   diagnostics = new MarkdownDiagnostics(),
-  hooks: MarkdownSegmentHooks = {}
+  hooks: MarkdownSegmentHooks = {},
+  source = text
 ): Descendant[] => {
   const mergedOptions: DeserializeMdContext = {
     ...getMergedOptionsDeserialize(runtime, options, {
       diagnostics,
       positionsReferToSource: true,
-      source: data,
+      source,
     }),
     ...hooks,
   };
-  const toSlateProcessor = unified()
-    .use(remarkParse)
-    .use(remarkSeparateEscapes)
-    .use(remarkMarkdownTags, { tags: runtime.formats.tags })
-    .use(remarkResolveMarkdownReferences)
-    .use(mergedOptions.remarkPlugins ?? [])
-    .use(remarkToSlate, mergedOptions);
 
-  return toSlateProcessor.processSync(data).result;
+  return createMarkdownParser(runtime, mergedOptions.remarkPlugins)
+    .use(remarkToSlate, mergedOptions)
+    .processSync(text).result;
 };
 
 declare module 'unified' {
@@ -495,7 +505,14 @@ const writeMarkdownBody = (context: SerializeMdContext) => {
     };
   });
 
-  return toRemarkProcessor.stringify(transformed);
+  const written = transformed.children.filter(
+    (node) => !Object.hasOwn(unwritable.handlers, node.type)
+  );
+
+  return {
+    data: toRemarkProcessor.stringify(transformed),
+    lastKind: written.at(-1)?.type,
+  };
 };
 
 // mdast-util-to-markdown writes these CommonMark kinds itself and throws on any
@@ -615,7 +632,8 @@ const runParsedNodes = (
   source: string,
   options: MarkdownParsePolicy,
   diagnostics: MarkdownDiagnostics,
-  hooks?: MarkdownSegmentHooks
+  hooks?: MarkdownSegmentHooks,
+  text = source
 ): Descendant[] | null => {
   if (reportByteLimit(source, options, diagnostics)) return null;
   if (
@@ -633,10 +651,11 @@ const runParsedNodes = (
   try {
     return markdownToSlateNodesWithRuntime(
       runtime,
-      previewSource(runtime, source, options),
+      previewSource(runtime, text, options),
       options,
       diagnostics,
-      hooks
+      hooks,
+      source
     );
   } catch (error) {
     if (error instanceof ReportedMarkdownFailureError) return null;
@@ -1110,7 +1129,15 @@ export const parseMarkdownDocumentWithRuntime = (
   options: MarkdownParsePolicy = {}
 ): MarkdownDocumentParseResult => {
   const diagnostics = new MarkdownDiagnostics();
-  const parsed = runParsedNodes(runtime, source, options, diagnostics);
+  const frontmatter = readMarkdownFrontmatter(source);
+  const parsed = runParsedNodes(
+    runtime,
+    source,
+    options,
+    diagnostics,
+    {},
+    frontmatter ? blankMarkdownFrontmatter(source, frontmatter.end) : source
+  );
 
   if (!parsed || diagnostics.failure()) {
     return documentParseFailure(diagnostics);
@@ -1122,6 +1149,16 @@ export const parseMarkdownDocumentWithRuntime = (
     children: landsMarkdownParagraph(runtime.registry)
       ? landMarkdownParagraphs(runtime, children, diagnostics)
       : children,
+    ...(frontmatter
+      ? {
+          meta: {
+            [MARKDOWN_FRONTMATTER_KEY]: {
+              format: frontmatter.format,
+              value: frontmatter.value,
+            },
+          },
+        }
+      : {}),
   });
 
   if (diagnostics.failure()) return documentParseFailure(diagnostics);
@@ -1321,24 +1358,73 @@ const isFittedEmptyDocument = (
   return dequal(comparable(document.children), comparable(fitted));
 };
 
+// mdast types name only `yaml`; remark-frontmatter's TOML preset emits `toml`.
+const isFrontmatterKind = (kind: string | undefined) =>
+  kind === 'yaml' || kind === 'toml';
+
+/**
+ * Reads the output as a UTF-8 file gives it back: each lone surrogate
+ * replaced, with and without the byte-order mark a file read may drop.
+ */
+const readsBackMarkdownFrontmatter = (
+  runtime: MarkdownRuntime,
+  context: SerializeMdContext,
+  data: string
+) => {
+  const readsBlock = (form: string) => {
+    if (!opensMarkdownFrontmatterFence(form)) return false;
+
+    const file = form.toWellFormed();
+
+    if (readMarkdownFrontmatter(file)) return true;
+    if (context.remarkPlugins.length === 0) return false;
+
+    return isFrontmatterKind(
+      createMarkdownParser(runtime, context.remarkPlugins).parse(file)
+        .children[0]?.type
+    );
+  };
+
+  return (
+    readsBlock(data) ||
+    (data.startsWith(BYTE_ORDER_MARK) && readsBlock(data.slice(1)))
+  );
+};
+
 const writeMarkdownDocument = (
   runtime: MarkdownRuntime,
   context: SerializeMdContext,
   frontmatter: string | null
 ) => {
-  if (frontmatter === null) return writeMarkdownBody(context);
-  if (isFittedEmptyDocument(runtime, context.document)) {
+  if (
+    frontmatter !== null &&
+    isFittedEmptyDocument(runtime, context.document)
+  ) {
     return `${emptyRootStartsWithByteOrderMark(context) ? BYTE_ORDER_MARK : ''}${frontmatter}`;
   }
 
-  const data = writeMarkdownBody(context);
-  const rootMarkLength =
-    data.startsWith(BYTE_ORDER_MARK) &&
-    emptyRootStartsWithByteOrderMark(context)
-      ? 1
-      : 0;
+  const { data, lastKind } = writeMarkdownBody(context);
+  const insertAfterRootByteOrderMark = (text: string, body: string) => {
+    const rootMarkLength =
+      body.startsWith(BYTE_ORDER_MARK) &&
+      emptyRootStartsWithByteOrderMark(context)
+        ? 1
+        : 0;
 
-  return `${data.slice(0, rootMarkLength)}${frontmatter}${data.slice(rootMarkLength)}`;
+    return `${body.slice(0, rootMarkLength)}${text}${body.slice(rootMarkLength)}`;
+  };
+
+  if (frontmatter !== null) {
+    return insertAfterRootByteOrderMark(frontmatter, data);
+  }
+  if (!readsBackMarkdownFrontmatter(runtime, context, data)) return data;
+
+  // mdast-util-to-markdown adds a final line ending only when the output lacks
+  // one, so a body that ends in raw HTML may end in the HTML's line ending.
+  const bodyLessFinalLineEnding =
+    lastKind !== 'html' && data.endsWith('\n') ? data.slice(0, -1) : data;
+
+  return insertAfterRootByteOrderMark('\n', bodyLessFinalLineEnding);
 };
 
 export const serializeMarkdownWithRuntime = (
@@ -1415,7 +1501,7 @@ export const serializeMarkdownSliceWithRuntime = (
         createContentFormatDocument({ content: children, roots }),
         diagnostics
       )
-    ),
+    ).data,
     diagnostics
   );
 };

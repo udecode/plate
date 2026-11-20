@@ -160,7 +160,7 @@ export function useEditorChat(
             if (id) comments.api.discardDraft(id);
           };
           try {
-            const parsed = markdownApi.parse(aiComment.content);
+            const parsed = markdownApi.parseSlice(aiComment.content);
 
             if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
             id = comments.api.createDraft({
@@ -170,7 +170,7 @@ export function useEditorChat(
                 requestedBy: editor.userId,
                 ...(commentData.model && { model: commentData.model }),
               },
-              excerpt: parsed.document.children
+              excerpt: parsed.slice.content
                 .map((node) => NodeApi.string(node))
                 .join('\n'),
             });

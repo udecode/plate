@@ -1,6 +1,22 @@
 {
   "schemaVersion": 1,
   "components": {
+    "use-chat": [
+      "2026-11-20-ai-comment-excerpt-slice",
+      "2026-11-17-ai-comment-author",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-15-history-actions",
+      "2026-09-08-ai-session",
+      "2026-09-02-comments-ownership",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-13-ai-request-refs",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
     "board-demo": [
       "2026-11-20-board-demo-browser-uploads",
       "2026-11-19-board-images",
@@ -920,21 +936,6 @@
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite",
       "2025-10-21-add-rejectaisuggestions"
-    ],
-    "use-chat": [
-      "2026-11-17-ai-comment-author",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-15-history-actions",
-      "2026-09-08-ai-session",
-      "2026-09-02-comments-ownership",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-13-ai-request-refs",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
     ],
     "editor-ai": [
       "2026-11-17-ai-comment-author",

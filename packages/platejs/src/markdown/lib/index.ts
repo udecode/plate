@@ -1,3 +1,4 @@
+export { getMarkdownFrontmatter } from './internal/markdownFrontmatter';
 export {
   type MarkdownApi,
   type MarkdownDefinition,

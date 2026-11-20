@@ -1,3 +1,4 @@
+import type { EditorDocumentValue } from '../../../core';
 import type { MarkdownFrontmatter } from '../types';
 
 export const MARKDOWN_FRONTMATTER_KEY = 'markdown.frontmatter';
@@ -37,7 +38,7 @@ const GRAMMAR = {
   },
 } as const;
 
-const readMarkdownFrontmatter = (source: string) => {
+export const readMarkdownFrontmatter = (source: string) => {
   const start = source.startsWith(BYTE_ORDER_MARK) ? 1 : 0;
   const format = FORMATS.find((name) => source.startsWith(FENCES[name], start));
 
@@ -93,6 +94,27 @@ const readMarkdownFrontmatter = (source: string) => {
   return value.isWellFormed() ? { end: line.end, format, value } : null;
 };
 
+export const blankMarkdownFrontmatter = (source: string, end: number) =>
+  source
+    .slice(0, end)
+    .replaceAll('\r\n', ' \n')
+    .replaceAll('\r', '\n')
+    .replaceAll(/[^\n]/g, ' ') + source.slice(end);
+
+export const opensMarkdownFrontmatterFence = (text: string) => {
+  const start = text.startsWith(BYTE_ORDER_MARK) ? 1 : 0;
+  const format = FORMATS.find((name) => text.startsWith(FENCES[name], start));
+
+  if (!format) return false;
+
+  const [opener = '', ...lines] = text.slice(start).split(/\r\n|\r|\n/);
+
+  return (
+    GRAMMAR[format].open.test(opener) &&
+    lines.some((line) => GRAMMAR[format].close.test(line))
+  );
+};
+
 export const writeMarkdownFrontmatter = ({
   format,
   value,
@@ -122,3 +144,17 @@ export const isMarkdownFrontmatter = (
 ): stored is MarkdownFrontmatter =>
   hasMarkdownFrontmatterShape(stored) &&
   (stored.format === 'yaml' || stored.format === 'toml');
+
+/**
+ * The front matter block that a Markdown document parse stored on the
+ * document, or `undefined` when the stored value is missing or is not a
+ * `MarkdownFrontmatter`. The block comes back as stored; a document serialize
+ * is what checks that it can be written.
+ */
+export const getMarkdownFrontmatter = (
+  document: EditorDocumentValue
+): MarkdownFrontmatter | undefined => {
+  const stored = document.meta?.[MARKDOWN_FRONTMATTER_KEY];
+
+  return isMarkdownFrontmatter(stored) ? stored : undefined;
+};

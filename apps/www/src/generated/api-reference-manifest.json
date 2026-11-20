@@ -14144,6 +14144,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/markdown:getMarkdownFrontmatter": {
+          "aliases": [],
+          "documentation": "The front matter block that a Markdown document parse stored on the\ndocument, or `undefined` when the stored value is missing or is not a\n`MarkdownFrontmatter`. The block comes back as stored; a document serialize\nis what checks that it can be written.",
+          "entrypoint": "platejs/markdown",
+          "kind": "const",
+          "name": "getMarkdownFrontmatter",
+          "runtime": true,
+          "signature": "getMarkdownFrontmatter: (document: EditorDocumentValue) => MarkdownFrontmatter | undefined",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/markdown:MarkdownApi": {
           "aliases": [],
           "documentation": "",

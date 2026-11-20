@@ -1,0 +1,14 @@
+---
+id: 2026-11-20-ai-comment-excerpt-slice
+date: 2026-11-20
+status: draft
+kind: fix
+summary: "Keep every line of an AI comment's quote that opens like front matter"
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-20-use-chat-keep-every-line-an-eac15b9f","kind":"fix","migrationNotes":[]} -->
+
+- **`use-chat`**: Read an AI comment's quote with `parseSlice`, so a quote that opens with a `---` line keeps every line in the comment's excerpt now that a document parse reads a leading front matter block. A schema whose first block must be a heading no longer gives the excerpt a leading empty line.
