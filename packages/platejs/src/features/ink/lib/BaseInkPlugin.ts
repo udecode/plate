@@ -8,6 +8,13 @@ import {
 } from '../../../facade';
 import { readEditorAuthor } from '../../../lib/editor/editorUser.internal';
 import {
+  decodePoints,
+  encodePoints,
+  isInkRefusal,
+  refuse,
+  roundSample,
+} from './inkCodec.internal';
+import {
   addGone,
   captureGone,
   flushGone,
@@ -229,14 +236,6 @@ const frozen = <T extends object>(value: T) => {
   return value;
 };
 
-class InkRefusalError extends TypeError {
-  override name = 'InkRefusalError';
-}
-
-const refuse = (message: string): never => {
-  throw new InkRefusalError(`Ink mark refused: ${message}.`);
-};
-
 const isNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
@@ -281,28 +280,33 @@ const sideIn = (value: unknown): InkMargin['side'] =>
     ? value
     : refuse("margin.side must be 'left' or 'right'");
 
-const encodeSamples = (input: unknown) => {
+type SavedShape = 'beta2' | 'packed';
+
+const encodeSamples = (input: unknown, shape: SavedShape) => {
   const samples = listIn<InkSample>(input, 'samples');
-  const numbers: number[] = [];
   let time = 0;
 
   if (samples.length === 0) refuse('a mark needs at least one sample');
-  for (const [at, sample] of samples.entries()) {
+
+  const checked = samples.map((sample, at): InkSample => {
     const name = `samples[${at}]`;
 
     if (!Array.isArray(sample) || sample.length !== 4) {
       refuse(`${name} must be [x, y, pressure, time]`);
     }
-    numbers.push(
+    time = numberIn(sample[3], `${name} time`, time);
+
+    return [
       numberIn(sample[0], `${name} x`),
       numberIn(sample[1], `${name} y`),
-      numberIn(sample[2], `${name} pressure`, 0, 1)
-    );
-    time = numberIn(sample[3], `${name} time`, time);
-    numbers.push(time);
-  }
+      numberIn(sample[2], `${name} pressure`, 0, 1),
+      time,
+    ];
+  });
 
-  return numbers.join(' ');
+  return shape === 'packed'
+    ? encodePoints(checked.map(roundSample))
+    : checked.flat().join(' ');
 };
 
 const copyRecord = (
@@ -340,7 +344,13 @@ const copyRecord = (
   };
 };
 
-const encodeMark = (input: InkMarkInput, author: string) => {
+const encodeMark = (
+  input: InkMarkInput,
+  author: string,
+  shape: SavedShape = 'packed'
+) => {
+  const list = <T>(values: readonly T[]) =>
+    shape === 'packed' ? values.join(' ') : values;
   if (typeof input !== 'object' || input === null) {
     refuse('input must be an object');
   }
@@ -357,12 +367,21 @@ const encodeMark = (input: InkMarkInput, author: string) => {
   }
 
   const copies = blocks.map((block, at) => {
-    const record =
-      typeof block === 'object' && block !== null
-        ? copyRecord(block, `blocks[${at}]`)
-        : refuse(`blocks[${at}] must be an object`);
+    const {
+      block: id,
+      height,
+      lines,
+      text,
+      width,
+    } = typeof block === 'object' && block !== null
+      ? copyRecord(block, `blocks[${at}]`)
+      : refuse(`blocks[${at}] must be an object`);
+    const record = { block: id, height, lines: list(lines), text, width };
 
-    return { id: `c_${digest(JSON.stringify(record))}`, record };
+    return {
+      id: `${shape === 'packed' ? 'p' : 'c'}_${digest(JSON.stringify(record))}`,
+      record,
+    };
   });
   const origins: number[] = [];
   const runs: number[] = [];
@@ -399,7 +418,7 @@ const encodeMark = (input: InkMarkInput, author: string) => {
       : refuse('brush must be an object');
   const place =
     margin === undefined
-      ? { runs }
+      ? { runs: list(runs) }
       : {
           reach: numberIn(margin.reach, 'margin.reach', 0),
           side: sideIn(margin.side),
@@ -411,11 +430,10 @@ const encodeMark = (input: InkMarkInput, author: string) => {
       at: numberIn(input.at, 'at', 0),
       author,
       color: textIn(brush.color, 'brush.color'),
-      copies: copies.map((copy) => copy.id),
+      copies: list(copies.map((copy) => copy.id)),
       direction: directionIn(input.direction),
       opacity: numberIn(brush.opacity, 'brush.opacity', 0, 1),
-      origins,
-      points: encodeSamples(input.samples),
+      origins: list(origins),
       size: numberIn(brush.size, 'brush.size', 0),
       ...place,
     },
@@ -449,7 +467,7 @@ const readSaved = <T>(read: () => T): T | undefined => {
   try {
     return read();
   } catch (error) {
-    if (error instanceof InkRefusalError) return undefined;
+    if (isInkRefusal(error)) return undefined;
     throw error;
   }
 };
@@ -464,8 +482,17 @@ const sameFields = (encoded: SavedRecord, saved: SavedRecord) =>
       : value === other;
   });
 
+const savedList = (value: unknown, name: string) =>
+  typeof value === 'string'
+    ? value === ''
+      ? []
+      : value.split(' ')
+    : listIn<unknown>(value, name);
+
 const savedNumbers = (value: unknown, name: string, stride: number) => {
-  const numbers = listIn<unknown>(value, name);
+  const numbers = savedList(value, name).map((number) =>
+    typeof number === 'string' ? Number(number) : number
+  );
 
   if (numbers.length % stride !== 0) {
     refuse(`${name} must hold ${stride} numbers per entry`);
@@ -493,10 +520,17 @@ const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
       top: numbers[at + 2],
       width: numbers[at + 3],
     }));
-    const { block, height, text, width } = copyRecord(
+    const { block, height, text, width, ...written } = copyRecord(
       { ...record, lines },
       'copy'
     );
+
+    if (
+      typeof record.lines === 'string' &&
+      written.lines.join(' ') !== record.lines
+    ) {
+      refuse('a saved copy must be what add writes');
+    }
 
     return frozen({ block, height, id, lines, text, width });
   });
@@ -507,7 +541,9 @@ const decodeMark = (
   copyOf: (id: string) => InkCopy | undefined
 ): InkMark | undefined =>
   readSaved(() => {
-    const copies = listIn<unknown>(record.copies, 'copies').map(
+    const shape: SavedShape =
+      typeof record.copies === 'string' ? 'packed' : 'beta2';
+    const copies = savedList(record.copies, 'copies').map(
       (copy, at) =>
         (typeof copy === 'string' && copyOf(copy)) ||
         refuse(`copies[${at}] must name a saved copy`)
@@ -515,13 +551,8 @@ const decodeMark = (
     const origins = savedNumbers(record.origins, 'origins', 2);
     const runs =
       record.runs === undefined ? [] : savedNumbers(record.runs, 'runs', 5);
-    const points = savedNumbers(
-      typeof record.points === 'string'
-        ? record.points.split(' ').map(Number)
-        : undefined,
-      'points',
-      4
-    );
+    const points =
+      shape === 'packed' ? [] : savedNumbers(record.points, 'points', 4);
     const marked = groupsOf(runs, 5, (at) => ({
       copy: runs[at],
       run: {
@@ -559,12 +590,15 @@ const decodeMark = (
             },
           }
         : {}),
-      samples: groupsOf(points, 4, (at): InkSample => [
-        points[at],
-        points[at + 1],
-        points[at + 2],
-        points[at + 3],
-      ]),
+      samples:
+        shape === 'packed'
+          ? decodePoints(textIn(record.points, 'points'))
+          : groupsOf(points, 4, (at): InkSample => [
+              points[at],
+              points[at + 1],
+              points[at + 2],
+              points[at + 3],
+            ]),
     };
     const { copies: _, ...written } = encodeMark(
       {
@@ -578,10 +612,15 @@ const decodeMark = (
           width: copies[index].width,
         })),
       },
-      author
+      author,
+      shape
     ).mark;
 
-    if (!sameFields(written, record)) {
+    if (
+      !sameFields(written, record) ||
+      (shape === 'beta2' &&
+        encodeSamples(mark.samples, 'beta2') !== record.points)
+    ) {
       refuse('a saved mark must be what add writes');
     }
 
@@ -710,20 +749,25 @@ export const BaseInkPlugin = definePlugin('ink', {
   update: ({ editor, tx }) => ({
     /**
      * Save one mark and each copy not saved yet, as one undo step, and
-     * return the mark's id. Refuses malformed input, writing nothing. A copy's
+     * return the mark's id. Each sample saves rounded to a hundredth of a
+     * pixel, a thousandth of pressure and a whole millisecond. Refuses
+     * malformed input, and a sample whose hundredths of a pixel or
+     * milliseconds pass a quarter of `Number.MAX_SAFE_INTEGER`, writing
+     * nothing. A copy's
      * block deleted by this update, by one of the last four updates that
      * deleted blocks, or while a stroke that entered it was still unsaved,
      * gets its place saved too.
      */
     add: txLocate(false, (input: InkMarkInput) => {
       const { copies, mark } = encodeMark(input, readEditorAuthor(editor));
+      const points = encodeSamples(input.samples, 'packed');
       const id = `m_${nanoid()}`;
 
       for (const copy of copies) {
         tx.records.put(COPIES, copy.id, copy.record);
         addGone(editor, tx, copy.record.block);
       }
-      tx.records.put(MARKS, id, mark);
+      tx.records.put(MARKS, id, { ...mark, points });
 
       return id;
     }),

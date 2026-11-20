@@ -10,6 +10,10 @@ import {
   type InkRun,
   type InkSample,
 } from '../../../features/ink/lib';
+import {
+  roundPixel,
+  roundSample,
+} from '../../../features/ink/lib/inkCodec.internal';
 import { holdInkBlock } from '../../../features/ink/lib/inkGone.internal';
 import {
   footprintEnters,
@@ -358,8 +362,8 @@ export const attachInkCapture = ({
     if (!contact || event.timeStamp < dropBefore) return;
 
     const point: Point = [
-      event.clientX - origin.left,
-      event.clientY - origin.top,
+      roundPixel(event.clientX - origin.left),
+      roundPixel(event.clientY - origin.top),
     ];
     const [previous] = epoch?.samples.slice(-1) ?? [];
     const { brush } = contact;
@@ -412,19 +416,21 @@ export const attachInkCapture = ({
 
       open.note = note && hold(note);
     }
-    open.samples.push([
-      point[0],
-      point[1],
-      inkPressure(
-        event,
-        last && {
-          distance: Math.hypot(point[0] - last[0], point[1] - last[1]),
-          pressure: last[2],
-        },
-        brush.size
-      ),
-      Math.max(last?.[3] ?? 0, event.timeStamp - open.start),
-    ]);
+    open.samples.push(
+      roundSample([
+        point[0],
+        point[1],
+        inkPressure(
+          event,
+          last && {
+            distance: Math.hypot(point[0] - last[0], point[1] - last[1]),
+            pressure: last[2],
+          },
+          brush.size
+        ),
+        Math.max(last?.[3] ?? 0, event.timeStamp - open.start),
+      ])
+    );
   };
 
   const cancel = () => {
