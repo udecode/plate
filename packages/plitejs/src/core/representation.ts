@@ -589,15 +589,18 @@ const carryProtectedInlineNodes = (
 const nodeOfIndex = (document: DocumentIndex, path: readonly number[]) =>
   document.find(path) as Descendant | undefined;
 
+type TextOffsetCount = 'edges' | 'letters';
+
 const getTextOffsetWithin = (
   editor: Editor,
   ancestor: Descendant | undefined,
   ancestorPath: readonly number[],
   point: Point,
-  edgeWidth: 0 | 1
+  count: TextOffsetCount
 ): number | null => {
   if (!ancestor || !ElementApi.isElement(ancestor)) return null;
 
+  const edgeWidth = count === 'edges' ? 1 : 0;
   let offset = 0;
   let result: number | null = null;
   const visit = (
@@ -624,8 +627,13 @@ const getTextOffsetWithin = (
 
       const isVoid = resolveRepresentationSchema(editor).isVoid(node);
 
+      if (isVoid && count === 'letters') {
+        offset += 1;
+        continue;
+      }
+
       offset += edgeWidth;
-      if (isVoid && edgeWidth && PathApi.isAncestor(nodePath, point.path)) {
+      if (isVoid && PathApi.isAncestor(nodePath, point.path)) {
         result = offset;
 
         return true;
@@ -648,10 +656,11 @@ const getPointAtTextOffset = (
   ancestorPath: readonly number[],
   targetOffset: number,
   association: -1 | 1,
-  edgeWidth: 0 | 1
+  count: TextOffsetCount
 ): Point | null => {
   if (!ancestor || !ElementApi.isElement(ancestor)) return null;
 
+  const edgeWidth = count === 'edges' ? 1 : 0;
   let offset = 0;
   let previous: Point | null = null;
   let endingAt: Point | null = null;
@@ -666,7 +675,8 @@ const getPointAtTextOffset = (
       if (TextApi.isText(node)) {
         const end = offset + node.text.length;
 
-        if (edgeWidth) {
+        if (count === 'letters' && offset > targetOffset) return previous;
+        if (count === 'edges') {
           if (offset <= targetOffset && targetOffset <= end) {
             const point = { offset: targetOffset - offset, path: nodePath };
 
@@ -692,8 +702,13 @@ const getPointAtTextOffset = (
 
       const isVoid = resolveRepresentationSchema(editor).isVoid(node);
 
+      if (isVoid && count === 'letters') {
+        offset += 1;
+        continue;
+      }
+
       offset += edgeWidth;
-      if (isVoid && edgeWidth && targetOffset === offset) {
+      if (isVoid && targetOffset === offset) {
         return {
           offset: 0,
           path: [...nodePath, ...NodeApi.first(node, [])[1]],
@@ -726,7 +741,7 @@ export const mapCanonicalRepresentationPoint = (
   association: -1 | 1,
   options: Readonly<{ countInlineEdges?: true }> = {}
 ): Point | null => {
-  const edgeWidth = options.countInlineEdges ? 1 : 0;
+  const count = options.countInlineEdges ? 'edges' : 'letters';
   const node = nodeOfIndex(beforeDocument, point.path);
   const startsLetteredText =
     point.offset === 0 && node && TextApi.isText(node) && node.text !== '';
@@ -749,7 +764,7 @@ export const mapCanonicalRepresentationPoint = (
       ancestor,
       ancestorPath,
       point,
-      edgeWidth
+      count
     );
 
     if (textOffset === null) continue;
@@ -772,7 +787,7 @@ export const mapCanonicalRepresentationPoint = (
       mappedAncestor.path,
       textOffset,
       side,
-      edgeWidth
+      count
     );
 
     if (mapped) return mapped;
