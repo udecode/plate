@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   existsSync,
   mkdirSync,
@@ -15,7 +16,7 @@ import { parseArgs } from 'node:util';
 import { findings } from '../../.agents/pstack/writing-check.mjs';
 
 const USAGE =
-  'usage: notify send --to <login|dev> [--file <png|jpg|gif|mp4|webm>]... <text...> | notify team <revision-range> | notify check';
+  'usage: notify send --to <login|dev|channel> [--file <png|jpg|gif|mp4|webm>]... <text...> | notify team <revision-range> | notify check';
 const DAY = 24 * 60 * 60 * 1000;
 const LIMIT = 2000;
 const MAX_FILES = 4;
@@ -138,6 +139,7 @@ const recipients = ({ team, role }) => ({
     ])
   ),
   dev: { mention: `<@&${role}>`, allowedMentions: { roles: [role] } },
+  channel: { allowedMentions: { parse: [] } },
 });
 
 const message = (recipient, text) => ({
@@ -296,8 +298,14 @@ const send = async (args) => {
   const path = statePath();
   const now = Date.now();
   const recent = readSent(path).filter((entry) => now - entry.at < DAY);
+  const media = files.map((file) =>
+    createHash('sha256').update(readFileSync(file)).digest('hex')
+  );
   const earlier = recent.find(
-    (entry) => entry.to === to && entry.text === text
+    (entry) =>
+      entry.to === to &&
+      entry.text === text &&
+      String(entry.media ?? []) === String(media)
   );
   if (earlier) {
     console.log(
@@ -310,7 +318,7 @@ const send = async (args) => {
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(
     path,
-    `${JSON.stringify([...recent, { to, text, at: now }], null, 2)}\n`
+    `${JSON.stringify([...recent, { to, text, media, at: now }], null, 2)}\n`
   );
 };
 
@@ -321,9 +329,10 @@ const team = (args) => {
   const config = readConfig();
   const repo = originRepo([]);
   if (!repo) fail(1, 'notify team cannot read the GitHub repository of origin');
+  const { channel, dev } = recipients(config);
   const kinds = {
-    Team: { allowedMentions: { parse: [] } },
-    'Team-Action': recipients(config).dev,
+    Team: channel,
+    'Team-Action': dev,
   };
   const run = spawnSync(
     'git',
