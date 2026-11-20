@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-board-picture-button",
+      "href": "/registry/changelog/2026-11-20-board-picture-button.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add an image button to the board toolbar",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-isolate-editor-container",
       "href": "/registry/changelog/2026-11-20-isolate-editor-container.json",
       "status": "draft",

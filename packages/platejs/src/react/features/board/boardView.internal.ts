@@ -135,6 +135,12 @@ export type BoardViewState = Readonly<{
    * changes.
    */
   selectedShapes: readonly BoardMemberEntry[];
+  /**
+   * Whether the board lands picture files from `upload`, a paste or a drop,
+   * which needs a view that can write, the upload plugin, and an image shape
+   * that holds both the upload draft and the image element.
+   */
+  takesPictureFiles: boolean;
   tool: BoardTool;
   /**
    * Whether the note, shape, frame and arrow tools stay picked after they add
@@ -170,6 +176,17 @@ export type BoardViewActions = Readonly<{
    * the selection, and the focused view says `toolLock` when it changes.
    */
   setToolLocked: (locked: boolean) => void;
+  /**
+   * Upload each of `files` as an image shape, in a row centered on the view,
+   * as one undo step, and select the shapes. The shapes land once the
+   * pictures load. A landing that still waits lands nothing after another
+   * landing starts, a key or press on the board, any paste, a document or
+   * selection change, focus leaving the board, or the view turning read-only.
+   * The upload plugin reports a file that is not a picture, and the pictures
+   * beside it still land. An empty list changes nothing, and neither does a
+   * view whose `takesPictureFiles` is false.
+   */
+  upload: (files: readonly File[]) => void;
   /** Zoom in to the next of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `+` does, and do nothing at 800. A focused board says the new zoom. */
   zoomIn: () => void;
   /** Zoom out to the next lower of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `-` does, and do nothing at 10. A focused board says the new zoom. */
@@ -479,11 +496,30 @@ export const createBoardView = (
     );
   };
 
+  const takesPictureFiles = () => {
+    const image = editor.plugin(BaseBoardImagePlugin);
+    const holds =
+      (image.installed &&
+        editor.read.schema.element(image.schema.type)?.content
+          ?.allowedElementTypes) ||
+      [];
+
+    return (
+      writable() &&
+      [PLUGINS.upload, PLUGINS.image].every((name) => {
+        const type = getCompiledPlateModelBinding(editor, name)?.elementType;
+
+        return !!type && holds.includes(type);
+      })
+    );
+  };
+
   let state: BoardViewState = {
     camera: { x: 0, y: 0, zoom: 1 },
     nextStyle: {},
     selectedShapes: [],
     styles: {},
+    takesPictureFiles: takesPictureFiles(),
     tool: 'select',
     toolLocked: false,
     writable: writable(),
@@ -740,17 +776,20 @@ export const createBoardView = (
       ? state.selectedShapes
       : listed;
     const canWrite = writable();
+    const takesFiles = takesPictureFiles();
     const styles = stylesOf({ ...state, selectedShapes: selected });
 
     if (
       selected !== state.selectedShapes ||
       canWrite !== state.writable ||
+      takesFiles !== state.takesPictureFiles ||
       styles !== state.styles
     ) {
       publish({
         ...state,
         selectedShapes: selected,
         styles,
+        takesPictureFiles: takesFiles,
         writable: canWrite,
       });
     }
@@ -1243,30 +1282,12 @@ export const createBoardView = (
     });
   };
 
-  const takesPictureFiles = () => {
-    const image = editor.plugin(BaseBoardImagePlugin);
-    const holds =
-      (image.installed &&
-        editor.read.schema.element(image.schema.type)?.content
-          ?.allowedElementTypes) ||
-      [];
-
-    return (
-      writable() &&
-      [PLUGINS.upload, PLUGINS.image].every((name) => {
-        const type = getCompiledPlateModelBinding(editor, name)?.elementType;
-
-        return !!type && holds.includes(type);
-      })
-    );
-  };
-
   const landPictureFiles: BoardViewCore['landPictureFiles'] = (
     files,
     point,
     refused
   ) => {
-    if (!surface) return;
+    if (!surface || files.length === 0) return;
     pendingPictures.load(surface, files, (sizes) => {
       const ids = write((tx) => {
         const upload = uploadDraftsOf(tx);
@@ -1650,6 +1671,9 @@ export const createBoardView = (
     },
     setTool: core.setTool,
     setToolLocked: core.setToolLocked,
+    upload: (files) => {
+      if (takesPictureFiles()) landPictureFiles(files, viewCenter());
+    },
     zoomIn: core.zoomIn,
     zoomOut: core.zoomOut,
   };

@@ -330,7 +330,7 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs'],
+    dependencies: ['platejs', 'use-file-picker@2.1.2'],
     files: [
       {
         path: 'components/editor/board.tsx',

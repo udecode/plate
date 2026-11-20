@@ -1338,7 +1338,8 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                 },
               ];
             });
-            const pictures = [];
+            const pictures: Array<(typeof placeable)[number] & { file: File }> =
+              [];
             const types = new Set<UploadFileType>();
 
             for (const picture of placeable) {

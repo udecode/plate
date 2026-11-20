@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-board-picture-button",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-board-picture-button.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add an image button to the board toolbar",
+  "targets": [
+    {
+      "name": "board",
+      "files": ["apps/www/src/registry/components/editor/board.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-board-picture-button-toolbar-8f99f821",
+      "kind": "new",
+      "summary": "Add an image button after the board toolbar's tools. It opens a file picker for pictures and uploads each picked file as an image shape, in a row centered on the view. The button is disabled on a board that takes no picture files, such as a read-only board or an editor without upload or without `BoardImageKit`. The board now depends on `use-file-picker`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-board-picture-button",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

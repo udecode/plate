@@ -8,6 +8,7 @@ import {
   EraserIcon,
   FrameIcon,
   HandIcon,
+  ImageIcon,
   LockIcon,
   LockOpenIcon,
   MousePointer2Icon,
@@ -54,6 +55,7 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
+import { useFilePicker } from 'use-file-picker';
 
 import {
   DropdownMenu,
@@ -353,6 +355,28 @@ function BoardShapeMenu({ pressed }: { pressed: boolean }) {
   );
 }
 
+function BoardPictureButton() {
+  const takesPictureFiles = useBoardView((view) => view.takesPictureFiles);
+  const { upload } = useBoardActions();
+  const { openFilePicker } = useFilePicker({
+    accept: ['image/*'],
+    multiple: true,
+    readFilesContent: false,
+    onFilesSelected: ({ plainFiles }) => upload(plainFiles),
+  });
+
+  return (
+    <ToolbarButton
+      className="px-1.5"
+      disabled={!takesPictureFiles}
+      tooltip="Image"
+      onClick={() => openFilePicker()}
+    >
+      <ImageIcon />
+    </ToolbarButton>
+  );
+}
+
 function BoardToolLock() {
   const locked = useBoardView((view) => view.toolLocked);
   const { setToolLocked } = useBoardActions();
@@ -414,6 +438,7 @@ export function BoardToolbar() {
             </ToolbarButton>
           )
         )}
+        <BoardPictureButton />
       </ToolbarGroup>
       <ToolbarGroup>
         <BoardToolLock />
