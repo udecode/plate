@@ -216,6 +216,23 @@ const ensureStartPointAfterHighestSplit = (
   const textPath = [getDefined(first), ...innerPath];
 
   if (NodeApi.isText(node)) {
+    // A split at the end of an inline element, such as a link, leaves an
+    // empty piece of it at the start of the right half. Typing on the new
+    // line goes past that piece, to the right half's first text outside it.
+    for (const [text, at] of NodeApi.texts(top, { from: innerPath })) {
+      if (rest.length > 0 && !PathApi.isDescendant(at, rest)) break;
+
+      const parent = NodeApi.parent(top, at);
+
+      if (
+        text.text !== '' ||
+        !NodeApi.isElement(parent) ||
+        !getEditorSchema(editor).isInline(parent)
+      ) {
+        return { path: [getDefined(first), ...at], offset: 0 };
+      }
+    }
+
     return { path: textPath, offset: 0 };
   }
 

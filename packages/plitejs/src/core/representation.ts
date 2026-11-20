@@ -600,18 +600,28 @@ const nodeOfIndex = (document: DocumentIndex, path: readonly number[]) =>
 
 type TextOffsetCount = 'edges' | 'letters';
 
+/**
+ * A place in a block's text. In the letters count, `offset` counts letters,
+ * an inline void as one, and `edges` counts the element edges between the
+ * last of those letters and the place, so the end of a link, the text after
+ * it and the start of the next link stay apart. In the edges count, `offset`
+ * also counts every element edge, and `edges` goes unread.
+ */
+type TextPlace = { edges: number; offset: number };
+
 const getTextOffsetWithin = (
   editor: Editor,
   ancestor: Descendant | undefined,
   ancestorPath: readonly number[],
   point: Point,
   count: TextOffsetCount
-): number | null => {
+): TextPlace | null => {
   if (!ancestor || !ElementApi.isElement(ancestor)) return null;
 
   const edgeWidth = count === 'edges' ? 1 : 0;
   let offset = 0;
-  let result: number | null = null;
+  let edges = 0;
+  let result: TextPlace | null = null;
   const visit = (
     nodes: readonly Descendant[],
     path: readonly number[]
@@ -625,12 +635,16 @@ const getTextOffsetWithin = (
           nodePath.length === point.path.length &&
           nodePath.every((part, depth) => part === point.path[depth])
         ) {
-          result = offset + point.offset;
+          result = {
+            edges: point.offset === 0 ? edges : 0,
+            offset: offset + point.offset,
+          };
 
           return true;
         }
 
         offset += node.text.length;
+        if (node.text !== '') edges = 0;
         continue;
       }
 
@@ -638,17 +652,20 @@ const getTextOffsetWithin = (
 
       if (isVoid && count === 'letters') {
         offset += 1;
+        edges = 0;
         continue;
       }
 
       offset += edgeWidth;
+      edges += 1;
       if (isVoid && PathApi.isAncestor(nodePath, point.path)) {
-        result = offset;
+        result = { edges, offset };
 
         return true;
       }
       if (!isVoid && visit(node.children, nodePath)) return true;
       offset += edgeWidth;
+      edges += 1;
     }
 
     return false;
@@ -659,17 +676,87 @@ const getTextOffsetWithin = (
   return result;
 };
 
+/**
+ * The point at `target` in the letters count. Of the points with as many
+ * letters before them, it takes one with as many edges since the last
+ * letter, the first such for a backward association and the last for a
+ * forward one. When repair removed edges there, the counts no longer line
+ * up, so it takes the first or the last of all those points the same way,
+ * and with no such point, the end of the text before it.
+ */
+const getPointAtLetters = (
+  editor: Editor,
+  ancestor: Descendant | undefined,
+  ancestorPath: readonly number[],
+  target: TextPlace,
+  association: -1 | 1
+): Point | null => {
+  if (!ancestor || !ElementApi.isElement(ancestor)) return null;
+
+  const places: Array<{ edges: number; point: Point }> = [];
+  let offset = 0;
+  let edges = 0;
+  let previous: Point | null = null;
+  const visit = (
+    nodes: readonly Descendant[],
+    path: readonly number[]
+  ): boolean => {
+    for (let index = 0; index < nodes.length; index++) {
+      const node = nodes[index];
+      const nodePath = [...path, index];
+
+      if (TextApi.isText(node)) {
+        const end = offset + node.text.length;
+
+        if (offset > target.offset) return true;
+        if (target.offset <= end) {
+          const at = target.offset - offset;
+
+          places.push({
+            edges: at === 0 ? edges : 0,
+            point: { offset: at, path: nodePath },
+          });
+          if (target.offset < end) return true;
+        }
+
+        previous = { offset: node.text.length, path: nodePath };
+        offset = end;
+        if (node.text !== '') edges = 0;
+        continue;
+      }
+
+      if (resolveRepresentationSchema(editor).isVoid(node)) {
+        offset += 1;
+        edges = 0;
+        continue;
+      }
+
+      edges += 1;
+      if (visit(node.children, nodePath)) return true;
+      edges += 1;
+    }
+
+    return false;
+  };
+
+  visit(ancestor.children, ancestorPath);
+
+  const same = places.filter((place) => place.edges === target.edges);
+  const pool = same.length > 0 ? same : places;
+  const place = association < 0 ? pool[0] : pool.at(-1);
+
+  return place?.point ?? previous;
+};
+
 const getPointAtTextOffset = (
   editor: Editor,
   ancestor: Descendant | undefined,
   ancestorPath: readonly number[],
   targetOffset: number,
-  association: -1 | 1,
-  count: TextOffsetCount
+  association: -1 | 1
 ): Point | null => {
   if (!ancestor || !ElementApi.isElement(ancestor)) return null;
 
-  const edgeWidth = count === 'edges' ? 1 : 0;
   let offset = 0;
   let previous: Point | null = null;
   let endingAt: Point | null = null;
@@ -684,24 +771,13 @@ const getPointAtTextOffset = (
       if (TextApi.isText(node)) {
         const end = offset + node.text.length;
 
-        if (count === 'letters' && offset > targetOffset) return previous;
-        if (count === 'edges') {
-          if (offset <= targetOffset && targetOffset <= end) {
-            const point = { offset: targetOffset - offset, path: nodePath };
+        if (offset <= targetOffset && targetOffset <= end) {
+          const point = { offset: targetOffset - offset, path: nodePath };
 
-            if (association < 0 || targetOffset < end || offset === end) {
-              return point;
-            }
-            endingAt = point;
+          if (association < 0 || targetOffset < end || offset === end) {
+            return point;
           }
-        } else if (
-          targetOffset < end ||
-          (targetOffset === end && association < 0)
-        ) {
-          return {
-            offset: Math.max(0, targetOffset - offset),
-            path: nodePath,
-          };
+          endingAt = point;
         }
 
         previous = { offset: node.text.length, path: nodePath };
@@ -711,12 +787,7 @@ const getPointAtTextOffset = (
 
       const isVoid = resolveRepresentationSchema(editor).isVoid(node);
 
-      if (isVoid && count === 'letters') {
-        offset += 1;
-        continue;
-      }
-
-      offset += edgeWidth;
+      offset += 1;
       if (isVoid && targetOffset === offset) {
         return {
           offset: 0,
@@ -726,7 +797,7 @@ const getPointAtTextOffset = (
       const nested = isVoid ? null : visit(node.children, nodePath);
 
       if (nested) return nested;
-      offset += edgeWidth;
+      offset += 1;
     }
 
     return null;
@@ -790,14 +861,23 @@ export const mapCanonicalRepresentationPoint = (
 
     if (!mappedAncestor || mappedAncestor.kind !== 'element') continue;
 
-    const mapped = getPointAtTextOffset(
-      editor,
-      nodeOfIndex(afterDocument, mappedAncestor.path),
-      mappedAncestor.path,
-      textOffset,
-      side,
-      count
-    );
+    const mappedNode = nodeOfIndex(afterDocument, mappedAncestor.path);
+    const mapped =
+      count === 'letters'
+        ? getPointAtLetters(
+            editor,
+            mappedNode,
+            mappedAncestor.path,
+            textOffset,
+            side
+          )
+        : getPointAtTextOffset(
+            editor,
+            mappedNode,
+            mappedAncestor.path,
+            textOffset.offset,
+            side
+          );
 
     if (mapped) return mapped;
   }
