@@ -1,5 +1,5 @@
 {
-  "generation": "a195f0f70573ed33f911360388291f008c53a2499a85e57fa6edb59acad2747f",
+  "generation": "c3269b33573ad5a5a1be01220d988d75254d2f376f50a96579232b6cb5c47912",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -770,6 +770,29 @@
           },
           "name": "inline-combobox",
           "title": "Inline Combobox",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "@ariakit/react",
+            "platejs"
+          ],
+          "description": "A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.",
+          "files": [
+            {
+              "path": "components/editor/prompt-editor.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/prompt-editor.tsx"
+            }
+          ],
+          "meta": {
+            "examples": [
+              "prompt-editor-demo"
+            ],
+            "registry": false
+          },
+          "name": "prompt-editor",
+          "title": "Prompt Editor",
           "type": "registry:component"
         },
         {
@@ -8116,6 +8139,29 @@
           },
           "name": "inline-combobox",
           "title": "Inline Combobox",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "@ariakit/react",
+            "platejs"
+          ],
+          "description": "A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.",
+          "files": [
+            {
+              "path": "components/editor/prompt-editor.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/prompt-editor.tsx"
+            }
+          ],
+          "meta": {
+            "examples": [
+              "prompt-editor-demo"
+            ],
+            "registry": false
+          },
+          "name": "prompt-editor",
+          "title": "Prompt Editor",
           "type": "registry:component"
         },
         {

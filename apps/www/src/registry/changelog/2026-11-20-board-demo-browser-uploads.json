@@ -15,7 +15,7 @@
     "status": "unresolved"
   },
   "kind": "wiring",
-  "summary": "Upload pictures pasted on the board demo without a server",
+  "summary": "Upload picture files on the board demo without a server",
   "targets": [
     {
       "name": "board-demo",
@@ -31,7 +31,7 @@
     {
       "id": "2026-11-20-board-upload-pasted-pictures-demo-54991602",
       "kind": "wiring",
-      "summary": "Install the browser upload kit after `EditorKit`, so a picture file pasted on the board uploads in the page and needs no upload server.",
+      "summary": "Install the browser upload kit after `EditorKit`, so a picture file pasted, dropped or picked on the board uploads in the page and needs no upload server.",
       "details": [],
       "migrationNotes": [],
       "targets": ["board-demo"],

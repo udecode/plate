@@ -11,4 +11,8 @@ diagnostics: []
 
 <!-- entry: {"id":"2026-11-20-board-picture-button-toolbar-8f99f821","kind":"new","migrationNotes":[]} -->
 
-- **`board`**: Add an image button after the board toolbar's tools. It opens a file picker for pictures and uploads each picked file as an image shape, in a row centered on the view. The button is disabled on a board that takes no picture files, such as a read-only board or an editor without upload or without `BoardImageKit`. The board now depends on `use-file-picker`.
+- **`board`**: Add an image button at the end of the board toolbar's tools. It opens a file picker for pictures and uploads each picked file as an image shape, in a row centered on the view. The button is disabled on a board that takes no picture files, such as a read-only board or an editor without upload or without `BoardImageKit`. The board now depends on `use-file-picker`.
+
+<!-- entry: {"id":"2026-11-20-board-toolbar-narrow-board-b99e834e","kind":"fix","migrationNotes":[]} -->
+
+- **`board`**: Fix the board toolbar cutting off its end buttons on a narrow board. A group wider than the board now wraps its buttons, so a phone shows every control. The tool lock moves into the tools group, before the image button.

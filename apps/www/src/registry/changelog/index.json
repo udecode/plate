@@ -42,7 +42,7 @@
       "href": "/registry/changelog/2026-11-20-board-demo-browser-uploads.json",
       "status": "draft",
       "kind": "wiring",
-      "summary": "Upload pictures pasted on the board demo without a server",
+      "summary": "Upload picture files on the board demo without a server",
       "change": {
         "type": "source",
         "date": "2026-11-20",
@@ -70,7 +70,7 @@
         "status": "unresolved"
       },
       "targets": ["board"],
-      "entries": 1,
+      "entries": 2,
       "diagnostics": []
     },
     {

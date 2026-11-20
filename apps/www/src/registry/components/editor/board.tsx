@@ -409,6 +409,16 @@ function BoardZoomLevel() {
   );
 }
 
+function BoardToolbarGroup({ children }: { children: React.ReactNode }) {
+  return (
+    <ToolbarGroup>
+      <div className="flex flex-wrap items-center justify-center gap-y-0.5">
+        {children}
+      </div>
+    </ToolbarGroup>
+  );
+}
+
 export function BoardToolbar() {
   const tool = useBoardView((view) => view.tool);
   const frame = useBoardView((view) => {
@@ -422,7 +432,7 @@ export function BoardToolbar() {
 
   return (
     <Toolbar className="absolute inset-x-0 bottom-2 z-10 mx-auto w-max max-w-[calc(100%-1rem)] flex-wrap justify-center gap-y-0.5 rounded-lg border bg-background p-1 shadow-sm">
-      <ToolbarGroup>
+      <BoardToolbarGroup>
         {TOOLS.map(({ icon, key, label, tool: itemTool }) =>
           itemTool === 'geo' ? (
             <BoardShapeMenu key={itemTool} pressed={tool === 'geo'} />
@@ -438,12 +448,10 @@ export function BoardToolbar() {
             </ToolbarButton>
           )
         )}
-        <BoardPictureButton />
-      </ToolbarGroup>
-      <ToolbarGroup>
         <BoardToolLock />
-      </ToolbarGroup>
-      <ToolbarGroup>
+        <BoardPictureButton />
+      </BoardToolbarGroup>
+      <BoardToolbarGroup>
         <ToolbarButton
           className="px-1.5"
           tooltip="Zoom out (-)"
@@ -475,7 +483,7 @@ export function BoardToolbar() {
             <UngroupIcon />
           </ToolbarButton>
         )}
-      </ToolbarGroup>
+      </BoardToolbarGroup>
     </Toolbar>
   );
 }
