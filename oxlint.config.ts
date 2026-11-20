@@ -23,7 +23,6 @@ const plateOxlintIgnorePatterns = [
   'skills/**',
   '**/test-results/**',
   '**/tmp/**',
-  'apps/plite/tests/**/donor/**',
   // Synced byte-for-byte from shadcn; provenance.json holds their hashes.
   'apps/www/src/registry/bases/*/ui/**',
   // Copied from shadcn new-york-v4.
@@ -207,7 +206,7 @@ const plateReactOwnedSourcePatterns = Object.entries(
   return [];
 });
 
-export default defineConfig({
+const config = defineConfig({
   extends: [
     core,
     react,
@@ -1416,4 +1415,25 @@ export default defineConfig({
       { considerDefaultExhaustiveForUnions: true },
     ],
   },
+});
+
+const ruleNames = [...(config.extends ?? []), config].flatMap((part) =>
+  [
+    part.rules,
+    ...(part.overrides ?? []).map((override) => override.rules),
+  ].flatMap((rules) => Object.keys(rules ?? {}))
+);
+
+const donorSpecsOnlyDeterminismRules = {
+  files: ['apps/plite/tests/**/donor/**'],
+  rules: {
+    ...Object.fromEntries(ruleNames.map((name) => [name, 'off'])),
+    'plate/no-fixed-sleep': 'error',
+    'plate/no-wall-clock-bound': 'error',
+  },
+};
+
+export default defineConfig({
+  ...config,
+  overrides: [...(config.overrides ?? []), donorSpecsOnlyDeterminismRules],
 });

@@ -1,9 +1,9 @@
 // `ultracite fix` formats before its lint autofix, which can leave code
-// `oxfmt --check` rejects, so `oxfmt` runs again. `oxlint.config.ts` turns
-// type-aware rules off for `ultracite check`, and that command's file count
-// includes Markdown, so the type-aware oxlint run supplies both the typed rules
-// and the count of files lint read. `land.mjs` passes `--allow-ignored`,
-// because a docs-only commit has nothing to lint and must still land.
+// `oxfmt --check` rejects, so `oxfmt` runs again. The check calls `oxfmt
+// --check` itself, because `ultracite check` fails when oxfmt ignores every
+// path, as it ignores the donor specs that oxlint still lints. `land.mjs`
+// passes `--allow-ignored`, because a docs-only commit has nothing to lint and
+// must still land.
 import { spawnSync } from 'node:child_process';
 import { lstatSync } from 'node:fs';
 import { delimiter, join, relative, resolve } from 'node:path';
@@ -81,7 +81,12 @@ let clean = true;
 if (files.length > 0) {
   run(['ultracite', 'fix', ...files]);
   run(['oxfmt', ...files]);
-  const check = run(['ultracite', 'check', ...files]);
+  const check = run([
+    'oxfmt',
+    '--check',
+    '--no-error-on-unmatched-pattern',
+    ...files,
+  ]);
   const typed = run([
     'oxlint',
     '--type-aware',
