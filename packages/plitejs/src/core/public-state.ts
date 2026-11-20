@@ -7705,6 +7705,40 @@ const mergeTransactionGroup = (read: unknown, update: unknown) => {
   return { group: { ...read, ...origin }, origin };
 };
 
+const LAZY_UPDATE_GROUP_VIEWS = new WeakSet<object>();
+
+/** @internal */
+export const hasLazyUpdateGroups = (view: object) =>
+  LAZY_UPDATE_GROUP_VIEWS.has(view);
+
+const defineLazyUpdateGroup = (
+  record: Record<string, unknown>,
+  name: string,
+  build: (read: unknown) => unknown
+) => {
+  const read = record[name];
+  let group: unknown;
+  let state: 'building' | 'built' | 'unbuilt' = 'unbuilt';
+
+  Object.defineProperty(record, name, {
+    enumerable: true,
+    get: () => {
+      if (state === 'built') return group;
+      if (state === 'building') return read;
+      state = 'building';
+      try {
+        group = build(read);
+        state = 'built';
+      } catch (error) {
+        state = 'unbuilt';
+        throw error;
+      }
+
+      return group;
+    },
+  });
+};
+
 const guardTransactionValue = (
   value: unknown,
   assertActive: () => void,
@@ -9468,25 +9502,34 @@ export const getUpdateView = <
   }
 
   for (const [groupName, registration] of pluginRegistry.txGroups) {
-    const authored = registration.factory(
-      txPluginRecord as never,
-      editor,
-      getUpdateContext(editor)
-    );
+    const build = (read: unknown) => {
+      assertActive();
 
-    assertUpdateMethodTreeProtocolKeys(groupName, authored);
-    const { group, origin } = mergeTransactionGroup(
-      txPluginRecord[groupName],
-      authored
-    );
+      const authored = registration.factory(
+        txPluginRecord as never,
+        editor,
+        getUpdateContext(editor)
+      );
 
-    txPluginRecord[groupName] = guardTransactionValue(
-      specContext?.kind === 'spec' ? getSpecSafeTransactionGroup(group) : group,
-      assertActive,
-      new WeakMap(),
-      origin,
-      { editor, transaction: txRecord, group: groupName, path: [] }
-    );
+      assertUpdateMethodTreeProtocolKeys(groupName, authored);
+      const { group, origin } = mergeTransactionGroup(read, authored);
+
+      return guardTransactionValue(
+        specContext?.kind === 'spec'
+          ? getSpecSafeTransactionGroup(group)
+          : group,
+        assertActive,
+        new WeakMap(),
+        origin,
+        { editor, transaction: txRecord, group: groupName, path: [] }
+      );
+    };
+
+    if (groupName === 'plugin') {
+      txPluginRecord.plugin = build(txPluginRecord.plugin);
+    } else {
+      defineLazyUpdateGroup(txPluginRecord, groupName, build);
+    }
   }
 
   txPluginRecord.plugin = createTransactionPluginSelector(
@@ -9500,6 +9543,7 @@ export const getUpdateView = <
   );
 
   const view = Object.freeze(txRecord) as EditorUpdateTransaction<V, TPlugins>;
+  LAZY_UPDATE_GROUP_VIEWS.add(view);
   if (!specContext) {
     throw new Error('Missing editor transaction draft.');
   }
@@ -10292,6 +10336,8 @@ export const applyTransactionSpec = <V extends Value>(
   applyTransactionSpecContents(editor, spec);
 };
 
+const CORRECTION_VIEW_OF_UPDATE_VIEW = new WeakMap<object, object>();
+
 export const getCorrectionUpdateView = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -10299,16 +10345,12 @@ export const getCorrectionUpdateView = <
   editor: Editor<V, TPlugins>
 ): EditorCorrectionTransaction<V, TPlugins> => {
   const tx = getUpdateView(editor);
-  const txRecord = tx as unknown as Record<string, unknown>;
-  const installedGroups = Object.fromEntries(
-    Array.from(
-      getPluginRegistry(editor).txGroups.keys(),
-      (groupName) => [groupName, txRecord[groupName]] as const
-    )
-  );
+  const kept = CORRECTION_VIEW_OF_UPDATE_VIEW.get(tx);
 
-  return Object.freeze({
-    ...installedGroups,
+  if (kept) return kept as EditorCorrectionTransaction<V, TPlugins>;
+
+  const txRecord = tx as unknown as Record<string, unknown>;
+  const view: Record<string, unknown> = {
     anchor: tx.anchor,
     blocks: tx.blocks,
     break: tx.break,
@@ -10320,7 +10362,19 @@ export const getCorrectionUpdateView = <
     tags: tx.tags,
     text: tx.text,
     value: tx.value,
-  }) as EditorCorrectionTransaction<V, TPlugins>;
+  };
+
+  for (const groupName of getPluginRegistry(editor).txGroups.keys()) {
+    if (groupName in view) continue;
+    Object.defineProperty(view, groupName, {
+      enumerable: true,
+      get: () => txRecord[groupName],
+    });
+  }
+  CORRECTION_VIEW_OF_UPDATE_VIEW.set(tx, Object.freeze(view));
+  LAZY_UPDATE_GROUP_VIEWS.add(view);
+
+  return view as EditorCorrectionTransaction<V, TPlugins>;
 };
 
 export const readEditor = <

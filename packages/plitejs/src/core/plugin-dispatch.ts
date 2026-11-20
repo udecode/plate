@@ -23,6 +23,7 @@ import {
   getTransactionSnapshot,
   getTransactionSpecContext,
   getUpdateView,
+  hasLazyUpdateGroups,
   withEditorUpdateRootScope,
 } from './public-state';
 import { EditorRefusalError } from './refusal';
@@ -265,8 +266,10 @@ export const resolvePluginMethod = (
     }
 
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    const lazyGroup =
+      descriptor?.get !== undefined && hasLazyUpdateGroups(value);
 
-    if (!descriptor || !('value' in descriptor)) {
+    if (!descriptor || !('value' in descriptor || lazyGroup)) {
       if (typeof value === 'function' && (key === 'call' || key === 'apply')) {
         const target = value;
 
@@ -279,7 +282,7 @@ export const resolvePluginMethod = (
       return MISSING;
     }
 
-    ({ value } = descriptor);
+    value = lazyGroup ? descriptor.get?.() : descriptor.value;
     if (!adapted) authoredMethod = value;
     if (isTxOnlyMethod(value)) txOnly = true;
   }

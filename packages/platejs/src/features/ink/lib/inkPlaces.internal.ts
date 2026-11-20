@@ -44,7 +44,11 @@ type InkPlaces = {
   copies: Map<string, InkCopy>;
   blocks: Map<
     string,
-    { copies: Map<string, InkCopy>; key: NodeKey | null; signed: Set<string> }
+    {
+      copies: Map<string, InkCopy>;
+      holder: NodeKey | null;
+      signed: Set<string>;
+    }
   >;
   blockOfKey: Map<NodeKey, string>;
   held: Map<string, HeldPlace>;
@@ -78,7 +82,7 @@ const shownPlaces = new WeakMap<
   { places: InkPlaces; version: number }
 >();
 
-const metrics = { hops: 0, resolved: 0 };
+const metrics = { holders: 0, hops: 0, resolved: 0 };
 
 export const getInkPlaceMetrics = () => Object.freeze({ ...metrics });
 
@@ -101,23 +105,37 @@ const dropSign = (places: InkPlaces, mark: string) => {
   places.signs.delete(mark);
 };
 
-const resolveBlock = (places: InkPlaces, state: InkState, id: string) => {
+const holderKey = (state: InkState, id: string) => {
+  metrics.holders += 1;
+
+  return state.unique.holder('id', id)?.key ?? null;
+};
+
+const resolveBlock = (
+  places: InkPlaces,
+  state: InkState,
+  id: string,
+  holderMayMove: boolean
+) => {
   const block = places.blocks.get(id);
 
   if (!block) return;
   metrics.resolved += 1;
 
-  const holder = state.unique.holder('id', id);
-  const [node] = (holder && state.nodes.get(holder.key)) || [];
-  const at = holder && node ? { key: holder.key, node } : undefined;
+  const found =
+    holderMayMove || block.holder === null
+      ? holderKey(state, id)
+      : block.holder;
+  const [node] = (found !== null && state.nodes.get(found)) || [];
+  const at = found !== null && node ? { key: found, node } : undefined;
   const key = at?.key ?? null;
 
-  if (block.key !== key) {
-    if (block.key !== null && places.blockOfKey.get(block.key) === id) {
-      places.blockOfKey.delete(block.key);
+  if (block.holder !== key) {
+    if (block.holder !== null && places.blockOfKey.get(block.holder) === id) {
+      places.blockOfKey.delete(block.holder);
     }
     if (key !== null) places.blockOfKey.set(key, id);
-    block.key = key;
+    block.holder = key;
   }
 
   const text = at && inkText(state.schema, at.node);
@@ -152,11 +170,11 @@ const trackCopy = (places: InkPlaces, read: InkPlaceRead, id: string) => {
   else {
     places.blocks.set(copy.block, {
       copies: new Map([[id, copy]]),
-      key: null,
+      holder: null,
       signed: new Set(),
     });
   }
-  resolveBlock(places, read.state, copy.block);
+  resolveBlock(places, read.state, copy.block, true);
 
   return copy;
 };
@@ -173,8 +191,11 @@ const untrackCopy = (places: InkPlaces, id: string) => {
   block.copies.delete(id);
   if (block.copies.size > 0) return;
   places.blocks.delete(copy.block);
-  if (block.key !== null && places.blockOfKey.get(block.key) === copy.block) {
-    places.blockOfKey.delete(block.key);
+  if (
+    block.holder !== null &&
+    places.blockOfKey.get(block.holder) === copy.block
+  ) {
+    places.blockOfKey.delete(block.holder);
   }
 };
 
@@ -436,7 +457,7 @@ export const advanceInkPlaces = (
           return;
         }
         if (moved) addArrivedBlocks(places, state, keys, dirty);
-        for (const block of dirty) resolveBlock(places, state, block);
+        for (const block of dirty) resolveBlock(places, state, block, moved);
       })
     );
   }
