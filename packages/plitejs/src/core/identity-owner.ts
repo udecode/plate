@@ -305,8 +305,6 @@ export type Topology = Readonly<{
   uniqueProperties: readonly string[];
 }>;
 
-const NO_PROPERTIES: readonly string[] = Object.freeze([]);
-
 let nextCellAddress = 0;
 let nextPageAddress = 0;
 
@@ -347,22 +345,22 @@ export class TopologyBuilder {
   private released: number[] = [];
   spareKeys: Directory<number>;
   top: number;
-  readonly uniqueProperties: readonly string[];
+  uniqueProperties: readonly string[];
 
-  constructor(
-    source: Topology | null,
-    uniqueProperties = source?.uniqueProperties ?? NO_PROPERTIES
-  ) {
+  constructor(source: Topology);
+  constructor(source: null, uniqueProperties: readonly string[]);
+  constructor(source: Topology | null, uniqueProperties?: readonly string[]) {
     this.cells = source?.cells ?? emptyDirectory();
     this.elements = source?.elements ?? emptyDirectory();
+    this.uniqueProperties =
+      source?.uniqueProperties ?? getDefined(uniqueProperties);
     this.holders =
       source?.holders ??
-      uniqueProperties.map(() => emptyUniqueHashMap<Holders>());
+      this.uniqueProperties.map(() => emptyUniqueHashMap<Holders>());
     this.keys = source?.keys ?? emptyDirectory();
     this.pages = source?.pages ?? emptyDirectory();
     this.spareKeys = source?.spareKeys ?? emptyDirectory();
     this.top = source ? source.top : NO_TREE;
-    this.uniqueProperties = uniqueProperties;
   }
 
   finish(): Topology {
@@ -392,6 +390,7 @@ export class TopologyBuilder {
   }
 
   private hold(at: number, key: string, cell: number) {
+    countCoreWork('uniqueHolderWrites');
     const map = this.holders[at];
     const holders = addHolder(hashMapGet(map, key), cell, this.edit);
 
@@ -401,7 +400,14 @@ export class TopologyBuilder {
     );
   }
 
+  private holdAll(cell: number, held: Cell['held']) {
+    held?.forEach((key, at) => {
+      if (key !== null) this.hold(at, key, cell);
+    });
+  }
+
   private unhold(at: number, key: string, cell: number) {
+    countCoreWork('uniqueHolderWrites');
     const map = this.holders[at];
     const rest = dropHolder(getDefined(hashMapGet(map, key)), cell, this.edit);
 
@@ -894,9 +900,7 @@ export class TopologyBuilder {
     this.setCell(cell, { children, held, key: nodeKey, kind, page });
     if (nodeKey) this.setKey(nodeKey, cell);
     this.addMember(kind, cell);
-    held?.forEach((key, at) => {
-      if (key !== null) this.hold(at, key, cell);
-    });
+    this.holdAll(cell, held);
     return cell;
   }
 
@@ -978,6 +982,27 @@ export class TopologyBuilder {
       this.addMember(kind, cell);
     }
     this.setCell(cell, { ...row, held, kind });
+  }
+
+  reindex(uniqueProperties: readonly string[], nodes: readonly Descendant[]) {
+    this.uniqueProperties = uniqueProperties;
+    this.holders = uniqueProperties.map(() => emptyUniqueHashMap<Holders>());
+    const visit = (tree: number, list: readonly Descendant[]) => {
+      this.cellsOf(tree).forEach((cell, at) => {
+        const node = getDefined(list[at]);
+        const row = this.cell(cell);
+        const held = this.heldOf(node, row.kind);
+
+        if (held || row.held) this.setCell(cell, { ...row, held });
+        this.holdAll(cell, held);
+        if (row.children !== NO_TREE) {
+          visit(row.children, childrenOfNode(node) ?? []);
+        }
+      });
+    };
+
+    countCoreWork('wholeListPasses');
+    if (this.top !== NO_TREE) visit(this.top, nodes);
   }
 
   rekey(cell: number, nodeKey: NodeKey) {
@@ -1129,7 +1154,7 @@ export const admitRoot = (
     forEach: (visit: (node: Descendant, index: number) => void) => void;
   }>,
   keyOf: KeyOf,
-  uniqueProperties?: readonly string[]
+  uniqueProperties: readonly string[]
 ): Topology => {
   countCoreWork('wholeListPasses');
   const builder = new TopologyBuilder(null, uniqueProperties);

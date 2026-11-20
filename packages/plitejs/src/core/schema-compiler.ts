@@ -6194,6 +6194,27 @@ export const uniquePropertiesOf = (schema: CompiledEditorSchema) => {
   return byKey;
 };
 
+const UNIQUE_PROPERTY_LISTS = new WeakMap<
+  CompiledEditorSchema,
+  readonly string[]
+>();
+const UNIQUE_PROPERTY_LISTS_BY_KEYS = new Map<string, readonly string[]>();
+
+export const internedUniquePropertiesOf = (schema: CompiledEditorSchema) => {
+  let list = UNIQUE_PROPERTY_LISTS.get(schema);
+
+  if (!list) {
+    const keys = [...uniquePropertiesOf(schema).keys()].toSorted();
+    const id = JSON.stringify(keys);
+
+    list = UNIQUE_PROPERTY_LISTS_BY_KEYS.get(id) ?? Object.freeze(keys);
+    UNIQUE_PROPERTY_LISTS_BY_KEYS.set(id, list);
+    UNIQUE_PROPERTY_LISTS.set(schema, list);
+  }
+
+  return list;
+};
+
 const UNIQUE_CROSSINGS = new WeakMap<
   CompiledEditorSchema,
   Map<string, boolean>

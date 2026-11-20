@@ -304,7 +304,11 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
       );
       const admitted = admitEditorDocument(editor, initializedDocument);
 
-      initializeEditorSchemaDocument(editor, admitted.document);
+      initializeEditorSchemaDocument(
+        editor,
+        admitted.document,
+        getCompiledEditorSchema(editor)
+      );
       if (spec.selection) {
         const root = spec.selection.root ?? 'main';
 
@@ -357,14 +361,15 @@ const adoptInitialDocumentChange = (
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
+  const schema = compilation?.schema ?? getCompiledEditorSchema(editor);
   const admitted = admitDocument(
     compilation &&
       onlyDocumentAdmission(compilation.contributions(documentAdmissionPoint)),
     change.apply(initialDocument),
-    compilation?.schema ?? getCompiledEditorSchema(editor)
+    schema
   );
 
-  initializeEditorSchemaDocument(editor, admitted.document);
+  initializeEditorSchemaDocument(editor, admitted.document, schema);
   if (!initialSelection) return;
 
   const mapped = mapSelectionThroughChange(
@@ -799,6 +804,7 @@ const createEditorImplementation = <
       constructLoadedDocumentChange(editor, initialDocument),
       null
     );
+    seedUniqueIndex(editor);
   }
 
   snapshotInitialDocumentState(editor);

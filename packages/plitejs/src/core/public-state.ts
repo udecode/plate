@@ -399,8 +399,10 @@ import { changedRootsOf } from './root-ownership';
 import { flushRootTargets, reportShownChange } from './root-target';
 import {
   areEditorSchemaIdentitiesEqual,
+  type CompiledEditorSchema,
   tracksPlaces,
   uniquePropertiesOf,
+  internedUniquePropertiesOf,
 } from './schema-compiler';
 import {
   EditorNoncanonicalChangeError,
@@ -440,6 +442,7 @@ import {
   getSnapshotIndexElementEntries,
   hasRegisteredSnapshotIndex,
   indexSurelyHoldsNodeKey,
+  indexUniqueValues,
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
   publishSnapshotIndex,
@@ -728,6 +731,33 @@ export const hasEditorProjectionSnapshotIndex = (
   nodes: NodeList<unknown>
 ) => projectedLists(getEditorRuntimeOwner(editor)).has(nodes);
 
+const changesIndexedProperty = (
+  owner: Editor,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  classification: DocumentChangeRootClassification | null | undefined
+) => {
+  if (!classification?.properties) return false;
+  const unique = internedUniquePropertiesOf(getCompiledEditorSchema(owner));
+
+  return classification.paths.some((path) => {
+    try {
+      const beforeNode = before.node(path);
+      const afterNode = after.node(path);
+      const changesElementType =
+        ('children' in beforeNode ? beforeNode.type : undefined) !==
+        ('children' in afterNode ? afterNode.type : undefined);
+      const changesIndexedKey =
+        'children' in beforeNode &&
+        unique.some((key) => beforeNode[key] !== afterNode[key]);
+
+      return changesElementType || changesIndexedKey;
+    } catch {
+      return false;
+    }
+  });
+};
+
 export const advanceSnapshotIndex = (
   owner: Editor,
   beforeDocument: DocumentIndex,
@@ -747,24 +777,14 @@ export const advanceSnapshotIndex = (
     afterDocument
   );
   const classification = options.classification ?? classified.classification;
-  const changesElementType =
-    classification.properties &&
-    classification.paths.some((path) => {
-      try {
-        const beforeNode = beforeDocument.node(path);
-        const afterNode = afterDocument.node(path);
-
-        return (
-          ('children' in beforeNode ? beforeNode.type : undefined) !==
-          ('children' in afterNode ? afterNode.type : undefined)
-        );
-      } catch {
-        return false;
-      }
-    });
 
   return !classification.structure &&
-    !changesElementType &&
+    !changesIndexedProperty(
+      owner,
+      beforeDocument,
+      afterDocument,
+      classification
+    ) &&
     discardedNodeKeys.size === 0
     ? advancePathStableSnapshotIndex(
         beforeDocument,
@@ -2263,6 +2283,12 @@ const uniqueIndexOf = (
 };
 
 export const seedUniqueIndex = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const roots = getEditorDocumentRoots(editor);
+
+  for (const root of Object.keys(roots)) {
+    indexUniqueValues(owner, rootSourceOf(roots, root));
+  }
   if (uniquePropertiesOf(getCompiledEditorSchema(editor)).size === 0) return;
 
   uniqueIndexOf(
@@ -12572,26 +12598,11 @@ const inheritDocumentChangeStepNodeKeys = (
         step.change,
         root
       );
-      const changesElementType =
-        classification?.properties === true &&
-        classification.paths.some((path) => {
-          try {
-            const beforeNode = before.node(path);
-            const afterNode = after.node(path);
-
-            return (
-              ('children' in beforeNode ? beforeNode.type : undefined) !==
-              ('children' in afterNode ? afterNode.type : undefined)
-            );
-          } catch {
-            return false;
-          }
-        });
       const pathStable =
         publishNodeKeys &&
         classification &&
         !classification.structure &&
-        !changesElementType &&
+        !changesIndexedProperty(owner, before, after, classification) &&
         snapshot.discardedNodeKeys.size === 0;
 
       return profileCoreDuration('transaction-runtime-map-index', () =>
@@ -14602,7 +14613,11 @@ export const initializeEditorSchemaSnapshot = (
 
   const admitted = admitEditorDocument(editor, document);
 
-  initializeEditorSchemaDocument(editor, admitted.document);
+  initializeEditorSchemaDocument(
+    editor,
+    admitted.document,
+    getCompiledEditorSchema(editor)
+  );
   const fittedSelection = representationSelection
     ? fitted.selection
     : snapshotInput.selection;
@@ -14701,9 +14716,6 @@ export const initializePublicState = <
   EDITOR_FOCUSED.set(editor, false);
   setEditorMaxLength(editor, options.maxLength);
   EDITOR_READ_ONLY.set(editor, options.readOnly ?? false);
-  for (const children of Object.values(initialRoots)) {
-    seedSnapshotIndex(getEditorRuntimeOwner(editor), children);
-  }
   const initialSelectionRoot = options.initialSelection
     ? (SelectionApi.root(options.initialSelection) ?? MAIN_ROOT_KEY)
     : MAIN_ROOT_KEY;
@@ -14722,22 +14734,28 @@ export const initializePublicState = <
 
 export const initializeEditorSchemaDocument = (
   editor: Editor,
-  value: AdmittedDocument
+  value: AdmittedDocument,
+  schema: CompiledEditorSchema
 ) => {
-  adoptEditorSchemaDocument(editor, value);
+  adoptEditorSchemaDocument(editor, value, schema);
 };
 
 export const saveEditorSchemaDocument = (editor: Editor) => {
   const document = getEditorDocumentValue(editor);
 
   return () => {
-    adoptEditorSchemaDocument(editor, document);
+    adoptEditorSchemaDocument(
+      editor,
+      document,
+      getCompiledEditorSchema(editor)
+    );
   };
 };
 
 const adoptEditorSchemaDocument = (
   editor: Editor,
-  value: EditorDocumentValue
+  value: EditorDocumentValue,
+  schema: CompiledEditorSchema
 ) => {
   const records = getValueRecords(value);
   const document = withValueRecords(cloneFrozenEditorJsonValue(value), records);
@@ -14756,7 +14774,7 @@ const adoptEditorSchemaDocument = (
   if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, document.meta);
   for (const children of Object.values(roots)) {
-    seedSnapshotIndex(getEditorRuntimeOwner(editor), children);
+    seedSnapshotIndex(getEditorRuntimeOwner(editor), children, schema);
   }
   clearSnapshotCache(editor);
 };

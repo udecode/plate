@@ -186,6 +186,7 @@ export type CoreWork = {
   uniqueHolderReads: number;
   /** Slots a key structure copied from the set of cells that hold one unique value, to add or drop one of them. */
   uniqueHolderSlotsCopied: number;
+  uniqueHolderWrites: number;
   /** Elements the index of unique values was built from. */
   uniqueIndexedNodes: number;
   /** Entries, bucket entries included, a comparison of two unique-value map versions read where they differ. */
@@ -314,6 +315,7 @@ export const coreWork: CoreWork = {
   uniqueHolderQueries: 0,
   uniqueHolderReads: 0,
   uniqueHolderSlotsCopied: 0,
+  uniqueHolderWrites: 0,
   uniqueIndexedNodes: 0,
   uniqueMapEntriesExamined: 0,
   uniqueMapNodesAllocated: 0,

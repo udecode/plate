@@ -50,8 +50,14 @@ import {
   topologyKeyAt,
   topologyPathOf,
   topologyRetained,
+  topologyUniqueEntries,
 } from './identity-owner';
+import { getCompiledEditorSchema } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
+import {
+  type CompiledEditorSchema,
+  internedUniquePropertiesOf,
+} from './schema-compiler';
 import { countCoreWork } from './work';
 
 const EMPTY_ENTRIES = Object.freeze([]) as ReadonlyArray<
@@ -500,8 +506,65 @@ const forEachChild = (
   }
 };
 
-const admitList = (editor: Editor, children: ChildrenList, keyOf: KeyOf) =>
-  admitRoot({ forEach: (visit) => forEachChild(children, visit) }, keyOf);
+const admitList = (
+  editor: Editor,
+  children: ChildrenList,
+  keyOf: KeyOf,
+  schema = getCompiledEditorSchema(editor)
+) =>
+  admitRoot(
+    { forEach: (visit) => forEachChild(children, visit) },
+    keyOf,
+    internedUniquePropertiesOf(schema)
+  );
+
+const REINDEXED = new WeakMap<Topology, Topology>();
+
+const currentTopology = (
+  editor: Editor,
+  topology: Topology,
+  children: ChildrenList
+) => {
+  const properties = internedUniquePropertiesOf(
+    getCompiledEditorSchema(editor)
+  );
+
+  if (topology.uniqueProperties === properties) return topology;
+  let reindexed = REINDEXED.get(topology);
+
+  if (reindexed?.uniqueProperties !== properties) {
+    const builder = new TopologyBuilder(topology);
+    const nodes: Descendant[] = [];
+
+    forEachChild(children, (node) => nodes.push(node));
+    builder.reindex(properties, nodes);
+    reindexed = builder.finish();
+    REINDEXED.set(topology, reindexed);
+  }
+
+  return reindexed;
+};
+
+/** @internal */
+export const indexUniqueValues = (editor: Editor, children: ChildrenList) => {
+  const topology = TOPOLOGIES.get(snapshotIndexOf(editor, children));
+
+  if (topology) currentTopology(editor, topology, children);
+};
+
+/** @internal */
+export const readUniqueEntries = (
+  editor: Editor,
+  index: SnapshotIndex,
+  children: ChildrenList
+) => {
+  const topology = TOPOLOGIES.get(index);
+
+  return (
+    topology &&
+    topologyUniqueEntries(currentTopology(editor, topology, children))
+  );
+};
 
 /** @internal */
 export const snapshotIndexOf = (
@@ -524,10 +587,16 @@ export const snapshotIndexOf = (
 /** @internal */
 export const seedSnapshotIndex = (
   editor: Editor,
-  children: readonly Descendant[]
+  children: readonly Descendant[],
+  schema: CompiledEditorSchema
 ) => {
   const index = versionOf(
-    admitList(editor, children, (node) => getOrCreateNodeKey(node, editor)),
+    admitList(
+      editor,
+      children,
+      (node) => getOrCreateNodeKey(node, editor),
+      schema
+    ),
     editor
   );
 
@@ -542,7 +611,7 @@ const topologyOf = (
 ) => {
   const known = TOPOLOGIES.get(index);
 
-  if (known) return known;
+  if (known) return currentTopology(editor, known, document);
   if (index === EMPTY_RUNTIME_INDEX) {
     return admitList(editor, document, () => null);
   }
@@ -1638,9 +1707,10 @@ export const mapSnapshotIndexThroughChange = (
   const publishNodeKeys = binding !== 'inherited';
   const bindNodeKey = publishNodeKeys ? setNodeKey : bindNodeKeyOnce;
   const sourceTopology = topologyOf(index, before, editor);
-  const source = TOPOLOGIES.has(index)
-    ? index
-    : versionOf(sourceTopology, editor);
+  const source =
+    TOPOLOGIES.get(index) === sourceTopology
+      ? index
+      : versionOf(sourceTopology, editor);
   const segment: MappingSegment = Object.freeze({ after, before, change });
   const builder = new TopologyBuilder(sourceTopology);
   const treeAt = (parent: Path) => {
@@ -1968,7 +2038,9 @@ export const advancePathStableSnapshotIndex = (
   const forks = sequenceOf(index, before) === 'fork';
   const topology = topologyOf(index, before, editor);
   const source =
-    TOPOLOGIES.has(index) && !forks ? index : versionOf(topology, editor);
+    TOPOLOGIES.get(index) === topology && !forks
+      ? index
+      : versionOf(topology, editor);
   const keyed = (runtimeCandidates ?? []).map((candidate) => {
     const path = [...candidate.path] as Path;
 
