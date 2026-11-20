@@ -297,6 +297,7 @@ const ZOOM_STEPS = [MIN_ZOOM, 0.25, 0.5, 1, 2, 4, MAX_ZOOM];
 const WHEEL_STEP_ZOOM = 100;
 const FIT_PADDING = 32;
 const PICTURE_GAP = 16;
+const FILE_DRAG_EVENTS = ['dragenter', 'dragover', 'drop'] as const;
 
 const percentOf = (zoom: number) => Math.round(zoom * 100);
 
@@ -1549,6 +1550,29 @@ export const createBoardView = (
       }
     };
 
+    const onFileDrag = (event: DragEvent) => {
+      const data = event.dataTransfer;
+
+      if (
+        !data ||
+        !Array.from(data.types).includes('Files') ||
+        editedShape() ||
+        !takesPictureFiles()
+      ) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      data.dropEffect = 'copy';
+      mounted.api.dom.drag.indicate(null);
+      if (event.type !== 'drop') return;
+      measure();
+      landPictureFiles(
+        Array.from(data.files),
+        boardPointAt({ x: event.clientX, y: event.clientY })
+      );
+    };
+
     const keys = attachBoardKeys(host, core);
 
     gestures = attachBoardGestures(host, core, keys.spaceHeld);
@@ -1556,6 +1580,9 @@ export const createBoardView = (
     const detachClipboard = attachBoardClipboard(host, core);
 
     host.addEventListener('wheel', onWheel, { passive: false });
+    for (const type of FILE_DRAG_EVENTS) {
+      host.addEventListener(type, onFileDrag);
+    }
 
     return () => {
       gestures?.detach();
@@ -1569,6 +1596,9 @@ export const createBoardView = (
       surface = null;
       resizeObserver.disconnect();
       host.removeEventListener('wheel', onWheel);
+      for (const type of FILE_DRAG_EVENTS) {
+        host.removeEventListener(type, onFileDrag);
+      }
       keys.detach();
       detachClipboard();
       pendingPictures.cancel();
