@@ -64,7 +64,11 @@ export type FieldProblem =
   | 'missing-target'
   | 'unsupported-test';
 
-const FIELD_TESTS: Record<FieldKind, readonly FieldTest[]> = {
+/**
+ * The tests a condition may use on a field of each kind. `insert` and `update`
+ * refuse any other test, and a read reports it as `unsupported-test`.
+ */
+export const FIELD_TESTS: Readonly<Record<FieldKind, readonly FieldTest[]>> = {
   checkbox: ['equals', 'not-equals'],
   choice: ['filled', 'blank', 'equals', 'not-equals'],
   date: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
@@ -342,7 +346,15 @@ type FieldShape = Pick<
 
 const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
 
-const fitsKind = ({ kind, options = [] }: FieldShape, value: unknown) => {
+/**
+ * Whether a value fits a field's kind: a boolean for a checkbox, one of its
+ * options' values for a choice, an ISO date string for a date, a finite number
+ * for a number, and a string for a text or signature field.
+ */
+export const fitsField = (
+  { kind, options = [] }: FieldShape,
+  value: unknown
+): value is FieldValue => {
   switch (kind) {
     case 'checkbox': {
       return typeof value === 'boolean';
@@ -369,7 +381,7 @@ const fitsSetting = (
   field[setting] === undefined ||
   (setting === 'options'
     ? field.kind === 'choice'
-    : fitsKind(field, field[setting]));
+    : fitsField(field, field[setting]));
 
 const conditionProblem = (
   { test, value }: FieldCondition,
@@ -381,7 +393,7 @@ const conditionProblem = (
   const fits =
     test === 'filled' || test === 'blank'
       ? value === undefined
-      : fitsKind(named, value);
+      : fitsField(named, value);
 
   return fits ? undefined : 'invalid-value';
 };

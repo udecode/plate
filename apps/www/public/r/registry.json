@@ -2186,6 +2186,22 @@
       "type": "registry:component"
     },
     {
+      "name": "field-static",
+      "dependencies": [
+        "platejs",
+        "cn",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/field-static.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/field-static.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
       "name": "footnote-static",
       "dependencies": [
         "platejs",

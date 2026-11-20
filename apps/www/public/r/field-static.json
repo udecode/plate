@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "field-static",
+  "dependencies": [
+    "platejs",
+    "cn",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/field-static.tsx",
+      "content": "import { cn } from 'cn';\nimport { BaseFieldPlugin } from 'platejs/field';\nimport { type EditorElementProps, EditorElement } from 'platejs/static';\nimport * as React from 'react';\n\nexport function FieldElementStatic(\n  props: EditorElementProps<typeof BaseFieldPlugin>\n) {\n  const { label, options, value } = props.element;\n  const answer = String(\n    options?.find((option) => option.value === value)?.label ?? value ?? ''\n  );\n\n  return (\n    <EditorElement as=\"span\" className=\"inline-block\" {...props}>\n      <span\n        className={cn(\n          'w-fit rounded-sm bg-muted px-1',\n          !answer && 'text-muted-foreground'\n        )}\n      >\n        {answer || label}\n      </span>\n      {props.children}\n    </EditorElement>\n  );\n}\n\nexport const BaseFieldKit = [\n  BaseFieldPlugin.configure({ component: FieldElementStatic }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/field-static.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

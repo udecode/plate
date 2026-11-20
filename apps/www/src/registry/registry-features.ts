@@ -75,6 +75,17 @@ export const registryStaticFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/field-static.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'field-static',
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/footnote-static.tsx',
         type: 'registry:component',
       },

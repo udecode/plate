@@ -12989,6 +12989,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/field:FIELD_TESTS": {
+          "aliases": [],
+          "documentation": "The tests a condition may use on a field of each kind. `insert` and `update`\nrefuse any other test, and a read reports it as `unsupported-test`.",
+          "entrypoint": "platejs/field",
+          "kind": "const",
+          "name": "FIELD_TESTS",
+          "runtime": true,
+          "signature": "FIELD_TESTS: Readonly<Record<FieldKind, readonly FieldTest[]>>",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/field:FieldCondition": {
           "aliases": [],
           "documentation": "When a field applies: the field whose `fieldId` is `ref` passes `test`.\nEvery test but `filled` and `blank` compares against `value`.",
@@ -13096,6 +13107,17 @@
           "name": "FieldValue",
           "runtime": false,
           "signature": "type FieldValue = boolean | number | string;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/field:fitsField": {
+          "aliases": [],
+          "documentation": "Whether a value fits a field's kind: a boolean for a checkbox, one of its\noptions' values for a choice, an ISO date string for a date, a finite number\nfor a number, and a string for a text or signature field.",
+          "entrypoint": "platejs/field",
+          "kind": "const",
+          "name": "fitsField",
+          "runtime": true,
+          "signature": "fitsField: ({ kind, options }: FieldShape, value: unknown) => value is FieldValue",
           "source": null,
           "typeParameters": []
         },

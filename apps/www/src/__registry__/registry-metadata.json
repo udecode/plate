@@ -1,5 +1,5 @@
 {
-  "generation": "8d32b321302c22e90533103eb1d8ae360f0c484a6b3d58350203a36b5648637c",
+  "generation": "35ad4a583eee6343193b4e48d411c7d2bfbaaf62625eb92fa1360ace04c4a1f6",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2284,6 +2284,22 @@
             }
           ],
           "name": "date-static",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "cn",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/field-static.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/field-static.tsx"
+            }
+          ],
+          "name": "field-static",
           "type": "registry:component"
         },
         {
@@ -9692,6 +9708,22 @@
             }
           ],
           "name": "date-static",
+          "type": "registry:component"
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "cn",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
+              "path": "components/editor/field-static.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/field-static.tsx"
+            }
+          ],
+          "name": "field-static",
           "type": "registry:component"
         },
         {
