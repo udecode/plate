@@ -1318,7 +1318,18 @@ export const compileSliceFitter = <V extends Value>(
         return null;
       }
 
-      const targetPath = start.path.slice(0, -1);
+      let targetPath = start.path.slice(0, -1);
+
+      while (targetPath.length > 0) {
+        const node = getDescendant(rootChildren, targetPath);
+
+        if (!ElementApi.isElement(node) || !getElementBehavior(node).inline) {
+          break;
+        }
+
+        targetPath = targetPath.slice(0, -1);
+      }
+
       const target = getDescendant(rootChildren, targetPath);
       const targetParent = getDescendant(rootChildren, targetPath.slice(0, -1));
       const source = slice.content[0];
@@ -1574,6 +1585,88 @@ export const compileSliceFitter = <V extends Value>(
       elementUsesInlineContent(left) &&
       elementUsesInlineContent(right)
     );
+  };
+
+  const getCaretOutsideInlineEdge = (
+    slice: ContentSlice,
+    at: Range,
+    rootChildren: readonly Descendant[]
+  ): Range | null => {
+    if (
+      !RangeApi.isCollapsed(at) ||
+      slice.content.length === 0 ||
+      !slice.content.every(
+        (node) => ElementApi.isElement(node) && !getElementBehavior(node).inline
+      )
+    ) {
+      return null;
+    }
+
+    const typesSliceOpensInto = new Set<string | null>();
+
+    for (const edge of ['start', 'end'] as const) {
+      let children = slice.content;
+      const depth = edge === 'start' ? slice.openStart : slice.openEnd;
+
+      for (let level = 0; level < depth; level++) {
+        const node = edge === 'start' ? children[0] : children.at(-1);
+
+        if (!node || !ElementApi.isElement(node)) break;
+        typesSliceOpensInto.add(getElementType(node));
+        ({ children } = node);
+      }
+    }
+
+    const sliceClosesInline = (inline: Element) => {
+      const behavior = getElementBehavior(inline);
+
+      return (
+        behavior.inline &&
+        !behavior.isolating &&
+        !behavior.void &&
+        !getElementSlicePolicy(inline).preserveContext &&
+        !typesSliceOpensInto.has(getElementType(inline))
+      );
+    };
+    let { offset, path } = at.anchor;
+
+    while (true) {
+      const inlinePath = path.slice(0, -1);
+      const inline = getDescendant(rootChildren, inlinePath);
+
+      if (
+        !inline ||
+        !ElementApi.isElement(inline) ||
+        !sliceClosesInline(inline)
+      ) {
+        break;
+      }
+
+      const startEdge = getTextEdge(inline, inlinePath, 'start');
+      const endEdge = getTextEdge(inline, inlinePath, 'end');
+      const step =
+        startEdge && pointsEqual({ offset, path }, startEdge)
+          ? -1
+          : endEdge && pointsEqual({ offset, path }, endEdge)
+            ? 1
+            : 0;
+
+      if (step === 0) break;
+      const siblingPath = [
+        ...inlinePath.slice(0, -1),
+        getDefined(inlinePath.at(-1)) + step,
+      ];
+      const sibling = getDescendant(rootChildren, siblingPath);
+
+      if (!sibling || !NodeApi.isText(sibling)) break;
+      offset = step < 0 ? sibling.text.length : 0;
+      path = siblingPath;
+    }
+
+    if (path === at.anchor.path) return null;
+    const point = { ...at.anchor, offset, path };
+
+    return { anchor: point, focus: point };
   };
 
   const getPrefixInsertionBoundary = (
@@ -2433,6 +2526,19 @@ export const compileSliceFitter = <V extends Value>(
       path: [],
       ...(root === 'main' ? {} : { root }),
     };
+    if (rangeTarget && !rangeTarget.exactBounds) {
+      const outside = getCaretOutsideInlineEdge(
+        inputSlice,
+        rangeTarget.at,
+        rootChildren
+      );
+      const landedOutsideInline =
+        !!outside &&
+        fit(slice, { ...options, target: { ...rangeTarget, at: outside } });
+
+      if (landedOutsideInline) return true;
+    }
+
     const at: Range =
       options.target.kind === 'root'
         ? { anchor: rootPoint, focus: rootPoint }
