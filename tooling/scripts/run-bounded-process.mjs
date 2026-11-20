@@ -1,4 +1,23 @@
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
+
+const processGroupCpuTimes = (pid) =>
+  new Promise((resolve) => {
+    execFile('ps', ['-A', '-o', 'pgid=,time='], (error, stdout) => {
+      if (error) {
+        resolve(null);
+        return;
+      }
+      resolve(
+        stdout
+          .split('\n')
+          .map((line) => line.trim().split(/\s+/u))
+          .filter(([group]) => Number(group) === pid)
+          .map(([, time]) => time)
+          .sort()
+          .join(' ')
+      );
+    });
+  });
 
 const waitForExit = async (child, timeoutMs) => {
   if (child.exitCode !== null || child.signalCode !== null) {
@@ -87,6 +106,7 @@ export const runBoundedProcess = async ({
   args = [],
   captureLimitBytes = 64 * 1024 * 1024,
   command,
+  cpuIdleTimeoutMs,
   cwd,
   echoOutput = false,
   env = process.env,
@@ -97,8 +117,19 @@ export const runBoundedProcess = async ({
   stdio = 'inherit',
   timeoutMs,
 }) => {
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+  const isPositive = (value) => Number.isFinite(value) && value > 0;
+
+  if (timeoutMs !== undefined && !isPositive(timeoutMs)) {
     throw new Error('timeoutMs must be a positive number');
+  }
+  if (cpuIdleTimeoutMs !== undefined && !isPositive(cpuIdleTimeoutMs)) {
+    throw new Error('cpuIdleTimeoutMs must be a positive number');
+  }
+  if (timeoutMs === undefined && cpuIdleTimeoutMs === undefined) {
+    throw new Error('timeoutMs or cpuIdleTimeoutMs must bound the process');
+  }
+  if (cpuIdleTimeoutMs !== undefined && process.platform === 'win32') {
+    throw new Error('cpuIdleTimeoutMs needs ps and a process group');
   }
 
   return new Promise((resolve, reject) => {
@@ -135,6 +166,7 @@ export const runBoundedProcess = async ({
     );
     const cleanup = () => {
       clearTimeout(timeout);
+      clearInterval(idleSampler);
       for (const [signal, handler] of signalHandlers) {
         process.off(signal, handler);
       }
@@ -149,13 +181,48 @@ export const runBoundedProcess = async ({
       callback(value);
     };
 
-    const timeout = setTimeout(() => {
+    const stopForTimeout = (reason) => {
+      if (timedOut) return;
+
       timedOut = true;
-      process.stderr.write(
-        `Bounded subprocess exceeded ${timeoutMs}ms: ${command}\n`
-      );
+      process.stderr.write(`Bounded subprocess ${reason}: ${command}\n`);
       void beginTermination().catch(reject);
-    }, timeoutMs);
+    };
+
+    const timeout =
+      timeoutMs === undefined
+        ? undefined
+        : setTimeout(() => {
+            stopForTimeout(`exceeded ${timeoutMs}ms`);
+          }, timeoutMs);
+
+    // A loaded host slows a working process without stopping its CPU clock,
+    // so the idle window counts only while the group's CPU time is unchanged.
+    let lastCpuTimes;
+    let lastProgressAt = performance.now();
+    let sampling = false;
+    const idleSampler =
+      cpuIdleTimeoutMs === undefined
+        ? undefined
+        : setInterval(
+            () => {
+              if (sampling || timedOut) return;
+
+              sampling = true;
+              void processGroupCpuTimes(child.pid).then((cpuTimes) => {
+                sampling = false;
+                if (cpuTimes === null || cpuTimes !== lastCpuTimes) {
+                  lastCpuTimes = cpuTimes;
+                  lastProgressAt = performance.now();
+                  return;
+                }
+                if (performance.now() - lastProgressAt >= cpuIdleTimeoutMs) {
+                  stopForTimeout(`used no CPU for ${cpuIdleTimeoutMs}ms`);
+                }
+              });
+            },
+            Math.min(1000, cpuIdleTimeoutMs / 4)
+          );
 
     const capture = (stream) => (chunk) => {
       if (echoOutput) process[stream].write(chunk);
