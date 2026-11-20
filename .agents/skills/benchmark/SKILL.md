@@ -133,16 +133,18 @@ source identity, then run the correctness guard. While a fix is still changing,
 check it with one quick pass of the affected rows; the full interleaved protocol
 runs once, on the final tree, and again only when a later change touches the
 measured path or a result misses its budget. Each run fits the block's one-hour
-Time budget. A protocol that cannot fit, or that needs a quieter host than
-the run has, goes to a session card as that rule says. Its lines stay
-`gate`s that the run's close does not wait on. In a Perf issue run, whose
-validator does not yet accept a deferred measurement, the plan stays partial
-instead, as the close rule says. The lead sets that `Status:` before it offers
-the task, so the task waits on no `run:`, which only a done plan frees. A disposable prototype proves
+Time budget, and a protocol too long for it narrows its cohorts or rounds until
+it fits. The work count that step 1 adds to `pnpm check` gates the change,
+because host load cannot move a count. A wall-clock line that stays
+inconclusive under its own noise reruns once and then closes in the run. Its
+claim narrows to what the work count proves, and the Close gives the
+candidate's median beside its budget. Every timing line settles in the run
+that froze it, so a timing rerun never becomes a suggested task or waits for a
+quieter host (owner's word, 2026-11-20). A disposable prototype proves
 the design decision only; it never proves the shipped implementation. When
 that rerun conclusively misses a frozen line under its noise rule, the target
 goes back to `architect` at once, as the Perf issue playbook's Pivot section
-says; an inconclusive line stays a `gate`.
+says.
 
 ## Comparison Law
 

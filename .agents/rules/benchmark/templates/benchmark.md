@@ -24,7 +24,7 @@ TODO: What could hurt the owner, in at most 40 words.
 - named-symptom: pending
 - final-artifacts: pending
 - inherited-budget: pending: <file>.md beside this plan, then the step whose frozen budget this run judges, or N/A: <reason>
-- inherited-budget-result: pending: pass: <evidence>, or fail: <evidence>; causes <id>, <id>
+- inherited-budget-result: pending: pass: <evidence>, inconclusive: <evidence>, or fail: <evidence>; causes <id>, <id>
 
 Boundaries:
 - allowed runtime/packages/apps: pending

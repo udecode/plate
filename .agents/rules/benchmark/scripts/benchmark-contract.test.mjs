@@ -1100,6 +1100,13 @@ test('a failing inherited budget names the pivoted or owner-kept causes that hol
       failing('fail: 4 count lines; cause stacked-marks', [{ ...failingCause, evidence: ownerKept }]),
       ''
     );
+    assert.equal(
+      closeWith([keptCause()], planPath, {
+        ...inherited,
+        inheritedBudgetResult: 'inconclusive: lines A to D under their noise twice; work count flat',
+      }),
+      ''
+    );
     const budget = (inheritedBudget, path = planPath) =>
       closeWith([keptCause()], path, {
         inheritedBudget,

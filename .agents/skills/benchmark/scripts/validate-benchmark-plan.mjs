@@ -114,6 +114,7 @@ const isTaggedResult = (value, tag) => {
 
 const isSuccessfulResult = (value) => isTaggedResult(value, 'pass');
 const isFailedResult = (value) => isTaggedResult(value, 'fail');
+const isInconclusiveResult = (value) => isTaggedResult(value, 'inconclusive');
 const hasResolvedPrefixedValue = (value, prefixes) => {
   const match = value?.match(
     new RegExp(`^(?:${prefixes.join('|')}):\\s*(.*)$`, 'i')
@@ -1124,9 +1125,13 @@ export const validateBenchmarkPlan = (
           );
         }
       }
-    } else if (isResolved(inherited) && !isSuccessfulResult(inheritedResult)) {
+    } else if (
+      isResolved(inherited) &&
+      !isSuccessfulResult(inheritedResult) &&
+      !isInconclusiveResult(inheritedResult)
+    ) {
       errors.push(
-        'complete benchmark plan with an inherited-budget requires inherited-budget-result: pass: <evidence> or fail: <evidence>; an inconclusive line keeps the run open until it is conclusive'
+        'complete benchmark plan with an inherited-budget requires inherited-budget-result: pass: <evidence>, inconclusive: <evidence> or fail: <evidence>; an inconclusive line closes on the work count, as the Benchmark skill says'
       );
     }
   }
