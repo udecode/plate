@@ -236,6 +236,25 @@ type DataTransferSliceElement<V extends Value> = Extract<
   Element
 >;
 
+const withoutCopyDrops = <V extends Value>(
+  state: EditorCoreStateView<V>,
+  root: NamedRootKey | undefined,
+  slice: ContentSlice<V>
+): ContentSlice<V> => {
+  const content = getInternalEditorSchemaFromApi(state.schema).copyIfCarrying(
+    slice.content,
+    root ?? MAIN_ROOT_KEY
+  );
+
+  return content === slice.content
+    ? slice
+    : ContentSliceApi.fromJSON<V>({
+        content,
+        openEnd: slice.openEnd,
+        openStart: slice.openStart,
+      });
+};
+
 const createPlainTextBlocks = <V extends Value>(
   state: EditorCoreStateView<V>,
   lines: readonly string[],
@@ -429,10 +448,14 @@ const createPlainTextInlineSlice = <V extends Value>(
   }, textNode as DescendantIn<V>);
   const content = Object.freeze([child]);
 
-  return createDetachedContentSlice<V>(
-    content,
-    inlineSpine.length,
-    inlineSpine.length
+  return withoutCopyDrops(
+    state,
+    start.root,
+    createDetachedContentSlice<V>(
+      content,
+      inlineSpine.length,
+      inlineSpine.length
+    )
   );
 };
 
@@ -461,9 +484,13 @@ const createPlainTextSliceOverPick = <V extends Value>(
 
   Object.freeze(content);
 
-  return createDetachedContentSlice<V>(content, 0, 0, {
-    canonicalFor: state.schema,
-  });
+  return withoutCopyDrops(
+    state,
+    root,
+    createDetachedContentSlice<V>(content, 0, 0, {
+      canonicalFor: state.schema,
+    })
+  );
 };
 
 const createDefaultPlainTextDataTransferFormat = <V extends Value>(
@@ -567,9 +594,13 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
 
       Object.freeze(content);
 
-      return createDetachedContentSlice<V>(content, 1, 1, {
-        canonicalFor: state.schema,
-      });
+      return withoutCopyDrops(
+        state,
+        start.root,
+        createDetachedContentSlice<V>(content, 1, 1, {
+          canonicalFor: state.schema,
+        })
+      );
     },
   });
 

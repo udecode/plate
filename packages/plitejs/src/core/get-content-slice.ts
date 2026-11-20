@@ -110,14 +110,14 @@ export const getContentSlice = <V extends Value>(
   // A move removes its source in the same update, so it keeps properties a copy drops.
   if (selectedNodes) {
     content = selectedNodes.map(([node, path]) =>
-      lifecycle === 'move' ? node : schema.copyNodeAt(node, path, root)
+      lifecycle === 'move' ? node : schema.carryNodeAt(node, path, root)
     );
   } else if (rangeSelection) {
     const fragment =
       fullRootContent ?? NodeApi.fragment(editor, rangeSelection);
 
     content =
-      lifecycle === 'move' ? fragment : schema.copyChildren(fragment, root);
+      lifecycle === 'move' ? fragment : schema.carryChildren(fragment, root);
   } else {
     return ContentSlice.empty;
   }
@@ -194,7 +194,7 @@ export const getContentSlice = <V extends Value>(
     collect(content);
     if (lifecycle === 'copy') {
       for (const [name, children] of Object.entries(roots)) {
-        roots[name] = schema.copyChildren(children, name);
+        roots[name] = schema.carryChildren(children, name);
       }
     }
   }

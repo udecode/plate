@@ -226,8 +226,11 @@ export type SchemaPropertyReferences<TValue> = Readonly<{
   key: string;
   /**
    * The value with each name it holds replaced by `renamed(name)` where that
-   * is defined. `renamed` returns the new value of a holder the same copy
-   * carried, and `undefined` for any other name.
+   * is defined, and must change nothing else. Runs on each valid reference
+   * in a copy before a paste places it, and again on each reference the copy
+   * wrote when one of its targets was dropped.
+   * `renamed` returns the value that replaces a holder's name in the same
+   * copy, and `undefined` for any other name.
    */
   map: (value: TValue, renamed: (name: string) => string | undefined) => TValue;
 }>;
@@ -261,9 +264,15 @@ export type SchemaElementPropertyOptions<TValue = unknown> = Readonly<{
    * nothing. A format tag that a writer without this rule saved for such a
    * retype holds no value, so rejecting a tag that dropped the value returns
    * `invalid`. Only a holder of a declared type keeps its value this way; an
-   * undeclared type that `unknown: 'preserve'` keeps does not. Sets `copy` and
-   * `split` to `drop`. The key takes no other element declaration, since every
-   * holder's fresh value comes from this one's generator.
+   * undeclared type that `unknown: 'preserve'` keeps does not. Sets `split` to
+   * `drop`. A copy drops the value unless a `references` names this key. Then
+   * a copied slice carries it, and a paste gives each holder it copies a
+   * fresh value before it places the copy. `tx.schema.copy` still drops it.
+   * A move, an undo, a load and an import keep their values.
+   * Copies, undo and peers keep values apart only while the generator gives
+   * values that no writer has stored and no reference names, such as random
+   * ids. The key takes no other element declaration, since every holder's
+   * fresh value comes from this one's generator.
    * Suggesting writes the value in place, with no suggestion, except that a
    * suggested split that drops the value parks it in the split's history,
    * where no element holds it until someone decides.

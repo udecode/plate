@@ -9,9 +9,9 @@ const sameNodes = (left: readonly unknown[], right: readonly unknown[]) =>
 
 /**
  * Prepare content that arrives from outside the editor, such as clipboard
- * data or an external drop. The receiving schema drops every property it
- * drops on copy, such as review marks, from the main content and from every
- * named root the slice carries.
+ * data or an external drop. The receiving schema drops every property a
+ * copied slice drops, such as review marks, from the main content and from
+ * every named root the slice carries.
  *
  * @internal
  */
@@ -20,7 +20,7 @@ export const importContentSlice = <V extends Value>(
   slice: ContentSlice<V>
 ): ContentSlice<V> => {
   const schema = getEditorSchema(editor);
-  const content = schema.copyChildren(
+  const content = schema.carryChildren(
     slice.content,
     getEditorRuntimeRoot(editor)
   );
@@ -28,7 +28,7 @@ export const importContentSlice = <V extends Value>(
     ? Object.fromEntries(
         Object.entries(slice.roots).map(([root, children]) => [
           root,
-          schema.copyChildren(children, root),
+          schema.carryChildren(children, root),
         ])
       )
     : undefined;

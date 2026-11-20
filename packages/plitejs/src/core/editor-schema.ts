@@ -392,6 +392,8 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root: RootKey,
       ancestors?: readonly Element[]
     ) => readonly Descendant[];
+    carryChildren: InternalEditorSchemaApi['copyChildren'];
+    copyIfCarrying: InternalEditorSchemaApi['copyChildren'];
     /**
      * Throws an `EditorSchemaValidationError` unless `children`, placed
      * under `ancestors`, nearest first, in `root`, are valid with every
@@ -403,6 +405,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       ancestors: readonly Element[]
     ) => void;
     copyNodeAt: (node: Descendant, path: Path, root?: RootKey) => Descendant;
+    carryNodeAt: InternalEditorSchemaApi['copyNodeAt'];
     placeElementAt: (
       source: Element,
       options: Readonly<{ at: Path; root?: RootKey | undefined }>
@@ -1076,6 +1079,24 @@ const isDeepFrozenNode = (node: Descendant): boolean => {
 // rebound validator compiles a new schema even when its identity is equal.
 const VALIDATED_ROOT_NODES = new WeakMap<object, WeakMap<object, RootKey>>();
 const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
+const REFERENCED_KEYS = new WeakMap<
+  CompiledEditorSchema,
+  ReadonlySet<string>
+>();
+const referencedKeysOf = (schema: CompiledEditorSchema) => {
+  let keys = REFERENCED_KEYS.get(schema);
+
+  if (!keys) {
+    keys = new Set(
+      [...schema.properties.byId.values()].flatMap(({ references }) =>
+        references ? [references.key] : []
+      )
+    );
+    REFERENCED_KEYS.set(schema, keys);
+  }
+
+  return keys;
+};
 const rootNodes = (document: DocumentIndex) =>
   document.nodes as NodeList<Descendant>;
 
@@ -3158,7 +3179,8 @@ export const createEditorSchema = <V extends Value = Value>(
     children: readonly Descendant[],
     schema: CompiledEditorSchema,
     root: RootKey,
-    ancestors: readonly Element[]
+    ancestors: readonly Element[],
+    carried?: ReadonlySet<string>
   ): readonly Descendant[] => {
     const copyProperties = (
       node: Descendant,
@@ -3177,7 +3199,10 @@ export const createEditorSchema = <V extends Value = Value>(
             context
           );
 
-          return property?.lifecycle.copy !== 'drop';
+          return (
+            property?.lifecycle.copy !== 'drop' ||
+            (property.lifecycle.unique === true && carried?.has(key) === true)
+          );
         })
       );
 
@@ -3202,10 +3227,13 @@ export const createEditorSchema = <V extends Value = Value>(
         toCompiledNodeContext(node, ancestors, root),
         new Set(['childRoots', 'children', 'type'])
       ) as Element;
-      const nested = copyDeclarativeChildren(node.children, schema, root, [
-        candidate,
-        ...ancestors,
-      ]);
+      const nested = copyDeclarativeChildren(
+        node.children,
+        schema,
+        root,
+        [candidate, ...ancestors],
+        carried
+      );
 
       return candidate === node && nested === node.children
         ? node
@@ -3242,19 +3270,46 @@ export const createEditorSchema = <V extends Value = Value>(
       : children;
   };
 
-  const copyNodeAt: InternalEditorSchemaApi['copyNodeAt'] = (
-    node,
-    path,
-    root = 'main'
+  const carryChildren: InternalEditorSchemaApi['carryChildren'] = (
+    children,
+    root,
+    ancestors = []
   ) => {
-    const children = getDocumentRootNodes(getDocument(), root);
+    const schema = getDeclarativeSchema();
+    const carried = schema && referencedKeysOf(schema);
 
-    return copyChildren(
-      node ? [node] : [],
-      root,
-      getElementAncestors(children, path)
-    )[0];
+    return schema && carried?.size
+      ? copyDeclarativeChildren(children, schema, root, ancestors, carried)
+      : copyChildren(children, root, ancestors);
   };
+
+  const copyIfCarrying: InternalEditorSchemaApi['copyIfCarrying'] = (
+    children,
+    root,
+    ancestors = []
+  ) => {
+    const schema = getDeclarativeSchema();
+
+    return schema && referencedKeysOf(schema).size > 0
+      ? copyChildren(children, root, ancestors)
+      : children;
+  };
+
+  const copyNodeAtWith =
+    (
+      copy: InternalEditorSchemaApi['copyChildren']
+    ): InternalEditorSchemaApi['copyNodeAt'] =>
+    (node, path, root = 'main') => {
+      const children = getDocumentRootNodes(getDocument(), root);
+
+      return copy(
+        node ? [node] : [],
+        root,
+        getElementAncestors(children, path)
+      )[0];
+    };
+  const copyNodeAt = copyNodeAtWith(copyChildren);
+  const carryNodeAt = copyNodeAtWith(carryChildren);
 
   const getTextProperty = (
     schema: CompiledEditorSchema,
@@ -5640,7 +5695,10 @@ export const createEditorSchema = <V extends Value = Value>(
     canonicalizeTextPropertiesAt,
     canonicalizeTextPropertiesIn,
     canonicalizeChildren,
+    carryChildren,
+    carryNodeAt,
     copyChildren,
+    copyIfCarrying,
     copyNodeAt,
     validateChildrenAt: (children, root, ancestors) => {
       const declarative = getDeclarativeSchema();
