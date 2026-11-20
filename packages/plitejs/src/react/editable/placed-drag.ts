@@ -15,7 +15,7 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { resolvePliteStringPlacementRange } from './plite-string-coordinate-placement';
 import { isPointInsideDOMSelection } from './root-interaction-dom-selection-replay';
 import type { RootInteractionTarget } from './root-interaction-resolver';
-import { getTripleClickBlock } from './selection-triple-click';
+import { getTripleClickRange } from './selection-triple-click';
 import type { ViewLines } from './view-lines';
 
 export type PlacedPressKind = 'block' | 'plain' | 'shift' | 'word';
@@ -272,7 +272,7 @@ export const getPlacedUnit = ({
       : null;
 
   return node
-    ? getTripleClickBlock(editor, [node, point.path])
+    ? getTripleClickRange(editor, [node, point.path], point)
     : { block: null, range: { anchor: point, focus: point } };
 };
 

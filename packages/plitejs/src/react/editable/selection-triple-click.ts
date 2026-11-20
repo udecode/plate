@@ -5,6 +5,7 @@ import {
   NodeApi,
   type NodeKey,
   type Path,
+  type Point,
   type Range,
   RangeApi,
 } from '../..';
@@ -18,6 +19,7 @@ import {
 } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
+import { getInnerLineRange } from './line-boundary';
 import {
   type AnyEditor,
   above as editorAbove,
@@ -47,17 +49,24 @@ export const readSelectionAnnotation = <TValue>(
 export const readTripleClickedBlock = (editor: AnyEditor, selection: Range) =>
   readSelectionAnnotation(editor, tripleClickedBlock, selection);
 
-export const getTripleClickBlock = (
+export const getTripleClickRange = (
   editor: ReactRuntimeEditor,
-  [node, path]: readonly [Node, Path]
+  [node, path]: readonly [Node, Path],
+  point: Point | null
 ) => {
-  const blockPath =
+  const blockEntry =
     NodeApi.isElement(node) && editorIsBlock(editor, node)
-      ? path
-      : (editorAbove(editor, {
+      ? ([node, path] as const)
+      : editorAbove(editor, {
           at: path,
           match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
-        })?.[1] ?? path.slice(0, 1));
+        });
+  const blockPath = blockEntry?.[1] ?? path.slice(0, 1);
+  const lineRange =
+    blockEntry && point ? getInnerLineRange(editor, blockEntry, point) : null;
+
+  if (lineRange) return { block: null, range: lineRange };
+
   const range = editorRange(editor, blockPath);
   const block = editor.read((state) => {
     const blocks = getFullySelectedSiblingBlocks(state, range);

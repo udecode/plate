@@ -101,7 +101,7 @@ import {
 } from './selection-side-effect-policy';
 import {
   exportTripleClickSelectionToDOM,
-  getTripleClickBlock,
+  getTripleClickRange,
   tripleClickedBlock,
 } from './selection-triple-click';
 import {
@@ -386,7 +386,11 @@ export const applyEditableClick = ({
     const { node, path } = target;
 
     if (event.detail === TRIPLE_CLICK && path.length >= 1) {
-      const { block, range } = getTripleClickBlock(editor, [node, path]);
+      const { block, range } = getTripleClickRange(
+        editor,
+        [node, path],
+        editor.api.dom.resolveEventRange(event.nativeEvent)?.focus ?? null
+      );
 
       writePliteViewSelection(editor, null);
       setEditableModelSelectionPreference({
@@ -801,9 +805,16 @@ export const syncSelectionForBeforeInput = ({
         didUseBeforeInputTargetRange = true;
       }
 
+      // A target range has no direction, so one that covers the current
+      // selection keeps that selection and its direction.
       if (
         shouldUseTargetRange &&
-        (!nextSelection || !RangeApi.equals(nextSelection, range))
+        (!nextSelection ||
+          (!RangeApi.equals(nextSelection, range) &&
+            !RangeApi.equals(nextSelection, {
+              anchor: range.focus,
+              focus: range.anchor,
+            })))
       ) {
         nextNative = false;
         nativeBlocker = 'target-range-selection-import';

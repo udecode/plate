@@ -461,56 +461,18 @@ const collectCharacterPositions = (
   return points;
 };
 
-const collectBlockBoundaryPoints = (
+const collectRunBoundaryPoints = (
   segments: PositionSegment[],
   reverse = false
 ): Point[] => {
-  const points: Point[] = [];
-  const groups: PositionSegment[][] = [];
+  const first = getDefined(segments[0]);
+  const last = getDefined(segments.at(-1));
+  const start = { path: first.path, offset: first.start };
+  const end = { path: last.path, offset: last.end };
 
-  segments.forEach((segment) => {
-    const group = groups.find((candidate) =>
-      PathApi.equals(candidate[0]?.groupPath ?? [], segment.groupPath)
-    );
+  if (comparePoints(start, end) === 0) return [start];
 
-    if (group) {
-      group.push(segment);
-      return;
-    }
-
-    groups.push([segment]);
-  });
-
-  const ordered = reverse ? [...groups].reverse() : groups;
-
-  ordered.forEach((group) => {
-    const first = group[0];
-    const last = group.at(-1);
-
-    if (!first || !last) {
-      return;
-    }
-
-    const blockPoints = reverse
-      ? [
-          { path: last.path, offset: last.end },
-          { path: first.path, offset: first.start },
-        ]
-      : [
-          { path: first.path, offset: first.start },
-          { path: last.path, offset: last.end },
-        ];
-
-    blockPoints.forEach((point) => {
-      const previous = points.at(-1);
-
-      if (!previous || comparePoints(previous, point) !== 0) {
-        points.push(point);
-      }
-    });
-  });
-
-  return points;
+  return reverse ? [end, start] : [start, end];
 };
 
 export function* positions(
@@ -552,20 +514,15 @@ export function* positions(
     return;
   }
 
-  // collectBlockBoundaryPoints joins segments that share a groupPath even
-  // when a nested block sits between them, and a groupPath never leaves its
-  // top-level block, so line and block units group by top-level block.
-  const lineUnit = unit === 'block' || unit === 'line';
-
+  // A block nested in a text block splits that block's text into runs, and
+  // line and block steps stop at each run's edges.
   for (const group of groupPositionSegments(
     segments,
-    lineUnit
-      ? (segment) => segment.path.slice(0, 1)
-      : (segment) => segment.groupPath,
+    (segment) => segment.groupPath,
     reverse
   )) {
-    if (lineUnit) {
-      yield* collectBlockBoundaryPoints(group, reverse);
+    if (unit === 'block' || unit === 'line') {
+      yield* collectRunBoundaryPoints(group, reverse);
       continue;
     }
 

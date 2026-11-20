@@ -45,6 +45,7 @@ import {
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { isPliteInactiveSelectionVisible } from '../inactive-selection';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import {
@@ -1280,6 +1281,9 @@ export const applyEditableDOMSelectionChange = ({
   } else {
     IS_FOCUSED.delete(editor);
     setEditorFocused(editor, false);
+    // Firefox collapses the native range after Tab moves focus out, and the
+    // marked control that now has focus acts on the selection it painted.
+    if (isPliteInactiveSelectionVisible(editor)) return;
   }
 
   if (!domSelection) {

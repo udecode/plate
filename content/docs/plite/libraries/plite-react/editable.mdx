@@ -406,8 +406,12 @@ owned external control. Mark the focus target or any composed ancestor with
 
 The exact `Editable` that loses focus paints an expanded range with
 `data-editor-inactive-selection` or a collapsed caret with
-`data-editor-inactive-selection-caret`. Focus returning to the editor or moving
-to an unmarked target clears that paint.
+`data-editor-inactive-selection-caret`. A primary press on a marked control
+counts as focus reaching it, because Safari on Mac does not focus a clicked
+button and the editor then blurs to nothing. Focus returning to the editor,
+moving to an unmarked target, a primary press outside a marked control or a
+window blur clears that paint. A primary press on a non-editable part of an
+editor, such as a void's controls, keeps it.
 
 Style the output hooks in product CSS:
 

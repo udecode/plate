@@ -963,7 +963,14 @@ const resolvePointNearCoordinates = (
     ? createDOMGeometryKernel({
         root,
         target: targetTextHost,
-      }).pointAtCoordinates({ useNative: false, x, y })
+      }).pointAtCoordinates({
+        // Retained text flow renders undecorated runs as bare text nodes that
+        // the string fallback cannot see, so only the browser's hit test
+        // finds a point inside them.
+        useNative: targetTextHost.hasAttribute('data-editor-text-flow-host'),
+        x,
+        y,
+      })
     : null;
   const result =
     targetResult ??

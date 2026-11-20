@@ -1872,6 +1872,8 @@ const InactiveSelectionCaretGeometry = ({
  * `data-editor-keep-selection-visible`, that exact Editable paints its live
  * canonical selection through `data-editor-inactive-selection` or
  * `data-editor-inactive-selection-caret` until focus returns or moves elsewhere.
+ * A primary press on such an element counts as focus reaching it, for browsers
+ * that do not focus a clicked button.
  */
 export const Editable = <
   TElement extends ElementNode,

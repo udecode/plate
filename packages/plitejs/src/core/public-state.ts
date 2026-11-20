@@ -993,6 +993,11 @@ export type TransactionSpecContext = {
   >;
   selectionWritten: boolean;
   snapshot: TransactionSnapshot;
+  strandedCaret?: Readonly<{
+    key: NodeKey;
+    root: string;
+    selection: SettledSelection;
+  }>;
   transactionView?: EditorTransaction;
   updateView?: { token: TransactionToken; view: object };
 };
@@ -1230,6 +1235,11 @@ const countingSpecPlacements = <T extends false | TransactionSpec>(
   }
 };
 
+const markSelectionPlaced = (context: TransactionSpecContext) => {
+  context.selectionWritten = true;
+  context.strandedCaret = undefined;
+};
+
 export const placeSelection = <T>(editor: Editor, write: () => T): T => {
   countPlacement(editor);
 
@@ -1246,7 +1256,7 @@ export const placeSelection = <T>(editor: Editor, write: () => T): T => {
   } finally {
     PLACING.delete(context);
   }
-  context.selectionWritten = true;
+  markSelectionPlaced(context);
 
   const placed = placeInDraft(editor, before, context.caret, () =>
     getEditorDocumentValue(editor)
@@ -10096,7 +10106,7 @@ const applyTransactionSpecContents = <V extends Value>(
 
   const context = getTransactionSpecContext(editor);
 
-  if (context && spec.selection) context.selectionWritten = true;
+  if (context && spec.selection) markSelectionPlaced(context);
   if (context && carried) {
     setDraftCaret(editor, landCarets(editor, context.caret, carried));
   }
@@ -12825,6 +12835,93 @@ const committedSettlementSplit = (
   return { rest, takeBack };
 };
 
+/**
+ * The caret a step's mapping gives, unless the step took the caret's text and
+ * left the element that held it with none. A draft step may do that before
+ * canonical construction builds the element's text, so the mapping parks the
+ * caret on a neighbor and the element is remembered; the step that gives the
+ * element a text again puts the caret at that text's start.
+ */
+const keepStrandedCaret = (
+  editor: Editor,
+  specContext: TransactionSpecContext,
+  caretBefore: SettledCaret,
+  mapped: SettledCaret,
+  after: EditorDocumentValue,
+  root: string,
+  indexes: StepNodeKeys | undefined
+): SettledCaret => {
+  const pending =
+    specContext.strandedCaret?.root === root &&
+    specContext.strandedCaret.selection === caretBefore.selection
+      ? specContext.strandedCaret
+      : undefined;
+
+  specContext.strandedCaret = undefined;
+
+  const { selection } = mapped;
+
+  if (!indexes || !selection || SelectionApi.isNode(selection)) return mapped;
+
+  const schema = getEditorSchema(editor);
+  const textIn = (key: NodeKey) => {
+    const path = indexes.after.pathOf(key);
+    const node = path
+      ? nodeAtPath(getDocumentRootChildren(after, root), path)
+      : undefined;
+
+    if (!path || !node) return undefined;
+
+    const [text] = NodeApi.texts(node, {
+      pass: ([child]) => NodeApi.isElement(child) && schema.isVoid(child),
+    });
+
+    return text ? [...path, ...text[1]] : null;
+  };
+
+  if (pending) {
+    const path = textIn(pending.key);
+
+    if (path === null) {
+      specContext.strandedCaret = { ...pending, selection };
+    }
+    if (!path) return mapped;
+
+    const point = { ...selection.anchor, offset: 0, path };
+
+    return settleCaret(
+      valueSite(getEditorSchema(editor), () => after),
+      mapped,
+      { root, selection: { ...selection, anchor: point, focus: point } },
+      'carry'
+    );
+  }
+
+  const held = caretBefore.selection;
+
+  if (!held || SelectionApi.isNode(held) || !RangeApi.isCollapsed(held)) {
+    return mapped;
+  }
+
+  const heldText = indexes.before.keyAt(held.anchor.path);
+
+  if (!heldText || indexes.after.pathOf(heldText)) return mapped;
+
+  for (let depth = held.anchor.path.length - 1; depth > 0; depth--) {
+    const key = indexes.before.keyAt(held.anchor.path.slice(0, depth));
+    const path = key ? textIn(key) : undefined;
+
+    if (path === undefined) continue;
+    if (path === null && key) {
+      specContext.strandedCaret = { key, root, selection };
+    }
+
+    break;
+  }
+
+  return mapped;
+};
+
 const applyTransactionSpecDocumentChangeStep = (
   editor: Editor,
   step: DocumentChangeStep,
@@ -12930,6 +13027,18 @@ const applyTransactionSpecDocumentChangeStep = (
           selectionRoot
         )
       : null;
+  const caret =
+    mappedCaret && hasRoot(mappedCaret.root)
+      ? keepStrandedCaret(
+          editor,
+          specContext,
+          carets,
+          mappedCaret,
+          after,
+          selectionRoot,
+          selectionRuntimeIndexes
+        )
+      : null;
 
   specContext.caret = {
     ...carets,
@@ -12949,8 +13058,8 @@ const applyTransactionSpecDocumentChangeStep = (
       explicitSelection.value,
       explicitSelection.root
     );
-  } else if (mappedCaret && hasRoot(mappedCaret.root)) {
-    setCurrentCaret(editor, mappedCaret);
+  } else if (caret) {
+    setCurrentCaret(editor, caret);
   } else {
     setCurrentSelection(
       editor,
@@ -12959,7 +13068,9 @@ const applyTransactionSpecDocumentChangeStep = (
     );
   }
   if (explicitSelection) {
-    specContext.selectionWritten = true;
+    markSelectionPlaced(specContext);
+    syncImplicitTargetToCurrentSelection(editor);
+  } else if (caret && caret !== mappedCaret) {
     syncImplicitTargetToCurrentSelection(editor);
   } else {
     transformImplicitTarget(editor, step.change, before, after, selectionRoot, {

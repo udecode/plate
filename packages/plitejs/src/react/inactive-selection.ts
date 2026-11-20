@@ -49,7 +49,13 @@ const getPliteDocumentFocusCoordinator = (
 
   let activeStore: PliteInactiveSelectionStore | null = null;
   let pendingStore: PliteInactiveSelectionStore | null = null;
+  // Safari on Mac does not focus a clicked button, so the blur that press
+  // causes names no destination; the press itself names the marked control.
+  let pressingMarkedControl = false;
   let registrations = 0;
+  const keepsSelectionVisibleAfterBlur = (relatedTarget: EventTarget | null) =>
+    keepsPliteSelectionVisible(relatedTarget) ||
+    (relatedTarget === null && pressingMarkedControl);
   const clear = () => {
     const store = activeStore;
 
@@ -85,11 +91,12 @@ const getPliteDocumentFocusCoordinator = (
     if (pendingStore) activate(pendingStore);
   };
   const onFocusOut = (event: FocusEvent) => {
-    if (keepsPliteSelectionVisible(event.relatedTarget)) return;
+    if (keepsSelectionVisibleAfterBlur(event.relatedTarget)) return;
 
     if (activeStore) defer(activeStore);
   };
   const onPointerDown = (event: PointerEvent) => {
+    pressingMarkedControl = false;
     if (!event.isPrimary || event.button !== 0) return;
 
     const path = event.composedPath();
@@ -106,15 +113,24 @@ const getPliteDocumentFocusCoordinator = (
     ) {
       return;
     }
-    if (!editable && path.some(keepsPliteSelectionVisible)) return;
+    if (!editable && path.some(keepsPliteSelectionVisible)) {
+      pressingMarkedControl = true;
+
+      return;
+    }
 
     clear();
+  };
+  const onPointerEnd = () => {
+    pressingMarkedControl = false;
   };
   const onWindowBlur = () => clear();
   const coordinator = Object.freeze({
     register(store: PliteInactiveSelectionStore) {
       if (registrations === 0) {
         document.addEventListener('pointerdown', onPointerDown, true);
+        document.addEventListener('pointerup', onPointerEnd, true);
+        document.addEventListener('pointercancel', onPointerEnd, true);
         document.addEventListener('focusin', onFocusIn, true);
         document.addEventListener('focusout', onFocusOut, true);
         document.defaultView?.addEventListener('blur', onWindowBlur);
@@ -131,6 +147,8 @@ const getPliteDocumentFocusCoordinator = (
 
         if (registrations === 0) {
           document.removeEventListener('pointerdown', onPointerDown, true);
+          document.removeEventListener('pointerup', onPointerEnd, true);
+          document.removeEventListener('pointercancel', onPointerEnd, true);
           document.removeEventListener('focusin', onFocusIn, true);
           document.removeEventListener('focusout', onFocusOut, true);
           document.defaultView?.removeEventListener('blur', onWindowBlur);
@@ -142,7 +160,7 @@ const getPliteDocumentFocusCoordinator = (
       store: PliteInactiveSelectionStore,
       relatedTarget: EventTarget | null
     ) {
-      if (keepsPliteSelectionVisible(relatedTarget)) {
+      if (keepsSelectionVisibleAfterBlur(relatedTarget)) {
         activate(store);
 
         return;

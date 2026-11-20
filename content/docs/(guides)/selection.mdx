@@ -86,8 +86,9 @@ model updates back to the DOM. Application code should not patch
 <ComponentPreview name="inactive-selection-demo" />
 
 Plate `EditorContent` renders an inactive selection when focus moves to a marked
-control. The behavior is built in; it does not require a prop, plugin, kit, or
-copied selection state.
+control, or when a click on a marked control takes focus from the editor
+without focusing the control, as Safari on Mac does for buttons. The behavior is
+built in; it does not require a prop, plugin, kit, or copied selection state.
 
 ### Mark a focus target
 
@@ -103,7 +104,8 @@ ancestor:
 The exact `EditorContent` that loses focus reads its live canonical selection. An
 expanded range renders a highlight. A collapsed range renders a caret. Focus
 returning to the editor or moving to an unmarked target removes the inactive
-paint.
+paint. A click outside a marked control removes it too, unless the click lands
+on a non-editable part of an editor, such as a void's controls.
 
 This marker only keeps the selection painted while focus is elsewhere. To let a
 widget inside a node handle its own input, use the
@@ -132,9 +134,10 @@ The copied `Editor` registry component already styles both hooks.
 | Focus target | Inactive paint |
 | --- | --- |
 | Marked control or composed ancestor | One highlight or caret from the originating `EditorContent` |
+| Nothing, after a click on a marked control | One highlight or caret from the originating `EditorContent` |
 | The editor | None; the browser owns the active selection |
 | Any unmarked control | None |
-| Window blur or missing focus target | None |
+| Window blur, or nothing after any other click | None |
 
 The marker controls presentation only. It does not modify the document,
 selection, history, clipboard, or collaboration state.

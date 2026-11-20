@@ -215,13 +215,25 @@ export const useEditableRootRuntime = ({
     const root = runtime.rootElement;
     const activeElement = root?.ownerDocument.activeElement;
 
+    if (!root) return;
     if (
-      !root ||
-      (!ReactEditor.isFocused(editor) &&
-        activeElement !== root &&
-        !(activeElement && root.contains(activeElement)))
+      !ReactEditor.isFocused(editor) &&
+      activeElement !== root &&
+      !(activeElement && root.contains(activeElement))
     ) {
-      return;
+      // A read-only root takes no focus unless given a tabIndex, so its
+      // pointer selection is the only sign it owns the page selection. Its
+      // root is not contenteditable, so writing that selection back cannot
+      // focus it.
+      const selection = readOnly ? root.ownerDocument.getSelection() : null;
+
+      if (
+        !selection?.anchorNode ||
+        !root.contains(selection.anchorNode) ||
+        !root.contains(selection.focusNode)
+      ) {
+        return;
+      }
     }
 
     syncDOMSelectionToEditor({
