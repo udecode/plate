@@ -343,6 +343,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (!selection) return null;
     return () => actionEditor.update.selection.set(selection);
   };
+  // The anchor follows edits made since the request; the stored range does
+  // not. Null when those edits deleted the whole selection.
+  const resolveChatSelection = () => {
+    const stored = context.store.get('chatSelection');
+
+    return stored && previewAnchor ? previewAnchor.resolve() : stored;
+  };
   const restoreTarget = (commandEditor: Editor) => {
     const restore = prepareTargetRestore(commandEditor);
     restore?.();
@@ -1246,12 +1253,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     ) {
       return false;
     }
-    if (state.chatSelection && previewAnchor && !previewAnchor.resolve()) {
-      return false;
-    }
+    const capturedSelection = resolveChatSelection();
+    if (state.chatSelection && !capturedSelection) return false;
 
     const currentChangeId = state._changeId;
-    const capturedSelection = state.chatSelection;
     const parsed = editor.api.markdown.parseSlice(content);
 
     // A response Markdown cannot represent clears the draft, so an earlier
@@ -1475,12 +1480,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const source = response ?? getActionPreviewSource();
 
       if (!source) return;
-      const capturedSelection = context.store.get('chatSelection');
-      const chatSelection =
-        capturedSelection && previewAnchor
-          ? previewAnchor.resolve()
-          : capturedSelection;
-      if (capturedSelection && previewAnchor && !chatSelection) return;
+      const chatSelection = resolveChatSelection();
+      if (context.store.get('chatSelection') && !chatSelection) return;
 
       if (chatSelection) {
         const [start, end] = RangeApi.edges(chatSelection);
