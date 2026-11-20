@@ -1,7 +1,19 @@
 'use client';
 
-import { indentLess, indentMore, standardKeymap } from '@codemirror/commands';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import {
+  copyLineDown,
+  copyLineUp,
+  cursorMatchingBracket,
+  indentLess,
+  indentMore,
+  moveLineDown,
+  moveLineUp,
+  standardKeymap,
+  toggleComment,
+} from '@codemirror/commands';
+import {
+  bracketMatching,
   HighlightStyle,
   indentUnit,
   LanguageDescription,
@@ -46,10 +58,19 @@ const codeMirrorAdapter = createCodeMirrorAdapter({
     indentUnit.of('  '),
     EditorState.tabSize.of(2),
     search({ top: true }),
+    closeBrackets(),
+    bracketMatching(),
     keymap.of(searchKeymap),
     keymap.of(
       [
         { key: 'Tab', run: indentMore, shift: indentLess },
+        { key: 'Alt-ArrowUp', run: moveLineUp },
+        { key: 'Alt-ArrowDown', run: moveLineDown },
+        { key: 'Shift-Alt-ArrowUp', run: copyLineUp },
+        { key: 'Shift-Alt-ArrowDown', run: copyLineDown },
+        { key: 'Mod-/', run: toggleComment },
+        { key: 'Shift-Mod-\\', run: cursorMatchingBracket },
+        ...closeBracketsKeymap,
         ...standardKeymap,
       ].map((binding) => ({ ...binding, scope: 'code-block' }))
     ),

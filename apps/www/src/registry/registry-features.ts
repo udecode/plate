@@ -414,6 +414,7 @@ export const registryFeatures: Registry['items'] = [
   },
   {
     dependencies: [
+      '@codemirror/autocomplete',
       '@codemirror/language-data',
       '@codemirror/commands',
       '@lezer/highlight',

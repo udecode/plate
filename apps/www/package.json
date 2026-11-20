@@ -49,6 +49,7 @@
     "@aws-sdk/lib-storage": "^3.700.0",
     "@aws-sdk/s3-presigned-post": "^3.700.0",
     "@aws-sdk/s3-request-presigner": "^3.700.0",
+    "@codemirror/autocomplete": "6.20.3",
     "@codemirror/commands": "6.10.3",
     "@codemirror/language": "6.12.4",
     "@codemirror/language-data": "6.5.2",

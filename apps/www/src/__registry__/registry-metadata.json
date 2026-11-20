@@ -1,5 +1,5 @@
 {
-  "generation": "a335c8d275eef868d2cb6aed2c9d9ddaa7dd34544df9d2dfb3c1bc2e8980fad8",
+  "generation": "a195f0f70573ed33f911360388291f008c53a2499a85e57fa6edb59acad2747f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2840,6 +2840,7 @@
         },
         {
           "dependencies": [
+            "@codemirror/autocomplete",
             "@codemirror/language-data",
             "@codemirror/commands",
             "@lezer/highlight",
@@ -10181,6 +10182,7 @@
         },
         {
           "dependencies": [
+            "@codemirror/autocomplete",
             "@codemirror/language-data",
             "@codemirror/commands",
             "@lezer/highlight",

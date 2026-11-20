@@ -272,6 +272,9 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.700.0
         version: 3.1136.0
+      '@codemirror/autocomplete':
+        specifier: 6.20.3
+        version: 6.20.3
       '@codemirror/commands':
         specifier: 6.10.3
         version: 6.10.3

@@ -47,6 +47,15 @@
       "2026-11-17-cn-package",
       "2026-11-12-add-board"
     ],
+    "code-block-codemirror": [
+      "2026-11-20-codemirror-code-keys",
+      "2026-10-16-code-block-diagrams",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-11-codemirror-selection",
+      "2026-09-08-codemirror-adapter",
+      "2026-09-04-code-block-editing-and-syntax",
+      "2026-09-03-huge-code-block-demo"
+    ],
     "editor": [
       "2026-11-20-isolate-editor-container",
       "2026-11-17-cn-package",
@@ -1388,14 +1397,6 @@
       "2026-10-17-footnote-links",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "code-block-codemirror": [
-      "2026-10-16-code-block-diagrams",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-11-codemirror-selection",
-      "2026-09-08-codemirror-adapter",
-      "2026-09-04-code-block-editing-and-syntax",
-      "2026-09-03-huge-code-block-demo"
     ],
     "indent": [
       "2026-10-16-code-block-diagrams",

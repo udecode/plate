@@ -73,6 +73,11 @@ const editor = createEditor({
 对应的 Promise。配置变更和卸载会使过期加载失效。不要启用 CodeMirror 历史扩展，
 撤销与重做由编辑器共享历史管理。组件中的 Tab 使用两个空格缩进行，Enter 根据语法缩进。
 
+组件还绑定了 CodeMirror 的代码按键：`Alt+Up` 和 `Alt+Down` 移动当前行，
+`Shift+Alt+Up` 和 `Shift+Alt+Down` 复制当前行，`Mod+/` 按代码块语言切换行注释，
+`Shift+Mod+\` 跳到匹配的括号，光标旁的括号对会高亮。输入括号或引号时会自动补上闭合符，
+在空括号对中间按 `Backspace` 会同时删除两者。这些编辑都进入编辑器历史，`Mod+Z` 可以撤销。
+
 ## 图表 [#diagrams]
 
 图表语言的代码块可以在源码下方绘制图片。

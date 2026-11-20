@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-codemirror-code-keys",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-codemirror-code-keys.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add line moves, a comment toggle and bracket keys to the CodeMirror code block",
+  "targets": [
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-code-block-codemirror-line-moves-comment-toggle-b4f29c71",
+      "kind": "new",
+      "summary": "Add CodeMirror's line, comment and bracket keys. `Alt+Up` and `Alt+Down` move the current line, and `Shift+Alt+Up` and `Shift+Alt+Down` copy it. `Mod+/` toggles a line comment in the block's language. `Shift+Mod+\\` moves the caret to the matching bracket, and CodeMirror highlights the bracket pair beside the caret. A typed bracket or quote inserts its closer, and `Backspace` between an empty pair deletes both. Plate's history records each of these edits, so `Mod+Z` undoes it. The component imports `@codemirror/autocomplete`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-codemirror"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-codemirror-code-keys",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
