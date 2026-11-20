@@ -200,9 +200,6 @@
     "packages/plitejs/src/editor-runtime-view.ts": [
       "transaction.nodes.move(options as never);",
       "viewRead((state) => state.key(target as never));"
-    ],
-    "packages/plitejs/src/react/components/editable-text-blocks.tsx": [
-      "authored={ownerAuthored as never}"
     ]
   },
   "plate/no-bare-peer-delivery": {},
