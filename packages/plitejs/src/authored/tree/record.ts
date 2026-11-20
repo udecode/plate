@@ -4362,15 +4362,29 @@ class RootRecorder {
 
       return null;
     };
+    const inOneText = () => {
+      const type = stack.findLast((context) => context.kind === 'element')
+        ?.props.type;
+
+      return typeof type === 'string' && this.options.oneText(type);
+    };
+    const joinedOneTextInserts = () =>
+      inOneText() && baseLeaf
+        ? this.oneTextMarksButOwnInserts(this.marks(baseLeaf))
+        : null;
     const insertedMarks = () => {
       const own = ownElement();
 
-      return own
-        ? [own.mark]
-        : [
-            ...this.containedInsertMarks(stack, at),
-            this.continuedOwnInsert(stack, at) ?? this.options.markOf('insert'),
-          ];
+      if (own) {
+        return own.oneText && baseLeaf
+          ? this.marks(baseLeaf).filter((mark) => mark.kind !== 'delete')
+          : [own.mark];
+      }
+
+      return [
+        ...(joinedOneTextInserts() ?? this.containedInsertMarks(stack, at)),
+        this.continuedOwnInsert(stack, at) ?? this.options.markOf('insert'),
+      ];
     };
     const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
       this.withMarks(withoutSpares(props), [...this.marks(props), ...added]);
@@ -4541,7 +4555,8 @@ class RootRecorder {
                     }
                   : leaf,
                 at,
-                ownElement()
+                ownElement(),
+                inOneText()
               );
 
         ensureLeaf(desired);
@@ -4880,7 +4895,8 @@ class RootRecorder {
   private suggestedTextProps(
     leaf: Context | undefined,
     at: number,
-    ownElement: Readonly<{ mark: AuthoredMark; oneText: boolean }> | null
+    ownElement: Readonly<{ mark: AuthoredMark; oneText: boolean }> | null,
+    inOneText: boolean
   ): Props {
     if (!leaf || leaf.kind !== 'text') {
       return this.withMarks({}, [
@@ -4906,15 +4922,18 @@ class RootRecorder {
 
       return this.withMarks(
         leaf.props,
-        ownElement.oneText ? live : [...live, ownElement.mark],
+        ownElement.oneText
+          ? marks.filter((mark) => mark.kind !== 'delete')
+          : [...live, ownElement.mark],
         true
       );
     }
 
-    const inside = leaf.contentFrom < at && at < leaf.contentTo;
-    const kept = inside
-      ? marks.filter((mark) => mark.kind === 'insert')
-      : this.sharedNeighborInserts(leaf, at);
+    const kept = inOneText
+      ? this.oneTextMarksButOwnInserts(marks)
+      : leaf.contentFrom < at && at < leaf.contentTo
+        ? marks.filter((mark) => mark.kind === 'insert')
+        : this.sharedNeighborInserts(leaf, at);
 
     return this.withMarks(
       leaf.props,
@@ -5109,6 +5128,14 @@ class RootRecorder {
     }
 
     return (children ?? []).every((child) => this.rejectingEmpties(child, own));
+  }
+
+  private oneTextMarksButOwnInserts(marks: readonly AuthoredMark[]) {
+    return marks.filter(
+      (mark) =>
+        mark.kind === 'format' ||
+        (mark.kind === 'insert' && !this.options.isOwn(mark))
+    );
   }
 
   private continuedOwnInsert(stack: readonly Context[], at: number) {

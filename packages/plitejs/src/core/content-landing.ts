@@ -18,6 +18,7 @@ import {
 import { refusedIn } from './command-document';
 import { hasEditorContent, isEditorContent } from './content';
 import { getEditorSchema } from './editor-runtime';
+import { holdsOneText } from './editor-schema';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { getActiveEditorUpdateTags } from './public-state';
 import { gridPartsOf, survivalUnder } from './survival';
@@ -166,27 +167,66 @@ export const struckGridPartAt = (
   return null;
 };
 
+/** @internal */
+export const struckOneTextAt = (
+  editor: Editor,
+  path: Path,
+  document: RootChildren
+): Path | null => {
+  if (!hasEditorContent(editor)) return null;
+
+  const schema = getEditorSchema(editor);
+
+  for (let depth = 1; depth <= path.length; depth += 1) {
+    const at = path.slice(0, depth);
+    const node = nodeAt(document, at);
+
+    if (!node) return null;
+    if (
+      NodeApi.isElement(node) &&
+      typeof node.type === 'string' &&
+      holdsOneText(schema, node.type) &&
+      !isEditorContent(editor, node)
+    ) {
+      return at;
+    }
+  }
+
+  return null;
+};
+
 const isReplayedWrite = (editor: Editor) => {
   const tags = getActiveEditorUpdateTags(editor);
 
   return tags.includes('collaboration') || tags.includes('historic');
 };
 
+const targetPaths = (at: Point | Range) =>
+  PointApi.isPoint(at) ? [at.path] : [at.anchor.path, at.focus.path];
+
+const refuseInStruckOneText = (
+  editor: Editor,
+  at: Point | Range,
+  document: RootChildren
+) => {
+  if (targetPaths(at).some((path) => struckOneTextAt(editor, path, document))) {
+    throw refusedIn(editor, 'one-text');
+  }
+};
+
 /** @internal */
-export const refuseTextWriteInStruckGrid = (
+export const refuseTextWriteInStruck = (
   editor: Editor,
   at: Point | Range,
   document: RootChildren
 ) => {
   if (isReplayedWrite(editor)) return;
-
-  const paths = PointApi.isPoint(at)
-    ? [at.path]
-    : [at.anchor.path, at.focus.path];
-
-  if (paths.some((path) => struckGridPartAt(editor, path, document))) {
+  if (
+    targetPaths(at).some((path) => struckGridPartAt(editor, path, document))
+  ) {
     throw refusedIn(editor, 'grid');
   }
+  refuseInStruckOneText(editor, at, document);
 };
 
 // A command frame passes the stored root's children, because the editor's own
@@ -244,27 +284,31 @@ export function landTextWrite(
 }
 
 /** @internal */
-export function landTextWriteOutsideStruckGrid(
+export function landTextWriteOutsideStruck(
   editor: Editor,
   at: Point,
   document: RootChildren
 ): Point;
-export function landTextWriteOutsideStruckGrid(
+export function landTextWriteOutsideStruck(
   editor: Editor,
   at: Range,
   document: RootChildren
 ): Range;
-export function landTextWriteOutsideStruckGrid(
+export function landTextWriteOutsideStruck(
   editor: Editor,
   at: Point | Range,
   document: RootChildren
 ): Point | Range;
-export function landTextWriteOutsideStruckGrid(
+export function landTextWriteOutsideStruck(
   editor: Editor,
   at: Point | Range,
   document: RootChildren
 ): Point | Range {
-  refuseTextWriteInStruckGrid(editor, at, document);
+  refuseTextWriteInStruck(editor, at, document);
 
-  return landTextWrite(editor, at, document);
+  const landed = landTextWrite(editor, at, document);
+
+  if (!isReplayedWrite(editor)) refuseInStruckOneText(editor, landed, document);
+
+  return landed;
 }

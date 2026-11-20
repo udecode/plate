@@ -26,11 +26,13 @@ export type ProjectionBreak = Readonly<{
 
 /**
  * Why a frame refuses a command: `grid` when it acts inside a table or row
- * whose deletion is pending, else why its range has no faithful place.
+ * whose deletion is pending, `one-text` when it acts at a caret inside a
+ * one-text element whose deletion is pending, else why its range has no
+ * faithful place.
  *
  * @internal
  */
-export type FrameRefusalReason = 'crosses' | 'grid' | 'unaligned';
+export type FrameRefusalReason = 'crosses' | 'grid' | 'one-text' | 'unaligned';
 
 /** @internal */
 export type RangePlacement =

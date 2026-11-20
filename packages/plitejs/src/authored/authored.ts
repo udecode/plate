@@ -188,7 +188,7 @@ import {
   type AuthoredRefusal,
   storesGeneratedValues,
   GENERATED_VALUES_REFUSAL,
-  unrepresentableFor,
+  frameRefusal,
   proposalRefusal,
   splitOneTextRefusal,
   unplaced,
@@ -2038,7 +2038,7 @@ export const createAuthoredPlugin = (
 
             return ledger.frame(value);
           },
-          refuse: unrepresentableFor,
+          refuse: frameRefusal,
           unplaced,
         })
       );

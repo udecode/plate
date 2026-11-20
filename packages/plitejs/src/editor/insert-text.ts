@@ -1,7 +1,7 @@
 import { dispatchCommand } from '../core/command-registry';
 import {
   landTextWrite,
-  landTextWriteOutsideStruckGrid,
+  landTextWriteOutsideStruck,
 } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import { limitTextInsert } from '../core/insert-limit';
@@ -119,7 +119,7 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
           : fallback;
       }
       if (PointApi.isPoint(target) || RangeApi.isRange(target)) {
-        target = landTextWriteOutsideStruckGrid(
+        target = landTextWriteOutsideStruck(
           editor,
           target,
           getChildList(editor)

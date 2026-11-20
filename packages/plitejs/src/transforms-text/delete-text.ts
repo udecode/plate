@@ -1,6 +1,6 @@
 import { createAnchor } from '../core/anchor';
 import { jsonEqual } from '../core/change/json';
-import { refuseTextWriteInStruckGrid } from '../core/content-landing';
+import { refuseTextWriteInStruck } from '../core/content-landing';
 import { getEditorSchema } from '../core/editor-runtime';
 import { joinKeepsPrefixOccupant } from '../core/prefix-occupant-join';
 import {
@@ -1548,6 +1548,24 @@ export const refuseMemberCrossingNodes = (
   }
 };
 
+const refuseUnhungInStruck = (
+  editor: Editor,
+  at: Location,
+  prepared: PreparedRemoval | null
+) => {
+  if (
+    RangeApi.isRange(at) &&
+    RangeApi.isExpanded(at) &&
+    prepared?.target.kind === 'range'
+  ) {
+    refuseTextWriteInStruck(
+      editor,
+      prepared.target.effectiveRange,
+      getChildList(editor)
+    );
+  }
+};
+
 const prepareAt = (
   editor: Editor,
   options: DeleteOptions,
@@ -1705,6 +1723,8 @@ export const removeText = (
   inRemovalRoot(editor, options.at, (tx, site) => {
     const prepared = prepareAt(editor, options, site.at, !!options.writes);
 
+    if (options.writes) refuseUnhungInStruck(editor, site.at, prepared);
+
     return prepared && applyAt(editor, tx, site, prepared);
   });
 
@@ -1794,10 +1814,12 @@ export const deleteText: TextMutationMethods['delete'] = (
       return null;
     }
     if (RangeApi.isRange(site.at) && RangeApi.isExpanded(site.at)) {
-      refuseTextWriteInStruckGrid(editor, site.at, getChildList(editor));
+      refuseTextWriteInStruck(editor, site.at, getChildList(editor));
     }
 
     const prepared = prepareAt(editor, options, site.at, false);
+
+    refuseUnhungInStruck(editor, site.at, prepared);
 
     if (prepared) return applyAt(editor, tx, site, prepared);
 

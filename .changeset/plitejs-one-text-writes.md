@@ -1,0 +1,8 @@
+---
+'plitejs': patch
+---
+
+- Fix a paste into a code block, or any element whose schema allows one text, being refused as `unrepresentable` in Editing and in your own pending code block in Suggesting. The pasted text now goes into the block's text, and in your own pending block it joins that block's suggestion, as typing does.
+- Fix an Editing letter or typed newline at the start or end of a pending code block, or in an empty one, being refused. The text now joins the block's suggestion, so accepting or rejecting the block takes the text with it.
+- Fix an Editing letter or paste being refused in a code block whose text holds another author's pending format, such as a color. The same paste into your own pending code block in Suggesting no longer refuses either. The letter now joins that text, so accepting or rejecting the format decides the letter too.
+- Refuse a typed letter, a typed newline, Enter, a paste, Backspace, Delete or a mark toggle inside a code block whose deletion is pending, in Suggesting and Editing. This holds at a caret and over a selection that starts or ends in that block. It also holds for a selection that reaches into the block past a struck line or ends at the start of the line after it, for a paste or typed letter aimed at the block itself or a command aimed at a node inside it, and for a write that would otherwise land in it from a struck line beside it. Before, the edit landed beside the block or in its struck text, or recorded into it. It now saves nothing and reaches `subscribeRefusals` as `unrepresentable`. Decide the block's pending deletion first.

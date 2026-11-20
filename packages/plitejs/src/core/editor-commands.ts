@@ -44,6 +44,7 @@ import type {
 import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
+import { refusesTextStartInStruck } from './command-frame';
 import { getActiveCommandEditor } from './command-registry';
 import {
   recordLocatedDestination,
@@ -484,6 +485,19 @@ const locateOptionsAt = <
     : { ...input, options: { ...input.options, at: placed } };
 };
 
+const locateTextOptionsAt = <
+  TInput extends { options?: { at?: NodeSelection | NodeTarget } },
+>(
+  input: TInput,
+  place: EditorCommandPlace
+): TInput | null => {
+  const at = input.options?.at;
+
+  if (at !== undefined && refusesTextStartInStruck(place, at)) return null;
+
+  return locateOptionsAt(input, place);
+};
+
 export type AddMarkCommand = {
   key: string;
   value: unknown;
@@ -789,7 +803,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   insertText: defineCommand<InsertTextCommand>('text.insert', {
     locate: (input, place) => {
-      const located = locateOptionsAt(input, place);
+      const located = locateTextOptionsAt(input, place);
 
       if (located) recordLocatedDestination(place, located.options?.at);
 
@@ -921,7 +935,7 @@ export const editorCommands: EditorCommands = Object.freeze({
       }),
   }),
   replaceSlice: defineCommand<ReplaceSliceCommand>('slice.replace', {
-    locate: locateOptionsAt,
+    locate: locateTextOptionsAt,
     build: ({ input, state }) => {
       const editor = getActiveCommandEditor();
       const plan = planPaste(editor, state, input, 'copy');

@@ -9,16 +9,20 @@ import type {
   DocumentIndex,
   IndexedNodeRange,
 } from '../core/change/document-index';
+import { jsonEqual } from '../core/change/json';
 import {
   applyPropertyModifications,
   type RootChange,
 } from '../core/change/root-change';
 import {
   isElementNode,
+  isTextNode,
+  type JsonNode,
   nodeProps,
   PreparedTokenSlice,
 } from '../core/change/tokens';
 import type { PropertyModification } from '../core/change/transform';
+import type { FrameRefusalReason } from '../core/command-document';
 import { EditorRefusalError } from '../core/refusal';
 import {
   type CompiledEditorSchema,
@@ -375,6 +379,15 @@ export const unrepresentable = (
     message
   );
 
+const holdsDifferingTexts = ([first, ...rest]: readonly JsonNode[]) =>
+  rest.some(
+    (child) =>
+      !first ||
+      !isTextNode(first) ||
+      !isTextNode(child) ||
+      !jsonEqual(nodeProps(first), nodeProps(child))
+  );
+
 export const splitOneTextRefusal = (
   change: DocumentChange,
   indexes: ReadonlyMap<string, DocumentIndex>,
@@ -392,9 +405,9 @@ export const splitOneTextRefusal = (
 
         if (
           isElementNode(node) &&
-          node.children.length > 1 &&
           typeof node.type === 'string' &&
-          oneText(node.type)
+          oneText(node.type) &&
+          holdsDifferingTexts(node.children)
         ) {
           return unrepresentable(
             `Suggesting cannot mark part of the text in "${node.type}", which holds one text.`
@@ -426,3 +439,10 @@ const REASON_MESSAGES: Readonly<Record<UnrepresentableReason, string>> = {
 
 export const unrepresentableFor = (reason: UnrepresentableReason) =>
   unrepresentable(REASON_MESSAGES[reason], reason);
+
+export const frameRefusal = (reason: FrameRefusalReason) =>
+  reason === 'one-text'
+    ? unrepresentable(
+        'This edit is inside a block whose deletion is pending; decide that block first.'
+      )
+    : unrepresentableFor(reason);

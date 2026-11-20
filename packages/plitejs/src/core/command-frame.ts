@@ -48,6 +48,7 @@ import {
   landTextWrite,
   nodeAt,
   struckGridPartAt,
+  struckOneTextAt,
 } from './content-landing';
 import {
   getEditorDocumentRecorder,
@@ -303,6 +304,17 @@ export const runSelectionOnlyInEditorUpdate = <T>(
 
   return applied;
 };
+
+const TEXT_STARTS = new WeakMap<
+  EditorCommandPlace,
+  (at: NodeTarget | NodeSelection) => boolean
+>();
+
+/** @internal */
+export const refusesTextStartInStruck = (
+  place: EditorCommandPlace,
+  at: NodeTarget | NodeSelection
+) => TEXT_STARTS.get(place)?.(at) ?? false;
 
 const LAST_FRAME_INDEXES = new WeakMap<
   Editor,
@@ -678,6 +690,31 @@ const createFramePlace = (
 
     return true;
   };
+  const refusesStruckText = (
+    paths: readonly Path[],
+    document: NodeList<Descendant>,
+    onRefuse: Refuse
+  ) => {
+    if (paths.some((at) => struckOneTextAt(editor, at, document))) {
+      onRefuse('one-text');
+    }
+  };
+  const insideStruckText = (paths: readonly Path[], root: string) => {
+    if (!refusesStruckTargets) return false;
+
+    const document = valueRootNodes(stored, root) as NodeList<Descendant>;
+
+    const inside = (at: Path) => {
+      const holder = struckOneTextAt(editor, at, document);
+
+      return holder !== null && holder.length < at.length;
+    };
+
+    if (!paths.some(inside)) return false;
+    refuse('one-text');
+
+    return true;
+  };
   // A caret no surviving line can take, as in a container whose every line
   // is gone, stays in what replaces its line, such as the line completion
   // gives that container.
@@ -692,6 +729,7 @@ const createFramePlace = (
     ) {
       onRefuse('grid');
     }
+    refusesStruckText([point.path, landed.path], document, onRefuse);
     if (projected.map.reorders(root)) {
       const at = valueRootIndex(stored, root).positionAt(landed);
       const placement = projected.map.projectRange(root, at, at);
@@ -729,6 +767,35 @@ const createFramePlace = (
 
     return placement;
   };
+  const storedPathOf = (point: JsonPoint, root: string, assoc: -1 | 1) => {
+    const at = projected.map.toStored(
+      root,
+      projectedIndex(projected, root).positionAt(point),
+      assoc
+    );
+
+    return at === null
+      ? null
+      : (valueRootIndex(stored, root).pointAt(at, assoc)?.path ?? null);
+  };
+  const lastLetterBeforeHungEnd = (from: Point, to: Point, root: string) => {
+    if (from.offset !== 0 || to.offset !== 0 || PathApi.hasPrevious(to.path)) {
+      return null;
+    }
+
+    const index = projectedIndex(projected, root);
+
+    return index.pointAt(index.nodeRange(PathApi.parent(to.path)).from, -1);
+  };
+  const writtenEnds = (from: Point, to: Point, root: string) => {
+    const hung = lastLetterBeforeHungEnd(from, to, root);
+
+    return [
+      storedPathOf(from, root, 1),
+      storedPathOf(to, root, -1),
+      hung && storedPathOf(hung, root, -1),
+    ].filter((at) => at !== null);
+  };
   const span = (range: Range, fallbackRoot: string, onRefuse: Refuse) => {
     const collapsed = (point: Point) => {
       const placed = caret(point, fallbackRoot, onRefuse);
@@ -743,6 +810,11 @@ const createFramePlace = (
     const root = SelectionApi.root(range) ?? fallbackRoot;
 
     refusesStruck([range.anchor.path, range.focus.path], root, onRefuse);
+    refusesStruckText(
+      [range.anchor.path, range.focus.path],
+      valueRootNodes(stored, root) as NodeList<Descendant>,
+      onRefuse
+    );
 
     const backward = RangeApi.isBackward(range);
     const [start, end] = backward
@@ -766,6 +838,12 @@ const createFramePlace = (
     if (!from || !to || PointApi.compare(from, to) >= 0) {
       return collapsed(start);
     }
+
+    refusesStruckText(
+      writtenEnds(from, to, root),
+      valueRootNodes(stored, root) as NodeList<Descendant>,
+      onRefuse
+    );
 
     const [anchor, focus] = backward ? [to, from] : [from, to];
 
@@ -845,7 +923,9 @@ const createFramePlace = (
     if (SelectionApi.isNode(at)) {
       const root = SelectionApi.root(at) ?? getEditorUpdateRoot(editor);
 
-      if (refusesStruck(at.paths, root)) return null;
+      if (refusesStruck(at.paths, root) || insideStruckText(at.paths, root)) {
+        return null;
+      }
 
       const mapped = map(at, getEditorUpdateRoot(editor));
 
@@ -855,7 +935,9 @@ const createFramePlace = (
       return caret(at, getEditorUpdateRoot(editor), refuse);
     }
     if (LocationApi.isSpan(at)) {
-      if (refusesStruck(at, getEditorUpdateRoot(editor))) return null;
+      const root = getEditorUpdateRoot(editor);
+
+      if (refusesStruck(at, root) || insideStruckText(at, root)) return null;
 
       const from = path(at[0]);
       const to = path(at[1]);
@@ -870,8 +952,12 @@ const createFramePlace = (
 
     const resolved = resolveNodeTargetLocation(editor, at);
     const target = resolved && PathApi.isPath(resolved) ? resolved : null;
+    const root = getEditorUpdateRoot(editor);
 
-    if (target && refusesStruck([target], getEditorUpdateRoot(editor))) {
+    if (
+      target &&
+      (refusesStruck([target], root) || insideStruckText([target], root))
+    ) {
       return null;
     }
 
@@ -882,7 +968,27 @@ const createFramePlace = (
       : placed;
   }
 
+  const startsInStruckText = (at: NodeTarget | NodeSelection) => {
+    if (SelectionApi.isNode(at)) return false;
+
+    const resolved = resolveNodeTargetLocation(editor, at);
+
+    if (!resolved || !PathApi.isPath(resolved)) return false;
+
+    const root = getEditorUpdateRoot(editor);
+    const node = nodeAt(
+      valueRootNodes(stored, root) as NodeList<Descendant>,
+      resolved
+    );
+
+    return (
+      node !== undefined &&
+      insideStruckText([[...resolved, ...NodeApi.first(node, [])[1]]], root)
+    );
+  };
   const place: EditorCommandPlace = Object.freeze({ location });
+
+  TEXT_STARTS.set(place, startsInStruckText);
   const placeSelection = (
     selection: Selection,
     root: string,

@@ -1,5 +1,5 @@
 import { dispatchCommand } from '../core/command-registry';
-import { landTextWriteOutsideStruckGrid } from '../core/content-landing';
+import { landTextWriteOutsideStruck } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
@@ -64,7 +64,7 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
 
   const landed =
     selection &&
-    landTextWriteOutsideStruckGrid(editor, selection, getChildList(editor));
+    landTextWriteOutsideStruck(editor, selection, getChildList(editor));
 
   if (
     landed &&
