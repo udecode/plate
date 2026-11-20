@@ -571,6 +571,9 @@ const readListToken = (node: PhrasingContent | undefined): ListToken | null => {
   return { checked: attributes.has('checked'), kind: 'checkbox' };
 };
 
+export const isMarkdownLineListToken = (node: PhrasingContent) =>
+  readListToken(node) !== null;
+
 const isBlank = (node: PhrasingContent | undefined) =>
   node?.type === 'text' && /^[ \t\r\n]*$/.test(node.value);
 

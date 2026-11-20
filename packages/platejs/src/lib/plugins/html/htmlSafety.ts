@@ -35,7 +35,7 @@ const NON_RENDERING_TAGS = new Set([
   'style',
   'template',
 ]);
-const HTML_SURROUNDING_WHITESPACE = /^[\t\n\f\r ]+|[\t\n\f\r ]+$/gu;
+export const HTML_SURROUNDING_WHITESPACE = /^[\t\n\f\r ]+|[\t\n\f\r ]+$/gu;
 const CSS_RESOURCE = /(?:\burl\s*\(|\bimage-set\s*\(|\bsrc\s*\(|@import\b)/iu;
 const CSS_ESCAPE = /\\(?:([\da-f]{1,6})[\t\n\f\r ]?|([^\n\f\r\da-f]))/giu;
 

@@ -35,6 +35,8 @@ const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
 
 export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
 
+export const isMarkdownBreakHtml = (value: string) => ONLY_BR_TAGS.test(value);
+
 /** Markdown drops an empty paragraph, so the writer gives it this text. */
 const EMPTY_PARAGRAPH_TEXT = '\u200B';
 
