@@ -18,6 +18,7 @@ import {
   TextApi,
   type BlockInsertOptions,
   type Descendant,
+  type Editor,
   type EditorCommit,
   type EditorCommitHandler,
   type EditorEffect,
@@ -46,6 +47,7 @@ import {
   readAuthoredView,
   registerEditorTransactionGuard,
   reportEditorLifecycleError,
+  txStored,
   withStoredAuthoredRead,
 } from '../../../facade';
 import { isReplaceableEmptyBlock } from '../../../internal/plugin/blockInsertion';
@@ -182,6 +184,31 @@ export type UploadSubmitOptions =
       replaceEmpty?: never;
     })
   | ({ slot?: never } & BlockInsertOptions);
+
+/** Limits the batch `admit` checks to the one upload kind a caller's drafts take. */
+export type UploadAdmitOptions = Readonly<{
+  /** A file of another kind refuses the batch before every other check. */
+  kind?: UploadKind;
+}>;
+
+/**
+ * A batch that passed every check and waits for the caller to insert its
+ * drafts. It lives for the transaction that admitted it.
+ */
+export type UploadAdmission = Readonly<{
+  /** One new draft per file, in file order. Upload does not track them. */
+  drafts: readonly Element[];
+  /**
+   * Give each file the live draft its node key names, in file order. It checks
+   * every key before it gives any file a draft, and throws when a check fails.
+   */
+  fill: (keys: readonly NodeKey[]) => void;
+}>;
+
+/** A batch `admit` refused, with the failure upload reports after the commit. */
+export type UploadRefusal = Readonly<{
+  failure: Extract<UploadFailure, { phase: 'admission' | 'configuration' }>;
+}>;
 
 const defaultRules = {
   audio: { kind: 'audio' },
@@ -922,9 +949,20 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         });
       }
     };
-    const refusal = (
-      failure: Extract<UploadFailure, { phase: 'admission' | 'configuration' }>
-    ) => ({ failure });
+    const writerWithWork = (updateEditor: Editor, files: readonly File[]) => {
+      const writer = getAuthoredUpdateView(updateEditor);
+      const authored = readAuthoredView(writer);
+
+      return closed() ||
+        files.length === 0 ||
+        updateEditor.read.view.isReadOnly() ||
+        (authored && 'preview' in authored)
+        ? undefined
+        : { authored, authorId: getViewAuthor(writer) };
+    };
+    const refusal = (failure: UploadRefusal['failure']): UploadRefusal => ({
+      failure,
+    });
     const check = (
       files: readonly File[],
       requireKind?: Readonly<{ files: readonly File[]; kind: UploadKind }>
@@ -1275,6 +1313,107 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         },
       },
       update: ({ context: { afterCommit }, editor: updateEditor, tx }) => ({
+        /**
+         * Check a batch for drafts the caller inserts itself. It writes nothing,
+         * and returns nothing when there is nothing to do.
+         */
+        admit: txStored(
+          (
+            input: readonly File[] | FileList,
+            options: UploadAdmitOptions = {}
+          ): UploadAdmission | UploadRefusal | undefined => {
+            const files = Array.from(input);
+            const writer = writerWithWork(updateEditor, files);
+
+            if (!writer) return undefined;
+
+            const batch = check(
+              files,
+              options.kind && { files, kind: options.kind }
+            );
+            if ('failure' in batch) {
+              const { failure } = batch;
+
+              refuse(tx.effects, afterCommit, failure);
+              return batch;
+            }
+
+            const { client, getUrl, uploads } = batch;
+            let filled = false;
+
+            return {
+              drafts: uploads.map(({ kind }) =>
+                tx.schema.create(type, { kind })
+              ),
+              fill: (given) => {
+                const keys = Array.from(given);
+
+                if (keys.length !== uploads.length) {
+                  throw new Error(
+                    'Upload fill takes one draft key for each file.'
+                  );
+                }
+                if (keys.some((key) => typeof key !== 'string')) {
+                  throw new Error('Upload fill takes node keys only.');
+                }
+                if (new Set(keys).size !== keys.length) {
+                  throw new Error(
+                    'Upload fill takes a different draft key for each file.'
+                  );
+                }
+
+                const taken = new Set(
+                  admissionMarks(tx.effects.all()).flatMap((mark) =>
+                    mark.form === 'replace' || mark.form === 'yield'
+                      ? mark.keys
+                      : []
+                  )
+                );
+                const prepared = keys.map((key, index) => {
+                  const { file, kind } = uploads[index];
+                  const draft = tx.nodes.get(key)?.[0];
+
+                  if (
+                    !NodeApi.isElement(draft) ||
+                    draft.type !== type ||
+                    draft.kind !== kind
+                  ) {
+                    throw new Error(
+                      'Upload fill takes the key of a live upload draft of its file kind.'
+                    );
+                  }
+                  if (tx.nodes.elementReadOnly({ at: key })) {
+                    throw new Error(
+                      'Upload fill cannot give a file to a draft inside a read-only element.'
+                    );
+                  }
+                  if (taken.has(key)) {
+                    throw new Error(
+                      'Upload fill names a draft that this update already gave a file.'
+                    );
+                  }
+
+                  return { file, key, kind };
+                });
+
+                if (filled) {
+                  throw new Error(
+                    'Upload fill runs once for each admitted batch.'
+                  );
+                }
+
+                tx.tags.add('history-push');
+                bind(
+                  tx.effects,
+                  afterCommit,
+                  { ...writer, client, getUrl, uploads: prepared },
+                  'yield'
+                );
+                filled = true;
+              },
+            };
+          }
+        ),
         submit: txLocate(
           (args, place) => {
             const [, { after, at, before, slot } = {}] = args;
@@ -1290,19 +1429,14 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
 
             return place.location(liveCaret) === null ? null : args;
           },
-          (input: File[] | FileList, options: UploadSubmitOptions = {}) => {
+          (
+            input: readonly File[] | FileList,
+            options: UploadSubmitOptions = {}
+          ) => {
             const files = Array.from(input);
-            const writer = getAuthoredUpdateView(updateEditor);
-            const authored = readAuthoredView(writer);
+            const writer = writerWithWork(updateEditor, files);
 
-            if (
-              closed() ||
-              files.length === 0 ||
-              updateEditor.read.view.isReadOnly() ||
-              (authored && 'preview' in authored)
-            ) {
-              return false;
-            }
+            if (!writer) return false;
 
             const slot = 'slot' in options ? options.slot : undefined;
             const slotKind = slot
@@ -1397,13 +1531,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             bind(
               tx.effects,
               afterCommit,
-              {
-                authored,
-                authorId: getViewAuthor(writer),
-                client,
-                getUrl,
-                uploads: prepared,
-              },
+              { ...writer, client, getUrl, uploads: prepared },
               slot ? 'replace' : 'yield'
             );
             return true;

@@ -127,6 +127,7 @@ export {
   hasCommandHandler,
   probeCommandNativeEquivalent,
 } from '../core/command-registry';
+export { txStored } from '../core/tx-only';
 export type {
   EditorCommandEvaluation,
   EditorCommandNativeProbe,

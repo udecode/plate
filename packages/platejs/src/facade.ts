@@ -305,5 +305,6 @@ export {
   retainViewPresentation,
   setSelectionAsView,
   withMountedPresentation,
+  txStored,
   type CompiledEditorSchema,
 } from 'plitejs/internal';
