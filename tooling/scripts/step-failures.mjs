@@ -8,7 +8,7 @@ import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
 const TEST_FILE = /\.(?:spec|test)\.[cm]?[jt]sx?$/u;
 // turbo starts each line of a package task with its id, such as
 // `plitejs:test:partition:core: `.
-const TASK_PREFIX = /^(@?[\w.-]+(?:\/[\w.-]+)?):[\w-]+(?::[\w-]+)*: /u;
+const TASK_PREFIX = /^((@?[\w.-]+(?:\/[\w.-]+)?):[\w-]+(?::[\w-]+)*): /u;
 
 export const EXPECTED_PATH = '.agents/expected-failures.json';
 export const clearedHeader = (step) =>
@@ -95,10 +95,15 @@ export const failuresOf = (output, root) => {
     const plain = stripVTControlCharacters(raw);
     const prefix = TASK_PREFIX.exec(plain);
     const task = prefix?.[1];
+    const packageName = prefix?.[2];
     const line = prefix ? plain.slice(prefix[0].length) : plain;
     const header = /^(\S+):$/u.exec(line);
     if (header && TEST_FILE.test(header[1])) {
-      headers.set(task, resolve(header[1], task));
+      headers.set(task, resolve(header[1], packageName));
+      continue;
+    }
+    if (line.startsWith('bun test v')) {
+      summaries.delete(task);
       continue;
     }
     // Bun repeats each failure in a summary after the last file's header.
@@ -113,7 +118,7 @@ export const failuresOf = (output, root) => {
     }
     const at = /^test at (\S+?):\d+:\d+$/u.exec(line);
     if (at) {
-      nodeFile = resolve(at[1], task);
+      nodeFile = resolve(at[1], packageName);
       continue;
     }
     const node = /^✖ (.+?)(?: \([\d.]+m?s\))?$/u.exec(line);
@@ -125,18 +130,18 @@ export const failuresOf = (output, root) => {
     const vitest =
       /^\s*FAIL\s+(\S+?\.(?:spec|test)\.[cm]?[jt]sx?) > (.+)$/u.exec(line);
     if (vitest) {
-      add(resolve(vitest[1], task), vitest[2]);
+      add(resolve(vitest[1], packageName), vitest[2]);
       continue;
     }
     const playwright = /^\s*\d+\) \[[\w-]+\] › (\S+?):\d+:\d+ › (.+)$/u.exec(
       line
     );
     if (playwright) {
-      add(resolve(playwright[1], task), playwright[2]);
+      add(resolve(playwright[1], packageName), playwright[2]);
       continue;
     }
     const audit = /^- (\S+?):\d+:\d+: (.+)$/u.exec(line);
-    if (audit) add(resolve(audit[1], task) ?? audit[1], audit[2]);
+    if (audit) add(resolve(audit[1], packageName) ?? audit[1], audit[2]);
   }
   return failures;
 };
