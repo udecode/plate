@@ -360,8 +360,13 @@ const SEAT_ROLES = ['interrogate reviewers', 'arena runners'];
 const SEAT_FLOOR = 'high';
 const NEVER = /\b(?:sonnet|haiku)\b/gu;
 
-export const modelsSheet = (runtime, env = process.env) =>
-  runtime === 'claude' ? join(env.HOME ?? homedir(), '.claude/pstack-models.md') : join(env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex'), 'pstack-models.md');
+// A Claude Code sheet committed at the repository root replaces each person's, as pstack's session hook reads it.
+export const modelsSheet = (runtime, env = process.env, root = process.cwd()) =>
+  runtime === 'claude'
+    ? existsSync(join(root, '.claude/pstack-models.md'))
+      ? join(root, '.claude/pstack-models.md')
+      : join(env.HOME ?? homedir(), '.claude/pstack-models.md')
+    : join(env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex'), 'pstack-models.md');
 
 /** Each way a models sheet seats the wrong models, written as the edit that fixes it. */
 export function sheetMisses(text, max) {
