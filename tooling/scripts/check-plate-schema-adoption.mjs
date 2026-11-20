@@ -457,6 +457,10 @@ const intentionalProductionExtendStageChains = new Map([
     'packages/platejs/src/features/board/lib/BaseBoardNotePlugin.ts',
     [[['formats']]],
   ],
+  [
+    'apps/www/src/registry/components/editor/prompt-editor.tsx',
+    [[['commands', 'shortcuts', 'update']]],
+  ],
 ]);
 const allowedSchemaFactoryBindings = new Set([
   'initialState',

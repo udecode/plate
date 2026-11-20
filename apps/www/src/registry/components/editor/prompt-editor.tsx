@@ -49,18 +49,18 @@ const unescapeText = (text: string) =>
     .replaceAll('&amp;', '&');
 
 const isMention = (
-  node: Descendant
+  node: Descendant,
+  mentionType: string
 ): node is Descendant & { ref: string; label?: string } =>
-  ElementApi.isElementType(node, MentionPlugin.name) &&
-  typeof node.ref === 'string';
+  ElementApi.isElementType(node, mentionType) && typeof node.ref === 'string';
 
-const toMessage = (children: readonly Descendant[]) =>
+const toMessage = (children: readonly Descendant[], mentionType: string) =>
   children
     .map((block) =>
       ElementApi.isElement(block)
         ? block.children
             .map((node) =>
-              isMention(node)
+              isMention(node, mentionType)
                 ? `<mention ref="${escapeText(node.ref).replaceAll('"', '&quot;')}">${escapeText(node.label ?? node.ref)}</mention>`
                 : NodeApi.string(node)
             )
@@ -69,7 +69,7 @@ const toMessage = (children: readonly Descendant[]) =>
     )
     .join('\n');
 
-const toValue = (message: string) =>
+const toValue = (message: string, mentionType: string) =>
   message.split('\n').map((line) => {
     const children: Descendant[] = [];
     let end = 0;
@@ -81,7 +81,7 @@ const toValue = (message: string) =>
           children: [{ text: '' }],
           label: unescapeText(tag[2]),
           ref: unescapeText(tag[1]),
-          type: MentionPlugin.name,
+          type: mentionType,
         }
       );
       end = tag.index + tag[0].length;
@@ -114,10 +114,11 @@ const PromptEditorPlugin = definePlugin('promptEditor', {
     // offers the same item, because the id may name something else here.
     around(editorCommands.replaceSlice, ({ input, next }) => {
       const { items } = store.get();
+      const mentionType = editor.plugin(MentionPlugin).schema.type;
       const keepKnownChips = (nodes: readonly Descendant[]): Descendant[] =>
         nodes.map((node) => {
           if (!ElementApi.isElement(node)) return node;
-          if (!isMention(node)) {
+          if (!isMention(node, mentionType)) {
             return { ...node, children: keepKnownChips(node.children) };
           }
 
@@ -152,10 +153,10 @@ const PromptEditorPlugin = definePlugin('promptEditor', {
         flushSync(store.get().report);
 
         const send = Array.from(form.elements).find(
-          (element): element is HTMLButtonElement | HTMLInputElement =>
-            (element instanceof HTMLButtonElement ||
-              element instanceof HTMLInputElement) &&
-            element.type === 'submit'
+          (control): control is HTMLButtonElement | HTMLInputElement =>
+            (control instanceof HTMLButtonElement ||
+              control instanceof HTMLInputElement) &&
+            control.type === 'submit'
         );
 
         if (send && !send.disabled) send.click();
@@ -166,7 +167,9 @@ const PromptEditorPlugin = definePlugin('promptEditor', {
     setMessage: txLocate(false, (message: string) => {
       const hadSelection = tx.selection() !== null;
 
-      tx.value.replace({ children: toValue(message) });
+      tx.value.replace({
+        children: toValue(message, editor.plugin(MentionPlugin).schema.type),
+      });
 
       const end = tx.points.end([]);
 
@@ -282,17 +285,19 @@ export function PromptEditor({
         }),
         PromptEditorPlugin,
       ],
-      initialValue: toValue(value ?? ''),
+      initialValue: ({ editor: created }) =>
+        toValue(value ?? '', created.plugin(MentionPlugin).schema.type),
     },
     []
   );
   const prompt = editor.plugin(PromptEditorPlugin);
+  const mentionType = editor.plugin(MentionPlugin).schema.type;
   const reported = React.useRef(value ?? '');
   // A parent that turns a change down keeps the same `value`, so React would
   // not render the field again to put that value back.
   const [, renderAgain] = React.useReducer((count: number) => count + 1, 0);
   const report = () => {
-    const message = toMessage(editor.read.children());
+    const message = toMessage(editor.read.children(), mentionType);
 
     reported.current = message;
     onChange?.(message);
@@ -321,7 +326,12 @@ export function PromptEditor({
 
     const view = form.ownerDocument.defaultView;
     const onFormData = (event: FormDataEvent) => {
-      if (name) event.formData.set(name, toMessage(editor.read.children()));
+      if (name) {
+        event.formData.set(
+          name,
+          toMessage(editor.read.children(), mentionType)
+        );
+      }
     };
     // The window hears a reset after every listener that can cancel it,
     // React's `onReset` included.
@@ -344,7 +354,7 @@ export function PromptEditor({
       form.removeEventListener('submit', onSubmit, true);
       view?.removeEventListener('reset', onReset);
     };
-  }, [editor, name, prompt]);
+  }, [editor, mentionType, name, prompt]);
 
   return (
     <EditorRoot
