@@ -70,7 +70,7 @@ export const AIKit = [
         },
       },
       afterContainer: AILoadingBar,
-      afterEditable: AIMenu,
+      caret: AIMenu,
       wrapRoot: AIIntegration,
     },
     shortcuts: {

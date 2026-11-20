@@ -301,6 +301,7 @@ export {
   getActiveEditorTransaction,
   getCaretOwner,
   getCarriedCaretEditor,
+  readCaretViewIn,
   getViewAuthor,
   getViewPresentation,
   holdsCaret,

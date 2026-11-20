@@ -176,6 +176,7 @@ type AnyPluginSlots = Omit<
   | 'afterNodeChildren'
   | 'beforeContainer'
   | 'beforeEditable'
+  | 'caret'
   | 'wrapContent'
   | 'wrapNode'
   | 'wrapNodeChildren'
@@ -186,6 +187,7 @@ type AnyPluginSlots = Omit<
   afterNodeChildren?: ErasedCallback<React.ReactNode> | null;
   beforeContainer?: ContainerSiblingComponent | null;
   beforeEditable?: EditableSiblingComponent | null;
+  caret?: EditableSiblingComponent | null;
   wrapContent?: ((props: WrapContentProps) => React.ReactNode) | null;
   wrapNode?: ErasedRenderNodeWrapper | ErasedRenderNodeWrapperDescriptor | null;
   wrapNodeChildren?: ErasedRenderNodeWrapper | null;
@@ -471,6 +473,12 @@ type ReactSlotFields<C extends AnyBasePluginDefinition> = {
   afterNodeChildren?: (props: RenderNodeWrapperProps<C>) => React.ReactNode;
   beforeContainer?: ContainerSiblingComponent;
   beforeEditable?: EditableSiblingComponent;
+  /**
+   * Renders after the Editable. Its editor is the view holding the caret while
+   * that view is this view or mounted inside it, such as a board note, and
+   * this view otherwise.
+   */
+  caret?: EditableSiblingComponent;
   wrapContent?: (props: WrapContentProps) => React.ReactNode;
   wrapNode?: RenderNodeWrapperConfig<C>;
   wrapNodeChildren?: RenderNodeWrapper<C>;

@@ -50,6 +50,7 @@ export type PlatePluginCache = Readonly<{
     afterNodeChildren: readonly string[];
     beforeContainer: readonly string[];
     beforeEditable: readonly string[];
+    caret: readonly string[];
     wrapContent: readonly string[];
     wrapNode: readonly string[];
     wrapNodeChildren: readonly string[];

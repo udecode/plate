@@ -598,7 +598,7 @@ export const LinkKit = [
       LinkRules.autolink({ variant: 'break' }),
     ],
     slots: {
-      afterEditable: LinkFloatingToolbar,
+      caret: LinkFloatingToolbar,
     },
   }),
 ] as const;

@@ -74,6 +74,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-caret-slot-toolbars",
+      "href": "/registry/changelog/2026-11-20-caret-slot-toolbars.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show the floating toolbar, link toolbar and AI menu where the caret is",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar", "link", "ai"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-code-syntax-style",
       "href": "/registry/changelog/2026-11-20-code-syntax-style.json",
       "status": "draft",

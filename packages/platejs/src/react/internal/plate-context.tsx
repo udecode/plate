@@ -6,6 +6,7 @@ import {
   getEditorRuntimeOwner,
   getViewPresentation,
   markRootViewUsed,
+  readCaretViewIn,
   readRootViewUse,
   readShownViewUse,
   subscribeCaretTarget,
@@ -13,6 +14,7 @@ import {
   subscribeShownViewUse,
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
+import type { NodeComponent } from '../../lib/plugin/PluginDefinition';
 import type { Editor } from '../editor/Editor';
 import { useEditorRootElement } from '../plite-react';
 import { trackEditableFocus } from '../stores/plate-controller/document-focus.internal';
@@ -158,29 +160,36 @@ export const outsideEveryProvider: PlateScope = {
 const targets = new WeakMap<object, PlateTarget>();
 export const getPlateTarget = (editor: Editor) => targets.get(editor);
 
+const targetOf = (
+  editor: Editor,
+  containerRef: PlateTarget['containerRef']
+): PlateTarget => {
+  let target = targets.get(editor);
+  if (!target) {
+    target = {
+      editor,
+      containerRef,
+      editableRef: {
+        get current() {
+          return editor.api.dom.editable();
+        },
+      },
+    };
+    targets.set(editor, target);
+  }
+  return target;
+};
+
 const createCaretScope = (
   view: Editor,
   containerRef: PlateTarget['containerRef']
 ): PlateScope => {
-  const getSnapshot = () => {
-    const editor =
+  const getSnapshot = () =>
+    targetOf(
       getCarriedCaretEditor(view) ??
-      failInvariant('Expected a mounted editor root');
-    let target = targets.get(editor);
-    if (!target) {
-      target = {
-        editor,
-        containerRef,
-        editableRef: {
-          get current() {
-            return editor.api.dom.editable();
-          },
-        },
-      };
-      targets.set(editor, target);
-    }
-    return target;
-  };
+        failInvariant('Expected a mounted editor root'),
+      containerRef
+    );
   const first = getSnapshot();
   return {
     getServerSnapshot: () => first,
@@ -188,6 +197,27 @@ const createCaretScope = (
     server: readServerFacts(first),
     subscribe: (listener) =>
       subscribeCaretTarget(getEditorRuntimeOwner(view), listener),
+  };
+};
+
+const createCaretSlotScope = (own: PlateTarget) => {
+  const owner = getEditorRuntimeOwner(own.editor);
+  return {
+    getServerSnapshot: () => own,
+    getSnapshot: () => {
+      const view = readCaretViewIn(own.editor);
+      return view && view !== own.editor
+        ? targetOf(view, own.containerRef)
+        : own;
+    },
+    server: readServerFacts(own),
+    subscribe: (listener: () => void) => {
+      const stops = [
+        subscribeCaretTarget(owner, listener),
+        subscribeShownViewUse(owner, listener),
+      ];
+      return () => stops.forEach((stop) => stop());
+    },
   };
 };
 
@@ -314,6 +344,30 @@ export function PlateCaretScope({
 
   return (
     <PlateScopeContext value={outside.scope}>{children}</PlateScopeContext>
+  );
+}
+
+export function PlateCaretSlots({
+  slots,
+}: {
+  slots: ReadonlyArray<{ Caret: NodeComponent; name: string }>;
+}) {
+  const own =
+    React.use(PlateScopeContext).fixed ??
+    failInvariant('Expected a mounted editing area');
+  const scope = React.useMemo(() => createCaretSlotScope(own), [own]);
+  const target = React.useSyncExternalStore(
+    scope.subscribe,
+    scope.getSnapshot,
+    scope.getServerSnapshot
+  );
+
+  return (
+    <PlateScopeContext value={scope}>
+      {slots.map(({ Caret, name }) => (
+        <Caret editableRef={target.editableRef} key={name} />
+      ))}
+    </PlateScopeContext>
   );
 }
 

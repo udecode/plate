@@ -192,6 +192,7 @@ type ErasedPluginSlots = {
   afterNodeChildren?: ErasedPluginCallable | null;
   beforeContainer?: NodeComponent | null;
   beforeEditable?: NodeComponent | null;
+  caret?: NodeComponent | null;
   wrapContent?: NodeComponent<{ children: any }> | null;
   wrapNode?:
     | ErasedPluginCallable
@@ -1346,6 +1347,12 @@ type BasePluginAuthorFields<
         beforeContainer?: () => any;
         /** Renders a component before the Editable. */
         beforeEditable?: () => any;
+        /**
+         * Renders a component after the Editable, whose editor is the view
+         * holding the caret while that view is this view or mounted inside it,
+         * such as a board note, and this view otherwise.
+         */
+        caret?: () => any;
         /** Wraps the Editable content and its lifecycle effects. */
         wrapContent?: NodeComponent<{ children: any }>;
         /** Wraps a rendered node. */

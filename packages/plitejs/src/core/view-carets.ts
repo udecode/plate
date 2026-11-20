@@ -185,7 +185,21 @@ export const samePair = (left: CaretPair | null, right: CaretPair | null) =>
     left.presentation === right.presentation &&
     left.root === right.root);
 
-const setCommittedCarets = (owner: Editor, carets: Carets) => {
+const notifyCaretOwner = (owner: Editor) => {
+  for (const listener of CARET_OWNER_LISTENERS.get(owner) ?? []) listener();
+};
+
+// A presentation is released in an insertion effect's cleanup, where React
+// forbids scheduling updates, so the notice of a released caret follows it.
+const notifyCaretOwnerAfterRelease = (owner: Editor) => {
+  queueMicrotask(() => notifyCaretOwner(owner));
+};
+
+const setCommittedCarets = (
+  owner: Editor,
+  carets: Carets,
+  notifyOwner = notifyCaretOwner
+) => {
   const before = getCommittedCarets(owner);
 
   COMMITTED.set(owner, carets);
@@ -195,7 +209,7 @@ const setCommittedCarets = (owner: Editor, carets: Carets) => {
     }
   }
   if (samePair(before.owner, carets.owner)) return;
-  for (const listener of CARET_OWNER_LISTENERS.get(owner) ?? []) listener();
+  notifyOwner(owner);
 };
 
 /**
@@ -718,11 +732,15 @@ const forgetPresentation = (owner: Editor, presentation: ViewPresentation) => {
     )
   );
 
-  setCommittedCarets(owner, {
-    ...carets,
-    book,
-    owner: carets.owner?.presentation === presentation ? null : carets.owner,
-  });
+  setCommittedCarets(
+    owner,
+    {
+      ...carets,
+      book,
+      owner: carets.owner?.presentation === presentation ? null : carets.owner,
+    },
+    notifyCaretOwnerAfterRelease
+  );
   WATCHED.get(owner)?.delete(presentation);
 };
 

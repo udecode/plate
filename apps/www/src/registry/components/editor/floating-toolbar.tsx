@@ -307,7 +307,7 @@ function PositionedFloatingToolbar({
 
 export const FloatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
-    afterEditable: () => <FloatingToolbar />,
+    caret: () => <FloatingToolbar />,
   },
 });
 

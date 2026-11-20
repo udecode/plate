@@ -47,6 +47,7 @@ const opaquePluginSlotKeys = new Set<PropertyKey>([
   'afterNodeChildren',
   'beforeContainer',
   'beforeEditable',
+  'caret',
   'wrapContent',
   'wrapNode',
   'wrapNodeChildren',

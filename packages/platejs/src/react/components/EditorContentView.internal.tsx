@@ -13,7 +13,11 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
-import { PlateReadOnlyContext, usePlateModel } from '../internal/plate-context';
+import {
+  PlateCaretSlots,
+  PlateReadOnlyContext,
+  usePlateModel,
+} from '../internal/plate-context';
 import {
   getHandlerView,
   type EditableProps as RuntimeEditableProps,
@@ -343,6 +347,23 @@ function EditorContentBranch<TExtra extends object>({
     );
   });
 
+  const caretSlots = getPlateRuntime(editor).pluginCache.slots.caret.flatMap(
+    (name) => {
+      const plugin =
+        getCompiledPlatePlugin(editor, name) ??
+        failInvariant('Expected value to be defined');
+      if (isEditOnly(plateReadOnly, plugin, 'slots')) return [];
+
+      return [
+        {
+          Caret:
+            plugin.slots.caret ?? failInvariant('Expected value to be defined'),
+          name,
+        },
+      ];
+    }
+  );
+
   let content: React.ReactNode = (
     <PlateRenderedAttributeProvider>
       <Editable {...editableExtra} {...editableProps} ref={ref} />
@@ -375,6 +396,7 @@ function EditorContentBranch<TExtra extends object>({
       {beforeEditable}
       {content}
       {afterEditable}
+      {caretSlots.length > 0 && <PlateCaretSlots slots={caretSlots} />}
     </>
   );
 }

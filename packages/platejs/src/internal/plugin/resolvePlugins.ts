@@ -243,6 +243,7 @@ const createMutablePlatePluginCache = (): MutablePlatePluginCache => ({
     afterNodeChildren: [],
     beforeContainer: [],
     beforeEditable: [],
+    caret: [],
     wrapContent: [],
     wrapNode: [],
     wrapNodeChildren: [],
@@ -903,6 +904,9 @@ export const createPlateModelPublication = (
     if (plugin.slots.beforeEditable) {
       pluginCache.slots.beforeEditable.push(plugin.name);
     }
+    if (plugin.slots.caret) {
+      pluginCache.slots.caret.push(plugin.name);
+    }
     if (plugin.slots.wrapNodeChildren) {
       pluginCache.slots.wrapNodeChildren.push(plugin.name);
     }
@@ -973,6 +977,7 @@ export const createPlateModelPublication = (
       afterNodeChildren: freezeList(pluginCache.slots.afterNodeChildren),
       beforeContainer: freezeList(pluginCache.slots.beforeContainer),
       beforeEditable: freezeList(pluginCache.slots.beforeEditable),
+      caret: freezeList(pluginCache.slots.caret),
       wrapContent: freezeList(pluginCache.slots.wrapContent),
       wrapNode: freezeList(pluginCache.slots.wrapNode),
       wrapNodeChildren: freezeList(pluginCache.slots.wrapNodeChildren),

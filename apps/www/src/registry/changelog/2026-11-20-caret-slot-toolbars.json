@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-caret-slot-toolbars",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-caret-slot-toolbars.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Show the floating toolbar, link toolbar and AI menu where the caret is",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-floating-toolbar-link-ai-menu-where-0f845586",
+      "kind": "behavior",
+      "summary": "The floating toolbar, the link toolbar and the AI menu render in the new `caret` slot, so they follow the caret into a board note inside the page and act on the note. A toolbar of another `EditorContent`, such as a header, stays on its own content while the caret is in the body or its note. In a note, the floating toolbar now shows the same buttons as on the page.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar", "link", "ai"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-caret-slot-toolbars",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

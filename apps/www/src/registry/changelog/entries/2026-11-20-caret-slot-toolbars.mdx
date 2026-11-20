@@ -1,0 +1,14 @@
+---
+id: 2026-11-20-caret-slot-toolbars
+date: 2026-11-20
+status: draft
+kind: behavior
+summary: 'Show the floating toolbar, link toolbar and AI menu where the caret is'
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-20-floating-toolbar-link-ai-menu-where-0f845586","kind":"behavior","migrationNotes":[]} -->
+
+- **`floating-toolbar`**, **`link`**, **`ai`**: The floating toolbar, the link toolbar and the AI menu render in the new `caret` slot, so they follow the caret into a board note inside the page and act on the note. A toolbar of another `EditorContent`, such as a header, stays on its own content while the caret is in the body or its note. In a note, the floating toolbar now shows the same buttons as on the page.

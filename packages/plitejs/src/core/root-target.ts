@@ -1,7 +1,13 @@
+import { getViewPresentation } from '../editor-runtime-view';
 import type { Editor, RootKey } from '../interfaces/editor';
-import { getEditorRuntime, getEditorRuntimeOwner } from './editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  type InternalEditorRuntime,
+} from './editor-runtime';
 import { notifyObservers } from './lifecycle-error';
-import { subscribeEditorViewState } from './public-state';
+import { getBaseCallRoot, subscribeEditorViewState } from './public-state';
+import { getCaretOwner } from './view-carets';
 import type { ViewPresentation } from './view-presentation';
 import { countCoreWork } from './work';
 
@@ -367,6 +373,29 @@ export const readNestedRootView = (
       [...entry.views].filter(isNested)
     )?.view ?? null
   );
+};
+
+export const readCaretViewIn = <TView extends Editor>(
+  area: TView
+): TView | null => {
+  const owner = getEditorRuntimeOwner(area);
+  const caretOwner = getCaretOwner(owner);
+  const target = readRootTarget(
+    owner,
+    caretOwner ? caretOwner.presentation : getViewPresentation(area),
+    getBaseCallRoot(owner)
+  );
+
+  if (!target?.shown) return null;
+
+  const host = getEditorRuntime(area);
+  let runtime: InternalEditorRuntime | undefined = getEditorRuntime(
+    target.view
+  );
+
+  while (runtime && runtime !== host) runtime = runtime.mountedIn;
+
+  return runtime ? (target.view as TView) : null;
 };
 
 export const subscribeRootTarget = (

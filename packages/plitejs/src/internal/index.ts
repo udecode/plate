@@ -44,6 +44,7 @@ export {
 } from '../core/record-store';
 export {
   markRootViewUsed,
+  readCaretViewIn,
   readRootViewUse,
   readShownViewUse,
   subscribeShownViewUse,
