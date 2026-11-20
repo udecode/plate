@@ -11,14 +11,17 @@
 import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { homedir, loadavg, userInfo } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
@@ -269,6 +272,29 @@ const shell = (logs, name, line) => {
   };
 };
 
+// Playwright empties its output folder when its next run starts.
+const keepFailedResults = (logs, name, since) => {
+  const kept = join(logs, `${name}-results`);
+  let count = 0;
+  for (const app of readdirSync(join(worktree, 'apps'))) {
+    const results = join(worktree, 'apps', app, 'test-results');
+    if (!existsSync(results)) continue;
+    for (const entry of readdirSync(results, {
+      recursive: true,
+      withFileTypes: true,
+    })) {
+      if (entry.name !== 'error-context.md') continue;
+      if (statSync(join(entry.parentPath, entry.name)).mtimeMs < since) {
+        continue;
+      }
+      const folder = relative(results, entry.parentPath);
+      cpSync(entry.parentPath, join(kept, app, folder), { recursive: true });
+      count += 1;
+    }
+  }
+  return count > 0 ? kept : null;
+};
+
 const stepLog = (log, step) =>
   stepOutput(existsSync(log) ? readFileSync(log, 'utf-8') : '', step);
 const readFailures = (log, step) => {
@@ -391,8 +417,8 @@ const report = (event) => {
   const found = event.cleared
     ? `Local CI found ${event.step} no longer failing on next with failures ${EXPECTED_PATH} lists. Log: ${event.log}, which names them. Remove their lines from the list and land through land.mjs.`
     : event.kind === 'flake'
-      ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}. The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.`
-      : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}. The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
+      ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.`
+      : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
@@ -510,6 +536,7 @@ const run = (args) => {
     }
     const step = option('--step');
     const name = runId(tip, step ?? (full ? 'full' : 'ci'));
+    const checkStarted = Date.now();
     const result = check(
       logs,
       name,
@@ -540,6 +567,7 @@ const run = (args) => {
     }
     const passing = new Set(result.passed);
     const flaked = new Set();
+    const results = keepFailedResults(logs, name, checkStarted);
     for (const failed of [...result.failed, ...result.interrupted]) {
       const interrupted = result.interrupted.includes(failed);
       const { failures, listedPassing, unexpected } = interrupted
@@ -581,9 +609,14 @@ const run = (args) => {
         files.length > 0 && files.every(Boolean)
           ? rerunCommand(failed, files)
           : null;
+      const aloneName = runId(
+        tip,
+        line ? `${failed}-failed` : `${failed}-alone`
+      );
+      const aloneStarted = Date.now();
       const alone = line
-        ? shell(logs, runId(tip, `${failed}-failed`), line)
-        : check(logs, runId(tip, `${failed}-alone`), [failed], { full });
+        ? shell(logs, aloneName, line)
+        : check(logs, aloneName, [failed], { full });
       const ok = passes(alone, failed, line ? files : undefined);
       if (ok && interrupted) {
         passing.add(failed);
@@ -597,6 +630,7 @@ const run = (args) => {
           load,
           loaded: load > FLAKE_LOAD,
           log: result.log,
+          results,
           step: failed,
           tip,
         };
@@ -621,6 +655,7 @@ const run = (args) => {
         load,
         loaded: load > FLAKE_LOAD,
         log: alone.log,
+        results: keepFailedResults(logs, aloneName, aloneStarted) ?? results,
         step: failed,
         tip,
         ...found,
