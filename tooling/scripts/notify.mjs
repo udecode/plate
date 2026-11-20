@@ -13,7 +13,16 @@ import { homedir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { LAND_CHECK } from '../../.agents/pstack/proof.mjs';
 import { findings } from '../../.agents/pstack/writing-check.mjs';
+import {
+  changedSince,
+  run as gitAt,
+  landingPair,
+  showAt,
+  untrackedFiles,
+  UPSTREAM,
+} from './private-files.mjs';
 
 const USAGE =
   'usage: notify send --to <login|dev|channel> [--file <png|jpg|gif|mp4|webm>]... <text...> | notify team <revision-range> | notify check';
@@ -358,6 +367,102 @@ const team = (args) => {
   console.log(JSON.stringify(messages));
 };
 
+const DATED_PLAN = /^docs\/plans\/\d{4}-\d{2}-\d{2}-[^/]+\.md$/u;
+const STEP = /^- \[(?<done>[ x])\] (?<id>\w+)\./u;
+const DEMO = /^Demo:[ \t]*(?<value>.*?)[ \t]*$/mu;
+const DEMO_VALUE = /^(?:step (?<step>\w+)|none)[,.;:]?[ \t]+\S/u;
+const SHOT = /^\[\[shot: (?<path>[^|\]]+?) *\|/gmu;
+
+const demoOf = (text) => DEMO.exec(text.split(/^## /mu)[0])?.groups.value;
+
+const stepsOf = (text) =>
+  new Map(
+    (text.split(/^## /mu).find((part) => part.startsWith('Steps\n')) ?? '')
+      .split('\n')
+      .flatMap((line) => {
+        const step = STEP.exec(line);
+        return step ? [[step.groups.id, step.groups.done === 'x']] : [];
+      })
+  );
+
+// zbot posts a landing's Team line with the files that this folder's shots.md
+// names, and posts none when one lies outside the folder or it names more than four.
+const shotsProblem = (path, id) => {
+  const session =
+    process.env.CLAUDE_CODE_HOST_SESSION_ID ||
+    process.env.CLAUDE_CODE_SESSION_ID ||
+    process.env.CODEX_SESSION_ID;
+  const demo = `step ${id} of ${path} is the plan's Demo step`;
+  if (!session) {
+    return `${demo}, but no session id is set, so its demo cannot be found. Land it from the agent session that recorded the clip.`;
+  }
+  const dir = join(homedir(), '.local/share/plate-bot/shots/landed', session);
+  const file = join(dir, 'shots.md');
+  const shots = existsSync(file)
+    ? [...readFileSync(file, 'utf-8').matchAll(SHOT)].map(({ groups }) =>
+        groups.path.trim()
+      )
+    : [];
+  const posts = (shot) =>
+    MEDIA.test(shot) &&
+    !shot.includes('..') &&
+    shot.startsWith(`${dir}/`) &&
+    existsSync(shot);
+  if (shots.length > 0 && shots.length <= 4 && shots.every(posts)) return null;
+  return `${demo}, and ${file} must name one to four clips or stills that exist in that folder, or zbot posts none. Record the demo with the clip skill, copy its files into ${dir} and write one [[shot: <absolute path> | <a few words>]] line per file in shots.md, as AGENTS.md's Team section says.`;
+};
+
+const demoProblems = (bodies) => {
+  const root = process.cwd();
+  const base = gitAt(root, ['merge-base', 'HEAD', UPSTREAM]).stdout.trim();
+  const pairing = { pair: landingPair };
+  const changed = base ? changedSince(root, base, pairing) : null;
+  if (!changed) {
+    return [
+      `notify check cannot diff the plans against where HEAD meets ${UPSTREAM}`,
+    ];
+  }
+  const committed = process.env[LAND_CHECK] === '1';
+  const announced = bodies.some((body) => teamLines(body).length > 0);
+  return [...new Set([...changed, ...untrackedFiles(root, ['docs/plans'])])]
+    .filter((path) => DATED_PLAN.test(path) && existsSync(join(root, path)))
+    .flatMap((path) => {
+      const after = readFileSync(join(root, path), 'utf-8');
+      const steps = stepsOf(after);
+      if (steps.size === 0) return [];
+      const shown = showAt(root, base, path, pairing);
+      const before = shown.status === 0 ? shown.stdout : null;
+      const demo = demoOf(after);
+      if (demo === undefined) {
+        return before === null || demoOf(before) !== undefined
+          ? [
+              `${path} has steps and no Demo line. Under its Status line write "Demo: step <id>, <what the clip shows>" for the step whose landing first gives a teammate something to try on a page, or "Demo: none, <why nothing in it is worth a clip>".`,
+            ]
+          : [];
+      }
+      const named = DEMO_VALUE.exec(demo)?.groups;
+      if (!named) {
+        return [
+          `${path} has the Demo line "Demo: ${demo}". Write "Demo: step <id>, <what the clip shows>" or "Demo: none, <why>".`,
+        ];
+      }
+      const { step } = named;
+      if (!step) return [];
+      if (!steps.has(step)) {
+        return [
+          `${path}'s Demo line names step ${step}, which its Steps lack. Move the line to the step whose landing now first gives a teammate something to try, or write "Demo: none, <why>".`,
+        ];
+      }
+      if (!steps.get(step) || stepsOf(before ?? '').get(step)) return [];
+      return [
+        shotsProblem(path, step),
+        committed && !announced
+          ? `step ${step} of ${path} is the plan's Demo step, and the land message has no Team line. Say what teammates can now try, then run land.mjs again with --message.`
+          : null,
+      ].filter(Boolean);
+    });
+};
+
 // land.mjs runs this as a land check, after it squashes the task's commit and
 // before it pushes, so a Team line that would hand teammates a command never posts.
 const check = (args) => {
@@ -393,6 +498,8 @@ const check = (args) => {
       `a Team line hands teammates a command to run, but they work through Claude:\n${refused.map((line) => `  ${line}`).join('\n')}\nSay in plain words what changed for them, or what to ask Claude for, then run land.mjs again with --message.`
     );
   }
+  const missing = demoProblems([...landing]);
+  if (missing.length > 0) fail(1, missing.join('\n'));
 };
 
 const [command, ...rest] = process.argv.slice(2);
