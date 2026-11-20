@@ -188,13 +188,23 @@ export type InternalPluginPublicationEntry =
 
 export type ViewFocus = Readonly<{ composing: boolean; focused: boolean }>;
 
-export type ViewPolicySource = Readonly<{
-  current: () => InternalEditorRuntime | undefined;
-  focusOf?: (
-    target: InternalEditorRuntime | undefined
-  ) => ViewFocus | undefined;
-  subscribe?: (listener: () => void) => () => void;
+export type ViewPolicyTarget = Readonly<{
+  current: () => Editor | undefined;
+  subscribe: (listener: () => void) => () => void;
 }>;
+
+export type ViewMadeFrom = Readonly<{
+  current: () => InternalEditorRuntime;
+  follows?: undefined;
+}>;
+
+export type ViewFollow = Readonly<{
+  current: () => InternalEditorRuntime | undefined;
+  focus: () => ViewFocus | undefined;
+  follows: ViewPolicyTarget;
+}>;
+
+export type ViewPolicySource = ViewFollow | ViewMadeFrom;
 
 export type InternalEditorRuntime<V extends Value = Value> =
   InternalPluginRuntime<V> &

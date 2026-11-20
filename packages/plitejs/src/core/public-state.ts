@@ -304,6 +304,8 @@ import {
   hasEditorRuntime,
   type InternalPluginPublicationEntry,
   type InternalEditorRuntime,
+  type ViewFocus,
+  type ViewPolicySource,
 } from './editor-runtime';
 import {
   getCompiledEditorSchemaFromApi,
@@ -676,10 +678,12 @@ type EditorViewStateChange =
   | 'composition'
   | 'focused'
   | 'readOnly';
-const EDITOR_VIEW_STATE_LISTENERS = new WeakMap<
+type ViewStateListeners = WeakMap<
   object,
   Set<(change: EditorViewStateChange) => void>
->();
+>;
+const EDITOR_VIEW_STATE_LISTENERS: ViewStateListeners = new WeakMap();
+const VIEW_STATE_FOLLOWS: ViewStateListeners = new WeakMap();
 const LAST_COMMIT = new WeakMap<Editor, EditorCommit | null>();
 const SNAPSHOT_CACHE = new WeakMap<Editor, Map<string, EditorSnapshot>>();
 const READ_PROJECTIONS = new WeakMap<Editor, EditorDocumentValue>();
@@ -10906,7 +10910,7 @@ export const isEditorCompositionPending = (editor: AnyPluginEditor) =>
 const recordPresentationComposing = (editor: AnyPluginEditor) => {
   // A view that follows another answers composition from that view, which
   // records its own.
-  if (getEditorRuntime(editor).policySource?.focusOf) return;
+  if (getEditorRuntime(editor).policySource?.follows) return;
 
   const composing =
     editor.read.view.isComposing() || isEditorCompositionPending(editor);
@@ -11062,12 +11066,14 @@ const PENDING_VIEW_STATE_NOTICES = new WeakMap<object, Set<ViewStateNotice>>();
 const deliverViewStateNotice = (channel: object, notice: ViewStateNotice) => {
   if (!PENDING_VIEW_STATE_NOTICES.get(channel)?.delete(notice)) return;
 
-  notifyObservers(
-    notice.editor,
-    EDITOR_VIEW_STATE_LISTENERS.get(channel),
-    'commit-listener',
-    (listener) => listener(notice.change)
-  );
+  for (const listeners of [EDITOR_VIEW_STATE_LISTENERS, VIEW_STATE_FOLLOWS]) {
+    notifyObservers(
+      notice.editor,
+      listeners.get(channel),
+      'commit-listener',
+      (listener) => listener(notice.change)
+    );
+  }
 };
 
 const notifyViewStateChannel = (
@@ -11120,29 +11126,44 @@ const isPolicyChange = (change: EditorViewStateChange) =>
 
 const listenToViewState = (
   runtime: object,
-  listener: (change: EditorViewStateChange) => void
+  listener: (change: EditorViewStateChange) => void,
+  registry = EDITOR_VIEW_STATE_LISTENERS
 ) => {
-  const listeners = EDITOR_VIEW_STATE_LISTENERS.get(runtime) ?? new Set();
+  const listeners = registry.get(runtime) ?? new Set();
 
   listeners.add(listener);
-  EDITOR_VIEW_STATE_LISTENERS.set(runtime, listeners);
+  registry.set(runtime, listeners);
 
   return () => {
     listeners.delete(listener);
 
     if (listeners.size === 0) {
-      EDITOR_VIEW_STATE_LISTENERS.delete(runtime);
+      registry.delete(runtime);
     }
   };
 };
 
-const followViewPolicy = (
-  { policySource: source }: Pick<InternalEditorRuntime, 'policySource'>,
-  hearChange: (change: EditorViewStateChange) => void,
-  hearSwitch: () => void
-): (() => void) => {
-  if (!source) return () => {};
+type PolicyFollower = Readonly<{
+  hearFocus: (key: keyof ViewFocus, now: boolean) => void;
+  hearPolicy: (change: EditorViewStateChange) => void;
+  hearSwitch: () => void;
+}>;
 
+const POLICY_FOLLOWS = new WeakMap<
+  ViewPolicySource,
+  Readonly<{ followers: Set<PolicyFollower>; stop: () => void }>
+>();
+
+const startPolicyFollow = (
+  source: ViewPolicySource,
+  followers: ReadonlySet<PolicyFollower>
+) => {
+  const tell = (hear: (follower: PolicyFollower) => void) => {
+    for (const follower of [...followers]) {
+      if (followers.has(follower)) hear(follower);
+    }
+  };
+  const tellSwitch = () => tell((follower) => follower.hearSwitch());
   const follow = (target: InternalEditorRuntime | undefined) => {
     if (!target) return () => {};
 
@@ -11152,21 +11173,36 @@ const followViewPolicy = (
     const hearTarget = (change: EditorViewStateChange) => {
       if (!isPolicyChange(change)) return;
 
-      if (source.current() === target) hearChange(change);
-      else hearSwitch();
+      if (source.current() === target) {
+        tell((follower) => follower.hearPolicy(change));
+      } else {
+        tellSwitch();
+      }
     };
     const stops = [target, ...policyChannels(target)].map((channel) =>
-      listenToViewState(channel, hearTarget)
+      listenToViewState(channel, hearTarget, VIEW_STATE_FOLLOWS)
     );
 
-    stops.push(followViewPolicy(target, hearTarget, hearSwitch));
-    if (source.focusOf?.(target)) {
+    stops.push(
+      joinPolicyFollow(target, {
+        hearFocus: () => {},
+        hearPolicy: hearTarget,
+        hearSwitch: tellSwitch,
+      })
+    );
+    if (source.follows) {
       stops.push(
-        listenToViewState(target, (change) => {
-          if (change === 'focused' || change === 'composing') {
-            hearChange(change);
-          }
-        })
+        listenToViewState(
+          target,
+          (change) => {
+            if (change !== 'focused' && change !== 'composing') return;
+
+            const now = source.focus()?.[change] ?? false;
+
+            tell((follower) => follower.hearFocus(change, now));
+          },
+          VIEW_STATE_FOLLOWS
+        )
       );
     }
 
@@ -11176,7 +11212,7 @@ const followViewPolicy = (
   };
   let followed = source.current();
   let stopFollowed = follow(followed);
-  const stopSource = source.subscribe?.(() => {
+  const stopSource = source.follows?.subscribe(() => {
     const next = source.current();
 
     if (next === followed) return;
@@ -11184,16 +11220,47 @@ const followViewPolicy = (
     stopFollowed();
     followed = next;
     stopFollowed = follow(next);
-    hearSwitch();
-    if (source.focusOf) {
-      hearChange('focused');
-      hearChange('composing');
-    }
+    tellSwitch();
+
+    const focus = source.focus();
+
+    tell((follower) => {
+      follower.hearFocus('focused', focus?.focused ?? false);
+      follower.hearFocus('composing', focus?.composing ?? false);
+    });
   });
 
   return () => {
     stopSource?.();
     stopFollowed();
+  };
+};
+
+const joinPolicyFollow = (
+  { policySource: source }: Pick<InternalEditorRuntime, 'policySource'>,
+  follower: PolicyFollower
+): (() => void) => {
+  if (!source) return () => {};
+
+  let shared = POLICY_FOLLOWS.get(source);
+
+  if (!shared) {
+    const followers = new Set<PolicyFollower>();
+
+    shared = { followers, stop: startPolicyFollow(source, followers) };
+    POLICY_FOLLOWS.set(source, shared);
+  }
+
+  const { followers, stop } = shared;
+
+  followers.add(follower);
+
+  return () => {
+    followers.delete(follower);
+    if (followers.size > 0) return;
+
+    POLICY_FOLLOWS.delete(source);
+    stop();
   };
 };
 
@@ -11224,21 +11291,17 @@ export const subscribeEditorViewState = <V extends Value>(
     composing: editor.read.view.isComposing(),
     focused: editor.read.view.isFocused(),
   };
-  const hearFollowed = (change: EditorViewStateChange) => {
-    if (!subscribed) return;
-    if (change === 'focused' || change === 'composing') {
-      const now =
-        change === 'focused'
-          ? editor.read.view.isFocused()
-          : editor.read.view.isComposing();
+  const hearFocus = (key: keyof ViewFocus, now: boolean) => {
+    if (!subscribed || now === heard[key]) return;
 
-      if (now === heard[change]) return;
-      heard[change] = now;
-    } else if (switching) {
-      // A pending switch notice already has the listener read both policies
-      // of the view it now follows, so that view's own notice would repeat it.
-      return;
-    }
+    heard[key] = now;
+    runEditorObserver(editor, 'commit-listener', () => listener(key));
+  };
+  const hearPolicy = (change: EditorViewStateChange) => {
+    // A pending switch notice already has the listener read both policies
+    // of the view it now follows, so that view's own notice would repeat it.
+    if (!subscribed || switching) return;
+
     runEditorObserver(editor, 'commit-listener', () => listener(change));
   };
   const hearSwitch = () => {
@@ -11263,7 +11326,7 @@ export const subscribeEditorViewState = <V extends Value>(
     ...[...policyChannels(runtime, presentationOf(editor))].map((channel) =>
       listenToViewState(channel, hearOwnPolicy)
     ),
-    followViewPolicy(runtime, hearFollowed, hearSwitch),
+    joinPolicyFollow(runtime, { hearFocus, hearPolicy, hearSwitch }),
     listenToOwnerAuthoredView(editor, listener),
   ];
 

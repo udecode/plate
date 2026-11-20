@@ -31,6 +31,7 @@ import {
   createEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
+import type { ViewPolicyTarget } from '../../core/editor-runtime';
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
 import { toPublicRoot } from '../../core/public-root';
@@ -55,7 +56,6 @@ import {
 import {
   createEditorViewRuntime,
   getViewPresentation,
-  type ViewPolicyTarget,
 } from '../../editor-runtime-view';
 import type { Editor } from '../../interfaces/editor';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';

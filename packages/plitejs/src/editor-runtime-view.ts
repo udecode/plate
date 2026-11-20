@@ -44,7 +44,9 @@ import {
   type InternalEditorReadRuntime,
   type InternalEditorRuntime,
   type ViewFocus,
-  type ViewPolicySource,
+  type ViewFollow,
+  type ViewMadeFrom,
+  type ViewPolicyTarget,
   setEditorRuntime,
 } from './core/editor-runtime';
 import { getSourcesForChange } from './core/listener-state';
@@ -135,25 +137,22 @@ import type { NodeUnsetNodesOptions } from './interfaces/transforms/node';
 import { getDefined } from './internal/get-defined';
 import { withImplicitRangeRoot } from './internal/root-location';
 
+type OwnFocus = {
+  composing: boolean;
+  focused: boolean;
+  policySource: ViewMadeFrom | undefined;
+};
+
 type ViewState = {
   authorId: string | undefined;
   editor: Editor | null;
-  composing: boolean;
   document: AdmittedDocument | undefined;
-  focused: boolean;
-  follows: ViewPolicyTarget | undefined;
   mountedIn: InternalEditorRuntime | undefined;
-  policySource: ViewPolicySource | undefined;
   presentation: ViewPresentation;
   readOnly: boolean;
   root: RootKey;
   surfaces: { readOnly: number; writable: number };
-};
-
-export type ViewPolicyTarget = Readonly<{
-  current: () => Editor | undefined;
-  subscribe: (listener: () => void) => () => void;
-}>;
+} & (OwnFocus | { policySource: ViewFollow });
 
 type LayeredEditorView<TEditor> = Omit<TEditor, 'blur' | 'focus' | 'root'> &
   Pick<EditorView, 'blur' | 'focus' | 'root'>;
@@ -343,6 +342,12 @@ type ViewStateTransformInput<V extends Value> = Pick<
 const shownOnlyReadOnly = ({ readOnly, writable }: ViewState['surfaces']) =>
   readOnly > 0 && writable === 0;
 
+const isShown = ({ surfaces }: ViewState) =>
+  surfaces.readOnly > 0 || surfaces.writable > 0;
+
+const ownsFocus = (state: ViewState): state is Extract<ViewState, OwnFocus> =>
+  'focused' in state;
+
 const isOwnLock = (state: ViewState) =>
   state.readOnly || shownOnlyReadOnly(state.surfaces);
 
@@ -401,23 +406,18 @@ export const getViewAuthor = (editor: object): string | undefined =>
     ? VIEW_STATES.get(getEditorRuntime(editor))?.authorId
     : undefined;
 
-const policySourceOf = (
-  sourceRuntime: InternalEditorRuntime | undefined,
-  target: ViewPolicyTarget | undefined,
-  root: RootKey
-): ViewPolicySource | undefined => {
-  if (!target) return sourceRuntime && { current: () => sourceRuntime };
+const followedArea = (target: ViewPolicyTarget, root: RootKey) => {
+  const runtime = viewRuntimeOf(target.current());
+  const state = runtime && VIEW_STATES.get(runtime);
 
-  return {
-    current: () => viewRuntimeOf(target.current()),
-    focusOf: (followed) => {
-      const state = followed && VIEW_STATES.get(followed);
-
-      return state?.root === root ? state : undefined;
-    },
-    subscribe: target.subscribe,
-  };
+  return state && ownsFocus(state) && state.root === root ? state : undefined;
 };
+
+const followOf = (target: ViewPolicyTarget, root: RootKey): ViewFollow => ({
+  current: () => viewRuntimeOf(target.current()),
+  focus: () => followedArea(target, root),
+  follows: target,
+});
 
 const assertViewWritable = (state: ViewState) => {
   if (isViewReadOnly(state)) {
@@ -425,11 +425,8 @@ const assertViewWritable = (state: ViewState) => {
   }
 };
 
-const viewFocus = (state: ViewState): ViewFocus | undefined => {
-  const source = state.policySource;
-
-  return source?.focusOf ? source.focusOf(source.current()) : state;
-};
+const viewFocus = (state: ViewState): ViewFocus | undefined =>
+  ownsFocus(state) ? state : state.policySource.focus();
 
 const createViewApi = (state: ViewState): EditorStateViewApi =>
   Object.freeze({
@@ -1428,8 +1425,7 @@ const createViewRuntime = <V extends Value>(
       withDocumentViewRead(getViewEditor() ?? editor, () =>
         baseRuntime.read((state) => fn(projectState(state)))
       ),
-    hasSurface: () =>
-      viewState.surfaces.readOnly > 0 || viewState.surfaces.writable > 0,
+    hasSurface: () => isShown(viewState),
     mountedIn: viewState.mountedIn,
     policySource: viewState.policySource,
     presentation: viewState.presentation,
@@ -1443,8 +1439,14 @@ const createViewRuntime = <V extends Value>(
       };
     },
     setViewState: (key, value) => {
-      if (key === 'readOnly' && viewState.document) return false;
-      if (key !== 'readOnly' && viewState.follows) return false;
+      if (key === 'readOnly') {
+        if (viewState.document) return false;
+
+        const changed = viewState.readOnly !== value;
+        viewState.readOnly = value;
+        return changed;
+      }
+      if (!ownsFocus(viewState)) return false;
 
       const changed = viewState[key] !== value;
       viewState[key] = value;
@@ -1612,26 +1614,23 @@ export const createEditorViewRuntime = <
     );
   }
 
-  const follows = document ? undefined : policyTarget;
-  // A view that follows another answers focus from that view, and nothing
-  // updates a copy of that answer, so neither it nor a view made from it
-  // starts with one.
-  const seedsFocus = !follows && !sourceView?.follows;
+  const root = toInternalRoot(options.root);
+  const seedsFocus = !sourceView || ownsFocus(sourceView);
   const viewState: ViewState = {
     authorId: options.authorId ?? sourceView?.authorId,
     editor: null,
-    composing: seedsFocus && sourceEditor.read.view.isComposing(),
     document,
-    focused: seedsFocus && sourceEditor.read.view.isFocused(),
-    follows,
     mountedIn: mountedIn && getEditorRuntime(mountedIn),
-    policySource: document
-      ? undefined
-      : policySourceOf(
-          sourceRuntime,
-          policyTarget,
-          toInternalRoot(options.root)
-        ),
+    ...(policyTarget && !document
+      ? { policySource: followOf(policyTarget, root) }
+      : {
+          composing: seedsFocus && sourceEditor.read.view.isComposing(),
+          focused: seedsFocus && sourceEditor.read.view.isFocused(),
+          policySource:
+            sourceRuntime && !document
+              ? { current: () => sourceRuntime }
+              : undefined,
+        }),
     presentation:
       presentation ??
       (options.authored || options.document
@@ -1639,8 +1638,21 @@ export const createEditorViewRuntime = <
         : sourceView?.presentation) ??
       createViewPresentation(),
     readOnly: Boolean(document || options.readOnly),
-    root: toInternalRoot(options.root),
+    root,
     surfaces: { readOnly: 0, writable: 0 },
+  };
+  const focusState = (call: 'blur' | 'focus') => {
+    if (ownsFocus(viewState)) return viewState;
+
+    const area = followedArea(viewState.policySource.follows, root);
+
+    if (!area || !isShown(area)) {
+      throw new Error(
+        `Cannot ${call} an editor view while no editing area shows its root.`
+      );
+    }
+
+    return area;
   };
   const baseRuntime = getEditorRuntime(runtimeEditor);
   let viewEditor: Editor<V> | null = null;
@@ -1706,14 +1718,14 @@ export const createEditorViewRuntime = <
     },
     anchor: createViewAnchor,
     blur: () => {
-      viewState.focused = false;
+      focusState('blur').focused = false;
     },
     get children() {
       return viewRead.children();
     },
     install: installView,
     focus: () => {
-      viewState.focused = true;
+      focusState('focus').focused = true;
     },
     plugin: ((descriptor: PluginReference) =>
       (
@@ -1778,7 +1790,7 @@ export const getOwnViewPresentation = (editor: Editor) =>
   VIEW_STATES.get(getEditorRuntime(editor))?.presentation;
 
 export const getViewFollowTarget = (editor: Editor) =>
-  VIEW_STATES.get(getEditorRuntime(editor))?.follows;
+  VIEW_STATES.get(getEditorRuntime(editor))?.policySource?.follows;
 
 export const readShownDocument = (editor: Editor) => {
   const viewState = VIEW_STATES.get(getEditorRuntime(editor));

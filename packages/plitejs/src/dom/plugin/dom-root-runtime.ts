@@ -2,6 +2,7 @@ import {
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
   hasEditorRuntime,
+  type ViewPolicyTarget,
 } from '../../core/editor-runtime';
 import { toInternalRoot } from '../../core/public-root';
 import {
@@ -14,7 +15,6 @@ import type { ViewPresentation } from '../../core/view-presentation';
 import {
   getOwnViewPresentation,
   getViewFollowTarget,
-  type ViewPolicyTarget,
 } from '../../editor-runtime-view';
 import type { AnyEditor, Editor, RootKey } from '../../interfaces/editor';
 import {
