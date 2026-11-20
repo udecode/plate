@@ -2,6 +2,7 @@
 
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
+import * as React from 'react';
 
 import { BoardImageKit, BoardKit } from '@/registry/components/editor/board';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
@@ -11,13 +12,16 @@ import {
   EditorFrame,
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
+import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
 import { aiUser } from '@/registry/components/editor/use-chat';
 import { boardValue } from '@/registry/examples/values/board-value';
 
 export default function BoardDemo() {
+  const [browserUploads] = React.useState(createBrowserUploadKit);
   const editor = useCreateEditor({
     plugins: [
       ...EditorKit,
+      ...browserUploads.plugins,
       ...BoardKit,
       ...BoardImageKit,
       ...DiscussionKit,
@@ -32,6 +36,8 @@ export default function BoardDemo() {
     ],
     initialValue: boardValue,
   });
+
+  React.useEffect(() => browserUploads.dispose, [browserUploads]);
 
   return (
     <EditorRoot editor={editor}>

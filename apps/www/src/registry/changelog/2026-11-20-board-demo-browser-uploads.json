@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-board-demo-browser-uploads",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-board-demo-browser-uploads.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Upload pictures pasted on the board demo without a server",
+  "targets": [
+    {
+      "name": "board-demo",
+      "files": [
+        "apps/www/src/registry/examples/board-demo.tsx",
+        "apps/www/src/registry/examples/values/board-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-board-upload-pasted-pictures-demo-54991602",
+      "kind": "wiring",
+      "summary": "Install the browser upload kit after `EditorKit`, so a picture file pasted on the board uploads in the page and needs no upload server.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-board-demo-browser-uploads",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

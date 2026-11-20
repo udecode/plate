@@ -53,6 +53,8 @@ import {
 import { isReplaceableEmptyBlock } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import { getCaretAnchor } from '../../../internal/plugin/insertionAnchor';
+import { pastedUploadFiles } from '../../../internal/plugin/pastedUploadFiles';
+import { UPLOAD_COMMIT_TAG } from '../../../internal/plugin/uploadDrafts';
 import { createZustandStore } from '../../../lib/libs/zustand';
 import { lookup } from './mimeTypes.internal';
 
@@ -847,7 +849,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             return;
           }
 
-          owner.update({ history: 'skip' }, (tx) => {
+          owner.update({ history: 'skip', tags: UPLOAD_COMMIT_TAG }, (tx) => {
             const entry = tx.nodes.get(upload.key);
             if (
               tasks.get(upload.key)?.token !== task.token ||
@@ -1543,14 +1545,9 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
   .extend(() => ({
     commands: ({ around }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
-        const files = Array.from(input.files ?? []);
+        const files = pastedUploadFiles(input);
 
-        if (
-          files.length === 0 ||
-          Array.from(input.types ?? []).includes('text/html')
-        ) {
-          return next();
-        }
+        if (files.length === 0) return next();
 
         let handled = false;
         const transaction = state.transaction((tx) => {

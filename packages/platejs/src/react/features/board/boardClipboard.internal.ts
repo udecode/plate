@@ -4,6 +4,7 @@ import {
   type BoardPlace,
 } from '../../../features/board/lib';
 import { readImageLink } from '../../../internal/plugin/imageLink';
+import { pastedUploadFiles } from '../../../internal/plugin/pastedUploadFiles';
 import type { BoardViewCore } from './boardView.internal';
 import { activeElementOf } from './boardVoice.internal';
 
@@ -106,25 +107,30 @@ export const attachBoardClipboard = (
 
     if (!event.clipboardData || !onBoard) return;
 
-    const read = editor.api.dom.clipboard.readSlice(event.clipboardData);
+    const data = event.clipboardData;
+    const read = editor.api.dom.clipboard.readSlice(data);
+    const holdsFiles = data.files.length > 0 && read.kind !== 'slice';
+
+    if (holdsFiles && !onTarget) return;
 
     core.measure();
 
+    const open = read.kind !== 'slice' && !core.editedShape();
     const pictures =
-      read.kind !== 'slice' &&
-      !core.editedShape() &&
-      core.writable() &&
-      editor.plugin(BaseBoardImagePlugin).installed
-        ? picturesIn(event.clipboardData)
+      open && core.writable() && editor.plugin(BaseBoardImagePlugin).installed
+        ? picturesIn(data)
         : undefined;
+    const takesFiles = open && core.takesPictureFiles();
+    const fallbackFiles = takesFiles && pictures ? Array.from(data.files) : [];
+    const pictureFiles = takesFiles && !pictures ? pastedUploadFiles(data) : [];
 
-    if (pictures) {
+    if (pictures || pictureFiles.length > 0) {
+      const point = hover ? core.boardPointAt(hover) : core.viewCenter();
+
       event.preventDefault();
       event.stopPropagation();
-      core.landPictures(
-        pictures,
-        hover ? core.boardPointAt(hover) : core.viewCenter()
-      );
+      if (pictures) core.landPictures(pictures, point, fallbackFiles);
+      else core.landPictureFiles(pictureFiles, point);
 
       return;
     }
@@ -133,8 +139,9 @@ export const attachBoardClipboard = (
       read.kind === 'slice'
         ? core.land(read.slice, hover ? core.boardPointAt(hover) : undefined)
         : onTarget &&
+          !holdsFiles &&
           core.selectedShapes().length > 0 &&
-          core.paste(event.clipboardData);
+          core.paste(data);
 
     if (!(pasted || onTarget)) return;
     event.preventDefault();

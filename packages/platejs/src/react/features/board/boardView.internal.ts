@@ -8,6 +8,7 @@ import {
   type Descendant,
   type NodeKey,
   PathApi,
+  PLUGINS,
   type PluginTransaction,
   SelectionApi,
 } from '../../../core';
@@ -43,6 +44,8 @@ import {
   type BoardStyles,
   parseBoardStyle,
 } from '../../../features/board/lib/boardStyle.internal';
+import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
+import { uploadDraftsOf } from '../../../internal/plugin/uploadDrafts';
 import type { Editor, EditorHistoryController } from '../../core';
 import { attachBoardClipboard } from './boardClipboard.internal';
 import { attachBoardGestures } from './boardGesture.internal';
@@ -220,7 +223,16 @@ export type BoardViewCore = Readonly<{
   ) => boolean;
   deselectOnBoard: () => boolean;
   land: (slice: ContentSlice, place?: BoardPlace) => boolean;
-  landPictures: (images: readonly Element[], point: BoardPlace) => void;
+  landPictureFiles: (
+    files: readonly File[],
+    point: BoardPlace,
+    refused?: () => void
+  ) => void;
+  landPictures: (
+    images: readonly Element[],
+    point: BoardPlace,
+    fallbackFiles?: readonly File[]
+  ) => void;
   leaveBoard: (backward: boolean) => boolean;
   /** Mark the shapes `ids` as ones the eraser will remove. */
   markErasing: (ids: readonly string[]) => void;
@@ -250,6 +262,7 @@ export type BoardViewCore = Readonly<{
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
   styleFor: (type: string, style: BoardStyle) => BoardStyle;
+  takesPictureFiles: () => boolean;
   toggleSelected: (key: NodeKey) => void;
   undo: () => void;
   voice: Pick<
@@ -1201,32 +1214,123 @@ export const createBoardView = (
     return true;
   };
 
-  const pendingPictures = createPendingPictures({ editor, mounted, writable });
+  const pendingPictures = createPendingPictures({ editor, shapes, writable });
 
-  const landPictures = (images: readonly Element[], point: BoardPlace) => {
-    if (!surface) return;
-    pendingPictures.load(surface, images, (loaded) => {
-      const width =
-        loaded.reduce((total, { size: box }) => total + box.width, 0) +
-        PICTURE_GAP * (loaded.length - 1);
-      let x = point.x - width / 2;
-      const ids = write((tx) =>
-        loaded.flatMap(({ element: image, size: box }) => {
-          const id = tx
-            .plugin(BaseBoardImagePlugin)
-            .insert(
-              { children: [image], ...box, x, y: point.y - box.height / 2 },
-              { board }
-            );
+  const landRow = (
+    tx: PluginTransaction,
+    children: readonly Element[],
+    sizes: readonly BoardSize[],
+    point: BoardPlace
+  ) => {
+    const width =
+      sizes.reduce((total, box) => total + box.width, 0) +
+      PICTURE_GAP * (sizes.length - 1);
+    let x = point.x - width / 2;
 
-          x += box.width + PICTURE_GAP;
+    return children.flatMap((child, at) => {
+      const box = sizes[at];
+      const id = tx
+        .plugin(BaseBoardImagePlugin)
+        .insert(
+          { children: [child], ...box, x, y: point.y - box.height / 2 },
+          { board }
+        );
 
-          return id ?? [];
-        })
-      );
+      x += box.width + PICTURE_GAP;
 
-      if (ids) selectIds(ids);
+      return id ?? [];
     });
+  };
+
+  const takesPictureFiles = () => {
+    const image = editor.plugin(BaseBoardImagePlugin);
+    const holds =
+      (image.installed &&
+        editor.read.schema.element(image.schema.type)?.content
+          ?.allowedElementTypes) ||
+      [];
+
+    return (
+      writable() &&
+      [PLUGINS.upload, PLUGINS.image].every((name) => {
+        const type = getCompiledPlateModelBinding(editor, name)?.elementType;
+
+        return !!type && holds.includes(type);
+      })
+    );
+  };
+
+  const landPictureFiles: BoardViewCore['landPictureFiles'] = (
+    files,
+    point,
+    refused
+  ) => {
+    if (!surface) return;
+    pendingPictures.load(surface, files, (sizes) => {
+      const ids = write((tx) => {
+        const upload = uploadDraftsOf(tx);
+        let taken = files;
+        let batch = upload?.admit(taken, { kind: 'image' });
+
+        if (
+          batch &&
+          'failure' in batch &&
+          batch.failure.code === 'unsupported-file-type'
+        ) {
+          const others = new Set(batch.failure.files);
+
+          taken = files.filter((file) => !others.has(file));
+          batch = upload?.admit(taken, { kind: 'image' });
+        }
+        if (!batch || 'failure' in batch) return [];
+
+        const landed = landRow(
+          tx,
+          batch.drafts,
+          taken.map((file) => sizes[files.indexOf(file)]),
+          point
+        );
+
+        batch.fill(
+          landed.flatMap((id) => {
+            const holder = tx.unique.holder('shapeId', id);
+            const shape = holder && tx.nodes.get(holder.key)?.[0];
+            const draft =
+              shape && ElementApi.isElement(shape) && shape.children[0];
+
+            return (draft && tx.key(draft)) || [];
+          })
+        );
+
+        return landed;
+      });
+
+      if (ids && ids.length > 0) selectIds(ids);
+      else refused?.();
+    });
+  };
+
+  const landPictures: BoardViewCore['landPictures'] = (
+    images,
+    point,
+    fallbackFiles = []
+  ) => {
+    if (!surface) return;
+    pendingPictures.load(
+      surface,
+      images.map(({ url }) => String(url)),
+      (sizes, failed) => {
+        const landLinks = () => {
+          const ids = write((tx) => landRow(tx, images, sizes, point));
+
+          if (ids) selectIds(ids);
+        };
+
+        if (failed && fallbackFiles.length > 0) {
+          landPictureFiles(fallbackFiles, point, landLinks);
+        } else landLinks();
+      }
+    );
   };
 
   const paste = (data: DataTransfer) => {
@@ -1305,6 +1409,7 @@ export const createBoardView = (
     },
     deselectOnBoard,
     land,
+    landPictureFiles,
     landPictures,
     leaveBoard: (backward) => {
       if (!writable()) {
@@ -1377,6 +1482,7 @@ export const createBoardView = (
     slice: (ids) => boards.read.slice(ids),
     state: () => state,
     styleFor,
+    takesPictureFiles,
     toggleSelected: (key) => {
       const keys = selectedShapes().map((shape) => shape.key);
 

@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "components": {
+    "board-demo": [
+      "2026-11-20-board-demo-browser-uploads",
+      "2026-11-19-board-images",
+      "2026-11-18-ai-menu-acts-on-board-note-text",
+      "2026-11-18-comments-on-board-note-text"
+    ],
     "markdown": [
       "2026-11-20-markdown-cjk-emphasis",
       "2026-09-28-markdown-registered-tags",
@@ -31,11 +37,6 @@
       "2026-11-18-registry-icon-library",
       "2026-11-17-cn-package",
       "2026-11-12-add-board"
-    ],
-    "board-demo": [
-      "2026-11-19-board-images",
-      "2026-11-18-ai-menu-acts-on-board-note-text",
-      "2026-11-18-comments-on-board-note-text"
     ],
     "board-page-demo": ["2026-11-19-board-images", "2026-11-12-add-board"],
     "mode-toolbar-button": [

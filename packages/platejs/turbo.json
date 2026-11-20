@@ -4826,6 +4826,8 @@
         "source-hash:partition:proxies",
         "source-hash:partition:react-core",
         "source-hash:partition:suggestion-react",
+        "source-hash:partition:upload",
+        "source-hash:partition:upload-react",
         "source-hash:partition:yjs-react"
       ],
       "inputs": [

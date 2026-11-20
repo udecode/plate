@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-20-board-demo-browser-uploads",
+      "href": "/registry/changelog/2026-11-20-board-demo-browser-uploads.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Upload pictures pasted on the board demo without a server",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-markdown-cjk-emphasis",
       "href": "/registry/changelog/2026-11-20-markdown-cjk-emphasis.json",
       "status": "draft",
