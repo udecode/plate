@@ -9,7 +9,8 @@
 // worktree a pinned session uses stays only while something writes it or a
 // `git worktree lock` holds it. The run stops Next telemetry flushers that
 // esbuild left running with no parent, because they keep their worktree
-// forever. It writes its report to ~/Library/Logs/cleanup-daily/ and posts a
+// forever. It then clears the tool caches and Docker volumes machine.mjs marks
+// safe. It writes its report to ~/Library/Logs/cleanup-daily/ and posts a
 // notification with the space freed and the rows left to decide.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -20,6 +21,7 @@ import { fileURLToPath } from 'node:url';
 
 const LABEL = 'dev.dotai.cleanup-daily';
 const SCAN = join(dirname(fileURLToPath(import.meta.url)), 'scan.mjs');
+const MACHINE = join(dirname(fileURLToPath(import.meta.url)), 'machine.mjs');
 const LOGS = join(homedir(), 'Library', 'Logs', 'cleanup-daily');
 const SESSIONS = join(homedir(), 'Library', 'Application Support', 'Claude', 'claude-code-sessions');
 const KEEP_DAYS = 14;
@@ -78,17 +80,21 @@ function run(folder) {
   writeFileSync(sessionsFile, JSON.stringify(desktopSessions()));
   const scan = spawnSync(process.execPath, [SCAN, '--repos', folder, '--delete', '--sessions', sessionsFile], { encoding: 'utf8', maxBuffer: 1024 ** 3 });
   rmSync(sessionsFile, { force: true });
+  const machine = spawnSync(process.execPath, [MACHINE, '--delete'], { encoding: 'utf8', maxBuffer: 1024 ** 3 });
   const after = freeBytes(folder);
-  const asks = (scan.stdout ?? '').split('\n').filter((line) => line.startsWith('ASK '));
+  const asks = `${scan.stdout ?? ''}\n${machine.stdout ?? ''}`.split('\n').filter((line) => line.startsWith('ASK '));
   mkdirSync(LOGS, { recursive: true });
   const report = join(LOGS, `${new Date().toISOString().slice(0, 10)}.txt`);
   const summary = `free on ${folder}: ${gib(before)} before, ${gib(after)} after; stopped ${stopped} orphaned Next telemetry flushers; ${asks.length} rows to decide`;
-  writeFileSync(report, [summary, '', scan.stdout ?? '', scan.stderr ? `stderr:\n${scan.stderr}` : '', `exit ${scan.status}`].join('\n'));
+  writeFileSync(
+    report,
+    [summary, '', scan.stdout ?? '', scan.stderr ? `stderr:\n${scan.stderr}` : '', `exit ${scan.status}`, '', '## tool caches and Docker volumes', machine.stdout ?? '', machine.stderr ? `stderr:\n${machine.stderr}` : '', `exit ${machine.status}`].join('\n')
+  );
   for (const name of readdirSync(LOGS)) {
     const path = join(LOGS, name);
     if (Date.now() - statSync(path).mtimeMs > KEEP_DAYS * 86_400_000) rmSync(path, { force: true });
   }
-  const failed = scan.status !== 0 ? ' The scan failed.' : '';
+  const failed = scan.status !== 0 || machine.status !== 0 ? ' The scan failed.' : '';
   notify('Daily cleanup', `Freed ${gib(Math.max(0, after - before))}, ${asks.length} rows to decide.${failed} Report: ${report}`);
   console.log(`${summary}\nreport: ${report}`);
   return scan.status ?? 1;
