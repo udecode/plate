@@ -28,6 +28,7 @@ import {
   type ElementOf,
   type NodeKey,
   type Path,
+  type Point,
   property,
   transferVeto,
   txLocate,
@@ -457,6 +458,39 @@ const validateFiles = (
   return { error: null, fileTypes } as const;
 };
 
+const refusedWhateverFollows = (
+  count: number,
+  types: ReadonlySet<UploadFileType>,
+  rule: UploadRule,
+  maxFiles: number
+) =>
+  count > maxFiles ||
+  (maxFiles === Number.POSITIVE_INFINITY &&
+    types.size === 1 &&
+    count >= (rule.minFiles ?? 0) &&
+    count > (rule.maxFiles ?? Number.POSITIVE_INFINITY));
+
+const lowBytes = (text: string) => {
+  const bytes = new Uint8Array(text.length);
+
+  for (let index = 0; index < text.length; index += 1) {
+    bytes[index] = text.charCodeAt(index) & 0xff;
+  }
+
+  return bytes;
+};
+
+const rasterFormat = (bytes: Uint8Array) => {
+  const head = String.fromCharCode(...bytes.subarray(0, 12));
+
+  if (head.startsWith('\u0089PNG\r\n\u001A\n')) return 'png';
+  if (head.startsWith('\u00FF\u00D8\u00FF')) return 'jpeg';
+  if (head.startsWith('GIF87a') || head.startsWith('GIF89a')) return 'gif';
+  if (head.startsWith('RIFF') && head.slice(8) === 'WEBP') return 'webp';
+
+  return undefined;
+};
+
 type InternalTask = {
   admittedVersion: number;
   controller: AbortController;
@@ -597,7 +631,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       return owner;
     };
     const notifyFailure = (failure: UploadFailure) => {
-      store.get('onError')?.(failure);
+      if (!closed()) store.get('onError')?.(failure);
     };
     const refuse = (
       effects: EditorTransactionEffectsApi,
@@ -1074,10 +1108,32 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       }),
       commands: ({ around }) => [
         around(domCommands.insertData, ({ input, next, state }) => {
-          const { client, getUrl, rules } = store.get();
           const pictureType = destination('image')?.schema.type;
-          const hasDataUrl = (picture: Element) =>
-            typeof picture.url === 'string' && /^data:/iu.test(picture.url);
+          const writer = getAuthoredUpdateView(editor);
+          const keepsPictures = () => {
+            const authored = readAuthoredView(writer);
+
+            return (
+              closed() ||
+              writer.read.view.isReadOnly() ||
+              (authored !== undefined &&
+                ('preview' in authored || authored.intent === 'propose'))
+            );
+          };
+          const admitting = () => {
+            const settings = store.get();
+            const { client, getUrl, rules } = settings;
+
+            return !keepsPictures() &&
+              client &&
+              getUrl &&
+              Object.values(rules).some((rule) => rule?.kind === 'image')
+              ? { client, getUrl, settings }
+              : undefined;
+          };
+          const hasLocalUrl = (picture: Element) =>
+            typeof picture.url === 'string' &&
+            /^(?:blob|data):/iu.test(picture.url);
           const stringsCarryPicture = () =>
             Array.from(input.types ?? []).some((format) => {
               // happy-dom's DataTransfer returns a pasted file from getData under its MIME type.
@@ -1085,7 +1141,10 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
 
               return (
                 typeof data === 'string' &&
-                (/data:image\//iu.test(data) || data.includes('\\pict'))
+                (/data:image\/|blob:(?:null\/|[a-z][\d+.a-z-]*:)/iu.test(
+                  data
+                ) ||
+                  data.includes('\\pict'))
               );
             });
           const editorSliceCarriesPicture = () => {
@@ -1098,18 +1157,15 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                 .some((node) =>
                   [...NodeApi.elements(node)].some(
                     ([element]) =>
-                      element.type === pictureType && hasDataUrl(element)
+                      element.type === pictureType && hasLocalUrl(element)
                   )
                 )
             );
           };
 
           if (
-            closed() ||
-            !client ||
-            !getUrl ||
             !pictureType ||
-            !Object.values(rules).some((rule) => rule?.kind === 'image') ||
+            !admitting() ||
             !(stringsCarryPicture() || editorSliceCarriesPicture())
           ) {
             return next();
@@ -1121,31 +1177,84 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             at: [],
             type: pictureType,
           })) {
-            const key = hasDataUrl(picture) ? state.key(path) : null;
+            const key = hasLocalUrl(picture) ? state.key(path) : null;
             if (key) known.add(key);
           }
           const before = new Set(state.nodes.children([]));
-          const writer = getAuthoredUpdateView(editor);
+          const roots = new Set(getEditorRuntimeRootKeys(editor));
           const pasted = next();
 
           if (pasted === false) return false;
 
           const handlers: EditorCommitHandler[] = [];
           const result = state.transaction.extend(pasted, (tx) => {
+            const admission = admitting();
+            if (!admission) return;
+
+            const { client, getUrl, settings } = admission;
+            const { rules } = settings;
             const allowedTypes = new Set(
               Object.keys(rules).filter(isUploadFileType)
             );
-            const decodeDataUrl = (url: string) => {
-              const mime = url.slice(5, url.indexOf(';')).toLowerCase();
+            const suggestingLosesPaste = getEditorRuntimeRootKeys(editor).some(
+              (root) => !roots.has(root)
+            );
+            const blocks = tx.nodes.children([]);
+            const stale = () => {
+              const now = tx.nodes.children([]);
+              const current = store.get();
 
+              return (
+                keepsPictures() ||
+                current.client !== client ||
+                current.getUrl !== getUrl ||
+                current.maxFiles !== settings.maxFiles ||
+                current.rules !== rules ||
+                (now !== blocks &&
+                  (now.length !== blocks.length ||
+                    now.some((block, index) => block !== blocks[index])))
+              );
+            };
+            const readPicture = (url: string) => {
               try {
-                const bytes = Uint8Array.from(
-                  atob(url.slice(url.indexOf(',') + 1)),
-                  (char) => char.charCodeAt(0)
-                );
+                if (/^data:/iu.test(url)) {
+                  const mime = url.slice(5, url.indexOf(';')).toLowerCase();
 
-                return new File([bytes], `image.${mime.slice(6)}`, {
-                  type: mime,
+                  return new File(
+                    [lowBytes(atob(url.slice(url.indexOf(',') + 1)))],
+                    `image.${mime.slice(6)}`,
+                    { type: mime }
+                  );
+                }
+                if (suggestingLosesPaste) return undefined;
+
+                const request = new XMLHttpRequest();
+
+                // oxlint-disable-next-line react-doctor/no-sync-xhr -- Each draft must enter the paste's own update, and only a synchronous request reads a `blob:` address before that update commits.
+                request.open('GET', url, false);
+                // Without this charset the browser decodes the bytes as UTF-8.
+                request.overrideMimeType('text/plain; charset=x-user-defined');
+                if (stale()) return undefined;
+                request.send();
+                if (request.status !== 200) return undefined;
+
+                const text = request.responseText;
+
+                // A leading byte-order mark overrides that charset and is
+                // dropped, which the length shows.
+                if (
+                  text.length !==
+                  Number(request.getResponseHeader('Content-Length'))
+                ) {
+                  return undefined;
+                }
+
+                const format = rasterFormat(lowBytes(text.slice(0, 12)));
+
+                if (!format) return undefined;
+
+                return new File([lowBytes(text)], `image.${format}`, {
+                  type: `image/${format}`,
                 });
               } catch {
                 return undefined;
@@ -1172,24 +1281,18 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             };
             const candidates: Array<[Element, Path]> = [];
 
-            tx.nodes.children([]).forEach((block, index) => {
+            blocks.forEach((block, index) => {
               if (before.has(block)) return;
               for (const [picture, path] of tx.nodes.entries({
                 at: [index],
                 type: pictureType,
               })) {
-                const key = hasDataUrl(picture) ? tx.key(path) : null;
+                const key = hasLocalUrl(picture) ? tx.key(path) : null;
                 if (key && !known.has(key)) candidates.push([picture, path]);
               }
             });
 
-            const pictures = candidates.flatMap(([node, path]) => {
-              const file = decodeDataUrl(String(node.url));
-              const fileType = file && classifyFile(file, allowedTypes);
-              if (!file || !fileType || rules[fileType]?.kind !== 'image') {
-                return [];
-              }
-
+            const placeable = candidates.flatMap(([node, path]) => {
               const properties: Record<string, unknown> = {};
               const draftProperties: Record<string, unknown> = {};
 
@@ -1226,17 +1329,54 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               }
 
               return [
-                { caption: node.children, draft, file, path, properties },
+                {
+                  caption: node.children,
+                  draft,
+                  path,
+                  properties,
+                  url: String(node.url),
+                },
               ];
             });
+            const pictures = [];
+            const types = new Set<UploadFileType>();
+
+            for (const picture of placeable) {
+              if (
+                pictures.some(({ path }) =>
+                  PathApi.isAncestor(path, picture.path)
+                )
+              ) {
+                continue;
+              }
+
+              const file = readPicture(picture.url);
+              const fileType = file && classifyFile(file, allowedTypes);
+              const rule = fileType ? rules[fileType] : undefined;
+              if (!file || !fileType || rule?.kind !== 'image') continue;
+
+              types.add(fileType);
+              pictures.push({ ...picture, file });
+              if (
+                refusedWhateverFollows(
+                  pictures.length,
+                  types,
+                  rule,
+                  settings.maxFiles
+                )
+              ) {
+                break;
+              }
+            }
 
             if (pictures.length === 0) return;
 
             const validation = validateFiles(
               pictures.map(({ file }) => file),
-              store.get()
+              settings
             );
 
+            if (stale()) return;
             if (validation.error) {
               const failure: UploadFailure = {
                 ...validation.error,
@@ -1248,11 +1388,13 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             }
 
             const selection = tx.selection();
+            const holds = (path: Path, point: Point) =>
+              point.root === tx.view.root() &&
+              PathApi.isAncestor(path, point.path);
             const caretPicture = pictures.find(
               ({ path }) =>
                 selection &&
-                (PathApi.isAncestor(path, selection.anchor.path) ||
-                  PathApi.isAncestor(path, selection.focus.path))
+                (holds(path, selection.anchor) || holds(path, selection.focus))
             );
             const swapped = pictures.flatMap(
               ({ caption, draft, file, path, properties }) => {
