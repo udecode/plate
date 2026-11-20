@@ -365,7 +365,7 @@ export function PromptEditor({
     >
       <EditorContent
         className={cn(
-          'min-h-16 w-full min-w-0 flex-1 cursor-text px-3 py-3 text-base outline-none md:text-sm',
+          'min-h-16! w-full min-w-0 flex-1 cursor-text px-3 py-3 text-base outline-none md:text-sm',
           'aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
           '**:data-editor-placeholder:text-muted-foreground **:data-editor-placeholder:opacity-100!',
           className
