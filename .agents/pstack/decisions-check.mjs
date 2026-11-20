@@ -156,12 +156,17 @@ const roundState = (lines) => {
   return state;
 };
 const ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, '\\': 92 };
+const encoder = new TextEncoder();
 // Git quotes a path that holds a double quote, a backslash, a control character or, unless core.quotePath is false, a non-ASCII byte, as "b/caf\303\251.js".
 const unquote = (quoted) => {
   const bytes = [];
   for (let at = 0; at < quoted.length; at += 1) {
     const octal = quoted.slice(at + 1, at + 4);
-    if (quoted[at] !== '\\') bytes.push(quoted.charCodeAt(at));
+    if (quoted[at] !== '\\') {
+      const char = String.fromCodePoint(quoted.codePointAt(at));
+      bytes.push(...encoder.encode(char));
+      at += char.length - 1;
+    }
     else if (/^[0-7]{3}$/u.test(octal)) {
       bytes.push(Number.parseInt(octal, 8));
       at += 3;
@@ -174,11 +179,16 @@ const unquote = (quoted) => {
 };
 function patchLines(patch, excluded) {
   const count = { product: 0, other: 0 };
-  let file = null;
-  let inHunk = false;
+  let [file, before, inHunk] = [null, null, false];
+  const side = (line) => {
+    const name = line.slice(4).replace(/\t.*$/u, '');
+    if (name === '/dev/null') return null;
+    return (name.startsWith('"') ? unquote(name.slice(1, -1)) : name).replace(/^[^/]+\//u, '');
+  };
   for (const line of patch.split('\n')) {
-    const header = line.match(/^diff --git (?:a\/.+ b\/(.+)|"a\/.+" "b\/(.+)")$/u);
-    if (header) [file, inHunk] = [header[1] ?? unquote(header[2]), false];
+    if (line.startsWith('diff --git ')) [file, before, inHunk] = [null, null, false];
+    else if (!inHunk && line.startsWith('--- ')) before = side(line);
+    else if (!inHunk && line.startsWith('+++ ')) file = side(line) ?? before;
     else if (line.startsWith('@@')) inHunk = true;
     else if (file && inHunk && /^[+-]/u.test(line)) count[excluded(file) ? 'other' : 'product'] += 1;
   }
@@ -204,13 +214,14 @@ function buildBudgetProblems(path, existing, rows, where) {
   const step = stepLines(top, config, gitIn);
   const records = step && step.product > budget ? stepRecords(top, config, gitIn, step.files) : null;
   if (!records) return [];
-  const log = join(realpathSync(dir), basename(path));
-  const dated = /^\d{4}-\d{2}-\d{2}-[^/]+\.decisions\.tsv$/u.test(basename(log)) && dirname(log) === join(top, plansOf(config));
+  const log = existsSync(path) ? realpathSync.native(path) : join(realpathSync.native(dir), basename(path));
+  const inPlans = dirname(log) === join(top, plansOf(config));
+  const dated = inPlans && /^\d{4}-\d{2}-\d{2}-[^/]+\.decisions\.tsv$/u.test(basename(log));
   if (!records.planned && !dated) return [];
   const others = records.logs.filter((other) => other !== log);
   if (others.some((other) => liftsStep(readFileSync(other, 'utf8')))) return [];
-  const own = dated || records.logs.includes(log);
-  const unlifted = builds.find((at) => !own || !liftsStep([...existing, ...rows.slice(0, at + 1)].join('\n')));
+  const own = inPlans || records.logs.includes(log);
+  const unlifted = builds.find((at) => !own || !liftsStep([...existing, ...rows.slice(0, at)].join('\n')));
   return unlifted === undefined ? [] : [`${where(unlifted)}: ${top}'s change since ${step.base} ${overBudget(step.product, budget)}. Split it before you log more of its build`];
 }
 const capMessage = ({ rounds }) =>

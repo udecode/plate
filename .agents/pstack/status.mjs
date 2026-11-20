@@ -21,7 +21,7 @@ export const stepBudget = (config) => {
   return { lines, excluded: globMatcher([...STEP_EXCLUDE, `${plansOf(config)}/**`, ...generated.flatMap((entry) => entry.paths ?? []), ...exclude]) };
 };
 export const BIG_STEP = /^big step:\s*\S/u;
-const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as \S/iu;
+const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as [0-9a-f]{7,40}\b/iu;
 export const liftsStep = (text) =>
   text.split('\n').reduce((lifted, line) => {
     const [, phase, decision = ''] = line.split('\t');
@@ -49,11 +49,13 @@ const split = (output) => (output === null ? null : output.split('\0').filter(Bo
 
 const nearestBase = (git, config) => {
   const names = ['upstream', 'origin'].flatMap((remote) => [config.branch, config.protected].filter(Boolean).map((branch) => `refs/remotes/${remote}/${branch}`));
-  const refs = git('for-each-ref', '--format=%(refname)', ...names)?.split('\n').filter(Boolean) ?? [];
+  if (names.length === 0) return null;
+  const listed = git('for-each-ref', '--format=%(refname)', ...names)?.split('\n') ?? [];
   let best = null;
-  for (const ref of refs) {
+  for (const ref of listed.filter((name) => names.includes(name))) {
     const sha = git('merge-base', 'HEAD', ref);
-    const ahead = sha && Number(git('rev-list', '--count', `${sha}..HEAD`));
+    const count = sha && git('rev-list', '--count', `${sha}..HEAD`);
+    const ahead = count === null ? Number.NaN : Number(count);
     if (sha && Number.isInteger(ahead) && (best === null || ahead < best.ahead)) best = { ref: ref.replace(/^refs\/remotes\//u, ''), sha, ahead };
   }
   return best;
