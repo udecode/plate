@@ -245,8 +245,10 @@ export type MarkdownParsePolicy = Readonly<{
   lossPolicy?: 'allow' | 'reject';
   /**
    * The source is an unfinished stream prefix, such as a streaming AI answer.
-   * A trailing tag that has not finished arriving is hidden; use a final parse
-   * once the stream completes.
+   * A trailing tag that has not finished arriving is hidden, and `parseSlice`
+   * also hides up to three trailing `*`, `_` or `~` characters, or a trailing
+   * `\`, until the next characters decide them. Use a final parse once the
+   * stream completes.
    */
   partial?: boolean;
 }>;

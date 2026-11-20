@@ -14437,7 +14437,7 @@
           "kind": "type",
           "name": "MarkdownParsePolicy",
           "runtime": false,
-          "signature": "type MarkdownParsePolicy = Readonly<{\n  limits?: Partial<MarkdownParseLimits>;\n  lossPolicy?: 'allow' | 'reject';\n  /**\n   * The source is an unfinished stream prefix, such as a streaming AI answer.\n   * A trailing tag that has not finished arriving is hidden; use a final parse\n   * once the stream completes.\n   */\n  partial?: boolean;\n}>;",
+          "signature": "type MarkdownParsePolicy = Readonly<{\n  limits?: Partial<MarkdownParseLimits>;\n  lossPolicy?: 'allow' | 'reject';\n  /**\n   * The source is an unfinished stream prefix, such as a streaming AI answer.\n   * A trailing tag that has not finished arriving is hidden, and `parseSlice`\n   * also hides up to three trailing `*`, `_` or `~` characters, or a trailing\n   * `\\`, until the next characters decide them. Use a final parse once the\n   * stream completes.\n   */\n  partial?: boolean;\n}>;",
           "source": null,
           "typeParameters": []
         },

@@ -22,10 +22,10 @@ const BYTE_ORDER_MARK = '\uFEFF';
 /**
  * Link and footnote definitions resolve across the whole source. A definition
  * can sit in a quote or list item, escape a bracket or break its label across
- * lines.
+ * lines. micromark skips a byte order mark that starts the source.
  */
 export const MARKDOWN_DEFINITION =
-  /(?:^|[\n\r])(?:[ \t>]|[*+-][ \t]|\d{1,9}[.)][ \t])*\[(?:[^[\]\\]|\\[\s\S])+\]:/;
+  /(?:^\uFEFF?|[\n\r])(?:[ \t>]|[*+-][ \t]|\d{1,9}[.)][ \t])*\[(?:[^[\]\\]|\\[\s\S])+\]:/;
 
 type ScanState = {
   fence: Readonly<{ char: string; length: number }> | null;

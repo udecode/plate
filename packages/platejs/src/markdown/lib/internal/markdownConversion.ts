@@ -90,6 +90,7 @@ import {
   getRegisteredMarkdownMappings,
   registerMarkdownMappings,
 } from './markdownMappings';
+import { remarkHoldOpenTail } from './markdownOpenTail';
 import {
   allocateMarkdownFootnoteLabels,
   remarkResolveMarkdownReferences,
@@ -291,17 +292,22 @@ export const getMergedOptionsSerialize = (
 type MarkdownSegmentHooks = Pick<
   DeserializeMdContext,
   'onRootChildren' | 'onSyntaxNodes' | 'previousRootSibling'
->;
+> &
+  Readonly<{
+    onHeldTail?: () => void;
+  }>;
 
 const createMarkdownParser = (
   runtime: MarkdownRuntime,
-  remarkPlugins: DeserializeMdContext['remarkPlugins']
+  remarkPlugins: DeserializeMdContext['remarkPlugins'],
+  onHeldTail?: () => void
 ) =>
   unified()
     .use(remarkParse)
     .use(remarkSeparateEscapes)
     .use(remarkMarkdownTags, { tags: runtime.formats.tags })
     .use(remarkResolveMarkdownReferences)
+    .use(onHeldTail ? [[remarkHoldOpenTail, onHeldTail]] : [])
     .use(remarkPlugins);
 
 export const markdownToSlateNodesWithRuntime = (
@@ -309,7 +315,7 @@ export const markdownToSlateNodesWithRuntime = (
   text: string,
   options: MarkdownParsePolicy = {},
   diagnostics = new MarkdownDiagnostics(),
-  hooks: MarkdownSegmentHooks = {},
+  { onHeldTail, ...hooks }: MarkdownSegmentHooks = {},
   source = text
 ): Descendant[] => {
   const mergedOptions: DeserializeMdContext = {
@@ -321,7 +327,11 @@ export const markdownToSlateNodesWithRuntime = (
     ...hooks,
   };
 
-  return createMarkdownParser(runtime, mergedOptions.remarkPlugins)
+  return createMarkdownParser(
+    runtime,
+    mergedOptions.remarkPlugins,
+    options.partial ? onHeldTail : undefined
+  )
     .use(remarkToSlate, mergedOptions)
     .processSync(text).result;
 };
@@ -719,13 +729,16 @@ const convertMarkdownSource = (
   source: string,
   options: MarkdownParsePolicy,
   diagnostics: MarkdownDiagnostics,
-  reuse?: MarkdownReuse
+  reuse?: MarkdownReuse,
+  onHeldTail?: () => void
 ): MarkdownConversion => {
   const limits = markdownParseLimits(options);
   const limitsKey = JSON.stringify(limits);
   const lossPolicy = options.lossPolicy ?? 'reject';
   const full = (): MarkdownConversion => {
-    const parsed = runParsedNodes(runtime, source, options, diagnostics);
+    const parsed = runParsedNodes(runtime, source, options, diagnostics, {
+      onHeldTail,
+    });
     const nodes = parsed && snapshotBlocks(runtime, parsed);
 
     return {
@@ -808,6 +821,7 @@ const convertMarkdownSource = (
       },
       local,
       {
+        onHeldTail,
         onRootChildren: (children) => {
           lastRoot = children.at(-1) ?? null;
         },
@@ -1181,11 +1195,12 @@ export const parseMarkdownDocumentWithRuntime = (
   });
 };
 
-export const parseMarkdownSliceWithRuntime = (
+const parseMarkdownSlice = (
   runtime: MarkdownRuntime,
   source: string,
-  options: MarkdownParsePolicy = {},
-  reuse?: MarkdownReuse
+  options: MarkdownParsePolicy,
+  reuse?: MarkdownReuse,
+  onHeldTail?: () => void
 ): MarkdownSliceParseResult => {
   const diagnostics = new MarkdownDiagnostics();
   const conversion = convertMarkdownSource(
@@ -1193,7 +1208,8 @@ export const parseMarkdownSliceWithRuntime = (
     source,
     options,
     diagnostics,
-    reuse
+    reuse,
+    onHeldTail
   );
 
   if (!conversion.nodes || diagnostics.failure()) {
@@ -1241,6 +1257,26 @@ export const parseMarkdownSliceWithRuntime = (
     runtime,
     reuse
   );
+};
+
+export const parseMarkdownSliceWithRuntime = (
+  runtime: MarkdownRuntime,
+  source: string,
+  options: MarkdownParsePolicy = {},
+  reuse?: MarkdownReuse
+): MarkdownSliceParseResult => {
+  // micromark's offsets skip a byte order mark that starts the source, so the
+  // held tail cannot read a fresh preview's tree.
+  if (options.partial && !source.startsWith(BYTE_ORDER_MARK)) {
+    let held = false;
+    const preview = parseMarkdownSlice(runtime, source, options, reuse, () => {
+      held = true;
+    });
+
+    if (preview.ok || !held) return preview;
+  }
+
+  return parseMarkdownSlice(runtime, source, options, reuse);
 };
 
 const LEADING_WHITESPACE = /^\s*/;
