@@ -5,6 +5,10 @@ import {
   type InkPlacement,
   placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
+import {
+  type InkMarkSign,
+  readInkSign,
+} from '../../../features/ink/lib/inkPlaces.internal';
 import type { Editor } from '../../core';
 import type { InkSign } from './InkLayer';
 import { createInkLayouts } from './inkLayout.internal';
@@ -36,10 +40,6 @@ type Decide = (
   copies: readonly InkCopy[],
   places: Places
 ) => InkPlacement;
-
-const DELETED = { reason: 'deleted', type: 'sign' } as const;
-
-const WORDS_CHANGED = { reason: 'changed', type: 'sign' } as const;
 
 type InkInputs = Readonly<{
   band: InkBand;
@@ -94,6 +94,7 @@ const placeInkMarks = (
   editable: HTMLElement,
   origin: InkLayerOrigin,
   marks: readonly InkMark[],
+  signOf: (mark: InkMark) => InkMarkSign | undefined,
   decide: Decide
 ): InkPlaced => {
   const { read } = view.plugin(InkPlugin);
@@ -144,27 +145,23 @@ const placeInkMarks = (
 
     if (copies.length !== mark.blocks.length) continue;
 
-    const places = copies.map((copy) => read.place(copy.id));
-    const placement = places.some((place) => place?.kind === 'gone')
-      ? DELETED
-      : decide(mark, copies, places);
+    const kept = signOf(mark);
+    let state: InkSign['state'] | undefined = kept?.state;
+    let place = kept?.place;
 
-    if (placement.type === 'ink') {
-      ink.push({ dx: placement.dx, dy: placement.dy, mark });
+    if (!kept) {
+      const places = copies.map((copy) => read.place(copy.id));
+      const placement = decide(mark, copies, places);
+
+      if (placement.type === 'ink') {
+        ink.push({ dx: placement.dx, dy: placement.dy, mark });
+      }
+      state = placement.type === 'sign' ? placement.reason : placement.sign;
+      place = places.find((at) => at?.kind !== 'live') ?? places[0];
     }
-
-    const state = placement.type === 'sign' ? placement.reason : placement.sign;
-
     if (!state) continue;
 
-    const anchor = anchorOf(
-      places[
-        Math.max(
-          0,
-          places.findIndex((place) => place?.kind !== 'live')
-        )
-      ]
-    );
+    const anchor = anchorOf(place);
     const id = `${mark.direction}|${anchor.id}|${state}`;
     const sign = signs.get(id) ?? {
       left: rails[mark.direction],
@@ -260,6 +257,11 @@ export const createInkPlacer = ({
   let nextId = 0;
   let index: MarkIndex | null = null;
   let gone: readonly InkMark[] | null = null;
+
+  const signOf = (mark: InkMark) =>
+    view.read((state) =>
+      readInkSign({ copy: read.copy, editor: view, state }, mark)
+    );
 
   const idOf = (value: object) => {
     let id = ids.get(value);
@@ -431,10 +433,6 @@ export const createInkPlacer = ({
     };
 
     const decide: Decide = (mark, copies, places) => {
-      if (!mark.margin && places.some((place) => place?.kind === 'changed')) {
-        return WORDS_CHANGED;
-      }
-
       const inputs = inkInputs(
         mark,
         copies,
@@ -481,13 +479,7 @@ export const createInkPlacer = ({
       return placement;
     };
 
-    gone ??= marks.filter((mark) =>
-      mark.blocks.some((block) => {
-        const copy = read.copy(block.copy);
-
-        return copy && read.place(copy.id)?.kind === 'gone';
-      })
-    );
+    gone ??= marks.filter((mark) => signOf(mark)?.state === 'deleted');
 
     const shown = new Set(gone);
 
@@ -500,6 +492,7 @@ export const createInkPlacer = ({
       editable,
       origin,
       marks.filter((mark) => shown.has(mark)),
+      signOf,
       decide
     );
   };

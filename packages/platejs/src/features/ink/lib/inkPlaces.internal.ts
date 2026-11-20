@@ -15,11 +15,13 @@ import {
   type RuntimeAnyEditor,
   withStoredAuthoredRead,
 } from '../../../facade';
-import type { InkCopy, InkCopyPlace } from './BaseInkPlugin';
+import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
 import { GONE, goneIn, idOf, type SavedRecords } from './inkGone.internal';
 import { inkText } from './inkMatch.internal';
 
 export const COPIES = 'ink-copies';
+
+export const MARKS = 'ink-marks';
 
 type Side = 'next' | 'previous';
 
@@ -27,20 +29,34 @@ type HeldPlace = Extract<InkCopyPlace, { key: NodeKey }>;
 
 type GonePlace = Extract<InkCopyPlace, { kind: 'gone' }>;
 
+export type InkMarkSign = Readonly<{
+  place: InkCopyPlace;
+  state: 'changed' | 'deleted';
+}>;
+
+type KeptSign = {
+  copies: readonly InkCopy[];
+  shown?: { copy: InkCopy; sign: InkMarkSign };
+};
+
 type InkPlaces = {
   identity: object;
   copies: Map<string, InkCopy>;
-  blocks: Map<string, { copies: Map<string, InkCopy>; key: NodeKey | null }>;
+  blocks: Map<
+    string,
+    { copies: Map<string, InkCopy>; key: NodeKey | null; signed: Set<string> }
+  >;
   blockOfKey: Map<NodeKey, string>;
   held: Map<string, HeldPlace>;
   gone: Map<string, GonePlace>;
   chainEnds: Record<Side, Map<string, string>>;
   walked: Set<string>;
+  signs: Map<string, KeptSign>;
 };
 
 type CommittedPlaces = {
   places: InkPlaces;
-  sets: Record<typeof COPIES | typeof GONE, RecordSetVersion>;
+  sets: Record<typeof COPIES | typeof GONE | typeof MARKS, RecordSetVersion>;
   version: number;
 };
 
@@ -74,8 +90,16 @@ const emptyPlaces = (identity: object): InkPlaces => ({
   gone: new Map(),
   held: new Map(),
   identity,
+  signs: new Map(),
   walked: new Set(),
 });
+
+const dropSign = (places: InkPlaces, mark: string) => {
+  for (const { block } of places.signs.get(mark)?.copies ?? []) {
+    places.blocks.get(block)?.signed.delete(mark);
+  }
+  places.signs.delete(mark);
+};
 
 const resolveBlock = (places: InkPlaces, state: InkState, id: string) => {
   const block = places.blocks.get(id);
@@ -109,6 +133,7 @@ const resolveBlock = (places: InkPlaces, state: InkState, id: string) => {
       places.held.delete(copyId);
     }
   }
+  for (const mark of block.signed) dropSign(places, mark);
 };
 
 const trackCopy = (places: InkPlaces, read: InkPlaceRead, id: string) => {
@@ -128,6 +153,7 @@ const trackCopy = (places: InkPlaces, read: InkPlaceRead, id: string) => {
     places.blocks.set(copy.block, {
       copies: new Map([[id, copy]]),
       key: null,
+      signed: new Set(),
     });
   }
   resolveBlock(places, read.state, copy.block);
@@ -140,6 +166,7 @@ const untrackCopy = (places: InkPlaces, id: string) => {
   const block = copy && places.blocks.get(copy.block);
 
   if (!copy || !block) return;
+  for (const mark of block.signed) dropSign(places, mark);
   places.copies.delete(id);
   places.held.delete(id);
   places.gone.delete(id);
@@ -192,29 +219,25 @@ const nearestPresent = (
   return found;
 };
 
-const placeOf = (
+const placeOfTracked = (
   places: InkPlaces,
-  read: InkPlaceRead,
-  copyId: string
-): InkCopyPlace | undefined => {
-  const copy = trackCopy(places, read, copyId);
-
-  if (!copy) return undefined;
-
-  const known = places.held.get(copyId) ?? places.gone.get(copyId);
+  state: InkState,
+  copy: InkCopy
+): InkCopyPlace => {
+  const known = places.held.get(copy.id) ?? places.gone.get(copy.id);
 
   if (known) return known;
 
-  const { records } = read.state.value();
+  const { records } = state.value();
   const previous = nearestPresent(
     places,
-    read.state,
+    state,
     records,
     copy.block,
     'previous'
   );
   const anchor =
-    previous ?? nearestPresent(places, read.state, records, copy.block, 'next');
+    previous ?? nearestPresent(places, state, records, copy.block, 'next');
   const gone: GonePlace = {
     beside: anchor
       ? { at: previous ? 'after' : 'before', key: anchor.key }
@@ -222,9 +245,45 @@ const placeOf = (
     kind: 'gone',
   };
 
-  places.gone.set(copyId, gone);
+  places.gone.set(copy.id, gone);
 
   return gone;
+};
+
+const samePlace = (a: InkCopyPlace, b: InkCopyPlace) =>
+  a === b ||
+  (a.kind === 'gone' &&
+    b.kind === 'gone' &&
+    a.beside.at === b.beside.at &&
+    (a.beside.at === 'start' ||
+      b.beside.at === 'start' ||
+      a.beside.key === b.beside.key));
+
+const keepSign = (places: InkPlaces, read: InkPlaceRead, mark: InkMark) => {
+  const copies = mark.blocks.flatMap(
+    (block) => trackCopy(places, read, block.copy) ?? []
+  );
+
+  if (copies.length < mark.blocks.length) return undefined;
+
+  const held = copies.map((copy) => places.held.get(copy.id));
+  const deleted = copies.some((copy) => !places.held.has(copy.id));
+  const changed =
+    !mark.margin && held.some((place) => place?.kind === 'changed');
+  const state = deleted ? 'deleted' : changed ? 'changed' : undefined;
+  const copy = copies[held.findIndex((place) => place?.kind !== 'live')];
+  const kept: KeptSign = {
+    copies,
+    shown: state && {
+      copy,
+      sign: { place: placeOfTracked(places, read.state, copy), state },
+    },
+  };
+
+  places.signs.set(mark.id, kept);
+  for (const { block } of copies) places.blocks.get(block)?.signed.add(mark.id);
+
+  return kept;
 };
 
 const placesOf = ({ editor, state }: InkPlaceRead) => {
@@ -263,6 +322,7 @@ const placesOf = ({ editor, state }: InkPlaceRead) => {
     sets: {
       [COPIES]: getRecordSetVersion(store, COPIES),
       [GONE]: getRecordSetVersion(store, GONE),
+      [MARKS]: getRecordSetVersion(store, MARKS),
     },
     version,
   });
@@ -270,8 +330,28 @@ const placesOf = ({ editor, state }: InkPlaceRead) => {
   return places;
 };
 
-export const readInkPlace = (read: InkPlaceRead, copyId: string) =>
-  placeOf(placesOf(read), read, copyId);
+export const readInkPlace = (read: InkPlaceRead, copyId: string) => {
+  const places = placesOf(read);
+  const copy = trackCopy(places, read, copyId);
+
+  return copy && placeOfTracked(places, read.state, copy);
+};
+
+export const readInkSign = (read: InkPlaceRead, mark: InkMark) => {
+  const places = placesOf(read);
+  const shown = (places.signs.get(mark.id) ?? keepSign(places, read, mark))
+    ?.shown;
+
+  if (!shown) return undefined;
+
+  const place = placeOfTracked(places, read.state, shown.copy);
+
+  if (!samePlace(shown.sign.place, place)) {
+    shown.sign = { place, state: shown.sign.state };
+  }
+
+  return shown.sign;
+};
 
 const addArrivedBlocks = (
   places: InkPlaces,
@@ -321,6 +401,7 @@ export const advanceInkPlaces = (
     startEpoch(places);
   }
   for (const id of changedIn(COPIES)) untrackCopy(places, id);
+  for (const id of changedIn(MARKS)) dropSign(places, id);
 
   const dirty = new Set<string>();
   const moved = changed.hasAny('structure') || changed.hasAny('properties');

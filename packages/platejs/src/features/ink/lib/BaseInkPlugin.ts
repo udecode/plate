@@ -16,7 +16,12 @@ import {
   idOf,
   type SavedRecords,
 } from './inkGone.internal';
-import { advanceInkPlaces, COPIES, readInkPlace } from './inkPlaces.internal';
+import {
+  advanceInkPlaces,
+  COPIES,
+  MARKS,
+  readInkPlace,
+} from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
@@ -168,8 +173,6 @@ export type InkSignPlace =
 export type InkCopyPlace =
   | Readonly<{ key: NodeKey; kind: 'changed' | 'live' }>
   | Readonly<{ beside: InkSignPlace; kind: 'gone' }>;
-
-const MARKS = 'ink-marks';
 
 const inkRecords = defineRuntimePlugin('ink-records', {
   schema: {
