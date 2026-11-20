@@ -454,6 +454,7 @@ function EditableContentRootSlot({
   );
   const { root } = useContentRoot(element, { slot });
   const ownerSources = React.useContext(DecorationSourcesContext);
+  const ownerReadOnly = useEditorReadOnly();
   const contentRootOwner = React.useMemo(
     () => ({
       childRoot: root,
@@ -477,6 +478,7 @@ function EditableContentRootSlot({
           ownerEditor={ownerEditor}
           ownerKey={ownerKey}
           ownerPath={ownerPath}
+          ownerReadOnly={ownerReadOnly}
           ownerRoot={ownerRoot}
           renderers={renderers}
           root={root}
@@ -492,6 +494,7 @@ function EditableContentRootView({
   ownerEditor,
   ownerKey,
   ownerPath,
+  ownerReadOnly,
   ownerRoot,
   renderers,
   root,
@@ -501,6 +504,7 @@ function EditableContentRootView({
   ownerEditor: Editor;
   ownerKey: string;
   ownerPath: Path;
+  ownerReadOnly: boolean;
   ownerRoot: RootKey;
   renderers: EditableContentRootSlotRenderers;
   root: RootKey;
@@ -528,7 +532,7 @@ function EditableContentRootView({
   const editor = useEditorContext();
   const ownerHandlers = React.useContext(OwnerHandlersContext);
   const viewReadOnly = useEditorViewState(editor, (view) => view.isReadOnly());
-  const readOnly = Boolean(options.readOnly || viewReadOnly);
+  const readOnly = Boolean(options.readOnly || ownerReadOnly || viewReadOnly);
   const { getMountedViewEditor, registerContentRootOwner } =
     useRequiredPliteRuntimeContext();
   const passesNodeSelectionFocus = nodeSelectionFocus !== undefined;
@@ -618,7 +622,7 @@ function EditableContentRootView({
     disableDefaultStyles,
     id,
     placeholder,
-    readOnly,
+    readOnly: options.readOnly || ownerReadOnly,
     renderElement,
     renderLeaf,
     renderPlaceholder,
