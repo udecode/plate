@@ -31,6 +31,7 @@ import {
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
 import { startOwnedEditor } from '../../core/editor-owner';
+import { flushEditorViewState } from '../../core/public-state';
 import {
   retainPresentation,
   type ViewPresentation,
@@ -360,6 +361,11 @@ export const EditorRuntimeView = <
     setEditorReadOnly(reactEditor, readOnly);
     return () => setEditorReadOnly(reactEditor, true);
   }, [directEditor, reactEditor, readOnly]);
+  // An insertion effect may not schedule updates, so the lock's notice goes
+  // out here, before the commit that wrote it ends.
+  useIsomorphicLayoutEffect(() => {
+    flushEditorViewState(reactEditor);
+  }, [reactEditor, readOnly]);
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const { focused: isFocused } = useRuntimeFocusState(reactEditor);
   useInsertionEffect(

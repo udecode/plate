@@ -43,6 +43,7 @@ import {
   hasEditorRuntime,
   type InternalEditorReadRuntime,
   type InternalEditorRuntime,
+  type ViewFocus,
   type ViewPolicySource,
   setEditorRuntime,
 } from './core/editor-runtime';
@@ -402,12 +403,18 @@ export const getViewAuthor = (editor: object): string | undefined =>
 
 const policySourceOf = (
   sourceRuntime: InternalEditorRuntime | undefined,
-  target: ViewPolicyTarget | undefined
+  target: ViewPolicyTarget | undefined,
+  root: RootKey
 ): ViewPolicySource | undefined => {
   if (!target) return sourceRuntime && { current: () => sourceRuntime };
 
   return {
     current: () => viewRuntimeOf(target.current()),
+    focusOf: (followed) => {
+      const state = followed && VIEW_STATES.get(followed);
+
+      return state?.root === root ? state : undefined;
+    },
     subscribe: target.subscribe,
   };
 };
@@ -418,10 +425,16 @@ const assertViewWritable = (state: ViewState) => {
   }
 };
 
+const viewFocus = (state: ViewState): ViewFocus | undefined => {
+  const source = state.policySource;
+
+  return source?.focusOf ? source.focusOf(source.current()) : state;
+};
+
 const createViewApi = (state: ViewState): EditorStateViewApi =>
   Object.freeze({
-    isComposing: () => state.composing,
-    isFocused: () => state.focused,
+    isComposing: () => viewFocus(state)?.composing ?? false,
+    isFocused: () => viewFocus(state)?.focused ?? false,
     isReadOnly: () => isViewReadOnly(state),
     isViewing: () => isViewing(state),
     root: () => toPublicRoot(state.root),
@@ -1431,6 +1444,7 @@ const createViewRuntime = <V extends Value>(
     },
     setViewState: (key, value) => {
       if (key === 'readOnly' && viewState.document) return false;
+      if (key !== 'readOnly' && viewState.follows) return false;
 
       const changed = viewState[key] !== value;
       viewState[key] = value;
@@ -1598,17 +1612,26 @@ export const createEditorViewRuntime = <
     );
   }
 
+  const follows = document ? undefined : policyTarget;
+  // A view that follows another answers focus from that view, and nothing
+  // updates a copy of that answer, so neither it nor a view made from it
+  // starts with one.
+  const seedsFocus = !follows && !sourceView?.follows;
   const viewState: ViewState = {
     authorId: options.authorId ?? sourceView?.authorId,
     editor: null,
-    composing: sourceEditor.read.view.isComposing(),
+    composing: seedsFocus && sourceEditor.read.view.isComposing(),
     document,
-    focused: sourceEditor.read.view.isFocused(),
-    follows: document ? undefined : policyTarget,
+    focused: seedsFocus && sourceEditor.read.view.isFocused(),
+    follows,
     mountedIn: mountedIn && getEditorRuntime(mountedIn),
     policySource: document
       ? undefined
-      : policySourceOf(sourceRuntime, policyTarget),
+      : policySourceOf(
+          sourceRuntime,
+          policyTarget,
+          toInternalRoot(options.root)
+        ),
     presentation:
       presentation ??
       (options.authored || options.document

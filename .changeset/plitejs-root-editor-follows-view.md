@@ -1,0 +1,5 @@
+---
+'plitejs': patch
+---
+
+Make `useRootEditor()` and `useCaretEditor()` return one editor per root and `readOnly` option under an `EditorRoot`, so a lock set through that editor holds after the caret leaves its root and comes back. Outside every editing area and inside the editing area of the `EditorRoot`'s own root, they return the same editor. Inside a content root's editing area, such as a board's note, they return another editor for that root. While no editing area shows the root, `useCommand()` for that root runs on the same editor, so that lock refuses its commands, also when the `EditorRoot` mounts no editing area. The editor's `isFocused()` and `isComposing()` report the editing area that shows its root, and its `focus()` and `blur()` no longer change them. A reader of the editor sees an `EditorRoot` lock or unlock in the render that changes it. A lock set in a render that moves the caret to another copy of the root, or that mounts or remounts the editing area that shows the root, still reaches that reader one microtask later, and so does the focus of an editing area that mounts with `autoFocus`.

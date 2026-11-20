@@ -73,7 +73,9 @@ const notifyOncePerMicrotask = (notice: Notice) => {
   notice.queued = true;
   queueMicrotask(() => {
     notice.queued = false;
-    for (const listener of [...notice.listeners]) listener();
+    for (const listener of [...notice.listeners]) {
+      if (notice.listeners.has(listener)) listener();
+    }
   });
 };
 

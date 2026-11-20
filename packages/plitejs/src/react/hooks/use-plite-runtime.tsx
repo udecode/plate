@@ -34,7 +34,11 @@ import {
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
 import { toPublicRoot } from '../../core/public-root';
-import { getBaseCallRoot, subscribeCaretTarget } from '../../core/public-state';
+import {
+  getBaseCallRoot,
+  hasEditorSurface,
+  subscribeCaretTarget,
+} from '../../core/public-state';
 import {
   mountRootView,
   readNestedRootView,
@@ -187,6 +191,7 @@ type PliteRuntimeContextValue = {
   ) => () => void;
   registerHistoryStepView: (editor: MountedViewEditor, root: RootKey) => void;
   registerViewEditor: (editor: MountedViewEditor, root: RootKey) => () => void;
+  rootEditor: (root?: NamedRootKey, readOnly?: boolean) => ReactEditorType;
   runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
   subscribeRootTarget: (root: RootKey, listener: () => void) => () => void;
@@ -216,8 +221,10 @@ type PresentationLookups = {
   ) => () => void;
 };
 
+type RuntimeScopeLookups = Omit<PliteRuntimeContextValue, 'rootEditor'>;
+
 type PliteRuntimeProviderValue = Omit<
-  PliteRuntimeContextValue,
+  RuntimeScopeLookups,
   keyof PresentationLookups | 'historyScope' | 'mountedEditor' | 'presentation'
 > &
   PresentationLookups;
@@ -226,7 +233,7 @@ const scopeRuntimeContext = (
   provider: PliteRuntimeProviderValue,
   presentation: ViewPresentation | null,
   mountedEditor: MountedViewEditor | null
-): PliteRuntimeContextValue => ({
+): RuntimeScopeLookups => ({
   ...provider,
   getActiveContentRootOwner: (root) =>
     provider.getActiveContentRootOwner(root, presentation),
@@ -243,6 +250,28 @@ const scopeRuntimeContext = (
   subscribeRootTarget: (root, listener) =>
     provider.subscribeRootTarget(root, presentation, listener),
 });
+
+const withRootEditors = (
+  lookups: RuntimeScopeLookups
+): PliteRuntimeContextValue => {
+  const rootEditors = new Map<string, ReactEditorType>();
+  const context: PliteRuntimeContextValue = {
+    ...lookups,
+    rootEditor: (root, readOnly = false) => {
+      const key = `${readOnly}\u0000${root ?? MAIN_ROOT_KEY}`;
+      let editor = rootEditors.get(key);
+
+      if (!editor) {
+        editor = createPliteRootEditor(lookups, root, readOnly);
+        rootEditors.set(key, editor);
+      }
+
+      return editor;
+    },
+  };
+
+  return context;
+};
 
 const presentationMap = <K, T>(
   maps: Map<ViewPresentation, Map<K, T>>,
@@ -273,7 +302,10 @@ export const SurfaceRuntimeScope = ({
     useContext(ProviderContext) ??
     failInvariant('A mounted surface requires an editor runtime provider.');
   const value = useMemo(
-    () => scopeRuntimeContext(provider, presentation, mountedEditor),
+    () =>
+      withRootEditors(
+        scopeRuntimeContext(provider, presentation, mountedEditor)
+      ),
     [mountedEditor, presentation, provider]
   );
 
@@ -794,33 +826,33 @@ export type UseRootEditorOptions = {
 };
 
 // The store types a view as a core editor, as `readProviderRootTarget` says.
-const findShownViewEditor = (
+const findRootViewEditor = (
   {
     getMountedViewEditor,
     mountedEditor,
     presentation,
     runtime,
-  }: PliteRuntimeContextValue,
+  }: RuntimeScopeLookups,
   root: RootKey
 ) =>
   ((mountedEditor && presentation
     ? readNestedRootView(runtime, presentation, root, mountedEditor)
     : null) as MountedViewEditor | null) ?? getMountedViewEditor(root);
 
-export function createPliteRootEditor(
-  context: PliteRuntimeContextValue,
+function createPliteRootEditor(
+  lookups: RuntimeScopeLookups,
   root?: NamedRootKey,
   readOnly?: boolean
 ): ReactEditorType {
-  const { getView, mountedEditor, presentation } = context;
+  const { getView, mountedEditor, presentation } = lookups;
   const shownRoot = root ?? MAIN_ROOT_KEY;
 
   return createReactRuntimeViewEditor(
     getView({ readOnly, root }, presentation ?? undefined, {
       current: () =>
-        findShownViewEditor(context, shownRoot) ?? mountedEditor ?? undefined,
+        findRootViewEditor(lookups, shownRoot) ?? mountedEditor ?? undefined,
       subscribe: (listener) => {
-        const stopTarget = context.subscribeRootTarget(shownRoot, listener);
+        const stopTarget = lookups.subscribeRootTarget(shownRoot, listener);
         const stopNested =
           mountedEditor && presentation
             ? subscribeRootViewPresentation(presentation, listener)
@@ -854,12 +886,7 @@ export function useRootEditor<const TRoot extends RootKey = RootKey>(
     throw new Error('Omit root to create an editor for the primary document.');
   }
 
-  const context = useRequiredPliteRuntimeContext();
-
-  return useMemo(
-    () => createPliteRootEditor(context, root, options.readOnly),
-    [context, options.readOnly, root]
-  );
+  return useRequiredPliteRuntimeContext().rootEditor(root, options.readOnly);
 }
 
 /**
@@ -880,7 +907,7 @@ export function useCaretEditor(): ReactEditorType {
     readRoot
   );
 
-  return useMemo(() => createPliteRootEditor(context, root), [context, root]);
+  return context.rootEditor(root);
 }
 
 /** Focus behavior before or after root command callbacks. */
@@ -911,8 +938,9 @@ export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
  * `focus: 'restore-root'` when the command should first restore editor focus.
  * Without `root`, the command runs in the root of the `Editable` around the
  * hook, or else in the caret's root when the dispatcher runs.
- * The command runs on the mounted view that shows the root, and on the view
- * around the hook while none shows it, so a read-only one refuses its writes.
+ * The command runs on the mounted view that shows the root, and on the editor
+ * `useRootEditor` gives for the root while none shows it, so a lock on either
+ * refuses its writes.
  */
 export function useCommand<
   TCommand extends EditorCommandDescriptor,
@@ -930,35 +958,17 @@ export function useCommand<
   const editableRoot = useContext(PliteEditableRootContext);
   const fixedRoot = root ?? editableRoot;
   const context = useRequiredPliteRuntimeContext();
-  const rootEditorRef = useRef<{
-    context: PliteRuntimeContextValue;
-    editor: ReactEditorType;
-    root: RootKey;
-  } | null>(null);
 
   return useCallback(
     (...input: CommandArgs<TCommand>) => {
       // A focus moves the caret's root before this hook renders again, so a
       // command called from it reads the root when it runs.
       const commandRoot = fixedRoot ?? context.runtime.read(selectActiveRoot);
-      const readRootEditor = () => {
-        const cached = rootEditorRef.current;
-
-        if (cached?.context === context && cached.root === commandRoot) {
-          return cached.editor;
-        }
-
-        const editor = createPliteRootEditor(
-          context,
-          toPublicRootOption(commandRoot)
-        );
-
-        rootEditorRef.current = { context, editor, root: commandRoot };
-
-        return editor;
-      };
+      const view = findRootViewEditor(context, commandRoot);
       const commandEditor =
-        findShownViewEditor(context, commandRoot) ?? readRootEditor();
+        view && hasEditorSurface(view)
+          ? view
+          : context.rootEditor(toPublicRootOption(commandRoot));
 
       if (focus === 'restore-root' && !commandEditor.read.view.isReadOnly()) {
         focusPliteEditable(commandEditor);

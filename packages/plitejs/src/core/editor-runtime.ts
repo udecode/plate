@@ -186,8 +186,13 @@ export type InternalPluginPublicationEntry =
       plugin: PluginReference;
     }>;
 
+export type ViewFocus = Readonly<{ composing: boolean; focused: boolean }>;
+
 export type ViewPolicySource = Readonly<{
   current: () => InternalEditorRuntime | undefined;
+  focusOf?: (
+    target: InternalEditorRuntime | undefined
+  ) => ViewFocus | undefined;
   subscribe?: (listener: () => void) => () => void;
 }>;
 

@@ -1549,12 +1549,17 @@ export const createBoardView = (
         if (changed.hasAny('selection')) voice.selectionChanged();
       });
 
-      const unsubscribeViewState = subscribeEditorViewState(shapes, () => {
-        gestures?.refuseWrites();
-        shownView = createEditorView(mounted, { root });
-        follow();
-        showSelection();
-      });
+      const unsubscribeViewState = subscribeEditorViewState(
+        shapes,
+        (change) => {
+          if (change !== 'readOnly' && change !== 'authored') return;
+
+          gestures?.refuseWrites();
+          shownView = createEditorView(mounted, { root });
+          follow();
+          showSelection();
+        }
+      );
 
       follow();
       showSelection();

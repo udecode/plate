@@ -1734,6 +1734,7 @@ const ViewSelectionCaret = ({
 }) => {
   const editor = useEditorContext();
   const focused = useEditorFocused();
+  const readOnly = useEditorReadOnly();
   const selection = React.useSyncExternalStore(
     React.useCallback(
       (notify) => subscribePliteViewSelection(editor, notify),
@@ -1742,7 +1743,12 @@ const ViewSelectionCaret = ({
     React.useCallback(() => readPliteViewSelection(editor), [editor]),
     () => null
   );
-  if (!focused || !selection || !isPliteViewSelectionCollapsed(selection)) {
+  if (
+    readOnly ||
+    !focused ||
+    !selection ||
+    !isPliteViewSelectionCollapsed(selection)
+  ) {
     return null;
   }
   return <ViewSelectionCaretGeometry editableRef={editableRef} />;

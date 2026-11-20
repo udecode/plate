@@ -10853,6 +10853,10 @@ export const isEditorCompositionPending = (editor: AnyPluginEditor) =>
   (EDITOR_COMPOSITION_PENDING.get(getEditorRuntime(editor))?.size ?? 0) > 0;
 
 const recordPresentationComposing = (editor: AnyPluginEditor) => {
+  // A view that follows another answers composition from that view, which
+  // records its own.
+  if (getEditorRuntime(editor).policySource?.focusOf) return;
+
   const composing =
     editor.read.view.isComposing() || isEditorCompositionPending(editor);
 
@@ -10997,19 +11001,43 @@ export const registerEditorSurface = (
 export const hasEditorSurface = (editor: AnyPluginEditor): boolean =>
   getEditorRuntime(editor).hasSurface?.() ?? false;
 
+type ViewStateNotice = Readonly<{
+  change: EditorViewStateChange;
+  editor: AnyPluginEditor;
+}>;
+
+const PENDING_VIEW_STATE_NOTICES = new WeakMap<object, Set<ViewStateNotice>>();
+
+const deliverViewStateNotice = (channel: object, notice: ViewStateNotice) => {
+  if (!PENDING_VIEW_STATE_NOTICES.get(channel)?.delete(notice)) return;
+
+  notifyObservers(
+    notice.editor,
+    EDITOR_VIEW_STATE_LISTENERS.get(channel),
+    'commit-listener',
+    (listener) => listener(notice.change)
+  );
+};
+
 const notifyViewStateChannel = (
   editor: AnyPluginEditor,
   channel: object,
   change: EditorViewStateChange
 ) => {
-  scheduleMicrotask(() => {
-    notifyObservers(
-      editor,
-      EDITOR_VIEW_STATE_LISTENERS.get(channel),
-      'commit-listener',
-      (listener) => listener(change)
-    );
-  });
+  const notice = { change, editor };
+  const pending = PENDING_VIEW_STATE_NOTICES.get(channel) ?? new Set();
+
+  pending.add(notice);
+  PENDING_VIEW_STATE_NOTICES.set(channel, pending);
+  scheduleMicrotask(() => deliverViewStateNotice(channel, notice));
+};
+
+export const flushEditorViewState = (editor: AnyPluginEditor) => {
+  const channel = getEditorRuntime(editor);
+
+  for (const notice of [...(PENDING_VIEW_STATE_NOTICES.get(channel) ?? [])]) {
+    deliverViewStateNotice(channel, notice);
+  }
 };
 
 export const notifyEditorViewState = (
@@ -11059,7 +11087,7 @@ const listenToViewState = (
 
 const followViewPolicy = (
   { policySource: source }: Pick<InternalEditorRuntime, 'policySource'>,
-  hearPolicyChange: (change: EditorViewStateChange) => void,
+  hearChange: (change: EditorViewStateChange) => void,
   hearSwitch: () => void
 ): (() => void) => {
   if (!source) return () => {};
@@ -11073,7 +11101,7 @@ const followViewPolicy = (
     const hearTarget = (change: EditorViewStateChange) => {
       if (!isPolicyChange(change)) return;
 
-      if (source.current() === target) hearPolicyChange(change);
+      if (source.current() === target) hearChange(change);
       else hearSwitch();
     };
     const stops = [target, ...policyChannels(target)].map((channel) =>
@@ -11081,6 +11109,15 @@ const followViewPolicy = (
     );
 
     stops.push(followViewPolicy(target, hearTarget, hearSwitch));
+    if (source.focusOf?.(target)) {
+      stops.push(
+        listenToViewState(target, (change) => {
+          if (change === 'focused' || change === 'composing') {
+            hearChange(change);
+          }
+        })
+      );
+    }
 
     return () => {
       for (const stop of stops) stop();
@@ -11097,6 +11134,10 @@ const followViewPolicy = (
     followed = next;
     stopFollowed = follow(next);
     hearSwitch();
+    if (source.focusOf) {
+      hearChange('focused');
+      hearChange('composing');
+    }
   });
 
   return () => {
@@ -11125,10 +11166,29 @@ export const subscribeEditorViewState = <V extends Value>(
   const runtime = getEditorRuntime(editor);
   let subscribed = true;
   let switching = false;
-  const hearPolicyChange = (change: EditorViewStateChange) => {
-    // A pending switch notice already has the listener read both policies of
-    // the view it now follows, so that view's own notice would repeat it.
-    if (!switching) listener(change);
+  // A switch sends a focus and a composition notice whether or not the answer
+  // changed, and the followed view sends its own, so only a changed answer
+  // reaches the listener.
+  const heard = {
+    composing: editor.read.view.isComposing(),
+    focused: editor.read.view.isFocused(),
+  };
+  const hearFollowed = (change: EditorViewStateChange) => {
+    if (!subscribed) return;
+    if (change === 'focused' || change === 'composing') {
+      const now =
+        change === 'focused'
+          ? editor.read.view.isFocused()
+          : editor.read.view.isComposing();
+
+      if (now === heard[change]) return;
+      heard[change] = now;
+    } else if (switching) {
+      // A pending switch notice already has the listener read both policies
+      // of the view it now follows, so that view's own notice would repeat it.
+      return;
+    }
+    runEditorObserver(editor, 'commit-listener', () => listener(change));
   };
   const hearSwitch = () => {
     if (switching) return;
@@ -11152,7 +11212,7 @@ export const subscribeEditorViewState = <V extends Value>(
     ...[...policyChannels(runtime, presentationOf(editor))].map((channel) =>
       listenToViewState(channel, hearOwnPolicy)
     ),
-    followViewPolicy(runtime, hearPolicyChange, hearSwitch),
+    followViewPolicy(runtime, hearFollowed, hearSwitch),
     listenToOwnerAuthoredView(editor, listener),
   ];
 

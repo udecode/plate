@@ -138,13 +138,14 @@ export const useEditableRootRuntime = ({
   useEditableRootCommitWakeup();
   useFlushDeferredSelectorsOnRender();
 
+  const readReadOnly = () => readOnlyProp || editor.read.view.isReadOnly();
   const readOnly = useSyncExternalStore(
     useCallback(
       (listener) => subscribeEditorViewState(editor, listener),
       [editor]
     ),
-    () => readOnlyProp || editor.read.view.isReadOnly(),
-    () => readOnlyProp
+    readReadOnly,
+    readReadOnly
   );
 
   const rootRuntimeState = useEditableRootRuntimeState({
