@@ -352,7 +352,7 @@ export type AuthoredTestOptions = AuthoredOptions &
 type Forced = Readonly<{ at: number; changeId: string; inc?: string }>;
 
 type AuthoredState = {
-  authorId: () => string | null;
+  authorId: (writing: Editor) => string | null;
   createChangeId: () => string;
   /** Updates whose writes record under one change, by update id. */
   forced: WeakMap<object, Forced>;
@@ -369,7 +369,7 @@ const STATES = new WeakMap<object, AuthoredState>();
 
 export const authoredProposerOf = (editor: Editor) => {
   const state = STATES.get(getEditorRuntimeOwner(editor));
-  const authorId = state?.authorId() ?? null;
+  const authorId = state?.authorId(editor) ?? null;
 
   if (!state || authorId === null) return null;
 
@@ -1834,7 +1834,7 @@ export const createAuthoredPlugin = (
     activate: ({ afterPublish, beforePublish, editor, onCleanup }) => {
       const owner = getEditorRuntimeOwner(editor);
       const state: AuthoredState = {
-        authorId: () => authorOf(editor),
+        authorId: authorOf,
         createChangeId,
         forced: new WeakMap(),
         marks: createDocumentMarksValidator(),
