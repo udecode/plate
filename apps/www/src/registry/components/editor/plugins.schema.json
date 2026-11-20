@@ -822,7 +822,8 @@
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
-            "element:listType@8cf5be6ea266d5d9"
+            "element:listType@8cf5be6ea266d5d9",
+            "element:meta@3876fc6602e1797d"
           ]
         },
         "groups": [
@@ -842,7 +843,8 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9"
+          "element:listType@8cf5be6ea266d5d9",
+          "element:meta@3876fc6602e1797d"
         ],
         "slice": {
           "preserveContext": true,
@@ -3858,10 +3860,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:6989fe11cec4ab0a",
+  "fingerprint": "fnv1a64:2382edd8f5f4f236",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:6989fe11cec4ab0a",
+    "fingerprint": "fnv1a64:2382edd8f5f4f236",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -4663,6 +4665,30 @@
         "target": {
           "kind": "type",
           "type": "table"
+        }
+      },
+      {
+        "descriptor": {
+          "kind": "string",
+          "omitDefault": false,
+          "required": false
+        },
+        "exclusiveGroupIds": [],
+        "id": "element:meta@3876fc6602e1797d",
+        "key": "meta",
+        "lifecycle": {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "drop"
+        },
+        "merge": "replace",
+        "owner": "codeBlock",
+        "placement": "element",
+        "role": "content",
+        "target": {
+          "kind": "type",
+          "type": "codeBlock"
         }
       },
       {
@@ -5773,6 +5799,10 @@
         []
       ],
       [
+        "element:meta@3876fc6602e1797d",
+        []
+      ],
+      [
         "element:name@1069a658ff703b9d",
         []
       ],
@@ -5984,7 +6014,8 @@
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
-          "element:listType@8cf5be6ea266d5d9"
+          "element:listType@8cf5be6ea266d5d9",
+          "element:meta@3876fc6602e1797d"
         ]
       ],
       [
@@ -6454,6 +6485,15 @@
       ],
       [
         "element:marginLeft@da82a82a76b6f0f1",
+        {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "drop"
+        }
+      ],
+      [
+        "element:meta@3876fc6602e1797d",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -6982,6 +7022,12 @@
             ]
           ],
           [
+            "meta",
+            [
+              "element:meta@3876fc6602e1797d"
+            ]
+          ],
+          [
             "name",
             [
               "element:name@1069a658ff703b9d"
@@ -7273,6 +7319,10 @@
       ],
       [
         "element:marginLeft@da82a82a76b6f0f1",
+        "replace"
+      ],
+      [
+        "element:meta@3876fc6602e1797d",
         "replace"
       ],
       [
@@ -8001,6 +8051,7 @@
       "element:listStyle@b90bb1ea0c1c1372",
       "element:listType@8cf5be6ea266d5d9",
       "element:marginLeft@da82a82a76b6f0f1",
+      "element:meta@3876fc6602e1797d",
       "element:name@1069a658ff703b9d",
       "element:naturalHeight@e20ef9fcaa621321",
       "element:naturalWidth@b685fe279997758e",

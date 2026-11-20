@@ -66,6 +66,7 @@ import {
   createEditorViewReadState,
   createEditorViewTransactionState,
   doesSelectionIntersect,
+  getBaseCallRoot,
   getCurrentSelection,
   getCurrentSelectionRoot,
   getReadProjection,
@@ -119,6 +120,7 @@ import type {
   EditorUpdateTransaction,
   EditorView,
   EditorViewOptions,
+  NamedRootKey,
   NodeTarget,
   RootKey,
   Selection,
@@ -1905,6 +1907,19 @@ export const withMountedPresentation: WithMountedPresentation = <
 
 export const getCarriedMount = (editor: object) =>
   MOUNTED_PRESENTATIONS.get(editor);
+
+type RootEditorOf = (root: NamedRootKey | undefined) => Editor;
+
+const ROOT_EDITORS = new WeakMap<object, RootEditorOf>();
+
+export const carryRootEditors = (view: object, rootEditor: RootEditorOf) => {
+  ROOT_EDITORS.set(view, rootEditor);
+};
+
+export const getCarriedCaretEditor = <TView extends Editor>(view: TView) =>
+  ROOT_EDITORS.get(view)?.(
+    toPublicRoot(getBaseCallRoot(getEditorRuntimeOwner(view)))
+  ) as TView | undefined;
 
 export const buildPluginRootTransaction = (
   editor: Editor,

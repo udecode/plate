@@ -17,6 +17,7 @@ import {
   type Range as ModelRange,
   type Text as TextNode,
 } from '../..';
+import { flushEditorViewState } from '../../core/public-state';
 import { markRootViewUsed } from '../../core/root-target';
 import {
   type DOMCoverageBoundary,
@@ -532,7 +533,11 @@ function EditableContentRootView({
   const editor = useEditorContext();
   const ownerHandlers = React.useContext(OwnerHandlersContext);
   const viewReadOnly = useEditorViewState(editor, (view) => view.isReadOnly());
-  const readOnly = Boolean(options.readOnly || ownerReadOnly || viewReadOnly);
+  const surfaceReadOnly = Boolean(options.readOnly || ownerReadOnly);
+  const readOnly = surfaceReadOnly || viewReadOnly;
+  useIsomorphicLayoutEffect(() => {
+    flushEditorViewState(editor);
+  }, [editor, surfaceReadOnly]);
   const { getMountedViewEditor, registerContentRootOwner } =
     useRequiredPliteRuntimeContext();
   const passesNodeSelectionFocus = nodeSelectionFocus !== undefined;
@@ -622,7 +627,7 @@ function EditableContentRootView({
     disableDefaultStyles,
     id,
     placeholder,
-    readOnly: options.readOnly || ownerReadOnly,
+    readOnly: surfaceReadOnly,
     renderElement,
     renderLeaf,
     renderPlaceholder,

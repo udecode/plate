@@ -60,6 +60,7 @@ import {
   EDITOR_TO_ROOT_VIEW_EDITORS,
 } from '../../dom/internal';
 import {
+  carryRootEditors,
   createEditorViewRuntime,
   getOwnViewReadOnly,
   getViewPresentation,
@@ -323,6 +324,39 @@ const presentationMap = <K, T>(
 
 const ProviderContext = createContext<PliteRuntimeProviderValue | null>(null);
 
+// In StrictMode, React calls a memo's function a second time and keeps the
+// first result. Without this cache, that second call would carry a context
+// that React dropped.
+const VIEW_SCOPES = new WeakMap<
+  MountedViewEditor,
+  Readonly<{
+    context: PliteRuntimeContextValue;
+    presentation: ViewPresentation | null;
+    provider: PliteRuntimeProviderValue;
+  }>
+>();
+
+const scopeOfView = (
+  provider: PliteRuntimeProviderValue,
+  presentation: ViewPresentation | null,
+  mountedEditor: MountedViewEditor
+) => {
+  const kept = VIEW_SCOPES.get(mountedEditor);
+
+  if (kept?.presentation === presentation && kept.provider === provider) {
+    return kept.context;
+  }
+
+  const context = withRootEditors(
+    scopeRuntimeContext(provider, presentation, mountedEditor)
+  );
+
+  VIEW_SCOPES.set(mountedEditor, { context, presentation, provider });
+  carryRootEditors(mountedEditor, context.rootEditor);
+
+  return context;
+};
+
 export const SurfaceRuntimeScope = ({
   children,
   mountedEditor,
@@ -337,11 +371,22 @@ export const SurfaceRuntimeScope = ({
     failInvariant('A mounted surface requires an editor runtime provider.');
   const value = useMemo(
     () =>
-      withRootEditors(
-        scopeRuntimeContext(provider, presentation, mountedEditor)
-      ),
+      mountedEditor
+        ? scopeOfView(provider, presentation, mountedEditor)
+        : withRootEditors(scopeRuntimeContext(provider, presentation, null)),
     [mountedEditor, presentation, provider]
   );
+
+  return <PliteRuntimeContext value={value}>{children}</PliteRuntimeContext>;
+};
+
+export const EditingAreaRootEditors = ({
+  children,
+}: {
+  children: ReactNode;
+}) => {
+  const around = useRequiredPliteRuntimeContext();
+  const value = useMemo(() => withRootEditors(around), [around]);
 
   return <PliteRuntimeContext value={value}>{children}</PliteRuntimeContext>;
 };
@@ -415,6 +460,7 @@ export const createReactRuntimeViewEditor = <
     },
   }) as ReactRuntimeEditor<V, TPlugins>['api'];
 
+  const portals = new WeakMap<object, object>();
   const pluginPortal = ((plugin: PluginLike) => {
     const sharedPortal = shared
       ? (
@@ -432,8 +478,11 @@ export const createReactRuntimeViewEditor = <
         update: unknown;
       }
     )(plugin);
+    const known = portals.get(portal);
 
-    return new Proxy(portal, {
+    if (known) return known;
+
+    const viewPortal = new Proxy(portal, {
       get(target, property, receiver) {
         if (property === 'api') {
           const capability = Reflect.get(target, property, receiver);
@@ -452,6 +501,10 @@ export const createReactRuntimeViewEditor = <
         return Reflect.get(target, property, receiver);
       },
     });
+
+    portals.set(portal, viewPortal);
+
+    return viewPortal;
   }) as ReactRuntimeEditor<V, TPlugins>['plugin'];
 
   Object.defineProperties(editor, {
@@ -982,6 +1035,8 @@ function createPliteRootEditor(
  * Create a command-capable editor for one root.
  *
  * The returned object is stable for the requested root and read-only option.
+ * A renderer inside an `Editable` gets another object than UI outside it, so
+ * a lock set through one does not reach the other.
  * It obeys the read-only state and the authored view of the mounted view that
  * shows its root, and of the view around the hook while none shows it. Inside
  * a view, that mounted view is the one this view mounts for the root, such as

@@ -72,6 +72,7 @@ export interface CodeBlockElement extends Element {
   readonly listStart?: number;
   readonly listStyle?: string;
   readonly listType?: "bulleted" | "numbered" | "task";
+  readonly meta?: string;
 }
 
 export interface ColumnElement extends Element {
@@ -423,6 +424,7 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
+      readonly meta?: string;
     }>;
     readonly properties: Readonly<{
       readonly authored?: readonly (unknown)[];
@@ -435,6 +437,7 @@ export type Mutations = Readonly<{
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
+      readonly meta?: string;
     }>;
     readonly type: "codeBlock";
   }>;

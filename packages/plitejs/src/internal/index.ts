@@ -168,6 +168,7 @@ export {
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
 export {
+  getCarriedCaretEditor,
   getViewAuthor,
   getViewPresentation,
   projectEditorView,
@@ -317,6 +318,7 @@ export {
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
   registerEditorTransactionGuard,
+  subscribeCaretTarget,
   subscribeEditorViewState,
   withEditorUpdateRootScope,
 } from '../core/public-state';

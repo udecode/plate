@@ -1,6 +1,10 @@
 import React from 'react';
 
-import { ElementApi, type NodeKey } from '../../../facade';
+import {
+  ElementApi,
+  getEditorRuntimeOwner,
+  type NodeKey,
+} from '../../../facade';
 import { DOMPlugin } from '../../../lib/plugins/dom/DOMPlugin';
 import { useEditorRootElement } from '../../plite-react';
 import { definePlugin, type ViewElementAttributes } from '../../plugin';
@@ -17,14 +21,15 @@ type FeedbackTarget = Readonly<{
 }>;
 
 type MountedFeedback = {
-  root: HTMLElement;
   target: FeedbackTarget | null;
   pulse: number;
   timeout: ReturnType<typeof setTimeout> | null;
   listeners: Set<() => void>;
 };
 
-const mountedFeedback = new WeakMap<object, MountedFeedback>();
+const feedbackByRoot = new WeakMap<HTMLElement, MountedFeedback>();
+const isModelEditor = (editor: Parameters<typeof getEditorRuntimeOwner>[0]) =>
+  getEditorRuntimeOwner(editor) === editor;
 const emptySnapshot = () => null;
 
 const publish = (state: MountedFeedback, target: FeedbackTarget | null) => {
@@ -53,8 +58,9 @@ export const NavigationFeedbackPlugin = definePlugin('navigation', {
       attributes = {},
       duration = store.get('duration'),
     }: NavigationFlashTargetOptions) => {
-      const state = mountedFeedback.get(editor);
-      if (!state || state.root !== editor.api.dom.root()) return false;
+      const root = isModelEditor(editor) ? null : editor.api.dom.root();
+      const state = root && feedbackByRoot.get(root);
+      if (!root || !state) return false;
       const path = editor.read.nodes.path(key);
       if (!path || !ElementApi.isElement(editor.read.nodes.get(path)?.[0])) {
         return false;
@@ -79,7 +85,7 @@ export const NavigationFeedbackPlugin = definePlugin('navigation', {
       );
       state.timeout = setTimeout(() => {
         if (
-          mountedFeedback.get(editor) === state &&
+          feedbackByRoot.get(root) === state &&
           state.target?.pulse === pulse
         ) {
           clear(state);
@@ -89,8 +95,9 @@ export const NavigationFeedbackPlugin = definePlugin('navigation', {
     },
     /** Clear this mounted view's feedback, returning whether a target was active. */
     clear: () => {
-      const state = mountedFeedback.get(editor);
-      if (!state || state.root !== editor.api.dom.root()) return false;
+      const root = isModelEditor(editor) ? null : editor.api.dom.root();
+      const state = root && feedbackByRoot.get(root);
+      if (!state) return false;
       const hadTarget = state.target !== null;
       clear(state);
       return hadTarget;
@@ -104,13 +111,12 @@ export const NavigationFeedbackPlugin = definePlugin('navigation', {
       React.useLayoutEffect(() => {
         if (!root) return undefined;
         const next: MountedFeedback = {
-          root,
           target: null,
           pulse: 0,
           timeout: null,
           listeners: new Set(),
         };
-        mountedFeedback.set(view, next);
+        feedbackByRoot.set(root, next);
         setState(next);
         const unsubscribe = view.subscribeCommit(() => {
           if (next.target && !view.read.nodes.path(next.target.key)) {
@@ -119,7 +125,7 @@ export const NavigationFeedbackPlugin = definePlugin('navigation', {
         });
         return () => {
           unsubscribe();
-          if (mountedFeedback.get(view) === next) mountedFeedback.delete(view);
+          if (feedbackByRoot.get(root) === next) feedbackByRoot.delete(root);
           next.listeners.clear();
           clear(next);
         };

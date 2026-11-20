@@ -49,7 +49,10 @@ import { ComposingContext } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
 import { useHydrated } from '../hooks/use-hydrated';
-import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
+import {
+  EditingAreaRootEditors,
+  useRequiredPliteRuntimeContext,
+} from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { usePliteViewSelectionPresence } from '../view-selection-decoration';
@@ -608,7 +611,7 @@ export const EditableDOMRoot = (
               }}
               suppressContentEditableWarning
             >
-              {customChildren}
+              <EditingAreaRootEditors>{customChildren}</EditingAreaRootEditors>
             </Component>
           </EditableDOMCommitFence>
         </EditableDOMRuntimeContext>
