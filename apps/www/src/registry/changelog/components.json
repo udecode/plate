@@ -1,6 +1,21 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai-api": [
+      "2026-11-20-ai-command-tool-results",
+      "2026-11-17-ai-api-initial-selection",
+      "2026-11-17-ai-comment-author",
+      "2026-11-16-ai-routes-caller-key",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-29-markdown-joiner-removal",
+      "2026-09-28-markdown-registered-tags",
+      "2026-09-17-ai-comment-recovery",
+      "2026-08-13-ai-request-refs",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite",
+      "2025-10-21-add-rejectaisuggestions"
+    ],
     "use-chat": [
       "2026-11-20-ai-comment-excerpt-slice",
       "2026-11-17-ai-comment-author",
@@ -923,20 +938,6 @@
       "2026-07-26-plugin-store-state"
     ],
     "slash-command-items-demo": ["2026-11-18-slash-app-items"],
-    "ai-api": [
-      "2026-11-17-ai-api-initial-selection",
-      "2026-11-17-ai-comment-author",
-      "2026-11-16-ai-routes-caller-key",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-29-markdown-joiner-removal",
-      "2026-09-28-markdown-registered-tags",
-      "2026-09-17-ai-comment-recovery",
-      "2026-08-13-ai-request-refs",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite",
-      "2025-10-21-add-rejectaisuggestions"
-    ],
     "editor-ai": [
       "2026-11-17-ai-comment-author",
       "2026-11-16-save-comment-ranges",

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-ai-command-tool-results",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-ai-command-tool-results.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix AI comments and table edits ending in an error",
+  "targets": [
+    {
+      "name": "ai-api",
+      "files": [
+        "apps/www/src/registry/app/api/ai/command/prompt/common.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+        "apps/www/src/registry/app/api/ai/command/route.ts",
+        "apps/www/src/registry/app/api/ai/command/utils.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-ai-api-fix-comments-table-edits-956cbc07",
+      "kind": "fix",
+      "summary": "Fix AI comments and table edits ending with a \"Could not generate comments\" error after they land: the `comment` and `table` tools now return a result.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-api"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-ai-command-tool-results",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

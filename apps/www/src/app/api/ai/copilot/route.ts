@@ -1,13 +1,20 @@
-import { faker } from '@faker-js/faker';
 import type { NextRequest } from 'next/server';
 
-export async function POST(request: NextRequest) {
-  const body = (await request.clone().json()) as { apiKey?: string };
-  if (body.apiKey) {
-    const { POST: complete } =
-      await import('@/registry/app/api/ai/copilot/route');
-    return complete(request);
-  }
+import { copilotDemoConfig } from '@/lib/ai-chat-demo';
+import { postWithEmulatedGateway } from '@/lib/ai-gateway-emulator';
+import { POST as complete } from '@/registry/app/api/ai/copilot/route';
 
-  return Response.json({ text: ` ${faker.lorem.sentence()}` });
+export async function POST(request: NextRequest) {
+  const body = (await request.clone().json()) as {
+    apiKey?: string;
+    prompt?: string;
+  };
+  if (body.apiKey) return complete(request);
+
+  return postWithEmulatedGateway(
+    complete,
+    request,
+    body,
+    copilotDemoConfig(body)
+  );
 }

@@ -1,572 +1,266 @@
-import { faker } from '@faker-js/faker';
-import { UI_MESSAGE_STREAM_HEADERS } from 'ai';
-import { NodeApi, nanoid } from 'platejs';
+import type { AiSeedConfig, Json } from '@emulators/ai';
+import { NodeApi } from 'platejs';
 import type { AIChatRequestContext } from 'platejs/ai';
 
 import { getCommentBlocks } from '@/registry/app/api/ai/command/prompt/getCommentPrompt';
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
+import type {
+  ChatMessage,
+  ToolName,
+} from '@/registry/components/editor/use-chat';
 
-type DemoSample = 'comment' | 'continue-writing' | 'markdown' | 'table';
+type DemoRules = NonNullable<AiSeedConfig['rules']>;
 
-export async function createAIChatDemoResponse({
-  messages,
-  ctx,
-  signal,
-}: {
-  messages: ChatMessage[];
-  ctx?: AIChatRequestContext;
-  signal: AbortSignal;
-}) {
-  let sample: DemoSample | null = null;
+type DemoScenario = {
+  chosenTool: ToolName;
+  rules: (ctx: AIChatRequestContext) => DemoRules;
+};
 
-  try {
-    const content = messages
-      .at(-1)
-      ?.parts.find((part) => part.type === 'text')?.text;
+const markdownSample = `Make text **bold**, *italic*, __underlined__, or apply a ***combination*** of these styles for a visually striking effect.
 
-    const toolName = ctx?.toolName;
+Add ~~strikethrough~~ to indicate deleted or outdated content.
 
-    if (toolName === 'comment') {
-      sample = 'comment';
-    } else if (toolName === 'edit') {
-      if ((ctx?.refs.tableCells.length ?? 0) > 1) sample = 'table';
-    } else if (content === 'Generate a markdown sample') {
-      sample = 'markdown';
-    } else if (
-      content?.includes('Continue writing AFTER <Block>') ||
-      content?.includes('Start writing a new paragraph AFTER <Document>')
-    ) {
-      sample = 'continue-writing';
-    } else if (!toolName && content?.includes('comment')) {
-      sample = 'comment';
-    }
+Write code snippets with inline \`code\` formatting for easy readability.
 
-    if (!sample && !toolName && (ctx?.refs.tableCells.length ?? 0) > 1) {
-      sample = 'table';
-    }
-  } catch {
-    sample = null;
+Add [links](https://example.com) to external resources or references.
+
+Use inline math equations like $E = mc^2$ for scientific notation.
+
+# Heading 1
+
+## Heading 2
+
+### Heading 3
+
+> Blockquote
+
+- Unordered list item 1
+- Unordered list item 2
+
+1. Ordered list item 1
+2. Ordered list item 2
+
+- [ ] Task list item 1
+- [x] Task list item 2
+
+![Alt text](https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)
+
+### Advantage blocks:
+
+$$
+a^2 + b^2 = c^2
+$$
+
+\`\`\`python
+# Code block
+print("Hello, World!")
+\`\`\`
+
+Horizontal rule
+
+---
+
+| Header 1 | Header 2 |
+|----------|----------|
+| Row 1    | Data     |
+| Row 2    | Data     |`;
+
+const demoProse = `Plate turns a plain text box into an editor your users can shape: headings, lists, tables and media all live in one document model.
+
+The AI menu works on that same model, so a draft, an edit or a comment lands as ordinary blocks you can undo, review and keep editing.
+
+Add your own AI Gateway key to see a real model answer here instead of this scripted demo.`;
+
+const demoComments = [
+  'Consider opening with the main point so readers know where this is going.',
+  'A short example here would make this easier to follow.',
+  'This sentence could be tighter without losing its meaning.',
+];
+
+const demoCellTexts = [
+  'Updated with a clearer summary.',
+  'Rewritten to match the column heading.',
+  'Shortened to fit the table.',
+];
+
+const copilotCompletions = [
+  ' and the rest of the paragraph follows naturally from here.',
+  ' which makes the idea easier to picture.',
+  ' so the next step is to try it in your own editor.',
+  ' while keeping the original meaning intact.',
+];
+
+const toolRules = (
+  tool: 'comment' | 'table',
+  elements: Json[],
+  textContains?: string
+): DemoRules => [
+  {
+    id: tool,
+    match: { tool },
+    reply: [{ arguments: {}, name: tool, type: 'tool_call' }],
+    times: 1,
+  },
+  {
+    id: `${tool}-elements`,
+    match: { stream: true, textContains },
+    reply: [{ type: 'object', value: { elements } }],
+    timing: { chunkDelayMs: 50 },
+    times: 1,
+  },
+];
+
+const textRules = (text: string, chunkDelayMs: number): DemoRules => [
+  {
+    id: 'text',
+    match: { stream: true },
+    reply: [{ text, type: 'text' }],
+    timing: { chunkDelayMs },
+    times: 1,
+  },
+];
+
+const demoScenarios: Record<
+  'comment' | 'continue-writing' | 'markdown' | 'table' | 'text',
+  DemoScenario
+> = {
+  comment: {
+    chosenTool: 'comment',
+    rules: (ctx) =>
+      toolRules(
+        'comment',
+        getCommentBlocks({
+          children: ctx.children,
+          refs: ctx.refs.blocks,
+          selection: ctx.nodeSelection ? null : ctx.selection,
+        })
+          .map(({ block, ref }) => ({ ref, text: NodeApi.string(block) }))
+          .filter(({ text }) => text.trim())
+          .filter((_, index) => index % 2 === 0)
+          .map(({ ref, text }, index) => ({
+            blockRef: ref,
+            comment: demoComments[index % demoComments.length],
+            content: text.includes('.')
+              ? text.slice(0, text.indexOf('.'))
+              : text,
+          }))
+      ),
+  },
+  'continue-writing': {
+    chosenTool: 'generate',
+    rules: () =>
+      textRules(
+        'AI can help turn an initial idea into a clear and useful first draft.',
+        40
+      ),
+  },
+  markdown: {
+    chosenTool: 'generate',
+    rules: () => textRules(markdownSample, 8),
+  },
+  table: {
+    chosenTool: 'edit',
+    rules: (ctx) => [
+      ...toolRules(
+        'table',
+        ctx.refs.tableCells
+          .filter(({ path }) =>
+            NodeApi.getIf({ children: ctx.children, type: '' }, path)
+          )
+          .map(({ ref }, index) => ({
+            content: demoCellTexts[index % demoCellTexts.length],
+            ref,
+          })),
+        '<CellRef'
+      ),
+      ...textRules(demoProse, 30),
+    ],
+  },
+  text: {
+    chosenTool: 'generate',
+    rules: () => textRules(demoProse, 30),
+  },
+};
+
+const pickScenario = (
+  ctx: AIChatRequestContext,
+  messages: ChatMessage[]
+): keyof typeof demoScenarios => {
+  const text = messages
+    .at(-1)
+    ?.parts.find((part) => part.type === 'text')?.text;
+  const manyCells = ctx.refs.tableCells.length > 1;
+
+  if (ctx.toolName === 'comment') return 'comment';
+  if (ctx.toolName === 'edit') return manyCells ? 'table' : 'text';
+  if (text === 'Generate a markdown sample') return 'markdown';
+  if (
+    text?.includes('Continue writing AFTER <Block>') ||
+    text?.includes('Start writing a new paragraph AFTER <Document>')
+  ) {
+    return 'continue-writing';
   }
+  if (!ctx.toolName && text?.includes('comment')) return 'comment';
+  if (!ctx.toolName && manyCells) return 'table';
 
-  await new Promise<void>((resolve, reject) => {
-    const abort = () => {
-      clearTimeout(timer);
-      const reason: unknown = signal.reason;
-      reject(
-        reason instanceof Error
-          ? reason
-          : new DOMException('AI request aborted', 'AbortError')
-      );
-    };
-    const timer = setTimeout(() => {
-      signal.removeEventListener('abort', abort);
-      resolve();
-    }, 400);
-    signal.addEventListener('abort', abort, { once: true });
-    if (signal.aborted) abort();
-  });
-  signal.throwIfAborted();
+  return 'text';
+};
 
-  const stream = fakeStreamText({
-    context: ctx,
-    sample,
-    signal,
-  });
+export function commandDemoConfig({
+  ctx,
+  messages,
+}: {
+  ctx: AIChatRequestContext;
+  messages: ChatMessage[];
+}): AiSeedConfig {
+  const scenario = demoScenarios[pickScenario(ctx, messages)];
+  const [first, ...rest]: DemoRules = [
+    ...(ctx.toolName
+      ? []
+      : [
+          {
+            id: 'choose',
+            match: { stream: false },
+            reply: [
+              {
+                type: 'object' as const,
+                value: { result: scenario.chosenTool },
+              },
+            ],
+            times: 1,
+          },
+        ]),
+    ...scenario.rules(ctx),
+  ];
 
-  const response = new Response(stream, {
-    headers: UI_MESSAGE_STREAM_HEADERS,
-  });
-
-  return response;
+  return {
+    rules: [{ ...first, timing: { ...first.timing, ttftMs: 400 } }, ...rest],
+    strict: true,
+  };
 }
 
-const fakeStreamText = ({
-  chunkCount = 10,
-  context,
-  sample = null,
-  signal,
+export function copilotDemoConfig({
+  prompt,
 }: {
-  context?: AIChatRequestContext;
-  chunkCount?: number;
-  sample?: DemoSample | null;
-  signal?: AbortSignal;
-}) => {
-  const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    async start(controller) {
-      const blocks = (() => {
-        if (sample === 'markdown') {
-          return markdownChunks;
-        }
-
-        if (sample === 'continue-writing') {
-          return continueWritingChunks;
-        }
-
-        if (sample === 'comment') {
-          const commentChunks = createCommentChunks(context);
-          return commentChunks;
-        }
-
-        if (sample === 'table') {
-          const tableChunks = createTableCellChunks(context);
-          return tableChunks;
-        }
-
-        return [
-          Array.from({ length: chunkCount }, () => ({
-            delay: faker.number.int({ max: 100, min: 30 }),
-            texts: `${faker.lorem.words({ max: 3, min: 1 })} `,
-          })),
-
-          Array.from({ length: chunkCount + 2 }, () => ({
-            delay: faker.number.int({ max: 100, min: 30 }),
-            texts: `${faker.lorem.words({ max: 3, min: 1 })} `,
-          })),
-
-          Array.from({ length: chunkCount + 4 }, () => ({
-            delay: faker.number.int({ max: 100, min: 30 }),
-            texts: `${faker.lorem.words({ max: 3, min: 1 })} `,
-          })),
-        ];
-      })();
-      if (signal?.aborted) {
-        controller.error(new Error('Aborted before start'));
-        return;
-      }
-
-      const abortHandler = () => {
-        controller.error(new Error('Stream aborted'));
-      };
-
-      signal?.addEventListener('abort', abortHandler, { once: true });
-
-      // Generate a unique message ID
-      const messageId = `msg_${faker.string.alphanumeric(40)}`;
-
-      controller.enqueue(encoder.encode('data: {"type":"start"}\n\n'));
-      if (sample !== 'comment' && sample !== 'table') {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({
-              type: 'data-toolName',
-              data: context?.toolName ?? 'generate',
-            })}\n\n`
-          )
-        );
-      }
-      await new Promise((resolve) => {
-        setTimeout(resolve, 10);
-      });
-      if (signal?.aborted) return;
-
-      controller.enqueue(encoder.encode('data: {"type":"start-step"}\n\n'));
-      await new Promise((resolve) => {
-        setTimeout(resolve, 10);
-      });
-      if (signal?.aborted) return;
-
-      // Handle comment and table data differently (they use data events, not text streams)
-      if (sample === 'comment' || sample === 'table') {
-        // For comments and tables, send data events directly
-        for (const block of blocks) {
-          for (const chunk of block) {
-            await new Promise((resolve) => {
-              setTimeout(resolve, chunk.delay);
-            });
-
-            if (signal?.aborted) {
-              signal?.removeEventListener('abort', abortHandler);
-              return;
-            }
-
-            // Send the data event directly (already formatted as JSON)
-            controller.enqueue(encoder.encode(`data: ${chunk.texts}\n\n`));
-          }
-        }
-      } else {
-        controller.enqueue(
-          encoder.encode(
-            `data: {"type":"text-start","id":"${messageId}","providerMetadata":{"openai":{"itemId":"${messageId}"}}}\n\n`
-          )
-        );
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10);
-        });
-        if (signal?.aborted) return;
-
-        for (let i = 0; i < blocks.length; i++) {
-          const block = blocks[i];
-
-          // Stream the block content
-          for (const chunk of block) {
-            await new Promise((resolve) => {
-              setTimeout(resolve, chunk.delay);
-            });
-
-            if (signal?.aborted) {
-              signal?.removeEventListener('abort', abortHandler);
-              return;
-            }
-
-            // Properly escape the text for JSON
-            const escapedText = chunk.texts
-              // Escape backslashes first
-              .replace(/\\/g, '\\\\')
-              // Escape quotes
-              .replace(/"/g, String.raw`\"`)
-              // Escape newlines
-              .replace(/\n/g, String.raw`\n`)
-              // Escape carriage returns
-              .replace(/\r/g, String.raw`\r`)
-              // Escape tabs
-              .replace(/\t/g, String.raw`\t`);
-
-            controller.enqueue(
-              encoder.encode(
-                `data: {"type":"text-delta","id":"${messageId}","delta":"${escapedText}"}\n\n`
-              )
-            );
-          }
-
-          // Add double newline after each block except the last one
-          if (i < blocks.length - 1) {
-            controller.enqueue(
-              encoder.encode(
-                `data: {"type":"text-delta","id":"${messageId}","delta":"\\n\\n"}\n\n`
-              )
-            );
-          }
-        }
-
-        // Send end events
-        controller.enqueue(
-          encoder.encode(`data: {"type":"text-end","id":"${messageId}"}\n\n`)
-        );
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10);
-        });
-        if (signal?.aborted) return;
-
-        controller.enqueue(encoder.encode('data: {"type":"finish-step"}\n\n'));
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10);
-        });
-        if (signal?.aborted) return;
-
-        controller.enqueue(encoder.encode('data: {"type":"finish"}\n\n'));
-        await new Promise((resolve) => {
-          setTimeout(resolve, 10);
-        });
-        if (signal?.aborted) return;
-      }
-
-      controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-
-      signal?.removeEventListener('abort', abortHandler);
-      controller.close();
-    },
-  });
-};
-
-const delay = faker.number.int({ max: 20, min: 5 });
-
-const continueWritingChunks = [
-  [
-    { delay, texts: 'AI can help ' },
-    { delay, texts: 'turn an initial idea ' },
-    { delay, texts: 'into a clear and useful ' },
-    { delay, texts: 'first draft.' },
-  ],
-];
-
-const markdownChunks = [
-  [
-    { delay, texts: 'Make text ' },
-    { delay, texts: '**bold**' },
-    { delay, texts: ', ' },
-    { delay, texts: '*italic*' },
-    { delay, texts: ', ' },
-    { delay, texts: '__underlined__' },
-    { delay, texts: ', or apply a ' },
-    {
-      delay,
-      texts: '***combination***',
-    },
-    { delay, texts: ' ' },
-    { delay, texts: 'of ' },
-    { delay, texts: 'these ' },
-    { delay, texts: 'styles ' },
-    { delay, texts: 'for ' },
-    { delay, texts: 'a ' },
-    { delay, texts: 'visually ' },
-    { delay, texts: 'striking ' },
-    { delay, texts: 'effect.' },
-    { delay, texts: '\n\n' },
-    { delay, texts: 'Add ' },
-    {
-      delay,
-      texts: '~~strikethrough~~',
-    },
-    { delay, texts: ' ' },
-    { delay, texts: 'to ' },
-    { delay, texts: 'indicate ' },
-    { delay, texts: 'deleted ' },
-    { delay, texts: 'or ' },
-    { delay, texts: 'outdated ' },
-    { delay, texts: 'content.' },
-    { delay, texts: '\n\n' },
-    { delay, texts: 'Write ' },
-    { delay, texts: 'code ' },
-    { delay, texts: 'snippets ' },
-    { delay, texts: 'with ' },
-    { delay, texts: 'inline ' },
-    { delay, texts: '`code`' },
-    { delay, texts: ' formatting ' },
-    { delay, texts: 'for ' },
-    { delay, texts: 'easy ' },
-    { delay: faker.number.int({ max: 100, min: 30 }), texts: 'readability.' },
-    { delay, texts: '\n\n' },
-    { delay, texts: 'Add ' },
-    {
-      delay,
-      texts: '[links](https://example.com)',
-    },
-    { delay: faker.number.int({ max: 100, min: 30 }), texts: ' to ' },
-    { delay: faker.number.int({ max: 100, min: 30 }), texts: 'external ' },
-    { delay, texts: 'resources ' },
-    { delay, texts: 'or ' },
-    {
-      delay,
-      texts: 'references.\n\n',
-    },
-
-    { delay, texts: 'Use ' },
-    { delay, texts: 'inline ' },
-    { delay, texts: 'math ' },
-    { delay, texts: 'equations ' },
-    { delay, texts: 'like ' },
-    { delay, texts: '$E = mc^2$ ' },
-    { delay, texts: 'for ' },
-    { delay, texts: 'scientific ' },
-    { delay, texts: 'notation.' },
-    { delay, texts: '\n\n' },
-
-    { delay, texts: '# ' },
-    { delay, texts: 'Heading ' },
-    { delay, texts: '1\n\n' },
-    { delay, texts: '## ' },
-    { delay, texts: 'Heading ' },
-    { delay, texts: '2\n\n' },
-    { delay, texts: '### ' },
-    { delay, texts: 'Heading ' },
-    { delay, texts: '3\n\n' },
-    { delay, texts: '> ' },
-    { delay, texts: 'Blockquote\n\n' },
-    { delay, texts: '- ' },
-    { delay, texts: 'Unordered ' },
-    { delay, texts: 'list ' },
-    { delay, texts: 'item ' },
-    { delay, texts: '1\n' },
-    { delay, texts: '- ' },
-    { delay, texts: 'Unordered ' },
-    { delay, texts: 'list ' },
-    { delay, texts: 'item ' },
-    { delay, texts: '2\n\n' },
-    { delay, texts: '1. ' },
-    { delay, texts: 'Ordered ' },
-    { delay, texts: 'list ' },
-    { delay, texts: 'item ' },
-    { delay, texts: '1\n' },
-    { delay, texts: '2. ' },
-    { delay, texts: 'Ordered ' },
-    { delay, texts: 'list ' },
-    { delay, texts: 'item ' },
-    { delay, texts: '2\n\n' },
-    { delay, texts: '- ' },
-    { delay, texts: '[ ' },
-    { delay, texts: '] ' },
-    { delay, texts: 'Task ' },
-    { delay, texts: 'list ' },
-    { delay, texts: 'item ' },
-    { delay, texts: '1\n' },
-    { delay, texts: '- ' },
-    { delay, texts: '[x] ' },
-    { delay, texts: 'Task ' },
-    { delay, texts: 'list ' },
-    { delay, texts: 'item ' },
-    { delay, texts: '2\n\n' },
-    { delay, texts: '![Alt ' },
-    {
-      delay,
-      texts:
-        'text](https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)\n\n',
-    },
-    {
-      delay,
-      texts: '### Advantage blocks:\n',
-    },
-    { delay, texts: '\n' },
-    { delay, texts: '$$\n' },
-    {
-      delay,
-      texts: 'a^2 + b^2 = c^2\n',
-    },
-    { delay, texts: '$$\n' },
-    { delay, texts: '\n' },
-    { delay, texts: '```python\n' },
-    { delay, texts: '# ' },
-    { delay, texts: 'Code ' },
-    { delay, texts: 'block\n' },
-    { delay, texts: 'print("Hello, ' },
-    { delay, texts: 'World!")\n' },
-    { delay, texts: '```\n\n' },
-    { delay, texts: 'Horizontal ' },
-    { delay, texts: 'rule\n\n' },
-    { delay, texts: '---\n\n' },
-    { delay, texts: '| ' },
-    { delay, texts: 'Header ' },
-    { delay, texts: '1 ' },
-    { delay, texts: '| ' },
-    { delay, texts: 'Header ' },
-    { delay, texts: '2 ' },
-    { delay, texts: '|\n' },
-    {
-      delay,
-      texts: '|----------|----------|\n',
-    },
-    { delay, texts: '| ' },
-    { delay, texts: 'Row ' },
-    { delay, texts: '1   ' },
-    { delay, texts: ' | ' },
-    { delay, texts: 'Data    ' },
-    { delay, texts: ' |\n' },
-    { delay, texts: '| ' },
-    { delay, texts: 'Row ' },
-    { delay, texts: '2   ' },
-    { delay, texts: ' | ' },
-    { delay, texts: 'Data    ' },
-    { delay, texts: ' |' },
-  ],
-];
-
-const createCommentChunks = (context?: AIChatRequestContext) => {
-  const blocks = context
-    ? getCommentBlocks({
-        children: context.children,
-        refs: context.refs.blocks,
-        selection: context.nodeSelection ? null : context.selection,
-      }).filter(({ block }) => NodeApi.string(block).trim())
-    : [];
-  const max = blocks.length;
-
-  if (max === 0) {
-    return [
-      [{ delay: 50, texts: '{"data":"comment","type":"data-toolName"}' }],
-      [
-        {
-          delay: 100,
-          texts: `{"id":"${nanoid()}","data":{"comment":null,"status":"finished"},"type":"data-comment"}`,
-        },
-      ],
-    ];
+  prompt?: string;
+}): AiSeedConfig {
+  let hash = 0;
+  for (const char of prompt ?? '') {
+    hash = (hash * 31 + char.charCodeAt(0)) % 2_147_483_647;
   }
 
-  const commentCount = Math.ceil(max / 2);
-
-  const result = new Set<number>();
-
-  while (result.size < commentCount) {
-    const num = Math.floor(Math.random() * max);
-    result.add(num);
-  }
-
-  const indexes = Array.from(result).sort((a, b) => a - b);
-
-  const chunks = indexes
-    .map((index) => {
-      const entry = blocks[index];
-
-      if (!entry) return [];
-
-      const blockString = NodeApi.string(entry.block);
-      const endIndex = blockString.indexOf('.');
-      const content =
-        endIndex === -1 ? blockString : blockString.slice(0, endIndex);
-
-      return [
-        {
-          delay: faker.number.int({ max: 500, min: 200 }),
-          texts: JSON.stringify({
-            id: nanoid(),
-            data: {
-              comment: {
-                blockRef: entry.ref,
-                comment: faker.lorem.sentence(),
-                content,
-              },
-              status: 'streaming',
-            },
-            type: 'data-comment',
-          }),
-        },
-      ];
-    })
-    .filter((chunk) => chunk.length > 0);
-
-  const resultChunks = [
-    [{ delay: 50, texts: '{"data":"comment","type":"data-toolName"}' }],
-    ...chunks,
-    [
+  return {
+    rules: [
       {
-        delay: 50,
-        texts: `{"id":"${nanoid()}","data":{"comment":null,"status":"finished"},"type":"data-comment"}`,
+        id: 'completion',
+        match: { stream: false },
+        reply: [
+          {
+            text: copilotCompletions[hash % copilotCompletions.length],
+            type: 'text',
+          },
+        ],
       },
     ],
-  ];
-
-  return resultChunks;
-};
-
-const createTableCellChunks = (context?: AIChatRequestContext) => {
-  const root = context ? { children: context.children, type: '' } : null;
-  const cellRefs =
-    root && context
-      ? context.refs.tableCells.flatMap(({ path, ref }) =>
-          NodeApi.getIf(root, path) ? [ref] : []
-        )
-      : [];
-
-  if (cellRefs.length === 0) {
-    return [
-      [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
-      [
-        {
-          delay: 100,
-          texts: `{"id":"${nanoid()}","data":{"cellUpdate":null,"status":"finished"},"type":"data-table"}`,
-        },
-      ],
-    ];
-  }
-
-  const chunks = cellRefs.map((cellRef) => [
-    {
-      delay: faker.number.int({ max: 300, min: 100 }),
-      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"ref":"${cellRef}","content":"${faker.lorem.sentence()}"},"status":"streaming"},"type":"data-table"}`,
-    },
-  ]);
-
-  const resultChunks = [
-    [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
-    ...chunks,
-    [
-      {
-        delay: 50,
-        texts: `{"id":"${nanoid()}","data":{"cellUpdate":null,"status":"finished"},"type":"data-table"}`,
-      },
-    ],
-  ];
-
-  return resultChunks;
-};
+    strict: true,
+  };
+}

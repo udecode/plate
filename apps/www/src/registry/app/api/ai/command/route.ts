@@ -266,6 +266,8 @@ const getCommentTool = (
         },
         type: 'data-comment',
       });
+
+      return 'Comments added.';
     },
   });
 
@@ -332,5 +334,7 @@ const getTableTool = (
         },
         type: 'data-table',
       });
+
+      return 'Table cells updated.';
     },
   });
