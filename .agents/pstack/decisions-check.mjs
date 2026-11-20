@@ -56,10 +56,20 @@
 //        under <plans>/artifacts/> in its evidence, and refuse a build row whose decision
 //        starts with "built:" and holds reach: <text> while such a row has no later panel or
 //        build row whose evidence names the same proof: file and whose result starts with
-//        applied, dismissed, fixed or verified. They refuse a build row to a log in a git
-//        checkout whose change builds a dated plan's step past the step budget, as
-//        status.mjs's stepLines counts it, unless a changed decision log holds an owner
-//        row starting "big step:" with no later "landed as" row.
+//        applied, dismissed, fixed or verified. That refusal reads the build row's step
+//        from the word after "built: step" and each recorded row's steps from the word
+//        after each step: label, any letter case for both, a label not right after a
+//        letter, digit or _. A step id is 1 to 9 digits and then at most one ASCII letter,
+//        either case, once trailing .,:)]}"'`* is cut, ordered by number then letter. It
+//        counts a row when one of its steps is the build row's step or earlier, or has the
+//        same number with no letter on one side; when it names no step:; or when the build
+//        row has no "built: step", or either word is not a step id, or another word that
+//        starts with a digit, past any symbols, follows it before the next ";" and, on the
+//        build row, before reach:, or on a recorded row before the next label. Words split
+//        at spaces and commas. They refuse a build row to a log in a git checkout whose
+//        change builds a dated plan's step past the step budget, as status.mjs's stepLines
+//        counts it, unless a changed decision log holds an owner row starting "big step:"
+//        with no later "landed as" row.
 //        node .agents/pstack/decisions-check.mjs rounds <log> [--patch <file>]
 //        (exits 1 when the log is at the cap of panel rounds since its last restart, the
 //        maxRounds in .agents/pstack.json or 1, plus one round after a round that applied
@@ -344,7 +354,7 @@ function recordedProblems(severity, [, , , evidence, result], where) {
   const labels = proofLabels(evidence, plansDir(), onDisk).filter((label) => label.path);
   const found = labels.filter((label) => !label.exists).map((label) => `${where}: proof: ${label.path} names no file`);
   if (labels.length === 0) found.push(`${where}: a recorded critical finding names the seat's saved case as "proof: <file under ${plansDir()}/artifacts/>" in its evidence`);
-  if (!/(?:^|[\s;,(])step:\s*\S/u.test(result)) found.push(`${where}: a recorded critical finding names the plan step that fixes it as "step: <n>" in its result, a step that lands no later than the plan's reach step`);
+  if (!/(?<![\p{L}\p{N}_])[sS][tT][eE][pP]:\s*\S/u.test(result)) found.push(`${where}: a recorded critical finding names the plan step that fixes it as "step: <n>" in its result, a step that lands no later than the plan's reach step`);
   return found;
 }
 
@@ -354,15 +364,37 @@ const isRecorded = ([, decision = '', , , result = '']) => /^critical\b/u.test(d
 const settlesRecorded = ([phase, , , , result = '']) => ['panel', 'build'].includes(phase) && /^(applied|dismissed|fixed|verified)\b/u.test(result);
 const caseKeys = (evidence) => proofLabels(evidence, plansDir(), onDisk).filter((label) => label.path).map((label) => label.key);
 
+const STEP_ID = /^(\d{1,9})([a-zA-Z]?)$/u;
+const STEP_LABEL = /(?<![\p{L}\p{N}_])[sS][tT][eE][pP]:/gu;
+const BUILT_STEP = /^built:\s*[sS][tT][eE][pP]\s+/u;
+function readStep(clause) {
+  const [token = '', ...words] = clause.split(';')[0].trim().split(/[\s,]+/u);
+  const [, number, letter] = token.replace(/[.,:)\]}"'`*]+$/u, '').match(STEP_ID) ?? [];
+  if (number === undefined || words.some((word) => /^\W*\d/u.test(word))) return null;
+  return [Number(number), letter.toLowerCase()];
+}
+function labelSteps(result) {
+  const starts = [...result.matchAll(STEP_LABEL)].map(({ index }) => index);
+  return starts.map((start, next) => readStep(result.slice(start + 'step:'.length, starts[next + 1])));
+}
+const comesAfter = ([number, letter], [builtNumber, builtLetter]) => number > builtNumber || (number === builtNumber && letter !== '' && builtLetter !== '' && letter > builtLetter);
+const holdsStep = (steps, built) => !built || steps.length === 0 || steps.some((step) => !step || !comesAfter(step, built));
+
 function trackRecorded(recorded, cells) {
-  if (isRecorded(cells)) for (const key of caseKeys(cells[3])) recorded.set(key, cells[1]);
-  else if (settlesRecorded(cells)) for (const key of caseKeys(cells[3])) recorded.delete(key);
+  if (isRecorded(cells)) {
+    const entry = { finding: cells[1], steps: labelSteps(cells[4]) };
+    for (const key of caseKeys(cells[3])) recorded.set(key, [...(recorded.get(key) ?? []), entry]);
+  } else if (settlesRecorded(cells)) for (const key of caseKeys(cells[3])) recorded.delete(key);
 }
 
 function reachProblems(recorded, [phase, decision = ''], where) {
-  if (phase !== 'build' || !/^built:/u.test(decision) || !REACH.test(decision) || recorded.size === 0) return [];
-  const count = recorded.size === 1 ? 'a recorded critical finding is' : `${recorded.size} recorded critical findings are`;
-  return [`${where}: this built: row names its step's reach:, and ${count} not settled: ${[...recorded.values()].join('; ')}. Before users can reach that code, fix each in the step its row's step: names, and log a panel or build row whose evidence names the same proof: file with a result that starts applied, dismissed, fixed or verified`];
+  if (phase !== 'build' || !/^built:/u.test(decision) || !REACH.test(decision)) return [];
+  const built = BUILT_STEP.test(decision) ? readStep(decision.replace(BUILT_STEP, '').split(/(?<![\p{L}\p{N}_])reach:/u)[0]) : null;
+  const held = [...new Set([...recorded.values()].flat())].filter(({ steps }) => holdsStep(steps, built)).map(({ finding }) => finding);
+  if (held.length === 0) return [];
+  const count = held.length === 1 ? 'a recorded critical finding is' : `${held.length} recorded critical findings are`;
+  const unread = built ? '' : ' This row does not name one readable step as "built: step <n>" with no other word that starts with a digit, past any symbols, before its first ";" or reach:, so every recorded finding counts.';
+  return [`${where}: this built: row names its step's reach:, and ${count} not settled: ${held.join('; ')}.${unread} Before users can reach that code, fix each in the step its row's step: names, and log a panel or build row whose evidence names the same proof: file with a result that starts applied, dismissed, fixed or verified`];
 }
 
 function rowProblems(line, where, roster, chips) {
