@@ -101,6 +101,8 @@ invalid, and read-only edits without changing the document.
 | `yieldKey(event)` | Offer a keydown the view declined to the editor's `onKeyDown`, which runs Plate's shortcuts and plugin key handlers. Call it from the view's own keydown listener, after every local handler passed on the key. Plate drops the key when something prevents its default or stops its propagation before the editor root. It refuses keys a text input uses natively: composing and modifier keys, typing, Enter without Ctrl or Meta, Tab, navigation and deletion keys, select-all, clipboard, undo and redo, and on Apple hosts Control with a letter, the quote key or Enter. It also refuses every key while the editor or the element is read-only, during an authored preview, or while any part of the selection is outside this Text. |
 
 Versioned actions return `{ status: "applied" | "stale" | "read-only" }`.
+`dispatch` returns `stale` when the editor refuses the edit, such as one
+Suggesting cannot record, and resets the view to `state.text` before it returns.
 An action may synchronously call `update` before returning, including a reset
 for rejected input. Adapters disable independent undo stacks and never dispatch
 actions, mutate the owning editor, or reenter their mounted view from `mount`,

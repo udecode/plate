@@ -32,6 +32,7 @@ import type {
   ExternalTextSelectionState,
   ExternalTextState,
 } from '../../react/core';
+import { isImeConfirmKeyEvent } from '../../react/utils/dispatchPlateShortcut.internal';
 
 type CodeBlockCodeMirrorConfig = Readonly<{
   language?: string;
@@ -641,7 +642,7 @@ export function createCodeMirrorAdapter({
           const result = actions.dispatch({
             baseVersion: current.version,
             changes: patches,
-            intent: getIntent(transactions, composing || target.composing),
+            intent: getIntent(transactions, composing),
             selection: { anchor: selection.anchor, focus: selection.head },
           });
 
@@ -714,7 +715,7 @@ export function createCodeMirrorAdapter({
               return false;
             },
             keydown(event) {
-              if (composing || view.composing || event.isComposing) {
+              if (composing || view.composing || isImeConfirmKeyEvent(event)) {
                 return false;
               }
 
@@ -832,6 +833,7 @@ export function createCodeMirrorAdapter({
         };
 
         if (changes === null) {
+          composing = false;
           specification.changes = {
             from: 0,
             insert: next.text,
@@ -848,6 +850,7 @@ export function createCodeMirrorAdapter({
           const selection = view.state.selection.main;
 
           if (
+            changes === null ||
             selection.anchor !== next.selection.anchor ||
             selection.head !== next.selection.focus
           ) {

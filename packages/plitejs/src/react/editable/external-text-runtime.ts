@@ -1127,8 +1127,9 @@ export class ExternalTextRuntime {
         };
         const { composing } = entry;
         entry.origin = origin;
+        let landed: true | undefined;
         try {
-          this.runtime.editor.update(
+          landed = this.runtime.editor.update(
             {
               tags: [
                 input.intent,
@@ -1163,17 +1164,20 @@ export class ExternalTextRuntime {
                   offset: input.selection.focus,
                 },
               });
+              return true;
             }
           );
-          entry.compositionStarted = false;
-          if (!composing || entry.composing) entry.historyBoundary = false;
+          if (landed) {
+            entry.compositionStarted = false;
+            if (!composing || entry.composing) entry.historyBoundary = false;
+          }
         } catch (error) {
           this.refresh(entry, true);
           throw error;
         } finally {
           entry.origin = null;
         }
-        return APPLIED;
+        return landed ? APPLIED : this.stale(entry);
       },
       select: ({ baseVersion, selection }) => {
         const rejected = this.check(entry, baseVersion, false);

@@ -4923,6 +4923,7 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:code-block-codemirror",
         "source-hash:partition:core",
         "source-hash:partition:react-core",
