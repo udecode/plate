@@ -583,7 +583,24 @@ test('keeps the budget law ratio as a floor when 1 plus its ms over the base med
   assert.match(run.stdout, /small budget 1\.2500 from a base median of 80\.00 ms/);
 });
 
+test('judges an ms plant against the run base median, so a base faster than the one a ratio was sized on still decides', (t) => {
+  const law = { budgetLaw: { ratio: 1, ms: 16 } };
+  const sized = { ...lawConfig(1 + 32 / 187), ...law };
+  const added = { ...lawConfig(3), ...law, planted: { planted: { small: { ms: 32 } } } };
+  for (const [extra, status] of [
+    [8, 0],
+    [36, 1],
+  ]) {
+    const values = { base: flat(105), candidate: flat(105 + extra), planted: flat(137), copy: flat(105 + extra) };
+    assert.equal(analyze(t, sized, measurementsFrom(sized, { small: values })).status, 3);
+    const run = analyze(t, added, measurementsFrom(added, { small: values }));
+    assert.equal(run.status, status, run.stderr);
+  }
+});
+
 for (const [shape, config, message] of [
+  ['an ms plant at the law ms', { ...lawConfig(3), planted: { planted: { small: { ms: 16 } } } }, /config\.planted\.planted\.small\.ms must be past the law's 16 ms/],
+  ['an ms plant without a law', { ...baseConfig, planted: { planted: { small: { ms: 32 } } } }, /config\.planted\.planted\.small gives ms, which only a config\.budgetLaw can judge/],
   ['a planted ratio at the law ratio', lawConfig(1.25), /config\.planted\.planted\.small must be a ratio past the budget 1\.25/],
   ['both budget and budgetLaw', { ...lawConfig(3), budget: 1.25 }, /config\.budget and config\.budgetLaw exclude each other/],
   ['a law with no ms', { ...lawConfig(3), budgetLaw: { ratio: 1.25 } }, /config\.budgetLaw needs a positive ratio and a positive ms/],

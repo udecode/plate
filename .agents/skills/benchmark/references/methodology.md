@@ -52,7 +52,9 @@ Record before measuring:
   observed baseline variability before reading the candidate result. A paired
   wall-clock line with both parts gives them to `scripts/paired-timing.mjs` as
   `budgetLaw`, so each run works out its ratio from its own base; a ratio
-  worked out from another run's base is not that budget.
+  worked out from another run's base is not that budget. A plant that adds a
+  fixed time, such as a busy wait, names those milliseconds as `{ "ms": N }`
+  for the same reason.
 
 Host load never gates a timing line, and no run waits for a quiet host. A
 timing verdict compares arms interleaved in one run, as

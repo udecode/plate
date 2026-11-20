@@ -30,7 +30,10 @@
 // `budgetLaw`, such as `{ "ratio": 1.25, "ms": 16 }`, replaces `budget` for a
 // metric in milliseconds: each cohort's budget is the larger of that ratio and
 // 1 plus that many ms over the median of base's six values in the run judged.
-// A planted ratio must pass the law's ratio.
+// A planted ratio must pass the law's ratio. Under a law, a planted cohort may
+// instead give `{ "ms": 32 }`, a slowdown that adds that many ms, past the
+// law's ms; it plants 1 plus that ms over the same base median, so a run whose
+// base is faster or slower than the one the plant was sized on still judges.
 // `wideRoom`, such as `{ "normal": "a paste runs once per gesture, so one frame is its material cost" }`,
 // maps a cohort to the reason its budget may let the candidate more than double.
 // Every run has six packets, three mirrored pairs. Every cohort needs a
@@ -148,7 +151,12 @@ const readConfig = (configPath) => {
       fail(`config.planted.${arm} must map each cohort to the ratio over base its slowdown plants`);
     }
     for (const [cohort, ratio] of Object.entries(plants)) {
-      if (Object.hasOwn(budgets, cohort) && !(isPositive(ratio) && ratio > budgets[cohort])) {
+      if (ratio !== null && typeof ratio === 'object') {
+        if (budgetLaw === undefined) fail(`config.planted.${arm}.${cohort} gives ms, which only a config.budgetLaw can judge`);
+        if (!(isPositive(ratio.ms) && ratio.ms > budgetLaw.ms)) {
+          fail(`config.planted.${arm}.${cohort}.ms must be past the law's ${budgetLaw.ms} ms, which the slowdown has to cross`);
+        }
+      } else if (Object.hasOwn(budgets, cohort) && !(isPositive(ratio) && ratio > budgets[cohort])) {
         fail(`config.planted.${arm}.${cohort} must be a ratio past the budget ${budgets[cohort]}, which the slowdown has to cross`);
       }
     }
@@ -298,7 +306,8 @@ const judge = (config, { runs }) => {
     const reasons = [];
     for (const arm of plantedOn(cohort)) {
       const { statistic } = row(arm);
-      const plant = config.planted[arm][cohort];
+      const planted = config.planted[arm][cohort];
+      const plant = typeof planted === 'number' ? planted : +(1 + planted.ms / baseMedian).toFixed(4);
       if (statistic - budget <= noise) {
         reasons.push(
           `planted ${arm} scored ${statistic.toFixed(3)}, not past the budget ${+budget.toFixed(4)} by more than the noise ${noise.toFixed(3)}, so the line could not fail there`
