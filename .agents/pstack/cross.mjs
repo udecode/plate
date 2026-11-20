@@ -312,7 +312,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
-        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(filtered && { refused: 'safety' }) });
+        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(codex?.kind === 'usage_limit_exceeded' && { limited: true }), ...(filtered && { refused: 'safety' }) });
       } catch (error) {
         done({ runtime, ok: false, text: error.message });
       }

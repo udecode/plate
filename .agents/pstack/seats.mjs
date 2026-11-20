@@ -82,10 +82,10 @@ export async function main(argv) {
       }
     }),
   );
-  const skipped = (answer) => !answer.ok && (answer.refused || answer.runtime === 'agy');
+  const skipped = (answer) => !answer.ok && (answer.refused || answer.limited || answer.runtime === 'agy');
   for (const answer of answers) {
     const reason = answer.text.split('\n')[0];
-    const outcome = answer.ok ? 'ok' : answer.refused ? `skipped, its provider refused the prompt for ${answer.refused}` : skipped(answer) ? `skipped, ${reason}` : `failed, ${reason}`;
+    const outcome = answer.ok ? 'ok' : answer.refused ? `skipped, its provider refused the prompt for ${answer.refused}` : answer.limited ? 'skipped, its usage limit ran out' : skipped(answer) ? `skipped, ${reason}` : `failed, ${reason}`;
     console.info(`${answer.name}: ${outcome}${answer.seat ? `, seat: ${answer.seat}` : ''}`);
   }
   return answers.every((answer) => answer.ok || skipped(answer)) && answers.some((answer) => answer.ok) ? 0 : 1;
