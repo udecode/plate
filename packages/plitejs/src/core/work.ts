@@ -183,6 +183,8 @@ export type CoreWork = {
   uniqueHolderQueries: number;
   /** Changed nodes a commit read to move the index of unique values. */
   uniqueHolderReads: number;
+  /** Slots a key structure copied from the set of cells that hold one unique value, to add or drop one of them. */
+  uniqueHolderSlotsCopied: number;
   /** Elements the index of unique values was built from. */
   uniqueIndexedNodes: number;
   /** Entries, bucket entries included, a comparison of two unique-value map versions read where they differ. */
@@ -308,6 +310,7 @@ export const coreWork: CoreWork = {
   uniqueCrossingChecks: 0,
   uniqueHolderQueries: 0,
   uniqueHolderReads: 0,
+  uniqueHolderSlotsCopied: 0,
   uniqueIndexedNodes: 0,
   uniqueMapEntriesExamined: 0,
   uniqueMapNodesAllocated: 0,

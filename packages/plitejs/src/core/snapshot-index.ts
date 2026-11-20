@@ -1915,7 +1915,7 @@ export const mapSnapshotIndexThroughChange = (
     const node = after.node(path) as unknown as Descendant;
     const own = getNodeKeyForNode(node, editor);
 
-    builder.retype(cell, node);
+    builder.stamp(cell, node);
     if (
       binding === 'projection' &&
       own &&

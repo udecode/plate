@@ -2,7 +2,16 @@ import type { NodeKey } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
-import { countCoreWork } from './work';
+import {
+  emptyUniqueHashMap,
+  hashMapDelete,
+  hashMapForEach,
+  hashMapGet,
+  hashMapSet,
+  type UniqueHashMap,
+  uniqueKeyOf,
+} from './unique-hash-map';
+import { type CoreWork, countCoreWork } from './work';
 
 const WIDTH = 32;
 const MIN = 16;
@@ -30,13 +39,19 @@ const emptyDirectory = <V>() => EMPTY_DIRECTORY as Directory<V>;
 const digit = (address: number, level: number) =>
   Math.floor(address / 2 ** (level * BITS)) % WIDTH;
 
-const ownedNode = (node: DirNode | null, edit: object): DirNode => {
+type SlotCounter = keyof CoreWork;
+
+const ownedNode = (
+  node: DirNode | null,
+  edit: object,
+  copied?: SlotCounter
+): DirNode => {
   if (node && node.edit === edit) return node;
   countCoreWork('identityDirectoryNodesCopied');
+  if (!node) return { edit, size: 0, slots: [] };
+  if (copied) countCoreWork(copied, node.slots.length);
 
-  return node
-    ? { edit, size: node.size, slots: [...node.slots] }
-    : { edit, size: 0, slots: [] };
+  return { edit, size: node.size, slots: [...node.slots] };
 };
 
 const dirGet = <V>(dir: Directory<V>, address: number): V | undefined => {
@@ -55,7 +70,8 @@ const dirSet = <V>(
   dir: Directory<V>,
   address: number,
   value: V,
-  edit: object
+  edit: object,
+  copied?: SlotCounter
 ): Directory<V> => {
   let { depth, root } = dir;
 
@@ -66,14 +82,14 @@ const dirSet = <V>(
     }
     depth += 1;
   }
-  const top = ownedNode(root, edit);
+  const top = ownedNode(root, edit, copied);
   let node = top;
   let added = false;
 
   for (let level = depth - 1; level > 0; level--) {
     const at = digit(address, level);
     const child = node.slots[at] as DirNode | undefined;
-    const owned = ownedNode(child ?? null, edit);
+    const owned = ownedNode(child ?? null, edit, copied);
 
     if (!child) node.size += 1;
     node.slots[at] = owned;
@@ -93,16 +109,17 @@ const dirSet = <V>(
 const dirDelete = <V>(
   dir: Directory<V>,
   address: number,
-  edit: object
+  edit: object,
+  copied?: SlotCounter
 ): Directory<V> => {
   if (dirGet(dir, address) === undefined) return dir;
   const path: Array<[DirNode, number]> = [];
-  const top = ownedNode(dir.root, edit);
+  const top = ownedNode(dir.root, edit, copied);
   let node = top;
 
   for (let level = dir.depth - 1; level > 0; level--) {
     const at = digit(address, level);
-    const owned = ownedNode(node.slots[at] as DirNode, edit);
+    const owned = ownedNode(node.slots[at] as DirNode, edit, copied);
 
     node.slots[at] = owned;
     path.push([node, at]);
@@ -215,8 +232,54 @@ export const ROOT_LIST = -1;
 const NO_PARENT_PAGE = -1;
 const NO_TREE = -1;
 
+type SoleHolder = number;
+
+type HolderSet = Directory<true>;
+
+type Holders = SoleHolder | HolderSet;
+
+const HOLDER_SLOTS = 'uniqueHolderSlotsCopied';
+
+const addHolder = (
+  holders: Holders | undefined,
+  cell: number,
+  edit: object
+): Holders => {
+  if (holders === undefined) return cell;
+  const set =
+    typeof holders === 'number'
+      ? dirSet(emptyDirectory<true>(), holders, true, edit, HOLDER_SLOTS)
+      : holders;
+
+  return dirSet(set, cell, true, edit, HOLDER_SLOTS);
+};
+
+const dropHolder = (
+  holders: Holders,
+  cell: number,
+  edit: object
+): Holders | undefined => {
+  if (typeof holders === 'number') return undefined;
+  const rest = dirDelete(holders, cell, edit, HOLDER_SLOTS);
+
+  if (rest.size > 1) return rest;
+  let sole = cell;
+
+  dirForEach(rest, (_, held) => {
+    sole = held;
+  });
+  return sole;
+};
+
+const forEachHolder = (holders: Holders, visit: (cell: number) => void) => {
+  if (typeof holders === 'number') visit(holders);
+  else dirForEach(holders, (_, cell) => visit(cell));
+};
+
 type Cell = Readonly<{
   children: number;
+  /** The key of each unique property's value, in the topology's order. */
+  held: ReadonlyArray<string | null> | null;
   key: NodeKey | null;
   kind: number;
   page: number;
@@ -233,11 +296,16 @@ type Page = Readonly<{
 export type Topology = Readonly<{
   cells: Directory<Cell>;
   elements: Directory<Directory<true>>;
+  /** For each unique property, the cells that hold each value's key. */
+  holders: ReadonlyArray<UniqueHashMap<Holders>>;
   keys: Directory<number>;
   pages: Directory<Page>;
   spareKeys: Directory<number>;
   top: number;
+  uniqueProperties: readonly string[];
 }>;
+
+const NO_PROPERTIES: readonly string[] = Object.freeze([]);
 
 let nextCellAddress = 0;
 let nextPageAddress = 0;
@@ -271,21 +339,30 @@ const elementKind = (node: Descendant) =>
 
 export class TopologyBuilder {
   cells: Directory<Cell>;
-  readonly edit = {};
+  private edit = {};
   elements: Directory<Directory<true>>;
+  private holders: ReadonlyArray<UniqueHashMap<Holders>>;
   keys: Directory<number>;
   pages: Directory<Page>;
   private released: number[] = [];
   spareKeys: Directory<number>;
   top: number;
+  readonly uniqueProperties: readonly string[];
 
-  constructor(source: Topology | null) {
+  constructor(
+    source: Topology | null,
+    uniqueProperties = source?.uniqueProperties ?? NO_PROPERTIES
+  ) {
     this.cells = source?.cells ?? emptyDirectory();
     this.elements = source?.elements ?? emptyDirectory();
+    this.holders =
+      source?.holders ??
+      uniqueProperties.map(() => emptyUniqueHashMap<Holders>());
     this.keys = source?.keys ?? emptyDirectory();
     this.pages = source?.pages ?? emptyDirectory();
     this.spareKeys = source?.spareKeys ?? emptyDirectory();
     this.top = source ? source.top : NO_TREE;
+    this.uniqueProperties = uniqueProperties;
   }
 
   finish(): Topology {
@@ -298,15 +375,56 @@ export class TopologyBuilder {
       for (const page of this.pagesOf(row.children)) this.dropPage(page);
     }
     this.released = [];
-
-    return Object.freeze({
+    const topology = Object.freeze({
       cells: this.cells,
       elements: this.elements,
+      holders: this.holders,
       keys: this.keys,
       pages: this.pages,
       spareKeys: this.spareKeys,
       top: this.top,
+      uniqueProperties: this.uniqueProperties,
     });
+
+    // The topology shares every node this edit owns, so later writes copy.
+    this.edit = {};
+    return topology;
+  }
+
+  private hold(at: number, key: string, cell: number) {
+    const map = this.holders[at];
+    const holders = addHolder(hashMapGet(map, key), cell, this.edit);
+
+    this.holders = this.holders.with(
+      at,
+      hashMapSet(map, key, holders, this.edit)
+    );
+  }
+
+  private unhold(at: number, key: string, cell: number) {
+    const map = this.holders[at];
+    const rest = dropHolder(getDefined(hashMapGet(map, key)), cell, this.edit);
+
+    this.holders = this.holders.with(
+      at,
+      rest === undefined
+        ? hashMapDelete(map, key, this.edit)
+        : hashMapSet(map, key, rest, this.edit)
+    );
+  }
+
+  private heldOf(node: Descendant, kind: number) {
+    if (kind === TEXT_KIND) return null;
+    let held: Array<string | null> | null = null;
+
+    for (let at = 0; at < this.uniqueProperties.length; at++) {
+      const key = uniqueKeyOf(node[this.uniqueProperties[at]]);
+
+      if (key === null) continue;
+      held ??= this.uniqueProperties.map(() => null);
+      held[at] = key;
+    }
+    return held;
   }
 
   cell(address: number) {
@@ -749,6 +867,9 @@ export class TopologyBuilder {
     const row = this.cell(cell);
 
     if (row.key) this.deleteKey(row.key);
+    row.held?.forEach((key, at) => {
+      if (key !== null) this.unhold(at, key, cell);
+    });
     this.released.push(cell);
     if (row.children === NO_TREE) return;
     for (const child of this.cellsOf(row.children)) {
@@ -768,10 +889,14 @@ export class TopologyBuilder {
       kind === TEXT_KIND
         ? NO_TREE
         : this.admitList(childrenOfNode(node) ?? [], cell, path, keyOf);
+    const held = this.heldOf(node, kind);
 
-    this.setCell(cell, { children, key: nodeKey, kind, page });
+    this.setCell(cell, { children, held, key: nodeKey, kind, page });
     if (nodeKey) this.setKey(nodeKey, cell);
     this.addMember(kind, cell);
+    held?.forEach((key, at) => {
+      if (key !== null) this.hold(at, key, cell);
+    });
     return cell;
   }
 
@@ -832,14 +957,27 @@ export class TopologyBuilder {
     return getDefined(levels.at(-1))[0];
   }
 
-  retype(cell: number, node: Descendant) {
+  stamp(cell: number, node: Descendant) {
     const row = this.cell(cell);
     const kind = elementKind(node);
+    const held = this.heldOf(node, kind);
+    let changed = false;
 
-    if (row.kind === kind) return;
-    this.removeMember(row.kind, cell);
-    this.addMember(kind, cell);
-    this.setCell(cell, { ...row, kind });
+    for (let at = 0; at < this.uniqueProperties.length; at++) {
+      const was = row.held?.[at] ?? null;
+      const now = held?.[at] ?? null;
+
+      if (was === now) continue;
+      changed = true;
+      if (was !== null) this.unhold(at, was, cell);
+      if (now !== null) this.hold(at, now, cell);
+    }
+    if (row.kind === kind && !changed) return;
+    if (row.kind !== kind) {
+      this.removeMember(row.kind, cell);
+      this.addMember(kind, cell);
+    }
+    this.setCell(cell, { ...row, held, kind });
   }
 
   rekey(cell: number, nodeKey: NodeKey) {
@@ -990,13 +1128,36 @@ export const admitRoot = (
   children: Readonly<{
     forEach: (visit: (node: Descendant, index: number) => void) => void;
   }>,
-  keyOf: KeyOf
+  keyOf: KeyOf,
+  uniqueProperties?: readonly string[]
 ): Topology => {
   countCoreWork('wholeListPasses');
-  const builder = new TopologyBuilder(null);
+  const builder = new TopologyBuilder(null, uniqueProperties);
   const nodes: Descendant[] = [];
 
   children.forEach((child) => nodes.push(child));
   builder.top = builder.admitList(nodes, ROOT_LIST, [], keyOf);
   return builder.finish();
+};
+
+export const topologyUniqueEntries = (topology: Topology) => {
+  const reader = readTopology(topology);
+  const entries: Array<
+    Readonly<{ key: string; path: Path | null; property: string }>
+  > = [];
+
+  topology.holders.forEach((map, at) => {
+    const property = topology.uniqueProperties[at];
+
+    hashMapForEach(map, (key, holders) => {
+      forEachHolder(holders, (cell) => {
+        const path = dirGet(topology.cells, cell)
+          ? reader.pathOfCell(cell)
+          : null;
+
+        entries.push({ key, path, property });
+      });
+    });
+  });
+  return entries;
 };
