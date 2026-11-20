@@ -18,6 +18,9 @@ export const COMPARISON_POLICY = Object.freeze({
   version: 1 as const,
 });
 
+export const COMPARISON_WORD =
+  /[\p{L}\p{M}\p{N}]+(?:['’][\p{L}\p{M}\p{N}]+)*/gu;
+
 export const stableStringify = (value: unknown): string => {
   if (value === null || typeof value !== 'object') {
     return JSON.stringify(value) ?? 'undefined';

@@ -10,6 +10,7 @@ import {
 } from './comparison-index';
 import {
   assertComparisonActive,
+  COMPARISON_WORD,
   mergeGroups,
   spanKey,
   stableStringify,
@@ -85,6 +86,12 @@ const MAX_CANDIDATE_EDGES = 100_000;
 const MAX_DIRECT_WINDOW_DISAMBIGUATIONS = 128;
 const MAX_WINDOW = 4;
 const YIELD_INTERVAL = 4096;
+
+const MAX_TOKEN_CODE = 0xff_ff;
+const TEXT_TOKEN = new RegExp(
+  String.raw`${COMPARISON_WORD.source}|\s+|.`,
+  'gsu'
+);
 
 const dmp = new DiffMatchPatch();
 
@@ -510,18 +517,112 @@ const hasMovedMatchedAncestor = (
   return false;
 };
 
+const semanticDiff = (beforeText: string, afterText: string) => {
+  const chunks = dmp.diff_main(beforeText, afterText);
+
+  dmp.diff_cleanupSemantic(chunks);
+
+  return chunks;
+};
+
+// Each distinct word, whitespace run or other character becomes one UTF-16
+// code unit, so the diff never splits a word and its semantic cleanup folds a
+// one-token gap, such as a space, between two rewritten words.
+const wordDiff = (
+  beforeSegments: readonly string[],
+  afterSegments: readonly string[]
+) => {
+  const tokens: string[] = [];
+  const codes = new Map<string, string>();
+  const encode = (texts: readonly string[]) => {
+    let encoded = '';
+
+    for (const text of texts) {
+      for (const [token] of text.matchAll(TEXT_TOKEN)) {
+        let code = codes.get(token);
+
+        if (code === undefined) {
+          if (tokens.length > MAX_TOKEN_CODE) return null;
+          code = String.fromCharCode(tokens.length);
+          tokens.push(token);
+          codes.set(token, code);
+        }
+        encoded += code;
+      }
+    }
+
+    return encoded;
+  };
+  const beforeCodes = encode(beforeSegments);
+  const afterCodes = encode(afterSegments);
+
+  if (beforeCodes === null || afterCodes === null) {
+    return semanticDiff(beforeSegments.join(''), afterSegments.join(''));
+  }
+
+  return semanticDiff(beforeCodes, afterCodes).map(([operation, codesText]) => {
+    let text = '';
+
+    for (let at = 0; at < codesText.length; at += 1) {
+      text += tokens[codesText.charCodeAt(at)];
+    }
+
+    return [operation, text] as const;
+  });
+};
+
+const segmentEdges = (texts: readonly string[]) => {
+  const edges: number[] = [];
+  let offset = 0;
+
+  for (const text of texts.slice(0, -1)) {
+    offset += text.length;
+    edges.push(offset);
+  }
+
+  return edges;
+};
+
+const cutAtSegmentEdges = (
+  edges: readonly [readonly number[], readonly number[]],
+  [beforeFrom, beforeTo]: readonly [number, number],
+  [afterFrom, afterTo]: readonly [number, number]
+) => {
+  const inside = (all: readonly number[], from: number, to: number) =>
+    all.filter((edge) => edge > from && edge < to);
+  let beforeCuts = inside(edges[0], beforeFrom, beforeTo);
+  let afterCuts = inside(edges[1], afterFrom, afterTo);
+
+  if (beforeFrom === beforeTo) beforeCuts = afterCuts.map(() => beforeFrom);
+  if (afterFrom === afterTo) afterCuts = beforeCuts.map(() => afterFrom);
+  if (beforeCuts.length !== afterCuts.length) {
+    beforeCuts = [];
+    afterCuts = [];
+  }
+
+  return {
+    after: [afterFrom, ...afterCuts, afterTo],
+    before: [beforeFrom, ...beforeCuts, beforeTo],
+  };
+};
+
 const textDifferenceParts = (
-  beforeTextValue: string,
-  afterTextValue: string,
+  beforeSegments: readonly string[],
+  afterSegments: readonly string[],
   beforeRange: (from: number, to: number) => readonly ComparisonSpan[],
   afterRange: (from: number, to: number) => readonly ComparisonSpan[],
   beforePoint: (offset: number) => ComparisonSpan,
   afterPoint: (offset: number) => ComparisonSpan
 ) => {
-  if (beforeTextValue === afterTextValue) return [];
-  const chunks = dmp.diff_main(beforeTextValue, afterTextValue);
+  const beforeAll = beforeSegments.join('');
+  const afterAll = afterSegments.join('');
 
-  dmp.diff_cleanupSemantic(chunks);
+  if (beforeAll === afterAll) return [];
+  const chunks = wordDiff(beforeSegments, afterSegments);
+  const edges = [
+    segmentEdges(beforeSegments),
+    segmentEdges(afterSegments),
+  ] as const;
   const differences: Array<{
     after: readonly ComparisonSpan[];
     afterText: string;
@@ -543,45 +644,71 @@ const textDifferenceParts = (
     }
     const beforeStart = beforeOffset;
     const afterStart = afterOffset;
-    let beforeText = '';
-    let afterText = '';
 
     while (index < chunks.length && chunks[index][0] !== DiffOp.Equal) {
       const [innerOperation, innerText] = chunks[index];
 
-      if (innerOperation === DiffOp.Delete) {
-        beforeText += innerText;
-        beforeOffset += innerText.length;
-      } else {
-        afterText += innerText;
-        afterOffset += innerText.length;
-      }
+      if (innerOperation === DiffOp.Delete) beforeOffset += innerText.length;
+      else afterOffset += innerText.length;
       index += 1;
     }
-    differences.push({
-      after:
-        afterText.length === 0
-          ? [afterPoint(afterStart)]
-          : afterRange(afterStart, afterOffset),
-      afterText,
-      before:
-        beforeText.length === 0
-          ? [beforePoint(beforeStart)]
-          : beforeRange(beforeStart, beforeOffset),
-      beforeText,
-    });
+    const bounds = cutAtSegmentEdges(
+      edges,
+      [beforeStart, beforeOffset],
+      [afterStart, afterOffset]
+    );
+
+    for (let piece = 1; piece < bounds.before.length; piece += 1) {
+      const [beforeFrom, beforeTo] = bounds.before.slice(piece - 1, piece + 1);
+      const [afterFrom, afterTo] = bounds.after.slice(piece - 1, piece + 1);
+
+      differences.push({
+        after:
+          afterFrom === afterTo
+            ? [afterPoint(afterFrom)]
+            : afterRange(afterFrom, afterTo),
+        afterText: afterAll.slice(afterFrom, afterTo),
+        before:
+          beforeFrom === beforeTo
+            ? [beforePoint(beforeFrom)]
+            : beforeRange(beforeFrom, beforeTo),
+        beforeText: beforeAll.slice(beforeFrom, beforeTo),
+      });
+    }
   }
 
   return differences;
 };
 
+const wordSegments = (
+  node: ComparisonIndexNode,
+  index: ComparisonDocumentIndex
+): string[] => {
+  if (node.kind === 'text' || node.inline) return [node.text];
+  const segments: string[] = [];
+  let afterText = false;
+
+  for (const child of node.childIndexes.map((at) => index.nodes[at])) {
+    if (child.kind === 'text' && afterText) {
+      segments[segments.length - 1] += child.text;
+    } else {
+      segments.push(...wordSegments(child, index));
+    }
+    afterText = child.kind === 'text';
+  }
+
+  return segments;
+};
+
 const textDifferences = (
   before: ComparisonIndexNode,
-  after: ComparisonIndexNode
+  after: ComparisonIndexNode,
+  beforeIndex: ComparisonDocumentIndex,
+  afterIndex: ComparisonDocumentIndex
 ) =>
   textDifferenceParts(
-    before.text,
-    after.text,
+    wordSegments(before, beforeIndex),
+    wordSegments(after, afterIndex),
     (from, to) => comparisonTextSpans(before, from, to),
     (from, to) => comparisonTextSpans(after, from, to),
     (offset) => comparisonTextPoint(before, offset),
@@ -679,20 +806,18 @@ const sequenceOwnProperties = (nodes: readonly ComparisonIndexNode[]) => {
 
 const sequenceTextDifferences = (
   beforeNodes: readonly ComparisonIndexNode[],
-  afterNodes: readonly ComparisonIndexNode[]
-) => {
-  const beforeText = beforeNodes.map(({ text }) => text).join('');
-  const afterText = afterNodes.map(({ text }) => text).join('');
-
-  return textDifferenceParts(
-    beforeText,
-    afterText,
+  afterNodes: readonly ComparisonIndexNode[],
+  beforeIndex: ComparisonDocumentIndex,
+  afterIndex: ComparisonDocumentIndex
+) =>
+  textDifferenceParts(
+    beforeNodes.flatMap((node) => wordSegments(node, beforeIndex)),
+    afterNodes.flatMap((node) => wordSegments(node, afterIndex)),
     (from, to) => sequenceTextSpans(beforeNodes, from, to),
     (from, to) => sequenceTextSpans(afterNodes, from, to),
     (offset) => sequenceTextPoint(beforeNodes, offset),
     (offset) => sequenceTextPoint(afterNodes, offset)
   );
-};
 
 const childOrderChanged = (
   pair: NodePair,
@@ -2076,7 +2201,12 @@ export const matchComparison = async (
       const ownPropertiesChanged =
         stableStringify(sequenceOwnProperties(sourceNodes)) !==
         stableStringify(sequenceOwnProperties(targetNodes));
-      const differences = sequenceTextDifferences(sourceNodes, targetNodes);
+      const differences = sequenceTextDifferences(
+        sourceNodes,
+        targetNodes,
+        before,
+        after
+      );
 
       addChange(beforeSpans, afterSpans, relation.evidence, (add) => {
         if (relation.kind === 'split') {
@@ -2152,7 +2282,7 @@ export const matchComparison = async (
     const differences =
       source.blockContainer && changedDescendants.length > 0
         ? []
-        : textDifferences(source, target).filter(
+        : textDifferences(source, target, before, after).filter(
             (difference) =>
               !textDifferenceOwnedByDescendant(
                 difference,

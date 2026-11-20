@@ -1,5 +1,5 @@
 import type { ComparisonDocumentIndex } from './comparison-index';
-import { disjointSets } from './comparison-internal';
+import { COMPARISON_WORD, disjointSets } from './comparison-internal';
 import type { PlanWindow } from './comparison-plan';
 import type { ComparedChange, ComparisonEffect } from './comparison-types';
 
@@ -7,7 +7,8 @@ type Side = 'after' | 'before';
 
 type TieWindow = Pick<PlanWindow, 'after' | 'before' | 'owners' | 'root'>;
 
-const WORD = /[\p{L}\p{M}\p{N}]+(?:['’][\p{L}\p{M}\p{N}]+)*/gu;
+type SideWords = ReturnType<typeof sideWords>;
+
 const LETTER = /\p{L}/u;
 const NO_WINDOW = -1;
 const MIN_RUN_LENGTH = 3;
@@ -125,7 +126,7 @@ const sideWords = (
   };
 
   for (const { held, text, writers } of blocks.values()) {
-    for (const match of text.matchAll(WORD)) {
+    for (const match of text.matchAll(COMPARISON_WORD)) {
       const word = match[0];
 
       if (!LETTER.test(word)) continue;
@@ -209,6 +210,97 @@ export const movedWordTies = (
   };
   const removed = sideWords(windows, groups, before, 'before');
   const added = sideWords(windows, groups, after, 'after');
+  const oneGroup = (writers: ReadonlySet<number>) =>
+    new Set([...writers].map(find)).size === 1;
+  const runsGluedOntoKeptWords = (glued: SideWords, other: SideWords) => {
+    const runs: Array<readonly [string, number]> = [];
+
+    for (const [word, writers] of glued.runWriters) {
+      if (!glued.wholeWords.has(word) || !oneGroup(writers)) continue;
+      const [writer] = writers;
+
+      for (let at = 1; at < word.length; at += 1) {
+        for (const [part, rest] of [
+          [word.slice(0, at), word.slice(at)],
+          [word.slice(at), word.slice(0, at)],
+        ]) {
+          if (
+            part.length >= MIN_RUN_LENGTH &&
+            other.wholeWords.has(part) &&
+            other.wholeWords.has(rest) &&
+            [...(other.runWriters.get(rest) ?? [])].some(
+              (keeper) => find(keeper) === find(writer)
+            )
+          ) {
+            runs.push([part, writer]);
+          }
+        }
+      }
+    }
+
+    return runs;
+  };
+  const addRuns = (
+    side: SideWords,
+    runs: ReadonlyArray<readonly [string, number]>
+  ) => {
+    for (const [run, writer] of runs) {
+      const writers = side.runWriters.get(run) ?? new Set<number>();
+
+      writers.add(writer);
+      side.runWriters.set(run, writers);
+    }
+  };
+  const wordsKeptInLongerWords = (side: SideWords, other: SideWords) => {
+    const longer = new Map<number, string[]>();
+
+    for (const [word, writers] of other.runWriters) {
+      if (!other.wholeWords.has(word)) continue;
+      for (const writer of writers) {
+        longer.set(find(writer), [...(longer.get(find(writer)) ?? []), word]);
+      }
+    }
+    const kept: Array<readonly [string, number]> = [];
+
+    for (const [word, writers] of side.runWriters) {
+      if (!side.wholeWords.has(word)) continue;
+      for (const writer of writers) {
+        if (
+          longer
+            .get(find(writer))
+            ?.some(
+              (grown) =>
+                grown.length > word.length &&
+                (grown.startsWith(word) || grown.endsWith(word))
+            )
+        ) {
+          kept.push([word, writer]);
+        }
+      }
+    }
+
+    return kept;
+  };
+  const dropRuns = (
+    side: SideWords,
+    runs: ReadonlyArray<readonly [string, number]>
+  ) => {
+    for (const [run, writer] of runs) {
+      const writers = side.runWriters.get(run);
+
+      writers?.delete(writer);
+      if (writers?.size === 0) side.runWriters.delete(run);
+    }
+  };
+  const addedGlue = runsGluedOntoKeptWords(added, removed);
+  const removedGlue = runsGluedOntoKeptWords(removed, added);
+  const addedKept = wordsKeptInLongerWords(added, removed);
+  const removedKept = wordsKeptInLongerWords(removed, added);
+
+  addRuns(added, addedGlue);
+  addRuns(removed, removedGlue);
+  dropRuns(added, addedKept);
+  dropRuns(removed, removedKept);
 
   for (const [word, holders] of removed.uniqueHolders) {
     const adders = added.uniqueHolders.get(word);
@@ -222,8 +314,8 @@ export const movedWordTies = (
       adders &&
       run.length >= MIN_RUN_LENGTH &&
       (removed.wholeWords.has(run) || added.wholeWords.has(run)) &&
-      new Set([...removers].map(find)).size === 1 &&
-      new Set([...adders].map(find)).size === 1
+      oneGroup(removers) &&
+      oneGroup(adders)
     ) {
       tie([...removers, ...adders]);
     }
