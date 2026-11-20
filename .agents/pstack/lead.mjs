@@ -384,7 +384,7 @@ export function sheetMisses(text, max) {
       misses.push(`add the line \`${role}: opus, codex:gpt-6.2-sol\`, or \`${role}: codex:gpt-6.2-sol\` without Claude Code`);
       continue;
     }
-    for (const [model, at] of value.split(',').map((entry) => entry.trim().split(/\s+/u))) {
+    for (const [model, at] of value.split(/,|\s+or\s+/u).map((entry) => entry.trim().split(/\s+/u))) {
       const effort = at?.match(/^@(\w+)$/u)?.[1];
       const floor = capEffort(SEAT_FLOOR, max);
       if (effort && EFFORTS.indexOf(effort) < EFFORTS.indexOf(floor)) misses.push(`\`${role}:\` runs ${model} @${effort}, below the seat floor ${floor}`);

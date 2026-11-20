@@ -71,7 +71,14 @@ function targets(sheet, agents, defaultEffort, override, max) {
   return (role) => {
     if (override) return seatList(override).map((seat) => capped({ ...seat, effort: seat.effort ?? max ?? defaultEffort }));
     const line = sheet?.match(new RegExp(`^${role}:\\s*(.+)$`, 'mu'))?.[1];
-    return line ? seatList(line).map((seat) => capped(raised({ ...seat, effort: seat.effort ?? max ?? defaultEffort }))) : null;
+    const settle = (seat) => capped(raised({ ...seat, effort: seat.effort ?? max ?? defaultEffort }));
+    // An entry may name a fallback after `or`, which answers for the seat when its first model cannot run.
+    return line
+      ? line.split(',').flatMap((entry) => {
+          const [seat, ...alts] = entry.split(/\s+or\s+/u).map(seatOf).filter(Boolean).map(settle);
+          return seat ? [{ ...seat, alts }] : [];
+        })
+      : null;
   };
 }
 
@@ -86,11 +93,12 @@ function leadGap(label, lead) {
 
 function roundGap(seats, wanted) {
   const gaps = wanted.flatMap((target) => {
-    if (seats.some((candidate) => candidate.name === target.name && candidate.status === 'skipped')) return [];
-    const seat = seats.find((candidate) => candidate.name === target.name && candidate.status === 'answered');
+    const options = [target, ...(target.alts ?? [])];
+    if (seats.some((candidate) => options.some((option) => option.name === candidate.name) && candidate.status === 'skipped')) return [];
+    const [option, seat] = options.map((each) => [each, seats.find((candidate) => candidate.name === each.name && candidate.status === 'answered')]).find(([, found]) => found) ?? [];
     if (!seat) return [`${target.name} missing`];
     if (rank(seat.effort) === -1) return [`${seat.name} has no effort`];
-    return rank(seat.effort) < rank(target.effort) ? [`${seat.name} @${seat.effort} is below @${target.effort}`] : [];
+    return rank(seat.effort) < rank(option.effort) ? [`${seat.name} @${seat.effort} is below @${option.effort}`] : [];
   });
   return gaps.length ? gaps.join('; ') : null;
 }

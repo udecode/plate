@@ -7,9 +7,10 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ask } from './cross.mjs';
 
-const SEAT = /^([\w-]+)=(claude|codex|agy):([^@\s]+)(?:@(\w+))?$/u;
+const RUN = String.raw`(claude|codex|agy):([^@\s|]+)(?:@(\w+))?`;
+const SEAT = new RegExp(String.raw`^([\w-]+)=${RUN}(?:\|${RUN})?$`, 'u');
 const CLAUDE_SEAT_NOTE = 'You run in plan mode and cannot leave it. Read-only commands work, and expect every write to be refused, a scratch copy included. Prove what a read-only command can prove, and name each probe that needs a write, with its commands, so the lead can run it.';
-const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... [--offline] [--effort-root <dir>] <name>=<claude|codex|agy>:<model>[@<effort>]...';
+const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... [--offline] [--effort-root <dir>] <name>=<claude|codex|agy>:<model>[@<effort>][|<fallback runtime>:<model>[@<effort>]]...';
 
 function mainCheckout() {
   try {
@@ -61,7 +62,7 @@ export async function main(argv) {
         console.error(`${match ? 'seat name given twice' : 'bad seat'}: ${arg}\n${usage}`);
         return 2;
       }
-      seats.push({ name: match[1], runtime: match[2], model: match[3], effort: match[4] });
+      seats.push({ name: match[1], runtime: match[2], model: match[3], effort: match[4], fallback: match[5] && { runtime: match[5], model: match[6], effort: match[7] } });
     }
   }
   if (!dir || !prompt?.trim() || seats.length === 0 || !(timeout === undefined || timeout > 0)) {
@@ -72,9 +73,16 @@ export async function main(argv) {
   const seatDirs = [...new Set([mainCheckout(), ...readDirs].filter(Boolean))];
   const answers = await Promise.all(
     seats.map(async (seat) => {
-      const answer = await ask(seat.runtime, seat.runtime === 'claude' ? `${CLAUDE_SEAT_NOTE}\n\n${prompt}` : prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'codex' ? [] : seatDirs }).catch((error) => ({ ok: false, text: error.message }));
+      const run = ({ runtime, model, effort }) =>
+        ask(runtime, runtime === 'claude' ? `${CLAUDE_SEAT_NOTE}\n\n${prompt}` : prompt, { timeout, model, effort, effortRoot, reach: runtime === 'codex' && !offline, offline, readDirs: runtime === 'codex' ? [] : seatDirs })
+          .catch((error) => ({ ok: false, text: error.message }))
+          .then((answer) => ({ ...answer, runtime }));
+      const first = await run(seat);
+      // A teammate without the first model's subscription, or past its usage limit, still seats a model here.
+      const answer = first.ok || !seat.fallback ? first : { ...(await run(seat.fallback)), fellBack: first };
+      const fell = answer.fellBack ? `fallback: ${seat.fallback.runtime}:${seat.fallback.model}${seat.fallback.effort ? `@${seat.fallback.effort}` : ''}, after ${seat.model} failed: ${answer.fellBack.text.split('\n')[0]}\n` : '';
       try {
-        writeFileSync(join(dir, `${seat.name}.err`), `${answer.ok ? '' : `${answer.text}\n`}${answer.refused ? `refused: ${answer.refused}\n` : ''}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
+        writeFileSync(join(dir, `${seat.name}.err`), `${fell}${answer.ok ? '' : `${answer.text}\n`}${answer.refused ? `refused: ${answer.refused}\n` : ''}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
         writeFileSync(join(dir, `${seat.name}.md`), answer.ok ? `${answer.text}\n` : '');
         return { ...seat, ...answer };
       } catch (error) {
@@ -86,7 +94,8 @@ export async function main(argv) {
   for (const answer of answers) {
     const reason = answer.text.split('\n')[0];
     const outcome = answer.ok ? 'ok' : answer.refused ? `skipped, its provider refused the prompt for ${answer.refused}` : answer.limited ? 'skipped, its usage limit ran out' : skipped(answer) ? `skipped, ${reason}` : `failed, ${reason}`;
-    console.info(`${answer.name}: ${outcome}${answer.seat ? `, seat: ${answer.seat}` : ''}`);
+    const fell = answer.fellBack ? `, on its fallback ${answer.fallback.model} after ${answer.model} failed` : '';
+    console.info(`${answer.name}: ${outcome}${fell}${answer.seat ? `, seat: ${answer.seat}` : ''}`);
   }
   return answers.every((answer) => answer.ok || skipped(answer)) && answers.some((answer) => answer.ok) ? 0 : 1;
 }
