@@ -29,6 +29,7 @@ import {
   lockfileInstalled,
   STEP_LOG,
 } from './check-steps.mjs';
+import { newPrivateFiles } from './private-files.mjs';
 import {
   clearedHeader,
   EXPECTED_PATH,
@@ -131,6 +132,24 @@ const node = (cwd, args, env = {}) =>
     maxBuffer: 64 << 20,
   });
 
+// attach keeps the private files a worktree already has, as a session's
+// own work, so this worktree's private files would stay at the commit it
+// was first made for. Nobody works here, so they move with the commit.
+const movePrivateFiles = () => {
+  must(worktree, [
+    `--git-dir=${readFileSync(join(worktree, '.git-private'), 'utf-8')
+      .replace(/^gitdir: /u, '')
+      .trim()}`,
+    `--work-tree=${worktree}`,
+    'reset',
+    '--quiet',
+    '--hard',
+  ]);
+  for (const file of newPrivateFiles(worktree)) {
+    rmSync(join(worktree, file));
+  }
+};
+
 // Moves the Local CI worktree to `sha`, its private half to the commit that
 // landed with it, and installs what that commit's lockfile names.
 const checkout = (sha) => {
@@ -148,20 +167,7 @@ const checkout = (sha) => {
     if (result.status !== 0) {
       throw new Error(`${args[0]} at ${sha}: ${result.stdout}${result.stderr}`);
     }
-    // attach keeps the private files a worktree already has, as a session's
-    // own work, so this worktree's private files would stay at the commit it
-    // was first made for. Nobody works here, so they move with the commit.
-    if (args[0] === 'tooling/scripts/git-private.mjs') {
-      must(worktree, [
-        `--git-dir=${readFileSync(join(worktree, '.git-private'), 'utf-8')
-          .replace(/^gitdir: /u, '')
-          .trim()}`,
-        `--work-tree=${worktree}`,
-        'reset',
-        '--quiet',
-        '--hard',
-      ]);
-    }
+    if (args[0] === 'tooling/scripts/git-private.mjs') movePrivateFiles();
   }
   // setup.mjs installs once per worktree, and this one moves to every new
   // tip, so it installs here when the lockfile differs from the installed one.
