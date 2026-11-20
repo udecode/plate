@@ -302,7 +302,14 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['remark-emoji', 'platejs', 'remark-gfm', 'remark-math'],
+    dependencies: [
+      'remark-emoji',
+      'platejs',
+      'remark-cjk-friendly',
+      'remark-cjk-friendly-gfm-strikethrough',
+      'remark-gfm',
+      'remark-math',
+    ],
     files: [
       {
         path: 'examples/markdown-to-editor-demo.tsx',

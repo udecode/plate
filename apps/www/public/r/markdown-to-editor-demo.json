@@ -4,6 +4,8 @@
   "dependencies": [
     "remark-emoji",
     "platejs",
+    "remark-cjk-friendly",
+    "remark-cjk-friendly-gfm-strikethrough",
     "remark-gfm",
     "remark-math",
     "diff-match-patch-ts@^0.6.0"

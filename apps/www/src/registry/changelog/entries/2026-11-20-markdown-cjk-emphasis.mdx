@@ -1,0 +1,16 @@
+---
+id: 2026-11-20-markdown-cjk-emphasis
+date: 2026-11-20
+status: draft
+kind: wiring
+summary: 'Read CJK bold, italic and strikethrough that end in punctuation'
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-20-markdown-cjk-bold-italic-strikethrough-6f91db0c","kind":"wiring","migrationNotes":["If you set your own `remarkPlugins`, add `remarkCjkFriendly` from `remark-cjk-friendly/bidi` and `remarkCjkFriendlyGfmStrikethrough` from `remark-cjk-friendly-gfm-strikethrough/bidi` after `remarkGfm`."]} -->
+
+- **`markdown`**: Add `remark-cjk-friendly` and `remark-cjk-friendly-gfm-strikethrough` after `remark-gfm`. Bold, strikethrough and `*` italic that end in Chinese, Japanese or Korean punctuation right before the next word now read as formatting, not as literal asterisks and tildes. Bold and strikethrough also export without character references.
+<!-- entry: {"id":"2026-11-20-markdown-to-editor-demo-cjk-packages-960856e4","kind":"wiring","migrationNotes":[]} -->
+- **`markdown-to-editor-demo`**: Add `remark-cjk-friendly` and `remark-cjk-friendly-gfm-strikethrough` to the demo's dependencies.

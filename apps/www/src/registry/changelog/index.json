@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-20-markdown-cjk-emphasis",
+      "href": "/registry/changelog/2026-11-20-markdown-cjk-emphasis.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Read CJK bold, italic and strikethrough that end in punctuation",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["markdown", "markdown-to-editor-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-19-all-comments-from-note",
       "href": "/registry/changelog/2026-11-19-all-comments-from-note.json",
       "status": "draft",

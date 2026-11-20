@@ -1,5 +1,5 @@
 {
-  "generation": "732d65dfa9982ca382778535987fcae751ba53f4d82edf2db4fe3ff8e24fb500",
+  "generation": "d77681e5d3763799f3ee47c38c59f1a70d92827edcf4c83d7f5bdd51d5187a32",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3789,6 +3789,8 @@
         {
           "dependencies": [
             "platejs",
+            "remark-cjk-friendly",
+            "remark-cjk-friendly-gfm-strikethrough",
             "remark-emoji",
             "remark-gfm",
             "remark-math",
@@ -5287,6 +5289,8 @@
           "dependencies": [
             "remark-emoji",
             "platejs",
+            "remark-cjk-friendly",
+            "remark-cjk-friendly-gfm-strikethrough",
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0"
@@ -11125,6 +11129,8 @@
         {
           "dependencies": [
             "platejs",
+            "remark-cjk-friendly",
+            "remark-cjk-friendly-gfm-strikethrough",
             "remark-emoji",
             "remark-gfm",
             "remark-math",
@@ -12623,6 +12629,8 @@
           "dependencies": [
             "remark-emoji",
             "platejs",
+            "remark-cjk-friendly",
+            "remark-cjk-friendly-gfm-strikethrough",
             "remark-gfm",
             "remark-math",
             "diff-match-patch-ts@^0.6.0"

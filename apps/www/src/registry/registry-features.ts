@@ -948,7 +948,14 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'remark-emoji', 'remark-gfm', 'remark-math'],
+    dependencies: [
+      'platejs',
+      'remark-cjk-friendly',
+      'remark-cjk-friendly-gfm-strikethrough',
+      'remark-emoji',
+      'remark-gfm',
+      'remark-math',
+    ],
     files: [
       {
         path: 'components/editor/markdown.tsx',

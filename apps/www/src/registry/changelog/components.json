@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
   "components": {
+    "markdown": [
+      "2026-11-20-markdown-cjk-emphasis",
+      "2026-09-28-markdown-registered-tags",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "markdown-to-editor-demo": [
+      "2026-11-20-markdown-cjk-emphasis",
+      "2026-09-28-markdown-registered-tags"
+    ],
     "comment-toolbar-button": [
       "2026-11-19-all-comments-from-note",
       "2026-11-19-rtl-editor-ui",
@@ -1509,11 +1518,6 @@
       "2026-09-29-markdown-joiner-removal",
       "2025-11-20-biome-ultracite"
     ],
-    "markdown": [
-      "2026-09-28-markdown-registered-tags",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "markdown-to-editor-demo": ["2026-09-28-markdown-registered-tags"],
     "docx-demo": [
       "2026-09-24-export-menu-projection",
       "2026-09-02-comments-ownership",
