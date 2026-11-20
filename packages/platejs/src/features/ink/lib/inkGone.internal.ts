@@ -33,6 +33,8 @@ const ADD_LOOKBACK_UPDATES = 4;
 
 type GoneSession = {
   departed: Map<string, InkGone>;
+  holdCounts: Map<string, number>;
+  kept: Map<string, Readonly<{ order: number; place: InkGone }>>;
   pending: Set<string>;
   recent: Array<
     Readonly<{ departed: ReadonlyMap<string, InkGone>; order: number }>
@@ -42,6 +44,70 @@ type GoneSession = {
 };
 
 const sessions = new WeakMap<object, GoneSession>();
+
+const sessionOf = (owner: object) => {
+  let session = sessions.get(owner);
+
+  if (!session) {
+    session = {
+      departed: new Map(),
+      holdCounts: new Map(),
+      kept: new Map(),
+      pending: new Set(),
+      recent: [],
+      runs: 0,
+      update: undefined,
+    };
+    sessions.set(owner, session);
+  }
+
+  return session;
+};
+
+const keepHeldChains = (
+  { holdCounts, kept }: GoneSession,
+  departed: ReadonlyMap<string, InkGone>,
+  order: number
+) => {
+  let grew = holdCounts.size > 0;
+
+  while (grew) {
+    grew = false;
+
+    const named = new Set(
+      [...kept.values()].flatMap(({ place }) => [place.next, place.previous])
+    );
+
+    for (const [id, place] of departed) {
+      const saved = kept.get(id);
+
+      if (saved && saved.order >= order) continue;
+      if (saved || holdCounts.has(id) || named.has(id)) {
+        kept.set(id, { order, place });
+        grew = true;
+      }
+    }
+  }
+};
+
+export const holdInkBlock = (editor: RuntimeAnyEditor, block: string) => {
+  const session = sessionOf(getEditorRuntimeOwner(editor));
+
+  session.holdCounts.set(block, (session.holdCounts.get(block) ?? 0) + 1);
+
+  let released = false;
+
+  return () => {
+    if (released) return;
+    released = true;
+
+    const count = (session.holdCounts.get(block) ?? 1) - 1;
+
+    if (count > 0) session.holdCounts.set(block, count);
+    else session.holdCounts.delete(block);
+    if (session.holdCounts.size === 0) session.kept.clear();
+  };
+};
 
 export const goneIn = (records: SavedRecords | undefined, id: string) => {
   const record = records?.[GONE]?.[id];
@@ -106,19 +172,8 @@ export const captureGone = (
 
   if (!update) return;
 
-  const owner = getEditorRuntimeOwner(editor);
-  let session = sessions.get(owner);
+  const session = sessionOf(getEditorRuntimeOwner(editor));
 
-  if (!session) {
-    session = {
-      departed: new Map(),
-      pending: new Set(),
-      recent: [],
-      runs: 0,
-      update: undefined,
-    };
-    sessions.set(owner, session);
-  }
   if (session.update?.deref() !== update) {
     const departed = new Map<string, InkGone>();
     session.runs += 1;
@@ -133,6 +188,7 @@ export const captureGone = (
 
       recent.splice(at === -1 ? recent.length : at, 0, { departed, order });
       if (recent.length > ADD_LOOKBACK_UPDATES) recent.shift();
+      keepHeldChains(session, departed, order);
     });
   }
 
@@ -218,13 +274,15 @@ export const addGone = (
   block: string
 ) => {
   const current = currentSession(editor)?.departed;
-  const recent = sessions.get(getEditorRuntimeOwner(editor))?.recent ?? [];
+  const session = sessions.get(getEditorRuntimeOwner(editor));
+  const recent = session?.recent ?? [];
 
   writeGone(
     tx,
     [block],
     (id) =>
       current?.get(id) ??
+      session?.kept.get(id)?.place ??
       recent.findLast((run) => run.departed.has(id))?.departed.get(id),
     (saved) => saved === undefined
   );

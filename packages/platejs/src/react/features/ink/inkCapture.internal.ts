@@ -10,6 +10,7 @@ import {
   type InkRun,
   type InkSample,
 } from '../../../features/ink/lib';
+import { holdInkBlock } from '../../../features/ink/lib/inkGone.internal';
 import {
   footprintEnters,
   gapAround,
@@ -43,9 +44,14 @@ type Entered = Readonly<{
 type Epoch = {
   readonly at: number;
   readonly blocks: Entered[];
+  readonly holds: Array<() => void>;
   note: Entered | undefined;
   readonly samples: InkSample[];
   readonly start: number;
+};
+
+const release = (epoch: Epoch) => {
+  for (const free of epoch.holds.splice(0)) free();
 };
 
 const heldBy = (epoch: Epoch) =>
@@ -287,20 +293,28 @@ export const attachInkCapture = ({
     const done = epoch;
 
     epoch = null;
-    if (!done || !contact) return;
+    if (!done) return;
 
-    const input = inputOf(done, contact.brush);
+    const input = contact && inputOf(done, contact.brush);
 
-    if (!input) return;
+    if (!input) {
+      release(done);
+
+      return;
+    }
     scheduleAfterCommitNotification(editor, () => {
-      const tracked = editor.plugin(HistoryPlugin).installed;
-      const joins = tracked && savedAt === editor.read.history().revision;
+      try {
+        const tracked = editor.plugin(HistoryPlugin).installed;
+        const joins = tracked && savedAt === editor.read.history().revision;
 
-      editor.update((tx) => {
-        if (joins) tx.history.merge();
-        tx.plugin(BaseInkPlugin).add(input);
-      });
-      savedAt = tracked ? editor.read.history().revision : undefined;
+        editor.update((tx) => {
+          if (joins) tx.history.merge();
+          tx.plugin(BaseInkPlugin).add(input);
+        });
+        savedAt = tracked ? editor.read.history().revision : undefined;
+      } finally {
+        release(done);
+      }
     });
   };
 
@@ -374,21 +388,29 @@ export const attachInkCapture = ({
     const open = epoch ?? {
       at: Date.now(),
       blocks: [],
+      holds: [],
       note: undefined,
       samples: [],
       start: event.timeStamp,
     };
     const [last] = open.samples.slice(-1);
     const segment: Point[] = last ? [[last[0], last[1]], point] : [point];
+    const hold = (entered: Entered) => {
+      open.holds.push(holdInkBlock(editor, entered.block.id));
+
+      return entered;
+    };
 
     epoch = open;
     for (const { block } of entering(segment)) {
       const entered = enter(block, origin);
 
-      if (entered) open.blocks.push(entered);
+      if (entered) open.blocks.push(hold(entered));
     }
     if (open.samples.length === 0 && open.blocks.length === 0) {
-      open.note = nearestTo(point, origin);
+      const note = nearestTo(point, origin);
+
+      open.note = note && hold(note);
     }
     open.samples.push([
       point[0],
@@ -406,6 +428,7 @@ export const attachInkCapture = ({
   };
 
   const cancel = () => {
+    if (epoch) release(epoch);
     epoch = null;
     contact = null;
     changedSinceCut = new Map();

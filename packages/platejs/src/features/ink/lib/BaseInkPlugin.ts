@@ -711,8 +711,9 @@ export const BaseInkPlugin = definePlugin('ink', {
     /**
      * Save one mark and each copy not saved yet, as one undo step, and
      * return the mark's id. Refuses malformed input, writing nothing. A copy's
-     * block deleted by this update, or by one of the last four updates that
-     * deleted blocks, gets its place saved too.
+     * block deleted by this update, by one of the last four updates that
+     * deleted blocks, or while a stroke that entered it was still unsaved,
+     * gets its place saved too.
      */
     add: txLocate(false, (input: InkMarkInput) => {
       const { copies, mark } = encodeMark(input, readEditorAuthor(editor));

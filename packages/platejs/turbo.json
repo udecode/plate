@@ -6717,7 +6717,8 @@
         "source-hash:partition:ink",
         "source-hash:partition:ink-react",
         "source-hash:partition:mention-react",
-        "source-hash:partition:react-core"
+        "source-hash:partition:react-core",
+        "source-hash:partition:yjs-react"
       ],
       "inputs": [
         "src/react/features/ink/**",
