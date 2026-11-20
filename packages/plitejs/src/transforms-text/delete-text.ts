@@ -16,8 +16,11 @@ import {
 } from '../core/public-state';
 import { crossesMembers, refuseCrossing } from '../core/set-root';
 import { isEditablePath, isWritablePoint } from '../core/writable-text';
+import { contentAfter } from '../editor/after';
+import { contentBefore } from '../editor/before';
 import { hasEdgeInReadOnlyInline } from '../editor/element-read-only';
 import { nodes as getNodes } from '../editor/nodes';
+import { skippedAbove } from '../editor/reach';
 import {
   type Element as EditorElement,
   type Location,
@@ -48,6 +51,7 @@ import {
   point as editorPoint,
   positions as editorPositions,
   previous as editorPrevious,
+  string as editorString,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
@@ -411,9 +415,10 @@ const resolveDeleteTarget = (
         return {
           kind: 'path',
           path: emptyInlinePath,
+          fallbackAssociation: 'forward',
           fallbackPoint:
-            editorBefore(editor, emptyInlinePath, { voids: true }) ??
-            editorAfter(editor, emptyInlinePath, { voids: true }),
+            contentBefore(editor, emptyInlinePath, { voids: true }) ??
+            contentAfter(editor, emptyInlinePath, { voids: true }),
           initialAt,
         };
       }
@@ -427,6 +432,7 @@ const resolveDeleteTarget = (
         return {
           kind: 'path',
           path: previousEmptyBlockPath,
+          fallbackAssociation: 'backward',
           fallbackPoint: at,
           initialAt,
         };
@@ -449,6 +455,7 @@ const resolveDeleteTarget = (
         return {
           kind: 'path',
           path: emptyBlockBesideGrid.path,
+          fallbackAssociation: 'backward',
           fallbackPoint: emptyBlockBesideGrid.landing,
           initialAt,
         };
@@ -462,6 +469,7 @@ const resolveDeleteTarget = (
         return {
           kind: 'path',
           path: targetNonEditable[1],
+          fallbackAssociation: reverse ? 'backward' : 'forward',
           fallbackPoint: at,
           initialAt,
         };
@@ -480,13 +488,14 @@ const resolveDeleteTarget = (
       (pathContainsPoint(at, selection.anchor) ||
         pathContainsPoint(at, selection.focus));
     const fallbackPoint = selectionInside
-      ? (editorBefore(editor, at, { voids: true }) ??
-        editorAfter(editor, at, { voids: true }))
+      ? (contentBefore(editor, at, { voids: true }) ??
+        contentAfter(editor, at, { voids: true }))
       : undefined;
 
     return {
       kind: 'path',
       path: at,
+      fallbackAssociation: 'forward',
       fallbackPoint,
       initialAt,
     };
@@ -1266,6 +1275,94 @@ const normalizeFinalDeletePoint = (
     : point;
 };
 
+const besideAtom = (editor: Editor, atom: Path, reverse: boolean) =>
+  editorPoint(editor, reverse ? PathApi.previous(atom) : PathApi.next(atom), {
+    edge: reverse ? 'end' : 'start',
+  });
+
+const blockOf = (editor: Editor, point: Point) =>
+  editorAbove(editor, {
+    at: point,
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
+    mode: 'lowest',
+    voids: true,
+  })?.[1];
+
+const reachAtomPastSpace = (
+  editor: Editor,
+  from: Point,
+  reach: Point,
+  limit: Point,
+  reverse: boolean
+) => {
+  if (editorString(editor, { anchor: from, focus: reach }).trim() !== '') {
+    return reach;
+  }
+
+  for (const point of editorPositions(editor, {
+    at: { anchor: from, focus: limit },
+    reverse,
+    unit: 'offset',
+  })) {
+    const atom = getHighestNonEditable(editor, point);
+
+    if (atom) {
+      return getEditorSchema(editor).isInline(atom[0]) ? point : reach;
+    }
+    if (editorString(editor, { anchor: from, focus: point }).trim() !== '') {
+      return reach;
+    }
+  }
+
+  return reach;
+};
+
+// Word positions give an atom no text, so a reach can run past one. An inline
+// atom past a block break does not touch `at`, so the delete joins the blocks
+// first, as it does without an atom.
+const stopAtAtom = (
+  editor: Editor,
+  at: Point,
+  reach: Point,
+  reverse: boolean
+) => {
+  const block = blockOf(editor, at) ?? [];
+  let near = at;
+
+  for (const point of editorPositions(editor, {
+    at: { anchor: at, focus: reach },
+    reverse,
+    unit: 'offset',
+  })) {
+    const atom = getHighestNonEditable(editor, point);
+    const skipped = skippedAbove(editor, point, 'content');
+
+    if (skipped && (!atom || PathApi.isAncestor(skipped[1], atom[1]))) {
+      continue;
+    }
+
+    if (!atom) {
+      near = point;
+      continue;
+    }
+
+    const inline = getEditorSchema(editor).isInline(atom[0]);
+
+    if (inline && !PathApi.equals(block, blockOf(editor, point) ?? [])) {
+      return near;
+    }
+
+    const between = editorString(editor, { anchor: at, focus: near });
+
+    if (between === '') return point;
+    if (!inline) return null;
+
+    return between.trim() === '' ? besideAtom(editor, atom[1], reverse) : near;
+  }
+
+  return null;
+};
+
 const getCollapsedDeleteTarget = (
   editor: Editor,
   at: import('../interfaces').Point,
@@ -1286,21 +1383,62 @@ const getCollapsedDeleteTarget = (
   }
 ) => {
   const { reverse, distance, unit, voids } = options;
-  const reach = clampToIsolationScope(
-    editor,
-    at,
-    reverse
-      ? (editorBefore(editor, at, { distance, unit, voids }) ??
-          editorPoint(editor, [], { edge: 'start' }))
-      : (editorAfter(editor, at, { distance, unit, voids }) ??
-          editorPoint(editor, [], { edge: 'end' })),
-    reverse,
-    voids
-  );
-  const pointTarget = matchPointRootVisibility(
-    stopBeforeEnteredIsolatingNode(editor, at, reach, reverse, voids),
-    at
-  );
+  const clamp = (from: Point, target: Point) =>
+    matchPointRootVisibility(
+      stopBeforeEnteredIsolatingNode(
+        editor,
+        from,
+        clampToIsolationScope(editor, from, target, reverse, voids),
+        reverse,
+        voids
+      ),
+      at
+    );
+  const reachFrom = (from: Point, steps: number) =>
+    clamp(
+      from,
+      reverse
+        ? (contentBefore(editor, from, { distance: steps, unit, voids }) ??
+            editorPoint(editor, [], { edge: 'start' }))
+        : (contentAfter(editor, from, { distance: steps, unit, voids }) ??
+            editorPoint(editor, [], { edge: 'end' }))
+    );
+
+  if (unit === 'word' && !voids) {
+    let from = at;
+
+    for (let step = 0; step < distance; step += 1) {
+      const block = blockOf(editor, from);
+      const reach = block
+        ? reachAtomPastSpace(
+            editor,
+            from,
+            reachFrom(from, 1),
+            clamp(
+              from,
+              editorPoint(editor, block, { edge: reverse ? 'start' : 'end' })
+            ),
+            reverse
+          )
+        : reachFrom(from, 1);
+      const stop = stopAtAtom(editor, from, reach, reverse) ?? reach;
+      const atom = getHighestNonEditable(editor, stop);
+
+      if (!atom) {
+        if (PointApi.equals(stop, from)) break;
+
+        from = stop;
+      } else if (distance > 1 && getEditorSchema(editor).isInline(atom[0])) {
+        from = besideAtom(editor, atom[1], reverse);
+      } else {
+        return matchPointRootVisibility(step === 0 ? stop : from, at);
+      }
+    }
+
+    return matchPointRootVisibility(from, at);
+  }
+
+  const pointTarget = reachFrom(at, distance);
 
   if (unit !== 'character' || distance !== 1) {
     return pointTarget;
@@ -1314,8 +1452,8 @@ const getCollapsedDeleteTarget = (
   }
 
   const offsetTarget = reverse
-    ? editorBefore(editor, at, { distance, unit: 'offset', voids })
-    : editorAfter(editor, at, { distance, unit: 'offset', voids });
+    ? contentBefore(editor, at, { distance, unit: 'offset', voids })
+    : contentAfter(editor, at, { distance, unit: 'offset', voids });
 
   if (!offsetTarget) {
     return pointTarget;
@@ -1328,18 +1466,9 @@ const getCollapsedDeleteTarget = (
   }
 
   if (!voids) {
-    // Deletion must see adjacent atoms that caret navigation skips.
-    const positions = editorPositions(editor, {
-      at: { anchor: at, focus: pointTarget },
-      reverse,
-      unit: 'offset',
-    });
-    positions.next();
-    const adjacent = positions.next().value;
+    const stop = stopAtAtom(editor, at, pointTarget, reverse);
 
-    if (adjacent && getHighestNonEditable(editor, adjacent)) {
-      return matchPointRootVisibility(adjacent, at);
-    }
+    if (stop) return matchPointRootVisibility(stop, at);
   }
 
   const currentBlock = editorAbove(editor, {
@@ -1371,7 +1500,7 @@ const getCollapsedDeleteTarget = (
       reverse &&
       pointTarget.offset === sameBlockTextBoundaryTarget.text.length
     ) {
-      const target = editorBefore(editor, pointTarget, {
+      const target = contentBefore(editor, pointTarget, {
         distance: 1,
         unit: 'character',
         voids,
@@ -1381,7 +1510,7 @@ const getCollapsedDeleteTarget = (
     }
 
     if (!reverse && pointTarget.offset === 0) {
-      const target = editorAfter(editor, pointTarget, {
+      const target = contentAfter(editor, pointTarget, {
         distance: 1,
         unit: 'character',
         voids,

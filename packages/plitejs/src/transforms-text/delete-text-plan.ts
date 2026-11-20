@@ -33,6 +33,7 @@ export type DeleteOptions = NonNullable<
 };
 
 export type DeletePathTarget = {
+  fallbackAssociation: 'backward' | 'forward';
   fallbackPoint?: Point;
   initialAt: DeleteOptions['at'];
   kind: 'path';

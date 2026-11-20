@@ -74,7 +74,7 @@ export const deletePathTarget = (
 ) => {
   const fallbackAnchor = target.fallbackPoint
     ? createAnchor(editor, target.fallbackPoint, {
-        association: 'backward',
+        association: target.fallbackAssociation,
         deletion: 'nearest',
       })
     : null;

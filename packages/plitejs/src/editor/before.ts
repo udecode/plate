@@ -1,4 +1,3 @@
-import { isEditorNodeSelectable } from '../core/editor-read-execution';
 import { getEditorSchema } from '../core/editor-runtime';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
@@ -14,54 +13,57 @@ import {
   canUseAdjacentCharacterFastPath,
   getAdjacentCharacterPoint,
 } from './adjacent-character-point';
+import { type Reach, skipsPoint } from './reach';
 
-const beforeBase: EditorStaticApi['before'] = (editor, at, options = {}) => {
-  const anchor = editorPoint(editor, [], { edge: 'start' });
-  const focus = editorPoint(editor, at, { edge: 'start' });
-  const { distance = 1, unit = 'offset', voids = false } = options;
+const stepBefore =
+  (reach: Reach): EditorStaticApi['before'] =>
+  (editor, at, options = {}) => {
+    const anchor = editorPoint(editor, [], { edge: 'start' });
+    const focus = editorPoint(editor, at, { edge: 'start' });
+    const { distance = 1, unit = 'offset', voids = false } = options;
 
-  if (unit === 'character' && canUseAdjacentCharacterFastPath(editor, focus)) {
-    return getAdjacentCharacterPoint(editor, focus, {
-      direction: 'backward',
-      distance,
-      voids,
-    });
-  }
-
-  const range = { anchor, focus };
-  let d = 0;
-  let target: Point | undefined;
-
-  for (const p of editorPositions(editor, {
-    ...options,
-    at: range,
-    reverse: true,
-  })) {
-    const insideNonSelectable = editorAbove(editor, {
-      at: p,
-      match: (node) =>
-        NodeApi.isElement(node) && !isEditorNodeSelectable(editor, node),
-      mode: 'highest',
-      voids: true,
-    });
-
-    if (insideNonSelectable) {
-      continue;
+    if (
+      unit === 'character' &&
+      canUseAdjacentCharacterFastPath(editor, focus)
+    ) {
+      return getAdjacentCharacterPoint(editor, focus, {
+        direction: 'backward',
+        distance,
+        reach,
+        voids,
+      });
     }
 
-    if (d > distance) {
-      break;
+    const range = { anchor, focus };
+    let d = 0;
+    let target: Point | undefined;
+
+    for (const p of editorPositions(editor, {
+      ...options,
+      at: range,
+      reverse: true,
+    })) {
+      if (skipsPoint(editor, p, reach)) {
+        continue;
+      }
+
+      if (d > distance) {
+        break;
+      }
+
+      if (d !== 0) {
+        target = p;
+      }
+
+      d += 1;
     }
 
-    if (d !== 0) {
-      target = p;
-    }
+    return target;
+  };
 
-    d += 1;
-  }
+const beforeBase = stepBefore('caret');
 
-  return target;
-};
+export const contentBefore = stepBefore('content');
 
 export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
   if (!options.match && options.matchString === undefined) {

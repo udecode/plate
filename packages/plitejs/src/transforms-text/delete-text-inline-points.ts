@@ -1,4 +1,5 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { isNonEditable } from '../core/writable-text';
 import {
   NodeApi,
   type Path,
@@ -119,7 +120,7 @@ export const moveLeadingSpacerPointIntoFollowingInline = (
   if (
     NodeApi.isElement(nextSibling) &&
     getEditorSchema(editor).isInline(nextSibling) &&
-    !getEditorSchema(editor).isVoid(nextSibling)
+    !isNonEditable(getEditorSchema(editor), nextSibling)
   ) {
     return editorPoint(editor, nextSiblingPath, { edge: 'start' });
   }
@@ -158,7 +159,7 @@ export const moveTrailingTextPointIntoFollowingInline = (
   if (
     NodeApi.isElement(nextSibling) &&
     getEditorSchema(editor).isInline(nextSibling) &&
-    !getEditorSchema(editor).isVoid(nextSibling)
+    !isNonEditable(getEditorSchema(editor), nextSibling)
   ) {
     return editorPoint(editor, nextSiblingPath, { edge: 'start' });
   }

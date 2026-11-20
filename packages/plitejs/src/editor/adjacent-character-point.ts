@@ -1,7 +1,7 @@
 import type { NodeList } from '../core/change/document-index';
-import { isEditorNodeSelectable } from '../core/editor-read-execution';
-import { getEditorRuntime } from '../core/editor-runtime';
+import { getEditorRuntime, getEditorSchema } from '../core/editor-runtime';
 import { getLiveNode, getLiveText } from '../core/public-state';
+import { isNonEditable } from '../core/writable-text';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   above as editorAbove,
@@ -9,12 +9,14 @@ import {
   isElementReadOnly as editorIsElementReadOnly,
   isInline as editorIsInline,
   isVoid as editorIsVoid,
+  point as editorPoint,
 } from '../interfaces/editor';
 import { type Descendant, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import { getDefined } from '../internal/get-defined';
 import { getCharacterDistance } from '../utils/string';
+import { type Reach, skipsPoint } from './reach';
 
 type Direction = 'backward' | 'forward';
 
@@ -205,30 +207,18 @@ const getPreviousCharacterPoint = (
   return getPreviousTextEndPoint(editor, point.path);
 };
 
-const isSelectablePoint = (editor: Editor, point: Point, voids: boolean) => {
-  if (voids) {
-    return true;
-  }
-
-  return !editorAbove(editor, {
-    at: point,
-    match: (node) =>
-      NodeApi.isElement(node) && !isEditorNodeSelectable(editor, node),
-    mode: 'highest',
-    voids: true,
-  });
-};
-
 export const getAdjacentCharacterPoint = (
   editor: Editor,
   point: Point,
   {
     direction,
     distance,
+    reach,
     voids,
   }: {
     direction: Direction;
     distance: number;
+    reach: Reach;
     voids: boolean;
   }
 ): Point | undefined => {
@@ -241,9 +231,27 @@ export const getAdjacentCharacterPoint = (
         ? getNextCharacterPoint(editor, current)
         : getPreviousCharacterPoint(editor, current);
 
-    if (current && isSelectablePoint(editor, current, voids)) {
-      remaining -= 1;
+    if (!current || (!voids && skipsPoint(editor, current, reach))) continue;
+
+    const atom =
+      reach === 'content' && !voids
+        ? editorAbove(editor, {
+            at: current,
+            match: (node) =>
+              NodeApi.isElement(node) &&
+              isNonEditable(getEditorSchema(editor), node),
+            mode: 'highest',
+            voids: true,
+          })
+        : undefined;
+
+    if (atom && editorIsInline(editor, atom[0])) {
+      current = editorPoint(editor, atom[1], {
+        edge: direction === 'forward' ? 'end' : 'start',
+      });
     }
+
+    remaining -= 1;
   }
 
   return current ?? undefined;
