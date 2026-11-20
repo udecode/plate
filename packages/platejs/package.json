@@ -483,6 +483,7 @@
     "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
     "test:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw-react",
     "test:partition:field": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs field",
+    "test:partition:field-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs field-react",
     "test:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find",
     "test:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote",
     "test:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs footnote-react",

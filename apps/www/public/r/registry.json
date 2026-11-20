@@ -3211,6 +3211,33 @@
       "type": "registry:component"
     },
     {
+      "name": "field",
+      "title": "Field",
+      "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
+      "dependencies": [
+        "platejs",
+        "cn",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/suggestion-style.json",
+        "button",
+        "checkbox",
+        "input",
+        "label",
+        "native-select",
+        "popover"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/field.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/field.tsx"
+        }
+      ],
+      "type": "registry:component"
+    },
+    {
       "name": "dnd",
       "title": "Drag and Drop",
       "description": "Block drag handles and drop indicators.",

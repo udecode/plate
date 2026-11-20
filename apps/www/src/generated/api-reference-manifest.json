@@ -13110,6 +13110,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/field/react:useFieldRead": {
+          "aliases": [],
+          "documentation": "Read the field with this id and its problems. A commit that changes an\nelement rereads it, and the caller renders again only when the field or its\nproblems changed, such as when the field its condition names is deleted.",
+          "entrypoint": "platejs/field/react",
+          "kind": "const",
+          "name": "useFieldRead",
+          "runtime": true,
+          "signature": "useFieldRead: (fieldId: string) => Readonly<{\n  fieldId: string;\n  node: FieldElement;\n  problems: readonly FieldProblem[];\n}> | null",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/find:BaseFindPlugin": {
           "aliases": [],
           "documentation": "Current literal text search without document or history changes.",

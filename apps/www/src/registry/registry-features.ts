@@ -696,6 +696,20 @@ export const registryFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/field.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'field',
+    type: 'registry:component',
+    description:
+      'A form field chip that one role fills, with a settings popover for its kind, options, default and condition.',
+    title: 'Field',
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/dnd.tsx',
         type: 'registry:component',
       },

@@ -843,6 +843,13 @@ const ICON_NAMES: Record<string, IconNames> = {
     remixicon: 'RiTriangleLine',
     tabler: 'IconTriangle',
   },
+  TriangleAlert: {
+    hugeicons: 'Alert02Icon',
+    lucide: 'TriangleAlert',
+    phosphor: 'WarningIcon',
+    remixicon: 'RiErrorWarningLine',
+    tabler: 'IconAlertTriangle',
+  },
   Underline: {
     hugeicons: 'TextUnderlineIcon',
     lucide: 'Underline',

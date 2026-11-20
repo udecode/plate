@@ -1,5 +1,5 @@
 {
-  "generation": "61e22d659a569fe4fe61737440670a8f4afd0bd9acc6d855695c579e3f8c3b5d",
+  "generation": "e621e71dce6ee321137b23803100fe5119ce243e594c21dc3c44b732216cee52",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3338,6 +3338,34 @@
           "registryDependencies": [
             "@plate/suggestion-style",
             "calendar",
+            "popover"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "cn",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
+          ],
+          "files": [
+            {
+              "path": "components/editor/field.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/field.tsx"
+            }
+          ],
+          "name": "field",
+          "type": "registry:component",
+          "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
+          "title": "Field",
+          "registryDependencies": [
+            "@plate/suggestion-style",
+            "button",
+            "checkbox",
+            "input",
+            "label",
+            "native-select",
             "popover"
           ]
         },
@@ -10718,6 +10746,34 @@
           "registryDependencies": [
             "@plate/suggestion-style",
             "calendar",
+            "popover"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "cn",
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
+          ],
+          "files": [
+            {
+              "path": "components/editor/field.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/field.tsx"
+            }
+          ],
+          "name": "field",
+          "type": "registry:component",
+          "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
+          "title": "Field",
+          "registryDependencies": [
+            "@plate/suggestion-style",
+            "button",
+            "checkbox",
+            "input",
+            "label",
+            "native-select",
             "popover"
           ]
         },

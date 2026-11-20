@@ -21,6 +21,9 @@
   "include": ["../src/react/features/field/**/*"],
   "references": [
     {
+      "path": "./core.json"
+    },
+    {
       "path": "./field.json"
     },
     {

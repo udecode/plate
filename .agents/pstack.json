@@ -259,6 +259,13 @@
     },
     {
       "paths": [
+        "apps/www/src/registry/components/editor/plugins.generated.ts",
+        "apps/www/src/registry/components/editor/plugins.schema.json"
+      ],
+      "command": "pnpm --filter www editor:generate"
+    },
+    {
+      "paths": [
         "apps/www/src/registry/changelog/*.json"
       ],
       "command": "node tooling/scripts/generate-ui-changelog-entries.mjs --write",
