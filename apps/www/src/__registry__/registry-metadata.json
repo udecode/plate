@@ -1,5 +1,5 @@
 {
-  "generation": "5386e72f90c87989bf63331668b1100a3a2020a1661aff7188c2292983b0a746",
+  "generation": "4010bd084c9e48c3717db8cb03a43b374bc37773684e41b8379171e8445624f2",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1199,6 +1199,33 @@
           "title": "Details Toolbar Button",
           "type": "registry:component",
           "registryDependencies": [
+            "@plate/toolbar"
+          ]
+        },
+        {
+          "description": "A toolbar menu that inserts a field of each kind.",
+          "files": [
+            {
+              "path": "components/editor/field-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/field-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "examples": [
+              "field-demo"
+            ]
+          },
+          "name": "field-toolbar-button",
+          "title": "Field Toolbar Button",
+          "type": "registry:component",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/editor-dropdown-menu",
             "@plate/toolbar"
           ]
         },
@@ -3379,7 +3406,13 @@
           "type": "registry:component",
           "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
           "title": "Field",
+          "meta": {
+            "examples": [
+              "field-demo"
+            ]
+          },
           "registryDependencies": [
+            "@plate/field-toolbar-button",
             "@plate/suggestion-style",
             "button",
             "checkbox",
@@ -6402,6 +6435,24 @@
             "@plate/dnd"
           ],
           "type": "registry:example"
+        },
+        {
+          "description": "A two-role lease template with fields, a date, a mention and a fee table, and its HTML, Markdown and Word export.",
+          "files": [
+            {
+              "path": "examples/field-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/field-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "field-demo",
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
         },
         {
           "dependencies": [
@@ -8672,6 +8723,33 @@
           ]
         },
         {
+          "description": "A toolbar menu that inserts a field of each kind.",
+          "files": [
+            {
+              "path": "components/editor/field-toolbar-button.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/field-toolbar-button.tsx"
+            }
+          ],
+          "meta": {
+            "examples": [
+              "field-demo"
+            ]
+          },
+          "name": "field-toolbar-button",
+          "title": "Field Toolbar Button",
+          "type": "registry:component",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
+        },
+        {
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
@@ -10844,7 +10922,13 @@
           "type": "registry:component",
           "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
           "title": "Field",
+          "meta": {
+            "examples": [
+              "field-demo"
+            ]
+          },
           "registryDependencies": [
+            "@plate/field-toolbar-button",
             "@plate/suggestion-style",
             "button",
             "checkbox",
@@ -13867,6 +13951,24 @@
             "@plate/dnd"
           ],
           "type": "registry:example"
+        },
+        {
+          "description": "A two-role lease template with fields, a date, a mention and a fee table, and its HTML, Markdown and Word export.",
+          "files": [
+            {
+              "path": "examples/field-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/field-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "name": "field-demo",
+          "type": "registry:example",
+          "meta": {
+            "registry": false
+          }
         },
         {
           "dependencies": [

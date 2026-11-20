@@ -650,6 +650,19 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    description: 'A toolbar menu that inserts a field of each kind.',
+    files: [
+      {
+        path: 'components/editor/field-toolbar-button.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { examples: ['field-demo'] },
+    name: 'field-toolbar-button',
+    title: 'Field Toolbar Button',
+    type: 'registry:component',
+  },
+  {
     dependencies: ['platejs'],
     description: 'A menu for converting between different block types.',
     files: [

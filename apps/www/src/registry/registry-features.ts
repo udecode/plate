@@ -714,10 +714,12 @@ export const registryFeatures: Registry['items'] = [
       },
     ],
     name: 'field',
+    registryDependencies: ['@plate/field-toolbar-button'],
     type: 'registry:component',
     description:
       'A form field chip that one role fills, with a settings popover for its kind, options, default and condition.',
     title: 'Field',
+    meta: { examples: ['field-demo'] },
   },
   {
     dependencies: ['platejs'],

@@ -9,6 +9,7 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/field-toolbar-button.json",
     "https://platejs.org/r/suggestion-style.json",
     "button",
     "checkbox",
@@ -25,5 +26,10 @@
       "target": "@components/editor/field.tsx"
     }
   ],
+  "meta": {
+    "examples": [
+      "field-demo"
+    ]
+  },
   "type": "registry:component"
 }

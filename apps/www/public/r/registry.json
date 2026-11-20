@@ -1111,6 +1111,32 @@
       "type": "registry:component"
     },
     {
+      "name": "field-toolbar-button",
+      "title": "Field Toolbar Button",
+      "description": "A toolbar menu that inserts a field of each kind.",
+      "dependencies": [
+        "diff-match-patch-ts@^0.6.0",
+        "platejs"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/toolbar.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/field-toolbar-button.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/field-toolbar-button.tsx"
+        }
+      ],
+      "meta": {
+        "examples": [
+          "field-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
       "name": "turn-into-toolbar-button",
       "title": "Turn Into Toolbar Button",
       "description": "A menu for converting between different block types.",
@@ -3240,6 +3266,7 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/field-toolbar-button.json",
         "https://platejs.org/r/suggestion-style.json",
         "button",
         "checkbox",
@@ -3255,6 +3282,11 @@
           "target": "@components/editor/field.tsx"
         }
       ],
+      "meta": {
+        "examples": [
+          "field-demo"
+        ]
+      },
       "type": "registry:component"
     },
     {

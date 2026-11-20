@@ -1091,6 +1091,19 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'A two-role lease template with fields, a date, a mention and a fee table, and its HTML, Markdown and Word export.',
+      files: [
+        { path: 'examples/field-demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/field-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      name: 'field-demo',
+      type: 'registry:example',
+    },
+    {
       dependencies: ['@platejs/test'],
       description:
         'GFM footnote references and definitions as dedicated editor nodes.',
