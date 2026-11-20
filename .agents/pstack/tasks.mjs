@@ -636,14 +636,23 @@ export const ownerOf = (task) => (task.ship ? null : task.owner);
 const held = (task) => task?.status === 'offered' && task.card;
 const ownerTranscriptOf = (task) => (task.ship ? null : task.ownerTranscript);
 
+const LAND_STOP = /\bstop (?:\w+ )?before (?:running )?(?:land\.mjs|landing)\b/iu;
+
+const withoutLegacyLandStop = (finding) => {
+  const sentences = finding.split(/(?<=\.) (?=[A-Z])/u);
+  const kept = sentences.filter((sentence) => !LAND_STOP.test(sentence));
+  return kept.length === sentences.length ? finding : [...kept, 'Land once the proof passes, because a check only a person runs, such as a retest, comes after the land.'].join(' ');
+};
+
 export function newChipRowProblems(cells, before, where, git, here = null, shipList = () => NO_SHIP, caller = '.') {
-  const [, decision, , evidence] = cells;
+  const [, decision, why, evidence] = cells;
   const row = parseRow(cells);
   if (!row) return [];
   const { id, move } = row;
   if (LEGACY_ONLY.includes(move)) return [`${where}: a task keeps its id for good: log uncarded when its card leaves the queue, updated when its waits or paths change, and dismissed dup <task id> to merge it into another task`];
   const { given, repeated, blankWaits } = fields(evidence);
   const found = repeated.map((key) => `${where}: a chip row names ${key}: once`);
+  if (['offered', 'folded'].includes(move) && LAND_STOP.test(why)) found.push(`${where}: a finding never has its session stop before landing, because the Autopilot rule runs work to its close and only the owner's own "stop before ship" adds that stop; a check only a person runs, such as a teammate's retest, comes after the land, so drop that sentence`);
   if (blankWaits) found.push(`${where}: waits: takes pr:<number>, task:<id> or run:<plan path ending in .md>, comma-separated, or none; an empty waits: is none of them`);
   const takes = TAKES[move] ?? [];
   for (const key of Object.keys(given)) {
@@ -1588,8 +1597,8 @@ function brief(task, ledger, max, tasks, codex, state) {
     ...(tier ? [`Tier: ${tier.name}, ${tier.at === -1 ? 'first in its priority, because it owns a check that fails on the base branch or names a page where it still works' : `rank ${tier.at + 1} of chips.tiers within its priority`}.`] : []),
     ...(task.regression.length ? [`Regression: it still works on ${task.regression.join(', ')}`] : []),
     'Findings:',
-    ...task.findings.map((finding) => `- ${finding}`),
-    ...(task.covers.length ? ['Also covers:', ...task.covers.flatMap((entry) => [`- ${entry.id} ${entry.title}`, ...entry.findings.map((finding) => `  - ${finding}`)])] : []),
+    ...task.findings.map((finding) => `- ${withoutLegacyLandStop(finding)}`),
+    ...(task.covers.length ? ['Also covers:', ...task.covers.flatMap((entry) => [`- ${entry.id} ${entry.title}`, ...entry.findings.map((finding) => `  - ${withoutLegacyLandStop(finding)}`)])] : []),
     `Writes: ${task.writes.join(', ')}`,
     ...(task.owns.length ? [`Owns: ${task.owns.join(', ')}`] : []),
     `Waited on: ${task.waits.length ? task.waits.join(', ') : 'nothing'}`,
