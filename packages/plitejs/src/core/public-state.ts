@@ -319,6 +319,13 @@ import {
 } from './insert-limit';
 import { getReplaceableEmptyBlock, isEmptyElement } from './is-empty-element';
 import {
+  renameSlice,
+  renewCopy,
+  restoreDroppedNames,
+  type RenewedCopy,
+  withRenewalOff,
+} from './landed-names';
+import {
   notifyObservers,
   reportEditorLifecycleError,
   runEditorObserver,
@@ -1652,8 +1659,9 @@ export const withDraftMove = <T>(
   run: () => T
 ): T => {
   const snapshot = getDraftSnapshot(editor);
+  const moved = () => withRenewalOff(editor, run);
 
-  return snapshot ? snapshot.builder.withMove(move, run) : run();
+  return snapshot ? snapshot.builder.withMove(move, moved) : moved();
 };
 
 /** @internal */
@@ -2061,9 +2069,12 @@ export const recordedCarets = (
   };
 };
 
-const composeDraftSteps = (steps: readonly DraftStep[]) =>
+const composeDraftSteps = (
+  steps: readonly DraftStep[],
+  from: JsonEditorValue
+) =>
   steps.reduce<DocumentChange>(
-    (change, step) => change.compose(step.change),
+    (change, step) => change.compose(step.change, from),
     DocumentChange.empty
   );
 
@@ -2093,7 +2104,9 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
     before:
       frontier?.value ??
       (getChangeValue(snapshot.roots, snapshot.records) as EditorDocumentValue),
-    change: frontier ? composeDraftSteps(steps) : snapshot.activeChange.change,
+    change: frontier
+      ? composeDraftSteps(steps, frontier.value)
+      : snapshot.activeChange.change,
   };
   const recorded = recorder({
     after: snapshot.builder.value as EditorDocumentValue,
@@ -5467,7 +5480,8 @@ const writeSliceAtRange = <V extends Value>(
 
 const createCheckedSliceSpec = (
   editor: Editor,
-  write: (transaction: EditorTransactionSpecBuilder) => boolean
+  write: (transaction: EditorTransactionSpecBuilder) => boolean,
+  restore?: () => void
 ): false | TransactionSpec => {
   let written = false;
 
@@ -5478,6 +5492,7 @@ const createCheckedSliceSpec = (
         written = write(transaction);
         if (!written) return;
         finalizeWithoutOrphanedRoots(editor);
+        restore?.();
         getActiveDocumentChangeBuilder(editor).check();
       },
       undefined,
@@ -5767,15 +5782,16 @@ export const fitSliceAtSite = (
   site: SliceFitSite,
   slice: import('../interfaces/editor').ContentSlice,
   options: Readonly<{
+    copy?: RenewedCopy | null;
     drop?: true;
     landing?: true;
     replaceEmptyBlock?: true;
   }> = {}
-): false | TransactionSpec => {
+) => {
   const owner = getEditorRuntimeOwner(editor);
   const place = readSliceFitPlace(site);
   const landings: DraftTrack[] = [];
-  const spec = createCheckedSliceSpec(owner, (transaction) =>
+  const fit = (transaction: EditorTransactionSpecBuilder) =>
     runWithMutationRoot(owner, place.root, () => {
       const remapped = renewContentSlice(owner, ContentSlice.fromJSON(slice));
 
@@ -5792,12 +5808,21 @@ export const fitSliceAtSite = (
           : {}),
         rootsPrepared: true,
       });
-    })
+    });
+  let written = slice;
+  const spec = createCheckedSliceSpec(
+    owner,
+    (transaction) => withRenewalOff(owner, fit, transaction),
+    () => {
+      const dropped = options.copy && restoreDroppedNames(owner, options.copy);
+
+      if (dropped) written = renameSlice(owner, slice, dropped);
+    }
   );
 
   if (spec) recordSpecLanding(spec, landings[0]);
 
-  return spec;
+  return spec && { spec, written };
 };
 
 const resolveRawSliceFitPlace = (
@@ -5865,7 +5890,8 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       );
 
       if (!place) return false;
-      const sourceSlice = ContentSlice.fromJSON<V>(slice);
+      const copy = internal?.rootsPrepared ? null : renewCopy(editor, slice);
+      const sourceSlice = ContentSlice.fromJSON<V>(copy?.slice ?? slice);
       const inputSlice = internal?.rootsPrepared
         ? sourceSlice
         : renewContentSlice(editor, sourceSlice);
@@ -5883,7 +5909,9 @@ const fitSliceIntoActiveDraft = <V extends Value>(
         return false;
       }
 
-      return landSlice(
+      const fitted = withRenewalOff(
+        editor,
+        landSlice,
         editor,
         getUpdateView(getEditorRuntimeOwner(editor)),
         place,
@@ -5893,6 +5921,13 @@ const fitSliceIntoActiveDraft = <V extends Value>(
           rootsPrepared: internal?.rootsPrepared,
         }
       );
+
+      if (fitted && copy) {
+        finalizeWithoutOrphanedRoots(editor);
+        restoreDroppedNames(editor, copy);
+      }
+
+      return fitted;
     }
   );
 
@@ -5908,10 +5943,15 @@ export const fitSliceChildren = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice,
   options: Readonly<{ at: InternalSliceChildrenTarget }>
-) =>
-  fitSliceIntoActiveDraft(editor, slice, undefined, {
+) => {
+  const spec = createSliceFitTransactionSpec(editor, slice, undefined, {
     childrenAt: options.at,
   });
+
+  if (spec) applyTransactionSpec(editor, spec);
+
+  return spec !== false;
+};
 
 type GroupedSliceParent = Readonly<{
   key: NodeKey;
@@ -6204,11 +6244,12 @@ export const replaceSliceAtBlockBoundary = <V extends Value>(
 const createSliceFitTransactionSpec = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice,
-  options?: Parameters<EditorTransactionSliceApi<V>['replace']>[1]
+  options?: Parameters<EditorTransactionSliceApi<V>['replace']>[1],
+  internal?: SliceFitInternal
 ): false | TransactionSpec => {
   let applicable = false;
   const spec = createTransactionSpec(editor, () => {
-    applicable = fitSliceIntoActiveDraft(editor, slice, options);
+    applicable = fitSliceIntoActiveDraft(editor, slice, options, internal);
   });
 
   return applicable ? spec : false;

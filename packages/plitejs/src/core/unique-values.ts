@@ -329,8 +329,10 @@ const drawFresh: FreshDraw = (key, property, taken) => {
   );
 };
 
-const renameChange = (
-  renames: ReadonlyArray<Holder & Readonly<{ key: string; value: unknown }>>,
+export const renameChange = (
+  renames: ReadonlyArray<
+    Readonly<{ from: number; key: string; root: string; value: unknown }>
+  >,
   indexOf: (root: string) => DocumentIndex
 ) => {
   const byRoot = Map.groupBy(renames, ({ root }) => root);

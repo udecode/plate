@@ -762,6 +762,14 @@ export class DocumentIndex {
     return this.cursor().nodeStartingAt(position);
   }
 
+  elementsOpeningIn(
+    from: number,
+    to: number,
+    visit: (node: JsonNode, from: number) => void
+  ) {
+    this.cursor().elementsOpeningIn(from, to, visit);
+  }
+
   nodeSlice(path: readonly number[]) {
     return PreparedTokenSlice.fromIndexedNodes([this.node(path)]);
   }

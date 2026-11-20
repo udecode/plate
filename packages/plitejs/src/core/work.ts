@@ -136,6 +136,13 @@ export type CoreWork = {
   wholeListPasses: number;
   /** Projected roots a frame installs as its snapshot's roots. */
   snapshotRoots: number;
+  /** Path components a token cursor or a content slice snapshot built. */
+  pathComponents: number;
+  /**
+   * Elements a slice landing read to renew a copy's unique values, and
+   * elements it read in the changed ranges to find where they landed.
+   */
+  renewalVisits: number;
   /** Sequence items a walk visited in order. */
   walkedSlots: number;
   /** Nodes of indexed lists read back as one whole array. */
@@ -266,6 +273,8 @@ export const coreWork: CoreWork = {
   identityMembersExamined: 0,
   wholeListPasses: 0,
   snapshotRoots: 0,
+  pathComponents: 0,
+  renewalVisits: 0,
   walkedSlots: 0,
   wholeReadNodes: 0,
   rootOwnerChecks: 0,

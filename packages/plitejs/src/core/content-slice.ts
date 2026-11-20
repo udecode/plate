@@ -14,6 +14,7 @@ import {
   getEditorJsonRecordEntries,
   snapshotEditorJsonValue,
 } from './value-codec';
+import { countCoreWork } from './work';
 
 export type ContentSlice<V extends Value = Value> = ContentSliceValue<V>;
 
@@ -83,6 +84,8 @@ const snapshotSliceContent = (
 
   const result = items.map((node, index): Descendant => {
     const nextPath = [...nodePath, index];
+
+    countCoreWork('pathComponents', nextPath.length);
 
     if (typeof node !== 'object' || node === null || Array.isArray(node)) {
       throw new Error(

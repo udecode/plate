@@ -18,6 +18,7 @@ import {
 } from './editor-runtime';
 import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { limitSliceToLength, sliceFitsLength } from './insert-limit';
+import { renewCopy, type RenewedCopy } from './landed-names';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   fitSliceAtSite,
@@ -34,6 +35,7 @@ import type {
 } from './slice-landing-types';
 
 export type PastePlan = Readonly<{
+  copy: RenewedCopy | null;
   drop?: true;
   emptyBlockReplacement: ContentSlice | null;
   inputCut: boolean;
@@ -70,6 +72,7 @@ export const planPaste = (
   const site = resolveSliceFitSite(editor, state, input.options);
 
   if (!site) return false;
+  const copy = renewCopy(editor, input.slice);
   const dissolve = (slice: ContentSlice) =>
     internal.drop
       ? slice
@@ -77,11 +80,12 @@ export const planPaste = (
           slice,
           getCompiledEditorSchemaFromApi(getEditorSchema(editor))
         );
-  const source = dissolve(input.slice);
+  const source = dissolve(copy?.slice ?? input.slice);
   const limited = limitSliceToLength(source, site.remainingLength);
 
   if (limited.content.length === 0 && input.slice.content.length > 0) {
     return {
+      copy,
       emptyBlockReplacement: null,
       inputCut: true,
       landingCut: false,
@@ -94,7 +98,7 @@ export const planPaste = (
   const landed = readSliceLanding(editor, {
     intent,
     slice: limited,
-    source: input.slice,
+    source: copy?.slice ?? input.slice,
     target,
   });
   const { replaceEmpty } = landed;
@@ -102,6 +106,7 @@ export const planPaste = (
   const slice = limitSliceToLength(landingSource, site.remainingLength);
 
   return {
+    copy,
     ...(internal.drop ? { drop: true } : {}),
     emptyBlockReplacement:
       target.kind === 'empty' && replaceEmpty
@@ -111,7 +116,8 @@ export const planPaste = (
               rootState,
               target,
               replaceEmpty,
-              site.remainingLength
+              site.remainingLength,
+              copy
             )
           )
         : null,
@@ -133,32 +139,32 @@ export const writePaste = (
   | Readonly<{ lossy: boolean; spec: TransactionSpec; written: ContentSlice }>
   | false => {
   if (plan.emptyBlockReplacement) {
-    const spec = fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
+    const fit = fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
       ...options,
+      copy: plan.copy,
       ...(plan.drop ? { drop: true } : {}),
       replaceEmptyBlock: true,
     });
 
-    if (spec) {
+    if (fit) {
       return {
         lossy: plan.inputCut,
-        spec,
-        written: plan.emptyBlockReplacement,
+        ...fit,
       };
     }
   }
   if (!plan.slice) return false;
 
-  const spec = fitSliceAtSite(editor, plan.site, plan.slice, {
+  const fit = fitSliceAtSite(editor, plan.site, plan.slice, {
     ...options,
+    copy: plan.copy,
     ...(plan.drop ? { drop: true } : {}),
   });
 
   return (
-    spec && {
+    fit && {
       lossy: plan.inputCut || plan.landingCut,
-      spec,
-      written: plan.slice,
+      ...fit,
     }
   );
 };
@@ -201,7 +207,8 @@ const prepareEmptyBlockReplacement = (
     omitTargetProperties = [],
     slice,
   }: NonNullable<SliceLanding['replaceEmpty']>,
-  remaining: number | undefined
+  remaining: number | undefined,
+  copy: RenewedCopy | null
 ): ContentSlice | null => {
   const [head, ...rest] = slice.content;
 
@@ -228,6 +235,12 @@ const prepareEmptyBlockReplacement = (
 
   for (const key of omitTargetProperties) delete kept[key];
   const landedHead = { ...kept, ...head };
+
+  for (const [key, sourceByDrawn] of copy?.sources ?? []) {
+    const headWasDrawn = sourceByDrawn.has(head[key]);
+
+    if (key in kept && headWasDrawn) landedHead[key] = kept[key];
+  }
   const content = [landedHead, ...rest];
   const index = getDefined(path.at(-1));
   const parentEntry = state.nodes.parent(path);

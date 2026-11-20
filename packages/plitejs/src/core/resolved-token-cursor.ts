@@ -1,6 +1,7 @@
 import { getDefined } from '../internal/get-defined';
 import type { JsonNode } from './change/tokens';
 import { MeasuredSequence } from './measured-sequence';
+import { countCoreWork } from './work';
 
 type NodeKind = 'element' | 'text';
 
@@ -222,6 +223,28 @@ export class ResolvedTokenCursor {
     return byDepth.flat();
   }
 
+  elementsOpeningIn(
+    from: number,
+    to: number,
+    visit: (node: JsonNode, from: number) => void,
+    children: TreeIndexChildren = this.tree,
+    base = 0
+  ) {
+    const first = Math.max(0, children.locate(from - base));
+
+    children.forEach(first, (child, _index, start) => {
+      const at = base + start;
+
+      if (at >= to) return false;
+      if (child.children && at >= from) visit(child.node, at);
+      if (child.children && at + child.length > from) {
+        this.elementsOpeningIn(from, to, visit, child.children, at + 1);
+      }
+
+      return true;
+    });
+  }
+
   nodeStartingAt(position: number) {
     if (position < 0 || position > this.tree.totalLength) return null;
 
@@ -308,6 +331,8 @@ export class ResolvedTokenCursor {
     from: number,
     path: readonly number[]
   ): ResolvedTokenEntry {
+    countCoreWork('pathComponents', path.length);
+
     return {
       contentFrom: from + 1,
       contentTo: from + node.length - 1,
