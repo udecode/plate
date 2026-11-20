@@ -311,8 +311,10 @@ export const capEffort = (effort, max) => (max && EFFORTS.indexOf(effort) > EFFO
 
 // A sheet without one of these lines falls back to pstack's own seat defaults, which name Claude models these
 // projects never dispatch. Any other model may take a seat, so a one-family sheet such as Codex-only passes, but
-// Sonnet, Haiku or an effort below maxEffort runs a weaker panel than the project asks for (owner's word, 2026-11-15).
-const SEAT_ROLES = ['interrogate reviewers', 'architect runners', 'arena runners'];
+// Sonnet, Haiku or a seat below high runs a weaker panel than the project asks for (owner's word, 2026-11-15). Seats
+// follow pstack's own defaults at high, below a project's maxEffort of xhigh (owner's word, 2026-11-20).
+const SEAT_ROLES = ['interrogate reviewers', 'arena runners'];
+const SEAT_FLOOR = 'high';
 const NEVER = /\b(?:sonnet|haiku)\b/gu;
 
 export const modelsSheet = (runtime, env = process.env) =>
@@ -336,7 +338,8 @@ export function sheetMisses(text, max) {
     }
     for (const [model, at] of value.split(',').map((entry) => entry.trim().split(/\s+/u))) {
       const effort = at?.match(/^@(\w+)$/u)?.[1];
-      if (effort && max && EFFORTS.indexOf(effort) < EFFORTS.indexOf(max)) misses.push(`\`${role}:\` runs ${model} @${effort}, below this project's maxEffort ${max}`);
+      const floor = capEffort(SEAT_FLOOR, max);
+      if (effort && EFFORTS.indexOf(effort) < EFFORTS.indexOf(floor)) misses.push(`\`${role}:\` runs ${model} @${effort}, below the seat floor ${floor}`);
     }
   }
   return misses;

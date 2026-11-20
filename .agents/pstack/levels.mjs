@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Lists each stretch of a decision log that ran below this session's level or
 // the configured seats: a lead stretch on a lower effort, another model or a
-// Codex lead, and a panel, architect or arena round with a seat missing or on
+// Codex lead, and a panel or arena round with a seat missing or on
 // a lower effort. The configured seats come from the runtime's models sheet;
 // a `<seat> @<effort>` that a project rule outside the pstack block names
 // replaces that seat's effort, the highest one when it names several. The
@@ -26,7 +26,6 @@ const REFUSING = new Set(['codex', 'gemini']);
 const seatKey = (model) => model.replace(/^(?:codex|agy):/u, '').replace(/^claude-([a-z]+)-.*$/u, '$1');
 const ROUNDS = {
   panel: { opens: /^seats\b/u, role: 'interrogate reviewers' },
-  architect: { opens: /^runners\b/u, role: 'architect runners' },
   arena: { opens: /^runners\b/u, role: 'arena runners' },
 };
 const BLOCK = /<!-- pstack:begin[\s\S]*?<!-- pstack:end -->/gu;

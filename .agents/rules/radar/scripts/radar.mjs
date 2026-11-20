@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,12 +35,6 @@ const lanes = () => {
   };
 };
 
-const howExplorerArgs = () => {
-  const sheet = join(homedir(), '.claude/pstack-models.md');
-  const line = existsSync(sheet) ? readFileSync(sheet, 'utf8').match(/^how explorer:\s*codex:(\S+)(?:\s*@(\w+))?/m) : null;
-  return line ? ['--model', line[1], ...(line[2] ? ['--effort', line[2]] : [])] : [];
-};
-
 const run = (command, args, options) => new Promise((done) => {
   const child = spawn(command, args, { ...options, stdio: ['ignore', options.out ?? 'inherit', options.err ?? 'inherit'] });
   child.on('close', (code) => done(code));
@@ -65,7 +59,7 @@ const runLanes = async (runDir, args) => {
   const codes = await Promise.all(ids.map(async (id) => {
     const stem = attemptStem(runDir, id);
     writeFileSync(`${stem}.prompt.md`, `${brief}\n\n## Your lane\n\n${all[id]}\n${rerun}`);
-    const code = await run('node', ['.agents/pstack/cross.mjs', '--to', 'codex', ...howExplorerArgs(), '--reach', '--timeout', '3300', '--prompt-file', `${stem}.prompt.md`], {
+    const code = await run('node', ['.agents/pstack/cross.mjs', '--to', 'codex', '--effort', 'medium', '--reach', '--timeout', '3300', '--prompt-file', `${stem}.prompt.md`], {
       cwd: root,
       out: openSync(`${stem}.md`, 'w'),
       err: openSync(`${stem}.err`, 'w'),
