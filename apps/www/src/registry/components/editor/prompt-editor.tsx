@@ -2,7 +2,14 @@
 
 import { useComboboxContext, useStoreState } from '@ariakit/react';
 import { cn } from 'cn';
-import { type Descendant, ElementApi, NodeApi, txLocate } from 'platejs';
+import {
+  ContentSlice,
+  type Descendant,
+  editorCommands,
+  ElementApi,
+  NodeApi,
+  txLocate,
+} from 'platejs';
 import { MentionPlugin } from 'platejs/mention/react';
 import {
   definePlugin,
@@ -102,6 +109,37 @@ const PromptEditorPlugin = definePlugin('promptEditor', {
     report: () => void;
   } => ({ items: [], report: () => {} }),
 }).extend(({ editor, store }) => ({
+  commands: ({ around }) => [
+    // A chip pasted from another document keeps its id only when this field
+    // offers the same item, because the id may name something else here.
+    around(editorCommands.replaceSlice, ({ input, next }) => {
+      const { items } = store.get();
+      const keepKnownChips = (nodes: readonly Descendant[]): Descendant[] =>
+        nodes.map((node) => {
+          if (!ElementApi.isElement(node)) return node;
+          if (!isMention(node)) {
+            return { ...node, children: keepKnownChips(node.children) };
+          }
+
+          const label = node.label ?? node.ref;
+
+          return items.some(
+            (item) => item.ref === node.ref && item.label === label
+          )
+            ? node
+            : { text: label };
+        });
+
+      return next({
+        ...input,
+        slice: ContentSlice.withContent(
+          input.slice,
+          keepKnownChips(input.slice.content),
+          { open: 'preserve' }
+        ),
+      });
+    }),
+  ],
   shortcuts: {
     send: {
       keys: 'alt?+ctrl?+meta?+enter',
@@ -212,6 +250,7 @@ export function PromptEditor({
   ref,
   value,
   onChange,
+  onFiles,
 }: {
   className?: string;
   disabled?: boolean;
@@ -225,6 +264,8 @@ export function PromptEditor({
   value?: string;
   /** Called with the message after each change, and before Enter sends. */
   onChange?: (message: string) => void;
+  /** Called with the files of a paste or a drop, which never enter the text. */
+  onFiles?: (files: File[]) => void;
 }) {
   const editor = useCreateEditor(
     {
@@ -321,6 +362,38 @@ export function PromptEditor({
         data-slot="input-group-control"
         disabled={disabled}
         placeholder={placeholder}
+        onDragOver={(event) => {
+          if (disabled || !event.dataTransfer.types.includes('Files')) {
+            return undefined;
+          }
+
+          event.preventDefault();
+
+          return true;
+        }}
+        onDrop={(event) => {
+          const files = Array.from(event.dataTransfer.files);
+
+          if (files.length === 0) return undefined;
+          if (!disabled && !event.defaultPrevented) {
+            event.preventDefault();
+            // A host's document drop listener would add the files again.
+            event.stopPropagation();
+            onFiles?.(files);
+          }
+
+          return true;
+        }}
+        onPaste={(event) => {
+          const files = Array.from(event.clipboardData.files);
+
+          if (files.length === 0) return undefined;
+
+          event.preventDefault();
+          if (!disabled) onFiles?.(files);
+
+          return true;
+        }}
       />
     </EditorRoot>
   );
