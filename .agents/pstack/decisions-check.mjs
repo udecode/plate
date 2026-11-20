@@ -121,7 +121,7 @@ import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
-import { acceptedWord, BIG_STEP, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, liftsStep, NOT_PASSED, overBudget, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STAGE_PHASES, stageOfRow, STATUSES, statusOf, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
+import { acceptedWord, BIG_STEP, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, liftsStep, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STAGE_PHASES, stageOfRow, STATUSES, statusOf, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -155,13 +155,30 @@ const roundState = (lines) => {
   for (const line of lines) trackRound(state, line);
   return state;
 };
+const ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, '\\': 92 };
+// Git quotes a path that holds a double quote, a backslash, a control character or, unless core.quotePath is false, a non-ASCII byte, as "b/caf\303\251.js".
+const unquote = (quoted) => {
+  const bytes = [];
+  for (let at = 0; at < quoted.length; at += 1) {
+    const octal = quoted.slice(at + 1, at + 4);
+    if (quoted[at] !== '\\') bytes.push(quoted.charCodeAt(at));
+    else if (/^[0-7]{3}$/u.test(octal)) {
+      bytes.push(Number.parseInt(octal, 8));
+      at += 3;
+    } else {
+      at += 1;
+      bytes.push(ESCAPES[quoted[at]] ?? quoted.charCodeAt(at));
+    }
+  }
+  return Buffer.from(bytes).toString('utf8');
+};
 function patchLines(patch, excluded) {
   const count = { product: 0, other: 0 };
   let file = null;
   let inHunk = false;
   for (const line of patch.split('\n')) {
-    const header = line.match(/^diff --git a\/.+ b\/(.+)$/u);
-    if (header) [file, inHunk] = [header[1], false];
+    const header = line.match(/^diff --git (?:a\/.+ b\/(.+)|"a\/.+" "b\/(.+)")$/u);
+    if (header) [file, inHunk] = [header[1] ?? unquote(header[2]), false];
     else if (line.startsWith('@@')) inHunk = true;
     else if (file && inHunk && /^[+-]/u.test(line)) count[excluded(file) ? 'other' : 'product'] += 1;
   }
@@ -177,20 +194,24 @@ const gitIn = (dir, ...args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', maxBuffer: 1 << 28 });
   return run.error || run.status !== 0 ? null : run.stdout.replace(/\n$/u, '');
 };
-function buildBudgetProblems(path, lines, where) {
+function buildBudgetProblems(path, existing, rows, where) {
+  const builds = rows.flatMap((row, at) => (row.split('\t')[1] === 'build' ? [at] : []));
   const dir = dirname(resolve(path));
-  const top = existsSync(dir) ? gitIn(dir, 'rev-parse', '--show-toplevel') : null;
-  if (top === null) return [];
-  const config = projectConfig();
-  const step = stepLines(top, config, gitIn);
+  const top = builds.length > 0 && existsSync(dir) ? gitIn(dir, 'rev-parse', '--show-toplevel') : null;
+  if (!top) return [];
+  const config = projectConfig(top);
   const { lines: budget } = stepBudget(config);
-  if (!step || step.product <= budget) return [];
-  const { logs, planned } = stepRecords(top, config, gitIn, step.files);
+  const step = stepLines(top, config, gitIn);
+  const records = step && step.product > budget ? stepRecords(top, config, gitIn, step.files) : null;
+  if (!records) return [];
   const log = join(realpathSync(dir), basename(path));
-  const dated = /^\d{4}-\d{2}-\d{2}-[^/]+\.decisions\.tsv$/u.test(basename(log)) && dirname(log) === join(top, config.plans || 'docs/plans');
-  if (!planned && !dated) return [];
-  if (liftsStep(lines.join('\n')) || logs.some((other) => other !== log && liftsStep(readFileSync(other, 'utf8')))) return [];
-  return [`${where}: ${top}'s change since ${step.base} ${overBudget(step.product, budget)}. Split it before you log more of its build`];
+  const dated = /^\d{4}-\d{2}-\d{2}-[^/]+\.decisions\.tsv$/u.test(basename(log)) && dirname(log) === join(top, plansOf(config));
+  if (!records.planned && !dated) return [];
+  const others = records.logs.filter((other) => other !== log);
+  if (others.some((other) => liftsStep(readFileSync(other, 'utf8')))) return [];
+  const own = dated || records.logs.includes(log);
+  const unlifted = builds.find((at) => !own || !liftsStep([...existing, ...rows.slice(0, at + 1)].join('\n')));
+  return unlifted === undefined ? [] : [`${where(unlifted)}: ${top}'s change since ${step.base} ${overBudget(step.product, budget)}. Split it before you log more of its build`];
 }
 const capMessage = ({ rounds }) =>
   `this would be panel round ${rounds + 1} since the last restart, past the cap of ${roundCap()}, and the last round applied fewer than ${EXTRA_ROUND_FIXES} critical findings, or already was the one extra round. Stop reviewing: settle each open finding as applied, dismissed on its proof, recorded when no user can reach its case, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, then build the plan or land the step. A built: row for a step this log has not built yet, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again; a built: row for a step already built does not`;
@@ -232,8 +253,8 @@ const currentLedger = () => {
   return ledgerTasks;
 };
 
-function projectConfig() {
-  const config = '.agents/pstack.json';
+function projectConfig(root = '.') {
+  const config = join(root, '.agents/pstack.json');
   return existsSync(config) ? JSON.parse(readFileSync(config, 'utf8')) : {};
 }
 
@@ -665,8 +686,7 @@ function append(path, batch, run, miss = null) {
     recordRow(chips, cells, stamp);
     rows.push(row);
   }
-  const build = rows.findIndex((row) => row.split('\t')[1] === 'build');
-  if (found.length === 0 && build !== -1) found.push(...buildBudgetProblems(path, [...existing, ...rows], count > 1 ? `${path} (new row ${build + 1 - attribution.length})` : `${path} (new row)`));
+  if (found.length === 0) found.push(...buildBudgetProblems(path, existing, rows, (at) => (count > 1 ? `${path} (new row ${at + 1 - attribution.length})` : `${path} (new row)`)));
   if (found.length > 0) return found;
   const added = rows.map((row) => `${row}\n`).join('');
   if (text !== null) {

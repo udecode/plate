@@ -56,7 +56,8 @@
 // passes. In a checkout of this repository whose change builds a dated plan's
 // step, it also denies an edit of a file the step budget counts once the change
 // is past that budget, as status.mjs's stepLines counts it, unless a changed
-// decision log holds an owner "big step:" row with no later "landed as" row. It
+// decision log holds an owner "big step:" row with no later "landed as" row;
+// that check lets the edit through when git or the check fails. Otherwise it
 // refuses the edit when git or the guard itself fails, because a hook that exits
 // with an error lets the edit through.
 
@@ -397,7 +398,7 @@ const GIT_DEADLINE = performance.timeOrigin + 8000;
 const git = (dir, ...args) => {
   const timeout = Math.floor(GIT_DEADLINE - Date.now());
   if (timeout <= 0) return null;
-  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout, killSignal: 'SIGKILL' });
+  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', maxBuffer: 1 << 28, timeout, killSignal: 'SIGKILL' });
   return run.error || run.status !== 0 ? null : run.stdout.replace(/\n$/u, '');
 };
 const sameDir = (a, b) => {
@@ -484,7 +485,7 @@ function editDenial(config, file, cwd) {
   return `agents never edit the main checkout on ${branch || 'a detached HEAD'}, here ${path}. ${worktree ? `Edit ${join(worktree, path)} in your worktree instead` : 'Move to your own worktree, such as with EnterWorktree, edit there'}, and land it with land.mjs.${artifacts ? ` Only ${artifacts}, which holds the suggested-task ledger, is writable in the main checkout.` : ''}`;
 }
 
-async function budgetDenial(config, file, cwd) {
+function budgetDenial({ liftsStep, overBudget, stepLines, stepRecords }, budget, config, file, cwd) {
   const path = resolvePhysically(resolve(cwd, file.trim().replace(/^~(?=\/|$)/u, homedir())));
   let dir = dirname(path);
   while (!existsSync(dir)) dir = dirname(dir);
@@ -492,18 +493,22 @@ async function budgetDenial(config, file, cwd) {
   const common = top && git(top, 'rev-parse', '--path-format=absolute', '--git-common-dir');
   const ours = git(dirname(fileURLToPath(import.meta.url)), 'rev-parse', '--path-format=absolute', '--git-common-dir');
   if (!common || !ours || !sameDir(common, ours)) return null;
-  const { liftsStep, overBudget, stepBudget, stepLines, stepRecords } = await import('./status.mjs');
-  const budget = stepBudget(config);
   const name = relative(top, path).split(sep).join('/');
-  if (budget.excluded(name)) return null;
+  if (budget.excluded(name) || git(top, 'check-ignore', '-q', '--', name) !== null) return null;
   const step = stepLines(top, config, git);
   if (!step || step.product <= budget.lines) return null;
-  const { logs, planned } = stepRecords(top, config, git, step.files);
-  if (!planned || logs.some((log) => liftsStep(readFileSync(log, 'utf8')))) return null;
-  const companion = config.companion?.dir && existsSync(join(top, config.companion.dir)) ? [`--git-dir=${join(top, config.companion.dir)}`, `--work-tree=${top}`] : null;
-  if (git(top, 'check-ignore', '-q', '--', name) !== null && !(companion && git(top, ...companion, 'ls-files', '--error-unmatch', '--', name) !== null)) return null;
-  return `this worktree's change since ${step.base} ${overBudget(step.product, budget.lines)}. So the guard refuses this edit to ${name} now, while the step is built, instead of at its panel. To split, save the whole diff in the run directory${companion ? `, the ${config.companion.dir} half's too` : ''}, restore in this worktree every file the first lettered step does not need, with \`git restore --source ${step.sha} -- <paths>\` for a tracked file, land that step, then apply the rest in a new worktree for the next one. Tests, specs, fixtures, Markdown, plans and excluded globs stay editable. A "big step:" row counts in a decision log this worktree changes, until that log's next "landed as" row.`;
+  const records = stepRecords(top, config, git, step.files);
+  if (!records?.planned || records.logs.some((log) => liftsStep(readFileSync(log, 'utf8')))) return null;
+  const companion = config.companion?.dir && existsSync(join(top, config.companion.dir));
+  return `this worktree's change since ${step.base} ${overBudget(step.product, budget.lines)}. So the guard refuses this edit to ${name} now, while the step is built, instead of at its panel. To split, save the whole diff in the run directory${companion ? `, the ${config.companion.dir} half's too` : ''}, restore in this worktree every file the first lettered step does not need, with \`git restore --source ${step.sha} -- <paths>\` for a tracked file, land that step, then apply the rest in a new worktree for the next one. Tests, specs, fixtures, Markdown, plans, excluded globs and files git ignores stay editable. A "big step:" row counts in a decision log this worktree changes, until that log's next "landed as" row.`;
 }
+const failOpen = (check) => {
+  try {
+    return check();
+  } catch {
+    return null;
+  }
+};
 
 const input = JSON.parse(readFileSync(0, 'utf8'));
 if (!existsSync(CONFIG)) process.exit(0);
@@ -513,7 +518,13 @@ if (EDIT_TOOLS.has(input.tool_name)) {
   let reason;
   try {
     const config = JSON.parse(readFileSync(CONFIG, 'utf8'));
-    reason = editDenial(config, file, input.cwd ?? process.cwd()) ?? (await budgetDenial(config, file, input.cwd ?? process.cwd()));
+    const cwd = input.cwd ?? process.cwd();
+    reason = editDenial(config, file, cwd);
+    if (!reason) {
+      const status = await import('./status.mjs');
+      const budget = status.stepBudget(config);
+      reason = failOpen(() => budgetDenial(status, budget, config, file, cwd));
+    }
   } catch (error) {
     reason = `the guard failed (${error.message}), so it refuses this edit. Fix the path, git or .agents/pstack.json, then retry.`;
   }

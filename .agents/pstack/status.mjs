@@ -14,13 +14,14 @@ export const globMatcher = (globs = []) => {
 };
 
 const STEP_EXCLUDE = ['**/*.test.*', '**/*.spec.*', '**/__tests__/**', '**/fixtures/**', '**/*.md', '**/*.mdx'];
+export const plansOf = (config) => (config.plans || 'docs/plans').replace(/^(?:\.\/)+/u, '').replace(/\/+$/u, '');
 export const stepBudget = (config) => {
-  const { stepBudget: { lines = 400, exclude = [] } = {}, generated = [], plans = 'docs/plans' } = config;
+  const { stepBudget: { lines = 400, exclude = [] } = {}, generated = [] } = config;
   if (!Number.isInteger(lines) || lines < 1) throw new Error(`.agents/pstack.json: stepBudget.lines is ${JSON.stringify(lines)}, not a whole number of 1 or more`);
-  return { lines, excluded: globMatcher([...STEP_EXCLUDE, `${plans}/**`, ...generated.flatMap((entry) => entry.paths ?? []), ...exclude]) };
+  return { lines, excluded: globMatcher([...STEP_EXCLUDE, `${plansOf(config)}/**`, ...generated.flatMap((entry) => entry.paths ?? []), ...exclude]) };
 };
 export const BIG_STEP = /^big step:\s*\S/u;
-const LANDED_ROW = /^(?:step \S+ )?landed as \S/u;
+const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as \S/iu;
 export const liftsStep = (text) =>
   text.split('\n').reduce((lifted, line) => {
     const [, phase, decision = ''] = line.split('\t');
@@ -30,43 +31,51 @@ export const liftsStep = (text) =>
 export const overBudget = (product, lines) =>
   `changes ${product} product lines, past the step budget of ${lines}. Split the step into lettered steps that land one by one, such as step 4a and step 4b, each with its own diff round, or log an owner row whose decision starts "big step:" and quotes the owner`;
 
+// Git counts a symlink as the one line of its target path.
 const countLines = (path) => {
   let text;
   try {
+    if (lstatSync(path).isSymbolicLink()) return 1;
     text = readFileSync(path);
   } catch {
     return 0;
   }
-  if (text.includes(0)) return 0;
+  if (text.length === 0 || text.includes(0)) return 0;
   const lines = text.toString('utf8').split('\n').length;
   return text.at(-1) === 10 ? lines - 1 : lines;
 };
 
-const baseOf = (git, branch) => {
-  const ref = ['upstream', 'origin'].map((remote) => `${remote}/${branch}`).find((name) => git('rev-parse', '--verify', '--quiet', `${name}^{commit}`) !== null);
-  const sha = ref && git('merge-base', 'HEAD', ref);
-  return sha ? { ref, sha } : null;
-};
-const must = (output, what) => {
-  if (output === null) throw new Error(`git ${what} failed`);
-  return output.split('\0').filter(Boolean);
+const split = (output) => (output === null ? null : output.split('\0').filter(Boolean));
+
+const nearestBase = (git, config) => {
+  const names = ['upstream', 'origin'].flatMap((remote) => [config.branch, config.protected].filter(Boolean).map((branch) => `refs/remotes/${remote}/${branch}`));
+  const refs = git('for-each-ref', '--format=%(refname)', ...names)?.split('\n').filter(Boolean) ?? [];
+  let best = null;
+  for (const ref of refs) {
+    const sha = git('merge-base', 'HEAD', ref);
+    const ahead = sha && Number(git('rev-list', '--count', `${sha}..HEAD`));
+    if (sha && Number.isInteger(ahead) && (best === null || ahead < best.ahead)) best = { ref: ref.replace(/^refs\/remotes\//u, ''), sha, ahead };
+  }
+  return best;
 };
 
 export function stepLines(top, config, gitAt) {
   const { excluded } = stepBudget(config);
   const git = (...args) => gitAt(top, ...args);
-  const base = baseOf(git, config.branch);
-  if (!base) return null;
+  const base = nearestBase(git, config);
+  const fields = base && split(git('diff', '--numstat', '-z', base.sha));
+  const untracked = fields && split(git('ls-files', '--others', '--exclude-standard', '-z'));
+  if (!untracked) return null;
   const step = { product: 0, base: `${base.ref} at ${base.sha.slice(0, 10)}`, sha: base.sha.slice(0, 10), files: [] };
-  const fields = must(git('diff', '--numstat', '-z', base.sha), `diff --numstat ${base.sha} in ${top}`);
   for (let at = 0; at < fields.length; at += 1) {
-    const [added, deleted, path] = fields[at].split('\t');
+    const [added, deleted, ...rest] = fields[at].split('\t');
+    const path = rest.join('\t');
     // A rename's numstat leaves the path empty and names the old and new paths in the next two fields.
     const file = path === '' ? fields[(at += 2)] : path;
     step.files.push(file);
     if (added !== '-' && !excluded(file)) step.product += Number(added) + Number(deleted);
   }
-  for (const file of must(git('ls-files', '--others', '--exclude-standard', '-z'), `ls-files --others in ${top}`)) {
+  for (const file of untracked) {
     step.files.push(file);
     if (!excluded(file)) step.product += countLines(join(top, file));
   }
@@ -75,18 +84,23 @@ export function stepLines(top, config, gitAt) {
 
 const companionPlanFiles = (top, config, gitAt, plans) => {
   const companion = (...args) => gitAt(top, `--git-dir=${join(top, config.companion.dir)}`, `--work-tree=${top}`, ...args);
-  const from = baseOf(companion, config.branch);
-  const changed = from ? must(companion('diff', '--name-only', '-z', from.sha), `diff --name-only through ${config.companion.dir} in ${top}`) : [];
-  return [...changed, ...must(companion('ls-files', '--others', '-z', '--', `:(glob)${plans}*`), `ls-files --others through ${config.companion.dir} in ${top}`)];
+  const from = nearestBase(companion, config);
+  const changed = from ? split(companion('diff', '--name-only', '--diff-filter=d', '-z', from.sha)) : [];
+  const companionNew = split(companion('ls-files', '--others', '-z', '--', `:(glob)${plans}/*`, `:(exclude,glob)${plans}/*/**`));
+  const tracked = split(gitAt(top, 'ls-files', '-z', '--', `${plans}/`));
+  if (!changed || !companionNew || !tracked) return null;
+  const publicTracked = new Set(tracked);
+  return [...changed, ...companionNew.filter((file) => !publicTracked.has(file))];
 };
 
 export function stepRecords(top, config, gitAt, files) {
-  const plans = `${config.plans || 'docs/plans'}/`;
-  const all = config.companion?.dir && existsSync(join(top, config.companion.dir)) ? [...files, ...companionPlanFiles(top, config, gitAt, plans)] : files;
+  const plans = plansOf(config);
+  const companion = config.companion?.dir && existsSync(join(top, config.companion.dir)) ? companionPlanFiles(top, config, gitAt, plans) : [];
+  if (companion === null) return null;
   const records = { logs: [], planned: false };
-  for (const file of all) {
-    const name = file.startsWith(plans) ? file.slice(plans.length) : '/';
-    if (name.includes('/')) continue;
+  for (const file of [...files, ...companion]) {
+    const name = file.startsWith(`${plans}/`) ? file.slice(plans.length + 1) : '/';
+    if (name.includes('/') || !existsSync(join(top, file))) continue;
     if (name.endsWith('.decisions.tsv')) records.logs.push(join(top, file));
     if (/^\d{4}-\d{2}-\d{2}-.+\.(?:md|decisions\.tsv)$/u.test(name)) records.planned = true;
   }

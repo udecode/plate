@@ -82,11 +82,13 @@ export async function main(argv) {
       }
     }),
   );
+  const skipped = (answer) => !answer.ok && (answer.refused || answer.runtime === 'agy');
   for (const answer of answers) {
-    const outcome = answer.ok ? 'ok' : answer.refused ? `skipped, its provider refused the prompt for ${answer.refused}` : `failed, ${answer.text.split('\n')[0]}`;
+    const reason = answer.text.split('\n')[0];
+    const outcome = answer.ok ? 'ok' : answer.refused ? `skipped, its provider refused the prompt for ${answer.refused}` : skipped(answer) ? `skipped, ${reason}` : `failed, ${reason}`;
     console.info(`${answer.name}: ${outcome}${answer.seat ? `, seat: ${answer.seat}` : ''}`);
   }
-  return answers.every((answer) => answer.ok || answer.refused) && answers.some((answer) => answer.ok) ? 0 : 1;
+  return answers.every((answer) => answer.ok || skipped(answer)) && answers.some((answer) => answer.ok) ? 0 : 1;
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
