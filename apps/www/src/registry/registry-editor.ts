@@ -405,6 +405,21 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['@ariakit/react', 'platejs'],
+    description:
+      'A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.',
+    files: [
+      {
+        path: 'components/editor/prompt-editor.tsx',
+        type: 'registry:component',
+      },
+    ],
+    meta: { examples: ['prompt-editor-demo'], registry: false },
+    name: 'prompt-editor',
+    title: 'Prompt Editor',
+    type: 'registry:component',
+  },
+  {
     dependencies: [],
     description: 'A menu for inserting different types of blocks.',
     files: [
