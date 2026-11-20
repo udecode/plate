@@ -179,6 +179,8 @@ export type CoreWork = {
   retypeLoweringApplies: number;
   /** Unique properties read to judge whether a retype crosses a unique target. */
   uniqueCrossingChecks: number;
+  /** Lookups of the node that holds a unique value, as `unique.holder` answers. */
+  uniqueHolderQueries: number;
   /** Changed nodes a commit read to move the index of unique values. */
   uniqueHolderReads: number;
   /** Elements the index of unique values was built from. */
@@ -296,6 +298,7 @@ export const coreWork: CoreWork = {
   retypeLowerings: 0,
   retypeLoweringApplies: 0,
   uniqueCrossingChecks: 0,
+  uniqueHolderQueries: 0,
   uniqueHolderReads: 0,
   uniqueIndexedNodes: 0,
   valueGroupReads: 0,

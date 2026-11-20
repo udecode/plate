@@ -119,6 +119,7 @@
           "packages/platejs/src/features/",
           "packages/platejs/src/math/",
           "packages/platejs/src/pagination/",
+          "packages/platejs/src/react/features/field/",
           "packages/platejs/src/yjs/"
         ]
       },
@@ -148,7 +149,8 @@
           "packages/platejs/src/authored/",
           "packages/platejs/src/diff/",
           "packages/platejs/src/features/field/",
-          "packages/platejs/src/pagination/"
+          "packages/platejs/src/pagination/",
+          "packages/platejs/src/react/features/field/"
         ],
         "checks": [
           "e2e:plite-pagination-",

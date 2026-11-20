@@ -165,6 +165,11 @@ export type FieldElement = ElementOf<typeof fieldSchemaPlugin>;
 /** What `insert` takes: a field's kind, role and label, with its settings. */
 export type FieldSettings = Omit<FieldElement, 'children' | 'fieldId' | 'type'>;
 
+/**
+ * What `update` changes. An optional setting given as `undefined` is removed.
+ */
+export type FieldPatch = Partial<FieldSettings>;
+
 /** A field as the plugin reads it, with what the read finds wrong with it. */
 export type FieldRead = Readonly<{
   fieldId: string;
@@ -306,10 +311,10 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           const holder = tx.unique.holder('fieldId', fieldId);
           const node = holder && tx.nodes.get(holder.key)?.[0];
 
-          return node && isField(node) ? node : undefined;
+          return node && isField(node) ? ([node, holder.key] as const) : [];
         };
         const checkCondition = (condition: FieldCondition) => {
-          const problem = conditionProblem(condition, held(condition.ref));
+          const problem = conditionProblem(condition, held(condition.ref)[0]);
 
           if (problem) throw refusal(`its condition has ${problem}`);
         };
@@ -342,6 +347,52 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
               );
             }
           ),
+          /**
+           * Change the settings or value of the field whose `fieldId` is
+           * `fieldId`. A new kind or new options drop each value, default or
+           * options the patch leaves out and the field no longer fits. Throws,
+           * and changes nothing, when no field holds `fieldId`, a setting the
+           * patch names does not fit the field's kind, the patch removes `kind`,
+           * `role` or `label`, or its condition names
+           * the field itself, no field, or a test or value the named field's
+           * kind does not take.
+           */
+          update: txLocate(false, (fieldId: string, patch: FieldPatch) => {
+            const [field, key] = held(fieldId);
+
+            if (!field) throw refusal(`no field holds "${fieldId}"`);
+
+            const next = { ...field, ...patch };
+            const unfit = SHAPED_SETTINGS.filter(
+              (setting) => !fitsSetting(next, setting)
+            );
+            const named = unfit.find((setting) => setting in patch);
+
+            if (named) {
+              throw refusal(`${named} does not fit a ${next.kind} field`);
+            }
+            if (patch.condition) {
+              if (patch.condition.ref === fieldId) {
+                throw refusal('its condition names the field itself');
+              }
+
+              checkCondition(patch.condition);
+            }
+
+            const reshaped = 'kind' in patch || 'options' in patch;
+
+            tx.nodes.set(
+              {
+                ...patch,
+                ...(reshaped
+                  ? Object.fromEntries(
+                      unfit.map((setting) => [setting, undefined])
+                    )
+                  : {}),
+              },
+              { at: key }
+            );
+          }),
         };
       },
     };

@@ -31,6 +31,7 @@
       "platejs/excalidraw": ["./src/excalidraw/index.ts"],
       "platejs/excalidraw/react": ["./src/excalidraw/react/index.ts"],
       "platejs/field": ["./src/features/field/index.ts"],
+      "platejs/field/react": ["./src/react/features/field/index.ts"],
       "platejs/find": ["./src/features/find/index.ts"],
       "platejs/footnote": ["./src/features/footnote/index.ts"],
       "platejs/footnote/react": ["./src/react/features/footnote/index.ts"],

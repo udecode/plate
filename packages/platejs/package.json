@@ -167,6 +167,11 @@
       "import": "./dist/features/field/index.js",
       "default": "./dist/features/field/index.js"
     },
+    "./field/react": {
+      "types": "./dist/react/features/field/index.d.ts",
+      "import": "./dist/react/features/field/index.js",
+      "default": "./dist/react/features/field/index.js"
+    },
     "./find": {
       "types": "./dist/features/find/index.d.ts",
       "import": "./dist/features/find/index.js",
@@ -400,6 +405,7 @@
     "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
     "lint:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw-react",
     "lint:partition:field": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs field",
+    "lint:partition:field-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs field-react",
     "lint:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find",
     "lint:partition:footnote": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote",
     "lint:partition:footnote-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs footnote-react",

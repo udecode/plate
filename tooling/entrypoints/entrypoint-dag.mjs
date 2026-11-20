@@ -106,6 +106,7 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'date',
   'details',
   'upload',
+  'field',
   'footnote',
   'ink',
   'layout',

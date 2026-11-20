@@ -26,6 +26,7 @@
     "../src/react/features/date/**/*",
     "../src/react/features/details/**/*",
     "../src/react/features/upload/**/*",
+    "../src/react/features/field/**/*",
     "../src/react/features/footnote/**/*",
     "../src/react/features/ink/**/*",
     "../src/react/features/layout/**/*",

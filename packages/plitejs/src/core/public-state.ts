@@ -2302,6 +2302,8 @@ const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
     );
   }
 
+  countCoreWork('uniqueHolderQueries');
+
   const roots = getEditorDocumentRoots(editor);
   function* publishedThenDraftHolders() {
     yield* indexedHoldersOf(publishedUniqueIndex(editor), property, value);
