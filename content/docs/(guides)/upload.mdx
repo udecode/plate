@@ -205,25 +205,37 @@ export const MyFileDropPlugin = definePlugin('myFileDrop', {
 
 An editor whose `UploadPlugin` has a `client`, a `getUrl`, and a rule with
 `kind: 'image'` uploads the pictures whose bytes come with a paste. These are
-raster `data` addresses in pasted HTML or in the editor's own clipboard, and the
+raster `data` addresses in pasted HTML or in the editor's own clipboard, the
 pictures that [Word paste](/docs/docx#paste-from-word) rebuilds from the RTF
-copy. Each picture becomes an upload draft where it landed, so the document
-never stores its `data` address. Its upload starts after the paste commits, and
-the finished image keeps the picture's alt text, width, and caption. Without
-those three settings, pasted pictures stay as pasted. The copied `UploadKit`
-sets all three.
+copy, and pictures with a `blob` address, such as a picture copied from Word in
+Safari. A `blob` address works only in the tab that pasted it, so the paste
+reads its bytes while it runs. Each picture becomes an upload draft where it
+landed, so the document never stores its `data` or `blob` address. Its upload
+starts after the paste commits, and the finished image keeps the picture's alt
+text, width, and caption. Without those three settings, pasted pictures stay as
+pasted. The copied `UploadKit` sets all three.
+
+A `blob` picture uploads only when its bytes are a GIF, JPEG, PNG or WebP
+image. Its file takes that type from the bytes and a name such as `image.png`.
+A `blob` picture whose read fails, or whose bytes are of another kind, such as
+SVG, keeps its pasted address while the other pictures upload. The paste reads
+with a synchronous request. So a page whose Content Security Policy sets
+`connect-src` without `blob:` keeps every `blob` picture as pasted, and so does
+a page whose Permissions Policy blocks `sync-xhr` in Chromium. A real Word paste
+in Safari is not yet tested.
 
 The paste checks its pictures as one batch against `rules` and `maxFiles`, as
-`submit` does. When those rules refuse the batch, every picture stays as pasted with
-its `data` address, so saves and collaborators still get its bytes, and
-`onError` runs once. The kit's image rule allows three files, so a paste of four
-or more pictures keeps them all as pasted. A picture whose address does not
-decode, or whose draft cannot sit where the picture landed, also stays as
-pasted while the other pictures upload.
+`submit` does. When those rules refuse the batch, every picture keeps the
+address it was pasted with, and `onError` runs once. The paste reads its
+pictures in document order and stops once it holds more than the batch allows,
+so `onError` gets the pictures read up to then. The kit's image rule allows
+three files, so a paste of four or more pictures keeps them all as pasted. A
+picture whose address does not decode, or whose draft cannot sit where the
+picture landed, also stays as pasted while the other pictures upload.
 
 One undo removes the paste and its drafts and stops their uploads. Redo brings
-back the drafts without starting an upload. In a Suggesting view, the drafts and
-the finished images are the view author's suggestion.
+back the drafts without starting an upload. A paste in a Suggesting view or into
+a preview keeps every picture as pasted.
 
 A paste does not upload:
 
@@ -231,8 +243,8 @@ A paste does not upload:
   address, and the image plugin turns a plain-text picture link into such an
   image.
 - A picture that was in the document before the paste.
-- A picture from Word in Safari. Its `blob` address works only in the tab that
-  pasted it.
+- A picture inside a content root the paste adds, such as a copied card's body.
+  A paste that adds such a root also keeps every `blob` picture as pasted.
 
 An HTML drop uploads its pictures the same way. With the React `UploadPlugin`,
 a drop that carries files uploads those files instead, as
