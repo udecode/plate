@@ -50,6 +50,40 @@ const editor = createEditor({
 
 </Steps>
 
+## 语法颜色 [#syntax-colors]
+
+代码块组件通过 CSS 变量为高亮标记着色，因此同一组值同时作用于编辑器、CodeMirror
+视图和静态输出。安装 `code-block` 或 `code-block-static` 会把它们的浅色和深色值加入你的
+样式表，在那里修改即可：
+
+```css
+:root {
+  --syntax-keyword: #d73a49;
+  --syntax-string: #032f62;
+}
+
+.dark {
+  --syntax-keyword: #ee6960;
+  --syntax-string: #3593ff;
+}
+```
+
+| 变量 | 标记 |
+| --- | --- |
+| `--syntax-keyword` | 关键字、类型、`this` 等语言名称、文档标签和模板标签 |
+| `--syntax-constant` | 数字、字面量、属性、运算符、元信息和变量 |
+| `--syntax-built-in` | 内置对象和符号 |
+| `--syntax-string` | 字符串和正则表达式 |
+| `--syntax-title` | 函数名和类名 |
+| `--syntax-tag` | 标签名、选择器和引用 |
+| `--syntax-comment` | 注释和公式 |
+| `--syntax-section` | 章节标题 |
+| `--syntax-bullet` | 列表符号 |
+| `--syntax-addition`、`--syntax-addition-background` | diff 中新增的行 |
+| `--syntax-deletion`、`--syntax-deletion-background` | diff 中删除的行 |
+
+Word 导出使用 `docx-export.tsx` 中自己的样式表为代码着色，它读取不到应用的变量，因此将浅色值保留为固定颜色。修改浅色值时也请同步修改这些颜色。
+
 ## 大型代码块
 
 `CodeBlockKit` 将代码保留在原生编辑器 DOM 中。当单个代码块的文本或语法标记使 DOM 变得昂贵时，请显式使用 `CodeBlockCodeMirrorElement`。Plate 仍然拥有规范文本、选择、历史记录、装饰和协作状态；CodeMirror 只拥有代码块挂载后的 DOM 和输入界面。

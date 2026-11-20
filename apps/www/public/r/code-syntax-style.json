@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-syntax-style",
+  "files": [],
+  "cssVars": {
+    "light": {
+      "syntax-keyword": "#d73a49",
+      "syntax-constant": "#005cc5",
+      "syntax-built-in": "#e36209",
+      "syntax-bullet": "#735c0f",
+      "syntax-comment": "#6a737d",
+      "syntax-tag": "#22863a",
+      "syntax-string": "#032f62",
+      "syntax-section": "#005cc5",
+      "syntax-title": "#6f42c1",
+      "syntax-addition": "#22863a",
+      "syntax-addition-background": "#f0fff4",
+      "syntax-deletion": "#b31d28",
+      "syntax-deletion-background": "#ffeef0"
+    },
+    "dark": {
+      "syntax-keyword": "#ee6960",
+      "syntax-constant": "#6596cf",
+      "syntax-built-in": "#c3854e",
+      "syntax-bullet": "#735c0f",
+      "syntax-comment": "#6a737d",
+      "syntax-tag": "#36a84f",
+      "syntax-string": "#3593ff",
+      "syntax-section": "#61a5f2",
+      "syntax-title": "#a77bfa",
+      "syntax-addition": "#ceead5",
+      "syntax-addition-background": "#3c5743",
+      "syntax-deletion": "#e7c7cb",
+      "syntax-deletion-background": "#473235"
+    }
+  },
+  "type": "registry:style"
+}

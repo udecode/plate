@@ -74,6 +74,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-code-syntax-style",
+      "href": "/registry/changelog/2026-11-20-code-syntax-style.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Color code blocks through one set of syntax CSS variables",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-block",
+        "code-block-static",
+        "code-syntax-style",
+        "docx-export"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-codemirror-code-keys",
       "href": "/registry/changelog/2026-11-20-codemirror-code-keys.json",
       "status": "draft",

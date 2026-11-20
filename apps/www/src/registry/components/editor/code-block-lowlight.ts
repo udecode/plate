@@ -392,3 +392,18 @@ export const createCodeBlockLowlight = () => {
 
   return lowlight;
 };
+
+export const codeSyntaxClassName = [
+  String.raw`**:[.hljs-keyword,.hljs-doctag,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language\_]:text-(--syntax-keyword)`,
+  '**:[.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable]:text-(--syntax-constant)',
+  String.raw`**:[.hljs-built\_in,.hljs-symbol]:text-(--syntax-built-in)`,
+  '**:[.hljs-bullet]:text-(--syntax-bullet)',
+  '**:[.hljs-comment,.hljs-code,.hljs-formula]:text-(--syntax-comment)',
+  '**:[.hljs-name,.hljs-quote,.hljs-selector-tag,.hljs-selector-pseudo]:text-(--syntax-tag)',
+  '**:[.hljs-regexp,.hljs-string,.hljs-meta_.hljs-string]:text-(--syntax-string)',
+  '**:[.hljs-section]:font-bold **:[.hljs-section]:text-(--syntax-section)',
+  String.raw`**:[.hljs-title,.hljs-title.class\_,.hljs-title.class\_.inherited\_\_,.hljs-title.function\_]:text-(--syntax-title)`,
+  '**:[.hljs-addition]:bg-(--syntax-addition-background) **:[.hljs-addition]:text-(--syntax-addition)',
+  '**:[.hljs-deletion]:bg-(--syntax-deletion-background) **:[.hljs-deletion]:text-(--syntax-deletion)',
+  '**:[.hljs-emphasis]:italic **:[.hljs-strong]:font-bold',
+].join(' ');

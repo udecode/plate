@@ -47,6 +47,7 @@ export const registryStaticFeatures: Registry['items'] = [
       },
     ],
     name: 'code-block-static',
+    registryDependencies: ['@plate/code-syntax-style'],
     type: 'registry:component',
   },
   {
@@ -422,6 +423,7 @@ export const registryFeatures: Registry['items'] = [
         'code-block-codemirror-demo',
       ],
     },
+    registryDependencies: ['@plate/code-syntax-style'],
   },
   {
     dependencies: [

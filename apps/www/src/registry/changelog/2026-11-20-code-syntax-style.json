@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-code-syntax-style",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-code-syntax-style.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Color code blocks through one set of syntax CSS variables",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-syntax-style",
+      "files": [],
+      "definitionFiles": ["apps/www/src/registry/registry-styles.ts"],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for code-syntax-style."
+        }
+      ]
+    },
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-code-block-color-blocks-through-one-5dea8edc",
+      "kind": "behavior",
+      "summary": "Color highlighted code through `--syntax-*` CSS variables with light and dark values, such as `--syntax-keyword` and `--syntax-string`, which the new `code-syntax-style` item adds to your stylesheet. Change a variable once to restyle the editor, the CodeMirror view and static output. Built-in names such as Python's `str` now take the built-in color, and language names such as `console` and `this`, template tags and template variables take the keyword color.",
+      "details": [],
+      "migrationNotes": [
+        "Copying the new code-block or code-block-static by hand also needs the code-syntax-style variables in your stylesheet; the shadcn CLI adds them."
+      ],
+      "targets": ["code-block", "code-block-static", "code-syntax-style"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-code-syntax-style",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-20-docx-export-code-colors-match-2b41c7e0",
+      "kind": "fix",
+      "summary": "Fix Word export code colors that differed from the editor. Code in a Word file uses the light values of the syntax variables, including the diff background colors and the comment color for inline code in Markdown.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docx-export"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-code-syntax-style",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

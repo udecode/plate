@@ -52,6 +52,43 @@ const editor = createEditor({
 
 </Steps>
 
+## Syntax colors
+
+The code block components color highlighted tokens through CSS variables, so
+one set of values styles the editor, the CodeMirror view and static output.
+Installing `code-block` or `code-block-static` adds their light and dark values
+to your stylesheet. Change them there:
+
+```css
+:root {
+  --syntax-keyword: #d73a49;
+  --syntax-string: #032f62;
+}
+
+.dark {
+  --syntax-keyword: #ee6960;
+  --syntax-string: #3593ff;
+}
+```
+
+| Variable | Tokens |
+| --- | --- |
+| `--syntax-keyword` | Keywords, types, language names such as `this`, doc tags and template tags |
+| `--syntax-constant` | Numbers, literals, attributes, operators, meta and variables |
+| `--syntax-built-in` | Built-ins and symbols |
+| `--syntax-string` | Strings and regular expressions |
+| `--syntax-title` | Function and class names |
+| `--syntax-tag` | Tag names, selectors and quotes |
+| `--syntax-comment` | Comments and formulas |
+| `--syntax-section` | Section headings |
+| `--syntax-bullet` | List bullets |
+| `--syntax-addition`, `--syntax-addition-background` | Added lines in a diff |
+| `--syntax-deletion`, `--syntax-deletion-background` | Removed lines in a diff |
+
+The Word export styles code with its own stylesheet in `docx-export.tsx`, which
+never sees your app's variables, so it holds the light values as fixed colors.
+Change those too when you change the light values.
+
 ## High-scale code blocks
 
 `CodeBlockKit` keeps code in native editor DOM. Use
