@@ -164,12 +164,10 @@ const MentionExample = () => {
         if (range) {
           tx.selection.set(range);
         }
-        tx.nodes.insert({
-          type: 'mention',
-          character,
-          children: [{ text: '' }],
-        });
-        tx.selection.move();
+        tx.nodes.insert([
+          { type: 'mention', character, children: [{ text: '' }] },
+          { text: '' },
+        ]);
       });
     },
     [editor]
@@ -295,6 +293,7 @@ const MentionExample = () => {
                   insertMention(char, target);
                   setTarget(null);
                 }}
+                onMouseDown={(event) => event.preventDefault()}
                 type="button"
               >
                 {char}
