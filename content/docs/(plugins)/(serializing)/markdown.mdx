@@ -114,9 +114,10 @@ in a [table cell](#table-cells), warns under every policy.
 ## Syntax
 
 Plate reads and writes CommonMark plus the tags that installed feature plugins
-register. GFM, math, and emoji come from the [remark plugins](#remark-plugins)
-configured on `MarkdownPlugin`. Registered tags look like HTML, but only
-registered names are tags and nothing is evaluated.
+register. GFM, math, emoji, and [CJK emphasis](#cjk-emphasis) come from the
+[remark plugins](#remark-plugins) configured on `MarkdownPlugin`. Registered
+tags look like HTML, but only registered names are tags and nothing is
+evaluated.
 
 ### Registered tags
 
@@ -534,7 +535,8 @@ root that no mapping reads through `contentRoot` as
 ## Remark plugins
 
 Configure remark plugins once on `MarkdownPlugin`. Every parse and serialize
-operation of that editor uses them. `MarkdownKit` enables GFM, math, and emoji:
+operation of that editor uses them. `MarkdownKit` enables GFM, math, emoji,
+and CJK emphasis:
 
 <ComponentSource name="markdown" />
 
@@ -554,6 +556,38 @@ Standalone functions read the configured `MarkdownPlugin` from `plugins`.
 Remark plugins must be synchronous. An attacher or transformer that returns a
 Promise is a configuration error and throws. The synchronous functions never
 return `Result | Promise<Result>`.
+
+### CJK emphasis
+
+CommonMark leaves `**` literal when punctuation ends the bold text and a letter
+follows, so `这是**重点。**然后继续` stays plain text. `remark-cjk-friendly`
+and `remark-cjk-friendly-gfm-strikethrough` read bold, strikethrough, and `*`
+italic that end in Chinese, Japanese, or Korean punctuation as marks. They read
+a source without CJK characters as CommonMark does. `MarkdownKit` installs
+both. A custom plugin list adds them after `remarkGfm`:
+
+```ts
+import { MarkdownPlugin } from 'platejs/markdown';
+import remarkCjkFriendlyGfmStrikethrough from 'remark-cjk-friendly-gfm-strikethrough/bidi';
+import remarkCjkFriendly from 'remark-cjk-friendly/bidi';
+import remarkGfm from 'remark-gfm';
+
+MarkdownPlugin.configure({
+  initialState: {
+    remarkPlugins: [
+      remarkGfm,
+      remarkCjkFriendly,
+      remarkCjkFriendlyGfmStrikethrough,
+    ],
+  },
+});
+```
+
+Serialize runs the same plugins, so it writes bold and strikethrough next to CJK
+text with plain `**` and `~~`. That needs `mdast-util-to-markdown` 2.1.3 or
+later. `_` keeps CommonMark's rule, and Plate writes italic with `_`, so it
+writes italic next to CJK letters with character references, such as
+`这&#x662F;_斜体。_&#x6587;字`.
 
 ## Results and diagnostics
 
