@@ -1847,7 +1847,8 @@ export const internalExamples: Registry['items'] = (
     },
     {
       dependencies: ['@platejs/test'],
-      description: 'Edit a Hebrew document from right to left.',
+      description:
+        'Edit an Arabic, English or Hebrew document, each in its own direction.',
       files: [
         { path: 'examples/rtl-demo.tsx', type: 'registry:example' },
         {
@@ -1864,6 +1865,8 @@ export const internalExamples: Registry['items'] = (
         '@plate/editor-plugins',
         '@plate/ai',
         '@plate/dnd',
+        'direction',
+        'native-select',
       ],
       type: 'registry:example',
     },

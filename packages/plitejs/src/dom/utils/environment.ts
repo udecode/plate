@@ -6,6 +6,7 @@ export type DOMRootQuirk =
   | 'compositionend-precedes-final-input'
   | 'line-motion-skips-out-of-flow-lines'
   | 'shadow-selection-needs-composed-range'
+  | 'unrendered-caret-needs-rewrite'
   | 'webkit-contextmenu-focus';
 
 export type ResolvedDOMRootFacts = Readonly<{
@@ -132,6 +133,9 @@ const resolveRealmDOMRootFacts = (
   if (engine === 'webkit') {
     quirks.add('shadow-selection-needs-composed-range');
     quirks.add('webkit-contextmenu-focus');
+  }
+  if (engine === 'webkit' || isMobileApple) {
+    quirks.add('unrendered-caret-needs-rewrite');
   }
 
   const facts = freezeDOMRootFacts({

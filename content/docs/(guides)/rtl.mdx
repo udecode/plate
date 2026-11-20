@@ -1,11 +1,11 @@
 ---
 title: Right-to-left
-description: Edit Hebrew, Arabic and other right-to-left documents.
+description: Edit Arabic, Hebrew and other right-to-left documents.
 ---
 
 <ComponentPreview name="rtl-demo" />
 
-Plate lays out each block by its own text. A Hebrew or Arabic paragraph starts at the right, an English paragraph in the same document starts at the left, and the editor UI mirrors with the page.
+Plate lays out each block by its own text. An Arabic or Hebrew paragraph starts at the right, an English paragraph in the same document starts at the left, and the editor UI mirrors with the page.
 
 ## Setup
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="he" dir="rtl">
+    <html lang="ar" dir="rtl">
       <body>
         <DirectionProvider direction="rtl">{children}</DirectionProvider>
       </body>
@@ -33,11 +33,13 @@ export default function RootLayout({
 }
 ```
 
+In a Radix style, pass `dir="rtl"` instead, because Radix's types require it.
+
 Plate's editor UI uses start and end classes, so it needs no `rtl` setting in `components.json` and works the same with one. shadcn's [RTL guide](https://ui.shadcn.com/docs/rtl) covers fonts and the rest of your app.
 
 ## Text direction
 
-Each text block, such as a paragraph, heading or list item, takes its direction from its first Hebrew, Arabic or Latin letter. A block without one, such as an empty line or a line of digits, follows the editor. Typing a first letter in the other script flips the block.
+Each text block, such as a paragraph, heading or list item, takes its direction from its first Arabic, Hebrew or Latin letter. A block without one, such as an empty line or a line of digits, follows the editor. Typing a first letter in the other script flips the block.
 
 Arrow keys follow the block's direction, so in a right-to-left block ArrowLeft moves forward through the text.
 

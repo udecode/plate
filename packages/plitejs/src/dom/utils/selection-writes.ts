@@ -1,5 +1,5 @@
 import { type DOMPoint, getSelection } from './dom';
-import { isWebKitDOMHost } from './environment';
+import { hasDOMHostQuirk, isWebKitDOMHost } from './environment';
 
 /** A selection's anchor and focus as DOM points, in selection direction. */
 export type DOMSelectionPoints = Readonly<{
@@ -13,6 +13,20 @@ export type DOMSelectionRecord = Readonly<{
 }>;
 
 const RECORDS = new WeakMap<Document | ShadowRoot, DOMSelectionRecord>();
+
+// WebKit keeps a caret written into content with no layout box, such as a
+// hidden caption, but never places it, so typing there does nothing until the
+// same points are written again after that content renders.
+const UNPLACED_WRITES = new WeakMap<
+  Document | ShadowRoot,
+  DOMSelectionPoints
+>();
+
+const hasLayoutBox = ([node]: DOMPoint) => {
+  const element = node.nodeType === 1 ? (node as Element) : node.parentElement;
+
+  return !!element && element.getClientRects().length > 0;
+};
 
 export const readDOMSelectionPoints = (
   selection: Selection
@@ -50,24 +64,25 @@ export const recordDOMSelection = (
   source: 'judged' | 'moved'
 ) => {
   RECORDS.set(tree, { points, source });
+  UNPLACED_WRITES.delete(tree);
 };
 
 export const forgetDOMSelectionRecord = (tree: Document | ShadowRoot) => {
   RECORDS.delete(tree);
+  UNPLACED_WRITES.delete(tree);
 };
+
+const touches = (container: Node, points?: DOMSelectionPoints | null) =>
+  !!points &&
+  (container.contains(points.anchor[0]) || container.contains(points.focus[0]));
 
 export const forgetDOMSelectionRecordWithin = (
   tree: Document | ShadowRoot,
   container: Node
 ) => {
-  const points = RECORDS.get(tree)?.points;
-
-  if (
-    points &&
-    (container.contains(points.anchor[0]) ||
-      container.contains(points.focus[0]))
-  ) {
-    RECORDS.delete(tree);
+  if (touches(container, RECORDS.get(tree)?.points)) RECORDS.delete(tree);
+  if (touches(container, UNPLACED_WRITES.get(tree))) {
+    UNPLACED_WRITES.delete(tree);
   }
 };
 
@@ -90,7 +105,9 @@ export const readsSelectionAsHost = (tree: Document | ShadowRoot) =>
  * Write `points` as `tree`'s selection, keeping their direction, or clear its
  * ranges for null, and record what the tree then shows, or the points written
  * where the tree reads its selection as its host. A selection that already
- * shows them is left alone, and so is the record.
+ * shows them is left alone, and so is the record, unless WebKit got them from
+ * a write while their anchor had no layout box, neither the user nor a write
+ * of other points has come since, and the anchor has one now.
  */
 export const writeDOMSelection = (
   tree: Document | ShadowRoot,
@@ -106,9 +123,16 @@ export const changeDOMSelection = (
 ) => {
   const selection = getSelection(tree);
 
+  if (!selection) return;
+
+  const rewritesUnplaced =
+    points !== null &&
+    sameDOMSelectionPoints(UNPLACED_WRITES.get(tree) ?? null, points);
+
+  if (!rewritesUnplaced) UNPLACED_WRITES.delete(tree);
   if (
-    !selection ||
-    sameDOMSelectionPoints(readDOMSelectionPoints(selection), points)
+    sameDOMSelectionPoints(readDOMSelectionPoints(selection), points) &&
+    !(rewritesUnplaced && hasLayoutBox(points.anchor))
   ) {
     return;
   }
@@ -122,6 +146,16 @@ export const changeDOMSelection = (
     );
   } else {
     selection.removeAllRanges();
+  }
+
+  if (
+    points &&
+    hasDOMHostQuirk(tree, 'unrendered-caret-needs-rewrite') &&
+    !hasLayoutBox(points.anchor)
+  ) {
+    UNPLACED_WRITES.set(tree, points);
+  } else {
+    UNPLACED_WRITES.delete(tree);
   }
 
   RECORDS.set(tree, {

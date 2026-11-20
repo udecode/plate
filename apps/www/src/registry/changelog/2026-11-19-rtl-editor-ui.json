@@ -546,7 +546,7 @@
     {
       "id": "2026-11-19-rtl-editor-ui-9",
       "kind": "behavior",
-      "summary": "Add an example of a Hebrew document edited from right to left",
+      "summary": "Add an example that switches between Arabic, English and Hebrew, each in its own direction",
       "details": [],
       "migrationNotes": [],
       "targets": ["rtl-demo"],

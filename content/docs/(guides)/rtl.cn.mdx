@@ -1,11 +1,11 @@
 ---
 title: 从右到左
-description: 编辑希伯来语、阿拉伯语等从右到左书写的文档。
+description: 编辑阿拉伯语、希伯来语等从右到左书写的文档。
 ---
 
 <ComponentPreview name="rtl-demo" />
 
-Plate 按每个块自身的文字排版。希伯来语或阿拉伯语段落从右侧开始，同一文档中的英文段落从左侧开始，编辑器界面随页面一起镜像。
+Plate 按每个块自身的文字排版。阿拉伯语或希伯来语段落从右侧开始，同一文档中的英文段落从左侧开始，编辑器界面随页面一起镜像。
 
 ## 设置
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="he" dir="rtl">
+    <html lang="ar" dir="rtl">
       <body>
         <DirectionProvider direction="rtl">{children}</DirectionProvider>
       </body>
@@ -33,11 +33,13 @@ export default function RootLayout({
 }
 ```
 
+使用 Radix 风格时改传 `dir="rtl"`，因为 Radix 的类型要求这个属性。
+
 Plate 的编辑器界面使用 start 和 end 类，所以不需要在 `components.json` 中设置 `rtl`，设置了也照常工作。字体和应用其余部分见 shadcn 的 [RTL 指南](https://ui.shadcn.com/docs/rtl)。
 
 ## 文字方向
 
-每个文本块，例如段落、标题或列表项，都按其第一个希伯来、阿拉伯或拉丁字母决定方向。没有这类字母的块，例如空行或只有数字的行，跟随编辑器的方向。在块开头输入另一种文字的字母会翻转该块的方向。
+每个文本块，例如段落、标题或列表项，都按其第一个阿拉伯、希伯来或拉丁字母决定方向。没有这类字母的块，例如空行或只有数字的行，跟随编辑器的方向。在块开头输入另一种文字的字母会翻转该块的方向。
 
 方向键跟随块的方向，所以在从右到左的块中，ArrowLeft 在文字中向前移动。
 

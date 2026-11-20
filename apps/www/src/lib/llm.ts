@@ -3,9 +3,15 @@ import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 import { getDocsSidebar } from './docs-page-tree';
 import { isMainDocsHref } from './docs-sidebar';
 import { PLATE_DEFAULT_REGISTRY_STYLE } from './plate-registry-styles';
+import { getRegistryMetadata } from './registry-metadata';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://platejs.org';
 const PLATE_REGISTRY_URL = `${SITE_URL}/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
+const PUBLISHED_REGISTRY_NAMES = new Set(
+  getRegistryMetadata()
+    .items.filter((item) => item.meta?.registry !== false)
+    .map((item) => item.name)
+);
 
 type PlateLLMFrontmatter = {
   description?: string;
@@ -129,5 +135,7 @@ export const processMdxForLLMs = (content: string) =>
   content.replace(
     /<Component(?:Preview|Source)[\s\S]*?name="([^"]+)"[\s\S]*?\/>/g,
     (_match, name: string) =>
-      `[${name} registry content](${PLATE_REGISTRY_URL}/${name}.json)`
+      PUBLISHED_REGISTRY_NAMES.has(name)
+        ? `[${name} registry content](${PLATE_REGISTRY_URL}/${name}.json)`
+        : ''
   );
