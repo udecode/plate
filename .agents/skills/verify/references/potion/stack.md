@@ -1,9 +1,9 @@
 # Potion stack
 
 How to run Potion in an isolated local stack, sign in a test user, drive the
-real web UI and keep the evidence. It serves two callers: Plate's
-[Potion proof lane](../potion.md), and Potion's own sessions, whose `verify`
-skill points here. The primary surface is the web UI at `/` (signed in) and
+real web UI and keep the evidence. It serves Plate's
+[Potion proof lane](../potion.md) and any other Potion task that needs the
+running app. The primary surface is the web UI at `/` (signed in) and
 `/editor` (the public Plate playground). APIs (`/api/trpc`, `/api/[[...route]]`)
 are internals, not proof.
 
@@ -15,14 +15,9 @@ map lists others for the same behavior.
 
 `potion-stack.sh` lives in Plate at `.agents/skills/verify/scripts/`. It runs
 against the Potion checkout that `VERIFY_POTION` names, or the current
-directory when that is unset. Set `STACK` once per shell:
-
-- From a Plate session, use the Plate checkout's copy and name the Potion
-  checkout: `export VERIFY_POTION=<potion checkout>` and
-  `STACK=.agents/skills/verify/scripts/potion-stack.sh`.
-- From a Potion session, run it from the Potion checkout. Plate's main
-  checkout is `plate` beside Potion's main checkout:
-  `STACK="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/../plate/.agents/skills/verify/scripts/potion-stack.sh"`.
+directory when that is unset. Set both once per shell, from the Plate
+checkout: `export VERIFY_POTION=<potion checkout>` and
+`STACK=.agents/skills/verify/scripts/potion-stack.sh`.
 
 Every command below is `"$STACK" <command>`, quoted, because zsh does not split
 an unquoted variable into words. The script writes its state, logs,

@@ -101,6 +101,7 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 | Plugin implementation, inference, colocation and package proof | `plate-plugins` |
 | Plate React/component method, copied UI and registry wiring | `plate-ui`; the law lives in `docs/vision/plate.md` |
 | Package review and sync for the live packages | `plate-next` |
+| Any Potion change, plan, review or sync: Plate first, Plate problems, backend rows, and the registry and `-app` rules | `potion` |
 | Code shape and ownership cleanup | the Refactoring playbook |
 | Retiring internal docs, or compiling their lessons into `docs/research` | `research`'s `maintain` mode |
 | Removing a feature (a hard cut) | the Build playbook with the architecture reference's Hard cut |

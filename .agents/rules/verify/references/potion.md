@@ -21,7 +21,7 @@ package build, an install and a `next dev` compile. When no Plate page or test
 shows the bug, check first whether Potion changed the file. The sync keeps Potion's
 version of a file it changed and saves Plate's as
 `.plate-ui-sync/base/<path>.base`. A bug in Potion's own code is fixed in
-Potion under its own rules, not here.
+Potion as the `potion` skill says, not through this lane.
 
 ## Steps
 
