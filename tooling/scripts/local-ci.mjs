@@ -33,6 +33,7 @@ import {
   STEP_LOG,
 } from './check-steps.mjs';
 import { newPrivateFiles } from './private-files.mjs';
+import { dueRecurrences, recurrenceOffer, runsOf } from './red-recurrence.mjs';
 import {
   clearedHeader,
   EXPECTED_PATH,
@@ -459,6 +460,34 @@ const settle = (step, tip) => {
   return { dismissed: dismissed.status === 0, task: task.id };
 };
 
+const offerRecurrences = () => {
+  if (!existsSync(ledger)) return;
+  const ledgerRows = readFileSync(ledger, 'utf-8').split('\n').filter(Boolean);
+  for (const due of dueRecurrences({
+    events: readEvents(),
+    ledgerRows,
+    now: Date.now(),
+  })) {
+    const { finding, title, tokens } = recurrenceOffer(due, eventsPath);
+    const id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
+    const added = node(main, [
+      ledgerHelper,
+      'append',
+      ledger,
+      'chip',
+      `${id} ${title}`,
+      finding,
+      tokens,
+      'offered',
+    ]);
+    console.info(
+      added.status === 0
+        ? `[local-ci] offered ${id} ${title}; /chips all cards it.`
+        : `[local-ci] the ledger refused the ${due.step} recurrence task: ${`${added.stderr}${added.stdout}`.trim()}`
+    );
+  }
+};
+
 // Fetches next in both halves and returns its tip.
 const fetchNext = () => {
   must(main, ['fetch', '--quiet', 'origin', 'next']);
@@ -674,6 +703,7 @@ const run = (args) => {
           });
         }
       }
+      if (!dry) offerRecurrences();
       next.passed = {
         ...state.passed,
         ...Object.fromEntries([...passing, ...flaked].map((ok) => [ok, tip])),
@@ -708,17 +738,9 @@ const pushGreen = (tip) => {
 };
 
 const streaks = (events) => {
-  const runs = [];
-  for (const event of events.filter((entry) => !entry.dry && !entry.offNext)) {
-    if (runs.at(-1)?.tip !== event.tip) {
-      runs.push({ events: [], tip: event.tip });
-    }
-    runs.at(-1).events.push(event);
-  }
   const open = new Map();
   const closed = [];
-  for (const { events: reported } of runs) {
-    if (reported.every((event) => event.kind === 'broken')) continue;
+  for (const { events: reported } of runsOf(events)) {
     const red = new Map(
       reported
         .filter((event) => event.kind === 'red')

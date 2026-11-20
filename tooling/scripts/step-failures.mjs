@@ -14,6 +14,10 @@ export const EXPECTED_PATH = '.agents/expected-failures.json';
 export const clearedHeader = (step) =>
   `[check] ${step} no longer fails with these, so remove their lines from ${EXPECTED_PATH}:`;
 export const failureKey = ({ file, test }) => `${file ?? '?'} › ${test}`;
+export const failureFile = (key) => {
+  const file = key.slice(0, key.indexOf(' › '));
+  return file === '?' ? null : file;
+};
 export const openExpectedFailures = (root) => {
   const file = join(root, EXPECTED_PATH);
   const common = spawnSync(
