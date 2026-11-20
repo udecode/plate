@@ -186,15 +186,19 @@ test('a worktree outside the folders agents use is asked about even when an arch
   assert.equal(classifyWorktree({ ...facts, agentMade: true })[0], 'safe');
 });
 
-test('a quiet worktree on a codex/ branch beside the checkout is safe, and one on another branch is asked about', () => {
+test('a quiet worktree beside the checkout on a codex/ or claude/ branch or a detached HEAD is safe, and one on another branch is asked about', () => {
   const f = fixture();
   const codex = join(f.root, 'ellie-codex-lane');
+  const claude = join(f.root, 'ellie-claude-lane');
+  const proof = join(f.root, 'ellie-proof');
   git(f.main, 'worktree', 'add', '-q', '-b', 'codex/lane', codex);
-  quietGit(codex, 3);
+  git(f.main, 'worktree', 'add', '-q', '-b', 'claude/lane', claude);
+  git(f.main, 'worktree', 'add', '-q', '--detach', proof);
+  for (const path of [codex, claude, proof]) quietGit(path, 3);
   quietGit(f.orphan, 3);
   const elsewhere = realpathSync(mkdtempSync(join(f.root, 'tmp-')));
   const run = spawnSync(process.execPath, [SCAN, '--repo', f.main, '--no-sizes'], { encoding: 'utf8', env: { ...process.env, TMPDIR: elsewhere } });
-  assert.match(run.stdout, new RegExp(`SAFE .*${codex} `), run.stdout);
+  for (const path of [codex, claude, proof]) assert.match(run.stdout, new RegExp(`SAFE .*${path} `), run.stdout);
   assert.match(run.stdout, new RegExp(`ASK .*${f.orphan}  it sits outside the folders agents make worktrees in`), run.stdout);
 });
 

@@ -507,7 +507,8 @@ function codexCwds(now) {
   return cwds.includes(null) ? null : cwds.filter((cwd) => typeof cwd === 'string').map(real);
 }
 
-// Codex agents also add worktrees beside the checkout, on a codex/ branch.
+// Agents also add worktrees beside the checkout: Codex on a codex/ branch or a
+// detached HEAD for a proof, Claude on a claude/ branch.
 const agentRoots = (main) =>
   [join(main, '.claude', 'worktrees'), join(main, 'docs', 'plans', 'artifacts'), tmpdir(), '/tmp', '/private/tmp'].map(real);
 
@@ -528,7 +529,7 @@ function usageFacts(main, entry, context) {
     session: sessionFor(path, context.sessions),
     codex: context.codex === null ? null : context.codex.filter((cwd) => within(cwd, path)).length,
     hoursQuiet: (context.now - changed) / HOUR,
-    agentMade: agentRoots(main).some((root) => within(path, root)) || entry.branch?.startsWith('refs/heads/codex/') === true,
+    agentMade: agentRoots(main).some((root) => within(path, root)) || 'detached' in entry || /^refs\/heads\/(codex|claude)\//u.test(entry.branch ?? ''),
     nested: nestedIn(path, context.worktrees),
   };
 }
