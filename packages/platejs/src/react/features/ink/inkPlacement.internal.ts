@@ -62,6 +62,8 @@ type Held = Decided &
 
 type Decide = (mark: InkMark, entry: InkIndexedMark) => Decided;
 
+export type InkAudit = (expired: () => boolean) => boolean;
+
 type InkInputs = Readonly<{
   band: InkBand;
   crossing: number;
@@ -366,16 +368,10 @@ export const createInkPlacer = ({
     return index;
   };
 
-  const placeWithin = (span: Span): InkPlaced => {
+  const openPass = (span: Span, fresh: boolean) => {
     const marks = read.marks();
 
-    if (marks.length === 0) {
-      return {
-        bottom: editable.offsetTop + editable.offsetHeight,
-        ink: [],
-        signs: [],
-      };
-    }
+    if (marks.length === 0) return undefined;
 
     const rect = layer.getBoundingClientRect();
     const origin = { left: rect.left, top: rect.top };
@@ -447,7 +443,8 @@ export const createInkPlacer = ({
 
         measured.set(
           key,
-          block && layouts.measure(block.element, block.text, block.box, origin)
+          block &&
+            layouts.measure(block.element, block.text, block.box, origin, fresh)
         );
       }
 
@@ -516,7 +513,7 @@ export const createInkPlacer = ({
     };
 
     const decide: Decide = (mark, entry) => {
-      const kept = stillHeld(mark, entry);
+      const kept = fresh ? undefined : stillHeld(mark, entry);
 
       if (kept) return kept;
 
@@ -588,18 +585,48 @@ export const createInkPlacer = ({
       for (const mark of markIndex.byBlock.get(block.id) ?? []) shown.add(mark);
     }
 
-    return placeInkMarks(
-      view,
-      editable,
-      origin,
-      marks.filter((mark) => shown.has(mark)),
-      entryOf,
-      signOf,
-      decide
-    );
+    return { decide, origin, shown: marks.filter((mark) => shown.has(mark)) };
+  };
+
+  const placeWithin = (span: Span): InkPlaced => {
+    const pass = openPass(span, false);
+
+    return pass
+      ? placeInkMarks(
+          view,
+          editable,
+          pass.origin,
+          pass.shown,
+          entryOf,
+          signOf,
+          pass.decide
+        )
+      : {
+          bottom: editable.offsetTop + editable.offsetHeight,
+          ink: [],
+          signs: [],
+        };
   };
 
   return {
+    audit: (): InkAudit => {
+      const pass = openPass(nearView, true);
+      let at = 0;
+
+      return (expired) => {
+        if (!pass) return false;
+        while (at < pass.shown.length) {
+          const mark = pass.shown[at];
+          const entry = entryOf(mark);
+
+          at += 1;
+          if (entry && !signOf(mark)) pass.decide(mark, entry);
+          if (expired()) break;
+        }
+
+        return at < pass.shown.length;
+      };
+    },
     layoutChanged: (change: InkLayoutChange, within?: Element) => {
       layouts.changed(change, within);
       if (change !== 'words') return;

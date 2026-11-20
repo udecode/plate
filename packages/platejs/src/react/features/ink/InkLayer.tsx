@@ -12,6 +12,7 @@ import { INK_TOUCH_ACTION } from './inkInput.internal';
 import { createInkSurface } from './inkPaint.internal';
 import {
   createInkPlacer,
+  type InkAudit,
   type InkPlaced,
   NOTHING_PLACED,
 } from './inkPlacement.internal';
@@ -29,6 +30,21 @@ export type InkSign = Readonly<{
 }>;
 
 type InkSigns = Omit<InkPlaced, 'ink'>;
+
+const SETTLE_MS = 250;
+const SLICE_MS = 3;
+
+const whenIdle = (run: () => void) => {
+  if (typeof requestIdleCallback === 'function') {
+    const id = requestIdleCallback(run);
+
+    return () => cancelIdleCallback(id);
+  }
+
+  const id = setTimeout(run, 0);
+
+  return () => clearTimeout(id);
+};
 
 const sameSigns = (a: InkSigns, b: InkSigns) =>
   a.bottom === b.bottom &&
@@ -146,6 +162,9 @@ export function InkLayer({
     const page = layer.ownerDocument;
     const win = page.defaultView;
     let frame = 0;
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    let stopSlice: (() => void) | undefined;
+    let audit: InkAudit | undefined;
     const show = ({ ink, ...signs }: InkPlaced) => {
       surface.paint(view.plugin(InkPlugin).read.marks(), ink);
       if (!sameSigns(signs, shown.get())) shown.set(signs);
@@ -154,12 +173,40 @@ export function InkLayer({
       frame = 0;
       show(placer.place());
     };
+    const stopAudit = () => {
+      clearTimeout(settle);
+      stopSlice?.();
+      stopSlice = undefined;
+      audit = undefined;
+    };
+    const slice = () => {
+      const start = performance.now();
+
+      audit ??= placer.audit();
+      const marksLeft = audit(() => performance.now() - start >= SLICE_MS);
+
+      if (marksLeft) {
+        stopSlice = whenIdle(slice);
+
+        return;
+      }
+      stopAudit();
+      show(placer.place());
+    };
+    // A change that moves words and reports nothing, such as a style rule on
+    // a neighbor, leaves a held decision stale, so the audit decides again
+    // once the page has gone quiet.
     const schedule = () => {
       frame ||= requestAnimationFrame(paint);
+      stopAudit();
+      settle = setTimeout(() => {
+        stopSlice = whenIdle(slice);
+      }, SETTLE_MS);
     };
     const onPrint = () => {
       cancelAnimationFrame(frame);
       frame = 0;
+      stopAudit();
       show(placer.placeEvery());
     };
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
@@ -186,6 +233,7 @@ export function InkLayer({
 
     return () => {
       cancelAnimationFrame(frame);
+      stopAudit();
       unsubscribe();
       stopLayout();
       page.removeEventListener('scroll', schedule, { capture: true });

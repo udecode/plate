@@ -32,9 +32,10 @@ export const createInkLayouts = () => {
       element: Element,
       text: string,
       box: InkBox,
-      origin: InkLayerOrigin
+      origin: InkLayerOrigin,
+      fresh = false
     ): InkMeasuredBlock | undefined => {
-      const layout = kept.get(element);
+      const layout = fresh ? undefined : kept.get(element);
 
       if (
         layout &&
@@ -47,6 +48,7 @@ export const createInkLayouts = () => {
       const measured = measureInkBlock(element, text, origin);
 
       if (measured) kept.set(element, measured);
+      else if (fresh) kept.delete(element);
 
       return measured;
     },
