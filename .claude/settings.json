@@ -67,6 +67,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Read|Grep|Glob|Bash|Edit|MultiEdit|Write|NotebookEdit|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/tooling/scripts/read-budget.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/read-budget.mjs\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -75,6 +85,11 @@
           {
             "type": "command",
             "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/pstack/title.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/pstack/title.mjs\" --hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/tooling/scripts/read-budget.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/read-budget.mjs\" --reset",
             "timeout": 10
           }
         ]
