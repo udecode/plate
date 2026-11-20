@@ -98,6 +98,24 @@
       "2026-09-04-code-block-editing-and-syntax",
       "2026-09-03-huge-code-block-demo"
     ],
+    "toc": [
+      "2026-11-20-fix-reduced-motion-scroll",
+      "2026-11-19-rtl-editor-ui",
+      "2026-10-19-toc-six-heading-levels",
+      "2026-10-14-block-void-selection",
+      "2026-10-14-toc-no-active-heading",
+      "2026-10-13-details-heading-titles",
+      "2026-09-09-navigation-view-feedback",
+      "2026-09-07-docx-bookmarks",
+      "2026-09-07-toc-observer",
+      "2026-08-29-fix-toc-scroll-navigation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "diff": [
+      "2026-11-20-fix-reduced-motion-scroll",
+      "2026-11-17-cn-package",
+      "2026-09-15-structural-diff"
+    ],
     "editor": [
       "2026-11-20-isolate-editor-container",
       "2026-11-17-cn-package",
@@ -669,18 +687,6 @@
       "2026-08-12-table-toolbar-focus",
       "2025-11-20-biome-ultracite"
     ],
-    "toc": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-10-19-toc-six-heading-levels",
-      "2026-10-14-block-void-selection",
-      "2026-10-14-toc-no-active-heading",
-      "2026-10-13-details-heading-titles",
-      "2026-09-09-navigation-view-feedback",
-      "2026-09-07-docx-bookmarks",
-      "2026-09-07-toc-observer",
-      "2026-08-29-fix-toc-scroll-navigation",
-      "2026-08-17-flat-editor-registry"
-    ],
     "toc-static": [
       "2026-11-19-rtl-editor-ui",
       "2026-10-19-toc-six-heading-levels",
@@ -1044,7 +1050,6 @@
       "2026-10-13-details-heading-titles",
       "2026-08-29-semantic-details"
     ],
-    "diff": ["2026-11-17-cn-package", "2026-09-15-structural-diff"],
     "editor-dropdown-menu": [
       "2026-11-17-cn-package",
       "2026-11-07-toolbar-overlays-close-on-scroll",

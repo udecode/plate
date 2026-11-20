@@ -115,6 +115,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-fix-reduced-motion-scroll",
+      "href": "/registry/changelog/2026-11-20-fix-reduced-motion-scroll.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Jump instead of smooth scrolling when the reader asks for reduced motion",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["toc", "diff"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-isolate-editor-container",
       "href": "/registry/changelog/2026-11-20-isolate-editor-container.json",
       "status": "draft",

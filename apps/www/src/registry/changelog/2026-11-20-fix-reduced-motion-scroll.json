@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-fix-reduced-motion-scroll",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-fix-reduced-motion-scroll.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Jump instead of smooth scrolling when the reader asks for reduced motion",
+  "targets": [
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "diff",
+      "files": ["apps/www/src/registry/components/editor/diff.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-toc-jump-instead-smooth-scrolling-6b309d1a",
+      "kind": "fix",
+      "summary": "Jump to the heading or change group instead of scrolling smoothly when the reader turns on reduced motion.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc", "diff"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-fix-reduced-motion-scroll",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

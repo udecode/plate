@@ -113,7 +113,11 @@ export function TocElement({
 
                   if (isScroll) {
                     editor.api.dom.scrollIntoView(entry[1], {
-                      behavior: 'smooth',
+                      behavior: window.matchMedia(
+                        '(prefers-reduced-motion: reduce)'
+                      ).matches
+                        ? 'auto'
+                        : 'smooth',
                       block: 'start',
                       scrollMode: 'always',
                     });

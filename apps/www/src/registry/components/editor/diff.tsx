@@ -323,7 +323,9 @@ export function Diff({
     setSelectedChangeId(next.id);
     requestAnimationFrame(() => {
       document.getElementById(`diff-${next.id}`)?.scrollIntoView({
-        behavior: 'smooth',
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'auto'
+          : 'smooth',
         block: 'nearest',
       });
     });
