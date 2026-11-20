@@ -2121,6 +2121,8 @@ function main() {
     );
   }
 
+  if (args.check) return;
+
   for (const output of outputs) {
     console.log(relativePath(output.targetPath));
   }
