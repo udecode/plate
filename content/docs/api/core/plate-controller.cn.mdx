@@ -58,6 +58,8 @@ function ActiveEditorLabel() {
 
 失焦保留活动视图，供工具栏使用。`EditorContent` 管理注册和清理；只有带可编辑 DOM 的视图才参与控制器选择。
 
+所有 `EditorContent` 之外的 UI 获得其所跟随视图中持有光标的根的编辑器。光标位于[白板](/docs/board)便签的文字中时，它获得该白板根的编辑器，因此固定工具栏的按钮会修改便签。插件的 `caret` slot 会跟随光标进入挂载在其 `EditorContent` 内的视图，见[工具栏](/docs/toolbar#act-where-the-caret-is)。
+
 ## 固定交互目标
 
 用 `EditorProvider` 将一组控件绑定到已有编辑器。例如，弹出菜单可以捕获打开时的 `useEditor()` 返回值，并在菜单关闭前通过此 provider 保持目标。

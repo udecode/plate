@@ -13,7 +13,7 @@ those contracts; it does not restate them.
 | --- | --- |
 | live node `component` | `EditorElementProps<typeof FooPlugin>` or `EditorLeafProps<typeof FooPlugin>` |
 | static node `component` | the same descriptor-derived props from `platejs/static` |
-| `beforeEditable` / `afterEditable` | `EditableSiblingProps` |
+| `beforeEditable` / `afterEditable` / `caret` | `EditableSiblingProps` |
 | `beforeContainer` / `afterContainer` | `ContainerSiblingProps` |
 | `wrapRoot` | `WrapRootProps` |
 | `wrapContent` | `WrapContentProps` |

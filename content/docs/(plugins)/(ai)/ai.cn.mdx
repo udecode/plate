@@ -114,7 +114,7 @@ const editor = createEditor({
     AIChatTransportPlugin.configure({
       slots: {
         afterContainer: AILoadingBar,
-        afterEditable: AIMenu,
+        caret: AIMenu,
       },
       initialState: {
         chatOptions: {
@@ -127,7 +127,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。请把复制的 `use-chat` 中的 `aiUser` 加入评论用户：
+`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `caret` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，用 `createEditor({ userId })` 以当前用户创建编辑器，并为 `CommentsPlugin` 配置 `initialComments: { ranges, threads }`，即应用表中的线程行和对应文档版本保存的范围。AI 评论是普通线程，`api.ranges()` 同样会保存它们的范围。请把复制的 `use-chat` 中的 `aiUser` 加入评论用户：
 
 ```tsx
 import { CommentsPlugin } from 'platejs/comments/react';

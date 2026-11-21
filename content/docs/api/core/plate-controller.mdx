@@ -48,7 +48,7 @@ Set `primary` on `EditorRoot`; it defaults to `true`. A view with `primary={fals
 
 ## Editor lookup
 
-`useEditor()` returns the nearest provider’s selected editor and throws when no target exists. `useOptionalEditor()` uses the same selection and returns `null` without a provider or target.
+`useEditor()` returns the nearest provider's selected editor and throws when no target exists. `useOptionalEditor()` uses the same selection and returns `null` without a provider or target.
 
 - Inside `EditorContent`, hooks use that exact editable view, including its root, DOM, and current read-only state.
 - Inside `EditorRoot`, outside its content, UI follows the view of that Plate the user focused or pressed last, then its first mounted view. A Plate without content provides its model.
@@ -58,6 +58,8 @@ Set `primary` on `EditorRoot`; it defaults to `true`. A view with `primary={fals
 A press on a read-only view counts, though it takes no focus. When the view used last unmounts, UI follows the view used before it.
 
 Blur retains the active view for toolbar interaction. `EditorContent` owns registration and cleanup; only views with editable DOM participate in controller selection.
+
+UI outside every `EditorContent` gets the editor of the root that holds the caret in the view it follows. With the caret in the text of a [board](/docs/board) note, it gets the editor of the board's root, so the fixed toolbar's buttons change the note. A plugin's `caret` slot follows the caret into the views mounted inside its `EditorContent`, as [Toolbar](/docs/toolbar#act-where-the-caret-is) describes.
 
 ## Captured interactions
 
@@ -71,7 +73,7 @@ import { EditorProvider } from 'platejs/react';
 </EditorProvider>
 ```
 
-`EditorProvider` accepts `editor: Editor | null` and `children: React.ReactNode`; it creates no editable view. React portals retain this context. Commands read the target’s current permissions. Read-only or unmounted targets reject writes, and captured interactions never select a replacement view automatically.
+`EditorProvider` accepts `editor: Editor | null` and `children: React.ReactNode`; it creates no editable view. React portals retain this context. Commands read the target's current permissions. Read-only or unmounted targets reject writes, and captured interactions never select a replacement view automatically.
 
 ## API Reference
 

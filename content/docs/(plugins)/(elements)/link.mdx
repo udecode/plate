@@ -97,14 +97,14 @@ const editor = createEditor({
     LinkPlugin.configure({
       component: LinkElement,
       slots: {
-        afterEditable: LinkFloatingToolbar,
+        caret: LinkFloatingToolbar,
       },
     }),
   ],
 });
 ```
 
-- `slots.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area for link editing.
+- `slots.caret`: Renders [`LinkFloatingToolbar`](/docs/components/link) after the editable area for link editing, on the view that holds the caret, such as a board note.
 - `.configure({ component: LinkElement })`: Renders link elements with
   [`LinkElement`](/docs/components/link).
 
@@ -172,7 +172,7 @@ LinkPlugin.configure({
 
 Options:
 
-- `allowedSchemes?: string[]` — URL schemes the link feature accepts when it
+- `allowedSchemes?: string[]` lists the URL schemes the link feature accepts when it
   inserts, types, pastes or imports a link, and that a rendered link may use.
   Relative URLs are always allowed. Add a scheme such as `vscode` for app deep links. Script-capable
   destinations, such as `javascript:`, `vbscript:`, and `data:`, are never

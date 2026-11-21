@@ -80,7 +80,7 @@ const fixedToolbarPlugin = definePlugin('fixedToolbar', {
 
 const floatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
-    afterEditable: () => <FloatingToolbar />,
+    caret: () => <FloatingToolbar />,
   },
 });
 
@@ -94,7 +94,7 @@ const editor = createEditor({
 ```
 
 - `slots.beforeContainer`: 在编辑器滚动容器前渲染[`FixedToolbar`](/docs/components/fixed-toolbar)
-- `slots.afterEditable`: 在编辑器后渲染[`FloatingToolbar`](/docs/components/floating-toolbar)作为覆盖层
+- `slots.caret`: 在编辑器后渲染[`FloatingToolbar`](/docs/components/floating-toolbar)作为覆盖层，作用于持有光标的视图
 
 将编辑器容器放在 `EditorFrame` 中。固定工具栏和滚动容器会在同一个有界布局中占据不同的行。
 
@@ -274,8 +274,8 @@ if (quote.installed) {
 
 <API name="FloatingToolbarKit">
 <APIOptions>
-  <APIItem name="slots.afterEditable" type="EditableSiblingComponent">
-    在编辑器后作为覆盖层渲染浮动工具栏。默认包含FloatingToolbarButtons。
+  <APIItem name="slots.caret" type="EditableSiblingComponent">
+    在编辑器后作为覆盖层渲染浮动工具栏，作用于持有光标的视图。默认包含FloatingToolbarButtons。
   </APIItem>
 </APIOptions>
 </API>

@@ -92,14 +92,14 @@ const editor = createEditor({
     LinkPlugin.configure({
       component: LinkElement,
       slots: {
-        afterEditable: LinkFloatingToolbar,
+        caret: LinkFloatingToolbar,
       },
     }),
   ],
 });
 ```
 
-- `slots.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link) 用于链接编辑
+- `slots.caret`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link) 用于链接编辑，作用于持有光标的视图（例如白板便签）
 - `.configure({ component: LinkElement })`：使用
   [`LinkElement`](/docs/components/link) 渲染链接元素
 
@@ -164,7 +164,7 @@ LinkPlugin.configure({
 
 选项：
 
-- `allowedSchemes?: string[]` — 链接功能在插入、输入、粘贴或导入链接时接受的、
+- `allowedSchemes?: string[]` 列出链接功能在插入、输入、粘贴或导入链接时接受的、
   以及渲染时链接可以使用的 URL 协议。相对 URL 始终允许。可以为应用 deep link 添加 `vscode` 等协议。
   `javascript:`、`vbscript:`、`data:` 等可执行脚本的 destination 永远不允许，
   存储的 link URL 也必须满足这一下限。HTML 与 Markdown 导入会保留 destination

@@ -622,7 +622,8 @@ Every other peer joins the new room with the new plugins and schema, and without
 ## Limits
 
 - Find searches only the page, not the text of notes. Word export leaves out a comment on note text and reports a `comment-range` warning.
-- Over note text, the copied toolbars' mark, color, highlight and comment buttons and the AI menu act on the note, as [Toolbar](/docs/toolbar#act-where-the-caret-is) describes. Other buttons, such as Insert, Turn into, lists and links, act on the page.
+- With the caret in a note, the copied toolbars and the AI menu act on the note, as [Toolbar](/docs/toolbar#act-where-the-caret-is) describes. Insert and Turn into then disable the blocks a note cannot hold, such as tables, quotes and code blocks.
+- Typing `/` or a space in an empty note paragraph inserts the character and opens no menu.
 - Moving a paragraph inside a note is refused. Moving the whole shape keeps its text.
 - Undo of a move puts back your old place, even over a teammate's later move of the same shape.
 - A long note gets slower, because a note's lines sync as one unit.

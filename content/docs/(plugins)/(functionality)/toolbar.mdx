@@ -82,7 +82,7 @@ const fixedToolbarPlugin = definePlugin('fixedToolbar', {
 
 const floatingToolbarPlugin = definePlugin('floatingToolbar', {
   slots: {
-    afterEditable: () => <FloatingToolbar />,
+    caret: () => <FloatingToolbar />,
   },
 });
 
@@ -96,7 +96,7 @@ const editor = createEditor({
 ```
 
 - `slots.beforeContainer`: Renders [`FixedToolbar`](/docs/components/fixed-toolbar) before the editor scroll container
-- `slots.afterEditable`: Renders [`FloatingToolbar`](/docs/components/floating-toolbar) as an overlay after the editor
+- `slots.caret`: Renders [`FloatingToolbar`](/docs/components/floating-toolbar) as an overlay after the editor, on the view that holds the caret
 
 Place the editor container in an `EditorFrame`. The fixed toolbar and scroll
 container then occupy separate rows inside the same bounded layout.
@@ -292,8 +292,8 @@ Plugin that renders a floating toolbar that appears on text selection.
 
 <API name="FloatingToolbarKit">
 <APIOptions>
-  <APIItem name="slots.afterEditable" type="EditableSiblingComponent">
-    Renders the floating toolbar as an overlay after the editor. Contains FloatingToolbarButtons by default.
+  <APIItem name="slots.caret" type="EditableSiblingComponent">
+    Renders the floating toolbar as an overlay after the editor, on the view that holds the caret. Contains FloatingToolbarButtons by default.
   </APIItem>
 </APIOptions>
 </API>

@@ -114,7 +114,7 @@ const editor = createEditor({
     AIChatTransportPlugin.configure({
       slots: {
         afterContainer: AILoadingBar,
-        afterEditable: AIMenu,
+        caret: AIMenu,
       },
       initialState: {
         chatOptions: {
@@ -127,7 +127,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with `initialComments: { ranges, threads }`, the thread rows from your tables and the ranges saved with the matching revision. AI comments are ordinary threads, so `api.ranges()` saves their ranges too. List `aiUser` from the copied `use-chat` among the comment users:
+`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `caret` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit`, create the editor with the current user as `createEditor({ userId })`, and configure `CommentsPlugin` with `initialComments: { ranges, threads }`, the thread rows from your tables and the ranges saved with the matching revision. AI comments are ordinary threads, so `api.ranges()` saves their ranges too. List `aiUser` from the copied `use-chat` among the comment users:
 
 ```tsx
 import { CommentsPlugin } from 'platejs/comments/react';

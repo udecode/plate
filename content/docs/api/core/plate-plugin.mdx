@@ -484,6 +484,9 @@ Renders before Editable and receives `{ editableRef }`.
 <APISubListItem parent="slots" name="afterEditable" type="EditableSiblingComponent" optional>
 Renders after Editable and receives `{ editableRef }`.
 </APISubListItem>
+<APISubListItem parent="slots" name="caret" type="EditableSiblingComponent" optional>
+Renders after Editable. While the view that holds the caret is this view or is mounted inside its Editable, such as the text of a board note, the slot's hooks and its `editableRef` prop answer for that view. Otherwise they answer for this view. See [Act where the caret is](/docs/toolbar#act-where-the-caret-is).
+</APISubListItem>
 <APISubListItem parent="slots" name="beforeContainer" type="ContainerSiblingComponent" optional>
 Renders before `EditorContainer` and receives `{ containerRef }`.
 </APISubListItem>
