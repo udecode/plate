@@ -11,6 +11,14 @@ export const refuse = (message: string): never => {
   throw new InkRefusalError(`Ink mark refused: ${message}.`);
 };
 
+const decodes = { copies: 0, marks: 0 };
+
+export const countInkDecode = (kind: keyof typeof decodes) => {
+  decodes[kind] += 1;
+};
+
+export const getInkDecodeMetrics = () => Object.freeze({ ...decodes });
+
 const zigzag = (delta: number) => (delta < 0 ? -delta * 2 - 1 : delta * 2);
 
 const unzigzag = (value: number) =>

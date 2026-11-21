@@ -24,47 +24,30 @@ export const inkOutline = (
     last
   );
 
-type InkOutline = { d: string; mark: InkMark };
-
 type InkPath = Readonly<{
   dx: number;
   dy: number;
   halo: boolean;
-  outline: InkOutline;
+  mark: InkMark;
   path: SVGPathElement;
 }>;
 
 const HALO = ['data-picked', 'stroke', 'stroke-opacity', 'stroke-width'];
 
-const sameInk = (a: InkMark, b: InkMark) =>
-  a === b ||
-  (a.brush.color === b.brush.color &&
-    a.brush.opacity === b.brush.opacity &&
-    a.brush.size === b.brush.size &&
-    a.samples.length === b.samples.length &&
-    a.samples.every(
-      ([x, y, pressure], at) =>
-        x === b.samples[at][0] &&
-        y === b.samples[at][1] &&
-        pressure === b.samples[at][2]
-    ));
-
 export const createInkSurface = (into: SVGGElement) => {
-  const outlines = new Map<string, InkOutline>();
+  const outlines = new WeakMap<InkMark, string>();
   const paths = new Map<string, InkPath>();
   let hidden = false;
   let ink: InkPlaced['ink'] = [];
   let picked: readonly string[] = [];
-  let lastSaved: readonly InkMark[] = [];
 
   const outlineOf = (mark: InkMark) => {
-    let outline = outlines.get(mark.id);
+    let outline = outlines.get(mark);
 
-    if (!outline || !sameInk(outline.mark, mark)) {
-      outline = { d: inkOutline(mark.samples, mark.brush), mark };
-      outlines.set(mark.id, outline);
+    if (outline === undefined) {
+      outline = inkOutline(mark.samples, mark.brush);
+      outlines.set(mark, outline);
     }
-    outline.mark = mark;
 
     return outline;
   };
@@ -76,9 +59,8 @@ export const createInkSurface = (into: SVGGElement) => {
     for (const { dx, dy, mark } of hidden ? [] : ink) {
       const { color, opacity, size } = mark.brush;
       const halo = picked.includes(mark.id);
-      const outline = outlineOf(mark);
       const kept = paths.get(mark.id);
-      const inked = kept?.outline !== outline;
+      const inked = kept?.mark !== mark;
       const moved = kept?.dx !== dx || kept?.dy !== dy;
       const path =
         kept?.path ??
@@ -89,7 +71,7 @@ export const createInkSurface = (into: SVGGElement) => {
 
       if (!kept) path.setAttribute('data-ink-mark', mark.id);
       if (inked) {
-        path.setAttribute('d', outline.d);
+        path.setAttribute('d', outlineOf(mark));
         path.setAttribute('fill', color);
         path.setAttribute('opacity', String(opacity));
       }
@@ -103,7 +85,7 @@ export const createInkSurface = (into: SVGGElement) => {
       }
       if (moved) path.setAttribute('transform', `translate(${dx} ${dy})`);
       if (inked || moved || kept?.halo !== halo) {
-        paths.set(mark.id, { dx, dy, halo, outline, path });
+        paths.set(mark.id, { dx, dy, halo, mark, path });
       }
       left.delete(mark.id);
       shown.push(path);
@@ -125,15 +107,7 @@ export const createInkSurface = (into: SVGGElement) => {
   };
 
   return {
-    paint: (saved: readonly InkMark[], placed: InkPlaced['ink']) => {
-      if (saved !== lastSaved) {
-        const ids = new Set(saved.map((mark) => mark.id));
-
-        lastSaved = saved;
-        for (const id of outlines.keys()) {
-          if (!ids.has(id)) outlines.delete(id);
-        }
-      }
+    paint: (placed: InkPlaced['ink']) => {
       ink = placed;
       draw();
     },

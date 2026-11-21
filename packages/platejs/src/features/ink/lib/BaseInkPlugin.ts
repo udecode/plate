@@ -8,6 +8,7 @@ import {
 } from '../../../facade';
 import { readEditorAuthor } from '../../../lib/editor/editorUser.internal';
 import {
+  countInkDecode,
   decodePoints,
   encodePoints,
   isInkRefusal,
@@ -242,9 +243,21 @@ const isNamed = (records: SavedRecords | undefined, id: string) =>
   idsIn(records?.[COPIES] ?? NO_RECORDS, ['block']).has(id) ||
   idsIn(records?.[GONE] ?? NO_RECORDS, ['next', 'previous']).has(id);
 
-const decodedCopies = new WeakMap<object, Map<string, InkCopy | undefined>>();
+type SavedRecord = Readonly<Record<string, unknown>>;
 
-const decodedMarks = new WeakMap<object, WeakMap<object, readonly InkMark[]>>();
+// The store keeps an unchanged record as the same object, so each decode is
+// cached on its record.
+const decodedCopies = new WeakMap<SavedRecord, InkCopy | undefined>();
+
+// A mark's decode also holds the copy record under each id the mark names, or
+// `undefined` for a missing one, because a copy dropped or saved later changes
+// what the mark decodes to.
+const decodedMarks = new WeakMap<
+  SavedRecord,
+  Readonly<{ mark?: InkMark; named: ReadonlyArray<SavedRecord | undefined> }>
+>();
+
+const markLists = new WeakMap<object, WeakMap<object, readonly InkMark[]>>();
 
 const frozen = <T extends object>(value: T) => {
   for (const field of Object.values(value)) {
@@ -480,8 +493,6 @@ const digest = (text: string) => {
   return hex(h2) + hex(h1);
 };
 
-type SavedRecord = Readonly<Record<string, unknown>>;
-
 const readSaved = <T>(read: () => T): T | undefined => {
   try {
     return read();
@@ -531,6 +542,8 @@ const groupsOf = <T>(
 
 const decodeCopy = (id: string, record: SavedRecord): InkCopy | undefined =>
   readSaved(() => {
+    countInkDecode('copies');
+
     const numbers = savedNumbers(record.lines, 'lines', 5);
     const lines = groupsOf(numbers, 5, (at) => ({
       end: numbers[at],
@@ -560,6 +573,8 @@ const decodeMark = (
   copyOf: (id: string) => InkCopy | undefined
 ): InkMark | undefined =>
   readSaved(() => {
+    countInkDecode('marks');
+
     const shape: SavedShape =
       typeof record.copies === 'string' ? 'packed' : 'beta2';
     const copies = savedList(record.copies, 'copies').map(
@@ -646,6 +661,35 @@ const decodeMark = (
     return frozen({ ...mark, author, blocks, id });
   });
 
+const copyIn = (saved: SavedRecords[string], id: string) => {
+  const record = saved[id];
+
+  if (record && !decodedCopies.has(record)) {
+    decodedCopies.set(record, decodeCopy(id, record));
+  }
+
+  return record && decodedCopies.get(record);
+};
+
+const markIn = (
+  id: string,
+  record: SavedRecord,
+  copies: SavedRecords[string]
+) => {
+  const named = (copiesOf(record) ?? []).map((copy) => copies[copy]);
+  const decoded = decodedMarks.get(record);
+
+  if (decoded?.named.every((copy, at) => copy === named[at])) {
+    return decoded.mark;
+  }
+
+  const mark = decodeMark(id, record, (copy) => copyIn(copies, copy));
+
+  decodedMarks.set(record, { mark, named });
+
+  return mark;
+};
+
 /**
  * Pen marks on a document's text, saved as records of the document value.
  * Its updates add and remove marks, and its reads return them decoded and say
@@ -698,56 +742,39 @@ export const BaseInkPlugin = definePlugin('ink', {
     },
   },
   read: ({ editor, state }) => {
-    const set = (name: string) => state.value().records?.[name];
-    const copyReader = (saved = set(COPIES) ?? NO_RECORDS) => {
-      const decoded =
-        decodedCopies.get(saved) ?? new Map<string, InkCopy | undefined>();
-
-      decodedCopies.set(saved, decoded);
-
-      return (id: string) => {
-        if (!decoded.has(id)) {
-          const record = saved[id];
-
-          decoded.set(id, record && decodeCopy(id, record));
-        }
-
-        return decoded.get(id);
-      };
-    };
-    const copy = (id: string) => copyReader()(id);
+    const set = (name: string) => state.value().records?.[name] ?? NO_RECORDS;
+    const copy = (id: string) => copyIn(set(COPIES), id);
 
     return {
       /** The copy saved under `id`, or `undefined`. */
       copy,
       /** The mark saved under `id`, or `undefined`. */
       mark: (id: string) => {
-        const record = set(MARKS)?.[id];
+        const record = set(MARKS)[id];
 
-        return record && decodeMark(id, record, copyReader());
+        return record && markIn(id, record, set(COPIES));
       },
       /**
        * Every saved mark, oldest first, frozen, as the same list while the
-       * saved marks and copies stay the same.
+       * saved marks and copies stay the same. Each mark stays the same object
+       * while its record and the copies it names stay the same.
        */
       marks: () => {
-        const saved = set(MARKS) ?? NO_RECORDS;
-        const copies = set(COPIES) ?? NO_RECORDS;
-        let byCopies = decodedMarks.get(saved);
+        const saved = set(MARKS);
+        const copies = set(COPIES);
+        let byCopies = markLists.get(saved);
 
         if (!byCopies) {
           byCopies = new WeakMap();
-          decodedMarks.set(saved, byCopies);
+          markLists.set(saved, byCopies);
         }
 
         let marks = byCopies.get(copies);
 
         if (!marks) {
-          const copyOf = copyReader(copies);
-
           marks = Object.freeze(
             Object.entries(saved)
-              .flatMap(([id, record]) => decodeMark(id, record, copyOf) ?? [])
+              .flatMap(([id, record]) => markIn(id, record, copies) ?? [])
               .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1))
           );
           byCopies.set(copies, marks);

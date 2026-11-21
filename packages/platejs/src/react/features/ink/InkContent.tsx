@@ -214,7 +214,7 @@ function InkLayer({
       const { bottom, ink, signs } = next;
 
       painted = next;
-      surface.paint(view.plugin(InkPlugin).read.marks(), ink);
+      surface.paint(ink);
       if (!sameSigns(next, shown.get())) shown.set({ bottom, signs });
     };
     const stopArriving = () => {
@@ -255,7 +255,7 @@ function InkLayer({
 
       moveFrame = 0;
       if (ink !== painted.ink) {
-        surface.paint(view.plugin(InkPlugin).read.marks(), ink);
+        surface.paint(ink);
       }
     };
     const stopAudit = () => {
