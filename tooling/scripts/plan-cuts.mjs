@@ -123,7 +123,7 @@ const isPlan = (path) =>
 const report = (path, problems) =>
   problems.map(({ line, message }) => `${path}:${line}: ${message}`);
 
-const linesBeyondBase = (before, after) => {
+export const linesBeyondBase = (before, after) => {
   const left = new Map();
   for (const line of before.split('\n')) {
     left.set(line, (left.get(line) ?? 0) + 1);

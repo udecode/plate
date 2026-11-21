@@ -8,7 +8,8 @@
   "landChecks": [
     "node tooling/scripts/notify.mjs check",
     "node tooling/scripts/review-ledger.mjs land",
-    "node tooling/scripts/plan-cuts.mjs land"
+    "node tooling/scripts/plan-cuts.mjs land",
+    "node tooling/scripts/registry-copies.mjs land"
   ],
   "freshEnv": [
     "TURBO_FORCE=true",
