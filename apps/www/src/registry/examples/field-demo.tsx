@@ -80,24 +80,35 @@ function FieldOutputs() {
   return (
     <div className="grid gap-4 @4xl:grid-cols-3">
       {Object.entries({ ...outputs, Word: { diagnostics: word } }).map(
-        ([title, result]) => (
-          <section key={title} aria-label={title} className={panel}>
-            <h3 className="text-sm font-medium">{title}</h3>
-            {'data' in result && (
-              <pre className="max-h-64 overflow-auto font-mono text-xs break-all whitespace-pre-wrap">
-                {result.data}
-              </pre>
-            )}
-            <ul className="flex flex-col gap-1 text-sm">
-              {result.diagnostics.map((diagnostic) => (
-                <li key={`${diagnostic.code} ${diagnostic.message}`}>
-                  {diagnostic.code}: {diagnostic.message}
-                  {'count' in diagnostic && ` (${diagnostic.count})`}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )
+        ([title, result]) => {
+          const lines = new Map<string, number>();
+
+          for (const diagnostic of result.diagnostics) {
+            const line = `${diagnostic.code}: ${diagnostic.message}`;
+            const count = 'count' in diagnostic ? diagnostic.count : 1;
+
+            lines.set(line, (lines.get(line) ?? 0) + count);
+          }
+
+          return (
+            <section key={title} aria-label={title} className={panel}>
+              <h3 className="text-sm font-medium">{title}</h3>
+              {'data' in result && (
+                <pre className="max-h-64 overflow-auto font-mono text-xs break-all whitespace-pre-wrap">
+                  {result.data}
+                </pre>
+              )}
+              <ul className="flex flex-col gap-1 text-sm">
+                {[...lines].map(([line, count]) => (
+                  <li key={line}>
+                    {line}
+                    {count > 1 && ` (${count})`}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        }
       )}
     </div>
   );
