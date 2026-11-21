@@ -17,6 +17,7 @@ docs:
 - Styles stored on each shape: fill, outline color, line style, outline width, opacity and text size, each with a default for its shape type. One pick restyles the selected shapes as one undo step, or the next shape while a drawing tool is picked.
 - Commands to insert, move, resize, restack and remove shapes. Undo never splits a call, and in Suggesting mode each call is one suggestion.
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
+- Paste text or a link, and it lands as a selected note at the pointer.
 - Paste an image link or a picture copied from a web page, and it lands as an image shape at the pointer, at the picture's proportions. With [`UploadPlugin`](/docs/upload) installed, picture files that you paste, drop or pick from the toolbar land as image shapes too, and each uploads in its own shape.
 - A camera, a tool, a tool lock and a next style for each mounted view, which the document never stores.
 - Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. Enter places a note, shape or frame, and connects two shapes with an arrow. A screen reader hears the selected shape, the picked tool, the zoom, each removal and each step of a connect, in words your app passes.
@@ -137,6 +138,16 @@ function TextSizeRow() {
   );
 }
 ```
+
+## Pasted text
+
+Paste text or a link while the board has focus, such as after a click on its empty space, and a new note holds it. With the caret in the page's text, the page takes the paste at the caret, even while the pointer is over the board.
+
+- The note lands centered on the pointer, or on the view's center when the pointer is off the board, at the note tool's 200 by 200 size and in the next style. It lands as one undo step, and the board selects it.
+- The note's text takes the paste as a paste into a note's text does, so the paste plugins your editor installs apply. With `LinkPlugin`, a pasted URL becomes a link.
+- With a shape selected, pasted text still lands as a new note, and the selected shape keeps its text.
+- Blank text, or a paste on a read-only board, lands nothing. An image link lands as an image shape, as [Images](#images) says.
+- While a shape's text is being edited, a paste goes into that text.
 
 ## Images
 
@@ -619,6 +630,7 @@ Every other peer joins the new room with the new plugins and schema, and without
 - Markdown keeps the text and pictures of the shapes in stored order and reports what it drops, such as places and arrow ends. Persist the Plate value, or HTML when the board holds only built-in shape types, to keep a board whole.
 - Without `UploadPlugin`, a picture file pasted or dropped on a board lands no shape, the board reports nothing, and the copied toolbar's Image button is disabled. Paste the picture's link, or insert it from code.
 - A paste, drop or pick of more pictures than `UploadPlugin` takes in one batch lands none of them, and `onError` gets a `too-many-files` failure that holds the limit. The copied `UploadKit` takes three pictures in one batch.
+- A pasted note keeps the note tool's 200 by 200 size, so long text runs past its bottom edge.
 - A shape property named after a style mark's key, such as `color`, `backgroundColor`, `fontSize` or `fontFamily`, also styles the shape's text while that mark's plugin is installed. Give the property another name, the way the note uses `fill`.
 - A board inside a note, rotation and cropping a picture are not supported, and the copied board draws no caption under a picture.
 - Drawing with the pen needs a pointer. A keyboard resize keeps the proportions of an image shape only, and cannot resize around the center, which Shift and Alt do on a corner drag.
