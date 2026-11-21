@@ -890,7 +890,9 @@ export type EditorStateViewApi = {
   /**
    * Whether this view's editor root is in Viewing, set through
    * `setEditorViewing` or by a lock on the outermost view. A nested view's own
-   * lock makes it read-only without putting its editor root in Viewing.
+   * lock makes it read-only without putting its editor root in Viewing. An
+   * editor that no editor root shows, such as the one `createEditor` returns,
+   * is in Viewing exactly while it is locked.
    */
   isViewing: () => boolean;
   /** Named view root, or `undefined` for the primary document. */

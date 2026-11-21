@@ -43,6 +43,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-21-mode-button-one-viewing-setter",
+      "href": "/registry/changelog/2026-11-21-mode-button-one-viewing-setter.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep a lock the app set on an editor view when Editing is chosen in the Mode button",
+      "change": {
+        "type": "source",
+        "date": "2026-11-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["mode-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-21-prompt-editor",
       "href": "/registry/changelog/2026-11-21-prompt-editor.json",
       "status": "draft",

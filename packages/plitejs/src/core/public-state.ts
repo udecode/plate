@@ -11167,17 +11167,18 @@ const presentationOf = (editor: AnyPluginEditor) =>
  * Put the editor root that shows this view in Viewing, or take it out. Every
  * view of that editor root, nested ones included, turns read-only at once,
  * while another editor root of the same editor keeps its own Mode. A lock
- * from `setEditorReadOnly` stays on its view and the views nested in it.
- * Throws for an editor that no editor root shows, such as the one
- * `createEditor` returns; pass a mounted view instead.
+ * from `setEditorReadOnly` stays on its view and the views nested in it, and
+ * leaving Viewing keeps it. An editor that no editor root shows, such as the
+ * one `createEditor` returns, has only that lock, so on that editor Viewing
+ * is the lock `setEditorReadOnly` writes and leaving Viewing unlocks it.
  */
 export const setEditorViewing = (editor: AnyPluginEditor, viewing: boolean) => {
   const { presentation } = getEditorRuntime(editor);
 
   if (!presentation) {
-    throw new Error(
-      'setEditorViewing() takes a view that an EditorRoot mounts, not the editor createEditor() returns, because Viewing belongs to the editor root that shows it.'
-    );
+    setEditorReadOnly(editor, viewing);
+
+    return;
   }
   if (setPresentationViewing(presentation, viewing)) {
     notifyPresentationViewState(editor, 'readOnly');

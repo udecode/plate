@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-21-mode-button-one-viewing-setter",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-21-mode-button-one-viewing-setter.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep a lock the app set on an editor view when Editing is chosen in the Mode button",
+  "targets": [
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-21-mode-toolbar-button-keeps-lock-app-4aa606d0",
+      "kind": "behavior",
+      "summary": "The button now writes Viewing through `setEditorViewing` alone, for every editor `useEditor()` returns. Choosing Editing no longer lifts a lock the app set on an editor view, such as one an `EditorProvider` hands the button, and the button shows Viewing while that lock holds.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["mode-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-21",
+          "entry": "2026-11-21-mode-button-one-viewing-setter",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

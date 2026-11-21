@@ -7,18 +7,13 @@ import {
   PenIcon,
   XIcon,
 } from 'lucide-react';
-import {
-  getEditorRuntimeOwner,
-  setEditorReadOnly,
-  setEditorViewing,
-} from 'platejs';
+import { setEditorViewing } from 'platejs';
 import {
   type AuthoredChange,
   AuthoredPlugin,
   type AuthoredView,
 } from 'platejs/authored';
 import {
-  useEditableRef,
   useEditor,
   useEditorSelector,
   useEditorViewState,
@@ -84,18 +79,9 @@ function ModeToolbarButtonContent({
   isSuggesting: boolean | null;
 }) {
   const editor = useEditor();
-  const editableRef = useEditableRef();
   const viewing = useEditorViewState(editor, (view) => view.isViewing());
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
-  const isModelEditor = getEditorRuntimeOwner(editor) === editor;
-  const writeViewing = isModelEditor ? setEditorReadOnly : setEditorViewing;
-  const leaveViewing = () => {
-    const shownInEditingArea = editableRef.current !== null;
-
-    writeViewing(editor, false);
-    if (!shownInEditingArea) setEditorReadOnly(editor, false);
-  };
   const suggestionsInstalled = isSuggesting !== null;
   const value = viewing ? 'viewing' : isSuggesting ? 'suggestion' : 'editing';
 
@@ -117,7 +103,7 @@ function ModeToolbarButtonContent({
         <DropdownMenuRadioGroup
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
-              writeViewing(editor, true);
+              setEditorViewing(editor, true);
 
               return;
             }
@@ -126,12 +112,12 @@ function ModeToolbarButtonContent({
 
               authored.api.setView({ intent: 'propose' });
               if (proposes(authored.read.view())) {
-                leaveViewing();
+                setEditorViewing(editor, false);
               }
 
               return;
             }
-            leaveViewing();
+            setEditorViewing(editor, false);
             if (suggestionsInstalled) {
               editor.plugin(AuthoredPlugin).api.setView({ intent: 'edit' });
             }

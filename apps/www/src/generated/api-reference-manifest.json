@@ -3549,7 +3549,7 @@
           "kind": "type",
           "name": "EditorStateViewApi",
           "runtime": false,
-          "signature": "type EditorStateViewApi = {\n  isComposing: () => boolean;\n  isFocused: () => boolean;\n  isReadOnly: () => boolean;\n  /**\n   * Whether this view's editor root is in Viewing, set through\n   * `setEditorViewing` or by a lock on the outermost view. A nested view's own\n   * lock makes it read-only without putting its editor root in Viewing.\n   */\n  isViewing: () => boolean;\n  /** Named view root, or `undefined` for the primary document. */\n  root: () => NamedRootKey | undefined;\n};",
+          "signature": "type EditorStateViewApi = {\n  isComposing: () => boolean;\n  isFocused: () => boolean;\n  isReadOnly: () => boolean;\n  /**\n   * Whether this view's editor root is in Viewing, set through\n   * `setEditorViewing` or by a lock on the outermost view. A nested view's own\n   * lock makes it read-only without putting its editor root in Viewing. An\n   * editor that no editor root shows, such as the one `createEditor` returns,\n   * is in Viewing exactly while it is locked.\n   */\n  isViewing: () => boolean;\n  /** Named view root, or `undefined` for the primary document. */\n  root: () => NamedRootKey | undefined;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -9259,7 +9259,7 @@
         },
         "platejs:setEditorViewing": {
           "aliases": [],
-          "documentation": "Put the editor root that shows this view in Viewing, or take it out. Every\nview of that editor root, nested ones included, turns read-only at once,\nwhile another editor root of the same editor keeps its own Mode. A lock\nfrom `setEditorReadOnly` stays on its view and the views nested in it.\nThrows for an editor that no editor root shows, such as the one\n`createEditor` returns; pass a mounted view instead.",
+          "documentation": "Put the editor root that shows this view in Viewing, or take it out. Every\nview of that editor root, nested ones included, turns read-only at once,\nwhile another editor root of the same editor keeps its own Mode. A lock\nfrom `setEditorReadOnly` stays on its view and the views nested in it, and\nleaving Viewing keeps it. An editor that no editor root shows, such as the\none `createEditor` returns, has only that lock, so on that editor Viewing\nis the lock `setEditorReadOnly` writes and leaving Viewing unlocks it.",
           "entrypoint": "platejs",
           "kind": "const",
           "name": "setEditorViewing",
@@ -20393,7 +20393,7 @@
           "kind": "type",
           "name": "EditorStateViewApi",
           "runtime": false,
-          "signature": "type EditorStateViewApi = {\n  isComposing: () => boolean;\n  isFocused: () => boolean;\n  isReadOnly: () => boolean;\n  /**\n   * Whether this view's editor root is in Viewing, set through\n   * `setEditorViewing` or by a lock on the outermost view. A nested view's own\n   * lock makes it read-only without putting its editor root in Viewing.\n   */\n  isViewing: () => boolean;\n  /** Named view root, or `undefined` for the primary document. */\n  root: () => NamedRootKey | undefined;\n};",
+          "signature": "type EditorStateViewApi = {\n  isComposing: () => boolean;\n  isFocused: () => boolean;\n  isReadOnly: () => boolean;\n  /**\n   * Whether this view's editor root is in Viewing, set through\n   * `setEditorViewing` or by a lock on the outermost view. A nested view's own\n   * lock makes it read-only without putting its editor root in Viewing. An\n   * editor that no editor root shows, such as the one `createEditor` returns,\n   * is in Viewing exactly while it is locked.\n   */\n  isViewing: () => boolean;\n  /** Named view root, or `undefined` for the primary document. */\n  root: () => NamedRootKey | undefined;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -26897,7 +26897,7 @@
         },
         "platejs/react:setEditorViewing": {
           "aliases": [],
-          "documentation": "Put the editor root that shows this view in Viewing, or take it out. Every\nview of that editor root, nested ones included, turns read-only at once,\nwhile another editor root of the same editor keeps its own Mode. A lock\nfrom `setEditorReadOnly` stays on its view and the views nested in it.\nThrows for an editor that no editor root shows, such as the one\n`createEditor` returns; pass a mounted view instead.",
+          "documentation": "Put the editor root that shows this view in Viewing, or take it out. Every\nview of that editor root, nested ones included, turns read-only at once,\nwhile another editor root of the same editor keeps its own Mode. A lock\nfrom `setEditorReadOnly` stays on its view and the views nested in it, and\nleaving Viewing keeps it. An editor that no editor root shows, such as the\none `createEditor` returns, has only that lock, so on that editor Viewing\nis the lock `setEditorReadOnly` writes and leaving Viewing unlocks it.",
           "entrypoint": "platejs/react",
           "kind": "const",
           "name": "setEditorViewing",

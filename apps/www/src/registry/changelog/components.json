@@ -37,6 +37,24 @@
       "2026-01-28-add-code-drawing-node",
       "2025-11-20-biome-ultracite"
     ],
+    "mode-toolbar-button": [
+      "2026-11-21-mode-button-one-viewing-setter",
+      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
+      "2026-11-19-mode-per-editor-root",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-10-17-accept-all-suggestions",
+      "2026-10-13-suggestions-review-tree",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-07-editor-user",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-toolbar-control-values",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
     "prompt-editor": ["2026-11-21-prompt-editor"],
     "prompt-editor-demo": ["2026-11-21-prompt-editor"],
     "ai-api": [
@@ -317,23 +335,6 @@
       "2026-09-15-history-actions",
       "2026-09-08-multi-editor-toolbar",
       "2026-08-17-flat-editor-registry"
-    ],
-    "mode-toolbar-button": [
-      "2026-11-20-toolbar-history-and-mode-follow-editor-root",
-      "2026-11-19-mode-per-editor-root",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-10-17-accept-all-suggestions",
-      "2026-10-13-suggestions-review-tree",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-07-editor-user",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-toolbar-control-values",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "upload": [
       "2026-11-20-upload-pick-one-file",
