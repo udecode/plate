@@ -236,6 +236,7 @@ const internalPliteBridgeConsumerPattern =
 const internalPliteBridgeConsumerFiles = new Set([
   'apps/plite/src/board-scale/board-probe.ts',
   'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',
+  'apps/www/src/registry/components/editor/field.work.spec.tsx',
 ]);
 const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;

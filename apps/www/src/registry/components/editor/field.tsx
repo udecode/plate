@@ -19,6 +19,7 @@ import {
   EditorElement,
   useEditor,
   useEditorReadOnly,
+  useEditorSelector,
   useElement,
 } from 'platejs/react';
 import * as React from 'react';
@@ -170,10 +171,15 @@ function FieldSettingsForm() {
   const { condition, fieldId, kind, options = [] } = element;
   const update = (patch: FieldPatch) =>
     editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, patch));
-  const targets = editor
-    .plugin(FieldPlugin)
-    .read.fields()
-    .filter((entry) => entry.fieldId !== fieldId);
+  const targets = useEditorSelector(
+    (innerEditor) => innerEditor.plugin(FieldPlugin).read.fields(),
+    {
+      shouldUpdate: (commit) =>
+        !commit ||
+        commit.changed.hasAny('properties') ||
+        commit.changed.hasAny('structure'),
+    }
+  ).filter((entry) => entry.fieldId !== fieldId);
   const target = targets.find(
     (entry) => entry.fieldId === condition?.ref
   )?.node;
