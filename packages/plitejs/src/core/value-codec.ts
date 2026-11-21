@@ -34,15 +34,19 @@ const hasIntrinsicConstructor = (
   );
 };
 
+// This realm's prototypes pass by identity. Any other prototype passes when it
+// looks intrinsic, so a plain value from another realm reads as one.
 const isObjectPrototype = (prototype: object | null) =>
   prototype === null ||
+  prototype === Object.prototype ||
   (Object.getPrototypeOf(prototype) === null &&
     hasIntrinsicConstructor(prototype, objectConstructorSource));
 
 const isArrayPrototype = (prototype: object | null) =>
-  prototype !== null &&
-  hasIntrinsicConstructor(prototype, arrayConstructorSource) &&
-  isObjectPrototype(Object.getPrototypeOf(prototype));
+  prototype === Array.prototype ||
+  (prototype !== null &&
+    hasIntrinsicConstructor(prototype, arrayConstructorSource) &&
+    isObjectPrototype(Object.getPrototypeOf(prototype)));
 
 /**
  * Read one strict JSON array without traversing its values.
