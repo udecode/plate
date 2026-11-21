@@ -502,61 +502,6 @@ export const resolveDOMReach = (
   return handle === owner ? reachDocumentView(mounted, handle, request) : null;
 };
 
-export const resolveSelectionView = <TView extends object>(
-  view: TView
-): TView | null => {
-  if (!hasEditorRuntime(view)) return null;
-
-  const owner = getEditorRuntimeOwner(view);
-  const root = getBaseCallRoot(owner);
-
-  if (getEditorRuntimeRoot(view) === root) return view;
-
-  const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(owner);
-
-  if (!mounted) return null;
-
-  const element = findEditorDOMRootRuntime(view)?.rootRef.current;
-
-  if (!element) return null;
-
-  const presentation = getOwnViewPresentation(view);
-  const inside = (candidate: AnyEditor) => {
-    let inner: Element | null | undefined =
-      findEditorDOMRootRuntime(candidate)?.rootRef.current;
-
-    if (
-      getEditorRuntimeRoot(candidate) !== root ||
-      getOwnViewPresentation(candidate) !== presentation ||
-      inner === element
-    ) {
-      return false;
-    }
-    while (inner && inner !== element) inner = composedParent(inner);
-
-    return inner === element;
-  };
-  const last = mounted.lastFocused;
-
-  return (pickView(mounted, inside) ??
-    (last && mounted.views.has(last) && inside(last)
-      ? last
-      : null)) as TView | null;
-};
-
-export const subscribeSelectionView = (view: object, listener: () => void) => {
-  let mounted = hasMountedDOMRoot(view);
-
-  // Unmounting releases the presentation from a React insertion effect after
-  // this view's Editable has gone, and React forbids updates there.
-  return subscribeDOMReach(documentOf(view), () => {
-    const wasMounted = mounted;
-
-    mounted = hasMountedDOMRoot(view);
-    if (mounted || wasMounted) listener();
-  });
-};
-
 export const resolveDOMTargetView = (
   handle: object,
   node: Node | null

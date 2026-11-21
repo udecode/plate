@@ -105,7 +105,6 @@ export {
   useComposedRef,
   useIsomorphicLayoutEffect,
 } from './internal/react-helpers';
-export * from './components/EditorSelectionView';
 export * from './components/NodeSelection';
 export * from './components/Plate';
 export * from './components/PlateContainer';

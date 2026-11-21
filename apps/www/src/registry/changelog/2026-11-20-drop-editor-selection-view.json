@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-20-drop-editor-selection-view",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-20-drop-editor-selection-view.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Drop the EditorSelectionView wrapper from the toolbars and the AI menu",
+  "targets": [
+    {
+      "name": "fixed-toolbar",
+      "files": ["apps/www/src/registry/components/editor/fixed-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-20-drop-editor-selection-view-1",
+      "kind": "fix",
+      "summary": "Drop the `EditorSelectionView` wrapper, which `platejs/react` no longer exports. The fixed toolbar already acts on the root that holds the caret, and the floating toolbar and the AI menu render in the `caret` slot, so they act on a board note's text without it. Over note text, the floating toolbar shows the same buttons as over page text.",
+      "details": [],
+      "migrationNotes": [
+        "Drop the `EditorSelectionView` wrapper, which `platejs/react` no longer exports."
+      ],
+      "targets": [
+        "fixed-toolbar",
+        "floating-toolbar",
+        "ai-menu",
+        "comment-toolbar-button"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-20",
+          "entry": "2026-11-20-drop-editor-selection-view",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

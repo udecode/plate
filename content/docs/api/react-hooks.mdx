@@ -533,9 +533,9 @@ const referenceRect = geometry?.boundingRect ?? null;
 - `boundingRect`, `focusRect` and `rects` cover the whole range, scrolled out
   of view or not. Use `boundingRect` to place a toolbar and `focusRect` to
   place a caret or label.
-- `clipRect` is the part of the `EditorContent` anyone can see: the viewport
-  cut by every box that clips it, its own box included when it scrolls itself.
-  It is `null` when no part of the `EditorContent` shows.
+- `clipRect` is the area where the `EditorContent`'s text can show: the
+  viewport cut by every box that clips it, its own box included when its
+  overflow clips. It is `null` when that area is empty.
 - `visible` holds the same three boxes cut to `clipRect`. A line that only
   touches the edge is dropped, and a caret on the edge stays. It is `null`
   when no part of the range shows.

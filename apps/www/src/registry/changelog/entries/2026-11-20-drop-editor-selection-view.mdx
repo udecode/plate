@@ -1,0 +1,12 @@
+---
+id: 2026-11-20-drop-editor-selection-view
+date: 2026-11-20
+status: draft
+kind: wiring
+summary: 'Drop the EditorSelectionView wrapper from the toolbars and the AI menu'
+change: { 'type': 'source', 'date': '2026-11-20', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+- **`fixed-toolbar`**, **`floating-toolbar`**, **`ai-menu`**, **`comment-toolbar-button`**: Drop the `EditorSelectionView` wrapper, which `platejs/react` no longer exports. The fixed toolbar already acts on the root that holds the caret, and the floating toolbar and the AI menu render in the `caret` slot, so they act on a board note's text without it. Over note text, the floating toolbar shows the same buttons as over page text.

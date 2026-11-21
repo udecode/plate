@@ -144,10 +144,7 @@ export const intersectClipChain = (
   let bottom = Math.min(rect.bottom, clientHeight);
 
   for (const box of chain.boxes) {
-    const clip =
-      box.element === chain.element
-        ? rect
-        : box.element.getBoundingClientRect();
+    const clip = box.element.getBoundingClientRect();
     const scaleX = box.offsetWidth ? clip.width / box.offsetWidth : 1;
     const scaleY = box.offsetHeight ? clip.height / box.offsetHeight : 1;
 

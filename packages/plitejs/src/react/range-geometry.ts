@@ -276,10 +276,17 @@ type GeometryCoordinator = Readonly<{
   syncBinding: (editable: HTMLElement) => void;
 }>;
 
-const readVisibleArea = (editable: HTMLElement, chain: ClipChain | null) => {
-  const rect = chain
-    ? intersectClipChain(chain, editable.getBoundingClientRect())
-    : null;
+const EVERYWHERE = Object.freeze({
+  bottom: Infinity,
+  height: Infinity,
+  left: -Infinity,
+  right: Infinity,
+  top: -Infinity,
+  width: Infinity,
+});
+
+const readClipArea = (chain: ClipChain | null) => {
+  const rect = chain ? intersectClipChain(chain, EVERYWHERE) : null;
 
   return rect ? boxRect(rect.left, rect.top, rect.right, rect.bottom) : null;
 };
@@ -383,7 +390,7 @@ const createGeometryCoordinator = (
     const lease = rootLeases.get(editable);
 
     if (!lease) {
-      return readVisibleArea(editable, walkClipChain(editable, { self: true }));
+      return readClipArea(walkClipChain(editable, { self: true }));
     }
     if (lease.chain && hasMoved(lease.chain)) lease.stale = true;
     if (lease.stale) {
@@ -394,7 +401,7 @@ const createGeometryCoordinator = (
     }
     if (lease.area !== undefined) return lease.area;
 
-    lease.area = readVisibleArea(editable, lease.chain);
+    lease.area = readClipArea(lease.chain);
     // A box can move with no event, such as when content above it grows, so
     // an area serves the reads of one task at most.
     if (!expiring) {
@@ -878,7 +885,7 @@ export function createRangeGeometryOwner(
       if (!target?.isConnected) return null;
       if (activeLeases === 0) {
         return resolveViewEditor(editor, target)
-          ? readVisibleArea(target, walkClipChain(target, { self: true }))
+          ? readClipArea(walkClipChain(target, { self: true }))
           : null;
       }
       if (target !== editable) syncBinding();

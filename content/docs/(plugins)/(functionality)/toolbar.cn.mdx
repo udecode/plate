@@ -122,33 +122,28 @@ const editor = createEditor({
 
 <ComponentSource name="floating-toolbar" />
 
-### 作用于持有选区的视图
+### 作用于光标所在的视图
 
 嵌套视图（例如[白板](/docs/board)便签的文字）是页面 Editable 内部的独立 Editable。
-由页面 slot 渲染的工具栏通过 `useEditor()` 得到页面编辑器。把应作用于嵌套视图的按钮包在
-`EditorSelectionView` 中：
+工具栏渲染的位置决定它作用于哪个视图：
+
+- 在所有编辑区域之外，例如固定工具栏所在的 `beforeContainer`，`useEditor()` 返回持有光标的根的编辑器。
+  光标在便签中时，复制的固定工具栏的标记按钮修改便签。
+- 插件的 `caret` slot 渲染在 Editable 之后，并跟随光标进入挂载在其编辑区域内的视图。
+  复制的浮动工具栏、链接工具栏和 AI 菜单渲染在这里，所以会在选中的便签文字旁打开。
+- 在编辑区域内部，其他 slot（例如 `afterEditable`）保持该区域的视图。
 
 ```tsx
-import { EditorSelectionView } from 'platejs/react';
+import { definePlugin } from 'platejs/react';
 
-<ToolbarGroup>
-  <EditorSelectionView>
-    <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
-      <HighlighterIcon />
-    </MarkToolbarButton>
-    <CommentToolbarButton />
-  </EditorSelectionView>
-  <AllCommentsButton />
-</ToolbarGroup>
+const FloatingToolbarPlugin = definePlugin('floatingToolbar', {
+  slots: { caret: () => <FloatingToolbar /> },
+});
 ```
 
-在它内部，`useEditor()`、`useEditableRef()`、`useEditorFocused()` 和
-`useFocusedLast()` 对应根中持有选区的视图。选区在页面中，或页面 Editable 内没有挂载该根的视图时，
-子组件保留页面编辑器。包装之外的按钮（例如这里的“所有评论”）作用于页面。
-
-复制的 `FloatingToolbar` 包住整个工具栏，并根据 `useEditableRef()` 定位，所以会在选中的便签文字旁打开，
-并在那里显示 Ask AI、标记按钮和评论按钮。复制的 `FixedToolbarButtons` 包住标记、颜色、高亮和评论按钮。
-撤销、插入和转换在包装之外，作用于页面。复制的 AI 菜单也以同样方式包住自身。
+在 `caret` slot 中，持有光标的视图挂载在该 slot 的编辑区域内时，`useEditor()`、`useEditableRef()`、
+`useEditorFocused()` 和 `useFocusedLast()` 对应该视图，否则对应 slot 自己的视图。
+所以光标在正文中时，页眉 `EditorContent` 的浮动工具栏仍留在页眉。
 
 ### 创建自定义按钮
 

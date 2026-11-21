@@ -114,7 +114,6 @@ export {
   useRuntimeState,
   useEditableClip,
   useSelectionGeometry,
-  useSelectionView,
   useSetStateField,
   useStateFieldValue,
   react,

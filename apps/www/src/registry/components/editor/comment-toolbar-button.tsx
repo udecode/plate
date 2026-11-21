@@ -7,7 +7,6 @@ import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   type Editor,
-  EditorSelectionView,
   useEditor,
   useEditorHasSelection,
   useEditorReadOnly,
@@ -200,11 +199,7 @@ function AllCommentsButtonImpl({ editor }: { editor: Editor }) {
           />
         )}
       </Dialog>
-      {revealing && (
-        <EditorSelectionView>
-          <RevealSelection onRevealed={() => setRevealing(false)} />
-        </EditorSelectionView>
-      )}
+      {revealing && <RevealSelection onRevealed={() => setRevealing(false)} />}
     </>
   );
 }

@@ -133,6 +133,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-20-drop-editor-selection-view",
+      "href": "/registry/changelog/2026-11-20-drop-editor-selection-view.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Drop the EditorSelectionView wrapper from the toolbars and the AI menu",
+      "change": {
+        "type": "source",
+        "date": "2026-11-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "fixed-toolbar",
+        "floating-toolbar",
+        "ai-menu",
+        "comment-toolbar-button"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-fix-reduced-motion-scroll",
       "href": "/registry/changelog/2026-11-20-fix-reduced-motion-scroll.json",
       "status": "draft",

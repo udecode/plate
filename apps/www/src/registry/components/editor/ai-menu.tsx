@@ -30,7 +30,6 @@ import {
 import { AIChatPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
-  EditorSelectionView,
   useCreateEditor,
   useEditorSelector,
   useFocusedLast,
@@ -180,14 +179,6 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
   );
 }
 
-export function AIMenu() {
-  return (
-    <EditorSelectionView>
-      <SelectionAIMenu />
-    </EditorSelectionView>
-  );
-}
-
 const resolveSelectionAnchor = (editor: ReturnType<typeof useEditor>) => {
   const block = editor.read.nodes.blocks().at(-1) ?? editor.read.nodes.block();
 
@@ -196,7 +187,7 @@ const resolveSelectionAnchor = (editor: ReturnType<typeof useEditor>) => {
     : null;
 };
 
-function SelectionAIMenu() {
+export function AIMenu() {
   const editor = useEditor();
   const { api, read } = useEditor().plugin(AIChatPlugin);
   const mode = usePluginStore(AIChatPlugin, 'mode');

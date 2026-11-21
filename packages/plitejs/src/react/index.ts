@@ -89,7 +89,6 @@ export {
   useEditorScrollElementRef,
 } from './hooks/use-editor-dom-scope';
 export { useEditorFocused } from './hooks/use-editor-focused';
-export { useSelectionView } from './hooks/use-selection-view';
 export {
   EditorReadOnlyProvider,
   type EditorReadOnlyProviderProps,

@@ -100,22 +100,23 @@ subscribing to every editor change. Use `useRootEditor(root)` for commands
 that must run against a specific root.
 
 A content root's view, such as a board note's text, is an `Editable` of its
-own inside the page's `Editable`. UI outside it, such as a page toolbar, gets
-that view from `useSelectionView(editor)` while the selection is in its root,
-and `editor` otherwise. Plate wraps this as
-[`EditorSelectionView`](/docs/toolbar#act-on-the-view-that-holds-the-selection).
+own inside the page's `Editable`. UI outside every `Editable`, such as a page
+toolbar, gets the editor of the root that holds the caret from
+`useCaretEditor()`, or the primary root's editor while nothing is selected.
+Plate's `useEditor()` gives the same editor outside every editing area, as
+[Toolbar](/docs/toolbar#act-where-the-caret-is) describes.
 
 ```tsx
-import { useEditorContext, useSelectionView } from "plitejs/react";
+import { useCaretEditor } from "plitejs/react";
 
 const BoldButton = () => {
-  const view = useSelectionView(useEditorContext());
+  const editor = useCaretEditor();
 
   return (
     <button
       onMouseDown={(event) => {
         event.preventDefault();
-        view.update.marks.toggle("bold");
+        editor.update.marks.toggle("bold");
       }}
     >
       Bold

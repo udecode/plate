@@ -13,15 +13,12 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import {
   BoldPlugin,
   CodePlugin,
-  type Editor,
-  EditorSelectionView,
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
   definePlugin,
   useComposedRef,
   useEditableRef,
-  useEditor,
   useEditorFocused,
   useEditorReadOnly,
   useEditorSelector,
@@ -43,10 +40,7 @@ import { MoreToolbarButton } from './more-toolbar-button';
 import { SuggestionToolbarButton } from './suggestion-toolbar-button';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
 
-const NestedViewContext = React.createContext(false);
-
 export function FloatingToolbarButtons() {
-  const nested = React.useContext(NestedViewContext);
   const readOnly = useEditorReadOnly();
 
   return (
@@ -60,30 +54,21 @@ export function FloatingToolbarButtons() {
         </ToolbarGroup>
       )}
 
-      {nested ? (
+      {!readOnly && (
         <ToolbarGroup>
-          {!readOnly && <StyleButtons />}
-          <CommentToolbarButton />
+          <TurnIntoToolbarButton />
+          <StyleButtons />
+          <InlineEquationToolbarButton />
+          <LinkToolbarButton />
         </ToolbarGroup>
-      ) : (
-        <>
-          {!readOnly && (
-            <ToolbarGroup>
-              <TurnIntoToolbarButton />
-              <StyleButtons />
-              <InlineEquationToolbarButton />
-              <LinkToolbarButton />
-            </ToolbarGroup>
-          )}
-
-          <ToolbarGroup>
-            <CommentToolbarButton />
-            <SuggestionToolbarButton />
-
-            {!readOnly && <MoreToolbarButton />}
-          </ToolbarGroup>
-        </>
       )}
+
+      <ToolbarGroup>
+        <CommentToolbarButton />
+        <SuggestionToolbarButton />
+
+        {!readOnly && <MoreToolbarButton />}
+      </ToolbarGroup>
     </>
   );
 }
@@ -115,25 +100,6 @@ function StyleButtons() {
 }
 
 export function FloatingToolbar({ children }: { children?: React.ReactNode }) {
-  const editor = useEditor();
-
-  return (
-    <EditorSelectionView>
-      <SelectionFloatingToolbar slotEditor={editor}>
-        {children}
-      </SelectionFloatingToolbar>
-    </EditorSelectionView>
-  );
-}
-
-function SelectionFloatingToolbar({
-  children,
-  slotEditor,
-}: {
-  children?: React.ReactNode;
-  slotEditor: Editor;
-}) {
-  const nested = useEditor() !== slotEditor;
   const hasNodeSelection = useEditorSelector(
     (editor) => editor.read.selection.nodes().length > 0
   );
@@ -141,11 +107,9 @@ function SelectionFloatingToolbar({
   if (hasNodeSelection) return null;
 
   return (
-    <NestedViewContext.Provider value={nested}>
-      <TextFloatingToolbar>
-        {children === undefined ? <FloatingToolbarButtons /> : children}
-      </TextFloatingToolbar>
-    </NestedViewContext.Provider>
+    <TextFloatingToolbar>
+      {children === undefined ? <FloatingToolbarButtons /> : children}
+    </TextFloatingToolbar>
   );
 }
 

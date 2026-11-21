@@ -27,7 +27,6 @@ import {
   UnderlinePlugin,
   FontBackgroundColorPlugin,
   FontColorPlugin,
-  EditorSelectionView,
   useEditor,
   useEditorReadOnly,
   useEditorViewState,
@@ -107,46 +106,44 @@ export function FixedToolbarButtons({
           </ToolbarGroup>
 
           <ToolbarGroup>
-            <EditorSelectionView>
-              <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
-                <BoldIcon />
-              </MarkToolbarButton>
+            <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold">
+              <BoldIcon />
+            </MarkToolbarButton>
 
-              <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
-                <ItalicIcon />
-              </MarkToolbarButton>
+            <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic">
+              <ItalicIcon />
+            </MarkToolbarButton>
 
-              <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
-                <UnderlineIcon />
-              </MarkToolbarButton>
+            <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline">
+              <UnderlineIcon />
+            </MarkToolbarButton>
 
-              <MarkToolbarButton
-                plugin={StrikethroughPlugin}
-                tooltip="Strikethrough"
-              >
-                <StrikethroughIcon />
-              </MarkToolbarButton>
+            <MarkToolbarButton
+              plugin={StrikethroughPlugin}
+              tooltip="Strikethrough"
+            >
+              <StrikethroughIcon />
+            </MarkToolbarButton>
 
-              <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
-                <Code2Icon />
-              </MarkToolbarButton>
+            <MarkToolbarButton plugin={CodePlugin} tooltip="Code">
+              <Code2Icon />
+            </MarkToolbarButton>
 
-              <FontColorToolbarButton
-                colors={DEFAULT_COLORS}
-                plugin={FontColorPlugin}
-                tooltip="Text color"
-              >
-                <BaselineIcon />
-              </FontColorToolbarButton>
+            <FontColorToolbarButton
+              colors={DEFAULT_COLORS}
+              plugin={FontColorPlugin}
+              tooltip="Text color"
+            >
+              <BaselineIcon />
+            </FontColorToolbarButton>
 
-              <FontColorToolbarButton
-                colors={DEFAULT_COLORS}
-                plugin={FontBackgroundColorPlugin}
-                tooltip="Background color"
-              >
-                <PaintBucketIcon />
-              </FontColorToolbarButton>
-            </EditorSelectionView>
+            <FontColorToolbarButton
+              colors={DEFAULT_COLORS}
+              plugin={FontBackgroundColorPlugin}
+              tooltip="Background color"
+            >
+              <PaintBucketIcon />
+            </FontColorToolbarButton>
           </ToolbarGroup>
 
           <ToolbarGroup>
@@ -188,12 +185,10 @@ export function FixedToolbarButtons({
       <div className="grow" />
 
       <ToolbarGroup>
-        <EditorSelectionView>
-          <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
-            <HighlighterIcon />
-          </MarkToolbarButton>
-          <CommentToolbarButton />
-        </EditorSelectionView>
+        <MarkToolbarButton plugin={HighlightPlugin} tooltip="Highlight">
+          <HighlighterIcon />
+        </MarkToolbarButton>
+        <CommentToolbarButton />
         <AllCommentsButton />
       </ToolbarGroup>
 

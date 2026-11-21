@@ -43,9 +43,9 @@ editor UI to its container; it does not identify the editable DOM element.
 
 `useEditableRef()` returns the matching view's `Editable` element ref. Its
 `current` value is `null` before mount. Use it to read the DOM selection or position UI against the text,
-as the copied floating toolbar does. Inside
-[`EditorSelectionView`](/docs/api/core/plate-components#editorselectionview) it
-is the `Editable` of the view that holds the selection.
+as the copied floating toolbar does. In a plugin's
+[`caret` slot](/docs/toolbar#act-where-the-caret-is) it is the `Editable` of the view that
+holds the caret while that view is mounted inside the slot's editing area.
 
 `EditorRoot` and `EditorContent` manage editor registration and mount status. Set
 primary-editor eligibility through `EditorRoot`'s `primary` prop and pass read-only
