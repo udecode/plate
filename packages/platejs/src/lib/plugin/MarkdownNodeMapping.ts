@@ -158,7 +158,12 @@ export type MarkdownDecodeContext<
     node: TNode;
     /** The node before this one among its Markdown siblings. */
     previousSibling: RootContent | null;
-    /** Attributes of `tag` (default: this node) decoded for the target type. */
+    /**
+     * Attributes of `tag` (default: this node). `properties` holds the
+     * non-metadata properties decoded from them: this plugin's under their
+     * `attributes` names and other plugins' by key. Read a metadata property,
+     * such as an id, from the raw `attributes`.
+     */
     readTagAttributes: (tag?: MarkdownTagNode) => MarkdownTagAttributeView;
     refuse: (message: string) => MarkdownRefusal;
     report: (
@@ -218,10 +223,12 @@ export type MarkdownEncodeContext<
     ) => MdxJsxAttribute[];
     /**
      * Encode `node` as a mapping without `encode` writes its tag: this
-     * plugin's properties under their `attributes` names, then other plugins'
-     * non-metadata properties by key, except those the enclosing Markdown
-     * structure writes (list topology). Claims the properties it writes, so
-     * return the attributes in your output.
+     * plugin's non-metadata properties under their `attributes` names, then
+     * other plugins' non-metadata properties by key, except those the
+     * enclosing Markdown structure writes (list topology). Claims the
+     * properties it writes, so return the attributes in your output. A
+     * mapping that keeps a metadata property, such as an id, writes it with
+     * `encodeAttributes`.
      */
     encodeNodeAttributes: () => MdxJsxAttribute[];
     node: TNode;
