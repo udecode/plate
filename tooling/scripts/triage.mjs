@@ -2917,6 +2917,17 @@ function claimCommand(options) {
         );
       }
     }
+    if (['claim', 'mine', 'take'].includes(result.verdict)) {
+      const claimedIssue = reads.issues.get(String(result.issue));
+      const untranscribed = claimedIssue
+        ? clipsOf(claimedIssue).filter((clip) => !clip.transcribed)
+        : [];
+      if (untranscribed.length > 0) {
+        console.log(
+          `  ${untranscribed.length} clip(s) have no transcript cache, such as ${untranscribed[0].url}, and a fixed record refuses until each has one; run video-transcripts on them now`
+        );
+      }
+    }
     if (result.verdict === 'held') {
       console.log(`held ${at}:`);
       for (const hold of result.holds) console.log(holdText(hold));
