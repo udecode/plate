@@ -1,12 +1,28 @@
-import type { Html, PhrasingContent, Root, RootContent } from 'mdast';
+import type {
+  Heading,
+  Html,
+  Text as MdText,
+  Nodes,
+  Paragraph,
+  PhrasingContent,
+  Root,
+  RootContent,
+  TableCell,
+} from 'mdast';
 import { type ErrorCodes, Tokenizer } from 'parse5';
 
+import type { Text } from '../../../core';
 import { decideUrl } from '../../../internal/utils/urlPolicy';
 import {
   decideHtmlAttribute,
   HTML_SURROUNDING_WHITESPACE,
 } from '../../../lib/plugins/html/htmlSafety';
-import { isMarkdownBreakHtml } from './markdownIntrinsics';
+import {
+  encodeRawHtmlLeaves,
+  isMarkdownBreakHtml,
+  markRawHtmlFlow,
+  rawHtmlPieceOf,
+} from './markdownIntrinsics';
 import { isMarkdownLineListToken } from './markdownLine';
 import { getMarkdownTagRepair } from './markdownTags';
 
@@ -322,4 +338,350 @@ export const createRawHtmlPlacementDecider = ({
       (read) => decideInlineRead(read, piece, container, before, after)
     );
   };
+};
+
+type MdParent = Extract<Nodes, Readonly<{ children: unknown }>>;
+type RawHtmlLeaf = Heading | Paragraph | TableCell;
+
+type RawHtmlPiece = Readonly<{
+  block: MdParent | Html;
+  changed: boolean;
+  node: Html;
+  place: RawHtmlPlace | 'unmodeled';
+  wholeParagraph?: Readonly<{ paragraph: Paragraph; place: RawHtmlPlace }>;
+}>;
+
+type LeafWriting = Readonly<{
+  /** The writer prints a final space or tab as a character reference. */
+  finalReference: boolean;
+  /** The writer prints a break or a line ending in text as a new line. */
+  lineEndings: boolean;
+}>;
+
+const FLOW_PARENTS: ReadonlySet<string> = new Set([
+  'blockquote',
+  'footnoteDefinition',
+  'list',
+  'listItem',
+  'mdxJsxFlowElement',
+  'table',
+  'tableRow',
+]);
+
+const isPiece = (node: Nodes): node is Html =>
+  rawHtmlPieceOf(node) !== undefined;
+const leavesOf = (node: Html) => rawHtmlPieceOf(node)?.leaves ?? [];
+const isChanged = (node: Html) =>
+  node.value !==
+  leavesOf(node)
+    .map((leaf) => leaf.text)
+    .join('');
+const isBreak = (node: Nodes) =>
+  node.type === 'break' ||
+  (node.type === 'html' && isMarkdownBreakHtml(node.value));
+const isText = (node: Nodes): node is Html | MdText =>
+  node.type === 'html' || node.type === 'text';
+// The writer prints nothing for an emphasis, strong or paragraph whose children
+// print nothing, or for a table whose rows hold no cells.
+const printsNothing = (node: Nodes): boolean =>
+  isText(node)
+    ? node.value === ''
+    : node.type === 'table'
+      ? node.children.every((row) => row.children.length === 0)
+      : (node.type === 'emphasis' ||
+          node.type === 'paragraph' ||
+          node.type === 'strong') &&
+        node.children.every(printsNothing);
+const isWhitespace = (node: Nodes) =>
+  node.type === 'text' && /^[\t ]+$/.test(node.value);
+// The writer escapes a space or tab only when it sees the line ending next to
+// it, and it does not see the one an `html` node holds.
+const isBlank = (node: Nodes) => printsNothing(node) || isWhitespace(node);
+// The writer prints the line ending an `html` node holds as it is, which ends
+// an ATX heading or a table row.
+const holdsHtmlLineEnding = (node: Nodes): boolean =>
+  (node.type === 'html' && /[\n\r]/.test(node.value)) ||
+  ('children' in node && node.children.some(holdsHtmlLineEnding));
+const holdsLineEnding = (node: Nodes, ending: RegExp): boolean =>
+  node.type === 'break' ||
+  ('value' in node && ending.test(node.value)) ||
+  ('children' in node &&
+    node.children.some((child) => holdsLineEnding(child, ending)));
+
+/**
+ * Merge each run of adjacent unchanged pieces in phrasing into one node that
+ * holds all their leaves. The writer turns a line ending before most `html`
+ * nodes into a space, so only one node prints the leaves' own text.
+ */
+const mergeAdjacentPieces = (parent: MdParent) => {
+  const children = parent.children as Nodes[];
+  const phrasing = parent.type !== 'root' && !FLOW_PARENTS.has(parent.type);
+
+  for (let index = 0; index < children.length; index += 1) {
+    const child = children[index];
+
+    if ('children' in child) mergeAdjacentPieces(child);
+    if (!phrasing) continue;
+    let end = index;
+
+    while (end < children.length && isPiece(children[end])) end += 1;
+    const run = children.slice(index, end) as Html[];
+
+    if (run.length < 2) continue;
+    if (run.some(isChanged)) {
+      index = end - 1;
+    } else {
+      children.splice(
+        index,
+        run.length,
+        encodeRawHtmlLeaves(run.flatMap(leavesOf))
+      );
+    }
+  }
+};
+
+/**
+ * Find each piece of marked text on the tree the writer prints, and its place
+ * on the lines it prints there. A piece is one `html` node that marked leaves
+ * encode.
+ */
+const findRawHtmlPieces = (
+  tree: Root,
+  { previousKind, setext }: Readonly<{ previousKind?: string; setext: boolean }>
+): RawHtmlPiece[] => {
+  const pieces: RawHtmlPiece[] = [];
+  const pushPiece = (
+    node: Html,
+    block: RawHtmlPiece['block'],
+    place: RawHtmlPiece['place'] = 'unmodeled'
+  ) => {
+    pieces.push({ block, changed: isChanged(node), node, place });
+  };
+  const visitUnknown = (parent: MdParent, block: MdParent) => {
+    for (const child of parent.children) {
+      if (isPiece(child)) pushPiece(child, block);
+      else if ('children' in child) visitUnknown(child, block);
+    }
+  };
+  const visitPhrasing = (
+    parent: MdParent,
+    container: RawHtmlContainer,
+    leaf: RawHtmlLeaf,
+    writing: LeafWriting
+  ) => {
+    const children = parent.children as PhrasingContent[];
+    const atLeaf = parent === leaf;
+    const last = children.at(-1);
+    const endsInReference =
+      atLeaf &&
+      writing.finalReference &&
+      last !== undefined &&
+      isWhitespace(last);
+    let before: Nodes | undefined;
+
+    for (const [index, child] of children.entries()) {
+      if (!isPiece(child)) {
+        if ('children' in child) {
+          visitPhrasing(
+            child,
+            child.type === 'mdxJsxTextElement' &&
+              container !== 'footnoteDefinition'
+              ? 'registeredTag'
+              : container,
+            leaf,
+            writing
+          );
+        }
+        if (!printsNothing(child)) before = child;
+        continue;
+      }
+      let afterIndex = index + 1;
+
+      while (afterIndex < children.length && isBlank(children[afterIndex])) {
+        afterIndex += 1;
+      }
+      const after = children.at(afterIndex);
+      const nextOf = () => {
+        if (!after) return !atLeaf || endsInReference ? 'text' : 'none';
+        if (
+          writing.lineEndings &&
+          isText(after) &&
+          /^[\n\r]/.test(after.value)
+        ) {
+          return 'none';
+        }
+        if (!isBreak(after) || leaf.type === 'tableCell') return 'text';
+
+        return leaf.type === 'heading' ? 'none' : 'break';
+      };
+      const startOf = () => {
+        if (!before) return atLeaf ? 'block' : 'mid';
+
+        return writing.lineEndings &&
+          (before.type === 'break' ||
+            (isText(before) && /[\n\r]$/.test(before.value)))
+          ? 'line'
+          : 'mid';
+      };
+
+      pushPiece(child, leaf, { container, next: nextOf(), start: startOf() });
+      before = child;
+    }
+  };
+  const visitFlow = (
+    parent: MdParent,
+    container: RawHtmlFlowContainer,
+    // A quote inside either prints on lines the outer container prefixes.
+    outer?: 'footnoteDefinition' | 'registeredTag'
+  ) => {
+    const inFootnote = outer === 'footnoteDefinition' ? outer : undefined;
+    let follows: Extract<RawHtmlPlace, { wholeBlock: true }>['follows'] =
+      parent.type === 'listItem'
+        ? 'marker'
+        : parent === tree && previousKind === 'list'
+          ? 'list'
+          : 'block';
+
+    for (const [index, child] of parent.children.entries()) {
+      const flowPlace = { container, follows, wholeBlock: true } as const;
+
+      if (isPiece(child)) {
+        pushPiece(
+          child,
+          child,
+          outer ? { container: outer, next: 'none', start: 'block' } : flowPlace
+        );
+      } else if (child.type === 'heading') {
+        const setextHeading =
+          child.depth < 3 && (setext || holdsLineEnding(child, /[\n\r]/));
+
+        if (!setextHeading && holdsHtmlLineEnding(child)) {
+          visitUnknown(child, child);
+        } else {
+          visitPhrasing(
+            child,
+            inFootnote ?? (setextHeading ? 'setextHeading' : 'atxHeading'),
+            child,
+            { finalReference: true, lineEndings: setextHeading }
+          );
+        }
+      } else if (child.type === 'paragraph') {
+        const taskItemFirstParagraph =
+          index === 0 &&
+          parent.type === 'listItem' &&
+          typeof parent.checked === 'boolean';
+        // The `mdxJsxFlowElement` handler in markdownTags.ts keeps one
+        // paragraph that prints no line feed on the tag's line, and there a
+        // final space or tab prints as it is.
+        const onTagLine =
+          parent.type === 'mdxJsxFlowElement' &&
+          parent.children.length === 1 &&
+          !holdsLineEnding(child, /\n/);
+        const first = pieces.length;
+
+        visitPhrasing(
+          child,
+          outer ??
+            (taskItemFirstParagraph ? 'taskItemFirstParagraph' : container),
+          child,
+          { finalReference: !onTagLine, lineEndings: true }
+        );
+        if (
+          !outer &&
+          !taskItemFirstParagraph &&
+          child.children.length > 0 &&
+          child.children.every(isPiece)
+        ) {
+          pieces[first] = {
+            ...pieces[first],
+            wholeParagraph: { paragraph: child, place: flowPlace },
+          };
+        }
+      } else if (child.type === 'tableCell' && holdsHtmlLineEnding(child)) {
+        visitUnknown(child, child);
+      } else if (child.type === 'tableCell') {
+        visitPhrasing(child, inFootnote ?? 'tableCell', child, {
+          finalReference: false,
+          lineEndings: false,
+        });
+      } else if (FLOW_PARENTS.has(child.type) && 'children' in child) {
+        visitFlow(
+          child,
+          child.type === 'blockquote'
+            ? 'quote'
+            : child.type === 'listItem'
+              ? 'listItem'
+              : container,
+          child.type === 'footnoteDefinition'
+            ? child.type
+            : child.type === 'mdxJsxFlowElement'
+              ? (outer ?? 'registeredTag')
+              : outer
+        );
+      } else if ('children' in child) {
+        visitUnknown(child, child);
+      }
+      if (!printsNothing(child)) {
+        follows = child.type === 'list' ? 'list' : 'block';
+      }
+    }
+  };
+
+  visitFlow(tree, 'document');
+
+  return pieces;
+};
+
+export type RawHtmlBlockRefusal = Readonly<{
+  leaves: readonly Text[];
+  reason: string;
+}>;
+
+/**
+ * Decide each block of marked text on the tree the writer prints. A block is
+ * the nearest paragraph, heading or table cell, a flow `html` node, or a node
+ * in flow position whose printing the decision does not model. It fails when
+ * any piece in it fails, and a piece fails when its node no longer holds its
+ * leaves' text, when its block is one the decision does not model, or when
+ * the placement rule refuses it at its place. A paragraph that holds only one
+ * piece also passes as an HTML block, which the writer then sets apart with
+ * blank lines.
+ */
+export const decideRawHtmlBlocks = (
+  tree: Root,
+  decide: ReturnType<typeof createRawHtmlPlacementDecider>,
+  options: Readonly<{ previousKind?: string; setext: boolean }>
+): RawHtmlBlockRefusal[] => {
+  const blocks = new Map<
+    RawHtmlPiece['block'],
+    { leaves: Text[]; reason?: string }
+  >();
+
+  mergeAdjacentPieces(tree);
+  for (const {
+    block,
+    changed,
+    node,
+    place,
+    wholeParagraph,
+  } of findRawHtmlPieces(tree, options)) {
+    const decided = blocks.get(block) ?? { leaves: [] };
+
+    decided.leaves.push(...leavesOf(node));
+    blocks.set(block, decided);
+    if (decided.reason) continue;
+    if (changed) decided.reason = 'changed';
+    else if (place === 'unmodeled') decided.reason = 'container';
+    else if (wholeParagraph && decide(node.value, wholeParagraph.place).ok) {
+      markRawHtmlFlow(wholeParagraph.paragraph);
+    } else {
+      const decision = decide(node.value, place);
+
+      if (!decision.ok) decided.reason = decision.reason;
+    }
+  }
+
+  return [...blocks.values()].flatMap(({ leaves, reason }) =>
+    reason ? [{ leaves, reason }] : []
+  );
 };

@@ -14,6 +14,7 @@ import {
   type EditorCoreStateView,
   type Element,
   ElementApi,
+  type Text,
   TextApi,
   PLUGINS,
 } from '../../../core';
@@ -36,6 +37,38 @@ const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
 export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
 
 export const isMarkdownBreakHtml = (value: string) => ONLY_BR_TAGS.test(value);
+
+type RawHtmlData = Readonly<{
+  rawHtmlFlow?: true;
+  rawHtmlPiece?: Readonly<{ leaves: readonly Text[] }>;
+}>;
+
+/** Encode marked leaves as raw HTML that their block's decision may keep. */
+export const encodeRawHtmlLeaves = (leaves: readonly Text[]): Html => {
+  const data: RawHtmlData = { rawHtmlPiece: { leaves } };
+
+  return {
+    data,
+    type: 'html',
+    value: leaves.map((leaf) => leaf.text).join(''),
+  };
+};
+
+const rawHtmlDataOf = (node: { data?: unknown }) =>
+  node.data as RawHtmlData | undefined;
+
+export const rawHtmlPieceOf = (node: Nodes) =>
+  node.type === 'html' ? rawHtmlDataOf(node)?.rawHtmlPiece : undefined;
+
+export const markRawHtmlFlow = (paragraph: Paragraph) => {
+  const data: RawHtmlData = { rawHtmlFlow: true };
+
+  paragraph.data = { ...paragraph.data, ...data };
+};
+
+export const isRawHtmlFlow = (node: Nodes) =>
+  rawHtmlPieceOf(node) !== undefined ||
+  (node.type === 'paragraph' && rawHtmlDataOf(node)?.rawHtmlFlow === true);
 
 /** Markdown drops an empty paragraph, so the writer gives it this text. */
 const EMPTY_PARAGRAPH_TEXT = '\u200B';
