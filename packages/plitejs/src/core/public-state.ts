@@ -378,6 +378,8 @@ import {
   getValueRecords,
   hasValueRecords,
   NO_RECORD_OPS,
+  collectRecordStore,
+  collectValueRecords,
   recordDrop,
   recordOpsBetween,
   recordPut,
@@ -664,6 +666,7 @@ const DOCUMENT_STATE = new WeakMap<
   Record<string, unknown> | undefined
 >();
 const RECORDS = new WeakMap<Editor, RecordStore>();
+const UNLOADED_RECORDS = new WeakMap<Editor, unknown>();
 // Each editor memoizes its latest store's JSON, so two editors reading in turn
 // never rebuild each other's.
 const RECORDS_JSON = new WeakMap<
@@ -14276,12 +14279,15 @@ const readDirectSnapshotInput = (
     );
   }
 
-  return deriveValue(
-    document as DirectSnapshotInput,
+  const selection =
     envelope.selection === undefined
       ? {}
-      : { selection: envelope.selection as SnapshotSelectionInput }
-  );
+      : { selection: envelope.selection as SnapshotSelectionInput };
+
+  // Saved records stay unread here, so only the open that adopts them loads them.
+  return Object.hasOwn(document, 'records')
+    ? ({ ...document, ...selection } as DirectSnapshotInput)
+    : deriveValue(document as DirectSnapshotInput, selection);
 };
 
 const deserializeSnapshotMeta = (
@@ -14608,7 +14614,10 @@ export const initializeEditorSchemaSnapshot = (
         ? {}
         : { roots: fitted.document.roots }),
     },
-    getValueRecords(snapshotInput)
+    collectValueRecords(
+      snapshotInput,
+      getCompiledEditorSchema(editor)?.recordSets ?? new Map()
+    )
   );
 
   const admitted = admitEditorDocument(editor, document);
@@ -14709,7 +14718,10 @@ export const initializePublicState = <
 
   CHILDREN.set(editor, initialChildren);
   ROOTS.set(editor, initialRoots);
-  RECORDS.set(editor, initialValue.records);
+  RECORDS.set(editor, EMPTY_RECORD_STORE);
+  if (initialValue.savedRecords !== undefined) {
+    UNLOADED_RECORDS.set(editor, initialValue.savedRecords);
+  }
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   DOCUMENT_STATE.set(editor, initialValue.meta);
   EDITOR_COMPOSING.set(editor, false);
@@ -14730,6 +14742,23 @@ export const initializePublicState = <
   clearSnapshotCache(editor);
 
   return Object.freeze({ explicit: initialValue.explicit });
+};
+
+/** @internal */
+export const loadOpenedRecords = (
+  editor: Editor,
+  schema: CompiledEditorSchema | undefined
+) => {
+  if (!UNLOADED_RECORDS.has(editor)) return;
+
+  const json = UNLOADED_RECORDS.get(editor);
+
+  UNLOADED_RECORDS.delete(editor);
+  RECORDS.set(
+    editor,
+    collectRecordStore(json, schema?.recordSets ?? new Map())
+  );
+  clearSnapshotCache(editor);
 };
 
 export const initializeEditorSchemaDocument = (

@@ -247,6 +247,7 @@ export const createWriter = ({
   fits,
   fresh,
   judge,
+  asOpened,
   rebuild,
   record: opened,
   schema,
@@ -261,6 +262,7 @@ export const createWriter = ({
   fits: Fits;
   fresh: boolean;
   judge: SyncJudge;
+  asOpened: (document: JsonEditorValue) => JsonEditorValue;
   rebuild?: (entry: StepRebuild) => void;
   record: OutboxRecord;
   schema: string;
@@ -651,7 +653,10 @@ export const createWriter = ({
   };
 
   const installSnapshot = (document: JsonEditorValue, version: number) => {
-    if (sameDocument(document, record.confirmed.document)) {
+    if (
+      sameDocument(document, record.confirmed.document) ||
+      sameDocument(asOpened(document), record.confirmed.document)
+    ) {
       save({ confirmed: { document, version } });
       showExactly();
 

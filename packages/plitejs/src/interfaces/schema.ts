@@ -448,9 +448,12 @@ export type SchemaRecordSet = Readonly<{
    * Records of `set` name this set's records by id. `names` gets a plain copy
    * of a record of `set` and returns the ids it names, or null when it cannot
    * read them; a throw counts as null. `keep` returns true for an id whose
-   * record stays when no record names it. Restoring a saved history keeps only
-   * the steps that replay before the first one that names a missing record or
-   * drops a record still named.
+   * record stays when no record names it. An editor created on a saved value
+   * leaves out, unread, each record of this set that no record of `set` names
+   * and `keep` does not accept, and keeps them all when one `names` gives
+   * null. A replacement and a room keep every record. Restoring a saved
+   * history keeps only the steps that replay before the first one that names a
+   * missing record or drops a record still named.
    */
   namedBy?: Readonly<{
     keep?: (id: string) => boolean;

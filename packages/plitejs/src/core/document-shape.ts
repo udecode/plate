@@ -220,10 +220,7 @@ export function assertEditorDocumentContainers(
   if (
     input.records !== undefined &&
     !isBuiltRecordsJson(input.records) &&
-    (!isRecord(input.records) ||
-      !Object.values(input.records).every(
-        (records) => isRecord(records) && Object.values(records).every(isRecord)
-      ))
+    (!isRecord(input.records) || !Object.values(input.records).every(isRecord))
   ) {
     reject({ kind: 'records' });
   }

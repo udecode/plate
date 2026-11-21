@@ -69,6 +69,7 @@ import {
   initializeEditorSchemaSnapshot,
   invalidateEditorTransactionSpecs,
   initializePublicState,
+  loadOpenedRecords,
   readEditor,
   repairEditorValue,
   saveEditorSchemaDocument,
@@ -791,6 +792,7 @@ const createEditorImplementation = <
       initialState.explicit
     );
   } else {
+    loadOpenedRecords(editor, undefined);
     const initialDocument = getEditorDocumentValue(editor);
 
     if (initialState.explicit && initialDocument.children.length === 0) {

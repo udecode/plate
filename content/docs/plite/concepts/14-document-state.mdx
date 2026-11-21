@@ -31,6 +31,33 @@ also preserves metadata keys without installed field descriptors.
 `editor.read.value()` includes non-empty record sets alongside children, roots,
 and persisted metadata.
 
+A record set declares `namedBy` when the records of another set refer to its
+records by id. An editor created on a saved value leaves out, without reading
+it, each record that no record of the naming set names and `keep` does not
+accept, so the next save drops it. When a naming record's `names` returns
+`null` or throws, the set keeps every record. A value replacement and a
+collaboration room keep every record.
+
+```ts
+import { definePlugin } from "plitejs";
+
+const drawings = definePlugin("drawings", {
+  schema: {
+    records: {
+      copies: {
+        namedBy: {
+          keep: (id) => id.startsWith("legacy_"),
+          names: ({ copies }) =>
+            typeof copies === "string" ? copies.split(" ") : null,
+          set: "marks",
+        },
+      },
+      marks: {},
+    },
+  },
+});
+```
+
 ## Save the document
 
 Read the full document value from `editor.read.value()`.

@@ -234,8 +234,10 @@ document, then keeps only the batches that document can replay. It leaves out
 what each batch wrote to a record set the schema declares with
 `history: "retain"`, and drops a batch that wrote nothing else.
 
-For a record set that declares `namedBy`, restore also cuts each branch at the
-first batch whose replay breaks a name. A replay breaks a name when it adds a
+An editor created on a saved value leaves out each record of a `namedBy` set
+that nothing names, so a saved history can reach a record the document no
+longer holds. For such a set, restore also cuts each branch at the first
+batch whose replay breaks a name. A replay breaks a name when it adds a
 name to a missing record, or drops a record that a record still in the
 document names. Undo keeps only the batches newer than the newest such batch,
 and redo keeps only the batches it replays before the first one. A name the

@@ -96,6 +96,7 @@ import {
   activateStateField,
   getEditorDocumentValue,
   hasOpenDraft,
+  loadOpenedRecords,
   runTrustedUpdate,
   stagePluginCandidate,
   withTransactionSpecDraftRead,
@@ -2341,6 +2342,7 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
 
   if (options.validateDocument !== false) {
     if (loadsInitialValue(options)) {
+      loadOpenedRecords(editor, mergedCandidate.schemaContributions.compiled);
       const loaded = getEditorDocumentValue(editor);
       const repair = repairLoadedDocument(
         onlyDocumentAdmission(
@@ -2529,6 +2531,7 @@ const createNoopPublication = (
   let documentChange = DocumentChange.empty;
 
   if (loadsInitialValue(options) && options.validateDocument !== false) {
+    loadOpenedRecords(editor, schema);
     documentChange = constructLoadedDocumentChange(
       editor,
       getEditorDocumentValue(editor)

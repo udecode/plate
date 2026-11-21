@@ -1,4 +1,5 @@
 import type { EditorDocumentRecords } from '../interfaces/editor';
+import type { SchemaRecordSet } from '../interfaces/schema';
 import { deepFreeze, isRecord } from './change/json';
 import { copyFields } from './change/lazy-root';
 import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
@@ -106,7 +107,10 @@ const notJson = (): never => {
 
 // `JSON.stringify` reads through getters, `toJSON` and proxy traps, so the text
 // is written from a plain copy of the own values the walk checked.
-const recordTextOf = (record: RecordJson): string | undefined => {
+const recordTextOf = (
+  record: RecordJson,
+  read?: (plain: RecordJson) => void
+): string | undefined => {
   const open = new WeakSet<object>();
   let indexKeys = false;
   const copy = (value: unknown): unknown => {
@@ -157,6 +161,7 @@ const recordTextOf = (record: RecordJson): string | undefined => {
     throw error;
   }
   countCoreWork('recordTexts');
+  read?.(plain as RecordJson);
 
   return indexKeys ? canonicalRecordJson(plain) : JSON.stringify(plain);
 };
@@ -538,35 +543,165 @@ const invalidRecords = (): never => {
   throw new Error('Document records must encode to JSON-compatible data.');
 };
 
-const parseRecordStore = (json: Readonly<Record<string, unknown>>) => {
-  const sets: Array<readonly [string, RecordTree]> = [];
+type NamedBy = NonNullable<SchemaRecordSet['namedBy']>;
+
+type RecordSetRules = ReadonlyMap<string, Readonly<{ namedBy?: NamedBy }>>;
+
+const NO_RULES: RecordSetRules = new Map();
+
+const namedIdsOf = (rules: RecordSetRules) => {
+  const named = new Map<string, Set<string>>();
+  const unreadable = new Set<string>();
+  const namers = new Map<
+    string,
+    Array<readonly [string, Set<string>, NamedBy['names']]>
+  >();
+
+  for (const [set, { namedBy }] of rules) {
+    if (!namedBy) continue;
+    const ids = new Set<string>();
+
+    named.set(set, ids);
+    namers.set(namedBy.set, [
+      ...(namers.get(namedBy.set) ?? []),
+      [set, ids, namedBy.names],
+    ]);
+  }
+
+  return {
+    keeps: (set: string) => {
+      const ids = named.get(set);
+      const keep = rules.get(set)?.namedBy?.keep;
+
+      return ids && !unreadable.has(set)
+        ? (id: string) => ids.has(id) || keep?.(id) === true
+        : undefined;
+    },
+    named,
+    namers,
+    read: (set: string, record: RecordJson) => {
+      for (const [target, ids, names] of namers.get(set) ?? []) {
+        if (unreadable.has(target)) continue;
+
+        let listed: unknown;
+
+        try {
+          listed = names(record);
+        } catch {
+          listed = null;
+        }
+        if (!Array.isArray(listed)) unreadable.add(target);
+        else for (const id of listed) if (typeof id === 'string') ids.add(id);
+      }
+    },
+  };
+};
+
+const parseRecordStore = (
+  json: Readonly<Record<string, unknown>>,
+  rules: RecordSetRules
+) => {
+  const ids = namedIdsOf(rules);
+  const sets = getEditorJsonRecordEntries(json) ?? invalidRecords();
+  const trees = new Map<string, RecordTree | null>();
+  const load = (set: string, records: unknown) => {
+    const keeps = ids.keeps(set);
+
+    trees.set(
+      set,
+      persistentMapFromSorted(
+        [...(getEditorJsonRecordEntries(records, keeps) ?? invalidRecords())]
+          .sort(([a], [b]) => (a < b ? -1 : 1))
+          .map(([id, record]) => {
+            if (!isRecord(record)) {
+              throw new Error(`Invalid record ${id} in record set ${set}.`);
+            }
+
+            return [
+              id,
+              {
+                json: undefined,
+                text:
+                  recordTextOf(record, (plain) => ids.read(set, plain)) ??
+                  invalidRecords(),
+              },
+            ] as const;
+          })
+      )
+    );
+  };
 
   countCoreWork('recordLoads');
-  for (const [set, records] of getEditorJsonRecordEntries(json) ??
-    invalidRecords()) {
+  for (const [set, records] of sets) {
     if (!isRecord(records)) {
       throw new Error(`Invalid records for record set ${set}.`);
     }
+  }
+  const namedLast = [
+    ...sets.filter(([set]) => !ids.named.has(set)),
+    ...sets.filter(([set]) => ids.named.has(set)),
+  ];
 
-    const tree = persistentMapFromSorted(
-      [...(getEditorJsonRecordEntries(records) ?? invalidRecords())]
-        .sort(([a], [b]) => (a < b ? -1 : 1))
-        .map(([id, record]) => {
-          if (!isRecord(record)) {
-            throw new Error(`Invalid record ${id} in record set ${set}.`);
-          }
+  for (const [set, records] of namedLast) load(set, records);
 
-          return [
-            id,
-            { json: undefined, text: recordTextOf(record) ?? invalidRecords() },
-          ] as const;
-        })
-    );
+  return Object.freeze(
+    Object.fromEntries(
+      sets.flatMap(([set]) => {
+        const tree = trees.get(set);
 
-    if (tree) sets.push([set, tree]);
+        return tree ? [[set, tree] as const] : [];
+      })
+    )
+  );
+};
+
+const collectLiveStore = (
+  store: RecordStore,
+  rules: RecordSetRules
+): RecordStore => {
+  const ids = namedIdsOf(rules);
+
+  for (const set of ids.namers.keys()) {
+    for (const [, text] of getRecordEntries(store, set)) {
+      ids.read(set, JSON.parse(text) as RecordJson);
+    }
   }
 
-  return Object.freeze(Object.fromEntries(sets));
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(store).flatMap(([set, tree]) => {
+        const keeps = ids.keeps(set);
+        const kept = keeps
+          ? [...persistentMapEntries(tree)].filter(([id]) => keeps(id))
+          : undefined;
+
+        if (!kept || kept.length === persistentMapSize(tree)) {
+          return [[set, tree] as const];
+        }
+
+        const collected = persistentMapFromSorted(kept);
+
+        return collected ? [[set, collected] as const] : [];
+      })
+    )
+  );
+};
+
+export const collectRecordStore = (
+  json: unknown,
+  rules: RecordSetRules
+): RecordStore => {
+  if (json === undefined) return EMPTY_RECORD_STORE;
+
+  const known =
+    typeof json === 'object' && json !== null
+      ? STORE_OF_JSON.get(json)
+      : undefined;
+
+  if (known) return collectLiveStore(known, rules);
+  if (!isRecord(json)) throw new Error('Invalid document records.');
+
+  return parseRecordStore(json, rules);
 };
 
 export const recordStoreFromJson = (json: unknown): RecordStore => {
@@ -578,7 +713,7 @@ export const recordStoreFromJson = (json: unknown): RecordStore => {
   }
   if (!isRecord(json)) throw new Error('Invalid document records.');
 
-  const store = parseRecordStore(json);
+  const store = parseRecordStore(json, NO_RULES);
 
   if (isOwnedJsonValue(json)) STORE_OF_JSON.set(json, store);
 
@@ -654,6 +789,17 @@ export const getValueRecords = (
   value: Readonly<{ records?: EditorDocumentRecords }>
 ): RecordStore =>
   VALUE_RECORDS.get(value) ?? recordStoreFromJson(value.records);
+
+export const collectValueRecords = (
+  value: Readonly<{ records?: EditorDocumentRecords }>,
+  rules: RecordSetRules
+): RecordStore => {
+  const known = VALUE_RECORDS.get(value);
+
+  return known
+    ? collectLiveStore(known, rules)
+    : collectRecordStore(value.records, rules);
+};
 
 /** Whether a value says what its records are, as a store or as JSON. */
 export const hasValueRecords = (

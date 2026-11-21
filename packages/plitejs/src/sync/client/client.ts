@@ -19,6 +19,7 @@ import {
   readEditorCommitHistoryStep,
   replaceEditorUndoStep,
 } from '../../core/public-state';
+import { collectValueRecords, withValueRecords } from '../../core/record-store';
 import { publishEditorRefusal } from '../../core/refusal';
 import { withoutUpdateTagContext } from '../../core/update-context';
 import { REMOTE_UPDATE } from '../../core/update-policy';
@@ -248,6 +249,11 @@ const startClient = (
     judge
   );
   const fits = fitsIn(editor);
+  const asOpened = (document: JsonEditorValue) =>
+    withValueRecords(
+      { ...document },
+      collectValueRecords(document, getCompiledEditorSchema(editor).recordSets)
+    );
   const roomTakeBackOf = (logged: DocumentChange, before: JsonEditorValue) =>
     withoutRetainedRecordSets(
       logged.invert(before),
@@ -300,6 +306,7 @@ const startClient = (
     fits,
     fresh: !opened,
     judge,
+    asOpened,
     rebuild,
     record,
     schema,
@@ -325,6 +332,7 @@ const startClient = (
       fits,
       fresh: false,
       judge,
+      asOpened,
       record: claimed.record,
       schema,
       show: () => 'exact',

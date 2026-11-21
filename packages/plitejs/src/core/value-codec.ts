@@ -106,7 +106,8 @@ export const setLazyJsonField = (
  * @internal
  */
 export const getEditorJsonRecordEntries = (
-  value: unknown
+  value: unknown,
+  only?: (key: string) => boolean
 ): ReadonlyArray<readonly [string, unknown]> | null => {
   if (
     typeof value !== 'object' ||
@@ -121,6 +122,7 @@ export const getEditorJsonRecordEntries = (
 
   for (const key of Reflect.ownKeys(value)) {
     if (typeof key !== 'string') return null;
+    if (only && !only(key)) continue;
 
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
 

@@ -7,11 +7,6 @@ import {
   readEditorDocument,
 } from './document-shape';
 import {
-  EMPTY_RECORD_STORE,
-  type RecordStore,
-  recordStoreFromJson,
-} from './record-store';
-import {
   cloneEditorJsonValue,
   getEditorJsonRecordEntries,
   snapshotEditorJsonValue,
@@ -21,7 +16,7 @@ type NormalizedInitialValue = {
   children: Descendant[];
   explicit: boolean;
   meta: Record<string, unknown> | undefined;
-  records: RecordStore;
+  savedRecords: unknown;
   roots: Record<string, Descendant[]>;
 };
 
@@ -133,7 +128,7 @@ export const normalizeEditorValue = (
       children,
       explicit: false,
       meta: undefined,
-      records: EMPTY_RECORD_STORE,
+      savedRecords: undefined,
       roots: Object.freeze({ [MAIN_ROOT_KEY]: children }),
     };
   }
@@ -145,7 +140,7 @@ export const normalizeEditorValue = (
       ),
       explicit: true,
       meta: undefined,
-      records: EMPTY_RECORD_STORE,
+      savedRecords: undefined,
     };
   }
 
@@ -180,6 +175,6 @@ export const normalizeEditorValue = (
     ...copyRepeatedNodes(children, roots),
     explicit: true,
     meta,
-    records: recordStoreFromJson(value.records),
+    savedRecords: value.records,
   };
 };
