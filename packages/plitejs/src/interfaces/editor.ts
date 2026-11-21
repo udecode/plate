@@ -1671,6 +1671,23 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
     options: Readonly<{ at: Path; root?: NamedRootKey }>
   ) => TNode;
   /**
+   * Whether `nodes` can land at the slot `at` ends in, the rule
+   * `tx.blocks.insert` enforces. With `replace`, the nodes take the place of
+   * the child at `at` instead. The parent's content prefix, its `max` and the
+   * children after the move are checked against the root's current document;
+   * the nodes' own children are not. A parent without declared `content`
+   * takes any nodes, and a missing parent refuses. Omit `root` for the
+   * primary root.
+   */
+  canPlace: <TRoot extends RootKey>(
+    nodes: readonly Descendant[],
+    options: Readonly<{
+      at: Path;
+      replace?: boolean;
+      root?: NamedRootKey<TRoot>;
+    }>
+  ) => boolean;
+  /**
    * Create the default child that the parent of `at` declares for the slot
    * `at` ends in. A one-step path names a slot of the root. The parent and its
    * ancestors are read from the root's current document; the slot need not

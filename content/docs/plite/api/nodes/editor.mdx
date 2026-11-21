@@ -426,6 +426,9 @@ const behavior = editor.read((state) => ({
 Common schema checks include:
 
 - `state.schema.allowsElementType(parentType, childType)`
+- `state.schema.canPlace(nodes, { at, replace?, root? })`, which answers whether
+  `nodes` can land at the slot `at` names, or take the place of the child at
+  `at`, under the rule `tx.blocks.insert` enforces
 - `state.schema.create(type, properties?)`
 - `state.schema.createDefaultChild({ at, root? })`
 - `state.schema.delta()`

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-21-block-menus-disable-refused-items",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-21-block-menus-disable-refused-items.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Disable the Turn into and Insert items the caret's parent cannot hold",
+  "targets": [
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-21-turn-into-toolbar-disable-insert-items-caret-ca7128da",
+      "kind": "behavior",
+      "summary": "Disable each item the caret's parent cannot hold, read through `editor.read.schema.canPlace` and, for the heading levels, `BaseHeadingPlugin`'s `read.canSetLevel`. With the caret in a board note, Turn into disables Quote, Details, Code and 3 columns, and Insert disables Table, Code, Quote, Divider and the other blocks a note cannot hold, while Text, Paragraph, the headings and the lists stay enabled. Over page text every item stays enabled.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["turn-into-toolbar-button", "insert-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-21",
+          "entry": "2026-11-21-block-menus-disable-refused-items",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

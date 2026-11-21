@@ -25,6 +25,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-21-block-menus-disable-refused-items",
+      "href": "/registry/changelog/2026-11-21-block-menus-disable-refused-items.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Disable the Turn into and Insert items the caret's parent cannot hold",
+      "change": {
+        "type": "source",
+        "date": "2026-11-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "insert-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-ai-command-tool-results",
       "href": "/registry/changelog/2026-11-20-ai-command-tool-results.json",
       "status": "draft",

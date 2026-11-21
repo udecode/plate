@@ -243,6 +243,48 @@ const getStructuralState = (editor: Editor): StructuralState => {
   };
 };
 
+type RefusedItem = LeafFormat | keyof StructuralState;
+
+const noRefusedItems: RefusedItem[] = [];
+
+const getNoRefusedItems = () => noRefusedItems;
+
+const getRefusedItems = (editor: Editor) => {
+  const [highest] = readBlocks(editor, 'highest');
+  const root = editor.read.view.root();
+  const heading = editor.plugin(BaseHeadingPlugin);
+  const refused: RefusedItem[] = [];
+
+  if (heading.installed) {
+    for (const level of [1, 2, 3, 4, 5, 6] as const) {
+      if (!heading.read.canSetLevel(level)) {
+        refused.push(`heading-${level}`);
+      }
+    }
+  }
+  for (const [value, plugin] of [
+    ['quote', BaseBlockquotePlugin],
+    ['details', BaseDetailsPlugin],
+    ['code', BaseCodeBlockPlugin],
+    ['columns', BaseColumnGroupPlugin],
+  ] as const) {
+    const portal = editor.plugin(plugin);
+
+    if (
+      portal.installed &&
+      highest &&
+      !editor.read.schema.canPlace(
+        [{ children: highest[0].children, type: portal.schema.type }],
+        { at: highest[1], replace: true, root }
+      )
+    ) {
+      refused.push(value);
+    }
+  }
+
+  return refused;
+};
+
 const getLeafFormat = (editor: Editor, node: Element): LeafFormat => {
   const list = editor.plugin(BaseListPlugin);
 
@@ -308,15 +350,18 @@ const getTurnIntoLabel = (value: LeafFormat | undefined) => {
 
 function TurnIntoLeafItem({
   children,
+  disabled,
   icon,
   value,
 }: React.PropsWithChildren<{
+  disabled: boolean;
   icon: React.ReactNode;
   value: LeafFormat;
 }>) {
   return (
     <DropdownMenuRadioItem
       className="min-w-[180px] ps-2 *:first:[span]:hidden"
+      disabled={disabled}
       value={value}
     >
       {icon}
@@ -335,6 +380,7 @@ export function TurnIntoToolbarButton() {
       ElementApi.isElement(node) ? getLeafFormat(editor, node) : undefined,
   }) as LeafFormat | undefined;
   const structural = useEditorSelector(getStructuralState);
+  const refused = useEditorSelector(open ? getRefusedItems : getNoRefusedItems);
   const hasSelection = useEditorSelector(
     (current) => readBlocks(current, 'highest').length > 0
   );
@@ -449,6 +495,7 @@ export function TurnIntoToolbarButton() {
       ? [
           {
             ...structural.quote,
+            refused: refused.includes('quote'),
             icon: <QuoteIcon />,
             label: 'Quote',
             onSelect: () => {
@@ -472,6 +519,7 @@ export function TurnIntoToolbarButton() {
       ? [
           {
             ...structural.details,
+            refused: refused.includes('details'),
             icon: <ChevronRightIcon className="[&:dir(rtl)]:rotate-180" />,
             label: 'Details',
             onSelect: () => {
@@ -496,6 +544,7 @@ export function TurnIntoToolbarButton() {
       ? [
           {
             ...structural.code,
+            refused: refused.includes('code'),
             icon: <FileCodeIcon />,
             label: 'Code',
             onSelect: () => {
@@ -519,6 +568,7 @@ export function TurnIntoToolbarButton() {
       ? [
           {
             ...structural.columns,
+            refused: refused.includes('columns'),
             icon: <Columns3Icon />,
             label: '3 columns',
             onSelect: () => {
@@ -577,6 +627,7 @@ export function TurnIntoToolbarButton() {
             {leafItems.map((item) => (
               <TurnIntoLeafItem
                 key={item.value}
+                disabled={refused.includes(item.value)}
                 icon={item.icon}
                 value={item.value}
               >
@@ -593,7 +644,7 @@ export function TurnIntoToolbarButton() {
                 key={item.label}
                 checked={item.active}
                 className="min-w-[180px]"
-                disabled={!item.eligible}
+                disabled={!item.eligible || item.refused}
                 onSelect={item.onSelect}
               >
                 {item.icon}

@@ -31,6 +31,8 @@ import {
   BaseHorizontalRulePlugin,
   BaseListPlugin,
   BaseParagraphPlugin,
+  type Descendant,
+  PathApi,
   PLUGINS,
 } from 'platejs';
 import { BaseDatePlugin } from 'platejs/date';
@@ -40,7 +42,12 @@ import { BaseFootnotePlugin } from 'platejs/footnote';
 import { BaseColumnGroupPlugin } from 'platejs/layout';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from 'platejs/math';
 import { BaseImagePlugin, BaseMediaEmbedPlugin } from 'platejs/media';
-import { type Editor, useEditor, useEditorReadOnly } from 'platejs/react';
+import {
+  type Editor,
+  useEditor,
+  useEditorReadOnly,
+  useEditorSelector,
+} from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
 import * as React from 'react';
@@ -62,9 +69,15 @@ type Item = {
   icon: React.ReactNode;
   onSelect: () => void;
   value: string;
+  block?: Descendant;
   focusEditor?: boolean;
   label?: string;
 };
+
+const blockOf = (
+  type: string,
+  properties: Readonly<Record<string, unknown>> = {}
+): Descendant => ({ ...properties, children: [{ text: '' }], type });
 
 type Group = {
   group: string;
@@ -117,6 +130,7 @@ function getGroups(editor: Editor): Group[] {
   if (paragraph.installed) {
     basicBlocks.push({
       icon: <PilcrowIcon />,
+      block: blockOf(paragraph.schema.type),
       label: 'Paragraph',
       value: PLUGINS.paragraph,
       onSelect: () => {
@@ -140,6 +154,7 @@ function getGroups(editor: Editor): Group[] {
       ] as const
     ).forEach(([value, label, icon, level]) => {
       basicBlocks.push({
+        block: blockOf(heading.schema.type, { level }),
         icon,
         label,
         value,
@@ -159,6 +174,7 @@ function getGroups(editor: Editor): Group[] {
   if (table.installed) {
     basicBlocks.push({
       icon: <TableIcon />,
+      block: blockOf(table.schema.type),
       label: 'Table',
       value: PLUGINS.table,
       onSelect: () => {
@@ -176,6 +192,7 @@ function getGroups(editor: Editor): Group[] {
   if (codeBlock.installed) {
     basicBlocks.push({
       icon: <FileCodeIcon />,
+      block: blockOf(codeBlock.schema.type),
       label: 'Code',
       value: PLUGINS.codeBlock,
       onSelect: () => {
@@ -193,6 +210,7 @@ function getGroups(editor: Editor): Group[] {
   if (blockquote.installed) {
     basicBlocks.push({
       icon: <QuoteIcon />,
+      block: blockOf(blockquote.schema.type),
       label: 'Quote',
       value: PLUGINS.blockquote,
       onSelect: () => {
@@ -210,6 +228,7 @@ function getGroups(editor: Editor): Group[] {
   if (horizontalRule.installed) {
     basicBlocks.push({
       icon: <MinusIcon />,
+      block: blockOf(horizontalRule.schema.type),
       label: 'Divider',
       value: PLUGINS.horizontalRule,
       onSelect: () => {
@@ -243,6 +262,9 @@ function getGroups(editor: Editor): Group[] {
       ] as const
     ).forEach(([value, label, icon, type]) => {
       lists.push({
+        block: paragraph.installed
+          ? blockOf(paragraph.schema.type, { indent: 1, listType: type })
+          : undefined,
         icon,
         label,
         value,
@@ -265,6 +287,7 @@ function getGroups(editor: Editor): Group[] {
   if (details.installed) {
     lists.push({
       icon: <ChevronRightIcon className="[&:dir(rtl)]:rotate-180" />,
+      block: blockOf(details.schema.type),
       label: 'Details',
       value: PLUGINS.details,
       onSelect: () => {
@@ -283,6 +306,7 @@ function getGroups(editor: Editor): Group[] {
     media.push({
       focusEditor: false,
       icon: <ImageIcon />,
+      block: blockOf(image.schema.type),
       label: 'Image',
       value: PLUGINS.image,
       onSelect: () => {
@@ -319,6 +343,7 @@ function getGroups(editor: Editor): Group[] {
     media.push({
       focusEditor: false,
       icon: <FilmIcon />,
+      block: blockOf(mediaEmbed.schema.type),
       label: 'Embed',
       value: PLUGINS.mediaEmbed,
       onSelect: () => {
@@ -354,6 +379,7 @@ function getGroups(editor: Editor): Group[] {
   if (toc.installed) {
     advancedBlocks.push({
       icon: <TableOfContentsIcon />,
+      block: blockOf(toc.schema.type),
       label: 'Table of contents',
       value: PLUGINS.toc,
       onSelect: () => {
@@ -371,6 +397,7 @@ function getGroups(editor: Editor): Group[] {
   if (column.installed) {
     advancedBlocks.push({
       icon: <Columns3Icon />,
+      block: blockOf(column.schema.type),
       label: '3 columns',
       value: 'action_three_columns',
       onSelect: () => {
@@ -392,6 +419,7 @@ function getGroups(editor: Editor): Group[] {
     advancedBlocks.push({
       focusEditor: false,
       icon: <RadicalIcon />,
+      block: blockOf(equation.schema.type),
       label: 'Equation',
       value: PLUGINS.equation,
       onSelect: () => {
@@ -409,6 +437,7 @@ function getGroups(editor: Editor): Group[] {
   if (excalidraw.installed) {
     advancedBlocks.push({
       icon: <PenToolIcon />,
+      block: blockOf(excalidraw.schema.type),
       label: 'Excalidraw',
       value: PLUGINS.excalidraw,
       onSelect: () => {
@@ -514,11 +543,33 @@ function getGroups(editor: Editor): Group[] {
   return groups;
 }
 
+const noRefusedItems: string[] = [];
+
+const getNoRefusedItems = () => noRefusedItems;
+
+const getRefusedItems = (editor: Editor) => {
+  const entry = editor.read.selection() ? editor.read.nodes.block() : undefined;
+
+  if (!entry) return noRefusedItems;
+
+  const at = PathApi.next(entry[1]);
+  const root = editor.read.view.root();
+
+  return getGroups(editor).flatMap(({ items }) =>
+    items.flatMap(({ block, value }) =>
+      block && !editor.read.schema.canPlace([block], { at, root })
+        ? [value]
+        : []
+    )
+  );
+};
+
 export function InsertToolbarButton() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const [open, setOpen] = React.useState(false);
   const groups = getGroups(editor);
+  const refused = useEditorSelector(open ? getRefusedItems : getNoRefusedItems);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
@@ -544,6 +595,7 @@ export function InsertToolbarButton() {
                 <DropdownMenuItem
                   key={value}
                   className="min-w-[180px]"
+                  disabled={refused.includes(value)}
                   finalFocus={
                     focusEditor
                       ? () => {

@@ -2179,6 +2179,15 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
+  const canPlace: EditorStateSchemaApi<V>['canPlace'] = (
+    nodes,
+    { at, replace, root = 'main' }
+  ) =>
+    canPlaceAtPath(at, nodes, {
+      removing: replace ? at.slice(-1) : [],
+      root,
+    });
+
   const createDeclarativeAndFill = (
     schema: CompiledEditorSchema,
     type: string,
@@ -5689,6 +5698,7 @@ export const createEditorSchema = <V extends Value = Value>(
     canContain,
     canContainAt,
     canContainAtRoot,
+    canPlace,
     canPlaceAt,
     canPlaceAtPath,
     canWrap,

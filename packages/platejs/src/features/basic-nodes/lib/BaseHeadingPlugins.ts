@@ -81,51 +81,66 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
       },
     }),
   rules,
-  read: ({ editor, schema: { type } }) => ({
-    level: (node: Element): HeadingLevel | undefined => {
-      const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
-      const summaryType = summary
-        ? editor.plugin(summary).schema.type
-        : undefined;
-
-      return (node.type === type ||
-        (summaryType !== undefined && node.type === summaryType)) &&
-        isHeadingLevel(node.level)
-        ? node.level
-        : undefined;
-    },
-  }),
-}).extend(({ read }) => ({
-  update: ({ editor, tx, schema: { type } }) => {
+}).extend(({ editor, schema: { type } }) => {
+  const isDetailsTitle = (node: Readonly<Element>) => {
     const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
-    const summaryType = summary
-      ? editor.plugin(summary).schema.type
+
+    return !!summary && node.type === editor.plugin(summary).schema.type;
+  };
+  const levelOf = (node: Readonly<Element>): HeadingLevel | undefined =>
+    (node.type === type || isDetailsTitle(node)) && isHeadingLevel(node.level)
+      ? node.level
       : undefined;
-    const setLevel = txLocate(false, (level: HeadingLevel) => {
-      const blocks = tx.nodes.blocks();
+  const levelProps = (level: HeadingLevel) => (node: Readonly<Element>) =>
+    isDetailsTitle(node) ? { level } : { level, type };
 
-      if (blocks.length === 0) return false;
+  return {
+    read: ({ state }) => ({
+      level: levelOf,
+      /**
+       * Whether `setLevel(level)` can apply: the schema lets every selected
+       * block take the level where it sits.
+       */
+      canSetLevel: (level: HeadingLevel) => {
+        const blocks = state.nodes.blocks();
+        const props = levelProps(level);
+        const root = state.view.root();
 
-      return (
-        blocks.every(([node]) => read.level(node) === level) ||
-        tx.blocks.set((node) =>
-          summaryType !== undefined && node.type === summaryType
-            ? { level }
-            : { level, type }
-        )
-      );
-    });
+        return (
+          blocks.length > 0 &&
+          blocks.every(([node, path]) =>
+            state.schema.canPlace([{ ...node, ...props(node) }], {
+              at: path,
+              replace: true,
+              root,
+            })
+          )
+        );
+      },
+    }),
+    update: ({ tx }) => {
+      const setLevel = txLocate(false, (level: HeadingLevel) => {
+        const blocks = tx.nodes.blocks();
 
-    return {
-      setLevel,
-      toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
-        tx.nodes.blocks().some(([node]) => read.level(node) === level)
-          ? tx.blocks.reset({ unset: 'level' })
-          : setLevel(level)
-      ),
-    };
-  },
-}));
+        if (blocks.length === 0) return false;
+
+        return (
+          blocks.every(([node]) => levelOf(node) === level) ||
+          tx.blocks.set(levelProps(level))
+        );
+      });
+
+      return {
+        setLevel,
+        toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
+          tx.nodes.blocks().some(([node]) => levelOf(node) === level)
+            ? tx.blocks.reset({ unset: 'level' })
+            : setLevel(level)
+        ),
+      };
+    },
+  };
+});
 
 export const HeadingRules = {
   markdown: ({

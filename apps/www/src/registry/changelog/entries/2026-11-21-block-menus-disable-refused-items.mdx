@@ -1,0 +1,14 @@
+---
+id: 2026-11-21-block-menus-disable-refused-items
+date: 2026-11-21
+status: draft
+kind: behavior
+summary: "Disable the Turn into and Insert items the caret's parent cannot hold"
+change: { 'type': 'source', 'date': '2026-11-21', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-21-turn-into-toolbar-disable-insert-items-caret-ca7128da","kind":"behavior","migrationNotes":[]} -->
+
+- **`turn-into-toolbar-button`**, **`insert-toolbar-button`**: Disable each item the caret's parent cannot hold, read through `editor.read.schema.canPlace` and, for the heading levels, `BaseHeadingPlugin`'s `read.canSetLevel`. With the caret in a board note, Turn into disables Quote, Details, Code and 3 columns, and Insert disables Table, Code, Quote, Divider and the other blocks a note cannot hold, while Text, Paragraph, the headings and the lists stay enabled. Over page text every item stays enabled.

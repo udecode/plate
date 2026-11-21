@@ -80,6 +80,12 @@ editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
 
 使用当前级别会把标题重置为根默认块；使用其他级别会修改同一标题类型的 level。
 
+~~~ts
+editor.plugin(HeadingPlugin).read.canSetLevel(2);
+~~~
+
+`canSetLevel` 回答每个选中的块能否在原位置取得该等级，规则与 `setLevel` 执行的一致。菜单可以据此禁用光标所在父级无法容纳的等级，复制的 Turn into 菜单就是这样做的。
+
 ## API
 
 | API | 用途 |

@@ -89,6 +89,12 @@ editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
 
 Calling toggle with the active level resets the selected heading to the root default block. Calling it with another level changes the level on the same heading type.
 
+~~~ts
+editor.plugin(HeadingPlugin).read.canSetLevel(2);
+~~~
+
+`canSetLevel` answers whether every selected block can take that level where it sits, under the rule `setLevel` enforces. A menu can disable a level the caret's parent cannot hold, as the copied Turn into menu does.
+
 ## API Reference
 
 | API | Purpose |
