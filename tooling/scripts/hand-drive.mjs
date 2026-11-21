@@ -516,6 +516,11 @@ function main() {
     return;
   }
   if (command === 'scope') {
+    if (options.files.length === 0) {
+      throw new Error(
+        'scope needs the changed files: hand-drive.mjs scope <file...>'
+      );
+    }
     const { cells, unmapped } = cellsFor(
       options.files,
       readSources(options.root),
