@@ -11,6 +11,7 @@ import {
 } from '../..';
 import { withAuthoredUpdateView } from '../../core/authored-runtime';
 import { withCompositionStamp } from '../../core/composition-stamp';
+import { deleteTripleClickedBlock } from '../../core/editor-commands';
 import {
   type NativeGroupingInput,
   nativeGroupingInput,
@@ -663,12 +664,23 @@ export const applyEditableCommand = ({
           return true;
         }
 
-        dispatchCommand(editor, editorCommands.deleteFragment, {
-          ...(selection &&
+        const expanded =
+          selection &&
           RangeApi.isRange(selection) &&
           RangeApi.isExpanded(selection)
-            ? { at: readTripleClickedBlock(editor, selection) ?? selection }
-            : {}),
+            ? selection
+            : null;
+        const block = expanded && readTripleClickedBlock(editor, expanded);
+
+        if (block) {
+          editor.update((tx) =>
+            deleteTripleClickedBlock(tx, block, command.direction ?? 'forward')
+          );
+          return true;
+        }
+
+        dispatchCommand(editor, editorCommands.deleteFragment, {
+          ...(expanded ? { at: expanded } : {}),
           direction: command.direction ?? 'forward',
         });
         return true;

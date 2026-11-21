@@ -9,7 +9,7 @@ import {
   type Range,
   RangeApi,
 } from '../..';
-import { getFullySelectedSiblingBlocks } from '../../core/editor-commands';
+import { getRemovableTripleClickedBlock } from '../../core/editor-commands';
 import { getSelection } from '../../dom';
 import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
 import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
@@ -68,11 +68,9 @@ export const getTripleClickRange = (
   if (lineRange) return { block: null, range: lineRange };
 
   const range = editorRange(editor, blockPath);
-  const block = editor.read((state) => {
-    const blocks = getFullySelectedSiblingBlocks(state, range);
-
-    return blocks?.length === 1 && blocks[0] ? state.key(blocks[0][0]) : null;
-  });
+  const block = editor.read((state) =>
+    getRemovableTripleClickedBlock(state, range)
+  );
 
   return { block, range };
 };

@@ -6,6 +6,7 @@ import type {
   EditorStateView,
   EditorToggleBlockOptions,
   EditorToggleMarkOptions,
+  EditorUpdateTransaction,
   NodeKey,
   NodeTarget,
   Value,
@@ -73,6 +74,7 @@ import { toCompiledNodeContext } from './schema-compiler';
 import { refuseCrossing } from './set-root';
 import { notePasteLoss, planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
+import { canReplaceChildrenWithText, holdsWritableText } from './writable-text';
 
 type CommandStateView = EditorStateView<Value, any>;
 
@@ -297,6 +299,56 @@ export const getFullySelectedSiblingBlocks = (
   return endsAtBlockEnd ? blocks : blocks.slice(0, -1);
 };
 
+const hasSiblingOutside = (
+  state: CommandStateView,
+  blocks: ReadonlyArray<NodeEntry<Element>>,
+  root: string | undefined
+) =>
+  PathApi.hasPrevious(getDefined(blocks[0])[1]) ||
+  state.nodes.get({
+    offset: 0,
+    path: PathApi.next(getDefined(blocks.at(-1))[1]),
+    ...(root ? { root } : {}),
+  }) !== undefined;
+
+const isGrid = (state: CommandStateView, node: Element) =>
+  getCompiledEditorSchemaFromApi(state.schema)?.elements.byType.get(node.type)
+    ?.structure?.kind === 'grid';
+
+const takesCaretAfterRemoval = (
+  state: CommandStateView,
+  node: Node | undefined
+) =>
+  NodeApi.isElement(node) &&
+  !isGrid(state, node) &&
+  holdsWritableText(getInternalEditorSchemaFromApi(state.schema), node);
+
+export const getRemovableTripleClickedBlock = (
+  state: CommandStateView,
+  range: Range
+): NodeKey | null => {
+  const blocks = getFullySelectedSiblingBlocks(state, range);
+  const [block, path] = blocks?.length === 1 ? getDefined(blocks[0]) : [];
+
+  if (!block || !path) return null;
+
+  const next = state.nodes.next({ at: state.key(block) })?.[0];
+  const removable = getInternalEditorSchemaFromApi(state.schema).canPlaceAtPath(
+    path,
+    [],
+    {
+      removing: [getDefined(path.at(-1))],
+      root: range.anchor.root ?? range.focus.root ?? 'main',
+    }
+  );
+
+  return removable &&
+    takesCaretAfterRemoval(state, block) &&
+    takesCaretAfterRemoval(state, next)
+    ? state.key(block)
+    : null;
+};
+
 const getTextMarks = (node: import('../interfaces').Text) => {
   const { text: _text, ...marks } = node;
 
@@ -347,13 +399,16 @@ const blockReplacing = (
   [block, at]: NodeEntry<Descendant>,
   root: string,
   text: string,
-  marks: Record<string, unknown> | null
+  marks: Record<string, unknown> | null,
+  shell?: Element
 ): Descendant | null => {
   const publicRoot = toPublicRoot(root);
-  const defaultChild = state.schema.createDefaultChild({
-    at,
-    root: publicRoot,
-  });
+  const defaultChild =
+    shell ??
+    state.schema.createDefaultChild({
+      at,
+      root: publicRoot,
+    });
   // New text drops the properties the schema drops on copy, such as review
   // marks of the text it replaces.
   const copied = marks
@@ -431,6 +486,13 @@ const getFullBlockTextReplacement = (
   }
 
   const root = rootOrUpdateRoot(range.anchor.root ?? range.focus.root);
+  const keepsFirstBlock =
+    blocks.length > 1 &&
+    hasSiblingOutside(state, blocks, toPublicRoot(root)) &&
+    canReplaceChildrenWithText(
+      getInternalEditorSchemaFromApi(state.schema),
+      firstBlock
+    );
   const replacement = blockReplacing(
     state,
     getDefined(blocks[0]),
@@ -440,7 +502,8 @@ const getFullBlockTextReplacement = (
       getConsistentBlockTextMarks(
         state,
         blocks.map(([block]) => state.key(block))
-      )
+      ),
+    keepsFirstBlock ? { ...firstBlock, children: [{ text: '' }] } : undefined
   );
 
   if (!replacement) return null;
@@ -650,45 +713,69 @@ export const editorCommands: EditorCommands = Object.freeze({
       const selectedBlocks = range
         ? getFullySelectedSiblingBlocks(state, range)
         : null;
-      const onlyBlock =
-        selectedBlocks?.length === 1 ? getDefined(selectedBlocks[0]) : null;
       const root = rootOrUpdateRoot(range?.anchor.root ?? range?.focus.root);
 
       if (range) {
         refuseCrossing(getSetSite(getActiveCommandEditor()), range, root);
       }
       const publicRoot = toPublicRoot(root);
-      const rootHasOtherBlock =
-        onlyBlock !== null &&
-        (PathApi.hasPrevious(onlyBlock[1]) ||
-          state.nodes.get({
-            offset: 0,
-            path: PathApi.next(onlyBlock[1]),
-            ...(publicRoot ? { root: publicRoot } : {}),
-          }) !== undefined);
-      const keepsBlock =
-        onlyBlock !== null &&
-        rootHasOtherBlock &&
-        RangeApi.isRange(input.at) &&
-        PathApi.isAncestor(onlyBlock[1], RangeApi.end(input.at).path);
-      const fullBlocks = keepsBlock ? null : selectedBlocks;
 
-      if (fullBlocks) {
-        const [firstBlock, firstPath] = getDefined(fullBlocks[0]);
-        const [lastBlock] = getDefined(fullBlocks.at(-1));
+      if (selectedBlocks) {
+        const [firstBlock, firstPath] = getDefined(selectedBlocks[0]);
+        const [lastBlock] = getDefined(selectedBlocks.at(-1));
+        const textRange =
+          range &&
+          RangeApi.isRange(input.at) &&
+          hasSiblingOutside(state, selectedBlocks, publicRoot)
+            ? range
+            : null;
+        const endsInFirst =
+          textRange !== null &&
+          PathApi.isAncestor(firstPath, RangeApi.end(textRange).path);
+
+        if (
+          textRange &&
+          (endsInFirst || takesCaretAfterRemoval(state, firstBlock))
+        ) {
+          const at: Range = endsInFirst
+            ? textRange
+            : {
+                anchor: RangeApi.start(textRange),
+                focus: {
+                  ...getDefined(state.points.end(state.key(firstBlock))),
+                  ...(publicRoot ? { root: publicRoot } : {}),
+                },
+              };
+
+          return state.transaction((tx) => {
+            if (selectedBlocks.length > 1) {
+              tx.nodes.replaceChildren([], {
+                at: PathApi.parent(firstPath),
+                count: selectedBlocks.length - 1,
+                index: getDefined(firstPath.at(-1)) + 1,
+                ...(publicRoot ? { root: publicRoot } : {}),
+              });
+            }
+            tx.fragment.delete({ at, direction: input.direction });
+          });
+        }
+
         const parentPath = PathApi.parent(firstPath);
         const index = getDefined(firstPath.at(-1));
-        const previous = state.nodes.previous({
-          at: state.key(firstBlock),
-          sibling: true,
-        })?.[0];
+        const previous = textRange
+          ? undefined
+          : state.nodes.previous({
+              at: state.key(firstBlock),
+              sibling: true,
+            })?.[0];
         const previousPoint =
           previous && NodeApi.isElement(previous)
             ? state.points.end(state.key(previous))
             : undefined;
-        const next = previousPoint
-          ? undefined
-          : state.nodes.next({ at: state.key(lastBlock) });
+        const next =
+          textRange || previousPoint
+            ? undefined
+            : state.nodes.next({ at: state.key(lastBlock) });
         const nextPoint = next
           ? state.points.start(state.key(next[0]))
           : undefined;
@@ -707,13 +794,13 @@ export const editorCommands: EditorCommands = Object.freeze({
           ? null
           : blockReplacing(
               state,
-              getDefined(fullBlocks[0]),
+              getDefined(selectedBlocks[0]),
               root,
               '',
               state.marks() ??
                 getConsistentBlockTextMarks(
                   state,
-                  fullBlocks.map(([block]) => state.key(block))
+                  selectedBlocks.map(([block]) => state.key(block))
                 )
             );
 
@@ -742,7 +829,7 @@ export const editorCommands: EditorCommands = Object.freeze({
 
           tx.nodes.replaceChildren(defaultChild ? [defaultChild] : [], {
             at: parentPath,
-            count: fullBlocks.length,
+            count: selectedBlocks.length,
             index,
             ...(publicRoot ? { root: publicRoot } : {}),
             ...(point
@@ -1034,3 +1121,19 @@ export const editorCommands: EditorCommands = Object.freeze({
     },
   }),
 });
+
+export const deleteTripleClickedBlock = (
+  tx: EditorUpdateTransaction<Value, any>,
+  block: NodeKey,
+  direction: 'backward' | 'forward'
+) => {
+  const next = tx.nodes.next({ at: block })?.[0];
+
+  tx.command(editorCommands.deleteFragment, { at: block, direction });
+
+  if (!next || tx.nodes.get(block)) return;
+
+  const start = tx.points.start(tx.key(next));
+
+  if (start) tx.selection.set({ anchor: start, focus: start });
+};
