@@ -3,11 +3,13 @@
 // the ones a landing leaves out, one run at a time. A launchd job starts it
 // every 20 minutes; a run that finds next unchanged or another run going
 // exits at once. Once a day the first run after 04:00 is the full fresh run.
-// A red step is rerun alone, its first bad commit is searched for from the
-// last commit that step passed on while the hour lasts, and the result goes to
-// events.jsonl and the suggested-task ledger, never to the team channel
-// (owner's word, 2026-11-17). The local-ci skill's watcher reads events.jsonl
-// and runs one fix at a time for the red steps.
+// The owner's Mac is the main CI and checks every step; another teammate's
+// Mac checks the steps its config.json names. A red step is rerun alone,
+// its first bad commit is searched for from the last commit that step passed
+// on while the hour lasts, and the result goes to events.jsonl and the
+// suggested-task ledger, never to the team channel (owner's word,
+// 2026-11-17). The local-ci skill's watcher reads events.jsonl and runs one
+// fix at a time for the red steps.
 import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
@@ -25,14 +27,19 @@ import { dirname, join, relative } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
-import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
+import {
+  ledgerPath,
+  lockLedger,
+  readTasks,
+  syncLedger,
+} from '../../.agents/pstack/tasks.mjs';
 import {
   installLockfile,
   INTERRUPTED,
   lockfileInstalled,
   STEP_LOG,
 } from './check-steps.mjs';
-import { newPrivateFiles } from './private-files.mjs';
+import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
 import { dueRecurrences, recurrenceOffer, runsOf } from './red-recurrence.mjs';
 import {
   clearedHeader,
@@ -46,21 +53,26 @@ import {
 
 const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
   run        check the newest origin/next unless it was checked
-             --full     the daily fresh run with --build --browser --reads
+             --full     the daily fresh run, with --build --browser --reads on main
              --ref <sha> --green <sha>   check <sha>, searching back to <sha>
-             --step <name>   run one step instead of every step
+             --step <name>   run one step instead of this Mac's steps
              --force    check next again although it has not moved
              --dry      write the event only: no ref push or task
-  status     the last run, the last green commit and the latest events
+  status     the last run, the last green commit, this Mac's steps and the
+             latest events
   wait       block until an event the watcher acts on, print it and exit
              --after <iso time>   only events written after that time
-  install    start the launchd job that runs it every 20 minutes
+  install    start the launchd job that runs it every 20 minutes, as the
+             main CI that checks every step
+             --steps <name,name>   as a Mac other than main that checks only
+                        these steps
   uninstall  stop and remove that job`;
 
 const LABEL = 'dev.plate.local-ci';
 const INTERVAL_SECONDS = 1200;
 const BUDGET_MS = 55 * 60_000;
 const FULL_HOUR = 4;
+const FULL_ARGS = ['--build', '--browser', '--reads'];
 const FLAKE_LOAD = 20;
 const GREEN_REF = 'refs/pstack/local-ci-green';
 const FIX_TOPIC = 'local-ci';
@@ -84,6 +96,7 @@ const common = must(here, [
 const main = dirname(common);
 const home = join(common, 'plate-local-ci');
 const statePath = join(home, 'state.json');
+const configPath = join(home, 'config.json');
 const eventsPath = join(home, 'events.jsonl');
 const lockDir = join(home, 'lock');
 const worktree = join(main, '.claude', 'worktrees', 'local-ci');
@@ -93,6 +106,47 @@ const readState = () =>
   existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf-8')) : {};
 const writeState = (state) =>
   writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
+
+const valueOf = (args, name) => {
+  const at = args.indexOf(name);
+  return at === -1 ? undefined : args[at + 1];
+};
+const myEmail = () => git(main, ['config', 'user.email']).stdout.trim();
+// The steps a Mac other than main checks, which install --steps writes. A Mac
+// with no config.json is main.
+const configSteps = () =>
+  existsSync(configPath)
+    ? JSON.parse(readFileSync(configPath, 'utf-8')).steps
+    : undefined;
+// check.mjs loads npm packages. Only a Mac that names its steps loads it, so
+// main's runner still starts and reports a broken event while its worktree's
+// install is broken.
+const checkModule = () => import('./check.mjs');
+const stepsFlag = async (args) => {
+  if (!args.includes('--steps')) return {};
+  const { steps } = await checkModule();
+  const names = (valueOf(args, '--steps') ?? '').split(',').filter(Boolean);
+  const unknown = names.filter(
+    (name) => !steps.some((step) => step.name === name)
+  );
+  if (names.length === 0 || unknown.length > 0) {
+    return {
+      error: `[local-ci] ${unknown.length > 0 ? `unknown step: ${unknown.join(', ')}` : '--steps names no step'}. Run pnpm check --list.`,
+    };
+  }
+  if (!myEmail()) {
+    return {
+      error: `[local-ci] --steps needs git config user.email in ${main}, which a red's culprit is judged against.`,
+    };
+  }
+  return { names };
+};
+const mainSteps = async () => {
+  const { deepSteps, selectSteps } = await checkModule();
+  return new Set(
+    [...deepSteps, ...selectSteps(FULL_ARGS)].map((step) => step.name)
+  );
+};
 const readEvents = () =>
   existsSync(eventsPath)
     ? readFileSync(eventsPath, 'utf-8')
@@ -240,13 +294,13 @@ const check = (logs, name, args, { full = false } = {}) => {
 };
 
 const commitInfo = (sha) => {
-  const [subject, session] = must(main, [
+  const [subject, author, session] = must(main, [
     'log',
     '-1',
-    '--format=%s%n%(trailers:key=Session,valueonly,separator=)',
+    '--format=%s%n%ae%n%(trailers:key=Session,valueonly,separator=)',
     sha,
   ]).split('\n');
-  return { culprit: sha, session: session || null, subject };
+  return { author, culprit: sha, session: session || null, subject };
 };
 
 const shell = (logs, name, line) => {
@@ -379,20 +433,36 @@ const where = (event) =>
   event.kind === 'flake'
     ? `once and passing its rerun${event.loaded ? ' under load' : ''}`
     : event.culprit
-      ? `since ${event.culprit.slice(0, 10)} (${event.subject})`
+      ? `since ${event.culprit.slice(0, 10)} (${event.subject})${event.author ? ` by ${event.author}` : ''}`
       : `somewhere in ${event.range}`;
 
 const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
 const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
 const fixTitle = (step) => `Fix the ${step} check that fails on next`;
-const openTask = (step) =>
-  existsSync(ledger)
+// A run can take most of an hour, and another Mac's run may offer the step's
+// task meanwhile, so each read first syncs the ledger with its ref on origin,
+// as setup.mjs does at each session start.
+const syncTasks = () => {
+  const companion = join(main, PRIVATE_DIR);
+  if (!existsSync(companion)) return;
+  const lock = lockLedger(common);
+  if (!lock) return;
+  try {
+    syncLedger(ledger, ['--git-dir', companion], lock);
+  } finally {
+    lock.release();
+  }
+};
+const openTask = (step) => {
+  syncTasks();
+  return existsSync(ledger)
     ? [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()].find(
         (task) =>
           task.title?.includes(fixTitle(step)) &&
           ['offered', 'started'].includes(task.status)
       )
     : undefined;
+};
 
 // A fix that dies with its session, such as in an app restart, leaves its
 // task open with nobody on it.
@@ -501,20 +571,32 @@ const fetchNext = () => {
   return must(main, ['rev-parse', 'origin/next']);
 };
 
-const run = (args) => {
-  const option = (name) => {
-    const at = args.indexOf(name);
-    return at === -1 ? undefined : args[at + 1];
-  };
+const run = async (args) => {
+  const option = (name) => valueOf(args, name);
   const dry = args.includes('--dry');
   const emit = (event) =>
     appendEvent(option('--ref') ? { ...event, offNext: true } : event);
   if (option('--step') && !option('--ref')) {
     console.error(
-      '[local-ci] --step checks one step, so it needs --ref; a run on next checks every step.'
+      "[local-ci] --step checks one step, so it needs --ref; a run on next checks this Mac's steps."
     );
     return 1;
   }
+  const mine = configSteps();
+  const isMain = mine === undefined;
+  const mainChecks = isMain ? new Set() : await mainSteps();
+  const me = myEmail().toLowerCase();
+  const leftToMain = (event) =>
+    mainChecks.has(event.step) &&
+    me !== '' &&
+    Boolean(event.culprit && event.author) &&
+    event.author.toLowerCase() !== me;
+  const reportRed = (event) => {
+    if (leftToMain(event)) {
+      return { ...(dry ? { dry } : {}), leftToMain: true, wake: false };
+    }
+    return dry ? { dry, wake: true } : report(event);
+  };
   mkdirSync(home, { recursive: true });
   const holder = takeLock();
   if (holder) {
@@ -569,7 +651,7 @@ const run = (args) => {
     const result = check(
       logs,
       name,
-      step ? [step] : full ? ['--build', '--browser', '--reads'] : ['--deep'],
+      step ? [step] : (mine ?? (full ? FULL_ARGS : ['--deep'])),
       { full }
     );
     const green = option('--green') ?? state.green ?? null;
@@ -578,7 +660,8 @@ const run = (args) => {
     if (result.ok) {
       emit({ kind: 'green', log: result.log, tip });
       if (!option('--ref')) next.green = tip;
-      if (!dry && !option('--ref')) pushGreen(tip);
+      // The shared ref claims every step passed, which only main checks.
+      if (!dry && !option('--ref') && isMain) pushGreen(tip);
     } else if (result.failed.length === 0 && result.interrupted.length === 0) {
       emit({
         kind: 'broken',
@@ -610,12 +693,13 @@ const run = (args) => {
           step: failed,
           tip,
         };
-        emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
+        emit({ ...event, ...reportRed(event) });
         continue;
       }
       const before = wasRed.get(failed);
       if (sameRed(before, { interrupted, unexpected })) {
         const event = {
+          author: before.author,
           culprit: before.culprit ?? null,
           failures: interrupted ? before.failures : unexpected,
           green: before.green ?? null,
@@ -628,7 +712,7 @@ const run = (args) => {
           subject: before.subject,
           tip,
         };
-        emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
+        emit({ ...event, ...reportRed(event) });
         continue;
       }
       const files = [
@@ -689,7 +773,7 @@ const run = (args) => {
         tip,
         ...found,
       };
-      emit({ ...event, ...(dry ? { dry, wake: true } : report(event)) });
+      emit({ ...event, ...reportRed(event) });
     }
     if (!option('--ref')) {
       for (const cleared of wasRed.keys()) {
@@ -790,6 +874,8 @@ const status = () => {
       `running: ${lock && alive(lock) ? `pid ${lock}` : 'no'}`,
       `last run: ${state.lastRun ?? 'none'} at ${state.lastRunAt ?? '-'}`,
       `last green: ${state.green ?? 'none'}`,
+      `checks: ${configSteps()?.join(', ') ?? 'every step (main CI)'}`,
+      `culprits judged against: ${myEmail() || 'nobody, because git config user.email is empty'}`,
       ...redFor(readEvents(), new Date().toISOString()),
       `events: ${eventsPath}`,
       ...readEvents()
@@ -803,13 +889,26 @@ const status = () => {
   return 0;
 };
 
-const install = () => {
+const install = async (args) => {
+  const flag = await stepsFlag(args);
+  if (flag.error) {
+    console.error(flag.error);
+    return 1;
+  }
   // Each run moves the Local CI worktree to the newest next, so the job runs
   // that copy and a fix to this script reaches it with its landing. The main
   // checkout's copy moves only when someone pulls there.
   const script = join(worktree, 'tooling', 'scripts', 'local-ci.mjs');
   if (!existsSync(script)) checkout(fetchNext());
   mkdirSync(home, { recursive: true });
+  if (flag.names) {
+    writeFileSync(
+      configPath,
+      `${JSON.stringify({ steps: flag.names }, null, 2)}\n`
+    );
+  } else {
+    rmSync(configPath, { force: true });
+  }
   const escape = (text) =>
     text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
   const strings = (items) =>
@@ -839,7 +938,7 @@ const install = () => {
     return 1;
   }
   console.info(
-    `[local-ci] ${LABEL} runs ${script} every ${INTERVAL_SECONDS / 60} minutes.`
+    `[local-ci] ${LABEL} runs ${script} every ${INTERVAL_SECONDS / 60} minutes and checks ${flag.names?.join(', ') ?? 'every step as the main CI'}.`
   );
   return 0;
 };

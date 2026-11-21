@@ -989,6 +989,10 @@ export const steps = [
   },
 ];
 
+export const deepSteps = steps.filter((step) =>
+  [undefined, '--browser', '--build'].includes(step.optIn)
+);
+
 export const manualOnly = {
   'bench:editor:check':
     'Checks the separate benchmarks/editor npm project, which needs its own npm install.',
@@ -1330,9 +1334,7 @@ const main = async () => {
   let chosen = affected
     ? steps.filter((step) => !step.optIn)
     : deep
-      ? steps.filter((step) =>
-          [undefined, '--browser', '--build'].includes(step.optIn)
-        )
+      ? deepSteps
       : selectSteps(args);
   if (affected) {
     const later = chosen.filter((step) => !step.land);
