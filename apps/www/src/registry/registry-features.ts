@@ -80,6 +80,9 @@ export const registryStaticFeatures: Registry['items'] = [
         type: 'registry:component',
       },
     ],
+    meta: {
+      docs: [{ route: '/docs/field', title: 'Field' }],
+    },
     name: 'field-static',
     type: 'registry:component',
   },
@@ -719,7 +722,10 @@ export const registryFeatures: Registry['items'] = [
     description:
       'A form field chip that one role fills, with a settings popover for its kind, options, default and condition.',
     title: 'Field',
-    meta: { examples: ['field-demo'] },
+    meta: {
+      docs: [{ route: '/docs/field', title: 'Field' }],
+      examples: ['field-demo'],
+    },
   },
   {
     dependencies: ['platejs'],

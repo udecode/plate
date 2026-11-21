@@ -1,0 +1,26 @@
+---
+id: 2026-11-21-add-field
+date: 2026-11-21
+status: draft
+kind: new
+summary: 'Add fields that one role fills, with an insert menu, a settings popover and a lease example'
+change: { 'type': 'source', 'date': '2026-11-21', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-21-field-fields-that-one-role-2a0713b6","kind":"new","migrationNotes":[]} -->
+
+- **`field`**: Add `FieldKit`, which installs `FieldPlugin` with `FieldElement`. The chip shows a field's label, an asterisk when it is required, its role, and a warning when `useFieldRead` reports a problem, such as a condition whose field was deleted. A click opens a popover for the field's label, kind, role, required flag, default, choice options and a Show when condition on another field. The role input offers the roles the document's fields already use. Installing `field` also installs `field-toolbar-button`.
+
+<!-- entry: {"id":"2026-11-21-field-static-answer-or-label","kind":"new","migrationNotes":[]} -->
+
+- **`field-static`**: Add `BaseFieldKit`, which renders each field's answer, a choice as its option's label, or the field's label when it has no answer.
+
+<!-- entry: {"id":"2026-11-21-field-toolbar-button-insert-menu","kind":"new","migrationNotes":[]} -->
+
+- **`field-toolbar-button`**: Add `FieldToolbarButton`, a menu that inserts a text, number, date, checkbox, choice or signature field. A new field takes the role of the document's first field, or `signer` in a document with no field.
+
+<!-- entry: {"id":"2026-11-21-field-demo-lease","kind":"new","migrationNotes":[]} -->
+
+- **`field-demo`**: Add an example of a lease template for a landlord and a tenant, with a fee table, that shows its HTML, its Markdown and what Word export drops.

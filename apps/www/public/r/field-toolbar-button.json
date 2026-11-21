@@ -20,6 +20,12 @@
     }
   ],
   "meta": {
+    "docs": [
+      {
+        "route": "/docs/field",
+        "title": "Field"
+      }
+    ],
     "examples": [
       "field-demo"
     ]

@@ -73,6 +73,7 @@
     "[Column](/docs/column)",
     "[Date](/docs/date)",
     "[Equation](/docs/equation)",
+    "[Field](/docs/field)",
     "[Link](/docs/link)",
     "[Media](/docs/media)",
     "[Mention](/docs/mention)",
@@ -1636,6 +1637,17 @@
                   ]
                 },
                 {
+                  "description": "Add typed blanks that one role fills, with conditions on other fields.",
+                  "href": "/docs/field",
+                  "title": "Field",
+                  "titleCn": "字段",
+                  "keywords": [
+                    "element",
+                    "template",
+                    "signature"
+                  ]
+                },
+                {
                   "description": "Insert and manage hyperlinks.",
                   "href": "/docs/link",
                   "title": "Link",
@@ -2303,6 +2315,17 @@
         ],
         "title": "Equation",
         "titleCn": "Equation"
+      },
+      "/docs/field": {
+        "description": "Add typed blanks that one role fills, with conditions on other fields.",
+        "experimental": true,
+        "keywords": [
+          "element",
+          "template",
+          "signature"
+        ],
+        "title": "Field",
+        "titleCn": "字段"
       },
       "/docs/link": {
         "description": "Insert and manage hyperlinks.",

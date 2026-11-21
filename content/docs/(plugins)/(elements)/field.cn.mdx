@@ -1,0 +1,327 @@
+---
+title: 字段
+description: 由一个角色填写的行内 void 字段，每个字段有类型、设置、可选的对其他字段的条件，以及在文档中唯一的 id。
+docs:
+  - route: /docs/components/field
+    title: 字段元素
+  - route: /docs/components/field-toolbar-button
+    title: 字段工具栏按钮
+---
+
+字段是文档中由一个角色填写的有类型的空白处，例如租客姓名、起租日期、复选框或签名。每个字段是一个行内 void `field` 元素，带有 `kind`、`role`、`label`，以及文档中其他字段都不持有的 `fieldId`。字段的 `condition` 通过这个 id 指向另一个字段。Plate 只检查角色，从不检查用户。由你的应用决定哪个人填写哪个角色。
+
+<ComponentPreview name="field-demo" height="1340px" />
+
+示例是一份房东和租客之间的租赁合同模板。从工具栏的菜单插入字段，点击字段修改它的设置，并查看编辑器下方的 HTML、Markdown 和 Word 面板。
+
+<PackageInfo>
+
+## 功能特性
+
+- 行内 void `field` 元素，共六种类型：文本、数字、日期、复选框、选择和签名。
+- 每个字段有一个角色、一个标签，以及可选的必填标记、默认值、选择选项和值，每一项都按字段的类型检查。
+- 条件通过 `fieldId` 指向另一个字段，并检查那个字段的值。
+- `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题。
+- 粘贴、拖动复制、创建副本和表格填充复制的字段会获得新 id，复制的条件指向复制出的字段。
+- HTML 和 Markdown 保留每个属性，Word 导出保留每个答案并报告它丢弃的设置。
+- 注册表 UI 提供带设置弹出框的字段标签、插入菜单和静态渲染组件。
+
+</PackageInfo>
+
+## 套件用法
+
+<Steps>
+
+### 安装
+
+最快捷的添加字段的方式是使用 `FieldKit`，它安装 `FieldPlugin` 和注册表中的 `FieldElement`。安装 `field` 时也会安装 `field-toolbar-button`。
+
+<ComponentSource name="field" />
+
+- [`FieldElement`](/cn/docs/components/field)：渲染字段标签及其设置弹出框。
+
+### 添加套件
+
+```tsx
+import { useCreateEditor } from 'platejs/react';
+
+import { FieldKit } from '@/components/editor/field';
+
+const editor = useCreateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FieldKit,
+  ],
+});
+```
+
+### 添加插入菜单
+
+`FieldToolbarButton` 可以插入每种类型的字段。新字段使用文档中第一个字段的角色；文档中没有字段时，使用 `signer`。主插入菜单和斜杠菜单中没有字段项，因此请把这个菜单加到工具栏中。
+
+<ComponentSource name="field-toolbar-button" />
+
+```tsx
+import { FieldToolbarButton } from '@/components/editor/field-toolbar-button';
+import { Toolbar } from '@/components/editor/toolbar';
+
+export function FieldToolbar() {
+  return (
+    <Toolbar>
+      <FieldToolbarButton />
+    </Toolbar>
+  );
+}
+```
+
+### 添加静态渲染
+
+`BaseFieldKit` 在 `platejs/static` 的只读输出中渲染每个字段的答案：选择字段显示所选选项的标签，没有答案的字段显示字段的标签。
+
+<ComponentSource name="field-static" />
+
+</Steps>
+
+## 手动配置
+
+<Steps>
+
+### 安装
+
+```bash
+npm install platejs
+```
+
+### 添加插件
+
+```tsx
+import { FieldPlugin } from 'platejs/field/react';
+import { useCreateEditor } from 'platejs/react';
+
+import { FieldElement } from '@/components/editor/field';
+
+const editor = useCreateEditor({
+  plugins: [FieldPlugin.configure({ component: FieldElement })],
+});
+```
+
+`platejs/field` 中的 `BaseFieldPlugin` 不需要 React 也能运行，例如在读取提交文档的服务器上：
+
+```ts
+import { createEditor, type Value } from 'platejs';
+import { BaseFieldPlugin } from 'platejs/field';
+
+export const readFields = (value: Value) =>
+  createEditor({ initialValue: value, plugins: [BaseFieldPlugin] })
+    .plugin(BaseFieldPlugin)
+    .read.fields();
+```
+
+</Steps>
+
+## 值的结构
+
+字段像日期或提及一样位于段落中。
+
+```json
+{
+  "type": "paragraph",
+  "children": [
+    { "text": "Tenant name: " },
+    {
+      "type": "field",
+      "fieldId": "f_k2x9",
+      "kind": "text",
+      "role": "tenant",
+      "label": "Tenant name",
+      "required": true,
+      "children": [{ "text": "" }]
+    },
+    { "text": "" }
+  ]
+}
+```
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `type` | `'field'` | 由 `BaseFieldPlugin` 拥有的行内 void 元素。 |
+| `fieldId` | `string` | 在文档中唯一。新字段获得一个随机的 `nanoid`。 |
+| `kind` | `FieldKind` | `'text'`、`'number'`、`'date'`、`'checkbox'`、`'choice'` 或 `'signature'`。必需。 |
+| `role` | `string` | 填写该字段的角色，例如 `'tenant'`。必需。 |
+| `label` | `string` | 必需。字段标签显示它，字段没有答案时输出也显示它。 |
+| `required` | `boolean` | 标记必须填写的字段。Plate 只保存它，由你的应用在收集答案时检查。 |
+| `defaultValue` | `FieldValue` | 符合字段类型的值。 |
+| `options` | `FieldOption[]` | 仅用于选择字段。每个选项为 `{ value, label }`，任意两个选项的 `value` 都不相同。 |
+| `value` | `FieldValue` | 答案。没有答案的字段未填写。 |
+| `condition` | `FieldCondition` | `{ ref, test, value? }`，见下文的条件一节。 |
+| `children` | `[{ text: '' }]` | 行内 void 元素必需的子节点。 |
+
+## 类型
+
+每种类型决定其值的结构，以及对它的条件可以使用哪些测试。`platejs/field` 中的 `fitsField(field, value)` 判断一个值是否符合字段的类型，`FIELD_TESTS` 列出每种类型的测试。
+
+| 类型 | 值 | 测试 |
+|------|----|------|
+| `text` | 字符串 | `filled`、`blank`、`equals`、`not-equals` |
+| `number` | 有限数字 | `filled`、`blank`、`equals`、`not-equals`、`above`、`below` |
+| `date` | ISO 日期，`YYYY-MM-DD` | `filled`、`blank`、`equals`、`not-equals`、`above`、`below` |
+| `checkbox` | `true` 或 `false` | `equals`、`not-equals` |
+| `choice` | 某个选项的 `value` | `filled`、`blank`、`equals`、`not-equals` |
+| `signature` | 由你的应用决定的字符串，例如存储图片的 id | `filled`、`blank` |
+
+选择字段保存选项的 `value`，因此修改选项的 `label` 后，指向它的答案和条件都保持不变。
+
+## 角色
+
+每个字段指定填写它的角色，例如 `landlord` 或 `tenant`。角色可以是任意字符串。Plate 只保存它，从不检查用户是谁。由你的应用把每个人对应到一个角色，就像把每条评论对应到它的作者。
+
+Plate 不会阻止一个角色修改另一个角色的字段或周围的文本。从多人收集答案的应用应在服务器上检查每个提交的值。
+
+设置弹出框提供文档中字段已经使用的角色，也可以输入新角色。
+
+## 插入与更新
+
+`insert` 接收字段的设置并返回新字段的 `fieldId`。第二个参数接收节点插入选项，例如 `at` 和 `select`。
+
+```tsx
+import { BaseFieldPlugin } from 'platejs/field';
+
+editor.update((tx) => {
+  const fieldId = tx.plugin(BaseFieldPlugin).insert(
+    { kind: 'text', label: 'Full name', required: true, role: 'tenant' },
+    { select: true }
+  );
+});
+```
+
+当值、默认值或选项不符合类型，或者条件指向不存在的字段，或使用了被指向字段的类型不接受的测试或值时，`insert` 会抛出错误。
+
+`update` 修改持有某个 `fieldId` 的字段的设置或值。传入 `undefined` 的设置会被移除。
+
+```tsx
+editor.update((tx) => {
+  tx.plugin(BaseFieldPlugin).update(fieldId, { value: 'Ada Lovelace' });
+});
+```
+
+在以下情况下，`update` 抛出错误且不做任何修改：
+
+- 没有字段持有 `fieldId`；
+- 补丁中的某项设置不符合字段的类型；
+- 补丁移除了 `kind`、`role` 或 `label`；
+- 条件指向字段自身或不存在的字段，或使用了被指向字段的类型不接受的测试或值。
+
+修改 `kind` 或 `options` 的补丁还会丢弃字段不再符合的值、默认值和选项。把带默认值的数字字段改为日期字段会丢弃默认值。字段保留它的 `fieldId`。
+
+## 条件
+
+条件说明字段何时适用。当 `fieldId` 为 `ref` 的字段通过 `test` 时，该字段适用。除 `filled` 和 `blank` 外，每种测试都与 `value` 比较，`value` 使用被指向字段的值的结构。示例中的宠物名字字段在宠物选择为 `yes` 时适用：
+
+```tsx
+editor.update((tx) => {
+  tx.plugin(BaseFieldPlugin).update(petNameId, {
+    condition: { ref: petsId, test: 'equals', value: 'yes' },
+  });
+});
+```
+
+弹出框的 Show when 列表提供文档中的其他所有字段，测试列表只提供那个字段的类型接受的测试。Plate 保存条件并检查它是否符合被指向的字段。它不会隐藏或跳过字段，因此条件不成立时意味着什么由你的应用决定。
+
+`update` 拒绝指向自身字段的条件，但不拒绝两个或更多字段之间的循环，例如 A 指向 B 而 B 指向 A。
+
+## 读取字段及其问题
+
+`read.field(fieldId)` 返回持有该 id 的字段（可在任意根中），没有时返回 `null`。它查找该字段以及其条件指向的字段。`read.fields()` 按阅读顺序返回文档中的每个字段。每次读取得到一个 `FieldRead`：`{ fieldId, node, problems }`。
+
+```tsx
+import { BaseFieldPlugin } from 'platejs/field';
+
+const fields = editor.plugin(BaseFieldPlugin).read;
+
+const tenant = fields.field(tenantId);
+const broken = fields.fields().filter((field) => field.problems.length > 0);
+```
+
+| 问题 | 何时出现 |
+|------|----------|
+| `missing-target` | 没有字段持有其条件指向的 id，例如那个字段被删除之后。 |
+| `unsupported-test` | 条件指向的字段的类型不接受该条件的测试。 |
+| `invalid-value` | 它的值、默认值或选项不符合它的类型，或者它的条件的值不符合测试或被指向字段的类型。 |
+
+`insert` 和 `update` 会拒绝导致问题的写入。问题来自之后的编辑，例如删除或修改条件指向的字段，或者来自绕过这些命令的写入，例如直接的 `tx.nodes.set` 或加载的文档。
+
+在 React 中，`platejs/field/react` 的 `useFieldRead(fieldId)` 读取一个字段及其问题。修改元素的提交会重新读取它，只有字段或其问题变化时组件才会重新渲染。注册表中的字段标签用它在条件指向的字段被删除时显示警告，撤销后警告消失。
+
+```tsx
+import { useFieldRead } from 'platejs/field/react';
+
+const field = useFieldRead(element.fieldId);
+const problems = field?.problems ?? [];
+```
+
+## 复制与粘贴
+
+字段在移动（包括拖动移动）、被撤销恢复以及加载已保存的文档时保留它的 `fieldId`。复制会获得新 id：
+
+- 粘贴、拖动复制、`tx.blocks.duplicate` 和表格填充会给它们复制的每个字段新 id。指向同一份副本中字段的复制条件会指向那个字段的副本。
+- 如果复制条件指向的字段没有被复制或没有落下，条件继续指向原字段。
+- 粘贴到表格单元格选区时每个单元格复制一次，因此每个单元格中的条件指向它自己单元格里的副本。
+- 粘贴到另一个文档同样获得新 id。
+- 剪切后粘贴会给字段新 id，因此在撤销之前，其他地方指向它的条件会报告 `missing-target`。
+- 应用用 `tx.schema.copy` 复制字段并插入结果时得到新 id，副本的条件继续指向原字段。
+
+在建议模式下，把字段改为提及会显示为被删除的字段旁边插入的提及，因此拒绝该修改会保留字段及其 `fieldId`。
+
+## HTML
+
+`editor.api.html.serialize()` 把每个字段写成一个 `span`，每个属性对应一个 `data-field-*` 属性。span 的文本是答案：选择字段为所选选项的标签，没有答案的字段为方括号中的标签。id、kind、label 和 role 属性保存纯文本，其他属性保存 JSON：
+
+```html
+<p>Pets? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-role="tenant" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-role="tenant">[Pet name]</span></p>
+```
+
+解析这段 HTML 会读回每个属性。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
+
+示例的 HTML 面板使用 `lossPolicy: 'allow'` 序列化，因为日期元素没有 HTML 编码器。面板为丢弃的日期列出一行 `html-unsupported-content`。
+
+## Markdown
+
+Markdown 把每个字段写成一个 `<field>` 标签，包含每个属性，`fieldId` 和条件也在其中：
+
+```md
+Pets? <field kind="choice" label="Pets" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" role="tenant" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
+```
+
+读取器需要 `kind`、`label` 和 `role`。缺少它们的标签保留为文本，并返回 `markdown-unsupported-node` diagnostic。粘贴的 Markdown 模板会获得新 id，其中的条件指向副本。
+
+## Word
+
+Word 没有字段元素。Word 导出把每个字段的答案写成文本：选择字段为所选选项的标签，没有答案的字段为方括号中的标签。它不需要静态字段组件，因此无界面的导出也会保留答案。
+
+```tsx
+import { exportDocx } from 'platejs/docx/export';
+
+const result = await exportDocx(editor);
+const dropped = result.diagnostics.filter(
+  (diagnostic) => diagnostic.code === 'property-dropped'
+);
+```
+
+导出会丢弃每个字段的 id、类型、角色、设置和条件。它用一个 `property-dropped` 警告报告这些损失，消息为 "Word keeps each field answer and drops its settings."，`feature` 为 `field`，`count` 为字段数量。无论 `lossPolicy` 是 `'allow'` 还是 `'reject'`，这个警告都不会使导出失败。示例的 Word 面板显示这个警告，插入字段时它的数量随之增加。
+
+通过 `platejs` 的 `serializePlainText` 导出的纯文本与 Word 写入的文本相同。
+
+## API 参考
+
+| API | 包 | 用途 |
+|-----|----|------|
+| `BaseFieldPlugin` | `platejs/field` | 无界面的行内 void 字段插件。 |
+| `FieldPlugin` | `platejs/field/react` | React 字段插件。 |
+| `tx.plugin(BaseFieldPlugin).insert(settings, options?)` | `BaseFieldPlugin` 更新 | 插入字段并返回它的 `fieldId`。 |
+| `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` 更新 | 修改字段的设置或值。 |
+| `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` 读取 | 持有该 id 的字段及其问题，或 `null`。 |
+| `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` 读取 | 按阅读顺序返回每个字段及其问题。 |
+| `useFieldRead(fieldId)` | `platejs/field/react` | 读取一个字段及其问题，任一变化时重新渲染。 |
+| `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型和选项。 |
+| `FIELD_TESTS` | `platejs/field` | 每种类型的条件可以使用的测试。 |
+| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption` | `platejs/field` | 字段类型。 |

@@ -1,5 +1,5 @@
 {
-  "generation": "4c28b76d0b79da083a7866ac65f42e7615170280420638722ee364e85636844d",
+  "generation": "84bc88beda8e3927e08dfefc0317f71a567e1f402d9f0272dd63998b39b777ff",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1212,6 +1212,12 @@
             }
           ],
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ],
             "examples": [
               "field-demo"
             ]
@@ -2329,6 +2335,14 @@
               "target": "@components/editor/field-static.tsx"
             }
           ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ]
+          },
           "name": "field-static",
           "type": "registry:component"
         },
@@ -3407,6 +3421,12 @@
           "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
           "title": "Field",
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ],
             "examples": [
               "field-demo"
             ]
@@ -6446,13 +6466,41 @@
             {
               "path": "examples/values/field-value.tsx",
               "type": "registry:example"
+            },
+            {
+              "path": "examples/values/cn/field-value.tsx",
+              "type": "registry:example"
             }
           ],
-          "name": "field-demo",
-          "type": "registry:example",
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ],
             "registry": false
-          }
+          },
+          "name": "field-demo",
+          "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/basic-blocks-static",
+            "@plate/basic-marks",
+            "@plate/basic-marks-static",
+            "@plate/date",
+            "@plate/date-static",
+            "@plate/editor",
+            "@plate/field",
+            "@plate/field-static",
+            "@plate/field-toolbar-button",
+            "@plate/markdown",
+            "@plate/mention",
+            "@plate/mention-static",
+            "@plate/table",
+            "@plate/table-static",
+            "@plate/toolbar"
+          ],
+          "type": "registry:example"
         },
         {
           "dependencies": [
@@ -8732,6 +8780,12 @@
             }
           ],
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ],
             "examples": [
               "field-demo"
             ]
@@ -9845,6 +9899,14 @@
               "target": "@components/editor/field-static.tsx"
             }
           ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ]
+          },
           "name": "field-static",
           "type": "registry:component"
         },
@@ -10923,6 +10985,12 @@
           "description": "A form field chip that one role fills, with a settings popover for its kind, options, default and condition.",
           "title": "Field",
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ],
             "examples": [
               "field-demo"
             ]
@@ -13962,13 +14030,41 @@
             {
               "path": "examples/values/field-value.tsx",
               "type": "registry:example"
+            },
+            {
+              "path": "examples/values/cn/field-value.tsx",
+              "type": "registry:example"
             }
           ],
-          "name": "field-demo",
-          "type": "registry:example",
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/field",
+                "title": "Field"
+              }
+            ],
             "registry": false
-          }
+          },
+          "name": "field-demo",
+          "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/basic-blocks-static",
+            "@plate/basic-marks",
+            "@plate/basic-marks-static",
+            "@plate/date",
+            "@plate/date-static",
+            "@plate/editor",
+            "@plate/field",
+            "@plate/field-static",
+            "@plate/field-toolbar-button",
+            "@plate/markdown",
+            "@plate/mention",
+            "@plate/mention-static",
+            "@plate/table",
+            "@plate/table-static",
+            "@plate/toolbar"
+          ],
+          "type": "registry:example"
         },
         {
           "dependencies": [

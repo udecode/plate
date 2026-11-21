@@ -1,0 +1,327 @@
+---
+title: Field
+description: Inline void fields that one role fills, each with a kind, settings, an optional condition on another field and an id unique in the document.
+docs:
+  - route: /docs/components/field
+    title: Field Element
+  - route: /docs/components/field-toolbar-button
+    title: Field Toolbar Button
+---
+
+A field is a typed blank in a document that one role fills, such as a tenant's name, a start date, a checkbox or a signature. Each field is an inline void `field` element with a `kind`, a `role`, a `label` and a `fieldId` that no other field in the document holds. A field's `condition` names another field by that id. Plate checks roles, never users. Your app decides which person fills which role.
+
+<ComponentPreview name="field-demo" height="1340px" />
+
+The demo is a lease template for a landlord and a tenant. Insert a field from the toolbar's menu, click a field to change its settings, and read the HTML, Markdown and Word panels under the editor.
+
+<PackageInfo>
+
+## Features
+
+- Inline void `field` element of six kinds: text, number, date, checkbox, choice and signature.
+- A role per field, a label, and an optional required flag, default, choice options and value, each checked against the field's kind.
+- A condition that names another field by its `fieldId` and tests that field's value.
+- `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field.
+- New ids for the fields a paste, a drag copy, a duplicate or a table fill copies, with copied conditions that name the copies.
+- HTML and Markdown that keep every property, and Word export that keeps each answer and reports the settings it drops.
+- A field chip with a settings popover, an insert menu and a static renderer in the registry UI.
+
+</PackageInfo>
+
+## Kit usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add fields is `FieldKit`, which installs `FieldPlugin` with the registry `FieldElement`. Installing `field` also installs `field-toolbar-button`.
+
+<ComponentSource name="field" />
+
+- [`FieldElement`](/docs/components/field): renders the field chip and its settings popover.
+
+### Add kit
+
+```tsx
+import { useCreateEditor } from 'platejs/react';
+
+import { FieldKit } from '@/components/editor/field';
+
+const editor = useCreateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...FieldKit,
+  ],
+});
+```
+
+### Add the insert menu
+
+`FieldToolbarButton` inserts a field of each kind. A new field takes the role of the document's first field, or `signer` in a document with no field. The main insert and slash menus have no Field item, so add this menu to a toolbar.
+
+<ComponentSource name="field-toolbar-button" />
+
+```tsx
+import { FieldToolbarButton } from '@/components/editor/field-toolbar-button';
+import { Toolbar } from '@/components/editor/toolbar';
+
+export function FieldToolbar() {
+  return (
+    <Toolbar>
+      <FieldToolbarButton />
+    </Toolbar>
+  );
+}
+```
+
+### Add static rendering
+
+`BaseFieldKit` renders each field's answer, a choice as its option's label, or the field's label when it has no answer, for read-only output with `platejs/static`.
+
+<ComponentSource name="field-static" />
+
+</Steps>
+
+## Manual usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install platejs
+```
+
+### Add the plugin
+
+```tsx
+import { FieldPlugin } from 'platejs/field/react';
+import { useCreateEditor } from 'platejs/react';
+
+import { FieldElement } from '@/components/editor/field';
+
+const editor = useCreateEditor({
+  plugins: [FieldPlugin.configure({ component: FieldElement })],
+});
+```
+
+`BaseFieldPlugin` from `platejs/field` runs without React, such as on a server that reads a submitted document:
+
+```ts
+import { createEditor, type Value } from 'platejs';
+import { BaseFieldPlugin } from 'platejs/field';
+
+export const readFields = (value: Value) =>
+  createEditor({ initialValue: value, plugins: [BaseFieldPlugin] })
+    .plugin(BaseFieldPlugin)
+    .read.fields();
+```
+
+</Steps>
+
+## Value shape
+
+A field sits inside a paragraph, like a date or a mention.
+
+```json
+{
+  "type": "paragraph",
+  "children": [
+    { "text": "Tenant name: " },
+    {
+      "type": "field",
+      "fieldId": "f_k2x9",
+      "kind": "text",
+      "role": "tenant",
+      "label": "Tenant name",
+      "required": true,
+      "children": [{ "text": "" }]
+    },
+    { "text": "" }
+  ]
+}
+```
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `type` | `'field'` | Inline void element owned by `BaseFieldPlugin`. |
+| `fieldId` | `string` | Unique in the document. A new field gets a random `nanoid`. |
+| `kind` | `FieldKind` | `'text'`, `'number'`, `'date'`, `'checkbox'`, `'choice'` or `'signature'`. Required. |
+| `role` | `string` | The role that fills the field, such as `'tenant'`. Required. |
+| `label` | `string` | Required. The chip shows it, and output shows it when the field has no answer. |
+| `required` | `boolean` | Marks a field that must be filled. Plate stores it, and your app checks it when it collects answers. |
+| `defaultValue` | `FieldValue` | A value of the field's kind. |
+| `options` | `FieldOption[]` | Choice fields only. Each option is `{ value, label }`, and no two share a `value`. |
+| `value` | `FieldValue` | The answer. A field without one is unfilled. |
+| `condition` | `FieldCondition` | `{ ref, test, value? }`, see [Conditions](#conditions). |
+| `children` | `[{ text: '' }]` | Required child of an inline void element. |
+
+## Kinds
+
+Each kind fixes the shape of its value and the tests a condition on it may use. `fitsField(field, value)` from `platejs/field` says whether a value fits a field's kind, and `FIELD_TESTS` lists each kind's tests.
+
+| Kind | Value | Tests |
+|------|-------|-------|
+| `text` | a string | `filled`, `blank`, `equals`, `not-equals` |
+| `number` | a finite number | `filled`, `blank`, `equals`, `not-equals`, `above`, `below` |
+| `date` | an ISO date, `YYYY-MM-DD` | `filled`, `blank`, `equals`, `not-equals`, `above`, `below` |
+| `checkbox` | `true` or `false` | `equals`, `not-equals` |
+| `choice` | one option's `value` | `filled`, `blank`, `equals`, `not-equals` |
+| `signature` | a string your app owns, such as a stored image's id | `filled`, `blank` |
+
+A choice stores the option's `value`, so renaming an option's `label` keeps every answer and condition that names it.
+
+## Roles
+
+Each field names the role that fills it, such as `landlord` or `tenant`. A role is any string. Plate stores it and never checks who a user is. Your app maps each person to a role, as it maps each comment to its author.
+
+Plate does not stop one role from changing another role's field, or the text around it. An app that collects answers from several people checks each submitted value on its server.
+
+The settings popover offers the roles the document's fields already use, and takes a new one.
+
+## Insert and update
+
+`insert` takes a field's settings and returns its new `fieldId`. Its second argument takes node insert options, such as `at` and `select`.
+
+```tsx
+import { BaseFieldPlugin } from 'platejs/field';
+
+editor.update((tx) => {
+  const fieldId = tx.plugin(BaseFieldPlugin).insert(
+    { kind: 'text', label: 'Full name', required: true, role: 'tenant' },
+    { select: true }
+  );
+});
+```
+
+`insert` throws when a value, default or options do not fit the kind, or when the condition names no field, or a test or value that the named field's kind does not take.
+
+`update` changes the settings or value of the field that holds a `fieldId`. A setting given as `undefined` is removed.
+
+```tsx
+editor.update((tx) => {
+  tx.plugin(BaseFieldPlugin).update(fieldId, { value: 'Ada Lovelace' });
+});
+```
+
+`update` throws, and changes nothing, when:
+
+- no field holds `fieldId`;
+- a setting the patch names does not fit the field's kind;
+- the patch removes `kind`, `role` or `label`;
+- the condition names the field itself or no field, or a test or value that the named field's kind does not take.
+
+A patch that changes `kind` or `options` also drops each value, default and options that the field no longer fits. Turning a number field with a default into a date field drops the default. The field keeps its `fieldId`.
+
+## Conditions
+
+A condition says when a field applies. It applies when the field whose `fieldId` is `ref` passes `test`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value. The demo's Pet name field applies when the Pets choice is `yes`:
+
+```tsx
+editor.update((tx) => {
+  tx.plugin(BaseFieldPlugin).update(petNameId, {
+    condition: { ref: petsId, test: 'equals', value: 'yes' },
+  });
+});
+```
+
+The popover's Show when list offers every other field of the document, and its test list offers only the tests that field's kind takes. Plate stores the condition and checks that it fits the field it names. It does not hide a field or skip it, so your app decides what a condition that fails means.
+
+`update` refuses a condition that names its own field. It does not refuse a loop of two or more fields, such as A naming B while B names A.
+
+## Read fields and their problems
+
+`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. It looks up that field and the field its condition names. `read.fields()` returns every field of the document in reading order. Each read is a `FieldRead`: `{ fieldId, node, problems }`.
+
+```tsx
+import { BaseFieldPlugin } from 'platejs/field';
+
+const fields = editor.plugin(BaseFieldPlugin).read;
+
+const tenant = fields.field(tenantId);
+const broken = fields.fields().filter((field) => field.problems.length > 0);
+```
+
+| Problem | When |
+|---------|------|
+| `missing-target` | No field holds the id its condition names, such as after that field is deleted. |
+| `unsupported-test` | The kind of the field its condition names does not take the condition's test. |
+| `invalid-value` | Its value, default or options do not fit its kind, or its condition's value does not fit the test or the named field's kind. |
+
+`insert` and `update` refuse a write that would cause a problem. A problem comes from a later edit, such as deleting or changing the field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
+
+In React, `useFieldRead(fieldId)` from `platejs/field/react` reads one field and its problems. A commit that changes an element reads it again, and the component renders again only when the field or its problems changed. The registry chip uses it to show a warning when the field its condition names is deleted, and an undo clears the warning.
+
+```tsx
+import { useFieldRead } from 'platejs/field/react';
+
+const field = useFieldRead(element.fieldId);
+const problems = field?.problems ?? [];
+```
+
+## Copy and paste
+
+A field keeps its `fieldId` through a move, a drag move included, through an undo that brings it back and when a saved document loads. A copy gets new ids:
+
+- A paste, a drag copy, `tx.blocks.duplicate` and a table fill give each field they copy a new id. A copied condition that names a field in the same copy names that field's copy.
+- A copied condition whose field was not copied, or did not land, keeps naming the original.
+- A paste into a table cell selection copies once per cell, so a condition in each cell names the copy in its own cell.
+- A paste into another document gets new ids too.
+- Cut and paste gives the field a new id, so a condition elsewhere that named it reports `missing-target` until an undo.
+- An app that copies a field with `tx.schema.copy` and inserts the result gets a new id, and the copy's condition keeps naming the original.
+
+In Suggesting mode, a change from a field to a mention shows the field as deleted beside the inserted mention, so rejecting it keeps the field and its `fieldId`.
+
+## HTML
+
+`editor.api.html.serialize()` writes each field as a `span` with one `data-field-*` attribute per property. The span's text is the answer, a choice as its option's label, or the label in brackets when the field has no answer. The id, kind, label and role attributes hold plain text, and the others hold JSON:
+
+```html
+<p>Pets? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-role="tenant" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-role="tenant">[Pet name]</span></p>
+```
+
+Parsing that HTML reads every property back. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
+
+The demo's HTML panel serializes with `lossPolicy: 'allow'`, because the date element has no HTML encoder. The panel lists one `html-unsupported-content` line for the date it drops.
+
+## Markdown
+
+Markdown writes each field as a `<field>` tag with every property, the `fieldId` and the condition included:
+
+```md
+Pets? <field kind="choice" label="Pets" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" role="tenant" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
+```
+
+The reader needs `kind`, `label` and `role`. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
+
+## Word
+
+Word has no field element. Word export writes each field's answer as text, a choice as its option's label, or the label in brackets when the field has no answer. It needs no static field component, so a headless export keeps the answers.
+
+```tsx
+import { exportDocx } from 'platejs/docx/export';
+
+const result = await exportDocx(editor);
+const dropped = result.diagnostics.filter(
+  (diagnostic) => diagnostic.code === 'property-dropped'
+);
+```
+
+The export drops each field's id, kind, role, settings and condition. It reports them with one `property-dropped` warning whose message is "Word keeps each field answer and drops its settings.", whose `feature` is `field` and whose `count` is the number of fields. The warning never refuses an export, under `lossPolicy: 'allow'` or `'reject'`. The demo's Word panel shows that warning, and its count goes up as you insert fields.
+
+Plain text, through `serializePlainText` from `platejs`, writes the same text as Word.
+
+## API Reference
+
+| API | Package | Use |
+|-----|---------|-----|
+| `BaseFieldPlugin` | `platejs/field` | Headless inline void field plugin. |
+| `FieldPlugin` | `platejs/field/react` | React field plugin. |
+| `tx.plugin(BaseFieldPlugin).insert(settings, options?)` | `BaseFieldPlugin` update | Inserts a field and returns its `fieldId`. |
+| `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` update | Changes a field's settings or value. |
+| `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` read | The field that holds an id, with its problems, or `null`. |
+| `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` read | Every field in reading order, with its problems. |
+| `useFieldRead(fieldId)` | `platejs/field/react` | Reads one field and its problems, and renders again when either changes. |
+| `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind and options. |
+| `FIELD_TESTS` | `platejs/field` | The tests a condition may use on each kind. |
+| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption` | `platejs/field` | Field types. |

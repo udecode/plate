@@ -1130,6 +1130,12 @@
         }
       ],
       "meta": {
+        "docs": [
+          {
+            "route": "/docs/field",
+            "title": "Field"
+          }
+        ],
         "examples": [
           "field-demo"
         ]
@@ -2228,6 +2234,14 @@
           "target": "@components/editor/field-static.tsx"
         }
       ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/field",
+            "title": "Field"
+          }
+        ]
+      },
       "type": "registry:component"
     },
     {
@@ -3283,6 +3297,12 @@
         }
       ],
       "meta": {
+        "docs": [
+          {
+            "route": "/docs/field",
+            "title": "Field"
+          }
+        ],
         "examples": [
           "field-demo"
         ]

@@ -14,5 +14,13 @@
       "target": "@components/editor/field-static.tsx"
     }
   ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/field",
+        "title": "Field"
+      }
+    ]
+  },
   "type": "registry:component"
 }

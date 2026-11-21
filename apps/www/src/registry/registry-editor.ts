@@ -657,7 +657,10 @@ export const editorComponents: Registry['items'] = [
         type: 'registry:component',
       },
     ],
-    meta: { examples: ['field-demo'] },
+    meta: {
+      docs: [{ route: '/docs/field', title: 'Field' }],
+      examples: ['field-demo'],
+    },
     name: 'field-toolbar-button',
     title: 'Field Toolbar Button',
     type: 'registry:component',

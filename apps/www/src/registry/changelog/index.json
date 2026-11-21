@@ -2,6 +2,29 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-21-add-field",
+      "href": "/registry/changelog/2026-11-21-add-field.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add fields that one role fills, with an insert menu, a settings popover and a lease example",
+      "change": {
+        "type": "source",
+        "date": "2026-11-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "field",
+        "field-static",
+        "field-toolbar-button",
+        "field-demo"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-ai-command-tool-results",
       "href": "/registry/changelog/2026-11-20-ai-command-tool-results.json",
       "status": "draft",
