@@ -58,6 +58,11 @@ const commandSpans = (text) =>
     .map(([, span]) => span.trim())
     .filter((span) => SHELL.test(span));
 
+const BETA = 'https://beta.platejs.org/';
+const unlinkedPage = (text) =>
+  /\b(?:demos?|docs pages?)\b/iu.test(text) && !text.includes(BETA);
+const PAGE_FIX = `link each page it names on ${BETA}, such as ${BETA}blocks/field-demo, and say clip when it means a clip, not a page`;
+
 const gitDirs = () => {
   const { companion } = readProject();
   return [
@@ -284,6 +289,12 @@ const send = async (args) => {
       `the text hands a teammate ${handed.map((span) => `\`${span}\``).join(', ')} to run, but teammates work through Claude; say what to ask Claude for instead, then send again.`
     );
   }
+  if (unlinkedPage(text)) {
+    fail(
+      1,
+      `the text names a demo or docs page without its link; ${PAGE_FIX}, then send again.`
+    );
+  }
   const { linked, missing } = linkCommits(text);
   if (missing.length > 0) {
     fail(
@@ -487,15 +498,28 @@ const check = (args) => {
         .filter(Boolean);
     })
   );
-  const refused = [...landing].flatMap((body) =>
-    teamLines(body).flatMap(({ kind, text }) =>
-      commandSpans(text).map((span) => `${kind}: ... \`${span}\``)
-    )
+  const lines = [...landing].flatMap((body) => teamLines(body));
+  const refused = lines.flatMap(({ kind, text }) =>
+    commandSpans(text).map((span) => `${kind}: ... \`${span}\``)
   );
   if (refused.length > 0) {
     fail(
       1,
       `a Team line hands teammates a command to run, but they work through Claude:\n${refused.map((line) => `  ${line}`).join('\n')}\nSay in plain words what changed for them, or what to ask Claude for, then run land.mjs again with --message.`
+    );
+  }
+  const retests = lines.filter(({ text }) => /\/triage retest\b/u.test(text));
+  if (retests.length > 0) {
+    fail(
+      1,
+      `a Team line asks for a retest, but the triage run sends each teammate reporter their retests through /notify:\n${retests.map(({ kind, text }) => `  ${kind}: ${text}`).join('\n')}\nSay what changed and drop the retests, then run land.mjs again with --message.`
+    );
+  }
+  const unlinked = lines.filter(({ text }) => unlinkedPage(text));
+  if (unlinked.length > 0) {
+    fail(
+      1,
+      `a Team line names a demo or docs page without its link:\n${unlinked.map(({ kind, text }) => `  ${kind}: ${text}`).join('\n')}\nIn it, ${PAGE_FIX}, then run land.mjs again with --message.`
     );
   }
   const missing = demoProblems([...landing]);
