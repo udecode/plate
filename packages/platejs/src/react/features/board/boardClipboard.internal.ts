@@ -115,6 +115,7 @@ export const attachBoardClipboard = (
 
     core.measure();
 
+    const point = hover ? core.boardPointAt(hover) : core.viewCenter();
     const open = read.kind !== 'slice' && !core.editedShape();
     const pictures =
       open && core.writable() && editor.plugin(BaseBoardImagePlugin).installed
@@ -125,8 +126,6 @@ export const attachBoardClipboard = (
     const pictureFiles = takesFiles && !pictures ? pastedUploadFiles(data) : [];
 
     if (pictures || pictureFiles.length > 0) {
-      const point = hover ? core.boardPointAt(hover) : core.viewCenter();
-
       event.preventDefault();
       event.stopPropagation();
       if (pictures) core.landPictures(pictures, point, fallbackFiles);
@@ -140,8 +139,10 @@ export const attachBoardClipboard = (
         ? core.land(read.slice, hover ? core.boardPointAt(hover) : undefined)
         : onTarget &&
           !holdsFiles &&
-          core.selectedShapes().length > 0 &&
-          core.paste(data);
+          ((core.selectedShapes().length > 0 && core.paste(data)) ||
+            (open &&
+              data.getData('text/plain').trim() !== '' &&
+              core.pasteNote(data, point)));
 
     if (!(pasted || onTarget)) return;
     event.preventDefault();

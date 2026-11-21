@@ -56,6 +56,7 @@ import {
   createBoardIndex,
 } from './boardIndex.internal';
 import { attachBoardKeys, takeTextTab } from './boardKeys.internal';
+import { BOARD_PLACE_SIZE } from './boardPick.internal';
 import { createPendingPictures } from './boardPictures.internal';
 import {
   type BoardMessages,
@@ -257,6 +258,7 @@ export type BoardViewCore = Readonly<{
   mounted: Editor;
   pan: (viewFraction: BoardPlace) => void;
   paste: (data: DataTransfer) => boolean;
+  pasteNote: (data: DataTransfer, point: BoardPlace) => boolean;
   place: (
     tool: BoardPlaceTool,
     box: BoardBox,
@@ -1365,6 +1367,34 @@ export const createBoardView = (
     return !!shownView.api.dom.clipboard.insertData(data);
   };
 
+  const pasteNote: BoardViewCore['pasteNote'] = (data, point) => {
+    const { height, width } = BOARD_PLACE_SIZE.note;
+
+    return insertAndSelect((tx) => {
+      const id = tx.plugin(BaseBoardNotePlugin).insert(
+        {
+          height,
+          width,
+          x: point.x - width / 2,
+          y: point.y - height / 2,
+          ...styleFor(BaseBoardNotePlugin.name, state.nextStyle),
+        },
+        { board }
+      );
+      const holder = id && tx.unique.holder('shapeId', id);
+      const shape = holder && tx.nodes.get(holder.key);
+
+      if (shape) {
+        const at = { offset: 0, path: [...shape[1], 0, 0], root };
+
+        tx.selection.set({ anchor: at, focus: at });
+        shownView.api.dom.clipboard.insertData(data);
+      }
+
+      return id;
+    });
+  };
+
   const core: BoardViewCore = {
     replaceInteraction: (next) => {
       cancelInteraction();
@@ -1471,6 +1501,7 @@ export const createBoardView = (
       });
     },
     paste,
+    pasteNote,
     place: placeShape,
     redo: () => {
       if (writable()) history?.redo();
