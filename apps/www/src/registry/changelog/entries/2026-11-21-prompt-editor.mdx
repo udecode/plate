@@ -1,0 +1,14 @@
+---
+id: 2026-11-21-prompt-editor
+date: 2026-11-21
+status: draft
+kind: new
+summary: 'Add a chat message field that holds @ chips'
+change: { 'type': 'source', 'date': '2026-11-21', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-21-prompt-editor-chat-message-field-that-3aacb628","kind":"new","migrationNotes":[]} -->
+
+- **`prompt-editor`**, **`prompt-editor-demo`**: Add `PromptEditor`, a message field for a chat form that takes the place of a text area. Typing @ opens a menu of the app's `items`, and a picked item becomes a chip. Enter presses the form's Send button and does nothing while that button is disabled, Shift+Enter breaks the line, and Enter while an input method composes sends nothing. The message is the typed text with each chip as `<mention ref="…">label</mention>`, read through `value` and `onChange` or under `name` in the form's data. A pasted or dropped file goes to `onFiles` and never into the text. The demo is a chat form that sends through the AI SDK.

@@ -75,6 +75,7 @@ export default function PromptEditorDemo() {
   );
   const { messages, sendMessage, status } = useChat({ chat });
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const editorRef = React.useRef<{ focus: () => void }>(null);
   const [sending, setSending] = React.useState(false);
   const canSend = text.trim().length > 0 && !sending;
 
@@ -183,11 +184,12 @@ export default function PromptEditorDemo() {
                   <InputGroupButton
                     aria-label={`Remove ${file.name}`}
                     size="icon-xs"
-                    onClick={() =>
+                    onClick={() => {
                       setFiles((current) =>
                         current.filter((item) => item.id !== id)
-                      )
-                    }
+                      );
+                      editorRef.current?.focus();
+                    }}
                   >
                     <XIcon />
                   </InputGroupButton>
@@ -196,6 +198,7 @@ export default function PromptEditorDemo() {
             </InputGroupAddon>
           )}
           <PromptEditor
+            ref={editorRef}
             value={text}
             onChange={setText}
             items={mentionItems}

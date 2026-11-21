@@ -757,6 +757,39 @@
       "type": "registry:component"
     },
     {
+      "name": "prompt-editor",
+      "title": "Prompt Editor",
+      "description": "A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.",
+      "dependencies": [
+        "@ariakit/react",
+        "platejs",
+        "cn",
+        "diff-match-patch-ts@^0.6.0"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/inline-combobox.json",
+        "https://platejs.org/r/mention.json"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/prompt-editor.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/prompt-editor.tsx"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/prompt-editor"
+          }
+        ],
+        "examples": [
+          "prompt-editor-demo"
+        ]
+      },
+      "type": "registry:component"
+    },
+    {
       "name": "insert-toolbar-button",
       "title": "Insert Toolbar Button",
       "description": "A menu for inserting different types of blocks.",
@@ -5145,6 +5178,33 @@
         "docs": [
           {
             "route": "/docs/multi-select"
+          }
+        ]
+      },
+      "type": "registry:example"
+    },
+    {
+      "name": "prompt-editor-demo",
+      "title": "Prompt Editor",
+      "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
+      "dependencies": [
+        "@ai-sdk/react",
+        "ai"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/prompt-editor.json",
+        "input-group"
+      ],
+      "files": [
+        {
+          "path": "src/registry/examples/prompt-editor-demo.tsx",
+          "type": "registry:example"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/prompt-editor"
           }
         ]
       },

@@ -209,6 +209,23 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
+    description:
+      'A chat form whose message field holds @ chips and sends through the AI SDK.',
+    files: [
+      { path: 'examples/prompt-editor-demo.tsx', type: 'registry:example' },
+    ],
+    meta: {
+      docs: [
+        {
+          route: '/docs/prompt-editor',
+        },
+      ],
+    },
+    name: 'prompt-editor-demo',
+    title: 'Prompt Editor',
+    type: 'registry:example',
+  },
+  {
     files: [
       {
         path: 'examples/controlled-demo.tsx',
@@ -1843,16 +1860,6 @@ export const internalExamples: Registry['items'] = (
         { path: 'examples/potion-iframe-demo.tsx', type: 'registry:example' },
       ],
       name: 'potion-iframe-demo',
-      type: 'registry:example',
-    },
-    {
-      description:
-        'A chat form whose message field holds @ chips and sends through the AI SDK.',
-      files: [
-        { path: 'examples/prompt-editor-demo.tsx', type: 'registry:example' },
-      ],
-      name: 'prompt-editor-demo',
-      title: 'Prompt Editor',
       type: 'registry:example',
     },
     {

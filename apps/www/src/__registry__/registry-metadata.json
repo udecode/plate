@@ -1,5 +1,5 @@
 {
-  "generation": "e4d11b64ebba84204ac94e8f0cfdcea8e5d1784cec8d6e97673a62bd1d7b692a",
+  "generation": "cecb16d6c54cf7cf7076068a73ad3c04c1ce9857fb48691aba09dab93dd6d161",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -775,7 +775,9 @@
         {
           "dependencies": [
             "@ariakit/react",
-            "platejs"
+            "platejs",
+            "cn",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.",
           "files": [
@@ -786,14 +788,22 @@
             }
           ],
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/prompt-editor"
+              }
+            ],
             "examples": [
               "prompt-editor-demo"
-            ],
-            "registry": false
+            ]
           },
           "name": "prompt-editor",
           "title": "Prompt Editor",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/inline-combobox",
+            "@plate/mention"
+          ]
         },
         {
           "dependencies": [
@@ -5295,6 +5305,34 @@
           ]
         },
         {
+          "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
+          "files": [
+            {
+              "path": "examples/prompt-editor-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/prompt-editor"
+              }
+            ]
+          },
+          "name": "prompt-editor-demo",
+          "title": "Prompt Editor",
+          "type": "registry:example",
+          "dependencies": [
+            "@ai-sdk/react",
+            "ai",
+            "lucide-react"
+          ],
+          "registryDependencies": [
+            "@plate/prompt-editor",
+            "input-group"
+          ]
+        },
+        {
           "files": [
             {
               "path": "examples/controlled-demo.tsx",
@@ -7404,21 +7442,6 @@
           }
         },
         {
-          "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
-          "files": [
-            {
-              "path": "examples/prompt-editor-demo.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "name": "prompt-editor-demo",
-          "title": "Prompt Editor",
-          "type": "registry:example",
-          "meta": {
-            "registry": false
-          }
-        },
-        {
           "files": [
             {
               "path": "examples/installation-next-01-editor-demo.tsx",
@@ -8343,7 +8366,9 @@
         {
           "dependencies": [
             "@ariakit/react",
-            "platejs"
+            "platejs",
+            "cn",
+            "diff-match-patch-ts@^0.6.0"
           ],
           "description": "A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.",
           "files": [
@@ -8354,14 +8379,22 @@
             }
           ],
           "meta": {
+            "docs": [
+              {
+                "route": "/docs/prompt-editor"
+              }
+            ],
             "examples": [
               "prompt-editor-demo"
-            ],
-            "registry": false
+            ]
           },
           "name": "prompt-editor",
           "title": "Prompt Editor",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/inline-combobox",
+            "@plate/mention"
+          ]
         },
         {
           "dependencies": [
@@ -12859,6 +12892,34 @@
           ]
         },
         {
+          "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
+          "files": [
+            {
+              "path": "examples/prompt-editor-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/prompt-editor"
+              }
+            ]
+          },
+          "name": "prompt-editor-demo",
+          "title": "Prompt Editor",
+          "type": "registry:example",
+          "dependencies": [
+            "@ai-sdk/react",
+            "ai",
+            "lucide-react"
+          ],
+          "registryDependencies": [
+            "@plate/prompt-editor",
+            "input-group"
+          ]
+        },
+        {
           "files": [
             {
               "path": "examples/controlled-demo.tsx",
@@ -14962,21 +15023,6 @@
             }
           ],
           "name": "potion-iframe-demo",
-          "type": "registry:example",
-          "meta": {
-            "registry": false
-          }
-        },
-        {
-          "description": "A chat form whose message field holds @ chips and sends through the AI SDK.",
-          "files": [
-            {
-              "path": "examples/prompt-editor-demo.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "name": "prompt-editor-demo",
-          "title": "Prompt Editor",
           "type": "registry:example",
           "meta": {
             "registry": false

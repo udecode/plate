@@ -1,0 +1,212 @@
+---
+title: Prompt Editor
+description: 聊天消息输入框，可以包含 @ 标签，按 Enter 发送。
+docs:
+  - route: /docs/components/prompt-editor
+  - route: /docs/mention
+    title: 提及功能
+---
+
+<ComponentPreview name="prompt-editor-demo" />
+
+`PromptEditor` 是聊天表单的消息输入框，用来代替文本框。输入 @ 会打开应用 `items` 的菜单，选中的条目会变成标签。按 Enter 会按下表单的发送按钮。消息是一个字符串：输入的文本，每个标签写成一个 `<mention>` 标记。
+
+## 安装
+
+<ComponentInstallation name="prompt-editor" inline />
+
+这个条目会添加 `prompt-editor.tsx`，以及它导入的 `mention` 和 `inline-combobox` 条目。输入框需要一份 `InlineComboboxItem` 不接收 `value` 属性的 `inline-combobox.tsx`。较旧的副本无法和输入框一起编译，所以当 CLI 询问是否覆盖时请选择覆盖。
+
+在 Next.js 应用中，请先按 [Next.js](/docs/installation/next#turbopack-builds) 的说明关闭 Turbopack 的 scope hoisting。否则生产构建可能在每个包含编辑器的页面上失败。
+
+## 使用
+
+```tsx
+'use client';
+
+import * as React from 'react';
+
+import { ArrowUpIcon } from 'lucide-react';
+
+import { PromptEditor } from '@/components/editor/prompt-editor';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+} from '@/components/ui/input-group';
+
+const items = [
+  { label: 'Spec', ref: 'docs/spec.md' },
+  { label: 'Changelog', ref: 'docs/changelog.md' },
+];
+
+export function ChatForm({ onSend }: { onSend: (message: string) => void }) {
+  const [message, setMessage] = React.useState('');
+
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSend(message);
+        setMessage('');
+      }}
+    >
+      <InputGroup>
+        <PromptEditor
+          items={items}
+          placeholder="Ask anything..."
+          value={message}
+          onChange={setMessage}
+        />
+        <InputGroupAddon align="block-end">
+          <InputGroupButton
+            aria-label="Send"
+            className="ml-auto rounded-full"
+            disabled={!message.trim()}
+            size="icon-sm"
+            type="submit"
+            variant="default"
+          >
+            <ArrowUpIcon />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </form>
+  );
+}
+```
+
+Enter 会按下表单的第一个提交按钮，所以表单和使用文本框时一样，在 `onSubmit` 中发送。这个按钮禁用时 Enter 不做任何事，所以请在消息为空或回复正在流式输出时禁用它。
+
+`InputGroup` 在包含块级附加项之前保持一行的高度。没有块级附加项时，请给它 `className="h-auto"`，让它随输入框一起变高。
+
+## 示例
+
+### AI SDK 聊天
+
+这个演示通过 AI SDK 的 `useChat` 发送消息和附加的文件。它使用一个本地传输层，流式输出固定的回复，而不调用模型。粘贴和拖放的文件会交给 `onFiles`，移除一个文件后，焦点会通过输入框的 `ref` 回到输入框。
+
+<ComponentSource name="prompt-editor-demo" />
+
+### AI Elements
+
+AI Elements 的 `PromptInput` 从表单数据的 `message` 键读取消息，这也是它自带文本框使用的名称。给输入框设置这个 `name`，并把它放在 `PromptInputTextarea` 的位置：
+
+```tsx
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import { PromptEditor } from '@/components/editor/prompt-editor';
+
+<PromptInput onSubmit={({ text }) => sendMessage({ text })}>
+  <PromptInputBody>
+    <PromptEditor items={items} name="message" placeholder="Ask anything..." />
+  </PromptInputBody>
+  <PromptInputFooter>
+    <PromptInputTools />
+    <PromptInputSubmit status={status} />
+  </PromptInputFooter>
+</PromptInput>;
+```
+
+`PromptInput` 会自己附加拖放到表单上的文件。对于粘贴的文件，请在 `PromptInput` 内部的组件中，把 `usePromptInputAttachments()` 返回的 `add` 作为 `onFiles` 传入。
+
+### 使用 provider 的 AI Elements
+
+在 `PromptInputProvider` 下，`PromptInput` 从 provider 而不是表单数据读取消息。请通过 `value` 和 `onChange` 连接输入框：
+
+```tsx
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputProvider,
+  usePromptInputController,
+} from '@/components/ai-elements/prompt-input';
+import { PromptEditor } from '@/components/editor/prompt-editor';
+
+function MessageField() {
+  const { textInput } = usePromptInputController();
+
+  return (
+    <PromptEditor
+      items={items}
+      value={textInput.value}
+      onChange={textInput.setInput}
+    />
+  );
+}
+
+<PromptInputProvider>
+  <PromptInput onSubmit={({ text }) => sendMessage({ text })}>
+    <PromptInputBody>
+      <MessageField />
+    </PromptInputBody>
+  </PromptInput>
+</PromptInputProvider>;
+```
+
+## 消息
+
+消息中每个段落是一行，各行用 `\n` 连接。一个标签写成 `<mention ref="docs/spec.md">Spec</mention>`，其中 `ref` 和标签文字里的 `&`、`<`、`>` 会被转义，`ref` 里的 `"` 也会被转义。其余文本就是用户输入的内容。应用的服务器读取每个 `ref`，把标签指向的内容交给模型。
+
+`value` 按同样的格式写回：每个标记变成一个标签，每个 `\n` 开始一个新段落。
+
+## 行为
+
+- Enter，以及 Ctrl、Cmd 或 Alt 加 Enter，会按下表单的第一个提交按钮。在表单外，或这个按钮禁用时，Enter 不会发送，并保留草稿。
+- Shift+Enter 换行。
+- 输入法正在组合输入时，Enter 不会发送。
+- @ 菜单显示匹配项时，Enter 和 Tab 选中它。菜单没有找到任何结果时，Enter 发送输入的文本。
+- 没有 `items` 时，输入的 @ 保持为文本。
+- 粘贴或拖放的文件会交给 `onFiles`，不会进入文本。禁用的输入框不会传出任何文件。
+- 粘贴只保留纯文本行和标签。当 `items` 包含粘贴标签的 `ref` 和标签文字时，它保持为标签，否则变成它的标签文字。
+- 没有监听器取消的表单重置会清空输入框。
+- 当 `value` 与输入框上一次报告的消息不同时，它会替换文本，并把光标放到末尾。应用拒绝的更改，例如超过长度限制的更改，会恢复为应用的 `value`，和受控文本框一样。
+
+在复制的 `prompt-editor.tsx` 中编辑 `PromptEditorPlugin` 可以修改这些规则。
+
+## 限制
+
+- 用户输入时输入框不会触发 `input` 事件，所以表单的 `onInput` 监听器不会为它运行。请通过 `onChange` 读取更改。
+- 修改输入框最小高度的类名需要加 `!`，例如 `min-h-24!`，因为占位文字显示时，可编辑区域会设置内联的最小高度。
+- AI Elements 每次清空自己的文本框时都会清空这个输入框。这包括没有 provider 时应用拒绝的发送，以及有 provider 时失败的发送。
+
+## API 参考
+
+### PromptEditor
+
+<API name="PromptEditor">
+<APIProps>
+  <APIItem name="items" type="readonly { label: string; ref: string }[]" optional>
+    @ 菜单提供的条目。菜单会搜索每个标签文字和 `ref`。
+  </APIItem>
+  <APIItem name="name" type="string" optional>
+    消息在表单 `FormData` 中使用的键。
+  </APIItem>
+  <APIItem name="value" type="string" optional>
+    受控输入框的消息。
+  </APIItem>
+  <APIItem name="onChange" type="(message: string) => void" optional>
+    每次更改后，以及 Enter 发送之前，用消息调用。
+  </APIItem>
+  <APIItem name="onFiles" type="(files: File[]) => void" optional>
+    用粘贴或拖放的文件调用。
+  </APIItem>
+  <APIItem name="placeholder" type="string" optional>
+    输入框为空时显示的文字。
+  </APIItem>
+  <APIItem name="disabled" type="boolean" optional>
+    关闭编辑和文件处理。
+  </APIItem>
+  <APIItem name="className" type="string" optional>
+    可编辑区域的类名。
+  </APIItem>
+  <APIItem name="ref" type="React.Ref<{ focus: () => void }>" optional>
+    为应用提供 `focus()`。
+  </APIItem>
+</APIProps>
+</API>

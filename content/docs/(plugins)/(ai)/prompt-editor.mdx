@@ -1,0 +1,212 @@
+---
+title: Prompt Editor
+description: A chat message field that holds @ chips and sends on Enter.
+docs:
+  - route: /docs/components/prompt-editor
+  - route: /docs/mention
+    title: Mention
+---
+
+<ComponentPreview name="prompt-editor-demo" />
+
+`PromptEditor` is the message field of a chat form, in place of a text area. Typing @ opens a menu of the app's `items`, and a picked item becomes a chip. Enter presses the form's Send button. The message is a string, the typed text with each chip written as a `<mention>` tag.
+
+## Installation
+
+<ComponentInstallation name="prompt-editor" inline />
+
+The registry item adds `prompt-editor.tsx` and the `mention` and `inline-combobox` items it imports. The field needs a copy of `inline-combobox.tsx` whose `InlineComboboxItem` takes no `value` prop. An older copy fails to compile with the field, so accept the CLI's offer to overwrite it.
+
+In a Next.js app, turn off Turbopack's scope hoisting first, as [Next.js](/docs/installation/next#turbopack-builds) says. Otherwise a production build can fail on every page with an editor.
+
+## Usage
+
+```tsx
+'use client';
+
+import * as React from 'react';
+
+import { ArrowUpIcon } from 'lucide-react';
+
+import { PromptEditor } from '@/components/editor/prompt-editor';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+} from '@/components/ui/input-group';
+
+const items = [
+  { label: 'Spec', ref: 'docs/spec.md' },
+  { label: 'Changelog', ref: 'docs/changelog.md' },
+];
+
+export function ChatForm({ onSend }: { onSend: (message: string) => void }) {
+  const [message, setMessage] = React.useState('');
+
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSend(message);
+        setMessage('');
+      }}
+    >
+      <InputGroup>
+        <PromptEditor
+          items={items}
+          placeholder="Ask anything..."
+          value={message}
+          onChange={setMessage}
+        />
+        <InputGroupAddon align="block-end">
+          <InputGroupButton
+            aria-label="Send"
+            className="ml-auto rounded-full"
+            disabled={!message.trim()}
+            size="icon-sm"
+            type="submit"
+            variant="default"
+          >
+            <ArrowUpIcon />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
+    </form>
+  );
+}
+```
+
+Enter presses the form's first submit button, so the form sends from `onSubmit` as it does for a text area. Enter does nothing while that button is disabled, so disable it while the message is empty or a reply streams.
+
+`InputGroup` keeps the height of one line until it holds a block addon. Without one, give it `className="h-auto"` so it grows with the field.
+
+## Examples
+
+### AI SDK chat
+
+The demo sends the message and its attached files through the AI SDK's `useChat`, with a local transport that streams a fixed reply instead of calling a model. Pasted and dropped files go to `onFiles`, and removing one moves focus back to the field through its `ref`.
+
+<ComponentSource name="prompt-editor-demo" />
+
+### AI Elements
+
+AI Elements' `PromptInput` reads the message from the form's data under `message`, the name its own text area uses. Give the field that `name` and put it where `PromptInputTextarea` goes:
+
+```tsx
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTools,
+} from '@/components/ai-elements/prompt-input';
+import { PromptEditor } from '@/components/editor/prompt-editor';
+
+<PromptInput onSubmit={({ text }) => sendMessage({ text })}>
+  <PromptInputBody>
+    <PromptEditor items={items} name="message" placeholder="Ask anything..." />
+  </PromptInputBody>
+  <PromptInputFooter>
+    <PromptInputTools />
+    <PromptInputSubmit status={status} />
+  </PromptInputFooter>
+</PromptInput>;
+```
+
+`PromptInput` attaches the files dropped on its form itself. For pasted files, pass `add` from `usePromptInputAttachments()` as `onFiles`, in a component inside `PromptInput`.
+
+### AI Elements with its provider
+
+Under `PromptInputProvider`, `PromptInput` reads the message from the provider instead of the form's data. Connect the field through `value` and `onChange`:
+
+```tsx
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputProvider,
+  usePromptInputController,
+} from '@/components/ai-elements/prompt-input';
+import { PromptEditor } from '@/components/editor/prompt-editor';
+
+function MessageField() {
+  const { textInput } = usePromptInputController();
+
+  return (
+    <PromptEditor
+      items={items}
+      value={textInput.value}
+      onChange={textInput.setInput}
+    />
+  );
+}
+
+<PromptInputProvider>
+  <PromptInput onSubmit={({ text }) => sendMessage({ text })}>
+    <PromptInputBody>
+      <MessageField />
+    </PromptInputBody>
+  </PromptInput>
+</PromptInputProvider>;
+```
+
+## Message
+
+The message holds one line per paragraph, joined with `\n`. A chip is `<mention ref="docs/spec.md">Spec</mention>`. Its `ref` and label escape `&`, `<` and `>`, and its `ref` also escapes `"`. The rest of the text is what the user typed. The app's server reads each `ref` and gives the model what the chip points to.
+
+A `value` sets the same shape back: each tag becomes a chip, and each `\n` starts a paragraph.
+
+## Behavior
+
+- Enter, and Ctrl, Cmd or Alt with Enter, press the form's first submit button. Enter outside a form or while that button is disabled sends nothing and keeps the draft.
+- Shift+Enter breaks the line.
+- Enter while an input method composes sends nothing.
+- With the @ menu showing a match, Enter and Tab pick it. When the menu finds nothing, Enter sends the typed text.
+- Without `items`, a typed @ stays text.
+- A pasted or dropped file goes to `onFiles` and never into the text. A disabled field passes no file on.
+- A paste keeps plain lines and chips only. A pasted chip stays a chip when `items` holds its `ref` and label, and becomes its label as text otherwise.
+- A form reset that no listener cancels clears the field.
+- A `value` other than the last message the field reported replaces the text and puts the caret at the end. A change the app turns down, such as one past a length limit, puts the app's `value` back, as a controlled text area does.
+
+Edit `PromptEditorPlugin` in the copied `prompt-editor.tsx` to change these rules.
+
+## Limits
+
+- The field fires no `input` event while the user types, so a form `onInput` listener never runs for it. Read changes through `onChange`.
+- A class that changes the field's minimum height needs `!`, such as `min-h-24!`, because the editable sets an inline minimum height while the placeholder shows.
+- AI Elements clears the field whenever it clears its own text area. That includes a send the app refuses without the provider and a failed send with it.
+
+## API Reference
+
+### PromptEditor
+
+<API name="PromptEditor">
+<APIProps>
+  <APIItem name="items" type="readonly { label: string; ref: string }[]" optional>
+    What the @ menu offers. The menu searches each label and `ref`.
+  </APIItem>
+  <APIItem name="name" type="string" optional>
+    The key the message takes in the form's `FormData`.
+  </APIItem>
+  <APIItem name="value" type="string" optional>
+    The message of a controlled field.
+  </APIItem>
+  <APIItem name="onChange" type="(message: string) => void" optional>
+    Called with the message after each change, and before Enter sends.
+  </APIItem>
+  <APIItem name="onFiles" type="(files: File[]) => void" optional>
+    Called with the files of a paste or a drop.
+  </APIItem>
+  <APIItem name="placeholder" type="string" optional>
+    The text shown while the field is empty.
+  </APIItem>
+  <APIItem name="disabled" type="boolean" optional>
+    Turns off editing and file handling.
+  </APIItem>
+  <APIItem name="className" type="string" optional>
+    Classes for the editable.
+  </APIItem>
+  <APIItem name="ref" type="React.Ref<{ focus: () => void }>" optional>
+    Gives the app `focus()`.
+  </APIItem>
+</APIProps>
+</API>

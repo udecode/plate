@@ -60,6 +60,7 @@
     "[Overview](/docs/plugins)",
     "[Stream](/docs/ai)",
     "[Copilot](/docs/copilot)",
+    "[Prompt Editor](/docs/prompt-editor)",
     "[Comments](/docs/comment)",
     "[Discussion](/docs/discussion)",
     "[Suggestions](/docs/suggestion)",
@@ -130,6 +131,7 @@
     "[Block Draggable](/docs/components/dnd)",
     "[Editor](/docs/components/editor)",
     "[Select Editor](/docs/components/select-editor)",
+    "[Prompt Editor](/docs/components/prompt-editor)",
     "[Emoji Toolbar Button](/docs/components/emoji-toolbar-button)",
     "[Fixed Toolbar](/docs/components/fixed-toolbar)",
     "[Floating Toolbar](/docs/components/floating-toolbar)",
@@ -483,6 +485,12 @@
               "href": "/docs/components/select-editor",
               "title": "Select Editor",
               "titleCn": "Select Editor"
+            },
+            {
+              "description": "A chat message field that holds @ chips.",
+              "href": "/docs/components/prompt-editor",
+              "title": "Prompt Editor",
+              "titleCn": "Prompt Editor"
             },
             {
               "description": "An emoji picker toolbar button.",
@@ -1511,6 +1519,17 @@
                   "keywords": [
                     "ai"
                   ]
+                },
+                {
+                  "description": "A chat message field that holds @ chips and sends on Enter.",
+                  "href": "/docs/prompt-editor",
+                  "title": "Prompt Editor",
+                  "titleCn": "Prompt Editor",
+                  "keywords": [
+                    "ai",
+                    "chat",
+                    "prompt input"
+                  ]
                 }
               ],
               "title": "AI"
@@ -2212,6 +2231,16 @@
         "title": "Copilot",
         "titleCn": "Copilot"
       },
+      "/docs/prompt-editor": {
+        "description": "A chat message field that holds @ chips and sends on Enter.",
+        "title": "Prompt Editor",
+        "titleCn": "Prompt Editor",
+        "keywords": [
+          "ai",
+          "chat",
+          "prompt input"
+        ]
+      },
       "/docs/comment": {
         "description": "Attach application-owned comment threads to durable editor ranges.",
         "keywords": [
@@ -2636,6 +2665,11 @@
         "description": "An editor to select tags.",
         "title": "Select Editor",
         "titleCn": "Select Editor"
+      },
+      "/docs/components/prompt-editor": {
+        "description": "A chat message field that holds @ chips.",
+        "title": "Prompt Editor",
+        "titleCn": "Prompt Editor"
       },
       "/docs/components/emoji-toolbar-button": {
         "description": "An emoji picker toolbar button.",

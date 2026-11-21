@@ -414,7 +414,10 @@ export const editorComponents: Registry['items'] = [
         type: 'registry:component',
       },
     ],
-    meta: { examples: ['prompt-editor-demo'], registry: false },
+    meta: {
+      docs: [{ route: '/docs/prompt-editor' }],
+      examples: ['prompt-editor-demo'],
+    },
     name: 'prompt-editor',
     title: 'Prompt Editor',
     type: 'registry:component',

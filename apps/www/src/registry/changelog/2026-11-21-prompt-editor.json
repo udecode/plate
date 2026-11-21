@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-21-prompt-editor",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-21-prompt-editor.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Add a chat message field that holds @ chips",
+  "targets": [
+    {
+      "name": "prompt-editor",
+      "files": ["apps/www/src/registry/components/editor/prompt-editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "prompt-editor-demo",
+      "files": ["apps/www/src/registry/examples/prompt-editor-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-21-prompt-editor-chat-message-field-that-3aacb628",
+      "kind": "new",
+      "summary": "Add `PromptEditor`, a message field for a chat form that takes the place of a text area. Typing @ opens a menu of the app's `items`, and a picked item becomes a chip. Enter presses the form's Send button and does nothing while that button is disabled, Shift+Enter breaks the line, and Enter while an input method composes sends nothing. The message is the typed text with each chip as `<mention ref=\"…\">label</mention>`, read through `value` and `onChange` or under `name` in the form's data. A pasted or dropped file goes to `onFiles` and never into the text. The demo is a chat form that sends through the AI SDK.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["prompt-editor", "prompt-editor-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-21",
+          "entry": "2026-11-21-prompt-editor",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

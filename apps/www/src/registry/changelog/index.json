@@ -43,6 +43,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-21-prompt-editor",
+      "href": "/registry/changelog/2026-11-21-prompt-editor.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Add a chat message field that holds @ chips",
+      "change": {
+        "type": "source",
+        "date": "2026-11-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["prompt-editor", "prompt-editor-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-20-ai-command-tool-results",
       "href": "/registry/changelog/2026-11-20-ai-command-tool-results.json",
       "status": "draft",
