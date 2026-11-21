@@ -1,5 +1,124 @@
 # platejs
 
+## 54.0.0-beta.3
+
+### Major Changes
+
+- [`60c44c5`](https://github.com/udecode/plate/commit/60c44c532a70d967ec322e76bdfe07d15035a947) by [@zbeyens](https://github.com/zbeyens) – Remove `EditorSelectionView` and the `useSelectionView` hook from `platejs/react`. Outside every editing area of an `EditorRoot`, `useEditor()` already returns the editor of the root that holds the caret, and a plugin's `caret` slot follows the caret into a board note inside its editing area.
+
+  **Migration:** Drop the `<EditorSelectionView>` wrapper. Move UI that used it inside an editing area, such as a floating toolbar, from `afterEditable` to the `caret` slot:
+
+  ```tsx
+  const FloatingToolbarPlugin = definePlugin('floatingToolbar', {
+    slots: { caret: () => <FloatingToolbar /> },
+  });
+  ```
+
+### Patch Changes
+
+- [`c28d5ad`](https://github.com/udecode/plate/commit/c28d5adcbac04d8bc5866e9556f2089fef3620e3) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix the AI menu's first edit suggestion replacing the old selected text, and leaving stray characters, when the person typed inside the selection after sending the request
+
+- [`fef4f73`](https://github.com/udecode/plate/commit/fef4f73b1a19a4d9fe7943e6f6848ef8e66c132e) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Paste text or a link onto a focused board to land it as a selected note centered on the pointer, or on the view's center when the pointer is off the board. The note holds what a paste into a note's text holds, and one undo removes it.
+
+- [`0fe05e3`](https://github.com/udecode/plate/commit/0fe05e37d756fc10b2a2465de1fb823b64e4a876) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Paste picture files onto a focused board to upload them as image shapes, one per file in a row centered on the pointer, or on the view's center when the pointer is off the board.
+  - Drop picture files onto a board to upload them as image shapes, one per file in a row centered on the drop point.
+  - Upload the file of a picture copied from a web page when its link does not load, so the picture still lands on the board.
+  - Add `upload(files)` to `useBoardActions()` to upload picture files, such as ones a toolbar's file picker returns, as image shapes in a row centered on the view. Read `takesPictureFiles` through `useBoardView` to disable such a button on a board that takes no picture files.
+  - Add `fitsAfter(key)` to the upload plugin's API to ask whether a second file's placeholder fits after an upload placeholder, such as before a file picker opens for several files. It changes nothing in the document.
+
+- [`972c50f`](https://github.com/udecode/plate/commit/972c50f6006c6681013def2d1d5b43e807e019a2) by [@zbeyens](https://github.com/zbeyens) – Add a `caret` plugin slot, rendered after the Editable. Inside it, `useEditor()` and the `editableRef` prop answer for the view that holds the caret while that view is the editing area's own view or a view mounted inside it, such as a board note. Otherwise they answer for the editing area's own view. A floating toolbar in this slot follows the caret into a note, where one in `afterEditable` stays on its editing area.
+
+- [`f7fa388`](https://github.com/udecode/plate/commit/f7fa388cfbdc2cf18d132c8f71e6074d2174dc7c) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep a code fence's info string after its language, such as `title="a.ts" {3-5}`, as the code block's `meta` through Markdown and HTML import and export
+
+- [`eff0999`](https://github.com/udecode/plate/commit/eff0999e8ba281964882aa5f776c7fc04d0f68c1) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix a CodeMirror code block dropping the next keystroke, paste, cut or drop when the editor resets its text during an input method composition, such as after a refused edit or a collaborator's change.
+  - Keep a CodeMirror code block's caret where the editor puts it when the editor resets its text.
+  - Leave the Backspace that WebKit sends after an input method empties a CodeMirror code block to CodeMirror, so the block stays a code block.
+
+- [`ef94ff1`](https://github.com/udecode/plate/commit/ef94ff11ea9c17b4d298f41486b587e67056ab0e) by [@zbeyens](https://github.com/zbeyens) – Make `useModelEditor()` under `EditorController` return the document editor of the `EditorRoot` used last, where it threw. Controls under `EditorController` get the editor, the document editor and the read-only answer that controls inside that `EditorRoot` get outside its editing areas.
+
+- [`d88d2b0`](https://github.com/udecode/plate/commit/d88d2b08fcef99a3dbdeb0c5ea8b9f75bec420ac) by [@zbeyens](https://github.com/zbeyens) – Make `useEditorHistory()` with no `editor` or `root` pick what it undoes from the editor `useEditor()` returns. While that editor belongs to the `EditorRoot` around the hook, it runs through that editor root, as before, so it stays on while the caret is in a read-only nested editing area. Otherwise, such as under an `EditorProvider` given another editor, it undoes and redoes that editor, and it no longer needs an `EditorRoot` around it.
+
+- [`5c0aff5`](https://github.com/udecode/plate/commit/5c0aff5d261697b1e237946af31fc5230ad72247) by [@zbeyens](https://github.com/zbeyens) – Add `editor.plugin(BaseHeadingPlugin).read.canSetLevel(level)`, which answers whether `setLevel(level)` can apply to every selected block. A menu can disable a heading level the caret's parent cannot hold.
+
+- [`868638a`](https://github.com/udecode/plate/commit/868638ac2fe89fc0d7988d0e53db2cda6245c9a5) by [@zbeyens](https://github.com/zbeyens) – Fix a hydration mismatch in a control that reads `useEditorFocused()` and hydrates after its editor took focus, such as a toolbar behind `Suspense` beside an `EditorContent` with `autoFocus`
+
+- [`7a0e402`](https://github.com/udecode/plate/commit/7a0e402a17374c80d3c16537a6c2988ffb28949f) by [@zbeyens](https://github.com/zbeyens) – Replace `InkLayer` with `InkContent`, which mounts as the ink plugin's `wrapContent` slot. In development, it throws when anything sits between the Editable and the ink layer, such as a toolbar the layer would cover.
+
+  **Migration:** Replace the `wrapContent` slot that rendered `<InkLayer sign={Sign} />` after its children with `wrapContent: (props) => <InkContent {...props} sign={Sign} />`.
+
+- [`405fd82`](https://github.com/udecode/plate/commit/405fd82c363be236baba67a96033653dd735683b) by [@zbeyens](https://github.com/zbeyens) – Keep a pen mark's sign where its block stood when the block is deleted while the mark is being drawn, here or by a collaborator, however many other edits come before the mark saves
+
+- [`0938c3d`](https://github.com/udecode/plate/commit/0938c3d8da13cf94bf8e7bcee15731b73f0ca2a2) by [@zbeyens](https://github.com/zbeyens) – Save pen marks in a packed format about half the size, with each sample rounded to a hundredth of a pixel, a thousandth of pressure and a whole millisecond. Marks saved by 54.0.0-beta.2 still read, but an app still on 54.0.0-beta.2 shows none of the marks this version saves
+
+- [`dffae16`](https://github.com/udecode/plate/commit/dffae16cdf7e17595560985bbbca0982b69e5ecd) by [@zbeyens](https://github.com/zbeyens) – Place ink marks again a quarter second after the last edit, layout change or scroll, so a style change that moves their words without resizing the paragraph no longer leaves them off their words
+
+- [`7bc3175`](https://github.com/udecode/plate/commit/7bc3175013df3e0a08e41c5852c3014dcea1043f) by [@zbeyens](https://github.com/zbeyens) – Speed up typing, drawing, scrolling and deleting many marked blocks in documents with many ink marks. `read.marks()` keeps each mark's object while its saved mark and the snapshots it names stay the same, so a pen-up decodes only the mark it changes.
+
+- [`6d7c412`](https://github.com/udecode/plate/commit/6d7c41251cab3bd08f73fc5a1f40372c7cd238a8) by [@zbeyens](https://github.com/zbeyens) – Leave out the ink paragraph snapshots that no mark points at when an editor opens a saved document, so a removed mark's snapshot, and the words it held, leave the file at its next save. Snapshots saved by 54.0.0-beta.2 stay, so an app still on beta.2 can undo back to its own marks.
+
+- [`78987a9`](https://github.com/udecode/plate/commit/78987a92e20e96972625f5e3a81af7a182fc1ee5) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep a Markdown file's leading YAML or TOML front matter. `editor.api.markdown.parse` stores it at `meta['markdown.frontmatter']` instead of reading it as a rule and a heading, `serialize` writes it back first, and `getMarkdownFrontmatter` from `platejs/markdown` reads it
+  - Fail `serialize` under the reject policy with `markdown-frontmatter-omitted` when the stored front matter cannot be written back; under `lossPolicy: 'allow'` it writes the file without the block and warns
+  - Start a serialized file with a line ending when its body would otherwise open with a block that reads back as front matter, such as two `---` rules
+
+- [`2ad50b0`](https://github.com/udecode/plate/commit/2ad50b014c94356114aa2e42c399bedac192ccf9) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Hide up to three trailing `*`, `_` or `~` markers, or a trailing backslash, in a `partial` `parseSlice` preview until the next characters show whether they start bold, italic or strikethrough, so a streamed preview no longer shows them as text
+
+- [`824887f`](https://github.com/udecode/plate/commit/824887fff62da30e8297a1d15eef8ee39e9f8c0e) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix Markdown that read back differently after a save: code spans with line endings or edge spaces, emphasis around a link, nested emphasis, a bare URL right after text and an empty list item before a nested ordered list
+  - Fix streamed Markdown parses that missed a link definition inside a quote or a list item
+
+- [`a1af219`](https://github.com/udecode/plate/commit/a1af219edc003dcbced0eeedb205f92c55616e4b) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix `parseSlice` with `previous` returning a different preview than a fresh parse when the streamed Markdown holds no-break spaces in a blank line or after a fence closer, a line of inline code in triple backticks, a math block opened with more than two dollars, a link definition with an escaped bracket, a label across lines or a byte order mark before it, a byte order mark or a lone CR line ending
+
+- [`9fc3e9a`](https://github.com/udecode/plate/commit/9fc3e9a4ac72ae81db336ef4642da2306729dbd7) by [@zbeyens](https://github.com/zbeyens) – Make `useEditor()` outside every editing area of an `EditorRoot`, such as in a fixed toolbar, return the editor of the root that holds the caret. A toolbar command such as `editor.plugin(BoldPlugin).update.toggle()` then changes a board's note while the caret is in it. With nothing selected it returns the editor of the primary root. `useEditorSelector`, `useEditorReadOnly`, `useEditorFocused` and the other hooks that read the editor `useEditor()` returns read the same editor. A `useEditorSelector` selector that keeps its identity between renders runs once per commit, and once more when the caret moves to another root. A component whose selected value stays equal no longer renders when the caret moves. Inside an `EditorContainer`, these hooks read the `EditorContent` it holds that the user used last.
+
+  **Migration:** A lock set through the editor that `useEditor()` returns outside every editing area refuses the commands sent through that editor and no longer locks an `EditorContent`. To lock one `EditorContent`, call `useEditor()` inside its `EditorContainer`:
+
+  ```tsx
+  function Lock() {
+    const editor = useEditor();
+
+    return (
+      <button onClick={() => setEditorReadOnly(editor, true)}>Lock</button>
+    );
+  }
+
+  <EditorRoot editor={editor}>
+    <EditorContainer>
+      <Lock />
+      <EditorContent />
+    </EditorContainer>
+  </EditorRoot>;
+  ```
+
+- [`038a7bc`](https://github.com/udecode/plate/commit/038a7bcf7fdf9fbb9ebcd6367017a86fbb168554) by [@zbeyens](https://github.com/zbeyens) – Give each tile a table paste lands and each cell a table fill writes its own copy of an element whose unique property a property's `references` names. Each copy gets a new value, and each copied reference names the copy in its own tile or cell.
+
+- [`9b218c9`](https://github.com/udecode/plate/commit/9b218c9cb6c60809c4f6de75f51b4c6e2df3f682) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `admit` and `fill` to the upload plugin's update API. A plugin with its own insert, such as one that wraps each file's placeholder in a container, checks a batch with `admit`, inserts the placeholders it returns and gives each file its placeholder with `fill`.
+
+- [`0db21cf`](https://github.com/udecode/plate/commit/0db21cf93a87eb3fc1ed40d4c2723cefd4f9f669) by [@zbeyens](https://github.com/zbeyens) –
+  - Report an unsupported file type first when a file of another kind is picked for an upload placeholder, before the size and configuration checks.
+  - Send the file of an upload placeholder's submit once when a transaction spec that holds it is applied twice, and report its refusal once.
+  - Keep the file of a placeholder submit in a transaction spec when an update applies the spec after another commit or a Cancel.
+  - Answer a placeholder submit from the placeholder as the update left it, such as one the update inserted, retagged, moved into a read-only element or removed.
+  - Send the newest file an update gave a placeholder when the update ends with a refused submit.
+
 ## 54.0.0-beta.2
 
 ### Major Changes
