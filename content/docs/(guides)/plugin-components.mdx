@@ -189,15 +189,18 @@ still selects the node. The [Excalidraw](/docs/excalidraw) element is
 a complete example.
 
 <Callout type="info" title="Keys the editor still takes">
-  Outside an IME composition, the editor takes Undo and Redo shortcuts before
-  the widget's own key handlers run, in a marked widget, a native control, or a
-  nested editor alike. An editable editor runs its own history for them, even
-  when it has nothing to undo. A read-only editor only stops them, so a native
-  text field still applies the browser's own undo. The editor also takes
-  Shift+Arrow keys from a nested editor, and from any widget while its own
-  selection is in another root. While it holds a selection it draws itself,
-  such as one that spans roots, it also takes Backspace, Delete, and Enter from
-  any widget, unless Alt, Ctrl, or Meta is held.
+  Outside an IME composition, a widget gets the Undo and Redo keys first. A
+  widget that stops the key or prevents its default keeps it, and a native text
+  field applies the browser's own undo. Otherwise an editable editor runs its
+  own history, even when it has nothing to undo. A read-only editor only stops
+  the key. An independent nested editor, such as the inner editor of
+  [Editable Voids](/docs/examples/editable-voids), runs its own history. The
+  editor takes Undo and Redo before a nested editor's key handlers run only
+  when that nested editor shows another root of the same editor. The editor
+  also takes Shift+Arrow keys from a nested editor, and from any widget while
+  its own selection is in another root. While it holds a selection it draws
+  itself, such as one that spans roots, it also takes Backspace, Delete, and
+  Enter from any widget, unless Alt, Ctrl, or Meta is held.
 </Callout>
 
 ## Styling
@@ -228,7 +231,7 @@ replace from the registry.
 | `EditorLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
 | `plugin.configure({ component: Component })` | Ordinary node component binding. | Include the component and every consumer override in the same terminal call. |
 | `plugin.configure({ component: 'tag' })` | Default wrapper with an intrinsic tag. | Accepts an HTML tag such as `'blockquote'`, `'strong'`, or `'code'`. |
-| `data-editor-root-chrome-ignore="true"` | A wrapper around a widget that owns its input. | Pair with `contentEditable={false}`; Undo and Redo shortcuts still reach the editor. |
+| `data-editor-root-chrome-ignore="true"` | A wrapper around a widget that owns its input. | Pair with `contentEditable={false}`; Undo and Redo reach the editor unless the widget stops them. |
 
 For plugin method details, see [Plugin Methods](/docs/plugin-methods). For static
 rendering components, see [Static Rendering](/docs/static).

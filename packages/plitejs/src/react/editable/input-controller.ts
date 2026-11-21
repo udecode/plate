@@ -27,7 +27,10 @@ import {
 } from './dom-coverage-vertical-selection';
 import type { EditableInputController, InputIntent } from './input-state';
 import { getExternalTextHostOwner } from './interaction-owner';
-import { setEditorComposing } from './runtime-editor-api';
+import {
+  getEditorRuntimeOwner,
+  setEditorComposing,
+} from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 
 export type {
@@ -108,7 +111,7 @@ export const getDocumentBoundaryKeyboardMove = (
   return null;
 };
 
-export const isNestedEditableDOMTarget = (
+const getNestedEditableDOMElement = (
   editorElement: HTMLElement,
   target: EventTarget | null
 ) => {
@@ -119,12 +122,17 @@ export const isNestedEditableDOMTarget = (
       : null;
   const targetEditor = targetElement?.closest('[data-editor="true"]');
 
-  return Boolean(
-    targetEditor &&
+  return targetEditor &&
     targetEditor !== editorElement &&
     editorElement.contains(targetEditor)
-  );
+    ? targetEditor
+    : null;
 };
+
+export const isNestedEditableDOMTarget = (
+  editorElement: HTMLElement,
+  target: EventTarget | null
+) => !!getNestedEditableDOMElement(editorElement, target);
 
 export const getNestedEditableDOMSelectionRoot = (
   editorElement: HTMLElement
@@ -160,6 +168,23 @@ const getEditorDOMElement = (editor: ReactRuntimeEditor) => {
   const node = ReactEditor.editable(editor);
 
   return node instanceof HTMLElement ? node : null;
+};
+
+export const isSameRuntimeNestedDOMTarget = (
+  editor: ReactRuntimeEditor,
+  target: EventTarget | null
+) => {
+  const editorElement = getEditorDOMElement(editor);
+  const nestedEditable = editorElement
+    ? getNestedEditableDOMElement(editorElement, target)
+    : null;
+  const view = nestedEditable
+    ? findDOMRootRuntime(nestedEditable)?.editor
+    : null;
+
+  return (
+    !!view && getEditorRuntimeOwner(view) === getEditorRuntimeOwner(editor)
+  );
 };
 
 export const isInteractiveInternalTarget = (

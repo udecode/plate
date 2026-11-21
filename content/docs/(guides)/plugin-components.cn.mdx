@@ -154,9 +154,10 @@ export function ExcalidrawElement({
 [Excalidraw](/docs/excalidraw) element 是一个完整示例。
 
 <Callout type="info" title="编辑器仍会接管的按键">
-  在 IME 组合输入之外，编辑器会在组件自身的按键处理器运行之前接管撤销和重做快捷键，
-  无论按键发生在带标记的组件、原生控件还是嵌套编辑器中。可编辑的编辑器会为它们运行自身的历史记录，
-  即使没有可撤销的内容。只读编辑器只会拦截它们，因此原生文本框仍会执行浏览器自身的撤销。
+  在 IME 组合输入之外，组件会先收到撤销和重做快捷键。阻止该按键传播或阻止其默认行为的组件会保留它，
+  原生文本框会执行浏览器自身的撤销。否则，可编辑的编辑器会运行自身的历史记录，即使没有可撤销的内容。
+  只读编辑器只会拦截该按键。独立的嵌套编辑器，例如[可编辑空白节点](/cn/docs/examples/editable-voids)中的内层编辑器，
+  会运行它自己的历史记录。只有当嵌套编辑器显示的是同一编辑器的另一个根时，编辑器才会在其按键处理器运行之前接管撤销和重做。
   编辑器还会接管嵌套编辑器中的 Shift+方向键；当自身选区位于另一个根时，也会接管任意组件中的 Shift+方向键。
   当编辑器持有由它自己绘制的选区时，例如跨根的选区，它还会接管任意组件中的 Backspace、Delete 和 Enter，
   按住 Alt、Ctrl 或 Meta 时除外。
@@ -170,4 +171,4 @@ export function ExcalidrawElement({
 | `EditorLeaf` | Mark 和 decoration 文本。 | 默认渲染 `span`；用于声明 `schema.mark` 的插件。 |
 | `plugin.configure({ component: Component })` | 绑定普通节点组件。 | 在同一次终结配置中加入组件和所有用户覆盖。 |
 | `plugin.configure({ component: 'tag' })` | 使用原生 HTML 标签。 | 接受 `'blockquote'`、`'strong'` 或 `'code'` 等标签。 |
-| `data-editor-root-chrome-ignore="true"` | 包裹自行处理输入的组件。 | 与 `contentEditable={false}` 一起使用；撤销和重做快捷键仍由编辑器接管。 |
+| `data-editor-root-chrome-ignore="true"` | 包裹自行处理输入的组件。 | 与 `contentEditable={false}` 一起使用；除非组件阻止，撤销和重做快捷键会交给编辑器。 |

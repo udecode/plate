@@ -4,6 +4,7 @@ type DOMRootPlatform = 'android' | 'apple' | 'other';
 export type DOMRootQuirk =
   | 'android-beforeinput-delete-is-uncancelable'
   | 'compositionend-precedes-final-input'
+  | 'line-motion-enters-scroll-container-at-end'
   | 'line-motion-skips-out-of-flow-lines'
   | 'shadow-selection-needs-composed-range'
   | 'unrendered-caret-needs-rewrite'
@@ -126,8 +127,11 @@ const resolveRealmDOMRootFacts = (
     quirks.add('compositionend-precedes-final-input');
   }
   // Firefox moves a vertical arrow press to the next line in normal flow, so
-  // it skips a line that an absolutely placed box draws.
+  // it skips a line that an absolutely placed box draws. A press that enters a
+  // scroll container, such as a code block with `overflow-x: auto`, lands at
+  // the end of that container's content instead of on its nearest line.
   if (engine === 'gecko') {
+    quirks.add('line-motion-enters-scroll-container-at-end');
     quirks.add('line-motion-skips-out-of-flow-lines');
   }
   if (engine === 'webkit') {

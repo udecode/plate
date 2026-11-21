@@ -31,6 +31,7 @@ import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
 import {
   isNestedEditableDOMTarget,
+  isSameRuntimeNestedDOMTarget,
   isPlainVerticalDocumentBoundary,
 } from './input-controller';
 import { useEditableKeyboardHandler } from './input-router';
@@ -49,7 +50,7 @@ import {
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { resolveViewBoundaryDOMPoint } from './selection-projected-dom';
-import { moveByViewLines, ViewLinesContext } from './view-lines';
+import { moveByRenderedLines, ViewLinesContext } from './view-lines';
 
 const WHITESPACE_KEY_RE = /\s/;
 const MODIFIER_ONLY_KEYS = new Set([
@@ -419,7 +420,7 @@ export const useRuntimeKeyboardEvents = ({
           }))
       ) {
         flushPendingNativeTextInput?.();
-        const repair = moveByViewLines({
+        const repair = moveByRenderedLines({
           editor,
           event,
           inputController,
@@ -615,7 +616,8 @@ export const useRuntimeKeyboardEvents = ({
         readPliteViewSelection(editor) !== null;
       const shouldCaptureTextHistory =
         decision.intent === 'history' &&
-        (!!getExternalTextHostOwner(event.target) || isNestedEditableTarget());
+        (!!getExternalTextHostOwner(event.target) ||
+          isSameRuntimeNestedDOMTarget(editor, event.target));
       const shouldCapture =
         decision.targetOwner === 'internal-control' &&
         (shouldCaptureTextHistory ||

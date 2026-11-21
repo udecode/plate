@@ -628,24 +628,21 @@ const LanguageSelect = (
     onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
   }
 ) => (
-  <NativeSelect
-    className="absolute top-[5px] right-[5px] z-10"
-    contentEditable={false}
-    data-test-id="language-select"
-    {...props}
-  >
-    <NativeSelectOption value="css">CSS</NativeSelectOption>
-    <NativeSelectOption value="html">HTML</NativeSelectOption>
-    <NativeSelectOption value="java">Java</NativeSelectOption>
-    <NativeSelectOption value="javascript">JavaScript</NativeSelectOption>
-    <NativeSelectOption value="jsx">JSX</NativeSelectOption>
-    <NativeSelectOption value="markdown">Markdown</NativeSelectOption>
-    <NativeSelectOption value="php">PHP</NativeSelectOption>
-    <NativeSelectOption value="python">Python</NativeSelectOption>
-    <NativeSelectOption value="sql">SQL</NativeSelectOption>
-    <NativeSelectOption value="tsx">TSX</NativeSelectOption>
-    <NativeSelectOption value="typescript">TypeScript</NativeSelectOption>
-  </NativeSelect>
+  <div className="absolute top-[5px] right-[5px] z-10" contentEditable={false}>
+    <NativeSelect data-test-id="language-select" {...props}>
+      <NativeSelectOption value="css">CSS</NativeSelectOption>
+      <NativeSelectOption value="html">HTML</NativeSelectOption>
+      <NativeSelectOption value="java">Java</NativeSelectOption>
+      <NativeSelectOption value="javascript">JavaScript</NativeSelectOption>
+      <NativeSelectOption value="jsx">JSX</NativeSelectOption>
+      <NativeSelectOption value="markdown">Markdown</NativeSelectOption>
+      <NativeSelectOption value="php">PHP</NativeSelectOption>
+      <NativeSelectOption value="python">Python</NativeSelectOption>
+      <NativeSelectOption value="sql">SQL</NativeSelectOption>
+      <NativeSelectOption value="tsx">TSX</NativeSelectOption>
+      <NativeSelectOption value="typescript">TypeScript</NativeSelectOption>
+    </NativeSelect>
+  </div>
 );
 
 const toChildren = (content: string): [CustomText] => [{ text: content }];

@@ -93,7 +93,7 @@ import {
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { getTextDirection } from './text-direction';
-import { moveByViewLines, type ViewLines } from './view-lines';
+import { moveByRenderedLines, type ViewLines } from './view-lines';
 
 export type EditableKeyDownResult = {
   focusEditor?: ReactRuntimeEditor;
@@ -1075,7 +1075,7 @@ export const applyEditableKeyDown = ({
 
     const viewLinesRepair = verticalOwnerTarget
       ? null
-      : moveByViewLines({ editor, event, inputController, viewLines });
+      : moveByRenderedLines({ editor, event, inputController, viewLines });
 
     if (viewLinesRepair) return keyDownHandled(viewLinesRepair);
 

@@ -217,7 +217,88 @@ export const landInViewBlock = ({
 
 const toPreferencePoint = ([node, offset]: DOMPoint) => ({ node, offset });
 
-export const moveByViewLines = ({
+const isScrollContainer = (element: Element) => {
+  const { overflowX, overflowY } = getComputedStyle(element);
+
+  return [overflowX, overflowY].some(
+    (overflow) => overflow !== 'visible' && overflow !== 'clip'
+  );
+};
+
+const entersScrollContainer = (root: HTMLElement, from: Node, to: Node) => {
+  for (
+    let element = to.parentElement;
+    element && element !== root;
+    element = element.parentElement
+  ) {
+    if (element.contains(from)) return false;
+    if (isScrollContainer(element)) return true;
+  }
+  return false;
+};
+
+const onSameLine = (a: DOMRect, b: DOMRect) =>
+  Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) >
+  Math.min(a.height, b.height) / 2;
+
+const landInScrollContainer = ({
+  direction,
+  editor,
+  focus,
+  focusDOM,
+  root,
+}: Readonly<{
+  direction: ViewLineDirection;
+  editor: ReactRuntimeEditor;
+  focus: Point;
+  focusDOM: DOMPoint;
+  root: HTMLElement;
+}>): ViewLineLanding | null => {
+  const adjacent = editor.read((state) => {
+    const block = state.nodes.block({ at: focus, mode: 'lowest' });
+    const edge =
+      block &&
+      (direction === 'down'
+        ? state.points.end(block[1])
+        : state.points.start(block[1]));
+    const next =
+      edge &&
+      (direction === 'down'
+        ? state.points.after(edge, { unit: 'offset' })
+        : state.points.before(edge, { unit: 'offset' }));
+
+    return edge && next ? { edge, next } : null;
+  });
+
+  if (!adjacent) return null;
+  const nextDOM = resolveDOMPointInRoot(editor, adjacent.next, root);
+
+  if (!nextDOM || !entersScrollContainer(root, focusDOM[0], nextDOM[0])) {
+    return null;
+  }
+  const kernel = createDOMGeometryKernel({ root });
+  const edgeDOM = resolveDOMPointInRoot(editor, adjacent.edge, root);
+  const caret = kernel.pointRect(focusDOM);
+  const edge = edgeDOM && kernel.pointRect(edgeDOM);
+
+  if (!caret || !edge || !onSameLine(caret, edge)) return null;
+  const line = kernel.pointRect(nextDOM);
+  const host = kernel.visualLineHost(nextDOM);
+  const x = kernel.verticalNavigationX(focusDOM);
+  const hit =
+    line && host && x !== null
+      ? kernel.pointInVisualLine({ host, line, x })
+      : null;
+  const dom: DOMPoint = hit ? [hit[0], hit[1]] : nextDOM;
+
+  return {
+    dom,
+    point:
+      editor.api.dom.resolvePoint(dom, { exactMatch: false }) ?? adjacent.next,
+  };
+};
+
+export const moveByRenderedLines = ({
   editor,
   event,
   inputController,
@@ -231,16 +312,22 @@ export const moveByViewLines = ({
   const direction =
     event.key === 'ArrowDown' ? 'down' : event.key === 'ArrowUp' ? 'up' : null;
   const root = event.currentTarget;
+  const paged =
+    !!viewLines &&
+    hasDOMHostQuirk(event.nativeEvent, 'line-motion-skips-out-of-flow-lines');
+  const scrolling = hasDOMHostQuirk(
+    event.nativeEvent,
+    'line-motion-enters-scroll-container-at-end'
+  );
 
   if (
-    !viewLines ||
+    !(paged || scrolling) ||
     !direction ||
     event.target !== root ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
-    isImeKeyDown(event.nativeEvent) ||
-    !hasDOMHostQuirk(event.nativeEvent, 'line-motion-skips-out-of-flow-lines')
+    isImeKeyDown(event.nativeEvent)
   ) {
     return null;
   }
@@ -270,15 +357,27 @@ export const moveByViewLines = ({
     : focus;
 
   if (!focus || !anchor) return null;
-  const landing = viewLines.lineAfter({
-    direction,
-    from: {
-      point: focus,
-      side: resolveSoftLineEndDOMPoint(points.focus)?.side ?? null,
-    },
-    readX: () =>
-      createDOMGeometryKernel({ root }).verticalNavigationX(points.focus),
-  });
+  const landing =
+    (paged
+      ? viewLines.lineAfter({
+          direction,
+          from: {
+            point: focus,
+            side: resolveSoftLineEndDOMPoint(points.focus)?.side ?? null,
+          },
+          readX: () =>
+            createDOMGeometryKernel({ root }).verticalNavigationX(points.focus),
+        })
+      : null) ??
+    (scrolling
+      ? landInScrollContainer({
+          direction,
+          editor,
+          focus,
+          focusDOM: points.focus,
+          root,
+        })
+      : null);
 
   if (!landing) return null;
   event.preventDefault();
