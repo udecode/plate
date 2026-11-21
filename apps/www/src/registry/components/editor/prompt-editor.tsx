@@ -1,6 +1,5 @@
 'use client';
 
-import { useComboboxContext, useStoreState } from '@ariakit/react';
 import { cn } from 'cn';
 import {
   ContentSlice,
@@ -28,6 +27,8 @@ import {
   InlineComboboxContent,
   InlineComboboxEmpty,
   InlineComboboxItem,
+  rankOptions,
+  useInlineComboboxQuery,
 } from './inline-combobox';
 import { MentionElement } from './mention';
 
@@ -178,18 +179,6 @@ const PromptEditorPlugin = definePlugin('promptEditor', {
   }),
 }));
 
-const rankItem = (item: PromptEditorItem, search: string) => {
-  const label = item.label.toLowerCase();
-  const ref = item.ref.toLowerCase();
-
-  if (label === search || ref === search) return 0;
-  if (label.startsWith(search)) return 1;
-  if (label.includes(search)) return 2;
-  if (ref.includes(search)) return 3;
-
-  return null;
-};
-
 function PromptEditorCombobox({ editableRef }: EditableSiblingProps) {
   return (
     <InlineCombobox editableRef={editableRef} plugin={MentionPlugin}>
@@ -200,27 +189,21 @@ function PromptEditorCombobox({ editableRef }: EditableSiblingProps) {
 
 function PromptEditorOptions() {
   const items = usePluginStore(PromptEditorPlugin, 'items');
-  const search = (useStoreState(useComboboxContext(), 'value') ?? '')
-    .trim()
-    .toLowerCase();
+  const query = useInlineComboboxQuery();
   const options = React.useMemo(
     () =>
-      items
-        .flatMap((item) => {
-          const rank = rankItem(item, search);
-
-          return rank === null ? [] : [{ item, rank }];
-        })
-        .sort((a, b) => a.rank - b.rank)
-        .slice(0, 50),
-    [items, search]
+      rankOptions(
+        items.map((item) => ({ ...item, keywords: [item.ref] })),
+        query
+      ).slice(0, 50),
+    [items, query]
   );
 
   return (
     <InlineComboboxContent className="my-1.5">
       <InlineComboboxEmpty>No results</InlineComboboxEmpty>
 
-      {options.map(({ item }) => (
+      {options.map((item) => (
         <InlineComboboxItem
           key={item.ref}
           className="h-auto flex-col items-start gap-0 py-1"

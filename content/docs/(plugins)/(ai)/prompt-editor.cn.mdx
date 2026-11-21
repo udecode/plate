@@ -15,7 +15,7 @@ docs:
 
 <ComponentInstallation name="prompt-editor" inline />
 
-这个条目会添加 `prompt-editor.tsx`，以及它导入的 `mention` 和 `inline-combobox` 条目。输入框需要一份 `InlineComboboxItem` 不接收 `value` 属性的 `inline-combobox.tsx`。较旧的副本无法和输入框一起编译，所以当 CLI 询问是否覆盖时请选择覆盖。
+这个条目会添加 `prompt-editor.tsx`，以及它导入的 `mention` 和 `inline-combobox` 条目。
 
 在 Next.js 应用中，请先按 [Next.js](/docs/installation/next#turbopack-builds) 的说明关闭 Turbopack 的 scope hoisting。否则生产构建可能在每个包含编辑器的页面上失败。
 
@@ -182,7 +182,7 @@ function MessageField() {
 <API name="PromptEditor">
 <APIProps>
   <APIItem name="items" type="readonly { label: string; ref: string }[]" optional>
-    @ 菜单提供的条目。菜单会搜索每个标签文字和 `ref`。
+    @ 菜单提供的条目。菜单会匹配标签文字中任意一个词的开头，或 `ref` 的开头。
   </APIItem>
   <APIItem name="name" type="string" optional>
     消息在表单 `FormData` 中使用的键。

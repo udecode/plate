@@ -761,7 +761,6 @@
       "title": "Prompt Editor",
       "description": "A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.",
       "dependencies": [
-        "@ariakit/react",
         "platejs",
         "cn",
         "diff-match-patch-ts@^0.6.0"

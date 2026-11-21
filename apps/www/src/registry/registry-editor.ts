@@ -405,7 +405,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ariakit/react', 'platejs'],
+    dependencies: ['platejs'],
     description:
       'A message field for a chat form: a text area that holds mention chips, sends on Enter through the Send button of its form and gives the message as text with each chip as a tag.',
     files: [

@@ -1,5 +1,5 @@
 {
-  "generation": "cdbccf01854495722d1f12a2ba4dcf594c9a061f4bb4ef6ceaf6b8abb6c97414",
+  "generation": "30372497a233a1cb2e9d65c90771fd502834b64edb4733dc0f1370d65f76ac9e",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -774,7 +774,6 @@
         },
         {
           "dependencies": [
-            "@ariakit/react",
             "platejs",
             "cn",
             "diff-match-patch-ts@^0.6.0"
@@ -8365,7 +8364,6 @@
         },
         {
           "dependencies": [
-            "@ariakit/react",
             "platejs",
             "cn",
             "diff-match-patch-ts@^0.6.0"

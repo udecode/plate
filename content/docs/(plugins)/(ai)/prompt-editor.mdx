@@ -15,7 +15,7 @@ docs:
 
 <ComponentInstallation name="prompt-editor" inline />
 
-The registry item adds `prompt-editor.tsx` and the `mention` and `inline-combobox` items it imports. The field needs a copy of `inline-combobox.tsx` whose `InlineComboboxItem` takes no `value` prop. An older copy fails to compile with the field, so accept the CLI's offer to overwrite it.
+The registry item adds `prompt-editor.tsx` and the `mention` and `inline-combobox` items it imports.
 
 In a Next.js app, turn off Turbopack's scope hoisting first, as [Next.js](/docs/installation/next#turbopack-builds) says. Otherwise a production build can fail on every page with an editor.
 
@@ -182,7 +182,7 @@ Edit `PromptEditorPlugin` in the copied `prompt-editor.tsx` to change these rule
 <API name="PromptEditor">
 <APIProps>
   <APIItem name="items" type="readonly { label: string; ref: string }[]" optional>
-    What the @ menu offers. The menu searches each label and `ref`.
+    What the @ menu offers. The menu matches the start of any word in a label, or the start of a `ref`.
   </APIItem>
   <APIItem name="name" type="string" optional>
     The key the message takes in the form's `FormData`.
