@@ -647,8 +647,9 @@ const legacyAdoption = (ledger, review) => {
 
 /**
  * What closes a Pursue: the implementation or workflow plans that name it, or
- * its own review page, when every one of them is landed. A review page's basis
- * adopts nothing.
+ * its own review page, when every one of them is landed. A plan that closed
+ * without landing, such as a superseded iteration, neither holds it open nor
+ * closes it. A review page's basis adopts nothing.
  */
 export function adoptionOf(ledger, review, plans) {
   const executing = plans.filter(
@@ -659,8 +660,11 @@ export function adoptionOf(ledger, review, plans) {
         (!isReviewPage(plan) && plan.reviewBasis.includes(review.id)))
   );
   if (executing.length) {
-    return executing.every((plan) => plan.landed)
-      ? { id: executing[0].path }
+    const live = executing.filter(
+      (plan) => plan.landed || plan.conflict || stateOf(plan.status) !== 'done'
+    );
+    return live.length && live.every((plan) => plan.landed)
+      ? { id: live[0].path }
       : null;
   }
   return legacyAdoption(ledger, review);
