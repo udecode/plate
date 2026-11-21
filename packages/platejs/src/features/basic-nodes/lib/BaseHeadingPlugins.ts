@@ -24,6 +24,11 @@ const isHeadingLevel = (value: unknown): value is HeadingLevel =>
   value >= 1 &&
   value <= 6;
 
+const levelProps =
+  (level: HeadingLevel, type: string, detailsTitleType: string | undefined) =>
+  (node: Readonly<Element>) =>
+    node.type === detailsTitleType ? { level } : { level, type };
+
 const rules = {
   break: { splitReset: true },
   delete: { empty: 'reset', start: 'reset' },
@@ -81,29 +86,26 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
       },
     }),
   rules,
-}).extend(({ editor, schema: { type } }) => {
-  const isDetailsTitle = (node: Readonly<Element>) => {
-    const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
+  read: ({ editor, schema: { type }, state }) => {
+    const detailsTitleType = () => {
+      const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
 
-    return !!summary && node.type === editor.plugin(summary).schema.type;
-  };
-  const levelOf = (node: Readonly<Element>): HeadingLevel | undefined =>
-    (node.type === type || isDetailsTitle(node)) && isHeadingLevel(node.level)
-      ? node.level
-      : undefined;
-  const levelProps = (level: HeadingLevel) => (node: Readonly<Element>) =>
-    isDetailsTitle(node) ? { level } : { level, type };
+      return summary ? editor.plugin(summary).schema.type : undefined;
+    };
 
-  return {
-    read: ({ state }) => ({
-      level: levelOf,
+    return {
+      level: (node: Readonly<Element>): HeadingLevel | undefined =>
+        (node.type === type || node.type === detailsTitleType()) &&
+        isHeadingLevel(node.level)
+          ? node.level
+          : undefined,
       /**
        * Whether `setLevel(level)` can apply: the schema lets every selected
        * block take the level where it sits.
        */
       canSetLevel: (level: HeadingLevel) => {
         const blocks = state.nodes.blocks();
-        const props = levelProps(level);
+        const props = levelProps(level, type, detailsTitleType());
         const root = state.view.root();
 
         return (
@@ -117,30 +119,35 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
           )
         );
       },
-    }),
-    update: ({ tx }) => {
-      const setLevel = txLocate(false, (level: HeadingLevel) => {
-        const blocks = tx.nodes.blocks();
+    };
+  },
+}).extend(({ read }) => ({
+  update: ({ editor, tx, schema: { type } }) => {
+    const summary = getCompiledPlatePlugin(editor, PLUGINS.detailsSummary);
+    const detailsTitleType = summary
+      ? editor.plugin(summary).schema.type
+      : undefined;
+    const setLevel = txLocate(false, (level: HeadingLevel) => {
+      const blocks = tx.nodes.blocks();
 
-        if (blocks.length === 0) return false;
+      if (blocks.length === 0) return false;
 
-        return (
-          blocks.every(([node]) => levelOf(node) === level) ||
-          tx.blocks.set(levelProps(level))
-        );
-      });
+      return (
+        blocks.every(([node]) => read.level(node) === level) ||
+        tx.blocks.set(levelProps(level, type, detailsTitleType))
+      );
+    });
 
-      return {
-        setLevel,
-        toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
-          tx.nodes.blocks().some(([node]) => levelOf(node) === level)
-            ? tx.blocks.reset({ unset: 'level' })
-            : setLevel(level)
-        ),
-      };
-    },
-  };
-});
+    return {
+      setLevel,
+      toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
+        tx.nodes.blocks().some(([node]) => read.level(node) === level)
+          ? tx.blocks.reset({ unset: 'level' })
+          : setLevel(level)
+      ),
+    };
+  },
+}));
 
 export const HeadingRules = {
   markdown: ({
