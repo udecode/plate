@@ -68,7 +68,7 @@ import {
   readMembers,
   withMembers,
 } from './marks';
-import { isTextBlock } from './resolve';
+import { inlineTestOf, isTextBlock } from './resolve';
 
 export type AuthoredRecordInput = Readonly<{
   before: JsonEditorValue;
@@ -1101,7 +1101,7 @@ const isLine = (
   if (entry.kind !== 'element') return false;
   const node = index.node(entry.path);
 
-  return isTextBlock(node) && !isInline(node);
+  return isTextBlock(node, inlineTestOf(null)) && !isInline(node);
 };
 
 const lineAround = (
@@ -2960,7 +2960,7 @@ class RootRecorder {
 
     if (
       !right ||
-      (isTextBlock(this.index.node(right.path)) &&
+      (isTextBlock(this.index.node(right.path), inlineTestOf(null)) &&
         !this.mergesIntoStruckLine(group))
     ) {
       return false;
@@ -3046,7 +3046,9 @@ class RootRecorder {
 
     const entry = this.index.nodeRange(container.path);
 
-    if (isTextBlock(this.index.node(container.path))) return false;
+    if (isTextBlock(this.index.node(container.path), inlineTestOf(null))) {
+      return false;
+    }
 
     const children = this.index.slice(before, container.contentTo);
 
@@ -3200,7 +3202,7 @@ class RootRecorder {
 
     const next = this.childAt(parentPath, index);
     const join =
-      next && isTextBlock(next)
+      next && isTextBlock(next, inlineTestOf(null))
         ? this.marks(propsOf(next)).find(this.isLiveJoin)
         : undefined;
 
@@ -3435,7 +3437,9 @@ class RootRecorder {
           holders.set(mark.key, (holders.get(mark.key) ?? 0) + 1);
         }
       }
-      if (!isTextBlock(node)) node.children?.forEach(visit);
+      if (!isTextBlock(node, inlineTestOf(null))) {
+        node.children?.forEach(visit);
+      }
     };
 
     this.index.nodes.forEach(visit);
@@ -3670,7 +3674,7 @@ class RootRecorder {
     if (
       !line ||
       to > line.contentTo ||
-      !isTextBlock(this.index.node(line.path)) ||
+      !isTextBlock(this.index.node(line.path), inlineTestOf(null)) ||
       !this.hasMarkKind(line.props, 'delete') ||
       !this.holdsLiveContent(line, [{ from, to: from }]) ||
       this.holdsLiveContent(line, [{ from, to }])
@@ -3784,7 +3788,7 @@ class RootRecorder {
     const gone = (from: number, to: number) =>
       removed.some((span) => span.from <= from && to <= span.to);
 
-    if (!isTextBlock(this.index.node(element.path))) {
+    if (!isTextBlock(this.index.node(element.path), inlineTestOf(null))) {
       for (let from = element.contentFrom; from < element.contentTo;) {
         const child = getDefined(this.index.nodeStartingAt(from));
 
@@ -4196,7 +4200,7 @@ class RootRecorder {
         if (
           boundary.kind === 'join' &&
           !isEditingChange(changeId) &&
-          !isTextBlock(this.index.node(context.path))
+          !isTextBlock(this.index.node(context.path), inlineTestOf(null))
         ) {
           throw unrepresentable('Suggesting cannot join a container block.');
         }

@@ -72,6 +72,8 @@ import { buildClaimsIn } from '../tree/reserves';
 import {
   type AuthoredResolveSchema,
   decidedJoinLeavesInPlace,
+  type InlineTest,
+  inlineTestOf,
   placementLinksIn,
   slotDecidingInsertions,
   startOccupants,
@@ -1001,12 +1003,17 @@ const settleRoot = (nodes: NodeList<Node>, pass: Pass, root: string) => {
   }
 };
 
-const liveLinksIn = (nodes: NodeList<Node>, facts: ReviewFacts) => {
+const liveLinksIn = (
+  nodes: NodeList<Node>,
+  facts: ReviewFacts,
+  isInline: InlineTest
+) => {
   const sourceOf = placementLinksIn<Node>(
     (visit) => nodes.forEach((node) => visit(node)),
     readAuthoredMarks,
     (mark) =>
-      outcomeOf(facts, mark) === 'pending' || isEditingChange(mark.change)
+      outcomeOf(facts, mark) === 'pending' || isEditingChange(mark.change),
+    isInline
   );
 
   return (node: Node, link: string) => sourceOf(link, node) !== null;
@@ -1095,9 +1102,16 @@ export const settleValue = <V extends JsonEditorValue>(
 }> => {
   let resolve: AuthoredResolveSchema | undefined;
   const dependencies = createDependencies(facts);
+  const isInline = inlineTestOf(null);
   const liveLinks = new Map<string, ReturnType<typeof liveLinksIn>>();
-  const buildClaims = buildClaimsIn<Node>(facts, dependencies, (root, visit) =>
-    (rootOf(value, root).nodes as NodeList<Node>).forEach((node) => visit(node))
+  const buildClaims = buildClaimsIn<Node>(
+    facts,
+    dependencies,
+    (root, visit) =>
+      (rootOf(value, root).nodes as NodeList<Node>).forEach((node) =>
+        visit(node)
+      ),
+    isInline
   );
   const pass: Pass = {
     dependencies,
@@ -1110,7 +1124,7 @@ export const settleValue = <V extends JsonEditorValue>(
       let live = liveLinks.get(root);
 
       if (!live) {
-        live = liveLinksIn(rootOf(value, root).nodes, facts);
+        live = liveLinksIn(rootOf(value, root).nodes, facts, isInline);
         liveLinks.set(root, live);
       }
 

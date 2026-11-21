@@ -4,7 +4,7 @@ import { getDefined } from '../../internal/get-defined';
 import { type BlockOccurrence, isStructureMark, sameShape } from '../changes';
 import { isEditingChange } from '../facts/editing';
 import { tokenLength } from '../tree/alignment';
-import { isTextBlock } from '../tree/resolve';
+import { inlineTestOf, isTextBlock } from '../tree/resolve';
 import { countLedgerWork } from './work';
 
 export type PairedChanges = Readonly<{
@@ -103,7 +103,7 @@ const holdsChanges = (changes: PairedChanges, node: JsonNode, at: number) => {
 };
 
 const isAtomic = (node: JsonNode) =>
-  typeof node.text === 'string' || isTextBlock(node);
+  typeof node.text === 'string' || isTextBlock(node, inlineTestOf(null));
 
 /**
  * The pending changes on `node` itself or on its own text, never on a block

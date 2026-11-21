@@ -224,6 +224,8 @@ import {
 import {
   type AuthoredResolveSchema,
   claimsBreakBefore,
+  type InlineTest,
+  inlineTestOf,
   projectAuthoredValue,
   isTextBlock,
   pastFollowers,
@@ -858,7 +860,12 @@ const nodePropsOf = ({
  * The deepest element whose children hold the range as whole blocks, so a
  * join or split in the range lands among the blocks beside it.
  */
-const siteOf = (index: DocumentIndex, from: number, to: number) => {
+const siteOf = (
+  index: DocumentIndex,
+  from: number,
+  to: number,
+  isInline: InlineTest
+) => {
   let site: readonly number[] = [];
 
   for (const range of index.openContextAt(from)) {
@@ -866,7 +873,7 @@ const siteOf = (index: DocumentIndex, from: number, to: number) => {
       range.kind !== 'element' ||
       range.contentFrom > from ||
       range.contentTo < to ||
-      isTextBlock(index.node(range.path))
+      isTextBlock(index.node(range.path), isInline)
     ) {
       break;
     }
@@ -906,14 +913,16 @@ const runAround = (
   path: readonly number[],
   from: number,
   to: number,
-  facts: ReviewFacts
+  facts: ReviewFacts,
+  isInline: InlineTest
 ): OwnRun => {
   const siblings = childrenOf(index, path);
   const structural = siblings
     .slice(from, to)
     .some((node) => holdsOwnStructure(node, facts));
   let start =
-    from > 0 && (structural || isTextBlock(getDefined(siblings.at(from - 1))))
+    from > 0 &&
+    (structural || isTextBlock(getDefined(siblings.at(from - 1)), isInline))
       ? from - 1
       : from;
 
@@ -931,7 +940,8 @@ const runAround = (
     from: start,
     path,
     to:
-      end < siblings.length && isTextBlock(getDefined(siblings.at(end)))
+      end < siblings.length &&
+      isTextBlock(getDefined(siblings.at(end)), isInline)
         ? end + 1
         : end,
   };
@@ -940,12 +950,13 @@ const runAround = (
 const ownRuns = (
   index: DocumentIndex,
   change: RootChange,
-  facts: ReviewFacts
+  facts: ReviewFacts,
+  isInline: InlineTest
 ) => {
   const sites = new Map<string, { path: readonly number[]; at: Set<number> }>();
 
   change.iterChangedRanges((_fromA, _toA, from, to) => {
-    const path = siteOf(index, from, to);
+    const path = siteOf(index, from, to, isInline);
     const key = path.join(',');
     const site = sites.get(key) ?? { at: new Set<number>(), path };
 
@@ -965,7 +976,7 @@ const ownRuns = (
 
   for (const { at, path } of sites.values()) {
     for (const child of [...at].toSorted((left, right) => left - right)) {
-      const run = runAround(index, path, child, child + 1, facts);
+      const run = runAround(index, path, child, child + 1, facts, isInline);
       const last = runs.at(-1);
 
       if (last && last.path === path && run.from <= last.to) {
@@ -1030,6 +1041,7 @@ const acceptOwn = (
   dependencies: Dependencies,
   base: ReviewFacts
 ) => {
+  const isInline = inlineTestOf(null);
   const minted = new Map(
     dependencies.minted().map((record) => [record.ctx, record] as const)
   );
@@ -1114,7 +1126,14 @@ const acceptOwn = (
           if (lines.length === 0 && run.path.length > 0) {
             const at = getDefined(run.path.at(-1));
 
-            run = runAround(index, run.path.slice(0, -1), at, at + 1, facts);
+            run = runAround(
+              index,
+              run.path.slice(0, -1),
+              at,
+              at + 1,
+              facts,
+              isInline
+            );
             continue;
           }
           run = {
@@ -1151,10 +1170,17 @@ const acceptOwn = (
 
         const at = getDefined(run.path.at(-1));
 
-        run = runAround(index, run.path.slice(0, -1), at, at + 1, facts);
+        run = runAround(
+          index,
+          run.path.slice(0, -1),
+          at,
+          at + 1,
+          facts,
+          isInline
+        );
       }
     };
-    let runs = ownRuns(index, rootChange, facts);
+    let runs = ownRuns(index, rootChange, facts, isInline);
     let spans: Array<
       ReturnType<typeof resolveRun> & Readonly<{ from: number; to: number }>
     > = [];
@@ -1198,7 +1224,7 @@ const acceptOwn = (
       const stored = { children: nodes } as JsonEditorValue;
       const settled = { children: result } as JsonEditorValue;
       const aligned =
-        characterAlignedChange(stored, settled, settledBy(result)) ??
+        characterAlignedChange(stored, settled, settledBy(result), isInline) ??
         DocumentChange.between(stored, settled, {
           isSetValued: isAuthoredSetValued,
         });

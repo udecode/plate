@@ -41,6 +41,8 @@ import {
   acceptedOwnShape,
   failInTests,
   hasLiveJoinMark,
+  type InlineTest,
+  inlineTestOf,
   isTextBlock,
   mergesUp,
   removes,
@@ -510,20 +512,23 @@ const acceptingRemoves = (node: unknown) =>
 export const characterAlignedChange = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
-  settledBy: SettledBy
+  settledBy: SettledBy,
+  isInline: InlineTest
 ): DocumentChange | null =>
   alignedByCharacters(
     stored,
     accepted,
     settledBy,
-    survivalUnder<JsonNode>(settledBy.removes, settledBy.wholeWhenRemoved)
+    survivalUnder<JsonNode>(settledBy.removes, settledBy.wholeWhenRemoved),
+    isInline
   );
 
 const alignedByCharacters = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
   settledBy: SettledBy,
-  settled: Survival<JsonNode>
+  settled: Survival<JsonNode>,
+  isInline: InlineTest
 ): DocumentChange | null => {
   if (stored.roots || accepted.roots) return null;
 
@@ -546,7 +551,7 @@ const alignedByCharacters = (
 
     const children = node.children ?? [];
 
-    if (isTextBlock(node)) {
+    if (isTextBlock(node, isInline)) {
       if (typeof children.at(-1)?.text === 'string') {
         removed[before.nodeRange([...at, children.length - 1]).to - 1] = 1;
       }
@@ -761,13 +766,18 @@ export const decidedAlignment = (
 
   return (
     (rejects ? null : structuralAcceptedChange(stored, decided)) ??
-    characterAlignedChange(stored, decided, {
-      joins: (node) =>
-        marksOf(node, facts).some((mark) => mergesUp(mark, outcomeOf(mark))),
-      removes: (node) =>
-        marksOf(node, facts).some((mark) => removes(mark, outcomeOf(mark))),
-      wholeWhenRemoved: gridPartsOf(schema),
-    })
+    characterAlignedChange(
+      stored,
+      decided,
+      {
+        joins: (node) =>
+          marksOf(node, facts).some((mark) => mergesUp(mark, outcomeOf(mark))),
+        removes: (node) =>
+          marksOf(node, facts).some((mark) => removes(mark, outcomeOf(mark))),
+        wholeWhenRemoved: gridPartsOf(schema),
+      },
+      inlineTestOf(null)
+    )
   );
 };
 
@@ -852,7 +862,8 @@ export const acceptedAlignment = (
       removes: acceptingRemoves,
       wholeWhenRemoved: gridPartsOf(schema),
     },
-    proposedSurvivalOf(schema)
+    proposedSurvivalOf(schema),
+    inlineTestOf(null)
   );
 
 /**
