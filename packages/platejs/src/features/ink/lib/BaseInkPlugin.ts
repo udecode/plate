@@ -181,10 +181,29 @@ export type InkCopyPlace =
   | Readonly<{ key: NodeKey; kind: 'changed' | 'live' }>
   | Readonly<{ beside: InkSignPlace; kind: 'gone' }>;
 
+const copiesOf = ({ copies }: Readonly<Record<string, unknown>>) => {
+  const ids =
+    typeof copies === 'string'
+      ? copies.split(' ')
+      : Array.isArray(copies)
+        ? copies
+        : [];
+
+  return ids.length > 0 &&
+    ids.every((id): id is string => typeof id === 'string' && id !== '')
+    ? ids
+    : null;
+};
+
+const beta2MayUndoTo = (id: string) => id.startsWith('c_');
+
 const inkRecords = defineRuntimePlugin('ink-records', {
   schema: {
     records: {
-      [COPIES]: { history: 'retain' },
+      [COPIES]: {
+        history: 'retain',
+        namedBy: { keep: beta2MayUndoTo, names: copiesOf, set: MARKS },
+      },
       [GONE]: { history: 'retain' },
       [MARKS]: {},
     },
@@ -199,7 +218,7 @@ const inkRecords = defineRuntimePlugin('ink-records', {
 const NO_RECORDS: SavedRecords[string] = {};
 const namedCache = new WeakMap<object, ReadonlySet<string>>();
 
-const namedBy = (set: SavedRecords[string], fields: readonly string[]) => {
+const idsIn = (set: SavedRecords[string], fields: readonly string[]) => {
   let ids = namedCache.get(set);
 
   if (!ids) {
@@ -220,8 +239,8 @@ const namedBy = (set: SavedRecords[string], fields: readonly string[]) => {
 };
 
 const isNamed = (records: SavedRecords | undefined, id: string) =>
-  namedBy(records?.[COPIES] ?? NO_RECORDS, ['block']).has(id) ||
-  namedBy(records?.[GONE] ?? NO_RECORDS, ['next', 'previous']).has(id);
+  idsIn(records?.[COPIES] ?? NO_RECORDS, ['block']).has(id) ||
+  idsIn(records?.[GONE] ?? NO_RECORDS, ['next', 'previous']).has(id);
 
 const decodedCopies = new WeakMap<object, Map<string, InkCopy | undefined>>();
 

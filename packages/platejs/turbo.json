@@ -6718,6 +6718,7 @@
         "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:ink",
+        "source-hash:partition:proxies",
         "source-hash:partition:yjs-react"
       ],
       "inputs": [

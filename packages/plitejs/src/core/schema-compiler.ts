@@ -22,6 +22,7 @@ import type {
   SchemaProperty,
   SchemaPropertyKey,
   SchemaPropertyLandingPolicy,
+  SchemaRecordSet,
   SchemaTarget,
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
@@ -296,6 +297,7 @@ type CompiledSchemaRoot = Readonly<{
 
 type CompiledSchemaRecordSet = Readonly<{
   history: 'retain' | 'undo';
+  namedBy?: SchemaRecordSet['namedBy'];
 }>;
 
 export type CompiledSchemaPropertyMergeStrategy = 'replace' | 'set';
@@ -1135,7 +1137,7 @@ const collectSchemaKeyDiagnostics = (
         : object(declaration.records, pluginName, 'records');
 
     for (const [name, value] of Object.entries(recordSets ?? {})) {
-      check(value, ['history'], pluginName, `records.${name}`);
+      check(value, ['history', 'namedBy'], pluginName, `records.${name}`);
     }
     if (declaration.contentRoots !== undefined) {
       array(declaration.contentRoots, pluginName, 'contentRoots')?.forEach(
@@ -4117,10 +4119,10 @@ const compileEditorSchemaInternal = (
   const rootsByName = new Map<string, Source<SchemaContent>>();
   const recordSets = new Map<
     string,
-    Readonly<{
-      history: CompiledSchemaRecordSet['history'];
-      pluginName: string;
-    }>
+    CompiledSchemaRecordSet &
+      Readonly<{
+        pluginName: string;
+      }>
   >();
   const primaryRoot: Source<SchemaContent> = {
     pluginName: completeRecord.pluginName,
@@ -4185,6 +4187,26 @@ const compileEditorSchemaInternal = (
           `records.${name}.history`
         );
       }
+      const { namedBy } = set;
+
+      if (
+        namedBy !== undefined &&
+        (typeof namedBy !== 'object' ||
+          namedBy === null ||
+          Reflect.ownKeys(namedBy).some(
+            (key) => key !== 'keep' && key !== 'names' && key !== 'set'
+          ) ||
+          typeof namedBy.names !== 'function' ||
+          (namedBy.keep !== undefined && typeof namedBy.keep !== 'function') ||
+          typeof namedBy.set !== 'string')
+      ) {
+        compileFailure(
+          'invalid-record-set-names',
+          `Schema record set "${name}" namedBy takes a set name, a names function and an optional keep function.`,
+          [source],
+          `records.${name}.namedBy`
+        );
+      }
       const known = recordSets.get(name);
 
       if (known) {
@@ -4197,8 +4219,30 @@ const compileEditorSchemaInternal = (
       }
       recordSets.set(name, {
         history: set.history ?? 'undo',
+        ...(namedBy
+          ? {
+              namedBy: Object.freeze({
+                ...(namedBy.keep ? { keep: namedBy.keep } : {}),
+                names: namedBy.names,
+                set: namedBy.set,
+              }),
+            }
+          : {}),
         pluginName: record.pluginName,
       });
+    }
+  }
+  for (const [name, { namedBy, pluginName }] of recordSets) {
+    if (!namedBy) continue;
+    const naming = recordSets.get(namedBy.set);
+
+    if (!naming || naming.namedBy) {
+      compileFailure(
+        'invalid-record-set-names',
+        `Schema record set "${name}" is named by "${namedBy.set}", which must be another declared record set that no set names.`,
+        [pluginName],
+        `records.${name}.namedBy.set`
+      );
     }
   }
 
@@ -5527,7 +5571,8 @@ const compileEditorSchemaInternal = (
     recordSets: freezeMap(
       new Map(
         [...recordSets].map(
-          ([name, { history }]) => [name, Object.freeze({ history })] as const
+          ([name, { pluginName: _plugin, ...set }]) =>
+            [name, Object.freeze(set)] as const
         )
       )
     ),

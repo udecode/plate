@@ -10,8 +10,10 @@ import {
 import { carriesRun, type CarriedRun } from '../core/change/carried-run';
 import {
   documentChangeWritesOnlyElementProperties,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   valueRootIndex,
+  withoutRetainedRecordSets,
 } from '../core/change/document-change';
 import {
   type ChangeFacts,
@@ -20,8 +22,19 @@ import {
   NO_FACTS,
   UNKNOWN_FACTS,
 } from '../core/change/record';
-import { getPluginRegistry as getInternalPluginRegistry } from '../core/plugin-registry';
+import {
+  getCompiledEditorSchema,
+  getPluginRegistry as getInternalPluginRegistry,
+} from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
+import {
+  getRecordEntries,
+  getRecordText,
+  getValueRecords,
+  hasRecord,
+  type RecordOps,
+  type RecordStore,
+} from '../core/record-store';
 import {
   areEditorSchemaIdentitiesEqual,
   readEditorSchemaIdentity,
@@ -33,6 +46,7 @@ import {
 } from '../core/selection-protocol';
 import { decodeEditorEffect, encodeEditorEffect } from '../core/value-codec';
 import type { AnyEditor } from '../interfaces/editor';
+import type { SchemaRecordSet } from '../interfaces/schema';
 import { isObject } from '../utils/is-object';
 import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
 import { checkedCarryProgram, historyReplaySchemaOf } from './history-replay';
@@ -274,29 +288,137 @@ const checkBatch = <V extends Value>(
   return value;
 };
 
+type RecordSets = ReturnType<typeof getCompiledEditorSchema>['recordSets'];
+
+type NamedBy = NonNullable<SchemaRecordSet['namedBy']>;
+
+const namesOf = (
+  names: (record: Readonly<Record<string, unknown>>) => unknown,
+  text: string | undefined
+): readonly unknown[] => {
+  try {
+    const found = text === undefined ? null : names(JSON.parse(text));
+
+    return Array.isArray(found) ? found : [];
+  } catch {
+    return [];
+  }
+};
+
+const addsMissingName = (
+  { names, set }: NamedBy,
+  named: string,
+  ops: RecordOps,
+  before: RecordStore,
+  after: RecordStore
+) => {
+  for (const [id, text] of ops.get(set) ?? []) {
+    if (text === null) continue;
+    const had = namesOf(names, getRecordText(before, set, id));
+
+    if (
+      namesOf(names, text).some(
+        (name) =>
+          typeof name === 'string' &&
+          !had.includes(name) &&
+          !hasRecord(after, named, name)
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const dropsNamedRecord = (
+  { names, set }: NamedBy,
+  named: string,
+  ops: RecordOps,
+  before: RecordStore,
+  after: RecordStore
+) => {
+  const dropped = new Set<string>();
+
+  for (const [id, text] of ops.get(named) ?? []) {
+    if (text === null && hasRecord(before, named, id)) dropped.add(id);
+  }
+  if (dropped.size === 0) return false;
+  for (const [, text] of getRecordEntries(after, set)) {
+    if (
+      namesOf(names, text).some(
+        (name) => typeof name === 'string' && dropped.has(name)
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const breaksNames = (
+  sets: RecordSets,
+  change: DocumentChange,
+  before: RecordStore,
+  after: RecordStore
+) => {
+  const ops = getInternalDocumentChangeRecords(change);
+
+  return [...sets].some(
+    ([named, { namedBy }]) =>
+      namedBy !== undefined &&
+      (addsMissingName(namedBy, named, ops, before, after) ||
+        dropsNamedRecord(namedBy, named, ops, before, after))
+  );
+};
+
 const validateBatches = <V extends Value>(
   editor: Editor<V>,
   batches: ReadonlyArray<Batch<V>>,
   direction: 'redo' | 'undo',
   document: EditorDocumentValue,
   recordPrograms: boolean,
-  fallbacks: Map<Batch<V>, Batch<V>>
+  fallbacks: Map<Batch<V>, Batch<V>>,
+  sets: RecordSets | null = null
 ) => {
   let value = document;
+  let keptFrom = 0;
+  const breaks = (
+    batch: Batch<V>,
+    from: EditorDocumentValue,
+    to: EditorDocumentValue
+  ) =>
+    sets !== null &&
+    breaksNames(sets, batch.change, getValueRecords(from), getValueRecords(to));
 
-  for (const batch of batches.toReversed()) {
+  for (const [at, batch] of batches.toReversed().entries()) {
     const fallback = direction === 'redo' ? historyFallbackOf(batch) : null;
 
     if (fallback) {
       try {
-        checkBatch(editor, fallback, direction, value, recordPrograms);
-        fallbacks.set(batch, fallback);
+        const landed = checkBatch(
+          editor,
+          fallback,
+          direction,
+          value,
+          recordPrograms
+        );
+
+        if (!breaks(fallback, value, landed)) fallbacks.set(batch, fallback);
       } catch (error) {
         if (recordPrograms) throw error;
       }
     }
-    value = checkBatch(editor, batch, direction, value, recordPrograms);
+    const after = checkBatch(editor, batch, direction, value, recordPrograms);
+
+    if (keptFrom === 0 && breaks(batch, value, after)) {
+      keptFrom = batches.length - at;
+    }
+    value = after;
   }
+
+  return batches.slice(keptFrom);
 };
 
 const validateHistory = <V extends Value>(
@@ -304,7 +426,8 @@ const validateHistory = <V extends Value>(
   history: Pick<History<V>, 'redos' | 'undos'>,
   validateAgainst: EditorDocumentValue | false = editor.read.value(),
   recordPrograms = false,
-  fallbacks = new Map<Batch<V>, Batch<V>>()
+  fallbacks = new Map<Batch<V>, Batch<V>>(),
+  sets: RecordSets | null = null
 ) => {
   if (!validateAgainst) {
     for (const batch of history.redos) {
@@ -313,30 +436,29 @@ const validateHistory = <V extends Value>(
       if (fallback) fallbacks.set(batch, fallback);
     }
 
-    return fallbacks;
+    return { fallbacks, redos: history.redos, undos: history.undos };
   }
 
-  validateBatches(
-    editor,
-    history.redos,
-    'redo',
-    validateAgainst,
-    recordPrograms,
-    fallbacks
-  );
-  validateBatches(
-    editor,
-    history.undos,
-    'undo',
-    validateAgainst,
-    recordPrograms,
-    fallbacks
-  );
+  const kept = (batches: ReadonlyArray<Batch<V>>, direction: 'redo' | 'undo') =>
+    validateBatches(
+      editor,
+      batches,
+      direction,
+      validateAgainst,
+      recordPrograms,
+      fallbacks,
+      sets
+    );
 
-  return fallbacks;
+  return {
+    fallbacks,
+    redos: kept(history.redos, 'redo'),
+    undos: kept(history.undos, 'undo'),
+  };
 };
 
 type HistoryValidationOptions = Readonly<{
+  restore?: boolean;
   validateAgainst?: EditorDocumentValue | false;
 }>;
 
@@ -415,10 +537,14 @@ const decodeBatch = <V extends Value>(
     throw new Error('Invalid history batch JSON.');
   }
 
+  const { recordSets } = getCompiledEditorSchema(editor);
+  const decode = (change: unknown) =>
+    withoutRetainedRecordSets(
+      DocumentChange.fromJSON(change as ReturnType<DocumentChange['toJSON']>),
+      recordSets
+    );
   const batch: Batch<V> = {
-    change: DocumentChange.fromJSON(
-      input.change as ReturnType<DocumentChange['toJSON']>
-    ),
+    change: decode(input.change),
     effects,
     selectionAfter,
     ...(input.selectionAfterRoot
@@ -430,18 +556,8 @@ const decodeBatch = <V extends Value>(
       : {}),
     ...(input.unsettle === undefined
       ? {}
-      : {
-          unsettle: DocumentChange.fromJSON(
-            input.unsettle as ReturnType<DocumentChange['toJSON']>
-          ),
-        }),
-    ...(input.rest === undefined
-      ? {}
-      : {
-          rest: DocumentChange.fromJSON(
-            input.rest as ReturnType<DocumentChange['toJSON']>
-          ),
-        }),
+      : { unsettle: decode(input.unsettle) }),
+    ...(input.rest === undefined ? {} : { rest: decode(input.rest) }),
     ...(carried ? { carried } : {}),
   };
 
@@ -491,37 +607,35 @@ export const decodeHistoryValue = <V extends Value>(
   }
 
   const { effectTypes } = getInternalPluginRegistry(editor);
-  const history = Object.freeze({
-    redos: Object.freeze(
-      json.redos.map((batch) =>
-        freezeHistoryBatch(
-          decodeBatch(editor, batch, effectTypes, 'redo', json.version)
-        )
-      )
-    ),
-    revision: 0,
-    schema,
-    undos: Object.freeze(
-      json.undos.map((batch) =>
-        freezeHistoryBatch(
-          decodeBatch(editor, batch, effectTypes, 'undo', json.version)
-        )
-      )
-    ),
-  });
+  const decodeStack = (direction: 'redo' | 'undo') =>
+    json[direction === 'redo' ? 'redos' : 'undos'].flatMap((input) => {
+      const batch = freezeHistoryBatch(
+        decodeBatch(editor, input, effectTypes, direction, json.version)
+      );
 
-  const fallbacks = validateHistory(
+      return options.restore && batch.change.empty && batch.effects.length === 0
+        ? []
+        : [batch];
+    });
+  const { fallbacks, redos, undos } = validateHistory(
     editor,
-    history,
+    { redos: decodeStack('redo'), undos: decodeStack('undo') },
     options.validateAgainst,
-    true
+    true,
+    undefined,
+    options.restore ? getCompiledEditorSchema(editor).recordSets : null
   );
 
-  for (const batch of history.redos) {
+  for (const batch of redos) {
     if (!fallbacks.has(batch)) withHistoryFallback(batch, null);
   }
 
-  return history;
+  return Object.freeze({
+    redos: Object.freeze(redos),
+    revision: 0,
+    schema,
+    undos: Object.freeze(undos),
+  });
 };
 
 export const encodeHistoryValue = <V extends Value>(
@@ -532,7 +646,7 @@ export const encodeHistoryValue = <V extends Value>(
   const schema = copyHistorySchemaIdentity(history.schema);
 
   assertSchemaIdentity(editor, schema);
-  const fallbacks = validateHistory(editor, history, options.validateAgainst);
+  const checked = validateHistory(editor, history, options.validateAgainst);
 
   const persistent = (batches: ReadonlyArray<Batch<V>>) =>
     batches.filter((batch) =>
@@ -544,7 +658,7 @@ export const encodeHistoryValue = <V extends Value>(
 
   return {
     redos: redos.map((batch) =>
-      encodeStep(editor, batch, fallbacks.get(batch))
+      encodeStep(editor, batch, checked.fallbacks.get(batch))
     ),
     schema,
     undos: undos.map((batch) => encodeStep(editor, batch)),

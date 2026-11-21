@@ -346,6 +346,22 @@ const reportFailedHistoryReplay = <V extends Value>(
   });
 };
 
+const dropHistoryHeadStep = <V extends Value>(
+  editor: Editor<V>,
+  direction: HistoryAction
+) => {
+  editor.update((tx) => {
+    tx.tags.add('history-skip');
+    tx.annotations.set(historyReplayDrop, direction);
+  });
+};
+
+const keptHistoryChange = <V extends Value>(
+  editor: Editor<V>,
+  change: DocumentChange
+) =>
+  withoutRetainedRecordSets(change, getCompiledEditorSchema(editor).recordSets);
+
 const dropFailedHistoryHead = <V extends Value>(
   editor: Editor<V>,
   direction: HistoryAction,
@@ -353,10 +369,7 @@ const dropFailedHistoryHead = <V extends Value>(
 ) => {
   countCoreWork('carriedFallbacks');
   try {
-    editor.update((tx) => {
-      tx.tags.add('history-skip');
-      tx.annotations.set(historyReplayDrop, direction);
-    });
+    dropHistoryHeadStep(editor, direction);
   } finally {
     reportFailedHistoryReplay(editor, direction, cause);
   }
@@ -477,7 +490,12 @@ const consumeHistoryBatch = <V extends Value>(
     : undefined;
   const facts = historyFactsOf(batch);
 
-  applyDocumentChange(getEditorRuntimeOwner(editor), batch.change, {}, facts);
+  applyDocumentChange(
+    getEditorRuntimeOwner(editor),
+    keptHistoryChange(editor, batch.change),
+    {},
+    facts
+  );
   if (facts?.kind === 'recorded') countCoreWork('factedReplays');
   for (const effect of batch.effects) {
     tx.effects.emit(effect.type, effect.value);
@@ -853,6 +871,7 @@ const createHistoryPlugin = <
       replaceHistoryState(
         editor,
         decodeHistoryValue(editor, restoredHistoryJSON, {
+          restore: true,
           validateAgainst: after,
         }),
         after
@@ -897,7 +916,9 @@ const createHistoryPlugin = <
         throw new Error(`Missing history batch for ${action}.`);
       }
 
-      const { carried, rest: replayed, unsettle: taken, ...moved } = batch;
+      const { carried, rest, unsettle, ...moved } = batch;
+      const taken = unsettle && kept(unsettle);
+      const replayed = rest && kept(rest);
       const redoParts = action === 'redo' ? settledParts(commit, kept) : null;
       const unsettled =
         action === 'undo' && taken
@@ -1510,10 +1531,18 @@ const createHistoryPlugin = <
         const drops = crossingDropCount(editor);
 
         try {
-          entry = peekHistoryEntry(
-            editor,
-            direction === 'undo' ? 'undos' : 'redos'
-          );
+          const stack = direction === 'undo' ? 'undos' : 'redos';
+
+          entry = peekHistoryEntry(editor, stack);
+          while (
+            entry &&
+            entry.batch.effects.length === 0 &&
+            !entry.batch.change.empty &&
+            keptHistoryChange(editor, entry.batch.change).empty
+          ) {
+            dropHistoryHeadStep(editor, direction);
+            entry = peekHistoryEntry(editor, stack);
+          }
         } catch (error) {
           dropFailedHistoryHead(editor, direction, error);
           return FAILED_HISTORY_RESULT;

@@ -444,6 +444,21 @@ export type SchemaRecordSet = Readonly<{
    * that wrote it.
    */
   history?: 'retain';
+  /**
+   * Records of `set` name this set's records by id. `names` gets a plain copy
+   * of a record of `set` and returns the ids it names, or null when it cannot
+   * read them; a throw counts as null. `keep` returns true for an id whose
+   * record stays when no record names it. Restoring a saved history keeps only
+   * the steps that replay before the first one that names a missing record or
+   * drops a record still named.
+   */
+  namedBy?: Readonly<{
+    keep?: (id: string) => boolean;
+    names: (
+      record: Readonly<Record<string, unknown>>
+    ) => readonly string[] | null;
+    set: string;
+  }>;
 }>;
 
 /** One content-root slot projected onto matching element types. */
