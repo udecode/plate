@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+
 import { readTasks } from '../../.agents/pstack/tasks.mjs';
 import { failureFile } from './step-failures.mjs';
 
@@ -97,7 +99,7 @@ export const recurrenceOffer = ({ failures, since, step }, eventsPath) => {
       `${failure} start failing at ${starts
         .map(
           (event) =>
-            `${event.at.slice(0, 16)}${event.kind === 'flake' ? ' as a flake' : event.culprit ? ` with ${event.culprit.slice(0, 10)}` : ''} (log ${event.log})`
+            `${event.at.slice(0, 16)}${event.kind === 'flake' ? ' as a flake' : event.culprit ? ` with ${event.culprit.slice(0, 10)}` : ''}${existsSync(event.log) ? ` (log ${event.log})` : ''}`
         )
         .join(', ')}`
   );
