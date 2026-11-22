@@ -19,7 +19,10 @@
   "targets": [
     {
       "name": "board",
-      "files": ["apps/www/src/registry/components/editor/board.tsx"],
+      "files": [
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
     },

@@ -1,6 +1,16 @@
 {
   "schemaVersion": 1,
   "components": {
+    "board": [
+      "2026-11-22-board-styles-file",
+      "2026-11-20-board-picture-button",
+      "2026-11-19-board-images",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-12-add-board"
+    ],
     "toc": [
       "2026-11-22-create-base-color-tw-prefix",
       "2026-11-20-fix-reduced-motion-scroll",
@@ -261,15 +271,6 @@
       "2026-11-19-board-images",
       "2026-11-18-ai-menu-acts-on-board-note-text",
       "2026-11-18-comments-on-board-note-text"
-    ],
-    "board": [
-      "2026-11-20-board-picture-button",
-      "2026-11-19-board-images",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-12-add-board"
     ],
     "floating-toolbar": [
       "2026-11-20-caret-slot-toolbars",

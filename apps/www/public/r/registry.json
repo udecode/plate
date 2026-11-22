@@ -2733,6 +2733,11 @@
           "path": "src/registry/components/editor/board.tsx",
           "type": "registry:component",
           "target": "@components/editor/board.tsx"
+        },
+        {
+          "path": "src/registry/components/editor/board-styles.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/board-styles.tsx"
         }
       ],
       "meta": {

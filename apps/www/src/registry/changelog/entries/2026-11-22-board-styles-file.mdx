@@ -1,0 +1,14 @@
+---
+id: 2026-11-22-board-styles-file
+date: 2026-11-22
+status: draft
+kind: wiring
+summary: "Install the board's style tables as their own file"
+change: { 'type': 'source', 'date': '2026-11-22', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-22-board-install-s-style-tables-0ba41486","kind":"wiring","migrationNotes":[]} -->
+
+- **`board`**: Move the board's colors, stroke widths, text sizes, shape outlines and arrowhead into `board-styles.tsx`, which the board installs beside `board.tsx`. Copy the new file when you update a copied board.

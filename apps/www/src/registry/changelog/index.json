@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-22-board-styles-file",
+      "href": "/registry/changelog/2026-11-22-board-styles-file.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install the board's style tables as their own file",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-create-base-color-tw-prefix",
       "href": "/registry/changelog/2026-11-22-create-base-color-tw-prefix.json",
       "status": "draft",

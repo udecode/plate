@@ -351,6 +351,10 @@ export const registryFeatures: Registry['items'] = [
         path: 'components/editor/board.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/board-styles.tsx',
+        type: 'registry:component',
+      },
     ],
     name: 'board',
     type: 'registry:component',

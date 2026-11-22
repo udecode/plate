@@ -58,6 +58,18 @@ import { flushSync } from 'react-dom';
 import { useFilePicker } from 'use-file-picker';
 
 import {
+  arrowHead,
+  BOARD_COLORS,
+  COLORS,
+  dashArray,
+  GEO_OUTLINES,
+  paint,
+  SHAPE_HEADINGS,
+  STROKE_WIDTHS,
+  TEXT_SIZES,
+  tint,
+} from '@/registry/components/editor/board-styles';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
@@ -100,46 +112,6 @@ const GEOS: ReadonlyArray<
   { geo: 'diamond', icon: <DiamondIcon />, label: 'Diamond' },
   { geo: 'triangle', icon: <TriangleIcon />, label: 'Triangle' },
 ];
-
-const COLORS = [
-  { color: 'grey', label: 'Grey' },
-  { color: 'red', label: 'Red' },
-  { color: 'orange', label: 'Orange' },
-  { color: 'yellow', label: 'Yellow' },
-  { color: 'green', label: 'Green' },
-  { color: 'blue', label: 'Blue' },
-  { color: 'violet', label: 'Violet' },
-] as const;
-
-const BOARD_COLORS =
-  '[--board-blue:#4263eb] [--board-green:#2f9e44] [--board-grey:#868e96] [--board-orange:#f76707] [--board-red:#e03131] [--board-violet:#7048e8] [--board-yellow:#fab005] dark:[--board-blue:#5c7cfa] dark:[--board-green:#51cf66] dark:[--board-grey:#adb5bd] dark:[--board-orange:#ff922b] dark:[--board-red:#ff6b6b] dark:[--board-violet:#9775fa] dark:[--board-yellow:#fcc419]';
-
-const NAMED_COLORS = new Set<string>(COLORS.map(({ color }) => color));
-
-const paint = (color: string) =>
-  NAMED_COLORS.has(color) ? `var(--board-${color})` : color;
-
-const tint = (fill: string) =>
-  `color-mix(in oklab, ${paint(fill)} 30%, var(--background))`;
-
-const STROKE_WIDTHS: Readonly<
-  Record<NonNullable<BoardStyle['strokeWidth']>, number>
-> = { l: 3.5, m: 2, s: 1, xl: 5 };
-
-const TEXT_SIZES: Readonly<
-  Record<NonNullable<BoardStyle['textSize']>, string>
-> = { l: '1.125rem', m: '0.875rem', s: '0.75rem', xl: '1.5rem' };
-
-const dashArray = (dash: BoardStyle['dash'], width: number) => {
-  if (dash === 'dashed') return `${width * 3} ${width * 2}`;
-  if (dash === 'dotted') return `0 ${width * 2}`;
-
-  return undefined;
-};
-
-// Headings size against the shape's text size instead of the page's.
-const SHAPE_HEADINGS =
-  '[&_h1]:text-[2.25em] [&_h2]:text-[1.5em] [&_h3]:text-[1.25em] [&_h4]:text-[1.125em] [&_h5]:text-[1.125em] [&_h6]:text-[1em]';
 
 type BoardStyleOption<TValue> = Readonly<{
   icon: React.ReactNode;
@@ -763,30 +735,6 @@ export function BoardNoteElement(
   );
 }
 
-const GEO_OUTLINES = {
-  diamond: (
-    <polygon
-      points="50,0 100,50 50,100 0,50"
-      vectorEffect="non-scaling-stroke"
-    />
-  ),
-  ellipse: (
-    <ellipse
-      cx={50}
-      cy={50}
-      rx={50}
-      ry={50}
-      vectorEffect="non-scaling-stroke"
-    />
-  ),
-  rectangle: (
-    <rect height={100} vectorEffect="non-scaling-stroke" width={100} />
-  ),
-  triangle: (
-    <polygon points="50,0 100,100 0,100" vectorEffect="non-scaling-stroke" />
-  ),
-};
-
 export function BoardGeoElement(
   props: EditorElementProps<typeof BoardGeoPlugin>
 ) {
@@ -858,9 +806,6 @@ export function BoardFrameElement(
   );
 }
 
-const HEAD_LENGTH = 12;
-const BARB_TURN = 0.45;
-
 // A suggested arrow or pen line keeps the suggestion's color over its own.
 const SUGGESTED_INK =
   'data-[editor-authored-change]:text-emerald-600 [&[data-editor-authored-change]_[data-board-ink]]:text-emerald-600!';
@@ -876,11 +821,6 @@ export function BoardArrowElement(
   const { end, path, start } = drawn;
   const width = STROKE_WIDTHS[element.strokeWidth];
   const hitWidth = Math.max(14, width + 10);
-  const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const barb = (turn: number) =>
-    `${end.x - HEAD_LENGTH * Math.cos(angle + turn)},${
-      end.y - HEAD_LENGTH * Math.sin(angle + turn)
-    }`;
 
   return (
     <BoardShape
@@ -927,10 +867,7 @@ export function BoardArrowElement(
               strokeLinecap="round"
               strokeWidth={width}
             />
-            <polygon
-              fill="currentColor"
-              points={`${end.x},${end.y} ${barb(BARB_TURN)} ${barb(-BARB_TURN)}`}
-            />
+            <polygon fill="currentColor" points={arrowHead(start, end)} />
           </g>
         </svg>
       </div>

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-board-styles-file",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-board-styles-file.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Install the board's style tables as their own file",
+  "targets": [
+    {
+      "name": "board",
+      "files": [
+        "apps/www/src/registry/components/editor/board-styles.tsx",
+        "apps/www/src/registry/components/editor/board.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-board-install-s-style-tables-0ba41486",
+      "kind": "wiring",
+      "summary": "Move the board's colors, stroke widths, text sizes, shape outlines and arrowhead into `board-styles.tsx`, which the board installs beside `board.tsx`. Copy the new file when you update a copied board.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["board"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-board-styles-file",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
