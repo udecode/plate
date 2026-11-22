@@ -333,6 +333,7 @@ type ViewStateTransformInput<V extends Value> = Pick<
   | 'runtime'
   | 'selection'
   | 'text'
+  | 'unique'
   | 'view'
 > & {
   children: () => readonly unknown[];
@@ -855,6 +856,10 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
       string: rootMethod(editor, viewState, state.text.string),
     }),
     ...(transaction ? { transaction } : {}),
+    unique: Object.freeze({
+      ...state.unique,
+      holder: rootMethod(editor, viewState, state.unique.holder),
+    }),
     view: createViewApi(viewState),
   });
 

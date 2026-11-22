@@ -6,6 +6,7 @@ import {
   type Element,
   ElementApi,
   type Descendant,
+  type Node,
   type NodeKey,
   PathApi,
   PLUGINS,
@@ -483,9 +484,20 @@ export const createBoardView = (
   shapes: RuntimeEditor
 ) => {
   const keyOf = (node: Descendant) => editor.read((state) => state.key(node));
-  const board = keyOf(element);
   const root =
     editor.read.schema.getElementContentRoots(element)[BOARD_SHAPES_SLOT] ?? '';
+  const shownBoard = mounted.read((state) => state.key(element));
+  const ownerBoard = editor.read.roots().find((entry) => entry.root === root)
+    ?.owners[0];
+  const board =
+    ownerBoard &&
+    (ownerBoard.root
+      ? createEditorView(editor, { root: ownerBoard.root })
+      : editor
+    ).key(ownerBoard.path);
+
+  if (!board) throw new Error('A board view needs its board in the editor.');
+
   const rootView = createEditorView(editor, { root });
   const boards = editor.plugin(BaseBoardPlugin);
   const shownBoards = mounted.plugin(BaseBoardPlugin);
@@ -683,7 +695,7 @@ export const createBoardView = (
           ])
       );
       const entries = shownBoards.read
-        .shapes(board)
+        .shapes(shownBoard)
         .filter(({ id }) => shown.has(id));
 
       renderedKeyOf = new Map(
@@ -961,10 +973,16 @@ export const createBoardView = (
     return { x: x + width / 2, y: y + height / 2 };
   };
 
+  const shownLayoutOf = (node: Node | undefined) =>
+    ElementApi.isElement(node) ? index.byId(shapeIdOf(node)) : undefined;
+
+  const selectedNodes = () =>
+    editor.read.selection.nodeMode() ? editor.read.selection.nodes() : [];
+
   const selectedKeys = (): ReadonlySet<NodeKey> =>
-    editor.read.selection.nodeMode()
-      ? new Set(editor.read.selection.nodes().map(([node]) => keyOf(node)))
-      : new Set();
+    new Set(
+      selectedNodes().flatMap(([node]) => shownLayoutOf(node)?.key ?? [])
+    );
 
   const selectedShapes = (): BoardShapeLayout[] => {
     const keys = selectedKeys();
@@ -1067,7 +1085,7 @@ export const createBoardView = (
   const editedShape = () => {
     const key = editedKey();
 
-    return key ? (index.layout(key) ?? null) : null;
+    return (key && shownLayoutOf(editor.read.nodes.get(key)?.[0])) ?? null;
   };
 
   const focusRoot = () => {
@@ -1092,14 +1110,23 @@ export const createBoardView = (
     return true;
   };
 
-  const select = (keys: readonly NodeKey[]) => {
-    const order = new Map(index.entries().map((entry, at) => [entry.key, at]));
-    const sorted = keys.toSorted(
+  const selectIds = (ids: readonly string[]) => {
+    const order = new Map(index.entries().map((entry, at) => [entry.id, at]));
+    const sorted = ids.toSorted(
       (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0)
     );
+
     deselectOnBoard();
-    editor.update((tx) => setShapeSelection(tx, sorted));
+    editor.update((tx) =>
+      setShapeSelection(
+        tx,
+        sorted.flatMap((id) => tx.unique.holder('shapeId', id)?.key ?? [])
+      )
+    );
   };
+
+  const select = (keys: readonly NodeKey[]) =>
+    selectIds(keys.flatMap((key) => index.layout(key)?.id ?? []));
 
   const focusBoard = () => {
     const edited = editedShape();
@@ -1177,11 +1204,9 @@ export const createBoardView = (
 
       return written;
     });
-    const inserted = id && boards.read.shape(id);
-
-    if (!inserted) return false;
+    if (!id || !boards.read.shape(id)) return false;
     if (!state.toolLocked) setState({ tool: 'select' });
-    select([inserted.key]);
+    selectIds([id]);
 
     return true;
   };
@@ -1233,15 +1258,6 @@ export const createBoardView = (
         );
     });
   };
-
-  const selectIds = (ids: readonly string[]) =>
-    select(
-      ids.flatMap((id) => {
-        const shape = boards.read.shape(id);
-
-        return shape ? [shape.key] : [];
-      })
-    );
 
   const land = (slice: ContentSlice, place?: BoardPlace) => {
     const ids = write((tx) =>
@@ -1434,9 +1450,13 @@ export const createBoardView = (
     viewBox,
     commit,
     edit: (key) => {
+      const id = index.layout(key)?.id;
+
+      if (!id || !boards.read.shape(id)) return;
       focusRoot();
       editor.update((tx) => {
-        const end = tx.points.end(key);
+        const owned = tx.unique.holder('shapeId', id)?.key;
+        const end = owned && tx.points.end(owned);
 
         if (end) tx.selection.set(end);
       });
@@ -1676,12 +1696,14 @@ export const createBoardView = (
       if (Object.keys(valid).length === 0) return;
 
       const edited = editedKey();
-      const keys = edited ? new Set([edited]) : selectedKeys();
+      const ownerKeys = new Set(
+        edited ? [edited] : selectedNodes().map(([node]) => keyOf(node))
+      );
       const picks =
         state.tool === 'select'
           ? boards.read
               .shapes(board)
-              .filter(({ key }) => keys.has(key))
+              .filter(({ key }) => ownerKeys.has(key))
               .flatMap(({ id, node }) => {
                 const taken = styleFor(node.type, valid);
 

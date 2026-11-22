@@ -2184,6 +2184,10 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
 };
 
 const UNIQUE_INDEXES = new WeakMap<Editor, UniqueIndex>();
+const PROJECTED_UNIQUE_INDEXES = new WeakMap<
+  Editor,
+  WeakMap<EditorDocumentValue, UniqueIndex>
+>();
 const UNIQUE_INDEX_GUARDS = new WeakSet<Editor>();
 const HOLDER_CHANGE_KINDS = ['node', 'presence'] as const;
 
@@ -2367,6 +2371,35 @@ export const seedUniqueIndex = (editor: Editor) => {
   );
 };
 
+const projectedUniqueIndex = (
+  editor: Editor,
+  projection: EditorDocumentValue
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const schema = getCompiledEditorSchema(editor);
+  let indexes = PROJECTED_UNIQUE_INDEXES.get(owner);
+
+  if (!indexes) {
+    indexes = new WeakMap();
+    PROJECTED_UNIQUE_INDEXES.set(owner, indexes);
+  }
+  const current = indexes.get(projection);
+
+  if (current?.schema === schema) return current;
+
+  const index = buildUniqueIndex(
+    schema,
+    projection,
+    getSnapshotVersion(editor),
+    (root) =>
+      withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
+  );
+
+  indexes.set(projection, index);
+
+  return index;
+};
+
 const publishedUniqueIndex = (editor: Editor) => {
   const snapshot = getTransactionSnapshot(editor);
 
@@ -2408,6 +2441,7 @@ const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
   countCoreWork('uniqueHolderQueries');
 
   const roots = getEditorDocumentRoots(editor);
+  const projection = getReadProjection(editor);
   function* publishedThenDraftHolders() {
     yield* indexedHoldersOf(publishedUniqueIndex(editor), property, value);
     for (const { snapshot } of TRANSACTION_SPEC_CONTEXTS.get(editor) ?? []) {
@@ -2428,7 +2462,15 @@ const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
     }
   }
 
-  return uniqueHolderOf(publishedThenDraftHolders(), value, (root, nodeKey) => {
+  const holders = projection
+    ? indexedHoldersOf(
+        projectedUniqueIndex(editor, projection),
+        property,
+        value
+      )
+    : publishedThenDraftHolders();
+
+  return uniqueHolderOf(holders, value, (root, nodeKey) => {
     if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
 
     return withEditorRootChildren(editor, root, () => {
