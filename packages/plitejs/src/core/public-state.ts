@@ -14346,10 +14346,14 @@ const readDirectSnapshotInput = (
       ? {}
       : { selection: envelope.selection as SnapshotSelectionInput };
 
+  if (!Object.hasOwn(document, 'records')) {
+    return deriveValue(document as DirectSnapshotInput, selection);
+  }
+
   // Saved records stay unread here, so only the open that adopts them loads them.
-  return Object.hasOwn(document, 'records')
-    ? ({ ...document, ...selection } as DirectSnapshotInput)
-    : deriveValue(document as DirectSnapshotInput, selection);
+  const { records, ...fields } = document as DirectSnapshotInput;
+
+  return { ...fields, records, ...selection };
 };
 
 const deserializeSnapshotMeta = (
