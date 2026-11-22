@@ -10,8 +10,9 @@ import {
   useChildRoot,
   useEditor,
   useRootChrome,
+  useRootEditor,
 } from 'plitejs/react';
-import type { PointerEvent } from 'react';
+import { type PointerEvent, useState } from 'react';
 
 import { Button, Icon, Toolbar } from './components';
 import type {
@@ -190,7 +191,11 @@ const unsetWidthStyle = 'editor-editable-voids-unset-width-style';
 
 const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
   const bodyRoot = useChildRoot(element, 'body');
+  const bodyEditor = useRootEditor(bodyRoot);
   const chrome = useRootChrome(bodyRoot);
+  const [mountedWithCaret] = useState(
+    () => bodyEditor.read.selection() !== null
+  );
 
   return (
     <div className="editor-editable-voids-card">
@@ -218,6 +223,7 @@ const EditableVoid = ({ element }: { element: EditableVoidElement }) => {
       <div {...chrome.props}>
         <Editable
           aria-label="Editable void rich content"
+          autoFocus={mountedWithCaret}
           className="editor-editable-voids-child-editor"
           placeholder="Tell us about yourself..."
           renderElement={renderElement}
@@ -238,7 +244,8 @@ const InsertEditableVoidButton = () => {
 
         editor.update((tx) => {
           tx.roots.create(bodyRoot, createEmptyEditableVoidBody());
-          tx.nodes.insert(createEditableVoid(bodyRoot));
+          tx.nodes.insert(createEditableVoid(bodyRoot), { select: false });
+          tx.selection.set({ offset: 0, path: [0, 0], root: bodyRoot });
         });
       }}
       onPointerDown={(event: PointerEvent<HTMLButtonElement>) => {

@@ -30,6 +30,14 @@ const FixtureDraggable = ({
       contentEditable={false}
       draggable
       type="button"
+      onClick={() => {
+        editor.update((tx) => {
+          const start = tx.points.start(renderPath);
+
+          if (start) tx.selection.set(start);
+        });
+        editor.api.dom.focus();
+      }}
       onDragStart={(event) => {
         if (!editor.api.dom.drag.start(event.nativeEvent, { node: element })) {
           event.preventDefault();

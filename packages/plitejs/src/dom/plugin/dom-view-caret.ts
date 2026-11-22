@@ -7,7 +7,11 @@ import {
 } from '../..';
 import { getEditorRuntime } from '../../core/editor-runtime';
 import { toInternalRoot } from '../../core/public-root';
-import { holdsCaret, resolveParkedCaret } from '../../core/view-carets';
+import {
+  holdsCaret,
+  resolveParkedCaret,
+  setSelectionAsView,
+} from '../../core/view-carets';
 import type { AnyEditor } from '../../interfaces/editor';
 import {
   type DOMCoverageSession,
@@ -67,4 +71,19 @@ export const resolveNextKeyCaret = (
         caret
       )
     : caret;
+};
+
+export const ensureFocusCaret = (
+  view: AnyEditor,
+  editable: Node | null
+): Selection => {
+  const caret = resolveNextKeyCaret(view, editable);
+
+  if (!caret) {
+    const start = view.read.points.start([]);
+
+    if (start) setSelectionAsView(view, start);
+  }
+
+  return caret;
 };

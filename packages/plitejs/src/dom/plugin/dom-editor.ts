@@ -33,11 +33,7 @@ import {
   withUpdateTagContext,
 } from '../../core/public-state';
 import { getSelectionDOMRange } from '../../core/selection-protocol';
-import {
-  getPlacementGeneration,
-  placedSince,
-  setSelectionAsView,
-} from '../../core/view-carets';
+import { getPlacementGeneration, placedSince } from '../../core/view-carets';
 import {
   type AnyEditor as EditorType,
   getNodeKey as editorGetNodeKey,
@@ -169,7 +165,7 @@ import {
 } from './dom-text-flow-index';
 import { getTextHost, getTextRoot } from './dom-text-freshness';
 import { isDOMRangePainted, isDOMTextPainted } from './dom-text-proofs';
-import { resolveNextKeyCaret } from './dom-view-caret';
+import { ensureFocusCaret, resolveNextKeyCaret } from './dom-view-caret';
 
 const EDITOR_TO_CANCEL_FOCUS_RETRY = new WeakMap<EditorType, () => void>();
 const EDITOR_TO_FOCUS_REQUEST_GENERATION = new WeakMap<EditorType, number>();
@@ -1821,16 +1817,10 @@ const DOMEditorImpl: DOMEditorInterface = {
     EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
     EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
 
-    const selection = resolveNextKeyCaret(editor, el);
+    const selection = ensureFocusCaret(editor, el);
     const selectionAtFocus = selection
       ? getSelectionDOMRange(editor, selection)
       : null;
-    // Create a new selection in the top of the document if missing
-    if (!selection) {
-      const start = editor.read((state) => state.points.start([]));
-
-      if (start) setSelectionAsView(editor, start);
-    }
 
     const syncDomSelection = () => {
       if (findDOMRootRuntime(el)?.isSelectionHeld()) return;

@@ -4,6 +4,7 @@ import { SelectionApi } from '../..';
 import { holdsCaret } from '../../core/view-carets';
 import { isDOMNode } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
+import { ensureFocusCaret } from '../../dom/plugin/dom-view-caret';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
 import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
@@ -250,6 +251,11 @@ export const useRuntimeFocusMouseEvents = ({
         };
 
         nativeInternalFocusRef.current = false;
+        // WebKit puts no caret of its own when the root's first content is
+        // not editable, such as a block's drag handle, and drops the typing.
+        if (!readOnly && !readPliteViewSelection(editor)) {
+          ensureFocusCaret(editor, editorElement);
+        }
         syncProgrammaticFocusSelection();
         domPhaseScheduler.schedule(
           'selection-repair',
