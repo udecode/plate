@@ -47,6 +47,10 @@ checkout's `.next/dev/lock`, or when a port is taken. It then:
 4. Prints `ready: http://127.0.0.1:3100` once `/login` renders. The first
    compile takes up to a few minutes.
 
+With `VERIFY_COLLAB=off`, `up` starts no Yjs server and leaves
+`NEXT_PUBLIC_YJS_URL` empty, as a host without collaboration such as Vercel
+runs Potion. Later commands read the setting from the stack's state file.
+
 Other sessions often run a stack of their own. When `up` says a port is taken,
 find free ports with `lsof -nP -iTCP:<port> -sTCP:LISTEN` and set every
 override: `VERIFY_PG_PORT`, `VERIFY_REDIS_PORT`, `VERIFY_APP_PORT`,

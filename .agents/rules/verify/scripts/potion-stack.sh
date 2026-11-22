@@ -2,6 +2,8 @@
 # Isolated Potion stack for verification: own Postgres and Redis containers,
 # own Next dev server and Yjs server on free ports, own auth secret.
 # Usage: potion-stack.sh up|doctor|login [name]|env|down
+# VERIFY_COLLAB=off starts no Yjs server and leaves NEXT_PUBLIC_YJS_URL empty,
+# as a host without collaboration runs.
 # VERIFY_POTION names the Potion checkout; it defaults to the current directory.
 set -euo pipefail
 
@@ -26,6 +28,7 @@ APP_PORT="${VERIFY_APP_PORT:-3100}"
 YJS_PORT="${VERIFY_YJS_PORT:-4544}"
 PG_NAME="${VERIFY_PG_NAME:-potion-verify-pg}"
 REDIS_NAME="${VERIFY_REDIS_NAME:-potion-verify-redis}"
+COLLAB="${VERIFY_COLLAB:-on}"
 
 listening() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null | head -1; }
 
@@ -45,7 +48,7 @@ export DATABASE_URL=postgresql://verify:verify@127.0.0.1:$PG_PORT/potion?schema=
 export BETTER_AUTH_SECRET=$SECRET
 export PORT=$APP_PORT
 export NEXT_PUBLIC_SITE_URL=http://127.0.0.1:$APP_PORT
-export NEXT_PUBLIC_YJS_URL=ws://127.0.0.1:$YJS_PORT/yjs
+export NEXT_PUBLIC_YJS_URL=$([ "$COLLAB" = off ] || echo "ws://127.0.0.1:$YJS_PORT/yjs")
 export YJS_PORT=$YJS_PORT
 export YJS_HOST=127.0.0.1
 export YJS_INTERNAL_URL=http://127.0.0.1:$YJS_PORT
@@ -106,7 +109,10 @@ up() {
   eval "$(exports)"
   bun x prisma migrate deploy >"$LOGS/migrate.log" 2>&1 || { cat "$LOGS/migrate.log" >&2; exit 1; }
 
-  YJS_PID="$(spawn "$LOGS/yjs.log" bun x dotenv -e .env.local -- bun --conditions=production src/server/yjs/server.ts)"
+  YJS_PID=none
+  if [ "$COLLAB" != off ]; then
+    YJS_PID="$(spawn "$LOGS/yjs.log" bun x dotenv -e .env.local -- bun --conditions=production src/server/yjs/server.ts)"
+  fi
   # The v54 editor's module graph runs next dev past Node's default heap on
   # the first document page compile.
   APP_PID="$(spawn "$LOGS/next.log" env NODE_OPTIONS="--max-old-space-size=${VERIFY_NEXT_HEAP_MB:-8192} ${NODE_OPTIONS:-}" bun x dotenv -e .env.local -- bun x next dev --port "$APP_PORT")"
@@ -114,10 +120,10 @@ up() {
     echo "PG_PORT=$PG_PORT REDIS_PORT=$REDIS_PORT APP_PORT=$APP_PORT YJS_PORT=$YJS_PORT"
     echo "PG_NAME=$PG_NAME REDIS_NAME=$REDIS_NAME"
     echo "SECRET='$SECRET'"
-    echo "APP_PID=$APP_PID YJS_PID=$YJS_PID"
+    echo "APP_PID=$APP_PID YJS_PID=$YJS_PID COLLAB=$COLLAB"
   } >"$STATE"
 
-  wait_for yjs 60 sh -c "[ -n \"\$(lsof -nP -iTCP:$YJS_PORT -sTCP:LISTEN -t)\" ]"
+  [ "$COLLAB" = off ] || wait_for yjs 60 sh -c "[ -n \"\$(lsof -nP -iTCP:$YJS_PORT -sTCP:LISTEN -t)\" ]"
   # First compile of /login takes a while; ready means it renders.
   wait_for next 240 curl -sf -o /dev/null "http://127.0.0.1:$APP_PORT/login"
   echo "ready: http://127.0.0.1:$APP_PORT (logs in $LOGS)"
@@ -133,9 +139,11 @@ doctor() {
   check "redis container answers" docker exec "$REDIS_NAME" redis-cli ping
   check "migrations applied" docker exec "$PG_NAME" psql -U verify -d potion -tAc 'select 1 from "_prisma_migrations" limit 1'
   check "next dev (pgid $APP_PID) alive" kill -0 "$APP_PID"
-  check "yjs (pgid $YJS_PID) alive" kill -0 "$YJS_PID"
+  if [ "$COLLAB" != off ]; then
+    check "yjs (pgid $YJS_PID) alive" kill -0 "$YJS_PID"
+  fi
   check "port $APP_PORT owned by our next" sh -c "ps -o pgid= -p \$(lsof -nP -iTCP:$APP_PORT -sTCP:LISTEN -t | head -1) | grep -qw $APP_PID"
-  check "port $YJS_PORT owned by our yjs" sh -c "ps -o pgid= -p \$(lsof -nP -iTCP:$YJS_PORT -sTCP:LISTEN -t | head -1) | grep -qw $YJS_PID"
+  [ "$COLLAB" = off ] || check "port $YJS_PORT owned by our yjs" sh -c "ps -o pgid= -p \$(lsof -nP -iTCP:$YJS_PORT -sTCP:LISTEN -t | head -1) | grep -qw $YJS_PID"
   check "/login renders" curl -sf -o /dev/null "http://127.0.0.1:$APP_PORT/login"
   return "$ok"
 }
@@ -191,7 +199,7 @@ EOF
 down() {
   [ -f "$STATE" ] || { echo "no stack state in $ROOT; nothing to stop"; return 0; }
   load
-  for pid in "$APP_PID" "$YJS_PID"; do kill -- "-$pid" 2>/dev/null || true; done
+  for pid in "$APP_PID" "$YJS_PID"; do [ "$pid" = none ] || kill -- "-$pid" 2>/dev/null || true; done
   docker rm -f "$PG_NAME" "$REDIS_NAME" >/dev/null 2>&1 || true
   rm -f "$STATE"
   echo "stopped; evidence kept in $STATE_DIR/evidence"
