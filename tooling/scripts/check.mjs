@@ -857,6 +857,22 @@ export const steps = [
     key: [],
   },
   {
+    name: 'third-party-notices',
+    land: true,
+    quick: true,
+    run: 'node tooling/scripts/third-party-notices.mjs',
+    affected: (files) =>
+      files.some(
+        (file) =>
+          file === 'tooling/scripts/third-party-notices.mjs' ||
+          file === 'tooling/scripts/private-files.mjs' ||
+          /^packages\/[^/]+\/(?:src\/|package\.json$|THIRD_PARTY_NOTICES\.md$)/u.test(
+            file
+          )
+      ),
+    key: [],
+  },
+  {
     name: 'knowledge',
     land: true,
     quick: true,

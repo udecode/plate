@@ -2,4 +2,4 @@
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/udecode/plate/blob/main/LICENSE)
