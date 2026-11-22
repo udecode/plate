@@ -2674,6 +2674,7 @@ export const compileSliceFitter = <V extends Value>(
       return allowed;
     };
     const openTokenAt = new WeakMap<FitOpenToken, number>();
+    const openTokenPath = new WeakMap<FitOpenToken, readonly number[]>();
     const getOpenContext = (position: number): FitOpenToken[] =>
       profileCoreDuration('slice-fit-open-context', () =>
         document
@@ -2686,6 +2687,7 @@ export const compileSliceFitter = <V extends Value>(
               throw new Error(`Missing open token at document path [${path}].`);
             }
             openTokenAt.set(token, from);
+            openTokenPath.set(token, path);
 
             return token;
           })
@@ -3195,11 +3197,68 @@ export const compileSliceFitter = <V extends Value>(
         ? encoded.length
         : getContentEndOffset(encoded);
       let insertedPosition = 0;
+      const syncPosition = getLocalSyncPosition();
+      const tail = document.tokens.slice(exactTo, syncPosition).tokens;
+      const tailContentAt = tail.findIndex((token) => token.kind !== 'close');
+      const receiving =
+        tailContentAt === -1 ? 0 : localEndContext.length - tailContentAt;
+      const opened: number[] = [];
 
-      for (const token of encoded.tokens) {
+      for (const [tokenAt, token] of encoded.tokens.entries()) {
+        if (token.kind === 'open') opened.push(tokenAt);
+        else if (token.kind === 'close') opened.pop();
+      }
+      const openAtEnd = new Set(opened);
+      const parentAdmitsCopyAfter = (token: FitOpenToken) => {
+        const path = openTokenPath.get(token);
+        const innerSchema = getDeclarativeSchema();
+
+        if (!path || !innerSchema) return true;
+        const ancestors = getElementAncestors(rootChildren, path.slice(0, -1), {
+          includeTarget: true,
+        });
+        const content = ancestors[0]
+          ? getCompiledElement(ancestors[0])?.content
+          : targetRootProgram;
+
+        return (
+          !content ||
+          contentAllowsAt(
+            innerSchema,
+            content,
+            openTokenNode(token),
+            (path.at(-1) ?? 0) + 1,
+            { ancestors, root }
+          )
+        );
+      };
+
+      const getKeptTargetBlock = (tokenAt: number, token: FitToken) => {
+        const depth = stack.length;
+        const target = localEndContext[depth];
+        const node = target && openTokenNode(target);
+
+        return token.kind === 'open' &&
+          openAtEnd.has(tokenAt) &&
+          depth < receiving &&
+          ElementApi.isElement(node) &&
+          !getElementBehavior(node).inline &&
+          openContextsMatch(target, token) &&
+          stack.every((open, index) =>
+            openContextsMatch(open, localEndContext[index])
+          ) &&
+          parentAdmitsCopyAfter(target)
+          ? target
+          : null;
+      };
+
+      for (const [tokenAt, token] of encoded.tokens.entries()) {
         const appended = output.length;
+        const keptTarget = getKeptTargetBlock(tokenAt, token);
 
-        if (!process(token, 'slice')) return null;
+        if (keptTarget ? !openFitted(keptTarget) : !process(token, 'slice')) {
+          return null;
+        }
         if (output.length > appended) {
           contentStart ??= outputPosition - tokenLength(token);
         }
@@ -3216,9 +3275,7 @@ export const compileSliceFitter = <V extends Value>(
         to: outputPosition,
       };
 
-      const syncPosition = getLocalSyncPosition();
-      const tail = document.tokens.slice(exactTo, syncPosition).tokens;
-      const tailOnlyCloses = tail.every((token) => token.kind === 'close');
+      const tailOnlyCloses = tailContentAt === -1;
       const expected =
         syncPosition === exactTo
           ? localEndContext
