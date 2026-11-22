@@ -47,13 +47,23 @@ function useEquation({
   }, [element.latex, katexRef, options]);
 }
 
+// Undo and redo restore a selection the user did not move into an equation, so
+// it must not open the equation's input and take focus from the editor.
+function useSelectedByUser() {
+  const editor = useEditor();
+
+  return (selected: boolean) =>
+    selected && !editor.read.lastCommit()?.tags.includes('historic');
+}
+
 export function EquationElement(
   props: EditorElementProps<typeof EquationPlugin> & {
     lineBreakBadge?: React.ReactNode;
   }
 ) {
   const selected = useElementSelected({ mode: 'text' });
-  const [open, setOpen] = React.useState(selected);
+  const selectedByUser = useSelectedByUser();
+  const [open, setOpen] = React.useState(() => selectedByUser(selected));
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const { lineBreakBadge } = props;
 
@@ -125,15 +135,16 @@ export function InlineEquationElement(
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useElementSelected({ mode: 'text' });
   const collapsedSelected = useElementSelected({ mode: 'collapsed' });
-  const [popoverState, setPopoverState] = React.useState({
-    open: collapsedSelected,
+  const selectedByUser = useSelectedByUser();
+  const [popoverState, setPopoverState] = React.useState(() => ({
+    open: selectedByUser(collapsedSelected),
     selected,
-  });
+  }));
   const openAtPointerDownRef = React.useRef(false);
   const open =
     popoverState.selected === selected
       ? popoverState.open
-      : selected && (popoverState.open || collapsedSelected);
+      : selected && (popoverState.open || selectedByUser(collapsedSelected));
 
   if (popoverState.selected !== selected) {
     setPopoverState({ open, selected });

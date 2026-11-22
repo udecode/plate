@@ -152,7 +152,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "1464e2638f3c1a92864fc430fbbd0f26820ffde16388efd96246ebdca9f2bf72",
+  "generation": "1538a214d3eef8e9814f32ee136ec240f0f2060a5d766fb9f135745e5212fce5",
   "itemCount": 193,
   "payloads": {
     "overlays/base-luma/floating-popover.json": "e0c52b7260aafdff9da9237463f1a66e029da7152c65af78fe07c9dff81d8a1f",
@@ -358,7 +358,7 @@
     "r/markdown-to-editor-demo.json": "79d92a08eb9f3ff019630d0ee9e4d83fd934c3b730c34b2539fe041364c9b9b8",
     "r/markdown.json": "004c17f8d1e0c6632a7b016961bb04347c0d0ed8889426db6bd65dae3c4bc5c3",
     "r/math-static.json": "2e8367904a6f4e01d012356954f1a8a5815af00983679bb3a62dc2948c398a7f",
-    "r/math.json": "813ad8f0f438fb298bef541f539110499ab9779d1bc918920fe7e8225ad4e043",
+    "r/math.json": "90b6ebd90dd9ba5e9ce6a4eb46eb40001adb2ba803366a67221d795c35cf511e",
     "r/media-audio-static.json": "053be0e1cd27a1ac1000f09e1549cdab513ce717d97bee67f566d3194d652fdd",
     "r/media-audio.json": "d3e85e70f578d01768695def9ddd2f02a157080e25d7550c0132ae6e9d5f0ab0",
     "r/media-embed-static.json": "c2cf75fce87221291d8a62528c3e607d22994ac4c04ab9e56ddec53f02a2e022",
@@ -552,7 +552,7 @@
     "rd/markdown-to-editor-demo.json": "c37a348b18eaba65cda42be0dd162efb832692ac4d176e39fe308ca90b5f9aa5",
     "rd/markdown.json": "004c17f8d1e0c6632a7b016961bb04347c0d0ed8889426db6bd65dae3c4bc5c3",
     "rd/math-static.json": "2e8367904a6f4e01d012356954f1a8a5815af00983679bb3a62dc2948c398a7f",
-    "rd/math.json": "07252a5497a08cf08684231da3f4eaa331414f8df6dda248d190d0b7c954f569",
+    "rd/math.json": "c525ee78caa0dcc25f4bb7b4c4c180dc32088e8c937c49e116c2ef84d17a5d44",
     "rd/media-audio-static.json": "330d6dc030eef50e075b8b20efd79d301371dcc16a46a4054fd0016039d8f482",
     "rd/media-audio.json": "cb1a9750e1c1ad8d3d771bbf2c581cec40ecb1099f479aa8f04a69dd8ca4ad01",
     "rd/media-embed-static.json": "8f547b41931043a958a33154957265e22639ab014934301739c3993f9caeb075",
