@@ -152,7 +152,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "ed0970aac23f68bbe9529971bb77a5a7cc94d8dfd00da5e19de2d9337a1e892a",
+  "generation": "6a6cb4515d79b885eba492e2cb091a88b204d659ab08d0e5b32446e8386d0280",
   "itemCount": 193,
   "payloads": {
     "overlays/base-luma/floating-popover.json": "e0c52b7260aafdff9da9237463f1a66e029da7152c65af78fe07c9dff81d8a1f",
@@ -390,7 +390,7 @@
     "r/remote-cursor-overlay.json": "504de875366a46a4a39853983084691393fbab04e121cefe102ab60bda2c923f",
     "r/resize-handle.json": "3eaa0af0ae458283d8b5ea22560692668a9bfafbc0b5b1254081310e82b0e7e3",
     "r/select-editor-demo.json": "633e04f23d8a5b3005edd6b94ce11fb03e2fb40f47d411276d56048ec7aa031f",
-    "r/select-editor.json": "7256567f765be51c87fe96fbddd03178a5024f8202739dfcfc91d8cc39a9f3a9",
+    "r/select-editor.json": "2de15801659161d5fde198f1773f1dc6d439f91ad7520b71be4d307a57fa5692",
     "r/settings-dialog.json": "0a5f1e41a9a88b467df6cba4b6b26728548ec210a0c03803a2fd7e366c577da3",
     "r/slash.json": "41653001f220d4d68ba35a65cef45f803476e1ebf740fc71fb73e43b134381d4",
     "r/suggestion-demo.json": "3823f83bde89af53b3a0cd40716a0883aa42bdfc3add7ba2800b80f1aad40290",
@@ -584,7 +584,7 @@
     "rd/remote-cursor-overlay.json": "504de875366a46a4a39853983084691393fbab04e121cefe102ab60bda2c923f",
     "rd/resize-handle.json": "3eaa0af0ae458283d8b5ea22560692668a9bfafbc0b5b1254081310e82b0e7e3",
     "rd/select-editor-demo.json": "4abada5830b42a7429033a7cfa1c60f598628a71fc70e395cc725a847c56a406",
-    "rd/select-editor.json": "7828537ea381618e70fc23b5a85fc4c8665ab9a6c1a0ea29713ec7d369b35604",
+    "rd/select-editor.json": "de2554dbfb21fc92310d72c0c3c7121b342772cdc0a6d7e162c8a2a6ce1c0f0a",
     "rd/settings-dialog.json": "06af1c3f20e5657879643d8816ec4bf9def7faf13ddd512f5a57413645d12f2a",
     "rd/slash.json": "d6a6a5a3a61b6091e9d0d1ec0e40cb45de6c512884613f8d5f61d01c61e21c7b",
     "rd/suggestion-demo.json": "05cfadc4dfc62b010b22906c63cd93e4c8c67d36806ed1476b567f4fa957fdbf",
@@ -619,5 +619,5 @@
     "rd/use-visible-anchor.json": "6a1fc3d43c6bea1aff70bbb8d33ba4d6efc1570d7caa9a6148b826a6f0300382",
     "rd/version-history-demo.json": "3538c8fc14ee1a0244143144e067b7c0579041e35bcb8a247c5527a50ecc4256"
   },
-  "shadcnStyleCommit": "ee628d75dea87325735fafa7c54f5d7d7edb8774"
+  "shadcnStyleCommit": "bfa64ff4d1cb7317d2403ecb176df6826d4caffc"
 }

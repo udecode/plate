@@ -1,18 +1,18 @@
 {
-  "commit": "ee628d75dea87325735fafa7c54f5d7d7edb8774",
+  "commit": "bfa64ff4d1cb7317d2403ecb176df6826d4caffc",
   "files": {
-    "styles/style-nova.css": "5d5751579c015b61e77cf0822862a43ac79f3e6fed236a17624be8e6d1ebea1d",
-    "styles/style-vega.css": "7b0dc3a9d2245ab6ce3d17653fa74a07f0ce2541e480bef36d2600fe38f1281b",
-    "styles/style-maia.css": "0a1e5a658ea601ee7a9427b91ea567c6fc915a385d7466bea19f42ec726added",
-    "styles/style-lyra.css": "7d75035683a22e61f5dace0b115e97f9e9b643500c1f4bfe2b31ad4dcdaa0c4a",
-    "styles/style-mira.css": "025f54a060adeb60489d17eb3eb935e1118ee091ba5c618d5463eb27f2b1d003",
-    "styles/style-luma.css": "a698210162ca2d3385142a47334f22985831b1e91716c2d3175828d928a59707",
-    "styles/style-sera.css": "eda71a39ba86625eb81b25f2e5824579952ced0cf0451be16be3f4dd70bf9876",
-    "styles/style-rhea.css": "bcb242a7845316f93b0562345dd5c32a46a2988b506a8e8d7df1c836a1637b49",
-    "bases/base/ui/toggle.tsx": "3ebc898aff16f6c119158abaae18fd749789ccded65c678fdc15994fd403b006",
-    "bases/base/ui/tooltip.tsx": "75e66453d7a6301281a0ecd7840d268a90a6972b252b018d2ac2bc34a979968b",
-    "bases/radix/ui/toggle.tsx": "3baf18afd5fdb34ff36e729490137f5354fbbd1be77a2e4e5ed00ea9ec5ba753",
-    "bases/radix/ui/tooltip.tsx": "c57cef1493d49b3d8219a00c86b9966bee44165d02b84dae38475ba17f340ed3"
+    "styles/style-nova.css": "fd9803ec398290c306b377a46a769cad0c7ff024bf6a626993c113cacc20f16e",
+    "styles/style-vega.css": "10fa07bd61b429ae2c14c572ba9975f6e991d68a04f8fec7e354a062597e0d4e",
+    "styles/style-maia.css": "8d518bcb26fad2904e7048e7be4c708814168c5e4ee29f1228945f91efd694a1",
+    "styles/style-lyra.css": "be24110aafbd07d794ced58f15512c640ab3dfa5733beb850e83f968457a9b52",
+    "styles/style-mira.css": "cdde6d38ee43c94cb6785672455adeea7fe195cc57772dc52b41acb5a1789732",
+    "styles/style-luma.css": "35c0578be1623049da1f11729ae43a2a7884dcc17b948fc72dcdf4f1be3c0484",
+    "styles/style-sera.css": "c26380d5023bb63d25c03c94cae223e0a4f133f6bae0a63f77b8e4ac17483ba0",
+    "styles/style-rhea.css": "bac4eff75a0e21d9dd90ce40634937f54730471d8f7fa50ca67b317892cf908f",
+    "bases/base/ui/toggle.tsx": "b53df3a8d6ad7ae3853a5e72f8bbf11e39daababfc8b0e369347b355eb9af120",
+    "bases/base/ui/tooltip.tsx": "dc5ec917d8276af9d66e7c951b0608d67c149bcb311072166bc8ce67ee2b7488",
+    "bases/radix/ui/toggle.tsx": "e2badd54fdb8c16f7967b6ddfce782d7e44beda5b2d2468045564bc690fbea8d",
+    "bases/radix/ui/tooltip.tsx": "25b33cd3bfd6046067259e476c3b5137b9f018c394d6ea51926accb8d6d5134a"
   },
   "source": "shadcn-ui/ui/apps/v4/registry"
 }

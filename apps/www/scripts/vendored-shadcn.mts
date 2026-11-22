@@ -10,7 +10,7 @@ import {
 } from '@/lib/plate-registry-styles';
 
 export const SHADCN_STYLE_SOURCE_COMMIT =
-  'ee628d75dea87325735fafa7c54f5d7d7edb8774';
+  'bfa64ff4d1cb7317d2403ecb176df6826d4caffc';
 
 export const SHADCN_INSTALL_MARKERS = [
   'cn-font-heading',
