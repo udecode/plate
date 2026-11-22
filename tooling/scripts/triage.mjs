@@ -1037,10 +1037,12 @@ const failedFixes = (comments, team) =>
     })
   );
 const isBot = (login) => BOTS.has(login) || login.endsWith('[bot]');
-const hashedComments = (issue) =>
+const postedComments = (issue) =>
   (issue.comments ?? []).filter(
-    (comment) => !isBot(comment.author?.login ?? '') && !isDraft(comment)
+    (comment) => !isBot(comment.author?.login ?? '')
   );
+const hashedComments = (issue) =>
+  postedComments(issue).filter((comment) => !isDraft(comment));
 // Stdout prints a lone surrogate as U+FFFD, so the text takes that form before it is printed, hashed or matched.
 const issueSource = (issue) =>
   unixText(
@@ -1062,11 +1064,19 @@ const clipsOf = (issue) => {
   const lines = issueSource(issue)
     .split('\n')
     .map((line) => line.trim());
+  const cacheLines = unixText(
+    [
+      issue.body ?? '',
+      ...postedComments(issue).map((comment) => comment.body ?? ''),
+    ].join('\n')
+  )
+    .split('\n')
+    .map((line) => line.trim());
   const transcribed = (url) =>
-    lines.some(
+    cacheLines.some(
       (line, at) =>
         line === `[[Transcript](${url})]` &&
-        /^\[\d{2}:\d{2}\]/u.test(lines[at + 1] ?? '')
+        /^\[\d{2}:\d{2}\]/u.test(cacheLines[at + 1] ?? '')
     );
   return [...new Set(lines.filter((line) => CLIP.test(line)))].map((url) => ({
     url,
