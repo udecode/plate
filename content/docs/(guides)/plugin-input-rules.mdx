@@ -134,16 +134,13 @@ plugin's `inputRules`.
 
 Basic block rules ship with `platejs`. Register them per plugin.
 
-**Headings.** `HeadingRules.markdown()` is the same factory for H1 through H6.
-It reads the heading depth from a resolved persisted type matching `h1` through
-`h6`, so you pass it once on each heading plugin. If an application remaps a
-heading to a different type, provide an app-owned rule for that type instead.
+**Headings.** `HeadingRules.markdown()` is one rule for every heading level. It
+counts the `#` characters typed before the space, `# ` through `###### `, and
+gives the heading that `level`. Pass it once, on `HeadingPlugin`.
 
 ```tsx showLineNumbers
 import { HeadingRules } from 'platejs';
-import {
-  HeadingPlugin,
-} from 'platejs/react';
+import { HeadingPlugin } from 'platejs/react';
 
 export const HeadingInputRulesKit = [
   HeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),

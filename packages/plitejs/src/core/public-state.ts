@@ -8337,51 +8337,64 @@ export const getUpdateView = <
             );
           }
 
-          if (!isActive) {
-            const schema = getEditorSchema(editor);
-            const allowed = runWithMutationRoot(editor, root, () =>
-              selectedBlockPaths.every((path) => {
-                const entry = state.nodes.get(path);
-
-                if (!entry || !ElementApi.isElement(entry[0])) return false;
-
-                const wrapper = {
-                  ...props,
-                  children: [entry[0]],
-                } as Element;
-                const parent = state.nodes.parent(path)?.[0];
-
-                return schema.canWrap(
-                  ElementApi.isElement(parent) ? parent : null,
-                  wrapper,
-                  path.at(-1) ?? 0,
-                  root
-                );
-              })
-            );
-
-            if (!allowed) return false;
-          }
-
           const before = getActiveDocumentChangeBuilder(editor).change;
 
-          for (const path of selectedBlockPaths.toReversed()) {
-            runWithMutationRoot(editor, root, () => {
-              if (
-                isActive &&
-                !state.nodes.some({ at: path, match: propsMatch, voids })
-              ) {
-                return;
+          if (isActive) {
+            for (const path of selectedBlockPaths.toReversed()) {
+              runWithMutationRoot(editor, root, () => {
+                if (state.nodes.some({ at: path, match: propsMatch, voids })) {
+                  unwrapNodes(editor, { at: path, match: propsMatch, voids });
+                }
+              });
+            }
+
+            return getActiveDocumentChangeBuilder(editor).change !== before;
+          }
+
+          const runs: Array<[Path, ...Path[]]> = [];
+
+          for (const path of selectedBlockPaths.toSorted(PathApi.compare)) {
+            const run = runs.at(-1);
+            const last = run?.at(-1);
+
+            if (run && last && PathApi.equals(PathApi.next(last), path)) {
+              run.push(path);
+            } else {
+              runs.push([path]);
+            }
+          }
+
+          const schema = getEditorSchema(editor);
+          const allowed = runWithMutationRoot(editor, root, () =>
+            runs.every((run) => {
+              const children = run.map((path) => state.nodes.get(path)?.[0]);
+
+              if (!children.every((node) => ElementApi.isElement(node))) {
+                return false;
               }
 
-              if (isActive) {
-                unwrapNodes(editor, { at: path, match: propsMatch, voids });
-              } else {
-                wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
-                  at: path,
-                  voids,
-                });
-              }
+              const [first] = run;
+              const parent = state.nodes.parent(first)?.[0];
+
+              return schema.canWrap(
+                ElementApi.isElement(parent) ? parent : null,
+                { ...props, children },
+                first.at(-1) ?? 0,
+                root
+              );
+            })
+          );
+
+          if (!allowed) return false;
+
+          for (const run of runs.toReversed()) {
+            runWithMutationRoot(editor, root, () => {
+              wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
+                at: PathApi.parent(run[0]),
+                match: (_node, path) =>
+                  run.some((member) => PathApi.equals(member, path)),
+                voids,
+              });
             });
           }
 

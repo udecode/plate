@@ -151,7 +151,7 @@ const insertItem = {
 
 ### `editor.plugin(BlockquotePlugin).update.wrap()`
 
-将每个选中的区块包裹进引用块，保留未选中的区块，并保持现有引用块不变。
+将选中的区块包裹进引用块。相邻的选中区块共用一个引用块，已在引用块内的区块保持不变。
 可传入 `at` 指定位置或节点选区。
 
 ```tsx
@@ -160,7 +160,7 @@ editor.plugin(BlockquotePlugin).update.wrap();
 
 ### `editor.plugin(BlockquotePlugin).update.toggle()`
 
-将当前块或选区包裹进引用块中。如果选区已经位于引用块内，则取消该引用块包裹。schema 拒绝引用时（例如在 Details 标题上），返回 `false` 且不做任何修改。
+将当前块或选区包裹进引用块中，相邻的选中区块共用一个引用块。如果选区已经位于引用块内，则取消该引用块包裹。schema 拒绝引用时（例如在 Details 标题上），返回 `false` 且不做任何修改。
 
 ```tsx
 editor.plugin(BlockquotePlugin).update.toggle();

@@ -109,7 +109,7 @@ plugin selection, rendering, input rules, and shortcuts editable.
 | Block | Plugin | Registry Component | Notes |
 |-------|--------|--------------------|-------|
 | Paragraph | `ParagraphPlugin` | `ParagraphElement` | Comes from `platejs/react`; the registry kit adds the UI component. |
-| Heading 1-6 | `HeadingPlugin` through `HeadingPlugin` | `HeadingElement` through `HeadingElement` | Each level gets a markdown rule and `mod+alt+<level>` shortcut. |
+| Heading 1-6 | `HeadingPlugin` | `HeadingElement` | One plugin whose `level` runs from 1 to 6. One markdown rule covers every level, and each level gets a `mod+alt+<level>` shortcut. |
 | Blockquote | `BlockquotePlugin` | `BlockquoteElement` | Uses a wrapping transform and `mod+shift+period`. |
 | Horizontal rule | `HorizontalRulePlugin` | `HrElement` | Void block; supports dash and underscore markdown rules. |
 
@@ -140,37 +140,55 @@ import {
 } from 'platejs';
 import {
   BlockquotePlugin,
+  createEditor,
   HeadingPlugin,
   HorizontalRulePlugin,
+  ParagraphPlugin,
 } from 'platejs/react';
-import { createEditor, ParagraphPlugin } from 'platejs/react';
 
 export const editor = createEditor({
   plugins: [
     ParagraphPlugin,
     HeadingPlugin.configure({
       inputRules: [HeadingRules.markdown()],
-      shortcuts: { toggle: { keys: 'mod+alt+1' } },
-    }),
-    HeadingPlugin.configure({
-      inputRules: [HeadingRules.markdown()],
-      shortcuts: { toggle: { keys: 'mod+alt+2' } },
-    }),
-    HeadingPlugin.configure({
-      inputRules: [HeadingRules.markdown()],
-      shortcuts: { toggle: { keys: 'mod+alt+3' } },
-    }),
-    HeadingPlugin.configure({
-      inputRules: [HeadingRules.markdown()],
-      shortcuts: { toggle: { keys: 'mod+alt+4' } },
-    }),
-    HeadingPlugin.configure({
-      inputRules: [HeadingRules.markdown()],
-      shortcuts: { toggle: { keys: 'mod+alt+5' } },
-    }),
-    HeadingPlugin.configure({
-      inputRules: [HeadingRules.markdown()],
-      shortcuts: { toggle: { keys: 'mod+alt+6' } },
+      shortcuts: {
+        toggleHeading1: {
+          handler: ({ editor }) => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 1 });
+          },
+          keys: 'mod+alt+1',
+        },
+        toggleHeading2: {
+          handler: ({ editor }) => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 2 });
+          },
+          keys: 'mod+alt+2',
+        },
+        toggleHeading3: {
+          handler: ({ editor }) => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 3 });
+          },
+          keys: 'mod+alt+3',
+        },
+        toggleHeading4: {
+          handler: ({ editor }) => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 4 });
+          },
+          keys: 'mod+alt+4',
+        },
+        toggleHeading5: {
+          handler: ({ editor }) => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 5 });
+          },
+          keys: 'mod+alt+5',
+        },
+        toggleHeading6: {
+          handler: ({ editor }) => {
+            editor.plugin(HeadingPlugin).update.toggle({ level: 6 });
+          },
+          keys: 'mod+alt+6',
+        },
+      },
     }),
     BlockquotePlugin.configure({
       inputRules: [BlockquoteRules.markdown()],
@@ -192,6 +210,6 @@ export const editor = createEditor({
 |-----|-----|
 | `BasicBlocksKit` from `@/components/editor/basic-blocks` | App-owned React preset for paragraph, blockquote, H1-H6, and horizontal rule behavior. |
 | `BaseBasicBlocksKit` from `@/components/editor/basic-blocks-static` | App-owned static/base preset for the same block family. |
-| `HeadingRules.markdown()` | Creates heading input rules based on the configured H1-H6 plugin name. |
+| `HeadingRules.markdown()` | Creates one block-start rule for `# ` through `###### ` that sets the matching heading level. |
 | `BlockquoteRules.markdown()` | Creates the `> ` block-start rule. |
 | `HorizontalRuleRules.markdown({ variant })` | Creates dash or underscore thematic-break rules. |

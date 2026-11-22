@@ -151,8 +151,9 @@ Plugin for blockquote container elements. Renders as `<blockquote>` HTML element
 
 ### `editor.plugin(BlockquotePlugin).update.wrap()`
 
-Wrap each selected block in a blockquote, preserving unselected blocks and
-leaving existing quotes intact. Pass `at` to target a location or node selection.
+Wrap the selected blocks in blockquotes. Adjacent selected blocks share one
+blockquote, and blocks already in a quote stay as they are. Pass `at` to target
+a location or node selection.
 
 ```tsx
 editor.plugin(BlockquotePlugin).update.wrap();
@@ -160,7 +161,8 @@ editor.plugin(BlockquotePlugin).update.wrap();
 
 ### `editor.plugin(BlockquotePlugin).update.toggle()`
 
-Wraps the current block or selection in a blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks. Returns `false` and changes nothing when the schema refuses the quote, as it does on a Details title.
+Wraps the current block or selection in a blockquote, with adjacent selected
+blocks in one blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks. Returns `false` and changes nothing when the schema refuses the quote, as it does on a Details title.
 
 ```tsx
 editor.plugin(BlockquotePlugin).update.toggle();

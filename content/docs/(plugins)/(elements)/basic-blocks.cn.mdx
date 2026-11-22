@@ -27,14 +27,12 @@ description: 用于构建内容的常用块级元素。
 
 ### 安装
 
-`BasicBlocksKit` 捆绑了段落、标题（H1、H2、H3）、引用块和水平分割线的插件，以及它们对应的 [Plate UI](/docs/installation/plate-ui) 组件。同时也注册了标题、引用块和水平分割线自带的 Markdown input rules。
+`BasicBlocksKit` 捆绑了段落、标题（H1 到 H6）、引用块和水平分割线的插件，以及它们对应的 [Plate UI](/docs/installation/plate-ui) 组件。同时也注册了标题、引用块和水平分割线自带的 Markdown input rules。
 
 <ComponentSource name="basic-blocks" />
 
 - [`ParagraphElement`](/docs/components/paragraph): 渲染段落元素。
-- [`HeadingElement`](/docs/components/heading): 渲染 H1 元素。
-- [`HeadingElement`](/docs/components/heading): 渲染 H2 元素。
-- [`HeadingElement`](/docs/components/heading): 渲染 H3 元素。
+- [`HeadingElement`](/docs/components/heading): 按 `level` 渲染 H1 到 H6 标题元素。
 - [`BlockquoteElement`](/docs/components/blockquote): 渲染引用块元素。
 - [`HrElement`](/docs/components/horizontal-rule): 渲染水平分割线元素。
 
@@ -58,7 +56,7 @@ const editor = createEditor({
 
 该套件默认启用常见的块级 Markdown 快捷输入：
 
-- `# `、`## `、`### ` 用于标题
+- `# ` 到 `###### ` 用于标题
 - `> ` 用于引用块
 - `---` 和 `___` 用于水平分割线
 

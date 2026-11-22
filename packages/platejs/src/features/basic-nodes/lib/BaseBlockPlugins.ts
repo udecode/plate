@@ -11,6 +11,7 @@ import {
   PLUGINS,
   type Location,
   type NodeSelection,
+  type Path,
   type StructuralRuleContext,
   TextApi,
   txLocate,
@@ -201,14 +202,35 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
     wrap: txLocate(
       locateAt(0),
       ({ at }: { at?: Location | NodeSelection } = {}) => {
-        for (const [node, path] of tx.nodes.blocks({ at }).toReversed()) {
+        const runs: Array<[Path, ...Path[]]> = [];
+
+        for (const [node, path] of tx.nodes.blocks({ at })) {
           if (
             node.type === type ||
             tx.nodes.above({ at: path, type: plugin })
           ) {
             continue;
           }
-          tx.nodes.wrap({ children: [], type }, { at: path });
+
+          const run = runs.at(-1);
+          const last = run?.at(-1);
+
+          if (run && last && PathApi.equals(PathApi.next(last), path)) {
+            run.push(path);
+          } else {
+            runs.push([path]);
+          }
+        }
+
+        for (const run of runs.toReversed()) {
+          tx.nodes.wrap(
+            { children: [], type },
+            {
+              at: PathApi.parent(run[0]),
+              match: (_node, path) =>
+                run.some((member) => PathApi.equals(member, path)),
+            }
+          );
         }
       }
     ),
