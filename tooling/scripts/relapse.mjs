@@ -6,13 +6,7 @@ import { parseArgs, promisify } from 'node:util';
 
 import { stateOf, waitsOnOwner } from '../../.agents/pstack/status.mjs';
 import { gitMerges } from '../../.agents/pstack/tasks.mjs';
-import {
-  adoptionOf,
-  headsOf,
-  loadLedger,
-  owningScopes,
-  plansOf,
-} from './review-ledger.mjs';
+import { adoptionOf, headsOf, loadLedger, plansOf } from './review-ledger.mjs';
 
 const DAY = 86_400_000;
 const RECENT_DAYS = 14;
@@ -27,7 +21,11 @@ const FIX = /^fix(?:\([^)]*\))?!?:/;
 const PRODUCT = /^(?:packages\/[^/]+\/src\/|apps\/[^/]+\/src\/)/;
 const NOT_PRODUCT =
   /\.(?:test|spec|slow)\.|\/__tests__\/|\/type-tests\/|\/__registry__\/|\/registry\/changelog\/|\/examples\/|\/generated\//;
-const CACHE_KEY = [FIX, PRODUCT, NOT_PRODUCT].map((re) => re.source).join(' ');
+const BLANK_OR_IMPORT_LINE =
+  /^\s*(?:$|import\b(?!\s*\()|export\b[^=(]*\bfrom\s*['"]|\}\s*from\s*['"])/;
+const CACHE_KEY = [FIX, PRODUCT, NOT_PRODUCT, BLANK_OR_IMPORT_LINE]
+  .map((re) => re.source)
+  .join(' ');
 
 const now = new Date();
 const { values } = parseArgs({
@@ -166,7 +164,10 @@ async function reworkOf(fix) {
         '--',
         file
       );
-      for (const [, sha] of blame.matchAll(/^([0-9a-f]{40}) \d+ \d+ \d+$/gm)) {
+      for (const [, sha, text] of blame.matchAll(
+        /^([0-9a-f]{40}) \d+ \d+(?: \d+)?\n(?:[^\t\n][^\n]*\n)*\t([^\n]*)$/gm
+      )) {
+        if (BLANK_OR_IMPORT_LINE.test(text)) continue;
         if (!FIX.test(commits.get(sha)?.subject ?? '')) continue;
         reworked[sha] ??= [];
         if (!reworked[sha].includes(file)) reworked[sha].push(file);
@@ -182,10 +183,20 @@ async function reworkOf(fix) {
 const ledger = loadLedger(root);
 const plans = plansOf(root, ledger);
 const { activeAt } = gitMerges();
+const closestScopes = (file) => {
+  const parts = file.split('/');
+  for (let depth = parts.length; depth > 0; depth--) {
+    const entry =
+      depth === parts.length ? file : `${parts.slice(0, depth).join('/')}/`;
+    const ids = ledger.membership.get(entry);
+    if (ids?.size) return [...ids];
+  }
+  return [];
+};
 const ownersOf = (files) => {
   const owned = new Map();
   for (const file of new Set(files)) {
-    for (const id of owningScopes(ledger, file)) {
+    for (const id of closestScopes(file)) {
       if (!owned.has(id)) owned.set(id, []);
       owned.get(id).push(file);
     }
