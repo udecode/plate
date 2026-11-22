@@ -120,6 +120,7 @@
       "2026-08-17-flat-editor-registry"
     ],
     "find": [
+      "2026-11-22-find-bar-clears-matches",
       "2026-11-22-find-touch-opener",
       "2026-11-19-rtl-editor-ui",
       "2026-11-18-find-tooltip-provider",

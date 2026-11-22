@@ -98,10 +98,11 @@ function FindRoot({ children, editableRef }: WrapRootProps) {
 
   return (
     <FindContext.Provider value={commands}>
-      {children}
-      {state ? (
+      {state && (
         <FindBar draft={state.draft} inputRef={inputRef} setState={setState} />
-      ) : (
+      )}
+      {children}
+      {!state && (
         <FindButton onOpen={() => commands.open(getSelectedText(editor))} />
       )}
     </FindContext.Provider>
@@ -170,10 +171,12 @@ function FindBar({
   React.useEffect(() => {
     if (!activeMatch || !focused) return undefined;
 
+    // 'if-needed' ignores the match's scroll margin, so it would leave a
+    // match under the stuck bar in place.
     return editor.api.dom.scrollIntoView(activeMatch.range, {
       block: 'nearest',
       inline: 'nearest',
-      scrollMode: 'if-needed',
+      scrollMode: 'always',
     });
   }, [activeMatch, editor, focused]);
 
@@ -184,7 +187,7 @@ function FindBar({
     <div
       aria-busy={inputQuery !== query}
       aria-label="Find in document"
-      className="absolute end-2 top-2 z-[60] w-[min(24rem,calc(100%-1rem))] rounded-xl border bg-background p-2 shadow-lg"
+      className="sticky top-2 z-[60] ms-auto me-2 mt-2 w-[min(24rem,calc(100%-1rem))] rounded-xl border bg-background p-2 shadow-lg"
       data-editor-keep-selection-visible=""
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
@@ -285,7 +288,7 @@ export const FindKit = [
     decorate: {
       attributes: {
         className:
-          'rounded-[2px] bg-yellow-200 text-inherit data-find-active:bg-orange-400! data-find-active:ring-1 data-find-active:ring-orange-600',
+          'scroll-mt-16 rounded-[2px] bg-yellow-200 text-inherit data-find-active:bg-orange-400! data-find-active:ring-1 data-find-active:ring-orange-600',
       },
     },
     slots: {

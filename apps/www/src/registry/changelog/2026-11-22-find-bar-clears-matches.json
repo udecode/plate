@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-find-bar-clears-matches",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-find-bar-clears-matches.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the open Find bar from covering matches",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-find-keep-open-bar-from-fe0bd940",
+      "kind": "fix",
+      "summary": "Show the open Find bar above the text instead of over it, and keep it at the top while the editor scrolls. Moving to a match scrolls the match clear of the bar.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-find-bar-clears-matches",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

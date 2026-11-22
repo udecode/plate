@@ -46,6 +46,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-22-find-bar-clears-matches",
+      "href": "/registry/changelog/2026-11-22-find-bar-clears-matches.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the open Find bar from covering matches",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-find-touch-opener",
       "href": "/registry/changelog/2026-11-22-find-touch-opener.json",
       "status": "draft",
