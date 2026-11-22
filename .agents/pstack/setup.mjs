@@ -16,7 +16,12 @@
 // order, and each row the ref's state forbids moves to
 // suggested-tasks.refused.tsv beside it. On the branch
 // .agents/pstack.json names it fast-forwards only when no other local edit,
-// staged, unstaged or untracked, touches a path the incoming commits change.
+// staged, unstaged or untracked, touches a path the incoming commits change,
+// except an unstaged edit to a regular file they delete, whose bytes it first
+// saves under pstack-kept/ in the git directory, in a folder its output names.
+// It never overwrites an ignored file. When the pull fails and leaves HEAD where
+// it was, it puts back each saved edit whose file still holds HEAD's bytes, and
+// it keeps the folder and names it unless every edit came back.
 // When the session's pstack install is older than the tag .claude/settings.json
 // pins, a --hook run updates a Claude Code install and says to restart, and
 // prints the update command for a Codex one.
@@ -24,7 +29,7 @@
 // read-only, which sets PSTACK_READ_ONLY, it does nothing.
 
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { hookPayload, sessionCheckout } from './checkout.mjs';
 import { pluginLag, runtimeFromEnv } from './lead.mjs';
@@ -158,25 +163,66 @@ if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === n
 
 const localEdits = () => {
   const local = git(['status', '--porcelain=v1', '-z', '--untracked-files=all']).stdout.split('\0').filter(Boolean);
-  const paths = [];
+  const edits = [];
   for (let i = 0; i < local.length; i += 1) {
-    paths.push(local[i].slice(3));
-    if (local[i][0] === 'R' || local[i][0] === 'C') paths.push(local[++i]);
+    edits.push({ status: local[i].slice(0, 2), path: local[i].slice(3) });
+    if (local[i][0] === 'R' || local[i][0] === 'C') edits.push({ status: local[i].slice(0, 2), path: local[++i] });
   }
-  return paths;
+  return edits;
 };
-
-const behind = Number(out('rev-list', '--count', `HEAD..${upstream}`) ?? 0);
+const checked = out('rev-parse', '--verify', '--quiet', `${upstream}^{commit}`);
+if (checked === null) process.exit();
+const behind = Number(out('rev-list', '--count', `HEAD..${checked}`) ?? 0);
 if (behind === 0) process.exit();
-if (git(['merge-base', '--is-ancestor', 'HEAD', upstream]).status !== 0) {
+if (git(['merge-base', '--is-ancestor', 'HEAD', checked]).status !== 0) {
   console.log(`setup.mjs: ${branch} has commits origin/${branch} lacks, so it was not fast-forwarded`);
   process.exit();
 }
-const incoming = new Set(out('diff', '--name-only', 'HEAD', upstream).split('\n').filter(Boolean));
-const touched = localEdits().filter((path) => incoming.has(path));
-if (touched.length > 0) {
-  console.log(`setup.mjs: ${behind} commit(s) on origin/${branch} not pulled, because local edits touch ${touched.slice(0, 10).join(', ')}`);
+const changes = git(['diff', '--name-status', '--no-renames', '-z', 'HEAD', checked]);
+if (changes.status !== 0) process.exit();
+const fields = changes.stdout.split('\0');
+const incoming = new Map();
+for (let at = 0; at + 1 < fields.length; at += 2) incoming.set(fields[at + 1], fields[at]);
+const touched = localEdits().filter(({ path }) => incoming.has(path));
+const kept = touched.filter(({ status, path }) => status === ' M' && incoming.get(path) === 'D' && lstatSync(path).isFile()).map(({ path }) => path);
+const blocked = touched.filter(({ path }) => !kept.includes(path)).map(({ path }) => path);
+if (blocked.length > 0) {
+  console.log(`setup.mjs: ${behind} commit(s) on origin/${branch} not pulled, because local edits touch ${blocked.slice(0, 10).join(', ')}`);
   process.exit();
 }
-const merged = git(['merge', '--ff-only', '--quiet', upstream]);
-console.log(merged.status === 0 ? `setup.mjs: fast-forwarded ${branch} by ${behind} commit(s)` : `setup.mjs: fast-forward failed: ${merged.stderr.trim()}`);
+const start = out('rev-parse', 'HEAD');
+const keptRoot = join(commonDir, 'pstack-kept');
+if (kept.length > 0) mkdirSync(keptRoot, { recursive: true });
+const saved = kept.length > 0 ? mkdtempSync(join(keptRoot, `${new Date().toISOString().replace(/[:.]/gu, '-')}-`)) : null;
+for (const path of kept) {
+  mkdirSync(dirname(join(saved, path)), { recursive: true });
+  copyFileSync(path, join(saved, path));
+}
+let merged = kept.length > 0 ? git(['--literal-pathspecs', 'checkout', 'HEAD', '--', ...kept]) : { status: 0 };
+if (merged.status === 0) merged = git(['merge', '--no-overwrite-ignore', '--ff-only', '--quiet', checked]);
+const head = out('rev-parse', 'HEAD');
+const pulled = head === checked;
+const sameBytes = (a, b) => {
+  try {
+    return readFileSync(a).equals(readFileSync(b));
+  } catch {
+    return false;
+  }
+};
+const atHead = (path) => git(['--no-optional-locks', '--literal-pathspecs', 'diff', '--quiet', 'HEAD', '--', path]).status === 0;
+if (!pulled && saved && head === start) {
+  for (const path of kept) {
+    if (!atHead(path)) continue;
+    try {
+      copyFileSync(join(saved, path), path);
+    } catch {}
+  }
+  if (kept.every((path) => sameBytes(join(saved, path), path))) rmSync(saved, { recursive: true, force: true });
+}
+const savedTo = saved && existsSync(saved) ? `${kept.slice(0, 10).join(', ')} in ${saved}` : '';
+const failure = merged.stderr?.trim() || merged.error?.message || `git exited with status ${merged.status}`;
+console.log(
+  pulled
+    ? `setup.mjs: fast-forwarded ${branch} by ${behind} commit(s)${savedTo ? `, saving the local edits to ${savedTo}, because those commits delete them` : ''}`
+    : `setup.mjs: fast-forward failed: ${failure}${savedTo ? `; the local edits to ${savedTo} were not all put back` : ''}`,
+);

@@ -20,29 +20,37 @@ export const stepBudget = (config) => {
   if (!Number.isInteger(lines) || lines < 1) throw new Error(`.agents/pstack.json: stepBudget.lines is ${JSON.stringify(lines)}, not a whole number of 1 or more`);
   return { lines, excluded: globMatcher([...STEP_EXCLUDE, `${plansOf(config)}/**`, ...generated.flatMap((entry) => entry.paths ?? []), ...exclude]) };
 };
-export const BIG_STEP = /^big step:\s*\S/u;
-const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as [0-9a-f]{7,40}\b/iu;
-export const liftsStep = (text) =>
+export const isBigStep = (phase, decision) => ['build', 'owner'].includes(phase) && /^big step:\s*\S/u.test(decision);
+const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as [0-9a-f]{7,64}\b/iu;
+const STEP_ID = String.raw`\d{1,9}(?:\.\d{1,9})*[a-z]?`;
+export const STEP_CLOSED = /(?:^|\bstep\s+)(\d+[a-z]?)(?![a-z0-9])[^\t]*?\b(?:landed|published|dropped)\b/iu;
+export const bigStepId = (decision, word) => {
+  const step = decision.match(new RegExp(`^big step:\\s*step (${STEP_ID})(?!\\w|\\.\\d)`, 'iu'))?.[1]?.toLowerCase();
+  return step && plainWord(word ?? '') === `split step ${step}` ? step : null;
+};
+export const liftsStep = (text, ends = () => false) =>
   text.split('\n').reduce((lifted, line) => {
     const [, phase, decision = ''] = line.split('\t');
-    if (phase === 'owner' && BIG_STEP.test(decision)) return true;
-    return LANDED_ROW.test(decision) ? false : lifted;
+    if (isBigStep(phase, decision)) return true;
+    return LANDED_ROW.test(decision) || (phase === 'delivery' && STEP_CLOSED.test(decision)) || ends(line) ? false : lifted;
   }, false);
 export const overBudget = (product, lines) =>
-  `changes ${product} product lines, past the step budget of ${lines}. Split the step into lettered steps that land one by one, such as step 4a and step 4b, each with its own diff round, or log an owner row whose decision starts "big step:" and quotes the owner`;
+  `changes ${product} product lines, past the step budget of ${lines}. Split the step into lettered steps that land one by one, such as step 4a and step 4b, when each lands under the budget, proven by behavior tests of its own, with its own diff round. When no such split exists, log a build row whose decision starts "big step: step 4" and names the split you tried and why it fails, and whose evidence names the plan's Defaults word that reverses it, as "word: split step 4"`;
+
+export const countText = (text) => {
+  const bytes = Buffer.from(text);
+  if (bytes.length === 0 || bytes.includes(0)) return 0;
+  const lines = bytes.toString('utf8').split('\n').length;
+  return bytes.at(-1) === 10 ? lines - 1 : lines;
+};
 
 // Git counts a symlink as the one line of its target path.
 const countLines = (path) => {
-  let text;
   try {
-    if (lstatSync(path).isSymbolicLink()) return 1;
-    text = readFileSync(path);
+    return lstatSync(path).isSymbolicLink() ? 1 : countText(readFileSync(path));
   } catch {
     return 0;
   }
-  if (text.length === 0 || text.includes(0)) return 0;
-  const lines = text.toString('utf8').split('\n').length;
-  return text.at(-1) === 10 ? lines - 1 : lines;
 };
 
 const split = (output) => (output === null ? null : output.split('\0').filter(Boolean));
@@ -61,26 +69,25 @@ const nearestBase = (git, config) => {
   return best;
 };
 
-export function stepLines(top, config, gitAt) {
+export function stepLines(top, config, gitAt, { cached = false, edited, from } = {}) {
   const { excluded } = stepBudget(config);
   const git = (...args) => gitAt(top, ...args);
-  const base = nearestBase(git, config);
-  const fields = base && split(git('diff', '--numstat', '-z', base.sha));
+  const base = from ?? nearestBase(git, config);
+  const fields = base && split(git('diff', ...(cached ? ['--cached'] : []), '--numstat', '-z', base.sha));
   const untracked = fields && split(git('ls-files', '--others', '--exclude-standard', '-z'));
   if (!untracked) return null;
-  const step = { product: 0, base: `${base.ref} at ${base.sha.slice(0, 10)}`, sha: base.sha.slice(0, 10), files: [] };
+  const step = { product: 0, base: `${base.ref} at ${base.sha.slice(0, 10)}`, sha: base.sha.slice(0, 10), from: base, files: [] };
+  const count = (file, lines) => {
+    step.files.push(file);
+    if (lines !== null && !excluded(file)) step.product += lines;
+  };
   for (let at = 0; at < fields.length; at += 1) {
     const [added, deleted, ...rest] = fields[at].split('\t');
     const path = rest.join('\t');
     // A rename's numstat leaves the path empty and names the old and new paths in the next two fields.
-    const file = path === '' ? fields[(at += 2)] : path;
-    step.files.push(file);
-    if (added !== '-' && !excluded(file)) step.product += Number(added) + Number(deleted);
+    count(path === '' ? fields[(at += 2)] : path, added === '-' ? null : Number(added) + Number(deleted));
   }
-  for (const file of untracked) {
-    step.files.push(file);
-    if (!excluded(file)) step.product += countLines(join(top, file));
-  }
+  for (const file of new Set([...untracked, ...(edited ? [edited.path] : [])])) count(file, excluded(file) ? null : file === edited?.path ? edited.lines : countLines(join(top, file)));
   return step;
 }
 
