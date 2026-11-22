@@ -21,6 +21,7 @@ import {
 import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import type { MdRootContent } from '../mdast';
+import { RawHtmlPlugin } from '../RawHtmlPlugin';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import type {
   DeserializeMdContext,
@@ -380,6 +381,7 @@ export const writeBareUrlsSafely = (parent: MdParent) => {
     }
     if (
       child.type !== 'html' ||
+      rawHtmlPieceOf(child) ||
       !BARE_URL_HTML.test(child.value) ||
       (!ENDS_IN_LETTER.test(writtenBefore(parent, index)) &&
         staysBare(child.value, writtenAfter(parent, index)))
@@ -469,7 +471,12 @@ export const encodeMarkdownParagraph = (
     TextApi.isText(only) &&
     only.text === '' &&
     options.preserveEmptyParagraphs !== false
-      ? { ...only, text: EMPTY_PARAGRAPH_TEXT }
+      ? {
+          ...only,
+          // The stand-in is the writer's own text, not raw HTML.
+          ...(options.rawHtml ? { [RawHtmlPlugin.name]: undefined } : {}),
+          text: EMPTY_PARAGRAPH_TEXT,
+        }
       : undefined;
   const children = convertNodesSerialize(
     placeholder ? [placeholder] : node.children,

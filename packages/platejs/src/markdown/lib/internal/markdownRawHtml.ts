@@ -381,22 +381,23 @@ const isBreak = (node: Nodes) =>
   (node.type === 'html' && isMarkdownBreakHtml(node.value));
 const isText = (node: Nodes): node is Html | MdText =>
   node.type === 'html' || node.type === 'text';
-// The writer prints nothing for an emphasis, strong or paragraph whose children
-// print nothing, or for a table whose rows hold no cells.
-const printsNothing = (node: Nodes): boolean =>
+export const printsNoText = (node: Nodes): boolean =>
   isText(node)
     ? node.value === ''
     : node.type === 'table'
       ? node.children.every((row) => row.children.length === 0)
-      : (node.type === 'emphasis' ||
-          node.type === 'paragraph' ||
-          node.type === 'strong') &&
-        node.children.every(printsNothing);
+      : node.type === 'list' || node.type === 'tableRow'
+        ? node.children.length === 0
+        : (node.type === 'emphasis' ||
+            node.type === 'paragraph' ||
+            node.type === 'strong' ||
+            node.type === 'tableCell') &&
+          node.children.every(printsNoText);
 const isWhitespace = (node: Nodes) =>
   node.type === 'text' && /^[\t ]+$/.test(node.value);
 // The writer escapes a space or tab only when it sees the line ending next to
 // it, and it does not see the one an `html` node holds.
-const isBlank = (node: Nodes) => printsNothing(node) || isWhitespace(node);
+const isBlank = (node: Nodes) => printsNoText(node) || isWhitespace(node);
 // The writer prints the line ending an `html` node holds as it is, which ends
 // an ATX heading or a table row.
 const holdsHtmlLineEnding = (node: Nodes): boolean =>
@@ -492,7 +493,7 @@ const findRawHtmlPieces = (
             writing
           );
         }
-        if (!printsNothing(child)) before = child;
+        if (!printsNoText(child)) before = child;
         continue;
       }
       let afterIndex = index + 1;
@@ -597,7 +598,11 @@ const findRawHtmlPieces = (
             wholeParagraph: { paragraph: child, place: flowPlace },
           };
         }
-      } else if (child.type === 'tableCell' && holdsHtmlLineEnding(child)) {
+      } else if (
+        child.type === 'tableCell' &&
+        // The table writer prints a cell outside a row with no pipe before it.
+        (parent.type !== 'tableRow' || holdsHtmlLineEnding(child))
+      ) {
         visitUnknown(child, child);
       } else if (child.type === 'tableCell') {
         visitPhrasing(child, inFootnote ?? 'tableCell', child, {
@@ -621,7 +626,7 @@ const findRawHtmlPieces = (
       } else if ('children' in child) {
         visitUnknown(child, child);
       }
-      if (!printsNothing(child)) {
+      if (!printsNoText(child)) {
         follows = child.type === 'list' ? 'list' : 'block';
       }
     }
@@ -645,11 +650,11 @@ export type RawHtmlBlockRefusal = Readonly<{
  * leaves' text, when its block is one the decision does not model, or when
  * the placement rule refuses it at its place. A paragraph that holds only one
  * piece also passes as an HTML block, which the writer then sets apart with
- * blank lines.
+ * blank lines, or from the next item of its list with that item's marker line.
  */
 export const decideRawHtmlBlocks = (
   tree: Root,
-  decide: ReturnType<typeof createRawHtmlPlacementDecider>,
+  decide: (piece: string, place: RawHtmlPlace) => Decision<string>,
   options: Readonly<{ previousKind?: string; setext: boolean }>
 ): RawHtmlBlockRefusal[] => {
   const blocks = new Map<

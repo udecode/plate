@@ -7,7 +7,9 @@ import type {
   RootContent as MdRootContent,
 } from 'mdast';
 import remarkParse from 'remark-parse';
-import remarkStringify from 'remark-stringify';
+import remarkStringify, {
+  type Options as RemarkStringifyOptions,
+} from 'remark-stringify';
 import { type Processor, type Plugin as UnifiedPlugin, unified } from 'unified';
 
 import {
@@ -22,6 +24,7 @@ import {
   ElementIdPlugin,
   type MarkdownPluginRegistry,
   type RootKey,
+  type Text,
   TextApi,
 } from '../../../core';
 import { sameUpToListIds } from '../../../features/list/lib/listIdentity.internal';
@@ -42,6 +45,7 @@ import { createValidatedContentSlice } from '../../../internal/utils/trustedCont
 import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
 import type { MarkdownPluginState } from '../MarkdownPlugin';
+import { RawHtmlPlugin } from '../RawHtmlPlugin';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import { finishMarkdownLists } from '../serializer/listToMdastTree';
 import type {
@@ -80,6 +84,8 @@ import {
 } from './markdownFrontmatter';
 import {
   getMarkdownParagraphLanding,
+  isRawHtmlFlow,
+  rawHtmlPieceOf,
   remarkSeparateEscapes,
   writeBareUrlsSafely,
 } from './markdownIntrinsics';
@@ -91,6 +97,13 @@ import {
   registerMarkdownMappings,
 } from './markdownMappings';
 import { remarkHoldOpenTail } from './markdownOpenTail';
+import {
+  createRawHtmlPlacementDecider,
+  decideRawHtmlBlocks,
+  type MarkdownReader,
+  printsNoText,
+  type RawHtmlBlockRefusal,
+} from './markdownRawHtml';
 import {
   allocateMarkdownFootnoteLabels,
   remarkResolveMarkdownReferences,
@@ -254,6 +267,13 @@ export const getMergedOptionsDeserialize = (
   return context;
 };
 
+export const writesRawHtml = (
+  runtime: MarkdownRuntime,
+  plainMarks: readonly string[] | null | undefined
+) =>
+  runtime.registry.has(RawHtmlPlugin) &&
+  !plainMarks?.includes(RawHtmlPlugin.name);
+
 export const getMergedOptionsSerialize = (
   runtime: MarkdownRuntime,
   options: MarkdownSerializePolicy = {},
@@ -264,15 +284,26 @@ export const getMergedOptionsSerialize = (
   const { plainMarks, remarkPlugins, remarkStringifyOptions } = runtime.options;
 
   const document = documentOverride ?? runtime.state.value();
+  const plain =
+    options.plainMarks ?? (plainMarks ? [...plainMarks] : plainMarks);
   const context: SerializeMdContext = {
     ...createConversionContext(runtime),
     document,
     lossPolicy: options.lossPolicy ?? 'reject',
     mappings: runtime.formats,
     modelLocation: createMarkdownModelLocator(document),
-    plainMarks:
-      options.plainMarks ?? (plainMarks ? [...plainMarks] : plainMarks),
+    plainMarks: plain,
     preserveEmptyParagraphs: options.preserveEmptyParagraphs,
+    ...(writesRawHtml(runtime, plain)
+      ? {
+          rawHtml: {
+            decide: createRawHtmlPlacementDecider({
+              commonmark: (source) => COMMONMARK.parse(source),
+              editor: (source) => getRawHtmlEditorReader(runtime)(source),
+            }),
+          },
+        }
+      : {}),
     readRoots,
     remarkPlugins: materializeRemarkPlugins(remarkPlugins),
     remarkStringifyOptions:
@@ -309,6 +340,40 @@ const createMarkdownParser = (
     .use(remarkResolveMarkdownReferences)
     .use(onHeldTail ? [[remarkHoldOpenTail, onHeldTail]] : [])
     .use(remarkPlugins);
+
+const COMMONMARK = unified().use(remarkParse).freeze();
+
+// The editor keeps its compiled mappings while its plugins stay the same, so
+// they key a reader that outlives one call. A copy clones the plugin state, so
+// the remark plugins compare one by one.
+const rawHtmlEditorReaders = new WeakMap<
+  CompiledMarkdownMappings,
+  Readonly<{ read: MarkdownReader; remarkPlugins: readonly unknown[] }>
+>();
+
+const getRawHtmlEditorReader = (runtime: MarkdownRuntime) => {
+  const { remarkPlugins } = runtime.options;
+  const cached = rawHtmlEditorReaders.get(runtime.formats);
+
+  if (
+    cached?.remarkPlugins.length === remarkPlugins.length &&
+    cached.remarkPlugins.every(
+      (plugin, index) => plugin === remarkPlugins[index]
+    )
+  ) {
+    return cached.read;
+  }
+  const parser = createMarkdownParser(
+    runtime,
+    materializeRemarkPlugins(remarkPlugins)
+  ).freeze();
+  const read: MarkdownReader = (source) =>
+    parser.runSync(parser.parse(source), source);
+
+  rawHtmlEditorReaders.set(runtime.formats, { read, remarkPlugins });
+
+  return read;
+};
 
 export const markdownToSlateNodesWithRuntime = (
   runtime: MarkdownRuntime,
@@ -419,8 +484,11 @@ const remarkEscapeDollars: UnifiedPlugin<[], Root> = function () {
 const createMarkdownStringifier = (
   context: SerializeMdContext,
   unwritable: MarkdownWriterExtension
-) =>
-  unified()
+) => {
+  const app = context.remarkStringifyOptions;
+  const { join: appJoin, ...appWithoutJoin } = app ?? {};
+
+  return unified()
     .use(remarkMarkdownTagWriter)
     .use(context.remarkPlugins)
     .use(remarkEscapeDollars)
@@ -430,18 +498,68 @@ const createMarkdownStringifier = (
       // After every plugin, so a plugin that replaces the list still gets it.
       (data.toMarkdownExtensions ??= []).push(unwritable);
     })
+    .use(function remarkRawHtmlJoin(this: Processor) {
+      if (!context.rawHtml) return;
+      const settings = this.data('settings') ?? {};
+      // remark-stringify spreads the app's options over the settings, so an
+      // app's `join` key replaces the plugins' joins even when its value is
+      // `undefined`.
+      const join = app && Object.hasOwn(app, 'join') ? appJoin : settings.join;
+
+      // The writer reads `join` from the end, so this one decides first:
+      // outside a list's own items, an HTML block of marked text ends only at
+      // a blank line.
+      this.data('settings', {
+        ...settings,
+        join: [...(join ?? []), joinRawHtmlFlow],
+      });
+    })
     .use(remarkStringify, {
       emphasis: '_',
       resourceLink: false,
-      ...context.remarkStringifyOptions,
+      ...(context.rawHtml ? appWithoutJoin : app),
     });
+};
+
+// Only a list, list item or quote can hold a flow piece that passes, so a join
+// looks for one at a block's edge only through them.
+const flowEdgeOf = (node: Nodes, edge: 'first' | 'last'): Nodes | undefined => {
+  if (
+    node.type !== 'blockquote' &&
+    node.type !== 'list' &&
+    node.type !== 'listItem'
+  ) {
+    return node;
+  }
+  const prints = (child: Nodes) => !printsNoText(child);
+  const child =
+    edge === 'first'
+      ? node.children.find(prints)
+      : node.children.findLast(prints);
+
+  return child && flowEdgeOf(child, edge);
+};
+
+const joinRawHtmlFlow: NonNullable<RemarkStringifyOptions['join']>[number] = (
+  left,
+  right,
+  parent
+) =>
+  // Each list item opens on a marker line, which ends the item before it, so
+  // a tight list stays tight.
+  parent.type !== 'list' &&
+  [flowEdgeOf(left, 'last'), flowEdgeOf(right, 'first')].some(
+    (node) => node !== undefined && isRawHtmlFlow(node)
+  )
+    ? 1
+    : undefined;
 
 const emptyRootStartsWithByteOrderMark = (context: SerializeMdContext) =>
   createMarkdownStringifier(context, {})
     .stringify({ children: [], type: 'root' })
     .startsWith(BYTE_ORDER_MARK);
 
-const writeMarkdownBody = (context: SerializeMdContext) => {
+const encodeMarkdownBody = (context: SerializeMdContext) => {
   const unwritable: MarkdownWriterExtension & {
     handlers: Record<string, (node: { type: string }) => string>;
   } = { handlers: {} };
@@ -520,8 +638,146 @@ const writeMarkdownBody = (context: SerializeMdContext) => {
   );
 
   return {
-    data: toRemarkProcessor.stringify(transformed),
-    lastKind: written.at(-1)?.type,
+    lastKind: written.findLast((node) => !printsNoText(node))?.type,
+    processor: toRemarkProcessor,
+    tree: transformed,
+  };
+};
+
+const SETEXT_PROBE: Root = {
+  children: [
+    { children: [{ type: 'text', value: 'x' }], depth: 1, type: 'heading' },
+  ],
+  type: 'root',
+};
+
+// The writer merges `setext` from settings, options and extensions, so ask it.
+const writesSetext = (
+  processor: ReturnType<typeof createMarkdownStringifier>
+) => processor.stringify(SETEXT_PROBE).includes('\n=');
+
+const REFUSAL_ROUNDS = 3;
+
+const holdsRawHtmlPiece = (node: Nodes): boolean =>
+  rawHtmlPieceOf(node) !== undefined ||
+  ('children' in node && node.children.some(holdsRawHtmlPiece));
+
+const markedLeavesOf = (nodes: readonly Descendant[]): Text[] =>
+  nodes.flatMap((node) =>
+    TextApi.isText(node)
+      ? node[RawHtmlPlugin.name] === true
+        ? [node]
+        : []
+      : markedLeavesOf(node.children)
+  );
+
+/**
+ * With `RawHtmlPlugin` installed and its mark not in `plainMarks`, each block
+ * of marked text decides on the tree
+ * the writer prints, and the document encodes again with every leaf of each
+ * failing block refused, so the writers escape that text as they escape any
+ * text. A refused leaf can sit in another block too, so encoding repeats until
+ * no block fails, for at most `REFUSAL_ROUNDS` rounds, because a chain of
+ * blocks that share leaves would otherwise encode once per leaf. `previousKind` is the
+ * type of the last root node the copied chunk before this one printed.
+ */
+const writeMarkdownBody = (
+  context: SerializeMdContext,
+  previousKind?: string
+) => {
+  const { rawHtml } = context;
+
+  if (!rawHtml) {
+    const { lastKind, processor, tree } = encodeMarkdownBody(context);
+
+    return { data: processor.stringify(tree), holdsRawHtml: false, lastKind };
+  }
+  let setext: boolean | undefined;
+  const encode = (refused?: ReadonlySet<Text> | 'all') => {
+    const diagnostics = new MarkdownDiagnostics();
+    const readRoots = new Set<RootKey>();
+    const body = encodeMarkdownBody({
+      ...context,
+      // Each encode is a conversion of its own, so its list audit starts empty.
+      operation: {},
+      rawHtml: { ...rawHtml, refused },
+      readRoots,
+      report: diagnostics.report,
+    });
+    const holdsRawHtml = holdsRawHtmlPiece(body.tree);
+    const options = {
+      previousKind,
+      setext: holdsRawHtml && (setext ??= writesSetext(body.processor)),
+    };
+
+    return {
+      ...body,
+      diagnostics,
+      failing: holdsRawHtml
+        ? decideRawHtmlBlocks(body.tree, rawHtml.decide, options)
+        : [],
+      holdsRawHtml,
+      options,
+      readRoots,
+    };
+  };
+  let body = encode();
+  const documentLeaves = new Set(
+    body.failing.length > 0
+      ? markedLeavesOf([
+          ...context.value,
+          ...Object.values(context.document.roots ?? {}).flat(),
+        ])
+      : []
+  );
+  const report = ({ leaves, reason }: RawHtmlBlockRefusal) =>
+    context.report({
+      code: 'markdown-unsafe-content',
+      impact: 'lossless',
+      message: `Markdown raw HTML cannot be written as HTML at its place (${reason}); it was written as text.`,
+      model: context.modelLocation(
+        leaves.find((leaf) => documentLeaves.has(leaf)) ?? leaves[0]
+      ),
+      nodeType: 'html',
+      phase: 'serialize',
+      severity: 'warning',
+    });
+  const refused = new Set<Text>();
+
+  for (let round = 0; body.failing.length > 0; round += 1) {
+    const copied = body.failing.some(({ leaves }) =>
+      leaves.some((leaf) => !documentLeaves.has(leaf))
+    );
+
+    if (copied || round === REFUSAL_ROUNDS) {
+      const reason = copied ? 'copied-leaf' : 'shared-leaf';
+
+      // A mapping that copies marked leaves defeats refusal by object, so
+      // every block that still holds marked text writes it as text.
+      decideRawHtmlBlocks(
+        body.tree,
+        () => ({ ok: false, reason }),
+        body.options
+      ).forEach(report);
+      body = encode('all');
+      break;
+    }
+    for (const block of body.failing) {
+      report(block);
+      block.leaves.forEach((leaf) => refused.add(leaf));
+    }
+    body = encode(new Set(refused));
+  }
+  // Writers report while they print too.
+  const data = body.processor.stringify(body.tree);
+
+  body.diagnostics.all().forEach(context.report);
+  body.readRoots.forEach((root) => context.readRoots.add(root));
+
+  return {
+    data,
+    holdsRawHtml: body.holdsRawHtml,
+    lastKind: body.lastKind,
   };
 };
 
@@ -1439,7 +1695,7 @@ const writeMarkdownDocument = (
     return `${emptyRootStartsWithByteOrderMark(context) ? BYTE_ORDER_MARK : ''}${frontmatter}`;
   }
 
-  const { data, lastKind } = writeMarkdownBody(context);
+  const { data, holdsRawHtml, lastKind } = writeMarkdownBody(context);
   const insertAfterRootByteOrderMark = (text: string, body: string) => {
     const rootMarkLength =
       body.startsWith(BYTE_ORDER_MARK) &&
@@ -1451,7 +1707,13 @@ const writeMarkdownDocument = (
   };
 
   if (frontmatter !== null) {
-    return insertAfterRootByteOrderMark(frontmatter, data);
+    // A reader without front matter reads `+++` as paragraph text, which
+    // neither an HTML block of a tag outside CommonMark's block list, such as
+    // `<span>`, nor an ordered list that starts past 1 can interrupt.
+    return insertAfterRootByteOrderMark(
+      holdsRawHtml ? `${frontmatter}\n` : frontmatter,
+      data
+    );
   }
   if (!readsBackMarkdownFrontmatter(runtime, context, data)) return data;
 
@@ -1525,21 +1787,21 @@ export const serializeMarkdownWithRuntime = (
 export const serializeMarkdownSliceWithRuntime = (
   runtime: MarkdownRuntime,
   children: Element[],
-  roots?: ContentSlice['roots']
-): MarkdownSerializeResult => {
+  roots?: ContentSlice['roots'],
+  previousKind?: string
+) => {
   const diagnostics = new MarkdownDiagnostics();
-
-  return finishMarkdownSerialize(
-    writeMarkdownBody(
-      getMergedOptionsSerialize(
-        runtime,
-        {},
-        createContentFormatDocument({ content: children, roots }),
-        diagnostics
-      )
-    ).data,
-    diagnostics
+  const { data, lastKind } = writeMarkdownBody(
+    getMergedOptionsSerialize(
+      runtime,
+      {},
+      createContentFormatDocument({ content: children, roots }),
+      diagnostics
+    ),
+    previousKind
   );
+
+  return { lastKind, result: finishMarkdownSerialize(data, diagnostics) };
 };
 
 const finishMarkdownSerialize = (

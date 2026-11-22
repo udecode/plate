@@ -22,6 +22,7 @@ import type {
   RuntimePluginReference,
 } from '../../facade';
 import type { CompiledMarkdownMappings } from './internal/markdownMappings';
+import type { createRawHtmlPlacementDecider } from './internal/markdownRawHtml';
 import type {
   MdDelete,
   MdEmphasis,
@@ -330,6 +331,15 @@ export type SerializeMdContext = Readonly<
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;
     modelLocation: (node: Descendant) => MarkdownModelLocation | undefined;
+    /**
+     * Set when `RawHtmlPlugin` is installed and `plainMarks` does not name its
+     * mark: marked text writes as raw HTML
+     * unless `refused` holds its leaf or is `all`.
+     */
+    rawHtml?: Readonly<{
+      decide: ReturnType<typeof createRawHtmlPlacementDecider>;
+      refused?: ReadonlySet<Text> | 'all';
+    }>;
     readRoots: Set<RootKey>;
     report: (diagnostic: MarkdownDiagnostic) => void;
     remarkPlugins: Pluggable[];

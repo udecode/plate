@@ -17,6 +17,7 @@ import { ReportedMarkdownFailureError } from './markdownDiagnostics';
 import { toMarkdownBlockContent } from './markdownDocument';
 import {
   BARE_URL_HTML,
+  rawHtmlPieceOf,
   readEmptyParagraphMarker,
   TRAILING_BREAK_HTML,
 } from './markdownIntrinsics';
@@ -267,6 +268,9 @@ const lowerPhrasing = (
         return [{ ...child, value: escaped }];
       }
       case 'html': {
+        // Its block's decision judges the leaf's own text, so a rewrite here
+        // would hide a `|` or a line ending from it.
+        if (rawHtmlPieceOf(child)) return [child];
         if (child.value === TRAILING_BREAK_HTML) return [html('<br />')];
 
         const value = child.value.replace(LINE_ENDINGS, ' ');

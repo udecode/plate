@@ -35,6 +35,7 @@ import {
   serializeMarkdownSliceWithRuntime,
   serializeMarkdownWithRuntime,
   withMarkdownRuntime,
+  writesRawHtml,
 } from './internal/markdownConversion';
 import { markdownMappingsRegistryKey } from './internal/markdownMappings';
 import type {
@@ -166,7 +167,7 @@ const serializeMarkdownDataTransferSlice = (
   state: EditorCoreStateView
 ): string | null => {
   if (slice.openStart === 0 && slice.openEnd === 0) {
-    const result = serializeMarkdownSliceWithRuntime(
+    const { result } = serializeMarkdownSliceWithRuntime(
       runtime,
       toMarkdownBlocks(runtime, slice.content),
       slice.roots
@@ -175,11 +176,21 @@ const serializeMarkdownDataTransferSlice = (
     return result.ok ? result.data : null;
   }
   let failed = false;
+  // Each chunk prints apart from the others, so it learns what the last
+  // chunk that printed something printed last. Text written as it is may end
+  // in a list, so it counts as one, the strict reading.
+  let previousKind: string | undefined;
+  const verbatim = (text: string) => {
+    if (text.trim()) previousKind = 'list';
+
+    return text;
+  };
   const serialize = (children: readonly Descendant[]) => {
-    const result = serializeMarkdownSliceWithRuntime(
+    const { lastKind, result } = serializeMarkdownSliceWithRuntime(
       runtime,
       toMarkdownBlocks(runtime, children),
-      slice.roots
+      slice.roots,
+      previousKind
     );
 
     if (!result.ok) {
@@ -188,7 +199,14 @@ const serializeMarkdownDataTransferSlice = (
       return '';
     }
 
-    return result.data;
+    // Raw HTML keeps its trailing spaces, so only the final line endings go.
+    const data = writesRawHtml(runtime, runtime.options.plainMarks)
+      ? result.data.replace(/\n+$/, '')
+      : result.data.trimEnd();
+
+    if (data.trim()) previousKind = lastKind;
+
+    return data;
   };
   const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   const serializeOpenNodes = (
@@ -214,9 +232,9 @@ const serializeMarkdownDataTransferSlice = (
     openEnd: number
   ): string => {
     if ((openStart === 0 && openEnd === 0) || !ElementApi.isElement(node)) {
-      return serialize([node]).trimEnd();
+      return serialize([node]);
     }
-    if (typeof node.rawCode === 'string') return node.rawCode;
+    if (typeof node.rawCode === 'string') return verbatim(node.rawCode);
 
     const hasOnlyInlineChildren = node.children.every(
       (child) => !ElementApi.isElement(child) || state.schema.isInline(child)
@@ -226,7 +244,7 @@ const serializeMarkdownDataTransferSlice = (
       hasOnlyInlineChildren &&
       state.schema.element(node.type)?.slice.preserveContext
     ) {
-      return NodeApi.string(node);
+      return verbatim(NodeApi.string(node));
     }
     if (hasOnlyInlineChildren) {
       return serialize([
@@ -234,7 +252,7 @@ const serializeMarkdownDataTransferSlice = (
           children: node.children,
           type: paragraphType,
         },
-      ]).trimEnd();
+      ]);
     }
     const unwrapped = serializeOpenNodes(
       node.children,
@@ -244,7 +262,7 @@ const serializeMarkdownDataTransferSlice = (
 
     return unwrapped.trim()
       ? unwrapped
-      : node.children.map(NodeApi.string).join('\n');
+      : verbatim(node.children.map(NodeApi.string).join('\n'));
   };
   const data =
     slice.content.length === 0
