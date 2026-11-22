@@ -58,7 +58,7 @@
     {
       "id": "2026-11-20-code-block-color-blocks-through-one-5dea8edc",
       "kind": "behavior",
-      "summary": "Color highlighted code through `--syntax-*` CSS variables with light and dark values, such as `--syntax-keyword` and `--syntax-string`, which the new `code-syntax-style` item adds to your stylesheet. Change a variable once to restyle the editor, the CodeMirror view and static output. Built-in names such as Python's `str` now take the built-in color, and language names such as `console` and `this`, template tags and template variables take the keyword color.",
+      "summary": "Color highlighted code through `--syntax-*` CSS variables with light and dark values, such as `--syntax-keyword` and `--syntax-string`, which the new `code-syntax-style` item adds to your stylesheet. Change a variable once to restyle the editor, the CodeMirror view and static output. Built-in names such as Python's `str` now take the built-in color, and language names such as `console` and `this`, template tags and template variables take the keyword color. Every syntax color reads at a contrast of 4.5:1 or more on the code block in light and dark mode, and Markdown list bullets get their own dark color.",
       "details": [],
       "migrationNotes": [
         "Copying the new code-block or code-block-static by hand also needs the code-syntax-style variables in your stylesheet; the shadcn CLI adds them."
@@ -77,7 +77,7 @@
     {
       "id": "2026-11-20-docx-export-code-colors-match-2b41c7e0",
       "kind": "fix",
-      "summary": "Fix Word export code colors that differed from the editor. Code in a Word file uses the light values of the syntax variables, including the diff background colors and the comment color for inline code in Markdown.",
+      "summary": "Fix Word export code colors that differed from the editor. Code in a Word file uses the light values of the syntax variables, including the diff background colors and the comment color for inline code in Markdown. Every code color reads at a contrast of 4.5:1 or more on the gray code background.",
       "details": [],
       "migrationNotes": [],
       "targets": ["docx-export"],

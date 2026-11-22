@@ -1,5 +1,5 @@
 {
-  "generation": "30372497a233a1cb2e9d65c90771fd502834b64edb4733dc0f1370d65f76ac9e",
+  "generation": "c815276c54b838e4b13a0e4bd534e8b05b2a1c248d0d10d11635a235a3291a9d",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -4806,8 +4806,8 @@
               "syntax-keyword": "#ee6960",
               "syntax-constant": "#6596cf",
               "syntax-built-in": "#c3854e",
-              "syntax-bullet": "#735c0f",
-              "syntax-comment": "#6a737d",
+              "syntax-bullet": "#967e38",
+              "syntax-comment": "#78828c",
               "syntax-tag": "#36a84f",
               "syntax-string": "#3593ff",
               "syntax-section": "#61a5f2",
@@ -4818,16 +4818,16 @@
               "syntax-deletion-background": "#473235"
             },
             "light": {
-              "syntax-keyword": "#d73a49",
+              "syntax-keyword": "#d13344",
               "syntax-constant": "#005cc5",
-              "syntax-built-in": "#e36209",
+              "syntax-built-in": "#bc4f01",
               "syntax-bullet": "#735c0f",
-              "syntax-comment": "#6a737d",
-              "syntax-tag": "#22863a",
+              "syntax-comment": "#68717b",
+              "syntax-tag": "#1b8136",
               "syntax-string": "#032f62",
               "syntax-section": "#005cc5",
               "syntax-title": "#6f42c1",
-              "syntax-addition": "#22863a",
+              "syntax-addition": "#1b8136",
               "syntax-addition-background": "#f0fff4",
               "syntax-deletion": "#b31d28",
               "syntax-deletion-background": "#ffeef0"
@@ -12392,8 +12392,8 @@
               "syntax-keyword": "#ee6960",
               "syntax-constant": "#6596cf",
               "syntax-built-in": "#c3854e",
-              "syntax-bullet": "#735c0f",
-              "syntax-comment": "#6a737d",
+              "syntax-bullet": "#967e38",
+              "syntax-comment": "#78828c",
               "syntax-tag": "#36a84f",
               "syntax-string": "#3593ff",
               "syntax-section": "#61a5f2",
@@ -12404,16 +12404,16 @@
               "syntax-deletion-background": "#473235"
             },
             "light": {
-              "syntax-keyword": "#d73a49",
+              "syntax-keyword": "#d13344",
               "syntax-constant": "#005cc5",
-              "syntax-built-in": "#e36209",
+              "syntax-built-in": "#bc4f01",
               "syntax-bullet": "#735c0f",
-              "syntax-comment": "#6a737d",
-              "syntax-tag": "#22863a",
+              "syntax-comment": "#68717b",
+              "syntax-tag": "#1b8136",
               "syntax-string": "#032f62",
               "syntax-section": "#005cc5",
               "syntax-title": "#6f42c1",
-              "syntax-addition": "#22863a",
+              "syntax-addition": "#1b8136",
               "syntax-addition-background": "#f0fff4",
               "syntax-deletion": "#b31d28",
               "syntax-deletion-background": "#ffeef0"
