@@ -275,8 +275,7 @@ const packageDiff = () =>
 
 // Steps run side by side within the worker share that land.mjs reserves for
 // its checks. `cores` is how many of those slots a step occupies, default 1,
-// passed to its command as CHECK_CORES, which only `pnpm test` reads; the
-// steps at 4 fan out to many workers themselves. Two steps that name the
+// passed to its command as CHECK_CORES. Two steps that name the
 // same folder in `holds` never overlap, because one of them writes it. An
 // `alone` step runs after every other step, one at a time, for the reason its
 // value gives. Under --affected, the `quick` steps run first and the rest
