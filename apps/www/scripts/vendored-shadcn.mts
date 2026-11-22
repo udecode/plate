@@ -20,7 +20,25 @@ export const SHADCN_INSTALL_MARKERS = [
   'cn-rtl-flip',
 ] as const;
 
-export const SHADCN_UI_COPIES = ['toggle', 'tooltip'] as const;
+export const SHADCN_UI_COPIES = [
+  'alert-dialog',
+  'avatar',
+  'button',
+  'calendar',
+  'checkbox',
+  'command',
+  'context-menu',
+  'dialog',
+  'dropdown-menu',
+  'hover-card',
+  'input',
+  'input-group',
+  'popover',
+  'separator',
+  'textarea',
+  'toggle',
+  'tooltip',
+] as const;
 
 export type ShadcnUiCopy = (typeof SHADCN_UI_COPIES)[number];
 

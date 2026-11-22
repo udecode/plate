@@ -6,6 +6,9 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@/app/(create)/components/icon-placeholder": [
+        "./src/components/site-registry/icon-placeholder"
+      ],
       "@/registry/components/editor/context-menu": [
         "./src/components/site-registry/context-menu"
       ],
