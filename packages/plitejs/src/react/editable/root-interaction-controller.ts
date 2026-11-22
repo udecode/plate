@@ -27,6 +27,7 @@ import {
   type DOMPhase,
   type DOMPhaseScheduler,
   type DOMPhaseTiming,
+  getTextFlowPointAtCoordinates,
   resolveDOMTargetView,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
@@ -909,28 +910,37 @@ const resolveCoordinatePlacementTarget = ({
   event: MouseEvent<HTMLElement>;
   placement: NonNullable<PliteStringCoordinatePlacement>;
 }) => {
-  const range = resolvePliteStringPlacementRange({ editor, placement });
+  const textFlowHost =
+    placement.offset == null
+      ? placement.string.closest<HTMLElement>(
+          '[data-editor-text-flow-host="true"]'
+        )
+      : null;
+  const textFlowPoint = textFlowHost
+    ? getTextFlowPointAtCoordinates({
+        host: textFlowHost,
+        x: event.clientX,
+        y: event.clientY,
+      })
+    : null;
+  const textFlowCaret = textFlowPoint
+    ? editor.api.dom.resolvePoint([textFlowPoint[0], textFlowPoint[1]], {
+        exactMatch: false,
+      })
+    : null;
 
-  if (
-    range &&
-    placement.offset == null &&
-    placement.string.closest('[data-editor-text-flow-host="true"]')
-  ) {
-    const native = editor.api.dom.resolveEventRange(event.nativeEvent);
-
-    if (
-      native &&
-      RangeApi.isCollapsed(native) &&
-      PathApi.equals(native.anchor.path, range.anchor.path) &&
-      native.anchor.offset !== range.anchor.offset
-    ) {
-      return { placementDOMPoint: null, range: native };
-    }
+  if (textFlowPoint && textFlowCaret) {
+    return {
+      placementDOMPoint: { node: textFlowPoint[0], offset: textFlowPoint[1] },
+      range: { anchor: textFlowCaret, focus: textFlowCaret },
+    };
   }
 
   return {
     placementDOMPoint: getPliteStringPlacementDOMPoint(placement),
-    range: range ?? editor.api.dom.resolveEventRange(event.nativeEvent),
+    range:
+      resolvePliteStringPlacementRange({ editor, placement }) ??
+      editor.api.dom.resolveEventRange(event.nativeEvent),
   };
 };
 

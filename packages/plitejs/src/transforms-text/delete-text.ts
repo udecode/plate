@@ -2,8 +2,10 @@ import { createAnchor } from '../core/anchor';
 import { jsonEqual } from '../core/change/json';
 import { refuseTextWriteInStruck } from '../core/content-landing';
 import { getEditorSchema } from '../core/editor-runtime';
+import { holdsOneText } from '../core/editor-schema';
 import { joinKeepsPrefixOccupant } from '../core/prefix-occupant-join';
 import {
+  applyBuiltDocumentChange,
   getActiveUpdateRoot,
   getChildList,
   getCurrentSelection,
@@ -61,7 +63,11 @@ import {
   withoutUnheldDefaultsBeside,
 } from '../internal/range-text-marks';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
-import { mergeNodes, removeNodes } from '../transforms-node';
+import {
+  mergeNodes,
+  removeNodes,
+  splitNodesKeepingType,
+} from '../transforms-node';
 import {
   getEmptyBlockBesideGrid,
   getGridBesideBlockEdge,
@@ -1541,11 +1547,59 @@ const getCollapsedDeleteTarget = (
   return pointTarget;
 };
 
-const mergeBlocksAtPoint = (
+const oneTextLineEndAt = (
   editor: Editor,
-  point: import('../interfaces').Point,
+  point: Point,
   voids: boolean
+): { block: Path; offset: number } | null => {
+  const block = editorAbove(editor, {
+    at: point,
+    match: (node): node is EditorElement =>
+      NodeApi.isElement(node) && editorIsBlock(editor, node),
+    mode: 'lowest',
+    voids,
+  });
+  const [text] = block?.[0].children ?? [];
+
+  if (
+    !block ||
+    block[0].children.length !== 1 ||
+    !TextApi.isText(text) ||
+    typeof block[0].type !== 'string' ||
+    !holdsOneText(getEditorSchema(editor), block[0].type)
+  ) {
+    return null;
+  }
+
+  const offset = text.text.indexOf('\n', point.offset);
+
+  return offset === -1 ? null : { block: block[1], offset };
+};
+
+const splitOffLinesAfter = (
+  editor: Editor,
+  { block, offset }: { block: Path; offset: number }
 ) => {
+  splitNodesKeepingType(editor, {
+    always: true,
+    at: { offset, path: [...block, 0] },
+    match: (_node, path) => PathApi.equals(path, block),
+  });
+  applyBuiltDocumentChange(editor, (builder, root) =>
+    builder.removeText(root, [...PathApi.next(block), 0], 0, '\n')
+  );
+};
+
+const mergeBlocksAtPoint = (editor: Editor, point: Point, voids: boolean) => {
+  const lineEnd = oneTextLineEndAt(editor, point, voids);
+
+  if (lineEnd?.offset === point.offset) {
+    applyBuiltDocumentChange(editor, (builder, root) =>
+      builder.removeText(root, [...lineEnd.block, 0], lineEnd.offset, '\n')
+    );
+    return;
+  }
+  if (lineEnd) splitOffLinesAfter(editor, lineEnd);
   mergeNodes(editor, {
     at: point,
     hanging: true,

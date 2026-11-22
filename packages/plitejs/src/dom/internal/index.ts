@@ -49,6 +49,7 @@ export {
   getPliteStringPlacementDOMPoint,
   getPliteTextHostBounds,
   getPliteTextHostStrings,
+  getTextFlowPointAtCoordinates,
   hasUsableDOMRect,
 } from '../plugin/dom-geometry';
 export {

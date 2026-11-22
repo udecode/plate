@@ -1,5 +1,5 @@
 /**
- * Copied from prism-react-renderer repo
+ * Adapted from prism-react-renderer repo
  * https://github.com/FormidableLabs/prism-react-renderer/blob/master/src/utils/normalizeTokens.js
  */
 
@@ -9,24 +9,9 @@ type PrismToken = Prism.Token;
 type Token = {
   types: string[];
   content: string;
-  empty?: boolean;
 };
 
 const newlineRe = /\r\n|\r|\n/;
-
-// Empty lines need to contain a single empty token, denoted with { empty: true }
-const normalizeEmptyLines = (line: Token[]) => {
-  if (line.length === 0) {
-    line.push({
-      types: ['plain'],
-      content: '\n',
-      empty: true,
-    });
-  } else if (line.length === 1 && line[0].content === '') {
-    line[0].content = '\n';
-    line[0].empty = true;
-  }
-};
 
 const appendTypes = (types: string[], add: string[] | string): string[] => {
   const typesSize = types.length;
@@ -100,7 +85,6 @@ export const normalizeTokens = (
 
       // Create a new line for each string on a new line
       for (let innerI = 1; innerI < newlineCount; innerI++) {
-        normalizeEmptyLines(currentLine);
         currentLine = [];
         acc.push(currentLine);
         currentLine.push({ types, content: splitByNewlines[innerI] });
@@ -115,6 +99,5 @@ export const normalizeTokens = (
     tokenArrSizeStack.pop();
   }
 
-  normalizeEmptyLines(currentLine);
   return acc;
 };

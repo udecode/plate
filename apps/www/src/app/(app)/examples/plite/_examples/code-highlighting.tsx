@@ -7,6 +7,7 @@ import {
   type Path,
   type Point,
   type Range,
+  schema,
 } from 'plitejs';
 import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
@@ -44,6 +45,11 @@ const CodeBlockType = 'code-block';
 const CodeIndent = '  ';
 
 const CodeBlockTextPastePlugin = definePlugin('codeBlockTextPaste', {
+  schema: {
+    elements: {
+      [CodeBlockType]: { content: schema.content.text({ max: 1, min: 1 }) },
+    },
+  },
   commands: ({ around }) => [
     around(domCommands.insertData, ({ input, next, state }) => {
       const text = input.getData('text/plain');

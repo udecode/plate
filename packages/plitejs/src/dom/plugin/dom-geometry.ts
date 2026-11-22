@@ -1324,6 +1324,198 @@ const getElementTextNodes = (element: Element) => {
   return nodes;
 };
 
+const TEXT_FLOW_LINE_BREAKS = /\r\n|[\n\r]/g;
+const TEXT_FLOW_UNPAINTED = /^(?:\r\n|[\n\r\uFEFF])$/;
+
+// The browser's caret for a point beside a line can land on another line.
+export const getTextFlowPointAtCoordinates = ({
+  host,
+  x,
+  y,
+}: {
+  host: HTMLElement;
+  x: number;
+  y: number;
+}): DOMGeometryPoint | null => {
+  const nodes = getElementTextNodes(host).filter((node) => node.data !== '');
+  const starts: number[] = [];
+  let text = '';
+
+  for (const node of nodes) {
+    starts.push(text.length);
+    text += node.data;
+  }
+
+  const range = host.ownerDocument.createRange();
+  const nodeIndexAt = (index: number) => {
+    let low = 0;
+    let high = nodes.length - 1;
+
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+
+      if (starts[middle] <= index) low = middle;
+      else high = middle - 1;
+    }
+
+    return low;
+  };
+  const pointAt = (index: number): DOMGeometryPoint => {
+    const nodeIndex = nodeIndexAt(index);
+
+    return [nodes[nodeIndex], index - starts[nodeIndex]];
+  };
+  const paintedUnitAt = (from: number, step: -1 | 1) => {
+    for (let index = from; index >= 0 && index < text.length; index += step) {
+      if (TEXT_FLOW_UNPAINTED.test(text[index])) continue;
+
+      const [node, offset] = pointAt(index);
+
+      range.setStart(node, offset);
+      range.setEnd(node, offset + 1);
+
+      const rect = getUsableRangeRects(range)[0];
+
+      if (rect) return { index, rect };
+    }
+
+    return null;
+  };
+
+  const firstIndexEndingBelowY = () => {
+    let low = 0;
+    let high = text.length;
+
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      const unit = paintedUnitAt(middle, 1);
+
+      if (!unit || unit.rect.bottom > y) high = middle;
+      else low = middle + 1;
+    }
+
+    return low;
+  };
+
+  const split = firstIndexEndingBelowY();
+  const below = paintedUnitAt(split, 1);
+  const above = split > 0 ? paintedUnitAt(split - 1, -1) : null;
+  const nearest =
+    below &&
+    (!above ||
+      getRectVerticalDistance(below.rect, y) <=
+        getRectVerticalDistance(above.rect, y))
+      ? below
+      : above;
+
+  if (!nearest) return null;
+
+  if (!below || below.rect.top > y) {
+    const from = above ? above.index + 1 : 0;
+    const breaks = [
+      ...text
+        .slice(from, below?.index ?? text.length)
+        .matchAll(TEXT_FLOW_LINE_BREAKS),
+    ];
+    const breaksEndingAbove = above ? 1 : 0;
+    const emptyRows = breaks.length - breaksEndingAbove;
+
+    if (emptyRows > 0) {
+      const height =
+        above && below
+          ? (below.rect.top - above.rect.bottom) / emptyRows
+          : nearest.rect.height;
+      const top = above
+        ? above.rect.bottom
+        : nearest.rect.top - emptyRows * height;
+      const row = Math.max(
+        0,
+        Math.min(emptyRows - 1, Math.floor((y - top) / height))
+      );
+      const previousBreak = above ? breaks[row] : breaks[row - 1];
+
+      return pointAt(
+        previousBreak
+          ? from + previousBreak.index + previousBreak[0].length
+          : from
+      );
+    }
+  }
+
+  const lineStart =
+    Math.max(
+      text.lastIndexOf('\n', nearest.index),
+      text.lastIndexOf('\r', nearest.index)
+    ) + 1;
+  const lineEnd = Math.min(
+    ...['\n', '\r'].map((lineBreak) => {
+      const index = text.indexOf(lineBreak, nearest.index);
+
+      return index === -1 ? text.length : index;
+    })
+  );
+  let best: { distance: number; point: DOMGeometryPoint } | null = null;
+  let onLine = false;
+
+  for (
+    let nodeIndex = nodeIndexAt(lineStart);
+    nodeIndex < nodes.length && starts[nodeIndex] < lineEnd;
+    nodeIndex++
+  ) {
+    const node = nodes[nodeIndex];
+    const from = Math.max(lineStart - starts[nodeIndex], 0);
+    const to = Math.min(lineEnd - starts[nodeIndex], node.data.length);
+    const direction = getElementDirection(node.parentElement);
+    const offsets = getGraphemeBoundaryOffsets(node.data.slice(from, to));
+
+    for (let index = 0; index < offsets.length - 1; index++) {
+      const start = from + offsets[index];
+      const end = from + offsets[index + 1];
+
+      if (TEXT_FLOW_UNPAINTED.test(node.data.slice(start, end))) continue;
+
+      range.setStart(node, start);
+      range.setEnd(node, end);
+
+      const rects = getUsableRangeRects(range);
+      const rect = rects.find(
+        (candidate) =>
+          getRectOverlap(candidate, nearest.rect) > VISUAL_LINE_TOLERANCE
+      );
+
+      if (!rect) {
+        const pastWrappedLine = onLine && rects.length > 0;
+
+        if (pastWrappedLine) return best?.point ?? null;
+        continue;
+      }
+
+      onLine = true;
+
+      if (x >= rect.left && x <= rect.right) {
+        const midpoint = rect.left + rect.width / 2;
+        const beforeMidpoint =
+          direction === 'rtl' ? x > midpoint : x <= midpoint;
+
+        return [node, beforeMidpoint ? start : end];
+      }
+
+      for (const [offset, edgeX] of [
+        [start, direction === 'rtl' ? rect.right : rect.left],
+        [end, direction === 'rtl' ? rect.left : rect.right],
+      ] as const) {
+        const distance = Math.abs(edgeX - x);
+
+        if (!best || distance < best.distance) {
+          best = { distance, point: [node, offset] };
+        }
+      }
+    }
+  }
+
+  return best?.point ?? null;
+};
+
 const getTextOffsetInVisualLineByX = ({
   line,
   textNode,
