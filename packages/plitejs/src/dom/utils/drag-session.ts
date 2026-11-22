@@ -10,6 +10,14 @@ const REPAINTS = new WeakMap<
   Document,
   Readonly<{ owner: object; repaint: () => void }>
 >();
+const RESTS = new WeakMap<
+  Document,
+  Readonly<{
+    key: string;
+    owner: object;
+    timer: ReturnType<typeof setTimeout>;
+  }>
+>();
 const CONSUMED = new WeakMap<Document, string>();
 
 export type DragSession = Readonly<{
@@ -32,6 +40,16 @@ const readToken = (dataTransfer: Pick<DataTransfer, 'getData'>) => {
   } catch {
     return null;
   }
+};
+
+/** Cancels the pending rest, or only `owner`'s, as when a drag leaves its view. */
+export const cancelDragRest = (document: Document, owner?: object) => {
+  const rest = RESTS.get(document);
+
+  if (!rest || (owner && rest.owner !== owner)) return;
+
+  globalThis.clearTimeout(rest.timer);
+  RESTS.delete(document);
 };
 
 const endSession = (document: Document, session: ActiveDragSession) => {
@@ -98,6 +116,7 @@ export const beginDragSession = ({
       document.removeEventListener('scroll', repaint, true);
       REPAINTS.delete(document);
       ORIGINS.delete(document);
+      cancelDragRest(document);
       for (const host of hosts) host.removeAttribute(DRAGGING_ATTRIBUTE);
       // A cancelled drag reaches no dragleave on the view it was over.
       clearDropIndicators();
@@ -131,6 +150,34 @@ export const setDragScrollRepaint = (
 /** Drops `owner`'s repaint, as when the pointer leaves its view. */
 export const clearDragScrollRepaint = (document: Document, owner: object) => {
   if (REPAINTS.get(document)?.owner === owner) REPAINTS.delete(document);
+};
+
+/**
+ * Runs `settle` once the active drag has rested on `key` of `owner` for
+ * `delay` ms. A dragover on another key, `null`, or the drag's end cancels it,
+ * and a repeated call for the pending key keeps its timer.
+ */
+export const restDrag = (
+  document: Document,
+  owner: object,
+  key: string | null,
+  delay: number,
+  settle: (key: string) => void
+) => {
+  const rest = RESTS.get(document);
+
+  if (rest?.owner === owner && rest.key === key) return;
+
+  cancelDragRest(document);
+
+  if (key === null || !SESSIONS.has(document)) return;
+
+  const timer = globalThis.setTimeout(() => {
+    RESTS.delete(document);
+    settle(key);
+  }, delay);
+
+  RESTS.set(document, { key, owner, timer });
 };
 
 // Outlives `takeDragSession`, so the drop resolves the target the hover painted.

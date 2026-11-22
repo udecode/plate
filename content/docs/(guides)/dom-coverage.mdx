@@ -49,6 +49,11 @@ chrome.
 Use that callback to open the accordion, activate the tab, or reveal the
 collapsed panel.
 
+A block drag that rests for 800 ms on a block whose children sit behind an
+`app-collapse` boundary also calls `onMaterialize`, with `reason: 'drag'`,
+so the drop can land inside once the content mounts. A quick pass leaves the
+content closed. Ignore that reason to keep the content closed during a drag.
+
 ## Copy policy
 
 `copyPolicy` controls clipboard output when a copied selection crosses hidden

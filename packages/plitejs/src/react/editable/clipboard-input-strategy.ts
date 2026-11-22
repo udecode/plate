@@ -32,6 +32,7 @@ import {
   indicateDOMDropTarget,
   pointAt,
   resolveDOMDropTarget,
+  restDOMBlockDrag,
 } from '../../dom/plugin/dom-drag';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
@@ -675,6 +676,11 @@ export const applyEditableDragOver = ({
     const root = editor.api.dom.root();
 
     indicateDOMDropTarget(editor, target);
+    restDOMBlockDrag(
+      editor,
+      input,
+      session.source.kind === 'nodes' ? session.source.keys : []
+    );
     followDOMDropTargetOnScroll(editor, session, input);
     // Always preventDefault for block drags to suppress the native text cursor,
     // even when no valid drop target is found.

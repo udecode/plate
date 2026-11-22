@@ -15,7 +15,10 @@ import {
   getPliteStringPlacementDOMPoint,
 } from '../../dom/internal';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
-import { clearDragScrollRepaint } from '../../dom/utils/drag-session';
+import {
+  cancelDragRest,
+  clearDragScrollRepaint,
+} from '../../dom/utils/drag-session';
 import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
@@ -448,6 +451,7 @@ export const EditableDOMRoot = (
         clearEditableDropCursor(event.currentTarget);
         editor.api.dom.drag.indicate(null);
         clearDragScrollRepaint(event.currentTarget.ownerDocument, editor);
+        cancelDragRest(event.currentTarget.ownerDocument, editor);
       }
       propsOnDragLeave?.(event);
     },

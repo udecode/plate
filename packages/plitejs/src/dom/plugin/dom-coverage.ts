@@ -99,7 +99,8 @@ export type DOMCoverageMaterializeReason =
   | 'paste'
   | 'focus'
   | 'programmatic'
-  | 'background';
+  | 'background'
+  | 'drag';
 
 /** Which part of a covered range triggered materialization. */
 export type DOMCoverageMaterializeRangeRole = 'anchor' | 'focus' | 'interior';
@@ -787,7 +788,7 @@ export const createDOMCoverageSession = (
       return targetPoint;
     },
 
-    /** Ask app code to mount or reveal a boundary for selection, copy, or focus. */
+    /** Ask app code to mount or reveal a boundary for selection, copy, focus or a resting drag. */
     materializeBoundary(
       boundaryId: string,
       reason: DOMCoverageMaterializeReason,

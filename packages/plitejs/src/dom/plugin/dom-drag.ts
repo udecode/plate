@@ -20,6 +20,7 @@ import {
   beginDragSession,
   readDragOriginX,
   readDragSession,
+  restDrag,
 } from '../utils/drag-session';
 import { publishDropIndicator } from '../utils/drop-indicator';
 import { usesAppleDOMHotkeys } from '../utils/environment';
@@ -251,6 +252,17 @@ const hitAt = (root: HTMLElement, x: number, y: number) => {
   return 'elementFromPoint' in tree
     ? (tree as Document | ShadowRoot).elementFromPoint(x, y)
     : null;
+};
+
+const elementUnder = (root: HTMLElement, input: DOMDropTargetInput) => {
+  const hit =
+    input.target && 'nodeType' in input.target
+      ? (input.target as globalThis.Node)
+      : hitAt(root, input.clientX, input.clientY);
+
+  if (!hit || !root.contains(hit)) return null;
+
+  return hit.nodeType === 1 ? (hit as globalThis.Element) : hit.parentElement;
 };
 
 // The level's child at the pointer's height, hit-tested on the level's
@@ -542,6 +554,74 @@ const collapsedEdge = (
   );
 };
 
+// A desktop file manager opens a folder once a drag rests on it, and Pierre's
+// file tree waits 800 ms; a quick pass leaves the folder closed.
+const REST_TO_OPEN_MS = 800;
+
+const collapseUnder = (
+  editor: AnyEditor,
+  input: DOMDropTargetInput,
+  nodes: readonly NodeKey[]
+) => {
+  const root = asDOM(editor).root();
+
+  if (!root) return null;
+
+  let host = elementUnder(root, input)?.closest(ELEMENT_HOST);
+
+  while (host && root.contains(host)) {
+    const entry = blockEntryOf(editor, host);
+    const path = entry && editor.read.nodes.path(entry.node);
+
+    if (entry && path) {
+      if (nodes.includes(entry.key)) return null;
+
+      const boundary = boundariesAt(
+        editor,
+        path,
+        0,
+        entry.node.children.length - 1
+      ).find(
+        ({ ownerNodeKey, reason }) =>
+          reason === 'app-collapse' && ownerNodeKey === entry.key
+      );
+
+      if (boundary) return boundary.boundaryId;
+    }
+    host = host.parentElement?.closest(ELEMENT_HOST) ?? null;
+  }
+
+  return null;
+};
+
+/**
+ * Opens the closed content of the block a block drag rests on, through its
+ * coverage boundary's materialize handler with reason `drag`, so the drop can
+ * land inside once the content mounts.
+ */
+export const restDOMBlockDrag = (
+  editor: AnyEditor,
+  input: DOMDropTargetInput,
+  nodes: readonly NodeKey[]
+) => {
+  const document = resolveLastEditorWindow(editor)?.document;
+
+  if (!document) return;
+
+  restDrag(
+    document,
+    editor,
+    collapseUnder(editor, input, nodes),
+    REST_TO_OPEN_MS,
+    (boundaryId) => {
+      findEditorDOMRootRuntime(editor)?.domCoverage.materializeBoundary(
+        boundaryId,
+        'drag'
+      );
+    }
+  );
+};
+
 const edgeOf = (
   editor: AnyEditor,
   { host, node }: Candidate,
@@ -645,17 +725,9 @@ export const resolveDOMDropTarget = (
   };
   const dom = asDOM(editor);
   const root = dom.root();
-  const hit =
-    input.target && 'nodeType' in input.target
-      ? (input.target as globalThis.Node)
-      : root && hitAt(root, input.clientX, input.clientY);
+  const start = root && elementUnder(root, input);
 
-  if (!root || !hit || !root.contains(hit)) return null;
-
-  const start =
-    hit.nodeType === 1 ? (hit as globalThis.Element) : hit.parentElement;
-
-  if (!start) return null;
+  if (!root || !start) return null;
 
   const found = levelAt(editor, start, root);
   const { level } = found;
