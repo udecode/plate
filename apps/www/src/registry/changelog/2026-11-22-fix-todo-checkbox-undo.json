@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-fix-todo-checkbox-undo",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-fix-todo-checkbox-undo.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix undo after quick todo checkbox clicks",
+  "targets": [
+    {
+      "name": "block-list",
+      "files": ["apps/www/src/registry/components/editor/block-list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-block-list-fix-undo-after-quick-d364198b",
+      "kind": "fix",
+      "summary": "Make each todo checkbox click its own undo step, so undo after a quick check and uncheck brings the check back.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-fix-todo-checkbox-undo",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

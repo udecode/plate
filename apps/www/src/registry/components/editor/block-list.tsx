@@ -103,7 +103,9 @@ function TodoMarker(
         onCheckedChange={(value) => {
           if (readOnly) return;
 
-          editor.update.nodes.set({ checked: value }, { at: props.element });
+          editor
+            .update({ history: 'new-batch' })
+            .nodes.set({ checked: value }, { at: props.element });
         }}
         onMouseDown={(event) => {
           event.preventDefault();

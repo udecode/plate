@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-22-fix-todo-checkbox-undo",
+      "href": "/registry/changelog/2026-11-22-fix-todo-checkbox-undo.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix undo after quick todo checkbox clicks",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-list"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-21-add-field",
       "href": "/registry/changelog/2026-11-21-add-field.json",
       "status": "draft",
