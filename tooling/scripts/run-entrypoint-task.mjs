@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 import {
@@ -181,6 +181,22 @@ const runTestTask = () => {
         .map((file) => [file, name])
     )
   );
+  const filesOutsidePartitions = onlyFiles.filter(
+    (file) => !partitionOf.has(path.resolve(repoRoot, file))
+  );
+
+  if (filesOutsidePartitions.length > 0) {
+    for (const file of filesOutsidePartitions) {
+      const fromRoot = path.relative(repoRoot, path.resolve(packageRoot, file));
+
+      console.error(
+        `No test file of ${packageName} ${partitionList} is at ${file}. Name each file from the repository root${existsSync(path.join(repoRoot, fromRoot)) ? `, such as ${fromRoot}` : ''}.`
+      );
+    }
+
+    return 1;
+  }
+
   const testFiles = [...partitionOf.keys()];
   const run = (traceEnv) => runTests(testFiles, partitionOf, traceEnv);
   const turboTaskId =
