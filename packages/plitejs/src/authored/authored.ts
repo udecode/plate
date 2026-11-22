@@ -63,7 +63,7 @@ import {
   type InternalEditorSchemaApi,
   withoutGeneration,
 } from '../core/editor-schema';
-import { notifyObservers, runEditorObserver } from '../core/lifecycle-error';
+import { notifyObservers } from '../core/lifecycle-error';
 import { definePlugin } from '../core/plugin';
 import {
   getCompiledEditorSchema,
@@ -189,6 +189,7 @@ import {
   storesGeneratedValues,
   GENERATED_VALUES_REFUSAL,
   frameRefusal,
+  isAuthoredRefusal,
   proposalRefusal,
   splitOneTextRefusal,
   unplaced,
@@ -1558,11 +1559,9 @@ export const createAuthoredPlugin = (
         requestView(editor, view);
       },
       subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
-        subscribeEditorRefusals(editor, (refusal) =>
-          runEditorObserver(editor, 'commit-listener', () =>
-            listener(refusal as AuthoredRefusal)
-          )
-        ),
+        subscribeEditorRefusals(editor, (refusal) => {
+          if (isAuthoredRefusal(refusal)) listener(refusal);
+        }),
       subscribeChanges: (listener: (delta: AuthoredChangesDelta) => void) => {
         const runtime = getEditorRuntime(editor);
         let publisher = PUBLISHERS.get(runtime);

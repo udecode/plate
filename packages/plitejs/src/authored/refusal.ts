@@ -75,6 +75,18 @@ export type AuthoredRefusal = Readonly<{
   reasons: readonly string[];
 }>;
 
+const AUTHORED_REFUSALS = new WeakSet<object>();
+
+const authoredRefusal = (refusal: AuthoredRefusal) => {
+  const frozen = Object.freeze(refusal);
+
+  AUTHORED_REFUSALS.add(frozen);
+  return frozen;
+};
+
+export const isAuthoredRefusal = (value: unknown): value is AuthoredRefusal =>
+  typeof value === 'object' && value !== null && AUTHORED_REFUSALS.has(value);
+
 const holds = (entry: IndexedNodeRange, at: number) =>
   entry.kind === 'element' && entry.from < at && at < entry.to;
 
@@ -328,7 +340,7 @@ export const proposalRefusal = (
 
   if (reasons.size === 0) return null;
 
-  return Object.freeze({
+  return authoredRefusal({
     code: 'veto',
     message: `Suggesting cannot change ${[...reasons].join(', ')} yet.`,
     reasons: Object.freeze([...reasons]),
@@ -359,7 +371,7 @@ export const storesGeneratedValues = (schema: CompiledEditorSchema) => {
   return stores;
 };
 
-export const GENERATED_VALUES_REFUSAL: AuthoredRefusal = Object.freeze({
+export const GENERATED_VALUES_REFUSAL = authoredRefusal({
   code: 'generated-values',
   message:
     'Suggesting is off in an editor whose schema generates a property value a suggestion cannot store.',
@@ -371,11 +383,11 @@ export const unrepresentable = (
   reason?: UnrepresentableReason
 ): EditorRefusalError =>
   new EditorRefusalError(
-    Object.freeze({
+    authoredRefusal({
       code: 'unrepresentable',
       message,
       reasons: Object.freeze(reason ? [reason] : []),
-    } satisfies AuthoredRefusal),
+    }),
     message
   );
 

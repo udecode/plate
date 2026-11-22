@@ -1,5 +1,7 @@
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import { notifyObservers } from './lifecycle-error';
+import { withoutUpdateTagContext } from './update-context';
 
 /**
  * Input the editor declines whole, not a fault: thrown to roll an update
@@ -42,10 +44,12 @@ export const subscribeEditorRefusals = (
 
 /** @internal */
 export const publishEditorRefusal = (editor: Editor, refusal: unknown) => {
-  const listeners = LISTENERS.get(getEditorRuntimeOwner(editor));
-
-  if (!listeners) return;
-  for (const listener of [...listeners]) {
-    if (listeners.has(listener)) listener(refusal);
-  }
+  withoutUpdateTagContext(editor, () =>
+    notifyObservers(
+      editor,
+      LISTENERS.get(getEditorRuntimeOwner(editor)),
+      'commit-listener',
+      (listener) => listener(refusal)
+    )
+  );
 };

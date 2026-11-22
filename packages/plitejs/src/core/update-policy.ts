@@ -30,7 +30,9 @@ export type CompiledEditorUpdatePolicy = Readonly<{
 export type SpeculativeUpdate = { committed: boolean; refusal?: unknown };
 
 export type InternalEditorUpdateOptions = {
+  ignoreGuardRefusals?: boolean;
   onAdmission?: (admission: AdmittedRepair | null) => void;
+  onRefusal?: (refusal: unknown) => void;
   placement?: ViewPresentation;
   skipCorrections?: boolean;
   speculative?: SpeculativeUpdate;

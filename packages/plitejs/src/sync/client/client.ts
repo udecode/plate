@@ -485,13 +485,7 @@ const startClient = (
     if (verdict === null && refusal === undefined && !thrown) {
       return refused('rewritten');
     }
-    if (refusal !== undefined) {
-      try {
-        publishEditorRefusal(editor, refusal);
-      } catch {
-        return refused('blocked', true);
-      }
-    }
+    if (refusal !== undefined) publishEditorRefusal(editor, refusal);
 
     return refused('blocked', thrown !== null);
   };

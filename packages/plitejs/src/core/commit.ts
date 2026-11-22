@@ -42,6 +42,7 @@ import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot, toPublicRoot } from './public-root';
 import { pathKey, snapshotIndexOf } from './snapshot-index';
+import { defineUpdateAnnotation } from './transaction-values';
 import { cloneFrozenEditorJsonValue } from './value-codec';
 import { countCoreWork } from './work';
 
@@ -331,6 +332,15 @@ export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
   EDITOR_COMMIT_STARTED_AT.get(commit) ??
   globalThis.performance?.now?.() ??
   Date.now();
+
+/** @internal */
+export const historyReplayClaim = defineUpdateAnnotation<number>({
+  key: 'history.replay-claim',
+});
+
+/** @internal */
+export const claimsHistoryReplay = (commit: EditorCommit) =>
+  commit.annotations[historyReplayClaim.key] !== undefined;
 
 /**
  * The top-level index of the node a changed range starts in, `side` 1, or

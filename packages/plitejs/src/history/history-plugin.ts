@@ -60,6 +60,7 @@ import {
   getEditorCommitRest,
   getEditorCommitStartedAt,
   getEditorCommitUnsettle,
+  historyReplayClaim,
 } from '../core/commit';
 import { DOCUMENT_SETTLED_TAG } from '../core/document-admission';
 import {
@@ -93,7 +94,10 @@ import {
   EditorSchemaValidationError,
 } from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
-import type { SpeculativeUpdate } from '../core/update-policy';
+import type {
+  InternalEditorUpdateOptions,
+  SpeculativeUpdate,
+} from '../core/update-policy';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
 import { countCoreWork } from '../core/work';
 import { getSelection } from '../interfaces/editor';
@@ -348,12 +352,13 @@ const reportFailedHistoryReplay = <V extends Value>(
 
 const dropHistoryHeadStep = <V extends Value>(
   editor: Editor<V>,
-  direction: HistoryAction
+  direction: HistoryAction,
+  options: InternalEditorUpdateOptions = {}
 ) => {
-  editor.update((tx) => {
+  getEditorRuntime(editor).update((tx) => {
     tx.tags.add('history-skip');
     tx.annotations.set(historyReplayDrop, direction);
-  });
+  }, options);
 };
 
 const keptHistoryChange = <V extends Value>(
@@ -388,11 +393,6 @@ type HistoryReplayClaim = Readonly<{
   undoAnchor: object | null;
 }>;
 
-const historyReplayClaim = defineUpdateAnnotation<number>({
-  combine: (_previous, next) => next,
-  key: 'history.replay-claim',
-});
-
 type HistoryReplaySettlement = Readonly<{
   request: number;
   status: 'applied' | 'blocked';
@@ -422,6 +422,44 @@ const BUSY_HISTORY_RESULT = Object.freeze({
 const FAILED_HISTORY_RESULT = Object.freeze({
   status: 'failed',
 }) satisfies HistorySettlement;
+
+const refusalReason = (refusal: unknown) => {
+  if (typeof refusal !== 'object' || refusal === null) return 'refused';
+  if (
+    'reason' in refusal &&
+    typeof refusal.reason === 'string' &&
+    refusal.reason !== ''
+  ) {
+    return refusal.reason;
+  }
+  if (
+    'code' in refusal &&
+    typeof refusal.code === 'string' &&
+    refusal.code !== ''
+  ) {
+    return refusal.code;
+  }
+  return 'refused';
+};
+
+const blockedOf = <V extends Value>(
+  editor: Editor<V>,
+  fn: (tx: HistoryTransaction<V>) => void,
+  options: InternalEditorUpdateOptions = {}
+): HistoryOutcome | null => {
+  let blocked: HistoryOutcome | null = null;
+
+  getEditorRuntime(editor).update(fn, {
+    ...options,
+    onRefusal: (refusal) => {
+      blocked = Object.freeze({
+        reason: refusalReason(refusal),
+        status: 'blocked',
+      });
+    },
+  });
+  return blocked;
+};
 
 const historyRestore = defineUpdateAnnotation<HistoryJSON>({
   combine: (_previous, next) => next,
@@ -1286,9 +1324,11 @@ const createHistoryPlugin = <
         nextHistoryReplayRequest += 1;
         let hasEntry = false;
         let failedAt: 'commit' | 'replay' | null = null;
+        let blocked: HistoryOutcome | null = null;
         const attempt = (canonical: boolean, trial?: SpeculativeUpdate) => {
           failedAt = null;
-          getEditorRuntime(editor).update(
+          return blockedOf(
+            editor,
             (tx) => {
               try {
                 hasEntry = applyHistoryAction(
@@ -1311,7 +1351,7 @@ const createHistoryPlugin = <
 
         const replayEntry = () => {
           try {
-            attempt(false);
+            return attempt(false);
           } catch (error) {
             if (
               !failedAt ||
@@ -1320,7 +1360,7 @@ const createHistoryPlugin = <
               throw error;
             }
             PREPARED_HISTORY_REPLAYS.delete(request);
-            attempt(true);
+            return attempt(true);
           }
         };
 
@@ -1351,13 +1391,13 @@ const createHistoryPlugin = <
 
               countCoreWork('keptRedoFallbacks');
               try {
-                replayEntry();
+                blocked = replayEntry();
               } finally {
                 if (!PREPARED_HISTORY_REPLAYS.has(request)) release();
               }
             }
           } else {
-            replayEntry();
+            blocked = replayEntry();
           }
         } catch (error) {
           PREPARED_HISTORY_REPLAYS.delete(request);
@@ -1372,7 +1412,7 @@ const createHistoryPlugin = <
         if (keptError) {
           reportFailedHistoryReplay(editor, direction, keptError.value);
         }
-
+        if (blocked) return blocked;
         if (!hasEntry) return EMPTY_HISTORY_RESULT;
 
         const receipt = PREPARED_HISTORY_REPLAYS.get(request);
@@ -1408,6 +1448,38 @@ const createHistoryPlugin = <
         nextHistoryReplayRequest += 1;
         const root = getEditorUpdateRoot(editor);
         const isCurrent = () => HISTORY_ACTIVATION.get(owner) === activation;
+        const isClaimed = () =>
+          readPendingHistoryReplay(editor)?.request === request;
+        const report = (cause: unknown) =>
+          reportEditorLifecycleError({
+            cause,
+            direction,
+            editor,
+            phase: 'replay',
+            source: 'history',
+          });
+        const settleBlocked = () => {
+          getEditorRuntime(owner).update(
+            (tx) => {
+              tx.annotations.set(historyReplaySettlement, {
+                request,
+                status: 'blocked',
+              });
+            },
+            { ignoreGuardRefusals: true }
+          );
+        };
+        const fail = (cause: unknown): HistorySettlement => {
+          if (isCurrent() && isClaimed()) {
+            try {
+              settleBlocked();
+            } catch (clearError) {
+              if (clearError !== cause) report(clearError);
+            }
+          }
+          report(cause);
+          return FAILED_HISTORY_RESULT;
+        };
 
         PENDING_HISTORY_REPLAY_CLAIMS.set(request, {
           activation,
@@ -1419,44 +1491,19 @@ const createHistoryPlugin = <
               ? (peekHistoryEntry(editor, 'undos')?.identity ?? null)
               : null,
         });
+        let claimBlocked;
         try {
-          editor.update((tx) => {
+          claimBlocked = blockedOf(editor, (tx) => {
             tx.annotations.set(historyReplayClaim, request);
           });
+        } catch (error) {
+          if (!isClaimed()) throw error;
+          return fail(error);
         } finally {
           PENDING_HISTORY_REPLAY_CLAIMS.delete(request);
         }
+        if (!isClaimed()) return claimBlocked ?? FAILED_HISTORY_RESULT;
 
-        const report = (cause: unknown) =>
-          reportEditorLifecycleError({
-            cause,
-            direction,
-            editor,
-            phase: 'replay',
-            source: 'history',
-          });
-        const settleBlocked = () => {
-          editor.update((tx) => {
-            tx.annotations.set(historyReplaySettlement, {
-              request,
-              status: 'blocked',
-            });
-          });
-        };
-        const fail = (cause: unknown): HistorySettlement => {
-          if (
-            isCurrent() &&
-            readPendingHistoryReplay(editor)?.request === request
-          ) {
-            try {
-              settleBlocked();
-            } catch (clearError) {
-              if (clearError !== cause) report(clearError);
-            }
-          }
-          report(cause);
-          return FAILED_HISTORY_RESULT;
-        };
         const settle = (
           ownerResult: EditorEffectHistoryReplayResult
         ): HistorySettlement => {
@@ -1475,18 +1522,25 @@ const createHistoryPlugin = <
               sessionEffect.type,
               ownerResult.value
             );
-            editor.update((tx) => {
-              runHistoricUpdate(root, tx, entry.batch, () => {
-                tx.effects.emit(replayedEffect.type, replayedEffect.value);
-              });
-              tx.annotations.set(historyReplaySettlement, {
-                request,
-                status: 'applied',
-              });
-            });
+            getEditorRuntime(owner).update(
+              (tx) => {
+                runHistoricUpdate(root, tx, entry.batch, () => {
+                  tx.effects.emit(replayedEffect.type, replayedEffect.value);
+                });
+                tx.annotations.set(historyReplaySettlement, {
+                  request,
+                  status: 'applied',
+                });
+              },
+              { ignoreGuardRefusals: true }
+            );
 
             const receipt = PREPARED_HISTORY_REPLAYS.get(request);
             PREPARED_HISTORY_REPLAYS.delete(request);
+            if (isCurrent() && isClaimed()) {
+              settleBlocked();
+              return FAILED_HISTORY_RESULT;
+            }
             const result = Object.freeze({
               status: 'applied',
             }) satisfies HistorySettlement;
@@ -1540,8 +1594,13 @@ const createHistoryPlugin = <
             !entry.batch.change.empty &&
             keptHistoryChange(editor, entry.batch.change).empty
           ) {
-            dropHistoryHeadStep(editor, direction);
-            entry = peekHistoryEntry(editor, stack);
+            dropHistoryHeadStep(editor, direction, {
+              ignoreGuardRefusals: true,
+            });
+            const head = peekHistoryEntry(editor, stack);
+
+            if (head?.identity === entry.identity) return FAILED_HISTORY_RESULT;
+            entry = head;
           }
         } catch (error) {
           dropFailedHistoryHead(editor, direction, error);

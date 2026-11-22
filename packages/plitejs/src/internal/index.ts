@@ -24,6 +24,7 @@ export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
 export {
+  claimsHistoryReplay,
   getDocumentValueNode,
   getEditorCommitNode,
   getEditorCommitSnapshot,
@@ -329,6 +330,7 @@ export type {
   InternalSlicePlacement,
 } from '../core/public-state';
 export { projectRangeInSnapshot } from '../range-projection';
+export { EditorRefusalError } from '../core/refusal';
 export { mapSemanticUpdateMethodArguments } from '../core/semantic-update-method';
 export {
   assertSelectionSupported,

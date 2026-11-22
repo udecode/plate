@@ -269,6 +269,7 @@ import {
   getEditorFitsByLook,
   type PositionMap,
   endEditorTransactionDraftGuards,
+  ignoreEditorDraftGuardRefusals,
   isEditorDraftView,
   runEditorDraftGuards,
 } from './document-recorder';
@@ -1050,6 +1051,7 @@ const TRANSACTION_GUARDS = new WeakMap<Editor, Set<EditorTransactionGuard>>();
 const LETTER_TRACKERS = new WeakMap<Editor, number>();
 const PREPARING_COMMIT = new WeakSet<Editor>();
 const PUBLISHING_COMMITS = new WeakMap<Editor, number>();
+const DEFERRED_DRAINS = new WeakMap<Editor, number>();
 const EDITED_VERSIONS = new WeakMap<Editor, number>();
 
 export const isEditorPublishingCommit = (editor: Editor) =>
@@ -2664,20 +2666,27 @@ const runEditorTransactionGuards = (
   effects: readonly EditorEffect[],
   commit: EditorCommit,
   replace: boolean,
-  schema: EditorSchemaIdentity
+  schema: EditorSchemaIdentity,
+  ignoreRefusals: boolean
 ) => {
   const publications: Array<() => void> = [];
   for (const guard of guards) {
-    const publish = guard({
-      after,
-      before,
-      change,
-      effects,
-      commit,
-      replace,
-      schema,
-    });
-    if (publish) publications.push(publish);
+    try {
+      const publish = guard({
+        after,
+        before,
+        change,
+        effects,
+        commit,
+        replace,
+        schema,
+      });
+      if (publish) publications.push(publish);
+    } catch (error) {
+      if (!ignoreRefusals || !(error instanceof EditorRefusalError)) {
+        throw error;
+      }
+    }
   }
   return publications;
 };
@@ -9920,18 +9929,23 @@ const drainAfterOpenDrafts = (editor: Editor) => {
   const owner = getEditorRuntimeOwner(editor);
   const queued = AFTER_OPEN_DRAFTS.get(owner);
 
-  if (!queued || hasOpenDraft(owner)) return;
+  if (!queued || hasOpenDraft(owner) || (DEFERRED_DRAINS.get(owner) ?? 0) > 0) {
+    return;
+  }
 
   AFTER_OPEN_DRAFTS.delete(owner);
-  let failure: Readonly<{ value: unknown }> | null = null;
+  const failure = withoutUpdateTagContext(editor, () => {
+    let first: Readonly<{ value: unknown }> | null = null;
 
-  for (const fn of queued) {
-    try {
-      fn();
-    } catch (error) {
-      failure ??= { value: error };
+    for (const fn of queued) {
+      try {
+        fn();
+      } catch (error) {
+        first ??= { value: error };
+      }
     }
-  }
+    return first;
+  });
   if (failure) throw failure.value;
 };
 
@@ -10601,7 +10615,9 @@ export const updateEditor = <
       () => fn(getUpdateView(editor), getUpdateContext(editor)),
       {
         authority: 'update',
+        ignoreGuardRefusals: options.ignoreGuardRefusals,
         onAdmission: options.onAdmission,
+        onRefusal: options.onRefusal,
         placement: options.placement,
         skipCorrections: options.skipCorrections,
         speculative: options.speculative,
@@ -13671,7 +13687,9 @@ export const runEditorTransaction = <R>(
   fn: (transaction: EditorTransaction) => R,
   options: {
     authority?: TransactionAuthority;
+    ignoreGuardRefusals?: boolean;
     onAdmission?: (admission: AdmittedRepair | null) => void;
+    onRefusal?: (refusal: unknown) => void;
     placement?: ViewPresentation;
     skipCorrections?: boolean;
     speculative?: SpeculativeUpdate;
@@ -13719,6 +13737,7 @@ export const runEditorTransaction = <R>(
     options.placement ?? currentPlacement(editor)
   );
   incrementEditorTransactionDepth(editor, depth);
+  if (options.ignoreGuardRefusals) ignoreEditorDraftGuardRefusals(editor);
 
   try {
     const transaction = getTransactionView(editor);
@@ -13893,7 +13912,9 @@ export const runEditorTransaction = <R>(
             restore();
           }
           disposeTransactionSpecContext(editor, draftContext);
-          options.onAdmission?.(admitted);
+          withoutUpdateTagContext(editor, () =>
+            options.onAdmission?.(admitted)
+          );
           // An update whose only change is a placement still commits it, so a
           // spec built before it goes stale.
           if (
@@ -14067,7 +14088,8 @@ export const runEditorTransaction = <R>(
               snapshot.effects,
               change,
               snapshot.reason === 'replace',
-              pluginSchemaIdentity ?? getEditorSchema(editor).identity()
+              pluginSchemaIdentity ?? getEditorSchema(editor).identity(),
+              options.ignoreGuardRefusals === true
             );
             withPluginPublicationRollback(pluginPublication, () =>
               pluginPublication?.commit()
@@ -14168,12 +14190,15 @@ export const runEditorTransaction = <R>(
           committed = change;
           const owner = getEditorRuntimeOwner(editor);
 
+          DEFERRED_DRAINS.set(owner, (DEFERRED_DRAINS.get(owner) ?? 0) + 1);
           PUBLISHING_COMMITS.set(
             owner,
             (PUBLISHING_COMMITS.get(owner) ?? 0) + 1
           );
           try {
-            options.onAdmission?.(admitted);
+            withoutUpdateTagContext(editor, () =>
+              options.onAdmission?.(admitted)
+            );
             anchorPublication?.publish();
             let publishError: Readonly<{ value: unknown }> | null = null;
 
@@ -14186,7 +14211,7 @@ export const runEditorTransaction = <R>(
                 break;
               }
               try {
-                publishPrepared();
+                withoutUpdateTagContext(editor, publishPrepared);
               } catch (error) {
                 publishError ??= { value: error };
               }
@@ -14241,7 +14266,7 @@ export const runEditorTransaction = <R>(
                 ])
               : [];
 
-          anchorPublication?.notify();
+          withoutUpdateTagContext(editor, () => anchorPublication?.notify());
 
           let notificationError: Readonly<{ value: unknown }> | null = null;
           try {
@@ -14269,7 +14294,9 @@ export const runEditorTransaction = <R>(
           } catch (error) {
             notificationError = { value: error };
           }
-          pluginPublication?.afterPublish();
+          withoutUpdateTagContext(editor, () =>
+            pluginPublication?.afterPublish()
+          );
           if (notificationError) {
             throw notificationError.value;
           }
@@ -14280,6 +14307,12 @@ export const runEditorTransaction = <R>(
     transactionError = { value: error };
   }
   if (options.speculative) options.speculative.committed = committed !== null;
+  if (committed) {
+    const owner = getEditorRuntimeOwner(editor);
+
+    DEFERRED_DRAINS.set(owner, (DEFERRED_DRAINS.get(owner) ?? 1) - 1);
+  }
+  let drainError: Readonly<{ value: unknown }> | null = null;
 
   if (options.speculative && committed === null) {
     const owner = getEditorRuntimeOwner(editor);
@@ -14294,7 +14327,7 @@ export const runEditorTransaction = <R>(
     try {
       drainAfterOpenDrafts(editor);
     } catch (error) {
-      transactionError ??= { value: error };
+      drainError = { value: error };
     }
   }
 
@@ -14303,17 +14336,22 @@ export const runEditorTransaction = <R>(
       committed === null &&
       transactionError.value instanceof EditorRefusalError
     ) {
+      const { refusal } = transactionError.value;
+
       if (options.speculative) {
-        options.speculative.refusal = transactionError.value.refusal;
+        options.speculative.refusal = refusal;
       } else {
-        publishEditorRefusal(editor, transactionError.value.refusal);
+        options.onRefusal?.(refusal);
+        publishEditorRefusal(editor, refusal);
       }
+      if (drainError) throw drainError.value;
 
       return undefined;
     }
 
     throw transactionError.value;
   }
+  if (drainError) throw drainError.value;
 
   return answer;
 };

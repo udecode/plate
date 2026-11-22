@@ -10,6 +10,7 @@ import type { DocumentIndex } from './change/document-index';
 import type { CommandProjection } from './command-document';
 import type { CompositionStamp } from './composition-stamp';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import { EditorRefusalError } from './refusal';
 
 /**
  * Rewrites a transaction's canonical change before the recorded draft guards
@@ -204,8 +205,16 @@ export const registerEditorDraftGuard = (
   return release;
 };
 
+const REFUSALS_IGNORED = new WeakSet<Editor>();
+
+/** @internal */
+export const ignoreEditorDraftGuardRefusals = (editor: Editor) => {
+  REFUSALS_IGNORED.add(getEditorRuntimeOwner(editor));
+};
+
 /** @internal */
 export const endEditorTransactionDraftGuards = (editor: Editor) => {
+  REFUSALS_IGNORED.delete(getEditorRuntimeOwner(editor));
   for (const release of [
     ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.transaction ?? []),
   ]) {
@@ -223,6 +232,15 @@ export const runEditorDraftGuards = (
   for (const guard of [
     ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.[phase] ?? []),
   ]) {
-    guard(written, frame);
+    try {
+      guard(written, frame);
+    } catch (error) {
+      if (
+        !(error instanceof EditorRefusalError) ||
+        !REFUSALS_IGNORED.has(getEditorRuntimeOwner(editor))
+      ) {
+        throw error;
+      }
+    }
   }
 };
