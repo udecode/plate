@@ -266,6 +266,16 @@ function EquationPopoverContent({
 
   const close = (commit: boolean, direction: 'after' | 'before' = 'after') => {
     const current = editor.read.nodes.get(key);
+    setOpen(false);
+    // Move the selection before saving: undoing the save restores the
+    // selection from before it, and a caret inside an inline equation would
+    // reopen its input.
+    if (isInline) {
+      const point = editor.read.points[direction](element);
+      if (point) editor.update.selection.set(point);
+    } else if (current) {
+      editor.update.selection.setNodes([current[1]]);
+    }
     if (
       commit &&
       current &&
@@ -281,13 +291,6 @@ function EquationPopoverContent({
         .plugin(plugin)
         .update({ history: 'new-batch' })
         .set({ latex: value }, { at: current[1] });
-    }
-    setOpen(false);
-    if (isInline) {
-      const point = editor.read.points[direction](element);
-      if (point) editor.update.selection.set(point);
-    } else if (current) {
-      editor.update.selection.setNodes([current[1]]);
     }
     editor.api.dom.focus();
   };

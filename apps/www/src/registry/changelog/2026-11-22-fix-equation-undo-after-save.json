@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-fix-equation-undo-after-save",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-fix-equation-undo-after-save.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep a saved equation's editor closed on undo",
+  "targets": [
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-math-keep-saved-equation-s-331b54e9",
+      "kind": "fix",
+      "summary": "Keep an inline equation's input closed when undo takes back its save, so later undos keep working.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["math"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-fix-equation-undo-after-save",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

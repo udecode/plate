@@ -28,6 +28,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-22-fix-equation-undo-after-save",
+      "href": "/registry/changelog/2026-11-22-fix-equation-undo-after-save.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep a saved equation's editor closed on undo",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-fix-todo-checkbox-undo",
       "href": "/registry/changelog/2026-11-22-fix-todo-checkbox-undo.json",
       "status": "draft",

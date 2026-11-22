@@ -42,6 +42,7 @@
     ],
     "math": [
       "2026-11-22-create-base-color-tw-prefix",
+      "2026-11-22-fix-equation-undo-after-save",
       "2026-11-19-rtl-editor-ui",
       "2026-11-18-registry-icon-library",
       "2026-11-17-cn-package",
