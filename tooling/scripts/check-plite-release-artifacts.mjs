@@ -825,6 +825,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     "    'useEditor',",
     "    'useEditorComposing',",
     "    'useEditorFocused',",
+    "    'useEditorHistory',",
     "    'useEditorReadOnly',",
     "    'useEditorSelection',",
     "    'useEditorSelector',",

@@ -93,6 +93,7 @@ export const createPlatePackageConfig = ({
   bundleDependencies = [],
   declarationsOnly = false,
   directDeclarations = false,
+  knownImportCycles = [],
   runtimeImportBoundaries = [],
   unbundle = false,
 }: {
@@ -101,6 +102,7 @@ export const createPlatePackageConfig = ({
   bundleDependencies?: string[];
   declarationsOnly?: boolean;
   directDeclarations?: boolean;
+  knownImportCycles?: ReadonlyArray<readonly string[]>;
   runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
   unbundle?: boolean;
 } = {}) =>
@@ -163,7 +165,10 @@ export const createPlatePackageConfig = ({
 
     return [
       declarationsOnly || directDeclarations
-        ? withDirectPackageConfig(config, { runtimeImportBoundaries })
+        ? withDirectPackageConfig(config, {
+            knownImportCycles,
+            runtimeImportBoundaries,
+          })
         : withRuntimeImportBoundaryConfig(config, {
             runtimeImportBoundaries,
           }),

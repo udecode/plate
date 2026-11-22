@@ -64,7 +64,7 @@ export function getPackageBuildArtifacts(packageJson) {
 
 export function assertPackageBuildArtifacts(
   packageRoot = process.cwd(),
-  { runtimeImportBoundaries = [] } = {}
+  { knownImportCycles = [], runtimeImportBoundaries = [] } = {}
 ) {
   const packageJson = JSON.parse(
     readFileSync(join(packageRoot, 'package.json'), 'utf-8')
@@ -120,6 +120,7 @@ export function assertPackageBuildArtifacts(
     runtimeImportBoundaries
   );
   assertNoSynthesizedNamespaces(packageRoot);
+  assertNoRuntimeImportCycles(packageRoot, knownImportCycles);
 
   assertNoPrivatePlateDeclarationBrands(packageRoot);
 }
@@ -168,6 +169,116 @@ function assertNoSynthesizedNamespaces(packageRoot) {
   throw new Error(
     `Runtime modules build namespace objects that defeat consumer tree shaking: ${files}.\nRe-export by name each value an importer reaches through \`export * from\` an external package: ${reached.join(', ')}`
   );
+}
+
+// Turbopack's scope hoisting merges modules into groups that register their
+// ids one by one, so a cycle that re-enters a group through a later id runs the
+// group again and splits every module-level registry in it.
+function assertNoRuntimeImportCycles(packageRoot, knownImportCycles) {
+  const distRoot = join(packageRoot, 'dist');
+  if (!existsSync(distRoot)) return;
+
+  const imports = new Map(
+    readdirSync(distRoot, { recursive: true })
+      .map((file) => file.split(sep).join('/'))
+      .filter((file) => runtimeExtensionPattern.test(file))
+      .map((file) => [file, getStaticLocalImports(distRoot, file)])
+  );
+  const cycles = findImportCycles(imports).map((files) =>
+    files.map((file) => `dist/${file}`).join(', ')
+  );
+  const known = new Set(
+    knownImportCycles.map((files) =>
+      [...files].sort((a, b) => a.localeCompare(b)).join(', ')
+    )
+  );
+  const unknown = cycles.filter((cycle) => !known.has(cycle));
+  const gone = [...known].filter((cycle) => !cycles.includes(cycle));
+
+  if (unknown.length > 0) {
+    throw new Error(
+      `Runtime modules import each other in a cycle, and a bundler that merges modules, such as Turbopack with scope hoisting, can then evaluate a module twice:\n${unknown
+        .map((cycle) => `- ${cycle}`)
+        .join(
+          '\n'
+        )}\nBreak each cycle, or build the package bundled, without unbundle, so each cycle stays inside one module.`
+    );
+  }
+
+  if (gone.length > 0) {
+    throw new Error(
+      `These known import cycles are no longer in dist, so drop them from knownImportCycles:\n${gone
+        .map((cycle) => `- ${cycle}`)
+        .join('\n')}`
+    );
+  }
+}
+
+function getStaticLocalImports(distRoot, file) {
+  const ast = parseRuntimeModule(
+    readFileSync(join(distRoot, file), 'utf-8'),
+    `dist/${file}`
+  );
+
+  return ast.program.body
+    .filter(
+      (node) =>
+        node.type === 'ImportDeclaration' ||
+        node.type === 'ExportAllDeclaration' ||
+        (node.type === 'ExportNamedDeclaration' && node.source)
+    )
+    .map((node) => node.source.value)
+    .filter((specifier) => specifier.startsWith('.'))
+    .map((specifier) =>
+      relative(distRoot, resolve(distRoot, dirname(file), specifier))
+        .split(sep)
+        .join('/')
+    );
+}
+
+function findImportCycles(imports) {
+  const order = new Map();
+  const low = new Map();
+  const stack = [];
+  const onStack = new Set();
+  const cycles = [];
+
+  const visit = (file) => {
+    order.set(file, order.size);
+    low.set(file, order.get(file));
+    stack.push(file);
+    onStack.add(file);
+
+    for (const imported of imports.get(file)) {
+      if (!imports.has(imported)) continue;
+      if (!order.has(imported)) {
+        visit(imported);
+        low.set(file, Math.min(low.get(file), low.get(imported)));
+      } else if (onStack.has(imported)) {
+        low.set(file, Math.min(low.get(file), order.get(imported)));
+      }
+    }
+
+    if (low.get(file) !== order.get(file)) return;
+
+    const component = [];
+    let member;
+    do {
+      member = stack.pop();
+      onStack.delete(member);
+      component.push(member);
+    } while (member !== file);
+
+    if (component.length > 1 || imports.get(file).includes(file)) {
+      cycles.push(component.sort((a, b) => a.localeCompare(b)));
+    }
+  };
+
+  for (const file of imports.keys()) {
+    if (!order.has(file)) visit(file);
+  }
+
+  return cycles;
 }
 
 export function getPackageRuntimeImportBoundaries(packageJson) {
@@ -257,11 +368,9 @@ function assertRuntimeImportBoundary(
   visit(entryPath, [entryRelativePath]);
 }
 
-function getRuntimeImportSpecifiers(source, filePath) {
-  let ast;
-
+function parseRuntimeModule(source, filePath) {
   try {
-    ast = parse(source, {
+    return parse(source, {
       allowAwaitOutsideFunction: true,
       allowReturnOutsideFunction: true,
       errorRecovery: false,
@@ -270,11 +379,14 @@ function getRuntimeImportSpecifiers(source, filePath) {
     });
   } catch (error) {
     throw new Error(
-      `Runtime import boundary could not parse ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
+      `Could not parse runtime module ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
       { cause: error }
     );
   }
+}
 
+function getRuntimeImportSpecifiers(source, filePath) {
+  const ast = parseRuntimeModule(source, filePath);
   const specifiers = new Set();
   const addSpecifier = (node) => {
     if (node?.type === 'StringLiteral') {

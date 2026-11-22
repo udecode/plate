@@ -9,22 +9,6 @@ description: Install and configure Plate UI for Next.js
 
 This guide walks you through incrementally building a Plate editor in your Next.js application.
 
-## Turbopack builds
-
-`next build` bundles with Turbopack, which merges modules into groups. In Next.js 16.4 and the 16.5 canary, the build can run a group of Plate modules twice, and every page with an editor then fails with `Editor read registrations must be created by the plugin read factory`. Until Turbopack fixes it, turn off its scope hoisting:
-
-```ts title="next.config.ts"
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
-  experimental: {
-    turbopackScopeHoisting: false,
-  },
-};
-
-export default nextConfig;
-```
-
 <Steps>
 
 ### Create your first editor

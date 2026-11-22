@@ -19,6 +19,11 @@ type RuntimeImportBoundaryOptions = Readonly<{
   runtimeImportBoundaries?: readonly RuntimeImportBoundary[];
 }>;
 
+type DirectPackageOptions = RuntimeImportBoundaryOptions &
+  Readonly<{
+    knownImportCycles?: ReadonlyArray<readonly string[]>;
+  }>;
+
 export const withRuntimeImportBoundaryConfig = (
   config: UserConfig,
   { runtimeImportBoundaries = [] }: RuntimeImportBoundaryOptions = {}
@@ -46,7 +51,10 @@ export const withRuntimeImportBoundaryConfig = (
 
 export const withDirectPackageConfig = (
   config: UserConfig,
-  { runtimeImportBoundaries = [] }: RuntimeImportBoundaryOptions = {}
+  {
+    knownImportCycles = [],
+    runtimeImportBoundaries = [],
+  }: DirectPackageOptions = {}
 ): UserConfig => {
   if (typeof config.hooks === 'function') {
     throw new Error('Direct package config requires object hooks.');
@@ -75,7 +83,10 @@ export const withDirectPackageConfig = (
       ...config.hooks,
       'build:done': async (context) => {
         await onBuildDone?.(context);
-        assertPackageBuildArtifacts(packageRoot, { runtimeImportBoundaries });
+        assertPackageBuildArtifacts(packageRoot, {
+          knownImportCycles,
+          runtimeImportBoundaries,
+        });
       },
     },
     suppressWarnings:
@@ -95,5 +106,5 @@ export const withDirectPackageConfig = (
 
 export const defineDirectPackageConfig = (
   config: UserConfig,
-  options: RuntimeImportBoundaryOptions = {}
+  options: DirectPackageOptions = {}
 ) => defineConfig(withDirectPackageConfig(config, options));
