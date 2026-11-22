@@ -25,10 +25,15 @@ const NOT_PRODUCT =
   /\.(?:test|spec|slow)\.|\/__tests__\/|\/type-tests\/|\/__registry__\/|\/registry\/changelog\//;
 const UNOWNED = '(no scope)';
 
+const now = new Date();
+const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
+  .toISOString()
+  .slice(0, 10);
 const { values } = parseArgs({
   options: {
+    fix: { type: 'string', multiple: true, default: [] },
     ref: { type: 'string', default: 'origin/next' },
-    until: { type: 'string', default: new Date().toISOString().slice(0, 10) },
+    until: { type: 'string', default: localToday },
   },
 });
 if (!/^\d{4}-\d{2}-\d{2}$/.test(values.until)) {
@@ -57,8 +62,9 @@ const log = await git(
   'log',
   values.ref,
   '--no-merges',
-  `--since-as-filter=${dayBefore(13 + REWORK_DAYS)}`,
-  '--format=%H%x1f%cs%x1f%s'
+  `--since-as-filter=${dayBefore(13 + REWORK_DAYS)}T00:00:00`,
+  '--date=format-local:%Y-%m-%d',
+  '--format=%H%x1f%cd%x1f%s'
 );
 const commits = new Map(
   log
@@ -140,7 +146,64 @@ async function reworkOf(fix) {
   return { product, reworked };
 }
 
-const queue = [...fixes];
+const ledger = loadLedger(root);
+const ownersOf = (reworked) => {
+  const owned = new Map();
+  for (const path of new Set(
+    [...reworked.values()].flatMap((set) => [...set])
+  )) {
+    for (const id of owningScopes(ledger, path)) {
+      if (!owned.has(id)) owned.set(id, []);
+      owned.get(id).push(path);
+    }
+  }
+  return owned;
+};
+
+const given = values.fix.map((rev) =>
+  execFileSync(
+    'git',
+    ['-C', root, 'rev-parse', '--verify', `${rev}^{commit}`],
+    { encoding: 'utf-8' }
+  ).trim()
+);
+const chosen = fixes.filter((fix) => given.includes(fix.sha));
+const ignored = given.filter((sha) => !chosen.some((fix) => fix.sha === sha));
+let targets = null;
+let scanned = fixes;
+if (given.length) {
+  targets = new Set();
+  for (const fix of chosen) {
+    const { reworked } = await reworkOf(fix);
+    for (const id of ownersOf(reworked).keys()) targets.add(id);
+  }
+  const names = await git(
+    'log',
+    values.ref,
+    '--no-merges',
+    `--since-as-filter=${previousStart}T00:00:00`,
+    '--format=%x1e%H',
+    '--name-only'
+  );
+  const touched = new Map(
+    names
+      .split('\u001E')
+      .slice(1)
+      .map((entry) => {
+        const [sha, ...paths] = entry.split('\n').filter(Boolean);
+        return [sha, paths];
+      })
+  );
+  scanned = fixes.filter((fix) =>
+    (touched.get(fix.sha) ?? []).some(
+      (path) =>
+        isProduct(path) &&
+        owningScopes(ledger, path).some((id) => targets.has(id))
+    )
+  );
+}
+
+const queue = [...scanned];
 const productFixes = [];
 const relapses = [];
 await Promise.all(
@@ -156,7 +219,6 @@ relapses.sort(
   (a, b) => b.date.localeCompare(a.date) || a.sha.localeCompare(b.sha)
 );
 
-const ledger = loadLedger(root);
 const plans = plansOf(root, ledger);
 const { activeAt } = gitMerges();
 const isIdle = (plan) => {
@@ -169,52 +231,52 @@ const isIdle = (plan) => {
 };
 const scopes = new Map();
 for (const relapse of relapses) {
-  const owned = new Map();
-  for (const path of new Set(
-    [...relapse.reworked.values()].flatMap((set) => [...set])
-  )) {
-    for (const id of owningScopes(ledger, path)) {
-      if (!owned.has(id)) owned.set(id, []);
-      owned.get(id).push(path);
-    }
-  }
+  const owned = ownersOf(relapse.reworked);
   for (const [id, paths] of owned.size ? owned : [[UNOWNED, []]]) {
     if (!scopes.has(id)) scopes.set(id, []);
     scopes.get(id).push({ ...relapse, paths });
   }
 }
 
-const rows = [...scopes].map(([id, list]) => {
-  const head = headsOf(ledger, id)
-    .filter((review) => review.verdict)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .at(-1);
-  const counted = head
-    ? list.filter((relapse) => relapse.date > head.date)
-    : list;
-  const week = counted.filter((relapse) => relapse.date >= weekStart);
-  const previous = counted.filter((relapse) => relapse.date < weekStart);
-  const open = plans.filter(
-    (plan) =>
-      plan.scopes.includes(id) &&
-      ['active', 'held'].includes(stateOf(plan.status))
-  );
-  const active = open.filter((plan) => !isIdle(plan)).map((plan) => plan.path);
-  const idle = open.filter(isIdle).map((plan) => plan.path);
-  const due =
-    id !== UNOWNED &&
-    week.length >= CARD_WEEK &&
-    previous.length >= CARD_PREVIOUS;
-  return {
-    id,
-    week,
-    previous,
-    since: head ? `${head.date} ${head.verdict}` : '-',
-    call: !due ? 'watch' : active.length ? `plan ${active.join(', ')}` : 'card',
-    idle,
-    question: ledger.scopes.get(id)?.question ?? '',
-  };
-});
+const rows = [...scopes]
+  .filter(([id]) => !targets || targets.has(id))
+  .map(([id, list]) => {
+    const head = headsOf(ledger, id)
+      .filter((review) => review.verdict)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .at(-1);
+    const counted = head
+      ? list.filter((relapse) => relapse.date > head.date)
+      : list;
+    const week = counted.filter((relapse) => relapse.date >= weekStart);
+    const previous = counted.filter((relapse) => relapse.date < weekStart);
+    const open = plans.filter(
+      (plan) =>
+        plan.scopes.includes(id) &&
+        ['active', 'held'].includes(stateOf(plan.status))
+    );
+    const active = open
+      .filter((plan) => !isIdle(plan))
+      .map((plan) => plan.path);
+    const idle = open.filter(isIdle).map((plan) => plan.path);
+    const due =
+      id !== UNOWNED &&
+      week.length >= CARD_WEEK &&
+      previous.length >= CARD_PREVIOUS;
+    return {
+      id,
+      week,
+      previous,
+      since: head ? `${head.date} ${head.verdict}` : '-',
+      call: !due
+        ? 'watch'
+        : active.length
+          ? `plan ${active.join(', ')}`
+          : 'card',
+      idle,
+      question: ledger.scopes.get(id)?.question ?? '',
+    };
+  });
 rows.sort(
   (a, b) =>
     b.week.length - a.week.length ||
@@ -225,10 +287,22 @@ rows.sort(
 const short = (sha) => sha.slice(0, 10);
 const count = (list, week) =>
   list.filter((item) => item.date >= weekStart === week).length;
+const shown = chosen.map((fix) => short(fix.sha)).join(', ');
 const out = [
-  `Relapses on ${values.ref}: fixes from ${previousStart} to ${values.until} that rework product lines a fix from the ${REWORK_DAYS} days before wrote, counted after each scope's newest verdict.`,
-  `Week ${weekStart}..${values.until}: ${count(relapses, true)} of ${count(productFixes, true)} product fixes relapse. Week before: ${count(relapses, false)} of ${count(productFixes, false)}.`,
-  `A scope cards with ${CARD_WEEK} or more relapses this week and ${CARD_PREVIOUS} or more the week before.`,
+  ...[
+    `Relapses on ${values.ref}: fixes from ${previousStart} to ${values.until} that rework product lines a fix from the ${REWORK_DAYS} days before wrote, counted after each scope's newest verdict.`,
+    !targets
+      ? `Week ${weekStart}..${values.until}: ${count(relapses, true)} of ${count(productFixes, true)} product fixes relapse. Week before: ${count(relapses, false)} of ${count(productFixes, false)}.`
+      : targets.size
+        ? `The relapses of --fix ${shown} fall in ${[...targets].join(', ')}, and the rows count every fix in those scopes.`
+        : chosen.length
+          ? `No relapse for --fix ${shown}: none reworks a recent fix in a review scope.`
+          : '',
+    ignored.length
+      ? `Counted nowhere, because none is a fix from ${previousStart} to ${values.until}: ${ignored.map(short).join(', ')}.`
+      : '',
+    `A scope cards with ${CARD_WEEK} or more relapses this week and ${CARD_PREVIOUS} or more the week before.`,
+  ].filter(Boolean),
   '',
   ['scope', 'week', 'before', 'since', 'call'].join('\t'),
   ...rows
