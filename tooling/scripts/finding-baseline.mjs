@@ -203,10 +203,10 @@ export function enforceBaseline({
   }
   if (mode === 'check') {
     if (decreases.length > 0) {
-      console.error(decreases.join('\n'));
       console.error(
-        `${file} lists findings the tree no longer holds. Run ${lowerCommand} to drop them.`
+        `${file} lists ${decreases.length} findings the tree no longer holds. Run ${lowerCommand} to drop them:`
       );
+      console.error(decreases.join('\n'));
       return 1;
     }
     console.info(`${file} matches the tree.`);
