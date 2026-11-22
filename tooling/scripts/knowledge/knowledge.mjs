@@ -76,6 +76,7 @@ const RULE_ID = /^EDIT-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3}$/;
 const RULE_PREFIX = /^EDIT-[A-Z0-9]+(?:-[A-Z0-9]+)*-?$/;
 const ISSUE_REF = /^([a-z][a-z0-9-]*)#(\d+)$/;
 const TAG = /\[(EDIT-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3}|[a-z][a-z0-9-]*#\d+)\]/g;
+const RULE_TAG = /\[(EDIT-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3})\]/g;
 const STATUSES = new Set(['locked', 'proposed', 'audit', 'deviation']);
 
 const git = (repo, args) =>
@@ -2001,6 +2002,27 @@ export function findings(
       } else if (!issueRefs.has(tag)) {
         at('K4', test.file, test.line, `tag ${tag} names no issue row`);
       }
+    }
+  }
+
+  // kb reads tags only from literal titles, so a rule tag in a title built at
+  // runtime, such as in a loop, silently drops that rule's proof.
+  const testsByFile = Map.groupBy(index.tests, (test) => test.file);
+  for (const [file, tests] of testsByFile) {
+    const unread = tests.find((test) => test.unsupported);
+    if (!unread) continue;
+    const read = new Set(tests.flatMap((test) => test.tags));
+    const hidden = new Set(
+      [...textOf(file).matchAll(RULE_TAG)].map((match) => match[1])
+    );
+    for (const tag of hidden) {
+      if (read.has(tag)) continue;
+      at(
+        'K4',
+        file,
+        unread.line,
+        `tag ${tag} sits in no test title kb can read; write the title as a string literal`
+      );
     }
   }
 
