@@ -95,7 +95,7 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 | A plan, its execution, a bug fix and PR closure | the project playbooks listed in the pstack block (`.agents/playbooks/`) |
 | "next", "what's next" and whether a suggested task is still worth doing | the `chips` skill's answer to a question about open chips, which writes no page or plan |
 | What to do from any input, whether an API or architecture proposal earns further work, a scope's next step to build, cut or redesign, judged against other editors, and a direction the owner settles in rounds of pushback and research before any verdict, typed as `explore <scope or idea>` | `verdict` |
-| The weekly look at which review scopes' fixes keep reworking recent fixes, and the Stop hook that runs the same count on each fix a session lands, with a redesign verdict carded for each scope that relapses two weeks running | `relapse`, the Verdict playbook's Relapse pass |
+| The weekly look at which review scopes' fixes keep reworking earlier fixes since the scope's last verdict, and the Stop hook that runs the same count on each fix a session lands, with a redesign verdict carded for each such scope | `relapse`, the Verdict playbook's Relapse pass |
 | Board-sized product ideas from outside editors and apps, ranked across every Plate feature with a free or Pro lean and an AI layer, and the product radar map | `radar` |
 | Public call shape and reusable API debt | `best-api` |
 | Architecture and API adoption plans, and read-only architecture audits, Plate or Plite | the Plan playbook with `.agents/playbooks/references/architecture.md` (its Audit section for a read-only audit) |
