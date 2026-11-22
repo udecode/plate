@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-comment-focus-card-decisions",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-comment-focus-card-decisions.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix new comment focus, comment button alignment and suggestion card decisions",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-discussion-new-comment-focus",
+      "kind": "fix",
+      "summary": "Focus the new comment when Cmd+Shift+M opens it on text whose discussion cards are open, so typing goes to the comment instead of replacing the selected text.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-comment-focus-card-decisions",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-22-discussion-suggestion-card",
+      "kind": "fix",
+      "summary": "List each property change of a suggestion once, even after typing splits the formatted text. Disable the card's Accept, Reject and related buttons while the editor is read-only.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-comment-focus-card-decisions",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-22-comment-form-actions",
+      "kind": "fix",
+      "summary": "Put the actions of a new comment and of a comment edit in the field's row as 24 px buttons, so they share one height and one center line.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-comment-focus-card-decisions",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

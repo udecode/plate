@@ -69,7 +69,7 @@ function SuggestionViewContent() {
       <EditorContainer className="h-[200px] rounded-md border">
         <Editor
           aria-label="Suggestion projection document"
-          className="h-auto px-[clamp(24px,8%,48px)] pb-8"
+          className="h-auto ps-[clamp(24px,8%,48px)] pe-13 pb-8"
           readOnly
           variant="demo"
         />

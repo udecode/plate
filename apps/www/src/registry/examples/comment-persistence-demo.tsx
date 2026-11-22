@@ -167,7 +167,7 @@ export default function CommentPersistenceDemo() {
           </Toolbar>
           <Editor
             aria-label="Saved comments document"
-            className="h-auto min-h-[240px] px-[clamp(24px,8%,48px)] pb-12"
+            className="h-auto min-h-[240px] ps-[clamp(24px,8%,48px)] pe-13 pb-12"
             variant="demo"
           />
         </EditorContainer>

@@ -610,10 +610,21 @@ const describeSuggestion = (
     }))
   );
   const descriptions: string[] = [];
+  let propertyLines = new Set<string>();
 
   for (let index = 0; index < parts.length; index++) {
-    const { endsChange, part } = parts[index];
+    const { endsChange, part, startsChange } = parts[index];
     const next = parts[index + 1];
+
+    if (startsChange) propertyLines = new Set();
+    if (part.kind === 'properties') {
+      for (const line of describeSuggestionPart(part)) {
+        if (propertyLines.has(line)) continue;
+        propertyLines.add(line);
+        descriptions.push(line);
+      }
+      continue;
+    }
 
     if (
       endsChange &&
@@ -667,6 +678,7 @@ function SuggestionDiscussionCard({
 }) {
   const editor = useEditor();
   const { api: comments } = useEditor().plugin(CommentsPlugin);
+  const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const user = useCommentUser(group.authorId);
   const groupKey = `${group.id}:${group.revision}`;
   const [outcomeState, setOutcomeState] = React.useState<{
@@ -775,6 +787,7 @@ function SuggestionDiscussionCard({
           <Button
             aria-label="Accept suggestion"
             className="size-6 p-1 text-muted-foreground"
+            disabled={readOnly}
             onClick={() => decide('accept')}
             variant="ghost"
           >
@@ -783,6 +796,7 @@ function SuggestionDiscussionCard({
           <Button
             aria-label="Reject suggestion"
             className="size-6 p-1 text-muted-foreground"
+            disabled={readOnly}
             onClick={() => decide('reject')}
             variant="ghost"
           >
@@ -819,6 +833,7 @@ function SuggestionDiscussionCard({
             {outcome?.status === 'blocked' && relatedIds.length > 0 && (
               <div className="flex gap-2">
                 <Button
+                  disabled={readOnly}
                   onClick={() => decide('accept', relatedIds)}
                   size="sm"
                   variant="outline"
@@ -826,6 +841,7 @@ function SuggestionDiscussionCard({
                   Accept related
                 </Button>
                 <Button
+                  disabled={readOnly}
                   onClick={() => decide('reject', relatedIds)}
                   size="sm"
                   variant="outline"
@@ -1265,6 +1281,14 @@ function DiscussionPopover({
   const openRef = React.useRef(open);
   const [placedPending, setPlacedPending] =
     React.useState<typeof pending>(null);
+  const [composerMount, setComposerMount] = React.useState({
+    count: 0,
+    pending,
+  });
+
+  if (pending && composerMount.pending !== pending) {
+    setComposerMount({ count: composerMount.count + 1, pending });
+  }
 
   React.useLayoutEffect(() => {
     openRef.current = open;
@@ -1307,6 +1331,7 @@ function DiscussionPopover({
         <FloatingPopoverContent
           align="center"
           anchorHidden={hidden}
+          key={composerMount.count}
           aria-label={pending ? 'New comment' : 'Discussion items'}
           className="max-h-[min(50dvh,calc(-24px+var(--floating-popover-available-height)))] w-[380px] max-w-[calc(100vw-24px)] min-w-[130px] gap-0 overflow-y-auto p-0 data-[state=closed]:opacity-0"
           data-discussion-popover=""

@@ -248,10 +248,7 @@ function CommentInput({
               autoComplete="off"
               autoFocus={autoFocus}
               enterKeyHint="send"
-              className={cn(
-                'min-h-[25px] grow pt-0.5',
-                showAvatar ? 'pe-8' : 'pe-16'
-              )}
+              className="min-h-[25px] min-w-0 grow basis-0 pt-0.5"
               onKeyDown={(event) => {
                 if (event.key === 'Escape' && onCancel && !submitting.current) {
                   event.preventDefault();
@@ -276,10 +273,10 @@ function CommentInput({
             />
 
             {!showAvatar && onCancel && (
-              <div className="ms-auto flex shrink-0 gap-1">
+              <div className="flex shrink-0 items-center gap-1 self-end">
                 <Button
                   aria-label="Cancel comment"
-                  className="size-[28px]"
+                  className="size-6"
                   disabled={saving}
                   onClick={cancel}
                   size="icon"
@@ -292,6 +289,7 @@ function CommentInput({
                 </Button>
                 <Button
                   aria-label="Send comment"
+                  className="size-6"
                   disabled={!canSubmit || saving}
                   size="icon"
                   type="submit"
@@ -305,13 +303,13 @@ function CommentInput({
             )}
 
             {showAvatar && (
-              <div className="absolute end-0.5 bottom-0.5 ms-auto flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1 self-end">
                 {canSubmit && onCancel && (
                   <Button
                     aria-label={cancelLabel}
                     disabled={saving}
                     onClick={cancel}
-                    size="sm"
+                    size="xs"
                     type="button"
                     variant="ghost"
                   >

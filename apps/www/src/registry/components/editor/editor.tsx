@@ -102,9 +102,10 @@ const editorVariants = cva(
           'rounded-none border-none bg-transparent text-base md:text-sm'
         ),
         default:
-          'size-full px-[max(clamp(24px,12.5%,64px),calc(50%-350px))] pt-4 pb-72 text-base',
-        demo: 'size-full px-[max(clamp(24px,12.5%,64px),calc(50%-350px))] pt-4 pb-72 text-base',
-        fullWidth: 'size-full px-[clamp(24px,15%,96px)] pt-4 pb-72 text-base',
+          'size-full ps-[max(clamp(24px,12.5%,64px),calc(50%-350px))] pe-[max(clamp(52px,12.5%,64px),calc(50%-350px))] pt-4 pb-72 text-base',
+        demo: 'size-full ps-[max(clamp(24px,12.5%,64px),calc(50%-350px))] pe-[max(clamp(52px,12.5%,64px),calc(50%-350px))] pt-4 pb-72 text-base',
+        fullWidth:
+          'size-full ps-[clamp(24px,15%,96px)] pe-[clamp(52px,15%,96px)] pt-4 pb-72 text-base',
         none: '',
         select: 'px-3 py-2 text-base data-readonly:w-fit',
       },

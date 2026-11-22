@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-22-comment-focus-card-decisions",
+      "href": "/registry/changelog/2026-11-22-comment-focus-card-decisions.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix new comment focus, comment button alignment and suggestion card decisions",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion", "comment"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-create-base-color-tw-prefix",
       "href": "/registry/changelog/2026-11-22-create-base-color-tw-prefix.json",
       "status": "draft",

@@ -1,0 +1,22 @@
+---
+id: 2026-11-22-comment-focus-card-decisions
+date: 2026-11-22
+status: draft
+kind: fix
+summary: 'Fix new comment focus, comment button alignment and suggestion card decisions'
+change: { 'type': 'source', 'date': '2026-11-22', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-22-discussion-new-comment-focus","kind":"fix","migrationNotes":[]} -->
+
+- **`discussion`**: Focus the new comment when Cmd+Shift+M opens it on text whose discussion cards are open, so typing goes to the comment instead of replacing the selected text.
+
+<!-- entry: {"id":"2026-11-22-discussion-suggestion-card","kind":"fix","migrationNotes":[]} -->
+
+- **`discussion`**: List each property change of a suggestion once, even after typing splits the formatted text. Disable the card's Accept, Reject and related buttons while the editor is read-only.
+
+<!-- entry: {"id":"2026-11-22-comment-form-actions","kind":"fix","migrationNotes":[]} -->
+
+- **`comment`**: Put the actions of a new comment and of a comment edit in the field's row as 24 px buttons, so they share one height and one center line.

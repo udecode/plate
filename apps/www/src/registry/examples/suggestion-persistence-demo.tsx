@@ -119,7 +119,7 @@ function SuggestionPersistenceContent() {
       </Toolbar>
       <Editor
         aria-label="Saved suggestions document"
-        className="h-auto min-h-[200px] px-[clamp(24px,8%,48px)] pb-12"
+        className="h-auto min-h-[200px] ps-[clamp(24px,8%,48px)] pe-13 pb-12"
         variant="demo"
       />
     </EditorContainer>

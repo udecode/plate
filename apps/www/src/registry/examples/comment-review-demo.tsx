@@ -65,7 +65,7 @@ export default function CommentReviewDemo() {
             </Toolbar>
             <Editor
               aria-label="Read-only comments document"
-              className="h-auto px-[clamp(24px,8%,48px)] pb-6"
+              className="h-auto ps-[clamp(24px,8%,48px)] pe-13 pb-6"
               readOnly
               variant="demo"
             />

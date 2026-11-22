@@ -47,7 +47,7 @@ export default function CommentOverlapDemo() {
         </Toolbar>
         <Editor
           aria-label="Overlapping comments document"
-          className="h-auto min-h-[280px] px-[clamp(24px,8%,48px)] pb-16"
+          className="h-auto min-h-[280px] ps-[clamp(24px,8%,48px)] pe-13 pb-16"
           variant="demo"
         />
       </EditorContainer>
