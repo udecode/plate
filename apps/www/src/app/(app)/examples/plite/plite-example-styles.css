@@ -328,27 +328,8 @@ details > summary {
   z-index: 3; /* To appear above the underlay */
 }
 
-.example-content {
-  max-width: 42em;
-  margin: 20px auto;
-  padding: 20px;
-  position: relative;
-  z-index: 0;
-  background: #fff;
-}
-
-.example-warning {
-  max-width: 42em;
-  margin: 20px auto;
-  padding: 20px;
-  background: #fffae0;
-}
-
-.example-warning > pre {
-  background: #fbf1bd;
-  white-space: pre;
-  overflow-x: scroll;
-  margin-bottom: 0;
+[data-editor-example] [data-editor-placeholder] {
+  opacity: 0.6;
 }
 
 .flex-center {
@@ -425,6 +406,8 @@ details > summary {
 }
 /* Plite example classes live in the site stylesheet. */
 .editor-comment-mode-panel {
+  width: 100%;
+  min-width: 0;
   max-width: 1180px;
   margin: 40px auto;
   padding: 0 24px 48px;
@@ -458,7 +441,7 @@ details > summary {
 
 @media (max-width: 900px) {
   .editor-comment-mode-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -504,19 +487,19 @@ details > summary {
 
 .editor-comment-mode-highlight {
   border-radius: 4px;
-  color: #111827;
+  color: var(--foreground);
 }
 
 .editor-comment-mode-highlight-question {
-  background-color: #dbeafe;
+  background-color: color-mix(in srgb, #3b82f6 22%, var(--background));
 }
 
 .editor-comment-mode-highlight-resolved {
-  background-color: #e2e8f0;
+  background-color: color-mix(in srgb, #64748b 22%, var(--background));
 }
 
 .editor-comment-mode-highlight-review {
-  background-color: #fef3c7;
+  background-color: color-mix(in srgb, #f59e0b 25%, var(--background));
 }
 
 .editor-comment-mode-highlight-single {
@@ -572,6 +555,8 @@ details > summary {
 }
 
 .editor-decorations-async-container {
+  width: 100%;
+  min-width: 0;
   max-width: 760px;
   margin: 40px auto;
   padding: 0 24px 48px;
@@ -591,8 +576,8 @@ details > summary {
 }
 
 .editor-decorations-async-highlight {
-  background: #fde68a;
-  color: #111827;
+  background: color-mix(in srgb, #f59e0b 35%, var(--background));
+  color: var(--foreground);
   border-radius: 3px;
   box-decoration-break: clone;
 }
@@ -606,6 +591,8 @@ details > summary {
 }
 
 .editor-document-state-panel {
+  width: 100%;
+  min-width: 0;
   max-width: 760px;
   margin: 40px auto;
   padding: 0 24px 48px;
@@ -693,6 +680,8 @@ details > summary {
 }
 
 .editor-linting-panel {
+  width: 100%;
+  min-width: 0;
   max-width: 760px;
   margin: 40px auto;
   padding: 0 24px 48px;
@@ -714,7 +703,7 @@ details > summary {
 
 .editor-linting-code {
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: 6px;
   background: #111827;
   color: white;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -738,22 +727,22 @@ details > summary {
 
 .editor-linting-segment {
   border-radius: 4px;
-  color: #111827;
+  color: var(--foreground);
 }
 
 .editor-linting-segment-error {
   border-bottom: 2px solid #dc2626;
-  background-color: #fee2e2;
+  background-color: color-mix(in srgb, #ef4444 20%, var(--background));
 }
 
 .editor-linting-segment-info {
   border-bottom: 2px solid #2563eb;
-  background-color: #dbeafe;
+  background-color: color-mix(in srgb, #3b82f6 20%, var(--background));
 }
 
 .editor-linting-segment-warning {
   border-bottom: 2px solid #f59e0b;
-  background-color: #fef3c7;
+  background-color: color-mix(in srgb, #f59e0b 25%, var(--background));
 }
 
 .editor-linting-editor {
@@ -1317,8 +1306,8 @@ details > summary {
 }
 
 .editor-search-highlighting-highlight {
-  background-color: #ffeeba;
-  color: #111827;
+  background-color: color-mix(in srgb, #facc15 35%, var(--background));
+  color: var(--foreground);
 }
 
 .editor-search-highlighting-bold {
@@ -1331,6 +1320,11 @@ details > summary {
 
 .editor-inlines-chromium-bugfix {
   font-size: 0;
+}
+
+.editor-inlines-link {
+  color: var(--brand);
+  text-decoration: underline;
 }
 
 .editor-inlines-link-selected,

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-ui-sweep-fixes",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-ui-sweep-fixes.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix the turn-into label in code blocks and add comments to two demos",
+  "targets": [
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar-demo",
+      "files": [
+        "apps/www/src/registry/examples/floating-toolbar-demo.tsx",
+        "apps/www/src/registry/examples/values/floating-toolbar-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "demo",
+      "files": [
+        "apps/www/src/registry/examples/demo.tsx",
+        "apps/www/src/registry/examples/playground-demo.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-turn-into-toolbar-fix-label-code-blocks-8cac35b1",
+      "kind": "fix",
+      "summary": "Fix the button label, which read Text instead of Code with the caret in a code block.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["turn-into-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-ui-sweep-fixes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-22-floating-toolbar-demo-comment-button-4f1d2a7c",
+      "kind": "fix",
+      "summary": "Add the discussion kit, so the floating toolbar shows the Comment button its text describes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar-demo"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-ui-sweep-fixes",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-22-demo-playground-document-9b3e6c51",
+      "kind": "behavior",
+      "summary": "Install the playground demo, whose document shows its suggestion marks and starter comments.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-ui-sweep-fixes",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

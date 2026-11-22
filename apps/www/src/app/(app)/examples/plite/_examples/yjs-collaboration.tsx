@@ -1102,7 +1102,7 @@ const Element = ({
       return (
         <blockquote
           {...attributes}
-          className="border-l-2 border-slate-300 pl-3 text-slate-700"
+          className="border-l-2 border-border pl-3 text-muted-foreground"
         >
           {children}
         </blockquote>
@@ -1167,7 +1167,7 @@ const CursorStatus = ({ editor }: { editor: YjsEditor }) => {
   const clientIds = useYjsRemoteCursorIds(editor);
 
   return (
-    <span className="text-xs text-slate-500">
+    <span className="text-xs text-muted-foreground">
       {clientIds.length === 0
         ? 'remote:none'
         : clientIds.map((clientId, index) => (
@@ -1289,15 +1289,15 @@ const PeerPanelContent = ({
   }, [editor, peer.name]);
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
+    <section className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
+          <h2 className="text-sm font-semibold text-foreground">{label}</h2>
           <div className="mt-0.5" data-test-id={`yjs-peer-${peer.id}-cursors`}>
             <CursorStatus editor={editor} />
           </div>
           <div
-            className="mt-0.5 text-xs text-slate-500"
+            className="mt-0.5 text-xs text-muted-foreground"
             data-test-id={`yjs-peer-${peer.id}-history`}
           >
             undo:{peer.undoDepth};redo:{peer.redoDepth}
@@ -1308,8 +1308,8 @@ const PeerPanelContent = ({
             className={cn(
               'rounded-full px-2 py-1 text-xs font-medium',
               connected
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-amber-50 text-amber-700'
+                ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                : 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
             )}
           >
             {connected ? 'connected' : 'offline'}
@@ -1317,7 +1317,9 @@ const PeerPanelContent = ({
           <span
             className={cn(
               'rounded-full px-2 py-1 text-xs font-medium',
-              ready ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600'
+              ready
+                ? 'bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300'
+                : 'bg-muted text-muted-foreground'
             )}
             data-admission-status={admission.state}
           >
@@ -1327,7 +1329,7 @@ const PeerPanelContent = ({
       </div>
 
       {admission.state === 'error' && (
-        <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
           <span>{errorMessage(admission.cause)}</span>
           <Button
             onClick={() => editor.api.yjs.retryImport()}
@@ -1341,7 +1343,7 @@ const PeerPanelContent = ({
       )}
 
       {peer.id === 'a' && (
-        <div className="grid gap-2 border-b border-slate-200 px-3 py-2 text-xs">
+        <div className="grid gap-2 border-b border-border px-3 py-2 text-xs">
           <div className="flex flex-wrap gap-1.5">
             <CommandButton
               onRun={() => {
@@ -1379,7 +1381,7 @@ const PeerPanelContent = ({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
+      <div className="flex flex-wrap gap-1.5 border-b border-border px-3 py-2">
         <CommandButton
           onRun={() => {
             selectHello(network, peer, editor);
@@ -1435,7 +1437,7 @@ const PeerPanelContent = ({
         </CommandButton>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
+      <div className="flex flex-wrap gap-1.5 border-b border-border px-3 py-2">
         <CommandButton
           onRun={() => {
             runPeerCommand(network, peer, editor, (tx) => appendText(peer, tx));
@@ -1602,7 +1604,7 @@ const PeerPanelContent = ({
         <Editable
           aria-busy={admission.state === 'waiting'}
           autoFocus={peer.id === 'a'}
-          className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
+          className="min-h-28 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm leading-6 outline-none focus:border-ring focus:bg-card"
           key={peer.renderEpoch}
           placeholder="Start typing"
           readOnly={!ready}
@@ -1685,15 +1687,15 @@ const YjsCollaborationExample = () => {
 
   if (!network) {
     return (
-      <output className="flex min-h-screen items-center justify-center bg-slate-100 text-sm text-slate-500">
+      <output className="flex min-h-screen items-center justify-center bg-muted text-sm text-muted-foreground">
         Starting a local collaboration room…
       </output>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">
-      <div className="mx-auto mb-4 max-w-7xl rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm">
+    <main className="min-h-screen bg-muted px-4 py-5 text-foreground">
+      <div className="mx-auto mb-4 max-w-7xl rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-sm">
         <span className="font-medium">Claimed room schema: </span>
         <output
           data-schema-fingerprint={network.roomSchemaIdentity.fingerprint}

@@ -250,8 +250,10 @@ const splitJoinMark = (element: object) => {
   return cn(
     (kinds.has('split') || kinds.has('join')) &&
       "relative before:absolute before:-left-4 before:content-['¶']",
-    kinds.has('split') && 'before:text-emerald-700',
-    kinds.has('join') && 'before:text-red-700 before:line-through'
+    kinds.has('split') &&
+      'before:text-emerald-700 dark:before:text-emerald-300',
+    kinds.has('join') &&
+      'before:text-red-700 before:line-through dark:before:text-red-300'
   );
 };
 
@@ -261,9 +263,12 @@ const ReviewLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
     <span
       {...attributes}
       className={cn(
-        kinds.has('insert') && 'bg-emerald-100 text-emerald-800 underline',
-        kinds.has('delete') && 'bg-red-50 text-red-700 line-through',
-        kinds.has('format') && 'bg-amber-100 text-gray-900'
+        kinds.has('insert') &&
+          'bg-emerald-100 text-emerald-800 underline dark:bg-emerald-950 dark:text-emerald-200',
+        kinds.has('delete') &&
+          'bg-red-50 text-red-700 line-through dark:bg-red-950 dark:text-red-300',
+        kinds.has('format') &&
+          'bg-amber-100 text-gray-900 dark:bg-amber-950 dark:text-amber-100'
       )}
     >
       {children}

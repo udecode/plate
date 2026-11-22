@@ -147,11 +147,8 @@
       "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
       "2025-11-20-biome-ultracite"
     ],
-    "field": ["2026-11-21-add-field"],
-    "field-static": ["2026-11-21-add-field"],
-    "field-toolbar-button": ["2026-11-21-add-field"],
-    "field-demo": ["2026-11-21-add-field"],
     "turn-into-toolbar-button": [
+      "2026-11-22-ui-sweep-fixes",
       "2026-11-21-block-menus-disable-refused-items",
       "2026-11-19-rtl-editor-ui",
       "2026-11-18-registry-icon-library",
@@ -169,6 +166,12 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-28-add-code-drawing-node"
     ],
+    "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
+    "demo": ["2026-11-22-ui-sweep-fixes"],
+    "field": ["2026-11-21-add-field"],
+    "field-static": ["2026-11-21-add-field"],
+    "field-toolbar-button": ["2026-11-21-add-field"],
+    "field-demo": ["2026-11-21-add-field"],
     "insert-toolbar-button": [
       "2026-11-21-block-menus-disable-refused-items",
       "2026-11-19-rtl-editor-ui",

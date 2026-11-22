@@ -1360,7 +1360,10 @@ export const demoExamples: Registry['items'] = (
       description:
         'Floating toolbar with text formatting and AI assistance options.',
       files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/floating-toolbar-demo.tsx',
+          type: 'registry:example',
+        },
         {
           path: 'examples/values/floating-toolbar-value.tsx',
           type: 'registry:example',
@@ -1375,7 +1378,12 @@ export const demoExamples: Registry['items'] = (
         ],
       },
       name: 'floating-toolbar-demo',
-      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      registryDependencies: [
+        '@plate/discussion',
+        '@plate/editor',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
       type: 'registry:example',
     },
     {
@@ -1843,9 +1851,24 @@ export const internalExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      files: [{ path: 'examples/demo.tsx', type: 'registry:example' }],
+      files: [
+        { path: 'examples/playground-demo.tsx', type: 'registry:example' },
+      ],
       name: 'demo',
-      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
+      registryDependencies: [
+        '@plate/code-block-diagram',
+        '@plate/code-block-diagram-mermaid',
+        '@plate/code-block-diagram-graphviz',
+        '@plate/code-block-diagram-flowchart',
+        '@plate/comment',
+        '@plate/discussion',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/excalidraw',
+        '@plate/upload-browser',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
       type: 'registry:example',
     },
     {

@@ -102,6 +102,7 @@ const RichTextSchema = defineEditorSchema('schema:derived', {
   properties: [
     schema.elementProperty('align', property.string(), {
       target: target.group('alignable'),
+      typeChange: 'preserve-if-allowed',
     }),
     ...TEXT_MARK_TYPES.map((mark) =>
       schema.textProperty(

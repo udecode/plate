@@ -890,7 +890,7 @@ const Element = ({
       return (
         <blockquote
           {...attributes}
-          className="border-l-2 border-slate-300 pl-3 text-slate-700"
+          className="border-l-2 border-border pl-3 text-muted-foreground"
         >
           {children}
         </blockquote>
@@ -955,7 +955,7 @@ const CursorStatus = ({ editor }: { editor: YjsEditor }) => {
   const clientIds = useYjsRemoteCursorIds(editor);
 
   return (
-    <span className="text-xs text-slate-500">
+    <span className="text-xs text-muted-foreground">
       {clientIds.length === 0
         ? 'remote:none'
         : clientIds.map((clientId, index) => (
@@ -1054,10 +1054,10 @@ const ProviderBackedPeerContent = ({
   }, [editor, peer.color, peer.name]);
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
+    <section className="rounded-lg border border-border bg-card shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-3 py-2">
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
+          <h2 className="text-sm font-semibold text-foreground">{label}</h2>
           <div className="mt-0.5" data-test-id={`yjs-peer-${peer.id}-cursors`}>
             <CursorStatus editor={editor} />
           </div>
@@ -1067,8 +1067,8 @@ const ProviderBackedPeerContent = ({
             className={cn(
               'rounded-full px-2 py-1 text-xs font-medium',
               connected
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-amber-50 text-amber-700'
+                ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                : 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
             )}
           >
             {connected ? 'connected' : status}
@@ -1076,7 +1076,9 @@ const ProviderBackedPeerContent = ({
           <span
             className={cn(
               'rounded-full px-2 py-1 text-xs font-medium',
-              synced ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600'
+              synced
+                ? 'bg-sky-50 dark:bg-sky-950 text-sky-700 dark:text-sky-300'
+                : 'bg-muted text-muted-foreground'
             )}
           >
             {synced ? 'synced' : 'syncing'}
@@ -1086,7 +1088,7 @@ const ProviderBackedPeerContent = ({
               'rounded-full px-2 py-1 text-xs font-medium',
               ready
                 ? 'bg-violet-50 text-violet-700'
-                : 'bg-slate-100 text-slate-600'
+                : 'bg-muted text-muted-foreground'
             )}
             data-admission-status={admission.state}
           >
@@ -1096,7 +1098,7 @@ const ProviderBackedPeerContent = ({
       </div>
 
       {admission.state === 'error' && (
-        <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="flex items-center justify-between gap-3 border-b border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
           <span>{errorMessage(admission.cause)}</span>
           <Button
             onClick={() => editor.api.yjs.retryImport()}
@@ -1109,7 +1111,7 @@ const ProviderBackedPeerContent = ({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2">
+      <div className="flex flex-wrap gap-1.5 border-b border-border px-3 py-2">
         <CommandButton
           disabled={!ready}
           onRun={() => {
@@ -1163,7 +1165,7 @@ const ProviderBackedPeerContent = ({
       </div>
 
       <fieldset
-        className="flex flex-wrap gap-1.5 border-b border-slate-200 px-3 py-2"
+        className="flex flex-wrap gap-1.5 border-b border-border px-3 py-2"
         disabled={!ready}
       >
         <CommandButton
@@ -1314,7 +1316,7 @@ const ProviderBackedPeerContent = ({
         <Editable
           aria-busy={admission.state === 'waiting'}
           autoFocus={peer.id === 'a'}
-          className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
+          className="min-h-28 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm leading-6 outline-none focus:border-ring focus:bg-card"
           key={renderEpoch}
           onSelect={() => {
             if (ready) {
@@ -1398,7 +1400,7 @@ const ProviderPeer = ({
 
   if (!provider) {
     return (
-      <output className="flex min-h-96 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-500 shadow-sm">
+      <output className="flex min-h-96 items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground shadow-sm">
         Starting {peer.name}…
       </output>
     );
@@ -1440,8 +1442,8 @@ const YjsHocuspocusExample = () => {
 
   if (!launch) {
     return (
-      <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">
-        <output className="mx-auto flex min-h-96 max-w-3xl items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-slate-500 shadow-sm">
+      <main className="min-h-screen bg-muted px-4 py-5 text-foreground">
+        <output className="mx-auto flex min-h-96 max-w-3xl items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground shadow-sm">
           Starting collaboration…
         </output>
       </main>
@@ -1451,7 +1453,7 @@ const YjsHocuspocusExample = () => {
   const { autoConnect, peers, roomName } = launch;
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-950">
+    <main className="min-h-screen bg-muted px-4 py-5 text-foreground">
       <div
         className={cn(
           'mx-auto grid gap-4',

@@ -1263,6 +1263,21 @@ export function auditPlateDocCode(
       continue;
     }
 
+    for (const statement of ast.program.body) {
+      if (statement.type !== 'ImportDeclaration') continue;
+      const blankLine = fence.code
+        .slice(statement.start, statement.end)
+        .split(/\r?\n/)
+        .findIndex((line) => line.trim() === '');
+      if (blankLine === -1) continue;
+      issues.push({
+        column: 1,
+        file,
+        line: fence.line + statement.loc.start.line - 1 + blankLine,
+        reason: 'blank line inside an import list',
+      });
+    }
+
     const staticValueBindings = collectStaticDocValueBindings(ast);
     const fenceNames = collectFenceNames(ast);
     const withCalls = (entries) =>

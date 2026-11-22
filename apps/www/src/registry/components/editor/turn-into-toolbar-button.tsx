@@ -390,6 +390,10 @@ export function TurnIntoToolbarButton() {
   const details = editor.plugin(BaseDetailsPlugin);
   const code = editor.plugin(BaseCodeBlockPlugin);
   const columns = editor.plugin(BaseColumnGroupPlugin);
+  const triggerLabel =
+    code.installed && structural.code.active
+      ? 'Code'
+      : getTurnIntoLabel(leafValue);
   const leafItems: LeafItem[] = [
     {
       icon: <PilcrowIcon />,
@@ -594,14 +598,14 @@ export function TurnIntoToolbarButton() {
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton
-          aria-label={`Turn into: ${getTurnIntoLabel(leafValue)}`}
+          aria-label={`Turn into: ${triggerLabel}`}
           className="min-w-[125px]"
           disabled={readOnly || !hasSelection}
           pressed={open}
           tooltip="Turn into"
           isDropdown
         >
-          {getTurnIntoLabel(leafValue)}
+          {triggerLabel}
         </ToolbarButton>
       </DropdownMenuTrigger>
 

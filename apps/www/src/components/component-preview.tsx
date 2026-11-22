@@ -120,7 +120,8 @@ export function ComponentPreview({
             {mounted ? (
               <div
                 className={cn(
-                  'preview relative flex size-full min-h-[350px] flex-col p-0',
+                  'preview relative flex size-full flex-col p-0',
+                  !height && 'min-h-[350px]',
                   padding === 'md' && 'p-4',
                   {
                     'items-center': align === 'center',

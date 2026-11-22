@@ -454,7 +454,10 @@ const LinkComponent = ({
   return (
     <a
       {...attributes}
-      className={cn(selected && 'editor-inlines-link-selected')}
+      className={cn(
+        'editor-inlines-link',
+        selected && 'editor-inlines-link-selected'
+      )}
       href={safeUrl}
     >
       <InlineChromiumBugfix />

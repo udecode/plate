@@ -1,5 +1,5 @@
 {
-  "generation": "6a6cb4515d79b885eba492e2cb091a88b204d659ab08d0e5b32446e8386d0280",
+  "generation": "91f3ea6674dbabbc943b6cb1e631a37be9f6c3adb74e9fe737d103a9ef712d89",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -6776,7 +6776,7 @@
           "description": "Floating toolbar with text formatting and AI assistance options.",
           "files": [
             {
-              "path": "examples/demo.tsx",
+              "path": "examples/floating-toolbar-demo.tsx",
               "type": "registry:example"
             },
             {
@@ -6795,6 +6795,7 @@
           },
           "name": "floating-toolbar-demo",
           "registryDependencies": [
+            "@plate/discussion",
             "@plate/editor",
             "@plate/ai",
             "@plate/dnd"
@@ -7399,13 +7400,22 @@
         {
           "files": [
             {
-              "path": "examples/demo.tsx",
+              "path": "examples/playground-demo.tsx",
               "type": "registry:example"
             }
           ],
           "name": "demo",
           "registryDependencies": [
+            "@plate/code-block-diagram",
+            "@plate/code-block-diagram-mermaid",
+            "@plate/code-block-diagram-graphviz",
+            "@plate/code-block-diagram-flowchart",
+            "@plate/comment",
+            "@plate/discussion",
             "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/excalidraw",
+            "@plate/upload-browser",
             "@plate/ai",
             "@plate/dnd"
           ],
@@ -14362,7 +14372,7 @@
           "description": "Floating toolbar with text formatting and AI assistance options.",
           "files": [
             {
-              "path": "examples/demo.tsx",
+              "path": "examples/floating-toolbar-demo.tsx",
               "type": "registry:example"
             },
             {
@@ -14381,6 +14391,7 @@
           },
           "name": "floating-toolbar-demo",
           "registryDependencies": [
+            "@plate/discussion",
             "@plate/editor",
             "@plate/ai",
             "@plate/dnd"
@@ -14985,13 +14996,22 @@
         {
           "files": [
             {
-              "path": "examples/demo.tsx",
+              "path": "examples/playground-demo.tsx",
               "type": "registry:example"
             }
           ],
           "name": "demo",
           "registryDependencies": [
+            "@plate/code-block-diagram",
+            "@plate/code-block-diagram-mermaid",
+            "@plate/code-block-diagram-graphviz",
+            "@plate/code-block-diagram-flowchart",
+            "@plate/comment",
+            "@plate/discussion",
             "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/excalidraw",
+            "@plate/upload-browser",
             "@plate/ai",
             "@plate/dnd"
           ],

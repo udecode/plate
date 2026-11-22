@@ -64,6 +64,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-22-ui-sweep-fixes",
+      "href": "/registry/changelog/2026-11-22-ui-sweep-fixes.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix the turn-into label in code blocks and add comments to two demos",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "floating-toolbar-demo", "demo"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-21-add-field",
       "href": "/registry/changelog/2026-11-21-add-field.json",
       "status": "draft",
