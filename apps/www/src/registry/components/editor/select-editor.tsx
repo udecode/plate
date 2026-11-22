@@ -541,7 +541,9 @@ function SelectEditorField({
                     <span className="flex items-center gap-1">
                       <PlusIcon className="text-foreground" />
                       Create new label:
-                      <span className="text-gray-600">"{option.value}"</span>
+                      <span className="text-muted-foreground">
+                        "{option.value}"
+                      </span>
                     </span>
                   ) : (
                     option.value

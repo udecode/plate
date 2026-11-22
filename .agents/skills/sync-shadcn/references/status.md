@@ -11,6 +11,9 @@ Purpose:
 - list deferred decisions so the user can choose what to do next
 - list reviewable Plate-vs-shadcn differences that are still intentionally
   undecided or deferred, especially visual parity gaps from scoped sync plans
+- report create compatibility: each `shadcn create` option, install marker
+  and install transformer at `origin/main` that has no verdict, and each
+  verdict that is still `pending` or `defer`
 - recommend the next command or decision
 
 Status mode may:
@@ -31,6 +34,8 @@ Status mode may:
 - summarize remaining reviewable differences from the matched plan's
   `Recommended Merge Slices`, `Visual Evidence`, `Implementation Result`, and
   `partialSyncs[*].deferred`
+- run `pnpm sync-shadcn compat` after the fetch, which reads the create
+  options at `origin/main` and writes no file
 
 Status mode must not:
 
@@ -100,6 +105,7 @@ TARGET=$(git -C ../shadcn rev-parse origin/main)
 PLANNED=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("docs/sync/shadcn/status.json", "utf8")).lastPlannedCommit || "")')
 git -C ../shadcn log --oneline --decorate "$PLANNED..$TARGET" -- apps/v4
 git -C ../shadcn diff --name-status --find-renames "$PLANNED..$TARGET" -- apps/v4
+pnpm sync-shadcn compat
 ```
 
 Status output shape:
@@ -120,6 +126,9 @@ Reviewable differences:
 
 Deferred decisions:
 - <item>
+
+Create compatibility at <origin/main-short>:
+- <option>: no verdict | <state> in <item id>, <decision>
 
 Next: <run review | rerun planning | decide deferred item | implement accepted slice | advance baseline>
 ```

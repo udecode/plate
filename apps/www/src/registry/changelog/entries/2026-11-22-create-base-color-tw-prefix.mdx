@@ -1,0 +1,18 @@
+---
+id: 2026-11-22-create-base-color-tw-prefix
+date: 2026-11-22
+status: draft
+kind: fix
+summary: "Editor UI follows shadcn create's base color and Tailwind prefix"
+change: { 'type': 'source', 'date': '2026-11-22', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-22-toc-editor-ui-follows-shadcn-3f34fa95","kind":"fix","migrationNotes":[]} -->
+
+- **`toc`**, **`toc-static`**, **`select-editor`**, **`math`**, **`math-static`**: Fix gray text and tints that ignored the base color picked in `shadcn create`. The empty table of contents, the new-label value and the empty equation now use theme colors.
+
+<!-- entry: {"id":"2026-11-22-dnd-table-static-tw-prefix","kind":"fix","migrationNotes":[]} -->
+
+- **`dnd`**, **`table-static`**: Fix the nested block gutter and the static table cell borders in projects with a Tailwind prefix. The CLI now prefixes their classes.

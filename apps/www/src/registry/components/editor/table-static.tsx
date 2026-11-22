@@ -62,13 +62,10 @@ export function TableCellElementStatic(
         isHeader && 'text-start font-normal *:m-0',
         'before:size-full',
         "before:absolute before:box-border before:select-none before:content-['']",
-        borders &&
-          cn(
-            borders.bottom?.width && 'before:border-b before:border-b-border',
-            borders.right?.width && 'before:border-e before:border-e-border',
-            borders.left?.width && 'before:border-s before:border-s-border',
-            borders.top?.width && 'before:border-t before:border-t-border'
-          )
+        borders?.bottom?.width && 'before:border-b before:border-b-border',
+        borders?.right?.width && 'before:border-e before:border-e-border',
+        borders?.left?.width && 'before:border-s before:border-s-border',
+        borders?.top?.width && 'before:border-t before:border-t-border'
       )}
       style={
         {

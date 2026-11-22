@@ -2,6 +2,32 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-22-create-base-color-tw-prefix",
+      "href": "/registry/changelog/2026-11-22-create-base-color-tw-prefix.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Editor UI follows shadcn create's base color and Tailwind prefix",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "toc",
+        "toc-static",
+        "select-editor",
+        "math",
+        "math-static",
+        "dnd",
+        "table-static"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-fix-todo-checkbox-undo",
       "href": "/registry/changelog/2026-11-22-fix-todo-checkbox-undo.json",
       "status": "draft",
@@ -16,6 +42,24 @@
         "status": "unresolved"
       },
       "targets": ["block-list"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-11-22-inline-combobox-menu-color",
+      "href": "/registry/changelog/2026-11-22-inline-combobox-menu-color.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Slash, mention and emoji menus follow shadcn create's inverted and translucent menu colors",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["inline-combobox"],
       "entries": 1,
       "diagnostics": []
     },

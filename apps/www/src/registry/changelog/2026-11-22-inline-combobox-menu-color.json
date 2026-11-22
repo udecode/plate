@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-inline-combobox-menu-color",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-inline-combobox-menu-color.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Slash, mention and emoji menus follow shadcn create's inverted and translucent menu colors",
+  "targets": [
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-inline-combobox-slash-mention-emoji-menus-2ac19c36",
+      "kind": "behavior",
+      "summary": "The slash, mention and emoji menus now follow the menu color picked in `shadcn create`. An inverted menu color turns them dark, and a translucent one gives them the same translucent, blurred background as the app's other menus.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-inline-combobox-menu-color",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

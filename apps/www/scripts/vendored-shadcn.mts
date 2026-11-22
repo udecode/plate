@@ -12,6 +12,14 @@ import {
 export const SHADCN_STYLE_SOURCE_COMMIT =
   'ee628d75dea87325735fafa7c54f5d7d7edb8774';
 
+export const SHADCN_INSTALL_MARKERS = [
+  'cn-font-heading',
+  'cn-logical-sides',
+  'cn-menu-target',
+  'cn-menu-translucent',
+  'cn-rtl-flip',
+] as const;
+
 export const SHADCN_UI_COPIES = ['toggle', 'tooltip'] as const;
 
 export type ShadcnUiCopy = (typeof SHADCN_UI_COPIES)[number];

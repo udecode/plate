@@ -3,11 +3,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createStyleMap, transformStyle } from 'shadcn/utils';
+import { Node, Project, ScriptKind } from 'ts-morph';
 
 import {
   PLATE_REGISTRY_STYLE_NAMES,
   type PlateRegistryStyleName,
 } from '@/lib/plate-registry-styles';
+
+import { SHADCN_INSTALL_MARKERS } from './vendored-shadcn.mts';
 
 export type RegistryStyleMaps = Record<
   PlateRegistryStyleName,
@@ -32,8 +35,42 @@ const REGISTRY_STYLE_ROOT = path.resolve(
   '../src/registry/styles'
 );
 
+const installMarkers: ReadonlySet<string> = new Set(SHADCN_INSTALL_MARKERS);
+
+const findMarkers = (source: string) =>
+  [...source.matchAll(/\bcn-[\w-]+\b/g)].map((match) => match[0]);
+
+const holdsInstallMarker = (source: string) =>
+  findMarkers(source).some((marker) => installMarkers.has(marker));
+
 export function findRegistryStyleMarkers(source: string) {
-  return [...source.matchAll(/\bcn-[\w-]+\b/g)].map((match) => match[0]);
+  return findMarkers(source).filter((marker) => !installMarkers.has(marker));
+}
+
+// transformMenu in @shadcn/registry 0.2.1, which shadcn 4.23.0 installs with,
+// inlines the translucent menu classes only into a double-quoted string.
+function doubleQuoteInstallMarkers(source: string) {
+  if (!holdsInstallMarker(source)) return source;
+
+  const literals = new Project({ useInMemoryFileSystem: true })
+    .createSourceFile('component.tsx', source, { scriptKind: ScriptKind.TSX })
+    .getDescendants()
+    .filter(
+      (node) =>
+        Node.isStringLiteral(node) || Node.isNoSubstitutionTemplateLiteral(node)
+    )
+    .filter(
+      (literal) =>
+        !literal.getText().startsWith('"') &&
+        holdsInstallMarker(literal.getLiteralText())
+    );
+  let quoted = source;
+
+  for (const literal of literals.reverse()) {
+    quoted = `${quoted.slice(0, literal.getStart())}${JSON.stringify(literal.getLiteralText())}${quoted.slice(literal.getEnd())}`;
+  }
+
+  return quoted;
 }
 
 export function getCommonRegistryStyleMarkers(styleMaps: RegistryStyleMaps) {
@@ -75,7 +112,7 @@ export async function transformRegistryStyleSource({
 }) {
   const markers = findRegistryStyleMarkers(source);
 
-  if (markers.length === 0) return source;
+  if (markers.length === 0) return doubleQuoteInstallMarkers(source);
 
   const unknownMarkers = [...new Set(markers)].filter(
     (marker) => !commonMarkers.has(marker)
@@ -95,7 +132,7 @@ export async function transformRegistryStyleSource({
     const next = await transformStyle(transformed, { styleMap });
     const remainingMarkers = [...new Set(findRegistryStyleMarkers(next))];
 
-    if (remainingMarkers.length === 0) return next;
+    if (remainingMarkers.length === 0) return doubleQuoteInstallMarkers(next);
     if (next === transformed) {
       throw new Error(
         `Unreachable shadcn style markers: ${remainingMarkers.join(', ')}`

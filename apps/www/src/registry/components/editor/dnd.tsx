@@ -266,9 +266,11 @@ function Draggable(props: RenderNodeWrapperProps) {
         // stacking below menus and toolbars outside the table.
         isTable && 'isolate hover:[&>.editor-gutterLeft]:opacity-100',
         renderPath.length > 1 &&
-          (isTable
-            ? 'not-hover:[&>.editor-gutterLeft]:hidden'
-            : 'not-data-hovered:[&>.editor-gutterLeft]:hidden')
+          isTable &&
+          'not-hover:[&>.editor-gutterLeft]:hidden',
+        renderPath.length > 1 &&
+          !isTable &&
+          'not-data-hovered:[&>.editor-gutterLeft]:hidden'
       )}
       onMouseEnter={() => setButtonTop(calcDragButtonTop(editor, element))}
       onPointerLeave={(event) => setHovered(event.currentTarget, false)}

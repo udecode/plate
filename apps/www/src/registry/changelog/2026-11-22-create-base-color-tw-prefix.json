@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-create-base-color-tw-prefix",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-create-base-color-tw-prefix.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Editor UI follows shadcn create's base color and Tailwind prefix",
+  "targets": [
+    {
+      "name": "toc",
+      "files": ["apps/www/src/registry/components/editor/toc.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-static",
+      "files": ["apps/www/src/registry/components/editor/toc-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "select-editor",
+      "files": [
+        "apps/www/src/registry/components/editor/select-editor.tsx",
+        "apps/www/src/registry/components/editor/tag.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-static",
+      "files": ["apps/www/src/registry/components/editor/table-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-toc-editor-ui-follows-shadcn-3f34fa95",
+      "kind": "fix",
+      "summary": "Fix gray text and tints that ignored the base color picked in `shadcn create`. The empty table of contents, the new-label value and the empty equation now use theme colors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toc", "toc-static", "select-editor", "math", "math-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-create-base-color-tw-prefix",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-22-dnd-table-static-tw-prefix",
+      "kind": "fix",
+      "summary": "Fix the nested block gutter and the static table cell borders in projects with a Tailwind prefix. The CLI now prefixes their classes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["dnd", "table-static"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-create-base-color-tw-prefix",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

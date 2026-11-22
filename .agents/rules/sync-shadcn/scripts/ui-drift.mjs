@@ -9,7 +9,7 @@ const siteUiDir = 'apps/www/src/components/ui';
 const upstreamUiDir = 'registry/new-york-v4/ui';
 const printer = ts.createPrinter({ removeComments: true });
 
-function git(cwd, args) {
+export function git(cwd, args) {
   const result = spawnSync('git', args, {
     cwd,
     encoding: 'utf8',
@@ -181,14 +181,7 @@ export function diffLines(upstream, plate) {
   return lines;
 }
 
-function resolveUpstream(repoRoot, status) {
-  const commit = status.uiSyncedCommit;
-  if (!commit) {
-    throw new Error(
-      'docs/sync/shadcn/status.json has no uiSyncedCommit, the upstream commit the site ui copies are compared against.'
-    );
-  }
-
+export function resolveClone(repoRoot, status) {
   const commonDir = git(repoRoot, [
     'rev-parse',
     '--path-format=absolute',
@@ -198,8 +191,26 @@ function resolveUpstream(repoRoot, status) {
     path.dirname(commonDir),
     status.upstream.clonePath
   );
+
+  if (!fs.existsSync(clone)) {
+    throw new Error(
+      `${clone} does not exist. Clone ${status.upstream.repo} there.`
+    );
+  }
+
+  return clone;
+}
+
+function resolveUpstream(repoRoot, status) {
+  const commit = status.uiSyncedCommit;
+  if (!commit) {
+    throw new Error(
+      'docs/sync/shadcn/status.json has no uiSyncedCommit, the upstream commit the site ui copies are compared against.'
+    );
+  }
+
+  const clone = resolveClone(repoRoot, status);
   const hasCommit =
-    fs.existsSync(clone) &&
     spawnSync('git', ['cat-file', '-e', `${commit}^{commit}`], { cwd: clone })
       .status === 0;
 

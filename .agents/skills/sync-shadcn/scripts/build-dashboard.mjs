@@ -5,6 +5,13 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import {
+  CREATE_COMPAT_FEATURE,
+  DEFAULT_CREATE_REF,
+  describeCompatProblems,
+  findCompatProblems,
+  readCreateCompat,
+} from './create-compat.mjs';
 import { readUiDrift } from './ui-drift.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -23,11 +30,14 @@ const [command = 'dashboard', ...commandRest] = args.filter(
 
 const isKnownCommand =
   (command === 'dashboard' && commandRest.length === 0) ||
-  (command === 'drift' && commandRest.length <= 1);
+  (command === 'drift' && commandRest.length <= 1) ||
+  (command === 'compat' &&
+    (commandRest.length === 0 ||
+      (commandRest.length === 2 && commandRest[0] === '--ref')));
 
 if (!isKnownCommand) {
   console.error(
-    'Usage: pnpm sync-shadcn dashboard [--no-open]\n       pnpm sync-shadcn drift [component]'
+    'Usage: pnpm sync-shadcn dashboard [--no-open]\n       pnpm sync-shadcn drift [component]\n       pnpm sync-shadcn compat [--ref <ref>]'
   );
   process.exit(1);
 }
@@ -136,6 +146,22 @@ function normalizeFeature(feature) {
 
     validateState(item.state, `feature ${feature.id} item ${item.id}`);
 
+    if (
+      'options' in item &&
+      (!Array.isArray(item.options) ||
+        item.options.some((option) => typeof option !== 'string'))
+    ) {
+      throw new Error(
+        `Feature ${feature.id} item ${item.id} options must be an array of option ids, such as "base:aria".`
+      );
+    }
+
+    if ('options' in item && feature.id !== CREATE_COMPAT_FEATURE) {
+      throw new Error(
+        `Feature ${feature.id} item ${item.id} lists options. Record each create option's verdict in an item of feature ${CREATE_COMPAT_FEATURE}.`
+      );
+    }
+
     return {
       decision: '',
       evidence: '',
@@ -143,6 +169,7 @@ function normalizeFeature(feature) {
       upstream: '',
       ...item,
       files: ensureArray(item.files),
+      options: ensureArray(item.options),
       screenshots: normalizeScreenshots(item.screenshots),
     };
   });
@@ -1042,6 +1069,7 @@ function renderHtml(dashboard) {
           <span>Planned ${escapeHtml(shortSha(dashboard.status.lastPlannedCommit))}</span>
           <span>Plan ${escapeHtml(dashboard.status.lastPlan || 'none')}</span>
           <span>UI ${escapeHtml(shortSha(dashboard.uiDrift.commit))}: ${dashboard.uiDrift.files.length} files differ</span>
+          <span>Create ${escapeHtml(dashboard.createCompat.ref)} ${escapeHtml(shortSha(dashboard.createCompat.commit))} (${escapeHtml(dashboard.createCompat.date)}): ${dashboard.createCompat.options.length} options</span>
         </div>
       </header>
 
@@ -1451,8 +1479,59 @@ function printDrift(drift, component) {
   }
 }
 
+function readCompatRows(features, status, ref) {
+  const items = features.flatMap((feature) => feature.items);
+  const compat = readCreateCompat(repoRoot, status, ref);
+
+  return {
+    compat,
+    problems: describeCompatProblems(
+      compat,
+      findCompatProblems(compat, items)
+    ),
+    rows: compat.options.map((option) => {
+      const item = items.find((candidate) =>
+        candidate.options.includes(option)
+      );
+      return {
+        option,
+        served: compat.served.has(option),
+        state: item?.state ?? 'none',
+        item: item?.id ?? '',
+      };
+    }),
+  };
+}
+
+function printCompat({ compat, problems, rows }) {
+  console.log(
+    `shadcn create options at ${compat.ref} ${shortSha(compat.commit)} (${compat.date}), read from ${compat.sources.join(', ')}`
+  );
+  console.log('');
+  console.log('| Option | Plate serves | State | Item |');
+  console.log('| --- | --- | --- | --- |');
+  for (const row of rows) {
+    console.log(
+      `| ${row.option} | ${row.served ? 'yes' : ''} | ${row.state} | ${row.item} |`
+    );
+  }
+  for (const problem of problems) {
+    console.error(`\n${problem}`);
+  }
+}
+
 const deltas = readJson(deltasPath);
 const status = readJson(statusPath);
+
+if (command === 'compat') {
+  const compatRows = readCompatRows(
+    ensureArray(deltas.features).map(normalizeFeature),
+    status,
+    commandRest[1] ?? DEFAULT_CREATE_REF
+  );
+  printCompat(compatRows);
+  process.exit(compatRows.problems.length > 0 ? 1 : 0);
+}
 
 if (command === 'drift') {
   printDrift(
@@ -1483,6 +1562,14 @@ if (unrecordedDrift.length > 0) {
   );
 }
 
+const compatRows = readCompatRows(features, status, DEFAULT_CREATE_REF);
+
+if (compatRows.problems.length > 0) {
+  throw new Error(
+    `${compatRows.problems.join(' ')} Run pnpm sync-shadcn compat to see each option.`
+  );
+}
+
 const dashboard = {
   generatedAt: new Date().toISOString(),
   source: {
@@ -1508,6 +1595,12 @@ const dashboard = {
       lines: row.lines,
       items: row.items.map((item) => item.id),
     })),
+  },
+  createCompat: {
+    ref: compatRows.compat.ref,
+    commit: compatRows.compat.commit,
+    date: compatRows.compat.date,
+    options: compatRows.rows,
   },
   features,
 };
