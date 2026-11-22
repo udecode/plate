@@ -725,15 +725,23 @@ const getDefaultFragmentAttach = (contents: DocumentFragment) => {
 
 export const writeDOMSelectionData = <V extends Value>(
   editor: DOMEditor<V>,
-  data: Pick<DataTransfer, 'getData' | 'setData'>
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  part?: (editor: DOMEditor<V>, selection: Range) => Range | null
 ) => {
   const selection = getEditorSelection(editor);
 
   if (!selection) return undefined;
 
-  return writeDOMRangeData(editor, data, selection, {
-    slice: editor.read.slice.export(),
-  });
+  const range =
+    part && !SelectionApi.isNode(selection) ? part(editor, selection) : null;
+
+  return range
+    ? writeDOMRangeData(editor, data, range, {
+        slice: editor.read.slice.export({ at: range }),
+      })
+    : writeDOMRangeData(editor, data, selection, {
+        slice: editor.read.slice.export(),
+      });
 };
 
 /** Write clipboard payloads for one model range without changing selection. */

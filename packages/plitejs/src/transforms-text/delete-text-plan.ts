@@ -147,15 +147,19 @@ export const shouldPreserveEmptyStartBlockForHangingRange = (
   isAcrossBlocks: boolean,
   preserveEndBlock: boolean,
   originalHangingBlockRange: boolean,
-  effectiveStartBlock: readonly [import('../interfaces').Node, Path] | undefined
+  effectiveStartBlock:
+    | readonly [import('../interfaces').Node, Path]
+    | undefined,
+  startLine: Path | undefined
 ) =>
   !isSingleText &&
   isAcrossBlocks &&
   (preserveEndBlock || originalHangingBlockRange) &&
   effectiveStartBlock &&
+  startLine &&
   NodeApi.isElement(effectiveStartBlock[0]) &&
   !getEditorSchema(editor).isVoid(effectiveStartBlock[0]) &&
-  PointApi.equals(start, editorPoint(editor, start.path, { edge: 'start' }))
+  PointApi.equals(start, editorPoint(editor, startLine, { edge: 'start' }))
     ? effectiveStartBlock[1]
     : null;
 

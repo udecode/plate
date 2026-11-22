@@ -9,6 +9,7 @@ import {
   SelectionApi,
   TextApi,
 } from '../..';
+import { resolveFragmentDeletedRange } from '../../core/fragment-deleted-range';
 import {
   isDOMElement,
   isDOMNode,
@@ -35,6 +36,7 @@ import {
   restDOMBlockDrag,
 } from '../../dom/plugin/dom-drag';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
+import { writeViewSelectionPart } from '../../dom/plugin/dom-editor';
 import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
@@ -49,6 +51,7 @@ import {
   settleDragSession,
   takeDragSession,
 } from '../../dom/utils/drag-session';
+import type { AnyEditor } from '../../interfaces/editor';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -84,6 +87,7 @@ import {
   readRuntimeSelection,
   readRuntimeSelectionRange,
 } from './runtime-selection-state';
+import { readTripleClickedBlock } from './selection-triple-click';
 import type { ViewLines } from './view-lines';
 
 type EditablePasteHandler = (
@@ -360,6 +364,24 @@ export const applyEditableCopy = ({
   }
 };
 
+const readCutDeletedRange = (editor: AnyEditor, selection: Range) => {
+  if (
+    RangeApi.isCollapsed(selection) ||
+    selection.anchor.root ||
+    selection.focus.root ||
+    readTripleClickedBlock(editor, selection)
+  ) {
+    return null;
+  }
+
+  const removed = resolveFragmentDeletedRange(editor, selection);
+  const [start, end] = RangeApi.edges(selection);
+
+  return removed && !RangeApi.equals(removed, { anchor: start, focus: end })
+    ? removed
+    : null;
+};
+
 export const applyEditableCut = ({
   editor,
   event,
@@ -417,7 +439,7 @@ export const applyEditableCut = ({
       }
     }
 
-    editor.api.dom.clipboard.writeSelection(clipboardData);
+    writeViewSelectionPart(editor, clipboardData, readCutDeletedRange);
     const selection = readRuntimeSelection(editor);
 
     if (selection) {
@@ -454,14 +476,15 @@ export const applyEditableCut = ({
         const inlineBeforePoint = inlinePath
           ? editorBefore(editor, inlinePath)
           : null;
-        const collapsePointAnchor = editor.anchor(RangeApi.start(selection), {
+        const start = RangeApi.start(selection);
+        const startAnchor = editor.anchor(start, {
           association: 'forward',
           deletion: 'nearest',
         });
         const version = editor.read((state) => state.lastCommit()?.version);
         applyEditableCommand({ command, editor });
         writePliteViewSelection(editor, null);
-        const collapsePoint = collapsePointAnchor.release();
+        const startPoint = startAnchor.release();
         const deleteRefused =
           editor.read((state) => state.lastCommit()?.version) === version;
 
@@ -514,32 +537,36 @@ export const applyEditableCut = ({
           });
         }
 
-        if (collapsePoint) {
+        const caret = readRuntimeSelectionRange(editor);
+        const caretLeftStartBlocks =
+          startPoint !== null &&
+          caret !== null &&
+          RangeApi.isCollapsed(caret) &&
+          PathApi.common(startPoint.path, start.path).length >
+            PathApi.common(caret.anchor.path, start.path).length;
+
+        if (caretLeftStartBlocks) {
           applyEditableCommand({
             command: {
               kind: 'select',
-              selection: {
-                anchor: collapsePoint,
-                focus: collapsePoint,
-              },
+              selection: { anchor: startPoint, focus: startPoint },
             },
             editor,
           });
-          return clipboardResult({
-            command,
-            repair: {
-              focus: true,
-              kind: 'repair-caret',
-              selectionSourceTransition: {
-                preferModelSelection: true,
-                reason: 'model-command',
-                selectionSource: 'model-owned',
-              },
-            },
-          });
         }
 
-        return clipboardResult({ command });
+        return clipboardResult({
+          command,
+          repair: {
+            focus: true,
+            kind: 'repair-caret',
+            selectionSourceTransition: {
+              preferModelSelection: true,
+              reason: 'model-command',
+              selectionSource: 'model-owned',
+            },
+          },
+        });
       }
       const node = NodeApi.parent(editor, selection.anchor.path);
       if (NodeApi.isElement(node) && editorIsVoid(editor, node)) {

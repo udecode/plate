@@ -57,7 +57,6 @@ import {
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
-import { getDefined } from '../internal/get-defined';
 import {
   getConsistentRangeTextMarks,
   withoutUnheldDefaultsBeside,
@@ -176,10 +175,10 @@ const canMergeBlocksAtPoint = (
   );
 };
 
-const shouldRemoveEmptyForwardStartBlock = (
+const readForwardDeletedEmptyBlock = (
   editor: Editor,
   plan: DeleteRangePlan
-) => {
+): Path | null => {
   if (
     plan.reverse ||
     !plan.isCollapsed ||
@@ -189,29 +188,52 @@ const shouldRemoveEmptyForwardStartBlock = (
     plan.effectiveStartBlockPath.length !== 1 ||
     !editorHasPath(editor, plan.effectiveStartBlockPath)
   ) {
-    return false;
+    return null;
   }
 
   const startBlock = getCurrentNode(editor, plan.effectiveStartBlockPath);
   const joinedPath = PathApi.next(plan.effectiveStartBlockPath);
 
-  return (
-    NodeApi.isElement(startBlock) &&
-    editorIsBlock(editor, startBlock) &&
-    NodeApi.string(startBlock) === '' &&
-    !Array.from(NodeApi.elements(startBlock)).some(([element]) =>
-      isInlineVoid(editor, element)
-    ) &&
-    PointApi.equals(
+  if (
+    !NodeApi.isElement(startBlock) ||
+    !editorIsBlock(editor, startBlock) ||
+    !PointApi.equals(
       plan.start,
       editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' })
-    ) &&
-    !joinKeepsPrefixOccupant(
+    ) ||
+    joinKeepsPrefixOccupant(
       editor,
       [startBlock, plan.effectiveStartBlockPath],
       [getCurrentNode(editor, joinedPath), joinedPath]
     )
-  );
+  ) {
+    return null;
+  }
+
+  const { isVoid } = getEditorSchema(editor);
+  let removed: Path | null = null;
+
+  for (let depth = plan.start.path.length - 1; depth >= 1; depth -= 1) {
+    const path = plan.start.path.slice(0, depth);
+    const node = getCurrentNode(editor, path);
+
+    if (!NodeApi.isElement(node) || !editorIsBlock(editor, node)) continue;
+    if (
+      isVoid(node) ||
+      NodeApi.string(node) !== '' ||
+      (removed
+        ? node.children.length !== 1
+        : Array.from(NodeApi.elements(node)).some(([element]) =>
+            isVoid(element)
+          ))
+    ) {
+      break;
+    }
+
+    removed = path;
+  }
+
+  return removed;
 };
 
 const shouldClearDeletedMarksAtMarkedSuffix = (
@@ -575,7 +597,8 @@ const resolveDeleteTarget = (
       before &&
       startBlock &&
       PathApi.isAncestor(startBlock[1], before.path) &&
-      shareGridCellOrNone(editor, start.path, before.path)
+      shareGridCellOrNone(editor, start.path, before.path) &&
+      !getHighestNonEditable(editor, before)
     ) {
       start = before;
       editableEdges &&= isInlineVoid(editor, startNonEditable[0]);
@@ -591,7 +614,8 @@ const resolveDeleteTarget = (
       after &&
       endBlock &&
       PathApi.isAncestor(endBlock[1], after.path) &&
-      shareGridCellOrNone(editor, end.path, after.path)
+      shareGridCellOrNone(editor, end.path, after.path) &&
+      !getHighestNonEditable(editor, after)
     ) {
       end = after;
       editableEdges &&= isInlineVoid(editor, endNonEditable[0]);
@@ -634,7 +658,8 @@ const resolveDeleteTarget = (
       isAcrossBlocks,
       preserveEndBlock,
       originalHangingBlockRange,
-      effectiveStartBlock
+      effectiveStartBlock,
+      lowestBlock(start)?.[1]
     );
   const preservedEmptyStartBlock =
     preserveEmptyStartBlockPath &&
@@ -667,7 +692,9 @@ const resolveDeleteTarget = (
     preserveEmptyStartBlockPath,
     preservedEmptyStartBlock,
     startJoinBlockPath:
-      !isCollapsed && isAcrossBlocks ? (lowestBlock(start)?.[1] ?? null) : null,
+      isAcrossBlocks && (!isCollapsed || !reverse)
+        ? (lowestBlock(start)?.[1] ?? null)
+        : null,
     topLevelCountBefore: getChildList(editor).length,
     effectiveStartBlockPath: effectiveStartBlock?.[1] ?? null,
     effectiveEndBlockPath: effectiveEndBlock?.[1] ?? null,
@@ -707,6 +734,7 @@ const reconcileDeleteStructure = (
 
     keptIncompatibleBlockBoundary =
       candidateMergePoint != null && mergePoint == null;
+    const emptyForwardStartBlock = readForwardDeletedEmptyBlock(editor, plan);
 
     if (plan.preserveEmptyStartBlockPath) {
       removeEmptyStructuralArtifacts(
@@ -736,17 +764,19 @@ const reconcileDeleteStructure = (
         cleanupRange()
       );
       mergeAdjacentTextRuns(editor, touchedRange);
-    } else if (shouldRemoveEmptyForwardStartBlock(editor, plan)) {
+    } else if (emptyForwardStartBlock) {
       removeNodes(editor, {
-        at: getDefined(plan.effectiveStartBlockPath),
+        at: emptyForwardStartBlock,
         voids: plan.voids,
       });
-      removeEmptyStructuralArtifacts(
-        editor,
-        plan.preserveEmptyStartBlockPath,
-        null,
-        cleanupRange()
-      );
+      if (emptyForwardStartBlock.length === 1) {
+        removeEmptyStructuralArtifacts(
+          editor,
+          plan.preserveEmptyStartBlockPath,
+          null,
+          cleanupRange()
+        );
+      }
       mergeAdjacentTextRuns(editor, touchedRange);
     } else if (mergePoint) {
       mergeBlocksAtPoint(editor, mergePoint, plan.voids);
@@ -1157,7 +1187,6 @@ const normalizeFinalDeletePoint = (
             )
           ) {
             if (
-              getEditorSchema(editor).isInline(parent) &&
               !getEditorSchema(editor).isVoid(parent) &&
               NodeApi.string(parent) === ''
             ) {

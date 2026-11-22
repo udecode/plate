@@ -41,6 +41,7 @@ import {
   isSelectableDOMSelection,
   resolveDOMRangeInRoot,
 } from '../../dom/plugin/dom-editor';
+import { resolvePliteNodePath } from '../../dom/plugin/dom-node-path';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   type DOMSelectionPoints,
@@ -530,6 +531,36 @@ export const applyEditableMouseDown = ({
   return modelTargetOwnsSelection;
 };
 
+// A range end between two blocks, such as Firefox's (editor, 2) for a selection
+// to the end of the second block, also names the end of the block before it.
+const readEndOfBlockBefore = (
+  editor: ReactRuntimeEditor,
+  target: StaticRange
+) => {
+  const { endContainer, endOffset } = target;
+  const before = isDOMElement(endContainer)
+    ? endContainer.childNodes[endOffset - 1]
+    : null;
+
+  if (
+    !isDOMElement(before) ||
+    !before.hasAttribute('data-editor-node') ||
+    endOffset === endContainer.childNodes.length
+  ) {
+    return null;
+  }
+
+  const node = ReactEditor.resolveNode(editor, before);
+
+  if (!node || !NodeApi.isElement(node) || editorIsInline(editor, node)) {
+    return null;
+  }
+
+  const path = resolvePliteNodePath(editor, node);
+
+  return path ? readTextEdge(editor, path, 'end') : null;
+};
+
 export const syncSelectionForBeforeInput = ({
   allowDOMSelectionImport = true,
   data,
@@ -807,16 +838,30 @@ export const syncSelectionForBeforeInput = ({
         didUseBeforeInputTargetRange = true;
       }
 
+      const covers = (candidate: Range) =>
+        !!nextSelection &&
+        (RangeApi.equals(nextSelection, candidate) ||
+          RangeApi.equals(nextSelection, {
+            anchor: candidate.focus,
+            focus: candidate.anchor,
+          }));
+      const endOfBlockBefore =
+        shouldUseTargetRange &&
+        nextSelection &&
+        RangeApi.isExpanded(nextSelection) &&
+        !covers(range)
+          ? readEndOfBlockBefore(editor, targetRange)
+          : null;
+
       // A target range has no direction, so one that covers the current
       // selection keeps that selection and its direction.
       if (
         shouldUseTargetRange &&
-        (!nextSelection ||
-          (!RangeApi.equals(nextSelection, range) &&
-            !RangeApi.equals(nextSelection, {
-              anchor: range.focus,
-              focus: range.anchor,
-            })))
+        !covers(range) &&
+        !(
+          endOfBlockBefore &&
+          covers({ anchor: range.anchor, focus: endOfBlockBefore })
+        )
       ) {
         nextNative = false;
         nativeBlocker = 'target-range-selection-import';

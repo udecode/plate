@@ -311,6 +311,28 @@ const hasSiblingOutside = (
     ...(root ? { root } : {}),
   }) !== undefined;
 
+export const readWholeBlockDelete = (
+  state: CommandStateView,
+  range: Range,
+  root: string | undefined
+) => {
+  const blocks = getFullySelectedSiblingBlocks(state, range);
+
+  if (!blocks) return null;
+
+  const keepsFirst = hasSiblingOutside(state, blocks, root);
+
+  return {
+    blocks,
+    endsInFirst:
+      keepsFirst &&
+      PathApi.isAncestor(getDefined(blocks[0])[1], RangeApi.end(range).path),
+    keepsFirst,
+    takesCaret:
+      keepsFirst && takesCaretAfterRemoval(state, getDefined(blocks[0])[0]),
+  };
+};
+
 const isGrid = (state: CommandStateView, node: Element) =>
   getCompiledEditorSchemaFromApi(state.schema)?.elements.byType.get(node.type)
     ?.structure?.kind === 'grid';
@@ -710,33 +732,27 @@ export const editorCommands: EditorCommands = Object.freeze({
     build: ({ input, state }) => {
       const range =
         input.at === undefined ? null : resolveCommandRange(state, input.at);
-      const selectedBlocks = range
-        ? getFullySelectedSiblingBlocks(state, range)
-        : null;
       const root = rootOrUpdateRoot(range?.anchor.root ?? range?.focus.root);
 
       if (range) {
         refuseCrossing(getSetSite(getActiveCommandEditor()), range, root);
       }
       const publicRoot = toPublicRoot(root);
+      const wholeBlocks = range
+        ? readWholeBlockDelete(state, range, publicRoot)
+        : null;
 
-      if (selectedBlocks) {
+      if (wholeBlocks) {
+        const selectedBlocks = wholeBlocks.blocks;
         const [firstBlock, firstPath] = getDefined(selectedBlocks[0]);
         const [lastBlock] = getDefined(selectedBlocks.at(-1));
         const textRange =
-          range &&
-          RangeApi.isRange(input.at) &&
-          hasSiblingOutside(state, selectedBlocks, publicRoot)
+          range && RangeApi.isRange(input.at) && wholeBlocks.keepsFirst
             ? range
             : null;
-        const endsInFirst =
-          textRange !== null &&
-          PathApi.isAncestor(firstPath, RangeApi.end(textRange).path);
+        const endsInFirst = textRange !== null && wholeBlocks.endsInFirst;
 
-        if (
-          textRange &&
-          (endsInFirst || takesCaretAfterRemoval(state, firstBlock))
-        ) {
+        if (textRange && (endsInFirst || wholeBlocks.takesCaret)) {
           const at: Range = endsInFirst
             ? textRange
             : {
@@ -756,7 +772,11 @@ export const editorCommands: EditorCommands = Object.freeze({
                 ...(publicRoot ? { root: publicRoot } : {}),
               });
             }
-            tx.fragment.delete({ at, direction: input.direction });
+            if (!RangeApi.isCollapsed(at)) {
+              tx.fragment.delete({ at, direction: input.direction });
+            } else if (selectedBlocks.length > 1) {
+              tx.selection.set({ anchor: at.anchor, focus: at.anchor });
+            }
           });
         }
 

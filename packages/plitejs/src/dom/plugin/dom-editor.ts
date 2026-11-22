@@ -2975,6 +2975,14 @@ const DOMEditorImpl: DOMEditorInterface = {
 
 const reachView = (editor: EditorType) => resolveDOMReach(editor) ?? editor;
 
+export const writeViewSelectionPart = (
+  editor: EditorType,
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  part: (view: EditorType, selection: Range) => Range | null
+) => {
+  writeDOMSelectionData(reachView(editor), data, part);
+};
+
 const reachTarget = (
   editor: EditorType,
   target: EventTarget | null | undefined

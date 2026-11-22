@@ -52,6 +52,7 @@ import { deselect } from '../transforms-selection/deselect';
 import { setSelection } from '../transforms-selection/set-selection';
 import { getDefaultInsertLocation } from '../utils';
 import { refuseMemberCrossing, removeText } from './delete-text';
+import { getHighestNonEditable } from './delete-text-plan';
 import { isFullDocumentRange } from './full-document-range';
 
 /**
@@ -422,10 +423,18 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
           const replacementMarks =
             text.length > 0 ? getConsistentRangeTextMarks(editor, at) : null;
           const end = RangeApi.end(at);
-          if (!voids && editorVoid(editor, { at: end })) {
+          const start = RangeApi.start(at);
+          const startNonEditable = getHighestNonEditable(editor, start);
+
+          if (
+            !voids &&
+            editorVoid(editor, { at: end }) &&
+            startNonEditable &&
+            !getEditorSchema(editor).isVoid(startNonEditable[0])
+          ) {
             return;
           }
-          const start = RangeApi.start(at);
+
           const startAnchor = editor.anchor(start, {
             association: 'backward',
             deletion: 'nearest',
@@ -472,6 +481,16 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             setSelection(editor, { anchor: nextAt, focus: nextAt });
           } else if (explicitAtPreservesNullSelection) {
             deselect(editor);
+          }
+
+          const nonEditable = getHighestNonEditable(editor, nextAt);
+
+          if (
+            (nonEditable &&
+              !(voids && getEditorSchema(editor).isVoid(nonEditable[0]))) ||
+            elementReadOnly(editor, { at: nextAt })
+          ) {
+            return;
           }
 
           const normalizedReplacementMarks =
