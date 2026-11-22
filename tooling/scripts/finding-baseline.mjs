@@ -111,8 +111,11 @@ export const differences = (from, minus) =>
 /**
  * Compares `found` with the baseline at `file` and returns the exit code.
  *
- * `check` fails on any difference. `lower` fails on a finding the baseline
- * does not list and otherwise drops the entries the tree no longer holds.
+ * `check` fails on any difference. `light` fails only on a finding the
+ * baseline does not list, for a run whose cases are a subset of the gate's,
+ * which reaches only some of the listed findings. `lower` fails on a finding
+ * the baseline does not list and otherwise drops the entries the tree no
+ * longer holds.
  * `init` seeds every rule the file lacks. `describe` turns a new finding's
  * baseline key into the line the caller prints for it. The base commit's
  * copies of `boundFiles`, `file` alone by default, together bound the
@@ -191,6 +194,12 @@ export function enforceBaseline({
     console.error(increases.map(describe).join('\n'));
     console.error(newFindingsHelp);
     return 1;
+  }
+  if (mode === 'light') {
+    console.info(
+      `${file} lists every finding of the light bound; the gate run checks the ${decreases.length} listed findings it does not reach.`
+    );
+    return 0;
   }
   if (mode === 'check') {
     if (decreases.length > 0) {

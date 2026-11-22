@@ -282,7 +282,11 @@ const packageDiff = () =>
 // start only once every one of them passes, and no step starts after one
 // fails, so a type, lint or citation error fails a landing before any slow
 // step starts. Under --affected, which every landing runs, only the `land`
-// steps run. Local CI runs every other step on next after landing.
+// steps run. Local CI runs every other step on next after landing. A formal
+// check's `light` command runs a smaller bound of the same check, the one a
+// session runs before a diff panel, and --light runs it in place of `run`.
+// `light: true` marks a check whose gate already runs in under two minutes at
+// its 90th percentile, so its light run is the gate.
 let imports;
 const importGraph = () => {
   if (imports) return imports;
@@ -529,6 +533,8 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
+    light:
+      'pnpm check:authored-order --light && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
     affected: runsScript(
       'packages/plitejs/scripts/authored-decision-order.ts',
       'packages/plitejs/scripts/',
@@ -542,6 +548,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:autoformat-rules',
+    light: 'pnpm check:autoformat-rules --light',
     affected: runsScript(
       'apps/www/scripts/autoformat-input-rules.ts',
       'apps/www/scripts/autoformat-input-rules',
@@ -555,6 +562,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:yjs-peer-order',
+    light: 'pnpm check:yjs-peer-order --light',
     affected: runsScript(
       'packages/plitejs/scripts/yjs-peer-order.ts',
       'packages/plitejs/scripts/yjs-peer-order',
@@ -567,6 +575,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:effect-ledger',
+    light: 'pnpm check:effect-ledger --light',
     affected: runsScript(
       'packages/plitejs/scripts/effect-ledger.ts',
       'packages/plitejs/scripts/check-harness.ts',
@@ -579,6 +588,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:authored-recording',
+    light: 'pnpm check:authored-recording --light',
     affected: runsScript(
       'packages/plitejs/scripts/authored-recording-order.ts',
       'packages/plitejs/scripts/authored-recording-order',
@@ -595,6 +605,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:undo-redo-history',
+    light: 'pnpm check:undo-redo-history --light',
     affected: runsScript(
       'packages/plitejs/scripts/undo-redo-history.ts',
       'packages/plitejs/scripts/undo-redo-history',
@@ -611,6 +622,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:delete-paste-ranges',
+    light: 'pnpm check:delete-paste-ranges --light',
     affected: runsScript(
       'packages/plitejs/scripts/delete-paste-ranges.ts',
       'packages/plitejs/scripts/delete-paste-ranges',
@@ -636,6 +648,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:markdown-round-trip && bun test ./packages/platejs/scripts/markdown-round-trip-previews.spec.ts',
+    light: true,
     affected: runsScript(
       'packages/platejs/scripts/markdown-round-trip.ts',
       'packages/platejs/scripts/markdown-round-trip',
@@ -649,6 +662,7 @@ export const steps = [
     cores: 4,
     private: true,
     run: 'pnpm check:table-grid',
+    light: true,
     affected: runsScript(
       'packages/platejs/scripts/table-grid-commands.ts',
       'packages/platejs/scripts/table-grid-commands',
@@ -1075,7 +1089,8 @@ export const selectSteps = (args) => {
     (step) =>
       ((names.length === 0 ? !step.optIn : names.includes(step.name)) ||
         args.includes(step.optIn)) &&
-      (!writing || step.write)
+      (!writing || step.write) &&
+      (!args.includes('--light') || step.light)
   );
 };
 
@@ -1279,6 +1294,7 @@ const main = async () => {
     '--browser',
     '--build',
     '--deep',
+    '--light',
     '--list',
     '--reads',
     '--write',
@@ -1297,7 +1313,7 @@ const main = async () => {
   if (args.includes('--list')) {
     for (const step of steps) {
       console.info(
-        `${step.name}\t${step.run}${step.optIn ? `\t(opt-in: ${step.optIn} or by name)` : ''}`
+        `${step.name}\t${step.run}${step.optIn ? `\t(opt-in: ${step.optIn} or by name)` : ''}${step.light === true ? '\t(--light: the gate)' : step.light ? `\t(--light: ${step.light})` : ''}`
       );
     }
     return 0;
@@ -1329,6 +1345,25 @@ const main = async () => {
   if (deep && (affected || writing || optIns.length > 0 || names.length > 0)) {
     console.error(
       '[check] --deep runs every step that --build --browser runs; run it without --affected, step names, --write, --build, --browser or --reads.'
+    );
+    return 1;
+  }
+  const light = args.includes('--light');
+  const heavy = names.filter(
+    (name) => !steps.find((step) => step.name === name).light
+  );
+  if (light && (affected || deep || writing || optIns.length > 0)) {
+    console.error(
+      '[check] --light runs the light bound of the formal checks it names, or of every one; run it without --affected, --deep, --write, --build, --browser or --reads.'
+    );
+    return 1;
+  }
+  if (light && heavy.length > 0) {
+    console.error(
+      `[check] ${heavy.join(', ')} has no light bound. Steps with one: ${steps
+        .filter((step) => step.light)
+        .map((step) => step.name)
+        .join(', ')}.`
     );
     return 1;
   }
@@ -1380,6 +1415,15 @@ const main = async () => {
       );
     }
     chosen = chosen.filter((step) => !step.private);
+  }
+  // A light pass is a pass of its own command, logged under its own name, so
+  // it never covers a full run or moves the step's typical time.
+  if (light) {
+    chosen = chosen.map((step) => ({
+      ...step,
+      name: `${step.name} --light`,
+      run: step.light === true ? step.run : step.light,
+    }));
   }
   const fresh = freshRun(process.env);
   const landing = process.env.PSTACK_LAND_CHECK === '1';
