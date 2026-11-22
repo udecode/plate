@@ -145,6 +145,25 @@ const teamLines = (message) => {
   return lines.filter(({ text }) => text.toLowerCase() !== 'none');
 };
 
+const PRIVATE_ISSUE = /\bplate-private#(\d+)\b/gu;
+
+const openIssuesNamed = (bodies) => {
+  const register = join(process.cwd(), 'docs/triage/plate-private.tsv');
+  if (!existsSync(register)) return [];
+  const latest = new Map();
+  for (const row of readFileSync(register, 'utf-8').split('\n').slice(1)) {
+    const [, ts, issue, outcome] = row.split('\t');
+    const seen = latest.get(issue);
+    if (outcome && (!seen || seen.ts <= ts)) latest.set(issue, { ts, outcome });
+  }
+  const named = bodies.flatMap((body) =>
+    [...body.matchAll(PRIVATE_ISSUE)].map(([, issue]) => issue)
+  );
+  return [...new Set(named)].filter(
+    (issue) => latest.get(issue)?.outcome === 'kind'
+  );
+};
+
 const recipients = ({ team, role }) => ({
   ...Object.fromEntries(
     Object.entries(team).map(([login, { discord }]) => [
@@ -434,7 +453,9 @@ const demoProblems = (bodies) => {
     ];
   }
   const committed = process.env[LAND_CHECK] === '1';
-  const announced = bodies.some((body) => teamLines(body).length > 0);
+  const announced =
+    bodies.some((body) => teamLines(body).length > 0) ||
+    openIssuesNamed(bodies).length > 0;
   return [...new Set([...changed, ...untrackedFiles(root, ['docs/plans'])])]
     .filter((path) => DATED_PLAN.test(path) && existsSync(join(root, path)))
     .flatMap((path) => {
@@ -513,6 +534,13 @@ const check = (args) => {
     fail(
       1,
       `a Team line asks for a retest, but the triage run sends each teammate reporter their retests through /notify:\n${retests.map(({ kind, text }) => `  ${kind}: ${text}`).join('\n')}\nSay what changed and drop the retests, then run land.mjs again with --message.`
+    );
+  }
+  const fixing = openIssuesNamed([...landing]);
+  if (lines.length > 0 && fixing.length > 0) {
+    fail(
+      1,
+      `this landing names ${fixing.map((issue) => `plate-private#${issue}`).join(', ')}, open in the triage register, and the triage run's message to each teammate reporter says what changed once the fixed records land. Drop the Team line and put what it says in that message, then run land.mjs again with --message.`
     );
   }
   const unlinked = lines.filter(({ text }) => unlinkedPage(text));
