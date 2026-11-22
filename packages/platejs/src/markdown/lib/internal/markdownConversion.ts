@@ -98,7 +98,15 @@ import {
   getRegisteredMarkdownMappings,
   registerMarkdownMappings,
 } from './markdownMappings';
-import { remarkHoldOpenTail } from './markdownOpenTail';
+import {
+  keepsReceived,
+  type MarkdownGrammar,
+  type MarkdownMarkKinds,
+  type OpenTailCopy,
+  type OpenTailPlan,
+  type OpenTailRead,
+  remarkOpenTail,
+} from './markdownOpenTail';
 import {
   createRawHtmlPlacementDecider,
   decideRawHtmlBlocks,
@@ -330,20 +338,21 @@ type MarkdownSegmentHooks = Pick<
   'onRootChildren' | 'onSyntaxNodes' | 'previousRootSibling'
 > &
   Readonly<{
-    onHeldTail?: () => void;
+    onSyntaxTree?: (root: Root) => void;
+    openTail?: OpenTailRead;
   }>;
 
 const createMarkdownParser = (
   runtime: MarkdownRuntime,
   remarkPlugins: DeserializeMdContext['remarkPlugins'],
-  onHeldTail?: () => void
+  openTail?: OpenTailRead
 ) =>
   unified()
     .use(remarkParse)
     .use(remarkSeparateEscapes)
     .use(remarkMarkdownTags, { tags: runtime.formats.tags })
     .use(remarkResolveMarkdownReferences)
-    .use(onHeldTail ? [[remarkHoldOpenTail, onHeldTail]] : [])
+    .use(openTail ? [[remarkOpenTail, openTail]] : [])
     .use(remarkPlugins);
 
 const COMMONMARK = unified().use(remarkParse).freeze();
@@ -385,10 +394,10 @@ export const markdownToSlateNodesWithRuntime = (
   text: string,
   options: MarkdownParsePolicy = {},
   diagnostics = new MarkdownDiagnostics(),
-  { onHeldTail, ...hooks }: MarkdownSegmentHooks = {},
+  { openTail, ...hooks }: MarkdownSegmentHooks = {},
   source = text
 ): Descendant[] => {
-  const mergedOptions: DeserializeMdContext = {
+  const mergedOptions: ToSlateOptions = {
     ...getMergedOptionsDeserialize(runtime, options, {
       diagnostics,
       positionsReferToSource: true,
@@ -400,7 +409,7 @@ export const markdownToSlateNodesWithRuntime = (
   return createMarkdownParser(
     runtime,
     mergedOptions.remarkPlugins,
-    options.partial ? onHeldTail : undefined
+    options.partial ? openTail : undefined
   )
     .use(remarkToSlate, mergedOptions, importsRawHtml(runtime))
     .processSync(text).result;
@@ -439,7 +448,10 @@ const readLineEndingsAsLf = (node: Nodes) => {
   }
 };
 
-type RemarkToSlateOptions = [DeserializeMdContext, marksRawHtml: boolean];
+type ToSlateOptions = DeserializeMdContext &
+  Pick<MarkdownSegmentHooks, 'onSyntaxTree'>;
+
+type RemarkToSlateOptions = [ToSlateOptions, marksRawHtml: boolean];
 
 const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
   function (options, marksRawHtml) {
@@ -454,6 +466,7 @@ const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
 
       if (syntaxNodes === null) throw new ReportedMarkdownFailureError();
       options.onSyntaxNodes?.(syntaxNodes);
+      options.onSyntaxTree?.(node as Root);
       cleanMarkdownDestinations(node as Root, {
         lossPolicy: options.lossPolicy,
         phase: 'parse',
@@ -1183,22 +1196,328 @@ const snapshotBlocks = (
     ...keepWrittenRawHtml(runtime, normalizeDocumentChildren(runtime, parsed)),
   ]).content;
 
+const MAX_COPIED_SEGMENT_LENGTH = 2000;
+
+const fitsSlice = (runtime: MarkdownRuntime, blocks: readonly Descendant[]) => {
+  if (
+    landsMarkdownParagraph(runtime.registry) &&
+    findMarkdownParagraph(blocks, [])
+  ) {
+    return false;
+  }
+  try {
+    runtime.state.schema.assertFragment(blocks);
+
+    return true;
+  } catch (error) {
+    if (error instanceof EditorSchemaValidationError) return false;
+    throw error;
+  }
+};
+
+const markKindsOf = (formats: CompiledMarkdownMappings): MarkdownMarkKinds => {
+  const keys = (kind: string) =>
+    new Set(
+      [...formats.markWriters]
+        .filter(([, writers]) => writers.some((writer) => writer.kind === kind))
+        .map(([key]) => key)
+    );
+
+  return { emphasis: keys('emphasis'), strong: keys('strong') };
+};
+
+// The probe's first and third paragraphs parse only under
+// remark-cjk-friendly's rules, its second and fourth under any rule that
+// parses the syntax at all.
+const GRAMMAR_PROBE = 'a**「b」**\n\n**b**\n\na~~「b」~~\n\n~~b~~';
+const grammars = new WeakMap<object, MarkdownGrammar>();
+
+const probeGrammar = (runtime: MarkdownRuntime): MarkdownGrammar => {
+  const { remarkPlugins } = runtime.options;
+  const known = grammars.get(remarkPlugins);
+
+  if (known) return known;
+  const [cjkStrong, strong, cjkDelete, deleted] = createMarkdownParser(
+    runtime,
+    materializeRemarkPlugins(remarkPlugins)
+  ).parse(GRAMMAR_PROBE).children;
+  const holds = (node: MdRootContent | undefined, type: string) =>
+    node?.type === 'paragraph' &&
+    node.children.some((child) => child.type === type);
+  const grammar: MarkdownGrammar = {
+    attention: holds(strong, 'strong')
+      ? holds(cjkStrong, 'strong')
+        ? 'cjkFriendly'
+        : 'commonmark'
+      : null,
+    strikethrough: holds(deleted, 'delete')
+      ? holds(cjkDelete, 'delete')
+        ? 'cjkFriendly'
+        : 'gfm'
+      : null,
+  };
+
+  grammars.set(remarkPlugins, grammar);
+
+  return grammar;
+};
+
+const offsetOf = (diagnostic: MarkdownDiagnostic) =>
+  ('source' in diagnostic ? diagnostic.source?.start?.offset : undefined) ??
+  Number.NaN;
+
+const diagnosticKeys = (
+  diagnostics: readonly MarkdownDiagnostic[],
+  sharedOffset: (offset: number) => number | null
+) =>
+  diagnostics
+    .map((diagnostic) => {
+      const { source: _source, ...rest } = diagnostic as MarkdownDiagnostic &
+        Readonly<{ source?: unknown }>;
+
+      return JSON.stringify([sharedOffset(offsetOf(diagnostic)), rest]);
+    })
+    .sort()
+    .join('\n');
+
+const hasUnplaced = (diagnostics: readonly MarkdownDiagnostic[]) =>
+  diagnostics.some((diagnostic) => Number.isNaN(offsetOf(diagnostic)));
+
+const isZeroWidthAt = (diagnostic: MarkdownDiagnostic, offset: number) =>
+  'source' in diagnostic &&
+  diagnostic.source?.start?.offset === offset &&
+  diagnostic.source.end?.offset === offset;
+
+type RootBefore = Readonly<{ index: number; root: Root; spentNodes: number }>;
+
+const inSourceOrder = (root: Root) => {
+  let end = 0;
+
+  return root.children.every((child) => {
+    const start = child.position?.start.offset;
+
+    if (start === undefined || start < end) return false;
+    end = child.position?.end.offset ?? Number.POSITIVE_INFINITY;
+
+    return true;
+  });
+};
+
+const rootBefore = (root: Root, from: number): RootBefore | null => {
+  if (!inSourceOrder(root)) return null;
+  const found = root.children.findIndex(
+    (child) => (child.position?.start.offset ?? 0) >= from
+  );
+  const index = found === -1 ? root.children.length : found;
+  const previous = root.children[index - 1];
+
+  if ((previous?.position?.end.offset ?? from) > from) return null;
+  const head: Root = { children: root.children.slice(0, index), type: 'root' };
+  const nodes = checkMarkdownTreeLimits(
+    head,
+    { maxBytes: Infinity, maxDepth: Infinity, maxNodes: Infinity },
+    () => {}
+  );
+
+  return { index, root, spentNodes: (nodes ?? 1) - 1 };
+};
+
+const closeOpenTail = (
+  runtime: MarkdownRuntime,
+  options: MarkdownParsePolicy,
+  received: Readonly<{
+    blocks: readonly Descendant[];
+    diagnostics: readonly MarkdownDiagnostic[];
+  }>,
+  plan: OpenTailPlan & Readonly<{ copy: OpenTailCopy }>,
+  before: RootBefore,
+  from: number,
+  previousRootSibling: MdRootContent | null
+) => {
+  const limits = markdownParseLimits(options);
+  const diagnostics = new MarkdownDiagnostics();
+  let children = Number.NaN;
+  let parsed: Descendant[];
+
+  try {
+    parsed = markdownToSlateNodesWithRuntime(
+      runtime,
+      plan.copy.text,
+      {
+        ...options,
+        limits: { ...limits, maxNodes: limits.maxNodes - before.spentNodes },
+      },
+      diagnostics,
+      {
+        onSyntaxTree: (root) => {
+          children = root.children.length;
+        },
+        openTail: {
+          copy: plan.copy,
+          heldFromEnd: plan.heldFromEnd,
+          mode: 'pairCopy',
+        },
+        previousRootSibling:
+          before.root.children[before.index - 1] ?? previousRootSibling,
+      }
+    );
+  } catch {
+    return null;
+  }
+  if (
+    diagnostics.failure() ||
+    children !== before.root.children.length - before.index
+  ) {
+    return null;
+  }
+  const copy = snapshotBlocks(runtime, parsed);
+  const kept = received.blocks.length - copy.length;
+  const closersAt = plan.copy.closers.from;
+
+  return kept >= 0 &&
+    keepsReceived(
+      received.blocks.slice(kept),
+      copy,
+      plan.copy,
+      markKindsOf(runtime.formats)
+    ) &&
+    !hasUnplaced(diagnostics.all()) &&
+    diagnosticKeys(diagnostics.all(), (offset) =>
+      offset < closersAt ? offset + from : null
+    ) ===
+      diagnosticKeys(
+        received.diagnostics.filter(
+          (diagnostic) => offsetOf(diagnostic) >= from
+        ),
+        (offset) => (offset < from + closersAt ? offset : null)
+      ) &&
+    fitsSlice(runtime, copy)
+    ? Object.freeze([...received.blocks.slice(0, kept), ...copy])
+    : null;
+};
+
+type OpenSegment = Readonly<{
+  keptDiagnostics: readonly MarkdownDiagnostic[];
+  retriesUncut: boolean;
+  start: number | null;
+}>;
+
+const deliverOpenTail = (
+  runtime: MarkdownRuntime,
+  source: string,
+  start: number,
+  options: MarkdownParsePolicy,
+  diagnostics: MarkdownDiagnostics,
+  hooks: MarkdownSegmentHooks,
+  segment: OpenSegment
+): readonly Descendant[] | null => {
+  const text = source.slice(start);
+
+  // micromark's offsets skip a byte order mark that starts the source, so
+  // the tail cannot read a fresh preview's tree.
+  if (source.startsWith(BYTE_ORDER_MARK)) {
+    const parsed = runParsedNodes(runtime, text, options, diagnostics, hooks);
+
+    return parsed && snapshotBlocks(runtime, parsed);
+  }
+  const from =
+    segment.start === null ||
+    source.length - segment.start > MAX_COPIED_SEGMENT_LENGTH
+      ? null
+      : segment.start - start;
+  const received = new MarkdownDiagnostics();
+  const read: { before?: RootBefore | null; plan?: OpenTailPlan } = {};
+  const onPlan = (plan: OpenTailPlan) => {
+    read.plan = plan;
+  };
+  const parsed = runParsedNodes(runtime, text, options, received, {
+    ...hooks,
+    onSyntaxTree: (root) => {
+      if (from !== null) read.before = rootBefore(root, from);
+    },
+    openTail:
+      from === null
+        ? { grammar: probeGrammar(runtime), mode: 'planHold', onPlan }
+        : { from, grammar: probeGrammar(runtime), mode: 'planCopy', onPlan },
+  });
+  const blocks =
+    parsed && !received.failure() ? snapshotBlocks(runtime, parsed) : null;
+  const { before, plan } = read;
+
+  if (plan?.heldFromEnd.length && !(blocks && fitsSlice(runtime, blocks))) {
+    if (!segment.retriesUncut) return null;
+    const uncut = runParsedNodes(runtime, text, options, diagnostics, hooks);
+
+    return uncut && snapshotBlocks(runtime, uncut);
+  }
+  received.all().forEach(diagnostics.report);
+  if (
+    !blocks ||
+    !plan?.copy ||
+    !before ||
+    from === null ||
+    hasUnplaced([...segment.keptDiagnostics, ...received.all()]) ||
+    segment.keptDiagnostics.some((diagnostic) =>
+      isZeroWidthAt(diagnostic, from + start)
+    ) ||
+    received.all().some((diagnostic) => isZeroWidthAt(diagnostic, from))
+  ) {
+    return blocks;
+  }
+
+  return (
+    closeOpenTail(
+      runtime,
+      options,
+      { blocks, diagnostics: received.all() },
+      { ...plan, copy: plan.copy },
+      before,
+      from,
+      hooks.previousRootSibling ?? null
+    ) ?? blocks
+  );
+};
+
 const convertMarkdownSource = (
   runtime: MarkdownRuntime,
   source: string,
   options: MarkdownParsePolicy,
   diagnostics: MarkdownDiagnostics,
-  reuse?: MarkdownReuse,
-  onHeldTail?: () => void
+  reuse?: MarkdownReuse
 ): MarkdownConversion => {
   const limits = markdownParseLimits(options);
   const limitsKey = JSON.stringify(limits);
   const lossPolicy = options.lossPolicy ?? 'reject';
   const full = (): MarkdownConversion => {
-    const parsed = runParsedNodes(runtime, source, options, diagnostics, {
-      onHeldTail,
-    });
-    const nodes = parsed && snapshotBlocks(runtime, parsed);
+    let nodes: readonly Descendant[] | null;
+
+    if (options.partial) {
+      const openSegmentStart =
+        new TextEncoder().encode(source).byteLength > limits.maxBytes ||
+        MARKDOWN_DEFINITION.test(source)
+          ? null
+          : (findMarkdownSegmentBoundaries(source, 0, runtime.formats.tags).at(
+              -1
+            ) ?? 0);
+
+      nodes = deliverOpenTail(
+        runtime,
+        source,
+        0,
+        options,
+        diagnostics,
+        {},
+        {
+          keptDiagnostics: [],
+          retriesUncut: true,
+          start: openSegmentStart,
+        }
+      );
+    } else {
+      const parsed = runParsedNodes(runtime, source, options, diagnostics);
+
+      nodes = parsed && snapshotBlocks(runtime, parsed);
+    }
 
     return {
       checkpoint: reuse
@@ -1267,8 +1586,6 @@ const convertMarkdownSource = (
     (count, segment) => count + segment.syntaxNodes - 1,
     1
   );
-  // Content follows every complete segment, so only the tail is the end of a
-  // partial source.
   const convertRange = (end: number) => {
     const local = new MarkdownDiagnostics();
     let count = 0;
@@ -1279,11 +1596,10 @@ const convertMarkdownSource = (
       {
         ...options,
         limits: { ...limits, maxNodes: limits.maxNodes - syntaxNodes + 1 },
-        partial: end === source.length,
+        partial: false,
       },
       local,
       {
-        onHeldTail,
         onRootChildren: (children) => {
           lastRoot = children.at(-1) ?? null;
         },
@@ -1346,14 +1662,33 @@ const convertMarkdownSource = (
     syntaxNodes += segment.syntaxNodes - 1;
     stableEnd = boundary;
   }
-  const tail = convertRange(source.length);
+  const local = new MarkdownDiagnostics();
+  const tailNodes = deliverOpenTail(
+    runtime,
+    source,
+    stableEnd,
+    {
+      ...options,
+      limits: { ...limits, maxNodes: limits.maxNodes - syntaxNodes + 1 },
+    },
+    local,
+    { previousRootSibling: segments.at(-1)?.lastRoot ?? null },
+    {
+      keptDiagnostics: segments.flatMap((segment) => segment.diagnostics),
+      retriesUncut: false,
+      start: boundaries.at(-1) ?? stableEnd,
+    }
+  );
 
-  if (!tail) return full();
+  if (!tailNodes || local.failure()) return full();
   for (const segment of segments) {
     segment.diagnostics.forEach(diagnostics.report);
   }
-  tail.diagnostics.forEach(diagnostics.report);
-  const tailNodes = snapshotBlocks(runtime, tail.parsed);
+  const lines = countMarkdownLines(source, stableEnd);
+
+  for (const diagnostic of local.all()) {
+    diagnostics.report(shiftMarkdownDiagnostic(diagnostic, lines, stableEnd));
+  }
 
   return {
     checkpoint: { limits: limitsKey, lossPolicy, segments, source },
@@ -1670,12 +2005,11 @@ export const parseMarkdownDocumentWithRuntime = (
   });
 };
 
-const parseMarkdownSlice = (
+export const parseMarkdownSliceWithRuntime = (
   runtime: MarkdownRuntime,
   source: string,
-  options: MarkdownParsePolicy,
-  reuse?: MarkdownReuse,
-  onHeldTail?: () => void
+  options: MarkdownParsePolicy = {},
+  reuse?: MarkdownReuse
 ): MarkdownSliceParseResult => {
   const diagnostics = new MarkdownDiagnostics();
   const conversion = convertMarkdownSource(
@@ -1683,8 +2017,7 @@ const parseMarkdownSlice = (
     source,
     options,
     diagnostics,
-    reuse,
-    onHeldTail
+    reuse
   );
 
   if (!conversion.nodes || diagnostics.failure()) {
@@ -1732,26 +2065,6 @@ const parseMarkdownSlice = (
     runtime,
     reuse
   );
-};
-
-export const parseMarkdownSliceWithRuntime = (
-  runtime: MarkdownRuntime,
-  source: string,
-  options: MarkdownParsePolicy = {},
-  reuse?: MarkdownReuse
-): MarkdownSliceParseResult => {
-  // micromark's offsets skip a byte order mark that starts the source, so the
-  // held tail cannot read a fresh preview's tree.
-  if (options.partial && !source.startsWith(BYTE_ORDER_MARK)) {
-    let held = false;
-    const preview = parseMarkdownSlice(runtime, source, options, reuse, () => {
-      held = true;
-    });
-
-    if (preview.ok || !held) return preview;
-  }
-
-  return parseMarkdownSlice(runtime, source, options, reuse);
 };
 
 const LEADING_WHITESPACE = /^\s*/;

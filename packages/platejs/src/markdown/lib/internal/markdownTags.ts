@@ -25,6 +25,7 @@ export type MarkdownTagElement = MdxJsxFlowElement | MdxJsxTextElement;
 type TagData = {
   markdownTag?: {
     atEnd?: boolean;
+    close?: Position;
     open: Position;
     raw: string;
     repair?: 'unclosed';
@@ -604,6 +605,9 @@ const createFromMarkdown = () => {
         }
         const element = stack.pop();
 
+        if (element?.data?.markdownTag) {
+          element.data.markdownTag.close = position;
+        }
         if (element?.position) {
           element.position = {
             end: { ...position.end },
@@ -760,6 +764,12 @@ const rereadLegacyIndentation = (
           end: remapPoint(tagData.open.end),
           start: remapPoint(tagData.open.start),
         };
+        if (tagData.close) {
+          tagData.close = {
+            end: remapPoint(tagData.close.end),
+            start: remapPoint(tagData.close.start),
+          };
+        }
       }
       node.children?.forEach(remap);
     };
@@ -938,6 +948,7 @@ const normalizeBlocks = (
                   markdownTagClose: true,
                   markdownTagRepair: 'misplaced',
                 },
+                position: tag.close,
                 type: 'html',
                 value: `</${(child as unknown as MarkdownTagElement).name}>`,
               },

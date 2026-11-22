@@ -14472,7 +14472,7 @@
           "kind": "type",
           "name": "MarkdownParsePolicy",
           "runtime": false,
-          "signature": "type MarkdownParsePolicy = Readonly<{\n  limits?: Partial<MarkdownParseLimits>;\n  lossPolicy?: 'allow' | 'reject';\n  /**\n   * The source is an unfinished stream prefix, such as a streaming AI answer.\n   * A trailing tag that has not finished arriving is hidden, and `parseSlice`\n   * also hides up to three trailing `*`, `_` or `~` characters, or a trailing\n   * `\\`, until the next characters decide them. Use a final parse once the\n   * stream completes.\n   */\n  partial?: boolean;\n}>;",
+          "signature": "type MarkdownParsePolicy = Readonly<{\n  limits?: Partial<MarkdownParseLimits>;\n  lossPolicy?: 'allow' | 'reject';\n  /**\n   * The source is an unfinished stream prefix, such as a streaming AI answer.\n   * A trailing tag that has not finished arriving is hidden. `parseSlice` also\n   * shows a bold, italic or strikethrough run that has not closed yet styled\n   * as it will read once it closes, and hides up to three trailing `*`, `_`,\n   * `~` or `\\` characters in all until the next characters decide them, so a\n   * later chunk can take back styling a preview showed. Use a final parse\n   * once the stream completes.\n   */\n  partial?: boolean;\n}>;",
           "source": null,
           "typeParameters": []
         },
