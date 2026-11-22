@@ -576,27 +576,26 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
 
         const detailsKey = state.key(details[0]);
         const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-        const exitAfterDetails = () =>
+        const afterDetails = PathApi.next(details[1]);
+        const insertParagraphAfterDetails = () =>
           state.transaction((tx) => {
-            const nextPath = PathApi.next(details[1]);
-            const nextBlock = tx.nodes.get(nextPath);
-            const point = nextBlock ? tx.points.start(nextPath) : undefined;
-
-            if (point) {
-              tx.selection.set(point);
-
-              return;
-            }
-
             tx.nodes.insert(
               { children: [{ text: '' }], type: paragraphType },
-              { at: nextPath, select: true }
+              { at: afterDetails, select: true }
             );
           });
 
         if (summary) {
           if (!viewStoreOf(state).get('openKeys').has(detailsKey)) {
-            return exitAfterDetails();
+            const point = state.nodes.get(afterDetails)
+              ? state.points.start(afterDetails)
+              : undefined;
+
+            return point
+              ? state.transaction((tx) => {
+                  tx.selection.set(point);
+                })
+              : insertParagraphAfterDetails();
           }
 
           if (state.points.isEnd(selection.anchor, summary[1])) {
@@ -627,7 +626,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           NodeApi.string(block[0]) === '' &&
           state.points.isEnd(selection.anchor, block[1])
         ) {
-          return exitAfterDetails();
+          return insertParagraphAfterDetails();
         }
 
         return next();
