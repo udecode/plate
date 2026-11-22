@@ -1,3 +1,5 @@
+import { strokeOutline } from '../../../internal/penStroke.internal';
+import type { BoardMemberEntry } from './boardMember.internal';
 import type { BoardPlace, BoardSize } from './boardShape.internal';
 
 export const BOARD_STROKE_TYPE = 'boardStroke';
@@ -34,6 +36,13 @@ export const BOARD_STROKE_REACH = boardStrokeRadius(1);
  * `BOARD_STROKE_REACH`, or by half a side shorter than twice that.
  */
 export type BoardStrokePoints = readonly number[];
+
+/** Where a stroke draws: an SVG path over a box of `width` by `height`. */
+export type BoardStrokePath = Readonly<{
+  height: number;
+  path: string;
+  width: number;
+}>;
 
 /** A point of a pen line in board coordinates, with its pressure from 0 to 1. */
 export type BoardInkPoint = readonly [x: number, y: number, pressure: number];
@@ -74,3 +83,24 @@ export const boardInkIn = (
 
   return ink;
 };
+
+export const boardStrokePointsOf = (
+  entry: BoardMemberEntry,
+  strokeType: string | undefined
+): BoardStrokePoints | undefined =>
+  entry.node.type === strokeType && Array.isArray(entry.node.points)
+    ? entry.node.points
+    : undefined;
+
+export const boardStrokePath = (
+  points: BoardStrokePoints,
+  { height, width }: BoardSize
+): BoardStrokePath => ({
+  height,
+  path: strokeOutline(
+    boardInkIn(points, { height, width, x: 0, y: 0 }),
+    BOARD_PEN,
+    true
+  ),
+  width,
+});

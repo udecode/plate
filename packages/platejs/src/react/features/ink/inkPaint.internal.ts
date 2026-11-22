@@ -1,5 +1,5 @@
 import type { InkBrush, InkMark, InkSample } from '../../../features/ink/lib';
-import { strokePolygon } from '../../internal/penStroke.internal';
+import { strokePolygon } from '../../../internal/penStroke.internal';
 import type { InkPlaced } from './inkPlacement.internal';
 
 // perfect-freehand draws a point's radius as size * (0.5 - thinning * (0.5 -

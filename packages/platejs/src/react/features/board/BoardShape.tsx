@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import type { Element } from '../../../core';
+import type { BoardStrokePath } from '../../../features/board/lib';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
 import {
   EditorElement,
@@ -10,7 +11,6 @@ import {
 } from '../../core';
 import { useClaimEditableDOMCommit } from '../../plite-react';
 import type { BoardCorner } from './boardIndex.internal';
-import type { BoardStrokePath } from './boardInk.internal';
 import type {
   BoardArrowPlugin,
   BoardFramePlugin,
@@ -22,7 +22,7 @@ import type {
 import { useBoardView } from './BoardSurface';
 import { type BoardArrowPath, useBoardViewContext } from './boardView.internal';
 
-export type { BoardStrokePath } from './boardInk.internal';
+export type { BoardStrokePath } from '../../../features/board/lib';
 export type { BoardArrowPath } from './boardView.internal';
 
 const CORNERS: ReadonlyArray<readonly [BoardCorner, React.CSSProperties]> = [

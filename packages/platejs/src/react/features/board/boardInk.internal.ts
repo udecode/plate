@@ -4,13 +4,6 @@ import {
   boardStrokeRadius,
 } from '../../../features/board/lib/boardStroke.internal';
 
-/** Where a stroke draws: an SVG path over a box of `width` by `height`. */
-export type BoardStrokePath = Readonly<{
-  height: number;
-  path: string;
-  width: number;
-}>;
-
 /** How many screen pixels past its line a press still reaches a stroke. */
 export const INK_SLOP_PX = 6;
 

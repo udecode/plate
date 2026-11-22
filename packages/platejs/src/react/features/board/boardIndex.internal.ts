@@ -27,21 +27,16 @@ import {
   flooredSizeKeepingRatio,
 } from '../../../features/board/lib/boardRatio.internal';
 import {
-  BOARD_PEN,
   BOARD_STROKE_REACH,
   type BoardInkPoint,
   boardInkIn,
+  boardStrokePath,
+  type BoardStrokePath,
+  boardStrokePointsOf,
   type BoardStrokePoints,
 } from '../../../features/board/lib/boardStroke.internal';
 import type { BoardTypes } from '../../../features/board/lib/boardTypes.internal';
-import { strokeOutline } from '../../internal/penStroke.internal';
-import {
-  type BoardStrokePath,
-  INK_SLOP_PX,
-  onInk,
-  lineSide,
-  segmentGap,
-} from './boardInk.internal';
+import { INK_SLOP_PX, onInk, lineSide, segmentGap } from './boardInk.internal';
 
 export type BoardBox = BoardPlace & BoardSize;
 
@@ -332,11 +327,8 @@ export const createBoardIndex = ({
   const isStroke = (entry: BoardMemberEntry) =>
     entry.node.type === types.stroke();
 
-  // The schema's validate guard checked the points when they came in.
-  const inkOf = (entry: BoardMemberEntry): BoardStrokePoints | undefined =>
-    isStroke(entry) && Array.isArray(entry.node.points)
-      ? entry.node.points
-      : undefined;
+  const inkOf = (entry: BoardMemberEntry) =>
+    boardStrokePointsOf(entry, types.stroke());
 
   const sameMember = (entry: BoardMemberEntry, previous: BoardMemberEntry) => {
     if (
@@ -769,15 +761,7 @@ export const createBoardIndex = ({
         return drawn;
       }
 
-      const next = {
-        height,
-        path: strokeOutline(
-          boardInkIn(ink, { height, width, x: 0, y: 0 }),
-          BOARD_PEN,
-          true
-        ),
-        width,
-      };
+      const next = boardStrokePath(ink, layout.box);
 
       strokePaths.set(ink, next);
 

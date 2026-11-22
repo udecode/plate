@@ -86,7 +86,7 @@ SOFTWARE.
 
 ## perfect-freehand
 
-`platejs` includes the pen stroke path and simulated pressure in `src/react/internal/penStroke.internal.ts`, adapted from [perfect-freehand](https://github.com/steveruizok/perfect-freehand). The board and ink input draw their pen strokes with it. perfect-freehand is distributed under the MIT License:
+`platejs` includes the pen stroke path and simulated pressure in `src/internal/penStroke.internal.ts`, adapted from [perfect-freehand](https://github.com/steveruizok/perfect-freehand). The board and ink input draw their pen strokes with it. perfect-freehand is distributed under the MIT License:
 
 ```text
 MIT License

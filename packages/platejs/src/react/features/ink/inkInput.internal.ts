@@ -1,4 +1,4 @@
-import { simulatedPressure } from '../../internal/penStroke.internal';
+import { simulatedPressure } from '../../../internal/penStroke.internal';
 
 /**
  * The layer's `touch-action`: a finger still pans the page natively while the

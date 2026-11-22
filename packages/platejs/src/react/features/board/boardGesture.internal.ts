@@ -13,7 +13,7 @@ import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import {
   simulatedPressure,
   strokeOutline,
-} from '../../internal/penStroke.internal';
+} from '../../../internal/penStroke.internal';
 import {
   CORNERS_CLOCKWISE,
   type BoardBox,

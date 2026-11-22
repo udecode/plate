@@ -94,6 +94,11 @@ import {
   shapeSelectionMode,
 } from './boardShape.internal';
 import {
+  boardStrokePath,
+  type BoardStrokePath,
+  boardStrokePointsOf,
+} from './boardStroke.internal';
+import {
   BOARD_ARROW_STYLES,
   BOARD_GEO_STYLES,
   BOARD_NOTE_STYLES,
@@ -102,6 +107,7 @@ import {
   encodeBoardStyleAttributes,
   reportInvalidBoardAttribute,
 } from './boardStyle.internal';
+import { boardTypesOf } from './boardTypes.internal';
 
 export type { BoardFramePlace, BoardShapePlace } from './boardFrame.internal';
 export type {
@@ -116,6 +122,7 @@ export type {
   BoardSize,
 } from './boardShape.internal';
 export { defineBoardShape } from './boardShape.internal';
+export type { BoardStrokePath } from './boardStroke.internal';
 
 /**
  * A board: a void block that owns one content root, whose top-level blocks
@@ -333,6 +340,7 @@ export const BaseBoardPlugin = definePlugin('board', {
       ],
       read: ({ state }) => {
         const members = boardMembersOf(state, properties);
+        const types = boardTypesOf(editor);
 
         return {
           /**
@@ -373,6 +381,19 @@ export const BaseBoardPlugin = definePlugin('board', {
           /** The members of the board block `board`, in stored order. */
           shapes: (board: NodeKey): BoardMemberEntry[] =>
             boardShapesOf(state, members, board),
+          /**
+           * Where the pen line `id` draws its outline within its box, the
+           * path the live board draws, or null when `id` names no pen line.
+           */
+          strokePath: (id: string): BoardStrokePath | null => {
+            const entry = members.member(id);
+
+            if (entry?.kind !== 'shape') return null;
+
+            const points = boardStrokePointsOf(entry, types.stroke());
+
+            return points ? boardStrokePath(points, entry.size) : null;
+          },
         };
       },
     };
