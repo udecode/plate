@@ -17,6 +17,7 @@ import { ReportedMarkdownFailureError } from './markdownDiagnostics';
 import { toMarkdownBlockContent } from './markdownDocument';
 import {
   BARE_URL_HTML,
+  LONE_BREAK_HTML,
   rawHtmlPieceOf,
   readEmptyParagraphMarker,
   TRAILING_BREAK_HTML,
@@ -271,7 +272,14 @@ const lowerPhrasing = (
         // Its block's decision judges the leaf's own text, so a rewrite here
         // would hide a `|` or a line ending from it.
         if (rawHtmlPieceOf(child)) return [child];
-        if (child.value === TRAILING_BREAK_HTML) return [html('<br />')];
+        // A cell is one line, so its break needs neither the line ending nor
+        // the comment a paragraph writes after `<br />`.
+        if (
+          child.value === TRAILING_BREAK_HTML ||
+          child.value === LONE_BREAK_HTML
+        ) {
+          return [html('<br />')];
+        }
 
         const value = child.value.replace(LINE_ENDINGS, ' ');
 

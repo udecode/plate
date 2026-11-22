@@ -1417,11 +1417,40 @@ export const getMarkdownDecoders = (
     ? compiled.decodeByTag.get(node.name ?? '')
     : compiled.decodeByNode.get(node.type);
 
-/**
- * Claim decoders run in priority order until one claims or refuses. Mark
- * decoders all contribute to one mark set, then the children decode once.
- * `undefined` means no decoder accepted the node.
- */
+const isValidFragmentNode = (
+  node: Descendant,
+  options: DeserializeMdContext
+): boolean => {
+  try {
+    options.state.schema.assertFragment([node]);
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const withInlineText = (
+  decoded: Descendant[],
+  options: DeserializeMdContext
+): Descendant[] =>
+  decoded.map((item) => {
+    if (
+      !ElementApi.isElement(item) ||
+      item.children.length > 0 ||
+      !options.isInline(item)
+    ) {
+      return item;
+    }
+
+    const filled = { ...item, children: [{ text: '' }] };
+
+    return !isValidFragmentNode(item, options) &&
+      isValidFragmentNode(filled, options)
+      ? filled
+      : item;
+  });
+
 export const runMarkdownDecoders = (
   decoders: readonly MarkdownDecoder[],
   node: UnistNode,
@@ -1495,7 +1524,10 @@ export const runMarkdownDecoders = (
       return isTagNode(node) ? refusedTagText(node, options) : [];
     }
     if (decoded !== undefined) {
-      return Array.isArray(decoded) ? decoded : [decoded as Descendant];
+      return withInlineText(
+        Array.isArray(decoded) ? decoded : [decoded as Descendant],
+        options
+      );
     }
   }
 

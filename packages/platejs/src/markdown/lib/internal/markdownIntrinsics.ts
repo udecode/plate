@@ -83,6 +83,20 @@ export const readEmptyParagraphMarker = (child: Descendant): Descendant =>
     ? { ...child, text: '' }
     : child;
 
+const withoutLoneBreakSeparators = (
+  children: Paragraph['children']
+): Paragraph['children'] =>
+  children.filter((child, index) => {
+    const previous = children[index - 1];
+
+    return !(
+      child.type === 'html' &&
+      child.value === WRITER_SEPARATOR &&
+      previous?.type === 'html' &&
+      previous.value === WRITTEN_BREAK_HTML
+    );
+  });
+
 const withoutTrailingBreakMarkup = (
   children: Paragraph['children']
 ): Paragraph['children'] => {
@@ -143,49 +157,105 @@ const withUnmarkedLineEndings = (text: string, marks: MdMarks) =>
         )
     : { ...marks, text };
 
-// An HTML block in these decodes into a paragraph of its own.
+// The writer prints a paragraph that holds only raw HTML as an HTML block only
+// when every container above it is the document, a quote, a list or a list
+// item.
 const FLOW_CONTAINERS: ReadonlySet<string> = new Set([
   'blockquote',
+  'list',
   'listItem',
-  'root',
-]);
-// A registered tag's mapping and a footnote definition read an HTML block in
-// them as text beside their other content, and export writes a flow piece
-// there as text, so a comment there drops as it does without the plugin.
-const TEXT_FLOW_CONTAINERS: ReadonlySet<string> = new Set([
-  'footnoteDefinition',
-  'mdxJsxFlowElement',
 ]);
 // The writer prints it between two blocks its join keeps apart.
 const WRITER_SEPARATOR = '<!---->';
 
+const isBlockWrapper = (node: Readonly<{ name?: unknown; type: string }>) =>
+  node.type === 'mdxJsxFlowElement' && node.name === 'block';
+
+type WrittenFollows = 'block' | 'list' | 'marker';
+
+export const wholeHtmlBlockRefusal = (
+  value: string,
+  follows: WrittenFollows
+): 'comment' | 'flow-shape' | undefined => {
+  if (value === WRITER_SEPARATOR) return 'comment';
+  // A leading tab can indent a line four columns, which reads as indented code.
+  // After a list marker, a leading space or tab reads as the marker's spacing,
+  // and the item's later lines, which the writer indents by the marker and one
+  // space, then fall out of the item. After a list, an indented line can
+  // continue the list.
+  if (/^ *\t/.test(value) || (follows !== 'block' && /^[\t ]/.test(value))) {
+    return 'flow-shape';
+  }
+
+  return undefined;
+};
+
 export const isMarkdownHtmlComment = (value: string) =>
   HTML_COMMENT.test(value);
+
+const isEmptyBlockWrapper = (node: MdParent): boolean =>
+  isBlockWrapper(node) &&
+  node.children.every((child) => isEmptyBlockWrapper(child as MdParent));
+
+const wrapsOneHtmlBlock = (wrapper: MdParent): boolean => {
+  const [only, ...rest] = wrapper.children.filter(
+    (child) => !isEmptyBlockWrapper(child as MdParent)
+  );
+
+  if (!only || rest.length > 0) return false;
+
+  return (
+    only.type === 'html' ||
+    (isBlockWrapper(only) && wrapsOneHtmlBlock(only as MdParent))
+  );
+};
 
 export const findMarkdownRawHtml = (
   tree: Root
 ): NonNullable<DeserializeMdContext['rawHtml']> => {
   const blocks = new Set<Html>();
-  const droppedComments = new Set<Html>();
-  const visit = (parent: MdParent) => {
+  const visit = (
+    parent: MdParent,
+    split: boolean,
+    held: boolean,
+    start: WrittenFollows
+  ): WrittenFollows => {
+    let follows = start;
+
     for (const child of parent.children) {
-      if (child.type !== 'html') {
-        if ('children' in child) visit(child);
-      } else if (
-        child.value === WRITER_SEPARATOR ||
-        (TEXT_FLOW_CONTAINERS.has(parent.type) &&
-          HTML_COMMENT.test(child.value))
-      ) {
-        droppedComments.add(child);
-      } else if (FLOW_CONTAINERS.has(parent.type)) {
-        blocks.add(child);
+      if (child.type === 'html') {
+        if (split && !held && !wholeHtmlBlockRefusal(child.value, follows)) {
+          blocks.add(child);
+          follows = 'block';
+        } else if (!HTML_COMMENT.test(child.value)) {
+          follows = 'block';
+        }
+      } else if (isBlockWrapper(child)) {
+        follows = visit(
+          child as MdParent,
+          split,
+          held || !wrapsOneHtmlBlock(child as MdParent),
+          follows
+        );
+      } else {
+        if ('children' in child) {
+          visit(
+            child,
+            split && FLOW_CONTAINERS.has(child.type),
+            held,
+            child.type === 'listItem' ? 'marker' : 'block'
+          );
+        }
+        follows = child.type === 'list' ? 'list' : 'block';
       }
     }
+
+    return follows;
   };
 
-  visit(tree);
+  visit(tree, true, false, 'block');
 
-  return { blocks, droppedComments };
+  return { blocks };
 };
 
 /**
@@ -218,9 +288,7 @@ export const markdownIntrinsicDecoders = {
     }
     const { rawHtml } = options;
 
-    if (
-      rawHtml ? rawHtml.droppedComments.has(node) : HTML_COMMENT.test(value)
-    ) {
+    if (HTML_COMMENT.test(value) && !rawHtml?.blocks.has(node)) {
       options.report({
         action: 'dropped',
         code: 'markdown-unsupported-node',
@@ -264,7 +332,7 @@ export const markdownIntrinsicDecoders = {
     const paragraphType = getMarkdownParagraphType(options.registry);
     const imageType = options.registry.type(PLUGINS.image);
     const children = convertChildrenDeserialize(
-      withoutTrailingBreakMarkup(node.children),
+      withoutTrailingBreakMarkup(withoutLoneBreakSeparators(node.children)),
       marks,
       options
     ).map(readEmptyParagraphMarker);
@@ -510,8 +578,17 @@ export const remarkSeparateEscapes: UnifiedPlugin<[], Root> = function (
   };
 };
 
-/** The `<br />` that keeps a paragraph's trailing line break, after its line ending. */
 export const TRAILING_BREAK_HTML = '\n<br />';
+
+const WRITTEN_BREAK_HTML = '<br />';
+
+/**
+ * The first break of a paragraph that holds only hard breaks. `<br />` alone
+ * on a paragraph's first line opens an HTML block, which reads back as an
+ * empty paragraph; the comment after it keeps the line a paragraph and drops
+ * on import.
+ */
+export const LONE_BREAK_HTML = `${WRITTEN_BREAK_HTML}${WRITER_SEPARATOR}`;
 
 /**
  * Encode the paragraph type when no feature mapping claims it. Newlines in text
@@ -548,14 +625,16 @@ export const encodeMarkdownParagraph = (
   );
 
   if (children.at(-1)?.type === 'break') {
-    for (let index = children.length - 2; index >= 0; index -= 1) {
-      if (children[index].type !== 'break') break;
-      children[index] = { type: 'html', value: '<br />' };
+    let index = children.length - 2;
+
+    for (; index >= 0 && children[index].type === 'break'; index -= 1) {
+      children[index] = { type: 'html', value: WRITTEN_BREAK_HTML };
     }
     children[children.length - 1] = {
       type: 'html',
       value: TRAILING_BREAK_HTML,
     };
+    if (index < 0) children[0] = { type: 'html', value: LONE_BREAK_HTML };
   }
 
   return { children: children as Paragraph['children'], type: 'paragraph' };

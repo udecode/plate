@@ -314,7 +314,6 @@ export type DeserializeMdContext = Readonly<
     previousRootSibling?: MdRootContent | null;
     rawHtml?: Readonly<{
       blocks: ReadonlySet<Html>;
-      droppedComments: ReadonlySet<Html>;
     }>;
     limits: MarkdownParseLimits;
     lossPolicy: 'allow' | 'reject';

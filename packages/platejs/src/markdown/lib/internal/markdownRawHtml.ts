@@ -20,8 +20,10 @@ import {
 import {
   encodeRawHtmlLeaves,
   isMarkdownBreakHtml,
+  isMarkdownHtmlComment,
   markRawHtmlFlow,
   rawHtmlPieceOf,
+  wholeHtmlBlockRefusal,
 } from './markdownIntrinsics';
 import { isMarkdownLineListToken } from './markdownLine';
 import { getMarkdownTagRepair } from './markdownTags';
@@ -191,6 +193,7 @@ type RawHtmlPlacementRefusal =
   | RawHtmlRefusal
   | 'block-shape'
   | 'char'
+  | 'comment'
   | 'empty'
   | 'flow-shape'
   | 'footnote'
@@ -249,6 +252,7 @@ const decideInlineRead = (
       isRawHtml(child) &&
       !(container === 'tableCell' && isMarkdownLineListToken(child))
     ) {
+      if (isMarkdownHtmlComment(child.value)) return 'comment';
       html += child.value;
     } else if (child.type === 'text') text += child.value;
     else return 'inline-shape';
@@ -306,17 +310,16 @@ export const createRawHtmlPlacementDecider = ({
     // Plain CommonMark reads a footnote definition's line as a link definition.
     if (container === 'footnoteDefinition') return refuse('footnote');
     if (place.wholeBlock) {
-      // A list item indents its later lines by its marker alone, and an
-      // indented line after a list continues the list, so a leading space or
-      // tab there can split the piece between two blocks.
-      if (place.follows !== 'block' && /^[\t ]/.test(piece)) {
-        return refuse('flow-shape');
-      }
+      const refusal = wholeHtmlBlockRefusal(piece, place.follows);
+
+      if (refusal) return refuse(refusal);
 
       return decideOnce(`flow\u0000${piece}`, piece, (read) =>
         readsAsHtmlBlock(read, piece) ? undefined : 'flow-shape'
       );
     }
+    // Import keeps a comment only as an HTML block of its own.
+    if (isMarkdownHtmlComment(piece)) return refuse('comment');
     // A backtick can open a code span and a pipe can end a table cell before
     // the piece ends.
     if (/[`|]/.test(piece)) return refuse('char');

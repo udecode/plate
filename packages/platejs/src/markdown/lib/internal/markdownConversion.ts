@@ -1,5 +1,6 @@
 import { dequal } from 'dequal';
 import type {
+  Html,
   Nodes,
   Paragraph,
   Parent,
@@ -85,7 +86,6 @@ import {
 import {
   findMarkdownRawHtml,
   getMarkdownParagraphLanding,
-  isMarkdownHtmlComment,
   isRawHtmlFlow,
   rawHtmlPieceOf,
   remarkSeparateEscapes,
@@ -338,6 +338,8 @@ type MarkdownSegmentHooks = Pick<
   'onRootChildren' | 'onSyntaxNodes' | 'previousRootSibling'
 > &
   Readonly<{
+    /** The source is one paragraph, so no HTML block decodes on its own. */
+    inline?: boolean;
     onSyntaxTree?: (root: Root) => void;
     openTail?: OpenTailRead;
   }>;
@@ -394,7 +396,7 @@ export const markdownToSlateNodesWithRuntime = (
   text: string,
   options: MarkdownParsePolicy = {},
   diagnostics = new MarkdownDiagnostics(),
-  { openTail, ...hooks }: MarkdownSegmentHooks = {},
+  { inline, openTail, ...hooks }: MarkdownSegmentHooks = {},
   source = text
 ): Descendant[] => {
   const mergedOptions: ToSlateOptions = {
@@ -411,7 +413,11 @@ export const markdownToSlateNodesWithRuntime = (
     mergedOptions.remarkPlugins,
     options.partial ? openTail : undefined
   )
-    .use(remarkToSlate, mergedOptions, importsRawHtml(runtime))
+    .use(
+      remarkToSlate,
+      mergedOptions,
+      importsRawHtml(runtime) ? (inline ? 'inline' : 'blocks') : undefined
+    )
     .processSync(text).result;
 };
 
@@ -451,10 +457,15 @@ const readLineEndingsAsLf = (node: Nodes) => {
 type ToSlateOptions = DeserializeMdContext &
   Pick<MarkdownSegmentHooks, 'onSyntaxTree'>;
 
-type RemarkToSlateOptions = [ToSlateOptions, marksRawHtml: boolean];
+type RemarkToSlateOptions = [
+  ToSlateOptions,
+  rawHtml: 'blocks' | 'inline' | undefined,
+];
+
+const NO_RAW_HTML_BLOCKS = Object.freeze({ blocks: new Set<Html>() });
 
 const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
-  function (options, marksRawHtml) {
+  function (options, rawHtml) {
     this.compiler = (node, file) => {
       if (String(file).includes('\r')) readLineEndingsAsLf(node as Root);
 
@@ -476,8 +487,14 @@ const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
 
       return mdastToSlate(
         node as Root,
-        marksRawHtml
-          ? { ...options, rawHtml: findMarkdownRawHtml(node as Root) }
+        rawHtml
+          ? {
+              ...options,
+              rawHtml:
+                rawHtml === 'blocks'
+                  ? findMarkdownRawHtml(node as Root)
+                  : NO_RAW_HTML_BLOCKS,
+            }
           : options
       );
     };
@@ -749,11 +766,10 @@ const copiesMarkedLeaf = (
 const sameTextProperties = (left: Text, right: Text) =>
   dequal({ ...left, text: '' }, { ...right, text: '' });
 
-// Only a text next to an unmarked or dropped leaf can newly equal its neighbor.
+// Only a text next to an unmarked leaf can newly equal its neighbor.
 const unmarkLeaves = (
   nodes: readonly Descendant[],
-  leaves: ReadonlySet<Text>,
-  dropped: ReadonlySet<Text>
+  leaves: ReadonlySet<Text>
 ): readonly Descendant[] => {
   const output: Descendant[] = [];
   let changed = false;
@@ -764,11 +780,7 @@ const unmarkLeaves = (
     let unmarked = false;
 
     if (!TextApi.isText(node)) {
-      next = unmarkElement(node, leaves, dropped);
-    } else if (dropped.has(node)) {
-      changed = true;
-      joinsUnmarked = true;
-      continue;
+      next = unmarkElement(node, leaves);
     } else if (leaves.has(node)) {
       const { [RawHtmlPlugin.name]: _marked, ...text } = node;
 
@@ -801,62 +813,21 @@ const unmarkLeaves = (
 
 const unmarkElement = (
   element: Element,
-  leaves: ReadonlySet<Text>,
-  dropped: ReadonlySet<Text>
+  leaves: ReadonlySet<Text>
 ): Element => {
-  const children = unmarkLeaves(element.children, leaves, dropped);
+  const children = unmarkLeaves(element.children, leaves);
 
-  if (children === element.children) return element;
-
-  // An inline element that held only a dropped comment keeps an empty text,
-  // as a link does without the plugin.
-  return {
-    ...element,
-    children: children.length > 0 ? [...children] : [{ text: '' }],
-  };
+  return children === element.children
+    ? element
+    : { ...element, children: [...children] };
 };
-
-const textsOf = (nodes: readonly Descendant[]): Text[] =>
-  nodes.flatMap((node) =>
-    TextApi.isText(node) ? [node] : textsOf(node.children)
-  );
-
-// Without the plugin a comment drops, so an unmarked one drops too unless
-// nothing but comments and whitespace would be left of its block's text.
-const droppedCommentsOf = (
-  nodes: readonly Descendant[],
-  unmarked: ReadonlySet<Text>
-): Text[] =>
-  nodes.flatMap((node) => {
-    if (TextApi.isText(node)) return [];
-    if (!node.children.some((child) => TextApi.isText(child))) {
-      return droppedCommentsOf(node.children, unmarked);
-    }
-    const texts = textsOf(node.children);
-    const comments = texts.filter(
-      (leaf) => unmarked.has(leaf) && isMarkdownHtmlComment(leaf.text)
-    );
-
-    return texts.some(
-      (leaf) => !comments.includes(leaf) && /\S/.test(leaf.text)
-    )
-      ? comments
-      : [];
-  });
 
 const unmarkBlocks = (
   blocks: readonly Element[],
   unmarked: ReadonlySet<Text>
-) => {
-  const dropped = new Set(droppedCommentsOf(blocks, unmarked));
+) => blocks.map((block) => unmarkElement(block, unmarked));
 
-  return blocks.map((block) => unmarkElement(block, unmarked, dropped));
-};
-
-/**
- * Unmarking leaves and dropping comments keep every block in its place, so one
- * decision is final.
- */
+/** Unmarking leaves keeps every block in its place, so one decision is final. */
 const keepWrittenRawHtml = (
   runtime: MarkdownRuntime,
   blocks: readonly Element[],
@@ -2093,7 +2064,9 @@ export const parseMarkdownInlineWithRuntime = (
       slice: ContentSlice.closed(whitespace(source)),
     });
   }
-  const parsed = runParsedNodes(runtime, trimmed, options, diagnostics);
+  const parsed = runParsedNodes(runtime, trimmed, options, diagnostics, {
+    inline: true,
+  });
 
   if (!parsed || diagnostics.failure()) return sliceParseFailure(diagnostics);
   const blocks = normalizeDocumentChildren(runtime, parsed);
