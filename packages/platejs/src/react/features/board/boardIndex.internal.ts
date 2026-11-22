@@ -26,15 +26,14 @@ import {
   MIN_SHAPE_SIZE,
   flooredSizeKeepingRatio,
 } from '../../../features/board/lib/boardRatio.internal';
-import { BOARD_GEO_TYPE } from '../../../features/board/lib/boardShape.internal';
 import {
   BOARD_PEN,
   BOARD_STROKE_REACH,
-  BOARD_STROKE_TYPE,
   type BoardInkPoint,
   boardInkIn,
   type BoardStrokePoints,
 } from '../../../features/board/lib/boardStroke.internal';
+import type { BoardTypes } from '../../../features/board/lib/boardTypes.internal';
 import { strokeOutline } from '../../internal/penStroke.internal';
 import {
   type BoardStrokePath,
@@ -202,15 +201,6 @@ export const resized = (
   };
 };
 
-const isStroke = (entry: BoardMemberEntry) =>
-  entry.node.type === BOARD_STROKE_TYPE;
-
-// The schema's validate guard checked the points when they came in.
-const inkOf = (entry: BoardMemberEntry): BoardStrokePoints | undefined =>
-  isStroke(entry) && Array.isArray(entry.node.points)
-    ? entry.node.points
-    : undefined;
-
 const sameInk = (a: BoardStrokePoints, b: BoardStrokePoints) =>
   a === b || (a.length === b.length && a.every((value, at) => value === b[at]));
 
@@ -272,9 +262,11 @@ const outlineAlong = (
 // Excalidraw, the eraser reaches it only near that outline.
 const hollow = (
   node: Element | undefined,
+  geoType: string | undefined,
   isEmpty: (block: Element) => boolean
 ) =>
-  node?.type === BOARD_GEO_TYPE &&
+  node !== undefined &&
+  node.type === geoType &&
   (node.fill ?? 'none') === 'none' &&
   node.children.every((block) => ElementApi.isElement(block) && isEmpty(block));
 
@@ -308,6 +300,7 @@ export const createBoardIndex = ({
   members: membersRead,
   nodeOf,
   previewCleared,
+  types,
 }: Readonly<{
   /** The board root's top-level blocks, whose identity changes with them. */
   children: () => readonly unknown[];
@@ -318,6 +311,7 @@ export const createBoardIndex = ({
   /** A member's current node, which a text commit changes without an update. */
   nodeOf: (key: NodeKey) => Element | undefined;
   previewCleared: () => void;
+  types: BoardTypes;
 }>) => {
   const tree = new RBush<CullBox>();
   let children: readonly unknown[] | null = null;
@@ -334,6 +328,15 @@ export const createBoardIndex = ({
   const arrowListeners = new Map<NodeKey, Set<() => void>>();
   const strokePaths = new WeakMap<BoardStrokePoints, BoardStrokePath>();
   let version = 0;
+
+  const isStroke = (entry: BoardMemberEntry) =>
+    entry.node.type === types.stroke();
+
+  // The schema's validate guard checked the points when they came in.
+  const inkOf = (entry: BoardMemberEntry): BoardStrokePoints | undefined =>
+    isStroke(entry) && Array.isArray(entry.node.points)
+      ? entry.node.points
+      : undefined;
 
   const sameMember = (entry: BoardMemberEntry, previous: BoardMemberEntry) => {
     if (
@@ -552,7 +555,7 @@ export const createBoardIndex = ({
             from,
             to,
             slop,
-            () => !hollow(nodeOf(layout.key), isEmpty)
+            () => !hollow(nodeOf(layout.key), types.geo(), isEmpty)
           )
         );
       }

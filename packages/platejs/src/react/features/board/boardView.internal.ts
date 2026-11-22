@@ -25,7 +25,6 @@ import {
   BaseBoardImagePlugin,
   BaseBoardNotePlugin,
   BaseBoardPlugin,
-  BaseBoardStrokePlugin,
   type BoardGeo,
   type BoardMemberEntry,
   type BoardPlace,
@@ -45,6 +44,7 @@ import {
   type BoardStyles,
   parseBoardStyle,
 } from '../../../features/board/lib/boardStyle.internal';
+import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 import { uploadDraftsOf } from '../../../internal/plugin/uploadDrafts';
 import type { Editor, EditorHistoryController } from '../../core';
@@ -281,7 +281,7 @@ export type BoardViewCore = Readonly<{
   shapesAlong: (from: BoardPlace, to: BoardPlace) => readonly string[];
   slice: (ids: readonly string[]) => ContentSlice | null;
   state: () => BoardViewState;
-  styleFor: (type: string, style: BoardStyle) => BoardStyle;
+  styleFor: (type: string | undefined, style: BoardStyle) => BoardStyle;
   takesPictureFiles: () => boolean;
   toggleSelected: (key: NodeKey) => void;
   undo: () => void;
@@ -448,14 +448,6 @@ const showAs = <K extends keyof BoardStyle>(
   styles[key] = shown;
 };
 
-const TOOL_SHAPES: Readonly<Partial<Record<BoardTool, string>>> = {
-  arrow: BaseBoardArrowPlugin.name,
-  frame: BaseBoardFramePlugin.name,
-  geo: BaseBoardGeoPlugin.name,
-  note: BaseBoardNotePlugin.name,
-  pen: BaseBoardStrokePlugin.name,
-};
-
 const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
   listeners.add(listener);
 
@@ -550,9 +542,20 @@ export const createBoardView = (
     }
   };
 
+  const types = boardTypesOf(editor);
+  const toolShapes: Readonly<
+    Partial<Record<BoardTool, () => string | undefined>>
+  > = {
+    arrow: () => BaseBoardArrowPlugin.name,
+    frame: () => BaseBoardFramePlugin.name,
+    geo: types.geo,
+    note: types.note,
+    pen: types.stroke,
+  };
+
   const takes = (type: string, key: keyof BoardStyle) =>
     key === 'geo'
-      ? type === BaseBoardGeoPlugin.name
+      ? type === types.geo()
       : editor.read.schema.property({ key, placement: 'element', type }) !==
         null;
 
@@ -584,8 +587,11 @@ export const createBoardView = (
     return stored;
   };
 
-  const styleFor = (type: string, style: BoardStyle) => {
+  const styleFor = (type: string | undefined, style: BoardStyle) => {
     const taken: { -readonly [K in keyof BoardStyle]?: BoardStyle[K] } = {};
+
+    if (type === undefined) return taken;
+
     const take = <K extends keyof BoardStyle>(key: K) => {
       if (style[key] !== undefined && takes(type, key)) taken[key] = style[key];
     };
@@ -615,7 +621,7 @@ export const createBoardView = (
     selectedShapes,
     tool,
   }: BoardViewState): BoardViewState['styles'] => {
-    const next = TOOL_SHAPES[tool];
+    const next = toolShapes[tool]?.();
     const targets =
       tool === 'select'
         ? styleTargets(selectedShapes).map(({ node }) => storedStylesOf(node))
@@ -685,6 +691,7 @@ export const createBoardView = (
         }) ?? false,
     isEmpty: (block) => editor.read.nodes.isEmpty(block),
     keepsRatio: keepsBoardRatio(editor),
+    types,
     members: () => {
       const shown = new Map(
         shownView.read
@@ -1244,18 +1251,12 @@ export const createBoardView = (
       if (tool === 'note') {
         return tx
           .plugin(BaseBoardNotePlugin)
-          .insert(
-            { ...box, ...styleFor(BaseBoardNotePlugin.name, style) },
-            { board }
-          );
+          .insert({ ...box, ...styleFor(types.note(), style) }, { board });
       }
 
       return tx
         .plugin(BaseBoardGeoPlugin)
-        .insert(
-          { ...box, ...styleFor(BaseBoardGeoPlugin.name, style) },
-          { board }
-        );
+        .insert({ ...box, ...styleFor(types.geo(), style) }, { board });
     });
   };
 
@@ -1393,7 +1394,7 @@ export const createBoardView = (
           width,
           x: point.x - width / 2,
           y: point.y - height / 2,
-          ...styleFor(BaseBoardNotePlugin.name, state.nextStyle),
+          ...styleFor(types.note(), state.nextStyle),
         },
         { board }
       );

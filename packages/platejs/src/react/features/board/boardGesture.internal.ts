@@ -9,6 +9,7 @@ import {
   BOARD_PEN,
   type BoardInkPoint,
 } from '../../../features/board/lib/boardStroke.internal';
+import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import {
   simulatedPressure,
   strokeOutline,
@@ -458,7 +459,7 @@ export const attachBoardGestures = (
       core.write((tx) =>
         tx.plugin(BaseBoardStrokePlugin).insert(
           {
-            ...core.styleFor(BaseBoardStrokePlugin.name, done.style),
+            ...core.styleFor(boardTypesOf(core.editor).stroke(), done.style),
             points: done.points,
           },
           { board: core.board }

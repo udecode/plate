@@ -4,17 +4,14 @@ import {
   NodeApi,
   screenReaderAnnouncementEffect,
 } from '../../../core';
-import {
-  BaseBoardFramePlugin,
-  BaseBoardGeoPlugin,
-  BaseBoardNotePlugin,
-  BaseBoardStrokePlugin,
-  type BoardArrowAnchor,
-  type BoardArrowSide,
-  type BoardMemberEntry,
-  type BoardPlace,
+import type {
+  BoardArrowAnchor,
+  BoardArrowSide,
+  BoardMemberEntry,
+  BoardPlace,
 } from '../../../features/board/lib';
 import { BOARD_FRAME_TYPE } from '../../../features/board/lib/boardFrame.internal';
+import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import type { Editor } from '../../core';
 import type {
   BoardCorner,
@@ -234,16 +231,6 @@ type BoardUtterance =
   | Readonly<{ kind: 'toolLock'; locked: boolean }>
   | Readonly<{ kind: 'zoom'; percent: number }>;
 
-const KINDS: ReadonlyMap<
-  string,
-  Exclude<BoardShapeDescription['kind'], 'arrow'>
-> = new Map([
-  [BaseBoardFramePlugin.name, 'frame'],
-  [BaseBoardGeoPlugin.name, 'geo'],
-  [BaseBoardNotePlugin.name, 'note'],
-  [BaseBoardStrokePlugin.name, 'stroke'],
-]);
-
 const textOf = (node: Element) => {
   if (node.type === BOARD_FRAME_TYPE) {
     return typeof node.name === 'string' ? node.name : '';
@@ -287,6 +274,18 @@ export const createBoardVoice = ({
   let owed: BoardUtterance | null = null;
   let pending: BoardUtterance | null = null;
   let selection: readonly NodeKey[] = [];
+  const types = boardTypesOf(editor);
+
+  const kindOf = (
+    type: string
+  ): Exclude<BoardShapeDescription['kind'], 'arrow'> => {
+    if (type === BOARD_FRAME_TYPE) return 'frame';
+    if (type === types.geo()) return 'geo';
+    if (type === types.note()) return 'note';
+    if (type === types.stroke()) return 'stroke';
+
+    return 'shape';
+  };
 
   const describe = (
     entry: BoardMemberEntry,
@@ -295,7 +294,7 @@ export const createBoardVoice = ({
     const text = textOf(entry.node);
 
     if (entry.kind !== 'arrow') {
-      return { kind: KINDS.get(entry.node.type) ?? 'shape', text };
+      return { kind: kindOf(entry.node.type), text };
     }
 
     const endOf = (side: 'end' | 'start') => {
