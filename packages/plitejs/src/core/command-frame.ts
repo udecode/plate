@@ -423,9 +423,9 @@ const enterFrameDraft = (
   snapshot.roots = roots;
   snapshot.reservedRoots = new Set(visitRootNames(stored.roots));
   countCoreWork('snapshotRoots', visitRootNames(snapshot.roots).length);
-  snapshot.rootIndexes = {};
-  snapshot.baseRuntimeIndexes = {};
-  snapshot.baseSnapshots = {};
+  snapshot.rootIndexes = new Map();
+  snapshot.baseRuntimeIndexes = new Map();
+  snapshot.baseSnapshots = new Map();
   for (const root of projected.map.roots) {
     let mapped: SnapshotIndex | undefined;
     const settle = () =>
@@ -433,11 +433,13 @@ const enterFrameDraft = (
         storedIndex(root)
       ));
 
-    snapshot.baseRuntimeIndexes[root] = settle;
+    snapshot.baseRuntimeIndexes.set(root, settle);
     deferNodeKeys(getEditorRuntimeOwner(editor), frame.id, root, settle);
   }
   for (const root of visitRootNames(roots)) {
-    snapshot.baseRuntimeIndexes[root] ??= () => storedIndex(root);
+    if (!snapshot.baseRuntimeIndexes.has(root)) {
+      snapshot.baseRuntimeIndexes.set(root, () => storedIndex(root));
+    }
   }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.

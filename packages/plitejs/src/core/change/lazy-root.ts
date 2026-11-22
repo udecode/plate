@@ -3,11 +3,14 @@ import type { DocumentIndex } from './document-index';
 
 /** @internal */
 export const visitRootNames = (
-  roots: Readonly<Record<string, unknown>> | undefined
+  roots:
+    | ReadonlyMap<string, unknown>
+    | Readonly<Record<string, unknown>>
+    | undefined
 ): string[] => {
   if (!roots) return [];
 
-  const names = Object.keys(roots);
+  const names = roots instanceof Map ? [...roots.keys()] : Object.keys(roots);
 
   countCoreWork('rootVisits', names.length);
 

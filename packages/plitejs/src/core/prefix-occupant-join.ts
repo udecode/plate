@@ -44,7 +44,7 @@ const sameNodeAtUpdateStart = (
 
   if (held === undefined || held === occupant) return true;
 
-  const startKey = start.baseRuntimeIndexes[root]?.().keyAt(path);
+  const startKey = start.baseRuntimeIndexes.get(root)?.().keyAt(path);
 
   return startKey != null && startKey === getNodeKey(editor, path);
 };

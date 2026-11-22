@@ -578,8 +578,8 @@ type TransactionSnapshot = {
   admissionRepair?: DocumentChange;
   settlement?: EditorCommitSettlement;
   settlementSplit?: SettlementSplit;
-  baseRuntimeIndexes: Record<string, () => SnapshotIndex>;
-  baseSnapshots: Record<string, EditorSnapshot>;
+  baseRuntimeIndexes: Map<string, () => SnapshotIndex>;
+  baseSnapshots: ReadonlyMap<string, EditorSnapshot>;
   builder: ChangeDraft;
   builderValidation?: 'configuration-publication';
   afterCommitHandlers: TransactionAfterCommitHandler[];
@@ -603,7 +603,7 @@ type TransactionSnapshot = {
       onPublished?: (uninstall: ReturnType<Editor['install']>) => void;
     }>
   >;
-  rootIndexes: Record<string, SnapshotIndex>;
+  rootIndexes: Map<string, SnapshotIndex>;
   roots: Record<string, readonly Descendant[]>;
   tags: Set<EditorUpdateTag>;
   transactionChangeObservers: Set<
@@ -2048,7 +2048,7 @@ export const commitRecordedDraft = (
   }
   for (const restore of snapshot.runtimeIndexRollbacks.values()) restore();
   snapshot.runtimeIndexRollbacks.clear();
-  snapshot.rootIndexes = {};
+  snapshot.rootIndexes = new Map();
   snapshot.discardedNodeKeys.clear();
   snapshot.builder = createEditorDocumentChangeBuilder(
     editor,
@@ -2425,7 +2425,7 @@ const publishedUniqueIndex = (editor: Editor) => {
     stored,
     snapshot.previousVersion,
     (root) =>
-      snapshot.baseSnapshots[root]?.index ??
+      snapshot.baseSnapshots.get(root)?.index ??
       snapshotIndexOf(
         getEditorRuntimeOwner(editor),
         getDocumentRootChildren(stored, root)
@@ -2599,7 +2599,7 @@ const admitTransactionDraft = (editor: Editor) => {
           stored,
           snapshot.previousVersion,
           (root) =>
-            snapshot.baseSnapshots[root]?.index ??
+            snapshot.baseSnapshots.get(root)?.index ??
             snapshotIndexOf(
               getEditorRuntimeOwner(editor),
               getDocumentRootChildren(stored, root)
@@ -9779,12 +9779,13 @@ export const createTransactionSpecContext = (
     ...getCurrentCaret(editor),
   };
   const currentChildrenRoot = getCurrentChildrenRoot(editor);
-  const baseRuntimeIndexes: Record<string, () => SnapshotIndex> = {};
+  const baseRuntimeIndexes = new Map<string, () => SnapshotIndex>();
 
   if (parentSnapshot) {
     for (const root of Object.keys(roots)) {
-      baseRuntimeIndexes[root] = () =>
-        retainTransactionSnapshotIndex(editor, parentSnapshot, root);
+      baseRuntimeIndexes.set(root, () =>
+        retainTransactionSnapshotIndex(editor, parentSnapshot, root)
+      );
     }
   } else {
     const baseSnapshot = getSnapshot(editor);
@@ -9793,10 +9794,10 @@ export const createTransactionSpecContext = (
       getEditorRuntimeOwner(editor)
     ) ?? []) {
       if (rootNodesOf(cached, 'children') === rootNodesOf(roots, root)) {
-        baseRuntimeIndexes[root] = () => cached.index;
+        baseRuntimeIndexes.set(root, () => cached.index);
       }
     }
-    baseRuntimeIndexes[currentChildrenRoot] = () => baseSnapshot.index;
+    baseRuntimeIndexes.set(currentChildrenRoot, () => baseSnapshot.index);
   }
   const records = getEditorDocumentRecords(editor);
   const source =
@@ -9812,7 +9813,7 @@ export const createTransactionSpecContext = (
     afterCommitHandlers: [],
     annotations: new Map(),
     baseRuntimeIndexes,
-    baseSnapshots: {},
+    baseSnapshots: new Map(),
     builder,
     childrenRoot: getCurrentChildrenRoot(editor),
     contentSliceRoots: new Set(parentSnapshot?.contentSliceRoots),
@@ -9836,7 +9837,7 @@ export const createTransactionSpecContext = (
     reservedRoots: parentSnapshot?.reservedRoots ?? NO_RESERVED_ROOTS,
     selectionInDroppedRoot: parentSnapshot?.selectionInDroppedRoot ?? false,
     records,
-    rootIndexes: {},
+    rootIndexes: new Map(),
     roots,
     runtimeIndexRollbacks: new Map(),
     selection,
@@ -12071,8 +12072,8 @@ const getKnownTransactionIndex = (
   transactionSnapshot: TransactionSnapshot,
   root: string
 ) =>
-  transactionSnapshot.rootIndexes[root] ??
-  transactionSnapshot.baseRuntimeIndexes[root]?.() ??
+  transactionSnapshot.rootIndexes.get(root) ??
+  transactionSnapshot.baseRuntimeIndexes.get(root)?.() ??
   (root === transactionSnapshot.childrenRoot
     ? transactionSnapshot.previousSnapshot?.index
     : null);
@@ -12093,8 +12094,8 @@ export function retainTransactionSnapshotIndex(
     transactionSnapshot.roots[root] ?? []
   );
 
-  transactionSnapshot.rootIndexes[root] = index;
-  transactionSnapshot.baseRuntimeIndexes[root] = () => index;
+  transactionSnapshot.rootIndexes.set(root, index);
+  transactionSnapshot.baseRuntimeIndexes.set(root, () => index);
 
   return index;
 }
@@ -12106,7 +12107,7 @@ const getTransactionBeforeRootSnapshot = (
 ): EditorSnapshot => {
   const children = transactionSnapshot.roots[root] ?? [];
   const index =
-    transactionSnapshot.baseRuntimeIndexes[root]?.() ??
+    transactionSnapshot.baseRuntimeIndexes.get(root)?.() ??
     retainTransactionSnapshotIndex(editor, transactionSnapshot, root);
 
   return Object.freeze({
@@ -12726,8 +12727,8 @@ const inheritDocumentChangeStepNodeKeys = (
       step.indexedBefore.get(root) ?? valueRootIndex(step.before, root);
     const after =
       step.indexedAfter.get(root) ?? valueRootIndex(step.after, root);
-    const currentIndex = snapshot.rootIndexes[root];
-    const baseIndex = snapshot.baseRuntimeIndexes[root];
+    const currentIndex = snapshot.rootIndexes.get(root);
+    const baseIndex = snapshot.baseRuntimeIndexes.get(root);
     const previousIndex =
       root === snapshot.childrenRoot ? snapshot.previousSnapshot?.index : null;
     let sourceIndex: SnapshotIndex | undefined;
@@ -12781,8 +12782,8 @@ const inheritDocumentChangeStepNodeKeys = (
       let mappedIndex: SnapshotIndex | undefined;
       const settle = () => (mappedIndex ??= mapIndex());
 
-      delete snapshot.rootIndexes[root];
-      snapshot.baseRuntimeIndexes[root] = settle;
+      snapshot.rootIndexes.delete(root);
+      snapshot.baseRuntimeIndexes.set(root, settle);
       deferNodeKeys(owner, options.defer, root, settle);
       continue;
     }
@@ -12791,10 +12792,10 @@ const inheritDocumentChangeStepNodeKeys = (
     const resolvedSourceIndex = getSourceIndex();
 
     if (!currentIndex && !baseIndex) {
-      snapshot.baseRuntimeIndexes[root] = () => resolvedSourceIndex;
+      snapshot.baseRuntimeIndexes.set(root, () => resolvedSourceIndex);
     }
 
-    snapshot.rootIndexes[root] = mappedIndex;
+    snapshot.rootIndexes.set(root, mappedIndex);
     indexes.set(
       root,
       Object.freeze({ after: mappedIndex, before: resolvedSourceIndex })
@@ -13541,16 +13542,15 @@ const createEditorUpdateDraftContext = (
         })
       : current),
   };
-  const cachedSnapshots = new Map(SNAPSHOT_CACHE.get(editor));
+  const baseSnapshots = new Map(SNAPSHOT_CACHE.get(editor));
 
-  cachedSnapshots.set(childrenRoot, previousSnapshot);
-  const baseSnapshots = Object.fromEntries(cachedSnapshots);
+  baseSnapshots.set(childrenRoot, previousSnapshot);
   const snapshot: TransactionSnapshot = {
     activeChange: { change: builder.change },
     afterCommitHandlers: [],
     annotations: new Map(),
-    baseRuntimeIndexes: Object.fromEntries(
-      [...cachedSnapshots].map(([root, cached]) => [root, () => cached.index])
+    baseRuntimeIndexes: new Map(
+      [...baseSnapshots].map(([root, cached]) => [root, () => cached.index])
     ),
     baseSnapshots,
     builder,
@@ -13572,7 +13572,7 @@ const createEditorUpdateDraftContext = (
     reservedRoots: NO_RESERVED_ROOTS,
     selectionInDroppedRoot: false,
     records,
-    rootIndexes: {},
+    rootIndexes: new Map(),
     roots: transactionRoots,
     runtimeIndexRollbacks: new Map(),
     selection,
@@ -13988,7 +13988,7 @@ export const runEditorTransaction = <R>(
                       editor,
                       MAIN_ROOT_KEY,
                       beforeSnapshot,
-                      snapshot.rootIndexes[MAIN_ROOT_KEY],
+                      snapshot.rootIndexes.get(MAIN_ROOT_KEY),
                       snapshot.previousVersion + 1
                     )
                   : getSelectionOnlySnapshot(
@@ -14003,8 +14003,8 @@ export const runEditorTransaction = <R>(
             const beforeIndexAt = (root: string) =>
               root === MAIN_ROOT_KEY
                 ? beforeSnapshot.index
-                : (snapshot.baseRuntimeIndexes[root]?.() ??
-                  snapshot.baseSnapshots[root]?.index);
+                : (snapshot.baseRuntimeIndexes.get(root)?.() ??
+                  snapshot.baseSnapshots.get(root)?.index);
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {
@@ -14022,8 +14022,8 @@ export const runEditorTransaction = <R>(
                   before: beforeSnapshot,
                   afterIndexAt: (root) =>
                     Object.hasOwn(afterValue.roots ?? {}, root)
-                      ? (snapshot.rootIndexes[root] ??
-                        snapshot.baseRuntimeIndexes[root]?.())
+                      ? (snapshot.rootIndexes.get(root) ??
+                        snapshot.baseRuntimeIndexes.get(root)?.())
                       : undefined,
                   beforeIndexAt,
                   beforeValue,
@@ -14161,12 +14161,12 @@ export const runEditorTransaction = <R>(
               if (root === MAIN_ROOT_KEY || !Object.hasOwn(draftRoots, root)) {
                 continue;
               }
-              const previousRootSnapshot = snapshot.baseSnapshots[root];
+              const previousRootSnapshot = snapshot.baseSnapshots.get(root);
               const rootSnapshot = getCurrentRootSnapshot(
                 editor,
                 root,
                 previousRootSnapshot,
-                snapshot.rootIndexes[root] ?? previousRootSnapshot?.index
+                snapshot.rootIndexes.get(root) ?? previousRootSnapshot?.index
               );
 
               setCachedSnapshot(editor, rootSnapshot, root);
