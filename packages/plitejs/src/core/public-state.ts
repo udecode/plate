@@ -441,7 +441,10 @@ import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
+  advanceRootDirectory,
   assertBuiltUniqueMaps,
+  assertRootDirectory,
+  emptyRootDirectory,
   getSnapshotIndexElementEntries,
   hasRegisteredSnapshotIndex,
   indexSurelyHoldsNodeKey,
@@ -449,6 +452,7 @@ import {
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
   publishSnapshotIndex,
+  type RootDirectory,
   seedSnapshotIndex,
   snapshotIndexOf,
 } from './snapshot-index';
@@ -2317,6 +2321,33 @@ const uniqueIndexOf = (
   return index;
 };
 
+const ROOT_DIRECTORIES = new WeakMap<Editor, RootDirectory>();
+
+const advanceStoredRootDirectory = (
+  owner: Editor,
+  changed: (() => Iterable<string>) | null
+) => {
+  const roots = getEditorDocumentRoots(owner);
+  const properties = internedUniquePropertiesOf(getCompiledEditorSchema(owner));
+  const known = ROOT_DIRECTORIES.get(owner);
+  const rebuild = !changed || !known || known.uniqueProperties !== properties;
+
+  if (!rebuild && properties.length === 0) return;
+  let directory = rebuild ? emptyRootDirectory(owner) : known;
+
+  if (properties.length > 0) {
+    for (const root of rebuild ? Object.keys(roots) : changed()) {
+      directory = advanceRootDirectory(
+        owner,
+        directory,
+        root,
+        Object.hasOwn(roots, root) ? rootSourceOf(roots, root) : null
+      );
+    }
+  }
+  ROOT_DIRECTORIES.set(owner, directory);
+};
+
 export const seedUniqueIndex = (editor: Editor) => {
   const owner = getEditorRuntimeOwner(editor);
   const roots = getEditorDocumentRoots(editor);
@@ -2324,6 +2355,7 @@ export const seedUniqueIndex = (editor: Editor) => {
   for (const root of Object.keys(roots)) {
     indexUniqueValues(owner, rootSourceOf(roots, root));
   }
+  advanceStoredRootDirectory(owner, null);
   if (uniquePropertiesOf(getCompiledEditorSchema(editor)).size === 0) return;
 
   uniqueIndexOf(
@@ -14023,6 +14055,7 @@ export const runEditorTransaction = <R>(
             beforeValue,
             afterValue,
             afterSnapshot,
+            canonicalChanges,
             change,
             publications,
           } = prepared;
@@ -14117,12 +14150,29 @@ export const runEditorTransaction = <R>(
               ...snapshot.pluginReconfigurations.values(),
             ]);
           }
+          // A plugin's after-publish step, such as a Yjs room's first import,
+          // can commit before the load seeds the directory, and the schema's
+          // unique properties can change after the directory was built, so
+          // each commit takes the directory under the current schema.
+          advanceStoredRootDirectory(owner, () =>
+            rootsThatCanMoveHolders(
+              canonicalChanges,
+              snapshot.reason === 'replace',
+              afterValue,
+              beforeValue
+            )
+          );
           if (lawCheckEnabled()) {
             const roots = getEditorDocumentRoots(owner);
+            const named: Array<readonly [string, ChildrenSource]> = [];
 
             for (const root of Object.keys(roots)) {
               assertBuiltUniqueMaps(owner, root, rootSourceOf(roots, root));
+              if (root !== MAIN_ROOT_KEY) {
+                named.push([root, rootSourceOf(roots, root)]);
+              }
             }
+            assertRootDirectory(owner, named, ROOT_DIRECTORIES.get(owner));
           }
           const afterCommitHandlers =
             snapshot.afterCommitHandlers.length > 0

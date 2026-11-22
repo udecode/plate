@@ -52,16 +52,26 @@ import {
   topologyKeyAt,
   topologyPathOf,
   topologyRetained,
+  topologyUniqueDiff,
   topologyUniqueEntries,
   topologyUniqueHolders,
 } from './identity-owner';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
+import { MAIN_ROOT_KEY } from './public-root';
 import {
   type CompiledEditorSchema,
   internedUniquePropertiesOf,
 } from './schema-compiler';
-import { uniqueLookupKeyOf } from './unique-hash-map';
+import {
+  emptyUniqueHashMap,
+  hashMapDelete,
+  hashMapForEach,
+  hashMapGet,
+  hashMapSet,
+  type UniqueHashMap,
+  uniqueLookupKeyOf,
+} from './unique-hash-map';
 import { countCoreWork, withoutCountingWork } from './work';
 
 const EMPTY_ENTRIES = Object.freeze([]) as ReadonlyArray<
@@ -594,17 +604,17 @@ export const readUniqueHolders = (
 const occurrence = (property: string, key: string, place: string) =>
   `${property} ${JSON.stringify(key)} at ${place}`;
 
-const assertMapMatchesWalk = (
+const walkUniqueValues = (
   root: string,
   children: ChildrenList,
-  held: Topology
+  properties: readonly string[],
+  found: (property: string, key: string, path: Path) => void
 ) => {
-  const walked = new Map<string, number>();
   const visit = (node: Descendant, path: Path) => {
     const nodes = childrenOfNode(node);
 
     if (!nodes) return;
-    for (const property of held.uniqueProperties) {
+    for (const property of properties) {
       if (node[property] === undefined) continue;
       const key = uniqueLookupKeyOf(node[property]);
 
@@ -613,14 +623,31 @@ const assertMapMatchesWalk = (
           `Root ${root} stores a ${property} at [${path}] that gets no key.`
         );
       }
-      const row = occurrence(property, key, `[${path}]`);
-
-      walked.set(row, (walked.get(row) ?? 0) + 1);
+      found(property, key, path);
     }
     nodes.forEach((child, at) => visit(child, [...path, at]));
   };
 
   forEachChild(children, (node, at) => visit(node, [at]));
+};
+
+const assertMapMatchesWalk = (
+  root: string,
+  children: ChildrenList,
+  held: Topology
+) => {
+  const walked = new Map<string, number>();
+
+  walkUniqueValues(
+    root,
+    children,
+    held.uniqueProperties,
+    (property, key, path) => {
+      const row = occurrence(property, key, `[${path}]`);
+
+      walked.set(row, (walked.get(row) ?? 0) + 1);
+    }
+  );
   for (const { key, path, property } of topologyUniqueEntries(held)) {
     const row = occurrence(
       property,
@@ -666,6 +693,173 @@ export const assertBuiltUniqueMaps = (
       if (held?.uniqueProperties.length) {
         assertMapMatchesWalk(root, children, held);
       }
+    }
+  });
+};
+
+/** @internal */
+export const uniqueTopologyOf = (
+  editor: Editor,
+  index: SnapshotIndex,
+  children: ChildrenList
+): Topology | null => {
+  const stored = TOPOLOGIES.get(index);
+
+  return stored ? currentTopology(editor, stored, children) : null;
+};
+
+type RootSet = string | UniqueHashMap<true>;
+
+/**
+ * The named roots of one document version that hold each unique value, taken
+ * from their maps. The main root's values stay out of it. A committed version
+ * holds each value once, but a draft can hold one value in two roots.
+ *
+ * @internal
+ */
+export type RootDirectory = Readonly<{
+  /** For each unique property, the named roots that hold each value's key. */
+  roots: ReadonlyArray<UniqueHashMap<RootSet>>;
+  /** Each named root's key structure as the directory last took it in. */
+  takenIn: UniqueHashMap<Topology>;
+  uniqueProperties: readonly string[];
+}>;
+
+/** @internal */
+export const emptyRootDirectory = (editor: Editor): RootDirectory => {
+  const uniqueProperties = internedUniquePropertiesOf(
+    getCompiledEditorSchema(editor)
+  );
+
+  return Object.freeze({
+    roots: Object.freeze(
+      uniqueProperties.map(() => emptyUniqueHashMap<RootSet>())
+    ),
+    takenIn: emptyUniqueHashMap<Topology>(),
+    uniqueProperties,
+  });
+};
+
+const joinRoot = (held: RootSet | undefined, root: string, edit: object) => {
+  if (held === undefined) return root;
+  const set =
+    typeof held === 'string'
+      ? hashMapSet(emptyUniqueHashMap<true>(), held, true, edit)
+      : held;
+
+  return hashMapSet(set, root, true, edit);
+};
+
+const leaveRoot = (held: RootSet, root: string, edit: object) => {
+  if (typeof held === 'string') return undefined;
+  const rest = hashMapDelete(held, root, edit);
+  const others: string[] = [];
+
+  hashMapForEach(rest, (other) => others.push(other));
+  return others.length > 1 ? rest : others[0];
+};
+
+/**
+ * The directory after named root `root` changed to `children`, or left the
+ * document when `children` is null. It reads only the parts of the root's maps
+ * that the version it last took in does not share, and writes only for a value
+ * the root starts or stops holding.
+ *
+ * @internal
+ */
+export const advanceRootDirectory = (
+  editor: Editor,
+  directory: RootDirectory,
+  root: string,
+  children: ChildrenList | null
+): RootDirectory => {
+  if (root === MAIN_ROOT_KEY) return directory;
+  const topology =
+    children &&
+    uniqueTopologyOf(editor, snapshotIndexOf(editor, children), children);
+  const source = hashMapGet(directory.takenIn, root) ?? null;
+
+  if (source?.holders === topology?.holders) return directory;
+  if (topology && topology.uniqueProperties !== directory.uniqueProperties) {
+    throw new Error(
+      `Root ${root} keys other unique properties than its document's root directory.`
+    );
+  }
+  const edit = {};
+  const roots = [...directory.roots];
+
+  topologyUniqueDiff(source, topology, (at, key, holds) => {
+    countCoreWork('uniqueDirectoryWrites');
+    const held = hashMapGet(roots[at], key);
+    const next = holds
+      ? joinRoot(held, root, edit)
+      : held && leaveRoot(held, root, edit);
+
+    roots[at] =
+      next === undefined
+        ? hashMapDelete(roots[at], key, edit)
+        : hashMapSet(roots[at], key, next, edit);
+  });
+
+  return Object.freeze({
+    roots: Object.freeze(roots),
+    takenIn: topology
+      ? hashMapSet(directory.takenIn, root, topology, edit)
+      : hashMapDelete(directory.takenIn, root, edit),
+    uniqueProperties: directory.uniqueProperties,
+  });
+};
+
+/**
+ * Throws unless `directory` names, for each unique value, exactly the named
+ * roots whose walk holds it.
+ *
+ * @internal
+ */
+export const assertRootDirectory = (
+  editor: Editor,
+  named: ReadonlyArray<readonly [root: string, children: ChildrenList]>,
+  directory: RootDirectory | undefined
+) => {
+  const properties = internedUniquePropertiesOf(
+    getCompiledEditorSchema(editor)
+  );
+  const membership = (property: string, key: string, root: string) =>
+    `${property} ${JSON.stringify(key)} in root ${root}`;
+
+  withoutCountingWork(() => {
+    const walked = new Set<string>();
+    const name = (property: string, key: string, root: string) => {
+      const row = membership(property, key, root);
+
+      if (!walked.delete(row)) {
+        failInvariant(
+          `The root directory names ${row}, which a walk of that root does not find.`
+        );
+      }
+    };
+
+    if (properties.length > 0) {
+      for (const [root, children] of named) {
+        walkUniqueValues(root, children, properties, (property, key) =>
+          walked.add(membership(property, key, root))
+        );
+      }
+    }
+    directory?.roots.forEach((byKey, at) => {
+      const property = directory.uniqueProperties[at];
+
+      hashMapForEach(byKey, (key, held) => {
+        if (typeof held === 'string') name(property, key, held);
+        else hashMapForEach(held, (root) => name(property, key, root));
+      });
+    });
+    const [unnamed] = walked;
+
+    if (unnamed !== undefined) {
+      failInvariant(
+        `A walk finds ${unnamed}, which the root directory does not name.`
+      );
     }
   });
 };

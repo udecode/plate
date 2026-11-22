@@ -181,6 +181,8 @@ export type CoreWork = {
   retypeLoweringApplies: number;
   /** Unique properties read to judge whether a retype crosses a unique target. */
   uniqueCrossingChecks: number;
+  /** Values a root directory recorded a named root as starting or stopping to hold. */
+  uniqueDirectoryWrites: number;
   /** Lookups of the node that holds a unique value, as `unique.holder` answers. */
   uniqueHolderQueries: number;
   /** Changed nodes a commit read to move the index of unique values. */
@@ -314,6 +316,7 @@ export const coreWork: CoreWork = {
   retypeLowerings: 0,
   retypeLoweringApplies: 0,
   uniqueCrossingChecks: 0,
+  uniqueDirectoryWrites: 0,
   uniqueHolderQueries: 0,
   uniqueHolderReads: 0,
   uniqueHolderSlotsCopied: 0,

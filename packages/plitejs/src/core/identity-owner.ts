@@ -5,6 +5,7 @@ import { getDefined } from '../internal/get-defined';
 import {
   emptyUniqueHashMap,
   hashMapDelete,
+  hashMapDiff,
   hashMapForEach,
   hashMapGet,
   hashMapSet,
@@ -1208,4 +1209,29 @@ export const topologyUniqueEntries = (topology: Topology) => {
     });
   });
   return entries;
+};
+
+/**
+ * Calls `changed` for each value that one of two versions of a root's maps
+ * holds and the other does not, with whether the later version holds it. It
+ * reads only the parts of the maps the versions do not share.
+ */
+export const topologyUniqueDiff = (
+  before: Topology | null,
+  after: Topology | null,
+  changed: (at: number, key: string, held: boolean) => void
+) => {
+  const empty = emptyUniqueHashMap<Holders>();
+
+  (after ?? before)?.uniqueProperties.forEach((_, at) => {
+    hashMapDiff(
+      before?.holders[at] ?? empty,
+      after?.holders[at] ?? empty,
+      (key, was, now) => {
+        if ((was === undefined) !== (now === undefined)) {
+          changed(at, key, now !== undefined);
+        }
+      }
+    );
+  });
 };
