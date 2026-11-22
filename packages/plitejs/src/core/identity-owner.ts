@@ -10,6 +10,7 @@ import {
   hashMapSet,
   type UniqueHashMap,
   uniqueKeyOf,
+  uniqueLookupKeyOf,
 } from './unique-hash-map';
 import { type CoreWork, countCoreWork } from './work';
 
@@ -321,7 +322,9 @@ const takePageAddress = () => {
 const isText = (node: Descendant) =>
   typeof (node as { text?: unknown }).text === 'string';
 
-const childrenOfNode = (node: Descendant): readonly Descendant[] | null =>
+export const childrenOfNode = (
+  node: Descendant
+): readonly Descendant[] | null =>
   'children' in node && Array.isArray(node.children)
     ? (node.children as readonly Descendant[])
     : null;
@@ -1163,6 +1166,26 @@ export const admitRoot = (
   children.forEach((child) => nodes.push(child));
   builder.top = builder.admitList(nodes, ROOT_LIST, [], keyOf);
   return builder.finish();
+};
+
+export const topologyUniqueHolders = (
+  topology: Topology,
+  property: string,
+  value: unknown
+) => {
+  const at = topology.uniqueProperties.indexOf(property);
+  const key = uniqueLookupKeyOf(value);
+  const holders =
+    at === -1 || key === null
+      ? undefined
+      : hashMapGet(topology.holders[at], key);
+  const reader = readTopology(topology);
+  const paths: Path[] = [];
+
+  if (holders !== undefined) {
+    forEachHolder(holders, (cell) => paths.push(reader.pathOfCell(cell)));
+  }
+  return paths;
 };
 
 export const topologyUniqueEntries = (topology: Topology) => {

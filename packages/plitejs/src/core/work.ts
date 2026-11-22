@@ -346,6 +346,12 @@ export const resetCoreWork = () => {
 };
 
 /** @internal */
-export const restoreCoreWork = (work: Readonly<CoreWork>) => {
-  Object.assign(coreWork, work);
+export const withoutCountingWork = <T>(run: () => T): T => {
+  const work = readCoreWork();
+
+  try {
+    return run();
+  } finally {
+    Object.assign(coreWork, work);
+  }
 };

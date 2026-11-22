@@ -5,6 +5,7 @@ import type {
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
+import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
 import {
   assignFreshNodeKey,
@@ -41,6 +42,7 @@ import {
 } from './change/tokens';
 import {
   admitRoot,
+  childrenOfNode,
   type KeyOf,
   ROOT_LIST,
   type Topology,
@@ -51,6 +53,7 @@ import {
   topologyPathOf,
   topologyRetained,
   topologyUniqueEntries,
+  topologyUniqueHolders,
 } from './identity-owner';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
@@ -58,7 +61,8 @@ import {
   type CompiledEditorSchema,
   internedUniquePropertiesOf,
 } from './schema-compiler';
-import { countCoreWork } from './work';
+import { uniqueLookupKeyOf } from './unique-hash-map';
+import { countCoreWork, withoutCountingWork } from './work';
 
 const EMPTY_ENTRIES = Object.freeze([]) as ReadonlyArray<
   readonly [NodeKey, Path]
@@ -564,6 +568,106 @@ export const readUniqueEntries = (
     topology &&
     topologyUniqueEntries(currentTopology(editor, topology, children))
   );
+};
+
+/** @internal */
+export const readUniqueHolders = (
+  editor: Editor,
+  index: SnapshotIndex,
+  children: ChildrenList,
+  property: string,
+  value: unknown
+) => {
+  const topology = TOPOLOGIES.get(index);
+
+  return topology
+    ? orderPaths(
+        topologyUniqueHolders(
+          currentTopology(editor, topology, children),
+          property,
+          value
+        )
+      )
+    : [];
+};
+
+const occurrence = (property: string, key: string, place: string) =>
+  `${property} ${JSON.stringify(key)} at ${place}`;
+
+const assertMapMatchesWalk = (
+  root: string,
+  children: ChildrenList,
+  held: Topology
+) => {
+  const walked = new Map<string, number>();
+  const visit = (node: Descendant, path: Path) => {
+    const nodes = childrenOfNode(node);
+
+    if (!nodes) return;
+    for (const property of held.uniqueProperties) {
+      if (node[property] === undefined) continue;
+      const key = uniqueLookupKeyOf(node[property]);
+
+      if (key === null) {
+        failInvariant(
+          `Root ${root} stores a ${property} at [${path}] that gets no key.`
+        );
+      }
+      const row = occurrence(property, key, `[${path}]`);
+
+      walked.set(row, (walked.get(row) ?? 0) + 1);
+    }
+    nodes.forEach((child, at) => visit(child, [...path, at]));
+  };
+
+  forEachChild(children, (node, at) => visit(node, [at]));
+  for (const { key, path, property } of topologyUniqueEntries(held)) {
+    const row = occurrence(
+      property,
+      key,
+      path ? `[${path}]` : 'a released cell'
+    );
+    const count = walked.get(row) ?? 0;
+
+    if (count === 0) {
+      failInvariant(
+        `The map of root ${root} lists ${row}, which a walk of the root does not find.`
+      );
+    }
+    if (count === 1) walked.delete(row);
+    else walked.set(row, count - 1);
+  }
+  const [unlisted] = walked.keys();
+
+  if (unlisted !== undefined) {
+    failInvariant(
+      `A walk of root ${root} finds ${unlisted}, which its map does not list.`
+    );
+  }
+};
+
+/**
+ * Throws unless each key structure already built for this version of a root
+ * maps exactly the unique values that a walk of its children finds.
+ *
+ * @internal
+ */
+export const assertBuiltUniqueMaps = (
+  editor: Editor,
+  root: string,
+  children: ChildrenList,
+  index: SnapshotIndex | null = registeredVersion(editor, children) ?? null
+) => {
+  const topology = index && TOPOLOGIES.get(index);
+
+  if (!topology) return;
+  withoutCountingWork(() => {
+    for (const held of [topology, REINDEXED.get(topology)]) {
+      if (held?.uniqueProperties.length) {
+        assertMapMatchesWalk(root, children, held);
+      }
+    }
+  });
 };
 
 /** @internal */

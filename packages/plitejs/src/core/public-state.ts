@@ -441,6 +441,7 @@ import { readSliceLanding } from './slice-landing';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
   advancePathStableSnapshotIndex,
+  assertBuiltUniqueMaps,
   getSnapshotIndexElementEntries,
   hasRegisteredSnapshotIndex,
   indexSurelyHoldsNodeKey,
@@ -524,7 +525,7 @@ import {
   setStatePresentation,
   type ViewPresentation,
 } from './view-presentation';
-import { countCoreWork, readCoreWork, restoreCoreWork } from './work';
+import { countCoreWork, withoutCountingWork } from './work';
 
 export {
   hasListeners,
@@ -2275,15 +2276,15 @@ const advanceUniqueIndexOnCommit = (owner: Editor) => {
         )
       );
       if (lawCheckEnabled()) {
-        const work = readCoreWork();
-        const built = buildUniqueIndex(
-          index.schema,
-          after,
-          commit.version,
-          (root) => getEditorCommitSnapshot(commit, root).index
+        const built = withoutCountingWork(() =>
+          buildUniqueIndex(
+            index.schema,
+            after,
+            commit.version,
+            (root) => getEditorCommitSnapshot(commit, root).index
+          )
         );
 
-        restoreCoreWork(work);
         if (!sameUniqueIndex(index, built)) {
           failInvariant(
             `The unique index a commit advanced to version ${commit.version} differs from one built from the document it published.`
@@ -12696,6 +12697,18 @@ const inheritDocumentChangeStepNodeKeys = (
       Object.freeze({ after: mappedIndex, before: resolvedSourceIndex })
     );
   }
+  if (lawCheckEnabled()) {
+    const roots = rootsOfValue(step.after);
+
+    for (const root of indexes.keys()) {
+      assertBuiltUniqueMaps(
+        owner,
+        root,
+        rootSourceOf(roots, root),
+        getKnownTransactionIndex(snapshot, root) ?? null
+      );
+    }
+  }
 
   return indexes;
 };
@@ -14103,6 +14116,13 @@ export const runEditorTransaction = <R>(
             pluginPublication.handUninstalls([
               ...snapshot.pluginReconfigurations.values(),
             ]);
+          }
+          if (lawCheckEnabled()) {
+            const roots = getEditorDocumentRoots(owner);
+
+            for (const root of Object.keys(roots)) {
+              assertBuiltUniqueMaps(owner, root, rootSourceOf(roots, root));
+            }
           }
           const afterCommitHandlers =
             snapshot.afterCommitHandlers.length > 0

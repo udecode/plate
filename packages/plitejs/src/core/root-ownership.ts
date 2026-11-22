@@ -18,7 +18,7 @@ import {
   rebaseElementOwnedRootIndex,
 } from './element-owned-root-index';
 import type { CompiledEditorSchema } from './schema-compiler';
-import { countCoreWork, readCoreWork, restoreCoreWork } from './work';
+import { countCoreWork, withoutCountingWork } from './work';
 
 /** @internal */
 export type OwnershipSides = Readonly<{
@@ -201,10 +201,8 @@ export const judgeProjectedRoots = (
   const judged = updateProjectedRoots(input);
 
   if (lawCheckEnabled()) {
-    const work = readCoreWork();
-    const swept = input.full();
+    const swept = withoutCountingWork(() => input.full());
 
-    restoreCoreWork(work);
     if (!sameRoots(swept, judged)) {
       failInvariant(
         `Projected orphans ${JSON.stringify([...judged].sort())} differ from a full judgment ${JSON.stringify([...swept].sort())}.`
@@ -519,7 +517,6 @@ export const orphanedRoots = (
   });
 
   if (lawCheckEnabled()) {
-    const work = readCoreWork();
     const indexes = (
       roots: readonly RootKey[],
       read: (root: RootKey) => ElementOwnedRootIndex | null
@@ -531,14 +528,15 @@ export const orphanedRoots = (
           return index ? [[root, index] as const] : [];
         })
       );
-    const swept = sweepOrphanedRoots({
-      after: indexes(afterRoots(), afterIndexOf),
-      before: indexes(beforeRoots(), (root) => indexOf(root, before(root))),
-      closed,
-      tracked,
-    });
+    const swept = withoutCountingWork(() =>
+      sweepOrphanedRoots({
+        after: indexes(afterRoots(), afterIndexOf),
+        before: indexes(beforeRoots(), (root) => indexOf(root, before(root))),
+        closed,
+        tracked,
+      })
+    );
 
-    restoreCoreWork(work);
     if (!sameRoots(swept, judged)) {
       failInvariant(
         `Orphaned roots ${JSON.stringify([...judged].sort())} differ from a full count ${JSON.stringify([...swept].sort())}.`
