@@ -63,7 +63,9 @@ import {
   nextTargets,
   ownerFiles,
   parseClaims,
+  RELEASED_SITES,
   rankOf,
+  regressionOf,
   sameActor,
   STALE_MS,
   targetMembers,
@@ -122,12 +124,6 @@ const DEVICE_WORDS = {
   ime: /\b(?:IME|input method)\b/iu,
 };
 const IME_LABEL = 'ime';
-const RELEASED_SITES = new Map([
-  ['slatejs.org', 'slate'],
-  ['www.slatejs.org', 'slate'],
-  ['platejs.org', 'plate'],
-  ['www.platejs.org', 'plate'],
-]);
 const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
@@ -1752,14 +1748,12 @@ const mainReport = (policy, milestone) =>
   policy.primary && !betaMilestones(policy).includes(milestone);
 
 function bugMilestone(policy, detail) {
-  const regression = detail.get('regression');
+  const regression = regressionOf(detail.get('regression'));
   if (!regression && policy.experimental.includes(detail.get('scope'))) {
     return policy.milestones.experimental;
   }
   const slate = regression
-    ? paths(regression).some(
-        (page) => RELEASED_SITES.get(URL.parse(page).hostname) === 'slate'
-      )
+    ? regression === 'slate'
     : paths(detail.get('owner')).some((ref) =>
         policy.slatePaths.some((prefix) => ref.startsWith(prefix))
       );

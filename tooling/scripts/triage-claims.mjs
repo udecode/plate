@@ -446,13 +446,31 @@ export const nextTargets = (world) => [
     .map(([id]) => ({ domain: null, task: id })),
 ];
 
+export const RELEASED_SITES = new Map([
+  ['slatejs.org', 'slate'],
+  ['www.slatejs.org', 'slate'],
+  ['platejs.org', 'plate'],
+  ['www.platejs.org', 'plate'],
+]);
+
+export const regressionOf = (pages) => {
+  if (pages === undefined) return null;
+  return pages
+    .split(/,\s*/u)
+    .some((page) => RELEASED_SITES.get(URL.parse(page)?.hostname) === 'slate')
+    ? 'slate'
+    : 'plate';
+};
+
 export const rankOf = ({ fields }) => ({
-  regression: fields.has('regression'),
+  regression: regressionOf(fields.get('regression')),
   priority: fields.get('priority'),
 });
 
+const REGRESSION_RANK = { slate: 2, plate: 1 };
+
 export const byRegressionThenPriority = (a, b) =>
-  Number(b.regression) - Number(a.regression) ||
+  (REGRESSION_RANK[b.regression] ?? 0) - (REGRESSION_RANK[a.regression] ?? 0) ||
   a.priority.localeCompare(b.priority);
 
 const REGRESSION_PRIORITY = 'P1';
