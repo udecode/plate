@@ -83,8 +83,9 @@ Reviewable differences:
 ```
 
 Collapse rejected upstream product/theme noise into its owning decision. Keep
-Plate's accepted eight registry code styles separate from the rejected theme,
-font, color, v0, and full project-designer surfaces.
+Plate's accepted eight registry code styles and its `/create` preset pickers
+separate from the rejected v0 features and from any hand copy of shadcn's
+theme, font, color or project designer.
 
 Status checks:
 

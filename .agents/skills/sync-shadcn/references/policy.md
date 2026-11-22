@@ -18,11 +18,11 @@ During planning, directly merge a change when all of these are true:
   no generated output, and no package or lockfile edit.
 - The local Plate file still has the old value or an equivalent local variant
   that should receive the same fix.
-- The change does not touch settled exclusions: v0, charts, colors,
-  theme/customizer product surfaces, upstream docs prose, external registry
-  directory content, or generated `public/r/**` output. Plate `/create` and
-  registry styles are accepted surfaces, but their multi-file product work can
-  never qualify as a micro-merge.
+- The change does not touch settled exclusions: v0, charts, upstream's color
+  pages, theme pages and customizer, upstream docs prose, external registry
+  directory content, or generated `public/r/**` output. Plate `/create`, its
+  preset pickers and registry styles are accepted surfaces, but their
+  multi-file product work can never qualify as a micro-merge.
 - No product judgment is needed. If the change changes layout, UX, copy,
   route shape, docs concepts, registry semantics, or multi-file architecture,
   it is not a micro-merge.

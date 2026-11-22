@@ -54,10 +54,11 @@ Important boundary:
 Plate's registry build is custom. The goal is still upstream parity at the
 item and resolver boundary.
 
-Plate `/create` is a thin selector for Plate editor presets. Shadcn owns the
-`create` command, preset encoding, provider names, style names, and registry
-directory resolution. Plate must not copy the upstream theme, font, color, v0,
-or full project-designer product into that route.
+On Plate `/create`, a person picks a Plate editor and a shadcn preset and sees
+the real editor under that preset. Shadcn owns the `create` command, preset encoding,
+provider names, style names, theme values and registry directory resolution.
+Plate builds its pickers from shadcn's exported preset lists and codec, and
+never copies shadcn's designer UI, theme values or option lists by hand.
 
 ## Registry Rules
 
@@ -96,7 +97,10 @@ Registry dependency rules:
 Do not fork shadcn CLI to compensate for Plate registry problems. Fix the
 registry data or Plate build/delivery code instead.
 
-Do not add a Plate `/init` proxy. Prove direct Base/Nova and Radix/Luma
+Installs call shadcn's `/init` directly, so the `create` command never points
+at a Plate `/init` proxy. The `/create` preview reads theme variables from
+`/init` through a Plate server route that sends no `track` and serves only the
+preview. Prove direct Base/Nova and Radix/Luma
 `shadcn create` installs against freshly built local Plate artifacts before
 changing the public create flow. Treat npm and the deployed registry directory
 as post-release smoke surfaces, not implementation gates.
