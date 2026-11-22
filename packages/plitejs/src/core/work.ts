@@ -17,6 +17,7 @@ export type CoreWork = {
   baselines: number;
   bookCopies: number;
   changeValueReads: number;
+  changedKeyRootReads: number;
   /** Change builders started on a projected document. */
   builders: number;
   /** Nodes the canonical pass opened past its check that a node is unchanged. */
@@ -221,6 +222,7 @@ export const coreWork: CoreWork = {
   baselines: 0,
   bookCopies: 0,
   changeValueReads: 0,
+  changedKeyRootReads: 0,
   builders: 0,
   canonicalNodes: 0,
   carriedFallbacks: 0,

@@ -43,6 +43,7 @@ import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot, toPublicRoot } from './public-root';
 import { pathKey, snapshotIndexOf } from './snapshot-index';
 import { cloneFrozenEditorJsonValue } from './value-codec';
+import { countCoreWork } from './work';
 
 type RootChangeDetails = {
   changedNodeKeys: ReadonlySet<NodeKey>;
@@ -766,6 +767,7 @@ const createCommitChanged = ({
       return details;
     }
 
+    countCoreWork('changedKeyRootReads');
     const innerBeforeIndex = getIndex('before', root);
     const innerAfterIndex = getIndex('after', root);
     const classification = getInternalDocumentChangeClassification(
@@ -1169,6 +1171,7 @@ const createCommitChanged = ({
     const cached = touchedKeys.get(root);
 
     if (cached) return cached;
+    countCoreWork('changedKeyRootReads');
     const beforeKeys = new Map<NodeKey, Path>();
     const afterKeys = new Map<NodeKey, Path>();
     const change = getInternalDocumentRootChange(changes, root);

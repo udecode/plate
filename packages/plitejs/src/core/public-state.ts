@@ -1037,6 +1037,7 @@ type EditorTransactionGuard = (context: {
   readonly change: DocumentChange;
   readonly effects: readonly EditorEffect[];
   readonly commit: EditorCommit;
+  readonly replace: boolean;
   readonly schema: EditorSchemaIdentity;
 }) => void | (() => void);
 
@@ -2181,21 +2182,51 @@ const UNIQUE_INDEXES = new WeakMap<Editor, UniqueIndex>();
 const UNIQUE_INDEX_GUARDS = new WeakSet<Editor>();
 const HOLDER_CHANGE_KINDS = ['node', 'presence'] as const;
 
+const rootsThatCanMoveHolders = (
+  change: DocumentChange,
+  replace: boolean,
+  after: EditorDocumentValue,
+  before: EditorDocumentValue
+) => {
+  if (replace) {
+    return new Set([
+      MAIN_ROOT_KEY,
+      ...visitRootNames(after.roots),
+      ...visitRootNames(before.roots),
+    ]);
+  }
+
+  return new Set([
+    ...change.createRoots,
+    ...change.deleteRoots,
+    ...[...getInternalDocumentChangeEntries(change)]
+      .map(([root]) => root)
+      .filter((root) => {
+        const classification = getInternalDocumentChangeClassification(
+          change,
+          root
+        );
+
+        return (
+          !classification ||
+          classification.structure ||
+          classification.properties
+        );
+      }),
+  ]);
+};
+
 const advanceUniqueIndexOnCommit = (owner: Editor) => {
   if (UNIQUE_INDEX_GUARDS.has(owner)) return;
   UNIQUE_INDEX_GUARDS.add(owner);
-  registerEditorTransactionGuard(owner, ({ commit }) => {
+  registerEditorTransactionGuard(owner, ({ change, commit, replace }) => {
     const index = UNIQUE_INDEXES.get(owner);
 
     if (!index) return undefined;
 
     const after = getEditorCommitValue(commit);
     const before = getEditorCommitValue(commit, 'before');
-    const roots = new Set([
-      MAIN_ROOT_KEY,
-      ...visitRootNames(after.roots),
-      ...visitRootNames(before.roots),
-    ]);
+    const roots = rootsThatCanMoveHolders(change, replace, after, before);
     const changed = new Map<string, Set<NodeKey>>();
 
     for (const root of roots) {
@@ -2557,11 +2588,20 @@ const runEditorTransactionGuards = (
   change: DocumentChange,
   effects: readonly EditorEffect[],
   commit: EditorCommit,
+  replace: boolean,
   schema: EditorSchemaIdentity
 ) => {
   const publications: Array<() => void> = [];
   for (const guard of guards) {
-    const publish = guard({ after, before, change, effects, commit, schema });
+    const publish = guard({
+      after,
+      before,
+      change,
+      effects,
+      commit,
+      replace,
+      schema,
+    });
     if (publish) publications.push(publish);
   }
   return publications;
@@ -13926,6 +13966,7 @@ export const runEditorTransaction = <R>(
               canonicalChanges,
               snapshot.effects,
               change,
+              snapshot.reason === 'replace',
               pluginSchemaIdentity ?? getEditorSchema(editor).identity()
             );
             withPluginPublicationRollback(pluginPublication, () =>

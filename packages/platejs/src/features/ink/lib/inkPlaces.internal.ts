@@ -3,11 +3,13 @@ import {
   type EditorCommit,
   type EditorCoreStateView,
   getActiveEditorUpdateId,
+  getEditorCommitNode,
   getEditorCommitValue,
   getEditorRuntimeOwner,
   getRecordSetVersion,
   getSnapshotVersion,
   getValueRecords,
+  type Node,
   type NodeKey,
   type RecordSetVersion,
   recordSetChanges,
@@ -41,12 +43,13 @@ type KeptSign = {
 
 type InkPlaces = {
   identity: object;
+  schema: InkState['schema'];
   copies: Map<string, InkCopy>;
   blocks: Map<
     string,
     {
       copies: Map<string, InkCopy>;
-      holder: NodeKey | null;
+      holder: BlockHolder | null;
       signed: Set<string>;
     }
   >;
@@ -82,18 +85,19 @@ const shownPlaces = new WeakMap<
   { places: InkPlaces; version: number }
 >();
 
-const metrics = { holders: 0, hops: 0, resolved: 0 };
+const metrics = { holders: 0, hops: 0, reads: 0, resolved: 0 };
 
 export const getInkPlaceMetrics = () => Object.freeze({ ...metrics });
 
-const emptyPlaces = (identity: object): InkPlaces => ({
+const emptyPlaces = (schema: InkState['schema']): InkPlaces => ({
   blockOfKey: new Map(),
   blocks: new Map(),
   chainEnds: { next: new Map(), previous: new Map() },
   copies: new Map(),
   gone: new Map(),
   held: new Map(),
-  identity,
+  identity: schema.identity(),
+  schema,
   signs: new Map(),
   walked: new Set(),
 });
@@ -105,40 +109,50 @@ const dropSign = (places: InkPlaces, mark: string) => {
   places.signs.delete(mark);
 };
 
-const holderKey = (state: InkState, id: string) => {
+type BlockHolder = Readonly<{ key: NodeKey; root: string }>;
+
+type Holder = BlockHolder & Readonly<{ node: Node }>;
+
+const holderIn = (state: InkState, id: string): Holder | undefined => {
   metrics.holders += 1;
 
-  return state.unique.holder('id', id)?.key ?? null;
+  const holder = state.unique.holder('id', id);
+  const [node] = (holder && state.nodes.get(holder.key)) || [];
+
+  return holder && node
+    ? { key: holder.key, node, root: holder.root }
+    : undefined;
+};
+
+const keptHolderIn = (
+  commit: EditorCommit,
+  holder: BlockHolder | null | undefined
+): Holder | undefined => {
+  const [node] =
+    (holder && getEditorCommitNode(commit, holder.key, holder.root)) || [];
+
+  return holder && node ? { ...holder, node } : undefined;
 };
 
 const resolveBlock = (
   places: InkPlaces,
-  state: InkState,
   id: string,
-  holderMayMove: boolean
+  at: Holder | undefined
 ) => {
   const block = places.blocks.get(id);
 
   if (!block) return;
   metrics.resolved += 1;
 
-  const found =
-    holderMayMove || block.holder === null
-      ? holderKey(state, id)
-      : block.holder;
-  const [node] = (found !== null && state.nodes.get(found)) || [];
-  const at = found !== null && node ? { key: found, node } : undefined;
-  const key = at?.key ?? null;
-
-  if (block.holder !== key) {
-    if (block.holder !== null && places.blockOfKey.get(block.holder) === id) {
-      places.blockOfKey.delete(block.holder);
+  if (block.holder?.key !== at?.key) {
+    if (block.holder && places.blockOfKey.get(block.holder.key) === id) {
+      places.blockOfKey.delete(block.holder.key);
     }
-    if (key !== null) places.blockOfKey.set(key, id);
-    block.holder = key;
+    if (at) places.blockOfKey.set(at.key, id);
+    block.holder = at ? { key: at.key, root: at.root } : null;
   }
 
-  const text = at && inkText(state.schema, at.node);
+  const text = at && inkText(places.schema, at.node);
 
   for (const [copyId, copy] of block.copies) {
     if (at) {
@@ -174,7 +188,7 @@ const trackCopy = (places: InkPlaces, read: InkPlaceRead, id: string) => {
       signed: new Set(),
     });
   }
-  resolveBlock(places, read.state, copy.block, true);
+  resolveBlock(places, copy.block, holderIn(read.state, copy.block));
 
   return copy;
 };
@@ -191,11 +205,8 @@ const untrackCopy = (places: InkPlaces, id: string) => {
   block.copies.delete(id);
   if (block.copies.size > 0) return;
   places.blocks.delete(copy.block);
-  if (
-    block.holder !== null &&
-    places.blockOfKey.get(block.holder) === copy.block
-  ) {
-    places.blockOfKey.delete(block.holder);
+  if (block.holder && places.blockOfKey.get(block.holder.key) === copy.block) {
+    places.blockOfKey.delete(block.holder.key);
   }
 };
 
@@ -322,7 +333,7 @@ const placesOf = ({ editor, state }: InkPlaceRead) => {
       return shown.places;
     }
 
-    const places = emptyPlaces(identity);
+    const places = emptyPlaces(state.schema);
 
     shownPlaces.set(document, { places, version });
 
@@ -336,7 +347,7 @@ const placesOf = ({ editor, state }: InkPlaceRead) => {
   }
 
   const store = getValueRecords(state.value());
-  const places = emptyPlaces(identity);
+  const places = emptyPlaces(state.schema);
 
   committed.set(owner, {
     places,
@@ -448,18 +459,29 @@ export const advanceInkPlaces = (
   const watches = places.copies.size > 0 || places.walked.size > 0;
 
   if (moved) places.gone.clear();
-  if (dirty.size > 0 || (moved && watches)) {
+  if (places.schema.identity() !== places.identity) {
+    committed.delete(owner);
+
+    return;
+  }
+  if (moved && (dirty.size > 0 || watches)) {
     withStoredAuthoredRead(editor, () =>
       editor.read((state) => {
-        if (state.schema.identity() !== places.identity) {
-          committed.delete(owner);
-
-          return;
+        metrics.reads += 1;
+        addArrivedBlocks(places, state, keys, dirty);
+        for (const block of dirty) {
+          resolveBlock(places, block, holderIn(state, block));
         }
-        if (moved) addArrivedBlocks(places, state, keys, dirty);
-        for (const block of dirty) resolveBlock(places, state, block, moved);
       })
     );
+  } else {
+    for (const id of dirty) {
+      resolveBlock(
+        places,
+        id,
+        keptHolderIn(commit, places.blocks.get(id)?.holder)
+      );
+    }
   }
   kept.version = commit.version;
 };
