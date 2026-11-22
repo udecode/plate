@@ -14,6 +14,13 @@
       "skillPath": "skills/cleanup/SKILL.md",
       "computedHash": "901579535fb258be8ed982e9ed5aabc7f0d1d23bbce8138b9b1bcf5339a2e38c"
     },
+    "clip": {
+      "source": "udecode/dotai",
+      "commit": "8d3b25d5af90727fc2a0148c593fb781f61ea9e2",
+      "sourceType": "github",
+      "skillPath": "skills/clip/SKILL.md",
+      "computedHash": "780ce07ba697f861af1a4250d747f21f9fa571fdf914337d537f1a3e49399ae0"
+    },
     "plan-page": {
       "source": "udecode/dotai",
       "commit": "4b5e5c56bb6a1975f8a19519b72b1e8936fa1323",

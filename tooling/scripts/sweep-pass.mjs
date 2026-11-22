@@ -414,7 +414,7 @@ function brief({ budget, name, rows }, dir, lang) {
     `Read \`${LANE_RULES}\` in full before anything else; it holds this lane's rules. Write every text field of your records in ${LANGUAGES[lang]}.`,
     '',
     `- Run directory: \`${dir}\``,
-    `- Lane: ${name}. Name each clip \`clips/${name}-<row number>-<slug>.webm\`.`,
+    `- Lane: ${name}. Name each clip \`clips/${name}-<row number>-<slug>.mp4\` and its take folder \`clips/${name}-<row number>-<slug>/\`.`,
     `- Budget: ${budget} minutes over ${rows.length} rows.`,
     '',
     '## Rows',

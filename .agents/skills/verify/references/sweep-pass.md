@@ -1,6 +1,6 @@
 # Sweep agent pass
 
-An agent pass runs a list of sweep rows with Claude Code subagents, the lanes, in Claude Code's built-in browser, several at once. It ends in one checked `results.json` with every row's result, finds and clips, and the beta builds each row saw. [The sweep](./sweep.md)'s A session says what one session covers; this file says how the lead session runs many of them. [The lane rules](./sweep-lane.md) hold what each lane does. `tooling/scripts/sweep-pass.mjs` writes the rows, the lanes and their briefs, and checks and collects the records. `tooling/scripts/sweep-clip.mjs` records a lane's find as a clip.
+An agent pass runs a list of sweep rows with Claude Code subagents, the lanes, in Claude Code's built-in browser, several at once. It ends in one checked `results.json` with every row's result, finds and clips, and the beta builds each row saw. [The sweep](./sweep.md)'s A session says what one session covers; this file says how the lead session runs many of them. [The lane rules](./sweep-lane.md) hold what each lane does. `tooling/scripts/sweep-pass.mjs` writes the rows, the lanes and their briefs, and checks and collects the records. The `clip` skill's Bug clip records a lane's find as a clip.
 
 Only Claude Code runs lanes. Codex can read this method, but its browsers take over the owner's desktop or Chrome, so a Codex session asked for a pass names this route and hands it to Claude Code.
 

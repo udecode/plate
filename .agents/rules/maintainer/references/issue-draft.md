@@ -172,25 +172,13 @@ then name the missing recording capability. Do not claim a recording was made,
 install an unrequested plugin, or turn static frames into simulated evidence.
 Post transcript caches only under explicit message authority.
 
-For Plate issue evidence, prefer 10 to 30 seconds:
-
-1. Establish the route and starting state.
-2. Show each action with a short top caption.
-3. Show explicit harmless keys in a large center HUD.
-4. Show pointer trail, click ripple, drag arrow/distance, and scroll direction.
-5. Hold the failure state long enough to read.
-
-After recording:
-
-```bash
-bash .agents/skills/video-transcripts/scripts/video_frames.sh \
-  /absolute/path/to/repro.mp4 \
-  --output /absolute/path/to/evidence
-```
-
-Inspect the key, pointer/drag, failure, and final frames. Re-record if captions
-are unreadable, a required action is missing, or the video contains unrelated
-private information.
+Record a fresh Chromium repro with the `clip` skill's Bug clip. It captions
+each step as the Reproduction steps word it, keeps the real time, names the
+route and build in its bar, holds the wrong state and shows a reference page's
+take above beta's when the bug has one. Read every still its render writes.
+Re-record when a caption is unreadable, a required action is missing, or the
+clip shows unrelated private information. A bug that shows only in another
+browser or on a phone needs a person's recording.
 
 ## Draft the issue
 

@@ -58,7 +58,7 @@ A recheck row names an issue. Read it with `gh issue view`, comments included. R
 
 ## Dark mode
 
-Check dark mode once per session row, headless, never in the built-in browser. Record a replay with `theme: 'dark'`, as Clips says, whose steps bring the states that matter on screen: menus, popovers, toolbars, the selection, placeholders, toggles and comment or suggestion highlights. Inside a step, `await page.screenshot({ path: '<run dir>/clips/<lane>-<row number>-dark-<state>.png' })` saves a still. Check that the result's `shownTheme` says `dark`, and read every still. When a value is in doubt, read the computed colors in a step and compare text with background. For a row with a reference, shoot the same states there too. A dark difference is a find when something is unreadable, invisible or clearly worse than the reference. Write what you checked in `dark`.
+Check dark mode once per session row, headless, never in the built-in browser. Write a scene as Clips says that opens the page with `openClip(url, { shape: 'repro', cursor: false })`, runs `localStorage.setItem('theme', 'dark')` through `clip.page.evaluate`, reloads and brings the states that matter on screen: menus, popovers, toolbars, the selection, placeholders, toggles and comment or suggestion highlights. Save each state with `await clip.page.screenshot({ path: '<run dir>/clips/<lane>-<row number>-dark-<state>.png' })`, check that `document.documentElement.classList.contains('dark')` is true, read every still and close the browser with `await clip.browser.close()`. When a value is in doubt, read the computed colors and compare text with background. For a row with a reference, shoot the same states there too. A dark difference is a find when something is unreadable, invisible or clearly worse than the reference. Write what you checked in `dark`.
 
 ## Before you record a find
 
@@ -66,27 +66,13 @@ Reproduce it once in a fresh tab: close your tab, create a new one and navigate.
 
 ## Clips
 
-Every find needs a clip. Replay the find's steps headless with `record` from `tooling/scripts/sweep-clip.mjs`, in the same checkout as this file. Write the replay as `<run dir>/clips/<lane>-<row number>-<slug>.mjs` and run it with `node`:
+Every find needs a clip, made with the `clip` skill's Bug clip. Read its `SKILL.md` in full before your first clip and run its Set up. Its folder is `.agents/skills/clip` in the same checkout as this file, written `<skill dir>` below.
 
-```js
-import { record } from '<checkout>/tooling/scripts/sweep-clip.mjs';
-
-const result = await record({
-  url: '<beta address of the row>',
-  out: '<run dir>/clips/<lane>-<row number>-<slug>.webm',
-  theme: 'light',
-  width: 1280,
-  height: 800,
-  steps: [
-    ['1. Click the second table cell', (page) => page.locator('td').nth(1).click()],
-    ['2. Type abc key by key', (page) => page.keyboard.type('abc', { delay: 120 })],
-    ['3. Press Tab', (page) => page.keyboard.press('Tab')],
-  ],
-});
-console.log(JSON.stringify(result, null, 2));
-```
-
-Caption each step in the records' language. `record` shows each caption on the page and saves one `.webm`. It returns `shownTheme`, `pageErrors` and `consoleErrors`, and judges none of them. A step that throws still saves the clip up to that step, and then `record` throws with the step's caption; fix the steps and record again. Look at a frame from the clip's middle before you cite it, for example with `ffmpeg -ss <seconds> -i <clip> -frames:v 1 <png>`.
+1. Write the replay as a scene, `<run dir>/clips/<lane>-<row number>-<slug>.ts`, that opens the row's beta address with `openClip(url, { shape: 'repro' })`. Before `clip.film`, attach `clip.page.on('pageerror', …)` and a `console` listener for errors, then reload, so the scene catches what the page throws while it loads. Caption each step with `clip.beat` as the find's `repro` words it, in the records' language, type with `clip.write` and press keys through `clip.page.keyboard`. End on the wrong state with `clip.read(2000)` under a caption that says what went wrong, and print the errors the listeners caught.
+2. Run `bun <scene> <run dir>/clips/<lane>-<row number>-<slug>`, then `bun <skill dir>/scripts/clip.ts review` on that take folder, and fix each FAIL.
+3. Read the build beta served with `gh run list --repo udecode/plate --workflow deploy.yml --status success --limit 1 --json headSha --jq '.[0].headSha[0:10]'`.
+4. Run `bun <skill dir>/scripts/clip.ts render <take folder> <run dir>/clips/<lane>-<row number>-<slug>.mp4 --route <route> --build <build>`. For a row with a reference, film the same scene on the reference page into its own take folder, with the same crop size and captions, and add `--before <reference take folder> --names <reference site>,beta`.
+5. Read every still the render writes before you cite the clip.
 
 The replay only records a find you already made in the built-in browser. When it does not show the find, the find has no clip: put what you saw and its steps in `hand` for a person instead. When the find shows only in the replay, such as a frame claim while the pane is hidden, record it with `replayOnly: true`, and a person confirms it.
 
@@ -109,7 +95,7 @@ Write one record per row at the path the brief gives, as JSON:
       "actual": "A tab character is inserted after abc",
       "reference": "The reference moves to the third cell",
       "cause": "Guess: no Tab handler runs; the console shows no error",
-      "clips": ["clips/L1-2-tab-in-cell.webm"]
+      "clips": ["clips/L1-2-tab-in-cell.mp4"]
     }
   ],
   "notes": ["Known issue from the context: merged cells scramble the row"],
@@ -121,7 +107,7 @@ Write one record per row at the path the brief gives, as JSON:
 - `result` for a session row is `clean` with no finds, `found` with one or more, `blocked` or `untested`. For a recheck row it is `fixed`, `still` or `changed` with one or more finds, `blocked` or `untested`. `blocked` and `untested` need `notes` that say why.
 - `start` and `end` are when you started and finished the row, as `date -u` prints them.
 - `steps` names two to five flows and moves you ran, so the next tester can start elsewhere.
-- Each find has `title`, `repro`, `expected`, `actual` and `clips`, and may have `reference`, `cause` and `replayOnly`. A clip path is relative to the run directory, and each find needs at least one `.webm` or `.mp4`. Put stills beside the clip in `clips`. Mark a guess in `cause` as a guess, and leave `cause` out when you did not look.
+- Each find has `title`, `repro`, `expected`, `actual` and `clips`, and may have `reference`, `cause` and `replayOnly`. A clip path is relative to the run directory, and each find needs at least one `.mp4`. Put stills beside the clip in `clips`. Mark a guess in `cause` as a guess, and leave `cause` out when you did not look.
 - `notes`, `dark` and `hand` are optional. `hand` lists what is left for a person, such as paste, an input method, a file picker, a native drag, frames below 30 or a browser other than Chromium.
 
 Write every text field in the language the brief names.
