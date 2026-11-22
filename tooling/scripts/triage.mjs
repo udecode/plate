@@ -2560,7 +2560,9 @@ function escapedMiss(issue, fields, reads, tag) {
 const REPORT_ROUTE = /https?:\/\/beta\.platejs\.org(\/[^\s)<>,`'"]*)/gu;
 const REPORT_SHORTCUT =
   /(?:\b(?:Command|Cmd|Ctrl|Control|Meta)\s*\+\s*|⌘\s*)(Shift\s*\+\s*)?(?:(?:Alt|Option)\s*\+\s*)?([A-Za-z0-9])\b/giu;
-const SPEC_SHORTCUT = /['"`]((?:[A-Za-z]+\+)+)([A-Za-z0-9])['"`]/gu;
+// Playwright names a key by its character or by its code, such as KeyM or Digit1.
+const SPEC_SHORTCUT =
+  /['"`]((?:[A-Za-z]+\+)+)(?:Key(?=[A-Z]['"`])|Digit(?=\d['"`]))?([A-Za-z0-9])['"`]/gu;
 const shortcutOf = (shift, key) =>
   `${shift ? 'Shift+' : ''}${key.toLowerCase()}`;
 
