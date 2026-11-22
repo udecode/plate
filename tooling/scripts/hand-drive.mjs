@@ -214,7 +214,7 @@ function cellsFor(files, sources, routes, currentBlob) {
     const pages = filePages(file, sources, routes, currentBlob);
     if (pages.kind === 'none') continue;
     if (pages.kind === 'unmapped') {
-      unmapped.push(file);
+      unmapped.push({ earlier: routes.get(file), file });
       continue;
     }
     const look =
@@ -381,9 +381,11 @@ function report({ states, unmapped }) {
     (cell) =>
       `${cell.state.padEnd(7)} ${cell.key}${cell.detail ? `  (${cell.detail})` : ''}`
   );
-  for (const file of unmapped) {
+  for (const { earlier, file } of unmapped) {
     lines.push(
-      `unmapped ${file}  (name its pages: hand-drive.mjs route ${file} <page...>, or --none <reason>)`
+      earlier
+        ? `unmapped ${file}  (its route names an earlier version of the file; name its pages again: hand-drive.mjs route ${file} ${earlier.none ? `--none ${JSON.stringify(earlier.none)}` : earlier.pages.join(' ')})`
+        : `unmapped ${file}  (name its pages: hand-drive.mjs route ${file} <page...>, or --none <reason>)`
     );
   }
   return lines;
