@@ -19,7 +19,8 @@
   "stepBudget": {
     "exclude": [
       "apps/www/src/generated/**",
-      "apps/www/src/registry/changelog/*.json"
+      "apps/www/src/registry/changelog/*.json",
+      "packages/*/test/**"
     ]
   },
   "planBoxes": {
