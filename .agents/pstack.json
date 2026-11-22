@@ -333,7 +333,7 @@
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/head.mjs": "8cb69ac6a2090a87986809f6bfac422aee7a7f10c07e335f7e08d195ae627f48",
       ".agents/pstack/lead.mjs": "8b6dd5ac797c6d21dc0a3b1cf7a65953c75fa8b52f2548bbecd60cdba139554a",
-      ".agents/pstack/proof.mjs": "6df99d9c8059a4d9e7b42c7457b3ad92a7d3427f2f819b4487655fd4f1627a8c",
+      ".agents/pstack/proof.mjs": "ee73155b82c9b07a494463f50abc63a05af343a070f5502c580a0654f7079bac",
       ".agents/pstack/replay.mjs": "2c41dcca9a4d3a9b8d7ddad38b6803d7a4fc5abe72a27e72abc015de7f0a266a",
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
       ".agents/pstack/seats.mjs": "dae2b1f91488e0670b11b86edc887bf2ba2abbead7e76ed8b2e5642e290dd1f7",
@@ -367,7 +367,7 @@
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af",
       ".claude/pstack-models.md": "a9e059fc831d264d3bf25cd53590b6fd18848515b02a6867c1a3aa11ae4b26b8"
     },
-    "source": "ce6c8f0a266be7c5b5f4b9ee9252c279c9c71e52"
+    "source": "733ccdb908c180fedbbbcb10056e52c3f0be8765"
   },
   "pageTopic": {
     "field": "review_scopes",

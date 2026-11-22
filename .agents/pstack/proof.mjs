@@ -26,7 +26,7 @@
 // Waiters enter in the order they arrived, except that a small ask that fits
 // now enters past a larger waiter that has waited under five minutes.
 
-import { spawn, spawnSync } from 'node:child_process';
+import { execFile, spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs';
 import { availableParallelism, constants, freemem, tmpdir, totalmem } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -265,16 +265,25 @@ const GB = 1024 ** 3;
 
 const gb = (bytes) => `${(bytes / GB).toFixed(1)} GB`;
 
-function processes() {
-  const { stdout } = spawnSync('ps', ['-A', '-o', 'pid=', '-o', 'ppid=', '-o', 'pgid=', '-o', 'rss=', '-o', 'comm='], { encoding: 'utf8', env: { ...process.env, LC_ALL: 'C' }, timeout: 10_000 });
-  return (stdout ?? '').split('\n').flatMap((line) => {
+function capture(file, args, options) {
+  return new Promise((resolve) => {
+    const scan = execFile(file, args, { encoding: 'utf8', ...options }, (_error, stdout) => resolve(stdout ?? ''));
+    scan.unref();
+    scan.stdout?.unref();
+    scan.stderr?.unref();
+  });
+}
+
+async function processes() {
+  const stdout = await capture('ps', ['-A', '-o', 'pid=', '-o', 'ppid=', '-o', 'pgid=', '-o', 'rss=', '-o', 'comm='], { env: { ...process.env, LC_ALL: 'C' }, timeout: 10_000 });
+  return stdout.split('\n').flatMap((line) => {
     const fields = line.match(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/u);
     return fields ? [{ pid: Number(fields[1]), parent: Number(fields[2]), group: Number(fields[3]), bytes: Number(fields[4]) * 1024, name: basename(fields[5].trim()) }] : [];
   });
 }
 
-function tree(root, withGroup) {
-  const all = processes();
+async function tree(root, withGroup) {
+  const all = await processes();
   const children = new Map();
   for (const entry of all) {
     if (!children.has(entry.parent)) children.set(entry.parent, []);
@@ -291,19 +300,23 @@ function tree(root, withGroup) {
   return [...found.values()];
 }
 
-function footprints(pids) {
-  const { stdout } = spawnSync('footprint', ['-f', 'bytes', '--noCategories', ...pids.flatMap((pid) => ['-p', String(pid)])], { encoding: 'utf8', timeout: 30_000 });
-  return new Map([...(stdout ?? '').matchAll(/\[(\d+)\]: .*Footprint: (\d+) B/gu)].map(([, pid, bytes]) => [Number(pid), Number(bytes)]));
+async function footprints(pids) {
+  const stdout = await capture('footprint', ['-f', 'bytes', '--noCategories', ...pids.flatMap((pid) => ['-p', String(pid)])], { timeout: 30_000 });
+  return new Map([...stdout.matchAll(/\[(\d+)\]: .*Footprint: (\d+) B/gu)].map(([, pid, bytes]) => [Number(pid), Number(bytes)]));
 }
 
-const signalAll = (pids, leader, signal) => {
-  for (const pid of leader ? [-leader, ...pids] : pids) {
-    try {
-      process.kill(pid, signal);
-    } catch (error) {
-      if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error;
-    }
+const sendSignal = (pid, name) => {
+  try {
+    process.kill(pid, name);
+  } catch (error) {
+    // macOS answers EPERM, not ESRCH, when every process left in a group is a
+    // zombie.
+    if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error;
   }
+};
+
+const signalAll = (pids, leader, name) => {
+  for (const pid of leader ? [-leader, ...pids] : pids) sendSignal(pid, name);
 };
 
 /**
@@ -320,18 +333,25 @@ const signalAll = (pids, leader, signal) => {
 export function watchMemory(pid, { group = false, stopped }) {
   if (memoryLevel() === null) return () => {};
   const total = totalmem();
-  const timer = setInterval(() => {
+  let watching = true;
+  let scanning = false;
+  const stop = () => {
+    watching = false;
+    clearInterval(timer);
+  };
+  const check = async () => {
     const free = memoryLevel() ?? 1;
-    const found = tree(pid, group);
-    if (found.reduce((sum, entry) => sum + entry.bytes, 0) >= total * FOOTPRINT_FROM_SHARE || free < FOOTPRINT_UNDER_FREE) {
-      const exact = footprints(found.map((entry) => entry.pid));
+    const found = await tree(pid, group);
+    if (watching && (found.reduce((sum, entry) => sum + entry.bytes, 0) >= total * FOOTPRINT_FROM_SHARE || free < FOOTPRINT_UNDER_FREE)) {
+      const exact = await footprints(found.map((entry) => entry.pid));
       for (const entry of found) entry.bytes = exact.get(entry.pid) ?? entry.bytes;
     }
+    if (!watching) return;
     const used = found.reduce((sum, entry) => sum + entry.bytes, 0);
     const short = free < MIN_FREE_MEMORY;
     const limit = total * (short ? SHORT_MEMORY_SHARE : MEMORY_SHARE);
     if (used <= limit) return;
-    clearInterval(timer);
+    stop();
     const pids = found.map((entry) => entry.pid).filter((entry) => entry !== process.pid);
     const leader = group ? pid : null;
     signalAll(pids, leader, 'SIGTERM');
@@ -342,9 +362,16 @@ export function watchMemory(pid, { group = false, stopped }) {
       .map((entry) => `${entry.name} (${entry.pid}) ${gb(entry.bytes)}`);
     const when = short ? ` while ${Math.round(free * 100)}% of its memory was free` : '';
     stopped(`used ${gb(used)} of this machine's ${gb(total)}${when}, over the ${gb(limit)} one command may use, so its processes were stopped; the largest: ${largest.join(', ')}`);
+  };
+  const timer = setInterval(() => {
+    if (scanning) return;
+    scanning = true;
+    check().finally(() => {
+      scanning = false;
+    });
   }, 2000);
   timer.unref();
-  return () => clearInterval(timer);
+  return stop;
 }
 
 function bootTime() {
@@ -398,9 +425,13 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
     timeout: timeout ? timeout * 1000 + 3 * KILL_GRACE_MS : undefined,
     killSignal: 'SIGKILL',
   });
+  const lines = (result.output?.[3]?.toString() ?? '').split('\n').filter(Boolean).map((line) => JSON.parse(line));
+  const spawned = lines.find((line) => 'group' in line);
+  const reported = lines.find((line) => !('group' in line));
+  if (spawned && !reported) sendSignal(-spawned.group, 'SIGKILL');
   release();
   closeSync(fd);
-  const report = JSON.parse(result.output?.[3]?.toString() || 'null') ?? { timedOut: result.error?.code === 'ETIMEDOUT', error: result.error?.code ?? 'error' };
+  const report = reported ?? { timedOut: result.error?.code === 'ETIMEDOUT', error: result.error?.code ?? 'error' };
   const exit = report.timedOut ? 'ETIMEDOUT' : report.memory ? 'EMEMORY' : (report.code ?? report.signal ?? report.error ?? 'error');
   const { size } = statSync(path);
   const stopped = report.timedOut ? `timed out after ${timeout} seconds\n` : '';
@@ -410,16 +441,7 @@ export function prove({ dir, name, command, cwd = process.cwd(), timeout, cores 
 }
 
 function superviseGroup([seconds, file, ...args]) {
-  const child = spawn(file, args, { stdio: ['ignore', 'inherit', 'inherit'], detached: true });
-  const killGroup = (signal) => {
-    try {
-      process.kill(-child.pid, signal);
-    } catch (error) {
-      // macOS answers EPERM, not ESRCH, when every process left in the group is
-      // a zombie.
-      if (error.code !== 'ESRCH' && error.code !== 'EPERM') throw error;
-    }
-  };
+  const killGroup = (name) => sendSignal(-child.pid, name);
   // A stop signal sent to the whole group ends the parent proof.mjs too, and
   // its pipe can still take the report, so the log gets the exit line here.
   let stopped = null;
@@ -440,6 +462,21 @@ function superviseGroup([seconds, file, ...args]) {
   };
   let timedOut = false;
   let memory = false;
+  for (const name of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+    process.on(name, () => {
+      stopped ??= name;
+      killGroup('SIGTERM');
+      setTimeout(() => {
+        killGroup('SIGKILL');
+        logExit(`proof.mjs stopped by ${stopped}`, stopped);
+        process.exit(128 + constants.signals[name]);
+      }, KILL_GRACE_MS);
+    });
+  }
+  // The handlers go in before the spawn: a stop signal that came between the
+  // two would end this process and leave the detached command running.
+  const child = spawn(file, args, { stdio: ['ignore', 'inherit', 'inherit'], detached: true });
+  if (child.pid) writeSync(3, `${JSON.stringify({ group: child.pid })}\n`);
   watchMemory(child.pid, {
     group: true,
     stopped: (text) => {
@@ -453,17 +490,6 @@ function superviseGroup([seconds, file, ...args]) {
       killGroup('SIGTERM');
       setTimeout(() => killGroup('SIGKILL'), KILL_GRACE_MS);
     }, Number(seconds) * 1000);
-  }
-  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
-    process.on(signal, () => {
-      stopped ??= signal;
-      killGroup('SIGTERM');
-      setTimeout(() => {
-        killGroup('SIGKILL');
-        logExit(`proof.mjs stopped by ${stopped}`, stopped);
-        process.exit(128 + constants.signals[signal]);
-      }, KILL_GRACE_MS);
-    });
   }
   child.on('error', (error) => report({ error: error.code }));
   child.on('exit', (code, signal) => {
