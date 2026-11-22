@@ -279,6 +279,17 @@ The publisher:
 A failure after the issue or comment exists exits 7 and names its URL. Never
 rerun the publisher then, because a second run publishes a second copy.
 
+## Record
+
+Once the publisher prints a new issue's URL, record that issue in the same
+session through the Triage playbook's `triage plate-private#<N>`. A domain or
+next claim refuses while an open issue has no record. Run
+`pnpm triage show plate-private#<N>` first. When its `session:` line says this
+session cannot record, name the issue in the reply and say that
+`triage plate-private#<N>` in a fresh Opus or Sol xhigh session records it, as
+the playbook's Who records says. A `--comment-on` run adds repros to an issue
+that already has a record, so it records nothing here.
+
 ## GitHub references
 
 - Attaching files: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files

@@ -2815,19 +2815,26 @@ function claimCommand(options) {
   const { repo } = reads.policy;
   const actor = actorOf(options);
   const open = openList(reads);
-  if (issues.length === 0) {
-    const prefix = issuePrefix(reads);
-    const untriaged = [...open]
-      .filter(
-        ([issue, { milestone }]) =>
-          !mainReport(reads.policy, milestone) && !reads.rows.get(issue)?.size
-      )
-      .map(([issue]) => `${prefix}${issue}`);
-    if (untriaged.length > 0) {
-      refuse(
-        `${untriaged.join(' ')} ${untriaged.length === 1 ? 'has' : 'have'} no triage record yet, so this claim cannot tell which group each joins; triage ${untriaged.length === 1 ? 'it' : 'them'} first, then claim again`
-      );
-    }
+  const untriaged =
+    issues.length > 0
+      ? []
+      : [...open]
+          .filter(
+            ([issue, { milestone }]) =>
+              !mainReport(reads.policy, milestone) &&
+              !reads.rows.get(issue)?.size
+          )
+          .map(([issue]) => issue);
+  const them = (list) => (list.length === 1 ? 'it' : 'them');
+  const unrecorded = (list) =>
+    `${list.map((issue) => `${issuePrefix(reads)}${issue}`).join(' ')} ${list.length === 1 ? 'has' : 'have'} no triage record yet`;
+  // A task claim's group starts from the issues its task names, so an issue
+  // with no record that the task does not name cannot join it, and one new
+  // issue must not stop every card session at once.
+  if (untriaged.length > 0 && !options.task) {
+    refuse(
+      `${unrecorded(untriaged)}, so this claim cannot tell which group each joins; triage ${them(untriaged)} first, then claim again`
+    );
   }
   const git = gitMerges({ branch: reads.branch });
   let target = null;
@@ -2984,6 +2991,14 @@ function claimCommand(options) {
     )) {
       console.log(`note: branch ${branch} names #${issue}`);
     }
+  }
+  const leftOut = untriaged.filter(
+    (issue) => !decision.members.includes(issue)
+  );
+  if (leftOut.length > 0) {
+    console.log(
+      `note: ${unrecorded(leftOut)}, so this task claim leaves ${them(leftOut)} out; a triage run records ${them(leftOut)}, and this run does not`
+    );
   }
   if (decision.exit === 1) {
     console.log('nothing claimed');
