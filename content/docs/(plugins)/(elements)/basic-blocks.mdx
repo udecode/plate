@@ -109,7 +109,7 @@ plugin selection, rendering, input rules, and shortcuts editable.
 | Block | Plugin | Registry Component | Notes |
 |-------|--------|--------------------|-------|
 | Paragraph | `ParagraphPlugin` | `ParagraphElement` | Comes from `platejs/react`; the registry kit adds the UI component. |
-| Heading 1-6 | `HeadingPlugin` | `HeadingElement` | One plugin whose `level` runs from 1 to 6. One markdown rule covers every level, and each level gets a `mod+alt+<level>` shortcut. |
+| Heading 1-6 | `HeadingPlugin` | `HeadingElement` | Takes `level` 1 to 6; each level has a `mod+alt+<level>` shortcut. |
 | Blockquote | `BlockquotePlugin` | `BlockquoteElement` | Uses a wrapping transform and `mod+shift+period`. |
 | Horizontal rule | `HorizontalRulePlugin` | `HrElement` | Void block; supports dash and underscore markdown rules. |
 

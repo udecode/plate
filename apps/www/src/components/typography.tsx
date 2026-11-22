@@ -220,7 +220,7 @@ export const TD = ({
 }: React.HTMLAttributes<HTMLTableCellElement>) => (
   <td
     className={cn(
-      'px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right',
+      'px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right [&_code]:[overflow-wrap:break-word]',
       className
     )}
     {...props}
