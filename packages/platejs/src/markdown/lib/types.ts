@@ -1,4 +1,4 @@
-import type { Root as MdRoot } from 'mdast';
+import type { Html, Root as MdRoot } from 'mdast';
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable, Processor, Transformer } from 'unified';
 import type { Node as UnistNode } from 'unist';
@@ -310,6 +310,10 @@ export type DeserializeMdContext = Readonly<
     onRootChildren?: (children: readonly MdRootContent[]) => void;
     /** The root node before this source when it continues an earlier one. */
     previousRootSibling?: MdRootContent | null;
+    rawHtml?: Readonly<{
+      blocks: ReadonlySet<Html>;
+      droppedComments: ReadonlySet<Html>;
+    }>;
     limits: MarkdownParseLimits;
     lossPolicy: 'allow' | 'reject';
     mappings: CompiledMarkdownMappings;

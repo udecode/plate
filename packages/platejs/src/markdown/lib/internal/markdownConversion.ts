@@ -83,7 +83,9 @@ import {
   writeMarkdownFrontmatter,
 } from './markdownFrontmatter';
 import {
+  findMarkdownRawHtml,
   getMarkdownParagraphLanding,
+  isMarkdownHtmlComment,
   isRawHtmlFlow,
   rawHtmlPieceOf,
   remarkSeparateEscapes,
@@ -274,6 +276,9 @@ export const writesRawHtml = (
   runtime.registry.has(RawHtmlPlugin) &&
   !plainMarks?.includes(RawHtmlPlugin.name);
 
+const importsRawHtml = (runtime: MarkdownRuntime) =>
+  writesRawHtml(runtime, runtime.options.plainMarks);
+
 export const getMergedOptionsSerialize = (
   runtime: MarkdownRuntime,
   options: MarkdownSerializePolicy = {},
@@ -397,7 +402,7 @@ export const markdownToSlateNodesWithRuntime = (
     mergedOptions.remarkPlugins,
     options.partial ? onHeldTail : undefined
   )
-    .use(remarkToSlate, mergedOptions)
+    .use(remarkToSlate, mergedOptions, importsRawHtml(runtime))
     .processSync(text).result;
 };
 
@@ -434,8 +439,10 @@ const readLineEndingsAsLf = (node: Nodes) => {
   }
 };
 
-const remarkToSlate: UnifiedPlugin<[DeserializeMdContext], Root, Descendant[]> =
-  function (options) {
+type RemarkToSlateOptions = [DeserializeMdContext, marksRawHtml: boolean];
+
+const remarkToSlate: UnifiedPlugin<RemarkToSlateOptions, Root, Descendant[]> =
+  function (options, marksRawHtml) {
     this.compiler = (node, file) => {
       if (String(file).includes('\r')) readLineEndingsAsLf(node as Root);
 
@@ -454,7 +461,12 @@ const remarkToSlate: UnifiedPlugin<[DeserializeMdContext], Root, Descendant[]> =
         sourceLocation: options.sourceLocation,
       });
 
-      return mdastToSlate(node as Root, options);
+      return mdastToSlate(
+        node as Root,
+        marksRawHtml
+          ? { ...options, rawHtml: findMarkdownRawHtml(node as Root) }
+          : options
+      );
     };
   };
 
@@ -671,6 +683,221 @@ const markedLeavesOf = (nodes: readonly Descendant[]): Text[] =>
       : markedLeavesOf(node.children)
   );
 
+type RawHtmlWriting = NonNullable<SerializeMdContext['rawHtml']>;
+
+/**
+ * Export and import both decide through it, so import marks only what export
+ * writes back.
+ */
+const encodeRawHtmlBody = (
+  context: SerializeMdContext,
+  rawHtml: RawHtmlWriting,
+  refused: RawHtmlWriting['refused'],
+  previousKind: string | undefined,
+  readSetext: (
+    processor: ReturnType<typeof createMarkdownStringifier>
+  ) => boolean
+) => {
+  const diagnostics = new MarkdownDiagnostics();
+  const readRoots = new Set<RootKey>();
+  const body = encodeMarkdownBody({
+    ...context,
+    // Each encode is a conversion of its own, so its list audit starts empty.
+    operation: {},
+    rawHtml: { ...rawHtml, refused },
+    readRoots,
+    report: diagnostics.report,
+  });
+  const holdsRawHtml = holdsRawHtmlPiece(body.tree);
+  const options = {
+    previousKind,
+    setext: holdsRawHtml && readSetext(body.processor),
+  };
+
+  return {
+    ...body,
+    diagnostics,
+    failing: holdsRawHtml
+      ? decideRawHtmlBlocks(body.tree, rawHtml.decide, options)
+      : [],
+    holdsRawHtml,
+    options,
+    readRoots,
+  };
+};
+
+// A mapping that copies marked leaves defeats refusal by object, so export then
+// writes every marked text as text.
+const copiesMarkedLeaf = (
+  failing: readonly RawHtmlBlockRefusal[],
+  document: ReadonlySet<Text>
+) => failing.some(({ leaves }) => leaves.some((leaf) => !document.has(leaf)));
+
+const sameTextProperties = (left: Text, right: Text) =>
+  dequal({ ...left, text: '' }, { ...right, text: '' });
+
+// Only a text next to an unmarked or dropped leaf can newly equal its neighbor.
+const unmarkLeaves = (
+  nodes: readonly Descendant[],
+  leaves: ReadonlySet<Text>,
+  dropped: ReadonlySet<Text>
+): readonly Descendant[] => {
+  const output: Descendant[] = [];
+  let changed = false;
+  let joinsUnmarked = false;
+
+  for (const node of nodes) {
+    let next: Descendant = node;
+    let unmarked = false;
+
+    if (!TextApi.isText(node)) {
+      next = unmarkElement(node, leaves, dropped);
+    } else if (dropped.has(node)) {
+      changed = true;
+      joinsUnmarked = true;
+      continue;
+    } else if (leaves.has(node)) {
+      const { [RawHtmlPlugin.name]: _marked, ...text } = node;
+
+      next = text;
+      unmarked = true;
+    }
+    changed ||= next !== node;
+    const previous = output.at(-1);
+
+    if (
+      (unmarked || joinsUnmarked) &&
+      previous !== undefined &&
+      TextApi.isText(previous) &&
+      TextApi.isText(next) &&
+      sameTextProperties(previous, next)
+    ) {
+      output[output.length - 1] = {
+        ...previous,
+        text: previous.text + next.text,
+      };
+      joinsUnmarked = true;
+    } else {
+      output.push(next);
+      joinsUnmarked = unmarked;
+    }
+  }
+
+  return changed ? output : nodes;
+};
+
+const unmarkElement = (
+  element: Element,
+  leaves: ReadonlySet<Text>,
+  dropped: ReadonlySet<Text>
+): Element => {
+  const children = unmarkLeaves(element.children, leaves, dropped);
+
+  if (children === element.children) return element;
+
+  // An inline element that held only a dropped comment keeps an empty text,
+  // as a link does without the plugin.
+  return {
+    ...element,
+    children: children.length > 0 ? [...children] : [{ text: '' }],
+  };
+};
+
+const textsOf = (nodes: readonly Descendant[]): Text[] =>
+  nodes.flatMap((node) =>
+    TextApi.isText(node) ? [node] : textsOf(node.children)
+  );
+
+// Without the plugin a comment drops, so an unmarked one drops too unless
+// nothing but comments and whitespace would be left of its block's text.
+const droppedCommentsOf = (
+  nodes: readonly Descendant[],
+  unmarked: ReadonlySet<Text>
+): Text[] =>
+  nodes.flatMap((node) => {
+    if (TextApi.isText(node)) return [];
+    if (!node.children.some((child) => TextApi.isText(child))) {
+      return droppedCommentsOf(node.children, unmarked);
+    }
+    const texts = textsOf(node.children);
+    const comments = texts.filter(
+      (leaf) => unmarked.has(leaf) && isMarkdownHtmlComment(leaf.text)
+    );
+
+    return texts.some(
+      (leaf) => !comments.includes(leaf) && /\S/.test(leaf.text)
+    )
+      ? comments
+      : [];
+  });
+
+const unmarkBlocks = (
+  blocks: readonly Element[],
+  unmarked: ReadonlySet<Text>
+) => {
+  const dropped = new Set(droppedCommentsOf(blocks, unmarked));
+
+  return blocks.map((block) => unmarkElement(block, unmarked, dropped));
+};
+
+/**
+ * Unmarking leaves and dropping comments keep every block in its place, so one
+ * decision is final.
+ */
+const keepWrittenRawHtml = (
+  runtime: MarkdownRuntime,
+  blocks: readonly Element[],
+  {
+    meta,
+    roots,
+  }: Readonly<{
+    meta?: EditorDocumentValue['meta'];
+    roots?: EditorDocumentValue['roots'];
+  }> = {}
+): readonly Element[] => {
+  if (!importsRawHtml(runtime)) return blocks;
+  const marked = markedLeavesOf(blocks);
+
+  if (marked.length === 0) return blocks;
+  const context = getMergedOptionsSerialize(
+    runtime,
+    {},
+    createContentFormatDocument({ content: blocks, meta, roots })
+  );
+  const { rawHtml } = context;
+
+  if (!rawHtml) return blocks;
+  const document = new Set(marked);
+  let failing: ReturnType<typeof encodeRawHtmlBody>['failing'];
+
+  try {
+    ({ failing } = encodeRawHtmlBody(
+      context,
+      rawHtml,
+      undefined,
+      undefined,
+      writesSetext
+    ));
+  } catch (error) {
+    try {
+      encodeRawHtmlBody(context, rawHtml, 'all', undefined, writesSetext);
+    } catch {
+      // Export throws on these blocks with or without raw HTML.
+      return unmarkBlocks(blocks, document);
+    }
+    throw error;
+  }
+
+  if (failing.length === 0) return blocks;
+
+  return unmarkBlocks(
+    blocks,
+    copiesMarkedLeaf(failing, document)
+      ? document
+      : new Set(failing.flatMap(({ leaves }) => leaves))
+  );
+};
+
 /**
  * With `RawHtmlPlugin` installed and its mark not in `plainMarks`, each block
  * of marked text decides on the tree
@@ -693,34 +920,12 @@ const writeMarkdownBody = (
     return { data: processor.stringify(tree), holdsRawHtml: false, lastKind };
   }
   let setext: boolean | undefined;
-  const encode = (refused?: ReadonlySet<Text> | 'all') => {
-    const diagnostics = new MarkdownDiagnostics();
-    const readRoots = new Set<RootKey>();
-    const body = encodeMarkdownBody({
-      ...context,
-      // Each encode is a conversion of its own, so its list audit starts empty.
-      operation: {},
-      rawHtml: { ...rawHtml, refused },
-      readRoots,
-      report: diagnostics.report,
-    });
-    const holdsRawHtml = holdsRawHtmlPiece(body.tree);
-    const options = {
-      previousKind,
-      setext: holdsRawHtml && (setext ??= writesSetext(body.processor)),
-    };
+  const encode = (refused?: ReadonlySet<Text> | 'all') =>
+    encodeRawHtmlBody(context, rawHtml, refused, previousKind, (processor) => {
+      setext ??= writesSetext(processor);
 
-    return {
-      ...body,
-      diagnostics,
-      failing: holdsRawHtml
-        ? decideRawHtmlBlocks(body.tree, rawHtml.decide, options)
-        : [],
-      holdsRawHtml,
-      options,
-      readRoots,
-    };
-  };
+      return setext;
+    });
   let body = encode();
   const documentLeaves = new Set(
     body.failing.length > 0
@@ -745,15 +950,11 @@ const writeMarkdownBody = (
   const refused = new Set<Text>();
 
   for (let round = 0; body.failing.length > 0; round += 1) {
-    const copied = body.failing.some(({ leaves }) =>
-      leaves.some((leaf) => !documentLeaves.has(leaf))
-    );
+    const copied = copiesMarkedLeaf(body.failing, documentLeaves);
 
     if (copied || round === REFUSAL_ROUNDS) {
       const reason = copied ? 'copied-leaf' : 'shared-leaf';
 
-      // A mapping that copies marked leaves defeats refusal by object, so
-      // every block that still holds marked text writes it as text.
       decideRawHtmlBlocks(
         body.tree,
         () => ({ ok: false, reason }),
@@ -978,7 +1179,9 @@ const snapshotBlocks = (
   runtime: MarkdownRuntime,
   parsed: readonly Descendant[]
 ): readonly Descendant[] =>
-  ContentSlice.closed(normalizeDocumentChildren(runtime, parsed)).content;
+  ContentSlice.closed([
+    ...keepWrittenRawHtml(runtime, normalizeDocumentChildren(runtime, parsed)),
+  ]).content;
 
 const convertMarkdownSource = (
   runtime: MarkdownRuntime,
@@ -1006,8 +1209,11 @@ const convertMarkdownSource = (
     };
   };
 
+  // A segment would decide raw HTML without the blocks before it, so a
+  // continued parse that marks raw HTML parses the whole source.
   if (
     !reuse?.previous ||
+    importsRawHtml(runtime) ||
     MARKDOWN_DEFINITION.test(source) ||
     new TextEncoder().encode(source).byteLength > limits.maxBytes
   ) {
@@ -1434,14 +1640,27 @@ export const parseMarkdownDocumentWithRuntime = (
   if (diagnostics.failure()) return documentParseFailure(diagnostics);
   let document: EditorDocumentValue;
 
-  try {
-    document = fitMarkdownDocument(runtime, input, options, diagnostics);
-    if (diagnostics.failure()) return documentParseFailure(diagnostics);
-    runtime.state.schema.assertDocument(document);
-  } catch (error) {
+  const invalid = (error: unknown) => {
     reportSchemaInvalid(error, diagnostics);
 
     return documentParseFailure(diagnostics);
+  };
+
+  try {
+    document = fitMarkdownDocument(runtime, input, options, diagnostics);
+    if (diagnostics.failure()) return documentParseFailure(diagnostics);
+  } catch (error) {
+    return invalid(error);
+  }
+  const blocks = keepWrittenRawHtml(runtime, document.children, document);
+
+  if (blocks !== document.children) {
+    document = { ...document, children: [...blocks] };
+  }
+  try {
+    runtime.state.schema.assertDocument(document);
+  } catch (error) {
+    return invalid(error);
   }
 
   return Object.freeze({
@@ -1583,15 +1802,21 @@ export const parseMarkdownInlineWithRuntime = (
 
     return sliceParseFailure(diagnostics);
   }
+  // The decision reads the paragraph the slice lands as, spaces included.
+  const paragraph = {
+    ...block,
+    children: [
+      ...whitespace(LEADING_WHITESPACE.exec(source)?.[0] ?? ''),
+      ...block.children,
+      ...whitespace(TRAILING_WHITESPACE.exec(source)?.[0] ?? ''),
+    ],
+  };
+  const [kept = paragraph] = keepWrittenRawHtml(runtime, [paragraph]);
 
   return Object.freeze({
     diagnostics: diagnostics.warnings(),
     ok: true,
-    slice: ContentSlice.closed([
-      ...whitespace(LEADING_WHITESPACE.exec(source)?.[0] ?? ''),
-      ...block.children,
-      ...whitespace(TRAILING_WHITESPACE.exec(source)?.[0] ?? ''),
-    ]),
+    slice: ContentSlice.closed(kept.children),
   });
 };
 

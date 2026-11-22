@@ -32,7 +32,10 @@ import { getMarkdownTagRepair } from './markdownTags';
 
 const BR_TAG = /<br\s*\/?>/gi;
 const ONLY_BR_TAGS = /^(?:\s*<br\s*\/?>)+\s*$/i;
-const HTML_COMMENT = /^\s*<!--[\s\S]*-->\s*$/;
+// A run of whole comments, each closed by its own first `-->`, with only HTML
+// whitespace between them, so no text or tag between two comments drops.
+const HTML_COMMENT =
+  /^[\t\n\f\r ]*(?:<!--(?!-?>)(?:(?!--!?>)[\s\S])*-->[\t\n\f\r ]*)+$/;
 const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
 
 export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
@@ -140,6 +143,51 @@ const withUnmarkedLineEndings = (text: string, marks: MdMarks) =>
         )
     : { ...marks, text };
 
+// An HTML block in these decodes into a paragraph of its own.
+const FLOW_CONTAINERS: ReadonlySet<string> = new Set([
+  'blockquote',
+  'listItem',
+  'root',
+]);
+// A registered tag's mapping and a footnote definition read an HTML block in
+// them as text beside their other content, and export writes a flow piece
+// there as text, so a comment there drops as it does without the plugin.
+const TEXT_FLOW_CONTAINERS: ReadonlySet<string> = new Set([
+  'footnoteDefinition',
+  'mdxJsxFlowElement',
+]);
+// The writer prints it between two blocks its join keeps apart.
+const WRITER_SEPARATOR = '<!---->';
+
+export const isMarkdownHtmlComment = (value: string) =>
+  HTML_COMMENT.test(value);
+
+export const findMarkdownRawHtml = (
+  tree: Root
+): NonNullable<DeserializeMdContext['rawHtml']> => {
+  const blocks = new Set<Html>();
+  const droppedComments = new Set<Html>();
+  const visit = (parent: MdParent) => {
+    for (const child of parent.children) {
+      if (child.type !== 'html') {
+        if ('children' in child) visit(child);
+      } else if (
+        child.value === WRITER_SEPARATOR ||
+        (TEXT_FLOW_CONTAINERS.has(parent.type) &&
+          HTML_COMMENT.test(child.value))
+      ) {
+        droppedComments.add(child);
+      } else if (FLOW_CONTAINERS.has(parent.type)) {
+        blocks.add(child);
+      }
+    }
+  };
+
+  visit(tree);
+
+  return { blocks, droppedComments };
+};
+
 /**
  * Language-level decoders every editor needs, even without feature plugins.
  * They run after every feature mapping on the same MDAST kind has declined.
@@ -168,7 +216,11 @@ export const markdownIntrinsicDecoders = {
     if (ONLY_BR_TAGS.test(value)) {
       return { text: value.replace(BR_TAG, '\n') };
     }
-    if (HTML_COMMENT.test(value)) {
+    const { rawHtml } = options;
+
+    if (
+      rawHtml ? rawHtml.droppedComments.has(node) : HTML_COMMENT.test(value)
+    ) {
       options.report({
         action: 'dropped',
         code: 'markdown-unsupported-node',
@@ -197,7 +249,12 @@ export const markdownIntrinsicDecoders = {
       source: options.sourceLocation(node),
     });
 
-    return { ...marks, text: value };
+    if (!rawHtml) return { ...marks, text: value };
+    const text = { ...marks, [RawHtmlPlugin.name]: true, text: value };
+
+    return rawHtml.blocks.has(node)
+      ? { children: [text], type: getMarkdownParagraphType(options.registry) }
+      : text;
   },
   paragraph: (
     node: Paragraph,
