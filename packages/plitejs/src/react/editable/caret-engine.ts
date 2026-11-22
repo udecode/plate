@@ -1063,7 +1063,9 @@ const moveEditableCaret = ({
       move: () => {
         dispatchCommand(editor, editorCommands.select, {
           target: {
-            anchor: selection?.anchor ?? plainVerticalDOMCoveragePlugin.target,
+            anchor: plainVerticalDOMCoveragePlugin.extend
+              ? (selection?.anchor ?? plainVerticalDOMCoveragePlugin.target)
+              : plainVerticalDOMCoveragePlugin.target,
             focus: plainVerticalDOMCoveragePlugin.target,
           },
         });

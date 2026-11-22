@@ -54,6 +54,7 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { getPointRoot } from '../root-key';
+import { samePliteRootPoint } from '../view-boundary-graph';
 import {
   readPliteViewSelection,
   writePliteViewSelection,
@@ -87,6 +88,7 @@ import {
   getSelectionDOMRange,
   setEditorFocused,
   string as editorString,
+  toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 import { decideWebKitProbeImport } from './selection-controller';
@@ -1104,6 +1106,27 @@ export const handleWebKitShadowDOMBeforeInput = ({
   return true;
 };
 
+const showsDOMSelection = (
+  editor: ReactRuntimeEditor,
+  domSelection: globalThis.Selection | null,
+  selection: Range
+) => {
+  if (!domSelection?.rangeCount || domSelection.isCollapsed) return false;
+
+  const shown = ReactEditor.resolveRange(editor, domSelection, {
+    exactMatch: false,
+  });
+
+  if (!shown) return false;
+
+  const root = toInternalRoot(editor.read((state) => state.view.root()));
+
+  return (
+    samePliteRootPoint(shown.anchor, selection.anchor, root) &&
+    samePliteRootPoint(shown.focus, selection.focus, root)
+  );
+};
+
 export const useEditableSelectionReconciler = ({
   viewportBackedSelection,
   runtime,
@@ -1217,7 +1240,17 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
-    if (viewportBackedSelection && selectionHasDOMCoverage) {
+    if (
+      viewportBackedSelection &&
+      projectedSelection &&
+      selectionHasDOMCoverage
+    ) {
+      // A range the browser drew across the unmounted blocks already shows
+      // the selection, and clearing it makes Chromium put the next caret at
+      // the editable's start.
+      if (showsDOMSelection(editor, domSelection, projectedSelection)) {
+        return undefined;
+      }
       writeDOMSelection(root, null);
       return undefined;
     }

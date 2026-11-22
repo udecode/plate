@@ -1,5 +1,14 @@
 import { parseAsBoolean, useQueryStates } from 'nuqs';
-import { NodeApi, type Element as ElementNode } from 'plitejs';
+import {
+  definePlugin,
+  definePluginSlot,
+  editorCommands,
+  NodeApi,
+  PathApi,
+  RangeApi,
+  schema,
+  type Element as ElementNode,
+} from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
@@ -8,7 +17,7 @@ import {
   EditorRoot,
   useEditor,
 } from 'plitejs/react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -40,9 +49,92 @@ const hiddenBoundaryUrlKeys = {
   outerHidden: 'outer_hidden',
 };
 
+const sectionBodyHidden: Partial<Record<string, keyof HiddenBoundaryState>> = {
+  'deep-section': 'deepHidden',
+  'nested-section': 'innerHidden',
+  section: 'outerHidden',
+};
+
+const isolateHiddenContent = definePlugin('dom-coverage-isolating', {
+  schema: {
+    elements: {
+      'deep-section': { content: schema.content.open(), isolating: true },
+      footer: { content: schema.content.open(), isolating: true },
+      header: { content: schema.content.open(), isolating: true },
+      'nested-section': { content: schema.content.open(), isolating: true },
+      section: { content: schema.content.open(), isolating: true },
+    },
+  },
+});
+
+const hiddenSectionEnterSlot = definePluginSlot('dom-coverage-hidden-enter');
+
+const exitHiddenSectionOnEnter = (hidden: HiddenBoundaryState) =>
+  definePlugin('dom-coverage-hidden-enter', {
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) => {
+        const selection = state.selection();
+
+        if (!selection || !RangeApi.isCollapsed(selection)) return false;
+
+        const summary = state.nodes.above({
+          match: (node) => NodeApi.isElement(node) && node.type === 'summary',
+        });
+        const section = summary && state.nodes.parent(summary[1]);
+        const hiddenKey =
+          section && NodeApi.isElement(section[0])
+            ? sectionBodyHidden[section[0].type]
+            : undefined;
+
+        if (!section || !hiddenKey || !hidden[hiddenKey]) return false;
+
+        return state.transaction((tx) => {
+          const nextPath = PathApi.next(section[1]);
+          const point = tx.nodes.get(nextPath)
+            ? tx.points.start(nextPath)
+            : undefined;
+
+          if (point) {
+            tx.selection.set(point);
+
+            return;
+          }
+
+          tx.nodes.insert(
+            { children: [{ text: '' }], type: 'paragraph' },
+            { at: nextPath, select: true }
+          );
+        });
+      }),
+    ],
+  });
+
 const DomCoverageBoundariesExample = () => {
+  const [
+    { deepHidden, footerHidden, headerHidden, innerHidden, outerHidden },
+    setHiddenBoundaryControls,
+  ] = useQueryStates(hiddenBoundaryQueryParsers, {
+    ...replaceQueryOptions,
+    urlKeys: hiddenBoundaryUrlKeys,
+  });
+  const [copyPreview, setCopyPreview] = useState('');
+  const [traceTick, setTraceTick] = useState(0);
+  const hiddenBoundaries = useMemo(
+    () => ({
+      deepHidden,
+      footerHidden,
+      headerHidden,
+      innerHidden,
+      outerHidden,
+    }),
+    [deepHidden, footerHidden, headerHidden, innerHidden, outerHidden]
+  );
   const editor = useEditor({
-    plugins: [history()],
+    plugins: [
+      history(),
+      isolateHiddenContent,
+      hiddenSectionEnterSlot.of(exitHiddenSectionOnEnter(hiddenBoundaries)),
+    ],
     initialValue: [
       {
         type: 'header',
@@ -112,25 +204,14 @@ const DomCoverageBoundariesExample = () => {
       },
     ] as ElementNode[],
   });
-  const [
-    { deepHidden, footerHidden, headerHidden, innerHidden, outerHidden },
-    setHiddenBoundaryControls,
-  ] = useQueryStates(hiddenBoundaryQueryParsers, {
-    ...replaceQueryOptions,
-    urlKeys: hiddenBoundaryUrlKeys,
-  });
-  const [copyPreview, setCopyPreview] = useState('');
-  const [traceTick, setTraceTick] = useState(0);
-  const hiddenBoundaries = useMemo(
-    () => ({
-      deepHidden,
-      footerHidden,
-      headerHidden,
-      innerHidden,
-      outerHidden,
-    }),
-    [deepHidden, footerHidden, headerHidden, innerHidden, outerHidden]
-  );
+
+  useEffect(() => {
+    editor.update.plugins.reconfigure(
+      hiddenSectionEnterSlot,
+      exitHiddenSectionOnEnter(hiddenBoundaries)
+    );
+  }, [editor, hiddenBoundaries]);
+
   const toggleHiddenBoundary = useCallback(
     (key: keyof HiddenBoundaryState) => {
       void setHiddenBoundaryControls({ [key]: !hiddenBoundaries[key] });

@@ -1,6 +1,7 @@
 import { NodeApi, PathApi, type Point, PointApi, type Range } from '../..';
 import {
   createDOMGeometryKernel,
+  type DOMCoverageBoundary,
   type DOMCoverageSession,
   type DOMGeometryPoint,
   type DOMGeometryRect,
@@ -23,26 +24,29 @@ type VerticalPluginEvent = Pick<
   'altKey' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'
 >;
 
-export const getPlainVerticalPluginReverse = (event: VerticalPluginEvent) => {
-  if (event.altKey || event.ctrlKey || event.metaKey || !event.shiftKey) {
-    return null;
-  }
-
-  if (event.key === 'ArrowUp') {
-    return true;
-  }
-
-  if (event.key === 'ArrowDown') {
-    return false;
-  }
+const getVerticalKeyReverse = (event: VerticalPluginEvent) => {
+  if (event.altKey || event.ctrlKey || event.metaKey) return null;
+  if (event.key === 'ArrowUp') return true;
+  if (event.key === 'ArrowDown') return false;
 
   return null;
 };
+
+export const getPlainVerticalPluginReverse = (event: VerticalPluginEvent) =>
+  event.shiftKey ? getVerticalKeyReverse(event) : null;
 
 type PlainVerticalDOMCoveragePlugin = {
   reverse: boolean;
   target: Point;
 };
+
+type VerticalDOMCoverageMove = PlainVerticalDOMCoveragePlugin & {
+  extend: boolean;
+};
+
+const isNonViewportMaterializeBoundary = (boundary: DOMCoverageBoundary) =>
+  boundary.selectionPolicy === 'materialize' &&
+  boundary.reason !== 'viewport-virtualization';
 
 type RectLike = DOMGeometryRect;
 type ResolvedDOMPoint = DOMGeometryPoint;
@@ -402,16 +406,20 @@ const resolveVisualLineTargetPoint = ({
 
 const getUnselectedMaterializeBoundariesForRange = ({
   coverage,
+  extend,
   range,
   selectedBoundaryIds,
 }: {
   coverage: DOMCoverageSession | undefined;
+  extend: boolean;
   range: Range;
   selectedBoundaryIds: Set<string>;
 }) =>
   (coverage?.getBoundariesForRange(range) ?? []).filter(
     (boundary) =>
-      boundary.selectionPolicy === 'materialize' &&
+      (extend
+        ? boundary.selectionPolicy === 'materialize'
+        : isNonViewportMaterializeBoundary(boundary)) &&
       !selectedBoundaryIds.has(boundary.boundaryId)
   );
 
@@ -988,10 +996,16 @@ export const getPlainVerticalDOMCoveragePlugin = ({
   editor: ReactRuntimeEditor;
   event: VerticalPluginEvent;
   selection?: Range | null;
-}): PlainVerticalDOMCoveragePlugin | null => {
-  const reverse = getPlainVerticalPluginReverse(event);
+}): VerticalDOMCoverageMove | null => {
+  const reverse = getVerticalKeyReverse(event);
+  const extend = event.shiftKey;
 
-  if (reverse === null || !selection) {
+  if (
+    reverse === null ||
+    !selection ||
+    (!extend &&
+      !coverage?.getBoundaries().some(isNonViewportMaterializeBoundary))
+  ) {
     return null;
   }
 
@@ -1016,11 +1030,12 @@ export const getPlainVerticalDOMCoveragePlugin = ({
   if (
     getUnselectedMaterializeBoundariesForRange({
       coverage,
+      extend,
       range: focusMovementRange,
       selectedBoundaryIds,
     }).length > 0
   ) {
-    return { reverse, target: nextFocus };
+    return { extend, reverse, target: nextFocus };
   }
 
   if (
@@ -1045,10 +1060,11 @@ export const getPlainVerticalDOMCoveragePlugin = ({
 
   return getUnselectedMaterializeBoundariesForRange({
     coverage,
+    extend,
     range: boundaryMovementRange,
     selectedBoundaryIds,
   }).length > 0
-    ? { reverse, target: boundaryFocus }
+    ? { extend, reverse, target: boundaryFocus }
     : null;
 };
 

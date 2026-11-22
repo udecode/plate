@@ -107,7 +107,10 @@ import {
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { importUnreadPressCaret } from './runtime-selection-engine';
-import { readRuntimeSelection } from './runtime-selection-state';
+import {
+  readRuntimeSelection,
+  readRuntimeSelectionRange,
+} from './runtime-selection-state';
 import { attachEditableSelectionChangeListener } from './selection-change-listener';
 import { SelectionClaims } from './selection-claim';
 import { setEditableModelSelectionPreference } from './selection-controller';
@@ -1474,6 +1477,25 @@ export class EditableDOMRuntime {
         { placedAt: watched.placedAt }
       )
     );
+
+    const viewport = this.viewportRuntime;
+    const restored = readRuntimeSelectionRange(this.editorValue);
+    const restoredOutsideMountedBlocks =
+      viewport &&
+      restored &&
+      RangeApi.isExpanded(restored) &&
+      isSelectionViewportBacked(
+        restored,
+        viewport.mountedTopLevelNodeKeys,
+        viewport.mountedTopLevelRanges ?? null
+      );
+
+    if (restoredOutsideMountedBlocks) {
+      this.observeHistoryReplay(direction, () =>
+        viewport.scrollToPath?.(RangeApi.start(restored).path, 'auto')
+      );
+    }
+
     const replayChanges = watched.changes(receipt);
 
     this.observeHistoryReplay(direction, () =>

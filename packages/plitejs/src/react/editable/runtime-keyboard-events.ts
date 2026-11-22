@@ -6,6 +6,7 @@ import { getSelectionRoot } from '../../core/public-state';
 import {
   createDOMGeometryKernel,
   type DOMPhaseScheduler,
+  findDOMRootRuntime,
 } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import type { EditableKeyDownHandler } from '../components/editable';
@@ -25,6 +26,7 @@ import {
 import { getHiddenAnchor } from './dom-coverage-selection';
 import {
   isMountedPlainVerticalLargeDocumentMovement,
+  shouldModelOwnPlainVerticalDOMCoveragePlugin,
   shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
@@ -417,7 +419,13 @@ export const useRuntimeKeyboardEvents = ({
           isNativeVerticalKeyFastPathFullyMounted({
             viewportRuntime,
             editor,
-          }))
+          })) &&
+        !shouldModelOwnPlainVerticalDOMCoveragePlugin({
+          coverage: findDOMRootRuntime(event.currentTarget)?.domCoverage,
+          editor,
+          event,
+          selection: snapshotRange,
+        })
       ) {
         flushPendingNativeTextInput?.();
         const repair = moveByRenderedLines({
