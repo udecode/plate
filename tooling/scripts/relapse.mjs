@@ -17,15 +17,16 @@ import {
 const DAY = 86_400_000;
 const RECENT_DAYS = 14;
 const IDLE_DAYS = 7;
+const SHARED_RELAPSES = 2;
+const WORKERS = 6;
 // Follow-ups that settle one bad fix rework only that fix, so a card needs
 // relapses that rework at least two different earlier fixes.
 const CARD_RELAPSES = 3;
 const CARD_REWORKED_FIXES = 2;
-const WORKERS = 6;
 const FIX = /^fix(?:\([^)]*\))?!?:/;
 const PRODUCT = /^(?:packages\/[^/]+\/src\/|apps\/[^/]+\/src\/)/;
 const NOT_PRODUCT =
-  /\.(?:test|spec|slow)\.|\/__tests__\/|\/type-tests\/|\/__registry__\/|\/registry\/changelog\/|\/examples\//;
+  /\.(?:test|spec|slow)\.|\/__tests__\/|\/type-tests\/|\/__registry__\/|\/registry\/changelog\/|\/examples\/|\/generated\//;
 const CACHE_KEY = [FIX, PRODUCT, NOT_PRODUCT].map((re) => re.source).join(' ');
 
 const now = new Date();
@@ -360,10 +361,21 @@ const out = [
       ].join('\t')
     ),
 ];
+const cards = rows.filter((row) => row.call === 'card');
 for (const row of rows.filter((item) => item.call !== 'watch')) {
   const owned = [...new Set(row.list.flatMap((relapse) => relapse.files))].sort(
     (a, b) => a.localeCompare(b)
   );
+  const mine = new Set(row.list.map((relapse) => relapse.sha));
+  const shared =
+    row.call === 'card' &&
+    cards
+      .slice(0, cards.indexOf(row))
+      .map((other) => ({
+        id: other.id,
+        count: other.list.filter((relapse) => mine.has(relapse.sha)).length,
+      }))
+      .find((other) => other.count >= SHARED_RELAPSES);
   out.push(
     '',
     `== ${row.call.split(' ')[0]} ${row.id}: ${row.question}`,
@@ -377,6 +389,11 @@ for (const row of rows.filter((item) => item.call !== 'watch')) {
   if (row.idle.length) {
     out.push(
       `idle: ${row.idle.join(', ')} had no commit or decision log row for ${IDLE_DAYS} days`
+    );
+  }
+  if (shared) {
+    out.push(
+      `shares: ${shared.id} counts ${shared.count} of these relapses too, so this card waits on ${shared.id}'s verdict`
     );
   }
   for (const relapse of row.list) {
