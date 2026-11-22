@@ -14,7 +14,8 @@ docs:
 
 ## Features
 
-- Opens with `Mod+F` and seeds the query from an expanded editor selection.
+- Opens from its Find button or with `Mod+F`, and seeds the query from an
+  expanded editor selection.
 - Highlights every match without writing marks into the document or history.
 - Finds a match that runs across text leaves and inline elements within one
   block. Find searches text placed directly beside a block on its own.
@@ -51,9 +52,10 @@ const editor = createEditor({
 ```
 
 `BaseFindPlugin` owns the current query, matches, navigation and transient
-decoration data. `FindKit` supplies the shortcut, deferred input and accessible
-search bar. Its configured `decorate.attributes` supplies ordinary and active
-match styling. Each mounted Editable owns its open bar, draft, focus and scroll
+decoration data. `FindKit` supplies the Find button, the shortcut, deferred
+input and accessible search bar. The button sits where the bar opens and lets
+a touch screen without `Mod+F` open Find. The open bar takes the button's place.
+Its configured `decorate.attributes` supplies ordinary and active match styling. Each mounted Editable owns its open bar, draft, focus and scroll
 requests. Views of the same editor share committed queries and results; opening
 one bar does not open another. Open bars follow the committed query when they
 have no pending draft. Only the focused bar scrolls its view. Detaching a view
@@ -118,8 +120,9 @@ Custom renderers can style `data-find-match` and `data-find-active` attributes.
 
 ## Custom controls
 
-Use `useFind` in a component rendered by that Editable's `beforeEditable` or
-`afterEditable` slot. `FindKit` supplies the context through `wrapRoot`, so a
+`FindKit` already shows a Find button in each Editable. For another opening
+control, use `useFind` in a component rendered by that Editable's
+`beforeEditable` or `afterEditable` slot. `FindKit` supplies the context through `wrapRoot`, so a
 custom control addresses one mounted view without subscribing to search results:
 
 ```tsx

@@ -3212,6 +3212,7 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor.json",
+        "button",
         "input-group",
         "tooltip"
       ],

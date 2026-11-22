@@ -14,7 +14,7 @@ docs:
 
 ## 功能
 
-- 使用 `Mod+F` 打开，并可从当前文本选择填充查询。
+- 通过查找按钮或 `Mod+F` 打开，并可从当前文本选择填充查询。
 - 使用临时装饰高亮结果，不向文档或历史记录写入标记。
 - 匹配项可以跨越同一块内的文本叶和行内元素；直接与块并列的文本单独搜索。
 - 使用 `Enter`、`Shift+Enter` 或按钮切换结果。
@@ -47,8 +47,9 @@ const editor = createEditor({
 });
 ```
 
-`BaseFindPlugin` 管理查询、匹配结果、导航和临时装饰数据。`FindKit` 提供快捷键、
-延迟输入和可访问的搜索栏，并通过 `decorate.attributes` 配置普通与当前匹配项的高亮样式。查询状态位于文档和
+`BaseFindPlugin` 管理查询、匹配结果、导航和临时装饰数据。`FindKit` 提供查找按钮、
+快捷键、延迟输入和可访问的搜索栏。按钮位于搜索栏打开的位置，
+没有 `Mod+F` 的触屏设备可以用它打开查找。打开的搜索栏会取代按钮。`FindKit` 还通过 `decorate.attributes` 配置普通与当前匹配项的高亮样式。查询状态位于文档和
 历史记录之外。每个 Editable 独立管理搜索栏的开关、输入草稿、焦点和滚动请求。
 同一编辑器的视图共享已提交的查询和结果，但打开一个搜索栏不会打开另一个。
 没有待处理草稿的搜索栏会跟随共享查询；只有获得焦点的搜索栏会滚动其视图。
@@ -86,7 +87,7 @@ store 订阅者，并保留同一个 `matches` 数组。
 
 ## 自定义控件
 
-在对应 Editable 的 `beforeEditable` 或 `afterEditable` 插槽组件中使用
+`FindKit` 已在每个 Editable 中显示查找按钮。如需其他打开控件，在对应 Editable 的 `beforeEditable` 或 `afterEditable` 插槽组件中使用
 `useFind`。`FindKit` 通过 `wrapRoot` 提供上下文，使控件只操作一个挂载视图，
 无需订阅搜索结果：
 

@@ -28,6 +28,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-22-find-touch-opener",
+      "href": "/registry/changelog/2026-11-22-find-touch-opener.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open Find from a button on touch screens",
+      "change": {
+        "type": "source",
+        "date": "2026-11-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["find", "find-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-fix-equation-undo-after-save",
       "href": "/registry/changelog/2026-11-22-fix-equation-undo-after-save.json",
       "status": "draft",

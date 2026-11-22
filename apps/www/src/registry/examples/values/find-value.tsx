@@ -11,6 +11,9 @@ export const findValue: Value = (
       This is editable text that you can search. Find highlights every matching
       string without writing marks into the document.
     </hp>
-    <hp>Press Mod+F, then use Enter or Shift+Enter to move between matches.</hp>
+    <hp>
+      Press Mod+F or the Find button, then use Enter or Shift+Enter to move
+      between matches.
+    </hp>
   </fragment>
 );

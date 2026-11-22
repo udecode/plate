@@ -57,31 +57,27 @@ const SearchHighlightingExample = () => {
     () => ({
       id: 'search-highlighting',
       read: ({ entry: [node, path] }) => {
-        if (!search || !NodeApi.isText(node)) return [];
-
-        const ranges = [];
-        const haystack = node.text.toLocaleLowerCase();
-        const needle = search.toLocaleLowerCase();
-        let start = haystack.indexOf(needle);
-
-        while (start !== -1) {
-          const end = start + needle.length;
-
-          ranges.push({
-            attributes: {
-              className: 'editor-search-highlighting-highlight',
-              'data-cy': 'search-highlighted',
-            },
-            key: `search:${path.join('.')}:${start}:${end}`,
-            range: {
-              anchor: { offset: start, path },
-              focus: { offset: end, path },
-            },
-          });
-          start = haystack.indexOf(needle, end);
+        if (
+          !search ||
+          !NodeApi.isElement(node) ||
+          !node.children.every((child) => NodeApi.isText(child))
+        ) {
+          return [];
         }
 
-        return ranges;
+        return NodeApi.findTextRanges(node, search, {
+          caseSensitive: false,
+        }).map(({ anchor, focus }) => ({
+          attributes: {
+            className: 'editor-search-highlighting-highlight',
+            'data-cy': 'search-highlighted',
+          },
+          key: `search:${[...path, ...anchor.path].join('.')}:${anchor.offset}`,
+          range: {
+            anchor: { ...anchor, path: [...path, ...anchor.path] },
+            focus: { ...focus, path: [...path, ...focus.path] },
+          },
+        }));
       },
     }),
     [search]

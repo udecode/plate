@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-22-find-touch-opener",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-22-find-touch-opener.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open Find from a button on touch screens",
+  "targets": [
+    {
+      "name": "find",
+      "files": ["apps/www/src/registry/components/editor/find.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "find-demo",
+      "files": [
+        "apps/www/src/registry/examples/find-demo.tsx",
+        "apps/www/src/registry/examples/values/find-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-22-find-open-from-button-touch-78d2aaa9",
+      "kind": "fix",
+      "summary": "Show a Find button where the Find bar opens, so a touch screen without `Mod+F` can open Find. The demo text names the button.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["find", "find-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-22",
+          "entry": "2026-11-22-find-touch-opener",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -1,5 +1,5 @@
 {
-  "generation": "c84d226df9e34c2a57092e813a4e873318cd0f12ae7917e140641666a9fce6a1",
+  "generation": "44d40cddde5dde02c76c64b705a97521a8e7ce2cc5d97c21073c6178810bfe1b",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -3339,6 +3339,7 @@
           },
           "registryDependencies": [
             "@plate/editor",
+            "button",
             "input-group",
             "tooltip"
           ]
@@ -10935,6 +10936,7 @@
           },
           "registryDependencies": [
             "@plate/editor",
+            "button",
             "input-group",
             "tooltip"
           ]

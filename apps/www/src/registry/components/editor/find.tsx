@@ -13,6 +13,7 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   InputGroup,
   InputGroupAddon,
@@ -98,10 +99,34 @@ function FindRoot({ children, editableRef }: WrapRootProps) {
   return (
     <FindContext.Provider value={commands}>
       {children}
-      {state && (
+      {state ? (
         <FindBar draft={state.draft} inputRef={inputRef} setState={setState} />
+      ) : (
+        <FindButton onOpen={() => commands.open(getSelectedText(editor))} />
       )}
     </FindContext.Provider>
+  );
+}
+
+function FindButton({ onOpen }: { onOpen: () => void }) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            aria-label="Find"
+            className="absolute end-2 top-2 z-[60]"
+            onClick={onOpen}
+            onMouseDown={(event) => event.preventDefault()}
+            size="icon-sm"
+            variant="outline"
+          >
+            <Search aria-hidden />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Find</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
