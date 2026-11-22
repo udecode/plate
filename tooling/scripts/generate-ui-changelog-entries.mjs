@@ -2078,11 +2078,23 @@ function main() {
     args.outDir
   );
 
+  const readArtifact = (targetPath) =>
+    fs.existsSync(targetPath) ? fs.readFileSync(targetPath, 'utf-8') : null;
+  let changedPaths = [];
+
   if (args.write) {
+    const before = artifactOutputs.map((output) =>
+      readArtifact(output.targetPath)
+    );
     const { removedPaths } = writeRegistryChangelogEvents(artifactOutputs, {
       format: true,
       pruneOutDir: args.outDir,
     });
+    changedPaths = artifactOutputs
+      .filter(
+        (output, index) => readArtifact(output.targetPath) !== before[index]
+      )
+      .map((output) => output.targetPath);
 
     for (const removedPath of removedPaths) {
       console.log(`Removed stale ${relativePath(removedPath)}`);
@@ -2123,12 +2135,17 @@ function main() {
 
   if (args.check) return;
 
-  for (const output of outputs) {
-    console.log(relativePath(output.targetPath));
+  if (args.write) {
+    console.log(
+      `Changed ${changedPaths.length} ${changedPaths.length === 1 ? 'file' : 'files'}.`
+    );
   }
 
-  console.log(relativePath(path.join(args.outDir, 'index.json')));
-  console.log(relativePath(path.join(args.outDir, 'components.json')));
+  for (const targetPath of args.write
+    ? changedPaths
+    : artifactOutputs.map((output) => output.targetPath)) {
+    console.log(relativePath(targetPath));
+  }
 }
 
 if (
