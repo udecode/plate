@@ -17,12 +17,17 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getPlateCreateCommand } from '@/lib/plate-create';
+import {
+  createPlateCreateConfig,
+  getPlateCreateCommand,
+} from '@/lib/plate-create';
 
 export function SetupMCPDialog() {
   const [open, setOpen] = useState(false);
 
-  const createCommand = getPlateCreateCommand({ editor: 'editor-basic' });
+  const createCommand = getPlateCreateCommand(
+    createPlateCreateConfig({ editor: 'editor-basic' })
+  );
 
   const codeXConfig = `[mcp_servers.plate]\ncommand = "npx"\nargs = ["shadcn@latest", "mcp"]\n`;
 

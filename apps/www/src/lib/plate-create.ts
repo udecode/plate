@@ -1,9 +1,16 @@
 import {
+  DEFAULT_PRESET_CONFIG,
+  decodePreset,
+  encodePreset,
+  PRESET_BASE_COLORS,
+  PRESET_THEMES,
+  type PresetConfig,
+} from 'shadcn/preset';
+
+import {
   type PlateRegistryBase,
-  type PlateRegistryStyleName,
   PLATE_DEFAULT_REGISTRY_BASE,
   PLATE_REGISTRY_BASES,
-  PLATE_REGISTRY_STYLE_NAMES,
 } from './plate-registry-styles';
 
 export const PLATE_CREATE_EDITORS = [
@@ -27,33 +34,101 @@ export const PLATE_CREATE_EDITORS = [
 export type PlateCreateEditor = (typeof PLATE_CREATE_EDITORS)[number]['name'];
 
 export const PLATE_DEFAULT_CREATE_EDITOR: PlateCreateEditor = 'editor-ai';
-export const PLATE_DEFAULT_CREATE_STYLE: PlateRegistryStyleName = 'nova';
 
-export const PLATE_PRESET_CODES = {
-  nova: 'b0',
-  vega: 'bIkeymG',
-  maia: 'bbVJxYW',
-  lyra: 'buFywKm',
-  mira: 'b1D0dv72',
-  luma: 'b1VlIttI',
-  sera: 'b1oVxsfY',
-  rhea: 'b27GcrRo',
-} as const satisfies Record<PlateRegistryStyleName, string>;
+export type PlateCreateConfig = PresetConfig & {
+  base: PlateRegistryBase;
+  editor: PlateCreateEditor;
+};
 
-export function getPlateCreateCommand({
-  base = PLATE_DEFAULT_REGISTRY_BASE,
-  editor = PLATE_DEFAULT_CREATE_EDITOR,
-  style = PLATE_DEFAULT_CREATE_STYLE,
-}: {
-  base?: PlateRegistryBase;
-  editor?: PlateCreateEditor;
-  style?: PlateRegistryStyleName;
-} = {}) {
-  return `npx shadcn@latest create @plate/${editor} --preset ${PLATE_PRESET_CODES[style]} --base ${base}`;
+type BaseColor = PresetConfig['baseColor'];
+type Theme = PresetConfig['theme'];
+
+const isBaseColor = (value: string) =>
+  PRESET_BASE_COLORS.some((baseColor) => baseColor === value);
+
+function getPlateCreateThemes(baseColor: BaseColor): Theme[] {
+  return PRESET_THEMES.filter(
+    (theme) => theme === baseColor || !isBaseColor(theme)
+  );
 }
 
-export function getShadcnCreateUrl(style: PlateRegistryStyleName) {
-  return `https://ui.shadcn.com/create?preset=${PLATE_PRESET_CODES[style]}`;
+function getPlateCreateRadius({
+  radius,
+  style,
+}: PresetConfig): PresetConfig['radius'] {
+  if (style === 'lyra' || style === 'sera') return 'none';
+  if (style === 'rhea' && radius === 'large') return 'default';
+
+  return radius;
+}
+
+// shadcn's create page normalizes its params with these pairings before it
+// encodes them, so Plate writes the same code that page writes.
+function normalizePlateCreateConfig(
+  config: PlateCreateConfig
+): PlateCreateConfig {
+  const themes = getPlateCreateThemes(config.baseColor);
+  const fits = (color: string | undefined) =>
+    themes.some((theme) => theme === color);
+
+  return {
+    ...config,
+    chartColor: fits(config.chartColor) ? config.chartColor : config.baseColor,
+    fontHeading:
+      config.fontHeading === config.font ? 'inherit' : config.fontHeading,
+    menuAccent: config.menuColor.endsWith('-translucent')
+      ? 'subtle'
+      : config.menuAccent,
+    radius: getPlateCreateRadius(config),
+    theme: fits(config.theme) ? config.theme : config.baseColor,
+  };
+}
+
+export function createPlateCreateConfig(
+  config: Partial<PlateCreateConfig> = {}
+): PlateCreateConfig {
+  return normalizePlateCreateConfig({
+    ...DEFAULT_PRESET_CONFIG,
+    base: PLATE_DEFAULT_REGISTRY_BASE,
+    editor: PLATE_DEFAULT_CREATE_EDITOR,
+    ...config,
+  });
+}
+
+export const PLATE_DEFAULT_CREATE_CONFIG = createPlateCreateConfig();
+
+export function readPlateCreateConfig(params: {
+  base?: string | null;
+  editor?: string | null;
+  preset?: string | null;
+}): PlateCreateConfig {
+  return createPlateCreateConfig({
+    ...(params.preset ? decodePreset(params.preset) : null),
+    ...(params.base && isPlateCreateBase(params.base)
+      ? { base: params.base }
+      : null),
+    ...(params.editor && isPlateCreateEditor(params.editor)
+      ? { editor: params.editor }
+      : null),
+  });
+}
+
+export function getPlateCreatePreset({
+  base: _base,
+  editor: _editor,
+  ...preset
+}: PlateCreateConfig) {
+  return encodePreset(preset);
+}
+
+export function getPlateCreateCommand(
+  config: PlateCreateConfig = PLATE_DEFAULT_CREATE_CONFIG
+) {
+  return `npx shadcn@latest create @plate/${config.editor} --preset ${getPlateCreatePreset(config)} --base ${config.base}`;
+}
+
+export function getShadcnCreateUrl(config: PlateCreateConfig) {
+  return `https://ui.shadcn.com/create?preset=${getPlateCreatePreset(config)}&base=${config.base}`;
 }
 
 export function isPlateCreateEditor(value: string): value is PlateCreateEditor {
@@ -62,10 +137,4 @@ export function isPlateCreateEditor(value: string): value is PlateCreateEditor {
 
 export function isPlateCreateBase(value: string): value is PlateRegistryBase {
   return PLATE_REGISTRY_BASES.includes(value as PlateRegistryBase);
-}
-
-export function isPlateCreateStyle(
-  value: string
-): value is PlateRegistryStyleName {
-  return PLATE_REGISTRY_STYLE_NAMES.includes(value as PlateRegistryStyleName);
 }

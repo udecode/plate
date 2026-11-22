@@ -8,39 +8,35 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
+  createPlateCreateConfig,
   getPlateCreateCommand,
+  getPlateCreatePreset,
   getShadcnCreateUrl,
-  type PlateCreateEditor,
+  type PlateCreateConfig,
   PLATE_CREATE_EDITORS,
-  PLATE_DEFAULT_CREATE_EDITOR,
-  PLATE_DEFAULT_CREATE_STYLE,
-  PLATE_PRESET_CODES,
+  PLATE_DEFAULT_CREATE_CONFIG,
 } from '@/lib/plate-create';
 import {
-  type PlateRegistryBase,
   type PlateRegistryStyleName,
-  PLATE_DEFAULT_REGISTRY_BASE,
   PLATE_REGISTRY_BASES,
   PLATE_REGISTRY_STYLE_NAMES,
 } from '@/lib/plate-registry-styles';
 
 export function CreateClient() {
-  const [base, setBase] = React.useState<PlateRegistryBase>(
-    PLATE_DEFAULT_REGISTRY_BASE
-  );
-  const [editor, setEditor] = React.useState<PlateCreateEditor>(
-    PLATE_DEFAULT_CREATE_EDITOR
-  );
-  const [style, setStyle] = React.useState<PlateRegistryStyleName>(
-    PLATE_DEFAULT_CREATE_STYLE
-  );
+  const [config, setConfig] = React.useState(PLATE_DEFAULT_CREATE_CONFIG);
   const [copied, setCopied] = React.useState(false);
-  const command = getPlateCreateCommand({ base, editor, style });
+  const { base, editor, style } = config;
+  const preset = getPlateCreatePreset(config);
+  const command = getPlateCreateCommand(config);
   const previewUrl = `/create-preview?${new URLSearchParams({
     base,
     editor,
-    style,
+    preset,
   })}`;
+
+  function update(patch: Partial<PlateCreateConfig>) {
+    setConfig((current) => createPlateCreateConfig({ ...current, ...patch }));
+  }
 
   async function copyCommand() {
     await navigator.clipboard.writeText(command);
@@ -62,7 +58,7 @@ export function CreateClient() {
           </p>
           <a
             className="inline-flex items-center gap-1.5 text-sm underline underline-offset-4"
-            href={getShadcnCreateUrl(style)}
+            href={getShadcnCreateUrl(config)}
             rel="noreferrer"
             target="_blank"
           >
@@ -80,7 +76,7 @@ export function CreateClient() {
                   key={option}
                   type="button"
                   variant={base === option ? 'default' : 'outline'}
-                  onClick={() => setBase(option)}
+                  onClick={() => update({ base: option })}
                 >
                   {option === 'base' ? 'Base UI' : 'Radix'}
                 </Button>
@@ -95,7 +91,7 @@ export function CreateClient() {
               id="plate-create-style"
               value={style}
               onChange={(event) =>
-                setStyle(event.target.value as PlateRegistryStyleName)
+                update({ style: event.target.value as PlateRegistryStyleName })
               }
             >
               {PLATE_REGISTRY_STYLE_NAMES.map((option) => (
@@ -105,7 +101,7 @@ export function CreateClient() {
               ))}
             </select>
             <p className="font-mono text-xs text-muted-foreground">
-              Preset {PLATE_PRESET_CODES[style]}
+              Preset {preset}
             </p>
           </div>
 
@@ -118,7 +114,7 @@ export function CreateClient() {
                   type="button"
                   className="w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted data-[selected=true]:border-primary data-[selected=true]:bg-muted"
                   data-selected={editor === option.name}
-                  onClick={() => setEditor(option.name)}
+                  onClick={() => update({ editor: option.name })}
                 >
                   <span className="block text-sm font-medium">
                     {option.title}

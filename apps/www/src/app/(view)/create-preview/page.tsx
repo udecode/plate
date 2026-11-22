@@ -1,13 +1,6 @@
 import * as React from 'react';
 
-import {
-  isPlateCreateBase,
-  isPlateCreateEditor,
-  isPlateCreateStyle,
-  PLATE_DEFAULT_CREATE_EDITOR,
-  PLATE_DEFAULT_CREATE_STYLE,
-} from '@/lib/plate-create';
-import { PLATE_DEFAULT_REGISTRY_BASE } from '@/lib/plate-registry-styles';
+import { readPlateCreateConfig } from '@/lib/plate-create';
 
 import { CreatePreview } from './create-preview';
 
@@ -29,28 +22,22 @@ async function CreatePreviewContent({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const requestedBase = typeof params.base === 'string' ? params.base : '';
-  const requestedEditor =
-    typeof params.editor === 'string' ? params.editor : '';
-  const requestedStyle = typeof params.style === 'string' ? params.style : '';
+  const read = (name: string) => {
+    const value = params[name];
+
+    return typeof value === 'string' ? value : null;
+  };
+  const config = readPlateCreateConfig({
+    base: read('base'),
+    editor: read('editor'),
+    preset: read('preset'),
+  });
 
   return (
     <CreatePreview
-      base={
-        isPlateCreateBase(requestedBase)
-          ? requestedBase
-          : PLATE_DEFAULT_REGISTRY_BASE
-      }
-      editor={
-        isPlateCreateEditor(requestedEditor)
-          ? requestedEditor
-          : PLATE_DEFAULT_CREATE_EDITOR
-      }
-      style={
-        isPlateCreateStyle(requestedStyle)
-          ? requestedStyle
-          : PLATE_DEFAULT_CREATE_STYLE
-      }
+      base={config.base}
+      editor={config.editor}
+      style={config.style}
     />
   );
 }
