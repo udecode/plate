@@ -1,5 +1,117 @@
 # plite
 
+## 54.0.0-beta.3
+
+### Patch Changes
+
+- [`cccbe29`](https://github.com/udecode/plate/commit/cccbe29c2ef277001e4bc9c1aac92e8e5b793be0) by [@zbeyens](https://github.com/zbeyens) – Fix Next.js production builds with Turbopack's default scope hoisting, where a page with an editor failed to prerender with `Editor read registrations must be created by the plugin read factory`. Apps no longer need `experimental.turbopackScopeHoisting: false`.
+
+- [`18448e7`](https://github.com/udecode/plate/commit/18448e77a2959b390df58552c551e36a9d548225) by [@zbeyens](https://github.com/zbeyens) – Fix a delete into a code block turning all of its lines into text of the block before it. Delete at the end of the block before joins only the first code line, and the code block keeps its other lines and its language. A range delete that covers the whole block before removes that block and keeps the code block whole.
+
+- [`18448e7`](https://github.com/udecode/plate/commit/18448e77a2959b390df58552c551e36a9d548225) by [@zbeyens](https://github.com/zbeyens) – Fix a click right of a code line putting the caret at another line's end or at the block's start. A click past a line's end now puts the caret at that line's end, and a click on an empty line puts it on that line.
+
+- [`44ce4cb`](https://github.com/udecode/plate/commit/44ce4cb2dd551e17acd58f7a49aa211f07b751bd) by [@zbeyens](https://github.com/zbeyens) – Fix Backspace and Delete next to mentions, inline voids and inlines a caret may not stop in
+
+  - Word Backspace and word Delete count a mention or another inline void as one word, and remove only that atom with the spaces between it and the caret.
+  - Backspace and Delete inside or at the edge of a writable inline with `selectable: false` remove one character, as they do in a link.
+  - Delete that stops before a read-only inline leaves the caret before it, so the next Delete removes it and typing works.
+  - Backspace and Delete beside a block with `selectable: false` remove it whole even when it holds a mention.
+
+- [`77ca905`](https://github.com/udecode/plate/commit/77ca90539f73cd6bddbcd4c7fb0c4a1dab584123) by [@zbeyens](https://github.com/zbeyens) – Open closed content, such as a closed details, when a block drag rests on its block for 800 ms, so the drop can land inside. The content's `onMaterialize` callback runs with the new `drag` reason; ignore that reason to keep the content closed during a drag.
+
+- [`1861fc4`](https://github.com/udecode/plate/commit/1861fc48528693ece514c4d3cc775383ada4564b) by [@zbeyens](https://github.com/zbeyens) – Fix the range a paste or a transfer copy returns with the authored plugin in Editing, which started one character late when the pasted text joined the text before it.
+
+- [`eff0999`](https://github.com/udecode/plate/commit/eff0999e8ba281964882aa5f776c7fc04d0f68c1) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Return `stale` from an external-text view's `dispatch` when the editor refuses the edit, such as one Suggesting cannot record, and reset the view to the editor's text.
+  - Keep the undo boundary when the editor refuses an external-text edit, so the next edit after a composition gets its own undo step.
+
+- [`7ca1ad5`](https://github.com/udecode/plate/commit/7ca1ad5d3a5b6dd6fa812b60f9047729a0556fec) by [@zbeyens](https://github.com/zbeyens) – Fix ArrowDown and ArrowUp in Firefox into a block that scrolls, such as a code block with `overflow-x: auto`, which put the caret at the end of the block instead of on its nearest line
+
+- [`022a98b`](https://github.com/udecode/plate/commit/022a98b252147243b9650a4178e574952533a9c0) by [@zbeyens](https://github.com/zbeyens) – Run a plugin's `update` factory the first time an update or a correction reads its group, not at the start of every update, so updates that never read a group skip it
+
+- [`0b0f932`](https://github.com/udecode/plate/commit/0b0f9326a08ad366d4f7dd1ad43cbcdf360a472f) by [@zbeyens](https://github.com/zbeyens) – Fix pasting blocks at a caret inside a link. A quote pasted in the middle of a link in a quoted paragraph no longer splits the quote in three, and blocks pasted at a link's start or end land just outside the link instead of joining into one line.
+
+- [`8623edf`](https://github.com/udecode/plate/commit/8623edf160e107071a9f2503cfd6fe4af9f194a7) by [@zbeyens](https://github.com/zbeyens) – Fix the caret after pasting a link right before another link, or an inline void such as a mention right before another inline void, so a typed letter lands between the two
+
+- [`d472a04`](https://github.com/udecode/plate/commit/d472a04e8a5bcec2e90b3329046440cc2626bbf9) by [@zbeyens](https://github.com/zbeyens) – Fix the caret and selection in mixed content and around marked controls
+
+  - Home and End stay on the text before or after a block nested in a text block.
+  - After a command removes a text element's only text, a typed letter lands in that element.
+  - A click after a double-click in decorated text, such as a lint underline, puts the caret at the clicked offset.
+  - A read-only editor keeps its selection painted after a command that re-renders it, such as Add comment.
+  - A triple-click selects only the clicked line in a code block or a block with line breaks, and only the clicked text beside a nested block.
+  - A backward selection stays backward after typing over it and undoing.
+  - The selection stays painted when focus moves to a marked control in Firefox or Safari.
+
+- [`7ca1ad5`](https://github.com/udecode/plate/commit/7ca1ad5d3a5b6dd6fa812b60f9047729a0556fec) by [@zbeyens](https://github.com/zbeyens) – Fix Undo and Redo pressed in an independent editor nested in a void element, which ran the outer editor's history instead of its own
+
+- [`674a565`](https://github.com/udecode/plate/commit/674a565e3f73ed1984c808533e3bf6e294a01b86) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix a paste into a code block, or any element whose schema allows one text, being refused in Editing and in your own pending code block in Suggesting.
+  - Fix a letter or newline typed in Editing at the start or end of a pending code block, or in an empty one, being refused. The text now joins the block's suggestion.
+  - Fix a letter or paste in Editing being refused in a code block whose text holds another author's pending format, such as a color.
+  - Refuse typing, Enter, paste, Backspace, Delete and mark toggles in a code block whose deletion is pending, in Suggesting and Editing, instead of landing the edit beside the block or in its struck text. The refusal reaches `subscribeRefusals` as `unrepresentable`. Decide the block's pending deletion first.
+
+- [`60c44c5`](https://github.com/udecode/plate/commit/60c44c532a70d967ec322e76bdfe07d15035a947) by [@zbeyens](https://github.com/zbeyens) – Fix `RangeGeometry.clipRect` and `visible` for an Editable whose text paints outside its own box without clipping, such as a board's. A popup placed by `useSelectionGeometry`, such as the floating toolbar, now shows over that text, and `useEditableClip` cuts by the same area.
+
+- [`16716a6`](https://github.com/udecode/plate/commit/16716a6ba1bccb566d9943d83c1a52d2d022b380) by [@zbeyens](https://github.com/zbeyens) – Give each pasted or duplicated element a new value for every unique property another property's `references` names, such as a field id, and point each copied reference at the copy. A reference whose target the paste or duplicate drops keeps naming the original.
+
+- [`70560ee`](https://github.com/udecode/plate/commit/70560ee1527dc29f995e9002bdf76e415db3a921) by [@zbeyens](https://github.com/zbeyens) – Fix a property write in the same update as a paste, a document replace or a content completion, such as a plugin completing a pasted field's id, which landed on another node or was lost when the authored plugin recorded the update
+
+- [`94e8d60`](https://github.com/udecode/plate/commit/94e8d601632fb77df76472a2e88416cce0882af6) by [@zbeyens](https://github.com/zbeyens) – Fix a closed quote pasted at a caret inside a quoted paragraph losing the text after the caret. A table pasted at a caret inside a table cell keeps the cell's text after the caret too.
+
+- [`19995c7`](https://github.com/udecode/plate/commit/19995c74c45639dca5897295c263343cca9abde3) by [@zbeyens](https://github.com/zbeyens) – Add `namedBy` to a schema record set, so a set declares which set's records point at its records through a `names` function that lists the ids a record points at.
+
+  - An editor created on a saved value leaves out the records of that set that nothing points at and `keep` does not accept, so the next save drops them.
+  - `tx.history.restore` stops undo or redo before a step whose replay would point a record at a missing one.
+  - Undo and redo skip writes to a record set the current schema retains.
+
+- [`02007e6`](https://github.com/udecode/plate/commit/02007e6cc93732f7a318eb4554a54b7e11e361f5) by [@zbeyens](https://github.com/zbeyens) – Open a document's saved records faster. Each record loads once as text and parses the first time something reads it. Records read back from `editor.read.value()` now always list their keys in sorted order, as records written after the open already did
+
+- [`806ba41`](https://github.com/udecode/plate/commit/806ba41d773c40f130f80f67674c8f026e33c78c) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Return `{ reason, status: 'blocked' }` from `editor.api.history.undo()` and `redo()` when the editor refuses the replay, instead of throwing, and pass it to the Editable's `onHistoryReplay` for a keyboard undo or redo. The step stays in history.
+  - Fix history left busy after a session undo or redo, such as a comment thread restore.
+  - Send an edit that a plugin makes in reaction to a remote Yjs import or another collaboration update to the other peers.
+  - Fix the authored plugin's `subscribeRefusals` passing on refusals from other plugins, such as a node write veto.
+
+- [`60c44c5`](https://github.com/udecode/plate/commit/60c44c532a70d967ec322e76bdfe07d15035a947) by [@zbeyens](https://github.com/zbeyens) – Remove `useSelectionView` from `plitejs/react`. Use `useCaretEditor()` for the editor of the root that holds the caret.
+
+- [`67de7de`](https://github.com/udecode/plate/commit/67de7de401b603c4a71e4283587286517348b093) by [@zbeyens](https://github.com/zbeyens) – Make `useRootEditor()` and `useCaretEditor()` return one editor per root under an `EditorRoot`, so a lock set through that editor holds after the caret leaves its root and comes back. A renderer inside an editing area, such as a shape on a board, gets an editor of its own, so a lock set from outside never reaches it. The editor's `isFocused()`, `isComposing()`, `focus()` and `blur()` act on the editing area that shows its root, and throw while none does.
+
+- [`5c0aff5`](https://github.com/udecode/plate/commit/5c0aff5d261697b1e237946af31fc5230ad72247) by [@zbeyens](https://github.com/zbeyens) – Add `editor.read.schema.canPlace(nodes, { at, replace, root })`, which answers whether `nodes` can land at a slot, or take the place of the child there, under the rule `tx.blocks.insert` enforces. A menu can disable what the parent cannot hold.
+
+- [`b294cdf`](https://github.com/udecode/plate/commit/b294cdf5ebc9fd62d70061c426d885a407491c92) by [@zbeyens](https://github.com/zbeyens) – Fix selector hooks calling a custom `equalityFn` with `null` before the first result. `equalityFn` now takes `(a: T, b: T) => boolean`.
+
+- [`24651f9`](https://github.com/udecode/plate/commit/24651f9a8b2b18aa4c688372f5439939140c77d2) by [@zbeyens](https://github.com/zbeyens) – Fix `tx.blocks.toggle(props, { wrap: true })` wrapping each selected block in its own wrapper. Adjacent selected blocks with the same parent now share one wrapper.
+
+- [`97828f2`](https://github.com/udecode/plate/commit/97828f2d8cd638eb7cfb04b3af52672a4421a515) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix `unique.holder` in an authored preview or a projected document view returning the stored document's key and path, or nothing. A read that finds a node by a unique id, such as a board's `read.board.shape`, now works there.
+
+- [`59aa10b`](https://github.com/udecode/plate/commit/59aa10b3a3eef9563da6922c2af40f152d3ea840) by [@zbeyens](https://github.com/zbeyens) – Speed up typing in documents whose schema declares a `unique` property, such as block ids.
+
+- [`25fc8f2`](https://github.com/udecode/plate/commit/25fc8f20106154152fc9ccf8c52c12a72034aee8) by [@zbeyens](https://github.com/zbeyens) – Make `editor.plugin(Plugin)` on a React view editor, such as the one `useRootEditor()` returns, return the same object on every call, so a hook that lists it as a dependency no longer runs again on each render.
+
+- [`1946357`](https://github.com/udecode/plate/commit/19463579aa5562d0a10dbf5e84c8736c5b902d41) by [@zbeyens](https://github.com/zbeyens) – Let `setEditorViewing()` take the editor `createEditor()` returns instead of throwing. That editor has no Mode apart from its lock, so Viewing locks it and leaving Viewing unlocks it, as `setEditorReadOnly()` does.
+
+- [`014d1c8`](https://github.com/udecode/plate/commit/014d1c8b9deca538c10d053383d71d865d2cfd62) by [@zbeyens](https://github.com/zbeyens) – Fix selections across blocks a virtualized editor has not mounted, and arrow keys beside hidden content
+
+  - A Shift-click or Shift+ArrowDown range that reaches unmounted blocks stays selected, and the next letter replaces it.
+  - Undo that restores a range far above the viewport scrolls to it and shows it selected.
+  - ArrowUp and ArrowDown after a click move into content an app hides, such as a collapsed accordion, instead of skipping past it.
+
+- [`faf5cc3`](https://github.com/udecode/plate/commit/faf5cc3847d5afbf10c948782659bf02b1bdcc17) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix Backspace after a triple-click putting the caret at the end of the block above. The caret now starts the block that moves up.
+  - Fix Backspace after a triple-click on the last block, a block next to a table or a table's only cell removing it. The block or cell now stays, empty, with the caret in it.
+  - Fix Backspace over whole blocks selected as text replacing them with a paragraph. The first block stays, so a checklist item keeps its checkbox.
+  - Fix typing over several whole blocks giving the new text the default block type. The text now takes the first block's type.
+
+- [`70d5dc5`](https://github.com/udecode/plate/commit/70d5dc57d61365fc0a03a11bdc6d293e15e9f2b6) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `compare` text changes to mark whole words instead of letters, so "like" to "love" is one change instead of "ik" to "ov"
+
 ## 54.0.0-beta.2
 
 ## 0.124.1
