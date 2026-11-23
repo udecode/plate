@@ -151,12 +151,20 @@ const entryLines = (entries) =>
     .map((entry) => `  ${failureKey(entry)} (owner ${entry.owner})`)
     .join('\n');
 
-export const expectedVerdict = ({ onlyFiles, output, root, status, step }) => {
+// readOutput runs only for a step the list names, because a long formal
+// check's log can pass the length of a string Node can hold.
+export const expectedVerdict = ({
+  onlyFiles,
+  readOutput,
+  root,
+  status,
+  step,
+}) => {
   const listed = openExpectedFailures(root).filter(
     (entry) => entry.step === step
   );
   if (listed.length === 0) return { status };
-  const failures = failuresOf(output, root);
+  const failures = failuresOf(readOutput(), root);
   const cleared = listed.filter(
     (entry) =>
       (!onlyFiles || onlyFiles.includes(entry.file)) &&

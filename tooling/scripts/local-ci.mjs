@@ -370,7 +370,7 @@ const passes = (run, step, onlyFiles) =>
   run.ok ||
   expectedVerdict({
     onlyFiles,
-    output: stepLog(run.log, step),
+    readOutput: () => stepLog(run.log, step),
     root: worktree,
     status: 1,
     step,

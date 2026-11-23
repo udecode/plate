@@ -45,6 +45,7 @@ import {
   commonSuffixLength,
   encodeNodes,
   getPreparedDocumentSlice,
+  openToken,
   type JsonEditorValue,
   type JsonNode,
 } from '../change/tokens';
@@ -3231,8 +3232,20 @@ export const compileSliceFitter = <V extends Value>(
           )
         );
       };
+      const splitTailOf = (target: FitOpenToken, node: Element) =>
+        openToken(
+          'element',
+          api.elementPropertiesForSplitUnder(
+            node,
+            getElementAncestors(
+              rootChildren,
+              getDefined(openTokenPath.get(target))
+            ),
+            root
+          )
+        );
 
-      const getKeptTargetBlock = (tokenAt: number, token: FitToken) => {
+      const getTargetSplitTail = (tokenAt: number, token: FitToken) => {
         const depth = stack.length;
         const target = localEndContext[depth];
         const node = target && openTokenNode(target);
@@ -3247,15 +3260,15 @@ export const compileSliceFitter = <V extends Value>(
             openContextsMatch(open, localEndContext[index])
           ) &&
           parentAdmitsCopyAfter(target)
-          ? target
+          ? splitTailOf(target, node)
           : null;
       };
 
       for (const [tokenAt, token] of encoded.tokens.entries()) {
         const appended = output.length;
-        const keptTarget = getKeptTargetBlock(tokenAt, token);
+        const splitTail = getTargetSplitTail(tokenAt, token);
 
-        if (keptTarget ? !openFitted(keptTarget) : !process(token, 'slice')) {
+        if (splitTail ? !openFitted(splitTail) : !process(token, 'slice')) {
           return null;
         }
         if (output.length > appended) {

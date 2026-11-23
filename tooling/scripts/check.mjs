@@ -1497,7 +1497,7 @@ const main = async () => {
     if (!interrupted && !writing) {
       const verdict = expectedVerdict({
         onlyFiles: scope.tests,
-        output: readFileSync(log, 'utf-8'),
+        readOutput: () => readFileSync(log, 'utf-8'),
         root,
         status: result.status,
         step: step.name,
