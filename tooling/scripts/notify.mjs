@@ -178,6 +178,8 @@ const recipients = ({ team, role }) => ({
 const message = (recipient, text) => ({
   content: [recipient.mention, text].filter(Boolean).join(' '),
   allowed_mentions: recipient.allowedMentions,
+  // Discord's SUPPRESS_EMBEDS: a beta link's preview card buries the message.
+  flags: 4,
 });
 
 const checkLength = (messages) => {
