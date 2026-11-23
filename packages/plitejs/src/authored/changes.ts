@@ -1,5 +1,6 @@
 import { jsonEqual } from '../core/change/json';
 import type { JsonEditorValue } from '../core/change/tokens';
+import { canonicalJsonKey } from '../core/change/transform';
 import type { ContentSlice } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
@@ -12,6 +13,8 @@ import type {
   AuthoredChangeDetails,
   AuthoredChangeKind,
   AuthoredChangePart,
+  AuthoredGroupDetails,
+  AuthoredGroupPart,
 } from './types';
 
 type Node = Readonly<Record<string, unknown>> & {
@@ -128,8 +131,9 @@ const isContent = (mark: AuthoredMark) =>
 
 const writesNothing = (mark: AuthoredMark) =>
   mark.kind === 'format' &&
-  mark.write.kind === 'set' &&
-  jsonEqual(mark.write.value, mark.before);
+  (mark.write.kind === 'set'
+    ? jsonEqual(mark.write.value, mark.before)
+    : !Object.hasOwn(mark, 'before') && mark.over === undefined);
 
 /** @internal */
 export const continues = (end: Occurrence, first: Occurrence) =>
@@ -138,27 +142,27 @@ export const continues = (end: Occurrence, first: Occurrence) =>
     end.root === first.root &&
     isInside(end.path, first.path));
 
-// Insert and delete marks run through every descendant, so the topmost
-// marked node stands for the content under it.
-const covering = (list: readonly Occurrence[]) => {
-  const out: Occurrence[] = [];
-  let top: Occurrence | null = null;
+const nestedContent = () => {
+  const top = new Map<'delete' | 'insert', Occurrence>();
 
-  for (const occurrence of list) {
+  return (occurrence: Occurrence) => {
+    const { kind } = occurrence.mark;
+
+    if (kind !== 'delete' && kind !== 'insert') return false;
+
+    const above = top.get(kind);
+
     if (
-      top &&
-      isContent(occurrence.mark) &&
-      occurrence.mark.kind === top.mark.kind &&
-      occurrence.root === top.root &&
-      top.path.every((index, depth) => occurrence.path[depth] === index)
+      above &&
+      occurrence.root === above.root &&
+      above.path.every((index, depth) => occurrence.path[depth] === index)
     ) {
-      continue;
+      return true;
     }
-    out.push(occurrence);
-    if (isContent(occurrence.mark)) top = occurrence;
-  }
+    top.set(kind, occurrence);
 
-  return out;
+    return false;
+  };
 };
 
 const FNV_OFFSET = 0x81_1c_9d_c5;
@@ -332,11 +336,13 @@ export const changeOf = (
   id: string,
   list: readonly Occurrence[]
 ): AuthoredChange => {
+  const writes = list.filter(({ mark }) => !writesNothing(mark));
   const kinds = new Set(
-    list.flatMap(({ mark }) => (writesNothing(mark) ? [] : [KINDS[mark.kind]]))
+    (writes.length > 0 ? writes : list).map(({ mark }) => KINDS[mark.kind])
   );
   const ranges: Range[] = [];
-  const covered = covering(list);
+  const isNested = nestedContent();
+  const covered = list.filter((occurrence) => !isNested(occurrence));
 
   covered.forEach((occurrence, index) => {
     const range = rangeOf(occurrence);
@@ -511,14 +517,16 @@ export type AuthoredChangeLookup = Readonly<{
   occurrences: Pick<ReadonlyMap<string, readonly Occurrence[]>, 'get'>;
 }>;
 
-export const readAuthoredDetails = (
-  index: AuthoredChangeLookup,
-  id: string
-): AuthoredChangeDetails | null => {
-  const change = index.changes.get(id);
+// One change can mark a leaf both deleted and inserted, and an empty text
+// inserted at the end of a deleted block touches it from inside.
+const apart = (left: Occurrence, right: Occurrence) =>
+  left.path.join(',') !== right.path.join(',') &&
+  !isInside(left.path, right.path) &&
+  !isInside(right.path, left.path);
 
-  if (!change) return null;
-
+// Runs close at each change's edge, while a deletion stays open across it so
+// the next change's touching insertion replaces it.
+const foldParts = (index: AuthoredChangeLookup, ids: readonly string[]) => {
   const parts: AuthoredChangePart[] = [];
   const open: {
     deletionEnd: Occurrence | null;
@@ -543,7 +551,8 @@ export const readAuthoredDetails = (
       previous?.kind === 'content' &&
       previous.action === 'delete' &&
       deletionEnd &&
-      touches(deletionEnd, run.first)
+      touches(deletionEnd, run.first) &&
+      apart(deletionEnd, run.first)
     ) {
       parts[parts.length - 1] = {
         ...previous,
@@ -564,65 +573,114 @@ export const readAuthoredDetails = (
     open.run = null;
   };
 
-  for (const occurrence of covering(index.occurrences.get(id) ?? [])) {
-    const { mark, node, path } = occurrence;
+  const isNested = nestedContent();
 
-    if (writesNothing(mark)) continue;
-    if (mark.kind === 'insert' || mark.kind === 'delete') {
-      const range = rangeOf(occurrence);
+  for (const id of ids) {
+    for (const occurrence of index.occurrences.get(id) ?? []) {
+      const { mark, node, path } = occurrence;
 
-      const { run } = open;
+      if (isNested(occurrence) || writesNothing(mark)) continue;
+      if (mark.kind === 'insert' || mark.kind === 'delete') {
+        const range = rangeOf(occurrence);
 
-      if (run?.action === mark.kind && touches(run.last, occurrence)) {
-        run.nodes.push(node);
-        run.last = occurrence;
-        run.range = { anchor: run.range.anchor, focus: range.focus };
+        const { run } = open;
+
+        if (run?.action === mark.kind && touches(run.last, occurrence)) {
+          run.nodes.push(node);
+          run.last = occurrence;
+          run.range = { anchor: run.range.anchor, focus: range.focus };
+          continue;
+        }
+        flush();
+        open.run = {
+          action: mark.kind,
+          first: occurrence,
+          last: occurrence,
+          nodes: [node],
+          range,
+        };
         continue;
       }
       flush();
-      open.run = {
-        action: mark.kind,
-        first: occurrence,
-        last: occurrence,
-        nodes: [node],
-        range,
-      };
-      continue;
+      if (mark.kind === 'format') {
+        parts.push({
+          after:
+            mark.write.kind === 'set' ? { [mark.key]: mark.write.value } : {},
+          before: Object.hasOwn(mark, 'before')
+            ? { [mark.key]: mark.before }
+            : {},
+          kind: 'properties',
+          nodeKind: isText(node) ? 'text' : 'element',
+          path,
+        });
+      } else if (
+        mark.kind === 'join' ||
+        mark.kind === 'joined' ||
+        mark.kind === 'split'
+      ) {
+        parts.push({
+          action: mark.kind === 'joined' ? 'join' : mark.kind,
+          at: rangeOf(occurrence).anchor,
+          kind: 'boundary',
+        });
+      } else {
+        parts.push({
+          action: mark.kind,
+          kind: 'enclosure',
+          path,
+          type: typeof node.type === 'string' ? node.type : '',
+        });
+      }
     }
     flush();
-    if (mark.kind === 'format') {
-      parts.push({
-        after:
-          mark.write.kind === 'set' ? { [mark.key]: mark.write.value } : {},
-        before: Object.hasOwn(mark, 'before')
-          ? { [mark.key]: mark.before }
-          : {},
-        kind: 'properties',
-        nodeKind: isText(node) ? 'text' : 'element',
-        path,
-      });
-    } else if (
-      mark.kind === 'join' ||
-      mark.kind === 'joined' ||
-      mark.kind === 'split'
-    ) {
-      parts.push({
-        action: mark.kind === 'joined' ? 'join' : mark.kind,
-        at: rangeOf(occurrence).anchor,
-        kind: 'boundary',
-      });
-    } else {
-      parts.push({
-        action: mark.kind,
-        kind: 'enclosure',
-        path,
-        type: typeof node.type === 'string' ? node.type : '',
-      });
-    }
   }
-  flush();
 
-  return Object.freeze({ change, parts: Object.freeze(parts) });
+  return parts;
+};
+
+export const readAuthoredDetails = (
+  index: AuthoredChangeLookup,
+  id: string
+): AuthoredChangeDetails | null => {
+  const change = index.changes.get(id);
+
+  if (!change) return null;
+
+  return Object.freeze({
+    change,
+    parts: Object.freeze(foldParts(index, [id])),
+  });
+};
+
+export const readAuthoredGroupDetails = (
+  index: AuthoredChangeLookup,
+  ids: readonly string[]
+): AuthoredGroupDetails => {
+  const parts: AuthoredGroupPart[] = [];
+  const shown = new Set<string>();
+
+  for (const part of foldParts(index, ids)) {
+    if (part.kind !== 'properties') {
+      parts.push(part);
+      continue;
+    }
+
+    const { path: _path, ...property } = part;
+    const key = canonicalJsonKey([
+      property.nodeKind,
+      property.before,
+      property.after,
+    ]);
+
+    if (shown.has(key)) continue;
+    shown.add(key);
+    parts.push(property);
+  }
+
+  return Object.freeze({
+    changes: Object.freeze(ids.flatMap((id) => index.changes.get(id) ?? [])),
+    parts: Object.freeze(parts),
+  });
 };
 
 /**

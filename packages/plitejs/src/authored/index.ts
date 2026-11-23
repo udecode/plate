@@ -26,6 +26,8 @@ export type {
   AuthoredChangePart,
   AuthoredDecision,
   AuthoredDocumentProjection,
+  AuthoredGroupDetails,
+  AuthoredGroupPart,
   AuthoredOptions,
   AuthoredOutcome,
   AuthoredPage,

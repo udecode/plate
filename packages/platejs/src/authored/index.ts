@@ -13,6 +13,8 @@ export {
   type AuthoredDecision,
   type AuthoredDocumentProjection,
   type AuthoredFormatProjection,
+  type AuthoredGroupDetails,
+  type AuthoredGroupPart,
   type AuthoredMark,
   type AuthoredOptions,
   type AuthoredOutcome,

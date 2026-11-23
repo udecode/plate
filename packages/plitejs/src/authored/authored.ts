@@ -143,6 +143,7 @@ import {
   indexAuthoredChanges,
   type Occurrence,
   readAuthoredDetails,
+  readAuthoredGroupDetails,
 } from './changes';
 import { claimOf, decide, isRefusal, spareGuardOver } from './decision';
 import {
@@ -176,7 +177,7 @@ import {
   projectAuthoredBlocks,
   projectAuthoredDocumentUnder,
 } from './format';
-import type { BookSink } from './ledger/book';
+import type { BookSink, BookView } from './ledger/book';
 import {
   createReviewLedger,
   getReviewLedger,
@@ -237,6 +238,7 @@ import type {
   AuthoredChangeGroup,
   AuthoredChangesDelta,
   AuthoredDecision,
+  AuthoredGroupDetails,
   AuthoredOptions,
   AuthoredOutcome,
   AuthoredPage,
@@ -256,6 +258,16 @@ type AuthoredRead = {
    */
   changes: (query?: AuthoredQuery) => AuthoredPage;
   details: (id: string) => AuthoredChangeDetails | null;
+  /**
+   * What the card holding a pending change shows, from its first `limit`
+   * changes in document order, or all of them without one. Null when the id
+   * names no pending change. A limit that is not a positive safe integer
+   * throws.
+   */
+  groupDetails: (
+    changeId: string,
+    options?: Readonly<{ limit?: number }>
+  ) => AuthoredGroupDetails | null;
   /**
    * The cards touching a place of the document the view shows, in document
    * order. On a preview `at` is a node's key or path, as `AuthoredQuery.at`
@@ -779,6 +791,11 @@ const ledgerOf = (editor: Editor) =>
 
 const changesOf = (editor: Editor, value: JsonEditorValue) =>
   ledgerOf(editor).changes(value);
+
+const lookupOf = (book: BookView) => ({
+  changes: { get: (id: string) => book.change(id) ?? undefined },
+  occurrences: { get: (id: string) => book.occurrences(id) },
+});
 
 type Outcome = 'accept' | 'reject';
 
@@ -1687,16 +1704,33 @@ export const createAuthoredPlugin = (
           items: Object.freeze(items),
         });
       },
-      details: (id: string) => {
-        const book = changesOf(editor, storedValue(editor));
-
-        return readAuthoredDetails(
-          {
-            changes: { get: (change) => book.change(change) ?? undefined },
-            occurrences: { get: (change) => book.occurrences(change) },
-          },
+      details: (id: string) =>
+        readAuthoredDetails(
+          lookupOf(changesOf(editor, storedValue(editor))),
           id
-        );
+        ),
+      groupDetails: (
+        changeId: string,
+        { limit }: Readonly<{ limit?: number }> = {}
+      ) => {
+        if (
+          limit !== undefined &&
+          (!Number.isSafeInteger(limit) || limit < 1)
+        ) {
+          throw new Error('Authored card limit must be a positive integer.');
+        }
+
+        const book = changesOf(editor, storedValue(editor));
+        const ids: string[] = [];
+
+        for (const id of book.idsFrom({ group: changeId })) {
+          ids.push(id);
+          if (ids.length === limit) break;
+        }
+
+        return ids.length === 0
+          ? null
+          : readAuthoredGroupDetails(lookupOf(book), ids);
       },
       groupOf: (changeId: string) =>
         changesOf(editor, storedValue(editor)).groupOf(changeId),

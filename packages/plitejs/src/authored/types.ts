@@ -79,6 +79,30 @@ export type AuthoredChangeDetails = Readonly<{
 }>;
 
 /**
+ * One line of a card: a change's part, except that a property change reads
+ * once per card, without the path of each text or element it formats.
+ */
+export type AuthoredGroupPart =
+  | Exclude<AuthoredChangePart, Readonly<{ kind: 'properties' }>>
+  | Readonly<{
+      after: Readonly<Record<string, unknown>>;
+      before: Readonly<Record<string, unknown>>;
+      kind: 'properties';
+      nodeKind: 'element' | 'text';
+    }>;
+
+/**
+ * What a card shows, read across its changes in document order: a deletion
+ * and a touching insertion from the next change read as one replacement, and
+ * equal property changes read once.
+ */
+export type AuthoredGroupDetails = Readonly<{
+  /** The changes read, in document order. */
+  changes: readonly AuthoredChange[];
+  parts: readonly AuthoredGroupPart[];
+}>;
+
+/**
  * Adjacent pending changes by one author that one card shows, such as a
  * deletion and the insertion that replaces it. Its id is its oldest change by
  * `createdAt`, then id, so every peer and reload names it alike; the id
