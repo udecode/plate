@@ -2,7 +2,7 @@ import type { Root } from 'mdast';
 
 import type { Descendant } from '../../../core';
 import type { DeserializeMdContext } from '../types';
-import { convertNodesDeserialize } from './convertNodesDeserialize';
+import { buildSlateNode } from './convertNodesDeserialize';
 
 export const mdastToSlate = (
   root: Root,
@@ -19,11 +19,24 @@ export const mdastToSlate = (
   });
 
   options.onRootChildren?.(root.children);
+  const marks = {};
+  const nodes: Descendant[] = [];
+  const counts: number[] = [];
 
-  return convertNodesDeserialize(
-    root.children,
-    {},
-    options,
-    options.previousRootSibling ?? null
-  );
+  root.children.forEach((child, index) => {
+    const converted = buildSlateNode(
+      child,
+      marks,
+      options,
+      index === 0
+        ? (options.previousRootSibling ?? null)
+        : root.children[index - 1]
+    );
+
+    counts.push(converted.length);
+    for (const node of converted) nodes.push(node);
+  });
+  options.onRootBlocks?.(counts);
+
+  return nodes;
 };

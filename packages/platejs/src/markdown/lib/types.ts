@@ -246,12 +246,12 @@ export type MarkdownParsePolicy = Readonly<{
   lossPolicy?: 'allow' | 'reject';
   /**
    * The source is an unfinished stream prefix, such as a streaming AI answer.
-   * A trailing tag that has not finished arriving is hidden. `parseSlice` also
-   * shows a bold, italic or strikethrough run that has not closed yet styled
-   * as it will read once it closes, and hides up to three trailing `*`, `_`,
-   * `~` or `\` characters in all until the next characters decide them, so a
-   * later chunk can take back styling a preview showed. Use a final parse
-   * once the stream completes.
+   * A trailing tag that has not finished arriving is hidden. `parse`,
+   * `parseSlice` and `parseInline` also show a bold, italic or strikethrough
+   * run that has not closed yet styled as it will read once it closes, and
+   * hide up to three trailing `*`, `_`, `~` or `\` characters in all until
+   * the next characters decide them, so a later chunk can take back styling a
+   * preview showed. Use a final parse once the stream completes.
    */
   partial?: boolean;
 }>;
@@ -310,6 +310,8 @@ export type DeserializeMdContext = Readonly<
     onSyntaxNodes?: (count: number) => void;
     /** Receives the root's children before they are converted. */
     onRootChildren?: (children: readonly MdRootContent[]) => void;
+    /** Receives how many nodes each of the root's children converted to. */
+    onRootBlocks?: (counts: readonly number[]) => void;
     /** The root node before this source when it continues an earlier one. */
     previousRootSibling?: MdRootContent | null;
     rawHtml?: Readonly<{

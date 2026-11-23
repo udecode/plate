@@ -1138,7 +1138,7 @@ export const trimIncompleteMarkdownTag = (
 ) => {
   const lt = source.lastIndexOf('<');
 
-  if (lt === -1 || source.includes('>', lt) || source.includes('\n', lt)) {
+  if (lt === -1 || /[>\n\r]/.test(source.slice(lt))) {
     return source;
   }
   const match = /^<\/?([A-Za-z][\w-]*)?/.exec(source.slice(lt));

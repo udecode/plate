@@ -54,6 +54,7 @@ import type {
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,
   MarkdownConversionContext,
+  MarkdownFrontmatter,
   MarkdownParsePolicy,
   MarkdownSerializePolicy,
   MarkdownSerializeResult,
@@ -335,7 +336,7 @@ export const getMergedOptionsSerialize = (
 
 type MarkdownSegmentHooks = Pick<
   DeserializeMdContext,
-  'onRootChildren' | 'onSyntaxNodes' | 'previousRootSibling'
+  'onRootBlocks' | 'onRootChildren' | 'onSyntaxNodes' | 'previousRootSibling'
 > &
   Readonly<{
     /** The source is one paragraph, so no HTML block decodes on its own. */
@@ -1186,6 +1187,31 @@ const fitsSlice = (runtime: MarkdownRuntime, blocks: readonly Descendant[]) => {
   }
 };
 
+type BlockFit = Readonly<{
+  fits: (blocks: readonly Descendant[]) => boolean;
+  ready: (parsed: readonly Descendant[]) => readonly Descendant[];
+}>;
+
+const sliceFit = (runtime: MarkdownRuntime): BlockFit => ({
+  fits: (blocks) => fitsSlice(runtime, blocks),
+  ready: (parsed) => snapshotBlocks(runtime, parsed),
+});
+
+const deferredFit = (runtime: MarkdownRuntime): BlockFit => ({
+  fits: () => true,
+  ready: (parsed) => normalizeDocumentChildren(runtime, parsed),
+});
+
+const headJoinsOpenPart = (
+  runtime: MarkdownRuntime,
+  parsed: readonly Descendant[],
+  headEnd: number
+) =>
+  [parsed[headEnd - 1], parsed[headEnd]].every(
+    (node) =>
+      !!node && (TextApi.isText(node) || runtime.state.schema.isInline(node))
+  );
+
 const markKindsOf = (formats: CompiledMarkdownMappings): MarkdownMarkKinds => {
   const keys = (kind: string) =>
     new Set(
@@ -1208,14 +1234,32 @@ const probeGrammar = (runtime: MarkdownRuntime): MarkdownGrammar => {
   const known = grammars.get(remarkPlugins);
 
   if (known) return known;
-  const [cjkStrong, strong, cjkDelete, deleted] = createMarkdownParser(
-    runtime,
-    materializeRemarkPlugins(remarkPlugins)
-  ).parse(GRAMMAR_PROBE).children;
+  const grammar = readGrammar(runtime);
+
+  grammars.set(remarkPlugins, grammar);
+
+  return grammar;
+};
+
+const readGrammar = (runtime: MarkdownRuntime): MarkdownGrammar => {
+  let probe: readonly MdRootContent[];
+
+  try {
+    probe = [
+      ...createMarkdownParser(
+        runtime,
+        materializeRemarkPlugins(runtime.options.remarkPlugins)
+      ).parse(GRAMMAR_PROBE).children,
+    ];
+  } catch {
+    return { attention: null, strikethrough: null };
+  }
+  const [cjkStrong, strong, cjkDelete, deleted] = probe;
   const holds = (node: MdRootContent | undefined, type: string) =>
     node?.type === 'paragraph' &&
     node.children.some((child) => child.type === type);
-  const grammar: MarkdownGrammar = {
+
+  return {
     attention: holds(strong, 'strong')
       ? holds(cjkStrong, 'strong')
         ? 'cjkFriendly'
@@ -1227,10 +1271,6 @@ const probeGrammar = (runtime: MarkdownRuntime): MarkdownGrammar => {
         : 'gfm'
       : null,
   };
-
-  grammars.set(remarkPlugins, grammar);
-
-  return grammar;
 };
 
 const offsetOf = (diagnostic: MarkdownDiagnostic) =>
@@ -1303,15 +1343,17 @@ const closeOpenTail = (
   plan: OpenTailPlan & Readonly<{ copy: OpenTailCopy }>,
   before: RootBefore,
   from: number,
-  previousRootSibling: MdRootContent | null
+  hooks: Pick<MarkdownSegmentHooks, 'inline' | 'previousRootSibling'>,
+  fit: BlockFit,
+  kept: number
 ) => {
   const limits = markdownParseLimits(options);
   const diagnostics = new MarkdownDiagnostics();
   let children = Number.NaN;
-  let parsed: Descendant[];
+  let copy: readonly Descendant[];
 
   try {
-    parsed = markdownToSlateNodesWithRuntime(
+    const parsed = markdownToSlateNodesWithRuntime(
       runtime,
       plan.copy.text,
       {
@@ -1320,6 +1362,7 @@ const closeOpenTail = (
       },
       diagnostics,
       {
+        inline: hooks.inline,
         onSyntaxTree: (root) => {
           children = root.children.length;
         },
@@ -1329,23 +1372,25 @@ const closeOpenTail = (
           mode: 'pairCopy',
         },
         previousRootSibling:
-          before.root.children[before.index - 1] ?? previousRootSibling,
+          before.root.children[before.index - 1] ??
+          hooks.previousRootSibling ??
+          null,
       }
     );
+
+    if (
+      diagnostics.failure() ||
+      children !== before.root.children.length - before.index
+    ) {
+      return null;
+    }
+    copy = fit.ready(parsed);
   } catch {
     return null;
   }
-  if (
-    diagnostics.failure() ||
-    children !== before.root.children.length - before.index
-  ) {
-    return null;
-  }
-  const copy = snapshotBlocks(runtime, parsed);
-  const kept = received.blocks.length - copy.length;
   const closersAt = plan.copy.closers.from;
 
-  return kept >= 0 &&
+  return kept <= received.blocks.length &&
     keepsReceived(
       received.blocks.slice(kept),
       copy,
@@ -1362,16 +1407,35 @@ const closeOpenTail = (
         ),
         (offset) => (offset < from + closersAt ? offset : null)
       ) &&
-    fitsSlice(runtime, copy)
+    fit.fits(copy)
     ? Object.freeze([...received.blocks.slice(0, kept), ...copy])
     : null;
 };
 
 type OpenSegment = Readonly<{
+  fit: BlockFit;
   keptDiagnostics: readonly MarkdownDiagnostic[];
   retriesUncut: boolean;
   start: number | null;
 }>;
+
+const fitsByteLimit = (source: string, options: MarkdownParsePolicy) =>
+  new TextEncoder().encode(source).byteLength <=
+  markdownParseLimits(options).maxBytes;
+
+const parsesInSegments = (source: string, options: MarkdownParsePolicy) =>
+  fitsByteLimit(source, options) && !MARKDOWN_DEFINITION.test(source);
+
+const openSegmentStart = (
+  runtime: MarkdownRuntime,
+  source: string,
+  options: MarkdownParsePolicy,
+  start = 0
+) =>
+  parsesInSegments(source, options)
+    ? (findMarkdownSegmentBoundaries(source, 0, runtime.formats.tags).at(-1) ??
+      start)
+    : null;
 
 const deliverOpenTail = (
   runtime: MarkdownRuntime,
@@ -1383,13 +1447,16 @@ const deliverOpenTail = (
   segment: OpenSegment
 ): readonly Descendant[] | null => {
   const text = source.slice(start);
+  const { fit } = segment;
+  const grammar = probeGrammar(runtime);
+  const repairable = grammar.attention ?? grammar.strikethrough;
 
   // micromark's offsets skip a byte order mark that starts the source, so
   // the tail cannot read a fresh preview's tree.
-  if (source.startsWith(BYTE_ORDER_MARK)) {
+  if (source.startsWith(BYTE_ORDER_MARK) || !repairable) {
     const parsed = runParsedNodes(runtime, text, options, diagnostics, hooks);
 
-    return parsed && snapshotBlocks(runtime, parsed);
+    return parsed && fit.ready(parsed);
   }
   const from =
     segment.start === null ||
@@ -1397,33 +1464,45 @@ const deliverOpenTail = (
       ? null
       : segment.start - start;
   const received = new MarkdownDiagnostics();
-  const read: { before?: RootBefore | null; plan?: OpenTailPlan } = {};
+  const read: {
+    before?: RootBefore | null;
+    blocks?: readonly number[];
+    plan?: OpenTailPlan;
+  } = {};
   const onPlan = (plan: OpenTailPlan) => {
     read.plan = plan;
   };
   const parsed = runParsedNodes(runtime, text, options, received, {
     ...hooks,
+    onRootBlocks: (counts) => {
+      read.blocks = counts;
+    },
     onSyntaxTree: (root) => {
       if (from !== null) read.before = rootBefore(root, from);
     },
     openTail:
       from === null
-        ? { grammar: probeGrammar(runtime), mode: 'planHold', onPlan }
-        : { from, grammar: probeGrammar(runtime), mode: 'planCopy', onPlan },
+        ? { grammar, mode: 'planHold', onPlan }
+        : { from, grammar, mode: 'planCopy', onPlan },
   });
-  const blocks =
-    parsed && !received.failure() ? snapshotBlocks(runtime, parsed) : null;
+  const blocks = parsed && !received.failure() ? fit.ready(parsed) : null;
   const { before, plan } = read;
 
-  if (plan?.heldFromEnd.length && !(blocks && fitsSlice(runtime, blocks))) {
+  if (plan?.heldFromEnd.length && !(blocks && fit.fits(blocks))) {
     if (!segment.retriesUncut) return null;
     const uncut = runParsedNodes(runtime, text, options, diagnostics, hooks);
 
-    return uncut && snapshotBlocks(runtime, uncut);
+    return uncut && fit.ready(uncut);
   }
   received.all().forEach(diagnostics.report);
+  const headEnd = (read.blocks ?? [])
+    .slice(0, before?.index)
+    .reduce((sum, n) => sum + n, 0);
+
   if (
+    !parsed ||
     !blocks ||
+    headJoinsOpenPart(runtime, parsed, headEnd) ||
     !plan?.copy ||
     !before ||
     from === null ||
@@ -1444,7 +1523,9 @@ const deliverOpenTail = (
       { ...plan, copy: plan.copy },
       before,
       from,
-      hooks.previousRootSibling ?? null
+      hooks,
+      fit,
+      normalizeDocumentChildren(runtime, parsed.slice(0, headEnd)).length
     ) ?? blocks
   );
 };
@@ -1463,14 +1544,6 @@ const convertMarkdownSource = (
     let nodes: readonly Descendant[] | null;
 
     if (options.partial) {
-      const openSegmentStart =
-        new TextEncoder().encode(source).byteLength > limits.maxBytes ||
-        MARKDOWN_DEFINITION.test(source)
-          ? null
-          : (findMarkdownSegmentBoundaries(source, 0, runtime.formats.tags).at(
-              -1
-            ) ?? 0);
-
       nodes = deliverOpenTail(
         runtime,
         source,
@@ -1479,9 +1552,10 @@ const convertMarkdownSource = (
         diagnostics,
         {},
         {
+          fit: sliceFit(runtime),
           keptDiagnostics: [],
           retriesUncut: true,
-          start: openSegmentStart,
+          start: openSegmentStart(runtime, source, options),
         }
       );
     } else {
@@ -1504,8 +1578,7 @@ const convertMarkdownSource = (
   if (
     !reuse?.previous ||
     importsRawHtml(runtime) ||
-    MARKDOWN_DEFINITION.test(source) ||
-    new TextEncoder().encode(source).byteLength > limits.maxBytes
+    !parsesInSegments(source, options)
   ) {
     return full();
   }
@@ -1645,6 +1718,7 @@ const convertMarkdownSource = (
     local,
     { previousRootSibling: segments.at(-1)?.lastRoot ?? null },
     {
+      fit: sliceFit(runtime),
       keptDiagnostics: segments.flatMap((segment) => segment.diagnostics),
       retriesUncut: false,
       start: boundaries.at(-1) ?? stableEnd,
@@ -1905,25 +1979,13 @@ const sliceParseFailure = (
   return Object.freeze({ diagnostics: failure, ok: false });
 };
 
-export const parseMarkdownDocumentWithRuntime = (
+const deliverMarkdownDocument = (
   runtime: MarkdownRuntime,
-  source: string,
-  options: MarkdownParsePolicy = {}
-): MarkdownDocumentParseResult => {
-  const diagnostics = new MarkdownDiagnostics();
-  const frontmatter = readMarkdownFrontmatter(source);
-  const parsed = runParsedNodes(
-    runtime,
-    source,
-    options,
-    diagnostics,
-    {},
-    frontmatter ? blankMarkdownFrontmatter(source, frontmatter.end) : source
-  );
-
-  if (!parsed || diagnostics.failure()) {
-    return documentParseFailure(diagnostics);
-  }
+  options: MarkdownParsePolicy,
+  frontmatter: MarkdownFrontmatter | null,
+  parsed: readonly Descendant[],
+  diagnostics: MarkdownDiagnostics
+): EditorDocumentValue | null => {
   // Normalized top-level blocks are elements. Fitting copies them, so a
   // document parse needs no frozen snapshot.
   const children = normalizeDocumentChildren(runtime, parsed);
@@ -1943,20 +2005,16 @@ export const parseMarkdownDocumentWithRuntime = (
       : {}),
   });
 
-  if (diagnostics.failure()) return documentParseFailure(diagnostics);
+  if (diagnostics.failure()) return null;
   let document: EditorDocumentValue;
-
-  const invalid = (error: unknown) => {
-    reportSchemaInvalid(error, diagnostics);
-
-    return documentParseFailure(diagnostics);
-  };
 
   try {
     document = fitMarkdownDocument(runtime, input, options, diagnostics);
-    if (diagnostics.failure()) return documentParseFailure(diagnostics);
+    if (diagnostics.failure()) return null;
   } catch (error) {
-    return invalid(error);
+    reportSchemaInvalid(error, diagnostics);
+
+    return null;
   }
   const blocks = keepWrittenRawHtml(runtime, document.children, document);
 
@@ -1966,7 +2024,79 @@ export const parseMarkdownDocumentWithRuntime = (
   try {
     runtime.state.schema.assertDocument(document);
   } catch (error) {
-    return invalid(error);
+    reportSchemaInvalid(error, diagnostics);
+
+    return null;
+  }
+
+  return document;
+};
+
+export const parseMarkdownDocumentWithRuntime = (
+  runtime: MarkdownRuntime,
+  source: string,
+  options: MarkdownParsePolicy = {}
+): MarkdownDocumentParseResult => {
+  const diagnostics = new MarkdownDiagnostics();
+  const frontmatter = readMarkdownFrontmatter(source);
+  const text = frontmatter
+    ? blankMarkdownFrontmatter(source, frontmatter.end)
+    : source;
+  let document: EditorDocumentValue | null = null;
+
+  if (options.partial) {
+    if (reportByteLimit(source, options, diagnostics)) {
+      return documentParseFailure(diagnostics);
+    }
+    const preview = new MarkdownDiagnostics();
+    const blocks = deliverOpenTail(
+      runtime,
+      text,
+      0,
+      options,
+      preview,
+      {},
+      {
+        fit: deferredFit(runtime),
+        keptDiagnostics: [],
+        retriesUncut: true,
+        start: openSegmentStart(runtime, text, options, frontmatter?.end),
+      }
+    );
+
+    if (!blocks || preview.failure()) return documentParseFailure(preview);
+    document = deliverMarkdownDocument(
+      runtime,
+      options,
+      frontmatter,
+      blocks,
+      preview
+    );
+    if (document) preview.all().forEach(diagnostics.report);
+  }
+  if (!document) {
+    const parsed = runParsedNodes(
+      runtime,
+      source,
+      options,
+      diagnostics,
+      {},
+      text
+    );
+
+    document =
+      parsed && !diagnostics.failure()
+        ? deliverMarkdownDocument(
+            runtime,
+            options,
+            frontmatter,
+            parsed,
+            diagnostics
+          )
+        : null;
+  }
+  if (!document || diagnostics.failure()) {
+    return documentParseFailure(diagnostics);
   }
 
   return Object.freeze({
@@ -2041,34 +2171,15 @@ export const parseMarkdownSliceWithRuntime = (
 const LEADING_WHITESPACE = /^\s*/;
 const TRAILING_WHITESPACE = /\s*$/;
 
-// Inline Markdown is exactly one paragraph; its inline children are the
-// slice. Surrounding whitespace is kept for insertion into running text.
-export const parseMarkdownInlineWithRuntime = (
+const whitespace = (value: string): Descendant[] =>
+  value ? [{ text: value }] : [];
+
+const deliverMarkdownInline = (
   runtime: MarkdownRuntime,
   source: string,
-  options: MarkdownParsePolicy = {}
-): MarkdownSliceParseResult => {
-  const diagnostics = new MarkdownDiagnostics();
-  const trimmed = source.trim();
-  const whitespace = (value: string): Descendant[] =>
-    value ? [{ text: value }] : [];
-
-  if (!trimmed) {
-    if (reportByteLimit(source, options, diagnostics)) {
-      return sliceParseFailure(diagnostics);
-    }
-
-    return Object.freeze({
-      diagnostics: diagnostics.warnings(),
-      ok: true,
-      slice: ContentSlice.closed(whitespace(source)),
-    });
-  }
-  const parsed = runParsedNodes(runtime, trimmed, options, diagnostics, {
-    inline: true,
-  });
-
-  if (!parsed || diagnostics.failure()) return sliceParseFailure(diagnostics);
+  parsed: readonly Descendant[],
+  diagnostics: MarkdownDiagnostics
+): readonly Descendant[] | null => {
   const blocks = normalizeDocumentChildren(runtime, parsed);
   const [block] = blocks;
 
@@ -2086,7 +2197,7 @@ export const parseMarkdownInlineWithRuntime = (
       severity: 'error',
     });
 
-    return sliceParseFailure(diagnostics);
+    return null;
   }
   // The decision reads the paragraph the slice lands as, spaces included.
   const paragraph = {
@@ -2099,10 +2210,82 @@ export const parseMarkdownInlineWithRuntime = (
   };
   const [kept = paragraph] = keepWrittenRawHtml(runtime, [paragraph]);
 
+  return kept.children;
+};
+
+// Surrounding whitespace is kept for insertion into running text. A partial
+// preview keeps only the trailing whitespace a partial parseSlice shows.
+export const parseMarkdownInlineWithRuntime = (
+  runtime: MarkdownRuntime,
+  source: string,
+  options: MarkdownParsePolicy = {}
+): MarkdownSliceParseResult => {
+  const diagnostics = new MarkdownDiagnostics();
+  const trimmed = source.trim();
+
+  if (!trimmed) {
+    if (reportByteLimit(source, options, diagnostics)) {
+      return sliceParseFailure(diagnostics);
+    }
+
+    return Object.freeze({
+      diagnostics: diagnostics.warnings(),
+      ok: true,
+      slice: ContentSlice.closed(whitespace(source)),
+    });
+  }
+  let children: readonly Descendant[] | null = null;
+
+  if (options.partial) {
+    const preview = new MarkdownDiagnostics();
+    const read = fitsByteLimit(source.trimStart(), options)
+      ? source.trimStart()
+      : trimmed;
+    let blocks: readonly Descendant[] | null;
+
+    // The preview reads the trailing whitespace a strict parse trims, and a
+    // remark parser may reject it.
+    try {
+      blocks = deliverOpenTail(
+        runtime,
+        read,
+        0,
+        options,
+        preview,
+        { inline: true },
+        {
+          fit: deferredFit(runtime),
+          keptDiagnostics: [],
+          retriesUncut: true,
+          start: openSegmentStart(runtime, read, options),
+        }
+      );
+    } catch {
+      blocks = null;
+    }
+
+    children =
+      blocks && !preview.failure()
+        ? deliverMarkdownInline(runtime, source.trimEnd(), blocks, preview)
+        : null;
+    if (children) preview.all().forEach(diagnostics.report);
+  }
+  if (!children) {
+    const parsed = runParsedNodes(runtime, trimmed, options, diagnostics, {
+      inline: true,
+    });
+
+    children =
+      parsed && !diagnostics.failure()
+        ? deliverMarkdownInline(runtime, source, parsed, diagnostics)
+        : null;
+  }
+  if (!children || diagnostics.failure()) return sliceParseFailure(diagnostics);
+
   return Object.freeze({
     diagnostics: diagnostics.warnings(),
     ok: true,
-    slice: ContentSlice.closed(kept.children),
+    slice: ContentSlice.closed(children),
   });
 };
 
