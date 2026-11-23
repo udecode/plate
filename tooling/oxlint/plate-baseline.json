@@ -65,7 +65,6 @@
     ],
     "packages/plitejs/src/react/editable/keyboard-input-strategy.ts": [
       "const editorElement = ReactEditor.editable(editor);",
-      "const editorElement = ReactEditor.editable(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(nestedEditor);",
       "const runtime = getMountedEditableDOMRuntime(editor);",

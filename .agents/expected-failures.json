@@ -5,6 +5,30 @@
       "file": "packages/plitejs/test/authored-tree-record.test.ts",
       "test": "authored review tree recording laws > records one update that pastes a link over a letter and types over the link and the next letter in Suggesting with the typed letter after both struck letters",
       "owner": "t_81a59868"
+    },
+    {
+      "step": "test",
+      "file": "apps/www/scripts/registry-style-transform.test.mts",
+      "test": "registry style transform > transforms every marked active registry source for all eight styles",
+      "owner": "t_0245331c"
+    },
+    {
+      "step": "test",
+      "file": "tooling/scripts/entrypoint-dag-plugin.test.mjs",
+      "test": "allows only exact Plate facade bridges and raw Plite proofs to import plitejs",
+      "owner": "t_19d48fac"
+    },
+    {
+      "step": "test",
+      "file": "tooling/scripts/entrypoint-dag-plugin.test.mjs",
+      "test": "platejs exposes exactly the accepted root and feature owners",
+      "owner": "t_19d48fac"
+    },
+    {
+      "step": "test",
+      "file": "tooling/scripts/entrypoint-dag-plugin.test.mjs",
+      "test": "every public entrypoint has one canonical runtime",
+      "owner": "t_19d48fac"
     }
   ]
 }
