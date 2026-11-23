@@ -113,7 +113,9 @@ Before the architecture owner may lock that target:
    decision `defer` or `gate` with the next probe named. A `gate` writes that
    probe and its frozen budget into the step that runs it, in whichever plan
    owns that step, with the rule that a miss sends the target back to
-   `architect`. Keeping or dismissing
+   `architect`, except a wall-clock miss with flat work counts in a run whose
+   ask is not that speed, which lands as Open work, as `AGENTS.md`'s Timing
+   gates rule says. Keeping or dismissing
    code on a cost argument needs a matched run with that code removed.
 
 An asymptotic table, review score, profiler suspicion, future benchmark plan,
@@ -140,7 +142,10 @@ quieter host (owner's word, 2026-11-20). A disposable prototype proves
 the design decision only; it never proves the shipped implementation. When
 that rerun conclusively misses a frozen line under its noise rule, the target
 goes back to `architect` at once, as the Perf issue playbook's Pivot section
-says.
+says, unless the work counts it measures stay flat in a run whose ask is not
+that speed. Such a miss lands with its step as an Open work item that the run
+measures again after landing, and pivots nothing, as `AGENTS.md`'s Timing
+gates rule says (owner's word, 2026-11-23).
 
 ## Comparison Law
 

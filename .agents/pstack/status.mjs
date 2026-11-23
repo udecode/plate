@@ -22,16 +22,17 @@ export const stepBudget = (config) => {
 };
 export const isBigStep = (phase, decision) => ['build', 'owner'].includes(phase) && /^big step:\s*\S/u.test(decision);
 const LANDED_ROW = /^(?:steps? [^\t]*?)?landed as [0-9a-f]{7,64}\b/iu;
-const STEP_ID = String.raw`\d{1,9}(?:\.\d{1,9})*[a-z]?`;
-export const STEP_CLOSED = /(?:^|\bstep\s+)(\d+[a-z]?)(?![a-z0-9])[^\t]*?\b(?:landed|published|dropped)\b/iu;
+export const STEP_ID = String.raw`\d{1,9}(?:\.\d{1,9})*[a-z]?`;
+export const STEP_CLOSED = new RegExp(String.raw`(?:^|\bstep\s+)(${STEP_ID})(?![a-z0-9]|\.\d)[^\t]*?\b(?:landed|published|dropped)\b`, 'iu');
+const liftedStep = (decision) => decision.match(new RegExp(`^big step:\\s*step (${STEP_ID})(?!\\w|\\.\\d)`, 'iu'))?.[1]?.toLowerCase() ?? null;
 export const bigStepId = (decision, word) => {
-  const step = decision.match(new RegExp(`^big step:\\s*step (${STEP_ID})(?!\\w|\\.\\d)`, 'iu'))?.[1]?.toLowerCase();
+  const step = liftedStep(decision);
   return step && plainWord(word ?? '') === `split step ${step}` ? step : null;
 };
-export const liftsStep = (text, ends = () => false) =>
+export const liftsStep = (text, ends = () => false, step = null) =>
   text.split('\n').reduce((lifted, line) => {
     const [, phase, decision = ''] = line.split('\t');
-    if (isBigStep(phase, decision)) return true;
+    if (isBigStep(phase, decision)) return lifted || !step || [null, step].includes(liftedStep(decision));
     return LANDED_ROW.test(decision) || (phase === 'delivery' && STEP_CLOSED.test(decision)) || ends(line) ? false : lifted;
   }, false);
 export const overBudget = (product, lines) =>

@@ -9,7 +9,8 @@
 // refspec or a `:<branch>` refspec. It also denies any other push to the
 // branch, because land.mjs squashes, checks and signs each landing there,
 // except a dry run and a push prefixed with PSTACK_RELEASE=1, which only a
-// project's release skill writes. A push with no refspec, or one whose
+// project's release skill writes. A push from a checkout of another repository
+// passes, because that repository's rules own its branches. A push with no refspec, or one whose
 // destination is HEAD, targets the current branch, and one with --tags and no
 // refspec targets no branch. A matching `:` refspec and a wildcard refspec
 // target each branch they match. The guard reads no git config, so a push with
@@ -35,7 +36,8 @@
 // elsewhere, and `cd <old> <new>` counts where zsh swaps the operands, in
 // `<old>`, where bash 3.2 moves, and in the earlier directory. The owner's
 // terminal never runs this hook. It denies an agent's `gh pr create` or `gh pr
-// new` into the branch or with no --base, because land.mjs opens those PRs;
+// new` into the branch or with no --base, because land.mjs opens those PRs,
+// unless it runs in a checkout of another repository and names no --repo;
 // one that names another base, such as a PR stacked on someone's head branch,
 // passes, and so does one where --help or -h is a flag rather than an option's
 // value. It denies any line whose text, with quotes and backslashes removed,
@@ -290,6 +292,7 @@ function pushes(words, cwd) {
   const call = gitCommand(words, cwd);
   if (call?.sub !== 'push') return null;
   const { args, dir } = call;
+  if (otherRepository(dir)) return null;
   let forced = false;
   let every = false;
   let deleting = false;
@@ -336,17 +339,27 @@ function pushes(words, cwd) {
 }
 
 // Whether a command is `gh pr create` into the branch or with no base, which defaults to the repository's default branch.
-function opensPr(words, branch) {
+function opensPr(words, branch, dir) {
   if (words[0]?.split('/').at(-1) !== 'gh' || words[1] !== 'pr' || !['create', 'new'].includes(words[2])) return false;
   if (asksHelp(words.slice(3))) return false;
   let base = null;
+  let repo = false;
   for (let at = 3; at < words.length; at += 1) {
     const word = words[at];
+    if (word === '--repo' || word === '-R' || word.startsWith('--repo=') || /^-R./u.test(word)) repo = true;
     if (word === '--base' || word === '-B') base = words[++at] ?? '';
     else if (word.startsWith('--base=')) base = word.slice('--base='.length);
     else if (/^-B./u.test(word)) base = word.slice(2);
   }
+  if (!repo && otherRepository(dir)) return false;
   return base === null || base.replace(/^refs\/heads\//u, '') === branch;
+}
+
+// Whether dir is a checkout of a repository other than the one this guard belongs to; unknown counts as ours.
+function otherRepository(dir) {
+  const common = git(dir, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  const ours = git(dirname(fileURLToPath(import.meta.url)), 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  return Boolean(common && ours && !sameDir(common, ours));
 }
 
 // gh pr create's flags that take no value; any other option consumes the next word, so `--title --help` sets a title.
@@ -616,7 +629,7 @@ eachCommand(command, (words, prefix, dir) => {
       } else if (name === config.branch && !push.dry && !prefix.includes('PSTACK_RELEASE=1')) direct = true;
     }
   }
-  pr ||= opensPr(words, config.branch);
+  pr ||= opensPr(words, config.branch, dir);
 }, new Set([input.cwd ?? process.cwd()]));
 const reasons = [];
 if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);

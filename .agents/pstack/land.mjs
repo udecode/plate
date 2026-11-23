@@ -91,6 +91,7 @@ import { findLead, leadLabel, maxEffort, modelsSheet, pluginLag, runtimeFromEnv,
 import { defaultsRefusal } from './plan-page.mjs';
 import { alive, LAND_CHECK, reserve } from './proof.mjs';
 import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
+import { remoteWorkingBranch } from './working-branch.mjs';
 import { findings } from './writing-check.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry], or node .agents/pstack/land.mjs --friction';
@@ -211,6 +212,10 @@ const forked = mode === 'pr' && git('remote', 'get-url', 'upstream').status === 
 const canonical = forked ? 'upstream' : 'origin';
 const upstream = `refs/remotes/${canonical}/${branch}`;
 const target = `${canonical}/${branch}`;
+const working = remoteWorkingBranch(canonical);
+if (working && working !== branch) {
+  fail(`this checkout's .agents/pstack.json lands on ${branch}, but ${canonical} now works on ${working}, so this checkout was cut from a retired branch. Run \`git rebase --onto ${canonical}/${working} ${canonical}/${branch}\`, then run land.mjs again`);
+}
 const current = must('branch', '--show-current');
 if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
