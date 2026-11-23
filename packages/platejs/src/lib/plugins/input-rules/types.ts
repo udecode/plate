@@ -2,7 +2,7 @@ import type {
   Element,
   EditorUpdateTransactionOf,
   NodeEntry,
-  NodeTarget,
+  TextTarget,
   Path,
   Point,
   EditorJsonValue,
@@ -26,7 +26,7 @@ import type {
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
 
 export type InputRuleInsertTextOptions = Omit<TextInsertTextOptions, 'at'> & {
-  at?: NodeTarget;
+  at?: TextTarget;
 };
 
 type ReadPluginPortal<TPortal> = Pick<

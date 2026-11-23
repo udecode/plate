@@ -8,6 +8,7 @@ import type {
   EditorToggleMarkOptions,
   NodeKey,
   NodeTarget,
+  TextTarget,
   Value,
 } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
@@ -84,9 +85,9 @@ type CommandStateView = EditorStateView<Value, any>;
 
 type CommandTargetOptions<
   TOptions extends { at?: Location | NodeSelection },
-  TNode extends Descendant = Descendant,
+  TTarget = NodeTarget,
 > = Omit<TOptions, 'at'> & {
-  at?: Extract<TOptions['at'], NodeSelection> | NodeTarget<TNode>;
+  at?: Extract<TOptions['at'], NodeSelection> | TTarget;
 };
 
 const rootOrUpdateRoot = (root: string | undefined) =>
@@ -623,7 +624,7 @@ export type DeleteCommand = {
 };
 
 export type DeleteFragmentCommand = {
-  at?: NodeTarget;
+  at?: TextTarget;
   direction: 'backward' | 'forward';
 };
 
@@ -639,7 +640,7 @@ export type InsertNodesCommand = {
 export type InsertSoftBreakCommand = void;
 
 export type InsertTextCommand = {
-  options?: CommandTargetOptions<TextInsertTextOptions>;
+  options?: CommandTargetOptions<TextInsertTextOptions, TextTarget>;
   text: string;
 };
 
@@ -669,7 +670,7 @@ export type SetSelectionCommand = {
 };
 
 export type ReplaceSliceCommand = {
-  options?: CommandTargetOptions<TextInsertFragmentOptions>;
+  options?: CommandTargetOptions<TextInsertFragmentOptions, TextTarget>;
   slice: ContentSlice;
 };
 

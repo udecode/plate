@@ -10,6 +10,7 @@ import {
   getRecordSetVersion,
   getSnapshotVersion,
   getValueRecords,
+  MAIN_ROOT_KEY,
   type Node,
   type NodeKey,
   type Path,
@@ -97,10 +98,7 @@ type CommittedPlaces = {
   version: number;
 };
 
-type InkState = Pick<
-  EditorCoreStateView,
-  'nodes' | 'schema' | 'unique' | 'value'
->;
+type InkState = Pick<EditorCoreStateView, 'nodes' | 'schema' | 'value'>;
 
 export type InkPlaceRead = Readonly<{
   copy: (id: string) => InkCopy | undefined;
@@ -258,11 +256,10 @@ type Holder = BlockHolder & Readonly<{ node: Node }>;
 const holderIn = (state: InkState, id: string): Holder | undefined => {
   metrics.holders += 1;
 
-  const holder = state.unique.holder('id', id);
-  const [node] = (holder && state.nodes.get(holder.key)) || [];
+  const entry = state.nodes.byId(id);
 
-  return holder && node
-    ? { key: holder.key, node, root: holder.root }
+  return entry
+    ? { key: entry.key, node: entry.node, root: entry.root ?? MAIN_ROOT_KEY }
     : undefined;
 };
 
@@ -363,7 +360,7 @@ const startEpoch = (places: InkPlaces) => {
 };
 
 const walkIn = (state: InkState, gone: RecordSetVersion) => ({
-  holder: (id: string) => state.unique.holder('id', id) ?? undefined,
+  holder: (id: string) => state.nodes.byId(id) ?? undefined,
   record: (id: string) => goneIn(gone, id),
 });
 
@@ -399,7 +396,7 @@ const reanchor = (
   if (!anchor || place.kind !== 'gone' || place.beside.at === 'start') return;
   metrics.holders += 1;
 
-  const holder = state.unique.holder('id', anchor.id);
+  const holder = state.nodes.byId(anchor.id);
   const memo = { ...places.chainEnds, walked: places.walked };
   const walk = walkIn(state, gone);
   const back = holder

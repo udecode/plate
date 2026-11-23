@@ -610,7 +610,17 @@ const editor = useCreateEditor({
 const elementId = editor.plugin(ElementIdPlugin);
 const key = editor.key(element);
 const id = elementId.read.id(key);
-const entry = id ? elementId.read.entry(id) : undefined;
+const entry = id ? editor.read.nodes.byId(id) : null;
+```
+
+`editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns
+the element's `key`, `node` and `path`, with `root` when the element lives in
+a named root, or `null` when no element holds the ID. A stored ID addresses an
+element; the element's live identity stays its key. Every node transform takes
+`at: { id }`:
+
+```ts
+editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
 
 The default generator is full-length `nanoid()`. Loads and moves preserve valid
@@ -725,7 +735,8 @@ Find the element that holds a unique value with
 update. It reads the unique index instead of scanning, in every root, and
 returns the holder's `key`, `path` and `root`, or `null` when no element holds
 the value. Inside an update it also finds an element that took the value
-earlier in that update.
+earlier in that update. In an editor whose elements store IDs,
+`holder("id", value)` throws: find that element with `nodes.byId(id)`.
 
 ```ts
 const holder = editor.read.unique.holder("anchorId", anchorId);

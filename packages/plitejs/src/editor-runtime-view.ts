@@ -596,6 +596,7 @@ const withRootChildren = <
     above: rootMethod(editor, viewState, state.nodes.above),
     block: rootMethod(editor, viewState, state.nodes.block),
     blocks: rootMethod(editor, viewState, state.nodes.blocks),
+    byId: rootMethod(editor, viewState, state.nodes.byId),
     children: rootMethod(editor, viewState, state.nodes.children),
     elementReadOnly: rootMethod(editor, viewState, state.nodes.elementReadOnly),
     entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),

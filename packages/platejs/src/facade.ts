@@ -124,6 +124,8 @@ export type {
   NodeSetNodesOptions,
   NodeTarget,
   NodeTypeSelector,
+  ElementIdTarget,
+  TextTarget,
   Path,
   PersistedDocumentInput,
   Decoration,

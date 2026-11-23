@@ -84,6 +84,7 @@ import {
   recordedCarets,
   recorderBookmarks,
   carryCurrentCaret,
+  isElementIdTarget,
   resolveNodeTargetLocation,
   runEditorDocumentRecorder,
   setTypedMarks,
@@ -927,6 +928,7 @@ const createFramePlace = (
     at: NodeTarget | NodeSelection | Span
   ): NodeTarget | NodeSelection | Span | null {
     located = true;
+    if (isElementIdTarget(at)) return at;
     if (SelectionApi.isNode(at)) {
       const root = SelectionApi.root(at) ?? getEditorUpdateRoot(editor);
 

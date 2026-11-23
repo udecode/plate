@@ -2,12 +2,10 @@ import { nanoid } from 'nanoid';
 
 import {
   type EditorCommit,
-  type Element,
   ElementApi,
-  type Path,
   property,
-  type RootKey,
   type NodeKey,
+  type RootKey,
   schema,
   target,
   getEditorCommitNode,
@@ -24,13 +22,6 @@ export type ElementIdPluginState = {
   /** Generate one persisted ID for a newly materialized element. */
   generateId: () => string;
 };
-
-export type ElementIdEntry = Readonly<{
-  key: NodeKey;
-  node: Element;
-  path: Path;
-  root: RootKey;
-}>;
 
 const onlyRemovesNodes = (
   changed: EditorCommit['changed'],
@@ -98,22 +89,13 @@ export const ElementIdPlugin = definePlugin('elementId', {
       );
     },
     read: ({ state }) => ({
-      entry(id: string): ElementIdEntry | undefined {
-        const holder = state.unique.holder('id', id);
-        const node = holder && state.nodes.get(holder.key)?.[0];
-
-        return holder && ElementApi.isElement(node)
-          ? Object.freeze({ ...holder, node })
-          : undefined;
-      },
       id(key: NodeKey): string | undefined {
         const node = state.nodes.get(key)?.[0];
         const id =
           ElementApi.isElement(node) &&
           state.schema.getProperty(node, idProperty);
 
-        return typeof id === 'string' &&
-          state.unique.holder('id', id)?.key === key
+        return typeof id === 'string' && state.nodes.byId(id)?.key === key
           ? id
           : undefined;
       },

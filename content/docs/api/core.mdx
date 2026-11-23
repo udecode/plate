@@ -525,7 +525,7 @@ const editor = createEditor({
 const elementId = editor.plugin(ElementIdPlugin);
 const key = editor.key(element);
 const id = elementId.read.id(key);
-const entry = id ? elementId.read.entry(id) : undefined;
+const entry = id ? editor.read.nodes.byId(id) : null;
 ```
 
 Configure `initialState.generateId` to replace the default full-length

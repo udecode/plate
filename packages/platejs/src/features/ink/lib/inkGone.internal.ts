@@ -1,4 +1,4 @@
-import type { EditorUniqueHolder } from '../../../core';
+import type { EditorElementEntry } from '../../../core';
 import {
   afterActiveTransactionEnds,
   canonicalRecordJson,
@@ -28,9 +28,7 @@ export const MARKS = 'ink-marks';
 
 type GoneTx = Readonly<{
   changes: Readonly<{ apply: (change: DocumentChange) => void }>;
-  unique: Readonly<{
-    holder: (field: 'id', id: string) => EditorUniqueHolder | null;
-  }>;
+  nodes: Readonly<{ byId: (id: string) => EditorElementEntry | null }>;
 }>;
 
 const ADD_LOOKBACK_UPDATES = 4;
@@ -362,7 +360,7 @@ export const captureGone = (
   const names = namedInkBlocks(editor);
   const { pending, queued } = session;
   const walk = {
-    holder: (block: string) => tx.unique.holder('id', block) ?? undefined,
+    holder: (block: string) => tx.nodes.byId(block) ?? undefined,
     record: (block: string) => pending.get(block) ?? savedGone(editor, block),
   };
   const gone = (block: string) => !walk.holder(block);
@@ -463,7 +461,7 @@ export const flushGone = (editor: RuntimeAnyEditor, tx: GoneTx) => {
     editor,
     tx,
     pending.keys(),
-    (id) => (tx.unique.holder('id', id) ? undefined : pending.get(id)),
+    (id) => (tx.nodes.byId(id) ? undefined : pending.get(id)),
     (saved, place) => !sameGone(saved, place)
   );
 };
@@ -479,9 +477,9 @@ export const addGone = (
   const recent = session?.recent ?? [];
   const standing = new Map<string, InkGone>();
   const stand = (id: string) => {
-    const holder = tx.unique.holder('id', id);
+    const holder = tx.nodes.byId(id);
 
-    if (holder?.root !== 'main' || standing.has(id)) return;
+    if (!holder || holder.root !== undefined || standing.has(id)) return;
 
     const { path } = holder;
     const value = tx.value();
@@ -506,7 +504,7 @@ export const addGone = (
     tx,
     blocks,
     (id) => {
-      if (tx.unique.holder('id', id)) return undefined;
+      if (tx.nodes.byId(id)) return undefined;
 
       const departure =
         current?.get(id) ??

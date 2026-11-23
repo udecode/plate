@@ -447,7 +447,7 @@ const editor = createEditor({
 const elementId = editor.plugin(ElementIdPlugin);
 const key = editor.key(element);
 const id = elementId.read.id(key);
-const entry = id ? elementId.read.entry(id) : undefined;
+const entry = id ? editor.read.nodes.byId(id) : null;
 ```
 
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。把

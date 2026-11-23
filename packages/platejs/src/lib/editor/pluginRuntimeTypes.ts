@@ -38,6 +38,7 @@ import type {
   EditorSelection,
   EditorStateSelectionApi,
   EditorTransactionSelectionApi,
+  ElementIdTarget,
   Location,
   Node,
   NodeEntry,
@@ -2267,7 +2268,7 @@ type PluginNodeSetProps<D> = Partial<Omit<Element, 'children'>> &
   PluginForbiddenWritablePropertyPatch<D>;
 
 type PluginNodeSetOptions = Omit<NodeSetNodesOptions<any>, 'at'> & {
-  at?: Descendant | Location | NodeKey | NodeSelection;
+  at?: Descendant | ElementIdTarget | Location | NodeKey | NodeSelection;
 };
 
 type NodeSelectorOptions<TOptions, TNode extends Node, TSelector> = Omit<

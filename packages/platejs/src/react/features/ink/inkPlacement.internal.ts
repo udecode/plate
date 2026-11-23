@@ -193,9 +193,7 @@ const placeInkMarks = (
           const [, path] = state.nodes.get(key) ?? [];
           const id = path && blockAbove(state.value(), path);
 
-          return id === undefined
-            ? undefined
-            : state.unique.holder('id', id)?.key;
+          return id === undefined ? undefined : state.nodes.byId(id)?.key;
         })
       );
     }

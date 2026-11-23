@@ -161,7 +161,7 @@ type NodePropertyKeyIn<V extends Value> = NodePropertyEntryIn<V>['key'];
 
 type WithNodeKeyTarget<TOptions extends { at?: Location | NodeSelection }> =
   Omit<TOptions, 'at'> & {
-    at?: Location | NodeKey | NodeSelection;
+    at?: ElementIdTarget | Location | NodeKey | NodeSelection;
   };
 
 type NodePropertyPatch<TProps> = TProps extends unknown
@@ -434,11 +434,31 @@ export type InitialValue<V extends Value = Value> =
       roots?: Readonly<Record<RootKey, V>>;
     }>;
 
-/** A document location, node key, or live node to resolve. */
-export type NodeTarget<N extends Descendant = Descendant> =
+/**
+ * An element's stored `id` as a target. An object is one only when `id` is
+ * its one key, so a live element that carries an `id` stays a node.
+ */
+export type ElementIdTarget = Readonly<{ id: string }>;
+
+/** An element found by its stored `id`, read from the state that found it. */
+export type EditorElementEntry<TElement extends Element = Element> = Readonly<{
+  key: NodeKey;
+  node: TElement;
+  path: Path;
+  /** The element's named root, absent in the primary document. */
+  root?: NamedRootKey;
+}>;
+
+/** A document location, node key or live node a text command lands at. */
+export type TextTarget<N extends Descendant = Descendant> =
   | Location
   | N
   | NodeKey;
+
+/** A document location, node key, live node or element id to resolve. */
+export type NodeTarget<N extends Descendant = Descendant> =
+  | TextTarget<N>
+  | ([Extract<N, Element>] extends [never] ? never : ElementIdTarget);
 
 export type EditorReplaceChildrenOptions = Omit<
   NodeReplaceChildrenOptions,
@@ -455,7 +475,7 @@ export type EditorReplaceChildrenOptions = Omit<
 
 /** Options for replacing exactly one node with zero or more nodes. */
 export type EditorReplaceNodeOptions = {
-  at: Descendant | NodeKey | Path;
+  at: Descendant | ElementIdTarget | NodeKey | Path;
   select?: boolean;
 };
 
@@ -468,6 +488,13 @@ type WithNodeTarget<
   TNode extends Descendant = Descendant,
 > = Omit<TOptions, 'at'> & {
   at?: NodeTarget<TNode>;
+};
+
+type WithTextTarget<
+  TOptions extends { at?: Location },
+  TNode extends Descendant = Descendant,
+> = Omit<TOptions, 'at'> & {
+  at?: TextTarget<TNode>;
 };
 
 type WithNodeTargetOrSpan<
@@ -913,7 +940,8 @@ export type EditorStateUniqueApi = Readonly<{
    * a child transaction each answer from their own document. When such a state
    * gave the value to a second node, it reads the node that held the value in
    * the state around it, the stored document for an update, while that node
-   * still holds it.
+   * still holds it. In an editor whose elements store ids, `holder('id', …)`
+   * throws: `nodes.byId` finds an element by its id.
    */
   holder: (property: string, value: unknown) => EditorUniqueHolder | null;
 }>;
@@ -937,7 +965,7 @@ export type EditorStateSliceApi<V extends Value = Value> = {
   /** Build an atomic replacement transaction without publishing it. */
   fit: (
     slice: ContentSlice,
-    options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
+    options?: WithTextTarget<TextInsertFragmentOptions, DescendantIn<V>>
   ) => false | TransactionSpec;
   /** Fit immutable slice content against one detached parent without publishing. */
   fitContent: <TRoot extends RootKey>(
@@ -1136,6 +1164,15 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options?: EditorBlocksReadOptions<ValueElement<V>>
     ): ReadonlyArray<NodeEntry<ValueElement<V>>>;
   };
+  /**
+   * Find the element whose stored `id` is `id` in the current state, with its
+   * key, node, path and named root. An update's draft, a command frame, a child
+   * transaction, a document view and a preview each answer from their own
+   * document. Throws unless the schema declares `id` as a generated, unique
+   * string property on every element type and no content admits undeclared
+   * element types.
+   */
+  byId: (id: string) => EditorElementEntry<ValueElement<V>> | null;
   children: (at?: NodeTarget) => ReadonlyArray<ValueDescendant<V>>;
   elementReadOnly: (
     options?: WithNodeTarget<EditorElementReadOnlyOptions>
@@ -1156,7 +1193,7 @@ export type EditorStateNodesApi<V extends Value = Value> = {
     ): NodeEntry<NodeForTypeSelector<TType>> | undefined;
     <TNode extends Descendant>(at: TNode): NodeEntry<TNode> | undefined;
     (
-      at: Location | NodeKey,
+      at: ElementIdTarget | Location | NodeKey,
       options?: EditorNodeGetOptions<ValueTreeNode<V>>
     ): NodeEntry | undefined;
   };
@@ -1534,12 +1571,12 @@ export type EditorStateTextApi = {
 export type EditorTransactionFragmentApi<V extends Value = Value> =
   EditorStateFragmentApi<V> & {
     delete: (
-      options?: WithNodeTarget<EditorFragmentDeletionOptions, DescendantIn<V>>
+      options?: WithTextTarget<EditorFragmentDeletionOptions, DescendantIn<V>>
     ) => void;
     /** Fit and replace known-closed content as one canonical closed slice. */
     replace: (
       content: ReadonlyArray<DescendantIn<V>>,
-      options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
+      options?: WithTextTarget<TextInsertFragmentOptions, DescendantIn<V>>
     ) => boolean;
   };
 
@@ -1556,7 +1593,7 @@ export type EditorTransactionSliceApi<V extends Value = Value> = Pick<
    */
   replace: (
     slice: ContentSlice,
-    options?: WithNodeTarget<TextInsertFragmentOptions, DescendantIn<V>>
+    options?: WithTextTarget<TextInsertFragmentOptions, DescendantIn<V>>
   ) => boolean;
 };
 
@@ -1591,12 +1628,12 @@ export type EditorTransactionBreakApi = {
 };
 
 export type EditorTransactionTextApi = EditorStateTextApi & {
-  delete: (options?: WithNodeTarget<TextDeleteOptions>) => void;
+  delete: (options?: WithTextTarget<TextDeleteOptions>) => void;
   deleteBackward: (options?: EditorDirectedDeletionOptions) => void;
   deleteForward: (options?: EditorDirectedDeletionOptions) => void;
   insert: (
     text: string,
-    options?: WithNodeTarget<TextInsertTextOptions>
+    options?: WithTextTarget<TextInsertTextOptions>
   ) => void;
 };
 

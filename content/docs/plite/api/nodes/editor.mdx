@@ -165,6 +165,22 @@ you call.
 Strict static helpers keep their non-optional contracts and treat a missing
 result as an internal invariant failure.
 
+When the schema declares `id` as a generated, unique string property of every
+element type, as Plate's `ElementIdPlugin` does, and no content admits
+undeclared element types, an element's stored `id` is also a target. `{ id }` works as `at` on node reads and node transforms, and
+writes reach the element in its own root. Text, mark and selection targets keep
+their point or range. An object is an id target only when `id` is its one key.
+`editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns
+the element's `key`, `node` and `path`, with `root` when the element lives in
+a named root, or `null` when no element holds the id. Without that schema,
+`byId` and `{ id }` throw.
+
+```typescript
+const entry = editor.read.nodes.byId("intro");
+
+editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
+```
+
 Node queries use `type` for structural selection and `match` for an optional
 predicate.
 

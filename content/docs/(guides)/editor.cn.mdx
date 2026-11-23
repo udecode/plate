@@ -578,7 +578,16 @@ const editor = useCreateEditor({
 const elementId = editor.plugin(ElementIdPlugin);
 const key = editor.key(element);
 const id = elementId.read.id(key);
-const entry = id ? elementId.read.entry(id) : undefined;
+const entry = id ? editor.read.nodes.byId(id) : null;
+```
+
+`editor.read.nodes.byId(id)`（update 内用 `tx.nodes.byId(id)`）返回该元素的
+`key`、`node` 和 `path`；元素位于命名根时还返回 `root`；没有元素持有该 ID 时
+返回 `null`。保存的 ID 是元素的地址，元素的实时身份仍是它的 key。每个节点变换都
+接受 `at: { id }`：
+
+```ts
+editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
 
 默认生成器是完整长度的 `nanoid()`。加载和移动保留有效 ID；复制、拆分、重复和
@@ -677,7 +686,8 @@ const AnchorPlugin = definePlugin("anchor", {
 用 `editor.read.unique.holder(property, value)` 查找持有某个唯一值的元素；在
 update 内使用 `tx.unique.holder`。它读取唯一值索引而不扫描文档，覆盖所有根，返回持有者的
 `key`、`path` 和 `root`；没有元素持有该值时返回 `null`。在 update 内，它也能找到在同一次
-update 中较早取得该值的元素。
+update 中较早取得该值的元素。在元素保存 ID 的编辑器中，`holder("id", value)` 会抛出
+错误：用 `nodes.byId(id)` 查找该元素。
 
 ```ts
 const holder = editor.read.unique.holder("anchorId", anchorId);
