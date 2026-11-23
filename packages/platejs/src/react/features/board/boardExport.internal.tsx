@@ -15,6 +15,12 @@ import type { BoardView } from './boardView.internal';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const PADDING = 32;
 const UNDRAWN_FILL = '#e4e4e7';
+const PNG_SCALE = 2;
+const PNG_SIDE = 16_384;
+const PNG_AREA = 16_777_216;
+const FETCHES = 6;
+const FETCH_LIMIT_MS = 5000;
+const FONT_WAIT_MS = 250;
 const STYLES = [
   'align-items',
   'background-color',
@@ -94,19 +100,35 @@ const INHERITED = new Set([
 const ON_SCREEN_PLACEMENT = new Set(['left', 'position', 'top', 'translate']);
 const COLOR = /(?:oklab|oklch|lab|lch|color)\([^()]*\)/gu;
 
+export type BoardPictureOptions = Readonly<{
+  format: 'png' | 'svg';
+  kit: readonly BasePluginInput[];
+}>;
+
 export type BoardPictureWarning = Readonly<{
-  code: 'content-undrawn' | 'shape-undrawn';
+  code:
+    | 'content-undrawn'
+    | 'downscaled'
+    | 'font-missing'
+    | 'image-unreadable'
+    | 'shape-undrawn';
   shapeId?: string;
 }>;
 
-export type BoardPictureSvg = Readonly<{
+export type BoardPicture = Readonly<{
+  blob: Blob;
   height: number;
-  svg: string;
   warnings: readonly BoardPictureWarning[];
   width: number;
 }>;
 
 type Drawing = Readonly<{ box: BoardBox; drawing: Element | null; id: string }>;
+
+type Shown = Readonly<{
+  id: string;
+  image: HTMLElement | SVGElement;
+  size: DOMRect;
+}>;
 
 function PictureShapes({
   editor,
@@ -296,6 +318,192 @@ const rectAt = (document: Document, box: BoardBox, fill: string) => {
   return rect;
 };
 
+const sourceOf = (image: Element) =>
+  image.localName === 'img' ? 'src' : 'href';
+
+const unquoted = (family: string) => family.trim().replace(/^["']|["']$/gu, '');
+
+const familiesIn = (styles: ReturnType<typeof stylesOf>) =>
+  new Set(
+    styles.flatMap(([, values]) =>
+      values.flatMap(([name, value]) =>
+        name === 'font-family' ? value.split(',').map(unquoted) : []
+      )
+    )
+  );
+
+const fontFacesOf = (document: Document, families: ReadonlySet<string>) =>
+  [...document.styleSheets].flatMap((sheet) => {
+    let rules: CSSRule[];
+
+    try {
+      rules = [...sheet.cssRules];
+    } catch {
+      return [];
+    }
+
+    return rules.flatMap((rule) =>
+      rule instanceof CSSFontFaceRule &&
+      families.has(unquoted(rule.style.getPropertyValue('font-family')))
+        ? [{ base: sheet.href ?? document.baseURI, css: rule.cssText }]
+        : []
+    );
+  });
+
+const inSixes = async (tasks: ReadonlyArray<() => Promise<void>>) => {
+  const queue = [...tasks];
+
+  await Promise.all(
+    Array.from({ length: FETCHES }, async () => {
+      for (let task = queue.shift(); task; task = queue.shift()) {
+        await task();
+      }
+    })
+  );
+};
+
+const fetched = async (url: string) => {
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(FETCH_LIMIT_MS),
+  });
+
+  if (!response.ok) throw new Error(`${url} answered ${response.status}.`);
+
+  return response.blob();
+};
+
+const dataUrlOf = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener('load', () =>
+      typeof reader.result === 'string'
+        ? resolve(reader.result)
+        : reject(new Error('The file did not read as a data URL.'))
+    );
+    reader.addEventListener('error', () =>
+      reject(reader.error ?? new Error('The file did not read.'))
+    );
+    reader.readAsDataURL(blob);
+  });
+
+const shrunk = async (
+  document: Document,
+  blob: Blob,
+  size: DOMRect,
+  scale: number
+) => {
+  const url = URL.createObjectURL(blob);
+
+  try {
+    const image = document.createElement('img');
+
+    image.src = url;
+    await image.decode();
+
+    const { naturalHeight, naturalWidth } = image;
+    const fit =
+      scale * Math.max(size.width / naturalWidth, size.height / naturalHeight);
+    const canvas = document.createElement('canvas');
+    const paint = fit < 1 ? canvas.getContext('2d') : null;
+
+    if (!paint) return await dataUrlOf(blob);
+
+    canvas.height = Math.max(1, Math.round(naturalHeight * fit));
+    canvas.width = Math.max(1, Math.round(naturalWidth * fit));
+    paint.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    return canvas.toDataURL('image/png');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+};
+
+const grayOf = (document: Document, image: HTMLElement | SVGElement) => {
+  if (image.namespaceURI === SVG_NS) {
+    const rect = document.createElementNS(SVG_NS, 'rect');
+
+    for (const name of ['height', 'width', 'x', 'y']) {
+      const value = image.getAttribute(name);
+
+      if (value !== null) rect.setAttribute(name, value);
+    }
+    rect.setAttribute('fill', UNDRAWN_FILL);
+
+    return rect;
+  }
+
+  const box = document.createElement('span');
+
+  box.style.cssText = image.style.cssText;
+  box.style.backgroundColor = UNDRAWN_FILL;
+  box.style.display ||= 'inline-block';
+
+  return box;
+};
+
+const pngSizeOf = (width: number, height: number) => {
+  const scale = Math.min(
+    PNG_SCALE,
+    PNG_SIDE / width,
+    PNG_SIDE / height,
+    Math.sqrt(PNG_AREA / (width * height))
+  );
+
+  return {
+    height: Math.max(1, Math.floor(height * scale)),
+    scale,
+    width: Math.max(1, Math.floor(width * scale)),
+  };
+};
+
+const pngOf = async (
+  document: Document,
+  svg: string,
+  { height, width }: Readonly<{ height: number; width: number }>
+) => {
+  const image = document.createElement('img');
+  let fallback: string | undefined;
+
+  try {
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    await image.decode().catch(() => {
+      fallback = URL.createObjectURL(
+        new Blob([svg], { type: 'image/svg+xml' })
+      );
+      image.src = fallback;
+
+      return image.decode();
+    });
+    // WebKit applies an SVG image's embedded fonts some time after decode()
+    // resolves, so the canvas waits before it draws.
+    await new Promise((resolve) => {
+      setTimeout(resolve, FONT_WAIT_MS);
+    });
+
+    const canvas = document.createElement('canvas');
+
+    canvas.height = height;
+    canvas.width = width;
+
+    const paint = canvas.getContext('2d');
+
+    if (!paint) throw new Error('The browser gave no 2D canvas for the PNG.');
+
+    paint.drawImage(image, 0, 0, width, height);
+
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) =>
+          blob ? resolve(blob) : reject(new Error('The PNG did not encode.')),
+        'image/png'
+      );
+    });
+  } finally {
+    if (fallback) URL.revokeObjectURL(fallback);
+  }
+};
+
 const unplace = (root: HTMLElement | SVGElement) => {
   for (const name of ON_SCREEN_PLACEMENT) root.style.removeProperty(name);
 };
@@ -351,8 +559,8 @@ const groupOf = (
 
 export const drawBoardPicture = async (
   view: BoardView,
-  kit: readonly BasePluginInput[]
-): Promise<BoardPictureSvg | null> => {
+  { format, kit }: BoardPictureOptions
+): Promise<BoardPicture | null> => {
   const source = view.pictureSource();
 
   if (!source) return null;
@@ -427,6 +635,18 @@ export const drawBoardPicture = async (
       .filter((element) => element.hasAttribute('data-board-arrow-label'))
       .map((label) => [label, label.getBoundingClientRect()])
   );
+  const images: Shown[] = placed.flatMap((drawn) =>
+    [...drawn.querySelectorAll<HTMLElement | SVGElement>('image, img')]
+      .filter((image) => image.getAttribute(sourceOf(image)))
+      .map((image) => ({
+        id:
+          image
+            .closest('[data-board-picture]')
+            ?.getAttribute('data-board-picture') ?? '',
+        image,
+        size: image.getBoundingClientRect(),
+      }))
+  );
   const srgb = srgbOf(document);
   const background = backgroundOf(host, srgb);
 
@@ -445,20 +665,91 @@ export const drawBoardPicture = async (
   const top = Math.floor(edges.top - PADDING);
   const width = Math.max(1, Math.ceil(edges.right + PADDING) - left);
   const height = Math.max(1, Math.ceil(edges.bottom + PADDING) - top);
+  const png = format === 'png' ? pngSizeOf(width, height) : null;
+  const faces = fontFacesOf(document, familiesIn(styles));
+  const css: string[] = [];
+  let fontMissing = false;
+
+  await inSixes([
+    ...images.map(({ id, image, size }) => async () => {
+      const name = sourceOf(image);
+      const href = image.getAttribute(name) ?? '';
+
+      try {
+        const blob = await fetched(href);
+
+        image.setAttribute(
+          name,
+          png
+            ? await shrunk(document, blob, size, png.scale)
+            : await dataUrlOf(blob)
+        );
+      } catch {
+        const link = URL.canParse(href, document.baseURI)
+          ? new URL(href, document.baseURI)
+          : null;
+
+        warnings.push({ code: 'image-unreadable', shapeId: id });
+        if (!png && link && /^https?:$/u.test(link.protocol)) {
+          image.setAttribute(name, link.href);
+        } else {
+          image.replaceWith(grayOf(document, image));
+        }
+      }
+    }),
+    ...faces.map(({ base, css: face }, at) => async () => {
+      try {
+        let embedded = face;
+
+        for (const [whole, url = ''] of face.matchAll(
+          /url\(\s*["']?([^"')]+)["']?\s*\)/gu
+        )) {
+          const inlined = await dataUrlOf(
+            await fetched(new URL(url, base).href)
+          );
+
+          embedded = embedded.replace(whole, `url("${inlined}")`);
+        }
+        css[at] = embedded;
+      } catch {
+        fontMissing = true;
+      }
+    }),
+  ]);
+  if (fontMissing) warnings.push({ code: 'font-missing' });
+
   const svg = document.createElementNS(SVG_NS, 'svg');
 
   svg.setAttribute('height', String(height));
   svg.setAttribute('viewBox', `${left} ${top} ${width} ${height}`);
   svg.setAttribute('width', String(width));
+  if (css.length > 0) {
+    const style = document.createElementNS(SVG_NS, 'style');
+
+    style.textContent = css.join('\n');
+    svg.append(style);
+  }
   svg.append(
     rectAt(document, { height, width, x: left, y: top }, background),
     ...drawings.map((drawing) => groupOf(document, drawing, labels))
   );
 
+  const text = new XMLSerializer().serializeToString(svg);
+
+  if (!png) {
+    return {
+      blob: new Blob([text], { type: 'image/svg+xml' }),
+      height,
+      warnings,
+      width,
+    };
+  }
+  if (png.scale < PNG_SCALE) warnings.push({ code: 'downscaled' });
+
   return {
-    height,
-    svg: new XMLSerializer().serializeToString(svg),
+    blob: await pngOf(document, text, png),
+    height: png.height,
     warnings,
-    width,
+    width: png.width,
   };
 };
