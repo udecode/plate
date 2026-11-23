@@ -2,40 +2,22 @@
 
 import * as React from 'react';
 
-import type {
-  PlateRegistryBase,
-  PlateRegistryStyleName,
-} from '@/lib/plate-registry-styles';
+import type { PlateRegistryBase } from '@/lib/plate-registry-styles';
 
-const SiteRegistryProviderContext = React.createContext<{
-  base: PlateRegistryBase;
-  style: PlateRegistryStyleName;
-}>({
-  base: 'radix',
-  style: 'nova',
-});
+const SiteRegistryProviderContext =
+  React.createContext<PlateRegistryBase>('radix');
 
 export function SiteRegistryProvider({
   base,
   children,
-  style = 'nova',
-}: React.PropsWithChildren<{
-  base: PlateRegistryBase;
-  style?: PlateRegistryStyleName;
-}>) {
-  const value = React.useMemo(() => ({ base, style }), [base, style]);
-
+}: React.PropsWithChildren<{ base: PlateRegistryBase }>) {
   return (
-    <SiteRegistryProviderContext.Provider value={value}>
+    <SiteRegistryProviderContext.Provider value={base}>
       {children}
     </SiteRegistryProviderContext.Provider>
   );
 }
 
 export function useSiteRegistryProvider() {
-  return React.useContext(SiteRegistryProviderContext).base;
-}
-
-export function useSiteRegistryStyle() {
-  return React.useContext(SiteRegistryProviderContext).style;
+  return React.useContext(SiteRegistryProviderContext);
 }

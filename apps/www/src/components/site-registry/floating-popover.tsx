@@ -7,7 +7,7 @@ import * as BasePopover from '@/registry/bases/base/floating-popover';
 import * as RadixPopover from '@/registry/bases/radix/floating-popover';
 import { PLATE_PREVIEW_STYLE_CLASSES } from '@/registry/styles/preview-style-classes';
 
-import { useSiteRegistryProvider, useSiteRegistryStyle } from './provider';
+import { useSiteRegistryProvider } from './provider';
 
 type PopoverModule = typeof RadixPopover;
 
@@ -43,7 +43,7 @@ export function FloatingPopoverContent(
   props: React.ComponentProps<PopoverModule['FloatingPopoverContent']>
 ) {
   const Component = usePopoverModule().FloatingPopoverContent;
-  const styleClasses = PLATE_PREVIEW_STYLE_CLASSES[useSiteRegistryStyle()];
+  const styleClasses = PLATE_PREVIEW_STYLE_CLASSES.nova;
 
   return (
     <Component
