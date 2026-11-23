@@ -21,6 +21,7 @@
       "apps/www/src/generated/**",
       "apps/www/src/registry/changelog/*.json",
       "packages/*/test/**",
+      "packages/*/type-tests/**",
       "**/scripts/*-baseline.json"
     ]
   },
