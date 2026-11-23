@@ -154,19 +154,20 @@ export const buildMdastNodes = (
 
 // Markdown list parsing gives an item's later blocks its indent + 1 and no
 // listType, so such a block stays in the open item at its indent - 1.
+const mayContinueListItem = (
+  node: Descendant | undefined
+): node is Element & { indent: number } =>
+  !!node &&
+  !TextApi.isText(node) &&
+  node.listType === undefined &&
+  typeof node.indent === 'number' &&
+  node.indent >= 2;
+
 const isListContinuation = (
   run: readonly Element[],
   node: Descendant | undefined
 ): node is Element => {
-  if (
-    !node ||
-    TextApi.isText(node) ||
-    node.listType !== undefined ||
-    typeof node.indent !== 'number' ||
-    node.indent < 2
-  ) {
-    return false;
-  }
+  if (!mayContinueListItem(node)) return false;
   const ownerIndent = node.indent - 1;
   const owner = run.findLast((block) => listItemDepth(block) <= ownerIndent);
 
@@ -180,10 +181,15 @@ const isListContinuation = (
 // List items are the block types Markdown list decoding rebuilds.
 const isListElement = (
   node: Descendant | undefined,
-  options: SerializeMdContext
+  options: Pick<SerializeMdContext, 'registry'>
 ): node is ListElement =>
   !!node &&
   !TextApi.isText(node) &&
   typeof node.listType === 'string' &&
   (node.type === getMarkdownParagraphType(options.registry) ||
     node.type === options.registry.type(PLUGINS.image));
+
+export const mayJoinList = (
+  node: Descendant | undefined,
+  options: Pick<SerializeMdContext, 'registry'>
+) => isListElement(node, options) || mayContinueListItem(node);

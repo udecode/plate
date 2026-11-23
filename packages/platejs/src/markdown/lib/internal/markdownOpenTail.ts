@@ -37,6 +37,7 @@ export type OpenTailPlan = Readonly<{
 
 export type MarkdownMarkKinds = Readonly<{
   emphasis: ReadonlySet<string>;
+  exact: ReadonlySet<string>;
   strong: ReadonlySet<string>;
 }>;
 
@@ -744,6 +745,9 @@ const keeps = (
 
   return (
     other?.char === token.char &&
+    [...kinds.exact].every(
+      (key) => isActive(token.marks[key]) === isActive(other.marks[key])
+    ) &&
     Object.entries(token.marks).every(
       ([key, value]) =>
         !isActive(value) ||

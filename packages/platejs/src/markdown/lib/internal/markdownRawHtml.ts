@@ -444,6 +444,12 @@ const mergeAdjacentPieces = (parent: MdParent) => {
   }
 };
 
+type RawHtmlTreeOptions = Readonly<{
+  previousKind?: string;
+  setext: boolean;
+  unwritable?: ReadonlySet<string>;
+}>;
+
 /**
  * Find each piece of marked text on the tree the writer prints, and its place
  * on the lines it prints there. A piece is one `html` node that marked leaves
@@ -451,7 +457,7 @@ const mergeAdjacentPieces = (parent: MdParent) => {
  */
 const findRawHtmlPieces = (
   tree: Root,
-  { previousKind, setext }: Readonly<{ previousKind?: string; setext: boolean }>
+  { previousKind, setext, unwritable }: RawHtmlTreeOptions
 ): RawHtmlPiece[] => {
   const pieces: RawHtmlPiece[] = [];
   const pushPiece = (
@@ -629,7 +635,7 @@ const findRawHtmlPieces = (
       } else if ('children' in child) {
         visitUnknown(child, child);
       }
-      if (!printsNoText(child)) {
+      if (!printsNoText(child) && !unwritable?.has(child.type)) {
         follows = child.type === 'list' ? 'list' : 'block';
       }
     }
@@ -658,7 +664,7 @@ export type RawHtmlBlockRefusal = Readonly<{
 export const decideRawHtmlBlocks = (
   tree: Root,
   decide: (piece: string, place: RawHtmlPlace) => Decision<string>,
-  options: Readonly<{ previousKind?: string; setext: boolean }>
+  options: RawHtmlTreeOptions
 ): RawHtmlBlockRefusal[] => {
   const blocks = new Map<
     RawHtmlPiece['block'],

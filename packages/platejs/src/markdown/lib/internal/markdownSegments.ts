@@ -40,6 +40,13 @@ export const readsMarkdownWhole = (source: string) =>
   source.includes('\r') ||
   source.startsWith(BYTE_ORDER_MARK);
 
+/** GFM's footnote syntax, which acts only in a source holding a definition. */
+export const DEFINITION_SYNTAX = [
+  'gfmFootnoteCall',
+  'gfmFootnoteDefinition',
+  'gfmPotentialFootnoteCall',
+];
+
 type ScanState = {
   fence: Readonly<{ char: string; length: number }> | null;
   openList: boolean;

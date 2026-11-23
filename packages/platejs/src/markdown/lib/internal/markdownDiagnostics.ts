@@ -158,16 +158,18 @@ export const createMarkdownModelLocator = (
   document: Readonly<{
     children: readonly Descendant[];
     roots?: Readonly<Record<string, readonly Descendant[]>>;
-  }>
+  }>,
+  { from = 0 }: Readonly<{ from?: number }> = {}
 ): ((node: Descendant) => MarkdownModelLocation | undefined) => {
   const locations = new WeakMap<object, MarkdownModelLocation>();
   const visit = (
     nodes: readonly Descendant[],
     path: readonly number[],
-    root?: string
+    root?: string,
+    offset = 0
   ) => {
     nodes.forEach((node, index) => {
-      const nodePath = Object.freeze([...path, index]);
+      const nodePath = Object.freeze([...path, offset + index]);
 
       locations.set(
         node,
@@ -180,7 +182,7 @@ export const createMarkdownModelLocator = (
     });
   };
 
-  visit(document.children, []);
+  visit(document.children.slice(from), [], undefined, from);
   Object.entries(document.roots ?? {}).forEach(([root, nodes]) => {
     visit(nodes, [], root);
   });

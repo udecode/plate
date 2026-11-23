@@ -173,7 +173,7 @@ const WRITER_SEPARATOR = '<!---->';
 const isBlockWrapper = (node: Readonly<{ name?: unknown; type: string }>) =>
   node.type === 'mdxJsxFlowElement' && node.name === 'block';
 
-type WrittenFollows = 'block' | 'list' | 'marker';
+export type WrittenFollows = 'block' | 'list' | 'marker';
 
 export const wholeHtmlBlockRefusal = (
   value: string,
@@ -213,8 +213,9 @@ const wrapsOneHtmlBlock = (wrapper: MdParent): boolean => {
 };
 
 export const findMarkdownRawHtml = (
-  tree: Root
-): NonNullable<DeserializeMdContext['rawHtml']> => {
+  tree: Root,
+  before: WrittenFollows = 'block'
+) => {
   const blocks = new Set<Html>();
   const visit = (
     parent: MdParent,
@@ -255,9 +256,9 @@ export const findMarkdownRawHtml = (
     return follows;
   };
 
-  visit(tree, true, false, 'block');
+  const follows = visit(tree, true, false, before);
 
-  return { blocks };
+  return { blocks, follows };
 };
 
 /**
