@@ -9,6 +9,12 @@ import { loadStaticRenderer } from '../../../static/internal/renderStaticHtmlWit
 import { getStaticRootView } from '../../../static/internal/staticDocumentView';
 import { bindStaticPresentation } from '../../../static/internal/staticPresentation';
 import type { BoardBox } from './boardIndex.internal';
+import {
+  PICTURE_ROOT,
+  pictureFrameOf,
+  pictureSheetOf,
+  readPictureStyles,
+} from './boardPictureStyles.internal';
 import type { BoardView } from './boardView.internal';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -20,84 +26,8 @@ const PNG_AREA = 16_777_216;
 const FETCHES = 6;
 const FETCH_LIMIT_MS = 5000;
 const FONT_WAIT_MS = 250;
-const STYLES = [
-  'align-items',
-  'background-color',
-  'border-bottom-left-radius',
-  'border-bottom-right-radius',
-  'border-left-width',
-  'border-top-color',
-  'border-top-left-radius',
-  'border-top-right-radius',
-  'border-top-style',
-  'border-top-width',
-  'box-shadow',
-  'box-sizing',
-  'color',
-  'display',
-  'fill',
-  'flex-direction',
-  'font-family',
-  'font-size',
-  'font-style',
-  'font-weight',
-  'height',
-  'justify-content',
-  'left',
-  'letter-spacing',
-  'line-height',
-  'list-style-type',
-  'margin-bottom',
-  'margin-inline-start',
-  'margin-left',
-  'margin-top',
-  'opacity',
-  'overflow',
-  'overflow-wrap',
-  'padding-bottom',
-  'padding-left',
-  'padding-right',
-  'padding-top',
-  'position',
-  'stroke',
-  'stroke-dasharray',
-  'stroke-linecap',
-  'stroke-linejoin',
-  'stroke-width',
-  'text-align',
-  'text-decoration-color',
-  'text-decoration-line',
-  'text-underline-offset',
-  'top',
-  'transform',
-  'translate',
-  'white-space',
-  'width',
-  'word-break',
-];
-const INHERITED = new Set([
-  'color',
-  'fill',
-  'font-family',
-  'font-size',
-  'font-style',
-  'font-weight',
-  'letter-spacing',
-  'line-height',
-  'list-style-type',
-  'overflow-wrap',
-  'stroke',
-  'stroke-dasharray',
-  'stroke-linecap',
-  'stroke-linejoin',
-  'stroke-width',
-  'text-align',
-  'text-underline-offset',
-  'white-space',
-  'word-break',
-]);
-const ON_SCREEN_PLACEMENT = new Set(['left', 'position', 'top', 'translate']);
 const COLOR = /(?:oklab|oklch|lab|lch|color)\([^()]*\)/gu;
+const QUOTED = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/u;
 
 export type BoardPictureOptions = Readonly<{
   format: 'png' | 'svg';
@@ -155,8 +85,6 @@ const boxIn = (drawing: Element): BoardBox => {
   return { height, width, x, y };
 };
 
-const offset = (value: string) => Number.parseFloat(value) || 0;
-
 const inOrUnder = (element: Element, selector: string) =>
   element.matches(selector) || element.querySelector(selector) !== null;
 
@@ -170,88 +98,39 @@ const stripEditor = (drawing: Element) => {
   }
 };
 
-const keyOf = (element: Element) =>
-  `${element.namespaceURI} ${element.localName}`;
-
-const sandboxOf = (document: Document, elements: readonly Element[]) => {
-  const bare = new Map<string, Element>();
-  const sandbox = document.createElement('div');
-  const svg = document.createElementNS(SVG_NS, 'svg');
-
-  for (const element of elements) {
-    if (bare.has(keyOf(element))) continue;
-
-    const svgTag = element.namespaceURI === SVG_NS;
-    const tag = svgTag
-      ? document.createElementNS(SVG_NS, element.localName)
-      : document.createElement(element.localName);
-
-    bare.set(keyOf(element), tag);
-    (svgTag ? svg : sandbox).append(tag);
-  }
-  sandbox.append(svg);
-
-  return { bare, sandbox };
-};
-
-const stylesOf = (
-  elements: ReadonlyArray<HTMLElement | SVGElement>,
-  bare: ReadonlyMap<string, Element>
-) => {
-  const defaults = new Map(
-    [...bare].map(([key, tag]) => {
-      const style = getComputedStyle(tag);
-
-      return [key, STYLES.map((name) => style.getPropertyValue(name))];
-    })
-  );
-  const computed = new Map(
-    elements.map((element) => [element, getComputedStyle(element)])
-  );
-
-  return [...computed].map(([element, style]) => {
-    const parent = element.parentElement && computed.get(element.parentElement);
-    const base = defaults.get(keyOf(element));
-    const values = STYLES.flatMap((name, at) => {
-      const value = style.getPropertyValue(name);
-      const kept = INHERITED.has(name)
-        ? parent?.getPropertyValue(name) === value
-        : base?.[at] === value;
-
-      return value === '' || kept ? [] : [[name, value] as const];
-    });
-
-    return [element, values] as const;
-  });
-};
-
 const srgbOf = (document: Document) => {
   const cache = new Map<string, string>();
   let paint: CanvasRenderingContext2D | null | undefined;
 
+  const converted = (color: string) => {
+    paint ??= document
+      .createElement('canvas')
+      .getContext('2d', { willReadFrequently: true });
+
+    if (!paint) return color;
+
+    let srgb = cache.get(color);
+
+    if (srgb === undefined) {
+      paint.clearRect(0, 0, 1, 1);
+      paint.fillStyle = color;
+      paint.fillRect(0, 0, 1, 1);
+
+      const [r, g, b, a = 0] = paint.getImageData(0, 0, 1, 1).data;
+
+      srgb = `rgba(${r}, ${g}, ${b}, ${Math.round((a / 255) * 1000) / 1000})`;
+      cache.set(color, srgb);
+    }
+
+    return srgb;
+  };
+
+  // Generated text keeps its quoted words, such as content: "color(srgb 1 0 0)".
   return (value: string) =>
-    value.replace(COLOR, (color) => {
-      paint ??= document
-        .createElement('canvas')
-        .getContext('2d', { willReadFrequently: true });
-
-      if (!paint) return color;
-
-      let srgb = cache.get(color);
-
-      if (srgb === undefined) {
-        paint.clearRect(0, 0, 1, 1);
-        paint.fillStyle = color;
-        paint.fillRect(0, 0, 1, 1);
-
-        const [r, g, b, a = 0] = paint.getImageData(0, 0, 1, 1).data;
-
-        srgb = `rgba(${r}, ${g}, ${b}, ${Math.round((a / 255) * 1000) / 1000})`;
-        cache.set(color, srgb);
-      }
-
-      return srgb;
-    });
+    value
+      .split(QUOTED)
+      .map((part, at) => (at % 2 === 1 ? part : part.replace(COLOR, converted)))
+      .join('');
 };
 
 const backgroundOf = (host: Element, srgb: (value: string) => string) => {
@@ -322,35 +201,6 @@ const rectAt = (document: Document, box: BoardBox, fill: string) => {
 
 const sourceOf = (image: Element) =>
   image.localName === 'img' ? 'src' : 'href';
-
-const unquoted = (family: string) => family.trim().replace(/^["']|["']$/gu, '');
-
-const familiesIn = (styles: ReturnType<typeof stylesOf>) =>
-  new Set(
-    styles.flatMap(([, values]) =>
-      values.flatMap(([name, value]) =>
-        name === 'font-family' ? value.split(',').map(unquoted) : []
-      )
-    )
-  );
-
-const fontFacesOf = (document: Document, families: ReadonlySet<string>) =>
-  [...document.styleSheets].flatMap((sheet) => {
-    let rules: CSSRule[];
-
-    try {
-      rules = [...sheet.cssRules];
-    } catch {
-      return [];
-    }
-
-    return rules.flatMap((rule) =>
-      rule instanceof CSSFontFaceRule &&
-      families.has(unquoted(rule.style.getPropertyValue('font-family')))
-        ? [{ base: sheet.href ?? document.baseURI, css: rule.cssText }]
-        : []
-    );
-  });
 
 const inSixes = async (tasks: ReadonlyArray<() => Promise<void>>) => {
   const queue = [...tasks];
@@ -509,10 +359,6 @@ const pngOf = async (
   }
 };
 
-const unplace = (root: HTMLElement | SVGElement) => {
-  for (const name of ON_SCREEN_PLACEMENT) root.style.removeProperty(name);
-};
-
 // WebKit paints positioned HTML inside a foreignObject from the picture's
 // origin, past every x, y and transform of the svg around it, unless a fixed
 // box inside the foreignObject holds that HTML.
@@ -532,7 +378,8 @@ const pin = (document: Document, object: Element) => {
 const groupOf = (
   document: Document,
   { box, drawing, id }: Drawing,
-  labels: ReadonlyMap<Element, DOMRect>
+  labels: ReadonlyMap<Element, DOMRect>,
+  offsets: ReadonlyMap<Element, Readonly<{ left: number; top: number }>>
 ) => {
   const group = document.createElementNS(SVG_NS, 'g');
 
@@ -543,9 +390,8 @@ const groupOf = (
     return group;
   }
   for (const svg of drawing.querySelectorAll<SVGSVGElement>(':scope > svg')) {
-    svg.setAttribute('x', String(box.x + offset(svg.style.left)));
-    svg.setAttribute('y', String(box.y + offset(svg.style.top)));
-    unplace(svg);
+    svg.setAttribute('x', String(box.x + (offsets.get(svg)?.left ?? 0)));
+    svg.setAttribute('y', String(box.y + (offsets.get(svg)?.top ?? 0)));
     group.append(svg);
   }
 
@@ -564,13 +410,12 @@ const groupOf = (
     object.setAttribute('width', String(width));
     object.setAttribute(
       'x',
-      String(box.x + offset(label.style.left) - width / 2)
+      String(box.x + (offsets.get(label)?.left ?? 0) - width / 2)
     );
     object.setAttribute(
       'y',
-      String(box.y + offset(label.style.top) - height / 2)
+      String(box.y + (offsets.get(label)?.top ?? 0) - height / 2)
     );
-    unplace(label);
     object.append(label);
     group.append(object);
   }
@@ -633,7 +478,6 @@ export const drawBoardPicture = async (
     const drawing = shown.get(id);
 
     if (drawing) {
-      stripEditor(drawing);
       if (inOrUnder(drawing, '[data-board-image-unreadable]')) {
         warnings.push({ code: 'image-unreadable', shapeId: id });
       }
@@ -662,13 +506,9 @@ export const drawBoardPicture = async (
       ':scope > svg, :scope > [data-board-arrow-label]'
     ) ?? []),
   ]);
-  const elements = placed.flatMap((element) => [
-    element,
-    ...element.querySelectorAll<HTMLElement | SVGElement>('*'),
-  ]);
-  const { bare, sandbox } = sandboxOf(document, elements);
+  const frame = pictureFrameOf(document);
 
-  host.append(...drawings.flatMap(({ drawing }) => drawing ?? []), sandbox);
+  host.append(...drawings.flatMap(({ drawing }) => drawing ?? []), frame);
 
   const origin = host.getBoundingClientRect();
   const edges = edgesOf(
@@ -677,7 +517,7 @@ export const drawBoardPicture = async (
       ...(drawing ? paintedIn(drawing, origin) : []),
     ])
   );
-  const styles = stylesOf(elements, bare);
+  const styles = readPictureStyles(frame, host, placed);
   const labels = new Map(
     placed
       .filter((element) => element.hasAttribute('data-board-arrow-label'))
@@ -700,21 +540,23 @@ export const drawBoardPicture = async (
 
   host.replaceChildren();
   // A node removed from the editor stays watched until its observer's next
-  // delivery, so the styles wait for that delivery.
+  // delivery, so the attribute removal and the styles wait for that delivery.
+  // The reads came first because a page style sheet can match the editor's
+  // attributes.
   await Promise.resolve();
 
-  for (const [element, values] of styles) {
-    for (const [name, value] of values) {
-      element.style.setProperty(name, srgb(value));
-    }
+  for (const { drawing } of drawings) {
+    if (drawing) stripEditor(drawing);
   }
+
+  const nonce = Math.random().toString(36).slice(2, 10);
+  const rules = styles.write(srgb, nonce);
 
   const left = Math.floor(edges.left - PADDING);
   const top = Math.floor(edges.top - PADDING);
   const width = Math.max(1, Math.ceil(edges.right + PADDING) - left);
   const height = Math.max(1, Math.ceil(edges.bottom + PADDING) - top);
   const png = format === 'png' ? pngSizeOf(width, height) : null;
-  const faces = fontFacesOf(document, familiesIn(styles));
   const css: string[] = [];
   let fontMissing = false;
 
@@ -743,7 +585,7 @@ export const drawBoardPicture = async (
         }
       }
     }),
-    ...faces.map(({ base, css: face }, at) => async () => {
+    ...styles.faces.map(({ base, css: face }, at) => async () => {
       try {
         let embedded = face;
 
@@ -765,19 +607,19 @@ export const drawBoardPicture = async (
   if (fontMissing) warnings.push({ code: 'font-missing' });
 
   const svg = document.createElementNS(SVG_NS, 'svg');
+  const sheet = document.createElementNS(SVG_NS, 'style');
 
+  sheet.textContent = pictureSheetOf(nonce, css, rules);
+  svg.setAttribute(PICTURE_ROOT, nonce);
   svg.setAttribute('height', String(height));
   svg.setAttribute('viewBox', `${left} ${top} ${width} ${height}`);
   svg.setAttribute('width', String(width));
-  if (css.length > 0) {
-    const style = document.createElementNS(SVG_NS, 'style');
-
-    style.textContent = css.join('\n');
-    svg.append(style);
-  }
   svg.append(
+    sheet,
     rectAt(document, { height, width, x: left, y: top }, background),
-    ...drawings.map((drawing) => groupOf(document, drawing, labels))
+    ...drawings.map((drawing) =>
+      groupOf(document, drawing, labels, styles.offsets)
+    )
   );
 
   const text = new XMLSerializer().serializeToString(svg);
