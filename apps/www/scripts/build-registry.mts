@@ -13,6 +13,7 @@ import path from 'node:path';
 
 import { type Registry, registrySchema } from 'shadcn/schema';
 
+import { PLATE_CREATE_EDITORS } from '@/lib/plate-create';
 import {
   PLATE_REGISTRY_BASES,
   PLATE_REGISTRY_STYLE_NAMES,
@@ -26,6 +27,10 @@ import { createRegistryResponse } from '@/lib/registry-response';
 import { createPlateRegistry } from '@/registry/registry';
 import { PLATE_REGISTRY_VARIANT_ITEM_NAMES } from '@/registry/registry-variants';
 
+import {
+  CREATE_PREVIEW_DIR,
+  writeCreatePreviewTrees,
+} from './create-preview-trees.mts';
 import { serveIconPlaceholders, toServedIcons } from './icon-placeholders.mts';
 import {
   acquireRegistryBuildLock,
@@ -363,6 +368,14 @@ const sourceIdentity = sha256(
 const build = await acquireRegistryBuildLock({ buildRoot, sourceIdentity });
 
 try {
+  console.info('Writing the /create preview trees...');
+  await writeCreatePreviewTrees({
+    editors: PLATE_CREATE_EDITORS.map(({ name }) => name),
+    outDir: path.join(root, CREATE_PREVIEW_DIR),
+    registries: sourceRegistries,
+    sourceRoot,
+  });
+
   const buildTargets = getRegistryBuildTargets(build.stageDir);
   const stage = getRegistryStageTargets(build.stageDir);
 

@@ -6,3 +6,4 @@
 .source-dev
 .source-async
 *.tsbuildinfo
+src/__registry__/create-preview
