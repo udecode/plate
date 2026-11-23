@@ -11,6 +11,7 @@ import {
   createPlateCreateConfig,
   getPlateCreateCommand,
   getPlateCreatePreset,
+  getPlateCreatePreviewPath,
   getShadcnCreateUrl,
   type PlateCreateConfig,
   PLATE_CREATE_EDITORS,
@@ -28,11 +29,7 @@ export function CreateClient() {
   const { base, editor, style } = config;
   const preset = getPlateCreatePreset(config);
   const command = getPlateCreateCommand(config);
-  const previewUrl = `/create-preview?${new URLSearchParams({
-    base,
-    editor,
-    preset,
-  })}`;
+  const previewUrl = getPlateCreatePreviewPath(config);
 
   function update(patch: Partial<PlateCreateConfig>) {
     setConfig((current) => createPlateCreateConfig({ ...current, ...patch }));

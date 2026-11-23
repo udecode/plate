@@ -221,6 +221,7 @@
   "exclude": [
     "node_modules",
     "__registry__",
+    "src/__registry__/create-preview",
     "src/__tests__/package-integration/**/*"
   ]
 }

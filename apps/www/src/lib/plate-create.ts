@@ -131,6 +131,14 @@ export function getShadcnCreateUrl(config: PlateCreateConfig) {
   return `https://ui.shadcn.com/create?preset=${getPlateCreatePreset(config)}&base=${config.base}`;
 }
 
+export function getPlateCreatePreviewPath(config: PlateCreateConfig) {
+  return `/create-preview?${new URLSearchParams({
+    base: config.base,
+    editor: config.editor,
+    preset: getPlateCreatePreset(config),
+  })}`;
+}
+
 export function isPlateCreateEditor(value: string): value is PlateCreateEditor {
   return PLATE_CREATE_EDITORS.some((editor) => editor.name === value);
 }
