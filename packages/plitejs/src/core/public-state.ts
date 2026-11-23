@@ -732,7 +732,7 @@ const projectedLists = (owner: Editor) => {
 
 export const getEditorProjectionSnapshotIndex = (
   editor: Editor,
-  children: ChildrenSource
+  children: ChildrenSource | NodeList<unknown>
 ): SnapshotIndex => {
   const owner = getEditorRuntimeOwner(editor);
 
@@ -14456,6 +14456,10 @@ export const runEditorTransaction = <R>(
                   effects: [...snapshot.effects],
                   editor,
                   replace: snapshot.reason === 'replace',
+                  schemas: pluginPublication?.schemas ?? {
+                    after: getCompiledEditorSchema(editor),
+                    before: getCompiledEditorSchema(editor),
+                  },
                   selectionAfter,
                   selectionAfterRoot: draftContext.caret.root,
                   selectionBefore,

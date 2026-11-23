@@ -3971,6 +3971,15 @@ export type EditorCommitChanged = {
   ) => readonly NodeKey[];
   /** Node keys with this change kind across every document root. */
   nodeKeysAll: (kind: EditorCommitRuntimeChangeKind) => readonly NodeKey[];
+  /**
+   * The named roots whose place this commit changed, as `read.roots()` lists
+   * places: each root whose owners changed, such as the root of a deleted
+   * board or the roots two boards swapped, and each root whose `top` now sits
+   * in another top-level page block, such as the roots of a board moved into
+   * a group. An insert or delete above an owner that adds or removes no owner
+   * only shifts its path, so it names no root and reads no owner.
+   */
+  rootPlacements: () => readonly NamedRootKey[];
   topLevelRanges: <TRoot extends RootKey>(
     root?: NamedRootKey<TRoot>
   ) => readonly TopLevelRuntimeRange[];

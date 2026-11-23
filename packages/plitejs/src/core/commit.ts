@@ -41,6 +41,11 @@ import { type ChangeFacts, NO_FACTS, UNKNOWN_FACTS } from './change/record';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot, toPublicRoot } from './public-root';
+import {
+  readRootPlacementChanges,
+  type RootPlacementSide,
+} from './root-entries';
+import type { SchemaSides } from './schema-compiler';
 import { pathKey, snapshotIndexOf } from './snapshot-index';
 import { defineUpdateAnnotation } from './transaction-values';
 import { cloneFrozenEditorJsonValue } from './value-codec';
@@ -80,6 +85,7 @@ type CommitChangedInput = {
   selectionChanged: boolean;
   stateChanged: boolean;
   editor: Editor;
+  schemas: SchemaSides;
 };
 
 type CommitInput<V extends Value> = Omit<
@@ -101,6 +107,7 @@ type CommitInput<V extends Value> = Omit<
   facts?: ChangeFacts;
   replace?: boolean;
   admission?: EditorCommitAdmission | null;
+  schemas: SchemaSides;
   settlement?: EditorCommitSettlement;
   split?: EditorCommitSplit | null;
   selectionAfterRoot: RootKey;
@@ -112,6 +119,7 @@ type EditorCommitSnapshotSource = Readonly<{
   beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined;
   beforeValue: EditorDocumentValue;
   editor: Editor;
+  schemas: SchemaSides;
   value: EditorDocumentValue;
 }>;
 
@@ -234,7 +242,7 @@ export const getEditorCommitSnapshot = <V extends Value>(
           root
         ) ??
         buildOwnedSnapshotIndex(
-          childrenOfRoot() as readonly Descendant[],
+          valueRootNodes(value as JsonEditorValue, root),
           source.editor
         )),
   });
@@ -286,6 +294,10 @@ export const getEditorCommitValue = (
 
   return phase === 'before' ? source.beforeValue : source.value;
 };
+
+/** @internal */
+export const getEditorCommitSchemas = (commit: EditorCommit) =>
+  EDITOR_COMMIT_SNAPSHOT_SOURCES.get(commit)?.schemas;
 
 /** @internal */
 export const getEditorCommitUnsettle = (
@@ -364,7 +376,7 @@ const valueRoot = (value: JsonEditorValue, root: RootKey) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
 
 const buildOwnedSnapshotIndex = (
-  children: readonly Descendant[],
+  children: NodeList,
   editor: Editor
 ): SnapshotIndex => snapshotIndexOf(getEditorRuntimeOwner(editor), children);
 
@@ -381,10 +393,7 @@ const bindInverseNodeKeys = (
     if (!index) {
       index =
         beforeIndexAt?.(root) ??
-        buildOwnedSnapshotIndex(
-          valueRoot(before, root) as readonly Descendant[],
-          editor
-        );
+        buildOwnedSnapshotIndex(valueRootNodes(before, root), editor);
       indexes.set(root, index);
     }
 
@@ -603,6 +612,7 @@ const createCommitChanged = ({
   selectionChanged,
   stateChanged,
   editor,
+  schemas,
 }: CommitChangedInput): EditorCommitChanged => {
   const marksChanged = !jsonValueEqual(
     getPendingSelectionMarks(selectionBefore),
@@ -645,10 +655,7 @@ const createCommitChanged = ({
           ? beforeIndex()
           : afterIndex()
         : ((phase === 'before' ? beforeIndexAt : afterIndexAt)?.(root) ??
-          buildOwnedSnapshotIndex(
-            valueRoot(value, root) as readonly Descendant[],
-            editor
-          ));
+          buildOwnedSnapshotIndex(valueRootNodes(value, root), editor));
 
     cache.set(root, index);
 
@@ -1333,6 +1340,21 @@ const createCommitChanged = ({
   };
   const knownRoots = [...allKnownRoots()];
 
+  const placementSide = (
+    phase: 'after' | 'before',
+    value: JsonEditorValue
+  ): RootPlacementSide => ({
+    index: (root) =>
+      root === 'main' || Object.hasOwn(value.roots ?? {}, root)
+        ? getIndex(phase, root)
+        : null,
+    nodes: (root) => valueRootNodes(value, root),
+    roots: () => ['main', ...Object.keys(value.roots ?? {})],
+    schema: schemas[phase],
+    source: value,
+  });
+  let rootPlacements: readonly NamedRootKey[] | undefined;
+
   const getAggregateNodeKeys = (kind: EditorCommitRuntimeChangeKind) => {
     const cached = aggregateNodeKeys.get(kind);
 
@@ -1361,6 +1383,12 @@ const createCommitChanged = ({
         : getMembership(kind, innerRoot).has(nodeKey);
     },
     paths: (root) => getRootDetails(toInternalRoot(root)).paths,
+    rootPlacements: () =>
+      (rootPlacements ??= readRootPlacementChanges(
+        getEditorRuntimeOwner(editor),
+        placementSide('before', before),
+        placementSide('after', after)
+      )),
     nodeKeys: (kind, root) => getNodeKeys(kind, toInternalRoot(root)),
     nodeKeysAll: (kind) => getAggregateNodeKeys(kind),
     topLevelRanges: (root) => getChangedTopLevelRanges(toInternalRoot(root)),
@@ -1386,6 +1414,7 @@ export const createEditorCommit = <V extends Value>(
     editor,
     facts = UNKNOWN_FACTS,
     replace = false,
+    schemas,
     settlement,
     split,
     ...body
@@ -1423,6 +1452,7 @@ export const createEditorCommit = <V extends Value>(
       selectionChanged: body.selectionChanged,
       stateChanged: body.dirtyStateKeys.length > 0,
       editor,
+      schemas,
     }),
   });
   let inverseChanges: DocumentChange | undefined;
@@ -1444,6 +1474,7 @@ export const createEditorCommit = <V extends Value>(
     beforeIndexAt,
     beforeValue,
     editor,
+    schemas,
     value: afterValue,
   });
   EDITOR_COMMIT_STARTED_AT.set(

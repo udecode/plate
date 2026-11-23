@@ -42,7 +42,7 @@ import type {
 import type { DocumentChange } from './change/document-change';
 import type { NodeList } from './change/document-index';
 import type { InternalEditorSchemaApi } from './editor-schema';
-import type { EditorSchemaContract } from './schema-compiler';
+import type { EditorSchemaContract, SchemaSides } from './schema-compiler';
 import type { InternalEditorUpdateOptions } from './update-policy';
 import type { ViewPresentation } from './view-presentation';
 
@@ -155,6 +155,7 @@ export type InternalPluginRuntime<V extends Value = Value> = {
     handUninstalls: (stagedInOrder: readonly StagedPluginInstall[]) => void;
     rollback: () => void;
     schemaContract: () => EditorSchemaContract;
+    schemas: SchemaSides;
     stage: () => void;
     validateDocument: (value: EditorDocumentValue) => void;
   }>;

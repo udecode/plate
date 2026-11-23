@@ -537,31 +537,47 @@ const admitList = (
     contentRootSlotsOf(schema)
   );
 
-const REINDEXED = new WeakMap<Topology, Topology>();
+const nodeListOf = (children: ChildrenList) =>
+  children instanceof DocumentIndex
+    ? children.nodes
+    : DocumentIndex.nodesOf(children);
+
+const REINDEXED = new WeakMap<
+  NodeList<unknown>,
+  WeakMap<Topology, readonly Topology[]>
+>();
+
+const reindexesOf = (topology: Topology, children: ChildrenList) =>
+  REINDEXED.get(nodeListOf(children))?.get(topology) ?? [];
 
 const currentTopology = (
   editor: Editor,
   topology: Topology,
-  children: ChildrenList
+  children: ChildrenList,
+  schema = getCompiledEditorSchema(editor)
 ) => {
-  const schema = getCompiledEditorSchema(editor);
   const properties = internedUniquePropertiesOf(schema);
   const contentRoots = contentRootSlotsOf(schema);
-  const indexes = (held: Topology | undefined): held is Topology =>
-    held?.uniqueProperties === properties &&
+  const indexes = (held: Topology) =>
+    held.uniqueProperties === properties &&
     held.contentRoots.signature === contentRoots.signature;
 
   if (indexes(topology)) return topology;
-  let reindexed = REINDEXED.get(topology);
+  const held = reindexesOf(topology, children);
+  let reindexed = held.find(indexes);
 
-  if (!indexes(reindexed)) {
+  if (!reindexed) {
     const builder = new TopologyBuilder(topology);
     const nodes: Descendant[] = [];
 
     forEachChild(children, (node) => nodes.push(node));
     builder.reindex(properties, contentRoots, nodes);
     reindexed = builder.finish();
-    REINDEXED.set(topology, reindexed);
+    const list = nodeListOf(children);
+    const byTopology = REINDEXED.get(list) ?? new WeakMap();
+
+    byTopology.set(topology, [...held, reindexed]);
+    REINDEXED.set(list, byTopology);
   }
 
   return reindexed;
@@ -577,12 +593,13 @@ const currentTopology = (
 export const readRootOwnerPlaces = (
   editor: Editor,
   index: SnapshotIndex,
-  children: ChildrenList
+  children: ChildrenList,
+  schema?: CompiledEditorSchema
 ) => {
-  const known = TOPOLOGIES.get(index);
+  const known = uniqueTopologyOf(editor, index, children, schema);
 
   return known
-    ? topologyRootOwners(currentTopology(editor, known, children), (at) =>
+    ? topologyRootOwners(known, (at) =>
         getDefined(
           (children instanceof DocumentIndex
             ? children.nodes
@@ -728,8 +745,8 @@ export const assertBuiltUniqueMaps = (
 
   if (!topology) return;
   withoutCountingWork(() => {
-    for (const held of [topology, REINDEXED.get(topology)]) {
-      if (held?.uniqueProperties.length) {
+    for (const held of [topology, ...reindexesOf(topology, children)]) {
+      if (held.uniqueProperties.length) {
         assertMapMatchesWalk(root, children, held);
       }
     }
@@ -740,11 +757,12 @@ export const assertBuiltUniqueMaps = (
 export const uniqueTopologyOf = (
   editor: Editor,
   index: SnapshotIndex,
-  children: ChildrenList
+  children: ChildrenList,
+  schema?: CompiledEditorSchema
 ): Topology | null => {
   const stored = TOPOLOGIES.get(index);
 
-  return stored ? currentTopology(editor, stored, children) : null;
+  return stored ? currentTopology(editor, stored, children, schema) : null;
 };
 
 type RootSet = string | UniqueHashMap<true>;

@@ -3,6 +3,7 @@ import {
   createInternalDocumentChange,
   DocumentChange,
   getInternalDocumentRootChange,
+  valueRootNodes,
 } from '../../core/change/document-change';
 import {
   DocumentIndex,
@@ -18,7 +19,11 @@ import type {
   CommandProjectionMap,
   EditorFrameRecording,
 } from '../../core/command-document';
-import { createEditorCommit, getEditorCommitValue } from '../../core/commit';
+import {
+  createEditorCommit,
+  getEditorCommitSchemas,
+  getEditorCommitValue,
+} from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { ElementGenerationMaskedError } from '../../core/editor-schema';
 import {
@@ -45,7 +50,10 @@ import {
   orphanedRoots,
   schemaHasContentRoots,
 } from '../../core/root-ownership';
-import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import type {
+  CompiledEditorSchema,
+  SchemaSides,
+} from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
 import type { SelectionModeSchema } from '../../core/selection-protocol';
 import { countCoreWork } from '../../core/work';
@@ -67,6 +75,7 @@ import {
   verdictIncarnationsOf,
 } from '../facts/records';
 import type { AuthoredFormatProjection } from '../format';
+import { storedResolveSchemaOf } from '../resolve-schema';
 import { tokenLength } from '../tree/alignment';
 import { ElementReads, ValueHolders } from '../tree/holders';
 import { isAuthoredSetValued } from '../tree/marks';
@@ -857,10 +866,19 @@ class ModeProjection {
   step(
     before: JsonEditorValue,
     after: JsonEditorValue,
-    schema: AuthoredResolveSchema,
+    schemas: SchemaSides,
+    live: AuthoredResolveSchema,
     selections: Readonly<{ after: RootedSelection; before: RootedSelection }>,
     leans = false
   ) {
+    const resolveOf = (
+      compiled: CompiledEditorSchema,
+      value: JsonEditorValue
+    ) =>
+      [live, this.history?.last.schema, this.history?.prior?.schema].find(
+        (known) => known?.ownership === compiled
+      ) ?? storedResolveSchemaOf(compiled, value as EditorDocumentValue);
+    const schema = resolveOf(schemas.before, before);
     const content = contentRootsOf(before);
     const held = [this.history?.last, this.history?.prior].find(
       (synced) => synced && matches(synced, before, content, schema)
@@ -891,7 +909,7 @@ class ModeProjection {
       return apartFrom().lens(before, schema).toView(selection, root, leans);
     };
     const selectionBefore = shownBefore();
-    const to = this.sync(after, schema);
+    const to = this.sync(after, resolveOf(schemas.after, after));
     const from = held ?? apartFrom().sync(before, schema);
 
     return {
@@ -1034,20 +1052,17 @@ const mapOf = (
 };
 
 const snapshotOf = (
-  owner: Editor,
   value: JsonEditorValue,
   version: number,
-  selection: Selection
+  selection: Selection,
+  indexOf: () => EditorSnapshot['index']
 ): EditorSnapshot => {
   let index: EditorSnapshot['index'] | undefined;
   const snapshot = {
     selection,
     version,
     get index() {
-      return (index ??= getEditorProjectionSnapshotIndex(
-        owner,
-        (value as EditorDocumentValue).children
-      ));
+      return (index ??= indexOf());
     },
   };
 
@@ -1520,10 +1535,12 @@ export class ReviewLedger {
 
     const afterRoot = toInternalRoot(commit.selectionAfterRoot);
     const beforeRoot = toInternalRoot(commit.selectionBeforeRoot);
+    const schemas = getDefined(getEditorCommitSchemas(commit));
     const { after, before, changes, selectionAfter, selectionBefore } =
       this.modeOf(mode).step(
         getEditorCommitValue(commit, 'before'),
         getEditorCommitValue(commit),
+        schemas,
         this.schemaOf(),
         {
           after: { root: afterRoot, selection: commit.selectionAfter },
@@ -1541,28 +1558,38 @@ export class ReviewLedger {
       );
     }
 
+    const beforeIndexAt = (root: string) =>
+      getEditorProjectionSnapshotIndex(
+        this.owner,
+        valueRootNodes(before, root)
+      );
+    const afterIndexAt = (root: string) =>
+      getEditorProjectionSnapshotIndex(this.owner, valueRootNodes(after, root));
     const projected = createEditorCommit(
       {
         after: snapshotOf(
-          this.owner,
           after,
           commit.version,
-          afterRoot === 'main' ? selectionAfter : null
+          afterRoot === 'main' ? selectionAfter : null,
+          () => afterIndexAt('main')
         ),
+        afterIndexAt,
         afterValue: after,
         annotations: commit.annotations,
         before: snapshotOf(
-          this.owner,
           before,
           commit.previousVersion,
-          beforeRoot === 'main' ? selectionBefore : null
+          beforeRoot === 'main' ? selectionBefore : null,
+          () => beforeIndexAt('main')
         ),
+        beforeIndexAt,
         beforeValue: before,
         changes,
         dirtyStateKeys: commit.dirtyStateKeys,
         editor: this.owner,
         effects: commit.effects,
         replace: commit.changed.hasAny('replace'),
+        schemas,
         selectionAfter,
         selectionAfterRoot: afterRoot,
         selectionBefore,

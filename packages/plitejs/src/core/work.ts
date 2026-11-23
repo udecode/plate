@@ -161,6 +161,10 @@ export type CoreWork = {
   ownerOrderBuilds: number;
   /** Owner paths the identity topology resolved for `read.roots()`. */
   ownerPathsResolved: number;
+  /** Owner places and root entries `changed.rootPlacements()` compared across a commit: the places of each root whose node list the commit replaced without keeping its owner order, then the entries once a place moved or a new schema changed which roots its types declare. */
+  rootPlacementChecks: number;
+  /** Roots whose node lists `changed.rootPlacements()` compared across a commit to find the ones it replaced. */
+  rootListCompares: number;
   /** Mounted views a root's target pick asked whether an `Editable` shows them. */
   rootTargetChecks: number;
   historyHeadRootReads: number;
@@ -307,6 +311,8 @@ export const coreWork: CoreWork = {
   ownerPlaceAsks: 0,
   ownerOrderBuilds: 0,
   ownerPathsResolved: 0,
+  rootPlacementChecks: 0,
+  rootListCompares: 0,
   rootTargetChecks: 0,
   historyHeadRootReads: 0,
   ownershipIndexVisits: 0,

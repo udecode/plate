@@ -6261,6 +6261,11 @@ export const internedUniquePropertiesOf = (schema: CompiledEditorSchema) => {
   return list;
 };
 
+export type SchemaSides = Readonly<{
+  after: CompiledEditorSchema;
+  before: CompiledEditorSchema;
+}>;
+
 const ROOT_SLOTS = new WeakMap<CompiledEditorSchema, ContentRootSlots>();
 
 export const contentRootSlotsOf = (schema: CompiledEditorSchema) => {

@@ -112,6 +112,7 @@ import {
   createEditorSchemaContract,
   type CompiledEditorSchema,
   type EditorSchemaContract,
+  type SchemaSides,
 } from './schema-compiler';
 import { registerSchemaContribution } from './schema-contribution-registry';
 import {
@@ -2510,6 +2511,7 @@ export type PreparedPluginPublication = Readonly<{
   rollback: () => void;
   schemaCompilation: () => PreparedEditorSchemaCompilation;
   schemaContract: () => EditorSchemaContract;
+  schemas: SchemaSides;
   stage: () => void;
   validateDocument: (value: EditorDocumentValue) => void;
 }>;
@@ -2566,6 +2568,7 @@ const createNoopPublication = (
       }),
     stage() {},
     schemaContract: () => createEditorSchemaContract(schema),
+    schemas: Object.freeze({ after: schema, before: schema }),
     validateDocument() {},
   });
 };
@@ -3069,6 +3072,10 @@ const prepareRecordPublication = <TEditor extends Editor>(
         mergedCandidate.schemaContributions.compiled
       );
     },
+    schemas: Object.freeze({
+      after: mergedCandidate.schemaContributions.compiled,
+      before: previousCurrentRegistry.schemaContributions.compiled,
+    }),
     validateDocument(value: EditorDocumentValue) {
       validateCandidateDocument(value);
     },
