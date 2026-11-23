@@ -422,7 +422,7 @@ const getConsistentBlockTextMarks = (
 
 const blockReplacing = (
   state: CommandStateView,
-  [block, at]: NodeEntry<Descendant>,
+  at: Path,
   root: string,
   text: string,
   marks: Record<string, unknown> | null,
@@ -452,7 +452,13 @@ const blockReplacing = (
             ...parents,
             ...Array.from(
               state.nodes.levels({
-                at: state.key(block),
+                at: getDefined(
+                  state.key({
+                    offset: 0,
+                    path: at,
+                    ...(publicRoot ? { root: publicRoot } : {}),
+                  })
+                ),
                 reverse: true,
                 voids: true,
               }),
@@ -522,7 +528,7 @@ const getFullBlockTextReplacement = (
     );
   const replacement = blockReplacing(
     state,
-    getDefined(blocks[0]),
+    getDefined(blocks[0])[1],
     root,
     text,
     (typing ? state.marks() : null) ??
@@ -735,8 +741,11 @@ export const editorCommands: EditorCommands = Object.freeze({
       return at === null ? null : { ...input, at };
     },
     build: ({ input, state }) => {
+      const selection = state.selection();
+      const target =
+        input.at ?? (RangeApi.isRange(selection) ? selection : undefined);
       const range =
-        input.at === undefined ? null : resolveCommandRange(state, input.at);
+        target === undefined ? null : resolveCommandRange(state, target);
       const root = rootOrUpdateRoot(range?.anchor.root ?? range?.focus.root);
 
       if (range) {
@@ -747,12 +756,20 @@ export const editorCommands: EditorCommands = Object.freeze({
         ? readWholeBlockDelete(state, range, publicRoot)
         : null;
 
-      if (wholeBlocks) {
+      if (wholeBlocks && (input.at !== undefined || wholeBlocks.keepsFirst)) {
         const selectedBlocks = wholeBlocks.blocks;
         const [firstBlock, firstPath] = getDefined(selectedBlocks[0]);
-        const [lastBlock] = getDefined(selectedBlocks.at(-1));
+        const [, lastPath] = getDefined(selectedBlocks.at(-1));
+        const keyAt = (path: Path) =>
+          getDefined(
+            state.key({
+              offset: 0,
+              path,
+              ...(publicRoot ? { root: publicRoot } : {}),
+            })
+          );
         const textRange =
-          range && RangeApi.isRange(input.at) && wholeBlocks.keepsFirst
+          range && RangeApi.isRange(target) && wholeBlocks.keepsFirst
             ? range
             : null;
         const endsInFirst = textRange !== null && wholeBlocks.endsInFirst;
@@ -763,7 +780,7 @@ export const editorCommands: EditorCommands = Object.freeze({
             : {
                 anchor: RangeApi.start(textRange),
                 focus: {
-                  ...getDefined(state.points.end(state.key(firstBlock))),
+                  ...getDefined(state.points.end(keyAt(firstPath))),
                   ...(publicRoot ? { root: publicRoot } : {}),
                 },
               };
@@ -777,10 +794,10 @@ export const editorCommands: EditorCommands = Object.freeze({
                 ...(publicRoot ? { root: publicRoot } : {}),
               });
             }
-            if (!RangeApi.isCollapsed(at)) {
-              tx.fragment.delete({ at, direction: input.direction });
-            } else if (selectedBlocks.length > 1) {
+            if (RangeApi.isCollapsed(at)) {
               tx.selection.set({ anchor: at.anchor, focus: at.anchor });
+            } else {
+              tx.fragment.delete({ at, direction: input.direction });
             }
           });
         }
@@ -789,21 +806,16 @@ export const editorCommands: EditorCommands = Object.freeze({
         const index = getDefined(firstPath.at(-1));
         const previous = textRange
           ? undefined
-          : state.nodes.previous({
-              at: state.key(firstBlock),
-              sibling: true,
-            })?.[0];
+          : state.nodes.previous({ at: keyAt(firstPath), sibling: true });
         const previousPoint =
-          previous && NodeApi.isElement(previous)
-            ? state.points.end(state.key(previous))
+          previous && NodeApi.isElement(previous[0])
+            ? state.points.end(keyAt(previous[1]))
             : undefined;
         const next =
           textRange || previousPoint
             ? undefined
-            : state.nodes.next({ at: state.key(lastBlock) });
-        const nextPoint = next
-          ? state.points.start(state.key(next[0]))
-          : undefined;
+            : state.nodes.next({ at: keyAt(lastPath) });
+        const nextPoint = next ? state.points.start(keyAt(next[1])) : undefined;
         const mappedNextPoint = nextPoint
           ? {
               ...nextPoint,
@@ -819,22 +831,58 @@ export const editorCommands: EditorCommands = Object.freeze({
           ? null
           : blockReplacing(
               state,
-              getDefined(selectedBlocks[0]),
+              firstPath,
               root,
               '',
               state.marks() ??
                 getConsistentBlockTextMarks(
                   state,
-                  selectedBlocks.map(([block]) => state.key(block))
+                  selectedBlocks.map(([, path]) => keyAt(path))
                 )
             );
 
-        if (!survivingPoint && !defaultChild) {
+        if (
+          !survivingPoint &&
+          (!defaultChild ||
+            (NodeApi.isElement(defaultChild) &&
+              defaultChild.children.every(NodeApi.isText) &&
+              takesCaretAfterRemoval(state, firstBlock)))
+        ) {
           return state.transaction((tx) => {
             tx.fragment.delete({
               direction: input.direction,
               ...(input.at === undefined ? {} : { at: range ?? input.at }),
             });
+
+            if (!NodeApi.isElement(defaultChild)) return;
+
+            const kept = () =>
+              getDefined(
+                tx.key({
+                  offset: 0,
+                  path: firstPath,
+                  ...(publicRoot ? { root: publicRoot } : {}),
+                })
+              );
+            let block = tx.nodes.get(kept())?.[0];
+
+            while (
+              NodeApi.isElement(block) &&
+              block.children.length === 1 &&
+              NodeApi.isElement(block.children[0])
+            ) {
+              tx.nodes.unwrap({ at: kept() });
+              block = tx.nodes.get(kept())?.[0];
+            }
+            if (!NodeApi.isElement(block)) return;
+
+            const { children: _children, ...props } = defaultChild;
+            const stale = Object.keys(block).filter(
+              (key) => key !== 'children' && !(key in props)
+            );
+
+            tx.nodes.set(props, { at: kept() });
+            if (stale.length > 0) tx.nodes.unset(stale, { at: kept() });
           });
         }
 
@@ -939,7 +987,7 @@ export const editorCommands: EditorCommands = Object.freeze({
         });
         const replacement = blockReplacing(
           state,
-          getDefined(nodeBlocks[0]),
+          getDefined(nodeBlocks[0])[1],
           root,
           nodeReplacementText,
           (typing ? state.marks() : null) ??

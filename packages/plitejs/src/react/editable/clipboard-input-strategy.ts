@@ -377,7 +377,9 @@ const readCutDeletedRange = (editor: AnyEditor, selection: Range) => {
   const removed = resolveFragmentDeletedRange(editor, selection);
   const [start, end] = RangeApi.edges(selection);
 
-  return removed && !RangeApi.equals(removed, { anchor: start, focus: end })
+  return removed &&
+    (SelectionApi.isNode(removed) ||
+      !RangeApi.equals(removed, { anchor: start, focus: end }))
     ? removed
     : null;
 };

@@ -745,7 +745,10 @@ const getDefaultFragmentAttach = (contents: ParentNode) => {
 export const writeDOMSelectionData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
-  part?: (editor: DOMEditor<V>, selection: Range) => Range | null
+  part?: (
+    editor: DOMEditor<V>,
+    selection: Range
+  ) => NodeSelection | Range | null
 ) => {
   const selection = getEditorSelection(editor);
 

@@ -7,6 +7,7 @@ import {
   type Element as EditorElement,
   type Node,
   NodeApi,
+  type NodeSelection,
   type Path,
   PathApi,
   PointApi,
@@ -2997,7 +2998,7 @@ const reachView = (editor: EditorType) => resolveDOMReach(editor) ?? editor;
 export const writeViewSelectionPart = (
   editor: EditorType,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
-  part: (view: EditorType, selection: Range) => Range | null
+  part: (view: EditorType, selection: Range) => NodeSelection | Range | null
 ) => {
   writeDOMSelectionData(reachView(editor), data, part);
 };
