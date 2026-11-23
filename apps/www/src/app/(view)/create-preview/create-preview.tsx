@@ -58,7 +58,7 @@ export function CreatePreview({
   const [theme, setTheme] = React.useState(initialTheme);
   const [failedPreset, setFailedPreset] = React.useState<string | null>(null);
   const { base, editor } = initialConfig;
-  const { style } = config;
+  const { menuColor, style } = config;
   const preset = getPlateCreatePreset(config);
   const Page = createPreviewPages[`${base}/${editor}`];
 
@@ -133,6 +133,35 @@ export function CreatePreview({
       classList.add(...previous);
     };
   }, [style]);
+
+  // shadcn's install rewrites each menu's cn-menu classes for the picked menu
+  // color, so the preview rewrites every menu the same way as it mounts.
+  React.useLayoutEffect(() => {
+    const inverted = menuColor.startsWith('inverted');
+    const translucent = menuColor.endsWith('-translucent');
+    const paint = () => {
+      for (const menu of document.querySelectorAll('.cn-menu-target')) {
+        menu.classList.toggle('dark', inverted);
+
+        if (translucent && menu.hasAttribute('data-menu-translucent')) {
+          menu.classList.add('cn-menu-translucent');
+          menu.removeAttribute('data-menu-translucent');
+        } else if (
+          !translucent &&
+          menu.classList.contains('cn-menu-translucent')
+        ) {
+          menu.classList.remove('cn-menu-translucent');
+          menu.setAttribute('data-menu-translucent', '');
+        }
+      }
+    };
+    const observer = new MutationObserver(paint);
+
+    paint();
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [menuColor]);
 
   return (
     <>
