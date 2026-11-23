@@ -12,6 +12,8 @@ import {
 } from '@/lib/plate-create';
 import type { PlateCreateTheme } from '@/lib/plate-create-theme';
 
+import { IconLibraryContext } from './icon-placeholder';
+
 type PreviewTheme = PlateCreateTheme & { preset: string };
 
 const toDeclarations = (vars: Record<string, string>) =>
@@ -182,9 +184,11 @@ export function CreatePreview({
             default theme.
           </p>
         )}
-        <React.Suspense fallback={null}>
-          <Page />
-        </React.Suspense>
+        <IconLibraryContext value={config.iconLibrary}>
+          <React.Suspense fallback={null}>
+            <Page />
+          </React.Suspense>
+        </IconLibraryContext>
       </div>
     </>
   );

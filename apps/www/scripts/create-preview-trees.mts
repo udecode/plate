@@ -7,7 +7,11 @@ import type { Registry } from 'shadcn/schema';
 
 import type { PlateRegistryBase } from '@/lib/plate-registry-styles';
 
-import { ICON_PLACEHOLDER_MODULE } from '../src/lib/registry-icon-placeholder.ts';
+import {
+  ICON_PLACEHOLDER_LIBRARIES,
+  ICON_PLACEHOLDER_MODULE,
+  type IconLibrary,
+} from '../src/lib/registry-icon-placeholder.ts';
 import { readIconPlaceholders, toServedIcons } from './icon-placeholders.mts';
 import { parseModuleImports } from './registry-imports.mts';
 
@@ -45,6 +49,21 @@ const ICON_PLACEHOLDER_IMPORTS = new Set([
   ICON_PLACEHOLDER_MODULE,
 ]);
 const PREVIEW_ICON_PLACEHOLDER = '@/app/(view)/create-preview/icon-placeholder';
+
+const ICON_PACKAGES: Record<IconLibrary, string> = {
+  hugeicons: '@hugeicons/core-free-icons',
+  lucide: 'lucide-react-v1',
+  phosphor: '@phosphor-icons/react',
+  remixicon: '@remixicon/react',
+  tabler: '@tabler/icons-react',
+};
+
+// shadcn's icon transform adds a library's default props only when its usage
+// wraps the icon, as Hugeicons' does, so Phosphor's strokeWidth never lands.
+const drawIcon = (library: IconLibrary) =>
+  library === 'hugeicons'
+    ? '<HugeiconsIcon icon={Icon} strokeWidth={2} {...props} />'
+    : '<Icon {...props} />';
 
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '.jsx', '.json'];
 const UI_IMPORT_REGEX =
@@ -300,7 +319,7 @@ export async function writeCreatePreviewTrees({
 }) {
   const files = new Map<string, string>();
   const keys: string[] = [];
-  const drawnLucideIcons = new Set<string>();
+  const placeholders: Array<Record<IconLibrary, string>> = [];
 
   for (const [base, registry] of Object.entries(registries) as Array<
     [PlateRegistryBase, Registry]
@@ -316,9 +335,7 @@ export async function writeCreatePreviewTrees({
       for (const { content, source, treePath } of tree) {
         files.set(join(outDir, base, editor, treePath), content);
 
-        for (const { lucide } of readIconPlaceholders(content, source)) {
-          drawnLucideIcons.add(lucide);
-        }
+        placeholders.push(...readIconPlaceholders(content, source));
       }
 
       keys.push(`${base}/${editor}`);
@@ -337,17 +354,25 @@ export async function writeCreatePreviewTrees({
     join(outDir, 'index.d.ts'),
     `${header}import type { ComponentType, LazyExoticComponent } from 'react';\n\nexport declare const createPreviewPages: Record<\n${keys.map((key) => `  | '${key}'`).join('\n')},\n  LazyExoticComponent<ComponentType>\n>;\n`
   );
-  files.set(
-    join(outDir, 'icons/__lucide__.ts'),
-    `${header}export {\n${[...drawnLucideIcons]
-      .sort()
-      .map((name) => `  ${name},`)
-      .join('\n')}\n} from 'lucide-react';\n`
-  );
-  files.set(
-    join(outDir, 'icons/lucide.tsx'),
-    `${header}import type * as React from 'react';\n\nimport * as icons from './__lucide__';\n\nexport default function Icon({\n  name,\n  ...props\n}: React.ComponentProps<'svg'> & { name: keyof typeof icons }) {\n  const Svg = icons[name];\n\n  return <Svg {...props} />;\n}\n`
-  );
+  for (const library of ICON_PLACEHOLDER_LIBRARIES) {
+    const names = [
+      ...new Set(placeholders.map((placeholder) => placeholder[library])),
+    ];
+
+    files.set(
+      join(outDir, `icons/__${library}__.ts`),
+      `${header}export {\n${names
+        .sort()
+        .map((name) => `  ${name},`)
+        .join('\n')}\n} from '${ICON_PACKAGES[library]}';\n`
+    );
+    // Tabler types its ref as a component, Remix Icon takes no children and
+    // Hugeicons takes only a numeric stroke width, so the props leave those out.
+    files.set(
+      join(outDir, `icons/${library}.tsx`),
+      `${header}${library === 'hugeicons' ? "import { HugeiconsIcon } from '@hugeicons/react';\n" : ''}import type * as React from 'react';\n\nimport * as icons from './__${library}__';\n\nexport default function PreviewIcon({\n  name,\n  ...props\n}: Omit<React.ComponentProps<'svg'>, 'children' | 'ref' | 'strokeWidth'> & {\n  name: keyof typeof icons;\n  strokeWidth?: number;\n}) {\n  const Icon = icons[name];\n\n  return ${drawIcon(library)};\n}\n`
+    );
+  }
 
   for (const stale of await listFiles(outDir)) {
     if (!files.has(stale)) await rm(stale);
