@@ -1135,13 +1135,18 @@ export const handleWebKitShadowDOMBeforeInput = ({
     return true;
   }
 
-  const decision = decideWebKitProbeImport(editor, newRange);
+  const backward = rootWindow.getSelection()?.direction === 'backward';
+  const decision = decideWebKitProbeImport(editor, newRange, backward);
 
   if (decision.verdict === 'sync' || decision.verdict === 'claim') {
     decision.write(() => {
       writePliteViewSelection(editor, null);
       editor.update((tx) => {
-        tx.selection.set(pliteRange);
+        tx.selection.set(
+          backward
+            ? { anchor: pliteRange.focus, focus: pliteRange.anchor }
+            : pliteRange
+        );
       });
     });
   }

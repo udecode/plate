@@ -439,10 +439,11 @@ const decideEditableSelectionImport = (
 
 export const decideWebKitProbeImport = (
   editor: ReactRuntimeEditor,
-  range: AbstractRange
+  range: AbstractRange,
+  backward: boolean
 ) => {
   const editable = findDOMRootRuntime(range.startContainer)?.rootRef.current;
-  const points = getDOMRangeSelectionPoints(range);
+  const points = getDOMRangeSelectionPoints(range, backward);
 
   return editable
     ? decideEditableSelectionImport(editor, editable, 'place', points)
