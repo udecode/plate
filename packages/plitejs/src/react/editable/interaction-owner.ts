@@ -1,11 +1,15 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
-import { isDOMElement, isDOMNode } from '../../dom';
+import type { RootKey } from '../..';
+import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
+import { findDOMRootRuntime } from '../../dom/internal';
 import type {
   EditableHandlerContext,
   EditableKeyDownHandler,
 } from '../components/editable';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { applyUserKeyDownHandler } from './keyboard-input-strategy';
+import { getEditorRuntimeOwner, toInternalRoot } from './runtime-editor-api';
 
 type ExternalHostOwner = Readonly<{
   root: () => HTMLElement | null;
@@ -51,6 +55,71 @@ export const getExternalTextHostOwner = (target: EventTarget | null) => {
   return null;
 };
 
+export type NestedEditable =
+  | Readonly<{
+      element: HTMLElement;
+      kind: 'view';
+      root: RootKey;
+      view: ReactRuntimeEditor;
+    }>
+  | Readonly<{ element: HTMLElement; kind: 'foreign' }>;
+
+export const findNestedEditable = (
+  editorElement: Element,
+  target: EventTarget | null
+): NestedEditable | null => {
+  const element = isDOMElement(target)
+    ? target
+    : isDOMText(target)
+      ? target.parentElement
+      : null;
+  const nested = element?.closest('[data-editor="true"]');
+
+  if (
+    !(nested instanceof HTMLElement) ||
+    nested === editorElement ||
+    !editorElement.contains(nested)
+  ) {
+    return null;
+  }
+
+  const runtime = findDOMRootRuntime(nested);
+  const own = findDOMRootRuntime(editorElement);
+
+  if (
+    runtime?.rootRef.current !== nested ||
+    !own ||
+    getEditorRuntimeOwner(runtime.editor) !== getEditorRuntimeOwner(own.editor)
+  ) {
+    return { element: nested, kind: 'foreign' };
+  }
+
+  const view = runtime.editor as ReactRuntimeEditor;
+
+  return {
+    element: nested,
+    kind: 'view',
+    root: toInternalRoot(view.read((state) => state.view.root())),
+    view,
+  };
+};
+
+export const findSelectionNestedEditable = (editorElement: HTMLElement) => {
+  const selection = getSelection(
+    editorElement.getRootNode() as Document | ShadowRoot
+  );
+  const anchor = findNestedEditable(
+    editorElement,
+    selection?.anchorNode ?? null
+  );
+
+  return anchor &&
+    anchor.element ===
+      findNestedEditable(editorElement, selection?.focusNode ?? null)?.element
+    ? anchor
+    : null;
+};
+
 /** Registration, not a spoofable DOM attribute, grants foreign input ownership. */
 export const getEditableInteractionOwner = (
   root: Element | null,
@@ -62,8 +131,7 @@ export const getEditableInteractionOwner = (
   const node = target as Node;
   const element = node.nodeType === 1 ? (node as Element) : node.parentElement;
   if (!root.contains(node)) return 'outside' as const;
-  const editor = element?.closest('[data-editor="true"]');
-  if (editor && editor !== root) return 'nested-editor' as const;
+  if (findNestedEditable(root, node)) return 'nested-editor' as const;
   const within = (owner: Element | null | undefined) =>
     !!owner && owner !== root && root.contains(owner);
   if (

@@ -12,7 +12,7 @@ import {
   RangeApi,
   type Selection,
 } from '../..';
-import { getSelection, Hotkeys, isDOMElement, isDOMText } from '../../dom';
+import { Hotkeys, isDOMElement, isDOMText } from '../../dom';
 import {
   DOMRootRuntime,
   findDOMRootRuntime,
@@ -26,11 +26,11 @@ import {
   shouldModelOwnPlainVerticalLargeDocumentPlugin,
 } from './dom-coverage-vertical-selection';
 import type { EditableInputController, InputIntent } from './input-state';
-import { getExternalTextHostOwner } from './interaction-owner';
 import {
-  getEditorRuntimeOwner,
-  setEditorComposing,
-} from './runtime-editor-api';
+  findNestedEditable,
+  getExternalTextHostOwner,
+} from './interaction-owner';
+import { setEditorComposing } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 
 export type {
@@ -111,80 +111,10 @@ export const getDocumentBoundaryKeyboardMove = (
   return null;
 };
 
-const getNestedEditableDOMElement = (
-  editorElement: HTMLElement,
-  target: EventTarget | null
-) => {
-  const targetElement = isDOMElement(target)
-    ? target
-    : isDOMText(target)
-      ? target.parentElement
-      : null;
-  const targetEditor = targetElement?.closest('[data-editor="true"]');
-
-  return targetEditor &&
-    targetEditor !== editorElement &&
-    editorElement.contains(targetEditor)
-    ? targetEditor
-    : null;
-};
-
-export const isNestedEditableDOMTarget = (
-  editorElement: HTMLElement,
-  target: EventTarget | null
-) => !!getNestedEditableDOMElement(editorElement, target);
-
-export const getNestedEditableDOMSelectionRoot = (
-  editorElement: HTMLElement
-) => {
-  const rootNode = editorElement.getRootNode() as Document | ShadowRoot;
-  const selection = getSelection(rootNode);
-  const anchorElement = isDOMElement(selection?.anchorNode)
-    ? selection.anchorNode
-    : isDOMText(selection?.anchorNode)
-      ? selection.anchorNode.parentElement
-      : null;
-  const focusElement = isDOMElement(selection?.focusNode)
-    ? selection.focusNode
-    : isDOMText(selection?.focusNode)
-      ? selection.focusNode.parentElement
-      : null;
-  const anchorEditor = anchorElement?.closest('[data-editor="true"]');
-  const focusEditor = focusElement?.closest('[data-editor="true"]');
-
-  if (
-    anchorEditor &&
-    anchorEditor === focusEditor &&
-    anchorEditor !== editorElement &&
-    editorElement.contains(anchorEditor)
-  ) {
-    return anchorEditor.getAttribute('data-editor-root');
-  }
-
-  return null;
-};
-
 const getEditorDOMElement = (editor: ReactRuntimeEditor) => {
   const node = ReactEditor.editable(editor);
 
   return node instanceof HTMLElement ? node : null;
-};
-
-export const isSameRuntimeNestedDOMTarget = (
-  editor: ReactRuntimeEditor,
-  target: EventTarget | null
-) => {
-  const editorElement = getEditorDOMElement(editor);
-  const nestedEditable = editorElement
-    ? getNestedEditableDOMElement(editorElement, target)
-    : null;
-  const view = nestedEditable
-    ? findDOMRootRuntime(nestedEditable)?.editor
-    : null;
-
-  return (
-    !!view && getEditorRuntimeOwner(view) === getEditorRuntimeOwner(editor)
-  );
 };
 
 export const isInteractiveInternalTarget = (
@@ -204,7 +134,7 @@ export const isInteractiveInternalTarget = (
     return false;
   }
 
-  if (isNestedEditableDOMTarget(editorElement, target)) {
+  if (findNestedEditable(editorElement, target)) {
     return true;
   }
 

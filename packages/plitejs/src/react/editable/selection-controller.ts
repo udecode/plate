@@ -90,7 +90,10 @@ import {
   isEditableOutsideFocusBoundarySettling,
   isSelectionHeldForNativeMove,
 } from './input-state';
-import { getExternalTextHostOwner } from './interaction-owner';
+import {
+  findNestedEditable,
+  getExternalTextHostOwner,
+} from './interaction-owner';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   getSelection as editorGetSelection,
@@ -191,24 +194,6 @@ const createContentRootDOMRangeViewSelection = ({
       anchor: projectPoint(range.anchor),
       focus: projectPoint(range.focus),
     }
-  );
-};
-
-const isNestedEditableDOMTarget = (
-  editorElement: HTMLElement,
-  target: EventTarget | null
-) => {
-  const targetElement = isDOMElement(target)
-    ? target
-    : isDOMText(target)
-      ? target.parentElement
-      : null;
-  const targetEditor = targetElement?.closest('[data-editor="true"]');
-
-  return Boolean(
-    targetEditor &&
-    targetEditor !== editorElement &&
-    editorElement.contains(targetEditor)
   );
 };
 
@@ -615,8 +600,8 @@ export const syncEditorSelectionFromDOM = ({
   const { anchorNode, focusNode } = domSelection;
 
   if (
-    isNestedEditableDOMTarget(editorElement, anchorNode) ||
-    isNestedEditableDOMTarget(editorElement, focusNode)
+    !!findNestedEditable(editorElement, anchorNode) ||
+    !!findNestedEditable(editorElement, focusNode)
   ) {
     return;
   }
@@ -1419,14 +1404,14 @@ const importDOMSelectionChange = ({
     activeElement !== editorElement &&
     isDOMNode(activeElement) &&
     (ReactEditor.hasDOMNode(editor, activeElement) ||
-      isNestedEditableDOMTarget(editorElement, activeElement))
+      !!findNestedEditable(editorElement, activeElement))
   ) {
     return;
   }
 
   if (
-    isNestedEditableDOMTarget(editorElement, anchorNode) ||
-    isNestedEditableDOMTarget(editorElement, focusNode)
+    !!findNestedEditable(editorElement, anchorNode) ||
+    !!findNestedEditable(editorElement, focusNode)
   ) {
     return;
   }

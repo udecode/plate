@@ -24,11 +24,12 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
 import { selectionSyncRepair } from './caret-engine';
 import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
-import { isImeKeyDown, isNestedEditableDOMTarget } from './input-controller';
+import { isImeKeyDown } from './input-controller';
 import {
   type EditableInputController,
   endSelectionImport,
 } from './input-state';
+import { findNestedEditable } from './interaction-owner';
 import type { EditableRepairRequest } from './mutation-controller';
 import { dispatchCommand, editorCommands } from './runtime-editor-api';
 
@@ -339,7 +340,7 @@ export const moveByRenderedLines = ({
   if (
     !points ||
     [points.anchor, points.focus].some(
-      ([node]) => !root.contains(node) || isNestedEditableDOMTarget(root, node)
+      ([node]) => !root.contains(node) || !!findNestedEditable(root, node)
     )
   ) {
     return null;

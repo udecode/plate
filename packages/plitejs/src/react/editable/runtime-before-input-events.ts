@@ -34,9 +34,7 @@ import {
 } from './editing-kernel';
 import {
   armModelOwnedTextInputGuard,
-  getNestedEditableDOMSelectionRoot,
   isEditableModelSelectionPreferredForInput,
-  isNestedEditableDOMTarget,
   isSelectionInEditorView,
   setEditableModelSelectionPreference,
   shouldForceModelOwnedTextInput,
@@ -54,6 +52,10 @@ import {
   shouldMergeEditableCompositionHistory,
 } from './input-state';
 import { openInputTarget, textSealedElsewhere } from './input-target';
+import {
+  findNestedEditable,
+  findSelectionNestedEditable,
+} from './interaction-owner';
 import {
   applyModelOwnedBeforeInputMutation,
   applyModelOwnedNativeHistoryEvent,
@@ -540,7 +542,7 @@ export const useRuntimeBeforeInputEvents = ({
         if (
           !el ||
           profilePliteReactDuration('beforeinput-nested-editable-target', () =>
-            isNestedEditableDOMTarget(el, event.target)
+            findNestedEditable(el, event.target)
           )
         ) {
           return;
@@ -800,9 +802,11 @@ export const useRuntimeBeforeInputEvents = ({
             });
           }
           clearExpiredTextInputRepairEcho(inputController, now());
-          const selectionRoot =
-            getSelectionRoot(currentSelection) ??
-            getNestedEditableDOMSelectionRoot(el);
+          let selectionRoot = getSelectionRoot(currentSelection);
+          if (!selectionRoot) {
+            const nested = findSelectionNestedEditable(el);
+            selectionRoot = nested?.kind === 'view' ? nested.root : undefined;
+          }
           const viewRoot = profilePliteReactDuration(
             'beforeinput-read-view-root',
             () => toInternalRoot(editor.read((state) => state.view.root()))

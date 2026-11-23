@@ -89,7 +89,6 @@ const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
 );
 
 type MountedViews = {
-  lastFocused: AnyEditor | null;
   readonly topDocuments: Map<Document, Set<DOMRootRuntime>>;
   readonly views: Set<AnyEditor>;
 };
@@ -1108,7 +1107,6 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       DOM_ROOT_RUNTIMES_BY_EDITOR.set(this.editor, editorRuntimes);
       const documentEditor = documentOf(this.editor);
       const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(documentEditor) ?? {
-        lastFocused: null,
         topDocuments: new Map(),
         views: new Set(),
       };
@@ -1121,15 +1119,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       MOUNTED_VIEWS_BY_DOCUMENT.set(documentEditor, mounted);
       this.registeredTopDocument = top;
       DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR.delete(this.editor);
-      const markInputRuntimeActive = (event?: Event) => {
+      const markInputRuntimeActive = () => {
         LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
-        if (
-          !event ||
-          (event.type === 'focusin' &&
-            findDOMRootRuntime(event.target as Node) === runtime)
-        ) {
-          mounted.lastFocused = this.editor;
-        }
         notifyEditorDOMScopeListeners(this.editor);
       };
       const publishRootFocus = () => notifyEditorDOMScopeListeners(this.editor);
@@ -1193,7 +1184,6 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     if (editorRuntimes?.size === 0) {
       DOM_ROOT_RUNTIMES_BY_EDITOR.delete(this.editor);
       mounted?.views.delete(this.editor);
-      if (mounted?.lastFocused === this.editor) mounted.lastFocused = null;
       if (mounted?.views.size === 0) {
         MOUNTED_VIEWS_BY_DOCUMENT.delete(documentEditor);
       }

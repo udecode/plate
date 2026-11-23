@@ -75,9 +75,9 @@ import {
   isInteractiveInternalTarget,
   isNamedInputMethodKey,
   isNativeTextControlTarget,
-  isNestedEditableDOMTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
+import { findNestedEditable, type NestedEditable } from './interaction-owner';
 import {
   applyEditableCommand,
   applyModelOwnedTextInput,
@@ -190,37 +190,6 @@ const selectionSpansNativeTextInputBoundary = ({
   );
 };
 
-const getTargetElement = (target: EventTarget | null) =>
-  isDOMElement(target)
-    ? target
-    : isDOMText(target)
-      ? target.parentElement
-      : null;
-
-const getNestedEditableRootKey = (
-  editor: ReactRuntimeEditor,
-  target: EventTarget | null
-): RootKey | null => {
-  const targetElement = getTargetElement(target);
-  const targetEditor = targetElement?.closest('[data-editor="true"]');
-
-  if (!(targetEditor instanceof HTMLElement)) {
-    return null;
-  }
-
-  const editorElement = ReactEditor.editable(editor);
-
-  if (
-    !editorElement ||
-    targetEditor === editorElement ||
-    !editorElement.contains(targetEditor)
-  ) {
-    return null;
-  }
-
-  return targetEditor.getAttribute('data-editor-root') ?? null;
-};
-
 const qualifySelectionRoot = (
   selection: Range | Selection,
   root: RootKey | null
@@ -263,17 +232,9 @@ const readNestedEditableDOMSelection = (
   });
 };
 
-const getNestedEditableSelectionContext = ({
-  editor,
-  getMountedViewEditor,
-  target,
-}: {
-  editor: ReactRuntimeEditor;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
-  target: EventTarget | null;
-}) => {
-  const root = getNestedEditableRootKey(editor, target);
-  const nestedEditor = root ? (getMountedViewEditor?.(root) ?? null) : null;
+const getNestedEditableSelectionContext = (nested: NestedEditable) => {
+  const root = nested.kind === 'view' ? nested.root : null;
+  const nestedEditor = nested.kind === 'view' ? nested.view : null;
   const rawSelection = nestedEditor
     ? (readNestedEditableDOMSelection(nestedEditor) ??
       readRuntimeSelection(nestedEditor))
@@ -509,6 +470,9 @@ export const applyEditableKeyDown = ({
   };
 
   const editorElement = ReactEditor.editable(editor);
+  const nested = editorElement
+    ? findNestedEditable(editorElement, event.target)
+    : null;
 
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
@@ -518,20 +482,12 @@ export const applyEditableKeyDown = ({
       return keyDownHandled();
     }
 
-    const nestedEditableTarget =
-      !!editorElement && isNestedEditableDOMTarget(editorElement, event.target);
-    const nestedSelectionContext = nestedEditableTarget
-      ? getNestedEditableSelectionContext({
-          editor,
-          getMountedViewEditor,
-          target: event.target,
-        })
+    const nestedSelectionContext = nested
+      ? getNestedEditableSelectionContext(nested)
       : null;
     const selection =
       nestedSelectionContext?.selection ?? readRuntimeSelection(editor);
-    const projectedSelection = nestedEditableTarget
-      ? readPliteViewSelection(editor)
-      : null;
+    const projectedSelection = nested ? readPliteViewSelection(editor) : null;
     const projectedCommand = projectedSelection
       ? getEditableCommandFromKeyDown({
           event,
@@ -542,7 +498,7 @@ export const applyEditableKeyDown = ({
     const selectionRoot = SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
     const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
     const shouldHandleProjectedSelection =
-      nestedEditableTarget || selectionRoot !== viewRoot;
+      !!nested || selectionRoot !== viewRoot;
 
     if (shouldHandleProjectedSelection) {
       if (isContentRootKeyAnswered(event)) return keyDownHandled();
@@ -655,7 +611,7 @@ export const applyEditableKeyDown = ({
     return keyDownHandled();
   }
 
-  if (editorElement && isNestedEditableDOMTarget(editorElement, event.target)) {
+  if (nested) {
     return keyDownUnhandled();
   }
 

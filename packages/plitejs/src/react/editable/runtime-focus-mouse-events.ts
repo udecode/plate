@@ -10,7 +10,6 @@ import { readPliteViewSelection } from '../view-selection';
 import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableFocusMouseKernel } from './editing-kernel';
 import {
-  getNestedEditableDOMSelectionRoot,
   isInteractiveInternalTarget,
   isNativeDraggableTarget,
   isNativeInternalControlTarget,
@@ -21,6 +20,7 @@ import {
   useEditableMouseHandler,
 } from './input-router';
 import type { EditableInputController } from './input-state';
+import { findSelectionNestedEditable } from './interaction-owner';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
@@ -216,7 +216,7 @@ export const useRuntimeFocusMouseEvents = ({
       if (
         editorElement &&
         event.target === editorElement &&
-        getNestedEditableDOMSelectionRoot(editorElement)
+        findSelectionNestedEditable(editorElement)
       ) {
         nativeInternalFocusRef.current = false;
         // While this editor holds the caret, the nested editor's DOM

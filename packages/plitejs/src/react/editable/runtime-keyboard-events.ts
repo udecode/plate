@@ -31,17 +31,16 @@ import {
 } from './dom-coverage-vertical-selection';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableKeyDownKernel } from './editing-kernel';
-import {
-  isNestedEditableDOMTarget,
-  isSameRuntimeNestedDOMTarget,
-  isPlainVerticalDocumentBoundary,
-} from './input-controller';
+import { isPlainVerticalDocumentBoundary } from './input-controller';
 import { useEditableKeyboardHandler } from './input-router';
 import {
   type EditableInputController,
   recordEditableInputIntent,
 } from './input-state';
-import { getExternalTextHostOwner } from './interaction-owner';
+import {
+  findNestedEditable,
+  getExternalTextHostOwner,
+} from './interaction-owner';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
 import {
   getSnapshot as editorGetSnapshot,
@@ -586,19 +585,18 @@ export const useRuntimeKeyboardEvents = ({
         viewportRuntime,
       });
 
-      const isNestedEditableTarget = () => {
+      const findNested = () => {
         const editorElement = editor.api.dom.resolveDOMNode(editor);
 
-        return (
-          editorElement instanceof HTMLElement &&
-          isNestedEditableDOMTarget(editorElement, event.target)
-        );
+        return editorElement instanceof HTMLElement
+          ? findNestedEditable(editorElement, event.target)
+          : null;
       };
       const shouldCaptureProjectedSelection =
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
-          if (isNestedEditableTarget()) {
+          if (findNested()) {
             const shared = readRuntimeSelection(getEditorRuntimeOwner(editor));
 
             return !(
@@ -625,7 +623,7 @@ export const useRuntimeKeyboardEvents = ({
       const shouldCaptureTextHistory =
         decision.intent === 'history' &&
         (!!getExternalTextHostOwner(event.target) ||
-          isSameRuntimeNestedDOMTarget(editor, event.target));
+          findNested()?.kind === 'view');
       const shouldCapture =
         decision.targetOwner === 'internal-control' &&
         (shouldCaptureTextHistory ||
