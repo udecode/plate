@@ -69,7 +69,6 @@ export function TocElement({
     (innerEditor) => innerEditor.plugin(TocPlugin).read.headings(),
     {
       equalityFn: (previous, next) =>
-        previous !== null &&
         previous.length === next.length &&
         previous.every((heading, index) => {
           const nextHeading = next[index];

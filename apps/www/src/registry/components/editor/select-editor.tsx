@@ -375,7 +375,7 @@ function SelectEditorField({
   const [active, setActive] = React.useState(FIRST_OPTION);
   const chips = useEditorSelector(
     (current) => current.plugin(SelectTagPlugin).read.items(),
-    { equalityFn: (previous, next) => !!previous && sameItems(previous, next) }
+    { equalityFn: sameItems }
   );
   const search = useEditorSelector((current) => current.read.text.string([]));
   const options = React.useMemo(

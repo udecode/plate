@@ -397,7 +397,7 @@ export const EditingAreaRootEditors = ({
 /** Selector options for `useRuntimeState` and `useRootState`. */
 export type RuntimeStateSelectorOptions<T> = {
   deferred?: boolean;
-  equalityFn?: (a: T | null, b: T) => boolean;
+  equalityFn?: (a: T, b: T) => boolean;
   shouldUpdate?: (change?: EditorCommit) => boolean;
 };
 

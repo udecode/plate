@@ -4,42 +4,22 @@ import { sameResult } from '../../core/same-result';
 import { countCoreWork } from '../../core/work';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
-/**
- * Create a selector that updates when an `update` function is called, and
- * which only causes the component to render when the result of `selector`
- * differs from the previous result according to `equalityFn`.
- *
- * The latest selector and equality function are committed after each render,
- * so callers do not need to memoize inline selectors for correctness.
- *
- * @example
- * const [state, update] = useGenericSelector(selector, equalityFn)
- *
- * useIsomorphicLayoutEffect(() => {
- *   return addEventListener(update)
- * }, [addEventListener, update])
- *
- * return state
- */
-
 type GenericSelectorSnapshot = {
   version: number;
 };
 
 type CommittedGenericSelector<T> = {
-  equalityFn: (a: T | null, b: T) => boolean;
-  selector: (() => T) | null;
-  selectedState: T | null;
+  equalityFn: (a: T, b: T) => boolean;
+  selection: { selector: () => T; state: T } | null;
   subscriptionCallbackError: Error | undefined;
 };
 
 const createGenericSelectorStore = <T,>(
-  equalityFn: (a: T | null, b: T) => boolean
+  equalityFn: (a: T, b: T) => boolean
 ) => {
   let committed: CommittedGenericSelector<T> = {
     equalityFn,
-    selector: null,
-    selectedState: null,
+    selection: null,
     subscriptionCallbackError: undefined,
   };
   let snapshot: GenericSelectorSnapshot = { version: 0 };
@@ -56,7 +36,7 @@ const createGenericSelectorStore = <T,>(
     commitRender: (
       renderSnapshot: GenericSelectorSnapshot,
       selector: () => T,
-      nextEqualityFn: (a: T | null, b: T) => boolean,
+      nextEqualityFn: (a: T, b: T) => boolean,
       selectedState: T
     ) => {
       if (snapshot !== renderSnapshot) {
@@ -65,8 +45,7 @@ const createGenericSelectorStore = <T,>(
 
       committed = {
         equalityFn: nextEqualityFn,
-        selector,
-        selectedState,
+        selection: { selector, state: selectedState },
         subscriptionCallbackError: undefined,
       };
     },
@@ -80,21 +59,23 @@ const createGenericSelectorStore = <T,>(
       };
     },
     update: () => {
-      if (!committed.selector) {
+      const { selection } = committed;
+
+      if (!selection) {
         return;
       }
 
       try {
         countCoreWork('selectorVisits');
-        const newSelectedState = committed.selector();
+        const newSelectedState = selection.selector();
 
-        if (committed.equalityFn(committed.selectedState, newSelectedState)) {
+        if (committed.equalityFn(selection.state, newSelectedState)) {
           return;
         }
 
         committed = {
           ...committed,
-          selectedState: newSelectedState,
+          selection: { selector: selection.selector, state: newSelectedState },
           subscriptionCallbackError: undefined,
         };
       } catch (error) {
@@ -112,7 +93,7 @@ const createGenericSelectorStore = <T,>(
 
 export function useGenericSelector<T>(
   selector: () => T,
-  equalityFn: (a: T | null, b: T) => boolean = sameResult
+  equalityFn: (a: T, b: T) => boolean = sameResult
 ): [state: T, update: () => void] {
   'use no memo';
 
@@ -123,24 +104,25 @@ export function useGenericSelector<T>(
     store.getSnapshot
   );
   const committed = store.getCommitted();
+  const { selection } = committed;
 
   let selectedState: T;
 
   try {
     if (
-      selector !== committed.selector ||
-      equalityFn !== committed.equalityFn ||
-      committed.subscriptionCallbackError
+      selection &&
+      selector === selection.selector &&
+      equalityFn === committed.equalityFn &&
+      !committed.subscriptionCallbackError
     ) {
+      selectedState = selection.state;
+    } else {
       const selectorResult = selector();
 
-      if (equalityFn(committed.selectedState, selectorResult)) {
-        selectedState = committed.selectedState as T;
-      } else {
-        selectedState = selectorResult;
-      }
-    } else {
-      selectedState = committed.selectedState as T;
+      selectedState =
+        selection && equalityFn(selection.state, selectorResult)
+          ? selection.state
+          : selectorResult;
     }
   } catch (error) {
     if (committed.subscriptionCallbackError && isError(error)) {

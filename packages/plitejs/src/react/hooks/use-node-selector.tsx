@@ -153,7 +153,7 @@ const shouldSkipSyncedTextRender = (
 
 function useRuntimeNodeSelector<T>(
   selector: (context: EditorNodeSelectorContext) => T,
-  equalityFn: ((a: T | null, b: T) => boolean) | undefined,
+  equalityFn: ((a: T, b: T) => boolean) | undefined,
   {
     deferred = false,
     includeRootOrderChanges = false,
@@ -218,7 +218,7 @@ function useRuntimeNodeSelector<T>(
  */
 export function useNodeSelector<T>(
   selector: (context: EditorNodeSelectorContext) => T,
-  equalityFn?: (a: T | null, b: T) => boolean,
+  equalityFn?: (a: T, b: T) => boolean,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
   return useRuntimeNodeSelector(selector, equalityFn, options);
@@ -226,7 +226,7 @@ export function useNodeSelector<T>(
 
 export function useMountedNodeRenderSelector<T>(
   selector: (context: EditorNodeSelectorContext) => T,
-  equalityFn: (a: T | null, b: T) => boolean = Object.is,
+  equalityFn: (a: T, b: T) => boolean = Object.is,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
   return useRuntimeNodeSelector(selector, equalityFn, {
@@ -244,7 +244,7 @@ export function useMountedNodeRenderSelector<T>(
  */
 export function useTextSelector<T>(
   selector: (context: EditorTextSelectorContext) => T,
-  equalityFn?: (a: T | null, b: T) => boolean,
+  equalityFn?: (a: T, b: T) => boolean,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
   const textSelector = useCallback(
@@ -262,7 +262,7 @@ export function useTextSelector<T>(
 
 export function useMountedTextRenderSelector<T>(
   selector: (context: EditorTextSelectorContext) => T,
-  equalityFn?: (a: T | null, b: T) => boolean,
+  equalityFn?: (a: T, b: T) => boolean,
   options: EditorRuntimeSelectorOptions = {}
 ): T {
   const textSelector = useCallback(

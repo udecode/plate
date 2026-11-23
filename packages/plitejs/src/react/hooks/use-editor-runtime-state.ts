@@ -16,7 +16,7 @@ export interface EditorRuntimeStateSelectorOptions<
   T,
   TEditor extends Editor<any, any> = Editor<any, any>,
 > {
-  equalityFn?: (a: T | null, b: T) => boolean;
+  equalityFn?: (a: T, b: T) => boolean;
   shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;
 }
 

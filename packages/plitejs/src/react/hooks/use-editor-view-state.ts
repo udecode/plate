@@ -10,7 +10,7 @@ import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 /** Options for explicit editor view-state selectors. */
 export interface EditorViewStateSelectorOptions<T> {
-  equalityFn?: (a: T | null, b: T) => boolean;
+  equalityFn?: (a: T, b: T) => boolean;
 }
 
 /**

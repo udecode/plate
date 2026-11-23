@@ -51,7 +51,7 @@ export type EditorSelectorContextValue = {
 /** Commit-subscription options for selectors that read from the editor. */
 export interface EditorSelectorOptions<T = unknown> {
   deferred?: boolean;
-  equalityFn?: (a: T | null, b: T) => boolean;
+  equalityFn?: (a: T, b: T) => boolean;
   includeRootOrderChanges?: boolean;
   profileId?: string;
   runtimeEventSource?: 'node' | 'path' | 'render' | 'selection';
@@ -63,7 +63,7 @@ export interface EditorSelectorOptions<T = unknown> {
 /** Options for selectors that read from the immutable editor state view. */
 export interface EditorStateSelectorOptions<T> {
   deferred?: boolean;
-  equalityFn?: (a: T | null, b: T) => boolean;
+  equalityFn?: (a: T, b: T) => boolean;
   shouldUpdate?: (change?: EditorCommit) => boolean;
 }
 

@@ -19686,7 +19686,7 @@
           "kind": "interface",
           "name": "EditorRuntimeStateSelectorOptions",
           "runtime": false,
-          "signature": "interface EditorRuntimeStateSelectorOptions<T, TEditor extends Editor$3<any, any> = Editor$3<any, any>> {\n  equalityFn?: (a: T | null, b: T) => boolean;\n  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;\n}",
+          "signature": "interface EditorRuntimeStateSelectorOptions<T, TEditor extends Editor$3<any, any> = Editor$3<any, any>> {\n  equalityFn?: (a: T, b: T) => boolean;\n  shouldUpdate?: (change?: EditorCommit<ValueOf<TEditor>>) => boolean;\n}",
           "source": null,
           "typeParameters": [
             "T",
@@ -21031,7 +21031,7 @@
           "kind": "interface",
           "name": "EditorViewStateSelectorOptions",
           "runtime": false,
-          "signature": "interface EditorViewStateSelectorOptions<T> {\n  equalityFn?: (a: T | null, b: T) => boolean;\n}",
+          "signature": "interface EditorViewStateSelectorOptions<T> {\n  equalityFn?: (a: T, b: T) => boolean;\n}",
           "source": null,
           "typeParameters": [
             "T"
@@ -25829,7 +25829,7 @@
           "kind": "type",
           "name": "RuntimeStateSelectorOptions",
           "runtime": false,
-          "signature": "type RuntimeStateSelectorOptions<T> = {\n  deferred?: boolean;\n  equalityFn?: (a: T | null, b: T) => boolean;\n  shouldUpdate?: (change?: EditorCommit) => boolean;\n};",
+          "signature": "type RuntimeStateSelectorOptions<T> = {\n  deferred?: boolean;\n  equalityFn?: (a: T, b: T) => boolean;\n  shouldUpdate?: (change?: EditorCommit) => boolean;\n};",
           "source": null,
           "typeParameters": [
             "T"
