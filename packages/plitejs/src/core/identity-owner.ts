@@ -340,11 +340,11 @@ type Page = Readonly<{
 }>;
 
 class OwnerOrderVersion {
-  declare private readonly guards: 'owner order';
+  private readonly guards = 'owner order';
 }
 
 class PlacementVersion {
-  declare private readonly guards: 'owner paths';
+  private readonly guards = 'owner paths';
 }
 
 export type Topology = Readonly<{
