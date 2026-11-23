@@ -1,19 +1,20 @@
 import {
-  DocumentChange,
+  createInternalDocumentChange,
+  type DocumentChange,
   getInternalDocumentChangeRecords,
+  getInternalDocumentRootChange,
   valueRoot,
+  valueRootIndex,
   withoutRetainedRecordSets,
 } from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
+import type { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import {
-  applyRecordOps,
-  deriveValue,
   getRecordText,
   getValueRecords,
   type RecordOps,
   recordOpsBetween,
-  showValueRecords,
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { sameDocument } from '../protocol';
@@ -51,18 +52,6 @@ const keepsItsRecords = (entry: PutEntry, head: JsonEditorValue) => {
   });
 };
 
-const withRoot = (
-  value: JsonEditorValue,
-  root: string,
-  nodes: readonly JsonNode[]
-): JsonEditorValue =>
-  deriveValue(
-    value,
-    root === 'main'
-      ? { children: nodes }
-      : { roots: { ...value.roots, [root]: nodes } }
-  );
-
 const blocksBack = (
   entry: PutEntry,
   head: JsonEditorValue,
@@ -77,39 +66,37 @@ const blocksBack = (
   if (walk === 'crossed') return null;
   if ([...walk.writers].some((writer) => writer !== entry.writer)) return null;
 
-  let value: JsonEditorValue = {
-    children: head.children,
-    ...(head.roots ? { roots: head.roots } : {}),
-  };
+  const roots = new Map<string, RootChange>();
 
-  for (const [index, { after, before }] of windows.entries()) {
+  for (const [index, { after }] of windows.entries()) {
     const { end, root, start } = walk.windows[index];
-    const current = valueRoot(head, root);
 
     if (
       !jsonEqual(
-        current.slice(start, end),
+        valueRoot(head, root).slice(start, end),
         valueRoot(entry.after, root).slice(after.start, after.end)
       )
     ) {
       return null;
     }
-    value = withRoot(value, root, [
-      ...current.slice(0, start),
-      ...valueRoot(entry.before, root).slice(before.start, before.end),
-      ...current.slice(end),
-    ]);
+
+    const written = valueRootIndex(entry.after, root);
+    const current = valueRootIndex(head, root);
+    const part = getInternalDocumentRootChange(inverse, root)?.within(
+      written.childPosition([], after.start),
+      written.childPosition([], after.end)
+    );
+
+    if (!part) return null;
+    roots.set(
+      root,
+      part.embed(current.length, current.childPosition([], start))
+    );
   }
 
-  showValueRecords(
-    value,
-    applyRecordOps(
-      getValueRecords(head),
-      getInternalDocumentChangeRecords(inverse)
-    )
-  );
-
-  return DocumentChange.between(head, value);
+  return createInternalDocumentChange(roots, {
+    records: getInternalDocumentChangeRecords(inverse),
+  });
 };
 
 export const putAllIndexOf = (

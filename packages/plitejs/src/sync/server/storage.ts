@@ -34,11 +34,22 @@ export type ChangeOwner = Readonly<{ author: string | null; change: string }>;
 export type Settlement = Readonly<{ mark: WriterMark }> &
   (
     | Readonly<{
-        entry: StoredEntry;
+        /**
+         * The document after `entry`, saved as the checkpoint at its version
+         * and time. Storage then drops the entries at or below the newest
+         * checkpoint saved before `compactBefore`, keeping every receipt,
+         * writer mark and change owner.
+         */
+        checkpoint?: Readonly<{
+          compactBefore: number;
+          document: JsonEditorValue;
+        }>;
+        entry: StoredEntry & Readonly<{ bytes: number }>;
         owners: readonly ChangeOwner[];
         receipt: StoredReceipt & Readonly<{ status: 'accepted' }>;
       }>
     | Readonly<{
+        checkpoint?: undefined;
         entry?: undefined;
         owners?: undefined;
         receipt: StoredReceipt & Readonly<{ status: 'satisfied' }>;
@@ -55,18 +66,13 @@ export type StoredRoom = Readonly<{
 
 /**
  * A room's durable state. `settle` is the one write a host maps to one
- * transaction, so a crash leaves the entry, the mark, the receipt and the
- * owners all written or none of them. It never replaces a stored owner.
+ * transaction, so a crash leaves the entry, the mark, the receipt, the owners
+ * and the checkpoint all written or none of them. It never replaces a stored
+ * owner.
  */
 export type SyncStorage = Readonly<{
   /** The newest checkpoint at or below `version`. */
   checkpoint: (room: string, version: number) => Promise<Checkpoint | null>;
-  /**
-   * Drops the entries at or below the newest checkpoint written before
-   * `before`, keeping every receipt, writer mark and change owner, and
-   * returns the new floor.
-   */
-  compact: (room: string, before: number) => Promise<number>;
   /** The entries after `version`, oldest first. */
   entries: (room: string, version: number) => Promise<readonly StoredEntry[]>;
   /**
@@ -82,12 +88,18 @@ export type SyncStorage = Readonly<{
       schema: string;
     }>
   ) => Promise<StoredRoom>;
+  /** The sum of the `bytes` stored with the entries after `version`. */
+  logged: (room: string, version: number) => Promise<number>;
   mark: (room: string, writer: string) => Promise<WriterMark | null>;
   owners: (
     room: string,
     changes: readonly string[]
   ) => Promise<readonly ChangeOwner[]>;
   receipt: (room: string, key: ReceiptKey) => Promise<StoredReceipt | null>;
-  saveCheckpoint: (room: string, checkpoint: Checkpoint) => Promise<void>;
-  settle: (room: string, settlement: Settlement) => Promise<void>;
+  /**
+   * Stores `entry.bytes`, the UTF-8 length of the entry's change JSON as the
+   * room measured it, and resolves to the room's floor once the settlement is
+   * written.
+   */
+  settle: (room: string, settlement: Settlement) => Promise<number>;
 }>;

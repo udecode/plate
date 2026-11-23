@@ -46,7 +46,12 @@ import {
   type SyncTakeBack,
 } from './grant';
 import { ownersToBind, seedOwnersOf } from './owners';
-import type { ChangeOwner, StoredEntry, SyncStorage } from './storage';
+import type {
+  ChangeOwner,
+  Checkpoint,
+  StoredEntry,
+  SyncStorage,
+} from './storage';
 import {
   type LaterEntry,
   ownTakeBack,
@@ -57,9 +62,12 @@ import {
 
 const IDLE_MS = 60_000;
 const CHECKPOINT_EVERY = 256;
+const CHECKPOINT_BYTES = SYNC_MAX_MESSAGE_BYTES;
+const READ_BYTES = CHECKPOINT_BYTES + SYNC_MAX_MESSAGE_BYTES;
 const TAKE_BACK_SCAN = 256;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_WAITING = 8;
+const MAX_REFUSED = MAX_WAITING;
 const MAX_WAITING_BYTES =
   SYNC_MAX_MESSAGE_BYTES + SYNC_MAX_BEFORE_WELCOME_BYTES;
 
@@ -80,6 +88,7 @@ export type SyncConnectionSnapshot =
       grant: SyncGrant | null;
       joined: Readonly<{ epoch: string; schema: string }> | null;
       kind: 'open';
+      refused: number;
       sentThrough: number;
       welcomedEpoch: string | null;
     }>;
@@ -133,12 +142,14 @@ type Peer = {
 };
 
 type LoadedRoom = {
+  checkpointed: number;
   editor: AnyEditor;
   epoch: string;
   floor: number;
   head: number;
   headEntry: SyncEntry | null;
   isSetValued: SetValued;
+  logged: number;
   name: string;
   schema: string;
   serving: boolean;
@@ -166,6 +177,7 @@ type CoveredStep = SyncStep &
 
 type Admission =
   | Readonly<{
+      bytes: number;
       headValue: JsonEditorValue;
       kind: 'admitted';
       published: DocumentChangeJson;
@@ -245,12 +257,14 @@ export const createSyncServer = <
       schema,
     });
     const room: LoadedRoom = {
+      checkpointed: stored.floor,
       editor,
       epoch: stored.epoch,
       floor: stored.floor,
       head: stored.head,
       headEntry: null,
       isSetValued: setValuedIn(editor),
+      logged: 0,
       name,
       schema,
       serving: false,
@@ -259,9 +273,12 @@ export const createSyncServer = <
 
     if (stored.schema !== schema) return room;
 
-    const { baseValue } = await storedHistory(name, room.head);
+    const checkpoint = await checkpointAt(name, room.head);
+    const { baseValue } = await replay(name, checkpoint, room.head);
 
     room.value = baseValue;
+    room.checkpointed = checkpoint.version;
+    room.logged = await storage.logged(name, checkpoint.version);
     serveFromHead(room);
 
     return room;
@@ -284,13 +301,17 @@ export const createSyncServer = <
     serveFromHead(room);
   };
 
-  const storedHistory = async (name: string, base: number) => {
-    const checkpoint = await storage.checkpoint(name, base);
+  const checkpointAt = async (name: string, version: number) => {
+    const checkpoint = await storage.checkpoint(name, version);
 
     if (!checkpoint) {
-      throw new Error(`Room ${name} has no checkpoint at ${base}.`);
+      throw new Error(`Room ${name} has no checkpoint at ${version}.`);
     }
 
+    return checkpoint;
+  };
+
+  const replay = async (name: string, checkpoint: Checkpoint, base: number) => {
     let baseValue: JsonEditorValue = checkpoint.document;
     const gap: Array<Readonly<{ change: DocumentChange; writer: string }>> = [];
 
@@ -303,6 +324,18 @@ export const createSyncServer = <
 
     return { baseValue, gap };
   };
+
+  const boundedHistory = async (
+    name: string,
+    checkpoint: Checkpoint,
+    base: number
+  ) =>
+    (await storage.logged(name, checkpoint.version)) > READ_BYTES
+      ? null
+      : replay(name, checkpoint, base);
+
+  const storedHistory = async (name: string, base: number) =>
+    boundedHistory(name, await checkpointAt(name, base), base);
 
   const historyOf = (room: LoadedRoom, base: number) =>
     base === room.head
@@ -432,9 +465,21 @@ export const createSyncServer = <
     );
   };
 
+  const sinceCheckpointBeforeHead = async (room: LoadedRoom) => {
+    const checkpoint = await checkpointAt(room.name, room.head - 1);
+
+    return boundedHistory(room.name, checkpoint, checkpoint.version);
+  };
+
   const recentEntries = async (room: LoadedRoom) => {
     const from = Math.max(room.floor, room.head - TAKE_BACK_SCAN);
-    const { baseValue, gap } = await storedHistory(room.name, from);
+    const history =
+      (await storedHistory(room.name, from)) ??
+      (await sinceCheckpointBeforeHead(room));
+
+    if (!history) return null;
+
+    const { baseValue, gap } = history;
     const entries: LaterEntry[] = [];
     let value = baseValue;
 
@@ -486,6 +531,9 @@ export const createSyncServer = <
     }
 
     const entries = await recentEntries(room);
+
+    if (!entries) return 'grant';
+
     const index = putAllIndexOf(
       entries.map(({ change }) => change),
       cover.set,
@@ -515,13 +563,16 @@ export const createSyncServer = <
     grant: SyncGrant,
     writer: string
   ): Promise<CoveredStep | 'grant'> => {
-    const change = ownTakeBack(
-      await recentEntries(room),
-      writer,
-      room.value,
-      batch.after,
-      getCompiledEditorSchema(room.editor)
-    );
+    const entries = await recentEntries(room);
+    const change =
+      entries &&
+      ownTakeBack(
+        entries,
+        writer,
+        room.value,
+        batch.after,
+        getCompiledEditorSchema(room.editor)
+      );
 
     const after = change && attempt(() => change.apply(room.value));
 
@@ -577,14 +628,15 @@ export const createSyncServer = <
 
     const json = commit.toJSON();
     const text = JSON.stringify(json);
+    const bytes = measureMessage(text, maxChangeBytes);
 
-    if (measureMessage(text, maxChangeBytes) === null) {
+    if (bytes === null) {
       renewEditor(room);
 
       return { kind: 'refused', reason: 'size' };
     }
 
-    return { headValue, kind: 'admitted', published: json, text };
+    return { bytes, headValue, kind: 'admitted', published: json, text };
   };
 
   const settleIn = async (
@@ -640,8 +692,11 @@ export const createSyncServer = <
 
     if (!change) return refuse('invalid');
 
-    const { baseValue, gap } = await historyOf(room, base);
+    const history = await historyOf(room, base);
 
+    if (!history) return refuse('expired');
+
+    const { baseValue, gap } = history;
     const own = attempt(() => ({
       after: change.apply(baseValue),
       before: baseValue,
@@ -744,14 +799,25 @@ export const createSyncServer = <
 
     if (admission.kind === 'refused') return refuse(admission.reason);
 
-    const { published } = admission;
+    const { bytes, headValue, published } = admission;
     const rewritten =
       admission.text === JSON.stringify(submit.change) ? {} : { published };
     const version = room.head + 1;
     const at = Date.now();
+    const due =
+      version - room.checkpointed >= CHECKPOINT_EVERY ||
+      room.logged + bytes >= CHECKPOINT_BYTES;
 
-    await storage.settle(room.name, {
-      entry: { at, change: published, seq, version, writer },
+    room.floor = await storage.settle(room.name, {
+      ...(due
+        ? {
+            checkpoint: {
+              compactBefore: at - RETENTION_MS,
+              document: documentOf(headValue),
+            },
+          }
+        : {}),
+      entry: { at, bytes, change: published, seq, version, writer },
       mark,
       owners: covered.owners,
       receipt: { digest, key, status: 'accepted', version, ...rewritten },
@@ -759,16 +825,9 @@ export const createSyncServer = <
 
     room.head = version;
     room.headEntry = { change: published, seq, version, writer };
-    room.value = admission.headValue;
-
-    if (version % CHECKPOINT_EVERY === 0) {
-      await storage.saveCheckpoint(room.name, {
-        at,
-        document: documentOf(room.value),
-        version,
-      });
-      room.floor = await storage.compact(room.name, at - RETENTION_MS);
-    }
+    room.value = headValue;
+    room.checkpointed = due ? version : room.checkpointed;
+    room.logged = due ? 0 : room.logged + bytes;
 
     return {
       ...rewritten,
@@ -785,7 +844,12 @@ export const createSyncServer = <
     version: number | null
   ): Promise<SyncServerMessage | null> => {
     if (version === room.head) return null;
-    if (version !== null && version >= room.floor && version < room.head) {
+    if (
+      version !== null &&
+      version >= room.floor &&
+      version < room.head &&
+      (await storage.logged(room.name, version)) <= READ_BYTES
+    ) {
       const entries = await storage.entries(room.name, version);
 
       return { entries: entries.map(entryOf), from: version, type: 'entries' };
@@ -856,6 +920,7 @@ export const createSyncServer = <
     const kept = restored?.kind === 'open' ? restored : null;
     let joined = kept?.joined ?? null;
     let grant = kept?.grant ?? null;
+    let refused = kept?.refused ?? 0;
     let queue: Promise<unknown> = Promise.resolve();
     const waiting: Array<Readonly<{ bytes: number; data: string }>> = [];
     let waitingBytes = 0;
@@ -890,6 +955,7 @@ export const createSyncServer = <
 
     const hello = async (message: SyncHello) => {
       joined = null;
+      refused = 0;
       leaveBroadcast();
 
       if (message.protocol !== SYNC_PROTOCOL) {
@@ -924,7 +990,7 @@ export const createSyncServer = <
     const submit = async (message: SyncSubmit) => {
       const member = joined && grant !== null ? { ...joined, grant } : null;
 
-      if (!member) {
+      if (!member || refused >= MAX_REFUSED) {
         peer.deliver(refusal(message, 'hello', 0));
 
         return;
@@ -933,6 +999,7 @@ export const createSyncServer = <
       await writeTurn(request.room, async (room) => {
         const receipt = await settleIn(room, member, message);
 
+        if (receipt.status === 'refused') refused += 1;
         if (
           receipt.status === 'accepted' &&
           peer.sentThrough === receipt.version - 1
@@ -995,6 +1062,7 @@ export const createSyncServer = <
               grant,
               joined,
               kind: 'open',
+              refused,
               sentThrough: peer.sentThrough,
               welcomedEpoch: peer.welcomedEpoch,
             }

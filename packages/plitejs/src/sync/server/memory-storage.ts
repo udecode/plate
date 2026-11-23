@@ -11,7 +11,7 @@ import type {
 
 type MemoryRoom = {
   checkpoints: Checkpoint[];
-  entries: StoredEntry[];
+  entries: Array<Readonly<{ bytes: number; entry: StoredEntry }>>;
   epoch: string;
   floor: number;
   marks: Map<string, WriterMark>;
@@ -26,10 +26,23 @@ const bindOwners = (room: MemoryRoom, owners: readonly ChangeOwner[]) => {
   }
 };
 
+const compact = (room: MemoryRoom, before: number) => {
+  const floor =
+    room.checkpoints.findLast((checkpoint) => checkpoint.at < before)
+      ?.version ?? room.floor;
+
+  room.floor = Math.max(room.floor, floor);
+  room.entries = room.entries.filter(({ entry }) => entry.version > room.floor);
+  room.checkpoints = room.checkpoints.filter(
+    (checkpoint) => checkpoint.version >= room.floor
+  );
+};
+
 const keyOf = ({ epoch, seq, writer }: ReceiptKey) =>
   JSON.stringify([epoch, writer, seq]);
 
-const headOf = (room: MemoryRoom) => room.entries.at(-1)?.version ?? room.floor;
+const headOf = (room: MemoryRoom) =>
+  room.entries.at(-1)?.entry.version ?? room.floor;
 
 const asStorageCall = <T>(read: () => T) =>
   new Promise<T>((resolve) => {
@@ -52,6 +65,8 @@ export const memoryStorage = (): SyncStorage => {
     head: headOf(room),
     schema: room.schema,
   });
+  const after = (name: string, version: number) =>
+    roomOf(name).entries.filter(({ entry }) => entry.version > version);
 
   return {
     checkpoint: (name, version) =>
@@ -61,27 +76,8 @@ export const memoryStorage = (): SyncStorage => {
             (checkpoint) => checkpoint.version <= version
           ) ?? null
       ),
-    compact: (name, before) =>
-      asStorageCall(() => {
-        const room = roomOf(name);
-        const floor =
-          room.checkpoints.findLast((checkpoint) => checkpoint.at < before)
-            ?.version ?? room.floor;
-
-        room.floor = Math.max(room.floor, floor);
-        room.entries = room.entries.filter(
-          (entry) => entry.version > room.floor
-        );
-        room.checkpoints = room.checkpoints.filter(
-          (checkpoint) => checkpoint.version >= room.floor
-        );
-
-        return room.floor;
-      }),
     entries: (name, version) =>
-      asStorageCall(() =>
-        roomOf(name).entries.filter((entry) => entry.version > version)
-      ),
+      asStorageCall(() => after(name, version).map(({ entry }) => entry)),
     load: (name, { checkpoint, owners, schema }) =>
       asStorageCall(() => {
         let room = rooms.get(name);
@@ -103,6 +99,10 @@ export const memoryStorage = (): SyncStorage => {
 
         return stored(room);
       }),
+    logged: (name, version) =>
+      asStorageCall(() =>
+        after(name, version).reduce((total, { bytes }) => total + bytes, 0)
+      ),
     mark: (name, writer) =>
       asStorageCall(() => roomOf(name).marks.get(writer) ?? null),
     owners: (name, changes) =>
@@ -117,18 +117,28 @@ export const memoryStorage = (): SyncStorage => {
       }),
     receipt: (name, key) =>
       asStorageCall(() => roomOf(name).receipts.get(keyOf(key)) ?? null),
-    saveCheckpoint: (name, checkpoint) =>
-      asStorageCall(() => {
-        roomOf(name).checkpoints.push(checkpoint);
-      }),
-    settle: (name, { entry, mark, owners, receipt }) =>
+    settle: (name, { checkpoint, entry, mark, owners, receipt }) =>
       asStorageCall(() => {
         const room = roomOf(name);
 
-        if (entry) room.entries.push(entry);
+        if (entry) {
+          const { bytes, ...saved } = entry;
+
+          room.entries.push({ bytes, entry: saved });
+        }
         bindOwners(room, owners ?? []);
         room.marks.set(mark.writer, mark);
         room.receipts.set(keyOf(receipt.key), receipt);
+        if (entry && checkpoint) {
+          room.checkpoints.push({
+            at: entry.at,
+            document: checkpoint.document,
+            version: entry.version,
+          });
+          compact(room, checkpoint.compactBefore);
+        }
+
+        return room.floor;
       }),
   };
 };

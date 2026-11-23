@@ -8,9 +8,11 @@ import type {
 } from '../server/storage';
 import type { RoomStorage, SqlValue } from './platform';
 
+// An entry's `bytes` comes before its `change`, so summing them reads no
+// change's overflow pages.
 const TABLES = `
 CREATE TABLE IF NOT EXISTS room (id INTEGER PRIMARY KEY CHECK (id = 0), epoch TEXT NOT NULL, schema TEXT NOT NULL, floor INTEGER NOT NULL);
-CREATE TABLE IF NOT EXISTS entries (version INTEGER PRIMARY KEY, at INTEGER NOT NULL, writer TEXT NOT NULL, seq INTEGER NOT NULL, change TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS entries (version INTEGER PRIMARY KEY, at INTEGER NOT NULL, writer TEXT NOT NULL, seq INTEGER NOT NULL, bytes INTEGER NOT NULL, change TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS checkpoints (version INTEGER PRIMARY KEY, at INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS checkpoint_parts (version INTEGER NOT NULL, part INTEGER NOT NULL, bytes BLOB NOT NULL, PRIMARY KEY (version, part));
 CREATE TABLE IF NOT EXISTS marks (writer TEXT PRIMARY KEY, actor TEXT NOT NULL) WITHOUT ROWID;
@@ -90,6 +92,19 @@ export const sqliteStorage = (
       );
     }
   };
+  const floorOf = () => rows('SELECT floor FROM room')[0].floor as number;
+  const compact = (before: number) => {
+    const [{ version }] = rows(
+      'SELECT MAX(version) AS version FROM checkpoints WHERE at < ?',
+      before
+    );
+    const floor = Math.max(floorOf(), (version as number | null) ?? 0);
+
+    sql.exec('UPDATE room SET floor = ?', floor);
+    sql.exec('DELETE FROM entries WHERE version <= ?', floor);
+    sql.exec('DELETE FROM checkpoints WHERE version < ?', floor);
+    sql.exec('DELETE FROM checkpoint_parts WHERE version < ?', floor);
+  };
   const checkpointOf = (row: Row): Checkpoint => {
     const decoder = new TextDecoder();
     let text = '';
@@ -138,29 +153,6 @@ export const sqliteStorage = (
 
         return row ? checkpointOf(row) : null;
       }),
-    compact: (name, before) =>
-      asStorageCall(() => {
-        own(name);
-
-        return storage.transactionSync(() => {
-          const [{ floor }] = rows('SELECT floor FROM room');
-          const [{ version }] = rows(
-            'SELECT MAX(version) AS version FROM checkpoints WHERE at < ?',
-            before
-          );
-          const next = Math.max(
-            floor as number,
-            (version as number | null) ?? (floor as number)
-          );
-
-          sql.exec('UPDATE room SET floor = ?', next);
-          sql.exec('DELETE FROM entries WHERE version <= ?', next);
-          sql.exec('DELETE FROM checkpoints WHERE version < ?', next);
-          sql.exec('DELETE FROM checkpoint_parts WHERE version < ?', next);
-
-          return next;
-        });
-      }),
     entries: (name, version) =>
       asStorageCall(() => {
         own(name);
@@ -190,6 +182,15 @@ export const sqliteStorage = (
         });
 
         return stored() as StoredRoom;
+      }),
+    logged: (name, version) =>
+      asStorageCall(() => {
+        own(name);
+
+        return rows(
+          'SELECT COALESCE(SUM(bytes), 0) AS bytes FROM entries WHERE version > ?',
+          version
+        )[0].bytes as number;
       }),
     mark: (name, writer) =>
       asStorageCall(() => {
@@ -230,22 +231,19 @@ export const sqliteStorage = (
 
         return row ? receiptOf(row) : null;
       }),
-    saveCheckpoint: (name, checkpoint) =>
+    settle: (name, { checkpoint, entry, mark, owners, receipt }) =>
       asStorageCall(() => {
         own(name);
-        storage.transactionSync(() => writeCheckpoint(checkpoint));
-      }),
-    settle: (name, { entry, mark, owners, receipt }) =>
-      asStorageCall(() => {
-        own(name);
-        storage.transactionSync(() => {
+
+        return storage.transactionSync(() => {
           if (entry) {
             sql.exec(
-              'INSERT INTO entries (version, at, writer, seq, change) VALUES (?, ?, ?, ?, ?)',
+              'INSERT INTO entries (version, at, writer, seq, bytes, change) VALUES (?, ?, ?, ?, ?, ?)',
               entry.version,
               entry.at,
               entry.writer,
               entry.seq,
+              entry.bytes,
               JSON.stringify(entry.change)
             );
           }
@@ -265,6 +263,16 @@ export const sqliteStorage = (
             receipt.version,
             receipt.published ? JSON.stringify(receipt.published) : null
           );
+          if (entry && checkpoint) {
+            writeCheckpoint({
+              at: entry.at,
+              document: checkpoint.document,
+              version: entry.version,
+            });
+            compact(checkpoint.compactBefore);
+          }
+
+          return floorOf();
         });
       }),
   };
