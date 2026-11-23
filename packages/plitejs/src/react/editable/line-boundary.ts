@@ -6,11 +6,13 @@ import {
   type Point,
   type Range,
 } from '../..';
+import { ReactEditor } from '../plugin/react-editor';
 import {
   above as editorAbove,
   after as editorAfter,
   before as editorBefore,
   isBlock as editorIsBlock,
+  positions as editorPositions,
   range as editorRange,
   type Editor as RuntimeEditor,
 } from './runtime-editor-api';
@@ -100,6 +102,54 @@ export const getLineBoundaryPoint = (
   return target && targetBlock && PathApi.equals(targetBlock[1], block[1])
     ? target
     : point;
+};
+
+const isOnLine = (rect: DOMRect | null, line: DOMRect) => {
+  if (!rect) return false;
+
+  const lineMiddle = (line.top + line.bottom) / 2;
+  const rectMiddle = (rect.top + rect.bottom) / 2;
+
+  return (
+    rect.top <= lineMiddle &&
+    rect.bottom >= lineMiddle &&
+    line.top <= rectMiddle &&
+    line.bottom >= rectMiddle
+  );
+};
+
+export const getRenderedLineStart = (
+  editor: RuntimeEditor,
+  point: Point
+): Point => {
+  const lineStart = getLineBoundaryPoint(editor, point, true);
+  const points = Array.from(
+    editorPositions(editor, { at: { anchor: lineStart, focus: point } })
+  );
+  const characterRect = (index: number) =>
+    ReactEditor.resolveRangeRect(editor, {
+      anchor: points[index],
+      focus: points[index + 1],
+    });
+  const last = points.length - 2;
+  const caretLineRect = last >= 0 ? characterRect(last) : null;
+
+  if (!caretLineRect) return lineStart;
+
+  let low = 0;
+  let high = last;
+
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+
+    if (isOnLine(characterRect(middle), caretLineRect)) {
+      high = middle;
+    } else {
+      low = middle + 1;
+    }
+  }
+
+  return points[low];
 };
 
 export const getLineBoundarySelection = (

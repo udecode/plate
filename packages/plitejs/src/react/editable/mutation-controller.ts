@@ -2,6 +2,7 @@ import {
   type EditorMarks,
   type EditorUpdateTransaction,
   type Point,
+  PointApi,
   type Range,
   RangeApi,
   type Selection,
@@ -61,7 +62,10 @@ import {
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
 } from './input-state';
-import { getLineBoundarySelection } from './line-boundary';
+import {
+  getLineBoundarySelection,
+  getRenderedLineStart,
+} from './line-boundary';
 import {
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
@@ -122,6 +126,31 @@ export const applyModelOwnedDeleteIntent = ({
   dispatchCommand(editor, editorCommands.delete, {
     direction,
     unit: unit ?? 'character',
+  });
+};
+
+const applyRenderedLineDeleteBackward = (editor: RuntimeEditor) => {
+  const selection = readRuntimeSelectionRange(editor);
+
+  if (!selection || RangeApi.isExpanded(selection)) {
+    applyModelOwnedDeleteIntent({
+      direction: 'backward',
+      editor,
+      unit: 'line',
+    });
+    return;
+  }
+
+  const start = getRenderedLineStart(editor, selection.focus);
+
+  if (PointApi.equals(start, selection.focus)) {
+    applyModelOwnedDeleteIntent({ direction: 'backward', editor });
+    return;
+  }
+
+  dispatchCommand(editor, editorCommands.deleteFragment, {
+    at: { anchor: start, focus: selection.focus },
+    direction: 'backward',
   });
 };
 
@@ -609,6 +638,11 @@ export const applyEditableCommand = ({
   switch (command.kind) {
     case 'delete': {
       if (applyProjectedViewSelectionTextCommand({ editor })) {
+        return true;
+      }
+
+      if (command.direction === 'backward' && command.unit === 'line') {
+        applyRenderedLineDeleteBackward(editor);
         return true;
       }
 
