@@ -18,6 +18,13 @@ enabled = true
 [gitignore]
 enabled = false
 
+[mcp]
+enabled = true
+merge_strategy = "merge"
+
+[mcp_servers.cloudflare]
+url = "https://mcp.cloudflare.com/mcp"
+
 # --- Agent-Specific Configuration ---
 
 [agents.claude-code]

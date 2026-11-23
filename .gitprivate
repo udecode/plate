@@ -44,6 +44,10 @@
 !/turbo.json
 !/vercel.json
 
+# Skiller writes Codex's MCP servers here from .agents/skiller.toml. They sign
+# in to the team's own accounts, so they stay private like root .mcp.json.
+/.codex/config.toml
+
 # Tests, the same globs as reviewPaths.tests in .agents/pstack.json.
 *.slow.*
 *.spec.*
