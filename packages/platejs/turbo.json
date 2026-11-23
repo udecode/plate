@@ -6278,10 +6278,15 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:board",
+        "source-hash:partition:comments",
         "source-hash:partition:core",
         "source-hash:partition:field",
         "source-hash:partition:markdown",
+        "source-hash:partition:proxies",
+        "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:table",
         "source-hash:partition:yjs-react"
       ],
       "inputs": [

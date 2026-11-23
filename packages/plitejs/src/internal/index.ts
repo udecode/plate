@@ -293,6 +293,7 @@ export {
   applyBuiltDocumentChange,
   attachTransactionSpecAfterCommit,
   getActiveEditorUpdateId,
+  getActiveEditorUpdateTags,
   getActiveEditorTransaction,
   getCollabEffectTypes,
   getCurrentMarks as getEditorCurrentMarks,

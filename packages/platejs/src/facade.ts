@@ -207,6 +207,7 @@ export {
   afterActiveTransactionEnds,
   attachTransactionSpecAfterCommit,
   getActiveEditorUpdateId,
+  getActiveEditorUpdateTags,
   getEditorRuntimeRootKeys,
   getSnapshotVersion,
   markRootViewUsed,

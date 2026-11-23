@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import {
   definePlugin,
   type Descendant,
+  documentReplacement,
   ElementApi,
   type ElementOf,
   locateAt,
@@ -13,6 +14,15 @@ import {
   target,
   txLocate,
 } from '../../../core';
+import {
+  claimsHistoryReplay,
+  EditorRefusalError,
+  getActiveEditorUpdateId,
+  getActiveEditorUpdateTags,
+  getSnapshotVersion,
+  readElementPropertyWrites,
+  registerEditorTransactionGuard,
+} from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 
 const FIELD_KINDS = [
@@ -135,6 +145,17 @@ const fieldText = ({
 };
 
 const FIELD_TYPE = 'field';
+
+const initialState: {
+  /**
+   * The role this editor fills as, or null while authoring. While a role is
+   * set, the editor refuses a local commit that writes anything besides
+   * fitting or cleared answers on that role's fields, the selection, state
+   * fields without `persist` and effects that neither persist nor sync to
+   * peers. A peer's change always passes.
+   */
+  fillRole: string | null;
+} = { fillRole: null };
 
 const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
   formats: ({ defineFormats, schema: { type } }) =>
@@ -276,6 +297,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
       },
       plainText: { encode: fieldText },
     }),
+  initialState,
   schema: {
     element: {
       properties: {
@@ -419,17 +441,158 @@ const fieldProblems = (
 const refusal = (reason: string) =>
   new TypeError(`Field write refused: ${reason}.`);
 
+const UNKNOWN_FILL_MODE = Symbol('unknown fill mode');
+
 /**
  * Fields: inline voids that each collect one value of a kind and hold a
  * document-wide unique `fieldId`. A field's `condition` names another field
  * by that id, so a paste that copies both names the copy.
  */
 export const BaseFieldPlugin = fieldSchemaPlugin.extend(
-  ({ schema: { properties, type } }) => {
+  ({ editor, schema: { properties, type }, store }) => {
     const isField = (node: Node): node is FieldElement =>
       ElementApi.isElement(node) && node.type === type;
+    let topStep: {
+      mode: string | null | typeof UNKNOWN_FILL_MODE;
+      version: number;
+    } = { mode: null, version: -1 };
+    let openWrite: {
+      mode: string | null;
+      switched: boolean;
+      updateId: ReturnType<typeof getActiveEditorUpdateId>;
+    } | null = null;
+    const openWriteOfThisUpdate = () =>
+      openWrite?.updateId === getActiveEditorUpdateId(editor)
+        ? openWrite
+        : null;
 
     return {
+      activate({ onCleanup }) {
+        topStep = {
+          mode: store.get('fillRole') ?? null,
+          version: getSnapshotVersion(editor),
+        };
+        onCleanup(
+          registerEditorTransactionGuard(
+            editor,
+            ({ before, commit, effects }) => {
+              const role = store.get('fillRole') ?? null;
+              const write = openWriteOfThisUpdate();
+              const refuse = (message: string) =>
+                new EditorRefusalError({ reason: 'field-fill', role }, message);
+              const { tags } = commit;
+              const collaboration = tags.includes('collaboration');
+              const switched =
+                write !== null && (write.switched || write.mode !== role);
+
+              if (switched && !collaboration) {
+                throw refuse(
+                  `The fill role changed from ${JSON.stringify(write.mode)} to ${JSON.stringify(role)} inside one update.`
+                );
+              }
+
+              const replaces =
+                commit.annotations[documentReplacement.key] === true;
+              const changesTopStep =
+                tags.includes('historic') ||
+                replaces ||
+                (!tags.includes('history-skip') &&
+                  (!commit.changes.empty ||
+                    commit.effects.some(
+                      ({ type: effect }) => effect.history !== 'skip'
+                    )));
+              const publish = changesTopStep
+                ? () => {
+                    if (commit.version <= topStep.version) return;
+
+                    const mode =
+                      write === null ||
+                      switched ||
+                      tags.includes('historic') ||
+                      replaces
+                        ? UNKNOWN_FILL_MODE
+                        : tags.includes('history-push') ||
+                            write.mode === topStep.mode
+                          ? write.mode
+                          : UNKNOWN_FILL_MODE;
+
+                    topStep = { mode, version: commit.version };
+                  }
+                : undefined;
+
+              if (role === null || collaboration) return publish;
+              if (replaces) {
+                throw refuse(
+                  `A fill as ${JSON.stringify(role)} cannot replace the document.`
+                );
+              }
+
+              const writes =
+                claimsHistoryReplay(commit) ||
+                effects.some(
+                  ({ type: effect }) =>
+                    effect.collab === 'shared' || effect.persist
+                )
+                  ? null
+                  : readElementPropertyWrites(editor, { before, commit });
+
+              if (
+                writes?.every(
+                  ({ element, modifications }) =>
+                    isField(element) &&
+                    element.role === role &&
+                    modifications.every(
+                      (modification) =>
+                        modification.key === 'value' &&
+                        (modification.type === 'unset' ||
+                          (modification.type === 'set' &&
+                            fitsField(element, modification.value)))
+                    )
+                )
+              ) {
+                return publish;
+              }
+
+              throw refuse(
+                `A fill as ${JSON.stringify(role)} changes only the values of that role's fields.`
+              );
+            }
+          )
+        );
+      },
+      corrections: [
+        {
+          event: 'properties',
+          query: { type },
+          correct: ({ tx }) => {
+            const mode = store.get('fillRole') ?? null;
+            const write = openWriteOfThisUpdate();
+
+            if (write) {
+              write.switched ||= write.mode !== mode;
+            } else {
+              openWrite = {
+                mode,
+                switched: false,
+                updateId: getActiveEditorUpdateId(editor),
+              };
+            }
+            if (
+              mode !== topStep.mode &&
+              !getActiveEditorUpdateTags(editor).some((tag) =>
+                [
+                  'collaboration',
+                  'historic',
+                  'history-merge',
+                  'history-skip',
+                ].includes(tag)
+              )
+            ) {
+              tx.tags.add('history-push');
+            }
+          },
+        },
+      ],
       read: ({ state }) => {
         const held = (fieldId: string) => {
           const holder = state.unique.holder('fieldId', fieldId);
@@ -525,12 +688,24 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
            * patch names does not fit the field's kind, the patch removes `kind`,
            * `role` or `label`, or its condition names
            * the field itself, no field, or a test or value the named field's
-           * kind does not take.
+           * kind does not take. While a fill role is set, a missing field or
+           * a setting that does not fit refuses the whole update instead,
+           * which then returns `undefined`.
            */
           update: txLocate(false, (fieldId: string, patch: FieldPatch) => {
+            const role = store.get('fillRole');
+            const refusalForRole = (reason: string) =>
+              role == null
+                ? refusal(reason)
+                : new EditorRefusalError(
+                    { reason: 'field-fill', role },
+                    `A fill as ${JSON.stringify(role)} refused: ${reason}.`
+                  );
             const [field, key] = held(fieldId);
 
-            if (!field) throw refusal(`no field holds "${fieldId}"`);
+            if (!field) {
+              throw refusalForRole(`no field holds ${JSON.stringify(fieldId)}`);
+            }
 
             const next = { ...field, ...patch };
             const unfit = SHAPED_SETTINGS.filter(
@@ -539,7 +714,9 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
             const named = unfit.find((setting) => setting in patch);
 
             if (named) {
-              throw refusal(`${named} does not fit a ${next.kind} field`);
+              throw refusalForRole(
+                `${named} does not fit a ${next.kind} field`
+              );
             }
             if (patch.condition) {
               if (patch.condition.ref === fieldId) {
