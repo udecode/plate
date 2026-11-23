@@ -34,21 +34,42 @@ const READ_COMMANDS = new Set([
   'jq',
 ]);
 const READ_GIT = new Set(['grep', 'show', 'log', 'diff', 'blame']);
+// The rules require these files read in full, so reading only them is not exploration and does not count.
+const READ_IN_FULL =
+  /(?:^|\/)(?:(?:AGENTS|CLAUDE|CODING_STANDARDS|VISION)\.md|(?:\.agents|\.claude\/plugins|\.claude\/skills|docs\/vision)\/.+\.mdc?)$/u;
+
+function readsOnlyReadInFullFiles(command) {
+  const paths = command
+    .split(/\s+/u)
+    .slice(1)
+    .filter((word) => !word.startsWith('-') && /\/|\.mdc?$/u.test(word));
+  return (
+    paths.length > 0 &&
+    !/[|;&<>`]|\$\(/u.test(command) &&
+    paths.every((path) => READ_IN_FULL.test(path))
+  );
+}
 
 export function readKind(tool, input = {}) {
   if (RESET_TOOLS.has(tool)) return 'reset';
-  if (READ_TOOLS.has(tool)) return 'read';
+  if (READ_TOOLS.has(tool)) {
+    return tool === 'Read' && READ_IN_FULL.test(input.file_path ?? '')
+      ? null
+      : 'read';
+  }
   if (tool !== 'Bash') return null;
-  const words = String(input.command ?? '')
+  const command = String(input.command ?? '')
     .replace(/^\s*(?:cd\s+[^;&|]+(?:&&|;)\s*)+/u, '')
     .replace(/^(?:[A-Z_][A-Z0-9_]*=\S*\s+)+/u, '')
     .replace(/^(?:command|rtk proxy)\s+/u, '')
-    .trim()
-    .split(/\s+/u);
+    .trim();
+  const words = command.split(/\s+/u);
   if (words[0] === 'sed' && words.some((word) => /^-[a-zA-Z]*i/u.test(word))) {
     return 'reset';
   }
-  if (READ_COMMANDS.has(words[0])) return 'read';
+  if (READ_COMMANDS.has(words[0])) {
+    return readsOnlyReadInFullFiles(command) ? null : 'read';
+  }
   if (
     words[0] === 'git' &&
     READ_GIT.has(
