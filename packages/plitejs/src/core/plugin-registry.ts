@@ -1020,9 +1020,9 @@ export const registerStateFieldDescriptorInRegistry = <TEditor extends Editor>(
       `Editor plugin "${pluginName}" cannot install a state field with an empty key.`
     );
   }
-  if (field.key === '__proto__') {
+  if (field.key === '__proto__' || field.key === '$configuration') {
     throw new Error(
-      `Editor plugin "${pluginName}" cannot install a state field keyed "__proto__".`
+      `Editor plugin "${pluginName}" cannot install a state field keyed "${field.key}".`
     );
   }
   if (!DEFINED_STATE_FIELDS.has(field)) {

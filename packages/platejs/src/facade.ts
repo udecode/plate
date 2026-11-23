@@ -244,6 +244,8 @@ export {
   createEditorOwner,
   EditorRefusalError,
   type EditorOwner,
+  type ElementPropertyWrite,
+  readElementPropertyWrites,
   getPluginContributions,
   getCompiledEditorSchema,
   getCompiledEditorSchemaFromApi,

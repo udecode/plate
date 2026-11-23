@@ -227,6 +227,7 @@ import {
 import { type ChangeFacts, historyFollowsAllFacts } from './change/record';
 import { keptRunsOf, type RootChange } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
+import type { PropertyModification } from './change/transform';
 import {
   cloneFrozen,
   cloneValue,
@@ -2876,6 +2877,81 @@ const rootsOfValue = (
   return roots;
 };
 
+const savesStateKey = (
+  fields: ReadonlyMap<string, Pick<EditorStateField, 'persist'>>,
+  key: string
+) => {
+  const field = fields.get(key);
+
+  return !field || Boolean(field.persist);
+};
+
+const stateFieldValuesEqual = <TValue>(
+  field: EditorStateField<TValue>,
+  left: TValue,
+  right: TValue
+) =>
+  field.persist
+    ? areEditorJsonValuesEqual(left, right)
+    : field.compare(left, right);
+
+/** One element a commit writes stored properties on, as it stood before. */
+export type ElementPropertyWrite = Readonly<{
+  element: Element;
+  modifications: readonly PropertyModification[];
+  path: Path;
+  root: RootKey;
+}>;
+
+/** @internal */
+export const readElementPropertyWrites = (
+  editor: Editor,
+  {
+    before,
+    commit,
+  }: Readonly<{ before: EditorDocumentValue; commit: EditorCommit }>
+): readonly ElementPropertyWrite[] | null => {
+  const fields = getPluginRegistry(editor).stateFieldIdentities;
+
+  if (
+    commit.dirtyStateKeys.some((key) => savesStateKey(fields, key)) ||
+    !documentChangeWritesOnlyElementProperties(commit.changes, before)
+  ) {
+    return null;
+  }
+
+  const writes: ElementPropertyWrite[] = [];
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(
+    commit.changes
+  )) {
+    let document: DocumentIndex | undefined;
+    let position = 0;
+
+    for (let at = 0; at < rootChange.sections.length; at += 2) {
+      if (rootChange.sections[at + 1] === -2) {
+        document ??= valueRootIndex(before, root);
+
+        const { path } = getDefined(document.nodeStartingAt(position));
+
+        writes.push(
+          Object.freeze({
+            element: document.node(path) as Element,
+            modifications: rootChange.data[
+              at / 2
+            ] as readonly PropertyModification[],
+            path: Object.freeze([...path]),
+            root,
+          })
+        );
+      }
+      position += getDefined(rootChange.sections[at]);
+    }
+  }
+
+  return Object.freeze(writes);
+};
+
 const createEditorDocumentValue = <V extends Value>({
   editor,
   fields,
@@ -2909,11 +2985,9 @@ const createEditorDocumentValue = <V extends Value>({
     copyRoot(extraRoots, root, roots, root);
     hasExtraRoots = true;
   }
-  const persistentMetaKeys = Object.keys(meta ?? {}).filter((key) => {
-    const field = fields.get(key);
-
-    return !field || field.persist;
-  });
+  const persistentMetaKeys = Object.keys(meta ?? {}).filter((key) =>
+    savesStateKey(fields, key)
+  );
   const hasPersistentMeta = persistentMetaKeys.length > 0;
   const persistentMeta = hasPersistentMeta
     ? (() => {
@@ -3809,13 +3883,12 @@ const setStateFieldValue = <TValue>(
         ? Object.hasOwn(snapshot.documentState, field.key)
         : false;
 
+      const current = currentState?.[field.key] as TValue;
+      const before = snapshot.documentState?.[field.key] as TValue;
+
       if (
         currentHasValue === baselineHasValue &&
-        (!currentHasValue ||
-          field.compare(
-            currentState?.[field.key] as TValue,
-            snapshot.documentState?.[field.key] as TValue
-          ))
+        (!currentHasValue || stateFieldValuesEqual(field, current, before))
       ) {
         snapshot.dirtyStateKeys.delete(field.key);
       }
@@ -4158,7 +4231,6 @@ export const stagePluginCandidate = (
       onPublished,
     })
   );
-  snapshot.dirtyStateKeys.add('$configuration');
   bumpMutationVersion(owner);
   markTransactionChanged(owner);
 };
@@ -13838,8 +13910,8 @@ export const runEditorTransaction = <R>(
         pluginPublication.rollback();
         pluginPublication = undefined;
         snapshot.pluginReconfigurations.clear();
-        snapshot.dirtyStateKeys.delete('$configuration');
       } else {
+        snapshot.dirtyStateKeys.add('$configuration');
         pluginSchemaIdentity = pluginPublication.schemaContract().identity;
         pluginPublication.stage();
       }

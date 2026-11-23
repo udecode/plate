@@ -320,12 +320,14 @@ export {
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
+  readElementPropertyWrites,
   registerEditorTransactionGuard,
   subscribeCaretTarget,
   subscribeEditorViewState,
   withEditorUpdateRootScope,
 } from '../core/public-state';
 export type {
+  ElementPropertyWrite,
   InternalSliceChildrenTarget,
   InternalSlicePlacement,
 } from '../core/public-state';

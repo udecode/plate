@@ -1360,6 +1360,10 @@ export const runInEditorCommandFrame = (
         outer.changed = true;
       }
       for (const tag of snapshot.tags) outer.snapshot.tags.add(tag);
+      for (const [key, candidate] of snapshot.pluginReconfigurations) {
+        outer.snapshot.pluginReconfigurations.set(key, candidate);
+        outer.changed = true;
+      }
     } finally {
       COMMAND_FRAMES.delete(editor);
       disposeTransactionSpecContext(editor, frame);

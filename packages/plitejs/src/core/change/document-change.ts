@@ -1,4 +1,5 @@
 import type { NamedRootKey, NodeKey } from '../../interfaces/editor';
+import { getDefined } from '../../internal/get-defined';
 import { isImmutable } from '../clone';
 import {
   applyRecordOps,
@@ -47,7 +48,7 @@ import {
   type DocumentSetPropertyResolver,
   type SectionData,
   type TrackMode,
-  writesOnlyElementProperties,
+  invertiblePropertyNode,
 } from './root-change';
 import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
 
@@ -924,6 +925,30 @@ export const filterDocumentChangeRoots = (
     }
   );
 
+const writesOnlyElementProperties = (
+  change: RootChange,
+  document: () => DocumentIndex
+) => {
+  let index: DocumentIndex | undefined;
+  let position = 0;
+
+  for (let at = 0; at < change.sections.length; at += 2) {
+    const length = getDefined(change.sections[at]);
+    const inserted = getDefined(change.sections[at + 1]);
+
+    if (inserted >= 0) return false;
+    if (inserted === -2) {
+      index ??= document();
+      if (invertiblePropertyNode(index, position, length)?.kind !== 'element') {
+        return false;
+      }
+    }
+    position += length;
+  }
+
+  return true;
+};
+
 /** @internal */
 export const documentChangeWritesOnlyElementProperties = (
   change: DocumentChange,
@@ -935,7 +960,7 @@ export const documentChangeWritesOnlyElementProperties = (
     (set) => set.size === 0
   ) &&
   [...getInternalDocumentChangeEntries(change)].every(([root, rootChange]) =>
-    writesOnlyElementProperties(rootChange, valueRootIndex(value, root))
+    writesOnlyElementProperties(rootChange, () => valueRootIndex(value, root))
   );
 
 /** @internal */

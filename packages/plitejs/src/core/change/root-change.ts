@@ -23,6 +23,7 @@ import {
 import {
   cloneFrozen,
   cloneJson,
+  deepFreeze,
   isRecord,
   jsonEqual,
   type JsonRecord,
@@ -1704,27 +1705,11 @@ export const getDocumentPropertyContext = (
 };
 
 /** @internal */
-export const writesOnlyElementProperties = (
-  change: RootChange,
-  document: DocumentIndex
-) => {
-  let position = 0;
-
-  for (let at = 0; at < change.sections.length; at += 2) {
-    const inserted = getDefined(change.sections[at + 1]);
-
-    if (inserted >= 0) return false;
-    if (
-      inserted === -2 &&
-      document.nodeStartingAt(position)?.kind !== 'element'
-    ) {
-      return false;
-    }
-    position += getDefined(change.sections[at]);
-  }
-
-  return true;
-};
+export const invertiblePropertyNode = (
+  document: DocumentIndex,
+  position: number,
+  length: number
+) => (length === 1 ? document.nodeStartingAt(position) : undefined);
 
 /** @internal */
 export const collapseElementPropertyWrites = (
@@ -4421,7 +4406,12 @@ export class RootChange {
     sections: readonly number[],
     data: readonly SectionData[]
   ) {
-    return new RootChange([...sections], [...data]);
+    return new RootChange(
+      [...sections],
+      data.map((value, at) =>
+        sections[at * 2 + 1] === -2 ? deepFreeze(value) : value
+      )
+    );
   }
 
   static transform(
@@ -6347,9 +6337,9 @@ export class RootChange {
       if (inserted === -1) {
         addSection(sections, data, length, -1, null);
       } else if (inserted === -2) {
-        const entry = document.nodeStartingAt(position);
+        const entry = invertiblePropertyNode(document, position, length);
 
-        if (!entry || length !== 1) {
+        if (!entry) {
           throw new Error('Cannot invert an invalid node property delta.');
         }
 
