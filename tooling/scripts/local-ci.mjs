@@ -8,8 +8,7 @@
 // its first bad commit is searched for from the last commit that step passed
 // on while the hour lasts, and the result goes to events.jsonl and the
 // suggested-task ledger, never to the team channel (owner's word,
-// 2026-11-17). The local-ci skill's watcher reads events.jsonl and runs one
-// fix at a time for the red steps.
+// 2026-11-17).
 import { spawnSync } from 'node:child_process';
 import {
   cpSync,
@@ -66,7 +65,7 @@ const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
              --dry      write the event only: no ref push or task
   status     the last run, the last green commit, this Mac's steps and the
              latest events
-  wait       block until an event the watcher acts on, print it and exit
+  wait       block until an event the operator acts on, print it and exit
              --after <iso time>   only events written after that time
   install    start the launchd job that runs it every 20 minutes, as the
              main CI that checks every step
@@ -626,7 +625,6 @@ const run = async (args) => {
     try {
       checkout(tip);
     } catch (error) {
-      // The watcher wakes for the first broken run in a row, not each retry.
       emit({
         kind: 'broken',
         output: error.message.split('\n').slice(-5),
@@ -953,9 +951,8 @@ const uninstall = () => {
   return 0;
 };
 
-// Blocks until the runner writes an event the watcher acts on after `--after`,
-// prints those events and exits, so a background command wakes the watcher
-// session once per event and never on a timer.
+// Exits once it prints, because the operator's background command wakes its
+// session only when the command exits.
 const wait = async (args) => {
   const at = args.indexOf('--after');
   const after = at === -1 ? new Date().toISOString() : args[at + 1];

@@ -1,0 +1,58 @@
+---
+description: Start or be the operator, the one session on a Mac that stays open, waits for Local CI and release events, and hands each one to a fresh agent. It starts a fix for each red or flaky step and a release agent for each beta that is due. Use for /operator, "keep watching", "start the operator", "release a beta now", being the operator, the old name "Local CI watcher", and when a release event or a local-ci task names a step.
+argument-hint: '[watch | release]'
+---
+
+# Operator
+
+The operator is the session titled `operator` on a Mac that installed Local CI. It waits for the events that Local CI and the beta release lane write to `events.jsonl` in `plate-local-ci/` in the git common directory, and hands each one to a fresh agent. It never edits, lands or fixes code itself, and it keeps each turn short. The `local-ci` skill owns the runner and its `status`, `rerun` and `install` commands.
+
+Two writers add `release` events. `beta-release.mjs wake`, which Local CI runs after each green run on next, adds one when a daily beta is due and no release event came in the last 12 hours. `triage.mjs record` adds one for each udecode/plate `fixed` record, so a public fix ships at once. A beta from `next` publishes without asking, as `AGENTS.md`'s Git and publication says.
+
+Run every command below from the main checkout. Each runs the Local CI worktree's copy of the script, because every Local CI run moves that copy to the newest next. Pick the mode from $ARGUMENTS. With none, or with `supervise`, run Keep watching. With `release`, run the Release brief below in this session and skip the due check in its step 1, because the owner asked for this beta.
+
+## Keep watching
+
+Make sure one operator is running on this Mac. Run this after the app quits or the Claude account changes, because the operator's background wait ends with the app. The owner chose Sonnet at medium for the operator, as `AGENTS.md`'s Plate overrides say. The operator works in the main checkout, which can lag next, so its prompt is "Read `<main checkout>/.claude/worktrees/local-ci/.agents/skills/operator/SKILL.md` in full and run its watch mode.", with the main checkout's absolute path. That copy moves with every Local CI run.
+
+1. Call `mcp__ccd_session_mgmt__get_session` with `"self"`. When this session's title is `operator`, run `watch` here and stop.
+2. Call `mcp__ccd_session_mgmt__list_sessions` and look for an unarchived session titled `operator`, or titled "Local CI", the operator's old title. Retitle a "Local CI" session `operator` with `mcp__ccd_session_mgmt__set_session_title`. When the session is mid-turn, report it and stop. When it is idle, send it the operator prompt with `SendMessage` (`to`: its session id), which restarts its loop unless its wait still runs, report it and stop.
+3. Otherwise start it with `mcp__ccd_session__start_session`: `initiation: "user_asked"`, `context: "fresh"`, `title: "operator"`, `model: "claude-sonnet-5-5"`, `effort: "medium"`, `cwd` set to the main checkout, `use_worktree: false`, and the operator prompt. Pin it with `mcp__ccd_sidebar__set_pinned`, so automatic archiving keeps it.
+
+## watch
+
+The operator's loop. It runs one fix subagent at a time, each for one red step, and one release agent at a time.
+
+1. Unless a wait this session started is still running, run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or the current time in ISO form on the first loop. The command exits when an event with `wake: true` arrives and prints one JSON line per event. The session wakes when it exits.
+2. Handle each printed event:
+   - `kind: "red"` or `kind: "flake"` with `wake: true`: when no fix subagent is running, spawn one with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Otherwise add the event to the end of the queue. Each such event names one step and its open task. Only one fix subagent runs at a time (owner's word, 2026-11-18), because each one runs heavy checks, and two at once slow the host until steps time out. A red whose log shows only a timeout, at any load, wakes a fix subagent like any other, because a step that cannot finish its hour on this host is a defect. That fix makes the step finish inside its budget, such as by speeding its code or moving cases to a stress lane, and never raises the timeout (owner's word, 2026-11-23).
+   - `kind: "passed"`: next passes that step now, so drop its queued events. When the running fix subagent works on that step, tell it with `SendMessage` that next passes its step, so it rechecks and closes its task.
+   - `dry: true`: spawn the same subagent with the Dry brief. It only reads, so it starts even while a fix runs.
+   - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-local-ci/`. When the cause is the Local CI worktree's install, run `pnpm install --frozen-lockfile` inside that worktree; the next wake retries the tip. Otherwise say the cause in this session's reply and send no message.
+   - `kind: "release"`: on a Mac other than main, which keeps `config.json` in `plate-local-ci/`, drop the event, because only the main CI's operator ships betas and two release agents would race on one version PR. On main, when no release agent is running, spawn one the way a fix subagent spawns, with the Release brief below filled in from the event. It starts even while a fix runs, because it runs only the landing checks. Otherwise drop the event, because the running agent ships every change up to next's tip and closes each public issue its beta fixed.
+3. When a fix subagent or release agent finishes, save its report to `docs/plans/artifacts/local-ci/<day>/fix-<task id or step>.md` or `release-<day>.md` in the main checkout. Then spawn a fix subagent for the first queued event, as step 2 says. Reply with one line per finished agent: the step and the fix commit, or the beta and the issues it closed, or why it is still open. Add one line that lists the steps still queued, so the queue survives a compaction.
+4. Go back to step 1 with the newest handled event's `at`.
+
+Nothing the operator starts posts to the team channel: not this session, a fix subagent or a release agent (owner's word, 2026-11-17). The agents run on Opus at high, the models sheet's bug-fix level, and each one ends with this session, so the operator stays open and pinned.
+
+### Fix brief
+
+> Local CI found the `<step>` check step failing on Plate's `next` branch. Its event: `<the event's JSON line>`. Work from the main checkout `<main checkout path>`; read its `AGENTS.md` first and follow it, and load the `local-ci` skill for what the lane is.
+>
+> 1. Cut a new worktree of your own from `origin/next`. Never check out a branch in a worktree that already exists, because another session works there. For a `red` event, run `pnpm check <step>` in it. When it passes, an earlier fix already cleared the step, so load the `chips` skill, log task `<task id>` `dismissed done` and stop. For a `flake` event, a pass clears nothing. Read the event's log for each failing assertion and remove what makes that test depend on timing or host load, such as a wall-clock bound, a raised timeout or a fixed wait. Prove each failing test with five warm runs without retries.
+> 2. Otherwise load the `chips` skill and start task `<task id>` as its Start mode says. When the event names no task, take the open task on the board whose topic is `local-ci` and whose title names `<step>`.
+> 3. Run the Bug fix playbook (`.agents/playbooks/bug-fix.md`) in that worktree. Read the event's log, fix the cause forward and land through `node .agents/pstack/land.mjs`. When the fix clears a failure `.agents/expected-failures.json` lists, remove its line in the same commit. A revert needs the owner's word, so never revert the first bad commit on your own.
+> 4. Send no team message. End with one line: the step and the fix commit, or why it is still open.
+
+### Dry brief
+
+> Local CI wrote a dry event for the `<step>` check step as a proof run: `<the event's JSON line>`. Read it and the log it names, and reply in one short paragraph with the step, the first bad commit or the range still unsearched, the log, and what you would fix first. Edit, land and message nothing.
+
+### Release brief
+
+> The operator woke for a beta: `<the event's JSON line>`. Work from the main checkout `<main checkout path>`; read its `AGENTS.md` first and follow it, and load the `release-lanes` and `changeset` skills.
+>
+> 1. Cut a new worktree of your own from `origin/next` and set it up as `AGENTS.md`'s Git rule says. Run `node tooling/scripts/beta-release.mjs due` there. When it says no beta is due, reply with its `why` and stop.
+> 2. Run `node tooling/scripts/beta-release.mjs pending`. Condense its changesets into the notes a user of the last beta reads: merge the changesets that describe one change, delete each one whose every `introduced by` line says no user has the bug, and rewrite the rest as the `changeset` skill says. When a file changed, land the result as one `chore(release): condense changesets` commit through `node .agents/pstack/land.mjs`.
+> 3. Run `node tooling/scripts/beta-release.mjs ship --force` in the background. `--force` skips its own due check, which step 1 already passed, because a condense commit moves next's tip past the run Local CI passed. It waits for the version PR to hold next's tip, merges it, waits for npm and the package tag, then closes each public issue the beta fixed. When it exits 75, run it again; a run after the merge only waits and closes. On any other exit, reply with its output and stop.
+> 4. Send no team message. End with one line: the beta and the issues it closed, or why no beta went out.
