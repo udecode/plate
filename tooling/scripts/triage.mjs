@@ -20,7 +20,8 @@
 //        pnpm triage retest <N> --pass|--fail --on "<browser or device and version>" [--device ios|android|ime] [--found <M>[,<M>...]] [--note "<text>"] [--dry-run]
 //        pnpm triage check [<register>]
 // --repo discussions, or discussions#<N>, reads the Discussions of the first repository instead, in
-// docs/triage/discussions.tsv, with show, queue [--category <name>] [--limit <N>] [--json], record, mark and check.
+// docs/triage/discussions.tsv, with show, queue [--category <name>] [--limit <N>] [--json], record, mark, labels and check;
+// pnpm triage features lists their open feature records.
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
@@ -87,7 +88,7 @@ const repoNameOf = (repo) => repo.split('/')[1];
 const registerOf = (name, first) =>
   name === first ? PRIMARY_REGISTER : `docs/triage/${name}.tsv`;
 const DISCUSSIONS = 'discussions';
-const LEANS = new Set(['planned', 'pro', 'not-planned']);
+const LEANS = ['planned', 'pro', 'not-planned'];
 const CONFIG = '.agents/pstack.json';
 const COLUMNS = [
   'id',
@@ -212,7 +213,7 @@ const DISCUSSION_VALUES = {
   answer: /\S/u,
   issue: referenceIn(triageNames),
   of: referenceIn(() => [DISCUSSIONS, triageNames()[0]]),
-  lean: (value) => LEANS.has(value),
+  lean: (value) => LEANS.includes(value),
 };
 const DISCUSSION_OUTCOMES = {
   answered: { required: ['answer'], optional: [] },
@@ -2086,6 +2087,140 @@ function discussionQueue(options) {
         result.reasons.join('; ') || '-',
         result.category,
         result.title,
+      ].join('\t')
+    );
+  }
+}
+
+const CLOSE_REASONS = {
+  answered: 'RESOLVED',
+  outdated: 'OUTDATED',
+  moved: 'RESOLVED',
+  dup: 'DUPLICATE',
+  feature: 'RESOLVED',
+};
+
+const replyAfter = (discussion, head) =>
+  discussion.comments.findLast(
+    (comment) =>
+      isDraft(comment) && Date.parse(comment.createdAt) > Date.parse(head.ts)
+  );
+
+const addLabelByName = (labelable, repo, name) =>
+  `gh api graphql -f query='mutation($label: ID!) { addLabelsToLabelable(input: { labelableId: "${labelable}", labelIds: [$label] }) { clientMutationId } }' -f label="$(gh api repos/${repo}/labels/${name} --jq .node_id)"`;
+
+function missingLabels(repo, names) {
+  if (names.length === 0) return [];
+  const fields = names.map(
+    (name, at) => `l${at}: label(name: ${JSON.stringify(name)}) { id }`
+  );
+  const { data, result } = ghGraphql(
+    `query { ${repositoryOf(repo)} { ${fields.join(' ')} } }`
+  );
+  if (!data?.repository) {
+    refuse(`gh could not read the labels of ${repo}: ${ghProblem(result)}`);
+  }
+  return names.filter((_, at) => !data.repository[`l${at}`]);
+}
+
+function discussionLabels() {
+  const reads = freshReads({ fallback: false });
+  if (!reads.policy) {
+    refuse(
+      `labels needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const { repo } = reads.policy;
+  const mutation = (text) =>
+    `gh api graphql -f query='mutation { ${text} { clientMutationId } }'`;
+  const commands = [];
+  const added = new Set();
+  for (const listed of loadOpenDiscussions(reads)) {
+    const number = String(listed.number);
+    const { state, head } = stateFor(number, reads);
+    if (state !== 'current' || !hasLanded(number, head, reads)) continue;
+    const discussion = reads.issues.get(number);
+    const lean = parseDetail(head.detail).get('lean');
+    if (head.outcome === 'feature') {
+      const ids = new Map(
+        discussion.labels.map((label) => [label.name, label.id])
+      );
+      if (!ids.has(lean)) {
+        added.add(lean);
+        commands.push(addLabelByName(discussion.id, repo, lean));
+      }
+      const others = LEANS.filter((name) => name !== lean && ids.has(name));
+      if (others.length > 0) {
+        commands.push(
+          mutation(
+            `removeLabelsFromLabelable(input: { labelableId: "${discussion.id}", labelIds: [${others.map((name) => `"${ids.get(name)}"`).join(', ')}] })`
+          )
+        );
+      }
+    }
+    const reply = replyAfter(discussion, head);
+    const closes =
+      head.outcome === 'dup' ||
+      (reply !== undefined &&
+        (head.outcome !== 'feature' || lean === 'not-planned'));
+    if (!closes) continue;
+    if (
+      head.outcome === 'answered' &&
+      discussion.category.isAnswerable &&
+      !reply.isAnswer
+    ) {
+      commands.push(
+        mutation(`markDiscussionCommentAsAnswer(input: { id: "${reply.id}" })`)
+      );
+    }
+    commands.push(
+      mutation(
+        `closeDiscussion(input: { discussionId: "${discussion.id}", reason: ${CLOSE_REASONS[head.outcome]} })`
+      )
+    );
+  }
+  const printed = [
+    ...missingLabels(repo, [...added]).map(
+      (name) => `gh label create ${name} --repo ${repo}`
+    ),
+    ...commands,
+  ];
+  if (printed.length > 0) console.log(printed.join('\n'));
+}
+
+function features() {
+  const reads = freshReads({ fallback: true });
+  if (!reads.policy) {
+    refuse(
+      `features needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const found = loadOpenDiscussions(reads).flatMap((listed) => {
+    const { state, head } = stateFor(String(listed.number), reads);
+    if (state !== 'current' || head.outcome !== 'feature') return [];
+    const fields = parseDetail(head.detail);
+    return [
+      {
+        number: listed.number,
+        priority: fields.get('priority'),
+        lean: fields.get('lean'),
+        title: listed.title,
+      },
+    ];
+  });
+  found.sort(
+    (a, b) =>
+      PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority) ||
+      LEANS.indexOf(a.lean) - LEANS.indexOf(b.lean)
+  );
+  for (const note of reads.notes) console.log(`note: ${note}`);
+  for (const each of found) {
+    console.log(
+      [
+        `${DISCUSSIONS}#${each.number}`,
+        each.priority,
+        each.lean,
+        each.title,
       ].join('\t')
     );
   }
@@ -4217,6 +4352,8 @@ const COMMANDS = {
     queue: discussionQueue,
     record: recordCommand,
     mark,
+    labels: discussionLabels,
+    features,
     check,
   },
 };
@@ -4225,6 +4362,7 @@ const FLAGS = {
   discussions: {
     ...OPTIONS,
     queue: { boolean: ['json'], value: ['category', 'limit'] },
+    features: {},
   },
 };
 const [command, ...rest] = process.argv.slice(2);
@@ -4241,6 +4379,7 @@ try {
     boolean: each.flatMap((flags) => flags.boolean ?? []),
     value: [...each.flatMap((flags) => flags.value ?? []), 'repo'],
   });
+  if (!COMMANDS.issues[command]) parsed.repo ??= DISCUSSIONS;
   const options = pickRepo(parsed);
   const handler = COMMANDS[reportSource.name][command];
   if (!handler) usage(`${command} does not read ${reportSource.name}`);
