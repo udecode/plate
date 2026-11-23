@@ -76,14 +76,14 @@ const log = await git(
   values.ref,
   '--no-merges',
   '--date=format-local:%Y-%m-%d',
-  '--format=%H%x1f%cd%x1f%s%x1f%(trailers:key=Plan,valueonly,separator=%x1d)'
+  '--format=%x1e%H%x1f%cd%x1f%s%x1f%B'
 );
 const commits = new Map();
 const landedOn = new Map();
-for (const line of log.split('\n').filter(Boolean)) {
-  const [sha, date, subject, planned] = line.split('\u001F');
+for (const record of log.split('\u001E').filter(Boolean)) {
+  const [sha, date, subject, body] = record.split('\u001F');
   commits.set(sha, { sha, date, subject });
-  for (const plan of planned.split('\u001D').filter(Boolean)) {
+  for (const [, plan] of body.matchAll(/^Plan: (\S+)\s*$/gmu)) {
     if (date <= values.until && !landedOn.has(plan)) landedOn.set(plan, date);
   }
 }
