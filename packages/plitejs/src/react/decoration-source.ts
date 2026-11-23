@@ -470,19 +470,18 @@ type NativeTextChange = readonly [
   toB: number,
 ];
 
-const mapTextOffset = (
+const mapSliceEdge = (
   changes: readonly NativeTextChange[],
   offset: number,
   edge: 'end' | 'start'
-) => {
+): number | 'crossed' => {
   let shift = 0;
 
-  for (const [fromA, toA, fromB, toB] of changes) {
+  for (const [fromA, toA, newTextStart, newTextEnd] of changes) {
     if (offset < fromA) break;
-    // An edge inside a replaced span moves away from the new text, so a slice
-    // never takes in typed text.
-    if (offset <= toA) return edge === 'start' ? toB : fromB;
-    shift = toB - toA;
+    if (offset > fromA && offset < toA) return 'crossed';
+    if (offset <= toA) return edge === 'start' ? newTextEnd : newTextStart;
+    shift = newTextEnd - toA;
   }
 
   return offset + shift;
@@ -506,15 +505,15 @@ const mapDecorationSlicesThroughChanges = (
   const mapped: DecorationSlice[] = [];
 
   for (const slice of slices) {
-    const start = mapTextOffset(changes, slice.start, 'start');
-    const end = mapTextOffset(changes, slice.end, 'end');
+    const start = mapSliceEdge(changes, slice.start, 'start');
+    const end = mapSliceEdge(changes, slice.end, 'end');
 
     if (start === slice.start && end === slice.end) {
       mapped.push(slice);
       continue;
     }
     changed = true;
-    if (end <= start) continue;
+    if (start === 'crossed' || end === 'crossed' || end <= start) continue;
 
     const mappedSlice = Object.freeze({ ...slice, end, start });
 
