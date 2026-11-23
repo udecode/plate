@@ -73,6 +73,12 @@ export const TEST_FAST_IGNORE_PATTERNS = [
   'packages/plitejs/**',
 ];
 
+// step-failures.mjs reads these too. They live here because its ledger imports
+// would let a change to .agents/pstack.json or a pstack helper reach the root
+// runner, so its landing would run every fast test file.
+export const EXPECTED_PATH = '.agents/expected-failures.json';
+export const leftOutLine = (file) => `[test-suite] left out ${file}`;
+
 const isCI = !!process.env.CI;
 
 // Budget the feedback loop, not file topology. A coherent file with many cheap

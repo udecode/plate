@@ -4,17 +4,16 @@ import { dirname, join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
 
 import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
+import { EXPECTED_PATH, leftOutLine } from '../config/test-suites.mjs';
 
 const TEST_FILE = /\.(?:spec|test)\.[cm]?[jt]sx?$/u;
 // turbo starts each line of a package task with its id, such as
 // `plitejs:test:partition:core: `.
 const TASK_PREFIX = /^((@?[\w.-]+(?:\/[\w.-]+)?):[\w-]+(?::[\w-]+)*): /u;
 
-export const EXPECTED_PATH = '.agents/expected-failures.json';
 export const clearedHeader = (step) =>
   `[check] ${step} no longer fails with these, so remove their lines from ${EXPECTED_PATH}:`;
-const LEFT_OUT = '[test-suite] left out ';
-export const leftOutLine = (file) => `${LEFT_OUT}${file}`;
+const LEFT_OUT = leftOutLine('');
 const leftOutFiles = (output) =>
   new Set(
     output

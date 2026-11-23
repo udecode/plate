@@ -33,6 +33,7 @@ import {
   readTasks,
   syncLedger,
 } from '../../.agents/pstack/tasks.mjs';
+import { EXPECTED_PATH } from '../config/test-suites.mjs';
 import {
   installLockfile,
   INTERRUPTED,
@@ -43,7 +44,6 @@ import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
 import { dueRecurrences, recurrenceOffer, runsOf } from './red-recurrence.mjs';
 import {
   clearedHeader,
-  EXPECTED_PATH,
   expectedVerdict,
   failureKey,
   failuresOf,
@@ -371,9 +371,8 @@ const passes = (run, step, onlyFiles) =>
     status: 1,
     step,
   }).status === 0;
-const sameRed = (lastRed, { interrupted, unexpected }) =>
-  Array.isArray(lastRed?.failures) &&
-  (interrupted || unexpected.every((key) => lastRed.failures.includes(key)));
+const sameFailures = (lastRed, unexpected) =>
+  unexpected.every((key) => lastRed.failures.includes(key));
 
 const rerunCommand = (step, files) => {
   const quoted = (list) => list.map((file) => `'${file}'`).join(' ');
@@ -693,7 +692,14 @@ const run = async (args) => {
         continue;
       }
       const before = wasRed.get(failed);
-      if (sameRed(before, { interrupted, unexpected })) {
+      // An interrupted step shows no failures, so without an open fix task
+      // its last red would name failures this tip never showed.
+      const held =
+        Array.isArray(before?.failures) &&
+        (interrupted
+          ? Boolean(openTask(failed))
+          : sameFailures(before, unexpected));
+      if (held) {
         const event = {
           author: before.author,
           culprit: before.culprit ?? null,
