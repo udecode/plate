@@ -18,6 +18,7 @@ import {
   type Selection,
   SelectionApi,
 } from '../..';
+import { tripleClickedBlock } from '../../core/editor-commands';
 import {
   getPlacementGeneration,
   liftShownTarget,
@@ -125,10 +126,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { canUseNativeViewSelection } from './selection-projected-dom';
-import {
-  readSelectionAnnotation,
-  tripleClickedBlock,
-} from './selection-triple-click';
+import { readSelectionAnnotation } from './selection-triple-click';
 import { settleViewFocus } from './set-root-endpoints';
 import { activateViewCaret } from './view-caret-restore';
 import type { ViewLines } from './view-lines';

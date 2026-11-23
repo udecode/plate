@@ -1,15 +1,12 @@
 import {
-  defineUpdateAnnotation,
   type EditorUpdateAnnotation,
   type Node,
   NodeApi,
-  type NodeKey,
   type Path,
   type Point,
   type Range,
   RangeApi,
 } from '../..';
-import { getRemovableTripleClickedBlock } from '../../core/editor-commands';
 import { getSelection } from '../../dom';
 import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
 import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
@@ -27,10 +24,6 @@ import {
   range as editorRange,
 } from './runtime-editor-api';
 
-export const tripleClickedBlock = defineUpdateAnnotation<NodeKey>({
-  key: 'selection.triple-clicked-block',
-});
-
 export const readSelectionAnnotation = <TValue>(
   editor: AnyEditor,
   annotation: EditorUpdateAnnotation<TValue>,
@@ -45,9 +38,6 @@ export const readSelectionAnnotation = <TValue>(
     ? value
     : null;
 };
-
-export const readTripleClickedBlock = (editor: AnyEditor, selection: Range) =>
-  readSelectionAnnotation(editor, tripleClickedBlock, selection);
 
 export const getTripleClickRange = (
   editor: ReactRuntimeEditor,
@@ -67,12 +57,10 @@ export const getTripleClickRange = (
 
   if (lineRange) return { block: null, range: lineRange };
 
-  const range = editorRange(editor, blockPath);
-  const block = editor.read((state) =>
-    getRemovableTripleClickedBlock(state, range)
-  );
-
-  return { block, range };
+  return {
+    block: editor.read((state) => state.key(blockPath)),
+    range: editorRange(editor, blockPath),
+  };
 };
 
 export const exportTripleClickSelectionToDOM = ({

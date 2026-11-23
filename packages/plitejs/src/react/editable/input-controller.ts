@@ -50,7 +50,6 @@ export {
   applyEditableRepairRequest,
   applyModelOwnedDataTransferInput,
   applyModelOwnedDeleteIntent,
-  applyModelOwnedExpandedDelete,
   applyModelOwnedHistoryIntent,
   applyModelOwnedLineBreak,
   applyModelOwnedNativeHistoryEvent,

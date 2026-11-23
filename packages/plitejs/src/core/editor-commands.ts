@@ -6,7 +6,6 @@ import type {
   EditorStateView,
   EditorToggleBlockOptions,
   EditorToggleMarkOptions,
-  EditorUpdateTransaction,
   NodeKey,
   NodeTarget,
   Value,
@@ -77,6 +76,7 @@ import {
 import { toCompiledNodeContext } from './schema-compiler';
 import { refuseCrossing } from './set-root';
 import { notePasteLoss, planPaste, writePaste } from './slice-landing';
+import { defineUpdateAnnotation } from './transaction-values';
 import { areEditorJsonValuesEqual } from './value-codec';
 import { canReplaceChildrenWithText, holdsWritableText } from './writable-text';
 
@@ -349,10 +349,24 @@ const takesCaretAfterRemoval = (
   !isGrid(state, node) &&
   holdsWritableText(getInternalEditorSchemaFromApi(state.schema), node);
 
-export const getRemovableTripleClickedBlock = (
+export const tripleClickedBlock = defineUpdateAnnotation<NodeKey>({
+  key: 'selection.triple-clicked-block',
+});
+
+export const readTripleClickRemoval = (
   state: CommandStateView,
   range: Range
 ): NodeKey | null => {
+  const commit = state.lastCommit();
+
+  if (
+    commit?.annotations[tripleClickedBlock.key] === undefined ||
+    !RangeApi.isRange(commit.selectionAfter) ||
+    !RangeApi.equals(commit.selectionAfter, range)
+  ) {
+    return null;
+  }
+
   const blocks = getFullySelectedSiblingBlocks(state, range);
   const [block, path] = blocks?.length === 1 ? getDefined(blocks[0]) : [];
 
@@ -751,6 +765,22 @@ export const editorCommands: EditorCommands = Object.freeze({
       if (range) {
         refuseCrossing(getSetSite(getActiveCommandEditor()), range, root);
       }
+      const tripleClicked =
+        range && RangeApi.isRange(target)
+          ? readTripleClickRemoval(state, range)
+          : null;
+
+      if (tripleClicked) {
+        return state.transaction((tx) => {
+          const [next] = getDefined(tx.nodes.next({ at: tripleClicked }));
+
+          tx.nodes.remove({ at: tripleClicked });
+          const start = getDefined(tx.points.start(tx.key(next)));
+
+          tx.selection.set({ anchor: start, focus: start });
+        });
+      }
+
       const publicRoot = toPublicRoot(root);
       const wholeBlocks = range
         ? readWholeBlockDelete(state, range, publicRoot)
@@ -1204,19 +1234,3 @@ export const editorCommands: EditorCommands = Object.freeze({
     },
   }),
 });
-
-export const deleteTripleClickedBlock = (
-  tx: EditorUpdateTransaction<Value, any>,
-  block: NodeKey,
-  direction: 'backward' | 'forward'
-) => {
-  const next = tx.nodes.next({ at: block })?.[0];
-
-  tx.command(editorCommands.deleteFragment, { at: block, direction });
-
-  if (!next || tx.nodes.get(block)) return;
-
-  const start = tx.points.start(tx.key(next));
-
-  if (start) tx.selection.set({ anchor: start, focus: start });
-};

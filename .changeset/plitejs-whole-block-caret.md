@@ -10,3 +10,4 @@
 - Fix redo of Backspace over a whole document that starts with a quote dropping a letter a collaborator typed into the quote after the undo.
 - Fix cutting the whole document and pasting it back turning a leading quote or code block into a paragraph.
 - Fix Backspace over an empty block up to the start of the next block leaving the selection in place. The caret now goes into the empty block.
+- Fix a delete command run right after a triple-click, such as from a plugin's key handler, emptying the block instead of removing it as Backspace does.

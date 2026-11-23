@@ -5,12 +5,19 @@ import { RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import { resolveDeletedRange } from '../transforms-text';
-import { readWholeBlockDelete } from './editor-commands';
+import {
+  readTripleClickRemoval,
+  readWholeBlockDelete,
+} from './editor-commands';
 
 export const resolveFragmentDeletedRange = (
   editor: AnyEditor,
   range: Range
 ): NodeSelection | Range | null => {
+  if (editor.read((state) => readTripleClickRemoval(state, range))) {
+    return range;
+  }
+
   const wholeBlocks = editor.read((state) =>
     readWholeBlockDelete(state, range, undefined)
   );

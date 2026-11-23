@@ -87,7 +87,6 @@ import {
   readRuntimeSelection,
   readRuntimeSelectionRange,
 } from './runtime-selection-state';
-import { readTripleClickedBlock } from './selection-triple-click';
 import type { ViewLines } from './view-lines';
 
 type EditablePasteHandler = (
@@ -368,8 +367,7 @@ const readCutDeletedRange = (editor: AnyEditor, selection: Range) => {
   if (
     RangeApi.isCollapsed(selection) ||
     selection.anchor.root ||
-    selection.focus.root ||
-    readTripleClickedBlock(editor, selection)
+    selection.focus.root
   ) {
     return null;
   }

@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import { NodeApi, PathApi, type Range, RangeApi, SelectionApi } from '../..';
+import { tripleClickedBlock } from '../../core/editor-commands';
 import { setShownSelectionAsView } from '../../core/view-carets';
 import {
   containsShadowAware,
@@ -106,7 +107,6 @@ import {
 import {
   exportTripleClickSelectionToDOM,
   getTripleClickRange,
-  tripleClickedBlock,
 } from './selection-triple-click';
 import {
   preferModelSelectionForSelectableOwnerTarget,

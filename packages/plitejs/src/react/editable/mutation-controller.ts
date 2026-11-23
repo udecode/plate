@@ -12,7 +12,6 @@ import {
 } from '../..';
 import { withAuthoredUpdateView } from '../../core/authored-runtime';
 import { withCompositionStamp } from '../../core/composition-stamp';
-import { deleteTripleClickedBlock } from '../../core/editor-commands';
 import {
   type NativeGroupingInput,
   nativeGroupingInput,
@@ -105,7 +104,6 @@ import {
   shouldUseModelBackedSelectAllSelection,
 } from './selection-controller';
 import { shouldSkipSelectionFocus } from './selection-side-effect-policy';
-import { readTripleClickedBlock } from './selection-triple-click';
 import { withTypedTextIntent } from './typed-text';
 
 export {
@@ -151,18 +149,6 @@ const applyRenderedLineDeleteBackward = (editor: RuntimeEditor) => {
   dispatchCommand(editor, editorCommands.deleteFragment, {
     at: { anchor: start, focus: selection.focus },
     direction: 'backward',
-  });
-};
-
-export const applyModelOwnedExpandedDelete = ({
-  direction,
-  editor,
-}: {
-  direction: 'backward' | 'forward';
-  editor: Editor;
-}) => {
-  dispatchCommand(editor, editorCommands.deleteFragment, {
-    direction,
   });
 };
 
@@ -704,14 +690,6 @@ export const applyEditableCommand = ({
           RangeApi.isExpanded(selection)
             ? selection
             : null;
-        const block = expanded && readTripleClickedBlock(editor, expanded);
-
-        if (block) {
-          editor.update((tx) =>
-            deleteTripleClickedBlock(tx, block, command.direction ?? 'forward')
-          );
-          return true;
-        }
 
         dispatchCommand(editor, editorCommands.deleteFragment, {
           ...(expanded ? { at: expanded } : {}),
