@@ -13,12 +13,22 @@ const TASK_PREFIX = /^((@?[\w.-]+(?:\/[\w.-]+)?):[\w-]+(?::[\w-]+)*): /u;
 export const EXPECTED_PATH = '.agents/expected-failures.json';
 export const clearedHeader = (step) =>
   `[check] ${step} no longer fails with these, so remove their lines from ${EXPECTED_PATH}:`;
+const LEFT_OUT = '[test-suite] left out ';
+export const leftOutLine = (file) => `${LEFT_OUT}${file}`;
+const leftOutFiles = (output) =>
+  new Set(
+    output
+      .split('\n')
+      .map((line) => stripVTControlCharacters(line))
+      .filter((line) => line.startsWith(LEFT_OUT))
+      .map((line) => line.slice(LEFT_OUT.length))
+  );
 export const failureKey = ({ file, test }) => `${file ?? '?'} › ${test}`;
 export const failureFile = (key) => {
   const file = key.slice(0, key.indexOf(' › '));
   return file === '?' ? null : file;
 };
-export const openExpectedFailures = (root) => {
+const openExpectedFailures = (root) => {
   const file = join(root, EXPECTED_PATH);
   const common = spawnSync(
     'git',
@@ -41,6 +51,13 @@ export const openExpectedFailures = (root) => {
     open.has(entry.owner)
   );
 };
+
+const LANES = new Set(['test', 'test-slow']);
+
+export const listedFor = (root, step) =>
+  openExpectedFailures(root).filter(
+    (entry) => entry.step === step || (LANES.has(step) && LANES.has(entry.step))
+  );
 
 export const stepOutput = (log, step) => {
   const lines = log.split('\n');
@@ -160,14 +177,15 @@ export const expectedVerdict = ({
   status,
   step,
 }) => {
-  const listed = openExpectedFailures(root).filter(
-    (entry) => entry.step === step
-  );
+  const listed = listedFor(root, step);
   if (listed.length === 0) return { status };
-  const failures = failuresOf(readOutput(), root);
+  const output = readOutput();
+  const failures = failuresOf(output, root);
+  const leftOut = leftOutFiles(output);
   const cleared = listed.filter(
     (entry) =>
       (!onlyFiles || onlyFiles.includes(entry.file)) &&
+      !leftOut.has(entry.file) &&
       !failures.has(failureKey(entry))
   );
   if (cleared.length > 0) {

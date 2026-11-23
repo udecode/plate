@@ -47,7 +47,7 @@ import {
   expectedVerdict,
   failureKey,
   failuresOf,
-  openExpectedFailures,
+  listedFor,
   stepOutput,
 } from './step-failures.mjs';
 
@@ -355,11 +355,7 @@ const stepLog = (log, step) =>
 const readFailures = (log, step) => {
   const output = stepLog(log, step);
   const failures = failuresOf(output, worktree);
-  const listed = new Set(
-    openExpectedFailures(worktree)
-      .filter((entry) => entry.step === step)
-      .map(failureKey)
-  );
+  const listed = new Set(listedFor(worktree, step).map(failureKey));
   return {
     failures,
     listedPassing: output.includes(clearedHeader(step)),
