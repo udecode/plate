@@ -584,6 +584,18 @@ export const steps = [
     key: [],
   },
   {
+    name: 'sync-simulation',
+    cores: 4,
+    private: true,
+    run: 'pnpm check:sync-simulation',
+    affected: runsScript(
+      'packages/plitejs/scripts/sync-simulation.ts',
+      'packages/plitejs/scripts/check-harness.ts',
+      'packages/plitejs/test/support/sync-world.ts'
+    ),
+    key: [],
+  },
+  {
     name: 'authored-recording',
     cores: 4,
     private: true,
