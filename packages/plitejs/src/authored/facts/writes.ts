@@ -745,11 +745,19 @@ export const authoredWritesOf = ({
         : head.index
             .nodeRangesTouching(position, position + 1)
             .filter(({ from, to }) => from <= position && position + 1 <= to)
-            .flatMap(({ path }) => [...governingOf(head, path).keys()]);
+            .flatMap(({ path }) =>
+              [...governingOf(head, path)].map(([key, claim]) => ({
+                claim,
+                key,
+                path,
+              }))
+            );
     const heldOnBothSides = (fromA: number, toA: number) => {
-      const ownersBefore = new Set(claimsOwningToken(fromA - 1));
+      const ownersBefore = new Set(
+        claimsOwningToken(fromA - 1).map(({ key }) => key)
+      );
 
-      return claimsOwningToken(toA).filter((key) => ownersBefore.has(key));
+      return claimsOwningToken(toA).filter(({ key }) => ownersBefore.has(key));
     };
     const ranges = whole
       ? [[0, headIndex?.length ?? 0, 0, resultIndex?.length ?? 0] as const]
@@ -880,7 +888,10 @@ export const authoredWritesOf = ({
         runs,
       };
     });
-    const heldByKeptSiblingBefore = (path: readonly number[]) => {
+    const heldByKeptSiblingBefore = (
+      path: readonly number[],
+      node: unknown
+    ) => {
       const index = path.at(-1) ?? 0;
 
       if (!head || !result || index === 0) return [];
@@ -892,7 +903,16 @@ export const authoredWritesOf = ({
       const [run] = keptRuns(from, from + 1);
       const headPath = run && head.index.nodeStartingAt(run.at)?.path;
 
-      return headPath ? [...governingOf(head, headPath).keys()] : [];
+      if (!headPath) return [];
+
+      const takes = takesFormats(node, head.index.node(headPath), {
+        born: resultFacts,
+        carrier: headFacts,
+      });
+
+      return [...governingOf(head, headPath)].flatMap(([key, claim]) =>
+        takes || claim.kind !== 'format' ? [key] : []
+      );
     };
     const heldByAncestors = (path: readonly number[]) =>
       result && path.length > 1
@@ -947,7 +967,7 @@ export const authoredWritesOf = ({
             bornHere.push({
               carrier: carrierAt(entry.from),
               continued: [
-                ...heldByKeptSiblingBefore(entry.path),
+                ...heldByKeptSiblingBefore(entry.path, node),
                 ...heldByAncestors(entry.path),
               ],
               key: carrierKeyOf('element', node, now, ''),
@@ -1094,7 +1114,12 @@ export const authoredWritesOf = ({
       const types = new Set(within.map(typeOf));
       const facts = { born: resultFacts, carrier: headFacts };
       const held = new Set([
-        ...around,
+        ...around.flatMap(({ claim, key, path }) =>
+          claim.kind !== 'format' ||
+          (head && takesFormats(each.node, head.index.node(path), facts))
+            ? [key]
+            : []
+        ),
         ...each.continued,
         ...(each.carrier.node === 'element'
           ? lostElements.flatMap((lost) => {

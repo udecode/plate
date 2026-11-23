@@ -2391,6 +2391,7 @@ class RootRecorder {
 
     return new Set(
       formats.flatMap((mark) =>
+        jsonEqual(continuation[mark.key], continued.props[mark.key]) &&
         [continued.props[mark.key], ...restoredBy(mark)].every((value) =>
           keeps(mark.key, value)
         )
