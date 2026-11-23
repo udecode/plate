@@ -14,18 +14,12 @@ import {
   type RecordSetVersion,
   recordSetChanges,
   readShownDocument,
+  readShownRecords,
   type RuntimeAnyEditor,
   withStoredAuthoredRead,
 } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
-import {
-  COPIES,
-  GONE,
-  goneIn,
-  idOf,
-  MARKS,
-  type SavedRecords,
-} from './inkGone.internal';
+import { COPIES, GONE, goneIn, idOf, MARKS } from './inkGone.internal';
 import { inkText } from './inkMatch.internal';
 
 type Side = 'next' | 'previous';
@@ -48,6 +42,7 @@ type DeletedGroup = {
   blocks: Set<string>;
   ids: Record<InkMark['direction'], readonly string[]>;
   marks: Record<InkMark['direction'], readonly InkMark[]>;
+  members: Map<string, InkMark>;
   pending: Map<string, Readonly<{ joins: boolean; mark: InkMark }>>;
   place: InkCopyPlace;
   sign: InkMarkSign;
@@ -111,7 +106,7 @@ const shownPlaces = new WeakMap<
 
 const metrics = { holders: 0, hops: 0, reads: 0, resolved: 0 };
 
-const work = { chains: 0, copies: 0, groups: 0, signs: 0 };
+const work = { chains: 0, copies: 0, groups: 0, members: 0, signs: 0 };
 
 export const getInkPlaceMetrics = () => Object.freeze({ ...metrics, ...work });
 
@@ -168,6 +163,7 @@ const groupAt = (
       blocks: new Set(),
       ids: { ltr: [], rtl: [] },
       marks: { ltr: [], rtl: [] },
+      members: new Map(),
       pending: new Map(),
       place,
       sign: { place, state: 'deleted' },
@@ -358,14 +354,14 @@ const startEpoch = (places: InkPlaces) => {
 const nearestPresent = (
   places: InkPlaces,
   state: InkState,
-  records: SavedRecords | undefined,
+  gone: RecordSetVersion,
   id: string,
   side: Side
 ) => {
   const chainEnds = places.chainEnds[side];
   const walked = new Set([id]);
   let end = id;
-  let at = chainEnds.get(id) ?? goneIn(records, id)?.[side];
+  let at = chainEnds.get(id) ?? goneIn(gone, id)?.[side];
   let found: EditorUniqueHolder | undefined;
 
   work.chains += 1;
@@ -380,7 +376,7 @@ const nearestPresent = (
       break;
     }
     walked.add(at);
-    at = chainEnds.get(at) ?? goneIn(records, at)?.[side];
+    at = chainEnds.get(at) ?? goneIn(gone, at)?.[side];
   }
   for (const passed of walked) {
     places.walked.add(passed);
@@ -390,15 +386,16 @@ const nearestPresent = (
   return found && { id: end, key: found.key };
 };
 
-const goneGroupOf = (places: InkPlaces, state: InkState, id: string) => {
+const goneGroupOf = (places: InkPlaces, read: InkPlaceRead, id: string) => {
   const block = places.blocks.get(id);
 
   if (block?.group) return block.group;
 
-  const { records } = state.value();
-  const previous = nearestPresent(places, state, records, id, 'previous');
+  const { state } = read;
+  const gone = getRecordSetVersion(readShownRecords(read.editor), GONE);
+  const previous = nearestPresent(places, state, gone, id, 'previous');
   const side = previous ? 'previous' : 'next';
-  const found = previous ?? nearestPresent(places, state, records, id, side);
+  const found = previous ?? nearestPresent(places, state, gone, id, side);
   const group = found
     ? groupAt(places, beside(side, found.key), { id: found.id, side })
     : groupAt(places, START);
@@ -409,17 +406,21 @@ const goneGroupOf = (places: InkPlaces, state: InkState, id: string) => {
   return group;
 };
 
-const reanchor = (places: InkPlaces, state: InkState, group: DeletedGroup) => {
+const reanchor = (
+  places: InkPlaces,
+  state: InkState,
+  gone: RecordSetVersion,
+  group: DeletedGroup
+) => {
   const { anchor, place } = group;
 
   if (!anchor || place.kind !== 'gone' || place.beside.at === 'start') return;
   metrics.holders += 1;
 
   const holder = state.unique.holder('id', anchor.id);
-  const { records } = state.value();
   const found = holder
     ? { id: anchor.id, key: holder.key }
-    : nearestPresent(places, state, records, anchor.id, anchor.side);
+    : nearestPresent(places, state, gone, anchor.id, anchor.side);
 
   if (found?.key === place.beside.key) return;
   if (found) {
@@ -452,7 +453,7 @@ const keepSign = (places: InkPlaces, read: InkPlaceRead, mark: InkMark) => {
   if (held.includes(undefined)) {
     kept.group = place
       ? groupAt(places, place)
-      : goneGroupOf(places, read.state, copies[shown].block);
+      : goneGroupOf(places, read, copies[shown].block);
     pend(places, kept);
   } else if (!mark.margin && place?.kind === 'changed') {
     kept.changed = { place, state: 'changed' };
@@ -514,8 +515,7 @@ export const readInkPlace = (read: InkPlaceRead, copyId: string) => {
 
   return (
     copy &&
-    (places.held.get(copy.id) ??
-      goneGroupOf(places, read.state, copy.block).place)
+    (places.held.get(copy.id) ?? goneGroupOf(places, read, copy.block).place)
   );
 };
 
@@ -538,32 +538,79 @@ export const readInkSign = (
   return kept?.group?.sign ?? kept?.changed;
 };
 
+type Cut = Readonly<{ at: number; mark?: InkMark }>;
+
+const placeIn = (marks: readonly InkMark[], mark: InkMark) => {
+  let from = 0;
+  let to = marks.length;
+
+  while (from < to) {
+    const at = (from + to) >>> 1;
+
+    work.members += 1;
+    if (byMark(marks[at], mark) < 0) from = at + 1;
+    else to = at;
+  }
+
+  return from;
+};
+
+const byCut = (a: Cut, b: Cut) =>
+  a.at - b.at ||
+  (a.mark && b.mark ? byMark(a.mark, b.mark) : a.mark ? -1 : b.mark ? 1 : 0);
+
+const cutIn = <T>(
+  of: readonly T[],
+  cuts: readonly Cut[],
+  add: (mark: InkMark) => T
+) => {
+  const pieces: Array<T | readonly T[]> = [];
+  let from = 0;
+
+  for (const { at, mark } of cuts) {
+    pieces.push(of.slice(from, at));
+    if (mark) pieces.push(add(mark));
+    from = mark ? at : at + 1;
+  }
+  pieces.push(of.slice(from));
+
+  return ([] as T[]).concat(...pieces);
+};
+
 const settle = (places: InkPlaces, group: DeletedGroup) => {
-  for (const direction of ['ltr', 'rtl'] as const) {
-    const changes = [...group.pending.values()].filter(
-      ({ mark }) => mark.direction === direction
-    );
-    const joins = changes.flatMap((change) =>
-      change.joins ? [change.mark] : []
-    );
-    const marks: InkMark[] = [];
-    let next = 0;
+  const cuts: Record<InkMark['direction'], Cut[]> = { ltr: [], rtl: [] };
 
-    if (changes.length === 0) continue;
-    work.copies += 1;
-    joins.sort(byMark);
-    for (const { id } of group.marks[direction]) {
-      const mark = places.signs.get(id)?.mark;
+  for (const [id, { joins, mark }] of group.pending) {
+    const member = group.members.get(id);
 
-      if (!mark || group.pending.has(id)) continue;
-      for (; next < joins.length && byMark(joins[next], mark) < 0; next++) {
-        marks.push(joins[next]);
-      }
-      marks.push(mark);
+    if (member) {
+      cuts[member.direction].push({
+        at: placeIn(group.marks[member.direction], member),
+      });
+      group.members.delete(id);
     }
-    marks.push(...joins.slice(next));
-    group.marks[direction] = Object.freeze(marks);
-    group.ids[direction] = Object.freeze(marks.map((mark) => mark.id));
+    if (joins) {
+      cuts[mark.direction].push({
+        at: placeIn(group.marks[mark.direction], mark),
+        mark,
+      });
+      group.members.set(id, mark);
+    }
+  }
+  for (const direction of ['ltr', 'rtl'] as const) {
+    if (cuts[direction].length === 0) continue;
+    work.copies += 1;
+    cuts[direction].sort(byCut);
+    group.marks[direction] = cutIn(
+      group.marks[direction],
+      cuts[direction],
+      (mark) => mark
+    );
+    group.ids[direction] = cutIn(
+      group.ids[direction],
+      cuts[direction],
+      (mark) => mark.id
+    );
   }
   group.pending.clear();
   if (group.blocks.size + size(group) === 0) {
@@ -694,7 +741,7 @@ export const advanceInkPlaces = (
 
         for (const group of anchored) {
           if (places.groups.get(keyOf(group.place)) === group) {
-            reanchor(places, state, group);
+            reanchor(places, state, sets[GONE], group);
           }
         }
       })

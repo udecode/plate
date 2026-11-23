@@ -20,10 +20,6 @@ import {
 
 export type InkGone = Readonly<{ next?: string; previous?: string }>;
 
-export type SavedRecords = Readonly<
-  Record<string, Readonly<Record<string, Readonly<Record<string, unknown>>>>>
->;
-
 export const COPIES = 'ink-copies';
 
 export const GONE = 'ink-gone';
@@ -125,8 +121,8 @@ const goneOf = (record: Readonly<Record<string, unknown>> | undefined) =>
       : {}),
   };
 
-export const goneIn = (records: SavedRecords | undefined, id: string) =>
-  goneOf(records?.[GONE]?.[id]);
+export const goneIn = (version: RecordSetVersion, id: string) =>
+  goneOf(readRecord(version, id));
 
 const NAMING_FIELDS = [
   [COPIES, ['block']],
@@ -272,7 +268,7 @@ export const hasPendingGone = (editor: RuntimeAnyEditor) =>
   !!currentSession(editor)?.pending.size;
 
 const savedGone = (editor: RuntimeAnyEditor, id: string) =>
-  goneOf(readRecord(getRecordSetVersion(readShownRecords(editor), GONE), id));
+  goneIn(getRecordSetVersion(readShownRecords(editor), GONE), id);
 
 const writeGone = (
   editor: RuntimeAnyEditor,
