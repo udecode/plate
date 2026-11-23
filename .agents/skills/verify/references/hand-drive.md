@@ -14,6 +14,8 @@ The tab that `preview_start` opens for a launch entry can stay on a "Policy chec
 
 The built-in browser cannot start a native drag. Drive a text drag there as a real mouse selection, then `DragEvent`s dispatched from the browser's JavaScript tool. Resize the tab to 1280x900 first, because a hidden pane reports a width of 0, which misplaces the drop, and list demo cells need at least 1,200 px. A dispatched drop proves the editor's drop handling, not a native drag, which [native editor proof](./editor-proof.md) owns.
 
+Drive a real mouse drag, such as on a media resize handle, at the pane's own size. In one drive, after a resize to 1280x900 that the pane scaled down to fit, a drag at the screenshot's coordinates missed the handle, and the same drag at the pane's own size hit it. Resize to the desktop width after the drag, to post the desktop cell's visit.
+
 The built-in browser cannot paste either: a `paste` event dispatched from its JavaScript tool left the `/docs/docx` editor unchanged. Paste HTML there with `document.querySelector('[data-editor="true"]').__EDITOR_BROWSER_HANDLE__.insertData({ html, text })`, which runs the editor's own data insertion over the current selection. Select first with the handle's `selectAll()` or `selectRange()`. It proves the editor's paste handling, not a native paste, which Claude in Chrome or the clipboard spec owns.
 
 ## Setup
