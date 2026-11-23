@@ -118,7 +118,10 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     return true;
   };
 
-  const handleOutsidePress = (event: PointerEvent | MouseEvent) => {
+  // A touch or pen tap also sends a compatibility mousedown before its click,
+  // so every pointer decides here, where a control keeps the editor's focus
+  // by preventing mousedown.
+  const handleOutsideMouseDown = (event: MouseEvent) => {
     const rootElement = rootRef.current;
 
     if (!rootElement || event.defaultPrevented) {
@@ -151,14 +154,6 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     );
   };
 
-  const handleOutsidePointerDown = (event: PointerEvent) => {
-    if (event.pointerType === 'mouse') return;
-
-    handleOutsidePress(event);
-  };
-  const handleOutsideMouseDown = (event: MouseEvent) => {
-    handleOutsidePress(event);
-  };
   const handleFocusIn = (event: FocusEvent) => {
     const rootElement = rootRef.current;
 
@@ -172,9 +167,6 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     }
   };
 
-  if (targetWindow?.PointerEvent) {
-    targetDocument.addEventListener('pointerdown', handleOutsidePointerDown);
-  }
   targetDocument.addEventListener('mousedown', handleOutsideMouseDown);
   // Capture, so a refocus ends the window before the editor's own focus
   // handler, which React runs at its root, reads it.
@@ -182,12 +174,6 @@ export const attachEditableOutsideFocusBoundaryListener = ({
 
   return () => {
     outsideFocusBoundaryRevision += 1;
-    if (targetWindow?.PointerEvent) {
-      targetDocument.removeEventListener(
-        'pointerdown',
-        handleOutsidePointerDown
-      );
-    }
     targetDocument.removeEventListener('mousedown', handleOutsideMouseDown);
     targetDocument.removeEventListener('focusin', handleFocusIn, true);
   };
