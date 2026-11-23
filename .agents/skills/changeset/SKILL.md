@@ -12,9 +12,9 @@ Release notes document user-visible changes: package changesets for published pa
 
 **Core principle:** one action verb + one impact statement = one bullet.
 
-## No package changesets on `next`
+## Package changesets on `next`
 
-While Plate v2 is in beta, a change on `next` gets no package changeset, whatever package it changes. On each push to `next` with no changeset pending, the release workflow adds one entry that links every commit since the last published beta, so the beta Version Packages PR always has a beta to publish. The v2 stable release gets one hand-written entry. Registry changelog entries still follow rule 4. The package rules below apply to changes on `main`.
+While Plate v2 is in beta, a change on `next` that a package user can observe gets one changeset, written by the rules below. Its release baseline is the last published beta. Use `patch`: the four packages `next` publishes move together in one fixed group, so the bump type changes no version. Before each beta, the release job condenses the pending changesets into one line per user-visible change. On each push to `next` with no changeset pending, the release workflow adds one entry that links every commit since the last published beta, so the beta Version Packages PR always has a beta to publish. The v2 stable release gets one hand-written entry. Registry changelog entries still follow rule 4.
 
 ## Critical Rules
 
@@ -41,8 +41,8 @@ Use `patch` instead. `minor` on those explodes version bumps across dependents.
 
 Only real breaking changes get `major`.
 
-Minor and patch changesets target `main`. A breaking change belongs on `next`,
-which takes no changeset during the v2 beta.
+On `main`, minor and patch changesets fix the stable line, and a breaking
+change belongs on `next`, where every changeset is `patch`.
 
 ### 2. One package per file
 
