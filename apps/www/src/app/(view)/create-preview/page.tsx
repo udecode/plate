@@ -25,17 +25,7 @@ async function CreatePreviewContent({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
-  const read = (name: string) => {
-    const value = params[name];
-
-    return typeof value === 'string' ? value : null;
-  };
-  const config = readPlateCreateConfig({
-    base: read('base'),
-    editor: read('editor'),
-    preset: read('preset'),
-  });
+  const config = readPlateCreateConfig(await searchParams);
   const preset = getPlateCreatePreset(config);
   const theme = await getPlateCreateTheme(config.base, preset).catch(
     () => null

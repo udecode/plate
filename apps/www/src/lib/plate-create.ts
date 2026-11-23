@@ -3,6 +3,9 @@ import {
   decodePreset,
   encodePreset,
   PRESET_BASE_COLORS,
+  PRESET_FONT_HEADINGS,
+  PRESET_FONTS,
+  PRESET_RADII,
   PRESET_THEMES,
   type PresetConfig,
 } from 'shadcn/preset';
@@ -11,6 +14,7 @@ import {
   type PlateRegistryBase,
   PLATE_DEFAULT_REGISTRY_BASE,
   PLATE_REGISTRY_BASES,
+  PLATE_REGISTRY_STYLE_NAMES,
 } from './plate-registry-styles';
 
 export const PLATE_CREATE_EDITORS = [
@@ -97,18 +101,16 @@ export function createPlateCreateConfig(
 
 export const PLATE_DEFAULT_CREATE_CONFIG = createPlateCreateConfig();
 
-export function readPlateCreateConfig(params: {
-  base?: string | null;
-  editor?: string | null;
-  preset?: string | null;
-}): PlateCreateConfig {
+export function readPlateCreateConfig({
+  base,
+  editor,
+  preset,
+}: Record<string, unknown>): PlateCreateConfig {
   return createPlateCreateConfig({
-    ...(params.preset ? decodePreset(params.preset) : null),
-    ...(params.base && isPlateCreateBase(params.base)
-      ? { base: params.base }
-      : null),
-    ...(params.editor && isPlateCreateEditor(params.editor)
-      ? { editor: params.editor }
+    ...(typeof preset === 'string' ? decodePreset(preset) : null),
+    ...(typeof base === 'string' && isPlateCreateBase(base) ? { base } : null),
+    ...(typeof editor === 'string' && isPlateCreateEditor(editor)
+      ? { editor }
       : null),
   });
 }
@@ -131,12 +133,36 @@ export function getShadcnCreateUrl(config: PlateCreateConfig) {
   return `https://ui.shadcn.com/create?preset=${getPlateCreatePreset(config)}&base=${config.base}`;
 }
 
-export function getPlateCreatePreviewPath(config: PlateCreateConfig) {
-  return `/create-preview?${new URLSearchParams({
+export function getPlateCreateOptions(config: PlateCreateConfig) {
+  return {
+    baseColor: PRESET_BASE_COLORS,
+    font: PRESET_FONTS,
+    fontHeading: PRESET_FONT_HEADINGS,
+    radius: [
+      ...new Set(
+        PRESET_RADII.map((radius) =>
+          getPlateCreateRadius({ ...config, radius })
+        )
+      ),
+    ],
+    style: PLATE_REGISTRY_STYLE_NAMES,
+    theme: getPlateCreateThemes(config.baseColor),
+  };
+}
+
+const getPlateCreateSearch = (config: PlateCreateConfig) =>
+  new URLSearchParams({
     base: config.base,
     editor: config.editor,
     preset: getPlateCreatePreset(config),
-  })}`;
+  });
+
+export function getPlateCreatePath(config: PlateCreateConfig) {
+  return `/create?${getPlateCreateSearch(config)}`;
+}
+
+export function getPlateCreatePreviewPath(config: PlateCreateConfig) {
+  return `/create-preview?${getPlateCreateSearch(config)}`;
 }
 
 export function isPlateCreateEditor(value: string): value is PlateCreateEditor {

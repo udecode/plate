@@ -56,6 +56,7 @@ export function CreatePreview({
 }) {
   const [config, setConfig] = React.useState(initialConfig);
   const [theme, setTheme] = React.useState(initialTheme);
+  const [failedPreset, setFailedPreset] = React.useState<string | null>(null);
   const { base, editor } = initialConfig;
   const { style } = config;
   const preset = getPlateCreatePreset(config);
@@ -85,29 +86,40 @@ export function CreatePreview({
 
     window.addEventListener('message', onMessage);
 
+    if (window.parent !== window) {
+      window.parent.postMessage(
+        { type: 'plate-create-ready' },
+        window.location.origin
+      );
+    }
+
     return () => window.removeEventListener('message', onMessage);
   }, [base, editor]);
+
+  const themeFailed = failedPreset === preset;
 
   React.useEffect(() => {
     const controller = new AbortController();
 
-    if (theme?.preset !== preset) {
+    if (theme?.preset !== preset && !themeFailed) {
       fetch(`/api/create/theme?${new URLSearchParams({ base, preset })}`, {
         signal: controller.signal,
       })
         .then(async (response) => {
-          if (!response.ok) return;
+          if (!response.ok) throw new Error(`theme ${response.status}`);
 
           setTheme({
             ...((await response.json()) as PlateCreateTheme),
             preset,
           });
         })
-        .catch(() => {});
+        .catch(() => {
+          if (!controller.signal.aborted) setFailedPreset(preset);
+        });
     }
 
     return () => controller.abort();
-  }, [base, preset, theme?.preset]);
+  }, [base, preset, theme?.preset, themeFailed]);
 
   React.useEffect(() => {
     const { classList } = document.body;
@@ -124,13 +136,23 @@ export function CreatePreview({
 
   return (
     <>
-      {theme && <style>{getThemeCss(theme)}</style>}
+      {theme && !themeFailed && <style>{getThemeCss(theme)}</style>}
       <div
         className="relative bg-background"
         data-preview-base={base}
         data-preview-editor={editor}
         data-preview-style={style}
       >
+        {themeFailed && (
+          <p
+            className="border-b bg-muted px-4 py-2 text-sm text-muted-foreground"
+            data-slot="theme-error"
+            role="status"
+          >
+            shadcn's theme service did not answer, so the preview shows the
+            default theme.
+          </p>
+        )}
         <React.Suspense fallback={null}>
           <Page />
         </React.Suspense>

@@ -10,29 +10,93 @@ import { Label } from '@/components/ui/label';
 import {
   createPlateCreateConfig,
   getPlateCreateCommand,
+  getPlateCreateOptions,
+  getPlateCreatePath,
   getPlateCreatePreset,
   getPlateCreatePreviewPath,
   getShadcnCreateUrl,
   type PlateCreateConfig,
   PLATE_CREATE_EDITORS,
-  PLATE_DEFAULT_CREATE_CONFIG,
 } from '@/lib/plate-create';
-import {
-  type PlateRegistryStyleName,
-  PLATE_REGISTRY_BASES,
-  PLATE_REGISTRY_STYLE_NAMES,
-} from '@/lib/plate-registry-styles';
+import { PLATE_REGISTRY_BASES } from '@/lib/plate-registry-styles';
 
-export function CreateClient() {
-  const [config, setConfig] = React.useState(PLATE_DEFAULT_CREATE_CONFIG);
+const pickers = [
+  { label: 'Style', name: 'style' },
+  { label: 'Theme', name: 'theme' },
+  { label: 'Base color', name: 'baseColor' },
+  { label: 'Radius', name: 'radius' },
+  { label: 'Font', name: 'font' },
+  { label: 'Heading font', name: 'fontHeading' },
+] as const;
+
+const wordLabels: Record<string, string> = {
+  dm: 'DM',
+  eb: 'EB',
+  ibm: 'IBM',
+  jetbrains: 'JetBrains',
+};
+
+const toLabel = (value: string) =>
+  value === 'inherit'
+    ? 'Same as body'
+    : value
+        .split('-')
+        .map(
+          (word) => wordLabels[word] ?? word[0].toUpperCase() + word.slice(1)
+        )
+        .join(' ');
+
+function postConfig(
+  frame: HTMLIFrameElement | null,
+  config: PlateCreateConfig
+) {
+  frame?.contentWindow?.postMessage(
+    {
+      base: config.base,
+      editor: config.editor,
+      preset: getPlateCreatePreset(config),
+      type: 'plate-create-config',
+    },
+    window.location.origin
+  );
+}
+
+export function CreateClient({
+  initialConfig,
+}: {
+  initialConfig: PlateCreateConfig;
+}) {
+  const [config, setConfig] = React.useState(initialConfig);
+  const [previewUrl] = React.useState(() =>
+    getPlateCreatePreviewPath(initialConfig)
+  );
   const [copied, setCopied] = React.useState(false);
-  const { base, editor, style } = config;
-  const preset = getPlateCreatePreset(config);
+  const frameRef = React.useRef<HTMLIFrameElement>(null);
+  const { base, editor } = config;
+  const options = getPlateCreateOptions(config);
   const command = getPlateCreateCommand(config);
-  const previewUrl = getPlateCreatePreviewPath(config);
+
+  React.useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (
+        event.source === frameRef.current?.contentWindow &&
+        event.data?.type === 'plate-create-ready'
+      ) {
+        postConfig(frameRef.current, config);
+      }
+    };
+
+    window.addEventListener('message', onMessage);
+
+    return () => window.removeEventListener('message', onMessage);
+  }, [config]);
 
   function update(patch: Partial<PlateCreateConfig>) {
-    setConfig((current) => createPlateCreateConfig({ ...current, ...patch }));
+    const next = createPlateCreateConfig({ ...config, ...patch });
+
+    setConfig(next);
+    window.history.replaceState(null, '', getPlateCreatePath(next));
+    postConfig(frameRef.current, next);
   }
 
   async function copyCommand() {
@@ -50,58 +114,13 @@ export function CreateClient() {
             Start with the editor you need.
           </h1>
           <p className="text-sm leading-6 text-muted-foreground">
-            Pick a Plate editor, a shadcn style, and Base UI or Radix. The CLI
+            Pick a Plate editor, Base UI or Radix, and a shadcn look. The
+            preview shows the editor as the install writes it, and the CLI
             creates the app and installs the editor in one command.
           </p>
-          <a
-            className="inline-flex items-center gap-1.5 text-sm underline underline-offset-4"
-            href={getShadcnCreateUrl(config)}
-            rel="noreferrer"
-            target="_blank"
-          >
-            Customize the full theme on shadcn/create
-            <ExternalLink className="size-3.5" />
-          </a>
         </div>
 
         <div className="space-y-5">
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium">Primitives</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {PLATE_REGISTRY_BASES.map((option) => (
-                <Button
-                  key={option}
-                  type="button"
-                  variant={base === option ? 'default' : 'outline'}
-                  onClick={() => update({ base: option })}
-                >
-                  {option === 'base' ? 'Base UI' : 'Radix'}
-                </Button>
-              ))}
-            </div>
-          </fieldset>
-
-          <div className="space-y-2">
-            <Label htmlFor="plate-create-style">Style</Label>
-            <select
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              id="plate-create-style"
-              value={style}
-              onChange={(event) =>
-                update({ style: event.target.value as PlateRegistryStyleName })
-              }
-            >
-              {PLATE_REGISTRY_STYLE_NAMES.map((option) => (
-                <option key={option} value={option}>
-                  {option[0].toUpperCase() + option.slice(1)}
-                </option>
-              ))}
-            </select>
-            <p className="font-mono text-xs text-muted-foreground">
-              Preset {preset}
-            </p>
-          </div>
-
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Editor</legend>
             <div className="space-y-2">
@@ -123,16 +142,66 @@ export function CreateClient() {
               ))}
             </div>
           </fieldset>
+
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Primitives</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {PLATE_REGISTRY_BASES.map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  variant={base === option ? 'default' : 'outline'}
+                  onClick={() => update({ base: option })}
+                >
+                  {option === 'base' ? 'Base UI' : 'Radix'}
+                </Button>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="grid grid-cols-2 gap-4">
+            {pickers.map(({ label, name }) => (
+              <div key={name} className="space-y-2">
+                <Label htmlFor={`plate-create-${name}`}>{label}</Label>
+                <select
+                  className="h-9 w-full rounded-md border bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+                  disabled={options[name].length < 2}
+                  id={`plate-create-${name}`}
+                  value={config[name]}
+                  onChange={(event) => update({ [name]: event.target.value })}
+                >
+                  {options[name].map((option) => (
+                    <option key={option} value={option}>
+                      {toLabel(option)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <p className="font-mono">Preset {getPlateCreatePreset(config)}</p>
+            <a
+              className="inline-flex items-center gap-1.5 underline underline-offset-4"
+              href={getShadcnCreateUrl(config)}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open this preset on shadcn/create
+              <ExternalLink className="size-3" />
+            </a>
+          </div>
         </div>
       </aside>
 
       <section className="min-w-0 space-y-4">
         <div className="overflow-hidden rounded-xl border bg-muted/30">
           <iframe
-            key={previewUrl}
+            ref={frameRef}
             className="h-[32rem] w-full bg-background"
             src={previewUrl}
-            title={`${base} ${style} ${editor} preview`}
+            title="Plate create preview"
           />
         </div>
 
