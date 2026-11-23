@@ -107,6 +107,10 @@ export function BoardSurface({
     (layer: HTMLDivElement | null) => (layer ? view.attach(layer) : undefined),
     [view]
   );
+  const holdPictureHost = React.useCallback(
+    (host: HTMLDivElement | null) => view.holdPictureHost(host),
+    [view]
+  );
   const history = useEditorHistory({ editor: mounted });
   const readHand = () => view.state().tool === 'hand';
   const hand = React.useSyncExternalStore(view.subscribe, readHand, readHand);
@@ -169,6 +173,15 @@ export function BoardSurface({
           instructions={messages.instructions}
           label={messages.label}
         />
+        <div
+          aria-hidden
+          contentEditable={false}
+          data-board-picture-host=""
+          data-editor-root-chrome-ignore="true"
+          inert
+          ref={holdPictureHost}
+          style={PICTURE_HOST}
+        />
         {toolbar && (
           <div
             contentEditable={false}
@@ -185,6 +198,14 @@ export function BoardSurface({
     </BoardViewContext.Provider>
   );
 }
+
+const PICTURE_HOST: React.CSSProperties = {
+  left: 0,
+  opacity: 0,
+  pointerEvents: 'none',
+  position: 'absolute',
+  top: 0,
+};
 
 const WITHOUT_OWN_FOCUS_RING: React.CSSProperties = {
   clipPath: 'inset(50%)',

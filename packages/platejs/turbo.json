@@ -3279,7 +3279,8 @@
         "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:proxies",
-        "source-hash:partition:react-core"
+        "source-hash:partition:react-core",
+        "source-hash:partition:static"
       ],
       "inputs": [
         "src/react/features/board/**",
@@ -4940,6 +4941,7 @@
         "source-hash:partition:media",
         "source-hash:partition:proxies",
         "source-hash:partition:react-core",
+        "source-hash:partition:static",
         "source-hash:partition:suggestion-react",
         "source-hash:partition:upload",
         "source-hash:partition:upload-react",

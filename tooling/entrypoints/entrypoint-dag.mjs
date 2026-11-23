@@ -124,7 +124,7 @@ export const publicReactOnlyEntrypoints = Object.freeze([
 ]);
 
 const standardReactDependencies = {
-  board: ['dom'],
+  board: ['dom', 'static'],
   combobox: ['combobox'],
   'format-painter': ['standard/basic-styles'],
   suggestion: ['authored'],
@@ -133,7 +133,7 @@ const standardReactDependencies = {
 
 const standardReactPeerDependencies = {
   'basic-nodes': ['react'],
-  board: ['react'],
+  board: ['react', 'react-dom'],
   combobox: ['react'],
   'format-painter': ['react'],
   ink: ['react'],

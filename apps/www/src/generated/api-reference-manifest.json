@@ -11475,17 +11475,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/board/react:BoardStrokePath": {
-          "aliases": [],
-          "documentation": "Where a stroke draws: an SVG path over a box of `width` by `height`.",
-          "entrypoint": "platejs/board/react",
-          "kind": "type",
-          "name": "BoardStrokePath",
-          "runtime": false,
-          "signature": "type BoardStrokePath = Readonly<{\n  height: number;\n  path: string;\n  width: number;\n}>;",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/board/react:BoardStrokePlugin": {
           "aliases": [],
           "documentation": "",

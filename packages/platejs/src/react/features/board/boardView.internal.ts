@@ -736,6 +736,7 @@ export const createBoardView = (
   let layer: HTMLElement | null = null;
   let zoomLayer: HTMLElement | null = null;
   const focusTarget = React.createRef<HTMLDivElement>();
+  let pictureHost: HTMLDivElement | null = null;
   let surface: HTMLElement | null = null;
   let gestures: ReturnType<typeof attachBoardGestures> | null = null;
   let interaction: BoardInteraction | null = null;
@@ -1792,6 +1793,36 @@ export const createBoardView = (
       if (!index.byId(id)) index.update();
 
       return index.shownLayout(id);
+    },
+    holdPictureHost: (host: HTMLDivElement | null) => {
+      pictureHost = host;
+    },
+    pictureSource: () => {
+      const host = pictureHost;
+
+      if (!host) return null;
+      index.update();
+
+      const selected = selectedShapes();
+      const picked = new Set(selected.map(({ id }) => id));
+
+      for (const { id } of selected) {
+        for (const member of index.membersOf(id) ?? []) picked.add(member);
+      }
+
+      const authored = readAuthoredView(shapes);
+
+      return {
+        editor,
+        host,
+        layouts: [...index.layouts()]
+          .filter(({ id }) => selected.length === 0 || picked.has(id))
+          .sort((a, b) => a.rank - b.rank),
+        projection:
+          authored &&
+          ('preview' in authored ? authored.preview : ('proposed' as const)),
+        root,
+      };
     },
     renderWith: (
       next: Readonly<{
