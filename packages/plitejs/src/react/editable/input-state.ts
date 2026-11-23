@@ -163,6 +163,7 @@ export type EditableInputControllerState = {
   pendingNativeTextInputRepairSuppressedDOMSelection?: boolean;
   pendingNativeTextInputRepairOffset?: number | null;
   pendingNativeTextInputRepairPathKey?: string | null;
+  plainPasteShortcut?: boolean;
   recentTextInputRepairEcho?: {
     expiresAt: number;
     pathKey: string;
@@ -550,6 +551,23 @@ export const recordEditableInputIntent = (
   intent: InputIntent | null
 ) => {
   inputController.state.activeIntent = intent;
+};
+
+export const recordEditablePlainPasteShortcut = (
+  inputController: EditableInputController,
+  plainPasteShortcut: boolean
+) => {
+  inputController.state.plainPasteShortcut = plainPasteShortcut;
+};
+
+export const takeEditablePlainPasteShortcut = (
+  inputController: EditableInputController
+) => {
+  const plainPasteShortcut = inputController.state.plainPasteShortcut === true;
+
+  inputController.state.plainPasteShortcut = false;
+
+  return plainPasteShortcut;
 };
 
 export const clearEditablePendingNativeTextInputRepair = (

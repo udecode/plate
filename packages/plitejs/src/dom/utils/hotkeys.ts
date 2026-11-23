@@ -29,6 +29,7 @@ const HOTKEYS = {
   moveLineStart: 'home',
   moveLineEnd: 'end',
   insertSoftBreak: 'shift+enter',
+  pasteWithoutFormatting: 'mod+opt?+shift+v',
   splitBlock: 'enter',
   undo: 'mod+z',
 };
@@ -125,6 +126,8 @@ export const Hotkeys = {
 
 const isMoveLineStart = create('moveLineStart');
 const isMoveLineEnd = create('moveLineEnd');
+
+export const isPasteWithoutFormatting = create('pasteWithoutFormatting');
 
 // Not on `Hotkeys`: its published `isMoveLineBackward` and `isMoveLineForward`
 // match the plain line keys too, plus Option+Up and Option+Down, which step

@@ -332,10 +332,20 @@ export const getFragmentAttribute = (
   }
 };
 
+const plainTextPastes = new WeakSet<object>();
+
+export const markPlainTextPaste = (data: DataTransfer) => {
+  plainTextPastes.add(data);
+};
+
+export const isPlainTextPaste = (data: object) => plainTextPastes.has(data);
+
 export const readClipboardFragmentPayload = (
   data: Pick<DataTransfer, 'getData'> & Partial<Pick<DataTransfer, 'types'>>,
   clipboardFormatKey: string
 ): { source: 'html' | 'mime'; value: string } | null => {
+  if (isPlainTextPaste(data)) return null;
+
   const mime = `application/${clipboardFormatKey}`;
   const value = data.getData(mime);
 

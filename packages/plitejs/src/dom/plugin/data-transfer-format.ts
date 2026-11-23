@@ -67,6 +67,7 @@ import {
 } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { readRemovalLanding } from '../../transforms-text/delete-text';
+import { isPlainTextPaste } from '../utils/dom';
 
 const DATA_TRANSFER_FORMATS = definePluginPoint<
   DataTransferFormatRegistration<any>
@@ -409,6 +410,7 @@ const readLandingBlock = <V extends Value>(
 const createPlainTextInlineSlice = <V extends Value>(
   state: EditorCoreStateView<V>,
   start: ReturnType<typeof RangeApi.start>,
+  end: ReturnType<typeof RangeApi.end>,
   blockPath: readonly number[],
   text: string,
   activeMarks: EditorMarks | null
@@ -423,6 +425,7 @@ const createPlainTextInlineSlice = <V extends Value>(
       ([, path]) =>
         path.length > blockPath.length &&
         path.length < start.path.length &&
+        PathApi.isAncestor(path, end.path) &&
         blockPath.every((part, index) => path[index] === part)
     )
     .sort((left, right) => left[1].length - right[1].length);
@@ -493,12 +496,14 @@ const createPlainTextSliceOverPick = <V extends Value>(
   );
 };
 
+const PLAIN_TEXT_FORMAT_KEY = 'core:plain-text';
+
 const createDefaultPlainTextDataTransferFormat = <V extends Value>(
   editor?: Editor<V, any>
 ) =>
   prepareDataTransferFormat<V>({
     mimeType: 'text/plain',
-    key: 'core:plain-text',
+    key: PLAIN_TEXT_FORMAT_KEY,
     decode: ({ data, state }) => {
       const selection = state.selection();
       const semanticSelection = editor ? getEditorSelection(editor) : null;
@@ -570,10 +575,11 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
       });
 
       const inlineSlice =
-        lines.length === 1 && !!selection && state.selection.isCollapsed()
+        lines.length === 1 && !!selection
           ? createPlainTextInlineSlice(
               state,
               start,
+              RangeApi.isRange(at) ? RangeApi.end(at) : at,
               blockPath,
               lines[0],
               activeMarks
@@ -1151,7 +1157,10 @@ export const createDataTransferTransactionSpec = <V extends Value>(
   const refused = new Set(
     options?.refusedMimeType ? [options.refusedMimeType] : []
   );
-  const formats = getDataTransferFormats(editor);
+  const formats = getDataTransferFormats(editor).filter(
+    ({ format }) =>
+      !isPlainTextPaste(dataTransfer) || format.key === PLAIN_TEXT_FORMAT_KEY
+  );
   const snapshot = createDataTransferSnapshot(
     dataTransfer,
     formats.map(({ format }) => format.mimeType)

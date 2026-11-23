@@ -5,6 +5,7 @@ import {
 } from 'react';
 
 import { SelectionApi } from '../..';
+import { markPlainTextPaste } from '../../dom/utils/dom';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
@@ -23,6 +24,7 @@ import {
 import {
   type EditableInputController,
   recordEditableInputIntent,
+  takeEditablePlainPasteShortcut,
 } from './input-state';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
@@ -98,6 +100,14 @@ export const useRuntimeClipboardEvents = ({
     (event: ReactClipboardEvent<HTMLDivElement>) => {
       runPaste(() => {
         flushPendingNativeTextInput?.();
+        // A paste event carries no modifier keys, so the shortcut's key down
+        // is the only sign that the user asked for no formatting.
+        if (
+          takeEditablePlainPasteShortcut(inputController) &&
+          event.clipboardData
+        ) {
+          markPlainTextPaste(event.clipboardData);
+        }
         const decision = prepareEditableClipboardKernel({
           editor,
           event,

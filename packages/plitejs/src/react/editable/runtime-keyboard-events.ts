@@ -9,6 +9,7 @@ import {
   findDOMRootRuntime,
 } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
+import { isPasteWithoutFormatting } from '../../dom/utils/hotkeys';
 import type { EditableKeyDownHandler } from '../components/editable';
 import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -36,6 +37,7 @@ import { useEditableKeyboardHandler } from './input-router';
 import {
   type EditableInputController,
   recordEditableInputIntent,
+  recordEditablePlainPasteShortcut,
 } from './input-state';
 import {
   findNestedEditable,
@@ -578,6 +580,10 @@ export const useRuntimeKeyboardEvents = ({
 
   const handleKeyDownCapture = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
+      recordEditablePlainPasteShortcut(
+        inputController,
+        isPasteWithoutFormatting(event.nativeEvent)
+      );
       const decision = prepareEditableKeyDownKernel({
         editor,
         event,
