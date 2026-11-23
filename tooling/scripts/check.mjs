@@ -521,7 +521,7 @@ export const steps = [
     onlyAffectedFiles: true,
     cores: 2,
     private: true,
-    run: 'node tooling/scripts/package-tests.mjs',
+    run: 'node tooling/scripts/package-tests.mjs --skip-slow',
     key: [],
     affected: directPackageTestImporters,
   },

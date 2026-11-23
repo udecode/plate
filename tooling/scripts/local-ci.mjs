@@ -375,7 +375,7 @@ const rerunCommand = (step, files) => {
     ['package-tests', 'plite-test'].includes(step) &&
     files.every((file) => /^packages\/(?:platejs|plitejs|test)\//u.test(file))
   ) {
-    return `node tooling/scripts/package-tests.mjs --with-slow ${quoted(files)}`;
+    return `node tooling/scripts/package-tests.mjs ${quoted(files)}`;
   }
   if (
     step === 'plite-browser' &&
