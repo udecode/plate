@@ -22,23 +22,28 @@ export const payloadKeyOf = ({
   ...props
 }: object & { children?: unknown }) => canonicalJsonKey(props);
 
-let landingSources: readonly LandingSource[] | null = null;
+/** How the slice being fitted lands: as a paste, or as a move's content. */
+type FitLanding =
+  | Readonly<{ kind: 'paste' }>
+  | Readonly<{ kind: 'move'; sources: readonly LandingSource[] }>;
 
-/** Whether the slice being fitted lands a move that named its sources. */
-export const isLandingMove = () => !!landingSources?.length;
+let landing: FitLanding = { kind: 'paste' };
 
-/** Fit `run`'s slices as the landing of a move whose texts came from `sources`. */
-export const withLandingSources = <T>(
-  sources: readonly LandingSource[] | null,
-  run: () => T
-): T => {
-  const previous = landingSources;
+const landingSources = () => (landing.kind === 'move' ? landing.sources : []);
 
-  landingSources = sources;
+export const isFittingMove = () => landing.kind === 'move';
+
+export const isFittingMoveWithSources = () => landingSources().length > 0;
+
+/** Fit `run`'s slices as `next` lands them. */
+export const withFitLanding = <T>(next: FitLanding, run: () => T): T => {
+  const previous = landing;
+
+  landing = next;
   try {
     return run();
   } finally {
-    landingSources = previous;
+    landing = previous;
   }
 };
 
@@ -55,9 +60,9 @@ export const landedRelocations = (
   after: DocumentIndex,
   change: RootChange
 ): readonly Relocation[] => {
-  const sources = landingSources;
+  const sources = landingSources();
 
-  if (!sources?.length) return [];
+  if (sources.length === 0) return [];
 
   const queues = {
     element: sources.filter(({ kind }) => kind === 'element'),

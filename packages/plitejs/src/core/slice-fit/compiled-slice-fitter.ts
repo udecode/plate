@@ -114,7 +114,8 @@ import {
 import {
   createRootFitPathProvenance,
   getTextEdge,
-  isLandingMove,
+  isFittingMove,
+  isFittingMoveWithSources,
   landedRelocations,
   pointsEqual,
   visitDescendantPaths,
@@ -404,7 +405,7 @@ const lookAlikeChange = (
  * the text it came from, so the canonical pass can judge a value it carried.
  */
 const landedMove = (builder: ChangeDraft, change: DocumentChange) => {
-  if (!builder.tracksPlaces || !isLandingMove()) return {};
+  if (!builder.tracksPlaces || !isFittingMoveWithSources()) return {};
 
   const indexedAfter = new Map<string, DocumentIndex>();
   const relocations: Relocation[] = [];
@@ -2647,8 +2648,14 @@ export const compileSliceFitter = <V extends Value>(
 
     const tokenLength = (token: FitToken) =>
       token.kind === 'text' ? token.text.length : 1;
+    // A split tail's token has no source node, so it holds the node it
+    // splits from for the content checks the open block needs.
+    const splitTailNodes = new WeakMap<FitOpenToken, Element>();
     const openTokenNode = (token: FitOpenToken): Descendant => {
       if (token.sourceNode) return token.sourceNode as Descendant;
+      const splitFrom = splitTailNodes.get(token);
+
+      if (splitFrom) return splitFrom;
 
       return token.nodeKind === 'text'
         ? { ...token.props, text: '' }
@@ -3232,25 +3239,32 @@ export const compileSliceFitter = <V extends Value>(
           )
         );
       };
-      const splitTailOf = (target: FitOpenToken, node: Element) =>
-        openToken(
-          'element',
-          api.elementPropertiesForSplitUnder(
-            node,
-            getElementAncestors(
-              rootChildren,
-              getDefined(openTokenPath.get(target))
-            ),
-            root
-          )
+      const splitTailOf = (target: FitOpenToken, node: Element) => {
+        const props = api.elementPropertiesForSplitUnder(
+          node,
+          getElementAncestors(
+            rootChildren,
+            getDefined(openTokenPath.get(target))
+          ),
+          root
         );
+        const tailToken = openToken('element', props);
+
+        splitTailNodes.set(tailToken, {
+          ...props,
+          children: node.children,
+        } as Element);
+
+        return tailToken;
+      };
 
       const getTargetSplitTail = (tokenAt: number, token: FitToken) => {
         const depth = stack.length;
         const target = localEndContext[depth];
         const node = target && openTokenNode(target);
 
-        return token.kind === 'open' &&
+        return !isFittingMove() &&
+          token.kind === 'open' &&
           openAtEnd.has(tokenAt) &&
           depth < receiving &&
           ElementApi.isElement(node) &&

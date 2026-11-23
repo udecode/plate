@@ -65,7 +65,7 @@ import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
 import {
   type LandingSource,
   payloadKeyOf,
-  withLandingSources,
+  withFitLanding,
 } from './slice-fit/provenance';
 import { planPaste, writePaste } from './slice-landing';
 import {
@@ -873,8 +873,11 @@ const runTransfer = (
         if (!plan) return null;
         if (!copy && (plan.inputCut || plan.landingCut)) refuse('lossy');
 
-        const written = withLandingSources(sources?.landing ?? null, () =>
-          writePaste(editor, plan, { landing: true })
+        const written = withFitLanding(
+          copy
+            ? { kind: 'paste' }
+            : { kind: 'move', sources: sources?.landing ?? [] },
+          () => writePaste(editor, plan, { landing: true })
         );
 
         if (!written) return null;
