@@ -2186,8 +2186,7 @@ export const compileSliceFitter = <V extends Value>(
           constructionChange,
           root,
           { offset: raw.offset, path: [...raw.path] },
-          inward,
-          { countInlineEdges: true }
+          inward
         );
 
       return (
