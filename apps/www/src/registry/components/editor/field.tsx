@@ -559,6 +559,7 @@ function FieldValueInput({
     stored?: FieldValue;
     text: string;
   } | null>(null);
+  const [resets, setResets] = React.useState(0);
 
   if (draft && (draft.kind !== kind || !Object.is(draft.stored, value))) {
     setDraft(null);
@@ -606,11 +607,20 @@ function FieldValueInput({
 
   return (
     <Input
+      key={resets}
       aria-label={label}
       className="h-8"
       type={kind === 'number' || kind === 'date' ? kind : 'text'}
       value={draft?.text ?? (value === undefined ? '' : String(value))}
-      onBlur={() => setDraft(null)}
+      onBlur={(event) => {
+        // A partial number or date reads as an empty value, so React never
+        // clears it from an input whose stored answer is empty, and WebKit
+        // keeps a partial date through an empty value write.
+        if (event.currentTarget.validity.badInput) {
+          setResets((count) => count + 1);
+        }
+        setDraft(null);
+      }}
       onInput={(event) => {
         const entry = entryOf(kind, event.currentTarget, clearable);
 
