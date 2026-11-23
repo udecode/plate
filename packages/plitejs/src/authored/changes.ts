@@ -665,16 +665,12 @@ export const readAuthoredGroupDetails = (
       continue;
     }
 
-    const { path: _path, ...property } = part;
-    const key = canonicalJsonKey([
-      property.nodeKind,
-      property.before,
-      property.after,
-    ]);
+    const { after, before } = part;
+    const key = canonicalJsonKey([before, after]);
 
     if (shown.has(key)) continue;
     shown.add(key);
-    parts.push(property);
+    parts.push({ after, before, kind: 'properties' });
   }
 
   return Object.freeze({

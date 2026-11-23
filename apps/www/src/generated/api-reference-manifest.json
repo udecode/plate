@@ -10817,12 +10817,12 @@
         },
         "platejs/authored:AuthoredGroupPart": {
           "aliases": [],
-          "documentation": "One line of a card: a change's part, except that a property change reads\nonce per card, without the path of each text or element it formats.",
+          "documentation": "One line of a card: a change's part, except that a property change reads\nonce per card, without the text or element it formats.",
           "entrypoint": "platejs/authored",
           "kind": "type",
           "name": "AuthoredGroupPart",
           "runtime": false,
-          "signature": "type AuthoredGroupPart = Exclude<AuthoredChangePart, Readonly<{\n  kind: 'properties';\n}>> | Readonly<{\n  after: Readonly<Record<string, unknown>>;\n  before: Readonly<Record<string, unknown>>;\n  kind: 'properties';\n  nodeKind: 'element' | 'text';\n}>;",
+          "signature": "type AuthoredGroupPart = Exclude<AuthoredChangePart, Readonly<{\n  kind: 'properties';\n}>> | Readonly<{\n  after: Readonly<Record<string, unknown>>;\n  before: Readonly<Record<string, unknown>>;\n  kind: 'properties';\n}>;",
           "source": null,
           "typeParameters": []
         },

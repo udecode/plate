@@ -115,6 +115,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-suggestion-card-lines",
+      "href": "/registry/changelog/2026-11-23-suggestion-card-lines.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show a suggestion card's replacements and format changes once",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-board-styles-file",
       "href": "/registry/changelog/2026-11-22-board-styles-file.json",
       "status": "draft",

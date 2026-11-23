@@ -80,7 +80,7 @@ export type AuthoredChangeDetails = Readonly<{
 
 /**
  * One line of a card: a change's part, except that a property change reads
- * once per card, without the path of each text or element it formats.
+ * once per card, without the text or element it formats.
  */
 export type AuthoredGroupPart =
   | Exclude<AuthoredChangePart, Readonly<{ kind: 'properties' }>>
@@ -88,7 +88,6 @@ export type AuthoredGroupPart =
       after: Readonly<Record<string, unknown>>;
       before: Readonly<Record<string, unknown>>;
       kind: 'properties';
-      nodeKind: 'element' | 'text';
     }>;
 
 /**

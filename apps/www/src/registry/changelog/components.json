@@ -146,17 +146,8 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "board": [
-      "2026-11-22-board-styles-file",
-      "2026-11-20-board-picture-button",
-      "2026-11-19-board-images",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-elements",
-      "2026-11-18-registry-icon-library",
-      "2026-11-17-cn-package",
-      "2026-11-12-add-board"
-    ],
     "discussion": [
+      "2026-11-23-suggestion-card-lines",
       "2026-11-22-comment-focus-card-decisions",
       "2026-11-19-popovers-hide-with-text",
       "2026-11-19-rtl-editor-ui",
@@ -180,6 +171,16 @@
       "2026-09-03-fix-comment-anchor-history",
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry"
+    ],
+    "board": [
+      "2026-11-22-board-styles-file",
+      "2026-11-20-board-picture-button",
+      "2026-11-19-board-images",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-elements",
+      "2026-11-18-registry-icon-library",
+      "2026-11-17-cn-package",
+      "2026-11-12-add-board"
     ],
     "comment": [
       "2026-11-22-comment-focus-card-decisions",

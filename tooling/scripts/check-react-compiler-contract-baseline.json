@@ -4,9 +4,7 @@
       "...activeGroups.map((group) => suggestionItemOf(editor, threads, group)),",
       "...store.getComments(targetKey),",
       "cards.length > 0 ? blockThreadCount(editor, threads, blockKey) : 0",
-      "changes.slice(0, shown).map((change) => authored.read.details(change.id)),",
       "const item = store.getComment(id);",
-      "const page = authored.read.changes({ cursor, group: group.id, limit: 200 });",
       "suggestionItemOf(editor, threads, group)"
     ]
   }

@@ -10,16 +10,14 @@ import {
 import {
   ElementApi,
   type NodeKey,
-  PathApi,
   type Point,
   type Range,
   RangeApi,
 } from 'platejs';
 import type {
-  AuthoredChange,
-  AuthoredChangeDetails,
   AuthoredChangeGroup,
-  AuthoredChangePart,
+  AuthoredGroupDetails,
+  AuthoredGroupPart,
   AuthoredResult,
 } from 'platejs/authored';
 import { AuthoredPlugin } from 'platejs/authored';
@@ -487,7 +485,7 @@ const readContentText = (value: unknown): string => {
 };
 
 const contentText = (
-  content: Extract<AuthoredChangePart, { kind: 'content' }>['after']
+  content: Extract<AuthoredGroupPart, { kind: 'content' }>['after']
 ) => {
   if (!content) return '';
 
@@ -510,7 +508,7 @@ const textPreview = (text: string) => {
 };
 
 const contentPreview = (
-  content: Extract<AuthoredChangePart, { kind: 'content' }>['after']
+  content: Extract<AuthoredGroupPart, { kind: 'content' }>['after']
 ) => textPreview(contentText(content));
 
 const formatPropertyName = (key: string) =>
@@ -528,9 +526,7 @@ const formatPropertyValue = (value: unknown) => {
   return JSON.stringify(value);
 };
 
-const describeSuggestionPart = (
-  part: AuthoredChangePart
-): readonly string[] => {
+const describeSuggestionPart = (part: AuthoredGroupPart): readonly string[] => {
   const { kind } = part;
 
   switch (kind) {
@@ -555,8 +551,10 @@ const describeSuggestionPart = (
         }
         case 'replace': {
           return [
-            before && after
-              ? `Replace “${before}” with “${after}”`
+            before || after
+              ? `Replace ${before ? `“${before}”` : 'content'} with ${
+                  after ? `“${after}”` : 'content'
+                }`
               : 'Replace content',
           ];
         }
@@ -598,59 +596,8 @@ const describeSuggestionPart = (
   }
 };
 
-const describeSuggestion = (
-  details: ReadonlyArray<AuthoredChangeDetails | null>,
-  fallback: AuthoredChange['kind']
-) => {
-  const parts = details.flatMap((detail) =>
-    (detail?.parts ?? []).map((part, index, list) => ({
-      endsChange: index === list.length - 1,
-      part,
-      startsChange: index === 0,
-    }))
-  );
-  const descriptions: string[] = [];
-  let propertyLines = new Set<string>();
-
-  for (let index = 0; index < parts.length; index++) {
-    const { endsChange, part, startsChange } = parts[index];
-    const next = parts[index + 1];
-
-    if (startsChange) propertyLines = new Set();
-    if (part.kind === 'properties') {
-      for (const line of describeSuggestionPart(part)) {
-        if (propertyLines.has(line)) continue;
-        propertyLines.add(line);
-        descriptions.push(line);
-      }
-      continue;
-    }
-
-    if (
-      endsChange &&
-      next?.startsChange &&
-      part.kind === 'content' &&
-      part.action === 'delete' &&
-      next.part.kind === 'content' &&
-      next.part.action === 'insert' &&
-      part.range.focus.root === next.part.range.anchor.root &&
-      PathApi.equals(
-        PathApi.next(part.range.focus.path),
-        next.part.range.anchor.path
-      )
-    ) {
-      descriptions.push(
-        ...describeSuggestionPart({
-          ...part,
-          action: 'replace',
-          after: next.part.after,
-        })
-      );
-      index += 1;
-      continue;
-    }
-    descriptions.push(...describeSuggestionPart(part));
-  }
+const describeSuggestion = (details: AuthoredGroupDetails | null) => {
+  const descriptions = (details?.parts ?? []).flatMap(describeSuggestionPart);
 
   if (descriptions.length > 0) return descriptions;
 
@@ -661,9 +608,13 @@ const describeSuggestion = (
       insert: 'Add content',
       mixed: 'Edit content',
       structure: 'Change structure',
-    }[fallback],
+    }[details?.changes[0]?.kind ?? 'mixed'],
   ];
 };
+
+const sameLines = (left: readonly string[], right: readonly string[]) =>
+  left.length === right.length &&
+  left.every((line, index) => line === right[index]);
 
 function SuggestionDiscussionCard({
   createdAt,
@@ -694,22 +645,19 @@ function SuggestionDiscussionCard({
   const shown =
     shownState.groupId === group.id ? shownState.count : DISCUSSION_PAGE_SIZE;
   const authored = editor.plugin(AuthoredPlugin);
-  // Each render reads the card's changes from its first page, so no cursor
-  // outlives a commit.
-  const changes: AuthoredChange[] = [];
-
-  for (let cursor: string | undefined; changes.length < shown;) {
-    const page = authored.read.changes({ cursor, group: group.id, limit: 200 });
-
-    changes.push(...page.items);
-    if (!page.cursor) break;
-    ({ cursor } = page);
-  }
-
-  const descriptions = describeSuggestion(
-    changes.slice(0, shown).map((change) => authored.read.details(change.id)),
-    changes[0]?.kind ?? 'mixed'
+  const readLines = React.useCallback(
+    (current: RuntimeEditor) =>
+      describeSuggestion(
+        current
+          .plugin(AuthoredPlugin)
+          .read.groupDetails(group.id, { limit: shown })
+      ),
+    [group.id, shown]
   );
+  const descriptions = useEditorSelector(readLines, {
+    equalityFn: sameLines,
+    shouldUpdate: (change) => !change || change.changed.hasAny('document'),
+  });
   const setOutcome = (result: AuthoredResult) =>
     setOutcomeState({ groupKey, result });
 
