@@ -12,7 +12,6 @@
 // fix at a time for the red steps.
 import { spawnSync } from 'node:child_process';
 import {
-  appendFileSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -40,6 +39,13 @@ import {
   lockfileInstalled,
   STEP_LOG,
 } from './check-steps.mjs';
+import {
+  appendLocalCiEvent,
+  FULL_RUN_HOUR,
+  localCiFiles,
+  readLocalCiEvents,
+  readLocalCiState,
+} from './local-ci-events.mjs';
 import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
 import { dueRecurrences, recurrenceOffer, runsOf } from './red-recurrence.mjs';
 import {
@@ -71,7 +77,6 @@ const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
 const LABEL = 'dev.plate.local-ci';
 const INTERVAL_SECONDS = 1200;
 const BUDGET_MS = 55 * 60_000;
-const FULL_HOUR = 4;
 const FULL_ARGS = ['--build', '--browser', '--reads'];
 const FLAKE_LOAD = 20;
 const GREEN_REF = 'refs/pstack/local-ci-green';
@@ -94,16 +99,13 @@ const common = must(here, [
   '--git-common-dir',
 ]);
 const main = dirname(common);
-const home = join(common, 'plate-local-ci');
-const statePath = join(home, 'state.json');
+const { home, state: statePath, events: eventsPath } = localCiFiles(common);
 const configPath = join(home, 'config.json');
-const eventsPath = join(home, 'events.jsonl');
 const lockDir = join(home, 'lock');
 const worktree = join(main, '.claude', 'worktrees', 'local-ci');
 const plist = join(homedir(), 'Library', 'LaunchAgents', `${LABEL}.plist`);
 
-const readState = () =>
-  existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf-8')) : {};
+const readState = () => readLocalCiState(common);
 const writeState = (state) =>
   writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
 
@@ -147,16 +149,9 @@ const mainSteps = async () => {
     [...deepSteps, ...selectSteps(FULL_ARGS)].map((step) => step.name)
   );
 };
-const readEvents = () =>
-  existsSync(eventsPath)
-    ? readFileSync(eventsPath, 'utf-8')
-        .split('\n')
-        .filter(Boolean)
-        .map((line) => JSON.parse(line))
-    : [];
+const readEvents = () => readLocalCiEvents(common);
 const appendEvent = (event) => {
-  const line = { at: new Date().toISOString(), ...event };
-  appendFileSync(eventsPath, `${JSON.stringify(line)}\n`);
+  const line = appendLocalCiEvent(common, event);
   console.info(`[local-ci] ${line.kind} ${line.step ?? ''} ${line.tip}`);
   return line;
 };
@@ -607,7 +602,7 @@ const run = async (args) => {
     const full =
       args.includes('--full') ||
       (!option('--ref') &&
-        now.getHours() >= FULL_HOUR &&
+        now.getHours() >= FULL_RUN_HOUR &&
         state.fullDay !== today &&
         state.fullTip !== tip);
     if (

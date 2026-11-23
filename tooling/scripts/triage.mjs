@@ -1601,6 +1601,7 @@ const OPTIONS = {
   },
   mark: {},
   labels: {},
+  shipped: { boolean: ['dry-run'] },
   check: {},
 };
 
@@ -2035,6 +2036,78 @@ function labels() {
     );
   }
   console.log([...commands, ...sets].join('\n'));
+}
+
+const BETA_RELEASE = /^\d+\.\d+\.\d+-beta\.\d+$/u;
+
+function shippedCommand(options) {
+  const [version, extra] = options.positional;
+  if (!BETA_RELEASE.test(version ?? '') || extra !== undefined) {
+    usage('shipped takes one published beta version, such as 54.0.0-beta.3');
+  }
+  const primary = repoNameOf(localConfig().triage.repos[0]);
+  if (repoName !== null && repoName !== primary) {
+    usage(
+      `shipped closes ${primary} issues only, because a ${repoName} issue closes on a passing retest`
+    );
+  }
+  const reads = freshReads({ fallback: false });
+  if (!reads.policy) {
+    refuse(
+      `shipped needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const { repo } = reads.policy;
+  const tag = `platejs@${version}`;
+  const missing = fetchRef(reads.remote, `+refs/tags/${tag}:refs/tags/${tag}`);
+  if (missing) {
+    refuse(
+      `${reads.remote} has no ${tag} tag (${missing.message}); run shipped once the release pushed it`
+    );
+  }
+  const line = `Fixed in [${tag}](https://github.com/${repo}/releases/tag/${encodeURIComponent(tag)}).`;
+  for (const issue of openIssues(reads)) {
+    const number = String(issue.number);
+    const { state, head } = stateFor(number, reads);
+    if (
+      state !== 'current' ||
+      head.outcome !== 'fixed' ||
+      !hasLanded(number, head, reads) ||
+      run('git', [
+        'merge-base',
+        '--is-ancestor',
+        parseDetail(head.detail).get('commit'),
+        `refs/tags/${tag}`,
+      ]).status !== 0
+    ) {
+      continue;
+    }
+    if (options['dry-run']) {
+      console.log(`#${number} would close: ${line}`);
+      continue;
+    }
+    const closed = run(
+      'gh',
+      [
+        'issue',
+        'close',
+        number,
+        '--repo',
+        repo,
+        '--reason',
+        'completed',
+        '--comment',
+        line,
+      ],
+      { timeout: NETWORK_MS }
+    );
+    if (closed.status === 0) {
+      console.log(`#${number} closed: ${line}`);
+    } else {
+      console.error(`#${number} did not close: ${ghProblem(closed)}`);
+      process.exitCode = 1;
+    }
+  }
 }
 
 const BETA = 'beta.platejs.org';
@@ -3885,6 +3958,7 @@ const COMMANDS = {
   record: recordCommand,
   mark,
   labels,
+  shipped: shippedCommand,
   retest: retestCommand,
   check,
 };
