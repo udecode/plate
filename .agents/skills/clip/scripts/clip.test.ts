@@ -271,6 +271,8 @@ describe('captions and bars', () => {
     expect(() => checkCaption('[Enter] type')).not.toThrow()
     expect(() => checkCaption('draw a note')).toThrow('starts with a capital')
     expect(() => checkCaption('Draw a note.')).toThrow('without a period')
+    expect(() => checkCaption('Or [Ctrl] [D] on Windows')).toThrow('"Windows"')
+    expect(() => checkCaption('[Cmd] [D] copies it')).not.toThrow()
     expect(() => checkCaption('Draw a note then type a long label in it')).toThrow(`more than ${CLIP.captionWords} words`)
     expect(fixCaption(' sketch with the pen. ')).toBe('Sketch with the pen')
     expect(captionHtml('Hold [Shift] for a circle').match(/border-radius/g)).toHaveLength(1)

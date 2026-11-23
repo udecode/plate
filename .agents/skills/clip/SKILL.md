@@ -104,7 +104,7 @@ When the owner corrects the same thing a second time, make it a check that fails
 - Each caption stays up at least 1.2 s. (`reviewTake` in `scripts/clip.ts`)
 - Nothing on screen sits still for more than 0.4 s, or 0.6 s at the end. Render cuts the extra still frames on its own, but never takes a caption under 1.2 s and never cuts a hold the scene marks with `read(ms)`. (`squeezePlan`, `renderTake` in `scripts/clip.ts`)
 - A caption is white text on a black footer under the clip, so it never reads as page text. Keys show as white keycaps in it. (`captionHtml`, `renderClip` in `scripts/clip.ts`)
-- A caption is a short sentence of at most 6 words with no closing period. It starts with a capital, unless it starts with a [Key]. Render fixes the capital and the period on its own. (`checkCaption`, `fixCaption` in `scripts/clip.ts`)
+- A caption is a short sentence of at most 6 words with no closing period. It starts with a capital, unless it starts with a [Key]. It speaks to a viewer on a Mac in Chrome, in Mac keys, and names no platform or browser (the owner, 2026-11-23). Render fixes the capital and the period on its own. (`checkCaption`, `fixCaption` in `scripts/clip.ts`)
 - A caption switches on as its action starts and off as the next one starts, with no fade. (`captionOverlay` in `scripts/clip.ts`)
 - The drawn cursor shrinks toward its tip and fades out over 0.15 s once it has rested 0.5 s with no button down, and grows back as it moves, so a scene never moves it off the result. A cursor `place` parks stays hidden until it first moves. (`drawCursor`, `Clip` in `scripts/clip.ts`)
 - While a button is down, the drawn cursor stays within 0.5 px of the pointer and never turns back on its own. (`checkTrail` in `scripts/clip.ts`)

@@ -75,7 +75,7 @@ export const RULES: { rule: string; check: string }[] = [
   { rule: `Each caption stays up at least ${CLIP.beatMinS} s.`, check: 'reviewTake' },
   { rule: `Nothing on screen sits still for more than ${CLIP.stillMaxS} s, or ${CLIP.endHoldS} s at the end. Render cuts the extra still frames on its own, but never takes a caption under ${CLIP.beatMinS} s and never cuts a hold the scene marks with \`read(ms)\`.`, check: 'squeezePlan, renderTake' },
   { rule: 'A caption is white text on a black footer under the clip, so it never reads as page text. Keys show as white keycaps in it.', check: 'captionHtml, renderClip' },
-  { rule: `A caption is a short sentence of at most ${CLIP.captionWords} words with no closing period. It starts with a capital, unless it starts with a [Key]. Render fixes the capital and the period on its own.`, check: 'checkCaption, fixCaption' },
+  { rule: `A caption is a short sentence of at most ${CLIP.captionWords} words with no closing period. It starts with a capital, unless it starts with a [Key]. It speaks to a viewer on a Mac in Chrome, in Mac keys, and names no platform or browser (the owner, 2026-11-23). Render fixes the capital and the period on its own.`, check: 'checkCaption, fixCaption' },
   { rule: 'A caption switches on as its action starts and off as the next one starts, with no fade.', check: 'captionOverlay' },
   { rule: `The drawn cursor shrinks toward its tip and fades out over ${CLIP.cursorFadeS} s once it has rested ${CLIP.cursorIdleS} s with no button down, and grows back as it moves, so a scene never moves it off the result. A cursor \`place\` parks stays hidden until it first moves.`, check: 'drawCursor, Clip' },
   { rule: `While a button is down, the drawn cursor stays within ${CLIP.heldLagPx} px of the pointer and never turns back on its own.`, check: 'checkTrail' },
@@ -489,6 +489,9 @@ export function checkCaption(text: string) {
   if (t.split(/\s+/).length > CLIP.captionWords) throw new Error(`caption "${text}" has more than ${CLIP.captionWords} words; say it shorter`)
   if (/^[a-z]/.test(t)) throw new Error(`caption "${text}" starts a sentence, so it starts with a capital, as in "Draw a note"`)
   if (/\.$/.test(t)) throw new Error(`caption "${text}" ends without a period`)
+  // A second platform's name hedges for viewers the clip does not have.
+  const stack = t.match(/\b(windows|linux|android|ios|iphone|firefox|safari|chrome|mac|macos|pc)\b/i)
+  if (stack) throw new Error(`caption "${text}" speaks to a Mac Chrome viewer in Mac keys, naming no platform or browser: "${stack[0]}"`)
 }
 
 /** Fixes what a caption can lose by accident: a lowercase start and a closing period. */

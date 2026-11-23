@@ -16,10 +16,10 @@
     },
     "clip": {
       "source": "udecode/dotai",
-      "commit": "8d3b25d5af90727fc2a0148c593fb781f61ea9e2",
+      "commit": "ae465ee560065bf017cbbcf0c6c488d6d1c59a00",
       "sourceType": "github",
       "skillPath": "skills/clip/SKILL.md",
-      "computedHash": "780ce07ba697f861af1a4250d747f21f9fa571fdf914337d537f1a3e49399ae0"
+      "computedHash": "5240f22a1f81d6684e83afba4f8604a16ff6b121edf3589a105918a97ad7d19c"
     },
     "plan-page": {
       "source": "udecode/dotai",
