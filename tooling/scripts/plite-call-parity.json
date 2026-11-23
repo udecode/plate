@@ -1,0 +1,501 @@
+{
+  "dropped": {
+    "plitejs/authored": [
+      "authored",
+      "authoredRecords",
+      "AuthoredTestOptions",
+      "createAuthoredPlugin",
+      "GaveWrite",
+      "SplitGave"
+    ],
+    "plitejs/dom": [
+      "applyStringDiff",
+      "CAN_USE_DOM",
+      "cleanDOMClipboardContents",
+      "closestShadowAware",
+      "containsShadowAware",
+      "createCompiledHotkeyMatcher",
+      "dom",
+      "DOMClipboardInsertDataHandler",
+      "DOMCoverage",
+      "DOMCoverageBoundary",
+      "DOMCoverageBoundaryAnchor",
+      "DOMCoverageBoundaryEdge",
+      "DOMCoverageBoundaryState",
+      "DOMCoverageCopyPolicy",
+      "DOMCoverageMaterializeHandler",
+      "DOMCoverageMaterializeRangeRole",
+      "DOMCoverageMaterializeReason",
+      "DOMCoverageMaterializeResult",
+      "DOMCoveragePathRange",
+      "DOMCoveragePointResult",
+      "DOMCoverageReason",
+      "DOMCoverageRuntimeRange",
+      "DOMCoverageSelectionPolicy",
+      "DOMCoverageSession",
+      "DOMDragApi",
+      "DOMDragStart",
+      "DOMDropEdge",
+      "DOMDropTarget",
+      "DOMDropTargetInput",
+      "DOMDropTargetOptions",
+      "DOMEditor",
+      "DOMEditorClipboardCapability",
+      "DOMEditorOptions",
+      "DOMFragmentDataHtml",
+      "DOMFragmentDataPayload",
+      "DOMGeometryRect",
+      "DOMPlugin",
+      "DOMPluginTypes",
+      "DOMSelectionPoints",
+      "DropIndicator",
+      "getActiveElement",
+      "getDefaultView",
+      "getDOMClipboardFormatKey",
+      "getEditorDOMRoot",
+      "getElements",
+      "getNodeDataAttributeKeys",
+      "getSelection",
+      "hasShadowRoot",
+      "Hotkeys",
+      "isAfter",
+      "isBefore",
+      "isDOMElement",
+      "isDOMNode",
+      "isDOMSelection",
+      "isDOMText",
+      "isEditor",
+      "isElement",
+      "isGeckoDOMHost",
+      "isLeaf",
+      "isNode",
+      "isPlainTextOnlyPaste",
+      "isString",
+      "isText",
+      "isTrackedMutation",
+      "isVoid",
+      "Key",
+      "keyToDataAttribute",
+      "mergeStringDiffs",
+      "normalizeDOMPoint",
+      "normalizePoint",
+      "normalizeRange",
+      "normalizeStringDiff",
+      "readDOMSelectionRange",
+      "StringDiff",
+      "targetRange",
+      "TextDiff",
+      "TRIPLE_CLICK",
+      "verifyDiffState",
+      "writeDOMFragmentData",
+      "writeDOMRangeData",
+      "writeDOMSelection"
+    ],
+    "plitejs/pagination/react": ["PagedEditable", "PagedEditableProps"],
+    "plitejs/react": [
+      "CommandDispatcher",
+      "CommandFocusPolicy",
+      "DOMTextSyncRendererCapabilityContext",
+      "Editable",
+      "EditablePointerSelectionEndHandler",
+      "EditorNodeSelectorContext",
+      "EditorPlaceholder",
+      "EditorReadOnlyProvider",
+      "EditorReadOnlyProviderProps",
+      "EditorRuntimeSelectorOptions",
+      "EditorSelectorOptions",
+      "EditorStateSelectorOptions",
+      "EditorTextSelectorContext",
+      "ReactPlugin",
+      "setDOMTextSyncRendererCapability",
+      "setRetainedTextFlowRendererCapability",
+      "TypedText",
+      "TypedTextListener",
+      "useCaretEditor",
+      "useClaimEditableDOMCommit",
+      "useCommand",
+      "UseCommandOptions",
+      "useEditorContext",
+      "useEditorEditableElement",
+      "UseEditorOptions",
+      "useNodeSelector",
+      "useOptionalEditorContext",
+      "useOptionalEditorReadOnly",
+      "useOptionalElement",
+      "useTextSelector"
+    ],
+    "plitejs/react/virtualized": [
+      "VirtualizedEditable",
+      "VirtualizedEditableProps"
+    ]
+  },
+  "refused": [
+    {
+      "case": "R-D12",
+      "errors": [
+        "TS2322 schema: Type '{ records: { copies: { namedBy: { keep: (id: any) => any; names: ({ copies }: { copies: any; }) => string[] | null; set: string; }; }; marks: {}; }; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"drawings\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ records: { copies: { namedBy: { keep: (id: any) => any; names: ({ copies }: { copies: any; }) => string[] | null; set: string; }; }; marks: {}; }; }' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ records: { copies: { namedBy: { keep: (id: any) => any; names: ({ copies }: { copies: any; }) => string[] | null; set: string; }; }; marks: {}; }; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'.",
+        "TS7006 id: Parameter 'id' implicitly has an 'any' type.",
+        "TS7031 copies: Binding element 'copies' implicitly has an 'any' type."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D13",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { link: { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; inline: true; properties: { ...; }; }; }...' is not assignable to type 'BasePluginConstructorSchemaInput<\"links2\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { link: { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; inline: true; properties: { ...; }; }; }...' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { link: { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; inline: true; properties: { ...; }; }; }...' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D14",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { image: { properties: { url: PropertyStringDescriptor<{}>; }; void: string; }; }; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"images\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { image: { properties: { url: PropertyStringDescriptor<{}>; }; void: string; }; }; }' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { image: { properties: { url: PropertyStringDescriptor<{}>; }; void: string; }; }; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D19",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { image: { void: string; }; }; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"images-insert\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { image: { void: string; }; }; }' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { image: { void: string; }; }; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-C5",
+      "errors": [
+        "TS2344 ArticleValue: Type 'ArticleValue' does not satisfy the constraint 'EditorApplicationSchema | undefined'.",
+        "TS2344 CommentValue: Type 'CommentValue' does not satisfy the constraint 'EditorApplicationSchema | undefined'.",
+        "TS4104 articleChildren: The type 'Value' is 'readonly' and cannot be assigned to the mutable type 'ArticleValue'.",
+        "TS4104 commentChildren: The type 'Value' is 'readonly' and cannot be assigned to the mutable type 'CommentValue'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-T3",
+      "errors": [
+        "TS2322 rDefinition: Type '{ api: () => {}; }' is not assignable to type 'BasePluginDefinitionInput'. Property 'name' is missing in type '{ api: () => {}; }' but required in type '{ api?: ((context: BasePluginApiContext<Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; conflicts?: readonly Readonly<...>[] | undefined; ... 24 more ...; validate?: true | undefined; }>>) => {}) | unde...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-T4",
+      "errors": [
+        "TS2322 rPortal: Type 'BasePluginPortal<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>, InternalInstalledSchemaDefinitionsProvider<...>, SpecializePluginApi<...>>' is not assignable to type 'BasePluginPortal<BasePlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>>'. Type 'Omit<ResolvedPlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>, \"schema\" | ... 6 more ... | \"viewStore\"> & PluginReference<...> & Omit<...> & { ...; }' is missing the following properties from type 'Omit<ResolvedPlugin<BasePlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>>, \"schema\" | ... 6 more ... | \"viewStore\">': validate, readMiddleware, commands, corrections, and 11 more.",
+        "TS2339 normalizeHref: Property 'normalizeHref' does not exist on type '{}'.",
+        "TS2344 typeof R_ApiLinksPlugin: Type 'BasePlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>' does not satisfy the constraint 'Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; conflicts?: readonly Readonly<{ enabled?: boolean | undefined; name: string; }>[] | undefined; ... 24 more ...; validate?: true | undefined; }>'. Types of property 'activate' are incompatible. Type 'ErasedPluginCallable<unknown> | undefined' is not assignable to type 'true | undefined'. Type 'ErasedPluginCallable<unknown>' is not assignable to type 'true'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-T6",
+      "errors": [
+        "TS2322 xDefinition: Type '{ api: () => {}; }' is not assignable to type 'PluginDefinitionInput'. Property 'name' is missing in type '{ api: () => {}; }' but required in type 'Omit<BasePluginDefinitionInput<Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; conflicts?: readonly Readonly<{ enabled?: boolean | undefined; name: string; }>[] | undefined; ... 24 more ...; validate?: ...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-T8",
+      "errors": [
+        "TS2740 blocks: Type 'Readonly<{ children: Value; meta?: Readonly<Record<string, unknown>> | undefined; records?: Readonly<Record<string, Readonly<Record<string, Readonly<Record<string, unknown>>>>>> | undefined; roots?: Readonly<...> | undefined; }>' is missing the following properties from type 'readonly BaseElement[]': length, concat, join, slice, and 26 more."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-T11",
+      "errors": [
+        "TS2322 xPortal: Type 'PluginPortal<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>, InternalInstalledSchemaDefinitionsProvider<...>>' is not assignable to type 'PluginPortal<BasePlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>>'. Property 'decorate' is missing in type 'Omit<ResolvedPlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>, \"schema\" | ... 6 more ... | \"viewStore\"> & PluginReference<...> & Omit<...> & { ...; }' but required in type 'Omit<ResolvedPlugin<BasePlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>>, \"schema\" | ... 6 more ... | \"viewStore\">'.",
+        "TS2339 normalizeHref: Property 'normalizeHref' does not exist on type '{}'.",
+        "TS2344 typeof R_ApiLinksPlugin: Type 'BasePlugin<Readonly<{}> & Readonly<{ name: \"apiLinks\"; }> & Readonly<Record<never, never>> & Readonly<{ api: { readonly normalizeHref: (href: string) => string; }; }>>' does not satisfy the constraint 'Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; conflicts?: readonly Readonly<{ enabled?: boolean | undefined; name: string; }>[] | undefined; ... 24 more ...; validate?: true | undefined; }>'. Types of property 'activate' are incompatible. Type 'ErasedPluginCallable<unknown> | undefined' is not assignable to type 'true | undefined'. Type 'ErasedPluginCallable<unknown>' is not assignable to type 'true'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-RP2",
+      "errors": [
+        "TS2769 EditorElement: No overload matches this call. Overload 1 of 2, '(props: Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }): ReactElement<...>', gave the following error. Type '{ children: ReactNode; style: { position: \"relative\"; }; }' is missing the following properties from type 'Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\">': element, slots Overload 2 of 2, '(props: Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { attributes: Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, \"ref\"> & UnknownObject; ... 4 more ...; style?: CSSProperties | undefined; }): ReactElement<...>', gave the following error. Type '{ children: ReactNode; style: { position: \"relative\"; }; }' is missing the following properties from type 'Omit<RenderElementProps, \"path\" | \"attributes\">': element, slots",
+        "TS2769 EditorElement: No overload matches this call. Overload 1 of 2, '(props: Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }): ReactElement<...>', gave the following error. Type '{ children: ReactNode; style: { position: \"relative\"; }; }' is missing the following properties from type 'Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\">': element, slots Overload 2 of 2, '(props: Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { attributes: Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, \"ref\"> & UnknownObject; ... 4 more ...; style?: CSSProperties | undefined; }): ReactElement<...>', gave the following error. Type '{ children: ReactNode; style: { position: \"relative\"; }; }' is missing the following properties from type 'Omit<RenderElementProps, \"path\" | \"attributes\">': element, slots"
+      ],
+      "removedBy": "phase 2"
+    },
+    {
+      "case": "X-H12",
+      "errors": [
+        "TS2353 deferred: Object literal may only specify known properties, and 'deferred' does not exist in type 'EditorRuntimeStateSelectorOptions<BaseRange | null, InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginRefe...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-U1",
+      "errors": ["TS2554 { initialValue }: Expected 0 arguments, but got 1."],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-U2",
+      "errors": [
+        "TS2554 { plugins: [FormattingPlugin], initialVa: Expected 0 arguments, but got 1."
+      ],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-U3",
+      "errors": [
+        "TS2554 { plugins: [documentTitle], initialValue: Expected 0 arguments, but got 1."
+      ],
+      "removedBy": "step 2 and phase 3"
+    },
+    {
+      "case": "X-U5",
+      "errors": [
+        "TS2558 CustomValue: Expected 0 type arguments, but got 1.",
+        "TS4104 typedValue: The type 'Value' is 'readonly' and cannot be assigned to the mutable type 'CustomValue'."
+      ],
+      "removedBy": "step 2 and phase 3"
+    },
+    {
+      "case": "X-U6",
+      "errors": [
+        "TS2554 { initialValue }, [query]: Expected 0 arguments, but got 2."
+      ],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-E4",
+      "errors": [
+        "TS2322 root: Type '{ children: Element; editor: InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>; root: string; }' is not assignable to type 'IntrinsicAttributes & EditorRootProps<InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>>'. Property 'root' does not exist on type 'IntrinsicAttributes & EditorRootProps<InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>>'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-E5",
+      "errors": [
+        "TS2322 decorations: Type '{ children: Element; decorations: { id: string; read: ({ entry: [node, path] }: { editor: InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; ... 27 more ...; validate?: true | undefined; }>, Readonly<...>, readonly ...' is not assignable to type 'IntrinsicAttributes & EditorRootProps<InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>>'. Property 'decorations' does not exist on type 'IntrinsicAttributes & EditorRootProps<InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>>'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-E7",
+      "errors": [
+        "TS2740 blocks: Type 'Readonly<{ children: Value; meta?: Readonly<Record<string, unknown>> | undefined; records?: Readonly<Record<string, Readonly<Record<string, Readonly<Record<string, unknown>>>>>> | undefined; roots?: Readonly<...> | undefined; }>' is missing the following properties from type 'readonly BaseElement[]': length, concat, join, slice, and 26 more."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D21",
+      "errors": [
+        "TS2345 {: Argument of type '{ read: ({ state }: BasePluginContext<NoInfer<Readonly<{ dependencies: readonly []; initialState: {}; initialViewState: {}; name: \"tables\"; targetPlugins: readonly []; }> & Readonly<Record<never, never>> & Readonly<...>>> & { ...; }) => { ...; }; schema: { ...; }; }' is not assignable to parameter of type 'Readonly<Record<\"schema\" | \"read\", unknown>> & Readonly<{ schema?: BasePluginConstructorSchemaInput<\"tables\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined; }> & ... 4 more ... & Readonly<...>'. Type '{ read: ({ state }: BasePluginContext<NoInfer<Readonly<{ dependencies: readonly []; initialState: {}; initialViewState: {}; name: \"tables\"; targetPlugins: readonly []; }> & Readonly<Record<never, never>> & Readonly<...>>> & { ...; }) => { ...; }; schema: { ...; }; }' is not assignable to type 'Readonly<{ schema?: BasePluginConstructorSchemaInput<\"tables\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined; }>'. Types of property 'schema' are incompatible. Type '{ readonly elements: { readonly tableCell: { readonly content: Readonly<{ allowed: Readonly<{ group: \"block\"; kind: \"group\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonl...' is not assignable to type 'BasePluginConstructorSchemaInput<\"tables\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ readonly elements: { readonly tableCell: { readonly content: Readonly<{ allowed: Readonly<{ group: \"block\"; kind: \"group\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonl...' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ readonly elements: { readonly tableCell: { readonly content: Readonly<{ allowed: Readonly<{ group: \"block\"; kind: \"group\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonl...' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D22",
+      "errors": [
+        "TS2322 schema: Type '({ name }: Readonly<{ initialState: Readonly<{}>; name: \"comments\"; plugins: Readonly<{ blockContent: (options?: PluginBlockContentOptions | undefined) => Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<...>[] | undefined; } & Readonly<...>>; }>; targetElementTypes: readonly string[]; }>) => { ...; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"comments\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '({ name }: Readonly<{ initialState: Readonly<{}>; name: \"comments\"; plugins: Readonly<{ blockContent: (options?: PluginBlockContentOptions | undefined) => Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<...>[] | undefined; } & Readonly<...>>; }>; targetElementTypes: readonly string[]; }>) => { ...; }' is not assignable to type 'BasePluginConstructorSchemaFactory<\"comments\", readonly [], {}, readonly [], PluginSchemaDeclaration>'. Type '{ readonly properties: readonly [Readonly<{ copy: SchemaPropertyCopyPolicy; exclusive?: readonly SchemaPropertyExclusiveGroup[]; ... 7 more ...; value: PropertyBooleanDescriptor<...>; }>]; }' is not assignable to type 'PluginSchemaDeclaration'. Property 'mark' is missing in type '{ readonly properties: readonly [Readonly<{ copy: SchemaPropertyCopyPolicy; exclusive?: readonly SchemaPropertyExclusiveGroup[]; ... 7 more ...; value: PropertyBooleanDescriptor<...>; }>]; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D23",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { 'synced-block': { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; contentRoots: { ...; }; }; }; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"synced-blocks\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { 'synced-block': { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; contentRoots: { ...; }; }; }; }' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { 'synced-block': { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; contentRoots: { ...; }; }; }; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D24",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { canvas: { contentRoots: { shapes: { content: Readonly<{ allowed: Readonly<{ kind: \"types\"; types: readonly [\"note\"]; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & R...' is not assignable to type 'BasePluginConstructorSchemaInput<\"canvases\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { canvas: { contentRoots: { shapes: { content: Readonly<{ allowed: Readonly<{ kind: \"types\"; types: readonly [\"note\"]; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & R...' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { canvas: { contentRoots: { shapes: { content: Readonly<{ allowed: Readonly<{ kind: \"types\"; types: readonly [\"note\"]; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & R...' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D25",
+      "errors": [
+        "TS2322 properties: Type '(Readonly<{ copy: SchemaPropertyCopyPolicy; exclusive?: readonly Readonly<{ id: string; kind: \"exclusive\"; }>[] | undefined; inclusive: boolean; key: \"subscript\"; ... 5 more ...; value: PropertyBooleanDescriptor<...>; }> | Readonly<...>)[]' is not assignable to type 'Readonly<Record<string, SchemaProperty | SchemaPropertyDefinition>>'. Index signature for type 'string' is missing in type '(Readonly<{ copy: SchemaPropertyCopyPolicy; exclusive?: readonly Readonly<{ id: string; kind: \"exclusive\"; }>[] | undefined; inclusive: boolean; key: \"subscript\"; ... 5 more ...; value: PropertyBooleanDescriptor<...>; }> | Readonly<...>)[]'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D26",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { image: { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; object: true; }; }; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"media\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { image: { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; object: true; }; }; }' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { image: { content: Readonly<{ allowed: Readonly<{ kind: \"text\"; }>; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<Record<string, EditorJsonValue>>; }>[] | undefined; } & { ...; } & Readonly<...>>; object: true; }; }; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "R-D27",
+      "errors": [
+        "TS2322 schema: Type '{ elements: { image: { void: string; }; }; }' is not assignable to type 'BasePluginConstructorSchemaInput<\"media\", readonly [], {}, readonly [], PluginSchemaDeclaration> | undefined'. Type '{ elements: { image: { void: string; }; }; }' is not assignable to type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'. Property 'mark' is missing in type '{ elements: { image: { void: string; }; }; }' but required in type 'Readonly<{ contentRoots?: readonly Readonly<Readonly<{ content: Readonly<{ allowed: SchemaContentRule; prefix?: readonly Readonly<{ element: string | Readonly<{ source: string; type: string; }>; properties?: Readonly<...> | undefined; }>[] | undefined; } & Readonly<...>>; ownership: SchemaContentRootOwnership; struc...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-C10",
+      "errors": [
+        "TS2769 clipboardFormatKey: No overload matches this call. Overload 1 of 2, '(options?: CreateEditorOptions<readonly [], undefined> | undefined): InternalReactEditorWithInstalledPlugins<Value, InstalledRuntimeCorePlugin, InternalInstalledSchemaDefinitionsProvider<InstalledRuntimeCorePlugin>, readonly []>', gave the following error. Object literal may only specify known properties, and 'clipboardFormatKey' does not exist in type 'CreateEditorOptions<readonly [], undefined>'. Overload 2 of 2, '(options: Partial<Omit<EditorOptions<readonly []>, \"schema\" | \"id\" | \"plugins\">> & { id?: string | undefined; initialValue?: EditorValueInput<Value> | ((context: { ...; }) => EditorValueInput<...>) | undefined; plugins?: readonly [] | undefined; schema?: undefined; } & { ...; }): InternalReactEditorWithInstalledPlugins<...>', gave the following error. Object literal may only specify known properties, and 'clipboardFormatKey' does not exist in type 'Partial<Omit<EditorOptions<readonly []>, \"schema\" | \"id\" | \"plugins\">> & { id?: string | undefined; initialValue?: EditorValueInput<Value> | ((context: { ...; }) => EditorValueInput<...>) | undefined; plugins?: readonly [] | undefined; schema?: undefined; } & { ...; }'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-T3",
+      "errors": [
+        "TS2322 customEditor: Type 'Readonly<{ [reactEditorReference]: true; }> & InternalReactEditorBase<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; ... 27 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]> & { ...; }' is not assignable to type 'InternalReactEditorWithInstalledPlugins<CustomValue, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; ... 25 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>'. Type 'Readonly<{ [reactEditorReference]: true; }> & InternalReactEditorBase<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; ... 27 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]> & { ...; }' is not assignable to type 'InternalReactEditorBase<CustomValue, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; ... 25 more ...; validate?: true | undefined; }>, Readonly<...>, readonly PluginReference[]>'. Types of property 'read' are incompatible. Type 'Omit<EditorReadMethods<Value, readonly [...PluginReference[], InstalledPlatePlugin<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>>]>, \"nodes\" | \"selection\"> & ...' is not assignable to type 'Omit<EditorReadMethods<CustomValue, readonly [...PluginReference[], InstalledPlatePlugin<CustomValue, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; ... 27 more ...; validate?: true | undefined; }>, Readonly<...>>]>, \"nodes\" | \"selection\"> & ... 5 more ... &...'. Type 'Omit<EditorReadMethods<Value, readonly [...PluginReference[], InstalledPlatePlugin<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; ... 26 more ...; validate?: true | undefined; }>, Readonly<...>>]>, \"nodes\" | \"selection\"> & ...' is not assignable to type 'Omit<EditorReadMethods<CustomValue, readonly [...PluginReference[], InstalledPlatePlugin<CustomValue, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; ... 27 more ...; validate?: true | undefined; }>, Readonly<...>>]>, \"nodes\" | \"selection\">'. The types of 'schema.fitDocument(...).children' are incompatible between these types. The type 'Value' is 'readonly' and cannot be assigned to the mutable type 'CustomValue'.",
+        "TS2558 CustomValue: Expected 0 type arguments, but got 1."
+      ],
+      "removedBy": "step 2 and phase 3"
+    },
+    {
+      "case": "X-T12",
+      "errors": [
+        "TS2322 placeholder: Type 'Element' is not assignable to type 'string'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-H18",
+      "errors": [
+        "TS2353 deferred: Object literal may only specify known properties, and 'deferred' does not exist in type 'EditorRuntimeStateSelectorOptions<boolean, InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; ... 25 more ...; validate?: true | undefined; }>, Readonly<...>,...'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-U8",
+      "errors": ["TS2554 {: Expected 0 arguments, but got 1."],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-U9",
+      "errors": ["TS2554 {: Expected 0 arguments, but got 1."],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-U10",
+      "errors": ["TS2554 {: Expected 0 arguments, but got 1."],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-U11",
+      "errors": [
+        "TS2322 properties: Type '(Readonly<{ copy: SchemaPropertyCopyPolicy; exclusive?: readonly Readonly<{ id: string; kind: \"exclusive\"; }>[] | undefined; inclusive: boolean; key: \"bold\"; placement: \"text\"; ... 4 more ...; value: PropertyBooleanDescriptor<...>; }> | Readonly<...>)[]' is not assignable to type 'Readonly<Record<string, SchemaProperty | SchemaPropertyDefinition>>'. Index signature for type 'string' is missing in type '(Readonly<{ copy: SchemaPropertyCopyPolicy; exclusive?: readonly Readonly<{ id: string; kind: \"exclusive\"; }>[] | undefined; inclusive: boolean; key: \"bold\"; placement: \"text\"; ... 4 more ...; value: PropertyBooleanDescriptor<...>; }> | Readonly<...>)[]'.",
+        "TS2554 {: Expected 0 arguments, but got 1."
+      ],
+      "removedBy": "step 2 and phase 3"
+    },
+    {
+      "case": "X-T14",
+      "errors": [
+        "TS2740 typedBlocks: Type 'Readonly<{ children: Value; meta?: Readonly<Record<string, unknown>> | undefined; records?: Readonly<Record<string, Readonly<Record<string, Readonly<Record<string, unknown>>>>>> | undefined; roots?: Readonly<...> | undefined; }>' is missing the following properties from type '(ParagraphElement | HeadingElement)[]': length, pop, push, concat, and 35 more."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-E12",
+      "errors": [
+        "TS2322 editor: Type 'InternalReactEditorWithInstalledPlugins<Value, Readonly<{ activate?: true | undefined; api?: object | undefined; dataTransferFormats?: true | undefined; formats?: true | undefined; commands?: true | undefined; conflicts?: readonly Readonly<...>[] | undefined; ... 24 more ...; validate?: true | undefined; }>, Readonl...' is not assignable to type 'CustomValue | null'."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-EL1",
+      "errors": [
+        "TS2769 as: No overload matches this call. Overload 1 of 2, '(props: Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }): ReactElement<...>', gave the following error. Type '\"p\"' is not assignable to type '\"div\"'. Overload 2 of 2, '(props: Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { attributes: Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, \"ref\"> & UnknownObject; ... 4 more ...; style?: CSSProperties | undefined; }): ReactElement<...>', gave the following error. Type '\"p\"' is not assignable to type '\"div\"'."
+      ],
+      "removedBy": "phase 2"
+    },
+    {
+      "case": "X-EL2",
+      "errors": [
+        "TS2769 contentEditable: No overload matches this call. Overload 1 of 2, '(props: Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }): ReactElement<...>', gave the following error. Type '{ children: string; className: string; contentEditable: boolean; }' is not assignable to type 'IntrinsicAttributes & Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }'. Property 'contentEditable' does not exist on type 'IntrinsicAttributes & Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }'. Overload 2 of 2, '(props: Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { attributes: Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, \"ref\"> & UnknownObject; ... 4 more ...; style?: CSSProperties | undefined; }): ReactElement<...>', gave the following error. Type '{ children: string; className: string; contentEditable: boolean; }' is not assignable to type 'IntrinsicAttributes & Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }'. Property 'contentEditable' does not exist on type 'IntrinsicAttributes & Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }'.",
+        "TS2769 EditorElement: No overload matches this call. Overload 1 of 2, '(props: Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { ...; }): ReactElement<...>', gave the following error. Type '{ children: ReactNode; className: string; }' is missing the following properties from type 'Omit<RenderElementProps<BaseElement>, \"path\" | \"attributes\">': element, slots Overload 2 of 2, '(props: Omit<RenderElementProps, \"path\" | \"attributes\"> & Pick<EditorNodeProps<never>, \"ref\"> & { attributes: Omit<DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>, \"ref\"> & UnknownObject; ... 4 more ...; style?: CSSProperties | undefined; }): ReactElement<...>', gave the following error. Type '{ children: ReactNode; className: string; }' is missing the following properties from type 'Omit<RenderElementProps, \"path\" | \"attributes\">': element, slots"
+      ],
+      "removedBy": "phase 2"
+    },
+    {
+      "case": "X-T13",
+      "errors": [
+        "TS2322 onDOMBeforeInput: Type '(event: any, { editor, inputType }: { editor: any; inputType: any; }) => boolean' is not assignable to type '(event: InputEvent) => void'. Target signature provides too few arguments. Expected 2 or more, but got 1.",
+        "TS7006 event: Parameter 'event' implicitly has an 'any' type.",
+        "TS7031 editor: Binding element 'editor' implicitly has an 'any' type.",
+        "TS7031 inputType: Binding element 'inputType' implicitly has an 'any' type."
+      ],
+      "removedBy": "phase 3"
+    },
+    {
+      "case": "X-RP6",
+      "errors": [
+        "TS2345 host.children: Argument of type 'any' is not assignable to parameter of type 'never'.",
+        "TS2345 piece.children: Argument of type 'any' is not assignable to parameter of type 'never'."
+      ],
+      "removedBy": "phase 2"
+    },
+    {
+      "case": "X-U12",
+      "errors": [
+        "TS2554 { plugins: [markdownBlocks], initialValu: Expected 0 arguments, but got 1."
+      ],
+      "removedBy": "step 2"
+    },
+    {
+      "case": "X-U13",
+      "errors": [
+        "TS2558 CustomValue, readonly [typeof historyPlu: Expected 0 type arguments, but got 2."
+      ],
+      "removedBy": "step 2 and phase 3"
+    },
+    {
+      "case": "X-T15",
+      "errors": [
+        "TS2345 selection: Argument of type 'any' is not assignable to parameter of type 'never'.",
+        "TS7006 selection: Parameter 'selection' implicitly has an 'any' type.",
+        "TS7031 editor: Binding element 'editor' implicitly has an 'any' type."
+      ],
+      "removedBy": "phase 3"
+    }
+  ],
+  "unproven": [
+    {
+      "name": "AuthoredPlugin",
+      "entrypoints": ["plitejs/authored"],
+      "reason": "authored-changes.tsx types component props with it, and each value it types comes from authored(), which platejs/authored drops, so no case can build one against Plate."
+    },
+    {
+      "name": "BlockInsertOptions",
+      "entrypoints": ["plitejs", "plitejs/react"],
+      "reason": "It types tx.blocks.insert's options, which the documented calls pass inline without naming the type."
+    },
+    {
+      "name": "CreateEditorOptions",
+      "entrypoints": ["plitejs", "plitejs/react"],
+      "reason": "No Plite doc, README or example names the options type; the documented calls pass createEditor and useEditor options inline."
+    },
+    {
+      "name": "definePlugin",
+      "entrypoints": ["plitejs/react"],
+      "reason": "No Plite doc, README or example imports definePlugin from plitejs/react, so no case can cite a call. platejs/react binds it to another function than platejs's, which the root cases check."
+    },
+    {
+      "name": "EditorLeaf",
+      "entrypoints": ["plitejs/react"],
+      "reason": "Docs name it only in prose lists of rendering primitives, and no doc, README or example page shows a call."
+    },
+    {
+      "name": "EditorText",
+      "entrypoints": ["plitejs/react"],
+      "reason": "Docs name it only in prose lists of rendering primitives, and no doc, README or example page shows a call."
+    },
+    {
+      "name": "Plugin",
+      "entrypoints": ["plitejs", "plitejs/react"],
+      "reason": "Named only in the export list and editor.mdx's signature, never in a call."
+    },
+    {
+      "name": "PluginReference",
+      "entrypoints": ["plitejs", "plitejs/react"],
+      "reason": "Named only in the export list and editor.mdx's signature, never in a call."
+    },
+    {
+      "name": "TransferPlugin",
+      "entrypoints": ["plitejs", "plitejs/react"],
+      "reason": "Plite exports it as the type of transfer()'s descriptor, Plate as a value, and no Plite doc calls it."
+    }
+  ]
+}

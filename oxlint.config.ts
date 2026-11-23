@@ -32,6 +32,8 @@ const plateOxlintIgnorePatterns = [
   // The load-trace fixtures hold the CommonJS and computed load forms the
   // trace check must catch.
   'tooling/scripts/__fixtures__/load-trace/**',
+  // Copies Plite's documented calls as the docs write them.
+  'packages/plitejs/type-tests/plite-call-parity.tsx',
 ];
 
 const plateJsPlugins = {
