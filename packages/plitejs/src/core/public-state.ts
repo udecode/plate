@@ -114,7 +114,6 @@ import type {
   NodeInsertNodesOptions,
   NodeUnsetNodesOptions,
 } from '../interfaces/transforms/node';
-import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
 import { lawCheckEnabled } from '../internal/law-check';
 import { stripLocationRoots } from '../internal/root-location';
@@ -242,12 +241,7 @@ import {
   FRAMED_SPECS,
   runInEditorCommandFrame,
 } from './command-frame';
-import {
-  createEditorCommit,
-  type EditorCommitSettlement,
-  getEditorCommitSnapshot,
-  getEditorCommitValue,
-} from './commit';
+import { createEditorCommit, type EditorCommitSettlement } from './commit';
 import { isEditorContent } from './content';
 import {
   landTextWriteOutsideStruck,
@@ -489,14 +483,7 @@ import {
   mapEffect,
 } from './transaction-values';
 import { copyTxMethodMarkers, isTxOnlyMethod } from './tx-only';
-import {
-  advanceUniqueIndex,
-  buildUniqueIndex,
-  keptUniqueHolder,
-  repairUniqueHolders,
-  sameUniqueIndex,
-  type UniqueIndex,
-} from './unique-values';
+import { keptUniqueHolder, repairUniqueHolders } from './unique-values';
 import {
   getCurrentUpdateTags,
   popUpdateTagContext,
@@ -542,7 +529,7 @@ import {
   setStatePresentation,
   type ViewPresentation,
 } from './view-presentation';
-import { countCoreWork, withoutCountingWork } from './work';
+import { countCoreWork } from './work';
 
 export {
   hasListeners,
@@ -2230,10 +2217,6 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
   });
 };
 
-const UNIQUE_INDEXES = new WeakMap<Editor, UniqueIndex>();
-const UNIQUE_INDEX_GUARDS = new WeakSet<Editor>();
-const HOLDER_CHANGE_KINDS = ['node', 'presence'] as const;
-
 const rootsThatCanMoveHolders = (
   change: DocumentChange,
   replace: boolean,
@@ -2266,106 +2249,6 @@ const rootsThatCanMoveHolders = (
         );
       }),
   ]);
-};
-
-const advanceUniqueIndexOnCommit = (owner: Editor) => {
-  if (UNIQUE_INDEX_GUARDS.has(owner)) return;
-  UNIQUE_INDEX_GUARDS.add(owner);
-  registerEditorTransactionGuard(owner, ({ change, commit, replace }) => {
-    const index = UNIQUE_INDEXES.get(owner);
-
-    if (!index) return undefined;
-
-    const after = getEditorCommitValue(commit);
-    const before = getEditorCommitValue(commit, 'before');
-    const roots = rootsThatCanMoveHolders(change, replace, after, before);
-    const changed = new Map<string, Set<NodeKey>>();
-
-    for (const root of roots) {
-      const keys = new Set<NodeKey>();
-
-      for (const kind of HOLDER_CHANGE_KINDS) {
-        for (const nodeKey of commit.changed.nodeKeys(
-          kind,
-          root === MAIN_ROOT_KEY ? undefined : root
-        )) {
-          keys.add(nodeKey);
-        }
-      }
-      if (keys.size > 0) changed.set(root, keys);
-    }
-
-    return () => {
-      if (index.schema !== getCompiledEditorSchema(owner)) {
-        UNIQUE_INDEXES.delete(owner);
-
-        return;
-      }
-      advanceUniqueIndex(
-        index,
-        changed,
-        (root, nodeKey) => {
-          if (
-            root !== MAIN_ROOT_KEY &&
-            !Object.hasOwn(after.roots ?? {}, root)
-          ) {
-            return null;
-          }
-          const rootSnapshot = getEditorCommitSnapshot(commit, root);
-          const path = rootSnapshot.index.pathOf(nodeKey);
-
-          return (
-            path && {
-              path,
-              top: (at: number) => valueRootIndex(after, root).child(at),
-            }
-          );
-        },
-        commit.version,
-        visitRootNames(before.roots).filter(
-          (root) => !Object.hasOwn(after.roots ?? {}, root)
-        )
-      );
-      if (lawCheckEnabled()) {
-        const built = withoutCountingWork(() =>
-          buildUniqueIndex(
-            index.schema,
-            after,
-            commit.version,
-            (root) => getEditorCommitSnapshot(commit, root).index
-          )
-        );
-
-        if (!sameUniqueIndex(index, built)) {
-          failInvariant(
-            `The unique index a commit advanced to version ${commit.version} differs from one built from the document it published.`
-          );
-        }
-      }
-    };
-  });
-};
-
-const uniqueIndexOf = (
-  editor: Editor,
-  stored: EditorDocumentValue,
-  version: number,
-  keysOf: (root: string) => SnapshotIndex
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const schema = getCompiledEditorSchema(editor);
-  const current = UNIQUE_INDEXES.get(owner);
-
-  if (current?.schema === schema && current.version === version) {
-    return current;
-  }
-
-  const index = buildUniqueIndex(schema, stored, version, keysOf);
-
-  UNIQUE_INDEXES.set(owner, index);
-  advanceUniqueIndexOnCommit(owner);
-
-  return index;
 };
 
 const ROOT_DIRECTORIES = new WeakMap<Editor, RootDirectory>();
@@ -2401,7 +2284,7 @@ const advanceStoredRootDirectory = (
   ROOT_DIRECTORIES.set(owner, directory);
 };
 
-export const seedUniqueIndex = (editor: Editor) => {
+export const seedUniqueMaps = (editor: Editor) => {
   const owner = getEditorRuntimeOwner(editor);
   const roots = getEditorDocumentRoots(editor);
 
@@ -2409,15 +2292,6 @@ export const seedUniqueIndex = (editor: Editor) => {
     indexUniqueValues(owner, rootSourceOf(roots, root));
   }
   advanceStoredRootDirectory(owner, null);
-  if (uniquePropertiesOf(getCompiledEditorSchema(editor)).size === 0) return;
-
-  uniqueIndexOf(
-    editor,
-    getEditorDocumentValue(editor),
-    getSnapshotVersion(editor),
-    (root) =>
-      withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
-  );
 };
 
 // Reads the index without `getSnapshot`, whose selection read an authored
@@ -14720,7 +14594,7 @@ export const runEditorTransaction = <R>(
           }
           pluginPublication?.finalize();
           if (pluginPublication) {
-            seedUniqueIndex(editor);
+            seedUniqueMaps(editor);
             pluginPublication.handUninstalls([
               ...snapshot.pluginReconfigurations.values(),
             ]);

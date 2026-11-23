@@ -194,13 +194,9 @@ export type CoreWork = {
   uniqueDirectoryWrites: number;
   /** Lookups of the node that holds a unique value, as `unique.holder` answers. */
   uniqueHolderQueries: number;
-  /** Changed nodes a commit read to move the index of unique values. */
-  uniqueHolderReads: number;
   /** Slots a key structure copied from the set of cells that hold one unique value, to add or drop one of them. */
   uniqueHolderSlotsCopied: number;
   uniqueHolderWrites: number;
-  /** Elements the index of unique values was built from. */
-  uniqueIndexedNodes: number;
   /** Entries, bucket entries included, a comparison of two unique-value map versions read where they differ. */
   uniqueMapEntriesExamined: number;
   /** Unique-value map trie nodes built or copied; a collision bucket's tree nodes are not counted. */
@@ -333,10 +329,8 @@ export const coreWork: CoreWork = {
   uniqueCrossingChecks: 0,
   uniqueDirectoryWrites: 0,
   uniqueHolderQueries: 0,
-  uniqueHolderReads: 0,
   uniqueHolderSlotsCopied: 0,
   uniqueHolderWrites: 0,
-  uniqueIndexedNodes: 0,
   uniqueMapEntriesExamined: 0,
   uniqueMapNodesAllocated: 0,
   uniqueMapNodesVisited: 0,
