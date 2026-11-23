@@ -44,6 +44,7 @@ import {
   admitRoot,
   childrenOfNode,
   type KeyOf,
+  NO_ROOT_OWNERS,
   ROOT_LIST,
   type Topology,
   TopologyBuilder,
@@ -52,6 +53,8 @@ import {
   topologyKeyAt,
   topologyPathOf,
   topologyRetained,
+  reorderRootOwners,
+  topologyRootOwners,
   topologyUniqueDiff,
   topologyUniqueEntries,
   topologyUniqueHolders,
@@ -61,6 +64,7 @@ import { profileCoreDuration } from './profiling';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   type CompiledEditorSchema,
+  contentRootSlotsOf,
   internedUniquePropertiesOf,
 } from './schema-compiler';
 import {
@@ -529,7 +533,8 @@ const admitList = (
   admitRoot(
     { forEach: (visit) => forEachChild(children, visit) },
     keyOf,
-    internedUniquePropertiesOf(schema)
+    internedUniquePropertiesOf(schema),
+    contentRootSlotsOf(schema)
   );
 
 const REINDEXED = new WeakMap<Topology, Topology>();
@@ -539,24 +544,53 @@ const currentTopology = (
   topology: Topology,
   children: ChildrenList
 ) => {
-  const properties = internedUniquePropertiesOf(
-    getCompiledEditorSchema(editor)
-  );
+  const schema = getCompiledEditorSchema(editor);
+  const properties = internedUniquePropertiesOf(schema);
+  const contentRoots = contentRootSlotsOf(schema);
+  const indexes = (held: Topology | undefined): held is Topology =>
+    held?.uniqueProperties === properties &&
+    held.contentRoots.signature === contentRoots.signature;
 
-  if (topology.uniqueProperties === properties) return topology;
+  if (indexes(topology)) return topology;
   let reindexed = REINDEXED.get(topology);
 
-  if (reindexed?.uniqueProperties !== properties) {
+  if (!indexes(reindexed)) {
     const builder = new TopologyBuilder(topology);
     const nodes: Descendant[] = [];
 
     forEachChild(children, (node) => nodes.push(node));
-    builder.reindex(properties, nodes);
+    builder.reindex(properties, contentRoots, nodes);
     reindexed = builder.finish();
     REINDEXED.set(topology, reindexed);
   }
 
   return reindexed;
+};
+
+/**
+ * Where the elements of one root's index name content roots, in reading
+ * order. Every version that keeps its topology's placement returns the same
+ * list.
+ *
+ * @internal
+ */
+export const readRootOwnerPlaces = (
+  editor: Editor,
+  index: SnapshotIndex,
+  children: ChildrenList
+) => {
+  const known = TOPOLOGIES.get(index);
+
+  return known
+    ? topologyRootOwners(currentTopology(editor, known, children), (at) =>
+        getDefined(
+          (children instanceof DocumentIndex
+            ? children.nodes
+            : (children as NodeList<unknown>)
+          ).at(at) as Descendant | undefined
+        )
+      )
+    : NO_ROOT_OWNERS;
 };
 
 /** @internal */
@@ -2060,7 +2094,14 @@ export const mapSnapshotIndexThroughChange = (
     discardedNodeKeys.size === 0 &&
     (runtimeCandidates?.length ?? 0) === 0 &&
     after.node(moved.targetPath) === before.node(moved.path) &&
-    preparedRuntimePlacementsFromSegment(segment).length === 0;
+    preparedRuntimePlacementsFromSegment(segment).length === 0 &&
+    !change
+      .propertyChanges()
+      .some(({ modifications }) =>
+        modifications.some(
+          ({ key }) => key === 'type' || builder.uniqueProperties.includes(key)
+        )
+      );
   let windows: readonly Window[] = [];
   const assignments = new Map<string, NodeKey>();
 
@@ -2353,7 +2394,8 @@ export const advancePathStableSnapshotIndex = (
   index: SnapshotIndex,
   editor: Editor,
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[],
-  binding: NodeKeyBinding = 'publish'
+  binding: NodeKeyBinding = 'publish',
+  rerooted = false
 ): SnapshotIndex => {
   assertMappingLengths(before, after, change);
   const forks = sequenceOf(index, before) === 'fork';
@@ -2418,8 +2460,11 @@ export const advancePathStableSnapshotIndex = (
     }
   });
 
-  const advanced =
-    binding === 'inherited' ? versionOf(topology, editor) : source;
+  const advanced = rerooted
+    ? versionOf(reorderRootOwners(topology), editor)
+    : binding === 'inherited'
+      ? versionOf(topology, editor)
+      : source;
   const movedFrom =
     (advanced === index ? VERSION_DOCUMENTS.get(index)?.movedFrom : null) ??
     new WeakSet<DocumentIndex>();

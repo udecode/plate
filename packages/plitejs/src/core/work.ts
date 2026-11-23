@@ -151,10 +151,14 @@ export type CoreWork = {
   wholeReadNodes: number;
   /** Elements a settlement judged as owners of a content root holding a holder. */
   rootOwnerChecks: number;
-  /** Roots whose owner elements `read.roots()` read, on a root's first read or after its children changed. */
-  rootOwnerReads: number;
-  /** Roots `read.roots()` placed, on its first read or after an owner moved or a root came or went. */
+  /** Roots `read.roots()` placed, on its first read or under a new schema, after a root came or went, or after an owner's path or roots changed. */
   orderedRoots: number;
+  /** Roots `read.roots()` asked their identity topology where their owners sit: every root on its first read or under a new schema, then each root that came or whose node list changed. */
+  ownerPlaceAsks: number;
+  /** Owner lists the identity topology sorted into reading order, after an element of a type that declares content roots came, went or was restamped, an edit rewrote an owner's named roots, a kept cell moved, or a new schema changed which roots its types declare. */
+  ownerOrderBuilds: number;
+  /** Owner paths the identity topology resolved for `read.roots()`. */
+  ownerPathsResolved: number;
   /** Mounted views a root's target pick asked whether an `Editable` shows them. */
   rootTargetChecks: number;
   historyHeadRootReads: number;
@@ -300,8 +304,10 @@ export const coreWork: CoreWork = {
   walkedSlots: 0,
   wholeReadNodes: 0,
   rootOwnerChecks: 0,
-  rootOwnerReads: 0,
   orderedRoots: 0,
+  ownerPlaceAsks: 0,
+  ownerOrderBuilds: 0,
+  ownerPathsResolved: 0,
   rootTargetChecks: 0,
   historyHeadRootReads: 0,
   ownershipIndexVisits: 0,

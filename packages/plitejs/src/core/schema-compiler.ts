@@ -31,6 +31,7 @@ import { isDocumentRootKey } from './change/document-change';
 import { jsonEqual } from './change/json';
 import { cloneFrozen } from './clone';
 import { readSchemaIdentity } from './document-shape';
+import type { ContentRootSlots } from './identity-owner';
 import { profileCoreDuration } from './profiling';
 import { countCoreWork } from './work';
 
@@ -6258,6 +6259,36 @@ export const internedUniquePropertiesOf = (schema: CompiledEditorSchema) => {
   }
 
   return list;
+};
+
+const ROOT_SLOTS = new WeakMap<CompiledEditorSchema, ContentRootSlots>();
+
+export const contentRootSlotsOf = (schema: CompiledEditorSchema) => {
+  let slots = ROOT_SLOTS.get(schema);
+
+  if (!slots) {
+    const declared = [...schema.elements.byType].flatMap(([type, element]) =>
+      element.contentRoots.size > 0
+        ? [
+            [
+              type,
+              // A record lists array-index keys first, so the slots take
+              // the order schema.element(type).contentRoots reads in.
+              Object.freeze(
+                Object.keys(Object.fromEntries(element.contentRoots))
+              ),
+            ] as const,
+          ]
+        : []
+    );
+    slots = Object.freeze({
+      byType: new Map(declared),
+      signature: JSON.stringify(declared),
+    });
+    ROOT_SLOTS.set(schema, slots);
+  }
+
+  return slots;
 };
 
 const UNIQUE_CROSSINGS = new WeakMap<

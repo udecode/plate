@@ -318,6 +318,7 @@ import {
 } from './editor-schema';
 import { getContentSlice } from './get-content-slice';
 import { getFragment } from './get-fragment';
+import { sameNamedRoots } from './identity-owner';
 import { normalizeEditorValue } from './initial-value';
 import {
   getInsertRemainingLength,
@@ -408,6 +409,7 @@ import {
   type CompiledEditorSchema,
   tracksPlaces,
   uniquePropertiesOf,
+  contentRootSlotsOf,
   internedUniquePropertiesOf,
 } from './schema-compiler';
 import {
@@ -456,6 +458,7 @@ import {
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
   publishSnapshotIndex,
+  readRootOwnerPlaces,
   readUniqueHolders,
   type RootDirectory,
   rootsHoldingValue,
@@ -752,31 +755,49 @@ export const hasEditorProjectionSnapshotIndex = (
   nodes: NodeList<unknown>
 ) => projectedLists(getEditorRuntimeOwner(editor)).has(nodes);
 
-const changesIndexedProperty = (
+const indexedPropertyChange = (
   owner: Editor,
   before: DocumentIndex,
   after: DocumentIndex,
   classification: DocumentChangeRootClassification | null | undefined
-) => {
-  if (!classification?.properties) return false;
-  const unique = internedUniquePropertiesOf(getCompiledEditorSchema(owner));
+): 'reroot' | 'restamp' | null => {
+  if (!classification?.properties) return null;
+  const schema = getCompiledEditorSchema(owner);
+  const unique = internedUniquePropertiesOf(schema);
+  const contentRoots = contentRootSlotsOf(schema).byType;
+  let change: 'reroot' | null = null;
 
-  return classification.paths.some((path) => {
+  for (const path of classification.paths) {
+    let beforeNode: ReturnType<DocumentIndex['node']>;
+    let afterNode: ReturnType<DocumentIndex['node']>;
+
     try {
-      const beforeNode = before.node(path);
-      const afterNode = after.node(path);
-      const changesElementType =
-        ('children' in beforeNode ? beforeNode.type : undefined) !==
-        ('children' in afterNode ? afterNode.type : undefined);
-      const changesIndexedKey =
-        'children' in beforeNode &&
-        unique.some((key) => beforeNode[key] !== afterNode[key]);
-
-      return changesElementType || changesIndexedKey;
+      beforeNode = before.node(path);
+      afterNode = after.node(path);
     } catch {
-      return false;
+      continue;
     }
-  });
+    if (
+      ('children' in beforeNode ? beforeNode.type : undefined) !==
+        ('children' in afterNode ? afterNode.type : undefined) ||
+      ('children' in beforeNode &&
+        unique.some((key) => beforeNode[key] !== afterNode[key]))
+    ) {
+      return 'restamp';
+    }
+    const slots =
+      'children' in beforeNode && typeof beforeNode.type === 'string'
+        ? contentRoots.get(beforeNode.type)
+        : undefined;
+
+    if (
+      slots &&
+      !sameNamedRoots(beforeNode.childRoots, afterNode.childRoots, slots)
+    ) {
+      change = 'reroot';
+    }
+  }
+  return change;
 };
 
 export const advanceSnapshotIndex = (
@@ -798,14 +819,15 @@ export const advanceSnapshotIndex = (
     afterDocument
   );
   const classification = options.classification ?? classified.classification;
+  const property = indexedPropertyChange(
+    owner,
+    beforeDocument,
+    afterDocument,
+    classification
+  );
 
   return !classification.structure &&
-    !changesIndexedProperty(
-      owner,
-      beforeDocument,
-      afterDocument,
-      classification
-    ) &&
+    property !== 'restamp' &&
     discardedNodeKeys.size === 0
     ? advancePathStableSnapshotIndex(
         beforeDocument,
@@ -814,7 +836,8 @@ export const advanceSnapshotIndex = (
         index,
         owner,
         classified.runtimeCandidates,
-        options.binding
+        options.binding,
+        property === 'reroot'
       )
     : mapSnapshotIndexThroughChange(
         beforeDocument,
@@ -4540,6 +4563,16 @@ export const getEditorRuntimeElementEntries = (
 ) =>
   withEditorRootChildren(editor, root, () =>
     getSnapshotIndexElementEntries(getCurrentRuntimeIndex(editor), types)
+  );
+
+/** @internal */
+export const getEditorRootOwnerPlaces = (editor: Editor, root: RootKey) =>
+  withEditorRootChildren(editor, root, () =>
+    readRootOwnerPlaces(
+      editor,
+      getCurrentRuntimeIndex(editor),
+      getChildrenSource(editor)
+    )
   );
 
 /**
@@ -12906,11 +12939,17 @@ const inheritDocumentChangeStepNodeKeys = (
         step.change,
         root
       );
+      const property = indexedPropertyChange(
+        owner,
+        before,
+        after,
+        classification
+      );
       const pathStable =
         publishNodeKeys &&
         classification &&
         !classification.structure &&
-        !changesIndexedProperty(owner, before, after, classification) &&
+        property !== 'restamp' &&
         snapshot.discardedNodeKeys.size === 0;
 
       return profileCoreDuration('transaction-runtime-map-index', () =>
@@ -12922,7 +12961,8 @@ const inheritDocumentChangeStepNodeKeys = (
               source,
               owner,
               step.runtimeCandidates.get(root),
-              'publish'
+              'publish',
+              property === 'reroot'
             )
           : mapSnapshotIndexThroughChange(
               before,

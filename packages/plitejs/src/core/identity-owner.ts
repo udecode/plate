@@ -1,6 +1,6 @@
-import type { NodeKey } from '../interfaces/editor';
+import type { NamedRootKey, NodeKey } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
-import type { Path } from '../interfaces/path';
+import { type Path, PathApi } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
 import {
   emptyUniqueHashMap,
@@ -278,6 +278,50 @@ const forEachHolder = (holders: Holders, visit: (cell: number) => void) => {
   else dirForEach(holders, (_, cell) => visit(cell));
 };
 
+export type ContentRootSlots = Readonly<{
+  byType: ReadonlyMap<string, readonly string[]>;
+  signature: string;
+}>;
+
+export type OwnerPlace = Readonly<{
+  childRoot: NamedRootKey;
+  path: Path;
+  slot: string;
+}>;
+
+export const NO_ROOT_OWNERS: readonly OwnerPlace[] = Object.freeze([]);
+
+const rootNameAt = (childRoots: unknown, slot: string): NamedRootKey | null => {
+  if (typeof childRoots !== 'object' || childRoots === null) return null;
+  const root = (childRoots as Readonly<Record<string, unknown>>)[slot];
+
+  return typeof root === 'string' && root.length > 0 ? root : null;
+};
+
+export const sameNamedRoots = (
+  before: unknown,
+  after: unknown,
+  slots: readonly string[]
+) => {
+  if (before === after) return true;
+  for (const slot of slots) {
+    if (rootNameAt(before, slot) !== rootNameAt(after, slot)) return false;
+  }
+  return true;
+};
+
+const OWNER_KINDS = new WeakMap<ContentRootSlots, ReadonlySet<number>>();
+
+const ownerKindsOf = (contentRoots: ContentRootSlots) => {
+  let kinds = OWNER_KINDS.get(contentRoots);
+
+  if (!kinds) {
+    kinds = new Set([...contentRoots.byType.keys()].map(typeAddress));
+    OWNER_KINDS.set(contentRoots, kinds);
+  }
+  return kinds;
+};
+
 type Cell = Readonly<{
   children: number;
   /** The key of each unique property's value, in the topology's order. */
@@ -295,13 +339,24 @@ type Page = Readonly<{
   up: number;
 }>;
 
+class OwnerOrderVersion {
+  declare private readonly guards: 'owner order';
+}
+
+class PlacementVersion {
+  declare private readonly guards: 'owner paths';
+}
+
 export type Topology = Readonly<{
   cells: Directory<Cell>;
+  contentRoots: ContentRootSlots;
   elements: Directory<Directory<true>>;
   /** For each unique property, the cells that hold each value's key. */
   holders: ReadonlyArray<UniqueHashMap<Holders>>;
   keys: Directory<number>;
   pages: Directory<Page>;
+  ownerOrder: OwnerOrderVersion;
+  placement: PlacementVersion;
   spareKeys: Directory<number>;
   top: number;
   uniqueProperties: readonly string[];
@@ -341,20 +396,35 @@ const elementKind = (node: Descendant) =>
 
 export class TopologyBuilder {
   cells: Directory<Cell>;
+  private contentRoots: ContentRootSlots;
   private edit = {};
   elements: Directory<Directory<true>>;
+  private firstNewCell = nextCellAddress;
   private holders: ReadonlyArray<UniqueHashMap<Holders>>;
   keys: Directory<number>;
+  private ownerOrder: OwnerOrderVersion;
   pages: Directory<Page>;
+  private placed = false;
+  private placement: PlacementVersion;
   private released: number[] = [];
+  private reordered = false;
   spareKeys: Directory<number>;
   top: number;
   uniqueProperties: readonly string[];
 
   constructor(source: Topology);
-  constructor(source: null, uniqueProperties: readonly string[]);
-  constructor(source: Topology | null, uniqueProperties?: readonly string[]) {
+  constructor(
+    source: null,
+    uniqueProperties: readonly string[],
+    contentRoots: ContentRootSlots
+  );
+  constructor(
+    source: Topology | null,
+    uniqueProperties?: readonly string[],
+    contentRoots?: ContentRootSlots
+  ) {
     this.cells = source?.cells ?? emptyDirectory();
+    this.contentRoots = source?.contentRoots ?? getDefined(contentRoots);
     this.elements = source?.elements ?? emptyDirectory();
     this.uniqueProperties =
       source?.uniqueProperties ?? getDefined(uniqueProperties);
@@ -363,6 +433,8 @@ export class TopologyBuilder {
       this.uniqueProperties.map(() => emptyUniqueHashMap<Holders>());
     this.keys = source?.keys ?? emptyDirectory();
     this.pages = source?.pages ?? emptyDirectory();
+    this.ownerOrder = source?.ownerOrder ?? new OwnerOrderVersion();
+    this.placement = source?.placement ?? new PlacementVersion();
     this.spareKeys = source?.spareKeys ?? emptyDirectory();
     this.top = source ? source.top : NO_TREE;
   }
@@ -377,12 +449,20 @@ export class TopologyBuilder {
       for (const page of this.pagesOf(row.children)) this.dropPage(page);
     }
     this.released = [];
+    if (this.reordered) this.ownerOrder = new OwnerOrderVersion();
+    if (this.reordered || this.placed) this.placement = new PlacementVersion();
+    this.reordered = false;
+    this.placed = false;
+    this.firstNewCell = nextCellAddress;
     const topology = Object.freeze({
       cells: this.cells,
+      contentRoots: this.contentRoots,
       elements: this.elements,
       holders: this.holders,
       keys: this.keys,
+      ownerOrder: this.ownerOrder,
       pages: this.pages,
+      placement: this.placement,
       spareKeys: this.spareKeys,
       top: this.top,
       uniqueProperties: this.uniqueProperties,
@@ -391,6 +471,14 @@ export class TopologyBuilder {
     // The topology shares every node this edit owns, so later writes copy.
     this.edit = {};
     return topology;
+  }
+
+  private reorderOwnersOf(kind: number) {
+    if (ownerKindsOf(this.contentRoots).has(kind)) this.reordered = true;
+  }
+
+  reorderOwners() {
+    this.reordered = true;
   }
 
   private hold(at: number, key: string, cell: number) {
@@ -657,6 +745,8 @@ export class TopologyBuilder {
     const row = this.page(leaf);
     const items = [...row.items];
 
+    this.placed = true;
+    if (cell < this.firstNewCell) this.reordered = true;
     items.splice(offset, 0, cell);
     this.setPage(leaf, { ...row, items });
     this.setCellPage(cell, leaf);
@@ -749,6 +839,7 @@ export class TopologyBuilder {
     const items = [...row.items];
     const [previous] = items.splice(offset, 1, cell);
 
+    if (previous !== cell && cell < this.firstNewCell) this.reordered = true;
     this.setPage(leaf, { ...row, items });
     this.setCellPage(cell, leaf);
 
@@ -761,6 +852,7 @@ export class TopologyBuilder {
     const items = [...row.items];
     const [cell] = items.splice(offset, 1);
 
+    this.placed = true;
     this.setPage(leaf, { ...row, items });
     for (const { page, slot } of trail) {
       const branch = this.page(page);
@@ -880,6 +972,7 @@ export class TopologyBuilder {
     row.held?.forEach((key, at) => {
       if (key !== null) this.unhold(at, key, cell);
     });
+    this.reorderOwnersOf(row.kind);
     this.released.push(cell);
     if (row.children === NO_TREE) return;
     for (const child of this.cellsOf(row.children)) {
@@ -904,6 +997,7 @@ export class TopologyBuilder {
     this.setCell(cell, { children, held, key: nodeKey, kind, page });
     if (nodeKey) this.setKey(nodeKey, cell);
     this.addMember(kind, cell);
+    this.reorderOwnersOf(kind);
     this.holdAll(cell, held);
     return cell;
   }
@@ -971,6 +1065,9 @@ export class TopologyBuilder {
     const held = this.heldOf(node, kind);
     let changed = false;
 
+    this.reorderOwnersOf(row.kind);
+    this.reorderOwnersOf(kind);
+
     for (let at = 0; at < this.uniqueProperties.length; at++) {
       const was = row.held?.[at] ?? null;
       const now = held?.[at] ?? null;
@@ -988,8 +1085,16 @@ export class TopologyBuilder {
     this.setCell(cell, { ...row, held, kind });
   }
 
-  reindex(uniqueProperties: readonly string[], nodes: readonly Descendant[]) {
+  reindex(
+    uniqueProperties: readonly string[],
+    contentRoots: ContentRootSlots,
+    nodes: readonly Descendant[]
+  ) {
+    if (contentRoots.signature !== this.contentRoots.signature) {
+      this.reordered = true;
+    }
     this.uniqueProperties = uniqueProperties;
+    this.contentRoots = contentRoots;
     this.holders = uniqueProperties.map(() => emptyUniqueHashMap<Holders>());
     const visit = (tree: number, list: readonly Descendant[]) => {
       this.cellsOf(tree).forEach((cell, at) => {
@@ -1114,6 +1219,121 @@ export const topologyElements = (
   });
 };
 
+type OwnerList = Readonly<{
+  cellOfPlace: readonly number[];
+  places: readonly OwnerPlace[];
+}>;
+
+const OWNER_ORDERS = new WeakMap<OwnerOrderVersion, OwnerList>();
+const OWNER_PLACES = new WeakMap<PlacementVersion, readonly OwnerPlace[]>();
+
+type TopAt = (index: number) => Descendant;
+
+const nodeAtPath = (topAt: TopAt, path: Path) => {
+  let node = topAt(path[0]);
+
+  for (let depth = 1; depth < path.length; depth++) {
+    node = getDefined(childrenOfNode(node)?.[path[depth]]);
+  }
+  return node;
+};
+
+const orderOwners = (topology: Topology, topAt: TopAt): OwnerList => {
+  const reader = readTopology(topology);
+  const owners: Array<{
+    cell: number;
+    childRoots: unknown;
+    path: Path;
+    slots: readonly string[];
+  }> = [];
+
+  for (const [type, slots] of topology.contentRoots.byType) {
+    const members = dirGet(topology.elements, typeAddress(type));
+
+    if (!members) continue;
+    dirForEach(members, (_, cell) => {
+      countCoreWork('identityMembersExamined');
+      countCoreWork('ownerPathsResolved');
+      const path = reader.pathOfCell(cell);
+      const { childRoots } = nodeAtPath(topAt, path);
+
+      if (slots.some((slot) => rootNameAt(childRoots, slot))) {
+        owners.push({ cell, childRoots, path, slots });
+      }
+    });
+  }
+  if (owners.length === 0) return { cellOfPlace: [], places: NO_ROOT_OWNERS };
+  countCoreWork('ownerOrderBuilds');
+  owners.sort(
+    (left, right) =>
+      PathApi.compare(left.path, right.path) ||
+      left.path.length - right.path.length
+  );
+  const cellOfPlace: number[] = [];
+  const places: OwnerPlace[] = [];
+
+  for (const { cell, childRoots, path, slots } of owners) {
+    for (const slot of slots) {
+      const childRoot = rootNameAt(childRoots, slot);
+
+      if (childRoot === null) continue;
+      cellOfPlace.push(cell);
+      places.push(Object.freeze({ childRoot, path, slot }));
+    }
+  }
+
+  return { cellOfPlace, places: Object.freeze(places) };
+};
+
+const placeOwners = (topology: Topology, list: OwnerList): OwnerList => {
+  const reader = readTopology(topology);
+  let moved: OwnerPlace[] | null = null;
+  let cell = -1;
+  let path: Path = [];
+
+  list.places.forEach((place, at) => {
+    if (list.cellOfPlace[at] !== cell) {
+      cell = list.cellOfPlace[at];
+      countCoreWork('ownerPathsResolved');
+      path = reader.pathOfCell(cell);
+    }
+    if (moved) moved.push(Object.freeze({ ...place, path }));
+    else if (!PathApi.equals(path, place.path)) {
+      moved = list.places.slice(0, at);
+      moved.push(Object.freeze({ ...place, path }));
+    }
+  });
+
+  return moved
+    ? { cellOfPlace: list.cellOfPlace, places: Object.freeze(moved) }
+    : list;
+};
+
+/** `topAt` reads the top-level nodes of the list `topology` indexes. */
+export const topologyRootOwners = (
+  topology: Topology,
+  topAt: TopAt
+): readonly OwnerPlace[] => {
+  const placed = OWNER_PLACES.get(topology.placement);
+
+  if (placed) return placed;
+  const kept = OWNER_ORDERS.get(topology.ownerOrder);
+  const list = kept
+    ? placeOwners(topology, kept)
+    : orderOwners(topology, topAt);
+
+  OWNER_ORDERS.set(topology.ownerOrder, list);
+  OWNER_PLACES.set(topology.placement, list.places);
+  return list.places;
+};
+
+export const reorderRootOwners = (topology: Topology): Topology => {
+  const builder = new TopologyBuilder(topology);
+
+  builder.reorderOwners();
+  return builder.finish();
+};
+
 export const topologyRetained = (topology: Topology) => {
   let memberships = 0;
 
@@ -1158,10 +1378,11 @@ export const admitRoot = (
     forEach: (visit: (node: Descendant, index: number) => void) => void;
   }>,
   keyOf: KeyOf,
-  uniqueProperties: readonly string[]
+  uniqueProperties: readonly string[],
+  contentRoots: ContentRootSlots
 ): Topology => {
   countCoreWork('wholeListPasses');
-  const builder = new TopologyBuilder(null, uniqueProperties);
+  const builder = new TopologyBuilder(null, uniqueProperties, contentRoots);
   const nodes: Descendant[] = [];
 
   children.forEach((child) => nodes.push(child));

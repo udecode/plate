@@ -6033,7 +6033,7 @@ export class RootChange {
     return replacements;
   }
 
-  private propertyChanges() {
+  propertyChanges() {
     const changes: PropertyChange[] = [];
     let position = 0;
 
