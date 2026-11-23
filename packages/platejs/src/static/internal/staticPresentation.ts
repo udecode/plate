@@ -36,9 +36,11 @@ export type StaticOverrides = Readonly<{
 
 type Peers = Readonly<Record<string, AnyBasePlugin>>;
 
+type DrawnFeature = 'render' | 'slots';
+
 type StaticPresentation = StaticOverrides &
   Readonly<{
-    missing: Set<string>;
+    missing: Map<string, Set<DrawnFeature>>;
     peers?: Peers;
   }>;
 
@@ -69,8 +71,8 @@ const compilePeers = (plugins: readonly BasePluginInput[]) => {
 };
 
 /**
- * Returns the set that rendering fills with the names of plugins whose drawing
- * the presentation lacked.
+ * Returns the map that rendering fills from the name of each plugin whose
+ * drawing the presentation lacked to the features it lacked, render or slots.
  */
 export const bindStaticPresentation = (
   editor: Editor,
@@ -81,8 +83,8 @@ export const bindStaticPresentation = (
     overrides?: StaticOverrides;
     plugins?: readonly BasePluginInput[];
   }>
-): ReadonlySet<string> => {
-  const missing = new Set<string>();
+): ReadonlyMap<string, ReadonlySet<DrawnFeature>> => {
+  const missing = new Map<string, Set<DrawnFeature>>();
 
   if (overrides || plugins) {
     PRESENTATIONS.set(editor, {
@@ -115,7 +117,7 @@ const isComponent = (component: unknown) =>
 const resolveDrawing = <T>(
   editor: Editor,
   plugin: DrawnPlugin,
-  feature: 'render' | 'slots',
+  feature: DrawnFeature,
   read: (plugin: DrawnPlugin) => T | null | undefined,
   readInstalled: (plugin: DrawnPlugin) => unknown = read
 ) => {
@@ -129,7 +131,10 @@ const resolveDrawing = <T>(
 
   if (drawing !== undefined) return drawing;
   if (!isComponent(readInstalled(plugin))) return own;
-  presentation.missing.add(plugin.name);
+  presentation.missing.set(
+    plugin.name,
+    (presentation.missing.get(plugin.name) ?? new Set()).add(feature)
+  );
 
   return undefined;
 };

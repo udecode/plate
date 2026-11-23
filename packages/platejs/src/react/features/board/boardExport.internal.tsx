@@ -1,14 +1,13 @@
 import * as React from 'react';
 
 import { ElementApi } from '../../../core';
+import { createAuthoredEditorView } from '../../../facade';
 import { shapeIdOf } from '../../../features/board/lib/boardCopy.internal';
-import type { BasePluginInput } from '../../../lib';
-import {
-  EditorStatic,
-  type EditorStaticProps,
-  renderStaticHtml,
-} from '../../../static';
+import { type BasePluginInput, getPluginNodeClass } from '../../../lib';
+import { EditorStatic, type EditorStaticProps } from '../../../static';
+import { loadStaticRenderer } from '../../../static/internal/renderStaticHtmlWithOverrides';
 import { getStaticRootView } from '../../../static/internal/staticDocumentView';
+import { bindStaticPresentation } from '../../../static/internal/staticPresentation';
 import type { BoardBox } from './boardIndex.internal';
 import type { BoardView } from './boardView.internal';
 
@@ -157,6 +156,9 @@ const boxIn = (drawing: Element): BoardBox => {
 };
 
 const offset = (value: string) => Number.parseFloat(value) || 0;
+
+const inOrUnder = (element: Element, selector: string) =>
+  element.matches(selector) || element.querySelector(selector) !== null;
 
 const stripEditor = (drawing: Element) => {
   for (const node of [drawing, ...drawing.querySelectorAll('*')]) {
@@ -387,11 +389,11 @@ const dataUrlOf = (blob: Blob) =>
     reader.readAsDataURL(blob);
   });
 
-const shrunk = async (
+const decodedDataUrl = async (
   document: Document,
   blob: Blob,
   size: DOMRect,
-  scale: number
+  scale: number | null
 ) => {
   const url = URL.createObjectURL(blob);
 
@@ -403,9 +405,12 @@ const shrunk = async (
 
     const { naturalHeight, naturalWidth } = image;
     const fit =
-      scale * Math.max(size.width / naturalWidth, size.height / naturalHeight);
+      scale === null
+        ? 1
+        : scale *
+          Math.max(size.width / naturalWidth, size.height / naturalHeight);
     const canvas = document.createElement('canvas');
-    const paint = fit < 1 ? canvas.getContext('2d') : null;
+    const paint = fit > 0 && fit < 1 ? canvas.getContext('2d') : null;
 
     if (!paint) return await dataUrlOf(blob);
 
@@ -508,6 +513,22 @@ const unplace = (root: HTMLElement | SVGElement) => {
   for (const name of ON_SCREEN_PLACEMENT) root.style.removeProperty(name);
 };
 
+// WebKit paints positioned HTML inside a foreignObject from the picture's
+// origin, past every x, y and transform of the svg around it, unless a fixed
+// box inside the foreignObject holds that HTML.
+const pin = (document: Document, object: Element) => {
+  const box = document.createElement('div');
+  const size = (name: 'height' | 'width') => {
+    const value = Number(object.getAttribute(name));
+
+    return Number.isFinite(value) && value > 0 ? `${value}px` : '100%';
+  };
+
+  box.style.cssText = `position: fixed; left: 0px; top: 0px; width: ${size('width')}; height: ${size('height')};`;
+  box.append(...object.childNodes);
+  object.append(box);
+};
+
 const groupOf = (
   document: Document,
   { box, drawing, id }: Drawing,
@@ -553,51 +574,69 @@ const groupOf = (
     object.append(label);
     group.append(object);
   }
+  for (const object of group.querySelectorAll('foreignObject')) {
+    pin(document, object);
+  }
 
   return group;
 };
 
 export const drawBoardPicture = async (
-  view: BoardView,
+  view: Pick<BoardView, 'pictureSource'>,
   { format, kit }: BoardPictureOptions
 ): Promise<BoardPicture | null> => {
+  const { renderToStaticMarkup } = await loadStaticRenderer();
   const source = view.pictureSource();
 
   if (!source) return null;
 
   const { editor, host, layouts, projection, root } = source;
-  const { data, diagnostics } = await renderStaticHtml(editor, {
-    component: PictureShapes,
-    presentation: kit,
-    props: { root },
-    ...(projection && { projection }),
+  const picture = createAuthoredEditorView(editor, {
+    readOnly: true,
+    ...(projection && { authored: { preview: projection } }),
   });
+  const missing = bindStaticPresentation(picture, { plugins: kit });
+  const data = renderToStaticMarkup(
+    <PictureShapes editor={picture} root={root} />
+  );
   const document = host.ownerDocument;
   const template = document.createElement('template');
 
   template.innerHTML = data;
 
-  const ids: string[] = JSON.parse(
-    template.content
-      .querySelector('[data-board-picture-shapes]')
-      ?.getAttribute('data-board-picture-shapes') ?? '[]'
+  const kept = new Set<string>(
+    JSON.parse(
+      template.content
+        .querySelector('[data-board-picture-shapes]')
+        ?.getAttribute('data-board-picture-shapes') ?? '[]'
+    )
   );
-  const tops = [
-    ...template.content.querySelectorAll(
-      `[data-editor-root="${CSS.escape(root)}"][data-editor-node="element"]`
-    ),
-  ].filter((node) => !node.getAttribute('data-editor-path')?.includes(','));
-  const shown = new Map(ids.map((id, at) => [id, tops[at]]));
+  const shown = new Map(
+    [
+      ...template.content.querySelectorAll(
+        `[data-editor-root="${CSS.escape(root)}"][data-editor-node="element"]`
+      ),
+    ].flatMap((node) => {
+      const id = node.getAttribute('data-board-picture');
+
+      return id === null || node.getAttribute('data-editor-path')?.includes(',')
+        ? []
+        : [[id, node] as const];
+    })
+  );
   const warnings: BoardPictureWarning[] = [];
   const drawings: Drawing[] = [];
 
   for (const { box, id } of layouts) {
-    if (!shown.has(id)) continue;
+    if (!kept.has(id)) continue;
 
     const drawing = shown.get(id);
 
-    if (drawing?.getAttribute('data-board-picture') === id) {
+    if (drawing) {
       stripEditor(drawing);
+      if (inOrUnder(drawing, '[data-board-image-unreadable]')) {
+        warnings.push({ code: 'image-unreadable', shapeId: id });
+      }
       drawings.push({ box: boxIn(drawing), drawing, id });
     } else {
       warnings.push({ code: 'shape-undrawn', shapeId: id });
@@ -605,7 +644,16 @@ export const drawBoardPicture = async (
     }
   }
   if (drawings.length === 0) return null;
-  if (diagnostics.some(({ code }) => code === 'missing-static-presentation')) {
+  if (
+    [...missing].some(([name, features]) =>
+      drawings.some(
+        ({ drawing }) =>
+          drawing &&
+          (features.has('slots') ||
+            inOrUnder(drawing, `.${CSS.escape(getPluginNodeClass(name))}`))
+      )
+    )
+  ) {
     warnings.push({ code: 'content-undrawn' });
   }
 
@@ -680,9 +728,7 @@ export const drawBoardPicture = async (
 
         image.setAttribute(
           name,
-          png
-            ? await shrunk(document, blob, size, png.scale)
-            : await dataUrlOf(blob)
+          await decodedDataUrl(document, blob, size, png?.scale ?? null)
         );
       } catch {
         const link = URL.canParse(href, document.baseURI)

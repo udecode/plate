@@ -1781,6 +1781,29 @@ export const createEditorView: CreateEditorView = <
   options?: EditorViewOptions<TRoot>
 ): EditorView<V, TPlugins> => createEditorViewRuntime(sourceEditor, options);
 
+/**
+ * `createEditorView` that takes `authored` on any editor type. A view made
+ * from a view without `authored` or `document` shares that view's mode.
+ * @internal
+ */
+export const createAuthoredEditorView: {
+  <const TEditor extends EditorStateViewProvider<() => unknown>>(
+    sourceEditor: TEditor,
+    options: EditorViewOptions
+  ): LayeredEditorView<TEditor>;
+  <V extends Value, TPlugins extends readonly unknown[] = readonly []>(
+    sourceEditor: Editor<V, TPlugins>,
+    options: EditorViewOptions
+  ): EditorView<V, TPlugins>;
+} = <
+  V extends Value,
+  TPlugins extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
+>(
+  sourceEditor: Editor<V, TPlugins>,
+  options: EditorViewOptions<TRoot>
+): EditorView<V, TPlugins> => createEditorViewRuntime(sourceEditor, options);
+
 export const projectEditorView: CreateEditorView = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],

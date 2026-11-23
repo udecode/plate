@@ -18,7 +18,7 @@ import {
 // renderers, and Next rejects the bare `react-dom/server` specifier in server
 // components. `process.env.NEXT_RUNTIME` stays bare so bundlers inline it, and
 // stays after the Node check so a browser bundle never reads `process`.
-const loadStaticRenderer = () =>
+export const loadStaticRenderer = () =>
   (globalThis as { process?: { versions?: { node?: string } } }).process
     ?.versions?.node && !process.env.NEXT_RUNTIME
     ? import('react-dom/server.edge')
@@ -62,7 +62,7 @@ export const renderStaticHtmlWithOverrides = async (
     data: html,
     diagnostics: Object.freeze([
       ...projected.diagnostics,
-      ...Array.from(missing, (plugin) =>
+      ...Array.from(missing.keys(), (plugin) =>
         Object.freeze({
           code: 'missing-static-presentation' as const,
           message: `Plugin "${plugin}" has no drawing in the presentation, so its content was drawn without it.`,

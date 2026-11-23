@@ -14,6 +14,7 @@ import {
   SelectionApi,
 } from '../../../core';
 import {
+  isDocumentView,
   readAuthoredView,
   type Editor as RuntimeEditor,
   subscribeEditorViewState,
@@ -1810,7 +1811,9 @@ export const createBoardView = (
         for (const member of index.membersOf(id) ?? []) picked.add(member);
       }
 
-      const authored = readAuthoredView(shapes);
+      const authored = isDocumentView(editor)
+        ? undefined
+        : readAuthoredView(shapes);
 
       return {
         editor,

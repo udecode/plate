@@ -313,6 +313,7 @@ export {
   getViewAuthor,
   getViewPresentation,
   holdsCaret,
+  createAuthoredEditorView,
   projectEditorView,
   retainViewPresentation,
   setSelectionAsView,

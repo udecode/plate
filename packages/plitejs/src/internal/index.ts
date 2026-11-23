@@ -173,6 +173,7 @@ export {
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
 export {
+  createAuthoredEditorView,
   getCarriedCaretEditor,
   getViewAuthor,
   getViewPresentation,
