@@ -2,4 +2,4 @@
 'platejs': patch
 ---
 
-Place ink marks again a quarter second after the last edit, layout change or scroll, so a style change that moves their words without resizing the paragraph no longer leaves them off their words
+Fix ink marks left off their words after a style change moves the words without resizing the paragraph. Marks now place again a quarter second after the last edit, layout change or scroll
