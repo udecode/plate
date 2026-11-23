@@ -197,6 +197,7 @@ export {
   canonicalRecordJson,
   getRecordSetVersion,
   getValueRecords,
+  readRecord,
   type RecordSetVersion,
   recordSetChanges,
 } from 'plitejs/internal';
@@ -210,6 +211,7 @@ export {
   markRootViewUsed,
   readRootViewUse,
   readShownDocument,
+  readShownRecords,
   readShownViewUse,
   scheduleAfterCommitNotification,
   subscribeShownViewUse,

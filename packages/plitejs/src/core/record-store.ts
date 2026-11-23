@@ -246,6 +246,15 @@ export const getRecordSetVersion = (
   set: string
 ): RecordSetVersion => treeOf(store, set);
 
+export const readRecord = (
+  version: RecordSetVersion,
+  id: string
+): RecordJson | undefined => {
+  const record = persistentMapGet(version, id);
+
+  return record && jsonOf(record);
+};
+
 export const recordSetChanges = (
   before: RecordSetVersion,
   after: RecordSetVersion
@@ -726,6 +735,7 @@ const setTableOf = (tree: RecordTree) => {
   return {
     tree,
     get value() {
+      if (!table) countCoreWork('recordTables');
       table ??= freezeOwnedJsonValue(
         Object.fromEntries(
           Array.from(persistentMapEntries(tree), ([id, record]) => [
@@ -760,6 +770,8 @@ export const recordStoreToJson = (
 
   const latest = latestJson;
   const json: EditorDocumentRecords = {};
+
+  countCoreWork('recordsJsonObjects');
   const tables = new Map<string, ReturnType<typeof setTableOf>>();
 
   for (const [set, tree] of Object.entries(store)) {

@@ -588,6 +588,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     /** Validate one canonical change whose immutable baseline already has authority. */
     validateDocumentChange: (input: DocumentChangeValidationInput) => void;
     checkDocumentChange: (input: DocumentChangeValidationInput) => void;
+    assertRecordSetsDeclared: (sets: Iterable<string>) => void;
   };
 
 type DocumentChangeValidationInput = Readonly<{
@@ -5793,6 +5794,11 @@ export const createEditorSchema = <V extends Value = Value>(
     validateDocumentChange,
     checkDocumentChange: (input) =>
       checkDocumentChange(input, documentRoots(input.before)),
+    assertRecordSetsDeclared: (sets) => {
+      const schema = getDeclarativeSchema();
+
+      if (schema) assertDeclaredRecordSets(sets, schema);
+    },
     validateTextPropertiesAtValue,
   });
 

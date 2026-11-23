@@ -198,6 +198,7 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   DocumentChange,
+  isInternalRecordsOnlyChange,
   transformInternalDocumentChange,
   valueRootIndex,
   valueRootNodes,
@@ -649,11 +650,13 @@ type TransactionToken = {
   active: boolean;
 };
 
-type TransactionAfterCommitHandler = {
-  handler: EditorCommitHandler<Editor>;
-  root: string;
-  unchanged?: () => void;
-};
+type TransactionAfterCommitHandler =
+  | Readonly<{
+      handler: EditorCommitHandler<Editor>;
+      kind: 'commit';
+      root: string;
+    }>
+  | Readonly<{ beforeListeners: boolean; ended: () => void; kind: 'ended' }>;
 
 type MaterializedAfterCommitHandler = {
   context: EditorCommitContext<Editor>;
@@ -1524,6 +1527,7 @@ export const attachTransactionSpecAfterCommit = <
       ...previous,
       {
         handler: handler as EditorCommitHandler<Editor>,
+        kind: 'commit',
         root: getCurrentChildrenRoot(editor),
       },
     ])
@@ -1535,17 +1539,17 @@ export const attachTransactionSpecAfterCommit = <
 /** @internal */
 export const afterActiveTransactionEnds = (
   editor: Editor,
-  ended: () => void
+  ended: () => void,
+  options: Readonly<{ beforeListeners?: boolean }> = {}
 ) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const snapshot = getTransactionSnapshot(owner);
+  const snapshot = getTransactionSnapshot(getEditorRuntimeOwner(editor));
 
   if (!snapshot) return false;
 
   snapshot.afterCommitHandlers.push({
-    handler: ended,
-    root: getCurrentChildrenRoot(owner),
-    unchanged: ended,
+    beforeListeners: options.beforeListeners === true,
+    ended,
+    kind: 'ended',
   });
 
   return true;
@@ -2976,6 +2980,8 @@ const createEditorDocumentValue = <V extends Value>({
   ) {
     return known.value as EditorDocumentValue<V>;
   }
+
+  countCoreWork('documentValues');
 
   const extraRoots: Record<string, readonly Descendant[]> = {};
   let hasExtraRoots = false;
@@ -7908,6 +7914,7 @@ const getUpdateContext = <
 
       snapshot.afterCommitHandlers.push({
         handler: handler as EditorCommitHandler<Editor>,
+        kind: 'commit',
         root: transactionRoot,
       });
     },
@@ -12481,6 +12488,12 @@ export const createEditorDocumentChangeBuilder = (
               before: before as EditorDocumentValue,
             });
           },
+          validateRecordsOnlyChange: (change) => {
+            assertRevision();
+            schema.assertRecordSetsDeclared(
+              getInternalDocumentChangeRecords(change).keys()
+            );
+          },
         }
       : {}),
   });
@@ -13259,71 +13272,87 @@ const applyTransactionSpecDocumentChangeStep = (
       }
     );
   };
-  const mappedCaret =
-    !explicitSelection && selectionBefore
-      ? mapThroughStep(
-          {
-            root: specContext.caret.root,
-            selection: specContext.caret.selection,
-            session: specContext.caret.session,
-            inSetRoot: specContext.caret.inSetRoot,
-          },
-          selectionRoot
-        )
-      : null;
-  const caret =
-    mappedCaret && hasRoot(mappedCaret.root)
-      ? keepStrandedCaret(
-          editor,
-          specContext,
-          carets,
-          mappedCaret,
-          after,
-          selectionRoot,
-          selectionRuntimeIndexes
-        )
-      : null;
+  const leavesSelection =
+    !explicitSelection &&
+    !options.carried &&
+    isInternalRecordsOnlyChange(step.change);
 
-  specContext.caret = {
-    ...carets,
-    book: mapBookThroughStep(carets.book, {
-      ...(options.carried ? { carried: options.carried } : {}),
-      before: (root) =>
-        step.indexedBefore.get(root) ?? valueRootIndex(step.before, root),
-      deletedRoots: step.change.deleteRoots,
-      keys: (root) => getDefined(runtimeIndexes.get(root)),
-      map: (selection, root) => mapThroughStep(selection, root).selection,
-      roots: changedRoots,
-    }),
-  };
-  if (explicitSelection) {
-    setCurrentSelection(
-      editor,
-      explicitSelection.value,
-      explicitSelection.root
-    );
-  } else if (caret) {
-    setCurrentCaret(editor, caret);
+  if (leavesSelection) {
+    bumpMutationVersion(editor);
   } else {
-    setCurrentSelection(
-      editor,
-      null,
-      hasRoot(selectionRoot) ? selectionRoot : nextRoot
-    );
-  }
-  if (explicitSelection) {
-    markSelectionPlaced(specContext);
-    syncImplicitTargetToCurrentSelection(editor);
-  } else if (caret && caret !== mappedCaret) {
-    syncImplicitTargetToCurrentSelection(editor);
-  } else {
-    transformImplicitTarget(editor, step.change, before, after, selectionRoot, {
-      association: options.selectionAssociation,
-      preferPositionMapping: options.selectionMapping === 'representation',
-      ...(selectionRuntimeIndexes
-        ? { runtimeIndexes: selectionRuntimeIndexes }
-        : {}),
-    });
+    const mappedCaret =
+      !explicitSelection && selectionBefore
+        ? mapThroughStep(
+            {
+              root: specContext.caret.root,
+              selection: specContext.caret.selection,
+              session: specContext.caret.session,
+              inSetRoot: specContext.caret.inSetRoot,
+            },
+            selectionRoot
+          )
+        : null;
+    const caret =
+      mappedCaret && hasRoot(mappedCaret.root)
+        ? keepStrandedCaret(
+            editor,
+            specContext,
+            carets,
+            mappedCaret,
+            after,
+            selectionRoot,
+            selectionRuntimeIndexes
+          )
+        : null;
+
+    specContext.caret = {
+      ...carets,
+      book: mapBookThroughStep(carets.book, {
+        ...(options.carried ? { carried: options.carried } : {}),
+        before: (root) =>
+          step.indexedBefore.get(root) ?? valueRootIndex(step.before, root),
+        deletedRoots: step.change.deleteRoots,
+        keys: (root) => getDefined(runtimeIndexes.get(root)),
+        map: (selection, root) => mapThroughStep(selection, root).selection,
+        roots: changedRoots,
+      }),
+    };
+    if (explicitSelection) {
+      setCurrentSelection(
+        editor,
+        explicitSelection.value,
+        explicitSelection.root
+      );
+    } else if (caret) {
+      setCurrentCaret(editor, caret);
+    } else {
+      setCurrentSelection(
+        editor,
+        null,
+        hasRoot(selectionRoot) ? selectionRoot : nextRoot
+      );
+    }
+    if (explicitSelection) {
+      markSelectionPlaced(specContext);
+      syncImplicitTargetToCurrentSelection(editor);
+    } else if (caret && caret !== mappedCaret) {
+      syncImplicitTargetToCurrentSelection(editor);
+    } else {
+      transformImplicitTarget(
+        editor,
+        step.change,
+        before,
+        after,
+        selectionRoot,
+        {
+          association: options.selectionAssociation,
+          preferPositionMapping: options.selectionMapping === 'representation',
+          ...(selectionRuntimeIndexes
+            ? { runtimeIndexes: selectionRuntimeIndexes }
+            : {}),
+        }
+      );
+    }
   }
 
   snapshot.activeChange = { change: snapshot.builder.change };
@@ -13540,7 +13569,10 @@ const materializeAfterCommitHandlers = (
 ): MaterializedAfterCommitHandler[] => {
   const snapshots = new Map<string, EditorSnapshot>();
 
-  return handlers.map(({ handler, root }) => {
+  return handlers.flatMap((registered) => {
+    if (registered.kind === 'ended') return [];
+
+    const { handler, root } = registered;
     let snapshot = snapshots.get(root);
 
     if (!snapshot) {
@@ -13566,6 +13598,22 @@ const runAfterCommitHandlers = (
     runEditorObserver(context.editor, 'after-commit', () => {
       handler(context);
     });
+  }
+};
+
+const runEndedHandlers = (
+  editor: Editor,
+  handlers: readonly TransactionAfterCommitHandler[],
+  order?: 'after' | 'before'
+) => {
+  for (const registered of handlers) {
+    if (
+      registered.kind === 'ended' &&
+      (order === undefined ||
+        registered.beforeListeners === (order === 'before'))
+    ) {
+      runEditorObserver(editor, 'after-commit', registered.ended);
+    }
   }
 };
 
@@ -14000,11 +14048,7 @@ export const runEditorTransaction = <R>(
             );
           }
           withoutUpdateTagContext(editor, () => {
-            for (const { unchanged } of snapshot.afterCommitHandlers) {
-              if (unchanged) {
-                runEditorObserver(editor, 'after-commit', unchanged);
-              }
-            }
+            runEndedHandlers(editor, snapshot.afterCommitHandlers);
           });
         } else {
           let prepared;
@@ -14326,19 +14370,17 @@ export const runEditorTransaction = <R>(
             }
             assertRootDirectory(owner, named, ROOT_DIRECTORIES.get(owner));
           }
-          const afterCommitHandlers =
-            snapshot.afterCommitHandlers.length > 0
-              ? materializeAfterCommitHandlers(editor, change, [
-                  ...snapshot.afterCommitHandlers.filter(
-                    ({ unchanged }) => !unchanged
-                  ),
-                  ...snapshot.afterCommitHandlers.filter(
-                    ({ unchanged }) => unchanged
-                  ),
-                ])
-              : [];
+          const registered = snapshot.afterCommitHandlers;
+          const afterCommitHandlers = materializeAfterCommitHandlers(
+            editor,
+            change,
+            registered
+          );
 
-          withoutUpdateTagContext(editor, () => anchorPublication?.notify());
+          withoutUpdateTagContext(editor, () => {
+            runEndedHandlers(editor, registered, 'before');
+            anchorPublication?.notify();
+          });
 
           let notificationError: Readonly<{ value: unknown }> | null = null;
           try {
@@ -14358,6 +14400,7 @@ export const runEditorTransaction = <R>(
               });
               profileCoreDuration('run-after-commit-handlers', () => {
                 runAfterCommitHandlers(afterCommitHandlers);
+                runEndedHandlers(editor, registered, 'after');
               });
               profileCoreDuration('transaction-flush-post-commit', () => {
                 flushPostCommitNotificationQueue(editor);

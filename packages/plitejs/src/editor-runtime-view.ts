@@ -69,6 +69,7 @@ import {
   getBaseCallRoot,
   getCurrentSelection,
   getCurrentSelectionRoot,
+  getEditorDocumentRecords,
   getReadProjection,
   getUpdateView,
   withEditorViewSelectionRead,
@@ -87,6 +88,7 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from './core/public-state';
+import { getValueRecords, type RecordStore } from './core/record-store';
 import { defineSemanticUpdateMethod } from './core/semantic-update-method';
 import {
   getEditorJsonArrayItems,
@@ -1807,6 +1809,14 @@ export const readShownDocument = (editor: Editor) => {
   const shown = () => getReadProjection(editor) ?? null;
 
   return viewState ? withRootRead(editor, viewState, shown) : shown();
+};
+
+export const readShownRecords = (editor: Editor): RecordStore => {
+  const document = VIEW_STATES.get(getEditorRuntime(editor))?.document;
+
+  return document
+    ? getValueRecords(document)
+    : getEditorDocumentRecords(getEditorRuntimeOwner(editor));
 };
 
 export const getViewPresentation = (editor: Editor) =>

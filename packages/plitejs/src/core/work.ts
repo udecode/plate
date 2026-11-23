@@ -59,6 +59,7 @@ export type CoreWork = {
   formerPlaceCalls: number;
   /** Steps, landed nodes and pieces those lookups examined. */
   formerPlaceVisits: number;
+  documentValues: number;
   /** Top-level blocks the authored stored-block index took in or let go. */
   heldBlocks: number;
   /** Values a settlement's worklist took from its stack to try a shower for. */
@@ -171,6 +172,8 @@ export type CoreWork = {
   /** Mark records a collaboration binding visits. */
   yjsMarkRecordsVisited: number;
   recordLoads: number;
+  recordsJsonObjects: number;
+  recordTables: number;
   recordTexts: number;
   recordWrites: number;
   /** Changed lines a Yjs import diffed by value, since the letters could not place them. */
@@ -248,6 +251,7 @@ export const coreWork: CoreWork = {
   factedReplays: 0,
   formerPlaceCalls: 0,
   formerPlaceVisits: 0,
+  documentValues: 0,
   heldBlocks: 0,
   contenderVisits: 0,
   decidedReads: 0,
@@ -310,6 +314,8 @@ export const coreWork: CoreWork = {
   yjsLetterLines: 0,
   yjsMarkRecordsVisited: 0,
   recordLoads: 0,
+  recordsJsonObjects: 0,
+  recordTables: 0,
   recordTexts: 0,
   recordWrites: 0,
   yjsValueDiffLines: 0,

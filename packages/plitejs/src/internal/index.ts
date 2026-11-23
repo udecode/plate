@@ -40,6 +40,7 @@ export {
   canonicalRecordJson,
   getRecordSetVersion,
   getValueRecords,
+  readRecord,
   type RecordSetVersion,
   recordSetChanges,
 } from '../core/record-store';
@@ -176,6 +177,7 @@ export {
   getViewPresentation,
   projectEditorView,
   readShownDocument,
+  readShownRecords,
   retainViewPresentation,
   withMountedPresentation,
 } from '../editor-runtime-view';

@@ -27,6 +27,7 @@ import {
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
+  isInternalRecordsOnlyChange,
   rootComposeRebuilds,
   valueRootIndex,
 } from './document-change';
@@ -240,6 +241,15 @@ const isClassified = (change: DocumentChange) =>
     getInternalDocumentChangeClassification(change, root)
   );
 
+const NO_INDEXES: ReadonlyMap<string, DocumentIndex> = freezeReadonlyMap(
+  new Map()
+);
+
+const NO_RUNTIME_CANDIDATES: ReadonlyMap<
+  string,
+  readonly DocumentChangeRuntimeCandidate[]
+> = freezeReadonlyMap(new Map());
+
 /**
  * Whether a step comes from a plugin correction, whatever primitive wrote it.
  *
@@ -366,6 +376,7 @@ export class ChangeDraft {
   private readonly checkConstructed?: (
     input: Parameters<DocumentChangeConstructionPolicy>[0]
   ) => void;
+  private readonly validateRecordsOnlyChange?: (change: DocumentChange) => void;
 
   constructor(
     value: JsonEditorValue,
@@ -405,6 +416,7 @@ export class ChangeDraft {
       checkConstructed?: (
         input: Parameters<DocumentChangeConstructionPolicy>[0]
       ) => void;
+      validateRecordsOnlyChange?: (change: DocumentChange) => void;
     }> = {}
   ) {
     this.source = value;
@@ -424,6 +436,7 @@ export class ChangeDraft {
     this.validate = options.validate;
     this.validateConstructed = options.validateConstructed;
     this.checkConstructed = options.checkConstructed;
+    this.validateRecordsOnlyChange = options.validateRecordsOnlyChange;
     this.accumulated = DocumentChange.empty;
   }
 
@@ -789,6 +802,7 @@ export class ChangeDraft {
         : {
             validate: this.validate,
             validateConstructed: this.validateConstructed,
+            validateRecordsOnlyChange: this.validateRecordsOnlyChange,
           }),
     });
 
@@ -1151,6 +1165,16 @@ export class ChangeDraft {
     change: DocumentChange,
     facts: ChangeFacts = UNKNOWN_FACTS
   ): DocumentChangeStep {
+    if (
+      this.validateRecordsOnlyChange &&
+      this.canonical &&
+      !this.validationPending &&
+      isInternalRecordsOnlyChange(change)
+    ) {
+      this.validateRecordsOnlyChange(change);
+
+      return this.applyRecords(change, facts);
+    }
     if (!this.validate && !this.validateConstructed && !this.assertCanonical) {
       const step = this.apply(change, { facts });
 
@@ -1201,6 +1225,40 @@ export class ChangeDraft {
       indexedAfter: candidate.indexedAfter,
       recordsAfter: getValueRecords(candidate.after),
       runtimeCandidates: candidate.runtimeCandidates,
+    });
+  }
+
+  private applyRecords(
+    change: DocumentChange,
+    facts: ChangeFacts
+  ): DocumentChangeStep {
+    const before = this.current;
+    const current = applyDocumentChangeWithIndexes(change, before, NO_INDEXES);
+
+    this.accumulated = this.accumulated.empty
+      ? change
+      : this.accumulated.compose(change, this.source);
+    this.land(
+      this.composed({
+        indexedAfter: NO_INDEXES,
+        indexedBefore: NO_INDEXES,
+        change,
+        move: this.stepMove,
+        origin: this.originOf(undefined),
+        source: this.stepSource,
+        facts: this.landedAsUnknown(facts),
+      })
+    );
+    this.runtimeCandidatesByChange.set(change, NO_RUNTIME_CANDIDATES);
+    this.current = current;
+
+    return Object.freeze({
+      after: current,
+      before,
+      change,
+      indexedAfter: NO_INDEXES,
+      indexedBefore: NO_INDEXES,
+      runtimeCandidates: NO_RUNTIME_CANDIDATES,
     });
   }
 

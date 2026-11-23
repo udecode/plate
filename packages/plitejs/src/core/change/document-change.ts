@@ -715,6 +715,13 @@ export const isInternalDocumentChangeNoop = (
     rootChange.isNoopOn(valueRootIndex(value, root))
   );
 
+/** @internal */
+export const isInternalRecordsOnlyChange = (change: DocumentChange) =>
+  getInternalDocumentChangeRecords(change).size > 0 &&
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  getInternalDocumentChangeEntries(change).next().done === true;
+
 /**
  * List changed roots without exposing their compact changes.
  *
