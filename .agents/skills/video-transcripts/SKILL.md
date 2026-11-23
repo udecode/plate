@@ -1,6 +1,6 @@
 ---
 name: video-transcripts
-description: "Transcribe a supplied local or linked video with Gemini, or from its frames with a Claude subagent when Gemini fails, and check the transcript against one frame per second, when a recording's contents are needed as evidence, such as a bug recording on an issue, PR or comment, or a question about what a video shows."
+description: "Transcribe a supplied local or linked video from one frame per second with Gemini 4 Neon through agy, or with a Claude subagent when agy fails, and check the transcript against the frames, when a recording's contents are needed as evidence, such as a bug recording on an issue, PR or comment, or a question about what a video shows."
 ---
 
 # Video Transcripts
@@ -41,9 +41,9 @@ bash <skill>/scripts/generate_video_transcript.sh \
 
 For auth-gated Linear uploads, the helper automatically retries with cookies from the local Linear desktop app on macOS. For private GitHub asset URLs, it retries with `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth token` when available.
 
-The helper also cuts the video into one frame per second and prints `Frames: <dir>` on stderr. `<dir>/frames/tSSSS.png` is the frame at second SSSS, so `[01:12]` is `t0072.png`, and each `<dir>/sheet-SSSS-SSSS.png` shows the nine seconds its name spans in one image. Pass `--frames <dir>` to choose the directory. For a local video without Gemini, run `bash <skill>/scripts/video_frames.sh <video> --output <dir>`.
+The helper cuts the video into one frame per second and prints `Frames: <dir>` on stderr. `<dir>/frames/tSSSS.png` is the frame at second SSSS, so `[01:12]` is `t0072.png`, and each `<dir>/sheet-SSSS-SSSS.png` shows the nine seconds its name spans in one image. Pass `--frames <dir>` to choose the directory. To cut the frames with no transcript, run `bash <skill>/scripts/video_frames.sh <video> --output <dir>`.
 
-When Gemini gives no transcript, such as with no API key, a refused upload or two failed models, the helper writes `<dir>/frames-brief.md`, prints its path and exits 3. Then run the [Frames fallback](#frames-fallback) for that video. Any other nonzero exit means the helper could not read or cut the video.
+Then the helper writes `<dir>/frames-brief.md` and sends it to Gemini 4 Neon through agy, the Antigravity CLI. When agy gives no transcript, the helper prints the brief's path and exits 3, and you run the [Frames fallback](#frames-fallback) for that video. agy gives none when it is missing or signed out, its quota ran out, Gemini's filters blocked the prompt or the run timed out. The helper also exits 3 when the transcript is too thin or repeats itself. Any other nonzero exit means the helper could not read or cut the video.
 
 The transcript is a draft until Workflow step 3 checks it against the frames.
 
@@ -75,8 +75,8 @@ permission to post.
 1. Run the helper once for each relevant video. When it exits 3, run the
    [Frames fallback](#frames-fallback) for that video.
 2. Give each run a short, bug-focused `--title`.
-3. Check the transcript against the frames before using it, whether Gemini or
-   the Frames fallback wrote it. Gemini misreads
+3. Check the transcript against the frames before using it, whether Neon or
+   the Frames fallback wrote it. A model misreads
    formatting, mixes up windows and invents repeated steps, and it states a
    wrong line as firmly as a right one. Open every sheet of a clip under a
    minute; for a longer clip, open the sheet that holds each line a
@@ -127,9 +127,7 @@ permission to post.
 
 ## Frames fallback
 
-When the helper exits 3, start one subagent per video on Claude Opus at medium effort. In Claude Code, that is an `Agent` call with `model: "opus"` and `effort: "medium"`. Its prompt names the path of the video's `frames-brief.md`, tells it to read only the folder the brief names and to write no files, and asks for the brief's XML as its final message. A runtime that cannot start a Claude subagent starts its own subagent at medium effort with the same prompt. The brief holds the rules the helper gives Gemini, so both transcripts follow the same rules. Its output is a draft, which Workflow step 3 checks against the frames.
-
-The frames carry no sound, so a video whose speech matters still needs Gemini. On four silent bug clips of 13 to 28 seconds (2026-11-05), Opus at medium got every bug-deciding fact right from the frames, and none of its lines checked against the frames was wrong. `gpt-6.1-sol` at medium also got every fact, but added a space after a full-width mark. `gemini-3.8-flash`, watching the videos, made up a step. Opus took about two minutes and 172k tokens for the four clips, while Gemini takes 4k to 8k tokens a clip, so the subagent runs only when Gemini fails.
+When the helper exits 3, start one subagent per video on Claude Opus at medium effort. In Claude Code, that is an `Agent` call with `model: "opus"` and `effort: "medium"`. Its prompt names the path of the video's `frames-brief.md`, tells it to read only the folder the brief names and to write no files, and asks for the brief's XML as its final message. A runtime that cannot start a Claude subagent starts its own subagent at medium effort with the same prompt. The subagent reads the brief Neon got, so both transcripts follow the same rules. Claude cannot play the brief's `speech.wav`, so its transcript leaves speech out; say so where the transcript is used. Its output is a draft, which Workflow step 3 checks against the frames.
 
 ## Output Contract
 
@@ -142,34 +140,38 @@ The frames carry no sound, so a video whose speech matters still needs Gemini. O
 
 ## Model Strategy
 
-The helper defaults to `gemini-3.8-flash`. When that call fails, stops early,
-or returns output that is malformed, too thin or repetitive, the helper
-retries with `gemini-3.1-pro-preview`. On five editor
-bug clips, 3.8-flash got the most right and made up the fewest steps;
-`gemini-3.1-flash-lite-preview` and `gemini-3-flash-preview` made up whole
-steps.
+The helper runs `gemini-4-neon-high`, Gemini 4 Neon at high effort, through
+agy. agy runs sandboxed in a scratch folder: it reads any file, writes only
+that folder, and its settings deny web reads and MCP tools. The brief points
+Neon at the frames. When the recording has a sound track, the helper also
+extracts it as `speech.wav` beside the frames, because the frames carry no
+sound, and the brief tells Neon to open it only for speech. agy played WAV and
+MP3 files but heard nothing in an M4A.
 
-Gemini 3 models run with `low` thinking at their default temperature, because
-Google warns that they loop below 1.0. Every model reads frames at high
-media resolution, about 280 tokens per frame instead of 70, because screen
-recordings are full of small text.
+A transcript that is too thin or repeats itself goes to the Frames fallback.
+Too thin means fewer lines than one per five seconds of video, capped at five.
+Repeating means one line appears five or more times, ignoring case, digits,
+punctuation and quoted text, and repeats make up half the lines.
 
-No model reads text formatting reliably. Asked to say how each typed word
-renders, 3.8-flash got it wrong in six runs out of six; left alone, it mostly
-leaves formatting out. Read formatting from the frames.
+On four silent bug clips of 16 to 31 seconds (2026-11-23), Neon at high and
+Opus at medium, both reading the frames, got every bug-deciding fact right.
+Neon had no wrong line, and Opus placed two captions two seconds early. Neon
+took 93 to 157 seconds a clip on the agy subscription; Opus took 48 to 99
+seconds and about 100k Claude tokens a clip. Neon given the video file instead
+of the frames took 45 to 68 seconds, but it misquoted on-screen captions and
+made up steps, as `gemini-3.8-flash` watching the videos did on 2026-11-05. So
+on-screen facts come only from the frames, and the recording reaches Neon only
+as its sound. Given a clip with a blank picture and one spoken sentence, Neon
+wrote the speech word for word.
 
-Override with:
+Override the model with:
 
 ```bash
-VIDEO_TRANSCRIPTS_MODEL=gemini-3.1-pro-preview bash <skill>/scripts/generate_video_transcript.sh ...
+VIDEO_TRANSCRIPTS_MODEL=gemini-4-neon-xhigh bash <skill>/scripts/generate_video_transcript.sh ...
 ```
 
-Or:
-
-```bash
-bash <skill>/scripts/generate_video_transcript.sh ... \
-  --model gemini-2.5-pro
-```
+Or pass `--model gemini-4-neon-xhigh`. `VIDEO_TRANSCRIPTS_TIMEOUT` sets the
+seconds agy gets, 600 by default.
 
 ## Notes
 
@@ -177,8 +179,6 @@ bash <skill>/scripts/generate_video_transcript.sh ... \
 - For `uploads.linear.app` URLs, it first tries `LINEAR_COOKIE_HEADER`, then `LINEAR_COOKIES_DB`, then falls back to the local Linear desktop cookie store at `~/Library/Application Support/Linear/Cookies`.
 - For GitHub asset URLs, it first tries `GITHUB_TOKEN`, then `GH_TOKEN`, then `gh auth token`, then falls back to an unauthenticated download.
 - For Screencastify watch URLs, it calls `https://umbrella.svc.screencastify.com/api/umbrellaService/watch/<id>`, resolves the signed HLS manifest, rewrites child playlists so segments keep the signature, and remuxes the recording with `ffmpeg`.
-- The helper requires `ffmpeg` and `ffprobe`, which cut the frames and remux Screencastify recordings.
-- It looks for `GEMINI_API_KEY`, then `GOOGLE_API_KEY`.
-- If neither is set, it tries `~/.bash_profile`, then writes the frames brief and exits 3.
-- Use `--debug-dir <dir>` when you want request and response artifacts saved.
-- The quality gate retries with the fallback model when a transcript is too thin or repeats itself. Too thin means fewer lines than one per five seconds of video, capped at five. Repeating means one line appears five or more times, ignoring case, digits, punctuation and quoted text, and repeats make up half the lines.
+- The helper requires `ffmpeg` and `ffprobe`, which cut the frames, extract the sound track and remux Screencastify recordings, and `jq`.
+- It runs `agy` from `PATH`, signed in to the account whose quota it spends. Without `agy`, it cuts the frames, writes the brief and exits 3.
+- Use `--debug-dir <dir>` to save the prompt, agy's event stream and its stderr.

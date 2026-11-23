@@ -5,13 +5,15 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  generate_video_transcript.sh <video-path-or-url> [--title TITLE] [--frames DIR] [--model MODEL] [--fallback-model MODEL] [--debug-dir DIR]
+  generate_video_transcript.sh <video-path-or-url> [--title TITLE] [--frames DIR] [--model MODEL] [--debug-dir DIR]
 
 Writes the video's frames to --frames DIR (default: a new temporary
-directory), named by second, and prints that directory on stderr.
+directory), named by second, prints that directory on stderr, writes
+frames-brief.md there and has Gemini 4 Neon transcribe the frames through
+agy.
 
-Exits 3 when Gemini gives no transcript, after it writes frames-brief.md
-in the frames directory for a transcript made from the frames.
+Exits 3 when agy gives no transcript, so the skill's Frames fallback
+transcribes the clip from the same brief.
 
 Examples:
   generate_video_transcript.sh "/tmp/bug.mov" --title "Preview link leaves workflow"
@@ -31,8 +33,8 @@ shift
 
 TITLE=""
 FRAMES_DIR=""
-MODEL="${VIDEO_TRANSCRIPTS_MODEL:-gemini-3.8-flash}"
-FALLBACK_MODEL="${VIDEO_TRANSCRIPTS_FALLBACK_MODEL:-gemini-3.1-pro-preview}"
+MODEL="${VIDEO_TRANSCRIPTS_MODEL:-gemini-4-neon-high}"
+TIMEOUT="${VIDEO_TRANSCRIPTS_TIMEOUT:-600}"
 DEBUG_DIR=""
 
 while [[ $# -gt 0 ]]; do
@@ -47,10 +49,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --model)
       MODEL="${2:-}"
-      shift 2
-      ;;
-    --fallback-model)
-      FALLBACK_MODEL="${2:-}"
       shift 2
       ;;
     --debug-dir)
@@ -411,13 +409,16 @@ EOF
 }
 
 write_frames_brief() {
-  local brief="$FRAMES_DIR/frames-brief.md"
   {
     printf '# Transcribe "%s" from its frames\n\n' "$TITLE"
-    printf 'Gemini gave no transcript for this recording, so transcribe it from the frames in %s. Read only that folder.\n\n' "$FRAMES_DIR"
+    printf 'Transcribe this recording from the frames in %s. Read only that folder.\n\n' "$FRAMES_DIR"
     printf -- '- `frames/tSSSS.png` is the frame at second SSSS, so `[00:12]` is `t0012.png`.\n'
     printf -- '- `sheet-SSSS-SSSS.png` shows the nine seconds its name spans in one image.\n'
-    printf -- '- The frames carry no sound.\n\n'
+    if [[ -n "$RECORDING" ]]; then
+      printf -- '- `%s` is the recording with its sound. Open it only to transcribe speech, and take every on-screen fact from the frames. When your file reading tool cannot play its sound, leave speech out.\n\n' "$(basename "$RECORDING")"
+    else
+      printf -- '- The recording has no sound.\n\n'
+    fi
     printf '1. Open every sheet.\n'
     printf '2. Open the full frame wherever a sheet is too small to read, such as bold, italic or struck-through text, a caret, a selection, a popup or a candidate window. Judge text formatting only from a full frame.\n'
     printf '3. Write the transcript.\n\n'
@@ -425,9 +426,7 @@ write_frames_brief() {
     printf '\nReturn only this XML, with no Markdown fences:\n\n'
     transcript_shape "$(escape_xml_attr "$TITLE")"
     printf '\n'
-  } > "$brief"
-  echo "Gemini gave no transcript. Transcribe from frames with $brief, as the skill's Frames fallback says." >&2
-  exit 3
+  } > "$BRIEF"
 }
 
 normalize_output() {
@@ -464,47 +463,6 @@ count_timestamps() {
   grep -c '^\[[0-9][0-9]:[0-9][0-9]\]' <<<"$text" || true
 }
 
-generation_config_json() {
-  local model_name="$1"
-
-  if [[ "$model_name" == gemini-2.5-flash* ]]; then
-    cat <<'EOF'
-{
-  "temperature": 0,
-  "maxOutputTokens": 8192,
-  "mediaResolution": "MEDIA_RESOLUTION_HIGH",
-  "thinkingConfig": {
-    "thinkingBudget": 0
-  }
-}
-EOF
-    return 0
-  fi
-
-  if [[ "$model_name" == gemini-2* ]]; then
-    cat <<'EOF'
-{
-  "temperature": 0,
-  "maxOutputTokens": 8192,
-  "mediaResolution": "MEDIA_RESOLUTION_HIGH"
-}
-EOF
-    return 0
-  fi
-
-  # Google warns that Gemini 3 below its default temperature of 1.0 can loop,
-  # and Gemini 3.1 Pro and 3.8 Flash reject the "minimal" thinking level.
-  cat <<'EOF'
-{
-  "maxOutputTokens": 8192,
-  "mediaResolution": "MEDIA_RESOLUTION_HIGH",
-  "thinkingConfig": {
-    "thinkingLevel": "low"
-  }
-}
-EOF
-}
-
 has_repeated_lines() {
   awk '
     /^\[[0-9][0-9]:[0-9][0-9]\]/ {
@@ -527,131 +485,77 @@ has_repeated_lines() {
   ' <<<"$1"
 }
 
-call_model() {
-  local model_name="$1"
-  local video_path="$2"
-  local title_value="$3"
-  local prefix="$4"
-
-  local mime_type
-  mime_type="$(file -b --mime-type "$video_path")"
-  local num_bytes
-  num_bytes="$(wc -c < "$video_path" | tr -d ' ')"
-  local display_name
-  display_name="$(basename "$video_path")"
-  local safe_title
-  safe_title="$(escape_xml_attr "$title_value")"
-  local header_file="$WORK_DIR/${prefix}.upload-header.tmp"
-  local file_info="$WORK_DIR/${prefix}.file_info.json"
-  local get_file="$WORK_DIR/${prefix}.file_get.json"
-  local request_file="$WORK_DIR/${prefix}.request.json"
-  local response_file="$WORK_DIR/${prefix}.response.json"
-  local generation_config
-  generation_config="$(generation_config_json "$model_name")"
-
-  local upload_body="$WORK_DIR/${prefix}.upload-start.json"
-  local upload_status
-  upload_status="$(curl -s "https://generativelanguage.googleapis.com/upload/v1beta/files?key=$API_KEY" \
-    -D "$header_file" \
-    -o "$upload_body" \
-    -w '%{http_code}' \
-    -H "X-Goog-Upload-Protocol: resumable" \
-    -H "X-Goog-Upload-Command: start" \
-    -H "X-Goog-Upload-Header-Content-Length: $num_bytes" \
-    -H "X-Goog-Upload-Header-Content-Type: $mime_type" \
-    -H "Content-Type: application/json" \
-    -d "{\"file\":{\"display_name\":\"$display_name\"}}")"
-
-  local upload_url
-  upload_url="$(awk -F': ' 'tolower($1)=="x-goog-upload-url" {gsub("\r", "", $2); print $2}' "$header_file")"
-  if [[ -z "$upload_url" ]]; then
-    local reason
-    reason="$(jq -r '.error.message // empty' "$upload_body" 2>/dev/null || true)"
-    echo "Gemini refused the upload for $model_name with HTTP $upload_status${reason:+: $reason}" >&2
-    return 1
-  fi
-
-  curl -s "$upload_url" \
-    -H "Content-Length: $num_bytes" \
-    -H "X-Goog-Upload-Offset: 0" \
-    -H "X-Goog-Upload-Command: upload, finalize" \
-    --data-binary @"$video_path" > "$file_info"
-
-  local file_name
-  file_name="$(jq -r '.file.name // empty' "$file_info")"
-  local file_uri
-  file_uri="$(jq -r '.file.uri // empty' "$file_info")"
-  if [[ -z "$file_name" || -z "$file_uri" ]]; then
-    echo "Upload failed for $model_name." >&2
-    return 1
-  fi
-
-  local state=""
-  for _ in $(seq 1 60); do
-    curl -s "https://generativelanguage.googleapis.com/v1beta/$file_name?key=$API_KEY" > "$get_file"
-    state="$(jq -r '.state // empty' "$get_file")"
-    if [[ "$state" == "ACTIVE" ]]; then
-      break
-    fi
-    if [[ "$state" == "FAILED" ]]; then
-      echo "Video processing failed for $model_name." >&2
-      return 1
-    fi
-    sleep 2
-  done
-
-  if [[ "$state" != "ACTIVE" ]]; then
-    echo "Timed out waiting for video processing for $model_name." >&2
-    return 1
-  fi
-
-  local prompt_json
-  prompt_json="$(printf '%s' "Analyze this video and return exactly one XML transcript block for the supplied title. Output only XML with no Markdown code fences. Use this exact shape:
-$(transcript_shape "$safe_title")
-
-$(transcript_rules)" | jq -Rs .)"
-
-  cat > "$request_file" <<EOF
-{
-  "generationConfig": $generation_config,
-  "contents": [{
-    "parts": [
-      {
-        "file_data": {
-          "mime_type": "$mime_type",
-          "file_uri": "$file_uri"
-        }
-      },
-      {
-        "text": $prompt_json
-      }
-    ]
-  }]
+agy_answer() {
+  jq -rnR '[inputs | fromjson? | select(.event == "result")] | last | .result.response // empty' "$1"
 }
-EOF
 
-  curl -s "https://generativelanguage.googleapis.com/v1beta/models/$model_name:generateContent?key=$API_KEY" \
-    -H "Content-Type: application/json" \
-    -X POST \
-    --data @"$request_file" > "$response_file"
+# agy ends a print run with no answer when it reaches a permission it would ask
+# for, so the settings deny each action the transcriber must not take, and the
+# prompt keeps every shell command in agy's sandbox.
+transcribe_with_agy() {
+  local scratch frames settings prompt answer normalized timestamp_count pid watchdog
+  local events="$WORK_DIR/agy.jsonl"
+  local status=0
 
-  if jq -e '.error' "$response_file" >/dev/null; then
-    jq -r '.error.message' "$response_file" >&2
+  if ! command -v agy >/dev/null 2>&1; then
+    echo "agy is not installed." >&2
     return 1
   fi
 
-  LAST_FINISH_REASON="$(jq -r '.candidates[0].finishReason // empty' "$response_file")"
-  LAST_THOUGHTS_TOKEN_COUNT="$(jq -r '.usageMetadata.thoughtsTokenCount // 0' "$response_file")"
-  LAST_CANDIDATES_TOKEN_COUNT="$(jq -r '.usageMetadata.candidatesTokenCount // 0' "$response_file")"
+  scratch="$(mktemp -d "$WORK_DIR/agy.XXXXXX")"
+  scratch="$(cd "$scratch" && pwd -P)"
+  frames="$(cd "$FRAMES_DIR" && pwd -P)"
+  settings="$(jq -nc --arg scratch "$scratch" --arg frames "$frames" '{
+    agentMode: "",
+    toolPermission: "proceed-in-sandbox",
+    permissions: {
+      allow: ["read_file(*)", "write_file(\($scratch))"],
+      deny: ["write_file(\($frames))", "execute_url(*)", "read_url(*)", "mcp(*)"]
+    }
+  }')"
+  prompt="Your working directory is a scratch folder. Run every shell command inside agy's sandbox, because a request to leave it ends your run with no answer. Put your whole answer in your final message.
+
+$(cat "$BRIEF")"
+
+  (cd "$scratch" && exec agy -p "$prompt" --model "$MODEL" --settings "$settings" --sandbox --output-format stream-json) \
+    < /dev/null > "$events" 2> "$WORK_DIR/agy.stderr" &
+  pid=$!
+  (sleep "$TIMEOUT" && kill "$pid") 2>/dev/null &
+  watchdog=$!
+  wait "$pid" || status=$?
+  pkill -P "$watchdog" 2>/dev/null || true
 
   if [[ -n "$DEBUG_DIR" ]]; then
-    cp "$file_info" "$DEBUG_DIR/${prefix}.file_info.json"
-    cp "$get_file" "$DEBUG_DIR/${prefix}.file_get.json"
-    cp "$request_file" "$DEBUG_DIR/${prefix}.request.json"
-    cp "$response_file" "$DEBUG_DIR/${prefix}.response.json"
+    printf '%s\n' "$prompt" > "$DEBUG_DIR/agy.prompt.md"
+    cp "$events" "$DEBUG_DIR/agy.jsonl"
+    cp "$WORK_DIR/agy.stderr" "$DEBUG_DIR/agy.stderr"
   fi
 
-  jq -r '.candidates[0].content.parts[]?.text // empty' "$response_file"
+  answer="$(agy_answer "$events")"
+  if [[ -z "$answer" ]]; then
+    local why="exit $status"
+    (( status >= 128 )) && why="stopped after $TIMEOUT s"
+    echo "agy gave no answer ($why): $(grep -m 1 -i 'error' "$WORK_DIR/agy.stderr" || tail -n 3 "$WORK_DIR/agy.stderr")" >&2
+    return 1
+  fi
+  if [[ "$answer" == "This request was blocked by Gemini's filters"* ]]; then
+    echo "Gemini's filters blocked the transcript." >&2
+    return 1
+  fi
+  if ! normalized="$(normalize_output "$answer")"; then
+    echo "agy's answer held no transcript XML." >&2
+    return 1
+  fi
+  timestamp_count="$(count_timestamps "$normalized")"
+  if (( timestamp_count < MIN_LINES )); then
+    echo "Transcript from $MODEL looked too thin ($timestamp_count timestamp lines)." >&2
+    return 1
+  fi
+  if has_repeated_lines "$normalized"; then
+    echo "Transcript from $MODEL repeats the same line." >&2
+    return 1
+  fi
+  printf '%s\n' "$normalized"
 }
 
 VIDEO_PATH="$(download_input_if_needed "$INPUT")"
@@ -670,56 +574,31 @@ seconds="$(find "$FRAMES_DIR/frames" -name 't*.png' | wc -l | tr -d ' ')"
 one_line_per_five_seconds=$(( (seconds + 4) / 5 ))
 MIN_LINES=$(( one_line_per_five_seconds < 5 ? one_line_per_five_seconds : 5 ))
 
-if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" && -f "$HOME/.bash_profile" ]]; then
-  # shellcheck disable=SC1090
-  source "$HOME/.bash_profile"
-fi
-
 if [[ -z "$TITLE" ]]; then
   TITLE="$(basename "$VIDEO_PATH")"
   TITLE="${TITLE%.*}"
 fi
 
-API_KEY="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
-if [[ -z "$API_KEY" ]]; then
-  echo "Missing GEMINI_API_KEY or GOOGLE_API_KEY." >&2
-  write_frames_brief
+# The frames carry no sound, so a sound track goes beside them as a WAV file:
+# agy plays WAV and MP3 but heard nothing in an M4A, and every ffmpeg build
+# writes WAV. A WAV keeps no start time, so silence fills the time before a
+# sound track that starts late, which keeps speech on the video's clock.
+RECORDING=""
+if [[ -n "$(ffprobe -v error -select_streams a -show_entries stream=index -of csv=p=0 "$VIDEO_PATH")" ]]; then
+  if ffmpeg -hide_banner -loglevel error -y -i "$VIDEO_PATH" -map 0:a:0 -af aresample=async=1:first_pts=0 -ac 1 -ar 16000 "$FRAMES_DIR/speech.wav"; then
+    RECORDING="$FRAMES_DIR/speech.wav"
+  else
+    echo "Could not extract the sound track, so the transcript leaves speech out." >&2
+  fi
 fi
 
-run_and_validate() {
-  local model_name="$1"
-  local prefix="$2"
-  local raw normalized timestamp_count
+BRIEF="$FRAMES_DIR/frames-brief.md"
+write_frames_brief
 
-  raw="$(call_model "$model_name" "$VIDEO_PATH" "$TITLE" "$prefix")"
-  if [[ "${LAST_FINISH_REASON:-}" != "STOP" && "${LAST_FINISH_REASON:-}" != "" ]]; then
-    echo "Transcript from $model_name ended with finish reason ${LAST_FINISH_REASON}." >&2
-    return 1
-  fi
-  normalized="$(normalize_output "$raw")" || return 1
-  timestamp_count="$(count_timestamps "$normalized")"
-  if (( timestamp_count < MIN_LINES )); then
-    echo "Transcript from $model_name looked too thin ($timestamp_count timestamp lines)." >&2
-    return 1
-  fi
-  if has_repeated_lines "$normalized"; then
-    echo "Transcript from $model_name repeats the same line." >&2
-    return 1
-  fi
-  printf '%s\n' "$normalized"
-}
-
-if transcript="$(run_and_validate "$MODEL" "primary")"; then
+if transcript="$(transcribe_with_agy)"; then
   printf '%s\n' "$transcript"
   exit 0
 fi
 
-if [[ "$FALLBACK_MODEL" != "$MODEL" ]]; then
-  echo "Retrying with fallback model: $FALLBACK_MODEL" >&2
-  if transcript="$(run_and_validate "$FALLBACK_MODEL" "fallback")"; then
-    printf '%s\n' "$transcript"
-    exit 0
-  fi
-fi
-
-write_frames_brief
+echo "agy gave no transcript. Transcribe from frames with $BRIEF, as the skill's Frames fallback says." >&2
+exit 3
