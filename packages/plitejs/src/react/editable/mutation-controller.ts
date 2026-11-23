@@ -364,6 +364,7 @@ const applyProjectedViewSelectionDataCommand = ({
 
   // The paste's commands evaluate outside an update, so they bind the view
   // as an update does, and read its author, intent and draft setting.
+  let replaced = false;
   const pasted = withAuthoredUpdateView(editor, editor, () =>
     editor.read((state) => {
       const deletion = state.transaction(() => {
@@ -384,6 +385,8 @@ const applyProjectedViewSelectionDataCommand = ({
           );
         });
       });
+
+      replaced = !deletion.changes.empty;
 
       return continueTransactionSpecOrDiscardPrefix(
         runtimeEditor,
@@ -412,15 +415,18 @@ const applyProjectedViewSelectionDataCommand = ({
   if (!pasted) return true;
 
   watchProjectedHistoryRanges(editor);
-  const landed = editor.update({ tags: 'paste' }, () => {
-    getDefined(getActiveEditorTransaction(editor)).annotations.set(
-      projectedHistoryRange,
-      viewSelection
-    );
-    applyTransactionSpec(runtimeEditor, pasted);
+  const landed = editor.update(
+    { tags: replaced ? ['paste', 'replace-range'] : 'paste' },
+    () => {
+      getDefined(getActiveEditorTransaction(editor)).annotations.set(
+        projectedHistoryRange,
+        viewSelection
+      );
+      applyTransactionSpec(runtimeEditor, pasted);
 
-    return true;
-  });
+      return true;
+    }
+  );
 
   if (!landed || pasted.changes.empty) return landed;
   writePliteViewSelection(editor, null);

@@ -131,6 +131,7 @@ export {
 export {
   dispatchCommand,
   evaluateCommand,
+  getActiveCommandEditor,
   hasCommandHandler,
   probeCommandNativeEquivalent,
 } from '../core/command-registry';
@@ -328,6 +329,7 @@ export {
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
+  readEditorCommitHistoryEntry,
   readElementPropertyWrites,
   registerEditorTransactionGuard,
   subscribeCaretTarget,

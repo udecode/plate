@@ -282,12 +282,57 @@ export type InsertDataInputRule<
     | InputRuleDecline
     | undefined
   >;
+  followUp?: never;
   mimeTypes?: string[];
   resolve?: BivariantCallback<
     [context: InsertDataInputRuleReadContext<TEditor>],
     TMatch | undefined
   >;
   target: 'insertData';
+};
+
+/** A paste follow-up's context, which holds a transaction on the view that pasted. */
+export type InsertDataFollowUpContext<TEditor = Editor> = {
+  tx: InputRuleTransaction<TEditor>;
+};
+
+/**
+ * An `insertData` rule that leaves the paste alone and runs `followUp` after
+ * it, as its own undo step on the view that pasted. It runs only after a local
+ * paste that landed content and that undo history saved, and never when that
+ * view is read-only. `resolve` reads the state the paste started from, and
+ * `followUp` gets its match and no range, so it checks what it acts on before
+ * it writes. Declare it through `defineInputRule`.
+ */
+export type InsertDataFollowUpInputRule<
+  TMatch = unknown,
+  TEditor = Editor,
+> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {
+  apply?: never;
+  followUp: BivariantCallback<
+    [context: InsertDataFollowUpContext<TEditor>, match: TMatch],
+    undefined
+  >;
+  mimeTypes?: string[];
+  resolve: BivariantCallback<
+    [context: InsertDataInputRuleReadContext<TEditor>],
+    TMatch | undefined
+  >;
+  target: 'insertData';
+};
+
+declare const checkedFollowUp: unique symbol;
+
+/**
+ * A follow-up rule that `defineInputRule` returned. Only `defineInputRule`
+ * checks that `followUp` takes what `resolve` returns, so a plugin's
+ * `inputRules` takes a follow-up rule only in this form.
+ */
+export type DefinedInsertDataFollowUpInputRule<
+  TMatch = unknown,
+  TEditor = Editor,
+> = InsertDataFollowUpInputRule<TMatch, TEditor> & {
+  readonly [checkedFollowUp]: true;
 };
 
 export type InsertTextInputRule<
@@ -317,11 +362,13 @@ export type InsertTextInputRule<
 export type InputRule<TMatch = unknown, TEditor = Editor> =
   | InsertBreakInputRule<TMatch, TEditor>
   | InsertDataInputRule<TMatch, TEditor>
+  | InsertDataFollowUpInputRule<TMatch, TEditor>
   | InsertTextInputRule<TMatch, TEditor>;
 
 type StoredInputRule =
   | InsertBreakInputRule<any, any>
   | InsertDataInputRule<any, any>
+  | InsertDataFollowUpInputRule<any, any>
   | InsertTextInputRule<any, any>;
 
 type InputRuleReference =
@@ -332,9 +379,18 @@ type InputRuleReference =
     })
   | (BaseInputRule<never> & {
       apply: BivariantCallback<[context: never, match: never], unknown>;
+      followUp?: never;
       mimeTypes?: string[];
       resolve?: BivariantCallback<[context: never], unknown>;
       target: 'insertData';
+    })
+  | (BaseInputRule<never> & {
+      apply?: never;
+      followUp: BivariantCallback<[context: never, match: never], undefined>;
+      mimeTypes?: string[];
+      resolve: BivariantCallback<[context: never], unknown>;
+      target: 'insertData';
+      readonly [checkedFollowUp]: true;
     })
   | (BaseInputRule<never> & {
       apply: BivariantCallback<[context: never, match: never], unknown>;
@@ -346,7 +402,11 @@ type InputRuleReference =
 export type InputRulesDefinition<TEditor = Editor> = InputRulesConfig<TEditor>;
 
 export type InputRulesConfig<TEditor = Editor> = Array<
-  InputRule<any, TEditor> | InputRuleReference
+  | InsertBreakInputRule<any, TEditor>
+  | InsertDataInputRule<any, TEditor>
+  | DefinedInsertDataFollowUpInputRule<any, TEditor>
+  | InsertTextInputRule<any, TEditor>
+  | InputRuleReference
 >;
 
 export type ResolvedInputRule = StoredInputRule & {

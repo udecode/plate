@@ -6,6 +6,9 @@ import type {
   InsertBreakInputRule,
   InsertBreakInputRuleContext,
   InsertBreakInputRuleReadContext,
+  DefinedInsertDataFollowUpInputRule,
+  InsertDataFollowUpContext,
+  InsertDataFollowUpInputRule,
   InsertDataInputRule,
   InsertDataInputRuleContext,
   InsertDataInputRuleReadContext,
@@ -43,6 +46,22 @@ type BoundResolvedInsertDataRule<P extends InputRuleOwner, TMatch> = Omit<
   ) => TMatch | undefined;
 };
 
+type BoundResolvedInsertDataFollowUpRule<
+  P extends InputRuleOwner,
+  TMatch,
+> = Omit<
+  InsertDataFollowUpInputRule<TMatch, OwnerEditor<P>>,
+  'followUp' | 'resolve'
+> & {
+  followUp: (
+    context: InsertDataFollowUpContext<OwnerEditor<P>>,
+    match: NoInfer<TMatch>
+  ) => undefined;
+  resolve: (
+    context: InsertDataInputRuleReadContext<OwnerEditor<P>>
+  ) => TMatch | undefined;
+};
+
 type BoundResolvedInsertTextRule<P extends InputRuleOwner, TMatch> = Omit<
   InsertTextInputRule<TMatch, OwnerEditor<P>>,
   'apply' | 'resolve'
@@ -62,6 +81,9 @@ export function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(
 export function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(
   rule: InsertDataInputRule<TMatch, TEditor>
 ): InsertDataInputRule<TMatch, TEditor>;
+export function defineInputRule<TMatch, TEditor extends Editor = Editor>(
+  rule: InsertDataFollowUpInputRule<TMatch, TEditor>
+): DefinedInsertDataFollowUpInputRule<TMatch, TEditor>;
 export function defineInputRule<TMatch = true, TEditor extends Editor = Editor>(
   rule: InsertTextInputRule<TMatch, TEditor>
 ): InsertTextInputRule<TMatch, TEditor>;
@@ -74,6 +96,10 @@ export function defineInputRule<P extends InputRuleOwner, TMatch>(
   owner: P,
   rule: BoundResolvedInsertDataRule<P, TMatch>
 ): InsertDataInputRule<TMatch, OwnerEditor<P>>;
+export function defineInputRule<P extends InputRuleOwner, TMatch>(
+  owner: P,
+  rule: BoundResolvedInsertDataFollowUpRule<P, TMatch>
+): DefinedInsertDataFollowUpInputRule<TMatch, OwnerEditor<P>>;
 export function defineInputRule<P extends InputRuleOwner, TMatch>(
   owner: P,
   rule: BoundResolvedInsertTextRule<P, TMatch>

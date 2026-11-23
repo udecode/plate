@@ -1488,6 +1488,20 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:DefinedInsertDataFollowUpInputRule": {
+          "aliases": [],
+          "documentation": "A follow-up rule that `defineInputRule` returned. Only `defineInputRule`\nchecks that `followUp` takes what `resolve` returns, so a plugin's\n`inputRules` takes a follow-up rule only in this form.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "DefinedInsertDataFollowUpInputRule",
+          "runtime": false,
+          "signature": "type DefinedInsertDataFollowUpInputRule<TMatch = unknown, TEditor = Editor> = InsertDataFollowUpInputRule<TMatch, TEditor> & {\n  readonly [checkedFollowUp]: true;\n};",
+          "source": null,
+          "typeParameters": [
+            "TMatch = unknown",
+            "TEditor = Editor"
+          ]
+        },
         "platejs:defineEditorSchema": {
           "aliases": [],
           "documentation": "Define one complete schema as a nominal editor plugin.",
@@ -5054,7 +5068,7 @@
           "kind": "type",
           "name": "InputRule",
           "runtime": false,
-          "signature": "type InputRule<TMatch = unknown, TEditor = Editor> = InsertBreakInputRule<TMatch, TEditor> | InsertDataInputRule<TMatch, TEditor> | InsertTextInputRule<TMatch, TEditor>;",
+          "signature": "type InputRule<TMatch = unknown, TEditor = Editor> = InsertBreakInputRule<TMatch, TEditor> | InsertDataInputRule<TMatch, TEditor> | InsertDataFollowUpInputRule<TMatch, TEditor> | InsertTextInputRule<TMatch, TEditor>;",
           "source": null,
           "typeParameters": [
             "TMatch = unknown",
@@ -5092,7 +5106,7 @@
           "kind": "type",
           "name": "InputRulesConfig",
           "runtime": false,
-          "signature": "type InputRulesConfig<TEditor = Editor> = Array<InputRule<any, TEditor> | InputRuleReference>;",
+          "signature": "type InputRulesConfig<TEditor = Editor> = Array<InsertBreakInputRule<any, TEditor> | InsertDataInputRule<any, TEditor> | DefinedInsertDataFollowUpInputRule<any, TEditor> | InsertTextInputRule<any, TEditor> | InputRuleReference>;",
           "source": null,
           "typeParameters": [
             "TEditor = Editor"
@@ -5184,6 +5198,33 @@
             "TEditor = Editor"
           ]
         },
+        "platejs:InsertDataFollowUpContext": {
+          "aliases": [],
+          "documentation": "A paste follow-up's context, which holds a transaction on the view that pasted.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "InsertDataFollowUpContext",
+          "runtime": false,
+          "signature": "type InsertDataFollowUpContext<TEditor = Editor> = {\n  tx: InputRuleTransaction<TEditor>;\n};",
+          "source": null,
+          "typeParameters": [
+            "TEditor = Editor"
+          ]
+        },
+        "platejs:InsertDataFollowUpInputRule": {
+          "aliases": [],
+          "documentation": "An `insertData` rule that leaves the paste alone and runs `followUp` after\nit, as its own undo step on the view that pasted. It runs only after a local\npaste that landed content and that undo history saved, and never when that\nview is read-only. `resolve` reads the state the paste started from, and\n`followUp` gets its match and no range, so it checks what it acts on before\nit writes. Declare it through `defineInputRule`.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "InsertDataFollowUpInputRule",
+          "runtime": false,
+          "signature": "type InsertDataFollowUpInputRule<TMatch = unknown, TEditor = Editor> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {\n  apply?: never;\n  followUp: BivariantCallback<[context: InsertDataFollowUpContext<TEditor>, match: TMatch], undefined>;\n  mimeTypes?: string[];\n  resolve: BivariantCallback<[context: InsertDataInputRuleReadContext<TEditor>], TMatch | undefined>;\n  target: 'insertData';\n};",
+          "source": null,
+          "typeParameters": [
+            "TMatch = unknown",
+            "TEditor = Editor"
+          ]
+        },
         "platejs:InsertDataInputRule": {
           "aliases": [],
           "documentation": "",
@@ -5191,7 +5232,7 @@
           "kind": "type",
           "name": "InsertDataInputRule",
           "runtime": false,
-          "signature": "type InsertDataInputRule<TMatch = true, TEditor = Editor> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {\n  apply: BivariantCallback<[context: InsertDataInputRuleContext<TEditor>, match: TMatch], InputRuleContinuation<DataTransfer | undefined> | InputRuleDecline | undefined>;\n  mimeTypes?: string[];\n  resolve?: BivariantCallback<[context: InsertDataInputRuleReadContext<TEditor>], TMatch | undefined>;\n  target: 'insertData';\n};",
+          "signature": "type InsertDataInputRule<TMatch = true, TEditor = Editor> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {\n  apply: BivariantCallback<[context: InsertDataInputRuleContext<TEditor>, match: TMatch], InputRuleContinuation<DataTransfer | undefined> | InputRuleDecline | undefined>;\n  followUp?: never;\n  mimeTypes?: string[];\n  resolve?: BivariantCallback<[context: InsertDataInputRuleReadContext<TEditor>], TMatch | undefined>;\n  target: 'insertData';\n};",
           "source": null,
           "typeParameters": [
             "TMatch = true",
@@ -17947,6 +17988,20 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/react:DefinedInsertDataFollowUpInputRule": {
+          "aliases": [],
+          "documentation": "A follow-up rule that `defineInputRule` returned. Only `defineInputRule`\nchecks that `followUp` takes what `resolve` returns, so a plugin's\n`inputRules` takes a follow-up rule only in this form.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "DefinedInsertDataFollowUpInputRule",
+          "runtime": false,
+          "signature": "type DefinedInsertDataFollowUpInputRule<TMatch = unknown, TEditor = Editor> = InsertDataFollowUpInputRule<TMatch, TEditor> & {\n  readonly [checkedFollowUp]: true;\n};",
+          "source": null,
+          "typeParameters": [
+            "TMatch = unknown",
+            "TEditor = Editor"
+          ]
+        },
         "platejs/react:defineEditorSchema": {
           "aliases": [],
           "documentation": "Define one complete schema as a nominal editor plugin.",
@@ -22226,7 +22281,7 @@
           "kind": "type",
           "name": "InputRule",
           "runtime": false,
-          "signature": "type InputRule<TMatch = unknown, TEditor = Editor> = InsertBreakInputRule<TMatch, TEditor> | InsertDataInputRule<TMatch, TEditor> | InsertTextInputRule<TMatch, TEditor>;",
+          "signature": "type InputRule<TMatch = unknown, TEditor = Editor> = InsertBreakInputRule<TMatch, TEditor> | InsertDataInputRule<TMatch, TEditor> | InsertDataFollowUpInputRule<TMatch, TEditor> | InsertTextInputRule<TMatch, TEditor>;",
           "source": null,
           "typeParameters": [
             "TMatch = unknown",
@@ -22264,7 +22319,7 @@
           "kind": "type",
           "name": "InputRulesConfig",
           "runtime": false,
-          "signature": "type InputRulesConfig<TEditor = Editor> = Array<InputRule<any, TEditor> | InputRuleReference>;",
+          "signature": "type InputRulesConfig<TEditor = Editor> = Array<InsertBreakInputRule<any, TEditor> | InsertDataInputRule<any, TEditor> | DefinedInsertDataFollowUpInputRule<any, TEditor> | InsertTextInputRule<any, TEditor> | InputRuleReference>;",
           "source": null,
           "typeParameters": [
             "TEditor = Editor"
@@ -22356,6 +22411,33 @@
             "TEditor = Editor"
           ]
         },
+        "platejs/react:InsertDataFollowUpContext": {
+          "aliases": [],
+          "documentation": "A paste follow-up's context, which holds a transaction on the view that pasted.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "InsertDataFollowUpContext",
+          "runtime": false,
+          "signature": "type InsertDataFollowUpContext<TEditor = Editor> = {\n  tx: InputRuleTransaction<TEditor>;\n};",
+          "source": null,
+          "typeParameters": [
+            "TEditor = Editor"
+          ]
+        },
+        "platejs/react:InsertDataFollowUpInputRule": {
+          "aliases": [],
+          "documentation": "An `insertData` rule that leaves the paste alone and runs `followUp` after\nit, as its own undo step on the view that pasted. It runs only after a local\npaste that landed content and that undo history saved, and never when that\nview is read-only. `resolve` reads the state the paste started from, and\n`followUp` gets its match and no range, so it checks what it acts on before\nit writes. Declare it through `defineInputRule`.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "InsertDataFollowUpInputRule",
+          "runtime": false,
+          "signature": "type InsertDataFollowUpInputRule<TMatch = unknown, TEditor = Editor> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {\n  apply?: never;\n  followUp: BivariantCallback<[context: InsertDataFollowUpContext<TEditor>, match: TMatch], undefined>;\n  mimeTypes?: string[];\n  resolve: BivariantCallback<[context: InsertDataInputRuleReadContext<TEditor>], TMatch | undefined>;\n  target: 'insertData';\n};",
+          "source": null,
+          "typeParameters": [
+            "TMatch = unknown",
+            "TEditor = Editor"
+          ]
+        },
         "platejs/react:InsertDataInputRule": {
           "aliases": [],
           "documentation": "",
@@ -22363,7 +22445,7 @@
           "kind": "type",
           "name": "InsertDataInputRule",
           "runtime": false,
-          "signature": "type InsertDataInputRule<TMatch = true, TEditor = Editor> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {\n  apply: BivariantCallback<[context: InsertDataInputRuleContext<TEditor>, match: TMatch], InputRuleContinuation<DataTransfer | undefined> | InputRuleDecline | undefined>;\n  mimeTypes?: string[];\n  resolve?: BivariantCallback<[context: InsertDataInputRuleReadContext<TEditor>], TMatch | undefined>;\n  target: 'insertData';\n};",
+          "signature": "type InsertDataInputRule<TMatch = true, TEditor = Editor> = BaseInputRule<InsertDataInputRuleReadContext<TEditor>> & {\n  apply: BivariantCallback<[context: InsertDataInputRuleContext<TEditor>, match: TMatch], InputRuleContinuation<DataTransfer | undefined> | InputRuleDecline | undefined>;\n  followUp?: never;\n  mimeTypes?: string[];\n  resolve?: BivariantCallback<[context: InsertDataInputRuleReadContext<TEditor>], TMatch | undefined>;\n  target: 'insertData';\n};",
           "source": null,
           "typeParameters": [
             "TMatch = true",

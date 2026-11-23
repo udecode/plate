@@ -190,8 +190,10 @@ export type {
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
 export {
+  getActiveCommandEditor,
   getTextSearchScope,
   normalizeSetValues,
+  readEditorCommitHistoryEntry,
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';

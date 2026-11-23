@@ -25,7 +25,9 @@ Each rule declares a target (`insertText`, `insertBreak`, or `insertData`), an
 optional `enabled` gate, a `resolve` function that looks at the current
 selection and returns a match payload, and an `apply` function that performs the
 transform. The first rule whose `resolve` returns a non-undefined payload gets
-to run; if nothing matches, the default transform runs as usual.
+to run; if nothing matches, the default transform runs as usual. An `insertData`
+rule can declare `followUp` instead of `apply` to run after the paste lands, as
+[Follow-up paste rules](#follow-up-paste-rules) describes.
 
 Ownership splits cleanly into three lanes:
 
@@ -680,6 +682,7 @@ rule matches, the original command runs normally.
 | `enabled` | Policy gate, evaluated first |
 | `resolve` | Computes the match payload passed to `apply` |
 | `apply` | Mutates `tx`, then consumes, returns `next(...)`, or returns `decline()` |
+| `followUp` | Replaces `apply` on an `insertData` rule and runs after the paste lands, as its own undo step |
 | `priority` | Sort order for rules on the same target |
 | `on` | Block-fence commit mode: `'match'` or `'break'` |
 | `mimeTypes` | Narrows an `insertData` rule to specific MIME types |
@@ -691,6 +694,60 @@ callout", "only fire when this plugin is active" — belongs in `enabled`. Retur
 `undefined` from `resolve` just to suppress a rule works, but it hides intent
 and makes rules harder to compose.
 </Callout>
+
+### Follow-up paste rules
+
+An `insertData` rule can declare `followUp` instead of `apply`. A follow-up rule
+leaves the paste alone and runs after it, as its own undo step. One undo takes
+back the follow-up's change and keeps the paste. A second undo takes back the
+paste when history saved nothing between the two.
+
+```ts
+import { defineInputRule, NodeApi } from 'platejs';
+
+const spaceAfterPastedLink = defineInputRule({
+  target: 'insertData',
+  resolve: ({ text }) =>
+    text && /^https?:\/\/\S+$/.test(text) ? text : undefined,
+  followUp: ({ tx }, link) => {
+    const block = tx.nodes.block();
+
+    if (!block || !NodeApi.string(block[0]).endsWith(link)) return;
+
+    tx.text.insert(' ', { at: tx.points.end(block[1]) });
+  },
+});
+```
+
+- The runtime resolves follow-up rules against the state that `insertData`
+  starts from, apart from the rules that have `apply`. The first follow-up rule
+  whose `resolve` returns a payload runs, whichever rule took the paste.
+- `followUp` runs only after a local paste that landed content and that undo
+  history saved, on the view that pasted. It never runs after a collaborator's
+  change, an undo, a redo or a document replacement, in an editor without
+  history, or when the view that pasted is read-only. It never runs when the
+  paste's commit changed nothing in the root the pasting view edits. It also
+  never runs after the editable's paste over a projected selection whose
+  deletion removed content, because that deletion runs before `insertData`
+  starts.
+- `followUp` gets a transaction and the match, and no range of what the paste
+  wrote. A commit listener, a cleanup or an update that wraps the paste can
+  change the document before the follow-up runs, so a follow-up finds what it
+  acts on from its match and checks it before it writes. A match that a
+  follow-up writes at must carry a node key, or a root with its path, because a
+  bare path addresses the main root of the view that pasted.
+- The follow-up writes at the pasting view's intent, so in Suggesting mode its
+  change is a suggestion. A rule that must not propose checks that intent
+  before it writes.
+- `resolve` reads the clipboard data the paste started with. A rule with
+  `apply` that rewrites the data through `next(newData)` does not get the new
+  data matched again.
+- `resolve` and `followUp` must be synchronous. A `resolve` that returns a
+  promise throws before the paste lands, a `followUp` that returns one throws,
+  and the editor reports each promise's rejection.
+- Declare a follow-up rule through `defineInputRule`. It checks that `followUp`
+  takes what `resolve` returns, and `inputRules` refuses a follow-up rule
+  written as a plain object.
 
 ## API Reference
 
@@ -732,8 +789,10 @@ const copyrightRule = defineInputRule({
 ```
 
 Use it for raw `insertText`, `insertBreak`, or `insertData` rules. Match payload
-types flow from `resolve` into `apply`. The owner-bound overload also exposes
-the owner's typed `tx` group without explicit callback annotations.
+types flow from `resolve` into `apply`, or into `followUp` for a
+[follow-up paste rule](#follow-up-paste-rules), which `inputRules` accepts only
+from `defineInputRule`. The owner-bound overload also exposes the owner's typed
+`tx` group without explicit callback annotations.
 
 ### createMarkInputRule
 
