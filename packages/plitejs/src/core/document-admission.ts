@@ -4,6 +4,7 @@ import type {
   EditorUpdateTag,
   PluginPoint,
 } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import { definePluginPoint } from './plugin-point';
@@ -55,8 +56,7 @@ export type DocumentAdmission = Readonly<{
   ) => Readonly<{ change: DocumentChange; value: EditorDocumentValue }> | null;
   /**
    * A change from `value`, which every other repair admitted, that settles
-   * what the document leaves ready to settle, or `null`. A commit runs it once
-   * after its other repairs, and a load runs it last, with no `commit`.
+   * what the document leaves ready to settle, or `null`.
    */
   settle?: (
     value: EditorDocumentValue,
@@ -145,27 +145,65 @@ export const withoutRepairOrphans = <V extends EditorDocumentValue>(
 };
 
 /** @internal */
+export class EditorAdmissionError extends Error {
+  override name = 'EditorAdmissionError';
+}
+
+const ADMISSION_WRITES = 8;
+
+/** @internal */
+export const admissionBound = (what: 'commit' | 'load') => {
+  let writes = 0;
+
+  return () => {
+    writes += 1;
+    if (writes > ADMISSION_WRITES) {
+      throw new EditorAdmissionError(
+        `The ${what}'s admission and repeat repair kept writing after ${ADMISSION_WRITES} writes.`
+      );
+    }
+  };
+};
+
+type Repaired = Readonly<{
+  change: DocumentChange;
+  value: EditorDocumentValue;
+}>;
+
+/** @internal */
 export const repairLoadedDocument = (
   admission: DocumentAdmission | null,
   document: EditorDocumentValue,
   schema: CompiledEditorSchema
 ) => {
-  const loaded = admission?.load(document, schema) ?? null;
-  const unique = repairLoadedUniqueValues(loaded?.value ?? document, schema);
-  const repaired =
-    loaded && unique
-      ? { change: loaded.change.compose(unique.change), value: unique.value }
-      : (unique ?? loaded);
-  const kept = repaired && withoutRepairOrphans(schema, document, repaired);
-  const value = kept?.value ?? document;
-  const settled = admission?.settle?.(value, schema, null) ?? null;
+  const writers: Array<(value: EditorDocumentValue) => Repaired | null> = [
+    (value) => admission?.load(value, schema) ?? null,
+    (value) => repairLoadedUniqueValues(value, schema),
+    (value) => {
+      const settled = admission?.settle?.(value, schema, null);
 
-  if (!settled) return kept;
+      return settled ? { change: settled, value: settled.apply(value) } : null;
+    },
+  ];
+  const write = admissionBound('load');
+  let repaired: Repaired | null = null;
 
-  return {
-    change: kept ? kept.change.compose(settled) : settled,
-    value: settled.apply(value),
-  };
+  for (let at = 0, quiet = 0; quiet < writers.length; at += 1) {
+    const value: EditorDocumentValue = repaired?.value ?? document;
+    const next = getDefined(writers[at % writers.length])(value);
+
+    quiet += 1;
+    if (!next) continue;
+    write();
+    quiet = 1;
+    const kept: Repaired = withoutRepairOrphans(schema, value, next);
+
+    repaired = repaired
+      ? { change: repaired.change.compose(kept.change), value: kept.value }
+      : kept;
+  }
+
+  return repaired;
 };
 
 /** @internal */

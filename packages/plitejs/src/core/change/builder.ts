@@ -1228,6 +1228,30 @@ export class ChangeDraft {
     });
   }
 
+  applyPropertyWrites(change: DocumentChange): DocumentChangeStep {
+    if (!this.canonical || this.validationPending) return this.apply(change);
+
+    const candidate = new ChangeDraft(this.current, {
+      isSetValued: this.isSetValued,
+      trackChanges: false,
+    }).apply(change);
+
+    this.validateConstructed?.({
+      after: candidate.after,
+      before: this.current,
+      change: candidate.change,
+      indexedAfter: candidate.indexedAfter,
+      indexedBefore: candidate.indexedBefore,
+    });
+
+    return this.applyTrustedCanonical(candidate.change, {
+      indexedAfter: candidate.indexedAfter,
+      recordsAfter: getValueRecords(candidate.after),
+      runtimeCandidates: candidate.runtimeCandidates,
+      validated: this.validateConstructed !== undefined,
+    });
+  }
+
   private applyRecords(
     change: DocumentChange,
     facts: ChangeFacts
@@ -1283,6 +1307,7 @@ export class ChangeDraft {
         string,
         readonly DocumentChangeRuntimeCandidate[]
       >;
+      validated?: boolean;
     }> = {}
   ): DocumentChangeStep {
     const facts = this.landedAsUnknown(options.facts ?? UNKNOWN_FACTS);
@@ -1481,7 +1506,7 @@ export class ChangeDraft {
     }
     this.canonical = true;
     this.current = current;
-    this.adoptCanonicalBaseline?.(current);
+    if (!options.validated) this.adoptCanonicalBaseline?.(current);
 
     return Object.freeze({
       after: current,

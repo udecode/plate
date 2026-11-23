@@ -260,6 +260,7 @@ import {
 } from './content-slice-roots';
 import {
   type AdmittedDocument,
+  admissionBound,
   admitEditorDocument,
   DOCUMENT_SETTLED_TAG,
   documentAdmissionPoint,
@@ -318,7 +319,11 @@ import {
 } from './editor-schema';
 import { getContentSlice } from './get-content-slice';
 import { getFragment } from './get-fragment';
-import { sameNamedRoots, topologyChangedHolders } from './identity-owner';
+import {
+  sameNamedRoots,
+  type Topology,
+  topologyChangedHolders,
+} from './identity-owner';
 import { normalizeEditorValue } from './initial-value';
 import {
   getInsertRemainingLength,
@@ -579,7 +584,6 @@ type SettlementSplit =
 
 type StateRootDirectory = {
   advanced?: Readonly<{ change: DocumentChange; directory: RootDirectory }>;
-  from?: RootDirectory;
   initial: () => RootDirectory | undefined;
 };
 
@@ -2368,11 +2372,17 @@ const ROOT_DIRECTORIES = new WeakMap<Editor, RootDirectory>();
 
 const advanceStoredRootDirectory = (
   owner: Editor,
-  changed: (() => Iterable<string>) | null
+  changed: (() => Iterable<string>) | null,
+  drafted?: Readonly<{ change: DocumentChange; directory: StateRootDirectory }>
 ) => {
   const roots = getEditorDocumentRoots(owner);
   const properties = internedUniquePropertiesOf(getCompiledEditorSchema(owner));
-  const known = ROOT_DIRECTORIES.get(owner);
+  const stored = ROOT_DIRECTORIES.get(owner);
+  const advanced = drafted?.directory.advanced;
+  const known =
+    advanced && advanced.change === drafted?.change
+      ? advanced.directory
+      : stored;
   const rebuild = !changed || !known || known.uniqueProperties !== properties;
 
   if (!rebuild && properties.length === 0) return;
@@ -2497,7 +2507,6 @@ const transactionRootDirectory = (
         : undefined
     );
   }
-  if (!advanced) snapshot.rootDirectory.from = start;
   snapshot.rootDirectory.advanced = { change, directory };
 
   return directory;
@@ -2640,10 +2649,17 @@ const admitTransactionDraft = (editor: Editor) => {
   const replaces =
     snapshot.annotations.get(documentReplacement.key)?.value === true;
   const loads = replaces && !collaboration;
+  const owner = getEditorRuntimeOwner(editor);
+  const write = admissionBound('commit');
+  let rootsToCheck: Set<string> | null = null;
+  let takeBack: {
+    admitted: EditorDocumentValue;
+    change: DocumentChange | null;
+  } | null = null;
   const applyRepair = (
     after: EditorDocumentValue,
     repaired: DocumentChange,
-    settles?: 'all'
+    options: Readonly<{ renames?: boolean; settles?: 'all' | undefined }> = {}
   ) => {
     const repair = withoutRepairOrphans(schema, after, {
       change: repaired,
@@ -2652,11 +2668,13 @@ const admitTransactionDraft = (editor: Editor) => {
 
     applyTransactionSpecDocumentChangeStep(
       editor,
-      snapshot.builder.apply(repair),
+      options.renames
+        ? snapshot.builder.applyPropertyWrites(repair)
+        : snapshot.builder.apply(repair),
       {
         notifyTransactionListeners: false,
         selectionMapping: 'representation',
-        settles,
+        settles: options.settles,
       }
     );
 
@@ -2668,7 +2686,7 @@ const admitTransactionDraft = (editor: Editor) => {
       applyTransactionSpecDocumentChangeStep(editor, constructed, {
         notifyTransactionListeners: false,
         selectionMapping: 'representation',
-        settles,
+        settles: options.settles,
       });
     }
     const change = constructed ? repair.compose(constructed.change) : repair;
@@ -2676,16 +2694,22 @@ const admitTransactionDraft = (editor: Editor) => {
     snapshot.admissionBase ??= after;
     snapshot.admissionRepair =
       snapshot.admissionRepair?.compose(change) ?? change;
+    if (!options.renames) {
+      rootsToCheck ??= new Set();
+      for (const root of rootsThatCanMoveHolders(change, false, after, after)) {
+        rootsToCheck.add(root);
+      }
+    }
+    if (takeBack) takeBack.change = takeBack.change?.compose(change) ?? change;
 
     return change;
   };
   const admit = (from: EditorDocumentValue, by: DocumentChange) => {
-    if (!admission) return null;
+    if (!admission) return;
     let before = from;
     let change = by;
-    let repairs: DocumentChange | null = null;
 
-    for (let pass = 0; ; pass += 1) {
+    for (;;) {
       const after = snapshot.builder.value as EditorDocumentValue;
       const repaired = admission.commit({
         after,
@@ -2696,38 +2720,29 @@ const admitTransactionDraft = (editor: Editor) => {
         loads,
       });
 
-      if (!repaired) return repairs;
-      if (pass === 2) {
-        throw new Error('Document admission repaired its own repair twice.');
-      }
+      if (!repaired) return;
+      write();
       change = DocumentChange.isDocumentChange(repaired)
         ? applyRepair(after, repaired)
         : (repaired.reduce<DocumentChange | null>((applied, part) => {
             const next = applyRepair(
               snapshot.builder.value as EditorDocumentValue,
               part.change,
-              part.settles ? 'all' : undefined
+              part.settles ? { settles: 'all' } : {}
             );
 
             return applied ? applied.compose(next) : next;
           }, null) ?? DocumentChange.empty);
-      repairs = repairs ? repairs.compose(change) : change;
       before = after;
     }
   };
-
-  admit(stored, snapshot.activeChange.change);
-  if (unique) {
+  const checkedTopology = new Map<string, Topology>();
+  const repeatsIn = (roots: ReadonlySet<string>) => {
     const after = snapshot.builder.value as EditorDocumentValue;
-    const owner = getEditorRuntimeOwner(editor);
     const held: Array<readonly [property: string, value: unknown]> = [];
 
-    for (const root of rootsThatCanMoveHolders(
-      snapshot.builder.change,
-      snapshot.reason === 'replace',
-      after,
-      stored
-    )) {
+    rootsToCheck = null;
+    for (const root of roots) {
       if (root !== MAIN_ROOT_KEY && !Object.hasOwn(after.roots ?? {}, root)) {
         continue;
       }
@@ -2735,57 +2750,80 @@ const admitTransactionDraft = (editor: Editor) => {
         ? rootSourceOf(snapshot.roots, root)
         : null;
       const index = snapshot.builder.getIndex(root);
+      const topology = getDefined(
+        uniqueTopologyOf(
+          owner,
+          retainTransactionSnapshotIndex(owner, snapshot, root),
+          valueRootNodes(after, root)
+        )
+      );
 
       topologyChangedHolders(
-        before &&
-          uniqueTopologyOf(
-            owner,
-            snapshot.baseRuntimeIndexes.get(root)?.() ??
-              snapshotIndexOf(owner, before),
-            before
-          ),
-        getDefined(
-          uniqueTopologyOf(
-            owner,
-            retainTransactionSnapshotIndex(owner, snapshot, root),
-            valueRootNodes(after, root)
-          )
-        ),
+        checkedTopology.get(root) ??
+          (before &&
+            uniqueTopologyOf(
+              owner,
+              snapshot.baseRuntimeIndexes.get(root)?.() ??
+                snapshotIndexOf(owner, before),
+              before
+            )),
+        topology,
         (property, path) => held.push([property, index.node(path)[property]])
       );
+      checkedTopology.set(root, topology);
     }
-    const renamed = repairUniqueHolders({
+
+    return repairUniqueHolders({
       held,
       holdersOf: (key, value) => stateUniqueHolders(owner, key, value),
       incumbentOf: (key, value) => updateIncumbent(owner, key, value),
       indexOf: (root) => snapshot.builder.getIndex(root),
       schema,
     });
+  };
 
-    if (renamed) admit(after, applyRepair(after, renamed));
-  }
-  if (!admission?.settle) return;
-
-  const admitted = snapshot.builder.value as EditorDocumentValue;
-  const settled = admission.settle(admitted, schema, {
-    before: stored,
-    change: snapshot.builder.change,
-    editor,
-    indexOf: (root) => snapshot.builder.getIndex(root),
-  });
-
-  if (!settled) return;
-  applyEditorUpdateTag(snapshot.tags, DOCUMENT_SETTLED_TAG);
-
-  // With a decision's settlement already split off, the shown values this
-  // stage settles join its take-back.
-  const settlement = applyRepair(
-    admitted,
-    settled,
-    snapshot.settlementSplit?.kind === 'carried' ? 'all' : undefined
+  admit(stored, snapshot.activeChange.change);
+  rootsToCheck = rootsThatCanMoveHolders(
+    snapshot.builder.change,
+    snapshot.reason === 'replace',
+    snapshot.builder.value as EditorDocumentValue,
+    stored
   );
-  const closing = admit(admitted, settlement);
-  const change = closing ? settlement.compose(closing) : settlement;
+  let settledAt: DocumentChange | null = null;
+
+  for (;;) {
+    const after = snapshot.builder.value as EditorDocumentValue;
+    const renamed = unique && rootsToCheck ? repeatsIn(rootsToCheck) : null;
+
+    if (renamed) {
+      write();
+      const rename = applyRepair(after, renamed, { renames: true });
+
+      admit(after, rename);
+      continue;
+    }
+    if (!admission?.settle || settledAt === snapshot.builder.change) break;
+    const settled = admission.settle(after, schema, {
+      before: stored,
+      change: snapshot.builder.change,
+      editor,
+      indexOf: (root) => snapshot.builder.getIndex(root),
+    });
+
+    if (!settled) break;
+    write();
+    applyEditorUpdateTag(snapshot.tags, DOCUMENT_SETTLED_TAG);
+    takeBack ??= { admitted: after, change: null };
+
+    const settlement = applyRepair(after, settled, {
+      settles: snapshot.settlementSplit?.kind === 'carried' ? 'all' : undefined,
+    });
+
+    settledAt = snapshot.builder.change;
+    admit(after, settlement);
+  }
+  if (!takeBack?.change) return;
+  const { admitted, change } = takeBack;
 
   if (!documentChangeWritesOnlyElementProperties(change, admitted)) {
     reportEditorLifecycleError({
@@ -14305,11 +14343,16 @@ export const runEditorTransaction = <R>(
     if (snapshot) {
       runEditorDocumentRecorder(editor);
       admitTransactionDraft(editor);
-      runEditorDraftGuards(
-        editor,
-        'recorded',
-        snapshot.builder.value as EditorDocumentValue
-      );
+      PREPARING_COMMIT.add(getEditorRuntimeOwner(editor));
+      try {
+        runEditorDraftGuards(
+          editor,
+          'recorded',
+          snapshot.builder.value as EditorDocumentValue
+        );
+      } finally {
+        PREPARING_COMMIT.delete(getEditorRuntimeOwner(editor));
+      }
     }
   } catch (error) {
     transactionFailed = true;
@@ -14628,6 +14671,20 @@ export const runEditorTransaction = <R>(
           committed = change;
           const owner = getEditorRuntimeOwner(editor);
 
+          advanceStoredRootDirectory(
+            owner,
+            () =>
+              rootsThatCanMoveHolders(
+                canonicalChanges,
+                snapshot.reason === 'replace',
+                afterValue,
+                beforeValue
+              ),
+            {
+              change: snapshot.builder.change,
+              directory: snapshot.rootDirectory,
+            }
+          );
           DEFERRED_DRAINS.set(owner, (DEFERRED_DRAINS.get(owner) ?? 0) + 1);
           PUBLISHING_COMMITS.set(
             owner,
@@ -14668,28 +14725,6 @@ export const runEditorTransaction = <R>(
               ...snapshot.pluginReconfigurations.values(),
             ]);
           }
-          // A commit that a transaction guard's publish step opens can store
-          // a directory first, and the draft's directory lacks what it wrote.
-          const drafted = snapshot.rootDirectory;
-
-          if (
-            drafted.advanced?.change === snapshot.builder.change &&
-            drafted.from === ROOT_DIRECTORIES.get(owner)
-          ) {
-            ROOT_DIRECTORIES.set(owner, drafted.advanced.directory);
-          }
-          // A plugin's after-publish step, such as a Yjs room's first import,
-          // can commit before the load seeds the directory, and the schema's
-          // unique properties can change after the directory was built, so
-          // each commit takes the directory under the current schema.
-          advanceStoredRootDirectory(owner, () =>
-            rootsThatCanMoveHolders(
-              canonicalChanges,
-              snapshot.reason === 'replace',
-              afterValue,
-              beforeValue
-            )
-          );
           if (lawCheckEnabled()) {
             const roots = getEditorDocumentRoots(owner);
             const named: Array<readonly [string, ChildrenSource]> = [];
