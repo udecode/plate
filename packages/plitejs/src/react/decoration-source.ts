@@ -8,17 +8,19 @@ import type {
   DecorationAttributes,
   DecorationRefresh,
   DecorationSource,
+  EditorCommit,
   Range,
+  RootKey,
 } from '..';
 import { NodeApi } from '..';
+import { valueRootIndex } from '../core/change/document-change';
 import { childAtPathIndex, rootNodesOf } from '../core/change/document-index';
-import { getEditorCommitSnapshot } from '../core/commit';
+import { getEditorCommitSnapshot, getEditorCommitValue } from '../core/commit';
 import { getEditorRuntimeRoot } from '../core/editor-runtime';
 import { toPublicRoot } from '../core/public-root';
 import { getReaderRange } from '../internal/root-location';
 import { createViewSourceFaultBoundary } from '../internal/view/mapped-view-store';
 import type { ViewSourceErrorSink } from '../internal/view/view-source';
-import { getPureTextInsertion } from './editable/native-text-input-delta';
 import {
   getSnapshot as editorGetSnapshot,
   projectRangeInSnapshot,
@@ -461,21 +463,58 @@ export const getDecorationPaintChange = (
     : null;
 };
 
-const mapDecorationSlicesThroughInsertion = (
+type NativeTextChange = readonly [
+  fromA: number,
+  toA: number,
+  fromB: number,
+  toB: number,
+];
+
+const mapTextOffset = (
+  changes: readonly NativeTextChange[],
+  offset: number,
+  edge: 'end' | 'start'
+) => {
+  let shift = 0;
+
+  for (const [fromA, toA, fromB, toB] of changes) {
+    if (offset < fromA) break;
+    // An edge inside a replaced span moves away from the new text, so a slice
+    // never takes in typed text.
+    if (offset <= toA) return edge === 'start' ? toB : fromB;
+    shift = toB - toA;
+  }
+
+  return offset + shift;
+};
+
+const getNativeTextInsertion = (
+  changes: readonly NativeTextChange[]
+): NativeTextInsertion | undefined => {
+  const [change] = changes;
+
+  return change && changes.length === 1 && change[0] === change[1]
+    ? { length: change[3] - change[2], offset: change[0] }
+    : undefined;
+};
+
+const mapDecorationSlicesThroughChanges = (
   slices: readonly DecorationSlice[],
-  insertion: NativeTextInsertion
+  changes: readonly NativeTextChange[]
 ) => {
   let changed = false;
-  const mapped = slices.map((slice) => {
-    const start =
-      slice.start >= insertion.offset
-        ? slice.start + insertion.length
-        : slice.start;
-    const end =
-      slice.end > insertion.offset ? slice.end + insertion.length : slice.end;
+  const mapped: DecorationSlice[] = [];
 
-    if (start === slice.start && end === slice.end) return slice;
+  for (const slice of slices) {
+    const start = mapTextOffset(changes, slice.start, 'start');
+    const end = mapTextOffset(changes, slice.end, 'end');
+
+    if (start === slice.start && end === slice.end) {
+      mapped.push(slice);
+      continue;
+    }
     changed = true;
+    if (end <= start) continue;
 
     const mappedSlice = Object.freeze({ ...slice, end, start });
 
@@ -483,37 +522,58 @@ const mapDecorationSlicesThroughInsertion = (
       mappedSlice,
       getDecorationSliceIdentity(slice)
     );
-
-    return mappedSlice;
-  });
+    mapped.push(mappedSlice);
+  }
 
   return changed ? Object.freeze(mapped) : slices;
 };
 
-const getNativeTextInsertions = (
-  before: EditorSnapshot,
-  snapshot: EditorSnapshot,
-  inputKeys: readonly NodeKey[]
+const getNativeTextChanges = (
+  commit: EditorCommit,
+  root: RootKey,
+  textKeys: readonly NodeKey[]
 ) => {
-  const insertions = new Map<NodeKey, NativeTextInsertion>();
+  const before = getEditorCommitSnapshot(commit, root, 'before');
+  const after = getEditorCommitSnapshot(commit, root);
+  const beforeIndex = valueRootIndex(
+    getEditorCommitValue(commit, 'before'),
+    root
+  );
+  const afterIndex = valueRootIndex(getEditorCommitValue(commit), root);
+  const ranges: NativeTextChange[] = [];
+  const changesByNodeKey = new Map<NodeKey, readonly NativeTextChange[]>();
 
-  for (const nodeKey of inputKeys) {
-    const path = snapshot.index.pathOf(nodeKey);
-    const beforeNode = path && getDescendantAtPath(before, path);
-    const afterNode = path && getDescendantAtPath(snapshot, path);
+  commit.changes.iterChangedRanges((changedRoot, fromA, toA, fromB, toB) => {
+    if ((changedRoot ?? 'main') === root) ranges.push([fromA, toA, fromB, toB]);
+  });
+  for (const nodeKey of textKeys) {
+    const beforePath = before.index.pathOf(nodeKey);
+    const afterPath = after.index.pathOf(nodeKey);
 
-    if (!beforeNode || !afterNode) return null;
+    if (!beforePath || !afterPath) return null;
+    const beforeNode = getDescendantAtPath(before, beforePath);
+    const afterNode = getDescendantAtPath(after, afterPath);
+
     if (!NodeApi.isText(beforeNode) || !NodeApi.isText(afterNode)) return null;
-    const insertion = getPureTextInsertion(beforeNode.text, afterNode.text);
+    const beforeStart = beforeIndex.positionAt({ offset: 0, path: beforePath });
+    const beforeEnd = beforeStart + beforeNode.text.length;
+    const afterStart = afterIndex.positionAt({ offset: 0, path: afterPath });
+    const changes: NativeTextChange[] = [];
 
-    if (!insertion) return null;
-    insertions.set(nodeKey, {
-      length: insertion.text.length,
-      offset: insertion.offset,
-    });
+    for (const [fromA, toA, fromB, toB] of ranges) {
+      if (toA < beforeStart || fromA > beforeEnd) continue;
+      if (fromA < beforeStart || toA > beforeEnd) return null;
+      changes.push([
+        fromA - beforeStart,
+        toA - beforeStart,
+        fromB - afterStart,
+        toB - afterStart,
+      ]);
+    }
+    changesByNodeKey.set(nodeKey, changes);
   }
 
-  return insertions;
+  return changesByNodeKey;
 };
 
 const validateDecorationSources = <E>(
@@ -1239,9 +1299,9 @@ export const createPliteDecorationManager = <E>(
     notifyChangedBuckets(changed);
   };
 
-  const mapNativeTextInsertions = (
+  const mapNativeTextChanges = (
     snapshot: EditorSnapshot,
-    insertions: ReadonlyMap<NodeKey, NativeTextInsertion>
+    changesByNodeKey: ReadonlyMap<NodeKey, readonly NativeTextChange[]>
   ) => {
     for (const state of sourceStates) {
       if (editorGetSnapshot(runtimeEditor).version !== snapshot.version) return;
@@ -1249,14 +1309,14 @@ export const createPliteDecorationManager = <E>(
       if (state.snapshot.version === snapshot.version) continue;
       const changes: DecorationSourceBucketChange[] = [];
 
-      for (const [nodeKey, insertion] of insertions) {
+      for (const [nodeKey, textChanges] of changesByNodeKey) {
         const previousParts = state.snapshot.partsByOutputKey.get(nodeKey);
 
         if (!previousParts) continue;
         const nextParts = previousParts.map((part) => {
-          const slices = mapDecorationSlicesThroughInsertion(
+          const slices = mapDecorationSlicesThroughChanges(
             part.slices,
-            insertion
+            textChanges
           );
 
           return slices === part.slices ? part : { ...part, slices };
@@ -1273,7 +1333,7 @@ export const createPliteDecorationManager = <E>(
         if (next !== previous) {
           decorationBucketChanges.set(next, {
             identity: getDecorationBucketIdentity(next),
-            insertion,
+            insertion: getNativeTextInsertion(textChanges),
             previous: getDecorationBucketIdentity(previous),
           });
         }
@@ -1756,17 +1816,13 @@ export const createPliteDecorationManager = <E>(
                 'text',
                 readerPublicRoot
               );
-              const insertions =
+              const changesByNodeKey =
                 textKeys.length > 0
-                  ? getNativeTextInsertions(
-                      getEditorCommitSnapshot(change, readerRoot, 'before'),
-                      snapshot,
-                      textKeys
-                    )
+                  ? getNativeTextChanges(change, readerRoot, textKeys)
                   : null;
 
-              if (insertions) {
-                mapNativeTextInsertions(snapshot, insertions);
+              if (changesByNodeKey) {
+                mapNativeTextChanges(snapshot, changesByNodeKey);
               }
               schedulePendingRefresh();
               return;
