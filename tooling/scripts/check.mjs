@@ -9,11 +9,7 @@ import {
   realpathSync,
   rmSync,
 } from 'node:fs';
-import {
-  availableParallelism,
-  constants as osConstants,
-  tmpdir,
-} from 'node:os';
+import { constants as osConstants, tmpdir } from 'node:os';
 import { basename, extname, join, matchesGlob, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -40,6 +36,7 @@ import {
 import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
 import { expectedVerdict } from './step-failures.mjs';
+import { workerBudget } from './worker-budget.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -1492,7 +1489,7 @@ const main = async () => {
   }
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();
-  const share = Math.ceil(availableParallelism() / 2);
+  const share = workerBudget();
   const typical = typicalSeconds(root);
   // Writers can read each other's output, so --write keeps one step at a time.
   let budget = 1;
