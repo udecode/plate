@@ -1,7 +1,9 @@
 import {
   type EditorCommit,
   type EditorCoreStateView,
+  ElementApi,
   getActiveEditorUpdateId,
+  getDocumentValueNode,
   getEditorCommitNode,
   getEditorCommitValue,
   getEditorRuntimeOwner,
@@ -10,6 +12,7 @@ import {
   getValueRecords,
   type Node,
   type NodeKey,
+  type Path,
   type RecordSetVersion,
   recordSetChanges,
   readShownDocument,
@@ -19,6 +22,7 @@ import {
 } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
 import {
+  besideAt,
   COPIES,
   GONE,
   goneIn,
@@ -113,7 +117,7 @@ const shownPlaces = new WeakMap<
 
 const metrics = { chains: 0, holders: 0, hops: 0, reads: 0, resolved: 0 };
 
-const work = { copies: 0, groups: 0, members: 0, signs: 0 };
+const work = { copies: 0, directions: 0, groups: 0, members: 0, signs: 0 };
 
 export const getInkPlaceMetrics = () => Object.freeze({ ...metrics, ...work });
 
@@ -560,22 +564,36 @@ const byCut = (a: Cut, b: Cut) =>
   a.at - b.at ||
   (a.mark && b.mark ? byMark(a.mark, b.mark) : a.mark ? -1 : b.mark ? 1 : 0);
 
-const cutIn = <T>(
-  of: readonly T[],
-  cuts: readonly Cut[],
-  add: (mark: InkMark) => T
+const cutIn = (
+  group: DeletedGroup,
+  direction: InkMark['direction'],
+  cuts: readonly Cut[]
 ) => {
-  const pieces: Array<T | readonly T[]> = [];
+  const marks = group.marks[direction];
+  const ids = group.ids[direction];
+  const nextMarks: InkMark[] = [];
+  const nextIds: string[] = [];
   let from = 0;
+  const keep = (to: number) => {
+    for (; from < to; from++) {
+      nextMarks.push(marks[from]);
+      nextIds.push(ids[from]);
+    }
+  };
 
+  work.copies += 1;
   for (const { at, mark } of cuts) {
-    pieces.push(of.slice(from, at));
-    if (mark) pieces.push(add(mark));
-    from = mark ? at : at + 1;
+    keep(at);
+    if (mark) {
+      nextMarks.push(mark);
+      nextIds.push(mark.id);
+    } else {
+      from += 1;
+    }
   }
-  pieces.push(of.slice(from));
-
-  return ([] as T[]).concat(...pieces);
+  keep(marks.length);
+  group.marks[direction] = nextMarks;
+  group.ids[direction] = nextIds;
 };
 
 const settle = (places: InkPlaces, group: DeletedGroup) => {
@@ -600,18 +618,8 @@ const settle = (places: InkPlaces, group: DeletedGroup) => {
   }
   for (const direction of ['ltr', 'rtl'] as const) {
     if (cuts[direction].length === 0) continue;
-    work.copies += 1;
-    cuts[direction].sort(byCut);
-    group.marks[direction] = cutIn(
-      group.marks[direction],
-      cuts[direction],
-      (mark) => mark
-    );
-    group.ids[direction] = cutIn(
-      group.ids[direction],
-      cuts[direction],
-      (mark) => mark.id
-    );
+    work.directions += 1;
+    cutIn(group, direction, cuts[direction].sort(byCut));
   }
   group.pending.clear();
   if (group.blocks.size + size(group) === 0) {
@@ -672,6 +680,126 @@ const addArrivedBlocks = (
   }
 };
 
+const slideRemoval = (
+  places: InkPlaces,
+  commit: EditorCommit,
+  gone: RecordSetVersion
+) => {
+  const { changed } = commit;
+  const removed = new Set(changed.nodeKeysAll('presence'));
+
+  if (removed.size === 0 || changed.hasAny('properties')) return false;
+
+  const { index } = commit.before;
+  const value = getEditorCommitValue(commit, 'before');
+  const left = new Map<NodeKey, Readonly<{ id?: string; path: Path }>>();
+
+  for (const key of removed) {
+    const path = index.pathOf(key);
+    const node = path && getDocumentValueNode(value, path);
+
+    if (!node) return false;
+    if (
+      ElementApi.isElement(node) &&
+      node.children.some((_, at) => {
+        const child = index.keyAt([...path, at]);
+
+        return !child || !removed.has(child);
+      })
+    ) {
+      return false;
+    }
+    left.set(key, { id: idOf(node), path });
+  }
+
+  const ids = new Set([...left.values()].flatMap(({ id }) => id ?? []));
+  const skips = (path: Path) => {
+    const key = index.keyAt(path);
+
+    return !key || removed.has(key);
+  };
+  const keptBeside = (path: Path, side: Side) => {
+    const found =
+      side === 'previous'
+        ? besideAt(value, path, -1, skips)
+        : besideAt(
+            value,
+            [...path.slice(0, -1), (path.at(-1) ?? 0) + 1],
+            1,
+            skips
+          );
+    const key = found && index.keyAt(found.path);
+
+    return found && key ? { id: found.id, key } : undefined;
+  };
+  const known = (id: string) => ids.has(id) || places.walked.has(id);
+  const walk = {
+    holder: (id: string) => (known(id) ? undefined : id),
+    record: (id: string) => goneIn(gone, id),
+  };
+  const memo = { ...places.chainEnds, walked: places.walked };
+  const landing = (id: string, path: Path, side: Side, top?: string) => {
+    const first = reachGone(walk, id, side, memo, metrics);
+    const from =
+      first.found || side === 'next' || top === undefined
+        ? undefined
+        : goneIn(gone, id)
+          ? first.last
+          : top;
+    const found =
+      first.found ??
+      (from === undefined
+        ? undefined
+        : reachGone(walk, from, 'next', memo, metrics).found);
+    const to = found && keptBeside(path, found.side);
+
+    if (!found) return { anchor: undefined, key: undefined };
+    if (to?.id !== found.id) return undefined;
+
+    return {
+      anchor: { id: to.id, side: found.side, top: from ?? first.last },
+      key: to.key,
+    };
+  };
+  const steps: Array<() => void> = [];
+
+  for (const [key, { id, path }] of left) {
+    const block = places.blockOfKey.get(key);
+
+    for (const side of ['previous', 'next'] as const) {
+      const group = places.groups.get(keyOf(beside(side, key)));
+      const anchor = group?.anchor;
+      const hints = side === 'previous' && block !== undefined;
+
+      if (anchor && anchor.id !== id) return false;
+      if (id === undefined || !(anchor || hints)) continue;
+
+      const lands = landing(id, path, side, anchor?.top);
+
+      if (anchor && !lands) return false;
+      if (!lands) continue;
+      steps.push(() => {
+        const into =
+          lands.anchor && lands.key && beside(lands.anchor.side, lands.key);
+
+        if (group && places.groups.get(keyOf(group.place)) === group) {
+          if (into) moveGroup(places, group, into, lands.anchor);
+          else dissolve(places, group);
+        }
+
+        const kept = block !== undefined && places.blocks.get(block);
+
+        if (!hints || !into || !kept || lands.anchor?.side !== side) return;
+        kept.group = groupAt(places, into, lands.anchor);
+        kept.group.blocks.add(block);
+      });
+    }
+  }
+  for (const step of steps) step();
+
+  return true;
+};
+
 export const advanceInkPlaces = (
   editor: RuntimeAnyEditor,
   commit: EditorCommit
@@ -725,7 +853,11 @@ export const advanceInkPlaces = (
 
     return;
   }
-  if (moved && (dirty.size > 0 || watches)) {
+  if (
+    moved &&
+    (dirty.size > 0 || watches) &&
+    !slideRemoval(places, commit, sets[GONE])
+  ) {
     withStoredAuthoredRead(editor, () =>
       editor.read((state) => {
         metrics.reads += 1;

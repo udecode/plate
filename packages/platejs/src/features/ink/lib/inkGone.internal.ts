@@ -194,7 +194,12 @@ const metrics = { besides: 0, chains: 0, hops: 0, reads: 0 };
 
 export const getInkGoneMetrics = () => Object.freeze({ ...metrics });
 
-const beside = (document: EditorDocumentValue, gap: Path, step: -1 | 1) => {
+export const besideAt = (
+  document: EditorDocumentValue,
+  gap: Path,
+  step: -1 | 1,
+  skips?: (path: Path) => boolean
+) => {
   metrics.besides += 1;
 
   const parent = gap.slice(0, -1);
@@ -202,13 +207,13 @@ const beside = (document: EditorDocumentValue, gap: Path, step: -1 | 1) => {
 
   if (step === -1) index -= 1;
   while (true) {
-    const node =
-      index >= 0 ? getDocumentValueNode(document, [...parent, index]) : null;
+    const path = [...parent, index];
+    const node = index >= 0 ? getDocumentValueNode(document, path) : null;
 
     if (node) {
       const id = idOf(node);
 
-      if (id) return id;
+      if (id && !skips?.(path)) return { id, path };
       index += step;
     } else if (parent.length > 0) {
       const [up] = parent.splice(-1);
@@ -219,6 +224,9 @@ const beside = (document: EditorDocumentValue, gap: Path, step: -1 | 1) => {
     }
   }
 };
+
+const beside = (document: EditorDocumentValue, gap: Path, step: -1 | 1) =>
+  besideAt(document, gap, step)?.id;
 
 const goneFrom = (previous: string | undefined, next: string | undefined) => ({
   ...(next ? { next } : {}),
