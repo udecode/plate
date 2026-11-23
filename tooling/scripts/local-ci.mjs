@@ -871,7 +871,14 @@ const status = () => {
   ]);
   console.info(
     [
-      `job: ${job.status === 0 ? 'loaded' : 'not installed'}`,
+      `job: ${
+        job.status !== 0
+          ? 'not installed'
+          : existsSync(plist) &&
+              readFileSync(plist, 'utf-8').includes('<key>ProcessType</key>')
+            ? 'loaded'
+            : 'loaded at launchd throttled priority; run install again'
+      }`,
       `running: ${lock && alive(lock) ? `pid ${lock}` : 'no'}`,
       `last run: ${state.lastRun ?? 'none'} at ${state.lastRunAt ?? '-'}`,
       `last green: ${state.green ?? 'none'}`,
@@ -914,6 +921,9 @@ const install = async (args) => {
     text.replaceAll('&', '&amp;').replaceAll('<', '&lt;');
   const strings = (items) =>
     items.map((item) => `<string>${escape(item)}</string>`).join('');
+  // launchd throttles a job with no ProcessType, and Standard is the same: its
+  // processes run at priority 20 under the sessions' 31, so a loaded host
+  // starves its steps past their hour.
   writeFileSync(
     plist,
     `<?xml version="1.0" encoding="UTF-8"?>
@@ -923,6 +933,7 @@ const install = async (args) => {
 <key>ProgramArguments</key><array>${strings([process.execPath, script, 'run'])}</array>
 <key>WorkingDirectory</key><string>${escape(main)}</string>
 <key>StartInterval</key><integer>${INTERVAL_SECONDS}</integer>
+<key>ProcessType</key><string>Interactive</string>
 <key>EnvironmentVariables</key><dict><key>PATH</key><string>${escape(process.env.PATH ?? '')}</string><key>HOME</key><string>${escape(homedir())}</string></dict>
 <key>StandardOutPath</key><string>${escape(join(home, 'launchd.log'))}</string>
 <key>StandardErrorPath</key><string>${escape(join(home, 'launchd.log'))}</string>
