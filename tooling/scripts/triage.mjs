@@ -2065,7 +2065,7 @@ function shippedCommand(options) {
       `${reads.remote} has no ${tag} tag (${missing.message}); run shipped once the release pushed it`
     );
   }
-  const line = `Fixed in [${tag}](https://github.com/${repo}/releases/tag/${encodeURIComponent(tag)}).`;
+  const line = `Fixed in [${tag}](https://github.com/${repo}/releases/tag/v${version}).`;
   for (const issue of openIssues(reads)) {
     const number = String(issue.number);
     const { state, head } = stateFor(number, reads);

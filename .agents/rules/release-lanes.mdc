@@ -21,7 +21,7 @@ publish beta.
 ## Lanes
 
 - `main` publishes stable packages with npm tag `latest`.
-- `next` publishes prerelease packages with npm tag `beta`. Agents write one changeset per user-visible change on `next`, as the `changeset` skill says. On each push to `next` with none pending, the release workflow adds one changeset that links every commit since the last published beta, so the beta Version Packages PR stays open. Merging that PR publishes the next beta to npm, even when a changeset lands after the PR's last refresh. That changeset goes in the beta after it. A beta publishes to npm and pushes its package tags, with no GitHub Release or AI release notes. `SKIP_NEXT_CI` skips only CI on `next`, not releases.
+- `next` publishes prerelease packages with npm tag `beta`. Agents write one changeset per user-visible change on `next`, as the `changeset` skill says. On each push to `next` with none pending, the release workflow adds one changeset that links every commit since the last published beta, so the beta Version Packages PR stays open. Merging that PR publishes the next beta to npm, even when a changeset lands after the PR's last refresh. That changeset goes in the beta after it. A beta publishes to npm, pushes its package tags and gets a GitHub pre-release page tagged `v<version>`, titled with its version and date. Its page shows the changelog notes without the AI rewrite. A stable release's page stays marked latest. `SKIP_NEXT_CI` skips only CI on `next`, not releases.
 - `.changeset/pre.json` belongs on `next` only.
 - `main` must never publish while `.changeset/pre.json` exists.
 
