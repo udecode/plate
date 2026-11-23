@@ -38,9 +38,6 @@ const bulletEntryPattern = /^-\s+/gm;
 const migrationPattern = /\bMigration\b/g;
 const contributorPattern =
   /by \[@([A-Za-z0-9-]+)\]\(https:\/\/github\.com\/[^)]+\)/g;
-const contributorHandlePattern = /(?:^|[\s,])@([A-Za-z0-9-]+)(?=$|[\s,.;)])/gm;
-const contributorsHeadingPattern = /^## Contributors[^\n]*\n/m;
-const headingBoundaryPattern = /\n##\s+/;
 const releaseTypes = ['major', 'minor', 'patch'];
 const releaseTypeLabels = {
   major: 'Major',
@@ -270,7 +267,6 @@ export async function generateRawReleaseNotes({
   workspacePackages,
 }) {
   const lines = [];
-  const contributors = new Set();
   const packages = publishedPackages
     .filter(
       (publishedPackage) =>
@@ -299,27 +295,12 @@ export async function generateRawReleaseNotes({
 
     if (releaseChanges) {
       lines.push(releaseChanges.body);
-      collectContributors(contributors, releaseChanges.body);
     } else {
       lines.push(
         `Published \`${publishedPackage.name}@${publishedPackage.version}\`.`
       );
     }
 
-    lines.push('');
-  }
-
-  if (contributors.size > 0) {
-    lines.push('## Contributors');
-    lines.push('');
-    lines.push('Thanks to everyone who contributed to this release:');
-    lines.push('');
-    lines.push(
-      [...contributors]
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-        .map((contributor) => `@${contributor}`)
-        .join(', ')
-    );
     lines.push('');
   }
 
@@ -418,16 +399,6 @@ export function validateAiReleaseNotes(raw, final) {
   const finalPullRequestLinks = matchAll(final, pullRequestLinkPattern);
   const rawCommitLinks = matchAll(raw, commitLinkPattern);
   const finalCommitLinks = matchAll(final, commitLinkPattern);
-  const rawContributorsSection = getContributorsSection(raw);
-  const finalContributorsSection = getContributorsSection(final);
-  const didDropContributorsSection =
-    rawContributorsSection.trim().length > 0 &&
-    finalContributorsSection.trim().length === 0;
-  const missingSectionContributors = didDropContributorsSection
-    ? []
-    : extractContributorSectionHandles(rawContributorsSection).filter(
-        (handle) => !hasContributorHandle(finalContributorsSection, handle)
-      );
   const missingContributors = extractContributorHandles(raw).filter(
     (handle) => !hasContributorHandle(final, handle)
   );
@@ -473,11 +444,7 @@ export function validateAiReleaseNotes(raw, final) {
     errors.push('AI output dropped migration notes.');
   }
 
-  if (didDropContributorsSection) {
-    errors.push('AI output dropped Contributors section.');
-  }
-
-  if (missingContributors.length > 0 || missingSectionContributors.length > 0) {
+  if (missingContributors.length > 0) {
     errors.push('AI output dropped contributors.');
   }
 
@@ -663,48 +630,12 @@ async function readOptionalFile(filePath) {
   }
 }
 
-function collectContributors(contributors, content) {
-  for (const match of content.matchAll(contributorPattern)) {
-    contributors.add(match[1]);
-  }
-}
-
-function collectContributorSectionHandles(contributors, content) {
-  for (const match of content.matchAll(contributorHandlePattern)) {
-    contributors.add(match[1]);
-  }
-}
-
 function extractContributorHandles(content) {
-  const contributors = new Set();
-
-  collectContributors(contributors, content);
-  collectContributorSectionHandles(
-    contributors,
-    getContributorsSection(content)
-  );
-
-  return [...contributors];
-}
-
-function extractContributorSectionHandles(content) {
-  const contributors = new Set();
-
-  collectContributorSectionHandles(contributors, content);
-
-  return [...contributors];
-}
-
-function getContributorsSection(content) {
-  const match = contributorsHeadingPattern.exec(content);
-
-  if (!match) return '';
-
-  const sectionStart = match.index + match[0].length;
-  const rest = content.slice(sectionStart);
-  const nextHeading = headingBoundaryPattern.exec(rest);
-
-  return rest.slice(0, nextHeading?.index ?? rest.length);
+  return [
+    ...new Set(
+      Array.from(content.matchAll(contributorPattern), (match) => match[1])
+    ),
+  ];
 }
 
 function hasContributorHandle(content, handle) {

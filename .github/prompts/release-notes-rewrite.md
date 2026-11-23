@@ -28,7 +28,6 @@ Rewrite each entry into a polished, user-focused release note while preserving t
 - Do not modify `## \`package-name\`` headings or their order.
 - Do not modify `### Major Changes`, `### Minor Changes`, or `### Patch Changes` headings or their order.
 - Do not modify `Full changelog: [\`...\`](...)` links.
-- Do not remove `## Contributors` when it exists.
 - Preserve all PR links in the raw changelog.
 - Preserve all migration-note blocks.
 
