@@ -12,6 +12,7 @@ export const mdastToSlate = (
     if (child.type === 'html' && /^<br\s*\/?>$/i.test(child.value)) {
       return {
         children: [{ type: 'text', value: '' }],
+        position: child.position,
         type: 'paragraph',
       };
     }

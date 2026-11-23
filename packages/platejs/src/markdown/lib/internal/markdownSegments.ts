@@ -1,7 +1,8 @@
 import type { MarkdownDiagnostic } from '../types';
-import type { MarkdownTagRegistry } from './markdownTags';
+import { type MarkdownTagRegistry, markdownTextEnd } from './markdownTags';
 
 const LIST = /^ {0,3}(?:[*+-]|\d{1,9}[.)])(?:[ \t]|$)/;
+const LIST_START = /^\d{1,9}$/;
 const INDENTED = /^(?: {4}|\t)/;
 const LEADING_WHITESPACE = /^[ \t]/;
 // CommonMark whitespace is spaces and tabs only, not a no-break space.
@@ -9,14 +10,15 @@ const BLANK = /^[ \t]*$/;
 const LINE_END = /\r\n?|\n/g;
 // A math block opens and closes like a code fence, with two or more dollars.
 const FENCE = /^ {0,3}(`{3,}|~{3,}|\${2,})/;
-const RAW_HTML = /^ {0,3}<(!--|pre|script|style|textarea)(?=[ \t>]|$)/i;
-const RAW_HTML_END: Readonly<Record<string, RegExp>> = {
-  '!--': /-->/,
-  pre: /<\/pre>/i,
-  script: /<\/script>/i,
-  style: /<\/style>/i,
-  textarea: /<\/textarea>/i,
-};
+// A raw tag and a comment, two of the HTML blocks a blank line does not end,
+// each with what ends it anywhere on a line, its first line included.
+const RAW_HTML: ReadonlyArray<readonly [start: RegExp, end: RegExp]> = [
+  [
+    /^ {0,3}<(?:pre|script|style|textarea)(?=[ \t>]|$)/i,
+    /<\/(?:pre|script|style|textarea)>/i,
+  ],
+  [/^ {0,3}<!--/, /-->/],
+];
 const BYTE_ORDER_MARK = '\uFEFF';
 
 /**
@@ -26,6 +28,17 @@ const BYTE_ORDER_MARK = '\uFEFF';
  */
 export const MARKDOWN_DEFINITION =
   /(?:^\uFEFF?|[\n\r])(?:[ \t>]|[*+-][ \t]|\d{1,9}[.)][ \t])*\[(?:[^[\]\\]|\\[\s\S])+\]:/;
+
+/**
+ * Whether a continued parse reads `source` whole instead of reusing segments:
+ * a definition resolves across the whole source, and a segment without the
+ * source's carriage returns or leading byte order mark reads its line endings
+ * and offsets differently.
+ */
+export const readsMarkdownWhole = (source: string) =>
+  MARKDOWN_DEFINITION.test(source) ||
+  source.includes('\r') ||
+  source.startsWith(BYTE_ORDER_MARK);
 
 type ScanState = {
   fence: Readonly<{ char: string; length: number }> | null;
@@ -87,12 +100,10 @@ const scanLine = (
 
     return;
   }
-  const raw = RAW_HTML.exec(line);
+  const raw = RAW_HTML.find(([start]) => start.test(line));
 
   if (raw) {
-    const end = RAW_HTML_END[raw[1].toLowerCase()];
-
-    if (!end.test(line.slice(raw.index + raw[0].length))) state.rawEnd = end;
+    if (!raw[1].test(line)) state.rawEnd = raw[1];
 
     return;
   }
@@ -110,10 +121,11 @@ const scanLine = (
  * how either side parses: a blank line followed by a new block, with no open
  * fence, math block or raw HTML block, no open list and no indented line before
  * it that the next block could continue. The next block must start unindented
- * and not with a list marker, since either can continue an earlier list item or
- * list. A list stays open until such a block starts after a blank line, because
- * a streamed chunk can end inside the next item's marker. `from` must be such a
- * boundary itself (or 0).
+ * and not with a list marker or a last line of digits that can still become
+ * one, since either can continue an earlier list item or list. A list stays
+ * open until such a block starts after a blank line, because a streamed chunk
+ * can end inside the next item's marker. `from` must be such a boundary itself
+ * (or 0).
  *
  * The count of registered block tags only skips offsets inside a balanced tag.
  * It reads no pairing, so it can reach 0 while a tag is open, and the caller
@@ -133,6 +145,7 @@ export const findMarkdownSegmentBoundaries = (
     tagDepth: 0,
   };
   const boundaries: number[] = [];
+  const textEnd = markdownTextEnd(source);
   let pendingBlank = false;
   let offset = from;
 
@@ -147,6 +160,7 @@ export const findMarkdownSegmentBoundaries = (
       pendingBlank &&
       !LEADING_WHITESPACE.test(line) &&
       !LIST.test(line) &&
+      !(lineEnd === null && LIST_START.test(line)) &&
       state.previousNonBlank !== null &&
       !state.fence &&
       !state.rawEnd &&
@@ -156,7 +170,10 @@ export const findMarkdownSegmentBoundaries = (
         !state.openList &&
         !INDENTED.test(state.previousNonBlank) &&
         // A segment's parse drops a byte order mark that starts it.
-        !line.startsWith(BYTE_ORDER_MARK)
+        !line.startsWith(BYTE_ORDER_MARK) &&
+        // The tag pass reads an unclosed tag before trailing whitespace, a
+        // no-break space included, as still arriving.
+        offset < textEnd
       ) {
         boundaries.push(offset);
       }
@@ -168,6 +185,26 @@ export const findMarkdownSegmentBoundaries = (
   }
 
   return boundaries;
+};
+
+/**
+ * Whether the last root node of a segment's own parse can take what the stream
+ * adds after the segment: a block that runs past the segment's last line of
+ * text, such as an unclosed fence, comment or raw tag.
+ */
+export const holdsMarkdownSegmentOpen = (
+  segment: string,
+  last: Readonly<{
+    position?: Readonly<{ end: Readonly<{ line: number }> }>;
+  }> | null
+) => {
+  if (!last?.position) return true;
+  const lines = segment.split(LINE_END);
+  let text = lines.length;
+
+  while (text > 0 && BLANK.test(lines[text - 1])) text -= 1;
+
+  return last.position.end.line > text;
 };
 
 const shiftPoint = <

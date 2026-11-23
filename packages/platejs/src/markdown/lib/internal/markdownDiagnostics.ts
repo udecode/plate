@@ -56,6 +56,20 @@ const freezeDiagnostic = (
   });
 };
 
+const sourceStart = (diagnostic: MarkdownDiagnostic) =>
+  'source' in diagnostic ? diagnostic.source?.start : undefined;
+
+// A diagnostic with a source place sorts by it, so a parse that reads the
+// source in parts reports what a parse of the whole reports, in its order.
+const bySource = (a: MarkdownDiagnostic, b: MarkdownDiagnostic) => {
+  const left = sourceStart(a);
+  const right = sourceStart(b);
+
+  if (!left || !right) return left ? -1 : right ? 1 : 0;
+
+  return left.line - right.line || left.column - right.column;
+};
+
 export class MarkdownDiagnostics {
   readonly #diagnostics: MarkdownDiagnostic[] = [];
   readonly #keys = new Set<string>();
@@ -73,8 +87,12 @@ export class MarkdownDiagnostics {
     this.#diagnostics.push(frozen);
   };
 
+  #ordered(): MarkdownDiagnostic[] {
+    return [...this.#diagnostics].sort(bySource);
+  }
+
   all(): readonly MarkdownDiagnostic[] {
-    return Object.freeze([...this.#diagnostics]);
+    return Object.freeze(this.#ordered());
   }
 
   failure():
@@ -85,12 +103,14 @@ export class MarkdownDiagnostics {
     );
 
     if (errorIndex === -1) return null;
+    const ordered = this.#ordered();
+
     return Object.freeze([
-      ...this.#diagnostics.filter(
+      ...ordered.filter(
         (diagnostic): diagnostic is MarkdownErrorDiagnostic =>
           diagnostic.severity === 'error'
       ),
-      ...this.#diagnostics.filter(
+      ...ordered.filter(
         (diagnostic): diagnostic is MarkdownWarningDiagnostic =>
           diagnostic.severity === 'warning'
       ),
@@ -99,7 +119,7 @@ export class MarkdownDiagnostics {
 
   warnings(): readonly MarkdownWarningDiagnostic[] {
     return Object.freeze(
-      this.#diagnostics.filter(
+      this.#ordered().filter(
         (diagnostic): diagnostic is MarkdownWarningDiagnostic =>
           diagnostic.severity === 'warning'
       )

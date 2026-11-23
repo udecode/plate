@@ -123,11 +123,14 @@ import { cleanMarkdownDestinations } from './markdownSafety';
 import {
   countMarkdownLines,
   findMarkdownSegmentBoundaries,
+  holdsMarkdownSegmentOpen,
   MARKDOWN_DEFINITION,
+  readsMarkdownWhole,
   shiftMarkdownDiagnostic,
 } from './markdownSegments';
 import {
   getMarkdownTagRepair,
+  isMarkdownTagSyntax,
   remarkMarkdownTags,
   remarkMarkdownTagWriter,
   trimIncompleteMarkdownTag,
@@ -361,8 +364,17 @@ const createMarkdownParser = (
 const COMMONMARK = unified().use(remarkParse).freeze();
 
 // The editor keeps its compiled mappings while its plugins stay the same, so
-// they key a reader that outlives one call. A copy clones the plugin state, so
-// the remark plugins compare one by one.
+// they key each cache that outlives one call. A copy clones the plugin state,
+// so the remark plugins compare one by one.
+const samePlugins = (
+  cached: Readonly<{ remarkPlugins: readonly unknown[] }>,
+  remarkPlugins: readonly unknown[]
+) =>
+  cached.remarkPlugins.length === remarkPlugins.length &&
+  cached.remarkPlugins.every(
+    (plugin, index) => plugin === remarkPlugins[index]
+  );
+
 const rawHtmlEditorReaders = new WeakMap<
   CompiledMarkdownMappings,
   Readonly<{ read: MarkdownReader; remarkPlugins: readonly unknown[] }>
@@ -372,14 +384,7 @@ const getRawHtmlEditorReader = (runtime: MarkdownRuntime) => {
   const { remarkPlugins } = runtime.options;
   const cached = rawHtmlEditorReaders.get(runtime.formats);
 
-  if (
-    cached?.remarkPlugins.length === remarkPlugins.length &&
-    cached.remarkPlugins.every(
-      (plugin, index) => plugin === remarkPlugins[index]
-    )
-  ) {
-    return cached.read;
-  }
+  if (cached && samePlugins(cached, remarkPlugins)) return cached.read;
   const parser = createMarkdownParser(
     runtime,
     materializeRemarkPlugins(remarkPlugins)
@@ -390,6 +395,66 @@ const getRawHtmlEditorReader = (runtime: MarkdownRuntime) => {
   rawHtmlEditorReaders.set(runtime.formats, { read, remarkPlugins });
 
   return read;
+};
+
+type MicromarkConstruct = Readonly<{ name?: string }> | null | undefined;
+
+type MicromarkConstructs = Readonly<
+  Record<string, MicromarkConstruct | readonly MicromarkConstruct[]>
+>;
+
+// A GFM footnote definition makes a continued parse read the whole source
+// anyway.
+const SCANNED_BLOCK_SYNTAX = new Set([
+  'gfmFootnoteDefinition',
+  'mathFlow',
+  'table',
+]);
+
+const scannedBlockSyntax = new WeakMap<
+  CompiledMarkdownMappings,
+  Readonly<{ remarkPlugins: readonly unknown[]; scanned: boolean }>
+>();
+
+/**
+ * Whether the segment scan reads every block syntax the editor's remark plugins
+ * add. remark-frontmatter's fences, a directive or another plugin's block can
+ * close on a later line or open at a segment's start, so a continued parse with
+ * one reads the whole source.
+ */
+const scansBlockSyntax = (runtime: MarkdownRuntime) => {
+  const { remarkPlugins } = runtime.options;
+  const cached = scannedBlockSyntax.get(runtime.formats);
+
+  if (cached && samePlugins(cached, remarkPlugins)) return cached.scanned;
+  const extensions = createMarkdownParser(
+    runtime,
+    materializeRemarkPlugins(remarkPlugins)
+  )
+    .freeze()
+    .data('micromarkExtensions') as unknown[] | undefined;
+  const scanned = [extensions ?? []].flat(Infinity).every(
+    (extension) =>
+      isMarkdownTagSyntax(extension) ||
+      (['document', 'contentInitial', 'flowInitial', 'flow'] as const).every(
+        (field) =>
+          Object.values(
+            (extension as Partial<Record<string, MicromarkConstructs>>)?.[
+              field
+            ] ?? {}
+          )
+            .flat()
+            .every(
+              (construct) =>
+                !construct ||
+                (!!construct.name && SCANNED_BLOCK_SYNTAX.has(construct.name))
+            )
+      )
+  );
+
+  scannedBlockSyntax.set(runtime.formats, { remarkPlugins, scanned });
+
+  return scanned;
 };
 
 export const markdownToSlateNodesWithRuntime = (
@@ -1301,10 +1366,10 @@ const isZeroWidthAt = (diagnostic: MarkdownDiagnostic, offset: number) =>
 
 type RootBefore = Readonly<{ index: number; root: Root; spentNodes: number }>;
 
-const inSourceOrder = (root: Root) => {
+const inSourceOrder = (children: readonly MdRootContent[]) => {
   let end = 0;
 
-  return root.children.every((child) => {
+  return children.every((child) => {
     const start = child.position?.start.offset;
 
     if (start === undefined || start < end) return false;
@@ -1315,7 +1380,7 @@ const inSourceOrder = (root: Root) => {
 };
 
 const rootBefore = (root: Root, from: number): RootBefore | null => {
-  if (!inSourceOrder(root)) return null;
+  if (!inSourceOrder(root.children)) return null;
   const found = root.children.findIndex(
     (child) => (child.position?.start.offset ?? 0) >= from
   );
@@ -1433,8 +1498,11 @@ const openSegmentStart = (
   start = 0
 ) =>
   parsesInSegments(source, options)
-    ? (findMarkdownSegmentBoundaries(source, 0, runtime.formats.tags).at(-1) ??
-      start)
+    ? (findMarkdownSegmentBoundaries(
+        previewSource(runtime, source, options),
+        0,
+        runtime.formats.tags
+      ).at(-1) ?? start)
     : null;
 
 const deliverOpenTail = (
@@ -1494,7 +1562,9 @@ const deliverOpenTail = (
 
     return uncut && fit.ready(uncut);
   }
-  received.all().forEach(diagnostics.report);
+  const receivedAll = received.all();
+
+  receivedAll.forEach(diagnostics.report);
   const headEnd = (read.blocks ?? [])
     .slice(0, before?.index)
     .reduce((sum, n) => sum + n, 0);
@@ -1506,11 +1576,11 @@ const deliverOpenTail = (
     !plan?.copy ||
     !before ||
     from === null ||
-    hasUnplaced([...segment.keptDiagnostics, ...received.all()]) ||
+    hasUnplaced([...segment.keptDiagnostics, ...receivedAll]) ||
     segment.keptDiagnostics.some((diagnostic) =>
       isZeroWidthAt(diagnostic, from + start)
     ) ||
-    received.all().some((diagnostic) => isZeroWidthAt(diagnostic, from))
+    receivedAll.some((diagnostic) => isZeroWidthAt(diagnostic, from))
   ) {
     return blocks;
   }
@@ -1519,7 +1589,7 @@ const deliverOpenTail = (
     closeOpenTail(
       runtime,
       options,
-      { blocks, diagnostics: received.all() },
+      { blocks, diagnostics: receivedAll },
       { ...plan, copy: plan.copy },
       before,
       from,
@@ -1578,7 +1648,9 @@ const convertMarkdownSource = (
   if (
     !reuse?.previous ||
     importsRawHtml(runtime) ||
-    !parsesInSegments(source, options)
+    readsMarkdownWhole(source) ||
+    !scansBlockSyntax(runtime) ||
+    !fitsByteLimit(source, options)
   ) {
     return full();
   }
@@ -1634,6 +1706,7 @@ const convertMarkdownSource = (
     const local = new MarkdownDiagnostics();
     let count = 0;
     let lastRoot: MdRootContent | null = null;
+    let ordered = false;
     const parsed = runParsedNodes(
       runtime,
       source.slice(stableEnd, end),
@@ -1646,6 +1719,9 @@ const convertMarkdownSource = (
       {
         onRootChildren: (children) => {
           lastRoot = children.at(-1) ?? null;
+          ordered =
+            inSourceOrder(children) &&
+            children.every((child) => child.position?.end.offset !== undefined);
         },
         onSyntaxNodes: (nodes) => {
           count = nodes;
@@ -1666,12 +1742,13 @@ const convertMarkdownSource = (
         ),
       lastRoot,
       parsed,
+      placed: ordered && !hasUnplaced(local.all()),
       syntaxNodes: count,
     };
   };
 
   const boundaries = findMarkdownSegmentBoundaries(
-    source,
+    previewSource(runtime, source, options),
     stableEnd,
     runtime.formats.tags
   );
@@ -1682,10 +1759,18 @@ const convertMarkdownSource = (
     const segment = convertRange(boundary);
 
     if (!segment) return full();
-    // A tag still open at the segment's end holds what follows, whatever the
-    // scan counted. Only the last boundary tries again, because trying each one
-    // inside a long open tag would parse its body once per boundary.
-    if (getMarkdownTagRepair(segment.lastRoot ?? {})?.repair === 'unclosed') {
+    const { lastRoot } = segment;
+
+    // A block or tag the segment's own parse leaves open holds what follows,
+    // whatever the scan read, and so does a root block or diagnostic it leaves
+    // without a source place, because a fresh parse reads the places of the
+    // whole document. Only the last boundary tries again, because trying each
+    // one inside a long open block would parse its body once per boundary.
+    if (
+      !segment.placed ||
+      getMarkdownTagRepair(lastRoot ?? {})?.repair === 'unclosed' ||
+      holdsMarkdownSegmentOpen(source.slice(stableEnd, boundary), lastRoot)
+    ) {
       nextTry = boundaries.length - 1;
       continue;
     }

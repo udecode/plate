@@ -384,6 +384,12 @@ const findHtmlFlow = (context: TokenizeContext) => {
   return htmlFlow;
 };
 
+const tagSyntaxes = new WeakSet<object>();
+
+/** Whether a micromark extension is the tag syntax `remarkMarkdownTags` adds. */
+export const isMarkdownTagSyntax = (extension: unknown) =>
+  tagSyntaxes.has(extension as object);
+
 const createSyntax = (tags: MarkdownTagRegistry) => {
   const isRegistered = (name: string) => tags.has(name);
   const isBlock = (name: string) => tags.get(name) === 'block';
@@ -979,8 +985,10 @@ const normalizeBlocks = (
   visit(tree);
 };
 
+export const markdownTextEnd = (source: string) => source.trimEnd().length;
+
 const markUnclosedAtEnd = (tree: AnyNode, source: string) => {
-  const end = source.trimEnd().length;
+  const end = markdownTextEnd(source);
   const visit = (node: AnyNode) => {
     const tag = node.data?.markdownTag;
 
@@ -1100,7 +1108,10 @@ export const remarkMarkdownTags: UnifiedPlugin<
     micromarkExtensions?: unknown[];
     toMarkdownExtensions?: unknown[];
   };
-  (data.micromarkExtensions ??= []).push(createSyntax(tags));
+  const syntax = createSyntax(tags);
+
+  tagSyntaxes.add(syntax);
+  (data.micromarkExtensions ??= []).push(syntax);
   (data.fromMarkdownExtensions ??= []).push(createFromMarkdown());
   (data.toMarkdownExtensions ??= []).push(toMarkdown);
 
