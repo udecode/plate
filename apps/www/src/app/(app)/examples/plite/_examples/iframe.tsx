@@ -178,10 +178,16 @@ const IFrame = ({
     });
     setIframeBody(iframe.contentDocument.body);
   };
+  // WebKit runs no event listener inside a frame sandboxed without
+  // allow-scripts.
+  const sandbox = new URLSearchParams(window.location.search).has('sandbox')
+    ? 'allow-same-origin'
+    : undefined;
+
   return (
     <iframe
       title="Embedded Plate editor"
-      sandbox="allow-same-origin"
+      sandbox={sandbox}
       srcDoc="<!DOCTYPE html>"
       {...props}
       onLoad={handleLoad}

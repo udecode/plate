@@ -1449,6 +1449,8 @@ export type BrowserEditorHarness = {
     updateSynthetic: (options: { text: string }) => Promise<void>;
     commitSynthetic: (options: { text: string }) => Promise<void>;
     compose: (options: {
+      /** Runs after the last composition step, before the commit. */
+      beforeCommit?: () => Promise<void>;
       text: string;
       steps?: readonly string[];
       committedText?: string;

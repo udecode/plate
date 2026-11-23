@@ -105,6 +105,34 @@ export const mutateTextDOM = async (
   await waitForPendingNativeTextInputRepair(root);
 };
 
+const toPagePoint = async (root: Locator, point: { x: number; y: number }) => {
+  const frameRect = await root.evaluate((element: HTMLElement) => {
+    const view = element.ownerDocument.defaultView;
+
+    if (!view || view === view.top) return null;
+
+    const rect = element.getBoundingClientRect();
+
+    return {
+      height: rect.height,
+      width: rect.width,
+      x: rect.left,
+      y: rect.top,
+    };
+  });
+
+  if (!frameRect) return point;
+
+  const box = await root.boundingBox();
+
+  if (!box) throw new Error('Missing editor box');
+
+  return {
+    x: box.x + ((point.x - frameRect.x) * box.width) / frameRect.width,
+    y: box.y + ((point.y - frameRect.y) * box.height) / frameRect.height,
+  };
+};
+
 export const clickTextOffset = async (
   root: Locator,
   path: number[],
@@ -329,10 +357,12 @@ export const clickTextOffset = async (
       point
     );
 
+  const pagePoint = await toPagePoint(root, point);
+
   if (clickCount === 2) {
-    await root.page().mouse.dblclick(point.x, point.y);
+    await root.page().mouse.dblclick(pagePoint.x, pagePoint.y);
   } else {
-    await root.page().mouse.click(point.x, point.y, {
+    await root.page().mouse.click(pagePoint.x, pagePoint.y, {
       clickCount,
     });
   }
@@ -550,8 +580,9 @@ export const clickTextPathRange = async (
     },
     { endOffset, path, startOffset, xAffinity }
   );
+  const pagePoint = await toPagePoint(root, point);
 
-  await root.page().mouse.click(point.x, point.y);
+  await root.page().mouse.click(pagePoint.x, pagePoint.y);
 };
 
 export const waitForPendingNativeTextInputRepair = async (

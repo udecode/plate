@@ -559,8 +559,10 @@ export const composeText = async (
   steps: readonly string[],
   committedText: string,
   {
+    beforeCommit,
     transport = 'native',
   }: {
+    beforeCommit?: () => Promise<void>;
     transport?: 'native' | 'preedit' | 'synthetic';
   } = {}
 ) => {
@@ -579,6 +581,7 @@ export const composeText = async (
         text,
       });
     }
+    await beforeCommit?.();
     await dispatchPreeditEvents(surface, {
       events: order.commit,
       start: steps.length === 0,
@@ -594,6 +597,7 @@ export const composeText = async (
       await updateSyntheticComposition(surface, text);
     }
 
+    await beforeCommit?.();
     await commitSyntheticCompositionText(surface, committedText);
 
     return;
@@ -609,6 +613,7 @@ export const composeText = async (
     });
   }
 
+  await beforeCommit?.();
   await client.send('Input.insertText', {
     text: committedText,
   });

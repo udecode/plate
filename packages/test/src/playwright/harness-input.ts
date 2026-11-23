@@ -296,13 +296,17 @@ export const createEditorHarnessIme = ({
     await commitSyntheticCompositionText(surface, text);
   },
   compose: async ({
+    beforeCommit,
     text,
     steps = [text],
     committedText = text,
     transport,
   }) => {
     await enableCompositionKeyEvents(surface);
-    await composeText(page, surface, steps, committedText, { transport });
+    await composeText(page, surface, steps, committedText, {
+      beforeCommit,
+      transport,
+    });
   },
   composeDirect: async ({ text }) => {
     await composeTextDirect(page, text);
