@@ -315,6 +315,7 @@ export {
   withTransactionSpecDraftRead,
   withEditorDocumentProjection,
   getStateFieldEffectTypes,
+  isEditorPublishingCommit,
   repairEditorValue,
   runTrustedUpdate,
   scheduleAfterCommitNotification,

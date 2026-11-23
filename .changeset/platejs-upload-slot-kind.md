@@ -7,3 +7,4 @@
 - Keep the file of a placeholder submit in a transaction spec when an update applies the spec after another commit or a Cancel.
 - Answer a placeholder submit from the placeholder as the update left it, such as one the update inserted, retagged, moved into a read-only element or removed.
 - Send the newest file an update gave a placeholder when the update ends with a refused submit.
+- Send no file for a placeholder submit that a newer submit, a Cancel, a document replacement or a retype overtook while its own update was still being published.

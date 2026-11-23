@@ -46,6 +46,7 @@ import {
   getEditorRuntimeRootKeys,
   getSnapshotVersion,
   getViewAuthor,
+  isEditorPublishingCommit,
   readAuthoredView,
   registerEditorTransactionGuard,
   reportEditorLifecycleError,
@@ -249,23 +250,6 @@ const admissionMarks = (effects: readonly EditorEffect[]) =>
   effects.flatMap(({ type, value }): AdmissionMark[] =>
     type === uploadAdmissionEffect ? [value] : []
   );
-
-const winningMark = (effects: readonly EditorEffect[], key: NodeKey) => {
-  let given = false;
-  let winner: AdmissionMark | undefined;
-
-  for (const mark of admissionMarks(effects)) {
-    if (!mark.keys.includes(key)) continue;
-    if (mark.form === 'cancel') {
-      winner = undefined;
-      continue;
-    }
-    if (mark.form === 'replace' || !given) winner = mark;
-    given = true;
-  }
-
-  return winner;
-};
 
 const onceAcrossReplays = <TArgs extends unknown[]>(
   handler: (...args: TArgs) => void
@@ -492,18 +476,39 @@ const rasterFormat = (bytes: Uint8Array) => {
   return undefined;
 };
 
-type InternalTask = {
+type InternalTask = Readonly<{
   admittedVersion: number;
   controller: AbortController;
   kind: UploadKind;
+  resource: UploadTask;
   state: ReturnType<typeof createZustandStore<UploadTaskState>>;
-  token: object;
+}>;
+
+type Admission = Readonly<{
+  admittedVersion: number;
+  id: number;
+  key: NodeKey;
+  kind: UploadKind;
+}>;
+
+type DraftRecord = {
+  picture?: PastedPicture;
+  task?: InternalTask;
+  waiting?: Admission;
 };
 
 type PreparedUpload = Readonly<{
   file: File;
   kind: UploadKind;
   key: NodeKey;
+}>;
+
+type Batch = Readonly<{
+  authored: EditorViewOptions['authored'];
+  authorId: string | undefined;
+  client: UploadClient;
+  getUrl: (file: UploadOutcome) => string;
+  uploads: ReadonlyArray<PreparedUpload | PastedPicture>;
 }>;
 
 /** Owns persisted upload drafts and editor-lifetime Files SDK requests. */
@@ -543,31 +548,31 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       schema: { type },
       store,
     } = context;
-    const tasks = new Map<NodeKey, InternalTask>();
-    const pastedPictures = new Map<NodeKey, PastedPicture>();
-    type PendingStart = Readonly<{
-      admittedVersion: number;
-      id: number;
-      kind: UploadKind;
-    }>;
-    type Admitted = Readonly<{ admittedVersion: number; kind: UploadKind }>;
-    const pending = new Map<NodeKey, Map<number, PendingStart>>();
-    const joinPending = (key: NodeKey, start: PendingStart) => {
-      pending.set(key, (pending.get(key) ?? new Map()).set(start.id, start));
-    };
-    const leavePending = (key: NodeKey, id: number) => {
-      const starts = pending.get(key);
+    const records = new Map<NodeKey, DraftRecord>();
+    const unpublished = new Set<Admission>();
+    const unlist = (key?: NodeKey) => {
+      const current = store.get('tasks');
+      const gone = (key ? [key] : (Object.keys(current) as NodeKey[])).filter(
+        (listed) => current[listed] && !records.get(listed)?.task
+      );
 
-      starts?.delete(id);
-      if (starts?.size === 0) pending.delete(key);
+      if (gone.length === 0) return;
+      const next = { ...current };
+      for (const listed of gone) delete next[listed];
+      store.set({ tasks: next });
     };
-    const supersedePending = (key: NodeKey, id: number) => {
-      const starts = pending.get(key);
-
-      if (!starts) return;
-      for (const other of starts.keys()) {
-        if (other !== id) starts.delete(other);
+    const prune = (key: NodeKey, record: DraftRecord) => {
+      if (!record.task && !record.waiting && records.get(key) === record) {
+        records.delete(key);
       }
+    };
+    const stop = (key: NodeKey, task: InternalTask) => {
+      const record = records.get(key);
+      if (record?.task !== task) return;
+      record.task = undefined;
+      prune(key, record);
+      task.controller.abort();
+      unlist(key);
     };
     let admissions = 0;
     const markAdmission = (
@@ -608,25 +613,6 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           NodeApi.isElement(node) && node.type === type && node.kind === kind
         );
       });
-    const removeTaskResource = (key: NodeKey, task?: InternalTask) => {
-      const current = tasks.get(key);
-      if (task && current && current !== task) return;
-      const next = { ...store.get('tasks') };
-      if (!next[key]) return;
-      delete next[key];
-      store.set({ tasks: next });
-    };
-    const stopTask = (key: NodeKey, expected?: InternalTask) => {
-      const task = tasks.get(key);
-      if (!task || (expected && task !== expected)) return false;
-      tasks.delete(key);
-      task.controller.abort();
-      removeTaskResource(key, task);
-      return true;
-    };
-    const cancel = (key: NodeKey, expected?: InternalTask) => {
-      if (stopTask(key, expected)) pastedPictures.delete(key);
-    };
     const createOwnerView = (
       authorId: string | undefined,
       authored: EditorViewOptions['authored']
@@ -656,29 +642,26 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       });
     };
     const revokeWhere = (
-      matches: (key: NodeKey, work: Admitted) => boolean
+      matches: (key: NodeKey, work: Admission | InternalTask) => boolean
     ) => {
-      for (const [key, starts] of pending) {
-        for (const start of starts.values()) {
-          if (matches(key, start)) leavePending(key, start.id);
+      const stopped: InternalTask[] = [];
+
+      for (const admission of unpublished) {
+        if (matches(admission.key, admission)) unpublished.delete(admission);
+      }
+      for (const [key, record] of records) {
+        if (record.waiting && matches(key, record.waiting)) {
+          record.waiting = undefined;
         }
+        if (record.task && matches(key, record.task)) {
+          stopped.push(record.task);
+          record.task = undefined;
+          record.picture = undefined;
+        }
+        prune(key, record);
       }
-      const stopped = [...tasks].filter(([key, task]) => matches(key, task));
-
-      for (const [key] of stopped) {
-        tasks.delete(key);
-        pastedPictures.delete(key);
-      }
-      for (const [, task] of stopped) task.controller.abort();
-      const current = store.get('tasks');
-      const gone = (Object.keys(current) as NodeKey[]).filter(
-        (key) => !tasks.has(key)
-      );
-
-      if (gone.length === 0) return;
-      const next = { ...current };
-      for (const key of gone) delete next[key];
-      store.set({ tasks: next });
+      for (const task of stopped) task.controller.abort();
+      unlist();
     };
     const destination = (kind: UploadKind) => {
       const name =
@@ -724,27 +707,12 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       };
     };
     const startTask = (
-      upload: PreparedUpload | PastedPicture,
-      client: UploadClient,
-      getUrl: (file: UploadOutcome) => string,
-      owner: typeof editor,
-      revoked: () => boolean,
-      admittedVersion: number
+      upload: PreparedUpload,
+      record: DraftRecord,
+      admittedVersion: number,
+      { client, getUrl }: Pick<Batch, 'client' | 'getUrl'>,
+      owner: typeof editor
     ) => {
-      if (!isStoredDraft(upload.key, upload.kind)) return;
-
-      stopTask(upload.key);
-      // Stopping the older request runs its abort listeners, which may cancel
-      // this slot or close the editor.
-      if (revoked()) {
-        if (!tasks.has(upload.key)) pastedPictures.delete(upload.key);
-        return;
-      }
-      if ('caption' in upload) {
-        pastedPictures.set(upload.key, upload);
-      } else if (pastedPictures.get(upload.key)?.file !== upload.file) {
-        pastedPictures.delete(upload.key);
-      }
       const controller = new AbortController();
       const state = createZustandStore<UploadTaskState>(
         Object.freeze({
@@ -752,25 +720,24 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           status: 'uploading',
         })
       );
-      const resource: UploadTask = {
-        file: upload.file,
-        getSnapshot: state.get,
-        subscribe: state.subscribe,
-      };
       const task: InternalTask = {
         admittedVersion,
         controller,
         kind: upload.kind,
+        resource: {
+          file: upload.file,
+          getSnapshot: state.get,
+          subscribe: state.subscribe,
+        },
         state,
-        token: {},
       };
-      tasks.set(upload.key, task);
+      record.task = task;
       store.set({
-        tasks: { ...store.get('tasks'), [upload.key]: resource },
+        tasks: { ...store.get('tasks'), [upload.key]: task.resource },
       });
 
       const owns = () =>
-        tasks.get(upload.key)?.token === task.token &&
+        records.get(upload.key)?.task === task &&
         !controller.signal.aborted &&
         isStoredDraft(upload.key, upload.kind);
       const fail = (
@@ -892,7 +859,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           owner.update({ history: 'skip', tags: UPLOAD_COMMIT_TAG }, (tx) => {
             const entry = tx.nodes.get(upload.key);
             if (
-              tasks.get(upload.key)?.token !== task.token ||
+              records.get(upload.key)?.task !== task ||
               !entry ||
               !NodeApi.isElement(entry[0]) ||
               entry[0].type !== type ||
@@ -901,7 +868,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               return;
             }
 
-            const kept = pastedPictures.get(upload.key);
+            const kept = record.picture;
 
             tx.nodes.set(
               { ...kept?.properties, ...normalized },
@@ -924,9 +891,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         } catch (error) {
           // `fail` ignores a task that lost ownership, which would hide this error.
           if (!owns()) {
-            // A throw while publishing the commit skips the `on.commit` handler
-            // that drops the task.
-            cancel(upload.key, task);
+            stop(upload.key, task);
             reportTaskError(error);
             return;
           }
@@ -948,13 +913,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
     const bind = (
       effects: EditorTransactionEffectsApi,
       afterCommit: (handler: EditorCommitHandler) => void,
-      admission: Readonly<{
-        authored: EditorViewOptions['authored'];
-        authorId: string | undefined;
-        client: UploadClient;
-        getUrl: (file: UploadOutcome) => string;
-        uploads: ReadonlyArray<PreparedUpload | PastedPicture>;
-      }>,
+      admission: Batch,
       form: 'replace' | 'yield'
     ) => {
       const id = markAdmission(
@@ -967,27 +926,41 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
 
       for (const upload of admission.uploads) {
         afterCommit(({ commit }) => {
-          const start = pending.get(upload.key)?.get(id);
+          const record = records.get(upload.key);
+          const waiting = record?.waiting;
 
-          if (!start) return;
-          if (closed() || winningMark(commit.effects, upload.key)?.id !== id) {
-            leavePending(upload.key, id);
+          if (
+            !record ||
+            waiting?.id !== id ||
+            waiting.admittedVersion !== commit.previousVersion
+          ) {
             return;
           }
-          supersedePending(upload.key, id);
+          if (closed() || !isStoredDraft(upload.key, upload.kind)) {
+            record.waiting = undefined;
+            prune(upload.key, record);
+            return;
+          }
+          if (record.task) stop(upload.key, record.task);
+          // Stopping the older request runs its abort listeners, which may
+          // cancel this draft, admit another file into it or close the editor.
+          if (
+            records.get(upload.key) !== record ||
+            record.waiting !== waiting ||
+            closed()
+          ) {
+            prune(upload.key, record);
+            return;
+          }
+          record.waiting = undefined;
+          record.picture =
+            'caption' in upload
+              ? upload
+              : record.picture?.file === upload.file
+                ? record.picture
+                : undefined;
           owner ??= createOwnerView(admission.authorId, admission.authored);
-          const supersededOrClosed = () =>
-            !pending.get(upload.key)?.has(id) || closed();
-
-          startTask(
-            upload,
-            admission.client,
-            admission.getUrl,
-            owner,
-            supersededOrClosed,
-            start.admittedVersion
-          );
-          leavePending(upload.key, id);
+          startTask(upload, record, waiting.admittedVersion, admission, owner);
         });
       }
     };
@@ -1083,22 +1056,51 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         beforePublish(() => validateConfiguration(store.get()));
         onCleanup(
           registerEditorTransactionGuard(editor, ({ commit, effects }) => {
-            const marks = admissionMarks(effects).filter(
-              ({ form }) => form === 'replace' || form === 'yield'
-            );
-            const joinOnPublish = () => {
-              for (const { id, keys, kinds } of marks) {
-                keys.forEach((key, index) => {
-                  joinPending(key, {
+            const given = new Set<NodeKey>();
+            const admitted = new Map<NodeKey, Admission>();
+
+            for (const { form, id, keys, kinds } of admissionMarks(effects)) {
+              keys.forEach((key, index) => {
+                if (form === 'cancel') {
+                  admitted.delete(key);
+                  return;
+                }
+                if (form === 'replace' || !given.has(key)) {
+                  admitted.set(key, {
                     admittedVersion: commit.previousVersion,
                     id,
+                    key,
                     kind: kinds[index],
                   });
-                });
+                }
+                given.add(key);
+              });
+            }
+            if (admitted.size === 0) return undefined;
+            if (!isEditorPublishingCommit(editor)) unpublished.clear();
+            for (const admission of admitted.values()) {
+              unpublished.add(admission);
+            }
+
+            return () => {
+              for (const [key, waiting] of admitted) {
+                if (!unpublished.delete(waiting)) continue;
+                const record = records.get(key) ?? {};
+                const newest = Math.max(
+                  record.task?.admittedVersion ?? -1,
+                  record.waiting?.admittedVersion ?? -1
+                );
+
+                if (
+                  newest > waiting.admittedVersion ||
+                  !isStoredDraft(key, waiting.kind)
+                ) {
+                  continue;
+                }
+                record.waiting = waiting;
+                records.set(key, record);
               }
             };
-
-            return marks.length === 0 ? undefined : joinOnPublish;
           })
         );
         onCleanup(() => revokeWhere(() => true));
@@ -1108,8 +1110,22 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           const active = getActiveEditorTransaction(editor);
 
           if (active) markAdmission(active.effects, 'cancel', [key]);
-          pending.delete(key);
-          cancel(key);
+          for (const admission of unpublished) {
+            if (admission.key === key) unpublished.delete(admission);
+          }
+          const record = records.get(key);
+
+          if (!record) return;
+          const { task } = record;
+
+          record.waiting = undefined;
+          if (!task) {
+            if (!record.picture) prune(key, record);
+            return;
+          }
+          records.delete(key);
+          task.controller.abort();
+          unlist(key);
         },
         /**
          * Whether another draft of the same kind fits after the upload draft

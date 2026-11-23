@@ -265,6 +265,7 @@ export {
   getInstalledPlugin,
   getSchemaElementSourceReference,
   getSelectionDOMRange,
+  isEditorPublishingCommit,
   isPlugin as isRuntimePlugin,
   MAIN_ROOT_KEY,
   mapSemanticUpdateMethodArguments,
