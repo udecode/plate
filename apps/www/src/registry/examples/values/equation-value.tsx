@@ -10,13 +10,13 @@ export const equationValue: Value = (
     <hheading level={2}>
       <htext>Equation</htext>
     </hheading>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>
         Equations allow you to express complex mathematical concepts in both
         inline and block formats.
       </htext>
     </hp>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>Key features:</htext>
     </hp>
     <hp indent={2} listType="bulleted">
@@ -25,14 +25,14 @@ export const equationValue: Value = (
     <hp indent={2} listType="bulleted">
       <htext>Inline and block equation formats</htext>
     </hp>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>Inline equation example: </htext>
       <hinlineequation latex="E=mc^2">
         <htext />
       </hinlineequation>
       <htext> (Einstein's famous equation)</htext>
     </hp>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>Block equation examples:</htext>
     </hp>
     <hequation latex="\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">
@@ -51,7 +51,7 @@ export const equationValue: Value = (
     <hp>
       <htext>The fundamental theorem of calculus.</htext>
     </hp>
-    <hp indent={1} listStart={5} listType="numbered">
+    <hp indent={1} listId="equation" listStart={5} listType="numbered">
       <htext>Try these actions:</htext>
     </hp>
     <hp indent={2} listType="bulleted">

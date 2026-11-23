@@ -23,16 +23,16 @@ export const listValue: Value = (
     <hp checked={false} indent={3} listType="task">
       待办事项 2
     </hp>
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       罗马数字 1
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       数字 11
     </hp>
-    <hp indent={3} listType="numbered">
+    <hp indent={3} listId="roman" listType="numbered">
       数字 111
     </hp>
-    <hp indent={3} listType="numbered">
+    <hp indent={3} listId="roman" listType="numbered">
       数字 112
     </hp>
 
@@ -42,10 +42,10 @@ export const listValue: Value = (
     {/* <hp indent={3} listStyle="lower-latin" listType="numbered"> */}
     {/*  7K-TM */}
     {/* </hp> */}
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       数字 12
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       数字 13
     </hp>
     {/* <hp indent={2} listType="numbered"> */}
@@ -57,13 +57,13 @@ export const listValue: Value = (
     {/* <hp indent={2} listType="numbered"> */}
     {/*  联盟号 MS */}
     {/* </hp> */}
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       罗马数字 2
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       数字 11
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       数字 12
     </hp>
     {/* <hp indent={2} listType="numbered"> */}
@@ -75,10 +75,10 @@ export const listValue: Value = (
     {/* <hp indent={2} listType="numbered"> */}
     {/*  奋进号 */}
     {/* </hp> */}
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       罗马数字 3
     </hp>
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       罗马数字 4
     </hp>
   </fragment>

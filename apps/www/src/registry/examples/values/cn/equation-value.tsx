@@ -10,10 +10,10 @@ export const equationValue: Value = (
     <hheading level={2}>
       <htext>公式</htext>
     </hheading>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>公式功能允许您以内联和块级格式表达复杂的数学概念。</htext>
     </hp>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>主要特点：</htext>
     </hp>
     <hp indent={2} listType="bulleted">
@@ -22,14 +22,14 @@ export const equationValue: Value = (
     <hp indent={2} listType="bulleted">
       <htext>支持内联和块级公式格式</htext>
     </hp>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>内联公式示例：</htext>
       <hinlineequation latex="E=mc^2">
         <htext />
       </hinlineequation>
       <htext>（爱因斯坦著名的方程）</htext>
     </hp>
-    <hp indent={1} listType="numbered">
+    <hp indent={1} listId="equation" listType="numbered">
       <htext>块级公式示例：</htext>
     </hp>
     <hequation latex="\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">
@@ -48,7 +48,7 @@ export const equationValue: Value = (
     <hp>
       <htext>微积分基本定理。</htext>
     </hp>
-    <hp indent={1} listStart={5} listType="numbered">
+    <hp indent={1} listId="equation" listStart={5} listType="numbered">
       <htext>尝试以下操作：</htext>
     </hp>
     <hp indent={2} listType="bulleted">

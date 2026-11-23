@@ -26,16 +26,16 @@ export const listValue: Value = (
     <hp checked={false} indent={3} listType="task">
       Todo 2
     </hp>
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       Roman 1
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       Decimal 11
     </hp>
-    <hp indent={3} listType="numbered">
+    <hp indent={3} listId="roman" listType="numbered">
       Decimal 111
     </hp>
-    <hp indent={3} listType="numbered">
+    <hp indent={3} listId="roman" listType="numbered">
       Decimal 112
     </hp>
 
@@ -45,10 +45,10 @@ export const listValue: Value = (
     {/* <hp indent={3} listStyle="lower-latin" listType="numbered"> */}
     {/*  7K-TM */}
     {/* </hp> */}
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       Decimal 12
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       Decimal 13
     </hp>
     {/* <hp indent={2} listType="numbered"> */}
@@ -60,13 +60,13 @@ export const listValue: Value = (
     {/* <hp indent={2} listType="numbered"> */}
     {/*  Soyuz MS */}
     {/* </hp> */}
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       Roman 2
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       Decimal 11
     </hp>
-    <hp indent={2} listType="numbered">
+    <hp indent={2} listId="roman" listType="numbered">
       Decimal 12
     </hp>
     {/* <hp indent={2} listType="numbered"> */}
@@ -78,10 +78,10 @@ export const listValue: Value = (
     {/* <hp indent={2} listType="numbered"> */}
     {/*  Endeavour */}
     {/* </hp> */}
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       Roman 3
     </hp>
-    <hp indent={1} listStyle="upper-roman" listType="numbered">
+    <hp indent={1} listId="roman" listStyle="upper-roman" listType="numbered">
       Roman 4
     </hp>
   </fragment>
