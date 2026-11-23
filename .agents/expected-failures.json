@@ -11,6 +11,12 @@
       "file": "apps/www/scripts/registry-style-transform.test.mts",
       "test": "registry style transform > transforms every marked active registry source for all eight styles",
       "owner": "t_0245331c"
+    },
+    {
+      "step": "test",
+      "file": "apps/www/src/registry/components/editor/link.lifecycle.spec.tsx",
+      "test": "opens only the focused editor with the configured shortcut and dismisses its input",
+      "owner": "t_2ae75a16"
     }
   ]
 }
