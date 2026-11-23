@@ -56,6 +56,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-fix-diff-paragraph-text",
+      "href": "/registry/changelog/2026-11-23-fix-diff-paragraph-text.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the text of a whole inserted or deleted block in the comparison card",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["diff"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-fix-toolbar-menu-checks",
       "href": "/registry/changelog/2026-11-23-fix-toolbar-menu-checks.json",
       "status": "draft",

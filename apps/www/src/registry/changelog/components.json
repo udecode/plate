@@ -49,6 +49,12 @@
       "2026-11-21-add-field"
     ],
     "field-demo": ["2026-11-23-field-fill-view", "2026-11-21-add-field"],
+    "diff": [
+      "2026-11-23-fix-diff-paragraph-text",
+      "2026-11-20-fix-reduced-motion-scroll",
+      "2026-11-17-cn-package",
+      "2026-09-15-structural-diff"
+    ],
     "turn-into-toolbar-button": [
       "2026-11-23-fix-toolbar-menu-checks",
       "2026-11-22-ui-sweep-fixes",
@@ -529,11 +535,6 @@
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
-    ],
-    "diff": [
-      "2026-11-20-fix-reduced-motion-scroll",
-      "2026-11-17-cn-package",
-      "2026-09-15-structural-diff"
     ],
     "editor": [
       "2026-11-20-isolate-editor-container",

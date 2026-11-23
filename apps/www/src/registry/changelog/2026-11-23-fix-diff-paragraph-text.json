@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-fix-diff-paragraph-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-fix-diff-paragraph-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show the text of a whole inserted or deleted block in the comparison card",
+  "targets": [
+    {
+      "name": "diff",
+      "files": ["apps/www/src/registry/components/editor/diff.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-diff-text-whole-inserted-deleted-49c0921b",
+      "kind": "fix",
+      "summary": "Show the text of a whole inserted or deleted block under its Insertion or Deletion heading.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["diff"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-fix-diff-paragraph-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -903,6 +903,16 @@ const maximalUnmatched = (
     return node.parentIndex === null || matched.has(node.parentIndex);
   });
 
+const blockText = (
+  index: ComparisonDocumentIndex,
+  node: ComparisonIndexNode
+): string =>
+  node.blockContainer
+    ? node.childIndexes
+        .map((childIndex) => blockText(index, index.nodes[childIndex]))
+        .join('\n')
+    : node.text;
+
 const ancestorsWithMatchedDescendants = (
   index: ComparisonDocumentIndex,
   matched: ReadonlySet<number>
@@ -2381,7 +2391,12 @@ export const matchComparison = async (
                 kind: 'wrapper',
                 type: source.type,
               }
-            : { after: [], before: beforeSpans, kind: 'delete' }
+            : {
+                after: [],
+                before: beforeSpans,
+                beforeText: blockText(before, source),
+                kind: 'delete',
+              }
         )
     );
   }
@@ -2410,7 +2425,12 @@ export const matchComparison = async (
                 kind: 'wrapper',
                 type: target.type,
               }
-            : { after: afterSpans, before: [], kind: 'insert' }
+            : {
+                after: afterSpans,
+                afterText: blockText(after, target),
+                before: [],
+                kind: 'insert',
+              }
         ),
       copy ? 'copy' : 'primary'
     );

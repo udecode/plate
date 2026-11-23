@@ -35,15 +35,20 @@ const segmentText = (
   text: string,
   granularity: DiffGranularity,
   locale?: string
-): readonly string[] => {
-  if (granularity === 'section' || text.length === 0) return [text];
+): ReadonlyArray<Readonly<{ index: number; segment: string }>> => {
+  if (granularity === 'section' || text.length === 0) {
+    return [{ index: 0, segment: text }];
+  }
   if (granularity === 'line') {
-    return text.match(/[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$/gu) ?? [text];
+    return Array.from(
+      text.matchAll(/[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$/gu),
+      ({ 0: segment, index }) => ({ index, segment })
+    );
   }
 
   return Array.from(
     new Intl.Segmenter(locale, { granularity }).segment(text),
-    ({ segment }) => segment
+    ({ index, segment }) => ({ index, segment })
   );
 };
 
@@ -72,48 +77,51 @@ const closeOverRequired = (
   return selected;
 };
 
-function TextEffect({
-  after,
-  before,
+const textSides = {
+  after: {
+    label: 'After',
+    mark: 'bg-emerald-200/70',
+    panel: 'border-emerald-200 bg-emerald-50/70',
+    text: 'text-emerald-950',
+    title: 'text-emerald-700',
+  },
+  before: {
+    label: 'Before',
+    mark: 'bg-red-200/70',
+    panel: 'border-red-200 bg-red-50/70',
+    text: 'text-red-950',
+    title: 'text-red-700',
+  },
+};
+
+function TextSide({
   granularity,
   locale,
+  side,
+  text,
 }: {
-  after: string;
-  before: string;
   granularity: DiffGranularity;
   locale?: string;
+  side: keyof typeof textSides;
+  text: string;
 }) {
+  const style = textSides[side];
+
   return (
-    <div className="grid gap-2 text-sm sm:grid-cols-2">
-      <div className="rounded-md border border-red-200 bg-red-50/70 p-2">
-        <div className="mb-1 text-xs font-medium text-red-700">Before</div>
-        <div className="whitespace-pre-wrap text-red-950">
-          {segmentText(before, granularity, locale).map((segment, index) => (
-            <mark
-              // oxlint-disable-next-line react-doctor/no-array-index-as-key -- Segments are a derived display mask and are recreated as one immutable text effect.
-              key={index}
-              className="bg-red-200/70 text-inherit"
-              data-diff-segment={granularity}
-            >
-              {segment}
-            </mark>
-          ))}
-        </div>
+    <div className={cn('rounded-md border p-2 text-sm', style.panel)}>
+      <div className={cn('mb-1 text-xs font-medium', style.title)}>
+        {style.label}
       </div>
-      <div className="rounded-md border border-emerald-200 bg-emerald-50/70 p-2">
-        <div className="mb-1 text-xs font-medium text-emerald-700">After</div>
-        <div className="whitespace-pre-wrap text-emerald-950">
-          {segmentText(after, granularity, locale).map((segment, index) => (
-            <mark
-              // oxlint-disable-next-line react-doctor/no-array-index-as-key -- Segments are a derived display mask and are recreated as one immutable text effect.
-              key={index}
-              className="bg-emerald-200/70 text-inherit"
-              data-diff-segment={granularity}
-            >
-              {segment}
-            </mark>
-          ))}
-        </div>
+      <div className={cn('whitespace-pre-wrap', style.text)}>
+        {segmentText(text, granularity, locale).map(({ index, segment }) => (
+          <mark
+            key={index}
+            className={cn('text-inherit', style.mark)}
+            data-diff-segment={granularity}
+          >
+            {segment}
+          </mark>
+        ))}
       </div>
     </div>
   );
@@ -130,11 +138,39 @@ function EffectDetails({
 }) {
   if (effect.kind === 'text') {
     return (
-      <TextEffect
-        after={effect.afterText}
-        before={effect.beforeText}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <TextSide
+          granularity={granularity}
+          locale={locale}
+          side="before"
+          text={effect.beforeText}
+        />
+        <TextSide
+          granularity={granularity}
+          locale={locale}
+          side="after"
+          text={effect.afterText}
+        />
+      </div>
+    );
+  }
+  if (effect.kind === 'insert') {
+    return (
+      <TextSide
         granularity={granularity}
         locale={locale}
+        side="after"
+        text={effect.afterText}
+      />
+    );
+  }
+  if (effect.kind === 'delete') {
+    return (
+      <TextSide
+        granularity={granularity}
+        locale={locale}
+        side="before"
+        text={effect.beforeText}
       />
     );
   }

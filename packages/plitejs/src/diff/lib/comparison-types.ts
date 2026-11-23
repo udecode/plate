@@ -65,7 +65,17 @@ type ComparisonEffectBase = Readonly<{
 
 export type ComparisonEffect = ComparisonEffectBase &
   (
-    | Readonly<{ kind: 'delete' | 'insert' | 'structure' }>
+    | Readonly<{ kind: 'structure' }>
+    | Readonly<{
+        /** The inserted content's text, with a line break between blocks. */
+        afterText: string;
+        kind: 'insert';
+      }>
+    | Readonly<{
+        /** The deleted content's text, with a line break between blocks. */
+        beforeText: string;
+        kind: 'delete';
+      }>
     | Readonly<{
         afterText: string;
         beforeText: string;
