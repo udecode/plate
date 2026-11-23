@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-footnote-create-definition-focus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-footnote-create-definition-focus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Focus a footnote definition created from its reference",
+  "targets": [
+    {
+      "name": "footnote",
+      "files": ["apps/www/src/registry/components/editor/footnote.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-footnote-focus-definition-created-from-68f9aba8",
+      "kind": "fix",
+      "summary": "Focus the new definition when Create definition in a reference's hover card, or a Cmd-click or Ctrl-click on an unresolved reference, adds it. Before, the caret stayed outside an editor that had no focus, and the next typing was lost.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["footnote"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-footnote-create-definition-focus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

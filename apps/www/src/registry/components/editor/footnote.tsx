@@ -189,13 +189,11 @@ export function FootnoteReferenceElement(
               if (event.metaKey || event.ctrlKey) {
                 event.preventDefault();
                 event.stopPropagation();
-                if (footnoteApi.isResolved({ ref })) {
-                  footnoteNavigation.focusDefinition({ ref });
-
-                  return;
+                if (!footnoteApi.isResolved({ ref })) {
+                  footnoteUpdate.createDefinition({ ref });
                 }
 
-                footnoteUpdate.createDefinition({ ref });
+                footnoteNavigation.focusDefinition({ ref });
               }
             }}
           >
@@ -227,6 +225,7 @@ export function FootnoteReferenceElement(
                     event.preventDefault();
                     event.stopPropagation();
                     footnoteUpdate.createDefinition({ ref });
+                    footnoteNavigation.focusDefinition({ ref });
                     setHoverOpen(false);
                   }}
                 >

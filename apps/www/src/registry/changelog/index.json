@@ -79,6 +79,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-footnote-create-definition-focus",
+      "href": "/registry/changelog/2026-11-23-footnote-create-definition-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Focus a footnote definition created from its reference",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["footnote"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-board-styles-file",
       "href": "/registry/changelog/2026-11-22-board-styles-file.json",
       "status": "draft",
