@@ -1,16 +1,20 @@
 'use client';
 
 import type { DocxDiagnostic } from 'platejs/docx/export';
+import { FieldPlugin } from 'platejs/field/react';
 import { MarkdownPlugin } from 'platejs/markdown';
 import {
   EditorRoot,
   useCreateEditor,
+  useEditor,
   useEditorSelector,
   useEditorValue,
   useModelEditor,
+  usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
 
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useLocale } from '@/hooks/useLocale';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BaseBasicBlocksKit } from '@/registry/components/editor/basic-blocks-static';
@@ -44,6 +48,39 @@ const presentation = [
   ...BaseTableKit,
 ];
 const panel = 'flex min-w-0 flex-col gap-2 rounded-md border p-3';
+const AUTHOR = 'author';
+
+function FillRoleSwitch({
+  labels,
+}: {
+  labels: Readonly<Record<string, string>>;
+}) {
+  const editor = useEditor();
+  const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
+
+  return (
+    <ToggleGroup
+      aria-label="Fill role"
+      onValueChange={(value) => {
+        if (value) {
+          editor
+            .plugin(FieldPlugin)
+            .store.set({ fillRole: value === AUTHOR ? null : value });
+        }
+      }}
+      size="sm"
+      type="single"
+      value={fillRole ?? AUTHOR}
+      variant="outline"
+    >
+      {Object.entries(labels).map(([role, label]) => (
+        <ToggleGroupItem key={role} value={role}>
+          {label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+}
 
 function FieldOutputs() {
   const editor = useModelEditor();
@@ -132,6 +169,21 @@ export default function FieldDemo() {
   return (
     <EditorRoot editor={editor}>
       <div className="@container flex flex-col gap-4 p-4">
+        <FillRoleSwitch
+          labels={
+            locale === 'cn'
+              ? {
+                  [AUTHOR]: '编辑模板',
+                  房东: '以房东身份填写',
+                  租客: '以租客身份填写',
+                }
+              : {
+                  [AUTHOR]: 'Author',
+                  landlord: 'Fill as landlord',
+                  tenant: 'Fill as tenant',
+                }
+          }
+        />
         <EditorFrame className="h-[520px] rounded-md border">
           <Toolbar className="border-b p-1">
             <FieldToolbarButton />

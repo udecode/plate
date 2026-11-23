@@ -30,6 +30,16 @@
       ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -77,6 +87,23 @@
       "source": {
         "line": 22,
         "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-field-fill-view",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-23-field-demo-fill-role-switch",
+      "kind": "new",
+      "summary": "Add a switch between Author, Fill as landlord and Fill as tenant, which sets `FieldPlugin`'s `fillRole`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 26,
+        "row": 4,
         "legacyRelease": {
           "date": "2026-11-23",
           "entry": "2026-11-23-field-fill-view",

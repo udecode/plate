@@ -51,8 +51,8 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["field", "field-toolbar-button"],
-      "entries": 3,
+      "targets": ["field", "field-toolbar-button", "field-demo"],
+      "entries": 4,
       "diagnostics": []
     },
     {

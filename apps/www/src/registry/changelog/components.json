@@ -48,6 +48,7 @@
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
+    "field-demo": ["2026-11-23-field-fill-view", "2026-11-21-add-field"],
     "turn-into-toolbar-button": [
       "2026-11-23-fix-toolbar-menu-checks",
       "2026-11-22-ui-sweep-fixes",
@@ -353,7 +354,6 @@
     "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
     "demo": ["2026-11-22-ui-sweep-fixes"],
     "field-static": ["2026-11-21-add-field"],
-    "field-demo": ["2026-11-21-add-field"],
     "insert-toolbar-button": [
       "2026-11-21-block-menus-disable-refused-items",
       "2026-11-19-rtl-editor-ui",
