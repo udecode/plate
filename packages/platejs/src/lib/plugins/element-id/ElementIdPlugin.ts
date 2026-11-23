@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 
 import {
+  type EditorCommit,
   type Element,
   ElementApi,
   type Path,
@@ -31,6 +32,15 @@ export type ElementIdEntry = Readonly<{
   root: RootKey;
 }>;
 
+const onlyRemovesNodes = (
+  changed: EditorCommit['changed'],
+  root: RootKey | undefined,
+  presence: readonly NodeKey[]
+) =>
+  presence.length > 0 &&
+  changed.nodeKeys('text', root).length === 0 &&
+  presence.every((key) => !changed.hasNodeKey(key, 'path', root));
+
 const elementIdInitialState: ElementIdPluginState = {
   generateId: () => nanoid(),
 };
@@ -58,17 +68,23 @@ export const ElementIdPlugin = definePlugin('elementId', {
     activate({ onCleanup }) {
       onCleanup(
         registerEditorTransactionGuard(editor, ({ after, commit }) => {
+          const { changed } = commit;
+
           for (const root of elementIdDocumentRoots(after)) {
             const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-            const mayChangeIds =
-              commit.changed.has('properties', publicRoot) ||
-              commit.changed.has('structure', publicRoot) ||
-              commit.changed.has('replace', publicRoot);
+            const writesIds =
+              changed.has('properties', publicRoot) ||
+              changed.has('replace', publicRoot);
 
-            if (!mayChangeIds) continue;
+            if (!writesIds && !changed.has('structure', publicRoot)) continue;
+            const presence = changed.nodeKeys('presence', publicRoot);
+
+            if (!writesIds && onlyRemovesNodes(changed, publicRoot, presence)) {
+              continue;
+            }
             for (const nodeKey of new Set([
-              ...commit.changed.nodeKeys('node', publicRoot),
-              ...commit.changed.nodeKeys('presence', publicRoot),
+              ...changed.nodeKeys('node', publicRoot),
+              ...presence,
             ])) {
               const [node, path] =
                 getEditorCommitNode(commit, nodeKey, root) ?? [];
