@@ -38,7 +38,7 @@ const newestPins = pinsOf(readJson(join(root, '.claude/settings.json'))).map((pi
 });
 const home = homedir();
 const findings = [];
-const stale = (what, fix) => findings.push({ fix, what });
+const stale = (what, fix) => findings.push({ fix, what: `stale: ${what}` });
 
 const claude = join(home, '.claude');
 if (existsSync(claude)) {
@@ -96,10 +96,19 @@ if (existsSync(config)) {
   }
 }
 
+if (process.platform === 'darwin') {
+  const rssKb = Number(spawnSync('ps', ['-axo', 'rss=,comm='], { encoding: 'utf8' }).stdout?.match(/^\s*(\d+)\s.*\/fseventsd$/mu)?.[1] ?? 0);
+  if (rssKb > 1024 ** 2 && spawnSync('launchctl', ['print', 'system/dev.dotai.fseventsd-watchdog'], { stdio: 'ignore' }).status !== 0)
+    findings.push({
+      fix: 'a human runs npx -y skills add udecode/dotai --skill fseventsd-watchdog --agent claude-code --global -y && sudo zsh ~/.claude/skills/fseventsd-watchdog/scripts/install.sh, which installs a root job that restarts fseventsd past 1 GB',
+      what: `leak: fseventsd holds ${(rssKb / 1024 ** 2).toFixed(1)} GB. macOS 15.6 to 27.x leaks fseventsd memory on every changed path, and each worktree install changes about 170,000 paths, so the Mac swaps and freezes.`,
+    });
+}
+
 if (findings.length > 0) {
   console.log(
-    'Your agent setup is behind the plugins this repository pins. Run each fix below in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. Then ask the human to start a new session, which loads the updated plugins.'
+    'Your setup needs the fixes below. Run each in order; give a fix that names a human to the human as one line. A `claude plugin` command may rewrite .claude/settings.json, so restore it with git when it changes. After a plugin fix, ask the human to start a new session, which loads the updated plugins.'
   );
-  for (const { fix, what } of findings) console.log(`stale: ${what}\n  fix: ${fix}`);
+  for (const { fix, what } of findings) console.log(`${what}\n  fix: ${fix}`);
 } else if (!hook) console.log('ok: this agent setup matches the plugins this repository pins.');
 process.exit(hook || findings.length === 0 ? 0 : 1);
