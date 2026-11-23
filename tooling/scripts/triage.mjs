@@ -16,7 +16,7 @@
 //        pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
 //        pnpm triage record --from <batch.tsv> [--dry-run]
 //        pnpm triage mark <draft.md>
-//        pnpm triage labels
+//        pnpm triage labels   (every repository unless --repo names one)
 //        pnpm triage retest <N> --pass|--fail --on "<browser or device and version>" [--device ios|android|ime] [--found <M>[,<M>...]] [--note "<text>"] [--dry-run]
 //        pnpm triage check [<register>]
 
@@ -1881,6 +1881,18 @@ function queue(options) {
 }
 
 function labels() {
+  if (repoName === null) {
+    // One process reads one repository, so labels for every repository runs this command once per repository.
+    for (const repo of localConfig().triage.repos) {
+      const { status } = spawnSync(
+        process.execPath,
+        [fileURLToPath(import.meta.url), 'labels', '--repo', repoNameOf(repo)],
+        { stdio: 'inherit' }
+      );
+      if (status !== 0) process.exit(status ?? 1);
+    }
+    return;
+  }
   const reads = freshReads({ fallback: false });
   if (!reads.policy) {
     refuse(
