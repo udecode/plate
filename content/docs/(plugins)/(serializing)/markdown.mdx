@@ -376,6 +376,21 @@ nothing. A source with a link reference or footnote definition (`[id]: url`,
 `[^1]: note`) always parses whole, because a definition can change blocks
 before it.
 
+A `partial` parse also shows bold, italic and strikethrough that have not
+closed yet, so the preview of `Use **bold` shows `bold` in bold. It parses a
+closed copy of the unfinished block, with the closers that block needs. The
+copy goes through the same plugins and schema, and the preview shows it only
+when it keeps every received character. Up to three trailing `*`, `_` or `~`
+that could still open styling, or one trailing backslash, stay hidden until the
+next character arrives. Markers that cannot open styling show as received, such
+as the star in `2*3` and the underscore in `foo_bar`. The parse makes no closed
+copy when the unfinished block holds more than 2,000 characters, or when the
+source has a link reference or footnote definition or starts with a byte order
+mark. Styling that opened more than 1,000 characters back gets no closer
+either. Such a block shows its markers until they close. Code spans, links,
+images, math and block syntax such as table rows show as received until they
+finish, and so does styling inside link text or after an unclosed backtick.
+
 A `partial` parse converts only the text after the kept blocks. Each kept block
 came from a parse of its own part of the source, so a remark plugin that reads
 the whole tree, such as one that numbers or joins blocks, can make a preview
@@ -660,7 +675,10 @@ const plugins = [
 Standalone functions read the configured `MarkdownPlugin` from `plugins`.
 Remark plugins must be synchronous. An attacher or transformer that returns a
 Promise is a configuration error and throws. The synchronous functions never
-return `Result | Promise<Result>`.
+return `Result | Promise<Result>`. Remark plugins must also keep no state
+between parses, because a `partial` parse runs them on the closed copy of an
+unfinished block as well as on the received text. See
+[Streaming previews](#streaming-previews).
 
 ### remark-frontmatter
 

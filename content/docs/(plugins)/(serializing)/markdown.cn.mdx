@@ -340,6 +340,15 @@ hint 都会解析整个 source。在另一个 `lossPolicy` 下的解析（例如
 的已完成 block。包含链接引用定义或脚注定义（`[id]: url`、`[^1]: note`）的
 source 总是完整解析，因为定义会改变它之前的 block。
 
+`partial` 解析还会把尚未闭合的粗体、斜体和删除线显示为带样式的文本，因此 `Use **bold`
+的 preview 把 `bold` 显示为粗体。它给未完成的 block 补上所需的闭合标记，生成一份 closed
+copy。这份 copy 经过同样的 plugin 与 schema，只有它保留了每个已收到的字符时，preview
+才显示它。末尾最多三个仍可能开启样式的 `*`、`_` 或 `~`，或末尾的一个反斜杠，会保持隐藏，直到下一个字符到达。不能开启样式的标记按原样显示，例如 `2*3`
+中的星号和 `foo_bar` 中的下划线。未完成的 block 超过 2,000 个字符，或 source
+包含链接引用定义或脚注定义、或以 byte order mark 开头时，解析不生成 closed copy。在 1,000
+个字符之前开启的样式也不补闭合标记。这样的 block 会显示这些标记，直到它们闭合。Code
+span、链接、图片、数学公式以及表格行等 block 语法在完成前按原样显示，链接文本内或未闭合反引号之后的样式也是如此。
+
 `partial` 解析只转换保留的 block 之后的文本。每个保留的 block 都来自对它自己那一段
 source 的解析，因此读取整棵树的 remark plugin（例如给 block 编号或合并 block 的 plugin）可能让
 preview 与全新解析不同。不带 `partial` 的解析会把整个 source 转换一次：保留的 block
@@ -596,7 +605,9 @@ const plugins = [
 
 Standalone function 从 `plugins` 中读取已配置的 `MarkdownPlugin`。Remark plugin
 必须是同步的。Attacher 或 transformer 返回 Promise 属于配置错误，会直接抛出。
-同步 function 不会返回 `Result | Promise<Result>`。
+同步 function 不会返回 `Result | Promise<Result>`。Remark plugin
+也不能在两次解析之间保存状态，因为 `partial` 解析除了已收到的文本，还会在未完成 block 的 closed
+copy 上运行它们。参阅[流式预览](#流式预览)。
 
 ### remark-frontmatter
 

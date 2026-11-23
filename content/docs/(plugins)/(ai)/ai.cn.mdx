@@ -275,7 +275,7 @@ editor.plugin(AIChatTransportPlugin).store.set({
 使用 `aiChat.api.setPreview(content, { final, requestId })` 发布累计的 Markdown 响应。
 插件通过编辑器已安装的 Markdown mappings 解析内容，并存入 `previewValue`。
 `final: false` 时解析使用 `{ lossPolicy: 'allow', partial: true }`：未完整到达的
-末尾 tag 保持隐藏，不支持的内容以文本预览。`final` 默认为 `true`；该解析保持严格，
+末尾 tag 保持隐藏，不支持的内容以文本预览。粗体、斜体和删除线在闭合标记到达前就以带样式的形式预览。`final` 默认为 `true`；该解析保持严格，
 Markdown 无法表示的响应会清空草稿。
 每次解析（包括最终解析）都会延续同一响应最新的 partial 解析。最终解析、`hide()`、
 `reset()`、`reload()` 或 `submit()` 之后，下一次解析会重新开始。`stop()` 结束请求，并将当前响应作为最终草稿发布；

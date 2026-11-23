@@ -286,7 +286,8 @@ Publish the accumulated Markdown response with
 the editor's installed Markdown mappings and stores the result in
 `previewValue`. With `final: false`, the parse uses
 `{ lossPolicy: 'allow', partial: true }`: an unfinished trailing tag stays hidden
-and unsupported content previews as text. `final` defaults to `true`; that parse
+and unsupported content previews as text. Bold, italic and strikethrough preview
+styled before their closing markers arrive. `final` defaults to `true`; that parse
 is strict, and a response that Markdown cannot represent clears the draft.
 Each parse, the final one included, continues the latest partial parse of the
 same response. After a final parse, `hide()`, `reset()`, `reload()` or
