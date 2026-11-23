@@ -40,8 +40,8 @@ import {
 } from '../../.agents/pstack/tasks.mjs';
 import {
   BRANCH,
+  citedEditedBetween,
   existsAt,
-  movedBetween,
   PRIVATE_DIR,
   privatePaths,
   showAt,
@@ -1134,26 +1134,19 @@ function liveRows(issue, reads) {
 
 const stripLine = (ref) => ref.replace(/:\d+(?:-\d+)?$/u, '');
 
-function ownerPaths(row) {
+function ownerRefs(row) {
   const fields = parseDetail(row.detail) ?? new Map();
   if (row.outcome === 'kind' || row.outcome === 'fixed') {
-    return paths(fields.get('owner') ?? '')
-      .filter(Boolean)
-      .map(stripLine);
+    return paths(fields.get('owner') ?? '').filter(Boolean);
   }
   if (
     (row.outcome === 'not-bug' || row.outcome === 'spec') &&
     fields.has('law')
   ) {
-    return [stripLine(fields.get('law'))];
+    return [fields.get('law')];
   }
   return [];
 }
-
-const stalingOwnerPaths = (head) =>
-  head.outcome === 'fixed' ? [] : ownerPaths(head);
-
-const ownerMoved = (read, tip, owned) => movedBetween(root, read, tip, owned);
 
 const dismissedAt = (ledger, id) =>
   Date.parse(ledger.times.get(id)?.dismissed ?? '') || -Infinity;
@@ -1253,12 +1246,12 @@ function computeState(issue, reads, visiting) {
   const current = reads.issues.get(issue);
   if (!current) unknown.push(`gh could not read #${issue}`);
   else if (fingerprint(current) !== head.seen) stale.push('issue-changed');
-  const owned = stalingOwnerPaths(head);
-  if (owned.length > 0) {
-    const moved = ownerMoved(head.read, reads.tip, owned);
-    if (moved === null) {
+  const cited = head.outcome === 'fixed' ? [] : ownerRefs(head);
+  if (cited.length > 0) {
+    const edited = citedEditedBetween(root, head.read, reads.tip, cited);
+    if (edited === null) {
       unknown.push(`commit ${head.read} is not in this clone`);
-    } else if (moved) stale.push('owner-moved');
+    } else if (edited) stale.push('owner-changed');
   }
   if (head.outcome === 'dup') {
     const target = parseDetail(head.detail).get('of');
@@ -3725,7 +3718,8 @@ function recordCommand(options) {
         );
       }
     }
-    const owned = ownerPaths({ outcome: entry.outcome, detail: entry.detail });
+    const cited = ownerRefs({ outcome: entry.outcome, detail: entry.detail });
+    const owned = cited.map(stripLine);
     for (const path of owned) {
       if (!existsAt(root, read, path)) {
         refuse(
@@ -3733,9 +3727,9 @@ function recordCommand(options) {
         );
       }
     }
-    if (owned.length > 0 && ownerMoved(read, reads.tip, owned)) {
+    if (cited.length > 0 && citedEditedBetween(root, read, reads.tip, cited)) {
       refuse(
-        `${where}: ${reads.remote}/${reads.branch} changed ${owned.join(', ')} after this checkout's base; rebase and read them again`
+        `${where}: ${reads.remote}/${reads.branch} changed the code at ${cited.join(', ')} after this checkout's base; rebase and read them again`
       );
     }
     if (entry.outcome === 'kind') {

@@ -435,25 +435,96 @@ export const changedSince = (root, rev, { pair = pairedCommit } = {}) => {
   ];
 };
 
-/** Whether a commit after `from` up to `to`, two udecode/plate revs, changed any of the files, or null when git cannot tell. */
-export const movedBetween = (root, from, to, files) => {
-  const hidden = isSplit(root) ? privatePaths(root, files) : new Set();
-  const changed = (git, range, paths) => {
-    if (paths.length === 0) return false;
-    const log = git(['log', '--format=%H', '-1', range, '--', ...paths]);
-    return log.status === 0 ? log.stdout.trim() !== '' : null;
+// A cited line usually heads the statement its claim rests on, so an edit
+// within this many lines of it counts as an edit to it.
+const CITED_REACH = 3;
+
+const citation = (ref) => {
+  const match = /^(.*):(\d+)(?:-(\d+))?$/u.exec(ref);
+  if (!match) return { file: ref, reach: null };
+  return {
+    file: match[1],
+    reach: [
+      Number(match[2]) - CITED_REACH,
+      Number(match[3] ?? match[2]) + CITED_REACH,
+    ],
   };
-  const shown = changed(
+};
+
+// git writes a pure insertion's old range as `-N,0`, where N is the line it
+// follows, so its span is the two lines around the gap.
+const editedSpans = (diff) => {
+  const spans = new Map();
+  let file = null;
+  let header = false;
+  for (const line of diff.split('\n')) {
+    if (line.startsWith('diff --git ')) {
+      header = true;
+      file = null;
+    } else if (header && line.startsWith('--- ')) {
+      file = line === '--- /dev/null' ? null : line.slice(6);
+    } else if (header && line.startsWith('+++ ')) {
+      file ??= line.slice(6);
+    } else {
+      const hunk = /^@@ -(\d+)(?:,(\d+))? /u.exec(line);
+      if (!hunk) continue;
+      header = false;
+      const start = Number(hunk[1]);
+      const length = hunk[2] === undefined ? 1 : Number(hunk[2]);
+      const span =
+        length === 0 ? [start, start + 1] : [start, start + length - 1];
+      spans.set(file, [...(spans.get(file) ?? []), span]);
+    }
+  }
+  return spans;
+};
+
+/** Whether `to` differs from `from`, two udecode/plate revs, within `CITED_REACH` lines of a ref's cited lines as numbered at `from`, or anywhere in a file a ref names without lines, or null when git cannot tell. A ref is a file, `file:line` or `file:start-end`. */
+export const citedEditedBetween = (root, from, to, refs) => {
+  const cited = refs.map(citation);
+  const hidden = isSplit(root)
+    ? privatePaths(
+        root,
+        cited.map(({ file }) => file)
+      )
+    : new Set();
+  const edited = (git, range, wanted) => {
+    if (wanted.length === 0) return false;
+    const diff = git([
+      '-c',
+      'core.quotePath=false',
+      'diff',
+      '-U0',
+      '--no-color',
+      '--no-ext-diff',
+      '--no-renames',
+      '--src-prefix=a/',
+      '--dst-prefix=b/',
+      range,
+      '--',
+      ...new Set(wanted.map(({ file }) => file)),
+    ]);
+    if (diff.status !== 0) return null;
+    const spans = editedSpans(diff.stdout);
+    return wanted.some(({ file, reach }) =>
+      (spans.get(file) ?? []).some(
+        ([start, end]) => !reach || (end >= reach[0] && start <= reach[1])
+      )
+    );
+  };
+  const shown = edited(
     (args) => run(root, args),
     `${from}..${to}`,
-    files.filter((file) => !hidden.has(file))
+    cited.filter(({ file }) => !hidden.has(file))
   );
   if (shown !== false || hidden.size === 0) return shown;
   const [start, end] = [pairedCommit(root, from), pairedCommit(root, to)];
   if (!start || !end) return null;
-  return changed((args) => privateGit(root, args), `${start}..${end}`, [
-    ...hidden,
-  ]);
+  return edited(
+    (args) => privateGit(root, args),
+    `${start}..${end}`,
+    cited.filter(({ file }) => hidden.has(file))
+  );
 };
 
 const logged = (root, file) =>
