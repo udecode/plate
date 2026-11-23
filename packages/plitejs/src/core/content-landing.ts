@@ -186,6 +186,7 @@ export const struckOneTextAt = (
       NodeApi.isElement(node) &&
       typeof node.type === 'string' &&
       holdsOneText(schema, node.type) &&
+      !schema.isVoid(node) &&
       !isEditorContent(editor, node)
     ) {
       return at;

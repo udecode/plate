@@ -53,10 +53,12 @@ import {
   point as editorPoint,
   positions as editorPositions,
   previous as editorPrevious,
+  shouldMergeNodesRemovePrevNode as editorShouldMergeNodesRemovePrevNode,
   string as editorString,
   unhangRange as editorUnhangRange,
 } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
+import { getDefined } from '../internal/get-defined';
 import {
   getConsistentRangeTextMarks,
   withoutUnheldDefaultsBeside,
@@ -1619,16 +1621,48 @@ const splitOffLinesAfter = (
   );
 };
 
-const mergeBlocksAtPoint = (editor: Editor, point: Point, voids: boolean) => {
-  const lineEnd = oneTextLineEndAt(editor, point, voids);
+const mergeRemovesBlockBefore = (editor: Editor, block: Path) => {
+  if (!PathApi.hasPrevious(block)) return false;
 
-  if (lineEnd?.offset === point.offset) {
+  const previousPath = PathApi.previous(block);
+  const canRemoveBlockBefore = getEditorSchema(editor).canPlaceAtPath(
+    previousPath,
+    [],
+    {
+      removing: [getDefined(previousPath.at(-1))],
+      root: getActiveUpdateRoot(editor) ?? 'main',
+    }
+  );
+
+  return (
+    canRemoveBlockBefore &&
+    editorShouldMergeNodesRemovePrevNode(
+      editor,
+      [NodeApi.get(editor, previousPath), previousPath],
+      [NodeApi.get(editor, block), block]
+    )
+  );
+};
+
+const mergeBlocksAtPoint = (editor: Editor, point: Point, voids: boolean) => {
+  const reachedLineEnd = oneTextLineEndAt(editor, point, voids);
+  const splitLineEnd =
+    reachedLineEnd && !mergeRemovesBlockBefore(editor, reachedLineEnd.block)
+      ? reachedLineEnd
+      : null;
+
+  if (splitLineEnd?.offset === point.offset) {
     applyBuiltDocumentChange(editor, (builder, root) =>
-      builder.removeText(root, [...lineEnd.block, 0], lineEnd.offset, '\n')
+      builder.removeText(
+        root,
+        [...splitLineEnd.block, 0],
+        splitLineEnd.offset,
+        '\n'
+      )
     );
     return;
   }
-  if (lineEnd) splitOffLinesAfter(editor, lineEnd);
+  if (splitLineEnd) splitOffLinesAfter(editor, splitLineEnd);
   mergeNodes(editor, {
     at: point,
     hanging: true,
