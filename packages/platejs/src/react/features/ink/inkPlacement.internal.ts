@@ -1,5 +1,6 @@
 import type { NodeKey } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from '../../../features/ink/lib';
+import { blockAbove } from '../../../features/ink/lib/inkGone.internal';
 import {
   type InkBox,
   type InkPlacement,
@@ -183,6 +184,24 @@ const placeInkMarks = (
 
     return anchors.get(key);
   };
+  const above = new Map<NodeKey, NodeKey | undefined>();
+  const aboveOf = (key: NodeKey) => {
+    if (!above.has(key)) {
+      above.set(
+        key,
+        view.read((state) => {
+          const [, path] = state.nodes.get(key) ?? [];
+          const id = path && blockAbove(state.value(), path);
+
+          return id === undefined
+            ? undefined
+            : state.unique.holder('id', id)?.key;
+        })
+      );
+    }
+
+    return above.get(key);
+  };
   const anchorOf = (place: InkCopyPlace | undefined) => {
     if (place?.kind === 'live' || place?.kind === 'changed') {
       return { id: place.key, top: anchorBox(place.key)?.top ?? startTop };
@@ -192,11 +211,14 @@ const placeInkMarks = (
 
     if (!beside || beside.at === 'start') return { id: 'start', top: startTop };
 
-    const box = anchorBox(beside.key);
+    const upper = beside.at === 'before' ? aboveOf(beside.key) : undefined;
+    const { at, key } =
+      upper === undefined ? beside : { at: 'after' as const, key: upper };
+    const box = anchorBox(key);
 
     return {
-      id: `${beside.at}:${beside.key}`,
-      top: box ? box.top + (beside.at === 'after' ? box.height : 0) : startTop,
+      id: `${at}:${key}`,
+      top: box ? box.top + (at === 'after' ? box.height : 0) : startTop,
     };
   };
   const ink: Array<InkPlaced['ink'][number]> = [];
@@ -254,6 +276,24 @@ const placeInkMarks = (
     signs.set(id, sign);
   }
 
+  const gone = new Map<
+    string,
+    Readonly<{ ids: readonly string[]; marks: readonly InkMark[]; top: number }>
+  >();
+
+  for (const { ids, marks: of, place } of deleted) {
+    const anchor = anchorOf(place);
+    const id = `${of[0].direction}|${anchor.id}|deleted`;
+    const there = gone.get(id);
+    const merged = there && [...there.marks, ...of].sort(byMark);
+
+    gone.set(id, {
+      ids: merged ? merged.map((mark) => mark.id) : ids,
+      marks: merged ?? of,
+      top: anchor.top,
+    });
+  }
+
   return {
     bottom: editable.offsetTop + editable.offsetHeight,
     contentOrigin: {
@@ -267,17 +307,13 @@ const placeInkMarks = (
         id,
         sign: { marks: ofSign, state },
       })),
-      ...deleted.map(({ ids, marks: [first], place }) => {
-        const anchor = anchorOf(place);
-
-        return {
-          first,
-          id: `${first.direction}|${anchor.id}|deleted`,
-          left: rails[first.direction],
-          sign: { marks: ids, state: 'deleted' as const },
-          top: anchor.top,
-        };
-      }),
+      ...[...gone].map(([id, { ids, marks: of, top }]) => ({
+        first: of[0],
+        id,
+        left: rails[of[0].direction],
+        sign: { marks: ids, state: 'deleted' as const },
+        top,
+      })),
     ]
       .sort((a, b) => byMark(a.first, b.first))
       .map(({ id, left, sign, top }) => ({ id, left, sign, top })),

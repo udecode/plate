@@ -228,6 +228,9 @@ const goneFrom = (previous: string | undefined, next: string | undefined) => ({
 const gapPlace = (after: EditorDocumentValue, gap: Path) =>
   goneFrom(beside(after, gap, -1), beside(after, gap, 1));
 
+export const blockAbove = (document: EditorDocumentValue, gap: Path) =>
+  beside(document, gap, -1);
+
 type Side = 'next' | 'previous';
 
 export type GoneMemo = Readonly<Record<Side, ReadonlyMap<string, string>>>;
