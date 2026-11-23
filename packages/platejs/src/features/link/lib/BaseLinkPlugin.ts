@@ -589,19 +589,17 @@ export const BaseLinkPlugin = definePlugin('link', {
   .extend(({ plugin }) => ({
     commands: ({ around }) => [
       around(editorCommands.insertText, ({ input, state, next }) => {
-        const target = input.options?.at;
-        const currentSelection = state.selection();
+        const { at, ...options } = input.options ?? {};
+        const selection = state.selection();
 
         if (
-          target &&
-          (!currentSelection ||
-            !RangeApi.isRange(target) ||
-            !RangeApi.equals(target, currentSelection))
+          at &&
+          (!selection ||
+            !RangeApi.isRange(at) ||
+            !RangeApi.equals(at, selection))
         ) {
           return next();
         }
-
-        const selection = state.selection();
 
         if (!selection || !state.selection.isCollapsed()) {
           return next();
@@ -620,7 +618,7 @@ export const BaseLinkPlugin = definePlugin('link', {
           tx.plugin(plugin.name).exitEnd();
         });
 
-        return next.after(prefix);
+        return next.after(prefix, { ...input, options });
       }),
     ],
   }));
