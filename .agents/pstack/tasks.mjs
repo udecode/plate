@@ -22,7 +22,7 @@ const reviewScopes = (dir) => (existsSync(dir) ? readdirSync(dir, { withFileType
 
 const FROM = {
   started: ['offered', 'started'],
-  landed: ['started'],
+  landed: ['started', 'landed'],
   reviewed: ['landed'],
   carded: ['offered'],
   uncarded: ['offered'],
@@ -350,10 +350,11 @@ export function recordRow(tasks, cells, ts = null) {
   }
   if (row.move === 'landed') {
     task.status = 'landed';
-    task.patch = given.patch ?? null;
-    task.commits = given.commit ?? [];
-    task.landedText = `${row.why} ${row.evidence}`;
+    task.patch = given.patch ?? task.patch;
+    task.commits = joined(task.commits, given.commit ?? []);
+    task.landedText = [task.landedText, `${row.why} ${row.evidence}`].filter(Boolean).join(' ');
     task.landedAt = ts;
+    task.reviewed = false;
   }
   if (row.move === 'reviewed') task.reviewed = true;
   if (row.move === 'apart') task.apart = joined(task.apart, given.from ?? []);
