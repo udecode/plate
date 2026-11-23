@@ -74,6 +74,8 @@ export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
      * read yet, so a focus call must not write over it.
      */
     isSelectionHeld?: () => boolean;
+    focusSelection?: (root: HTMLElement) => boolean;
+    nodeSelectionFocus?: () => HTMLElement | null;
     onRegisterBoundary?: (boundary: DOMCoverageBoundary) => void;
     testRootFacts?: DOMRootFactOverrides;
   };
@@ -638,6 +640,10 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   readonly isSelectionHeld: () => boolean;
 
+  readonly focusSelection: (root: HTMLElement) => boolean;
+
+  readonly nodeSelectionFocus: () => HTMLElement | null;
+
   generation = 0;
 
   private facts: ResolvedDOMRootFacts | null = null;
@@ -667,6 +673,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
   constructor(options: DOMRootRuntimeOptions<TRoot>) {
     this.isComposing = options.isComposing;
     this.isSelectionHeld = options.isSelectionHeld ?? (() => false);
+    this.focusSelection = options.focusSelection ?? (() => false);
+    this.nodeSelectionFocus = options.nodeSelectionFocus ?? (() => null);
     this.adapter = options.adapter;
     this.editor = options.editor;
     this.domCoverage = createDOMCoverageSession(

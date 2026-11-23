@@ -234,13 +234,15 @@ export type EditableContentRootSlotOptions = {
   id?: string;
   /**
    * The element that takes focus in place of this root's editable when the
-   * editor moves focus here, as after an undo, while there is no selection or
-   * a node selection holds only top-level blocks of this root. It does not
-   * take focus while the editor shows a caret or a text selection, even one
-   * the model does not hold, or on a call to `editor.api.dom.focus()`, which
-   * focuses the editable. Unless the element is a control, such as a button,
-   * the editor reads no keys from it, so it must handle the keys it needs,
-   * such as undo and redo.
+   * editor moves focus here, as after an undo or on a call to
+   * `editor.api.dom.focus()`, while there is no selection or a node selection
+   * holds only top-level blocks of this root. It does not take focus while the
+   * editor shows a caret or a text selection, even a range drawn on the page
+   * that reaches into this root, and a click that selects an object in this
+   * root focuses the editable. When the render that follows a focus call
+   * replaces the element, focus falls to the page. Unless the element is a
+   * control, such as a button, the editor reads no keys from it, so it must
+   * handle the keys it needs, such as undo and redo.
    */
   nodeSelectionFocus?: NodeSelectionFocus;
   placeholder?: ReactNode;

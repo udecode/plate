@@ -125,6 +125,30 @@ const syncPreferredModelSelectionToDOM = <
   }
 };
 
+export const focusSelectionTarget = <
+  V extends Value = Value,
+  TPlugins extends readonly unknown[] = readonly [],
+>(
+  editor: ReactRuntimeEditor<V, TPlugins>,
+  element: HTMLElement
+) => {
+  if (findMountedEditableDOMRuntime(element)?.focusNodeSelectionElement()) {
+    return true;
+  }
+
+  const viewSelection = readPliteViewSelection(editor);
+
+  if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
+    return false;
+  }
+
+  IS_FOCUSED.set(editor as unknown as Editor, true);
+  setEditorFocused(editor as unknown as Editor, true);
+  element.focus({ preventScroll: true });
+
+  return true;
+};
+
 const focusPliteEditableForRequest = <
   V extends Value = Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -138,24 +162,9 @@ const focusPliteEditableForRequest = <
 
   if (
     element &&
-    findMountedEditableDOMRuntime(element)?.focusNodeSelectionElement()
+    (focusSelectionTarget(editor, element) ||
+      syncPreferredModelSelectionToDOM(editor, element))
   ) {
-    return;
-  }
-
-  const viewSelection = readPliteViewSelection(editor);
-
-  if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
-    if (element) {
-      IS_FOCUSED.set(editor as unknown as Editor, true);
-      setEditorFocused(editor as unknown as Editor, true);
-      element.focus({ preventScroll: true });
-    }
-
-    return;
-  }
-
-  if (element && syncPreferredModelSelectionToDOM(editor, element)) {
     return;
   }
 

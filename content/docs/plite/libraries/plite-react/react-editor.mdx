@@ -129,12 +129,15 @@ Check if the DOM editor is in read-only mode.
 
 #### `editor.api.dom.blur(): void`
 
-Blur the editor.
+Blur the editor, and take focus from the root's `nodeSelectionFocus` element
+while it holds it.
 
 #### `editor.api.dom.focus(options?: { retries?: number }): void`
 
 Focus the editor's [view](react-editor#views). Does nothing when no view is
-picked.
+picked. The root's `nodeSelectionFocus` element takes focus while there is no
+selection or a node selection holds only the root's top-level blocks, and a
+range shown across roots stays shown.
 
 #### `editor.api.dom.deselect(): void`
 

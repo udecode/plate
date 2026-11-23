@@ -57,7 +57,10 @@ import type {
 } from '../components/editable';
 import { readHistoryStepUndoRange } from '../history-step-views';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
-import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
+import {
+  focusSelectionTarget,
+  supersedeEditableFocusRequests,
+} from '../hooks/focus-plite-editable';
 import {
   getPliteNodePathFromDOMElement,
   isPliteNodeFlowRootBound,
@@ -639,6 +642,8 @@ export class EditableDOMRuntime {
           textHost?.textContent?.replaceAll('\uFEFF', '') === modelText
         );
       },
+      nodeSelectionFocus: () => this.nodeSelectionFocus?.current ?? null,
+      focusSelection: (root) => focusSelectionTarget(this.editorValue, root),
       isComposing: () => this.state.isComposing,
       isSelectionHeld: () =>
         isSelectionHeldForNativeMove(

@@ -35,6 +35,7 @@ import {
   projectedHistoryRange,
   watchProjectedHistoryRanges,
 } from '../history-step-views';
+import { focusSelectionTarget } from '../hooks/focus-plite-editable';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -50,7 +51,6 @@ import {
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
 import type { DOMRepairQueue } from './dom-repair-queue';
-import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
 import {
   type EditableCommand,
   type EditableRepairPolicy,
@@ -906,19 +906,18 @@ export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
   try {
     const editorElement = ReactEditor.editable(editor);
 
-    if (
-      editorElement &&
-      findMountedEditableDOMRuntime(editorElement)?.focusNodeSelectionElement()
-    ) {
+    if (editorElement && focusSelectionTarget(editor, editorElement)) {
       return true;
     }
 
     const viewSelection = readPliteViewSelection(editor);
 
-    if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
-      if (!editorElement) return false;
-      editorElement.focus({ preventScroll: true });
-      return true;
+    if (
+      !editorElement &&
+      viewSelection &&
+      !isPliteViewSelectionCollapsed(viewSelection)
+    ) {
+      return false;
     }
 
     ReactEditor.focus(editor);

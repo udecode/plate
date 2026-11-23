@@ -383,6 +383,8 @@ Bind one typed semantic command to the mounted root editor. Command input
 belongs to the returned dispatcher, so event-time data never becomes hook
 configuration. The dispatcher returns `true` when the command landed, `false`
 when no handler applied, and `undefined` when the editor refused the update.
+Some refusals throw instead, such as a write through a read-only view or a
+preview.
 
 ```tsx
 import { editorCommands } from "plitejs";
@@ -396,12 +398,12 @@ return <button onClick={() => insertBreak()}>New paragraph</button>;
 ```
 
 Pass `focus: 'restore-root'` when the command should move focus back to the
-editor root before running. Pass `focus: 'none'` to leave focus alone. The
-default is `focus: 'preserve'`. Pass `root` when the command should target a
-known root instead of the editable or active root. An `EditorRoot` does not
-hide the `Editable` around it, so a hook in an `EditorRoot` nested inside an
-`Editable` takes that `Editable`'s root name, whether the nested `EditorRoot`
-shows the same editor or another.
+editor root before running, so it runs at the caret that focus gives the root.
+Pass `focus: 'none'` to leave focus alone. The default is `focus: 'preserve'`.
+Pass `root` when the command should target a known root instead of the editable
+or active root. An `EditorRoot` does not hide the `Editable` around it, so a
+hook in an `EditorRoot` nested inside an `Editable` takes that `Editable`'s root
+name, whether the nested `EditorRoot` shows the same editor or another.
 
 With no `root` and outside an `Editable`, the command runs in the root the
 caret is in when the dispatcher is called. A focus that no press started puts

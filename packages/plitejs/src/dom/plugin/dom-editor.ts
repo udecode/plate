@@ -188,6 +188,16 @@ export const supersedeFocusRequest = (editor: EditorType) => {
   EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
 };
 
+const focusRetries = (options?: { retries?: number }) => options?.retries ?? 50;
+
+const claimFocusRequest = (editor: EditorType, root: Document | ShadowRoot) => {
+  supersedeFocusRequest(editor);
+  ROOT_TO_FOCUS_REQUEST_OWNER.set(root, {
+    editor,
+    generation: EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0,
+  });
+};
+
 const getLastChildren = (element: HTMLElement): HTMLElement => {
   if (element.childElementCount > 0) {
     return getLastChildren(element.children[0] as HTMLElement);
@@ -203,6 +213,10 @@ export type DOMEditor<
 > = EditorType<V, TPlugins>;
 
 export interface DOMApi {
+  /**
+   * Blur the editor, and take focus from the root's `nodeSelectionFocus`
+   * element while it holds it.
+   */
   blur: () => void;
   drag: DOMDragApi;
   /**
@@ -248,6 +262,11 @@ export interface DOMApi {
   assertEventRange: (event: any) => Range;
   findKey: (node: Descendant) => Key;
   assertPath: (node: Node) => Path;
+  /**
+   * Focus the editor's view. The root's `nodeSelectionFocus` element takes
+   * focus while there is no selection or a node selection holds only the
+   * root's top-level blocks, and a range shown across roots stays shown.
+   */
   focus: (options?: { retries?: number }) => void;
   getWindow: () => Window;
   hasDOMNode: (target: DOMNode, options?: { editable?: boolean }) => boolean;
@@ -1754,7 +1773,7 @@ const DOMEditorImpl: DOMEditorInterface = {
   resolvePath: (editor, node) => resolvePliteNodePath(editor, node),
 
   focus: (editor, options = {}) => {
-    const retries = options.retries ?? 50;
+    const retries = focusRetries(options);
     const focusRequestGeneration =
       (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1;
 
@@ -3418,7 +3437,17 @@ export const createDOMEditorCapability = <
   };
   const capability: DOMEditorCapability<V> = {
     blur: () => {
-      DOMEditor.blur(editor);
+      const view = reachView(editor);
+      const el = DOMEditorImpl.editable(view);
+      const focusElement = el && findDOMRootRuntime(el)?.nodeSelectionFocus();
+      const held =
+        !!focusElement &&
+        (focusElement.getRootNode() as Document | ShadowRoot).activeElement ===
+          focusElement;
+
+      DOMEditorImpl.blur(view);
+      // Last, so focus that the element's blur handler moves stays where it went.
+      if (held) focusElement.blur();
     },
     deselect: () => {
       DOMEditor.deselect(editor);
@@ -3432,6 +3461,15 @@ export const createDOMEditorCapability = <
     findKey: (node) => DOMEditor.findKey(editor, node),
     assertPath: (node) => DOMEditor.assertPath(editor, node),
     focus: (options) => {
+      const view = reachView(editor);
+      const el = DOMEditorImpl.editable(view);
+
+      if (focusRetries(options) > 0 && el) {
+        // Before the focus, so a request that a focus handler makes wins.
+        claimFocusRequest(view, el.getRootNode() as Document | ShadowRoot);
+        if (findDOMRootRuntime(el)?.focusSelection(el)) return;
+      }
+
       DOMEditor.focus(editor, options);
     },
     getWindow: () => DOMEditor.getWindow(editor),
