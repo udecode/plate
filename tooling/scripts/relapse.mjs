@@ -31,6 +31,7 @@ const now = new Date();
 const { values } = parseArgs({
   options: {
     fix: { type: 'string', multiple: true, default: [] },
+    help: { type: 'boolean', short: 'h', default: false },
     ref: { type: 'string', default: 'origin/next' },
     until: {
       type: 'string',
@@ -40,6 +41,16 @@ const { values } = parseArgs({
     },
   },
 });
+if (values.help) {
+  console.log(`Usage: node tooling/scripts/relapse.mjs [--fix <commit>]... [--ref <ref>] [--until <YYYY-MM-DD>]
+
+Lists the fixes that rework product lines an earlier fix wrote, per review scope.
+
+  --fix <commit>   report only the relapses of this fix; repeat it for several
+  --ref <ref>      the branch whose history it reads, origin/next by default
+  --until <date>   count fixes up to this date, today by default`);
+  process.exit(0);
+}
 if (!/^\d{4}-\d{2}-\d{2}$/.test(values.until)) {
   throw new Error(
     `--until takes a date such as 2026-11-22, not ${values.until}`
