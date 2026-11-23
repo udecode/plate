@@ -226,7 +226,7 @@
       "apps/plite/",
       "apps/www/src/app/(app)/examples/plite/"
     ],
-    "focus": "next",
+    "focus": "all",
     "floor": [
       "claude-opus-5 @xhigh",
       "gpt-6.1-sol @xhigh",

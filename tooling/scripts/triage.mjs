@@ -196,7 +196,9 @@ const OUTCOMES = {
   'not-bug': { required: ['law'], optional: [] },
   split: { required: ['into'], optional: [] },
   spec: { required: ['question'], optional: ['law'] },
+  'works-on-beta': { required: ['commit', 'proof'], optional: [] },
 };
+const CLOSED_BY_BETA = new Set(['fixed', 'works-on-beta']);
 const ROW_SHAPE = {
   ts: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u,
   issue: ISSUE,
@@ -1762,7 +1764,12 @@ function bugMilestone(policy, detail) {
 }
 
 function milestoneFor(policy, milestone, state, head, bug) {
-  if (mainReport(policy, milestone)) return milestone;
+  if (mainReport(policy, milestone)) {
+    const betaStillShowsBug = state === 'current' && head.outcome === 'kind';
+    return betaStillShowsBug
+      ? bugMilestone(policy, parseDetail(head.detail))
+      : milestone;
+  }
   if (
     state === 'current' &&
     head.outcome !== 'kind' &&
@@ -1942,6 +1949,11 @@ function labels() {
       replaysReport(parseDetail(head.detail)) &&
       hasLanded(String(issue.number), head, reads) &&
       devices.length === 0;
+    const declined =
+      reads.policy.primary &&
+      state === 'current' &&
+      head.outcome === 'not-bug' &&
+      hasLanded(String(issue.number), head, reads);
     if (state === 'current') {
       const triageId = fields.triage.optionIds.get(
         head.outcome === 'needs-repro'
@@ -2030,6 +2042,11 @@ function labels() {
         `gh issue close ${issue.number} --repo ${repo} --reason completed`
       );
     }
+    if (declined) {
+      commands.push(
+        `gh issue close ${issue.number} --repo ${repo} --reason 'not planned'`
+      );
+    }
   }
   if (unscoped.length > 0) {
     console.error(
@@ -2072,7 +2089,7 @@ function shippedCommand(options) {
     const { state, head } = stateFor(number, reads);
     if (
       state !== 'current' ||
-      head.outcome !== 'fixed' ||
+      !CLOSED_BY_BETA.has(head.outcome) ||
       !hasLanded(number, head, reads) ||
       run('git', [
         'merge-base',
@@ -3054,7 +3071,7 @@ function claimCommand(options) {
     if (result.verdict === 'closed') console.log(`skipped ${at}: closed`);
     if (result.verdict === 'main') {
       console.log(
-        `skipped ${at}: on none of the Beta milestones, ${betaMilestones(reads.policy).join(', ')}, it reports main, which gets no fixes yet`
+        `skipped ${at}: on none of the Beta milestones, ${betaMilestones(reads.policy).join(', ')}, it reports main, which takes no fixes, so triage #${result.issue} checks it on the beta first`
       );
     }
     if (result.verdict === 'fixed') {
@@ -3750,8 +3767,13 @@ function recordCommand(options) {
         );
       }
     }
+    if (entry.outcome === 'works-on-beta' && !reads.policy.primary) {
+      refuse(
+        `${where}: every ${reads.policy.repo} issue reports the beta, so one the beta already passes gets a fixed record with the commit that fixed it`
+      );
+    }
     if (
-      entry.outcome === 'fixed' &&
+      CLOSED_BY_BETA.has(entry.outcome) &&
       run('git', [
         'merge-base',
         '--is-ancestor',
@@ -3885,7 +3907,9 @@ function recordCommand(options) {
   );
   for (const row of rows) console.log(row);
   if (reads.policy.primary) {
-    for (const entry of entries.filter((each) => each.outcome === 'fixed')) {
+    for (const entry of entries.filter((each) =>
+      CLOSED_BY_BETA.has(each.outcome)
+    )) {
       const issue = issueNumber(entry.issue);
       requestRelease({
         issue,
