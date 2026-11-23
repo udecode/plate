@@ -366,6 +366,7 @@ export type CompiledEditorSchema = Readonly<{
     textGroups: ReadonlySet<string>;
     wrapperPlans: ReadonlyMap<string, CompiledSchemaWrapperPlan>;
   }>;
+  everyElementHasId: boolean;
   identity: EditorSchemaIdentity;
   primaryRoot: CompiledSchemaRoot;
   properties: Readonly<{
@@ -5544,9 +5545,25 @@ const compileEditorSchemaInternal = (
     }
   }
 
+  const idProperty = mutableProperties.find(
+    (property) => property.key === 'id' && property.lifecycle.unique
+  );
+  const everyElementHasId =
+    idProperty?.descriptor.kind === 'string' &&
+    [...frozenPrograms.values()].every(
+      (program) => !program.allowsUnknownElements
+    ) &&
+    [...compiledElements.keys()].every((type) =>
+      matchesCompiledSchemaTarget({ elements }, idProperty.target, {
+        root: null,
+        type,
+      })
+    );
+
   return Object.freeze({
     diagnostics: Object.freeze([]),
     elements,
+    everyElementHasId,
     identity: derived
       ? Object.freeze({ fingerprint, kind: 'derived' })
       : Object.freeze({
@@ -7563,6 +7580,7 @@ export const restoreEditorSchemaContract = (
         Object.freeze([...value])
       ),
     }),
+    everyElementHasId: compiled.everyElementHasId,
     identity: contract.identity,
     primaryRoot: restoreRoot(contract.primaryRoot),
     properties: Object.freeze({
