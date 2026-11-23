@@ -4,9 +4,10 @@ import {
   getInternalDocumentRootChange,
   valueRoot,
   valueRootIndex,
+  valueRootNodes,
   withDocumentChangeRecords,
 } from '../core/change/document-change';
-import type { DocumentIndex } from '../core/change/document-index';
+import type { DocumentIndex, NodeList } from '../core/change/document-index';
 import { jsonEqual } from '../core/change/json';
 import { copyRoots, setLazyRoot } from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
@@ -407,10 +408,10 @@ const insideTaken = (
   path: readonly number[],
   takenWhole: ReadonlySet<unknown>
 ) => {
-  let nodes = root === 'main' ? value.children : (value.roots?.[root] ?? []);
+  let nodes: Pick<NodeList, 'at'> = valueRootNodes(value, root);
 
   for (const at of path) {
-    const node = nodes[at];
+    const node = nodes.at(at);
 
     if (!node) return false;
     if (takenWhole.has(node)) return true;
@@ -440,12 +441,11 @@ const takenWithoutVerdict = (
   const removedByMark = (node: unknown) =>
     takenWhole.has(node) && marksOf(node, facts).some(removes);
   const partsOn = ({ path, root }: Occurrence) => {
-    let nodes =
-      root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
+    let nodes: Pick<NodeList, 'at'> = valueRootNodes(value, root);
     let taken = false;
 
     for (const at of path) {
-      const node = nodes[at];
+      const node = nodes.at(at);
 
       if (!node) break;
       if (removedByMark(node)) return { remover: node, taken: true };
