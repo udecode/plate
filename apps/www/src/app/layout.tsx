@@ -90,7 +90,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      className={cn(fontSans.variable, fontMono.variable)}
+      lang="en"
+      suppressHydrationWarning
+    >
       <head>
         <Script
           id="theme-color-script"
@@ -115,9 +119,7 @@ export default function RootLayout({
       <body
         className={cn(
           'group/body style-nova min-h-svh bg-background font-sans antialiased',
-          '[--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] lg:[--header-height:calc(var(--spacing)*16)] xl:[--footer-height:calc(var(--spacing)*24)]',
-          fontSans.variable,
-          fontMono.variable
+          '[--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] lg:[--header-height:calc(var(--spacing)*16)] xl:[--footer-height:calc(var(--spacing)*24)]'
         )}
         suppressHydrationWarning
       >

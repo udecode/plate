@@ -1,6 +1,10 @@
 import * as React from 'react';
 
-import { readPlateCreateConfig } from '@/lib/plate-create';
+import {
+  getPlateCreatePreset,
+  readPlateCreateConfig,
+} from '@/lib/plate-create';
+import { getPlateCreateTheme } from '@/lib/plate-create-theme';
 
 import { CreatePreview } from './create-preview';
 
@@ -32,12 +36,15 @@ async function CreatePreviewContent({
     editor: read('editor'),
     preset: read('preset'),
   });
+  const preset = getPlateCreatePreset(config);
+  const theme = await getPlateCreateTheme(config.base, preset).catch(
+    () => null
+  );
 
   return (
     <CreatePreview
-      base={config.base}
-      editor={config.editor}
-      style={config.style}
+      initialConfig={config}
+      initialTheme={theme && { ...theme, preset }}
     />
   );
 }

@@ -287,11 +287,11 @@ export async function writeCreatePreviewTrees({
   // following the index into them. The install check owns the trees' types.
   files.set(
     join(outDir, 'index.js'),
-    `${header}export const createPreviewPages = {\n${keys.map((key) => `  '${key}': () => import('./${key}/app/editor/page'),`).join('\n')}\n};\n`
+    `${header}import { lazy } from 'react';\n\nexport const createPreviewPages = {\n${keys.map((key) => `  '${key}': lazy(() => import('./${key}/app/editor/page')),`).join('\n')}\n};\n`
   );
   files.set(
     join(outDir, 'index.d.ts'),
-    `${header}import type { ComponentType } from 'react';\n\nexport declare const createPreviewPages: Record<\n${keys.map((key) => `  | '${key}'`).join('\n')},\n  () => Promise<{ default: ComponentType }>\n>;\n`
+    `${header}import type { ComponentType, LazyExoticComponent } from 'react';\n\nexport declare const createPreviewPages: Record<\n${keys.map((key) => `  | '${key}'`).join('\n')},\n  LazyExoticComponent<ComponentType>\n>;\n`
   );
 
   for (const stale of await listFiles(outDir)) {

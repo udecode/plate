@@ -67,15 +67,15 @@
   --color-highlight: var(--highlight);
 
   --font-heading:
-    'var(--font-heading)', 'ui-sans-serif', '-apple-system',
-    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
-    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
+    var(--font-heading), 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont',
+    'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji',
+    'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
   --font-mono:
-    'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
   --font-sans:
-    'var(--font-sans)', 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont',
+    var(--font-sans), 'ui-sans-serif', '-apple-system', 'BlinkMacSystemFont',
     'Segoe UI Variable Display', 'Segoe UI', 'Helvetica', 'Apple Color Emoji',
     'Arial', 'sans-serif', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';

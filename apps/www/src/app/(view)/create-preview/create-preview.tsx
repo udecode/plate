@@ -1,140 +1,140 @@
 'use client';
 
-import { Bot, Bold, LinkIcon, List, Sparkles } from 'lucide-react';
+import './create-preview.css';
 import * as React from 'react';
 
-import { SiteRegistryProvider } from '@/components/site-registry/provider';
-import type { PlateCreateEditor } from '@/lib/plate-create';
-import type {
-  PlateRegistryBase,
-  PlateRegistryStyleName,
-} from '@/lib/plate-registry-styles';
-import { cn } from '@/lib/utils';
+import { createPreviewPages } from '@/__registry__/create-preview';
 import {
-  FloatingPopover,
-  FloatingPopoverContent,
-  FloatingPopoverTrigger,
-} from '@/registry/components/editor/floating-popover';
-import {
-  Toolbar,
-  ToolbarButton,
-  ToolbarGroup,
-} from '@/registry/components/editor/toolbar';
+  getPlateCreatePreset,
+  getPlateCreatePreviewPath,
+  type PlateCreateConfig,
+  readPlateCreateConfig,
+} from '@/lib/plate-create';
+import type { PlateCreateTheme } from '@/lib/plate-create-theme';
 
-const editorContent: Record<PlateCreateEditor, React.ReactNode> = {
-  'editor-ai': (
-    <>
-      <h2>Plan the launch</h2>
-      <p>
-        Draft the announcement, assign reviewers, and ask AI to tighten the
-        final copy.
-      </p>
-      <div className="mt-5 flex items-center gap-2 rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-        <Sparkles className="size-4" />
-        Ask AI to continue writing…
-      </div>
-    </>
-  ),
-  'editor-basic': (
-    <>
-      <h2>Weekly notes</h2>
-      <p>A clean editor for documents, notes, and long-form content.</p>
-      <ul>
-        <li>Review the product brief</li>
-        <li>Share the first draft</li>
-      </ul>
-    </>
-  ),
-  'editor-select': (
-    <>
-      <p className="text-muted-foreground">Project summary</p>
-      <p>Rich text that fits naturally inside a form.</p>
-    </>
-  ),
-};
+type PreviewTheme = PlateCreateTheme & { preset: string };
+
+const toDeclarations = (vars: Record<string, string>) =>
+  Object.entries(vars)
+    .map(
+      ([name, value]) =>
+        `${name.startsWith('--') ? name : `--${name}`}: ${value};`
+    )
+    .join(' ');
+
+const getThemeCss = ({ cssVars, fonts }: PreviewTheme) =>
+  [
+    ...fonts.map(
+      (font) =>
+        `@import url('https://cdn.jsdelivr.net/npm/${font.dependency}/index.css');`
+    ),
+    `:root { ${toDeclarations({
+      ...cssVars.light,
+      ...cssVars.theme,
+      ...Object.fromEntries(
+        fonts.flatMap(({ family, variable }) =>
+          // shadcn's install puts a mono or serif body font's utility class on
+          // <html>, so the preview's font-sans text takes that font too.
+          variable === '--font-heading'
+            ? [[variable, family]]
+            : [
+                [variable, family],
+                ['--font-sans', family],
+              ]
+        )
+      ),
+    })} }`,
+    `.dark { ${toDeclarations(cssVars.dark)} }`,
+  ].join('\n');
 
 export function CreatePreview({
-  base,
-  editor,
-  style,
+  initialConfig,
+  initialTheme,
 }: {
-  base: PlateRegistryBase;
-  editor: PlateCreateEditor;
-  style: PlateRegistryStyleName;
+  initialConfig: PlateCreateConfig;
+  initialTheme: PreviewTheme | null;
 }) {
-  const [bold, setBold] = React.useState(false);
-  const styleClassName = `style-${style}`;
+  const [config, setConfig] = React.useState(initialConfig);
+  const [theme, setTheme] = React.useState(initialTheme);
+  const { base, editor } = initialConfig;
+  const { style } = config;
+  const preset = getPlateCreatePreset(config);
+  const Page = createPreviewPages[`${base}/${editor}`];
 
   React.useEffect(() => {
-    const previousStyleClasses = [...document.body.classList].filter((name) =>
-      name.startsWith('style-')
-    );
+    const onMessage = (event: MessageEvent) => {
+      if (
+        event.origin !== window.location.origin ||
+        event.data?.type !== 'plate-create-config'
+      ) {
+        return;
+      }
 
-    document.body.classList.remove(...previousStyleClasses);
-    document.body.classList.add(styleClassName);
+      const next = readPlateCreateConfig(event.data);
+      const path = getPlateCreatePreviewPath(next);
+
+      if (next.base !== base || next.editor !== editor) {
+        window.location.replace(path);
+
+        return;
+      }
+
+      window.history.replaceState(null, '', path);
+      setConfig(next);
+    };
+
+    window.addEventListener('message', onMessage);
+
+    return () => window.removeEventListener('message', onMessage);
+  }, [base, editor]);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    if (theme?.preset !== preset) {
+      fetch(`/api/create/theme?${new URLSearchParams({ base, preset })}`, {
+        signal: controller.signal,
+      })
+        .then(async (response) => {
+          if (!response.ok) return;
+
+          setTheme({
+            ...((await response.json()) as PlateCreateTheme),
+            preset,
+          });
+        })
+        .catch(() => {});
+    }
+
+    return () => controller.abort();
+  }, [base, preset, theme?.preset]);
+
+  React.useEffect(() => {
+    const { classList } = document.body;
+    const previous = [...classList].filter((name) => name.startsWith('style-'));
+
+    classList.remove(...previous);
+    classList.add(`style-${style}`);
 
     return () => {
-      document.body.classList.remove(styleClassName);
-      document.body.classList.add(...previousStyleClasses);
+      classList.remove(`style-${style}`);
+      classList.add(...previous);
     };
-  }, [styleClassName]);
+  }, [style]);
 
   return (
-    <SiteRegistryProvider base={base} style={style}>
-      <main
-        className={cn(
-          styleClassName,
-          'flex min-h-svh items-center justify-center bg-muted/40 p-4 sm:p-8'
-        )}
+    <>
+      {theme && <style>{getThemeCss(theme)}</style>}
+      <div
+        className="relative bg-background"
         data-preview-base={base}
         data-preview-editor={editor}
         data-preview-style={style}
       >
-        <section className="w-full max-w-3xl overflow-hidden rounded-xl border bg-background shadow-sm">
-          <Toolbar className="min-h-11 gap-1 border-b bg-background px-2">
-            <ToolbarGroup>
-              <ToolbarButton
-                aria-label="Bold"
-                pressed={bold}
-                onClick={() => setBold((value) => !value)}
-              >
-                <Bold className="size-4" />
-              </ToolbarButton>
-              <ToolbarButton aria-label="List">
-                <List className="size-4" />
-              </ToolbarButton>
-              <ToolbarButton aria-label="AI">
-                <Bot className="size-4" />
-              </ToolbarButton>
-            </ToolbarGroup>
-
-            <FloatingPopover>
-              <FloatingPopoverTrigger>
-                <ToolbarButton aria-label="Insert link">
-                  <LinkIcon className="size-4" />
-                </ToolbarButton>
-              </FloatingPopoverTrigger>
-              <FloatingPopoverContent>
-                <p className="text-sm font-medium">Insert link</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Provider-specific popover behavior, shared Plate API.
-                </p>
-              </FloatingPopoverContent>
-            </FloatingPopover>
-          </Toolbar>
-
-          <article
-            className={cn(
-              'prose prose-neutral dark:prose-invert max-w-none p-6 sm:p-10',
-              editor === 'editor-select' && 'min-h-44',
-              editor !== 'editor-select' && 'min-h-80',
-              bold && 'font-semibold'
-            )}
-          >
-            {editorContent[editor]}
-          </article>
-        </section>
-      </main>
-    </SiteRegistryProvider>
+        <React.Suspense fallback={null}>
+          <Page />
+        </React.Suspense>
+      </div>
+    </>
   );
 }

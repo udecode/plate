@@ -31,6 +31,8 @@ const FontItemSchema = z.object({
   }),
 });
 
+export type PlateCreateTheme = Awaited<ReturnType<typeof getPlateCreateTheme>>;
+
 export async function getPlateCreateTheme(
   base: PlateCreateConfig['base'],
   preset: string
