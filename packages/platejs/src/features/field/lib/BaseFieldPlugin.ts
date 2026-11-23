@@ -371,7 +371,8 @@ const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
 /**
  * Whether a value fits a field's kind: a boolean for a checkbox, one of its
  * options' values for a choice, an ISO date string for a date, a finite number
- * for a number, and a string for a text or signature field.
+ * other than -0 for a number, a string with no line break for a text field,
+ * and a string for a signature field.
  */
 export const fitsField = (
   { kind, options = [] }: FieldShape,
@@ -388,7 +389,14 @@ export const fitsField = (
       return typeof value === 'string' && isIsoDate(value);
     }
     case 'number': {
-      return typeof value === 'number' && Number.isFinite(value);
+      return (
+        typeof value === 'number' &&
+        Number.isFinite(value) &&
+        !Object.is(value, -0)
+      );
+    }
+    case 'text': {
+      return typeof value === 'string' && !/[\n\r]/.test(value);
     }
     default: {
       return typeof value === 'string';

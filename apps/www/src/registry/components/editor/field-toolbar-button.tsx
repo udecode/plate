@@ -2,7 +2,7 @@
 
 import { BracesIcon } from 'lucide-react';
 import { BaseFieldPlugin } from 'platejs/field';
-import { useEditor, useEditorReadOnly } from 'platejs/react';
+import { useEditor, useEditorReadOnly, usePluginStore } from 'platejs/react';
 import * as React from 'react';
 
 import {
@@ -25,11 +25,17 @@ const KINDS = [
 export function FieldToolbarButton() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
+  const filling = usePluginStore(
+    BaseFieldPlugin,
+    (state) => state.fillRole != null
+  );
   const [open, setOpen] = React.useState(false);
+
+  if (open && (readOnly || filling)) setOpen(false);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger disabled={readOnly}>
+      <DropdownMenuTrigger disabled={readOnly || filling}>
         <ToolbarButton pressed={open} tooltip="Insert field" isDropdown>
           <BracesIcon />
         </ToolbarButton>

@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-field-fill-view",
+      "href": "/registry/changelog/2026-11-23-field-fill-view.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Fill a field template as one role through the field chips",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field", "field-toolbar-button"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-board-styles-file",
       "href": "/registry/changelog/2026-11-22-board-styles-file.json",
       "status": "draft",

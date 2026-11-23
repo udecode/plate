@@ -1,0 +1,22 @@
+---
+id: 2026-11-23-field-fill-view
+date: 2026-11-23
+status: draft
+kind: new
+summary: 'Fill a field template as one role through the field chips'
+change: { 'type': 'source', 'date': '2026-11-23', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-23-field-fill-template-one-role-aa0fee00","kind":"new","migrationNotes":[]} -->
+
+- **`field`**: While `FieldPlugin`'s `fillRole` names a role, each chip shows its field's answer, or its label when it has none. A choice shows its option's label, and a checkbox shows a ticked or empty box. The role's own chip opens a popover with an input for the answer and a Clear button, and the role's checkbox ticks and unticks on click. Another role's chip opens nothing. The role's chip whose answer holds a pending suggestion says it waits for review and opens nothing until someone accepts or rejects it. When an answer is not stored, as when the editor refuses it or another author proposed deleting the field, the popover says "Not saved." and the input shows the stored answer. A refused checkbox says "Not saved." beside its chip. No chip drags, and an open popover closes when the role changes or the editor turns read-only.
+
+<!-- entry: {"id":"2026-11-23-field-partial-number-date-empty-choice","kind":"fix","migrationNotes":[]} -->
+
+- **`field`**: Keep the caret and the typed spelling, such as `1.0`, in a field's inputs while the change lands. Keep a number or date typed in part in its input without writing it, `-0` included, so the stored answer, default or compared value stays until the entry is complete. Unset an answer or default when its input is emptied. Keep a condition's compared value when its input is emptied, unless it compares text, which then compares with the empty string. Offer no None for a condition's compared choice. Show a newer answer that arrives while its input has focus, and drop a partial entry when the field's kind changes. Let a choice option whose value is the empty string be picked, apart from None. Render the chip itself as its popover's trigger, so the Base UI install no longer puts one button inside another.
+
+<!-- entry: {"id":"2026-11-23-field-toolbar-button-fill-view","kind":"behavior","migrationNotes":[]} -->
+
+- **`field-toolbar-button`**: Disable the insert menu while `FieldPlugin`'s `fillRole` names a role, and close an open menu when the role changes or the editor turns read-only.

@@ -1,7 +1,8 @@
 'use client';
 
 import { cn } from 'cn';
-import { PlusIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
+import { CheckIcon, PlusIcon, TriangleAlertIcon, XIcon } from 'lucide-react';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   FIELD_TESTS,
   fitsField,
@@ -20,7 +21,7 @@ import {
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
-  useElement,
+  usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -88,45 +89,135 @@ const conditionOn = (
   ...(needsValue(test) ? { value: value ?? firstValue(target) } : {}),
 });
 
+type FieldNode = EditorElementProps<typeof FieldPlugin>['element'];
+
+const saveAnswer = (
+  editor: ReturnType<typeof useEditor>,
+  fieldId: string,
+  value?: FieldValue
+) => {
+  editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, { value }));
+
+  return Object.is(
+    editor.plugin(FieldPlugin).read.field(fieldId)?.node.value,
+    value
+  );
+};
+
+const useWaitsForReview = (element: FieldNode, watches: boolean) => {
+  const editor = useEditor();
+  const subscribe = React.useCallback(
+    (wake: () => void) => (watches ? editor.subscribeCommit(wake) : () => {}),
+    [editor, watches]
+  );
+  const waits = () =>
+    watches &&
+    editor
+      .plugin(AuthoredPlugin)
+      .read.reviewOf(element)
+      .marks.some((mark) => mark.kind === 'format' && mark.key === 'value');
+
+  return React.useSyncExternalStore(subscribe, waits, waits);
+};
+
 export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const { element } = props;
+  const editor = useEditor();
   const readOnly = useEditorReadOnly();
+  const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
   const field = useFieldRead(element.fieldId);
   const problems = field?.problems ?? [];
   const warning = problems.map((problem) => PROBLEMS[problem]).join(' ');
-  const openRef = React.useRef(false);
+  const filling = fillRole !== null;
+  const ownField = element.role === fillRole;
+  const waitsForReview = useWaitsForReview(
+    element,
+    ownField && editor.plugin(AuthoredPlugin).installed
+  );
+  const fills = ownField && !readOnly && !waitsForReview;
+  const toggles = fills && element.kind === 'checkbox';
+  const ticked = element.value === true;
+  const [refusedToggle, setRefusedToggle] = React.useState<{
+    role: string | null;
+    stored?: FieldValue;
+  } | null>(null);
+
+  if (
+    refusedToggle &&
+    (refusedToggle.role !== fillRole ||
+      !Object.is(refusedToggle.stored, element.value))
+  ) {
+    setRefusedToggle(null);
+  }
+
+  const answer = String(
+    element.options?.find((option) => option.value === element.value)?.label ??
+      element.value ??
+      ''
+  );
+  let form: React.ReactNode = null;
+
+  if (!filling && !readOnly) form = <FieldSettingsForm element={element} />;
+  if (fills && !toggles) form = <FieldAnswerForm element={element} />;
+
   const openAtPointerDownRef = React.useRef(false);
-  const [open, setOpen] = React.useState(false);
-  const setOpenState = React.useCallback((nextOpen: boolean) => {
-    openRef.current = nextOpen;
-    setOpen(nextOpen);
-  }, []);
+  const [openAs, setOpenAs] = React.useState<{ role: string | null } | null>(
+    null
+  );
+  const open = form !== null && openAs?.role === fillRole;
 
-  const trigger = (
-    <button
-      className={cn(
-        'inline-flex w-fit cursor-pointer items-baseline gap-1 rounded-sm bg-muted px-1 text-muted-foreground',
-        inlineSuggestionVariants({ on: 'parent' })
+  if (openAs && !open) setOpenAs(null);
+
+  const chip = {
+    className: cn(
+      'inline-flex w-fit items-baseline gap-1 rounded-sm bg-muted px-1 text-muted-foreground',
+      (form || toggles) && 'cursor-pointer',
+      inlineSuggestionVariants({ on: 'parent' })
+    ),
+    contentEditable: false,
+    draggable: !filling,
+    onClick: (event: React.MouseEvent) => {
+      if (toggles) {
+        setRefusedToggle(
+          saveAnswer(editor, element.fieldId, !ticked)
+            ? null
+            : { role: fillRole, stored: element.value }
+        );
+
+        return;
+      }
+
+      const beganOpen =
+        event.detail === 0 ? open : openAtPointerDownRef.current;
+
+      if (!form || beganOpen) return;
+
+      event.preventDefault();
+      setOpenAs({ role: fillRole });
+    },
+    onPointerDown: () => {
+      openAtPointerDownRef.current = open;
+    },
+  };
+  const chipContent = (
+    <>
+      {filling && element.kind === 'checkbox' && (
+        <span
+          aria-label={ticked ? 'Ticked' : 'Not ticked'}
+          className="flex size-3 items-center justify-center self-center rounded-[3px] border border-current"
+          role="img"
+        >
+          {ticked && <CheckIcon className="size-2.5" />}
+        </span>
       )}
-      contentEditable={false}
-      draggable
-      onClick={(event) => {
-        const beganOpen =
-          event.detail === 0 ? openRef.current : openAtPointerDownRef.current;
-
-        if (readOnly || beganOpen) return;
-
-        event.preventDefault();
-        setOpenState(true);
-      }}
-      onPointerDown={() => {
-        openAtPointerDownRef.current = openRef.current;
-      }}
-      type="button"
-    >
-      {element.label}
+      {filling && element.kind !== 'checkbox'
+        ? answer || element.label
+        : element.label}
       {element.required && <span className="text-destructive">*</span>}
       <span className="text-xs opacity-70">{element.role}</span>
+      {waitsForReview && (
+        <span className="text-xs opacity-70">waits for review</span>
+      )}
       {warning && (
         <span
           aria-label={warning}
@@ -138,7 +229,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
           <TriangleAlertIcon className="size-3" />
         </span>
       )}
-    </button>
+    </>
   );
 
   return (
@@ -150,24 +241,72 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
         contentEditable: false,
       }}
     >
-      {readOnly ? (
-        trigger
-      ) : (
-        <Popover open={open} onOpenChange={setOpenState}>
-          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-          <PopoverContent className="w-80">
-            <FieldSettingsForm />
+      {form ? (
+        <Popover
+          open={open}
+          onOpenChange={(nextOpen) =>
+            setOpenAs(nextOpen ? { role: fillRole } : null)
+          }
+        >
+          <PopoverTrigger asChild>
+            <button {...chip} type="button">
+              {chipContent}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className={filling ? 'w-64' : 'w-80'}>
+            {form}
           </PopoverContent>
         </Popover>
+      ) : (
+        <button {...chip} type="button">
+          {chipContent}
+        </button>
+      )}
+      {ownField && element.kind === 'checkbox' && (
+        <span className="text-xs text-muted-foreground" role="status">
+          {refusedToggle && ' Not saved.'}
+        </span>
       )}
       {props.children}
     </EditorElement>
   );
 }
 
-function FieldSettingsForm() {
+function FieldAnswerForm({ element }: { element: FieldNode }) {
   const editor = useEditor();
-  const element = useElement(FieldPlugin);
+  const { fieldId, kind, label, options, value } = element;
+  const [refusal, setRefusal] = React.useState<{
+    stored?: FieldValue;
+  } | null>(null);
+
+  if (refusal && !Object.is(refusal.stored, value)) setRefusal(null);
+
+  const setValue = (next?: FieldValue) =>
+    setRefusal(saveAnswer(editor, fieldId, next) ? null : { stored: value });
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <FieldValueInput
+          kind={kind}
+          label={label}
+          options={options}
+          value={value}
+          onChange={setValue}
+        />
+        <Button size="sm" variant="ghost" onClick={() => setValue()}>
+          Clear
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground" role="status">
+        {refusal && 'Not saved.'}
+      </p>
+    </div>
+  );
+}
+
+function FieldSettingsForm({ element }: { element: FieldNode }) {
+  const editor = useEditor();
   const { condition, fieldId, kind, options = [] } = element;
   const update = (patch: FieldPatch) =>
     editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, patch));
@@ -356,6 +495,7 @@ function FieldSettingsForm() {
           </NativeSelect>
           {needsValue(condition.test) && tests.includes(condition.test) && (
             <FieldValueInput
+              clearable={false}
               kind={target.kind}
               label="Compared value"
               options={target.options}
@@ -378,19 +518,52 @@ function FieldSettingsForm() {
   );
 }
 
+const NO_OPTION = '';
+const optionToken = (option: FieldOption) => `option:${option.value}`;
+
+const entryOf = (
+  kind: FieldKind,
+  input: HTMLInputElement,
+  clearable: boolean
+): { value?: FieldValue } | null => {
+  // The browser reports a number or date typed in part as bad input.
+  if (input.validity.badInput) return null;
+  if (input.value === '') {
+    if (clearable) return { value: undefined };
+
+    return kind === 'text' ? { value: '' } : null;
+  }
+
+  const value = kind === 'number' ? input.valueAsNumber : input.value;
+
+  return fitsField({ kind }, value) ? { value } : null;
+};
+
 function FieldValueInput({
+  clearable = true,
   kind,
   label,
   onChange,
   options,
   value,
 }: {
+  clearable?: boolean;
   kind: FieldKind;
   label: string;
   onChange: (value: FieldValue | undefined) => void;
   options?: readonly FieldOption[];
   value?: FieldValue;
 }) {
+  const [draft, setDraft] = React.useState<{
+    kind: FieldKind;
+    stored?: FieldValue;
+    text: string;
+  } | null>(null);
+
+  if (draft && (draft.kind !== kind || !Object.is(draft.stored, value))) {
+    setDraft(null);
+  }
+
   if (kind === 'checkbox') {
     return (
       <Checkbox
@@ -401,16 +574,29 @@ function FieldValueInput({
     );
   }
   if (kind === 'choice') {
+    const picked = options?.find((option) => option.value === value);
+
     return (
       <NativeSelect
         aria-label={label}
         size="sm"
-        value={typeof value === 'string' ? value : ''}
-        onChange={(event) => onChange(event.target.value || undefined)}
+        value={picked ? optionToken(picked) : NO_OPTION}
+        onChange={(event) => {
+          const option = options?.find(
+            (entry) => optionToken(entry) === event.target.value
+          );
+
+          if (option) onChange(option.value);
+          else if (event.target.value === NO_OPTION && clearable) {
+            onChange(undefined);
+          }
+        }}
       >
-        <NativeSelectOption value="">None</NativeSelectOption>
+        {(clearable || !picked) && (
+          <NativeSelectOption value={NO_OPTION}>None</NativeSelectOption>
+        )}
         {options?.map((option) => (
-          <NativeSelectOption key={option.value} value={option.value}>
+          <NativeSelectOption key={option.value} value={optionToken(option)}>
             {option.label}
           </NativeSelectOption>
         ))}
@@ -423,13 +609,17 @@ function FieldValueInput({
       aria-label={label}
       className="h-8"
       type={kind === 'number' || kind === 'date' ? kind : 'text'}
-      value={value === undefined ? '' : String(value)}
-      onChange={(event) => {
-        const { value: next, valueAsNumber } = event.target;
+      value={draft?.text ?? (value === undefined ? '' : String(value))}
+      onBlur={() => setDraft(null)}
+      onInput={(event) => {
+        const entry = entryOf(kind, event.currentTarget, clearable);
 
-        onChange(
-          next === '' ? undefined : kind === 'number' ? valueAsNumber : next
-        );
+        if (entry) onChange(entry.value);
+        setDraft({
+          kind,
+          stored: entry ? entry.value : value,
+          text: event.currentTarget.value,
+        });
       }}
     />
   );

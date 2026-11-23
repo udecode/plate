@@ -13114,7 +13114,7 @@
         },
         "platejs/field:fitsField": {
           "aliases": [],
-          "documentation": "Whether a value fits a field's kind: a boolean for a checkbox, one of its\noptions' values for a choice, an ISO date string for a date, a finite number\nfor a number, and a string for a text or signature field.",
+          "documentation": "Whether a value fits a field's kind: a boolean for a checkbox, one of its\noptions' values for a choice, an ISO date string for a date, a finite number\nother than -0 for a number, a string with no line break for a text field,\nand a string for a signature field.",
           "entrypoint": "platejs/field",
           "kind": "const",
           "name": "fitsField",
