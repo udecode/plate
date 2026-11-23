@@ -325,7 +325,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "87c5b922b1f08adcc700ee19d297dc17775e5d56b2e2d5df650876b9d5d32688",
+    "block": "c1ae862f01dbf24ca6fa6ef7025655d32521444b3b7b69d9a9a12957f40ecbe8",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
