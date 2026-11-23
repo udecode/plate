@@ -1390,7 +1390,7 @@ export const admitRoot = (
   return builder.finish();
 };
 
-export const topologyUniqueHolders = (
+export const topologyHolding = (
   topology: Topology,
   property: string,
   value: unknown
@@ -1401,13 +1401,30 @@ export const topologyUniqueHolders = (
     at === -1 || key === null
       ? undefined
       : hashMapGet(topology.holders[at], key);
-  const reader = readTopology(topology);
-  const paths: Path[] = [];
 
-  if (holders !== undefined) {
-    forEachHolder(holders, (cell) => paths.push(reader.pathOfCell(cell)));
-  }
-  return paths;
+  if (holders === undefined) return undefined;
+  const reader = readTopology(topology);
+  const holderAt = (cell: number) => ({
+    key: reader.cell(cell).key,
+    path: reader.pathOfCell(cell),
+  });
+
+  return {
+    all: () => {
+      const found: Array<ReturnType<typeof holderAt>> = [];
+
+      forEachHolder(holders, (cell) => found.push(holderAt(cell)));
+      return found;
+    },
+    keyed: (nodeKey: NodeKey) => {
+      const cell = reader.cellOfKey(nodeKey);
+
+      return cell !== undefined && reader.cell(cell).held?.[at] === key
+        ? holderAt(cell)
+        : undefined;
+    },
+    several: typeof holders !== 'number',
+  };
 };
 
 export const topologyUniqueEntries = (topology: Topology) => {

@@ -165,19 +165,27 @@ export type UniqueIncumbent = Readonly<{
 }>;
 
 /**
- * `holders` come in document order. An import, a load, a replacement or a
- * commit tagged `collaboration` has no incumbent.
+ * `all` gives the holders in document order. An import, a load, a replacement
+ * or a commit tagged `collaboration` has no incumbent.
  */
 export const keptUniqueHolder = <T extends Holder>(
-  holders: readonly T[],
+  holders: Readonly<{
+    all: () => readonly T[];
+    keyed: (key: NodeKey) => T | undefined;
+  }>,
   incumbent: UniqueIncumbent | null
-): T | undefined =>
-  (incumbent &&
-    (holders.find(({ key }) => key === incumbent.key) ??
-      (incumbent.left()
-        ? holders.find(({ root }) => root === incumbent.root)
-        : undefined))) ??
-  holders[0];
+): T | undefined => {
+  const kept = incumbent && holders.keyed(incumbent.key);
+
+  if (kept) return kept;
+  const all = holders.all();
+
+  return (
+    (incumbent?.left()
+      ? all.find(({ root }) => root === incumbent.root)
+      : undefined) ?? all[0]
+  );
+};
 
 export const repairUniqueHolders = (
   input: Readonly<{
@@ -202,7 +210,13 @@ export const repairUniqueHolders = (
     const holders = input.holdersOf(key, value);
 
     if (holders.length < 2) continue;
-    const kept = keptUniqueHolder(holders, input.incumbentOf(key, value));
+    const kept = keptUniqueHolder(
+      {
+        all: () => holders,
+        keyed: (nodeKey) => holders.find((holder) => holder.key === nodeKey),
+      },
+      input.incumbentOf(key, value)
+    );
     const property = getDefined(properties.get(key));
 
     for (const { path, root } of holders.filter((held) => held !== kept)) {

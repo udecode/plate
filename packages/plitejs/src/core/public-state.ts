@@ -317,6 +317,7 @@ import {
   sameNamedRoots,
   type Topology,
   topologyChangedHolders,
+  topologyHolding,
 } from './identity-owner';
 import { normalizeEditorValue } from './initial-value';
 import {
@@ -452,6 +453,7 @@ import {
   emptyRootDirectory,
   getSnapshotIndexElementEntries,
   hasRegisteredSnapshotIndex,
+  inDocumentOrder,
   indexSurelyHoldsNodeKey,
   indexUniqueValues,
   mapSnapshotIndexThroughChange,
@@ -2405,22 +2407,76 @@ const stateUniqueHolder = (
   property: string,
   value: unknown
 ): EditorUniqueHolder | null => {
-  const holders = stateUniqueHolders(owner, property, value);
   const update = getReadProjection(owner)
     ? undefined
     : TRANSACTION_SPEC_CONTEXTS.get(owner)?.[0];
 
-  if (!update) return holders[0] ?? null;
-  const holder =
-    holders.length < 2
-      ? holders[0]
-      : keptUniqueHolder(holders, updateIncumbent(owner, property, value));
+  if (!update) return stateUniqueHolders(owner, property, value)[0] ?? null;
+  const holder = draftUniqueHolder(owner, property, value);
 
   // A command frame's commit carries only the keys read while it ran, so the
   // key named here keeps naming the element the commit leaves the value on.
   if (holder) noteKeyRead(owner, holder.key);
 
   return holder ?? null;
+};
+
+const draftHolding = (owner: Editor, property: string, value: unknown) => {
+  const { snapshot } = getDefined(getTransactionSpecContext(owner));
+  const shown = snapshot.builder.value as EditorDocumentValue;
+
+  return [
+    MAIN_ROOT_KEY,
+    ...rootsHoldingValue(
+      transactionRootDirectory(owner, snapshot),
+      property,
+      value
+    ).toSorted(),
+  ].flatMap((root) => {
+    if (root !== MAIN_ROOT_KEY && !Object.hasOwn(shown.roots ?? {}, root)) {
+      return [];
+    }
+    const topology = uniqueTopologyOf(
+      owner,
+      runtimeRootIndex(owner, root),
+      valueRootNodes(shown, root)
+    );
+    const holding = topology && topologyHolding(topology, property, value);
+
+    return holding ? [{ holding, root }] : [];
+  });
+};
+
+const draftHolders = (held: ReturnType<typeof draftHolding>) =>
+  held.flatMap(({ holding, root }) =>
+    holdersAt(root, inDocumentOrder(holding.all()))
+  );
+
+const draftUniqueHolder = (
+  owner: Editor,
+  property: string,
+  value: unknown
+): EditorUniqueHolder | undefined => {
+  const held = draftHolding(owner, property, value);
+  const [first] = held;
+
+  if (!first) return undefined;
+  if (held.length === 1 && !first.holding.several) {
+    return holdersAt(first.root, first.holding.all())[0];
+  }
+
+  return keptUniqueHolder(
+    {
+      all: () => draftHolders(held),
+      keyed: (key) =>
+        held.flatMap(({ holding, root }) => {
+          const kept = holding.keyed(key);
+
+          return kept ? [Object.freeze({ key, path: kept.path, root })] : [];
+        })[0],
+    },
+    updateIncumbent(owner, property, value)
+  );
 };
 
 const updateIncumbent = (owner: Editor, property: string, value: unknown) => {
@@ -2453,6 +2509,14 @@ const updateIncumbent = (owner: Editor, property: string, value: unknown) => {
     : null;
 };
 
+const holdersAt = (
+  root: string,
+  holders: ReadonlyArray<Readonly<{ key: NodeKey | null; path: Path }>>
+) =>
+  holders.flatMap(({ key, path }) =>
+    key ? [Object.freeze({ key, path, root })] : []
+  );
+
 // Holders come in document order: main, then the named roots by name.
 const stateUniqueHolders = (
   owner: Editor,
@@ -2460,31 +2524,29 @@ const stateUniqueHolders = (
   value: unknown
 ): readonly EditorUniqueHolder[] => {
   const projection = getReadProjection(owner);
-  const context = projection ? undefined : getTransactionSpecContext(owner);
-  const shown = projection ?? context?.snapshot.builder.value;
-  const stored = shown ? undefined : getEditorDocumentRoots(owner);
-  const named = shown?.roots ?? stored ?? {};
+
+  if (!projection && getTransactionSpecContext(owner)) {
+    return draftHolders(draftHolding(owner, property, value));
+  }
+  const stored = projection ? undefined : getEditorDocumentRoots(owner);
+  const named = projection?.roots ?? stored ?? {};
   const holdersIn = (root: string) => {
     if (root !== MAIN_ROOT_KEY && !Object.hasOwn(named, root)) return [];
     const index = projection
       ? shownRootIndex(owner, root)
       : runtimeRootIndex(owner, root);
-    const children = shown
-      ? valueRootNodes(shown, root)
+    const children = projection
+      ? valueRootNodes(projection, root)
       : rootSourceOf(getDefined(stored), root);
 
-    return readUniqueHolders(owner, index, children, property, value).flatMap(
-      (path) => {
-        const key = index.keyAt(path);
-
-        return key ? [Object.freeze({ key, path, root })] : [];
-      }
+    return holdersAt(
+      root,
+      readUniqueHolders(owner, index, children, property, value)
     );
   };
   const main = holdersIn(MAIN_ROOT_KEY);
   const directory = () => {
     if (projection) return projectedRootDirectory(owner, projection);
-    if (context) return transactionRootDirectory(owner, context.snapshot);
     if (
       ROOT_DIRECTORIES.get(owner)?.uniqueProperties !==
       internedUniquePropertiesOf(getCompiledEditorSchema(owner))
@@ -2495,10 +2557,11 @@ const stateUniqueHolders = (
     return getDefined(ROOT_DIRECTORIES.get(owner));
   };
 
-  if (!context && main.length > 0) return main;
-  const held = rootsHoldingValue(directory(), property, value);
+  if (main.length > 0) return main;
 
-  return [...main, ...held.toSorted().flatMap(holdersIn)];
+  return rootsHoldingValue(directory(), property, value)
+    .toSorted()
+    .flatMap(holdersIn);
 };
 
 const admitTransactionDraft = (editor: Editor) => {

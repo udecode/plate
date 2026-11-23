@@ -50,6 +50,7 @@ import {
   TopologyBuilder,
   topologyElements,
   topologyEntries,
+  topologyHolding,
   topologyKeyAt,
   topologyPathOf,
   topologyRetained,
@@ -57,7 +58,6 @@ import {
   topologyRootOwners,
   topologyUniqueDiff,
   topologyUniqueEntries,
-  topologyUniqueHolders,
 } from './identity-owner';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
@@ -624,16 +624,21 @@ export const readUniqueHolders = (
 ) => {
   const topology = TOPOLOGIES.get(index);
 
-  return topology
-    ? orderPaths(
-        topologyUniqueHolders(
+  return inDocumentOrder(
+    topology
+      ? (topologyHolding(
           currentTopology(editor, topology, children),
           property,
           value
-        )
-      )
-    : [];
+        )?.all() ?? [])
+      : []
+  );
 };
+
+/** @internal */
+export const inDocumentOrder = <T extends Readonly<{ path: Path }>>(
+  holders: T[]
+) => holders.sort((left, right) => comparePaths(left.path, right.path));
 
 const occurrence = (property: string, key: string, place: string) =>
   `${property} ${JSON.stringify(key)} at ${place}`;
