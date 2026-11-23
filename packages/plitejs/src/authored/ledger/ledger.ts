@@ -71,12 +71,7 @@ import { tokenLength } from '../tree/alignment';
 import { ElementReads, ValueHolders } from '../tree/holders';
 import { isAuthoredSetValued } from '../tree/marks';
 import { ShownBook } from '../tree/readiness';
-import {
-  type AuthoredResolveSchema,
-  type InlineTest,
-  inlineTestOf,
-  isTextBlock,
-} from '../tree/resolve';
+import { type AuthoredResolveSchema, isTextBlock } from '../tree/resolve';
 import { type BookSink, ChangeBook } from './book';
 import type { WrittenList } from './level';
 import { mapSpans, type Pairing, rankAt, type Span, startOf } from './pairs';
@@ -413,19 +408,14 @@ function* heldBlocks(
 const changedRanges = (
   before: DocumentIndex,
   after: DocumentIndex,
-  identity: (node: JsonNode) => unknown,
-  isInline: InlineTest
+  identity: (node: JsonNode) => unknown
 ) => {
   const ranges: Array<readonly [number, number]> = [];
   const inside = (old: JsonNode, next: JsonNode, at: number) => {
     const left = old.children ?? [];
     const right = next.children ?? [];
 
-    if (
-      isTextBlock(old, isInline) ||
-      isTextBlock(next, isInline) ||
-      left.length === 0
-    ) {
+    if (isTextBlock(old) || isTextBlock(next) || left.length === 0) {
       ranges.push([at, at + tokenLength(old)]);
       return;
     }
@@ -1223,12 +1213,7 @@ export class ReviewLedger {
         before === after
           ? blocksAt(before)
           : [
-              ...changedRanges(
-                before,
-                after,
-                this.identity,
-                inlineTestOf(null)
-              ),
+              ...changedRanges(before, after, this.identity),
               ...mapSpans(after, before, blocksAt(after), this.identity),
             ];
 

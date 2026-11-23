@@ -46,8 +46,6 @@ import {
   type AuthoredPlacement,
   type AuthoredResolveSchema,
   hasBoundaryMark,
-  type InlineTest,
-  inlineTestOf,
   isTextBlock,
   resolveAuthoredChildren,
 } from '../tree/resolve';
@@ -196,7 +194,7 @@ const childFactsOf = (node: JsonNode): ChildFacts => {
 export const combineFacts = (
   node: JsonNode,
   children: ChildFacts,
-  textBlock = isTextBlock(node, inlineTestOf(null))
+  textBlock = isTextBlock(node)
 ): BlockFacts => {
   countLedgerWork('factNodes');
   countLedgerWork('visitedNodes');
@@ -516,8 +514,7 @@ type Item = {
  */
 const orderOf = (
   nodes: readonly JsonNode[],
-  placements: readonly AuthoredPlacement[],
-  isInline: InlineTest
+  placements: readonly AuthoredPlacement[]
 ): RunOrder | null => {
   if (placements.length === 0) return null;
 
@@ -546,9 +543,7 @@ const orderOf = (
         if (items.has(node)) twice.add(node);
         items.set(node, item);
         parent.children.push(item);
-        if (!isTextBlock(node, isInline)) {
-          build(node.children ?? [], item, at + 1);
-        }
+        if (!isTextBlock(node)) build(node.children ?? [], item, at + 1);
       }
       at += tokenLength(node);
     }
@@ -718,9 +713,7 @@ export const resolveRun = (
           )
         );
   const output = resolution?.children ?? [];
-  const order = resolution
-    ? orderOf(nodes, resolution.placements, inlineTestOf(null))
-    : null;
+  const order = resolution ? orderOf(nodes, resolution.placements) : null;
 
   for (const node of resolution?.unstored ?? NOTHING_UNSTORED) BUILT.add(node);
 

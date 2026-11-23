@@ -5,7 +5,7 @@ import { gridPartsOf, type Survival, survivalUnder } from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { type AuthoredMark, readAuthoredMarks } from './marks';
-import { inlineTestOf, isTextBlock, joinKeysOf, joinPassage } from './resolve';
+import { isTextBlock, joinKeysOf, joinPassage } from './resolve';
 
 type Node = JsonNode;
 
@@ -107,7 +107,6 @@ export const proposedChildren = (
   }>
 ): Readonly<{ children: ProposedChild[]; keptJoins: ReadonlySet<Node> }> => {
   const { liveContent, survives } = proposedSurvivalOf(schema);
-  const isInline = inlineTestOf(null);
   const out: ProposedChild[] = [];
   const keptJoins = new Set<Node>();
   const landings = new Map<string, Readonly<{ node: Node; path: Path }>>();
@@ -123,7 +122,7 @@ export const proposedChildren = (
   const reachableBlocks: ReachableBlock[] = [];
   const claimsOf = (node: unknown) =>
     readAuthoredMarks(node).filter((mark) => !joinAside(mark));
-  const passage = joinPassage(children, claimsOf, survives, isInline);
+  const passage = joinPassage(children, claimsOf, survives);
   const joinKeys = (node: Node) => joinKeysOf(claimsOf(node));
   // A join after a container merges into the container's last text block,
   // which stays inside it.
@@ -140,7 +139,7 @@ export const proposedChildren = (
 
         if (before && PathApi.compare(childPath, before) === 1) continue;
         if (isText(child) || !survives(child)) continue;
-        if (isTextBlock(child, isInline)) {
+        if (isTextBlock(child)) {
           if (before && !PathApi.isBefore(childPath, before)) continue;
 
           return { path: childPath, container };
@@ -229,7 +228,7 @@ export const proposedChildren = (
 
       // A join past a container with no text block left reaches the block
       // before it.
-      const block = isTextBlock(child, isInline)
+      const block = isTextBlock(child)
         ? { path: childPath }
         : lastTextBlockIn({ node: child, path: childPath });
 
@@ -240,7 +239,7 @@ export const proposedChildren = (
     node: Node
   ): Readonly<{ below: number[]; node: Node }> | null => {
     if (isText(node) || !survives(node)) return null;
-    if (isTextBlock(node, isInline)) return { below: [], node };
+    if (isTextBlock(node)) return { below: [], node };
 
     for (const [index, child] of (node.children ?? []).entries()) {
       const found = firstBlockIn(child);
@@ -300,8 +299,8 @@ export const proposedChildren = (
     hostPath.length > 0 &&
     hostPath.every((_, depth) =>
       depth === hostPath.length - 1
-        ? isTextBlock(nodeAt(depth), isInline)
-        : !isTextBlock(nodeAt(depth), isInline)
+        ? isTextBlock(nodeAt(depth))
+        : !isTextBlock(nodeAt(depth))
     );
 
   read(childrenAt(children, hostPath), hostPath);

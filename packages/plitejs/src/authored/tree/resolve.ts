@@ -379,14 +379,13 @@ export const placementLinksIn = <
 >(
   eachBlock: (visit: (node: N) => void) => void,
   claimsOf: (node: N) => readonly AuthoredMark[],
-  isPending: (mark: AuthoredMark) => boolean,
-  isInline: InlineTest
+  isPending: (mark: AuthoredMark) => boolean
 ) => {
   const blocks: N[] = [];
   const orders = new Map<N, number>();
   const visit = (node: N) => {
     orders.set(node, blocks.length);
-    if (isTextBlock(node, isInline)) blocks.push(node);
+    if (isTextBlock(node)) blocks.push(node);
     else node.children?.forEach(visit);
   };
 
@@ -578,39 +577,13 @@ const prefixHead = <N>({ built, children }: Completion<N>, slots: number) =>
     )
     .join(',');
 
-export type InlineTest = (node: Readonly<JsonRecord>) => boolean;
-
-const INLINE_TESTS = new WeakMap<CompiledEditorSchema, InlineTest>();
-
-const ANY_INLINE: InlineTest = () => true;
-
-export const inlineTestOf = (
-  schema: CompiledEditorSchema | null | undefined
-): InlineTest => {
-  if (!schema) return ANY_INLINE;
-
-  let test = INLINE_TESTS.get(schema);
-
-  if (!test) {
-    test = (node) =>
-      typeof node.type === 'string' &&
-      (schema.elements.byType.get(node.type)?.behavior.inline ?? false);
-    INLINE_TESTS.set(schema, test);
-  }
-
-  return test;
-};
-
-export const isTextBlock = (node: unknown, isInline: InlineTest) => {
+export const isTextBlock = (node: unknown) => {
   const { children, text } = (node ?? {}) as Node;
 
   return (
     typeof text !== 'string' &&
     !!children &&
-    (children.length === 0 ||
-      (children.some(isText) &&
-        (isInline === ANY_INLINE ||
-          children.every((child) => isText(child) || isInline(child)))))
+    (children.length === 0 || children.some(isText))
   );
 };
 
@@ -762,10 +735,9 @@ export const joinKeysOf = (marks: readonly AuthoredMark[]) =>
 
 const followerPassage = (
   children: NodeList<Node>,
-  claimsOf: (node: Node) => readonly AuthoredMark[],
-  isInline: InlineTest
+  claimsOf: (node: Node) => readonly AuthoredMark[]
 ) => {
-  const blocks = textBlocksIn(children, [], isInline);
+  const blocks = textBlocksIn(children, []);
   const firstHolders = new Map<
     string,
     Readonly<{ kind: 'join' | 'joined'; path: Path }>
@@ -846,10 +818,9 @@ const followerPassage = (
 export const joinPassage = (
   children: NodeList,
   claimsOf: (node: Node) => readonly AuthoredMark[],
-  survives: (node: JsonNode) => boolean,
-  isInline: InlineTest
+  survives: (node: JsonNode) => boolean
 ) => ({
-  ...followerPassage(children, claimsOf, isInline),
+  ...followerPassage(children, claimsOf),
   /**
    * Whether the join on the text block at `path` stops before `from`: a
    * surviving element that does not unwrap encloses the block and not
@@ -884,19 +855,18 @@ type TextBlock = Readonly<{
 
 function* textBlocksIn(
   nodes: NodeList<Node>,
-  base: Path,
-  isInline: InlineTest
+  base: Path
 ): Generator<Readonly<{ node: Node; path: Path }>> {
   for (let index = 0; index < nodes.length; index += 1) {
     const node = getDefined(nodes.at(index));
 
     if (isText(node)) continue;
-    if (isTextBlock(node, isInline)) yield { node, path: [...base, index] };
-    else yield* textBlocksIn(node.children ?? [], [...base, index], isInline);
+    if (isTextBlock(node)) yield { node, path: [...base, index] };
+    else yield* textBlocksIn(node.children ?? [], [...base, index]);
   }
 }
 
-const textBlocksOf = (children: NodeList<Node>, isInline: InlineTest) => {
+const textBlocksOf = (children: NodeList<Node>) => {
   const blocks: TextBlock[] = [];
   const collect = (
     nodes: NodeList<Node>,
@@ -907,7 +877,7 @@ const textBlocksOf = (children: NodeList<Node>, isInline: InlineTest) => {
       const path = [...base, index];
 
       if (isText(node)) return;
-      if (isTextBlock(node, isInline)) blocks.push({ ancestors, node, path });
+      if (isTextBlock(node)) blocks.push({ ancestors, node, path });
       else collect(node.children ?? [], [...ancestors, node], path);
     });
   };
@@ -964,7 +934,7 @@ const cutIndexIn = (
       ['main', value.children] as const,
       ...Object.entries(value.roots ?? {}),
     ]) {
-      for (const block of textBlocksOf(children, inlineTestOf(null))) {
+      for (const block of textBlocksOf(children)) {
         visit(block.node.children ?? [], block, root);
       }
     }
@@ -1025,8 +995,7 @@ type Landing = { children: Landing[]; node: Node; parent: Landing | null };
 const placementsOf = (
   children: readonly Node[],
   landings: readonly AuthoredPlacement[],
-  shows: (node: Node) => boolean,
-  isInline: InlineTest
+  shows: (node: Node) => boolean
 ): AuthoredPlacement[] => {
   if (landings.length === 0) return [];
 
@@ -1040,14 +1009,14 @@ const placementsOf = (
 
       items.set(node, item);
       parent.children.push(item);
-      if (!isTextBlock(node, isInline)) build(node.children ?? [], item);
+      if (!isTextBlock(node)) build(node.children ?? [], item);
     }
   };
 
   build(children, top);
 
   const linesOf = (item: Landing): Landing[] =>
-    item !== top && isTextBlock(item.node, isInline)
+    item !== top && isTextBlock(item.node)
       ? [item]
       : item.children.flatMap(linesOf);
   const holds = (outer: Landing, inner: Landing) => {
@@ -1219,7 +1188,6 @@ const resolveIn = (
     site = [],
     cutIndex,
   } = options;
-  const isInline = inlineTestOf(null);
   const children = removed ? given.filter((node) => !removed.has(node)) : given;
   const outcomeOf = typeof outcome === 'string' ? () => outcome : outcome;
   const pending = (node: unknown) =>
@@ -1709,7 +1677,7 @@ const resolveIn = (
 
   const outsideTakenPart = ({ ancestors }: TextBlock) =>
     !ancestors.some(takesWhole);
-  const blocks = textBlocksOf(children, isInline).filter(outsideTakenPart);
+  const blocks = textBlocksOf(children).filter(outsideTakenPart);
 
   // Phase one: where each decided join lands.
   const mergedInto = new Map<Node, Node>();
@@ -1978,14 +1946,14 @@ const resolveIn = (
         followers.push({ follows, node, order: lines });
         followerOrders.set(node, lines);
       }
-      if (isTextBlock(node, isInline)) lines += 1;
+      if (isTextBlock(node)) lines += 1;
       else collectFollowers(node.children ?? []);
     }
   };
 
   collectFollowers(children);
 
-  const passage = joinPassage(children, holderClaims, survives, isInline);
+  const passage = joinPassage(children, holderClaims, survives);
   const precedesJoin = ({ path }: TextBlock, keys: ReadonlySet<string>) =>
     followers.length > 0 && passage.passesOver(path, keys);
 
@@ -2698,7 +2666,7 @@ const resolveIn = (
       // An Editing unwrap of a line removes a wrapper that stands for the
       // content pending inside it, as a removal does.
       const unwrapsLine =
-        isTextBlock(node, isInline) &&
+        isTextBlock(node) &&
         marks.some(
           (mark) =>
             mark.kind === 'unwrap' &&
@@ -3349,8 +3317,7 @@ const resolveIn = (
     (node) =>
       (shown.has(node) && !unwrapped.has(node)) ||
       (mergedInto.has(node) &&
-        (node.children ?? []).some((child) => shown.has(child))),
-    isInline
+        (node.children ?? []).some((child) => shown.has(child)))
   );
   const resolvedChildren = completeLevel(
     top.list,

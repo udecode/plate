@@ -57,13 +57,7 @@ import {
   readMembers,
   withMembers,
 } from './marks';
-import {
-  buildClaimsOf,
-  type InlineTest,
-  inlineTestOf,
-  type JoinBlock,
-  placementLinksIn,
-} from './resolve';
+import { buildClaimsOf, type JoinBlock, placementLinksIn } from './resolve';
 import { type Spare, slotKeyOf, spareFits, sparesIn } from './spares';
 
 /**
@@ -338,8 +332,7 @@ const typesOfTag = (mark: AuthoredMark) => {
 export const buildClaimsIn = <N extends Readonly<{ children?: readonly N[] }>>(
   facts: ReviewFacts,
   lookup: ContextLookup,
-  eachBlock: (root: string, visit: (node: N) => void) => void,
-  isInline: InlineTest
+  eachBlock: (root: string, visit: (node: N) => void) => void
 ) => {
   const claimsOf = (node: N) => standingClaimsOf(node, facts, lookup);
   const isPending = (mark: AuthoredMark) => undecided(facts, mark);
@@ -357,8 +350,7 @@ export const buildClaimsIn = <N extends Readonly<{ children?: readonly N[] }>>(
           ...claimsOf(node).filter(({ kind }) => kind !== 'joined'),
           ...readAuthoredMarks(node).filter(({ kind }) => kind === 'joined'),
         ],
-        () => true,
-        isInline
+        () => true
       );
       sources.set(root, sourceOf);
     }
@@ -411,8 +403,7 @@ export const sparesFor = (
       } else {
         rootChildren(value, root)?.forEach(visit);
       }
-    },
-    inlineTestOf(null)
+    }
   );
   let detached: ReturnType<typeof createDetachedEditorSchema> | null = null;
   const api = () => (detached ??= createDetachedEditorSchema(schema, document));

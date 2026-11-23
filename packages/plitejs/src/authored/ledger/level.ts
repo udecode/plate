@@ -18,7 +18,7 @@ import { getDefined } from '../../internal/get-defined';
 import type { AuthoredFormatProjection } from '../format';
 import { tokenLength } from '../tree/alignment';
 import { readMembers } from '../tree/marks';
-import { type InlineTest, inlineTestOf, isTextBlock } from '../tree/resolve';
+import { isTextBlock } from '../tree/resolve';
 import { type BlockLine, type Span, spansOf } from './links';
 import { ContainerPlaces, placesOf } from './places';
 import {
@@ -272,15 +272,12 @@ const showsThrough = (
   min: number
 ) => group.length === 1 && !!group[0]?.level && !head && min <= 1;
 
-const isContainer = (node: JsonNode, isInline: InlineTest) =>
-  typeof node.text !== 'string' &&
-  !!node.children &&
-  !isTextBlock(node, isInline);
+const isContainer = (node: JsonNode) =>
+  typeof node.text !== 'string' && !!node.children && !isTextBlock(node);
 
 const countWhole = (group: readonly BlockSlot[]) => {
-  const isInline = inlineTestOf(null);
   const whole = group.filter(
-    ({ level, node }) => !!level || isContainer(node, isInline)
+    ({ level, node }) => !!level || isContainer(node)
   ).length;
 
   if (whole > 0) countLedgerWork('wholeContainers', whole);
@@ -883,7 +880,7 @@ export class Level {
 
         return source.level;
       }
-      if (isTextBlock(node, inlineTestOf(null))) return null;
+      if (isTextBlock(node)) return null;
       countLedgerWork('levelBuilds');
 
       return new Level(this.mode, children, site);
