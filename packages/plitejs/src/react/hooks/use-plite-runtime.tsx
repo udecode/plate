@@ -31,14 +31,17 @@ import {
   createEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
+import { assertEditorNotDestroyed } from '../../core/editor-lifetime';
 import type { ViewPolicyTarget } from '../../core/editor-runtime';
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
 import { toInternalRoot, toPublicRoot } from '../../core/public-root';
 import {
   getBaseCallRoot,
+  getEditorReadDepth,
   getEditorRuntimeRootKeys,
   hasEditorSurface,
+  isInTransaction,
   subscribeCaretTarget,
 } from '../../core/public-state';
 import {
@@ -995,8 +998,10 @@ function createPliteRootEditor(
 
   return createReactRuntimeViewEditor(
     getView({ readOnly, root }, presentation ?? undefined, {
+      // A read-only mount keeps its editor on itself, so a writable area
+      // that holds the caret elsewhere takes no write through it.
       current: () =>
-        caretArea() ??
+        (mountedEditor?.read.view.isReadOnly() ? undefined : caretArea()) ??
         findRootViewEditor(lookups, shownRoot) ??
         mountedEditor ??
         undefined,
@@ -1041,10 +1046,14 @@ function createPliteRootEditor(
  * shows its root, and of the view around the hook while none shows it. Inside
  * a view, that mounted view is the one this view mounts for the root, such as
  * its own board when two editing areas show the same board. While its
- * `EditorRoot` shows no editing area and the caret is in its root, it follows
- * the editing area that holds the caret. Use it for
- * root-specific toolbar/sidebar commands. Pass `readOnly: true` when UI only
- * needs read APIs. Exact plugin capability comes from `editor.plugin(Plugin)`.
+ * `EditorRoot` is writable, shows no editing area and the caret is in its
+ * root, it follows the editing area that holds the caret, for that area's DOM
+ * and the read-only state of that area's `EditorRoot`. It keeps its own
+ * `EditorRoot`'s authored view there, and a write that places the caret, even
+ * where the caret already is, moves the caret into its own `EditorRoot`, which
+ * ends the follow. Use it for root-specific toolbar/sidebar commands. Pass
+ * `readOnly: true` when UI only needs read APIs. Exact plugin capability comes
+ * from `editor.plugin(Plugin)`.
  */
 export function useRootEditor<const TRoot extends RootKey = RootKey>(
   root?: NamedRootKey<TRoot>,
@@ -1108,7 +1117,10 @@ export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
  * hook, or else in the caret's root when the dispatcher runs.
  * The command runs on the mounted view that shows the root, and on the editor
  * `useRootEditor` gives for the root while none shows it, so a lock on either
- * refuses its writes.
+ * refuses its writes. The dispatcher throws inside `editor.read` and
+ * `editor.update`, before it moves focus. Inside an update, run the command
+ * with `tx.command` in an update of the root's `useRootEditor` editor, so it
+ * keeps that view's suggesting mode.
  */
 export function useCommand<
   TCommand extends EditorCommandDescriptor,
@@ -1129,6 +1141,17 @@ export function useCommand<
 
   return useCallback(
     (...input: CommandArgs<TCommand>) => {
+      assertEditorNotDestroyed(context.runtime);
+
+      if (
+        isInTransaction(context.runtime) ||
+        getEditorReadDepth(context.runtime) > 0
+      ) {
+        throw new Error(
+          "A useCommand dispatcher cannot run inside editor.read or editor.update. Call it after the read returns; inside an update, call tx.command in an update of the root's useRootEditor editor."
+        );
+      }
+
       // A focus moves the caret's root before this hook renders again, so a
       // command called from it reads the root when it runs.
       const commandRoot = fixedRoot ?? context.runtime.read(selectActiveRoot);
