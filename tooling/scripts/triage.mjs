@@ -1480,6 +1480,10 @@ const ghLogin = () => {
   const login = result.status === 0 ? result.stdout.trim() : '';
   return LOGIN.test(login) ? login : null;
 };
+// A claim that ends without a release leaves its assignment on GitHub, so
+// this session's own login holds nothing, as holdsOf already treats it.
+const othersOf = (assignees, self) =>
+  assignees.filter((login) => login !== self);
 
 function recorder(policy) {
   const { run: lead, miss } = findLead();
@@ -2643,14 +2647,16 @@ const deviceLaneOf = (issue, reads) =>
 
 const claimEnd = (reads, isOpen) => (issue, claim) => {
   if (!isOpen(issue)) return claim.since;
-  const landedHead = headOf(issue, { rows: reads.landed });
+  const fixedAt = [...(reads.landed.get(issue)?.values() ?? [])]
+    .filter((row) => row.outcome === 'fixed')
+    .map((row) => row.ts);
   const task = claim.task ? reads.ledger?.tasks.get(claim.task) : null;
   const times = task ? reads.ledger.times.get(task.id) : null;
   const ownStart =
     Boolean(task?.startedIn) &&
     [claim.actor.session, claim.actor.transcript].includes(task.startedIn);
   const after = [
-    landedHead?.outcome === 'fixed' ? landedHead.ts : null,
+    ...fixedAt,
     times?.landed,
     ownStart ? times?.dismissed : null,
   ].filter((at) => at && Date.parse(at) > Date.parse(claim.since));
@@ -3332,6 +3338,7 @@ function lane(options) {
   }
   const open = openList(reads);
   const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
+  const self = ghLogin();
   const entries = [...open].flatMap(([issue, { title, assignees }]) => {
     const head = headOf(issue, reads);
     const devices = devicesOf(head);
@@ -3350,7 +3357,7 @@ function lane(options) {
           devices.join(','),
           claim
             ? `${claim.actor.who}/${claim.actor.session}`
-            : assignees.join(',') || 'free',
+            : othersOf(assignees, self).join(',') || 'free',
           title,
         ].join('\t'),
       },
@@ -3387,7 +3394,7 @@ function openSummaryIn(reads, open, outside) {
   };
 }
 
-function kindsIn(reads, open) {
+function kindsIn(reads, open, self) {
   const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
   const prefix = issuePrefix(reads);
   return [...open]
@@ -3402,7 +3409,7 @@ function kindsIn(reads, open) {
         .map(({ id }) => id);
       const route =
         (claim && `${claim.actor.who}/${claim.actor.session}`) ||
-        assignees.join(',') ||
+        othersOf(assignees, self).join(',') ||
         tasks.join(',') ||
         (devices.length > 0 && 'lane') ||
         (mainReport(reads.policy, milestone) && 'main') ||
@@ -3465,7 +3472,7 @@ function kinds(options) {
     ({ notes } = reads);
     const listed = openIssues(reads);
     const focus = listed.filter((issue) => inFocus(reads, issue));
-    entries = kindsIn(reads, openMap(focus));
+    entries = kindsIn(reads, openMap(focus), ghLogin());
     open = [openSummaryIn(reads, focus, listed.length - focus.length)];
   }
   entries.sort(byRegressionThenPriority);
