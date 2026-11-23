@@ -624,7 +624,7 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
             context.store
               .get()
               .autoTriggerQuery?.({ editor: context.editor }) &&
-            context.editor.read.view.isFocused()
+            context.editor.api.dom.isFocused()
           ) {
             void context.api.triggerSuggestion();
           }

@@ -47,6 +47,7 @@ import {
 } from '../../features/table';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import { resolveInsertionAnchor } from '../../internal/plugin/insertionAnchor';
+import { isInputRuleVetoed } from '../../lib/plugins/input-rules/inputRuleVeto.internal';
 import {
   type MarkdownEditorSerializeOptions,
   type MarkdownSliceParseResult,
@@ -150,7 +151,10 @@ type MarkdownType = 'block' | 'editor' | 'nodeSelection' | 'tableCellWithRef';
 // Names the empty block AI Space opens in by its key: the typing that opens it
 // may decide on a document whose positions differ from the stored one, and the
 // key names the same block in both.
-const aiChatShowEffect = defineEffect<NodeKey>({ key: 'ai.chat.show' });
+const aiChatShowEffect = defineEffect<NodeKey>({
+  history: 'skip',
+  key: 'ai.chat.show',
+});
 const aiChatCommandEditors = new WeakMap<object, Editor>();
 export const getAIChatCommandEditor = (editor: Editor) =>
   aiChatCommandEditors.get(editor) ?? editor;
@@ -1651,7 +1655,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         if (
           !selection ||
           !matches ||
-          (triggerQuery && !triggerQuery(context.editor))
+          (triggerQuery && !triggerQuery(context.editor)) ||
+          isInputRuleVetoed(context.editor, state)
         ) {
           return false;
         }

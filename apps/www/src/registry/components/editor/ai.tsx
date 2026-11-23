@@ -21,11 +21,13 @@ function AIInlinePreview({
   children,
   element,
 }: RenderNodeWrapperProps<typeof AIChatTransportPlugin>) {
-  const replacesEmptyParagraph = useEditorSelector(
-    (editor) =>
-      element.type === editor.plugin(BaseParagraphPlugin).schema.type &&
-      editor.read.nodes.isEmpty(element)
-  );
+  const replacesEmptyParagraph = useEditorSelector((editor) => {
+    const paragraph = editor.read.nodes.get(element, {
+      type: editor.plugin(BaseParagraphPlugin).schema.type,
+    });
+
+    return !!paragraph && editor.read.nodes.isEmpty(paragraph[0]);
+  });
   return (
     <div data-editor-ai-preview-wrapper="">
       <div hidden={replacesEmptyParagraph}>{children}</div>

@@ -3,7 +3,6 @@ import {
   type DocumentChange,
   type EditorStateView,
   editorCommands,
-  getPluginContributions,
   type NodeSelection,
   type NodeTarget,
   PointApi,
@@ -19,7 +18,7 @@ import {
   isInputRuleDecline,
   isInputRuleContinuation,
 } from './inputRuleContinuation.internal';
-import { inputRuleVeto } from './inputRuleVeto';
+import { isInputRuleVetoed } from './inputRuleVeto.internal';
 import type {
   InsertBreakInputRuleContext,
   InsertBreakInputRuleReadContext,
@@ -201,19 +200,6 @@ export const InputRulesPlugin = definePlugin('inputRules', {
     };
   };
 
-  const vetoTypesByRules = new WeakMap<object, readonly string[]>();
-  const isVetoed = (state: Pick<EditorStateView, 'nodes'>) => {
-    const { inputRules } = getPlateRuntime(editor);
-    let types = vetoTypesByRules.get(inputRules);
-
-    if (!types) {
-      types = [...new Set(getPluginContributions(editor, inputRuleVeto))];
-      vetoTypesByRules.set(inputRules, types);
-    }
-
-    return types.length > 0 && state.nodes.some({ type: types });
-  };
-
   let pendingRuleKey: string | undefined;
   let revertible:
     | { inverse: DocumentChange; selection: Selection; text: string }
@@ -265,7 +251,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
 
         const firstRule = rules[0];
 
-        if (!firstRule || isVetoed(state)) return next();
+        if (!firstRule || isInputRuleVetoed(editor, state)) return next();
 
         const dataTypes = new Set(input.types);
         const selectionContext = createSelectionContext({ state });
@@ -369,7 +355,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
 
         const firstRule = rules[0];
 
-        if (!firstRule || isVetoed(state)) return next();
+        if (!firstRule || isInputRuleVetoed(editor, state)) return next();
 
         const selectionContext = createSelectionContext({ state });
         const context = {
@@ -453,7 +439,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
         if (
           !firstRule ||
           !insertsAtCaret(input.options?.at, state.selection()) ||
-          isVetoed(state)
+          isInputRuleVetoed(editor, state)
         ) {
           return next();
         }

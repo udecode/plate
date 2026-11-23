@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-ai-preview-live-source",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-ai-preview-live-source.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the block that Continue writing extends visible during the preview",
+  "targets": [
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-ai-preview-live-source",
+      "kind": "fix",
+      "summary": "Keep a block visible beside its Continue writing draft when its text was typed into it while it was empty, such as `12` in a new bullet.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-ai-preview-live-source",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

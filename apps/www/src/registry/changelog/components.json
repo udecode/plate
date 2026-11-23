@@ -31,6 +31,18 @@
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
     ],
+    "ai": [
+      "2026-11-23-ai-preview-live-source",
+      "2026-11-20-caret-slot-toolbars",
+      "2026-11-05-remove-ai-leaf",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry"
+    ],
     "field": ["2026-11-23-field-fill-view", "2026-11-21-add-field"],
     "field-toolbar-button": [
       "2026-11-23-field-fill-view",
@@ -417,17 +429,6 @@
       "2026-08-26-fix-link-popover-rows",
       "2026-08-25-base-first-registry",
       "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "ai": [
-      "2026-11-20-caret-slot-toolbars",
-      "2026-11-05-remove-ai-leaf",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry"
     ],
     "code-block": [

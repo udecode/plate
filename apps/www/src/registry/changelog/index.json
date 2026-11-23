@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-ai-preview-live-source",
+      "href": "/registry/changelog/2026-11-23-ai-preview-live-source.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the block that Continue writing extends visible during the preview",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-field-fill-view",
       "href": "/registry/changelog/2026-11-23-field-fill-view.json",
       "status": "draft",

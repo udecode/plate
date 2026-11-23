@@ -238,15 +238,28 @@ export function commandDemoConfig({
   };
 }
 
+// remark-stringify writes a trailing space as a hex character reference, &#x20;.
+const quotedContextEndsWithSpace = (prompt: string) => {
+  const quoted = prompt.split('"""');
+  const context = (quoted.length > 2 && quoted.at(-2)?.trimEnd()) || prompt;
+  const reference = /&#x([\da-f]+);$/i.exec(context);
+  const last = reference
+    ? String.fromCodePoint(Number.parseInt(reference[1], 16))
+    : context.at(-1);
+
+  return /\s/.test(last ?? '');
+};
+
 export function copilotDemoConfig({
-  prompt,
+  prompt = '',
 }: {
   prompt?: string;
 }): AiSeedConfig {
   let hash = 0;
-  for (const char of prompt ?? '') {
+  for (const char of prompt) {
     hash = (hash * 31 + char.charCodeAt(0)) % 2_147_483_647;
   }
+  const completion = copilotCompletions[hash % copilotCompletions.length];
 
   return {
     rules: [
@@ -255,7 +268,9 @@ export function copilotDemoConfig({
         match: { stream: false },
         reply: [
           {
-            text: copilotCompletions[hash % copilotCompletions.length],
+            text: quotedContextEndsWithSpace(prompt)
+              ? completion.trimStart()
+              : completion,
             type: 'text',
           },
         ],
