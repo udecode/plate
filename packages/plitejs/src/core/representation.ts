@@ -1307,7 +1307,9 @@ const replaceCanonicalChildWindow = (
     root,
   });
   const baselineAt = (from: number) =>
-    beforeDocument ? { document: beforeDocument, from, path } : undefined;
+    beforeDocument
+      ? { afterLength: source.length, document: beforeDocument, from, path }
+      : undefined;
   const { carried } = options;
   // Texts below this window's children that drop a carried value, by their
   // parent's path: only a window over that parent merges them with a text

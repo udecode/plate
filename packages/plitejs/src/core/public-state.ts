@@ -2223,13 +2223,13 @@ const rootsThatCanMoveHolders = (
   change: DocumentChange,
   replace: boolean,
   after: EditorDocumentValue,
-  before: EditorDocumentValue
+  beforeRoots: Readonly<Record<string, unknown>> | undefined
 ) => {
   if (replace) {
     return new Set([
       MAIN_ROOT_KEY,
       ...visitRootNames(after.roots),
-      ...visitRootNames(before.roots),
+      ...visitRootNames(beforeRoots),
     ]);
   }
 
@@ -2252,6 +2252,13 @@ const rootsThatCanMoveHolders = (
       }),
   ]);
 };
+
+const onlyRemovesHolders = (change: DocumentChange, root: string) =>
+  !change.createRoots.has(root) &&
+  !change.deleteRoots.has(root) &&
+  getInternalDocumentRootChange(change, root)?.sections.every(
+    (inserted, index) => index % 2 === 0 || inserted === -1 || inserted === 0
+  ) === true;
 
 const ROOT_DIRECTORIES = new WeakMap<Editor, RootDirectory>();
 
@@ -2576,6 +2583,24 @@ const admitTransactionDraft = (editor: Editor) => {
   const unique = uniquePropertiesOf(schema).size > 0;
 
   if (!admission && !unique) return;
+  const replace = snapshot.reason === 'replace';
+  const rootsThatCanRepeat = () => {
+    const { change } = snapshot.builder;
+    const roots = rootsThatCanMoveHolders(
+      change,
+      replace,
+      snapshot.builder.value as EditorDocumentValue,
+      snapshot.roots
+    );
+
+    return replace
+      ? roots
+      : new Set([...roots].filter((root) => !onlyRemovesHolders(change, root)));
+  };
+
+  const unadmittedRoots = admission ? null : rootsThatCanRepeat();
+
+  if (unadmittedRoots?.size === 0) return;
 
   const stored = getChangeValue(
     snapshot.roots,
@@ -2633,7 +2658,12 @@ const admitTransactionDraft = (editor: Editor) => {
       snapshot.admissionRepair?.compose(change) ?? change;
     if (!options.renames) {
       rootsToCheck ??= new Set();
-      for (const root of rootsThatCanMoveHolders(change, false, after, after)) {
+      for (const root of rootsThatCanMoveHolders(
+        change,
+        false,
+        after,
+        undefined
+      )) {
         rootsToCheck.add(root);
       }
     }
@@ -2720,12 +2750,7 @@ const admitTransactionDraft = (editor: Editor) => {
   };
 
   admit(stored, snapshot.activeChange.change);
-  rootsToCheck = rootsThatCanMoveHolders(
-    snapshot.builder.change,
-    snapshot.reason === 'replace',
-    snapshot.builder.value as EditorDocumentValue,
-    stored
-  );
+  rootsToCheck = unadmittedRoots ?? rootsThatCanRepeat();
   let settledAt: DocumentChange | null = null;
 
   for (;;) {
@@ -14619,7 +14644,7 @@ export const runEditorTransaction = <R>(
                 canonicalChanges,
                 snapshot.reason === 'replace',
                 afterValue,
-                beforeValue
+                beforeValue.roots
               ),
             {
               change: snapshot.builder.change,

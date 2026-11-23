@@ -384,6 +384,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
         document: DocumentIndex;
         path: readonly number[];
         from: number;
+        afterLength: number;
       }>,
       carried?: CarriedPropertyHook
     ) => readonly Descendant[];
@@ -3033,15 +3034,26 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey,
     ancestors: readonly Element[],
     dropMisplaced: boolean,
-    baseline?: NodeList<Descendant>,
-    offset = 0,
+    baseline?: Readonly<{
+      children: NodeList<Descendant>;
+      from: number;
+      shift: number;
+    }>,
     carried?: CarriedPropertyHook,
     prefix: readonly number[] = []
   ): readonly Descendant[] => {
     const canonical = children.map((node, index) => {
-      const previous = baseline?.at(index + offset);
+      const at = index + (baseline?.from ?? 0);
+      const previous = baseline?.children.at(at);
 
-      if (node === previous) return node;
+      if (
+        node === previous ||
+        (baseline !== undefined &&
+          baseline.shift !== 0 &&
+          node === baseline.children.at(at + baseline.shift))
+      ) {
+        return node;
+      }
       countCoreWork('canonicalNodes');
       const path = carried ? [...prefix, index] : prefix;
       const carriedKey = carried && ((key: string) => carried(path, node, key));
@@ -3083,8 +3095,7 @@ export const createEditorSchema = <V extends Value = Value>(
           root,
           [node, ...ancestors],
           dropMisplaced,
-          previousChildren,
-          0,
+          previousChildren && { children: previousChildren, from: 0, shift: 0 },
           carried,
           path
         );
@@ -3116,8 +3127,7 @@ export const createEditorSchema = <V extends Value = Value>(
         root,
         [candidate, ...ancestors],
         dropMisplaced,
-        previousChildren,
-        0,
+        previousChildren && { children: previousChildren, from: 0, shift: 0 },
         carried,
         path
       );
@@ -3166,8 +3176,13 @@ export const createEditorSchema = <V extends Value = Value>(
             root,
             ancestors,
             dropMisplaced,
-            previous,
-            baseline?.from ?? 0,
+            previous && baseline
+              ? {
+                  children: previous,
+                  from: baseline.from,
+                  shift: previous.length - baseline.afterLength,
+                }
+              : undefined,
             carried
           )
         : children;
