@@ -6,8 +6,11 @@ import {
   placeMark,
 } from '../../../features/ink/lib/inkMatch.internal';
 import {
+  byMark,
+  type InkDeletedSign,
   type InkIndexedMark,
   type InkMarkSign,
+  readInkDeletedSigns,
   readInkIndexedMark,
   readInkSign,
 } from '../../../features/ink/lib/inkPlaces.internal';
@@ -89,7 +92,7 @@ type InkInputs = Readonly<{
   near: readonly InkMeasuredBlock[];
 }>;
 
-const metrics = { decided: 0 };
+const metrics = { arrivalLookups: 0, decided: 0, shownIds: 0, signReads: 0 };
 
 export const getInkPlacementMetrics = () => Object.freeze({ ...metrics });
 
@@ -142,6 +145,7 @@ const placeInkMarks = (
   editable: HTMLElement,
   origin: InkLayerOrigin,
   marks: readonly InkMark[],
+  deleted: readonly InkDeletedSign[],
   entryOf: (mark: InkMark) => InkIndexedMark | undefined,
   signOf: (mark: InkMark) => InkMarkSign | undefined,
   decide: (...of: Parameters<Decide>) => Decided | undefined
@@ -198,7 +202,13 @@ const placeInkMarks = (
   const ink: Array<InkPlaced['ink'][number]> = [];
   const signs = new Map<
     string,
-    { left: number; marks: string[]; state: InkSign['state']; top: number }
+    {
+      first: InkMark;
+      left: number;
+      marks: string[];
+      state: InkSign['state'];
+      top: number;
+    }
   >();
 
   for (const mark of marks) {
@@ -233,6 +243,7 @@ const placeInkMarks = (
     const anchor = anchorOf(place);
     const id = `${mark.direction}|${anchor.id}|${state}`;
     const sign = signs.get(id) ?? {
+      first: mark,
       left: rails[mark.direction],
       marks: [],
       state,
@@ -250,11 +261,26 @@ const placeInkMarks = (
       top: editableBox.top - editable.scrollTop,
     },
     ink,
-    signs: [...signs].map(([id, { marks: ofSign, state, ...place }]) => ({
-      ...place,
-      id,
-      sign: { marks: ofSign, state },
-    })),
+    signs: [
+      ...[...signs].map(([id, { marks: ofSign, state, ...at }]) => ({
+        ...at,
+        id,
+        sign: { marks: ofSign, state },
+      })),
+      ...deleted.map(({ ids, marks: [first], place }) => {
+        const anchor = anchorOf(place);
+
+        return {
+          first,
+          id: `${first.direction}|${anchor.id}|deleted`,
+          left: rails[first.direction],
+          sign: { marks: ids, state: 'deleted' as const },
+          top: anchor.top,
+        };
+      }),
+    ]
+      .sort((a, b) => byMark(a.first, b.first))
+      .map(({ id, left, sign, top }) => ({ id, left, sign, top })),
   };
 };
 
@@ -325,7 +351,6 @@ export const createInkPlacer = ({
   >();
   const held = new Map<string, Held>();
   let index: MarkIndex | null = null;
-  let gone: readonly InkMark[] | null = null;
   let heading = 1;
   let contentTop: number | undefined;
 
@@ -333,9 +358,21 @@ export const createInkPlacer = ({
     view.read((state) =>
       readInkIndexedMark({ copy: read.copy, editor: view, state }, mark)
     );
-  const signOf = (mark: InkMark) =>
-    view.read((state) =>
+  const signOf = (mark: InkMark) => {
+    metrics.signReads += 1;
+
+    return view.read((state) =>
       readInkSign({ copy: read.copy, editor: view, state }, mark)
+    );
+  };
+  const deletedSigns = () =>
+    view.read((state) =>
+      readInkDeletedSigns({
+        copy: read.copy,
+        editor: view,
+        marks: read.marks,
+        state,
+      })
     );
 
   const textBlock = (key: NodeKey) => {
@@ -403,7 +440,6 @@ export const createInkPlacer = ({
       }
     }
     index = { byBlock, marks, reachAbove, reachBelow };
-    gone = null;
 
     return index;
   };
@@ -649,20 +685,20 @@ export const createInkPlacer = ({
       return { pin, place, placement };
     };
 
-    gone ??= marks.filter((mark) => signOf(mark)?.state === 'deleted');
-
-    const shown = new Set(gone);
-
-    for (const block of blocks) {
-      for (const mark of markIndex.byBlock.get(block.id) ?? []) shown.add(mark);
-    }
+    const deleted = deletedSigns();
+    const visible = new Set(
+      blocks.flatMap((block) => markIndex.byBlock.get(block.id) ?? [])
+    );
 
     return {
       blocks,
       decide,
+      deleted,
       marksOn: (block: string) => markIndex.byBlock.get(block) ?? [],
       origin,
-      shown: marks.filter((mark) => shown.has(mark)),
+      shown: [...visible]
+        .filter((mark) => signOf(mark)?.state !== 'deleted')
+        .sort(byMark),
       stillHeld,
     };
   };
@@ -676,6 +712,7 @@ export const createInkPlacer = ({
           editable,
           pass.origin,
           pass.shown,
+          pass.deleted,
           entryOf,
           signOf,
           pass.decide
@@ -710,10 +747,22 @@ export const createInkPlacer = ({
         }
       }
 
-      const shownBefore = new Set([
-        ...shown.ink.map(({ mark }) => mark.id),
-        ...shown.signs.flatMap(({ sign }) => sign.marks),
-      ]);
+      const showing = new Set(pass.deleted.map(({ ids }) => ids));
+      let before: ReadonlySet<string> | undefined;
+      const shownBefore = (id: string) => {
+        metrics.arrivalLookups += 1;
+        if (!before) {
+          before = new Set([
+            ...shown.ink.map(({ mark }) => mark.id),
+            ...shown.signs.flatMap(({ sign }) =>
+              showing.has(sign.marks) ? [] : sign.marks
+            ),
+          ]);
+          metrics.shownIds += before.size;
+        }
+
+        return before.has(id);
+      };
       const decided = new Map<InkMark, Decided>();
       let undecided: InkArrival['undecided'];
       let arrivalsDecided = 0;
@@ -725,7 +774,7 @@ export const createInkPlacer = ({
 
         const kept = pass.stillHeld(mark, entry);
 
-        const arriving = !kept && !shownBefore.has(mark.id);
+        const arriving = !kept && !shownBefore(mark.id);
 
         if (arriving) {
           if (undecided || (arrivalsDecided > 0 && expired(rank === 0))) {
@@ -743,6 +792,7 @@ export const createInkPlacer = ({
           editable,
           pass.origin,
           pass.shown,
+          pass.deleted,
           entryOf,
           signOf,
           (mark) => decided.get(mark)
@@ -816,9 +866,6 @@ export const createInkPlacer = ({
           break;
         }
       }
-    },
-    nodesChanged: () => {
-      gone = null;
     },
     place: () => placeWithin(nearView),
     placeEvery: () => placeWithin(everywhere),

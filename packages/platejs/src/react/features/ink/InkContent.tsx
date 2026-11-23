@@ -60,7 +60,9 @@ const sameSigns = (a: InkSigns, b: InkSigns) =>
       id === b.signs[at].id &&
       left === b.signs[at].left &&
       top === b.signs[at].top &&
-      sign.marks.join(',') === b.signs[at].sign.marks.join(',')
+      (sign.marks === b.signs[at].sign.marks ||
+        (sign.marks.length === b.signs[at].sign.marks.length &&
+          sign.marks.every((mark, n) => mark === b.signs[at].sign.marks[n])))
   );
 
 const firstElementAfter = (element: Element) => {
@@ -318,12 +320,6 @@ function InkLayer({
     };
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
       if (!changed.hasAny('document')) return;
-      if (
-        changed.nodeKeysAll('presence').length > 0 ||
-        changed.hasAny('properties')
-      ) {
-        placer.nodesChanged();
-      }
       schedule();
     });
     const stopLayout = observeInkLayout(editable, layer, (change, within) => {

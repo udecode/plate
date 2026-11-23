@@ -17,12 +17,7 @@ import {
   type RuntimeAnyEditor,
   withStoredAuthoredRead,
 } from '../../../facade';
-import {
-  BaseInkPlugin,
-  type InkCopy,
-  type InkCopyPlace,
-  type InkMark,
-} from './BaseInkPlugin';
+import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
 import {
   COPIES,
   GONE,
@@ -43,6 +38,7 @@ export type InkMarkSign = Readonly<{
 }>;
 
 export type InkDeletedSign = Readonly<{
+  ids: readonly string[];
   marks: readonly InkMark[];
   place: InkCopyPlace;
 }>;
@@ -50,6 +46,7 @@ export type InkDeletedSign = Readonly<{
 type DeletedGroup = {
   anchor?: Readonly<{ id: string; side: Side }>;
   blocks: Set<string>;
+  ids: Record<InkMark['direction'], readonly string[]>;
   marks: Record<InkMark['direction'], readonly InkMark[]>;
   pending: Map<string, Readonly<{ joins: boolean; mark: InkMark }>>;
   place: InkCopyPlace;
@@ -112,9 +109,6 @@ const shownPlaces = new WeakMap<
   { places: InkPlaces; version: number }
 >();
 
-const marksOf = ({ editor }: InkPlaceRead) =>
-  editor.plugin(BaseInkPlugin).read.marks();
-
 const metrics = { holders: 0, hops: 0, reads: 0, resolved: 0 };
 
 const work = { chains: 0, copies: 0, groups: 0, signs: 0 };
@@ -150,7 +144,7 @@ const keyOf = (place: InkCopyPlace) =>
       ? 'start'
       : `${place.beside.at}:${place.beside.key}`;
 
-const byMark = (a: InkMark, b: InkMark) =>
+export const byMark = (a: InkMark, b: InkMark) =>
   a.at - b.at || (a.id < b.id ? -1 : 1);
 
 const size = (of: DeletedGroup) =>
@@ -172,6 +166,7 @@ const groupAt = (
     group = {
       anchor,
       blocks: new Set(),
+      ids: { ltr: [], rtl: [] },
       marks: { ltr: [], rtl: [] },
       pending: new Map(),
       place,
@@ -568,6 +563,7 @@ const settle = (places: InkPlaces, group: DeletedGroup) => {
     }
     marks.push(...joins.slice(next));
     group.marks[direction] = Object.freeze(marks);
+    group.ids[direction] = Object.freeze(marks.map((mark) => mark.id));
   }
   group.pending.clear();
   if (group.blocks.size + size(group) === 0) {
@@ -575,9 +571,11 @@ const settle = (places: InkPlaces, group: DeletedGroup) => {
   }
 };
 
-export const readInkDeletedSigns = (read: InkPlaceRead) => {
+export const readInkDeletedSigns = (
+  read: InkPlaceRead & Readonly<{ marks: () => readonly InkMark[] }>
+) => {
   const places = placesOf(read);
-  const marks = marksOf(read);
+  const marks = read.marks();
 
   if (places.listed !== marks) {
     places.listed = marks;
@@ -597,9 +595,11 @@ export const readInkDeletedSigns = (read: InkPlaceRead) => {
 
   places.deleted = Object.freeze(
     [...places.groups.values()]
-      .flatMap(({ marks: of, place }): InkDeletedSign[] =>
-        [of.ltr, of.rtl].flatMap((members) =>
-          members.length > 0 ? [{ marks: members, place }] : []
+      .flatMap(({ ids, marks: of, place }) =>
+        (['ltr', 'rtl'] as const).flatMap((direction): InkDeletedSign[] =>
+          of[direction].length > 0
+            ? [{ ids: ids[direction], marks: of[direction], place }]
+            : []
         )
       )
       .sort((a, b) => byMark(a.marks[0], b.marks[0]))
