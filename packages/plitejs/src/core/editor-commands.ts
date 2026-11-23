@@ -43,6 +43,10 @@ import type {
   TextInsertTextOptions,
 } from '../interfaces/transforms/text';
 import { getDefined } from '../internal/get-defined';
+import {
+  setNextKeyMarks,
+  typesAtSelection,
+} from '../transforms-text/insert-text';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { refusesTextStartInStruck } from './command-frame';
@@ -487,6 +491,7 @@ const getFullBlockTextReplacement = (
   state: CommandStateView,
   range: Range,
   text: string,
+  typing: boolean,
   force = false
 ) => {
   if (LINE_BREAK_PATTERN.test(text)) return null;
@@ -520,7 +525,7 @@ const getFullBlockTextReplacement = (
     getDefined(blocks[0]),
     root,
     text,
-    state.marks() ??
+    (typing ? state.marks() : null) ??
       getConsistentBlockTextMarks(
         state,
         blocks.map(([block]) => state.key(block))
@@ -929,12 +934,15 @@ export const editorCommands: EditorCommands = Object.freeze({
           return false;
         }
         const root = rootOrUpdateRoot(SelectionApi.root(state.selection()));
+        const typing = typesAtSelection(getActiveCommandEditor(), {
+          marks: input.options?.marks,
+        });
         const replacement = blockReplacing(
           state,
           getDefined(nodeBlocks[0]),
           root,
           nodeReplacementText,
-          state.marks() ??
+          (typing ? state.marks() : null) ??
             getConsistentBlockTextMarks(
               state,
               nodeBlocks.map(([block]) => state.key(block))
@@ -948,10 +956,15 @@ export const editorCommands: EditorCommands = Object.freeze({
 
         return state.transaction((tx) => {
           replaceSelectedBlocks(tx, nodeReplacement);
+          if (typing) setNextKeyMarks(getActiveCommandEditor());
         });
       }
 
       const range = resolveCommandRange(state, input.options?.at);
+      const typing = typesAtSelection(getActiveCommandEditor(), {
+        at: range ?? undefined,
+        marks: input.options?.marks,
+      });
 
       if (range) {
         refuseCrossing(
@@ -968,6 +981,7 @@ export const editorCommands: EditorCommands = Object.freeze({
             state,
             range,
             replacementText,
+            typing,
             replacementText !== input.text
           )
         : null;
@@ -984,6 +998,7 @@ export const editorCommands: EditorCommands = Object.freeze({
                 ? null
                 : replacement.selection,
           });
+          if (typing) setNextKeyMarks(getActiveCommandEditor());
         });
       }
 

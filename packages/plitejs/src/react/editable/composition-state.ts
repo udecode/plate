@@ -2,6 +2,7 @@ import { type CompositionEvent, useEffect } from 'react';
 
 import {
   type EditorMarks,
+  PathApi,
   type Range,
   RangeApi,
   type Text,
@@ -63,6 +64,7 @@ import { dispatchUserText, getUserTextLanding } from './mutation-controller';
 import {
   type Editor,
   editorCommands,
+  getRestorableMarks,
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
@@ -813,7 +815,7 @@ export const commitChromeCompositionEndFallback = ({
       if (placeholderMarks !== undefined) {
         EDITOR_TO_USER_MARKS.set(
           editor,
-          editor.read((state) => state.marks())
+          editor.read(() => getRestorableMarks(editor))
         );
         writeRuntimeMarks(editor, placeholderMarks);
       }
@@ -1199,14 +1201,19 @@ export const applyEditableCompositionStart = ({
     const caretText = selection
       ? readRuntimeText(editor, selection.anchor.path)
       : null;
+    const typing = { ...editor.read((state) => state.marks()), text: '' };
+    const inOneText =
+      !!selection &&
+      PathApi.equals(selection.anchor.path, selection.focus.path);
+    const continuesCaretText = (composed: Text) =>
+      !!caretText &&
+      TextApi.equals(caretText, composed, { loose: true }) &&
+      (!inOneText || TextApi.equals(typing, composed, { loose: true }));
 
-    // Marks the caret's text already holds come with typing inside it, as
-    // they do outside composition, so a document recorder decides the
-    // composed text's review marks from where it lands.
     if (
       marks &&
       Object.keys(marks).length > 0 &&
-      !(caretText && TextApi.equals(caretText, marks as Text, { loose: true }))
+      !continuesCaretText(marks as Text)
     ) {
       EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, marks);
       writeRuntimeMarks(editor, marks);

@@ -107,7 +107,7 @@ import {
   SelectionApi,
   type SelectionValue,
 } from '../interfaces/selection';
-import type { Text } from '../interfaces/text';
+import { type Text, TextApi } from '../interfaces/text';
 import type {
   BlockDuplicateOptions,
   NodeDuplicateOptions,
@@ -2002,6 +2002,7 @@ export const commitRecordedDraft = (
     plain,
     runs,
     storedToWritten,
+    typed,
   }: Readonly<{
     /** The draft's placements, with its bookmarks in recorded coordinates. */
     carried?: CarriedCarets | null;
@@ -2011,7 +2012,8 @@ export const commitRecordedDraft = (
     /** The runs the plain draft carried. */
     runs?: readonly DraftRun[];
     storedToWritten?: PositionMap;
-  }> = {}
+    typed: EditorMarks | null;
+  }>
 ) => {
   const { snapshot } = context;
   const frontier = RECORDING_FRONTIERS.get(snapshot);
@@ -2136,6 +2138,7 @@ export const commitRecordedDraft = (
     steps: snapshot.builder.draftSteps.length,
     value: snapshot.builder.value as EditorDocumentValue,
   });
+  setTypedMarks(editor, typed);
 };
 
 export const recorderBookmarks = (carried: CarriedCarets | null) =>
@@ -2216,6 +2219,7 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
     carried: recordedCarets(carried, recorded),
     plain,
     runs: draftRunsOf(steps),
+    typed: getTypedMarks(editor),
   });
 };
 
@@ -4776,8 +4780,10 @@ export const getSelectionMarks = <V extends Value>(
     return null;
   }
 
-  if (marks) {
-    return marks as EditorMarks<V>;
+  const typed = marks ?? getTypedMarks(editor);
+
+  if (typed) {
+    return typed as EditorMarks<V>;
   }
 
   if (SelectionApi.isNode(selection)) {
@@ -9300,7 +9306,10 @@ export const getUpdateView = <
           }
         ),
         set: (marks: EditorMarks<V> | null) => {
-          runSelectionMutation(() => setCurrentMarks(editor, marks));
+          runSelectionMutation(() => {
+            setCurrentMarks(editor, marks);
+            if (marks === null) setTypedMarks(editor, null);
+          });
         },
         toggle: defineSemanticUpdateMethod<
           EditorTransactionMarksApi<V>['toggle']
@@ -10327,6 +10336,7 @@ const finalizeTransactionSpecContext = (
   const carried = carryCarets(editor, context.baseCaret, context.caret);
 
   if (carried) TRANSACTION_SPEC_CARETS.set(spec, carried);
+  keepSpecTypedMarks(context, spec);
 
   return spec;
 };
@@ -10457,6 +10467,7 @@ const applyTransactionSpecContents = <V extends Value>(
   if (context && carried) {
     setDraftCaret(editor, landCarets(editor, context.caret, carried));
   }
+  landSpecTypedMarks(editor, spec);
 
   if (TRANSACTION_SPEC_DOCUMENT_STATES.has(spec)) {
     const nextState = TRANSACTION_SPEC_DOCUMENT_STATES.get(spec);
@@ -11135,6 +11146,21 @@ export const carryCurrentCaret = (
 
 const MOVING = new WeakSet<Editor>();
 
+type TypedMarks = Readonly<{
+  marks: EditorMarks;
+  offset: number;
+  path: Path;
+  root: string;
+  text: PliteNode | null;
+}>;
+
+const TYPED_MARKS = new WeakMap<Editor, TypedMarks>();
+const DRAFT_TYPED_MARKS = new WeakMap<
+  TransactionSpecContext,
+  TypedMarks | null
+>();
+const SPEC_TYPED_MARKS = new WeakMap<TransactionSpec, TypedMarks | null>();
+
 /**
  * Runs keyboard motion: each selection write inside `run` keeps the member
  * of a set root that the previous selection held, so an arrow, a word move,
@@ -11170,6 +11196,19 @@ const setSelectionValue = (
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(editor);
+  const typed = readTypedRecord(owner);
+
+  if (
+    typed &&
+    !(
+      SelectionApi.isText(selection) &&
+      RangeApi.isCollapsed(selection) &&
+      root === typed.root &&
+      samePlace(selection.anchor, typed)
+    )
+  ) {
+    writeTypedRecord(owner, null);
+  }
 
   storeCaret(
     editor,
@@ -11214,6 +11253,115 @@ export const setCurrentMarks = (editor: Editor, marks: EditorMarks | null) => {
   if (context) context.selectionWritten = true;
   setCurrentSelection(editor, nextSelection, getCurrentSelectionRoot(editor));
   syncImplicitTargetToCurrentSelection(editor);
+};
+
+const readTypedRecord = (owner: Editor) => {
+  const draft = TRANSACTION_SPEC_CONTEXTS.get(owner)?.findLast((context) =>
+    DRAFT_TYPED_MARKS.has(context)
+  );
+
+  return draft ? DRAFT_TYPED_MARKS.get(draft) : TYPED_MARKS.get(owner);
+};
+
+const writeTypedRecord = (owner: Editor, typed: TypedMarks | null) => {
+  const context = getTransactionSpecContext(owner);
+
+  if (context) DRAFT_TYPED_MARKS.set(context, typed);
+  else if (typed) TYPED_MARKS.set(owner, typed);
+  else TYPED_MARKS.delete(owner);
+};
+
+export const samePlace = (
+  point: Pick<Point, 'offset' | 'path'>,
+  another: Pick<Point, 'offset' | 'path'>
+) =>
+  point.offset === another.offset && PathApi.equals(point.path, another.path);
+
+const readCaretText = (editor: Editor, root: string, path: Path) =>
+  withEditorRootChildren(editor, root, () =>
+    NodeApi.has(editor, path) ? NodeApi.get(editor, path) : null
+  );
+
+const sameText = (text: PliteNode | null, another: PliteNode | null) =>
+  TextApi.isText(text) &&
+  TextApi.isText(another) &&
+  TextApi.equals(text, another);
+
+export const setTypedMarks = (editor: Editor, marks: EditorMarks | null) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const selection = getCurrentSelection(editor);
+
+  if (
+    !marks ||
+    !SelectionApi.isText(selection) ||
+    !RangeApi.isCollapsed(selection)
+  ) {
+    writeTypedRecord(owner, null);
+    return;
+  }
+
+  const root = SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor);
+  const { offset, path } = selection.anchor;
+
+  writeTypedRecord(owner, {
+    marks: cloneValue(marks),
+    offset,
+    path,
+    root,
+    text: readCaretText(editor, root, path),
+  });
+};
+
+export const getTypedMarks = (editor: Editor): EditorMarks | null => {
+  const typed = readTypedRecord(getEditorRuntimeOwner(editor));
+
+  if (!typed) return null;
+
+  const selection = getCurrentSelection(editor);
+
+  return SelectionApi.isText(selection) &&
+    RangeApi.isCollapsed(selection) &&
+    (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) ===
+      typed.root &&
+    samePlace(selection.anchor, typed) &&
+    sameText(readCaretText(editor, typed.root, typed.path), typed.text)
+    ? cloneValue(typed.marks)
+    : null;
+};
+
+export const getRestorableMarks = (editor: Editor): EditorMarks | null =>
+  getCurrentMarks(editor) ??
+  (getTypedMarks(editor) ? null : getSelectionMarks(editor));
+
+const keepSpecTypedMarks = (
+  context: TransactionSpecContext,
+  spec: TransactionSpec
+) => {
+  const typed = DRAFT_TYPED_MARKS.get(context);
+
+  if (typed !== undefined) SPEC_TYPED_MARKS.set(spec, typed);
+};
+
+const landSpecTypedMarks = (editor: Editor, spec: TransactionSpec) => {
+  const typed = SPEC_TYPED_MARKS.get(spec);
+
+  if (typed !== undefined) {
+    writeTypedRecord(getEditorRuntimeOwner(editor), typed);
+  }
+};
+
+const publishTypedMarks = (editor: Editor, context: TransactionSpecContext) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const typed = DRAFT_TYPED_MARKS.get(context);
+
+  if (typed !== undefined) writeTypedRecord(owner, typed);
+  if (
+    TYPED_MARKS.has(owner) &&
+    !getTransactionSpecContext(owner) &&
+    !getTypedMarks(owner)
+  ) {
+    TYPED_MARKS.delete(owner);
+  }
 };
 
 const readCurrentSelection = (editor: Editor): SettledSelection => {
@@ -13884,6 +14032,7 @@ const publishTransactionDraft = (
   else DOCUMENT_STATE.set(editor, documentState);
   MUTATION_VERSION.set(editor, context.mutationVersion);
   clearSnapshotCache(editor);
+  publishTypedMarks(editor, context);
 };
 
 const withPluginPublicationRollback = <T>(
@@ -14138,6 +14287,7 @@ export const runEditorTransaction = <R>(
             restore();
           }
           disposeTransactionSpecContext(editor, draftContext);
+          publishTypedMarks(editor, draftContext);
           withoutUpdateTagContext(editor, () =>
             options.onAdmission?.(admitted)
           );

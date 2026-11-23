@@ -68,6 +68,7 @@ import {
   failInvariant,
   getEditorCurrentMarks,
   getNodeKey as editorGetNodeKey,
+  getRestorableMarks,
   probeCommandNativeEquivalent,
   range as editorRange,
   leaf as editorLeaf,
@@ -320,7 +321,7 @@ export function createAndroidInputManager({
       });
     EDITOR_TO_USER_MARKS.set(
       editor,
-      editor.read((state) => state.marks())
+      editor.read(() => getRestorableMarks(editor))
     );
 
     let scheduleSelectionChange = hasPendingDiffs();

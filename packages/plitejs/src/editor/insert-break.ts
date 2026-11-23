@@ -19,6 +19,7 @@ import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { dividesTextCell, splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
+import { withoutTypedMarks } from '../transforms-text/insert-text';
 import { breakAtSelectedBlockVoid } from './block-void-break';
 import { refusesReadOnlyWrite } from './element-read-only';
 import { startEmptyRoot } from './insert-default-child';
@@ -90,7 +91,7 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   // Canonical form drops formatting from the new line's empty text, so the
   // caret carries the formatting typing continues with.
   runEditorTransaction(editor, (tx) => {
-    const marks = tx.marks ?? tx.getSelectionMarks();
+    const marks = withoutTypedMarks(editor, tx.marks ?? tx.getSelectionMarks());
 
     splitNodes(editor, { always: true });
 

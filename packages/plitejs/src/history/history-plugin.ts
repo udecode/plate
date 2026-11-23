@@ -88,6 +88,7 @@ import {
   recordEditorHistoryReplayReceipt,
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
+  setTypedMarks,
 } from '../core/public-state';
 import {
   EditorNoncanonicalChangeError,
@@ -486,6 +487,7 @@ const createHistoryControl = <V extends Value>(
   });
 
 const runHistoricUpdate = <V extends Value>(
+  editor: Editor<V>,
   root: string,
   tx: HistoryTransaction<V>,
   batch: Batch<V>,
@@ -506,6 +508,7 @@ const runHistoricUpdate = <V extends Value>(
   }
 
   fn();
+  setTypedMarks(editor, null);
 };
 
 const toChangeValue = <V extends Value>(
@@ -565,7 +568,7 @@ const applyHistoryAction = <V extends Value>(
     direction === 'undo' ? 'before' : 'after'
   );
 
-  runHistoricUpdate(root, tx, entry.batch, () => {
+  runHistoricUpdate(editor, root, tx, entry.batch, () => {
     consumeHistoryBatch(editor, tx, entry.batch, direction, root);
     if (entry.carets) {
       restoreHistoryCarets(
@@ -1524,7 +1527,7 @@ const createHistoryPlugin = <
             );
             getEditorRuntime(owner).update(
               (tx) => {
-                runHistoricUpdate(root, tx, entry.batch, () => {
+                runHistoricUpdate(editor, root, tx, entry.batch, () => {
                   tx.effects.emit(replayedEffect.type, replayedEffect.value);
                 });
                 tx.annotations.set(historyReplaySettlement, {

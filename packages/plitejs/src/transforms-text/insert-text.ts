@@ -3,10 +3,14 @@ import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getCurrentMarks,
+  getCurrentSelectionRoot,
   getEditorUpdateRoot,
   getPublicSelection,
   getSelectionMarks,
+  getTypedMarks,
+  samePlace,
   setCurrentMarks,
+  setTypedMarks,
   syncImplicitTargetToCurrentSelection,
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
@@ -279,6 +283,74 @@ const getMarksAtNonInclusiveEnd = (
     : null;
 };
 
+const readAt = <T>(editor: Editor, at: Point, read: () => T) =>
+  at.root
+    ? withEditorUpdateRoot(editor, at.root, () =>
+        withEditorUpdateRootChildren(editor, at.root, read)
+      )
+    : read();
+
+export const typesAtSelection = (
+  editor: Editor,
+  { at, marks }: TextInsertTextOptions = {}
+) => {
+  if (marks === false) return false;
+  if (at == null) return true;
+
+  const selection = getPublicSelection(editor);
+  const range = LocationApi.isPoint(at) ? { anchor: at, focus: at } : at;
+
+  return (
+    !!selection &&
+    LocationApi.isRange(range) &&
+    (getLocationRoot(at) ?? getEditorUpdateRoot(editor)) ===
+      (SelectionApi.root(selection) ?? getCurrentSelectionRoot(editor)) &&
+    samePlace(RangeApi.start(range), RangeApi.start(selection)) &&
+    samePlace(RangeApi.end(range), RangeApi.end(selection))
+  );
+};
+
+export const setNextKeyMarks = (editor: Editor) => {
+  const selection = getPublicSelection(editor);
+  const at =
+    selection && RangeApi.isCollapsed(selection) ? selection.anchor : null;
+
+  setTypedMarks(
+    editor,
+    at &&
+      readAt(editor, at, () => {
+        const node = NodeApi.has(editor, at.path)
+          ? NodeApi.get(editor, at.path)
+          : null;
+
+        return TextApi.isText(node) && getMarksAtNonInclusiveEnd(editor, at)
+          ? NodeApi.extractProps(node)
+          : null;
+      })
+  );
+};
+
+export const withoutTypedMarks = <T extends object>(
+  editor: Editor,
+  marks: T | null
+): T | null => {
+  const selection = getPublicSelection(editor);
+  const typed = getTypedMarks(editor);
+
+  if (!marks || !selection || !typed) return marks;
+
+  const at = selection.anchor;
+  const kept = readAt(editor, at, () => getMarksAtNonInclusiveEnd(editor, at));
+
+  if (!kept) return marks;
+
+  return Object.fromEntries(
+    Object.entries(marks).filter(
+      ([key, value]) => key in kept || !jsonEqual(value, typed[key])
+    )
+  ) as T;
+};
+
 const outsideReadOnlyInline = (editor: Editor, point: Point): Point => {
   const inline = readOnlyInlineAt(editor, point);
 
@@ -322,7 +394,12 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
   options: TextInsertTextOptions = {}
 ) => {
   const explicitRoot = getLocationRoot(options.at);
-  const shouldApplyPendingMarks = options.at == null && options.marks !== false;
+  const typing = typesAtSelection(editor, options);
+  const keepTyping = () => {
+    if (!typing) return;
+    setCurrentMarks(editor, null);
+    setNextKeyMarks(editor);
+  };
   const insertText = () => {
     const { voids = false } = options;
     const explicitAtPreservesNullSelection =
@@ -407,6 +484,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       if (options.at == null) {
         syncImplicitTargetToCurrentSelection(editor);
       }
+      keepTyping();
       return;
     }
 
@@ -511,6 +589,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
                 });
               }
               insertTextAtPoint(editor, textInsertionPoint, text);
+              keepTyping();
               return;
             }
 
@@ -529,6 +608,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
                 voids,
               }
             );
+            keepTyping();
             return;
           }
 
@@ -567,8 +647,10 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
       const { path, offset, root } = at;
       if (text.length > 0) {
-        const typedMarks = shouldApplyPendingMarks
-          ? (getCurrentMarks(editor) ?? getMarksAtNonInclusiveEnd(editor, at))
+        const typedMarks = typing
+          ? (getCurrentMarks(editor) ??
+            getTypedMarks(editor) ??
+            getMarksAtNonInclusiveEnd(editor, at))
           : null;
         const marks = normalizeTextMarks(typedMarks);
 
@@ -587,7 +669,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               });
             }
             insertTextAtPoint(editor, textInsertionPoint, text);
-            setCurrentMarks(editor, null);
+            keepTyping();
             return;
           }
 
@@ -605,7 +687,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               { at, select: !explicitAtPreservesNullSelection, voids }
             );
           }
-          setCurrentMarks(editor, null);
+          keepTyping();
           return;
         }
 

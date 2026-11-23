@@ -2,6 +2,7 @@ import type {
   AnyEditor as Editor,
   EditorCommandPlace,
   EditorDocumentValue,
+  EditorMarks,
   NodeTarget,
   Selection,
   SnapshotIndex,
@@ -78,12 +79,14 @@ import {
   getTransactionSnapshot,
   retainTransactionSnapshotIndex,
   getTransactionSpecContext,
+  getTypedMarks,
   type RecordedDraft,
   recordedCarets,
   recorderBookmarks,
   carryCurrentCaret,
   resolveNodeTargetLocation,
   runEditorDocumentRecorder,
+  setTypedMarks,
   type TransactionSpecContext,
   withTransactionSpecDraftRead,
   withEditorUpdateRootScope,
@@ -233,6 +236,7 @@ export const probeInEditorCommandFrame = <T>(
           ),
         ])
   );
+  const typed = getTypedMarks(editor);
   const frame = createTransactionSpecContext(editor);
   const { snapshot } = frame;
 
@@ -256,6 +260,7 @@ export const probeInEditorCommandFrame = <T>(
       selection,
       placed.bookCaret
     );
+    setTypedMarks(editor, typed);
     snapshot.implicitTarget = null;
     snapshot.implicitTargetResolved = false;
     snapshot.implicitTargetFrame = {
@@ -1187,8 +1192,10 @@ export const runInEditorCommandFrame = (
   const storedIndex = (root: string) =>
     retainTransactionSnapshotIndex(editor, outer.snapshot, root);
   const runFramed = () => {
+    const typed = getTypedMarks(editor);
     const frame = createTransactionSpecContext(editor);
     const { snapshot } = frame;
+    let typedAfter: EditorMarks | null = null;
     let carried: CarriedCarets | null = null;
     let recorded: RecordedDraft | null = null;
     let written: {
@@ -1212,6 +1219,7 @@ export const runInEditorCommandFrame = (
         selection,
         placed.bookCaret
       );
+      setTypedMarks(editor, typed);
       if (snapshot.implicitTargetResolved) {
         snapshot.implicitTarget = target;
       } else {
@@ -1364,16 +1372,21 @@ export const runInEditorCommandFrame = (
         outer.snapshot.pluginReconfigurations.set(key, candidate);
         outer.changed = true;
       }
+      typedAfter = getTypedMarks(editor);
     } finally {
       COMMAND_FRAMES.delete(editor);
       disposeTransactionSpecContext(editor, frame);
     }
-    if (!recorded) return true;
+    if (!recorded) {
+      setTypedMarks(editor, typedAfter);
+      return true;
+    }
     commitRecordedDraft(editor, outer, recorded, frame.caret.root, {
       carried,
       letters,
       runs,
       storedToWritten,
+      typed: typedAfter,
     });
     outer.changed = true;
     if (written) {
