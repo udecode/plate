@@ -1396,11 +1396,6 @@ const resolveIn = (
     ...pending(node),
     ...(node.children ?? []).flatMap(subtreeMarks),
   ];
-  // An Editing join, or a claim of a block that goes with a join, whose
-  // landing waits on a pending change keeps its claim, to land once that
-  // change is decided. A proposed one holds the decision instead, since only a
-  // verdict would remember its acceptance. An accepted Editing claim that
-  // `editingClaimOutlivesItsJoin` keeps stays as well.
   const retainedJoins = new Set<Node>();
   const retainedFollowers = new Map<Node, Set<string>>();
   const followerKeyOf = (mark: AuthoredMark) =>
@@ -2191,18 +2186,13 @@ const resolveIn = (
     }
     if (emptiedTargets.has(node)) continue;
 
-    const waiting = claims.filter(
+    const accepted = claims.filter(
       (mark) =>
         resultOf(mark) === 'accept' &&
         links.sourceOf([getDefined(followsOf(mark))], order) !== null
     );
 
-    if (waiting.length === 0) continue;
-    if (waiting.some((mark) => isEditingChange(mark.change))) {
-      if (decisionOf(source.mark) === 'keep') retainFollowers(node, waiting);
-    } else {
-      wait([source.mark]);
-    }
+    if (decisionOf(source.mark) === 'keep') retainFollowers(node, accepted);
   }
 
   const joinedCarriedTo = (node: Node): AuthoredMark[] =>

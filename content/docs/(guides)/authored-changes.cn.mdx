@@ -208,7 +208,7 @@ const result = authored.update.decide({
 
 除了顶层 block 内部的拆分或合并，revision 都不包含 change 所在的位置，因此在它之前的编辑不会改变 revision。它的 `ranges` 可能在 revision 不变时移动，因此每次文档变更后请重新读取。合并、拆分、包裹或解除包裹的 revision 不包含其内部的文本和 leaf，因此在其中输入不会改变它；它随元素自身字段以及其内部元素的顺序和形状而变化。在顶层 block（例如 quote）内部，拆分或合并的 revision 还包含它在该 block 中的索引，因为决定会把它所在的行合并到前一个 block 中。索引只计算 block 的数量，不记录该行之前是哪一个 block。当它之前的 block 改变顺序，或其中一个被替换或改变类型后，之前读取的决定仍然有效，并会把该行合并进现在位于它之前的 block。落入顶层拆分或合并两半之间的 block 也不会改变 revision，之前读取的决定会把该行合并进这个 block。
 
-决定会按读取时的状态指名 change；读取后 revision 已变化的 change 返回 `stale`。接受一个 change 可能需要同时接受其他 change，拒绝一个 change 可能需要同时拒绝依赖它的 change。此时结果为 `blocked`，`with` 列出所需的 change，且不会应用任何内容。编辑器绝不会决定你未指名的 change。一次调用中的多个决定会一起决定：
+决定会按读取时的状态指名 change；读取后 revision 已变化的 change 返回 `stale`。接受一个 change 可能需要同时接受其他 change，拒绝一个 change 可能需要同时拒绝依赖它的 change。此时结果为 `blocked`，`with` 列出所需的 change，且不会应用任何内容。编辑器绝不会决定你未指名的 change。接受某人紧接在另一位作者待处理的 join 之后输入的行时，会直接应用，不等待那个 join。该行留在它存储的位置，之后接受 join 会把它放到合并后的行之后，与一次决定两者的结果相同。在不同作者之间，决定的顺序仍可能改变这样一行的最终位置。拒绝产生某行的 split 时，顺序也可能改变某人在 Editing 中移动过的那一行的位置。一次调用中的多个决定会一起决定：
 
 ```tsx
 if (result.status === "blocked") {
