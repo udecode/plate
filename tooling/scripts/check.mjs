@@ -574,7 +574,7 @@ export const steps = [
     name: 'effect-ledger',
     cores: 4,
     private: true,
-    run: 'pnpm check:effect-ledger',
+    run: 'pnpm check:effect-ledger --deadline=3300',
     light: 'pnpm check:effect-ledger --light',
     affected: runsScript(
       'packages/plitejs/scripts/effect-ledger.ts',
