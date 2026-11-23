@@ -212,9 +212,9 @@ const CheckListItemElement = ({
         <input
           checked={checked}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            editor
-              .update({ history: 'new-batch' })
-              .nodes.set({ checked: event.target.checked }, { at: element });
+            editor.update({ history: 'new-batch' }, (tx) => {
+              tx.nodes.set({ checked: event.target.checked }, { at: element });
+            });
           }}
           type="checkbox"
         />

@@ -120,7 +120,10 @@ const editor = useEditor<CustomValue>({ initialValue })`),
       children: toChildren('There you have it!'),
     },
   ];
-  const editor = useEditor({
+  const editor = useEditor<
+    CustomValue,
+    readonly [ReturnType<typeof history>, typeof CodeBlockTextPastePlugin]
+  >({
     plugins: [history(), CodeBlockTextPastePlugin],
     initialValue,
   });

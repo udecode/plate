@@ -1,4 +1,5 @@
 import type {
+  Data,
   Html,
   Nodes,
   Paragraph,
@@ -42,10 +43,11 @@ export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
 
 export const isMarkdownBreakHtml = (value: string) => ONLY_BR_TAGS.test(value);
 
-type RawHtmlData = Readonly<{
-  rawHtmlFlow?: true;
-  rawHtmlPiece?: Readonly<{ leaves: readonly Text[] }>;
-}>;
+type RawHtmlData = Data &
+  Readonly<{
+    rawHtmlFlow?: true;
+    rawHtmlPiece?: Readonly<{ leaves: readonly Text[] }>;
+  }>;
 
 /** Encode marked leaves as raw HTML that their block's decision may keep. */
 export const encodeRawHtmlLeaves = (leaves: readonly Text[]): Html => {
