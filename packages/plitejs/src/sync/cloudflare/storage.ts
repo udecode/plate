@@ -8,7 +8,7 @@ import type {
 } from '../server/storage';
 import type { RoomStorage, SqlValue } from './platform';
 
-// An entry's `bytes` comes before its `change`, so summing them reads no
+// An entry's `bytes` comes before its `change`, so reading `bytes` reads no
 // change's overflow pages.
 const TABLES = `
 CREATE TABLE IF NOT EXISTS room (id INTEGER PRIMARY KEY CHECK (id = 0), epoch TEXT NOT NULL, schema TEXT NOT NULL, floor INTEGER NOT NULL);
@@ -98,7 +98,10 @@ export const sqliteStorage = (
       'SELECT MAX(version) AS version FROM checkpoints WHERE at < ?',
       before
     );
-    const floor = Math.max(floorOf(), (version as number | null) ?? 0);
+    const current = floorOf();
+    const floor = Math.max(current, (version as number | null) ?? 0);
+
+    if (floor === current) return;
 
     sql.exec('UPDATE room SET floor = ?', floor);
     sql.exec('DELETE FROM entries WHERE version <= ?', floor);
@@ -152,6 +155,16 @@ export const sqliteStorage = (
         );
 
         return row ? checkpointOf(row) : null;
+      }),
+    checkpoints: (name, version) =>
+      asStorageCall(() => {
+        own(name);
+
+        return rows(
+          'SELECT version FROM checkpoints WHERE version >= (SELECT COALESCE(MAX(version), ?) FROM checkpoints WHERE version <= ?) ORDER BY version',
+          version,
+          version
+        ).map((row) => row.version as number);
       }),
     entries: (name, version) =>
       asStorageCall(() => {
@@ -217,6 +230,21 @@ export const sqliteStorage = (
 
           return row ? [{ author: row.author as string | null, change }] : [];
         });
+      }),
+    reach: (name, limit) =>
+      asStorageCall(() => {
+        own(name);
+
+        let total = 0;
+
+        for (const row of sql.exec(
+          'SELECT version, bytes FROM entries ORDER BY version DESC'
+        )) {
+          total += row.bytes as number;
+          if (total > limit) return row.version as number;
+        }
+
+        return floorOf();
       }),
     receipt: (name, { epoch, seq, writer }) =>
       asStorageCall(() => {

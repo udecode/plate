@@ -325,17 +325,15 @@ export const createSyncServer = <
     return { baseValue, gap };
   };
 
-  const boundedHistory = async (
-    name: string,
-    checkpoint: Checkpoint,
-    base: number
-  ) =>
-    (await storage.logged(name, checkpoint.version)) > READ_BYTES
-      ? null
-      : replay(name, checkpoint, base);
+  const storedHistory = async (name: string, base: number) => {
+    const [at] = await storage.checkpoints(name, base);
 
-  const storedHistory = async (name: string, base: number) =>
-    boundedHistory(name, await checkpointAt(name, base), base);
+    if (at === undefined || at < (await storage.reach(name, READ_BYTES))) {
+      return null;
+    }
+
+    return replay(name, await checkpointAt(name, at), base);
+  };
 
   const historyOf = (room: LoadedRoom, base: number) =>
     base === room.head
@@ -465,21 +463,21 @@ export const createSyncServer = <
     );
   };
 
-  const sinceCheckpointBeforeHead = async (room: LoadedRoom) => {
-    const checkpoint = await checkpointAt(room.name, room.head - 1);
-
-    return boundedHistory(room.name, checkpoint, checkpoint.version);
-  };
-
   const recentEntries = async (room: LoadedRoom) => {
     const from = Math.max(room.floor, room.head - TAKE_BACK_SCAN);
-    const history =
-      (await storedHistory(room.name, from)) ??
-      (await sinceCheckpointBeforeHead(room));
+    const [reach, checkpoints] = await Promise.all([
+      storage.reach(room.name, READ_BYTES),
+      storage.checkpoints(room.name, from),
+    ]);
+    const at = checkpoints.find((version) => version >= reach);
 
-    if (!history) return null;
+    if (at === undefined) return null;
 
-    const { baseValue, gap } = history;
+    const { baseValue, gap } = await replay(
+      room.name,
+      await checkpointAt(room.name, at),
+      Math.max(at, from)
+    );
     const entries: LaterEntry[] = [];
     let value = baseValue;
 
@@ -848,7 +846,7 @@ export const createSyncServer = <
       version !== null &&
       version >= room.floor &&
       version < room.head &&
-      (await storage.logged(room.name, version)) <= READ_BYTES
+      version >= (await storage.reach(room.name, READ_BYTES))
     ) {
       const entries = await storage.entries(room.name, version);
 

@@ -73,6 +73,11 @@ export type StoredRoom = Readonly<{
 export type SyncStorage = Readonly<{
   /** The newest checkpoint at or below `version`. */
   checkpoint: (room: string, version: number) => Promise<Checkpoint | null>;
+  /**
+   * The versions of the newest checkpoint at or below `version` and of every
+   * later checkpoint, oldest first. It reads no document.
+   */
+  checkpoints: (room: string, version: number) => Promise<readonly number[]>;
   /** The entries after `version`, oldest first. */
   entries: (room: string, version: number) => Promise<readonly StoredEntry[]>;
   /**
@@ -88,13 +93,24 @@ export type SyncStorage = Readonly<{
       schema: string;
     }>
   ) => Promise<StoredRoom>;
-  /** The sum of the `bytes` stored with the entries after `version`. */
+  /**
+   * The sum of the `bytes` stored with the entries after `version`. It reads
+   * every one of them, so a room asks it only from its newest checkpoint,
+   * whose later entries the room's checkpoint rule keeps under its read bound.
+   */
   logged: (room: string, version: number) => Promise<number>;
   mark: (room: string, writer: string) => Promise<WriterMark | null>;
   owners: (
     room: string,
     changes: readonly string[]
   ) => Promise<readonly ChangeOwner[]>;
+  /**
+   * The oldest version at or above the floor whose later entries hold at most
+   * `limit` bytes, or the floor when every entry fits. It reads the entries'
+   * `bytes` newest first and stops once their sum passes `limit`, so
+   * `logged(version) <= limit` holds exactly when `version >= reach(limit)`.
+   */
+  reach: (room: string, limit: number) => Promise<number>;
   receipt: (room: string, key: ReceiptKey) => Promise<StoredReceipt | null>;
   /**
    * Stores `entry.bytes`, the UTF-8 length of the entry's change JSON as the

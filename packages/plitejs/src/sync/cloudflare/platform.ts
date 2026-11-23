@@ -5,7 +5,9 @@ export type RoomStorage = {
     exec(
       query: string,
       ...bindings: SqlValue[]
-    ): { toArray(): Array<Record<string, SqlValue>> };
+    ): Iterable<Record<string, SqlValue>> & {
+      toArray(): Array<Record<string, SqlValue>>;
+    };
   };
   transactionSync<T>(write: () => T): T;
 };

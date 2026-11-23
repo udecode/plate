@@ -31,7 +31,9 @@ const compact = (room: MemoryRoom, before: number) => {
     room.checkpoints.findLast((checkpoint) => checkpoint.at < before)
       ?.version ?? room.floor;
 
-  room.floor = Math.max(room.floor, floor);
+  if (floor <= room.floor) return;
+
+  room.floor = floor;
   room.entries = room.entries.filter(({ entry }) => entry.version > room.floor);
   room.checkpoints = room.checkpoints.filter(
     (checkpoint) => checkpoint.version >= room.floor
@@ -76,6 +78,17 @@ export const memoryStorage = (): SyncStorage => {
             (checkpoint) => checkpoint.version <= version
           ) ?? null
       ),
+    checkpoints: (name, version) =>
+      asStorageCall(() => {
+        const { checkpoints } = roomOf(name);
+        const newest = checkpoints.findLastIndex(
+          (checkpoint) => checkpoint.version <= version
+        );
+
+        return checkpoints
+          .slice(Math.max(newest, 0))
+          .map((checkpoint) => checkpoint.version);
+      }),
     entries: (name, version) =>
       asStorageCall(() => after(name, version).map(({ entry }) => entry)),
     load: (name, { checkpoint, owners, schema }) =>
@@ -114,6 +127,18 @@ export const memoryStorage = (): SyncStorage => {
 
           return author === undefined ? [] : [{ author, change }];
         });
+      }),
+    reach: (name, limit) =>
+      asStorageCall(() => {
+        const room = roomOf(name);
+        let total = 0;
+
+        for (const { bytes, entry } of room.entries.toReversed()) {
+          total += bytes;
+          if (total > limit) return entry.version;
+        }
+
+        return room.floor;
       }),
     receipt: (name, key) =>
       asStorageCall(() => roomOf(name).receipts.get(keyOf(key)) ?? null),
