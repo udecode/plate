@@ -1,4 +1,5 @@
 import type {
+  EditorCoreStateView,
   EditorEffect,
   EditorEffectHistoryReplayResult,
   EditorEffectType,
@@ -7,6 +8,7 @@ import type {
   StateFieldHistoryPolicy,
 } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
+import { type Range, RangeApi } from '../interfaces/range';
 import { cloneFrozen } from './clone';
 import { normalizeEditorValuePersistence } from './value-codec';
 
@@ -207,6 +209,21 @@ export type DefineUpdateAnnotationOptions<TValue> = Readonly<{
   combine?: (previous: TValue, next: TValue) => TValue;
   key: string;
 }>;
+
+export const readLastCommitAnnotation = <TValue>(
+  state: EditorCoreStateView,
+  annotation: EditorUpdateAnnotation<TValue>,
+  selection: Range
+) => {
+  const commit = state.lastCommit();
+  const value = commit?.annotations[annotation.key] as TValue | undefined;
+
+  return value !== undefined &&
+    RangeApi.isRange(commit?.selectionAfter) &&
+    RangeApi.equals(commit.selectionAfter, selection)
+    ? value
+    : null;
+};
 
 export const defineUpdateAnnotation = <TValue>(
   options: DefineUpdateAnnotationOptions<TValue>

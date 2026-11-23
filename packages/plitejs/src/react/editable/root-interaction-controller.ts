@@ -19,6 +19,7 @@ import {
   SelectionApi,
 } from '../..';
 import { tripleClickedBlock } from '../../core/editor-commands';
+import { readLastCommitAnnotation } from '../../core/transaction-values';
 import {
   getPlacementGeneration,
   liftShownTarget,
@@ -126,7 +127,6 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { canUseNativeViewSelection } from './selection-projected-dom';
-import { readSelectionAnnotation } from './selection-triple-click';
 import { settleViewFocus } from './set-root-endpoints';
 import { activateViewCaret } from './view-caret-restore';
 import type { ViewLines } from './view-lines';
@@ -1974,7 +1974,9 @@ export const useRootInteractionController = ({
       if (!placement || !point) return false;
       const gecko = isGeckoDOMHost(event.nativeEvent);
       const word = shiftFrom
-        ? readSelectionAnnotation(view, placedSelectionWord, shiftFrom)
+        ? view.read((state) =>
+            readLastCommitAnnotation(state, placedSelectionWord, shiftFrom)
+          )
         : null;
       // Chromium and WebKit extend a double-click's selection by words,
       // Firefox by characters.

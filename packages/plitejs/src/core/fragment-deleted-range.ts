@@ -1,64 +1,50 @@
 import type { AnyEditor } from '../interfaces/editor';
-import { PathApi } from '../interfaces/path';
 import type { Range } from '../interfaces/range';
 import { RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import { resolveDeletedRange } from '../transforms-text';
-import {
-  readTripleClickRemoval,
-  readWholeBlockDelete,
-} from './editor-commands';
+import { readWholeBlockLanding, tripleClickedBlock } from './editor-commands';
+import { getEditorUpdateRoot } from './public-state';
+import { readLastCommitAnnotation } from './transaction-values';
 
 export const resolveFragmentDeletedRange = (
   editor: AnyEditor,
   range: Range
 ): NodeSelection | Range | null => {
-  if (editor.read((state) => readTripleClickRemoval(state, range))) {
-    return range;
-  }
-
-  const wholeBlocks = editor.read((state) =>
-    readWholeBlockDelete(state, range, undefined)
+  const landing = editor.read((state) =>
+    readWholeBlockLanding(state, range, {
+      root:
+        range.anchor.root ?? range.focus.root ?? getEditorUpdateRoot(editor),
+      tripleClicked: readLastCommitAnnotation(state, tripleClickedBlock, range),
+    })
   );
 
-  if (!wholeBlocks || wholeBlocks.endsInFirst) {
-    return resolveDeletedRange(editor, range);
-  }
+  if (!landing) return resolveDeletedRange(editor, range);
+  if (landing.keeps === 'default') {
+    const [first, ...rest] = landing.blocks.map(([, path]) => path);
+    const firstPath = getDefined(first);
 
-  const [[first, firstPath], ...rest] = wholeBlocks.blocks;
-  const [last] = getDefined(wholeBlocks.blocks.at(-1));
-
-  if (!wholeBlocks.keepsFirst) {
-    return firstPath.length === 1
-      ? SelectionApi.nodes([firstPath, ...rest.map(([, path]) => path)], {
-          mode: 'block',
-        })
+    return landing.whole && firstPath.length === 1
+      ? SelectionApi.nodes([firstPath, ...rest], { mode: 'block' })
       : null;
   }
-  if (!wholeBlocks.takesCaret) return null;
+  if (landing.keeps !== 'first') return range;
 
-  const anchor = RangeApi.start(range);
-  const focus = getDefined(
-    editor.read((state) =>
-      state.points.end(state.key(wholeBlocks.blocks.length > 1 ? last : first))
-    )
-  );
+  const { blocks, spansLines, text } = landing;
+  const [, firstPath] = getDefined(blocks[0]);
 
-  const removed = { anchor, focus };
+  if (blocks.length > 1) {
+    const [, lastPath] = getDefined(blocks.at(-1));
 
-  if (wholeBlocks.blocks.length > 1 || RangeApi.isCollapsed(removed)) {
-    return removed;
+    return {
+      anchor: RangeApi.start(range),
+      focus: getDefined(editor.read((state) => state.points.end(lastPath))),
+    };
   }
+  if (RangeApi.isCollapsed(text)) return text;
 
-  const acrossTextBlocks = editor.read((state) => {
-    const start = state.nodes.block({ at: anchor, mode: 'lowest' });
-    const end = state.nodes.block({ at: focus, mode: 'lowest' });
-
-    return !!start && !!end && !PathApi.equals(start[1], end[1]);
-  });
-
-  return firstPath.length === 1 && acrossTextBlocks
+  return spansLines && firstPath.length === 1 && !RangeApi.equals(text, range)
     ? null
-    : resolveDeletedRange(editor, removed);
+    : resolveDeletedRange(editor, text);
 };

@@ -6,6 +6,8 @@ import type {
   EditorStateView,
   EditorToggleBlockOptions,
   EditorToggleMarkOptions,
+  EditorTransactionSpecBuilder,
+  NamedRootKey,
   NodeKey,
   NodeTarget,
   TextTarget,
@@ -77,7 +79,10 @@ import {
 import { toCompiledNodeContext } from './schema-compiler';
 import { refuseCrossing } from './set-root';
 import { notePasteLoss, planPaste, writePaste } from './slice-landing';
-import { defineUpdateAnnotation } from './transaction-values';
+import {
+  defineUpdateAnnotation,
+  readLastCommitAnnotation,
+} from './transaction-values';
 import { areEditorJsonValuesEqual } from './value-codec';
 import { canReplaceChildrenWithText, holdsWritableText } from './writable-text';
 
@@ -316,36 +321,11 @@ const hasSiblingOutside = (
     ...(root ? { root } : {}),
   }) !== undefined;
 
-export const readWholeBlockDelete = (
-  state: CommandStateView,
-  range: Range,
-  root: string | undefined
-) => {
-  const blocks = getFullySelectedSiblingBlocks(state, range);
-
-  if (!blocks) return null;
-
-  const keepsFirst = hasSiblingOutside(state, blocks, root);
-
-  return {
-    blocks,
-    endsInFirst:
-      keepsFirst &&
-      PathApi.isAncestor(getDefined(blocks[0])[1], RangeApi.end(range).path),
-    keepsFirst,
-    takesCaret:
-      keepsFirst && takesCaretAfterRemoval(state, getDefined(blocks[0])[0]),
-  };
-};
-
 const isGrid = (state: CommandStateView, node: Element) =>
   getCompiledEditorSchemaFromApi(state.schema)?.elements.byType.get(node.type)
     ?.structure?.kind === 'grid';
 
-const takesCaretAfterRemoval = (
-  state: CommandStateView,
-  node: Node | undefined
-) =>
+const takesText = (state: CommandStateView, node: Node | undefined) =>
   NodeApi.isElement(node) &&
   !isGrid(state, node) &&
   holdsWritableText(getInternalEditorSchemaFromApi(state.schema), node);
@@ -354,40 +334,205 @@ export const tripleClickedBlock = defineUpdateAnnotation<NodeKey>({
   key: 'selection.triple-clicked-block',
 });
 
-export const readTripleClickRemoval = (
+type WholeBlockLanding = {
+  readonly blocks: ReadonlyArray<NodeEntry<Element>>;
+  readonly root: NamedRootKey | undefined;
+} & (
+  | Readonly<{ keeps: 'first'; spansLines: boolean; text: Range }>
+  | Readonly<{ keeps: 'next' }>
+  | Readonly<{ keeps: 'previous' }>
+  | Readonly<{
+      block: Descendant;
+      keeps: 'default';
+      reusesFirst: boolean;
+      whole: boolean;
+    }>
+);
+
+export const readWholeBlockLanding = (
   state: CommandStateView,
-  range: Range
-): NodeKey | null => {
-  const commit = state.lastCommit();
+  at: NodeTarget,
+  { root, tripleClicked }: { root: string; tripleClicked: NodeKey | null }
+): WholeBlockLanding | null => {
+  const range = resolveCommandRange(state, at);
+  const blocks = range && getFullySelectedSiblingBlocks(state, range);
+
+  if (!range || !blocks) return null;
+
+  const publicRoot = toPublicRoot(root);
+  const inRoot = publicRoot ? { root: publicRoot } : {};
+  const keyAt = (path: Path) =>
+    getDefined(state.key({ offset: 0, path, ...inRoot }));
+  const [first, firstPath] = getDefined(blocks[0]);
+  const next = state.nodes.get({
+    offset: 0,
+    path: PathApi.next(getDefined(blocks.at(-1))[1]),
+    ...inRoot,
+  })?.[0];
+  const clicked = tripleClicked && state.nodes.get(tripleClicked)?.[1];
+  const landing = { blocks, root: publicRoot };
 
   if (
-    commit?.annotations[tripleClickedBlock.key] === undefined ||
-    !RangeApi.isRange(commit.selectionAfter) ||
-    !RangeApi.equals(commit.selectionAfter, range)
+    clicked &&
+    blocks.length === 1 &&
+    PathApi.isCommon(firstPath, clicked) &&
+    takesText(state, first) &&
+    takesText(state, next) &&
+    getInternalEditorSchemaFromApi(state.schema).canPlaceAtPath(firstPath, [], {
+      removing: [getDefined(firstPath.at(-1))],
+      root,
+    })
   ) {
-    return null;
+    return { ...landing, keeps: 'next' };
   }
 
-  const blocks = getFullySelectedSiblingBlocks(state, range);
-  const [block, path] = blocks?.length === 1 ? getDefined(blocks[0]) : [];
+  const keepsFirst = PathApi.hasPrevious(firstPath) || next !== undefined;
 
-  if (!block || !path) return null;
+  if (RangeApi.isRange(at)) {
+    const endsInFirst = PathApi.isAncestor(firstPath, RangeApi.end(range).path);
 
-  const next = state.nodes.next({ at: state.key(block) })?.[0];
-  const removable = getInternalEditorSchemaFromApi(state.schema).canPlaceAtPath(
-    path,
-    [],
-    {
-      removing: [getDefined(path.at(-1))],
-      root: range.anchor.root ?? range.focus.root ?? 'main',
+    if (keepsFirst && (endsInFirst || takesText(state, first))) {
+      const text = endsInFirst
+        ? range
+        : {
+            anchor: RangeApi.start(range),
+            focus: getDefined(
+              withPointRoot(state.points.end(keyAt(firstPath)), publicRoot)
+            ),
+          };
+      const [startLine, endLine] = RangeApi.edges(text).map((point) =>
+        state.nodes.block({ at: point, mode: 'lowest' })
+      );
+
+      return {
+        ...landing,
+        keeps: 'first',
+        spansLines:
+          !!startLine && !!endLine && !PathApi.equals(startLine[1], endLine[1]),
+        text,
+      };
     }
+  } else if (PathApi.hasPrevious(firstPath)) {
+    return { ...landing, keeps: 'previous' };
+  } else if (next) {
+    return { ...landing, keeps: 'next' };
+  }
+
+  const block = blockReplacing(
+    state,
+    firstPath,
+    root,
+    '',
+    state.marks() ??
+      getConsistentBlockTextMarks(
+        state,
+        blocks.map(([, path]) => keyAt(path))
+      )
   );
 
-  return removable &&
-    takesCaretAfterRemoval(state, block) &&
-    takesCaretAfterRemoval(state, next)
-    ? state.key(block)
-    : null;
+  if (!block) return null;
+
+  return {
+    ...landing,
+    block,
+    keeps: 'default',
+    reusesFirst:
+      !keepsFirst &&
+      NodeApi.isElement(block) &&
+      block.children.every(NodeApi.isText) &&
+      takesText(state, first),
+    whole: !keepsFirst,
+  };
+};
+
+const writeWholeBlockLanding = (
+  tx: EditorTransactionSpecBuilder,
+  landing: WholeBlockLanding,
+  { at, direction }: { at: Range; direction: 'backward' | 'forward' }
+) => {
+  const { blocks, root } = landing;
+  const [, firstPath] = getDefined(blocks[0]);
+  const [, lastPath] = getDefined(blocks.at(-1));
+  const parentPath = PathApi.parent(firstPath);
+  const index = getDefined(firstPath.at(-1));
+  const inRoot = root ? { root } : {};
+  const keyAt = (path: Path) =>
+    getDefined(tx.key({ offset: 0, path, ...inRoot }));
+  const replace = (
+    path: Path,
+    from: number,
+    count: number,
+    children: readonly Descendant[] = []
+  ) => {
+    if (count > 0 || children.length > 0) {
+      tx.nodes.replaceChildren(children, {
+        at: path,
+        count,
+        index: from,
+        ...inRoot,
+      });
+    }
+  };
+  const collapse = (point: Point | undefined) => {
+    const caret = withPointRoot(point, root);
+
+    if (caret) tx.selection.set({ anchor: caret, focus: caret });
+  };
+
+  if (landing.keeps === 'next' || landing.keeps === 'previous') {
+    const kept = keyAt(
+      landing.keeps === 'next'
+        ? PathApi.next(lastPath)
+        : PathApi.previous(firstPath)
+    );
+
+    replace(parentPath, index, blocks.length);
+    collapse(
+      landing.keeps === 'next' ? tx.points.start(kept) : tx.points.end(kept)
+    );
+    return;
+  }
+  if (landing.keeps === 'first') {
+    replace(parentPath, index + 1, blocks.length - 1);
+    if (RangeApi.isCollapsed(landing.text)) {
+      collapse(landing.text.anchor);
+    } else {
+      tx.fragment.delete({ at: landing.text, direction });
+    }
+    return;
+  }
+  if (!landing.reusesFirst) {
+    replace(parentPath, index, blocks.length, [landing.block]);
+    collapse(tx.points.start(keyAt(firstPath)));
+
+    const blockText = NodeApi.texts(landing.block).next().value;
+    const marks = blockText ? NodeApi.extractProps(blockText[0]) : {};
+
+    if (Object.keys(marks).length > 0) tx.marks.set(marks);
+    return;
+  }
+
+  tx.fragment.delete({ at, direction });
+
+  let kept = tx.nodes.get(keyAt(firstPath))?.[0];
+
+  while (
+    NodeApi.isElement(kept) &&
+    kept.children.length === 1 &&
+    NodeApi.isElement(kept.children[0])
+  ) {
+    tx.nodes.unwrap({ at: keyAt(firstPath) });
+    kept = tx.nodes.get(keyAt(firstPath))?.[0];
+  }
+  if (!NodeApi.isElement(kept) || !NodeApi.isElement(landing.block)) return;
+
+  const { children: _children, ...props } = landing.block;
+  const stale = Object.keys(kept).filter(
+    (key) => key !== 'children' && !(key in props)
+  );
+
+  tx.nodes.set(props, { at: keyAt(firstPath) });
+  if (stale.length > 0) tx.nodes.unset(stale, { at: keyAt(firstPath) });
 };
 
 const getTextMarks = (node: import('../interfaces').Text) => {
@@ -766,195 +911,28 @@ export const editorCommands: EditorCommands = Object.freeze({
       if (range) {
         refuseCrossing(getSetSite(getActiveCommandEditor()), range, root);
       }
-      const tripleClicked =
-        range && RangeApi.isRange(target)
-          ? readTripleClickRemoval(state, range)
+      const landing =
+        target !== undefined && range
+          ? readWholeBlockLanding(state, target, {
+              root,
+              tripleClicked: RangeApi.isRange(target)
+                ? readLastCommitAnnotation(state, tripleClickedBlock, range)
+                : null,
+            })
           : null;
 
-      if (tripleClicked) {
+      if (
+        range &&
+        landing &&
+        (input.at !== undefined ||
+          landing.keeps !== 'default' ||
+          !landing.whole)
+      ) {
         return state.transaction((tx) => {
-          const [next] = getDefined(tx.nodes.next({ at: tripleClicked }));
-
-          tx.nodes.remove({ at: tripleClicked });
-          const start = getDefined(tx.points.start(tx.key(next)));
-
-          tx.selection.set({ anchor: start, focus: start });
-        });
-      }
-
-      const publicRoot = toPublicRoot(root);
-      const wholeBlocks = range
-        ? readWholeBlockDelete(state, range, publicRoot)
-        : null;
-
-      if (wholeBlocks && (input.at !== undefined || wholeBlocks.keepsFirst)) {
-        const selectedBlocks = wholeBlocks.blocks;
-        const [firstBlock, firstPath] = getDefined(selectedBlocks[0]);
-        const [, lastPath] = getDefined(selectedBlocks.at(-1));
-        const keyAt = (path: Path) =>
-          getDefined(
-            state.key({
-              offset: 0,
-              path,
-              ...(publicRoot ? { root: publicRoot } : {}),
-            })
-          );
-        const textRange =
-          range && RangeApi.isRange(target) && wholeBlocks.keepsFirst
-            ? range
-            : null;
-        const endsInFirst = textRange !== null && wholeBlocks.endsInFirst;
-
-        if (textRange && (endsInFirst || wholeBlocks.takesCaret)) {
-          const at: Range = endsInFirst
-            ? textRange
-            : {
-                anchor: RangeApi.start(textRange),
-                focus: {
-                  ...getDefined(state.points.end(keyAt(firstPath))),
-                  ...(publicRoot ? { root: publicRoot } : {}),
-                },
-              };
-
-          return state.transaction((tx) => {
-            if (selectedBlocks.length > 1) {
-              tx.nodes.replaceChildren([], {
-                at: PathApi.parent(firstPath),
-                count: selectedBlocks.length - 1,
-                index: getDefined(firstPath.at(-1)) + 1,
-                ...(publicRoot ? { root: publicRoot } : {}),
-              });
-            }
-            if (RangeApi.isCollapsed(at)) {
-              tx.selection.set({ anchor: at.anchor, focus: at.anchor });
-            } else {
-              tx.fragment.delete({ at, direction: input.direction });
-            }
+          writeWholeBlockLanding(tx, landing, {
+            at: range,
+            direction: input.direction,
           });
-        }
-
-        const parentPath = PathApi.parent(firstPath);
-        const index = getDefined(firstPath.at(-1));
-        const previous = textRange
-          ? undefined
-          : state.nodes.previous({ at: keyAt(firstPath), sibling: true });
-        const previousPoint =
-          previous && NodeApi.isElement(previous[0])
-            ? state.points.end(keyAt(previous[1]))
-            : undefined;
-        const next =
-          textRange || previousPoint
-            ? undefined
-            : state.nodes.next({ at: keyAt(lastPath) });
-        const nextPoint = next ? state.points.start(keyAt(next[1])) : undefined;
-        const mappedNextPoint = nextPoint
-          ? {
-              ...nextPoint,
-              path: [
-                ...parentPath,
-                index,
-                ...nextPoint.path.slice(parentPath.length + 1),
-              ],
-            }
-          : undefined;
-        const survivingPoint = previousPoint ?? mappedNextPoint;
-        const defaultChild = survivingPoint
-          ? null
-          : blockReplacing(
-              state,
-              firstPath,
-              root,
-              '',
-              state.marks() ??
-                getConsistentBlockTextMarks(
-                  state,
-                  selectedBlocks.map(([, path]) => keyAt(path))
-                )
-            );
-
-        if (
-          !survivingPoint &&
-          (!defaultChild ||
-            (NodeApi.isElement(defaultChild) &&
-              defaultChild.children.every(NodeApi.isText) &&
-              takesCaretAfterRemoval(state, firstBlock)))
-        ) {
-          return state.transaction((tx) => {
-            tx.fragment.delete({
-              direction: input.direction,
-              ...(input.at === undefined ? {} : { at: range ?? input.at }),
-            });
-
-            if (!NodeApi.isElement(defaultChild)) return;
-
-            const kept = () =>
-              getDefined(
-                tx.key({
-                  offset: 0,
-                  path: firstPath,
-                  ...(publicRoot ? { root: publicRoot } : {}),
-                })
-              );
-            let block = tx.nodes.get(kept())?.[0];
-
-            while (
-              NodeApi.isElement(block) &&
-              block.children.length === 1 &&
-              NodeApi.isElement(block.children[0])
-            ) {
-              tx.nodes.unwrap({ at: kept() });
-              block = tx.nodes.get(kept())?.[0];
-            }
-            if (!NodeApi.isElement(block)) return;
-
-            const { children: _children, ...props } = defaultChild;
-            const stale = Object.keys(block).filter(
-              (key) => key !== 'children' && !(key in props)
-            );
-
-            tx.nodes.set(props, { at: kept() });
-            if (stale.length > 0) tx.nodes.unset(stale, { at: kept() });
-          });
-        }
-
-        return state.transaction((tx) => {
-          const defaultText = defaultChild
-            ? NodeApi.texts(defaultChild).next().value
-            : undefined;
-          const point =
-            survivingPoint ??
-            (defaultText
-              ? {
-                  offset: 0,
-                  path: [...parentPath, index, ...defaultText[1]],
-                  ...(publicRoot ? { root: publicRoot } : {}),
-                }
-              : undefined);
-
-          tx.nodes.replaceChildren(defaultChild ? [defaultChild] : [], {
-            at: parentPath,
-            count: selectedBlocks.length,
-            index,
-            ...(publicRoot ? { root: publicRoot } : {}),
-            ...(point
-              ? {
-                  newSelection: {
-                    anchor: point,
-                    focus: point,
-                    kind: 'text',
-                  },
-                }
-              : {}),
-          });
-
-          const deletedTextMarks =
-            !survivingPoint && defaultText
-              ? NodeApi.extractProps(defaultText[0])
-              : {};
-
-          if (Object.keys(deletedTextMarks).length > 0) {
-            tx.marks.set(deletedTextMarks);
-          }
         });
       }
 

@@ -1,5 +1,4 @@
 import {
-  type EditorUpdateAnnotation,
   type Node,
   NodeApi,
   type Path,
@@ -18,26 +17,10 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
 import { getInnerLineRange } from './line-boundary';
 import {
-  type AnyEditor,
   above as editorAbove,
   isBlock as editorIsBlock,
   range as editorRange,
 } from './runtime-editor-api';
-
-export const readSelectionAnnotation = <TValue>(
-  editor: AnyEditor,
-  annotation: EditorUpdateAnnotation<TValue>,
-  selection: Range
-) => {
-  const commit = editor.read.lastCommit();
-  const value = commit?.annotations[annotation.key] as TValue | undefined;
-
-  return value !== undefined &&
-    RangeApi.isRange(commit?.selectionAfter) &&
-    RangeApi.equals(commit.selectionAfter, selection)
-    ? value
-    : null;
-};
 
 export const getTripleClickRange = (
   editor: ReactRuntimeEditor,
