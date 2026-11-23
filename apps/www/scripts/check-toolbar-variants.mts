@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import {
   copyFileSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -41,7 +42,13 @@ for (const variant of variants) {
     toolbarSource,
     path.join(sourceRoot, 'components/editor/toolbar.tsx')
   );
-  for (const name of SHADCN_UI_COPIES) {
+  const toolbar = readFileSync(toolbarSource, 'utf-8');
+
+  // Some copies import the /create page's icon placeholder, which this
+  // fixture's paths do not map, so copy only the ones the toolbar imports.
+  for (const name of SHADCN_UI_COPIES.filter((copy) =>
+    toolbar.includes(`'@/registry/bases/${variant}/ui/${copy}'`)
+  )) {
     copyFileSync(
       path.join(appRoot, 'src/registry', getShadcnCopyPath(variant, name)),
       path.join(sourceRoot, 'registry', getShadcnCopyPath(variant, name))
