@@ -1,3 +1,5 @@
 # @platejs/cli
 
+## 54.0.0-beta.3
+
 ## 54.0.0-beta.2
