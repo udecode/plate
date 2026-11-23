@@ -52,7 +52,7 @@ export function LineHeightToolbarButton() {
           }}
         >
           <DropdownMenuRadioItem
-            className="min-w-[180px] ps-2 *:first:[span]:hidden"
+            className="min-w-[180px]"
             finalFocus={() => editor.api.dom.focus()}
             value="default"
           >
@@ -61,7 +61,7 @@ export function LineHeightToolbarButton() {
           {presets.map((preset) => (
             <DropdownMenuRadioItem
               key={preset}
-              className="min-w-[180px] ps-2 *:first:[span]:hidden"
+              className="min-w-[180px]"
               finalFocus={() => editor.api.dom.focus()}
               value={String(preset)}
             >

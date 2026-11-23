@@ -1,6 +1,12 @@
 'use client';
 
-import { flip, offset, useDismiss, useInteractions } from '@floating-ui/react';
+import {
+  flip,
+  offset,
+  shift,
+  useDismiss,
+  useInteractions,
+} from '@floating-ui/react';
 import {
   BoldIcon,
   Code2Icon,
@@ -237,6 +243,7 @@ function PositionedFloatingToolbar({
         ],
         padding: 12,
       }),
+      shift({ padding: 8 }),
     ],
     placement: 'top',
     onOpenChange,

@@ -360,7 +360,7 @@ function TurnIntoLeafItem({
 }>) {
   return (
     <DropdownMenuRadioItem
-      className="min-w-[180px] ps-2 *:first:[span]:hidden"
+      className="min-w-[180px]"
       disabled={disabled}
       value={value}
     >

@@ -38,6 +38,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-fix-toolbar-menu-checks",
+      "href": "/registry/changelog/2026-11-23-fix-toolbar-menu-checks.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the current choice in toolbar menus and keep the floating toolbar inside the editor",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "turn-into-toolbar-button",
+        "line-height-toolbar-button",
+        "mode-toolbar-button",
+        "floating-toolbar"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-board-styles-file",
       "href": "/registry/changelog/2026-11-22-board-styles-file.json",
       "status": "draft",

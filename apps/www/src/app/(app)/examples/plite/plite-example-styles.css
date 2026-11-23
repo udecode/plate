@@ -89,7 +89,7 @@ details > summary {
   content: attr(data-label);
 }
 
-[data-editor]:focus {
+:where([data-editor]:focus) {
   outline: none;
 }
 

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-fix-toolbar-menu-checks",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-fix-toolbar-menu-checks.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Show the current choice in toolbar menus and keep the floating toolbar inside the editor",
+  "targets": [
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "line-height-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/line-height-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/mode-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-toolbar-menus-current-choice-check",
+      "kind": "fix",
+      "summary": "Show a check next to the current choice in the Turn into, line height and editing mode menus.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "turn-into-toolbar-button",
+        "line-height-toolbar-button",
+        "mode-toolbar-button"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-fix-toolbar-menu-checks",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-23-floating-toolbar-stays-inside-editor",
+      "kind": "fix",
+      "summary": "Keep the floating toolbar inside the editor when the selection sits near its edge, so every button stays reachable on a phone.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-fix-toolbar-menu-checks",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
