@@ -116,10 +116,11 @@ export const differences = (from, minus) =>
  * which reaches only some of the listed findings. `lower` fails on a finding
  * the baseline does not list and otherwise drops the entries the tree no
  * longer holds.
- * `init` seeds every rule the file lacks. `describe` turns a new finding's
- * baseline key into the line the caller prints for it. The base commit's
- * copies of `boundFiles`, `file` alone by default, together bound the
- * baseline's growth.
+ * `init` fails when the file already lists every rule, or on a finding the
+ * file does not list under a rule it lists, and otherwise seeds every rule
+ * the file lacks. `describe` turns a new finding's baseline key into the line
+ * the caller prints for it. The base commit's copies of `boundFiles`, `file`
+ * alone by default, together bound the baseline's growth.
  */
 export function enforceBaseline({
   describe = (key) => key,
@@ -174,6 +175,17 @@ export function enforceBaseline({
       console.error(
         `Every rule already has entries in ${file}; init only seeds new rules.`
       );
+      return 1;
+    }
+    const raised = differences(
+      Object.fromEntries(
+        Object.keys(old).map((rule) => [rule, found[rule] ?? {}])
+      ),
+      old
+    );
+    if (raised.length > 0) {
+      console.error(raised.map(describe).join('\n'));
+      console.error(newFindingsHelp);
       return 1;
     }
     const seeded = Object.fromEntries(
