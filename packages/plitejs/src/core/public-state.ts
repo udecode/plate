@@ -486,11 +486,9 @@ import { copyTxMethodMarkers, isTxOnlyMethod } from './tx-only';
 import {
   advanceUniqueIndex,
   buildUniqueIndex,
-  indexedHoldersOf,
   repairCommittedUniqueValues,
   sameUniqueIndex,
   type UniqueIndex,
-  uniqueHolderOf,
 } from './unique-values';
 import {
   getCurrentUpdateTags,
@@ -2222,10 +2220,6 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
 };
 
 const UNIQUE_INDEXES = new WeakMap<Editor, UniqueIndex>();
-const PROJECTED_UNIQUE_INDEXES = new WeakMap<
-  Editor,
-  WeakMap<EditorDocumentValue, UniqueIndex>
->();
 const UNIQUE_INDEX_GUARDS = new WeakSet<Editor>();
 const HOLDER_CHANGE_KINDS = ['node', 'presence'] as const;
 
@@ -2409,33 +2403,52 @@ export const seedUniqueIndex = (editor: Editor) => {
   );
 };
 
-const projectedUniqueIndex = (
-  editor: Editor,
-  projection: EditorDocumentValue
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const schema = getCompiledEditorSchema(editor);
-  let indexes = PROJECTED_UNIQUE_INDEXES.get(owner);
-
-  if (!indexes) {
-    indexes = new WeakMap();
-    PROJECTED_UNIQUE_INDEXES.set(owner, indexes);
-  }
-  const current = indexes.get(projection);
-
-  if (current?.schema === schema) return current;
-
-  const index = buildUniqueIndex(
-    schema,
-    projection,
-    getSnapshotVersion(editor),
-    (root) =>
-      withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
+// Reads the index without `getSnapshot`, whose selection read an authored
+// preview works out over every root.
+const shownRootIndex = (owner: Editor, root: string) =>
+  withEditorRootChildren(owner, root, () =>
+    getEditorProjectionSnapshotIndex(owner, getChildrenSource(owner))
   );
 
-  indexes.set(projection, index);
+const PROJECTED_ROOT_DIRECTORIES = new WeakMap<
+  Editor,
+  WeakMap<EditorDocumentValue, RootDirectory>
+>();
 
-  return index;
+// Like a transaction's, a view's directory can still name a root the view
+// drops.
+const projectedRootDirectory = (
+  owner: Editor,
+  projection: EditorDocumentValue
+): RootDirectory => {
+  const properties = internedUniquePropertiesOf(getCompiledEditorSchema(owner));
+  let directories = PROJECTED_ROOT_DIRECTORIES.get(owner);
+
+  if (!directories) {
+    directories = new WeakMap();
+    PROJECTED_ROOT_DIRECTORIES.set(owner, directories);
+  }
+  const known = directories.get(projection);
+
+  if (known?.uniqueProperties === properties) return known;
+  const stored = ROOT_DIRECTORIES.get(owner);
+  let directory =
+    stored?.uniqueProperties === properties
+      ? stored
+      : emptyRootDirectory(owner);
+
+  for (const root of visitRootNames(projection.roots)) {
+    directory = advanceRootDirectory(
+      owner,
+      directory,
+      root,
+      valueRootNodes(projection, root),
+      shownRootIndex(owner, root)
+    );
+  }
+  directories.set(projection, directory);
+
+  return directory;
 };
 
 // A state's directory moves on from the one it starts from over the named
@@ -2491,50 +2504,28 @@ const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
 
   countCoreWork('uniqueHolderQueries');
 
-  const projection = getReadProjection(editor);
-
-  if (projection) {
-    const roots = getEditorDocumentRoots(editor);
-
-    return uniqueHolderOf(
-      indexedHoldersOf(
-        projectedUniqueIndex(editor, projection),
-        property,
-        value
-      ),
-      value,
-      (root, nodeKey) => {
-        if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
-
-        return withEditorRootChildren(editor, root, () => {
-          const path = getPathByNodeKey(editor, nodeKey);
-          const node = path && getLiveNode(editor, path);
-
-          return path && node && NodeApi.isElement(node)
-            ? { held: node[property], path }
-            : null;
-        });
-      }
-    );
-  }
-
   return stateUniqueHolder(getEditorRuntimeOwner(editor), property, value);
 };
 
+// While a command runs, `getReadProjection` gives no projection, so a view or
+// a preview reads the command's state, not the document it shows.
 const stateUniqueHolder = (
   owner: Editor,
   property: string,
   value: unknown
 ): EditorUniqueHolder | null => {
-  const context = getTransactionSpecContext(owner);
-  const draft = context?.snapshot.builder.value;
-  const stored = draft ? undefined : getEditorDocumentRoots(owner);
-  const named = draft?.roots ?? stored ?? {};
+  const projection = getReadProjection(owner);
+  const context = projection ? undefined : getTransactionSpecContext(owner);
+  const shown = projection ?? context?.snapshot.builder.value;
+  const stored = shown ? undefined : getEditorDocumentRoots(owner);
+  const named = shown?.roots ?? stored ?? {};
   const holdersIn = (root: string) => {
     if (root !== MAIN_ROOT_KEY && !Object.hasOwn(named, root)) return [];
-    const index = runtimeRootIndex(owner, root);
-    const children = draft
-      ? valueRootNodes(draft, root)
+    const index = projection
+      ? shownRootIndex(owner, root)
+      : runtimeRootIndex(owner, root);
+    const children = shown
+      ? valueRootNodes(shown, root)
       : rootSourceOf(getDefined(stored), root);
 
     return readUniqueHolders(owner, index, children, property, value).flatMap(
@@ -2546,23 +2537,21 @@ const stateUniqueHolder = (
     );
   };
   const main = holdersIn(MAIN_ROOT_KEY);
-
-  if (!context) {
-    if (main.length > 0) return main[0];
+  const directory = () => {
+    if (projection) return projectedRootDirectory(owner, projection);
+    if (context) return transactionRootDirectory(owner, context.snapshot);
     if (
       ROOT_DIRECTORIES.get(owner)?.uniqueProperties !==
       internedUniquePropertiesOf(getCompiledEditorSchema(owner))
     ) {
       advanceStoredRootDirectory(owner, null);
     }
-  }
-  const held = rootsHoldingValue(
-    context
-      ? transactionRootDirectory(owner, context.snapshot)
-      : getDefined(ROOT_DIRECTORIES.get(owner)),
-    property,
-    value
-  );
+
+    return getDefined(ROOT_DIRECTORIES.get(owner));
+  };
+
+  if (!context && main.length > 0) return main[0];
+  const held = rootsHoldingValue(directory(), property, value);
   const holders = [
     ...main,
     ...(held.length > 1

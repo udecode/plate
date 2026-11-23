@@ -102,6 +102,8 @@ export type CoreWork = {
   projectedIndexes: number;
   /** Reads of the whole change from the stored document to the projected. */
   projectionChanges: number;
+  /** Ancestors and retyped nodes a projection's key structure gave the key each node carries. */
+  projectionRekeys: number;
   /** Roots a collaboration binding reconciled whole by diffing them. */
   reconciles: number;
   /** Runs of tokens a step recorded as relocated from another place. */
@@ -277,6 +279,7 @@ export const coreWork: CoreWork = {
   ownershipBuilds: 0,
   projectedIndexes: 0,
   projectionChanges: 0,
+  projectionRekeys: 0,
   reconciles: 0,
   relocations: 0,
   relocationReads: 0,

@@ -2354,6 +2354,7 @@ export const mapSnapshotIndexThroughChange = (
       !discardedNodeKeys.has(own) &&
       builder.cellOfKey(own) === undefined
     ) {
+      countCoreWork('projectionRekeys');
       builder.rekey(cell, own);
     }
     const nodeKey = builder.cell(cell).key;
