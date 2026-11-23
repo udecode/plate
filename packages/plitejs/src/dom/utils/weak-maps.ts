@@ -29,6 +29,7 @@ export type OpenedInput = InputTarget | 'sealed';
 export type Action = {
   at?: Point | Range;
   deletes?: boolean;
+  rebuildsLine?: boolean;
   run: () => void;
   target: OpenedInput;
 };

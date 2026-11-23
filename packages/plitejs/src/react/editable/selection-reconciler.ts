@@ -77,6 +77,7 @@ import {
   syncEditableDOMSelectionToEditor,
 } from './input-controller';
 import { exportEditableDOMSelection } from './input-state';
+import { getEditableInteractionOwner } from './interaction-owner';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   failInvariant,
@@ -1579,6 +1580,15 @@ export const useEditableSelectionReconciler = ({
       return undefined;
     }
 
+    let pressed = false;
+    const editable = rootRef.current;
+    const notePress = (event: PointerEvent) => {
+      pressed ||=
+        getEditableInteractionOwner(editable, event.target) === 'editor';
+    };
+
+    editable?.addEventListener('pointerdown', notePress, true);
+
     let cancelTimeout = () => {};
     const cancelAnimationFrame = phaseScheduler.schedule(
       'selection-repair',
@@ -1586,7 +1596,20 @@ export const useEditableSelectionReconciler = ({
       () => {
         if (ensureSelection) {
           const ensureDomSelection = (forceChange?: boolean) => {
-            if (!ReactEditor.isFocused(editor)) return;
+            if (pressed || !ReactEditor.isFocused(editor)) return;
+
+            const caret = resolveNextKeyCaret(editor, editable);
+            const caretMoved =
+              caret?.kind === 'text' && selection?.kind === 'text'
+                ? !RangeApi.equals(caret, selection)
+                : !SelectionApi.equals(caret, selection);
+
+            if (
+              caretMoved ||
+              androidInputManagerRef.current?.hasPendingChanges()
+            ) {
+              return;
+            }
 
             try {
               const el = ReactEditor.editable(editor);
@@ -1628,6 +1651,7 @@ export const useEditableSelectionReconciler = ({
     return () => {
       cancelAnimationFrame();
       cancelTimeout();
+      editable?.removeEventListener('pointerdown', notePress, true);
     };
   });
 

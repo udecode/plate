@@ -104,14 +104,23 @@ const cloneRange = (range: Range): Range => ({
   focus: clonePoint(range.focus),
 });
 
-export const shouldFlushStoredTextDiffForInsertTextHandler = (
+const typedTextNeedsInsertTextCommand = (
   editor: ReactRuntimeEditor,
-  diff: StringDiff
-) =>
-  diff.text.length > 0 &&
-  !probeCommandNativeEquivalent(editor, editorCommands.insertText, {
-    text: diff.text,
-  }).nativeEquivalent;
+  at: Range,
+  text: string
+) => {
+  const caret = readRuntimeSelectionRange(editor);
+
+  return (
+    text.length > 0 &&
+    RangeApi.isCollapsed(at) &&
+    !!caret &&
+    RangeApi.equals(caret, at) &&
+    !probeCommandNativeEquivalent(editor, editorCommands.insertText, {
+      text,
+    }).nativeEquivalent
+  );
+};
 
 export type CreateAndroidInputManagerOptions = {
   editor: ReactRuntimeEditor;
@@ -273,8 +282,9 @@ export function createAndroidInputManager({
 
     if (
       lineKey &&
-      isDOMElement(line) &&
-      !line.querySelector('[data-editor-node="text"]')
+      (action.rebuildsLine ||
+        (isDOMElement(line) &&
+          !line.querySelector('[data-editor-node="text"]')))
     ) {
       rebuildLine?.(lineKey);
     }
@@ -728,10 +738,12 @@ export function createAndroidInputManager({
       at,
       deletes,
       preserveInsertPositionHint = false,
+      rebuildsLine,
     }: {
       at?: Point | Range;
       deletes?: boolean;
       preserveInsertPositionHint?: boolean;
+      rebuildsLine?: boolean;
     } = {}
   ): void => {
     if (!preserveInsertPositionHint) {
@@ -750,6 +762,7 @@ export function createAndroidInputManager({
     EDITOR_TO_PENDING_ACTION.set(editor, {
       at,
       deletes,
+      rebuildsLine,
       run,
       target: openInputTarget(editor),
     });
@@ -770,7 +783,13 @@ export function createAndroidInputManager({
       at,
       inputType,
       paste = false,
-    }: { at?: Point | Range; inputType?: string; paste?: boolean } = {}
+      rebuildsLine,
+    }: {
+      at?: Point | Range;
+      inputType?: string;
+      paste?: boolean;
+      rebuildsLine?: boolean;
+    } = {}
   ) => {
     scheduleAction(
       () =>
@@ -779,7 +798,7 @@ export function createAndroidInputManager({
           : paste
             ? runPaste(() => applyEditableCommand({ command, editor }))
             : applyEditableCommand({ command, editor }),
-      { at, deletes: command.kind.startsWith('delete') }
+      { at, deletes: command.kind.startsWith('delete'), rebuildsLine }
     );
   };
 
@@ -1189,9 +1208,17 @@ export function createAndroidInputManager({
         }
 
         if (!spansLeaves) {
+          const keyTarget =
+            (preferRuntimeSelection && readRuntimeSelectionRange(editor)) ||
+            innerTargetRange2;
+
           canStoreDiff &&=
             canStoreDOMTextDiffAtRange(innerTargetRange2) &&
-            !caretMarksDifferAt(innerTargetRange2);
+            !caretMarksDifferAt(innerTargetRange2) &&
+            !(
+              type === 'insertText' &&
+              typedTextNeedsInsertTextCommand(editor, keyTarget, text)
+            );
           if (!canStoreDiff && event.cancelable) {
             event.preventDefault();
             preventedTextInput = true;
@@ -1277,9 +1304,6 @@ export function createAndroidInputManager({
                 preserveInsertPositionHint: true,
               });
             }
-            if (shouldFlushStoredTextDiffForInsertTextHandler(editor, diff)) {
-              scheduleFlush();
-            }
             return;
           }
         }
@@ -1295,6 +1319,7 @@ export function createAndroidInputManager({
                     innerTargetRange2)
             ),
             inputType: type,
+            rebuildsLine: !preventedTextInput && !compositionTarget,
           }
         );
         if (preventedTextInput) {
