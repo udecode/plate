@@ -1,6 +1,9 @@
 import { exportContentSlice } from 'plitejs/internal';
 
-import { readDOMSelectionRange } from '../../dom/plite-dom.internal';
+import {
+  cleanDOMClipboardContents,
+  readDOMSelectionRange,
+} from '../../dom/plite-dom.internal';
 import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
@@ -374,10 +377,17 @@ const getStaticSelectionPayload = (
     textNode = textWalker.nextNode();
   }
 
+  const text = getPlainText(htmlContainer);
+
+  htmlContainer.querySelectorAll('[data-editor-string]').forEach((marker) => {
+    if (marker.textContent === '\uFEFF') marker.textContent = '';
+  });
+  cleanDOMClipboardContents(htmlContainer);
+
   return {
     html: htmlContainer.innerHTML,
     slice: exportContentSlice(editor, assembled),
-    text: getPlainText(htmlContainer),
+    text,
   };
 };
 

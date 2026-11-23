@@ -53,6 +53,7 @@ export type {
   DOMFragmentDataPayload,
 } from './plugin/dom-clipboard-runtime';
 export {
+  cleanDOMClipboardContents,
   domCommands,
   getDOMClipboardFormatKey,
   writeDOMFragmentData,

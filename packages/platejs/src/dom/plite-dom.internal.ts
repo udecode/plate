@@ -1,4 +1,5 @@
 export {
+  cleanDOMClipboardContents,
   domCommands,
   createCompiledHotkeyMatcher,
   dom,

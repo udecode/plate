@@ -230,6 +230,14 @@ Applications normally use
 `editor.api.dom.clipboard.writeSelection(dataTransfer)`, which writes the native
 Plite payload and registered MIME representations together.
 
+A writer that builds `text/html` from a copy of rendered editor DOM, such as a
+read-only preview's copy handler, passes that copy through
+`cleanDOMClipboardContents(root)` first. It removes editor markers, classes,
+ids, `data-*` and `aria-*` attributes, form controls and `aria-hidden`
+elements such as icons, so comment and search highlights and other page state
+stay out of the pasted HTML. A button keeps its label. Links, images, table
+spans and inline styles stay, except the style a decoration paints on the text.
+
 ## Public type groups
 
 DOM bridge types include `DOMApi`, `DOMClipboardApi`,

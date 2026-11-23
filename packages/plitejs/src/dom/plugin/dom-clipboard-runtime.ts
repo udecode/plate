@@ -703,15 +703,34 @@ const replaceRenderOnlyContainers = (root: ParentNode) => {
     });
 };
 
-const stripEditorAttributes = (root: ParentNode) => {
+const PAINTED_ATTRIBUTE_RE =
+  /^(?:aria-|data-|on)|^(?:class|contenteditable|draggable|id|role|spellcheck|tabindex)$/;
+
+/**
+ * Remove what the page paints for its view from a DOM copy of editor content
+ * before it becomes `text/html`: editor markers, decoration and app state
+ * attributes, classes, ids, form controls, `aria-hidden` elements such as icons
+ * and carets, and the style a decoration paints on the text. A button keeps
+ * its label, and links, images, table spans and other inline styles stay.
+ */
+export const cleanDOMClipboardContents = (root: ParentNode) => {
+  root
+    .querySelectorAll('[aria-hidden="true"], input, select, textarea')
+    .forEach((chrome) => chrome.remove());
+  root
+    .querySelectorAll('button')
+    .forEach((button) => button.replaceWith(...Array.from(button.childNodes)));
+  root
+    .querySelectorAll(PLITE_STRING_SELECTOR)
+    .forEach((string) => string.removeAttribute('style'));
   root.querySelectorAll('*').forEach((element) => {
     Array.from(element.attributes).forEach(({ name }) => {
-      if (name.startsWith('data-editor-')) element.removeAttribute(name);
+      if (PAINTED_ATTRIBUTE_RE.test(name)) element.removeAttribute(name);
     });
   });
 };
 
-const getDefaultFragmentAttach = (contents: DocumentFragment) => {
+const getDefaultFragmentAttach = (contents: ParentNode) => {
   let attach: ChildNode | null = contents.childNodes[0] ?? null;
 
   contents.childNodes.forEach((node) => {
@@ -816,16 +835,12 @@ export const writeDOMRangeData = <V extends Value>(
   replaceRenderOnlyContainers(contents);
   stripRenderOnlyTrailingNewlines(contents, domRange);
 
-  let attach = getDefaultFragmentAttach(contents);
-
-  if (startVoid) {
-    attach =
-      contents.querySelector('[data-editor-spacer]') ??
+  const voidAttach = startVoid
+    ? (contents.querySelector('[data-editor-spacer]') ??
       contents.querySelector(
         '[data-editor-node="element"], [data-editor-node="text"], [data-editor-string], [data-editor-zero-width]'
-      ) ??
-      attach;
-  }
+      ))
+    : null;
 
   replaceZeroWidthSentinels(contents);
 
@@ -840,6 +855,9 @@ export const writeDOMRangeData = <V extends Value>(
   stripRenderOnlyLeafWrappers(div, ui);
 
   const text = getPlainText(div, ui);
+
+  cleanDOMClipboardContents(div);
+  let attach = voidAttach ?? getDefaultFragmentAttach(div);
 
   // Set a `data-editor-fragment` attribute on a non-empty node, so it shows up
   // in the HTML, and can be used for intra-Plite pasting. If it's a text
@@ -869,7 +887,6 @@ export const writeDOMRangeData = <V extends Value>(
     attachElement = span;
   }
 
-  stripEditorAttributes(div);
   writeDOMDataTransferFragment(editor, data, {
     clipboardFormatKey,
     html: ({ encoded }) => {
