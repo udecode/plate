@@ -760,10 +760,9 @@ const leaveRoot = (held: RootSet, root: string, edit: object) => {
 };
 
 /**
- * The directory after named root `root` changed to `children`, or left the
- * document when `children` is null. It reads only the parts of the root's maps
- * that the version it last took in does not share, and writes only for a value
- * the root starts or stops holding.
+ * Reads only the parts of the root's maps that the version in
+ * `directory.takenIn` does not share, and writes only for a value the root
+ * starts or stops holding.
  *
  * @internal
  */
@@ -771,12 +770,17 @@ export const advanceRootDirectory = (
   editor: Editor,
   directory: RootDirectory,
   root: string,
-  children: ChildrenList | null
+  children: ChildrenList | null,
+  index?: SnapshotIndex
 ): RootDirectory => {
   if (root === MAIN_ROOT_KEY) return directory;
   const topology =
     children &&
-    uniqueTopologyOf(editor, snapshotIndexOf(editor, children), children);
+    uniqueTopologyOf(
+      editor,
+      index ?? snapshotIndexOf(editor, children),
+      children
+    );
   const source = hashMapGet(directory.takenIn, root) ?? null;
 
   if (source?.holders === topology?.holders) return directory;
@@ -808,6 +812,25 @@ export const advanceRootDirectory = (
       : hashMapDelete(directory.takenIn, root, edit),
     uniqueProperties: directory.uniqueProperties,
   });
+};
+
+/** @internal */
+export const rootsHoldingValue = (
+  directory: RootDirectory,
+  property: string,
+  value: unknown
+): readonly string[] => {
+  const at = directory.uniqueProperties.indexOf(property);
+  const key = uniqueLookupKeyOf(value);
+  const held =
+    at === -1 || key === null
+      ? undefined
+      : hashMapGet(directory.roots[at], key);
+  const roots: string[] = [];
+
+  if (typeof held === 'string') roots.push(held);
+  else if (held) hashMapForEach(held, (root) => roots.push(root));
+  return roots;
 };
 
 /**

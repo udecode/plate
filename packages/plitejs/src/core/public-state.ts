@@ -58,6 +58,7 @@ import type {
   EditorTransactionSliceApi,
   EditorTransactionSpecBuilder,
   EditorTransactionTextApi,
+  EditorUniqueHolder,
   EditorUpdateContext,
   EditorUpdateTag,
   EditorUpdateTransaction,
@@ -455,7 +456,9 @@ import {
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
   publishSnapshotIndex,
+  readUniqueHolders,
   type RootDirectory,
+  rootsHoldingValue,
   seedSnapshotIndex,
   snapshotIndexOf,
 } from './snapshot-index';
@@ -485,7 +488,6 @@ import {
   sameUniqueIndex,
   type UniqueIndex,
   uniqueHolderOf,
-  writtenHoldersOf,
 } from './unique-values';
 import {
   getCurrentUpdateTags,
@@ -572,6 +574,11 @@ type SettlementSplit =
     }>
   | Readonly<{ kind: 'dropped' }>;
 
+type StateRootDirectory = {
+  advanced?: Readonly<{ change: DocumentChange; directory: RootDirectory }>;
+  initial: () => RootDirectory | undefined;
+};
+
 type TransactionSnapshot = {
   activeChange: {
     change: DocumentChange;
@@ -605,6 +612,7 @@ type TransactionSnapshot = {
       onPublished?: (uninstall: ReturnType<Editor['install']>) => void;
     }>
   >;
+  rootDirectory: StateRootDirectory;
   rootIndexes: Map<string, SnapshotIndex>;
   roots: Record<string, readonly Descendant[]>;
   tags: Set<EditorUpdateTag>;
@@ -2407,35 +2415,48 @@ const projectedUniqueIndex = (
   return index;
 };
 
-const publishedUniqueIndex = (editor: Editor) => {
-  const snapshot = getTransactionSnapshot(editor);
+// A state's directory moves on from the one it starts from over the named
+// roots its change has entries for, which include every root the change
+// creates with content. It can name a root that no longer holds a value, such
+// as one the change deleted, one whose edit the state took back or one a
+// command frame's projection hides, but it names every root that does, and a
+// lookup checks each root's own map.
+const transactionRootDirectory = (
+  owner: Editor,
+  snapshot: TransactionSnapshot
+): RootDirectory => {
+  const { change, value } = snapshot.builder;
+  const { advanced, initial } = snapshot.rootDirectory;
 
-  if (!snapshot) {
-    return uniqueIndexOf(
-      editor,
-      getEditorDocumentValue(editor),
-      getSnapshotVersion(editor),
-      (root) =>
-        withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
+  if (advanced?.change === change) return advanced.directory;
+  const properties = internedUniquePropertiesOf(getCompiledEditorSchema(owner));
+  const start = advanced?.directory ?? initial();
+  const current = start?.uniqueProperties === properties ? start : undefined;
+  const named = value.roots ?? {};
+  const roots = current
+    ? [...getInternalDocumentChangeEntries(change)].map(([root]) => root)
+    : visitRootNames(named);
+  let directory = current ?? emptyRootDirectory(owner);
+
+  for (const root of roots) {
+    const children =
+      root !== MAIN_ROOT_KEY && Object.hasOwn(named, root)
+        ? valueRootNodes(value, root)
+        : null;
+
+    directory = advanceRootDirectory(
+      owner,
+      directory,
+      root,
+      children,
+      children
+        ? retainTransactionSnapshotIndex(owner, snapshot, root)
+        : undefined
     );
   }
+  snapshot.rootDirectory.advanced = { change, directory };
 
-  const stored = getChangeValue(
-    snapshot.roots,
-    snapshot.records
-  ) as EditorDocumentValue;
-
-  return uniqueIndexOf(
-    editor,
-    stored,
-    snapshot.previousVersion,
-    (root) =>
-      snapshot.baseSnapshots.get(root)?.index ??
-      snapshotIndexOf(
-        getEditorRuntimeOwner(editor),
-        getDocumentRootChildren(stored, root)
-      )
-  );
+  return directory;
 };
 
 const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
@@ -2447,48 +2468,92 @@ const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
 
   countCoreWork('uniqueHolderQueries');
 
-  const roots = getEditorDocumentRoots(editor);
   const projection = getReadProjection(editor);
-  function* publishedThenDraftHolders() {
-    yield* indexedHoldersOf(publishedUniqueIndex(editor), property, value);
-    for (const { snapshot } of TRANSACTION_SPEC_CONTEXTS.get(editor) ?? []) {
-      for (const { path, root } of writtenHoldersOf(
-        snapshot.builder.change,
-        (name) => snapshot.builder.getIndex(name),
-        property,
-        value
-      )) {
-        const nodeKey = retainTransactionSnapshotIndex(
-          editor,
-          snapshot,
-          root
-        ).keyAt([...path]);
 
-        if (nodeKey) yield [nodeKey, root] as const;
-      }
-    }
-  }
+  if (projection) {
+    const roots = getEditorDocumentRoots(editor);
 
-  const holders = projection
-    ? indexedHoldersOf(
+    return uniqueHolderOf(
+      indexedHoldersOf(
         projectedUniqueIndex(editor, projection),
         property,
         value
-      )
-    : publishedThenDraftHolders();
+      ),
+      value,
+      (root, nodeKey) => {
+        if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
 
-  return uniqueHolderOf(holders, value, (root, nodeKey) => {
-    if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
+        return withEditorRootChildren(editor, root, () => {
+          const path = getPathByNodeKey(editor, nodeKey);
+          const node = path && getLiveNode(editor, path);
 
-    return withEditorRootChildren(editor, root, () => {
-      const path = getPathByNodeKey(editor, nodeKey);
-      const node = path && getLiveNode(editor, path);
+          return path && node && NodeApi.isElement(node)
+            ? { held: node[property], path }
+            : null;
+        });
+      }
+    );
+  }
 
-      return path && node && NodeApi.isElement(node)
-        ? { held: node[property], path }
-        : null;
-    });
-  });
+  return stateUniqueHolder(getEditorRuntimeOwner(editor), property, value);
+};
+
+const stateUniqueHolder = (
+  owner: Editor,
+  property: string,
+  value: unknown
+): EditorUniqueHolder | null => {
+  const context = getTransactionSpecContext(owner);
+  const draft = context?.snapshot.builder.value;
+  const stored = draft ? undefined : getEditorDocumentRoots(owner);
+  const named = draft?.roots ?? stored ?? {};
+  const holdersIn = (root: string) => {
+    if (root !== MAIN_ROOT_KEY && !Object.hasOwn(named, root)) return [];
+    const index = runtimeRootIndex(owner, root);
+    const children = draft
+      ? valueRootNodes(draft, root)
+      : rootSourceOf(getDefined(stored), root);
+
+    return readUniqueHolders(owner, index, children, property, value).flatMap(
+      (path) => {
+        const key = index.keyAt(path);
+
+        return key ? [Object.freeze({ key, path, root })] : [];
+      }
+    );
+  };
+  const main = holdersIn(MAIN_ROOT_KEY);
+
+  if (!context) {
+    if (main.length > 0) return main[0];
+    if (
+      ROOT_DIRECTORIES.get(owner)?.uniqueProperties !==
+      internedUniquePropertiesOf(getCompiledEditorSchema(owner))
+    ) {
+      advanceStoredRootDirectory(owner, null);
+    }
+  }
+  const held = rootsHoldingValue(
+    context
+      ? transactionRootDirectory(owner, context.snapshot)
+      : getDefined(ROOT_DIRECTORIES.get(owner)),
+    property,
+    value
+  );
+  const holders = [
+    ...main,
+    ...(held.length > 1
+      ? visitRootNames(named).filter((name) => held.includes(name))
+      : held
+    ).flatMap(holdersIn),
+  ];
+
+  if (!context || holders.length < 2) return holders[0] ?? null;
+  const heldBelow = withContextsBelow(owner, context, () =>
+    stateUniqueHolder(owner, property, value)
+  );
+
+  return holders.find(({ key }) => key === heldBelow?.key) ?? holders[0];
 };
 
 const admitTransactionDraft = (editor: Editor) => {
@@ -9916,6 +9981,15 @@ export const createTransactionSpecContext = (
     reservedRoots: parentSnapshot?.reservedRoots ?? NO_RESERVED_ROOTS,
     selectionInDroppedRoot: parentSnapshot?.selectionInDroppedRoot ?? false,
     records,
+    rootDirectory: {
+      initial: parentSnapshot
+        ? () =>
+            transactionRootDirectory(
+              getEditorRuntimeOwner(editor),
+              parentSnapshot
+            )
+        : () => ROOT_DIRECTORIES.get(getEditorRuntimeOwner(editor)),
+    },
     rootIndexes: new Map(),
     roots,
     runtimeIndexRollbacks: new Map(),
@@ -13692,6 +13766,9 @@ const createEditorUpdateDraftContext = (
     reservedRoots: NO_RESERVED_ROOTS,
     selectionInDroppedRoot: false,
     records,
+    rootDirectory: {
+      initial: () => ROOT_DIRECTORIES.get(getEditorRuntimeOwner(editor)),
+    },
     rootIndexes: new Map(),
     roots: transactionRoots,
     runtimeIndexRollbacks: new Map(),

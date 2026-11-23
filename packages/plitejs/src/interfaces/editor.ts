@@ -909,10 +909,11 @@ export type EditorUniqueHolder = Readonly<{
 export type EditorStateUniqueApi = Readonly<{
   /**
    * Find the node that holds `value` of the `unique` property `property` in
-   * the current state, without a scan. Inside an update it also finds a node
-   * that got the value earlier in the same update, reading only the content
-   * the update wrote. When the update gave the value to a second node, it reads
-   * the node that held it before the update.
+   * the current state, without a scan. An update's draft, a command frame and
+   * a child transaction each answer from their own document. When such a state
+   * gave the value to a second node, it reads the node that held the value in
+   * the state around it, the stored document for an update, while that node
+   * still holds it.
    */
   holder: (property: string, value: unknown) => EditorUniqueHolder | null;
 }>;
