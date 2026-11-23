@@ -28,9 +28,10 @@ import {
   GONE,
   hasPendingGone,
   idOf,
+  MARKS,
   namedInkBlocks,
 } from './inkGone.internal';
-import { advanceInkPlaces, MARKS, readInkPlace } from './inkPlaces.internal';
+import { advanceInkPlaces, readInkPlace } from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';

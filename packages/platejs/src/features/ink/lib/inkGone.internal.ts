@@ -28,6 +28,8 @@ export const COPIES = 'ink-copies';
 
 export const GONE = 'ink-gone';
 
+export const MARKS = 'ink-marks';
+
 type GoneTx = Readonly<{
   changes: Readonly<{ apply: (change: DocumentChange) => void }>;
   unique: Readonly<{
