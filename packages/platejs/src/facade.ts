@@ -200,6 +200,7 @@ export {
   readRecord,
   type RecordSetVersion,
   recordSetChanges,
+  recordSetIds,
 } from 'plitejs/internal';
 export { sameResult } from 'plitejs/internal';
 export {

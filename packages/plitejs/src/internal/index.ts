@@ -43,6 +43,7 @@ export {
   readRecord,
   type RecordSetVersion,
   recordSetChanges,
+  recordSetIds,
 } from '../core/record-store';
 export {
   markRootViewUsed,

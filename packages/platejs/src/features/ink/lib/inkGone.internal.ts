@@ -8,8 +8,13 @@ import {
   getActiveEditorUpdateId,
   getDocumentValueNode,
   getEditorRuntimeOwner,
+  getRecordSetVersion,
   type Node,
   type Path,
+  readRecord,
+  type RecordSetVersion,
+  readShownRecords,
+  recordSetChanges,
   type RuntimeAnyEditor,
 } from '../../../facade';
 
@@ -19,6 +24,8 @@ export type SavedRecords = Readonly<
   Record<string, Readonly<Record<string, Readonly<Record<string, unknown>>>>>
 >;
 
+export const COPIES = 'ink-copies';
+
 export const GONE = 'ink-gone';
 
 type GoneTx = Readonly<{
@@ -26,7 +33,6 @@ type GoneTx = Readonly<{
   unique: Readonly<{
     holder: (field: 'id', id: string) => EditorUniqueHolder | null;
   }>;
-  value: () => Readonly<{ records?: SavedRecords }>;
 }>;
 
 const ADD_LOOKBACK_UPDATES = 4;
@@ -109,17 +115,68 @@ export const holdInkBlock = (editor: RuntimeAnyEditor, block: string) => {
   };
 };
 
-export const goneIn = (records: SavedRecords | undefined, id: string) => {
-  const record = records?.[GONE]?.[id];
+const goneOf = (record: Readonly<Record<string, unknown>> | undefined) =>
+  record && {
+    ...(typeof record.next === 'string' ? { next: record.next } : {}),
+    ...(typeof record.previous === 'string'
+      ? { previous: record.previous }
+      : {}),
+  };
 
-  return (
-    record && {
-      ...(typeof record.next === 'string' ? { next: record.next } : {}),
-      ...(typeof record.previous === 'string'
-        ? { previous: record.previous }
-        : {}),
+export const goneIn = (records: SavedRecords | undefined, id: string) =>
+  goneOf(records?.[GONE]?.[id]);
+
+const NAMING_FIELDS = [
+  [COPIES, ['block']],
+  [GONE, ['next', 'previous']],
+] as const;
+
+type NamedBlocks = {
+  counts: Map<string, number>;
+  versions: Map<string, RecordSetVersion>;
+};
+
+const namedBlocks = new WeakMap<object, NamedBlocks>();
+
+export const namedInkBlocks = (editor: RuntimeAnyEditor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const store = readShownRecords(editor);
+  let named = namedBlocks.get(owner);
+
+  if (!named) {
+    named = { counts: new Map(), versions: new Map() };
+    namedBlocks.set(owner, named);
+  }
+
+  const { counts, versions } = named;
+
+  for (const [set, fields] of NAMING_FIELDS) {
+    const before = versions.get(set) ?? null;
+    const after = getRecordSetVersion(store, set);
+
+    for (const id of recordSetChanges(before, after)) {
+      for (const [version, step] of [
+        [before, -1],
+        [after, 1],
+      ] as const) {
+        const record = readRecord(version, id);
+
+        for (const field of fields) {
+          const block = record?.[field];
+
+          if (typeof block !== 'string') continue;
+
+          const count = (counts.get(block) ?? 0) + step;
+
+          if (count === 0) counts.delete(block);
+          else counts.set(block, count);
+        }
+      }
     }
-  );
+    versions.set(set, after);
+  }
+
+  return counts;
 };
 
 const sameGone = (a: InkGone | undefined, b: InkGone) =>
@@ -183,13 +240,17 @@ export const captureGone = (
     session.update = new WeakRef(update);
     session.departed = departed;
     session.pending = new Set();
-    afterActiveTransactionEnds(editor, () => {
-      const at = recent.findIndex((run) => run.order > order);
+    afterActiveTransactionEnds(
+      editor,
+      () => {
+        const at = recent.findIndex((run) => run.order > order);
 
-      recent.splice(at === -1 ? recent.length : at, 0, { departed, order });
-      if (recent.length > ADD_LOOKBACK_UPDATES) recent.shift();
-      keepHeldChains(session, departed, order);
-    });
+        recent.splice(at === -1 ? recent.length : at, 0, { departed, order });
+        if (recent.length > ADD_LOOKBACK_UPDATES) recent.shift();
+        keepHeldChains(session, departed, order);
+      },
+      { beforeListeners: true }
+    );
   }
 
   const next = beside(after, gap, 1);
@@ -208,13 +269,16 @@ export const captureGone = (
 export const hasPendingGone = (editor: RuntimeAnyEditor) =>
   !!currentSession(editor)?.pending.size;
 
+const savedGone = (editor: RuntimeAnyEditor, id: string) =>
+  goneOf(readRecord(getRecordSetVersion(readShownRecords(editor), GONE), id));
+
 const writeGone = (
+  editor: RuntimeAnyEditor,
   tx: GoneTx,
   ids: Iterable<string>,
   placeOf: (id: string) => InkGone | undefined,
   writes: (saved: InkGone | undefined, place: InkGone) => boolean
 ) => {
-  const { records } = tx.value();
   const queue = [...ids];
   const done = new Set<string>();
   const texts = new Map<string, string>();
@@ -226,10 +290,7 @@ const writeGone = (
     const place = placeOf(id);
 
     if (!place || tx.unique.holder('id', id)) continue;
-
-    const saved = goneIn(records, id);
-
-    if (!writes(saved, place)) continue;
+    if (!writes(savedGone(editor, id), place)) continue;
     texts.set(id, canonicalRecordJson(place));
     for (const neighbor of [place.next, place.previous]) {
       if (neighbor !== undefined && !done.has(neighbor)) queue.push(neighbor);
@@ -247,20 +308,20 @@ const writeGone = (
 export const flushGone = (
   editor: RuntimeAnyEditor,
   tx: GoneTx,
-  named: (id: string) => boolean
+  named: ReadonlyMap<string, number>
 ) => {
   const session = currentSession(editor);
 
   if (!session) return;
 
-  const { records } = tx.value();
   const ids = [...session.pending].filter(
-    (id) => named(id) || goneIn(records, id) !== undefined
+    (id) => named.has(id) || savedGone(editor, id) !== undefined
   );
   const { departed } = session;
 
   session.pending = new Set();
   writeGone(
+    editor,
     tx,
     ids,
     (id) => departed.get(id),
@@ -278,6 +339,7 @@ export const addGone = (
   const recent = session?.recent ?? [];
 
   writeGone(
+    editor,
     tx,
     [block],
     (id) =>

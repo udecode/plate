@@ -260,6 +260,9 @@ export const recordSetChanges = (
   after: RecordSetVersion
 ) => persistentMapChanges(before, after, sameRecord);
 
+export const recordSetIds = (version: RecordSetVersion) =>
+  recordSetChanges(null, version);
+
 /** `store` without any record of `set`. */
 export const withoutRecordSet = (store: RecordStore, set: string) => {
   if (!Object.hasOwn(store, set)) return store;

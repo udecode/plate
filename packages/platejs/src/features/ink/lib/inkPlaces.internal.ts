@@ -18,10 +18,14 @@ import {
   withStoredAuthoredRead,
 } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
-import { GONE, goneIn, idOf, type SavedRecords } from './inkGone.internal';
+import {
+  COPIES,
+  GONE,
+  goneIn,
+  idOf,
+  type SavedRecords,
+} from './inkGone.internal';
 import { inkText } from './inkMatch.internal';
-
-export const COPIES = 'ink-copies';
 
 export const MARKS = 'ink-marks';
 

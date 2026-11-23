@@ -4,7 +4,12 @@ import { definePlugin, ElementIdPlugin, txLocate } from '../../../core';
 import {
   defineRuntimePlugin,
   getDocumentValueNode,
+  getRecordSetVersion,
   type NodeKey,
+  type RecordSetVersion,
+  readRecord,
+  readShownRecords,
+  recordSetIds,
 } from '../../../facade';
 import { readEditorAuthor } from '../../../lib/editor/editorUser.internal';
 import {
@@ -18,18 +23,14 @@ import {
 import {
   addGone,
   captureGone,
+  COPIES,
   flushGone,
   GONE,
   hasPendingGone,
   idOf,
-  type SavedRecords,
+  namedInkBlocks,
 } from './inkGone.internal';
-import {
-  advanceInkPlaces,
-  COPIES,
-  MARKS,
-  readInkPlace,
-} from './inkPlaces.internal';
+import { advanceInkPlaces, MARKS, readInkPlace } from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
@@ -211,37 +212,10 @@ const inkRecords = defineRuntimePlugin('ink-records', {
   },
   update: ({ editor, tx }) => ({
     flush: txLocate(false, () => {
-      flushGone(editor, tx, (id) => isNamed(tx.value().records, id));
+      flushGone(editor, tx, namedInkBlocks(editor));
     }),
   }),
 });
-
-const NO_RECORDS: SavedRecords[string] = {};
-const namedCache = new WeakMap<object, ReadonlySet<string>>();
-
-const idsIn = (set: SavedRecords[string], fields: readonly string[]) => {
-  let ids = namedCache.get(set);
-
-  if (!ids) {
-    const found = new Set<string>();
-
-    for (const record of Object.values(set)) {
-      for (const field of fields) {
-        const id = record[field];
-
-        if (typeof id === 'string') found.add(id);
-      }
-    }
-    ids = found;
-    namedCache.set(set, ids);
-  }
-
-  return ids;
-};
-
-const isNamed = (records: SavedRecords | undefined, id: string) =>
-  idsIn(records?.[COPIES] ?? NO_RECORDS, ['block']).has(id) ||
-  idsIn(records?.[GONE] ?? NO_RECORDS, ['next', 'previous']).has(id);
 
 type SavedRecord = Readonly<Record<string, unknown>>;
 
@@ -258,6 +232,7 @@ const decodedMarks = new WeakMap<
 >();
 
 const markLists = new WeakMap<object, WeakMap<object, readonly InkMark[]>>();
+const EMPTY_SET_VERSION = {};
 
 const frozen = <T extends object>(value: T) => {
   for (const field of Object.values(value)) {
@@ -661,8 +636,8 @@ const decodeMark = (
     return frozen({ ...mark, author, blocks, id });
   });
 
-const copyIn = (saved: SavedRecords[string], id: string) => {
-  const record = saved[id];
+const copyIn = (copies: RecordSetVersion, id: string) => {
+  const record = readRecord(copies, id);
 
   if (record && !decodedCopies.has(record)) {
     decodedCopies.set(record, decodeCopy(id, record));
@@ -671,12 +646,10 @@ const copyIn = (saved: SavedRecords[string], id: string) => {
   return record && decodedCopies.get(record);
 };
 
-const markIn = (
-  id: string,
-  record: SavedRecord,
-  copies: SavedRecords[string]
-) => {
-  const named = (copiesOf(record) ?? []).map((copy) => copies[copy]);
+const markIn = (id: string, record: SavedRecord, copies: RecordSetVersion) => {
+  const named = (copiesOf(record) ?? []).map((copy) =>
+    readRecord(copies, copy)
+  );
   const decoded = decodedMarks.get(record);
 
   if (decoded?.named.every((copy, at) => copy === named[at])) {
@@ -742,17 +715,18 @@ export const BaseInkPlugin = definePlugin('ink', {
     },
   },
   read: ({ editor, state }) => {
-    const set = (name: string) => state.value().records?.[name] ?? NO_RECORDS;
-    const copy = (id: string) => copyIn(set(COPIES), id);
+    const version = (set: string) =>
+      getRecordSetVersion(readShownRecords(editor), set);
+    const copy = (id: string) => copyIn(version(COPIES), id);
 
     return {
       /** The copy saved under `id`, or `undefined`. */
       copy,
       /** The mark saved under `id`, or `undefined`. */
       mark: (id: string) => {
-        const record = set(MARKS)[id];
+        const record = readRecord(version(MARKS), id);
 
-        return record && markIn(id, record, set(COPIES));
+        return record && markIn(id, record, version(COPIES));
       },
       /**
        * Every saved mark, oldest first, frozen, as the same list while the
@@ -760,24 +734,28 @@ export const BaseInkPlugin = definePlugin('ink', {
        * while its record and the copies it names stay the same.
        */
       marks: () => {
-        const saved = set(MARKS);
-        const copies = set(COPIES);
-        let byCopies = markLists.get(saved);
+        const saved = version(MARKS);
+        const copies = version(COPIES);
+        let byCopies = markLists.get(saved ?? EMPTY_SET_VERSION);
 
         if (!byCopies) {
           byCopies = new WeakMap();
-          markLists.set(saved, byCopies);
+          markLists.set(saved ?? EMPTY_SET_VERSION, byCopies);
         }
 
-        let marks = byCopies.get(copies);
+        let marks = byCopies.get(copies ?? EMPTY_SET_VERSION);
 
         if (!marks) {
           marks = Object.freeze(
-            Object.entries(saved)
-              .flatMap(([id, record]) => markIn(id, record, copies) ?? [])
+            recordSetIds(saved)
+              .flatMap((id) => {
+                const record = readRecord(saved, id);
+
+                return (record && markIn(id, record, copies)) ?? [];
+              })
               .sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1))
           );
-          byCopies.set(copies, marks);
+          byCopies.set(copies ?? EMPTY_SET_VERSION, marks);
         }
 
         return marks;
