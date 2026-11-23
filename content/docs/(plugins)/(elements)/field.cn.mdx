@@ -12,7 +12,7 @@ docs:
 
 <ComponentPreview name="field-demo" height="1340px" />
 
-示例是一份房东和租客之间的租赁合同模板。从工具栏的菜单插入字段，点击字段修改它的设置，并查看编辑器下方的 HTML、Markdown 和 Word 面板。
+示例是一份房东和租客之间的租赁合同模板。从工具栏的菜单插入字段，点击字段修改它的设置，并查看编辑器下方的 HTML、Markdown 和 Word 面板。在编辑器上方选择以房东身份填写或以租客身份填写，即可以该角色填写合同。
 
 <PackageInfo>
 
@@ -22,6 +22,7 @@ docs:
 - 每个字段有一个角色、一个标签，以及可选的必填标记、默认值、选择选项和值，每一项都按字段的类型检查。
 - 条件通过 `fieldId` 指向另一个字段，并检查那个字段的值。
 - `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题。
+- 一个角色的只填写视图，只接受该角色的答案，拒绝其他所有本地修改，撤销时只撤回该角色的答案。
 - 粘贴、拖动复制、创建副本和表格填充复制的字段会获得新 id，复制的条件指向复制出的字段。
 - HTML 和 Markdown 保留每个属性，Word 导出保留每个答案并报告它丢弃的设置。
 - 注册表 UI 提供带设置弹出框的字段标签、插入菜单和静态渲染组件。
@@ -175,7 +176,7 @@ export const readFields = (value: Value) =>
 
 每个字段指定填写它的角色，例如 `landlord` 或 `tenant`。角色可以是任意字符串。Plate 只保存它，从不检查用户是谁。由你的应用把每个人对应到一个角色，就像把每条评论对应到它的作者。
 
-Plate 不会阻止一个角色修改另一个角色的字段或周围的文本。从多人收集答案的应用应在服务器上检查每个提交的值。
+[只填写视图](#fill-as-one-role)会在该编辑器中阻止一个角色修改另一个角色的字段或周围的文本。从多人收集答案的应用仍应在服务器上检查每个提交的值。
 
 设置弹出框提供文档中字段已经使用的角色，也可以输入新角色。
 
@@ -259,6 +260,52 @@ const field = useFieldRead(element.fieldId);
 const problems = field?.problems ?? [];
 ```
 
+## 以一个角色填写 [#fill-as-one-role]
+
+设置 `fillRole` 打开一个角色的只填写视图。编辑器只接受该角色字段的答案，并拒绝其他所有本地修改，因此租客只能填写租客的字段，不能修改其他内容。
+
+```tsx
+import { FieldPlugin } from 'platejs/field/react';
+import { useCreateEditor } from 'platejs/react';
+
+import { FieldElement } from '@/components/editor/field';
+
+const editor = useCreateEditor({
+  initialValue: template,
+  plugins: [
+    // ...otherPlugins,
+    FieldPlugin.configure({
+      component: FieldElement,
+      initialState: { fillRole: 'tenant' },
+    }),
+  ],
+});
+```
+
+示例通过插件 store 在编辑模板和每个角色之间切换同一个编辑器，`null` 回到编辑模板：
+
+```tsx
+editor.plugin(FieldPlugin).store.set({ fillRole: 'landlord' });
+editor.plugin(FieldPlugin).store.set({ fillRole: null });
+```
+
+在组件中用 `platejs/react` 的 `usePluginStore(FieldPlugin, 'fillRole')` 读取角色。角色是编辑器状态，因此同一个编辑器的每个视图都以同一个角色填写。在两次更新之间切换角色。切换不会写入文档，也不会改变撤销和重做。
+
+设置角色后：
+
+- 注册表中该角色字段的标签打开一个弹出框，带有答案输入框和 Clear 按钮，该角色的复选框点击即可勾选或取消。答案带有待审阅建议的标签会提示它在等待审阅，并且不会打开任何内容。其他角色的标签不会打开任何内容，标签不能拖动，插入菜单被禁用。
+- 编辑器拒绝除该角色字段上符合的答案或清空答案之外的任何本地提交。输入、粘贴、剪切、拖放、回车和 AI 写入都不会改变文档。被拒绝的更新不会向调用者抛出错误，也不会改变任何内容。
+- 选区、没有 `persist` 的状态字段，以及既不持久化也不同步给其他协作者的副作用都可以通过，因此仍然可以选择和复制。
+- 撤销和重做只撤回该角色自己的答案。撤销在第一个修改了其他内容的步骤处停止，例如作者的编辑，并返回 `{ reason, status: 'blocked' }`。切换后的第一个答案是单独的撤销步骤，因此切换后立即输入的答案需要撤销两次。
+- 替换文档，例如 `tx.value.replace` 或加载另一个模板，会被拒绝，重新配置插件也会被拒绝。先加载模板并配置插件，再设置角色，或者先清除角色。
+- 评论可以添加，因为创建评论线程是一个本地副作用。由你的应用决定是否允许在只填写视图中评论。评论会增加一个撤销步骤，撤销会停在这个步骤，因此评论之前的答案无法再撤销。
+
+其他协作者的修改整体通过。每个带有 `collaboration` 标签的提交都会通过，因此协作者保持同一份文档。从 provider 的事件中应用其他协作者的 Yjs 更新，不要在编辑器更新内部应用。在其他协作者的修改内部进行的本地写入会带上它的 `collaboration` 标签，通过检查，并且永远不会发送给其他协作者。同理，由你的应用自己驱动的 Yjs `UndoManager`，或你的应用标记为 `collaboration` 的本地更新，也会通过填写检查。
+
+填写检查运行在字段插件的 `activate` 中，撤销步骤的边界运行在它的 `corrections` 中。用自己的 `activate` 或 `corrections` 扩展字段插件的插件会替换它们，因此把这部分逻辑放在一个配套插件中。
+
+填写检查运行在用户的浏览器中，任何人都可以在那里运行自己的代码。由你的服务器分配每个人的角色，并检查每个提交的答案。
+
 ## 复制与粘贴
 
 字段在移动（包括拖动移动）、被撤销恢复以及加载已保存的文档时保留它的 `fieldId`。复制会获得新 id：
@@ -321,6 +368,7 @@ const dropped = result.diagnostics.filter(
 | `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` 更新 | 修改字段的设置或值。 |
 | `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` 读取 | 持有该 id 的字段及其问题，或 `null`。 |
 | `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` 读取 | 按阅读顺序返回每个字段及其问题。 |
+| `fillRole` | `BaseFieldPlugin` 状态 | 该编辑器填写时使用的角色，编辑模板时为 `null`。通过 `initialState` 或 `editor.plugin(FieldPlugin).store.set` 设置。 |
 | `useFieldRead(fieldId)` | `platejs/field/react` | 读取一个字段及其问题，任一变化时重新渲染。 |
 | `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型和选项。 |
 | `FIELD_TESTS` | `platejs/field` | 每种类型的条件可以使用的测试。 |

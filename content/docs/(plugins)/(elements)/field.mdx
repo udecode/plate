@@ -12,7 +12,7 @@ A field is a typed blank in a document that one role fills, such as a tenant's n
 
 <ComponentPreview name="field-demo" height="1340px" />
 
-The demo is a lease template for a landlord and a tenant. Insert a field from the toolbar's menu, click a field to change its settings, and read the HTML, Markdown and Word panels under the editor.
+The demo is a lease template for a landlord and a tenant. Insert a field from the toolbar's menu, click a field to change its settings, and read the HTML, Markdown and Word panels under the editor. Pick Fill as landlord or Fill as tenant above the editor to fill the lease as that role.
 
 <PackageInfo>
 
@@ -22,6 +22,7 @@ The demo is a lease template for a landlord and a tenant. Insert a field from th
 - A role per field, a label, and an optional required flag, default, choice options and value, each checked against the field's kind.
 - A condition that names another field by its `fieldId` and tests that field's value.
 - `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field.
+- A fill-only view of one role, which takes that role's answers, refuses every other local change and undoes only that role's answers.
 - New ids for the fields a paste, a drag copy, a duplicate or a table fill copies, with copied conditions that name the copies.
 - HTML and Markdown that keep every property, and Word export that keeps each answer and reports the settings it drops.
 - A field chip with a settings popover, an insert menu and a static renderer in the registry UI.
@@ -175,7 +176,7 @@ A choice stores the option's `value`, so renaming an option's `label` keeps ever
 
 Each field names the role that fills it, such as `landlord` or `tenant`. A role is any string. Plate stores it and never checks who a user is. Your app maps each person to a role, as it maps each comment to its author.
 
-Plate does not stop one role from changing another role's field, or the text around it. An app that collects answers from several people checks each submitted value on its server.
+A [fill-only view](#fill-as-one-role) stops one role from changing another role's field, or the text around it, in that editor. An app that collects answers from several people still checks each submitted value on its server.
 
 The settings popover offers the roles the document's fields already use, and takes a new one.
 
@@ -259,6 +260,52 @@ const field = useFieldRead(element.fieldId);
 const problems = field?.problems ?? [];
 ```
 
+## Fill as one role
+
+Set `fillRole` to open a fill-only view of one role. The editor then takes answers for that role's fields and refuses every other local change, so a tenant fills the tenant's fields and changes nothing else.
+
+```tsx
+import { FieldPlugin } from 'platejs/field/react';
+import { useCreateEditor } from 'platejs/react';
+
+import { FieldElement } from '@/components/editor/field';
+
+const editor = useCreateEditor({
+  initialValue: template,
+  plugins: [
+    // ...otherPlugins,
+    FieldPlugin.configure({
+      component: FieldElement,
+      initialState: { fillRole: 'tenant' },
+    }),
+  ],
+});
+```
+
+The demo switches one editor between authoring and each role through the plugin store, and `null` returns to authoring:
+
+```tsx
+editor.plugin(FieldPlugin).store.set({ fillRole: 'landlord' });
+editor.plugin(FieldPlugin).store.set({ fillRole: null });
+```
+
+`usePluginStore(FieldPlugin, 'fillRole')` from `platejs/react` reads the role in a component. The role is editor state, so every view of one editor fills as the same role. Switch it between updates. A switch writes nothing to the document and leaves undo and redo as they are.
+
+While a role is set:
+
+- The registry chip of the role's field opens a popover with an input for the answer and a Clear button, and the role's checkbox ticks and unticks on click. A chip whose answer holds a pending suggestion says it waits for review and opens nothing. Another role's chip opens nothing, no chip drags, and the insert menu is disabled.
+- The editor refuses a local commit that writes anything besides a fitting or cleared answer on the role's fields. Typing, paste, cut, a drop, Enter and AI writes change nothing. A refused update throws nothing to its caller and changes nothing.
+- Selection, state fields without `persist` and effects that neither persist nor sync to peers pass, so a person can still select and copy.
+- Undo and redo take back only the role's own answers. Undo stops at the first step that changed anything else, such as the author's edit, and returns `{ reason, status: 'blocked' }`. The first answer after a switch is its own undo step, so an answer typed right after a switch takes two undos.
+- A document replacement, such as `tx.value.replace` or loading another template, is refused, and so is a plugin reconfiguration. Load the template and configure plugins before you set the role, or clear the role first.
+- A comment lands, because creating its thread is a local effect. Your app decides whether people may comment in a fill view. The comment adds an undo step, and undo stops at that step, so the answers before the comment can no longer be undone.
+
+A peer's change passes whole. Every commit tagged `collaboration` passes, so collaborators keep one document. Apply a peer's Yjs update from your provider's events, never from inside an editor update. A local write made inside a peer's change takes its `collaboration` tag, passes and never reaches peers. For the same reason, a Yjs `UndoManager` that your app drives itself, or a local update that your app tags `collaboration`, passes the fill check.
+
+The fill check runs in the field plugin's `activate`, and the undo step boundary in its `corrections`. A plugin that extends the field plugin with its own `activate` or `corrections` replaces them, so put that work in a companion plugin.
+
+The fill check runs in the person's browser, where anyone can run their own code. Your server assigns each person's role and checks each submitted answer.
+
 ## Copy and paste
 
 A field keeps its `fieldId` through a move, a drag move included, through an undo that brings it back and when a saved document loads. A copy gets new ids:
@@ -321,6 +368,7 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` update | Changes a field's settings or value. |
 | `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` read | The field that holds an id, with its problems, or `null`. |
 | `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` read | Every field in reading order, with its problems. |
+| `fillRole` | `BaseFieldPlugin` state | The role this editor fills as, or `null` while authoring. Set it through `initialState` or `editor.plugin(FieldPlugin).store.set`. |
 | `useFieldRead(fieldId)` | `platejs/field/react` | Reads one field and its problems, and renders again when either changes. |
 | `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind and options. |
 | `FIELD_TESTS` | `platejs/field` | The tests a condition may use on each kind. |
