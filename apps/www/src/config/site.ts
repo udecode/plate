@@ -26,6 +26,11 @@ export const siteConfig = {
       label: 'Editors',
       labelCn: '编辑器',
     },
+    {
+      href: '/create',
+      label: 'Create',
+      labelCn: '创建',
+    },
   ],
   ogImage: 'https://platejs.org/og.png',
   url:
