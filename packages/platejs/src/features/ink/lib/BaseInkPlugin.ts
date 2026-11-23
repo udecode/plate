@@ -29,9 +29,12 @@ import {
   hasPendingGone,
   idOf,
   MARKS,
-  namedInkBlocks,
 } from './inkGone.internal';
-import { advanceInkPlaces, readInkPlace } from './inkPlaces.internal';
+import {
+  advanceInkPlaces,
+  readInkPlace,
+  takeFirstChangeWalkMemo,
+} from './inkPlaces.internal';
 
 /** Which way a mark's text runs. */
 export type InkDirection = 'ltr' | 'rtl';
@@ -213,7 +216,7 @@ const inkRecords = defineRuntimePlugin('ink-records', {
   },
   update: ({ editor, tx }) => ({
     flush: txLocate(false, () => {
-      flushGone(editor, tx, namedInkBlocks(editor));
+      flushGone(editor, tx);
     }),
   }),
 });
@@ -668,8 +671,8 @@ const markIn = (id: string, record: SavedRecord, copies: RecordSetVersion) => {
  * Pen marks on a document's text, saved as records of the document value.
  * Its updates add and remove marks, and its reads return them decoded and say
  * where each copy's block stands. It turns on block ids, because a mark names
- * its blocks by id, and saves where a deleted block stood in the update that
- * deletes it.
+ * its blocks by id, and saves where each marked block stands with its stroke,
+ * and again in a delete that leaves that place wrong.
  */
 export const BaseInkPlugin = definePlugin('ink', {
   corrections: [
@@ -700,17 +703,20 @@ export const BaseInkPlugin = definePlugin('ink', {
     },
     transactionChange: ({ after, before, changed, editor, tx }) => {
       if (!changed.has('structure') && !changed.has('properties')) return;
+
+      const memo = takeFirstChangeWalkMemo(editor);
+
       for (const { node, path } of changed.removed()) {
         const id = idOf(node);
 
-        if (id) captureGone(editor, tx.tags, after, { gap: path, id });
+        if (id) captureGone(editor, tx, after, [path, id], memo);
       }
       if (changed.has('structure')) return;
       for (const path of changed.paths()) {
         const id = idOf(getDocumentValueNode(before, path));
 
         if (id && id !== idOf(getDocumentValueNode(after, path))) {
-          captureGone(editor, tx.tags, after, { gap: path, id });
+          captureGone(editor, tx, after, [path, id], memo);
         }
       }
     },
@@ -782,6 +788,7 @@ export const BaseInkPlugin = definePlugin('ink', {
      * block deleted by this update, by one of the last four updates that
      * deleted blocks, or while a stroke that entered it was still unsaved,
      * gets its place saved too.
+     * Each other copy's block and the block on each side of it get theirs.
      */
     add: txLocate(false, (input: InkMarkInput) => {
       const { copies, mark } = encodeMark(input, readEditorAuthor(editor));
@@ -790,8 +797,8 @@ export const BaseInkPlugin = definePlugin('ink', {
 
       for (const copy of copies) {
         tx.records.put(COPIES, copy.id, copy.record);
-        addGone(editor, tx, copy.record.block);
       }
+      addGone(editor, tx, copies);
       tx.records.put(MARKS, id, { ...mark, points });
 
       return id;

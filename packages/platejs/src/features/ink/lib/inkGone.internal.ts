@@ -35,13 +35,16 @@ type GoneTx = Readonly<{
 
 const ADD_LOOKBACK_UPDATES = 4;
 
+type Departure = readonly [after: EditorDocumentValue, gap: Path];
+
 type GoneSession = {
-  departed: Map<string, InkGone>;
+  departed: Map<string, Departure>;
   holdCounts: Map<string, number>;
   kept: Map<string, Readonly<{ order: number; place: InkGone }>>;
-  pending: Set<string>;
+  pending: Map<string, InkGone>;
+  queued: Map<string, Set<string>>;
   recent: Array<
-    Readonly<{ departed: ReadonlyMap<string, InkGone>; order: number }>
+    Readonly<{ departed: ReadonlyMap<string, Departure>; order: number }>
   >;
   runs: number;
   update: WeakRef<object> | undefined;
@@ -57,7 +60,8 @@ const sessionOf = (owner: object) => {
       departed: new Map(),
       holdCounts: new Map(),
       kept: new Map(),
-      pending: new Set(),
+      pending: new Map(),
+      queued: new Map(),
       recent: [],
       runs: 0,
       update: undefined,
@@ -70,7 +74,7 @@ const sessionOf = (owner: object) => {
 
 const keepHeldChains = (
   { holdCounts, kept }: GoneSession,
-  departed: ReadonlyMap<string, InkGone>,
+  departed: ReadonlyMap<string, Departure>,
   order: number
 ) => {
   let grew = holdCounts.size > 0;
@@ -87,7 +91,7 @@ const keepHeldChains = (
 
       if (saved && saved.order >= order) continue;
       if (saved || holdCounts.has(id) || named.has(id)) {
-        kept.set(id, { order, place });
+        kept.set(id, { order, place: gapPlace(...place) });
         grew = true;
       }
     }
@@ -126,11 +130,11 @@ export const goneIn = (version: RecordSetVersion, id: string) =>
 
 const NAMING_FIELDS = [
   [COPIES, ['block']],
-  [GONE, ['next', 'previous']],
+  [GONE, ['id', 'next', 'previous']],
 ] as const;
 
 type NamedBlocks = {
-  counts: Map<string, number>;
+  names: Map<`${'block' | 'id' | Side} ${string}`, Set<string>>;
   versions: Map<string, RecordSetVersion>;
 };
 
@@ -142,11 +146,11 @@ export const namedInkBlocks = (editor: RuntimeAnyEditor) => {
   let named = namedBlocks.get(owner);
 
   if (!named) {
-    named = { counts: new Map(), versions: new Map() };
+    named = { names: new Map(), versions: new Map() };
     namedBlocks.set(owner, named);
   }
 
-  const { counts, versions } = named;
+  const { names, versions } = named;
 
   for (const [set, fields] of NAMING_FIELDS) {
     const before = versions.get(set) ?? null;
@@ -160,21 +164,22 @@ export const namedInkBlocks = (editor: RuntimeAnyEditor) => {
         const record = readRecord(version, id);
 
         for (const field of fields) {
-          const block = record?.[field];
+          const block = field === 'id' && record ? id : record?.[field];
 
           if (typeof block !== 'string') continue;
 
-          const count = (counts.get(block) ?? 0) + step;
+          const key = `${field} ${block}` as const;
+          const ids = names.get(key) ?? new Set();
 
-          if (count === 0) counts.delete(block);
-          else counts.set(block, count);
+          if (step > 0) names.set(key, ids.add(id));
+          else if (ids.delete(id) && ids.size === 0) names.delete(key);
         }
       }
     }
     versions.set(set, after);
   }
 
-  return counts;
+  return names;
 };
 
 const sameGone = (a: InkGone | undefined, b: InkGone) =>
@@ -185,7 +190,13 @@ export const idOf = (node: Node | null) =>
     ? node.id
     : undefined;
 
+const metrics = { besides: 0, chains: 0, hops: 0, reads: 0 };
+
+export const getInkGoneMetrics = () => Object.freeze({ ...metrics });
+
 const beside = (document: EditorDocumentValue, gap: Path, step: -1 | 1) => {
+  metrics.besides += 1;
+
   const parent = gap.slice(0, -1);
   let [index] = gap.slice(-1);
 
@@ -209,6 +220,87 @@ const beside = (document: EditorDocumentValue, gap: Path, step: -1 | 1) => {
   }
 };
 
+const goneFrom = (previous: string | undefined, next: string | undefined) => ({
+  ...(next ? { next } : {}),
+  ...(previous ? { previous } : {}),
+});
+
+const gapPlace = (after: EditorDocumentValue, gap: Path) =>
+  goneFrom(beside(after, gap, -1), beside(after, gap, 1));
+
+type Side = 'next' | 'previous';
+
+export type GoneMemo = Readonly<Record<Side, ReadonlyMap<string, string>>>;
+
+export type GoneMemoWriter = Readonly<
+  Record<Side, Map<string, string>> & { walked: Set<string> }
+>;
+
+export type GoneWalk<H> = Readonly<{
+  holder: (id: string) => H | undefined;
+  record: (id: string) => InkGone | undefined;
+}>;
+
+export const reachGone = <H>(
+  walk: GoneWalk<H>,
+  from: string,
+  side: Side,
+  memo: GoneMemo | GoneMemoWriter | undefined,
+  count: { chains: number; hops: number }
+) => {
+  const seen = new Set([from]);
+  let last = from;
+  let found: Readonly<{ holder: H; id: string; side: Side }> | undefined;
+
+  count.chains += 1;
+  while (true) {
+    const to = memo?.[side].get(last);
+
+    if (to !== undefined && !seen.has(to)) {
+      last = to;
+      seen.add(to);
+    }
+
+    const at = walk.record(last)?.[side];
+
+    if (at === undefined || seen.has(at)) break;
+    count.hops += 1;
+
+    const holder = walk.holder(at);
+
+    if (holder !== undefined) {
+      found = { holder, id: at, side };
+      break;
+    }
+    if (!walk.record(at)) break;
+    last = at;
+    seen.add(at);
+  }
+  if (memo && 'walked' in memo) {
+    for (const block of seen) {
+      memo.walked.add(block);
+      if (block !== last) memo[side].set(block, last);
+    }
+  }
+
+  return { found, last };
+};
+
+export const walkGone = <H>(
+  walk: GoneWalk<H>,
+  id: string,
+  memo: GoneMemo | GoneMemoWriter | undefined,
+  count: { chains: number; hops: number }
+) => {
+  const { found: above, last } = reachGone(walk, id, 'previous', memo, count);
+  const next = (from: string) =>
+    reachGone(walk, from, 'next', memo, count).found;
+  const belowTop = () => next(last);
+  const belowBlock = () => (last === id ? undefined : next(id));
+
+  return { found: above ?? belowTop() ?? belowBlock(), last };
+};
+
 const currentSession = (editor: RuntimeAnyEditor) => {
   const session = sessions.get(getEditorRuntimeOwner(editor));
 
@@ -219,9 +311,10 @@ const currentSession = (editor: RuntimeAnyEditor) => {
 
 export const captureGone = (
   editor: RuntimeAnyEditor,
-  tags: Readonly<{ has: (tag: string) => boolean }>,
+  tx: GoneTx & Readonly<{ tags: Readonly<{ has: (tag: string) => boolean }> }>,
   after: EditorDocumentValue,
-  { gap, id }: Readonly<{ gap: Path; id: string }>
+  [gap, id]: readonly [Path, string],
+  memo: GoneMemo | undefined
 ) => {
   const update = getActiveEditorUpdateId(editor);
 
@@ -230,14 +323,15 @@ export const captureGone = (
   const session = sessionOf(getEditorRuntimeOwner(editor));
 
   if (session.update?.deref() !== update) {
-    const departed = new Map<string, InkGone>();
+    const departed = new Map<string, Departure>();
     session.runs += 1;
     const order = session.runs;
     const { recent } = session;
 
     session.update = new WeakRef(update);
     session.departed = departed;
-    session.pending = new Set();
+    session.pending = new Map();
+    session.queued = new Map();
     afterActiveTransactionEnds(
       editor,
       () => {
@@ -251,24 +345,67 @@ export const captureGone = (
     );
   }
 
-  const next = beside(after, gap, 1);
-  const previous = beside(after, gap, -1);
+  session.departed.set(id, [after, gap]);
+  if (tx.tags.has('collaboration')) return;
 
-  session.departed.set(id, {
-    ...(next ? { next } : {}),
-    ...(previous ? { previous } : {}),
-  });
+  const names = namedInkBlocks(editor);
+  const { pending, queued } = session;
+  const walk = {
+    holder: (block: string) => tx.unique.holder('id', block) ?? undefined,
+    record: (block: string) => pending.get(block) ?? savedGone(editor, block),
+  };
+  const gone = (block: string) => !walk.holder(block);
+  const named = (side: Side) =>
+    [
+      ...new Set(
+        [names, queued].flatMap((map) => [...(map.get(`${side} ${id}`) ?? [])])
+      ),
+    ].filter(
+      (block) =>
+        gone(block) &&
+        (!pending.has(block) || pending.get(block)?.[side] === id)
+    );
+  const asNext = named('next');
+  const namers = named('previous');
+  const copied = names.has(`block ${id}`) || session.holdCounts.has(id);
+  const watched = copied || names.has(`id ${id}`) || pending.has(id);
 
-  const savedByPeer = tags.has('collaboration');
+  if (!watched && asNext.length + namers.length === 0) return;
 
-  if (!savedByPeer) session.pending.add(id);
+  const place = gapPlace(after, gap);
+  const atGap = (block: string) => {
+    const { found } = walkGone(walk, block, memo, metrics);
+
+    return found
+      ? found.id === place[found.side]
+      : place.previous === undefined && place.next === undefined;
+  };
+  const saved = walk.record(id);
+  const was = saved?.previous;
+  const right = watched
+    ? was !== undefined &&
+      (was === place.previous ||
+        (gone(was) && walk.record(was) !== undefined && atGap(was))) &&
+      (asNext.length === 0 ||
+        saved?.next === place.next ||
+        reachGone(walk, id, 'next', memo, metrics).found?.id === place.next)
+    : [...asNext, ...namers].every(atGap);
+
+  if (right) return;
+  pending.set(id, place);
+  for (const key of Object.entries(place).map((pair) => pair.join(' '))) {
+    queued.set(key, (queued.get(key) ?? new Set()).add(id));
+  }
 };
 
 export const hasPendingGone = (editor: RuntimeAnyEditor) =>
   !!currentSession(editor)?.pending.size;
 
-const savedGone = (editor: RuntimeAnyEditor, id: string) =>
-  goneIn(getRecordSetVersion(readShownRecords(editor), GONE), id);
+const savedGone = (editor: RuntimeAnyEditor, id: string) => {
+  metrics.reads += 1;
+
+  return goneIn(getRecordSetVersion(readShownRecords(editor), GONE), id);
+};
 
 const writeGone = (
   editor: RuntimeAnyEditor,
@@ -287,7 +424,7 @@ const writeGone = (
 
     const place = placeOf(id);
 
-    if (!place || tx.unique.holder('id', id)) continue;
+    if (!place) continue;
     if (!writes(savedGone(editor, id), place)) continue;
     texts.set(id, canonicalRecordJson(place));
     for (const neighbor of [place.next, place.previous]) {
@@ -303,47 +440,71 @@ const writeGone = (
   );
 };
 
-export const flushGone = (
-  editor: RuntimeAnyEditor,
-  tx: GoneTx,
-  named: ReadonlyMap<string, number>
-) => {
+export const flushGone = (editor: RuntimeAnyEditor, tx: GoneTx) => {
   const session = currentSession(editor);
 
   if (!session) return;
 
-  const ids = [...session.pending].filter(
-    (id) => named.has(id) || savedGone(editor, id) !== undefined
-  );
-  const { departed } = session;
+  const { pending } = session;
 
-  session.pending = new Set();
+  session.pending = new Map();
   writeGone(
     editor,
     tx,
-    ids,
-    (id) => departed.get(id),
+    pending.keys(),
+    (id) => (tx.unique.holder('id', id) ? undefined : pending.get(id)),
     (saved, place) => !sameGone(saved, place)
   );
 };
 
 export const addGone = (
   editor: RuntimeAnyEditor,
-  tx: GoneTx,
-  block: string
+  tx: GoneTx & Readonly<{ value: () => EditorDocumentValue }>,
+  copies: ReadonlyArray<Readonly<{ record: Readonly<{ block: string }> }>>
 ) => {
+  const blocks = copies.map(({ record }) => record.block);
   const current = currentSession(editor)?.departed;
   const session = sessions.get(getEditorRuntimeOwner(editor));
   const recent = session?.recent ?? [];
+  const standing = new Map<string, InkGone>();
+  const stand = (id: string) => {
+    const holder = tx.unique.holder('id', id);
 
+    if (holder?.root !== 'main' || standing.has(id)) return;
+
+    const { path } = holder;
+    const value = tx.value();
+    const past = [...path.slice(0, -1), (path.at(-1) ?? 0) + 1];
+
+    standing.set(id, goneFrom(beside(value, path, -1), beside(value, past, 1)));
+  };
+
+  for (const block of blocks) {
+    stand(block);
+    for (const side of Object.values(standing.get(block) ?? {})) stand(side);
+  }
   writeGone(
     editor,
     tx,
-    [block],
-    (id) =>
-      current?.get(id) ??
-      session?.kept.get(id)?.place ??
-      recent.findLast((run) => run.departed.has(id))?.departed.get(id),
+    standing.keys(),
+    (id) => standing.get(id),
+    (saved, place) => !sameGone(saved, place)
+  );
+  writeGone(
+    editor,
+    tx,
+    blocks,
+    (id) => {
+      if (tx.unique.holder('id', id)) return undefined;
+
+      const departure =
+        current?.get(id) ??
+        (session?.kept.has(id)
+          ? undefined
+          : recent.findLast((run) => run.departed.has(id))?.departed.get(id));
+
+      return departure ? gapPlace(...departure) : session?.kept.get(id)?.place;
+    },
     (saved) => saved === undefined
   );
 };

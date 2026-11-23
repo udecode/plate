@@ -1,4 +1,3 @@
-import type { EditorUniqueHolder } from '../../../core';
 import {
   type EditorCommit,
   type EditorCoreStateView,
@@ -19,7 +18,15 @@ import {
   withStoredAuthoredRead,
 } from '../../../facade';
 import type { InkCopy, InkCopyPlace, InkMark } from './BaseInkPlugin';
-import { COPIES, GONE, goneIn, idOf, MARKS } from './inkGone.internal';
+import {
+  COPIES,
+  GONE,
+  goneIn,
+  idOf,
+  MARKS,
+  reachGone,
+  walkGone,
+} from './inkGone.internal';
 import { inkText } from './inkMatch.internal';
 
 type Side = 'next' | 'previous';
@@ -38,7 +45,7 @@ export type InkDeletedSign = Readonly<{
 }>;
 
 type DeletedGroup = {
-  anchor?: Readonly<{ id: string; side: Side }>;
+  anchor?: Readonly<{ id: string; side: Side; top: string }>;
   blocks: Set<string>;
   ids: Record<InkMark['direction'], readonly string[]>;
   marks: Record<InkMark['direction'], readonly InkMark[]>;
@@ -104,9 +111,9 @@ const shownPlaces = new WeakMap<
   { places: InkPlaces; version: number }
 >();
 
-const metrics = { holders: 0, hops: 0, reads: 0, resolved: 0 };
+const metrics = { chains: 0, holders: 0, hops: 0, reads: 0, resolved: 0 };
 
-const work = { chains: 0, copies: 0, groups: 0, members: 0, signs: 0 };
+const work = { copies: 0, groups: 0, members: 0, signs: 0 };
 
 export const getInkPlaceMetrics = () => Object.freeze({ ...metrics, ...work });
 
@@ -351,53 +358,24 @@ const startEpoch = (places: InkPlaces) => {
   }
 };
 
-const nearestPresent = (
-  places: InkPlaces,
-  state: InkState,
-  gone: RecordSetVersion,
-  id: string,
-  side: Side
-) => {
-  const chainEnds = places.chainEnds[side];
-  const walked = new Set([id]);
-  let end = id;
-  let at = chainEnds.get(id) ?? goneIn(gone, id)?.[side];
-  let found: EditorUniqueHolder | undefined;
-
-  work.chains += 1;
-  while (at !== undefined && !walked.has(at)) {
-    metrics.hops += 1;
-    end = at;
-
-    const holder = state.unique.holder('id', at);
-
-    if (holder) {
-      found = holder;
-      break;
-    }
-    walked.add(at);
-    at = chainEnds.get(at) ?? goneIn(gone, at)?.[side];
-  }
-  for (const passed of walked) {
-    places.walked.add(passed);
-    if (passed !== end) chainEnds.set(passed, end);
-  }
-
-  return found && { id: end, key: found.key };
-};
+const walkIn = (state: InkState, gone: RecordSetVersion) => ({
+  holder: (id: string) => state.unique.holder('id', id) ?? undefined,
+  record: (id: string) => goneIn(gone, id),
+});
 
 const goneGroupOf = (places: InkPlaces, read: InkPlaceRead, id: string) => {
   const block = places.blocks.get(id);
 
   if (block?.group) return block.group;
 
-  const { state } = read;
   const gone = getRecordSetVersion(readShownRecords(read.editor), GONE);
-  const previous = nearestPresent(places, state, gone, id, 'previous');
-  const side = previous ? 'previous' : 'next';
-  const found = previous ?? nearestPresent(places, state, gone, id, side);
+  const memo = { ...places.chainEnds, walked: places.walked };
+  const { found, last } = walkGone(walkIn(read.state, gone), id, memo, metrics);
   const group = found
-    ? groupAt(places, beside(side, found.key), { id: found.id, side })
+    ? groupAt(places, beside(found.side, found.holder.key), {
+        ...found,
+        top: last,
+      })
     : groupAt(places, START);
 
   group.blocks.add(id);
@@ -418,20 +396,28 @@ const reanchor = (
   metrics.holders += 1;
 
   const holder = state.unique.holder('id', anchor.id);
-  const found = holder
-    ? { id: anchor.id, key: holder.key }
-    : nearestPresent(places, state, gone, anchor.id, anchor.side);
+  const memo = { ...places.chainEnds, walked: places.walked };
+  const walk = walkIn(state, gone);
+  const back = holder
+    ? { found: { holder, id: anchor.id, side: anchor.side }, last: anchor.top }
+    : reachGone(walk, anchor.id, anchor.side, memo, metrics);
+  const top = goneIn(gone, anchor.id) ? back.last : anchor.top;
+  const found =
+    back.found ??
+    (anchor.side === 'previous'
+      ? reachGone(walk, top, 'next', memo, metrics).found
+      : undefined);
 
-  if (found?.key === place.beside.key) return;
+  if (found?.side === anchor.side && found.holder.key === place.beside.key) {
+    return;
+  }
   if (found) {
-    moveGroup(places, group, beside(anchor.side, found.key), {
-      id: found.id,
-      side: anchor.side,
+    moveGroup(places, group, beside(found.side, found.holder.key), {
+      ...found,
+      top,
     });
-  } else if (anchor.side === 'previous') {
-    dissolve(places, group);
   } else {
-    moveGroup(places, group, START);
+    dissolve(places, group);
   }
 };
 
@@ -507,6 +493,21 @@ const placesOf = ({ editor, state }: InkPlaceRead) => {
   });
 
   return places;
+};
+
+const memoUpdates = new WeakSet<object>();
+
+export const takeFirstChangeWalkMemo = (editor: RuntimeAnyEditor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const kept = committed.get(owner);
+  const update = getActiveEditorUpdateId(editor);
+
+  if (!update || memoUpdates.has(update)) return undefined;
+  memoUpdates.add(update);
+
+  return kept?.version === getSnapshotVersion(owner)
+    ? kept.places.chainEnds
+    : undefined;
 };
 
 export const readInkPlace = (read: InkPlaceRead, copyId: string) => {
