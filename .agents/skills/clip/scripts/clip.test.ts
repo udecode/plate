@@ -220,7 +220,7 @@ describe('a before-and-after pair', () => {
     expect(padBox(undefined, [2, 2], 128, 128)).toEqual({ x: 0, y: 0, w: 128, h: 128 })
   })
 
-  test('replays two copies stacked, before above after, one gap and one tab apart, each as large as the page allows but never past its own size', () => {
+  test('replays two copies in rows, or in columns when that shows a tall crop larger, each as large as the page allows but never past its own size', () => {
     const { width, height } = CLIP.x
     const tab = 17
     const whole = replayLayout({ x: 0, y: 0, w: width, h: height }, width, height, tab)
@@ -228,14 +228,24 @@ describe('a before-and-after pair', () => {
     expect(whole.y[0]).toBeCloseTo(0)
     expect(whole.y[1] - whole.y[0]).toBeCloseTo(whole.panel.h + 8 + tab)
     expect(whole.y[1] + whole.panel.h).toBeCloseTo(height - 12)
-    expect(whole.x).toBeCloseTo((width - whole.panel.w) / 2)
+    expect(whole.across).toBe(false)
+    expect(whole.x[0]).toBeCloseTo((width - whole.panel.w) / 2)
     const narrow = replayLayout({ x: 100, y: 0, w: 200, h: 300 }, width, height, tab)
     expect(narrow.k).toBe(1)
     expect(narrow.panel).toEqual({ w: 200, h: 300 })
+    expect(narrow.across).toBe(false)
     expect(narrow.y[0]).toBeCloseTo((height - 12 - 600 - 8 - tab) / 2)
     const wide = replayLayout({ x: 0, y: 0, w: width, h: 100 }, width, height, tab)
     expect(wide.panel.w).toBeCloseTo(width - 24)
-    expect(wide.x).toBeCloseTo(12)
+    expect(wide.x[0]).toBeCloseTo(12)
+    const tall = replayLayout({ x: 0, y: 0, w: 200, h: 640 }, width, height, tab)
+    expect(tall.across).toBe(true)
+    expect(tall.k).toBeCloseTo(Math.min(1, (width - 24 - 8) / 2 / 200, (height - 12 - tab) / 640))
+    expect(tall.k).toBeGreaterThan((height - 12 - 8 - tab) / 2 / 640)
+    expect(tall.y).toEqual([tall.y[0], tall.y[0]])
+    expect(tall.y[0]).toBeGreaterThanOrEqual(tab)
+    expect(tall.x[1] - tall.x[0]).toBeCloseTo(tall.panel.w + 8)
+    expect(tall.x[0] + tall.x[1] + tall.panel.w).toBeCloseTo(width)
   })
 
   test('an X clip with its bars is 2:3', () => {
