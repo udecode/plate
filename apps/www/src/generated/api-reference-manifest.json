@@ -14801,7 +14801,7 @@
         },
         "platejs/media:BaseMediaEmbedPlugin": {
           "aliases": [],
-          "documentation": "Enables support for embeddable media such as YouTube or Vimeo videos,\nInstagram posts and tweets or Google Maps.",
+          "documentation": "Embeds third-party media. Links to YouTube, Vimeo, Dailymotion, Youku and\nCoub videos are stored as each provider's player URL, and X (Twitter) post\nlinks as the post URL. Any other URL is stored as `transformUrl` returns it;\nthe default takes the `src` out of a pasted `<iframe>` snippet.",
           "entrypoint": "platejs/media",
           "kind": "const",
           "name": "BaseMediaEmbedPlugin",

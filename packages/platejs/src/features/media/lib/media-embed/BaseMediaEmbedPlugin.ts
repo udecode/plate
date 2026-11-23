@@ -56,8 +56,10 @@ const initialState: MediaEmbedPluginState = {
 };
 
 /**
- * Enables support for embeddable media such as YouTube or Vimeo videos,
- * Instagram posts and tweets or Google Maps.
+ * Embeds third-party media. Links to YouTube, Vimeo, Dailymotion, Youku and
+ * Coub videos are stored as each provider's player URL, and X (Twitter) post
+ * links as the post URL. Any other URL is stored as `transformUrl` returns it;
+ * the default takes the `src` out of a pasted `<iframe>` snippet.
  */
 export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
   schema: {
@@ -148,6 +150,10 @@ export const BaseMediaEmbedPlugin = definePlugin(PLUGINS.mediaEmbed, {
                 {
                   attributes: {
                     allowfullscreen: true,
+                    referrerpolicy: 'strict-origin-when-cross-origin',
+                    // Providers play only with scripts and their own origin.
+                    sandbox:
+                      'allow-scripts allow-same-origin allow-presentation',
                     src: url,
                     title: 'Embedded media',
                   },

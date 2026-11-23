@@ -47,7 +47,10 @@ export function MediaEmbedElement(
   const isTweet = embed?.provider === 'twitter';
   const isVideo = !!embed?.provider && VIDEO_PROVIDERS.includes(embed.provider);
   const isYoutube = embed?.provider === 'youtube';
-  const youtubeId = isYoutube ? embed.id : undefined;
+  // LiteYouTubeEmbed builds its iframe src from fixed parameters and ignores
+  // its typed `params` prop, so a start time needs the plain iframe.
+  const youtubeId =
+    isYoutube && !embed.url?.includes('start=') ? embed.id : undefined;
   const editor = useEditor();
   const provider = embed?.provider;
 
@@ -101,6 +104,7 @@ export function MediaEmbedElement(
                   <div
                     className={cn(
                       provider === 'vimeo' && 'pb-[75%]',
+                      provider === 'youtube' && 'pb-[56.25%]',
                       provider === 'youku' && 'pb-[56.25%]',
                       provider === 'dailymotion' && 'pb-[56.0417%]',
                       provider === 'coub' && 'pb-[51.25%]'

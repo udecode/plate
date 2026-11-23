@@ -51,6 +51,7 @@ import {
 import { BaseTablePlugin } from 'platejs/table';
 import { BaseTocPlugin } from 'platejs/toc';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import {
   DropdownMenu,
@@ -357,8 +358,18 @@ function getGroups(editor: Editor): Group[] {
 
         void current.api
           .insertUrl(
-            // oxlint-disable-next-line no-alert -- This copied menu owns its URL input policy.
-            () => window.prompt('Enter the URL of the embed'),
+            () => {
+              // oxlint-disable-next-line no-alert -- This copied menu owns its URL input policy.
+              const url = window.prompt('Enter the URL of the embed');
+
+              if (!url || current.api.normalizeUrl(url)?.provider) return url;
+
+              toast.error(
+                'Paste a YouTube, Vimeo, Dailymotion, Youku, Coub or X link.'
+              );
+
+              return null;
+            },
             { select: true }
           )
           .then((inserted) => {

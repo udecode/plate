@@ -146,6 +146,31 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "media-embed": [
+      "2026-11-23-media-embed-gaps",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-17-cn-package",
+      "2026-10-18-layout-style-values",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-media-caption-preview",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "insert-toolbar-button": [
+      "2026-11-23-media-embed-gaps",
+      "2026-11-21-block-menus-disable-refused-items",
+      "2026-11-19-rtl-editor-ui",
+      "2026-11-18-registry-icon-library",
+      "2026-10-18-layout-style-values",
+      "2026-10-18-math-katex-import",
+      "2026-10-16-code-block-diagrams",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-23-redesign-blockquotes-container-blocks",
+      "2026-01-28-add-code-drawing-node",
+      "2025-11-20-biome-ultracite"
+    ],
     "discussion": [
       "2026-11-23-suggestion-card-lines",
       "2026-11-22-comment-focus-card-decisions",
@@ -377,20 +402,6 @@
     "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
     "demo": ["2026-11-22-ui-sweep-fixes"],
     "field-static": ["2026-11-21-add-field"],
-    "insert-toolbar-button": [
-      "2026-11-21-block-menus-disable-refused-items",
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-18-registry-icon-library",
-      "2026-10-18-layout-style-values",
-      "2026-10-18-math-katex-import",
-      "2026-10-16-code-block-diagrams",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-23-redesign-blockquotes-container-blocks",
-      "2026-01-28-add-code-drawing-node",
-      "2025-11-20-biome-ultracite"
-    ],
     "prompt-editor": ["2026-11-21-prompt-editor"],
     "prompt-editor-demo": ["2026-11-21-prompt-editor"],
     "ai-api": [
@@ -714,15 +725,6 @@
       "2026-08-16-direct-react-component-families"
     ],
     "ink-sign-button": ["2026-11-19-rtl-editor-ui"],
-    "media-embed": [
-      "2026-11-19-rtl-editor-ui",
-      "2026-11-17-cn-package",
-      "2026-10-18-layout-style-values",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-media-caption-preview",
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry"
-    ],
     "media-preview-dialog": [
       "2026-11-19-rtl-editor-ui",
       "2026-11-18-registry-icon-library",

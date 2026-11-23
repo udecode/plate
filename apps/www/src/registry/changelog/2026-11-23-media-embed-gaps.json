@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-media-embed-gaps",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-media-embed-gaps.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep YouTube start times and refuse embed links no player renders",
+  "targets": [
+    {
+      "name": "media-embed",
+      "files": ["apps/www/src/registry/components/editor/media-embed.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "insert-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/insert-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-media-embed-youtube-start-c0b3b26a",
+      "kind": "fix",
+      "summary": "Start a YouTube embed at the time its link names, such as `t=1m30s`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["media-embed"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-media-embed-gaps",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-23-insert-toolbar-embed-hosts-5e1d7a42",
+      "kind": "fix",
+      "summary": "Refuse an embed link from a host the embed component cannot play, and say which providers it can.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["insert-toolbar-button"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-media-embed-gaps",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

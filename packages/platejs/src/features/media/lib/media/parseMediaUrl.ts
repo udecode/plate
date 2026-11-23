@@ -200,6 +200,23 @@ const parseYoutubeId = (url: URL) => {
   return isYoutubeId(pathId) ? pathId : undefined;
 };
 
+const youtubeTimeRegex = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/;
+
+const parseYoutubeStart = (url: URL) => {
+  const value =
+    url.searchParams.get('t') ??
+    url.searchParams.get('start') ??
+    new URLSearchParams(url.hash.slice(1)).get('t');
+  const match = value ? youtubeTimeRegex.exec(value) : null;
+
+  if (!match) return undefined;
+
+  const [, hours = '0', minutes = '0', seconds = '0'] = match;
+  const start = Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
+
+  return start > 0 ? start : undefined;
+};
+
 const parseVimeoId = (url: URL) => {
   const host = url.hostname.toLowerCase();
 
@@ -283,7 +300,9 @@ export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
 
     if (!id) continue;
 
-    const embedUrl = `${providerUrls[provider]}${id}`;
+    const start =
+      provider === 'youtube' ? parseYoutubeStart(parsedUrl) : undefined;
+    const embedUrl = `${providerUrls[provider]}${id}${start ? `?start=${start}` : ''}`;
 
     return {
       id,

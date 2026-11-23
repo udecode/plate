@@ -1,0 +1,18 @@
+---
+id: 2026-11-23-media-embed-gaps
+date: 2026-11-23
+status: draft
+kind: fix
+summary: 'Keep YouTube start times and refuse embed links no player renders'
+change: { 'type': 'source', 'date': '2026-11-23', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-23-media-embed-youtube-start-c0b3b26a","kind":"fix","migrationNotes":[]} -->
+
+- **`media-embed`**: Start a YouTube embed at the time its link names, such as `t=1m30s`.
+
+<!-- entry: {"id":"2026-11-23-insert-toolbar-embed-hosts-5e1d7a42","kind":"fix","migrationNotes":[]} -->
+
+- **`insert-toolbar-button`**: Refuse an embed link from a host the embed component cannot play, and say which providers it can.
