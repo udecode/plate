@@ -152,6 +152,8 @@ jobs:
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/docs/installation/react" > /dev/null
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/api/search?query=controlled&locale=en" | jq --exit-status 'type == "array" and length > 0' > /dev/null
           curl --fail --silent --show-error --retry 2 --max-time 180 "$DEPLOYMENT_URL/r/editor-basic.json" | jq --exit-status '.files | length > 0' > /dev/null
+          curl --fail --silent --show-error --retry 2 --max-time 180 --json '{"prompt":"Plate is"}' "$DEPLOYMENT_URL/api/ai/copilot" | jq --exit-status '.text | length > 0' > /dev/null
+          curl --fail --silent --show-error --retry 2 --max-time 180 --json '{"ctx":{"children":[{"type":"paragraph","children":[{"text":""}]}],"nodeSelection":null,"refs":{"blocks":[{"path":[0],"ref":"b1"}],"tableCells":[]},"selection":null,"toolName":"generate"},"messages":[{"id":"m1","role":"user","parts":[{"type":"text","text":"Continue writing"}]}]}' "$DEPLOYMENT_URL/api/ai/command" | grep --fixed-strings '"type":"text-delta"' > /dev/null
 
       - name: Publish the current branch deployment
         shell: bash

@@ -191,9 +191,15 @@ const nextConfig = (_phase: string) => {
         : {}),
     },
 
-    ...(process.env.PLATE_WWW_WEBPACK
-      ? { serverExternalPackages: ['ts-morph'] }
-      : { transpilePackages: ['ts-morph'] }),
+    // The AI demo emulators read their fonts beside their own module as they
+    // load. Webpack bakes that module's build-machine path into the bundle,
+    // and a deployed function has no file there.
+    serverExternalPackages: [
+      '@emulators/ai',
+      '@emulators/core',
+      ...(process.env.PLATE_WWW_WEBPACK ? ['ts-morph'] : []),
+    ],
+    transpilePackages: process.env.PLATE_WWW_WEBPACK ? [] : ['ts-morph'],
     typedRoutes: true,
 
     redirects() {
