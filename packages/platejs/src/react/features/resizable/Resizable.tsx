@@ -65,11 +65,14 @@ export function Resizable({
   width: nodeWidth = '100%',
   ...props
 }: ResizableProps) {
-  const [widthState, setWidthState] = React.useState(() => ({
-    source: nodeWidth,
-    value: nodeWidth,
-  }));
-  const width = widthState.source === nodeWidth ? widthState.value : nodeWidth;
+  const [preview, setPreview] = React.useState<{
+    source: ResizeLength;
+    value: ResizeLength;
+  } | null>(null);
+  // A preview belongs to the node width it started from. Dropping it once that
+  // width changes keeps an undo back to the same width from showing it again.
+  if (preview && preview.source !== nodeWidth) setPreview(null);
+  const width = preview?.source === nodeWidth ? preview.value : nodeWidth;
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const [parentWidth, setParentWidth] = React.useState(0);
   const measureWrapper = React.useCallback((element: HTMLDivElement | null) => {
@@ -87,7 +90,7 @@ export function Resizable({
   }, []);
   const setWidth = React.useCallback(
     (value: ResizeLength) => {
-      setWidthState({ source: nodeWidth, value });
+      setPreview({ source: nodeWidth, value });
     },
     [nodeWidth]
   );
