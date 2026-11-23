@@ -790,6 +790,12 @@ const run = async (args) => {
         ...Object.fromEntries([...passing, ...flaked].map((ok) => [ok, tip])),
       };
       writeState(next);
+      if (result.ok && !dry) {
+        spawnSync(process.execPath, [join(here, 'beta-release.mjs'), 'wake'], {
+          cwd: main,
+          stdio: 'inherit',
+        });
+      }
     }
     return 0;
   } finally {

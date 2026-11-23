@@ -6,6 +6,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import {
+  appendLocalCiEvent,
   FULL_RUN_HOUR,
   readLocalCiEvents,
   readLocalCiState,
@@ -21,7 +22,9 @@ const USAGE = `Usage: node tooling/scripts/beta-release.mjs <command>
                    --force ships a beta that is not due, and a run that still
                    waits after --wait minutes, 50 by default, exits 75
   close <version> [--dry]
-                   close each open public issue that beta fixed`;
+                   close each open public issue that beta fixed
+  wake             ask the operator for a beta when one is due, at most once
+                   in 12 hours`;
 
 const REPO = 'udecode/plate';
 const PACKAGE = 'platejs';
@@ -31,6 +34,7 @@ const POLL_MS = 30_000;
 // Stays under the hour any command may run; a rerun continues the wait.
 const WAIT_MINUTES = 50;
 const WAITING = 75;
+const WAKE_GAP_MS = 12 * 3_600_000;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root =
@@ -166,6 +170,45 @@ function releaseDue({ common, tip, now = new Date() }) {
     why: `no beta since ${since.toISOString()}, and Local CI passed ${tip.slice(0, 10)}`,
   };
 }
+
+export const requestRelease = ({ issue, commit }) =>
+  appendLocalCiEvent(commonDir(), {
+    kind: 'release',
+    reason: 'fix',
+    issue: Number(issue),
+    commit,
+    wake: true,
+  });
+
+// A beta still in flight keeps looking due, so a release event in the last
+// 12 hours stops the operator from waking for it again.
+const wake = () => {
+  const common = commonDir();
+  const since = Date.now() - WAKE_GAP_MS;
+  if (
+    readLocalCiEvents(common).some(
+      (event) => event.kind === 'release' && Date.parse(event.at) > since
+    )
+  ) {
+    console.info('A release event came in the last 12 hours.');
+    return 0;
+  }
+  const tip = fetchNext();
+  const decision = releaseDue({ common, tip });
+  if (!decision.due) {
+    console.info(`No beta is due: ${decision.why}.`);
+    return 0;
+  }
+  appendLocalCiEvent(common, {
+    kind: 'release',
+    reason: decision.reason,
+    tip,
+    why: decision.why,
+    wake: true,
+  });
+  console.info(`Asked the operator for a beta: ${decision.why}.`);
+  return 0;
+};
 
 const due = () => {
   const result = releaseDue({ common: commonDir(), tip: fetchNext() });
@@ -325,7 +368,7 @@ const ship = async (args) => {
   return close([version, ...(dry ? ['--dry'] : [])]);
 };
 
-const COMMANDS = { due, pending, ship, close };
+const COMMANDS = { due, pending, ship, close, wake };
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const [command, ...rest] = process.argv.slice(2);

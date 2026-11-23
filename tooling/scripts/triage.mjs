@@ -38,6 +38,7 @@ import {
   readTasks,
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
+import { requestRelease } from './beta-release.mjs';
 import {
   BRANCH,
   citedEditedBetween,
@@ -2024,7 +2025,7 @@ function labels() {
         `gh issue edit ${issue.number} --repo ${repo} ${edits.join(' ')}`
       );
     }
-    if (closes) {
+    if (closes && !reads.policy.primary) {
       commands.push(
         `gh issue close ${issue.number} --repo ${repo} --reason completed`
       );
@@ -3883,6 +3884,18 @@ function recordCommand(options) {
     `recorded ${rows.length} row(s) in ${registerFile} by ${author}; commit the file and land it`
   );
   for (const row of rows) console.log(row);
+  if (reads.policy.primary) {
+    for (const entry of entries.filter((each) => each.outcome === 'fixed')) {
+      const issue = issueNumber(entry.issue);
+      requestRelease({
+        issue,
+        commit: parseDetail(entry.detail).get('commit'),
+      });
+      console.log(
+        `asked for a beta for #${issue}, which closes once npm has that beta`
+      );
+    }
+  }
 }
 
 function check(options) {
