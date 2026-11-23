@@ -7,6 +7,8 @@ import type { Registry } from 'shadcn/schema';
 
 import type { PlateRegistryBase } from '@/lib/plate-registry-styles';
 
+import { ICON_PLACEHOLDER_MODULE } from '../src/lib/registry-icon-placeholder.ts';
+import { readIconPlaceholders, toServedIcons } from './icon-placeholders.mts';
 import { parseModuleImports } from './registry-imports.mts';
 
 type RegistryItem = Registry['items'][number];
@@ -29,9 +31,20 @@ const { transformAsChild } = (await import(
   ) => string | Promise<string>;
 };
 
-type TreeFile = { source: string; treePath: string };
+type TreeFile = {
+  source: string;
+  treePath: string;
+  registryType?: RegistryFile['type'];
+};
 
 export const CREATE_PREVIEW_DIR = 'src/__registry__/create-preview';
+
+const SHADCN_UI_ICON_PLACEHOLDER = '@/app/(create)/components/icon-placeholder';
+const ICON_PLACEHOLDER_IMPORTS = new Set([
+  SHADCN_UI_ICON_PLACEHOLDER,
+  ICON_PLACEHOLDER_MODULE,
+]);
+const PREVIEW_ICON_PLACEHOLDER = '@/app/(view)/create-preview/icon-placeholder';
 
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.mts', '.js', '.jsx', '.json'];
 const UI_IMPORT_REGEX =
@@ -134,7 +147,8 @@ export async function createPreviewTree({
   const byTreePath = new Map<string, string>();
   const tree: TreeFile[] = [];
 
-  const add = (source: string, treePath: string) => {
+  const add = (file: TreeFile) => {
+    const { source, treePath } = file;
     const existing = byTreePath.get(treePath);
 
     if (existing === source) return;
@@ -146,12 +160,21 @@ export async function createPreviewTree({
 
     bySource.set(source, treePath);
     byTreePath.set(treePath, source);
-    tree.push({ source, treePath });
+    tree.push(file);
   };
   const addUi = (name: string) =>
-    add(`bases/${base}/ui/${name}.tsx`, `components/ui/${name}.tsx`);
+    add({
+      source: `bases/${base}/ui/${name}.tsx`,
+      treePath: `components/ui/${name}.tsx`,
+    });
 
-  for (const file of files) add(file.path, getTreePath(file));
+  for (const file of files) {
+    add({
+      registryType: file.type,
+      source: file.path,
+      treePath: getTreePath(file),
+    });
+  }
   for (const name of ui) addUi(name);
 
   const fromSource = (path: string) =>
@@ -188,26 +211,41 @@ export async function createPreviewTree({
   };
 
   const root = `@/__registry__/create-preview/${base}/${editor}`;
-  const output: Array<{ content: string; treePath: string }> = [];
+  const getReplacement = (file: TreeFile, specifier: string) => {
+    if (ICON_PLACEHOLDER_IMPORTS.has(specifier)) {
+      return PREVIEW_ICON_PLACEHOLDER;
+    }
+
+    const treePath = resolve(file, specifier);
+
+    if (treePath) return `${root}/${treePath.replace(/\.[cm]?[jt]sx?$/, '')}`;
+    if (/^(?:\.|@\/(?:registry|components|hooks)\/)/.test(specifier)) {
+      throw new Error(
+        `${base}/${editor}: ${file.source} imports ${specifier}, which no installed file provides`
+      );
+    }
+
+    return null;
+  };
+  const output: Array<{ content: string; source: string; treePath: string }> =
+    [];
 
   for (const file of tree) {
-    let content = await readFile(join(sourceRoot, file.source), 'utf-8');
+    const raw = await readFile(join(sourceRoot, file.source), 'utf-8');
+    let content = file.registryType
+      ? toServedIcons({
+          content: raw,
+          path: file.source,
+          type: file.registryType,
+        })
+      : raw;
 
     for (const { specifier } of parseModuleImports(content, {
       filePath: file.source,
     })) {
-      const treePath = resolve(file, specifier);
+      const replacement = getReplacement(file, specifier);
 
-      if (!treePath) {
-        if (/^(?:\.|@\/(?:registry|components|hooks)\/)/.test(specifier)) {
-          throw new Error(
-            `${base}/${editor}: ${file.source} imports ${specifier}, which no installed file provides`
-          );
-        }
-        continue;
-      }
-
-      const replacement = `${root}/${treePath.replace(/\.[cm]?[jt]sx?$/, '')}`;
+      if (!replacement) continue;
 
       content = content.replaceAll(
         new RegExp(
@@ -224,6 +262,7 @@ export async function createPreviewTree({
         filename: file.treePath,
         raw: content,
       }),
+      source: file.source,
       treePath: file.treePath,
     });
   }
@@ -261,6 +300,7 @@ export async function writeCreatePreviewTrees({
 }) {
   const files = new Map<string, string>();
   const keys: string[] = [];
+  const drawnLucideIcons = new Set<string>();
 
   for (const [base, registry] of Object.entries(registries) as Array<
     [PlateRegistryBase, Registry]
@@ -273,8 +313,12 @@ export async function writeCreatePreviewTrees({
         sourceRoot,
       });
 
-      for (const { content, treePath } of tree) {
+      for (const { content, source, treePath } of tree) {
         files.set(join(outDir, base, editor, treePath), content);
+
+        for (const { lucide } of readIconPlaceholders(content, source)) {
+          drawnLucideIcons.add(lucide);
+        }
       }
 
       keys.push(`${base}/${editor}`);
@@ -292,6 +336,17 @@ export async function writeCreatePreviewTrees({
   files.set(
     join(outDir, 'index.d.ts'),
     `${header}import type { ComponentType, LazyExoticComponent } from 'react';\n\nexport declare const createPreviewPages: Record<\n${keys.map((key) => `  | '${key}'`).join('\n')},\n  LazyExoticComponent<ComponentType>\n>;\n`
+  );
+  files.set(
+    join(outDir, 'icons/__lucide__.ts'),
+    `${header}export {\n${[...drawnLucideIcons]
+      .sort()
+      .map((name) => `  ${name},`)
+      .join('\n')}\n} from 'lucide-react';\n`
+  );
+  files.set(
+    join(outDir, 'icons/lucide.tsx'),
+    `${header}import type * as React from 'react';\n\nimport * as icons from './__lucide__';\n\nexport default function Icon({\n  name,\n  ...props\n}: React.ComponentProps<'svg'> & { name: keyof typeof icons }) {\n  const Svg = icons[name];\n\n  return <Svg {...props} />;\n}\n`
   );
 
   for (const stale of await listFiles(outDir)) {

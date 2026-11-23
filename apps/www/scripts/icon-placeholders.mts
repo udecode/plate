@@ -20,6 +20,36 @@ import {
 
 const HUGEICONS_COMPONENT = 'HugeiconsIcon';
 
+const ICON_PLACEHOLDER_REGEX = new RegExp(
+  `<${ICON_PLACEHOLDER_ELEMENT}\\s+${ICON_PLACEHOLDER_LIBRARIES.map(
+    (library) => `${library}="([^"]+)"`
+  ).join(String.raw`\s+`)}`,
+  'g'
+);
+
+export function readIconPlaceholders(source: string, filePath: string) {
+  const placeholders = [...source.matchAll(ICON_PLACEHOLDER_REGEX)].map(
+    ([, lucide, tabler, hugeicons, phosphor, remixicon]) => ({
+      hugeicons,
+      lucide,
+      phosphor,
+      remixicon,
+      tabler,
+    })
+  );
+
+  if (
+    placeholders.length !==
+    source.split(`<${ICON_PLACEHOLDER_ELEMENT}`).length - 1
+  ) {
+    throw new Error(
+      `${filePath}: an ${ICON_PLACEHOLDER_ELEMENT} does not open with its five icon names`
+    );
+  }
+
+  return placeholders;
+}
+
 function toIconPlaceholders(source: string, filePath: string) {
   const uses = collectLucideUses(source, filePath);
   const { elements, importRanges, otherNames } = uses;
