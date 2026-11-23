@@ -143,7 +143,7 @@ if (card) {
 }
 ```
 
-`groups({ at })` returns card summaries in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change. `groupOf(changeId)` returns the card that holds a change, and `changes({ group: card.id })` pages its changes. A card decision reads as `stale` once the card's ID or revision moved. `view.api.authored.subscribeChanges(listener)` passes `{ blocks, changed, groups, removed }` for each commit that changes the review. `blocks` names the view's top-level blocks whose reads may differ, which are each block a change reached or left and each block holding a change whose card ID changed. A change to a card's summary alone names no block, so a copy of its `changeCount` or `revision` held per block can trail until it reads again.
+`groups({ at })` returns card summaries in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change. `groupOf(changeId)` returns the card that holds a change, and `changes({ group: card.id })` pages its changes. `groupDetails(changeId, { limit })` reads a card's first `limit` changes and their parts as a review card shows them. A deletion that ends one change and a touching insertion that starts the next read as one `replace` when neither node is the other or holds it, and property changes with the same `before` and the same `after` read as one part. A card decision reads as `stale` once the card's ID or revision moved. `view.api.authored.subscribeChanges(listener)` passes `{ blocks, changed, groups, removed }` for each commit that changes the review. `blocks` names the view's top-level blocks whose reads may differ, which are each block a change reached or left and each block holding a change whose card ID changed. A change to a card's summary alone names no block, so a copy of its `changeCount` or `revision` held per block can trail until it reads again.
 
 ## Local history
 
@@ -170,6 +170,7 @@ Install `yjs` from `plitejs/yjs` on every peer to synchronize marked content and
 | `read.authored.details(id)` | Read one change with its semantic parts. |
 | `read.authored.groups({ at })` | Read summaries of the cards touching a place of the document the view shows. |
 | `read.authored.groupOf(changeId)` | Read the card that holds a change. |
+| `read.authored.groupDetails(changeId, options?)` | Read a card's changes and parts as a review card shows them. |
 | `read.authored.reviewOf(node)` | Read a stored node's pending marks. |
 | `update.authored.decide(decision)` | Accept or reject changes or cards. |
 | `update.authored.withdraw(changes)` | Remove the writing view's author's own pending changes and record no decision. |

@@ -231,7 +231,7 @@ for (const part of details?.parts ?? []) {
 }
 ```
 
-`details(id)` 返回该 change 及其 part。Content part 包含修改前后的 slice。一个删除和紧随其后的插入在当前文档中相邻时，content part 的 `action` 为 `replace`；相隔的删除和插入，例如移动段落的两份副本，分别是一个 `delete` part 和一个 `insert` part。Boundary part 区分段落拆分和合并；enclosure part 指明包裹和解除包裹；property part 保留准确的前后值。
+`details(id)` 返回该 change 及其 part。Content part 包含修改前后的 slice。一个删除和紧随其后的插入在当前文档中相邻，且两个节点互不相同、互不包含时，content part 的 `action` 为 `replace`；相隔的删除和插入，例如移动段落的两份副本，分别是一个 `delete` part 和一个 `insert` part。Boundary part 区分段落拆分和合并；enclosure part 指明包裹和解除包裹；property part 保存每次写入时记录的前后值。若格式写入设置的值与记录该写入时节点已有的值相同，或移除节点从未有过、也没有其他建议写过的属性，则不读出任何 part。对其下方另一条建议做出决定后，它仍读出所记录的内容：不读出 part，或读出一个拒绝该写入时可能不再恢复的 `before`。写在另一条建议之上、移除节点当时没有的属性的写入，会读出一个不指名任何属性的 part。
 
 ### 审阅卡片
 
@@ -241,12 +241,14 @@ for (const part of details?.parts ?? []) {
 const [card] = authored.read.groups({ at: [0] });
 
 if (card) {
-  const firstChanges = authored.read.changes({ group: card.id, limit: 20 });
+  const shown = authored.read.groupDetails(card.id, { limit: 20 });
   const decided = authored.update.decide({ action: "accept", groups: [card] });
 }
 ```
 
 `groups({ at })` 按文档顺序返回与 view 所显示文档某个位置相交的卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change，因此每个 peer 和每次重新加载都会给出相同的 ID。卡片拆分或合并时，或该 change 离开卡片时，ID 会改变。`groupOf(changeId)` 返回包含某个 change 的卡片。
+
+`groupDetails(changeId, { limit })` 读取卡片显示的内容：按文档顺序的前 `limit` 个 change 及其 part；ID 不指向任何待处理 change 时返回 `null`。卡片中的任一 change 都能找到该卡片。不传 `limit` 时读取整张卡片，`limit` 不是正的安全整数时会抛出错误。一个 change 末尾的删除和下一个 change 开头与之相邻的插入，在两个节点互不相同、互不包含时读作一个 `replace` part，与 `details` 相同。位于读取范围内某个 change 所删除节点内部的删除读入该节点的 part，位于读取范围内某个 change 所插入节点内部的插入也是如此。位于被删除节点内部的插入保留自己的 part，而被删除节点的 part 仍包含插入的文本。`before` 相同且 `after` 也相同的多条属性变更读作一个不带位置的 part，因此两个不指名任何属性的移除也读作一个 part。卡片旁边的编辑可能改变其 part 的相邻关系而 revision 不变，因此卡片打开期间，每次文档变化后都要重新读取。
 
 决定一张卡片会决定它在那一刻包含的所有 change。卡片的 ID 或 revision 变化后，该决定会返回 `stale`，因此重试前请用 `groupOf` 重新读取卡片。
 
@@ -395,6 +397,7 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 | `authored.read.changes(query?)`            | 按文档顺序分页读取待处理 change。                                      |
 | `authored.read.groups({ at })`             | 读取与 view 所显示文档某个位置相交的卡片摘要。                         |
 | `authored.read.groupOf(changeId)`          | 读取包含某个 change 的卡片；不存在时返回 `null`。                      |
+| `authored.read.groupDetails(changeId, options?)` | 按审阅卡片的显示方式读取卡片的 change 和 part；不存在时返回 `null`。 |
 | `authored.read.outcome(id)`                | 读取 change 是待处理、已接受、已拒绝还是 `'contested'`；没有裁决地离开审阅时返回 `null`。 |
 | `authored.read.reviewOf(node)`             | 读取存储 node 的待处理 mark，以及这些 mark 所格式化属性的已接受值。    |
 | `authored.update.decide(decision)`         | 接受或拒绝 change 或卡片；决定数组会一起决定。                         |

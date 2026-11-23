@@ -233,7 +233,7 @@ for (const part of details?.parts ?? []) {
 }
 ```
 
-`details(id)` returns the change and its parts. Content parts include before and after slices. A content part's `action` is `replace` for a deletion and the insertion right after it that touch in the document as it stands. A deletion and an insertion apart, such as a moved paragraph's two copies, are a `delete` part and an `insert` part. Boundary parts distinguish paragraph splits from joins. Enclosure parts name wraps and unwraps. Property parts preserve exact before and after values.
+`details(id)` returns the change and its parts. Content parts include before and after slices. A content part's `action` is `replace` for a deletion and the insertion right after it that touch in the document as it stands, when neither node is the other or holds it. A deletion and an insertion apart, such as a moved paragraph's two copies, are a `delete` part and an `insert` part. Boundary parts distinguish paragraph splits from joins. Enclosure parts name wraps and unwraps. Property parts hold the before and after values recorded with each write. A format write reads no part when it sets the value the node held when the write was recorded, or when it removes a property that the node never had and no other suggestion wrote. After a decision on another suggestion under the write, it still reads what it recorded: no part, or a `before` that rejecting the write may no longer restore. A removal of a property that the node did not have, written over another suggestion's write, reads a part that names no property.
 
 ### Review cards
 
@@ -243,12 +243,14 @@ A review card groups one author's adjacent pending changes, such as a deletion a
 const [card] = authored.read.groups({ at: [0] });
 
 if (card) {
-  const firstChanges = authored.read.changes({ group: card.id, limit: 20 });
+  const shown = authored.read.groupDetails(card.id, { limit: 20 });
   const decided = authored.update.decide({ action: "accept", groups: [card] });
 }
 ```
 
 `groups({ at })` returns summaries of the cards touching a place of the document the view shows, in document order: `id`, `authorId`, `createdAt`, `changeCount`, and `revision`. A card's ID is its oldest change, so every peer and reload names it alike. The ID moves when the card splits or merges, or when that change leaves it. `groupOf(changeId)` returns the card that holds a change.
+
+`groupDetails(changeId, { limit })` reads what a card shows: its first `limit` changes in document order and their parts, or `null` when the ID names no pending change. Any change of the card finds it. Without `limit` the read takes the whole card, and a `limit` that is not a positive safe integer throws. A deletion that ends one change and a touching insertion that starts the next read as one `replace` part when neither node is the other or holds it, as in `details`. A deletion inside a node that a change in the read deletes reads in that node's part, and so does an insertion inside a node that a change in the read inserts. An insertion inside a deleted node keeps its own part, and the deleted node's part still holds the inserted text. Property changes with the same `before` and the same `after` read as one part with no location, so two removals that name no property read as one part. An edit beside the card can change which of its parts touch while its revision stays the same, so read it again after each document change while the card is open.
 
 Deciding a card decides every change it holds at that moment. The decision reads as `stale` once the card's ID or revision moved, so read the card again with `groupOf` before retrying.
 
@@ -424,6 +426,7 @@ After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 | `authored.read.changes(query?)`            | Read a page of pending changes in document order.                                      |
 | `authored.read.groups({ at })`             | Read summaries of the cards touching a place of the document the view shows.           |
 | `authored.read.groupOf(changeId)`          | Read the card that holds a change, or `null`.                                          |
+| `authored.read.groupDetails(changeId, options?)` | Read a card's changes and parts as a review card shows them, or `null`.          |
 | `authored.read.outcome(id)`                | Read whether a change is pending, accepted, rejected or `'contested'`, or `null` when it left with no verdict. |
 | `authored.read.reviewOf(node)`             | Read a stored node's pending marks and the accepted values of the properties they format. |
 | `authored.update.decide(decision)`         | Accept or reject changes or cards; an array of decisions decides together.             |

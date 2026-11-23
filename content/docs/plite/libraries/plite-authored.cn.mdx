@@ -143,7 +143,7 @@ if (card) {
 }
 ```
 
-`groups({ at })` 按文档顺序返回卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change。`groupOf(changeId)` 返回包含某个 change 的卡片，`changes({ group: card.id })` 分页读取其 change。卡片的 ID 或 revision 变化后，卡片决定会返回 `stale`。`view.api.authored.subscribeChanges(listener)` 为每个改变审阅的 commit 传入 `{ blocks, changed, groups, removed }`。`blocks` 指名读取结果可能不同的 view 顶层 block：change 进入或离开的每个 block，以及其中有 change 的卡片 ID 发生变化的每个 block。仅卡片摘要变化不会指名任何 block，因此按 block 保存的 `changeCount` 或 `revision` 副本可能落后，直到再次读取。
+`groups({ at })` 按文档顺序返回卡片摘要：`id`、`authorId`、`createdAt`、`changeCount` 和 `revision`。卡片 ID 是其中最早的 change。`groupOf(changeId)` 返回包含某个 change 的卡片，`changes({ group: card.id })` 分页读取其 change。`groupDetails(changeId, { limit })` 按审阅卡片的显示方式读取卡片的前 `limit` 个 change 及其 part。一个 change 末尾的删除和下一个 change 开头与之相邻的插入，在两个节点互不相同、互不包含时读作一个 `replace`；`before` 相同且 `after` 也相同的多条属性变更读作一个 part。卡片的 ID 或 revision 变化后，卡片决定会返回 `stale`。`view.api.authored.subscribeChanges(listener)` 为每个改变审阅的 commit 传入 `{ blocks, changed, groups, removed }`。`blocks` 指名读取结果可能不同的 view 顶层 block：change 进入或离开的每个 block，以及其中有 change 的卡片 ID 发生变化的每个 block。仅卡片摘要变化不会指名任何 block，因此按 block 保存的 `changeCount` 或 `revision` 副本可能落后，直到再次读取。
 
 ## 本地历史
 
@@ -170,6 +170,7 @@ if (card) {
 | `read.authored.details(id)` | 读取一个 change 及其语义 part。 |
 | `read.authored.groups({ at })` | 读取与 view 所显示文档某个位置相交的卡片摘要。 |
 | `read.authored.groupOf(changeId)` | 读取包含某个 change 的卡片。 |
+| `read.authored.groupDetails(changeId, options?)` | 按审阅卡片的显示方式读取卡片的 change 和 part。 |
 | `read.authored.reviewOf(node)` | 读取存储 node 的待处理 mark。 |
 | `update.authored.decide(decision)` | 接受或拒绝 change 或卡片。 |
 | `update.authored.withdraw(changes)` | 撤回写入视图作者自己的待定 change，不记录任何决定。 |

@@ -126,7 +126,9 @@ export const touches = (left: Occurrence, right: Occurrence) => {
   return isInside(start.slice(0, -1), end) || isInside(end.slice(0, -1), start);
 };
 
-const isContent = (mark: AuthoredMark) =>
+const isContent = (
+  mark: AuthoredMark
+): mark is Extract<AuthoredMark, { kind: 'delete' | 'insert' }> =>
   mark.kind === 'insert' || mark.kind === 'delete';
 
 const writesNothing = (mark: AuthoredMark) =>
@@ -142,26 +144,60 @@ export const continues = (end: Occurrence, first: Occurrence) =>
     end.root === first.root &&
     isInside(end.path, first.path));
 
-const nestedContent = () => {
-  const top = new Map<'delete' | 'insert', Occurrence>();
+type MarkedNode = {
+  below?: Map<number, MarkedNode>;
+  marked?: boolean;
+  seen?: boolean;
+};
 
-  return (occurrence: Occurrence) => {
-    const { kind } = occurrence.mark;
+const contentMarks = (occurrences: readonly Occurrence[]) => {
+  const roots = new Map<string, Record<'delete' | 'insert', MarkedNode>>();
 
-    if (kind !== 'delete' && kind !== 'insert') return false;
+  for (const { mark, path, root } of occurrences) {
+    if (!isContent(mark)) continue;
 
-    const above = top.get(kind);
+    let tops = roots.get(root);
 
-    if (
-      above &&
-      occurrence.root === above.root &&
-      above.path.every((index, depth) => occurrence.path[depth] === index)
-    ) {
-      return true;
+    if (!tops) roots.set(root, (tops = { delete: {}, insert: {} }));
+
+    let node = tops[mark.kind];
+
+    for (const index of path) {
+      node.below ??= new Map();
+
+      let next = node.below.get(index);
+
+      if (!next) node.below.set(index, (next = {}));
+      node = next;
     }
-    top.set(kind, occurrence);
+    node.marked = true;
+  }
 
-    return false;
+  return {
+    isDeleted: ({ path, root }: Occurrence) => {
+      let node = roots.get(root)?.delete;
+
+      for (const index of path) {
+        if (!node || node.marked) break;
+        node = node.below?.get(index);
+      }
+
+      return node?.marked === true;
+    },
+    isCovered: ({ mark, path, root }: Occurrence) => {
+      if (!isContent(mark)) return false;
+
+      let node = roots.get(root)?.[mark.kind];
+
+      for (const index of path) {
+        if (node?.marked) return true;
+        node = node?.below?.get(index);
+      }
+      if (!node || node.seen) return true;
+      node.seen = true;
+
+      return false;
+    },
   };
 };
 
@@ -341,8 +377,8 @@ export const changeOf = (
     (writes.length > 0 ? writes : list).map(({ mark }) => KINDS[mark.kind])
   );
   const ranges: Range[] = [];
-  const isNested = nestedContent();
-  const covered = list.filter((occurrence) => !isNested(occurrence));
+  const { isCovered } = contentMarks(list);
+  const covered = list.filter((occurrence) => !isCovered(occurrence));
 
   covered.forEach((occurrence, index) => {
     const range = rangeOf(occurrence);
@@ -527,6 +563,8 @@ const apart = (left: Occurrence, right: Occurrence) =>
 // Runs close at each change's edge, while a deletion stays open across it so
 // the next change's touching insertion replaces it.
 const foldParts = (index: AuthoredChangeLookup, ids: readonly string[]) => {
+  const lists = ids.map((id) => index.occurrences.get(id) ?? []);
+  const { isDeleted, isCovered } = contentMarks(lists.flat());
   const parts: AuthoredChangePart[] = [];
   const open: {
     deletionEnd: Occurrence | null;
@@ -552,7 +590,8 @@ const foldParts = (index: AuthoredChangeLookup, ids: readonly string[]) => {
       previous.action === 'delete' &&
       deletionEnd &&
       touches(deletionEnd, run.first) &&
-      apart(deletionEnd, run.first)
+      apart(deletionEnd, run.first) &&
+      !isDeleted(run.first)
     ) {
       parts[parts.length - 1] = {
         ...previous,
@@ -573,13 +612,11 @@ const foldParts = (index: AuthoredChangeLookup, ids: readonly string[]) => {
     open.run = null;
   };
 
-  const isNested = nestedContent();
-
-  for (const id of ids) {
-    for (const occurrence of index.occurrences.get(id) ?? []) {
+  for (const list of lists) {
+    for (const occurrence of list) {
       const { mark, node, path } = occurrence;
 
-      if (isNested(occurrence) || writesNothing(mark)) continue;
+      if (isCovered(occurrence) || writesNothing(mark)) continue;
       if (mark.kind === 'insert' || mark.kind === 'delete') {
         const range = rangeOf(occurrence);
 
