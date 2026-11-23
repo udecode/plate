@@ -152,7 +152,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "97c9a675195b1de358ad1b776761d7528c3817dbb4b3f51620e28394e8f1601f",
+  "generation": "86e93bb6a622ae557c9a3e5062d0223748aa3624f0d2a26534d53fcc59946074",
   "itemCount": 193,
   "payloads": {
     "overlays/base-luma/floating-popover.json": "e0c52b7260aafdff9da9237463f1a66e029da7152c65af78fe07c9dff81d8a1f",
@@ -231,7 +231,7 @@
     "overlays/radix-vega/registry.json": "b75171175a01e15108f8df622f6840e46788fe3f25844d282bb55e3333a410ea",
     "overlays/radix-vega/toolbar.json": "ad02f79367b621ebc832aee1673af261029952c6ca7f34af42fd182b68bd948d",
     "r/ai-api.json": "82c74e9a34cdfd1555aa1108c3691d74f6c93370e6629f8e878dc3a5febcf0aa",
-    "r/ai-menu.json": "874faf1673fb48c10a7443d4b91b014744225473cd328f9e6e3c9bf3eccd14ce",
+    "r/ai-menu.json": "dc4b08ec4f8735002063067914c0fd74499d724231cb698e097387b710f911ae",
     "r/ai-toolbar-button.json": "7ab9d0732bb5101f59fc9f486fcf156ef6a0f6e175cb74f140791e6a829dc02c",
     "r/ai.json": "7e1280bd5f8e05e5340f4ea476f38398e3e57f9ecb0d109a04e7b7fa3f46e318",
     "r/align-toolbar-button.json": "2f629489711cd53c7b73e8c639cd604b83e4ac16de7fc3870431efebd8c36c78",
@@ -425,7 +425,7 @@
     "r/use-visible-anchor.json": "6a1fc3d43c6bea1aff70bbb8d33ba4d6efc1570d7caa9a6148b826a6f0300382",
     "r/version-history-demo.json": "8a424420c32c56454ec5362a5b6bd1129698c8db6b2f38262713bf894c5d9c71",
     "rd/ai-api.json": "762e140fd0177f169d707edf73ee97e64bfc990f0f168a2cf70f80e76cd00cf3",
-    "rd/ai-menu.json": "10095aa5c7d32586b62b8b703d065c31f0d4e3714cfdbaedef853a759841fdd0",
+    "rd/ai-menu.json": "9ae967d27a6bad675e197fabf8d25c447068395646912a2d43dcaf34a9c7850e",
     "rd/ai-toolbar-button.json": "afb9ae5aa45a3710414704747250f5b808317155a51ac923b4d86a47e5cfdaed",
     "rd/ai.json": "195218e446b157490de6328fd36cf5a533f831b16dd676d1eb7e38b5e53a37c3",
     "rd/align-toolbar-button.json": "221542bc40feab6d1345bbf829c22a9727c02297c3f7b97551639e337b4cc958",

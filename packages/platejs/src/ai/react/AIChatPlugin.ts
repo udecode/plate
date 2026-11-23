@@ -462,11 +462,15 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const authored = projectEditorView(editor, {
       authorId: change?.authorId,
     }).plugin(AuthoredPlugin);
-    const result: AuthoredResult = change
+    const decided: AuthoredResult | undefined = change
       ? action === 'reject'
         ? authored.update.withdraw([change])
         : authored.update.decide({ action, changes: [change] })
       : { ids: [changeId], status: 'unchanged' };
+    const result: AuthoredResult = decided ?? {
+      ids: [changeId],
+      status: 'invalid',
+    };
 
     if (reviewSucceeded(result)) {
       context.store.set({ _changeId: null });
@@ -535,7 +539,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     ).filter((node) => ElementApi.isElement(node));
   };
   const resetOptions = () => {
-    cancel();
+    const { chat } = context.store.get();
+
     previewAnchor?.release();
     previewAnchor = null;
     previewOwner = null;
@@ -544,10 +549,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     suggestionTarget = null;
     tableDraft.clear();
     aiChatCommandEditors.delete(editor);
-
-    const { chat } = context.store.get();
-
-    if (chat?.messages.length) chat.clear();
     responseAuthor = null;
     context.store.set({
       _blockKey: null,
@@ -564,6 +565,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       previewValue: [],
       toolName: null,
     });
+    try {
+      cancel();
+    } finally {
+      if (chat?.messages.length) chat.clear();
+    }
   };
   const resetEditor = (
     commandEditor: Editor,
@@ -1005,8 +1011,26 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     });
   };
   const finishCompleteAction = () => {
-    resetOptions();
-    hideOptions();
+    try {
+      resetOptions();
+    } finally {
+      hideOptions();
+    }
+  };
+  const landAndClose = (
+    actionEditor: AIActionEditor | null,
+    land: (tx: AIActionTransaction) => boolean
+  ) => {
+    let closed = false;
+    const landed = actionEditor?.update((tx, { afterCommit }) => {
+      if (!land(tx)) return false;
+      afterCommit(() => {
+        closed = true;
+        finishCompleteAction();
+      });
+      return true;
+    });
+    if (landed && !closed) finishCompleteAction();
   };
   const getActionChatBlocks = (tx: AIActionTransaction) => {
     const chatNodes = context.store.get('chatNodes');
@@ -1263,7 +1287,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     // response cannot be accepted in its place.
     if (!parsed.ok) {
       const result = decideCurrentChange('reject');
-      if (!result || reviewSucceeded(result)) suggestion = null;
+      if (!result || reviewSucceeded(result)) {
+        suggestion = null;
+        suggestionTarget = null;
+      }
 
       return false;
     }
@@ -1332,7 +1359,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       } else {
         target = { kind: 'text', range };
       }
-      suggestionTarget = target;
     }
     const nextNodes = parseSuggestion(parsed.slice.content, target);
     if (suggestion && actionEditor.read.children() !== suggestion.children) {
@@ -1343,39 +1369,56 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       : null;
 
     if (previous) {
-      actionEditor.update((tx) => {
+      let withdrawn = false;
+      actionEditor.update((tx, { afterCommit }) => {
         tx.history.merge();
         tx.plugin(AuthoredPlugin).withdraw([previous]);
+        afterCommit(({ snapshot }) => {
+          withdrawn = true;
+          suggestion &&= { ...suggestion, children: snapshot.children };
+        });
       });
+      if (
+        !withdrawn ||
+        (suggestion && actionEditor.read.children() !== suggestion.children)
+      ) {
+        return false;
+      }
     }
 
+    const response = parsed.slice.content.filter((node): node is Element =>
+      ElementApi.isElement(node)
+    );
     let publishedChangeId: string | null = null;
-    actionEditor.update((tx) => {
+    const publish = (
+      changeId: string | null,
+      children: readonly unknown[] = actionEditor.read.children()
+    ) => {
+      publishedChangeId = changeId;
+      suggestion = { children, response };
+      suggestionTarget = target;
+      context.store.set({ _changeId: changeId, previewValue: [] });
+      const published = pendingChange();
+      if (published) {
+        responseAuthor = {
+          authorId: published.authorId,
+          requestId: context.store.get('_requestId'),
+        };
+      }
+    };
+    const proposed = actionEditor.update((tx, { afterCommit }) => {
       const changeId = tx
         .plugin(AuthoredPlugin)
         .propose(currentChangeId ? { changeId: currentChangeId } : undefined);
       if (currentChangeId) tx.history.merge();
       else tx.history.newBatch();
-      if (writeSuggestion(tx, target, nextNodes)) publishedChangeId = changeId;
+      if (writeSuggestion(tx, target, nextNodes)) {
+        afterCommit(({ snapshot }) => publish(changeId, snapshot.children));
+      }
+      return true;
     });
 
-    suggestion = {
-      children: actionEditor.read.children(),
-      response: parsed.slice.content.filter((node): node is Element =>
-        ElementApi.isElement(node)
-      ),
-    };
-    context.store.set({
-      _changeId: publishedChangeId,
-      previewValue: [],
-    });
-    const published = pendingChange();
-    if (published) {
-      responseAuthor = {
-        authorId: published.authorId,
-        requestId: context.store.get('_requestId'),
-      };
-    }
+    if (proposed && publishedChangeId === null) publish(null);
 
     return publishedChangeId !== null;
   };
@@ -1387,8 +1430,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     }
     responseAuthor = null;
     if (tableDraft.size > 0) {
-      let applied = false;
-      getActionEditor(commandEditor)?.update((tx) => {
+      landAndClose(getActionEditor(commandEditor), (tx) => {
         const targets = [...tableDraft].map(([key, draft]) => ({
           draft,
           entry:
@@ -1396,7 +1438,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
               ? tx.nodes.get(key, { match: ElementApi.isElement })
               : undefined,
         }));
-        if (targets.some(({ entry }) => !entry)) return;
+        if (targets.some(({ entry }) => !entry)) return false;
         tx.history.newBatch();
         for (const { draft, entry } of targets) {
           if (entry) {
@@ -1405,23 +1447,21 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             });
           }
         }
-        applied = true;
+        return true;
       });
-      if (applied) finishCompleteAction();
       return undefined;
     }
     if (context.store.get('mode') === 'chat') {
       completeDetachedOutput(commandEditor, 'replaceSelection', 'single');
       return undefined;
     }
-    let applied = false;
-    getActionEditor(commandEditor)?.update((tx) => {
+    landAndClose(getActionEditor(commandEditor), (tx) => {
       const output = getActionPreviewSource();
       const blockKey = context.store.get('_blockKey');
       const target = blockKey
         ? tx.nodes.get(blockKey, { match: ElementApi.isElement })
         : undefined;
-      if (!target || !output) return;
+      if (!target || !output) return false;
       tx.history.newBatch();
       const [node, path] = target;
       const replace =
@@ -1431,7 +1471,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         : resolveInsertionAnchor(editor, tx, target);
       const firstPath = replace ? path : PathApi.next(anchorPath);
       const firstIndex = firstPath.at(-1);
-      if (firstIndex === undefined) return;
+      if (firstIndex === undefined) return false;
       const blocks = cloneDeep(
         replace
           ? isListItem(node)
@@ -1449,23 +1489,22 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         replace ? [firstIndex] : undefined
       );
 
-      if (!placed) return;
+      if (!placed) return false;
 
       let last: NodeKey | Path | undefined;
 
       if (replace) {
-        if (!tx.nodes.replace(placed, { at: path })) return;
+        if (!tx.nodes.replace(placed, { at: path })) return false;
         last = [...firstPath.slice(0, -1), firstIndex + placed.length - 1];
       } else {
         last = tx.blocks.insert(placed, { after: anchorPath })?.at(-1);
-        if (!last) return;
+        if (!last) return false;
       }
 
       const end = tx.points.end(last);
       if (end) tx.selection.set(end);
-      applied = true;
+      return true;
     });
-    if (applied) finishCompleteAction();
     return undefined;
   };
   const completeDetachedOutput = (
@@ -1474,14 +1513,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     format: 'all' | 'none' | 'single',
     response?: Element[]
   ) => {
-    let applied = false;
-
-    getActionEditor(commandEditor)?.update((tx) => {
+    const land = (tx: AIActionTransaction) => {
       const source = response ?? getActionPreviewSource();
 
-      if (!source) return;
+      if (!source) return false;
       const chatSelection = resolveChatSelection();
-      if (context.store.get('chatSelection') && !chatSelection) return;
+      if (context.store.get('chatSelection') && !chatSelection) return false;
 
       if (chatSelection) {
         const [start, end] = RangeApi.edges(chatSelection);
@@ -1489,11 +1526,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           at: action === 'insertBelow' ? end : start,
         });
 
-        if (!block) return;
+        if (!block) return false;
         if (action === 'insertBelow') {
-          applied = insertActionBlocks(tx, cloneDeep(source), format, block);
-
-          return;
+          return insertActionBlocks(tx, cloneDeep(source), format, block);
         }
 
         const blocks = formatAIOutput({
@@ -1502,7 +1537,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           sourceBlock: block[0],
         });
 
-        if (!blocks) return;
+        if (!blocks) return false;
         tx.history.newBatch();
 
         const whole = wholeTextBlocks(tx, chatSelection, (first) =>
@@ -1510,9 +1545,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         );
 
         if (whole) {
-          applied = replaceActionBlocks(tx, whole.nodes, whole.blocks);
-
-          return;
+          return replaceActionBlocks(tx, whole.nodes, whole.blocks);
         }
 
         const landed = landAIOutput(editor, tx, blocks, {
@@ -1533,10 +1566,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             ? placeActionBlocks(tx, rest, PathApi.next(block[1]))
             : rest;
 
-        if (!tail) return;
+        if (!tail) return false;
         const content = head ? [head, ...tail] : landed;
 
-        applied = tx.slice.replace(
+        return tx.slice.replace(
           ContentSlice.fromJSON({
             content,
             openStart: openTextBlock(content[0]),
@@ -1544,26 +1577,17 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           }),
           { at: chatSelection }
         );
-
-        return;
       }
 
       const selected = getActionChatBlocks(tx);
 
-      if (selected.length === 0) return;
+      if (selected.length === 0) return false;
       const sourceBlock =
         action === 'insertBelow' ? selected.at(-1) : selected[0];
 
-      if (!sourceBlock) return;
+      if (!sourceBlock) return false;
       if (action === 'insertBelow') {
-        applied = insertActionBlocks(
-          tx,
-          cloneDeep(source),
-          format,
-          sourceBlock
-        );
-
-        return;
+        return insertActionBlocks(tx, cloneDeep(source), format, sourceBlock);
       }
 
       const blocks = formatAIOutput({
@@ -1572,9 +1596,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         sourceBlock: sourceBlock[0],
       });
 
-      if (!blocks) return;
+      if (!blocks) return false;
       tx.history.newBatch();
-      applied = replaceActionBlocks(
+      return replaceActionBlocks(
         tx,
         landAIOutput(editor, tx, blocks, {
           block: sourceBlock[0],
@@ -1582,9 +1606,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         }),
         selected
       );
-    });
+    };
 
-    if (applied) finishCompleteAction();
+    landAndClose(getActionEditor(commandEditor), land);
   };
 
   const show = (commandEditor: Editor, target?: Range) => {
@@ -1676,11 +1700,15 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       accept: () => acceptAIResponse(commandEditor),
       /** Close the session, cancel its request, and discard any unapplied draft. */
       hide: ({ focus = true }: { focus?: boolean } = {}) => {
-        const result = resetEditor(commandEditor, {
-          restoreSelection: focus,
-        });
+        let result: AuthoredResult | null | undefined;
+        try {
+          result = resetEditor(commandEditor, {
+            restoreSelection: focus,
+          });
+        } finally {
+          if (!result || reviewSucceeded(result)) hideOptions();
+        }
         if (result && !reviewSucceeded(result)) return result;
-        hideOptions();
         if (focus) commandEditor.api.dom.focus();
 
         return result;
@@ -1703,9 +1731,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       /** Cancel the request, discard its draft, and request a new response. */
       reload: () => {
         const { chat, toolName } = context.store.get();
-        cancel();
         const result = decideCurrentChange('reject');
         if (result && !reviewSucceeded(result)) return result;
+        cancel();
         suggestion = null;
         suggestionTarget = null;
         previewOwner = null;

@@ -4753,6 +4753,7 @@
         "source-hash:partition:board",
         "source-hash:partition:core",
         "source-hash:partition:details",
+        "source-hash:partition:field",
         "source-hash:partition:markdown",
         "source-hash:partition:react-core",
         "source-hash:partition:standard-basic-nodes",

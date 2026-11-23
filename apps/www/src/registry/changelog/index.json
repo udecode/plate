@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-23-ai-menu-refused-accept",
+      "href": "/registry/changelog/2026-11-23-ai-menu-refused-accept.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the AI menu open when the editor refuses an AI write",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-board-styles-file",
       "href": "/registry/changelog/2026-11-22-board-styles-file.json",
       "status": "draft",

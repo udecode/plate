@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-ai-menu-refused-accept",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-ai-menu-refused-accept.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the AI menu open when the editor refuses an AI write",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-ai-menu-keep-open-when-editor-27d2a064",
+      "kind": "fix",
+      "summary": "Keep the AI menu and its draft open when the editor refuses Accept or Insert below, such as while a field fill role is set. Focus moves to the editor only once the menu closes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-ai-menu-refused-accept",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

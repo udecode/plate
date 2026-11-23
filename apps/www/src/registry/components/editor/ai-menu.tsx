@@ -420,6 +420,10 @@ const AICommentIcon = () => (
   </svg>
 );
 
+const focusEditorOnceClosed = (editor: Editor) => {
+  if (!editor.plugin(AIChatPlugin).store.get('open')) editor.api.dom.focus();
+};
+
 const aiChatItems = {
   accept: {
     icon: <Check />,
@@ -427,7 +431,7 @@ const aiChatItems = {
     value: 'accept',
     onSelect: ({ editor }) => {
       editor.plugin(AIChatPlugin).api.accept();
-      editor.api.dom.focus();
+      focusEditorOnceClosed(editor);
     },
   },
   comment: {
@@ -546,7 +550,7 @@ Continue writing AFTER <Block> with ONLY ONE SENTENCE. DO NOT REPEAT THE TEXT.`,
     onSelect: ({ editor }) => {
       /** Format: 'none' Fix insert table */
       editor.plugin(AIChatPlugin).api.insertBelow({ format: 'none' });
-      editor.api.dom.focus();
+      focusEditorOnceClosed(editor);
     },
   },
   makeLonger: {
@@ -579,7 +583,7 @@ Continue writing AFTER <Block> with ONLY ONE SENTENCE. DO NOT REPEAT THE TEXT.`,
     value: 'replace',
     onSelect: ({ editor }) => {
       editor.plugin(AIChatPlugin).api.replaceSelection();
-      editor.api.dom.focus();
+      focusEditorOnceClosed(editor);
     },
   },
   simplifyLanguage: {
