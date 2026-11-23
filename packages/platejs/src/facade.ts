@@ -211,10 +211,12 @@ export {
   getEditorRuntimeRootKeys,
   getSnapshotVersion,
   markRootViewUsed,
+  readRootEntries,
   readRootViewUse,
   readShownDocument,
   readShownRecords,
   readShownViewUse,
+  readViewPage,
   scheduleAfterCommitNotification,
   subscribeShownViewUse,
 } from 'plitejs/internal';

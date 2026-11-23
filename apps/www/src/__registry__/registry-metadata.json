@@ -1,5 +1,5 @@
 {
-  "generation": "81761fdc24fed523f4b25d40095f32d856ef786e125bb1389f5a6cf52d192a80",
+  "generation": "a879908c78d5908544f775644de25cae3a6a247dfb2056f3463204298ae5dc0d",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -808,7 +808,8 @@
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
-            "platejs"
+            "platejs",
+            "sonner"
           ],
           "description": "A menu for inserting different types of blocks.",
           "files": [
@@ -8414,7 +8415,8 @@
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
             "lucide-react",
-            "platejs"
+            "platejs",
+            "sonner"
           ],
           "description": "A menu for inserting different types of blocks.",
           "files": [

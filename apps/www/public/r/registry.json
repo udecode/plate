@@ -794,7 +794,8 @@
       "description": "A menu for inserting different types of blocks.",
       "dependencies": [
         "diff-match-patch-ts@^0.6.0",
-        "platejs"
+        "platejs",
+        "sonner"
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",

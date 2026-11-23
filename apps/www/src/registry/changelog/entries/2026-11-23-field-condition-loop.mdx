@@ -1,0 +1,14 @@
+---
+id: 2026-11-23-field-condition-loop
+date: 2026-11-23
+status: draft
+kind: behavior
+summary: 'Warn on a loop of field conditions and offer no condition that closes one'
+change: { 'type': 'source', 'date': '2026-11-23', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-23-field-condition-loop","kind":"behavior","migrationNotes":["Update the copied `field` component, because `FieldProblem` gains `condition-loop` and a `Record<FieldProblem, string>` needs that key."]} -->
+
+- **`field`**: Show a warning on each chip of a loop of conditions, such as A naming B while B names A. The Show when list offers no field whose conditions lead back to the field being edited, and keeps the field its condition already names. Always clears the condition even when a field has an empty id.

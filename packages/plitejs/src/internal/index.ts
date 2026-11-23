@@ -52,6 +52,7 @@ export {
   readShownViewUse,
   subscribeShownViewUse,
 } from '../core/root-target';
+export { readRootEntries } from '../core/root-entries';
 export { sameResult } from '../core/same-result';
 export { getNodeKeyDOMValue } from '../utils/node-keys';
 export { getTextSearchScope } from './text-run';
@@ -180,6 +181,7 @@ export {
   projectEditorView,
   readShownDocument,
   readShownRecords,
+  readViewPage,
   retainViewPresentation,
   withMountedPresentation,
 } from '../editor-runtime-view';

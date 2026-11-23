@@ -195,7 +195,7 @@ editor.update((tx) => {
 });
 ```
 
-`insert` throws when a value, default or options do not fit the kind, or when the condition names no field, or a test or value that the named field's kind does not take.
+`insert` throws when a value, default or options do not fit the kind, when the settings name a `fieldId`, or when the condition names no field, or a test or value that the named field's kind does not take.
 
 `update` changes the settings or value of the field that holds a `fieldId`. A setting given as `undefined` is removed.
 
@@ -209,8 +209,8 @@ editor.update((tx) => {
 
 - no field holds `fieldId`;
 - a setting the patch names does not fit the field's kind;
-- the patch removes `kind`, `role` or `label`;
-- the condition names the field itself or no field, or a test or value that the named field's kind does not take.
+- the patch removes `kind`, `role` or `label`, or names `fieldId`;
+- the condition names no field, a test or value that the named field's kind does not take, or a field it did not name before whose chain of conditions leads back to this one.
 
 A patch that changes `kind` or `options` also drops each value, default and options that the field no longer fits. Turning a number field with a default into a date field drops the default. The field keeps its `fieldId`.
 
@@ -226,13 +226,13 @@ editor.update((tx) => {
 });
 ```
 
-The popover's Show when list offers every other field of the document, and its test list offers only the tests that field's kind takes. Plate stores the condition and checks that it fits the field it names. It does not hide a field or skip it, so your app decides what a condition that fails means.
+The popover's Show when list offers the field the condition names and every other field whose conditions do not lead back to this one. Its test list offers only the tests that field's kind takes. Plate stores the condition and checks that it fits the field it names. It does not hide a field or skip it, so your app decides what a condition that fails means.
 
-`update` refuses a condition that names its own field. It does not refuse a loop of two or more fields, such as A naming B while B names A.
+`update` refuses a condition that would close a loop, such as A naming B while B names A, or a field naming itself. A new test or value on a field of a loop passes. A loop can still come from a loaded document, a plain node write or two peers' updates made at the same time, and each of its fields then reports `condition-loop`.
 
 ## Read fields and their problems
 
-`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. It looks up that field and the field its condition names. `read.fields()` returns every field of the document in reading order. Each read is a `FieldRead`: `{ fieldId, node, problems }`.
+`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. It looks up that field, then one field for each condition it follows along the chain. `read.fields()` returns every field of the document in reading order. Each read is a `FieldRead`: `{ fieldId, node, problems }`.
 
 ```tsx
 import { BaseFieldPlugin } from 'platejs/field';
@@ -248,6 +248,7 @@ const broken = fields.fields().filter((field) => field.problems.length > 0);
 | `missing-target` | No field holds the id its condition names, such as after that field is deleted. |
 | `unsupported-test` | The kind of the field its condition names does not take the condition's test. |
 | `invalid-value` | Its value, default or options do not fit its kind, or its condition's value does not fit the test or the named field's kind. |
+| `condition-loop` | Its condition names a field whose chain of conditions leads back to it, such as A naming B while B names A. |
 
 `insert` and `update` refuse a write that would cause a problem. A problem comes from a later edit, such as deleting or changing the field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
 

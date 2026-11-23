@@ -57,6 +57,7 @@ const TEST_LABELS: Record<FieldTest, string> = {
   'not-equals': 'is not',
 };
 const PROBLEMS: Record<FieldProblem, string> = {
+  'condition-loop': 'Its condition leads back to this field.',
   'invalid-value': 'A value does not fit this kind of field.',
   'missing-target': 'The field its condition names is gone.',
   'unsupported-test': 'Its condition does not fit the field it names.',
@@ -310,7 +311,7 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
   const { condition, fieldId, kind, options = [] } = element;
   const update = (patch: FieldPatch) =>
     editor.update((tx) => tx.plugin(FieldPlugin).update(fieldId, patch));
-  const targets = useEditorSelector(
+  const fields = useEditorSelector(
     (innerEditor) => innerEditor.plugin(FieldPlugin).read.fields(),
     {
       shouldUpdate: (commit) =>
@@ -318,10 +319,29 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
         commit.changed.hasAny('properties') ||
         commit.changed.hasAny('structure'),
     }
-  ).filter((entry) => entry.fieldId !== fieldId);
-  const target = targets.find(
-    (entry) => entry.fieldId === condition?.ref
-  )?.node;
+  );
+  const targets = fields.filter((entry) => entry.fieldId !== fieldId);
+  const target = fields.find((entry) => entry.fieldId === condition?.ref)?.node;
+  const namers = new Map<string, string[]>();
+
+  for (const { fieldId: namer, node } of fields) {
+    if (!node.condition) continue;
+
+    const named = namers.get(node.condition.ref) ?? [];
+
+    named.push(namer);
+    namers.set(node.condition.ref, named);
+  }
+
+  const leadsHere = new Set([fieldId]);
+
+  for (const id of leadsHere) {
+    for (const namer of namers.get(id) ?? []) leadsHere.add(namer);
+  }
+
+  const choices = fields.filter(
+    (entry) => entry.fieldId === condition?.ref || !leadsHere.has(entry.fieldId)
+  );
   const tests = target ? fillableTests(target) : [];
 
   return (
@@ -441,10 +461,10 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
       <NativeSelect
         id={`${fieldId}-condition`}
         size="sm"
-        value={condition?.ref ?? ''}
+        value={condition ? `#${condition.ref}` : ''}
         onChange={(event) => {
-          const next = targets.find(
-            (entry) => entry.fieldId === event.target.value
+          const next = choices.find(
+            (entry) => `#${entry.fieldId}` === event.target.value
           );
 
           update({
@@ -456,12 +476,12 @@ function FieldSettingsForm({ element }: { element: FieldNode }) {
       >
         <NativeSelectOption value="">Always</NativeSelectOption>
         {condition && !target && (
-          <NativeSelectOption value={condition.ref}>
+          <NativeSelectOption value={`#${condition.ref}`}>
             Missing field
           </NativeSelectOption>
         )}
-        {targets.map((entry) => (
-          <NativeSelectOption key={entry.fieldId} value={entry.fieldId}>
+        {choices.map((entry) => (
+          <NativeSelectOption key={entry.fieldId} value={`#${entry.fieldId}`}>
             {entry.node.label}
           </NativeSelectOption>
         ))}

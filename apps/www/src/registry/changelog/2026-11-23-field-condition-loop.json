@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-field-condition-loop",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-field-condition-loop.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Warn on a loop of field conditions and offer no condition that closes one",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-field-condition-loop",
+      "kind": "behavior",
+      "summary": "Show a warning on each chip of a loop of conditions, such as A naming B while B names A. The Show when list offers no field whose conditions lead back to the field being edited, and keeps the field its condition already names. Always clears the condition even when a field has an empty id.",
+      "details": [],
+      "migrationNotes": [
+        "Update the copied `field` component, because `FieldProblem` gains `condition-loop` and a `Record<FieldProblem, string>` needs that key."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-field-condition-loop",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

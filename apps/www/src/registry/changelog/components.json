@@ -43,7 +43,11 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry"
     ],
-    "field": ["2026-11-23-field-fill-view", "2026-11-21-add-field"],
+    "field": [
+      "2026-11-23-field-condition-loop",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
     "field-toolbar-button": [
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"

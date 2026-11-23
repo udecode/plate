@@ -21,9 +21,16 @@ import {
   getActiveEditorUpdateTags,
   getSnapshotVersion,
   readElementPropertyWrites,
+  readRootEntries,
+  readViewPage,
   registerEditorTransactionGuard,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
+import {
+  type FieldLink,
+  fieldLinks,
+  sharedFieldLinks,
+} from './fieldRules.internal';
 
 const FIELD_KINDS = [
   'checkbox',
@@ -67,9 +74,11 @@ export type FieldCondition = Readonly<{
  * id its condition names. `unsupported-test`: the target's kind does not take
  * the condition's test. `invalid-value`: its value, default or options do not
  * fit its kind, or its condition's value does not fit its test or the
- * target's kind.
+ * target's kind. `condition-loop`: its condition names a field whose chain of
+ * conditions leads back to it.
  */
 export type FieldProblem =
+  | 'condition-loop'
   | 'invalid-value'
   | 'missing-target'
   | 'unsupported-test';
@@ -430,7 +439,7 @@ const conditionProblem = (
 
 const fieldProblems = (
   field: FieldElement,
-  targetOf: (fieldId: string) => FieldShape | undefined
+  link: FieldLink
 ): FieldProblem[] => {
   const own: FieldProblem[] = SHAPED_SETTINGS.every((setting) =>
     fitsSetting(field, setting)
@@ -438,12 +447,11 @@ const fieldProblems = (
     ? []
     : ['invalid-value'];
   const conditioned =
-    field.condition &&
-    conditionProblem(field.condition, targetOf(field.condition.ref));
+    field.condition && conditionProblem(field.condition, link.target);
+  const problems =
+    conditioned && !own.includes(conditioned) ? [...own, conditioned] : own;
 
-  return conditioned && !own.includes(conditioned)
-    ? [...own, conditioned]
-    : own;
+  return link.loop ? [...problems, 'condition-loop'] : problems;
 };
 
 const refusal = (reason: string) =>
@@ -601,7 +609,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           },
         },
       ],
-      read: ({ state }) => {
+      read: ({ editor: reader, state }) => {
         const held = (fieldId: string) => {
           const holder = state.unique.holder('fieldId', fieldId);
           const node = holder && state.nodes.get(holder.key)?.[0];
@@ -618,31 +626,42 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
         return {
           /**
            * The field whose `fieldId` is `fieldId`, in any root, or null when
-           * no field holds it. Looks up the field and the field its condition
-           * names.
+           * no field holds it. Looks up the field, then one field for each
+           * condition it follows along the chain.
            */
           field: (fieldId: string): FieldRead | null => {
             const node = held(fieldId);
 
             return node
-              ? { fieldId, node, problems: fieldProblems(node, held) }
+              ? {
+                  fieldId,
+                  node,
+                  problems: fieldProblems(
+                    node,
+                    sharedFieldLinks(reader)(node, held)
+                  ),
+                }
               : null;
           },
           /** Every field of the document, in reading order. */
           fields: (): FieldRead[] => {
             const fields = new Map(
               [
-                state.children(),
-                ...state.roots().map(({ root }) => state.root(root)),
+                readViewPage(state) ?? state.children(),
+                ...readRootEntries(reader).map(({ root }) => state.root(root)),
               ]
                 .flatMap(fieldsIn)
                 .map((node) => [node.fieldId, node] as const)
             );
+            const link = fieldLinks();
 
             return [...fields].map(([fieldId, node]) => ({
               fieldId,
               node,
-              problems: fieldProblems(node, (id) => fields.get(id)),
+              problems: fieldProblems(
+                node,
+                link(node, (id) => fields.get(id))
+              ),
             }));
           },
         };
@@ -654,8 +673,14 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
 
           return node && isField(node) ? ([node, holder.key] as const) : [];
         };
-        const checkCondition = (condition: FieldCondition) => {
-          const problem = conditionProblem(condition, held(condition.ref)[0]);
+        const checkCondition = (
+          condition: FieldCondition,
+          self?: FieldElement
+        ) => {
+          const problem = conditionProblem(
+            condition,
+            condition.ref === self?.fieldId ? self : held(condition.ref)[0]
+          );
 
           if (problem) throw refusal(`its condition has ${problem}`);
         };
@@ -664,11 +689,16 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           /**
            * Insert a field and return its new `fieldId`. Throws when a value,
            * default or options do not fit `kind`, or the condition names no
-           * field, or a test or value the named field's kind does not take.
+           * field, or a test or value the named field's kind does not take,
+           * or the settings name a `fieldId`.
            */
           insert: txLocate(
             locateAt(1),
             (settings: FieldSettings, options: NodeInsertOptions = {}) => {
+              if ('fieldId' in settings) {
+                throw refusal('fieldId is not a setting');
+              }
+
               const unfit = SHAPED_SETTINGS.find(
                 (setting) => !fitsSetting(settings, setting)
               );
@@ -694,13 +724,16 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
            * options the patch leaves out and the field no longer fits. Throws,
            * and changes nothing, when no field holds `fieldId`, a setting the
            * patch names does not fit the field's kind, the patch removes `kind`,
-           * `role` or `label`, or its condition names
-           * the field itself, no field, or a test or value the named field's
-           * kind does not take. While a fill role is set, a missing field or
-           * a setting that does not fit refuses the whole update instead,
-           * which then returns `undefined`.
+           * `role` or `label` or names `fieldId`, or its condition names no
+           * field, a test or value the named field's kind does not take, or a
+           * field it did not name before whose chain of conditions leads back
+           * to this one. While a fill role is set, a missing field or a
+           * setting that does not fit refuses the whole update instead, which
+           * then returns `undefined`.
            */
           update: txLocate(false, (fieldId: string, patch: FieldPatch) => {
+            if ('fieldId' in patch) throw refusal('fieldId is not a setting');
+
             const role = store.get('fillRole');
             const refusalForRole = (reason: string) =>
               role == null
@@ -727,11 +760,16 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
               );
             }
             if (patch.condition) {
-              if (patch.condition.ref === fieldId) {
-                throw refusal('its condition names the field itself');
-              }
+              checkCondition(patch.condition, next);
 
-              checkCondition(patch.condition);
+              if (
+                patch.condition.ref !== field.condition?.ref &&
+                fieldLinks()(next, (id) =>
+                  id === fieldId ? next : held(id)[0]
+                ).loop
+              ) {
+                throw refusal('its condition closes a loop');
+              }
             }
 
             const reshaped = 'kind' in patch || 'options' in patch;

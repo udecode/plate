@@ -482,9 +482,10 @@ const withRootGenerator = <T>(
     }
   })();
 
-const VIEW_PAGES = new WeakMap<object, () => readonly Descendant[]>();
+const VIEW_PAGE = Symbol('view page');
 
-export const readViewPage = (state: object) => VIEW_PAGES.get(state)?.();
+export const readViewPage = (state: object) =>
+  (state as { [VIEW_PAGE]?: () => readonly Descendant[] })[VIEW_PAGE]?.();
 
 const rootMethod = <TMethod extends (...args: any[]) => any>(
   editor: Editor,
@@ -788,6 +789,11 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
       viewState.root === MAIN_ROOT_KEY
         ? state.children()
         : state.root(viewState.root)
+    ),
+    [VIEW_PAGE]: rootMethod(
+      editor,
+      { ...viewState, root: MAIN_ROOT_KEY },
+      state.children
     ),
     fragment: Object.freeze(
       Object.assign(
@@ -1324,14 +1330,6 @@ const createViewRuntime = <V extends Value>(
         },
         viewState.presentation
       ) as EditorStateView<V, any>;
-      VIEW_PAGES.set(
-        cachedViewState,
-        rootMethod(
-          editor,
-          { ...viewState, root: MAIN_ROOT_KEY },
-          state.children
-        )
-      );
     }
 
     return getDefined(cachedViewState);

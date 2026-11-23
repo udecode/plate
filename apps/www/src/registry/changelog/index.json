@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-field-condition-loop",
+      "href": "/registry/changelog/2026-11-23-field-condition-loop.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Warn on a loop of field conditions and offer no condition that closes one",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-field-fill-view",
       "href": "/registry/changelog/2026-11-23-field-fill-view.json",
       "status": "draft",
