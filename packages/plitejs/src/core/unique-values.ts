@@ -59,24 +59,6 @@ const rootChildrenOf = (document: EditorDocumentValue, root: string) =>
     ? document.children
     : (document.roots?.[root] ?? [])) as readonly JsonNode[];
 
-const comparePlaces = (order: readonly string[], left: Place, right: Place) => {
-  const byRoot = order.indexOf(left.root) - order.indexOf(right.root);
-
-  if (byRoot !== 0) return byRoot;
-  for (
-    let depth = 0;
-    depth < Math.min(left.path.length, right.path.length);
-    depth += 1
-  ) {
-    const byIndex =
-      getDefined(left.path[depth]) - getDefined(right.path[depth]);
-
-    if (byIndex !== 0) return byIndex;
-  }
-
-  return left.path.length - right.path.length;
-};
-
 const visitElements = (
   nodes: readonly JsonNode[],
   visit: (node: JsonNode, path: readonly number[]) => void,
@@ -309,19 +291,19 @@ export const advanceUniqueIndex = (
   index.version = version;
 };
 
-type Holder = Place & Readonly<{ from: number }>;
+type Holder = Place & Readonly<{ key: NodeKey }>;
 
 type FreshDraw = (
   key: string,
   property: CompiledSchemaProperty,
-  taken: (value: string) => boolean
+  taken: (value: unknown) => boolean
 ) => unknown;
 
 const drawFresh: FreshDraw = (key, property, taken) => {
   for (let draw = 0; draw < DRAWS; draw += 1) {
     const value = generateElementPropertyValue(property);
 
-    if (value !== undefined && !taken(canonicalJsonKey(value))) return value;
+    if (value !== undefined && !taken(value)) return value;
   }
 
   throw new Error(
@@ -388,7 +370,7 @@ export const repairLoadedUniqueValues = (
     const property = getDefined(properties.get(key));
     const values = getDefined(held.get(key));
     const value = drawFresh(key, property, (candidate) =>
-      values.has(candidate)
+      values.has(canonicalJsonKey(candidate))
     );
 
     values.add(canonicalJsonKey(value));
@@ -401,149 +383,74 @@ export const repairLoadedUniqueValues = (
 };
 
 /**
- * A commit's repair: every unique value an element the commit inserted or set
- * stores, when another element of `after` stores it too. A commit that keeps
- * the first holder, such as a collaboration import or a load, keeps the value
- * on the first holder in document order; any other commit keeps it on each
- * holder it did not write and gives each holder it wrote a fresh value, or,
- * when it wrote every holder, keeps the first.
+ * A value's holder when a local update began, and whether its key has left
+ * the document since.
  */
-export const repairCommittedUniqueValues = (
+export type UniqueIncumbent = Readonly<{
+  key: NodeKey;
+  left: () => boolean;
+  root: string;
+}>;
+
+/**
+ * `holders` come in document order. An import, a load, a replacement or a
+ * commit tagged `collaboration` has no incumbent.
+ */
+export const keptUniqueHolder = <T extends Holder>(
+  holders: readonly T[],
+  incumbent: UniqueIncumbent | null
+): T | undefined =>
+  (incumbent &&
+    (holders.find(({ key }) => key === incumbent.key) ??
+      (incumbent.left()
+        ? holders.find(({ root }) => root === incumbent.root)
+        : undefined))) ??
+  holders[0];
+
+export const repairUniqueHolders = (
   input: Readonly<{
-    after: EditorDocumentValue;
-    afterIndexOf: (root: string) => DocumentIndex;
-    afterKeysOf: (root: string) => SnapshotIndex;
-    change: DocumentChange;
-    index: () => UniqueIndex;
-    keepFirst: boolean;
+    held: Iterable<readonly [property: string, value: unknown]>;
+    holdersOf: (property: string, value: unknown) => readonly Holder[];
+    incumbentOf: (property: string, value: unknown) => UniqueIncumbent | null;
+    indexOf: (root: string) => DocumentIndex;
     schema: CompiledEditorSchema;
-    stored: EditorDocumentValue;
   }>
 ): DocumentChange | null => {
   const properties = uniquePropertiesOf(input.schema);
+  const claimOf = (key: string, value: unknown) =>
+    `${key}\u0000${canonicalJsonKey(value)}`;
+  const claimed = new Set<string>();
+  const renames: Array<
+    Readonly<{ from: number; key: string; root: string; value: unknown }>
+  > = [];
 
-  if (properties.size === 0) return null;
+  for (const [key, value] of input.held) {
+    if (claimed.has(claimOf(key, value))) continue;
+    claimed.add(claimOf(key, value));
+    const holders = input.holdersOf(key, value);
 
-  const written = new Map<string, Map<string, Holder[]>>();
-
-  for (const [root, rootChange] of getInternalDocumentChangeEntries(
-    input.change
-  )) {
-    if (rootChange.empty) continue;
-    const after = input.afterIndexOf(root);
-    const before =
-      root === MAIN || Object.hasOwn(input.stored.roots ?? {}, root)
-        ? valueRootIndex(input.stored, root)
-        : null;
-
-    rootChange.iterChangedRanges((fromA, toA, fromB, toB) => {
-      const kept = new Map<number, JsonNode>();
-
-      for (const range of before?.nodeRangesTouching(fromA, toA) ?? []) {
-        if (range.kind === 'text' || range.from < fromA || range.from >= toA) {
-          continue;
-        }
-        const at = rootChange.mapPos(range.from, 1, 'after');
-
-        if (at !== null) kept.set(at, getDefined(before).node(range.path));
-      }
-      for (const range of after.nodeRangesTouching(fromB, toB)) {
-        if (range.kind === 'text' || range.from < fromB || range.from >= toB) {
-          continue;
-        }
-        const node = after.node(range.path);
-        const previous = kept.get(range.from);
-
-        for (const [key, value] of uniqueValuesOf(properties, node)) {
-          if (
-            previous?.[key] !== undefined &&
-            canonicalJsonKey(previous[key]) === value
-          ) {
-            continue;
-          }
-          let byValue = written.get(key);
-
-          if (!byValue) {
-            byValue = new Map();
-            written.set(key, byValue);
-          }
-          byValue.set(value, [
-            ...(byValue.get(value) ?? []),
-            { from: range.from, path: range.path, root },
-          ]);
-        }
-      }
-    });
-  }
-  if (written.size === 0) return null;
-
-  const index = input.index();
-  const order = documentRootsOf(input.after);
-  const writtenAt = new Map(
-    [...written].map(([key, byValue]) => [
-      key,
-      new Set(
-        [...byValue.values()].flatMap((holders) =>
-          holders.map(({ from, root }) => `${root}\u0000${from}`)
-        )
-      ),
-    ])
-  );
-  const untouched = (key: string, value: string): Holder[] =>
-    [...(index.holders.get(key)?.get(value) ?? [])].flatMap(
-      ([nodeKey, root]) => {
-        if (root !== MAIN && !Object.hasOwn(input.after.roots ?? {}, root)) {
-          return [];
-        }
-        const path = input.afterKeysOf(root).pathOf(nodeKey);
-
-        if (!path) return [];
-        const after = input.afterIndexOf(root);
-        const node = after.node(path);
-
-        if (node[key] === undefined || canonicalJsonKey(node[key]) !== value) {
-          return [];
-        }
-        const { from } = after.nodeRange(path);
-
-        return writtenAt.get(key)?.has(`${root}\u0000${from}`)
-          ? []
-          : [{ from, path, root }];
-      }
-    );
-  const assigned = new Map<string, Set<string>>();
-  const renames: Array<Holder & Readonly<{ key: string; value: unknown }>> = [];
-
-  for (const [key, byValue] of written) {
+    if (holders.length < 2) continue;
+    const kept = keptUniqueHolder(holders, input.incumbentOf(key, value));
     const property = getDefined(properties.get(key));
-    const taken = (value: string) =>
-      byValue.has(value) ||
-      !!assigned.get(key)?.has(value) ||
-      untouched(key, value).length > 0;
 
-    for (const [value, holders] of byValue) {
-      const kept = untouched(key, value);
+    for (const { path, root } of holders.filter((held) => held !== kept)) {
+      const fresh = drawFresh(
+        key,
+        property,
+        (candidate) =>
+          claimed.has(claimOf(key, candidate)) ||
+          input.holdersOf(key, candidate).length > 0
+      );
 
-      if (kept.length + holders.length < 2) continue;
-      const renamed =
-        !input.keepFirst && kept.length > 0
-          ? holders
-          : [...kept, ...holders]
-              .sort((left, right) => comparePlaces(order, left, right))
-              .slice(1);
-
-      for (const holder of renamed) {
-        const fresh = drawFresh(key, property, taken);
-        const values = assigned.get(key) ?? new Set();
-
-        values.add(canonicalJsonKey(fresh));
-        assigned.set(key, values);
-        renames.push({ ...holder, key, value: fresh });
-      }
+      claimed.add(claimOf(key, fresh));
+      renames.push({
+        from: input.indexOf(root).nodeRange(path).from,
+        key,
+        root,
+        value: fresh,
+      });
     }
   }
 
-  return renames.length === 0
-    ? null
-    : renameChange(renames, input.afterIndexOf);
+  return renames.length === 0 ? null : renameChange(renames, input.indexOf);
 };

@@ -318,7 +318,7 @@ import {
 } from './editor-schema';
 import { getContentSlice } from './get-content-slice';
 import { getFragment } from './get-fragment';
-import { sameNamedRoots } from './identity-owner';
+import { sameNamedRoots, topologyChangedHolders } from './identity-owner';
 import { normalizeEditorValue } from './initial-value';
 import {
   getInsertRemainingLength,
@@ -464,6 +464,7 @@ import {
   rootsHoldingValue,
   seedSnapshotIndex,
   snapshotIndexOf,
+  uniqueTopologyOf,
 } from './snapshot-index';
 import {
   getInstalledStateField,
@@ -486,7 +487,8 @@ import { copyTxMethodMarkers, isTxOnlyMethod } from './tx-only';
 import {
   advanceUniqueIndex,
   buildUniqueIndex,
-  repairCommittedUniqueValues,
+  keptUniqueHolder,
+  repairUniqueHolders,
   sameUniqueIndex,
   type UniqueIndex,
 } from './unique-values';
@@ -577,6 +579,7 @@ type SettlementSplit =
 
 type StateRootDirectory = {
   advanced?: Readonly<{ change: DocumentChange; directory: RootDirectory }>;
+  from?: RootDirectory;
   initial: () => RootDirectory | undefined;
 };
 
@@ -2494,6 +2497,7 @@ const transactionRootDirectory = (
         : undefined
     );
   }
+  if (!advanced) snapshot.rootDirectory.from = start;
   snapshot.rootDirectory.advanced = { change, directory };
 
   return directory;
@@ -2518,6 +2522,60 @@ const stateUniqueHolder = (
   property: string,
   value: unknown
 ): EditorUniqueHolder | null => {
+  const holders = stateUniqueHolders(owner, property, value);
+  const update = getReadProjection(owner)
+    ? undefined
+    : TRANSACTION_SPEC_CONTEXTS.get(owner)?.[0];
+
+  if (!update) return holders[0] ?? null;
+  const holder =
+    holders.length < 2
+      ? holders[0]
+      : keptUniqueHolder(holders, updateIncumbent(owner, property, value));
+
+  // A command frame's commit carries only the keys read while it ran, so the
+  // key named here keeps naming the element the commit leaves the value on.
+  if (holder) noteKeyRead(owner, holder.key);
+
+  return holder ?? null;
+};
+
+const updateIncumbent = (owner: Editor, property: string, value: unknown) => {
+  const update = TRANSACTION_SPEC_CONTEXTS.get(owner)?.[0];
+
+  if (
+    !update ||
+    getActiveEditorUpdateTags(owner).includes('collaboration') ||
+    update.snapshot.annotations.get(documentReplacement.key)?.value === true
+  ) {
+    return null;
+  }
+  const stored = withContextsBelow(owner, update, () =>
+    withEditorDocumentProjection(
+      owner,
+      undefined,
+      () => stateUniqueHolders(owner, property, value)[0]
+    )
+  );
+
+  return stored
+    ? {
+        key: stored.key,
+        left: () =>
+          getEditorRuntimeRootKeys(owner).every(
+            (root) => !runtimeRootIndex(owner, root).pathOf(stored.key)
+          ),
+        root: stored.root,
+      }
+    : null;
+};
+
+// Holders come in document order: main, then the named roots by name.
+const stateUniqueHolders = (
+  owner: Editor,
+  property: string,
+  value: unknown
+): readonly EditorUniqueHolder[] => {
   const projection = getReadProjection(owner);
   const context = projection ? undefined : getTransactionSpecContext(owner);
   const shown = projection ?? context?.snapshot.builder.value;
@@ -2554,22 +2612,10 @@ const stateUniqueHolder = (
     return getDefined(ROOT_DIRECTORIES.get(owner));
   };
 
-  if (!context && main.length > 0) return main[0];
+  if (!context && main.length > 0) return main;
   const held = rootsHoldingValue(directory(), property, value);
-  const holders = [
-    ...main,
-    ...(held.length > 1
-      ? visitRootNames(named).filter((name) => held.includes(name))
-      : held
-    ).flatMap(holdersIn),
-  ];
 
-  if (!context || holders.length < 2) return holders[0] ?? null;
-  const heldBelow = withContextsBelow(owner, context, () =>
-    stateUniqueHolder(owner, property, value)
-  );
-
-  return holders.find(({ key }) => key === heldBelow?.key) ?? holders[0];
+  return [...main, ...held.toSorted().flatMap(holdersIn)];
 };
 
 const admitTransactionDraft = (editor: Editor) => {
@@ -2673,27 +2719,47 @@ const admitTransactionDraft = (editor: Editor) => {
   admit(stored, snapshot.activeChange.change);
   if (unique) {
     const after = snapshot.builder.value as EditorDocumentValue;
-    const renamed = repairCommittedUniqueValues({
+    const owner = getEditorRuntimeOwner(editor);
+    const held: Array<readonly [property: string, value: unknown]> = [];
+
+    for (const root of rootsThatCanMoveHolders(
+      snapshot.builder.change,
+      snapshot.reason === 'replace',
       after,
-      afterIndexOf: (root) => snapshot.builder.getIndex(root),
-      afterKeysOf: (root) =>
-        retainTransactionSnapshotIndex(editor, snapshot, root),
-      change: snapshot.builder.change,
-      index: () =>
-        uniqueIndexOf(
-          editor,
-          stored,
-          snapshot.previousVersion,
-          (root) =>
-            snapshot.baseSnapshots.get(root)?.index ??
-            snapshotIndexOf(
-              getEditorRuntimeOwner(editor),
-              getDocumentRootChildren(stored, root)
-            )
+      stored
+    )) {
+      if (root !== MAIN_ROOT_KEY && !Object.hasOwn(after.roots ?? {}, root)) {
+        continue;
+      }
+      const before = Object.hasOwn(snapshot.roots, root)
+        ? rootSourceOf(snapshot.roots, root)
+        : null;
+      const index = snapshot.builder.getIndex(root);
+
+      topologyChangedHolders(
+        before &&
+          uniqueTopologyOf(
+            owner,
+            snapshot.baseRuntimeIndexes.get(root)?.() ??
+              snapshotIndexOf(owner, before),
+            before
+          ),
+        getDefined(
+          uniqueTopologyOf(
+            owner,
+            retainTransactionSnapshotIndex(owner, snapshot, root),
+            valueRootNodes(after, root)
+          )
         ),
-      keepFirst: collaboration || replaces,
+        (property, path) => held.push([property, index.node(path)[property]])
+      );
+    }
+    const renamed = repairUniqueHolders({
+      held,
+      holdersOf: (key, value) => stateUniqueHolders(owner, key, value),
+      incumbentOf: (key, value) => updateIncumbent(owner, key, value),
+      indexOf: (root) => snapshot.builder.getIndex(root),
       schema,
-      stored,
     });
 
     if (renamed) admit(after, applyRepair(after, renamed));
@@ -14601,6 +14667,16 @@ export const runEditorTransaction = <R>(
             pluginPublication.handUninstalls([
               ...snapshot.pluginReconfigurations.values(),
             ]);
+          }
+          // A commit that a transaction guard's publish step opens can store
+          // a directory first, and the draft's directory lacks what it wrote.
+          const drafted = snapshot.rootDirectory;
+
+          if (
+            drafted.advanced?.change === snapshot.builder.change &&
+            drafted.from === ROOT_DIRECTORIES.get(owner)
+          ) {
+            ROOT_DIRECTORIES.set(owner, drafted.advanced.directory);
           }
           // A plugin's after-publish step, such as a Yjs room's first import,
           // can commit before the load seeds the directory, and the schema's

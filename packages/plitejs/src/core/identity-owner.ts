@@ -1456,3 +1456,27 @@ export const topologyUniqueDiff = (
     );
   });
 };
+
+export const topologyChangedHolders = (
+  before: Topology | null,
+  after: Topology,
+  held: (property: string, path: Path) => void
+) => {
+  const reader = readTopology(after);
+
+  after.uniqueProperties.forEach((property, at) => {
+    hashMapDiff(
+      before?.holders[at] ?? emptyUniqueHashMap<Holders>(),
+      after.holders[at],
+      (_, __, now) => {
+        if (now === undefined) return;
+        let cell: number | undefined;
+
+        forEachHolder(now, (holder) => {
+          cell ??= holder;
+        });
+        held(property, reader.pathOfCell(getDefined(cell)));
+      }
+    );
+  });
+};
