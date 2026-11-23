@@ -76,6 +76,7 @@ export type SavedBatch = Readonly<{
         frame: string;
         origin?: BatchOrigin;
         state: 'sent';
+        takesBackSeq?: number;
       }>
     | Readonly<{
         frame: string;

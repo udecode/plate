@@ -49,7 +49,14 @@ export const leaving = (
 
   if (batch.state === 'sent') {
     return reason
-      ? { ...batch, ...withOrigin, reason, state: 'kept' }
+      ? {
+          ...provenanceOf(batch),
+          change: batch.change,
+          frame: batch.frame,
+          ...withOrigin,
+          reason,
+          state: 'kept',
+        }
       : {
           ...provenanceOf(batch),
           frame: batch.frame,

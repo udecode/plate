@@ -757,6 +757,22 @@ export const createWriter = ({
       : { base, front };
   };
 
+  const putBack = (sent: SentBatch) => {
+    save({
+      put: [
+        {
+          ...provenanceOf(sent),
+          change: sent.change,
+          ...(sent.origin ? { origin: sent.origin } : {}),
+          state: 'saved',
+          ...(sent.takesBackSeq === undefined
+            ? {}
+            : { takesBackSeq: sent.takesBackSeq }),
+        },
+      ],
+    });
+  };
+
   const freeze = async () => {
     if (freezing) return;
     freezing = true;
@@ -806,32 +822,23 @@ export const createWriter = ({
           frame: JSON.stringify(submit),
           ...(origin ? { origin } : {}),
           state: 'sent',
+          ...(front.takesBackSeq === undefined
+            ? {}
+            : { takesBackSeq: front.takesBackSeq }),
         };
 
         await writes.durable(save({ put: [sent] }));
 
         const now = batchAt(seq);
 
-        if (destroyed || now !== sent || savedLive.has(seq) !== live) {
+        if (destroyed) return;
+        if (now !== sent || savedLive.has(seq) !== live) {
           if (now?.state === 'sent') {
-            save({
-              put: [
-                {
-                  ...provenanceOf(now),
-                  change: now.change,
-                  ...(now.origin ? { origin: now.origin } : {}),
-                  state: 'saved',
-                  ...(front.takesBackSeq === undefined
-                    ? {}
-                    : { takesBackSeq: front.takesBackSeq }),
-                },
-              ],
-            });
-          } else if (now?.state === 'withheld' && !destroyed) {
+            putBack(now);
+          } else if (now?.state === 'withheld') {
             keep(now, { kind: 'conflict' });
             changed();
           }
-          if (destroyed) return;
           continue;
         }
         savedFrame = sent.frame;
@@ -918,11 +925,20 @@ export const createWriter = ({
 
   return {
     connect,
-    destroy: () => {
+    close: () => {
       destroyed = true;
       savedLive.clear();
       link?.close();
       link = null;
+
+      // The lock frees once the writer has tried the writes queued by now, so
+      // the put-back of a frame that never left is queued here, before
+      // another tab can load the outbox.
+      const sent = inFlight();
+
+      if (sent?.state === 'sent' && sent.frame !== savedFrame) putBack(sent);
+
+      return writes.retrySaves();
     },
     discard: (seq: number) => {
       save({ drop: [seq] });
@@ -960,7 +976,6 @@ export const createWriter = ({
       };
     },
     rebuilds: () => record.rebuilds,
-    retrySaves: writes.retrySaves,
     saveCommit: (
       change: DocumentChange,
       made: CommitDecision | null,

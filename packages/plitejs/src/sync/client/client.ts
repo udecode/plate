@@ -276,8 +276,7 @@ const startClient = (
 
   const draining = new Map<Writer, SyncRelease>();
   const finish = (done: Writer, free: SyncRelease) => {
-    done.destroy();
-    void done.retrySaves().then(free);
+    void done.close().then(free);
   };
   const finishDrains = () => {
     for (const [other, free] of draining) finish(other, free);
