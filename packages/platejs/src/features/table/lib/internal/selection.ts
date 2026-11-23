@@ -44,6 +44,7 @@ export type TableSelectionView = Readonly<{
   hasCellKey: (key: NodeKey) => boolean;
   root?: string;
   selection: NodeSelection | Range;
+  selectsCells: boolean;
   table: Element;
   tableKey: NodeKey;
   tablePath: Path;
@@ -98,7 +99,10 @@ type SelectionViewCacheEntry = Readonly<{
   version: number;
 }>;
 
-const selectionViewCache = new WeakMap<object, SelectionViewCacheEntry>();
+const selectionViewCache = new WeakMap<
+  ReturnType<TableSelectionState['runtime']['snapshot']>,
+  SelectionViewCacheEntry
+>();
 let cacheHitCount = 0;
 let compileCount = 0;
 let projectionSlotCount = 0;
@@ -241,7 +245,7 @@ export const readTableSelection = (
     cacheable && at === undefined
       ? `${tableType}\u0000${expansion}\u0000${cellTypes.join('\u0000')}\u0000${JSON.stringify(currentSelection)}\u0000${state.view.root() ?? ''}`
       : null;
-  const cached = cacheKey ? selectionViewCache.get(state) : undefined;
+  const cached = cacheKey ? selectionViewCache.get(snapshot) : undefined;
 
   if (cached?.key === cacheKey && cached.version === snapshot.version) {
     cacheHitCount += 1;
@@ -258,7 +262,7 @@ export const readTableSelection = (
   const publish = (view: TableSelectionView | null) => {
     if (cacheKey) {
       selectionViewCache.set(
-        state,
+        snapshot,
         Object.freeze({ key: cacheKey, version: snapshot.version, view })
       );
     }
@@ -368,6 +372,9 @@ export const readTableSelection = (
         hasCellKey: (key: NodeKey) => cellKeySet.has(key),
         ...(root === undefined ? {} : { root }),
         selection: location,
+        selectsCells:
+          anchors.length > 1 ||
+          location.paths.every((path) => path.length <= tablePath.length + 2),
         table,
         tableKey: keyAt(tablePath),
         tablePath,
@@ -463,6 +470,7 @@ export const readTableSelection = (
       hasCellKey: (key: NodeKey) => cellKeySet.has(key),
       ...(root === undefined ? {} : { root }),
       selection,
+      selectsCells: anchors.length > 1,
       table,
       tableKey: keyAt(tablePath),
       tablePath,

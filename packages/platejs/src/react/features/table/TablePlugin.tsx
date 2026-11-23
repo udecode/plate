@@ -318,23 +318,16 @@ const readTableSelectionHostState = (
   editor: Editor
 ): TableSelectionHostState => {
   const ownsSelection = editor.read.selection() !== null;
-  const view = editor.plugin(TablePlugin).read.selection();
-  const isExpanded = !!view && view.cells.length > 1;
+  const view = readInternalSelection(editor);
 
-  if (!isExpanded) {
+  if (!view?.selectsCells) {
     return { anchorKey: null, ownsSelection, selectedKeys: [] };
   }
 
   return {
-    anchorKey: view.anchor,
+    anchorKey: view.cellKeys[view.anchors.indexOf(view.anchor)] ?? null,
     ownsSelection,
-    selectedKeys: view.cells.flatMap(([, path]) => {
-      const key = editor.key(
-        view.root === undefined ? path : { offset: 0, path, root: view.root }
-      );
-
-      return key ? [key] : [];
-    }),
+    selectedKeys: view.cellKeys,
   };
 };
 

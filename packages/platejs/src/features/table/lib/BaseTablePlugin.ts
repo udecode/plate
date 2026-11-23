@@ -2512,12 +2512,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             tableType: context.schema.type,
           });
 
-          if (
-            !view ||
-            (!SelectionApi.isNode(input.at) && view.cellEntries.length < 2)
-          ) {
-            return false;
-          }
+          if (!view?.selectsCells) return false;
 
           return state.transaction((tx) => {
             const cellPaths = view.cellEntries.map(([, path]) => path);
@@ -2576,7 +2571,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           });
 
           if (prepared === null) {
-            if (view.anchors.length <= 1) return next();
+            if (!view.selectsCells) return next();
             let fitted = false;
             const transaction = state.transaction(() => {
               fitted = fitSlicePlacements(context.editor, slice, {
@@ -2697,7 +2692,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             tableType: context.schema.type,
           });
 
-          if (!view || view.cellEntries.length < 2) return next();
+          if (!view?.selectsCells) return next();
           const focusPath = view.tablePath.concat(view.focus.path);
           const focus = state.points.start(focusPath);
           const transaction = state.transaction((tx) => {
