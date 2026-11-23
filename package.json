@@ -116,7 +116,7 @@
     "plite:public-types": "pnpm plite:packages:build && tsc --project packages/plitejs/test/tsconfig.public-package-types.json --noEmit && node tooling/scripts/check-declaration-consumer.mjs",
     "plite:release:packages": "pnpm plite:packages:build && node tooling/scripts/check-plite-release-artifacts.mjs",
     "plite:release:boundaries": "turbo build --filter=./packages/plitejs --filter=./packages/platejs && node tooling/scripts/check-plite-release-artifacts.mjs --package-boundaries-only",
-    "plite:test": "turbo run test:partition:core --filter=plitejs --concurrency=1 --output-logs=errors-only --log-order=grouped && turbo run test --filter=plitejs --filter=platejs --filter=@platejs/test --concurrency=8 --continue --output-logs=errors-only --log-order=grouped",
+    "plite:test": "turbo run test:partition:core --filter=plitejs --concurrency=1 --output-logs=errors-only --log-order=grouped; core=$?; turbo run test --filter=plitejs --filter=platejs --filter=@platejs/test --concurrency=8 --continue --output-logs=errors-only --log-order=grouped && exit $core",
     "plite:typecheck": "node tooling/scripts/typecheck.mjs plitejs platejs @platejs/test",
     "sync-shadcn": "node .agents/rules/sync-shadcn/scripts/build-dashboard.mjs",
     "templates:ai": "./tooling/scripts/update-template.sh ai",
