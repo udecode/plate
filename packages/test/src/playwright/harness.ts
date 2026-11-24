@@ -192,6 +192,12 @@ export const createEditorHarness = (
           },
           { key: BROWSER_HANDLE_KEY }
         ),
+      lastPasteVersion: async () =>
+        root.evaluate(
+          (element: HTMLElement, { key }: { key: string }) =>
+            (element as Record<string, any>)[key]?.getLastPasteVersion?.(),
+          { key: BROWSER_HANDLE_KEY }
+        ),
       placeholderShape: async (selector = '[data-editor-zero-width]') => {
         const count = await root.locator(selector).count();
 

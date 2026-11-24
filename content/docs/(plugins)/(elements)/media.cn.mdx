@@ -46,6 +46,7 @@ docs:
 ### 媒体功能
 - 可编辑的标题说明
 - 可调整大小的元素
+- 在空行上单独粘贴视频或帖子链接，会在该行上方嵌入它。
 
 ### 上传功能
 - **多种上传方式**:
@@ -170,8 +171,43 @@ const editor = createEditor({
 本地文件上传需单独添加 `UploadPlugin`，配置方法见[上传文件](/cn/docs/upload)。
 
 <Callout type="info">
-  **注意：** 在 Markdown 中，只有 `url`、`alt` 和 `title` 的图片写为 `![alt](url "title")`。带有其他属性（例如 `width`）的图片使用 `<img src="…" />`，带标题的图片使用包含 `<img />` 与 `<figcaption>` 的 `<figure>`。视频、音频、文件和嵌入使用各自的标签，例如 `<video src="…">Caption</video>`；嵌入保留规范的 `src` 与 `provider`，以及可选的 `sourceUrl`，使编辑可逆。标题必须是一个 Markdown 段落。白名单内的提供商片段（例如 YouTube、Tweet）在粘贴时会被规范化为 URL。原始 `<script>` 或自定义嵌入外观不在支持范围内——如需保留，请添加自己的规则。
+  **注意：** 在 Markdown 中，只有 `url`、`alt` 和 `title` 的图片写为 `![alt](url "title")`。带有其他属性（例如 `width`）的图片使用 `<img src="…" />`，带标题的图片使用包含 `<img />` 与 `<figcaption>` 的 `<figure>`。视频、音频、文件和嵌入使用各自的标签，例如 `<video src="…">Caption</video>`；嵌入保留规范的 `src` 与 `provider`，以及可选的 `sourceUrl`，使编辑可逆。标题必须是一个 Markdown 段落。`update.insert` 会从 `<iframe>` 片段中取出 `src`；在空行上单独粘贴的提供商链接通过 [`MediaEmbedRules`](#input-rules) 嵌入。原始 `<script>` 和自定义嵌入外观不在支持范围内。如需保留，请添加自己的规则。
 </Callout>
+
+### Input Rules
+
+`MediaKit` 已启用粘贴嵌入规则。在你自己的 `MediaEmbedPlugin` 上启用它：
+
+```tsx
+import { MediaEmbedRules } from 'platejs/media';
+import { MediaEmbedPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
+import { MediaEmbedElement } from '@/components/editor/media-embed';
+
+const editor = createEditor({
+  plugins: [
+    // ...其他插件
+    MediaEmbedPlugin.configure({
+      component: MediaEmbedElement,
+      inputRules: [MediaEmbedRules.autoEmbed({ variant: 'paste' })],
+    }),
+  ],
+});
+```
+
+- `MediaEmbedRules.autoEmbed({ variant: 'paste' })`：在空段落中单独粘贴 YouTube、Vimeo、Dailymotion、Youku、Coub 或 X（Twitter）链接时嵌入它。粘贴先照常落地：有链接插件的粘贴规则时成为链接，没有时成为纯文本。随后，嵌入作为独立的撤销步骤插入到该段落上方，段落保持为空并保留光标。撤销一次恢复粘贴落地的内容，再撤销一次恢复空行。
+
+以下情况粘贴保持落地时的样子（链接或纯文本）：
+
+- 同一行还有其他文本，或链接后跟着换行；
+- 段落不是裸段落，例如列表项、标题、缩进或对齐的段落、折叠标题或媒体标题，或光标在代码块中；
+- 粘贴替换了选中的范围，剪贴板包含完整的 Plate 片段，或剪贴板没有纯文本；
+- 链接是带 `h` 参数的 Vimeo 链接，例如 Vimeo 嵌入代码中的播放器 URL，因为嵌入会丢掉该参数；
+- 视图在提议修改，例如建议模式；
+- 在 `EditorKit` 中，链接前后有空格或制表符，因为套件的 Markdown 或 HTML 粘贴会替换该行。开头的制表符或四个空格会成为代码块。
+
+如果剪贴板的 HTML 只包含该链接，即一个只有 `href` 属性、文本就是该 URL 的锚点，HTML 粘贴会去掉链接两侧的空格或制表符，链接会嵌入。
+引用、表格单元格、分栏或折叠内容中的空段落也会嵌入。在另一个根中，通过该根的视图（用 `createEditorView(editor, { root })` 创建）粘贴会嵌入到该根中；通过主编辑器粘贴到另一个根则保持为链接。
 
 ### 标题
 
@@ -320,7 +356,7 @@ editor.plugin(ImagePlugin).update.insert({
 </APIOptions>
 </API>
 
-`UploadPlugin` 处理粘贴的图片文件。没有更早的粘贴规则接管时，`ImagePlugin` 会把粘贴的图片 URL 插入为图片。在 `EditorKit` 中，链接 kit 的 `LinkRules.autolink({ variant: 'paste' })` 规则先运行，会把任何有效 URL（包括图片 URL）作为链接插入。
+`UploadPlugin` 处理粘贴的图片文件。没有更早的粘贴规则接管时，`ImagePlugin` 会把粘贴的图片 URL 插入为图片。在 `EditorKit` 中，链接 kit 的 `LinkRules.autolink({ variant: 'paste' })` 规则先运行，会把任何有效 URL（包括图片 URL）作为链接插入。如果该链接是在空行上单独粘贴的提供商链接，`MediaEmbedRules.autoEmbed({ variant: 'paste' })` 随后会在该行上方嵌入它。
 
 ### `VideoPlugin`
 
@@ -347,6 +383,7 @@ editor.plugin(ImagePlugin).update.insert({
 
 用于非 void、隔离且可通过键盘选择的媒体嵌入元素。其直接行内 children 存储标题。
 扩展 `MediaPluginState`。
+它的粘贴规则 [`MediaEmbedRules.autoEmbed`](#mediaembedrulesautoembed) 从 `platejs/media` 导出。
 
 ### `UploadPlugin`
 
@@ -378,6 +415,39 @@ React 版 `UploadPlugin` 会把拖入的文件放在指针所在区块的边缘�
 只安装 `BaseUploadPlugin` 的编辑器会像粘贴一样处理拖入的文件，不经过放置规则和否决。
 
 ## API
+
+### `MediaEmbedRules.autoEmbed`
+
+返回一个用于 `MediaEmbedPlugin` 的 `inputRules` 的[后续粘贴规则](/docs/plugin-input-rules#follow-up-paste-rules)。
+
+<API name="MediaEmbedRules.autoEmbed">
+<APIParameters>
+  <APIItem name="options.variant" type="'paste'">
+    嵌入在空段落中单独粘贴的提供商链接，见 [Input Rules](#input-rules)。
+  </APIItem>
+  <APIItem name="options.enabled" type="(context) => boolean" optional>
+    策略开关，在规则匹配前求值。
+  </APIItem>
+  <APIItem name="options.priority" type="number" optional>
+    在编辑器的粘贴规则中的排序。
+  </APIItem>
+</APIParameters>
+</API>
+
+规则读取一个 `http` 或 `https` 链接，两侧只允许空格或制表符。嵌入在 `provider` 中存储提供商名称，在 `url` 中存储播放器 URL，在 `sourceUrl` 中存储规范链接。X 的 `provider` 为 `twitter`，规范链接存于 `url`：
+
+| 提供商 | 接受的链接 | `url` | `sourceUrl` |
+| --- | --- | --- | --- |
+| YouTube | `youtube.com/watch?v=<id>`、`/shorts/<id>`、`/embed/<id>` 与 `/live/<id>`，以及 `youtu.be/<id>` | `https://www.youtube.com/embed/<id>` | `https://www.youtube.com/watch?v=<id>` |
+| Vimeo | `vimeo.com/<id>` 与 `player.vimeo.com/video/<id>`，不带 `h` 参数 | `https://player.vimeo.com/video/<id>` | `https://vimeo.com/<id>` |
+| Dailymotion | `dailymotion.com/video/<id>` 与 `dai.ly/<id>` | `https://www.dailymotion.com/embed/video/<id>` | `https://www.dailymotion.com/video/<id>` |
+| Youku | `v.youku.com/v_show/id_<id>.html` | `https://player.youku.com/embed/<id>` | `https://v.youku.com/v_show/id_<id>.html` |
+| Coub | `coub.com/view/<id>` 与 `coub.com/embed/<id>` | `https://coub.com/embed/<id>` | `https://coub.com/view/<id>` |
+| X（Twitter） | `x.com` 与 `twitter.com` 上的 `/<user>/status/<id>` 与 `/i/web/status/<id>`，可带 `/photo/<n>` 或 `/video/<n>` | `https://x.com/i/status/<id>` | 无 |
+
+`youtube.com`、`vimeo.com`、`dailymotion.com`、`coub.com`、`x.com` 与 `twitter.com` 上的链接也可带 `www.`、`m.` 或 `mobile.` 前缀。YouTube 查询中的 `t` 或 `start` 时间，或片段中的 `t` 时间，按原值以 `&t=` 写入 `sourceUrl`。当该值是正的秒数时，例如 `90` 或 `1m30s`，`url` 还会以这些秒数得到 `?start=`。
+
+YouTube 播放列表、Vimeo 的 `showcase`、`channels`、`album` 或 `groups` 链接，以及 id 之后还有路径的链接，保持为链接。
 
 ### 上传任务
 

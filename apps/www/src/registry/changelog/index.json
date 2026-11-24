@@ -64,6 +64,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-24-media-paste-embed",
+      "href": "/registry/changelog/2026-11-24-media-paste-embed.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Embed a video or post link pasted alone on an empty line",
+      "change": {
+        "type": "source",
+        "date": "2026-11-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["media"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-ai-menu-refused-accept",
       "href": "/registry/changelog/2026-11-23-ai-menu-refused-accept.json",
       "status": "draft",

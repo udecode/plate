@@ -59,6 +59,7 @@ import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   getSelection as editorGetSelection,
+  getEditorRuntimeOwner,
   getEditorSelectionRoot,
   getInternalDocumentChangeRootKeys,
   getSelectionDOMRange,
@@ -107,6 +108,7 @@ export type PliteBrowserHandle = {
     ExternalTextRuntime['metrics']
   > | null;
   getLastCommit: () => unknown;
+  getLastPasteVersion: () => number | null;
   getBlockText: (index: number) => string | null;
   getBlockTexts: () => string[];
   getDOMSelection: () => Range | null;
@@ -179,6 +181,8 @@ const getPublicDocumentChangeRoots = (change: DocumentChange) => [
   ...change.createRoots,
   ...change.deleteRoots,
 ];
+
+const lastPasteVersionByOwner = new WeakMap<object, number>();
 
 const createBrowserHandleDataTransfer = ({
   html,
@@ -376,6 +380,15 @@ export const attachPliteBrowserHandle = ({
       { timing: 'timeout' }
     );
   };
+
+  const runtimeOwner = getEditorRuntimeOwner(editor);
+  const stopRecordingPastes = editor.subscribeCommit((commit) => {
+    if (!commit.tags.includes('paste') || commit.changes.empty) return;
+    lastPasteVersionByOwner.set(
+      runtimeOwner,
+      Math.max(lastPasteVersionByOwner.get(runtimeOwner) ?? 0, commit.version)
+    );
+  });
 
   const handle: PliteBrowserHandle = {
     applyChange: (change, policy) => {
@@ -603,6 +616,8 @@ export const attachPliteBrowserHandle = ({
         version: commit.version,
       };
     },
+    getLastPasteVersion: () =>
+      lastPasteVersionByOwner.get(runtimeOwner) ?? null,
     getElementByPath: (path) => getPliteNodeElementByPath(editor, path),
     getPathByNodeKey: (nodeKey) => editorGetPathByNodeKey(editor, nodeKey),
     getProjectedNativeAffordanceMatrix,
@@ -941,6 +956,8 @@ export const attachPliteBrowserHandle = ({
   element[BROWSER_HANDLE_KEY] = handle;
 
   return () => {
+    stopRecordingPastes();
+
     if (element[BROWSER_HANDLE_KEY] === handle) {
       element[BROWSER_HANDLE_KEY] = undefined;
     }

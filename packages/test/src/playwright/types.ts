@@ -1311,6 +1311,8 @@ export type BrowserEditorHarness = {
     kernelTrace: () => Promise<BrowserKernelTraceEntry[]>;
     history: () => Promise<unknown>;
     lastCommit: () => Promise<unknown>;
+    /** `undefined` when the page's handle records no paste versions. */
+    lastPasteVersion: () => Promise<number | null | undefined>;
     placeholderShape: (selector?: string) => Promise<PlaceholderShape | null>;
   };
   selection: {

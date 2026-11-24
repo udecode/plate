@@ -319,11 +319,13 @@ const readExactProviderLink = (text: string) => {
   const [first, second] = path;
 
   if (
-    (host === 'vimeo.com' && path.length === 1 && NUMERIC_ID.test(first)) ||
-    (host === 'player.vimeo.com' &&
-      path.length === 2 &&
-      first === 'video' &&
-      NUMERIC_ID.test(second))
+    // The stored URLs drop `h`, which an unlisted video needs to play.
+    !url.searchParams.has('h') &&
+    ((host === 'vimeo.com' && path.length === 1 && NUMERIC_ID.test(first)) ||
+      (host === 'player.vimeo.com' &&
+        path.length === 2 &&
+        first === 'video' &&
+        NUMERIC_ID.test(second)))
   ) {
     const id = host === 'vimeo.com' ? first : second;
 

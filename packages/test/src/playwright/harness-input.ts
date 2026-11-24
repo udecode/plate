@@ -60,6 +60,27 @@ export const readProjectClipboardTransport = ():
   return value;
 };
 
+const PASTE_REACHED_ROOT_KEY = '__editorHarnessPasteReachedRoot';
+
+const watchPasteReachesRoot = async (root: Locator) => {
+  await root.evaluate((element: HTMLElement, key: string) => {
+    Reflect.set(window, key, false);
+    element.addEventListener(
+      'paste',
+      () => {
+        Reflect.set(window, key, true);
+      },
+      { capture: true, once: true }
+    );
+  }, PASTE_REACHED_ROOT_KEY);
+
+  return async () =>
+    (await root.evaluate(
+      (_element: HTMLElement, key: string) => Reflect.get(window, key),
+      PASTE_REACHED_ROOT_KEY
+    )) === true;
+};
+
 const pasteThroughTransport = async ({
   getHarness,
   page,
@@ -93,18 +114,15 @@ const pasteThroughTransport = async ({
   // Clipboard inserts commit under the paste tag, and an applied paste changes
   // the document; a traced insert-data command only shows that the kernel
   // planned one, and a handler can still cancel it or only move the selection.
-  const pasteCommitVersion = async () => {
-    const commit = (await harness.get.lastCommit()) as {
-      changedRoots?: unknown[];
-      tags?: string[];
-      version?: number;
-    } | null;
+  const before = await harness.get.lastPasteVersion();
 
-    return commit?.tags?.includes('paste') && commit.changedRoots?.length
-      ? (commit.version ?? null)
-      : null;
-  };
-  const before = await pasteCommitVersion();
+  if (before === undefined) {
+    throw new Error(
+      "The page's browser handle does not record pastes. Pair @platejs/test with the platejs release of its own version."
+    );
+  }
+  const pasteReachedRoot =
+    transport === 'handle' ? null : await watchPasteReachesRoot(root);
   // A handler can apply part of a paste and then throw.
   const pageErrors: Error[] = [];
   const onPageError = (error: Error) => pageErrors.push(error);
@@ -126,9 +144,13 @@ const pasteThroughTransport = async ({
     await expect
       .poll(
         async () => {
-          const after = await pasteCommitVersion();
+          const after = await harness.get.lastPasteVersion();
 
-          return after !== null && after !== before;
+          return (
+            typeof after === 'number' &&
+            after !== before &&
+            (pasteReachedRoot === null || (await pasteReachedRoot()))
+          );
         },
         { message: `The ${transport} paste did not apply`, timeout: 2000 }
       )

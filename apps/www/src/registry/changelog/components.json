@@ -171,6 +171,16 @@
       "2026-08-17-flat-editor-registry",
       "2026-07-26-plugin-store-state"
     ],
+    "media": [
+      "2026-11-24-media-paste-embed",
+      "2026-09-19-files-sdk-upload-kit",
+      "2026-09-07-media-upload-lifetime",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
     "ai-menu": [
       "2026-11-23-ai-menu-refused-accept",
       "2026-11-20-drop-editor-selection-view",
@@ -1617,15 +1627,6 @@
       "2026-09-24-export-menu-projection",
       "2026-09-02-comments-ownership",
       "2026-08-18-isolate-docx-file-io"
-    ],
-    "media": [
-      "2026-09-19-files-sdk-upload-kit",
-      "2026-09-07-media-upload-lifetime",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
     ],
     "plate": ["2026-09-18-ui-commands-and-installation"],
     "plate-ui": [

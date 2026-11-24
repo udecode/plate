@@ -1,3 +1,4 @@
+import { MediaEmbedRules } from 'platejs/media';
 import {
   AudioPlugin,
   FilePlugin,
@@ -20,7 +21,10 @@ export const MediaKit = [
     component: ImageElement,
     slots: { afterEditable: MediaPreviewDialog },
   }),
-  MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
+  MediaEmbedPlugin.configure({
+    component: MediaEmbedElement,
+    inputRules: [MediaEmbedRules.autoEmbed({ variant: 'paste' })],
+  }),
   VideoPlugin.configure({ component: VideoElement }),
   AudioPlugin.configure({ component: AudioElement }),
   FilePlugin.configure({ component: FileElement }),

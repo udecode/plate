@@ -389,7 +389,7 @@ export const LinkInputRulesPlugin = LinkPlugin.configure({
 ```
 
 - `LinkRules.markdown()` handles `[label](https://...)`.
-- `LinkRules.autolink({ variant: 'paste' })` turns a pasted URL into a link.
+- `LinkRules.autolink({ variant: 'paste' })` turns a pasted URL into a link. When the media kit's `MediaEmbedRules.autoEmbed({ variant: 'paste' })` is installed, a YouTube, Vimeo, Dailymotion, Youku, Coub or X link pasted alone on an empty line lands as a link. Then an embed of that link goes in above the line, and the line empties, as [Media](/docs/media#input-rules) describes.
 - `LinkRules.autolink({ variant: 'space' })` detects a URL when you type a trailing space.
 - `LinkRules.autolink({ variant: 'break' })` detects a URL when you press Enter.
 
@@ -632,7 +632,7 @@ Matching cannot mutate the editor.
 
 | Field | Returns |
 | ----- | ------- |
-| `editor` | A read-only editor projection with `read` and read-only plugin portals |
+| `editor` | A read-only editor projection with `read`, `key` and read-only plugin portals; `editor.key(node)` returns a node's stable key, as the full editor's `editor.key` does |
 | `isCollapsed` | Whether the selection is collapsed |
 | `plugin` | The descriptor that owns the rule; use `editor.plugin(plugin).schema` for persisted identity. |
 | `getBlockEntry()` | The current block's `NodeEntry`, or `undefined` |
@@ -700,7 +700,8 @@ and makes rules harder to compose.
 An `insertData` rule can declare `followUp` instead of `apply`. A follow-up rule
 leaves the paste alone and runs after it, as its own undo step. One undo takes
 back the follow-up's change and keeps the paste. A second undo takes back the
-paste when history saved nothing between the two.
+paste when history saved nothing between the two. `MediaEmbedRules.autoEmbed`
+from `platejs/media` is one; see [Media](/docs/media#mediaembedrulesautoembed).
 
 ```ts
 import { defineInputRule, NodeApi } from 'platejs';

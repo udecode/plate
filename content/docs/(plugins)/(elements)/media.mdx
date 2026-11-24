@@ -45,6 +45,7 @@ docs:
 - Editable captions
 - Resizable elements
 - Embed URLs are normalized into `url` and `provider`, with an optional `sourceUrl` preserved for reversible editing.
+- Paste a video or post link alone on an empty line to embed it above that line.
 
 ### Upload
 - **Multiple upload methods**:
@@ -173,8 +174,48 @@ For local file uploads, add `UploadPlugin` separately as shown in
 [Upload files](/docs/upload).
 
 <Callout type="info">
-  **Note:** In Markdown, an image with only `url`, `alt`, and `title` is written as `![alt](url "title")`. An image with other properties, such as `width`, uses `<img src="…" />`, and a captioned image uses `<figure>` with `<img />` and `<figcaption>`. Video, audio, file, and embed use their own tags, such as `<video src="…">Caption</video>`; embeds keep the canonical `src` and `provider`, plus an optional `sourceUrl` so edits remain reversible. A caption must be one Markdown paragraph. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
+  **Note:** In Markdown, an image with only `url`, `alt`, and `title` is written as `![alt](url "title")`. An image with other properties, such as `width`, uses `<img src="…" />`, and a captioned image uses `<figure>` with `<img />` and `<figcaption>`. Video, audio, file, and embed use their own tags, such as `<video src="…">Caption</video>`; embeds keep the canonical `src` and `provider`, plus an optional `sourceUrl` so edits remain reversible. A caption must be one Markdown paragraph. `update.insert` takes the `src` out of an `<iframe>` snippet, and a provider link pasted alone on an empty line embeds through [`MediaEmbedRules`](#input-rules). Raw `<script>` and custom embed chrome are out of scope. Add your own rules to keep them.
 </Callout>
+
+### Input rules
+
+`MediaKit` enables the paste embed rule. To enable it on your own `MediaEmbedPlugin`:
+
+```tsx
+import { MediaEmbedRules } from 'platejs/media';
+import { MediaEmbedPlugin } from 'platejs/media/react';
+import { createEditor } from 'platejs/react';
+import { MediaEmbedElement } from '@/components/editor/media-embed';
+
+const editor = createEditor({
+  plugins: [
+    // ...otherPlugins,
+    MediaEmbedPlugin.configure({
+      component: MediaEmbedElement,
+      inputRules: [MediaEmbedRules.autoEmbed({ variant: 'paste' })],
+    }),
+  ],
+});
+```
+
+- `MediaEmbedRules.autoEmbed({ variant: 'paste' })`: Embeds a YouTube, Vimeo, Dailymotion, Youku, Coub or X (Twitter) link pasted alone into an empty paragraph. The paste lands first, as a link under the link plugin's paste rule or as plain text without it. Then, as its own undo step, the embed goes in above that paragraph, which stays empty and keeps the caret. One undo gives back what the paste landed, and a second gives the empty line.
+
+The paste stays as it landed, a link or plain text, when:
+
+- other text shares the line, or a line break follows the link;
+- the paragraph is not bare, such as a list item, heading, indented or aligned paragraph, toggle title or caption, or the caret is in a code block;
+- the paste replaces a selected range, or the clipboard holds an exact Plate slice or no plain text;
+- the link is a Vimeo link with an `h` parameter, such as the player URL in Vimeo's embed code, because the embed would drop it;
+- the view proposes changes, as in Suggesting mode;
+- in `EditorKit`, a space or tab sits before or after the link, because the kit's Markdown or HTML paste then replaces the line. A leading tab or four leading spaces land a code block.
+
+When the clipboard's HTML holds only the link, as an anchor with no attribute but
+`href` and no text but the URL, the HTML paste drops the space or tab around it,
+and the link embeds.
+An empty paragraph inside a quote, table cell, column or details body embeds.
+In another root, the paste embeds when it goes through a view of that root,
+made with `createEditorView(editor, { root })`. A paste through the main
+editor into another root stays a link.
 
 ### Captions
 
@@ -336,7 +377,7 @@ inline children store captions.
 </APIOptions>
 </API>
 
-`UploadPlugin` handles pasted image files. `ImagePlugin` inserts a pasted image URL as an image when no earlier paste rule takes it. In `EditorKit`, the link kit's `LinkRules.autolink({ variant: 'paste' })` rule runs first and takes any valid URL, image URLs included, as a link.
+`UploadPlugin` handles pasted image files. `ImagePlugin` inserts a pasted image URL as an image when no earlier paste rule takes it. In `EditorKit`, the link kit's `LinkRules.autolink({ variant: 'paste' })` rule runs first and takes any valid URL, image URLs included, as a link. When that link is a provider link pasted alone on an empty line, `MediaEmbedRules.autoEmbed({ variant: 'paste' })` then embeds it above the line.
 
 ### `VideoPlugin`
 
@@ -363,6 +404,8 @@ inline children store captions. Extends `MediaPluginState`.
 
 Plugin for non-void object media embed elements whose
 direct inline children store captions. Extends `MediaPluginState`.
+Its paste rule, [`MediaEmbedRules.autoEmbed`](#mediaembedrulesautoembed), ships
+from `platejs/media`.
 
 ### `UploadPlugin`
 
@@ -400,6 +443,49 @@ inserts nothing. An editor with only `BaseUploadPlugin` treats a dropped file
 like a pasted one, without landing rules or vetoes.
 
 ## API
+
+### `MediaEmbedRules.autoEmbed`
+
+Returns a [follow-up paste rule](/docs/plugin-input-rules#follow-up-paste-rules)
+for `MediaEmbedPlugin`'s `inputRules`.
+
+<API name="MediaEmbedRules.autoEmbed">
+<APIParameters>
+  <APIItem name="options.variant" type="'paste'">
+    Embeds a provider link pasted alone into an empty paragraph, as
+    [Input rules](#input-rules) describes.
+  </APIItem>
+  <APIItem name="options.enabled" type="(context) => boolean" optional>
+    Policy gate, evaluated before the rule matches.
+  </APIItem>
+  <APIItem name="options.priority" type="number" optional>
+    Sort order among the editor's paste rules.
+  </APIItem>
+</APIParameters>
+</API>
+
+The rule reads one `http` or `https` link with only spaces or tabs around it.
+The embed stores the provider's name in `provider`, its player URL in `url` and
+its canonical link in `sourceUrl`. X stores `twitter` as its `provider` and its
+canonical link as its `url`:
+
+| Provider | Accepted links | `url` | `sourceUrl` |
+| --- | --- | --- | --- |
+| YouTube | `youtube.com/watch?v=<id>`, `/shorts/<id>`, `/embed/<id>` and `/live/<id>`, and `youtu.be/<id>` | `https://www.youtube.com/embed/<id>` | `https://www.youtube.com/watch?v=<id>` |
+| Vimeo | `vimeo.com/<id>` and `player.vimeo.com/video/<id>`, without an `h` parameter | `https://player.vimeo.com/video/<id>` | `https://vimeo.com/<id>` |
+| Dailymotion | `dailymotion.com/video/<id>` and `dai.ly/<id>` | `https://www.dailymotion.com/embed/video/<id>` | `https://www.dailymotion.com/video/<id>` |
+| Youku | `v.youku.com/v_show/id_<id>.html` | `https://player.youku.com/embed/<id>` | `https://v.youku.com/v_show/id_<id>.html` |
+| Coub | `coub.com/view/<id>` and `coub.com/embed/<id>` | `https://coub.com/embed/<id>` | `https://coub.com/view/<id>` |
+| X (Twitter) | `/<user>/status/<id>` and `/i/web/status/<id>` on `x.com` and `twitter.com`, with an optional `/photo/<n>` or `/video/<n>` | `https://x.com/i/status/<id>` | none |
+
+Links on `youtube.com`, `vimeo.com`, `dailymotion.com`, `coub.com`, `x.com` and
+`twitter.com` also match with `www.`, `m.` or `mobile.`. A YouTube `t` or
+`start` time in the query, or a `t` time in the fragment, goes on `sourceUrl` as
+`&t=` with its value as given. When that value reads as a positive number of
+seconds, such as `90` or `1m30s`, `url` also gets `?start=` with those seconds.
+
+A YouTube playlist, a Vimeo `showcase`, `channels`, `album` or `groups` link, and a link with
+more path after its id stay links.
 
 ### Upload tasks
 
