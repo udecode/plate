@@ -545,8 +545,55 @@ const packageTsconfigs = (packageName) => [
 export const getEntrypointTypecheckProjects = (packageName) =>
   packageTsconfigs(packageName).map(({ file, kind }) => ({
     config: path.relative(repoRoot, file),
+    kind,
+    packageName,
     readsPrivateHalf: kind !== 'partition',
   }));
+
+const packageTypecheckedTestFiles = (packageName) =>
+  [
+    ...getPackageSourceFiles(packageName, { tests: true }).filter((filename) =>
+      Object.hasOwn(
+        entrypointDags[packageName].entrypoints,
+        classifyPackageFile(packageName, filename)
+      )
+    ),
+    ...getTypecheckedExternalTestFiles(packageName),
+  ].sort(compareStrings);
+
+const packageTestsTsconfigFiles = (packageName, absoluteTestFiles) => {
+  const configDirectory = path.dirname(packageTestsTsconfigPath(packageName));
+
+  return [
+    ...absoluteTestFiles
+      .map((filename) =>
+        normalizePath(path.relative(configDirectory, filename))
+      )
+      .sort(compareStrings),
+    '../../../tooling/config/global.d.ts',
+  ];
+};
+
+export const testsTsconfigDrift = (packageName, listedFiles) => {
+  const configDirectory = path.dirname(packageTestsTsconfigPath(packageName));
+  const expected = packageTestsTsconfigFiles(
+    packageName,
+    packageTypecheckedTestFiles(packageName)
+  );
+  const listed = new Set(listedFiles);
+  const wanted = new Set(expected);
+  const repoPaths = (files) =>
+    files.map((filename) =>
+      normalizePath(
+        path.relative(repoRoot, path.resolve(configDirectory, filename))
+      )
+    );
+
+  return {
+    extra: repoPaths(listedFiles.filter((filename) => !wanted.has(filename))),
+    missing: repoPaths(expected.filter((filename) => !listed.has(filename))),
+  };
+};
 
 const createPartitionTsconfig = (
   packageName,
@@ -604,25 +651,7 @@ const projectReferences = (packageName, taskDependencies) =>
   });
 
 const createPackageTestsTsconfig = (packageName) => {
-  const configDirectory = path.join(
-    packageRoot(packageName),
-    'tsconfig.entrypoints'
-  );
-  const absoluteTestFiles = [
-    ...Object.keys(entrypointDags[packageName].entrypoints).flatMap(
-      (entrypointName) =>
-        getPackageSourceFiles(packageName, {
-          entrypointName,
-          tests: true,
-        })
-    ),
-    ...getTypecheckedExternalTestFiles(packageName),
-  ].sort(compareStrings);
-  const testFiles = absoluteTestFiles
-    .map((filename) => normalizePath(path.relative(configDirectory, filename)))
-    .sort(compareStrings);
-
-  testFiles.push('../../../tooling/config/global.d.ts');
+  const absoluteTestFiles = packageTypecheckedTestFiles(packageName);
   const taskDependencies = collectSourceTaskDependencies(
     packageName,
     absoluteTestFiles,
@@ -636,7 +665,7 @@ const createPackageTestsTsconfig = (packageName) => {
     exclude: [],
     extends:
       packageName === 'platejs' ? '../tsconfig.test.json' : '../tsconfig.json',
-    files: testFiles,
+    files: packageTestsTsconfigFiles(packageName, absoluteTestFiles),
     include: ['../src/**/*.d.ts'],
     references: projectReferences(packageName, taskDependencies),
   };

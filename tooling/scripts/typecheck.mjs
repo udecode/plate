@@ -11,6 +11,7 @@ import { entrypointDags } from '../entrypoints/entrypoint-dag.mjs';
 import {
   getEntrypointTypecheckProjects,
   repoRoot,
+  testsTsconfigDrift,
 } from '../entrypoints/entrypoint-turbo.mjs';
 import { hasPrivateHalf } from './private-files.mjs';
 
@@ -140,6 +141,15 @@ const assertBunMatchesTypescript = () => {
 const readConfig = (config) =>
   JSON.parse(fs.readFileSync(path.join(repoRoot, config), 'utf-8'));
 
+const staleTestLists = (projects) =>
+  projects
+    .filter(({ kind }) => kind === 'tests')
+    .map(({ config, packageName }) => ({
+      config,
+      ...testsTsconfigDrift(packageName, readConfig(config).files ?? []),
+    }))
+    .filter(({ extra, missing }) => extra.length > 0 || missing.length > 0);
+
 const workspaceSourceConfig = (config) => {
   const packageRoot = path.dirname(path.join(repoRoot, config));
   const localPaths = Object.fromEntries(
@@ -196,6 +206,18 @@ const run = (label, executable, args) =>
 
 const main = async (packageNames) => {
   const projects = selectProjects(packageNames, hasPrivateHalf(repoRoot));
+  const stale = staleTestLists([...projects.bun, ...projects.tsc]);
+
+  for (const { config, extra, missing } of stale) {
+    console.error(
+      [
+        `${config} does not list the test files on disk. Run pnpm entrypoint:turbo:generate.`,
+        ...missing.map((file) => `  missing: ${file}`),
+        ...extra.map((file) => `  extra: ${file}`),
+      ].join('\n')
+    );
+  }
+  if (stale.length > 0) return 1;
 
   assertBunMatchesTypescript();
   fs.mkdirSync(perCheckoutCacheDirectory, { recursive: true });
