@@ -497,5 +497,307 @@
       "entrypoints": ["plitejs", "plitejs/react"],
       "reason": "Plite exports it as the type of transfer()'s descriptor, Plate as a value, and no Plite doc calls it."
     }
+  ],
+  "runtime": [
+    {
+      "case": "R-D4",
+      "expect": "insert adds an undeclared mention element as a block after the caret",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown editor element type \"mention\"."
+    },
+    {
+      "case": "R-D6",
+      "expect": "insertRow adds undeclared table-row and table-cell elements",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown editor element type \"table-cell\"."
+    },
+    {
+      "case": "R-D7",
+      "expect": "an element with an undeclared closed property is not selectable",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown element property \"closed\" in closed editor schema."
+    },
+    {
+      "case": "R-D7",
+      "expect": "export drops an undeclared transient property",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown element property \"transient\" in closed editor schema."
+    },
+    {
+      "case": "R-D8",
+      "expect": "under the documented name no-empty-text, empty text is handled and changes nothing, and other text falls through",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"no-empty-text\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-D9",
+      "expect": "a space turns the block into an undeclared heading-one",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown editor element type \"heading-one\"."
+    },
+    {
+      "case": "R-D10",
+      "expect": "an undeclared link element loads with its url",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown editor element type \"link\" at [0]."
+    },
+    {
+      "case": "R-D10",
+      "expect": "under the documented name valid-link, a valid undeclared link url stays and a blank one is removed",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"valid-link\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-D15",
+      "expect": "under the documented name removed-places, the handler records each removed node and its place under its key",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"removed-places\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-D18",
+      "expect": "under the documented name host-state, activate subscribes once and destroy releases it",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"host-state\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-D20",
+      "expect": "the update portal toggles the undeclared bold mark on and the transaction portal toggles it off",
+      "removedBy": "phase 3",
+      "saw": "saw [null,null]"
+    },
+    {
+      "case": "R-D28",
+      "expect": "undeclared heading-one blocks load",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown editor element type \"heading-one\" at [0]."
+    },
+    {
+      "case": "R-D28",
+      "expect": "under the documented name markdown-blocks, Backspace and Enter at an undeclared heading start make paragraphs",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"markdown-blocks\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-C2",
+      "expect": "with no selection, the read portal reports none and neither write form changes the empty editor",
+      "removedBy": "phase 3",
+      "saw": "saw [false,{\"children\":[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]},{\"children\":[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]}]"
+    },
+    {
+      "case": "R-C2",
+      "expect": "the update portal sets the undeclared url on the selected block",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown element property \"url\" in closed editor schema."
+    },
+    {
+      "case": "R-C2",
+      "expect": "the transaction portal sets the undeclared url on the selected block",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown element property \"url\" in closed editor schema."
+    },
+    {
+      "case": "R-C4",
+      "expect": "under the documented name counter-effects, the editor installs the effect beside yjs and starts empty",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"counter-effects\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-C4",
+      "expect": "under the camelCase name counterEffects, the editor installs the effect beside yjs and starts empty",
+      "removedBy": "phase 3",
+      "saw": "saw {\"children\":[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]}"
+    },
+    {
+      "case": "R-C10",
+      "expect": "the value keeps the undeclared header and footer roots",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Undeclared editor root \"footer\" in closed editor schema."
+    },
+    {
+      "case": "R-C11",
+      "expect": "the documented call refuses writes until its provider loads, then moves on to seeding in the article room",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "R-C11",
+      "expect": "without history(), it refuses writes until its provider loads, then moves on to seeding in the article room",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Undeclared editor root \"header\" in closed editor schema."
+    },
+    {
+      "case": "R-C12",
+      "expect": "history() installs on the editor",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "R-C13",
+      "expect": "the documented call waits for its provider in the plitejs room and publishes cursor data to its awareness",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "R-C15",
+      "expect": "under the documented name my-plugin, the editor starts empty",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"my-plugin\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-C15",
+      "expect": "under the camelCase name myPlugin, the editor starts empty",
+      "removedBy": "phase 3",
+      "saw": "saw {\"children\":[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]}"
+    },
+    {
+      "case": "R-C16",
+      "expect": "under the documented name read-mode, the slot swaps readMode for writeMode inside an update",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Plate plugin name \"read-mode\" must be a human-readable camelCase identifier."
+    },
+    {
+      "case": "R-C16",
+      "expect": "under the camelCase name readMode, the slot swaps readMode for writeMode inside an update",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"readMode\" does not carry a raw authored definition."
+    },
+    {
+      "case": "R-C16",
+      "expect": "Plite plugin descriptors in the slot swap readMode for writeMode inside an update",
+      "removedBy": "phase 3",
+      "saw": "saw [[\"readMode start\",\"readMode cleanup remove\",\"writeMode start\"],{\"children\":[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]}]"
+    },
+    {
+      "case": "R-C17",
+      "expect": "history() installs on the editor",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "R-T2",
+      "expect": "toggleBold makes the selection bold with the undeclared bold mark",
+      "removedBy": "phase 3",
+      "saw": "saw false"
+    },
+    {
+      "case": "R-T2",
+      "expect": "toggleCodeBlock turns the block into an undeclared code block and back",
+      "removedBy": "phase 3",
+      "saw": "threw EditorSchemaValidationError: Unknown editor element type \"code\"."
+    },
+    {
+      "case": "X-C7",
+      "expect": "a bare React editor starts with no blocks",
+      "removedBy": "phase 3",
+      "saw": "saw {\"children\":[{\"type\":\"paragraph\",\"children\":[{\"text\":\"\"}]}]}"
+    },
+    {
+      "case": "X-U7",
+      "expect": "inside an EditorRoot, bare useEditor() makes its own empty editor",
+      "removedBy": "step 2",
+      "saw": "saw {\"children\":[{\"children\":[{\"text\":\"host\"}],\"type\":\"paragraph\"}]}"
+    },
+    {
+      "case": "X-U7",
+      "expect": "inside an EditorRoot, two bare useEditor() callers each get their own editor, and an edit through one leaves the other and the host unchanged",
+      "removedBy": "step 2",
+      "saw": "saw [false,{\"children\":[{\"children\":[{\"text\":\"a\"}],\"type\":\"paragraph\"},{\"children\":[{\"text\":\"host\"}],\"type\":\"paragraph\"}]},{\"children\":[{\"children\":[{\"text\":\"a\"}],\"type\":\"paragraph\"},{\"children\":[{\"text\":\"host\"}],\"type\":\"paragraph\"}]},{\"children\":[{\"children\":[{\"text\":\"a\"}],\"type\":\"paragraph\"},{\"children\":[{\"text\":\"host\"}],\"type\":\"paragraph\"}]}]"
+    },
+    {
+      "case": "X-U7",
+      "expect": "outside every EditorRoot, two bare useEditor() callers each get their own editor, and an edit through one leaves the other unchanged",
+      "removedBy": "step 2",
+      "saw": "threw Error: useEditor() requires an active Plate editor."
+    },
+    {
+      "case": "X-U7",
+      "expect": "outside every EditorRoot, bare useEditor() renders",
+      "removedBy": "step 2",
+      "saw": "threw Error: useEditor() requires an active Plate editor."
+    },
+    {
+      "case": "X-H1",
+      "expect": "a toolbar beside the surface does not see the composition session",
+      "removedBy": "step 2",
+      "saw": "saw [false,true,false]"
+    },
+    {
+      "case": "X-H5",
+      "expect": "toggling the undeclared bold mark rerenders it as bold",
+      "removedBy": "phase 3",
+      "saw": "saw false"
+    },
+    {
+      "case": "X-H6",
+      "expect": "an object selector rerenders once when the undeclared bold mark turns on",
+      "removedBy": "phase 3",
+      "saw": "saw [0,{\"bold\":false,\"italic\":false}]"
+    },
+    {
+      "case": "X-H13",
+      "expect": "without history(), the toolbar has nothing to undo after a mounted edit",
+      "removedBy": "phase 3",
+      "saw": "saw [true,false,[\"a\"],\"false\"]"
+    },
+    {
+      "case": "X-H13",
+      "expect": "with history(), the toolbar undoes a mounted edit and is idle again",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "X-H14",
+      "expect": "without history(), the header toolbar has nothing to undo after a header edit",
+      "removedBy": "phase 3",
+      "saw": "saw [true,false,{\"children\":[{\"children\":[{\"text\":\"Body\"}],\"type\":\"paragraph\"}],\"roots\":{\"header\":[{\"children\":[{\"text\":\"Draft\"}],\"type\":\"paragraph\"}]}},\"toolbar\"]"
+    },
+    {
+      "case": "X-H14",
+      "expect": "with history(), the header toolbar undoes a header edit and keeps focus outside the editor",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "X-H14",
+      "expect": "with history() and with no header surface shown, the header toolbar stays off after a body edit",
+      "removedBy": "phase 3",
+      "saw": "threw Error: Editor plugin \"history\" has multiple descriptor identities in the same configuration."
+    },
+    {
+      "case": "X-E9",
+      "expect": "an edit hands over the root blocks",
+      "removedBy": "phase 3",
+      "saw": "saw {\"children\":[{\"children\":[{\"text\":\"ab\"}],\"type\":\"paragraph\"}],\"meta\":{\"document.title\":{\"value\":\"Untitled\",\"version\":1}}}"
+    },
+    {
+      "case": "X-E9",
+      "expect": "a meta-only change does not fire it",
+      "removedBy": "phase 3",
+      "saw": "saw [{\"children\":[{\"children\":[{\"text\":\"ab\"}],\"type\":\"paragraph\"}],\"meta\":{\"document.title\":{\"value\":\"Brief\",\"version\":1}}}]"
+    },
+    {
+      "case": "X-E9",
+      "expect": "an edit to a schema-declared sibling root does not fire it",
+      "removedBy": "phase 3",
+      "saw": "saw [{\"children\":[{\"children\":[{\"text\":\"Body\"}],\"type\":\"paragraph\"}],\"roots\":{\"header\":[{\"children\":[{\"text\":\"Revised\"}],\"type\":\"paragraph\"}]}}]"
+    },
+    {
+      "case": "X-E9",
+      "expect": "on a plain single-root editor, an edit hands over the root blocks",
+      "removedBy": "phase 3",
+      "saw": "saw [{\"children\":[{\"children\":[{\"text\":\"ab\"}],\"type\":\"paragraph\"}]}]"
+    },
+    {
+      "case": "X-T9",
+      "expect": "inside a read-only EditorRoot, readOnly: false leaves the surface read-only",
+      "removedBy": "step 2",
+      "saw": "saw 1"
+    },
+    {
+      "case": "X-H3",
+      "expect": "a toolbar beside a surface turned read-only by its own prop reads the editor as writable",
+      "removedBy": "step 2",
+      "saw": "saw [false,true]"
+    }
   ]
 }
