@@ -429,7 +429,12 @@ at the artifact tree, such as Playwright's
 Playwright empties its `test-results` when a run starts. When a runner cannot
 take an output path, treat its output directory as temporary and copy a
 failure's artifacts to the artifact tree when a log row or plan first cites
-them, before the next run of that config. Each base, mutant,
+them, before the next run of that config. The managed Plite browser runner is
+such a runner, because it sets each batch's reporter and output itself. It
+writes a failing batch's log and JSON report to
+`apps/plite/test-results/plite-browser-runner/` and its traces and screenshots
+to `apps/plite/test-results/plite-browser/<project>/`, which the first batch
+of its next run empties. Each base, mutant,
 spike and control run writes its own named log, never a path an earlier run or
 row cites. A script that syncs later bytes over a proof overlay or folder in
 place leaves every earlier log that cites it pointing at bytes it no longer
