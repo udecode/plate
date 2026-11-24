@@ -280,6 +280,13 @@ const reserveStands = ({
 
 const NEVER = () => false;
 
+const STRUCTURE_KINDS: ReadonlySet<Claim['kind']> = new Set([
+  'join',
+  'joined',
+  'split',
+  'wrap',
+]);
+
 const RULES: { [K in OrdinaryKind]: Rule<K> } = {
   born: {
     editing: ({ unheld }, judge) =>
@@ -333,6 +340,14 @@ const RULES: { [K in OrdinaryKind]: Rule<K> } = {
         insideTakenGridPart(write.carrier, judge.takenGridParts())),
     own: (write, judge) =>
       otherCutsCanRejoin(write, judge) && underOwnStructure(write, judge),
+  },
+  rehomed: {
+    editing: () => true,
+    own: ({ headBlock, resultBlock, under }, judge) =>
+      underOwnInsertion(under, judge) ||
+      [...headBlock, ...resultBlock].some(
+        (claim) => STRUCTURE_KINDS.has(claim.kind) && isOwnPending(claim, judge)
+      ),
   },
   reserve: {
     editing: (write, judge) =>

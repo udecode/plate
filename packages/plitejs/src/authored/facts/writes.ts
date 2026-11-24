@@ -101,6 +101,13 @@ export type AuthoredWrite =
     }>
   | Readonly<{
       carrier: Carrier;
+      headBlock: readonly Claim[];
+      kind: 'rehomed';
+      resultBlock: readonly Claim[];
+      under: readonly Claim[];
+    }>
+  | Readonly<{
+      carrier: Carrier;
       claim: Exclude<Claim, FormatTag>;
       kind: 'released';
     }>
@@ -147,6 +154,12 @@ type Side = Readonly<{
   facts: ReviewFacts;
   governing: Map<string, ReadonlyMap<string, Claim>>;
   index: DocumentIndex;
+}>;
+
+type Home = Readonly<{
+  headOpen: number | null;
+  claims: readonly Claim[];
+  root: string;
 }>;
 
 type Voucher = Readonly<{
@@ -562,12 +575,15 @@ export const authoredWritesOf = ({
   const once = (key: string, write: AuthoredWrite) => {
     if (!nodeWrites.has(key)) nodeWrites.set(key, write);
   };
+  const homes = new Map<AuthoredWrite, Home>();
   const tally = (
     into: Map<string, AuthoredWrite[]>,
     key: string,
-    write: AuthoredWrite
+    write: AuthoredWrite,
+    home: Home | null = null
   ) => {
     into.set(key, [...(into.get(key) ?? []), write]);
+    if (home) homes.set(write, home);
   };
   const underKey = (claims: ReadonlyMap<string, Claim>) =>
     [...claims.keys()].sort().join('|');
@@ -739,6 +755,29 @@ export const authoredWritesOf = ({
       whole || !rootChange ? [] : keptRunsOf(rootChange, from, to);
     const headPathAt = (position: number) =>
       head?.index.openContextAt(position).at(-1)?.path ?? null;
+    const headHomeOf = (path: readonly number[]): Home | null => {
+      if (!head || path.length < 2) return null;
+
+      const block = path.slice(0, -1);
+
+      return {
+        headOpen: head.index.nodeRange(block).from,
+        claims: ownClaimsOf(head.index.node(block), headFacts),
+        root,
+      };
+    };
+    const resultHomeOf = (path: readonly number[]): Home | null => {
+      if (!result || path.length < 2) return null;
+
+      const block = path.slice(0, -1);
+      const { from } = result.index.nodeRange(block);
+
+      return {
+        headOpen: keptRuns(from, from + 1)[0]?.at ?? null,
+        claims: ownClaimsOf(result.index.node(block), resultFacts),
+        root,
+      };
+    };
     const claimsOwningToken = (position: number) =>
       !head || position < 0 || position + 1 > head.index.length
         ? []
@@ -799,6 +838,7 @@ export const authoredWritesOf = ({
       Readonly<{
         carrier: Carrier;
         continued: readonly string[];
+        home: Home | null;
         key: string;
         node: unknown;
         range: number;
@@ -872,14 +912,19 @@ export const authoredWritesOf = ({
             node,
           });
         }
-        tally(removed, key, {
-          carrier: { at: entry.from, node: entry.kind, root },
-          kind: 'removed',
-          taker:
-            entry.kind === 'element' ? takerOf(entry.from, entry.path) : null,
-          under: [...was.values()],
-          whole: minus([entry.from, entry.to], removedAt).length === 0,
-        });
+        tally(
+          removed,
+          key,
+          {
+            carrier: { at: entry.from, node: entry.kind, root },
+            kind: 'removed',
+            taker:
+              entry.kind === 'element' ? takerOf(entry.from, entry.path) : null,
+            under: [...was.values()],
+            whole: minus([entry.from, entry.to], removedAt).length === 0,
+          },
+          entry.kind === 'text' ? headHomeOf(entry.path) : null
+        );
       }
 
       return {
@@ -970,6 +1015,7 @@ export const authoredWritesOf = ({
                 ...heldByKeptSiblingBefore(entry.path, node),
                 ...heldByAncestors(entry.path),
               ],
+              home: null,
               key: carrierKeyOf('element', node, now, ''),
               node,
               range: index,
@@ -1029,6 +1075,7 @@ export const authoredWritesOf = ({
           bornHere.push({
             carrier: carrierAt(fresh[0][0]),
             continued: heldByAncestors(entry.path),
+            home: resultHomeOf(entry.path),
             key: carrierKeyOf(
               'text',
               node,
@@ -1055,6 +1102,19 @@ export const authoredWritesOf = ({
             { claims: now, node }
           );
           setKeys(carrierAt(run.from), changedKeys(was, node), claims, now);
+
+          const home = resultHomeOf(entry.path);
+          const left = headHomeOf(headPath);
+
+          if (home && home.headOpen !== left?.headOpen) {
+            once(`rehomed ${root} ${run.from}`, {
+              carrier: carrierAt(run.from),
+              headBlock: left?.claims ?? [],
+              kind: 'rehomed',
+              resultBlock: home.claims,
+              under: [...claims.values()],
+            });
+          }
         }
       }
     }
@@ -1166,14 +1226,19 @@ export const authoredWritesOf = ({
       ]);
 
       if (each.carrier.node === 'element') releaseUncopiedLineClaims(each);
-      tally(born, each.key, {
-        carrier: each.carrier,
-        kind: 'born',
-        under: each.under,
-        unheld: ownClaimsOf(each.node, resultFacts).filter(
-          (claim) => !held.has(claimKeyOf(claim))
-        ),
-      });
+      tally(
+        born,
+        each.key,
+        {
+          carrier: each.carrier,
+          kind: 'born',
+          under: each.under,
+          unheld: ownClaimsOf(each.node, resultFacts).filter(
+            (claim) => !held.has(claimKeyOf(claim))
+          ),
+        },
+        each.home
+      );
     }
   }
 
@@ -1277,6 +1342,28 @@ export const authoredWritesOf = ({
       writes.slice(theirs.get(key)?.length ?? 0)
     );
 
+  const pairedRehomes = [...removed].flatMap(([key, gone]) =>
+    (born.get(key) ?? []).slice(0, gone.length).flatMap((write, index) => {
+      const from = homes.get(gone[index]);
+      const to = homes.get(write);
+
+      return from &&
+        to &&
+        write.kind === 'born' &&
+        (from.root !== to.root || from.headOpen !== to.headOpen)
+        ? [
+            {
+              carrier: write.carrier,
+              headBlock: from.claims,
+              kind: 'rehomed' as const,
+              resultBlock: to.claims,
+              under: write.under,
+            },
+          ]
+        : [];
+    })
+  );
+
   return {
     claims: [...resultClaims.values(), ...recordedBases],
     moved: [...removed].flatMap(([key, writes]) =>
@@ -1290,6 +1377,7 @@ export const authoredWritesOf = ({
       ...reserves,
       ...exceptMoved(removed, born),
       ...exceptMoved(born, removed),
+      ...pairedRehomes,
       ...nodeWrites.values(),
     ],
   };
