@@ -369,7 +369,7 @@
       ".agents/pstack/rules/long-runs.md": "733c7a5802b116b63f342c65d6f89b089484988a00ef8587be231bb2395db1d9",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "2fa3014e78ab176422673a1f53a455f6675652b5aa221b5aebdbfd9b792931d8",
-      ".agents/pstack/rules/panel.md": "77068f366691a95e7acb8e9fe24b1c0e97db5722270f4442259626b6f5e003dc",
+      ".agents/pstack/rules/panel.md": "31635f49e6ffff1bae18b3002ac9c434b3c74d4cb2781c9bd6efdf9831c8f6b3",
       ".agents/pstack/rules/reflect.md": "3c6396725d81b688e0e03ebba66c34cf549b93ac9a57d57fe7d4f389bfc2df51",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "c083944ff161c08480f33eb592f3789296a05d331155fa331fa815683793718a",
@@ -377,7 +377,7 @@
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af",
       ".claude/pstack-models.md": "13ad894ff4c98d47542efdcff2931bc96627a508e67f88674f42e4bd2b2a8f58"
     },
-    "source": "67a59a651c1835d0c5a765a4badcd984c794e3c3"
+    "source": "0d38083792cfb912a4a921674a39abb404e54336"
   },
   "pageTopic": {
     "field": "review_scopes",
