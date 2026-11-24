@@ -2303,6 +2303,9 @@ const unfenced = (text) => {
     .join('\n');
 };
 
+const withoutCode = (text) =>
+  unfenced(text).replace(/(`+)(?!`)[\s\S]*?[^`]\1(?!`)/g, '');
+
 const htmlLine = /^ {0,3}</;
 const threePipeLines = /(?:^ {0,3}\|.*(?:\n|$)){3}/m;
 
@@ -2495,11 +2498,12 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
   ) {
     problems.push('a Pursue page needs ## Public API');
   }
-  for (const [, link] of text.matchAll(/\]\((\/[^)\s]*)/g)) {
+  const linked = withoutCode(text);
+  for (const [, link] of linked.matchAll(/\]\((\/[^)\s]*)/g)) {
     problems.push(`link ${link} is absolute, not a repository path`);
   }
   const inlined = inlinedFrames(plan.path, text);
-  for (const target of linksOf(plan.path, text)) {
+  for (const target of linksOf(plan.path, linked)) {
     if (target.startsWith('..')) {
       problems.push(`link ${target} leaves the repository`);
     } else if (
@@ -2510,7 +2514,9 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
     }
   }
   if (
-    !linksOf(plan.path, evidence).some((target) => !target.startsWith('..'))
+    !linksOf(plan.path, withoutCode(evidence)).some(
+      (target) => !target.startsWith('..')
+    )
   ) {
     problems.push(
       '## Evidence links no repository file; write at least one source path as a relative Markdown link, such as [file.ts](../../packages/<package>/src/file.ts), because a path in backticks is not a link'
