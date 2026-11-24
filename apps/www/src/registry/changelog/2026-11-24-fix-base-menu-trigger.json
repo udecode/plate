@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-24-fix-base-menu-trigger",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-24-fix-base-menu-trigger.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix Base UI's native button error on drag handle menus",
+  "targets": [
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-24-editor-dropdown-menu-fix-base-ui-s-4d9476bd",
+      "kind": "fix",
+      "summary": "Stop Base UI from logging a native button error when a menu trigger renders a non-button element, such as the anchor of the block, row and column handle menus.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-dropdown-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-fix-base-menu-trigger",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

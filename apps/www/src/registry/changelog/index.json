@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-24-fix-base-menu-trigger",
+      "href": "/registry/changelog/2026-11-24-fix-base-menu-trigger.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix Base UI's native button error on drag handle menus",
+      "change": {
+        "type": "source",
+        "date": "2026-11-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor-dropdown-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-ai-menu-refused-accept",
       "href": "/registry/changelog/2026-11-23-ai-menu-refused-accept.json",
       "status": "draft",

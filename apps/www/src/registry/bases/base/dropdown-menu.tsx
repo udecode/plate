@@ -354,6 +354,13 @@ export function DropdownMenuTrigger({
   const triggerRef = useComposedRef(ref, root?.triggerRef);
 
   return (
-    <BaseDropdownMenuTrigger {...props} ref={triggerRef} render={children} />
+    <BaseDropdownMenuTrigger
+      {...props}
+      ref={triggerRef}
+      nativeButton={
+        typeof children.type !== 'string' || children.type === 'button'
+      }
+      render={children}
+    />
   );
 }

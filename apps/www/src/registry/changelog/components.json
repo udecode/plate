@@ -1,6 +1,18 @@
 {
   "schemaVersion": 1,
   "components": {
+    "editor-dropdown-menu": [
+      "2026-11-24-fix-base-menu-trigger",
+      "2026-11-17-cn-package",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-10-28-fix-editor-dropdown-menu-width",
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press",
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-09-24-export-menu-projection",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-25-base-first-registry"
+    ],
     "ai-menu": [
       "2026-11-23-ai-menu-refused-accept",
       "2026-11-20-drop-editor-selection-view",
@@ -1164,17 +1176,6 @@
       "2026-11-17-cn-package",
       "2026-10-13-details-heading-titles",
       "2026-08-29-semantic-details"
-    ],
-    "editor-dropdown-menu": [
-      "2026-11-17-cn-package",
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-10-28-fix-editor-dropdown-menu-width",
-      "2026-10-28-touch-menus",
-      "2026-10-21-floating-toolbar-menu-press",
-      "2026-10-20-preserve-more-formatting-toolbar",
-      "2026-09-24-export-menu-projection",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
     ],
     "editor-static": [
       "2026-11-17-cn-package",
