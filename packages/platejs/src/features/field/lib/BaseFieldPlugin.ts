@@ -565,7 +565,8 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           },
           /**
            * The `value` of each field of `role` that holds one, keyed by
-           * `fieldId` and read from the field that id names.
+           * `fieldId` and read from the field that id names, to pass to
+           * `applyFieldValues`.
            */
           submission: (role: string): FieldSubmission => {
             const { lookup, nodes } = listed();

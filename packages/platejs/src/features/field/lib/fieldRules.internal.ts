@@ -138,10 +138,12 @@ export const conditionProblem = (
   return fits ? undefined : 'invalid-value';
 };
 
-const isFilled = (field: FieldShape, answer: FieldValue | undefined) =>
-  fitsField(field, answer) &&
-  ((field.kind !== 'text' && field.kind !== 'signature') ||
-    /\S/.test(String(answer)));
+export const isFilled = (field: FieldShape, answer: FieldValue | undefined) =>
+  field.kind === 'checkbox'
+    ? answer === true
+    : fitsField(field, answer) &&
+      ((field.kind !== 'text' && field.kind !== 'signature') ||
+        /\S/.test(String(answer)));
 
 const holds = (
   { test, value }: FieldCondition,
@@ -175,7 +177,15 @@ const holds = (
 
 type Chain = Readonly<{ loop: boolean; target: FieldElement | undefined }>;
 
-export type FieldLink = Chain & Readonly<{ applies: boolean | null }>;
+type Verdict =
+  | Readonly<{ applies: boolean }>
+  | Readonly<{ applies: null; waitsOn: string }>;
+
+const APPLIES: Verdict = { applies: true };
+const SKIPS: Verdict = { applies: false };
+const verdictOf = (applies: boolean) => (applies ? APPLIES : SKIPS);
+
+export type FieldLink = Chain & Verdict;
 
 const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
 
@@ -210,26 +220,24 @@ type Held = (fieldId: string) => FieldElement | undefined;
 const judge = (
   condition: FieldCondition,
   target: FieldElement,
-  reached: boolean | null,
-  readingRole: string
-) => {
-  if (reached === null) return null;
-  if (!reached) return holds(condition, target, undefined);
+  reached: Verdict,
+  settled: boolean
+): Verdict => {
+  if (reached.applies === null) return reached;
+  if (!reached.applies) return verdictOf(holds(condition, target, undefined));
   if (fitsField(target, target.value)) {
-    return holds(condition, target, target.value);
+    return verdictOf(holds(condition, target, target.value));
   }
-  if (target.role !== readingRole) return null;
+  if (!settled) return { applies: null, waitsOn: target.role };
 
-  return holds(
-    condition,
-    target,
-    target.kind === 'checkbox' ? false : undefined
+  return verdictOf(
+    holds(condition, target, target.kind === 'checkbox' ? false : undefined)
   );
 };
 
-export const fieldLinks = () => {
+const linksWith = (settles: (role: string, readingRole: string) => boolean) => {
   const chains = new Map<string, Chain>();
-  const byReadingRole = new Map<string, Map<string, boolean | null>>();
+  const byReadingRole = new Map<string, Map<string, Verdict>>();
   const chainOf = (field: FieldElement, held: Held): Chain => {
     const path: FieldElement[] = [];
     const places = new Map<string, number>();
@@ -260,8 +268,7 @@ export const fieldLinks = () => {
     held: Held,
     readingRole = field.role
   ) => {
-    const known =
-      byReadingRole.get(readingRole) ?? new Map<string, boolean | null>();
+    const known = byReadingRole.get(readingRole) ?? new Map<string, Verdict>();
 
     byReadingRole.set(readingRole, known);
 
@@ -278,7 +285,7 @@ export const fieldLinks = () => {
         !target ||
         conditionProblem(at.condition, target)
       ) {
-        reached = true;
+        reached = APPLIES;
         known.set(at.fieldId, reached);
         break;
       }
@@ -291,7 +298,7 @@ export const fieldLinks = () => {
     for (let index = waiting.length - 1; index >= 0; index--) {
       const [next, condition] = waiting[index];
 
-      reached = judge(condition, at, reached, readingRole);
+      reached = judge(condition, at, reached, settles(at.role, readingRole));
       known.set(next.fieldId, reached);
       at = next;
     }
@@ -302,25 +309,31 @@ export const fieldLinks = () => {
   return {
     link: (field: FieldElement, held: Held): FieldLink => ({
       ...chainOf(field, held),
-      applies: appliesOf(field, held),
+      ...appliesOf(field, held),
     }),
     linkCopy: (field: FieldElement, held: Held): FieldLink => {
       const { condition } = field;
       const target = condition && held(condition.ref);
-      const applies =
+      const verdict =
         !condition || !target || conditionProblem(condition, target)
-          ? true
+          ? APPLIES
           : judge(
               condition,
               target,
               appliesOf(target, held, field.role),
-              field.role
+              settles(target.role, field.role)
             );
 
-      return { applies, loop: false, target };
+      return { ...verdict, loop: false, target };
     },
   };
 };
+
+export const fieldLinks = () =>
+  linksWith((role, readingRole) => role === readingRole);
+
+export const submittedFieldLinks = (roles: ReadonlySet<string>) =>
+  linksWith((role) => roles.has(role));
 
 const shared = new WeakMap<
   object,

@@ -3,3 +3,4 @@
  */
 
 export * from './BaseFieldPlugin';
+export * from './applyFieldValues';
