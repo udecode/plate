@@ -38,6 +38,32 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-24-install-plate-ui-color",
+      "href": "/registry/changelog/2026-11-24-install-plate-ui-color.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Install Plate UI's color with every component that reads it",
+      "change": {
+        "type": "source",
+        "date": "2026-11-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor",
+        "comment",
+        "dnd",
+        "math",
+        "table",
+        "code-block-codemirror",
+        "suggestion-toolbar-button"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-ai-menu-refused-accept",
       "href": "/registry/changelog/2026-11-23-ai-menu-refused-accept.json",
       "status": "draft",

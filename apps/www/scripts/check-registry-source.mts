@@ -3,7 +3,10 @@ import { readFileSync } from 'node:fs';
 import { registrySchema } from 'shadcn/schema';
 
 import registryShadcnData from '../registry-shadcn.json';
-import { PLATE_DEFAULT_REGISTRY_STYLE } from '../src/lib/plate-registry-styles';
+import {
+  PLATE_DEFAULT_REGISTRY_STYLE,
+  PLATE_REGISTRY_BASES,
+} from '../src/lib/plate-registry-styles';
 import { getRegistryMetadata } from '../src/lib/registry-metadata';
 import { registryFeatures } from '../src/registry/registry-features';
 import {
@@ -633,5 +636,81 @@ for (const item of publicRegistry.items) {
     );
   }
 }
+
+function readsColor(source: string, names: ReadonlySet<string>) {
+  return source.split(/[\s"'`,;()]+/).some((word) => {
+    const utility = word
+      .slice(word.lastIndexOf(':') + 1)
+      .replaceAll('!', '')
+      .split('/')[0];
+
+    return [...names].some((name) => utility.endsWith(`-${name}`));
+  });
+}
+
+const PLATE_UI_COLOR_CONTROLS = [
+  'align',
+  'line-height',
+  'upload',
+  'upload-browser',
+];
+const missingPlateUiEdges: string[] = [];
+
+for (const base of PLATE_REGISTRY_BASES) {
+  const servedItems = new Map(
+    getRegistryMetadata(base).items.map((item) => [item.name, item])
+  );
+  const cssVars = servedItems.get('plate-ui')?.cssVars;
+  const colorNames = new Set([
+    ...Object.keys(cssVars?.light ?? {}),
+    ...Object.keys(cssVars?.dark ?? {}),
+    ...Object.keys(cssVars?.theme ?? {})
+      .filter((key) => key.startsWith('color-'))
+      .map((key) => key.slice('color-'.length)),
+  ]);
+
+  assert(
+    colorNames.size > 0,
+    `Expected ${base} plate-ui to ship an editor color`
+  );
+
+  for (const item of servedItems.values()) {
+    const reader = item.files?.find((file) =>
+      readsColor(
+        readFileSync(
+          new URL(`../src/registry/${file.path}`, import.meta.url),
+          'utf-8'
+        ),
+        colorNames
+      )
+    );
+    const hasEdge = item.registryDependencies?.includes('@plate/plate-ui');
+
+    if (PLATE_UI_COLOR_CONTROLS.includes(item.name)) {
+      assert(
+        !reader && !hasEdge,
+        `Expected ${base} ${item.name} to read no plate-ui color and install no plate-ui`
+      );
+    }
+    if (reader && !hasEdge) {
+      missingPlateUiEdges.push(`${base} ${item.name}:${reader.path}`);
+    }
+  }
+
+  for (const control of PLATE_UI_COLOR_CONTROLS) {
+    assert(
+      servedItems.has(control),
+      `Expected ${base} registry item ${control}`
+    );
+  }
+}
+
+assert(
+  missingPlateUiEdges.length === 0,
+  [
+    'Expected every item whose copied files read a plate-ui color to list @plate/plate-ui. Run pnpm --filter www build:registry. If an edge is still missing, this word scan found a read that the color pattern in registry-package-dependencies.mts misses; keep the two detectors separate.',
+    ...missingPlateUiEdges,
+  ].join('\n')
+);
 
 console.info('Registry source check passed.');

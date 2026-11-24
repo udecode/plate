@@ -13,6 +13,7 @@
   "registryDependencies": [
     "https://platejs.org/r/equation-toolbar-button.json",
     "https://platejs.org/r/floating-popover.json",
+    "https://platejs.org/r/plate-ui.json",
     "https://platejs.org/r/suggestion-style.json",
     "button"
   ],

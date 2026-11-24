@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-24-install-plate-ui-color",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-24-install-plate-ui-color.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Install Plate UI's color with every component that reads it",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-24-editor-install-plate-ui-s-c0a70e5b",
+      "kind": "fix",
+      "summary": "Adding one of these components on its own now installs `plate-ui`, so the `--brand` color these components read is set. Before, a lone `shadcn add @plate/editor` left the editor's selection tint without a color.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "editor",
+        "comment",
+        "dnd",
+        "math",
+        "table",
+        "code-block-codemirror",
+        "suggestion-toolbar-button"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-install-plate-ui-color",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

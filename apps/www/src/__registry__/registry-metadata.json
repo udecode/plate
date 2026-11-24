@@ -1,5 +1,5 @@
 {
-  "generation": "f9618957683fc4f6749e46f55b894326f0163392b769da97bac8e12aa5f34d96",
+  "generation": "8ecdbfa569a7ab48e16a8ee839375d98a70c95a57f39fea87e227ecccf84e338",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -66,7 +66,10 @@
           },
           "name": "editor",
           "title": "Editor",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/plate-ui"
+          ]
         },
         {
           "dependencies": [
@@ -1447,6 +1450,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/suggestion",
+            "@plate/plate-ui",
             "@plate/toolbar"
           ]
         },
@@ -2985,7 +2989,8 @@
             ]
           },
           "registryDependencies": [
-            "@plate/code-block"
+            "@plate/code-block",
+            "@plate/plate-ui"
           ]
         },
         {
@@ -3220,6 +3225,7 @@
             "@plate/basic-marks-static",
             "@plate/editor",
             "@plate/editor-dropdown-menu",
+            "@plate/plate-ui",
             "avatar",
             "button"
           ]
@@ -3510,6 +3516,7 @@
           },
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
+            "@plate/plate-ui",
             "tooltip"
           ]
         },
@@ -3997,6 +4004,7 @@
           "registryDependencies": [
             "@plate/equation-toolbar-button",
             "@plate/floating-popover",
+            "@plate/plate-ui",
             "@plate/suggestion-style",
             "button"
           ]
@@ -4264,6 +4272,7 @@
             "@plate/editor-dropdown-menu",
             "@plate/floating-popover",
             "@plate/font-color-toolbar-button",
+            "@plate/plate-ui",
             "@plate/toolbar",
             "button"
           ]
@@ -7685,7 +7694,10 @@
           },
           "name": "editor",
           "title": "Editor",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/plate-ui"
+          ]
         },
         {
           "dependencies": [
@@ -9062,6 +9074,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/suggestion",
+            "@plate/plate-ui",
             "@plate/toolbar"
           ]
         },
@@ -10600,7 +10613,8 @@
             ]
           },
           "registryDependencies": [
-            "@plate/code-block"
+            "@plate/code-block",
+            "@plate/plate-ui"
           ]
         },
         {
@@ -10835,6 +10849,7 @@
             "@plate/basic-marks-static",
             "@plate/editor",
             "@plate/editor-dropdown-menu",
+            "@plate/plate-ui",
             "avatar",
             "button"
           ]
@@ -11125,6 +11140,7 @@
           },
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
+            "@plate/plate-ui",
             "tooltip"
           ]
         },
@@ -11612,6 +11628,7 @@
           "registryDependencies": [
             "@plate/equation-toolbar-button",
             "@plate/floating-popover",
+            "@plate/plate-ui",
             "@plate/suggestion-style",
             "button"
           ]
@@ -11879,6 +11896,7 @@
             "@plate/editor-dropdown-menu",
             "@plate/floating-popover",
             "@plate/font-color-toolbar-button",
+            "@plate/plate-ui",
             "@plate/toolbar",
             "button"
           ]

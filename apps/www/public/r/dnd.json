@@ -10,6 +10,7 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/editor-dropdown-menu.json",
+    "https://platejs.org/r/plate-ui.json",
     "tooltip"
   ],
   "files": [

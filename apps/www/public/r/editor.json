@@ -9,6 +9,9 @@
     "diff-match-patch-ts@^0.6.0",
     "platejs"
   ],
+  "registryDependencies": [
+    "https://platejs.org/r/plate-ui.json"
+  ],
   "files": [
     {
       "path": "src/registry/components/editor/editor.tsx",

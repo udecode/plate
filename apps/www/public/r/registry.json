@@ -40,6 +40,9 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
+      "registryDependencies": [
+        "https://platejs.org/r/plate-ui.json"
+      ],
       "files": [
         {
           "path": "src/registry/components/editor/editor.tsx",
@@ -1359,6 +1362,7 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/suggestion.json",
+        "https://platejs.org/r/plate-ui.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
@@ -2861,7 +2865,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-block.json"
+        "https://platejs.org/r/code-block.json",
+        "https://platejs.org/r/plate-ui.json"
       ],
       "files": [
         {
@@ -3088,6 +3093,7 @@
         "https://platejs.org/r/basic-marks-static.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/plate-ui.json",
         "avatar",
         "button"
       ],
@@ -3370,6 +3376,7 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/plate-ui.json",
         "tooltip"
       ],
       "files": [
@@ -3862,6 +3869,7 @@
       "registryDependencies": [
         "https://platejs.org/r/equation-toolbar-button.json",
         "https://platejs.org/r/floating-popover.json",
+        "https://platejs.org/r/plate-ui.json",
         "https://platejs.org/r/suggestion-style.json",
         "button"
       ],
@@ -4124,6 +4132,7 @@
         "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/floating-popover.json",
         "https://platejs.org/r/font-color-toolbar-button.json",
+        "https://platejs.org/r/plate-ui.json",
         "https://platejs.org/r/toolbar.json",
         "button"
       ],

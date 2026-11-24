@@ -1,0 +1,14 @@
+---
+id: 2026-11-24-install-plate-ui-color
+date: 2026-11-24
+status: draft
+kind: fix
+summary: "Install Plate UI's color with every component that reads it"
+change: { 'type': 'source', 'date': '2026-11-24', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-24-editor-install-plate-ui-s-c0a70e5b","kind":"fix","migrationNotes":[]} -->
+
+- **`editor`**, **`comment`**, **`dnd`**, **`math`**, **`table`**, **`code-block-codemirror`**, **`suggestion-toolbar-button`**: Adding one of these components on its own now installs `plate-ui`, so the `--brand` color these components read is set. Before, a lone `shadcn add @plate/editor` left the editor's selection tint without a color.

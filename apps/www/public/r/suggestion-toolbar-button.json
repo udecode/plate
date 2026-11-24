@@ -10,6 +10,7 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/suggestion.json",
+    "https://platejs.org/r/plate-ui.json",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [

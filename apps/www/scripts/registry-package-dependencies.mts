@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
 import { isAbsolute, relative, resolve } from 'node:path';
 
-import type { Registry, RegistryItemFile } from 'shadcn/schema';
+import type { Registry, RegistryItem, RegistryItemFile } from 'shadcn/schema';
 
 import { entrypointDags as defaultEntrypointDags } from '../../../tooling/entrypoints/entrypoint-dag.mjs';
 import { ICON_PLACEHOLDER_MODULE } from '../src/lib/registry-icon-placeholder.ts';
@@ -57,6 +57,7 @@ export type DeriveRegistryDependenciesOptions = {
   }) => string;
 };
 
+const PLATE_UI_ITEM = 'plate-ui';
 const DEFAULT_HOST_PROVIDED_ALIASES = ['@/lib/utils'] as const;
 const DEFAULT_HOST_PROVIDED_PACKAGES = ['react', 'react-dom'] as const;
 const NODE_BUILTINS = new Set([
@@ -255,6 +256,28 @@ function reconcileDependencies(
   return [...authoredDependencies, ...derived];
 }
 
+function createColorUsePattern(cssVars: RegistryItem['cssVars']) {
+  const names = new Set([
+    ...Object.keys(cssVars?.light ?? {}),
+    ...Object.keys(cssVars?.dark ?? {}),
+    ...Object.keys(cssVars?.theme ?? {})
+      .filter((key) => key.startsWith('color-'))
+      .map((key) => key.slice('color-'.length)),
+  ]);
+
+  if (names.size === 0) return null;
+
+  const alternatives = [...names]
+    .map((name) => name.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`))
+    .join('|');
+  const tailwindUtilityPrefix = String.raw`[a-z][\w-]*?-`;
+  const cssVariablePrefix = '--(?:color-)?';
+
+  return new RegExp(
+    String.raw`(?<![\w-])(?:${tailwindUtilityPrefix}|${cssVariablePrefix})(?:${alternatives})(?![\w-])`
+  );
+}
+
 function getPlateDependencyNames(dependencies: readonly string[]) {
   return new Set(
     dependencies
@@ -307,6 +330,9 @@ export function deriveRegistryDependencies(
   );
   const itemsByName = new Map(registry.items.map((item) => [item.name, item]));
   const targetResolver = createRegistryInstalledTargetResolver(registry);
+  const plateUiColorUse = createColorUsePattern(
+    itemsByName.get(PLATE_UI_ITEM)?.cssVars
+  );
 
   for (const item of registry.items) {
     for (const file of item.files ?? []) {
@@ -407,8 +433,6 @@ export function deriveRegistryDependencies(
       };
 
       for (const file of item.files ?? []) {
-        if (!isImportableRegistrySource(file.path)) continue;
-
         const sourcePath = assertSourcePath(options.sourceRoot, file.path);
         let source: string;
 
@@ -428,6 +452,18 @@ export function deriveRegistryDependencies(
               type: file.type,
             })
           : source;
+
+        if (
+          plateUiColorUse?.test(served) &&
+          !directPlateDependencies.has(PLATE_UI_ITEM) &&
+          !requiredPlate.has(PLATE_UI_ITEM)
+        ) {
+          requiredPlate.set(
+            PLATE_UI_ITEM,
+            `${item.name}:${file.path} uses a ${PLATE_UI_ITEM} color`
+          );
+        }
+        if (!isImportableRegistrySource(file.path)) continue;
 
         for (const imported of parseModuleImports(served, {
           filePath: file.path,
