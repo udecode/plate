@@ -1,5 +1,26 @@
 # platejs
 
+## 54.0.0-beta.5
+
+### Patch Changes
+
+- [`dee395d`](https://github.com/udecode/plate/commit/dee395d68e25980340ce470257e16c1d37486ac5) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Move a comment thread with its text when a drag moves all of that text, and back again on undo. A drag of part of the text leaves the thread on the part that stays. Undoing a drag and the thread's creation, then redoing both, puts the thread back on its text.
+
+- [`dca432b`](https://github.com/udecode/plate/commit/dca432b402ecaf554b5e662415c3966788e8051e) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `fillsField(field, value)` to `platejs/field` to check whether a value fills a field. `required`, the `filled` and `blank` conditions and the refusal of an answer on a skipped field all use it. A checkbox fills only when ticked. A text or signature answer needs a character other than whitespace. Any other field needs a value of its kind.
+
+- [`d2af1ef`](https://github.com/udecode/plate/commit/d2af1efb9783ba40aa5d8ef856eeb42c9c462368) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix the ink layer holding the outline of each removed pen mark in memory while undo history can still restore that mark
+
+- [`4081ba8`](https://github.com/udecode/plate/commit/4081ba8baae622b170ea68fb3666a43753947942) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix Markdown copied from VS Code pasting as a Markdown code block; it now pastes as headings, lists and marks
+  - Paste code copied from VS Code as a code block at the caret, replacing an empty block, instead of after the current block
+  - Paste text copied from a plain-text file in VS Code as plain text instead of a code block
+
 ## 54.0.0-beta.4
 
 ### Patch Changes
