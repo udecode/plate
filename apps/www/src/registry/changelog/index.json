@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-board-export",
+      "href": "/registry/changelog/2026-11-23-board-export.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Export the board as a PNG or an SVG",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["board", "block-list-static", "html-export"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-field-condition-loop",
       "href": "/registry/changelog/2026-11-23-field-condition-loop.json",
       "status": "draft",

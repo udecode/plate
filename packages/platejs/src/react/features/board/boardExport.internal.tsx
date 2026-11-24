@@ -15,7 +15,12 @@ import {
   pictureSheetOf,
   readPictureStyles,
 } from './boardPictureStyles.internal';
-import type { BoardView } from './boardView.internal';
+import type {
+  BoardPicture,
+  BoardPictureOptions,
+  BoardPictureWarning,
+  BoardView,
+} from './boardView.internal';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const PADDING = 32;
@@ -28,28 +33,6 @@ const FETCH_LIMIT_MS = 5000;
 const FONT_WAIT_MS = 250;
 const COLOR = /(?:oklab|oklch|lab|lch|color)\([^()]*\)/gu;
 const QUOTED = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/u;
-
-export type BoardPictureOptions = Readonly<{
-  format: 'png' | 'svg';
-  kit: readonly BasePluginInput[];
-}>;
-
-export type BoardPictureWarning = Readonly<{
-  code:
-    | 'content-undrawn'
-    | 'downscaled'
-    | 'font-missing'
-    | 'image-unreadable'
-    | 'shape-undrawn';
-  shapeId?: string;
-}>;
-
-export type BoardPicture = Readonly<{
-  blob: Blob;
-  height: number;
-  warnings: readonly BoardPictureWarning[];
-  width: number;
-}>;
 
 type Drawing = Readonly<{ box: BoardBox; drawing: Element | null; id: string }>;
 
@@ -426,14 +409,94 @@ const groupOf = (
   return group;
 };
 
+const OFF_PAGE = 'The board is not on the page.';
+const CSS_TOKEN =
+  /"(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?|\\.?|[(),;]|[^"'\\(),;]+/gsu;
+const URL_SOURCE =
+  /^url\(\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'|((?:[^"'()\s\\]|\\.)*))\s*\)/isu;
+
+const splitTopLevel = (text: string, separator: ',' | ';') => {
+  const parts = [''];
+  let depth = 0;
+
+  for (const [token] of text.matchAll(CSS_TOKEN)) {
+    if (token === '(') depth += 1;
+    if (token === ')') depth = Math.max(0, depth - 1);
+    if (token === separator && depth === 0) parts.push('');
+    else parts[parts.length - 1] += token;
+  }
+
+  return parts;
+};
+
+const inlinedFace = async (face: string, base: string) => {
+  const open = face.indexOf('{') + 1;
+  const close = face.lastIndexOf('}');
+  const declarations = splitTopLevel(face.slice(open, close), ';');
+  const at = declarations.findIndex((declaration) =>
+    /^\s*src\s*:/iu.test(declaration)
+  );
+
+  if (at === -1) return { css: face, missing: false };
+
+  const colon = declarations[at].indexOf(':') + 1;
+  const kept: string[] = [];
+  let urls = 0;
+  let loaded = 0;
+
+  // A face's src is a priority list, and a browser uses the first source it
+  // can load, which need not be the first one that downloads.
+  for (const source of splitTopLevel(declarations[at].slice(colon), ',')) {
+    const written = source.trim();
+    const url = URL_SOURCE.exec(written);
+
+    if (!url) {
+      if (written) kept.push(written);
+      continue;
+    }
+    urls += 1;
+    try {
+      const href = (url[1] ?? url[2] ?? url[3] ?? '').replaceAll(
+        /\\(.)/gsu,
+        '$1'
+      );
+      const inlined = /^data:/iu.test(href)
+        ? href
+        : await dataUrlOf(await fetched(new URL(href, base).href));
+
+      kept.push(
+        `url("${inlined.replaceAll(/["\\]/gu, '\\$&')}")${written.slice(url[0].length)}`
+      );
+      loaded += 1;
+    } catch {
+      continue;
+    }
+  }
+  if (urls === 0) return { css: face, missing: false };
+  declarations[at] = `${declarations[at].slice(0, colon)} ${kept.join(', ')}`;
+
+  return {
+    css:
+      kept.length === 0
+        ? ''
+        : `${face.slice(0, open)}${declarations.join(';')}${face.slice(close)}`,
+    missing: loaded === 0,
+  };
+};
+
+const pageUrlOf = (href: string, base: string) =>
+  URL.canParse(href, base) ? new URL(href, base) : null;
+
 export const drawBoardPicture = async (
   view: Pick<BoardView, 'pictureSource'>,
-  { format, kit }: BoardPictureOptions
+  selected: readonly string[],
+  format: BoardPictureOptions['format'],
+  kit: readonly BasePluginInput[]
 ): Promise<BoardPicture | null> => {
   const { renderToStaticMarkup } = await loadStaticRenderer();
-  const source = view.pictureSource();
+  const source = view.pictureSource(selected);
 
-  if (!source) return null;
+  if (!source) throw new Error(OFF_PAGE);
 
   const { editor, host, layouts, projection, root } = source;
   const picture = createAuthoredEditorView(editor, {
@@ -445,6 +508,7 @@ export const drawBoardPicture = async (
     <PictureShapes editor={picture} root={root} />
   );
   const document = host.ownerDocument;
+  const { baseURI } = document;
   const template = document.createElement('template');
 
   template.innerHTML = data;
@@ -548,6 +612,13 @@ export const drawBoardPicture = async (
   for (const { drawing } of drawings) {
     if (drawing) stripEditor(drawing);
   }
+  for (const link of placed.flatMap((drawn) => [
+    ...drawn.querySelectorAll('a[href]'),
+  ])) {
+    const url = pageUrlOf(link.getAttribute('href') ?? '', baseURI);
+
+    if (url) link.setAttribute('href', url.href);
+  }
 
   const nonce = Math.random().toString(36).slice(2, 10);
   const rules = styles.write(srgb, nonce);
@@ -566,16 +637,14 @@ export const drawBoardPicture = async (
       const href = image.getAttribute(name) ?? '';
 
       try {
-        const blob = await fetched(href);
+        const blob = await fetched(new URL(href, baseURI).href);
 
         image.setAttribute(
           name,
           await decodedDataUrl(document, blob, size, png?.scale ?? null)
         );
       } catch {
-        const link = URL.canParse(href, document.baseURI)
-          ? new URL(href, document.baseURI)
-          : null;
+        const link = pageUrlOf(href, baseURI);
 
         warnings.push({ code: 'image-unreadable', shapeId: id });
         if (!png && link && /^https?:$/u.test(link.protocol)) {
@@ -586,22 +655,10 @@ export const drawBoardPicture = async (
       }
     }),
     ...styles.faces.map(({ base, css: face }, at) => async () => {
-      try {
-        let embedded = face;
+      const inlined = await inlinedFace(face, base);
 
-        for (const [whole, url = ''] of face.matchAll(
-          /url\(\s*["']?([^"')]+)["']?\s*\)/gu
-        )) {
-          const inlined = await dataUrlOf(
-            await fetched(new URL(url, base).href)
-          );
-
-          embedded = embedded.replace(whole, `url("${inlined}")`);
-        }
-        css[at] = embedded;
-      } catch {
-        fontMissing = true;
-      }
+      if (inlined.missing) fontMissing = true;
+      css[at] = inlined.css;
     }),
   ]);
   if (fontMissing) warnings.push({ code: 'font-missing' });
@@ -624,20 +681,20 @@ export const drawBoardPicture = async (
 
   const text = new XMLSerializer().serializeToString(svg);
 
-  if (!png) {
+  if (png && png.scale < PNG_SCALE) warnings.push({ code: 'downscaled' });
+
+  const blob = png
+    ? await pngOf(document, text, png)
+    : new Blob([text], { type: 'image/svg+xml' });
+
+  if (host.isConnected) {
     return {
-      blob: new Blob([text], { type: 'image/svg+xml' }),
-      height,
+      blob,
+      height: png?.height ?? height,
       warnings,
-      width,
+      width: png?.width ?? width,
     };
   }
-  if (png.scale < PNG_SCALE) warnings.push({ code: 'downscaled' });
 
-  return {
-    blob: await pngOf(document, text, png),
-    height: png.height,
-    warnings,
-    width: png.width,
-  };
+  throw new Error(OFF_PAGE);
 };

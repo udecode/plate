@@ -15,22 +15,28 @@ import { FloatingToolbarPlugin } from './floating-toolbar';
 import { HtmlExportKit } from './html-export-kit';
 import { HtmlExportSchemaKit } from './html-export-schema-kit';
 
+const subscribeNever = () => () => {};
+
 function useThemedHtml(html: string, serverTheme?: string) {
   const { resolvedTheme } = useTheme();
+  const hydrated = React.useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false
+  );
 
   return React.useMemo(() => {
-    if (typeof window === 'undefined') return html;
-    // Only parse and update if theme differs from server
-    if (serverTheme === resolvedTheme) return html;
+    if (!hydrated) return html;
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const htmlElement = doc.documentElement;
+    const doc = new DOMParser().parseFromString(html, 'text/html');
 
-    htmlElement.classList.toggle('dark', resolvedTheme === 'dark');
+    doc.body.className = document.body.className;
+    if (serverTheme !== resolvedTheme) {
+      doc.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
+    }
 
-    return doc.documentElement.outerHTML;
-  }, [html, resolvedTheme, serverTheme]);
+    return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+  }, [html, hydrated, resolvedTheme, serverTheme]);
 }
 
 export function ExportHtmlButton({

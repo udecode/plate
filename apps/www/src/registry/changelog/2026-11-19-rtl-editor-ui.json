@@ -62,6 +62,7 @@
     {
       "name": "board",
       "files": [
+        "apps/www/src/registry/components/editor/board-static.tsx",
         "apps/www/src/registry/components/editor/board-styles.tsx",
         "apps/www/src/registry/components/editor/board.tsx"
       ],

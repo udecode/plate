@@ -2721,12 +2721,19 @@
       "description": "A whiteboard block whose notes, shapes, arrows, frames and pen lines are document blocks.",
       "dependencies": [
         "platejs",
+        "sonner",
         "use-file-picker@2.1.2",
         "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/basic-blocks-static.json",
+        "https://platejs.org/r/basic-marks-static.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/link-static.json",
+        "https://platejs.org/r/list-static.json",
+        "https://platejs.org/r/media-image-static.json",
+        "https://platejs.org/r/mention-static.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
@@ -2734,6 +2741,11 @@
           "path": "src/registry/components/editor/board.tsx",
           "type": "registry:component",
           "target": "@components/editor/board.tsx"
+        },
+        {
+          "path": "src/registry/components/editor/board-static.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/board-static.tsx"
         },
         {
           "path": "src/registry/components/editor/board-styles.tsx",

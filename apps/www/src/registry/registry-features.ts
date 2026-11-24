@@ -345,10 +345,14 @@ export const registryFeatures: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['platejs', 'use-file-picker@2.1.2'],
+    dependencies: ['platejs', 'sonner', 'use-file-picker@2.1.2'],
     files: [
       {
         path: 'components/editor/board.tsx',
+        type: 'registry:component',
+      },
+      {
+        path: 'components/editor/board-static.tsx',
         type: 'registry:component',
       },
       {

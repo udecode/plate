@@ -333,7 +333,9 @@ export function BoardImageElementStatic(
   const image = editor.plugin(BaseImagePlugin);
   const [child] = element.children;
   const uploaded =
-    ElementApi.isElement(child) && child.type === image.schema.type
+    image.installed &&
+    ElementApi.isElement(child) &&
+    child.type === image.schema.type
       ? (child as ImageElement)
       : undefined;
 
@@ -346,7 +348,7 @@ export function BoardImageElementStatic(
         style={{ inset: 0, position: 'absolute' }}
         width={box.width}
       >
-        {uploaded ? (
+        {uploaded?.url ? (
           <image
             aria-label={uploaded.alt}
             height={box.height}
@@ -355,7 +357,12 @@ export function BoardImageElementStatic(
             width={box.width}
           />
         ) : (
-          <rect className="fill-muted" height={box.height} width={box.width} />
+          <rect
+            className="fill-muted"
+            data-board-image-unreadable=""
+            height={box.height}
+            width={box.width}
+          />
         )}
       </svg>
     </EditorElement>

@@ -68,6 +68,8 @@ async function writeIfChanged(target: string, content: string) {
 
 const files: Record<string, string> = {};
 const previewMarkers = [
+  'cn-checkbox',
+  'cn-checkbox-indicator',
   'cn-command',
   'cn-command-empty',
   'cn-command-group',

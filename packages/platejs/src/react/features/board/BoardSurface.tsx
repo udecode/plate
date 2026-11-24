@@ -24,6 +24,9 @@ import type { BoardMessages } from './boardVoice.internal';
 export type { BoardCorner } from './boardIndex.internal';
 export type {
   BoardCamera,
+  BoardPicture,
+  BoardPictureOptions,
+  BoardPictureWarning,
   BoardStyle,
   BoardTool,
   BoardViewActions,

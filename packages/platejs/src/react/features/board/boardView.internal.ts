@@ -48,6 +48,7 @@ import {
 import { boardTypesOf } from '../../../features/board/lib/boardTypes.internal';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 import { uploadDraftsOf } from '../../../internal/plugin/uploadDrafts';
+import type { BasePluginInput } from '../../../lib';
 import type { Editor, EditorHistoryController } from '../../core';
 import { attachBoardClipboard } from './boardClipboard.internal';
 import { attachBoardGestures } from './boardGesture.internal';
@@ -155,7 +156,51 @@ export type BoardViewState = Readonly<{
   writable: boolean;
 }>;
 
+/** How `exportPicture` draws the board. */
+export type BoardPictureOptions = Readonly<{
+  /** `png` draws pixels, and `svg` keeps the shapes as markup. */
+  format: 'png' | 'svg';
+  /**
+   * The static plugins that draw each shape and its content, as
+   * `renderStaticHtml`'s `presentation` takes them, or a promise of them, such
+   * as a dynamic import. The export reads the selection before it waits for
+   * the promise.
+   */
+  kit: Promise<readonly BasePluginInput[]> | readonly BasePluginInput[];
+}>;
+
+/**
+ * Something the picture shows differently from the board. `content-undrawn`
+ * means the kit has no static drawing for some content, `downscaled` that the
+ * PNG is the SVG drawn at less than twice its size, and `font-missing` that a
+ * font the text uses could not be read. `image-unreadable` means an image in
+ * `shapeId` could not be read and draws as a gray box, or stays a web link in
+ * an SVG, and `shape-undrawn` that the kit draws no shape for `shapeId`, so a
+ * gray box stands in for it.
+ */
+export type BoardPictureWarning =
+  | Readonly<{ code: 'content-undrawn' | 'downscaled' | 'font-missing' }>
+  | Readonly<{ code: 'image-unreadable' | 'shape-undrawn'; shapeId: string }>;
+
+/** A picture of the board, with its size in pixels and what it could not show. */
+export type BoardPicture = Readonly<{
+  blob: Blob;
+  height: number;
+  warnings: readonly BoardPictureWarning[];
+  width: number;
+}>;
+
 export type BoardViewActions = Readonly<{
+  /**
+   * Draw the board as a picture with `kit`. With shapes selected when it is
+   * called, it draws only those and the members of each selected frame. The
+   * PNG is the SVG drawn at twice its size, or smaller when that passes 16,384
+   * px a side or 16,777,216 px in all. It resolves null when there is nothing
+   * to draw, such as on an empty board. It rejects when the board surface is
+   * not on the page, or leaves it before the picture is drawn. It loads its
+   * drawing code on the first call.
+   */
+  exportPicture: (options: BoardPictureOptions) => Promise<BoardPicture | null>;
   /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. A focused board says the new zoom when it changes. */
   fit: () => void;
   /** Move focus to the board and keep its selection, such as after a toolbar menu closes. A shape whose text is being edited ends its edit and stays selected. */
@@ -1685,6 +1730,15 @@ export const createBoardView = (
   refresh();
 
   const actions: BoardViewActions = {
+    exportPicture: async ({ format, kit }) => {
+      const selected = selectedShapes().map(({ id }) => id);
+      const [{ drawBoardPicture }, plugins] = await Promise.all([
+        import('./boardExport.internal'),
+        kit,
+      ]);
+
+      return drawBoardPicture(view, selected, format, plugins);
+    },
     fit,
     focus: () => {
       core.focusBoard();
@@ -1734,7 +1788,7 @@ export const createBoardView = (
     zoomOut: core.zoomOut,
   };
 
-  return {
+  const view = {
     actions,
     arrowPathOf: (id: string) => {
       const key = keyById(id);
@@ -1798,16 +1852,15 @@ export const createBoardView = (
     holdPictureHost: (host: HTMLDivElement | null) => {
       pictureHost = host;
     },
-    pictureSource: () => {
+    pictureSource: (selected: readonly string[]) => {
       const host = pictureHost;
 
-      if (!host) return null;
+      if (!host?.isConnected) return null;
       index.update();
 
-      const selected = selectedShapes();
-      const picked = new Set(selected.map(({ id }) => id));
+      const picked = new Set(selected);
 
-      for (const { id } of selected) {
+      for (const id of selected) {
         for (const member of index.membersOf(id) ?? []) picked.add(member);
       }
 
@@ -1870,6 +1923,8 @@ export const createBoardView = (
     takeTextTab: (event: React.KeyboardEvent) => takeTextTab(core, event),
     viewport: () => viewport,
   };
+
+  return view;
 };
 
 export type BoardView = ReturnType<typeof createBoardView>;

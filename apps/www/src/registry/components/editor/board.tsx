@@ -2,6 +2,7 @@
 
 import { cn } from 'cn';
 import {
+  ArrowDownToLineIcon,
   BanIcon,
   CircleIcon,
   DiamondIcon,
@@ -33,6 +34,7 @@ import {
   type BoardMessages,
   BoardNotePlugin,
   type BoardPickState,
+  type BoardPictureWarning,
   BoardPlugin,
   BoardShape,
   type BoardShapeDescription,
@@ -55,6 +57,7 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 import { flushSync } from 'react-dom';
+import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
 import {
@@ -72,6 +75,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -349,6 +353,91 @@ function BoardPictureButton() {
   );
 }
 
+const PICTURE_WARNINGS: Readonly<Record<BoardPictureWarning['code'], string>> =
+  {
+    'content-undrawn': 'Some content could not be drawn.',
+    downscaled: 'The PNG was made smaller to fit the size limit.',
+    'font-missing': 'A font could not be read, so its text uses another font.',
+    'image-unreadable':
+      'Some images could not be read, so they show as gray boxes or links.',
+    'shape-undrawn': 'Some shapes could not be drawn and show as gray boxes.',
+  };
+
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+const loadPictureKit = () =>
+  import('@/registry/components/editor/board-static').then(
+    ({ BoardPictureKit }) => BoardPictureKit
+  );
+
+function BoardExportMenu() {
+  const { exportPicture } = useBoardActions();
+  const mounted = React.useRef(false);
+
+  React.useEffect(() => {
+    mounted.current = true;
+
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const save = async (format: 'png' | 'svg') => {
+    try {
+      const picture = await exportPicture({ format, kit: loadPictureKit() });
+
+      if (!picture) {
+        toast('There is nothing to export.');
+        return;
+      }
+
+      downloadBlob(picture.blob, `board.${format}`);
+
+      if (picture.warnings.length > 0) {
+        toast.warning(
+          [
+            ...new Set(
+              picture.warnings.map(({ code }) => PICTURE_WARNINGS[code])
+            ),
+          ].join(' ')
+        );
+      }
+    } catch (error) {
+      if (!mounted.current) return;
+      console.error('Could not export the board.', error);
+      toast.error('The board could not be exported.');
+    }
+  };
+
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger>
+        <ToolbarButton isDropdown tooltip="Export">
+          <ArrowDownToLineIcon />
+        </ToolbarButton>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top">
+        <DropdownMenuItem onSelect={() => save('png')}>
+          Export as PNG
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => save('svg')}>
+          Export as SVG
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function BoardToolLock() {
   const locked = useBoardView((view) => view.toolLocked);
   const { setToolLocked } = useBoardActions();
@@ -422,6 +511,7 @@ export function BoardToolbar() {
         )}
         <BoardToolLock />
         <BoardPictureButton />
+        <BoardExportMenu />
       </BoardToolbarGroup>
       <BoardToolbarGroup>
         <ToolbarButton

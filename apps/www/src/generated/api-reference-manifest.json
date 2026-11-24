@@ -11531,6 +11531,39 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/board/react:BoardPicture": {
+          "aliases": [],
+          "documentation": "A picture of the board, with its size in pixels and what it could not show.",
+          "entrypoint": "platejs/board/react",
+          "kind": "type",
+          "name": "BoardPicture",
+          "runtime": false,
+          "signature": "type BoardPicture = Readonly<{\n  blob: Blob;\n  height: number;\n  warnings: readonly BoardPictureWarning[];\n  width: number;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/board/react:BoardPictureOptions": {
+          "aliases": [],
+          "documentation": "How `exportPicture` draws the board.",
+          "entrypoint": "platejs/board/react",
+          "kind": "type",
+          "name": "BoardPictureOptions",
+          "runtime": false,
+          "signature": "type BoardPictureOptions = Readonly<{\n  /** `png` draws pixels, and `svg` keeps the shapes as markup. */\n  format: 'png' | 'svg';\n  /**\n   * The static plugins that draw each shape and its content, as\n   * `renderStaticHtml`'s `presentation` takes them, or a promise of them, such\n   * as a dynamic import. The export reads the selection before it waits for\n   * the promise.\n   */\n  kit: Promise<readonly BasePluginInput[]> | readonly BasePluginInput[];\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/board/react:BoardPictureWarning": {
+          "aliases": [],
+          "documentation": "Something the picture shows differently from the board. `content-undrawn`\nmeans the kit has no static drawing for some content, `downscaled` that the\nPNG is the SVG drawn at less than twice its size, and `font-missing` that a\nfont the text uses could not be read. `image-unreadable` means an image in\n`shapeId` could not be read and draws as a gray box, or stays a web link in\nan SVG, and `shape-undrawn` that the kit draws no shape for `shapeId`, so a\ngray box stands in for it.",
+          "entrypoint": "platejs/board/react",
+          "kind": "type",
+          "name": "BoardPictureWarning",
+          "runtime": false,
+          "signature": "type BoardPictureWarning = Readonly<{\n  code: 'content-undrawn' | 'downscaled' | 'font-missing';\n}> | Readonly<{\n  code: 'image-unreadable' | 'shape-undrawn';\n  shapeId: string;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/board/react:BoardPlugin": {
           "aliases": [],
           "documentation": "",
@@ -11615,7 +11648,7 @@
           "kind": "type",
           "name": "BoardViewActions",
           "runtime": false,
-          "signature": "type BoardViewActions = Readonly<{\n  /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. A focused board says the new zoom when it changes. */\n  fit: () => void;\n  /** Move focus to the board and keep its selection, such as after a toolbar menu closes. A shape whose text is being edited ends its edit and stays selected. */\n  focus: () => void;\n  /** Remove the frame `id` and keep its shapes where they are, as one undo step. */\n  removeFrame: (id: string) => void;\n  /** Zoom to 100 percent around the view's center, as Shift+0 does. A focused board says the new zoom when it changes. */\n  resetZoom: () => void;\n  /**\n   * Merge `style` into the style the next added shape gets. With the select\n   * tool, also write each of its styles to every selected shape that takes it\n   * and to the shape whose text is being edited, as one undo step that keeps\n   * the caret and the edit. A drawing tool's pick styles only the next shape.\n   * It skips a value outside the board's values for a style, such as an\n   * opacity outside 0.1 to 1. A read-only view or a preview changes nothing.\n   */\n  setStyle: (style: BoardStyle) => void;\n  setTool: (tool: BoardTool) => void;\n  /**\n   * Turn the tool lock on or off, as Q does. It changes neither the tool nor\n   * the selection, and the focused view says `toolLock` when it changes.\n   */\n  setToolLocked: (locked: boolean) => void;\n  /**\n   * Upload each of `files` as an image shape, in a row centered on the view,\n   * as one undo step, and select the shapes. The shapes land once the\n   * pictures load. A landing that still waits lands nothing after another\n   * landing starts, a key or press on the board, any paste, a document or\n   * selection change, focus leaving the board, or the view turning read-only.\n   * The upload plugin reports a file that is not a picture, and the pictures\n   * beside it still land. An empty list changes nothing, and neither does a\n   * view whose `takesPictureFiles` is false.\n   */\n  upload: (files: readonly File[]) => void;\n  /** Zoom in to the next of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `+` does, and do nothing at 800. A focused board says the new zoom. */\n  zoomIn: () => void;\n  /** Zoom out to the next lower of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `-` does, and do nothing at 10. A focused board says the new zoom. */\n  zoomOut: () => void;\n}>;",
+          "signature": "type BoardViewActions = Readonly<{\n  /**\n   * Draw the board as a picture with `kit`. With shapes selected when it is\n   * called, it draws only those and the members of each selected frame. The\n   * PNG is the SVG drawn at twice its size, or smaller when that passes 16,384\n   * px a side or 16,777,216 px in all. It resolves null when there is nothing\n   * to draw, such as on an empty board. It rejects when the board surface is\n   * not on the page, or leaves it before the picture is drawn. It loads its\n   * drawing code on the first call.\n   */\n  exportPicture: (options: BoardPictureOptions) => Promise<BoardPicture | null>;\n  /** Move the camera so every shape is in view, at most at full size, and clear of the toolbar when the board has room. A focused board says the new zoom when it changes. */\n  fit: () => void;\n  /** Move focus to the board and keep its selection, such as after a toolbar menu closes. A shape whose text is being edited ends its edit and stays selected. */\n  focus: () => void;\n  /** Remove the frame `id` and keep its shapes where they are, as one undo step. */\n  removeFrame: (id: string) => void;\n  /** Zoom to 100 percent around the view's center, as Shift+0 does. A focused board says the new zoom when it changes. */\n  resetZoom: () => void;\n  /**\n   * Merge `style` into the style the next added shape gets. With the select\n   * tool, also write each of its styles to every selected shape that takes it\n   * and to the shape whose text is being edited, as one undo step that keeps\n   * the caret and the edit. A drawing tool's pick styles only the next shape.\n   * It skips a value outside the board's values for a style, such as an\n   * opacity outside 0.1 to 1. A read-only view or a preview changes nothing.\n   */\n  setStyle: (style: BoardStyle) => void;\n  setTool: (tool: BoardTool) => void;\n  /**\n   * Turn the tool lock on or off, as Q does. It changes neither the tool nor\n   * the selection, and the focused view says `toolLock` when it changes.\n   */\n  setToolLocked: (locked: boolean) => void;\n  /**\n   * Upload each of `files` as an image shape, in a row centered on the view,\n   * as one undo step, and select the shapes. The shapes land once the\n   * pictures load. A landing that still waits lands nothing after another\n   * landing starts, a key or press on the board, any paste, a document or\n   * selection change, focus leaving the board, or the view turning read-only.\n   * The upload plugin reports a file that is not a picture, and the pictures\n   * beside it still land. An empty list changes nothing, and neither does a\n   * view whose `takesPictureFiles` is false.\n   */\n  upload: (files: readonly File[]) => void;\n  /** Zoom in to the next of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `+` does, and do nothing at 800. A focused board says the new zoom. */\n  zoomIn: () => void;\n  /** Zoom out to the next lower of 10, 25, 50, 100, 200, 400 and 800 percent around the view's center, as `-` does, and do nothing at 10. A focused board says the new zoom. */\n  zoomOut: () => void;\n}>;",
           "source": null,
           "typeParameters": []
         },

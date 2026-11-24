@@ -1,5 +1,5 @@
 {
-  "generation": "21ad48926026b9956bfa37c78f2e6169ab5f0ae1e2fde160d8fe505f2e7e6495",
+  "generation": "401303838e5bc501e3fb854275b6b5e4559c44c23f7bffc7be0e32f6d4829da3",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2798,6 +2798,7 @@
         {
           "dependencies": [
             "platejs",
+            "sonner",
             "use-file-picker@2.1.2",
             "cn",
             "diff-match-patch-ts@^0.6.0",
@@ -2808,6 +2809,11 @@
               "path": "components/editor/board.tsx",
               "type": "registry:component",
               "target": "@components/editor/board.tsx"
+            },
+            {
+              "path": "components/editor/board-static.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/board-static.tsx"
             },
             {
               "path": "components/editor/board-styles.tsx",
@@ -2831,7 +2837,13 @@
             ]
           },
           "registryDependencies": [
+            "@plate/basic-blocks-static",
+            "@plate/basic-marks-static",
             "@plate/editor-dropdown-menu",
+            "@plate/link-static",
+            "@plate/list-static",
+            "@plate/media-image-static",
+            "@plate/mention-static",
             "@plate/toolbar"
           ]
         },
@@ -10401,6 +10413,7 @@
         {
           "dependencies": [
             "platejs",
+            "sonner",
             "use-file-picker@2.1.2",
             "cn",
             "diff-match-patch-ts@^0.6.0",
@@ -10411,6 +10424,11 @@
               "path": "components/editor/board.tsx",
               "type": "registry:component",
               "target": "@components/editor/board.tsx"
+            },
+            {
+              "path": "components/editor/board-static.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/board-static.tsx"
             },
             {
               "path": "components/editor/board-styles.tsx",
@@ -10434,7 +10452,13 @@
             ]
           },
           "registryDependencies": [
+            "@plate/basic-blocks-static",
+            "@plate/basic-marks-static",
             "@plate/editor-dropdown-menu",
+            "@plate/link-static",
+            "@plate/list-static",
+            "@plate/media-image-static",
+            "@plate/mention-static",
             "@plate/toolbar"
           ]
         },
