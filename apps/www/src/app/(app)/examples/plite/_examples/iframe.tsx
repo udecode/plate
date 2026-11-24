@@ -10,7 +10,7 @@ import {
   useEditorSelector,
 } from 'plitejs/react';
 import type React from 'react';
-import { type PointerEvent, useState } from 'react';
+import { type PointerEvent, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { Button, Icon, Toolbar } from './components';
@@ -169,6 +169,29 @@ const IFrame = ({
   children: React.ReactNode;
 }) => {
   const [iframeBody, setIframeBody] = useState<HTMLElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // A frame whose color scheme differs from its element's paints an opaque
+  // canvas, so the frame takes the scheme the site sets.
+  useEffect(() => {
+    const frame = iframeRef.current;
+    const frameRoot = frame?.contentDocument?.documentElement;
+
+    if (!iframeBody || !frame || !frameRoot) return undefined;
+
+    const takeScheme = () => {
+      frameRoot.style.colorScheme = getComputedStyle(frame).colorScheme;
+    };
+    const observer = new MutationObserver(takeScheme);
+
+    takeScheme();
+    observer.observe(document.documentElement, {
+      attributeFilter: ['class', 'style'],
+    });
+
+    return () => observer.disconnect();
+  }, [iframeBody]);
+
   const handleLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
     const iframe = e.target as HTMLIFrameElement;
     if (!iframe.contentDocument) return;
@@ -190,6 +213,7 @@ const IFrame = ({
       sandbox={sandbox}
       srcDoc="<!DOCTYPE html>"
       {...props}
+      ref={iframeRef}
       onLoad={handleLoad}
     >
       {iframeBody && createPortal(children, iframeBody)}
