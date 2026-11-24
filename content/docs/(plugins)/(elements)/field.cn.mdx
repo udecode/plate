@@ -12,7 +12,7 @@ docs:
 
 <ComponentPreview name="field-demo" height="1340px" />
 
-示例是一份房东和租客之间的租赁合同模板。从工具栏的菜单插入字段，点击字段修改它的设置，并查看编辑器下方的 HTML、Markdown 和 Word 面板。在编辑器上方选择以房东身份填写或以租客身份填写，即可以该角色填写合同。
+示例是一份房东和租客之间的租赁合同模板。从工具栏的菜单插入字段，点击字段修改它的设置，并查看编辑器下方的 HTML、Markdown 和 Word 面板。在编辑器上方选择以房东身份填写或以租客身份填写，即可以该角色填写合同。Submit 会在之前已提交角色的答案之后检查该角色的答案。随后 Submission 面板显示每条拒绝原因，或者以静态输出显示填写后的文档，以及它仍在等待的角色。
 
 <PackageInfo>
 
@@ -20,12 +20,13 @@ docs:
 
 - 行内 void `field` 元素，共六种类型：文本、数字、日期、复选框、选择和签名。
 - 每个字段有一个角色、一个标签，以及可选的必填标记、默认值、选择选项和值，每一项都按字段的类型检查。
-- 条件通过 `fieldId` 指向另一个字段，并检查那个字段的值。
-- `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题。
+- 条件通过 `fieldId` 指向另一个字段，并检查那个字段的值。条件不成立的字段被跳过，因此不需要答案。
+- `insert` 和 `update` 命令拒绝不符合的设置或条件，读取会报告每个字段的问题以及它是否适用。
 - 一个角色的只填写视图，只接受该角色的答案，拒绝其他所有本地修改，撤销时只撤回该角色的答案。
+- `applyFieldValues` 在服务器上按模板检查每个角色的答案，并生成填写后的文档。
 - 粘贴、拖动复制、创建副本和表格填充复制的字段会获得新 id，复制的条件指向复制出的字段。
 - HTML 和 Markdown 保留每个属性，Word 导出保留每个答案并报告它丢弃的设置。
-- 注册表 UI 提供带设置弹出框的字段标签、插入菜单和静态渲染组件。
+- 注册表 UI 提供带设置弹出框、会把被跳过的字段显示为淡色的字段标签、插入菜单，以及在原处显示每个答案或一条空白线的静态渲染组件。
 
 </PackageInfo>
 
@@ -77,7 +78,7 @@ export function FieldToolbar() {
 
 ### 添加静态渲染
 
-`BaseFieldKit` 在 `platejs/static` 的只读输出中渲染每个字段的答案：选择字段显示所选选项的标签，没有答案的字段显示字段的标签。
+`BaseFieldKit` 在 `platejs/static` 的只读输出中渲染每个字段。字段在原处显示它的答案：选择字段显示所选选项的标签，复选框显示为已勾选或空的方框，数字按原样显示，包括 `0`。复选框以外的字段在没有已填答案时显示一条空白线。应用用这份输出生成填写后文档的 PDF，见[打印填写后的文档](#print-the-filled-document)。
 
 <ComponentSource name="field-static" />
 
@@ -149,11 +150,11 @@ export const readFields = (value: Value) =>
 | `fieldId` | `string` | 在文档中唯一。新字段获得一个随机的 `nanoid`。 |
 | `kind` | `FieldKind` | `'text'`、`'number'`、`'date'`、`'checkbox'`、`'choice'` 或 `'signature'`。必需。 |
 | `role` | `string` | 填写该字段的角色，例如 `'tenant'`。必需。 |
-| `label` | `string` | 必需。字段标签显示它，字段没有答案时输出也显示它。 |
-| `required` | `boolean` | 标记必须填写的字段。Plate 只保存它，由你的应用在收集答案时检查。 |
+| `label` | `string` | 必需。字段标签显示它，字段没有答案时 HTML、Word 和纯文本会显示方括号中的它。 |
+| `required` | `boolean` | 标记字段适用时需要已填答案。提交让它保持未填写时，`applyFieldValues` 会拒绝该提交。 |
 | `defaultValue` | `FieldValue` | 符合字段类型的值。 |
 | `options` | `FieldOption[]` | 仅用于选择字段。每个选项为 `{ value, label }`，任意两个选项的 `value` 都不相同。 |
-| `value` | `FieldValue` | 答案。没有答案的字段未填写。 |
+| `value` | `FieldValue` | 答案。没有答案，或 `fillsField` 判断它的答案不算填写时，字段未填写。 |
 | `condition` | `FieldCondition` | `{ ref, test, value? }`，见下文的条件一节。 |
 | `children` | `[{ text: '' }]` | 行内 void 元素必需的子节点。 |
 
@@ -172,11 +173,21 @@ export const readFields = (value: Value) =>
 
 选择字段保存选项的 `value`，因此修改选项的 `label` 后，指向它的答案和条件都保持不变。
 
+`platejs/field` 中的 `fillsField(field, value)` 判断一个值是否是字段的已填答案。`required` 以及 `filled` 和 `blank` 测试使用同一条规则。已填答案是已勾选的复选框，或者符合字段类型的值。文本或签名答案还需要包含至少一个 JavaScript 的 `\s` 不匹配的字符。因此 `false`、空文本和只含空格的文本符合字段，但不算填写，而 `0` 算作数字字段的已填答案。
+
+```ts
+import { fillsField } from 'platejs/field';
+
+fillsField({ kind: 'text' }, '  '); // false
+fillsField({ kind: 'number' }, 0); // true
+fillsField({ kind: 'checkbox' }, false); // false
+```
+
 ## 角色
 
 每个字段指定填写它的角色，例如 `landlord` 或 `tenant`。角色可以是任意字符串。Plate 只保存它，从不检查用户是谁。由你的应用把每个人对应到一个角色，就像把每条评论对应到它的作者。
 
-[只填写视图](#fill-as-one-role)会在该编辑器中阻止一个角色修改另一个角色的字段或周围的文本。从多人收集答案的应用仍应在服务器上检查每个提交的值。
+[只填写视图](#fill-as-one-role)会在该编辑器中阻止一个角色修改另一个角色的字段或周围的文本。从多人收集答案的应用仍应在服务器上用 [`applyFieldValues`](#apply-answers-on-the-server) 检查每个角色的答案。
 
 设置弹出框提供文档中字段已经使用的角色，也可以输入新角色。
 
@@ -216,7 +227,7 @@ editor.update((tx) => {
 
 ## 条件
 
-条件说明字段何时适用。当 `fieldId` 为 `ref` 的字段通过 `test` 时，该字段适用。除 `filled` 和 `blank` 外，每种测试都与 `value` 比较，`value` 使用被指向字段的值的结构。示例中的宠物名字字段在宠物选择为 `yes` 时适用：
+条件说明字段何时适用。当 `fieldId` 为 `ref` 的字段通过 `test` 时，该字段适用。除 `filled` 和 `blank` 外，每种测试都与 `value` 比较，`value` 使用被指向字段的值的结构。示例中由租客填写的宠物名字字段，在房东的允许养宠物选择为 `yes` 时适用：
 
 ```tsx
 editor.update((tx) => {
@@ -226,13 +237,20 @@ editor.update((tx) => {
 });
 ```
 
-弹出框的 Show when 列表提供条件已指向的字段，以及条件不会指回该字段的其他所有字段。测试列表只提供那个字段的类型接受的测试。Plate 保存条件并检查它是否符合被指向的字段。它不会隐藏或跳过字段，因此条件不成立时意味着什么由你的应用决定。
+弹出框的 Show when 列表提供条件已指向的字段，以及条件不会指回该字段的其他所有字段。测试列表只提供那个字段的类型接受的测试。
+
+编辑器从不隐藏字段。条件不成立的字段被跳过。即使它是 `required`，它也不需要答案，并且 `applyFieldValues` 会拒绝它的已填答案。条件检查它指向的字段的答案：
+
+- `equals` 在答案等于 `value` 时成立，`not-equals` 在答案不等于它时成立，没有答案也算不等于。
+- `above` 和 `below` 比较数字，并按日期比较 ISO 日期。没有答案时两者都不成立。
+- 不符合字段类型的答案算作没有答案，本身被跳过的字段的答案也算作没有答案。
+- 没有答案的复选框在它的角色完成作答后读作 `false`。在编辑器中，这适用于填写被读取字段的那个角色的复选框。在 `applyFieldValues` 中，这在复选框的角色提交之后适用。
 
 `update` 拒绝会形成循环的条件，例如 A 指向 B 而 B 指向 A，或者字段指向自身。修改循环中字段的测试或值不会被拒绝。循环仍可能来自加载的文档、直接的节点写入或两个协作者同时进行的更新，此时其中每个字段都会报告 `condition-loop`。
 
 ## 读取字段及其问题
 
-`read.field(fieldId)` 返回持有该 id 的字段（可在任意根中），没有时返回 `null`。它查找该字段，然后沿条件链每经过一个条件查找一个字段。`read.fields()` 按阅读顺序返回文档中的每个字段。每次读取得到一个 `FieldRead`：`{ fieldId, node, problems }`。
+`read.field(fieldId)` 返回持有该 id 的字段（可在任意根中），没有时返回 `null`。它查找该字段，然后沿条件链每经过一个条件查找一个字段。`read.fields()` 按阅读顺序返回文档中的每个字段。每次读取得到一个 `FieldRead`：`{ applies, fieldId, node, problems }`。
 
 ```tsx
 import { BaseFieldPlugin } from 'platejs/field';
@@ -241,6 +259,7 @@ const fields = editor.plugin(BaseFieldPlugin).read;
 
 const tenant = fields.field(tenantId);
 const broken = fields.fields().filter((field) => field.problems.length > 0);
+const skipped = fields.fields().filter((field) => field.applies === false);
 ```
 
 | 问题 | 何时出现 |
@@ -252,13 +271,22 @@ const broken = fields.fields().filter((field) => field.problems.length > 0);
 
 `insert` 和 `update` 会拒绝导致问题的写入。问题来自之后的编辑，例如删除或修改条件指向的字段，或者来自绕过这些命令的写入，例如直接的 `tx.nodes.set` 或加载的文档。
 
-在 React 中，`platejs/field/react` 的 `useFieldRead(fieldId)` 读取一个字段及其问题。修改元素的提交会重新读取它，只有字段或其问题变化时组件才会重新渲染。注册表中的字段标签用它在条件指向的字段被删除时显示警告，撤销后警告消失。
+`applies` 说明字段在它的条件下是否适用。它依据文档当前持有的答案，以字段自己的角色的视角沿整条条件链读取：
+
+- 字段没有条件、条件有问题或处于循环中，或者条件成立时，为 `true`。
+- 字段被跳过，即条件不成立时，为 `false`。
+- 依赖另一个角色尚未给出的答案时为 `null`，例如房东选择允许养宠物之前租客的宠物名字。只有 `applyFieldValues` 知道哪些角色已经提交，因此编辑器把这样的字段读作等待中。
+
+条件指向被跳过字段的字段是确定的，即使那个被跳过的字段属于另一个角色。
+
+在 React 中，`platejs/field/react` 的 `useFieldRead(fieldId)` 读取一个字段、它的问题以及它是否适用。修改元素的提交会重新读取它，只有字段、其问题或 `applies` 变化时组件才会重新渲染。注册表中的字段标签用它在条件指向的字段被删除时显示警告，撤销后警告消失。字段标签还会把 `applies` 为 `false` 的字段显示为淡色，并标记为 skipped。等待中的字段的标签不会变淡。
 
 ```tsx
 import { useFieldRead } from 'platejs/field/react';
 
 const field = useFieldRead(element.fieldId);
 const problems = field?.problems ?? [];
+const skipped = field?.applies === false;
 ```
 
 ## 以一个角色填写 [#fill-as-one-role]
@@ -305,7 +333,94 @@ editor.plugin(FieldPlugin).store.set({ fillRole: null });
 
 填写检查运行在字段插件的 `activate` 中，撤销步骤的边界运行在它的 `corrections` 中。用自己的 `activate` 或 `corrections` 扩展字段插件的插件会替换它们，因此把这部分逻辑放在一个配套插件中。
 
-填写检查运行在用户的浏览器中，任何人都可以在那里运行自己的代码。由你的服务器分配每个人的角色，并检查每个提交的答案。
+填写检查运行在用户的浏览器中，任何人都可以在那里运行自己的代码。由你的服务器分配每个人的角色，并用 `applyFieldValues` 检查每个提交。
+
+## 提交答案 [#submit-answers]
+
+客户端从编辑器读取一个角色的答案并发送出去。服务器按它保存的模板检查每个角色的答案，并保存填写后的文档。
+
+### 读取一个角色的答案 [#read-a-roles-answers]
+
+`read.submission(role)` 返回一个 `FieldSubmission`，即 `{ role, values }`。`values` 以 `fieldId` 为键，保存该角色每个有 `value` 的字段的值。
+
+```tsx
+import { FieldPlugin } from 'platejs/field/react';
+
+const submission = editor.plugin(FieldPlugin).read.submission('tenant');
+// { role: 'tenant', values: { tenant: 'Grace Hopper', 'pet-name': 'Milo', rules: true } }
+```
+
+提交保留 `false`、`0`、空文本、只含空格的文本，以及不再符合字段类型的值，由服务器判断每一个。它不包含没有 `value` 的字段，因此从未勾选过的复选框和勾选后又取消的复选框可以区分开。
+
+### 在服务器上应用答案 [#apply-answers-on-the-server]
+
+`platejs/field` 中的 `applyFieldValues(template, submissions, options?)` 检查每个角色的答案并生成填写后的文档。它不导入 React，并自己检查每个提交的结构，因此服务器可以直接传入解析后的 JSON。在这个路由中，`frozenTemplate` 是你的应用保存的模板，`accepted` 保存它之前接受的提交，`saveFilled` 保存结果。
+
+```ts
+import { applyFieldValues } from 'platejs/field';
+
+const result = applyFieldValues(frozenTemplate, [...accepted, submission]);
+
+if (!result.ok) {
+  return Response.json({ refusals: result.refusals }, { status: 400 });
+}
+
+await saveFilled(result.document);
+```
+
+- `template` 是你的应用保存的编辑后文档，带有它的 `fieldId`，不带答案，因此只填写视图和 `applyFieldValues` 从相同的 id 开始。它接受 `Value` 或带命名根的文档，`result.document` 的结构与之相同。`applyFieldValues` 读取主根和每个命名根中的字段，从不读取 `meta` 或记录中的字段。
+- `submissions` 按角色提交的顺序列出每个角色的提交。每个提交都按之前的角色加上它自己的答案进行检查。
+- 你的应用用 `schema.override` 重命名了字段元素的类型时，`options.type` 指定这个类型。默认为 `field`。
+
+填写后的文档是模板加上每个被接受的答案，答案作为其字段的 `value`。默认值始终是设置，从不变成答案。
+
+成功时，`pending` 列出每个尚未提交、且有适用或等待中的必填字段的角色。它还列出每个这样的等待中字段下一个需要其答案的角色。可选字段从不会让角色出现在 `pending` 中。示例把 `pending` 显示为 Waiting on。
+
+### 拒绝 [#refusals]
+
+拒绝时，`result` 为 `{ ok: false, refusals }`，至少包含一条拒绝。模板有拒绝时，结果列出所有这些拒绝，并且不检查任何提交。否则，它列出第一个有拒绝的提交的所有拒绝。
+
+| 代码 | 何时出现 |
+|------|----------|
+| `invalid-template` | 模板字段持有答案（`answered`），缺少 `fieldId`、包含的不是恰好一个文本，或者 kind、role、label、设置或条件的结构不对（`malformed`），重复了 `fieldId`（`duplicate-id`），或者有读取会报告的问题，包括 `condition-loop`。拒绝会给出 `problem`、字段的 `path`、字段在命名根中时的 `root`，以及字段有 `fieldId` 时的 `fieldId`。 |
+| `invalid-submission` | 提交不是一个带有 `role` 字符串和 `values` 对象的对象。拒绝会给出它的 `index`。 |
+| `duplicate-role` | 已在列表中的角色再次提交。 |
+| `unknown-role` | 该角色不拥有任何字段。 |
+| `unknown-field` | 答案指向的字段不在模板中。 |
+| `wrong-role` | 答案属于另一个角色的字段。 |
+| `invalid-value` | 答案不符合它的字段。 |
+| `waiting` | 该角色的字段在等待一个尚未提交的角色，由 `waitsOn` 给出。即使该字段的答案也被拒绝，仍会报告这条拒绝。 |
+| `skipped` | 该角色的字段被跳过，却持有已填答案。未填写的答案按原样保留，因此清空答案或取消勾选即可消除这条拒绝。 |
+| `missing-required` | 该角色的必填字段适用，但没有已填答案。 |
+
+`invalid-submission`、`duplicate-role` 和 `unknown-role` 单独出现。其他提交拒绝会给出 `role` 和 `fieldId`，并且会列出该提交的每一条。
+
+在示例中，租客在房东之前点击 Submit 会得到一条 `waiting` 拒绝，因为宠物名字在等待房东的允许养宠物。房东提交否时，租客仍然输入的宠物名字会被拒绝为 `skipped`，直到清空它。
+
+两个角色互相等待对方的模板可以通过，因为第三个角色的答案可以让链上的某个字段被跳过，从而结束等待。两个字段都仍在等待时，先提交的角色会被拒绝为 `waiting`，等待另一个角色。
+
+### 打印填写后的文档 [#print-the-filled-document]
+
+通过 `platejs/static` 用 `BaseFieldKit` 渲染填写后的文档，并用这份输出生成 PDF。静态输出把没有已填答案的非复选框字段显示为一条空白线，而 `editor.api.html.serialize()` 为没有答案的字段写入方括号中的标签。
+
+```tsx
+import { createEditor } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
+
+import { BaseFieldKit } from '@/components/editor/field-static';
+
+const filled = createEditor({
+  initialValue: result.document,
+  plugins: [
+    // ...otherPlugins,
+    ...BaseFieldKit,
+  ],
+});
+
+const { data } = await renderStaticHtml(filled);
+```
+
+[静态渲染](/cn/docs/static)介绍 `EditorStatic` 和 `renderStaticHtml`。
 
 ## 复制与粘贴
 
@@ -325,7 +440,7 @@ editor.plugin(FieldPlugin).store.set({ fillRole: null });
 `editor.api.html.serialize()` 把每个字段写成一个 `span`，每个属性对应一个 `data-field-*` 属性。span 的文本是答案：选择字段为所选选项的标签，没有答案的字段为方括号中的标签。id、kind、label 和 role 属性保存纯文本，其他属性保存 JSON：
 
 ```html
-<p>Pets? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-role="tenant" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-role="tenant">[Pet name]</span></p>
+<p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
 解析这段 HTML 会读回每个属性。span 需要 `data-field-kind`、`data-field-label` 和 `data-field-role` 才会被读成字段。粘贴的 HTML 模板会获得新 id，其中的条件指向副本。
@@ -337,7 +452,7 @@ editor.plugin(FieldPlugin).store.set({ fillRole: null });
 Markdown 把每个字段写成一个 `<field>` 标签，包含每个属性，`fieldId` 和条件也在其中：
 
 ```md
-Pets? <field kind="choice" label="Pets" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" role="tenant" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
+Pets allowed? <field kind="choice" label="Pets allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
 读取器需要 `kind`、`label` 和 `role`。缺少它们的标签保留为文本，并返回 `markdown-unsupported-node` diagnostic。粘贴的 Markdown 模板会获得新 id，其中的条件指向副本。
@@ -367,10 +482,13 @@ const dropped = result.diagnostics.filter(
 | `FieldPlugin` | `platejs/field/react` | React 字段插件。 |
 | `tx.plugin(BaseFieldPlugin).insert(settings, options?)` | `BaseFieldPlugin` 更新 | 插入字段并返回它的 `fieldId`。 |
 | `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` 更新 | 修改字段的设置或值。 |
-| `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` 读取 | 持有该 id 的字段及其问题，或 `null`。 |
-| `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` 读取 | 按阅读顺序返回每个字段及其问题。 |
+| `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` 读取 | 持有该 id 的字段及其问题和它是否适用，或 `null`。 |
+| `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` 读取 | 按阅读顺序返回每个字段及其问题和它是否适用。 |
+| `editor.plugin(BaseFieldPlugin).read.submission(role)` | `BaseFieldPlugin` 读取 | 一个角色的字段的值，以 `fieldId` 为键，用于传给 `applyFieldValues`。 |
 | `fillRole` | `BaseFieldPlugin` 状态 | 该编辑器填写时使用的角色，编辑模板时为 `null`。通过 `initialState` 或 `editor.plugin(FieldPlugin).store.set` 设置。 |
-| `useFieldRead(fieldId)` | `platejs/field/react` | 读取一个字段及其问题，任一变化时重新渲染。 |
+| `useFieldRead(fieldId)` | `platejs/field/react` | 读取一个字段、它的问题以及它是否适用，任一变化时重新渲染。 |
+| `applyFieldValues(template, submissions, options?)` | `platejs/field` | 按模板检查每个角色的答案，返回填写后的文档和 `pending`，或者返回拒绝。 |
 | `fitsField(field, value)` | `platejs/field` | 判断一个值是否符合字段的类型和选项。 |
+| `fillsField(field, value)` | `platejs/field` | 判断一个值是否是字段的已填答案。 |
 | `FIELD_TESTS` | `platejs/field` | 每种类型的条件可以使用的测试。 |
-| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption` | `platejs/field` | 字段类型。 |
+| `FieldElement`、`FieldSettings`、`FieldPatch`、`FieldRead`、`FieldCondition`、`FieldProblem`、`FieldKind`、`FieldTest`、`FieldValue`、`FieldOption`、`FieldSubmission`、`FieldRefusal`、`FieldApplyResult` | `platejs/field` | 字段类型。 |

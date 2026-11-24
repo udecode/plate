@@ -12,7 +12,7 @@ A field is a typed blank in a document that one role fills, such as a tenant's n
 
 <ComponentPreview name="field-demo" height="1340px" />
 
-The demo is a lease template for a landlord and a tenant. Insert a field from the toolbar's menu, click a field to change its settings, and read the HTML, Markdown and Word panels under the editor. Pick Fill as landlord or Fill as tenant above the editor to fill the lease as that role.
+The demo is a lease template for a landlord and a tenant. Insert a field from the toolbar's menu, click a field to change its settings, and read the HTML, Markdown and Word panels under the editor. Pick Fill as landlord or Fill as tenant above the editor to fill the lease as that role. Submit checks that role's answers after the answers of the roles that submitted before it. The Submission panel then shows each refusal, or the filled document as static output with the roles it still waits on.
 
 <PackageInfo>
 
@@ -20,12 +20,13 @@ The demo is a lease template for a landlord and a tenant. Insert a field from th
 
 - Inline void `field` element of six kinds: text, number, date, checkbox, choice and signature.
 - A role per field, a label, and an optional required flag, default, choice options and value, each checked against the field's kind.
-- A condition that names another field by its `fieldId` and tests that field's value.
-- `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field.
+- A condition that names another field by its `fieldId` and tests that field's value. A field whose condition fails is skipped, so it needs no answer.
+- `insert` and `update` commands that refuse a setting or condition that does not fit, and reads that report what is wrong with each field and whether it applies.
 - A fill-only view of one role, which takes that role's answers, refuses every other local change and undoes only that role's answers.
+- `applyFieldValues`, which checks each role's answers against the template on a server and builds the filled document.
 - New ids for the fields a paste, a drag copy, a duplicate or a table fill copies, with copied conditions that name the copies.
 - HTML and Markdown that keep every property, and Word export that keeps each answer and reports the settings it drops.
-- A field chip with a settings popover, an insert menu and a static renderer in the registry UI.
+- A field chip with a settings popover that mutes a skipped field, an insert menu, and a static renderer that shows each answer in place or a blank line, in the registry UI.
 
 </PackageInfo>
 
@@ -77,7 +78,7 @@ export function FieldToolbar() {
 
 ### Add static rendering
 
-`BaseFieldKit` renders each field's answer, a choice as its option's label, or the field's label when it has no answer, for read-only output with `platejs/static`.
+`BaseFieldKit` renders each field for read-only output with `platejs/static`. A field shows its answer in place: a choice as its option's label, a checkbox as a ticked or empty box, and a number as written, `0` included. A field other than a checkbox shows a blank line when it has no filled answer. An app makes the PDF of a filled document from this output, as [Print the filled document](#print-the-filled-document) shows.
 
 <ComponentSource name="field-static" />
 
@@ -149,11 +150,11 @@ A field sits inside a paragraph, like a date or a mention.
 | `fieldId` | `string` | Unique in the document. A new field gets a random `nanoid`. |
 | `kind` | `FieldKind` | `'text'`, `'number'`, `'date'`, `'checkbox'`, `'choice'` or `'signature'`. Required. |
 | `role` | `string` | The role that fills the field, such as `'tenant'`. Required. |
-| `label` | `string` | Required. The chip shows it, and output shows it when the field has no answer. |
-| `required` | `boolean` | Marks a field that must be filled. Plate stores it, and your app checks it when it collects answers. |
+| `label` | `string` | Required. The chip shows it, and HTML, Word and plain text show it in brackets when the field has no answer. |
+| `required` | `boolean` | Marks a field that needs a filled answer while it applies. `applyFieldValues` refuses a submission that leaves it unfilled. |
 | `defaultValue` | `FieldValue` | A value of the field's kind. |
 | `options` | `FieldOption[]` | Choice fields only. Each option is `{ value, label }`, and no two share a `value`. |
-| `value` | `FieldValue` | The answer. A field without one is unfilled. |
+| `value` | `FieldValue` | The answer. A field is unfilled without one, or when `fillsField` says its answer does not fill it. |
 | `condition` | `FieldCondition` | `{ ref, test, value? }`, see [Conditions](#conditions). |
 | `children` | `[{ text: '' }]` | Required child of an inline void element. |
 
@@ -172,11 +173,21 @@ Each kind fixes the shape of its value and the tests a condition on it may use. 
 
 A choice stores the option's `value`, so renaming an option's `label` keeps every answer and condition that names it.
 
+`fillsField(field, value)` from `platejs/field` says whether a value is a filled answer for a field. `required` and the `filled` and `blank` tests read the same rule. A filled answer is a ticked checkbox, or a value that fits the field's kind. A text or signature answer also needs a character that JavaScript's `\s` does not match. So `false`, an empty text and a text of spaces fit a field but do not fill it, and `0` fills a number field.
+
+```ts
+import { fillsField } from 'platejs/field';
+
+fillsField({ kind: 'text' }, '  '); // false
+fillsField({ kind: 'number' }, 0); // true
+fillsField({ kind: 'checkbox' }, false); // false
+```
+
 ## Roles
 
 Each field names the role that fills it, such as `landlord` or `tenant`. A role is any string. Plate stores it and never checks who a user is. Your app maps each person to a role, as it maps each comment to its author.
 
-A [fill-only view](#fill-as-one-role) stops one role from changing another role's field, or the text around it, in that editor. An app that collects answers from several people still checks each submitted value on its server.
+A [fill-only view](#fill-as-one-role) stops one role from changing another role's field, or the text around it, in that editor. An app that collects answers from several people still checks each role's answers on its server, with [`applyFieldValues`](#apply-answers-on-the-server).
 
 The settings popover offers the roles the document's fields already use, and takes a new one.
 
@@ -216,7 +227,7 @@ A patch that changes `kind` or `options` also drops each value, default and opti
 
 ## Conditions
 
-A condition says when a field applies. It applies when the field whose `fieldId` is `ref` passes `test`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value. The demo's Pet name field applies when the Pets choice is `yes`:
+A condition says when a field applies. It applies when the field whose `fieldId` is `ref` passes `test`. Every test but `filled` and `blank` compares against `value`, which takes the shape of the named field's value. The demo's Pet name field, which the tenant fills, applies when the landlord's Pets allowed choice is `yes`:
 
 ```tsx
 editor.update((tx) => {
@@ -226,13 +237,20 @@ editor.update((tx) => {
 });
 ```
 
-The popover's Show when list offers the field the condition names and every other field whose conditions do not lead back to this one. Its test list offers only the tests that field's kind takes. Plate stores the condition and checks that it fits the field it names. It does not hide a field or skip it, so your app decides what a condition that fails means.
+The popover's Show when list offers the field the condition names and every other field whose conditions do not lead back to this one. Its test list offers only the tests that field's kind takes.
+
+The editor never hides a field. A field whose condition fails is skipped. It needs no answer even when it is `required`, and `applyFieldValues` refuses a filled answer for it. A condition tests the answer of the field it names:
+
+- `equals` holds when the answer is `value`, and `not-equals` when it is not, no answer included.
+- `above` and `below` compare numbers, and ISO dates as dates. Neither holds without an answer.
+- An answer that does not fit its field's kind counts as no answer, and so does the answer of a field that is skipped itself.
+- A checkbox with no answer reads as `false` once its role is done answering. In the editor, that holds for a checkbox of the role that fills the field being read. In `applyFieldValues`, it holds once the checkbox's role has submitted.
 
 `update` refuses a condition that would close a loop, such as A naming B while B names A, or a field naming itself. A new test or value on a field of a loop passes. A loop can still come from a loaded document, a plain node write or two peers' updates made at the same time, and each of its fields then reports `condition-loop`.
 
 ## Read fields and their problems
 
-`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. It looks up that field, then one field for each condition it follows along the chain. `read.fields()` returns every field of the document in reading order. Each read is a `FieldRead`: `{ fieldId, node, problems }`.
+`read.field(fieldId)` returns the field that holds an id, in any root, or `null`. It looks up that field, then one field for each condition it follows along the chain. `read.fields()` returns every field of the document in reading order. Each read is a `FieldRead`: `{ applies, fieldId, node, problems }`.
 
 ```tsx
 import { BaseFieldPlugin } from 'platejs/field';
@@ -241,6 +259,7 @@ const fields = editor.plugin(BaseFieldPlugin).read;
 
 const tenant = fields.field(tenantId);
 const broken = fields.fields().filter((field) => field.problems.length > 0);
+const skipped = fields.fields().filter((field) => field.applies === false);
 ```
 
 | Problem | When |
@@ -252,13 +271,22 @@ const broken = fields.fields().filter((field) => field.problems.length > 0);
 
 `insert` and `update` refuse a write that would cause a problem. A problem comes from a later edit, such as deleting or changing the field a condition names, or from a write that skipped the commands, such as a plain `tx.nodes.set` or a loaded document.
 
-In React, `useFieldRead(fieldId)` from `platejs/field/react` reads one field and its problems. A commit that changes an element reads it again, and the component renders again only when the field or its problems changed. The registry chip uses it to show a warning when the field its condition names is deleted, and an undo clears the warning.
+`applies` says whether the field applies under its condition. It reads the answers the document holds now, along the whole chain of conditions, as the field's own role reads them:
+
+- `true` for a field with no condition, a condition that has a problem or one in a loop, and a condition that holds.
+- `false` for a skipped field, whose condition fails.
+- `null` while it depends on an answer another role has not given, such as the tenant's Pet name before the landlord picks Pets allowed. Only `applyFieldValues` knows which roles have submitted, so the editor reads such a field as waiting.
+
+A field whose condition names a skipped field is decided, even when another role owns that field.
+
+In React, `useFieldRead(fieldId)` from `platejs/field/react` reads one field, its problems and whether it applies. A commit that changes an element reads it again, and the component renders again only when the field, its problems or `applies` changed. The registry chip uses it to show a warning when the field its condition names is deleted, and an undo clears the warning. The chip also mutes a field whose `applies` is `false` and marks it skipped. The chip of a field that waits is not muted.
 
 ```tsx
 import { useFieldRead } from 'platejs/field/react';
 
 const field = useFieldRead(element.fieldId);
 const problems = field?.problems ?? [];
+const skipped = field?.applies === false;
 ```
 
 ## Fill as one role
@@ -305,7 +333,94 @@ A peer's change passes whole. Every commit tagged `collaboration` passes, so col
 
 The fill check runs in the field plugin's `activate`, and the undo step boundary in its `corrections`. A plugin that extends the field plugin with its own `activate` or `corrections` replaces them, so put that work in a companion plugin.
 
-The fill check runs in the person's browser, where anyone can run their own code. Your server assigns each person's role and checks each submitted answer.
+The fill check runs in the person's browser, where anyone can run their own code. Your server assigns each person's role and checks each submission with `applyFieldValues`.
+
+## Submit answers
+
+A client reads one role's answers from the editor and posts them. The server checks every role's answers against the template it saved, and keeps the filled document.
+
+### Read a role's answers
+
+`read.submission(role)` returns a `FieldSubmission`, `{ role, values }`. `values` holds the `value` of each field of the role that has one, keyed by `fieldId`.
+
+```tsx
+import { FieldPlugin } from 'platejs/field/react';
+
+const submission = editor.plugin(FieldPlugin).read.submission('tenant');
+// { role: 'tenant', values: { tenant: 'Grace Hopper', 'pet-name': 'Milo', rules: true } }
+```
+
+The submission keeps `false`, `0`, an empty text, a text of spaces and a value that no longer fits its field's kind, so the server judges each of them. It leaves out a field with no `value`, so a checkbox never touched and one ticked and then unticked stay apart.
+
+### Apply answers on the server
+
+`applyFieldValues(template, submissions, options?)` from `platejs/field` checks each role's answers and builds the filled document. It imports no React and checks each submission's shape itself, so a server passes parsed JSON straight in. In this route, `frozenTemplate` is the template your app saved, `accepted` holds the submissions it accepted before, and `saveFilled` stores the result.
+
+```ts
+import { applyFieldValues } from 'platejs/field';
+
+const result = applyFieldValues(frozenTemplate, [...accepted, submission]);
+
+if (!result.ok) {
+  return Response.json({ refusals: result.refusals }, { status: 400 });
+}
+
+await saveFilled(result.document);
+```
+
+- `template` is the authored document as your app saved it, with its `fieldId`s and no answers, so the fill view and `applyFieldValues` start from the same ids. It takes a `Value` or a document with named roots, and `result.document` has the same shape. `applyFieldValues` reads fields in the main root and each named root, never in `meta` or records.
+- `submissions` lists each role's submission in the order the roles submitted. Each one is checked against the roles before it plus its own answers.
+- `options.type` names the field element's type when your app renamed it with `schema.override`. It defaults to `field`.
+
+The filled document is the template with each accepted answer set as its field's `value`. A default stays a setting and never becomes an answer.
+
+On success, `pending` lists each role that has not submitted and holds a required field that applies or waits. It also lists the role whose answer each such waiting field needs next. An optional field never puts a role in `pending`. The demo shows `pending` as Waiting on.
+
+### Refusals
+
+On a refusal, `result` is `{ ok: false, refusals }` with at least one refusal. When the template has refusals, the result lists all of them and checks no submission. Otherwise it lists the refusals of the first submission that has any.
+
+| Code | When |
+|------|------|
+| `invalid-template` | A template field holds an answer (`answered`), lacks a `fieldId`, holds anything but one text or has a kind, role, label, setting or condition of the wrong shape (`malformed`), repeats a `fieldId` (`duplicate-id`), or has a problem a read reports, `condition-loop` included. The refusal names the `problem`, the field's `path`, its `root` in a named root and its `fieldId` when it has one. |
+| `invalid-submission` | A submission is not an object with a `role` string and a `values` object. The refusal names its `index`. |
+| `duplicate-role` | A role already in the list submits again. |
+| `unknown-role` | The role owns no field. |
+| `unknown-field` | An answer names no field of the template. |
+| `wrong-role` | An answer is for another role's field. |
+| `invalid-value` | An answer does not fit its field. |
+| `waiting` | A field of the role waits on a role that has not submitted, which `waitsOn` names. It is reported even when the field's answer is refused too. |
+| `skipped` | A field of the role is skipped and holds a filled answer. An unfilled answer stays as written, so clearing the answer or unticking the box ends the refusal. |
+| `missing-required` | A required field of the role applies and has no filled answer. |
+
+`invalid-submission`, `duplicate-role` and `unknown-role` come alone. The other submission refusals name the `role` and the `fieldId`, and the result lists every one of them for that submission.
+
+In the demo, the tenant's Submit before the landlord's gets a `waiting` refusal, because Pet name waits on the landlord's Pets allowed. When the landlord submits No, a pet name the tenant types anyway is refused as `skipped` until it is cleared.
+
+A template where two roles each wait on the other passes, because a third role's answer can end the wait by making a field along the chain skip. While both fields still wait, the role that submits first is refused as `waiting` on the other.
+
+### Print the filled document
+
+Render the filled document with `BaseFieldKit` through `platejs/static`, and make its PDF from that output. Static output shows a field other than a checkbox as a blank line when it has no filled answer, while `editor.api.html.serialize()` writes the label in brackets for a field with no answer.
+
+```tsx
+import { createEditor } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
+
+import { BaseFieldKit } from '@/components/editor/field-static';
+
+const filled = createEditor({
+  initialValue: result.document,
+  plugins: [
+    // ...otherPlugins,
+    ...BaseFieldKit,
+  ],
+});
+
+const { data } = await renderStaticHtml(filled);
+```
+
+[Static Rendering](/docs/static) covers `EditorStatic` and `renderStaticHtml`.
 
 ## Copy and paste
 
@@ -325,7 +440,7 @@ In Suggesting mode, a change from a field to a mention shows the field as delete
 `editor.api.html.serialize()` writes each field as a `span` with one `data-field-*` attribute per property. The span's text is the answer, a choice as its option's label, or the label in brackets when the field has no answer. The id, kind, label and role attributes hold plain text, and the others hold JSON:
 
 ```html
-<p>Pets? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-role="tenant" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-role="tenant">[Pet name]</span></p>
+<p>Pets allowed? <span data-field-id="pets" data-field-kind="choice" data-field-label="Pets allowed" data-field-options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" data-field-required="true" data-field-role="landlord" data-field-value="&quot;yes&quot;">Yes</span> Pet name: <span data-field-condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" data-field-id="pet-name" data-field-kind="text" data-field-label="Pet name" data-field-required="true" data-field-role="tenant">[Pet name]</span></p>
 ```
 
 Parsing that HTML reads every property back. A span needs `data-field-kind`, `data-field-label` and `data-field-role` to read as a field. A pasted HTML template gets new ids, and its conditions name the copies.
@@ -337,7 +452,7 @@ The demo's HTML panel serializes with `lossPolicy: 'allow'`, because the date el
 Markdown writes each field as a `<field>` tag with every property, the `fieldId` and the condition included:
 
 ```md
-Pets? <field kind="choice" label="Pets" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" role="tenant" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
+Pets allowed? <field kind="choice" label="Pets allowed" options="[{&quot;label&quot;:&quot;Yes&quot;,&quot;value&quot;:&quot;yes&quot;},{&quot;label&quot;:&quot;No&quot;,&quot;value&quot;:&quot;no&quot;}]" required role="landlord" value="yes" fieldId="pets" /> Pet name: <field kind="text" label="Pet name" required role="tenant" condition="{&quot;ref&quot;:&quot;pets&quot;,&quot;test&quot;:&quot;equals&quot;,&quot;value&quot;:&quot;yes&quot;}" fieldId="pet-name" />
 ```
 
 The reader needs `kind`, `label` and `role`. A tag without them stays as text, with a `markdown-unsupported-node` diagnostic. A pasted Markdown template gets new ids, and its conditions name the copies.
@@ -367,10 +482,13 @@ Plain text, through `serializePlainText` from `platejs`, writes the same text as
 | `FieldPlugin` | `platejs/field/react` | React field plugin. |
 | `tx.plugin(BaseFieldPlugin).insert(settings, options?)` | `BaseFieldPlugin` update | Inserts a field and returns its `fieldId`. |
 | `tx.plugin(BaseFieldPlugin).update(fieldId, patch)` | `BaseFieldPlugin` update | Changes a field's settings or value. |
-| `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` read | The field that holds an id, with its problems, or `null`. |
-| `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` read | Every field in reading order, with its problems. |
+| `editor.plugin(BaseFieldPlugin).read.field(fieldId)` | `BaseFieldPlugin` read | The field that holds an id, with its problems and whether it applies, or `null`. |
+| `editor.plugin(BaseFieldPlugin).read.fields()` | `BaseFieldPlugin` read | Every field in reading order, with its problems and whether it applies. |
+| `editor.plugin(BaseFieldPlugin).read.submission(role)` | `BaseFieldPlugin` read | The values of one role's fields, keyed by `fieldId`, to pass to `applyFieldValues`. |
 | `fillRole` | `BaseFieldPlugin` state | The role this editor fills as, or `null` while authoring. Set it through `initialState` or `editor.plugin(FieldPlugin).store.set`. |
-| `useFieldRead(fieldId)` | `platejs/field/react` | Reads one field and its problems, and renders again when either changes. |
+| `useFieldRead(fieldId)` | `platejs/field/react` | Reads one field, its problems and whether it applies, and renders again when any of them changes. |
+| `applyFieldValues(template, submissions, options?)` | `platejs/field` | Checks each role's answers against the template, and returns the filled document with `pending` or the refusals. |
 | `fitsField(field, value)` | `platejs/field` | Whether a value fits a field's kind and options. |
+| `fillsField(field, value)` | `platejs/field` | Whether a value is a filled answer for a field. |
 | `FIELD_TESTS` | `platejs/field` | The tests a condition may use on each kind. |
-| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption` | `platejs/field` | Field types. |
+| `FieldElement`, `FieldSettings`, `FieldPatch`, `FieldRead`, `FieldCondition`, `FieldProblem`, `FieldKind`, `FieldTest`, `FieldValue`, `FieldOption`, `FieldSubmission`, `FieldRefusal`, `FieldApplyResult` | `platejs/field` | Field types. |
