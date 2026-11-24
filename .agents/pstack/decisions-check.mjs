@@ -51,8 +51,12 @@
 //        open row that names a new plan, the first one included, unless the first path
 //        under <plans>/artifacts/ in any prior-art: of its evidence or result is an
 //        existing file there, read without a :line suffix, quotes, asterisks or trailing
-//        punctuation and with its .. segments
-//        resolved. Both append forms take a "recorded" result on a row whose decision starts
+//        punctuation and with its .. segments resolved. Once that report exists, they
+//        refuse the row unless its evidence or result holds a sign-ins: label, in any case
+//        and with optional asterisks or backticks, and, up to the next ; or tab, either none
+//        or a comma-separated list whose every item is a product name followed by signed in,
+//        or by answer "<text>" whose text has no < or > and some character that is not
+//        whitespace. Both append forms take a "recorded" result on a row whose decision starts
 //        with "critical", in any phase, only with step: <n> in it and proof: <existing file
 //        under <plans>/artifacts/> in its evidence, and refuse a build row whose decision
 //        starts with "built:" and holds reach: <text> while such a row has no later panel or
@@ -685,7 +689,6 @@ function secondPlanProblems(state, cells, where) {
 
 const PRIOR_ART = /(?:^|[\s;`(*])prior-art:\**\s*([^;\t]*)/giu;
 const isFile = (path) => existsSync(path) && statSync(path).isFile();
-const fileOnDisk = (path) => checkoutCopies(path).some(isFile);
 
 function priorArtProblems(state, cells, where) {
   const plan = pivotPlanOf(cells);
@@ -694,10 +697,23 @@ function priorArtProblems(state, cells, where) {
   const words = [...`${cells[3]} ${cells[4]}`.matchAll(PRIOR_ART)].flatMap((match) => match[1].match(/[^\s()[\]<>`,*"']+/gu) ?? []);
   const word = words.find((part) => part.includes(root)) ?? words[0];
   const path = word && normalize(tidy(word));
-  if (path?.includes(root) && fileOnDisk(path)) return [];
+  const report = path?.includes(root) && checkoutCopies(path).some(isFile);
+  if (report) return signInsProblems(cells, plan, where);
   const named = path ? `its prior-art: ${path} is no file under ${root}` : 'it names no prior-art: report';
   return [
     `${where}: this starts the new plan ${plan}, and ${named}. Before a pivot designs its plan, the lead runs evidence lanes on the finding's own case and saves their report in the run directory, as the pivot rule in .agents/pstack/rules/panel.md says. Name that report in this row as prior-art: <path under ${root}>`,
+  ];
+}
+
+const SIGN_INS = /(?:^|[\s;(*`])sign-ins:[*`]*\s*([^;\t]*)/iu;
+const SIGN_IN_ITEMS = /^(?:\s*[^,"]*[^,"\s]\s+(?:signed in|answer "[^"<>]*[^"<>\s][^"<>]*")\s*(?:,|$))+$/u;
+
+function signInsProblems(cells, plan, where) {
+  const value = `${cells[3]}\t${cells[4]}`.match(SIGN_INS)?.[1].trim();
+  if (value === 'none' || (value && SIGN_IN_ITEMS.test(value))) return [];
+  const got = value === undefined ? 'it names no sign-ins: outcome' : `its sign-ins: ${value} is neither none nor a list of products that each end with signed in or hold answer "<words>"`;
+  return [
+    `${where}: this starts the new plan ${plan}, and ${got}. A product the lanes need that lacks a sign-in stops the run until the owner signs the browser in or says to go on without it, as the product lane rule in .agents/pstack/rules/panel.md says. Name the outcome in this row as sign-ins: none, or as sign-ins: <product> signed in, <product> answer "<the owner's words>"`,
   ];
 }
 
