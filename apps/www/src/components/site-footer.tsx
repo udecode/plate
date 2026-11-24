@@ -17,7 +17,7 @@ export function SiteFooter() {
         pathname === '/editors' || pathname.startsWith('/editors/')
           ? 'bg-surface/40'
           : 'dark:bg-transparent',
-        '3xl:fixed:bg-transparent'
+        '3xl:fixed:bg-transparent group-has-data-[slot=designer]/layout:hidden'
       )}
     >
       <div className="container-wrapper px-4 xl:px-6">
