@@ -255,7 +255,6 @@ const main = async () => {
 
   const tempRoot = mkdtempSync(join(tmpdir(), 'plate-api-reference-'));
   const symbols: Record<string, SymbolFact> = {};
-  let version = '';
 
   try {
     const packOutput = execFileSync(
@@ -268,9 +267,7 @@ const main = async () => {
       packOutput.slice(packOutput.search(/^\{/m))
     ) as {
       filename: string;
-      version: string;
     };
-    ({ version } = packResult);
     execFileSync('tar', ['-xzf', packResult.filename, '-C', tempRoot]);
 
     const packageRoot = join(tempRoot, 'package');
@@ -366,7 +363,6 @@ const main = async () => {
               left.localeCompare(right)
             )
           ),
-          version,
         },
       },
       schemaVersion: 1,
