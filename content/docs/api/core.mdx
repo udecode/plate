@@ -526,7 +526,39 @@ const elementId = editor.plugin(ElementIdPlugin);
 const key = editor.key(element);
 const id = elementId.read.id(key);
 const entry = id ? editor.read.nodes.byId(id) : null;
+
+editor.update.nodes.move({ at: { id: "intro" }, to: [0] });
+editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
+
+An editor that stores IDs finds and targets an element by its ID:
+
+- `editor.read.nodes.byId(id)`: the element that holds `id`, as
+  `{ key, node, path, root? }`, or `null`. `root` is present only when the
+  element lives in a named root.
+- `tx.nodes.byId(id)`: the same lookup inside an update, read from its draft.
+  It throws once its update ends.
+- `{ id }`: a node target, such as `nodes.path({ id })` on a read or
+  `at: { id }` on a transform, which acts as the key of the element that holds
+  the ID. Text, mark, range and offset targets keep their point or range. A
+  target is an ID only as an object, not an array, whose one own key is a
+  string `id`.
+
+An editor stores IDs when the schema gives every element type a generated,
+unique string `id`, as the plugin's default target does, and no content admits
+undeclared element types. In any other editor, `byId` and `at: { id }` throw.
+
+A command, a plugin update method and a one-shot `insert`, `remove`, `set`,
+`move`, `split`, `merge`, `lift` or `unwrap` on `editor.update.nodes` look an
+ID up in the command's document. Over another author's pending suggestions,
+they reach a moved element's moved copy and change nothing for an ID that only
+a struck original holds. A raw `editor.update((tx) => ...)` looks the ID up in
+the stored draft, as it resolves a path or a key, so it reaches the struck
+original. A one-shot `unset`, `wrap`, `replace` or `replaceChildren` runs as a
+raw update. An editor view answers from its own document, except a read
+while a command runs, which answers from the command's document. When no
+element holds the ID, a write changes nothing and a read returns its empty
+result. [Node identity](/docs/editor#node-identity) shows each route.
 
 Configure `initialState.generateId` to replace the default full-length
 `nanoid()` generator. Include `ElementIdPlugin` in the target passed to
@@ -543,7 +575,8 @@ The application schema can narrow the plugin-owned `id` target. Current
 document admission generates and retains IDs only for elements that match the
 compiled target. A narrowed target must match every type that can take a
 matched type's place, so `target.group("block")` works while no element's
-content admits both a block and an inline element.
+content admits both a block and an inline element. Narrow it only when the
+application never finds or targets an element by ID:
 
 ```ts
 const editor = createEditor({
@@ -557,6 +590,10 @@ const editor = createEditor({
   },
 });
 ```
+
+A block-only target leaves inline elements without IDs, so `nodes.byId` and
+`at: { id }` throw in that editor, even for a block's ID. `read.id(key)` and
+pen marks from `platejs/ink` keep working.
 
 ### `ElementStatePlugin`
 
@@ -671,7 +708,8 @@ Generic component for rendering an element.
       Necessary for rendering the node children.
     </APIItem>
     <APIItem name="as" type="React.ElementType" optional>
-      The component type to render as. - **Default:** `'div'`
+      The component type to render as.
+      - **Default:** `'div'`
     </APIItem>
   </APIProps>
 </API>
@@ -706,7 +744,8 @@ Generic component for rendering a leaf.
       </APISubList>
     </APIItem>
     <APIItem name="as" type="React.ElementType" optional>
-      The component type to render as. - **Default:** `'span'`
+      The component type to render as.
+      - **Default:** `'span'`
     </APIItem>
   </APIProps>
 </API>
@@ -730,7 +769,8 @@ Generic component for rendering text.
       Necessary for rendering the node children.
     </APIItem>
     <APIItem name="as" type="React.ElementType" optional>
-      The component type to render as. - **Default:** `'span'`
+      The component type to render as.
+      - **Default:** `'span'`
     </APIItem>
   </APIProps>
 </API>

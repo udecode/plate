@@ -167,9 +167,19 @@ result as an internal invariant failure.
 
 When the schema declares `id` as a generated, unique string property of every
 element type, as Plate's `ElementIdPlugin` does, and no content admits
-undeclared element types, an element's stored `id` is also a target. `{ id }` works as `at` on node reads and node transforms, and
-writes reach the element in its own root. Text, mark and selection targets keep
-their point or range. An object is an id target only when `id` is its one key.
+undeclared element types, an element's stored `id` is also a target. `{ id }`
+works as `at` on node reads and node transforms and acts as the key of the
+element that holds the id, so writes reach the element in its own root. Text,
+mark, range and offset targets keep their point or range. An object is an id
+target only when it is not an array and its one own key is a string `id`. A
+command, a plugin update method and a one-shot `insert`, `remove`, `set`,
+`move`, `split`, `merge`, `lift` or `unwrap` on `editor.update.nodes` look the
+id up in the command's document. Over another author's pending suggestions, an
+id that only a struck original holds changes nothing there. A raw
+`editor.update((tx) => ...)` looks the id up in the stored draft, as it
+resolves a path or a key. A one-shot `unset`, `wrap`, `replace` or
+`replaceChildren` runs as a raw update. A target that no element holds changes
+nothing, and reads return their empty result.
 `editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns
 the element's `key`, `node` and `path`, with `root` when the element lives in
 a named root, or `null` when no element holds the id. Without that schema,

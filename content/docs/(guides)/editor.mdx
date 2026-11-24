@@ -616,12 +616,41 @@ const entry = id ? editor.read.nodes.byId(id) : null;
 `editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns
 the element's `key`, `node` and `path`, with `root` when the element lives in
 a named root, or `null` when no element holds the ID. A stored ID addresses an
-element; the element's live identity stays its key. Every node transform takes
+element; the element's live identity stays its key. Node reads and node
+transforms take an `{ id }` target, such as `nodes.path({ id })` or
 `at: { id }`:
 
 ```ts
+// A command looks the ID up in the document it runs in.
+editor.update.nodes.move({ at: { id: "intro" }, to: [0] });
+
+// A raw update looks the ID up in the stored draft.
 editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
+
+`byId` and `at: { id }` need an editor that stores IDs. An editor stores IDs
+when the schema gives every element type a generated, unique string `id`, as
+`ElementIdPlugin`'s default target does, and no content admits undeclared
+element types. In any other editor, both throw.
+
+An `{ id }` target acts as the key of the element that holds the ID. Text,
+mark, range and offset targets keep their point or range. A target is an ID
+only as an object, not an array, whose one own key is a string `id`, so a live
+element that carries an `id` stays a node target. When no element holds the
+ID, a write changes nothing and a read returns its empty result.
+
+The route decides which document the ID is looked up in:
+
+- A command, a plugin update method and a one-shot `insert`, `remove`, `set`,
+  `move`, `split`, `merge`, `lift` or `unwrap` on `editor.update.nodes` look it
+  up in the command's document. Over another author's pending suggestions, the
+  ID of a moved element reaches the moved copy, and an ID that only a struck
+  original holds changes nothing.
+- A raw `editor.update((tx) => ...)` looks it up in the stored draft, as it
+  resolves a path or a key. It reaches the struck original. A one-shot `unset`,
+  `wrap`, `replace` or `replaceChildren` runs as a raw update.
+- An editor view answers from its own document. A read on a view while a
+  command runs answers from the command's document.
 
 The default generator is full-length `nanoid()`. Loads and moves preserve valid
 IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. No two
@@ -633,8 +662,9 @@ optionally installed package boundaries. A suggested Enter stores the new
 element's ID when it records, so
 [previews and decisions](/docs/authored-changes#configure-a-view) show that ID.
 
-The compiled schema property target decides which elements receive IDs. Narrow
-the target in the application schema when only blocks need persisted identity:
+The compiled schema property target decides which elements receive IDs. When
+only blocks need persisted identity and the application never finds or targets
+an element by ID, narrow the target in the application schema:
 
 ```ts
 import { ElementIdPlugin, schema, target } from "platejs";
@@ -650,6 +680,10 @@ const editor = useCreateEditor({
   },
 });
 ```
+
+A block-only target leaves inline elements without IDs, so `nodes.byId` and
+`at: { id }` throw in that editor, even for a block's ID.
+`elementId.read.id(key)` and pen marks from `platejs/ink` keep working.
 
 Current-document admission generates IDs only for matching elements and removes
 the plugin-owned `id` from excluded elements. The block target works while no

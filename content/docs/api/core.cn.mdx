@@ -448,7 +448,36 @@ const elementId = editor.plugin(ElementIdPlugin);
 const key = editor.key(element);
 const id = elementId.read.id(key);
 const entry = id ? editor.read.nodes.byId(id) : null;
+
+editor.update.nodes.move({ at: { id: "intro" }, to: [0] });
+editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 ```
+
+保存 ID 的编辑器可以通过 ID 查找和定位元素：
+
+- `editor.read.nodes.byId(id)`：持有 `id` 的元素，形如
+  `{ key, node, path, root? }`；没有元素持有该 ID 时为 `null`。只有元素位于命名根
+  时才有 `root`。
+- `tx.nodes.byId(id)`：update 内的同一查找，从该 update 的草稿读取。update 结束
+  后调用会抛出错误。
+- `{ id }`：节点 target，例如读取时的 `nodes.path({ id })` 或变换时的
+  `at: { id }`，相当于持有该 ID 的元素的 key。
+  文本、mark、range 和 offset target 仍使用各自的点或范围。只有当一个非数组对象
+  唯一的自有键是字符串 `id` 时，它才是 ID target。
+
+当 schema 为每种元素类型声明生成的、唯一的字符串 `id`，并且没有内容允许未声明的
+元素类型时，编辑器才保存 ID。该插件的默认 target 就是如此声明的。在其他编辑器中，
+`byId` 和 `at: { id }` 会抛出错误。
+
+命令、插件 update 方法，以及 `editor.update.nodes` 上一次性的 `insert`、`remove`、
+`set`、`move`、`split`、`merge`、`lift` 或 `unwrap` 调用，在命令的文档中查找 ID。
+存在其他作者待定的建议时，它们指向被移动元素移动后的副本；只有被删除线标记的原件
+持有的 ID 不做任何更改。原始的 `editor.update((tx) => ...)` 在已存储的草稿中查找
+ID，与它解析路径或 key 的方式相同，因此会指向被删除线标记的原件。一次性的
+`unset`、`wrap`、`replace` 或 `replaceChildren` 调用按原始 update 运行。editor view
+从它自己的文档中回答，但命令运行期间的读取从命令的文档中回答。没有元素持有该 ID
+时，写入不做任何更改，读取返回它的空结果。[节点身份](/cn/docs/editor#节点身份)
+展示了每种途径。
 
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。把
 `ElementIdPlugin` 加入传给 `defineDocumentMigrations` 的 target。该插件用
@@ -461,7 +490,7 @@ const entry = id ? editor.read.nodes.byId(id) : null;
 应用 schema 可以收窄该插件拥有的 `id` target。当前文档进入系统时，只为匹配编译后
 target 的元素生成并保留 ID。收窄后的 target 必须匹配每一种能取代已匹配类型位置的
 类型，因此只要没有元素的内容同时允许 block 和 inline 元素，`target.group("block")`
-就可用。
+就可用。只有应用从不通过 ID 查找或定位元素时才收窄它：
 
 ```ts
 const editor = createEditor({
@@ -475,6 +504,10 @@ const editor = createEditor({
   },
 });
 ```
+
+只匹配 block 的 target 让 inline 元素没有 ID，因此在该编辑器中 `nodes.byId` 和
+`at: { id }` 会抛出错误，即使查找的是 block 的 ID。`read.id(key)` 和
+`platejs/ink` 的笔迹标记仍然可用。
 
 ### `ElementStatePlugin`
 
@@ -585,7 +618,8 @@ const CustomMetadataPlugin = definePlugin("customMetadata", {
       渲染节点子元素所必需。
     </APIItem>
     <APIItem name="as" type="React.ElementType" optional>
-      要渲染的组件类型。 - **默认值:** `'div'`
+      要渲染的组件类型。
+      - **默认值:** `'div'`
     </APIItem>
   </APIProps>
 </API>
@@ -620,7 +654,8 @@ const CustomMetadataPlugin = definePlugin("customMetadata", {
       </APISubList>
     </APIItem>
     <APIItem name="as" type="React.ElementType" optional>
-      要渲染的组件类型。 - **默认值:** `'span'`
+      要渲染的组件类型。
+      - **默认值:** `'span'`
     </APIItem>
   </APIProps>
 </API>
@@ -644,7 +679,8 @@ const CustomMetadataPlugin = definePlugin("customMetadata", {
       渲染节点子元素所必需。
     </APIItem>
     <APIItem name="as" type="React.ElementType" optional>
-      要渲染的组件类型。 - **默认值:** `'span'`
+      要渲染的组件类型。
+      - **默认值:** `'span'`
     </APIItem>
   </APIProps>
 </API>
