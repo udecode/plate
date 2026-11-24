@@ -1,5 +1,12 @@
 # plite
 
+## 54.0.0-beta.5
+
+### Patch Changes
+
+- [`dee395d`](https://github.com/udecode/plate/commit/dee395d68e25980340ce470257e16c1d37486ac5) by [@zbeyens](https://github.com/zbeyens) –
+  - Keep a range anchor made with `deletion: 'nearest'` on its text when a drag moves all of that text within one root, instead of leaving it collapsed where the text was. Undo and redo move it back and forth. A drag of part of the range leaves the anchor on the part that stays, unless the drop rebuilds the block that holds that part. A Suggesting move keeps the anchor on the struck original until the move is decided. A copy, a drag into another editor or root and an editor bound to Yjs or `plitejs/sync` map the range as before.
+
 ## 54.0.0-beta.4
 
 ### Patch Changes

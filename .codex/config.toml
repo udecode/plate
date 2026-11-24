@@ -1,0 +1,3 @@
+[mcp_servers.cloudflare]
+command = "npx"
+args = [ "-y", "mcp-remote@latest", "https://mcp.cloudflare.com/mcp" ]
