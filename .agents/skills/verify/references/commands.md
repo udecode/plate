@@ -76,11 +76,12 @@ Rules:
   `apps/www` docs app;
 - the managed Plite runner passes `-g` to Playwright as `--grep`, a regular
   expression, so escape `+` and `(` in a test title, or pass a plain part of
-  it. It refuses every other Playwright flag, such as `--output` or
-  `--workers`; `node scripts/run-plite-browser.mjs direct` from `apps/plite`
-  takes them for diagnostics. A file stops at its first failing batch and
-  resumes its passing batches on the next run, so a case after a known
-  failure runs only once its file runs without that failure;
+  it. It also takes `--grep-invert` and refuses every other Playwright flag,
+  such as `--output` or `--workers`; `node scripts/run-plite-browser.mjs
+  direct` from `apps/plite` takes them for diagnostics. A file stops at its
+  first failing batch, prints how many batches and tests did not run, and
+  resumes its passing batches on the next run. To run the cases after a
+  known failure now, add `--grep-invert` with the failing test's title;
 - managed Playwright proofs never run at the same time. Two at once share
   the CPU and fail timing-sensitive specs that pass alone, can trip the Next
   build lock (`Another next build process is already running`) or prove the
