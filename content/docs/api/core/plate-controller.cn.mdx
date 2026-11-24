@@ -50,7 +50,7 @@ function ActiveEditorLabel() {
 `useEditor()` 返回最近 provider 所选的编辑器，没有目标时抛出错误。`useOptionalEditor()` 使用相同规则，没有 provider 或没有目标时返回 `null`。
 
 - `EditorContent` 内的 hook 使用该可编辑视图，包括其根、DOM 和当前只读状态。
-- `EditorRoot` 内、content 外的 UI 跟随该 Plate 中用户最近聚焦或按下的视图，此前使用第一个已挂载视图。没有 content 时使用模型。
+- `EditorRoot` 内、content 外的 UI 跟随该 Plate 中用户最近聚焦或按下的视图，此前使用第一个已挂载视图。没有 content 时为其 UI 提供该 Plate 的根编辑器，因此其 UI 只作用于该 Plate，即使同一编辑器的另一个 Plate 持有光标。
 - 控制器下的共享 UI 跟随用户最近聚焦或按下的已挂载视图，此前使用第一个已挂载的主视图。
 - 嵌套的 `EditorRoot` 和 `EditorController` 为后代提供自己的作用域。
 

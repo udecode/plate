@@ -352,33 +352,32 @@ The editor follows the `EditorContent` that shows its root inside the
 the user last focused or pressed. Until the user has focused or pressed one,
 it follows the first one mounted. Once the one it follows unmounts, it follows
 the one the user focused or pressed before that, or the first one mounted when
-the user has focused or pressed no other. While no `EditorContent` there shows
-the root, it follows the `EditorRoot`, or the `EditorContent` around the hook
-when the hook renders inside one. While that `EditorRoot` is writable and
-shows no `EditorContent` at all, and the caret sits in the hook's root inside
-another `EditorRoot` of the same editor, the editor follows the
-`EditorContent` that holds the caret instead, for that `EditorContent`'s DOM
-and for the read-only state of the `EditorRoot` around it. A read-only `EditorContent` that shares
-its `EditorRoot` with a writable one leaves the editor writable. The editor
-keeps the authored view of its own `EditorRoot`. A write through it that
-places the caret, even where the caret already is, moves the caret into its
-own `EditorRoot`, which ends the follow. A caret that moves only because the
-content around it changed stays in the followed `EditorContent`. An
-`EditorRoot` that shows a preview counts as writable here, so its editor
-follows too. The preview refuses the editor's content edits, but a selection
-change through the editor still ends the follow, and a review decision still
-changes the document. When that `EditorRoot` is read-only, the editor stays
-read-only instead.
+the user has focused or pressed no other. While every `EditorContent` of the
+root there is hidden, as under an `Activity` or a plugin whose `wrapRoot`
+returns `null`, it follows a hidden one. While none of the root is mounted
+there, it follows the `EditorRoot`, or the `EditorContent` around the hook when
+the hook renders inside one. A lock or a preview takes hold as React commits
+the render that sets it, so a write from a control's mount or unmount code in
+that same render can still land. A preview set while the user composes text
+takes hold when the composition ends.
+
+The editor never acts in another `EditorRoot`, even while an `EditorContent`
+there holds the caret in the hook's root, and that `EditorRoot`'s lock and
+authored mode never apply to it. So a press in a writable `EditorRoot` writes
+plain text into a root that another `EditorRoot` shows read-only or in
+suggesting mode. A write through it that places the
+caret moves the caret into its own `EditorRoot`. Under an `EditorRoot` that
+shows a preview, its content edits throw and its selection changes go through.
 
 While what it follows is read-only, every update through the editor throws,
 and `{ readOnly: false }` does not make the editor writable. An `EditorContent`
 that overrides the `readOnly` of its `EditorRoot` decides for the editor too.
-Outside that follow into another `EditorRoot`, the editor also takes the
+The editor also takes the
 [authored view](/docs/api/core/plate-components#authored-view) of what it
 follows, so it records its edits as proposals in suggesting mode.
 
-A nested `EditorRoot` is a view of its own. An editor from a hook outside it
-follows it only while it holds the caret, as above.
+A nested `EditorRoot` is a view of its own, and an editor from a hook outside
+it never acts in it.
 
 Its `editor.api.dom` calls run in the view it follows, so it can focus the
 view it edits, even after focus moves to the button:
@@ -389,8 +388,9 @@ const note = useRootEditor("note");
 return <button onClick={() => note.api.dom.focus()}>Edit note</button>;
 ```
 
-While the editor follows its `EditorRoot` because no `EditorContent` shows the
-root, its DOM lookups return `null` and `focus()` does nothing. A call given a
+While no `EditorContent` in its `EditorRoot` shows the root, `editable()`
+returns `null` and `focus()` does nothing, even when an `EditorContent` in
+another `EditorRoot` holds the caret. A call given a
 DOM node, an event or pointer coordinates runs in the view of the root that
 holds them, when that view belongs to the same `EditorRoot`, as
 [Views](/docs/api/dom#views) describes.

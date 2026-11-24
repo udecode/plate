@@ -300,22 +300,21 @@ When several views show the root, the editor follows the one the user last
 focused or pressed. Until the user has focused or pressed one, it follows the
 first one mounted. Once the view it follows unmounts, it follows the one the
 user focused or pressed before that, or the first one mounted when the user has
-focused or pressed no other. While no view shows the root, it follows the
-`EditorRoot`, or the `Editable` around the hook when the hook renders inside
-one. While the `EditorRoot` around the hook is writable and shows no
-`Editable` at all, and the caret sits in the hook's root inside another
-`EditorRoot` of the same editor, the editor follows the `Editable` that holds
-the caret instead, for that `Editable`'s DOM and for the read-only state of
-the `EditorRoot` around it. A read-only `Editable` that shares its `EditorRoot` with a
-writable one leaves the editor writable. The editor keeps the authored view of
-its own `EditorRoot`. A write through it that places the caret, even where the
-caret already is, moves the caret into its own `EditorRoot`, which ends the
-follow. A caret that moves only because the content around it changed stays
-in the followed `Editable`. An `EditorRoot` that shows a preview counts as
-writable here, so its editor follows too. The preview refuses the editor's
-content edits, but a selection change through the editor still ends the
-follow, and a review decision still changes the document. When the
-`EditorRoot` around the hook is read-only, the editor stays read-only instead.
+focused or pressed no other. While every view of the root there is hidden, as
+under an `Activity`, it follows a hidden one. While no view of the root is
+mounted there, it follows the `EditorRoot`, or the `Editable` around the hook
+when the hook renders inside one. A lock or a preview takes hold as React
+commits the render that sets it, so a write from a control's mount or unmount
+code in that same render can still land. A preview set while the user composes
+text takes hold when the composition ends.
+
+The editor never acts in another `EditorRoot`, even while an `Editable` there
+holds the caret in the hook's root, and that `EditorRoot`'s lock and authored
+mode never apply to it. So a press in a writable `EditorRoot` writes plain text
+into a root that another `EditorRoot` shows read-only or in suggesting mode.
+A write through it that places the caret
+moves the caret into its own `EditorRoot`. Under an `EditorRoot` that shows a
+preview, its content edits throw and its selection changes go through.
 
 Hooks that render in the same `EditorRoot` or `Editable` and ask for the same
 root and `readOnly` option share one editor, so a lock or unlock set through
@@ -324,20 +323,20 @@ it with `setEditorReadOnly` reaches each of them.
 While that view is read-only, every update through the editor throws, and
 `{ readOnly: false }` does not make the editor writable. An `EditorRoot` is
 read-only while it has `readOnly`, or while every `Editable` that shows its own
-root is read-only and at least one does. Outside that follow into another
-`EditorRoot`, the editor also takes the view's authored view, so it records its
-edits as proposals while the view is in suggesting mode.
+root is read-only and at least one does. The editor also takes the view's
+authored view, so it records its edits as proposals while the view is in
+suggesting mode.
 
-A nested `EditorRoot` is a view of its own. An editor from a hook outside it
-follows it only while it holds the caret, as above.
+A nested `EditorRoot` is a view of its own, and an editor from a hook outside
+it never acts in it.
 
 Its `editor.api.dom` calls run in the view it follows, so a toolbar button can
 focus or measure the view its commands edit. A call given a DOM node, an
 event or pointer coordinates runs instead in the view of the root that holds
-them, when that view belongs to the same `EditorRoot`. While the editor
-follows its `EditorRoot` because no `Editable` shows the root, the calls find
-no `Editable` and `focus()` does nothing. `resolveNode` and `resolvePoint`
-still resolve a text node that any view of the editor renders, because they
+them, when that view belongs to the same `EditorRoot`. While no `Editable` in
+its `EditorRoot` shows the root, the calls find no `Editable`, even when one in
+another `EditorRoot` holds the caret, and `focus()` does nothing.
+`resolveNode` and `resolvePoint` still resolve a text node that any view of the editor renders, because they
 read the document's text before they look for a view.
 
 #### `useCaretEditor(): Editor`

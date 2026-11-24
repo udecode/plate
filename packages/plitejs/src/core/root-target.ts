@@ -416,38 +416,21 @@ export const subscribeRootTarget = (
   };
 };
 
-export const showsRootView = (
-  owner: Editor,
-  presentation: ViewPresentation
-) => {
-  for (const entry of ENTRIES.get(owner)?.get(presentation)?.values() ?? []) {
-    for (const view of entry.views) {
-      if (isShown(view)) return true;
-    }
-  }
-
-  return false;
-};
-
 export const readRootViewPresentationRevision = (
   presentation: ViewPresentation
 ) => NOTICES.get(presentation)?.revision ?? 0;
 
-/**
- * Hear, once per microtask, that a view of the presentation mounted,
- * unmounted, gained or lost its surface, changed its read-only state, or that
- * the user used another of its views.
- */
 export const subscribeRootViewPresentation = (
   presentation: ViewPresentation,
   listener: () => void
 ) => {
   const { listeners } = noticeOf(presentation);
+  const entry = () => listener();
 
-  listeners.add(listener);
+  listeners.add(entry);
 
   return () => {
-    listeners.delete(listener);
+    listeners.delete(entry);
   };
 };
 

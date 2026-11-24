@@ -42,14 +42,11 @@ runs in one view, picked by the editor you call it on:
 - An editor from `useRootEditor(root)` runs in the view of `root` it follows,
   as [`useRootEditor`](/docs/plite/libraries/plite-react/hooks) describes, so
   its DOM calls and its commands reach the same view, even after focus moves
-  to a button. While it follows an `Editable` in another `EditorRoot`, its DOM
-  calls run in that `Editable`, but `resolveEventRange` returns `null` for an
-  event from it, such as a drop. While it follows its own `EditorRoot` because no `Editable` there
-  shows `root`, and once a write through it that places the caret ends a
-  follow into another `EditorRoot`, it finds no `Editable`, so `editable()`
-  returns `null` and `hasDOMNode` returns `false`. `resolveNode` and
-  `resolvePoint` still resolve a text node that any view of the editor
-  renders.
+  to a button. While no `Editable` in its `EditorRoot` shows `root`, it finds
+  no `Editable`, even when one in another `EditorRoot` holds the caret, so
+  `editable()` returns `null` and `hasDOMNode` returns `false`. `resolveNode` and
+  `resolvePoint` still resolve a text node of `root` that another view
+  renders with the default leaf.
 - The editor `createEditor` returns runs in a view that shows the root the
   call is about: its target's root, else the caret's root, else the primary
   document. When the caret was placed in that root from an `EditorRoot`,

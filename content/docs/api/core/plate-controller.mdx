@@ -51,7 +51,7 @@ Set `primary` on `EditorRoot`; it defaults to `true`. A view with `primary={fals
 `useEditor()` returns the nearest provider's selected editor and throws when no target exists. `useOptionalEditor()` uses the same selection and returns `null` without a provider or target.
 
 - Inside `EditorContent`, hooks use that exact editable view, including its root, DOM, and current read-only state.
-- Inside `EditorRoot`, outside its content, UI follows the view of that Plate the user focused or pressed last, then its first mounted view. A Plate without content provides its model.
+- Inside `EditorRoot`, outside its content, UI follows the view of that Plate the user focused or pressed last, then its first mounted view. A Plate without content gives its UI a root editor of that Plate, so its UI acts on that Plate alone, even while another Plate of the same editor holds the caret.
 - Shared UI under the controller follows the mounted view the user focused or pressed last, then the first mounted primary view.
 - Nested `EditorRoot` and `EditorController` components scope their descendants independently.
 
