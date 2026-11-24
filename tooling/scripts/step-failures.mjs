@@ -52,10 +52,17 @@ const openExpectedFailures = (root) => {
 };
 
 const LANES = new Set(['test', 'test-slow']);
+// Both steps run plitejs test files, so a failure one lists holds in the other.
+const PACKAGE_LANES = new Set(['plite-test', 'package-tests']);
+
+const ownLane = (entry, step) =>
+  entry.step === step || (LANES.has(step) && LANES.has(entry.step));
 
 export const listedFor = (root, step) =>
   openExpectedFailures(root).filter(
-    (entry) => entry.step === step || (LANES.has(step) && LANES.has(entry.step))
+    (entry) =>
+      ownLane(entry, step) ||
+      (PACKAGE_LANES.has(step) && PACKAGE_LANES.has(entry.step))
   );
 
 export const stepOutput = (log, step) => {
@@ -183,6 +190,7 @@ export const expectedVerdict = ({
   const leftOut = leftOutFiles(output);
   const cleared = listed.filter(
     (entry) =>
+      ownLane(entry, step) &&
       (!onlyFiles || onlyFiles.includes(entry.file)) &&
       !leftOut.has(entry.file) &&
       !failures.has(failureKey(entry))
