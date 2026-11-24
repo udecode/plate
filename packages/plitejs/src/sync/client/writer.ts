@@ -291,6 +291,8 @@ export const createWriter = ({
   });
 
   const save = (write: OutboxWrite) => {
+    if (destroyed) return 0;
+
     const before = record.batches;
 
     record = applyWrite(record, write);
@@ -330,8 +332,13 @@ export const createWriter = ({
     !record.head.offline;
 
   let savedFrame = inFlight()?.frame ?? null;
+  let handedFrame = savedFrame;
 
   if (fresh) save({ confirmed: record.confirmed, head: record.head });
+
+  const handOut = () => {
+    if (joined && inFlight()?.frame === savedFrame) handedFrame = savedFrame;
+  };
 
   const release = () => {
     const sent = inFlight();
@@ -339,6 +346,7 @@ export const createWriter = ({
     if (!sent || sent.frame !== savedFrame) return;
     if (measureMessage(sent.frame, SYNC_MAX_MESSAGE_BYTES) !== null) {
       link?.hold(sent.frame);
+      handOut();
     } else {
       keep(sent, { kind: 'size' });
       changed();
@@ -892,6 +900,7 @@ export const createWriter = ({
             break;
           }
           joined = true;
+          stalled = false;
           target = event.version;
           if (record.head.epoch === null) {
             save({ head: { ...record.head, epoch: event.epoch } });
@@ -903,6 +912,7 @@ export const createWriter = ({
       stop({ kind: 'invalid' });
     }
     changed();
+    handOut();
     void freeze();
   };
 
@@ -926,17 +936,16 @@ export const createWriter = ({
   return {
     connect,
     close: () => {
+      const sent = inFlight();
+
+      if (sent && sent.frame !== handedFrame) {
+        if (sent.state === 'sent') putBack(sent);
+        else keep(sent, { kind: 'conflict' });
+      }
       destroyed = true;
       savedLive.clear();
       link?.close();
       link = null;
-
-      // The lock frees once the writer has tried the writes queued by now, so
-      // the put-back of a frame that never left is queued here, before
-      // another tab can load the outbox.
-      const sent = inFlight();
-
-      if (sent?.state === 'sent' && sent.frame !== savedFrame) putBack(sent);
 
       return writes.retrySaves();
     },

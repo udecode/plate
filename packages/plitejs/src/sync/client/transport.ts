@@ -220,7 +220,10 @@ export const socketTransport = (
               if (welcomed) reconnectDelay = FIRST_RECONNECT;
             }
             peer.receive(message);
-            if (message.type === 'welcome') sendFrame();
+            if (message.type === 'welcome') {
+              frameTries = Math.min(frameTries, ANSWER_DEADLINES.length - 1);
+              sendFrame();
+            }
           },
         });
       } catch {
