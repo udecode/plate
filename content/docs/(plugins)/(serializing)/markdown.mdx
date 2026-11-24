@@ -119,7 +119,8 @@ register, after a leading [front matter](#front-matter) block. GFM, math,
 emoji, and [CJK emphasis](#cjk-emphasis) come from the
 [remark plugins](#remark-plugins) configured on `MarkdownPlugin`. Registered
 tags look like HTML, but only registered names are tags and nothing is
-evaluated.
+evaluated. Other HTML stays text, which [`RawHtmlPlugin`](#raw-html) writes
+back as HTML when its block passes a check.
 
 ### Registered tags
 
@@ -138,6 +139,90 @@ evaluated.
 A tag is registered only while its feature plugin is installed. Element tags
 use the schema type, so an application that renames a type also renames its
 tag.
+
+### Raw HTML
+
+`RawHtmlPlugin` keeps a file's raw HTML through a save. The Markdown kit
+installs it. An editor with its own plugin list adds it beside
+`MarkdownPlugin`:
+
+```ts
+import { BaseParagraphPlugin, createEditor } from 'platejs';
+import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
+
+const editor = createEditor({
+  plugins: [BaseParagraphPlugin, MarkdownPlugin, RawHtmlPlugin],
+});
+```
+
+An app whose own plugin already declares a `rawHtml` mark keeps that plugin and
+leaves `RawHtmlPlugin` out, because two plugins cannot own one mark.
+
+The plugin changes the editor's schema fingerprint, so an editor with it
+refuses a document saved under the earlier schema identity. An app that saves
+documents under a named schema increments its `version` and adds a migration
+step, as [Document migrations](/docs/editor#document-migrations) shows. An app
+that saves `{ document, schema }` under the derived identity opens each saved
+document in an editor without the plugin and passes its `read.value()` to the
+new editor.
+
+Import gives the `rawHtml` mark to raw HTML that no registered tag claims, such
+as a README's centered header, and to most HTML comments on lines of their own
+in the document, a block quote or a list item. The editor shows that text as
+plain text, and export writes it back as HTML:
+
+```md
+<p align="center">
+  <img src="logo.png" width="200" />
+</p>
+
+<!-- markdownlint-disable -->
+```
+
+- Import marks only HTML that export can write back. Other raw HTML stays plain
+  text without the mark and saves escaped, as it does without the plugin. A
+  comment block that fails the check, such as `<!-- a <!-- b -->`, also stays
+  plain text, where an editor without the plugin drops it.
+- Export checks each block that holds marked text: its paragraph, heading,
+  table cell or HTML block. Marked text in any other block fails the check.
+  The check accepts a fixed set of formatting, heading, list, table, media and
+  disclosure tags, such as `p`, `div`, `img`, `kbd` and `details`, and
+  attributes such as `align`, `alt`, `href`, `src`, `title` and `width`. It
+  refuses every other tag and attribute, such as `script`, `class`, `style` and
+  event handlers, and a doctype.
+- An `href` or `src` URL passes when it is empty or Plate's URL safety rules
+  accept it, and a `cite` or `srcset` URL passes only when those rules accept
+  it. The rules refuse script-capable schemes such as `javascript:`. The check
+  does not read the Link plugin's `allowedSchemes`, so
+  `<a href="smb://server/share">x</a>` writes back as HTML, while the Link
+  plugin with its default schemes refuses `[x](smb://server/share)`.
+- When an edit makes a marked block fail the check, export writes that block's
+  marked text escaped and reports a lossless `markdown-unsafe-content` warning.
+  In rare cases, such as a mapping that copies marked text, export writes all
+  marked text in the document escaped. Plate writes a details summary line as
+  HTML, so a CommonMark reader still reads escaped text there as HTML, while
+  Plate reads it back as the same plain text.
+- An HTML block writes back as HTML in the document, a block quote or a list
+  item. Inside a registered block tag's body, such as `<callout>`, raw HTML
+  writes back only in pieces that fit on one line. An HTML block there stays
+  plain text and saves escaped, and one directly inside `<details>` fails the
+  parse with `markdown-schema-invalid`, unless it is a comment. A `<block>`
+  wrapper around one HTML block drops on import, and its HTML writes back. A
+  footnote definition keeps all of its raw HTML as plain text.
+- A comment drops, as it does without the plugin, when it sits inside a line of
+  paragraph or heading text, a table cell, a registered tag's body or a
+  footnote definition, or when it is an unindented `<!---->`, the separator
+  Plate writes between two blocks.
+- Import also leaves unmarked a comment or HTML block whose indent export
+  cannot write back. That covers one indented past its list item's text on the
+  line after an empty marker, such as `   <!-- c -->` after `-`, one indented
+  after a list, such as one space after `- a`, and one whose indent keeps a tab
+  after the indent of its quote or list item. Such a comment drops, and such
+  HTML saves escaped.
+- HTML, DOCX and plain-text export write marked text as visible text.
+- Naming `rawHtml` in `MarkdownPlugin`'s `plainMarks` stops import from
+  marking, so tags stay plain text and comment blocks drop. Naming it in a
+  serialize call's `plainMarks` writes marked text escaped, with no warning.
 
 ### Writer output
 
@@ -170,7 +255,8 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 
 - Every string parses. Raw HTML that no mapping accepts stays literal text and
   reports a lossless `markdown-unsupported-node` warning under every policy.
-- HTML comments are dropped with a lossless warning.
+- Without [`RawHtmlPlugin`](#raw-html), an HTML block that holds only closed
+  comments drops with a lossless warning.
 - `<br>`, `<br/>`, and `<br />` become line breaks.
 - A line holding only a registered block tag is a block, even next to paragraph
   text. A block tag elsewhere in a paragraph or heading stays text. A table cell
@@ -687,8 +773,9 @@ When the list still holds it, it reads every slice and every block Plate's
 reader refuses. Unless a mapping decodes the `yaml` or `toml` node it makes,
 that node is a lossy `markdown-unsupported-node`, which fails the parse under
 the default policy. A [streaming preview](#streaming-previews) that continues
-its previous result also reads a block at the start of each later piece of the
-stream, so that preview can differ from a fresh parse of the same text.
+its previous result reads the whole source again while the plugin adds front
+matter syntax, as it does with its default options, so it matches a fresh parse
+of the same text.
 
 ### CJK emphasis
 
@@ -741,7 +828,7 @@ reportWarnings(result.diagnostics);
 | Code | Severity | Reports |
 | --- | --- | --- |
 | `markdown-unsupported-node` | Warning when `lossless` or when the content stays; other `lossy` follows `lossPolicy` | Content no mapping accepts, refused content, or nodes dropped on export (`lossy`), such as a table when no remark plugin, like `remark-gfm`, writes tables. Raw HTML kept as text, HTML comments and removed `<block>` wrappers are `lossless`. A [table cell](#table-cells)'s folded paragraph boundary or collapsed block keeps its content and warns. |
-| `markdown-unsafe-content` | Warning when `lossless`; lossy follows `lossPolicy` | A removed link or image destination. |
+| `markdown-unsafe-content` | Warning when `lossless`; lossy follows `lossPolicy` | A removed link or image destination, or marked raw HTML whose block fails the raw HTML check on export. |
 | `markdown-tag-repair` | Warning | An `unclosed`, `unmatched`, or `misplaced` registered tag. |
 | `markdown-property-omitted` | Warning | A property or mark Markdown cannot carry on export, such as a paragraph's `textAlign`, or an invalid tag attribute value on import. |
 | `markdown-limit-exceeded` | Error | Source bytes, node count, or depth above `limits`. |
@@ -769,8 +856,8 @@ parser returns because mdast does not expose a bounded construction hook.
 | `editor.api.markdown.parseInline(source, options?)` | Closed, rootless inline `ContentSlice`. |
 | `editor.api.markdown.serialize(options?)` | Current or supplied document using the installed target. |
 
-Import `MarkdownPlugin`, the standalone functions, and their result,
-diagnostic, and option types from `platejs/markdown`.
+Import `MarkdownPlugin`, `RawHtmlPlugin`, the standalone functions, and their
+result, diagnostic, and option types from `platejs/markdown`.
 
 | Parse option | Use |
 | --- | --- |
@@ -783,7 +870,7 @@ diagnostic, and option types from `platejs/markdown`.
 | --- | --- |
 | `document` | Editor method only: the document to serialize, typed as the editor's value. Defaults to the current value. |
 | `lossPolicy` | `'reject'` (default) or `'allow'`. |
-| `plainMarks` | Mark keys written as plain text without Markdown formatting. |
+| `plainMarks` | Mark keys written as plain text without Markdown formatting. Defaults to `MarkdownPlugin`'s `plainMarks`. |
 | `preserveEmptyParagraphs` | Keep empty paragraphs. Defaults to `true`. |
 | `projection` | `'accepted'` or `'proposed'`. Required when the document has pending suggestions. |
 | `remarkStringifyOptions` | Options passed to `remark-stringify`. |
@@ -792,4 +879,5 @@ diagnostic, and option types from `platejs/markdown`.
 Standalone functions also require `plugins` and accept `schema`. Installed
 editor methods omit both because the plugin captures them from the editor.
 `MarkdownPlugin` state holds `remarkPlugins`, `remarkStringifyOptions`, and
-`plainMarks`.
+`plainMarks`. When its `plainMarks` names `rawHtml`, import gives raw HTML no
+mark.
