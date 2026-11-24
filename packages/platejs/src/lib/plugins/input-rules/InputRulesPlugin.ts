@@ -176,7 +176,11 @@ export const InputRulesPlugin = definePlugin('inputRules', {
       return value;
     }) as InputRuleEditor['plugin'];
 
-    return { plugin, read: state } as unknown as InputRuleEditor;
+    return {
+      key: state.key,
+      plugin,
+      read: state,
+    } as unknown as InputRuleEditor;
   };
   const createSelectionContext = ({
     state,

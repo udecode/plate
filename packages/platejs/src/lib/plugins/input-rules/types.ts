@@ -60,9 +60,11 @@ type InputRulePluginLookup = {
 
 /** Read-only editor capabilities available while an input rule is selected. */
 export type InputRuleEditor<TEditor = Editor> = TEditor extends {
+  key: infer TKeyApi;
   read: infer TRead;
 }
   ? {
+      readonly key: TKeyApi;
       readonly plugin: InputRulePluginLookup;
       readonly read: { readonly [TKey in keyof TRead]: TRead[TKey] };
     }
