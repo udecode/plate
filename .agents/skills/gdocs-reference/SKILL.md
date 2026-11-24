@@ -1,0 +1,48 @@
+---
+description: Drive Google Docs' suggesting mode in Claude in Chrome, with one author or two, to see what the reference editor does before Plate's suggestions code picks a behavior. Use when a suggestions or authored-review behavior is uncertain, such as which decision order may wait, what one keystroke records or how two authors' pending changes resolve, before writing that behavior into a plan, a test's expectation or a decision row, and for "check what Google Docs does".
+argument-hint: <the behavior question> [two authors]
+name: gdocs-reference
+metadata:
+  skiller:
+    source: .agents/rules/gdocs-reference.mdc
+---
+
+# Google Docs reference
+
+Handle $ARGUMENTS.
+
+`docs/editor-behavior/scenarios/suggestions.md` names Google Docs' suggesting mode as the reference editor for suggestions. This skill drives that editor to answer one behavior question with an observed result instead of memory. Its Reference drive section holds the test document, the two author accounts and the Chrome profile each one runs in, and its Google Docs results section holds every answer recorded so far. Both live in the private half, so this file names no link or account.
+
+A result is evidence, not law. The Authored changes law in `docs/vision/plite.md` and the scope's subject file decide; a row that departs from Google Docs says so, as the scenario file's `Law:` cells do.
+
+## Before a drive
+
+1. Read the Google Docs results section. When a row already answers the question, cite it and stop.
+2. Write the question as a case: the starting lines, each author's keystrokes in Suggesting mode, and every decision order to try. Try each order of the decisions that can differ, because one order proves nothing about another.
+3. Load the `anthropic-skills:chrome-browser` skill and read `.agents/pstack/rules/browser.md` in full.
+
+## Connect the authors
+
+1. Call `list_connected_browsers`. Each Chrome profile with the Claude extension shows as one browser. A browser's `deviceId` changes when its extension reconnects, so never reuse one from an earlier run.
+2. For each browser, `select_browser`, then `tabs_context_mcp` with `createIfEmpty: true`, open the test document, and `find` the text `Google Account:`. The button names the account the tab edits as.
+3. A profile signed into two Google accounts can open the document as the other account. Add the `authuser` value the Reference drive section gives for that author to the URL, open it again and read the button again.
+4. Dismiss an informational notice, such as "You're currently signed in as" or "Editors can see your view history", with its OK or "I understand" button. It changes no setting.
+5. When fewer authors connect than the case needs, ask the owner once to sign the Claude extension in on the missing profile, and stop until they answer.
+
+Codex's browser lane cannot drive these profiles from the command line. ChatGPT's computer-use plugin grants browser access only to a Codex task the ChatGPT app itself starts, and `cross.mjs` starts Codex alone, so every call fails with "The browser access host is unavailable".
+
+## Drive
+
+1. In the first author's tab, switch to Editing from the mode menu at the right of the toolbar. Click once in the last paragraph, press `cmd+Down` for the end of the document, and type the case's starting lines, each after `Return`. Use four-letter lines such as `AAAA` and `BBBB`, because the page draws its text on a canvas and only a screenshot reads it.
+2. Switch each author's tab to Suggesting. The menu reads Suggesting, or 建议 in a Chinese interface.
+3. Make each author's suggestion with keys: `type` one character at a time, `Return`, `BackSpace`, `cmd+Left` and `cmd+Right` for the line's start and end, `shift+cmd+Right` to select to the line's end. Read back with a screenshot after every keystroke group, and check that each author's card shows in the margin with the author's name.
+4. Decide one card at a time. Click a card to open it, then click its check to accept or its cross to reject. After each decision, zoom on the test lines and the margin, and record the lines and the cards still pending.
+5. For the next order, start again from step 1 with new letters, so every order starts from the same kind of lines.
+6. Leave alone any dialog you did not open, such as a Share dialog another person is using, and wait until it closes.
+
+## Close
+
+1. In the first author's tab, switch to Editing, click in the test lines, press `cmd+Down`, and press `BackSpace` once for each character and each line break you added. Zoom on the document's last paragraph and confirm it reads as it did before the drive.
+2. Close every tab you opened, in each browser.
+3. Add one row per case and order to the Google Docs results section, dated, with the result as the lines read and whether any step waited or could not be decided. Name the case in Plate's terms, such as a join, a split or a following line.
+4. Cite that row in the run's decision log or reply.
