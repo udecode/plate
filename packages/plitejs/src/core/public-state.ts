@@ -229,7 +229,7 @@ import {
 import { coversContent } from './change/range-content';
 import { type ChangeFacts, historyFollowsAllFacts } from './change/record';
 import { keptRunsOf, type RootChange } from './change/root-change';
-import type { JsonEditorValue } from './change/tokens';
+import type { JsonEditorValue, JsonNode } from './change/tokens';
 import type { PropertyModification } from './change/transform';
 import {
   cloneFrozen,
@@ -4787,14 +4787,14 @@ const runtimeRootIndex = (owner: Editor, root: string): SnapshotIndex => {
 };
 
 const nodeAtPath = (
-  children: readonly Descendant[] | undefined,
+  children: NodeList<Descendant> | undefined,
   path: Path
 ): Descendant | undefined => {
   let node: Descendant | undefined;
   let nodes = children;
 
   for (const index of path) {
-    node = nodes?.[index];
+    node = nodes && childAtPathIndex(nodes, index);
     nodes = node && ElementApi.isElement(node) ? node.children : undefined;
   }
 
@@ -13297,6 +13297,17 @@ const getDocumentRootChildren = (
     ? value.children
     : (value.roots?.[root] ?? [])) as readonly Descendant[];
 
+const getDocumentRootNodes = (
+  value: JsonEditorValue,
+  root: RootKey
+): NodeList<Descendant> =>
+  (root === MAIN_ROOT_KEY
+    ? rootNodesOf<JsonNode, 'children'>(value, 'children')
+    : rootNodesOf<JsonNode, string>(
+        value.roots ?? {},
+        root
+      )) as NodeList<Descendant>;
+
 type StepNodeKeys = Readonly<{ after: SnapshotIndex; before: SnapshotIndex }>;
 
 const inheritDocumentChangeStepNodeKeys = (
@@ -13643,7 +13654,7 @@ const keepStrandedCaret = (
   const textIn = (key: NodeKey) => {
     const path = indexes.after.pathOf(key);
     const node = path
-      ? nodeAtPath(getDocumentRootChildren(after, root), path)
+      ? nodeAtPath(getDocumentRootNodes(after, root), path)
       : undefined;
 
     if (!path || !node) return undefined;
