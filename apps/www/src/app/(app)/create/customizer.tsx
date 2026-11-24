@@ -30,6 +30,14 @@ import { useIsMobile } from '@/registry/hooks/use-mobile';
 import { useMounted } from '@/registry/hooks/use-mounted';
 
 import {
+  button,
+  CreateMenu,
+  OpenPreset,
+  outlineButton,
+  ResetDialog,
+  useCreateActions,
+} from './create-actions';
+import {
   AccentSample,
   baseSamples,
   iconLibrarySamples,
@@ -276,9 +284,6 @@ function getPickerRows({
   ];
 }
 
-const button =
-  "inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border bg-clip-padding px-2.5 text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
-
 const cardFooter =
   'flex min-w-0 items-center gap-2 rounded-b-xl border-t bg-muted/50 p-3 md:flex-col md:**:[button,a]:w-full';
 
@@ -300,6 +305,7 @@ export function Customizer({
   const theme = useSampleTheme(config);
   const sections = getPickerRows({ config, siteDark, theme });
   const lastRow = sections.at(-1)?.at(-1);
+  const actions = useCreateActions({ config, onPick });
 
   return (
     <div
@@ -318,6 +324,16 @@ export function Customizer({
             .join('\n')}
         </style>
       )}
+      <div
+        className="hidden items-center justify-between gap-2 rounded-t-xl border-b px-3 pb-3 md:flex"
+        data-slot="card-header"
+      >
+        <CreateMenu
+          onOpenPreset={() => actions.setPresetOpen(true)}
+          onRandomize={actions.randomize}
+          onReset={() => actions.setResetOpen(true)}
+        />
+      </div>
       <div
         className="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-3 md:overflow-y-auto"
         data-slot="card-content"
@@ -422,10 +438,7 @@ export function Customizer({
         data-slot="card-footer"
       >
         <CopyButton
-          className={cn(
-            button,
-            'min-w-0 flex-1 touch-manipulation border-border bg-transparent! px-2! py-0! text-sm! transition-none hover:bg-muted! hover:text-foreground md:flex-none dark:border-input pointer-coarse:h-10!'
-          )}
+          className={cn(outlineButton, 'min-w-0 flex-1 md:flex-none')}
           text={`--preset ${getPlateCreatePreset(config)}`}
         >
           {(copied) => (
@@ -434,6 +447,30 @@ export function Customizer({
             </span>
           )}
         </CopyButton>
+        <OpenPreset
+          className="max-w-20 min-w-0 flex-1 sm:max-w-none md:flex-none"
+          label={isMobile ? 'Open' : 'Open Preset'}
+          onOpen={actions.openPreset}
+          onOpenChange={actions.setPresetOpen}
+          open={actions.presetOpen}
+        />
+        <button
+          className={cn(
+            outlineButton,
+            'max-w-20 min-w-0 flex-1 sm:max-w-none md:flex-none'
+          )}
+          onClick={actions.randomize}
+          type="button"
+        >
+          <span className="w-full truncate text-center font-medium">
+            Shuffle
+          </span>
+        </button>
+        <ResetDialog
+          onOpenChange={actions.setResetOpen}
+          onReset={actions.reset}
+          open={actions.resetOpen}
+        />
       </div>
       <div
         className={cn(cardFooter, '-mt-3 hidden md:flex')}

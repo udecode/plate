@@ -28,13 +28,15 @@ export function PickerTrigger({
 
 export function PickerContent({
   align,
+  alignOffset,
   anchor,
   className,
   side,
   ...props
 }: MenuPrimitive.Popup.Props & {
   align: MenuPrimitive.Positioner.Props['align'];
-  anchor: MenuPrimitive.Positioner.Props['anchor'];
+  alignOffset?: MenuPrimitive.Positioner.Props['alignOffset'];
+  anchor?: MenuPrimitive.Positioner.Props['anchor'];
   side: MenuPrimitive.Positioner.Props['side'];
 }) {
   return (
@@ -42,6 +44,7 @@ export function PickerContent({
       <MenuPrimitive.Positioner
         className="isolate z-50 outline-none"
         align={align}
+        alignOffset={alignOffset}
         anchor={anchor}
         side={side}
         sideOffset={20}
@@ -73,6 +76,35 @@ export function PickerLabel({
       data-slot="dropdown-menu-label"
       className={cn(
         'px-2 py-1.5 text-xs font-medium text-neutral-400',
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export function PickerItem({ className, ...props }: MenuPrimitive.Item.Props) {
+  return (
+    <MenuPrimitive.Item
+      data-slot="dropdown-menu-item"
+      className={cn(
+        "group/dropdown-menu-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium outline-hidden select-none **:text-neutral-100 focus:bg-neutral-600 focus:text-neutral-100 focus:**:text-neutral-100 data-disabled:pointer-events-none data-disabled:opacity-50 dark:focus:bg-neutral-700/80 pointer-coarse:gap-3 pointer-coarse:py-2.5 pointer-coarse:pl-3 pointer-coarse:text-base [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export function PickerShortcut({
+  className,
+  ...props
+}: React.ComponentProps<'span'>) {
+  return (
+    <span
+      data-slot="dropdown-menu-shortcut"
+      className={cn(
+        'ml-auto text-xs tracking-widest text-neutral-400! group-focus/dropdown-menu-item:text-neutral-100',
         className
       )}
       {...props}
