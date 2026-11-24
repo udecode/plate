@@ -228,6 +228,7 @@ type PlateModel = Readonly<{
 }>;
 export const PlateModelContext = React.createContext<PlateModel | null>(null);
 export const PlateReadOnlyContext = React.createContext(false);
+export const PlateEditorPlaceholderContext = React.createContext(false);
 
 export type PlateRootOutside = Readonly<{
   model: PlateModel;

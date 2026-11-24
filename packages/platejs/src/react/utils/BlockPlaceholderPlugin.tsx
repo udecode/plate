@@ -1,9 +1,12 @@
+import React from 'react';
+
 import type { Element, NodeKey, Path } from '../../facade';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { ElementStatePlugin } from '../../lib/plugins/element-state/ElementStatePlugin';
 import { PLUGINS } from '../../utils';
 import type { Editor } from '../editor/Editor';
+import { PlateEditorPlaceholderContext } from '../internal/plate-context';
 import type { PliteReactEditor } from '../internal/plite-types';
 import {
   useEditorFocused,
@@ -40,6 +43,7 @@ const getBlockPlaceholderTarget = (
   view: Readonly<{
     composing: boolean;
     focused: boolean;
+    hasEditorPlaceholder: boolean;
     readOnly: boolean;
   }>
 ): BlockPlaceholderTarget | null => {
@@ -63,10 +67,11 @@ const getBlockPlaceholderTarget = (
 
   if (!firstNode) return null;
 
-  const isPristineEmptyEditor =
+  const isEditorPlaceholderState =
     children.length === 1 &&
     viewEditor.read.nodes.isEmpty(firstNode) &&
-    editor.plugin(ElementStatePlugin).api.isEmpty(firstNode);
+    (view.hasEditorPlaceholder ||
+      editor.plugin(ElementStatePlugin).api.isEmpty(firstNode));
   const placeholderPlugin = Object.keys(state.placeholders).find((name) => {
     const descriptor = getCompiledPlatePlugin(editor, name);
 
@@ -76,7 +81,7 @@ const getBlockPlaceholderTarget = (
   });
 
   if (
-    isPristineEmptyEditor ||
+    isEditorPlaceholderState ||
     !placeholderPlugin ||
     !state.query({ editor, node, path, type: node.type }) ||
     !viewEditor.read.nodes.isEmpty(node)
@@ -114,6 +119,7 @@ export const BlockPlaceholderPlugin = definePlugin(PLUGINS.blockPlaceholder, {
           viewEditor.api.dom.isComposing()
         ),
         focused: useEditorFocused(),
+        hasEditorPlaceholder: React.use(PlateEditorPlaceholderContext),
         readOnly: useEditorReadOnly(),
       };
       const target = useEditorRuntimeState(viewEditor, () =>

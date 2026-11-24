@@ -15,6 +15,7 @@ import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
 import {
   PlateCaretSlots,
+  PlateEditorPlaceholderContext,
   PlateReadOnlyContext,
   usePlateModel,
 } from '../internal/plate-context';
@@ -368,7 +369,9 @@ function EditorContentBranch<TExtra extends object>({
     <PlateRenderedAttributeProvider>
       <Editable {...editableExtra} {...editableProps} ref={ref} />
 
-      <EditorRefEffect />
+      <PlateEditorPlaceholderContext value={Boolean(editableProps.placeholder)}>
+        <EditorRefEffect />
+      </PlateEditorPlaceholderContext>
       <TapOrderEffect editableRef={editableRef} />
     </PlateRenderedAttributeProvider>
   );
