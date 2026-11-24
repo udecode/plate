@@ -8,6 +8,7 @@ import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import { isMainCheckout } from '../../config/main-checkout.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import docsRedirects from './docs-redirects.json';
+import { PREVIEW_ICON_PACKAGES } from './src/lib/registry-icon-placeholder.ts';
 
 const APP_ROOT = import.meta.dirname;
 const REPO_ROOT = path.resolve(APP_ROOT, '../..');
@@ -107,6 +108,7 @@ const nextConfig = (_phase: string) => {
         : { turbopackRustReactCompiler: true }),
       webpackBuildWorker: true,
       webpackMemoryOptimizations: basicBuild,
+      optimizePackageImports: Object.values(PREVIEW_ICON_PACKAGES),
     },
     logging: {
       browserToTerminal: true,

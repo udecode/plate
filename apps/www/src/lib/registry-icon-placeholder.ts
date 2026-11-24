@@ -13,6 +13,14 @@ export type IconLibrary = (typeof ICON_PLACEHOLDER_LIBRARIES)[number];
 
 export const LUCIDE_PACKAGE = 'lucide-react';
 
+export const PREVIEW_ICON_PACKAGES: Record<IconLibrary, string> = {
+  hugeicons: '@hugeicons/core-free-icons',
+  lucide: 'lucide-react-v1',
+  phosphor: '@phosphor-icons/react',
+  remixicon: '@remixicon/react',
+  tabler: '@tabler/icons-react',
+};
+
 /** The element the shadcn CLI swaps for the project's icon. */
 export const ICON_PLACEHOLDER_ELEMENT = 'IconPlaceholder';
 

@@ -11,6 +11,7 @@ import {
   ICON_PLACEHOLDER_LIBRARIES,
   ICON_PLACEHOLDER_MODULE,
   type IconLibrary,
+  PREVIEW_ICON_PACKAGES,
 } from '../src/lib/registry-icon-placeholder.ts';
 import { readIconPlaceholders, toServedIcons } from './icon-placeholders.mts';
 import { parseModuleImports } from './registry-imports.mts';
@@ -49,14 +50,6 @@ const ICON_PLACEHOLDER_IMPORTS = new Set([
   ICON_PLACEHOLDER_MODULE,
 ]);
 const PREVIEW_ICON_PLACEHOLDER = '@/app/(view)/create-preview/icon-placeholder';
-
-const ICON_PACKAGES: Record<IconLibrary, string> = {
-  hugeicons: '@hugeicons/core-free-icons',
-  lucide: 'lucide-react-v1',
-  phosphor: '@phosphor-icons/react',
-  remixicon: '@remixicon/react',
-  tabler: '@tabler/icons-react',
-};
 
 // shadcn's icon transform adds a library's default props only when its usage
 // wraps the icon, as Hugeicons' does, so Phosphor's strokeWidth never lands.
@@ -357,14 +350,17 @@ export async function writeCreatePreviewTrees({
   for (const library of ICON_PLACEHOLDER_LIBRARIES) {
     const names = [
       ...new Set(placeholders.map((placeholder) => placeholder[library])),
-    ];
+    ]
+      .sort()
+      .map((name) => `  ${name},`)
+      .join('\n');
 
+    // Next's optimizePackageImports rewrites an import but not an
+    // `export … from`, and without it webpack builds every icon the package
+    // ships.
     files.set(
       join(outDir, `icons/__${library}__.ts`),
-      `${header}export {\n${names
-        .sort()
-        .map((name) => `  ${name},`)
-        .join('\n')}\n} from '${ICON_PACKAGES[library]}';\n`
+      `${header}import {\n${names}\n} from '${PREVIEW_ICON_PACKAGES[library]}';\n\nexport {\n${names}\n};\n`
     );
     // Tabler types its ref as a component, Remix Icon takes no children and
     // Hugeicons takes only a numeric stroke width, so the props leave those out.
