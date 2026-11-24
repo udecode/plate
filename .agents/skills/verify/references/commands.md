@@ -349,11 +349,14 @@ survives; every base control runs in a fresh worktree.
 In a split clone, `git diff` reads only the public half, so a patch made from it
 leaves out each `*.spec.*` file and the other files `.gitprivate` lists. Replay
 those files with `--with <file>` or a second patch from
-`git --git-dir=.git-private --work-tree=. diff`, then check that the run's test
+`node tooling/scripts/git-private.mjs diff`, then check that the run's test
 count includes the new tests. A mutant run on the base copy of a spec passes
 without proving anything. `node tooling/scripts/git-private.mjs status` lists
-both halves' changes, and the script runs any other git command on the private
-half. A `git rebase` or `git merge` moves only the public half, so follow it
+both halves' changes and the new private files, and the script runs any other
+git command on the private half. Before that patch, run
+`node tooling/scripts/git-private.mjs add -N <file>` for each new private file
+`status` names, so the diff holds it. The script refuses `add -A`, which stages
+every public file in the private half. A `git rebase` or `git merge` moves only the public half, so follow it
 with `node tooling/scripts/git-private.mjs sync`, which fetches plate-private
 and merges its `next` into the private branch.
 
