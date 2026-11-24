@@ -2257,7 +2257,6 @@
       "name": "field-static",
       "dependencies": [
         "platejs",
-        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "files": [

@@ -53,16 +53,18 @@ export const fieldValue: Value = (
       </htr>
     </htable>
     <hp>
-      是否养宠物？
-      {field('pets', 'choice', '宠物', '租客', {
+      是否允许养宠物？
+      {field('pets', 'choice', '允许养宠物', '房东', {
         options: [
           { label: '是', value: 'yes' },
           { label: '否', value: 'no' },
         ],
+        required: true,
       })}{' '}
       宠物名字：
       {field('pet-name', 'text', '宠物名字', '租客', {
         condition: { ref: 'pets', test: 'equals', value: 'yes' },
+        required: true,
       })}
     </hp>
     <hp>

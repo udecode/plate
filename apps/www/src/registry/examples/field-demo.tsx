@@ -1,8 +1,15 @@
 'use client';
 
+import { createEditor, type EditorDocumentValue } from 'platejs';
 import type { DocxDiagnostic } from 'platejs/docx/export';
+import {
+  applyFieldValues,
+  BaseFieldPlugin,
+  type FieldRefusal,
+  type FieldSubmission,
+} from 'platejs/field';
 import { FieldPlugin } from 'platejs/field/react';
-import { MarkdownPlugin } from 'platejs/markdown';
+import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';
 import {
   EditorRoot,
   useCreateEditor,
@@ -12,8 +19,10 @@ import {
   useModelEditor,
   usePluginStore,
 } from 'platejs/react';
+import { EditorStatic } from 'platejs/static';
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useLocale } from '@/hooks/useLocale';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
@@ -46,6 +55,7 @@ const presentation = [
   ...BaseFieldKit,
   ...BaseMentionKit,
   ...BaseTableKit,
+  RawHtmlPlugin,
 ];
 const panel = 'flex min-w-0 flex-col gap-2 rounded-md border p-3';
 const AUTHOR = 'author';
@@ -79,6 +89,170 @@ function FillRoleSwitch({
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
+  );
+}
+
+const withoutAnswers = (document: EditorDocumentValue) => {
+  const author = createEditor({
+    initialValue: document,
+    plugins: presentation,
+  });
+
+  author.update((tx) => {
+    for (const { fieldId } of author.plugin(BaseFieldPlugin).read.fields()) {
+      tx.plugin(BaseFieldPlugin).update(fieldId, { value: undefined });
+    }
+  });
+
+  return author.read.value();
+};
+
+const sortedKeys = (_key: string, value: unknown) =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? Object.fromEntries(
+        Object.entries(value).sort(([a], [b]) => (a < b ? -1 : 1))
+      )
+    : value;
+
+const json = (value: unknown) => JSON.stringify(value, sortedKeys);
+
+type Accepted = Readonly<{
+  submissions: readonly FieldSubmission[];
+  templateJson: string;
+}>;
+
+type Shown = Readonly<{ children: unknown }> &
+  (
+    | { filled: ReturnType<typeof createEditor>; pending: readonly string[] }
+    | { refusals: ReadonlyArray<{ key: string; line: string }> }
+  );
+
+const acceptedPrefix = (
+  accepted: Accepted,
+  templateJson: string,
+  role: string,
+  answers: (role: string) => FieldSubmission
+) => {
+  if (accepted.templateJson !== templateJson) return [];
+
+  const firstStale = accepted.submissions.findIndex(
+    (entry) => entry.role === role || json(entry) !== json(answers(entry.role))
+  );
+
+  return firstStale === -1
+    ? accepted.submissions
+    : accepted.submissions.slice(0, firstStale);
+};
+
+const refusalLine = (
+  refusal: FieldRefusal,
+  labels: ReadonlyMap<string, string>
+) => {
+  switch (refusal.code) {
+    case 'duplicate-role':
+    case 'unknown-role': {
+      return `${refusal.code}: ${refusal.role}`;
+    }
+    case 'invalid-submission': {
+      return `${refusal.code}: ${refusal.index}`;
+    }
+    case 'invalid-template': {
+      return `${refusal.code}: ${refusal.problem} at ${[
+        refusal.root ?? 'main',
+        ...refusal.path,
+      ].join(' ')}`;
+    }
+    case 'waiting': {
+      return `${refusal.code}: ${labels.get(refusal.fieldId)} waits on ${refusal.waitsOn}`;
+    }
+    default: {
+      return `${refusal.code}: ${labels.get(refusal.fieldId)}`;
+    }
+  }
+};
+
+function FieldSubmit() {
+  const editor = useEditor();
+  const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
+  const value = useEditorValue();
+  const [accepted, setAccepted] = React.useState<Accepted>({
+    submissions: [],
+    templateJson: '',
+  });
+  const [shown, setShown] = React.useState<Shown | null>(null);
+  const current = shown?.children === value ? shown : null;
+
+  const submit = (role: string) => {
+    const fields = editor.plugin(FieldPlugin).read;
+    const children = editor.read.children();
+    const template = withoutAnswers(editor.read.value());
+    const templateJson = json(template);
+    const before = acceptedPrefix(accepted, templateJson, role, (other) =>
+      fields.submission(other)
+    );
+    const submission = fields.submission(role);
+    const result = applyFieldValues(template, [...before, submission]);
+
+    if (!result.ok) {
+      const labels = new Map(
+        fields.fields().map(({ fieldId, node }) => [fieldId, node.label])
+      );
+
+      setShown({
+        children,
+        refusals: result.refusals.map((refusal) => ({
+          key: JSON.stringify(refusal),
+          line: refusalLine(refusal, labels),
+        })),
+      });
+
+      return;
+    }
+
+    setAccepted({ submissions: [...before, submission], templateJson });
+    setShown({
+      children,
+      filled: createEditor({
+        initialValue: result.document,
+        plugins: presentation,
+      }),
+      pending: result.pending,
+    });
+  };
+
+  return (
+    <section aria-label="Submission" className={panel}>
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-medium">Submission</h3>
+        <Button
+          disabled={fillRole === null}
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            if (fillRole !== null) submit(fillRole);
+          }}
+        >
+          Submit
+        </Button>
+      </div>
+      {current && 'refusals' in current && (
+        <ul className="flex flex-col gap-1 text-sm text-destructive">
+          {current.refusals.map(({ key, line }) => (
+            <li key={key}>{line}</li>
+          ))}
+        </ul>
+      )}
+      {current && 'filled' in current && (
+        <>
+          {current.pending.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              Waiting on {current.pending.join(', ')}
+            </p>
+          )}
+          <EditorStatic className="text-sm" editor={current.filled} />
+        </>
+      )}
+    </section>
   );
 }
 
@@ -192,6 +366,7 @@ export default function FieldDemo() {
             <Editor />
           </EditorContainer>
         </EditorFrame>
+        <FieldSubmit />
         <FieldOutputs />
       </div>
     </EditorRoot>

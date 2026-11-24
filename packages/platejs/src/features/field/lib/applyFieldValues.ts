@@ -6,12 +6,12 @@ import type {
 } from './BaseFieldPlugin';
 import {
   fieldProblems,
+  fillsField,
   fitsField,
   isFieldCondition,
   isFieldKind,
   isFieldOptions,
   isFieldValue,
-  isFilled,
   submittedFieldLinks,
 } from './fieldRules.internal';
 
@@ -289,7 +289,7 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
       }
       if (refusedIds.has(fieldId)) continue;
 
-      const filled = isFilled(field, held.get(fieldId)?.value);
+      const filled = fillsField(field, held.get(fieldId)?.value);
 
       if (!verdict.applies && filled) {
         refusals.push({ code: 'skipped', fieldId, role });

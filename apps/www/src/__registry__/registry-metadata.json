@@ -1,5 +1,5 @@
 {
-  "generation": "6b846924ba85d8ec197af38398a56e84331835db9cbe7bf3a492f21470ade1bb",
+  "generation": "f9618957683fc4f6749e46f55b894326f0163392b769da97bac8e12aa5f34d96",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2335,8 +2335,8 @@
         {
           "dependencies": [
             "platejs",
-            "cn",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {
@@ -9950,8 +9950,8 @@
         {
           "dependencies": [
             "platejs",
-            "cn",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react"
           ],
           "files": [
             {

@@ -1,6 +1,18 @@
 {
   "schemaVersion": 1,
   "components": {
+    "field-static": ["2026-11-24-field-static-answers", "2026-11-21-add-field"],
+    "field": [
+      "2026-11-24-field-static-answers",
+      "2026-11-23-field-condition-loop",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
+    "field-demo": [
+      "2026-11-24-field-static-answers",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
     "editor-dropdown-menu": [
       "2026-11-24-fix-base-menu-trigger",
       "2026-11-17-cn-package",
@@ -88,16 +100,10 @@
       "2026-10-13-static-editor-previews",
       "2026-09-13-rename-html-export-files"
     ],
-    "field": [
-      "2026-11-23-field-condition-loop",
-      "2026-11-23-field-fill-view",
-      "2026-11-21-add-field"
-    ],
     "field-toolbar-button": [
       "2026-11-23-field-fill-view",
       "2026-11-21-add-field"
     ],
-    "field-demo": ["2026-11-23-field-fill-view", "2026-11-21-add-field"],
     "diff": [
       "2026-11-23-fix-diff-paragraph-text",
       "2026-11-20-fix-reduced-motion-scroll",
@@ -472,7 +478,6 @@
     ],
     "floating-toolbar-demo": ["2026-11-22-ui-sweep-fixes"],
     "demo": ["2026-11-22-ui-sweep-fixes"],
-    "field-static": ["2026-11-21-add-field"],
     "prompt-editor": ["2026-11-21-prompt-editor"],
     "prompt-editor-demo": ["2026-11-21-prompt-editor"],
     "ai-api": [

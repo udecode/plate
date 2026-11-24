@@ -138,12 +138,17 @@ export const conditionProblem = (
   return fits ? undefined : 'invalid-value';
 };
 
-export const isFilled = (field: FieldShape, answer: FieldValue | undefined) =>
+/**
+ * Whether a value is a filled answer for a field: a ticked checkbox, or for
+ * any other field a value that fits its kind and, for a text or signature
+ * field, holds a character that `\s` does not match.
+ */
+export const fillsField = (field: FieldShape, value: unknown): boolean =>
   field.kind === 'checkbox'
-    ? answer === true
-    : fitsField(field, answer) &&
+    ? value === true
+    : fitsField(field, value) &&
       ((field.kind !== 'text' && field.kind !== 'signature') ||
-        /\S/.test(String(answer)));
+        /\S/.test(String(value)));
 
 const holds = (
   { test, value }: FieldCondition,
@@ -161,13 +166,13 @@ const holds = (
       return test === 'above' ? before(value, answer) : before(answer, value);
     }
     case 'blank': {
-      return !isFilled(target, answer);
+      return !fillsField(target, answer);
     }
     case 'equals': {
       return answer === value;
     }
     case 'filled': {
-      return isFilled(target, answer);
+      return fillsField(target, answer);
     }
     default: {
       return answer !== value;

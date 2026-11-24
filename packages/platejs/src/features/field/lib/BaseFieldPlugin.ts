@@ -40,7 +40,7 @@ import {
   unfitSettings,
 } from './fieldRules.internal';
 
-export { FIELD_TESTS, fitsField } from './fieldRules.internal';
+export { FIELD_TESTS, fillsField, fitsField } from './fieldRules.internal';
 
 /** What a field collects, which fixes the shape of its value. */
 export type FieldKind = (typeof FIELD_KINDS)[number];

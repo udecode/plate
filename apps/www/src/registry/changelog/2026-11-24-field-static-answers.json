@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-24-field-static-answers",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-24-field-static-answers.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "new",
+  "summary": "Show field answers in static output and submit a role's answers in the field demo",
+  "targets": [
+    {
+      "name": "field-static",
+      "files": ["apps/www/src/registry/components/editor/field-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-24-field-static-answers-in-place",
+      "kind": "behavior",
+      "summary": "Show each field's answer in place: a choice as its option's label, a checkbox as a ticked or empty box and a number as written, `0` included. Any field other than a checkbox shows a blank line instead of its label when it has no filled answer. HTML, Word and plain-text export still write their own text, such as an unanswered field's label in brackets.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["field-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-field-static-answers",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-24-field-skipped-chip",
+      "kind": "new",
+      "summary": "Mute a chip and mark it skipped while its field's condition fails, so a person sees which answers the form does not need.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["field"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-field-static-answers",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-24-field-demo-submit",
+      "kind": "new",
+      "summary": "The landlord now answers whether pets are allowed. The tenant's pet name is required when pets are allowed and skipped when they are not. Submit checks the current role's answers with `applyFieldValues`, after the answers of the roles that submitted before it, and shows the refusals or the static output of the filled document. A role's submitted answers count while the template and that role's answers still match what was checked. They stop counting once an earlier role's answers do. When they stop counting, a role whose field depends on them is refused as `waiting` until the role that gave them submits again. A result stays on screen only until the document changes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-field-static-answers",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

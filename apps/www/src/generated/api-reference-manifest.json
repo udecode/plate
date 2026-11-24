@@ -13309,6 +13309,17 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs/field:fillsField": {
+          "aliases": [],
+          "documentation": "Whether a value is a filled answer for a field: a ticked checkbox, or for\nany other field a value that fits its kind and, for a text or signature\nfield, holds a character that `\\s` does not match.",
+          "entrypoint": "platejs/field",
+          "kind": "const",
+          "name": "fillsField",
+          "runtime": true,
+          "signature": "fillsField: (field: FieldShape, value: unknown) => boolean",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs/field:fitsField": {
           "aliases": [],
           "documentation": "Whether a value fits a field's kind: a boolean for a checkbox, one of its\noptions' values for a choice, an ISO date string for a date, a finite number\nother than -0 for a number, a string with no line break for a text field,\nand a string for a signature field.",
@@ -31079,7 +31090,7 @@
           "typeParameters": []
         }
       },
-      "version": "54.0.0-beta.3"
+      "version": "54.0.0-beta.4"
     }
   },
   "schemaVersion": 1

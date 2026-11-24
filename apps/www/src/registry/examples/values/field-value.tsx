@@ -71,16 +71,18 @@ export const fieldValue: Value = (
       </htr>
     </htable>
     <hp>
-      Pets?{' '}
-      {field('pets', 'choice', 'Pets', 'tenant', {
+      Pets allowed?{' '}
+      {field('pets', 'choice', 'Pets allowed', 'landlord', {
         options: [
           { label: 'Yes', value: 'yes' },
           { label: 'No', value: 'no' },
         ],
+        required: true,
       })}{' '}
       Pet name:{' '}
       {field('pet-name', 'text', 'Pet name', 'tenant', {
         condition: { ref: 'pets', test: 'equals', value: 'yes' },
+        required: true,
       })}
     </hp>
     <hp>

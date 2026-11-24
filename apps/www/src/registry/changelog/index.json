@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-24-field-static-answers",
+      "href": "/registry/changelog/2026-11-24-field-static-answers.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Show field answers in static output and submit a role's answers in the field demo",
+      "change": {
+        "type": "source",
+        "date": "2026-11-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field-static", "field", "field-demo"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-24-fix-base-menu-trigger",
       "href": "/registry/changelog/2026-11-24-fix-base-menu-trigger.json",
       "status": "draft",

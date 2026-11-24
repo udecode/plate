@@ -128,6 +128,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
   const fillRole = usePluginStore(FieldPlugin, 'fillRole') ?? null;
   const field = useFieldRead(element.fieldId);
   const problems = field?.problems ?? [];
+  const skipped = field?.applies === false;
   const warning = problems.map((problem) => PROBLEMS[problem]).join(' ');
   const filling = fillRole !== null;
   const ownField = element.role === fillRole;
@@ -173,6 +174,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
     className: cn(
       'inline-flex w-fit items-baseline gap-1 rounded-sm bg-muted px-1 text-muted-foreground',
       (form || toggles) && 'cursor-pointer',
+      skipped && 'opacity-50',
       inlineSuggestionVariants({ on: 'parent' })
     ),
     contentEditable: false,
@@ -216,6 +218,7 @@ export function FieldElement(props: EditorElementProps<typeof FieldPlugin>) {
         : element.label}
       {element.required && <span className="text-destructive">*</span>}
       <span className="text-xs opacity-70">{element.role}</span>
+      {skipped && <span className="text-xs opacity-70">skipped</span>}
       {waitsForReview && (
         <span className="text-xs opacity-70">waits for review</span>
       )}
