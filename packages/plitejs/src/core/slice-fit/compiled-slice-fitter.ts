@@ -1989,6 +1989,29 @@ export const compileSliceFitter = <V extends Value>(
     return false;
   };
 
+  const opensIntoInline = (slice: ContentSlice) => {
+    const edgeOpensIntoInline = (
+      edge: Descendant | undefined,
+      depth: number,
+      side: 0 | -1
+    ) => {
+      let node = edge;
+
+      for (let level = 0; level < depth; level++) {
+        if (!node || !ElementApi.isElement(node)) return false;
+        if (getElementBehavior(node).inline) return true;
+        node = node.children.at(side);
+      }
+
+      return false;
+    };
+
+    return (
+      edgeOpensIntoInline(slice.content[0], slice.openStart, 0) ||
+      edgeOpensIntoInline(slice.content.at(-1), slice.openEnd, -1)
+    );
+  };
+
   const restorePartiallyDeletedContext = (
     document: DocumentIndex,
     rootChildren: readonly Descendant[],
@@ -3376,6 +3399,13 @@ export const compileSliceFitter = <V extends Value>(
         (inputSlice.openStart === 1 &&
           inputSlice.openEnd === 1 &&
           start.path.length === 2) ||
+        (inputSlice.openStart > 0 &&
+          inputSlice.openEnd > 0 &&
+          !opensIntoInline(inputSlice) &&
+          sameTextPath &&
+          NodeApi.isText(targetText) &&
+          start.offset > 0 &&
+          end.offset < targetText.text.length) ||
         (inputSlice.content.length > 1 && start.path.length > 2) ||
         (inputSlice.openStart > 0 && targetHasInlineAncestor) ||
         (!collapsed && targetHasInlineAncestor) ||
@@ -3534,16 +3564,30 @@ export const compileSliceFitter = <V extends Value>(
         [targetBlock, ...sourceBlocks.slice(1)]
       );
     };
-    const fitOpenBlocksToPositionalSlots = (
+    const fitOpenBlocksToLandingIndexes = (
       variant: ContentSlice
     ): ContentSlice | null => {
-      if (variant.openStart !== 1 || variant.openEnd !== 1 || sameTextPath) {
+      if (variant.openStart !== 1 || variant.openEnd !== 1) {
         return null;
       }
 
       const targetSchema = getDeclarativeSchema();
-      const startBlockPath = start.path.slice(0, -1);
-      const endBlockPath = end.path.slice(0, -1);
+      const blockPathOf = (path: readonly number[]) => {
+        let blockPath = path.slice(0, -1);
+
+        while (blockPath.length > 1) {
+          const node = getDescendant(rootChildren, blockPath);
+
+          if (!ElementApi.isElement(node) || !getElementBehavior(node).inline) {
+            break;
+          }
+          blockPath = blockPath.slice(0, -1);
+        }
+
+        return blockPath;
+      };
+      const startBlockPath = blockPathOf(start.path);
+      const endBlockPath = blockPathOf(end.path);
       const parentPath = startBlockPath.slice(0, -1);
       const endParentPath = endBlockPath.slice(0, -1);
       const startIndex = startBlockPath.at(-1);
@@ -3560,7 +3604,7 @@ export const compileSliceFitter = <V extends Value>(
 
       if (
         !targetSchema ||
-        !content?.prefix ||
+        !content ||
         startIndex === undefined ||
         parentPath.length !== endParentPath.length ||
         parentPath.some((part, index) => part !== endParentPath[index]) ||
@@ -3576,6 +3620,8 @@ export const compileSliceFitter = <V extends Value>(
             : [],
         root,
       };
+      const slotPastPrefix = ((content.prefix && content.remainder) || content)
+        .defaultPlan;
       const fitted: Descendant[] = [];
       let changed = false;
 
@@ -3596,7 +3642,9 @@ export const compileSliceFitter = <V extends Value>(
           continue;
         }
 
-        const slot = content.prefix[index];
+        const slot =
+          content.prefix?.[index] ??
+          (slotPastPrefix?.kind === 'element' ? slotPastPrefix : null);
         if (!slot) return null;
         const shell = createDeclarativeAndFill(
           targetSchema,
@@ -4191,9 +4239,9 @@ export const compileSliceFitter = <V extends Value>(
       inputSlice.openEnd === 1
         ? createLocalTextCandidate(inputSlice, 0)
         : null;
-    const positionalOpenSlice = fitOpenBlocksToPositionalSlots(inputSlice);
-    const positionalOpenCandidate = positionalOpenSlice
-      ? createLocalTextCandidate(positionalOpenSlice, -1)
+    const landingTypedSlice = fitOpenBlocksToLandingIndexes(inputSlice);
+    const landingTypedCandidate = landingTypedSlice
+      ? createLocalTextCandidate(landingTypedSlice, -1)
       : null;
     const selectedPrefixCandidate = ((): SliceFitCandidate | null => {
       if (
@@ -4299,9 +4347,9 @@ export const compileSliceFitter = <V extends Value>(
           })()
         : (closedBoundaryCandidate ??
           selectedPrefixCandidate ??
-          (positionalOpenCandidate &&
-          isStructurallyApplicable(positionalOpenCandidate)
-            ? positionalOpenCandidate
+          (landingTypedCandidate &&
+          isStructurallyApplicable(landingTypedCandidate)
+            ? landingTypedCandidate
             : null) ??
           (directLocalCandidate &&
           'preparedOpenBlock' in directLocalCandidate &&
