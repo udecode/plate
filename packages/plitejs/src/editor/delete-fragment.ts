@@ -12,6 +12,7 @@ import { SelectionApi } from '../interfaces/selection';
 import { getLocationRoot } from '../internal/root-location';
 import { deleteText } from '../transforms-text/delete-text';
 import { applyDelete } from './delete-backward';
+import { hasEdgeInReadOnlyInline } from './element-read-only';
 
 export const applyDeleteFragment: EditorStaticApi['deleteFragment'] = (
   editor,
@@ -39,6 +40,7 @@ export const applyDeleteFragment: EditorStaticApi['deleteFragment'] = (
         selection,
         getLocationRoot(selection) ?? getEditorUpdateRoot(editor)
       );
+      if (hasEdgeInReadOnlyInline(editor, selection)) return;
       tx.setSelection(SelectionApi.text(selection));
       deleteText(editor, {
         at: selection,
