@@ -45,7 +45,12 @@ import {
   readLocalCiState,
 } from './local-ci-events.mjs';
 import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
-import { dueRecurrences, recurrenceOffer, runsOf } from './red-recurrence.mjs';
+import {
+  dueRecurrences,
+  recurrenceOffer,
+  reportsRun,
+  runsOf,
+} from './red-recurrence.mjs';
 import { failuresOf, stepOutput } from './step-failures.mjs';
 
 const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
@@ -444,40 +449,64 @@ const openTask = (step) => {
 // task open with nobody on it.
 const CLAIM_MS = 6 * 60 * 60_000;
 
-const CUT_MS = 24 * 60 * 60_000;
-const CUT_WAKES = 2;
-const taskTimes = (task) => {
-  const rows = readFileSync(ledger, 'utf-8')
+const taskRowTimes = (task) =>
+  readFileSync(ledger, 'utf-8')
     .split('\n')
     .filter((line) => line.split('\t')[2]?.startsWith(`${task.id} `))
     .map((line) => Date.parse(line.split('\t')[0]));
+const lastActivity = (task) => {
   const wakes = readEvents()
     .filter((event) => event.wake && event.task === task.id)
     .map((event) => Date.parse(event.at));
+  return Math.max(...taskRowTimes(task), ...wakes);
+};
+
+const isRed = (step, event) =>
+  event.step === step && ['flake', 'red'].includes(event.kind);
+const redStart = (step) => {
+  const events = readEvents().filter(reportsRun);
+  const passedTip = readState().passed?.[step];
+  const passedRun = passedTip
+    ? events.findLastIndex((event) => event.tip === passedTip)
+    : -1;
+  const first = events.slice(passedRun + 1).find((event) => isRed(step, event));
+  return first ? Date.parse(first.at) : Number.POSITIVE_INFINITY;
+};
+
+const CUT_MS = 24 * 60 * 60_000;
+const CUT_WAKES = 2;
+const cutDue = (step, open) => {
+  const since = Math.min(
+    Date.now(),
+    redStart(step),
+    ...(open ? taskRowTimes(open) : [])
+  );
+  const fixRuns = readEvents().filter(
+    (event) =>
+      reportsRun(event) &&
+      isRed(step, event) &&
+      event.wake &&
+      Date.parse(event.at) >= since
+  ).length;
   return {
-    newest: Math.max(...rows, ...wakes),
-    since: Math.min(...rows),
-    wakes: wakes.length,
+    redSince: new Date(since).toISOString(),
+    ...(Date.now() - since >= CUT_MS || fixRuns >= CUT_WAKES
+      ? { cut: true }
+      : {}),
   };
 };
 
 const report = (event) => {
   const title = fixTitle(event.step);
   const open = openTask(event.step);
+  const due = cutDue(event.step, open);
   if (open) {
-    const { newest, since, wakes } = taskTimes(open);
-    const due = {
-      redSince: new Date(since).toISOString(),
-      ...(Date.now() - since >= CUT_MS || wakes >= CUT_WAKES
-        ? { cut: true }
-        : {}),
-    };
-    return Date.now() - newest < CLAIM_MS
+    return Date.now() - lastActivity(open) < CLAIM_MS
       ? { ...due, wake: false }
       : { ...due, task: open.id, wake: true };
   }
   const cut =
-    ' When no fix lands within 24 hours of this offer, cut instead. Delete each failing test or case, or drop the step from tooling/scripts/check.mjs, and name what you cut and this task in the commit.';
+    ' When the step is still red 24 hours after it first failed, or two fix runs have not cleared it, cut instead. Delete each failing test or case, or drop the step from tooling/scripts/check.mjs, and name what you cut and this task in the commit.';
   const found =
     event.kind === 'flake'
       ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.${cut}`
@@ -499,7 +528,7 @@ const report = (event) => {
     ]);
     if (added.status !== 0) id = null;
   }
-  return { redSince: new Date().toISOString(), task: id, wake: true };
+  return { ...due, task: id, wake: true };
 };
 
 // Dismisses a step's offered task once a run on next passes the step, so a
@@ -819,7 +848,7 @@ const streaks = (events) => {
   for (const { events: reported } of runsOf(events)) {
     const red = new Map(
       reported
-        .filter((event) => event.kind === 'red')
+        .filter((event) => ['flake', 'red'].includes(event.kind))
         .map((event) => [event.step, event.at])
     );
     for (const [step, since] of [...open]) {
@@ -841,10 +870,12 @@ const redFor = (events, now) => {
     .toSorted((a, b) => a - b);
   return [
     open.size === 0 ? 'red now: nothing' : 'red now:',
-    ...[...open].map(
-      ([step, since]) =>
-        `  ${step} since ${since} (${hoursBetween(since, now).toFixed(1)}h)`
-    ),
+    ...[...open].map(([step, start]) => {
+      const since = new Date(
+        Math.min(Date.parse(start), redStart(step))
+      ).toISOString();
+      return `  ${step} since ${since} (${hoursBetween(since, now).toFixed(1)}h)`;
+    }),
     recent.length === 0
       ? 'time to green, last 14 days: no red step cleared'
       : `time to green, last 14 days: ${recent.length} cleared, median ${recent[Math.floor(recent.length / 2)].toFixed(1)}h, longest ${recent.at(-1).toFixed(1)}h`,

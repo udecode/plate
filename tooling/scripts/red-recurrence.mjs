@@ -9,9 +9,12 @@ const STARTS = 3;
 
 const recurrenceTitle = (step) => `Stop ${step} from failing on next again`;
 
+export const reportsRun = (event) =>
+  !event.dry && !event.offNext && event.kind !== 'release';
+
 export const runsOf = (events) => {
   const runs = [];
-  for (const event of events.filter((entry) => !entry.dry && !entry.offNext)) {
+  for (const event of events.filter(reportsRun)) {
     if (runs.at(-1)?.tip !== event.tip) {
       runs.push({ events: [], tip: event.tip });
     }
