@@ -968,6 +968,21 @@ export const steps = [
     key: [],
   },
   {
+    // It asks shadcn's live theme service about every value /create offers,
+    // and that service can retire a value with no change here, so its pass
+    // lasts one day.
+    name: 'create-options',
+    run: 'pnpm --filter www check:create-options',
+    affected: touches(
+      'apps/www/package.json',
+      'apps/www/scripts/check-create-options.mts',
+      'apps/www/src/lib/plate-create-theme.ts',
+      'apps/www/src/lib/plate-create.ts',
+      'apps/www/src/lib/plate-registry-styles.ts'
+    ),
+    key: ['date'],
+  },
+  {
     name: 'toolbar-variants',
     holds: ['packages/*/dist'],
     after: ['public-types'],

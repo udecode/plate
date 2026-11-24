@@ -12,6 +12,7 @@
     "build:source": "fumadocs-mdx source.config.ts .source",
     "build:source:dev": "fumadocs-mdx source.config.ts .source-dev",
     "build:tw": "pnpm tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
+    "check:create-options": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-create-options.mts",
     "check:docs": "pnpm api-reference:check && pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts",
     "check:page-load": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-page-load.mts",
     "check:toolbar-variants": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-toolbar-variants.mts",

@@ -50,13 +50,21 @@ export type PlateCreateConfig = PresetConfig & {
 type BaseColor = PresetConfig['baseColor'];
 type Theme = PresetConfig['theme'];
 
+// shadcn's theme service rejects these colors and its create page dropped
+// them, but its preset codec keeps them so old codes still decode.
+const RETIRED_COLORS = new Set(['gray']);
+
+const BASE_COLORS = PRESET_BASE_COLORS.filter(
+  (baseColor) => !RETIRED_COLORS.has(baseColor)
+);
+
+const THEMES = PRESET_THEMES.filter((theme) => !RETIRED_COLORS.has(theme));
+
 const isBaseColor = (value: string) =>
-  PRESET_BASE_COLORS.some((baseColor) => baseColor === value);
+  BASE_COLORS.some((baseColor) => baseColor === value);
 
 function getPlateCreateThemes(baseColor: BaseColor): Theme[] {
-  return PRESET_THEMES.filter(
-    (theme) => theme === baseColor || !isBaseColor(theme)
-  );
+  return THEMES.filter((theme) => theme === baseColor || !isBaseColor(theme));
 }
 
 function getPlateCreateRadius({
@@ -74,20 +82,24 @@ function getPlateCreateRadius({
 function normalizePlateCreateConfig(
   config: PlateCreateConfig
 ): PlateCreateConfig {
-  const themes = getPlateCreateThemes(config.baseColor);
+  const baseColor = RETIRED_COLORS.has(config.baseColor)
+    ? DEFAULT_PRESET_CONFIG.baseColor
+    : config.baseColor;
+  const themes = getPlateCreateThemes(baseColor);
   const fits = (color: string | undefined) =>
     themes.some((theme) => theme === color);
 
   return {
     ...config,
-    chartColor: fits(config.chartColor) ? config.chartColor : config.baseColor,
+    baseColor,
+    chartColor: fits(config.chartColor) ? config.chartColor : baseColor,
     fontHeading:
       config.fontHeading === config.font ? 'inherit' : config.fontHeading,
     menuAccent: config.menuColor.endsWith('-translucent')
       ? 'subtle'
       : config.menuAccent,
     radius: getPlateCreateRadius(config),
-    theme: fits(config.theme) ? config.theme : config.baseColor,
+    theme: fits(config.theme) ? config.theme : baseColor,
   };
 }
 
@@ -138,7 +150,7 @@ export function getShadcnCreateUrl(config: PlateCreateConfig) {
 
 export function getPlateCreateOptions(config: PlateCreateConfig) {
   return {
-    baseColor: PRESET_BASE_COLORS,
+    baseColor: BASE_COLORS,
     font: PRESET_FONTS,
     fontHeading: PRESET_FONT_HEADINGS,
     iconLibrary: PRESET_ICON_LIBRARIES,

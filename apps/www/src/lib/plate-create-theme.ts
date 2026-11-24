@@ -31,15 +31,36 @@ const FontItemSchema = z.object({
   }),
 });
 
-export type PlateCreateTheme = Awaited<ReturnType<typeof getPlateCreateTheme>>;
+const AnswerSchema = z.object({ error: z.string().trim() });
 
-export async function getPlateCreateTheme(
+export class ShadcnAnswerError extends Error {
+  readonly status: number;
+
+  constructor(url: string, status: number, answer: string | undefined) {
+    super(`${url} answered ${status}${answer ? `: ${answer}` : ''}`);
+    this.name = 'ShadcnAnswerError';
+    this.status = status;
+  }
+}
+
+export type PlateCreateTheme = Awaited<
+  ReturnType<typeof fetchPlateCreateTheme>
+>;
+
+export async function getCachedPlateCreateTheme(
   base: PlateCreateConfig['base'],
   preset: string
 ) {
   'use cache';
   cacheLife('days');
 
+  return fetchPlateCreateTheme(base, preset);
+}
+
+export async function fetchPlateCreateTheme(
+  base: PlateCreateConfig['base'],
+  preset: string
+) {
   const config = readPlateCreateConfig({ base, preset });
   const init = InitSchema.parse(
     await fetchJson(`${SHADCN_URL}/init?${getInitParams(config, preset)}`)
@@ -96,7 +117,11 @@ async function fetchJson(url: string): Promise<unknown> {
   const response = await fetch(url, { next: { revalidate: 86_400 } });
 
   if (!response.ok) {
-    throw new Error(`${url} answered ${response.status}`);
+    const answer = AnswerSchema.safeParse(
+      await response.json().catch(() => null)
+    );
+
+    throw new ShadcnAnswerError(url, response.status, answer.data?.error);
   }
 
   return response.json();

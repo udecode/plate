@@ -2,7 +2,7 @@ import {
   getPlateCreatePreset,
   readPlateCreateConfig,
 } from '@/lib/plate-create';
-import { getPlateCreateTheme } from '@/lib/plate-create-theme';
+import { getCachedPlateCreateTheme } from '@/lib/plate-create-theme';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,13 +13,16 @@ export async function GET(request: Request) {
 
   try {
     return Response.json(
-      await getPlateCreateTheme(config.base, getPlateCreatePreset(config)),
+      await getCachedPlateCreateTheme(
+        config.base,
+        getPlateCreatePreset(config)
+      ),
       { headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } }
     );
   } catch (error) {
     return Response.json(
       {
-        error: `shadcn's theme service did not answer: ${error instanceof Error ? error.message : String(error)}`,
+        error: `Could not load this preset's theme from shadcn: ${error instanceof Error ? error.message : String(error)}`,
       },
       { status: 502 }
     );

@@ -181,8 +181,8 @@ export function CreatePreview({
             data-slot="theme-error"
             role="status"
           >
-            shadcn's theme service did not answer, so the preview shows the
-            default theme.
+            The preview could not load this preset's theme from shadcn, so it
+            shows the default theme.
           </p>
         )}
         <IconLibraryContext value={config.iconLibrary}>

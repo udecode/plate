@@ -4,7 +4,7 @@ import {
   getPlateCreatePreset,
   readPlateCreateConfig,
 } from '@/lib/plate-create';
-import { getPlateCreateTheme } from '@/lib/plate-create-theme';
+import { getCachedPlateCreateTheme } from '@/lib/plate-create-theme';
 
 import { CreatePreview } from './create-preview';
 
@@ -27,7 +27,7 @@ async function CreatePreviewContent({
 }) {
   const config = readPlateCreateConfig(await searchParams);
   const preset = getPlateCreatePreset(config);
-  const theme = await getPlateCreateTheme(config.base, preset).catch(
+  const theme = await getCachedPlateCreateTheme(config.base, preset).catch(
     () => null
   );
 
