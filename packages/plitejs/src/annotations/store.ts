@@ -54,6 +54,12 @@ export type AnnotationRefreshOptions = Readonly<{
 }>;
 
 export type AnnotationStoreOptions = Readonly<{
+  /**
+   * Resolve an annotation whose range covers no letter and no whole void to
+   * `range: null`. It still follows the nodes its range touches, so an edit
+   * there that brings content back resolves it again.
+   */
+  hideEmpty?: boolean;
   id?: string;
   onError?: ViewSourceErrorSink;
 }>;
@@ -183,7 +189,12 @@ const createPliteAnnotationStoreInternal = <TData>(
         const mappedRange = resolvedRange
           ? projectAnnotationRange(editor, resolvedRange)
           : null;
-        const range = mappedRange ? resolvedRange : null;
+        const range =
+          resolvedRange &&
+          mappedRange &&
+          !(options.hideEmpty && editor.read.ranges.isEmpty(resolvedRange))
+            ? resolvedRange
+            : null;
 
         return {
           entity: Object.freeze({
@@ -244,6 +255,14 @@ const createPliteAnnotationStoreInternal = <TData>(
   let subscriberCount = 0;
   let lastSnapshot = dormant ? null : editor.read.runtime.snapshot();
   let lastProjection = dormant ? undefined : authoredPreview(editor);
+  let lastSchema = dormant ? undefined : editor.read.schema.identity();
+  const markFresh = () => {
+    lastSnapshot = editor.read.runtime.snapshot();
+    lastProjection = authoredPreview(editor);
+    lastSchema = editor.read.schema.identity();
+  };
+  const schemaChanged = () =>
+    options.hideEmpty === true && editor.read.schema.identity() !== lastSchema;
 
   const refreshCandidates = (
     candidateIds: readonly string[] | null = null,
@@ -272,8 +291,7 @@ const createPliteAnnotationStoreInternal = <TData>(
     if (!mappedResult.ok) return;
 
     currentAnnotations = annotationsResult.value;
-    lastSnapshot = editor.read.runtime.snapshot();
-    lastProjection = authoredPreview(editor);
+    markFresh();
     const changedIds = mappedResult.value.changedEntityIds;
     const changed =
       changedIds.length > 0 ||
@@ -322,14 +340,20 @@ const createPliteAnnotationStoreInternal = <TData>(
     if (
       snapshot.children !== lastSnapshot?.children ||
       snapshot.index !== lastSnapshot?.index ||
-      authoredPreview(editor) !== lastProjection
+      authoredPreview(editor) !== lastProjection ||
+      schemaChanged()
     ) {
       refreshCandidates(null, true, 'editor');
     }
   };
   const subscribeToEditor = () => {
     const unsubscribeCommit = editor.subscribeCommit((change) => {
-      if (destroyed || !shouldRefreshForEditorChange(change)) return;
+      if (destroyed) return;
+      if (schemaChanged()) {
+        refreshCandidates(null, true, 'editor');
+        return;
+      }
+      if (!shouldRefreshForEditorChange(change)) return;
       if (authoredPreview(editor) !== lastProjection) {
         refreshCandidates(null, true, 'editor');
         return;
@@ -349,8 +373,7 @@ const createPliteAnnotationStoreInternal = <TData>(
         : null;
 
       if (candidateIds && candidateIds.length === 0) {
-        lastSnapshot = editor.read.runtime.snapshot();
-        lastProjection = authoredPreview(editor);
+        markFresh();
         return;
       }
 
@@ -409,9 +432,10 @@ const createPliteAnnotationStoreInternal = <TData>(
     getAnnotationsAt: (nodeKey) => {
       ensureFresh();
       return Object.freeze(
-        mappedSource
-          .getIdsForOutputKeys([nodeKey])
-          .flatMap((id) => annotationsStore.getSnapshot().byId.get(id) ?? [])
+        mappedSource.getIdsForOutputKeys([nodeKey]).flatMap((id) => {
+          const annotation = annotationsStore.getSnapshot().byId.get(id);
+          return annotation?.range ? [annotation] : [];
+        })
       );
     },
     getSnapshot: () => {

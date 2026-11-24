@@ -226,6 +226,7 @@ import {
   mergeSpans,
   type NewLetters,
 } from './change/new-letters';
+import { coversContent } from './change/range-content';
 import { type ChangeFacts, historyFollowsAllFacts } from './change/record';
 import { keptRunsOf, type RootChange } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
@@ -7927,6 +7928,23 @@ const getStateView = <
             const at = resolveReadableNodeTarget(editor, routedTarget);
 
             return at ? readRange(editor, at, to) : undefined;
+          }),
+        isEmpty: (range) =>
+          withLocationRootRead(editor, range, () => {
+            const source = getChildrenSource(editor);
+            const index =
+              source instanceof DocumentIndex
+                ? source
+                : DocumentIndex.fromValue(source);
+            const from = index.positionAt(range.anchor);
+            const to = index.positionAt(range.focus);
+
+            return !coversContent(
+              index,
+              Math.min(from, to),
+              Math.max(from, to),
+              getEditorSchema(editor)
+            );
           }),
         project: (range) =>
           (({ range: innerRange }) =>

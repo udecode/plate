@@ -644,6 +644,7 @@ const withRootRanges = <V extends Value, T extends ViewStateTransformInput<V>>(
     edges: rootMethod(editor, viewState, state.ranges.edges),
     fromEntries: rootMethod(editor, viewState, state.ranges.fromEntries),
     get: rootMethod(editor, viewState, state.ranges.get),
+    isEmpty: rootMethod(editor, viewState, state.ranges.isEmpty),
     project: rootMethod(editor, viewState, state.ranges.project),
     unhang: rootMethod(editor, viewState, state.ranges.unhang),
   });

@@ -3463,7 +3463,7 @@
           "kind": "type",
           "name": "EditorStateRangesApi",
           "runtime": false,
-          "signature": "type EditorStateRangesApi = {\n  edges: (at: NodeTarget) => readonly [Point, Point] | undefined;\n  fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;\n  get: (at: NodeTarget, to?: Location) => Range | undefined;\n  project: (range: Range) => readonly ProjectedRangeSegment[];\n  unhang: (range: Range, options?: EditorUnhangRangeOptions) => Range;\n};",
+          "signature": "type EditorStateRangesApi = {\n  edges: (at: NodeTarget) => readonly [Point, Point] | undefined;\n  fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;\n  get: (at: NodeTarget, to?: Location) => Range | undefined;\n  /**\n   * Whether a range covers nothing a reader sees: no letter, and no void\n   * element such as a mention wholly inside it. A collapsed range is empty,\n   * and so is one that crosses only the edges of text leaves or containers.\n   */\n  isEmpty: (range: Range) => boolean;\n  project: (range: Range) => readonly ProjectedRangeSegment[];\n  unhang: (range: Range, options?: EditorUnhangRangeOptions) => Range;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -16540,7 +16540,7 @@
           "kind": "type",
           "name": "AnnotationStoreOptions",
           "runtime": false,
-          "signature": "type AnnotationStoreOptions = Readonly<{\n  id?: string;\n  onError?: ViewSourceErrorSink;\n}>;",
+          "signature": "type AnnotationStoreOptions = Readonly<{\n  /**\n   * Resolve an annotation whose range covers no letter and no whole void to\n   * `range: null`. It still follows the nodes its range touches, so an edit\n   * there that brings content back resolves it again.\n   */\n  hideEmpty?: boolean;\n  id?: string;\n  onError?: ViewSourceErrorSink;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -20398,7 +20398,7 @@
           "kind": "type",
           "name": "EditorStateRangesApi",
           "runtime": false,
-          "signature": "type EditorStateRangesApi = {\n  edges: (at: NodeTarget) => readonly [Point, Point] | undefined;\n  fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;\n  get: (at: NodeTarget, to?: Location) => Range | undefined;\n  project: (range: Range) => readonly ProjectedRangeSegment[];\n  unhang: (range: Range, options?: EditorUnhangRangeOptions) => Range;\n};",
+          "signature": "type EditorStateRangesApi = {\n  edges: (at: NodeTarget) => readonly [Point, Point] | undefined;\n  fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;\n  get: (at: NodeTarget, to?: Location) => Range | undefined;\n  /**\n   * Whether a range covers nothing a reader sees: no letter, and no void\n   * element such as a mention wholly inside it. A collapsed range is empty,\n   * and so is one that crosses only the edges of text leaves or containers.\n   */\n  isEmpty: (range: Range) => boolean;\n  project: (range: Range) => readonly ProjectedRangeSegment[];\n  unhang: (range: Range, options?: EditorUnhangRangeOptions) => Range;\n};",
           "source": null,
           "typeParameters": []
         },

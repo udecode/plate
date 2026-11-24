@@ -37,6 +37,8 @@ export type CoreWork = {
   collapsedBoundaryVisits: number;
   composedProjectionSections: number;
   contentRootOwnerScans: number;
+  contentSpanNodes: number;
+  tokenRangeVisits: number;
   coverageCandidateChecks: number;
   coverageQueries: number;
   coverageRootKeyBuilds: number;
@@ -244,6 +246,8 @@ export const coreWork: CoreWork = {
   collapsedBoundaryVisits: 0,
   composedProjectionSections: 0,
   contentRootOwnerScans: 0,
+  contentSpanNodes: 0,
+  tokenRangeVisits: 0,
   coverageCandidateChecks: 0,
   coverageQueries: 0,
   coverageRootKeyBuilds: 0,

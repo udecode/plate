@@ -5201,7 +5201,9 @@
         "source-hash:partition:board",
         "source-hash:partition:comments",
         "source-hash:partition:core",
-        "source-hash:partition:standard-basic-nodes"
+        "source-hash:partition:mention",
+        "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:table"
       ],
       "inputs": [
         "src/features/comments/**",

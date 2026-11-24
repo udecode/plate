@@ -199,6 +199,7 @@ export class ResolvedTokenCursor {
       children.forEach(first, (child, index, start) => {
         const childFrom = contentFrom + start;
 
+        countCoreWork('tokenRangeVisits');
         if (childFrom > to) return false;
         if (childFrom + child.length < from) return true;
 

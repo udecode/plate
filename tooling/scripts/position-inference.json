@@ -24,5 +24,7 @@
     "packages/plitejs/src/sync/server/take-back.ts",
     "packages/plitejs/src/sync/server/window.ts"
   ],
-  "uncounted": {}
+  "uncounted": {
+    "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap."
+  }
 }

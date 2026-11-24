@@ -1951,7 +1951,9 @@ export const createAuthoredPlugin = (
           readView: (view, read) => {
             const preview = previewModeOf(view);
 
-            if (!preview) return read();
+            if (!preview) {
+              return withEditorDocumentProjection(owner, undefined, read);
+            }
 
             const stored = storedValue(owner);
             const root = withEditorDocumentProjection(owner, undefined, () =>

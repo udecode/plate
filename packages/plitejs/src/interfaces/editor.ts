@@ -1559,6 +1559,12 @@ export type EditorStateRangesApi = {
   edges: (at: NodeTarget) => readonly [Point, Point] | undefined;
   fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;
   get: (at: NodeTarget, to?: Location) => Range | undefined;
+  /**
+   * Whether a range covers nothing a reader sees: no letter, and no void
+   * element such as a mention wholly inside it. A collapsed range is empty,
+   * and so is one that crosses only the edges of text leaves or containers.
+   */
+  isEmpty: (range: Range) => boolean;
   project: (range: Range) => readonly ProjectedRangeSegment[];
   unhang: (range: Range, options?: EditorUnhangRangeOptions) => Range;
 };

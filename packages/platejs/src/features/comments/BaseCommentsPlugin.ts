@@ -26,6 +26,7 @@ import {
   readDocumentRange,
   runEditorObserver,
   subscribeEditorViewState,
+  withStoredAuthoredRead,
 } from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
@@ -556,7 +557,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       annotations = createAnnotationStore(
         view,
         () => sourcesByRoot.get(view.read.view.root()) ?? [],
-        { id: 'comments' }
+        { hideEmpty: true, id: 'comments' }
       );
       passiveIndexes.set(view, annotations);
     }
@@ -625,7 +626,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         if (changed && !changed(root)) return;
         group.forEach(({ anchor, id }) => {
           present.add(id);
-          const range = anchor.resolve(view);
+          const range = textIn(view, anchor.resolve(view));
           if (ranges.has(id) && isEqual(ranges.get(id), range)) return;
           ranges.set(id, range);
           ids.add(id);
@@ -656,13 +657,20 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       queueChange(() => deliver(listeners, 'commit-listener', change));
     };
     changedIds();
+    let schema = view.read.schema.identity();
     const stopCommits = view.subscribeCommit((commit) => {
-      if (commit && !commit.changed.hasAny('document')) return;
+      const next = view.read.schema.identity();
+      const reconfigured = next !== schema;
+      schema = next;
+      if (!commit || reconfigured) {
+        announce(changedIds(), 'editor');
+        return;
+      }
+      if (!commit.changed.hasAny('document')) return;
       announce(
         changedIds(
-          commit && ((root) => commit.changed.has('document', root)),
-          !commit ||
-            commit.changed.hasAny('structure') ||
+          (root) => commit.changed.has('document', root),
+          commit.changed.hasAny('structure') ||
             commit.changed.hasAny('properties')
         ),
         'editor'
@@ -802,6 +810,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     if (destroyed) return;
     store.set({ activeIds: Object.freeze([...new Set(ids)]) });
   };
+  const textIn = (
+    view: { read: { ranges: { isEmpty: (range: Range) => boolean } } },
+    range: Range | null
+  ) => (range && !view.read.ranges.isEmpty(range) ? range : null);
+  const storedText = (anchor: Anchor<Range>) =>
+    withStoredAuthoredRead(editor, () => textIn(editor, anchor.resolve()));
   const syncSource = () => {
     sourcesByRoot = new Map();
     anchors.forEach((anchor, id) => {
@@ -857,10 +871,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       view,
       readDocumentRange(value, { view: view.read.view.root() })
     );
-  const resolveIn = (view: Editor, anchor: Anchor<Range>) =>
+  const rangeIn = (view: Editor, anchor: Anchor<Range>) =>
     anchor.root === view.read.view.root() || isPageView(view)
       ? anchor.resolve(view)
       : null;
+  const resolveIn = (view: Editor, anchor: Anchor<Range>) =>
+    textIn(view, rangeIn(view, anchor));
   const locationRoot = (location: Location) => {
     if (PathApi.isPath(location)) return undefined;
     return PointApi.isPoint(location)
@@ -1105,9 +1121,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     {
       afterWrite,
       isCurrent = () => true,
+      allowEmpty = false,
     }: {
       afterWrite?: (canonical: CommentThread | null) => void;
       isCurrent?: () => boolean;
+      allowEmpty?: boolean;
     } = {}
   ): Promise<CommentMutationResult> => {
     const previous = threads.get(id) ?? null;
@@ -1140,14 +1158,16 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     try {
       let range: Range | null = null;
       if (location) {
-        if (location.resolve()) {
+        const written = () =>
+          allowEmpty ? location.resolve() : storedText(location);
+        if (written()) {
           rangesAwaitingMutate.set(id, location);
           announceRanges();
           if (isStale()) {
             dropUnwritten();
             return { status: 'stale' };
           }
-          range = location.resolve();
+          range = written();
         }
         if (!range) {
           dropUnwritten();
@@ -1284,6 +1304,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             },
             isCurrent: () =>
               sameThread(threads.get(thread.id) ?? null, transition.previous),
+            allowEmpty: true,
           }
         );
 
@@ -1434,7 +1455,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         let range: Range | undefined;
         if (input.target.type === 'range') {
           range = commandRange(commandEditor, input.target.range);
-          if (RangeApi.isCollapsed(range)) return null;
+          if (commandEditor.read.ranges.isEmpty(range)) return null;
         } else if (!input.target.id) return null;
         const createdAt = new Date().toISOString();
         const userId = readEditorAuthor(commandEditor);
@@ -1510,13 +1531,15 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         begin: (at: Range | null = commandEditor.read.selection()) => {
           if (!at || destroyed) return false;
           let range: Range | null = commandRange(commandEditor, at);
-          if (RangeApi.isCollapsed(range)) {
-            const block = commandEditor.read.nodes.block({ at: range });
+          if (commandEditor.read.ranges.isEmpty(range)) {
+            const block = commandEditor.read.nodes.block({
+              at: RangeApi.start(range),
+            });
             range = block
               ? (commandEditor.read.ranges.get(block[0]) ?? null)
               : null;
           }
-          if (!range || RangeApi.isCollapsed(range)) return false;
+          if (!range || commandEditor.read.ranges.isEmpty(range)) return false;
           const anchor = commandEditor.anchor(range, {
             association: 'inward',
             deletion: 'nearest',
@@ -1828,8 +1851,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
                 if (anchor.root !== root || threads.get(id)?.resolution) {
                   return [];
                 }
-                const range = resolveIn(commandEditor, anchor);
-                return range && RangeApi.includes(range, location) ? [id] : [];
+                const range = rangeIn(commandEditor, anchor);
+                return range &&
+                  RangeApi.includes(range, location) &&
+                  textIn(commandEditor, range)
+                  ? [id]
+                  : [];
               })
             );
           }
@@ -1864,7 +1891,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           if (thread.target.type === 'change') return thread.target;
           const anchor = anchors.get(id);
           const range = anchor && resolveIn(commandEditor, anchor);
-          return range && !RangeApi.isCollapsed(range)
+          return range
             ? freezeComment({
                 type: 'range',
                 status: 'attached',
