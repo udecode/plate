@@ -35,7 +35,6 @@ import {
 } from './import-graph.mjs';
 import { FROZEN, indexPatterns } from './knowledge/knowledge.mjs';
 import { hasPrivateHalf, trackedFiles } from './private-files.mjs';
-import { expectedVerdict } from './step-failures.mjs';
 import { workerBudget } from './worker-budget.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
@@ -1522,18 +1521,6 @@ const main = async () => {
       writing,
     });
     const reason = cache.end(step.name);
-    if (!interrupted && !writing) {
-      const verdict = expectedVerdict({
-        onlyFiles: scope.tests,
-        readOutput: () => readFileSync(log, 'utf-8'),
-        root,
-        status: result.status,
-        step: step.name,
-      });
-      if (verdict.message) appendFileSync(log, verdict.message);
-      result.status = verdict.status;
-      result.heldByList = verdict.heldByList;
-    }
     results.set(step.name, result);
     logStep({
       cores: Math.min(step.cores ?? 1, budget),
@@ -1545,7 +1532,7 @@ const main = async () => {
     // after one never counts as passed.
     if (!interrupted && result.status !== 0) {
       firstFailure ??= step.name;
-    } else if (!interrupted && !result.heldByList) {
+    } else if (!interrupted) {
       cache.record(scope, result.seconds, reason);
     }
     if (group) console.info(`::group::${step.name}`);

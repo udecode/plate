@@ -31,7 +31,6 @@ import {
   readTasks,
   syncLedger,
 } from '../../.agents/pstack/tasks.mjs';
-import { EXPECTED_PATH } from '../config/test-suites.mjs';
 import {
   installLockfile,
   INTERRUPTED,
@@ -47,14 +46,7 @@ import {
 } from './local-ci-events.mjs';
 import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
 import { dueRecurrences, recurrenceOffer, runsOf } from './red-recurrence.mjs';
-import {
-  clearedHeader,
-  expectedVerdict,
-  failureKey,
-  failuresOf,
-  listedFor,
-  stepOutput,
-} from './step-failures.mjs';
+import { failuresOf, stepOutput } from './step-failures.mjs';
 
 const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
   run        check the newest origin/next unless it was checked
@@ -346,27 +338,9 @@ const keepFailedResults = (logs, name, since) => {
 
 const stepLog = (log, step) =>
   stepOutput(existsSync(log) ? readFileSync(log, 'utf-8') : '', step);
-const readFailures = (log, step) => {
-  const output = stepLog(log, step);
-  const failures = failuresOf(output, worktree);
-  const listed = new Set(listedFor(worktree, step).map(failureKey));
-  return {
-    failures,
-    listedPassing: output.includes(clearedHeader(step)),
-    unexpected: [...failures.keys()].filter((key) => !listed.has(key)),
-  };
-};
-const passes = (run, step, onlyFiles) =>
-  run.ok ||
-  expectedVerdict({
-    onlyFiles,
-    readOutput: () => stepLog(run.log, step),
-    root: worktree,
-    status: 1,
-    step,
-  }).status === 0;
-const sameFailures = (lastRed, unexpected) =>
-  unexpected.every((key) => lastRed.failures.includes(key));
+const readFailures = (log, step) => failuresOf(stepLog(log, step), worktree);
+const sameFailures = (lastRed, failing) =>
+  failing.every((key) => lastRed.failures.includes(key));
 
 const rerunCommand = (step, files) => {
   const quoted = (list) => list.map((file) => `'${file}'`).join(' ');
@@ -404,7 +378,7 @@ const firstBad = (logs, step, green, tip, deadline, target) => {
     const failed =
       !probe.ok &&
       (target.length === 0 ||
-        [...readFailures(probe.log, step).failures.keys()].some((key) =>
+        [...readFailures(probe.log, step).keys()].some((key) =>
           target.includes(key)
         ));
     if (failed) bad = mid;
@@ -456,29 +430,45 @@ const openTask = (step) => {
 // A fix that dies with its session, such as in an app restart, leaves its
 // task open with nobody on it.
 const CLAIM_MS = 6 * 60 * 60_000;
-const claimLive = (task) => {
+
+const CUT_MS = 24 * 60 * 60_000;
+const CUT_WAKES = 2;
+const taskTimes = (task) => {
   const rows = readFileSync(ledger, 'utf-8')
     .split('\n')
     .filter((line) => line.split('\t')[2]?.startsWith(`${task.id} `))
-    .map((line) => line.split('\t')[0]);
+    .map((line) => Date.parse(line.split('\t')[0]));
   const wakes = readEvents()
     .filter((event) => event.wake && event.task === task.id)
-    .map((event) => event.at);
-  const newest = Math.max(...[...rows, ...wakes].map(Date.parse));
-  return Date.now() - newest < CLAIM_MS;
+    .map((event) => Date.parse(event.at));
+  return {
+    newest: Math.max(...rows, ...wakes),
+    since: Math.min(...rows),
+    wakes: wakes.length,
+  };
 };
 
 const report = (event) => {
   const title = fixTitle(event.step);
   const open = openTask(event.step);
   if (open) {
-    return claimLive(open) ? { wake: false } : { task: open.id, wake: true };
+    const { newest, since, wakes } = taskTimes(open);
+    const due = {
+      redSince: new Date(since).toISOString(),
+      ...(Date.now() - since >= CUT_MS || wakes >= CUT_WAKES
+        ? { cut: true }
+        : {}),
+    };
+    return Date.now() - newest < CLAIM_MS
+      ? { ...due, wake: false }
+      : { ...due, task: open.id, wake: true };
   }
-  const found = event.cleared
-    ? `Local CI found ${event.step} no longer failing on next with failures ${EXPECTED_PATH} lists. Log: ${event.log}, which names them. Remove their lines from the list and land through land.mjs.`
-    : event.kind === 'flake'
-      ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.`
-      : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.`;
+  const cut =
+    ' When no fix lands within 24 hours of this offer, cut instead. Delete each failing test or case, or drop the step from tooling/scripts/check.mjs, and name what you cut and this task in the commit.';
+  const found =
+    event.kind === 'flake'
+      ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.${cut}`
+      : `Local CI found ${event.step} failing on next ${where(event)}. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest ${event.kind} event in ${eventsPath} names the commits. Reproduce it with pnpm check ${event.step}, fix forward and land through land.mjs.${cut}`;
   let id = null;
   if (existsSync(ledger)) {
     id = node(main, [ledgerHelper, 'chips', 'id']).stdout.trim();
@@ -496,7 +486,7 @@ const report = (event) => {
     ]);
     if (added.status !== 0) id = null;
   }
-  return { task: id, wake: true };
+  return { redSince: new Date().toISOString(), task: id, wake: true };
 };
 
 // Dismisses a step's offered task once a run on next passes the step, so a
@@ -670,20 +660,10 @@ const run = async (args) => {
     const results = keepFailedResults(logs, name, checkStarted);
     for (const failed of [...result.failed, ...result.interrupted]) {
       const interrupted = result.interrupted.includes(failed);
-      const { failures, listedPassing, unexpected } = interrupted
-        ? { failures: new Map(), listedPassing: false, unexpected: [] }
+      const failures = interrupted
+        ? new Map()
         : readFailures(result.log, failed);
-      if (listedPassing && unexpected.length === 0) {
-        const event = {
-          cleared: true,
-          kind: 'red',
-          log: result.log,
-          step: failed,
-          tip,
-        };
-        emit({ ...event, ...reportRed(event) });
-        continue;
-      }
+      const failing = [...failures.keys()];
       const before = wasRed.get(failed);
       // An interrupted step shows no failures, so without an open fix task
       // its last red would name failures this tip never showed.
@@ -691,12 +671,12 @@ const run = async (args) => {
         Array.isArray(before?.failures) &&
         (interrupted
           ? Boolean(openTask(failed))
-          : sameFailures(before, unexpected));
+          : sameFailures(before, failing));
       if (held) {
         const event = {
           author: before.author,
           culprit: before.culprit ?? null,
-          failures: interrupted ? before.failures : unexpected,
+          failures: interrupted ? before.failures : failing,
           green: before.green ?? null,
           kind: 'red',
           known: true,
@@ -710,9 +690,7 @@ const run = async (args) => {
         emit({ ...event, ...reportRed(event) });
         continue;
       }
-      const files = [
-        ...new Set(unexpected.map((key) => failures.get(key).file)),
-      ];
+      const files = [...new Set(failing.map((key) => failures.get(key).file))];
       const line =
         files.length > 0 && files.every(Boolean)
           ? rerunCommand(failed, files)
@@ -725,7 +703,7 @@ const run = async (args) => {
       const alone = line
         ? shell(logs, aloneName, line)
         : check(logs, aloneName, [failed], { full });
-      const ok = passes(alone, failed, line ? files : undefined);
+      const { ok } = alone;
       if (ok && interrupted) {
         passing.add(failed);
         continue;
@@ -734,7 +712,7 @@ const run = async (args) => {
       if (ok) {
         const event = {
           kind: 'flake',
-          failures: unexpected,
+          failures: failing,
           load,
           loaded: load > FLAKE_LOAD,
           log: result.log,
@@ -749,14 +727,14 @@ const run = async (args) => {
       // The search starts from the last commit this step passed on, so a
       // step can find its culprit while other steps keep next from going green.
       const from = option('--green') ?? state.passed?.[failed] ?? green;
-      const target = readFailures(alone.log, failed).unexpected;
+      const target = [...readFailures(alone.log, failed).keys()];
       const found =
         from && from !== tip
           ? firstBad(logs, failed, from, tip, started + BUDGET_MS, target)
           : { culprit: null, range: tip };
       const event = {
         kind: 'red',
-        failures: target.length > 0 ? target : unexpected,
+        failures: target.length > 0 ? target : failing,
         green: from,
         // A loaded host can time a step out alone too, so the fix run reads
         // the load the alone rerun ended under.

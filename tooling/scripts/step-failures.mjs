@@ -1,70 +1,17 @@
-import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { stripVTControlCharacters } from 'node:util';
-
-import { ledgerPath, readTasks } from '../../.agents/pstack/tasks.mjs';
-import { EXPECTED_PATH, leftOutLine } from '../config/test-suites.mjs';
 
 const TEST_FILE = /\.(?:spec|test)\.[cm]?[jt]sx?$/u;
 // turbo starts each line of a package task with its id, such as
 // `plitejs:test:partition:core: `.
 const TASK_PREFIX = /^((@?[\w.-]+(?:\/[\w.-]+)?):[\w-]+(?::[\w-]+)*): /u;
 
-export const clearedHeader = (step) =>
-  `[check] ${step} no longer fails with these, so remove their lines from ${EXPECTED_PATH}:`;
-const LEFT_OUT = leftOutLine('');
-const leftOutFiles = (output) =>
-  new Set(
-    output
-      .split('\n')
-      .map((line) => stripVTControlCharacters(line))
-      .filter((line) => line.startsWith(LEFT_OUT))
-      .map((line) => line.slice(LEFT_OUT.length))
-  );
 export const failureKey = ({ file, test }) => `${file ?? '?'} › ${test}`;
 export const failureFile = (key) => {
   const file = key.slice(0, key.indexOf(' › '));
   return file === '?' ? null : file;
 };
-const openExpectedFailures = (root) => {
-  const file = join(root, EXPECTED_PATH);
-  const common = spawnSync(
-    'git',
-    ['rev-parse', '--path-format=absolute', '--git-common-dir'],
-    { cwd: root, encoding: 'utf-8' }
-  );
-  const ledger = join(
-    dirname(common.stdout.trim()),
-    ledgerPath('docs/plans', 'trunk')
-  );
-  if (!existsSync(file) || common.status !== 0 || !existsSync(ledger)) {
-    return [];
-  }
-  const open = new Set(
-    [...readTasks(readFileSync(ledger, 'utf-8').split('\n')).values()]
-      .filter((task) => ['offered', 'started'].includes(task.status))
-      .map((task) => task.id)
-  );
-  return JSON.parse(readFileSync(file, 'utf-8')).expected.filter((entry) =>
-    open.has(entry.owner)
-  );
-};
-
-const LANES = new Set(['test', 'test-slow']);
-// Both steps run plitejs test files, so a failure one lists holds in the other.
-const PACKAGE_LANES = new Set(['plite-test', 'package-tests']);
-
-const ownLane = (entry, step) =>
-  entry.step === step || (LANES.has(step) && LANES.has(entry.step));
-
-export const listedFor = (root, step) =>
-  openExpectedFailures(root).filter(
-    (entry) =>
-      ownLane(entry, step) ||
-      (PACKAGE_LANES.has(step) && PACKAGE_LANES.has(entry.step))
-  );
-
 export const stepOutput = (log, step) => {
   const lines = log.split('\n');
   const start = lines.findIndex((line) => line.startsWith(`[check] ${step}: `));
@@ -167,50 +114,4 @@ export const failuresOf = (output, root) => {
     if (audit) add(resolve(audit[1], packageName) ?? audit[1], audit[2]);
   }
   return failures;
-};
-
-const entryLines = (entries) =>
-  entries
-    .map((entry) => `  ${failureKey(entry)} (owner ${entry.owner})`)
-    .join('\n');
-
-// readOutput runs only for a step the list names, because a long formal
-// check's log can pass the length of a string Node can hold.
-export const expectedVerdict = ({
-  onlyFiles,
-  readOutput,
-  root,
-  status,
-  step,
-}) => {
-  const listed = listedFor(root, step);
-  if (listed.length === 0) return { status };
-  const output = readOutput();
-  const failures = failuresOf(output, root);
-  const leftOut = leftOutFiles(output);
-  const cleared = listed.filter(
-    (entry) =>
-      ownLane(entry, step) &&
-      (!onlyFiles || onlyFiles.includes(entry.file)) &&
-      !leftOut.has(entry.file) &&
-      !failures.has(failureKey(entry))
-  );
-  if (cleared.length > 0) {
-    return {
-      message: `${clearedHeader(step)}\n${entryLines(cleared)}\n`,
-      status: status === 0 ? 1 : status,
-    };
-  }
-  const keys = new Set(listed.map(failureKey));
-  const heldByList =
-    status !== 0 &&
-    failures.size > 0 &&
-    [...failures.keys()].every((key) => keys.has(key));
-  return heldByList
-    ? {
-        heldByList,
-        message: `[check] ${step} fails only as ${EXPECTED_PATH} expects:\n${entryLines(listed)}\n`,
-        status: 0,
-      }
-    : { status };
 };
