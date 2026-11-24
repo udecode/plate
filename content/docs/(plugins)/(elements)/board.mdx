@@ -19,6 +19,7 @@ docs:
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
 - Paste text or a link, and it lands as a selected note at the pointer.
 - Paste an image link or a picture copied from a web page, and it lands as an image shape at the pointer, at the picture's proportions. With [`UploadPlugin`](/docs/upload) installed, picture files that you paste, drop or pick from the toolbar land as image shapes too, and each uploads in its own shape.
+- Export the board, or its selected shapes, as a PNG or an SVG that holds the shapes off screen too.
 - A camera, a tool, a tool lock and a next style for each mounted view, which the document never stores.
 - Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. Enter places a note, shape or frame, and connects two shapes with an arrow. A screen reader hears the selected shape, the picked tool, the zoom, each removal and each step of a connect, in words your app passes.
 - Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
@@ -39,7 +40,7 @@ docs:
 - `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
 - `BoardImageElement`: renders an image shape. `BoardImageKit` installs it apart from `BoardKit`, as [Images](#images) shows.
-- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle for the next shape. The lock button after them turns the tool lock on or off, as Q does, and shows pressed while the lock is on. The Image button after the lock opens a file picker and lands the picked pictures, as [Picture files](#picture-files) describes, and is disabled on a board that takes no picture files. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
+- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle for the next shape. The lock button after them turns the tool lock on or off, as Q does, and shows pressed while the lock is on. The Image button after the lock opens a file picker and lands the picked pictures, as [Picture files](#picture-files) describes, and is disabled on a board that takes no picture files. The Export menu after the Image button saves the board as a PNG or an SVG, as [Export](#export) describes. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
 - `BoardStylePanel`: docks at the board's top right and styles the selected shapes, or the next shape while a drawing tool is picked, as [Style panel](#style-panel) shows.
 
 ### Add kit
@@ -243,6 +244,33 @@ const editor = createEditor({
 - While a shape's text is being edited, the board leaves pasted and dropped files to the page. A file pasted into a note's text lands no shape, and `UploadPlugin` reports that it does not fit there.
 
 The board takes picture files only in a view that can write, in an editor that installs both `UploadPlugin` and `ImagePlugin`. On any other board, the Image button is disabled and a pasted or dropped file lands no shape. The copied button reads that check as `takesPictureFiles` from `useBoardView`, and lands its files with `upload(files)` from `useBoardActions`.
+
+## Export
+
+The copied toolbar's Export menu saves the board as `board.png` or `board.svg`.
+
+- The picture holds the selected shapes and every shape of a selected frame, or the whole board when nothing is selected. Shapes off screen are included.
+- It draws the board's background in the current light or dark theme, without the dot grid.
+- The file holds the fonts its text uses and the board's images, so it looks the same on another computer.
+- The PNG is twice the board's size. A board too large for the browser's canvas draws smaller, and the menu says so.
+- An image that cannot be read draws as a gray box in the PNG and stays a web link in the SVG. A shape type with no static component draws as a gray box. Note content whose plugin `BoardPictureKit` lacks shows as plain text, and a font that cannot be read leaves its text in another font. The menu shows a warning for each.
+- A note's text is HTML inside the SVG. Browsers draw it, but a design tool that opens the SVG shows the shapes without the note text.
+- On an empty board, the menu says there is nothing to export.
+
+When you export, the menu loads `BoardPictureKit` from the copied `board-static.tsx` and passes it to `exportPicture` from `useBoardActions`. A control of your own inside the surface's `toolbar` can do the same:
+
+```tsx
+const { exportPicture } = useBoardActions();
+
+const picture = await exportPicture({
+  format: 'svg',
+  kit: import('@/components/editor/board-static').then(
+    ({ BoardPictureKit }) => BoardPictureKit
+  ),
+});
+```
+
+`picture` is `null` when there is nothing to draw. Otherwise it holds the file's `blob`, its `width` and `height` in pixels, and its `warnings`.
 
 ## Manual usage
 
@@ -636,6 +664,7 @@ Every other peer joins the new room with the new plugins and schema, and without
 - A board inside a note, rotation and cropping a picture are not supported, and the copied board draws no caption under a picture.
 - Drawing with the pen needs a pointer. A keyboard resize keeps the proportions of an image shape only, and cannot resize around the center, which Shift and Alt do on a corner drag.
 - No key or pointer gesture moves a bound arrow end off its shape, or resizes several shapes at once. Moving a selected arrow moves its free ends, and each bound end stays on its shape.
+- An export of a selected frame holds the frame's shapes but not an arrow between them, because an arrow never belongs to a frame. Select the arrow too to include it.
 - On a board page, the board is still a block of the document. Delete or Backspace with the board selected removes it with its shapes, and Undo brings it back. With [exit break](/docs/exit-break) installed, Mod+Enter with the caret on the board, where Mod+A can put it, adds a paragraph after the board, out of sight.
 
 ## Plugins
@@ -670,5 +699,6 @@ The image shape, `boardImage`: an object block that holds at most one `image` el
 | `BoardSurface`, `BoardShape` | `platejs/board/react` | The board's mounted view and a shape's positioned wrapper, for copied renderers. The surface's required `messages` holds every word the board says, as [Screen readers](#screen-readers) lists. Its `height` sets its view's height and defaults to the board's stored `height`. A shape the eraser will remove shows `data-erasing`, which the copied board fades, and the shape under the picking cursor shows `data-board-cursor`, which the copied board rings. A plain wheel over a toolbar element that can still scroll in the wheel's main direction scrolls that element instead of panning the board. |
 | `data-board-dock` | `platejs/board/react` | Marks an element at the top level of the surface's `toolbar` that sits at the board's `"left"` or `"right"` side. Every other top-level toolbar element counts as a row at the board's top or bottom. `fit` and Shift+1 fit the shapes into the room the toolbar leaves clear. Where that room's width or height cannot hold them at 10 percent, they use the board's whole width or height. Both zoom between 10 and 100 percent, so shapes the board cannot hold at 10 percent run past its edges. |
 | `BoardMessages`, `BoardShapeDescription`, `BoardCorner`, `BoardPickState` | `platejs/board/react` | The type of `messages`, the shape that `messages.shape` describes, the corner a resize moves, and where picking stands when the board says `picking` or `pick`. |
-| `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Inside the surface's `toolbar`, read the view's `tool`, `toolLocked`, `camera` and `nextStyle`, its board's selected shapes as `selectedShapes`, each style a pick would set as `styles`, whether it can write as `writable`, and whether its board takes picture files as `takesPictureFiles`. A camera `zoom` of 1 is 100 percent. Call `setTool`, `setToolLocked`, `setStyle`, `fit`, `zoomIn`, `zoomOut`, `resetZoom`, `removeFrame`, `focus` and `upload`. From any zoom, `zoomIn` and `zoomOut` go to the next step the `=` or `+` and `-` keys use, and stop at 800 and 10 percent. `resetZoom` zooms to 100 percent, as Shift+0 does. All three work in a read-only view too. `toolLocked` says whether the note, shape, frame and arrow tools stay picked after they add a shape. It is off when the view mounts and is never stored, and `setToolLocked` turns it on or off, as Q does, without changing the tool or the selection. `focus` moves focus back to the board and keeps its selection, such as after a toolbar menu closes. A shape whose text is being edited ends its edit and stays selected. `setStyle` merges into the next style. With the select tool it also writes each style to every selected shape that takes it and to the shape whose text is being edited, as one undo step that keeps the caret. With a drawing tool it styles only the next shape. Each entry of `styles` is `{ mixed: false, value }` when its targets share a value and `{ mixed: true }` when they differ, and a style no target takes has no entry. A read-only view's `setStyle` changes nothing. `upload(files)` lands picture files as image shapes in a row centered on the view, as [Picture files](#picture-files) describes. It changes nothing with an empty list or while `takesPictureFiles` is false. |
+| `useBoardView(selector)`, `useBoardActions()` | `platejs/board/react` | Inside the surface's `toolbar`, read the view's `tool`, `toolLocked`, `camera` and `nextStyle`, its board's selected shapes as `selectedShapes`, each style a pick would set as `styles`, whether it can write as `writable`, and whether its board takes picture files as `takesPictureFiles`. A camera `zoom` of 1 is 100 percent. Call `setTool`, `setToolLocked`, `setStyle`, `fit`, `zoomIn`, `zoomOut`, `resetZoom`, `removeFrame`, `focus`, `upload` and `exportPicture`. From any zoom, `zoomIn` and `zoomOut` go to the next step the `=` or `+` and `-` keys use, and stop at 800 and 10 percent. `resetZoom` zooms to 100 percent, as Shift+0 does. All three work in a read-only view too. `toolLocked` says whether the note, shape, frame and arrow tools stay picked after they add a shape. It is off when the view mounts and is never stored, and `setToolLocked` turns it on or off, as Q does, without changing the tool or the selection. `focus` moves focus back to the board and keeps its selection, such as after a toolbar menu closes. A shape whose text is being edited ends its edit and stays selected. `setStyle` merges into the next style. With the select tool it also writes each style to every selected shape that takes it and to the shape whose text is being edited, as one undo step that keeps the caret. With a drawing tool it styles only the next shape. Each entry of `styles` is `{ mixed: false, value }` when its targets share a value and `{ mixed: true }` when they differ, and a style no target takes has no entry. A read-only view's `setStyle` changes nothing. `upload(files)` lands picture files as image shapes in a row centered on the view, as [Picture files](#picture-files) describes. It changes nothing with an empty list or while `takesPictureFiles` is false. `exportPicture({ format, kit })` draws the selected shapes, or the whole board when nothing is selected, as a `'png'` or `'svg'` picture with the static plugins in `kit`. `kit` can be a promise, such as a dynamic import, as [Export](#export) shows. It reads the selection when it is called and loads its drawing code on the first call. It resolves `null` when there is nothing to draw, and rejects when the surface is not on the page or leaves it before the picture is drawn. |
+| `BoardPicture`, `BoardPictureOptions`, `BoardPictureWarning` | `platejs/board/react` | What `exportPicture` resolves, what it takes, and each warning in the picture's `warnings`. A warning's `code` is `content-undrawn`, `downscaled`, `font-missing`, `image-unreadable` or `shape-undrawn`, and the last two also name the `shapeId`. |
 | `useArrowPath(element)`, `useStrokePath(element)` | `platejs/board/react` | The drawn path of an arrow or a pen line. |
