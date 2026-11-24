@@ -24,8 +24,12 @@ const CITABLE = [
 const MARKER =
   /^\s*(?:\/\/|\{?\/\*)\s*(?:case ([A-Za-z][\w-]*):\s*(.*?)\s*(?:\*\/\}?)?|shared)\s*$/u;
 const CITATION = /([\w./()-]+\.(?:mdx?|tsx?)):(\d+)(?:-(\d+))?/gu;
-const FENCE = /^\s*```(\S*)/u;
-const CODE_FENCE = /^(?:[jt]sx?|typescript|javascript)$/u;
+const FENCE_OPEN = /^\s*(`{3,}(?!.*`)|~{3,})\s*([A-Za-z]*)/u;
+const FENCE_CLOSE = /^\s*(`{3,}|~{3,})\s*$/u;
+const fenceExtension = (word) =>
+  /^(?:ts|typescript)$/iu.test(word)
+    ? 'ts'
+    : /^(?:jsx?|tsx|javascript)$/iu.test(word) && 'tsx';
 
 export const readEntrypoints = (repoRoot) => {
   const problems = [];
@@ -138,6 +142,36 @@ const checksName = (node) => {
   return false;
 };
 
+const pliteUse = (checker, node, twins) => {
+  const { parent } = node;
+  const declaration = (
+    ts.isShorthandPropertyAssignment(parent) && parent.name === node
+      ? checker.getShorthandAssignmentValueSymbol(parent)
+      : checker.getSymbolAtLocation(node)
+  )?.declarations?.[0];
+  const entrypoint =
+    declaration &&
+    ts.findAncestor(declaration, ts.isImportDeclaration)?.moduleSpecifier.text;
+  if (!twins.has(entrypoint)) return null;
+  if (!ts.isNamespaceImport(declaration)) {
+    return {
+      module: entrypoint,
+      name: ts.isImportSpecifier(declaration)
+        ? (declaration.propertyName ?? declaration.name).text
+        : 'default',
+      node,
+    };
+  }
+  const member = ts.isPropertyAccessExpression(parent)
+    ? parent.name
+    : ts.isQualifiedName(parent) && parent.right;
+  return {
+    module: entrypoint,
+    name: member ? member.text : '*',
+    node: member ? parent : node,
+  };
+};
+
 const readCitations = (source) =>
   [...source.matchAll(CITATION)].map(([, file, start, end]) => ({
     end: Number(end ?? start),
@@ -146,7 +180,12 @@ const readCitations = (source) =>
   }));
 
 const callsAny = (text, names) =>
-  [...names].some((used) => new RegExp(`\\b${used}\\b`, 'u').test(text));
+  [...names].some((used) =>
+    new RegExp(
+      `(?<![\\w$])${used.replaceAll(/[$*]/gu, '\\$&')}(?![\\w$])`,
+      'u'
+    ).test(text)
+  );
 
 const nearestCalling = (lines, { end, start }, names) => {
   for (let shift = 1; shift < lines.length; shift += 1) {
@@ -164,52 +203,81 @@ const nearestCalling = (lines, { end, start }, names) => {
   return null;
 };
 
-const fenceUses = (text, names) => {
-  const code = ts.createSourceFile(
-    'fence.tsx',
-    text,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  );
-  const uses = new Map();
-  const visit = (node) => {
-    if (ts.isImportDeclaration(node)) return;
-    if (ts.isIdentifier(node) && names.has(node.text)) {
-      const { line } = code.getLineAndCharacterOfPosition(node.getStart(code));
-      if (!uses.has(line)) uses.set(line, node.text);
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(code);
-  return uses;
-};
-
-const walkthroughCalls = (repoRoot, names) => {
-  const calls = [];
+const walkthroughFences = (repoRoot) => {
+  const fences = [];
+  const imports = [];
   const directory = path.join(repoRoot, WALKTHROUGHS);
   for (const page of readdirSync(directory).sort()) {
     if (!page.endsWith('.mdx') || page.endsWith('.cn.mdx')) continue;
     const file = path.posix.join(WALKTHROUGHS, page);
     const lines = readFileSync(path.join(directory, page), 'utf-8').split('\n');
     let open = null;
-    lines.forEach((line, index) => {
-      const fence = FENCE.exec(line);
-      if (!fence) return;
-      if (!open) {
-        open = { code: CODE_FENCE.test(fence[1]), first: index + 1 };
-        return;
-      }
-      if (open.code) {
-        const text = lines.slice(open.first, index).join('\n');
-        for (const [at, name] of fenceUses(text, names)) {
-          calls.push({ file, line: open.first + 1 + at, name });
-        }
+    const close = (end) => {
+      if (open.extension) {
+        const name = path.join(
+          directory,
+          `${page}.${open.first}.${open.extension}`
+        );
+        const code = lines.slice(open.first, end).join('\n');
+        fences.push({
+          code: [code, ...imports].join('\n'),
+          file,
+          first: open.first,
+          path: name,
+        });
+        imports.unshift(
+          ...ts
+            .createSourceFile(name, code, ts.ScriptTarget.Latest, true)
+            .statements.filter(ts.isImportDeclaration)
+            .map((statement) => statement.getText())
+        );
       }
       open = null;
+    };
+    lines.forEach((line, index) => {
+      if (!open) {
+        const start = FENCE_OPEN.exec(line);
+        if (start) {
+          open = {
+            extension: fenceExtension(start[2]),
+            first: index + 1,
+            marker: start[1],
+          };
+        }
+      } else if (FENCE_CLOSE.exec(line)?.[1].startsWith(open.marker)) {
+        close(index);
+      }
     });
+    if (open) close(lines.length);
   }
-  return calls;
+  return fences;
+};
+
+const walkthroughUses = (program, fences, twins, changes) => {
+  const checker = program.getTypeChecker();
+  const uses = [];
+  for (const fence of fences) {
+    const code = program.getSourceFile(fence.path);
+    const seen = new Set();
+    const visit = (node) => {
+      if (ts.isImportDeclaration(node) || ts.isJsxClosingElement(node)) return;
+      if (ts.isIdentifier(node)) {
+        const use = pliteUse(checker, node, twins);
+        const line =
+          fence.first +
+          1 +
+          code.getLineAndCharacterOfPosition(node.getStart(code)).line;
+        const key = use && changes(use) && `${line}#${use.module}#${use.name}`;
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          uses.push({ ...use, file: fence.file, line });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(code);
+  }
+  return uses;
 };
 
 const readExports = (checker, modules, pairs) => {
@@ -221,6 +289,7 @@ const readExports = (checker, modules, pairs) => {
     );
   const rebound = new Map();
   const drops = new Map();
+  const typeOnly = new Set();
   const pairKeys = new Map();
   for (const [lite, plate] of pairs) {
     const plateExports = new Map(
@@ -238,7 +307,8 @@ const readExports = (checker, modules, pairs) => {
         (liteValues.has(symbol.name) && !plateValues.has(symbol.name))
       ) {
         dropped.push(symbol.name);
-        continue;
+        if (!twin) continue;
+        typeOnly.add(`${lite}#${symbol.name}`);
       }
       const liteTarget = resolveAlias(checker, symbol);
       const plateTarget = resolveAlias(checker, twin);
@@ -258,7 +328,7 @@ const readExports = (checker, modules, pairs) => {
       dropped.sort((a, b) => a.localeCompare(b))
     );
   }
-  return { drops, rebound };
+  return { drops, rebound, typeOnly };
 };
 
 const checkDrops = (drops, ledger, twins) => {
@@ -362,7 +432,9 @@ export function checkPliteCallParity({
       );
     }
   }
+  const fences = walkthroughFences(repoRoot);
   const virtual = new Map([
+    ...fences.map((fence) => [fence.path, fence.code]),
     [plateFile, plateCopy(controlText, imports, plateNames)],
     [
       censusFile,
@@ -375,11 +447,21 @@ export function checkPliteCallParity({
     ],
   ]);
 
-  const options = { ...compilerOptions, noEmit: true };
+  const options = {
+    ...compilerOptions,
+    noEmit: true,
+    stableTypeOrdering: true,
+  };
   const host = ts.createCompilerHost(options);
   host.getCurrentDirectory = () => repoRoot;
   const readFile = host.readFile.bind(host);
   host.readFile = (file) => virtual.get(file) ?? readFile(file);
+  const getSourceFile = host.getSourceFile.bind(host);
+  const parsed = new Map();
+  host.getSourceFile = (file, ...rest) => {
+    if (!parsed.has(file)) parsed.set(file, getSourceFile(file, ...rest));
+    return parsed.get(file);
+  };
 
   const program = ts.createProgram(
     [controlFile, plateFile, censusFile],
@@ -387,6 +469,7 @@ export function checkPliteCallParity({
     host
   );
   const checker = program.getTypeChecker();
+  const plateSource = program.getSourceFile(plateFile);
 
   for (const diagnostic of [
     ...program.getOptionsDiagnostics(),
@@ -435,7 +518,15 @@ export function checkPliteCallParity({
     }
   }
 
-  const { drops, rebound } = readExports(checker, modules, shared);
+  const { drops, rebound, typeOnly } = readExports(checker, modules, shared);
+  const changes = (use) =>
+    twins.get(use.module) === null ||
+    rebound.has(`${use.module}#${use.name}`) ||
+    (drops.get(use.module)?.includes(use.name) &&
+      !(
+        typeOnly.has(`${use.module}#${use.name}`) &&
+        (ts.isPartOfTypeNode(use.node) || ts.isTypeQueryNode(use.node.parent))
+      ));
   problems.push(...checkDrops(drops, ledger, twins));
 
   const { duplicates, lineCase, markers } = readCases(controlText);
@@ -444,27 +535,28 @@ export function checkPliteCallParity({
   }
   const label = (id) => `case ${id} (${markers.get(id)})`;
 
+  const caseOf = (node) =>
+    lineCase[
+      control.getLineAndCharacterOfPosition(node.getStart(control)).line
+    ];
   const covered = new Set();
-  const caseNames = new Map([...markers.keys()].map((id) => [id, new Set()]));
+  const caseUses = new Map([...markers.keys()].map((id) => [id, new Set()]));
+  const caseTexts = new Map([...markers.keys()].map((id) => [id, new Set()]));
+  const references = new Map();
   const markCovered = (node) => {
-    const id =
-      ts.isIdentifier(node) &&
-      lineCase[
-        control.getLineAndCharacterOfPosition(node.getStart(control)).line
-      ];
-    if (id && checksName(node)) {
-      const symbol = checker.getSymbolAtLocation(node);
-      const specifier = symbol?.declarations?.find(ts.isImportSpecifier);
-      if (specifier) {
-        const importDeclaration = specifier.parent.parent.parent;
-        const imported = (specifier.propertyName ?? specifier.name).text;
-        const entry = rebound.get(
-          `${importDeclaration.moduleSpecifier.text}#${imported}`
-        );
-        if (entry) {
-          covered.add(entry.key);
-          caseNames.get(id)?.add(imported);
-        }
+    if (ts.isImportDeclaration(node)) return;
+    const id = ts.isIdentifier(node) && caseOf(node);
+    const use = id && pliteUse(checker, node, twins);
+    if (use) {
+      if (!references.has(node.text)) references.set(node.text, new Set());
+      references.get(node.text).add(id);
+      const entry = rebound.get(`${use.module}#${use.name}`);
+      if (entry ? checksName(use.node) : changes(use)) {
+        if (entry) covered.add(entry.key);
+        caseUses.get(id)?.add(`${use.module}#${use.name}`);
+        const text = /^(?:\*|default)$/u.test(use.name) ? node.text : use.name;
+        const shown = use.node === node ? node.text : text;
+        caseTexts.get(id)?.add(text).add(shown);
       }
     }
     ts.forEachChild(node, markCovered);
@@ -512,10 +604,10 @@ export function checkPliteCallParity({
 
   const cited = new Map();
   for (const [id, marker] of markers) {
-    const names = caseNames.get(id);
+    const names = caseTexts.get(id);
     if (names.size === 0) {
       problems.push(
-        `${label(id)}: the case calls, renders and types no name Plate binds its own way. Delete it, or make it use one.`
+        `${label(id)}: the case calls, renders and types no name Plate binds its own way or drops. Delete it, or make it use one.`
       );
     }
     const citations = readCitations(marker);
@@ -544,52 +636,97 @@ export function checkPliteCallParity({
         );
       }
       if (!cited.has(file)) cited.set(file, []);
-      cited.get(file).push(citation);
+      cited.get(file).push({ ...citation, id });
     }
   }
-  const changedNames = new Set([
-    ...[...rebound.values()].map((entry) => entry.name),
-    ...[...drops.values()].flat(),
-  ]);
-  for (const call of walkthroughCalls(repoRoot, changedNames)) {
-    const covering = (cited.get(call.file) ?? []).some(
-      ({ end, start }) => start <= call.line && call.line <= end
+  for (const use of walkthroughUses(
+    ts.createProgram(
+      fences.map((fence) => fence.path),
+      options,
+      host
+    ),
+    fences,
+    twins,
+    changes
+  )) {
+    const citing = (cited.get(use.file) ?? []).filter(
+      ({ end, start }) => start <= use.line && use.line <= end
     );
-    if (!covering) {
-      problems.push(
-        `${call.file}:${call.line}: the walkthrough uses ${call.name}, and no case cites the line. Copy the call into ${CONTROL} as a case that cites it.`
-      );
-    }
+    const key = `${use.module}#${use.name}`;
+    if (citing.some(({ id }) => caseUses.get(id).has(key))) continue;
+    const uses = `${use.file}:${use.line}: the walkthrough uses ${use.name} from ${use.module}`;
+    problems.push(
+      citing.length === 0
+        ? `${uses}, and no case cites the line. Copy the call into ${CONTROL} as a case that cites it.`
+        : `${uses}, and no case that cites the line (${[...new Set(citing.map(({ id }) => id))].join(', ')}) uses it. Copy the call into the case that cites it.`
+    );
   }
 
+  const liteProgram = ts.createProgram([controlFile], options, host);
   for (const diagnostic of [
-    ...program.getSyntacticDiagnostics(program.getSourceFile(controlFile)),
-    ...program.getSemanticDiagnostics(program.getSourceFile(controlFile)),
+    ...liteProgram.getSyntacticDiagnostics(
+      liteProgram.getSourceFile(controlFile)
+    ),
+    ...liteProgram.getSemanticDiagnostics(
+      liteProgram.getSourceFile(controlFile)
+    ),
   ]) {
     problems.push(
       `${relative(controlFile)}:${lineOf(diagnostic) + 1}: the Plite control does not compile: TS${diagnostic.code} ${message(diagnostic)}`
     );
   }
 
+  const importOwners = (position) => {
+    const clause = plateSource.statements.find(
+      (statement) =>
+        ts.isImportDeclaration(statement) &&
+        statement.getStart(plateSource) <= position &&
+        position < statement.end
+    )?.importClause;
+    if (!clause) return [];
+    const elements = clause.namedBindings?.elements ?? [];
+    const specifier = elements.find(
+      (element) =>
+        element.getStart(plateSource) <= position && position < element.end
+    );
+    const locals = specifier
+      ? [specifier.name]
+      : [
+          clause.name,
+          ...(clause.namedBindings && !clause.namedBindings.elements
+            ? [clause.namedBindings.name]
+            : elements.map((element) => element.name)),
+        ];
+    return [
+      ...new Set(
+        locals.flatMap((local) => [...(references.get(local?.text) ?? [])])
+      ),
+    ];
+  };
+
   const refusals = new Map();
   for (const diagnostic of [
-    ...program.getSyntacticDiagnostics(program.getSourceFile(plateFile)),
-    ...program.getSemanticDiagnostics(program.getSourceFile(plateFile)),
+    ...program.getSyntacticDiagnostics(plateSource),
+    ...program.getSemanticDiagnostics(plateSource),
   ]) {
     const line = lineOf(diagnostic);
-    const id = lineCase[line];
-    if (!id) {
+    const importing = importOwners(diagnostic.start);
+    const owners =
+      importing.length > 0 || !lineCase[line] ? importing : [lineCase[line]];
+    if (owners.length === 0) {
       problems.push(
         `${relative(controlFile)}:${line + 1}: Plate refuses a line no case owns: TS${diagnostic.code} ${message(diagnostic)}. Move the line under its case's // case <id>: <file>:<line> marker, not under // shared.`
       );
       continue;
     }
-    if (!refusals.has(id)) refusals.set(id, []);
-    refusals.get(id).push({
-      key: errorKey(diagnostic),
-      line: line + 1,
-      text: message(diagnostic),
-    });
+    for (const id of owners) {
+      if (!refusals.has(id)) refusals.set(id, []);
+      refusals.get(id).push({
+        key: errorKey(diagnostic),
+        line: line + 1,
+        text: message(diagnostic),
+      });
+    }
   }
 
   const rows = new Map();
