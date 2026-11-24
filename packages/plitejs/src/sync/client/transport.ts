@@ -32,6 +32,7 @@ export type SyncEvent =
 export type SyncPeer = Readonly<{
   hello: () => SyncHello;
   receive: (event: SyncEvent) => void;
+  sending: (frame: string) => void;
 }>;
 
 export type SyncLink = Readonly<{
@@ -45,8 +46,17 @@ export type SyncTransport = Readonly<{
 }>;
 
 const ANSWER_DEADLINES = [5000, 10_000, 20_000];
+const LAST_TRY = ANSWER_DEADLINES.length - 1;
+const LAST_RESEND_DEADLINE = 300_000;
 const FIRST_RECONNECT = 250;
 const LAST_RECONNECT = 10_000;
+
+const frameDeadline = (tries: number) =>
+  Math.min(
+    ANSWER_DEADLINES[Math.min(tries, LAST_TRY)] *
+      2 ** Math.max(tries - LAST_TRY, 0),
+    LAST_RESEND_DEADLINE
+  );
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -148,12 +158,15 @@ export const socketTransport = (
 
     const sendFrame = () => {
       cancelFrame();
-      if (!open || !welcomed || frame === null) return;
-      if (frameTries >= ANSWER_DEADLINES.length) return;
-      socket?.send(frame);
-      cancelFrame = clock.wait(ANSWER_DEADLINES[frameTries], () => {
+      if (!open || !welcomed || !socket || frame === null) return;
+
+      const sending = frame;
+
+      peer.sending(sending);
+      socket.send(sending);
+      cancelFrame = clock.wait(frameDeadline(frameTries), () => {
         frameTries += 1;
-        if (frameTries < ANSWER_DEADLINES.length) {
+        if (frameTries <= LAST_TRY) {
           sendFrame();
 
           return;
@@ -220,10 +233,7 @@ export const socketTransport = (
               if (welcomed) reconnectDelay = FIRST_RECONNECT;
             }
             peer.receive(message);
-            if (message.type === 'welcome') {
-              frameTries = Math.min(frameTries, ANSWER_DEADLINES.length - 1);
-              sendFrame();
-            }
+            if (message.type === 'welcome') sendFrame();
           },
         });
       } catch {
