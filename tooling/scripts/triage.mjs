@@ -30,6 +30,7 @@ import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { EFFORTS, findLead, leadLabel } from '../../.agents/pstack/lead.mjs';
+import { mainCheckout } from '../../.agents/pstack/plan-page.mjs';
 import {
   board,
   boardState,
@@ -2421,6 +2422,7 @@ function shippedCommand(options) {
     );
   }
   const line = `Fixed in [${tag}](https://github.com/${repo}/releases/tag/v${version}).`;
+  const media = join(mainCheckout(root), 'docs/plans/artifacts/issue-media');
   for (const issue of openIssues(reads)) {
     const number = String(issue.number);
     const { state, head } = stateFor(number, reads);
@@ -2437,8 +2439,42 @@ function shippedCommand(options) {
     ) {
       continue;
     }
+    const folder = join(media, number);
+    const clips = existsSync(folder)
+      ? readdirSync(folder)
+          .filter((name) => !name.startsWith('.'))
+          .sort()
+          .map((name) => join(folder, name))
+      : [];
     if (options['dry-run']) {
-      console.log(`#${number} would close: ${line}`);
+      console.log(
+        `#${number} would close: ${line}${clips.map((clip) => ` + ${clip}`).join('')}`
+      );
+      continue;
+    }
+    const commented = issue.comments.some((comment) =>
+      comment.body.trim().startsWith(line)
+    );
+    const posted =
+      clips.length === 0 || commented
+        ? null
+        : run(
+            'gh',
+            [
+              'issue',
+              'comment',
+              number,
+              '--repo',
+              repo,
+              '--body',
+              line,
+              ...clips.flatMap((clip) => ['--attach', clip]),
+            ],
+            { timeout: NETWORK_MS }
+          );
+    if (posted && posted.status !== 0) {
+      console.error(`#${number} did not get its comment: ${ghProblem(posted)}`);
+      process.exitCode = 1;
       continue;
     }
     const closed = run(
@@ -2451,8 +2487,7 @@ function shippedCommand(options) {
         repo,
         '--reason',
         'completed',
-        '--comment',
-        line,
+        ...(clips.length === 0 && !commented ? ['--comment', line] : []),
       ],
       { timeout: NETWORK_MS }
     );

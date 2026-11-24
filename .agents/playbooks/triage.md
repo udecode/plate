@@ -40,7 +40,7 @@ Read each issue as `show` prints it, then its neighbors: open and closed issues 
 
 A main report is a udecode/plate issue on no Beta milestone. Before its call, replay the reporter's steps on beta.platejs.org, which deploys every push to `next`. `gh run list --repo udecode/plate --workflow deploy.yml --branch next --status success --limit 1 --json headSha` prints the commit that site serves. The replay picks the record:
 
-- When the beta behaves as the reporter expects, record `works-on-beta` with that commit and `proof:` naming the steps replayed. `record` asks the operator for a beta, and once npm has a beta that holds the commit, `beta-release.mjs ship` closes the issue with a "Fixed in" comment.
+- When the beta behaves as the reporter expects, record `works-on-beta` with that commit and `proof:` naming the steps replayed. `record` asks the operator for a beta, and once npm has a beta that holds the commit, `beta-release.mjs ship` closes the issue with a "Fixed in" comment. `ship` attaches each file in the main checkout's `docs/plans/artifacts/issue-media/<N>/` to that comment. The lead posts no comment for a `works-on-beta` record, so it copies the replay's before-and-after clip into that folder (owner's word, 2026-11-24).
 - When the beta still shows the bug, record its `kind`, as [Kinds](#kinds) says. `labels` then moves the issue onto that kind's milestone, where a claim takes it like any Beta issue.
 - When v2 removed the feature, or its law rules the behavior out, record `not-bug` with `law:` naming that law. Once the record lands and its answer posts, `labels` closes the issue as not planned.
 - When the report gives no case to replay, record `needs-repro`, naming what is missing.
