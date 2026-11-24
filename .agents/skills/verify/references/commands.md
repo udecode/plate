@@ -447,30 +447,65 @@ point the worktree's git commands at another checkout.
 ## Open a DOCX in Word
 
 Checking that Word opens an exported `.docx`, with no repair prompt and the
-right header and footer on each page, is not a manual test. The owner's Mac
-has licensed desktop Word, so every Word check runs there, never in Word for
-the web or OneDrive (owner's word, 2026-11-24). That holds for any other Word
-drive too, such as a product lane that compares Word's behavior. In Claude
-Code an agent drives Word through computer use in the background:
+right header and footer on each page, is not a manual test. In Claude Code an
+agent drives it, and any other Word drive, such as a product lane that
+compares Word's behavior, picks its Word the same way (owner's word,
+2026-11-24):
 
-1. Write the file into the run directory. For a quick look before Word, use
-   the Quick Look bullet in `testing.md`.
-2. Ask for `Microsoft Word` with `request_access`.
+- Word for the web, when the built-in browser is signed in to OneDrive.
+- Desktop Word, when OneDrive shows a sign-in page.
+- Desktop Word, always, when the check needs a feature Word for the web lacks,
+  such as pen ink: on 2026-11-22 its ribbon showed no Draw tab.
+
+For a quick look before either, use the Quick Look bullet in `testing.md`.
+
+**Word for the web.**
+
+1. Open `https://onedrive.live.com/my` in the built-in browser. When OneDrive
+   shows a sign-in page, use desktop Word instead.
+2. Upload without the file picker, which the pane cannot drive. In
+   `javascript_tool`, decode the file from base64, wrap it in a `File`, add it
+   to a `DataTransfer` and dispatch `dragenter`, `dragover` and `drop` on the
+   file list. A drop on a folder row uploads into that folder. When the
+   base64 runs past about 10,000 characters, gzip the file first, unpack it in
+   the page with `DecompressionStream('gzip')` and compare its SHA-256 with the
+   local file's.
+3. Clicking a file opens Word in a new tab, which the pane blocks. Replace
+   `window.open` with a function that records its URL, click the file again,
+   and navigate to the recorded `Doc.aspx` URL with `action=view`.
+4. Word takes about 15 seconds to render. Scroll page by page and read each
+   footer inside the page. The number outside the page's right edge is Word's
+   page marker, not the footer.
+5. Tell the owner which files the run left in their OneDrive.
+
+**Desktop Word**, through computer use in the background:
+
+1. Write the file into the run directory.
+2. Ask for `Microsoft Word` with `request_access`. The grant lasts for the
+   session, so the owner approves it once per session.
 3. Open the file without taking the owner's focus:
    `open -g -a "Microsoft Word" <file>.docx`.
 4. Find the document's window with `app_list_windows` and capture it with
    `app_screenshot`. A dialog that says Word found unreadable content or could
    not open the file fails the check. Close any other first-run dialog, such
-   as a sign-in or what's-new screen, with `escape`.
+   as a sign-in or what's-new screen, with `escape`. A title that ends in
+   `Compatibility Mode` means the file names no Word 2013 compatibility
+   setting, so report it with the result.
 5. Choose `View > Print Layout` with `app_menu`, so each page draws its header
    and footer.
-6. Scroll page by page with `app_scroll`, and read each header and footer
-   inside the page with `app_zoom`.
-7. Close the document with `File > Close` without saving, then `app_release`.
+6. Keep the zoom at 100%, because footers are unreadable at 70% or less. Jump
+   to a page with `Edit > Find > Go To...`, then `app_scroll` over the page
+   text until its footer shows, and read it with `app_zoom`. The status bar's
+   `Page N of M` gives the page count.
+7. Check each `app_scroll` result. It must say it set the scrollbar value. A
+   result that says it went as raw input can type into another window, such
+   as opening Word's Preferences. Close any such window and scroll again over
+   the page text.
+8. Close the document with `File > Close` without saving, then `app_release`.
 
-This proves Word for Mac only, so the limits name Word for Windows as
-unchecked. A runtime without computer use, or a run whose Word grant is
-declined, falls back to `AGENTS.md`'s Manual tests rule.
+The limits name each Word the run did not drive, and always Word for Windows.
+A run that can drive neither, such as one with no OneDrive sign-in whose Word
+grant is declined, falls back to `AGENTS.md`'s Manual tests rule.
 
 ## Local install recovery
 
