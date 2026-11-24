@@ -110,6 +110,23 @@ const resolveCommandRange = (
   return RangeApi.isRange(at) ? at : state.ranges.get(at);
 };
 
+const readCommandTarget = <TTarget extends NodeTarget>(
+  state: CommandStateView,
+  at: TTarget | undefined
+): TTarget | EditorSelection | null =>
+  at ??
+  (state.selection() === null
+    ? null
+    : peekImplicitTarget(getActiveCommandEditor()));
+
+const readLandingRange = (
+  state: CommandStateView,
+  target: NodeTarget | EditorSelection | null | undefined
+): Range | null =>
+  !target || SelectionApi.isNode(target)
+    ? null
+    : (resolveCommandRange(state, target) ?? null);
+
 const equalsInRoot = (point: Point | undefined, target: Point) => {
   if (!point) return false;
 
@@ -119,6 +136,27 @@ const equalsInRoot = (point: Point | undefined, target: Point) => {
       : point,
     target
   );
+};
+
+const selectMovedTarget = (
+  tx: EditorTransactionSpecBuilder,
+  state: CommandStateView,
+  at: NodeTarget | undefined,
+  target: NodeTarget | EditorSelection | null
+) => {
+  const stored = state.selection();
+
+  if (
+    at === undefined &&
+    RangeApi.isRange(target) &&
+    !(
+      stored &&
+      equalsInRoot(stored.anchor, target.anchor) &&
+      equalsInRoot(stored.focus, target.focus)
+    )
+  ) {
+    tx.selection.set(target);
+  }
 };
 
 const withPointRoot = (
@@ -677,10 +715,8 @@ const breakAfterLanding = (
   state: CommandStateView,
   write: (tx: EditorTransactionSpecBuilder) => void
 ) => {
-  const selection = getCurrentNodeSelection(state) ? null : state.selection();
-  const range = RangeApi.isRange(selection)
-    ? resolveCommandRange(state, selection)
-    : null;
+  const target = readCommandTarget(state, undefined);
+  const range = readLandingRange(state, target);
   const over = range && readRangeLanding(state, range);
 
   if (range && over) {
@@ -688,6 +724,7 @@ const breakAfterLanding = (
   }
 
   return state.transaction((tx) => {
+    selectMovedTarget(tx, state, undefined, target);
     if (range && over) {
       writeWholeBlockLanding(tx, over.landing, {
         at: range,
@@ -933,10 +970,9 @@ export const editorCommands: EditorCommands = Object.freeze({
       return at === null ? null : { ...input, at };
     },
     build: ({ input, state }) => {
-      const target =
-        input.at ?? peekImplicitTarget(getActiveCommandEditor()) ?? undefined;
+      const target = readCommandTarget(state, input.at) ?? undefined;
       const at = SelectionApi.isNode(target) ? undefined : target;
-      const range = at === undefined ? null : resolveCommandRange(state, at);
+      const range = readLandingRange(state, target);
       const root = rootOrUpdateRoot(range?.anchor.root ?? range?.focus.root);
 
       if (range) {
@@ -1049,7 +1085,8 @@ export const editorCommands: EditorCommands = Object.freeze({
         });
       }
 
-      const range = resolveCommandRange(state, input.options?.at);
+      const target = readCommandTarget(state, input.options?.at);
+      const range = readLandingRange(state, target);
       const typing = typesAtSelection(getActiveCommandEditor(), {
         at: range ?? undefined,
         marks: input.options?.marks,
@@ -1078,6 +1115,7 @@ export const editorCommands: EditorCommands = Object.freeze({
         const { landing } = over;
 
         return state.transaction((tx) => {
+          selectMovedTarget(tx, state, input.options?.at, target);
           writeWholeBlockLanding(tx, landing, {
             at: range,
             direction: 'backward',
@@ -1105,6 +1143,7 @@ export const editorCommands: EditorCommands = Object.freeze({
 
       if (replacement) {
         return state.transaction((tx) => {
+          selectMovedTarget(tx, state, input.options?.at, target);
           tx.nodes.replaceChildren([replacement.replacement], {
             at: replacement.parentPath,
             count: replacement.count,
@@ -1120,6 +1159,7 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
+        selectMovedTarget(tx, state, input.options?.at, target);
         writeComposedText(
           getActiveCommandEditor(),
           input.options?.at,
