@@ -41,7 +41,7 @@ const maskQuoted = (line) => line.replaceAll(/"[^"]*"|`[^`]*`/gu, '""');
 
 const splitSentences = (line) =>
   line
-    .split(/\s\|\s|(?<=[.;!?])\s+/u)
+    .split(/\s\|\s|(?<=[.;!?][*_]*)\s+/u)
     .map((part) => part.trim())
     .filter(Boolean);
 
