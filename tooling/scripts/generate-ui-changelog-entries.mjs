@@ -2146,6 +2146,12 @@ function main() {
     : artifactOutputs.map((output) => output.targetPath)) {
     console.log(relativePath(targetPath));
   }
+
+  if (!args.write) {
+    console.log(
+      'Nothing was written. Pass --write to write these files, or --check to compare them with the generated output.'
+    );
+  }
 }
 
 if (
