@@ -3,6 +3,7 @@
 /* oxlint-disable react/iframe-missing-sandbox -- Next hydration reads document.cookie before app code; the preview renders trusted registry source and a scripts-only sandbox crashes hydration. */
 
 import { Check, Copy, ExternalLink } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import {
   PLATE_CREATE_EDITORS,
 } from '@/lib/plate-create';
 import { PLATE_REGISTRY_BASES } from '@/lib/plate-registry-styles';
+import { useMounted } from '@/registry/hooks/use-mounted';
 
 const pickers = [
   { label: 'Style', name: 'style' },
@@ -27,7 +29,28 @@ const pickers = [
   { label: 'Radius', name: 'radius' },
   { label: 'Font', name: 'font' },
   { label: 'Heading font', name: 'fontHeading' },
+  { label: 'Menu color', name: 'menuColor' },
+  { label: 'Menu accent', name: 'menuAccent' },
+  { label: 'Icon library', name: 'iconLibrary' },
 ] as const;
+
+type PickerName = (typeof pickers)[number]['name'];
+
+const optionLabels: Partial<Record<PickerName, Record<string, string>>> = {
+  iconLibrary: {
+    hugeicons: 'HugeIcons',
+    lucide: 'Lucide',
+    phosphor: 'Phosphor Icons',
+    remixicon: 'Remix Icon',
+    tabler: 'Tabler Icons',
+  },
+  menuColor: {
+    default: 'Default / Solid',
+    'default-translucent': 'Default / Translucent',
+    inverted: 'Inverted / Solid',
+    'inverted-translucent': 'Inverted / Translucent',
+  },
+};
 
 const wordLabels: Record<string, string> = {
   dm: 'DM',
@@ -72,8 +95,15 @@ export function CreateClient({
   );
   const [copied, setCopied] = React.useState(false);
   const frameRef = React.useRef<HTMLIFrameElement>(null);
+  const pickedMenuAccent = React.useRef(initialConfig.menuAccent);
+  const { resolvedTheme } = useTheme();
+  const siteDark = useMounted() && resolvedTheme === 'dark';
   const { base, editor } = config;
   const options = getPlateCreateOptions(config);
+  const disabledOptions: Partial<Record<PickerName, readonly string[]>> = {
+    menuAccent: config.menuColor.endsWith('-translucent') ? ['bold'] : [],
+    menuColor: siteDark ? ['inverted', 'inverted-translucent'] : [],
+  };
   const command = getPlateCreateCommand(config);
 
   React.useEffect(() => {
@@ -92,8 +122,13 @@ export function CreateClient({
   }, [config]);
 
   function update(patch: Partial<PlateCreateConfig>) {
-    const next = createPlateCreateConfig({ ...config, ...patch });
+    const next = createPlateCreateConfig({
+      ...config,
+      menuAccent: pickedMenuAccent.current,
+      ...patch,
+    });
 
+    if (patch.menuAccent) pickedMenuAccent.current = patch.menuAccent;
     setConfig(next);
     window.history.replaceState(null, '', getPlateCreatePath(next));
     postConfig(frameRef.current, next);
@@ -171,8 +206,12 @@ export function CreateClient({
                   onChange={(event) => update({ [name]: event.target.value })}
                 >
                   {options[name].map((option) => (
-                    <option key={option} value={option}>
-                      {toLabel(option)}
+                    <option
+                      key={option}
+                      disabled={disabledOptions[name]?.includes(option)}
+                      value={option}
+                    >
+                      {optionLabels[name]?.[option] ?? toLabel(option)}
                     </option>
                   ))}
                 </select>

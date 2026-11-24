@@ -5,6 +5,9 @@ import {
   PRESET_BASE_COLORS,
   PRESET_FONT_HEADINGS,
   PRESET_FONTS,
+  PRESET_ICON_LIBRARIES,
+  PRESET_MENU_ACCENTS,
+  PRESET_MENU_COLORS,
   PRESET_RADII,
   PRESET_THEMES,
   type PresetConfig,
@@ -138,6 +141,9 @@ export function getPlateCreateOptions(config: PlateCreateConfig) {
     baseColor: PRESET_BASE_COLORS,
     font: PRESET_FONTS,
     fontHeading: PRESET_FONT_HEADINGS,
+    iconLibrary: PRESET_ICON_LIBRARIES,
+    menuAccent: PRESET_MENU_ACCENTS,
+    menuColor: PRESET_MENU_COLORS,
     radius: [
       ...new Set(
         PRESET_RADII.map((radius) =>
