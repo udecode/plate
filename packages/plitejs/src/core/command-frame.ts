@@ -3,7 +3,9 @@ import type {
   EditorCommandPlace,
   EditorDocumentValue,
   EditorMarks,
+  EditorUniqueHolder,
   NodeTarget,
+  TextTarget,
   Selection,
   SnapshotIndex,
   TransactionSpec,
@@ -57,6 +59,7 @@ import {
   runEditorDraftGuards,
 } from './document-recorder';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
+import { topologyHolding } from './identity-owner';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
@@ -84,7 +87,8 @@ import {
   recordedCarets,
   recorderBookmarks,
   carryCurrentCaret,
-  isElementIdTarget,
+  elementIdOf,
+  lookupElementId,
   resolveNodeTargetLocation,
   runEditorDocumentRecorder,
   setTypedMarks,
@@ -97,6 +101,7 @@ import { mapSelectionThroughChange } from './selection-protocol';
 import {
   mapSnapshotIndexThroughChange,
   snapshotIndexOf,
+  uniqueTopologyOf,
 } from './snapshot-index';
 import { mapEffect } from './transaction-values';
 import {
@@ -213,19 +218,6 @@ export const probeInEditorCommandFrame = <T>(
     storedSelection?.kind === 'text' &&
     (insideRemoved(storedSelection.anchor) ||
       insideRemoved(storedSelection.focus));
-  // A probe throws nothing, so a selection its apply would refuse only
-  // leaves the native path.
-  const placed = createFramePlace(
-    editor,
-    projected,
-    stored,
-    selectionRoot,
-    () => {
-      moved = true;
-    }
-  );
-  const selection = placed.selection(storedSelection);
-  const evaluate = body(placed.place);
   const parent = getTransactionSnapshot(editor);
   const published = new Map(
     parent
@@ -237,6 +229,28 @@ export const probeInEditorCommandFrame = <T>(
           ),
         ])
   );
+  const storedIndex = (rootName: string) =>
+    parent
+      ? retainTransactionSnapshotIndex(editor, parent, rootName)
+      : (published.get(rootName)?.index ??
+        snapshotIndexOf(
+          getEditorRuntimeOwner(editor),
+          valueRootNodes(stored, rootName)
+        ));
+  // A probe throws nothing, so a selection its apply would refuse only
+  // leaves the native path.
+  const placed = createFramePlace(
+    editor,
+    projected,
+    stored,
+    storedIndex,
+    selectionRoot,
+    () => {
+      moved = true;
+    }
+  );
+  const selection = placed.selection(storedSelection);
+  const evaluate = body(placed.place);
   const typed = getTypedMarks(editor);
   const frame = createTransactionSpecContext(editor);
   const { snapshot } = frame;
@@ -248,14 +262,7 @@ export const probeInEditorCommandFrame = <T>(
       frame,
       stored,
       projected,
-      (rootName) =>
-        parent
-          ? retainTransactionSnapshotIndex(editor, parent, rootName)
-          : (published.get(rootName)?.index ??
-            snapshotIndexOf(
-              getEditorRuntimeOwner(editor),
-              valueRootNodes(stored, rootName)
-            )),
+      storedIndex,
       storedSelection,
       selectionRoot,
       selection,
@@ -313,13 +320,22 @@ export const runSelectionOnlyInEditorUpdate = <T>(
 
 const TEXT_STARTS = new WeakMap<
   EditorCommandPlace,
-  (at: NodeTarget | NodeSelection) => boolean
+  (at: TextTarget | NodeSelection) => boolean
 >();
+
+const ELEMENT_ID_PLACES = new WeakMap<
+  EditorCommandPlace,
+  (id: string) => EditorUniqueHolder | null
+>();
+
+/** @internal */
+export const placeElementIdIn = (place: EditorCommandPlace, id: string) =>
+  getDefined(ELEMENT_ID_PLACES.get(place))(id);
 
 /** @internal */
 export const refusesTextStartInStruck = (
   place: EditorCommandPlace,
-  at: NodeTarget | NodeSelection
+  at: TextTarget | NodeSelection
 ) => TEXT_STARTS.get(place)?.(at) ?? false;
 
 const LAST_FRAME_INDEXES = new WeakMap<
@@ -513,6 +529,7 @@ const createFramePlace = (
   editor: Editor,
   projected: CommandProjection,
   stored: EditorDocumentValue,
+  storedIndex: (root: string) => SnapshotIndex,
   selectionRoot: string,
   refuse: Refuse,
   stamp: CompositionStamp | null = null,
@@ -928,7 +945,9 @@ const createFramePlace = (
     at: NodeTarget | NodeSelection | Span
   ): NodeTarget | NodeSelection | Span | null {
     located = true;
-    if (isElementIdTarget(at)) return at;
+    const id = elementIdOf(at);
+
+    if (id !== undefined) return placeElementId(id)?.key ?? null;
     if (SelectionApi.isNode(at)) {
       const root = SelectionApi.root(at) ?? getEditorUpdateRoot(editor);
 
@@ -977,7 +996,7 @@ const createFramePlace = (
       : placed;
   }
 
-  const startsInStruckText = (at: NodeTarget | NodeSelection) => {
+  const startsInStruckText = (at: TextTarget | NodeSelection) => {
     if (SelectionApi.isNode(at)) return false;
 
     const resolved = resolveNodeTargetLocation(editor, at);
@@ -995,9 +1014,38 @@ const createFramePlace = (
       insideStruckText([[...resolved, ...NodeApi.first(node, [])[1]]], root)
     );
   };
+  // An id names the element that holds it in the frame's document: the copy a
+  // pending move shows, never its struck original. A root the projection
+  // leaves alone shows what it stores. A holder only the stored document
+  // shows refuses as its key does, then places nowhere.
+  const placeElementId = (id: string) => {
+    const held = lookupElementId(editor, id);
+    const changed = projected.map.roots;
+
+    if (held && !changed.includes(held.root)) return held;
+    for (const root of changed.toSorted((a, b) =>
+      a === MAIN_ROOT_KEY ? -1 : b === MAIN_ROOT_KEY ? 1 : a < b ? -1 : 1
+    )) {
+      const topology = uniqueTopologyOf(
+        getEditorRuntimeOwner(editor),
+        frameIndexOf(editor, stored, projected, root, () => storedIndex(root)),
+        valueRootNodes(projected.value, root)
+      );
+      const [shown] = (topology &&
+        topologyHolding(topology, 'id', id)?.all()) || [null];
+
+      if (shown?.key) return { key: shown.key, path: shown.path, root };
+    }
+    if (held) {
+      withEditorUpdateRootScope(editor, held.root, () => location(held.key));
+    }
+
+    return null;
+  };
   const place: EditorCommandPlace = Object.freeze({ location });
 
   TEXT_STARTS.set(place, startsInStruckText);
+  ELEMENT_ID_PLACES.set(place, placeElementId);
   const placeSelection = (
     selection: Selection,
     root: string,
@@ -1171,10 +1219,13 @@ export const runInEditorCommandFrame = (
 
   if (!projected) return null;
 
+  const storedIndex = (root: string) =>
+    retainTransactionSnapshotIndex(editor, outer.snapshot, root);
   const placed = createFramePlace(
     editor,
     projected,
     stored,
+    storedIndex,
     outer.caret.root,
     (reason) => {
       throw refusedIn(editor, reason);
@@ -1191,8 +1242,6 @@ export const runInEditorCommandFrame = (
 
   if (!ignoresSelection) placed.refuseAtHeldSelection();
 
-  const storedIndex = (root: string) =>
-    retainTransactionSnapshotIndex(editor, outer.snapshot, root);
   const runFramed = () => {
     const typed = getTypedMarks(editor);
     const frame = createTransactionSpecContext(editor);

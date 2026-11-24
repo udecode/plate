@@ -330,6 +330,7 @@ export {
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
   readEditorCommitHistoryEntry,
+  readElementById,
   readElementPropertyWrites,
   registerEditorTransactionGuard,
   subscribeCaretTarget,

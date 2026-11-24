@@ -16,6 +16,7 @@ import {
   type Path,
   type RecordSetVersion,
   recordSetChanges,
+  readElementById,
   readShownDocument,
   readShownRecords,
   type RuntimeAnyEditor,
@@ -256,7 +257,7 @@ type Holder = BlockHolder & Readonly<{ node: Node }>;
 const holderIn = (state: InkState, id: string): Holder | undefined => {
   metrics.holders += 1;
 
-  const entry = state.nodes.byId(id);
+  const entry = readElementById(state.nodes, id);
 
   return entry
     ? { key: entry.key, node: entry.node, root: entry.root ?? MAIN_ROOT_KEY }
@@ -360,7 +361,7 @@ const startEpoch = (places: InkPlaces) => {
 };
 
 const walkIn = (state: InkState, gone: RecordSetVersion) => ({
-  holder: (id: string) => state.nodes.byId(id) ?? undefined,
+  holder: (id: string) => readElementById(state.nodes, id) ?? undefined,
   record: (id: string) => goneIn(gone, id),
 });
 
@@ -396,7 +397,7 @@ const reanchor = (
   if (!anchor || place.kind !== 'gone' || place.beside.at === 'start') return;
   metrics.holders += 1;
 
-  const holder = state.nodes.byId(anchor.id);
+  const holder = readElementById(state.nodes, anchor.id);
   const memo = { ...places.chainEnds, walked: places.walked };
   const walk = walkIn(state, gone);
   const back = holder

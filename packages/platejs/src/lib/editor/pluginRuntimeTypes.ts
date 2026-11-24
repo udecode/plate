@@ -1690,6 +1690,13 @@ type PropertiesForSelector<TSchema, TSelector> =
       ? PropertiesForPlugin<TSchema, TSelector>
       : Readonly<Record<string, unknown>>;
 
+// A selector call takes every target its Plite method takes, an element id
+// included, which the Location-only option interfaces it builds on leave out.
+type SelectorOptions<TOptions> = Omit<TOptions, 'at' | 'match' | 'type'> &
+  ('at' extends keyof TOptions
+    ? { at?: NodeTarget | TOptions['at' & keyof TOptions] }
+    : unknown);
+
 type NodesReadOptions<TNode extends Node, TSelector> = Omit<
   EditorNodesReadOptions<TNode>,
   'match' | 'type'
@@ -1698,57 +1705,50 @@ type NodesReadOptions<TNode extends Node, TSelector> = Omit<
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type NodeGetOptions<TNode extends Node, TSelector> = Omit<
-  EditorNodeGetOptions<TNode>,
-  'match' | 'type'
+type NodeGetOptions<TNode extends Node, TSelector> = SelectorOptions<
+  EditorNodeGetOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type AboveOptions<TNode extends Element, TSelector> = Omit<
-  EditorAboveOptions<TNode>,
-  'match' | 'type'
+type AboveOptions<TNode extends Element, TSelector> = SelectorOptions<
+  EditorAboveOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type BlockOptions<TNode extends Element, TSelector> = Omit<
-  EditorBlockOptions<TNode>,
-  'match' | 'type'
+type BlockOptions<TNode extends Element, TSelector> = SelectorOptions<
+  EditorBlockOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type LevelsOptions<TNode extends Node, TSelector> = Omit<
-  EditorLevelsOptions<TNode>,
-  'match' | 'type'
+type LevelsOptions<TNode extends Node, TSelector> = SelectorOptions<
+  EditorLevelsOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type NextOptions<TNode extends Element, TSelector> = Omit<
-  EditorNextOptions<TNode>,
-  'match' | 'type'
+type NextOptions<TNode extends Element, TSelector> = SelectorOptions<
+  EditorNextOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type PreviousOptions<TNode extends Node, TSelector> = Omit<
-  EditorPreviousOptions<TNode>,
-  'match' | 'type'
+type PreviousOptions<TNode extends Node, TSelector> = SelectorOptions<
+  EditorPreviousOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };
 
-type ParentOptions<TNode extends Element, TSelector> = Omit<
-  EditorParentOptions<TNode>,
-  'match' | 'type'
+type ParentOptions<TNode extends Element, TSelector> = SelectorOptions<
+  EditorParentOptions<TNode>
 > & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
@@ -2271,10 +2271,11 @@ type PluginNodeSetOptions = Omit<NodeSetNodesOptions<any>, 'at'> & {
   at?: Descendant | ElementIdTarget | Location | NodeKey | NodeSelection;
 };
 
-type NodeSelectorOptions<TOptions, TNode extends Node, TSelector> = Omit<
-  NonNullable<TOptions>,
-  'match' | 'type'
-> & {
+type NodeSelectorOptions<
+  TOptions,
+  TNode extends Node,
+  TSelector,
+> = SelectorOptions<NonNullable<TOptions>> & {
   match?: NodeMatch<TNode>;
   type: TSelector & ([TNode] extends [never] ? never : unknown);
 };

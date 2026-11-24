@@ -215,6 +215,7 @@ export {
   getEditorRuntimeRootKeys,
   getSnapshotVersion,
   markRootViewUsed,
+  readElementById,
   readRootEntries,
   readRootViewUse,
   readShownDocument,

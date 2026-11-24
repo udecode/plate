@@ -9,6 +9,7 @@ import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import {
   COMMAND_FRAMES,
+  placeElementIdIn,
   runInEditorCommandFrame,
   runSelectionOnlyInEditorUpdate,
 } from './command-frame';
@@ -16,6 +17,7 @@ import { getEditorRuntimeOwner } from './editor-runtime';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   assertRootPlaced,
+  elementIdOf,
   getBaseCallRoot,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -24,6 +26,7 @@ import {
   getTransactionSpecContext,
   getUpdateView,
   hasLazyUpdateGroups,
+  lookupElementId,
   withEditorUpdateRootScope,
 } from './public-state';
 import { EditorRefusalError } from './refusal';
@@ -125,7 +128,15 @@ export const dispatchPluginUpdate = (
     ) {
       located = locate(args, {
         location(at) {
-          const keyRoot = getNodeTargetRoot(editor, at);
+          const id = elementIdOf(at);
+          const holder =
+            id === undefined
+              ? undefined
+              : framePlace
+                ? placeElementIdIn(framePlace, id)
+                : lookupElementId(editor, id);
+          if (holder === null) return null;
+          const keyRoot = holder ? holder.root : getNodeTargetRoot(editor, at);
           const hiddenFromFrame =
             calledInFrame &&
             keyRoot === undefined &&
@@ -145,6 +156,7 @@ export const dispatchPluginUpdate = (
             }
             targetRoot = root;
           }
+          if (holder) return holder.key as typeof at;
           return framePlace
             ? withEditorUpdateRootScope(editor, root, () =>
                 framePlace.location(at)

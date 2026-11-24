@@ -10,6 +10,7 @@ import {
   target,
   getEditorCommitNode,
   MAIN_ROOT_KEY,
+  readElementById,
   registerEditorTransactionGuard,
 } from '../../../facade';
 import { definePlugin } from '../../plugin/definePlugin';
@@ -95,7 +96,8 @@ export const ElementIdPlugin = definePlugin('elementId', {
           ElementApi.isElement(node) &&
           state.schema.getProperty(node, idProperty);
 
-        return typeof id === 'string' && state.nodes.byId(id)?.key === key
+        return typeof id === 'string' &&
+          readElementById(state.nodes, id)?.key === key
           ? id
           : undefined;
       },

@@ -865,7 +865,8 @@ export type EditorUpdateValueApi<V extends Value = Value> =
   };
 
 export type EditorSelectionTargetOptions = {
-  at?: NodeTarget | null;
+  /** The range the query tests in place of the selection. */
+  at?: TextTarget | null;
 };
 
 export type EditorSelectionSetNodesOptions = Readonly<
@@ -1168,9 +1169,11 @@ export type EditorStateNodesApi<V extends Value = Value> = {
    * Find the element whose stored `id` is `id` in the current state, with its
    * key, node, path and named root. An update's draft, a command frame, a child
    * transaction, a document view and a preview each answer from their own
-   * document. Throws unless the schema declares `id` as a generated, unique
-   * string property on every element type and no content admits undeclared
-   * element types.
+   * document, except that a view read while a command runs answers from the
+   * command's state. A view bound to a named root finds no element of the
+   * main root, whose entry names no root. Throws unless the schema declares
+   * `id` as a generated, unique string property on every element type and no
+   * content admits undeclared element types.
    */
   byId: (id: string) => EditorElementEntry<ValueElement<V>> | null;
   children: (at?: NodeTarget) => ReadonlyArray<ValueDescendant<V>>;

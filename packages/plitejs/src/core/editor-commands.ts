@@ -7,6 +7,7 @@ import type {
   EditorToggleBlockOptions,
   EditorToggleMarkOptions,
   EditorTransactionSpecBuilder,
+  EditorUpdateTransaction,
   NamedRootKey,
   NodeKey,
   NodeTarget,
@@ -742,7 +743,7 @@ const locateOptionsAt = <
 };
 
 const locateTextOptionsAt = <
-  TInput extends { options?: { at?: NodeSelection | NodeTarget } },
+  TInput extends { options?: { at?: NodeSelection | TextTarget } },
 >(
   input: TInput,
   place: EditorCommandPlace
@@ -1212,4 +1213,28 @@ export const editorCommands: EditorCommands = Object.freeze({
       return applied ? spec : false;
     },
   }),
+});
+
+type ElementIdMethod = 'lift' | 'merge' | 'move' | 'split' | 'unwrap';
+
+type ElementIdCommand<TMethod extends ElementIdMethod> = {
+  options: Parameters<EditorUpdateTransaction['nodes'][TMethod]>[0];
+};
+
+const elementIdCommand = <TMethod extends ElementIdMethod>(method: TMethod) =>
+  defineCommand<ElementIdCommand<TMethod>>(`node.${method}`, {
+    locate: locateOptionsAt,
+    build: ({ input, state }) =>
+      state.transaction((tx) => {
+        (tx.nodes[method] as (options: unknown) => unknown)(input.options);
+      }),
+  });
+
+/** @internal */
+export const elementIdCommands = Object.freeze({
+  lift: elementIdCommand('lift'),
+  merge: elementIdCommand('merge'),
+  move: elementIdCommand('move'),
+  split: elementIdCommand('split'),
+  unwrap: elementIdCommand('unwrap'),
 });
