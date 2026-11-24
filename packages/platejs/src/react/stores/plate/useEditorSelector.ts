@@ -1,8 +1,15 @@
 import React from 'react';
 
-import { runEditorObserver, sameResult } from '../../../facade';
+import {
+  readShownPreview,
+  runEditorObserver,
+  sameResult,
+} from '../../../facade';
 import type { Editor } from '../../editor';
-import { usePlateScope } from '../../internal/plate-context';
+import {
+  subscribeAuthoredViewState,
+  usePlateScope,
+} from '../../internal/plate-context';
 import type { EditorRuntimeStateSelectorOptions } from '../../plite-react';
 
 export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
@@ -12,6 +19,7 @@ export type UseEditorSelectorOptions<T> = EditorRuntimeStateSelectorOptions<
 
 type Selected<T> = {
   editor: Editor;
+  preview: ReturnType<typeof readShownPreview>;
   selector: (editor: Editor) => T;
   value: T;
   version: number | undefined;
@@ -35,14 +43,17 @@ const createSelection = <T>() => {
       }
       shouldUpdate = shouldUpdateNow;
       const version = editor.read.lastCommit()?.version;
+      const preview = readShownPreview(editor);
       if (
         last?.editor !== editor ||
         last.selector !== selector ||
-        last.version !== version
+        last.version !== version ||
+        last.preview !== preview
       ) {
         const value = editor.read(() => selector(editor));
         last = {
           editor,
+          preview,
           selector,
           value: last && equalityFn(last.value, value) ? last.value : value,
           version,
@@ -50,6 +61,8 @@ const createSelection = <T>() => {
       }
       return last.value;
     },
+    previewChanged: (editor: Editor) =>
+      last?.editor !== editor || last.preview !== readShownPreview(editor),
     wants: (editor: Editor, change: Parameters<ShouldUpdate<T>>[0]) => {
       let wanted = true;
       runEditorObserver(editor, 'commit-listener', () => {
@@ -62,11 +75,12 @@ const createSelection = <T>() => {
 
 /**
  * Subscribe to a value derived from the selected editor. A selector that
- * keeps its identity between renders runs at most once per commit, and once
- * more when the selected editor changes, such as when the caret moves to
- * another root. A selector written inline gets a new identity each render, so
- * it also runs on every render of its component. A change that leaves the
- * value equal renders nothing.
+ * keeps its identity between renders runs at most once per commit, once more
+ * when the selected editor changes, such as when the caret moves to another
+ * root, and once more when the editor shows a different review preview than
+ * the selector last read. A selector written inline gets a new identity each
+ * render, so it also runs on every render of its component. A change that
+ * leaves the value equal renders nothing.
  */
 export const useEditorSelector = <T>(
   selector: (editor: Editor) => T,
@@ -83,13 +97,21 @@ export const useEditorSelector = <T>(
       (listener: () => void) => {
         let editor: Editor | undefined;
         let stopCommits: (() => void) | undefined;
+        let stopView: (() => void) | undefined;
         const follow = () => {
           const next = scope.getSnapshot()?.editor;
           if (next === editor) return;
           stopCommits?.();
+          stopView?.();
+          stopCommits = undefined;
+          stopView = undefined;
           editor = next;
-          stopCommits = next?.subscribeCommit((change) => {
+          if (!next) return;
+          stopCommits = next.subscribeCommit((change) => {
             if (selection.wants(next, change)) listener();
+          });
+          stopView = subscribeAuthoredViewState(next, () => {
+            if (selection.previewChanged(next)) listener();
           });
         };
         follow();
@@ -100,6 +122,7 @@ export const useEditorSelector = <T>(
         return () => {
           stopScope();
           stopCommits?.();
+          stopView?.();
         };
       },
       [scope, selection]

@@ -375,6 +375,7 @@ export {
 export {
   configureAuthoredView,
   getAuthoredUpdateView,
+  readShownPreview,
   readAuthoredView,
   withStoredAuthoredRead,
 } from '../core/authored-runtime';

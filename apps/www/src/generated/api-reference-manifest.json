@@ -28634,7 +28634,7 @@
         },
         "platejs/react:useEditorSelector": {
           "aliases": [],
-          "documentation": "Subscribe to a value derived from the selected editor. A selector that\nkeeps its identity between renders runs at most once per commit, and once\nmore when the selected editor changes, such as when the caret moves to\nanother root. A selector written inline gets a new identity each render, so\nit also runs on every render of its component. A change that leaves the\nvalue equal renders nothing.",
+          "documentation": "Subscribe to a value derived from the selected editor. A selector that\nkeeps its identity between renders runs at most once per commit, once more\nwhen the selected editor changes, such as when the caret moves to another\nroot, and once more when the editor shows a different review preview than\nthe selector last read. A selector written inline gets a new identity each\nrender, so it also runs on every render of its component. A change that\nleaves the value equal renders nothing.",
           "entrypoint": "platejs/react",
           "kind": "const",
           "name": "useEditorSelector",

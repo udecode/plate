@@ -131,9 +131,11 @@ export function SuggestionEditor() {
 
 编辑器必须安装 authored plugin，可以直接安装，也可以通过 `SuggestionPlugin` 安装。修改 `authored` prop 会更新这个 view。以等价值重新渲染时，会保留之后通过已挂载 view 的 portal 做出的模式修改。
 
-交互式模式控件请在已挂载的 view 上设置 intent：
+交互式模式控件请在已挂载的 view 上设置 intent。在 `EditorRoot` 内，`useEditor()` 返回这个 view。已挂载的 view 保留自己的模式，所以在传给 `EditorRoot` 的 editor 上调用 `setView` 不会改变它显示的内容：
 
 ```tsx
+const editor = useEditor();
+
 editor.plugin(AuthoredPlugin).api.setView({ intent: "propose" });
 ```
 

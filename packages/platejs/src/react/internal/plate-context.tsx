@@ -6,6 +6,7 @@ import {
   getEditorRuntimeOwner,
   getViewPresentation,
   markRootViewUsed,
+  notifyObservers,
   readCaretViewIn,
   readRootViewUse,
   readShownViewUse,
@@ -372,30 +373,51 @@ export function PlateCaretSlots({
   );
 }
 
-const viewStateReaders = new WeakMap<
-  Editor,
-  { listeners: Set<() => void>; stop: () => void }
->();
+type ViewStateReaders = {
+  any: Set<() => void>;
+  authored: Set<() => void>;
+  stop: () => void;
+};
 
-const subscribeSharedViewState = (editor: Editor, listener: () => void) => {
+const viewStateReaders = new WeakMap<Editor, ViewStateReaders>();
+
+const subscribeSharedViewState = (
+  editor: Editor,
+  heard: 'any' | 'authored',
+  listener: () => void
+) => {
   let readers = viewStateReaders.get(editor);
   if (!readers) {
-    const listeners = new Set<() => void>();
-    const stop = subscribeEditorViewState(editor, () => {
-      for (const notify of listeners) notify();
+    const any = new Set<() => void>();
+    const authored = new Set<() => void>();
+    const notifyAll = (listeners: Set<() => void>) =>
+      notifyObservers(editor, listeners, 'commit-listener', (notify) =>
+        notify()
+      );
+    const stop = subscribeEditorViewState(editor, (change) => {
+      notifyAll(any);
+      if (change !== 'authored') return;
+      notifyAll(authored);
     });
-    readers = { listeners, stop };
+    readers = { any, authored, stop };
     viewStateReaders.set(editor, readers);
   }
   const shared = readers;
-  shared.listeners.add(listener);
+  const listeners = shared[heard];
+  const registration = () => listener();
+  listeners.add(registration);
   return () => {
-    shared.listeners.delete(listener);
-    if (shared.listeners.size > 0) return;
+    if (!listeners.delete(registration)) return;
+    if (shared.any.size > 0 || shared.authored.size > 0) return;
     shared.stop();
     viewStateReaders.delete(editor);
   };
 };
+
+export const subscribeAuthoredViewState = (
+  editor: Editor,
+  listener: () => void
+) => subscribeSharedViewState(editor, 'authored', listener);
 
 export const useTargetViewState = (
   target: PlateTarget | null,
@@ -411,7 +433,9 @@ export const useTargetViewState = (
   return React.useSyncExternalStore(
     React.useCallback(
       (listener: () => void) =>
-        editor ? subscribeSharedViewState(editor, listener) : stopNothing,
+        editor
+          ? subscribeSharedViewState(editor, 'any', listener)
+          : stopNothing,
       [editor]
     ),
     readFact,

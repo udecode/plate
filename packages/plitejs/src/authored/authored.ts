@@ -51,6 +51,7 @@ import {
   registerEditorDraftView,
   registerEditorFitsByLook,
 } from '../core/document-recorder';
+import { isDocumentViewReading } from '../core/document-view-read';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -1949,7 +1950,9 @@ export const createAuthoredPlugin = (
           },
           readStored: storedRead,
           readView: (view, read) => {
-            const preview = previewModeOf(view);
+            const preview = isDocumentViewReading(owner)
+              ? null
+              : previewModeOf(view);
 
             if (!preview) {
               return withEditorDocumentProjection(owner, undefined, read);

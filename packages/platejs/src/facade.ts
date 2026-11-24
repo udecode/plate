@@ -308,6 +308,7 @@ export {
   isDocumentView,
   configureAuthoredView,
   getAuthoredUpdateView,
+  readShownPreview,
   readAuthoredView,
   withStoredAuthoredRead,
   snapshotEditorJsonValue,

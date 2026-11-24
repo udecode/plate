@@ -133,9 +133,11 @@ export function SuggestionEditor() {
 
 The editor must install an authored plugin, either directly or through `SuggestionPlugin`. Changing the `authored` prop updates this view. Rerendering with an equivalent value preserves later mode changes made through the mounted view's portal.
 
-For an interactive mode control, set the intent on the mounted view:
+For an interactive mode control, set the intent on the mounted view, which `useEditor()` returns inside `EditorRoot`. The mounted view keeps its own mode, so `setView` on the editor passed to `EditorRoot` does not change what it shows:
 
 ```tsx
+const editor = useEditor();
+
 editor.plugin(AuthoredPlugin).api.setView({ intent: "propose" });
 ```
 

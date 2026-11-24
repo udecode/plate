@@ -42,9 +42,13 @@ export const withDocumentViewRead = <T>(
   }
 };
 
+/** @internal */
+export const isDocumentViewReading = (editor: EditorRuntimeCarrier) =>
+  DOCUMENT_VIEW_READS.has(getEditorRuntimeOwner(editor));
+
 /** Refuse a source-editor read made while a document view is reading. @internal */
 export const assertNoDocumentViewRead = (editor: EditorRuntimeCarrier) => {
-  if (DOCUMENT_VIEW_READS.has(getEditorRuntimeOwner(editor))) {
+  if (isDocumentViewReading(editor)) {
     throw new Error(
       'Editor read its own document while a document view was reading. Read through the editor or state passed to this call: an editor captured when a plugin was created is the source editor.'
     );

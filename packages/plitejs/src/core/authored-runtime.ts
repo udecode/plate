@@ -8,6 +8,7 @@ import type {
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
+import { isDocumentView } from './document-view-read';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot } from './public-root';
 
@@ -77,6 +78,12 @@ export const isAuthoredPreview = (view: Editor) => {
   const authored = readAuthoredView(view);
 
   return authored !== undefined && 'preview' in authored;
+};
+
+export const readShownPreview = (view: Editor) => {
+  const authored = isDocumentView(view) ? undefined : readAuthoredView(view);
+
+  return authored && 'preview' in authored ? authored.preview : undefined;
 };
 
 export const withAuthoredViewRead = <T>(
