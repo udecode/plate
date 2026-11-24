@@ -31,6 +31,7 @@ import {
   mapInternalDocumentChangePosition,
 } from '../change/document-change';
 import { decodeNodes, DocumentIndex } from '../change/document-index';
+import { jsonEqual } from '../change/json';
 import type { Relocation } from '../change/lineage';
 import { historyFollowsAllFacts } from '../change/record';
 import {
@@ -109,6 +110,7 @@ import {
   FitOriginLog,
   type FitSource,
   fitSections,
+  markFit,
   sliceOrigins,
 } from './origin';
 import {
@@ -2648,14 +2650,8 @@ export const compileSliceFitter = <V extends Value>(
 
     const tokenLength = (token: FitToken) =>
       token.kind === 'text' ? token.text.length : 1;
-    // A split tail's token has no source node, so it holds the node it
-    // splits from for the content checks the open block needs.
-    const splitTailNodes = new WeakMap<FitOpenToken, Element>();
     const openTokenNode = (token: FitOpenToken): Descendant => {
       if (token.sourceNode) return token.sourceNode as Descendant;
-      const splitFrom = splitTailNodes.get(token);
-
-      if (splitFrom) return splitFrom;
 
       return token.nodeKind === 'text'
         ? { ...token.props, text: '' }
@@ -2681,7 +2677,6 @@ export const compileSliceFitter = <V extends Value>(
       return allowed;
     };
     const openTokenAt = new WeakMap<FitOpenToken, number>();
-    const openTokenPath = new WeakMap<FitOpenToken, readonly number[]>();
     const getOpenContext = (position: number): FitOpenToken[] =>
       profileCoreDuration('slice-fit-open-context', () =>
         document
@@ -2694,7 +2689,6 @@ export const compileSliceFitter = <V extends Value>(
               throw new Error(`Missing open token at document path [${path}].`);
             }
             openTokenAt.set(token, from);
-            openTokenPath.set(token, path);
 
             return token;
           })
@@ -2768,6 +2762,25 @@ export const compileSliceFitter = <V extends Value>(
       .some(
         (node) => ElementApi.isElement(node) && getElementBehavior(node).inline
       );
+    const getTailSplitProperties = (node: Element, path: readonly number[]) => {
+      if (isFittingMove() || getElementBehavior(node).inline) return null;
+      const ancestors = getElementAncestors(rootChildren, path);
+      const declared = getDeclarativeSchema();
+      const content = ancestors[0]
+        ? getCompiledElement(ancestors[0])?.content
+        : targetRootProgram;
+      const admitsCopyAfter =
+        !declared ||
+        !content ||
+        contentAllowsAt(declared, content, node, getDefined(path.at(-1)) + 1, {
+          ancestors,
+          root,
+        });
+
+      return admitsCopyAfter
+        ? api.elementPropertiesForSplitUnder(node, ancestors, root)
+        : null;
+    };
     const createLocalTextCandidate = (
       variant: ContentSlice,
       cost: number,
@@ -2852,6 +2865,19 @@ export const compileSliceFitter = <V extends Value>(
               !nodePropertiesEqual(text, targetText, 'text', targetTextKeys)
             );
           })
+        ) {
+          return null;
+        }
+        const tailProperties = getTailSplitProperties(targetBlock, targetPath);
+
+        if (
+          tailProperties &&
+          !nodePropertiesEqual(
+            targetBlock,
+            tailProperties,
+            'children',
+            Object.keys(tailProperties)
+          )
         ) {
           return null;
         }
@@ -3207,84 +3233,11 @@ export const compileSliceFitter = <V extends Value>(
       const syncPosition = getLocalSyncPosition();
       const tail = document.tokens.slice(exactTo, syncPosition).tokens;
       const tailContentAt = tail.findIndex((token) => token.kind !== 'close');
-      const receiving =
-        tailContentAt === -1 ? 0 : localEndContext.length - tailContentAt;
-      const opened: number[] = [];
 
-      for (const [tokenAt, token] of encoded.tokens.entries()) {
-        if (token.kind === 'open') opened.push(tokenAt);
-        else if (token.kind === 'close') opened.pop();
-      }
-      const openAtEnd = new Set(opened);
-      const parentAdmitsCopyAfter = (token: FitOpenToken) => {
-        const path = openTokenPath.get(token);
-        const innerSchema = getDeclarativeSchema();
-
-        if (!path || !innerSchema) return true;
-        const ancestors = getElementAncestors(rootChildren, path.slice(0, -1), {
-          includeTarget: true,
-        });
-        const content = ancestors[0]
-          ? getCompiledElement(ancestors[0])?.content
-          : targetRootProgram;
-
-        return (
-          !content ||
-          contentAllowsAt(
-            innerSchema,
-            content,
-            openTokenNode(token),
-            (path.at(-1) ?? 0) + 1,
-            { ancestors, root }
-          )
-        );
-      };
-      const splitTailOf = (target: FitOpenToken, node: Element) => {
-        const props = api.elementPropertiesForSplitUnder(
-          node,
-          getElementAncestors(
-            rootChildren,
-            getDefined(openTokenPath.get(target))
-          ),
-          root
-        );
-        const tailToken = openToken('element', props);
-
-        splitTailNodes.set(tailToken, {
-          ...props,
-          children: node.children,
-        } as Element);
-
-        return tailToken;
-      };
-
-      const getTargetSplitTail = (tokenAt: number, token: FitToken) => {
-        const depth = stack.length;
-        const target = localEndContext[depth];
-        const node = target && openTokenNode(target);
-
-        return !isFittingMove() &&
-          token.kind === 'open' &&
-          openAtEnd.has(tokenAt) &&
-          depth < receiving &&
-          ElementApi.isElement(node) &&
-          !getElementBehavior(node).inline &&
-          openContextsMatch(target, token) &&
-          stack.every((open, index) =>
-            openContextsMatch(open, localEndContext[index])
-          ) &&
-          parentAdmitsCopyAfter(target)
-          ? splitTailOf(target, node)
-          : null;
-      };
-
-      for (const [tokenAt, token] of encoded.tokens.entries()) {
+      for (const token of encoded.tokens) {
         const appended = output.length;
-        const splitTail = getTargetSplitTail(tokenAt, token);
 
-        if (splitTail ? !openFitted(splitTail) : !process(token, 'slice')) {
-          return null;
-        }
+        if (!process(token, 'slice')) return null;
         if (output.length > appended) {
           contentStart ??= outputPosition - tokenLength(token);
         }
@@ -3795,6 +3748,88 @@ export const compileSliceFitter = <V extends Value>(
       document
         .openContextAt(position)
         .filter((entry) => entry.from < position && position < entry.to);
+    const withTailSplit = (candidate: SliceFitCandidate): SliceFitCandidate => {
+      if (!('insert' in candidate) || options.target.kind === 'root') {
+        return candidate;
+      }
+      const { from, insert, origins, to } = candidate;
+      const destination = getStructuralContext(exactTo);
+      const closedFirst = document.tokens
+        .slice(
+          exactTo,
+          Math.min(document.length, exactTo + destination.length + 1)
+        )
+        .tokens.findIndex((token) => token.kind !== 'close');
+      const receiving =
+        closedFirst === -1 ? 0 : destination.length - closedFirst;
+
+      if (receiving === 0) return candidate;
+      let tailAt = to === exactTo ? insert.length : null;
+      let runAt = 0;
+
+      for (const { length, source } of origins.runs) {
+        if (tailAt !== null) break;
+        if (
+          source.kind === 'document' &&
+          source.at <= exactTo &&
+          exactTo < source.at + length
+        ) {
+          tailAt = runAt + exactTo - source.at;
+        }
+        runAt += length;
+      }
+      if (tailAt === null) return candidate;
+      const stack: Array<Readonly<{ at: number; index: number }> | null> =
+        getStructuralContext(from).map(() => null);
+      let position = 0;
+
+      for (const [index, token] of insert.tokens.entries()) {
+        if (position >= tailAt) break;
+        if (token.kind === 'open') stack.push({ at: position, index });
+        else if (token.kind === 'close') stack.pop();
+        position += tokenLength(token);
+      }
+      if (stack.length !== destination.length) return candidate;
+      const replaced = new Map<number, FitToken>();
+      const replacedAt: number[] = [];
+
+      for (let depth = stack.length - 1; depth >= 0; depth--) {
+        const written = stack[depth];
+
+        if (!written) break;
+        if (depth >= receiving) continue;
+        const token = insert.tokens[written.index];
+        const { path } = destination[depth];
+        const node = document.node(path) as Descendant;
+
+        if (NodeApi.isText(node)) {
+          if (token.kind !== 'open' || token.nodeKind !== 'text') break;
+          continue;
+        }
+        if (
+          token.kind !== 'open' ||
+          token.nodeKind !== 'element' ||
+          getElementType(token.props) !== getElementType(node)
+        ) {
+          break;
+        }
+        const props = getTailSplitProperties(node, path);
+
+        if (!props || jsonEqual(props, token.props)) continue;
+        replaced.set(written.index, openToken('element', props));
+        replacedAt.push(written.at);
+      }
+      if (replaced.size === 0) return candidate;
+      const rewritten = PreparedTokenSlice.fromTokens(
+        insert.tokens.map((token, index) => replaced.get(index) ?? token)
+      );
+
+      return Object.freeze({
+        ...candidate,
+        insert: rewritten,
+        origins: markFit(origins, replacedAt, rewritten),
+      });
+    };
     // A grid cell that holds its text directly never closes to fit more
     // blocks, so a candidate that replaces past the innermost one, or whose
     // tokens close it, is refused.
@@ -4346,7 +4381,7 @@ export const compileSliceFitter = <V extends Value>(
     if (!selectedCandidate) return false;
     const fittedCandidate = profileCoreDuration(
       'slice-fit-candidate-materialize',
-      () => materializeCandidate(selectedCandidate)
+      () => materializeCandidate(withTailSplit(selectedCandidate))
     );
     const sections =
       options.target.kind === 'range' &&

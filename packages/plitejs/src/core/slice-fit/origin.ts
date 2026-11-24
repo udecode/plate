@@ -91,6 +91,36 @@ export class FitOriginLog {
   }
 }
 
+export const markFit = (
+  origins: FitOrigins,
+  offsets: readonly number[],
+  insert: PreparedTokenSlice
+) => {
+  const log = new FitOriginLog();
+  const sorted = [...offsets].sort((left, right) => left - right);
+  let runAt = 0;
+
+  for (const { length, source } of origins.runs) {
+    const runEnd = runAt + length;
+    let kept = runAt;
+
+    if (source.kind === 'document') {
+      for (const offset of sorted) {
+        if (offset < runAt || offset >= runEnd) continue;
+        log.add(offset - kept, 'document', source.at + kept - runAt);
+        log.add(1, 'fit');
+        kept = offset + 1;
+      }
+      log.add(runEnd - kept, 'document', source.at + kept - runAt);
+    } else {
+      log.add(length, source.kind);
+    }
+    runAt = runEnd;
+  }
+
+  return log.seal(insert);
+};
+
 export const sliceOrigins = (insert: PreparedTokenSlice) => {
   const log = new FitOriginLog();
 
