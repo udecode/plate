@@ -1,4 +1,5 @@
 import React, {
+  Component,
   useCallback,
   useContext,
   useInsertionEffect,
@@ -37,8 +38,14 @@ import {
   type ViewPresentation,
 } from '../../core/view-presentation';
 import {
+  createViewLockScope,
+  flushViewLockScope,
   getCarriedMount,
   getViewPresentation,
+  joinViewLockScope,
+  linkViewLockScope,
+  setViewLockScopeLocked,
+  type ViewLockScope,
   withMountedPresentation,
 } from '../../editor-runtime-view';
 import type { AnyEditor } from '../../interfaces/editor';
@@ -68,7 +75,10 @@ import {
   useOptionalEditorContext,
 } from '../hooks/use-editor-context';
 import { FocusedContext } from '../hooks/use-editor-focused';
-import { ReadOnlyContext } from '../hooks/use-editor-read-only';
+import {
+  ReadOnlyContext,
+  ViewLockScopeContext,
+} from '../hooks/use-editor-read-only';
 import {
   EditorSelectorContext,
   useEditorSelectorContext,
@@ -193,6 +203,7 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   decorations?: ReadonlyArray<DecorationSource<E>> | null;
   directEditor?: E;
   lifetime?: object;
+  lockLink?: ViewLockScope;
   onCommit?: (context: EditorCommitContext<E>) => void;
   onSelectionChange?: (
     context: EditorCommitContext<E> & {
@@ -280,13 +291,16 @@ const EditorRootContent = <
       root: initialRoot === 'main' ? undefined : initialRoot,
     };
   }, [editor]);
+  const enclosingLock = useContext(ViewLockScopeContext);
   const carried = getCarriedMount(editor);
+  const followsEnclosingLock = carried !== undefined && !carried.mountedIn;
   const content = (
     <EditorRuntimeView
       {...viewProps}
       // A carried presentation already holds its editor root's mode.
       authored={carried ? undefined : (props.authored ?? defaults.authored)}
       lifetime={editor}
+      lockLink={followsEnclosingLock ? enclosingLock : undefined}
       mountedIn={carried?.mountedIn}
       presentation={carried?.presentation}
       readOnly={props.readOnly ?? defaults.readOnly}
@@ -315,6 +329,7 @@ export const EditorRuntimeView = <
   root,
   directEditor,
   lifetime,
+  lockLink,
   mountedIn,
   presentation,
 }: EditorRuntimeViewProps<E>) => {
@@ -325,6 +340,7 @@ export const EditorRuntimeView = <
   const inheritedTextFlow = useContext(ImperativeTextFlowContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
   const { selectorContext, onChange } = useEditorSelectorContext();
+  const [lockScope] = useState(() => createViewLockScope(readOnly));
   const editor = useMemo(() => {
     if (directEditor) {
       return directEditor;
@@ -358,9 +374,24 @@ export const EditorRuntimeView = <
   ]);
   useInsertionEffect(() => {
     if (directEditor) return undefined;
-    setEditorReadOnly(reactEditor, readOnly);
     return () => setEditorReadOnly(reactEditor, true);
-  }, [directEditor, reactEditor, readOnly]);
+  }, [directEditor, reactEditor]);
+  useInsertionEffect(() => {
+    setViewLockScopeLocked(lockScope, readOnly);
+    if (!directEditor) setEditorReadOnly(reactEditor, readOnly);
+  }, [directEditor, lockScope, reactEditor, readOnly]);
+  useInsertionEffect(
+    () =>
+      directEditor ? undefined : joinViewLockScope(lockScope, reactEditor),
+    [directEditor, lockScope, reactEditor]
+  );
+  useInsertionEffect(() => {
+    linkViewLockScope(lockScope, lockLink);
+  }, [lockLink, lockScope]);
+  useInsertionEffect(
+    () => () => linkViewLockScope(lockScope, undefined),
+    [lockScope]
+  );
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const { focused: isFocused } = useRuntimeFocusState(reactEditor);
   useInsertionEffect(
@@ -375,7 +406,8 @@ export const EditorRuntimeView = <
   // out here, before the commit that wrote it ends.
   useIsomorphicLayoutEffect(() => {
     flushEditorViewState(reactEditor);
-  }, [reactEditor, readOnly]);
+    flushViewLockScope(lockScope);
+  }, [lockLink, lockScope, reactEditor, readOnly]);
   const hasViewSelection = usePliteViewSelectionPresence(reactEditor);
   const viewSelectionDecoration = useMemo(
     () =>
@@ -399,6 +431,13 @@ export const EditorRuntimeView = <
   const registerDecorationSource = useDecorationRegistrar(decorationManager);
   return (
     <EditorSelectorContext value={selectorContext}>
+      <ViewReadOnlyLock
+        editor={reactEditor}
+        link={lockLink}
+        readOnly={readOnly}
+        scope={lockScope}
+        skip={Boolean(directEditor)}
+      />
       <FirstChildViewStart
         editor={reactEditor}
         onChange={onChange}
@@ -428,7 +467,9 @@ export const EditorRuntimeView = <
                         mountedEditor={reactEditor}
                         presentation={viewPresentation}
                       >
-                        {children}
+                        <ViewLockScopeContext value={lockScope}>
+                          {children}
+                        </ViewLockScopeContext>
                       </SurfaceRuntimeScope>
                     </TextRenderScopeContext>
                   </ImperativeTextFlowContext>
@@ -441,6 +482,43 @@ export const EditorRuntimeView = <
     </EditorSelectorContext>
   );
 };
+
+// React runs every snapshot in tree order before it removes, hides or inserts
+// any node, so a lock applied here, first in the view root, binds every
+// control's snapshot, a removed control's cleanup and a new custom element's
+// connect in the render that sets it. An unlock stays in the insertion effect,
+// so the lock it lifts still holds while the render removes and inserts nodes.
+// oxlint-disable-next-line react/prefer-function-component -- [P0 React lifecycle] getSnapshotBeforeUpdate has no function-component equivalent.
+class ViewReadOnlyLock extends Component<{
+  editor: AnyEditor;
+  link: ViewLockScope | undefined;
+  readOnly: boolean;
+  scope: ViewLockScope;
+  skip: boolean;
+}> {
+  getSnapshotBeforeUpdate(prev: this['props']) {
+    const { editor, link, readOnly, scope, skip } = this.props;
+
+    if (prev.link !== link) linkViewLockScope(scope, link);
+    if (!readOnly) return null;
+    if (!prev.skip && prev.editor !== editor) {
+      setEditorReadOnly(prev.editor, true);
+    }
+    if (prev.editor === editor && prev.readOnly) return null;
+
+    setViewLockScopeLocked(scope, true);
+    if (!skip) setEditorReadOnly(editor, true);
+
+    return null;
+  }
+
+  // React warns about a snapshot without componentDidUpdate.
+  componentDidUpdate() {}
+
+  render() {
+    return null;
+  }
+}
 
 type ChangeCallbacksInput<E extends ReactEditorType<any, any>> = {
   editor: E;

@@ -66,6 +66,7 @@ import {
   createEditorViewReadState,
   createEditorViewTransactionState,
   doesSelectionIntersect,
+  flushEditorViewState,
   getBaseCallRoot,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -79,6 +80,7 @@ import {
   isSelectionAtBlockEnd,
   isSelectionAtBlockStart,
   isSelectionWithinBlock,
+  notifyEditorViewState,
   replaceTransformedSnapshot,
   setViewChildrenSource,
   transformEditorSnapshotInput,
@@ -150,10 +152,18 @@ type OwnFocus = {
   policySource: ViewMadeFrom | undefined;
 };
 
+export type ViewLockScope = {
+  readonly children: Set<ViewLockScope>;
+  link: ViewLockScope | undefined;
+  locked: boolean;
+  view: Editor | undefined;
+};
+
 type ViewState = {
   authorId: string | undefined;
   editor: Editor | null;
   document: AdmittedDocument | undefined;
+  lockScope: ViewLockScope | undefined;
   mountedIn: InternalEditorRuntime | undefined;
   presentation: ViewPresentation;
   readOnly: boolean;
@@ -356,8 +366,16 @@ const isShown = ({ surfaces }: ViewState) =>
 const ownsFocus = (state: ViewState): state is Extract<ViewState, OwnFocus> =>
   'focused' in state;
 
+const isLinkLocked = ({ lockScope }: ViewState) => {
+  for (let scope = lockScope?.link; scope; scope = scope.link) {
+    if (scope.locked) return true;
+  }
+
+  return false;
+};
+
 const isOwnLock = (state: ViewState) =>
-  state.readOnly || shownOnlyReadOnly(state.surfaces);
+  state.readOnly || shownOnlyReadOnly(state.surfaces) || isLinkLocked(state);
 
 const mountingState = (state: ViewState) =>
   state.mountedIn && VIEW_STATES.get(state.mountedIn);
@@ -1658,6 +1676,7 @@ export const createEditorViewRuntime = <
     authorId: options.authorId ?? sourceView?.authorId,
     editor: null,
     document,
+    lockScope: undefined,
     mountedIn: mountedIn && getEditorRuntime(mountedIn),
     ...(policyTarget && !document
       ? { policySource: followOf(policyTarget, root) }
@@ -1975,6 +1994,75 @@ export const withMountedPresentation: WithMountedPresentation = <
 
 export const getCarriedMount = (editor: object) =>
   MOUNTED_PRESENTATIONS.get(editor);
+
+export const createViewLockScope = (locked: boolean): ViewLockScope => ({
+  children: new Set(),
+  link: undefined,
+  locked,
+  view: undefined,
+});
+
+const linkedViews = (scope: ViewLockScope, views: Editor[] = []) => {
+  for (const child of scope.children) {
+    if (child.view) views.push(child.view);
+    linkedViews(child, views);
+  }
+
+  return views;
+};
+
+const reportLockChange = (views: Editor[], change: () => void) => {
+  const was = views.map((view) => view.read.view.isReadOnly());
+
+  change();
+  views.forEach((view, index) => {
+    if (view.read.view.isReadOnly() !== was[index]) {
+      notifyEditorViewState(view, 'readOnly');
+    }
+  });
+};
+
+export const setViewLockScopeLocked = (
+  scope: ViewLockScope,
+  locked: boolean
+) => {
+  if (scope.locked === locked) return;
+
+  reportLockChange(linkedViews(scope), () => {
+    scope.locked = locked;
+  });
+};
+
+export const linkViewLockScope = (
+  scope: ViewLockScope,
+  link: ViewLockScope | undefined
+) => {
+  if (scope.link === link) return;
+
+  reportLockChange(linkedViews(scope, scope.view ? [scope.view] : []), () => {
+    scope.link?.children.delete(scope);
+    scope.link = link;
+    link?.children.add(scope);
+  });
+};
+
+export const joinViewLockScope = (scope: ViewLockScope, view: Editor) => {
+  const state = getDefined(VIEW_STATES.get(getEditorRuntime(view)));
+
+  reportLockChange([view], () => {
+    state.lockScope = scope;
+    scope.view = view;
+  });
+
+  return () => {
+    state.lockScope = undefined;
+    if (scope.view === view) scope.view = undefined;
+  };
+};
+
+export const flushViewLockScope = (scope: ViewLockScope) => {
+  for (const view of linkedViews(scope)) flushEditorViewState(view);
+};
 
 type RootEditorOf = (root: NamedRootKey | undefined) => Editor;
 

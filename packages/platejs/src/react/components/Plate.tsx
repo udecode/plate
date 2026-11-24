@@ -23,7 +23,7 @@ import {
 import { EditorRoot as RuntimeEditorRoot } from '../internal/plite-components';
 import { usePlateInstancesWarn } from '../internal/usePlateInstancesWarn';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
-import { EditorReadOnlyProvider, useEditorViewState } from '../plite-react';
+import { useEditorViewState } from '../plite-react';
 
 export type SelectionChangeContext<E = Editor> = CommitContext<E> & {
   selection: Selection;
@@ -244,15 +244,13 @@ function PlateInner({
       editor={currentEditor}
       readOnly={plateReadOnly}
     >
-      <EditorReadOnlyProvider readOnly={plateReadOnly}>
-        <PlateReadOnlyContext value={plateReadOnly}>
-          <PlateModelContext value={model}>
-            <PlateCaretScope primary={primary ?? true}>
-              {children}
-            </PlateCaretScope>
-          </PlateModelContext>
-        </PlateReadOnlyContext>
-      </EditorReadOnlyProvider>
+      <PlateReadOnlyContext value={plateReadOnly}>
+        <PlateModelContext value={model}>
+          <PlateCaretScope primary={primary ?? true}>
+            {children}
+          </PlateCaretScope>
+        </PlateModelContext>
+      </PlateReadOnlyContext>
     </RuntimeEditorRoot>
   );
 }

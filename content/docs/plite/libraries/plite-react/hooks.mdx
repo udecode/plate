@@ -303,10 +303,28 @@ user focused or pressed before that, or the first one mounted when the user has
 focused or pressed no other. While every view of the root there is hidden, as
 under an `Activity`, it follows a hidden one. While no view of the root is
 mounted there, it follows the `EditorRoot`, or the `Editable` around the hook
-when the hook renders inside one. A lock or a preview takes hold as React
-commits the render that sets it, so a write from a control's mount or unmount
-code in that same render can still land. A preview set while the user composes
-text takes hold when the composition ends.
+when the hook renders inside one. An `EditorRoot`'s `readOnly` holds for every
+write of the render that sets it. That includes writes through each `Editable`
+with `root` inside it that the render keeps, mounts, removes, hides or
+suspends. An `EditorReadOnlyProvider` that sets `readOnly` gives each
+`Editable` inside it that value as its own `readOnly` instead. The lock
+covers a control's unmount code and a custom element's connect. It does not
+cover the first `attributeChangedCallback` of a custom element that React
+creates in that render with an observed attribute, because React runs that
+callback while it renders. When `readOnly` turns off, writes stay refused until
+React has removed and inserted the nodes of that render. A preview takes hold
+in the `EditorRoot`'s layout effect. An `Editable`'s own `readOnly` takes hold
+in that `Editable`'s layout effect when the `Editable` has no `root` or mounts
+in that render. In such a render, a write from code that runs before that
+layout effect can still land, such as a control's mount or unmount code or an
+earlier layout effect. An `Editable` with `root` that the render keeps applies
+its own `readOnly` where it sits in the tree. So a class component's
+`getSnapshotBeforeUpdate` placed before it can still write, and a render that
+hides or suspends it applies the lock only once it shows again.
+`setEditorViewing(editor, true)` on the hook's editor and
+`api.authored.setView(policy)` on the view take hold at the call, so call one
+before that render to refuse those writes too. A preview set while the user
+composes text takes hold when the composition ends.
 
 The editor never acts in another `EditorRoot`, even while an `Editable` there
 holds the caret in the hook's root, and that `EditorRoot`'s lock and authored

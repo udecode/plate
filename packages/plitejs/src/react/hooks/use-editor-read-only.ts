@@ -5,7 +5,13 @@ import {
   type ReactNode,
 } from 'react';
 
+import type { ViewLockScope } from '../../editor-runtime-view';
+
 export const ReadOnlyContext = createContext<boolean | undefined>(undefined);
+
+export const ViewLockScopeContext = createContext<ViewLockScope | undefined>(
+  undefined
+);
 
 /**
  * Props for `EditorReadOnlyProvider`.
@@ -22,8 +28,19 @@ export type EditorReadOnlyProviderProps = {
 export const EditorReadOnlyProvider = ({
   children,
   readOnly,
-}: EditorReadOnlyProviderProps) =>
-  createElement(ReadOnlyContext.Provider, { value: readOnly }, children);
+}: EditorReadOnlyProviderProps) => {
+  const enclosingLock = useContext(ViewLockScopeContext);
+
+  return createElement(
+    ReadOnlyContext.Provider,
+    { value: readOnly },
+    createElement(
+      ViewLockScopeContext.Provider,
+      { value: readOnly === undefined ? enclosingLock : undefined },
+      children
+    )
+  );
+};
 
 /**
  * Return the nearest editor read-only state, or `undefined` when no provider is

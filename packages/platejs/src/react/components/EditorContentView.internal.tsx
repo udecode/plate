@@ -14,6 +14,7 @@ import {
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { Editor } from '../editor/Editor';
 import {
+  getPlateTarget,
   PlateCaretSlots,
   PlateEditorPlaceholderContext,
   PlateReadOnlyContext,
@@ -22,11 +23,13 @@ import {
 import {
   getHandlerView,
   type EditableProps as RuntimeEditableProps,
+  useOptionalEditorContext,
 } from '../internal/plite-components';
 import { useComposedRef } from '../internal/react-helpers';
 import { PlateRenderedAttributeProvider } from '../internal/rendered-attributes';
 import { useDeepCompareMemo } from '../internal/useDeepCompareMemo';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
+import { EditorReadOnlyProvider } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import { useEditor } from '../stores';
 import { dispatchPlateShortcut } from '../utils/dispatchPlateShortcut.internal';
@@ -88,6 +91,7 @@ export function EditorContentView<TExtra extends object>({
 }) {
   const { editor } = usePlateModel();
   const plateReadOnly = React.use(PlateReadOnlyContext);
+  const enclosingView = useOptionalEditorContext();
   const editableRef = useRef<HTMLDivElement | null>(null);
   const previousElementRef = useRef<{
     element: HTMLDivElement;
@@ -123,24 +127,30 @@ export function EditorContentView<TExtra extends object>({
     );
   }
 
+  const followsRootLock =
+    readOnlyProp === undefined &&
+    (enclosingView === null || getPlateTarget(enclosingView) === undefined);
+
   return (
-    <PlateRoot
-      key={viewGeneration}
-      editableRef={editableRef}
-      readOnly={readOnly}
-      root={props.root}
-    >
-      <EditorContentBranch
-        {...props}
-        ref={combinedRef}
+    <EditorReadOnlyProvider readOnly={followsRootLock ? undefined : readOnly}>
+      <PlateRoot
+        key={viewGeneration}
         editableRef={editableRef}
-        autoFocusOnEditable={autoFocusOnEditable}
-        plateReadOnly={readOnly}
-        readOnly={readOnlyProp}
-        editable={editable}
-        editableExtra={editableExtra}
-      />
-    </PlateRoot>
+        readOnly={readOnly}
+        root={props.root}
+      >
+        <EditorContentBranch
+          {...props}
+          ref={combinedRef}
+          editableRef={editableRef}
+          autoFocusOnEditable={autoFocusOnEditable}
+          plateReadOnly={readOnly}
+          readOnly={readOnlyProp}
+          editable={editable}
+          editableExtra={editableExtra}
+        />
+      </PlateRoot>
+    </EditorReadOnlyProvider>
   );
 }
 
