@@ -863,19 +863,30 @@ const releaseCollapsePoint = (
       : reverseMergePoint;
 };
 
+const readFinalPointOptions = (
+  plan: DeleteRangePlan,
+  removedContent: boolean
+) => ({
+  reverse: plan.reverse,
+  allowForwardBoundaryJump:
+    (plan.initialAt != null && LocationApi.isPoint(plan.initialAt)) ||
+    (plan.initialAt != null &&
+      LocationApi.isRange(plan.initialAt) &&
+      RangeApi.isCollapsed(plan.initialAt)),
+  removedContent,
+});
+
 const resolveDeletePoint = (
   editor: Editor,
   plan: DeleteRangePlan,
-  collapseTarget: Point | null
+  collapseTarget: Point | null,
+  removedContent: boolean
 ) => {
-  let point = normalizeFinalDeletePoint(editor, collapseTarget, {
-    reverse: plan.reverse,
-    allowForwardBoundaryJump:
-      (plan.initialAt != null && LocationApi.isPoint(plan.initialAt)) ||
-      (plan.initialAt != null &&
-        LocationApi.isRange(plan.initialAt) &&
-        RangeApi.isCollapsed(plan.initialAt)),
-  });
+  let point = normalizeFinalDeletePoint(
+    editor,
+    collapseTarget,
+    readFinalPointOptions(plan, removedContent)
+  );
 
   if (!plan.reverse && !plan.isCollapsed) {
     point = moveLeadingSpacerPointIntoFollowingInline(editor, point);
@@ -944,9 +955,15 @@ const resolveDeleteSelection = (
   editor: Editor,
   plan: DeleteRangePlan,
   collapseTarget: Point | null,
-  tx: TransactionWriter
+  tx: TransactionWriter,
+  removedContent: boolean
 ) => {
-  const point = resolveDeletePoint(editor, plan, collapseTarget);
+  const point = resolveDeletePoint(
+    editor,
+    plan,
+    collapseTarget,
+    removedContent
+  );
 
   if ((!plan.initialAt || !LocationApi.isPath(plan.initialAt)) && point) {
     tx.setSelection(
@@ -967,14 +984,7 @@ const resolveDeleteSelection = (
     let normalizedSelectionPoint = normalizeFinalDeletePoint(
       editor,
       finalSelection.anchor,
-      {
-        reverse: plan.reverse,
-        allowForwardBoundaryJump:
-          (plan.initialAt != null && LocationApi.isPoint(plan.initialAt)) ||
-          (plan.initialAt != null &&
-            LocationApi.isRange(plan.initialAt) &&
-            RangeApi.isCollapsed(plan.initialAt)),
-      }
+      readFinalPointOptions(plan, removedContent)
     );
 
     if (!plan.reverse && !plan.isCollapsed) {
@@ -1021,7 +1031,11 @@ const resolveDeleteSelection = (
 const normalizeFinalDeletePoint = (
   editor: Editor,
   point: import('../interfaces').Point | null | undefined,
-  options: { reverse: boolean; allowForwardBoundaryJump: boolean }
+  options: {
+    reverse: boolean;
+    allowForwardBoundaryJump: boolean;
+    removedContent: boolean;
+  }
 ) => {
   if (!point) {
     return point;
@@ -1167,8 +1181,9 @@ const normalizeFinalDeletePoint = (
 
         if (
           NodeApi.isElement(nextSibling) &&
-          (!getEditorSchema(editor).isInline(nextSibling) ||
-            getEditorSchema(editor).isVoid(nextSibling))
+          (getEditorSchema(editor).isInline(nextSibling)
+            ? getEditorSchema(editor).isVoid(nextSibling)
+            : !options.removedContent)
         ) {
           return editorPoint(editor, nextSiblingPath, { edge: 'start' });
         }
@@ -1189,8 +1204,10 @@ const normalizeFinalDeletePoint = (
             )
           ) {
             if (
-              !getEditorSchema(editor).isVoid(parent) &&
-              NodeApi.string(parent) === ''
+              (options.removedContent &&
+                !getEditorSchema(editor).isInline(parent)) ||
+              (!getEditorSchema(editor).isVoid(parent) &&
+                NodeApi.string(parent) === '')
             ) {
               return point;
             }
@@ -1695,7 +1712,8 @@ const removePlainRange = (editor: Editor, range: Range, voids: boolean) => {
         target,
         removal,
         keptIncompatibleBlockBoundary
-      )
+      ),
+      removal.removedContent
     ) ?? null
   );
 };
@@ -1942,7 +1960,7 @@ const applyAt = (
   );
 
   if (writesSelection) {
-    resolveDeleteSelection(editor, target, landing, tx);
+    resolveDeleteSelection(editor, target, landing, tx, removal.removedContent);
   }
   setDeletedMarks();
 

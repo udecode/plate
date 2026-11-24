@@ -245,7 +245,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
         deletion: 'drop',
       })
     : null;
-  let removedText = '';
+  let removedContent = false;
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {
     const point = getDefined(startAnchor.resolve());
@@ -256,7 +256,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
       applyBuiltDocumentChange(editor, (builder, root) =>
         builder.removeText(root, point.path, plan.start.offset, text)
       );
-      removedText = text;
+      removedContent = true;
     }
   }
 
@@ -266,6 +266,11 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     .map((anchor) => anchor.release())
     .filter((path): path is Path => path !== null)
     .forEach((path) => {
+      const node = getCurrentNode(editor, path);
+
+      if (!NodeApi.isText(node) || node.text.length > 0) {
+        removedContent = true;
+      }
       applyBuiltDocumentChange(editor, (builder, root) =>
         builder.removeNode(root, path)
       );
@@ -292,7 +297,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
       applyBuiltDocumentChange(editor, (builder, root) =>
         builder.removeText(root, point.path, offset, text)
       );
-      removedText = text;
+      removedContent = true;
     }
   }
 
@@ -301,6 +306,6 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     endAnchor,
     startBlockAnchor,
     endChain,
-    removedText,
+    removedContent,
   };
 };

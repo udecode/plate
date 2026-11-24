@@ -32,6 +32,7 @@ import {
   openToken,
   PreparedTokenSlice,
   textToken,
+  tokenLength,
 } from '../../core/change/tokens';
 import {
   normalizeSetValues,
@@ -473,6 +474,125 @@ const farEdge = (
   return caret === from
     ? { position: at + 1, stored: from - 1 }
     : { position: at - 1, stored: to + 1 };
+};
+
+const inlineRunAt = (
+  index: DocumentIndex,
+  line: Readonly<{ contentFrom: number; contentTo: number }>,
+  position: number,
+  isInline: RecorderOptions['isInline']
+) => {
+  let from = line.contentFrom;
+  let at = line.contentFrom;
+  let depth = 0;
+  let inBlock = false;
+
+  for (const token of index.slice(line.contentFrom, line.contentTo).tokens) {
+    const next = at + tokenLength(token);
+
+    if (token.kind === 'open') {
+      if (
+        depth === 0 &&
+        token.nodeKind === 'element' &&
+        !isInline(token.props)
+      ) {
+        if (at >= position) return { from, to: at };
+        inBlock = true;
+      }
+      depth += 1;
+    } else if (token.kind === 'close') {
+      depth -= 1;
+      if (depth === 0 && inBlock) {
+        from = next;
+        inBlock = false;
+      }
+    }
+    at = next;
+  }
+
+  return { from, to: line.contentTo };
+};
+
+function* framedSections(changes: readonly RootChange[]) {
+  let earlier: RootChange | null = null;
+
+  for (const change of changes) {
+    const back = (position: number, assoc: -1 | 1) =>
+      earlier
+        ? getDefined(mapRootChangePositionBackward(earlier, position, assoc))
+        : position;
+    let position = 0;
+
+    for (let pair = 0; pair < change.sections.length; pair += 2) {
+      const length = change.sections[pair];
+
+      yield { back, inserted: change.sections[pair + 1], length, position };
+      position += length;
+    }
+    earlier = earlier ? earlier.compose(change) : change;
+  }
+}
+
+const emptiesRunThatShowed = (
+  changes: readonly RootChange[],
+  toProjected: (
+    position: number,
+    association: 'backward' | 'forward'
+  ) => number,
+  index: DocumentIndex,
+  run: Readonly<{ from: number; to: number }>,
+  isInline: RecorderOptions['isInline']
+) => {
+  const removed: Array<{ from: number; to: number }> = [];
+
+  for (const { back, inserted, length, position } of framedSections(changes)) {
+    if (length > 0 && inserted >= 0) {
+      removed.push({
+        from: back(position, 1),
+        to: back(position + length, -1),
+      });
+    }
+  }
+  removed.sort((left, right) => left.from - right.from);
+
+  const merged: Array<{ from: number; to: number }> = [];
+
+  for (const range of removed) {
+    const last = merged.at(-1);
+
+    if (last && range.from <= last.to) last.to = Math.max(last.to, range.to);
+    else merged.push({ ...range });
+  }
+
+  let covering = 0;
+  let at = run.from;
+  let shows = false;
+
+  for (const token of index.slice(run.from, run.to).tokens) {
+    const next = at + tokenLength(token);
+
+    if (
+      token.kind === 'text' ||
+      (token.kind === 'open' &&
+        token.nodeKind === 'element' &&
+        isInline(token.props))
+    ) {
+      const from = toProjected(at, 'forward');
+      const to = toProjected(next, 'backward');
+
+      if (from < to) {
+        while (merged[covering + 1]?.from <= from) covering += 1;
+
+        const range = merged[covering];
+
+        if (!range || range.from > from || range.to < to) return false;
+        shows = true;
+      }
+    }
+    at = next;
+  }
+
+  return shows;
 };
 
 const bothUnclaimed = (
@@ -1069,25 +1189,12 @@ const advanceBreaks = (
 const changedStretch = (changes: readonly RootChange[]) => {
   let from = Infinity;
   let to = -Infinity;
-  let earlier: RootChange | null = null;
 
-  for (const change of changes) {
-    const back = (position: number, assoc: -1 | 1) =>
-      earlier
-        ? getDefined(mapRootChangePositionBackward(earlier, position, assoc))
-        : position;
-    let position = 0;
-
-    for (let pair = 0; pair < change.sections.length; pair += 2) {
-      const length = change.sections[pair];
-
-      if (change.sections[pair + 1] !== -1) {
-        from = Math.min(from, back(position, -1));
-        to = Math.max(to, back(position + length, 1));
-      }
-      position += length;
+  for (const { back, inserted, length, position } of framedSections(changes)) {
+    if (inserted !== -1) {
+      from = Math.min(from, back(position, -1));
+      to = Math.max(to, back(position + length, 1));
     }
-    earlier = earlier ? earlier.compose(change) : change;
   }
 
   return from <= to ? { from, to } : null;
@@ -1765,6 +1872,11 @@ const recordSteps = (
       const fold = foldOf(root);
       const toStored = (position: number, assoc: -1 | 1) =>
         getDefined(map.toStored(root, position, assoc));
+      const toProjected = (
+        position: number,
+        association: 'backward' | 'forward' = 'forward'
+      ) => getDefined(map.toProjected(root, position, association));
+      const storedIndex = fold.index;
       const caretAt =
         input.selectionBefore?.root === root
           ? input.selectionBefore.position
@@ -1776,23 +1888,35 @@ const recordSteps = (
       const far =
         caretAt === null
           ? null
-          : farEdge(
-              (position) =>
-                getDefined(map.toProjected(root, position, 'forward')),
-              toStored,
-              fold.index,
-              caretAt
-            );
+          : farEdge(toProjected, toStored, storedIndex, caretAt);
 
-      const stretch = changedStretch(
-        stepChanges.flatMap(({ changes }) =>
-          changes.flatMap(([changed, change]) =>
-            changed === root ? [change] : []
-          )
+      const rootChanges = stepChanges.flatMap(({ changes }) =>
+        changes.flatMap(([changed, change]) =>
+          changed === root ? [change] : []
         )
       );
+      const stretch = changedStretch(rootChanges);
 
       const frame = getDefined(indexes.get(root));
+
+      let caretRunEmptied: boolean | undefined;
+      const emptiesCaretRun = (at: number) => {
+        if (caretRunEmptied === undefined) {
+          const line = lineHolding(storedIndex, at, input.isInline);
+
+          caretRunEmptied =
+            line !== undefined &&
+            emptiesRunThatShowed(
+              rootChanges,
+              toProjected,
+              storedIndex,
+              inlineRunAt(storedIndex, line, at, input.isInline),
+              input.isInline
+            );
+        }
+
+        return caretRunEmptied;
+      };
 
       fold.frameIndex = frame;
       // A step that breaks a line is refused after a break earlier in that
@@ -1828,9 +1952,13 @@ const recordSteps = (
         // The projection hides content, so where it removed some, a position has
         // a stored edge on each side; a caret at one edge picks it, so the next
         // letter lands on the line the caret shows.
-        return caretAt !== null && before !== caretAt && other === caretAt
-          ? caretAt
-          : before;
+        const keepsCaretEdge =
+          caretAt !== null &&
+          before !== caretAt &&
+          other === caretAt &&
+          !(caret === true && emptiesCaretRun(caretAt));
+
+        return keepsCaretEdge ? caretAt : before;
       };
     }
   }
