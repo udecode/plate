@@ -22,7 +22,8 @@
       "apps/www/src/registry/changelog/*.json",
       "packages/*/test/**",
       "packages/*/type-tests/**",
-      "**/scripts/*-baseline.json"
+      "**/scripts/*-baseline.json",
+      "apps/www/src/registry/styles/preview-style-classes.*"
     ]
   },
   "planBoxes": {
