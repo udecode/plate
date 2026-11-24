@@ -213,11 +213,24 @@ const checkout = (sha) => {
     }
     if (args[0] === 'tooling/scripts/git-private.mjs') movePrivateFiles();
   }
-  // setup.mjs installs once per worktree, and this one moves to every new
-  // tip, so it installs here when the lockfile differs from the installed one.
-  if (lockfileInstalled(worktree) === true) return;
-  const failure = installLockfile(worktree);
-  if (failure !== null) throw new Error(`pnpm install at ${sha}: ${failure}`);
+  if (lockfileInstalled(worktree) !== true) {
+    const failure = installLockfile(worktree);
+    if (failure !== null) throw new Error(`pnpm install at ${sha}: ${failure}`);
+  }
+  // Every checkout on this Mac shares one Playwright browser cache, and any
+  // `playwright install`, at any version, deletes the browsers no live install
+  // registered. Installing here registers this worktree, which keeps its
+  // Chromium, and puts back one that another install already deleted.
+  const browsers = spawnSync('pnpm', ['plite:browser:install', 'chromium'], {
+    cwd: worktree,
+    encoding: 'utf-8',
+    maxBuffer: 64 << 20,
+  });
+  if (browsers.status !== 0) {
+    throw new Error(
+      `playwright install at ${sha}: ${browsers.error?.message ?? `${browsers.stdout}${browsers.stderr}`}`
+    );
+  }
 };
 
 const runId = (sha, suffix) =>
