@@ -15,13 +15,15 @@ const sameRead = (a: FieldRead | null, b: FieldRead | null) =>
   (a !== null &&
     b !== null &&
     a.node === b.node &&
+    a.applies === b.applies &&
     a.problems.length === b.problems.length &&
     a.problems.every((problem, index) => problem === b.problems[index]));
 
 /**
- * Read the field with this id and its problems. A commit that changes an
- * element rereads it, and the caller renders again only when the field or its
- * problems changed, such as when the field its condition names is deleted.
+ * Read the field with this id, its problems and whether it applies. A commit
+ * that changes an element rereads it, and the caller renders again only when
+ * the field, its problems or whether it applies changed, such as when the
+ * field its condition names is deleted or answered.
  */
 export const useFieldRead = (fieldId: string) =>
   useEditorSelector(

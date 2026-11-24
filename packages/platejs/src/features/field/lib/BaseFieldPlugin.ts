@@ -27,10 +27,16 @@ import {
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
+  conditionProblem,
+  FIELD_TESTS,
   type FieldLink,
   fieldLinks,
+  type FieldShape,
+  fitsField,
   sharedFieldLinks,
 } from './fieldRules.internal';
+
+export { FIELD_TESTS, fitsField } from './fieldRules.internal';
 
 const FIELD_KINDS = [
   'checkbox',
@@ -82,30 +88,6 @@ export type FieldProblem =
   | 'invalid-value'
   | 'missing-target'
   | 'unsupported-test';
-
-/**
- * The tests a condition may use on a field of each kind. `insert` and `update`
- * refuse any other test, and a read reports it as `unsupported-test`.
- */
-export const FIELD_TESTS: Readonly<Record<FieldKind, readonly FieldTest[]>> = {
-  checkbox: ['equals', 'not-equals'],
-  choice: ['filled', 'blank', 'equals', 'not-equals'],
-  date: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
-  number: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
-  signature: ['filled', 'blank'],
-  text: ['filled', 'blank', 'equals', 'not-equals'],
-};
-
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-const isIsoDate = (value: string) => {
-  if (!ISO_DATE_PATTERN.test(value)) return false;
-
-  const date = new Date(`${value}T00:00:00Z`);
-
-  // A day past its month's end parses to a later date.
-  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
-};
 
 const isFieldValue = (value: unknown): value is FieldValue =>
   typeof value === 'string' ||
@@ -363,55 +345,24 @@ export type FieldSettings = Omit<FieldElement, 'children' | 'fieldId' | 'type'>;
  */
 export type FieldPatch = Partial<FieldSettings>;
 
-/** A field as the plugin reads it, with what the read finds wrong with it. */
+/**
+ * A field as the plugin reads it, with what the read finds wrong with it.
+ * `applies` says whether the field applies under its condition, as the field's
+ * own role sees the answers the document holds. It is `null` while that
+ * depends on an answer another role has not given yet, and `true` for a field
+ * with no condition or with a condition that has a problem or is in a loop. A
+ * condition whose target does not apply tests it as having no answer, an
+ * answer that does not fit its field's kind counts as none, and an unanswered
+ * checkbox of the field's own role reads as `false` while it applies.
+ */
 export type FieldRead = Readonly<{
+  applies: boolean | null;
   fieldId: string;
   node: FieldElement;
   problems: readonly FieldProblem[];
 }>;
 
-type FieldShape = Pick<
-  FieldSettings,
-  'defaultValue' | 'kind' | 'options' | 'value'
->;
-
 const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
-
-/**
- * Whether a value fits a field's kind: a boolean for a checkbox, one of its
- * options' values for a choice, an ISO date string for a date, a finite number
- * other than -0 for a number, a string with no line break for a text field,
- * and a string for a signature field.
- */
-export const fitsField = (
-  { kind, options = [] }: FieldShape,
-  value: unknown
-): value is FieldValue => {
-  switch (kind) {
-    case 'checkbox': {
-      return typeof value === 'boolean';
-    }
-    case 'choice': {
-      return options.some((option) => option.value === value);
-    }
-    case 'date': {
-      return typeof value === 'string' && isIsoDate(value);
-    }
-    case 'number': {
-      return (
-        typeof value === 'number' &&
-        Number.isFinite(value) &&
-        !Object.is(value, -0)
-      );
-    }
-    case 'text': {
-      return typeof value === 'string' && !/[\n\r]/.test(value);
-    }
-    default: {
-      return typeof value === 'string';
-    }
-  }
-};
 
 const fitsSetting = (
   field: FieldShape,
@@ -421,21 +372,6 @@ const fitsSetting = (
   (setting === 'options'
     ? field.kind === 'choice'
     : fitsField(field, field[setting]));
-
-const conditionProblem = (
-  { test, value }: FieldCondition,
-  named: FieldShape | undefined
-): FieldProblem | undefined => {
-  if (!named) return 'missing-target';
-  if (!FIELD_TESTS[named.kind].includes(test)) return 'unsupported-test';
-
-  const fits =
-    test === 'filled' || test === 'blank'
-      ? value === undefined
-      : fitsField(named, value);
-
-  return fits ? undefined : 'invalid-value';
-};
 
 const fieldProblems = (
   field: FieldElement,
@@ -632,37 +568,51 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           field: (fieldId: string): FieldRead | null => {
             const node = held(fieldId);
 
-            return node
-              ? {
-                  fieldId,
-                  node,
-                  problems: fieldProblems(
-                    node,
-                    sharedFieldLinks(reader)(node, held)
-                  ),
-                }
-              : null;
+            if (!node) return null;
+
+            const link = sharedFieldLinks(reader).link(node, held);
+
+            return {
+              applies: link.applies,
+              fieldId,
+              node,
+              problems: fieldProblems(node, link),
+            };
           },
           /** Every field of the document, in reading order. */
           fields: (): FieldRead[] => {
-            const fields = new Map(
-              [
-                readViewPage(state) ?? state.children(),
-                ...readRootEntries(reader).map(({ root }) => state.root(root)),
-              ]
-                .flatMap(fieldsIn)
-                .map((node) => [node.fieldId, node] as const)
-            );
-            const link = fieldLinks();
+            const roots = getActiveEditorUpdateId(reader)
+              ? readRootEntries(reader)
+              : reader.read.roots();
+            const nodes = [
+              readViewPage(state) ?? state.children(),
+              ...roots.map(({ root }) => state.root(root)),
+            ].flatMap(fieldsIn);
+            const byId = new Map<string, FieldElement>();
+            const repeated = new Set<string>();
 
-            return [...fields].map(([fieldId, node]) => ({
-              fieldId,
-              node,
-              problems: fieldProblems(
+            for (const node of nodes) {
+              if (byId.has(node.fieldId)) repeated.add(node.fieldId);
+              else byId.set(node.fieldId, node);
+            }
+
+            const lookup = (id: string) =>
+              repeated.has(id) ? held(id) : byId.get(id);
+            const links = fieldLinks();
+
+            return nodes.map((node) => {
+              const link =
+                lookup(node.fieldId) === node
+                  ? links.link(node, lookup)
+                  : links.linkCopy(node, lookup);
+
+              return {
+                applies: link.applies,
+                fieldId: node.fieldId,
                 node,
-                link(node, (id) => fields.get(id))
-              ),
-            }));
+                problems: fieldProblems(node, link),
+              };
+            });
           },
         };
       },
@@ -764,7 +714,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
 
               if (
                 patch.condition.ref !== field.condition?.ref &&
-                fieldLinks()(next, (id) =>
+                fieldLinks().link(next, (id) =>
                   id === fieldId ? next : held(id)[0]
                 ).loop
               ) {

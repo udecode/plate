@@ -6,24 +6,166 @@ import {
   type RuntimeAnyEditor,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
-import type { FieldElement } from './BaseFieldPlugin';
+import type {
+  FieldCondition,
+  FieldElement,
+  FieldKind,
+  FieldProblem,
+  FieldSettings,
+  FieldTest,
+  FieldValue,
+} from './BaseFieldPlugin';
 
-export type FieldLink = Readonly<{
-  loop: boolean;
-  target: FieldElement | undefined;
-}>;
+export type FieldShape = Pick<
+  FieldSettings,
+  'defaultValue' | 'kind' | 'options' | 'value'
+>;
+
+/**
+ * The tests a condition may use on a field of each kind. `insert` and `update`
+ * refuse any other test, and a read reports it as `unsupported-test`.
+ */
+export const FIELD_TESTS: Readonly<Record<FieldKind, readonly FieldTest[]>> = {
+  checkbox: ['equals', 'not-equals'],
+  choice: ['filled', 'blank', 'equals', 'not-equals'],
+  date: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
+  number: ['filled', 'blank', 'equals', 'not-equals', 'above', 'below'],
+  signature: ['filled', 'blank'],
+  text: ['filled', 'blank', 'equals', 'not-equals'],
+};
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const isIsoDate = (value: string) => {
+  if (!ISO_DATE_PATTERN.test(value)) return false;
+
+  const date = new Date(`${value}T00:00:00Z`);
+
+  // A day past its month's end parses to a later date.
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value);
+};
+
+/**
+ * Whether a value fits a field's kind: a boolean for a checkbox, one of its
+ * options' values for a choice, an ISO date string for a date, a finite number
+ * other than -0 for a number, a string with no line break for a text field,
+ * and a string for a signature field.
+ */
+export const fitsField = (
+  { kind, options = [] }: FieldShape,
+  value: unknown
+): value is FieldValue => {
+  switch (kind) {
+    case 'checkbox': {
+      return typeof value === 'boolean';
+    }
+    case 'choice': {
+      return options.some((option) => option.value === value);
+    }
+    case 'date': {
+      return typeof value === 'string' && isIsoDate(value);
+    }
+    case 'number': {
+      return (
+        typeof value === 'number' &&
+        Number.isFinite(value) &&
+        !Object.is(value, -0)
+      );
+    }
+    case 'text': {
+      return typeof value === 'string' && !/[\n\r]/.test(value);
+    }
+    default: {
+      return typeof value === 'string';
+    }
+  }
+};
+
+export const conditionProblem = (
+  { test, value }: FieldCondition,
+  named: FieldShape | undefined
+): FieldProblem | undefined => {
+  if (!named) return 'missing-target';
+  if (!FIELD_TESTS[named.kind].includes(test)) return 'unsupported-test';
+
+  const fits =
+    test === 'filled' || test === 'blank'
+      ? value === undefined
+      : fitsField(named, value);
+
+  return fits ? undefined : 'invalid-value';
+};
+
+const isFilled = (field: FieldShape, answer: FieldValue | undefined) =>
+  fitsField(field, answer) &&
+  ((field.kind !== 'text' && field.kind !== 'signature') ||
+    /\S/.test(String(answer)));
+
+const holds = (
+  { test, value }: FieldCondition,
+  target: FieldShape,
+  answer: FieldValue | undefined
+) => {
+  const before = (a: unknown, b: unknown) =>
+    target.kind === 'number' ? Number(a) < Number(b) : String(a) < String(b);
+
+  switch (test) {
+    case 'above':
+    case 'below': {
+      if (answer === undefined) return false;
+
+      return test === 'above' ? before(value, answer) : before(answer, value);
+    }
+    case 'blank': {
+      return !isFilled(target, answer);
+    }
+    case 'equals': {
+      return answer === value;
+    }
+    case 'filled': {
+      return isFilled(target, answer);
+    }
+    default: {
+      return answer !== value;
+    }
+  }
+};
+
+type Chain = Readonly<{ loop: boolean; target: FieldElement | undefined }>;
+
+export type FieldLink = Chain & Readonly<{ applies: boolean | null }>;
 
 type Held = (fieldId: string) => FieldElement | undefined;
 
-export const fieldLinks = () => {
-  const links = new Map<string, FieldLink>();
+const judge = (
+  condition: FieldCondition,
+  target: FieldElement,
+  reached: boolean | null,
+  readingRole: string
+) => {
+  if (reached === null) return null;
+  if (!reached) return holds(condition, target, undefined);
+  if (fitsField(target, target.value)) {
+    return holds(condition, target, target.value);
+  }
+  if (target.role !== readingRole) return null;
 
-  return (field: FieldElement, held: Held): FieldLink => {
+  return holds(
+    condition,
+    target,
+    target.kind === 'checkbox' ? false : undefined
+  );
+};
+
+export const fieldLinks = () => {
+  const chains = new Map<string, Chain>();
+  const byReadingRole = new Map<string, Map<string, boolean | null>>();
+  const chainOf = (field: FieldElement, held: Held): Chain => {
     const path: FieldElement[] = [];
     const places = new Map<string, number>();
     let next: FieldElement | undefined = field;
 
-    while (next && !links.has(next.fieldId) && !places.has(next.fieldId)) {
+    while (next && !chains.has(next.fieldId) && !places.has(next.fieldId)) {
       places.set(next.fieldId, path.length);
       path.push(next);
       next = next.condition && held(next.condition.ref);
@@ -32,16 +174,81 @@ export const fieldLinks = () => {
     const loopStart = next ? places.get(next.fieldId) : undefined;
 
     for (let index = path.length - 1; index >= 0; index--) {
-      links.set(path[index].fieldId, {
+      chains.set(path[index].fieldId, {
         loop: loopStart !== undefined && index >= loopStart,
         target: path[index + 1] ?? next,
       });
     }
 
     return (
-      links.get(field.fieldId) ??
+      chains.get(field.fieldId) ??
       failInvariant('A field was read before its link.')
     );
+  };
+  const appliesOf = (
+    field: FieldElement,
+    held: Held,
+    readingRole = field.role
+  ) => {
+    const known =
+      byReadingRole.get(readingRole) ?? new Map<string, boolean | null>();
+
+    byReadingRole.set(readingRole, known);
+
+    const waiting: Array<readonly [FieldElement, FieldCondition]> = [];
+    let at = field;
+    let reached = known.get(at.fieldId);
+
+    while (reached === undefined) {
+      const { loop, target } = chainOf(at, held);
+
+      if (
+        loop ||
+        !at.condition ||
+        !target ||
+        conditionProblem(at.condition, target)
+      ) {
+        reached = true;
+        known.set(at.fieldId, reached);
+        break;
+      }
+
+      waiting.push([at, at.condition]);
+      at = target;
+      reached = known.get(at.fieldId);
+    }
+
+    for (let index = waiting.length - 1; index >= 0; index--) {
+      const [next, condition] = waiting[index];
+
+      reached = judge(condition, at, reached, readingRole);
+      known.set(next.fieldId, reached);
+      at = next;
+    }
+
+    return reached;
+  };
+
+  return {
+    link: (field: FieldElement, held: Held): FieldLink => ({
+      ...chainOf(field, held),
+      applies: appliesOf(field, held),
+    }),
+    linkCopy: (field: FieldElement, held: Held): FieldLink => {
+      const { condition } = field;
+      const target = condition && held(condition.ref);
+      const applies =
+        !condition || !target || conditionProblem(condition, target)
+          ? true
+          : judge(
+              condition,
+              target,
+              appliesOf(target, held, field.role),
+              field.role
+            );
+
+      return { applies, loop: false, target };
+    },
   };
 };
 

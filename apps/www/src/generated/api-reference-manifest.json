@@ -13159,12 +13159,12 @@
         },
         "platejs/field:FieldRead": {
           "aliases": [],
-          "documentation": "A field as the plugin reads it, with what the read finds wrong with it.",
+          "documentation": "A field as the plugin reads it, with what the read finds wrong with it.\n`applies` says whether the field applies under its condition, as the field's\nown role sees the answers the document holds. It is `null` while that\ndepends on an answer another role has not given yet, and `true` for a field\nwith no condition or with a condition that has a problem or is in a loop. A\ncondition whose target does not apply tests it as having no answer, an\nanswer that does not fit its field's kind counts as none, and an unanswered\ncheckbox of the field's own role reads as `false` while it applies.",
           "entrypoint": "platejs/field",
           "kind": "type",
           "name": "FieldRead",
           "runtime": false,
-          "signature": "type FieldRead = Readonly<{\n  fieldId: string;\n  node: FieldElement;\n  problems: readonly FieldProblem[];\n}>;",
+          "signature": "type FieldRead = Readonly<{\n  applies: boolean | null;\n  fieldId: string;\n  node: FieldElement;\n  problems: readonly FieldProblem[];\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -13225,12 +13225,12 @@
         },
         "platejs/field/react:useFieldRead": {
           "aliases": [],
-          "documentation": "Read the field with this id and its problems. A commit that changes an\nelement rereads it, and the caller renders again only when the field or its\nproblems changed, such as when the field its condition names is deleted.",
+          "documentation": "Read the field with this id, its problems and whether it applies. A commit\nthat changes an element rereads it, and the caller renders again only when\nthe field, its problems or whether it applies changed, such as when the\nfield its condition names is deleted or answered.",
           "entrypoint": "platejs/field/react",
           "kind": "const",
           "name": "useFieldRead",
           "runtime": true,
-          "signature": "useFieldRead: (fieldId: string) => Readonly<{\n  fieldId: string;\n  node: FieldElement;\n  problems: readonly FieldProblem[];\n}> | null",
+          "signature": "useFieldRead: (fieldId: string) => Readonly<{\n  applies: boolean | null;\n  fieldId: string;\n  node: FieldElement;\n  problems: readonly FieldProblem[];\n}> | null",
           "source": null,
           "typeParameters": []
         },
