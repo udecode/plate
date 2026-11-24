@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: a Claude Code SessionStart hook,
-//   node .agents/pstack/setup.mjs [--hook] [--install <command>] [--env <name>]...
+//   node .agents/pstack/setup.mjs [--hook] [--install <command>] [--installs <path>] [--env <name>]...
 // --hook reads the hook payload from stdin and works on the session's own
 // checkout, as checkout.mjs finds it. In a linked worktree it copies each
 // untracked env file (by default `.env` and `.env.local`, at any depth git
 // does not skip as an ignored directory) from the main checkout to the same
 // path when that path is free, and runs
-// --install once per worktree, again after a failed run; run by hand, a
-// failed install makes it exit 1. Then, in the main
+// --install once per worktree, again after a failed run or once the path
+// --installs names is gone; run by hand, a failed install makes it exit 1.
+// Then, in the main
 // checkout, it keeps the suggested-task ledger, which git ignores, in step
 // with refs/pstack/ledger on origin, or on the companion repository's origin
 // through the main checkout's `companion.dir` when the config names a
@@ -47,15 +48,17 @@ const out = (...args) => {
 
 const args = process.argv.slice(2);
 let install = null;
+let installs = null;
 let hook = false;
 const names = [];
 for (let i = 0; i < args.length; i += 1) {
   const hasValue = args[i + 1] && !args[i + 1].startsWith('--');
   if (args[i] === '--hook') hook = true;
   else if (args[i] === '--install' && hasValue) install = args[++i];
+  else if (args[i] === '--installs' && hasValue) installs = args[++i];
   else if (args[i] === '--env' && hasValue) names.push(args[++i]);
   else {
-    console.error('Usage: node .agents/pstack/setup.mjs [--hook] [--install <command>] [--env <name>]...');
+    console.error('Usage: node .agents/pstack/setup.mjs [--hook] [--install <command>] [--installs <path>] [--env <name>]...');
     process.exit(2);
   }
 }
@@ -98,7 +101,7 @@ if (linked) {
   // A worktree can arrive with node_modules copied from the main checkout, which skipped every
   // install script, so a node_modules folder does not mean an install ran here.
   const installMarker = join(gitDir, 'pstack-installed');
-  if (install && !existsSync(installMarker)) {
+  if (install && (!existsSync(installMarker) || (installs && !existsSync(installs)))) {
     const run = spawnSync(install, { shell: true, encoding: 'utf8' });
     if (run.status === 0) writeFileSync(installMarker, `${install}\n`);
     const tail = `${run.stdout}${run.stderr}`.trim().split('\n').at(-1);

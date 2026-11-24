@@ -51,7 +51,7 @@
           },
           {
             "type": "command",
-            "command": "payload=$(cat); cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || printf '%s' \"$payload\" | node .agents/pstack/setup.mjs --hook --install 'pnpm install --offline'; }; [ ! -f tooling/scripts/git-private.mjs ] || printf '%s' \"$payload\" | node tooling/scripts/git-private.mjs start --hook",
+            "command": "payload=$(cat); cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || printf '%s' \"$payload\" | node .agents/pstack/setup.mjs --hook --install 'pnpm install --offline' --installs node_modules; }; [ ! -f tooling/scripts/git-private.mjs ] || printf '%s' \"$payload\" | node tooling/scripts/git-private.mjs start --hook",
             "timeout": 600
           },
           {
