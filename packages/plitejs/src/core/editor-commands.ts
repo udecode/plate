@@ -76,6 +76,7 @@ import {
   getActiveDocumentChangeBuilder,
   getEditorUpdateRoot,
   getSetSite,
+  peekImplicitTarget,
 } from './public-state';
 import { toCompiledNodeContext } from './schema-compiler';
 import { refuseCrossing } from './set-root';
@@ -677,7 +678,7 @@ const breakAfterLanding = (
   state: CommandStateView,
   write: (tx: EditorTransactionSpecBuilder) => void
 ) => {
-  const selection = state.selection();
+  const selection = getCurrentNodeSelection(state) ? null : state.selection();
   const range = RangeApi.isRange(selection)
     ? resolveCommandRange(state, selection)
     : null;
@@ -933,21 +934,20 @@ export const editorCommands: EditorCommands = Object.freeze({
       return at === null ? null : { ...input, at };
     },
     build: ({ input, state }) => {
-      const selection = state.selection();
       const target =
-        input.at ?? (RangeApi.isRange(selection) ? selection : undefined);
-      const range =
-        target === undefined ? null : resolveCommandRange(state, target);
+        input.at ?? peekImplicitTarget(getActiveCommandEditor()) ?? undefined;
+      const at = SelectionApi.isNode(target) ? undefined : target;
+      const range = at === undefined ? null : resolveCommandRange(state, at);
       const root = rootOrUpdateRoot(range?.anchor.root ?? range?.focus.root);
 
       if (range) {
         refuseCrossing(getSetSite(getActiveCommandEditor()), range, root);
       }
       const landing =
-        target !== undefined && range
-          ? readWholeBlockLanding(state, target, {
+        at !== undefined && range
+          ? readWholeBlockLanding(state, at, {
               root,
-              tripleClicked: RangeApi.isRange(target)
+              tripleClicked: RangeApi.isRange(at)
                 ? readLastCommitAnnotation(state, tripleClickedBlock, range)
                 : null,
             })
@@ -969,9 +969,10 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
+        if (SelectionApi.isNode(target)) tx.selection.set(target);
         tx.fragment.delete({
           direction: input.direction,
-          ...(input.at === undefined ? {} : { at: input.at }),
+          ...(at === undefined ? {} : { at }),
         });
       });
     },

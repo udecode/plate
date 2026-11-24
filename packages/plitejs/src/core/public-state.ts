@@ -12386,6 +12386,17 @@ export const getActiveImplicitTarget = (
   return snapshot?.implicitTargetResolved ? snapshot.implicitTarget : undefined;
 };
 
+export const peekImplicitTarget = (editor: Editor): Selection => {
+  const owner = getEditorRuntimeOwner(editor);
+  const snapshot = getTransactionSnapshot(owner);
+
+  if (snapshot?.implicitTargetResolved) {
+    return cloneValue(snapshot.implicitTarget);
+  }
+
+  return moveImplicitTarget(owner)?.target ?? getCurrentSelection(owner);
+};
+
 export const setActiveImplicitTarget = (editor: Editor, target: Selection) => {
   const snapshot = getTransactionSnapshot(editor);
 
