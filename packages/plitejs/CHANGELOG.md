@@ -1,5 +1,49 @@
 # plite
 
+## 54.0.0-beta.4
+
+### Patch Changes
+
+- [`c5f9275`](https://github.com/udecode/plate/commit/c5f9275d8afb6ffc77c77551e9e74d6956fc243a) by [@felixfeng33](https://github.com/felixfeng33) – Fix accepting a line typed right after another author's pending join, which returned `blocked` until that join was decided. The accept now applies. The line stays where it is stored, and accepting the join later still places it after the joined line, as deciding both at once does.
+
+- [`7428002`](https://github.com/udecode/plate/commit/74280028c1c3a0840d2ea5f983104206e85c6a5a) by [@zbeyens](https://github.com/zbeyens) – Fix `EditorRoot`'s `readOnly` letting a write through in the render that sets it, such as from a removed control's cleanup or a custom element's `connectedCallback`. That write now throws through an `Editable`, `PagedEditable` or `VirtualizedEditable`, also when the render mounts, removes, hides or suspends it. An `EditorReadOnlyProvider` that sets no `readOnly` no longer makes those editables writable.
+
+- [`708a247`](https://github.com/udecode/plate/commit/708a2470c94d02a66a823d1fd05f3c2ff0ad9a6e) by [@felixfeng33](https://github.com/felixfeng33) – Fix accepting a join, or rejecting a split, that merges a line another author inserted or struck, which returned `blocked` until that author's change was decided. The merge now applies, and the other author's change stays pending on its text. Accepting the deletion of a line while another author's join onto it is pending keeps the line empty until the join is decided, as Google Docs does. Decisions of different authors can still give different results in different orders.
+
+- [`a8d490e`](https://github.com/udecode/plate/commit/a8d490eeddc3031ceea145693201a55ed46fc18d) by [@zbeyens](https://github.com/zbeyens) – Add `nodes.byId(id)` to reads and transactions, and accept `{ id }` as a node target
+
+  - `editor.read.nodes.byId(id)`, or `tx.nodes.byId(id)` inside an update, returns the element that holds the stored `id` as `{ key, node, path, root? }`, or `null` when no element holds it.
+  - Node reads and node transforms accept `at: { id }`, such as `editor.update.nodes.move({ at: { id }, to })`, and a write reaches the element in its own root. An id that no element holds changes nothing.
+  - Add `WithNodeTarget<Options>` and `PlacedTarget<T>` to type a plugin method whose `at` takes every node target.
+  - Both need a schema that declares `id` as a generated, unique string on every element type, as Plate's `ElementIdPlugin` does. With any other schema they throw.
+
+  **Migration:** In an editor whose elements store ids, `unique.holder('id', value)` throws. Use `nodes.byId(value)`.
+
+- [`263988d`](https://github.com/udecode/plate/commit/263988d12543f1b88f94df987de6f2c22730bd40) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix pasting a copy that ends in a quote, such as text copied from a paragraph into the quote after it or across two quotes, into the middle of a paragraph, which changed nothing. The first copied line now joins the text before the caret, and the last lands in a quote with the text after the caret.
+  - Fix pasting two titles into the middle of a block, which changed nothing. Each pasted block now takes the type its place allows. In a title, the second title becomes a paragraph, as it does when you press Return in a title.
+
+- [`dc2d018`](https://github.com/udecode/plate/commit/dc2d0182b361c78e257819f47251993efef70ecf) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix the text after the caret taking the last pasted block's properties, such as `checked`, and losing the destination block's, such as `align`, when you paste a copy of quoted paragraphs into the middle of a quoted paragraph. It now keeps the destination block's properties, as Return splits them.
+  - Fix pasting blocks that equal the destination block into its middle keeping a `split: 'drop'` property and the destination's unique value on the text after the caret. That text now gets the properties Return gives it.
+
+- [`6016f0d`](https://github.com/udecode/plate/commit/6016f0da5257dc6752e84cc43e51e7e96b73b0dc) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `editor.read.ranges.isEmpty(range)`, which answers whether a range covers no letter and no whole void element, such as a mention.
+  - Add the `hideEmpty` option to `createAnnotationStore`. An annotation whose range covers nothing then resolves with `range: null`, leaves `getAnnotationsAt`, and its listeners hear when its text is deleted or comes back, or when a plugin reconfigure changes what counts as content.
+  - Fix a view without a preview reading the preview its editor shows. It now reads the stored document.
+
+- [`64c3257`](https://github.com/udecode/plate/commit/64c32576914dc34edf9a3225da8bdc177bb50df8) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Keep a view that sets its own authored mode showing that mode while the editor it comes from shows a review preview. The view `EditorRoot` mounts copies the editor's mode when it mounts, so call `setView` on that mounted view to change what it shows.
+  - Fix a document view read throwing while the editor it comes from shows a review preview.
+
+- [`c16a73c`](https://github.com/udecode/plate/commit/c16a73c0c5c24de614973e4d84f0c0f5f2743d78) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `nodes.byId`, `unique.holder` and `at: { id }` targets in a transaction over a view of another document. They find the element that held the value in the view's document, where a copy the transaction inserted before that element used to take the value. This holds in the main root and in named roots, and inside a `collaboration`-tagged update of the source editor.
+  - Refuse a spec that a transaction over a view of another document built when the source editor applies it, with `Cannot apply a transaction spec outside its base state.`
+
 ## 54.0.0-beta.3
 
 ### Patch Changes
