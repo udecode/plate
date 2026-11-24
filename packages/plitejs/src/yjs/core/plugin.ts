@@ -1,5 +1,6 @@
 import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
+import { suspendMovePlacement } from '../../core/moved-anchors';
 import {
   carryPluginFactoryType,
   queueAfterPluginAcquisition,
@@ -122,9 +123,11 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
       }
 
       const current = binding;
+      const resumePlacement = suspendMovePlacement(owner);
 
       current.records += 1;
       context.onCleanup(() => {
+        resumePlacement();
         current.records -= 1;
         if (current.records > 0) return;
 

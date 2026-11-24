@@ -8,6 +8,7 @@ import type { JsonEditorValue } from '../../core/change/tokens';
 import { getEditorLifetime } from '../../core/editor-lifetime';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { notifyObservers } from '../../core/lifecycle-error';
+import { suspendMovePlacement } from '../../core/moved-anchors';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import {
   applyUnnamedDocumentChange,
@@ -392,10 +393,15 @@ const startClient = (
     },
   });
   const stop = editor.subscribeCommit(notice.flushOutermost);
+  const resumePlacement = suspendMovePlacement(getEditorRuntimeOwner(editor));
 
-  const teardown = () => {
+  const detach = () => {
     stop();
+    resumePlacement();
     gate.release();
+  };
+  const teardown = () => {
+    detach();
     finish(writer, release);
     finishDrains();
   };
@@ -491,7 +497,13 @@ const startClient = (
 
   let deciding: Promise<unknown> = Promise.resolve();
 
-  writer.connect();
+  try {
+    writer.connect();
+  } catch (error) {
+    notice.close();
+    detach();
+    throw error;
+  }
 
   return {
     decide: (seq, action, view) => {

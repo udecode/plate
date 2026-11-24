@@ -27,6 +27,7 @@ import {
   RECOVERY_ASSOCIATION_INWARD,
   RECOVERY_ASSOCIATION_OUTWARD,
   RECOVERY_ASSOCIATION_SHIFT,
+  RECOVERY_AT_ONCE,
   RECOVERY_BEFORE_A,
   RECOVERY_BEFORE_A_FORWARD,
   RECOVERY_BEFORE_B,
@@ -851,6 +852,19 @@ export function createAnchor<TValue extends AnchorValue>(
       }
     }
 
+    if (
+      placed ||
+      (kind !== 'path' &&
+        checkpoint.current &&
+        pointStates.some(
+          (state, index) =>
+            state.nodeKey !== checkpoint.pointStates[index]?.nodeKey
+        ))
+    ) {
+      flags |= RECOVERY_AT_ONCE;
+    }
+    placed = false;
+
     data[offset + RECOVERY_ID] = id;
     data[offset + RECOVERY_ROOT] = rootIndex;
     data[offset + RECOVERY_FLAGS] = flags;
@@ -861,6 +875,7 @@ export function createAnchor<TValue extends AnchorValue>(
 
     return true;
   };
+  let placed = false;
   let pendingRecoveryActive = false;
   let pendingRecoveryBefore = false;
   let pendingRecoveryFirst = RECOVERY_NULL_POSITION;
@@ -1027,6 +1042,7 @@ export function createAnchor<TValue extends AnchorValue>(
       return false;
     }
 
+    pendingRecoveryActive = false;
     const changedNodeKeys = applyHistoryRecovery(
       flags,
       first,
@@ -1624,14 +1640,29 @@ export function createAnchor<TValue extends AnchorValue>(
 
     sourceValue = nextValue;
   };
+  const readMappedTo = <T>(target: JsonEditorValue, read: () => T) => {
+    const saved = {
+      current: cloneAnchorValue(current),
+      pointStates: clonePointStates(),
+      sourceValue,
+    };
+
+    try {
+      mapTo(target);
+      return read();
+    } finally {
+      ({ current, pointStates, sourceValue } = saved);
+    }
+  };
 
   const subscription = subscribeAnchorState(
     runtimeEditor,
     {
       begin() {
+        placed = false;
         checkpoints.push({
-          current: pendingRecoveryActive ? null : cloneAnchorValue(current),
-          pointStates: pendingRecoveryActive ? [] : clonePointStates(),
+          current: cloneAnchorValue(current),
+          pointStates: clonePointStates(),
           recoveryActive: pendingRecoveryActive,
           recoveryBefore: pendingRecoveryBefore,
           recoveryFirst: pendingRecoveryFirst,
@@ -1689,11 +1720,9 @@ export function createAnchor<TValue extends AnchorValue>(
             pendingRecoveryFirst = checkpoint.recoveryFirst;
             pendingRecoveryFlags = checkpoint.recoveryFlags;
             pendingRecoverySecond = checkpoint.recoverySecond;
-            sourceValue = innerValue2;
-
-            return;
+          } else {
+            pendingRecoveryActive = false;
           }
-          pendingRecoveryActive = false;
           ({ current, pointStates } = checkpoint);
           sourceValue = innerValue2;
           return;
@@ -1721,6 +1750,54 @@ export function createAnchor<TValue extends AnchorValue>(
             history: {
               capture: appendHistoryRecovery,
               restore: restoreHistoryRecovery,
+            },
+          }
+        : {}),
+      ...(options.deletion === 'nearest' && kind === 'range'
+        ? {
+            move: {
+              span(document, documentValue) {
+                materializeHistoryRecovery();
+
+                return readMappedTo(
+                  documentValue as unknown as JsonEditorValue,
+                  () =>
+                    current &&
+                    pointStates.map((state) => document.positionAt(state.point))
+                );
+              },
+              place(document, documentValue, first, second) {
+                const sides = getRangeEndpointAssociations(
+                  first.forward[0] <= second.forward[0]
+                    ? 'forward'
+                    : 'backward',
+                  association
+                );
+                const [anchor, focus] = [first, second].map((place, index) => {
+                  const point = document.pointAt(
+                    ...(sides[index] === 1 ? place.forward : place.backward)
+                  );
+                  const includeRoot = pointStates[index]?.includeRoot ?? false;
+
+                  return point && withPublicPointRoot(point, root, includeRoot);
+                });
+
+                if (!anchor || !focus) return false;
+                placed = true;
+                sourceValue = documentValue;
+                pointStates = [anchor, focus].map((point) =>
+                  createPointState(
+                    runtimeEditor,
+                    sourceValue,
+                    point,
+                    root,
+                    document
+                  )
+                );
+                current = { anchor, focus };
+
+                return true;
+              },
             },
           }
         : {}),
@@ -1774,22 +1851,11 @@ export function createAnchor<TValue extends AnchorValue>(
         if (!subscription.isShadowed()) {
           mapTo(innerValue3);
         } else {
-          const checkpoint = {
-            current: cloneAnchorValue(current),
-            pointStates: clonePointStates(),
-            sourceValue,
-          };
-
-          mapTo(innerValue3);
-          const resolved = cloneAnchorValue(current);
-
-          ({ current, pointStates, sourceValue } = checkpoint);
-
           return toViewValue(
             runtimeEditor,
             root,
             view,
-            resolved
+            readMappedTo(innerValue3, () => cloneAnchorValue(current))
           ) as TValue | null;
         }
       }

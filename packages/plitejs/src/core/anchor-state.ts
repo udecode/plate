@@ -56,6 +56,7 @@ export const RECOVERY_BEFORE_A_FORWARD = 1 << 8;
 export const RECOVERY_BEFORE_B_FORWARD = 1 << 9;
 export const RECOVERY_AFTER_A_FORWARD = 1 << 10;
 export const RECOVERY_AFTER_B_FORWARD = 1 << 11;
+export const RECOVERY_AT_ONCE = 1 << 12;
 
 export type AnchorHistoryRecoveryTarget = 'after' | 'before';
 
@@ -103,10 +104,29 @@ export type AnchorStateListener = {
   discard: (value: EditorDocumentValue) => void;
   fallback: () => boolean;
   history?: AnchorHistoryListener;
+  move?: AnchorMoveListener;
   nodeKeys: () => readonly NodeKey[];
   prepareCommit: () => () => void;
   root: string;
 };
+
+export type AnchorPlace = Readonly<
+  Record<'backward' | 'forward', readonly [position: number, assoc: -1 | 1]>
+>;
+
+type AnchorMoveListener = Readonly<{
+  place: (
+    ...args: [DocumentIndex, EditorDocumentValue, ...AnchorPlace[]]
+  ) => boolean;
+  span: (
+    ...args: [DocumentIndex, EditorDocumentValue]
+  ) => readonly number[] | null;
+}>;
+
+type AnchorPlacement = (
+  context: AnchorChangeContext,
+  place: (listener: AnchorStateListener, ...ends: AnchorPlace[]) => void
+) => void;
 
 export type AnchorChangeContext = Readonly<{
   after: EditorDocumentValue;
@@ -179,6 +199,7 @@ const COHERENT_ANCHOR_WORK = new WeakMap<Editor, AnchorStateWork[]>();
 const ANCHOR_RUNTIME_ID = new WeakMap<Editor, number>();
 const ANCHOR_TRANSACTION_CEILING = new WeakMap<Editor, number>();
 const COMMIT_ANCHOR_HISTORY = new WeakMap<EditorCommit, AnchorHistoryCapture>();
+const STAGED_ANCHOR_PLACEMENTS = new WeakMap<object, AnchorPlacement>();
 const STAGED_ANCHOR_HISTORY = new WeakMap<
   Editor,
   Readonly<{
@@ -988,7 +1009,8 @@ export const mergeAnchorHistoryRecovery = (
       RECOVERY_BEFORE_A_FORWARD |
       RECOVERY_BEFORE_B_FORWARD |
       RECOVERY_AFTER_A_FORWARD |
-      RECOVERY_AFTER_B_FORWARD
+      RECOVERY_AFTER_B_FORWARD |
+      RECOVERY_AT_ONCE
     );
 
     if ((beforeFlags & staticMask) !== (afterFlags & staticMask)) {
@@ -999,7 +1021,10 @@ export const mergeAnchorHistoryRecovery = (
       id,
       appendRoot(beforeRoot),
       (beforeFlags & ~(RECOVERY_AFTER_A_FORWARD | RECOVERY_AFTER_B_FORWARD)) |
-        (afterFlags & (RECOVERY_AFTER_A_FORWARD | RECOVERY_AFTER_B_FORWARD)),
+        (afterFlags &
+          (RECOVERY_AFTER_A_FORWARD |
+            RECOVERY_AFTER_B_FORWARD |
+            RECOVERY_AT_ONCE)),
       beforePacket.data[beforeOffset + RECOVERY_BEFORE_A],
       beforePacket.data[beforeOffset + RECOVERY_BEFORE_B],
       afterPacket.data[afterOffset + RECOVERY_AFTER_A],
@@ -1248,7 +1273,44 @@ export const notifyAnchorChanges = (
     listener.change(context);
     indexAnchorListener(state, listener);
   }
+
+  const placement = options.commit && STAGED_ANCHOR_PLACEMENTS.get(editor);
+
+  if (!placement) return;
+  STAGED_ANCHOR_PLACEMENTS.delete(editor);
+  placement(context, (listener, ...ends) => {
+    if (!state.listeners.has(listener)) return;
+    if (state.activeTransaction && !state.activeTransaction.has(listener)) {
+      PREPARING_ANCHOR_STATES.get(state)?.pending.add(listener);
+      listener.begin();
+      state.activeTransaction.add(listener);
+    }
+    if (
+      listener.move?.place(context.afterRoot(listener.root), after, ...ends)
+    ) {
+      indexAnchorListener(state, listener);
+    }
+  });
 };
+
+export const placeAnchorsOnCommit = (
+  editor: Editor,
+  placement: AnchorPlacement
+) => {
+  STAGED_ANCHOR_PLACEMENTS.set(editor, placement);
+};
+
+export const getMovableAnchors = (
+  editor: Editor,
+  nodeKeys: readonly NodeKey[]
+) =>
+  new Set(
+    nodeKeys.flatMap((nodeKey) =>
+      [
+        ...(ACTIVE_ANCHORS.get(editor)?.listenersByNodeKey.get(nodeKey) ?? []),
+      ].filter((listener) => listener.move)
+    )
+  );
 
 export const commitAnchorTransaction = (
   editor: Editor,
@@ -1258,7 +1320,7 @@ export const commitAnchorTransaction = (
   const state = getActiveAnchorState(editor);
   const staged = STAGED_ANCHOR_HISTORY.get(editor);
 
-  STAGED_ANCHOR_HISTORY.delete(editor);
+  clearStagedAnchorHistory(editor);
 
   if (value && state && value !== state.value) {
     state.value = value;
@@ -1296,7 +1358,10 @@ export const commitAnchorTransaction = (
       );
 
       if (!listener?.history) continue;
-      if (deferRecovery) {
+      if (
+        deferRecovery &&
+        (data[offset + RECOVERY_FLAGS] & RECOVERY_AT_ONCE) === 0
+      ) {
         const preparing = PREPARING_ANCHOR_STATES.get(state);
 
         if (preparing && !preparing.pending.has(listener)) {
@@ -1484,7 +1549,7 @@ export const discardAnchorTransaction = (
   }
 
   ANCHOR_TRANSACTION_CEILING.delete(editor);
-  STAGED_ANCHOR_HISTORY.delete(editor);
+  clearStagedAnchorHistory(editor);
 
   const listeners = state?.activeTransaction ?? state?.listeners;
 
@@ -1531,6 +1596,7 @@ const commitPreparedAnchorListener = (
 
 export const clearStagedAnchorHistory = (editor: Editor) => {
   STAGED_ANCHOR_HISTORY.delete(editor);
+  STAGED_ANCHOR_PLACEMENTS.delete(editor);
 };
 
 export const prepareAnchorPublication = (

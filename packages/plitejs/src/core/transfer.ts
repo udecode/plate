@@ -44,6 +44,7 @@ import {
   TransferRefusalError,
   transferVeto,
 } from './landing';
+import { collectMovedAnchors, placeMovedAnchors } from './moved-anchors';
 import { definePlugin } from './plugin';
 import {
   getCompiledEditorSchema,
@@ -852,6 +853,14 @@ const runTransfer = (
         });
       };
 
+      const collectMoved = () =>
+        copy || source.kind !== 'text' || source.root !== targetRoot
+          ? null
+          : collectMovedAnchors(
+              runtime,
+              targetRoot,
+              source.deleted ?? source.range
+            );
       const landedKind = (element: Element) => {
         const behavior = schema.getElementBehavior(element);
 
@@ -935,6 +944,7 @@ const runTransfer = (
                 (element) => schema.getElementBehavior(element).inline
               )
             : null;
+        const moved = collectMoved();
 
         removeSource();
         // Canonicalize the source's leftovers as their own step. When one
@@ -950,6 +960,9 @@ const runTransfer = (
             asMove('landing', () => landAsPaste(point, slice, sources))) ||
           refuse('schema');
         const track = getAppliedSpecLanding(pasted.spec) ?? refuse('schema');
+
+        if (moved) placeMovedAnchors(runtime, moved, track);
+
         const { builder } = getDefined(getTransactionSnapshot(runtime));
         const [span] = readDraftTrack(track, builder.value) ?? [];
         const index = builder.getIndex(targetRoot);
@@ -985,6 +998,8 @@ const runTransfer = (
         return true;
       }
 
+      const moved = collectMoved();
+
       removeSource();
 
       const target = tx.nodes.get(landing.edge.key);
@@ -1019,6 +1034,7 @@ const runTransfer = (
 
       landed = nodes;
       draft.current = trackNodes(paths);
+      if (moved) placeMovedAnchors(runtime, moved, draft.current.track);
       holdNodes(nodes);
       if (select) tx.selection.set(nodes);
 
