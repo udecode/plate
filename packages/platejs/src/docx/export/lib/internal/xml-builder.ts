@@ -3446,6 +3446,13 @@ const buildTable = async (
   tableFragment.import(tablePropertiesFragment);
 
   const rowSpanMap = new Map<number, RowSpanInfo>();
+  // A w:tbl holds one w:tblGrid, so only the table's first grid is written.
+  let hasGrid = false;
+  const importGrid = (tableGridFragment: XMLBuilderType) => {
+    if (hasGrid) return;
+    hasGrid = true;
+    tableFragment.import(tableGridFragment);
+  };
 
   if (vNodeHasChildren(vNode)) {
     for (let index = 0; index < (vNode.children || []).length; index++) {
@@ -3455,7 +3462,7 @@ const buildTable = async (
           childVNode,
           modifiedAttributes
         );
-        tableFragment.import(tableGridFragment);
+        importGrid(tableGridFragment);
       } else if (childVNode.tagName === 'thead') {
         for (
           let iteratorIndex = 0;
@@ -3471,7 +3478,7 @@ const buildTable = async (
                 grandChildVNode,
                 modifiedAttributes
               );
-              tableFragment.import(tableGridFragment);
+              importGrid(tableGridFragment);
             }
             const tableRowFragment = await buildTableRow(
               grandChildVNode,
@@ -3498,7 +3505,7 @@ const buildTable = async (
                 grandChildVNode,
                 modifiedAttributes
               );
-              tableFragment.import(tableGridFragment);
+              importGrid(tableGridFragment);
             }
             const tableRowFragment = await buildTableRow(
               grandChildVNode,
@@ -3516,7 +3523,7 @@ const buildTable = async (
             childVNode,
             modifiedAttributes
           );
-          tableFragment.import(tableGridFragment);
+          importGrid(tableGridFragment);
         }
         const tableRowFragment = await buildTableRow(
           childVNode,

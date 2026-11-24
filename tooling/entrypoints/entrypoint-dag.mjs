@@ -95,7 +95,7 @@ export const publicFeatureDependencies = Object.freeze({
   media: ['dom'],
   mention: ['combobox'],
   suggestion: ['authored'],
-  table: ['dom'],
+  table: ['authored', 'dom'],
   toc: ['standard/basic-nodes'],
 });
 
@@ -128,7 +128,7 @@ const standardReactDependencies = {
   combobox: ['combobox'],
   'format-painter': ['standard/basic-styles'],
   suggestion: ['authored'],
-  table: ['dom'],
+  table: ['authored', 'dom'],
 };
 
 const standardReactPeerDependencies = {
@@ -304,6 +304,7 @@ export const entrypointDags = {
             'math',
             'standard/list',
             'static',
+            'table',
             'toc',
           ],
           [],

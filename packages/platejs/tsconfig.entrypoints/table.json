@@ -21,6 +21,9 @@
   "include": ["../src/features/table/**/*"],
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     },
     {

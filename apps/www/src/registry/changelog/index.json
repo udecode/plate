@@ -205,6 +205,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-table-suggestion-columns",
+      "href": "/registry/changelog/2026-11-23-table-suggestion-columns.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Name table row and column suggestions on their cards and hide column resize handles while Suggesting",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["discussion", "table"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-22-board-styles-file",
       "href": "/registry/changelog/2026-11-22-board-styles-file.json",
       "status": "draft",

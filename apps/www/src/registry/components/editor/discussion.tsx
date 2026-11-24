@@ -10,12 +10,16 @@ import {
 import {
   ElementApi,
   type NodeKey,
+  type Path,
+  PathApi,
   type Point,
   type Range,
   RangeApi,
 } from 'platejs';
 import type {
+  AuthoredChange,
   AuthoredChangeGroup,
+  AuthoredChangePart,
   AuthoredGroupDetails,
   AuthoredGroupPart,
   AuthoredResult,
@@ -40,6 +44,11 @@ import {
   useActiveSuggestion,
   useSuggestionGroups,
 } from 'platejs/suggestion/react';
+import {
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from 'platejs/table';
 import * as React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -612,6 +621,185 @@ const describeSuggestion = (details: AuthoredGroupDetails | null) => {
   ];
 };
 
+const partPaths = (part: AuthoredChangePart): readonly Path[] =>
+  part.kind === 'boundary'
+    ? [part.at.path]
+    : part.kind === 'content'
+      ? [part.range.anchor.path, part.range.focus.path]
+      : [part.path];
+
+const changeName = (
+  kind: 'delete' | 'insert',
+  noun: 'column' | 'row' | 'table',
+  count: number
+) =>
+  `${kind === 'insert' ? 'Add' : 'Delete'} ${
+    count === 1 ? noun : `${count} ${noun}s`
+  }`;
+
+const tableChangeName = (
+  current: RuntimeEditor,
+  { id: changeId, ranges }: AuthoredChange
+) => {
+  const table = current.plugin(BaseTablePlugin);
+  const viewRoot = current.read.view.root();
+  const inView = ({ root }: Point) => root === viewRoot;
+
+  if (
+    !table.installed ||
+    !ranges.every(({ anchor, focus }) => inView(anchor) && inView(focus))
+  ) {
+    return null;
+  }
+  const path = ranges[0]?.anchor.path ?? [];
+  const tables = path.flatMap((_, index) => {
+    const tablePath = path.slice(0, index + 1);
+    const node = current.read.nodes.get(tablePath)?.[0];
+
+    return ElementApi.isElement(node) && node.type === table.schema.type
+      ? [{ node, tablePath }]
+      : [];
+  });
+  const { read } = current.plugin(AuthoredPlugin);
+  const details = tables.length > 0 ? read.details(changeId) : null;
+
+  if (!details) return null;
+  const rowType = current.plugin(BaseTableRowPlugin).schema.type;
+  const cellType = current.plugin(BaseTableCellPlugin).schema.type;
+  const kindOf = (node: unknown) =>
+    read
+      .reviewOf(node)
+      .marks.flatMap((mark) =>
+        mark.change === changeId &&
+        (mark.kind === 'delete' || mark.kind === 'insert')
+          ? [mark.kind]
+          : []
+      )[0] ?? null;
+  const markedAt = (depth: number) => {
+    const node =
+      path.length >= depth
+        ? current.read.nodes.get(path.slice(0, depth))?.[0]
+        : undefined;
+
+    return node ? kindOf(node) : null;
+  };
+  const covers = (tablePath: Path, members: readonly Path[], column = false) =>
+    details.parts.every((part) =>
+      part.kind === 'properties' && PathApi.equals(part.path, tablePath)
+        ? column &&
+          Object.keys({ ...part.before, ...part.after }).every(
+            (key) => key === 'columnWidths'
+          )
+        : partPaths(part).every((partPath) =>
+            members.some((member) => PathApi.isCommon(member, partPath))
+          )
+    );
+
+  for (const { node, tablePath } of tables) {
+    const tableKind = kindOf(node);
+
+    // A column change's width write on the table can be its first range.
+    if (
+      !read.reviewOf(node).marks.some((mark) => mark.change === changeId) &&
+      !markedAt(tablePath.length + 1) &&
+      !markedAt(tablePath.length + 2)
+    ) {
+      continue;
+    }
+    if (tableKind) {
+      return covers(tablePath, [tablePath])
+        ? changeName(tableKind, 'table', 1)
+        : null;
+    }
+    const rows = node.children.flatMap((row, index) =>
+      ElementApi.isElement(row) && row.type === rowType
+        ? [{ path: [...tablePath, index], row }]
+        : []
+    );
+
+    if (
+      rows.some(({ row }) =>
+        row.children.some(
+          (cell) =>
+            ElementApi.isElement(cell) &&
+            [cell.colSpan, cell.rowSpan].some(
+              (span) => typeof span === 'number' && span > 1
+            )
+        )
+      )
+    ) {
+      return null;
+    }
+    const markedRows = rows.flatMap((entry) => {
+      const kind = kindOf(entry.row);
+
+      return kind ? [{ kind, path: entry.path }] : [];
+    });
+
+    if (markedRows.length > 0) {
+      const { kind } = markedRows[0];
+
+      return markedRows.every((row) => row.kind === kind) &&
+        covers(
+          tablePath,
+          markedRows.map((row) => row.path)
+        )
+        ? changeName(kind, 'row', markedRows.length)
+        : null;
+    }
+    const markedCells = rows.map((entry) =>
+      entry.row.children.flatMap((cell, index) => {
+        const kind =
+          ElementApi.isElement(cell) && cell.type === cellType
+            ? kindOf(cell)
+            : null;
+
+        return kind ? [{ index, kind, path: [...entry.path, index] }] : [];
+      })
+    );
+    const cells = markedCells.flat();
+
+    if (cells.length === 0) continue;
+    const { kind } = cells[0];
+    const columns = markedCells[0].map((cell) => cell.index);
+    const wholeColumns = markedCells.every(
+      (rowCells) =>
+        rowCells.length === columns.length &&
+        rowCells.every((cell, index) => cell.index === columns[index])
+    );
+
+    return wholeColumns &&
+      cells.every((cell) => cell.kind === kind) &&
+      covers(
+        tablePath,
+        cells.map((cell) => cell.path),
+        true
+      )
+      ? changeName(kind, 'column', columns.length)
+      : null;
+  }
+
+  return null;
+};
+
+const everyTableChangeName = (
+  current: RuntimeEditor,
+  groupId: string,
+  details: AuthoredGroupDetails | null,
+  shown: number
+) => {
+  const changes =
+    details?.changes.length === shown
+      ? (current.plugin(AuthoredPlugin).read.groupDetails(groupId)?.changes ??
+        [])
+      : (details?.changes ?? []);
+  const names = changes.map((change) => tableChangeName(current, change));
+
+  return names.length > 0 && names.every((name) => name !== null)
+    ? names.slice(0, shown)
+    : null;
+};
+
 const sameLines = (left: readonly string[], right: readonly string[]) =>
   left.length === right.length &&
   left.every((line, index) => line === right[index]);
@@ -646,12 +834,15 @@ function SuggestionDiscussionCard({
     shownState.groupId === group.id ? shownState.count : DISCUSSION_PAGE_SIZE;
   const authored = editor.plugin(AuthoredPlugin);
   const readLines = React.useCallback(
-    (current: RuntimeEditor) =>
-      describeSuggestion(
-        current
-          .plugin(AuthoredPlugin)
-          .read.groupDetails(group.id, { limit: shown })
-      ),
+    (current: RuntimeEditor) => {
+      const { read } = current.plugin(AuthoredPlugin);
+      const details = read.groupDetails(group.id, { limit: shown });
+
+      return (
+        everyTableChangeName(current, group.id, details, shown) ??
+        describeSuggestion(details)
+      );
+    },
     [group.id, shown]
   );
   const descriptions = useEditorSelector(readLines, {

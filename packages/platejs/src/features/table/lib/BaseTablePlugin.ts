@@ -1,3 +1,4 @@
+import { AuthoredPlugin } from '../../../authored';
 import {
   authoredVeto,
   BaseParagraphPlugin,
@@ -653,12 +654,76 @@ const hasDefaultCellContent = (editor: Editor, cell: TableCellElement) => {
   );
 };
 
+const getColumnWidthsWrite = (editor: Editor, table: Element) => {
+  const authored = editor.plugin(AuthoredPlugin);
+
+  if (!('authored' in table) || !authored.installed) return null;
+  const review = authored.read.reviewOf(table);
+  const write = review.marks.find(
+    (mark) => mark.kind === 'format' && mark.key === 'columnWidths'
+  );
+
+  return write ? { read: authored.read, review, write } : null;
+};
+
+const struckColumnsCache = new WeakMap<
+  Element,
+  Readonly<{
+    struck: readonly boolean[];
+    write: NonNullable<ReturnType<typeof getColumnWidthsWrite>>['write'];
+  }>
+>();
+
+const getShownColumnSizes = (
+  editor: Editor,
+  table: Element
+): ReadonlyArray<number | null> | undefined => {
+  const stored = getTableColumnSizes(table);
+  const pending = getColumnWidthsWrite(editor, table);
+
+  if (!pending) return stored;
+  const { read, review, write } = pending;
+  const accepted = review.accepted.columnWidths;
+  const replaced = isTableColumnSizes(accepted) ? accepted : undefined;
+  const cached = struckColumnsCache.get(table);
+  let struck = cached?.write === write ? cached.struck : undefined;
+
+  if (!struck) {
+    const grid = compileTableGrid(table);
+
+    struck = Array.from({ length: grid.width }, (_, col) =>
+      grid.slots.some((row) => {
+        const cell = row[col]?.cell;
+
+        return (
+          !!cell &&
+          read
+            .reviewOf(cell)
+            .marks.some(
+              (mark) => mark.change === write.change && mark.kind === 'delete'
+            )
+        );
+      })
+    );
+    struckColumnsCache.set(table, { struck, write });
+  }
+  let storedIndex = 0;
+
+  return struck.map((isStruck, col) => {
+    if (isStruck) return replaced?.[col] ?? null;
+    storedIndex += 1;
+
+    return stored?.[storedIndex - 1] ?? null;
+  });
+};
+
 const getResolvedColumnWidths = (
+  editor: Editor,
   table: Element,
   state: Pick<TablePluginState, 'defaultTableWidth' | 'minColumnWidth'>
 ): readonly number[] => {
   const columnCount = compileTableGrid(table).width;
-  const columnWidths = getTableColumnSizes(table);
+  const columnWidths = getShownColumnSizes(editor, table);
   const fallbackWidth = getFallbackColumnWidth({
     columnCount,
     defaultTableWidth: state.defaultTableWidth,
@@ -1108,21 +1173,26 @@ export type TableRowElement = ElementOf<typeof BaseTableRowPlugin>;
 export type TableElement = ElementOf<typeof BaseTableSchemaPlugin>;
 
 export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
-  api: () => ({
+  api: ({ editor }) => ({
     columnWidths: (table: TableElement) =>
-      getResolvedColumnWidths(table, store.get()),
+      getResolvedColumnWidths(editor, table, store.get()),
     /**
      * Captures table sizes and returns a pure delta-to-preview calculation.
      * Interior boundaries preserve the adjacent columns' combined width.
      * The left boundary exchanges first-column width for table indentation.
      * Commit the result with `update.resize`; previews never change the editor.
+     * Throws a `RangeError` for a column edge while the table holds a pending
+     * column width change.
      */
     createResize: (table: TableElement, target: TableResizeTarget) => {
       const { minColumnWidth } = store.get();
       const minimum = isPositiveFiniteNumber(minColumnWidth)
         ? minColumnWidth
         : 1;
-      const widths = getResolvedColumnWidths(table, store.get());
+      const widths =
+        target.edge === 'bottom'
+          ? []
+          : getResolvedColumnWidths(editor, table, store.get());
       const marginLeft = table.marginLeft ?? 0;
       const index = target.edge === 'right' ? target.colIndex : 0;
 
@@ -1137,6 +1207,10 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
             'Table resize requires a valid row and positive height.'
           );
         }
+      } else if (getColumnWidthsWrite(editor, table)) {
+        throw new RangeError(
+          'Table resize cannot move a column while a column width change waits for review.'
+        );
       } else if (
         !Number.isSafeInteger(index) ||
         index < 0 ||
@@ -1257,7 +1331,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
         if (!entry) return null;
         const [cell] = entry;
         const { defaultTableWidth, minColumnWidth } = store.get();
-        const columnWidths = getTableColumnSizes(context.table);
+        const columnWidths = getShownColumnSizes(editor, context.table);
         const fallbackWidth = getFallbackColumnWidth({
           columnCount: context.grid.width,
           defaultTableWidth,

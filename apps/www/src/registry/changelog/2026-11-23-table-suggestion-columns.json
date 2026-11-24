@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-table-suggestion-columns",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-table-suggestion-columns.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Name table row and column suggestions on their cards and hide column resize handles while Suggesting",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-table-suggestion-columns-1",
+      "kind": "behavior",
+      "summary": "Name a suggestion that adds or deletes whole columns, rows or a table as \"Add column\", \"Delete 2 rows\" or \"Delete table\" on its card.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-table-suggestion-columns",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-23-table-suggestion-columns-2",
+      "kind": "behavior",
+      "summary": "Hide the column resize handles while Suggesting, and in Editing while a column width suggestion waits.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["table"],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-table-suggestion-columns",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

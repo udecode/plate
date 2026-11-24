@@ -54,6 +54,9 @@
       "path": "./static.json"
     },
     {
+      "path": "./table.json"
+    },
+    {
       "path": "./toc.json"
     }
   ]

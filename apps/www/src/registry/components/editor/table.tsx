@@ -16,12 +16,14 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   type EditorElementProps,
   EditorElement,
   useEditor,
   useEditorReadOnly,
   useEditorSelector,
+  useEditorViewState,
   useElement,
   useElementSelected,
   useFocusedLast,
@@ -78,6 +80,7 @@ type TableResizeStartOptions = {
 };
 
 type TableResizeContextValue = {
+  columnsResizable: boolean;
   hasMultiRowSelection: boolean;
   rowSizeOverrides: Map<number, number>;
   clearResizePreview: (handleKey: string) => void;
@@ -153,6 +156,23 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     },
     [setRowHeightOverrides]
   );
+  const authored = editor.plugin(AuthoredPlugin);
+  const suggesting = useEditorViewState(editor, () => {
+    const view = authored.installed ? authored.read.view() : null;
+
+    return view !== null && 'intent' in view && view.intent === 'propose';
+  });
+  // Shown and stored widths differ while a column change waits, so a drag
+  // would write the wrong columns.
+  const widthsPending =
+    'authored' in props.element &&
+    authored.installed &&
+    authored.read
+      .reviewOf(props.element)
+      .marks.some(
+        (mark) => mark.kind === 'format' && mark.key === 'columnWidths'
+      );
+  const columnsResizable = !suggesting && !widthsPending;
   const marginLeft = props.element.marginLeft ?? 0;
   const baseColSizes = usePluginStore(
     TablePlugin,
@@ -203,6 +223,11 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     setColSizeOverrides(new Map());
     setRowHeightOverrides(new Map());
   };
+  React.useLayoutEffect(() => {
+    if (columnsResizable) return;
+    previewHandleKeyRef.current = null;
+    paintIndicator(hoverIndicatorRef, null);
+  }, [columnsResizable]);
   const beginResize = useTableResize({
     element: props.element,
     tableRef,
@@ -321,6 +346,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const tableResizeContext = React.useMemo(
     () => ({
       clearResizePreview,
+      columnsResizable,
       hasMultiRowSelection,
       rowSizeOverrides,
       showResizePreview,
@@ -328,6 +354,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     }),
     [
       clearResizePreview,
+      columnsResizable,
       hasMultiRowSelection,
       rowSizeOverrides,
       showResizePreview,
@@ -962,8 +989,12 @@ function TableCellResizeControls({
   colIndex: number;
   rowIndex: number;
 }) {
-  const { clearResizePreview, showResizePreview, startResize } =
-    useTableResizeContext();
+  const {
+    clearResizePreview,
+    columnsResizable,
+    showResizePreview,
+    startResize,
+  } = useTableResizeContext();
   const rightHandleKey = `right:${rowIndex}:${colIndex}`;
   const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
 
@@ -974,37 +1005,39 @@ function TableCellResizeControls({
       data-editor-root-chrome-ignore="true"
       suppressContentEditableWarning={true}
     >
-      <div
-        className="pointer-events-auto absolute -end-1 -top-2 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
-        data-table-resize-handle="column-end"
-        onPointerEnter={(event) => {
-          showResizePreview(event, {
-            colIndex,
-            direction: 'right',
-            handleKey: rightHandleKey,
-            rowIndex,
-          });
-        }}
-        onPointerMove={(event) => {
-          showResizePreview(event, {
-            colIndex,
-            direction: 'right',
-            handleKey: rightHandleKey,
-            rowIndex,
-          });
-        }}
-        onPointerLeave={() => {
-          clearResizePreview(rightHandleKey);
-        }}
-        onPointerDown={(event) => {
-          startResize(event, {
-            colIndex,
-            direction: 'right',
-            handleKey: rightHandleKey,
-            rowIndex,
-          });
-        }}
-      />
+      {columnsResizable && (
+        <div
+          className="pointer-events-auto absolute -end-1 -top-2 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+          data-table-resize-handle="column-end"
+          onPointerEnter={(event) => {
+            showResizePreview(event, {
+              colIndex,
+              direction: 'right',
+              handleKey: rightHandleKey,
+              rowIndex,
+            });
+          }}
+          onPointerMove={(event) => {
+            showResizePreview(event, {
+              colIndex,
+              direction: 'right',
+              handleKey: rightHandleKey,
+              rowIndex,
+            });
+          }}
+          onPointerLeave={() => {
+            clearResizePreview(rightHandleKey);
+          }}
+          onPointerDown={(event) => {
+            startResize(event, {
+              colIndex,
+              direction: 'right',
+              handleKey: rightHandleKey,
+              rowIndex,
+            });
+          }}
+        />
+      )}
       <div
         className="pointer-events-auto absolute start-0 -bottom-1 z-40 h-2 w-full cursor-row-resize touch-none"
         data-table-resize-handle="row-end"

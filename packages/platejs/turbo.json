@@ -3585,6 +3585,7 @@
         "source-hash:partition:standard-code-block",
         "source-hash:partition:standard-list",
         "source-hash:partition:static",
+        "source-hash:partition:table",
         "source-hash:partition:toc"
       ],
       "inputs": [
@@ -4461,6 +4462,7 @@
     "source-hash:partition:table": {
       "cache": true,
       "dependsOn": [
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:proxies"
       ],
@@ -4477,6 +4479,7 @@
     "source-hash:partition:table-react": {
       "cache": true,
       "dependsOn": [
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:proxies",
         "source-hash:partition:react-core",

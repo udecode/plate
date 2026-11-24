@@ -13,6 +13,7 @@ import {
   type Path,
   type Value,
 } from '../../../core';
+import { BaseTablePlugin, type TableElement } from '../../../features/table';
 import { parseDocxHtml } from '../../internal/domParser';
 import type { DocxDiagnostic } from '../../internal/types';
 
@@ -68,6 +69,7 @@ export const createReviewProjection = (
 ): ReviewProjection => {
   const reviewOf = (node: Descendant) =>
     editor.plugin(AuthoredPlugin).read.reviewOf(node);
+  const tablePlugin = editor.plugin(BaseTablePlugin);
   const { schema } = editor.read;
   const isInlineVoid = (node: Descendant) =>
     schema.isVoid(node) && schema.isInline(node);
@@ -178,8 +180,20 @@ export const createReviewProjection = (
         structures.set(renderKey('element', root, key), revisionOf(structure));
       }
 
+      // The projection drops the marks the table plugin reads, so a table whose
+      // column change waits keeps the widths the editor shows.
+      const shownWidths =
+        tablePlugin.installed &&
+        node.type === tablePlugin.schema.type &&
+        marks.some(
+          (mark) => mark.kind === 'format' && mark.key === 'columnWidths'
+        )
+          ? { columnWidths: tablePlugin.api.columnWidths(node as TableElement) }
+          : {};
+
       return {
         ...plain,
+        ...shownWidths,
         children: build(node.children, root, path),
       };
     });

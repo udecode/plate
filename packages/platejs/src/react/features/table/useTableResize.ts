@@ -1,11 +1,12 @@
 import * as React from 'react';
 
+import { AuthoredPlugin } from '../../../authored';
 import type {
   TableElement,
   TableResize,
   TableResizeTarget,
 } from '../../../features/table';
-import { useEditor, useEditorReadOnly } from '../../core';
+import { useEditor, useEditorReadOnly, useEditorViewState } from '../../core';
 import { bindPointerSession } from '../../utils/bindPointerSession.internal';
 import { TablePlugin } from './TablePlugin';
 
@@ -16,7 +17,8 @@ export type TableResizeHandle =
 /**
  * Starts a table resize from a primary pointer on the supplied table.
  * Previews stay in the caller; pointerup commits once. Cancellation, blur,
- * read-only changes, table replacement and unmount discard the preview.
+ * read-only changes, a change of the view's authored intent, table
+ * replacement and unmount discard the preview.
  * Returns false when the handle cannot start a resize.
  */
 export const useTableResize = ({
@@ -32,6 +34,12 @@ export const useTableResize = ({
 }) => {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
+  const intent = useEditorViewState(editor, () => {
+    const authored = editor.plugin(AuthoredPlugin);
+    const view = authored.installed ? authored.read.view() : null;
+
+    return view && 'intent' in view ? view.intent : null;
+  });
   const cancelRef = React.useRef<(() => void) | null>(null);
   const callbacksRef = React.useRef({ onResize, onResizeEnd });
 
@@ -43,7 +51,7 @@ export const useTableResize = ({
     () => () => {
       cancelRef.current?.();
     },
-    [editor, element, readOnly, tableRef]
+    [editor, element, intent, readOnly, tableRef]
   );
 
   return React.useCallback(
