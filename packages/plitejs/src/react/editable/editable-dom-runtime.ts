@@ -22,7 +22,12 @@ import {
   readEditorHistoryReplayReceipt,
   withUpdateTagContext,
 } from '../../core/public-state';
-import { watchFirstPlacement } from '../../core/view-carets';
+import {
+  getPlacementGeneration,
+  placedSince,
+  setSelectionAsView,
+  watchFirstPlacement,
+} from '../../core/view-carets';
 import {
   containsShadowAware,
   type DataTransferDiagnostic,
@@ -50,6 +55,8 @@ import {
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
+import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
 import { isDOMNode } from '../../dom/utils/dom';
 import type {
   EditableHandlerContext,
@@ -104,9 +111,7 @@ import { PressFence } from './press-fence';
 import { RenderContractMonitor } from './render-contract-monitor';
 import {
   getEditorRuntimeOwner,
-  getEditorSelectionRoot,
   setEditorComposing,
-  toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { importUnreadPressCaret } from './runtime-selection-engine';
@@ -121,6 +126,7 @@ import { UnreadPress } from './unread-press';
 import {
   activateViewCaret,
   clampCaretAtRegistration,
+  readNodeSelectionFocus,
 } from './view-caret-restore';
 
 type MutableCell<T> = { current: T };
@@ -273,6 +279,8 @@ export const focusPressedView = (target: EventTarget | null | undefined) => {
   const root = runtime?.rootRef.current;
 
   if (root && !runtime.holdsFocus()) root.focus({ preventScroll: true });
+
+  return root ?? null;
 };
 
 export const isDOMTargetInAnotherSelectionView = (
@@ -764,25 +772,23 @@ export class EditableDOMRuntime {
     const element = this.nodeSelectionFocus?.current;
     const editor = this.editorValue;
 
-    if (!element?.isConnected || readPliteViewSelection(editor)) return false;
+    if (!element?.isConnected || !readNodeSelectionFocus(editor)) return false;
 
-    const selectsOnlyTopLevelBlocks = () =>
-      editor.read(
-        (state) =>
-          getEditorSelectionRoot(editor) ===
-            toInternalRoot(state.view.root()) &&
-          state.selection.nodeMode() !== null &&
-          state.selection.nodes().every(([, path]) => path.length === 1)
-      );
-
-    if (
-      readRuntimeSelection(getEditorRuntimeOwner(editor)) &&
-      !selectsOnlyTopLevelBlocks()
-    ) {
-      return false;
-    }
+    const superseded = watchFocusSuperseded(editor, element);
+    const receipt = getPlacementGeneration(editor);
 
     element.focus({ preventScroll: true });
+
+    const focusHandlerTookOver =
+      superseded() ||
+      placedSince(editor, receipt) ||
+      !isElementFocused(element);
+
+    if (focusHandlerTookOver) return true;
+
+    const target = readNodeSelectionFocus(editor);
+
+    if (!target) return true;
 
     const root = this.rootElement;
     const tree = root?.getRootNode() as Document | ShadowRoot | undefined;
@@ -802,6 +808,7 @@ export class EditableDOMRuntime {
         )
       );
     }
+    if (target.parked) setSelectionAsView(editor, target.parked);
 
     return true;
   }

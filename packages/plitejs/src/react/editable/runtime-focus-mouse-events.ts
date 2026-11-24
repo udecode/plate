@@ -8,6 +8,7 @@ import {
 } from '../../core/view-carets';
 import { getSelection, isDOMNode } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
 import { ensureFocusCaret } from '../../dom/plugin/dom-view-caret';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
@@ -259,7 +260,12 @@ export const useRuntimeFocusMouseEvents = ({
           return;
         }
         const syncProgrammaticFocusSelection = () => {
-          if (ReactEditor.isFocused(editor)) syncDOMSelectionToEditor();
+          if (
+            ReactEditor.isFocused(editor) &&
+            isElementFocused(editorElement)
+          ) {
+            syncDOMSelectionToEditor();
+          }
         };
         let placedStartCaret = false;
         const lacksAnyCaret = () =>

@@ -113,6 +113,11 @@ import {
   preferModelSelectionForVoidTarget,
   resolveEditableClickTarget,
   resolveEditableVoidClickTarget,
+  selectEditableSelectableOwnerPath,
+  selectEditableSelectableOwnerTarget,
+  selectEditableVoidPath,
+  selectEditableVoidTarget,
+  selectThenFocusUnlessMoved,
 } from './selection-void-target';
 import { decideSoftLineEndDelete } from './soft-line-end-delete';
 
@@ -121,7 +126,7 @@ export {
   selectEditableSelectableOwnerTarget,
   selectEditableVoidPath,
   selectEditableVoidTarget,
-} from './selection-void-target';
+};
 
 const getDOMSelectionOffsetLimit = (node: globalThis.Node) =>
   isDOMText(node) ? (node.textContent?.length ?? 0) : node.childNodes.length;
@@ -456,11 +461,11 @@ export const applyEditableClick = ({
 
     if (startVoid && endVoid && PathApi.equals(startVoid[1], endVoid[1])) {
       const range = editorRange(editor, start);
-      ReactEditor.focus(editor);
-      writePliteViewSelection(editor, null);
-      editor.update((tx) => {
-        tx.selection.set(range);
-      });
+      selectThenFocusUnlessMoved(editor, () =>
+        editor.update((tx) => {
+          tx.selection.set(range);
+        })
+      );
     }
   }
 };

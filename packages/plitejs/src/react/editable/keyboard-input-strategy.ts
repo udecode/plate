@@ -20,7 +20,11 @@ import {
   supportsDOMBeforeInput,
   usesAppleDOMHotkeys,
 } from '../../dom/internal';
-import { isSelectableDOMSelection } from '../../dom/plugin/dom-editor';
+import {
+  isFocusRequestedElsewhere,
+  isSelectableDOMSelection,
+  watchFocusSuperseded,
+} from '../../dom/plugin/dom-editor';
 import type { EditableKeyDownHandler } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
@@ -797,11 +801,16 @@ export const applyEditableKeyDown = ({
         const targetScheduler =
           getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??
           domPhaseScheduler;
+        const page = event.currentTarget;
+        const superseded = watchFocusSuperseded(targetEditor, page);
 
         targetScheduler.schedule(
           'dom-write',
           'typed-root-focus-editor',
           () => {
+            if (superseded() || isFocusRequestedElsewhere(targetEditor, page)) {
+              return;
+            }
             focusPliteEditable(targetEditor);
           },
           { timing: 'animation-frame' }

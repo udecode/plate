@@ -14,6 +14,7 @@ import {
   createDOMGeometryKernel,
   getPliteStringPlacementDOMPoint,
 } from '../../dom/internal';
+import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import {
   cancelDragRest,
@@ -486,7 +487,9 @@ export const EditableDOMRoot = (
         !runtime.longPressSelected &&
         event.target === event.currentTarget
       ) {
-        activateViewCaret(editor);
+        activateViewCaret(editor, {
+          superseded: watchFocusSuperseded(editor, event.currentTarget),
+        });
       }
       propsOnFocusCapture?.(event);
     },

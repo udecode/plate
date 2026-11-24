@@ -17,6 +17,7 @@ import {
   getViewFollowTarget,
 } from '../../editor-runtime-view';
 import type { AnyEditor, Editor, RootKey } from '../../interfaces/editor';
+import { pageOf } from '../utils/dom';
 import {
   type DOMRootFactOverrides,
   type DOMRootQuirk,
@@ -343,6 +344,40 @@ const registerTreesAbove = (element: Element) => {
 const shadowRootOf = (host: Element) =>
   host.shadowRoot ?? SHADOW_ROOT_BY_HOST.get(host);
 
+/**
+ * Whether the element itself holds focus. It walks up from the element, so a
+ * closed shadow root nobody registered counts, and a host whose own shadow
+ * tree holds focus does not.
+ */
+export const isElementFocused = (element: Element) => {
+  const frameDocument =
+    'contentDocument' in element
+      ? (element as HTMLIFrameElement).contentDocument
+      : null;
+  const inner = shadowRootOf(element) ?? frameDocument;
+
+  if (inner?.activeElement && inner.activeElement !== frameDocument?.body) {
+    return false;
+  }
+
+  let node = element;
+
+  for (;;) {
+    const tree = node.getRootNode() as Document | ShadowRoot;
+
+    if (tree.activeElement !== node) return false;
+    if ('host' in tree) {
+      node = tree.host;
+      continue;
+    }
+
+    const frame = tree.defaultView?.frameElement;
+
+    if (!frame) return true;
+    node = frame;
+  }
+};
+
 export const resolveInnermostElementAtPoint = (
   document: Document,
   x: number,
@@ -378,6 +413,9 @@ const focusedElementOf = (top: Document) => {
 
   return null;
 };
+
+export const focusedElementOnPage = (node: Node) =>
+  focusedElementOf(pageOf(node.ownerDocument ?? (node as Document)));
 
 const outerElementOf = (element: Element) => {
   if (element.parentElement) return element.parentElement;

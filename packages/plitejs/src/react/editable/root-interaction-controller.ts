@@ -33,6 +33,7 @@ import {
   resolveDOMTargetView,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
+import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
 import {
   isGeckoDOMHost,
   usesAppleDOMHotkeys,
@@ -1504,18 +1505,24 @@ export const useRootInteractionController = ({
     ({
       fallbackSelection,
       receipt,
+      superseded,
       selection: selectionPreference = selection,
     }: {
       fallbackSelection?: RootInteractionFocusSelection;
       receipt?: number;
+      superseded?: ReturnType<typeof watchFocusSuperseded>;
       selection?: RootInteractionFocusSelection;
     } = {}) => {
-      const view = getMountedViewEditor(root) ?? editor;
+      if (superseded?.()) return;
 
-      focusPressedView(rootRuntime?.rootElement);
+      const view = getMountedViewEditor(root) ?? editor;
+      const element = rootRuntime?.rootElement;
+
+      focusPressedView(element);
       activateViewCaret(view, {
         fallback: fallbackSelection === 'end' ? 'end' : undefined,
         focus: true,
+        superseded: watchFocusSuperseded(view, element),
         press: true,
         receipt,
         target: selectionPreference === 'end' ? 'end' : undefined,
@@ -1532,6 +1539,7 @@ export const useRootInteractionController = ({
         keepScroll?: boolean;
         placementDOMPoint?: PliteStringPlacementDOMPoint | null;
         receipt?: number;
+        superseded?: ReturnType<typeof watchFocusSuperseded>;
         word?: Range | null;
       } = {}
     ) => {
@@ -1626,6 +1634,7 @@ export const useRootInteractionController = ({
       focusRoot({
         fallbackSelection: action.fallbackSelection,
         receipt: options.receipt,
+        superseded: options.superseded,
         selection: action.selection,
       });
     },
@@ -2412,6 +2421,10 @@ export const useRootInteractionController = ({
         }
 
         const receipt = getPlacementGeneration(focusEditor);
+        const superseded = watchFocusSuperseded(
+          focusEditor,
+          event.currentTarget
+        );
 
         scheduleHeldFrame(
           'root-interaction-mouse-down',
@@ -2422,7 +2435,7 @@ export const useRootInteractionController = ({
                 pendingAction: action,
                 selection,
               }),
-              { receipt }
+              { receipt, superseded }
             );
           },
           event.currentTarget,

@@ -1,11 +1,17 @@
 import { type Value, RangeApi } from '../..';
-import { placedSince } from '../../core/view-carets';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import { hasOpenDraft } from '../../core/public-state';
+import { getPlacementGeneration, placedSince } from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import { findDOMRootRuntime, IS_FOCUSED } from '../../dom/internal';
 import {
+  claimFocusRequest,
+  isFocusRequestedElsewhere,
   resolveWrittenDOMRange,
   supersedeFocusRequest,
+  watchFocusSuperseded,
 } from '../../dom/plugin/dom-editor';
+import { isElementFocused } from '../../dom/plugin/dom-root-runtime';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   getDOMRangeSelectionPoints,
@@ -21,6 +27,10 @@ import {
   getSelectionDOMRange,
   setEditorFocused,
 } from '../editable/runtime-editor-api';
+import {
+  reachesRoot,
+  readNodeSelectionFocus,
+} from '../editable/view-caret-restore';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
@@ -47,6 +57,7 @@ const createEditableFocusRequest = <
   const root = element.getRootNode();
   const token = {};
 
+  claimFocusRequest(editor as unknown as Editor, element);
   ROOT_TO_EDITABLE_FOCUS_REQUEST.set(root, token);
 
   return { root, token };
@@ -81,13 +92,18 @@ const syncPreferredModelSelectionToDOM = <
       selection
     );
 
+    const superseded = watchFocusSuperseded(
+      editor as unknown as Editor,
+      element
+    );
+
     if (!projectedSelection) {
       const root = element.getRootNode() as Document | ShadowRoot;
 
       IS_FOCUSED.set(editor as unknown as Editor, true);
       setEditorFocused(editor as unknown as Editor, true);
       element.focus({ preventScroll: true });
-      writeDOMSelection(root, null);
+      if (!superseded()) writeDOMSelection(root, null);
       return true;
     }
 
@@ -111,6 +127,7 @@ const syncPreferredModelSelectionToDOM = <
     IS_FOCUSED.set(editor as unknown as Editor, true);
     setEditorFocused(editor as unknown as Editor, true);
     element.focus({ preventScroll: true });
+    if (superseded()) return true;
     writeDOMSelection(
       root,
       getDOMRangeSelectionPoints(
@@ -138,7 +155,11 @@ export const focusSelectionTarget = <
 
   const viewSelection = readPliteViewSelection(editor);
 
-  if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
+  if (
+    !viewSelection ||
+    isPliteViewSelectionCollapsed(viewSelection) ||
+    !reachesRoot(editor, viewSelection)
+  ) {
     return false;
   }
 
@@ -170,7 +191,11 @@ const focusPliteEditableForRequest = <
 
   editor.api.dom.focus();
 
-  if (element && element.ownerDocument.activeElement !== element) {
+  if (
+    element &&
+    element.ownerDocument.activeElement !== element &&
+    !isFocusRequestedElsewhere(editor as unknown as Editor, element)
+  ) {
     element.focus({ preventScroll: true });
     if (!syncPreferredModelSelectionToDOM(editor, element)) {
       editor.api.dom.focus();
@@ -194,25 +219,52 @@ export const focusPliteEditableAfterEventFrame = <
   editor: ReactRuntimeEditor<V, TPlugins>,
   { receipt }: { receipt?: number } = {}
 ) => {
-  const superseded = () =>
-    receipt !== undefined && placedSince(editor, receipt);
+  const called = getPlacementGeneration(editor);
+  const placedOverParked = () =>
+    placedSince(editor, called) &&
+    !!readNodeSelectionFocus(editor as unknown as ReactRuntimeEditor & Editor)
+      ?.parked;
+  const placed =
+    receipt === undefined
+      ? placedOverParked
+      : () => placedSince(editor, receipt);
 
-  if (superseded()) return () => {};
+  if (placed()) return () => {};
 
   const request = createEditableFocusRequest(editor);
+  const element = editor.api.dom.editable();
+  const focusElement =
+    element && findDOMRootRuntime(element)?.nodeSelectionFocus();
+  const picked =
+    focusElement?.isConnected &&
+    readNodeSelectionFocus(editor as unknown as ReactRuntimeEditor & Editor)
+      ? focusElement
+      : element;
 
   focusPliteEditableForRequest(editor, request);
   const domPhaseScheduler =
     getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+  const movedOff = () => !!picked && !isElementFocused(picked);
 
-  if (!domPhaseScheduler) return () => {};
+  if (
+    !domPhaseScheduler ||
+    hasOpenDraft(getEditorRuntimeOwner(editor)) ||
+    movedOff() ||
+    (element && isFocusRequestedElsewhere(editor as unknown as Editor, element))
+  ) {
+    return () => {};
+  }
 
-  const focusRoot = request?.root as Document | ShadowRoot | undefined;
-  const focusOwner = focusRoot?.activeElement;
+  let superseded = element
+    ? watchFocusSuperseded(editor as unknown as Editor, element)
+    : () => false;
   const retryFocus = () => {
     // Native field focus supersedes retries without another editor request.
-    if (focusRoot?.activeElement !== focusOwner || superseded()) return;
+    if (movedOff() || superseded() || placed()) return;
     focusPliteEditableForRequest(editor, request);
+    if (element) {
+      superseded = watchFocusSuperseded(editor as unknown as Editor, element);
+    }
   };
   const cancelFrame = domPhaseScheduler.schedule(
     'dom-write',

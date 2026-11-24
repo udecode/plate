@@ -408,6 +408,14 @@ export const getFlatTreeParentElement = (element: Element): Element | null => {
     : null;
 };
 
+// A cross-origin frame's frameElement is null, so its document stands in for
+// its page.
+export const pageOf = (document: Document): Document => {
+  const frame = document.defaultView?.frameElement;
+
+  return frame ? pageOf(frame.ownerDocument) : document;
+};
+
 /**
  * Retrieves the deepest active element in the DOM, considering nested shadow DOMs.
  */

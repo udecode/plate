@@ -75,6 +75,7 @@ import {
   isDOMText,
   isPointBefore,
   normalizeDOMPoint,
+  pageOf,
 } from '../utils/dom';
 import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
 import { Key } from '../utils/key';
@@ -151,6 +152,7 @@ import {
   findDOMRootRuntime,
   hasMountedDOMRoot,
   hasMountedDocumentView,
+  isElementFocused,
   listenEditorDOMScope,
   notifyEditorDOMScopeListeners,
   resolveDOMReach,
@@ -170,12 +172,10 @@ import { ensureFocusCaret, resolveNextKeyCaret } from './dom-view-caret';
 
 const EDITOR_TO_CANCEL_FOCUS_RETRY = new WeakMap<EditorType, () => void>();
 const EDITOR_TO_FOCUS_REQUEST_GENERATION = new WeakMap<EditorType, number>();
-const ROOT_TO_FOCUS_REQUEST_OWNER = new WeakMap<
-  Document | ShadowRoot,
-  {
-    editor: EditorType;
-    generation: number;
-  }
+// A page focuses one element across its shadow roots and frames.
+const PAGE_TO_FOCUS_REQUEST_OWNER = new WeakMap<
+  Document,
+  { editor: WeakRef<EditorType> }
 >();
 
 export const FOCUS_SETTLE_TIMEOUT = 50;
@@ -189,13 +189,38 @@ export const supersedeFocusRequest = (editor: EditorType) => {
   EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
 };
 
-const focusRetries = (options?: { retries?: number }) => options?.retries ?? 50;
+const readFocusRequest = (node: DOMNode | undefined) =>
+  node &&
+  PAGE_TO_FOCUS_REQUEST_OWNER.get(
+    pageOf(node.ownerDocument ?? (node as Document))
+  );
 
-const claimFocusRequest = (editor: EditorType, root: Document | ShadowRoot) => {
+export const watchFocusSuperseded = (
+  editor: EditorType,
+  node?: DOMNode | null
+) => {
+  const page = node ?? resolveLastEditorWindow(editor)?.document;
+  const generation = EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor);
+  const owner = readFocusRequest(page);
+
+  return () =>
+    EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) !== generation ||
+    readFocusRequest(page) !== owner;
+};
+
+export const isFocusRequestedElsewhere = (
+  editor: EditorType,
+  node: DOMNode
+) => {
+  const holder = readFocusRequest(node)?.editor.deref();
+
+  return !!holder && holder !== editor && holder !== reachView(editor);
+};
+
+export const claimFocusRequest = (editor: EditorType, element: Element) => {
   supersedeFocusRequest(editor);
-  ROOT_TO_FOCUS_REQUEST_OWNER.set(root, {
-    editor,
-    generation: EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0,
+  PAGE_TO_FOCUS_REQUEST_OWNER.set(pageOf(element.ownerDocument), {
+    editor: new WeakRef(editor),
   });
 };
 
@@ -264,8 +289,11 @@ export interface DOMApi {
   assertPath: (node: Node) => Path;
   /**
    * Focus the editor's view. The root's `nodeSelectionFocus` element takes
-   * focus while there is no selection or a node selection holds only the
-   * root's top-level blocks, and a range shown across roots stays shown.
+   * focus while no range is shown into the root and the root's own selection
+   * is none or a node selection of its top-level blocks, including one the
+   * root kept while the caret was in another root. A range shown into the root
+   * stays shown. Inside an open update or read, such a root's editable takes
+   * focus instead.
    */
   focus: (options?: { retries?: number }) => void;
   getWindow: () => Window;
@@ -1600,10 +1628,12 @@ const DOMEditorImpl: DOMEditorInterface = {
     const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
 
     if (!el || !root) return;
-    if (ROOT_TO_FOCUS_REQUEST_OWNER.get(root)?.editor === editor) {
-      ROOT_TO_FOCUS_REQUEST_OWNER.delete(root);
-    }
-    if (root.activeElement === el) {
+
+    const focusElement = findDOMRootRuntime(el)?.nodeSelectionFocus();
+
+    if (focusElement && isElementFocused(focusElement)) {
+      focusElement.blur();
+    } else if (isElementFocused(el)) {
       el.blur();
     }
   },
@@ -1773,11 +1803,9 @@ const DOMEditorImpl: DOMEditorInterface = {
   resolvePath: (editor, node) => resolvePliteNodePath(editor, node),
 
   focus: (editor, options = {}) => {
-    const retries = focusRetries(options);
-    const focusRequestGeneration =
-      (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1;
+    const retries = options.retries ?? 50;
 
-    EDITOR_TO_FOCUS_REQUEST_GENERATION.set(editor, focusRequestGeneration);
+    supersedeFocusRequest(editor);
 
     // Return if no dom node is associated with the editor, which means the editor is not yet mounted
     // or has been unmounted. This can happen especially, while retrying to focus the editor.
@@ -1788,21 +1816,21 @@ const DOMEditorImpl: DOMEditorInterface = {
       return;
     }
 
-    const focusRequestOwner = {
-      editor,
-      generation: focusRequestGeneration,
-    };
-
-    ROOT_TO_FOCUS_REQUEST_OWNER.set(root, focusRequestOwner);
-
-    // Retry setting focus if the editor has pending updates.
-    // The DOM (selection) is unstable while changes are applied.
-    // Retry until retries are exhausted or editor is focused.
     if (retries <= 0) {
       return;
     }
+
+    PAGE_TO_FOCUS_REQUEST_OWNER.set(pageOf(el.ownerDocument), {
+      editor: new WeakRef(editor),
+    });
+    const superseded = watchFocusSuperseded(editor, el);
+    const markAndFocus = () => {
+      IS_FOCUSED.set(editor, true);
+      setEditorFocused(editor, true);
+      el.focus({ preventScroll: true });
+    };
+
     if (IS_NODE_MAP_DIRTY.get(editor)) {
-      EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
       let cancel = () => {};
       const generation = getPlacementGeneration(editor);
 
@@ -1814,13 +1842,7 @@ const DOMEditorImpl: DOMEditorInterface = {
           if (EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor) === cancel) {
             EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
           }
-          // A newer placement owns the caret and focus.
-          if (
-            ROOT_TO_FOCUS_REQUEST_OWNER.get(root) !== focusRequestOwner ||
-            placedSince(editor, generation)
-          ) {
-            return;
-          }
+          if (superseded() || placedSince(editor, generation)) return;
           DOMEditor.focus(editor, { retries: retries - 1 });
         },
         {
@@ -1833,10 +1855,12 @@ const DOMEditorImpl: DOMEditorInterface = {
       return;
     }
 
-    EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
-    EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
+    if (findDOMRootRuntime(el)?.focusSelection(el)) return;
 
     const selection = ensureFocusCaret(editor, el);
+
+    if (superseded()) return;
+
     const selectionAtFocus = selection
       ? getSelectionDOMRange(editor, selection)
       : null;
@@ -1885,13 +1909,7 @@ const DOMEditorImpl: DOMEditorInterface = {
         ? root.activeElement
         : null;
     const settleFocus = () => {
-      if (
-        EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) !==
-          focusRequestGeneration ||
-        ROOT_TO_FOCUS_REQUEST_OWNER.get(root) !== focusRequestOwner
-      ) {
-        return;
-      }
+      if (superseded()) return;
 
       const liveElement = DOMEditor.editable(editor);
 
@@ -1927,9 +1945,8 @@ const DOMEditorImpl: DOMEditorInterface = {
         return;
       }
 
-      IS_FOCUSED.set(editor, true);
-      setEditorFocused(editor, true);
-      el.focus({ preventScroll: true });
+      markAndFocus();
+      if (superseded()) return;
       trySyncDomSelection();
     };
     const scheduleFocusSettle = () => {
@@ -1967,10 +1984,6 @@ const DOMEditorImpl: DOMEditorInterface = {
     };
 
     if (root.activeElement !== el) {
-      // IS_FOCUSED should be set before calling el.focus() to ensure that
-      // FocusedContext is updated to the correct value
-      IS_FOCUSED.set(editor, true);
-      setEditorFocused(editor, true);
       const { activeElement } = root;
 
       if (
@@ -1980,9 +1993,11 @@ const DOMEditorImpl: DOMEditorInterface = {
         typeof activeElement.blur === 'function'
       ) {
         activeElement.blur();
+        if (superseded()) return;
       }
 
-      el.focus({ preventScroll: true });
+      markAndFocus();
+      if (superseded()) return;
       trySyncDomSelection();
       if (selectionAtFocus) {
         scheduleEditorDOMPhase(
@@ -1990,7 +2005,7 @@ const DOMEditorImpl: DOMEditorInterface = {
           'selection-repair',
           'dom-editor-focus-selection-sync',
           () => {
-            if (root.activeElement !== el) {
+            if (superseded() || !isElementFocused(el)) {
               return;
             }
 
@@ -3437,17 +3452,7 @@ export const createDOMEditorCapability = <
   };
   const capability: DOMEditorCapability<V> = {
     blur: () => {
-      const view = reachView(editor);
-      const el = DOMEditorImpl.editable(view);
-      const focusElement = el && findDOMRootRuntime(el)?.nodeSelectionFocus();
-      const held =
-        !!focusElement &&
-        (focusElement.getRootNode() as Document | ShadowRoot).activeElement ===
-          focusElement;
-
-      DOMEditorImpl.blur(view);
-      // Last, so focus that the element's blur handler moves stays where it went.
-      if (held) focusElement.blur();
+      DOMEditor.blur(editor);
     },
     deselect: () => {
       DOMEditor.deselect(editor);
@@ -3461,15 +3466,6 @@ export const createDOMEditorCapability = <
     findKey: (node) => DOMEditor.findKey(editor, node),
     assertPath: (node) => DOMEditor.assertPath(editor, node),
     focus: (options) => {
-      const view = reachView(editor);
-      const el = DOMEditorImpl.editable(view);
-
-      if (focusRetries(options) > 0 && el) {
-        // Before the focus, so a request that a focus handler makes wins.
-        claimFocusRequest(view, el.getRootNode() as Document | ShadowRoot);
-        if (findDOMRootRuntime(el)?.focusSelection(el)) return;
-      }
-
       DOMEditor.focus(editor, options);
     },
     getWindow: () => DOMEditor.getWindow(editor),

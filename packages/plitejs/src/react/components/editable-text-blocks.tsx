@@ -234,15 +234,22 @@ export type EditableContentRootSlotOptions = {
   id?: string;
   /**
    * The element that takes focus in place of this root's editable when the
-   * editor moves focus here, as after an undo or on a call to
-   * `editor.api.dom.focus()`, while there is no selection or a node selection
-   * holds only top-level blocks of this root. It does not take focus while the
-   * editor shows a caret or a text selection, even a range drawn on the page
-   * that reaches into this root, and a click that selects an object in this
-   * root focuses the editable. When the render that follows a focus call
-   * replaces the element, focus falls to the page. Unless the element is a
-   * control, such as a button, the editor reads no keys from it, so it must
-   * handle the keys it needs, such as undo and redo.
+   * editor moves focus here, as after an undo, on a click that selects an
+   * object or on a call to `editor.api.dom.focus()`. It takes focus only while
+   * no range is shown into this root and the root's own selection is none or
+   * a node selection of its top-level blocks, including a node selection the
+   * root kept while the caret was in another root. Once the element holds
+   * focus, that kept node selection becomes the selection again, so a key the
+   * element handles acts on it. It does not come back when the element's focus
+   * handler leaves focus on another element, asks for focus elsewhere or
+   * changes the selection. A focus call made inside an update or a read focuses
+   * the editable instead, as on a root without this element. When the render
+   * that follows a focus call replaces the element, focus falls to the page.
+   * Give the element `contentEditable={false}`: one that inherits editing runs
+   * the editable's own focus handler, which in Firefox moves focus to the
+   * editable. Unless the element is a control, such as a button, the editor
+   * reads no keys from it, so it must handle the keys it needs, such as undo
+   * and redo.
    */
   nodeSelectionFocus?: NodeSelectionFocus;
   placeholder?: ReactNode;

@@ -126,9 +126,11 @@ while it holds it. An unmounted editor only clears its focused state.
 #### `editor.api.dom.focus(options?: { retries?: number }): void`
 
 Focus the editor's [view](#views). Does nothing when no view is picked. The
-root's `nodeSelectionFocus` element takes focus while there is no selection or
-a node selection holds only the root's top-level blocks, and a range shown
-across roots stays shown.
+root's `nodeSelectionFocus` element takes focus while no range is shown into
+the root and the root's own selection is none or a node selection of its
+top-level blocks, including one the root kept while the caret was in another
+root. A range shown into the root stays shown. Inside an open update or read,
+such a root's editable takes focus instead.
 
 #### `editor.api.dom.deselect(): void`
 

@@ -4,11 +4,15 @@ import {
   type Selection,
   SelectionApi,
   type TextSelection,
+  type Value,
 } from '../..';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { toInternalRoot } from '../../core/public-root';
 import {
   afterOpenDrafts,
   getActiveEditorTransaction,
+  getEditorReadDepth,
+  hasOpenDraft,
 } from '../../core/public-state';
 import {
   getPlacementGeneration,
@@ -42,18 +46,20 @@ const inViewRoot = (view: CaretView, selection: Range | Selection) =>
   toInternalRoot(SelectionApi.root(selection)) ===
   toInternalRoot(view.read.view.root());
 
-/**
- * Whether `selection` reaches `view`'s root: the root holds part of it, or
- * nests the copy of a root that does. A root shown in more than one place
- * names its host only through the selection's own owners.
- */
-const coversRoot = (view: CaretView, selection: PliteViewSelection) => {
+export const reachesRoot = <V extends Value>(
+  view: Pick<AnyEditor<V>, 'read'>,
+  selection: PliteViewSelection
+) => {
   const root = toInternalRoot(view.read.view.root());
   const owners = findContentRootOwners(view);
   const onlyHost = (child: RootKey) => {
-    const hosts = owners.filter((owner) => owner.childRoot === child);
+    const hosts = new Set(
+      owners
+        .filter((owner) => owner.childRoot === child)
+        .map((owner) => owner.ownerRoot)
+    );
 
-    return hosts.length === 1 ? hosts[0].ownerRoot : undefined;
+    return hosts.size === 1 ? [...hosts][0] : undefined;
   };
   const starts: Array<{ host?: RootKey; root: RootKey }> = [
     {
@@ -84,6 +90,27 @@ const coversRoot = (view: CaretView, selection: PliteViewSelection) => {
   }
 
   return false;
+};
+
+export const readNodeSelectionFocus = (view: CaretView) => {
+  if (hasOpenDraft(getEditorRuntimeOwner(view))) return null;
+
+  const shown = readPliteViewSelection(view);
+
+  if (shown && reachesRoot(view, shown)) return null;
+
+  const parked = holdsCaret(view) ? null : resolveParkedCaret(view);
+  const own = parked ?? resolveLiveCaret(view);
+
+  if (
+    own &&
+    inViewRoot(view, own) &&
+    !(SelectionApi.isNode(own) && own.paths.every((path) => path.length === 1))
+  ) {
+    return null;
+  }
+
+  return { parked };
 };
 
 const visibleTarget = <T extends Range | Selection>(
@@ -141,6 +168,7 @@ export type ViewCaretActivation = Readonly<{
    */
   fallback?: 'end';
   focus?: boolean;
+  superseded?: () => boolean;
   /**
    * A press on the root's chrome: the root takes its own caret and ends a
    * selection across content roots, even one that covers it. Without it, a
@@ -178,13 +206,22 @@ export const activateViewCaret = (
   view: CaretView,
   activation: ViewCaretActivation = {}
 ): boolean => {
-  const { fallback, focus = false, press = false, target: at } = activation;
+  const {
+    fallback,
+    focus = false,
+    superseded,
+    press = false,
+    target: at,
+  } = activation;
 
-  if (getActiveEditorTransaction(view)) {
+  if (
+    getActiveEditorTransaction(view) ||
+    getEditorReadDepth(getEditorRuntimeOwner(view)) > 0
+  ) {
     const receipt = activation.receipt ?? getPlacementGeneration(view);
 
     afterOpenDrafts(view, () => {
-      activateViewCaret(view, { ...activation, receipt });
+      if (!superseded?.()) activateViewCaret(view, { ...activation, receipt });
     });
 
     return false;
@@ -198,7 +235,7 @@ export const activateViewCaret = (
 
   const generation = getPlacementGeneration(view);
   const shown = readPliteViewSelection(view);
-  const keeps = !!shown && !press && at !== 'end' && coversRoot(view, shown);
+  const keeps = !!shown && !press && at !== 'end' && reachesRoot(view, shown);
   let receipt = generation;
   let wrote: boolean;
 
@@ -222,7 +259,9 @@ export const activateViewCaret = (
       setSelectionAsView(view, visibleTarget(view, target));
     }
   }
-  if (focus) focusPliteEditableAfterEventFrame(view, { receipt });
+  if (focus && !superseded?.()) {
+    focusPliteEditableAfterEventFrame(view, { receipt });
+  }
 
   return wrote;
 };

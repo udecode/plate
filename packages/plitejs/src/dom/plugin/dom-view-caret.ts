@@ -5,8 +5,12 @@ import {
   SelectionApi,
   type TextSelection,
 } from '../..';
-import { getEditorRuntime } from '../../core/editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+} from '../../core/editor-runtime';
 import { toInternalRoot } from '../../core/public-root';
+import { getEditorReadDepth } from '../../core/public-state';
 import {
   holdsCaret,
   resolveParkedCaret,
@@ -79,7 +83,7 @@ export const ensureFocusCaret = (
 ): Selection => {
   const caret = resolveNextKeyCaret(view, editable);
 
-  if (!caret) {
+  if (!caret && getEditorReadDepth(getEditorRuntimeOwner(view)) === 0) {
     const start = view.read.points.start([]);
 
     if (start) setSelectionAsView(view, start);

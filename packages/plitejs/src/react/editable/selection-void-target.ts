@@ -1,6 +1,12 @@
 import { NodeApi, type Path, type Point, SelectionApi } from '../..';
 import { isObjectSelectionTarget } from '../../core/selection-protocol';
+import { resolveLiveCaret } from '../../core/view-carets';
 import { isDOMElement, isDOMNode, isDOMText } from '../../dom';
+import { watchFocusSuperseded } from '../../dom/plugin/dom-editor';
+import {
+  focusedElementOnPage,
+  isElementFocused,
+} from '../../dom/plugin/dom-root-runtime';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -256,18 +262,41 @@ export const selectEditableVoidPath = ({
   const start = editorPoint(editor, path, { edge: 'start' });
   const range = editorRange(editor, start);
 
-  ReactEditor.focus(editor);
-  writePliteViewSelection(editor, null);
-  dispatchCommand(editor, editorCommands.select, { target: range });
+  selectThenFocusUnlessMoved(editor, () =>
+    dispatchCommand(editor, editorCommands.select, { target: range })
+  );
 
   return path;
 };
 
+export const selectThenFocusUnlessMoved = (
+  editor: ReactRuntimeEditor,
+  select: () => void
+) => {
+  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+  const before = root && focusedElementOnPage(root);
+  const superseded = watchFocusSuperseded(editor, root);
+
+  writePliteViewSelection(editor, null);
+  select();
+
+  const after = root && focusedElementOnPage(root);
+
+  if (
+    !superseded() &&
+    (!after || after === before || after === after.ownerDocument.body)
+  ) {
+    ReactEditor.focus(editor);
+  }
+};
+
 export const selectEditableSelectableOwnerPath = ({
+  editable,
   editor,
   inputController,
   path,
 }: {
+  editable: HTMLElement | null;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   path: Path;
@@ -284,13 +313,17 @@ export const selectEditableSelectableOwnerPath = ({
   });
   inputController.state.selectionChangeOrigin = 'programmatic-export';
 
-  // Focus uses the current selection; publish the owner before it can seed a caret elsewhere.
-  writePliteViewSelection(editor, null);
-  dispatchCommand(editor, editorCommands.select, { target: selection });
-  ReactEditor.focus(editor);
-  const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+  selectThenFocusUnlessMoved(editor, () =>
+    dispatchCommand(editor, editorCommands.select, { target: selection })
+  );
 
-  if (root) writeDOMSelection(root, null);
+  if (
+    editable &&
+    isElementFocused(editable) &&
+    SelectionApi.equals(resolveLiveCaret(editor), selection)
+  ) {
+    writeDOMSelection(editable.getRootNode() as Document | ShadowRoot, null);
+  }
 
   return path;
 };
@@ -310,9 +343,8 @@ export const selectEditableSelectableOwnerTarget = ({
 
   if (!selectableTarget) return null;
 
-  focusPressedView(target);
-
   return selectEditableSelectableOwnerPath({
+    editable: focusPressedView(target),
     editor,
     inputController,
     path: selectableTarget.path,
