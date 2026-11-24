@@ -20,6 +20,7 @@ import {
 } from '../config/test-suites.mjs';
 import { packageTestFiles } from '../entrypoints/entrypoint-turbo.mjs';
 import { freshRun, openCache } from './check-cache.mjs';
+import { isPlateSchemaAdoptionSourcePath } from './check-plate-schema-adoption.mjs';
 import {
   commonDir,
   installLockfile,
@@ -93,6 +94,19 @@ const runsScript = (script, ...paths) => {
       : new Set();
     return files.some((file) => closure.has(file));
   };
+};
+const SCHEMA_ADOPTION_AUDIT = 'tooling/scripts/check-plate-schema-adoption.mjs';
+let schemaAdoptionAuditClosure;
+const schemaAdoptionFiles = (files) => {
+  schemaAdoptionAuditClosure ??= new Set([
+    'tooling/scripts/plate-schema-adoption-baseline.json',
+    ...runtimeClosure([join(root, SCHEMA_ADOPTION_AUDIT)]).map((file) =>
+      relative(root, file)
+    ),
+  ]);
+  return files.some((file) => schemaAdoptionAuditClosure.has(file))
+    ? true
+    : files.filter(isPlateSchemaAdoptionSourcePath);
 };
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
 const PACKAGE_MANIFEST = /^packages\/[^/]+\/package\.json$/u;
@@ -717,6 +731,18 @@ export const steps = [
     private: true,
     run: 'pnpm check:core',
     affected: source,
+    key: [],
+  },
+  {
+    // core-audits runs the whole schema adoption audit, which takes minutes,
+    // so a landing audits only the files it changes.
+    name: 'schema-adoption',
+    land: true,
+    partOf: 'core-audits',
+    onlyAffectedFiles: true,
+    private: true,
+    run: `node ${SCHEMA_ADOPTION_AUDIT} --check`,
+    affected: schemaAdoptionFiles,
     key: [],
   },
   {

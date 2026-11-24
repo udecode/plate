@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, readFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { parse } from '@babel/parser';
@@ -152,6 +152,7 @@ const skippedDirectoryNames = new Set([
   'templates',
 ]);
 export const isPlateSchemaAdoptionSourcePath = (file) =>
+  sourceRoots.some((root) => file.startsWith(`${root}/`)) &&
   auditedFilePattern.test(file) &&
   !file.split('/').some((part) => skippedDirectoryNames.has(part));
 const deletedNodeBagKeys = new Set([
@@ -569,8 +570,6 @@ const requiredNamedSchemaLineageFiles = new Set([
   'content/docs/(plugins)/(collaboration)/yjs.mdx',
   'packages/platejs/src/yjs/YjsPlugin.api.spec.ts',
 ]);
-
-const toPosixPath = (path) => path.split(sep).join('/');
 
 const getPropertyName = (node) => {
   if (node?.type === 'Identifier') return node.name;
@@ -6815,18 +6814,15 @@ export function auditNamedSchemaLineageDocument(
   return issues;
 }
 
-const collectSourceFiles = () =>
-  trackedFiles(repoRoot, { untracked: true })
-    .filter((file) => sourceRoots.some((root) => file.startsWith(`${root}/`)))
-    .filter(isPlateSchemaAdoptionSourcePath)
-    .map((file) => join(repoRoot, file))
-    .filter(existsSync);
-
-export function auditPlateSchemaAdoption() {
-  const files = collectSourceFiles();
-  const issues = files.flatMap((path) => {
-    const file = toPosixPath(relative(repoRoot, path));
-    const source = readFileSync(path, 'utf-8');
+export function auditPlateSchemaAdoption(
+  files = trackedFiles(repoRoot, { untracked: true })
+) {
+  const audited = files.filter(
+    (file) =>
+      isPlateSchemaAdoptionSourcePath(file) && existsSync(join(repoRoot, file))
+  );
+  const issues = audited.flatMap((file) => {
+    const source = readFileSync(join(repoRoot, file), 'utf-8');
 
     try {
       return markdownFilePattern.test(file)
@@ -6846,7 +6842,7 @@ export function auditPlateSchemaAdoption() {
 
   return {
     excludedGeneratedRoots: ciGeneratedPlateSchemaOutputRoots,
-    fileCount: files.length,
+    fileCount: audited.length,
     issues,
   };
 }
@@ -6854,8 +6850,16 @@ export function auditPlateSchemaAdoption() {
 const baselineFile = 'tooling/scripts/plate-schema-adoption-baseline.json';
 
 function runAudit() {
+  const args = process.argv.slice(2);
+  const paths = args.filter((arg) => !arg.startsWith('--'));
+  // With file arguments, the baseline comparison covers only the files they
+  // name, deleted ones included, which then hold no finding.
+  const scope =
+    paths.length > 0
+      ? new Set(paths.filter(isPlateSchemaAdoptionSourcePath))
+      : null;
   const { excludedGeneratedRoots, fileCount, issues } =
-    auditPlateSchemaAdoption();
+    auditPlateSchemaAdoption(scope ? [...scope] : undefined);
   const known = readBaseline(baselineFile);
   const findings = issues.map((issue) => ({
     ...issue,
@@ -6867,15 +6871,25 @@ function runAudit() {
         ),
     rule: issue.reason,
   }));
-  const rules = [...new Set(findings.map((finding) => finding.rule))];
+  const found = groupFindings(findings);
+  if (scope) {
+    for (const [rule, files] of Object.entries(known)) {
+      for (const [file, identities] of Object.entries(files)) {
+        if (!scope.has(file)) (found[rule] ??= {})[file] = identities;
+      }
+    }
+  }
 
   process.exitCode = enforceBaseline({
     file: baselineFile,
-    found: groupFindings(findings),
-    lowerCommand: 'node tooling/scripts/check-plate-schema-adoption.mjs',
-    mode: process.argv.includes('--check')
+    found,
+    lowerCommand: [
+      'node tooling/scripts/check-plate-schema-adoption.mjs',
+      ...paths.map((path) => `'${path}'`),
+    ].join(' '),
+    mode: args.includes('--check')
       ? 'check'
-      : process.argv.includes('--init')
+      : args.includes('--init')
         ? 'init'
         : 'lower',
     newFindingsHelp: [
@@ -6890,7 +6904,7 @@ function runAudit() {
             `- ${finding.file}:${finding.line}:${finding.column}: ${finding.reason}`
         ),
     ].join('\n'),
-    rules,
+    rules: Object.keys(found),
   });
   if (process.exitCode === 0) {
     console.log(
