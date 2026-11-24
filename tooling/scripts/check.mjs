@@ -1032,7 +1032,7 @@ export const steps = [
   {
     name: 'www-build',
     alone: 'rewrites tracked files',
-    run: 'pnpm build:www:ci',
+    run: 'pnpm build:www:ci && pnpm --filter www check:page-load',
     optIn: '--build',
   },
   {

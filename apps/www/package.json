@@ -13,6 +13,7 @@
     "build:source:dev": "fumadocs-mdx source.config.ts .source-dev",
     "build:tw": "pnpm tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
     "check:docs": "pnpm api-reference:check && pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts",
+    "check:page-load": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-page-load.mts",
     "check:toolbar-variants": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-toolbar-variants.mts",
     "dev": "pnpm build:registry && PLATE_WWW_DYNAMIC_DOCS=1 pnpm build:source:dev && PLATE_WWW_DYNAMIC_DOCS=1 next dev",
     "dev:highlight": "pnpm build:registry && PLATE_WWW_DYNAMIC_DOCS=1 PLATE_WWW_CODE_HIGHLIGHT=1 pnpm build:source:dev && PLATE_WWW_DYNAMIC_DOCS=1 PLATE_WWW_CODE_HIGHLIGHT=1 next dev",

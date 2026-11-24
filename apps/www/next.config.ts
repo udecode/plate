@@ -8,6 +8,7 @@ import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import { isMainCheckout } from '../../config/main-checkout.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import docsRedirects from './docs-redirects.json';
+import { pageLoadReport } from './scripts/page-load.ts';
 import { PREVIEW_ICON_PACKAGES } from './src/lib/registry-icon-placeholder.ts';
 
 const APP_ROOT = import.meta.dirname;
@@ -168,7 +169,10 @@ const nextConfig = (_phase: string) => {
       ? {
           // tsconfig paths resolve collections/server before resolve.alias
           // applies, so the request is rewritten before resolution starts.
-          webpack: (webpackConfig, { webpack }) => {
+          webpack: (webpackConfig, { dev, isServer, webpack }) => {
+            if (!dev && !isServer) {
+              webpackConfig.plugins.push(pageLoadReport(APP_ROOT));
+            }
             if (basicBuild) {
               webpackConfig.cache = false;
               webpackConfig.parallelism = 4;
