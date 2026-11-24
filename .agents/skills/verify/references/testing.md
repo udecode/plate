@@ -222,14 +222,15 @@ imports both sides.
   probe lacked, such as an unfetchable image, a table-first figure, a
   blockquote after a paragraph and an empty figure, and the probe still ran
   only round 1's cases.
-- On a Mac without Word, look at an exported `.docx` through Quick Look.
+- For a quick look at an exported `.docx` without Word, use Quick Look.
   `qlmanage -t -s 1200 -o <run directory> <file>.docx` writes
   `<file>.docx.png`, a picture of the first page, and
   `textutil -convert txt -stdout <file>.docx` prints the text. `textutil`
   prints `•` for every list marker, numbered ones included, so judge markers on
   the picture. Claim the result as Quick Look's rendering, never as Word's,
   because Quick Look uses Apple's own reader, which can differ from Word in
-  numbering, spacing and layout.
+  numbering, spacing and layout. Word's own rendering comes from the Open a
+  DOCX in Word section of `commands.md`.
 
 ## Package-specific contracts
 
