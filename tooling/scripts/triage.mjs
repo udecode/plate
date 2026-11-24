@@ -4318,12 +4318,36 @@ function pickRepo(options) {
     }
     pick(options.repo);
   }
+  const named = (arg) => {
+    const [, name, number] = /^([\w.-]+)(#[1-9]\d*)$/u.exec(arg) ?? [];
+    return names.includes(name) ? { name, number } : null;
+  };
   const positional = options.positional.map((arg) => {
-    const named = /^([\w.-]+)(#[1-9]\d*)$/u.exec(arg);
-    if (!named || !names.includes(named[1])) return arg;
-    pick(named[1]);
-    return named[2];
+    const issue = named(arg);
+    if (!issue) return arg;
+    pick(issue.name);
+    return issue.number;
   });
+  if (options.from) {
+    const explicit = repoName;
+    const issues = entriesOf(options).map((entry) => entry.issue);
+    for (const issue of issues) {
+      const row = named(issue);
+      if (row) pick(row.name);
+    }
+    // A bare number means the primary repository, so beside a row that names
+    // another one it is ambiguous.
+    if (
+      explicit === null &&
+      repoName !== null &&
+      repoName !== names[0] &&
+      issues.some((issue) => /^#?[1-9]\d*$/u.test(issue))
+    ) {
+      usage(
+        `${options.from}: a row with a bare issue number sits beside rows that name ${repoName}; name each row's repository or pass --repo`
+      );
+    }
+  }
   if (repoName !== null && repoName !== names[0]) {
     registerFile = registerOf(repoName);
     claimsRef = `${CLAIMS_REF}-${repoName}`;
