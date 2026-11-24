@@ -1682,9 +1682,9 @@ export function pathSet(paths) {
 
 export const pathsAt = (root, ref) => pathSet(filesAt(root, ref));
 
-const trackedPathsOnDisk = (root) =>
+const pathsOnDisk = (root) =>
   pathSet(
-    trackedFiles(root).filter((file) =>
+    trackedFiles(root, { untracked: true }).filter((file) =>
       lstatSync(join(root, file), { throwIfNoEntry: false })
     )
   );
@@ -1863,7 +1863,7 @@ export function findings(
   {
     tracked = index.tree.ref
       ? pathSet(index.tree.list())
-      : trackedPathsOnDisk(index.tree.repo),
+      : pathsOnDisk(index.tree.repo),
   } = {}
 ) {
   const { tree } = index;
