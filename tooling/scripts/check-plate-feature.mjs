@@ -44,6 +44,13 @@ const flowModes = new Map([
     },
   ],
   [
+    'existing package plus kit',
+    {
+      excluded: ['React adapter', 'Registry UI'],
+      required: ['Package', 'Composition', 'Registry metadata/examples'],
+    },
+  ],
+  [
     'headless package',
     {
       excluded: [

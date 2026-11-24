@@ -54,6 +54,7 @@ Flow presets are classification aids, not generated schemas:
 | ------------------------------------ | ---------------------------------------------------------------------------------- |
 | new public feature entrypoint        | all structural rows; Scale proof is yes unless live source proves zero runtime impact |
 | existing package plus React/registry | structural rows                                                                    |
+| existing package plus kit            | Package, Composition, Metadata/examples; a kit turns on package behavior with no React adapter or copied component change |
 | headless package                     | API, Package, Docs, Release                                                        |
 | registry-only                        | Registry UI, Composition, Metadata/examples, Docs, Registry release                |
 
