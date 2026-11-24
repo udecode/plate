@@ -339,7 +339,7 @@
       ".agents/pstack/replay.mjs": "2c41dcca9a4d3a9b8d7ddad38b6803d7a4fc5abe72a27e72abc015de7f0a266a",
       ".agents/pstack/reread.mjs": "27d4b9161e486e3be21f720c1b9688593d755d6a6e43f2ac739438e2d64e0100",
       ".agents/pstack/seats.mjs": "dae2b1f91488e0670b11b86edc887bf2ba2abbead7e76ed8b2e5642e290dd1f7",
-      ".agents/pstack/title.mjs": "af0ed076449d8f91bd22d1a28c494ffd3c1b0df547104fa173ba0577e59bc7db",
+      ".agents/pstack/title.mjs": "0469631408516ce5c09a0fad97e829aa594dd465a194281a951d67b9bcb87c88",
       ".agents/pstack/decisions-check.mjs": "b187c74ad76f0822bdd8270f7fdd60427e8d7500036132d2f88df69c4365a1d8",
       ".agents/pstack/levels.mjs": "0201aeb50b3e27d1070d246ed06dc3950a2a208e340908b01b16a506ca65a17f",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
@@ -366,11 +366,11 @@
       ".agents/pstack/rules/reflect.md": "3c6396725d81b688e0e03ebba66c34cf549b93ac9a57d57fe7d4f389bfc2df51",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "c083944ff161c08480f33eb592f3789296a05d331155fa331fa815683793718a",
-      ".agents/pstack/rules/title.md": "21f35700a51d41ea370fd5b80f7c33d2f81b8ccf4747d8f5aaa9e63c4a81f711",
+      ".agents/pstack/rules/title.md": "9f32f41e312d3c44f5fcde7cd1dd9fe2de8fec03ef43812bb56f7e9cc9f40519",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af",
       ".claude/pstack-models.md": "13ad894ff4c98d47542efdcff2931bc96627a508e67f88674f42e4bd2b2a8f58"
     },
-    "source": "9a61ee345579660aabef680bd29dc76aece784b6"
+    "source": "aa6fbaf84e754e247157b4168f16258987f3b7a6"
   },
   "pageTopic": {
     "field": "review_scopes",
