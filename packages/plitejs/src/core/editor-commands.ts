@@ -85,7 +85,7 @@ import {
   readLastCommitAnnotation,
 } from './transaction-values';
 import { areEditorJsonValuesEqual } from './value-codec';
-import { canReplaceChildrenWithText, holdsWritableText } from './writable-text';
+import { holdsWritableText } from './writable-text';
 
 type CommandStateView = EditorStateView<Value, any>;
 
@@ -310,18 +310,6 @@ export const getFullySelectedSiblingBlocks = (
   return endsAtBlockEnd ? blocks : blocks.slice(0, -1);
 };
 
-const hasSiblingOutside = (
-  state: CommandStateView,
-  blocks: ReadonlyArray<NodeEntry<Element>>,
-  root: string | undefined
-) =>
-  PathApi.hasPrevious(getDefined(blocks[0])[1]) ||
-  state.nodes.get({
-    offset: 0,
-    path: PathApi.next(getDefined(blocks.at(-1))[1]),
-    ...(root ? { root } : {}),
-  }) !== undefined;
-
 const isGrid = (state: CommandStateView, node: Element) =>
   getCompiledEditorSchemaFromApi(state.schema)?.elements.byType.get(node.type)
     ?.structure?.kind === 'grid';
@@ -449,7 +437,11 @@ export const readWholeBlockLanding = (
 const writeWholeBlockLanding = (
   tx: EditorTransactionSpecBuilder,
   landing: WholeBlockLanding,
-  { at, direction }: { at: Range; direction: 'backward' | 'forward' }
+  {
+    at,
+    direction,
+    selectsText = false,
+  }: { at: Range; direction: 'backward' | 'forward'; selectsText?: boolean }
 ) => {
   const { blocks, root } = landing;
   const [, firstPath] = getDefined(blocks[0]);
@@ -497,6 +489,8 @@ const writeWholeBlockLanding = (
     replace(parentPath, index + 1, blocks.length - 1);
     if (RangeApi.isCollapsed(landing.text)) {
       collapse(landing.text.anchor);
+    } else if (selectsText) {
+      tx.selection.set(landing.text);
     } else {
       tx.fragment.delete({ at: landing.text, direction });
     }
@@ -586,16 +580,13 @@ const blockReplacing = (
   at: Path,
   root: string,
   text: string,
-  marks: Record<string, unknown> | null,
-  shell?: Element
+  marks: Record<string, unknown> | null
 ): Descendant | null => {
   const publicRoot = toPublicRoot(root);
-  const defaultChild =
-    shell ??
-    state.schema.createDefaultChild({
-      at,
-      root: publicRoot,
-    });
+  const defaultChild = state.schema.createDefaultChild({
+    at,
+    root: publicRoot,
+  });
   // New text drops the properties the schema drops on copy, such as review
   // marks of the text it replaces.
   const copied = marks
@@ -654,6 +645,59 @@ const blockReplacing = (
 
 const LINE_BREAK_PATTERN = /\r|\n/;
 
+const typesInPlace = (
+  state: CommandStateView,
+  blocks: ReadonlyArray<NodeEntry<Element>>,
+  text: string
+) =>
+  blocks.length === 1 &&
+  getInternalEditorSchemaFromApi(state.schema).canContain(
+    getDefined(blocks[0])[0],
+    { text }
+  );
+
+const readRangeLanding = (state: CommandStateView, range: Range) => {
+  if (RangeApi.isCollapsed(range)) return null;
+
+  const root = rootOrUpdateRoot(range.anchor.root ?? range.focus.root);
+  const landing = readWholeBlockLanding(state, range, {
+    root,
+    tripleClicked: null,
+  });
+
+  const lands =
+    landing?.keeps === 'first'
+      ? !landing.spansLines
+      : landing?.keeps === 'default' && !landing.whole;
+
+  return landing && lands ? { landing, root } : null;
+};
+
+const breakAfterLanding = (
+  state: CommandStateView,
+  write: (tx: EditorTransactionSpecBuilder) => void
+) => {
+  const selection = state.selection();
+  const range = RangeApi.isRange(selection)
+    ? resolveCommandRange(state, selection)
+    : null;
+  const over = range && readRangeLanding(state, range);
+
+  if (range && over) {
+    refuseCrossing(getSetSite(getActiveCommandEditor()), range, over.root);
+  }
+
+  return state.transaction((tx) => {
+    if (range && over) {
+      writeWholeBlockLanding(tx, over.landing, {
+        at: range,
+        direction: 'backward',
+      });
+    }
+    write(tx);
+  });
+};
+
 const getFullBlockTextReplacement = (
   state: CommandStateView,
   range: Range,
@@ -667,37 +711,25 @@ const getFullBlockTextReplacement = (
 
   if (!blocks) return null;
 
-  const [firstBlock, firstPath] = getDefined(blocks[0]);
+  const [, firstPath] = getDefined(blocks[0]);
 
-  if (
-    !force &&
-    blocks.length === 1 &&
-    getInternalEditorSchemaFromApi(state.schema).canContain(firstBlock, {
-      text,
-    })
-  ) {
-    return null;
-  }
+  if (!force && typesInPlace(state, blocks, text)) return null;
 
   const root = rootOrUpdateRoot(range.anchor.root ?? range.focus.root);
-  const keepsFirstBlock =
-    blocks.length > 1 &&
-    hasSiblingOutside(state, blocks, toPublicRoot(root)) &&
-    canReplaceChildrenWithText(
-      getInternalEditorSchemaFromApi(state.schema),
-      firstBlock
-    );
+  const publicRoot = toPublicRoot(root);
+  const inRoot = publicRoot ? { root: publicRoot } : {};
   const replacement = blockReplacing(
     state,
-    getDefined(blocks[0])[1],
+    firstPath,
     root,
     text,
     (typing ? state.marks() : null) ??
       getConsistentBlockTextMarks(
         state,
-        blocks.map(([block]) => state.key(block))
-      ),
-    keepsFirstBlock ? { ...firstBlock, children: [{ text: '' }] } : undefined
+        blocks.map(([, path]) =>
+          getDefined(state.key({ offset: 0, path, ...inRoot }))
+        )
+      )
   );
 
   if (!replacement) return null;
@@ -708,11 +740,10 @@ const getFullBlockTextReplacement = (
 
   const parentPath = PathApi.parent(firstPath);
   const index = getDefined(firstPath.at(-1));
-  const publicRoot = toPublicRoot(root);
   const point: Point = {
     offset: text.length,
     path: [...parentPath, index, ...firstText[1]],
-    ...(publicRoot ? { root: publicRoot } : {}),
+    ...inRoot,
   };
 
   return {
@@ -947,7 +978,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   insertBreak: defineCommand('break.insert', {
     build: ({ state }) =>
-      state.transaction((tx) => {
+      breakAfterLanding(state, (tx) => {
         tx.break.insert();
       }),
   }),
@@ -967,7 +998,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   insertSoftBreak: defineCommand('break.insertSoft', {
     build: ({ state }) =>
-      state.transaction((tx) => {
+      breakAfterLanding(state, (tx) => {
         tx.break.insertSoft();
       }),
   }),
@@ -1034,6 +1065,34 @@ export const editorCommands: EditorCommands = Object.freeze({
       const replacementText = range
         ? limitTextInsert(state, input.text, { at: range })
         : input.text;
+      const over =
+        range && !LINE_BREAK_PATTERN.test(replacementText)
+          ? readRangeLanding(state, range)
+          : null;
+
+      if (
+        range &&
+        over?.landing.keeps === 'first' &&
+        !typesInPlace(state, over.landing.blocks, replacementText)
+      ) {
+        const { landing } = over;
+
+        return state.transaction((tx) => {
+          writeWholeBlockLanding(tx, landing, {
+            at: range,
+            direction: 'backward',
+            selectsText: true,
+          });
+          tx.text.insert(
+            replacementText,
+            input.options?.at === undefined
+              ? input.options
+              : { ...input.options, at: landing.text }
+          );
+          if (typing) setNextKeyMarks(getActiveCommandEditor());
+        });
+      }
+
       const replacement = range
         ? getFullBlockTextReplacement(
             state,
