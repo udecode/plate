@@ -3860,10 +3860,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:2382edd8f5f4f236",
+  "fingerprint": "fnv1a64:4154ff469aa554ab",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:2382edd8f5f4f236",
+    "fingerprint": "fnv1a64:4154ff469aa554ab",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -5621,6 +5621,28 @@
       },
       {
         "descriptor": {
+          "default": false,
+          "kind": "boolean",
+          "omitDefault": true,
+          "required": false
+        },
+        "exclusiveGroupIds": [],
+        "id": "text:rawHtml@42d627abd7985516",
+        "key": "rawHtml",
+        "lifecycle": {
+          "copy": "preserve",
+          "inclusive": false,
+          "split": "preserve",
+          "typeChange": "preserve-if-allowed"
+        },
+        "merge": "replace",
+        "owner": "rawHtml",
+        "placement": "text",
+        "role": "content",
+        "target": null
+      },
+      {
+        "descriptor": {
           "kind": "enum",
           "omitDefault": false,
           "required": false,
@@ -5952,6 +5974,10 @@
       ],
       [
         "text:kbd@26be899c0d1b681a",
+        []
+      ],
+      [
+        "text:rawHtml@42d627abd7985516",
         []
       ],
       [
@@ -6844,6 +6870,15 @@
         }
       ],
       [
+        "text:rawHtml@42d627abd7985516",
+        {
+          "copy": "preserve",
+          "inclusive": false,
+          "split": "preserve",
+          "typeChange": "preserve-if-allowed"
+        }
+      ],
+      [
         "text:script@508ca8ff29baaad6",
         {
           "copy": "preserve",
@@ -7191,6 +7226,12 @@
             ]
           ],
           [
+            "rawHtml",
+            [
+              "text:rawHtml@42d627abd7985516"
+            ]
+          ],
+          [
             "script",
             [
               "text:script@508ca8ff29baaad6"
@@ -7478,6 +7519,10 @@
         "replace"
       ],
       [
+        "text:rawHtml@42d627abd7985516",
+        "replace"
+      ],
+      [
         "text:script@508ca8ff29baaad6",
         "replace"
       ],
@@ -7505,6 +7550,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7523,6 +7569,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7541,6 +7588,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7559,6 +7607,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7577,6 +7626,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7595,6 +7645,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7613,6 +7664,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7631,6 +7683,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7649,6 +7702,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7667,6 +7721,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7685,6 +7740,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7703,6 +7759,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7721,6 +7778,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7739,6 +7797,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7757,6 +7816,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7775,6 +7835,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7793,6 +7854,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7811,6 +7873,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7829,6 +7892,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7847,6 +7911,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7865,6 +7930,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7883,6 +7949,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7901,6 +7968,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7919,6 +7987,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7937,6 +8006,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7955,6 +8025,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -7973,6 +8044,7 @@
           "text:highlight@b4c2a38d602e5889",
           "text:italic@4f9fcc9f4f2d32c1",
           "text:kbd@26be899c0d1b681a",
+          "text:rawHtml@42d627abd7985516",
           "text:script@508ca8ff29baaad6",
           "text:strikethrough@9568299587c9032e",
           "text:underline@e3a9db819714dd91"
@@ -8090,6 +8162,7 @@
       "text:highlight@b4c2a38d602e5889",
       "text:italic@4f9fcc9f4f2d32c1",
       "text:kbd@26be899c0d1b681a",
+      "text:rawHtml@42d627abd7985516",
       "text:script@508ca8ff29baaad6",
       "text:strikethrough@9568299587c9032e",
       "text:underline@e3a9db819714dd91"
