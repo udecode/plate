@@ -84,6 +84,16 @@
         ]
       },
       {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/tooling/scripts/type-probe-guard.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/type-probe-guard.mjs\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Read|Grep|Glob|Bash|Edit|MultiEdit|Write|NotebookEdit|Agent",
         "hooks": [
           {
