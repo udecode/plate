@@ -91,10 +91,15 @@ const log = await git(
 );
 const commits = new Map();
 const landedOn = new Map();
+const planLines = new Map();
 for (const record of log.split('\u001E').filter(Boolean)) {
   const [sha, date, subject, body] = record.split('\u001F');
   commits.set(sha, { sha, date, subject });
-  for (const [, plan] of body.matchAll(/^Plan: (\S+)\s*$/gmu)) {
+  const named = [...body.matchAll(/^Plan: (\S+)\s*$/gmu)].map(
+    ([, plan]) => plan
+  );
+  planLines.set(sha, named);
+  for (const plan of named) {
     if (date <= values.until && !landedOn.has(plan)) landedOn.set(plan, date);
   }
 }
@@ -215,13 +220,37 @@ const ownersOf = (files) => {
   return owned;
 };
 
-const starts = new Map();
-const startOf = (id) => {
-  if (starts.has(id)) return starts.get(id);
-  const head = headsOf(ledger, id)
+const headOf = (id) =>
+  headsOf(ledger, id)
     .filter((review) => review.verdict && review.date <= values.until)
     .sort((a, b) => a.date.localeCompare(b.date))
     .at(-1);
+const builds = new Map();
+const buildsOf = (id) => {
+  if (!builds.has(id)) {
+    const head = headOf(id);
+    builds.set(
+      id,
+      new Set(
+        head?.verdict === 'pursue'
+          ? plans
+              .filter(
+                (plan) =>
+                  plan.scopes.includes(id) &&
+                  (plan.path === head.path ||
+                    plan.reviewBasis.includes(head.id))
+              )
+              .map((plan) => plan.path)
+          : []
+      )
+    );
+  }
+  return builds.get(id);
+};
+const starts = new Map();
+const startOf = (id) => {
+  if (starts.has(id)) return starts.get(id);
+  const head = headOf(id);
   let start = head
     ? { date: head.date, label: `${head.date} ${head.verdict}` }
     : { date: '', label: '-' };
@@ -255,7 +284,9 @@ const given = values.fix.map((rev) =>
 );
 const chosen = fixes.filter((fix) => given.includes(fix.sha));
 const ignored = given.filter((sha) => !chosen.some((fix) => fix.sha === sha));
-const counts = (fix, id) => fix.date > startOf(id).date;
+const counts = (fix, id) =>
+  fix.date > startOf(id).date &&
+  !(planLines.get(fix.sha) ?? []).some((plan) => buildsOf(id).has(plan));
 let targets = null;
 if (given.length) {
   targets = new Set();
