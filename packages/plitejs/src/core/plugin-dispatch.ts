@@ -147,7 +147,6 @@ export const dispatchPluginUpdate = (
   let located: readonly unknown[] | null = args;
   const inheritedRoot = context.pluginRoot;
   const locateCall = (framePlace?: EditorCommandPlace) => {
-    const calledInFrame = !framePlace && COMMAND_FRAMES.has(editor);
     let targetRoot: string | undefined;
     if (typeof locate === 'function') {
       located = locate(args, {
@@ -161,11 +160,11 @@ export const dispatchPluginUpdate = (
                 : lookupElementId(editor, id);
           if (holder === null) return null;
           const keyRoot = holder ? holder.root : getNodeTargetRoot(editor, at);
-          const hiddenFromFrame =
-            calledInFrame &&
+          const resolvesNowhere =
+            !framePlace &&
             keyRoot === undefined &&
             (typeof at === 'string' || NodeApi.isDescendant(at));
-          if (hiddenFromFrame) return null;
+          if (resolvesNowhere) return null;
           const root =
             keyRoot ??
             (SelectionApi.isNode(at) || RangeApi.isRange(at)

@@ -168,8 +168,11 @@ result as an internal invariant failure.
 When the schema declares `id` as a generated, unique string property of every
 element type, as Plate's `ElementIdPlugin` does, and no content admits
 undeclared element types, an element's stored `id` is also a target. `{ id }`
-works as `at` on node reads and node transforms and acts as the key of the
-element that holds the id, so writes reach the element in its own root. Text,
+works as `at` on node reads and node transforms, and a write reaches the
+element that holds the id in its own root. A view bound to a root looks an id
+up only in that root, so its `nodes.get({ id })` and `nodes.path({ id })`
+return nothing for an id another root holds, while a node key reads the
+element in whichever root holds it. Text,
 mark, range and offset targets keep their point or range. An object is an id
 target only when it is not an array and its one own key is a string `id`. A
 command, a plugin update method and every one-shot on `editor.update` or on

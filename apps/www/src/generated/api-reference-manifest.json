@@ -10370,7 +10370,7 @@
         },
         "platejs:txLocate": {
           "aliases": [],
-          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` only places its\narguments, so an id that names no element still does nothing. A method\ncalled with arguments that has no declaration throws.",
+          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there. A node key or\nlive node that no root holds has no place either. Either way the method\ndoes nothing and the call returns undefined. `false` says the arguments\nhold no location. A call that passes a function runs in the caller's root,\nand `locate` only places its arguments, so an id or key that names no\nelement still does nothing. A method called with arguments that has no\ndeclaration throws.",
           "entrypoint": "platejs",
           "kind": "const",
           "name": "txLocate",
@@ -28334,7 +28334,7 @@
         },
         "platejs/react:txLocate": {
           "aliases": [],
-          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` only places its\narguments, so an id that names no element still does nothing. A method\ncalled with arguments that has no declaration throws.",
+          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there. A node key or\nlive node that no root holds has no place either. Either way the method\ndoes nothing and the call returns undefined. `false` says the arguments\nhold no location. A call that passes a function runs in the caller's root,\nand `locate` only places its arguments, so an id or key that names no\nelement still does nothing. A method called with arguments that has no\ndeclaration throws.",
           "entrypoint": "platejs/react",
           "kind": "const",
           "name": "txLocate",

@@ -64,7 +64,9 @@ root's view. A node key, a live node, or a point or range that names its root
 picks the root. A bare path addresses the caller's root, and a call with no
 target runs in the view's own root, or in the caret's root when called on the
 editor. `txSelection` and `txOnly` methods, and a call that passes a function,
-skip this routing and run in the caller's root.
+skip this routing and run in the caller's root. A `txLocate` method called with
+a node key or live node that no root holds does nothing and returns
+`undefined`, even when the call passes a function.
 
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.

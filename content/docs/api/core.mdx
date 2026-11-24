@@ -539,8 +539,7 @@ An editor that stores IDs finds and targets an element by its ID:
 - `tx.nodes.byId(id)`: the same lookup inside an update, read from its draft.
   It throws once its update ends.
 - `{ id }`: a node target, such as `nodes.path({ id })` on a read or
-  `at: { id }` on a transform, which acts as the key of the element that holds
-  the ID. Text, mark, range and offset targets keep their point or range. A
+  `at: { id }` on a transform, which names the element that holds the ID. Text, mark, range and offset targets keep their point or range. A
   target is an ID only as an object, not an array, whose one own key is a
   string `id`.
 
@@ -556,7 +555,9 @@ and change nothing for an ID that only a struck original holds. A path in
 stored document. A raw `editor.update((tx) => ...)` looks the ID up in the
 stored draft, as it resolves a path or a key, so it reaches the struck
 original. An editor view answers from its own document, except a read while a
-command runs, which answers from the command's document. When no element holds
+command runs, which answers from the command's document. A view bound to a
+root reads an ID only in that root, while a node key reads the element in
+whichever root holds it. When no element holds
 the ID, a write changes nothing and a read returns its empty result.
 [Node identity](/docs/editor#node-identity) shows each route.
 

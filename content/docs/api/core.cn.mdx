@@ -461,7 +461,7 @@ editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 - `tx.nodes.byId(id)`：update 内的同一查找，从该 update 的草稿读取。update 结束
   后调用会抛出错误。
 - `{ id }`：节点 target，例如读取时的 `nodes.path({ id })` 或变换时的
-  `at: { id }`，相当于持有该 ID 的元素的 key。
+  `at: { id }`，指向持有该 ID 的元素。
   文本、mark、range 和 offset target 仍使用各自的点或范围。只有当一个非数组对象
   唯一的自有键是字符串 `id` 时，它才是 ID target。
 
@@ -475,7 +475,8 @@ editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 `before` 中的路径，以及子节点的 `position`，仍指向已存储文档中的位置。原始的
 `editor.update((tx) => ...)` 在已存储的草稿中查找 ID，与它解析路径或 key 的方式
 相同，因此会指向被删除线标记的原件。editor view 从它自己的文档中回答，但命令运行
-期间的读取从命令的文档中回答。没有元素持有该 ID 时，写入不做任何更改，读取返回它
+期间的读取从命令的文档中回答。绑定到某个 root 的 view 只在该 root 中读取 ID，而
+节点 key 会读取任一 root 中持有它的元素。没有元素持有该 ID 时，写入不做任何更改，读取返回它
 的空结果。[节点身份](/cn/docs/editor#节点身份)展示了每种途径。
 
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。把

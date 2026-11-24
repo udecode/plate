@@ -293,7 +293,9 @@ editor.update.highlight.clear({ at: bodyBlock }); // clears one primary-document
 
 A call whose targets sit in two roots throws before the method runs.
 `txSelection` and `txOnly` methods, and a call that passes a function, run in
-the caller's root.
+the caller's root. A `txLocate` method called with a node key or live node that
+no root holds does nothing and returns `undefined`, even when the call passes a
+function.
 
 ## Declare feature format mappings
 

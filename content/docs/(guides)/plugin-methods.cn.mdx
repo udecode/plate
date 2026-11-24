@@ -261,7 +261,8 @@ editor.update.highlight.clear({ at: bodyBlock }); // 清除主文档中的一个
 ```
 
 目标分属两个 root 时，方法运行前就会抛错。`txSelection` 和 `txOnly` 方法，以及传入
-函数的调用，在调用方的 root 中运行。
+函数的调用，在调用方的 root 中运行。用 `txLocate` 声明的方法，以没有任何 root 持有
+的节点 key 或实时节点调用时，不做任何事并返回 `undefined`，即使调用传入了函数。
 
 ## 声明 feature format mapping
 

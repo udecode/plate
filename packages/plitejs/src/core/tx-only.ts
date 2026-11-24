@@ -128,11 +128,13 @@ const TX_LOCATES = getRuntimeRegistry(
  * Declare where a plugin update method's arguments land. The method runs in
  * the root of the targets `locate` places. While a command document is
  * registered, `locate` also maps them into the document editing commands
- * decide on, or returns null when they have no place there, so the method
- * does nothing. `false` says the arguments hold no location. A call that
- * passes a function runs in the caller's root, and `locate` only places its
- * arguments, so an id that names no element still does nothing. A method
- * called with arguments that has no declaration throws.
+ * decide on, or returns null when they have no place there. A node key or
+ * live node that no root holds has no place either. Either way the method
+ * does nothing and the call returns undefined. `false` says the arguments
+ * hold no location. A call that passes a function runs in the caller's root,
+ * and `locate` only places its arguments, so an id or key that names no
+ * element still does nothing. A method called with arguments that has no
+ * declaration throws.
  */
 export const txLocate = <TMethod extends (...args: never[]) => unknown>(
   locate: NoInfer<BivariantLocate<Parameters<TMethod>>> | false,

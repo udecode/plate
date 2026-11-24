@@ -66,6 +66,7 @@ import {
   createEditorViewReadState,
   createEditorViewTransactionState,
   doesSelectionIntersect,
+  elementIdOf,
   flushEditorViewState,
   getBaseCallRoot,
   getCurrentSelection,
@@ -110,10 +111,12 @@ import type {
   AnyEditor as Editor,
   EditorAnchorApi,
   EditorElementEntry,
+  ElementIdTarget,
   EditorCommitContext,
   EditorDocumentValue,
   PluginReference,
   EditorKeyApi,
+  EditorNodeGetOptions,
   EditorParentOptions,
   EditorSelectionBlockOptions,
   EditorSnapshot,
@@ -128,6 +131,7 @@ import type {
   EditorView,
   EditorViewOptions,
   NamedRootKey,
+  NodeKey,
   NodeTarget,
   RootKey,
   Selection,
@@ -137,7 +141,7 @@ import type {
 } from './interfaces/editor';
 import type { ElementIn, ElementOrTextIn } from './interfaces/element';
 import type { Location } from './interfaces/location';
-import type { Ancestor, Descendant, NodeEntry } from './interfaces/node';
+import type { Ancestor, Descendant, Node, NodeEntry } from './interfaces/node';
 import { type Range, RangeApi } from './interfaces/range';
 import type { SchemaPropertyHandle } from './interfaces/schema';
 import type { NodeSelection } from './interfaces/selection';
@@ -622,6 +626,17 @@ const withRootChildren = <
     viewState.root === MAIN_ROOT_KEY || entry?.root !== undefined
       ? entry
       : null;
+  const getWithIdInOwnRoot = ((
+    target: ElementIdTarget | Location | NodeKey,
+    options?: EditorNodeGetOptions<Node>
+  ) => {
+    if (elementIdOf(target) === undefined) {
+      return state.nodes.get(target, options);
+    }
+    const path = state.nodes.path(target);
+
+    return path && state.nodes.get(path, options);
+  }) as T['nodes']['get'];
 
   return withElementFinder(
     {
@@ -641,7 +656,7 @@ const withRootChildren = <
       entries: rootGeneratorMethod(editor, viewState, state.nodes.entries),
       find: rootMethod(editor, viewState, state.nodes.find),
       first: rootMethod(editor, viewState, state.nodes.first),
-      get: rootMethod(editor, viewState, state.nodes.get),
+      get: rootMethod(editor, viewState, getWithIdInOwnRoot),
       last: rootMethod(editor, viewState, state.nodes.last),
       leaf: rootMethod(editor, viewState, state.nodes.leaf),
       levels: rootGeneratorMethod(editor, viewState, state.nodes.levels),

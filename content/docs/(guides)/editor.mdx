@@ -633,7 +633,7 @@ when the schema gives every element type a generated, unique string `id`, as
 `ElementIdPlugin`'s default target does, and no content admits undeclared
 element types. In any other editor, both throw.
 
-An `{ id }` target acts as the key of the element that holds the ID. Text,
+An `{ id }` target names the element that holds the ID. Text,
 mark, range and offset targets keep their point or range. A target is an ID
 only as an object, not an array, whose one own key is a string `id`, so a live
 element that carries an `id` stays a node target. When no element holds the
@@ -651,7 +651,10 @@ The route decides which document the ID is looked up in:
 - A raw `editor.update((tx) => ...)` looks it up in the stored draft, as it
   resolves a path or a key. It reaches the struck original.
 - An editor view answers from its own document. A read on a view while a
-  command runs answers from the command's document.
+  command runs answers from the command's document. A view bound to a root
+  reads an ID only in that root, so its `nodes.get({ id })` and
+  `nodes.path({ id })` return nothing for an ID another root holds. A node key
+  still reads the element in whichever root holds it.
 
 The default generator is full-length `nanoid()`. Loads and moves preserve valid
 IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. No two
