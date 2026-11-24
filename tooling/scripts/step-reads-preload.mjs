@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const dir = process.env.STEP_READS_LOG;
 
 if (dir) {
-  const { writeFileSync } = fs;
+  const { renameSync, writeFileSync } = fs;
   const seen = { listed: new Set(), probed: new Set(), read: new Set() };
   const spawns = new Set();
   const toPath = (target) => {
@@ -141,12 +141,15 @@ if (dir) {
     },
   });
 
+  // A process can outlive the step that started it, so its record appears
+  // under its .json name only once it is whole.
   process.on('exit', () => {
+    const record = path.join(
+      dir,
+      `${process.pid}-${Math.random().toString(36).slice(2)}`
+    );
     writeFileSync(
-      path.join(
-        dir,
-        `${process.pid}-${Math.random().toString(36).slice(2)}.json`
-      ),
+      `${record}.tmp`,
       JSON.stringify({
         argv: process.argv.slice(1),
         listed: [...seen.listed],
@@ -155,5 +158,6 @@ if (dir) {
         spawns: [...spawns],
       })
     );
+    renameSync(`${record}.tmp`, `${record}.json`);
   });
 }

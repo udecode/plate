@@ -92,9 +92,9 @@ const runTraced = ({ command, dir }) => {
     maxBuffer: 1024 * 1024 * 256,
     stdio: ['ignore', 'ignore', 'pipe'],
   });
-  const processes = readdirSync(log).map((name) =>
-    readJson(path.join(log, name))
-  );
+  const processes = readdirSync(log)
+    .filter((name) => name.endsWith('.json'))
+    .map((name) => readJson(path.join(log, name)));
   rmSync(log, { force: true, recursive: true });
   return {
     processes,
