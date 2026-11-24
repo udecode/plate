@@ -360,6 +360,9 @@ const SEAT_ROLES = ['interrogate reviewers', 'arena runners'];
 const SEAT_FLOOR = 'high';
 const NEVER = /\b(?:sonnet|haiku)\b/gu;
 
+const ROLE_LINE = /^([a-z][a-z ,-]*):\s*(.*)$/u;
+export const LOCAL_SHEET = '.claude/pstack-models.local.md';
+
 // A Claude Code sheet committed at the repository root replaces each person's, as pstack's session hook reads it.
 export const modelsSheet = (runtime, env = process.env, root = process.cwd()) =>
   runtime === 'claude'
@@ -368,12 +371,32 @@ export const modelsSheet = (runtime, env = process.env, root = process.cwd()) =>
       : join(env.HOME ?? homedir(), '.claude/pstack-models.md')
     : join(env.CODEX_HOME ?? join(env.HOME ?? homedir(), '.codex'), 'pstack-models.md');
 
+export function localOverrides(main) {
+  const path = join(main, LOCAL_SHEET);
+  if (!existsSync(path)) return null;
+  return { path, lines: readFileSync(path, 'utf8').split('\n').filter((line) => ROLE_LINE.test(line)) };
+}
+
+export function effectiveModelsSheet(runtime, env = process.env, root = process.cwd(), main = mainCheckout(root)) {
+  const path = modelsSheet(runtime, env, root);
+  const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
+  const trunk = readJson(join(root, '.agents/pstack.json'))?.delivery === 'trunk';
+  const local = runtime === 'claude' && trunk ? localOverrides(main) : null;
+  if (!local) return { paths: [path], text };
+  const overrides = new Map(local.lines.map((line) => [line.match(ROLE_LINE)[1], line]));
+  const lines = text ? text.trimEnd().split('\n') : [];
+  const committed = new Set(lines.map((line) => line.match(ROLE_LINE)?.[1]));
+  const added = [...overrides].filter(([role]) => !committed.has(role)).map(([, line]) => line);
+  const merged = [...lines.map((line) => overrides.get(line.match(ROLE_LINE)?.[1]) ?? line), ...added];
+  return { paths: [path, local.path], text: `${merged.join('\n')}\n` };
+}
+
 /** Each way a models sheet seats the wrong models, written as the edit that fixes it. */
 export function sheetMisses(text, max) {
   const roles = new Map(
     (text ?? '')
       .split('\n')
-      .map((line) => line.match(/^([a-z][a-z ,-]*):\s*(.*)$/u))
+      .map((line) => line.match(ROLE_LINE))
       .filter(Boolean)
       .map(([, role, value]) => [role, value])
   );

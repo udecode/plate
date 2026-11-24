@@ -77,11 +77,17 @@
 //        same step, or names one that no Word cell of the Defaults in the plan beside a
 //        .decisions.tsv log offers, or, for a log in the plans directory of the checkout
 //        that holds it, when that plan is missing.
-//        node .agents/pstack/decisions-check.mjs rounds <log> [--patch <file>]
+//        node .agents/pstack/decisions-check.mjs rounds <log> [--step <id>] [--patch <file>]
 //        (exits 1 when the log is at the cap of panel rounds since its last restart, the
 //        maxRounds in .agents/pstack.json or 1, plus one round after a round that applied
 //        three or more critical findings; a built: row restarts the count only for a step
-//        the log has not built before; with --patch, also exits 1 when the patch
+//        the log has not built before; --step counts only the seats rows whose evidence
+//        names "reviewed step: <id>" since that step's first built: row or the last
+//        "another round:" row, exits 1 when the log has no built: row for that step
+//        whose result starts with applied, fixed, partial, proven, recorded or verified;
+//        without --step it exits 1 once a seats row named its step, until an "another
+//        round:" row or a built: row without a step id; with --patch, it judges the
+//        budget lift of the --step step, or else of the last built one, and also exits 1 when the patch
 //        changes more product lines than stepBudget.lines in .agents/pstack.json, 400 by
 //        default, not counting tests, specs, fixtures, Markdown, the plans directory, the
 //        config's generated paths or stepBudget.exclude globs, unless a build or owner
@@ -138,7 +144,7 @@ import { basename, dirname, isAbsolute, join, normalize, relative, resolve } fro
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, LEDGER_REF, ledgerPath, lockLedger, namesOwner, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, REFUSED, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, syncLedger, withoutPlannedWrites } from './tasks.mjs';
-import { acceptedWord, bigStepId, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isBigStep, isHandOffReview, liftsStep, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STATUSES, statusOf, STEP_CLOSED, STEP_ID as LOGGED_STEP_ID, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
+import { acceptedWord, bigStepId, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isBigStep, isHandOffReview, liftsStep, NAMED_STEP_END, NAMED_STEP_ID, NOT_PASSED, overBudget, plansOf, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, severityOf, STATUSES, statusOf, STEP_CLOSED, STEP_ID as LOGGED_STEP_ID, stepBudget, stepLines, stepRecords, tidy } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -155,23 +161,55 @@ const roundCap = () => {
 };
 const EXTRA_ROUND_FIXES = 3;
 const STEP_BUILT = new RegExp(String.raw`^built:\s*step\s+(${LOGGED_STEP_ID})(?![a-z0-9]|\.\d)`, 'iu');
-const ROUND_STEP = /^built:\s*step\s+([a-z0-9]+(?:[.-][a-z0-9]+)*)(?![a-z0-9]|[.-][a-z0-9])/iu;
+const RESTART_KEY = /^built:\s*step\s+([a-z0-9]+(?:[.-][a-z0-9]+)*)(?![a-z0-9]|[.-][a-z0-9])/iu;
+const NAMED_BUILD = new RegExp(String.raw`^built:\s*[Ss][Tt][Ee][Pp]\s+(${NAMED_STEP_ID})${NAMED_STEP_END}`, 'u');
+const REVIEWED_STEP = new RegExp(String.raw`^reviewed step:\s*(${NAMED_STEP_ID})$`, 'u');
+const NAMED_STEP_ARG = new RegExp(`^${NAMED_STEP_ID}$`, 'u');
+const reviewedStep = (evidence) => {
+  const items = evidence
+    .split(';')
+    .map((item) => item.trim())
+    .filter((item) => /^reviewed\s+steps?\b/iu.test(item));
+  const step = items.length === 1 ? (items[0].match(REVIEWED_STEP)?.[1].toLowerCase() ?? null) : null;
+  return { step, malformed: items.length > 0 && !step ? items.join('; ') : null };
+};
+const noRounds = () => ({ rounds: 0, applied: 0 });
+const roundCounts = (state) => {
+  if (!state.reviewing) return [state.log];
+  if (!state.byStep.has(state.reviewing)) state.byStep.set(state.reviewing, noRounds());
+  return [state.log, state.byStep.get(state.reviewing)];
+};
 // A built: row for a step the log has built before records that step's fixes, not a new diff, so it starts no count.
 function trackRound(state, line) {
-  const [, phase, decision = '', , , result = ''] = line.split('\t');
+  const [, phase, decision = '', , evidence = '', result = ''] = line.split('\t');
   if (phase === 'build' && /^built:\s*\S/u.test(decision) && /^(applied|fixed|partial|proven|recorded|verified)\b/u.test(result)) {
-    const step = decision.match(ROUND_STEP)?.[1].toLowerCase();
-    if (!step || !state.steps.has(step)) Object.assign(state, { rounds: 0, applied: 0 });
-    if (step) state.steps.add(step);
-  } else if (phase === 'owner' && /^another round:\s*\S/u.test(decision)) Object.assign(state, { rounds: 0, applied: 0 });
-  else if (opens(line)) Object.assign(state, { rounds: state.rounds + 1, applied: 0 });
-  else if (phase === 'panel' && /^critical\b/u.test(decision) && /^applied\b/u.test(result)) state.applied += 1;
+    const id = decision.match(NAMED_BUILD)?.[1].toLowerCase();
+    if (id && !state.stepsBuilt.has(id)) {
+      state.stepsBuilt.add(id);
+      state.byStep.delete(id);
+    }
+    const key = decision.match(RESTART_KEY)?.[1].toLowerCase();
+    if (key && state.built.has(key)) return;
+    state.log = noRounds();
+    if (key) state.built.add(key);
+    else state.named = false;
+  } else if (phase === 'owner' && /^another round:\s*\S/u.test(decision)) {
+    Object.assign(state, { log: noRounds(), named: false });
+    state.byStep.clear();
+  } else if (opens(line)) {
+    state.reviewing = reviewedStep(evidence).step;
+    state.named ||= Boolean(state.reviewing);
+    for (const count of roundCounts(state)) Object.assign(count, { rounds: count.rounds + 1, applied: 0 });
+  } else if (phase === 'panel' && /^critical\b/u.test(decision) && /^applied\b/u.test(result)) {
+    for (const count of roundCounts(state)) count.applied += 1;
+  }
 }
 const roundState = (lines) => {
-  const state = { rounds: 0, applied: 0, steps: new Set() };
+  const state = { log: noRounds(), byStep: new Map(), built: new Set(), stepsBuilt: new Set(), reviewing: null, named: false };
   for (const line of lines) trackRound(state, line);
   return state;
 };
+const capCount = (state, step) => (step ? (state.byStep.get(step) ?? noRounds()) : state.log);
 const ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, '\\': 92 };
 const encoder = new TextEncoder();
 // Git quotes a path that holds a double quote, a backslash, a control character or, unless core.quotePath is false, a non-ASCII byte, as "b/caf\303\251.js".
@@ -240,9 +278,16 @@ function buildBudgetProblems(path, existing, rows, where) {
   const unlifted = builds.find((at) => !own || !liftsStep([...existing, ...rows.slice(0, at)].join('\n'), undefined, stepOf(rows[at], 'build', STEP_BUILT)));
   return unlifted === undefined ? [] : [`${where(unlifted)}: ${top}'s change since ${step.base} ${overBudget(step.product, budget)}. Split it before you log more of its build`];
 }
-const capMessage = ({ rounds }) =>
-  `this would be panel round ${rounds + 1} since the last restart, past the cap of ${roundCap()}, and the last round applied fewer than ${EXTRA_ROUND_FIXES} critical findings, or already was the one extra round. Stop reviewing: settle each open finding as applied, dismissed on its proof, recorded when no user can reach its case, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, then build the plan or land the step. A built: row for a step this log has not built yet, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again; a built: row for a step already built does not`;
+const capMessage = ({ rounds }, step = null) =>
+  `this would be panel round ${rounds + 1} ${step ? `of step ${step} since its first built: row` : 'since the last restart'}, past the cap of ${roundCap()}, and the last round applied fewer than ${EXTRA_ROUND_FIXES} critical findings, or already was the one extra round. Stop reviewing: settle each open finding as applied, dismissed on its proof, recorded when no user can reach its case, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, then build the plan or land the step. ${step ? `Only an owner row whose decision starts with "another round:" and quotes the owner starts step ${step}'s count again` : `A built: row for a step this log has not built yet, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again; a built: row for a step already built does not. When this round reviews one step's diff and other steps were built beside it, add "reviewed step: <id>" to the seats row's evidence, which counts only that step's rounds since its first built: row`}`;
 const pastCap = ({ rounds, applied }) => rounds >= roundCap() && !(rounds === roundCap() && applied >= EXTRA_ROUND_FIXES);
+const capProblem = (state, { step, malformed = null }) => {
+  if (malformed) return `this seats row's evidence names "${malformed}"; name the reviewed step once, as one ;-separated item "reviewed step: <id>", where <id> is ASCII letters and digits joined by . or -, such as C.10`;
+  if (step && !state.stepsBuilt.has(step)) return `this seats row names reviewed step: ${step}, but no earlier build row's decision starts "built: step ${step}", with that id ending at a space, a comma, a colon, a semicolon, a closing bracket, a quote or a full stop, and a result that starts with applied, fixed, partial, proven, recorded or verified. Log that step's built: row first, or fix the step id`;
+  if (!step && state.named) return `an earlier seats row named its reviewed step, and no owner row starting "another round:" and no built: row without a step id came after it, so this one names its step too: add "reviewed step: <id>" as one ;-separated item of its evidence`;
+  const count = capCount(state, step);
+  return pastCap(count) ? capMessage(count, step) : null;
+};
 const stepOf = (line, phase, pattern) => {
   const cells = line.split('\t');
   return cells[1] === phase ? (cells[2]?.match(pattern)?.[1].toLowerCase() ?? null) : null;
@@ -738,7 +783,8 @@ function append(path, batch, run, miss = null) {
     if (opens(row) && roster && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
-    if (opens(row) && pastCap(round)) found.push(`${where}: ${capMessage(round)}`);
+    const capped = opens(row) && capProblem(round, reviewedStep(cells[3]));
+    if (capped) found.push(`${where}: ${capped}`);
     if (steps) {
       found.push(...stepInFlightProblems(steps, row, where));
       trackStep(steps, row);
@@ -815,15 +861,23 @@ function dispatch() {
   }
   if (args[0] === 'rounds') {
     if (!args[1] || !existsSync(args[1])) {
-      console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv> [--patch <file>]');
+      console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv> [--step <id>] [--patch <file>]');
       return 2;
     }
+    const stepArg = args.includes('--step') ? (args[args.indexOf('--step') + 1] ?? '') : null;
+    if (stepArg !== null && !NAMED_STEP_ARG.test(stepArg)) {
+      console.error('--step takes the id a seats row names as "reviewed step: <id>" in its evidence, such as 4b or C.10');
+      return 2;
+    }
+    const named = stepArg?.toLowerCase() ?? null;
     const lines = readFileSync(args[1], 'utf8').split('\n');
-    const round = roundState(lines);
-    console.info(`${round.rounds} panel round(s) since the last restart, the last applying ${round.applied} critical finding(s); the cap is ${roundCap()}, plus one round after a round that applies ${EXTRA_ROUND_FIXES} or more`);
+    const state = roundState(lines);
+    const round = capCount(state, named);
+    console.info(`${round.rounds} panel round(s) ${named ? `of step ${named} since its first built: row` : 'since the last restart'}, the last applying ${round.applied} critical finding(s); the cap is ${roundCap()}, plus one round after a round that applies ${EXTRA_ROUND_FIXES} or more`);
     let status = 0;
-    if (pastCap(round)) {
-      console.error(capMessage(round));
+    const capped = capProblem(state, { step: named });
+    if (capped) {
+      console.error(capped);
       status = 1;
     }
     const patchFile = args[args.indexOf('--patch') + 1];
@@ -835,7 +889,7 @@ function dispatch() {
       const budget = stepBudget(projectConfig());
       const { product, other } = patchLines(readFileSync(patchFile, 'utf8'), budget.excluded);
       console.info(`the patch changes ${product} product line(s), and ${other} more in tests, fixtures, Markdown, generated output and stepBudget.exclude globs; the step budget is ${budget.lines}`);
-      const reviewed = lines.reduce((step, line) => stepOf(line, 'build', STEP_BUILT) ?? step, null);
+      const reviewed = named ?? lines.reduce((step, line) => stepOf(line, 'build', STEP_BUILT) ?? step, null);
       if (product > budget.lines && !liftsStep(lines.join('\n'), opens, reviewed)) {
         console.error(`the patch ${overBudget(product, budget.lines)}. That row lifts the budget for one diff round, whose brief asks the seats what the step can delete as well as what is wrong`);
         status = 1;

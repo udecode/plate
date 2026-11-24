@@ -29,10 +29,15 @@ export const bigStepId = (decision, word) => {
   const step = liftedStep(decision);
   return step && plainWord(word ?? '') === `split step ${step}` ? step : null;
 };
+// ASCII and matched without the i flag, because under the u flag case folding turns ſ into s.
+export const NAMED_STEP_ID = String.raw`[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*`;
+export const NAMED_STEP_END = String.raw`(?=$|\s|[,;:)\]}'"’”]|\.(?![\p{L}\p{N}]))`;
+const namedLift = new RegExp(String.raw`^big step:\s*[Ss]tep\s+(${NAMED_STEP_ID})${NAMED_STEP_END}`, 'u');
+const liftNames = (decision) => liftedStep(decision) ?? decision.match(namedLift)?.[1].toLowerCase() ?? null;
 export const liftsStep = (text, ends = () => false, step = null) =>
   text.split('\n').reduce((lifted, line) => {
     const [, phase, decision = ''] = line.split('\t');
-    if (isBigStep(phase, decision)) return lifted || !step || [null, step].includes(liftedStep(decision));
+    if (isBigStep(phase, decision)) return lifted || !step || [null, step].includes(liftNames(decision));
     return LANDED_ROW.test(decision) || (phase === 'delivery' && STEP_CLOSED.test(decision)) || ends(line) ? false : lifted;
   }, false);
 export const overBudget = (product, lines) =>

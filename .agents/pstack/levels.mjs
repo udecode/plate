@@ -13,7 +13,7 @@
 //        --seats replaces the configured seats of every round)
 
 import { existsSync, readFileSync } from 'node:fs';
-import { capEffort, EFFORTS, findLead, maxEffort, modelsSheet } from './lead.mjs';
+import { capEffort, EFFORTS, findLead, maxEffort, effectiveModelsSheet } from './lead.mjs';
 
 const rank = (effort) => EFFORTS.indexOf(effort);
 const MODEL = /^(?:(?:codex|agy):[\w.-]+|claude-[\w.-]+|gpt-[\w.-]+|gemini-[\w.-]+|opus|sonnet|haiku|fable)$/u;
@@ -161,8 +161,7 @@ function main(argv) {
     return [error.message, 1];
   }
   const run = { ...found, effort: capEffort(found.effort, max) };
-  const sheetPath = modelsSheet(family(run.model) === 'claude' ? 'claude' : 'codex');
-  const sheet = existsSync(sheetPath) ? readFileSync(sheetPath, 'utf8') : null;
+  const { text: sheet } = effectiveModelsSheet(family(run.model) === 'claude' ? 'claude' : 'codex');
   const sheetEffort = sheet?.match(/^default effort:\s*(\w+)/mu)?.[1];
   const defaultEffort = !sheetEffort || sheetEffort === 'session' ? run.effort : sheetEffort;
   const agents = existsSync('AGENTS.md') ? readFileSync('AGENTS.md', 'utf8') : null;

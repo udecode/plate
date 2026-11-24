@@ -148,3 +148,4 @@ packages/platejs/docs/
 /autoresearch.*
 /autoresearch.research/
 
+.claude/*.local.md

@@ -25,6 +25,9 @@
 // When the session's pstack install is older than the tag .claude/settings.json
 // pins, a --hook run updates a Claude Code install and says to restart, and
 // prints the update command for a Codex one.
+// A Claude Code session also hears the role lines of the person's own
+// .claude/pstack-models.local.md in the main checkout, which override the
+// committed sheet's.
 // It prints one line per action for the session. In a session cross.mjs starts
 // read-only, which sets PSTACK_READ_ONLY, it does nothing.
 
@@ -32,7 +35,7 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { hookPayload, sessionCheckout } from './checkout.mjs';
-import { pluginLag, runtimeFromEnv } from './lead.mjs';
+import { localOverrides, pluginLag, runtimeFromEnv } from './lead.mjs';
 import { LEDGER, LEDGER_REF, ledgerPath, lockLedger, REFUSED, syncLedger } from './tasks.mjs';
 
 // The ledger outgrows spawnSync's 1 MB default buffer, which cuts its output off without failing.
@@ -105,6 +108,9 @@ if (linked) {
   if (!main) process.exit();
   process.chdir(main);
 }
+
+const local = runtime === 'codex' ? null : localOverrides(process.cwd());
+if (local?.lines.length) console.log(`setup.mjs: ${local.path} overrides these lines of .claude/pstack-models.md for this person:\n${local.lines.join('\n')}`);
 
 const rows = (text) => text.slice(0, text.lastIndexOf('\n') + 1).split('\n').filter(Boolean);
 
