@@ -20,6 +20,7 @@ import {
 import type { RuntimePluginReference } from '../../facade';
 import { getPlateNodeMappingContributions } from '../../internal/plugin/collectPlateNodeMappings';
 import { getPluginStore } from '../../internal/plugin/pluginStore';
+import { readVSCodeLanguage } from '../../internal/utils/vscodeClipboard';
 import {
   projectPlateFormatDocument,
   withPlateFormatCompilation,
@@ -99,7 +100,13 @@ const shouldParseMarkdown = (
   data: string,
   source: { files: { length: number }; getData: (format: string) => string }
 ) => {
-  if (source.getData('text/html')) return false;
+  // VS Code's HTML only colors the Markdown source it copied.
+  if (
+    source.getData('text/html') &&
+    readVSCodeLanguage(source) !== 'markdown'
+  ) {
+    return false;
+  }
   if (source.files.length === 0 && isUrl(data)) return false;
 
   return true;

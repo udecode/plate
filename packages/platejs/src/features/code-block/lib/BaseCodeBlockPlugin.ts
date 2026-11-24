@@ -36,6 +36,7 @@ import {
   canReplaceContainers,
   readBlockReleases,
 } from '../../../internal/plugin/blockRelease';
+import { readVSCodeLanguage } from '../../../internal/utils/vscodeClipboard';
 import {
   createBrowserHtmlDocument,
   MATHML_FIRST_CHILD_DRAWN,
@@ -789,51 +790,29 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         mimeType: 'text/html',
         priority: 200,
       },
+      {
+        decode: ({ data, snapshot }) => {
+          const language = readVSCodeLanguage(snapshot);
+
+          if (language === null || language === 'markdown') return null;
+
+          return ContentSlice.closed([
+            {
+              children: [{ text: data }],
+              language,
+              type: context.schema.type,
+            },
+          ]);
+        },
+        mimeType: 'text/plain',
+        priority: 200,
+      },
     ],
     commands: ({ around, handle }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
         const text = input.getData('text/plain');
-        const vscodeDataString = input.getData('vscode-editor-data');
-        const block = state.nodes.block();
-        const isInCodeBlock = block?.[0].type === context.schema.type;
-
-        if (vscodeDataString) {
-          try {
-            const vscodeData: unknown = JSON.parse(vscodeDataString);
-            const language =
-              typeof vscodeData === 'object' &&
-              vscodeData !== null &&
-              'mode' in vscodeData &&
-              typeof vscodeData.mode === 'string'
-                ? vscodeData.mode
-                : undefined;
-            if (isInCodeBlock) {
-              return state.transaction((tx) => {
-                tx.text.insert(text);
-              });
-            }
-
-            if (!block) return next();
-
-            return state.transaction((tx) => {
-              tx.fragment.replace(
-                [
-                  {
-                    children: [{ text }],
-                    language,
-                    type: context.schema.type,
-                  },
-                ],
-                {
-                  at: PathApi.next(block[1]),
-                }
-              );
-            });
-          } catch {
-            // Ignore malformed syntax nodes and keep scanning candidates.
-          }
-        }
-
+        const isInCodeBlock =
+          state.nodes.block()?.[0].type === context.schema.type;
         const textIsHtmlMarkup = text === input.getData('text/html');
 
         if (isInCodeBlock && text && !textIsHtmlMarkup) {
