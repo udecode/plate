@@ -6,6 +6,8 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { NON_CODE_EXPORT, readPackageEntrypoints } from './export-targets.mjs';
+
 const require = createRequire(import.meta.url);
 const ts = require('@typescript/typescript6');
 
@@ -25,28 +27,28 @@ const CITATION = /([\w./()-]+\.(?:mdx?|tsx?)):(\d+)(?:-(\d+))?/gu;
 const FENCE = /^\s*```(\S*)/u;
 const CODE_FENCE = /^(?:[jt]sx?|typescript|javascript)$/u;
 
-export const readPairs = (repoRoot) => {
-  const entries = (name) =>
-    Object.keys(
-      JSON.parse(
-        readFileSync(
-          path.join(repoRoot, 'packages', name, 'package.json'),
-          'utf-8'
-        )
-      ).exports
-    ).filter((key) => key !== './package.json');
-  const plate = new Set(entries('platejs'));
-  return entries('plitejs')
-    .filter((key) => plate.has(key))
-    .map((key) => [
-      path.posix.join('plitejs', key),
-      path.posix.join('platejs', key),
-    ]);
+export const readEntrypoints = (repoRoot) => {
+  const problems = [];
+  const sourceBySpecifier = new Map();
+  for (const name of ['plitejs', 'platejs']) {
+    const read = readPackageEntrypoints(path.join(repoRoot, 'packages', name));
+    problems.push(...read.problems);
+    for (const [specifier, source] of read.sourceBySpecifier) {
+      sourceBySpecifier.set(specifier, source);
+    }
+  }
+  const pairs = [...sourceBySpecifier.keys()]
+    .filter((specifier) => /^plitejs(?:\/|$)/u.test(specifier))
+    .map((lite) => {
+      const plate = lite.replace(/^plitejs/u, 'platejs');
+      return [lite, sourceBySpecifier.has(plate) ? plate : null];
+    });
+  return { pairs, problems, sourceBySpecifier };
 };
 
 const readCases = (text) => {
   const lineCase = [];
-  const sources = new Map();
+  const markers = new Map();
   const duplicates = [];
   let current = null;
 
@@ -54,40 +56,25 @@ const readCases = (text) => {
     const match = MARKER.exec(line);
     if (match) {
       current = match[1] ?? null;
-      if (current && sources.has(current)) duplicates.push(current);
-      else if (current) sources.set(current, match[2]);
+      if (current && markers.has(current)) duplicates.push(current);
+      else if (current) markers.set(current, match[2]);
     }
     lineCase.push(current);
   }
 
-  return { duplicates, lineCase, sources };
+  return { duplicates, lineCase, markers };
 };
 
-const plateCopy = (sourceFile, twins) => {
-  const edits = [];
-  for (const statement of sourceFile.statements) {
-    const specifier =
-      (ts.isImportDeclaration(statement) ||
-        ts.isExportDeclaration(statement)) &&
-      statement.moduleSpecifier;
-    if (
-      specifier &&
-      ts.isStringLiteral(specifier) &&
-      twins.has(specifier.text)
-    ) {
-      edits.push([
-        specifier.getStart(sourceFile) + 1,
-        specifier.end - 1,
-        twins.get(specifier.text),
-      ]);
+const packageOf = (specifier) => specifier.split('/')[0];
+
+const plateCopy = (text, imports, twins) => {
+  let copy = text;
+  for (const { fileName, pos } of imports.toSorted((a, b) => b.pos - a.pos)) {
+    if (twins.has(fileName)) {
+      copy = `${copy.slice(0, pos + 1)}${twins.get(fileName)}${copy.slice(pos + 1 + fileName.length)}`;
     }
   }
-
-  let { text } = sourceFile;
-  for (const [start, end, replacement] of edits.reverse()) {
-    text = text.slice(0, start) + replacement + text.slice(end);
-  }
-  return text;
+  return copy;
 };
 
 const resolveAlias = (checker, symbol) =>
@@ -307,17 +294,53 @@ const checkDrops = (drops, ledger, twins) => {
   return problems;
 };
 
+const checkPliteOnly = (pairs, ledger) => {
+  const problems = [];
+  const twins = new Map(pairs);
+  const listed = ledger.pliteOnly ?? [];
+  for (const lite of new Set(
+    listed.filter((entry, index) => listed.indexOf(entry) !== index)
+  )) {
+    problems.push(`${LEDGER}: pliteOnly lists ${lite} more than once`);
+  }
+  for (const [lite, plate] of pairs) {
+    if (plate === null && !listed.includes(lite)) {
+      problems.push(
+        `platejs publishes no twin of ${lite}. Publish one, or add ${lite} to pliteOnly in ${LEDGER}.`
+      );
+    }
+  }
+  for (const lite of new Set(listed)) {
+    if (twins.get(lite) !== null) {
+      problems.push(
+        `${LEDGER}: pliteOnly lists ${lite}, ${twins.has(lite) ? `and ${twins.get(lite)} is its twin` : 'which no Plite manifest publishes'}. Delete it.`
+      );
+    }
+  }
+  return problems;
+};
+
 export function checkPliteCallParity({
   compilerOptions,
   controlFile,
   ledger,
   pairs,
   repoRoot,
+  sourceBySpecifier,
 }) {
-  const problems = [];
+  const problems = [...checkPliteOnly(pairs, ledger)];
   const fatal = [];
   const relative = (file) => path.relative(repoRoot, file);
   const twins = new Map(pairs);
+  const shared = pairs.filter(([, plate]) => plate);
+  const plateRoot = packageOf(shared[0][1]);
+  const plateNames = new Map(
+    pairs.map(([lite, plate]) => [
+      lite,
+      plate ?? `${plateRoot}${lite.slice(packageOf(lite).length)}`,
+    ])
+  );
+  const packages = new Set([...sourceBySpecifier.keys()].map(packageOf));
   const { dir, ext, name: base } = path.parse(controlFile);
   const plateFile = path.join(dir, `${base}.plate${ext}`);
   const censusFile = path.join(dir, `${base}.census.ts`);
@@ -328,11 +351,22 @@ export function checkPliteCallParity({
     ts.ScriptTarget.Latest,
     true
   );
+  const imports = ts.preProcessFile(controlText, true, true).importedFiles;
+  for (const { fileName, pos } of imports) {
+    if (
+      !plateNames.has(fileName) &&
+      (/^[./]/u.test(fileName) || packages.has(packageOf(fileName)))
+    ) {
+      problems.push(
+        `${relative(controlFile)}:${control.getLineAndCharacterOfPosition(pos).line + 1}: the control imports ${fileName}, which is not a Plite entrypoint, so the Plate copy would read it unchanged. Import it from the Plite entrypoint that publishes it.`
+      );
+    }
+  }
   const virtual = new Map([
-    [plateFile, plateCopy(control, twins)],
+    [plateFile, plateCopy(controlText, imports, plateNames)],
     [
       censusFile,
-      pairs
+      shared
         .flat()
         .map(
           (specifier, index) => `import * as m${index} from '${specifier}';\n`
@@ -373,17 +407,45 @@ export function checkPliteCallParity({
   }
   if (fatal.length > 0) return { fatal, problems };
 
-  const { drops, rebound } = readExports(checker, modules, pairs);
+  for (const specifier of Object.keys(options.paths ?? {})) {
+    if (
+      packages.has(packageOf(specifier)) &&
+      !NON_CODE_EXPORT.test(specifier) &&
+      !sourceBySpecifier.has(specifier)
+    ) {
+      problems.push(
+        `${specifier}: ${CONFIG} gives it a path alias, and no manifest publishes it. Delete the alias, or publish the entrypoint.`
+      );
+    }
+  }
+  const twinsOfPliteOnly = pairs
+    .filter(([, plate]) => !plate)
+    .map(([lite]) => plateNames.get(lite));
+  for (const specifier of new Set([
+    ...sourceBySpecifier.keys(),
+    ...twinsOfPliteOnly,
+  ])) {
+    const resolved = ts.resolveModuleName(specifier, controlFile, options, host)
+      .resolvedModule?.resolvedFileName;
+    const published = sourceBySpecifier.get(specifier);
+    if ((resolved && path.resolve(resolved)) !== published) {
+      problems.push(
+        `${specifier}: the compiler reads ${resolved ? relative(resolved) : 'nothing'}, and its manifest publishes ${published ? relative(published) : 'nothing'}. Make the tsconfig paths of ${CONFIG} and the exports map agree.`
+      );
+    }
+  }
+
+  const { drops, rebound } = readExports(checker, modules, shared);
   problems.push(...checkDrops(drops, ledger, twins));
 
-  const { duplicates, lineCase, sources } = readCases(controlText);
+  const { duplicates, lineCase, markers } = readCases(controlText);
   for (const id of duplicates) {
     problems.push(`case ${id}: the control declares it twice`);
   }
-  const label = (id) => `case ${id} (${sources.get(id)})`;
+  const label = (id) => `case ${id} (${markers.get(id)})`;
 
   const covered = new Set();
-  const caseNames = new Map([...sources.keys()].map((id) => [id, new Set()]));
+  const caseNames = new Map([...markers.keys()].map((id) => [id, new Set()]));
   const markCovered = (node) => {
     const id =
       ts.isIdentifier(node) &&
@@ -449,14 +511,14 @@ export function checkPliteCallParity({
   }
 
   const cited = new Map();
-  for (const [id, source] of sources) {
+  for (const [id, marker] of markers) {
     const names = caseNames.get(id);
     if (names.size === 0) {
       problems.push(
         `${label(id)}: the case calls, renders and types no name Plate binds its own way. Delete it, or make it use one.`
       );
     }
-    const citations = readCitations(source);
+    const citations = readCitations(marker);
     if (citations.length === 0) {
       problems.push(
         `${label(id)}: the case cites no docs lines. Write its marker as // case ${id}: <file>:<line> or <file>:<start>-<end>, naming each call it copies from a file under ${CITABLE.join(' or ')}.`
@@ -536,7 +598,7 @@ export function checkPliteCallParity({
       problems.push(`${LEDGER}: case ${row.case} has two rows`);
     }
     rows.set(row.case, row);
-    if (!sources.has(row.case)) {
+    if (!markers.has(row.case)) {
       problems.push(`${LEDGER}: case ${row.case} is not a case of ${CONTROL}`);
     }
     if (typeof row.removedBy !== 'string' || row.removedBy.trim() === '') {
@@ -549,7 +611,7 @@ export function checkPliteCallParity({
   const list = (keys) =>
     JSON.stringify([...keys].sort((a, b) => a.localeCompare(b)));
   for (const id of new Set([...refusals.keys(), ...rows.keys()])) {
-    if (!sources.has(id)) continue;
+    if (!markers.has(id)) continue;
     const found = refusals.get(id) ?? [];
     const row = rows.get(id);
     const actual = list(found.map(({ key }) => key));
@@ -572,7 +634,7 @@ export function checkPliteCallParity({
   return {
     fatal,
     problems,
-    summary: `${sources.size} cases, ${rebound.size} rebound and ${[...drops.values()].flat().length} dropped names, ${rows.size} refused cases recorded`,
+    summary: `${markers.size} cases, ${rebound.size} rebound and ${[...drops.values()].flat().length} dropped names, ${rows.size} refused cases recorded`,
   };
 }
 
@@ -604,13 +666,20 @@ const main = () => {
     return;
   }
 
-  const { fatal, problems, summary } = checkPliteCallParity({
-    compilerOptions: readCompilerOptions(repoRoot),
-    controlFile,
-    ledger: JSON.parse(readFileSync(path.join(repoRoot, LEDGER), 'utf-8')),
-    pairs: readPairs(repoRoot),
-    repoRoot,
-  });
+  const entrypoints = readEntrypoints(repoRoot);
+  const { fatal, problems, summary } =
+    entrypoints.problems.length > 0
+      ? { fatal: entrypoints.problems, problems: [] }
+      : checkPliteCallParity({
+          compilerOptions: readCompilerOptions(repoRoot),
+          controlFile,
+          ledger: JSON.parse(
+            readFileSync(path.join(repoRoot, LEDGER), 'utf-8')
+          ),
+          pairs: entrypoints.pairs,
+          repoRoot,
+          sourceBySpecifier: entrypoints.sourceBySpecifier,
+        });
 
   if (fatal.length > 0) {
     console.error(fatal.join('\n'));

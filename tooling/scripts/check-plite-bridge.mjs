@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // TypeScript 7 exposes its checker only under `typescript/unstable/*`, so this
 // gate uses the stable TypeScript 6 API.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+
+import { readPackageEntrypoints } from './export-targets.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('@typescript/typescript6');
 
 const BRIDGE = 'plitejs/internal';
-const NON_CODE_EXPORT = /\.(?:css|json)$/u;
 
 const rootArgument = process.argv.indexOf('--root');
 const repoRoot =
@@ -32,80 +33,19 @@ const readTsconfig = () => {
   return ts.parseJsonConfigFileContent(config, ts.sys, repoRoot);
 };
 
-const exportTargets = (value) => {
-  if (typeof value === 'string') {
-    return NON_CODE_EXPORT.test(value) ? [] : [value];
-  }
-  if (!value || typeof value !== 'object') return [];
-
-  return Object.values(value).flatMap(exportTargets);
-};
-
-// Every package builds `dist/<path>` from `src/<path>`, for runtime and
-// declaration targets alike.
-const sourceOfTarget = (packageRoot, target) => {
-  const stem = target
-    .replace(/^\.\/dist\//u, 'src/')
-    .replace(/\.d\.ts$|\.js$/u, '');
-
-  return ['.ts', '.tsx', '.mts']
-    .map((extension) => path.join(packageRoot, `${stem}${extension}`))
-    .find(existsSync);
-};
-
 const listEntrypoints = (paths) => {
   const packagesRoot = path.join(repoRoot, 'packages');
 
   return readdirSync(packagesRoot).flatMap((directory) => {
     const packageRoot = path.join(packagesRoot, directory);
-    const manifestPath = path.join(packageRoot, 'package.json');
 
-    if (!existsSync(manifestPath)) return [];
+    if (!existsSync(path.join(packageRoot, 'package.json'))) return [];
 
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-    if (!manifest.exports) {
-      problems.push(`${manifest.name}: package.json has no exports map`);
-      return [];
-    }
+    const { problems: manifestProblems, sourceBySpecifier } =
+      readPackageEntrypoints(packageRoot);
+    problems.push(...manifestProblems);
 
-    const exportsMap =
-      typeof manifest.exports === 'object' &&
-      Object.keys(manifest.exports).some((key) => key.startsWith('.'))
-        ? manifest.exports
-        : { '.': manifest.exports };
-
-    return Object.entries(exportsMap).flatMap(([subpath, value]) => {
-      if (subpath === './package.json' || NON_CODE_EXPORT.test(subpath)) {
-        return [];
-      }
-
-      const targets = exportTargets(value);
-      const specifier =
-        subpath === '.' ? manifest.name : `${manifest.name}${subpath.slice(1)}`;
-
-      if (targets.length === 0) return [];
-
-      const sources = new Set();
-
-      for (const target of targets) {
-        const source = sourceOfTarget(packageRoot, target);
-
-        if (!source) {
-          problems.push(`${specifier}: no source file for ${target}`);
-          return [];
-        }
-
-        sources.add(source);
-      }
-
-      if (sources.size > 1) {
-        problems.push(
-          `${specifier}: export conditions point at different files (${targets.join(', ')})`
-        );
-        return [];
-      }
-
-      const [source] = sources;
+    return [...sourceBySpecifier].flatMap(([specifier, source]) => {
       const mapped = paths[specifier]?.[0];
 
       if (!mapped || path.resolve(repoRoot, mapped) !== source) {

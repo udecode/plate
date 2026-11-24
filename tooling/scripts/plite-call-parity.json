@@ -129,6 +129,7 @@
       "VirtualizedEditableProps"
     ]
   },
+  "pliteOnly": ["plitejs/annotations", "plitejs/internal"],
   "refused": [
     {
       "case": "R-D12",
