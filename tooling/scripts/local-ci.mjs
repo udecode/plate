@@ -480,22 +480,33 @@ const lastActivity = (task) => {
 
 const isRed = (step, event) =>
   event.step === step && ['flake', 'red'].includes(event.kind);
-const redStart = (step) => {
-  const events = readEvents().filter(reportsRun);
+// state.json records a flaked step as passed, so the red streak, which a flake
+// keeps open, can start earlier than the first red after that run. A run on
+// `tip` that is still reporting would end the streak of each step it has not
+// reported yet, so the streak leaves that run out.
+const redStart = (step, tip) => {
+  const events = readEvents();
+  const runs = events.filter(reportsRun);
   const passedTip = readState().passed?.[step];
   const passedRun = passedTip
-    ? events.findLastIndex((event) => event.tip === passedTip)
+    ? runs.findLastIndex((event) => event.tip === passedTip)
     : -1;
-  const first = events.slice(passedRun + 1).find((event) => isRed(step, event));
-  return first ? Date.parse(first.at) : Number.POSITIVE_INFINITY;
+  const first = runs.slice(passedRun + 1).find((event) => isRed(step, event));
+  const streak = streaks(
+    events.filter((event) => !tip || event.tip !== tip)
+  ).open.get(step);
+  return Math.min(
+    first ? Date.parse(first.at) : Number.POSITIVE_INFINITY,
+    streak ? Date.parse(streak) : Number.POSITIVE_INFINITY
+  );
 };
 
 const CUT_MS = 24 * 60 * 60_000;
 const CUT_WAKES = 2;
-const cutDue = (step, open) => {
+const cutDue = (step, open, tip) => {
   const since = Math.min(
     Date.now(),
-    redStart(step),
+    redStart(step, tip),
     ...(open ? taskRowTimes(open) : [])
   );
   const fixRuns = readEvents().filter(
@@ -516,9 +527,16 @@ const cutDue = (step, open) => {
 const report = (event) => {
   const title = fixTitle(event.step);
   const open = openTask(event.step);
-  const due = cutDue(event.step, open);
+  const due = cutDue(event.step, open, event.tip);
   if (open) {
-    return Date.now() - lastActivity(open) < CLAIM_MS
+    // A cut that comes due while a fix holds the task still wakes the
+    // operator, once per task, so it can tell that fix to cut instead.
+    const tellCut =
+      due.cut &&
+      !readEvents().some(
+        (heard) => heard.cut && heard.wake && heard.task === open.id
+      );
+    return Date.now() - lastActivity(open) < CLAIM_MS && !tellCut
       ? { ...due, wake: false }
       : { ...due, task: open.id, wake: true };
   }
@@ -906,10 +924,8 @@ const redFor = (events, now) => {
     .toSorted((a, b) => a - b);
   return [
     open.size === 0 ? 'red now: nothing' : 'red now:',
-    ...[...open].map(([step, start]) => {
-      const since = new Date(
-        Math.min(Date.parse(start), redStart(step))
-      ).toISOString();
+    ...[...open.keys()].map((step) => {
+      const since = new Date(redStart(step)).toISOString();
       return `  ${step} since ${since} (${hoursBetween(since, now).toFixed(1)}h)`;
     }),
     recent.length === 0
