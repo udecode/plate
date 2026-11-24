@@ -1122,7 +1122,8 @@ const applyAnchorChange = (
 export const subscribeAnchorState = (
   editor: Editor,
   listener: AnchorStateListener,
-  getInitialValue: () => EditorDocumentValue
+  getInitialValue: () => EditorDocumentValue,
+  reused?: number
 ) => {
   const scoped = ANCHOR_SCOPES.get(editor)?.at(-1);
   const state =
@@ -1132,16 +1133,22 @@ export const subscribeAnchorState = (
   const runtimeId =
     scoped?.kind === 'draft'
       ? undefined
-      : (() => {
-          const id = (ANCHOR_RUNTIME_ID.get(editor) ?? 0) + 1;
+      : reused !== undefined &&
+          reused <= (ANCHOR_RUNTIME_ID.get(editor) ?? 0) &&
+          ![state, ACTIVE_ANCHORS.get(editor)].some((held) =>
+            held?.listenersByRuntimeId.has(reused)
+          )
+        ? reused
+        : (() => {
+            const id = (ANCHOR_RUNTIME_ID.get(editor) ?? 0) + 1;
 
-          if (id > 0x7f_ff_ff_ff) {
-            throw new Error('Anchor runtime identity space is exhausted.');
-          }
-          ANCHOR_RUNTIME_ID.set(editor, id);
+            if (id > 0x7f_ff_ff_ff) {
+              throw new Error('Anchor runtime identity space is exhausted.');
+            }
+            ANCHOR_RUNTIME_ID.set(editor, id);
 
-          return id;
-        })();
+            return id;
+          })();
 
   addAnchorListener(state, listener, runtimeId);
   if (!scoped) ACTIVE_ANCHORS.set(editor, state);

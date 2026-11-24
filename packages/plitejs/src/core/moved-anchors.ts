@@ -22,10 +22,67 @@ import { getTransactionSnapshot, withEditorRootChildren } from './public-state';
 
 type TokenKind = 'text' | `${'block' | 'void'}-${'open' | 'close'}`;
 type Token = readonly [at: number, kind: TokenKind, letter?: string];
+type Unit = readonly [from: number, to: number, isVoid: boolean];
+type Remainder = Readonly<{
+  content: readonly [from: number, to: number];
+  listener: AnchorStateListener;
+  reorders: boolean;
+  span: readonly number[];
+}>;
+
+const contentUnits = (
+  editor: Editor,
+  index: DocumentIndex,
+  from: number,
+  to: number
+) => {
+  const { isVoid } = getEditorSchema(editor);
+  const entries = index.nodeRangesTouching(from, to);
+  const voids = entries.filter(
+    (entry) =>
+      entry.kind !== 'text' && isVoid(index.node(entry.path) as Element)
+  );
+  const units: Unit[] = [];
+
+  for (const entry of entries) {
+    if (entry.kind === 'text') {
+      const start = Math.max(from, entry.contentFrom);
+      const end = Math.min(to, entry.contentTo);
+
+      if (
+        start < end &&
+        !voids.some((node) => node.from <= start && start < node.to)
+      ) {
+        units.push([start, end, false]);
+      }
+    } else if (voids.includes(entry) && from <= entry.from && entry.to <= to) {
+      units.push([entry.from, entry.to, true]);
+    }
+  }
+
+  return units;
+};
+
+const edgeTokens = (units: readonly Unit[]): readonly Token[] | null => {
+  if (units.length === 0) return null;
+
+  const first = units.reduce((left, right) =>
+    right[0] < left[0] ? right : left
+  );
+  const last = units.reduce((left, right) =>
+    right[1] > left[1] ? right : left
+  );
+
+  return [
+    [first[0], first[2] ? 'void-open' : 'text'],
+    [last[1] - 1, last[2] ? 'void-close' : 'text'],
+  ];
+};
 
 export type MovedAnchors = Readonly<{
   anchors: ReadonlyArray<readonly [AnchorStateListener, number, number]>;
   from: number;
+  remainders: readonly Remainder[];
   root: string;
   struck: boolean;
   to: number;
@@ -119,7 +176,10 @@ export const collectMovedAnchors = (
       .nodeRangesTouching(Math.max(0, low - 1), Math.min(index.length, to + 1))
       .flatMap(({ path }) => getEditorRuntime(editor).getNodeKey(path) ?? [])
   );
+  const struck = isEditorDraftView(editor);
   const kept: Array<readonly [AnchorStateListener, readonly number[]]> = [];
+  const remainders: Remainder[] = [];
+  let carried: readonly Unit[] | undefined;
 
   for (const listener of getMovableAnchors(editor, keys)) {
     const span =
@@ -133,18 +193,39 @@ export const collectMovedAnchors = (
 
     const first = Math.min(...span);
     const last = Math.max(...span);
+    const leftOut = coversContent(index, first, from, schema);
+    const rightOut = coversContent(index, to, last, schema);
 
     if (
-      !coversContent(index, first, from, schema) &&
-      !coversContent(index, to, last, schema) &&
-      coversContent(index, Math.max(first, from), Math.min(last, to), schema)
+      !coversContent(index, Math.max(first, from), Math.min(last, to), schema)
     ) {
-      kept.push([listener, span]);
+      continue;
+    }
+    if (!leftOut && !rightOut) kept.push([listener, span]);
+    else if (leftOut !== rightOut && (leftOut ? last < to : from < first)) {
+      const [restFrom, restTo] = struck
+        ? [first, last]
+        : leftOut
+          ? [first, from]
+          : [to, last];
+      const content = edgeTokens(contentUnits(editor, index, restFrom, restTo));
+
+      carried ??= contentUnits(editor, index, from, to);
+      if (content) {
+        remainders.push({
+          content: [content[0][0], content[1][0] + 1],
+          listener,
+          reorders: !carried.some(
+            ([start, end]) => start < first || end > last
+          ),
+          span,
+        });
+      }
     }
   }
-  if (kept.length === 0) return null;
+  if (kept.length === 0 && remainders.length === 0) return null;
 
-  const tokens = contentOf(editor, index, from, to);
+  const tokens = kept.length > 0 ? contentOf(editor, index, from, to) : [];
   const tokensBefore = (position: number) => {
     let below = 0;
     let above = tokens.length;
@@ -165,8 +246,9 @@ export const collectMovedAnchors = (
         [listener, tokensBefore(span[0]), tokensBefore(span[1])] as const
     ),
     from,
+    remainders,
     root,
-    struck: isEditorDraftView(editor),
+    struck,
     to,
     tokens,
   };
@@ -193,6 +275,30 @@ const trimWrapperBlocks = (tokens: Token[], moved: readonly Token[]) =>
       )
   );
 
+const placeBetween = (tokens: readonly Token[], count: number): AnchorPlace => {
+  const kindPastBlockEdges = (start: number, step: number) => {
+    let at = start;
+
+    while (tokens[at]?.[1].startsWith('block')) at += step;
+
+    return tokens[at]?.[1];
+  };
+  const before = tokens[count - 1];
+  const next = tokens[count];
+
+  return {
+    backward: before
+      ? [
+          before[0] + 1,
+          kindPastBlockEdges(count - 1, -1) === 'void-close' ? 1 : -1,
+        ]
+      : [next[0], -1],
+    forward: next
+      ? [next[0], kindPastBlockEdges(count, 1) === 'void-open' ? -1 : 1]
+      : [before[0] + 1, 1],
+  };
+};
+
 export const placeMovedAnchors = (
   editor: Editor,
   moved: MovedAnchors,
@@ -206,6 +312,51 @@ export const placeMovedAnchors = (
     const after = context.afterRoot(moved.root);
     const landFrom = spans[0].from;
     const landTo = getDefined(spans.at(-1)).to;
+
+    const mapEdges = ([low, high]: readonly number[]) =>
+      [low, high].map((position, end) =>
+        mapInternalDocumentChangePosition(
+          context.change,
+          moved.root,
+          position,
+          end ? -1 : 1
+        )
+      );
+
+    for (const { content, listener, reorders, span } of moved.remainders) {
+      const edges = [Math.min(...span), Math.max(...span)];
+      let [from, to] = mapEdges(content);
+
+      if (from === null || to === null || from >= to) continue;
+      if (reorders && !moved.struck) {
+        const [low, high] = mapEdges(edges);
+
+        if (
+          low !== null &&
+          high !== null &&
+          low <= landFrom &&
+          landTo <= high
+        ) {
+          from = Math.min(from, landFrom);
+          to = Math.max(to, landTo);
+        }
+      } else if (!moved.struck && from < landFrom && landFrom < to) {
+        to = landFrom;
+      }
+
+      const kept = edgeTokens(contentUnits(editor, after, from, to));
+
+      if (!kept) continue;
+
+      const ends = [placeBetween(kept, 0), placeBetween(kept, kept.length)];
+      const [first, second] = span.map(
+        (position) => ends[position === edges[0] ? 0 : 1]
+      );
+
+      place(listener, first, second);
+    }
+    if (moved.anchors.length === 0) return;
+
     const [from, to] = [moved.from, moved.to].map((position, end) =>
       mapInternalDocumentChangePosition(
         context.change,
@@ -242,36 +393,16 @@ export const placeMovedAnchors = (
 
     if (!landed) return;
 
-    const kindPastBlockEdges = (start: number, step: number) => {
-      let at = start;
-
-      while (landed[at]?.[1].startsWith('block')) at += step;
-
-      return landed[at]?.[1];
-    };
     const places = new Map<number, AnchorPlace>();
-    const endPlace = (count: number): AnchorPlace => {
-      const known = places.get(count);
+    const endPlace = (count: number) => {
+      let known = places.get(count);
 
-      if (known) return known;
+      if (!known) {
+        known = placeBetween(landed, count);
+        places.set(count, known);
+      }
 
-      const before = landed[count - 1];
-      const next = landed[count];
-      const anchorPlace: AnchorPlace = {
-        backward: before
-          ? [
-              before[0] + 1,
-              kindPastBlockEdges(count - 1, -1) === 'void-close' ? 1 : -1,
-            ]
-          : [next[0], -1],
-        forward: next
-          ? [next[0], kindPastBlockEdges(count, 1) === 'void-open' ? -1 : 1]
-          : [before[0] + 1, 1],
-      };
-
-      places.set(count, anchorPlace);
-
-      return anchorPlace;
+      return known;
     };
 
     for (const [listener, first, second] of moved.anchors) {

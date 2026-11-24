@@ -103,6 +103,33 @@ const SAVED_RANGES = new WeakMap<
   }
 >();
 const RELEASED_RANGES = new WeakSet<Anchor<Range>>();
+const ANCHOR_RUNTIME_IDS = new WeakMap<Anchor<AnchorValue>, number>();
+
+/** The runtime ID that history's anchor records name this anchor by. */
+export const getAnchorRuntimeId = (anchor: Anchor<AnchorValue>) =>
+  ANCHOR_RUNTIME_IDS.get(anchor) ?? null;
+
+/**
+ * Restore a saved range under the runtime ID of the anchor it was saved from,
+ * when no live anchor holds that ID, so redoing a step that moved the released
+ * anchor moves the restored one.
+ */
+export const restoreAnchor = (
+  editor: Editor,
+  input: unknown,
+  runtimeId: number | null
+): Anchor<Range> => {
+  const saved = decodeSavedRange(input);
+  const options: AnchorOptions<Range> = {
+    association: saved.association,
+    deletion: saved.deletion,
+    ...(saved.root === 'main' ? {} : { root: saved.root }),
+  };
+
+  return saved.range
+    ? createAnchor(editor, saved.range, options, runtimeId ?? undefined)
+    : createBoundAnchor<Range>(editor, saved, undefined, 'range');
+};
 
 const assertAnchorView = (editor: Editor, root: string, view?: Editor) => {
   if (!view) return;
@@ -272,16 +299,7 @@ export const createEditorAnchorApi = (
         );
       },
       restore(input: unknown): Anchor<Range> {
-        const editor = getEditor();
-        const saved = decodeSavedRange(input);
-        const options: AnchorOptions<Range> = {
-          association: saved.association,
-          deletion: saved.deletion,
-          ...(saved.root === 'main' ? {} : { root: saved.root }),
-        };
-        return saved.range
-          ? createAnchor(editor, saved.range, options)
-          : createBoundAnchor<Range>(editor, saved, undefined, 'range');
+        return restoreAnchor(getEditor(), input, null);
       },
     }
   );
@@ -521,7 +539,8 @@ const createPointState = (
 export function createAnchor<TValue extends AnchorValue>(
   editor: BaseEditor<any, any>,
   value: TValue,
-  options: Omit<AnchorOptions<TValue>, 'root'> & Readonly<{ root?: RootKey }>
+  options: Omit<AnchorOptions<TValue>, 'root'> & Readonly<{ root?: RootKey }>,
+  runtimeId?: number
 ): Anchor<TValue> {
   const viewEditor = editor as Editor;
   const runtimeEditor = getEditorRuntimeOwner(viewEditor);
@@ -1816,7 +1835,8 @@ export function createAnchor<TValue extends AnchorValue>(
       },
       root,
     },
-    () => readValue(runtimeEditor) as unknown as EditorDocumentValue
+    () => readValue(runtimeEditor) as unknown as EditorDocumentValue,
+    runtimeId
   );
 
   const anchor = Object.freeze({
@@ -1864,6 +1884,9 @@ export function createAnchor<TValue extends AnchorValue>(
     },
     root: toPublicRoot(root),
   }) as Anchor<TValue>;
+  if (subscription.runtimeId !== undefined) {
+    ANCHOR_RUNTIME_IDS.set(anchor, subscription.runtimeId);
+  }
   if (kind === 'range') {
     SAVED_RANGES.set(anchor as Anchor<Range>, {
       editor: getEditorRuntimeOwner(runtimeEditor),

@@ -22,8 +22,10 @@ import {
   type Value,
 } from '../../core';
 import {
+  getAnchorRuntimeId,
   notifyObservers,
   readDocumentRange,
+  restoreAnchor,
   runEditorObserver,
   subscribeEditorViewState,
   withStoredAuthoredRead,
@@ -102,6 +104,7 @@ export type CommentThread = Readonly<{
 }>;
 
 type CommentCreationHistoryTransition = Readonly<{
+  anchorId: number | null;
   attachment: EditorDocumentRange | null;
   messageId: string;
   previous: CommentThread | null;
@@ -1279,7 +1282,17 @@ export const BaseCommentsPlugin = definePlugin('comments', {
               } as const,
             };
           }
-          restoredAnchor = editor.anchor.restore(transition.attachment);
+          const kept = orphans.get(thread.id);
+          restoredAnchor =
+            kept &&
+            transition.anchorId !== null &&
+            getAnchorRuntimeId(kept) === transition.anchorId
+              ? kept
+              : restoreAnchor(
+                  editor,
+                  transition.attachment,
+                  transition.anchorId
+                );
           hold(restoredAnchor);
           if (!restoredAnchor.resolve()) {
             return {
@@ -1293,6 +1306,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         }
 
         let value: CommentThread | null = null;
+        const removed = transition.value ? undefined : anchors.get(thread.id);
         const mutation = await commitMutation(
           thread.id,
           transition.value ? 'createThread' : 'removeThread',
@@ -1327,6 +1341,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             status: 'applied',
             value: Object.freeze({
               ...transition,
+              anchorId: removed
+                ? getAnchorRuntimeId(removed)
+                : transition.anchorId,
               previous: current,
               value,
             }),
@@ -1504,6 +1521,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
                   if (!canonical || viewRefuses) return;
                   commandEditor.update((tx) => {
                     tx.effects.emit(commentCreationHistoryEffect, {
+                      anchorId: anchor ? getAnchorRuntimeId(anchor) : null,
                       attachment: anchor
                         ? commandEditor.anchor.save(anchor)
                         : null,

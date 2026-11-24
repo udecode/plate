@@ -35,6 +35,7 @@ export {
   observeAnchorStateWork,
   type AnchorStateWork,
 } from '../core/anchor-state';
+export { getAnchorRuntimeId, restoreAnchor } from '../core/anchor';
 export { readCoreWork, type CoreWork } from '../core/work';
 export {
   canonicalRecordJson,

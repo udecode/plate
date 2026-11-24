@@ -197,6 +197,7 @@ export {
   shouldMergeNodesRemovePrevNode,
 } from 'plitejs/internal';
 export { type CoreWork, readCoreWork } from 'plitejs/internal';
+export { getAnchorRuntimeId, restoreAnchor } from 'plitejs/internal';
 export {
   canonicalRecordJson,
   getRecordSetVersion,
