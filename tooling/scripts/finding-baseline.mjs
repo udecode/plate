@@ -205,6 +205,11 @@ export function enforceBaseline({
   if (increases.length > 0) {
     console.error(increases.map(describe).join('\n'));
     console.error(newFindingsHelp);
+    if (mode === 'check' && decreases.length > 0) {
+      console.error(
+        `${file} also lists ${decreases.length} findings the tree no longer holds. Once the new findings are fixed, run ${lowerCommand} to drop them.`
+      );
+    }
     return 1;
   }
   if (mode === 'light') {
