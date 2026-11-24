@@ -34,6 +34,7 @@ import {
   type BoardMessages,
   BoardNotePlugin,
   type BoardPickState,
+  type BoardPicture,
   type BoardPictureWarning,
   BoardPlugin,
   BoardShape,
@@ -78,6 +79,7 @@ import {
   DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
 import {
@@ -380,6 +382,14 @@ const loadPictureKit = () =>
     ({ BoardPictureKit }) => BoardPictureKit
   );
 
+const warnAbout = ({ warnings }: BoardPicture) => {
+  if (warnings.length === 0) return;
+
+  toast.warning(
+    [...new Set(warnings.map(({ code }) => PICTURE_WARNINGS[code]))].join(' ')
+  );
+};
+
 function BoardExportMenu() {
   const { exportPicture } = useBoardActions();
   const mounted = React.useRef(false);
@@ -402,20 +412,46 @@ function BoardExportMenu() {
       }
 
       downloadBlob(picture.blob, `board.${format}`);
-
-      if (picture.warnings.length > 0) {
-        toast.warning(
-          [
-            ...new Set(
-              picture.warnings.map(({ code }) => PICTURE_WARNINGS[code])
-            ),
-          ].join(' ')
-        );
-      }
+      warnAbout(picture);
     } catch (error) {
       if (!mounted.current) return;
       console.error('Could not export the board.', error);
       toast.error('The board could not be exported.');
+    }
+  };
+
+  const copy = async (format: 'png' | 'svg') => {
+    // Firefox and Safari cannot copy image/svg+xml, so the SVG goes as text.
+    const type = format === 'png' ? 'image/png' : 'text/plain';
+    const empty = new Error('There is nothing to copy.');
+    const drawing = exportPicture({ format, kit: loadPictureKit() }).then(
+      (picture) => picture ?? Promise.reject(empty)
+    );
+
+    try {
+      // Safari and Firefox take a clipboard write only within the click's user
+      // activation, so the write starts now with the picture still drawing.
+      const [picture] = await Promise.all([
+        drawing,
+        navigator.clipboard.write([
+          new ClipboardItem({
+            [type]: drawing.then(({ blob }) => new Blob([blob], { type })),
+          }),
+        ]),
+      ]);
+
+      toast.success(
+        `Copied the board as ${format === 'png' ? 'a PNG' : 'an SVG'}.`
+      );
+      warnAbout(picture);
+    } catch (error) {
+      if (error === empty) {
+        toast(empty.message);
+        return;
+      }
+      if (!mounted.current) return;
+      console.error('Could not copy the board.', error);
+      toast.error('The board could not be copied.');
     }
   };
 
@@ -432,6 +468,13 @@ function BoardExportMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => save('svg')}>
           Export as SVG
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => copy('png')}>
+          Copy as PNG
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => copy('svg')}>
+          Copy as SVG
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

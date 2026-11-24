@@ -19,7 +19,7 @@ docs:
 - Copy, paste and duplicate with fresh shape ids. A copied arrow binds the copied shapes. The copies land on top, with frames still behind the other shapes. They land at the pointer when it is over the board, and step 24px down and right off any shape already at their place.
 - Paste text or a link, and it lands as a selected note at the pointer.
 - Paste an image link or a picture copied from a web page, and it lands as an image shape at the pointer, at the picture's proportions. With [`UploadPlugin`](/docs/upload) installed, picture files that you paste, drop or pick from the toolbar land as image shapes too, and each uploads in its own shape.
-- Export the board, or its selected shapes, as a PNG or an SVG that holds the shapes off screen too.
+- Export or copy the board, or its selected shapes, as a PNG or an SVG that holds the shapes off screen too.
 - A camera, a tool, a tool lock and a next style for each mounted view, which the document never stores.
 - Tab and Mod with an arrow move between shapes, Shift+Enter reaches the toolbar, and keys zoom, pan and fit. Enter places a note, shape or frame, and connects two shapes with an arrow. A screen reader hears the selected shape, the picked tool, the zoom, each removal and each step of a connect, in words your app passes.
 - Only the shapes near the camera mount, so the work each keystroke does stays the same as the board grows.
@@ -40,7 +40,7 @@ docs:
 - `BoardPageElement`: renders a board that fills its container. `BoardPageKit` installs it in place of `BoardElement`.
 - `BoardNoteElement`, `BoardGeoElement`, `BoardArrowElement`, `BoardFrameElement` and `BoardStrokeElement`: render each shape type.
 - `BoardImageElement`: renders an image shape. `BoardImageKit` installs it apart from `BoardKit`, as [Images](#images) shows.
-- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle for the next shape. The lock button after them turns the tool lock on or off, as Q does, and shows pressed while the lock is on. The Image button after the lock opens a file picker and lands the picked pictures, as [Picture files](#picture-files) describes, and is disabled on a board that takes no picture files. The Export menu after the Image button saves the board as a PNG or an SVG, as [Export](#export) describes. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
+- `BoardToolbar`: picks the select, hand, note, shape, arrow, frame, pen or eraser tool, and its shape menu picks a rectangle, ellipse, diamond or triangle for the next shape. The lock button after them turns the tool lock on or off, as Q does, and shows pressed while the lock is on. The Image button after the lock opens a file picker and lands the picked pictures, as [Picture files](#picture-files) describes, and is disabled on a board that takes no picture files. The Export menu after the Image button saves or copies the board as a PNG or an SVG, as [Export](#export) describes. Zoom out and zoom in move one zoom step, the zoom level between them shows the zoom as a percentage and goes back to 100% when clicked, and the fit button brings every shape into view. With a frame selected, an icon button removes the frame and keeps the frame's shapes.
 - `BoardStylePanel`: docks at the board's top right and styles the selected shapes, or the next shape while a drawing tool is picked, as [Style panel](#style-panel) shows.
 
 ### Add kit
@@ -247,7 +247,7 @@ The board takes picture files only in a view that can write, in an editor that i
 
 ## Export
 
-The copied toolbar's Export menu saves the board as `board.png` or `board.svg`.
+The copied toolbar's Export menu saves the board as `board.png` or `board.svg`. Its Copy as PNG and Copy as SVG items put the same picture on the clipboard. The SVG goes on the clipboard as text, because Firefox and Safari cannot copy an SVG image.
 
 - The picture holds the selected shapes and every shape of a selected frame, or the whole board when nothing is selected. Shapes off screen are included.
 - It draws the board's background in the current light or dark theme, without the dot grid.
@@ -255,7 +255,8 @@ The copied toolbar's Export menu saves the board as `board.png` or `board.svg`.
 - The PNG is twice the board's size. A board too large for the browser's canvas draws smaller, and the menu says so.
 - An image that cannot be read draws as a gray box in the PNG and stays a web link in the SVG. A shape type with no static component draws as a gray box. Note content whose plugin `BoardPictureKit` lacks shows as plain text, and a font that cannot be read leaves its text in another font. The menu shows a warning for each.
 - A note's text is HTML inside the SVG. Browsers draw it, but a design tool that opens the SVG shows the shapes without the note text.
-- On an empty board, the menu says there is nothing to export.
+- On an empty board, the menu says there is nothing to export or copy.
+- When the browser refuses a copy, the menu says the board could not be copied. Export as PNG and Export as SVG still save it.
 
 When you export, the menu loads `BoardPictureKit` from the copied `board-static.tsx` and passes it to `exportPicture` from `useBoardActions`. A control of your own inside the surface's `toolbar` can do the same:
 
@@ -271,6 +272,25 @@ const picture = await exportPicture({
 ```
 
 `picture` is `null` when there is nothing to draw. Otherwise it holds the file's `blob`, its `width` and `height` in pixels, and its `warnings`.
+
+To copy the picture, start the clipboard write before you await it. Safari and Firefox refuse a clipboard write that starts too long after the click, and drawing the picture can take longer:
+
+```tsx
+const picture = exportPicture({
+  format: 'png',
+  kit: import('@/components/editor/board-static').then(
+    ({ BoardPictureKit }) => BoardPictureKit
+  ),
+});
+
+await navigator.clipboard.write([
+  new ClipboardItem({
+    'image/png': picture.then(
+      (drawn) => drawn?.blob ?? Promise.reject(new Error('The board is empty.'))
+    ),
+  }),
+]);
+```
 
 ## Manual usage
 

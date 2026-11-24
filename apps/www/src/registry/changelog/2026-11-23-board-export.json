@@ -67,7 +67,7 @@
     {
       "id": "2026-11-23-board-export-png-an-svg-6f4acbbb",
       "kind": "new",
-      "summary": "Add an Export menu to the board toolbar that saves the board, or its selected shapes, as `board.png` or `board.svg`. Add `board-static.tsx`, whose `BoardPictureKit` draws each shape in the picture. The menu shows its notices for images, fonts and shapes the picture could not draw, and for an empty board, through `sonner`. When you update a copied board, copy `board-static.tsx` and the static items it imports, add the `sonner` dependency, and mount one `<Toaster />` in your app.",
+      "summary": "Add an Export menu to the board toolbar that saves the board, or its selected shapes, as `board.png` or `board.svg`, or copies it to the clipboard as a PNG or as SVG text. Add `board-static.tsx`, whose `BoardPictureKit` draws each shape in the picture. The menu shows its notices for images, fonts and shapes the picture could not draw, and for an empty board, through `sonner`. When you update a copied board, copy `board-static.tsx` and the static items it imports, add the `sonner` dependency, and mount one `<Toaster />` in your app.",
       "details": [],
       "migrationNotes": [],
       "targets": ["board"],
