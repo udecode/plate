@@ -22,6 +22,10 @@ templates/my-app
 # udecode/plate-private's git directory, a folder in a clone and a file in a
 # worktree; .gitprivate lists the files it tracks.
 /.git-private
+# Skiller writes these on every install. A clone without .gitprivate, such as
+# the release job's, would commit them; udecode/plate-private tracks them.
+/.mcp.json
+/.codex/config.toml
 .history
 apps/www/next-env.d.ts
 **/out/
