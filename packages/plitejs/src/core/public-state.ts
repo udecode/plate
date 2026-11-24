@@ -203,6 +203,7 @@ import {
   DocumentChange,
   isInternalRecordsOnlyChange,
   transformInternalDocumentChange,
+  valueRoot,
   valueRootIndex,
   valueRootNodes,
   withDocumentChangeRecords,
@@ -213,6 +214,7 @@ import {
   childAtPathIndex,
   rootNodesOf,
 } from './change/document-index';
+import { isRecord } from './change/json';
 import {
   copyRoot,
   copyRoots,
@@ -315,6 +317,7 @@ import {
   getInternalEditorSchemaFromApi,
   type InternalEditorSchemaApi,
 } from './editor-schema';
+import { keepElementIds } from './element-id';
 import { getContentSlice } from './get-content-slice';
 import { getFragment } from './get-fragment';
 import {
@@ -9664,11 +9667,7 @@ export const getUpdateView = <
 
           applyTransactionSpec(
             editor,
-            createRootFitTransactionSpec(
-              editor,
-              root,
-              ContentSlice.closed(children)
-            )
+            createRootFitTransactionSpec(editor, root, children)
           );
         });
       },
@@ -9700,11 +9699,7 @@ export const getUpdateView = <
 
           applyTransactionSpec(
             editor,
-            createRootFitTransactionSpec(
-              editor,
-              root,
-              ContentSlice.closed(children)
-            )
+            createRootFitTransactionSpec(editor, root, children)
           );
         });
       },
@@ -15010,9 +15005,13 @@ export const runEditorTransaction = <R>(
 const createRootFitTransactionSpec = (
   editor: Editor,
   root: RootKey,
-  input: import('../interfaces/editor').ContentSlice,
+  content: readonly Descendant[],
   selection?: NonNullable<Selection>
 ) => {
+  const [kept] = keepElementIds(editor, [
+    [valueRoot(getActiveDocumentChangeBuilder(editor).value, root), content],
+  ]);
+  const input = ContentSlice.closed(kept);
   let applicable = false;
   const spec = createTransactionSpec(editor, () => {
     applicable = getEditorSchema(editor).fit(input, {
@@ -15180,13 +15179,54 @@ const deserializeSnapshotMeta = (
   return nextMeta;
 };
 
+const keepSnapshotIds = (
+  editor: Editor,
+  input: DirectSnapshotInput
+): DirectSnapshotInput => {
+  const inputRoots = isRecord(input.roots) ? Object.entries(input.roots) : [];
+
+  if (
+    !Array.isArray(input.children) ||
+    (input.roots !== undefined && !isRecord(input.roots)) ||
+    !inputRoots.every(([, nodes]) => Array.isArray(nodes))
+  ) {
+    return input;
+  }
+
+  const current = getActiveDocumentChangeBuilder(editor).value;
+  const [children, ...roots] = keepElementIds(editor, [
+    [current.children, input.children],
+    ...inputRoots.map(
+      ([root, nodes]) => [valueRoot(current, root), nodes] as const
+    ),
+  ]);
+
+  return children === input.children &&
+    roots.every((nodes, at) => nodes === inputRoots[at][1])
+    ? input
+    : {
+        ...input,
+        children,
+        ...(input.roots === undefined
+          ? {}
+          : {
+              roots: Object.fromEntries(
+                inputRoots.map(([root], at) => [root, roots[at]])
+              ),
+            }),
+      };
+};
+
 export const replaceTransformedSnapshot = (
   editor: Editor,
   transformedInput: SnapshotInput,
   replacedRoot?: RootKey
 ) => {
   const apply = () => {
-    const snapshotInput = readDirectSnapshotInput(editor, transformedInput);
+    const snapshotInput = keepSnapshotIds(
+      editor,
+      readDirectSnapshotInput(editor, transformedInput)
+    );
     const transaction = getTransactionSnapshot(editor);
     const explicitSelection =
       snapshotInput.selection &&
@@ -15264,7 +15304,7 @@ export const replaceTransformedSnapshot = (
         createRootFitTransactionSpec(
           editor,
           root,
-          ContentSlice.closed(selectedSource),
+          selectedSource,
           root === selectedRoot
             ? (representationSelection ?? undefined)
             : undefined

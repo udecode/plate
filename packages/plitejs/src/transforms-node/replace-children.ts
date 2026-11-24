@@ -1,4 +1,5 @@
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
+import { keepElementIds } from '../core/element-id';
 import {
   applyBuiltDocumentChange,
   getChildren,
@@ -96,7 +97,7 @@ export const replaceChildren = <
   TPlugins extends readonly unknown[],
 >(
   editor: Editor<V, TPlugins>,
-  children: ReadonlyArray<ElementOrTextIn<NoInfer<V>>>,
+  replacements: ReadonlyArray<ElementOrTextIn<NoInfer<V>>>,
   {
     at,
     count,
@@ -111,6 +112,8 @@ export const replaceChildren = <
     index,
     index + replacementCount
   ) as Descendant[];
+  const owner = getEditorRuntimeOwner(editor);
+  const [children] = keepElementIds(owner, [[replacedChildren, replacements]]);
   const updateRoot = getEditorUpdateRoot(editor);
   const liveSelection = getLiveSelection(editor);
   const selection =
@@ -190,12 +193,7 @@ export const replaceChildren = <
       : undefined;
   const selectionAfter =
     newSelection === undefined ? retainedSelection : newSelection;
-  const storedCopies = findNewNodes(
-    getEditorRuntimeOwner(editor),
-    children,
-    at,
-    index
-  );
+  const storedCopies = findNewNodes(owner, children, at, index);
 
   const apply = () =>
     applyBuiltDocumentChange(
