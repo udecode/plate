@@ -39,6 +39,8 @@ import {
 } from './check-steps.mjs';
 import {
   appendLocalCiEvent,
+  startsBrokenStreak,
+  frictionCommand,
   FULL_RUN_HOUR,
   localCiFiles,
   readLocalCiEvents,
@@ -64,6 +66,8 @@ const USAGE = `Usage: node tooling/scripts/local-ci.mjs <command>
              latest events
   wait       block until an event the operator acts on, print it and exit
              --after <iso time>   only events written after that time
+  friction   queue what got in a zbot session's way for the operator;
+             friction alone prints its commands
   install    start the launchd job that runs it every 20 minutes, as the
              main CI that checks every step
              --steps <name,name>   as a Mac other than main that checks only
@@ -378,6 +382,15 @@ const rerunCommand = (step, files) => {
   return null;
 };
 
+const backToTip = (tip) => {
+  if (
+    !existsSync(worktree) ||
+    git(worktree, ['rev-parse', 'HEAD']).stdout.trim() !== tip
+  ) {
+    checkout(tip);
+  }
+};
+
 // Binary search over next's first-parent commits after `green`, while the
 // hour lasts; returns the first bad commit or the range still unsearched.
 const firstBad = (logs, step, green, tip, deadline, target) => {
@@ -389,18 +402,22 @@ const firstBad = (logs, step, green, tip, deadline, target) => {
   ]).split('\n');
   let good = -1;
   let bad = commits.length - 1;
-  while (bad - good > 1 && Date.now() < deadline) {
-    const mid = Math.floor((good + bad) / 2);
-    checkout(commits[mid]);
-    const probe = check(logs, runId(commits[mid], step), [step]);
-    const failed =
-      !probe.ok &&
-      (target.length === 0 ||
-        [...readFailures(probe.log, step).keys()].some((key) =>
-          target.includes(key)
-        ));
-    if (failed) bad = mid;
-    else good = mid;
+  try {
+    while (bad - good > 1 && Date.now() < deadline) {
+      const mid = Math.floor((good + bad) / 2);
+      checkout(commits[mid]);
+      const probe = check(logs, runId(commits[mid], step), [step]);
+      const failed =
+        !probe.ok &&
+        (target.length === 0 ||
+          [...readFailures(probe.log, step).keys()].some((key) =>
+            target.includes(key)
+          ));
+      if (failed) bad = mid;
+      else good = mid;
+    }
+  } finally {
+    backToTip(tip);
   }
   return bad - good === 1
     ? commitInfo(commits[bad])
@@ -597,6 +614,15 @@ const run = async (args) => {
   const dry = args.includes('--dry');
   const emit = (event) =>
     appendEvent(option('--ref') ? { ...event, offNext: true } : event);
+  const brokenAt = (tip, error) => {
+    emit({
+      kind: 'broken',
+      output: error.message.split('\n').slice(-5),
+      tip,
+      wake: startsBrokenStreak(readEvents()),
+    });
+    return 1;
+  };
   if (option('--step') && !option('--ref')) {
     console.error(
       "[local-ci] --step checks one step, so it needs --ref; a run on next checks this Mac's steps."
@@ -643,6 +669,11 @@ const run = async (args) => {
       tip === state.tip
     ) {
       console.info(`[local-ci] next is still ${tip.slice(0, 10)}.`);
+      try {
+        backToTip(tip);
+      } catch (error) {
+        return brokenAt(tip, error);
+      }
       return 0;
     }
     const logs = join(main, 'docs', 'plans', 'artifacts', 'local-ci', today);
@@ -657,13 +688,7 @@ const run = async (args) => {
     try {
       checkout(tip);
     } catch (error) {
-      emit({
-        kind: 'broken',
-        output: error.message.split('\n').slice(-5),
-        tip,
-        wake: readEvents().at(-1)?.kind !== 'broken',
-      });
-      return 1;
+      return brokenAt(tip, error);
     }
     const step = option('--step');
     const name = runId(tip, step ?? (full ? 'full' : 'ci'));
@@ -688,7 +713,7 @@ const run = async (args) => {
         log: result.log,
         output: result.output,
         tip,
-        wake: readEvents().at(-1)?.kind !== 'broken',
+        wake: startsBrokenStreak(readEvents()),
       });
       // A run that checked nothing leaves the tip unchecked, so the next
       // wake tries it again instead of reading it as done.
@@ -770,10 +795,21 @@ const run = async (args) => {
       // step can find its culprit while other steps keep next from going green.
       const from = option('--green') ?? state.passed?.[failed] ?? green;
       const target = [...readFailures(alone.log, failed).keys()];
-      const found =
-        from && from !== tip
-          ? firstBad(logs, failed, from, tip, started + BUDGET_MS, target)
-          : { culprit: null, range: tip };
+      let found = { culprit: null, range: tip };
+      try {
+        if (from && from !== tip) {
+          found = firstBad(
+            logs,
+            failed,
+            from,
+            tip,
+            started + BUDGET_MS,
+            target
+          );
+        }
+      } catch (error) {
+        return brokenAt(tip, error);
+      }
       const event = {
         kind: 'red',
         failures: target.length > 0 ? target : failing,
@@ -912,7 +948,7 @@ const status = () => {
         .slice(-5)
         .map(
           (event) =>
-            `  ${event.at} ${event.kind} ${event.step ?? ''} ${event.culprit ?? event.range ?? event.tip}`
+            `  ${[event.at, event.kind, event.step, event.culprit ?? event.range ?? event.tip ?? event.id ?? event.item ?? event.reason].filter(Boolean).join(' ')}`
         ),
     ].join('\n')
   );
@@ -1001,7 +1037,10 @@ const wait = async (args) => {
   }
 };
 
-const commands = { install, run, status, uninstall, wait };
+const friction = (args) =>
+  frictionCommand(common, args, () => readFileSync(0, 'utf-8'));
+
+const commands = { friction, install, run, status, uninstall, wait };
 const [command, ...rest] = process.argv.slice(2);
 if (!commands[command]) {
   console.error(USAGE);

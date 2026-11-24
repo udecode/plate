@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 
 import { readTasks } from '../../.agents/pstack/tasks.mjs';
+import { isRunEvent } from './local-ci-events.mjs';
 import { failureFile } from './step-failures.mjs';
 
 const RECURRENCE_TOPIC = 'red-recurrence';
@@ -10,7 +11,7 @@ const STARTS = 3;
 const recurrenceTitle = (step) => `Stop ${step} from failing on next again`;
 
 export const reportsRun = (event) =>
-  !event.dry && !event.offNext && event.kind !== 'release';
+  !event.dry && !event.offNext && isRunEvent(event);
 
 export const runsOf = (events) => {
   const runs = [];

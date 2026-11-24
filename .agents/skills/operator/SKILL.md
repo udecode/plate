@@ -1,5 +1,5 @@
 ---
-description: Start or be the operator, the one session on a Mac that stays open, waits for Local CI and release events, and hands each one to a fresh agent. It starts a fix for each red or flaky step and a release agent for each beta that is due. Use for /operator, "keep watching", "start the operator", "release a beta now", being the operator, the old name "Local CI watcher", and when a release event or a local-ci task names a step.
+description: Start or be the operator, the one session on a Mac that stays open, waits for Local CI, release and friction events, and hands each one to a fresh agent. It starts a fix for each red or flaky step, a release agent for each beta that is due and a judge for each friction line zbot's sessions write. Use for /operator, "keep watching", "start the operator", "release a beta now", being the operator, the old name "Local CI watcher", and when a release or friction event or a local-ci task names a step.
 argument-hint: '[watch | release]'
 name: operator
 metadata:
@@ -9,7 +9,7 @@ metadata:
 
 # Operator
 
-The operator is the session titled `operator` on a Mac that installed Local CI. It waits for the events that Local CI and the beta release lane write to `events.jsonl` in `plate-local-ci/` in the git common directory, and hands each one to a fresh agent. It never edits, lands or fixes code itself, and it keeps each turn short. The `local-ci` skill owns the runner and its `status`, `rerun` and `install` commands.
+The operator is the session titled `operator` on a Mac that installed Local CI. It waits for the events that Local CI, the beta release lane and zbot write to `events.jsonl` in `plate-local-ci/` in the git common directory, and hands each one to a fresh agent. zbot, the team's Discord bot, queues a friction report with `local-ci.mjs friction add` for each of its sessions that ended with `[[friction: <what got in the way> | <the fix>]]` lines. The friction queue lives in the same events file, so `local-ci.mjs friction list` reads it back after a restart or a compaction. Every friction command runs the main checkout's copy of `local-ci.mjs`, as zbot does, because Local CI's copy moves to older commits while it searches for a first bad one. It never edits, lands or fixes code itself, and it keeps each turn short. The `local-ci` skill owns the runner and its `status`, `rerun` and `install` commands.
 
 Two writers add `release` events. `beta-release.mjs wake`, which Local CI runs after each green run on next, adds one when a daily beta is due and no release event came in the last 12 hours. `triage.mjs record` adds one for each udecode/plate `fixed` record, so a public fix ships at once. A beta from `next` publishes without asking, as `AGENTS.md`'s Git and publication says.
 
@@ -25,19 +25,25 @@ Make sure one operator is running on this Mac. Run this after the app quits or t
 
 ## watch
 
-The operator's loop. It runs one fix subagent at a time, each for one red step, and one release agent at a time.
+The operator's loop. It runs one fix subagent at a time, for a red step or a friction item, one release agent at a time and one friction judge at a time. It spawns each agent with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and its brief below filled in. `<ci>` stands for `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs`, and `<friction>` for `node tooling/scripts/local-ci.mjs friction`.
 
-1. Unless a wait this session started is still running, run `node .claude/worktrees/local-ci/tooling/scripts/local-ci.mjs wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or the current time in ISO form on the first loop. The command exits when an event with `wake: true` arrives and prints one JSON line per event. The session wakes when it exits.
-2. Handle each printed event:
-   - `kind: "red"` or `kind: "flake"` with `wake: true`: when no fix subagent is running, spawn one with the `Agent` tool: `subagent_type: "pstack:poteto-agent"`, `model: "opus"`, `effort: "high"`, `run_in_background: true`, and the Fix brief below filled in from the event. Otherwise add the event to the end of the queue. Each such event names one step and its open task. Only one fix subagent runs at a time (owner's word, 2026-11-18), because each one runs heavy checks, and two at once slow the host until steps time out. A red whose log shows only a timeout, at any load, wakes a fix subagent like any other, because a step that cannot finish its hour on this host is a defect. That fix makes the step finish inside its budget, such as by speeding its code or moving cases to a stress lane, and never raises the timeout (owner's word, 2026-11-23).
-   - `kind: "passed"`: next passes that step now, so drop its queued events. When the running fix subagent works on that step, tell it with `SendMessage` that next passes its step, so it rechecks and closes its task.
-   - `dry: true`: spawn the same subagent with the Dry brief. It only reads, so it starts even while a fix runs.
+1. On the first loop, note the current time in ISO form, then run step 3 before you wait, so friction that came in while no operator ran gets judged and fixed. Then, unless a wait this session started is still running, run `<ci> wait --after <time>` with the Bash tool's `run_in_background`. `<time>` is the `at` of the last event this session handled, or on the first loop the time you noted, so an event that came in during step 3 still wakes you. The command exits when an event with `wake: true` arrives and prints one JSON line per event. The session wakes when it exits.
+2. Handle each printed event, then run step 3:
+   - `kind: "red"` or `kind: "flake"` with `wake: true`: add the event to the end of the red queue. Each such event names one step and its open task. Only one fix subagent runs at a time (owner's word, 2026-11-18), because each one runs heavy checks, and two at once slow the host until steps time out. A red whose log shows only a timeout, at any load, wakes a fix subagent like any other, because a step that cannot finish its hour on this host is a defect. That fix makes the step finish inside its budget, such as by speeding its code or moving cases to a stress lane, and never raises the timeout (owner's word, 2026-11-23).
+   - `kind: "passed"`: next passes that step now, so drop its events from the red queue. When the running fix subagent works on that step, tell it with `SendMessage` that next passes its step, so it rechecks and closes its task.
+   - `dry: true`: spawn an agent with the Dry brief. It only reads, so it starts even while a fix runs.
    - `kind: "broken"`: the runner could not check out or run next. Read its `output` and `launchd.log` in `plate-local-ci/`. When the cause is the Local CI worktree's install, run `pnpm install --frozen-lockfile` inside that worktree; the next wake retries the tip. Otherwise say the cause in this session's reply and send no message.
-   - `kind: "release"`: on a Mac other than main, which keeps `config.json` in `plate-local-ci/`, drop the event, because only the main CI's operator ships betas and two release agents would race on one version PR. On main, when no release agent is running, spawn one the way a fix subagent spawns, with the Release brief below filled in from the event. It starts even while a fix runs, because it runs only the landing checks. Otherwise drop the event, because the running agent ships every change up to next's tip and closes each public issue its beta fixed.
-3. When a fix subagent or release agent finishes, save its report to `docs/plans/artifacts/local-ci/<day>/fix-<task id or step>.md` or `release-<day>.md` in the main checkout. Then spawn a fix subagent for the first queued event, as step 2 says. Reply with one line per finished agent: the step and the fix commit, or the beta and the issues it closed, or why it is still open. Add one line that lists the steps still queued, so the queue survives a compaction.
+   - `kind: "release"`: on a Mac other than main, which keeps `config.json` in `plate-local-ci/`, drop the event, because only the main CI's operator ships betas and two release agents would race on one version PR. On main, when no release agent is running, spawn one with the Release brief filled in from the event. It starts even while a fix runs, because it runs only the landing checks. Otherwise drop the event, because the running agent ships every change up to next's tip and closes each public issue its beta fixed.
+   - `kind: "friction"`: nothing more, because step 3 reads every friction report from the queue.
+3. Start what can start:
+   - When no fix subagent is running and the red queue holds an event, spawn a fix subagent for its oldest event with the Fix brief.
+   - When no fix subagent is running and the red queue is empty, run `<friction> next`. When it prints an `item`, run `<friction> start --item <its id>`, then spawn a fix subagent with the Friction fix brief filled in from that item.
+   - When no friction judge is running, and this loop handled a `friction` event, ran `<friction> failed` or is the first loop, and `<friction> next` counts an `unjudged` report or a `stuck` item, spawn a judge with the Friction brief. It starts even while a fix runs, because it only reads and decides. A judge that ended without recording its verdicts waits for the next of those, so a failing judge never runs in a loop.
 4. Go back to step 1 with the newest handled event's `at`.
 
-Nothing the operator starts posts to the team channel: not this session, a fix subagent or a release agent (owner's word, 2026-11-17). The agents run on Opus at high, the models sheet's bug-fix level, and each one ends with this session, so the operator stays open and pinned.
+When an agent finishes, save its report in `docs/plans/artifacts/local-ci/<day>/` in the main checkout: a fix subagent's as `fix-<task id or step>.md`, or `fix-friction-<item id>-<time>.md` for a friction item, a release agent's as `release-<day>.md`, and a judge's as `friction-<time>.md`, where `<time>` is the UTC time it finished, from `date -u +%H%M%S`. When a friction fix subagent finishes, run `<friction> failed --item <its id>`, which counts a failed attempt only when the agent left its item open. Then run step 3. Reply with one line per finished agent: the step and the fix commit, the beta and the issues it closed, each friction line's outcome, or why it is still open. Add one line that lists the events in the red queue, so that queue survives a compaction. `friction list` keeps the friction queue.
+
+Nothing the operator starts posts to the team channel: not this session, a fix subagent, a release agent or a friction judge (owner's word, 2026-11-17). The agents run on Opus at high, the models sheet's bug-fix level, and each one ends with this session, so the operator stays open and pinned.
 
 ### Fix brief
 
@@ -60,3 +66,43 @@ Nothing the operator starts posts to the team channel: not this session, a fix s
 > 2. Run `node tooling/scripts/beta-release.mjs pending`. Condense its changesets into the notes a user of the last beta reads: merge the changesets that describe one change, delete each one whose every `introduced by` line says no user has the bug, and rewrite the rest as the `changeset` skill says. When a file changed, land the result as one `chore(release): condense changesets` commit through `node .agents/pstack/land.mjs`.
 > 3. Run `node tooling/scripts/beta-release.mjs ship --force` in the background. `--force` skips its own due check, which step 1 already passed, because a condense commit moves next's tip past the run Local CI passed. It waits for the version PR to hold next's tip, merges it, waits for npm and the package tag, then closes each public issue the beta fixed. When it exits 75, run it again; a run after the merge only waits and closes. On any other exit, reply with its output and stop.
 > 4. Send no team message. End with one line: the beta and the issues it closed, or why no beta went out.
+
+### Friction brief
+
+> zbot's sessions wrote what got in their way, and zbot queued it in Local CI's events file. Run `local-ci.mjs friction` as `node <main checkout path>/tooling/scripts/local-ci.mjs friction`; `friction` alone prints its commands. Work from the main checkout `<main checkout path>`. Read its `AGENTS.md` and follow it, except where this brief says otherwise, because you only decide. Keep no plan, decision log, todo file or worktree, and change no file, even where its Improve the workflow mid-task rule would. Land nothing, run no check and send no message. You write only the `chips` rows of steps 3 and 5 and the `friction` commands of steps 4 and 5.
+>
+> 1. Run `friction list`. Its `unjudged` reports hold the lines to judge. Each line is `<report id>-<n>`, with `<n>` counting the report's lines from 0. Its `open`, `waiting` and `stuck` items are lines judged `fixed` that no fix has closed yet, and its `history` holds every verdict, with the commit or task that closed each item. Run `git -C <main checkout path> fetch --quiet origin next` and read each file a line names with `git show origin/next:<path>`, because the main checkout can lag next.
+> 2. Give each line of each unjudged report one outcome:
+>    - `fixed`: friction in a skill, rule, script or helper, the kind that `AGENTS.md`'s Improve the workflow mid-task rule has a session fix, in Plate or in the repository that owns the file, such as dotai for a shared skill. Name exactly one of these, checked in order:
+>      - `same`: the id of an earlier item, in any state or in `history`, that covers the same problem, such as `show-3886b74-5f0c1e2a-0`. The queue keeps the line behind that item and carries its fix. When that item's fix landed, a fix agent checks whether the problem came back. When it closed as a chip, the line joins that chip.
+>      - `commit`: the commit on `origin/next`, or on the owning repository's main branch, that already fixed the problem, when no earlier item covers it.
+>      - `fix`: what to change, so an agent can act without zbot's session.
+>    - `chip`: a product bug, a change to zbot itself, such as its router, prompt or settings in zstack, or anything else that needs the owner's call.
+>    - `dropped`: the line asks for what an owner decision rules out, such as a clip page wider than the 540 px the `clip` skill films. Write in `reason` the decision and where it is written.
+>
+>    Nothing goes to triage, and no line opens an issue.
+> 3. Load the `chips` skill and offer each `chip` line through its Offer mode, at the priority chips.md gives it, such as P1 for a broken `next build`. Name the line id in the finding. Before each offer, search `docs/plans/artifacts/suggested-tasks.decisions.tsv` in the main checkout for that line id, and reuse the task you find, because an earlier judge may have offered it before it stopped. A new offer carries `via: hook` and `session: none`, and a P0 or P1 offer carries zbot's command or page as its `repro:`. Offer every chip line, whatever its priority, because you keep no plan to hold Open work. A line that repeats an uncarded offered task folds into that task with a `folded` row, which takes neither `via:` nor `session:`. A line that repeats a carded or started task adds no row and names that task, unless it raises the task's priority or gives its first repro, which an `updated` row with `priority:` and its evidence records. Card nothing.
+> 4. Record every verdict with one `friction judged` call, which reads JSON on stdin and refuses a report unless each of its lines gets exactly one outcome. When it refuses, run `friction list` again and fix the verdicts once:
+>
+>    ```sh
+>    friction judged <<'EOF'
+>    {"verdicts": [
+>      {"line": "show-3886b74-5f0c1e2a-0", "outcome": "fixed", "fix": "<what to change>"},
+>      {"line": "show-3886b74-5f0c1e2a-1", "outcome": "fixed", "same": "brief-12-ab12cd34-0"},
+>      {"line": "show-3886b74-5f0c1e2a-2", "outcome": "fixed", "commit": "<sha>"},
+>      {"line": "show-3886b74-5f0c1e2a-3", "outcome": "chip", "task": "<task id>"},
+>      {"line": "show-3886b74-5f0c1e2a-4", "outcome": "dropped", "reason": "<decision and where>"}
+>    ]}
+>    EOF
+>    ```
+> 5. Each `stuck` item failed two fix attempts. Offer it as a chip the same way, with its line and fix, and run `friction done --item <id> --task <task id>`. The lines waiting behind it join that chip.
+> 6. End with one line per judged line and stuck item: its outcome and its fix, earlier item, commit, task or reason.
+
+### Friction fix brief
+
+> The operator's friction judge queued this fix: `<the item's JSON from friction next>`. Its `line` is what zbot's session wrote, its `from` names that session and its `fix` is what to change. When it names `after`, an earlier fix for the same problem landed as that commit. Run `local-ci.mjs friction` as `node <main checkout path>/tooling/scripts/local-ci.mjs friction`. Work from the main checkout `<main checkout path>`; read its `AGENTS.md` first and follow it.
+>
+> 1. Cut a new worktree of your own from `origin/next`, or from the owning repository's main branch when another repository owns the file. Never check out a branch in a worktree that already exists, because another session works there. When the problem is gone there, run `friction done --item <id> --commit <the commit that fixed it>` and stop.
+> 2. When the item names `after` and the problem is still there, its earlier fix did not hold, so run `/pstack:correct` on its class. Never run `/pstack:correct` for an item without `after`, because that is a first report. Otherwise fix the skill, rule, script or helper it names, as `AGENTS.md`'s Improve the workflow mid-task rule says, in the repository that owns the file.
+> 3. Land through `node .agents/pstack/land.mjs`, or as the owning repository's rules say. As your next command after it lands, run `friction done --item <id> --commit <the landed commit>`. When nothing can land, offer the line as a chip through the `chips` skill's Offer mode with what you found, `via: hook` and `session: none`, and run `friction done --item <id> --task <task id>`.
+> 4. Send no team message. End with one line: the fix commit or the task, and why.
