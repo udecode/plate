@@ -67,6 +67,12 @@ export function readKind(tool, input = {}) {
   if (words[0] === 'sed' && words.some((word) => /^-[a-zA-Z]*i/u.test(word))) {
     return 'reset';
   }
+  if (
+    words[0] === 'cat' &&
+    /\s>>?\s*(?!\/dev\/null)[^\s&]/u.test(command.split('\n')[0])
+  ) {
+    return 'reset';
+  }
   if (READ_COMMANDS.has(words[0])) {
     return readsOnlyReadInFullFiles(command) ? null : 'read';
   }
