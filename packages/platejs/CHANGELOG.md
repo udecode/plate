@@ -1,5 +1,66 @@
 # platejs
 
+## 54.0.0-beta.4
+
+### Patch Changes
+
+- [`3a568a1`](https://github.com/udecode/plate/commit/3a568a1a718270551a0585ee86b0c2d8e2145272) by [@sin6626](https://github.com/sin6626) –
+
+  - Fix `BlockPlaceholderPlugin` drawing its placeholder on top of the editor `placeholder` when the editor holds only an empty list item. Only the editor placeholder shows there now, and an editor without a `placeholder` still shows the block placeholder on that item.
+
+- [`df47a83`](https://github.com/udecode/plate/commit/df47a83b35087f809937f4f1e8a203160c618e1b) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `exportPicture({ format, kit })` to `useBoardActions()` in `platejs/board/react`. It draws the board, or the selected shapes and frames, as a PNG or an SVG with the static plugins in `kit`, which may be a promise such as a dynamic import. It resolves `null` when there is nothing to draw, and rejects when the board is not on the page.
+  - Add the `BoardPicture`, `BoardPictureOptions` and `BoardPictureWarning` types. A picture's warnings name each image it could not read and each shape it could not draw, and say when a font could not be embedded or a large PNG was scaled down.
+
+- [`6016f0d`](https://github.com/udecode/plate/commit/6016f0da5257dc6752e84cc43e51e7e96b73b0dc) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix a comment thread whose text was deleted still reading as attached over nothing. Its range now reads `status: 'unavailable'` until its text comes back, such as through undo, and `idsAt` no longer answers it at the spot where its text was.
+  - Refuse to create, send or publish a thread over a range that covers no letter and no embedded item, as for a draft whose selected text was deleted before it was sent. Starting a draft over such a range between two blocks takes the first block.
+  - Load a saved thread whose range covers nothing as unavailable.
+  - Notify attachment listeners when a thread's text is deleted or comes back, even when its range keeps the same points, and answer `pendingRange()` with `null` once the pending draft's text is deleted.
+
+- [`a752fda`](https://github.com/udecode/plate/commit/a752fda73b80e58a116dee1133fa586596d45b3b) by [@zbeyens](https://github.com/zbeyens) – Report a `lossy-content` diagnostic with the table's path when a review DOCX export includes a table that holds a pending row, column or table format change, also when the export returns the retained source file unchanged. Word's revisions cannot carry that change, so the default `lossPolicy: 'reject'` refuses the export. Pass `lossPolicy: 'allow'` to export the file with the warning.
+
+- [`7428002`](https://github.com/udecode/plate/commit/74280028c1c3a0840d2ea5f983104206e85c6a5a) by [@zbeyens](https://github.com/zbeyens) – Fix `EditorRoot`'s `readOnly` letting a write through an `EditorContent` in the render that sets it. A write from a removed control's cleanup in that render now throws, also when the render removes, hides or suspends the `EditorContent`. An `EditorContent` with `readOnly={false}` stays writable.
+
+- [`a8d490e`](https://github.com/udecode/plate/commit/a8d490eeddc3031ceea145693201a55ed46fc18d) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Accept `at: { id }` in node reads and transforms, including those that select by plugin, such as `editor.read.nodes.block({ at: { id }, type: BaseParagraphPlugin })`, and in the `insert` of date, mention, inline equation, field and footnote.
+  - Remove `ElementIdPlugin`'s `read.entry(id)` and the `ElementIdEntry` type.
+
+  **Migration:** Use `editor.read.nodes.byId(id)`. It returns `{ key, node, path, root? }`, or `null` instead of `undefined` when no element holds the id.
+
+- [`c16a73c`](https://github.com/udecode/plate/commit/c16a73c0c5c24de614973e4d84f0c0f5f2743d78) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `read.submission(role)` to the field plugin. It returns a `FieldSubmission`, `{ role, values }`, with the `value` of each of that role's fields keyed by `fieldId`. A field with no `value` is left out.
+  - Add `applyFieldValues(template, submissions, options?)` to `platejs/field`. It checks each role's submission against an empty template, in the order the roles submitted, and returns a `FieldApplyResult`: the filled document, the roles that still have to submit as `pending`, or the refusals as `FieldRefusal` objects. A required checkbox counts as answered only when it is ticked. Pass a renamed field type as `options.type`.
+
+- [`a29e09a`](https://github.com/udecode/plate/commit/a29e09abe74b974301a09e51070f065c1e99227c) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fix Markdown export writing document text that a CommonMark or GFM reader runs as HTML or reads as a script link, such as a tag in a details summary, in an equation's TeX or at the start of a footnote. Plate reads the exported file back as the same document.
+  - Fix copying part of a code block writing its raw text into `text/markdown`. The copied code is now escaped Markdown text.
+
+- [`828f500`](https://github.com/udecode/plate/commit/828f50035cbbfa158cb2412064a5f8268df7ba16) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add `RawHtmlPlugin` to `platejs/markdown`. Installed beside `MarkdownPlugin`, it keeps a Markdown file's raw HTML, such as a README's centered header, and HTML comments on lines of their own. Export writes that HTML back when it passes a check of tags, attributes and URLs, and otherwise writes it escaped with a `markdown-unsafe-content` warning.
+  - Keep raw HTML as plain text when `MarkdownPlugin`'s `plainMarks`, or a `serialize` call's, names `rawHtml`.
+  - Drop a 53.x document's saved `rawHtml` in `migrateV54` where no plugin declares it, as `migrateV54` drops `ai`.
+  - Refuse a 53.x document in `migrateV54` when a pending suggestion changes `ai` and no plugin declares `ai`, instead of opening a suggestion that loses the mark when accepted.
+
+- [`3106db0`](https://github.com/udecode/plate/commit/3106db0d824bb0fa3334aa68f7a5e87e5668a909) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Add follow-up paste rules. A `defineInputRule` rule with `target: 'insertData'`, `resolve` and `followUp` runs `followUp` after a local paste that history saved, as its own undo step on the view that pasted.
+  - Add `key` to an input rule's `editor`, which returns a node's stable key, as `editor.key` does.
+  - Add `MediaEmbedRules.autoEmbed({ variant: 'paste' })` to `platejs/media`. A YouTube, Vimeo, Dailymotion, Youku, Coub or X link pasted alone on an empty paragraph becomes a media embed above that paragraph, and one undo gives the link back.
+
+- [`64c3257`](https://github.com/udecode/plate/commit/64c32576914dc34edf9a3225da8bdc177bb50df8) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Run a `useEditorSelector` selector again when its editor shows a different review preview, so hooks built on it, such as `useFieldRead`, show what the preview shows.
+  - Fix `renderStaticHtml` with a `document` option throwing while the editor shows a review preview.
+
+- [`efacbf4`](https://github.com/udecode/plate/commit/efacbf43e864eace35725522795e62665067b7b7) by [@zbeyens](https://github.com/zbeyens) – Give each column its own width while a suggested column insertion or deletion waits. `api.table.columnWidths` and `read.table.cell` show a struck column at its old width and an inserted one at its new width. Column edges do not resize until the suggestion is decided, and `api.table.createResize` throws a `RangeError` for one; row edges still resize.
+
 ## 54.0.0-beta.3
 
 ### Patch Changes
