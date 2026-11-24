@@ -42,7 +42,6 @@ import {
   readTasks,
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
-import { requestRelease } from './beta-release.mjs';
 import {
   BRANCH,
   citedEditedBetween,
@@ -4280,20 +4279,6 @@ function recordCommand(options) {
     `recorded ${rows.length} row(s) in ${registerFile} by ${author}; commit the file and land it`
   );
   for (const row of rows) console.log(row);
-  if (reads.policy.primary) {
-    for (const entry of entries.filter((each) =>
-      CLOSED_BY_BETA.has(each.outcome)
-    )) {
-      const issue = issueNumber(entry.issue);
-      requestRelease({
-        issue,
-        commit: parseDetail(entry.detail).get('commit'),
-      });
-      console.log(
-        `asked for a beta for #${issue}, which closes once npm has that beta`
-      );
-    }
-  }
 }
 
 function check(options) {

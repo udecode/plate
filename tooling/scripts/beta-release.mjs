@@ -133,20 +133,6 @@ function releaseDue({ common, tip, now = new Date() }) {
       why: `${tagOf(beta.version)} has no tag yet, so its release is still running`,
     };
   }
-  const fixes = readLocalCiEvents(common).filter(
-    (event) =>
-      event.kind === 'release' &&
-      event.reason === 'fix' &&
-      contains(event.commit, tagRef(beta.version)) !== 0
-  );
-  if (fixes.length > 0) {
-    return {
-      ...facts,
-      due: true,
-      reason: 'fix',
-      why: `a public fix waits for a beta: ${fixes.map((event) => `#${event.issue}`).join(', ')}`,
-    };
-  }
   const since = lastFullRunHour(now);
   if (Date.parse(beta.at) >= since.getTime()) {
     return {
@@ -170,15 +156,6 @@ function releaseDue({ common, tip, now = new Date() }) {
     why: `no beta since ${since.toISOString()}, and Local CI passed ${tip.slice(0, 10)}`,
   };
 }
-
-export const requestRelease = ({ issue, commit }) =>
-  appendLocalCiEvent(commonDir(), {
-    kind: 'release',
-    reason: 'fix',
-    issue: Number(issue),
-    commit,
-    wake: true,
-  });
 
 // A beta still in flight keeps looking due, so a release event in the last
 // 12 hours stops the operator from waking for it again.
