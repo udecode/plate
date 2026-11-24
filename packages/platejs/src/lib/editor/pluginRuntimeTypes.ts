@@ -1,3 +1,5 @@
+import type { WithNodeTarget } from 'plitejs';
+
 import type {
   Editor as RuntimeBaseEditor,
   EditorSchemaContribution,
@@ -1647,7 +1649,7 @@ type PluginNodeTypeSelector =
 
 /** Broad insertion options for package APIs that forward a stored selector. */
 export type NodeInsertOptions = Omit<
-  NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>,
+  WithNodeTarget<NodeInsertNodesOptions<Node, NodeTypeSelector | undefined>>,
   'split'
 > & {
   split?: Omit<
@@ -1690,12 +1692,9 @@ type PropertiesForSelector<TSchema, TSelector> =
       ? PropertiesForPlugin<TSchema, TSelector>
       : Readonly<Record<string, unknown>>;
 
-// A selector call takes every target its Plite method takes, an element id
-// included, which the Location-only option interfaces it builds on leave out.
-type SelectorOptions<TOptions> = Omit<TOptions, 'at' | 'match' | 'type'> &
-  ('at' extends keyof TOptions
-    ? { at?: NodeTarget | TOptions['at' & keyof TOptions] }
-    : unknown);
+type SelectorOptions<TOptions> = WithNodeTarget<
+  Omit<TOptions, 'match' | 'type'>
+>;
 
 type NodesReadOptions<TNode extends Node, TSelector> = Omit<
   EditorNodesReadOptions<TNode>,

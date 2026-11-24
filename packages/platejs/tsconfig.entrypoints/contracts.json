@@ -23,10 +23,19 @@
       "path": "./core.json"
     },
     {
+      "path": "./date.json"
+    },
+    {
       "path": "./docx-export.json"
     },
     {
       "path": "./docx-import.json"
+    },
+    {
+      "path": "./field.json"
+    },
+    {
+      "path": "./footnote.json"
     },
     {
       "path": "./footnote-react.json"

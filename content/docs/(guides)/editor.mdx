@@ -641,14 +641,15 @@ ID, a write changes nothing and a read returns its empty result.
 
 The route decides which document the ID is looked up in:
 
-- A command, a plugin update method and a one-shot `insert`, `remove`, `set`,
-  `move`, `split`, `merge`, `lift` or `unwrap` on `editor.update.nodes` look it
-  up in the command's document. Over another author's pending suggestions, the
-  ID of a moved element reaches the moved copy, and an ID that only a struck
-  original holds changes nothing.
+- A command, a plugin update method and every one-shot on `editor.update`, such
+  as `editor.update.nodes.wrap`, look it up in the command's document. So do
+  the one-shots and plugin update methods of a writable view, in the view's
+  root. Over another author's pending suggestions, the ID of a moved element
+  reaches the moved copy, and an ID that only a struck original holds changes
+  nothing. A path in `to`, `after` or `before`, and a child `position`, still
+  names a place in the stored document.
 - A raw `editor.update((tx) => ...)` looks it up in the stored draft, as it
-  resolves a path or a key. It reaches the struck original. A one-shot `unset`,
-  `wrap`, `replace` or `replaceChildren` runs as a raw update.
+  resolves a path or a key. It reaches the struck original.
 - An editor view answers from its own document. A read on a view while a
   command runs answers from the command's document.
 

@@ -483,11 +483,15 @@ type NodeSelectionTarget<TNode extends Descendant = Descendant> =
   | NodeSelection
   | NodeTarget<TNode>;
 
-type WithNodeTarget<
-  TOptions extends { at?: Location },
+/**
+ * Options whose `at` takes every node target: a location, a node key, a live
+ * node or an element id, beside any other target the options already take.
+ */
+export type WithNodeTarget<
+  TOptions,
   TNode extends Descendant = Descendant,
 > = Omit<TOptions, 'at'> & {
-  at?: NodeTarget<TNode>;
+  at?: NodeTarget<TNode> | TOptions['at' & keyof TOptions];
 };
 
 type WithTextTarget<
@@ -2538,13 +2542,23 @@ export type EditorCommandContext<Input, TEditor = Editor> = {
  * Where a command's stored targets land in the document it decides on. A
  * point lands where typing there would land, a range keeps content at its
  * edges out, and a path or a span's paths land on their nodes' paths. A node
- * or node key names its node in both documents, so it stays as given. Each
+ * or node key names its node in both documents, so it stays as given. An
+ * element id lands as the key of the element that holds it there. Every other
  * target keeps its kind, and `location` returns null when it has no place
  * there.
  */
 export type EditorCommandPlace = Readonly<{
-  location: <T extends NodeTarget | NodeSelection | Span>(at: T) => T | null;
+  location: <T extends NodeTarget | NodeSelection | Span>(
+    at: T
+  ) => PlacedTarget<T> | null;
 }>;
+
+/** A target as a command place gives it back: an element id as a node key. */
+export type PlacedTarget<T> = T extends ElementIdTarget
+  ? Exclude<keyof T, 'id'> extends never
+    ? NodeKey
+    : T
+  : T;
 
 export type EditorCommandContinuation<Input> = ((
   ...input: [] | [input: Input]

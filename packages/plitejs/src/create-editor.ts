@@ -728,6 +728,7 @@ const createEditorImplementation = <
   const update = createEditorUpdateApi<V, TPlugins>(
     (fn, policy) => updateEditor(editor, fn, { tags: policy.tags }),
     {
+      caller: () => editor,
       hasTxGroup: (groupName) =>
         getPluginRegistry(editor).txGroups.has(groupName),
       repairValue: () =>

@@ -19,7 +19,6 @@ import type {
   EditorCommitContext,
   EditorCommitHandler,
   EditorCommand,
-  EditorCommandDispatch,
   EditorCoreStateView,
   EditorCoreUpdateTransaction,
   EditorDocumentRecords,
@@ -293,7 +292,7 @@ import {
   settleDraftTrack,
   trackDraftSpans,
 } from './draft-track';
-import { editorCommands, elementIdCommands } from './editor-commands';
+import { editorCommands } from './editor-commands';
 import { assertEditorNotDestroyed } from './editor-lifetime';
 import {
   isEditorNodeSelectable,
@@ -2438,9 +2437,8 @@ export const lookupElementId = (editor: Editor, id: string) => {
   return holderOfElementId(editor, id);
 };
 
-// A symbol property, not a WeakMap entry, so it reaches through Plate's
-// proxy of `nodes`.
-const ELEMENT_FINDER = Symbol('element finder');
+/** @internal */
+export const ELEMENT_FINDER = Symbol('element finder');
 
 type ElementFinder = (id: string) => EditorElementEntry | null;
 
@@ -3473,17 +3471,8 @@ const readNodePath = (
 
 export const resolveNodeTargetLocation = (
   editor: Editor,
-  target: NodeTarget
+  target: TextTarget
 ): Location | undefined => {
-  const id = elementIdOf(target);
-
-  if (id !== undefined) {
-    const holder = lookupElementId(editor, id);
-
-    return holder?.root === getCurrentChildrenRoot(editor)
-      ? holder.path
-      : undefined;
-  }
   if (typeof target === 'string') {
     return getPathByNodeKey(editor, target) ?? undefined;
   }
@@ -3573,6 +3562,9 @@ const getRuntimeTargetRoot = (
   return root;
 };
 
+/** @internal */
+export const UNPLACED_TARGET: ElementIdTarget = Object.freeze({ id: '' });
+
 export const elementIdOf = (target: unknown): string | undefined => {
   if (typeof target !== 'object' || target === null || Array.isArray(target)) {
     return undefined;
@@ -3588,7 +3580,7 @@ export const elementIdOf = (target: unknown): string | undefined => {
 type NodeTargetRoute<TTarget> = Readonly<{
   path?: Path;
   root: string | undefined;
-  target: TTarget | NodeKey;
+  target: Exclude<TTarget, ElementIdTarget> | NodeKey;
 }>;
 
 const routeNodeTarget = <
@@ -3597,10 +3589,15 @@ const routeNodeTarget = <
   editor: Editor,
   target: TTarget
 ): NodeTargetRoute<TTarget> | null => {
+  if (target === UNPLACED_TARGET) return null;
+
   const id = elementIdOf(target);
 
   if (id === undefined) {
-    return { root: getNodeTargetRoot(editor, target), target };
+    return {
+      root: getNodeTargetRoot(editor, target),
+      target: target as Exclude<TTarget, ElementIdTarget>,
+    };
   }
   const holder = lookupElementId(editor, id);
 
@@ -3611,9 +3608,6 @@ export const getNodeTargetRoot = (
   editor: Editor,
   target: NodeTarget | NodeSelection | Span | undefined
 ) => {
-  const id = elementIdOf(target);
-
-  if (id !== undefined) return lookupElementId(editor, id)?.root;
   if (typeof target === 'string') {
     return getRuntimeTargetRoot(editor, target);
   }
@@ -3688,22 +3682,6 @@ const routeOptions = <TOptions extends object>(
   getOptionsNodeTarget(options) === target
     ? options
     : { ...options, at: target };
-
-// A one-shot transform given a path or key acts on the stored document; given
-// an id it runs as a command, which places the id in the frame's document.
-const lowerElementId =
-  (command: EditorCommand<any>) =>
-  (
-    dispatch: EditorCommandDispatch<any>,
-    [options]: readonly any[],
-    primitive: (options: any) => any
-  ): any => {
-    const id = elementIdOf(options?.at);
-
-    return id === undefined
-      ? primitive(options)
-      : dispatch(command, { options: { ...options, at: { id } } });
-  };
 
 const readAtOptionsTarget = <TOptions extends object, T>(
   editor: Editor,
@@ -3830,7 +3808,7 @@ const resolveNodeTargetOptions = <TOptions extends NodeTargetOptions>(
       : undefined;
   }
 
-  const at = resolveNodeTargetLocation(editor, options.at);
+  const at = resolveNodeTargetLocation(editor, options.at as TextTarget);
 
   if (at === undefined) return null;
 
@@ -3964,7 +3942,7 @@ const resolveNodeTargetOrSpanOptions = <
     ) as ResolvedNodeTargetOrSpanOptions<TOptions>;
   }
 
-  const at = resolveNodeTargetLocation(editor, options.at);
+  const at = resolveNodeTargetLocation(editor, options.at as TextTarget);
 
   if (at === undefined) return null;
 
@@ -4404,32 +4382,74 @@ const runInTargetRoot = <T>(
   editor: Editor,
   at: NodeSelection | NodeTarget,
   selectionRoot: (selection: NodeSelection) => string,
-  fn: (at: NodeSelection | Location) => T,
+  fn: (at: NodeSelection | Location, root: string | undefined) => T,
   miss: T
 ): T => {
   if (SelectionApi.isNode(at)) {
-    return runWithMutationRoot(editor, selectionRoot(at), () => fn(at));
+    const root = selectionRoot(at);
+
+    return runWithMutationRoot(editor, root, () => fn(at, root));
   }
   const route = routeNodeTarget(editor, at);
 
   if (!route) return miss;
-  if (route.root) {
-    return runWithMutationRoot(editor, route.root, () => {
+
+  const { root } = route;
+
+  if (root) {
+    return runWithMutationRoot(editor, root, () => {
       const location =
         route.path ?? resolveNodeTargetLocation(editor, route.target);
 
-      return location ? fn(location) : miss;
+      return location ? fn(location, root) : miss;
     });
   }
   const location = resolveNodeTargetLocation(editor, route.target);
+  const locationRoot = location && getLocationMutationRoot(editor, location);
 
   return location
-    ? runWithMutationRoot(
-        editor,
-        getLocationMutationRoot(editor, location),
-        () => fn(location)
+    ? runWithMutationRoot(editor, locationRoot, () =>
+        fn(location, locationRoot)
       )
     : miss;
+};
+
+const runAtOptionsTarget = <TOptions extends NodeTargetOptions, T, TMiss>(
+  editor: Editor,
+  options: TOptions | undefined,
+  childrenRoot: string | undefined,
+  run: (
+    localOptions: ResolvedNodeTargetOptions<TOptions> | undefined,
+    root: string | undefined
+  ) => T,
+  miss: TMiss
+): T | TMiss => {
+  const route = routeNodeTarget(editor, options?.at);
+
+  if (!route) return miss;
+  const routed = options && routeOptions(options, route);
+  const runtimeRoot = childrenRoot ?? route.root;
+  const preResolvedOptions = runtimeRoot
+    ? undefined
+    : resolveNodeTargetOptions(editor, routed);
+
+  if (preResolvedOptions === null) return miss;
+  const root = runtimeRoot ?? getMutationRoot(editor, preResolvedOptions);
+
+  return runWithMutationRoot(editor, root, () => {
+    const resolvedOptions = runtimeRoot
+      ? resolveNodeTargetOptions(editor, routed)
+      : preResolvedOptions;
+
+    if (resolvedOptions === null) return miss;
+
+    return run(
+      resolvedOptions?.at === undefined
+        ? resolvedOptions
+        : { ...resolvedOptions, at: localizeLocation(resolvedOptions.at) },
+      root
+    );
+  });
 };
 
 type RootScope = Readonly<
@@ -5618,32 +5638,8 @@ const withSliceFitTarget = <V extends Value, T>(
         : getCurrentChildrenRoot(editor);
 
   if (childrenAt !== undefined && !childrenRoot) return false;
-  const route = routeNodeTarget(editor, options?.at);
 
-  if (!route) return false;
-  const routed = options && routeOptions(options, route);
-  const runtimeRoot = childrenRoot ?? route.root;
-  const preResolvedOptions = runtimeRoot
-    ? undefined
-    : resolveNodeTargetOptions(editor, routed);
-
-  if (preResolvedOptions === null) return false;
-  const root = runtimeRoot ?? getMutationRoot(editor, preResolvedOptions);
-
-  return runWithMutationRoot(editor, root, () => {
-    const resolvedOptions = runtimeRoot
-      ? resolveNodeTargetOptions(editor, routed)
-      : preResolvedOptions;
-
-    if (resolvedOptions === null) return false;
-
-    return run(
-      resolvedOptions?.at === undefined
-        ? resolvedOptions
-        : { ...resolvedOptions, at: localizeLocation(resolvedOptions.at) },
-      root
-    );
-  });
+  return runAtOptionsTarget(editor, options, childrenRoot, run, false);
 };
 
 type SliceFitRangePlace = Extract<SliceFitPlace, { kind: 'range' }>;
@@ -7742,7 +7738,15 @@ const getStateView = <
           path: (target: NodeTarget, options: EditorPathOptions = {}) => {
             // A Path has no root discriminator. Keep this lookup scoped to the
             // current editor/view root; use a root view for a named-root path.
-            const at = resolveNodeTargetLocation(editor, target);
+            const id = elementIdOf(target);
+            const holder =
+              id === undefined ? null : lookupElementId(editor, id);
+            const at =
+              id === undefined
+                ? resolveNodeTargetLocation(editor, target as TextTarget)
+                : holder?.root === getCurrentChildrenRoot(editor)
+                  ? holder.path
+                  : undefined;
 
             if (!at) return undefined;
 
@@ -8494,33 +8498,8 @@ export const getUpdateView = <
     fn: (options: ResolvedNodeTargetOptions<TOptions> | undefined) => TResult
   ): TResult | undefined => {
     assertActive();
-    const route = routeNodeTarget(editor, options?.at);
 
-    if (!route) return undefined;
-    const routed = options && routeOptions(options, route);
-    const preResolvedOptions = route.root
-      ? undefined
-      : resolveNodeTargetOptions(editor, routed);
-
-    if (preResolvedOptions === null) return undefined;
-    const root = route.root ?? getMutationRoot(editor, preResolvedOptions);
-
-    return runWithMutationRoot(editor, root, () => {
-      const resolvedOptions = route.root
-        ? resolveNodeTargetOptions(editor, routed)
-        : preResolvedOptions;
-
-      if (resolvedOptions === null) return undefined;
-      const localOptions =
-        resolvedOptions?.at === undefined
-          ? resolvedOptions
-          : ({
-              ...resolvedOptions,
-              at: localizeLocation(resolvedOptions.at),
-            } as ResolvedNodeTargetOptions<TOptions>);
-
-      return fn(localOptions);
-    });
+    return runAtOptionsTarget(editor, options, undefined, fn, undefined);
   };
   type NodeMutationTargetOptions = {
     at?: NodeSelection | NodeTarget;
@@ -8728,59 +8707,37 @@ export const getUpdateView = <
             selection,
             explicitAt === undefined ? 'stored' : 'target'
           ),
-        (routedTarget) => {
-          const nodeSelection = SelectionApi.isNode(routedTarget)
-            ? routedTarget
-            : null;
-          const targetAt = nodeSelection ? null : (routedTarget as Location);
-          const root = nodeSelection
-            ? getNodeSelectionRoot(
-                editor,
-                nodeSelection,
-                explicitAt === undefined ? 'stored' : 'target'
-              )
-            : targetAt
-              ? (getLocationMutationRoot(editor, targetAt) ?? MAIN_ROOT_KEY)
-              : MAIN_ROOT_KEY;
-          const selectedBlockPaths = runWithMutationRoot(editor, root, () =>
-            state.nodes
-              .blocks({ at: nodeSelection ?? targetAt ?? undefined, voids })
-              .map(([, path]) => path)
-          );
+        (routedTarget, targetRoot) => {
+          const root = targetRoot ?? MAIN_ROOT_KEY;
+          const selectedBlockPaths = state.nodes
+            .blocks({ at: routedTarget, voids })
+            .map(([, path]) => path);
 
           if (selectedBlockPaths.length === 0) return false;
 
           const propsMatch = (node: PliteNode) =>
             NodeApi.isElement(node) && ElementApi.matches(node, props);
-          const isActive = runWithMutationRoot(editor, root, () =>
-            wrap
-              ? selectedBlockPaths.some((path) =>
-                  state.nodes.some({ at: path, match: propsMatch, voids })
-                )
-              : selectedBlockPaths.some((path) => {
-                  const entry = state.nodes.get(path);
+          const isActive = wrap
+            ? selectedBlockPaths.some((path) =>
+                state.nodes.some({ at: path, match: propsMatch, voids })
+              )
+            : selectedBlockPaths.some((path) => {
+                const entry = state.nodes.get(path);
 
-                  return !!entry && propsMatch(entry[0]);
-                })
-          );
+                return !!entry && propsMatch(entry[0]);
+              });
 
           if (!wrap) {
             const before = getActiveDocumentChangeBuilder(editor).change;
-            const applied = runWithMutationRoot(editor, root, () => {
-              const patches = isActive
-                ? prepareBlockResets(
-                    selectedBlockPaths,
-                    root,
-                    Object.keys(props)
-                  )
-                : selectedBlockPaths.map((path) => ({
-                    path,
-                    props,
-                    unset: [],
-                  }));
-
-              return !!patches && applyBlockPatches(patches, root, voids);
-            });
+            const patches = isActive
+              ? prepareBlockResets(selectedBlockPaths, root, Object.keys(props))
+              : selectedBlockPaths.map((path) => ({
+                  path,
+                  props,
+                  unset: [],
+                }));
+            const applied =
+              !!patches && applyBlockPatches(patches, root, voids);
 
             return (
               applied &&
@@ -8792,11 +8749,9 @@ export const getUpdateView = <
 
           if (isActive) {
             for (const path of selectedBlockPaths.toReversed()) {
-              runWithMutationRoot(editor, root, () => {
-                if (state.nodes.some({ at: path, match: propsMatch, voids })) {
-                  unwrapNodes(editor, { at: path, match: propsMatch, voids });
-                }
-              });
+              if (state.nodes.some({ at: path, match: propsMatch, voids })) {
+                unwrapNodes(editor, { at: path, match: propsMatch, voids });
+              }
             }
 
             return getActiveDocumentChangeBuilder(editor).change !== before;
@@ -8816,36 +8771,32 @@ export const getUpdateView = <
           }
 
           const schema = getEditorSchema(editor);
-          const allowed = runWithMutationRoot(editor, root, () =>
-            runs.every((run) => {
-              const children = run.map((path) => state.nodes.get(path)?.[0]);
+          const allowed = runs.every((run) => {
+            const children = run.map((path) => state.nodes.get(path)?.[0]);
 
-              if (!children.every((node) => ElementApi.isElement(node))) {
-                return false;
-              }
+            if (!children.every((node) => ElementApi.isElement(node))) {
+              return false;
+            }
 
-              const [first] = run;
-              const parent = state.nodes.parent(first)?.[0];
+            const [first] = run;
+            const parent = state.nodes.parent(first)?.[0];
 
-              return schema.canWrap(
-                ElementApi.isElement(parent) ? parent : null,
-                { ...props, children },
-                first.at(-1) ?? 0,
-                root
-              );
-            })
-          );
+            return schema.canWrap(
+              ElementApi.isElement(parent) ? parent : null,
+              { ...props, children },
+              first.at(-1) ?? 0,
+              root
+            );
+          });
 
           if (!allowed) return false;
 
           for (const run of runs.toReversed()) {
-            runWithMutationRoot(editor, root, () => {
-              wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
-                at: PathApi.parent(run[0]),
-                match: (_node, path) =>
-                  run.some((member) => PathApi.equals(member, path)),
-                voids,
-              });
+            wrapNodes(editor, { ...props, children: [] } as ElementIn<V>, {
+              at: PathApi.parent(run[0]),
+              match: (_node, path) =>
+                run.some((member) => PathApi.equals(member, path)),
+              voids,
             });
           }
 
@@ -9011,38 +8962,29 @@ export const getUpdateView = <
           state.schema.isBlock(node) &&
           (!blockMatch || blockMatch(node, path));
         const entries = nodeSelection
-          ? runWithMutationRoot(
-              editor,
-              getNodeSelectionRoot(
-                editor,
-                nodeSelection,
-                explicitAt === undefined ? 'stored' : 'target'
-              ),
-              () =>
-                nodeSelection.paths.reduce<Array<NodeEntry<Element>>>(
-                  (all, path) => {
-                    const exact = state.nodes.get(path);
-                    const block =
-                      exact &&
-                      NodeApi.isElement(exact[0]) &&
-                      state.schema.isBlock(exact[0])
-                        ? (exact as NodeEntry<Element>)
-                        : state.nodes.block({ at: path });
+          ? nodeSelection.paths.reduce<Array<NodeEntry<Element>>>(
+              (all, path) => {
+                const exact = state.nodes.get(path);
+                const block =
+                  exact &&
+                  NodeApi.isElement(exact[0]) &&
+                  state.schema.isBlock(exact[0])
+                    ? (exact as NodeEntry<Element>)
+                    : state.nodes.block({ at: path });
 
-                    if (
-                      block &&
-                      matchesBlock(block[0], block[1]) &&
-                      !all.some(([, candidate]) =>
-                        PathApi.equals(candidate, block[1])
-                      )
-                    ) {
-                      all.push(block);
-                    }
+                if (
+                  block &&
+                  matchesBlock(block[0], block[1]) &&
+                  !all.some(([, candidate]) =>
+                    PathApi.equals(candidate, block[1])
+                  )
+                ) {
+                  all.push(block);
+                }
 
-                    return all;
-                  },
-                  []
-                )
+                return all;
+              },
+              []
             )
           : targetAt
             ? LocationApi.isRange(targetAt)
@@ -9602,29 +9544,18 @@ export const getUpdateView = <
             });
           }
         ),
-        lift: defineSemanticUpdateMethod<EditorTransactionNodesApi<V>['lift']>(
-          (options?: { at?: NodeSelection | NodeTarget }) =>
-            runNodeTargetMutation(options, (resolvedOptions) => {
-              liftNodes(editor, resolvedOptions);
-            }),
-          lowerElementId(elementIdCommands.lift)
-        ),
-        merge: defineSemanticUpdateMethod<
-          EditorTransactionNodesApi<V>['merge']
-        >(
-          (options?: { at?: NodeSelection | NodeTarget }) =>
-            runNodeTargetMutation(options, (resolvedOptions) => {
-              mergeNodes(editor, resolvedOptions);
-            }),
-          lowerElementId(elementIdCommands.merge)
-        ),
-        move: defineSemanticUpdateMethod<EditorTransactionNodesApi<V>['move']>(
-          (options: { at?: NodeSelection | NodeTarget }) =>
-            runNodeTargetMutation(options, (resolvedOptions) => {
-              moveNodes(editor, resolvedOptions as never);
-            }),
-          lowerElementId(elementIdCommands.move)
-        ),
+        lift: (options?: { at?: NodeSelection | NodeTarget }) =>
+          runNodeTargetMutation(options, (resolvedOptions) => {
+            liftNodes(editor, resolvedOptions);
+          }),
+        merge: (options?: { at?: NodeSelection | NodeTarget }) =>
+          runNodeTargetMutation(options, (resolvedOptions) => {
+            mergeNodes(editor, resolvedOptions);
+          }),
+        move: (options: { at?: NodeSelection | NodeTarget }) =>
+          runNodeTargetMutation(options, (resolvedOptions) => {
+            moveNodes(editor, resolvedOptions as never);
+          }),
         remove: defineSemanticUpdateMethod<
           EditorTransactionNodesApi<V>['remove']
         >(
@@ -9639,29 +9570,19 @@ export const getUpdateView = <
         replace: replaceNode,
         replaceChildren: replaceChildrenNodes,
         set: setTransactionNodes,
-        split: defineSemanticUpdateMethod<
-          EditorTransactionNodesApi<V>['split']
-        >(
-          (options?: { at?: NodeTarget }) =>
-            runTargetMutation(options, (resolvedOptions) => {
-              splitNodes(editor, resolvedOptions);
-            }),
-          lowerElementId(elementIdCommands.split)
-        ),
+        split: (options?: { at?: NodeTarget }) =>
+          runTargetMutation(options, (resolvedOptions) => {
+            splitNodes(editor, resolvedOptions);
+          }),
         unset: unsetTransactionNodes,
-        unwrap: defineSemanticUpdateMethod<
-          EditorTransactionNodesApi<V>['unwrap']
-        >(
-          (options?: { at?: NodeSelection | NodeTarget }) =>
-            runNodeTargetMutation(options, (resolvedOptions) => {
-              const before = getActiveDocumentChangeBuilder(editor).change;
+        unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
+          runNodeTargetMutation(options, (resolvedOptions) => {
+            const before = getActiveDocumentChangeBuilder(editor).change;
 
-              unwrapNodes(editor, resolvedOptions);
+            unwrapNodes(editor, resolvedOptions);
 
-              return getActiveDocumentChangeBuilder(editor).change !== before;
-            }) ?? false,
-          lowerElementId(elementIdCommands.unwrap)
-        ),
+            return getActiveDocumentChangeBuilder(editor).change !== before;
+          }) ?? false,
         wrap: (
           element: ElementIn<V>,
           options?: { at?: NodeSelection | NodeTarget }

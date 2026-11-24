@@ -605,13 +605,14 @@ target，因此带有 `id` 的实时元素仍是节点 target。没有元素持�
 
 调用途径决定在哪个文档中查找该 ID：
 
-- 命令、插件 update 方法，以及 `editor.update.nodes` 上一次性的 `insert`、
-  `remove`、`set`、`move`、`split`、`merge`、`lift` 或 `unwrap` 调用，在命令的
-  文档中查找。存在其他作者待定的建议时，被移动元素的 ID 指向移动后的副本，只有
-  被删除线标记的原件持有的 ID 不做任何更改。
+- 命令、插件 update 方法，以及 `editor.update` 上的每个一次性调用，例如
+  `editor.update.nodes.wrap`，都在命令的文档中查找。可写 view 的一次性调用和插件
+  update 方法也是如此，在 view 的 root 中运行。存在其他作者待定的建议时，被移动
+  元素的 ID 指向移动后的副本，只有被删除线标记的原件持有的 ID 不做任何更改。
+  `to`、`after` 或 `before` 中的路径，以及子节点的 `position`，仍指向已存储文档中
+  的位置。
 - 原始的 `editor.update((tx) => ...)` 在已存储的草稿中查找，与它解析路径或 key
-  的方式相同。它会指向被删除线标记的原件。一次性的 `unset`、`wrap`、`replace`
-  或 `replaceChildren` 调用按原始 update 运行。
+  的方式相同。它会指向被删除线标记的原件。
 - editor view 从它自己的文档中回答。命令运行期间在 view 上的读取从命令的文档中
   回答。
 

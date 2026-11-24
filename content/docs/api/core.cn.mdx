@@ -469,15 +469,14 @@ editor.update((tx) => tx.nodes.remove({ at: { id: "intro" } }));
 元素类型时，编辑器才保存 ID。该插件的默认 target 就是如此声明的。在其他编辑器中，
 `byId` 和 `at: { id }` 会抛出错误。
 
-命令、插件 update 方法，以及 `editor.update.nodes` 上一次性的 `insert`、`remove`、
-`set`、`move`、`split`、`merge`、`lift` 或 `unwrap` 调用，在命令的文档中查找 ID。
-存在其他作者待定的建议时，它们指向被移动元素移动后的副本；只有被删除线标记的原件
-持有的 ID 不做任何更改。原始的 `editor.update((tx) => ...)` 在已存储的草稿中查找
-ID，与它解析路径或 key 的方式相同，因此会指向被删除线标记的原件。一次性的
-`unset`、`wrap`、`replace` 或 `replaceChildren` 调用按原始 update 运行。editor view
-从它自己的文档中回答，但命令运行期间的读取从命令的文档中回答。没有元素持有该 ID
-时，写入不做任何更改，读取返回它的空结果。[节点身份](/cn/docs/editor#节点身份)
-展示了每种途径。
+命令、插件 update 方法，以及 `editor.update` 或可写 view 的 `update` 上的每个
+一次性调用，都在命令的文档中查找 ID。存在其他作者待定的建议时，它们指向被移动元素
+移动后的副本；只有被删除线标记的原件持有的 ID 不做任何更改。`to`、`after` 或
+`before` 中的路径，以及子节点的 `position`，仍指向已存储文档中的位置。原始的
+`editor.update((tx) => ...)` 在已存储的草稿中查找 ID，与它解析路径或 key 的方式
+相同，因此会指向被删除线标记的原件。editor view 从它自己的文档中回答，但命令运行
+期间的读取从命令的文档中回答。没有元素持有该 ID 时，写入不做任何更改，读取返回它
+的空结果。[节点身份](/cn/docs/editor#节点身份)展示了每种途径。
 
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。把
 `ElementIdPlugin` 加入传给 `defineDocumentMigrations` 的 target。该插件用

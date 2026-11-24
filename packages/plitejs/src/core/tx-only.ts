@@ -1,4 +1,9 @@
-import type { EditorCommandPlace, NodeTarget } from '../interfaces/editor';
+import type {
+  EditorCommandPlace,
+  ElementIdTarget,
+  NodeKey,
+  NodeTarget,
+} from '../interfaces/editor';
 import type { Span } from '../interfaces/location';
 import type { NodeSelection } from '../interfaces/selection';
 
@@ -125,9 +130,9 @@ const TX_LOCATES = getRuntimeRegistry(
  * registered, `locate` also maps them into the document editing commands
  * decide on, or returns null when they have no place there, so the method
  * does nothing. `false` says the arguments hold no location. A call that
- * passes a function runs in the caller's root, and `locate` runs only to map
- * its arguments into the command document. A method called with arguments
- * that has no declaration throws.
+ * passes a function runs in the caller's root, and `locate` only places its
+ * arguments, so an id that names no element still does nothing. A method
+ * called with arguments that has no declaration throws.
  */
 export const txLocate = <TMethod extends (...args: never[]) => unknown>(
   locate: NoInfer<BivariantLocate<Parameters<TMethod>>> | false,
@@ -139,6 +144,14 @@ export const txLocate = <TMethod extends (...args: never[]) => unknown>(
 };
 
 type Target = NodeSelection | NodeTarget | Span | null;
+
+type TakesPlacedIds<TOptions, TKey extends string> = {
+  readonly [K in TKey & keyof TOptions]?: ElementIdTarget extends TOptions[K]
+    ? NodeKey extends TOptions[K]
+      ? TOptions[K]
+      : NodeKey
+    : TOptions[K];
+};
 
 // TypeScript has no type for a tuple with one element replaced, so the
 // overload keeps the caller's tuple type.
@@ -163,7 +176,8 @@ export const locateAt =
   ) =>
   <
     TArgs extends readonly unknown[] & {
-      readonly [K in TIndex]?: Readonly<Partial<Record<TKey, Target>>>;
+      readonly [K in TIndex]?: Readonly<Partial<Record<TKey, Target>>> &
+        TakesPlacedIds<TArgs[K], TKey>;
     },
   >(
     args: TArgs,

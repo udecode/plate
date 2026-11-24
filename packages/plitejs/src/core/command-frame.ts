@@ -5,6 +5,7 @@ import type {
   EditorMarks,
   EditorUniqueHolder,
   NodeTarget,
+  PlacedTarget,
   TextTarget,
   Selection,
   SnapshotIndex,
@@ -88,8 +89,10 @@ import {
   recorderBookmarks,
   carryCurrentCaret,
   elementIdOf,
+  getNodeTargetRoot,
   lookupElementId,
   resolveNodeTargetLocation,
+  UNPLACED_TARGET,
   runEditorDocumentRecorder,
   setTypedMarks,
   type TransactionSpecContext,
@@ -109,6 +112,7 @@ import {
   carryCarets,
   getPlacementGeneration,
   mapBookThroughStep,
+  withViewPlacement,
 } from './view-carets';
 import { countCoreWork } from './work';
 
@@ -328,9 +332,88 @@ const ELEMENT_ID_PLACES = new WeakMap<
   (id: string) => EditorUniqueHolder | null
 >();
 
+const OPTION_PLACES = new WeakMap<
+  EditorCommandPlace,
+  (options: Readonly<Record<string, unknown>>) => Record<string, unknown> | null
+>();
+
 /** @internal */
 export const placeElementIdIn = (place: EditorCommandPlace, id: string) =>
   getDefined(ELEMENT_ID_PLACES.get(place))(id);
+
+const TARGET_OPTIONS = ['at', 'after', 'before'] as const;
+
+const isOptions = (arg: unknown): arg is Readonly<Record<string, unknown>> =>
+  typeof arg === 'object' &&
+  arg !== null &&
+  !Array.isArray(arg) &&
+  !NodeApi.isDescendant(arg);
+
+const namesElementId = (args: readonly unknown[]) => {
+  const options = args.at(-1);
+
+  return (
+    isOptions(options) &&
+    TARGET_OPTIONS.some((name) => elementIdOf(options[name]) !== undefined)
+  );
+};
+
+/** @internal */
+export const callAtElementIds = (
+  caller: Editor,
+  args: readonly unknown[],
+  call: (args: readonly unknown[], framed: boolean) => unknown
+): unknown => {
+  if (!namesElementId(args)) return call(args, false);
+
+  const owner = getEditorRuntimeOwner(caller);
+  let result: unknown;
+  const framed = withViewPlacement(caller, () =>
+    runInEditorCommandFrame(owner, (place) => {
+      const last = args.length - 1;
+      const options = getDefined(OPTION_PLACES.get(place))(
+        args[last] as Readonly<Record<string, unknown>>
+      );
+      const placed = args.with(last, options ?? missedOptions(args[last]));
+
+      return () => {
+        result = call(placed, true);
+
+        return true;
+      };
+    })
+  );
+
+  return framed === null ? call(args, false) : result;
+};
+
+const missedOptions = (options: unknown) =>
+  Object.fromEntries(
+    Object.entries(options as Record<string, unknown>).map(([name, value]) => [
+      name,
+      (TARGET_OPTIONS as readonly string[]).includes(name) &&
+      value !== undefined
+        ? UNPLACED_TARGET
+        : value,
+    ])
+  );
+
+/** @internal */
+export const unframedPlace = (editor: Editor): EditorCommandPlace =>
+  Object.freeze({
+    location: ((at: NodeTarget | NodeSelection | Span) => {
+      const id = elementIdOf(at);
+
+      if (id !== undefined) return lookupElementId(editor, id)?.key ?? null;
+
+      const hiddenFromFrame =
+        COMMAND_FRAMES.has(getEditorRuntimeOwner(editor)) &&
+        (typeof at === 'string' || NodeApi.isDescendant(at)) &&
+        getNodeTargetRoot(editor, at) === undefined;
+
+      return hiddenFromFrame ? null : at;
+    }) as EditorCommandPlace['location'],
+  });
 
 /** @internal */
 export const refusesTextStartInStruck = (
@@ -940,7 +1023,7 @@ const createFramePlace = (
 
   function location<T extends NodeTarget | NodeSelection | Span>(
     at: T
-  ): T | null;
+  ): PlacedTarget<T> | null;
   function location(
     at: NodeTarget | NodeSelection | Span
   ): NodeTarget | NodeSelection | Span | null {
@@ -948,6 +1031,8 @@ const createFramePlace = (
     const id = elementIdOf(at);
 
     if (id !== undefined) return placeElementId(id)?.key ?? null;
+    const isNode = NodeApi.isDescendant(at);
+
     if (SelectionApi.isNode(at)) {
       const root = SelectionApi.root(at) ?? getEditorUpdateRoot(editor);
 
@@ -959,7 +1044,7 @@ const createFramePlace = (
 
       return mapped?.kind === 'node' ? mapped : null;
     }
-    if (PointApi.isPoint(at)) {
+    if (!isNode && PointApi.isPoint(at)) {
       return caret(at, getEditorUpdateRoot(editor), refuse);
     }
     if (LocationApi.isSpan(at)) {
@@ -972,13 +1057,13 @@ const createFramePlace = (
 
       return from && to && [from, to];
     }
-    if (RangeApi.isRange(at)) {
+    if (!isNode && RangeApi.isRange(at)) {
       const placed = span(at, getEditorUpdateRoot(editor), refuse);
 
       return placed && { ...at, ...placed };
     }
 
-    const resolved = resolveNodeTargetLocation(editor, at);
+    const resolved = resolveNodeTargetLocation(editor, at as TextTarget);
     const target = resolved && PathApi.isPath(resolved) ? resolved : null;
     const root = getEditorUpdateRoot(editor);
 
@@ -991,9 +1076,7 @@ const createFramePlace = (
 
     const placed = target ? path(target) : null;
 
-    return placed && (typeof at === 'string' || NodeApi.isDescendant(at))
-      ? at
-      : placed;
+    return placed && (typeof at === 'string' || isNode) ? at : placed;
   }
 
   const startsInStruckText = (at: TextTarget | NodeSelection) => {
@@ -1018,8 +1101,21 @@ const createFramePlace = (
   // pending move shows, never its struck original. A root the projection
   // leaves alone shows what it stores. A holder only the stored document
   // shows refuses as its key does, then places nowhere.
-  const placeElementId = (id: string) => {
+  const storedHolders = new Map<string, EditorUniqueHolder | null>();
+  const storedHolder = (id: string) => {
+    const known = storedHolders.get(id);
+
+    if (known !== undefined) return known;
+
     const held = lookupElementId(editor, id);
+
+    storedHolders.set(id, held);
+
+    return held;
+  };
+  const placeElementId = (id: string) => {
+    located = true;
+    const held = storedHolder(id);
     const changed = projected.map.roots;
 
     if (held && !changed.includes(held.root)) return held;
@@ -1036,16 +1132,57 @@ const createFramePlace = (
 
       if (shown?.key) return { key: shown.key, path: shown.path, root };
     }
-    if (held) {
-      withEditorUpdateRootScope(editor, held.root, () => location(held.key));
+    if (held && !refusesStruck([held.path], held.root)) {
+      insideStruckText([held.path], held.root);
     }
 
     return null;
+  };
+  const placeOptions = (options: Readonly<Record<string, unknown>>) => {
+    const id = elementIdOf(options.at);
+    const held = id === undefined ? null : storedHolder(id);
+    const inHolderRoot = <T>(fn: () => T) =>
+      held ? withEditorUpdateRootScope(editor, held.root, fn) : fn();
+    const placed: Record<string, unknown> = { ...options };
+
+    for (const name of ['at', 'after', 'before', 'to'] as const) {
+      const target = options[name] as NodeTarget | undefined;
+
+      if (target === undefined || target === null) continue;
+
+      const at = inHolderRoot(() => location(target));
+
+      if (at === null) return null;
+      placed[name] = at;
+    }
+
+    const childIndexInFrame = (position: number) =>
+      inHolderRoot(() => {
+        const holder = resolveNodeTargetLocation(
+          editor,
+          placed.at as TextTarget
+        );
+        const child =
+          holder && PathApi.isPath(holder) ? path([...holder, position]) : null;
+
+        return child?.at(-1) ?? null;
+      });
+    const { position } = options;
+
+    if (held && typeof position === 'number') {
+      const index = childIndexInFrame(position);
+
+      if (index === null) return null;
+      placed.position = index;
+    }
+
+    return placed;
   };
   const place: EditorCommandPlace = Object.freeze({ location });
 
   TEXT_STARTS.set(place, startsInStruckText);
   ELEMENT_ID_PLACES.set(place, placeElementId);
+  OPTION_PLACES.set(place, placeOptions);
   const placeSelection = (
     selection: Selection,
     root: string,

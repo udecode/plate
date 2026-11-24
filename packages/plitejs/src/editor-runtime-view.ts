@@ -469,11 +469,12 @@ const withRootGenerator = <T>(
   editor: Editor,
   viewState: ViewState,
   create: () => Iterable<T>
-): Generator<T, void, undefined> =>
-  (function* iterateViewRoot() {
-    const iterator = withRootRead(editor, viewState, () =>
-      create()[Symbol.iterator]()
-    );
+): Generator<T, void, undefined> => {
+  const iterator = withRootRead(editor, viewState, () =>
+    create()[Symbol.iterator]()
+  );
+
+  return (function* iterateViewRoot() {
     try {
       while (true) {
         const result = withRootRead(editor, viewState, () => iterator.next());
@@ -484,6 +485,7 @@ const withRootGenerator = <T>(
       withRootRead(editor, viewState, () => iterator.return?.());
     }
   })();
+};
 
 const VIEW_PAGE = Symbol('view page');
 
@@ -634,7 +636,7 @@ const withRootChildren = <
       void: rootMethod(editor, viewState, state.nodes.void),
     },
     rootMethod(editor, viewState, (id: string) =>
-      namesItsRoot(readElementById(state.nodes, id))
+      readElementById(state.nodes, id)
     )
   );
 };
@@ -1718,6 +1720,7 @@ export const createEditorViewRuntime = <
       );
     },
     {
+      caller: () => getDefined(viewEditor),
       hasTxGroup: (groupName) =>
         getPluginRegistry(sourceEditor).txGroups.has(groupName),
       repairValue: () => {

@@ -2038,12 +2038,12 @@
         },
         "platejs:EditorCommandPlace": {
           "aliases": [],
-          "documentation": "Where a command's stored targets land in the document it decides on. A\npoint lands where typing there would land, a range keeps content at its\nedges out, and a path or a span's paths land on their nodes' paths. A node\nor node key names its node in both documents, so it stays as given. Each\ntarget keeps its kind, and `location` returns null when it has no place\nthere.",
+          "documentation": "Where a command's stored targets land in the document it decides on. A\npoint lands where typing there would land, a range keeps content at its\nedges out, and a path or a span's paths land on their nodes' paths. A node\nor node key names its node in both documents, so it stays as given. An\nelement id lands as the key of the element that holds it there. Every other\ntarget keeps its kind, and `location` returns null when it has no place\nthere.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "EditorCommandPlace",
           "runtime": false,
-          "signature": "type EditorCommandPlace = Readonly<{\n  location: <T extends NodeTarget | NodeSelection | Span>(at: T) => T | null;\n}>;",
+          "signature": "type EditorCommandPlace = Readonly<{\n  location: <T extends NodeTarget | NodeSelection | Span>(at: T) => PlacedTarget<T> | null;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -5600,7 +5600,7 @@
           "kind": "const",
           "name": "locateAt",
           "runtime": true,
-          "signature": "locateAt: <TIndex extends number, TKey extends string = 'at'>(index: TIndex, ...keys: TKey[]) => <TArgs extends readonly unknown[] & { readonly [K in TIndex]?: Readonly<Partial<Record<TKey, Target>>>; }>(args: TArgs, place: EditorCommandPlace) => TArgs | null",
+          "signature": "locateAt: <TIndex extends number, TKey extends string = 'at'>(index: TIndex, ...keys: TKey[]) => <TArgs extends readonly unknown[] & { readonly [K in TIndex]?: Readonly<Partial<Record<TKey, Target>>> & TakesPlacedIds<TArgs[K], TKey>; }>(args: TArgs, place: EditorCommandPlace) => TArgs | null",
           "source": null,
           "typeParameters": []
         },
@@ -6238,7 +6238,7 @@
           "kind": "type",
           "name": "NodeInsertOptions",
           "runtime": false,
-          "signature": "type NodeInsertOptions = Omit<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>, 'split'> & {\n  split?: Omit<NonNullable<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>['split']>, 'type'> & {\n    type?: PluginNodeTypeSelector;\n  };\n};",
+          "signature": "type NodeInsertOptions = Omit<WithNodeTarget<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>>, 'split'> & {\n  split?: Omit<NonNullable<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>['split']>, 'type'> & {\n    type?: PluginNodeTypeSelector;\n  };\n};",
           "source": null,
           "typeParameters": []
         },
@@ -6798,6 +6798,19 @@
           "source": null,
           "typeParameters": [
             "V extends Value = Value"
+          ]
+        },
+        "platejs:PlacedTarget": {
+          "aliases": [],
+          "documentation": "A target as a command place gives it back: an element id as a node key.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "PlacedTarget",
+          "runtime": false,
+          "signature": "type PlacedTarget<T> = T extends ElementIdTarget ? Exclude<keyof T, 'id'> extends never ? NodeKey : T : T;",
+          "source": null,
+          "typeParameters": [
+            "T"
           ]
         },
         "platejs:PlainTextDiagnostic": {
@@ -10357,7 +10370,7 @@
         },
         "platejs:txLocate": {
           "aliases": [],
-          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` runs only to map\nits arguments into the command document. A method called with arguments\nthat has no declaration throws.",
+          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` only places its\narguments, so an id that names no element still does nothing. A method\ncalled with arguments that has no declaration throws.",
           "entrypoint": "platejs",
           "kind": "const",
           "name": "txLocate",
@@ -10504,6 +10517,20 @@
           "source": null,
           "typeParameters": [
             "C extends AnyBasePluginDefinition = BasePluginDefinition"
+          ]
+        },
+        "platejs:WithNodeTarget": {
+          "aliases": [],
+          "documentation": "Options whose `at` takes every node target: a location, a node key, a live\nnode or an element id, beside any other target the options already take.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "WithNodeTarget",
+          "runtime": false,
+          "signature": "type WithNodeTarget<TOptions, TNode extends Descendant = Descendant> = Omit<TOptions, 'at'> & {\n  at?: NodeTarget<TNode> | TOptions['at' & keyof TOptions];\n};",
+          "source": null,
+          "typeParameters": [
+            "TOptions",
+            "TNode extends Descendant = Descendant"
           ]
         },
         "platejs:WithRequiredName": {
@@ -18817,12 +18844,12 @@
         },
         "platejs/react:EditorCommandPlace": {
           "aliases": [],
-          "documentation": "Where a command's stored targets land in the document it decides on. A\npoint lands where typing there would land, a range keeps content at its\nedges out, and a path or a span's paths land on their nodes' paths. A node\nor node key names its node in both documents, so it stays as given. Each\ntarget keeps its kind, and `location` returns null when it has no place\nthere.",
+          "documentation": "Where a command's stored targets land in the document it decides on. A\npoint lands where typing there would land, a range keeps content at its\nedges out, and a path or a span's paths land on their nodes' paths. A node\nor node key names its node in both documents, so it stays as given. An\nelement id lands as the key of the element that holds it there. Every other\ntarget keeps its kind, and `location` returns null when it has no place\nthere.",
           "entrypoint": "platejs/react",
           "kind": "type",
           "name": "EditorCommandPlace",
           "runtime": false,
-          "signature": "type EditorCommandPlace = Readonly<{\n  location: <T extends NodeTarget | NodeSelection | Span>(at: T) => T | null;\n}>;",
+          "signature": "type EditorCommandPlace = Readonly<{\n  location: <T extends NodeTarget | NodeSelection | Span>(at: T) => PlacedTarget<T> | null;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -22982,7 +23009,7 @@
           "kind": "const",
           "name": "locateAt",
           "runtime": true,
-          "signature": "locateAt: <TIndex extends number, TKey extends string = 'at'>(index: TIndex, ...keys: TKey[]) => <TArgs extends readonly unknown[] & { readonly [K in TIndex]?: Readonly<Partial<Record<TKey, Target>>>; }>(args: TArgs, place: EditorCommandPlace) => TArgs | null",
+          "signature": "locateAt: <TIndex extends number, TKey extends string = 'at'>(index: TIndex, ...keys: TKey[]) => <TArgs extends readonly unknown[] & { readonly [K in TIndex]?: Readonly<Partial<Record<TKey, Target>>> & TakesPlacedIds<TArgs[K], TKey>; }>(args: TArgs, place: EditorCommandPlace) => TArgs | null",
           "source": null,
           "typeParameters": []
         },
@@ -23653,7 +23680,7 @@
           "kind": "type",
           "name": "NodeInsertOptions",
           "runtime": false,
-          "signature": "type NodeInsertOptions = Omit<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>, 'split'> & {\n  split?: Omit<NonNullable<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>['split']>, 'type'> & {\n    type?: PluginNodeTypeSelector;\n  };\n};",
+          "signature": "type NodeInsertOptions = Omit<WithNodeTarget<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>>, 'split'> & {\n  split?: Omit<NonNullable<NodeInsertNodesOptions<Node$1, NodeTypeSelector | undefined>['split']>, 'type'> & {\n    type?: PluginNodeTypeSelector;\n  };\n};",
           "source": null,
           "typeParameters": []
         },
@@ -24307,6 +24334,19 @@
           "source": null,
           "typeParameters": [
             "V extends Value = Value"
+          ]
+        },
+        "platejs/react:PlacedTarget": {
+          "aliases": [],
+          "documentation": "A target as a command place gives it back: an element id as a node key.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "PlacedTarget",
+          "runtime": false,
+          "signature": "type PlacedTarget<T> = T extends ElementIdTarget ? Exclude<keyof T, 'id'> extends never ? NodeKey : T : T;",
+          "source": null,
+          "typeParameters": [
+            "T"
           ]
         },
         "platejs/react:PlainTextDiagnostic": {
@@ -28246,7 +28286,7 @@
         },
         "platejs/react:txLocate": {
           "aliases": [],
-          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` runs only to map\nits arguments into the command document. A method called with arguments\nthat has no declaration throws.",
+          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` only places its\narguments, so an id that names no element still does nothing. A method\ncalled with arguments that has no declaration throws.",
           "entrypoint": "platejs/react",
           "kind": "const",
           "name": "txLocate",
@@ -29226,6 +29266,20 @@
           "source": null,
           "typeParameters": [
             "C extends AnyBasePluginDefinition = BasePluginDefinition"
+          ]
+        },
+        "platejs/react:WithNodeTarget": {
+          "aliases": [],
+          "documentation": "Options whose `at` takes every node target: a location, a node key, a live\nnode or an element id, beside any other target the options already take.",
+          "entrypoint": "platejs/react",
+          "kind": "type",
+          "name": "WithNodeTarget",
+          "runtime": false,
+          "signature": "type WithNodeTarget<TOptions, TNode extends Descendant = Descendant> = Omit<TOptions, 'at'> & {\n  at?: NodeTarget<TNode> | TOptions['at' & keyof TOptions];\n};",
+          "source": null,
+          "typeParameters": [
+            "TOptions",
+            "TNode extends Descendant = Descendant"
           ]
         },
         "platejs/react:WithRequiredName": {

@@ -2,12 +2,16 @@ import { buildPluginRootTransaction } from '../editor-runtime-view';
 import type {
   AnyEditor as Editor,
   EditorCommandPlace,
+  NodeTarget,
 } from '../interfaces/editor';
+import type { Span } from '../interfaces/location';
 import { NodeApi } from '../interfaces/node';
 import { PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
-import { SelectionApi } from '../interfaces/selection';
+import { type NodeSelection, SelectionApi } from '../interfaces/selection';
+import { getDefined } from '../internal/get-defined';
 import {
+  callAtElementIds,
   COMMAND_FRAMES,
   placeElementIdIn,
   runInEditorCommandFrame,
@@ -31,7 +35,7 @@ import {
 } from './public-state';
 import { EditorRefusalError } from './refusal';
 import { getTxMethodLocate, isTxOnlyMethod } from './tx-only';
-import { currentPlacement } from './view-carets';
+import { currentPlacement, withViewPlacement } from './view-carets';
 import { countCoreWork } from './work';
 
 const placingPresentation = (editor: Editor) => {
@@ -80,6 +84,29 @@ const callMember = (
   );
 };
 
+/** @internal */
+export const dispatchOneShot = (
+  caller: Editor,
+  transaction: object & { view: { root: () => string | undefined } },
+  group: string,
+  key: string,
+  args: readonly unknown[]
+): unknown =>
+  callAtElementIds(caller, args, (placed, framed) => {
+    const owner = getEditorRuntimeOwner(caller);
+    const target = framed
+      ? caller === owner
+        ? getUpdateView(owner)
+        : getRootTransaction(owner, transaction.view.root() ?? MAIN_ROOT_KEY)
+      : transaction;
+    const methods = Reflect.get(target, group) as Record<
+      string,
+      (...args: readonly unknown[]) => unknown
+    >;
+
+    return Reflect.apply(getDefined(methods[key]), methods, placed);
+  });
+
 export const dispatchPluginUpdate = (
   caller: Editor,
   transaction: object & { view: { root: () => string | undefined } },
@@ -122,12 +149,9 @@ export const dispatchPluginUpdate = (
   const locateCall = (framePlace?: EditorCommandPlace) => {
     const calledInFrame = !framePlace && COMMAND_FRAMES.has(editor);
     let targetRoot: string | undefined;
-    if (
-      typeof locate === 'function' &&
-      (!callback || framePlace || calledInFrame)
-    ) {
+    if (typeof locate === 'function') {
       located = locate(args, {
-        location(at) {
+        location: ((at: NodeSelection | NodeTarget | Span) => {
           const id = elementIdOf(at);
           const holder =
             id === undefined
@@ -156,13 +180,13 @@ export const dispatchPluginUpdate = (
             }
             targetRoot = root;
           }
-          if (holder) return holder.key as typeof at;
+          if (holder) return holder.key;
           return framePlace
             ? withEditorUpdateRootScope(editor, root, () =>
                 framePlace.location(at)
               )
             : at;
-        },
+        }) as EditorCommandPlace['location'],
       });
     }
     decidedRoot = callback
@@ -181,7 +205,7 @@ export const dispatchPluginUpdate = (
       if (callback) {
         return framed
           ? callMember(getUpdateView(editor), group, path, [...located])
-          : run();
+          : Reflect.apply(method, thisArg, located);
       }
       const base =
         !isView &&
@@ -205,19 +229,37 @@ export const dispatchPluginUpdate = (
       active.pluginRoot = previous;
     }
   };
-  if (!isView && !COMMAND_FRAMES.has(editor)) {
+  const locatesElementId = () => {
+    let named = false;
+
+    if (typeof locate === 'function') {
+      locate(args, {
+        location: ((at: unknown) => {
+          named ||= elementIdOf(at) !== undefined;
+          return at;
+        }) as EditorCommandPlace['location'],
+      });
+    }
+    return named;
+  };
+  const opensFrame =
+    !COMMAND_FRAMES.has(editor) && (!isView || locatesElementId());
+
+  if (opensFrame) {
     let result: unknown;
-    const framed = withEditorUpdateRootScope(editor, ownRoot, () =>
-      runInEditorCommandFrame(
-        editor,
-        (place) => {
-          locateCall(place);
-          return () => {
-            result = invoke(true);
-            return located !== null;
-          };
-        },
-        { targetRoot: () => decidedRoot }
+    const framed = withViewPlacement(caller, () =>
+      withEditorUpdateRootScope(editor, ownRoot, () =>
+        runInEditorCommandFrame(
+          editor,
+          (place) => {
+            locateCall(place);
+            return () => {
+              result = invoke(true);
+              return located !== null;
+            };
+          },
+          { targetRoot: () => decidedRoot }
+        )
       )
     );
     if (framed !== null) return result;

@@ -323,6 +323,8 @@ export type {
   NodeTarget,
   ElementIdTarget,
   TextTarget,
+  WithNodeTarget,
+  PlacedTarget,
   ProjectedRangeSegment,
   RootKey,
   NodeKey,

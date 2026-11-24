@@ -21,6 +21,7 @@ import {
 import { getEditorCommandDocument } from './command-document';
 import {
   type EditorFrameBody,
+  unframedPlace,
   evaluateInEditorCommandFrame,
   probeInEditorCommandFrame,
   runInEditorCommandFrame,
@@ -454,11 +455,17 @@ const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   input: Input
 ): boolean | undefined => {
   const owner = getEditorRuntimeOwner(editor);
-  const run = () =>
-    applyCommandEvaluation(
-      editor,
-      evaluateCommandChain(editor, command, input)
+  const run = () => {
+    const located = locateCommandInput(command, input, unframedPlace(editor));
+
+    return (
+      located !== null &&
+      applyCommandEvaluation(
+        editor,
+        evaluateCommandChain(editor, command, located)
+      )
     );
+  };
 
   if (!getEditorCommandDocument(owner)) return run();
 
