@@ -10,6 +10,7 @@ import type {
   FieldCondition,
   FieldElement,
   FieldKind,
+  FieldOption,
   FieldProblem,
   FieldSettings,
   FieldTest,
@@ -20,6 +21,15 @@ export type FieldShape = Pick<
   FieldSettings,
   'defaultValue' | 'kind' | 'options' | 'value'
 >;
+
+export const FIELD_KINDS = [
+  'checkbox',
+  'choice',
+  'date',
+  'number',
+  'signature',
+  'text',
+] as const;
 
 /**
  * The tests a condition may use on a field of each kind. `insert` and `update`
@@ -33,6 +43,38 @@ export const FIELD_TESTS: Readonly<Record<FieldKind, readonly FieldTest[]>> = {
   signature: ['filled', 'blank'],
   text: ['filled', 'blank', 'equals', 'not-equals'],
 };
+
+export const isFieldValue = (value: unknown): value is FieldValue =>
+  typeof value === 'string' ||
+  typeof value === 'boolean' ||
+  (typeof value === 'number' && Number.isFinite(value));
+
+export const isFieldOptions = (
+  value: unknown
+): value is readonly FieldOption[] =>
+  Array.isArray(value) &&
+  value.every(
+    (option) =>
+      typeof option?.label === 'string' && typeof option.value === 'string'
+  ) &&
+  new Set(value.map((option) => option.value)).size === value.length;
+
+export const isFieldCondition = (value: unknown): value is FieldCondition => {
+  if (!value || typeof value !== 'object') return false;
+
+  const { ref, test, value: compared } = value as Record<string, unknown>;
+
+  return (
+    typeof ref === 'string' &&
+    Object.values(FIELD_TESTS).some((tests) =>
+      tests.some((known) => known === test)
+    ) &&
+    (compared === undefined || isFieldValue(compared))
+  );
+};
+
+export const isFieldKind = (value: unknown): value is FieldKind =>
+  FIELD_KINDS.some((kind) => kind === value);
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -134,6 +176,34 @@ const holds = (
 type Chain = Readonly<{ loop: boolean; target: FieldElement | undefined }>;
 
 export type FieldLink = Chain & Readonly<{ applies: boolean | null }>;
+
+const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
+
+const fitsSetting = (
+  field: FieldShape,
+  setting: (typeof SHAPED_SETTINGS)[number]
+) =>
+  field[setting] === undefined ||
+  (setting === 'options'
+    ? field.kind === 'choice'
+    : fitsField(field, field[setting]));
+
+export const unfitSettings = (field: FieldShape) =>
+  SHAPED_SETTINGS.filter((setting) => !fitsSetting(field, setting));
+
+export const fieldProblems = (
+  field: FieldElement,
+  link: FieldLink
+): FieldProblem[] => {
+  const own: FieldProblem[] =
+    unfitSettings(field).length === 0 ? [] : ['invalid-value'];
+  const conditioned =
+    field.condition && conditionProblem(field.condition, link.target);
+  const problems =
+    conditioned && !own.includes(conditioned) ? [...own, conditioned] : own;
+
+  return link.loop ? [...problems, 'condition-loop'] : problems;
+};
 
 type Held = (fieldId: string) => FieldElement | undefined;
 

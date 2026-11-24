@@ -1032,6 +1032,7 @@ export const setEditorStateViewTransform = (
 export type TransactionSpecContext = {
   activeChildrenRoot?: string;
   activeUpdateRoot?: string;
+  baseViewDocument?: EditorDocumentValue;
   baseCaret: CaretState;
   baseDraftEpoch: number;
   caret: CaretState;
@@ -1477,6 +1478,7 @@ const TRANSACTION_SPEC_BASE = new WeakMap<
     draftEpoch: number;
     editor: Editor;
     revision: number;
+    viewDocument?: EditorDocumentValue;
   }>
 >();
 const TRANSACTION_SPEC_PARENT = new WeakMap<TransactionSpec, TransactionSpec>();
@@ -2549,7 +2551,9 @@ const updateIncumbent = (owner: Editor, property: string, value: unknown) => {
 
   if (
     !update ||
-    getActiveEditorUpdateTags(owner).includes('collaboration') ||
+    (update.kind === 'update'
+      ? getActiveEditorUpdateTags(owner).includes('collaboration')
+      : update.snapshot.tags.has('collaboration')) ||
     update.snapshot.annotations.get(documentReplacement.key)?.value === true
   ) {
     return null;
@@ -2557,7 +2561,7 @@ const updateIncumbent = (owner: Editor, property: string, value: unknown) => {
   const stored = withContextsBelow(owner, update, () =>
     withEditorDocumentProjection(
       owner,
-      undefined,
+      update.baseViewDocument,
       () => stateUniqueHolders(owner, property, value)[0]
     )
   );
@@ -10205,6 +10209,7 @@ export const createTransactionSpecContext = (
   const activeChildrenRoot = getEditorChildrenRoot(editor);
   const activeUpdateRoot = getActiveUpdateRoot(editor);
   const anchorValue = getEditorDocumentValue(editor);
+  const baseViewDocument = parent ? undefined : getReadProjection(editor);
   const roots = getEditorDocumentRoots(editor);
   const selection = getCurrentSelection(editor);
   const caret: CaretState = {
@@ -10277,7 +10282,13 @@ export const createTransactionSpecContext = (
               getEditorRuntimeOwner(editor),
               parentSnapshot
             )
-        : () => ROOT_DIRECTORIES.get(getEditorRuntimeOwner(editor)),
+        : baseViewDocument
+          ? () =>
+              projectedRootDirectory(
+                getEditorRuntimeOwner(editor),
+                baseViewDocument
+              )
+          : () => ROOT_DIRECTORIES.get(getEditorRuntimeOwner(editor)),
     },
     rootIndexes: new Map(),
     roots,
@@ -10292,6 +10303,7 @@ export const createTransactionSpecContext = (
   const context: TransactionSpecContext = {
     ...(activeChildrenRoot ? { activeChildrenRoot } : {}),
     ...(activeUpdateRoot ? { activeUpdateRoot } : {}),
+    ...(baseViewDocument ? { baseViewDocument } : {}),
     baseDraftEpoch: parent?.draftEpoch ?? 0,
     baseRevision: getMutationVersion(editor),
     changed: false,
@@ -10413,7 +10425,12 @@ const assertTransactionSpecBase = (editor: Editor, spec: TransactionSpec) => {
     base.context === context?.id ||
     (context?.kind === 'update' && base.context === undefined);
 
-  if (!validContext && (base.context !== undefined || context !== undefined)) {
+  if (
+    (!validContext && (base.context !== undefined || context !== undefined)) ||
+    (base.viewDocument &&
+      base.viewDocument !==
+        TRANSACTION_SPEC_CONTEXTS.get(editor)?.[0]?.baseViewDocument)
+  ) {
     throw new Error('Cannot apply a transaction spec outside its base state.');
   }
   if (base.revision !== getMutationVersion(editor)) {
@@ -10564,6 +10581,9 @@ const finalizeTransactionSpecContext = (
     draftEpoch: context.baseDraftEpoch,
     editor,
     revision: context.baseRevision,
+    ...(context.baseViewDocument
+      ? { viewDocument: context.baseViewDocument }
+      : {}),
   });
   if (snapshot.reason === 'replace') {
     TRANSACTION_SPEC_DOCUMENT_STATES.set(

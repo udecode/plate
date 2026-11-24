@@ -28,24 +28,19 @@ import {
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   conditionProblem,
-  FIELD_TESTS,
-  type FieldLink,
+  FIELD_KINDS,
   fieldLinks,
-  type FieldShape,
+  fieldProblems,
   fitsField,
+  isFieldCondition,
+  isFieldKind,
+  isFieldOptions,
+  isFieldValue,
   sharedFieldLinks,
+  unfitSettings,
 } from './fieldRules.internal';
 
 export { FIELD_TESTS, fitsField } from './fieldRules.internal';
-
-const FIELD_KINDS = [
-  'checkbox',
-  'choice',
-  'date',
-  'number',
-  'signature',
-  'text',
-] as const;
 
 /** What a field collects, which fixes the shape of its value. */
 export type FieldKind = (typeof FIELD_KINDS)[number];
@@ -88,36 +83,6 @@ export type FieldProblem =
   | 'invalid-value'
   | 'missing-target'
   | 'unsupported-test';
-
-const isFieldValue = (value: unknown): value is FieldValue =>
-  typeof value === 'string' ||
-  typeof value === 'boolean' ||
-  (typeof value === 'number' && Number.isFinite(value));
-
-const isFieldOptions = (value: unknown): value is readonly FieldOption[] =>
-  Array.isArray(value) &&
-  value.every(
-    (option) =>
-      typeof option?.label === 'string' && typeof option.value === 'string'
-  ) &&
-  new Set(value.map((option) => option.value)).size === value.length;
-
-const isFieldCondition = (value: unknown): value is FieldCondition => {
-  if (!value || typeof value !== 'object') return false;
-
-  const { ref, test, value: compared } = value as Record<string, unknown>;
-
-  return (
-    typeof ref === 'string' &&
-    Object.values(FIELD_TESTS).some((tests) =>
-      tests.some((known) => known === test)
-    ) &&
-    (compared === undefined || isFieldValue(compared))
-  );
-};
-
-const isFieldKind = (value: unknown): value is FieldKind =>
-  FIELD_KINDS.some((kind) => kind === value);
 
 const fieldText = ({
   node: { label, options, value },
@@ -362,33 +327,11 @@ export type FieldRead = Readonly<{
   problems: readonly FieldProblem[];
 }>;
 
-const SHAPED_SETTINGS = ['defaultValue', 'options', 'value'] as const;
-
-const fitsSetting = (
-  field: FieldShape,
-  setting: (typeof SHAPED_SETTINGS)[number]
-) =>
-  field[setting] === undefined ||
-  (setting === 'options'
-    ? field.kind === 'choice'
-    : fitsField(field, field[setting]));
-
-const fieldProblems = (
-  field: FieldElement,
-  link: FieldLink
-): FieldProblem[] => {
-  const own: FieldProblem[] = SHAPED_SETTINGS.every((setting) =>
-    fitsSetting(field, setting)
-  )
-    ? []
-    : ['invalid-value'];
-  const conditioned =
-    field.condition && conditionProblem(field.condition, link.target);
-  const problems =
-    conditioned && !own.includes(conditioned) ? [...own, conditioned] : own;
-
-  return link.loop ? [...problems, 'condition-loop'] : problems;
-};
+/** One role's field values, keyed by `fieldId`. */
+export type FieldSubmission = Readonly<{
+  role: string;
+  values: Readonly<Record<string, FieldValue>>;
+}>;
 
 const refusal = (reason: string) =>
   new TypeError(`Field write refused: ${reason}.`);
@@ -558,6 +501,28 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
 
             return ElementApi.isElement(node) ? fieldsIn(node.children) : [];
           });
+        const listed = () => {
+          const roots = getActiveEditorUpdateId(reader)
+            ? readRootEntries(reader)
+            : reader.read.roots();
+          const nodes = [
+            readViewPage(state) ?? state.children(),
+            ...roots.map(({ root }) => state.root(root)),
+          ].flatMap(fieldsIn);
+          const byId = new Map<string, FieldElement>();
+          const repeated = new Set<string>();
+
+          for (const node of nodes) {
+            if (typeof node.fieldId !== 'string') continue;
+            if (byId.has(node.fieldId)) repeated.add(node.fieldId);
+            else byId.set(node.fieldId, node);
+          }
+
+          const lookup = (id: string) =>
+            repeated.has(id) ? held(id) : byId.get(id);
+
+          return { lookup, nodes };
+        };
 
         return {
           /**
@@ -581,23 +546,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           },
           /** Every field of the document, in reading order. */
           fields: (): FieldRead[] => {
-            const roots = getActiveEditorUpdateId(reader)
-              ? readRootEntries(reader)
-              : reader.read.roots();
-            const nodes = [
-              readViewPage(state) ?? state.children(),
-              ...roots.map(({ root }) => state.root(root)),
-            ].flatMap(fieldsIn);
-            const byId = new Map<string, FieldElement>();
-            const repeated = new Set<string>();
-
-            for (const node of nodes) {
-              if (byId.has(node.fieldId)) repeated.add(node.fieldId);
-              else byId.set(node.fieldId, node);
-            }
-
-            const lookup = (id: string) =>
-              repeated.has(id) ? held(id) : byId.get(id);
+            const { lookup, nodes } = listed();
             const links = fieldLinks();
 
             return nodes.map((node) => {
@@ -613,6 +562,26 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 problems: fieldProblems(node, link),
               };
             });
+          },
+          /**
+           * The `value` of each field of `role` that holds one, keyed by
+           * `fieldId` and read from the field that id names.
+           */
+          submission: (role: string): FieldSubmission => {
+            const { lookup, nodes } = listed();
+            const values: Record<string, FieldValue> = Object.create(null);
+
+            for (const node of nodes) {
+              if (
+                node.role === role &&
+                isFieldValue(node.value) &&
+                lookup(node.fieldId) === node
+              ) {
+                values[node.fieldId] = node.value;
+              }
+            }
+
+            return { role, values };
           },
         };
       },
@@ -649,9 +618,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 throw refusal('fieldId is not a setting');
               }
 
-              const unfit = SHAPED_SETTINGS.find(
-                (setting) => !fitsSetting(settings, setting)
-              );
+              const [unfit] = unfitSettings(settings);
 
               if (unfit) {
                 throw refusal(`${unfit} does not fit a ${settings.kind} field`);
@@ -699,9 +666,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
             }
 
             const next = { ...field, ...patch };
-            const unfit = SHAPED_SETTINGS.filter(
-              (setting) => !fitsSetting(next, setting)
-            );
+            const unfit = unfitSettings(next);
             const named = unfit.find((setting) => setting in patch);
 
             if (named) {
