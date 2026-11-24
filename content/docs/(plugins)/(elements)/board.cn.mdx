@@ -276,21 +276,23 @@ const picture = await exportPicture({
 要复制图片，请在 await 它之前开始写入剪贴板。Safari 和 Firefox 会拒绝在点击之后过久才开始的剪贴板写入，而绘制图片可能需要更久：
 
 ```tsx
+const empty = new Error('There is nothing to copy.');
 const picture = exportPicture({
   format: 'png',
   kit: import('@/components/editor/board-static').then(
     ({ BoardPictureKit }) => BoardPictureKit
   ),
-});
+}).then((drawn) => drawn ?? Promise.reject(empty));
 
-await navigator.clipboard.write([
-  new ClipboardItem({
-    'image/png': picture.then(
-      (drawn) => drawn?.blob ?? Promise.reject(new Error('The board is empty.'))
-    ),
-  }),
+await Promise.all([
+  picture,
+  navigator.clipboard.write([
+    new ClipboardItem({ 'image/png': picture.then(({ blob }) => blob) }),
+  ]),
 ]);
 ```
+
+白板为空时，`await` 以 `empty` reject，剪贴板保留原有内容。其他任何 reject 都表示浏览器拒绝了复制，或者图片无法绘制。
 
 ## 手动用法
 
@@ -715,10 +717,11 @@ const editor = createEditor({
 | `remove(ids)` | `BaseBoardPlugin` | 删除图形，框架连同其中的图形。绑定到被删图形的箭头会在原绘制处留下自由端点。 |
 | `removeFrame(id)` | `BaseBoardPlugin` | 删除框架，图形留在原处。 |
 | `insertCopy(slice, { board, place? })` | `BaseBoardPlugin` | 把 `slice` 中图形的副本以新 id 粘贴到 `board`，并返回副本的 id。 |
-| `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置，以及复制图形所携带的 slice。在 `tx.plugin(BaseBoardPlugin)` 上调用。 |
+| `shapes(board)`、`shape(id)`、`arrowEnds(id)`、`strokePath(id)`、`slice(ids)` | `BaseBoardPlugin` | 读取白板的图形、任意白板中按 id 找到的图形、箭头两端的绘制位置、笔迹的轮廓，以及复制图形所携带的 slice。id 指向的不是笔迹时，`strokePath` 返回 `null`。在 update 中于 `tx.plugin(BaseBoardPlugin)` 上调用，在 update 之外于 `editor.read.board` 上调用，例如在没有挂载白板的服务器上。 |
+| `BoardStrokePath` | `platejs/board` | 笔迹的轮廓：一个 SVG `path`，位于 `width` 乘 `height` 的框中，即笔迹存储的尺寸，你需要把它缩放到 `shape(id)` 给出的框。 |
 | `BoardSurface`、`BoardShape` | `platejs/board/react` | 白板的挂载视图和图形的定位外壳，供复制的渲染组件使用。白板表面必填的 `messages` 包含白板播报的所有文字，如[屏幕阅读器](#屏幕阅读器)一节所列。它的 `height` 设置其视图的高度，默认为白板存储的 `height`。橡皮擦将要删除的图形带有 `data-erasing`，复制的白板会让它变淡；挑选光标所在的图形带有 `data-board-cursor`，复制的白板会给它加上虚线环。在可以朝滚轮的主要方向继续滚动的工具栏元素上使用普通滚轮会滚动该元素，而不是平移白板。 |
 | `data-board-dock` | `platejs/board/react` | 标记白板表面 `toolbar` 顶层中停靠在白板一侧的元素，取值为 `"left"` 或 `"right"`。其他顶层工具栏元素视为白板顶部或底部的一行。通过 `fit` 或 Shift+1 适应视图时，图形会放进工具栏未遮挡的空间；如果这块空间的宽度或高度在 10% 缩放下放不下这些图形，就改用白板在该方向上的整个宽度或高度。两者的缩放都在 10% 到 100% 之间，因此白板在 10% 缩放下也放不下的图形会超出白板边缘。 |
 | `BoardMessages`、`BoardShapeDescription`、`BoardCorner`、`BoardPickState` | `platejs/board/react` | `messages` 的类型、`messages.shape` 所描述的图形、调整大小时移动的角，以及播报 `picking` 或 `pick` 时的挑选状态。 |
-| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`toolLocked`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `styles` 读取一次选取会设置的各个样式，以 `writable` 读取视图能否写入，以 `takesPictureFiles` 读取白板是否接收图片文件。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setToolLocked`、`setStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame`、`focus`、`upload` 和 `exportPicture`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`toolLocked` 表示便签、图形、框架和箭头工具在添加图形后是否保持选中；视图挂载时它是关闭的，也从不存储。`setToolLocked` 像 Q 一样开启或关闭它，不改变工具或选区。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中。`setStyle` 合并到下一个样式。使用选择工具时，它还会把每个样式写入接受该样式的每个选中形状，以及正在编辑文字的形状，作为一个撤销步骤，并保留光标。使用绘制工具时，它只设置下一个形状的样式。`styles` 的每一项在目标的值相同时为 `{ mixed: false, value }`，不同时为 `{ mixed: true }`；没有目标接受的样式没有对应项。只读视图中的 `setStyle` 不做任何更改。`upload(files)` 把图片文件作为图片图形排成一行落下，以视图中心为中心，见[图片文件](#图片文件)。文件列表为空或 `takesPictureFiles` 为 false 时，它不做任何更改。`exportPicture({ format, kit })` 用 `kit` 中的静态插件把选中的图形（没有选中图形时为整个白板）绘制为 `'png'` 或 `'svg'` 图片。`kit` 也可以是一个 promise，例如动态导入，见[导出](#导出)。它在调用时读取选区，并在第一次调用时加载绘制代码。没有可绘制的内容时，它解析为 `null`；白板表面不在页面上，或在图片绘制完成前离开页面时，它会 reject。 |
+| `useBoardView(selector)`、`useBoardActions()` | `platejs/board/react` | 在画板表面的 `toolbar` 中，读取视图的 `tool`、`toolLocked`、`camera` 和 `nextStyle`，以 `selectedShapes` 读取本画板选中的形状，以 `styles` 读取一次选取会设置的各个样式，以 `writable` 读取视图能否写入，以 `takesPictureFiles` 读取白板是否接收图片文件。`camera` 的 `zoom` 为 1 即 100%。调用 `setTool`、`setToolLocked`、`setStyle`、`fit`、`zoomIn`、`zoomOut`、`resetZoom`、`removeFrame`、`focus`、`upload` 和 `exportPicture`。无论当前缩放比例是多少，`zoomIn` 和 `zoomOut` 都会缩放到 `=` 或 `+` 和 `-` 键所用的下一级，放大到 800%、缩小到 10% 为止。`resetZoom` 像 Shift+0 一样缩放到 100%。三者在只读视图中也可用。`toolLocked` 表示便签、图形、框架和箭头工具在添加图形后是否保持选中；视图挂载时它是关闭的，也从不存储。`setToolLocked` 像 Q 一样开启或关闭它，不改变工具或选区。`focus` 把焦点移回画板并保留其选择，例如在工具栏菜单关闭之后。正在编辑文字的形状会结束编辑并保持选中。`setStyle` 合并到下一个样式。使用选择工具时，它还会把每个样式写入接受该样式的每个选中形状，以及正在编辑文字的形状，作为一个撤销步骤，并保留光标。使用绘制工具时，它只设置下一个形状的样式。`styles` 的每一项在目标的值相同时为 `{ mixed: false, value }`，不同时为 `{ mixed: true }`；没有目标接受的样式没有对应项。只读视图中的 `setStyle` 不做任何更改。`upload(files)` 把图片文件作为图片图形排成一行落下，以视图中心为中心，见[图片文件](#图片文件)。文件列表为空或 `takesPictureFiles` 为 false 时，它不做任何更改。`exportPicture({ format, kit })` 用 `kit` 中的静态插件把选中的图形（没有选中图形时为整个白板）绘制为 `'png'` 或 `'svg'` 图片。`kit` 也可以是一个 promise，例如动态导入，见[导出](#导出)。它在调用时读取选区，并在第一次调用时加载绘制代码。没有可绘制的内容时，它解析为 `null`；白板表面不在页面上，或在图片绘制完成前离开页面时，它会 reject。这两个 hook 在 `BoardSurface` 之外会抛出错误。 |
 | `BoardPicture`、`BoardPictureOptions`、`BoardPictureWarning` | `platejs/board/react` | `exportPicture` 解析的结果、它接收的选项，以及图片 `warnings` 中的每条警告。警告的 `code` 为 `content-undrawn`、`downscaled`、`font-missing`、`image-unreadable` 或 `shape-undrawn`，后两种还会给出 `shapeId`。 |
-| `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 箭头或笔迹的绘制路径。 |
+| `useArrowPath(element)`、`useStrokePath(element)` | `platejs/board/react` | 已挂载白板中箭头或笔迹的绘制路径。`useStrokePath` 返回 `strokePath(id)` 读取的 `BoardStrokePath`；元素不是该白板的笔迹时返回 `undefined`。 |
