@@ -1,16 +1,10 @@
 import {
   BaseHeadingPlugin,
   definePlugin,
-  ElementIdPlugin,
   property,
   schema,
   type Value,
 } from 'platejs';
-import {
-  defineDocumentMigrations,
-  migrateDocument,
-  type DocumentMigrations,
-} from 'platejs/migrations';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 
@@ -49,49 +43,6 @@ const BenchmarkDenseInlinePropsSchema = definePlugin(
     },
   }
 );
-
-let nextBenchmarkElementId = 0;
-const BenchmarkElementIdPlugin = ElementIdPlugin.configure({
-  initialState: {
-    generateId: () => `editor-perf-${(nextBenchmarkElementId += 1)}`,
-  },
-});
-const elementIdAdmissionMigrations = new Map<
-  EditorPerfWorkloadId,
-  DocumentMigrations
->();
-
-function getElementIdAdmissionMigrations(workloadId: EditorPerfWorkloadId) {
-  const cached = elementIdAdmissionMigrations.get(workloadId);
-
-  if (cached) return cached;
-
-  const migrations = defineDocumentMigrations({
-    plugins: [
-      ...getEditorPerfWorkloadPlugins(workloadId),
-      BenchmarkElementIdPlugin,
-    ],
-    schema: {
-      id: `editor-perf-${workloadId}-element-id`,
-      version: 1,
-    },
-    steps: {},
-  });
-
-  elementIdAdmissionMigrations.set(workloadId, migrations);
-
-  return migrations;
-}
-
-export function admitEditorPerfElementIds(
-  value: Value,
-  workloadId: EditorPerfWorkloadId
-) {
-  return migrateDocument(value, {
-    migrations: getElementIdAdmissionMigrations(workloadId),
-    source: 'current',
-  }).output.document.children;
-}
 
 export function getEditorPerfWorkloadPlugins(
   workloadId: EditorPerfWorkloadId,
@@ -156,9 +107,12 @@ export type EditorPerfWorkloadId =
 
 export type ScenarioWorkloadId = Exclude<EditorPerfWorkloadId, 'huge-bold'>;
 
-export type ElementIdFragmentBenchmarkKind =
-  | 'raw-import'
-  | 'seeded-duplicate-paste';
+export type EditorPerfScenarioId =
+  | 'slate'
+  | 'plate-core'
+  | 'plate-basic'
+  | 'plate-basic-aligned'
+  | 'plate-code-only';
 
 type WorkloadDefinition = {
   description: string;
@@ -323,29 +277,9 @@ const markDocumentCache = new Map<string, Value>();
 const denseTextDocumentCache = new Map<number, Value>();
 const denseInlinePropsDocumentCache = new Map<number, Value>();
 const fallbackParagraphDocumentCache = new Map<number, Value>();
-const elementIdFragmentDocumentCache = new Map<
-  string,
-  { fragment: Value; value: Value }
->();
-const seededDocumentCache = new Map<string, Value>();
 
 export function cloneValue(value: Value): Value {
   return value.map((node) => structuredClone(node));
-}
-
-export function createBenchIdFactory(
-  counter: { count: number },
-  prefix = 'bench'
-) {
-  return () => {
-    counter.count += 1;
-
-    return `${prefix}-${counter.count}`;
-  };
-}
-
-export function getDefaultElementIdFragmentBlockCount(blocks: number) {
-  return Math.max(25, Math.min(200, Math.floor(blocks / 25)));
 }
 
 function buildMixedBlockValue(blocks: number): Value {
@@ -664,83 +598,4 @@ export function getEditorPerfWorkloadValue({
   }
 
   throw new Error('Unknown editor performance workload.');
-}
-
-export function getSeededEditorPerfWorkloadValue({
-  blocks,
-  cacheKey,
-  workloadId,
-}: {
-  blocks: number;
-  cacheKey?: string;
-  workloadId: EditorPerfWorkloadId;
-}) {
-  const resolvedCacheKey = cacheKey ?? `${workloadId}:${blocks}`;
-  const cachedValue = seededDocumentCache.get(resolvedCacheKey);
-
-  if (cachedValue) {
-    return cloneValue(cachedValue);
-  }
-
-  const seededValue = admitEditorPerfElementIds(
-    getEditorPerfWorkloadValue({ blocks, workloadId }),
-    workloadId
-  );
-
-  seededDocumentCache.set(resolvedCacheKey, seededValue);
-
-  return cloneValue(seededValue);
-}
-
-export function getElementIdFragmentBenchmarkData({
-  blocks,
-  fragmentBlocks = getDefaultElementIdFragmentBlockCount(blocks),
-  kind,
-}: {
-  blocks: number;
-  fragmentBlocks?: number;
-  kind: ElementIdFragmentBenchmarkKind;
-}) {
-  const resolvedFragmentBlocks = Math.max(1, Math.min(blocks, fragmentBlocks));
-  const cacheKey = `${kind}:${blocks}:${resolvedFragmentBlocks}`;
-  const cachedValue = elementIdFragmentDocumentCache.get(cacheKey);
-
-  if (cachedValue) {
-    return {
-      fragment: cloneValue(cachedValue.fragment),
-      value: cloneValue(cachedValue.value),
-    };
-  }
-
-  let value: Value;
-  let fragment: Value;
-
-  if (kind === 'seeded-duplicate-paste') {
-    const sourceValue = getSeededEditorPerfWorkloadValue({
-      blocks,
-      cacheKey: `element-id-fragment:${blocks}`,
-      workloadId: 'huge-mixed-block',
-    });
-
-    value = sourceValue;
-    fragment = sourceValue
-      .slice(0, resolvedFragmentBlocks)
-      .map((node) => structuredClone(node));
-  } else {
-    value = getEditorPerfWorkloadValue({
-      blocks,
-      workloadId: 'huge-mixed-block',
-    });
-    fragment = getEditorPerfWorkloadValue({
-      blocks: resolvedFragmentBlocks,
-      workloadId: 'huge-mixed-block',
-    });
-  }
-
-  elementIdFragmentDocumentCache.set(cacheKey, { fragment, value });
-
-  return {
-    fragment: cloneValue(fragment),
-    value: cloneValue(value),
-  };
 }

@@ -32,13 +32,15 @@ import {
   CORE_PLUGIN_CENSUS_ENTRIES,
   type CorePluginCensusEntryId,
 } from '../src/app/dev/editor-perf/plugin-census';
-import type { EditorPerfWorkloadId } from '../src/app/dev/editor-perf/workloads';
+import type {
+  EditorPerfScenarioId,
+  EditorPerfWorkloadId,
+} from '../src/app/dev/editor-perf/workloads';
 
 type BenchmarkName =
   | 'construction'
   | 'core-mount'
   | 'init-dissection'
-  | 'element-id-fragment'
   | 'find-edit'
   | 'input'
   | 'mount'
@@ -53,14 +55,7 @@ type PresetName =
   | 'layer-3-core-stress'
   | 'public-slate-vs-plate';
 type ScenarioWorkloadId = EditorPerfWorkloadId;
-type ScenarioId =
-  | 'slate'
-  | 'plate-core'
-  | 'plate-core-element-id'
-  | 'plate-core-element-id-seeded'
-  | 'plate-basic'
-  | 'plate-basic-aligned'
-  | 'plate-code-only';
+type ScenarioId = EditorPerfScenarioId;
 type VisibilityMode = 'chunk' | 'element' | 'none';
 type RunnerJob = {
   benchmarks: BenchmarkName[];
@@ -68,7 +63,6 @@ type RunnerJob = {
   chunkSize: number;
   chunking: boolean;
   coreMountCase?: string;
-  coreMountElementId?: string;
   fanoutSubscribers?: string;
   id: string;
   pluginCensusEntry?: CorePluginCensusEntryId | 'all';
@@ -166,10 +160,6 @@ function getConstructionMean(results: any, scenarioId: string) {
   return results?.results?.[scenarioId]?.construction?.mean ?? null;
 }
 
-function getInitOnlyMean(results: any, caseId: string) {
-  return results?.dissection?.results?.[caseId]?.initOnly?.mean ?? null;
-}
-
 function getPluginCensusEntry(results: any, entryId: CorePluginCensusEntryId) {
   return results?.pluginCensus?.results?.[entryId] ?? null;
 }
@@ -223,24 +213,12 @@ function summarizePresetRun(run: PresetRunPayload) {
     plateCoreMountMean: includesMount
       ? getMountMean(run.results, 'plate-core')
       : null,
-    plateCoreElementIdMountMean: includesMount
-      ? getMountMean(run.results, 'plate-core-element-id')
-      : null,
-    plateCoreElementIdSeededMountMean: includesMount
-      ? getMountMean(run.results, 'plate-core-element-id-seeded')
-      : null,
     plateBasicMountMean: includesMount
       ? getMountMean(run.results, 'plate-basic')
       : null,
     slateInputMean: includesInput ? getInputMean(run.results, 'slate') : null,
     plateCoreInputMean: includesInput
       ? getInputMean(run.results, 'plate-core')
-      : null,
-    plateCoreElementIdInputMean: includesInput
-      ? getInputMean(run.results, 'plate-core-element-id')
-      : null,
-    plateCoreElementIdSeededInputMean: includesInput
-      ? getInputMean(run.results, 'plate-core-element-id-seeded')
       : null,
     plateBasicInputMean: includesInput
       ? getInputMean(run.results, 'plate-basic')
@@ -254,14 +232,6 @@ function summarizePresetRun(run: PresetRunPayload) {
     plateCoreConstructionMean: includesConstruction
       ? getConstructionMean(run.results, 'plate-core')
       : null,
-    rawElementIdInitMean: getInitOnlyMean(
-      run.results,
-      'plate-core-element-id-raw'
-    ),
-    seededElementIdInitMean: getInitOnlyMean(
-      run.results,
-      'plate-core-element-id-seeded'
-    ),
     pluginCensusEntry:
       run.results?.pluginCensus?.activeEntryId &&
       run.results.pluginCensus.activeEntryId !== 'all'
@@ -328,7 +298,6 @@ async function configurePage(
     | 'chunkSize'
     | 'chunking'
     | 'coreMountCase'
-    | 'coreMountElementId'
     | 'fanoutSubscribers'
     | 'pluginCensusEntry'
     | 'scenario'
@@ -345,7 +314,6 @@ async function configurePage(
             chunkSize: number;
             chunking: boolean;
             coreMountCase?: string;
-            coreMountElementId?: string;
             fanoutSubscribers?: string;
             pluginCensusEntry?: CorePluginCensusEntryId | 'all';
             scenario?: ScenarioId;
@@ -475,7 +443,6 @@ async function runBenchmarksWithRecovery(
     chunkSize,
     chunking,
     coreMountCase,
-    coreMountElementId,
     fanoutSubscribers,
     pluginCensusEntry,
     scenario,
@@ -488,7 +455,6 @@ async function runBenchmarksWithRecovery(
     chunkSize: number;
     chunking: boolean;
     coreMountCase?: string;
-    coreMountElementId?: string;
     fanoutSubscribers?: string;
     pluginCensusEntry?: CorePluginCensusEntryId | 'all';
     scenario?: ScenarioId;
@@ -506,7 +472,6 @@ async function runBenchmarksWithRecovery(
         chunkSize,
         chunking,
         coreMountCase,
-        coreMountElementId,
         fanoutSubscribers,
         pluginCensusEntry,
         scenario,
@@ -585,16 +550,6 @@ function getLayer0Jobs(): RunnerJob[] {
       id: 'core-mixed-5k-no-chunk',
       scenarioWorkload: 'huge-mixed-block',
       visibility: 'none',
-    },
-    {
-      benchmarks: ['init-dissection'],
-      blocks: 10_000,
-      chunkSize: 1000,
-      chunking: true,
-      id: 'element-id-init-10k',
-      scenarioWorkload: 'huge-mixed-block',
-      timeoutMs: 240_000,
-      visibility: 'chunk',
     },
   ];
 }
@@ -713,16 +668,6 @@ function getLayer0SmokeJobs(): RunnerJob[] {
       id: 'smoke-core-blockquote-1k-chunk',
       scenarioWorkload: 'huge-blockquote',
       timeoutMs: 120_000,
-      visibility: 'chunk',
-    },
-    {
-      benchmarks: ['init-dissection'],
-      blocks: 5000,
-      chunkSize: 1000,
-      chunking: true,
-      id: 'smoke-element-id-init-5k',
-      timeoutMs: 120_000,
-      scenarioWorkload: 'huge-mixed-block',
       visibility: 'chunk',
     },
   ];
@@ -1812,7 +1757,6 @@ async function main() {
   const contentVisibility = (getArg('visibility') ?? 'chunk') as VisibilityMode;
   const fanoutSubscribers = getArg('fanout-subscribers');
   const coreMountCase = getArg('core-mount-case');
-  const coreMountElementId = getArg('core-mount-element-id');
   const pluginCensusEntry = getArg('plugin-census-entry') as
     | CorePluginCensusEntryId
     | 'all'
@@ -1915,7 +1859,6 @@ async function main() {
         chunkSize,
         chunking,
         coreMountCase,
-        coreMountElementId,
         fanoutSubscribers,
         pluginCensusEntry,
         scenario,
