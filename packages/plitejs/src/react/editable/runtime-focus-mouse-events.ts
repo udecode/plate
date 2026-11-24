@@ -1,8 +1,12 @@
 import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
 
 import { SelectionApi } from '../..';
-import { holdsCaret } from '../../core/view-carets';
-import { isDOMNode } from '../../dom';
+import {
+  holdsCaret,
+  mayClearCaret,
+  resolveLiveCaret,
+} from '../../core/view-carets';
+import { getSelection, isDOMNode } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { ensureFocusCaret } from '../../dom/plugin/dom-view-caret';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -36,6 +40,14 @@ import {
 
 type FocusHandler = (event: FocusEvent<HTMLDivElement>) => boolean | void;
 type MouseHandler = (event: MouseEvent<HTMLDivElement>) => boolean | void;
+
+const hasDOMCaretIn = (element: HTMLElement) => {
+  const anchorNode = getSelection(
+    element.getRootNode() as Document | ShadowRoot
+  )?.anchorNode;
+
+  return !!anchorNode && element.contains(anchorNode);
+};
 
 export const useRuntimeFocusMouseEvents = ({
   cancelNativeSelectionImport,
@@ -249,24 +261,38 @@ export const useRuntimeFocusMouseEvents = ({
         const syncProgrammaticFocusSelection = () => {
           if (ReactEditor.isFocused(editor)) syncDOMSelectionToEditor();
         };
-
-        nativeInternalFocusRef.current = false;
+        let placedStartCaret = false;
+        const lacksAnyCaret = () =>
+          mayClearCaret(editor) &&
+          !resolveLiveCaret(editor) &&
+          !readPliteViewSelection(editor) &&
+          !hasDOMCaretIn(editorElement);
         // WebKit puts no caret of its own when the root's first content is
         // not editable, such as a block's drag handle, and drops the typing.
-        if (!readOnly && !readPliteViewSelection(editor)) {
-          ensureFocusCaret(editor, editorElement);
-        }
+        const fillStartCaretOnceFocusSettles = () => {
+          if (!ReactEditor.isFocused(editor)) return;
+          if (!readOnly && !placedStartCaret && lacksAnyCaret()) {
+            editor.update({ tags: 'skip-scroll-into-view' }, () => {
+              placedStartCaret = !ensureFocusCaret(editor, editorElement);
+            });
+          }
+          if (!placedStartCaret || !hasDOMCaretIn(editorElement)) {
+            syncDOMSelectionToEditor();
+          }
+        };
+
+        nativeInternalFocusRef.current = false;
         syncProgrammaticFocusSelection();
         domPhaseScheduler.schedule(
           'selection-repair',
           'programmatic-focus-selection-microtask',
-          syncProgrammaticFocusSelection,
+          fillStartCaretOnceFocusSettles,
           { timing: 'microtask' }
         );
         domPhaseScheduler.schedule(
           'selection-repair',
           'programmatic-focus-selection-timeout',
-          syncProgrammaticFocusSelection,
+          fillStartCaretOnceFocusSettles,
           { timing: 'timeout' }
         );
       }

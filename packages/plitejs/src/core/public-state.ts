@@ -13597,10 +13597,11 @@ const keepStrandedCaret = (
   specContext: TransactionSpecContext,
   caretBefore: SettledCaret,
   mapped: SettledCaret,
-  after: EditorDocumentValue,
+  step: DocumentChangeStep,
   root: string,
   indexes: StepNodeKeys | undefined
 ): SettledCaret => {
+  const after = step.after as EditorDocumentValue;
   const pending =
     specContext.strandedCaret?.root === root &&
     specContext.strandedCaret.selection === caretBefore.selection
@@ -13614,6 +13615,13 @@ const keepStrandedCaret = (
   if (!indexes || !selection || SelectionApi.isNode(selection)) return mapped;
 
   const schema = getEditorSchema(editor);
+  const firstText = (node: PliteNode) => {
+    const [text] = NodeApi.texts(node, {
+      pass: ([child]) => NodeApi.isElement(child) && schema.isVoid(child),
+    });
+
+    return text;
+  };
   const textIn = (key: NodeKey) => {
     const path = indexes.after.pathOf(key);
     const node = path
@@ -13622,11 +13630,40 @@ const keepStrandedCaret = (
 
     if (!path || !node) return undefined;
 
-    const [text] = NodeApi.texts(node, {
-      pass: ([child]) => NodeApi.isElement(child) && schema.isVoid(child),
-    });
+    const text = firstText(node);
 
     return text ? [...path, ...text[1]] : null;
+  };
+  const removesTextAndLeavesTextless = (textPath: Path) => {
+    const rootChange = getInternalDocumentRootChange(step.change, root);
+
+    if (!rootChange) return false;
+
+    const { from } = (
+      step.indexedBefore.get(root) ?? valueRootIndex(step.before, root)
+    ).nodeRange(textPath);
+
+    if (rootChange.mapPos(from, 1, 'after') !== null) return false;
+
+    const afterIndex =
+      step.indexedAfter.get(root) ?? valueRootIndex(step.after, root);
+    let leavesTextless = false;
+
+    rootChange.iterChangedRanges(
+      (_fromBefore, _toBefore, fromAfter, toAfter) => {
+        leavesTextless ||= afterIndex
+          .nodeRangesTouching(fromAfter, toAfter)
+          .some(({ kind, path }) => {
+            if (kind !== 'element') return false;
+
+            const node = afterIndex.node(path) as Element;
+
+            return !schema.isVoid(node) && !firstText(node);
+          });
+      }
+    );
+
+    return leavesTextless;
   };
 
   if (pending) {
@@ -13652,6 +13689,8 @@ const keepStrandedCaret = (
   if (!held || SelectionApi.isNode(held) || !RangeApi.isCollapsed(held)) {
     return mapped;
   }
+
+  if (!removesTextAndLeavesTextless(held.anchor.path)) return mapped;
 
   const heldText = indexes.before.keyAt(held.anchor.path);
 
@@ -13792,7 +13831,7 @@ const applyTransactionSpecDocumentChangeStep = (
             specContext,
             carets,
             mappedCaret,
-            after,
+            step,
             selectionRoot,
             selectionRuntimeIndexes
           )
