@@ -271,6 +271,13 @@
     },
     {
       "paths": [
+        "apps/www/src/generated/api-reference-manifest.json",
+        "apps/www/api-reference-baseline.json"
+      ],
+      "command": "pnpm --filter www api-reference"
+    },
+    {
+      "paths": [
         "apps/www/src/registry/changelog/*.json"
       ],
       "command": "node tooling/scripts/generate-ui-changelog-entries.mjs --write",
