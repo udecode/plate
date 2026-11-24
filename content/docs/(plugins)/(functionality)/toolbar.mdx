@@ -17,7 +17,7 @@ docs:
 ## Features
 
 - **Fixed Toolbar**: Persistent toolbar above the editor's scrollable content
-- **Floating Toolbar**: Contextual toolbar that appears on text selection
+- **Floating Toolbar**: Contextual toolbar that appears on text selection, docked above the keyboard on touch screens
 - **Customizable Buttons**: Add, remove, and reorder toolbar buttons
 - **Responsive Design**: Adapts to different screen sizes and content
 - **Plugin Integration**: Uses Plate plugins and copied UI components
@@ -114,6 +114,15 @@ in a scroll area that clips the toolbar, and shows again when the text scrolls
 back. A scroll area that does not clip the toolbar does not hide it, such as a
 wide code block or a static scroll panel when the toolbar is positioned against
 an element outside the panel.
+
+On a touch screen, the floating toolbar docks as a bar along the bottom of the
+visible page, above the on-screen keyboard, and shows while the editor has
+focus. A phone opens its own Copy and Paste menu above the selection, and a page
+cannot move that menu, so a toolbar at the selection and that menu would cover
+each other. When the bar would cover the caret, it scrolls the caret above itself. A
+screen counts as touch when its primary pointer is coarse, as the
+`(pointer: coarse)` media query reports; a mouse or trackpad screen keeps the
+floating toolbar at any width.
 
 ### Customizing fixed toolbar buttons
 
@@ -288,7 +297,7 @@ Plugin that renders a fixed toolbar before the editor scroll container.
 
 ### `FloatingToolbarKit`
 
-Plugin that renders a floating toolbar that appears on text selection.
+Plugin that renders a floating toolbar that appears on text selection, or a bar above the keyboard on touch screens.
 
 <API name="FloatingToolbarKit">
 <APIOptions>

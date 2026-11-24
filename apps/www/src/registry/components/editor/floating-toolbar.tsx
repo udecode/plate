@@ -32,6 +32,7 @@ import {
   useSelectionGeometry,
 } from 'platejs/react';
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 import { ToolbarGroup, Toolbar } from '@/registry/components/editor/toolbar';
 import { useFloatingRect } from '@/registry/hooks/use-floating-rect';
@@ -109,13 +110,151 @@ export function FloatingToolbar({ children }: { children?: React.ReactNode }) {
   const hasNodeSelection = useEditorSelector(
     (editor) => editor.read.selection.nodes().length > 0
   );
+  const touch = useCoarsePointer();
 
   if (hasNodeSelection) return null;
 
-  return (
-    <TextFloatingToolbar>
-      {children === undefined ? <FloatingToolbarButtons /> : children}
-    </TextFloatingToolbar>
+  const buttons =
+    children === undefined ? <FloatingToolbarButtons /> : children;
+
+  return touch ? (
+    <KeyboardToolbar>{buttons}</KeyboardToolbar>
+  ) : (
+    <TextFloatingToolbar>{buttons}</TextFloatingToolbar>
+  );
+}
+
+const COARSE_POINTER_QUERY = '(pointer: coarse)';
+const CARET_GAP = 8;
+
+function subscribeCoarsePointer(onChange: () => void) {
+  const query = window.matchMedia(COARSE_POINTER_QUERY);
+
+  query.addEventListener('change', onChange);
+
+  return () => query.removeEventListener('change', onChange);
+}
+
+function useCoarsePointer() {
+  return React.useSyncExternalStore(
+    subscribeCoarsePointer,
+    () => window.matchMedia(COARSE_POINTER_QUERY).matches,
+    () => false
+  );
+}
+
+function subscribeViewport(onChange: () => void) {
+  const viewport = window.visualViewport;
+  const resized = viewport ?? window;
+
+  resized.addEventListener('resize', onChange);
+  viewport?.addEventListener('scroll', onChange);
+
+  return () => {
+    resized.removeEventListener('resize', onChange);
+    viewport?.removeEventListener('scroll', onChange);
+  };
+}
+
+function readViewportBottom() {
+  const viewport = window.visualViewport;
+
+  return viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+}
+
+// A page cannot move the phone's own selection menu, which opens above the selection, and iOS gives it no way to hide it, so touch screens dock the toolbar above the keyboard.
+function KeyboardToolbar({ children }: { children: React.ReactNode }) {
+  const editableRef = useEditableRef();
+  const editorFocused = useEditorFocused();
+  const readOnly = useEditorReadOnly();
+  const isFloatingLinkOpen = !!usePluginStore(linkPlugin, 'mode');
+  const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
+  const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
+  const viewportBottom = React.useSyncExternalStore(
+    subscribeViewport,
+    readViewportBottom,
+    () => 0
+  );
+  const barRef = React.useRef<HTMLDivElement>(null);
+  const open =
+    !isFloatingLinkOpen &&
+    !isAIChatOpen &&
+    !readOnly &&
+    (editorFocused || ownedOverlayOpen);
+
+  React.useEffect(() => {
+    const document = editableRef.current?.ownerDocument;
+    const view = document?.defaultView;
+
+    if (!open || !document || !view) return undefined;
+
+    let frame = 0;
+    const revealCaret = () => {
+      view.cancelAnimationFrame(frame);
+      frame = view.requestAnimationFrame(() => {
+        const selection = document.getSelection();
+        const node = selection?.focusNode;
+        const element = node instanceof Element ? node : node?.parentElement;
+        const bar = barRef.current;
+
+        if (
+          !bar ||
+          !selection?.isCollapsed ||
+          !element ||
+          !editableRef.current?.contains(element)
+        ) {
+          return;
+        }
+
+        const caret = selection.getRangeAt(0).getClientRects()[0];
+        let overlap =
+          (caret ?? element.getBoundingClientRect()).bottom +
+          CARET_GAP -
+          bar.getBoundingClientRect().top;
+
+        for (
+          let parent = element.parentElement;
+          parent && overlap > 0;
+          parent = parent.parentElement
+        ) {
+          if (!/auto|scroll/.test(view.getComputedStyle(parent).overflowY)) {
+            continue;
+          }
+
+          const before = parent.scrollTop;
+
+          parent.scrollTop += overlap;
+          overlap -= parent.scrollTop - before;
+        }
+
+        if (overlap > 0) view.scrollBy(0, overlap);
+      });
+    };
+
+    document.addEventListener('selectionchange', revealCaret);
+    view.visualViewport?.addEventListener('resize', revealCaret);
+    revealCaret();
+
+    return () => {
+      view.cancelAnimationFrame(frame);
+      document.removeEventListener('selectionchange', revealCaret);
+      view.visualViewport?.removeEventListener('resize', revealCaret);
+    };
+  }, [editableRef, open]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <Toolbar
+      ref={barRef}
+      data-slot="keyboard-toolbar"
+      onOverlayOpenChange={setOwnedOverlayOpen}
+      style={{ top: viewportBottom }}
+      className="fixed inset-x-0 z-50 scrollbar-hide -translate-y-full overflow-x-auto border-t bg-popover p-1 whitespace-nowrap print:hidden"
+    >
+      {children}
+    </Toolbar>,
+    document.body
   );
 }
 

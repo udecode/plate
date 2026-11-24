@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-24-floating-toolbar-touch-dock",
+      "href": "/registry/changelog/2026-11-24-floating-toolbar-touch-dock.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Dock the floating toolbar above the keyboard on touch screens",
+      "change": {
+        "type": "source",
+        "date": "2026-11-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-24-install-plate-ui-color",
       "href": "/registry/changelog/2026-11-24-install-plate-ui-color.json",
       "status": "draft",

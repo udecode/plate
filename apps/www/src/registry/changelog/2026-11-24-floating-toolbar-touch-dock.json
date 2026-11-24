@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-24-floating-toolbar-touch-dock",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-24-floating-toolbar-touch-dock.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Dock the floating toolbar above the keyboard on touch screens",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-24-floating-toolbar-dock-above-keyboard-touch-5eff6997",
+      "kind": "behavior",
+      "summary": "On a screen whose primary pointer is coarse, such as a phone or tablet, render the toolbar as a bar above the on-screen keyboard while the editor has focus, so it no longer covers the phone's own selection menu. The bar scrolls the caret above itself when it would cover it. Mouse and trackpad screens keep the floating toolbar.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-floating-toolbar-touch-dock",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
