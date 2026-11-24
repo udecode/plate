@@ -5492,6 +5492,7 @@ class RootRecorder {
     atContent: boolean
   ) {
     let removed: Extract<Piece, { kind: 'removed' }> | null = null;
+    let endKept: Extract<Piece, { kind: 'kept' }> | null = null;
     const startsInserted =
       atContent &&
       assoc === 1 &&
@@ -5523,10 +5524,15 @@ class RootRecorder {
         (replacing.offsets[0] ?? 0)
       );
     }
+    const throughKept = (piece: Extract<Piece, { kind: 'kept' }>) =>
+      recorded.mapPos(piece.beforeFrom + position - piece.afterFrom, assoc) ??
+      position;
+
     for (const piece of this.pieces) {
       if (piece.kind === 'removed') continue;
       if (position < piece.afterFrom || position > piece.afterTo) continue;
       if (piece.kind === 'shifted') {
+        if (removed) break;
         return (
           recorded.mapPos(
             this.options.plainToReview(
@@ -5545,14 +5551,10 @@ class RootRecorder {
           assoc === 1 &&
           piece.afterTo > piece.afterFrom
         ) {
+          endKept = piece;
           continue;
         }
-        return (
-          recorded.mapPos(
-            piece.beforeFrom + position - piece.afterFrom,
-            assoc
-          ) ?? position
-        );
+        return throughKept(piece);
       }
 
       const start = recorded.mapPos(piece.at, -1) ?? position;
@@ -5569,6 +5571,7 @@ class RootRecorder {
 
       return recorded.mapPos(...this.caretLanding(removed, right)) ?? position;
     }
+    if (endKept) return throughKept(endKept);
 
     return position;
   }

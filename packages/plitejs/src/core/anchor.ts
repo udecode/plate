@@ -1480,15 +1480,6 @@ export function createAnchor<TValue extends AnchorValue>(
         kind === 'range'
           ? beforeDocument.positionAt(getDefined(pointStates[1]).point)
           : sourceFrom;
-      const sourceRangeWasReplaced =
-        targetWasExpanded &&
-        options.deletion === 'drop' &&
-        changeCoversSourceRange(
-          change,
-          root,
-          Math.min(sourceFrom, sourceTo),
-          Math.max(sourceFrom, sourceTo)
-        );
       const sourceNodesKeepIdentity = pointStates.every((state) => {
         const runtimePath = runtimePathOf(state.nodeKey, context);
         if (!runtimePath) return false;
@@ -1502,6 +1493,15 @@ export function createAnchor<TValue extends AnchorValue>(
           return false;
         }
       });
+      const sourceRangeWasDeleted =
+        targetWasExpanded &&
+        !sourceNodesKeepIdentity &&
+        changeCoversSourceRange(
+          change,
+          root,
+          Math.min(sourceFrom, sourceTo),
+          Math.max(sourceFrom, sourceTo)
+        );
       const associations =
         kind === 'point'
           ? ([association === 'backward' ? -1 : 1] as const)
@@ -1577,11 +1577,17 @@ export function createAnchor<TValue extends AnchorValue>(
             }
           : null;
       });
-      const points = mappedPoints.map((mapped) => mapped?.point ?? null);
-      const nextPointStates = mappedPoints.map((mapped, index) => {
+      const start = sourceFrom <= sourceTo ? 0 : 1;
+      const sources =
+        options.deletion === 'nearest' && sourceRangeWasDeleted && !replacement
+          ? [start, start]
+          : mappedPoints.map((_, index) => index);
+      const points = sources.map((index) => mappedPoints[index]?.point ?? null);
+      const nextPointStates = sources.map((source) => {
+        const mapped = mappedPoints[source];
         if (!mapped) return null;
 
-        const previous = pointStates[index];
+        const previous = pointStates[source];
         if (mapped.runtimeStable) {
           return {
             ...previous,
@@ -1602,7 +1608,7 @@ export function createAnchor<TValue extends AnchorValue>(
       });
 
       current =
-        sourceRangeWasReplaced && !sourceNodesKeepIdentity
+        options.deletion === 'drop' && sourceRangeWasDeleted
           ? null
           : kind === 'point'
             ? points[0]
