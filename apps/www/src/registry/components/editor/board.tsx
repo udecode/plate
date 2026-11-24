@@ -65,7 +65,7 @@ import {
   BOARD_COLORS,
   COLORS,
   dashArray,
-  GEO_OUTLINES,
+  geoOutline,
   paint,
   SHAPE_HEADINGS,
   STROKE_WIDTHS,
@@ -860,7 +860,11 @@ export function BoardGeoElement(
           }}
           viewBox="0 0 100 100"
         >
-          {GEO_OUTLINES[element.geo]}
+          {geoOutline(element.geo, {
+            height: 100,
+            vectorEffect: 'non-scaling-stroke',
+            width: 100,
+          })}
         </svg>
       </div>
       <div

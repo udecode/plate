@@ -20,7 +20,7 @@ import {
   arrowHead,
   BOARD_COLORS,
   dashArray,
-  GEO_OUTLINES,
+  geoOutline,
   paint,
   SHAPE_HEADINGS,
   STROKE_WIDTHS,
@@ -159,7 +159,6 @@ export function BoardGeoElementStatic(
           height="100%"
           opacity={element.opacity}
           overflow="visible"
-          preserveAspectRatio="none"
           strokeDasharray={dashArray(element.dash, width)}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -168,10 +167,9 @@ export function BoardGeoElementStatic(
             fill: element.fill === 'none' ? 'none' : tint(element.fill),
             stroke: paint(element.strokeColor),
           }}
-          viewBox="0 0 100 100"
           width="100%"
         >
-          {GEO_OUTLINES[element.geo]}
+          {geoOutline(element.geo, box)}
         </svg>
         <foreignObject height={box.height} width={box.width}>
           <div

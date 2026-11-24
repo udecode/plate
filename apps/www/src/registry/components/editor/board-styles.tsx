@@ -41,28 +41,57 @@ export const dashArray = (dash: BoardStyle['dash'], width: number) => {
 export const SHAPE_HEADINGS =
   '[&_h1]:text-[2.25em] [&_h2]:text-[1.5em] [&_h3]:text-[1.25em] [&_h4]:text-[1.125em] [&_h5]:text-[1.125em] [&_h6]:text-[1em]';
 
-export const GEO_OUTLINES = {
-  diamond: (
+/**
+ * A picture draws the outline at the shape's own size, because browsers
+ * disagree on a non-scaling stroke once the picture is drawn into a canvas.
+ */
+export const geoOutline = (
+  geo: NonNullable<BoardStyle['geo']>,
+  {
+    height,
+    vectorEffect,
+    width,
+  }: Readonly<{
+    height: number;
+    vectorEffect?: 'non-scaling-stroke';
+    width: number;
+  }>
+) => {
+  if (geo === 'rectangle') {
+    return <rect height={height} vectorEffect={vectorEffect} width={width} />;
+  }
+  if (geo === 'ellipse') {
+    return (
+      <ellipse
+        cx={width / 2}
+        cy={height / 2}
+        rx={width / 2}
+        ry={height / 2}
+        vectorEffect={vectorEffect}
+      />
+    );
+  }
+
+  const corners =
+    geo === 'diamond'
+      ? [
+          [width / 2, 0],
+          [width, height / 2],
+          [width / 2, height],
+          [0, height / 2],
+        ]
+      : [
+          [width / 2, 0],
+          [width, height],
+          [0, height],
+        ];
+
+  return (
     <polygon
-      points="50,0 100,50 50,100 0,50"
-      vectorEffect="non-scaling-stroke"
+      points={corners.map(([x, y]) => `${x},${y}`).join(' ')}
+      vectorEffect={vectorEffect}
     />
-  ),
-  ellipse: (
-    <ellipse
-      cx={50}
-      cy={50}
-      rx={50}
-      ry={50}
-      vectorEffect="non-scaling-stroke"
-    />
-  ),
-  rectangle: (
-    <rect height={100} vectorEffect="non-scaling-stroke" width={100} />
-  ),
-  triangle: (
-    <polygon points="50,0 100,100 0,100" vectorEffect="non-scaling-stroke" />
-  ),
+  );
 };
 
 const HEAD_LENGTH = 12;
