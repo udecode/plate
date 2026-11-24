@@ -150,6 +150,12 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "markdown": [
+      "2026-11-23-markdown-raw-html",
+      "2026-11-20-markdown-cjk-emphasis",
+      "2026-09-28-markdown-registered-tags",
+      "2026-08-17-flat-editor-registry"
+    ],
     "media-embed": [
       "2026-11-23-media-embed-gaps",
       "2026-11-19-rtl-editor-ui",
@@ -573,11 +579,6 @@
       "2026-06-15-editor-fix-preserved-space-wrapping",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
-    ],
-    "markdown": [
-      "2026-11-20-markdown-cjk-emphasis",
-      "2026-09-28-markdown-registered-tags",
-      "2026-08-17-flat-editor-registry"
     ],
     "markdown-to-editor-demo": [
       "2026-11-20-markdown-cjk-emphasis",

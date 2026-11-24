@@ -133,6 +133,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-23-markdown-raw-html",
+      "href": "/registry/changelog/2026-11-23-markdown-raw-html.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Keep a Markdown file's raw HTML and comments",
+      "change": {
+        "type": "source",
+        "date": "2026-11-23",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["markdown"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-23-media-embed-gaps",
       "href": "/registry/changelog/2026-11-23-media-embed-gaps.json",
       "status": "draft",

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-23-markdown-raw-html",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-23-markdown-raw-html.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-23",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Keep a Markdown file's raw HTML and comments",
+  "targets": [
+    {
+      "name": "markdown",
+      "files": ["apps/www/src/registry/components/editor/markdown.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-23-markdown-keep-file-s-raw-9c3a6be3",
+      "kind": "wiring",
+      "summary": "Install `RawHtmlPlugin` beside `MarkdownPlugin`. Raw HTML in a Markdown file, such as a README's centered header, now saves back as HTML when its block passes Plate's safety check, instead of as escaped text. Most HTML comments on lines of their own, such as `<!-- markdownlint-disable -->`, save back instead of dropping when they sit in the document, a block quote or a list item.",
+      "details": [],
+      "migrationNotes": [
+        "Upgrade `platejs` to a release that exports `RawHtmlPlugin` from `platejs/markdown` before you copy the new kit.",
+        "If your editor builds its own plugin list instead of using `MarkdownKit`, add `RawHtmlPlugin` from `platejs/markdown` beside `MarkdownPlugin`.",
+        "A document the kit saves can hold the `rawHtml` mark, so add `RawHtmlPlugin` to every other editor that opens it, such as a server renderer.",
+        "`RawHtmlPlugin` changes the kit's schema fingerprint. If your app saves documents under a named schema, increment its `version`, add a migration step that returns the document unchanged, and register the earlier version's fingerprint in `sourceFingerprints`, as the Document migrations section of the editor guide shows.",
+        "The new kit refuses to join a Yjs room that the earlier kit created, with `Yjs schema mismatch`, or `Yjs derived schema mismatch` when your app declares no `schema`. Move each room's document to a new room. Under a named schema, migrate it as the Yjs rooms section of the board guide shows. Under the default derived identity, seed the new room with the document that an editor with the earlier kit reads.",
+        "If your app saves `{ document, schema }` under the default derived identity, the new fingerprint no longer matches the saved one. Load each saved document in an editor with the earlier kit and pass its `read.value()` to the new editor.",
+        "Undo history that your app saved with the earlier kit no longer loads, and `History.fromJSON` throws `History schema mismatch`. Discard that history, or migrate it offline before the new kit loads it.",
+        "If your app already declares its own `rawHtml` mark, keep that plugin and leave `RawHtmlPlugin` out of the kit, because two plugins cannot own one mark."
+      ],
+      "targets": ["markdown"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-23",
+          "entry": "2026-11-23-markdown-raw-html",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

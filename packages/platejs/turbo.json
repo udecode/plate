@@ -7206,6 +7206,7 @@
         "source-hash:partition:excalidraw",
         "source-hash:partition:footnote",
         "source-hash:partition:layout",
+        "source-hash:partition:markdown",
         "source-hash:partition:math",
         "source-hash:partition:media",
         "source-hash:partition:mention",

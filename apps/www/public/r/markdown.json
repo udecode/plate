@@ -16,7 +16,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/markdown.tsx",
-      "content": "import { MarkdownPlugin } from 'platejs/markdown';\nimport remarkCjkFriendlyGfmStrikethrough from 'remark-cjk-friendly-gfm-strikethrough/bidi';\nimport remarkCjkFriendly from 'remark-cjk-friendly/bidi';\nimport remarkEmoji from 'remark-emoji';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    initialState: {\n      remarkPlugins: [\n        remarkMath,\n        remarkGfm,\n        remarkCjkFriendly,\n        remarkCjkFriendlyGfmStrikethrough,\n        remarkEmoji,\n      ],\n    },\n  }),\n];\n",
+      "content": "import { MarkdownPlugin, RawHtmlPlugin } from 'platejs/markdown';\nimport remarkCjkFriendlyGfmStrikethrough from 'remark-cjk-friendly-gfm-strikethrough/bidi';\nimport remarkCjkFriendly from 'remark-cjk-friendly/bidi';\nimport remarkEmoji from 'remark-emoji';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    initialState: {\n      remarkPlugins: [\n        remarkMath,\n        remarkGfm,\n        remarkCjkFriendly,\n        remarkCjkFriendlyGfmStrikethrough,\n        remarkEmoji,\n      ],\n    },\n  }),\n  RawHtmlPlugin,\n];\n",
       "type": "registry:component",
       "target": "@components/editor/markdown.tsx"
     }

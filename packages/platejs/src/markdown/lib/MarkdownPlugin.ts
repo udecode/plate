@@ -51,7 +51,11 @@ import type {
 } from './types';
 
 export type MarkdownPluginState = {
-  /** Mark keys serialized as plain text. */
+  /**
+   * Mark keys serialized as plain text. Naming `rawHtml` also stops import
+   * from marking raw HTML, so tags stay plain text and comment blocks drop
+   * with `RawHtmlPlugin` installed.
+   */
   plainMarks: readonly string[] | null;
   /** Remark plugins used for parsing and serialization. */
   remarkPlugins: readonly MarkdownSyncPluggable[];

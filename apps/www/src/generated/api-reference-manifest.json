@@ -14583,7 +14583,7 @@
           "kind": "type",
           "name": "MarkdownPluginState",
           "runtime": false,
-          "signature": "type MarkdownPluginState = {\n  /** Mark keys serialized as plain text. */\n  plainMarks: readonly string[] | null;\n  /** Remark plugins used for parsing and serialization. */\n  remarkPlugins: readonly MarkdownSyncPluggable[];\n  /** Options passed to `remark-stringify`. */\n  remarkStringifyOptions: Options | null;\n};",
+          "signature": "type MarkdownPluginState = {\n  /**\n   * Mark keys serialized as plain text. Naming `rawHtml` also stops import\n   * from marking raw HTML, so tags stay plain text and comment blocks drop\n   * with `RawHtmlPlugin` installed.\n   */\n  plainMarks: readonly string[] | null;\n  /** Remark plugins used for parsing and serialization. */\n  remarkPlugins: readonly MarkdownSyncPluggable[];\n  /** Options passed to `remark-stringify`. */\n  remarkStringifyOptions: Options | null;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -14605,7 +14605,7 @@
           "kind": "type",
           "name": "MarkdownSerializePolicy",
           "runtime": false,
-          "signature": "type MarkdownSerializePolicy = Readonly<{\n  lossPolicy?: 'allow' | 'reject';\n  /** Mark keys written as plain text without Markdown formatting. */\n  plainMarks?: readonly string[] | null;\n  preserveEmptyParagraphs?: boolean;\n  /**\n   * Version of an authored document to export. `accepted` drops pending changes\n   * and `proposed` applies them as plain content. Either choice adds an\n   * `authored-lossy-projection` warning while changes are pending. Required\n   * when the document has authored metadata, which every document from an\n   * editor with the authored plugin carries, even with no pending change.\n   * Omitting it or passing any other value then throws, and so does a valid\n   * value when the editor or `plugins` lacks the authored plugin. A document\n   * without authored metadata ignores it.\n   */\n  projection?: 'accepted' | 'proposed';\n  remarkStringifyOptions?: Readonly<Options> | null;\n  spread?: boolean;\n}>;",
+          "signature": "type MarkdownSerializePolicy = Readonly<{\n  lossPolicy?: 'allow' | 'reject';\n  /**\n   * Mark keys written as plain text without Markdown formatting. Naming\n   * `rawHtml` writes text that `RawHtmlPlugin` marked as escaped text.\n   */\n  plainMarks?: readonly string[] | null;\n  preserveEmptyParagraphs?: boolean;\n  /**\n   * Version of an authored document to export. `accepted` drops pending changes\n   * and `proposed` applies them as plain content. Either choice adds an\n   * `authored-lossy-projection` warning while changes are pending. Required\n   * when the document has authored metadata, which every document from an\n   * editor with the authored plugin carries, even with no pending change.\n   * Omitting it or passing any other value then throws, and so does a valid\n   * value when the editor or `plugins` lacks the authored plugin. A document\n   * without authored metadata ignores it.\n   */\n  projection?: 'accepted' | 'proposed';\n  remarkStringifyOptions?: Readonly<Options> | null;\n  spread?: boolean;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -14698,6 +14698,17 @@
           "name": "parseMarkdown",
           "runtime": true,
           "signature": "parseMarkdown: (source: string, options: MarkdownParseOptions) => MarkdownDocumentParseResult",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs/markdown:RawHtmlPlugin": {
+          "aliases": [],
+          "documentation": "Marks text that Markdown import kept from raw HTML, such as a README's\ncentered header or an HTML comment, so Markdown export writes it back as\nHTML when its block passes Plate's safety check and as escaped text\notherwise. Install it beside `MarkdownPlugin`. Every other format writes the\ntext as plain visible text.",
+          "entrypoint": "platejs/markdown",
+          "kind": "const",
+          "name": "RawHtmlPlugin",
+          "runtime": true,
+          "signature": "RawHtmlPlugin: BasePlugin<Readonly<{\n  formats: true;\n}> & Readonly<{\n  name: \"rawHtml\";\n}> & Readonly<Record<never, never>> & Readonly<{\n  __pluginWritableProperties: Readonly<{\n    descriptor: PropertyBooleanDescriptor<{\n      readonly default: false;\n      readonly omitDefault: true;\n    }>;\n    key: \"rawHtml\";\n    localId: \"rawHtml\";\n    ownerName: \"rawHtml\";\n    placement: \"text\";\n    unaliased: true;\n    value: boolean;\n  }>;\n  schema: {\n    readonly mark: {\n      readonly inclusive: false;\n      readonly property: PropertyBooleanDescriptor<{\n        readonly default: false;\n        readonly omitDefault: true;\n      }>;\n    };\n  };\n}>>",
           "source": null,
           "typeParameters": []
         },

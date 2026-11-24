@@ -46,6 +46,7 @@ export const V53_FIRST_PARTY_IDENTITIES = [
   { identity: 'mention', kind: 'element-unchanged' },
   { identity: 'mention_input', kind: 'input-literal', trigger: '@' },
   { identity: 'p', kind: 'element-rename', owner: 'paragraph' },
+  { identity: 'rawHtml', kind: 'mark-retired' },
   { identity: 'search_highlight', kind: 'transient' },
   { identity: 'slash_input', kind: 'input-literal', trigger: '/' },
   { identity: 'strikethrough', kind: 'mark-unchanged' },

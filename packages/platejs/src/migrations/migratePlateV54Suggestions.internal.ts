@@ -33,7 +33,7 @@ type MutableSuggestionRecord = {
   kinds: Set<LegacySuggestionData['type']>;
 };
 
-const LEGACY_SUGGESTION_PREFIX = 'suggestion_';
+export const LEGACY_SUGGESTION_PREFIX = 'suggestion_';
 const LEGACY_TRANSIENT_KEYS = new Set([
   'suggestionData',
   'suggestionTransient',
@@ -46,7 +46,7 @@ const UPDATE_DATA_KEYS = new Set([
   'properties',
 ]);
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const isJsonValue = (value: unknown): value is EditorJsonValue => {

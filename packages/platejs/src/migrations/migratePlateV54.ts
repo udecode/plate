@@ -136,10 +136,7 @@ const shapeDocument = (
   context: DocumentMigrationContext,
   document: EditorDocumentValue
 ): PlateV54Shape => {
-  const inputs = migratePlateV54Inputs({
-    ...context,
-    document: migratePlateV54RetiredMarks({ ...context, document }),
-  });
+  const inputs = migratePlateV54Inputs({ ...context, document });
   const profile = migratePlateV54Profile({
     ...context,
     document: inputs.document,
@@ -172,8 +169,9 @@ export type PlateV54Migration = (
  */
 export const migrateV54: PlateV54Migration = (context) => {
   const schema = context.target.schema as InternalEditorSchemaApi;
-  const legacy = migratePlateV54Suggestions(context.document);
-  const shapedSource = shapeDocument(context, context.document);
+  const source = migratePlateV54RetiredMarks(context);
+  const legacy = migratePlateV54Suggestions(source);
+  const shapedSource = shapeDocument(context, source);
   const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
   const toProfile = createStageMapper(schema, inputs.document, profile);
   const toAst = createStageMapper(schema, profile, ast);

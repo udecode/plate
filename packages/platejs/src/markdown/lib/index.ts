@@ -8,6 +8,7 @@ export {
   parseMarkdown,
   serializeMarkdown,
 } from './MarkdownPlugin';
+export { RawHtmlPlugin } from './RawHtmlPlugin';
 export type {
   MarkdownDiagnostic,
   MarkdownDocumentParseResult,

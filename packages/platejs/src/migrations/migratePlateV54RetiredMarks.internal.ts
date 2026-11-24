@@ -12,6 +12,14 @@ import type {
   DocumentMigrationContext,
   DocumentMigrationTarget,
 } from './documentMigrations';
+import {
+  createPropertyOwnership,
+  type NodeContext,
+} from './migratePlateV54Ownership.internal';
+import {
+  isRecord,
+  LEGACY_SUGGESTION_PREFIX,
+} from './migratePlateV54Suggestions.internal';
 import { V53_RETIRED_TEXT_MARKS } from './v53-manifest.internal';
 
 const undeclaredRetiredMarks = (target: DocumentMigrationTarget) => {
@@ -26,6 +34,19 @@ const undeclaredRetiredMarks = (target: DocumentMigrationTarget) => {
       )
     : [];
 };
+
+const changedByLegacyUpdate = (
+  properties: Readonly<Record<string, unknown>>,
+  key: string
+) =>
+  Object.entries(properties).some(
+    ([name, data]) =>
+      (name === 'suggestion' || name.startsWith(LEGACY_SUGGESTION_PREFIX)) &&
+      isRecord(data) &&
+      [data.properties, data.newProperties].some(
+        (changed) => isRecord(changed) && Object.hasOwn(changed, key)
+      )
+  );
 
 const withoutKeys = <T extends Readonly<Record<string, unknown>>>(
   properties: T,
@@ -51,22 +72,41 @@ export const migratePlateV54RetiredMarks = ({
   const retired = undeclaredRetiredMarks(target);
 
   if (retired.length === 0) return document;
-  const migrateList = <T extends readonly unknown[]>(list: T): T => {
-    const next = list.map(migrateNode);
+  const { ownsProperty } = createPropertyOwnership(target);
+  const migrateList = <T extends readonly unknown[]>(
+    list: T,
+    context: NodeContext
+  ): T => {
+    const next = list.map((node) => migrateNode(node, context));
 
     return next.every((node, index) => node === list[index])
       ? list
       : (next as unknown as T);
   };
-  const migrateNode = (node: unknown): unknown => {
-    if (TextApi.isText(node)) return withoutKeys(node, retired);
+  const migrateNode = (node: unknown, context: NodeContext): unknown => {
+    if (TextApi.isText(node)) {
+      return withoutKeys(
+        node,
+        retired.filter((key) => !changedByLegacyUpdate(node, key))
+      );
+    }
     if (typeof node !== 'object' || node === null) return node;
     const record = node as Readonly<Record<string, unknown>>;
+    const type = String(record.type);
+    const childContext = {
+      ancestors: [type, ...context.ancestors],
+      root: context.root,
+    };
     const changed = V53_NODE_LISTS.flatMap((key) => {
       const list = record[key];
 
-      if (!Array.isArray(list)) return [];
-      const migrated = migrateList(list);
+      if (
+        !Array.isArray(list) ||
+        (key === 'caption' && ownsProperty(type, key, context))
+      ) {
+        return [];
+      }
+      const migrated = migrateList(list, childContext);
 
       return migrated === list ? [] : [[key, migrated] as const];
     });
@@ -75,12 +115,15 @@ export const migratePlateV54RetiredMarks = ({
       ? { ...record, ...Object.fromEntries(changed) }
       : record;
   };
-  const children = migrateList(document.children);
+  const children = migrateList(document.children, {
+    ancestors: [],
+    root: null,
+  });
   const roots = document.roots
     ? Object.fromEntries(
         Object.entries(document.roots).map(([root, rootChildren]) => [
           root,
-          migrateList(rootChildren) as Value,
+          migrateList(rootChildren, { ancestors: [], root }) as Value,
         ])
       )
     : undefined;

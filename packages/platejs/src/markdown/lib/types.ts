@@ -258,7 +258,10 @@ export type MarkdownParsePolicy = Readonly<{
 
 export type MarkdownSerializePolicy = Readonly<{
   lossPolicy?: 'allow' | 'reject';
-  /** Mark keys written as plain text without Markdown formatting. */
+  /**
+   * Mark keys written as plain text without Markdown formatting. Naming
+   * `rawHtml` writes text that `RawHtmlPlugin` marked as escaped text.
+   */
   plainMarks?: readonly string[] | null;
   preserveEmptyParagraphs?: boolean;
   /**
