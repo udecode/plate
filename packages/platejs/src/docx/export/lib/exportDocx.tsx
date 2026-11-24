@@ -1,7 +1,7 @@
 import { dequal } from 'dequal';
 
 import type { AuthoredProjectionDiagnostic } from '../../../authored';
-import { AuthoredPlugin, projectAuthoredRange } from '../../../authored';
+import { projectAuthoredRange } from '../../../authored';
 import {
   BaseParagraphPlugin,
   type BasePluginInput,
@@ -210,12 +210,7 @@ const captureExport = (
   const snapshot = captureExportSnapshot(editor, options.projection);
 
   if (options.projection === 'review') {
-    const review = createReviewProjection(
-      snapshot.stored,
-      (node) => editor.plugin(AuthoredPlugin).read.reviewOf(node),
-      (node) =>
-        editor.read.schema.isVoid(node) && editor.read.schema.isInline(node)
-    );
+    const review = createReviewProjection(editor, snapshot.stored);
 
     return Object.freeze({
       comments,
@@ -692,6 +687,28 @@ const isContentLoss = (diagnostic: DocxDiagnostic) =>
     diagnostic.feature !== 'named-root' &&
     diagnostic.feature !== 'quote-structure');
 
+const rejectedLoss = (
+  diagnostics: readonly DocxDiagnostic[],
+  options: DocxExportOptions
+): DocxExportResult | null => {
+  if ((options.lossPolicy ?? 'reject') !== 'reject') return null;
+  const policyDiagnostics = diagnostics.map((diagnostic) =>
+    diagnostic.severity === 'warning' && isContentLoss(diagnostic)
+      ? (Object.freeze({
+          ...diagnostic,
+          severity: 'error' as const,
+        }) as DocxDiagnostic)
+      : diagnostic
+  );
+
+  return policyDiagnostics.some(({ severity }) => severity === 'error')
+    ? Object.freeze({
+        diagnostics: Object.freeze(policyDiagnostics),
+        ok: false,
+      })
+    : null;
+};
+
 const generateDocx = async (html: string, options: DocxExportOptions) => {
   try {
     const blob = await exportHtmlToDocx(html, options);
@@ -745,10 +762,17 @@ export async function exportDocx(
 
   if (sourceResolution.kind === 'exact') {
     throwIfDocxAborted(options.signal);
+    const exactDiagnostics = [
+      ...nativeOnly,
+      ...(capture.review?.diagnostics ?? []),
+    ];
+    const rejected = rejectedLoss(exactDiagnostics, options);
+
+    if (rejected) return rejected;
 
     return Object.freeze({
       blob: sourceResolution.lease.blob,
-      diagnostics: Object.freeze(nativeOnly),
+      diagnostics: Object.freeze(exactDiagnostics),
       ok: true,
     });
   }
@@ -835,23 +859,9 @@ export async function exportDocx(
       });
     }
 
-    if ((options.lossPolicy ?? 'reject') === 'reject') {
-      const policyDiagnostics = diagnostics.map((diagnostic) =>
-        diagnostic.severity === 'warning' && isContentLoss(diagnostic)
-          ? (Object.freeze({
-              ...diagnostic,
-              severity: 'error' as const,
-            }) as DocxDiagnostic)
-          : diagnostic
-      );
+    const rejected = rejectedLoss(diagnostics, options);
 
-      if (policyDiagnostics.some(({ severity }) => severity === 'error')) {
-        return Object.freeze({
-          diagnostics: Object.freeze(policyDiagnostics),
-          ok: false,
-        });
-      }
-    }
+    if (rejected) return rejected;
 
     return Object.freeze({
       blob,

@@ -1,5 +1,11 @@
-import type { AuthoredMark, AuthoredReview } from '../../../authored';
 import {
+  type AuthoredMark,
+  AuthoredPlugin,
+  type AuthoredReview,
+} from '../../../authored';
+import {
+  type Editor,
+  type Element as EditorElement,
   ElementApi,
   type Descendant,
   type EditorDocumentRecords,
@@ -57,10 +63,49 @@ const holdsMarks = (node: Descendant): boolean =>
  * stored document's, so ranges into it need no mapping.
  */
 export const createReviewProjection = (
-  stored: EditorDocumentValue,
-  reviewOf: (node: Descendant) => AuthoredReview,
-  isInlineVoid: (node: Descendant) => boolean
+  editor: Editor,
+  stored: EditorDocumentValue
 ): ReviewProjection => {
+  const reviewOf = (node: Descendant) =>
+    editor.plugin(AuthoredPlugin).read.reviewOf(node);
+  const { schema } = editor.read;
+  const isInlineVoid = (node: Descendant) =>
+    schema.isVoid(node) && schema.isInline(node);
+  const gridRoleOf = (node: EditorElement) => {
+    const structure = schema.element(node.type)?.structure;
+
+    return structure?.kind === 'grid' ? structure.role : null;
+  };
+  const marksOf = (node: Descendant) =>
+    'authored' in node && node.authored ? reviewOf(node).marks : [];
+  const isPlacement = ({ kind }: AuthoredMark) =>
+    kind === 'insert' || kind === 'delete';
+  const placementOf = ({ at, change, inc, kind }: AuthoredMark) =>
+    JSON.stringify([kind, change, inc ?? at]);
+  const partsOf = (node: EditorElement): EditorElement[] =>
+    node.children.flatMap((child) => {
+      if (!ElementApi.isElement(child)) return [];
+      const role = gridRoleOf(child);
+
+      if (role === 'cell') return [child];
+      if (role === 'row') return [child, ...partsOf(child)];
+
+      return role === null ? partsOf(child) : [];
+    });
+  const holdsGridChange = (table: EditorElement) => {
+    const wholeTableChanges = new Set(
+      marksOf(table).filter(isPlacement).map(placementOf)
+    );
+
+    return [table, ...partsOf(table)].some((element) =>
+      marksOf(element).some((mark) =>
+        isPlacement(mark)
+          ? !wholeTableChanges.has(placementOf(mark))
+          : mark.kind === 'format'
+      )
+    );
+  };
+  const diagnostics: DocxDiagnostic[] = [];
   const revisionIds = new Map<string, number>();
   const runs = new Map<string, ReviewRun>();
   const structures = new Map<string, DocxRevision>();
@@ -108,6 +153,20 @@ export const createReviewProjection = (
         }
       }
       if (!ElementApi.isElement(node)) return plain;
+      if (
+        root === 'main' &&
+        gridRoleOf(node) === 'grid' &&
+        holdsGridChange(node)
+      ) {
+        diagnostics.push({
+          code: 'lossy-content',
+          feature: 'authored-review',
+          message: `The table at ${path.join('.')} holds a pending row, column or table format change that Word's revisions cannot carry, so deciding it in Word gives a different table.`,
+          path,
+          root,
+          severity: 'warning',
+        });
+      }
       const structure = marks.find(
         (mark) =>
           mark.kind !== 'insert' &&
@@ -132,14 +191,15 @@ export const createReviewProjection = (
       rootValue(build(nodes, root, [])),
     ])
   );
+  const children = rootValue(build(stored.children, 'main', []));
 
   return Object.freeze({
     bound: stored.children.flatMap((node, index) =>
       holdsMarks(node) ? [index] : []
     ),
-    diagnostics: Object.freeze([]),
+    diagnostics: Object.freeze(diagnostics),
     document: Object.freeze({
-      children: rootValue(build(stored.children, 'main', [])),
+      children,
       ...(Object.keys(roots).length > 0 ? { roots } : {}),
     }),
     runs,
