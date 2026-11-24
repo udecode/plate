@@ -315,8 +315,8 @@ importers:
         specifier: 5.1.1
         version: 5.1.1(react-hook-form@7.57.0(react@19.2.8))
       '@hugeicons/core-free-icons':
-        specifier: ^1.2.1
-        version: 1.2.1
+        specifier: ^4.4.0
+        version: 4.4.0
       '@hugeicons/react':
         specifier: ^1.1.1
         version: 1.1.10(react@19.2.8)
@@ -2283,8 +2283,8 @@ packages:
     peerDependencies:
       react-hook-form: ^7.55.0
 
-  '@hugeicons/core-free-icons@1.2.1':
-    resolution: {integrity: sha512-ho0QdGMkgL+kt+QsZocCsKvJou1rfyVQWARrxIhNLi+9tCKayUUtD9jlHgioaRphmskSl84TxrDm9Ae0G4Uu1g==}
+  '@hugeicons/core-free-icons@4.4.0':
+    resolution: {integrity: sha512-7Mz8bmGoY6tZ6l3C2TXwNMLVSr0I8HPwjjFIERAuJFj3rWwLxdF2ZLkDqdrVuEE1dx5b/VXyIsP4WoSU6Q40KQ==}
 
   '@hugeicons/react@1.1.10':
     resolution: {integrity: sha512-9tAsd92yMVVGP+E+d8cM+wc0VnXuYZHNbWQi7TOe8k2neawmhiaFmVFbzyruejhOMa197/LbgvSED32ayUo3ZA==}
@@ -12931,7 +12931,7 @@ snapshots:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.57.0(react@19.2.8)
 
-  '@hugeicons/core-free-icons@1.2.1': {}
+  '@hugeicons/core-free-icons@4.4.0': {}
 
   '@hugeicons/react@1.1.10(react@19.2.8)':
     dependencies:

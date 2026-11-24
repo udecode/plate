@@ -44,20 +44,24 @@ export async function getPlateCreateTheme(
   const init = InitSchema.parse(
     await fetchJson(`${SHADCN_URL}/init?${getInitParams(config, preset)}`)
   );
+  const fetchFont = async (name: string) =>
+    FontItemSchema.parse(
+      await fetchJson(
+        `${SHADCN_URL}/r/styles/${config.base}-${config.style}/${name}.json`
+      )
+    ).font;
   const fonts = await Promise.all(
     init.registryDependencies
       .filter((name) => /^font-[a-z0-9-]+$/.test(name))
-      .map(
-        async (name) =>
-          FontItemSchema.parse(
-            await fetchJson(
-              `${SHADCN_URL}/r/styles/${config.base}-${config.style}/${name}.json`
-            )
-          ).font
-      )
+      .map(fetchFont)
   );
+  // shadcn's Next template loads Geist Mono as --font-mono, and only a mono
+  // body font replaces it.
+  const monoFont = fonts.some(({ variable }) => variable === '--font-mono')
+    ? null
+    : await fetchFont('font-geist-mono');
 
-  return { cssVars: init.cssVars, fonts };
+  return { cssVars: init.cssVars, fonts, monoFont };
 }
 
 // The query shadcn's CLI sends for `create --preset`, without `track`, so a

@@ -63,7 +63,7 @@
     "@floating-ui/react": "^0.26.23",
     "@hocuspocus/provider": "3.4.4",
     "@hookform/resolvers": "5.1.1",
-    "@hugeicons/core-free-icons": "^1.2.1",
+    "@hugeicons/core-free-icons": "^4.4.0",
     "@hugeicons/react": "^1.1.1",
     "@lezer/highlight": "1.2.3",
     "@next/third-parties": "16.4.6",

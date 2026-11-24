@@ -24,15 +24,16 @@ const toDeclarations = (vars: Record<string, string>) =>
     )
     .join(' ');
 
-const getThemeCss = ({ cssVars, fonts }: PreviewTheme) =>
+const getThemeCss = ({ cssVars, fonts, monoFont }: PreviewTheme) =>
   [
-    ...fonts.map(
+    ...[...fonts, ...(monoFont ? [monoFont] : [])].map(
       (font) =>
         `@import url('https://cdn.jsdelivr.net/npm/${font.dependency}/index.css');`
     ),
     `:root { ${toDeclarations({
       ...cssVars.light,
       ...cssVars.theme,
+      ...(monoFont && { [monoFont.variable]: monoFont.family }),
       ...Object.fromEntries(
         fonts.flatMap(({ family, variable }) =>
           // shadcn's install puts a mono or serif body font's utility class on
