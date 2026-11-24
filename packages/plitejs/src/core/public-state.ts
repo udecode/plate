@@ -12890,7 +12890,15 @@ export const createEditorDocumentChangeBuilder = (
       }
     },
     construct: (
-      { after, before, carried, change, indexedAfter, indexedBefore },
+      {
+        after,
+        before,
+        carried,
+        change,
+        indexedAfter,
+        indexedBefore,
+        sinceValidated,
+      },
       preparation
     ) => {
       assertRevision();
@@ -12903,6 +12911,7 @@ export const createEditorDocumentChangeBuilder = (
         indexedBefore,
         preserveInlineSpacersAdjacentTo: (root) =>
           getProtectedInlineSpacerNodes(editor, after, root),
+        sinceValidated,
       });
     },
     indexConstructedRoot: schema.indexConstructedRoot,

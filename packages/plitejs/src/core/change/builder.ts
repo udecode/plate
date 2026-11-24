@@ -207,9 +207,17 @@ export type DocumentChangeConstructionPolicy = (
       steps: readonly DraftStep[];
       view: boolean;
     }>;
+    sinceValidated?: SinceValidated;
   }>,
   preparation?: object
 ) => DocumentChange;
+
+/** @internal */
+export type SinceValidated = Readonly<{
+  before: JsonEditorValue;
+  change: DocumentChange;
+  indexedBefore: ReadonlyMap<string, DocumentIndex>;
+}>;
 
 /** @internal */
 export type DraftStepOrigin =
@@ -332,6 +340,7 @@ export class ChangeDraft {
   ) => void;
   private readonly adoptCanonicalBaseline?: (value: JsonEditorValue) => void;
   private canonical = true;
+  private sinceValidated: SinceValidated | null = null;
   private validationPending = false;
   private readonly construct?: DocumentChangeConstructionPolicy;
   private current: JsonEditorValue;
@@ -549,6 +558,7 @@ export class ChangeDraft {
     this.appliedSteps.push(...from.appliedSteps);
     this.marks = from.marks;
     this.record = from.record?.clone() ?? null;
+    this.sinceValidated = from.sinceValidated;
     this.spanStart = from.spanStart;
   }
 
@@ -920,6 +930,7 @@ export class ChangeDraft {
     }
 
     this.accumulated = accumulated;
+    this.composeSinceValidated(payload.change);
     for (const step of payload.steps) {
       if (!this.stepMove || step.move) {
         this.land(this.composed(step));
@@ -1123,6 +1134,7 @@ export class ChangeDraft {
       this.accumulated = this.accumulated.empty
         ? classifiedChange
         : this.accumulated.compose(classifiedChange, this.source);
+      this.composeSinceValidated(classifiedChange);
       if (!classifiedChange.empty) {
         const relocations = this.recordsRelocations
           ? options.relocations
@@ -1220,12 +1232,16 @@ export class ChangeDraft {
     }
     this.assertCanonical?.(candidate.after, accumulated);
 
-    return this.applyTrustedCanonical(candidate.change, {
+    const step = this.applyTrustedCanonical(candidate.change, {
       facts,
       indexedAfter: candidate.indexedAfter,
       recordsAfter: getValueRecords(candidate.after),
       runtimeCandidates: candidate.runtimeCandidates,
     });
+
+    this.standValidated();
+
+    return step;
   }
 
   applyPropertyWrites(change: DocumentChange): DocumentChangeStep {
@@ -1262,6 +1278,7 @@ export class ChangeDraft {
     this.accumulated = this.accumulated.empty
       ? change
       : this.accumulated.compose(change, this.source);
+    this.composeSinceValidated(change);
     this.land(
       this.composed({
         indexedAfter: NO_INDEXES,
@@ -1482,6 +1499,7 @@ export class ChangeDraft {
     this.accumulated = this.accumulated.empty
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
+    this.composeSinceValidated(canonicalChange);
     if (!canonicalChange.empty) {
       this.recordFacts(prefix, canonicalChange, facts);
       this.land(
@@ -1534,18 +1552,21 @@ export class ChangeDraft {
 
     if (!this.canonical && this.construct) {
       const steps = this.appliedSteps.slice(this.spanStart);
+      const input = this.sinceValidated
+        ? { ...this.validationInput(), sinceValidated: this.sinceValidated }
+        : this.validationInput();
 
       constructionChange = this.construct(
         this.tracksPlaces
           ? {
-              ...this.validationInput(),
+              ...input,
               carried: {
                 drops,
                 steps,
                 view: steps.length > 0 && (this.view?.() ?? false),
               },
             }
-          : this.validationInput(),
+          : input,
         preparation
       );
     }
@@ -1583,7 +1604,7 @@ export class ChangeDraft {
       for (const [root, index] of this.sourceIndexes) {
         this.indexes.set(root, index);
       }
-      this.canonical = true;
+      this.standValidated();
       this.validationPending = false;
 
       if (!step) return null;
@@ -1633,10 +1654,33 @@ export class ChangeDraft {
     } else {
       this.validate?.(this.current, this.accumulated);
     }
-    this.canonical = true;
+    this.standValidated();
     this.validationPending = false;
 
     return step;
+  }
+
+  private standValidated() {
+    this.canonical = true;
+    this.sinceValidated = this.accumulated.empty
+      ? null
+      : Object.freeze({
+          before: this.current,
+          change: DocumentChange.empty,
+          indexedBefore: new Map(this.indexes),
+        });
+  }
+
+  private composeSinceValidated(change: DocumentChange) {
+    if (!this.sinceValidated || change.empty) return;
+
+    const { before, change: since, indexedBefore } = this.sinceValidated;
+
+    this.sinceValidated = Object.freeze({
+      before,
+      change: since.empty ? change : since.compose(change, before),
+      indexedBefore,
+    });
   }
 
   createRoot(root: string, children: readonly JsonNode[]) {

@@ -522,6 +522,9 @@ type CompletionInput = Readonly<{
   dropsFromEmptyText?: (key: string, value: unknown) => boolean;
   editing?: Readonly<{
     occupant: (slot: number, candidate: Descendant) => PrefixOccupantFate;
+    vacatedProperties?: (
+      slot: number
+    ) => Readonly<Record<string, unknown>> | undefined;
   }>;
   editor?: Editor;
   /** False for a root, which takes no empty text and no inline runs. */
@@ -560,9 +563,12 @@ const startCompletion = ({
     }
     if (fate === 'kept') return null;
 
-    const node = schema.create(prefix.type, prefix.properties, {
-      prefix: slot,
-    });
+    const kept = editing?.vacatedProperties?.(slot);
+    const node = schema.create(
+      prefix.type,
+      kept ? { ...prefix.properties, ...kept } : prefix.properties,
+      { prefix: slot }
+    );
 
     builtSlots.set(node, { prefix: slot });
     inserted.add(node);

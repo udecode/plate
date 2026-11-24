@@ -13,6 +13,7 @@ import type {
 } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import { inheritNodeKey } from '../utils/node-keys';
+import type { SinceValidated } from './change/builder';
 import {
   createInternalDocumentChange,
   type DocumentChange,
@@ -54,6 +55,7 @@ import {
 } from './content-slice';
 import { carriesDefault } from './default-storage';
 import { getEditorSchema } from './editor-runtime';
+import { getCompiledEditorSchemaFromApi } from './editor-schema';
 import { profileCoreDuration } from './profiling';
 import type {
   CompiledEditorSchema,
@@ -77,6 +79,10 @@ const isInline = (
 
 type CanonicalizeOptions = Readonly<{
   displacement?: 'change' | 'none';
+  displacedFrom?: Readonly<{
+    change: RootChange | undefined;
+    document: DocumentIndex;
+  }>;
   document?: import('../interfaces/editor').EditorDocumentValue;
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
   rebuilt?: Map<Descendant, Descendant>;
@@ -1265,6 +1271,27 @@ const writeKeepingElements = (
   }
 };
 
+const vacatedBlockId = (
+  schema: RepresentationSchema,
+  left: Descendant | undefined,
+  nodes: NodeList<Descendant>
+) => {
+  if (
+    !getCompiledEditorSchemaFromApi(schema)?.everyElementHasId ||
+    !ElementApi.isElement(left) ||
+    typeof left.id !== 'string'
+  ) {
+    return undefined;
+  }
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes.at(index);
+
+    if (ElementApi.isElement(node) && node.id === left.id) return undefined;
+  }
+
+  return { id: left.id };
+};
+
 const replaceCanonicalChildWindow = (
   draft: CanonicalRootDraft,
   editor: Editor,
@@ -1527,15 +1554,19 @@ const replaceCanonicalChildWindow = (
   const children =
     path.length === 0 ? null : (draft.document.node(path) as Element).children;
   const nodes = children ?? (draft.document.nodes as NodeList<Descendant>);
-  const previousParent = beforeDocument
+  const displacedDocument = options.displacedFrom?.document ?? beforeDocument;
+  const displacedChange = options.displacedFrom
+    ? options.displacedFrom.change
+    : rootChange;
+  const previousParent = displacedDocument
     ? path.length === 0
       ? null
-      : getDescendant(beforeDocument.nodes as NodeList<Descendant>, path)
+      : getDescendant(displacedDocument.nodes as NodeList<Descendant>, path)
     : null;
   const previousChildren =
-    beforeDocument && options.displacement !== 'none'
+    displacedDocument && options.displacement !== 'none'
       ? path.length === 0
-        ? (beforeDocument.nodes as NodeList<Descendant>)
+        ? (displacedDocument.nodes as NodeList<Descendant>)
         : previousParent && ElementApi.isElement(previousParent)
           ? previousParent.children
           : null
@@ -1559,17 +1590,19 @@ const replaceCanonicalChildWindow = (
               ) {
                 return 'kept';
               }
-              if (!beforeDocument || !rootChange) return 'displaced';
+              if (!displacedDocument || !displacedChange) return 'displaced';
 
               positionAfterJoins ??= positionsAfterJoins(
                 previousChildren,
                 path,
-                beforeDocument,
-                rootChange
+                displacedDocument,
+                displacedChange
               );
 
               return positionAfterJoins(child) <= slot ? 'joined' : 'displaced';
             },
+            vacatedProperties: (slot: number) =>
+              vacatedBlockId(schema, previousChildren.at(slot), nodes),
           },
         }
       : {}),
@@ -1698,6 +1731,7 @@ export const constructCanonicalDocumentChange = (
       root: string
     ) => ReadonlySet<Descendant> | undefined;
     schema?: RepresentationSchema;
+    sinceValidated?: SinceValidated;
     displacement?: CanonicalizeOptions['displacement'];
     carried?: (root: string) => CarriedWindowHook;
   }> = {}
@@ -1778,6 +1812,12 @@ export const constructCanonicalDocumentChange = (
       ? (options.indexedBefore?.get(root) ??
         valueRootIndex(options.before, root))
       : null;
+    const since = options.sinceValidated;
+    const displacedFrom = since && {
+      change: getInternalDocumentRootChange(since.change, root),
+      document:
+        since.indexedBefore.get(root) ?? valueRootIndex(since.before, root),
+    };
     const move =
       beforeDocument && rootChange
         ? rootChange.exactMove(beforeDocument)
@@ -1946,6 +1986,7 @@ export const constructCanonicalDocumentChange = (
             displacement: options.displacement,
             document: after as EditorDocumentValue,
             preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
+            displacedFrom,
           }
         );
       }
