@@ -122,6 +122,7 @@ const getEntrypointRuntimeMetadata = (specifier) => {
   return {
     runtime: entrypoint.runtime,
     runtimeProof: entrypoint.runtimeProof,
+    runtimeProofPeers: entrypoint.runtimeProofPeers ?? [],
   };
 };
 
@@ -358,6 +359,7 @@ export function createPackedHeadlessRuntimeProofs(packedPackages) {
       if (existing) {
         existing.specifiers.push(packageExport.specifier);
         existing.runtimeProofs.push(packageExport.runtimeProof ?? null);
+        existing.runtimeProofPeers.push(packageExport.runtimeProofPeers ?? []);
         continue;
       }
 
@@ -371,6 +373,7 @@ export function createPackedHeadlessRuntimeProofs(packedPackages) {
         packageNames: [packedPackage.packageJson.name],
         requiredOptionalPackages,
         runtime: 'headless',
+        runtimeProofPeers: [packageExport.runtimeProofPeers ?? []],
         runtimeProofs: [packageExport.runtimeProof ?? null],
         specifiers: [packageExport.specifier],
         typecheck: false,
@@ -1390,6 +1393,7 @@ function verifyIsolatedPackedConsumer({
   packedPackages,
   requiredOptionalPackages,
   runtime,
+  runtimeProofPeers = [],
   runtimeProofs = [],
   specifiers,
   typecheck = true,
@@ -1490,9 +1494,20 @@ function verifyIsolatedPackedConsumer({
       `Object.values(packageExport${index}).forEach((value) => void value);`,
       ...(runtimeProofs[index] === 'plate-plugin'
         ? [
+            ...(runtimeProofPeers[index] ?? []).map(
+              (peer, peerIndex) =>
+                `import * as packageExport${index}Peer${peerIndex} from ${JSON.stringify(peer)};`
+            ),
             `const platePlugins${index} = Object.values(packageExport${index}).filter(isPlateProofPlugin);`,
             `runtimeEqual(platePlugins${index}.length > 0, true);`,
-            `createPlateProofEditor({ plugins: platePlugins${index}, skipInitialization: true });`,
+            `createPlateProofEditor({ plugins: [...platePlugins${index}, ${(
+              runtimeProofPeers[index] ?? []
+            )
+              .map(
+                (_, peerIndex) =>
+                  `...Object.values(packageExport${index}Peer${peerIndex}).filter(isPlateProofPlugin)`
+              )
+              .join(', ')}], skipInitialization: true });`,
           ]
         : []),
     ]),

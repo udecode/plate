@@ -178,6 +178,17 @@ const rootFeatureEntrypoints = Object.fromEntries([
   ]),
 ]);
 
+const runtimeProofPeers = Object.freeze({ board: ['media'] });
+
+const runtimeProofPeersOf = (name, suffix) =>
+  runtimeProofPeers[name]
+    ? {
+        runtimeProofPeers: runtimeProofPeers[name].map(
+          (peer) => `platejs/${peer}${suffix}`
+        ),
+      }
+    : {};
+
 const publicFeatureEntrypoints = Object.fromEntries([
   ...Object.entries(publicFeatureDependencies).map(([name, dependencies]) => [
     name,
@@ -190,6 +201,7 @@ const publicFeatureEntrypoints = Object.fromEntries([
           ? {}
           : {
               ...(name === 'upload' ? { peerDependencies: ['files-sdk'] } : {}),
+              ...runtimeProofPeersOf(name, ''),
               runtimeProof: 'plate-plugin',
             }
       )
@@ -209,6 +221,7 @@ const publicFeatureEntrypoints = Object.fromEntries([
         [],
         {
           peerDependencies: standardReactPeerDependencies[name] ?? [],
+          ...runtimeProofPeersOf(name, '/react'),
           runtimeProof: 'plate-plugin-client',
         }
       )
@@ -1013,6 +1026,7 @@ export const getPublicEntrypointRuntimeRows = (dags = entrypointDags) =>
           packageName,
           runtime: entrypoint.runtime,
           runtimeProof: entrypoint.runtimeProof,
+          runtimeProofPeers: entrypoint.runtimeProofPeers ?? [],
           specifier:
             entrypointName === 'root'
               ? packageName

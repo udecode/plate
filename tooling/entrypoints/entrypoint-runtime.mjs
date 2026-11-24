@@ -18,13 +18,21 @@ export const createClientRuntimeProofSource = (rows) => {
   const clientRows = (rows ?? getPublicEntrypointRuntimeRows()).filter(
     (row) => row.runtime === 'client'
   );
-  const imports = clientRows.map(
-    (row, index) =>
-      `import * as clientEntrypoint${index} from ${quoted(row.specifier)};`
-  );
+  const peersOf = (row) => row.runtimeProofPeers ?? [];
+  const imports = clientRows.flatMap((row, index) => [
+    `import * as clientEntrypoint${index} from ${quoted(row.specifier)};`,
+    ...peersOf(row).map(
+      (peer, peerIndex) =>
+        `import * as clientEntrypoint${index}Peer${peerIndex} from ${quoted(peer)};`
+    ),
+  ]);
   const entries = clientRows.map(
     (row, index) =>
-      `  { exports: clientEntrypoint${index}, runtimeProof: ${quoted(row.runtimeProof ?? null)}, specifier: ${quoted(row.specifier)} },`
+      `  { exports: clientEntrypoint${index}, peers: [${peersOf(row)
+        .map((_, peerIndex) => `clientEntrypoint${index}Peer${peerIndex}`)
+        .join(
+          ', '
+        )}], runtimeProof: ${quoted(row.runtimeProof ?? null)}, specifier: ${quoted(row.specifier)} },`
   );
 
   return [
@@ -47,7 +55,7 @@ export const createClientRuntimeProofSource = (rows) => {
     "    throw new Error('Client entrypoint proof requires a browser DOM.');",
     '  }',
     '',
-    '  return clientRuntimeEntrypoints.map(({ exports, runtimeProof, specifier }) => {',
+    '  return clientRuntimeEntrypoints.map(({ exports, peers, runtimeProof, specifier }) => {',
     '    const exportCount = Object.keys(exports).length;',
     '',
     '    if (exportCount === 0) {',
@@ -61,7 +69,9 @@ export const createClientRuntimeProofSource = (rows) => {
     '      if (plugins.length === 0) {',
     "        throw new Error(specifier + ' has no executable Plate plugin descriptor.');",
     '      }',
-    '      createRuntimeProofEditor({ plugins, skipInitialization: true });',
+    '      const peerPlugins = (peers as readonly object[]).flatMap((peer) => Object.values(peer).filter(isRuntimeProofPlugin)) as BasePluginInput[];',
+    '',
+    '      createRuntimeProofEditor({ plugins: [...plugins, ...peerPlugins], skipInitialization: true });',
     '    }',
     '',
     "    const marker = document.createElement('meta');",
