@@ -158,6 +158,25 @@ const readCitations = (source) =>
     start: Number(start),
   }));
 
+const callsAny = (text, names) =>
+  [...names].some((used) => new RegExp(`\\b${used}\\b`, 'u').test(text));
+
+const nearestCalling = (lines, { end, start }, names) => {
+  for (let shift = 1; shift < lines.length; shift += 1) {
+    for (const from of [start - shift, start + shift]) {
+      const to = from + end - start;
+      if (
+        from >= 1 &&
+        to <= lines.length &&
+        callsAny(lines.slice(from - 1, to).join('\n'), names)
+      ) {
+        return `${from}-${to}`;
+      }
+    }
+  }
+  return null;
+};
+
 const fenceUses = (text, names) => {
   const code = ts.createSourceFile(
     'fence.tsx',
@@ -456,13 +475,10 @@ export function checkPliteCallParity({
         problems.push(
           `${label(id)}: ${file}:${citation.start}-${citation.end} is not a line range of a file under ${CITABLE.join(' or ')}`
         );
-      } else if (
-        ![...names].some((used) =>
-          new RegExp(`\\b${used}\\b`, 'u').test(quoted)
-        )
-      ) {
+      } else if (!callsAny(quoted, names)) {
+        const moved = nearestCalling(lines, citation, names);
         problems.push(
-          `${label(id)}: ${file}:${citation.start}-${citation.end} calls none of ${JSON.stringify([...names])}, which the case uses`
+          `${label(id)}: ${file}:${citation.start}-${citation.end} calls none of ${JSON.stringify([...names])}, which the case uses${moved ? `; ${file}:${moved} is the nearest range that does, so cite it when a docs edit moved the snippet` : ''}`
         );
       }
       if (!cited.has(file)) cited.set(file, []);
