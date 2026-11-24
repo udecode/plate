@@ -35,7 +35,7 @@ type InkPath = Readonly<{
 const HALO = ['data-picked', 'stroke', 'stroke-opacity', 'stroke-width'];
 
 export const createInkSurface = (into: SVGGElement) => {
-  const outlines = new WeakMap<InkMark, string>();
+  const outlines = new Map<InkMark, string>();
   const paths = new Map<string, InkPath>();
   let hidden = false;
   let ink: InkPlaced['ink'] = [];
@@ -107,6 +107,11 @@ export const createInkSurface = (into: SVGGElement) => {
   };
 
   return {
+    keep: (holds: (mark: InkMark) => boolean) => {
+      for (const mark of outlines.keys()) {
+        if (!holds(mark)) outlines.delete(mark);
+      }
+    },
     paint: (placed: InkPlaced['ink']) => {
       ink = placed;
       draw();

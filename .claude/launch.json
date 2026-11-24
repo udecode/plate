@@ -288,6 +288,39 @@
         "3298"
       ],
       "port": 3298
+    },
+    {
+      "name": "www-ink-gate",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "-C",
+        "apps/www",
+        "PLATE_WWW_DIST_DIR=.next-ink-gate",
+        "node",
+        "node_modules/next/dist/bin/next",
+        "start",
+        "--port",
+        "3801"
+      ],
+      "port": 3801
+    },
+    {
+      "name": "www-ink-oracle",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "-C",
+        "apps/www",
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_PLITE=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "node",
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "--port",
+        "3657"
+      ],
+      "port": 3657
     }
   ]
 }

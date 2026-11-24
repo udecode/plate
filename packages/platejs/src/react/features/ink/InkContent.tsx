@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { getRecordSetVersion, readShownRecords } from '../../../facade';
+import { COPIES, MARKS } from '../../../features/ink/lib/inkGone.internal';
 import {
   useEditableRef,
   useEditor,
@@ -318,8 +320,26 @@ function InkLayer({
       stopArriving();
       show(placer.placeEvery());
     };
+    const savedSets = () => {
+      const records = readShownRecords(editor);
+
+      return [
+        getRecordSetVersion(records, MARKS),
+        getRecordSetVersion(records, COPIES),
+      ] as const;
+    };
+    let saved = savedSets();
     const unsubscribe = editor.subscribeCommit(({ changed }) => {
       if (!changed.hasAny('document')) return;
+
+      const next = savedSets();
+
+      if (next[0] !== saved[0] || next[1] !== saved[1]) {
+        const { read } = view.plugin(InkPlugin);
+
+        saved = next;
+        surface.keep((mark) => read.mark(mark.id) === mark);
+      }
       schedule();
     });
     const stopLayout = observeInkLayout(editable, layer, (change, within) => {
