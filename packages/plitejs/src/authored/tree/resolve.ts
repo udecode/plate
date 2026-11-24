@@ -1418,11 +1418,56 @@ const resolveIn = (
   };
 
   const ownRemovalMemo = new WeakMap<Node, boolean>();
+  let nextLines: Map<Node, Node> | undefined;
+  const keptForPendingJoin = (
+    node: Node,
+    removing: readonly AuthoredMark[]
+  ) => {
+    nextLines ??= new Map(
+      textBlocksOf(children).flatMap(({ node: line, path }, at, lines) => {
+        const next = lines[at + 1];
+
+        return next &&
+          next.path.length === path.length &&
+          next.path.at(-1) === getDefined(path.at(-1)) + 1 &&
+          next.path.slice(0, -1).every((step, depth) => step === path[depth])
+          ? [[line, next.node] as const]
+          : [];
+      })
+    );
+    const next = nextLines.get(node);
+
+    return (
+      !!next &&
+      !readAuthoredMarks(node).some((mark) => followsOf(mark) !== undefined) &&
+      removing.every(
+        (mark) =>
+          (mark.kind === 'insert' || mark.kind === 'delete') &&
+          !isEditingChange(mark.change)
+      ) &&
+      !pending(next).some((mark) => removes(mark, resultOf(mark))) &&
+      pending(next).some(
+        (mark) =>
+          mark.kind === 'join' &&
+          !isEditingChange(mark.change) &&
+          decisionOf(mark) === 'keep' &&
+          removing.every((removal) => removal.author !== mark.author)
+      )
+    );
+  };
   const ownMarkRemoves = (node: Node) => {
     let value = ownRemovalMemo.get(node);
 
     if (value === undefined) {
-      value = pending(node).some((mark) => removes(mark, resultOf(mark)));
+      value =
+        pending(node).some((mark) => removes(mark, resultOf(mark))) &&
+        !(
+          isTextBlock(node) &&
+          keptForPendingJoin(
+            node,
+            pending(node).filter((mark) => removes(mark, resultOf(mark)))
+          )
+        );
       ownRemovalMemo.set(node, value);
     }
 
@@ -1591,11 +1636,12 @@ const resolveIn = (
     key: string | Node,
     storedLeft: Node,
     halves: Halves,
-    around: Around
+    around: Around,
+    stays?: (mark: AuthoredMark) => boolean
   ): Verdict | 'wait' => {
     let rightKeys: ReadonlySet<string> | undefined;
     const undecided = (mark: AuthoredMark) =>
-      !decidedWholeByGridPart(mark, around.place);
+      !decidedWholeByGridPart(mark, around.place) && !stays?.(mark);
     const unheld = (half: Half) => ({
       ...half,
       pending: half.pending.filter(undecided),
@@ -1637,6 +1683,23 @@ const resolveIn = (
 
     return result.verdict;
   };
+  let marksOnText: Set<string> | undefined;
+  const textMarksIn = (nodes: readonly Node[], into: Set<string>) => {
+    for (const node of nodes) {
+      if (typeof node.text === 'string') {
+        if (node.text === '') continue;
+        for (const mark of readAuthoredMarks(node)) {
+          into.add(`${mark.kind} ${incarnationOf(mark)}`);
+        }
+      } else textMarksIn(node.children ?? [], into);
+    }
+
+    return into;
+  };
+  const marksNonEmptyText = (mark: AuthoredMark) =>
+    (marksOnText ??= textMarksIn(children, new Set())).has(
+      `${mark.kind} ${incarnationOf(mark)}`
+    );
   // Insert and delete marks of content the decision leaves standing, whose
   // own decisions say whether it stays.
   const contentMarksIn = (node: Node): AuthoredMark[] => [
@@ -1677,6 +1740,17 @@ const resolveIn = (
   // Phase one: where each decided join lands.
   const mergedInto = new Map<Node, Node>();
   const mergedBlocks = new Map<Node, Node[]>();
+  const pendingOnMergedText = new Set<string>();
+  const mergesBeyondMark = (node: Node, mark: AuthoredMark) =>
+    pendingOnMergedText.has(incarnationOf(mark)) &&
+    (mergedBlocks.get(node) ?? []).some(
+      (block) =>
+        !pending(block).some(
+          (other) =>
+            other.kind === mark.kind &&
+            incarnationOf(other) === incarnationOf(mark)
+        )
+    );
   const emptiedTargets = new Set<Node>();
   const standsFor = new Map<Node, Node>();
   const standsIn = new Set<Node>();
@@ -1790,7 +1864,11 @@ const resolveIn = (
         place,
         right: halfOf(node, own, place),
       },
-      { between: [], place: chain }
+      { between: [], place: chain },
+      (mark) =>
+        (mark.kind === 'insert' || mark.kind === 'delete') &&
+        mark.author !== cut.author &&
+        decisionOf(mark) === 'keep'
     ) === 'together'
       ? left
       : null;
@@ -1956,14 +2034,38 @@ const resolveIn = (
     const { editingJoin, join } = structureOf(node);
 
     if (!join) return;
+    let deciders: Set<string> | undefined;
+    const othersPendingOnText = (mark: AuthoredMark) => {
+      if (editingJoin || (mark.kind !== 'insert' && mark.kind !== 'delete')) {
+        return false;
+      }
+      deciders ??= new Set(
+        pending(node).flatMap((own) =>
+          mergesUp(own, resultOf(own)) ? [own.author] : []
+        )
+      );
+
+      return !deciders.has(mark.author) && marksNonEmptyText(mark);
+    };
+    let target: Node | null = null;
     const waited =
       editingJoin || (node.children ?? []).some(keptContent)
         ? []
         : contentMarksIn(node);
     const land = (effect?: () => void) => {
       const waiting = waited.filter(
-        (mark) => !decidedWholeByGridPart(mark, ancestors)
+        (mark) =>
+          !decidedWholeByGridPart(mark, ancestors) &&
+          !(decisionOf(mark) === 'keep' && othersPendingOnText(mark))
       );
+
+      if (target && effect) {
+        for (const mark of waited) {
+          if (decisionOf(mark) === 'keep' && othersPendingOnText(mark)) {
+            pendingOnMergedText.add(incarnationOf(mark));
+          }
+        }
+      }
 
       if (
         waiting.some((mark) => decisionOf(mark) === 'keep') &&
@@ -1989,7 +2091,6 @@ const resolveIn = (
         .find(
           (ancestor) => survives(ancestor) && !structureOf(ancestor).unwrap
         ) ?? null;
-    let target: Node | null = null;
     // Rejecting a split makes its pieces one block again, and both pieces
     // carry the insertions of the block that was cut. A piece that goes only
     // because one of those insertions goes is still the block the rejected
@@ -2746,7 +2847,7 @@ const resolveIn = (
 
             return mark.kind === 'format'
               ? (formats?.kept.has(mark) ?? false)
-              : result === 'keep' ||
+              : (result === 'keep' && !mergesBeyondMark(node, mark)) ||
                   (mark.kind === 'join' &&
                     result === 'accept' &&
                     retainedJoins.has(node)) ||

@@ -72,6 +72,7 @@ import { buildClaimsIn } from '../tree/reserves';
 import {
   type AuthoredResolveSchema,
   decidedJoinLeavesInPlace,
+  isTextBlock,
   placementLinksIn,
   slotDecidingInsertions,
   startOccupants,
@@ -490,6 +491,33 @@ const deletionAccepted = (node: Node, pass: Pass) =>
     (mark) => mark.kind === 'delete' && outcomeOf(pass.facts, mark) === 'accept'
   );
 
+const keptForPendingJoin = (
+  element: Node,
+  next: Node | undefined,
+  pass: Pass
+) => {
+  if (!next || !isTextBlock(element) || !isTextBlock(next)) return false;
+  const deleting = readAuthoredMarks(element).filter(
+    (mark) =>
+      mark.kind === 'delete' &&
+      !isEditingChange(mark.change) &&
+      outcomeOf(pass.facts, mark) === 'accept'
+  );
+
+  return (
+    deleting.length > 0 &&
+    !readAuthoredMarks(element).some((mark) => followsOf(mark) !== undefined) &&
+    !deletionAccepted(next, pass) &&
+    readAuthoredMarks(next).some(
+      (mark) =>
+        mark.kind === 'join' &&
+        !isEditingChange(mark.change) &&
+        outcomeOf(pass.facts, mark) === 'pending' &&
+        deleting.every((deletion) => deletion.author !== mark.author)
+    )
+  );
+};
+
 const goesWhenSettled = (
   element: Node,
   children: readonly Node[],
@@ -827,7 +855,8 @@ const settleChild = (
   at: number,
   pass: Pass,
   site: Site,
-  inline: boolean
+  inline: boolean,
+  next: Node | undefined
 ): Node | null => {
   const path = [...site.parentPath, at];
 
@@ -864,7 +893,12 @@ const settleChild = (
     settled.children.some(isText)
   );
 
-  if (goesWhenSettled(settled, level?.nodes ?? settled.children, pass)) {
+  const held = keptForPendingJoin(settled, next, pass);
+
+  if (
+    !held &&
+    goesWhenSettled(settled, level?.nodes ?? settled.children, pass)
+  ) {
     if (inline) {
       edits.drop(path);
 
@@ -879,11 +913,20 @@ const settleChild = (
     return shell;
   }
 
-  const kept = dropDeletionWhenContentStays(
-    settled,
-    level?.nodes ?? settled.children,
-    pass
-  );
+  const kept = held
+    ? withMembers(
+        settled,
+        readMembers(settled).filter(
+          (member) =>
+            member.kind !== 'delete' ||
+            outcomeOf(pass.facts, member) !== 'accept'
+        )
+      )
+    : dropDeletionWhenContentStays(
+        settled,
+        level?.nodes ?? settled.children,
+        pass
+      );
 
   const left = level ? leaveLevel(level, settled.children, inner, pass) : null;
   const settles = left ? !left.waits : kept !== node;
@@ -921,7 +964,7 @@ const settleNodes = (
   nodes.forEach((node, at) => {
     if (firstText === -1 && isText(node)) firstText = at;
 
-    const settled = settleChild(node, at, pass, site, inline);
+    const settled = settleChild(node, at, pass, site, inline, nodes.at(at + 1));
 
     if (settleChanges(node, settled, pass)) changed = true;
     if (!settled) return;
@@ -952,7 +995,19 @@ const settleBlocks = (
     const block = index.child(at) as Node | undefined;
 
     if (block) {
-      settled.set(at, getDefined(settleChild(block, at, pass, site, false)));
+      settled.set(
+        at,
+        getDefined(
+          settleChild(
+            block,
+            at,
+            pass,
+            site,
+            false,
+            index.child(at + 1) as Node | undefined
+          )
+        )
+      );
     }
   }
 
