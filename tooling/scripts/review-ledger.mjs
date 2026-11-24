@@ -2567,7 +2567,9 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
         before !== verdict &&
         reconciliationOf(evidence, id)?.action === 'retains'
       ) {
-        problems.push(`a changed verdict retains ${id}`);
+        problems.push(
+          `a changed verdict retains ${id}: on that ## Evidence line write supersedes or reopens in place of retains, then the reason`
+        );
       }
     }
   }
