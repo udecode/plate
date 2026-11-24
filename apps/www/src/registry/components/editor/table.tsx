@@ -156,23 +156,23 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     },
     [setRowHeightOverrides]
   );
-  const authored = editor.plugin(AuthoredPlugin);
+  const authored = editor.plugin(AuthoredPlugin).installed
+    ? editor.plugin(AuthoredPlugin).read
+    : null;
   const suggesting = useEditorViewState(editor, () => {
-    const view = authored.installed ? authored.read.view() : null;
+    const view = authored?.view() ?? null;
 
     return view !== null && 'intent' in view && view.intent === 'propose';
   });
-  // Shown and stored widths differ while a column change waits, so a drag
-  // would write the wrong columns.
-  const widthsPending =
+  const widthChangeWaits =
     'authored' in props.element &&
-    authored.installed &&
-    authored.read
+    authored !== null &&
+    authored
       .reviewOf(props.element)
       .marks.some(
         (mark) => mark.kind === 'format' && mark.key === 'columnWidths'
       );
-  const columnsResizable = !suggesting && !widthsPending;
+  const columnsResizable = !suggesting && !widthChangeWaits;
   const marginLeft = props.element.marginLeft ?? 0;
   const baseColSizes = usePluginStore(
     TablePlugin,
