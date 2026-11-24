@@ -161,6 +161,74 @@ export const decideRawHtml = (value: string): RawHtmlDecision => {
   return refusal ? refuse(refusal) : PASS;
 };
 
+const INLINE_MARKUP_AFTER_LT =
+  /[A-Za-z][A-Za-z\d-]*(?:\s*\/?>|\s+[A-Za-z_:])|\/[A-Za-z][A-Za-z\d-]*\s*>|!(?:--|[A-Za-z]|\[CDATA\[)|\?|[A-Za-z][A-Za-z\d+.-]{1,31}:[^\0- <>]*(?:>|$)/
+    .source;
+const MARKUP_LT = new RegExp(`<(?=${INLINE_MARKUP_AFTER_LT})`, 'g');
+const TEXT_LT = new RegExp(`<(?!${INLINE_MARKUP_AFTER_LT})`, 'g');
+// A line that opens an HTML block running to its end tag, past the closing
+// `$$`, whether or not the tag is whole.
+const TO_END_TAG_LINE =
+  /^([\t ]{0,3})<(?=(?:pre|script|style|textarea)(?:[\s>]|$))/gim;
+const TEX_INDENT = '    ';
+// CommonMark reads a line of spaces as blank whatever its indent, and a
+// footnote's container indent never comes off it, so only lines with text
+// take the indent.
+const TEXT_LINE = /^(?=.*\S)/gm;
+const INDENTED_TEXT_LINE = /^ {4}(?=.*\S)/gm;
+const isIndentedTex = (value: string) => {
+  const lines = value.split('\n').filter((line) => /\S/.test(line));
+
+  return lines.length > 0 && lines.every((line) => line.startsWith(TEX_INDENT));
+};
+
+/**
+ * A reader without math reads `$…$` and a `$$` block as Markdown text, where
+ * TeX such as `<img src=x onerror=alert(1)>` is raw HTML and
+ * `<javascript:alert(1)>` is a link, and a tag the TeX leaves open takes its
+ * `>` from the text after it. TeX whose tags the raw HTML rule refuses writes
+ * a space after each `<` that could start a tag, which TeX ignores in math
+ * mode. A `$$` block that CommonMark does not read as one paragraph, such as
+ * TeX holding a blank line and then `[a]: javascript:alert(1)`, indents each
+ * TeX line that holds text by four spaces, so every line reads as paragraph
+ * text or indented code.
+ */
+export const writeMathSafely = (node: Nodes, read: MarkdownReader) => {
+  if (
+    (node.type === 'math' || node.type === 'inlineMath') &&
+    node.value.includes('<')
+  ) {
+    const after = node.type === 'math' ? '\n$$' : '$';
+    const written = `${node.value}${after}`;
+
+    if (!decideRawHtml(written.replaceAll(TEXT_LT, '&lt;')).ok) {
+      node.value = written.replaceAll(MARKUP_LT, '< ').slice(0, -after.length);
+    }
+  }
+  if (node.type === 'math') {
+    node.value = node.value.replaceAll(TO_END_TAG_LINE, '$1< ');
+    const [first, ...rest] = read(`$$\n${node.value}\n$$`).children;
+
+    if (
+      (/\S/.test(node.value) &&
+        (first?.type !== 'paragraph' || rest.length > 0)) ||
+      isIndentedTex(node.value)
+    ) {
+      node.value = node.value.replaceAll(TEXT_LINE, TEX_INDENT);
+    }
+  }
+  if ('children' in node) {
+    for (const child of node.children) writeMathSafely(child, read);
+  }
+};
+
+export const readMathSafely = (node: Nodes) => {
+  if (node.type === 'math' && isIndentedTex(node.value)) {
+    node.value = node.value.replaceAll(INDENTED_TEXT_LINE, '');
+  }
+  if ('children' in node) node.children.forEach(readMathSafely);
+};
+
 export type MarkdownReader = (source: string) => Root;
 
 export type RawHtmlFlowContainer = 'document' | 'listItem' | 'quote';

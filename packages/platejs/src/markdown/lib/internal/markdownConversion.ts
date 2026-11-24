@@ -77,6 +77,7 @@ import {
   ReportedMarkdownFailureError,
 } from './markdownDiagnostics';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
+import { remarkFootnoteDefinitionWriter } from './markdownFootnoteWriter';
 import {
   blankMarkdownFrontmatter,
   BYTE_ORDER_MARK,
@@ -118,6 +119,8 @@ import {
   type MarkdownReader,
   printsNoText,
   type RawHtmlBlockRefusal,
+  readMathSafely,
+  writeMathSafely,
 } from './markdownRawHtml';
 import {
   allocateMarkdownFootnoteLabels,
@@ -322,7 +325,7 @@ export const getMergedOptionsSerialize = (
       ? {
           rawHtml: {
             decide: createRawHtmlPlacementDecider({
-              commonmark: (source) => COMMONMARK.parse(source),
+              commonmark: readCommonMark,
               editor: (source) => getRawHtmlEditorReader(runtime)(source),
             }),
           },
@@ -368,9 +371,11 @@ const createMarkdownParser = (
     .use(remarkMarkdownTags, { tags: runtime.formats.tags })
     .use(remarkResolveMarkdownReferences)
     .use(openTail ? [[remarkOpenTail, openTail]] : [])
-    .use(remarkPlugins);
+    .use(remarkPlugins)
+    .use(() => readMathSafely);
 
 const COMMONMARK = unified().use(remarkParse).freeze();
+const readCommonMark: MarkdownReader = (source) => COMMONMARK.parse(source);
 
 // The editor keeps its compiled mappings while its plugins stay the same, so
 // they key each cache that outlives one call. A copy clones the plugin state,
@@ -650,6 +655,7 @@ const createMarkdownStringifier = (
     .use(remarkMarkdownTagWriter)
     .use(context.remarkPlugins)
     .use(remarkEscapeDollars)
+    .use(remarkFootnoteDefinitionWriter, { read: readCommonMark })
     .use(function remarkUnwritableNodeWriter(this: Processor) {
       const data = this.data() as { toMarkdownExtensions?: unknown[] };
 
@@ -749,6 +755,7 @@ const encodeMarkdownBody = (context: SerializeMdContext) => {
   const transformed = toRemarkProcessor.runSync(tree);
 
   writeBareUrlsSafely(transformed);
+  writeMathSafely(transformed, readCommonMark);
   const configuredWriters = new Set<string>();
 
   [

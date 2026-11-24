@@ -1,3 +1,5 @@
+import type { PhrasingContent } from 'mdast';
+
 import {
   BaseParagraphPlugin,
   definePlugin,
@@ -57,6 +59,39 @@ const getDetailsOfTitle = (
 
   return title && state.nodes.isContent(title) ? container : undefined;
 };
+
+const opensTagOrBreaks = (text: string) =>
+  /<[!/?A-Za-z]/.test(text) || text.includes('\n');
+
+const breaksHeadedLine = (nodes: readonly PhrasingContent[]): boolean =>
+  nodes.some((node) => {
+    if (node.type === 'break') return true;
+    if (node.type === 'html') return node.value.includes('\n');
+    if ('value' in node) return opensTagOrBreaks(node.value);
+    // mdast-util-to-markdown encloses a titled empty destination, or one with a
+    // space or control character, in angle brackets, and prints a link whose
+    // text is its URL as an autolink. Either puts a `<` on the line.
+    if (
+      (node.type === 'link' || node.type === 'image') &&
+      (!node.url ||
+        /[\0- \u007F]/.test(node.url) ||
+        [
+          node.url,
+          node.title ?? '',
+          node.type === 'image' ? (node.alt ?? '') : '',
+        ].some(opensTagOrBreaks) ||
+        (node.type === 'link' &&
+          node.children.length === 1 &&
+          node.children[0]?.type === 'text' &&
+          [node.url, node.url.replace(/^mailto:/i, '')].includes(
+            node.children[0].value
+          )))
+    ) {
+      return true;
+    }
+
+    return 'children' in node && breaksHeadedLine(node.children);
+  });
 
 const isSummaryHeadingLevel = (value: unknown): value is HeadingLevel =>
   typeof value === 'number' &&
@@ -185,7 +220,10 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
             readPlainInline(node.children) === ''
               ? []
               : encodePhrasing(node.children);
-          const phrasing = node.level
+          // CommonMark reads `<summary><hN>` as raw HTML, so a title that
+          // cannot print on that line keeps its level as an attribute.
+          const headed = Boolean(node.level) && !breaksHeadedLine(content);
+          const phrasing = headed
             ? [
                 { type: 'html' as const, value: `<h${node.level}>` },
                 ...content,
@@ -198,7 +236,7 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
           return {
             attributes: encodeNodeAttributes().filter(
               (attribute) =>
-                !('name' in attribute && attribute.name === 'level')
+                !headed || !('name' in attribute && attribute.name === 'level')
             ),
             children:
               phrasing.length > 0

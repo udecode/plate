@@ -180,21 +180,13 @@ const serializeMarkdownDataTransferSlice = (
     return result.ok ? result.data : null;
   }
   let failed = false;
-  // Each chunk prints apart from the others, so it learns what the last
-  // chunk that printed something printed last. Text written as it is may end
-  // in a list, so it counts as one, the strict reading.
-  let previousKind: string | undefined;
-  const verbatim = (text: string) => {
-    if (text.trim()) previousKind = 'list';
-
-    return text;
-  };
+  let lastPrintedKind: string | undefined;
   const serialize = (children: readonly Descendant[]) => {
     const { lastKind, result } = serializeMarkdownSliceWithRuntime(
       runtime,
       toMarkdownBlocks(runtime, children),
       slice.roots,
-      previousKind
+      lastPrintedKind
     );
 
     if (!result.ok) {
@@ -208,7 +200,7 @@ const serializeMarkdownDataTransferSlice = (
       ? result.data.replace(/\n+$/, '')
       : result.data.trimEnd();
 
-    if (data.trim()) previousKind = lastKind;
+    if (data.trim()) lastPrintedKind = lastKind;
 
     return data;
   };
@@ -238,19 +230,11 @@ const serializeMarkdownDataTransferSlice = (
     if ((openStart === 0 && openEnd === 0) || !ElementApi.isElement(node)) {
       return serialize([node]);
     }
-    if (typeof node.rawCode === 'string') return verbatim(node.rawCode);
-
-    const hasOnlyInlineChildren = node.children.every(
-      (child) => !ElementApi.isElement(child) || state.schema.isInline(child)
-    );
-
     if (
-      hasOnlyInlineChildren &&
-      state.schema.element(node.type)?.slice.preserveContext
+      node.children.every(
+        (child) => !ElementApi.isElement(child) || state.schema.isInline(child)
+      )
     ) {
-      return verbatim(NodeApi.string(node));
-    }
-    if (hasOnlyInlineChildren) {
       return serialize([
         {
           children: node.children,
@@ -266,7 +250,12 @@ const serializeMarkdownDataTransferSlice = (
 
     return unwrapped.trim()
       ? unwrapped
-      : verbatim(node.children.map(NodeApi.string).join('\n'));
+      : serialize(
+          node.children.map((child) => ({
+            children: [{ text: NodeApi.string(child) }],
+            type: paragraphType,
+          }))
+        );
   };
   const data =
     slice.content.length === 0

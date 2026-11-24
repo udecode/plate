@@ -1,4 +1,4 @@
-import type { Root } from 'mdast';
+import type { PhrasingContent, Root } from 'mdast';
 import type {
   MdxJsxAttribute,
   MdxJsxExpressionAttribute,
@@ -1032,10 +1032,33 @@ const serializeAttributes = (
     })
     .join('');
 
+const countTagOpeners = (text: string) =>
+  text.match(/<[!/?A-Za-z]/g)?.length ?? 0;
+
+const countMarkupTagOpeners = (nodes: readonly PhrasingContent[]): number =>
+  nodes.reduce((count, node) => {
+    if (node.type === 'html') return count + countTagOpeners(node.value);
+    const selfClosing = 'children' in node && node.children.length === 0;
+    const own =
+      node.type === 'mdxJsxTextElement'
+        ? (selfClosing ? 1 : 2) +
+          countTagOpeners(serializeAttributes(node.attributes))
+        : 0;
+
+    return (
+      count +
+      own +
+      ('children' in node ? countMarkupTagOpeners(node.children) : 0)
+    );
+  }, 0);
+
 // Blank lines around block children and no indentation, so nesting never
 // reaches CommonMark's indented-code threshold. A block holding one
 // single-line paragraph stays on one line (`<summary>Title</summary>`); the
-// reader's line rule reads it back as a block.
+// reader's line rule reads it back as a block. CommonMark reads a line that
+// opens with a block tag name such as `summary` as raw HTML, where a
+// backslash escapes nothing, so a line that prints a tag opener its raw HTML
+// and inline tags do not hold takes the block form.
 const toMarkdown = {
   handlers: {
     mdxJsxFlowElement(
@@ -1057,7 +1080,10 @@ const toMarkdown = {
           before: '>',
         });
 
-        if (!line.includes('\n')) {
+        if (
+          !line.includes('\n') &&
+          countTagOpeners(line) === countMarkupTagOpeners(only.children)
+        ) {
           exit();
 
           return `${open}>${line}</${node.name}>`;
