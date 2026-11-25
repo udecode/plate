@@ -45,9 +45,11 @@ import {
   subscribeCaretTarget,
 } from '../../core/public-state';
 import {
+  continueRootViewUse,
   mountRootView,
   readNestedRootView,
   readRootTarget,
+  readRootViewUse,
   subscribeRootTarget,
   subscribeRootViewPresentation,
 } from '../../core/root-target';
@@ -141,6 +143,9 @@ const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
   `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${
     owner.childRoot
   }`;
+
+const getSlotRootKey = (slot: HistoryStepSlot, owner: PliteContentRootOwner) =>
+  `${slot.owner}\u0000${slot.slot}\u0000${owner.childRoot}`;
 
 export const unregisterContentRootOwnerViewEditor = <TEditor,>(
   ownerViewEditors: Map<string, TEditor>,
@@ -560,6 +565,9 @@ export function EditorRuntimeProvider({
   const contentRootOwnerViewEditorsRef = useRef(
     new Map<ViewPresentation, Map<string, typeof reactEditor>>()
   );
+  const lastRootUseBySlotRef = useRef(
+    new WeakMap<Editor, Map<string, number>>()
+  );
   const subscribeProviderRootTarget = useCallback(
     (
       root: RootKey,
@@ -653,12 +661,19 @@ export function EditorRuntimeProvider({
         contentRootOwnerViewEditorsRef.current,
         getViewPresentation(editor)
       );
+      const lastRootUses =
+        lastRootUseBySlotRef.current.get(slot.parent) ??
+        new Map<string, number>();
+      const place = getSlotRootKey(slot, owner);
 
+      lastRootUseBySlotRef.current.set(slot.parent, lastRootUses);
+      continueRootViewUse(editor, lastRootUses.get(place) ?? 0);
       historyStepViews.registerSlot(editor, slot);
       contentRootOwnersRef.current.set(editor, owner);
       ownerViewEditors.set(getContentRootOwnerKey(owner), editor);
 
       return () => {
+        lastRootUses.set(place, readRootViewUse(editor));
         if (contentRootOwnersRef.current.get(editor) === owner) {
           contentRootOwnersRef.current.delete(editor);
           unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, editor);

@@ -246,6 +246,27 @@ const tellViewUse = (owner: Editor) =>
     (listener) => listener()
   );
 
+const placeByUse = (entry: Entry, view: Editor) => {
+  entry.usedLatestFirst = [
+    ...entry.usedLatestFirst.filter((used) => used !== view),
+    view,
+  ].sort((left, right) => readRootViewUse(right) - readRootViewUse(left));
+};
+
+export const continueRootViewUse = (view: Editor, usedAt: number) => {
+  const runtime = getEditorRuntime(view);
+  const entry = VIEW_ENTRIES.get(runtime);
+
+  if (usedAt <= (USED_AT.get(runtime) ?? 0)) return;
+
+  USED_AT.set(runtime, usedAt);
+  if (entry?.views.has(view)) {
+    placeByUse(entry, view);
+    invalidate(entry);
+    tellViewUse(entry.owner);
+  }
+};
+
 /**
  * Hear, in the same turn, each use of a view of the editor, and each of its
  * views that mounts, unmounts, or gains or loses its surface.
@@ -277,11 +298,7 @@ export const mountRootView = (
 
   entry.views.add(view);
   VIEW_ENTRIES.set(runtime, entry);
-  if (USED_AT.has(runtime)) {
-    entry.usedLatestFirst = [...entry.usedLatestFirst, view].sort(
-      (left, right) => readRootViewUse(right) - readRootViewUse(left)
-    );
-  }
+  if (USED_AT.has(runtime)) placeByUse(entry, view);
   invalidate(entry);
   announcePresentation(presentation);
   tellViewUse(owner);
