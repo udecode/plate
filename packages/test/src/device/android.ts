@@ -891,7 +891,7 @@ export const switchKeyboardLanguage = async (
   serial: string,
   language: DeviceLanguage
 ) => {
-  const visited = new Set<string>();
+  const visited: string[] = [];
 
   for (;;) {
     const keys = readKeyboard(serial);
@@ -899,8 +899,10 @@ export const switchKeyboardLanguage = async (
     const layout = `${identity.languageTag}/${identity.variant}`;
 
     if (languageFor(identity) === language) return identity;
-    if (visited.has(layout)) break;
-    visited.add(layout);
+    // Android's switch button first jumps to the language typed last, then
+    // walks the enabled order, so the start can come round before the target.
+    if (visited.includes(layout, 1)) break;
+    visited.push(layout);
 
     const switcher =
       keys['Switch input method'] ??
@@ -915,7 +917,7 @@ export const switchKeyboardLanguage = async (
   }
 
   throw new Error(
-    `Gboard did not switch to ${language}; its language key went through ${[...visited].join(', ')}.`
+    `Gboard did not switch to ${language}; its language key went through ${visited.join(', ')}.`
   );
 };
 
