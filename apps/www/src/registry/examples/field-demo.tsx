@@ -149,6 +149,11 @@ const refusalLine = (
   labels: ReadonlyMap<string, string>
 ) => {
   switch (refusal.code) {
+    case 'answer-conflict': {
+      return `${refusal.code}: ${refusal.name} in ${refusal.fieldIds
+        .map((fieldId) => labels.get(fieldId))
+        .join(', ')}`;
+    }
     case 'duplicate-role':
     case 'unknown-role': {
       return `${refusal.code}: ${refusal.role}`;

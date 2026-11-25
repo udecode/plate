@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-25-field-demo-answer-conflict",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-25-field-demo-answer-conflict.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Show a split answer in the field demo refusals",
+  "targets": [
+    {
+      "name": "field-demo",
+      "files": [
+        "apps/www/src/registry/examples/field-demo.tsx",
+        "apps/www/src/registry/examples/values/cn/field-value.tsx",
+        "apps/www/src/registry/examples/values/field-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-25-field-demo-answer-conflict",
+      "kind": "behavior",
+      "summary": "Show an `answer-conflict` refusal with the field name and the labels of its fields, when the fields of one name hold different answers.",
+      "details": [],
+      "migrationNotes": [
+        "Update the copied `field-demo`, because `FieldRefusal` gains `answer-conflict`, which lists `fieldIds` instead of one `fieldId`."
+      ],
+      "targets": ["field-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-field-demo-answer-conflict",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

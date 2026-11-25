@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "components": {
+    "field-demo": [
+      "2026-11-25-field-demo-answer-conflict",
+      "2026-11-24-field-static-answers",
+      "2026-11-23-field-fill-view",
+      "2026-11-21-add-field"
+    ],
     "field": [
       "2026-11-25-field-name-conflicts",
       "2026-11-24-field-static-answers",
@@ -9,11 +15,6 @@
       "2026-11-21-add-field"
     ],
     "field-static": ["2026-11-24-field-static-answers", "2026-11-21-add-field"],
-    "field-demo": [
-      "2026-11-24-field-static-answers",
-      "2026-11-23-field-fill-view",
-      "2026-11-21-add-field"
-    ],
     "editor-dropdown-menu": [
       "2026-11-24-fix-base-menu-trigger",
       "2026-11-17-cn-package",

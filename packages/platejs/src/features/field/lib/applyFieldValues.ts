@@ -8,37 +8,70 @@ import {
   fieldProblems,
   fillsField,
   fitsField,
+  indexFieldNames,
   isFieldCondition,
   isFieldKind,
   isFieldName,
   isFieldOptions,
   isFieldValue,
+  nameProblems,
   submittedFieldLinks,
 } from './fieldRules.internal';
 
-/** Why `applyFieldValues` refused a template or a submission. */
+/**
+ * Why `applyFieldValues` refused a template or a submission. A refusal that
+ * names a field also carries that field's `name` when it has one.
+ */
 export type FieldRefusal =
+  /**
+   * The fields of one role and name hold different answers once the role's
+   * submission applies. `fieldIds` lists every field of the name, in document
+   * order.
+   */
+  | Readonly<{
+      code: 'answer-conflict';
+      fieldIds: readonly string[];
+      name: string;
+      role: string;
+    }>
   | Readonly<{ code: 'duplicate-role'; role: string }>
   | Readonly<{
       code: 'invalid-template';
       fieldId?: string;
+      name?: string;
       path: Path;
       problem: FieldProblem | 'answered' | 'duplicate-id' | 'malformed';
       root?: string;
     }>
   | Readonly<{ code: 'invalid-submission'; index: number }>
-  | Readonly<{ code: 'invalid-value'; fieldId: string; role: string }>
-  | Readonly<{ code: 'missing-required'; fieldId: string; role: string }>
-  | Readonly<{ code: 'skipped'; fieldId: string; role: string }>
+  | Readonly<{
+      code: 'invalid-value';
+      fieldId: string;
+      name?: string;
+      role: string;
+    }>
+  | Readonly<{
+      code: 'missing-required';
+      fieldId: string;
+      name?: string;
+      role: string;
+    }>
+  | Readonly<{ code: 'skipped'; fieldId: string; name?: string; role: string }>
   | Readonly<{ code: 'unknown-field'; fieldId: string; role: string }>
   | Readonly<{ code: 'unknown-role'; role: string }>
   | Readonly<{
       code: 'waiting';
       fieldId: string;
+      name?: string;
       role: string;
       waitsOn: string;
     }>
-  | Readonly<{ code: 'wrong-role'; fieldId: string; role: string }>;
+  | Readonly<{
+      code: 'wrong-role';
+      fieldId: string;
+      name?: string;
+      role: string;
+    }>;
 
 /**
  * The filled document, or the refusals. `pending` lists each role that has not
@@ -86,6 +119,9 @@ const placesIn = (
       ? placesIn(node.children, type, root, at)
       : [];
   });
+
+const nameOf = ({ name }: Readonly<{ name?: unknown }>) =>
+  isFieldName(name) ? { name } : {};
 
 const isWellFormed = (
   node: Readonly<Record<string, unknown>>
@@ -151,12 +187,14 @@ const fillNode = (
  * while it applies.
  *
  * Refuses a template whose fields hold an answer, lack or repeat a `fieldId`,
- * break the schema or have a problem a read reports, a condition loop
- * included. Then refuses, at the first submission that has any: a malformed
- * submission, a role that submitted before or owns no field, an answer for a
- * field that is missing, of another role or does not fit it, a field of the
- * role that waits on another role, a filled answer on a skipped field, and a
- * required field that applies without a filled answer.
+ * break the schema or have a problem a read reports, a condition loop and a
+ * name conflict between fields of one role and name included. Then refuses, at
+ * the first submission that has any: a malformed submission, a role that
+ * submitted before or owns no field, an answer for a field that is missing, of
+ * another role or does not fit it, a field of the role that waits on another
+ * role, a filled answer on a skipped field, a required field that applies
+ * without a filled answer, and a name of the role whose fields hold different
+ * answers.
  */
 export function applyFieldValues<D extends EditorDocumentValue | Value>(
   template: D,
@@ -189,6 +227,8 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
   }
 
   const lookup = (fieldId: string) => held.get(fieldId);
+  const fields = [...held.values()];
+  const names = indexFieldNames(fields);
   const templateLinks = submittedFieldLinks(new Set());
   const [templateRefusal, ...templateRefusals] = places.flatMap(
     (place): FieldRefusal[] => {
@@ -198,6 +238,7 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
       ): FieldRefusal => ({
         code: 'invalid-template',
         ...(typeof node.fieldId === 'string' ? { fieldId: node.fieldId } : {}),
+        ...nameOf(node),
         path,
         problem,
         ...(root === undefined ? {} : { root }),
@@ -219,6 +260,9 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
         ...fieldProblems(node, templateLinks.link(node, lookup)).map(
           (problem) => invalid(problem)
         ),
+        ...nameProblems(node, names, lookup)
+          .filter((problem) => problem === 'name-conflict')
+          .map((problem) => invalid(problem)),
       ];
     }
   );
@@ -227,7 +271,6 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
     return { ok: false, refusals: [templateRefusal, ...templateRefusals] };
   }
 
-  const fields = [...held.values()];
   const roles = [...new Set(fields.map(({ role }) => role))];
   const settled = new Set<string>();
 
@@ -254,18 +297,23 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
 
     for (const [fieldId, value] of Object.entries(values)) {
       const field = lookup(fieldId);
-      const code = !field
-        ? 'unknown-field'
-        : field.role !== role
+
+      if (!field) {
+        refusals.push({ code: 'unknown-field', fieldId, role });
+        continue;
+      }
+
+      const code =
+        field.role !== role
           ? 'wrong-role'
           : fitsField(field, value)
             ? undefined
             : 'invalid-value';
 
       if (code) {
-        refusals.push({ code, fieldId, role });
+        refusals.push({ code, fieldId, ...nameOf(field), role });
         refusedIds.add(fieldId);
-      } else if (field) {
+      } else {
         held.set(fieldId, { ...field, value });
       }
     }
@@ -284,6 +332,7 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
         refusals.push({
           code: 'waiting',
           fieldId,
+          ...nameOf(field),
           role,
           waitsOn: verdict.waitsOn,
         });
@@ -294,9 +343,26 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
       const filled = fillsField(field, held.get(fieldId)?.value);
 
       if (!verdict.applies && filled) {
-        refusals.push({ code: 'skipped', fieldId, role });
+        refusals.push({ code: 'skipped', fieldId, ...nameOf(field), role });
       } else if (verdict.applies && field.required && !filled) {
-        refusals.push({ code: 'missing-required', fieldId, role });
+        refusals.push({
+          code: 'missing-required',
+          fieldId,
+          ...nameOf(field),
+          role,
+        });
+      }
+    }
+
+    for (const [name, fieldIds] of names.byRole.get(role) ?? []) {
+      const member = held.get(fieldIds[0]);
+
+      if (
+        member &&
+        !fieldIds.some((fieldId) => refusedIds.has(fieldId)) &&
+        nameProblems(member, names, lookup).includes('answer-conflict')
+      ) {
+        refusals.push({ code: 'answer-conflict', fieldIds, name, role });
       }
     }
 

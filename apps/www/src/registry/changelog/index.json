@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-25-field-demo-answer-conflict",
+      "href": "/registry/changelog/2026-11-25-field-demo-answer-conflict.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Show a split answer in the field demo refusals",
+      "change": {
+        "type": "source",
+        "date": "2026-11-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-field-name-conflicts",
       "href": "/registry/changelog/2026-11-25-field-name-conflicts.json",
       "status": "draft",

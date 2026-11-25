@@ -1,0 +1,14 @@
+---
+id: 2026-11-25-field-demo-answer-conflict
+date: 2026-11-25
+status: draft
+kind: behavior
+summary: 'Show a split answer in the field demo refusals'
+change: { 'type': 'source', 'date': '2026-11-25', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-25-field-demo-answer-conflict","kind":"behavior","migrationNotes":["Update the copied `field-demo`, because `FieldRefusal` gains `answer-conflict`, which lists `fieldIds` instead of one `fieldId`."]} -->
+
+- **`field-demo`**: Show an `answer-conflict` refusal with the field name and the labels of its fields, when the fields of one name hold different answers.
