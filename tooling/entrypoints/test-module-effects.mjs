@@ -182,9 +182,13 @@ export const testModuleEffects = {
     'writes the trace file that its caller names',
   'packages/test/src/playwright/test.ts':
     "writes editor-state.json in the failed test's output folder",
+  'packages/test/src/device/webkit.ts':
+    "runs xcrun simctl to find a simulator's Web Inspector socket, which is outside the repository",
   'packages/test/test/node/device-witness.test.ts': {
     reads: ['packages/test/test/node/fixtures/*.json'],
   },
+  'packages/test/test/node/web-inspector.test.ts':
+    'runs plutil on the messages it builds and listens on a socket in a temporary folder it removes',
   'packages/test/test/proof/mobile-device-proof-command.test.ts': {
     reads: ['package.json'],
     runs: ['tooling/plite/donor/proof/mobile-device-proof.mjs'],
