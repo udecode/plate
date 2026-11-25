@@ -156,13 +156,18 @@ export type InkMarkInput = Readonly<{
   samples: readonly InkSample[];
 }>;
 
-/** A Draw tool: the brush its marks are drawn with. */
-export type InkTool = Readonly<{ brush: InkBrush; type: 'draw' }>;
+/**
+ * A Draw tool. `draw` draws marks with its brush. `erase` removes each mark
+ * whose ink its path, `size` pixels wide, touches.
+ */
+export type InkTool =
+  | Readonly<{ brush: InkBrush; type: 'draw' }>
+  | Readonly<{ size: number; type: 'erase' }>;
 
 /**
- * What one view shows and does with ink: the tool a pen draws with, or
- * `null` when drawing is off, whether ink and signs are hidden, and the ids
- * of the marks picked.
+ * What one view shows and does with ink: the tool a pen uses, or `null` when
+ * drawing is off, whether ink and signs are hidden, and the ids of the marks
+ * picked.
  */
 export type InkViewState = {
   hidden: boolean;

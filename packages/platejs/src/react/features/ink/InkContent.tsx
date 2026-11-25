@@ -13,6 +13,7 @@ import {
 import { attachInkCapture } from './inkCapture.internal';
 import { INK_TOUCH_ACTION } from './inkInput.internal';
 import { createInkSurface } from './inkPaint.internal';
+import { attachInkPick } from './inkPick.internal';
 import {
   createInkPlacer,
   type InkAudit,
@@ -89,8 +90,9 @@ const firstElementAfter = (element: Element) => {
  * own. The layer draws the marks of the blocks within a screen of the view,
  * and every mark once the page is about to print. With the Draw tool on, a pen
  * or the primary mouse button draws a mark, which saves when the contact ends
- * and keeps the Editable's focus and caret. A finger still scrolls, and other
- * mouse buttons keep their own behavior. The view's `hidden` hides ink and
+ * and keeps the Editable's focus and caret. With the eraser on, it removes
+ * each mark whose painted ink its path touches. A finger still scrolls, and
+ * other mouse buttons keep their own behavior. The view's `hidden` hides ink and
  * signs, and picked marks paint with a halo. Turning the view read-only turns
  * the tool off. The layer fills the nearest positioned ancestor of the
  * Editable, which should hold the Editable and its margins, and reaches at
@@ -170,17 +172,16 @@ function InkLayer({
   );
   const preview = React.useRef<SVGPathElement>(null);
   const currentTool = React.useRef(tool);
-  const capture = React.useRef<ReturnType<typeof attachInkCapture>>(null);
+  const cancel = React.useRef<() => void>(null);
 
   React.useLayoutEffect(() => {
     currentTool.current = tool;
   }, [tool]);
 
   React.useEffect(() => {
-    if (!readOnly) return;
-    capture.current?.cancel();
-    view.plugin(InkPlugin).api.setTool(null);
-  }, [readOnly, view]);
+    cancel.current?.();
+    if (readOnly) view.plugin(InkPlugin).api.setTool(null);
+  }, [readOnly, tool, view]);
 
   React.useEffect(() => {
     const editable = editableRef.current;
@@ -196,12 +197,21 @@ function InkLayer({
       );
     }
 
+    const live = () =>
+      view.read.view.isReadOnly() ? null : currentTool.current;
     const attached = attachInkCapture({
       editor,
       layer,
       preview: path,
-      tool: () => currentTool.current,
+      tool: live,
       view,
+    });
+    const picker = attachInkPick({
+      editor,
+      holds: (mark) => view.plugin(InkPlugin).read.mark(mark.id) === mark,
+      layer,
+      painted: surface.painted,
+      tool: live,
     });
     const placer = createInkPlacer({ editable, layer, view });
     const page = layer.ownerDocument;
@@ -339,6 +349,7 @@ function InkLayer({
 
         saved = next;
         surface.keep((mark) => read.mark(mark.id) === mark);
+        picker.keep((mark) => read.mark(mark.id) === mark);
       }
       schedule();
     });
@@ -351,7 +362,10 @@ function InkLayer({
     page.addEventListener('scroll', onScroll, { capture: true, passive: true });
     win?.addEventListener('resize', schedule);
     win?.addEventListener('beforeprint', onPrint);
-    capture.current = attached;
+    cancel.current = () => {
+      attached.cancel();
+      picker.cancel();
+    };
     schedule();
 
     return () => {
@@ -365,7 +379,8 @@ function InkLayer({
       win?.removeEventListener('resize', schedule);
       win?.removeEventListener('beforeprint', onPrint);
       attached.detach();
-      capture.current = null;
+      picker.detach();
+      cancel.current = null;
     };
   }, [editableRef, editor, layer, shown, surface, view]);
 
@@ -404,7 +419,11 @@ function InkLayer({
         }}
       >
         <g ref={mountInk} />
-        <path data-ink-stroke="" ref={preview} />
+        <path
+          data-ink-stroke=""
+          ref={preview}
+          visibility={hidden ? 'hidden' : undefined}
+        />
       </svg>
       {!hidden &&
         placed.signs.map(({ id, left, sign }) => (

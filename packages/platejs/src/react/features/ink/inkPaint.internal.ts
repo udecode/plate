@@ -1,5 +1,8 @@
 import type { InkBrush, InkMark, InkSample } from '../../../features/ink/lib';
-import { strokePolygon } from '../../../internal/penStroke.internal';
+import {
+  strokePolygon,
+  strokePolygonPoints,
+} from '../../../internal/penStroke.internal';
 import type { InkPlaced } from './inkPlacement.internal';
 
 // perfect-freehand draws a point's radius as size * (0.5 - thinning * (0.5 -
@@ -8,6 +11,18 @@ import type { InkPlaced } from './inkPlacement.internal';
 // the radius capture and placement test words against, while a pen still shows
 // its pressure.
 const INK_THINNING = 0.25;
+
+const shapeOf = ({ size }: InkBrush) => ({
+  size: size / (1 + INK_THINNING),
+  thinning: INK_THINNING,
+});
+
+export const inkOutlinePoints = ({ brush, samples }: InkMark) =>
+  strokePolygonPoints(
+    samples.map(([x, y, pressure]) => [x, y, pressure] as const),
+    shapeOf(brush),
+    true
+  );
 
 /**
  * The SVG outline of a mark's samples in `brush`, moved by `dx` and `dy`.
@@ -20,7 +35,7 @@ export const inkOutline = (
 ) =>
   strokePolygon(
     samples.map(([x, y, pressure]) => [x + dx, y + dy, pressure] as const),
-    { size: brush.size / (1 + INK_THINNING), thinning: INK_THINNING },
+    shapeOf(brush),
     last
   );
 
@@ -112,6 +127,7 @@ export const createInkSurface = (into: SVGGElement) => {
         if (!holds(mark)) outlines.delete(mark);
       }
     },
+    painted: () => (hidden ? [] : ink),
     paint: (placed: InkPlaced['ink']) => {
       ink = placed;
       draw();

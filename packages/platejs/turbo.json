@@ -6876,6 +6876,7 @@
       "dependsOn": [
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:ink",
         "source-hash:partition:ink-react",

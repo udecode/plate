@@ -45,7 +45,7 @@ const curvedPathOf = (outline: readonly number[][]) => {
   return `${path}Z`;
 };
 
-const polygonPathOf = (outline: readonly number[][]) =>
+const polygonPathOf = (outline: ReadonlyArray<readonly number[]>) =>
   outline.length === 0
     ? ''
     : `M${outline.map(([x, y]) => `${round(x)},${round(y)}`).join('L')}Z`;
@@ -79,6 +79,9 @@ export const strokeOutline = (
 // shrink to hundredths of a pixel.
 const POLYGON_SCALE = 100;
 
+const unscaled = (outline: readonly number[][]) =>
+  outline.map(([x, y]) => [x / POLYGON_SCALE, y / POLYGON_SCALE] as const);
+
 /**
  * The outline of a pen line through `points`, `size` wide at half pressure and
  * `thinning` thinner as pressure falls, as an SVG path of straight edges
@@ -88,10 +91,16 @@ const POLYGON_SCALE = 100;
  */
 export const strokePolygon = (
   points: readonly PenPoint[],
+  shape: Readonly<{ size: number; thinning: number }>,
+  last: boolean
+) => polygonPathOf(strokePolygonPoints(points, shape, last));
+
+export const strokePolygonPoints = (
+  points: readonly PenPoint[],
   { size, thinning }: Readonly<{ size: number; thinning: number }>,
   last: boolean
 ) =>
-  polygonPathOf(
+  unscaled(
     getStrokeOutlinePoints(
       getStrokePoints(
         points.map(([x, y, pressure]) => ({
@@ -108,7 +117,7 @@ export const strokePolygon = (
         smoothing: 0,
         thinning,
       }
-    ).map(([x, y]) => [x / POLYGON_SCALE, y / POLYGON_SCALE])
+    )
   );
 
 /**

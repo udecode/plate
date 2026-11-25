@@ -9,6 +9,7 @@ import {
   type InkMarkInput,
   type InkRun,
   type InkSample,
+  type InkTool,
 } from '../../../features/ink/lib';
 import {
   roundPixel,
@@ -184,7 +185,7 @@ export const attachInkCapture = ({
   editor: Editor;
   layer: HTMLElement;
   preview: SVGPathElement;
-  tool: () => Readonly<{ brush: InkBrush }> | null;
+  tool: () => InkTool | null;
   view: Editor;
 }>) => {
   let contact: Readonly<{ brush: InkBrush; pointerId: number }> | null = null;
@@ -445,7 +446,7 @@ export const attachInkCapture = ({
     const current = tool();
 
     if (
-      !current ||
+      current?.type !== 'draw' ||
       !inkDraws(event, contact !== null) ||
       (event.target instanceof Element &&
         event.target.closest('[data-ink-sign]'))
@@ -461,8 +462,15 @@ export const attachInkCapture = ({
     take(event, originOf());
     draw();
   };
+  const holdOrEnd = (event: PointerEvent) => {
+    if (event.pointerId !== contact?.pointerId) return false;
+    if (tool()?.type === 'draw') return true;
+    cancel();
+
+    return false;
+  };
   const onPointerMove = (event: PointerEvent) => {
-    if (event.pointerId !== contact?.pointerId) return;
+    if (!holdOrEnd(event)) return;
 
     const origin = originOf();
 
@@ -474,7 +482,7 @@ export const attachInkCapture = ({
     draw();
   };
   const onPointerUp = (event: PointerEvent) => {
-    if (event.pointerId !== contact?.pointerId) return;
+    if (!holdOrEnd(event)) return;
     seal();
     contact = null;
     draw();
@@ -517,6 +525,7 @@ export const attachInkCapture = ({
   layer.addEventListener('pointermove', onPointerMove);
   layer.addEventListener('pointerup', onPointerUp);
   layer.addEventListener('pointercancel', onPointerCancel);
+  layer.addEventListener('lostpointercapture', onPointerCancel);
 
   return {
     cancel,
@@ -527,6 +536,7 @@ export const attachInkCapture = ({
       layer.removeEventListener('pointermove', onPointerMove);
       layer.removeEventListener('pointerup', onPointerUp);
       layer.removeEventListener('pointercancel', onPointerCancel);
+      layer.removeEventListener('lostpointercapture', onPointerCancel);
     },
     layoutChanged: (change: InkLayoutChange) => {
       blocks = null;
