@@ -23,7 +23,7 @@ const runHookInEmptyHome = ({ fseventsdKb, watchdogLoaded }) => {
 };
 
 test('a leaking fseventsd with no watchdog tells the human to install the watchdog', { skip: macOnly }, () => {
-  assert.match(runHookInEmptyHome({ fseventsdKb: 18_874_368, watchdogLoaded: false }), /fix: a human runs .*sudo zsh ~\/\.claude\/skills\/fseventsd-watchdog\/scripts\/install\.sh/u);
+  assert.match(runHookInEmptyHome({ fseventsdKb: 18_874_368, watchdogLoaded: false }), /fix: a human runs .*sudo zsh ~\/\.claude\/skills\/mac-watchdog\/scripts\/install-fseventsd\.sh/u);
 });
 
 test('fseventsd under 1 GB prints nothing', { skip: macOnly }, () => {
