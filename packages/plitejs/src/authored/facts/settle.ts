@@ -66,6 +66,7 @@ import {
   isStructureChange,
   readAuthoredMarks,
   readMembers,
+  dissolveClaimsOf,
   withMembers,
 } from '../tree/marks';
 import { buildClaimsIn } from '../tree/reserves';
@@ -585,20 +586,13 @@ const pendingOn = (
     (mark) => outcomeOf(facts, mark) === 'pending' && test(mark)
   );
 
-const acceptedAuthorsIn = (
-  nodes: readonly Node[],
-  facts: ReviewFacts,
-  into = new Set<string>()
-) => {
-  for (const node of nodes) {
-    for (const mark of readAuthoredMarks(node)) {
-      if (outcomeOf(facts, mark) === 'accept') into.add(mark.author);
-    }
-    acceptedAuthorsIn(node.children ?? [], facts, into);
-  }
-
-  return into;
-};
+const acceptsIn = (nodes: readonly Node[], facts: ReviewFacts): boolean =>
+  nodes.some(
+    (node) =>
+      readAuthoredMarks(node).some(
+        (mark) => outcomeOf(facts, mark) === 'accept'
+      ) || acceptsIn(node.children ?? [], facts)
+  );
 
 const buildWaits = (
   chain: readonly Node[],
@@ -606,11 +600,9 @@ const buildWaits = (
   removed: readonly Node[],
   facts: ReviewFacts
 ) => {
-  const deciders = acceptedAuthorsIn(removed, facts);
+  const accepts = acceptsIn(removed, facts);
   const own = (mark: ReturnType<typeof claimsOf>[number]) =>
-    deciders.size === 0 ||
-    isEditingChange(mark.change) ||
-    deciders.has(mark.author);
+    !accepts || isEditingChange(mark.change);
 
   return (
     chain.some((node, at) =>
@@ -751,13 +743,18 @@ const replacementsOf = (
     return null;
   }
 
-  const enclosing = chain.flatMap((node) =>
-    standingClaimsOf(node, pass.facts, pass.facts).filter(
-      (mark) =>
-        (mark.kind === 'insert' || mark.kind === 'delete') &&
-        outcomeOf(pass.facts, mark) === 'pending'
-    )
-  );
+  const enclosing = chain.flatMap((node, index) => {
+    const pending = standingClaimsOf(node, pass.facts, pass.facts).filter(
+      (mark) => outcomeOf(pass.facts, mark) === 'pending'
+    );
+
+    return [
+      ...pending.filter(
+        (mark) => mark.kind === 'insert' || mark.kind === 'delete'
+      ),
+      ...(index === 0 ? dissolveClaimsOf(pending) : []),
+    ];
+  });
   const builtNodes = new Set<unknown>(completion.built.map(({ node }) => node));
   const children = (completion.children as readonly Node[]).map((node) =>
     enclosing.length > 0 && builtNodes.has(node)

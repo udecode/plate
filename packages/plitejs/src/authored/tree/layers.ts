@@ -67,7 +67,7 @@ export type ValueReading = Standing & Readonly<{ output: IsSplitOutput }>;
 export type KeyReading = ValueReading &
   Readonly<{
     outcome: LayerOutcome;
-    byAnotherAuthor?: (tag: FormatTag) => boolean;
+    onAnotherAuthorsCard?: (tag: FormatTag) => boolean;
   }>;
 
 export type KeyDecision = Readonly<{
@@ -480,7 +480,7 @@ export const decideKey = (
     if (statuses[index] !== 'keep' || free[index]) return;
     if ((firstReject !== -1 && index > firstReject) || index < lastAccept) {
       for (const tag of step.tags) {
-        if (of(tag) === 'keep' && !reading.byAnotherAuthor?.(tag)) {
+        if (of(tag) === 'keep' && !reading.onAnotherAuthorsCard?.(tag)) {
           waits.add(tag.change);
         }
       }

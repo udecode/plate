@@ -171,6 +171,15 @@ export const isStructureChange = (mark: AuthoredMark) =>
 
 export const isUnwrap = (mark: AuthoredMark) => mark.kind === 'unwrap';
 
+export const dissolveClaimsOf = (marks: readonly AuthoredMark[]) =>
+  marks.flatMap((mark): AuthoredMark[] =>
+    mark.kind === 'wrap'
+      ? [{ ...mark, kind: 'insert' as const }]
+      : mark.kind === 'unwrap'
+        ? [{ ...mark, kind: 'delete' as const }]
+        : []
+  );
+
 export const followsOf = (mark: AuthoredMark) =>
   (mark.kind === 'split' && mark.cut === undefined) || mark.kind === 'insert'
     ? mark.follows

@@ -96,6 +96,7 @@ import {
   isStructureChange,
   readAuthoredMarks,
   readMembers,
+  dissolveClaimsOf,
   withMembers,
 } from './marks';
 import {
@@ -624,7 +625,12 @@ export type AuthoredResolveOptions = Readonly<{
   /** The containers the children sit in, nearest first; none at a root. */
   site?: readonly JsonNode[];
   cutIndex?: CutIndex;
-  decidingAuthors?: ReadonlySet<string> | 'every';
+  deciding?: DecidingCards | 'every';
+}>;
+
+export type DecidingCards = Readonly<{
+  authors: ReadonlySet<string>;
+  changes: ReadonlySet<string>;
 }>;
 
 type LeftFragment = Readonly<{ block: TextBlock; node: Node; root: string }>;
@@ -1391,38 +1397,60 @@ const resolveIn = (
       if (decisionOf(mark) === 'keep') waits.add(mark.change);
     }
   };
-  let { decidingAuthors } = options;
-  const decidingAuthorsIn = (nodes: readonly Node[], into: Set<string>) => {
+  let { deciding } = options;
+  const decidingIn = (
+    nodes: readonly Node[],
+    into: { authors: Set<string>; changes: Set<string> }
+  ) => {
     for (const node of nodes) {
       for (const mark of readAuthoredMarks(node)) {
-        if (outcomeOf(mark.change) !== 'keep') into.add(mark.author);
+        if (outcomeOf(mark.change) === 'keep') continue;
+        into.authors.add(mark.author);
+        into.changes.add(mark.change);
       }
-      decidingAuthorsIn(node.children ?? [], into);
+      decidingIn(node.children ?? [], into);
     }
 
     return into;
   };
-  const deciders = () =>
-    (decidingAuthors ??=
+  const decidingCards = () =>
+    (deciding ??=
       typeof outcome === 'string'
         ? 'every'
-        : decidingAuthorsIn(children, new Set()));
-  const byAnotherAuthor = (mark: AuthoredMark) => {
-    const authors = deciders();
+        : decidingIn(children, { authors: new Set(), changes: new Set() }));
+  const onAnotherCard = (mark: AuthoredMark) => {
+    const cards = decidingCards();
 
     return (
       !isEditingChange(mark.change) &&
-      authors !== 'every' &&
-      !authors.has(mark.author)
+      cards !== 'every' &&
+      !cards.changes.has(mark.change)
     );
   };
-  const waitOnOwn = (marks: readonly AuthoredMark[]) => {
+  const onAnotherAuthorsCard = (mark: AuthoredMark) => {
+    const cards = decidingCards();
+
+    return (
+      onAnotherCard(mark) &&
+      cards !== 'every' &&
+      !cards.authors.has(mark.author)
+    );
+  };
+  const waitOnOwn = (
+    marks: readonly AuthoredMark[],
+    apart: (mark: AuthoredMark) => boolean
+  ) => {
     for (const mark of marks) {
-      if (decisionOf(mark) === 'keep' && !byAnotherAuthor(mark)) {
+      if (decisionOf(mark) === 'keep' && !apart(mark)) {
         waits.add(mark.change);
       }
     }
   };
+  const waitOnType = (marks: readonly AuthoredMark[]) =>
+    waitOnOwn(
+      marks.filter((mark) => mark.kind === 'format' && mark.key === 'type'),
+      onAnotherAuthorsCard
+    );
   const waitOnPlaceChanges = (at: readonly Node[]) => {
     for (const node of at) wait(pending(node).filter(isPlaceChange));
   };
@@ -1526,7 +1554,7 @@ const resolveIn = (
     outcome: (tag) =>
       isRejected(facts, tag) ? 'reject' : outcomeOf(tag.change),
     output: elementSplitOutput(schema?.ownership ?? null),
-    byAnotherAuthor,
+    onAnotherAuthorsCard,
   };
   const decidedPropsOf = (node: Node) =>
     decideFormats(propsOf(node), pending(node), reading)?.props ??
@@ -1623,7 +1651,7 @@ const resolveIn = (
       root,
       {
         ...options,
-        decidingAuthors: deciders(),
+        deciding: decidingCards(),
         dependencies: createDependencies(facts),
         facts,
       },
@@ -1696,7 +1724,7 @@ const resolveIn = (
     const others = new Set<string>();
     const settleWithOthersPending = (othersPending: ReadonlySet<string>) => {
       const undecided = (mark: AuthoredMark) => {
-        if (byAnotherAuthor(mark)) others.add(mark.change);
+        if (onAnotherAuthorsCard(mark)) others.add(mark.change);
 
         return (
           !decidedWholeByGridPart(mark, around.place) &&
@@ -1916,7 +1944,7 @@ const resolveIn = (
     const chain: readonly Node[] = [...[...ancestors].reverse(), ...site];
     const place = placeUnder(chain);
     const uncopied = (tag: FormatTag) =>
-      byAnotherAuthor(tag) &&
+      onAnotherAuthorsCard(tag) &&
       !own.some((mark) => mark.kind === 'format' && mark.id === tag.id);
     const left = halfOf(into, target, place, uncopied);
     // A save from before the recorder tagged the continuation's type shows
@@ -1969,7 +1997,7 @@ const resolveIn = (
       : (into.children ?? []).flatMap(contentMarksIn);
 
     const reshapedByAnother = () =>
-      pending(into).filter(isStructureChange).some(byAnotherAuthor);
+      pending(into).filter(isStructureChange).some(onAnotherCard);
     return !rejoins || keepsContent(into, joinOf(node)) || reshapedByAnother()
       ? { merges: true, reads }
       : { merges: false, reads: [...reads, ...subtreeMarks(into)] };
@@ -2122,7 +2150,7 @@ const resolveIn = (
     const othersPendingOnText = (mark: AuthoredMark) =>
       !editingJoin &&
       (mark.kind === 'insert' || mark.kind === 'delete') &&
-      byAnotherAuthor(mark) &&
+      onAnotherAuthorsCard(mark) &&
       marksNonEmptyText(mark);
     let target: Node | null = null;
     const waited =
@@ -2153,7 +2181,7 @@ const resolveIn = (
         retainedJoins.add(node);
         return;
       }
-      waitOnOwn(waiting);
+      waitOnOwn(waiting, onAnotherAuthorsCard);
       effect?.();
     };
 
@@ -2413,13 +2441,11 @@ const resolveIn = (
         ? candidate.node
         : null;
 
-    if (
-      previous &&
-      (!survives(previous) ||
-        mergedInto.has(previous) ||
-        emptiedTargets.has(previous))
-    ) {
-      waitOnOwn(joins);
+    if (!previous) return;
+    if (mergedInto.has(previous)) {
+      waitOnOwn(joins, onAnotherCard);
+    } else if (!survives(previous) || emptiedTargets.has(previous)) {
+      waitOnOwn(joins, onAnotherAuthorsCard);
     }
   });
 
@@ -2862,8 +2888,9 @@ const resolveIn = (
       if (ownMarkRemoves(node) && !survives(node)) {
         // Its pending cuts would have nothing to join, so they decide with it.
         if (whole) takenWhole.add(original);
-        else if (leftOfOneInBlockCut(node)) waitOnOwn(cutsOf(node));
-        else wait(cutsOf(node));
+        else if (leftOfOneInBlockCut(node)) {
+          waitOnOwn(cutsOf(node), onAnotherAuthorsCard);
+        } else wait(cutsOf(node));
         // Corrections derive values from elements, not from text runs.
         if (isText(node)) changed = true;
         else {
@@ -3056,7 +3083,10 @@ const resolveIn = (
         ) {
           unplaceable = true;
         }
-        waitOnOwn(pending({ [AUTHORED_MARKS_KEY]: formatted.kept }));
+        waitOnOwn(
+          pending({ [AUTHORED_MARKS_KEY]: formatted.kept }),
+          onAnotherCard
+        );
         // Unwrapping moves the join boundary of the block's first child and
         // of the block after it.
         waitOnOwn(
@@ -3064,7 +3094,8 @@ const resolveIn = (
             pending(item).filter(
               (mark) => mark.kind === 'join' || mark.kind === 'split'
             )
-          )
+          ),
+          onAnotherCard
         );
         landFormats();
         for (const at of childDirty) dirty.push(out.length + at);
@@ -3090,11 +3121,7 @@ const resolveIn = (
       }
       landFormats();
       if (emptied) {
-        waitOnOwn(
-          pending({ [AUTHORED_MARKS_KEY]: formatted.kept }).filter(
-            (mark) => !decidedWholeByGridPart(mark, above)
-          )
-        );
+        waitOnType(pending({ [AUTHORED_MARKS_KEY]: formatted.kept }));
         restructured = true;
       }
       out.push(track(element, original));
@@ -3194,17 +3221,9 @@ const resolveIn = (
   const waitOnBuild = (level: readonly Node[], at: readonly Node[]) => {
     const [parent, ...ancestors] = at;
 
-    // The element's type picks the content its completion builds for.
-    waitOnOwn(
-      pending(parent).filter(
-        (mark) => isPlaceChange(mark) || mark.kind === 'delete'
-      )
-    );
-    for (const child of level) {
-      waitOnOwn(pending(child).filter(isStructureChange));
-    }
-    for (const ancestor of ancestors) {
-      waitOnOwn(pending(ancestor).filter(isStructureChange));
+    waitOnType(pending(parent));
+    for (const node of [...level, ...ancestors]) {
+      waitOnOwn(pending(node).filter(isStructureChange), onAnotherAuthorsCard);
     }
   };
   const waitOnPrefix = (
@@ -3234,13 +3253,16 @@ const resolveIn = (
     completion: Completion<Node>,
     at: readonly Node[]
   ): Completion<Node> => {
-    const marks = at.flatMap((node) =>
-      pending(node).filter(
-        (mark) =>
-          (mark.kind === 'insert' || mark.kind === 'delete') &&
-          decisionOf(mark) === 'keep'
-      )
-    );
+    const marks = at.flatMap((node, index) => {
+      const kept = pending(node).filter((mark) => decisionOf(mark) === 'keep');
+
+      return [
+        ...kept.filter(
+          (mark) => mark.kind === 'insert' || mark.kind === 'delete'
+        ),
+        ...(index === 0 ? dissolveClaimsOf(kept) : []),
+      ];
+    });
 
     if (marks.length === 0 || completion.built.length === 0) return completion;
 
@@ -3852,7 +3874,7 @@ const mergeTextsWithEqualProps = (nodes: readonly Node[]): Node[] => {
 };
 
 type ValueResolveOptions = Readonly<{
-  decidingAuthors?: ReadonlySet<string>;
+  deciding?: DecidingCards;
   stores?: boolean;
   withdraws?: boolean;
 }>;

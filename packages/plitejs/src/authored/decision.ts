@@ -60,7 +60,7 @@ export type DecisionRequest = Readonly<{
 }>;
 
 export type DecisionSite = Readonly<{
-  book: Pick<BookView, 'idsIn' | 'occurrences' | 'pendingInOrder'>;
+  book: Pick<BookView, 'idsIn' | 'members' | 'occurrences' | 'pendingInOrder'>;
   resolveSchema: AuthoredResolveSchema;
   spares: SpareGuard | null;
 }>;
@@ -483,10 +483,15 @@ export const decide = (
 ): Decided => {
   const ids = [...actions.keys()];
   const outcome = (change: string) => actions.get(change) ?? 'keep';
-  const decidingAuthors = new Set(
-    ids.flatMap((id) => book.occurrences(id).map(({ mark }) => mark.author))
-  );
-  const resolveOptions = { decidingAuthors, stores: true, withdraws };
+  const deciding = {
+    authors: new Set(
+      ids.flatMap((id) => book.occurrences(id).map(({ mark }) => mark.author))
+    ),
+    changes: new Set(
+      ids.flatMap((id) => [id, ...book.members(id).map((entry) => entry.id)])
+    ),
+  };
+  const resolveOptions = { deciding, stores: true, withdraws };
   const windows = decisionWindowsOf(
     value,
     ids,
@@ -612,20 +617,20 @@ export const decide = (
     node.text !== '' &&
     !insideTaken(value, root, path, resolution.takenWhole) &&
     (root === MAIN_ROOT_KEY || !rootsTaken().has(root));
-  const undecidedLosingText = book
+  const decidersLosingText = book
     .pendingInOrder(new Set([...candidates, ...inDroppedRoots]))
     .filter(
       (id) =>
         !actions.has(id) &&
         book
           .occurrences(id)
-          .some(({ mark }) => decidingAuthors.has(mark.author)) &&
+          .some(({ mark }) => deciding.authors.has(mark.author)) &&
         (inDroppedRoots.has(id) ||
           (!remains(id) && book.occurrences(id).some(losesText)))
     );
 
-  if (undecidedLosingText.length > 0) {
-    return { status: 'blocked', with: undecidedLosingText };
+  if (decidersLosingText.length > 0) {
+    return { status: 'blocked', with: decidersLosingText };
   }
 
   const records = recordOpsBetween(
