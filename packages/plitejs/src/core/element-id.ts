@@ -1,4 +1,5 @@
 import type { Editor } from '../interfaces/editor';
+import type { JsonRecord } from './change/json';
 import { isElementNode, type JsonNode } from './change/tokens';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { canonicalRecordJson } from './record-store';
@@ -7,6 +8,15 @@ export const storedElementIdOf = (node: JsonNode): string | undefined => {
   const id = isElementNode(node) ? node.id : undefined;
 
   return typeof id === 'string' ? id : undefined;
+};
+
+export const withoutStoredElementId = (
+  props: Readonly<JsonRecord>
+): Readonly<JsonRecord> => {
+  if (typeof props.id !== 'string') return props;
+  const { id: _id, ...rest } = props;
+
+  return rest;
 };
 
 type Pairs = Array<readonly [old: number, incoming: number]>;

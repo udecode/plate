@@ -1,4 +1,5 @@
 import type { EditorDocumentRecords } from '../../interfaces/editor';
+import { withoutStoredElementId } from '../element-id';
 import {
   canonicalRecordJson,
   getValueRecords,
@@ -779,8 +780,7 @@ const factsOf = (streams: Streams): Facts => {
       );
       for (const node of nodes) {
         if (node.token.nodeKind === 'text') {
-          const { block } = context;
-          const blockId = block?.token.id ?? `${ROOT}${root}`;
+          const blockId = context.block?.token.id ?? `${ROOT}${root}`;
           const held = blocks.get(blockId) ?? [];
           blocks.set(blockId, held);
           for (const token of [node.token, ...node.letters, node.close]) {
@@ -792,7 +792,7 @@ const factsOf = (streams: Streams): Facts => {
             letters.set(letter.id, {
               anc: `${root}:${context.types.join('/')}|${inline}`,
               block: blockId,
-              blockProps: block?.token.props ?? {},
+              blockProps: elements.get(blockId)?.props ?? {},
               inline,
               root,
               text: node.token.props ?? {},
@@ -804,7 +804,7 @@ const factsOf = (streams: Streams): Facts => {
           }
           continue;
         }
-        const props = node.token.props ?? {};
+        const props = withoutStoredElementId(node.token.props ?? {});
         const type = typeof props.type === 'string' ? props.type : 'element';
         const isBlock = !holdsText;
         const at = siblings.indexOf(node);
