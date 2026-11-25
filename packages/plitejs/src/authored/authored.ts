@@ -2634,7 +2634,7 @@ export const createAuthoredPlugin = (
             ? sparesFor(
                 recordedValue as EditorDocumentValue,
                 compiled,
-                changedSitesOf(recordedLater, recordedIndexes),
+                changedSitesOf(recordedLater, recordedIndexes, before),
                 deferred.map(({ index, ...build }) => ({
                   ...build,
                   node:
@@ -2652,7 +2652,8 @@ export const createAuthoredPlugin = (
                     ) ?? build.node,
                   writer: owned ? null : mark,
                 })),
-                spareBlocksOf(recordedValue)
+                spareBlocksOf(recordedValue),
+                writer
               )
             : NO_SPARE_WRITES;
           const spares =

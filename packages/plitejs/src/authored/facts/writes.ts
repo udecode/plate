@@ -28,7 +28,7 @@ import {
   readMembers,
   type ReserveMember,
 } from '../tree/marks';
-import { claimsOf, factsOf, type ReviewFacts } from './facts';
+import { claimsOf, factsOf, holdsBase, type ReviewFacts } from './facts';
 import {
   CONTEXTS,
   type ContextRecord,
@@ -306,21 +306,6 @@ const slotKeyOf = ({ slot }: Pick<ReserveMember, 'slot'>) =>
 
 const baseOf = ({ at, author, change, inc }: MarkBase) =>
   memberOf({ at, author, change, ...(inc === undefined ? {} : { inc }) });
-
-const holdsBase = (
-  nodes: readonly unknown[],
-  base: MarkBase,
-  facts: ReviewFacts
-) => {
-  const incarnation = incarnationOf(base);
-
-  return nodes.some((node) =>
-    claimsOf(node, facts).some(
-      (claim) =>
-        claim.author === base.author && incarnationOf(claim) === incarnation
-    )
-  );
-};
 
 const childrenOf = (node: unknown): readonly unknown[] => {
   const { children } = node as { children?: unknown };

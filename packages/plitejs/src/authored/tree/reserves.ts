@@ -2,6 +2,7 @@ import {
   createInternalDocumentChange,
   type DocumentChange,
   getInternalDocumentRootChange,
+  valueRootIndex,
 } from '../../core/change/document-change';
 import type { DocumentIndex } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
@@ -42,6 +43,7 @@ import { createDependencies } from '../facts/dependencies';
 import {
   type ContextLookup,
   factsOf,
+  holdsBase,
   type ReviewFacts,
   standingClaimsOf,
   undecided,
@@ -384,7 +386,8 @@ export const sparesFor = (
   schema: CompiledEditorSchema,
   sites: Iterable<SpareSite>,
   fills: readonly DeferredFill[] = [],
-  blocks: SpareBlocks | null = null
+  blocks: SpareBlocks | null = null,
+  author: string | null = null
 ): SpareWrites => {
   const generating = generatingOf(schema);
 
@@ -433,10 +436,27 @@ export const sparesFor = (
     const writer = firstOf(claims);
     const filling = fillsAt.get(siteKey) ?? [];
 
-    if (!writer && filling.length === 0) continue;
-
     const stored = container ? sparesIn(container) : [];
     const rootStored = container ? [] : rootSparesOf(value, site.root);
+
+    if (!writer && filling.length === 0) {
+      const siteNodes = container ? [container, ...level] : level;
+      const takenBackByWriter = (
+        spare: MarkBase & Readonly<{ built?: true }>
+      ) =>
+        !spare.built &&
+        spare.author === author &&
+        !holdsBase(siteNodes, spare, facts);
+      const dropped = stored.filter(takenBackByWriter);
+
+      if (dropped.length > 0) {
+        containers.push({ ...site, added: [], replaced: dropped });
+      }
+      for (const { id, record } of rootStored) {
+        if (takenBackByWriter(record)) records.set(id, null);
+      }
+      continue;
+    }
     const siteOf = (type: string | null) =>
       container
         ? ([
@@ -764,6 +784,38 @@ export const withSpareWrites = <V extends EditorDocumentValue>(
   );
 };
 
+function* removedElementHostsOf(
+  rootChange: RootChange,
+  was: DocumentIndex,
+  index: DocumentIndex,
+  fromA: number,
+  toA: number
+): Generator<Path> {
+  for (const entry of was.nodeRangesTouching(fromA, toA)) {
+    const close = entry.to - 1;
+
+    if (
+      entry.kind !== 'element' ||
+      (!(fromA <= entry.from && entry.from < toA) &&
+        !(fromA <= close && close < toA))
+    ) {
+      continue;
+    }
+
+    const parent = entry.path.slice(0, -1);
+
+    if (parent.length === 0) {
+      yield parent;
+      continue;
+    }
+
+    const start = rootChange.mapPos(was.nodeRange(parent).from, -1);
+    const host = start === null ? null : index.nodeStartingAt(start);
+
+    if (host?.from === start && host.kind === 'element') yield host.path;
+  }
+}
+
 /**
  * The containers a recorded `change` touched, read in `indexes`, the
  * document after it: each element whose own tokens it wrote, the element or
@@ -774,7 +826,8 @@ export const withSpareWrites = <V extends EditorDocumentValue>(
  */
 export function* changedSitesOf(
   change: DocumentChange,
-  indexes: ReadonlyMap<string, DocumentIndex>
+  indexes: ReadonlyMap<string, DocumentIndex>,
+  before: JsonEditorValue
 ): Generator<SpareSite> {
   for (const [root, index] of indexes) {
     const rootChange = getInternalDocumentRootChange(change, root);
@@ -783,8 +836,22 @@ export function* changedSitesOf(
 
     const paths = new Map<string, Path>();
     const add = (path: Path) => paths.set(path.join(','), path);
+    let was: DocumentIndex | undefined;
 
-    rootChange.iterChangedRanges((_fromA, _toA, from, to) => {
+    rootChange.iterChangedRanges((fromA, toA, from, to) => {
+      if (fromA < toA) {
+        was ??= valueRootIndex(before, root);
+        for (const path of removedElementHostsOf(
+          rootChange,
+          was,
+          index,
+          fromA,
+          toA
+        )) {
+          add(path);
+        }
+      }
+
       const open = index
         .openContextAt(from)
         .filter(

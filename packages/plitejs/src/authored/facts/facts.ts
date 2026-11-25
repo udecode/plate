@@ -979,6 +979,21 @@ export const claimsOf = (
   return claims;
 };
 
+export const holdsBase = (
+  nodes: readonly unknown[],
+  base: MarkBase,
+  facts: ContextLookup
+) => {
+  const incarnation = incarnationOf(base);
+
+  return nodes.some((node) =>
+    claimsOf(node, facts).some(
+      (claim) =>
+        claim.author === base.author && incarnationOf(claim) === incarnation
+    )
+  );
+};
+
 export const marksOf = (
   node: unknown,
   facts: ReviewFacts
