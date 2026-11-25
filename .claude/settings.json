@@ -30,6 +30,11 @@
           },
           {
             "type": "command",
+            "command": "D=\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/pstack-doctor/scripts/doctor.mjs\"; [ ! -f \"$D\" ] || node \"$D\" due --hook || exit 1",
+            "timeout": 30
+          },
+          {
+            "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f tooling/scripts/dev-servers.mjs ] || node tooling/scripts/dev-servers.mjs --hook; }",
             "timeout": 30
           }

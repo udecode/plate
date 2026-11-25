@@ -39,6 +39,11 @@
             "type": "command",
             "command": "f=\"$(git rev-parse --show-toplevel)/tooling/scripts/relapse-due.mjs\"; [ ! -f \"$f\" ] || node \"$f\" --codex",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.agents/skills/pstack-doctor/scripts/doctor.mjs\"; [ ! -f \"$f\" ] || node \"$f\" due --hook || exit 1",
+            "timeout": 30
           }
         ]
       }
