@@ -11,8 +11,8 @@ Every Potion task runs from a Plate session; nobody runs a session inside Potion
 ## Paths and delivery
 
 - Potion's main checkout is `potion` beside Plate's main checkout, which is the parent of `git rev-parse --path-format=absolute --git-common-dir`. When that folder does not exist, say so and stop.
-- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: commit in a Potion worktree of its own, fast-forward the branch it was cut from, and never push.
-- A reply names a Potion commit by its short sha, with no link, because no remote holds it.
+- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: commit in a Potion worktree of its own cut from `origin/next`, fast-forward Potion's `next` and push it.
+- A reply links a pushed Potion commit as any other repository's commit, and names one no remote holds yet by its short sha alone.
 
 ## Plate first
 
