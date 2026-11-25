@@ -76,6 +76,7 @@ or changing a `*-app` file.
 | `src/registry/lib/database-grid.ts` and its test `database-grid.test.ts` | own | The table's keyboard cursor model: cursor state by row and column id, a key-to-action table, edge clamping, "Show more", and repair after rows or columns change. Pure functions, no DOM | 2026-11-19 |
 | `src/registry/components/editor/database-cell.tsx` | own | The table cell editor: mounted only while editing, saves on Enter, Tab, Escape and an outside click, and edits text, number, date, select and checkbox by type | 2026-11-19 |
 | `src/registry/lib/database-clipboard.ts` and its test `database-clipboard.test.ts` | own | The table's clipboard: writes a range as tab-separated text, an HTML table and a Potion type, and reads a paste from the Potion type, an HTML table or tab-separated text into the writes, new rows and new select options a paste makes. Pure functions, no DOM beyond `DOMParser` | 2026-11-23 |
+| `src/registry/components/editor/database-row-properties.tsx` | own | A row's properties under its name, on its full page and in the row drawer: each value edits as its table cell does, reusing the table's cell editor and select picker, and Cmd+Z and redo in the list go to the row editor's history. Data and edit functions come from `useDatabase` in plugin state | 2026-11-25 |
 
 ## App files
 
