@@ -816,6 +816,8 @@ export const steps = [
       'packages/plitejs/package.json',
       'packages/plitejs/src/',
       'packages/plitejs/type-tests/plite-call-parity.tsx',
+      'packages/test/package.json',
+      'packages/test/src/',
       'tooling/scripts/plite-call-parity.json'
     ),
     key: [],
@@ -982,9 +984,12 @@ export const steps = [
       canRetargetImports(files, retargeted) ||
       files.filter((file) => CODE.test(file)),
     key: [],
-    // Resolving an import probes the generated folder, and no file in it can
-    // be private.
-    ignoredReads: ['apps/www/.source/'],
+    // Resolving an import probes these generated folders, and git ignores them,
+    // so no file in them can be private.
+    ignoredReads: [
+      'apps/www/.source/',
+      'apps/www/src/__registry__/create-preview/',
+    ],
   },
   {
     name: 'manifests',
@@ -1061,11 +1066,12 @@ export const steps = [
       'tooling/scripts/private-files.mjs'
     ),
     key: [],
-    filesOnly: true,
-    // Its own commands build these from packages/ and content/ before its
-    // scripts read them.
+    // Its own commands build these from tracked sources before its scripts
+    // read them; build-registry reads its old preview trees only to drop stale
+    // files and skip unchanged ones, so they never change what it writes.
     ignoredReads: [
       'apps/www/.source/',
+      'apps/www/src/__registry__/create-preview/',
       'packages/cli/dist/',
       'packages/platejs/dist/',
       'packages/plitejs/dist/',

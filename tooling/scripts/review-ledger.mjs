@@ -139,10 +139,13 @@ function repoPath(path) {
 
 /** Live observation of the working tree, memoized for one command. */
 export function observe(root) {
+  let visible;
   let listed;
   const digests = new Map();
+  const visibleFiles = () =>
+    (visible ??= new Set(trackedFiles(root, { untracked: true })));
   const files = () => {
-    listed ??= trackedFiles(root, { untracked: true })
+    listed ??= [...visibleFiles()]
       .filter(
         (path) =>
           path &&
@@ -155,11 +158,15 @@ export function observe(root) {
       .sort(bySegment);
     return listed;
   };
+  // The ledger digests only files git lists, so a record naming an ignored
+  // file finds it missing and no rebuild or local file changes its answer.
   const fileDigest = (path) => {
     if (!digests.has(path)) {
       digests.set(
         path,
-        existsSync(join(root, path)) && statSync(join(root, path)).isFile()
+        visibleFiles().has(path) &&
+          existsSync(join(root, path)) &&
+          statSync(join(root, path)).isFile()
           ? hash(readFileSync(join(root, path)))
           : null
       );
