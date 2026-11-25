@@ -483,7 +483,7 @@ function hook({ dir, root }) {
     JSON.stringify({
       decision: 'block',
       reason: [
-        `The hand drive is not done: ${open.length} cells and ${result.unmapped.length} unmapped files are open for the browser-visible files this session edited. Open each cell's page in the built-in browser against the www-drive server at desktop width in light, at least ${SETTLE_MS / 1000} s after the last edit to its files, take a screenshot and read it, then run node tooling/scripts/hand-drive.mjs check, as verify's Hand drive section says. The owner's message starting with "skip drive" waives the edits made before it.`,
+        `The hand drive is not done: ${open.length} cells and ${result.unmapped.length} unmapped files are open for the browser-visible files this session edited. Open each cell's page in the built-in browser against the www-drive server in light, in a tab at least ${DESKTOP_MIN_WIDTH} px wide, such as 1280x900, because the pane often opens narrower, at least ${SETTLE_MS / 1000} s after the last edit to its files, take a screenshot and read it, then run node tooling/scripts/hand-drive.mjs check, as verify's Hand drive section says. The owner's message starting with "skip drive" waives the edits made before it.`,
         ...lines.slice(0, 40),
         ...(lines.length > 40 ? [`… and ${lines.length - 40} more`] : []),
       ].join('\n'),
