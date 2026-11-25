@@ -375,9 +375,9 @@
       ".agents/pstack/rules/time.md": "c083944ff161c08480f33eb592f3789296a05d331155fa331fa815683793718a",
       ".agents/pstack/rules/title.md": "9f32f41e312d3c44f5fcde7cd1dd9fe2de8fec03ef43812bb56f7e9cc9f40519",
       ".agents/pstack/rules/writing.md": "a05ad96003883899b7274d0e1eb0de38a54982209d18410deb2f237d78f364af",
-      ".claude/pstack-models.md": "13ad894ff4c98d47542efdcff2931bc96627a508e67f88674f42e4bd2b2a8f58"
+      ".claude/pstack-models.md": "61db71dda6db7d68ef76b9df91e761b07efd229107b456d848ea4a318a6ca684"
     },
-    "source": "0d38083792cfb912a4a921674a39abb404e54336"
+    "source": "74a48d19dcebff71cbb2cc9391ec56835e248604"
   },
   "pageTopic": {
     "field": "review_scopes",
