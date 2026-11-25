@@ -244,6 +244,30 @@ export const UNSCOPED_ORIGINS: ReadonlySet<DraftStepOrigin> = new Set([
   'migration',
 ]);
 
+const lettersBeyond = (letters: NewLetters, covered: NewLetters) => {
+  const beyond = new Map<string, LetterSpan[]>();
+
+  for (const [root, spans] of letters) {
+    const held = mergeSpans(covered.get(root) ?? []);
+    const rest: LetterSpan[] = [];
+    let next = 0;
+
+    for (const [from, to] of mergeSpans(spans)) {
+      let start = from;
+
+      while (next < held.length && held[next][1] <= start) next += 1;
+      for (let at = next; at < held.length && held[at][0] < to; at += 1) {
+        if (held[at][0] > start) rest.push([start, held[at][0]]);
+        start = Math.max(start, held[at][1]);
+      }
+      if (start < to) rest.push([start, to]);
+    }
+    if (rest.length > 0) beyond.set(root, rest);
+  }
+
+  return beyond;
+};
+
 const isClassified = (change: DocumentChange) =>
   [...getInternalDocumentChangeEntries(change)].every(([root]) =>
     getInternalDocumentChangeClassification(change, root)
@@ -290,6 +314,17 @@ export type DraftStep = Readonly<{
   letters?: NewLetters;
   fit?: Readonly<{ lookAlike?: RootChange; paste: object }>;
   facts: ChangeFacts;
+}>;
+
+/** @internal */
+export type DraftCheckpoint = Readonly<{
+  change: DocumentChange;
+  indexedAfter: ReadonlyMap<string, DocumentIndex>;
+  letters: NewLetters;
+  record: DraftFacts | null;
+  sinceValidated: SinceValidated | null;
+  spanStart: number;
+  steps: readonly DraftStep[];
 }>;
 
 /** @internal */
@@ -474,17 +509,15 @@ export class ChangeDraft {
 
   /** @internal */
   completedTextDeletion(): CompletedTextDeletion | null {
-    const split = this.appliedSteps.findIndex(
-      (step) => step.origin === 'canonical'
-    );
+    const split =
+      this.appliedSteps.findLastIndex((step) => step.origin !== 'canonical') +
+      1;
 
-    if (split <= 0) return null;
+    if (split === 0 || split === this.appliedSteps.length) return null;
 
     const own = this.appliedSteps.slice(0, split);
-    const completion = this.appliedSteps.slice(split);
 
     if (
-      completion.some((step) => step.origin !== 'canonical') ||
       own.some(
         ({ change }) =>
           change.createRoots.size > 0 || change.deleteRoots.size > 0
@@ -547,19 +580,40 @@ export class ChangeDraft {
     return this.marks;
   }
 
-  /**
-   * Keep the steps of a draft this one replaces, such as a schema rebind that
-   * replays the accumulated change, so each original step stays recordable.
-   *
-   * @internal
-   */
-  keepSteps(from: ChangeDraft) {
+  /** @internal */
+  checkpoint(): DraftCheckpoint {
+    return {
+      change: this.accumulated,
+      indexedAfter: this.indexedAfter(),
+      letters: this.marks,
+      record: this.record?.clone() ?? null,
+      sinceValidated: this.sinceValidated,
+      spanStart: this.spanStart,
+      steps: [...this.appliedSteps],
+    };
+  }
+
+  /** @internal */
+  resume(checkpoint: DraftCheckpoint): DocumentChangeStep | null {
+    const step = checkpoint.change.empty
+      ? null
+      : this.apply(checkpoint.change, {
+          indexedAfter: checkpoint.indexedAfter,
+        });
+
     this.appliedSteps.length = 0;
-    this.appliedSteps.push(...from.appliedSteps);
-    this.marks = from.marks;
-    this.record = from.record?.clone() ?? null;
-    this.sinceValidated = from.sinceValidated;
-    this.spanStart = from.spanStart;
+    this.appliedSteps.push(...checkpoint.steps);
+    this.marks = checkpoint.letters;
+    this.record = checkpoint.record?.clone() ?? null;
+    this.sinceValidated = checkpoint.sinceValidated;
+    this.spanStart = checkpoint.spanStart;
+
+    return step;
+  }
+
+  /** @internal */
+  stepsSince(checkpoint: DraftCheckpoint | undefined): readonly DraftStep[] {
+    return this.appliedSteps.slice(checkpoint?.steps.length ?? 0);
   }
 
   factsFor(change: DocumentChange): ChangeFacts {
@@ -698,14 +752,18 @@ export class ChangeDraft {
   }
 
   private land(step: DraftStep) {
-    this.appliedSteps.push(step);
-    if (this.marks.size === 0 && !step.letters) return;
+    if (this.marks.size === 0 && !step.letters) {
+      this.appliedSteps.push(step);
+      return;
+    }
 
     const marks = landMarks(this.marks, step);
+    const unlanded = step.letters && lettersBeyond(step.letters, marks);
 
-    for (const [root, spans] of step.letters ?? []) {
+    for (const [root, spans] of unlanded ?? []) {
       marks.set(root, mergeSpans([...(marks.get(root) ?? []), ...spans]));
     }
+    this.appliedSteps.push(unlanded ? { ...step, letters: unlanded } : step);
     this.marks = marks;
   }
 
@@ -2284,13 +2342,7 @@ const sameRootChanges = (left: DocumentChange, right: DocumentChange) => {
 const sameSet = (left: ReadonlySet<string>, right: ReadonlySet<string>) =>
   left.size === right.size && [...left].every((item) => right.has(item));
 
-/**
- * The runs `steps` carried, as their composed change carries them: each
- * run's source in the first step's input and its landing in the last step's
- * output. A later step that edits inside a run ends it.
- *
- * @internal
- */
+/** @internal */
 export const carriedRunsOf = (
   steps: readonly DraftStep[]
 ): readonly CarriedRun[] => {
@@ -2298,7 +2350,6 @@ export const carriedRunsOf = (
 
   const rootChange = (step: DraftStep, root: string) =>
     getInternalDocumentRootChange(step.change, root) ?? null;
-  // Composed once per root, so a draft of many moves stays quadratic.
   const drafts = new Map<string, Array<RootChange | null>>();
   const draftBefore = (root: string, step: number) => {
     const composed = drafts.get(root) ?? [null];
@@ -2313,54 +2364,80 @@ export const carriedRunsOf = (
 
     return composed[step];
   };
-  // Each run keeps its source in the input of the step that carried it,
-  // because an earlier step may have deleted tokens around it.
-  let runs: Array<Readonly<{ run: CarriedRun; step: number }>> = [];
+  let runs: Array<Readonly<{ carriedAt: number; run: CarriedRun }>> = [];
+  const dropRewrittenLeaves = (
+    run: CarriedRun | null,
+    carriedAt: number,
+    after: DocumentIndex | undefined
+  ) =>
+    run && after && run.length !== run.landed
+      ? trimRunLeaves(
+          run,
+          getDefined(steps[carriedAt].indexedBefore.get(run.root)),
+          after
+        )
+      : run;
 
   for (const [index, step] of steps.entries()) {
-    runs = runs.flatMap(({ run, step: carriedAt }) => {
+    runs = runs.flatMap(({ carriedAt, run }) => {
+      if (step.change.deleteRoots.has(run.root)) return [];
+
       const change = rootChange(step, run.root);
 
-      if (!change) return [{ run, step: carriedAt }];
+      if (!change) return [{ carriedAt, run }];
 
       const before = step.indexedBefore.get(run.root);
       const after = step.indexedAfter.get(run.root);
-      const mapped =
+      const mapped = dropRewrittenLeaves(
         before && after
           ? followCarriedRun(run, change, before, after)
-          : mapCarriedRunThrough(run, change);
+          : mapCarriedRunThrough(run, change),
+        carriedAt,
+        after
+      );
 
-      return mapped ? [{ run: mapped, step: carriedAt }] : [];
+      return mapped ? [{ carriedAt, run: mapped }] : [];
     });
-    for (const run of step.carried ?? []) runs.push({ run, step: index });
+    for (const carried of step.carried ?? []) {
+      const run = dropRewrittenLeaves(
+        carried,
+        index,
+        step.indexedAfter.get(carried.root)
+      );
+
+      if (run) runs.push({ carriedAt: index, run });
+    }
   }
 
-  return runs.flatMap(({ run: carried, step }) => {
-    const landingLeavesRewritten = carried.length !== carried.landed;
-    const run = landingLeavesRewritten
-      ? trimRunLeaves(
-          carried,
-          getDefined(steps[step].indexedBefore.get(carried.root)),
-          getDefined(
-            steps
-              .findLast((each) => each.indexedAfter.has(carried.root))
-              ?.indexedAfter.get(carried.root)
-          )
-        )
-      : carried;
-
-    if (!run) return [];
-
+  return runs.flatMap(({ carriedAt, run }) => {
     const end = run.source + run.length;
-    const draft = draftBefore(run.root, step);
+    const draft = draftBefore(run.root, carriedAt);
     const kept = draft
       ? keptRunsOf(draft, run.source, end)
       : [{ at: run.source, from: run.source, to: end }];
 
-    return kept.length === 1 &&
-      kept[0].from === run.source &&
-      kept[0].to === end
-      ? [{ ...run, source: kept[0].at }]
+    if (
+      kept.length !== 1 ||
+      kept[0].from !== run.source ||
+      kept[0].to !== end
+    ) {
+      return [];
+    }
+
+    const traced = { ...run, source: kept[0].at };
+    const change = draftBefore(run.root, steps.length);
+    const before = steps
+      .find((step) => step.indexedBefore.has(run.root))
+      ?.indexedBefore.get(run.root);
+    const after = steps
+      .findLast((step) => step.indexedAfter.has(run.root))
+      ?.indexedAfter.get(run.root);
+
+    return change &&
+      before &&
+      after &&
+      carriesRun(change, before, after, traced)
+      ? [traced]
       : [];
   });
 };

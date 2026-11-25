@@ -4,7 +4,8 @@ import type {
   EditorUpdateTag,
   Selection,
 } from '../interfaces/editor';
-import type { DraftStep } from './change/builder';
+import { carriedRunsOf, type DraftStep } from './change/builder';
+import type { CarriedRun } from './change/carried-run';
 import type { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import type { CommandProjection } from './command-document';
@@ -72,6 +73,40 @@ export type PositionMap = (
   position: number,
   assoc: -1 | 1
 ) => number | null;
+
+/** @internal */
+export const recordedCarriedRuns = (
+  steps: readonly DraftStep[],
+  writtenToRecorded: PositionMap,
+  startToRecordedStart: PositionMap = (_root, position) => position
+): readonly CarriedRun[] =>
+  carriedRunsOf(steps).flatMap((run): CarriedRun[] => {
+    const source = startToRecordedStart(run.root, run.source, 1);
+    const sourceEnd = startToRecordedStart(
+      run.root,
+      run.source + run.length,
+      -1
+    );
+    const at = writtenToRecorded(run.root, run.at, 1);
+    const end = writtenToRecorded(run.root, run.at + run.landed, -1);
+
+    return source === null ||
+      sourceEnd === null ||
+      at === null ||
+      end === null ||
+      sourceEnd <= source ||
+      end <= at
+      ? []
+      : [
+          {
+            at,
+            landed: end - at,
+            length: sourceEnd - source,
+            root: run.root,
+            source,
+          },
+        ];
+  });
 
 /**
  * A command frame's draft: `mapPosition` maps a position of `stored` to what
