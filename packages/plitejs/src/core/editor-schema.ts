@@ -260,6 +260,7 @@ const generatePropertyValue = (
   }
   if (draws?.descriptor === property.descriptor) return draws.draw();
 
+  countCoreWork('generatorDraws');
   try {
     return property.descriptor.generate?.();
   } catch (error) {

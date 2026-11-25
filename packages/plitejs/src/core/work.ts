@@ -64,6 +64,7 @@ export type CoreWork = {
   documentValues: number;
   /** Top-level blocks the authored stored-block index took in or let go. */
   heldBlocks: number;
+  generatorDraws: number;
   /** Values a settlement's worklist took from its stack to try a shower for. */
   contenderVisits: number;
   /** Reads waiting on an incarnation a commit decided, which settlement reached. */
@@ -270,6 +271,7 @@ export const coreWork: CoreWork = {
   formerPlaceVisits: 0,
   documentValues: 0,
   heldBlocks: 0,
+  generatorDraws: 0,
   contenderVisits: 0,
   decidedReads: 0,
   decisionBlocks: 0,

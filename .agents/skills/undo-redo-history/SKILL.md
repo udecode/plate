@@ -207,6 +207,7 @@ Synced at `feat(plitejs): record the facts of every command behind an internal o
 | `packages/plitejs/scripts/authored-documents.ts` | the document shapes |
 | `packages/plitejs/scripts/undo-redo-history-letters.ts` | the other peer's letter commands and their laws |
 | `packages/plitejs/scripts/undo-redo-history-exact.ts` | the labelled tree `--exact` compares each press with |
+| `packages/plitejs/test/support/unasked-ids.ts` | the document comparison every law uses, which leaves out an element id the expected document does not name |
 
 To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "record the facts of every command"`, then run `git log --oneline <that commit>..HEAD --` with the table's files. The scripts and the test support live in the private half, which lands a commit with the same subject, so run `git --git-dir=.git-private log` the same way on the table's files under `packages/plitejs/scripts/` and `packages/plitejs/test/support/` and on `packages/plitejs/scripts/undo-redo-history.ts`. For each commit it lists, read the diff and confirm three things. A new update policy or grouping rule is a mode or a law. A new refusal the editor gives on purpose is still an `EditorRefusalError`. The laws still compare with the documents the script recorded before each step, not with the history's own output. Move the sync commit in this file forward, naming its subject, only after that check, a run of `pnpm check:undo-redo-history`, and a run of `--exact` in each mode.
 

@@ -190,6 +190,7 @@ Synced at `test(plitejs): run the delete and paste range check over a code block
 | `packages/plitejs/test/support/recording-laws.ts` | `editorFor`, `rootChildren` and `isRefusal` |
 | `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate |
 | `packages/plitejs/scripts/authored-documents.ts` | `story`, which names each document |
+| `packages/plitejs/test/support/unasked-ids.ts` | `matchesDocument`, which compares each document the oracle builds and leaves out an element id the expected document does not name |
 | `packages/plitejs/src/editor/insert-break.ts` | Return, which the mixed world runs at every caret of a text line and a paragraph |
 | `packages/plitejs/src/core/content-completion.ts` | the spacers and empty texts loading keeps, which the mixed world's `range-canonical` copies and its load check compares |
 

@@ -163,6 +163,7 @@ Synced at `test(plitejs): check every recording command's accept and reject on e
 | `packages/plitejs/src/history/history-state.ts` | undo, redo and the mapping through a remote paragraph |
 | `packages/plitejs/test/support/recording-laws.ts` | the laws the check and the sampled spec share |
 | `packages/plitejs/scripts/authored-documents.ts` | the documents both formal checks build |
+| `packages/plitejs/test/support/unasked-ids.ts` | the document comparison `documentsMatch` uses, which leaves out an element id the expected document does not name |
 
 To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "check every recording command's accept and reject"`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `packages/plitejs/scripts/authored-recording-order.ts`. For each commit it lists, read the diff and confirm three things. A new command or mark kind that recording writes is in `actsOf` or the builder. A new refusal the editor gives on purpose is still an `EditorRefusalError`. The laws still compare with a plain editor, not with the resolver's own output. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:authored-recording`.
 

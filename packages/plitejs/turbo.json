@@ -652,6 +652,7 @@
         "test/support/mixed-lines-enter.ts",
         "test/support/recording-laws.ts",
         "test/support/schema.ts",
+        "test/support/unasked-ids.ts",
         "test/support/work-budget.ts",
         "test/yjs/support/collaboration.ts",
         "test/yjs/support/provider.ts",
