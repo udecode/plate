@@ -43,6 +43,22 @@ export const isRunEvent = (event) => RUN_KINDS.has(event.kind);
 export const startsBrokenStreak = (events) =>
   events.findLast(isRunEvent)?.kind !== 'broken';
 
+export const searchFirstBad = (commits, fails, deadline) => {
+  if (Date.now() < deadline && fails(commits[0])) {
+    return { failsAtStart: commits[0] };
+  }
+  let good = 0;
+  let bad = commits.length - 1;
+  while (bad - good > 1 && Date.now() < deadline) {
+    const mid = Math.floor((good + bad) / 2);
+    if (fails(commits[mid])) bad = mid;
+    else good = mid;
+  }
+  return bad - good === 1
+    ? { culprit: commits[bad] }
+    : { range: `${commits[good]}..${commits[bad]}` };
+};
+
 const OUTCOMES = ['fixed', 'chip', 'dropped'];
 const FIXED_BY = ['fix', 'same', 'commit'];
 const MAX_FAILURES = 2;

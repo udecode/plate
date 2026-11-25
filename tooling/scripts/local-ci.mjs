@@ -45,6 +45,7 @@ import {
   localCiFiles,
   readLocalCiEvents,
   readLocalCiState,
+  searchFirstBad,
 } from './local-ci-events.mjs';
 import { newPrivateFiles, PRIVATE_DIR } from './private-files.mjs';
 import {
@@ -391,40 +392,47 @@ const backToTip = (tip) => {
   }
 };
 
-// Binary search over next's first-parent commits after `green`, while the
-// hour lasts; returns the first bad commit or the range still unsearched.
-const firstBad = (logs, step, green, tip, deadline, target) => {
-  const commits = must(main, [
-    'rev-list',
-    '--first-parent',
-    '--reverse',
-    `${green}..${tip}`,
-  ]).split('\n');
-  let good = -1;
-  let bad = commits.length - 1;
+const firstBad = (
+  logs,
+  step,
+  green,
+  tip,
+  deadline,
+  target,
+  failedFilesRerun
+) => {
+  const commits = [
+    green,
+    ...must(main, [
+      'rev-list',
+      '--first-parent',
+      '--reverse',
+      `${green}..${tip}`,
+    ]).split('\n'),
+  ];
+  const fails = (sha) => {
+    checkout(sha);
+    const name = runId(sha, failedFilesRerun ? `${step}-failed` : step);
+    const probe = failedFilesRerun
+      ? shell(logs, name, failedFilesRerun)
+      : check(logs, name, [step]);
+    return (
+      !probe.ok &&
+      (target.length === 0 ||
+        [...readFailures(probe.log, step).keys()].some((key) =>
+          target.includes(key)
+        ))
+    );
+  };
   try {
-    while (bad - good > 1 && Date.now() < deadline) {
-      const mid = Math.floor((good + bad) / 2);
-      checkout(commits[mid]);
-      const probe = check(logs, runId(commits[mid], step), [step]);
-      const failed =
-        !probe.ok &&
-        (target.length === 0 ||
-          [...readFailures(probe.log, step).keys()].some((key) =>
-            target.includes(key)
-          ));
-      if (failed) bad = mid;
-      else good = mid;
-    }
+    const found = searchFirstBad(commits, fails, deadline);
+    if (found.culprit) return commitInfo(found.culprit);
+    return found.failsAtStart
+      ? { culprit: null, green: null, range: `..${found.failsAtStart}` }
+      : { culprit: null, range: found.range };
   } finally {
     backToTip(tip);
   }
-  return bad - good === 1
-    ? commitInfo(commits[bad])
-    : {
-        culprit: null,
-        range: `${good === -1 ? green : commits[good]}..${commits[bad]}`,
-      };
 };
 
 const where = (event) =>
@@ -432,7 +440,9 @@ const where = (event) =>
     ? `once and passing its rerun${event.loaded ? ' under load' : ''}`
     : event.culprit
       ? `since ${event.culprit.slice(0, 10)} (${event.subject})${event.author ? ` by ${event.author}` : ''}`
-      : `somewhere in ${event.range}`;
+      : event.range?.startsWith('..')
+        ? `since ${event.range.slice(2, 12)} or earlier`
+        : `somewhere in ${event.range}`;
 
 const ledgerHelper = join(main, '.agents', 'pstack', 'decisions-check.mjs');
 const ledger = join(main, ledgerPath('docs/plans', 'trunk'));
@@ -480,26 +490,28 @@ const lastActivity = (task) => {
 
 const isRed = (step, event) =>
   event.step === step && ['flake', 'red'].includes(event.kind);
-// state.json records a flaked step as passed, so the red streak, which a flake
-// keeps open, can start earlier than the first red after that run. A run on
-// `tip` that is still reporting would end the streak of each step it has not
-// reported yet, so the streak leaves that run out.
-const redStart = (step, tip) => {
-  const events = readEvents();
-  const runs = events.filter(reportsRun);
+const firstRedAfterRecordedPass = (step) => {
+  const runs = readEvents().filter(reportsRun);
   const passedTip = readState().passed?.[step];
   const passedRun = passedTip
     ? runs.findLastIndex((event) => event.tip === passedTip)
     : -1;
   const first = runs.slice(passedRun + 1).find((event) => isRed(step, event));
-  const streak = streaks(
-    events.filter((event) => !tip || event.tip !== tip)
-  ).open.get(step);
-  return Math.min(
-    first ? Date.parse(first.at) : Number.POSITIVE_INFINITY,
-    streak ? Date.parse(streak) : Number.POSITIVE_INFINITY
-  );
+  return first ? Date.parse(first.at) : Number.POSITIVE_INFINITY;
 };
+const openStreakStart = (step, tipStillReporting) => {
+  const start = streaks(
+    readEvents().filter(
+      (event) => !tipStillReporting || event.tip !== tipStillReporting
+    )
+  ).open.get(step);
+  return start ? Date.parse(start) : Number.POSITIVE_INFINITY;
+};
+const redStart = (step, tipStillReporting) =>
+  Math.min(
+    firstRedAfterRecordedPass(step),
+    openStreakStart(step, tipStillReporting)
+  );
 
 const CUT_MS = 24 * 60 * 60_000;
 const CUT_WAKES = 2;
@@ -739,7 +751,6 @@ const run = async (args) => {
       return 1;
     }
     const passing = new Set(result.passed);
-    const flaked = new Set();
     const results = keepFailedResults(logs, name, checkStarted);
     for (const failed of [...result.failed, ...result.interrupted]) {
       const interrupted = result.interrupted.includes(failed);
@@ -774,17 +785,17 @@ const run = async (args) => {
         continue;
       }
       const files = [...new Set(failing.map((key) => failures.get(key).file))];
-      const line =
+      const failedFilesRerun =
         files.length > 0 && files.every(Boolean)
           ? rerunCommand(failed, files)
           : null;
       const aloneName = runId(
         tip,
-        line ? `${failed}-failed` : `${failed}-alone`
+        failedFilesRerun ? `${failed}-failed` : `${failed}-alone`
       );
       const aloneStarted = Date.now();
-      const alone = line
-        ? shell(logs, aloneName, line)
+      const alone = failedFilesRerun
+        ? shell(logs, aloneName, failedFilesRerun)
         : check(logs, aloneName, [failed], { full });
       const { ok } = alone;
       if (ok && interrupted) {
@@ -803,7 +814,6 @@ const run = async (args) => {
           step: failed,
           tip,
         };
-        flaked.add(failed);
         emit({ ...event, ...(dry ? {} : report(event)) });
         continue;
       }
@@ -820,7 +830,8 @@ const run = async (args) => {
             from,
             tip,
             started + BUDGET_MS,
-            target
+            target,
+            failedFilesRerun
           );
         }
       } catch (error) {
@@ -857,7 +868,7 @@ const run = async (args) => {
       if (!dry) offerRecurrences();
       next.passed = {
         ...state.passed,
-        ...Object.fromEntries([...passing, ...flaked].map((ok) => [ok, tip])),
+        ...Object.fromEntries([...passing].map((ok) => [ok, tip])),
       };
       writeState(next);
       if (result.ok && !dry) {
