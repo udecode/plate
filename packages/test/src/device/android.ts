@@ -110,7 +110,7 @@ const stateRoot =
     ? join(homedir(), 'Library/Caches/plate-proof/android')
     : join(homedir(), '.cache/plate-proof/android');
 
-const deviceStateDir = (serial: string) =>
+export const deviceStateDir = (serial: string) =>
   join(stateRoot, serial.replaceAll(/[^\w.-]/g, '_'));
 
 const restorePath = (serial: string) =>
