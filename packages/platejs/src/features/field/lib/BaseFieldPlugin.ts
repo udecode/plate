@@ -34,6 +34,7 @@ import {
   fitsField,
   isFieldCondition,
   isFieldKind,
+  isFieldName,
   isFieldOptions,
   isFieldValue,
   sharedFieldLinks,
@@ -117,7 +118,8 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       docx: {
-        dropped: 'Word keeps each field answer and drops its settings.',
+        dropped:
+          'Word keeps each field answer and drops its name and settings.',
         text: fieldText,
       },
       html: {
@@ -131,6 +133,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
           }
 
           const fieldId = element.getAttribute('data-field-id');
+          const name = element.getAttribute('data-field-name');
           const claimIfValid = <T>(
             attribute: string,
             is: (value: unknown) => value is T
@@ -162,7 +165,9 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
             (value): value is boolean => typeof value === 'boolean'
           );
           const value = claimIfValid('data-field-value', isFieldValue);
+          const named = isFieldName(name);
 
+          if (named) preserve('data-field-name');
           preserve(
             'data-field-id',
             'data-field-kind',
@@ -177,6 +182,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
             ...(fieldId === null ? {} : { fieldId }),
             kind,
             label,
+            ...(named ? { name } : {}),
             ...(options === undefined ? {} : { options }),
             ...(required === undefined ? {} : { required }),
             role,
@@ -193,6 +199,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
             'fieldId',
             'kind',
             'label',
+            'name',
             'options',
             'required',
             'role',
@@ -206,6 +213,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
               'data-field-id': node.fieldId,
               'data-field-kind': node.kind,
               'data-field-label': node.label,
+              'data-field-name': node.name,
               'data-field-options': json(node.options),
               'data-field-required': json(node.required),
               'data-field-role': node.role,
@@ -263,6 +271,7 @@ const fieldSchemaPlugin = definePlugin(FIELD_TYPE, {
         }),
         kind: property.enum(FIELD_KINDS, { required: true }),
         label: property.string({ required: true }),
+        name: property.string({ validate: isFieldName, validationVersion: 1 }),
         options: property.json({
           validate: isFieldOptions,
           validationVersion: 1,
@@ -610,7 +619,9 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
            * Insert a field and return its new `fieldId`. Throws when a value,
            * default or options do not fit `kind`, or the condition names no
            * field, or a test or value the named field's kind does not take,
-           * or the settings name a `fieldId`.
+           * or the settings name a `fieldId`, or a `name` that is empty, has
+           * whitespace at either end, or holds a control character, a line or
+           * paragraph separator or a lone surrogate.
            */
           insert: txLocate(
             locateAt(1),
@@ -642,8 +653,9 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
            * options the patch leaves out and the field no longer fits. Throws,
            * and changes nothing, when no field holds `fieldId`, a setting the
            * patch names does not fit the field's kind, the patch removes `kind`,
-           * `role` or `label` or names `fieldId`, or its condition names no
-           * field, a test or value the named field's kind does not take, or a
+           * `role` or `label`, names `fieldId` or gives a `name` that `insert`
+           * refuses, or its condition names no field, a test or value the
+           * named field's kind does not take, or a
            * field it did not name before whose chain of conditions leads back
            * to this one. While a fill role is set, a missing field or a
            * setting that does not fit refuses the whole update instead, which

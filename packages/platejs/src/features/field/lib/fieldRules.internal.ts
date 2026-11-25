@@ -73,6 +73,12 @@ export const isFieldCondition = (value: unknown): value is FieldCondition => {
   );
 };
 
+export const isFieldName = (value: unknown): value is string =>
+  typeof value === 'string' &&
+  value !== '' &&
+  value.trim() === value &&
+  !/[\p{Cc}\p{Cs}\p{Zl}\p{Zp}]/u.test(value);
+
 export const isFieldKind = (value: unknown): value is FieldKind =>
   FIELD_KINDS.some((kind) => kind === value);
 

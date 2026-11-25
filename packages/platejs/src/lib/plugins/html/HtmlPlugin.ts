@@ -1764,6 +1764,7 @@ export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-field-id',
   'data-field-kind',
   'data-field-label',
+  'data-field-name',
   'data-field-options',
   'data-field-required',
   'data-field-role',

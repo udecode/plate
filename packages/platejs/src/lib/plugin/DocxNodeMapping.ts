@@ -9,7 +9,7 @@ import type { PluginFormatNode } from './pluginNodeTypes';
 export type DocxNodeMapping<D extends AnyBasePluginDefinition> = Readonly<{
   /**
    * What Word keeps and drops of each element, such as "Word keeps each field
-   * answer and drops its settings." It is the warning's message.
+   * answer and drops its name and settings." It is the warning's message.
    */
   dropped: string;
   /** The text Word export writes in place of `node`. */

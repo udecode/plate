@@ -6313,6 +6313,7 @@
         "source-hash:partition:core",
         "source-hash:partition:field",
         "source-hash:partition:markdown",
+        "source-hash:partition:migrations",
         "source-hash:partition:proxies",
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:table",

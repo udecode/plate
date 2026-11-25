@@ -10,6 +10,7 @@ import {
   fitsField,
   isFieldCondition,
   isFieldKind,
+  isFieldName,
   isFieldOptions,
   isFieldValue,
   submittedFieldLinks,
@@ -96,6 +97,7 @@ const isWellFormed = (
   typeof node.fieldId === 'string' &&
   isFieldKind(node.kind) &&
   typeof node.label === 'string' &&
+  (node.name === undefined || isFieldName(node.name)) &&
   typeof node.role === 'string' &&
   (node.required === undefined || typeof node.required === 'boolean') &&
   (node.condition === undefined || isFieldCondition(node.condition)) &&
