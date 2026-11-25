@@ -690,6 +690,18 @@ const slideRemoval = (
 
   const { index } = commit.before;
   const value = getEditorCommitValue(commit, 'before');
+  const holdsAnotherBlock = (key: NodeKey) => {
+    const path = removed.has(key) ? null : index.pathOf(key);
+
+    return (
+      path !== null &&
+      idOf(getDocumentValueNode(value, path)) !==
+        idOf(getEditorCommitNode(commit, key)?.[0] ?? null)
+    );
+  };
+
+  if (changed.nodeKeysAll('node').some(holdsAnotherBlock)) return false;
+
   const left = new Map<NodeKey, Readonly<{ id?: string; path: Path }>>();
 
   for (const key of removed) {
