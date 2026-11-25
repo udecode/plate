@@ -93,7 +93,9 @@ On Firefox, `page.keyboard.insertText` (the harness `composeTextDirect` lane) ca
 
 Android Chrome soft-keyboard claims run through the local device lane:
 `apps/plite/playwright.device.config.ts` with cases in `apps/plite/tests/device`,
-after `node tooling/device/android.mjs setup`, `calibrate` and `doctor` pass.
+on the pinned emulator after `node tooling/device/device.mjs install android`
+and `boot android`, or on a connected phone after
+`node tooling/device/android.mjs setup`, `calibrate` and `doctor` pass.
 It types with real Gboard touches, refuses every DevTools `Input.*` command,
 and fails a case whose trace the witness rejects. Its scope is the emulator
 and Gboard version in the run log; OEM keyboards, physical phones and iOS stay

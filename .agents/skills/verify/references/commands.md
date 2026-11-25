@@ -293,28 +293,58 @@ browser claims or when explicitly requested.
 
 `bun test:mobile-device-proof:raw` requires actual Appium Android/iOS artifacts.
 The local device lane is `verify`-scoped proof and does not satisfy that raw
-gate:
+gate. It runs on the Android emulator that `tooling/device/targets.mjs` pins,
+on an Apple silicon Mac:
 
 ```bash
-emulator -list-avds
-emulator -avd <avd> -no-window -no-audio -no-snapshot-save &
-adb wait-for-device
-until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; do sleep 3; done
-node tooling/device/android.mjs setup && node tooling/device/android.mjs calibrate
-node tooling/device/android.mjs doctor
-PLATE_DEVICE_WWW_PORT=3000 pnpm --filter plite exec playwright test --config playwright.device.config.ts
+node tooling/device/device.mjs doctor android
+node tooling/device/device.mjs install android
+node tooling/device/device.mjs install android --yes --accept-licenses
+node tooling/device/device.mjs boot android
+PLATE_DEVICE_SERIALS=emulator-5554 PLATE_DEVICE_REPEAT=1 PLATE_DEVICE_WWW_PORT=3297 pnpm --filter plite exec playwright test --config playwright.device.config.ts
 ```
+
+`doctor` names each missing piece. The first `install` lists each download
+with its size and writes each license it needs to a file, then stops. Read
+them, then rerun with the flags it prints. It unzips into
+`~/.cache/plate-device/android-sdk`, or the folder `PLATE_DEVICE_ANDROID_SDK`
+names, with no Java. Then it saves a clean snapshot with Gboard set up and
+calibrated for English, Japanese, Korean and Chinese, and with Wi-Fi and
+mobile data off. The emulator takes 8 GB of the Mac's memory, because with
+4 GB its Android restarted mid-run. `install` needs the network even when its downloads are
+cached in `~/.cache/plate-device/downloads`, because Gboard downloads its
+Japanese and Korean data during setup. With the downloads cached it took
+about five minutes. `boot` starts the emulator
+with no window from that snapshot and prints the lane's device doctor, so each
+boot forgets the words Gboard learned in the run before. Stop the emulator
+with `adb -s emulator-5554 emu kill`, using the `adb` in the SDK folder's
+`platform-tools`. After an interrupted run, stop the emulator and boot it
+again. Before the last command, start a www server of this checkout, such as
+`pnpm --filter www dev --port 3297`, and pass its port as
+`PLATE_DEVICE_WWW_PORT`. The cases on the homepage and the docs open it, and
+without it they fail or skip. The last command runs each case once, which
+took about 21 minutes on the emulator. An acceptance claim needs five
+runs, so run the last command five times, each as its own command. Without
+`PLATE_DEVICE_REPEAT` one command runs each case five times, which takes
+over an hour.
+
+A phone connected over adb runs the same config once
+`node tooling/device/android.mjs setup`, `calibrate` and `doctor` pass on
+it. Setup adds English and Korean to the phone's Gboard unless
+`PLATE_DEVICE_LANGUAGES` names others, such as `en,ko,ja,zh`, and a run types
+the languages that calibration recorded. `PLATE_DEVICE_SERIALS` picks the
+devices when several are connected.
+After an interrupted run on a phone, `doctor` refuses until `restore` runs;
+then run `setup` and `calibrate` again.
 
 Each run writes `test-results/device/run.json` (Chrome pid, DevTools target,
 served build fingerprint), `report.json` and `guard-<serial>.json` (refused
-commands). After an interrupted run, `doctor` refuses until `restore` runs;
-then `setup` and `calibrate` again.
+commands).
 
 `playwright test --list`, typecheck and lint never execute `globalSetup`, and
 Playwright loads `apps/plite` TypeScript as CommonJS, so `import.meta` there
 fails only at run time. After any edit to the device config, global setup or
-lane fixtures, run one case once before the default five repeats, which take
-about twelve minutes:
+lane fixtures, run one case once before a full run:
 `PLATE_DEVICE_REPEAT=1 pnpm --filter plite exec playwright test --config playwright.device.config.ts bypass`.
 
 ## Base worktree for a HEAD comparison
