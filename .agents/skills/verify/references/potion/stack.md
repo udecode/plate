@@ -85,27 +85,30 @@ prints a `FAIL` line for each failed check.
 "$STACK" login "Verify User" > <potion checkout>/tmp/verify/login-2.json
 ```
 
-Both sign in by email through better-auth, the way the login dialog does.
-Without a name it signs in the default user, `agent@potion.local`, with the
-fixed local password `potion-local-agent`, and signs it up on first use. With a
-name it signs up a new email user with a throwaway password. Either way the
-sign-up hook gives a new user its 13 template pages (Playground, AI, Callout,
-Upload and more). It prints JSON with `email`, `userId`, `cookieJar` and
-`documents` (`id`, `title`). The cookie jar serves `curl -b <jar>`. A case
-with an owner and another user takes one call of each kind.
+Both sign in by email through better-auth. The dev server allows email
+sign-up, which a production build turns off, so the stack creates users over
+HTTP and the login dialog only signs in.
+
+Without a name, `login` signs in the default user, `agent@potion.local`, with
+the fixed local password `potion-local-agent`, and signs that user up on first
+use. With a name, it signs up a new email user with a throwaway password, so
+that user signs in only through its cookie jar. Either way the sign-up hook
+gives a new user its 13 template pages (Playground, AI, Callout, Upload and
+more). It prints JSON with `email`, `userId`, `cookieJar` and `documents`
+(`id`, `title`). The cookie jar serves `curl -b <jar>`. A case with an owner
+and another user takes one call of each kind.
 
 A local D1 from before 2026-11-25 can hold an `agent@potion.local` user that
 the removed Agent Login made. That user has no password, so `login` fails with
-HTTP 422.
-Delete that user with `"$STACK" sql`, or start from a fresh `.wrangler/state`.
+HTTP 422. Delete that user with `"$STACK" sql`, or start from a fresh
+`.wrangler/state`.
 
 The session cookie is httpOnly, so the browser signs in through the dialog:
 
-1. Open `http://127.0.0.1:<port>/login`.
-2. Fill the dialog's email form and submit it: Sign in with email for
-   `agent@potion.local` and `potion-local-agent` once `login` has made that
-   user, or Create an account for a new user.
-3. The dialog reloads the app signed in. Pick a page.
+1. Run `"$STACK" login` once, so the default user exists.
+2. Open `http://127.0.0.1:<port>/login`.
+3. Type `agent@potion.local` and `potion-local-agent`, and press Sign in.
+4. The dialog reloads the app signed in. Pick a page.
 
 ## Drive
 
