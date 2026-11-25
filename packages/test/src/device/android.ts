@@ -429,6 +429,18 @@ export const openUrl = (serial: string, url: string) => {
   );
 };
 
+/** Bring Chrome to the front, since Android freezes a background Chrome and its DevTools socket. */
+export const showChrome = (serial: string) => {
+  shell(
+    serial,
+    'am',
+    'start',
+    '-W',
+    '-n',
+    'com.android.chrome/com.google.android.apps.chrome.Main'
+  );
+};
+
 // UI automation for setup only
 
 type UiNode = {
@@ -516,6 +528,15 @@ const clickText = async (serial: string, pattern: RegExp, wait = 1500) => {
   if (!node) throw new Error(`Setup could not find ${pattern} on screen.`);
   createDeviceTouch(serial).tap(node.x, node.y);
   await sleep(wait);
+};
+
+export const dismissChromePrompts = async (serial: string) => {
+  const prompt = dumpApp(serial).find((node) => /^No thanks$/i.test(node.text));
+
+  if (prompt) {
+    createDeviceTouch(serial).tap(prompt.x, prompt.y);
+    await sleep(1000);
+  }
 };
 
 const openGboardSettings = async (serial: string, section: RegExp) => {
