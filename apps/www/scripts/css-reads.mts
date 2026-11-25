@@ -90,10 +90,7 @@ async function utilityValues(theme: string, candidates: string[]) {
     .map(({ value }) => value);
 }
 
-export function assertEditorColorReads(
-  label: string,
-  values: Iterable<string>
-) {
+function assertEditorColorReads(label: string, values: Iterable<string>) {
   for (const value of values) {
     for (const { fallback, name, text } of varReads(value)) {
       assert(
@@ -109,14 +106,34 @@ export function assertEditorColorReads(
   }
 }
 
+function assertCssColors(label: string, css: string) {
+  const declarations = cssDeclarations(css);
+  const retired = declarations.find(
+    ({ prop }) => prop === '--brand' || prop === '--color-brand'
+  );
+
+  assert(
+    !retired,
+    `Expected ${label} to declare no ${retired?.prop}, which Plate no longer reads`
+  );
+  assertEditorColorReads(
+    label,
+    declarations.map(({ value }) => value)
+  );
+}
+
 export async function assertSourceColorReads(label: string, source: string) {
   if (label.endsWith('.css')) {
-    assertEditorColorReads(
-      label,
-      cssDeclarations(source).map(({ value }) => value)
-    );
+    assertCssColors(label, source);
 
     return;
+  }
+  if (label.endsWith('.mdx')) {
+    for (const fence of source.matchAll(
+      /^([ \t]*)```css[^\n]*\n([\s\S]*?)^\1```/gm
+    )) {
+      assertCssColors(label, fence[2]);
+    }
   }
 
   const literals: string[] = [];

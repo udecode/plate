@@ -22,12 +22,14 @@ This is the fastest way to integrate Plate UI's core dependencies and base style
 npx shadcn@latest add @plate/plate-ui
 ```
 
+The command also adds the [editor color](#editor-color) to your global stylesheet.
+
 ### Basic usage 
 
 With Plate UI's core installed, proceed to the guide specific to your framework:
 
-*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
-*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+*   **[Next.js Guide](./next)**: for server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)**: for single-page applications (Vite, React Router, etc.)
 
 </Steps>
 
@@ -48,10 +50,37 @@ Base and style matching needs a Plate registry URL that holds `{style}`, because
 - A `base-*` style, such as `base-nova`, installs Base UI files, and a `radix-*` style, such as `radix-luma`, installs Radix files. Each file uses your style's classes.
 - A `base-*` or `radix-*` style that Plate does not serve yet installs the Nova files of its base.
 - In a `base-*` or `radix-*` style, icons come from your icon library: Lucide, Tabler, Hugeicons, Phosphor or Remix Icon.
-- The older styles `new-york`, `new-york-v4` and Tailwind v3's `default` install the Radix Nova files with Lucide icons.
+- The older styles `new-york`, `new-york-v4` and `default` install the Radix Nova files with Lucide icons.
+- Plate UI needs Tailwind v4. In a Tailwind v3 app, such as one on shadcn's `default` style, the copied files and the editor color do not work.
 - Toolbar buttons use your project's own `toggle` and `tooltip` components.
 
 Plate serves no files for shadcn's React Aria base, so an item fails to install in an `aria-*` style.
+
+## Editor color
+
+Plate UI paints the editor's text selection, caret, block selection and drop line with the Tailwind color `editor-primary`. Installing `@plate/plate-ui` adds it to your global stylesheet:
+
+```css title="app/globals.css"
+@theme inline {
+  --color-editor-primary: var(--editor-primary, var(--primary));
+}
+```
+
+The color needs Tailwind v4. It follows shadcn's `--primary`, so a shadcn theme recolors the editor too.
+
+To give the editor a color of its own, add `--editor-primary` to your stylesheet. The install does not add it. A value in `:root` also applies in dark mode unless `.dark` sets its own:
+
+```css title="app/globals.css"
+:root {
+  --editor-primary: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --editor-primary: oklch(0.707 0.165 254.624);
+}
+```
+
+An app without shadcn's theme has no `--primary`, so it must set `--editor-primary`.
 
 ## Manual installation
 
@@ -72,20 +101,17 @@ npm install platejs
   lists its peers; the CLI installs them with copied components.
 </Callout>
 
-### Configure CSS variables
+### Add the editor color
 
-Add the following CSS variables to your global stylesheet:
+Add the editor color to your global stylesheet:
 
 ```css title="app/globals.css"
-:root {
-  /* Base brand color for EditorRoot UI components */
-  --brand: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --brand: oklch(0.707 0.165 254.624);
+@theme inline {
+  --color-editor-primary: var(--editor-primary, var(--primary));
 }
 ```
+
+Without shadcn's theme, also set `--editor-primary`, as [Editor color](#editor-color) shows.
 
 ### Add components
 
@@ -123,8 +149,8 @@ Explore the available [UI Components](/docs/components) and [Plugin Components](
 
 With Plate UI's core installed, proceed to the guide specific to your framework:
 
-*   **[Next.js Guide](./next)** - For server-side rendered applications (Next, Remix, etc.)
-*   **[React Guide](./react)** - For single-page applications (Vite, React Router, etc.)
+*   **[Next.js Guide](./next)**: for server-side rendered applications (Next, Remix, etc.)
+*   **[React Guide](./react)**: for single-page applications (Vite, React Router, etc.)
 
 </Steps>
 

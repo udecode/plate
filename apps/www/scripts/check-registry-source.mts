@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import { registrySchema } from 'shadcn/schema';
 
+import { listDocPages } from '../../../tooling/scripts/docs-sources.mjs';
 import registryShadcnData from '../registry-shadcn.json';
 import {
   PLATE_DEFAULT_REGISTRY_STYLE,
@@ -10,10 +12,8 @@ import {
 import { getRegistryMetadata } from '../src/lib/registry-metadata';
 import { registryFeatures } from '../src/registry/registry-features';
 import {
-  assertEditorColorReads,
   assertSourceColorReads,
   assertThemeEntries,
-  cssDeclarations,
   PLATE_UI_THEME,
 } from './css-reads.mts';
 import {
@@ -665,10 +665,7 @@ const readWwwCss = (path: string) =>
 const globalsCss = readWwwCss('globals.css');
 
 await assertThemeEntries('www globals.css', globalsCss);
-assertEditorColorReads(
-  'www globals.css',
-  cssDeclarations(globalsCss).map(({ value }) => value)
-);
+await assertSourceColorReads('www globals.css', globalsCss);
 await assertSourceColorReads(
   'the Plite example stylesheet plite-example-styles.css',
   readWwwCss('(app)/examples/plite/plite-example-styles.css')
@@ -742,5 +739,14 @@ assert(
     ...missingPlateUiEdges,
   ].join('\n')
 );
+
+for (const { file } of listDocPages(
+  fileURLToPath(new URL('../../../', import.meta.url))
+)) {
+  await assertSourceColorReads(
+    file,
+    readFileSync(new URL(`../../../${file}`, import.meta.url), 'utf-8')
+  );
+}
 
 console.info('Registry source check passed.');

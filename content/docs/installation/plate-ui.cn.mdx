@@ -21,12 +21,14 @@ Plate UI 是 Plate 的复制式组件层。使用 shadcn CLI 可以最快完成�
 npx shadcn@latest add @plate/plate-ui
 ```
 
+该命令还会把[编辑器颜色](#editor-color)添加到您的全局样式表中。
+
 ### 基本用法
 
 安装 Plate UI 核心后，请继续阅读适合您框架的指南：
 
-*   **[Next.js 指南](./next)** - 适用于服务端渲染应用（Next、Remix 等）
-*   **[React 指南](./react)** - 适用于单页应用（Vite、React Router 等）
+*   **[Next.js 指南](./next)**：适用于服务端渲染应用（Next、Remix 等）
+*   **[React 指南](./react)**：适用于单页应用（Vite、React Router 等）
 
 </Steps>
 
@@ -47,10 +49,37 @@ base 和样式的匹配需要包含 `{style}` 的 Plate 注册表地址，因为
 - `base-*` 样式（如 `base-nova`）安装 Base UI 文件，`radix-*` 样式（如 `radix-luma`）安装 Radix 文件。每个文件都使用您的样式的类名。
 - Plate 尚未提供的 `base-*` 或 `radix-*` 样式会安装其 base 的 Nova 文件。
 - 在 `base-*` 或 `radix-*` 样式中，图标来自您的图标库：Lucide、Tabler、Hugeicons、Phosphor 或 Remix Icon。
-- 旧样式 `new-york`、`new-york-v4` 和 Tailwind v3 的 `default` 会安装 Radix Nova 文件，并使用 Lucide 图标。
+- 旧样式 `new-york`、`new-york-v4` 和 `default` 会安装 Radix Nova 文件，并使用 Lucide 图标。
+- Plate UI 需要 Tailwind v4。在 Tailwind v3 应用中（例如使用 shadcn `default` 样式的应用），复制的文件和编辑器颜色都无法工作。
 - 工具栏按钮使用您项目自己的 `toggle` 和 `tooltip` 组件。
 
 Plate 不提供 shadcn React Aria base 的文件，因此在 `aria-*` 样式中安装组件会失败。
+
+## 编辑器颜色 [#editor-color]
+
+Plate UI 使用 Tailwind 颜色 `editor-primary` 绘制编辑器的文本选区、光标、块选区和拖放指示线。安装 `@plate/plate-ui` 会把它添加到您的全局样式表中：
+
+```css title="app/globals.css"
+@theme inline {
+  --color-editor-primary: var(--editor-primary, var(--primary));
+}
+```
+
+该颜色需要 Tailwind v4。它跟随 shadcn 的 `--primary`，因此 shadcn 主题也会改变编辑器的颜色。
+
+要为编辑器设置独立的颜色，请在样式表中添加 `--editor-primary`。安装不会添加它。在 `:root` 中设置的值在暗色模式下同样生效，除非 `.dark` 设置了自己的值：
+
+```css title="app/globals.css"
+:root {
+  --editor-primary: oklch(0.623 0.214 259.815);
+}
+
+.dark {
+  --editor-primary: oklch(0.707 0.165 254.624);
+}
+```
+
+没有 shadcn 主题的应用没有 `--primary`，因此必须设置 `--editor-primary`。
 
 ## 手动安装
 
@@ -70,20 +99,17 @@ npm install platejs
   依赖。每个功能页面都会列出这些依赖；CLI 会随复制的组件一起安装。
 </Callout>
 
-### 配置 CSS 变量
+### 添加编辑器颜色
 
-将以下 CSS 变量添加到您的全局样式表中：
+将编辑器颜色添加到您的全局样式表中：
 
 ```css title="app/globals.css"
-:root {
-  /* Base brand color for EditorRoot UI components */
-  --brand: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --brand: oklch(0.707 0.165 254.624);
+@theme inline {
+  --color-editor-primary: var(--editor-primary, var(--primary));
 }
 ```
+
+如果没有 shadcn 主题，还需要设置 `--editor-primary`，如[编辑器颜色](#editor-color)所示。
 
 ### 添加组件
 
@@ -121,8 +147,8 @@ export function MyEditor() {
 
 安装 Plate UI 核心后，请继续阅读适合您框架的指南：
 
-*   **[Next.js 指南](./next)** - 适用于服务端渲染应用（Next、Remix 等）
-*   **[React 指南](./react)** - 适用于单页应用（Vite、React Router 等）
+*   **[Next.js 指南](./next)**：适用于服务端渲染应用（Next、Remix 等）
+*   **[React 指南](./react)**：适用于单页应用（Vite、React Router 等）
 
 </Steps>
 

@@ -289,8 +289,10 @@ export function Editor(props: EditorContentProps) {
   return (
     <>
       <EditorContent {...props} />
-      <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
-      <NodeSelectionDrag className="z-50 border border-brand/25 bg-brand/15" />
+      <NodeSelectionHighlight className="z-1 bg-editor-primary/[.13]" />
+      <NodeSelectionDrag
+        className="z-50 border border-editor-primary/25 bg-editor-primary/15"
+      />
     </>
   );
 }
@@ -361,9 +363,9 @@ export function Page({ cover }: { cover: string }) {
       </div>
       <EditorRoot editor={editor}>
         <EditorContent />
-        <NodeSelectionHighlight className="z-1 bg-brand/[.13]" />
+        <NodeSelectionHighlight className="z-1 bg-editor-primary/[.13]" />
         <NodeSelectionDrag
-          className="z-50 border border-brand/25 bg-brand/15"
+          className="z-50 border border-editor-primary/25 bg-editor-primary/15"
           container={container}
         />
       </EditorRoot>
