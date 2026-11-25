@@ -1055,7 +1055,10 @@ export const steps = [
       'docs/plite/reference/',
       'packages/',
       'tooling/entrypoints/',
-      'tooling/scripts/finding-baseline.mjs'
+      'tooling/scripts/build-package-docs.mjs',
+      'tooling/scripts/docs-sources.mjs',
+      'tooling/scripts/finding-baseline.mjs',
+      'tooling/scripts/private-files.mjs'
     ),
     key: [],
     filesOnly: true,
