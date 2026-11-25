@@ -206,11 +206,17 @@ const decidable = (mark: AuthoredMark) => !isEditingChange(mark.change);
 export type Above = Readonly<{
   /** By what an element adds, the standing below it. */
   below: Map<string, Above>;
+  childReads: WeakMap<readonly JsonNode[], ChildReads>;
   claimed: boolean;
   /** Each element read under this standing. */
   reads: WeakMap<JsonNode, ElementRead>;
   spare: boolean;
   waitsOn: readonly AuthoredMark[];
+}>;
+
+type ChildReads = Readonly<{
+  children: readonly ElementRead[];
+  marked: boolean;
 }>;
 
 const aboveOf = (
@@ -219,6 +225,7 @@ const aboveOf = (
   waitsOn: readonly AuthoredMark[]
 ): Above => ({
   below: new Map(),
+  childReads: new WeakMap(),
   claimed,
   reads: new WeakMap(),
   spare,
@@ -255,6 +262,8 @@ export type ElementRead = Readonly<{
 }>;
 
 const NO_READS: readonly ElementRead[] = Object.freeze([]);
+
+const NO_NODES: readonly JsonNode[] = Object.freeze([]);
 
 const NO_ROOTS: readonly string[] = Object.freeze([]);
 
@@ -361,21 +370,11 @@ export class ElementReads {
     }
 
     const below = this.below(above, node, claimed, contexts, joins, types);
-    let marked = readMembers(node).length > 0;
-    const children: ElementRead[] = [];
-
-    for (const child of node.children ?? []) {
-      if (isText(child)) {
-        marked ||= readMembers(child).length > 0;
-        continue;
-      }
-
-      const read = this.of(child, below);
-
-      marked ||= read.marked;
-      children.push(read);
-    }
-
+    const { children, marked: childMarked } = this.childrenOf(
+      node.children ?? NO_NODES,
+      below
+    );
+    const marked = childMarked || readMembers(node).length > 0;
     const spares = above.spare
       ? NO_READS
       : sparesIn(node).flatMap((member) =>
@@ -407,6 +406,34 @@ export class ElementReads {
     above.reads.set(node, read);
 
     return read;
+  }
+
+  private childrenOf(nodes: readonly JsonNode[], below: Above): ChildReads {
+    const known = below.childReads.get(nodes);
+
+    if (known) return known;
+
+    let marked = false;
+    const children: ElementRead[] = [];
+
+    for (const child of nodes) {
+      countCoreWork('readChildScans');
+      if (isText(child)) {
+        marked ||= readMembers(child).length > 0;
+        continue;
+      }
+
+      const read = this.of(child, below);
+
+      marked ||= read.marked;
+      children.push(read);
+    }
+
+    const reads = { children, marked };
+
+    below.childReads.set(nodes, reads);
+
+    return reads;
   }
 
   private below(
@@ -459,6 +486,8 @@ const diffLists = (
   after: readonly ElementRead[],
   visit: ReadVisit
 ) => {
+  if (before === after) return;
+
   let start = 0;
   let endBefore = before.length;
   let endAfter = after.length;

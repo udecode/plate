@@ -689,8 +689,6 @@ const DOCUMENT_STATE = new WeakMap<
 >();
 const RECORDS = new WeakMap<Editor, RecordStore>();
 const UNLOADED_RECORDS = new WeakMap<Editor, unknown>();
-// Each editor memoizes its latest store's JSON, so two editors reading in turn
-// never rebuild each other's.
 const RECORDS_JSON = new WeakMap<
   Editor,
   Readonly<{ json: EditorDocumentRecords; store: RecordStore }>
@@ -3001,7 +2999,7 @@ const getEditorRecordsJson = (editor: Editor, store: RecordStore) => {
 
   if (cached?.store === store) return cached.json;
 
-  const json = recordStoreToJson(store);
+  const json = recordStoreToJson(store, cached?.json);
 
   RECORDS_JSON.set(editor, { json, store });
 

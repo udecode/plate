@@ -753,32 +753,33 @@ const setTableOf = (tree: RecordTree) => {
   };
 };
 
-// Only the latest store's set tables stay, so the store versions that history
-// keeps hold no table. A set the next store shares with it keeps its table.
+const TABLES_OF_JSON = new WeakMap<
+  object,
+  ReadonlyMap<string, ReturnType<typeof setTableOf>>
+>();
+
 let latestJson: Readonly<{
   json: EditorDocumentRecords;
   store: RecordStore;
-  tables: ReadonlyMap<string, ReturnType<typeof setTableOf>>;
 }> | null = null;
 
-const BUILT_JSON = new WeakSet<object>();
-
 export const isBuiltRecordsJson = (json: unknown) =>
-  typeof json === 'object' && json !== null && BUILT_JSON.has(json);
+  typeof json === 'object' && json !== null && TABLES_OF_JSON.has(json);
 
 export const recordStoreToJson = (
-  store: RecordStore
+  store: RecordStore,
+  reuseTablesFrom: EditorDocumentRecords | undefined = latestJson?.json
 ): EditorDocumentRecords => {
   if (latestJson?.store === store) return latestJson.json;
 
-  const latest = latestJson;
+  const latest = reuseTablesFrom && TABLES_OF_JSON.get(reuseTablesFrom);
   const json: EditorDocumentRecords = {};
 
   countCoreWork('recordsJsonObjects');
   const tables = new Map<string, ReturnType<typeof setTableOf>>();
 
   for (const [set, tree] of Object.entries(store)) {
-    const shared = latest?.tables.get(set);
+    const shared = latest?.get(set);
     const table = shared?.tree === tree ? shared : setTableOf(tree);
 
     tables.set(set, table);
@@ -786,8 +787,8 @@ export const recordStoreToJson = (
   }
   freezeOwnedJsonValue(json);
   STORE_OF_JSON.set(json, store);
-  BUILT_JSON.add(json);
-  latestJson = { json, store, tables };
+  TABLES_OF_JSON.set(json, tables);
+  latestJson = { json, store };
 
   return json;
 };

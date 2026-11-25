@@ -92,7 +92,11 @@ export type CoreWork = {
   pluginDispatches: number;
   /** Nodes judged for the values their place can hold. */
   placeChecks: number;
-  /** Children of two reads of an element compared by identity to find the reads a move changed. */
+  /**
+   * Children a child list read visited, once per list and standing, and
+   * children of two reads of an element compared by identity to find the
+   * reads a move changed.
+   */
   readChildScans: number;
   /** Candidate roots the orphan judge counted owners for. */
   ownedRootsJudged: number;
@@ -185,6 +189,7 @@ export type CoreWork = {
   yjsMarkRecordsVisited: number;
   recordLoads: number;
   recordsJsonObjects: number;
+  /** Record set tables built, each when its set's JSON is first read. */
   recordTables: number;
   recordTexts: number;
   recordWrites: number;
