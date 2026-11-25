@@ -3,7 +3,7 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { constants, homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -185,7 +185,7 @@ const agyConversation = (stdout) => {
 
 const COLEAD_TIMEOUT_SECONDS = 3300;
 const coleadBrief = (worktree, prompt) =>
-  `You are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a base control the brief asks for. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours.\n\n${prompt}\n\nPut your whole answer in your final message, and name each file you changed.`;
+  `${prompt}\n\nYou are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a base control the brief asks for. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours. Put your whole answer in your final message, and name each file you changed.`;
 const gitLines = (dir, args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
   return run.status === 0 ? run.stdout.trim().split('\n') : null;
@@ -224,7 +224,7 @@ export const onStop = (cleanup) => {
 // as more prompt, so stdin is closed and the answer comes only from that file.
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
-export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false, colead, conversation, stream } = {}) {
+export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false, colead, conversation, stream, onConversation } = {}) {
   const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
@@ -317,9 +317,16 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     let stdout = '';
     let stderr = '';
     let workedAt = Date.now();
+    if (stream) writeFileSync(stream, '');
+    let announced = null;
     child.stdout.on('data', (chunk) => {
       stdout += chunk;
       workedAt = Date.now();
+      if (stream) appendFileSync(stream, chunk);
+      if (colead && !announced) {
+        announced = agyConversation(stdout);
+        if (announced) onConversation?.(announced);
+      }
     });
     child.stderr.on('data', (chunk) => {
       stderr += chunk;
@@ -350,7 +357,6 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       }
       try {
         if (computerUse) writeFileSync(computerUse.events, stdout);
-        if (stream) writeFileSync(stream, stdout);
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : runtime === 'agy' ? agyAnswer(stdout) : stdout).trim();
         const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
         const touched = mainCheckout && checkoutState(mainCheckout) !== mainBefore;
@@ -456,11 +462,10 @@ async function main(argv) {
     console.error(`--computer-use and --chrome-profile go together, and only --to codex\n${usage}`);
     return 2;
   }
-  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile }, colead, conversation, stream: stream && resolve(stream) });
+  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile }, colead, conversation, stream: stream && resolve(stream), onConversation: (id) => console.error(`conversation: ${id}`) });
   (answer.ok ? console.info : console.error)(answer.text);
   if (answer.refused) console.error(`refused: ${answer.refused}`);
   if (answer.seat) console.error(`seat: ${answer.seat}`);
-  if (answer.conversation) console.error(`conversation: ${answer.conversation}`);
   return answer.ok ? 0 : 1;
 }
 
