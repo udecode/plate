@@ -32,6 +32,12 @@ You can choose one of the following templates to get started:
 
 You can learn more about Plate by checking out our [documentation](https://platejs.org/docs).
 
+## Versions
+
+New work ships in `platejs@beta`, documented at [beta.platejs.org](https://beta.platejs.org/docs).
+
+`platejs@latest` is v53, built from the `main` branch. `main` takes only security fixes, dependency updates and pull requests from contributors. When `platejs@beta` replaced the v53 API that a question or report asks about, the team closes it as outdated.
+
 ## Contributing
 
 Found a bug or want a feature? File an issue with a reproduction. The team writes every fix, as the [contributing guide](CONTRIBUTING.md) explains.

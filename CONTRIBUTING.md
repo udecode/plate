@@ -19,7 +19,7 @@
 
 - Plate's shipped code, Plite included, lives here under the MIT license.
 - Tests, plans and research live in a private team repository. A clone of this repository has the code without its tests.
-- You contribute by filing an issue with a reproduction. The team writes every fix and closes pull requests from outside the team.
+- You contribute by filing an issue with a reproduction. The team writes every fix on `next` and closes pull requests into `next` from outside the team. `main`, which builds v53, still takes pull requests from contributors, as the README's Versions section says.
 
 ## How to Contribute
 

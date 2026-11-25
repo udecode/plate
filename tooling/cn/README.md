@@ -34,6 +34,12 @@ Plate
 
 您可以通过查看我们的[文档](https://platejs.org/cn/docs)了解更多关于Plate的信息。
 
+## 版本
+
+新的开发都发布在 `platejs@beta`，文档见 [beta.platejs.org](https://beta.platejs.org/docs)。
+
+`platejs@latest` 是 v53，由 `main` 分支构建。`main` 只接收安全修复、依赖更新和贡献者的拉取请求。如果问题或报告涉及的 v53 API 已被 `platejs@beta` 取代，团队会将其标记为过时并关闭。
+
 ## 贡献
 
 发现错误或想要新功能？请提交一个附带复现的 issue。所有修复都由团队编写，详见[贡献指南](./CONTRIBUTING.md)。
