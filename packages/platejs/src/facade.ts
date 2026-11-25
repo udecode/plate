@@ -175,6 +175,7 @@ export type {
   TxMethodDeclarations,
   Value,
   ValueOf,
+  WithNodeTarget,
   EditorSchemaSource,
 } from 'plitejs';
 

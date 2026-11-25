@@ -1,5 +1,3 @@
-import type { WithNodeTarget } from 'plitejs';
-
 import type {
   Editor as RuntimeBaseEditor,
   EditorSchemaContribution,
@@ -79,6 +77,7 @@ import type {
   EditorSchemaSourceProvider,
   RuntimePluginDependencyReferenceFor,
   RuntimePluginInstalledCapabilitiesOf,
+  WithNodeTarget,
 } from '../../facade';
 import type { UnionToIntersection } from '../../internal/types';
 import type { AnyBasePlugin } from '../plugin/BasePlugin';

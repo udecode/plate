@@ -107,39 +107,85 @@ const errorKey = (diagnostic) =>
     .map((line) => line.trim())
     .join(' ')}`;
 
-const hasDeclare = (node) =>
-  ts.canHaveModifiers(node) &&
-  (ts.getModifiers(node) ?? []).some(
-    (modifier) => modifier.kind === ts.SyntaxKind.DeclareKeyword
+const typeParameterCount = (symbols) =>
+  Math.max(
+    0,
+    ...symbols.flatMap((symbol) =>
+      (symbol.declarations ?? []).map(
+        (declaration) => declaration.typeParameters?.length ?? 0
+      )
+    )
   );
 
-const typesBuiltValue = (reference) => {
-  for (let node = reference; node; node = node.parent) {
-    if (hasDeclare(node)) return false;
-    if (ts.isVariableDeclaration(node)) {
-      const { initializer } = node;
-      return Boolean(
-        initializer &&
-        initializer.kind !== ts.SyntaxKind.NullKeyword &&
-        !(ts.isIdentifier(initializer) && initializer.text === 'undefined')
-      );
-    }
+const standInName = (index) => `StandIn${index}`;
+const printedStandIns = (text) =>
+  [...text.matchAll(/\bStandIn(\d+)\b/gu)].map(([, index]) => Number(index));
+
+// A type argument to a non-generic stand-in errors on every use, so each
+// stand-in takes the type parameters either package declares. `export *`
+// carries no default, so the module names Plate's.
+const standInModule = (specifier, bindings, keepsDefault) =>
+  [
+    `export * from '${specifier}';`,
+    ...(keepsDefault ? [`export { default } from '${specifier}';`] : []),
+    ...bindings.flatMap(({ count, index, name, type, typeOnly, value }) => {
+      const standIn = standInName(index);
+      const keepsPlateValue = typeOnly && value;
+      const parameters = Array.from(
+        { length: count },
+        (_, at) => `T${at} = any`
+      ).join(', ');
+      const exported = type
+        ? standIn
+        : value
+          ? `value${index}`
+          : `space${index}`;
+      return [
+        ...(keepsPlateValue
+          ? [`import type { ${name} as original${index} } from '${specifier}';`]
+          : []),
+        `declare const brand${index}: unique symbol;`,
+        `type ${standIn}${count ? `<${parameters}>` : ''} = { readonly [brand${index}]: true };`,
+        ...(value
+          ? [
+              `declare const ${exported}: ${keepsPlateValue ? `typeof original${index}` : standIn};`,
+            ]
+          : []),
+        ...(type || value ? [] : [`declare namespace ${exported} {}`]),
+        `export ${typeOnly || (type && !value) ? 'type ' : ''}{ ${exported} as ${name} };`,
+      ];
+    }),
+  ].join('\n');
+
+const caseErrors = (program, file, lineCase) => {
+  const byCase = new Map();
+  for (const diagnostic of program.getSemanticDiagnostics(
+    program.getSourceFile(file)
+  )) {
+    const id = lineCase[lineOf(diagnostic)];
+    if (!id) continue;
+    if (!byCase.has(id)) byCase.set(id, []);
+    byCase.get(id).push({
+      site: `${diagnostic.start} TS${diagnostic.code}`,
+      text: message(diagnostic),
+    });
   }
-  return true;
+  return byCase;
 };
 
-const checksName = (node) => {
-  const { parent } = node;
-  if (ts.isCallExpression(parent) || ts.isNewExpression(parent)) {
-    return parent.expression === node;
+const errorSitesChanged = (base = [], errors = []) => {
+  const left = new Map();
+  for (const { site } of base) left.set(site, (left.get(site) ?? 0) + 1);
+  const added = [];
+  for (const error of errors) {
+    const count = left.get(error.site) ?? 0;
+    if (count > 0) left.set(error.site, count - 1);
+    else added.push(error);
   }
-  if (ts.isJsxOpeningElement(parent) || ts.isJsxSelfClosingElement(parent)) {
-    return parent.tagName === node;
-  }
-  if (ts.isTypeReferenceNode(parent)) {
-    return parent.typeName === node && typesBuiltValue(parent);
-  }
-  return false;
+  return {
+    added,
+    changed: added.length > 0 || [...left.values()].some((count) => count > 0),
+  };
 };
 
 const pliteUse = (checker, node, twins) => {
@@ -155,6 +201,10 @@ const pliteUse = (checker, node, twins) => {
   if (!twins.has(entrypoint)) return null;
   if (!ts.isNamespaceImport(declaration)) {
     return {
+      member:
+        ts.isPropertyAccessExpression(parent) && parent.expression === node
+          ? parent.name.text
+          : undefined,
       module: entrypoint,
       name: ts.isImportSpecifier(declaration)
         ? (declaration.propertyName ?? declaration.name).text
@@ -165,11 +215,238 @@ const pliteUse = (checker, node, twins) => {
   const member = ts.isPropertyAccessExpression(parent)
     ? parent.name
     : ts.isQualifiedName(parent) && parent.right;
+  const call = member && parent.parent;
   return {
+    member:
+      call && ts.isPropertyAccessExpression(call) && call.expression === parent
+        ? call.name.text
+        : undefined,
     module: entrypoint,
     name: member ? member.text : '*',
     node: member ? parent : node,
   };
+};
+
+const caseDependencies = ({ checker, control, lineCase, rebound, twins }) => {
+  const reads = new Map();
+  const keysOf = (node, stack) => {
+    const use = pliteUse(checker, node, twins);
+    if (use) {
+      return use.name === '*'
+        ? [...rebound.keys()].filter((key) => key.startsWith(`${use.module}#`))
+        : [`${use.module}#${use.name}`];
+    }
+    const symbol =
+      ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node
+        ? checker.getShorthandAssignmentValueSymbol(node.parent)
+        : checker.getSymbolAtLocation(node);
+    if (!symbol || stack.has(symbol)) return [];
+    if (reads.has(symbol)) return reads.get(symbol);
+    const complete = stack.size === 0;
+    stack.add(symbol);
+    const found = new Set();
+    const visit = (child) => {
+      if (ts.isIdentifier(child)) {
+        for (const key of keysOf(child, stack)) found.add(key);
+      }
+      ts.forEachChild(child, visit);
+    };
+    for (const declaration of symbol.declarations ?? []) {
+      if (declaration.getSourceFile() !== control) continue;
+      visit(
+        ts.isBindingElement(declaration)
+          ? ts.walkUpBindingElementsAndPatterns(declaration)
+          : declaration
+      );
+    }
+    stack.delete(symbol);
+    if (complete) reads.set(symbol, found);
+    return found;
+  };
+  const dependencies = new Map();
+  const visit = (node) => {
+    const id =
+      ts.isIdentifier(node) &&
+      lineCase[
+        control.getLineAndCharacterOfPosition(node.getStart(control)).line
+      ];
+    if (id) {
+      if (!dependencies.has(id)) dependencies.set(id, new Set());
+      for (const key of keysOf(node, new Set())) {
+        const entry = rebound.get(key);
+        if (entry) dependencies.get(id).add(entry.key);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(control);
+  return dependencies;
+};
+
+const groupNamesNoCaseShares = (keys, dependencies) => {
+  const users = (key) =>
+    [...dependencies.values()].filter((names) => names.has(key)).length;
+  const groups = [];
+  for (const key of [...keys].sort(
+    (a, b) => users(b) - users(a) || a.localeCompare(b)
+  )) {
+    const group = groups.find((names) =>
+      names.every(
+        (other) =>
+          ![...dependencies.values()].some(
+            (read) => read.has(key) && read.has(other)
+          )
+      )
+    );
+    if (group) group.push(key);
+    else groups.push([key]);
+  }
+  return groups;
+};
+
+const proveByStandIns = ({
+  checker,
+  control,
+  host,
+  lineCase,
+  modules,
+  options,
+  plateFile,
+  program,
+  rebound,
+  twins,
+  virtual,
+}) => {
+  const dependencies = caseDependencies({
+    checker,
+    control,
+    lineCase,
+    rebound,
+    twins,
+  });
+  const keys = [...new Set([...rebound.values()].map(({ key }) => key))];
+  const groups = groupNamesNoCaseShares(keys, dependencies);
+
+  const standIns = new Map();
+  const cache = ts.createModuleResolutionCache(
+    host.getCurrentDirectory(),
+    (name) => name,
+    options
+  );
+  const standInHost = Object.create(host);
+  standInHost.resolveModuleNameLiterals = (
+    literals,
+    containingFile,
+    redirected,
+    compilerOptions,
+    source
+  ) =>
+    literals.map((literal) =>
+      containingFile === plateFile && standIns.has(literal.text)
+        ? {
+            resolvedModule: {
+              extension: ts.Extension.Ts,
+              resolvedFileName: standIns.get(literal.text).file,
+            },
+          }
+        : ts.resolveModuleName(
+            literal.text,
+            containingFile,
+            compilerOptions,
+            host,
+            cache,
+            redirected,
+            ts.getModeForUsageLocation(source, literal, compilerOptions)
+          )
+    );
+
+  const exportOf = (entrypoint, name) =>
+    checker
+      .getExportsOfModule(modules.get(entrypoint))
+      .find((symbol) => symbol.name === name);
+  let compiles = 0;
+  const compile = (names) => {
+    standIns.clear();
+    for (const [liteKey, entry] of rebound) {
+      if (!names.includes(entry.key)) continue;
+      const [lite, name] = liteKey.split('#');
+      const plate = twins.get(lite);
+      const symbol = exportOf(plate, name);
+      const target = resolveAlias(checker, symbol);
+      const file = plateFile.replace(
+        /\.plate\.tsx?$/u,
+        `.stand-in-${compiles}-${plate.replaceAll('/', '-')}.ts`
+      );
+      if (!standIns.has(plate)) standIns.set(plate, { file, list: [] });
+      standIns.get(plate).list.push({
+        count: typeParameterCount([
+          target,
+          resolveAlias(checker, exportOf(lite, name)),
+        ]),
+        index: keys.indexOf(entry.key),
+        name,
+        type: Boolean(target.flags & ts.SymbolFlags.Type),
+        typeOnly: Boolean(checker.getTypeOnlyAliasDeclaration(symbol)),
+        value: Boolean(target.flags & ts.SymbolFlags.Value),
+      });
+    }
+    for (const [plate, { file, list }] of standIns) {
+      const keepsDefault =
+        exportOf(plate, 'default') &&
+        !list.some(({ name }) => name === 'default');
+      virtual.set(file, standInModule(plate, list, keepsDefault));
+    }
+    compiles += 1;
+    return caseErrors(
+      ts.createProgram([plateFile], options, standInHost),
+      plateFile,
+      lineCase
+    );
+  };
+  const alone = new Map();
+  const compileAlone = (key) => {
+    if (!alone.has(key)) alone.set(key, compile([key]));
+    return alone.get(key);
+  };
+
+  const base = caseErrors(program, plateFile, lineCase);
+  const proven = new Map(keys.map((key) => [key, new Set()]));
+  const pending = [];
+  for (const group of groups) {
+    const errors = group.length === 1 ? compileAlone(group[0]) : compile(group);
+    for (const id of new Set([...base.keys(), ...errors.keys()])) {
+      const { added, changed } = errorSitesChanged(
+        base.get(id),
+        errors.get(id)
+      );
+      if (!changed) continue;
+      const named =
+        group.length === 1
+          ? group
+          : added.flatMap(({ text }) => {
+              const printed = new Set(
+                printedStandIns(text).map((index) => keys[index])
+              );
+              return printed.size === 1 ? [...printed] : [];
+            });
+      for (const key of named) proven.get(key).add(id);
+      if (named.length === 0) pending.push({ group, id });
+    }
+  }
+  const creditBySoloCompile = ({ group, id }) => {
+    const read = group.filter((key) => dependencies.get(id)?.has(key));
+    return [...read, ...group.filter((key) => !read.includes(key))].find(
+      (key) =>
+        errorSitesChanged(base.get(id), compileAlone(key).get(id)).changed
+    );
+  };
+  const unattributed = [];
+  for (const change of pending) {
+    const credited = creditBySoloCompile(change);
+    if (credited) proven.get(credited).add(change.id);
+    else unattributed.push(change);
+  }
+  return { proven, unattributed };
 };
 
 const readCitations = (source) =>
@@ -253,6 +530,9 @@ const walkthroughFences = (repoRoot) => {
   return fences;
 };
 
+const memberKey = (use) =>
+  `${use.module}#${use.name}${use.member ? `.${use.member}` : ''}`;
+
 const walkthroughUses = (program, fences, twins, changes) => {
   const checker = program.getTypeChecker();
   const uses = [];
@@ -267,7 +547,7 @@ const walkthroughUses = (program, fences, twins, changes) => {
           fence.first +
           1 +
           code.getLineAndCharacterOfPosition(node.getStart(code)).line;
-        const key = use && changes(use) && `${line}#${use.module}#${use.name}`;
+        const key = use && changes(use) && `${line}#${memberKey(use)}`;
         if (key && !seen.has(key)) {
           seen.add(key);
           uses.push({ ...use, file: fence.file, line });
@@ -423,15 +703,41 @@ export function checkPliteCallParity({
   );
   const imports = ts.preProcessFile(controlText, true, true).importedFiles;
   for (const { fileName, pos } of imports) {
+    const line = control.getLineAndCharacterOfPosition(pos).line + 1;
+    if (
+      plateNames.has(fileName) &&
+      !control.statements.some(
+        (statement) =>
+          ts.isImportDeclaration(statement) &&
+          statement.moduleSpecifier.getStart(control) === pos
+      )
+    ) {
+      problems.push(
+        `${relative(controlFile)}:${line}: the control reads ${fileName} outside an import statement, which the check does not follow. Import the name at the top of the control.`
+      );
+    }
     if (
       !plateNames.has(fileName) &&
       (/^[./]/u.test(fileName) || packages.has(packageOf(fileName)))
     ) {
       problems.push(
-        `${relative(controlFile)}:${control.getLineAndCharacterOfPosition(pos).line + 1}: the control imports ${fileName}, which is not a Plite entrypoint, so the Plate copy would read it unchanged. Import it from the Plite entrypoint that publishes it.`
+        `${relative(controlFile)}:${line}: the control imports ${fileName}, which is not a Plite entrypoint, so the Plate copy would read it unchanged. Import it from the Plite entrypoint that publishes it.`
       );
     }
   }
+  const findImportCalls = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      !node.arguments.slice(0, 1).every(ts.isStringLiteralLike)
+    ) {
+      problems.push(
+        `${relative(controlFile)}:${control.getLineAndCharacterOfPosition(node.getStart(control)).line + 1}: the control calls import() with a specifier the check cannot read. Import the name at the top of the control.`
+      );
+    }
+    ts.forEachChild(node, findImportCalls);
+  };
+  findImportCalls(control);
   const fences = walkthroughFences(repoRoot);
   const virtual = new Map([
     ...fences.map((fence) => [fence.path, fence.code]),
@@ -463,13 +769,12 @@ export function checkPliteCallParity({
     return parsed.get(file);
   };
 
-  const program = ts.createProgram(
-    [controlFile, plateFile, censusFile],
-    options,
-    host
-  );
+  const program = ts.createProgram([controlFile, censusFile], options, host);
   const checker = program.getTypeChecker();
-  const plateSource = program.getSourceFile(plateFile);
+  // Plate's errors come from the Plate copy compiled alone, as a Plate app is,
+  // so no global type only Plite declares reaches them.
+  const plateProgram = ts.createProgram([plateFile], options, host);
+  const plateSource = plateProgram.getSourceFile(plateFile);
 
   for (const diagnostic of [
     ...program.getOptionsDiagnostics(),
@@ -535,11 +840,32 @@ export function checkPliteCallParity({
   }
   const label = (id) => `case ${id} (${markers.get(id)})`;
 
+  const { proven, unattributed } = proveByStandIns({
+    checker,
+    control: program.getSourceFile(controlFile),
+    host,
+    lineCase,
+    modules,
+    options,
+    plateFile,
+    program: plateProgram,
+    rebound,
+    twins,
+    virtual,
+  });
+  for (const { group, id } of unattributed) {
+    problems.push(
+      `${label(id)}: its Plate errors change when the check replaces ${group.join(', ')} together, and no one of them changes them alone. Check each binding in a case of its own.`
+    );
+  }
+
   const caseOf = (node) =>
     lineCase[
       control.getLineAndCharacterOfPosition(node.getStart(control)).line
     ];
-  const covered = new Set();
+  const covered = new Set(
+    [...proven].filter(([, ids]) => ids.size > 0).map(([key]) => key)
+  );
   const caseUses = new Map([...markers.keys()].map((id) => [id, new Set()]));
   const caseTexts = new Map([...markers.keys()].map((id) => [id, new Set()]));
   const references = new Map();
@@ -551,9 +877,8 @@ export function checkPliteCallParity({
       if (!references.has(node.text)) references.set(node.text, new Set());
       references.get(node.text).add(id);
       const entry = rebound.get(`${use.module}#${use.name}`);
-      if (entry ? checksName(use.node) : changes(use)) {
-        if (entry) covered.add(entry.key);
-        caseUses.get(id)?.add(`${use.module}#${use.name}`);
+      if (entry ? proven.get(entry.key).has(id) : changes(use)) {
+        caseUses.get(id)?.add(`${use.module}#${use.name}`).add(memberKey(use));
         const text = /^(?:\*|default)$/u.test(use.name) ? node.text : use.name;
         const shown = use.node === node ? node.text : text;
         caseTexts.get(id)?.add(text).add(shown);
@@ -580,7 +905,7 @@ export function checkPliteCallParity({
     const row = reasons.get(name);
     if (!row) {
       problems.push(
-        `Plate binds ${name} from ${entrypoints.join(' and ')} its own way, and no case calls, renders or types a value with Plite's ${name}. Add a documented call to ${CONTROL}, or give the reason in ${LEDGER}'s unproven list.`
+        `Plate binds ${name} from ${entrypoints.join(' and ')} its own way, and no case checks anything with it: replacing Plate's ${name} with a type nothing fits changes no case's errors. Add a documented call to ${CONTROL}, or give the reason in ${LEDGER}'s unproven list.`
       );
     } else if (
       JSON.stringify(
@@ -607,7 +932,7 @@ export function checkPliteCallParity({
     const names = caseTexts.get(id);
     if (names.size === 0) {
       problems.push(
-        `${label(id)}: the case calls, renders and types no name Plate binds its own way or drops. Delete it, or make it use one.`
+        `${label(id)}: the case's own lines check nothing with a name Plate binds its own way and use no name Plate drops. Delete it, or move the use it copies onto its lines.`
       );
     }
     const citations = readCitations(marker);
@@ -652,9 +977,9 @@ export function checkPliteCallParity({
     const citing = (cited.get(use.file) ?? []).filter(
       ({ end, start }) => start <= use.line && use.line <= end
     );
-    const key = `${use.module}#${use.name}`;
+    const key = memberKey(use);
     if (citing.some(({ id }) => caseUses.get(id).has(key))) continue;
-    const uses = `${use.file}:${use.line}: the walkthrough uses ${use.name} from ${use.module}`;
+    const uses = `${use.file}:${use.line}: the walkthrough uses ${use.member ? `${use.name}.${use.member}` : use.name} from ${use.module}`;
     problems.push(
       citing.length === 0
         ? `${uses}, and no case cites the line. Copy the call into ${CONTROL} as a case that cites it.`
@@ -706,8 +1031,8 @@ export function checkPliteCallParity({
 
   const refusals = new Map();
   for (const diagnostic of [
-    ...program.getSyntacticDiagnostics(plateSource),
-    ...program.getSemanticDiagnostics(plateSource),
+    ...plateProgram.getSyntacticDiagnostics(plateSource),
+    ...plateProgram.getSemanticDiagnostics(plateSource),
   ]) {
     const line = lineOf(diagnostic);
     const importing = importOwners(diagnostic.start);
