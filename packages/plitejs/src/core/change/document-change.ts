@@ -971,6 +971,40 @@ export const documentChangeWritesOnlyElementProperties = (
   );
 
 /** @internal */
+export const documentChangePropertyOnlyWrites = (
+  change: DocumentChange,
+  value: JsonEditorValue
+): ReadonlyArray<
+  Readonly<{ path: readonly number[]; root: string }>
+> | null => {
+  if (change.createRoots.size > 0 || change.deleteRoots.size > 0) return null;
+
+  const writes: Array<Readonly<{ path: readonly number[]; root: string }>> = [];
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+    let index: DocumentIndex | undefined;
+    let position = 0;
+
+    for (let at = 0; at < rootChange.sections.length; at += 2) {
+      const length = getDefined(rootChange.sections[at]);
+      const inserted = getDefined(rootChange.sections[at + 1]);
+
+      if (inserted >= 0) return null;
+      if (inserted === -2) {
+        index ??= valueRootIndex(value, root);
+        const node = invertiblePropertyNode(index, position, length);
+
+        if (!node) return null;
+        writes.push(Object.freeze({ path: node.path, root }));
+      }
+      position += length;
+    }
+  }
+
+  return writes;
+};
+
+/** @internal */
 export const collapseDocumentElementPropertyWrites = (
   change: DocumentChange,
   value: JsonEditorValue,

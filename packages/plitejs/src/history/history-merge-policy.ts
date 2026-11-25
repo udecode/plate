@@ -1,5 +1,6 @@
 import { type EditorCommit, RangeApi, type RootKey, type Selection } from '..';
 import {
+  documentChangePropertyOnlyWrites,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRootKeys,
   mapInternalDocumentChangePosition,
@@ -7,6 +8,7 @@ import {
 import {
   getEditorCommitCompletedTextDeletion,
   getEditorCommitSnapshot,
+  getEditorCommitValue,
 } from '../core/commit';
 import type { NativeGroupingInput } from '../core/native-grouping-input';
 import { MAIN_ROOT_KEY, toPublicRoot } from '../core/public-root';
@@ -59,8 +61,8 @@ export type HistoryBatchGroup = Readonly<{
       }>
     | Readonly<{
         kind: 'properties';
-        root: RootKey;
-        target: HistoryTarget;
+        root: RootKey | undefined;
+        targets: readonly string[];
       }>
     | TextHistoryGroup
   );
@@ -132,10 +134,9 @@ const selectionIsExpandedInRoot = (
 const getTarget = (
   commit: EditorCommit,
   root: RootKey,
-  path: readonly number[] | null,
-  kind: 'node' | 'text'
+  path: readonly number[] | null
 ): HistoryTarget | null => {
-  const nodeKeys = commit.changed.nodeKeys(kind, toPublicRoot(root));
+  const nodeKeys = commit.changed.nodeKeys('text', toPublicRoot(root));
 
   if (!path && nodeKeys.length !== 1) return null;
 
@@ -178,9 +179,45 @@ const getChangedSpan = (
   ]);
 };
 
+const getPropertyGroup = (commit: EditorCommit): HistoryBatchGroup | null => {
+  const writes = documentChangePropertyOnlyWrites(
+    commit.changes,
+    getEditorCommitValue(commit, 'before')
+  );
+
+  if (!writes || writes.length === 0) return null;
+
+  const targets = new Set<string>();
+
+  for (const { path, root } of writes) {
+    const nodeKey = getEditorCommitSnapshot(commit, root, 'before').index.keyAt(
+      path
+    );
+
+    if (!nodeKey) return null;
+    targets.add(JSON.stringify([root, nodeKey]));
+  }
+
+  const roots = new Set(writes.map(({ root }) => root));
+
+  return Object.freeze({
+    kind: 'properties',
+    root: roots.size === 1 ? writes[0].root : undefined,
+    targets: Object.freeze([...targets].sort()),
+  });
+};
+
+const sameTargets = (left: readonly string[], right: readonly string[]) =>
+  left.length === right.length &&
+  left.every((target, index) => target === right[index]);
+
 export const createHistoryBatchGroup = (
   commit: EditorCommit
 ): HistoryBatchGroup | null => {
+  const propertyGroup = getPropertyGroup(commit);
+
+  if (propertyGroup) return propertyGroup;
+
   const root = getChangedRoot(commit);
 
   if (!root) return null;
@@ -226,10 +263,8 @@ export const createHistoryBatchGroup = (
   const textTarget = getTarget(
     commit,
     root,
-    changedPath ?? afterPoint?.path ?? beforePoint?.path ?? null,
-    'text'
+    changedPath ?? afterPoint?.path ?? beforePoint?.path ?? null
   );
-  const propertyTarget = getTarget(commit, root, changedPath, 'node');
 
   if (
     changedSpan &&
@@ -248,7 +283,7 @@ export const createHistoryBatchGroup = (
       replacedSelection: true,
       root,
       target:
-        getTarget(commit, root, afterPoint.path, 'text') ??
+        getTarget(commit, root, afterPoint.path) ??
         failInvariant('Expected value to be defined'),
       toAfter: changedSpan[3],
       toBefore: changedSpan[1],
@@ -294,20 +329,6 @@ export const createHistoryBatchGroup = (
       target: textTarget,
       toAfter: range[3],
       toBefore: range[1],
-    });
-  }
-
-  if (
-    range &&
-    propertyTarget &&
-    propertiesChanged &&
-    !structureChanged &&
-    !textChanged
-  ) {
-    return Object.freeze({
-      kind: 'properties',
-      root,
-      target: propertyTarget,
     });
   }
 
@@ -414,7 +435,7 @@ export const shouldMergeBatch = (
   return (
     current.kind === 'properties' &&
     previous.kind === 'properties' &&
-    sameTarget(current.target, previous.target)
+    sameTargets(current.targets, previous.targets)
   );
 };
 
