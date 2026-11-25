@@ -11,6 +11,7 @@ import {
 } from '../..';
 import { resolveFragmentDeletedRange } from '../../core/fragment-deleted-range';
 import {
+  getDefaultView,
   isDOMElement,
   isDOMNode,
   isDOMText,
@@ -292,9 +293,16 @@ const isClipboardEventTargetInput = ({
   event,
 }: {
   event: ClipboardEvent<HTMLDivElement>;
-}) =>
-  event.target instanceof HTMLInputElement ||
-  event.target instanceof HTMLTextAreaElement;
+}) => {
+  const { target } = event;
+  const view = getDefaultView(target) as (Window & typeof globalThis) | null;
+
+  return (
+    !!view &&
+    (target instanceof view.HTMLInputElement ||
+      target instanceof view.HTMLTextAreaElement)
+  );
+};
 
 const preventReadOnlyClipboardDefault = ({
   editor,

@@ -5,7 +5,7 @@ import {
 } from 'react';
 
 import { SelectionApi } from '../..';
-import { markPlainTextPaste } from '../../dom/utils/dom';
+import { isDOMNode, markPlainTextPaste } from '../../dom/utils/dom';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
@@ -239,7 +239,7 @@ export const useRuntimeClipboardEvents = ({
     const route = (event: globalThis.ClipboardEvent) => {
       const projected = readPliteViewSelection(editor);
       const { target } = event;
-      const targetNode = target instanceof Node ? target : null;
+      const targetNode = isDOMNode(target) ? target : null;
       const targetUsesRootHandler = targetNode && root.contains(targetNode);
       if (
         event.defaultPrevented ||
