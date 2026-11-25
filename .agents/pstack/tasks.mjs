@@ -237,7 +237,7 @@ const fields = (evidence) => {
     if (found.length > 0) given[key] = found[0];
   }
   const blankWaits = given.waits?.length === 0;
-  if (given.waits) given.waits = given.waits.filter((wait) => wait !== 'none');
+  for (const key of ['waits', 'owns']) if (given[key]) given[key] = given[key].filter((value) => value !== 'none');
   return { given, repeated, blankWaits };
 };
 
