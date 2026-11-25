@@ -1,4 +1,3 @@
-import type { RootChangeSection } from '../change/root-change';
 import type { PreparedTokenSlice } from '../change/tokens';
 
 export type FitSource =
@@ -7,6 +6,12 @@ export type FitSource =
   | Readonly<{ kind: 'slice' }>;
 
 export type FitRun = Readonly<{ length: number; source: FitSource }>;
+
+export type FitSection = Readonly<{
+  from: number;
+  insert: PreparedTokenSlice;
+  to: number;
+}>;
 
 declare const sealed: unique symbol;
 
@@ -139,7 +144,7 @@ export const fitSections = ({
   insert: PreparedTokenSlice;
   origins: FitOrigins;
   to: number;
-}>): RootChangeSection[] => {
+}>): FitSection[] => {
   const kept: Array<
     Readonly<{ at: number; insertAt: number; length: number }>
   > = [];
@@ -165,7 +170,7 @@ export const fitSections = ({
     unclaimedTo = keepFrom;
   }
 
-  const sections: RootChangeSection[] = [];
+  const sections: FitSection[] = [];
   let cursor = from;
   let written = 0;
 

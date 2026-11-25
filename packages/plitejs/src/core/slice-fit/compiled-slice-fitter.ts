@@ -36,8 +36,11 @@ import type { Relocation } from '../change/lineage';
 import { historyFollowsAllFacts } from '../change/record';
 import {
   RootChange,
+  propertyDeltaFromModifications,
   reconcileChildrenStep,
+  semanticPropertyModifications,
   type DocumentPropertyContext,
+  type RootChangeSection,
 } from '../change/root-change';
 import { sliceFacts } from '../change/slice-facts';
 import {
@@ -45,6 +48,7 @@ import {
   PreparedTokenSliceStructureError,
   commonSuffixLength,
   encodeNodes,
+  getDocumentSliceNodeKeys,
   getPreparedDocumentSlice,
   openToken,
   type JsonEditorValue,
@@ -108,6 +112,7 @@ import {
 } from './frontier';
 import {
   FitOriginLog,
+  type FitSection,
   type FitSource,
   fitSections,
   markFit,
@@ -354,6 +359,17 @@ export type SliceFitterDelegate<V extends Value = Value> = Pick<
 // A local candidate replaces through the end of its block and re-emits the
 // unchanged tail; mapped as a replacement, that tail pins forward anchors at
 // the insertion point to the replacement's start.
+// Trimmed to nothing, an identical replacement would read as a fit that
+// changed nothing, and the range guard would refuse its placement.
+const trimsEverything = (
+  trimmed: number,
+  {
+    from,
+    insert,
+    to,
+  }: Readonly<{ from: number; insert: PreparedTokenSlice; to: number }>
+) => trimmed === insert.length && trimmed === to - from;
+
 const withoutUnchangedTail = (
   document: DocumentIndex,
   candidate: MaterializedSliceFitCandidate
@@ -372,18 +388,68 @@ const withoutUnchangedTail = (
     limit
   );
 
-  // Trimmed to nothing, an identical replacement would read as a fit that
-  // changed nothing, and the range guard would refuse its placement.
-  const identical =
-    tail === candidate.insert.length && tail === candidate.to - candidate.from;
-
-  return tail === 0 || identical
+  return tail === 0 || trimsEverything(tail, candidate)
     ? candidate
     : Object.freeze({
         ...candidate,
         insert: candidate.insert.slice(0, candidate.insert.length - tail),
         to: candidate.to - tail,
       });
+};
+
+const keepRewrittenHead = (
+  document: DocumentIndex,
+  change: FitSection
+): Readonly<{
+  change: FitSection;
+  properties: readonly RootChangeSection[];
+}> => {
+  const { from, insert, to } = change;
+  const unchanged = { change, properties: [] };
+
+  if (to === from || insert.length === 0) return unchanged;
+  const ownKeys = getDocumentSliceNodeKeys(insert);
+  const properties: RootChangeSection[] = [];
+  let head = 0;
+
+  for (const token of document.slice(from, to).tokens) {
+    const landed = insert.tokens[head];
+
+    if (
+      token.kind !== 'open' ||
+      token.nodeKind !== 'element' ||
+      landed?.kind !== 'open' ||
+      landed.nodeKind !== 'element' ||
+      token.props.type !== landed.props.type ||
+      ownKeys.has(head)
+    ) {
+      break;
+    }
+    const modifications = semanticPropertyModifications(
+      token.props,
+      landed.props,
+      () => false
+    );
+
+    if (modifications.length > 0) {
+      properties.push({
+        from: from + head,
+        properties: propertyDeltaFromModifications(modifications),
+      });
+    }
+    head += 1;
+  }
+
+  return head === 0 || trimsEverything(head, change)
+    ? unchanged
+    : {
+        change: Object.freeze({
+          from: from + head,
+          insert: insert.slice(head),
+          to,
+        }),
+        properties,
+      };
 };
 
 const lookAlikeChange = (
@@ -4435,12 +4501,23 @@ export const compileSliceFitter = <V extends Value>(
       options.target.kind === 'range' &&
       !exactBounds &&
       options.target.byLook !== 'commit'
-        ? fitSections(fittedCandidate)
+        ? fitSections(fittedCandidate).flatMap((section) => {
+            const { change, properties } = keepRewrittenHead(document, section);
+
+            return [...properties, change];
+          })
         : null;
     const materializedCandidate =
       options.target.kind === 'range' && !exactBounds && !sections
         ? withoutUnchangedTail(document, fittedCandidate)
         : fittedCandidate;
+    const plain =
+      options.target.kind === 'range' &&
+      !exactBounds &&
+      !sections &&
+      !materializedCandidate.semanticChange
+        ? keepRewrittenHead(document, materializedCandidate)
+        : { change: materializedCandidate, properties: [] };
     const candidate = materializedCandidate.preparation
       ? Object.freeze({
           ...materializedCandidate,
@@ -4448,7 +4525,7 @@ export const compileSliceFitter = <V extends Value>(
             materializedCandidate.preparation,
             sections?.flatMap(({ insert }) =>
               insert && insert.length > 0 ? [insert] : []
-            ) ?? [materializedCandidate.insert]
+            ) ?? [plain.change.insert]
           ),
         })
       : materializedCandidate;
@@ -4466,11 +4543,14 @@ export const compileSliceFitter = <V extends Value>(
               document.value.length,
               inputSlice.content as readonly JsonNode[]
             ).change
-          : RootChange.create(document, {
-              from: candidate.from,
-              insert: candidate.insert,
-              to: candidate.to,
-            })
+          : RootChange.create(document, [
+              ...plain.properties,
+              {
+                from: plain.change.from,
+                insert: plain.change.insert,
+                to: plain.change.to,
+              },
+            ])
     );
     const rootChange = sections
       ? RootChange.create(document, sections)
