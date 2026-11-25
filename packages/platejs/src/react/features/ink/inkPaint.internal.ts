@@ -127,7 +127,7 @@ export const createInkSurface = (into: SVGGElement) => {
         if (!holds(mark)) outlines.delete(mark);
       }
     },
-    painted: () => (hidden ? [] : ink),
+    painted: () => ink,
     paint: (placed: InkPlaced['ink']) => {
       ink = placed;
       draw();

@@ -188,7 +188,11 @@ export const attachInkCapture = ({
   tool: () => InkTool | null;
   view: Editor;
 }>) => {
-  let contact: Readonly<{ brush: InkBrush; pointerId: number }> | null = null;
+  let contact: Readonly<{
+    brush: InkBrush;
+    pointerId: number;
+    tool: InkTool;
+  }> | null = null;
   let epoch: Epoch | null = null;
   let blocks: Array<
     Readonly<{ block: InkTextBlock; box: ReturnType<typeof inkBoxOf> }>
@@ -302,13 +306,18 @@ export const attachInkCapture = ({
 
     const input = contact && inputOf(done, contact.brush);
 
-    if (!input) {
+    if (!contact || !input) {
       release(done);
 
       return;
     }
+
+    const by = contact.tool;
+
     scheduleAfterCommitNotification(editor, () => {
       try {
+        if (tool() !== by) return;
+
         const tracked = editor.plugin(HistoryPlugin).installed;
         const joins = tracked && savedAt === editor.read.history().revision;
 
@@ -332,6 +341,11 @@ export const attachInkCapture = ({
 
   const sealOnChange = () => {
     if (!contact) return;
+    if (tool() !== contact.tool) {
+      cancel();
+
+      return;
+    }
     seal();
     cutAt(performance.now());
     draw();
@@ -386,6 +400,7 @@ export const attachInkCapture = ({
 
     if (changes.length > 0) {
       seal();
+      if (!holdOrEnd(event)) return;
       cutAt(Math.max(...changes));
       if (event.timeStamp < dropBefore) return;
     }
@@ -454,7 +469,11 @@ export const attachInkCapture = ({
       return;
     }
     event.preventDefault();
-    contact = { brush: current.brush, pointerId: event.pointerId };
+    contact = {
+      brush: current.brush,
+      pointerId: event.pointerId,
+      tool: current,
+    };
     savedAt = undefined;
     changedSinceCut = new Map();
     dropBefore = Number.NEGATIVE_INFINITY;
@@ -464,7 +483,7 @@ export const attachInkCapture = ({
   };
   const holdOrEnd = (event: PointerEvent) => {
     if (event.pointerId !== contact?.pointerId) return false;
-    if (tool()?.type === 'draw') return true;
+    if (tool() === contact.tool) return true;
     cancel();
 
     return false;
@@ -478,14 +497,20 @@ export const attachInkCapture = ({
       blocks = null;
       sealOnChange();
     }
-    for (const sample of inkSamplesOf(event)) take(sample, origin);
+    for (const sample of inkSamplesOf(event)) {
+      if (!holdOrEnd(event)) return;
+      take(sample, originOf());
+    }
     draw();
   };
   const onPointerUp = (event: PointerEvent) => {
     if (!holdOrEnd(event)) return;
-    seal();
-    contact = null;
-    draw();
+    try {
+      seal();
+    } finally {
+      contact = null;
+      draw();
+    }
   };
   const onPointerCancel = (event: PointerEvent) => {
     if (event.pointerId === contact?.pointerId) cancel();
@@ -494,6 +519,11 @@ export const attachInkCapture = ({
   const unsubscribe = editor.subscribeCommit(({ changed }) => {
     blocks = null;
     if (!contact) return;
+    if (tool() !== contact.tool) {
+      cancel();
+
+      return;
+    }
 
     const paths = changed.paths();
 

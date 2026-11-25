@@ -15,6 +15,7 @@ type Erasing = {
   readonly pointerId: number;
   readonly radius: number;
   step: unknown;
+  readonly tool: InkTool;
 };
 
 type Box = Readonly<{
@@ -124,13 +125,10 @@ export const attachInkPick = ({
     return outline;
   };
 
-  const pointsOf = (samples: readonly PointerEvent[]) => {
+  const pointOf = ({ clientX, clientY }: PointerEvent): Point => {
     const { left, top } = layer.getBoundingClientRect();
 
-    return samples.map(({ clientX, clientY }): Point => [
-      clientX - left,
-      clientY - top,
-    ]);
+    return [clientX - left, clientY - top];
   };
 
   const erase = (erasing: Erasing, to: Point) => {
@@ -182,7 +180,7 @@ export const attachInkPick = ({
 
   const holdOrEnd = (event: PointerEvent) => {
     if (event.pointerId !== contact?.pointerId) return null;
-    if (tool()?.type === 'erase') return contact;
+    if (tool() === contact.tool) return contact;
     contact = null;
 
     return null;
@@ -202,28 +200,31 @@ export const attachInkPick = ({
     event.preventDefault();
     layer.setPointerCapture(event.pointerId);
 
-    const [point] = pointsOf([event]);
+    const point = pointOf(event);
 
     contact = {
       last: point,
       pointerId: event.pointerId,
       radius: current.size / 2,
       step: undefined,
+      tool: current,
     };
     erase(contact, point);
   };
   const onPointerMove = (event: PointerEvent) => {
-    const held = holdOrEnd(event);
+    for (const sample of inkSamplesOf(event)) {
+      const erasing = holdOrEnd(event);
 
-    if (!held) return;
-    for (const point of pointsOf(inkSamplesOf(event))) erase(held, point);
+      if (!erasing) return;
+      erase(erasing, pointOf(sample));
+    }
   };
   const onPointerUp = (event: PointerEvent) => {
-    const held = holdOrEnd(event);
+    const erasing = holdOrEnd(event);
 
-    if (!held) return;
+    if (!erasing) return;
     contact = null;
-    erase(held, pointsOf([event])[0]);
+    erase(erasing, pointOf(event));
   };
   const onPointerCancel = (event: PointerEvent) => {
     if (event.pointerId === contact?.pointerId) contact = null;

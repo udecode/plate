@@ -1,6 +1,10 @@
 import * as React from 'react';
 
-import { getRecordSetVersion, readShownRecords } from '../../../facade';
+import {
+  getRecordSetVersion,
+  readShownRecords,
+  subscribeEditorViewState,
+} from '../../../facade';
 import { COPIES, MARKS } from '../../../features/ink/lib/inkGone.internal';
 import {
   useEditableRef,
@@ -93,10 +97,12 @@ const firstElementAfter = (element: Element) => {
  * and keeps the Editable's focus and caret. With the eraser on, it removes
  * each mark whose painted ink its path touches. A finger still scrolls, and
  * other mouse buttons keep their own behavior. The view's `hidden` hides ink and
- * signs, and picked marks paint with a halo. Turning the view read-only turns
- * the tool off. The layer fills the nearest positioned ancestor of the
- * Editable, which should hold the Editable and its margins, and reaches at
- * least to the Editable's bottom, so it covers the whole content of a
+ * signs and leaves every press to the content, and picked marks paint with a
+ * halo. Changing the tool, hiding ink or turning the view read-only ends the
+ * contact, and a drawing contact ended so saves nothing more. Turning the view
+ * read-only turns the tool off. The layer fills the nearest positioned ancestor
+ * of the Editable, which should hold the Editable and its margins, and reaches
+ * at least to the Editable's bottom, so it covers the whole content of a
  * scrolling ancestor. Pass the slot's props on with a `sign`, as in
  * `wrapContent: (props) => <InkContent {...props} sign={Sign} />`, so the
  * layer comes right after the Editable and before every `afterEditable` slot.
@@ -171,17 +177,10 @@ function InkLayer({
     shown.get
   );
   const preview = React.useRef<SVGPathElement>(null);
-  const currentTool = React.useRef(tool);
-  const cancel = React.useRef<() => void>(null);
-
-  React.useLayoutEffect(() => {
-    currentTool.current = tool;
-  }, [tool]);
 
   React.useEffect(() => {
-    cancel.current?.();
     if (readOnly) view.plugin(InkPlugin).api.setTool(null);
-  }, [readOnly, tool, view]);
+  }, [readOnly, view]);
 
   React.useEffect(() => {
     const editable = editableRef.current;
@@ -197,8 +196,11 @@ function InkLayer({
       );
     }
 
+    const tools = view.plugin(InkPlugin).viewStore;
     const live = () =>
-      view.read.view.isReadOnly() ? null : currentTool.current;
+      view.read.view.isReadOnly() || tools.get('hidden')
+        ? null
+        : tools.get('tool');
     const attached = attachInkCapture({
       editor,
       layer,
@@ -362,10 +364,21 @@ function InkLayer({
     page.addEventListener('scroll', onScroll, { capture: true, passive: true });
     win?.addEventListener('resize', schedule);
     win?.addEventListener('beforeprint', onPrint);
-    cancel.current = () => {
+    const end = () => {
       attached.cancel();
       picker.cancel();
     };
+    const stopTool = tools.subscribe((state, previous) => {
+      if (state.tool !== previous.tool || state.hidden !== previous.hidden) {
+        end();
+      }
+    });
+    const stopViewState = subscribeEditorViewState(view, (change) => {
+      if (change !== 'readOnly') return;
+      end();
+      view.plugin(InkPlugin).api.setTool(null);
+    });
+
     schedule();
 
     return () => {
@@ -374,13 +387,14 @@ function InkLayer({
       stopAudit();
       stopArriving();
       unsubscribe();
+      stopTool();
+      stopViewState();
       stopLayout();
       page.removeEventListener('scroll', onScroll, { capture: true });
       win?.removeEventListener('resize', schedule);
       win?.removeEventListener('beforeprint', onPrint);
       attached.detach();
       picker.detach();
-      cancel.current = null;
     };
   }, [editableRef, editor, layer, shown, surface, view]);
 
@@ -400,7 +414,7 @@ function InkLayer({
         cursor: tool ? 'crosshair' : undefined,
         inset: 0,
         minHeight: placed.bottom,
-        pointerEvents: tool && !readOnly ? 'auto' : 'none',
+        pointerEvents: tool && !readOnly && !hidden ? 'auto' : 'none',
         position: 'absolute',
         touchAction: INK_TOUCH_ACTION,
         zIndex: 50,
@@ -419,11 +433,7 @@ function InkLayer({
         }}
       >
         <g ref={mountInk} />
-        <path
-          data-ink-stroke=""
-          ref={preview}
-          visibility={hidden ? 'hidden' : undefined}
-        />
+        <path data-ink-stroke="" ref={preview} />
       </svg>
       {!hidden &&
         placed.signs.map(({ id, left, sign }) => (
