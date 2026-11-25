@@ -114,7 +114,6 @@ vitest.config.*
 /tooling/ime/
 /tooling/plite/donor/
 /tooling/config/bunTestSetup.ts
-/tooling/config/domNodeStandIns.ts
 /tooling/config/memoryCeiling.ts
 /tooling/config/load-trace-preload.ts
 /tooling/config/vitest-load-trace.mjs
