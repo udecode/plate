@@ -12798,7 +12798,7 @@ export const getActiveTransactionDocumentChange = (editor: Editor) => {
 };
 
 export const getActiveDocumentChangeBuilder = (editor: Editor) => {
-  const snapshot = getTransactionSnapshot(editor);
+  const snapshot = getDraftSnapshot(editor);
 
   if (!snapshot) {
     throw new Error('Document change builders require an active transaction.');
