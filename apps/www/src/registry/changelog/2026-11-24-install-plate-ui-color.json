@@ -24,12 +24,6 @@
       "diagnostics": []
     },
     {
-      "name": "comment",
-      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
-      "diagnostics": []
-    },
-    {
       "name": "dnd",
       "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
@@ -54,32 +48,16 @@
       ],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
-    },
-    {
-      "name": "suggestion-toolbar-button",
-      "files": [
-        "apps/www/src/registry/components/editor/suggestion-toolbar-button.tsx"
-      ],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
-      "diagnostics": []
     }
   ],
   "entries": [
     {
       "id": "2026-11-24-editor-install-plate-ui-s-c0a70e5b",
       "kind": "fix",
-      "summary": "Adding one of these components on its own now installs `plate-ui`, so the `--brand` color these components read is set. Before, a lone `shadcn add @plate/editor` left the editor's selection tint without a color.",
+      "summary": "Adding one of these components on its own now installs `plate-ui`, which defines the editor color they read. Before, a lone `shadcn add @plate/editor` left the editor's selection tint without a color.",
       "details": [],
       "migrationNotes": [],
-      "targets": [
-        "editor",
-        "comment",
-        "dnd",
-        "math",
-        "table",
-        "code-block-codemirror",
-        "suggestion-toolbar-button"
-      ],
+      "targets": ["editor", "dnd", "math", "table", "code-block-codemirror"],
       "source": {
         "line": 14,
         "row": 1,

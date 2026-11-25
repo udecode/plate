@@ -1323,7 +1323,7 @@ details > summary {
 }
 
 .editor-inlines-link {
-  color: var(--brand);
+  color: var(--editor-primary, var(--primary));
   text-decoration: underline;
 }
 

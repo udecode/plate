@@ -99,7 +99,8 @@ const codeMirrorAdapter = createCodeMirrorAdapter({
         overflow: 'auto',
       },
       '[data-code-block-model-selection]': {
-        backgroundColor: 'color-mix(in srgb, var(--brand) 25%, transparent)',
+        backgroundColor:
+          'color-mix(in srgb, var(--editor-primary, var(--primary)) 25%, transparent)',
       },
       '.cm-search': {
         alignItems: 'center',

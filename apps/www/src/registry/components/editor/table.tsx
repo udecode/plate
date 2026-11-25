@@ -946,7 +946,7 @@ export function TableCellElement(
         isHeader && 'text-start font-normal *:m-0',
         'before:size-full',
         'data-[table-cell-selected=true]:before:z-10',
-        'data-[table-cell-selected=true]:before:bg-brand/5',
+        'data-[table-cell-selected=true]:before:bg-editor-primary/5',
         "before:absolute before:box-border before:select-none before:content-['']",
         borders?.bottom.width && 'before:border-b before:border-b-border',
         borders?.right.width && 'before:border-e before:border-e-border',

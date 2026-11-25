@@ -14,21 +14,18 @@
     },
     {
       "name": "plate-ui",
-      "description": "Install Plate package and styles",
+      "description": "Install Plate package and the editor color token",
       "devDependencies": [],
       "registryDependencies": [
         "https://platejs.org/r/plate.json"
       ],
       "files": [],
       "cssVars": {
-        "light": {
-          "brand": "oklch(0.623 0.214 259.815)"
-        },
-        "dark": {
-          "brand": "oklch(0.707 0.165 254.624)"
+        "theme": {
+          "color-editor-primary": "var(--editor-primary, var(--primary))"
         }
       },
-      "type": "registry:style"
+      "type": "registry:lib"
     },
     {
       "name": "editor",
@@ -1357,12 +1354,10 @@
       "description": "A toolbar button for toggling suggestion mode in the editor.",
       "dependencies": [
         "platejs",
-        "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/plate-ui.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
@@ -2396,6 +2391,9 @@
         "cn",
         "diff-match-patch-ts@^0.6.0"
       ],
+      "registryDependencies": [
+        "https://platejs.org/r/plate-ui.json"
+      ],
       "files": [
         {
           "path": "src/registry/components/editor/math-static.tsx",
@@ -3093,7 +3091,6 @@
         "https://platejs.org/r/basic-marks-static.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
-        "https://platejs.org/r/plate-ui.json",
         "avatar",
         "button"
       ],
@@ -4705,7 +4702,7 @@
           "highlight": "oklch(0.852 0.199 91.936)"
         }
       },
-      "type": "registry:style"
+      "type": "registry:lib"
     },
     {
       "name": "code-syntax-style",
@@ -4742,7 +4739,7 @@
           "syntax-deletion-background": "#473235"
         }
       },
-      "type": "registry:style"
+      "type": "registry:lib"
     },
     {
       "name": "use-floating-rect",

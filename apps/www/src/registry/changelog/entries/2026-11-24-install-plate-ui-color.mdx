@@ -11,4 +11,4 @@ diagnostics: []
 
 <!-- entry: {"id":"2026-11-24-editor-install-plate-ui-s-c0a70e5b","kind":"fix","migrationNotes":[]} -->
 
-- **`editor`**, **`comment`**, **`dnd`**, **`math`**, **`table`**, **`code-block-codemirror`**, **`suggestion-toolbar-button`**: Adding one of these components on its own now installs `plate-ui`, so the `--brand` color these components read is set. Before, a lone `shadcn add @plate/editor` left the editor's selection tint without a color.
+- **`editor`**, **`dnd`**, **`math`**, **`table`**, **`code-block-codemirror`**: Adding one of these components on its own now installs `plate-ui`, which defines the editor color they read. Before, a lone `shadcn add @plate/editor` left the editor's selection tint without a color.

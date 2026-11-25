@@ -28,7 +28,7 @@ export function EquationElementStatic(
     <EditorElement className="my-1" {...props}>
       <div
         className={cn(
-          'group flex select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
+          'group flex select-none items-center justify-center rounded-sm hover:bg-editor-primary/10 data-[selected=true]:bg-editor-primary/10',
           element.latex.length === 0 ? 'bg-muted p-3 pe-9' : 'px-2 py-1'
         )}
       >

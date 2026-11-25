@@ -91,19 +91,16 @@ export const registryInit: RegistryItem[] = [
   },
   {
     cssVars: {
-      dark: {
-        brand: 'oklch(0.707 0.165 254.624)',
-      },
-      light: {
-        brand: 'oklch(0.623 0.214 259.815)',
+      theme: {
+        'color-editor-primary': 'var(--editor-primary, var(--primary))',
       },
     },
-    description: 'Install Plate package and styles',
+    description: 'Install Plate package and the editor color token',
     devDependencies: [],
     files: [],
     name: 'plate-ui',
     registryDependencies: ['@plate/plate'],
-    type: 'registry:style',
+    type: 'registry:lib',
   },
 ];
 

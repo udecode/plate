@@ -38,6 +38,34 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-24-editor-primary-color",
+      "href": "/registry/changelog/2026-11-24-editor-primary-color.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Color the editor with editor-primary, which follows the app's primary color",
+      "change": {
+        "type": "source",
+        "date": "2026-11-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "plate-ui",
+        "editor",
+        "dnd",
+        "math",
+        "math-static",
+        "table",
+        "code-block-codemirror",
+        "comment",
+        "suggestion-toolbar-button"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-24-field-static-answers",
       "href": "/registry/changelog/2026-11-24-field-static-answers.json",
       "status": "draft",
@@ -105,15 +133,7 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": [
-        "editor",
-        "comment",
-        "dnd",
-        "math",
-        "table",
-        "code-block-codemirror",
-        "suggestion-toolbar-button"
-      ],
+      "targets": ["editor", "dnd", "math", "table", "code-block-codemirror"],
       "entries": 1,
       "diagnostics": []
     },

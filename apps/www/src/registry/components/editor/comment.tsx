@@ -283,8 +283,8 @@ function CommentInput({
                   type="button"
                   variant="ghost"
                 >
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/40">
-                    <XIcon className="size-3 stroke-[3px] text-background" />
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted">
+                    <XIcon className="size-3 stroke-[3px] text-muted-foreground" />
                   </span>
                 </Button>
                 <Button
@@ -295,8 +295,8 @@ function CommentInput({
                   type="submit"
                   variant="ghost"
                 >
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-brand">
-                    <CheckIcon className="size-3 stroke-[3px] text-background" />
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary">
+                    <CheckIcon className="size-3 stroke-[3px] text-primary-foreground" />
                   </span>
                 </Button>
               </div>

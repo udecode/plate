@@ -1,0 +1,26 @@
+---
+id: 2026-11-24-editor-primary-color
+date: 2026-11-24
+status: draft
+kind: rename
+summary: "Color the editor with editor-primary, which follows the app's primary color"
+change: { 'type': 'source', 'date': '2026-11-24', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-24-plate-ui-color-editor-primary-which-5877ae68","kind":"rename","migrationNotes":["Components you copied before this change still read `brand`. Add each of them again with `shadcn add --overwrite`, which replaces any edits you made to those files. Plate no longer reads `--brand` or `--color-brand`, but your own components or stylesheets may, so keep both while anything in your app reads them. To give the editor a color apart from `--primary`, set `--editor-primary` in a `:root` rule of your own, and in `.dark` for a separate dark value."]} -->
+
+- **`plate-ui`**, **`editor`**, **`dnd`**, **`math`**, **`math-static`**, **`table`**, **`code-block-codemirror`**: The editor's selection, block selection, drop line and focus ring, the inline equation and table cell highlights, and the code block selection use the Tailwind color `editor-primary` instead of `brand`. The text caret outside code blocks uses `editor-primary` instead of `primary`, and so do the hover and selected highlights of block equations, live and static. `plate-ui` adds `--color-editor-primary: var(--editor-primary, var(--primary))` to your theme, so the editor follows your shadcn `--primary` until you set `--editor-primary`. Plate no longer reads `--brand`.
+
+<!-- entry: {"id":"2026-11-24-editor-caret-on-editor","kind":"behavior","migrationNotes":["A caret color or `selection:` class you set on `EditorContainer` no longer reaches the text. Set it on `Editor` instead."]} -->
+
+- **`editor`**: `Editor` sets the caret and text selection colors instead of `EditorContainer`, so an editor rendered without the container keeps them.
+
+<!-- entry: {"id":"2026-11-24-comment-send-primary","kind":"behavior","migrationNotes":[]} -->
+
+- **`comment`**: The Send button of a comment being edited uses your primary button colors, and its Cancel button uses your muted colors.
+
+<!-- entry: {"id":"2026-11-24-suggestion-toolbar-button-pressed","kind":"behavior","migrationNotes":[]} -->
+
+- **`suggestion-toolbar-button`**: The suggesting button shows its on state as a pressed toolbar button.

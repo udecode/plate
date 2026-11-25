@@ -17,7 +17,7 @@ import {
 import * as React from 'react';
 
 const editorContainerVariants = cva(
-  'relative isolate w-full cursor-text select-text overflow-y-auto caret-primary selection:bg-brand/25 focus-visible:outline-none',
+  'relative isolate w-full cursor-text select-text overflow-y-auto focus-visible:outline-none',
   {
     defaultVariants: {
       variant: 'default',
@@ -27,7 +27,7 @@ const editorContainerVariants = cva(
         comment: cn(
           'flex flex-wrap justify-between gap-1 px-1 py-0.5 text-base md:text-sm',
           'rounded-md border-[1.5px] border-transparent bg-transparent',
-          'has-[[data-editor]:focus]:border-brand/50 has-[[data-editor]:focus]:ring-2 has-[[data-editor]:focus]:ring-brand/30',
+          'has-[[data-editor]:focus]:border-editor-primary/50 has-[[data-editor]:focus]:ring-2 has-[[data-editor]:focus]:ring-editor-primary/30',
           'has-aria-disabled:border-input has-aria-disabled:bg-muted'
         ),
         default: 'min-h-0 flex-1',
@@ -78,10 +78,10 @@ const editorVariants = cva(
   cn(
     'group/editor ignore-click-outside/toolbar',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
-    'rounded-md ring-offset-background focus-visible:outline-none',
-    '**:data-editor-placeholder:!top-1/2 **:data-editor-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-editor-placeholder:text-muted-foreground/80 **:data-editor-placeholder:opacity-100! **:data-editor-drop-cursor:z-20 **:data-editor-drop-cursor:rounded-full **:data-editor-drop-cursor:bg-brand **:data-editor-inactive-selection:bg-brand/25 **:data-editor-inactive-selection-caret:z-20 **:data-editor-inactive-selection-caret:w-0.5 **:data-editor-inactive-selection-caret:bg-primary',
+    'rounded-md ring-offset-background caret-editor-primary selection:bg-editor-primary/25 focus-visible:outline-none',
+    '**:data-editor-placeholder:!top-1/2 **:data-editor-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-editor-placeholder:text-muted-foreground/80 **:data-editor-placeholder:opacity-100! **:data-editor-drop-cursor:z-20 **:data-editor-drop-cursor:rounded-full **:data-editor-drop-cursor:bg-editor-primary **:data-editor-inactive-selection:bg-editor-primary/25 **:data-editor-inactive-selection-caret:z-20 **:data-editor-inactive-selection-caret:w-0.5 **:data-editor-inactive-selection-caret:bg-editor-primary',
     '[&_strong]:font-bold',
-    '[--node-selection-tint:color-mix(in_oklab,var(--color-brand)_13%,transparent)]'
+    '[--node-selection-tint:color-mix(in_oklab,var(--editor-primary,var(--primary))_13%,transparent)]'
   ),
   {
     defaultVariants: {
@@ -143,7 +143,7 @@ export function Editor({
       />
       <NodeSelectionHighlight className="z-1 bg-(--node-selection-tint)" />
       <NodeSelectionDrag
-        className="z-50 border border-brand/25 bg-brand/15"
+        className="z-50 border border-editor-primary/25 bg-editor-primary/15"
         container={scrollElement}
       />
     </>

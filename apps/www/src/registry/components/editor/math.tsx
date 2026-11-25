@@ -92,7 +92,7 @@ export function EquationElement(
               props.element.latex.length > 0 ? 'Edit equation' : 'Add equation'
             }
             className={cn(
-              'group flex w-full cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
+              'group flex w-full cursor-pointer select-none items-center justify-center rounded-sm hover:bg-editor-primary/10 data-[selected=true]:bg-editor-primary/10',
               props.element.latex.length === 0
                 ? 'bg-muted p-3 pe-9'
                 : 'px-2 py-1'
@@ -189,7 +189,7 @@ export function InlineEquationElement(
               'h-6',
               inlineSuggestionVariants({ on: 'parent' }),
               ((element.latex.length > 0 && open) || selected) &&
-                'after:bg-brand/15',
+                'after:bg-editor-primary/15',
               element.latex.length === 0 &&
                 'text-muted-foreground after:bg-muted-foreground/10'
             )}

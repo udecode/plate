@@ -395,7 +395,7 @@ function DropIndicator() {
   return createPortal(
     <div
       aria-hidden
-      className="pointer-events-none fixed top-0 [left:0] z-50 rounded-full bg-brand/50"
+      className="pointer-events-none fixed top-0 [left:0] z-50 rounded-full bg-editor-primary/50"
       data-drop-indicator={axis}
       style={
         axis === 'y'

@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from 'cn';
 import { PencilLineIcon } from 'lucide-react';
 import { AuthoredPlugin } from 'platejs/authored';
 import {
@@ -34,7 +33,7 @@ function SuggestionToolbarButtonContent() {
 
   return (
     <ToolbarButton
-      className={cn(isSuggesting && 'text-brand/80 hover:text-brand/80')}
+      pressed={isSuggesting}
       onClick={() => {
         authored.api.setView({ intent: isSuggesting ? 'edit' : 'propose' });
       }}

@@ -23,7 +23,7 @@ export const registryStyles: RegistryItem[] = [
     },
     files: [],
     name: 'highlight-style',
-    type: 'registry:style',
+    type: 'registry:lib',
   },
   {
     cssVars: {
@@ -60,6 +60,6 @@ export const registryStyles: RegistryItem[] = [
     },
     files: [],
     name: 'code-syntax-style',
-    type: 'registry:style',
+    type: 'registry:lib',
   },
 ];

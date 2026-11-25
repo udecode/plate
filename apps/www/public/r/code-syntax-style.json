@@ -34,5 +34,5 @@
       "syntax-deletion-background": "#473235"
     }
   },
-  "type": "registry:style"
+  "type": "registry:lib"
 }

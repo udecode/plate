@@ -10,6 +10,13 @@ import {
 import { getRegistryMetadata } from '../src/lib/registry-metadata';
 import { registryFeatures } from '../src/registry/registry-features';
 import {
+  assertEditorColorReads,
+  assertSourceColorReads,
+  assertThemeEntries,
+  cssDeclarations,
+  PLATE_UI_THEME,
+} from './css-reads.mts';
+import {
   toPublicRegistryDependencySpecifier,
   toRegistryDependencySpecifier,
 } from './registry-dependencies.mts';
@@ -648,12 +655,31 @@ function readsColor(source: string, names: ReadonlySet<string>) {
   });
 }
 
-const PLATE_UI_COLOR_CONTROLS = [
+const PLATE_UI_COLOR_NAMES = new Set(
+  Object.keys(PLATE_UI_THEME).map((key) => key.slice('color-'.length))
+);
+const PLATE_UI_LIB_ITEMS = ['plate-ui', 'highlight-style', 'code-syntax-style'];
+const readWwwCss = (path: string) =>
+  readFileSync(new URL(`../src/app/${path}`, import.meta.url), 'utf-8');
+
+const globalsCss = readWwwCss('globals.css');
+
+await assertThemeEntries('www globals.css', globalsCss);
+assertEditorColorReads(
+  'www globals.css',
+  cssDeclarations(globalsCss).map(({ value }) => value)
+);
+await assertSourceColorReads(
+  'the Plite example stylesheet plite-example-styles.css',
+  readWwwCss('(app)/examples/plite/plite-example-styles.css')
+);
+
+const PLATE_UI_COLOR_CONTROLS = new Set([
   'align',
   'line-height',
   'upload',
   'upload-browser',
-];
+]);
 const missingPlateUiEdges: string[] = [];
 
 for (const base of PLATE_REGISTRY_BASES) {
@@ -661,32 +687,36 @@ for (const base of PLATE_REGISTRY_BASES) {
     getRegistryMetadata(base).items.map((item) => [item.name, item])
   );
   const cssVars = servedItems.get('plate-ui')?.cssVars;
-  const colorNames = new Set([
-    ...Object.keys(cssVars?.light ?? {}),
-    ...Object.keys(cssVars?.dark ?? {}),
-    ...Object.keys(cssVars?.theme ?? {})
-      .filter((key) => key.startsWith('color-'))
-      .map((key) => key.slice('color-'.length)),
-  ]);
 
   assert(
-    colorNames.size > 0,
-    `Expected ${base} plate-ui to ship an editor color`
+    JSON.stringify(cssVars) === JSON.stringify({ theme: PLATE_UI_THEME }),
+    `Expected ${base} plate-ui to ship only the theme entry ${JSON.stringify(PLATE_UI_THEME)}`
   );
+  for (const name of PLATE_UI_LIB_ITEMS) {
+    assert(
+      servedItems.get(name)?.type === 'registry:lib',
+      `Expected ${base} ${name} to be a registry:lib item, so adding it again keeps the app's own values of its variables`
+    );
+  }
 
   for (const item of servedItems.values()) {
-    const reader = item.files?.find((file) =>
-      readsColor(
-        readFileSync(
-          new URL(`../src/registry/${file.path}`, import.meta.url),
-          'utf-8'
-        ),
-        colorNames
-      )
+    const sources = (item.files ?? []).map((file) => ({
+      path: file.path,
+      source: readFileSync(
+        new URL(`../src/registry/${file.path}`, import.meta.url),
+        'utf-8'
+      ),
+    }));
+    const reader = sources.find(({ source }) =>
+      readsColor(source, PLATE_UI_COLOR_NAMES)
     );
     const hasEdge = item.registryDependencies?.includes('@plate/plate-ui');
 
-    if (PLATE_UI_COLOR_CONTROLS.includes(item.name)) {
+    for (const { path, source } of sources) {
+      await assertSourceColorReads(`${base} ${path}`, source);
+    }
+
+    if (PLATE_UI_COLOR_CONTROLS.has(item.name)) {
       assert(
         !reader && !hasEdge,
         `Expected ${base} ${item.name} to read no plate-ui color and install no plate-ui`

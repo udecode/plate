@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-24-editor-primary-color",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-24-editor-primary-color.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Color the editor with editor-primary, which follows the app's primary color",
+  "targets": [
+    {
+      "name": "plate-ui",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for plate-ui."
+        }
+      ]
+    },
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-static",
+      "files": ["apps/www/src/registry/components/editor/math-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table",
+      "files": ["apps/www/src/registry/components/editor/table.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-codemirror",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-codemirror.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment",
+      "files": ["apps/www/src/registry/components/editor/comment.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/suggestion-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-24-plate-ui-color-editor-primary-which-5877ae68",
+      "kind": "rename",
+      "summary": "The editor's selection, block selection, drop line and focus ring, the inline equation and table cell highlights, and the code block selection use the Tailwind color `editor-primary` instead of `brand`. The text caret outside code blocks uses `editor-primary` instead of `primary`, and so do the hover and selected highlights of block equations, live and static. `plate-ui` adds `--color-editor-primary: var(--editor-primary, var(--primary))` to your theme, so the editor follows your shadcn `--primary` until you set `--editor-primary`. Plate no longer reads `--brand`.",
+      "details": [],
+      "migrationNotes": [
+        "Components you copied before this change still read `brand`. Add each of them again with `shadcn add --overwrite`, which replaces any edits you made to those files. Plate no longer reads `--brand` or `--color-brand`, but your own components or stylesheets may, so keep both while anything in your app reads them. To give the editor a color apart from `--primary`, set `--editor-primary` in a `:root` rule of your own, and in `.dark` for a separate dark value."
+      ],
+      "targets": [
+        "plate-ui",
+        "editor",
+        "dnd",
+        "math",
+        "math-static",
+        "table",
+        "code-block-codemirror"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-editor-primary-color",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-24-editor-caret-on-editor",
+      "kind": "behavior",
+      "summary": "`Editor` sets the caret and text selection colors instead of `EditorContainer`, so an editor rendered without the container keeps them.",
+      "details": [],
+      "migrationNotes": [
+        "A caret color or `selection:` class you set on `EditorContainer` no longer reaches the text. Set it on `Editor` instead."
+      ],
+      "targets": ["editor"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-editor-primary-color",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-24-comment-send-primary",
+      "kind": "behavior",
+      "summary": "The Send button of a comment being edited uses your primary button colors, and its Cancel button uses your muted colors.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-editor-primary-color",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-24-suggestion-toolbar-button-pressed",
+      "kind": "behavior",
+      "summary": "The suggesting button shows its on state as a pressed toolbar button.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion-toolbar-button"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-11-24",
+          "entry": "2026-11-24-editor-primary-color",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

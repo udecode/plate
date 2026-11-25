@@ -1,19 +1,16 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
   "name": "plate-ui",
-  "description": "Install Plate package and styles",
+  "description": "Install Plate package and the editor color token",
   "devDependencies": [],
   "registryDependencies": [
     "https://platejs.org/r/plate.json"
   ],
   "files": [],
   "cssVars": {
-    "light": {
-      "brand": "oklch(0.623 0.214 259.815)"
-    },
-    "dark": {
-      "brand": "oklch(0.707 0.165 254.624)"
+    "theme": {
+      "color-editor-primary": "var(--editor-primary, var(--primary))"
     }
   },
-  "type": "registry:style"
+  "type": "registry:lib"
 }

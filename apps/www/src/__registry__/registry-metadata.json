@@ -1,5 +1,5 @@
 {
-  "generation": "52bff904e9a42fe344b2eb5ea6a31fcc5856c05002577a2d022a3184a83f4ba7",
+  "generation": "6c6e4ef934c1c2576020602c46ca33e7207c9970924263185350d6892508ef06",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -16,18 +16,15 @@
         },
         {
           "cssVars": {
-            "dark": {
-              "brand": "oklch(0.707 0.165 254.624)"
-            },
-            "light": {
-              "brand": "oklch(0.623 0.214 259.815)"
+            "theme": {
+              "color-editor-primary": "var(--editor-primary, var(--primary))"
             }
           },
-          "description": "Install Plate package and styles",
+          "description": "Install Plate package and the editor color token",
           "devDependencies": [],
           "files": [],
           "name": "plate-ui",
-          "type": "registry:style",
+          "type": "registry:lib",
           "registryDependencies": [
             "@plate/plate"
           ]
@@ -1426,7 +1423,6 @@
         {
           "dependencies": [
             "platejs",
-            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1450,7 +1446,6 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/suggestion",
-            "@plate/plate-ui",
             "@plate/toolbar"
           ]
         },
@@ -2484,7 +2479,10 @@
             }
           ],
           "name": "math-static",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/plate-ui"
+          ]
         },
         {
           "dependencies": [
@@ -3225,7 +3223,6 @@
             "@plate/basic-marks-static",
             "@plate/editor",
             "@plate/editor-dropdown-menu",
-            "@plate/plate-ui",
             "avatar",
             "button"
           ]
@@ -4826,7 +4823,7 @@
           },
           "files": [],
           "name": "highlight-style",
-          "type": "registry:style"
+          "type": "registry:lib"
         },
         {
           "cssVars": {
@@ -4863,7 +4860,7 @@
           },
           "files": [],
           "name": "code-syntax-style",
-          "type": "registry:style"
+          "type": "registry:lib"
         },
         {
           "dependencies": [
@@ -7644,18 +7641,15 @@
         },
         {
           "cssVars": {
-            "dark": {
-              "brand": "oklch(0.707 0.165 254.624)"
-            },
-            "light": {
-              "brand": "oklch(0.623 0.214 259.815)"
+            "theme": {
+              "color-editor-primary": "var(--editor-primary, var(--primary))"
             }
           },
-          "description": "Install Plate package and styles",
+          "description": "Install Plate package and the editor color token",
           "devDependencies": [],
           "files": [],
           "name": "plate-ui",
-          "type": "registry:style",
+          "type": "registry:lib",
           "registryDependencies": [
             "@plate/plate"
           ]
@@ -9050,7 +9044,6 @@
         {
           "dependencies": [
             "platejs",
-            "cn",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -9074,7 +9067,6 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/suggestion",
-            "@plate/plate-ui",
             "@plate/toolbar"
           ]
         },
@@ -10108,7 +10100,10 @@
             }
           ],
           "name": "math-static",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/plate-ui"
+          ]
         },
         {
           "dependencies": [
@@ -10849,7 +10844,6 @@
             "@plate/basic-marks-static",
             "@plate/editor",
             "@plate/editor-dropdown-menu",
-            "@plate/plate-ui",
             "avatar",
             "button"
           ]
@@ -12450,7 +12444,7 @@
           },
           "files": [],
           "name": "highlight-style",
-          "type": "registry:style"
+          "type": "registry:lib"
         },
         {
           "cssVars": {
@@ -12487,7 +12481,7 @@
           },
           "files": [],
           "name": "code-syntax-style",
-          "type": "registry:style"
+          "type": "registry:lib"
         },
         {
           "dependencies": [

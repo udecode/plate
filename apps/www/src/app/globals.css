@@ -63,7 +63,7 @@
   --color-selection: var(--selection);
   --color-selection-foreground: var(--selection-foreground);
 
-  --color-brand: var(--brand);
+  --color-editor-primary: var(--editor-primary, var(--primary));
   --color-highlight: var(--highlight);
 
   --font-heading:
@@ -130,7 +130,6 @@
   --color-blue-700: oklch(0.488 0.243 264.376);
   --color-blue-800: oklch(0.419 0.243 267.218);
 
-  --brand: oklch(0.623 0.214 259.815); /* Blue 500 */
   --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
 
   --syntax-keyword: #d13344;
@@ -189,7 +188,6 @@
   --selection: oklch(0.922 0 0);
   --selection-foreground: oklch(0.205 0 0);
 
-  --brand: oklch(0.707 0.165 254.624); /* Blue 400 */
   --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
 
   --syntax-keyword: #ee6960;
