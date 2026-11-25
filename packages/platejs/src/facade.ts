@@ -215,6 +215,7 @@ export {
   getActiveEditorUpdateId,
   getActiveEditorUpdateTags,
   getEditorRuntimeRootKeys,
+  getMutationVersion,
   getSnapshotVersion,
   markRootViewUsed,
   readElementById,

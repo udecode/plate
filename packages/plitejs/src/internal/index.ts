@@ -313,6 +313,7 @@ export {
   fitSlicePlacements,
   getLiveNode as getEditorLiveNode,
   getLiveText as getEditorLiveText,
+  getMutationVersion,
   getSnapshotVersion,
   withTransactionSpecDraftRead,
   withEditorDocumentProjection,

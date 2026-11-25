@@ -2879,6 +2879,7 @@ export const assertCanStartEditorWrite = (
 
 const getVersion = (editor: Editor) => SNAPSHOT_VERSION.get(editor) ?? 0;
 
+/** @internal */
 export const getMutationVersion = (editor: Editor) =>
   getTransactionSpecContext(editor)?.mutationVersion ??
   MUTATION_VERSION.get(editor) ??

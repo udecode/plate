@@ -5,6 +5,7 @@ import {
   type Descendant,
   documentReplacement,
   ElementApi,
+  type EditorStateView,
   type ElementOf,
   locateAt,
   type Node,
@@ -21,6 +22,7 @@ import {
   getActiveEditorUpdateId,
   getActiveEditorUpdateTags,
   getEditorRuntimeOwner,
+  getMutationVersion,
   getSnapshotVersion,
   readElementPropertyWrites,
   readRootEntries,
@@ -392,9 +394,86 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
       openWrite?.updateId === getActiveEditorUpdateId(editor)
         ? openWrite
         : null;
+    const fieldsIn = (nodes: readonly Descendant[]): FieldElement[] =>
+      nodes.flatMap((node) => {
+        if (isField(node)) return [node];
+
+        return ElementApi.isElement(node) ? fieldsIn(node.children) : [];
+      });
+    const documentOf = (
+      reader: typeof editor,
+      state: Pick<EditorStateView, 'children' | 'nodes' | 'root' | 'unique'>
+    ) => {
+      const held = (fieldId: string) => {
+        const holder = state.unique.holder('fieldId', fieldId);
+        const node = holder && state.nodes.get(holder.key)?.[0];
+
+        return node && isField(node) ? node : undefined;
+      };
+      const roots = () =>
+        getActiveEditorUpdateId(reader)
+          ? readRootEntries(reader)
+          : reader.read.roots();
+      const page = () => readViewPage(state) ?? state.children();
+      const shown = () => [
+        page(),
+        ...roots().map(({ root }) => state.root(root)),
+      ];
+      const listed = () => {
+        const nodes = shown().flatMap(fieldsIn);
+        const byId = new Map<string, FieldElement>();
+        const repeated = new Set<string>();
+
+        for (const node of nodes) {
+          if (typeof node.fieldId !== 'string') continue;
+          if (byId.has(node.fieldId)) repeated.add(node.fieldId);
+          else byId.set(node.fieldId, node);
+        }
+
+        const lookup = (id: string) =>
+          repeated.has(id) ? held(id) : byId.get(id);
+
+        return { lookup, nodes };
+      };
+
+      return { held, listed };
+    };
+    const owner = getEditorRuntimeOwner(editor);
+    let countAtCommit: number | null = null;
+    let afterValueWrite: {
+      count: number;
+      index: ReturnType<typeof indexFieldNames>;
+      updateId: ReturnType<typeof getActiveEditorUpdateId>;
+    } | null = null;
+    const readCountAtCommit = () => {
+      if (!getActiveEditorUpdateId(owner)) {
+        countAtCommit = getMutationVersion(owner);
+      }
+    };
+    const namesOfUntouchedDraft = (
+      reader: typeof editor,
+      nodes: () => readonly FieldElement[]
+    ) => {
+      const updateId = getActiveEditorUpdateId(reader);
+
+      if (!updateId) return sharedFieldNames(reader, nodes);
+
+      const count = getMutationVersion(owner);
+
+      if (afterValueWrite?.updateId === updateId) {
+        return afterValueWrite.count === count
+          ? afterValueWrite.index
+          : undefined;
+      }
+
+      return countAtCommit === count
+        ? sharedFieldNames(reader, nodes)
+        : undefined;
+    };
 
     return {
       activate({ onCleanup }) {
+        onCleanup(owner.subscribeCommit(readCountAtCommit));
         topStep = {
           mode: store.get('fillRole') ?? null,
           version: getSnapshotVersion(editor),
@@ -538,58 +617,10 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
         },
       ],
       read: ({ editor: reader, state }) => {
-        const held = (fieldId: string) => {
-          const holder = state.unique.holder('fieldId', fieldId);
-          const node = holder && state.nodes.get(holder.key)?.[0];
-
-          return node && isField(node) ? node : undefined;
-        };
-        const fieldsIn = (nodes: readonly Descendant[]): FieldElement[] =>
-          nodes.flatMap((node) => {
-            if (isField(node)) return [node];
-
-            return ElementApi.isElement(node) ? fieldsIn(node.children) : [];
-          });
-        const roots = () =>
-          getActiveEditorUpdateId(reader)
-            ? readRootEntries(reader)
-            : reader.read.roots();
-        const page = () => readViewPage(state) ?? state.children();
-        const drafted = () => {
-          if (!getActiveEditorUpdateId(reader)) return false;
-
-          const committed = getEditorRuntimeOwner(reader).read;
-          const drafts = roots();
-
-          return (
-            page() !== committed.children() ||
-            drafts.length !== committed.roots().length ||
-            drafts.some(({ root }) => state.root(root) !== committed.root(root))
-          );
-        };
+        readCountAtCommit();
+        const { held, listed } = documentOf(reader, state);
         const names = (nodes: () => readonly FieldElement[]) =>
-          drafted()
-            ? indexFieldNames(nodes())
-            : sharedFieldNames(reader, nodes);
-        const listed = () => {
-          const nodes = [
-            page(),
-            ...roots().map(({ root }) => state.root(root)),
-          ].flatMap(fieldsIn);
-          const byId = new Map<string, FieldElement>();
-          const repeated = new Set<string>();
-
-          for (const node of nodes) {
-            if (typeof node.fieldId !== 'string') continue;
-            if (byId.has(node.fieldId)) repeated.add(node.fieldId);
-            else byId.set(node.fieldId, node);
-          }
-
-          const lookup = (id: string) =>
-            repeated.has(id) ? held(id) : byId.get(id);
-
-          return { lookup, nodes };
-        };
+          namesOfUntouchedDraft(reader, nodes) ?? indexFieldNames(nodes());
 
         return {
           /**
@@ -668,7 +699,8 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           },
         };
       },
-      update: ({ tx }) => {
+      update: ({ editor: writer, tx }) => {
+        const document = documentOf(writer, tx);
         const held = (fieldId: string) => {
           const holder = tx.unique.holder('fieldId', fieldId);
           const node = holder && tx.nodes.get(holder.key)?.[0];
@@ -723,7 +755,10 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           /**
            * Change the settings or value of the field whose `fieldId` is
            * `fieldId`. A new kind or new options drop each value, default or
-           * options the patch leaves out and the field no longer fits. Throws,
+           * options the patch leaves out and the field no longer fits. A
+           * `value`, a cleared one included, also goes to every other field of
+           * the same role and name, unless the field has the `name-conflict`
+           * problem; no other setting does. Throws,
            * and changes nothing, when no field holds `fieldId`, a setting the
            * patch names does not fit the field's kind, the patch removes `kind`,
            * `role` or `label`, names `fieldId` or gives a `name` that `insert`
@@ -774,6 +809,13 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
             }
 
             const reshaped = 'kind' in patch || 'options' in patch;
+            const valuesOnly = Object.keys(patch).every(
+              (setting) => setting === 'value'
+            );
+            const kept =
+              field.name === undefined || !valuesOnly
+                ? undefined
+                : namesOfUntouchedDraft(writer, () => document.listed().nodes);
 
             tx.nodes.set(
               {
@@ -786,6 +828,31 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
               },
               { at: key }
             );
+
+            const written = document.held(fieldId);
+
+            if (!('value' in patch) || written?.name === undefined) return;
+
+            const index = kept ?? indexFieldNames(document.listed().nodes);
+
+            if (
+              !nameProblems(written, index, document.held).includes(
+                'name-conflict'
+              )
+            ) {
+              for (const id of index.byRole
+                .get(written.role)
+                ?.get(written.name) ?? []) {
+                const [, at] = held(id);
+
+                if (at) tx.nodes.set({ value: written.value }, { at });
+              }
+            }
+            afterValueWrite = {
+              count: getMutationVersion(owner),
+              index,
+              updateId: getActiveEditorUpdateId(writer),
+            };
           }),
         };
       },
