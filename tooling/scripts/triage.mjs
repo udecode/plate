@@ -1502,31 +1502,55 @@ function claudeChain(path) {
   }
 }
 
-function turnsOf(lead, chain) {
+const turnOf = (lead, record) => {
   if (lead.runtime === 'claude') {
-    return chain.flatMap(({ records }) =>
-      records
-        .filter(
-          (record) =>
-            record.type === 'assistant' &&
-            !record.isSidechain &&
-            record.message?.model &&
-            record.message.model !== '<synthetic>'
-        )
-        .map((record) => ({
+    return record.type === 'assistant' &&
+      !record.isSidechain &&
+      record.message?.model &&
+      record.message.model !== '<synthetic>'
+      ? {
           model: record.message.model,
           effort: record.effort ?? 'unknown',
-        }))
-    );
+          at: record.timestamp,
+        }
+      : null;
   }
-  return chain.flatMap(({ records }) =>
-    records
-      .filter((record) => record.type === 'turn_context')
-      .map((record) => ({
+  return record.type === 'turn_context'
+    ? {
         model: record.payload?.model ?? 'unknown',
         effort: record.payload?.effort ?? 'unknown',
-      }))
+        at: record.timestamp,
+      }
+    : null;
+};
+
+const turnsOf = (lead, chain) =>
+  chain.flatMap(({ records }) =>
+    records.map((record) => turnOf(lead, record)).filter(Boolean)
   );
+
+function splitAtLastTurnOff(lead, newestFirst, policy) {
+  const isOff = (record) => {
+    const turn = turnOf(lead, record);
+    return turn && !meets(turn.model, turn.effort, policy.floor, policy.max);
+  };
+  for (const [link, { records }] of newestFirst.entries()) {
+    const at = records.findLastIndex(isOff);
+    if (at !== -1) {
+      return {
+        last: turnOf(lead, records[at]),
+        before: [
+          { ...newestFirst[link], records: records.slice(0, at + 1) },
+          ...newestFirst.slice(link + 1),
+        ],
+        after: [
+          ...newestFirst.slice(0, link),
+          { ...newestFirst[link], records: records.slice(at + 1) },
+        ],
+      };
+    }
+  }
+  return null;
 }
 
 const textOf = (content) =>
@@ -1661,9 +1685,11 @@ function recorder(policy) {
     ),
   ];
   const read = chain.map((link) => basename(link.file, '.jsonl')).join(', ');
-  if (off.length > 0) {
+  const level = `${policy.floorText} on every turn since the session first read the issue${policy.max ? `, at most ${policy.max}` : ''}`;
+  const split = splitAtLastTurnOff(lead, chain, policy);
+  if (split && turnsOf(lead, split.after).length === 0) {
     return {
-      refusal: `this session's transcripts (${read}) have turns at ${off.join(', ')}; a triage record needs ${policy.floorText} on every turn${policy.max ? `, at most ${policy.max}` : ''}. Start a new session at that level`,
+      refusal: `this session's transcripts (${read}) have turns at ${off.join(', ')}, its latest included; a triage record needs ${level}. Raise this session to that level, then show the issues again`,
     };
   }
   const who = ghLogin();
@@ -1673,7 +1699,21 @@ function recorder(policy) {
         'gh could not say which GitHub account runs this session; run gh auth login',
     };
   }
-  return { by: leadLabel(lead), who, lead, chain };
+  return {
+    by: leadLabel(lead),
+    who,
+    lead,
+    chain: split ? split.after : chain,
+    earlier: split
+      ? {
+          chain: split.before,
+          off: off.join(', '),
+          until: split.last.at,
+          read,
+          level,
+        }
+      : null,
+  };
 }
 
 // A file read in pieces counts, so a line may carry the line number a reader prefixes.
@@ -1808,7 +1848,7 @@ function show(options) {
     };
   };
   const session = identity.by
-    ? `${identity.who} on ${identity.by} can record${reads.policy.confirmed.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.maintainersText} records the issue again`}`
+    ? `${identity.who} on ${identity.by} can record${identity.earlier ? ` the issues it first reads after ${identity.earlier.until}, when its turns at ${identity.earlier.off} ended` : ''}${reads.policy.confirmed.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.maintainersText} records the issue again`}`
     : `cannot record: ${identity.refusal}`;
   const results = numbers.map((number) => ({
     ...summary(number, reads),
@@ -4093,6 +4133,9 @@ function recordCommand(options) {
     );
   }
   const shown = shownLines(toolOutputs(identity.lead, identity.chain));
+  const shownEarlier = identity.earlier
+    ? shownLines(toolOutputs(identity.lead, identity.earlier.chain))
+    : new Set();
   const workTree = join(root, registerFile);
   if (!existsSync(workTree)) {
     refuse(
@@ -4125,6 +4168,16 @@ function recordCommand(options) {
     if (seen !== entry.seen) {
       refuse(
         `${where}: the issue changed since it was read; run pnpm triage show ${issue}, read it again and record its new seen`
+      );
+    }
+    if (
+      issueText(current)
+        .split('\n')
+        .some((line) => line.includes(' ') && shownEarlier.has(line.trimEnd()))
+    ) {
+      const { read: transcripts, off, until, level } = identity.earlier;
+      refuse(
+        `${where}: this session's transcripts (${transcripts}) read the issue before turns at ${off}, which ended at ${until}; a triage record needs ${level}. Record it from a new session at that level`
       );
     }
     const unshown = unshownLines(shown, current, seen);
