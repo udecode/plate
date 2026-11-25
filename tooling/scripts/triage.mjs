@@ -118,6 +118,7 @@ const TRIAGE_FIELD = 'Triage';
 const TRIAGED = 'Triaged';
 const NEEDS_REPRO = 'Needs reproduction';
 const NEEDS_RETEST = 'Needs retest';
+const FIXED_IN_NEXT_RELEASE = 'Fixed in next release';
 const DUPLICATE = 'Duplicate';
 const PLATFORM_FIELD = 'Platform';
 const PLATFORM_DEVICES = new Map([
@@ -988,6 +989,7 @@ function fieldValues(repo, numbers) {
     TRIAGED,
     NEEDS_REPRO,
     NEEDS_RETEST,
+    FIXED_IN_NEXT_RELEASE,
     DUPLICATE,
   ]);
   const values = new Map(
@@ -2261,7 +2263,9 @@ function labels() {
     open.map(({ issue }) => issue.number)
   );
   const clearedIds = new Set(
-    [TRIAGED, DUPLICATE].map((name) => fields.triage.optionIds.get(name))
+    [TRIAGED, DUPLICATE, FIXED_IN_NEXT_RELEASE].map((name) =>
+      fields.triage.optionIds.get(name)
+    )
   );
   const keptScopeIds = new Set(
     SCOPES_KEPT_BESIDE_RECORD.map((name) =>
@@ -2286,6 +2290,11 @@ function labels() {
       replaysReport(parseDetail(head.detail)) &&
       hasLanded(String(issue.number), head, reads) &&
       devices.length === 0;
+    const awaitsRelease =
+      reads.policy.primary &&
+      state === 'current' &&
+      CLOSED_BY_BETA.has(head.outcome) &&
+      hasLanded(String(issue.number), head, reads);
     const declined =
       reads.policy.primary &&
       state === 'current' &&
@@ -2293,13 +2302,15 @@ function labels() {
       hasLanded(String(issue.number), head, reads);
     if (state === 'current') {
       const triageId = fields.triage.optionIds.get(
-        head.outcome === 'needs-repro'
-          ? NEEDS_REPRO
-          : head.outcome === 'dup'
-            ? DUPLICATE
-            : head.outcome === 'fixed' && !closes
-              ? NEEDS_RETEST
-              : TRIAGED
+        awaitsRelease
+          ? FIXED_IN_NEXT_RELEASE
+          : head.outcome === 'needs-repro'
+            ? NEEDS_REPRO
+            : head.outcome === 'dup'
+              ? DUPLICATE
+              : head.outcome === 'fixed' && !closes
+                ? NEEDS_RETEST
+                : TRIAGED
       );
       if (triage !== triageId) {
         changes.push(
