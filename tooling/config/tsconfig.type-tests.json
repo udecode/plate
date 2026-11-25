@@ -190,6 +190,7 @@
     "../../node_modules",
     "../../**/node_modules",
     "../../dist",
-    "../../**/dist"
+    "../../**/dist",
+    "../../packages/plitejs/type-tests/plite-call-parity.tsx"
   ]
 }

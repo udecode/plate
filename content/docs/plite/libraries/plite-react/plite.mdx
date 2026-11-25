@@ -188,6 +188,8 @@ Decoration sources publish transient text attributes for search matches,
 diagnostics, code highlights, comments, and remote cursors.
 
 ```tsx
+import { TextApi } from "plitejs";
+import { type DecorationSource } from "plitejs/react";
 import { useMemo } from "react";
 
 const searchDecorations = useMemo(

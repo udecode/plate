@@ -22,10 +22,75 @@ const CITABLE = [
 ];
 
 const MARKER =
-  /^\s*(?:\/\/|\{?\/\*)\s*(?:case ([A-Za-z][\w-]*):\s*(.*?)\s*(?:\*\/\}?)?|shared)\s*$/u;
+  /^\s*(?:\/\/|\{?\/\*)\s*case ([A-Za-z][\w-]*):\s*(.*?)\s*(?:\*\/\}?)?\s*$/u;
 const CITATION = /([\w./()-]+\.(?:mdx?|tsx?)):(\d+)(?:-(\d+))?/gu;
 const FENCE_OPEN = /^\s*(`{3,}(?!.*`)|~{3,})\s*([A-Za-z]*)/u;
 const FENCE_CLOSE = /^\s*(`{3,}|~{3,})\s*$/u;
+const FREE =
+  /^(?:Cannot find name|Cannot find namespace|No value exists in scope for the shorthand property) '([^']+)'/u;
+const LOOSE = ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.Never;
+const PREAMBLE_TYPE_KINDS = new Set(
+  'ArrayType BigIntKeyword BigIntLiteral BooleanKeyword DeclareKeyword DotDotDotToken FalseKeyword FunctionDeclaration FunctionType Identifier IndexSignature LiteralType MethodSignature NamedTupleMember NullKeyword NumberKeyword NumericLiteral OptionalType Parameter ParenthesizedType PrefixUnaryExpression PropertySignature QualifiedName QuestionToken ReadonlyKeyword RestType StringKeyword StringLiteral SymbolKeyword TrueKeyword TupleType TypeLiteral TypeOperator TypeReference UndefinedKeyword UnionType VariableDeclaration VoidKeyword'
+    .split(' ')
+    .map((kind) => ts.SyntaxKind[kind])
+);
+const isMemberName = (node) =>
+  (ts.isQualifiedName(node.parent) && node.parent.right === node) ||
+  (ts.isPropertyAccessExpression(node.parent) && node.parent.name === node);
+const symbolOf = (checker, node) =>
+  ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node
+    ? checker.getShorthandAssignmentValueSymbol(node.parent)
+    : checker.getSymbolAtLocation(node);
+const globalNames = (checker, source) => {
+  const names = new Set();
+  const visit = (node) => {
+    const symbol =
+      ts.isIdentifier(node) && !isMemberName(node) && symbolOf(checker, node);
+    if (
+      symbol &&
+      !(symbol.flags & (ts.SymbolFlags.Property | ts.SymbolFlags.Method)) &&
+      symbol.declarations?.every(
+        (declaration) => declaration.getSourceFile() !== source
+      )
+    ) {
+      names.add(node.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return names;
+};
+const preambleDeclarations = (statement) =>
+  (ts
+    .getModifiers(statement)
+    ?.some(({ kind }) => kind === ts.SyntaxKind.DeclareKeyword) &&
+    (ts.isFunctionDeclaration(statement)
+      ? [statement]
+      : ts.isVariableStatement(statement) &&
+        statement.declarationList.flags & ts.NodeFlags.Const &&
+        statement.declarationList.declarations)) ||
+  [];
+const boundNames = (name) =>
+  ts.isIdentifier(name)
+    ? [name.text]
+    : name.elements.flatMap((element) =>
+        ts.isOmittedExpression(element) ? [] : boundNames(element.name)
+      );
+const topLevelNames = (statement) =>
+  ts.isImportDeclaration(statement)
+    ? [
+        statement.importClause?.name,
+        ...(statement.importClause?.namedBindings?.elements?.map(
+          (each) => each.name
+        ) ?? [statement.importClause?.namedBindings?.name]),
+      ].flatMap((name) => (name ? [name.text] : []))
+    : ts.isVariableStatement(statement)
+      ? statement.declarationList.declarations.flatMap(({ name }) =>
+          boundNames(name)
+        )
+      : statement.name && ts.isIdentifier(statement.name)
+        ? [statement.name.text]
+        : [];
 const fenceExtension = (word) =>
   /^(?:ts|typescript)$/iu.test(word)
     ? 'ts'
@@ -71,9 +136,11 @@ const readCases = (text) => {
 
 const packageOf = (specifier) => specifier.split('/')[0];
 
-const plateCopy = (text, imports, twins) => {
+const plateCopy = (text, twins) => {
   let copy = text;
-  for (const { fileName, pos } of imports.toSorted((a, b) => b.pos - a.pos)) {
+  for (const { fileName, pos } of ts
+    .preProcessFile(text, true, true)
+    .importedFiles.toSorted((a, b) => b.pos - a.pos)) {
     if (twins.has(fileName)) {
       copy = `${copy.slice(0, pos + 1)}${twins.get(fileName)}${copy.slice(pos + 1 + fileName.length)}`;
     }
@@ -157,16 +224,16 @@ const standInModule = (specifier, bindings, keepsDefault) =>
     }),
   ].join('\n');
 
-const caseErrors = (program, file, lineCase) => {
+const caseErrors = (program, files, caseAt) => {
   const byCase = new Map();
-  for (const diagnostic of program.getSemanticDiagnostics(
-    program.getSourceFile(file)
+  for (const diagnostic of files.flatMap((file) =>
+    program.getSemanticDiagnostics(program.getSourceFile(file))
   )) {
-    const id = lineCase[lineOf(diagnostic)];
+    const id = caseAt(diagnostic.file.fileName, lineOf(diagnostic));
     if (!id) continue;
     if (!byCase.has(id)) byCase.set(id, []);
     byCase.get(id).push({
-      site: `${diagnostic.start} TS${diagnostic.code}`,
+      site: `${diagnostic.file.fileName}:${diagnostic.start} TS${diagnostic.code}`,
       text: message(diagnostic),
     });
   }
@@ -201,10 +268,6 @@ const pliteUse = (checker, node, twins) => {
   if (!twins.has(entrypoint)) return null;
   if (!ts.isNamespaceImport(declaration)) {
     return {
-      member:
-        ts.isPropertyAccessExpression(parent) && parent.expression === node
-          ? parent.name.text
-          : undefined,
       module: entrypoint,
       name: ts.isImportSpecifier(declaration)
         ? (declaration.propertyName ?? declaration.name).text
@@ -215,19 +278,28 @@ const pliteUse = (checker, node, twins) => {
   const member = ts.isPropertyAccessExpression(parent)
     ? parent.name
     : ts.isQualifiedName(parent) && parent.right;
-  const call = member && parent.parent;
   return {
-    member:
-      call && ts.isPropertyAccessExpression(call) && call.expression === parent
-        ? call.name.text
-        : undefined,
     module: entrypoint,
     name: member ? member.text : '*',
     node: member ? parent : node,
   };
 };
 
-const caseDependencies = ({ checker, control, lineCase, rebound, twins }) => {
+const caseDependencies = ({
+  caseAt,
+  checker,
+  onPreamble,
+  rebound,
+  sources,
+  twins,
+}) => {
+  const lineOfNode = (node) => {
+    const source = node.getSourceFile();
+    return [
+      source.fileName,
+      source.getLineAndCharacterOfPosition(node.getStart(source)).line,
+    ];
+  };
   const reads = new Map();
   const keysOf = (node, stack) => {
     const use = pliteUse(checker, node, twins);
@@ -236,10 +308,7 @@ const caseDependencies = ({ checker, control, lineCase, rebound, twins }) => {
         ? [...rebound.keys()].filter((key) => key.startsWith(`${use.module}#`))
         : [`${use.module}#${use.name}`];
     }
-    const symbol =
-      ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node
-        ? checker.getShorthandAssignmentValueSymbol(node.parent)
-        : checker.getSymbolAtLocation(node);
+    const symbol = symbolOf(checker, node);
     if (!symbol || stack.has(symbol)) return [];
     if (reads.has(symbol)) return reads.get(symbol);
     const complete = stack.size === 0;
@@ -252,7 +321,12 @@ const caseDependencies = ({ checker, control, lineCase, rebound, twins }) => {
       ts.forEachChild(child, visit);
     };
     for (const declaration of symbol.declarations ?? []) {
-      if (declaration.getSourceFile() !== control) continue;
+      if (
+        !sources.includes(declaration.getSourceFile()) ||
+        onPreamble(...lineOfNode(declaration))
+      ) {
+        continue;
+      }
       visit(
         ts.isBindingElement(declaration)
           ? ts.walkUpBindingElementsAndPatterns(declaration)
@@ -265,11 +339,9 @@ const caseDependencies = ({ checker, control, lineCase, rebound, twins }) => {
   };
   const dependencies = new Map();
   const visit = (node) => {
-    const id =
-      ts.isIdentifier(node) &&
-      lineCase[
-        control.getLineAndCharacterOfPosition(node.getStart(control)).line
-      ];
+    if (ts.isImportDeclaration(node)) return;
+    const at = ts.isIdentifier(node) && lineOfNode(node);
+    const id = at && !onPreamble(...at) && caseAt(...at);
     if (id) {
       if (!dependencies.has(id)) dependencies.set(id, new Set());
       for (const key of keysOf(node, new Set())) {
@@ -279,7 +351,7 @@ const caseDependencies = ({ checker, control, lineCase, rebound, twins }) => {
     }
     ts.forEachChild(node, visit);
   };
-  visit(control);
+  for (const source of sources) visit(source);
   return dependencies;
 };
 
@@ -305,59 +377,33 @@ const groupNamesNoCaseShares = (keys, dependencies) => {
 };
 
 const proveByStandIns = ({
+  caseAt,
   checker,
-  control,
+  dependencies,
   host,
-  lineCase,
   modules,
   options,
-  plateFile,
+  plateRoots,
   program,
   rebound,
   twins,
   virtual,
 }) => {
-  const dependencies = caseDependencies({
-    checker,
-    control,
-    lineCase,
-    rebound,
-    twins,
-  });
   const keys = [...new Set([...rebound.values()].map(({ key }) => key))];
   const groups = groupNamesNoCaseShares(keys, dependencies);
 
   const standIns = new Map();
-  const cache = ts.createModuleResolutionCache(
-    host.getCurrentDirectory(),
-    (name) => name,
-    options
-  );
   const standInHost = Object.create(host);
-  standInHost.resolveModuleNameLiterals = (
-    literals,
-    containingFile,
-    redirected,
-    compilerOptions,
-    source
-  ) =>
+  standInHost.resolveModuleNameLiterals = (literals, containingFile, ...rest) =>
     literals.map((literal) =>
-      containingFile === plateFile && standIns.has(literal.text)
+      plateRoots.includes(containingFile) && standIns.has(literal.text)
         ? {
             resolvedModule: {
               extension: ts.Extension.Ts,
               resolvedFileName: standIns.get(literal.text).file,
             },
           }
-        : ts.resolveModuleName(
-            literal.text,
-            containingFile,
-            compilerOptions,
-            host,
-            cache,
-            redirected,
-            ts.getModeForUsageLocation(source, literal, compilerOptions)
-          )
+        : host.resolveModuleNameLiterals([literal], containingFile, ...rest)[0]
     );
 
   const exportOf = (entrypoint, name) =>
@@ -373,7 +419,7 @@ const proveByStandIns = ({
       const plate = twins.get(lite);
       const symbol = exportOf(plate, name);
       const target = resolveAlias(checker, symbol);
-      const file = plateFile.replace(
+      const file = plateRoots[0].replace(
         /\.plate\.tsx?$/u,
         `.stand-in-${compiles}-${plate.replaceAll('/', '-')}.ts`
       );
@@ -398,9 +444,9 @@ const proveByStandIns = ({
     }
     compiles += 1;
     return caseErrors(
-      ts.createProgram([plateFile], options, standInHost),
-      plateFile,
-      lineCase
+      ts.createProgram(plateRoots, options, standInHost),
+      plateRoots,
+      caseAt
     );
   };
   const alone = new Map();
@@ -409,7 +455,7 @@ const proveByStandIns = ({
     return alone.get(key);
   };
 
-  const base = caseErrors(program, plateFile, lineCase);
+  const base = caseErrors(program, plateRoots, caseAt);
   const proven = new Map(keys.map((key) => [key, new Set()]));
   const pending = [];
   for (const group of groups) {
@@ -429,7 +475,9 @@ const proveByStandIns = ({
               );
               return printed.size === 1 ? [...printed] : [];
             });
-      for (const key of named) proven.get(key).add(id);
+      for (const key of named) {
+        if (dependencies.get(id)?.has(key)) proven.get(key).add(id);
+      }
       if (named.length === 0) pending.push({ group, id });
     }
   }
@@ -443,8 +491,10 @@ const proveByStandIns = ({
   const unattributed = [];
   for (const change of pending) {
     const credited = creditBySoloCompile(change);
-    if (credited) proven.get(credited).add(change.id);
-    else unattributed.push(change);
+    if (!credited) unattributed.push(change);
+    else if (dependencies.get(change.id)?.has(credited)) {
+      proven.get(credited).add(change.id);
+    }
   }
   return { proven, unattributed };
 };
@@ -456,58 +506,25 @@ const readCitations = (source) =>
     start: Number(start),
   }));
 
-const callsAny = (text, names) =>
-  [...names].some((used) =>
-    new RegExp(
-      `(?<![\\w$])${used.replaceAll(/[$*]/gu, '\\$&')}(?![\\w$])`,
-      'u'
-    ).test(text)
-  );
-
-const nearestCalling = (lines, { end, start }, names) => {
-  for (let shift = 1; shift < lines.length; shift += 1) {
-    for (const from of [start - shift, start + shift]) {
-      const to = from + end - start;
-      if (
-        from >= 1 &&
-        to <= lines.length &&
-        callsAny(lines.slice(from - 1, to).join('\n'), names)
-      ) {
-        return `${from}-${to}`;
-      }
-    }
-  }
-  return null;
-};
-
-const walkthroughFences = (repoRoot) => {
+const readFences = (repoRoot, files) => {
   const fences = [];
-  const imports = [];
-  const directory = path.join(repoRoot, WALKTHROUGHS);
-  for (const page of readdirSync(directory).sort()) {
-    if (!page.endsWith('.mdx') || page.endsWith('.cn.mdx')) continue;
-    const file = path.posix.join(WALKTHROUGHS, page);
-    const lines = readFileSync(path.join(directory, page), 'utf-8').split('\n');
+  for (const file of files) {
+    const page = [];
+    const lines = readFileSync(path.join(repoRoot, file), 'utf-8').split('\n');
     let open = null;
     const close = (end) => {
       if (open.extension) {
-        const name = path.join(
-          directory,
-          `${page}.${open.first}.${open.extension}`
-        );
-        const code = lines.slice(open.first, end).join('\n');
-        fences.push({
-          code: [code, ...imports].join('\n'),
+        const fence = {
+          code: lines.slice(open.first, end).join('\n'),
+          earlier: [...page],
+          extension: open.extension,
           file,
           first: open.first,
-          path: name,
-        });
-        imports.unshift(
-          ...ts
-            .createSourceFile(name, code, ts.ScriptTarget.Latest, true)
-            .statements.filter(ts.isImportDeclaration)
-            .map((statement) => statement.getText())
-        );
+          last: end,
+          path: path.join(repoRoot, `${file}.${open.first}.${open.extension}`),
+        };
+        fences.push(fence);
+        page.unshift(fence);
       }
       open = null;
     };
@@ -530,34 +547,20 @@ const walkthroughFences = (repoRoot) => {
   return fences;
 };
 
-const memberKey = (use) =>
-  `${use.module}#${use.name}${use.member ? `.${use.member}` : ''}`;
-
-const walkthroughUses = (program, fences, twins, changes) => {
-  const checker = program.getTypeChecker();
-  const uses = [];
-  for (const fence of fences) {
-    const code = program.getSourceFile(fence.path);
-    const seen = new Set();
-    const visit = (node) => {
-      if (ts.isImportDeclaration(node) || ts.isJsxClosingElement(node)) return;
-      if (ts.isIdentifier(node)) {
-        const use = pliteUse(checker, node, twins);
-        const line =
-          fence.first +
-          1 +
-          code.getLineAndCharacterOfPosition(node.getStart(code)).line;
-        const key = use && changes(use) && `${line}#${memberKey(use)}`;
-        if (key && !seen.has(key)) {
-          seen.add(key);
-          uses.push({ ...use, file: fence.file, line });
-        }
-      }
-      ts.forEachChild(node, visit);
-    };
-    visit(code);
-  }
-  return uses;
+const importOf = (statement, name) => {
+  const clause = statement.importClause;
+  const element = clause?.namedBindings?.elements?.find(
+    (each) => each.name.text === name
+  );
+  const binding = element
+    ? `{ ${element.getText().replaceAll(/\s+/gu, ' ')} }`
+    : clause?.name?.text === name
+      ? name
+      : clause?.namedBindings?.name?.text === name && `* as ${name}`;
+  return (
+    binding &&
+    `import ${clause.isTypeOnly ? 'type ' : ''}${binding} from ${statement.moduleSpecifier.getText()};`
+  );
 };
 
 const readExports = (checker, modules, pairs) => {
@@ -569,7 +572,6 @@ const readExports = (checker, modules, pairs) => {
     );
   const rebound = new Map();
   const drops = new Map();
-  const typeOnly = new Set();
   const pairKeys = new Map();
   for (const [lite, plate] of pairs) {
     const plateExports = new Map(
@@ -588,7 +590,6 @@ const readExports = (checker, modules, pairs) => {
       ) {
         dropped.push(symbol.name);
         if (!twin) continue;
-        typeOnly.add(`${lite}#${symbol.name}`);
       }
       const liteTarget = resolveAlias(checker, symbol);
       const plateTarget = resolveAlias(checker, twin);
@@ -608,7 +609,7 @@ const readExports = (checker, modules, pairs) => {
       dropped.sort((a, b) => a.localeCompare(b))
     );
   }
-  return { drops, rebound, typeOnly };
+  return { drops, rebound };
 };
 
 const checkDrops = (drops, ledger, twins) => {
@@ -738,14 +739,72 @@ export function checkPliteCallParity({
     ts.forEachChild(node, findImportCalls);
   };
   findImportCalls(control);
-  const fences = walkthroughFences(repoRoot);
+  const { duplicates, lineCase, markers } = readCases(controlText);
+  for (const statement of control.statements) {
+    const { line } = control.getLineAndCharacterOfPosition(
+      statement.getStart(control)
+    );
+    if (ts.isModuleDeclaration(statement)) {
+      problems.push(
+        `${relative(controlFile)}:${line + 1}: the control declares a global or module augmentation, which reaches every case. Delete it.`
+      );
+    } else if (!lineCase[line] && !ts.isImportDeclaration(statement)) {
+      problems.push(
+        `${relative(controlFile)}:${line + 1}: the control holds code above its first case marker. Move it under the case that uses it.`
+      );
+    }
+  }
+  const citations = new Map(
+    [...markers].map(([id, marker]) => [id, readCitations(marker)])
+  );
+  const walkthroughs = readdirSync(path.join(repoRoot, WALKTHROUGHS))
+    .filter((page) => page.endsWith('.mdx') && !page.endsWith('.cn.mdx'))
+    .sort()
+    .map((page) => path.posix.join(WALKTHROUGHS, page));
+  const fences = readFences(repoRoot, [
+    ...walkthroughs,
+    ...new Set(
+      [...citations.values()]
+        .flat()
+        .map(({ file }) => file)
+        .filter(
+          (file) =>
+            /\.mdx?$/u.test(file) &&
+            !walkthroughs.includes(file) &&
+            CITABLE.some((prefix) => file.startsWith(prefix)) &&
+            existsSync(path.join(repoRoot, file))
+        )
+    ),
+  ]);
+  const selects = ({ end, file, start }) =>
+    fences.filter(
+      (fence) => fence.file === file && start <= fence.last && end > fence.first
+    );
+  const selected = new Map(
+    [...citations].map(([id, list]) => [
+      id,
+      [...new Set(list.flatMap(selects))],
+    ])
+  );
+  const fenceCase = (id) => selected.get(id)?.length > 0;
+  const unread = fences.filter(
+    (fence) => ![...selected.values()].flat().includes(fence)
+  );
+  const liteText = controlText
+    .split('\n')
+    .map((line, at) =>
+      fenceCase(lineCase[at]) ? ' '.repeat(line.length) : line
+    )
+    .join('\n');
   const virtual = new Map([
-    ...fences.map((fence) => [fence.path, fence.code]),
-    [plateFile, plateCopy(controlText, imports, plateNames)],
+    ...fences.map((fence) => [fence.path, `${fence.code}\nexport {};`]),
+    [controlFile, liteText],
+    [plateFile, plateCopy(liteText, plateNames)],
     [
       censusFile,
-      shared
+      pairs
         .flat()
+        .filter(Boolean)
         .map(
           (specifier, index) => `import * as m${index} from '${specifier}';\n`
         )
@@ -768,13 +827,40 @@ export function checkPliteCallParity({
     if (!parsed.has(file)) parsed.set(file, getSourceFile(file, ...rest));
     return parsed.get(file);
   };
+  const cache = ts.createModuleResolutionCache(
+    repoRoot,
+    (name) => name,
+    options
+  );
+  const isRelativeImportFromFence = (file, specifier) =>
+    virtual.has(file) && specifier.startsWith('.');
+  host.resolveModuleNameLiterals = (
+    literals,
+    containingFile,
+    redirected,
+    resolution,
+    source
+  ) =>
+    literals.map((literal) =>
+      isRelativeImportFromFence(containingFile, literal.text)
+        ? { resolvedModule: undefined }
+        : ts.resolveModuleName(
+            literal.text,
+            containingFile,
+            resolution,
+            host,
+            cache,
+            redirected,
+            ts.getModeForUsageLocation(source, literal, resolution)
+          )
+    );
 
-  const program = ts.createProgram([controlFile, censusFile], options, host);
+  const program = ts.createProgram(
+    [censusFile, ...fences.map((fence) => fence.path)],
+    options,
+    host
+  );
   const checker = program.getTypeChecker();
-  // Plate's errors come from the Plate copy compiled alone, as a Plate app is,
-  // so no global type only Plite declares reaches them.
-  const plateProgram = ts.createProgram([plateFile], options, host);
-  const plateSource = plateProgram.getSourceFile(plateFile);
 
   for (const diagnostic of [
     ...program.getOptionsDiagnostics(),
@@ -787,7 +873,7 @@ export function checkPliteCallParity({
   for (const statement of program.getSourceFile(censusFile).statements) {
     const symbol = checker.getSymbolAtLocation(statement.moduleSpecifier);
     if (symbol) modules.set(statement.moduleSpecifier.text, symbol);
-    else {
+    else if (twins.get(statement.moduleSpecifier.text) !== null) {
       fatal.push(
         `${statement.moduleSpecifier.text}: the compiler did not resolve this entrypoint`
       );
@@ -823,32 +909,421 @@ export function checkPliteCallParity({
     }
   }
 
-  const { drops, rebound, typeOnly } = readExports(checker, modules, shared);
-  const changes = (use) =>
-    twins.get(use.module) === null ||
-    rebound.has(`${use.module}#${use.name}`) ||
-    (drops.get(use.module)?.includes(use.name) &&
-      !(
-        typeOnly.has(`${use.module}#${use.name}`) &&
-        (ts.isPartOfTypeNode(use.node) || ts.isTypeQueryNode(use.node.parent))
-      ));
+  const { drops, rebound } = readExports(checker, modules, shared);
   problems.push(...checkDrops(drops, ledger, twins));
 
-  const { duplicates, lineCase, markers } = readCases(controlText);
   for (const id of duplicates) {
     problems.push(`case ${id}: the control declares it twice`);
   }
   const label = (id) => `case ${id} (${markers.get(id)})`;
 
+  const exportingEntrypoints = new Map();
+  for (const [lite] of pairs) {
+    for (const { name } of modules.has(lite)
+      ? checker.getExportsOfModule(modules.get(lite))
+      : []) {
+      exportingEntrypoints.set(name, [
+        ...(exportingEntrypoints.get(name) ?? []),
+        lite,
+      ]);
+    }
+  }
+  for (const fence of fences) {
+    fence.source = program.getSourceFile(fence.path);
+    fence.free = program
+      .getSemanticDiagnostics(fence.source)
+      .map((diagnostic) => FREE.exec(message(diagnostic))?.[1])
+      .filter(Boolean);
+    fence.global = globalNames(checker, fence.source);
+  }
+  const bindPageNames = (fence, imported = new Set()) => {
+    const own = new Set([
+      ...fence.source.statements.flatMap(topLevelNames),
+      ...imported,
+    ]);
+    const rows = new Map();
+    const unbound = new Set();
+    const add = (line) => line && rows.set(line, [line, 'an import it adds']);
+    const bindImport = (statement, name) =>
+      own.has(name) || add(importOf(statement, name));
+    const carry = (earlier, statement) => {
+      const [first, last] = [
+        statement.getStart(earlier.source),
+        statement.end,
+      ].map(
+        (position) =>
+          earlier.source.getLineAndCharacterOfPosition(position).line
+      );
+      const key = `${earlier.path}:${first}`;
+      if (
+        rows.has(key) ||
+        topLevelNames(statement).some((name) => own.has(name))
+      ) {
+        return;
+      }
+      rows.set(key, null);
+      const visit = (node) => {
+        if (ts.isIdentifier(node) && !isMemberName(node)) {
+          const symbol = symbolOf(checker, node);
+          const declaration = symbol?.declarations?.find(
+            (each) => each.getSourceFile() === earlier.source
+          );
+          const top =
+            declaration &&
+            ts.findAncestor(
+              declaration,
+              (each) => each.parent === earlier.source
+            );
+          if (top) {
+            if (ts.isImportDeclaration(top)) bindImport(top, node.text);
+            else if (top !== statement) carry(earlier, top);
+          } else if (symbol) {
+            if (earlier.global.has(node.text)) need(earlier, node.text);
+          } else if (
+            earlier.free.includes(node.text) &&
+            !need(earlier, node.text)
+          ) {
+            unbound.add(node.text);
+          }
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(statement);
+      rows.delete(key);
+      const lines = earlier.code.split('\n');
+      for (let line = first; line <= last; line += 1) {
+        rows.set(`${earlier.path}:${line}`, [
+          lines[line],
+          `${earlier.file}:${earlier.first + line + 1}`,
+        ]);
+      }
+    };
+    const need = (from, name) => {
+      for (const earlier of from.earlier) {
+        for (const statement of earlier.source.statements) {
+          if (ts.isImportDeclaration(statement)) {
+            if (topLevelNames(statement).includes(name)) {
+              return bindImport(statement, name);
+            }
+          } else if (topLevelNames(statement).includes(name)) {
+            carry(earlier, statement);
+            return true;
+          }
+        }
+      }
+      const exporters = exportingEntrypoints.get(name) ?? [];
+      return (
+        from.free.includes(name) &&
+        exporters.length === 1 &&
+        add(`import { ${name} } from '${exporters[0]}';`)
+      );
+    };
+    for (const name of new Set([...fence.free, ...fence.global])) {
+      if (!need(fence, name) && fence.free.includes(name)) unbound.add(name);
+    }
+    return { rows: [...rows.values()].filter(Boolean), unbound };
+  };
+  const units = [];
+  const moduleUnit = new Map();
+  const controlLines = controlText.split('\n');
+  const preambles = [];
+  for (const [id, list] of selected) {
+    if (list.length === 0) continue;
+    const at = controlLines.flatMap((line, index) =>
+      lineCase[index] === id ? [index] : []
+    );
+    const source = ts.createSourceFile(
+      `${id}.tsx`,
+      at.map((index) => controlLines[index]).join('\n'),
+      ts.ScriptTarget.Latest,
+      true
+    );
+    const preamble = source.statements.map((statement) => {
+      const start = source.getLineAndCharacterOfPosition(
+        statement.getStart(source)
+      );
+      const typeNames = new Set();
+      const visit = (node) => {
+        if (ts.isTypeReferenceNode(node)) {
+          let name = node.typeName;
+          while (ts.isQualifiedName(name)) name = name.left;
+          typeNames.add(name.text);
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(statement);
+      return {
+        binds: ts.isImportDeclaration(statement)
+          ? topLevelNames(statement)
+          : [],
+        column: start.character,
+        declares: preambleDeclarations(statement).map(({ name }) => name.text),
+        id,
+        lines: at.slice(
+          start.line,
+          source.getLineAndCharacterOfPosition(statement.end).line + 1
+        ),
+        typeNames,
+      };
+    });
+    preambles.push(...preamble);
+    const where = (lines) =>
+      `${label(id)}: ${relative(controlFile)}:${lines[0] + 1}: the preamble`;
+    const read = new Set();
+    for (const fence of list) {
+      let header = bindPageNames(fence);
+      const free = header.unbound;
+      const declared = preamble.filter(({ declares }) =>
+        declares.some((name) => free.has(name))
+      );
+      const lines = [
+        ...new Set(
+          preamble
+            .filter(
+              (entry) =>
+                declared.includes(entry) ||
+                entry.binds.some((name) =>
+                  declared.some(({ typeNames }) => typeNames.has(name))
+                )
+            )
+            .flatMap((entry) => entry.lines)
+        ),
+      ].sort((a, b) => a - b);
+      const imported = preamble.flatMap((entry) =>
+        lines.includes(entry.lines[0]) ? entry.binds : []
+      );
+      header = bindPageNames(fence, new Set(imported));
+      const rows = [
+        ...header.rows,
+        ...lines.map((index) => [
+          controlLines[index],
+          `${relative(controlFile)}:${index + 1}`,
+        ]),
+      ];
+      const start = rows.length;
+      rows.push(
+        ...fence.code
+          .split('\n')
+          .map((line, index) => [
+            line,
+            `${fence.file}:${fence.first + index + 1}`,
+          ]),
+        ['export {};', 'its end']
+      );
+      const [lite, plate] = ['', '.plate'].map((copy) =>
+        path.join(
+          dir,
+          `${base}.case-${id}-${units.length}${copy}.${fence.extension}`
+        )
+      );
+      const text = rows.map(([line]) => line).join('\n');
+      virtual.set(lite, text).set(plate, plateCopy(text, plateNames));
+      const unit = {
+        id,
+        lite,
+        origins: rows.map(([, origin]) => origin),
+        plate,
+        preambleStart: header.rows.length,
+        start,
+      };
+      units.push(unit);
+      moduleUnit.set(lite, unit).set(plate, unit);
+      for (const entry of declared) {
+        entry.unit ??= {
+          line: unit.preambleStart + lines.indexOf(entry.lines[0]),
+          lite,
+        };
+        for (const name of entry.declares) {
+          if (free.has(name)) read.add(name);
+        }
+      }
+    }
+    for (const { binds, declares, lines } of preamble) {
+      if (!declares.length && !binds.length) {
+        problems.push(
+          `${where(lines)} holds a statement other than declare const, declare function and import declarations.`
+        );
+      }
+      for (const name of binds) {
+        if (
+          list.some(
+            (fence) => fence.free.includes(name) || fence.global.has(name)
+          )
+        ) {
+          problems.push(
+            `${where(lines)} imports ${name}, which a cited fence reads. The page imports what its code reads.`
+          );
+        }
+      }
+      for (const name of declares) {
+        if (exportingEntrypoints.has(name) || !read.has(name)) {
+          problems.push(
+            `${where(lines)} declares ${name}, which ${exportingEntrypoints.has(name) ? `Plite exports from ${exportingEntrypoints.get(name).join(' and ')}, so the page imports it` : 'no cited fence reads and leaves unbound'}.`
+          );
+        }
+      }
+    }
+  }
+  const caseAt = (file, line) => moduleUnit.get(file)?.id ?? lineCase[line];
+  const onPreamble = (file, line) => {
+    const unit = moduleUnit.get(file);
+    return Boolean(unit) && line >= unit.preambleStart && line < unit.start;
+  };
+  const readPath = (fence) => fence.path.replace(/\.(tsx?)$/u, '.read.$1');
+  for (const fence of unread) {
+    const { rows } = bindPageNames(fence);
+    fence.start = rows.length;
+    virtual.set(
+      readPath(fence),
+      [...rows.map(([line]) => line), fence.code, 'export {};'].join('\n')
+    );
+  }
+  const liteProgram = ts.createProgram(
+    [controlFile, ...units.map(({ lite }) => lite), ...unread.map(readPath)],
+    options,
+    host
+  );
+  const liteChecker = liteProgram.getTypeChecker();
+  const liteControl = liteProgram.getSourceFile(controlFile);
+  const sources = [controlFile, ...units.map(({ lite }) => lite)].map((file) =>
+    liteProgram.getSourceFile(file)
+  );
+  for (const diagnostic of sources.flatMap((source) => [
+    ...liteProgram.getSyntacticDiagnostics(source),
+    ...liteProgram.getSemanticDiagnostics(source),
+  ])) {
+    const unit = moduleUnit.get(diagnostic.file.fileName);
+    problems.push(
+      unit
+        ? `${label(unit.id)}: ${unit.origins[lineOf(diagnostic)]}: the cited code does not compile against Plite: TS${diagnostic.code} ${message(diagnostic)}`
+        : `${relative(controlFile)}:${lineOf(diagnostic) + 1}: the Plite control does not compile: TS${diagnostic.code} ${message(diagnostic)}`
+    );
+  }
+
+  const isLib = (symbol) =>
+    symbol?.declarations?.some((declaration) =>
+      liteProgram.isSourceFileDefaultLibrary(declaration.getSourceFile())
+    );
+  for (const { column, id, unit: at } of preambles) {
+    if (!at) continue;
+    const unit = moduleUnit.get(at.lite);
+    const source = liteProgram.getSourceFile(at.lite);
+    const position = source.getPositionOfLineAndCharacter(at.line, column);
+    const statement = source.statements.find(
+      (each) => each.getStart(source) === position
+    );
+    const named = (node) => {
+      const symbol = liteChecker.getSymbolAtLocation(node);
+      if (!(symbol?.flags & ts.SymbolFlags.Alias)) return isLib(symbol);
+      const declaration = symbol.declarations[0];
+      if (declaration.getSourceFile() !== source) return false;
+      const { line } = source.getLineAndCharacterOfPosition(
+        declaration.getStart(source)
+      );
+      return line >= unit.preambleStart && line < unit.start;
+    };
+    const typed = (node) =>
+      PREAMBLE_TYPE_KINDS.has(node.kind) &&
+      !('type' in node && !node.type) &&
+      !(
+        ts.isTypeOperatorNode(node) &&
+        node.operator !== ts.SyntaxKind.ReadonlyKeyword
+      ) &&
+      !(
+        ts.isTypeReferenceNode(node) &&
+        node.typeArguments &&
+        isLib(liteChecker.getSymbolAtLocation(node.typeName))
+      ) &&
+      !(
+        ts.isIdentifier(node) &&
+        [node.parent.typeName, node.parent.left].includes(node) &&
+        !named(node)
+      ) &&
+      !ts.forEachChild(node, (child) => !typed(child));
+    const loose = (node) =>
+      (ts.isTypeNode(node) &&
+        liteChecker.getTypeFromTypeNode(node).flags & LOOSE) ||
+      ts.forEachChild(node, loose);
+    for (const declaration of ts.isVariableStatement(statement)
+      ? statement.declarationList.declarations
+      : [statement]) {
+      const fault = !typed(declaration)
+        ? ' with a type that can take its type from the code under test. Type it by a name a package exports or the lib declares, a primitive, a literal, or an object, function, array, tuple or union of those, and give a lib type no type arguments'
+        : loose(declaration) &&
+          ' as any, unknown or never, which fits whatever Plate gives';
+      if (fault) {
+        problems.push(
+          `${label(id)}: ${unit.origins[at.line]}: the preamble declares ${declaration.name.text}${fault}.`
+        );
+      }
+    }
+  }
+
+  const probeCode = new Set();
+  const visitProbe = (node) => {
+    const at = liteControl.getLineAndCharacterOfPosition(
+      node.getStart(liteControl)
+    ).line;
+    const id = lineCase[at];
+    const checked = !fenceCase(id);
+    const where = () =>
+      `${id ? `${label(id)}: ` : ''}${relative(controlFile)}:${at + 1}: the probe holds ${node.getText(liteControl).split('\n')[0]}`;
+    if (
+      id &&
+      checked &&
+      (ts.isCallExpression(node) ||
+        ts.isNewExpression(node) ||
+        ts.isJsxElement(node) ||
+        ts.isJsxSelfClosingElement(node))
+    ) {
+      probeCode.add(id);
+    }
+    if (
+      checked &&
+      (ts.isTypeAssertionExpression(node) ||
+        ts.isNonNullExpression(node) ||
+        (ts.isAsExpression(node) && !ts.isConstTypeReference(node.type)))
+    ) {
+      problems.push(
+        `${where()}, a type assertion, which hides the type Plate gives.`
+      );
+    } else if (
+      checked &&
+      ts.isExpression(node) &&
+      node.parent.tagName !== node &&
+      !(ts.isStringLiteral(node) && ts.isJsxAttribute(node.parent)) &&
+      liteChecker.getTypeAtLocation(node).flags & LOOSE
+    ) {
+      problems.push(
+        `${where()}, which the Plite compiler types any, unknown or never, so it fits whatever Plate gives.`
+      );
+    }
+    if (!ts.isImportDeclaration(node) && !ts.isTypeNode(node)) {
+      ts.forEachChild(node, visitProbe);
+    }
+  };
+  visitProbe(liteControl);
+
+  const plateRoots = [plateFile, ...units.map(({ plate }) => plate)];
+  const plateAppProgram = ts.createProgram(plateRoots, options, host);
+  const plateSource = plateAppProgram.getSourceFile(plateFile);
+  const dependencies = caseDependencies({
+    caseAt,
+    checker: liteChecker,
+    onPreamble,
+    rebound,
+    sources,
+    twins,
+  });
   const { proven, unattributed } = proveByStandIns({
+    caseAt,
     checker,
-    control: program.getSourceFile(controlFile),
+    dependencies,
     host,
-    lineCase,
     modules,
     options,
-    plateFile,
-    program: plateProgram,
+    plateRoots,
+    program: plateAppProgram,
     rebound,
     twins,
     virtual,
@@ -859,34 +1334,25 @@ export function checkPliteCallParity({
     );
   }
 
-  const caseOf = (node) =>
-    lineCase[
-      control.getLineAndCharacterOfPosition(node.getStart(control)).line
-    ];
   const covered = new Set(
     [...proven].filter(([, ids]) => ids.size > 0).map(([key]) => key)
   );
-  const caseUses = new Map([...markers.keys()].map((id) => [id, new Set()]));
-  const caseTexts = new Map([...markers.keys()].map((id) => [id, new Set()]));
   const references = new Map();
-  const markCovered = (node) => {
+  const markReferences = (node) => {
     if (ts.isImportDeclaration(node)) return;
-    const id = ts.isIdentifier(node) && caseOf(node);
-    const use = id && pliteUse(checker, node, twins);
-    if (use) {
+    const id =
+      ts.isIdentifier(node) &&
+      lineCase[
+        liteControl.getLineAndCharacterOfPosition(node.getStart(liteControl))
+          .line
+      ];
+    if (id && pliteUse(liteChecker, node, twins)) {
       if (!references.has(node.text)) references.set(node.text, new Set());
       references.get(node.text).add(id);
-      const entry = rebound.get(`${use.module}#${use.name}`);
-      if (entry ? proven.get(entry.key).has(id) : changes(use)) {
-        caseUses.get(id)?.add(`${use.module}#${use.name}`).add(memberKey(use));
-        const text = /^(?:\*|default)$/u.test(use.name) ? node.text : use.name;
-        const shown = use.node === node ? node.text : text;
-        caseTexts.get(id)?.add(text).add(shown);
-      }
     }
-    ts.forEachChild(node, markCovered);
+    ts.forEachChild(node, markReferences);
   };
-  markCovered(program.getSourceFile(controlFile));
+  markReferences(liteControl);
 
   const unproven = new Map();
   for (const [liteKey, entry] of rebound) {
@@ -927,78 +1393,86 @@ export function checkPliteCallParity({
     }
   }
 
-  const cited = new Map();
-  for (const [id, marker] of markers) {
-    const names = caseTexts.get(id);
-    if (names.size === 0) {
-      problems.push(
-        `${label(id)}: the case's own lines check nothing with a name Plate binds its own way and use no name Plate drops. Delete it, or move the use it copies onto its lines.`
-      );
-    }
-    const citations = readCitations(marker);
-    if (citations.length === 0) {
+  for (const [id, list] of citations) {
+    if (list.length === 0) {
       problems.push(
         `${label(id)}: the case cites no docs lines. Write its marker as // case ${id}: <file>:<line> or <file>:<start>-<end>, naming each call it copies from a file under ${CITABLE.join(' or ')}.`
       );
     }
-    for (const citation of citations) {
-      const { file } = citation;
-      const absolute = path.join(repoRoot, file);
-      const lines =
-        CITABLE.some((prefix) => file.startsWith(prefix)) &&
-        existsSync(absolute)
-          ? readFileSync(absolute, 'utf-8').split('\n')
-          : null;
-      const quoted = lines?.slice(citation.start - 1, citation.end).join('\n');
-      if (!lines || citation.end > lines.length) {
+    if (!fenceCase(id) && !probeCode.has(id)) {
+      problems.push(
+        `${label(id)}: it cites no fence, so its lines are a probe, and they hold no call, new expression or JSX element. Cite the fence it copies, or write the call it checks.`
+      );
+    }
+    for (const citation of list) {
+      const { end, file, start } = citation;
+      if (fenceCase(id) && selects(citation).length === 0) {
         problems.push(
-          `${label(id)}: ${file}:${citation.start}-${citation.end} is not a line range of a file under ${CITABLE.join(' or ')}`
-        );
-      } else if (!callsAny(quoted, names)) {
-        const moved = nearestCalling(lines, citation, names);
-        problems.push(
-          `${label(id)}: ${file}:${citation.start}-${citation.end} calls none of ${JSON.stringify([...names])}, which the case uses${moved ? `; ${file}:${moved} is the nearest range that does, so cite it when a docs edit moved the snippet` : ''}`
+          `${label(id)}: ${file}:${start}-${end} selects no fence, and the case compiles only the fences it cites. Cite a fence, or drop the citation.`
         );
       }
-      if (!cited.has(file)) cited.set(file, []);
-      cited.get(file).push({ ...citation, id });
+      const absolute = path.join(repoRoot, file);
+      if (
+        !CITABLE.some((prefix) => file.startsWith(prefix)) ||
+        !existsSync(absolute) ||
+        end > readFileSync(absolute, 'utf-8').split('\n').length
+      ) {
+        problems.push(
+          `${label(id)}: ${file}:${start}-${end} is not a line range of a file under ${CITABLE.join(' or ')}`
+        );
+      }
     }
   }
-  for (const use of walkthroughUses(
-    ts.createProgram(
-      fences.map((fence) => fence.path),
-      options,
-      host
-    ),
-    fences,
-    twins,
-    changes
-  )) {
-    const citing = (cited.get(use.file) ?? []).filter(
-      ({ end, start }) => start <= use.line && use.line <= end
-    );
-    const key = memberKey(use);
-    if (citing.some(({ id }) => caseUses.get(id).has(key))) continue;
-    const uses = `${use.file}:${use.line}: the walkthrough uses ${use.member ? `${use.name}.${use.member}` : use.name} from ${use.module}`;
-    problems.push(
-      citing.length === 0
-        ? `${uses}, and no case cites the line. Copy the call into ${CONTROL} as a case that cites it.`
-        : `${uses}, and no case that cites the line (${[...new Set(citing.map(({ id }) => id))].join(', ')}) uses it. Copy the call into the case that cites it.`
-    );
-  }
-
-  const liteProgram = ts.createProgram([controlFile], options, host);
-  for (const diagnostic of [
-    ...liteProgram.getSyntacticDiagnostics(
-      liteProgram.getSourceFile(controlFile)
-    ),
-    ...liteProgram.getSemanticDiagnostics(
-      liteProgram.getSourceFile(controlFile)
-    ),
-  ]) {
-    problems.push(
-      `${relative(controlFile)}:${lineOf(diagnostic) + 1}: the Plite control does not compile: TS${diagnostic.code} ${message(diagnostic)}`
-    );
+  const unboundUses = (node) =>
+    ts.isIdentifier(node) &&
+    node.parent.name !== node &&
+    !liteChecker.getSymbolAtLocation(node)
+      ? (exportingEntrypoints.get(node.text) ?? []).map((module) => ({
+          module,
+          name: node.text,
+          node,
+        }))
+      : [];
+  for (const fence of unread) {
+    const lines = `${fence.file}:${fence.first + 1}-${fence.last}`;
+    if (walkthroughs.includes(fence.file)) {
+      problems.push(
+        `${lines}: no case cites this walkthrough fence. Cite it from a case in ${CONTROL}.`
+      );
+    }
+    const reads = new Map();
+    const source = liteProgram.getSourceFile(readPath(fence));
+    const visit = (node) => {
+      if (
+        ts.isImportDeclaration(node) ||
+        source.getLineAndCharacterOfPosition(node.end).line < fence.start
+      ) {
+        return;
+      }
+      const use = ts.isIdentifier(node) && pliteUse(liteChecker, node, twins);
+      for (const each of use ? [use] : unboundUses(node)) {
+        const key = `${each.module}#${each.name}`;
+        if (rebound.has(key)) {
+          reads.set(rebound.get(key).key, `${each.name} from ${each.module}`);
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    for (const [id, list] of citations) {
+      const probed = [...reads].filter(([key]) =>
+        dependencies.get(id)?.has(key)
+      );
+      if (
+        probed.length > 0 &&
+        !fenceCase(id) &&
+        list.some(({ file }) => file === fence.file)
+      ) {
+        problems.push(
+          `${label(id)}: ${lines} reads ${probed.map(([, name]) => name).join(', ')}, which the probe reads, and no case cites that fence. Cite it from a case.`
+        );
+      }
+    }
   }
 
   const importOwners = (position) => {
@@ -1030,9 +1504,16 @@ export function checkPliteCallParity({
   };
 
   const refusals = new Map();
+  const refuse = (id, diagnostic, where) => {
+    if (!refusals.has(id)) refusals.set(id, []);
+    refusals.get(id).push({
+      key: errorKey(diagnostic),
+      text: `${where}: ${message(diagnostic)}`,
+    });
+  };
   for (const diagnostic of [
-    ...plateProgram.getSyntacticDiagnostics(plateSource),
-    ...plateProgram.getSemanticDiagnostics(plateSource),
+    ...plateAppProgram.getSyntacticDiagnostics(plateSource),
+    ...plateAppProgram.getSemanticDiagnostics(plateSource),
   ]) {
     const line = lineOf(diagnostic);
     const importing = importOwners(diagnostic.start);
@@ -1040,17 +1521,16 @@ export function checkPliteCallParity({
       importing.length > 0 || !lineCase[line] ? importing : [lineCase[line]];
     if (owners.length === 0) {
       problems.push(
-        `${relative(controlFile)}:${line + 1}: Plate refuses a line no case owns: TS${diagnostic.code} ${message(diagnostic)}. Move the line under its case's // case <id>: <file>:<line> marker, not under // shared.`
+        `${relative(controlFile)}:${line + 1}: Plate refuses a line no case owns: TS${diagnostic.code} ${message(diagnostic)}. Move the line under its case's // case <id>: <file>:<line> marker.`
       );
-      continue;
     }
-    for (const id of owners) {
-      if (!refusals.has(id)) refusals.set(id, []);
-      refusals.get(id).push({
-        key: errorKey(diagnostic),
-        line: line + 1,
-        text: message(diagnostic),
-      });
+    for (const id of owners) refuse(id, diagnostic, `line ${line + 1}`);
+  }
+  for (const { id, origins, plate } of units) {
+    for (const diagnostic of plateAppProgram.getSemanticDiagnostics(
+      plateAppProgram.getSourceFile(plate)
+    )) {
+      refuse(id, diagnostic, origins[lineOf(diagnostic)]);
     }
   }
 
@@ -1077,7 +1557,7 @@ export function checkPliteCallParity({
     const found = refusals.get(id) ?? [];
     const row = rows.get(id);
     const actual = list(found.map(({ key }) => key));
-    const first = found[0] && `line ${found[0].line}: ${found[0].text}`;
+    const first = found[0]?.text;
     if (!row) {
       problems.push(
         `${label(id)}: Plate refuses it with ${actual}, and ${LEDGER} has no row for it. Make Plate take the call, or record it with the step or phase that removes it. First error at ${first}`

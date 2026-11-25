@@ -11,15 +11,17 @@ formatting such as bold, italic, code, and strikethrough.
 Start with the block renderer from the previous walkthrough:
 
 ```tsx
-const CodeElement = ({ attributes, children }) => (
+import { type RenderElementProps } from "plitejs/react";
+
+const CodeElement = ({ attributes, children }: RenderElementProps) => (
   <pre {...attributes}><code>{children}</code></pre>
 );
 
-const DefaultElement = ({ attributes, children }) => (
+const DefaultElement = ({ attributes, children }: RenderElementProps) => (
   <p {...attributes}>{children}</p>
 );
 
-const renderElement = (props) => {
+const renderElement = (props: RenderElementProps) => {
   switch (props.element.type) {
     case "code":
       return <CodeElement {...props} />;
@@ -111,7 +113,9 @@ Enabling one group member removes the active peer automatically.
 Add `renderLeaf` to decide how marked text appears.
 
 ```tsx
-const renderLeaf = ({ attributes, children, leaf }) => {
+import { type RenderLeafProps } from "plitejs/react";
+
+const renderLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
   return (
     <span
       {...attributes}

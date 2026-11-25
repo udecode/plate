@@ -14,6 +14,8 @@ The shortest editor value is still an array of blocks. Plite treats it as the
 primary document.
 
 ```tsx
+import { createEditor } from "plitejs";
+
 const editor = createEditor({
   initialValue: [{ type: "paragraph", children: [{ text: "Body" }] }],
 });

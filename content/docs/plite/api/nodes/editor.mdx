@@ -60,6 +60,8 @@ type Editor<
 Create an editor.
 
 ```javascript
+import { createEditor } from "plitejs";
+
 const editor = createEditor({
   initialValue: [{ type: "paragraph", children: [{ text: "Body" }] }],
   maxLength: 1000,
@@ -599,6 +601,8 @@ Use a named slot for runtime configuration. Reconfiguration is part of one
 atomic editor transaction rather than an immediate registry mutation.
 
 ```javascript
+import { createEditor, definePluginSlot } from "plitejs";
+
 const feature = definePluginSlot("feature");
 const editor = createEditor({
   plugins: [feature.of(readMode)] as const,

@@ -57,17 +57,39 @@ as `useElementSelected()`, `useNodeSelector()`, and `useTextSelector()`. Use
 If your components depend on custom React contexts containing non-primitive values (such as objects or arrays), ensure that these values are properly memoized so that components only re-render when these values change. In some circumstances, you may instead want to consider passing a ref object or an unchanging getter function to retrieve the latest value.
 
 ```tsx
-// Provider
-const myDataRef = useRef(myData);
-myDataRef.current = myData;
-return <MyContext.Provider value={myDataRef}>{children}</MyContext.Provider>;
+import {
+  createContext,
+  useContext,
+  useRef,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
-// Consumer
-// Does not re-render when `myData` changes
-const myDataRef = useContext(MyContext);
+type MyData = { count: number };
 
-const onClick = () => {
-  console.log(myDataRef.current);
+const MyContext = createContext<RefObject<MyData> | null>(null);
+
+const MyProvider = ({
+  myData,
+  children,
+}: {
+  myData: MyData;
+  children: ReactNode;
+}) => {
+  const myDataRef = useRef(myData);
+  myDataRef.current = myData;
+  return <MyContext.Provider value={myDataRef}>{children}</MyContext.Provider>;
+};
+
+const LogButton = () => {
+  // Does not re-render when `myData` changes
+  const myDataRef = useContext(MyContext);
+
+  const onClick = () => {
+    console.log(myDataRef?.current);
+  };
+
+  return <button onClick={onClick}>Log</button>;
 };
 ```
 

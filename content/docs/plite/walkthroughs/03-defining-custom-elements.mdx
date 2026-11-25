@@ -45,7 +45,9 @@ Element renderers are normal React functions. Always spread `attributes` on the
 top-level DOM element and render `children`.
 
 ```tsx
-const CodeElement = ({ attributes, children }) => {
+import { type RenderElementProps } from "plitejs/react";
+
+const CodeElement = ({ attributes, children }: RenderElementProps) => {
   return (
     <pre {...attributes}>
       <code>{children}</code>
@@ -53,11 +55,11 @@ const CodeElement = ({ attributes, children }) => {
   );
 };
 
-const DefaultElement = ({ attributes, children }) => {
+const DefaultElement = ({ attributes, children }: RenderElementProps) => {
   return <p {...attributes}>{children}</p>;
 };
 
-const renderElement = (props) => {
+const renderElement = (props: RenderElementProps) => {
   switch (props.element.type) {
     case "code":
       return <CodeElement {...props} />;

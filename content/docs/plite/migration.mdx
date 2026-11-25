@@ -502,15 +502,26 @@ const App = () => {
 For a single-root editor, save the `value` passed to `<EditorRoot onValueChange>`.
 
 ```tsx
-import { type ValueChangeContext } from "plitejs/react";
+import {
+  Editable,
+  EditorRoot,
+  useEditor,
+  type ValueChangeContext,
+} from "plitejs/react";
 
-const handleChange = ({ value }: ValueChangeContext) => {
-  saveDocument(value);
+const App = () => {
+  const editor = useEditor({ initialValue });
+
+  const handleChange = ({ value }: ValueChangeContext) => {
+    saveDocument(value);
+  };
+
+  return (
+    <EditorRoot editor={editor} onValueChange={handleChange}>
+      <Editable />
+    </EditorRoot>
+  );
 };
-
-<EditorRoot editor={editor} onValueChange={handleChange}>
-  <Editable />
-</EditorRoot>;
 ```
 
 For a document with extra roots or document meta, read the full document value.

@@ -488,9 +488,10 @@ collapsed sections, or hidden element shells that still exist in the Plite
 value.
 
 ```tsx
-import { EditorElement } from "plitejs/react";
+import { EditorElement, type RenderElementProps } from "plitejs/react";
+import * as React from "react";
 
-const renderElement = ({ children, element, slots }) => {
+const renderElement = ({ children, element, slots }: RenderElementProps) => {
   if (element.type === "section") {
     return (
       <EditorElement style={{ position: 'relative' }}>
