@@ -529,19 +529,17 @@ const report = (event) => {
   const open = openTask(event.step);
   const due = cutDue(event.step, open, event.tip);
   if (open) {
-    // A cut that comes due while a fix holds the task still wakes the
-    // operator, once per task, so it can tell that fix to cut instead.
-    const tellCut =
+    const firstCutWake =
       due.cut &&
       !readEvents().some(
         (heard) => heard.cut && heard.wake && heard.task === open.id
       );
-    return Date.now() - lastActivity(open) < CLAIM_MS && !tellCut
+    return Date.now() - lastActivity(open) < CLAIM_MS && !firstCutWake
       ? { ...due, wake: false }
       : { ...due, task: open.id, wake: true };
   }
   const cut =
-    ' When the step is still red 24 hours after it first failed, or two fix runs have not cleared it, cut instead. Delete each failing test or case, or drop the step from tooling/scripts/check.mjs, and name what you cut and this task in the commit.';
+    " When the step is still red 24 hours after it first failed, or two fix runs have not cleared it, stop fixing. Cut the failing test or case only when the test is wrong, revert the first bad commit when the code is wrong, and otherwise offer the owner a P0 decide task, as AGENTS.md's Proof and tooling rule says.";
   const found =
     event.kind === 'flake'
       ? `Local CI found ${event.step} failing on next ${where(event)}, so a test it names depends on timing or host load. Log: ${event.log}.${event.results ? ` Failed tests' results: ${event.results}.` : ''} The newest flake event in ${eventsPath} names its failures. A passing pnpm check ${event.step} does not clear it: remove that dependence, such as a wall-clock bound, a raised timeout or a fixed wait, prove each failing test with five warm runs without retries and land through land.mjs.${cut}`
