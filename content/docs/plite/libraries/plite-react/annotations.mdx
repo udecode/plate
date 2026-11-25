@@ -64,8 +64,10 @@ const annotationStore = useAnnotationStore(editor, [
 ]);
 ```
 
-Use `nearest` for durable annotations. Complete deletion collapses the range to
-a valid position, while saved undo and redo restore its exact endpoints.
+Use `nearest` for durable annotations. A range whose text is deleted still
+spans the place where the text was.
+[`editor.read.ranges.isEmpty`](../../api/locations/range#editor-reads) tells whether it
+still covers anything, and saved undo and redo restore its exact endpoints.
 
 When annotations come from React state, pass the current array. A new array
 identity refreshes the store automatically.
