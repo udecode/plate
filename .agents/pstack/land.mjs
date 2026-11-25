@@ -64,23 +64,23 @@
 // Its check runs with PSTACK_LAND_CHECK=1 and outside that share, so a check
 // that reserves cores through proof.mjs enters at once as a landing too, and
 // the pool counts a check that reserves none under the landing. It gives the
-// share back while it waits out a GH006 and takes it again when it next
-// rebuilds or checks. Each check runs in a process group of its
-// own, and at 55 minutes into the run land.mjs stops that group and exits 75,
-// so a check runner that records each step's pass keeps the steps that
-// finished for the rerun. A check that fails after it ran on a public commit
-// whose companion half reached origin late counts as a move, so land.mjs
-// rebases both halves and checks them again. When a rebase changes the folder
+// share back while it waits out a GH006 or a connection or server error and
+// takes it again when it next rebuilds or checks. Each check runs in a process
+// group of its own, and at 55 minutes into the run land.mjs stops that group
+// and exits 75, so a check runner that records each step's pass keeps the
+// steps that finished for the rerun. A check that fails after it ran on a
+// public commit whose companion half reached origin late counts as a move, so
+// land.mjs rebases both halves and checks them again. When a rebase changes the folder
 // land.mjs runs from or .agents/pstack.json, the run goes on in a new process
 // that loads the rebased copy, once per landing, and the 55 minutes count the
 // time both processes took. Each run past the squash appends a line to
 // pstack-land-runs.jsonl in the git common directory when it starts and another
 // when it exits, so a run that a signal stopped still counts, and --friction
-// prints the runs of the last day. A run that exits 75, other than for a GH006,
-// or is stopped loses all its minutes, and any other run loses its wait for
-// cores. When no land-friction task is open and the runs of the last day since
-// the last one closed lost an hour, the run offers one in the suggested-task
-// ledger as it exits.
+// prints the runs of the last day. A run that exits 75, other than for a GH006
+// or a connection or server error, or is stopped loses all its minutes, and
+// any other run loses its wait for cores. When no land-friction task is open
+// and the runs of the last day since the last one closed lost an hour, the run
+// offers one in the suggested-task ledger as it exits.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -116,7 +116,7 @@ const RETRIES = 3;
 // One core covers the git work and the generators, and makes the pool count a
 // check that reserves none.
 const LAND_WORKERS = 2;
-const DECLINED_WAITS = [1, 2, 4, 8, 16];
+const OUTAGE_WAITS = [1, 2, 4, 8, 16];
 const COMMAND_LIMIT = 60 * 60_000;
 const DEADLINE = COMMAND_LIMIT - 5 * 60_000;
 // A run that went on in a new process after a rebase changed the helpers counts the minutes of the process before it, because the hour limit covers both.
@@ -125,6 +125,11 @@ const elapsed = () => spent + performance.now();
 const STOPS = ['SIGINT', 'SIGTERM', 'SIGHUP'];
 const EX_TEMPFAIL = 75;
 const MOVED = /\[rejected\]|fetch first|non-fast-forward|cannot lock ref/u;
+// A 5xx or a lost connection can pass on a later try; a 4xx refuses the request.
+const TRANSIENT = /^fatal: unable to access '[^']*': (?!The requested URL returned error: 4)|^ssh: (?:connect to host|Could not resolve hostname) |^error: RPC failed; (?!HTTP 4)/mu;
+// An empty GH006 or a failed connection ends a run that no change to land.mjs could have saved.
+const OUTAGES = ['declined', 'transient'];
+const RECHECK_LOCAL = 'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.';
 const FRICTION_TOPIC = 'land-friction';
 const FRICTION_BOUND_MINUTES = 60;
 const FRICTION_WINDOW = 24 * 60 * 60_000;
@@ -269,6 +274,7 @@ let waitedMs = 0;
 let checkedMs = 0;
 let moves = 0;
 let declines = 0;
+let outages = 0;
 let cause = null;
 
 function takeCores() {
@@ -282,8 +288,23 @@ function dropCores() {
   share = null;
 }
 
+function waitOut(tries, note) {
+  const wait = OUTAGE_WAITS[tries];
+  if (wait === undefined || elapsed() + wait * MINUTE > DEADLINE) return false;
+  console.log(`${note} in ${wait} min (retry ${tries + 1} of ${OUTAGE_WAITS.length})`);
+  dropCores();
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait * MINUTE);
+  return true;
+}
+
+function waitOutOutage(command) {
+  if (!waitOut(outages, `${command} failed on the connection or with a server error; trying again`)) return false;
+  outages += 1;
+  return true;
+}
+
 async function rebaseOntoOrigin() {
-  await fetchCompanionFirst();
+  await fetchCompanionFirst(RECHECK_LOCAL);
   await rebaseFetched();
 }
 
@@ -329,13 +350,24 @@ async function fetchPastRaces(prefix, remote, ref, where) {
 const fetchTheirs = () => fetchPastRaces(side, 'origin', cupstream, `${pair.dir}'s origin/${branch}`);
 const fetchOwn = () => fetchPastRaces([], canonical, upstream, target);
 
-async function fetchCompanionFirst() {
-  const crun = pair ? await fetchTheirs() : null;
-  const run = await fetchOwn();
-  if (run.status !== 0) fail(`git fetch --quiet ${canonical} +refs/heads/${branch}:${upstream} failed: ${run.stderr.trim()}`);
-  if (crun && crun.status !== 0) fail(`git fetch --quiet origin +refs/heads/${branch}:${cupstream} in ${pair.dir} failed: ${crun.stderr.trim()}`);
+async function fetchCompanionFirst(rerun) {
+  let crun;
+  let run;
+  do {
+    crun = pair ? await fetchTheirs() : null;
+    run = await fetchOwn();
+  } while ([crun, run].some((one) => one && one.status !== 0 && TRANSIENT.test(one.stderr)) && waitOutOutage('git fetch'));
+  failFetch(run, `git fetch --quiet ${canonical} +refs/heads/${branch}:${upstream}`, rerun);
+  if (crun) failFetch(crun, `git fetch --quiet origin +refs/heads/${branch}:${cupstream} in ${pair.dir}`, rerun);
   // FETCH_HEAD is per worktree. Every worktree shares the upstream refs, and another session's push moves them.
   fetched = { own: must('rev-parse', 'FETCH_HEAD'), theirs: pair ? cmust('rev-parse', 'FETCH_HEAD') : null };
+}
+
+function failFetch(run, command, rerun) {
+  if (run.status === 0) return;
+  if (!TRANSIENT.test(run.stderr)) fail(`${command} failed: ${run.stderr.trim()}`);
+  cause = 'transient';
+  fail(`${command} still failed on the connection or with a server error. ${rerun}\n${run.stderr.trim()}`, EX_TEMPFAIL);
 }
 
 // A failed fetch reads as no move, because a flaky fetch of the other repository should not stop a push that its own origin accepts.
@@ -750,9 +782,8 @@ function readRuns() {
   return [...ended, ...stopped].sort((one, other) => Date.parse(one.end) - Date.parse(other.end));
 }
 
-// A GH006 outage is GitHub's, so a run it ended loses only its wait for cores, as a run that landed does.
 function thrownAway(run) {
-  return run.exit === null || (run.exit === EX_TEMPFAIL && run.cause !== 'declined');
+  return run.exit === null || (run.exit === EX_TEMPFAIL && !OUTAGES.includes(run.cause));
 }
 
 function lostMinutes(run) {
@@ -878,7 +909,7 @@ function printFriction() {
   console.log(`${runs.length} land.mjs runs in the last day lost ${lost} minutes to exit 75, to a stop or to waiting for cores; past ${FRICTION_BOUND_MINUTES} since the last ${FRICTION_TOPIC} task closed, a landing offers one.`);
 }
 
-await fetchCompanionFirst();
+await fetchCompanionFirst('This run committed nothing, so run land.mjs again with the same options.');
 // <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
 const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
 const { sourceless } = settled;
@@ -998,8 +1029,7 @@ async function check(rebased = false) {
     const run = await runCheck(command);
     if (run.stopped) {
       fail(
-        `land.mjs stopped ${command} at ${DEADLINE / 60_000} minutes into the run. ` +
-          'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
+        `land.mjs stopped ${command} at ${DEADLINE / 60_000} minutes into the run. ${RECHECK_LOCAL}`,
         EX_TEMPFAIL
       );
     }
@@ -1023,8 +1053,7 @@ async function check(rebased = false) {
 async function retry(where) {
   if (moves >= RETRIES || elapsed() >= DEADLINE) {
     fail(
-      `${where} moved, and ${moves >= RETRIES ? `it had moved ${RETRIES} times already while land.mjs checked` : `the run has reached ${DEADLINE / 60_000} minutes`}. ` +
-        'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
+      `${where} moved, and ${moves >= RETRIES ? `it had moved ${RETRIES} times already while land.mjs checked` : `the run has reached ${DEADLINE / 60_000} minutes`}. ${RECHECK_LOCAL}`,
       EX_TEMPFAIL
     );
   }
@@ -1048,6 +1077,7 @@ if (fresh) {
 
 if (mode === 'push') {
   const pushesPublic = landing.own;
+  const keptLocal = `The squashed commit stays local and land.mjs recorded it, so run land.mjs again with the same --check options and no --message; it skips the checks unless origin/${branch} has moved since this run last rebased onto it.`;
   while (landing.own) {
     if (pair && (await companionMoved())) {
       await retry(`${pair.dir}'s origin/${branch}`);
@@ -1056,21 +1086,20 @@ if (mode === 'push') {
     const run = git('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
     if (run.status === 0) break;
     const declined = declinedWithoutReason(run.stderr);
-    const wait = DECLINED_WAITS[declines];
     if (MOVED.test(run.stderr)) {
       await retry(`origin/${branch}`);
-    } else if (declined && wait !== undefined && elapsed() + wait * MINUTE <= DEADLINE) {
+    } else if (declined && waitOut(declines, `GitHub declined the push to ${branch} with an empty GH006; pushing again`)) {
       declines += 1;
-      console.log(`GitHub declined the push to ${branch} with an empty GH006; pushing again in ${wait} min (retry ${declines} of ${DECLINED_WAITS.length})`);
-      dropCores();
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait * MINUTE);
     } else if (declined) {
       cause = 'declined';
       fail(
-        `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(elapsed() / 60_000)} minutes land.mjs has run. ` +
-          `The squashed commit stays local and land.mjs recorded it, so run land.mjs again with the same --check options and no --message; it skips the checks unless origin/${branch} has moved since this run last rebased onto it.\n${run.stderr.trim()}`,
+        `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(elapsed() / 60_000)} minutes land.mjs has run. ${keptLocal}\n${run.stderr.trim()}`,
         EX_TEMPFAIL
       );
+    } else if (TRANSIENT.test(run.stderr)) {
+      if (waitOutOutage(`git push origin HEAD:${branch}`)) continue;
+      cause = 'transient';
+      fail(`git push origin HEAD:${branch} still failed on the connection or with a server error. ${keptLocal}\n${run.stderr.trim()}`, EX_TEMPFAIL);
     } else {
       fail(`git push origin HEAD:${branch} failed: ${run.stderr.trim()}`);
     }
