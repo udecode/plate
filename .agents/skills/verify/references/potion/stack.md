@@ -41,7 +41,10 @@ It refuses when its state file exists or when the port is taken. It then:
    one with fresh secrets and no AI or Upstash keys, which `down` removes. The
    script never prints the file. When `.dev.vars` sets
    `UPSTASH_REDIS_REST_TOKEN`, rate limits count against the real Upstash, and
-   `up` says so.
+   `up` says so. The generated file sets `FILES_STORAGE=memory`, so uploads
+   through `/api/files` live in the dev server's memory and vanish when it
+   stops. A `.dev.vars` without that line uses `wrangler.jsonc`'s R2 bucket,
+   which needs the R2 keys, and `up` says so.
 2. Applies the Drizzle migrations with
    `wrangler d1 migrations apply potion --local`. It never passes `--remote`.
 3. Starts `vite dev` on `127.0.0.1:3000` in its own process group, with

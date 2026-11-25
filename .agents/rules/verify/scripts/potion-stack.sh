@@ -74,9 +74,7 @@ up() {
     cat >.dev.vars <<EOF
 BETTER_AUTH_SECRET=$(openssl rand -base64 32)
 FILES_API_SECRET=$(openssl rand -base64 32)
-FILES_STORAGE=fs
-FILES_FS_ROOT=tmp/verify/files
-FILES_MAX_UPLOAD_SIZE=16777216
+FILES_STORAGE=memory
 EOF
     OWN_DEV_VARS=1
   elif ! grep -Eq '^BETTER_AUTH_SECRET=.+' .dev.vars; then
@@ -85,6 +83,9 @@ EOF
   fi
   if grep -Eq '^UPSTASH_REDIS_REST_TOKEN=.+' .dev.vars; then
     echo "note: .dev.vars sets UPSTASH_REDIS_REST_TOKEN, so rate limits count against the real Upstash" >&2
+  fi
+  if ! grep -Eq '^FILES_STORAGE=memory$' .dev.vars; then
+    echo "note: .dev.vars does not set FILES_STORAGE=memory, so uploads go to wrangler.jsonc's R2 bucket and need its keys" >&2
   fi
 
   # The dev server and wrangler both keep the local D1 under .wrangler/state.
@@ -116,6 +117,7 @@ doctor() {
     if "${@:2}" >/dev/null 2>&1; then echo "ok   $1"; else echo "FAIL $1"; ok=1; fi
   }
   check ".dev.vars sets BETTER_AUTH_SECRET" grep -Eq '^BETTER_AUTH_SECRET=.+' .dev.vars
+  check ".dev.vars sets FILES_API_SECRET" grep -Eq '^FILES_API_SECRET=.{32,}' .dev.vars
   check "migrations applied" sh -c "bunx wrangler d1 migrations list $DB_NAME --local 2>&1 | grep -q 'No migrations to apply'"
   check "vite dev (pgid $APP_PID) alive" kill -0 "$APP_PID"
   check "port $APP_PORT owned by our vite" sh -c "ps -o pgid= -p \$(lsof -nP -iTCP:$APP_PORT -sTCP:LISTEN -t | head -1) | grep -qw $APP_PID"
