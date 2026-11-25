@@ -25,6 +25,7 @@ import type {
   SelectionPoint,
 } from '../playwright/types';
 import {
+  calibratedLanguages,
   chromeContentBounds,
   createDeviceTouch,
   currentKeyMap,
@@ -34,7 +35,6 @@ import {
   keyboardIdentity,
   keyboardShown,
   readKeyboard,
-  requestedLanguages,
   switchKeyboardLanguage,
 } from './android';
 import {
@@ -430,29 +430,37 @@ export const createDeviceLane = ({
       const controls = Array.from(document.querySelectorAll(interactive))
         .flatMap((element) => Array.from(element.getClientRects()))
         .filter((rect) => rect.width > 0 && rect.height > 0);
-      let point: { x: number; y: number } | null = null;
+      const controlMargin = 24;
+      const quiet = ({ x, y }: { x: number; y: number }) => {
+        const target = document.elementFromPoint(x, y);
 
-      for (const y of [height / 2, 6, height - 6]) {
-        for (const x of [6, width / 2, width - 6]) {
-          const target = document.elementFromPoint(left + x, top + y);
+        return (
+          !!target &&
+          !target.closest(interactive) &&
+          !controls.some(
+            (rect) =>
+              x >= rect.left - controlMargin &&
+              x <= rect.right + controlMargin &&
+              y >= rect.top - controlMargin &&
+              y <= rect.bottom + controlMargin
+          )
+        );
+      };
+      const gridLines = (size: number) =>
+        Array.from(
+          { length: Math.floor(size / controlMargin) },
+          (_, index) => (index + 0.5) * controlMargin
+        );
+      const preferredPoints = [height / 2, 6, height - 6].flatMap((y) =>
+        [6, width / 2, width - 6].map((x) => ({ x, y }))
+      );
+      const gridPoints = gridLines(height).flatMap((y) =>
+        gridLines(width).map((x) => ({ x, y }))
+      );
+      const point = [...preferredPoints, ...gridPoints]
+        .map(({ x, y }) => ({ x: left + x, y: top + y }))
+        .find(quiet);
 
-          if (
-            target &&
-            !target.closest(interactive) &&
-            !controls.some(
-              (rect) =>
-                left + x >= rect.left - 24 &&
-                left + x <= rect.right + 24 &&
-                top + y >= rect.top - 24 &&
-                top + y <= rect.bottom + 24
-            )
-          ) {
-            point = { x: left + x, y: top + y };
-            break;
-          }
-        }
-        if (point) break;
-      }
       if (!point) return null;
       window.__deviceCalibration = null;
       window.addEventListener(
@@ -833,7 +841,7 @@ export const createDeviceLane = ({
       );
     },
     keyboard: {
-      languages: requestedLanguages(),
+      languages: calibratedLanguages(state.serial),
       shown: () => keyboardShown(state.serial),
       tap: async (label) => {
         const map = confirmKeyboard();

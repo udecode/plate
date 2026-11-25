@@ -5,28 +5,39 @@ import type { SurfaceTarget } from './surface';
 import type { HtmlNormalizationOptions } from './types';
 
 export const getBlockTexts = async (root: Locator): Promise<string[]> =>
-  root.evaluate((element: HTMLElement) =>
-    Array.from(
-      element.querySelectorAll(':scope > [data-editor-node="element"]')
-    ).map((block) => {
-      const logicalBlock = block.cloneNode(true) as Element;
+  root.evaluate((element: HTMLElement) => {
+    const isTopLevelBlock = (block: Element) => {
+      for (
+        let node = block.parentElement;
+        node && node !== element;
+        node = node.parentElement
+      ) {
+        if (node.matches('[data-editor-node="element"]')) return false;
+      }
+      return true;
+    };
 
-      logicalBlock
-        .querySelectorAll('[data-editor-string][data-editor-length]')
-        .forEach((string) => {
-          const length = Number.parseInt(
-            string.getAttribute('data-editor-length') ?? '',
-            10
-          );
+    return Array.from(element.querySelectorAll('[data-editor-node="element"]'))
+      .filter(isTopLevelBlock)
+      .map((block) => {
+        const logicalBlock = block.cloneNode(true) as Element;
 
-          if (Number.isFinite(length)) {
-            string.textContent = (string.textContent ?? '').slice(0, length);
-          }
-        });
+        logicalBlock
+          .querySelectorAll('[data-editor-string][data-editor-length]')
+          .forEach((string) => {
+            const length = Number.parseInt(
+              string.getAttribute('data-editor-length') ?? '',
+              10
+            );
 
-      return (logicalBlock.textContent ?? '').replace(/\uFEFF/g, '');
-    })
-  );
+            if (Number.isFinite(length)) {
+              string.textContent = (string.textContent ?? '').slice(0, length);
+            }
+          });
+
+        return (logicalBlock.textContent ?? '').replace(/\uFEFF/g, '');
+      });
+  });
 
 export const getSelectedText = async (root: Locator): Promise<string> =>
   root.evaluate((element: HTMLElement) => {

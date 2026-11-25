@@ -914,11 +914,17 @@ export const switchKeyboardLanguage = async (
     await sleep(1200);
   }
 
-  throw new Error(`Gboard did not switch to ${language}.`);
+  throw new Error(
+    `Gboard did not switch to ${language}; its language key went through ${[...visited].join(', ')}.`
+  );
 };
 
 const readKeyMaps = (serial: string) =>
   readJSON<DeviceKeyMap[]>(keyMapPath(serial)) ?? [];
+
+export const calibratedLanguages = (serial: string) => [
+  ...new Set(readKeyMaps(serial).map((map) => map.language)),
+];
 
 /** Look up the calibrated map for the keyboard Gboard shows now; fails on a miss. */
 export const currentKeyMap = (
@@ -993,9 +999,11 @@ const CALIBRATION_PAGE =
   '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><textarea autofocus style="width:90vw;height:30vh"></textarea>';
 
 /** Record a key map for each lane language. The keyboard must show for a text field. */
-export const calibrateKeyboard = async (serial: string, port = 8790) => {
-  const languages = requestedLanguages();
-
+export const calibrateKeyboard = async (
+  serial: string,
+  languages = requestedLanguages(),
+  port = 8790
+) => {
   acquireSerialLock(serial);
 
   const calibrationURL = `http://localhost:${port}/?calibrate=${Date.now()}`;
@@ -1123,11 +1131,14 @@ export const calibrateKeyboard = async (serial: string, port = 8790) => {
 
 // Commands for tooling/device/android.mjs
 
-export const setupDevice = async (serial: string) => {
+export const setupDevice = async (
+  serial: string,
+  languages = requestedLanguages()
+) => {
   acquireSerialLock(serial);
 
   try {
-    return await setupLockedDevice(serial);
+    return await setupLockedDevice(serial, languages);
   } finally {
     releaseSerialLock(serial);
   }
@@ -1166,8 +1177,10 @@ const setZenMode = async (serial: string, mode: string) => {
   }
 };
 
-const setupLockedDevice = async (serial: string) => {
-  const languages = requestedLanguages();
+const setupLockedDevice = async (
+  serial: string,
+  languages: DeviceLanguage[]
+) => {
   recordRestore(serial, {});
 
   const ime = shell(
