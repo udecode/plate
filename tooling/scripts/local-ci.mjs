@@ -388,12 +388,17 @@ const rerunCommand = (step, files) => {
   return null;
 };
 
-const backToTip = (tip) => {
+const resetToTip = (tip) => {
   if (
     !existsSync(worktree) ||
     git(worktree, ['rev-parse', 'HEAD']).stdout.trim() !== tip
   ) {
     checkout(tip);
+  } else {
+    // A step such as www-build rewrites tracked files, so a step checked after
+    // it on the same commit would judge that step's output instead of the
+    // commit's.
+    must(worktree, ['checkout', '--quiet', '--force', '--detach', tip]);
   }
 };
 
@@ -436,7 +441,7 @@ const firstBad = (
       ? { culprit: null, green: null, range: `..${found.failsAtStart}` }
       : { culprit: null, range: found.range };
   } finally {
-    backToTip(tip);
+    resetToTip(tip);
   }
 };
 
@@ -703,7 +708,7 @@ const run = async (args) => {
     ) {
       console.info(`[local-ci] next is still ${tip.slice(0, 10)}.`);
       try {
-        backToTip(tip);
+        resetToTip(tip);
       } catch (error) {
         return brokenAt(tip, error);
       }
@@ -798,6 +803,7 @@ const run = async (args) => {
         tip,
         failedFilesRerun ? `${failed}-failed` : `${failed}-alone`
       );
+      resetToTip(tip);
       const aloneStarted = Date.now();
       const alone = failedFilesRerun
         ? shell(logs, aloneName, failedFilesRerun)
