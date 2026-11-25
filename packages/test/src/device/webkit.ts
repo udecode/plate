@@ -198,9 +198,21 @@ export type InspectorPageInfo = {
   url: string;
 };
 
+export type InspectorLogEntry = {
+  at: string;
+  message: {
+    id?: number;
+    method?: string;
+    params?: Record<string, unknown>;
+  };
+  sent: boolean;
+};
+
 export type InspectorPage = {
   close: () => void;
-  evaluate: <T>(expression: string) => Promise<T>;
+  evaluate: <T>(expression: string, timeoutMs?: number) => Promise<T>;
+  /** Every message on this page's targets, with Console messages from the first evaluate on. */
+  log: readonly InspectorLogEntry[];
 };
 
 export const inspectorSocket = (udid: string) =>
@@ -325,8 +337,10 @@ export const connectWebInspector = async (socketPath: string) => {
       WIRSenderKey: sender,
     };
     const replies = new Map<number, (reply: ProtocolReply) => void>();
+    const log: InspectorLogEntry[] = [];
     let id = 0;
     let target = '';
+    let consoleTarget = '';
     let markCreated = () => {};
     const created = new Promise<void>((resolve) => {
       markCreated = resolve;
@@ -343,6 +357,9 @@ export const connectWebInspector = async (socketPath: string) => {
         (message.__argument.WIRMessageDataKey as Buffer).toString()
       );
 
+      if (event.method !== 'Target.dispatchMessageFromTarget') {
+        log.push({ at: new Date().toISOString(), message: event, sent: false });
+      }
       if (event.error) {
         replies.get(event.id)?.(event);
         replies.delete(event.id);
@@ -357,6 +374,7 @@ export const connectWebInspector = async (socketPath: string) => {
       } else if (event.method === 'Target.dispatchMessageFromTarget') {
         const reply = JSON.parse(event.params.message) as ProtocolReply;
 
+        log.push({ at: new Date().toISOString(), message: reply, sent: false });
         replies.get(reply.id)?.(reply);
         replies.delete(reply.id);
       }
@@ -365,7 +383,8 @@ export const connectWebInspector = async (socketPath: string) => {
     const command = (
       method: string,
       params: Record<string, unknown>,
-      expression: string
+      expression: string,
+      timeoutMs = 60_000
     ) => {
       id += 1;
 
@@ -375,10 +394,10 @@ export const connectWebInspector = async (socketPath: string) => {
           replies.delete(sent);
           reject(
             new Error(
-              `${method} of ${expression.replaceAll(/\s+/g, ' ').slice(0, 80)} got no answer from ${page.url} within 60 s`
+              `${method} of ${expression.replaceAll(/\s+/g, ' ').slice(0, 80)} got no answer from ${page.url} within ${timeoutMs / 1000} s`
             )
           );
-        }, 60_000);
+        }, timeoutMs);
 
         replies.set(sent, (answer) => {
           clearTimeout(timer);
@@ -386,6 +405,11 @@ export const connectWebInspector = async (socketPath: string) => {
         });
       });
 
+      log.push({
+        at: new Date().toISOString(),
+        message: { id: sent, method, params },
+        sent: true,
+      });
       send('_rpc_forwardSocketData:', {
         ...route,
         WIRSocketDataKey: Buffer.from(
@@ -420,24 +444,35 @@ export const connectWebInspector = async (socketPath: string) => {
         listeners.delete(listener);
         send('_rpc_forwardDidClose:', route);
       },
-      evaluate: async <T>(expression: string) => {
+      evaluate: async <T>(expression: string, timeoutMs?: number) => {
+        // A navigation can commit a new target, which starts without Console.
+        if (consoleTarget !== target) {
+          const enabling = target;
+
+          settled(await command('Console.enable', {}, expression, timeoutMs));
+          consoleTarget = enabling;
+        }
+
         const promise = settled(
           await command(
             'Runtime.evaluate',
             { expression: `Promise.resolve((${expression}))` },
-            expression
+            expression,
+            timeoutMs
           )
         );
         const value = settled(
           await command(
             'Runtime.awaitPromise',
             { promiseObjectId: promise.objectId, returnByValue: true },
-            expression
+            expression,
+            timeoutMs
           )
         );
 
         return value.value as T;
       },
+      log,
     };
   };
 

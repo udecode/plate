@@ -11,6 +11,14 @@ type AtLeastOne<T extends object> = {
   [K in keyof T]-?: Required<Pick<T, K>> & Partial<Omit<T, K>>;
 }[keyof T];
 
+/** The element a read runs against: a Playwright locator, or a page reached another way. */
+export type EditorRoot = {
+  evaluate: <R, Arg>(
+    pageFunction: (element: HTMLElement, arg: Arg) => R | Promise<R>,
+    arg?: Arg
+  ) => Promise<R>;
+};
+
 /** Exact or bounded numeric assertion used by browser proof steps. */
 export type BrowserNumberBudget =
   | number

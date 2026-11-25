@@ -1,7 +1,7 @@
 import type { BrowserNativeEventTraceEntry } from '../playwright/types';
 
 /** The `keydown` key a soft-keyboard tap produces, or null for none. */
-export type DeviceWitnessKey = 'Backspace' | 'Enter' | 'Unidentified' | null;
+export type DeviceWitnessKey = string | null;
 
 /** One lane gesture, before the lane measures its trace range. */
 export type DeviceWitnessGesture =
@@ -72,7 +72,8 @@ const expectedKey = (step: DeviceWitnessStep): DeviceWitnessKey => {
  * produces, be an IME companion of a trusted Enter/13 in that same step, or
  * repeat and close the composition already active before that Enter step.
  * Every `beforeinput` needs its own preceding `keydown`, except a
- * composition commit carried by a content touch, and every `input` needs its
+ * composition commit carried by a content touch and an autocorrect
+ * replacement that shares its key's `keydown`, and every `input` needs its
  * own preceding `beforeinput` of the same input type. A key or strip step
  * that expects a key must show one. Content touches must deliver a
  * `pointerdown` near their target. An insertion that copies all of this from
@@ -215,9 +216,15 @@ export const judgeDeviceWitness = ({
         compositionOpen &&
         event.inputType === 'insertCompositionText';
 
+      // The iPhone keyboard's autocorrect replaces the word before the key's
+      // own text, so the replacement shares that key's keydown.
+      const autocorrect =
+        step.kind === 'key' && event.inputType === 'insertReplacementText';
+
       pendingBeforeInputs.push(event.inputType ?? null);
-      if (pendingKeydowns > 0) pendingKeydowns -= 1;
-      else if (!touchCommit) {
+      if (pendingKeydowns > 0) {
+        if (!autocorrect) pendingKeydowns -= 1;
+      } else if (!touchCommit) {
         violations.push({
           ...at,
           detail: `${event.inputType} without its own keydown`,

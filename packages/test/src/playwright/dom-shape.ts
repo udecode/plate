@@ -1,17 +1,18 @@
-import { expect, type Locator } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 import type {
+  EditorRoot,
   DOMSelectionLocationSnapshot,
   RenderedBlockDOMShapeSnapshot,
   RenderedDOMShapeExpectation,
 } from './types';
 
 type DOMSelectionLocationReader = (
-  root: Locator
+  root: EditorRoot
 ) => Promise<DOMSelectionLocationSnapshot | null>;
 
 export const getRenderedBlockDOMShapes = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<RenderedBlockDOMShapeSnapshot[]> =>
   root.evaluate((element: HTMLElement) => {
     const normalizeText = (text: string) => text.replace(/\uFEFF/g, '');
@@ -75,7 +76,7 @@ export const getRenderedBlockDOMShapes = async (
   });
 
 export const getRenderedBlockDOMShape = async (
-  root: Locator,
+  root: EditorRoot,
   blockIndex: number
 ): Promise<RenderedBlockDOMShapeSnapshot> => {
   const shapes = await getRenderedBlockDOMShapes(root);
@@ -89,7 +90,7 @@ export const getRenderedBlockDOMShape = async (
 };
 
 export const assertRenderedBlockText = async (
-  root: Locator,
+  root: EditorRoot,
   blockIndex: number,
   text: string
 ) => {
@@ -103,7 +104,7 @@ export const assertRenderedBlockText = async (
 };
 
 export const assertNoUnexpectedZeroWidthBreaks = async (
-  root: Locator,
+  root: EditorRoot,
   blockIndex: number
 ) => {
   await expect
@@ -116,7 +117,7 @@ export const assertNoUnexpectedZeroWidthBreaks = async (
 };
 
 export const assertRenderedDOMShape = async (
-  root: Locator,
+  root: EditorRoot,
   expected: RenderedDOMShapeExpectation,
   readDOMSelectionLocation?: DOMSelectionLocationReader
 ) => {

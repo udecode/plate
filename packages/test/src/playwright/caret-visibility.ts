@@ -1,6 +1,6 @@
-import { expect, type Locator } from '@playwright/test';
+import { expect } from '@playwright/test';
 
-import type { BrowserEditorHarness } from './types';
+import type { EditorRoot, BrowserEditorHarness } from './types';
 
 /** Snapshot used to prove caret visibility inside a scroll container. */
 /** Caret visibility evidence captured inside a scrollable parent. */
@@ -26,7 +26,7 @@ export type CaretVisibilitySnapshot = {
 };
 
 const takeCaretVisibilitySnapshot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<CaretVisibilitySnapshot> =>
   root.evaluate((element: HTMLElement) => {
     const selection = element.ownerDocument.getSelection();
@@ -127,7 +127,9 @@ const takeCaretVisibilitySnapshot = async (
     };
   });
 
-export const assertCaretVisibleInScrollableParent = async (root: Locator) => {
+export const assertCaretVisibleInScrollableParent = async (
+  root: EditorRoot
+) => {
   let lastSnapshot: CaretVisibilitySnapshot | null = null;
 
   try {
@@ -152,7 +154,7 @@ export const assertCaretVisibleInScrollableParent = async (root: Locator) => {
   }
 };
 
-export const assertNoVisibleCaretInRoot = async (root: Locator) => {
+export const assertNoVisibleCaretInRoot = async (root: EditorRoot) => {
   let lastSnapshot: CaretVisibilitySnapshot | null = null;
 
   try {

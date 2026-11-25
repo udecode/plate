@@ -1,9 +1,11 @@
-import type { Locator } from '@playwright/test';
-
-import type { FocusOwnerSnapshot, SelectionRectSnapshot } from './types';
+import type {
+  EditorRoot,
+  FocusOwnerSnapshot,
+  SelectionRectSnapshot,
+} from './types';
 
 export const getSelectionRect = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<SelectionRectSnapshot | null> =>
   root.evaluate((element: HTMLElement) => {
     const rootNode = element.getRootNode() as Document | ShadowRoot;
@@ -113,7 +115,7 @@ export const getSelectionRect = async (
   });
 
 export const getFocusOwnerSnapshot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<FocusOwnerSnapshot> =>
   root.evaluate((element: HTMLElement) => {
     const rootNode = element.getRootNode() as Document | ShadowRoot;

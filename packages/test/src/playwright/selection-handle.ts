@@ -2,9 +2,9 @@ import { expect, type Locator } from '@playwright/test';
 
 import { BROWSER_HANDLE_KEY } from './constants';
 import { waitForSelectionSync } from './selection-snapshots';
-import type { SelectionSnapshot } from './types';
+import type { EditorRoot, SelectionSnapshot } from './types';
 
-export const hasSelectionHandle = async (root: Locator) =>
+export const hasSelectionHandle = async (root: EditorRoot) =>
   root
     .evaluate(
       (element: HTMLElement, { key }: { key: string }) =>

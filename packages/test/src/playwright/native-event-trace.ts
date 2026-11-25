@@ -1,6 +1,5 @@
-import type { Locator } from '@playwright/test';
-
 import type {
+  EditorRoot,
   BrowserNativeEventTraceAnomaly,
   BrowserNativeEventTraceDOMDelta,
   BrowserNativeEventTraceEntry,
@@ -19,7 +18,7 @@ const NATIVE_EVENT_TRACE_KEY = '__EDITOR_BROWSER_NATIVE_EVENT_TRACE__';
 
 /** Start native event tracing for a editor browser root. */
 export const startBrowserNativeEventTrace = async (
-  root: Locator,
+  root: EditorRoot,
   options: BrowserNativeEventTraceOptions = {}
 ) => {
   const maxEntries = options.maxEntries ?? 100;
@@ -488,7 +487,7 @@ export const startBrowserNativeEventTrace = async (
 };
 
 /** Clear the current native event trace for a editor browser root. */
-export const resetBrowserNativeEventTrace = async (root: Locator) => {
+export const resetBrowserNativeEventTrace = async (root: EditorRoot) => {
   await root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
       (element as Record<string, any>)[key]?.reset?.();
@@ -498,7 +497,7 @@ export const resetBrowserNativeEventTrace = async (root: Locator) => {
 };
 
 /** Stop native event tracing for a editor browser root. */
-export const stopBrowserNativeEventTrace = async (root: Locator) => {
+export const stopBrowserNativeEventTrace = async (root: EditorRoot) => {
   await root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
       (element as Record<string, any>)[key]?.stop?.();
@@ -509,7 +508,7 @@ export const stopBrowserNativeEventTrace = async (root: Locator) => {
 };
 
 /** Read only the newest trace entry's `seq`, or 0 before any entry. */
-export const readBrowserNativeEventTraceSeq = async (root: Locator) =>
+export const readBrowserNativeEventTraceSeq = async (root: EditorRoot) =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) =>
       ((element as Record<string, any>)[key]?.entries?.at(-1)?.seq as
@@ -520,7 +519,7 @@ export const readBrowserNativeEventTraceSeq = async (root: Locator) =>
 
 /** Read the native event trace captured for a editor browser root. */
 export const takeBrowserNativeEventTrace = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<BrowserNativeEventTraceSnapshot> =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {

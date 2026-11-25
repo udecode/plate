@@ -1,10 +1,8 @@
-import type { Locator } from '@playwright/test';
-
 import { toPlainText } from './clipboard';
 import type { SurfaceTarget } from './surface';
-import type { HtmlNormalizationOptions } from './types';
+import type { EditorRoot, HtmlNormalizationOptions } from './types';
 
-export const getBlockTexts = async (root: Locator): Promise<string[]> =>
+export const getBlockTexts = async (root: EditorRoot): Promise<string[]> =>
   root.evaluate((element: HTMLElement) => {
     const isTopLevelBlock = (block: Element) => {
       for (
@@ -39,7 +37,7 @@ export const getBlockTexts = async (root: Locator): Promise<string[]> =>
       });
   });
 
-export const getSelectedText = async (root: Locator): Promise<string> =>
+export const getSelectedText = async (root: EditorRoot): Promise<string> =>
   root.evaluate((element: HTMLElement) => {
     const rootNode = element.getRootNode() as Document | ShadowRoot;
     const selection =
@@ -52,7 +50,7 @@ export const getSelectedText = async (root: Locator): Promise<string> =>
 
 export const dropHtml = async (
   surface: SurfaceTarget,
-  root: Locator,
+  root: EditorRoot,
   html: string,
   plainText?: string
 ) => {
@@ -81,7 +79,7 @@ export const dropHtml = async (
 };
 
 export const normalizeHtml = async (
-  root: Locator,
+  root: EditorRoot,
   markup: string,
   {
     ignoreClasses = false,

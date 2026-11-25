@@ -10,8 +10,8 @@ import {
   showChrome,
   waitForDevTools,
 } from './android';
+import { findOwnedPage } from './android-lane';
 import { type GuardedEndpoint, startGuardedEndpoint } from './guard';
-import { findOwnedPage } from './lane';
 
 export type DeviceRun = {
   close: () => Promise<GuardedEndpoint['refused']>;

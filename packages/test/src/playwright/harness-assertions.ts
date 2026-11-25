@@ -1,4 +1,4 @@
-import { expect, type Locator } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 import type { PlaceholderShape } from '../browser/zero-width';
 import {
@@ -23,6 +23,7 @@ import {
 } from './selection-snapshots';
 import type {
   CollapsedModelDOMSelectionExpectation,
+  EditorRoot,
   DOMSelectionLocationSnapshot,
   DOMSelectionSnapshotExpectation,
   FocusOwnerSnapshot,
@@ -33,37 +34,11 @@ import type {
   BrowserKernelTraceExpectation,
 } from './types';
 
-export const createEditorHarnessAssertions = ({
-  getHarness,
-  root,
-}: {
-  getHarness: () => BrowserEditorHarness;
-  root: Locator;
-}): BrowserEditorHarness['assert'] => ({
-  text: async (text: RegExp | string) => {
-    await expect(root).toContainText(text);
-  },
-  modelBlockText: async (index: number, text: string | null) => {
-    await expect.poll(() => getHarness().get.modelBlockText(index)).toBe(text);
-  },
-  modelBlockTexts: async (texts: string[]) => {
-    await expect.poll(() => getHarness().get.modelBlockTexts()).toEqual(texts);
-  },
-  blockTexts: async (texts: string[]) => {
-    await expect.poll(() => getBlockTexts(root)).toEqual(texts);
-  },
-  html: async (
-    expectedHtml: string,
-    options: HtmlNormalizationOptions = {}
-  ) => {
-    await getHarness().assert.htmlEquals(expectedHtml, options);
-  },
-  htmlContains: async (expectedFragment: string) => {
-    await expect
-      .poll(() => root.evaluate((el: HTMLElement) => el.innerHTML))
-      .toContain(expectedFragment);
-  },
-  htmlEquals: async (
+export const createEditorAssertions = (
+  root: EditorRoot,
+  get: BrowserEditorHarness['get']
+): Omit<BrowserEditorHarness['assert'], 'placeholderVisible' | 'text'> => {
+  const htmlEquals = async (
     expectedHtml: string,
     options: HtmlNormalizationOptions = {}
   ) => {
@@ -80,102 +55,102 @@ export const createEditorHarnessAssertions = ({
         actual: await normalizeHtml(root, expectedHtml, options),
         expected: await normalizeHtml(root, expectedHtml, options),
       });
-  },
-  focusOwner: async (expected: FocusOwnerSnapshot['kind']) => {
-    await expect
-      .poll(async () => {
-        const snapshot = await getFocusOwnerSnapshot(root);
+  };
 
-        return snapshot.kind;
-      })
-      .toBe(expected);
-  },
-  kernelTrace: async (expected: BrowserKernelTraceExpectation) => {
-    await expect
-      .poll(async () =>
-        Boolean(
-          findBrowserKernelTraceEntry(
-            await getHarness().get.kernelTrace(),
-            expected
+  return {
+    modelBlockText: async (index: number, text: string | null) => {
+      await expect.poll(() => get.modelBlockText(index)).toBe(text);
+    },
+    modelBlockTexts: async (texts: string[]) => {
+      await expect.poll(() => get.modelBlockTexts()).toEqual(texts);
+    },
+    blockTexts: async (texts: string[]) => {
+      await expect.poll(() => getBlockTexts(root)).toEqual(texts);
+    },
+    html: async (
+      expectedHtml: string,
+      options: HtmlNormalizationOptions = {}
+    ) => {
+      await htmlEquals(expectedHtml, options);
+    },
+    htmlContains: async (expectedFragment: string) => {
+      await expect
+        .poll(() => root.evaluate((el: HTMLElement) => el.innerHTML))
+        .toContain(expectedFragment);
+    },
+    htmlEquals,
+    focusOwner: async (expected: FocusOwnerSnapshot['kind']) => {
+      await expect
+        .poll(async () => {
+          const snapshot = await getFocusOwnerSnapshot(root);
+
+          return snapshot.kind;
+        })
+        .toBe(expected);
+    },
+    kernelTrace: async (expected: BrowserKernelTraceExpectation) => {
+      await expect
+        .poll(async () =>
+          Boolean(
+            findBrowserKernelTraceEntry(await get.kernelTrace(), expected)
           )
         )
-      )
-      .toBe(true);
-  },
-  selection: async (expected: SelectionSnapshotExpectation) => {
-    await assertSelectionExpectation(root, expected);
-  },
-  collapsedModelDOMSelection: async (
-    expected: CollapsedModelDOMSelectionExpectation
-  ) => {
-    await assertCollapsedModelDOMSelectionExpectation(root, expected);
-  },
-  noDoubleSelectionHighlight: async () => {
-    await expect
-      .poll(async () => {
-        const snapshot = await takeDisplayedSelectionSnapshotForRoot(root);
+        .toBe(true);
+    },
+    selection: async (expected: SelectionSnapshotExpectation) => {
+      await assertSelectionExpectation(root, expected);
+    },
+    collapsedModelDOMSelection: async (
+      expected: CollapsedModelDOMSelectionExpectation
+    ) => {
+      await assertCollapsedModelDOMSelectionExpectation(root, expected);
+    },
+    noDoubleSelectionHighlight: async () => {
+      await expect
+        .poll(async () => {
+          const snapshot = await takeDisplayedSelectionSnapshotForRoot(root);
 
-        return snapshot.doubleHighlighted;
-      })
-      .toBe(false);
-  },
-  caretVisibleInScrollableParent: async () => {
-    await assertCaretVisibleInScrollableParent(root);
-  },
-  noVisibleCaretInRoot: async () => {
-    await assertNoVisibleCaretInRoot(root);
-  },
-  domSelection: async (expected: DOMSelectionSnapshotExpectation) => {
-    await assertDOMSelectionExpectation(root, expected);
-  },
-  domCaret: async (expected: { offset: number; text: string }) => {
-    await assertDOMCaretExpectation(root, expected);
-  },
-  domSelectionTarget: async (
-    expected: Partial<DOMSelectionLocationSnapshot>
-  ) => {
-    await expect
-      .poll(() => takeDOMSelectionLocationSnapshotForRoot(root))
-      .toMatchObject(expected);
-  },
-  noUnexpectedZeroWidthBreaks: async (blockIndex = 0) => {
-    await assertNoUnexpectedZeroWidthBreaks(root, blockIndex);
-  },
-  placeholderShape: async (
-    expected: PlaceholderShape,
-    selector = '[data-editor-zero-width]'
-  ) => {
-    await expect
-      .poll(() =>
-        root
-          .locator(selector)
-          .first()
-          .evaluate((element: Element) => ({
-            hasBr: !!element.querySelector('br'),
-            hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-            kind: element.getAttribute('data-editor-zero-width'),
-          }))
-      )
-      .toEqual(expected);
-  },
-  placeholderVisible: async (visible = true) => {
-    const placeholder = root.locator('[data-editor-placeholder="true"]');
-
-    if (visible) {
-      await expect(placeholder).toBeVisible();
-      return;
-    }
-
-    await expect(placeholder).not.toBeVisible();
-  },
-  renderedBlockText: async (blockIndex: number, text: string) => {
-    await assertRenderedBlockText(root, blockIndex, text);
-  },
-  renderedDOMShape: async (expected: RenderedDOMShapeExpectation) => {
-    await assertRenderedDOMShape(
-      root,
-      expected,
-      takeDOMSelectionLocationSnapshotForRoot
-    );
-  },
-});
+          return snapshot.doubleHighlighted;
+        })
+        .toBe(false);
+    },
+    caretVisibleInScrollableParent: async () => {
+      await assertCaretVisibleInScrollableParent(root);
+    },
+    noVisibleCaretInRoot: async () => {
+      await assertNoVisibleCaretInRoot(root);
+    },
+    domSelection: async (expected: DOMSelectionSnapshotExpectation) => {
+      await assertDOMSelectionExpectation(root, expected);
+    },
+    domCaret: async (expected: { offset: number; text: string }) => {
+      await assertDOMCaretExpectation(root, expected);
+    },
+    domSelectionTarget: async (
+      expected: Partial<DOMSelectionLocationSnapshot>
+    ) => {
+      await expect
+        .poll(() => takeDOMSelectionLocationSnapshotForRoot(root))
+        .toMatchObject(expected);
+    },
+    noUnexpectedZeroWidthBreaks: async (blockIndex = 0) => {
+      await assertNoUnexpectedZeroWidthBreaks(root, blockIndex);
+    },
+    placeholderShape: async (
+      expected: PlaceholderShape,
+      selector = '[data-editor-zero-width]'
+    ) => {
+      await expect.poll(() => get.placeholderShape(selector)).toEqual(expected);
+    },
+    renderedBlockText: async (blockIndex: number, text: string) => {
+      await assertRenderedBlockText(root, blockIndex, text);
+    },
+    renderedDOMShape: async (expected: RenderedDOMShapeExpectation) => {
+      await assertRenderedDOMShape(
+        root,
+        expected,
+        takeDOMSelectionLocationSnapshotForRoot
+      );
+    },
+  };
+};

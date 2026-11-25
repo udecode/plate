@@ -54,7 +54,7 @@ const getConsoleText = (message: ConsoleMessage) => {
     : text;
 };
 
-const isIgnoredRuntimeError = (
+export const isIgnoredRuntimeError = (
   text: string,
   frames: string,
   pageOrigin: string | null

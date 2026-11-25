@@ -1,7 +1,6 @@
-import type { Locator } from '@playwright/test';
-
 import { BROWSER_HANDLE_KEY } from './constants';
 import type {
+  EditorRoot,
   SelectionPoint,
   SelectionSnapshot,
   BrowserDisplayedSelectionSnapshot,
@@ -9,7 +8,7 @@ import type {
 
 /** Capture displayed selection overlays for one editor root. */
 export const takeDisplayedSelectionSnapshotForRoot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<BrowserDisplayedSelectionSnapshot> =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {

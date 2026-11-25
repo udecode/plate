@@ -14,6 +14,7 @@ export type RunnerCommand =
       y2: number;
     }
   | { action: 'key'; label: string }
+  | { action: 'frame'; label: string }
   | { action: 'keyboard' }
   | { action: 'press'; ms: number; x: number; y: number }
   | { action: 'tap'; x: number; y: number };
@@ -21,8 +22,13 @@ export type RunnerCommand =
 export type RunnerReply = {
   error?: string;
   keys?: string[];
+  /** The key label the runner tapped, which Shift can capitalize. */
+  label?: string;
   ok: boolean;
   shown?: boolean;
+  /** Where the labeled element starts, in web view points. */
+  x?: number;
+  y?: number;
 };
 
 export type IosRunner = {

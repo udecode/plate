@@ -2,6 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import { BROWSER_HANDLE_KEY } from './constants';
 import type {
+  EditorRoot,
   CollapsedModelDOMSelectionExpectation,
   DOMSelectionLocationSnapshot,
   DOMSelectionSnapshot,
@@ -72,7 +73,7 @@ const matchesDOMSelectionExpectation = (
 };
 
 export const assertCollapsedModelDOMSelectionExpectation = async (
-  root: Locator,
+  root: EditorRoot,
   expected: CollapsedModelDOMSelectionExpectation
 ) => {
   let actual: {
@@ -176,7 +177,7 @@ export const assertCollapsedModelDOMSelectionExpectation = async (
 };
 
 export const assertSelectionExpectation = async (
-  root: Locator,
+  root: EditorRoot,
   expected: SelectionSnapshotExpectation
 ) => {
   let actual: SelectionSnapshot | null = null;
@@ -198,7 +199,7 @@ export const assertSelectionExpectation = async (
 };
 
 export const assertDOMSelectionExpectation = async (
-  root: Locator,
+  root: EditorRoot,
   expected: DOMSelectionSnapshotExpectation
 ) => {
   let actual: DOMSelectionSnapshot | null = null;
@@ -243,7 +244,7 @@ export const assertDOMSelectionExpectation = async (
 };
 
 export const assertDOMCaretExpectation = async (
-  root: Locator,
+  root: EditorRoot,
   expected: { offset: number; text: string }
 ) => {
   await expect
@@ -298,7 +299,7 @@ export const takeDOMSelectionSnapshot = async (
   });
 
 export const takeDOMSelectionSnapshotForRoot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<DOMSelectionSnapshot | null> =>
   root.evaluate((element: HTMLElement) => {
     const rootNode = element.getRootNode() as Document | ShadowRoot;
@@ -327,7 +328,7 @@ export const takeDOMSelectionSnapshotForRoot = async (
   });
 
 const takeResolvedDOMSelectionSnapshotForRoot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<SelectionSnapshot | null> =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
@@ -353,7 +354,7 @@ const takeResolvedDOMSelectionSnapshotForRoot = async (
   );
 
 export const takeDOMSelectionLocationSnapshotForRoot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<DOMSelectionLocationSnapshot | null> =>
   root.evaluate((element: HTMLElement) => {
     const rootNode = element.getRootNode() as Document | ShadowRoot;
@@ -529,7 +530,7 @@ export const takeSelectionSnapshot = async (
   );
 
 export const takeSelectionSnapshotForRoot = async (
-  root: Locator
+  root: EditorRoot
 ): Promise<SelectionSnapshot | null> =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {

@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 import { BROWSER_HANDLE_KEY } from './constants';
 import { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
@@ -7,16 +7,15 @@ import {
   locateBrowserBlock,
   locateBrowserText,
 } from './dom-locators';
-import { getRenderedBlockDOMShapes } from './dom-shape';
-import { getBlockTexts, getSelectedText } from './dom-text';
 import {
   clickTextOffset,
   clickTextPathRange,
   collapseDOMAtTextPath,
   waitForPendingNativeTextInputRepair,
 } from './dom-text-actions';
+import { createEditorGet, snapshotEditor } from './editor-reads';
 import { evaluateHarnessHandle } from './handle';
-import { createEditorHarnessAssertions } from './harness-assertions';
+import { createEditorAssertions } from './harness-assertions';
 import {
   createEditorHarnessClipboard,
   createEditorHarnessIme,
@@ -49,7 +48,7 @@ import {
   releaseSelectionAnchorHandle,
   waitForHandleSelection,
 } from './selection-anchors';
-import { getFocusOwnerSnapshot, getSelectionRect } from './selection-geometry';
+import { getSelectionRect } from './selection-geometry';
 import {
   focusWithHandle,
   selectAllWithHandle,
@@ -76,7 +75,6 @@ import type {
   BrowserDoubleClickDragTextRangeOptions,
   BrowserDragTextRangeOptions,
   BrowserEditorHarness,
-  BrowserKernelTraceEntry,
 } from './types';
 
 export const createEditorHarness = (
@@ -120,6 +118,7 @@ export const createEditorHarness = (
   };
 
   const clipboardTransport = readProjectClipboardTransport();
+  const get = createEditorGet(root);
   const harness: BrowserEditorHarness = {
     name,
     page,
@@ -132,89 +131,7 @@ export const createEditorHarness = (
         surfaceOptions,
         surface.locator(selector).first()
       ),
-    get: {
-      modelText: async () => evaluateHarnessHandle(root, 'getText'),
-      modelBlockText: async (index) =>
-        evaluateHarnessHandle(
-          root,
-          'getBlockText',
-          [index],
-          'This editor surface does not expose getBlockText'
-        ),
-      modelBlockTexts: async () =>
-        evaluateHarnessHandle(
-          root,
-          'getBlockTexts',
-          [],
-          'This editor surface does not expose getBlockTexts'
-        ),
-      modelValue: async () =>
-        evaluateHarnessHandle(
-          root,
-          'getValue',
-          [],
-          'This editor surface does not expose getValue'
-        ),
-      text: async () => (await root.textContent()) ?? '',
-      blockTexts: async () => getBlockTexts(root),
-      renderedDOMShape: async () => getRenderedBlockDOMShapes(root),
-      selectedText: async () => getSelectedText(root),
-      displayedSelection: async () =>
-        takeDisplayedSelectionSnapshotForRoot(root),
-      html: async () => root.evaluate((el: HTMLElement) => el.innerHTML),
-      selection: async () => takeSelectionSnapshotForRoot(root),
-      domSelection: async () => takeDOMSelectionSnapshotForRoot(root),
-      focusOwner: async () => getFocusOwnerSnapshot(root),
-      kernelTrace: async () =>
-        root.evaluate(
-          (element: HTMLElement, { key }: { key: string }) => {
-            const handle = (element as Record<string, any>)[key];
-
-            return handle?.getKernelTrace ? handle.getKernelTrace() : [];
-          },
-          { key: BROWSER_HANDLE_KEY }
-        ) as Promise<BrowserKernelTraceEntry[]>,
-      history: async () =>
-        root.evaluate(
-          (element: HTMLElement, { key }: { key: string }) => {
-            const handle = (element as Record<string, any>)[key];
-
-            return handle?.getHistory ? handle.getHistory() : null;
-          },
-          { key: BROWSER_HANDLE_KEY }
-        ),
-      lastCommit: async () =>
-        root.evaluate(
-          (element: HTMLElement, { key }: { key: string }) => {
-            const handle = (element as Record<string, any>)[key];
-
-            return handle?.getLastCommit ? handle.getLastCommit() : null;
-          },
-          { key: BROWSER_HANDLE_KEY }
-        ),
-      lastPasteVersion: async () =>
-        root.evaluate(
-          (element: HTMLElement, { key }: { key: string }) =>
-            (element as Record<string, any>)[key]?.getLastPasteVersion?.(),
-          { key: BROWSER_HANDLE_KEY }
-        ),
-      placeholderShape: async (selector = '[data-editor-zero-width]') => {
-        const count = await root.locator(selector).count();
-
-        if (count === 0) {
-          return null;
-        }
-
-        return root
-          .locator(selector)
-          .first()
-          .evaluate((element: Element) => ({
-            hasBr: !!element.querySelector('br'),
-            hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-            kind: element.getAttribute('data-editor-zero-width'),
-          }));
-      },
-    },
+    get,
     selection: {
       select: async (selection: SelectionSnapshot) => {
         const selectedWithHandle =
@@ -425,19 +342,7 @@ export const createEditorHarness = (
     ready: async (options: ReadyOptions) => {
       await waitForReady(harness, surface, options);
     },
-    snapshot: async () => ({
-      text: await harness.get.text(),
-      blockTexts: await harness.get.blockTexts(),
-      renderedBlocks: await harness.get.renderedDOMShape(),
-      selectedText: await harness.get.selectedText(),
-      selection: await harness.get.selection(),
-      domSelection: await harness.get.domSelection(),
-      focusOwner: await harness.get.focusOwner(),
-      kernelTrace: await harness.get.kernelTrace(),
-      history: await harness.get.history(),
-      lastCommit: await harness.get.lastCommit(),
-      placeholderShape: await harness.get.placeholderShape(),
-    }),
+    snapshot: async () => snapshotEditor(get),
     focus: async () => {
       const readHandleSelection = () =>
         root.evaluate(
@@ -557,10 +462,22 @@ export const createEditorHarness = (
     selectAll: async () => {
       await harness.selection.selectAll();
     },
-    assert: createEditorHarnessAssertions({
-      getHarness: () => harness,
-      root,
-    }),
+    assert: {
+      ...createEditorAssertions(root, get),
+      text: async (text: RegExp | string) => {
+        await expect(root).toContainText(text);
+      },
+      placeholderVisible: async (visible = true) => {
+        const placeholder = root.locator('[data-editor-placeholder="true"]');
+
+        if (visible) {
+          await expect(placeholder).toBeVisible();
+          return;
+        }
+
+        await expect(placeholder).not.toBeVisible();
+      },
+    },
     clipboard: createEditorHarnessClipboard({
       clipboardTransport,
       getHarness: () => harness,

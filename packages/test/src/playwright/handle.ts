@@ -1,7 +1,5 @@
-import type { Locator } from '@playwright/test';
-
 import { BROWSER_HANDLE_KEY } from './constants';
-import type { SelectionSnapshot } from './types';
+import type { EditorRoot, SelectionSnapshot } from './types';
 
 type BrowserHarnessHandle = {
   deleteBackward: () => void;
@@ -28,7 +26,7 @@ type BrowserHarnessHandleMethod = keyof BrowserHarnessHandle;
 export const evaluateHarnessHandle = async <
   TMethod extends BrowserHarnessHandleMethod,
 >(
-  root: Locator,
+  root: EditorRoot,
   method: TMethod,
   args?: Parameters<BrowserHarnessHandle[TMethod]>,
   errorMessage = `This editor surface does not expose ${method}`
