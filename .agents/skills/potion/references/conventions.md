@@ -13,10 +13,9 @@ components, modals, toasts, stores or tests. `src/registry` follows Plate, as
   as `empty.tsx` and `resizable-panel.tsx`.
 - `Button` from `src/registry/ui/button.tsx` takes an `icon` prop and a
   `tooltip` prop. Use them instead of wrapping it in a `Tooltip` by hand.
-- Styling is Tailwind v4. Theme tokens live in `src/app/globals.css`.
-- React Compiler is on, so new code does not memoize by hand. Next turns it on
-  with `reactCompiler: true`. The TanStack Start move must turn it on in the
-  Vite config, or this rule stops holding.
+- Styling is Tailwind v4. Theme tokens live in `src/styles/globals.css`.
+- React Compiler is on, so new code does not memoize by hand. The Vite config
+  turns it on with `reactCompilerPreset()`.
 
 ## Modals
 
@@ -53,8 +52,7 @@ components, modals, toasts, stores or tests. `src/registry` follows Plate, as
 
 - Zod v4 (`import { z } from 'zod'`) parses input at each boundary, such as a
   server procedure's input or stored JSON, as `src/lib/stored-document.ts`
-  does. From the TanStack Start move on, routes parse their search params
-  with zod in `validateSearch`.
+  does. Routes parse their search params with zod in `validateSearch`.
 
 ## Tests
 
