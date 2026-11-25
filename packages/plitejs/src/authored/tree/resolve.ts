@@ -637,6 +637,7 @@ type LeftFragment = Readonly<{ block: TextBlock; node: Node; root: string }>;
 
 type CutIndex = Readonly<{
   copiedFrom: (key: string) => readonly SplitCopies[];
+  hasRight?: (cut: string) => boolean;
   leftOf?: (cut: string) => LeftFragment | undefined;
 }>;
 
@@ -905,12 +906,14 @@ const cutIndexIn = (
     | Readonly<{
         copies: Map<string, SplitCopies[]>;
         fragments: Map<string, LeftFragment>;
+        rights: Set<string>;
       }>
     | undefined;
   const read = () => {
     if (index) return index;
     const fragments = new Map<string, LeftFragment>();
     const copies = new Map<string, SplitCopies[]>();
+    const rights = new Set<string>();
     const visit = (nodes: readonly Node[], block: TextBlock, root: string) => {
       for (const node of nodes) {
         for (const tag of cutsOf(node)) {
@@ -918,6 +921,7 @@ const cutIndexIn = (
             fragments.set(tag.cut, { block, node, root });
             continue;
           }
+          rights.add(tag.cut);
           const copied = splitCopiesOf(dependencies.marks(node), tag.change);
 
           const entry = {
@@ -945,7 +949,7 @@ const cutIndexIn = (
         visit(block.node.children ?? [], block, root);
       }
     }
-    index = { copies, fragments };
+    index = { copies, fragments, rights };
 
     return index;
   };
@@ -954,7 +958,10 @@ const cutIndexIn = (
     copiedFrom: (key) => read().copies.get(key) ?? [],
     ...(ownedRootsDropLate
       ? {}
-      : { leftOf: (cut: string) => read().fragments.get(cut) }),
+      : {
+          hasRight: (cut: string) => read().rights.has(cut),
+          leftOf: (cut: string) => read().fragments.get(cut),
+        }),
   };
 };
 
@@ -2494,15 +2501,23 @@ const resolveIn = (
       : cutIndex?.leftOf?.(cut);
   };
 
-  const leftOfOneInBlockCut = (node: Node) => {
-    const [cut, ...more] = cutsOf(node);
-    const sides = cut && cutSides.get(cut.cut);
+  const inBlockCutsOnly = (node: Node) => {
+    const cuts = cutsOf(node);
 
     return (
-      more.length === 0 &&
-      cut?.side === 'end' &&
-      sides?.start !== undefined &&
-      sides.start === sides.end
+      cuts.length > 0 &&
+      cuts.every(({ change, cut }) => {
+        const sides = cutSides.get(cut);
+
+        if (change !== cuts[0]?.change || !sides) return false;
+        if (sides.start !== undefined && sides.end !== undefined) {
+          return sides.start === sides.end;
+        }
+
+        return sides.start === undefined
+          ? !!cutIndex?.hasRight && !cutIndex.hasRight(cut)
+          : !!cutIndex?.leftOf && !cutIndex.leftOf(cut);
+      })
     );
   };
   const standsWhenCutDecides = ({ block, node }: LeftFragment) =>
@@ -2630,7 +2645,9 @@ const resolveIn = (
     const starts = cutsOf(endNode).filter(({ side }) => side === 'start');
 
     if (starts.every((start) => decisionOf(start) === 'keep')) {
-      if (!survives(endNode)) wait(starts);
+      if (!survives(endNode)) {
+        waitOnOwn(starts, ({ change }) => change === tag.change);
+      }
     } else if (survives(endNode)) {
       wait(pending(endNode).filter(({ kind }) => kind === 'delete'));
     }
@@ -2888,7 +2905,7 @@ const resolveIn = (
       if (ownMarkRemoves(node) && !survives(node)) {
         // Its pending cuts would have nothing to join, so they decide with it.
         if (whole) takenWhole.add(original);
-        else if (leftOfOneInBlockCut(node)) {
+        else if (inBlockCutsOnly(node)) {
           waitOnOwn(cutsOf(node), onAnotherAuthorsCard);
         } else wait(cutsOf(node));
         // Corrections derive values from elements, not from text runs.
@@ -4048,6 +4065,11 @@ export const resolveAuthoredWindows = (
         },
         ...(cuts.leftOf
           ? {
+              hasRight: (cut: string) => {
+                crossed = true;
+
+                return !!cuts.hasRight?.(cut);
+              },
               leftOf: (cut: string) => {
                 crossed = true;
 
