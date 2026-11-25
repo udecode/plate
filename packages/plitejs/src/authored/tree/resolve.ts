@@ -3085,7 +3085,7 @@ const resolveIn = (
         }
         waitOnOwn(
           pending({ [AUTHORED_MARKS_KEY]: formatted.kept }),
-          onAnotherCard
+          onAnotherAuthorsCard
         );
         // Unwrapping moves the join boundary of the block's first child and
         // of the block after it.
