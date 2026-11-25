@@ -9,8 +9,8 @@ set -euo pipefail
 
 SCRIPT="$0"
 ROOT="$(cd "${VERIFY_POTION:-$PWD}" && pwd)"
-if [ ! -f "$ROOT/wrangler.jsonc" ] || [ ! -f "$ROOT/src/routes/api/dev/agent-login.ts" ]; then
-  echo "$ROOT is not a Potion checkout on the Cloudflare stack (no wrangler.jsonc or src/routes/api/dev/agent-login.ts)" >&2
+if [ ! -f "$ROOT/wrangler.jsonc" ] || [ ! -f "$ROOT/src/server/auth/auth.ts" ]; then
+  echo "$ROOT is not a Potion checkout on the Cloudflare stack (no wrangler.jsonc or src/server/auth/auth.ts)" >&2
   exit 1
 fi
 cd "$ROOT"
@@ -125,24 +125,34 @@ doctor() {
   return "$ok"
 }
 
-# Signs a user in over HTTP and saves its session cookie in a curl jar.
-# Without a name it is the development Agent user, agent@potion.local, which
-# gets 13 template pages on first use. With a name it signs up a fresh email
-# user, who gets its own 13 pages. Prints the user, the jar and the pages.
+AGENT_EMAIL=agent@potion.local
+AGENT_PASSWORD=potion-local-agent
+
+auth_post() {
+  local base="$1" path="$2" jar="$3" body="$4"
+  curl -s -o /dev/null -w '%{http_code}' -c "$jar" -H 'content-type: application/json' \
+    -H "origin: $base" --data "$body" "$base/api/auth/$path"
+}
+
 login() {
   load
-  local base="http://127.0.0.1:$APP_PORT" name="${1:-}" jar slug
+  local base="http://127.0.0.1:$APP_PORT" name="${1:-}" jar slug status body
   if [ -z "$name" ]; then
     jar="$COOKIES/agent.txt"
-    curl -sf -o /dev/null -c "$jar" -X POST --form-string callbackUrl=/ "$base/api/dev/agent-login"
+    body="$(node -e 'console.log(JSON.stringify({email:process.argv[1],password:process.argv[2]}))' "$AGENT_EMAIL" "$AGENT_PASSWORD")"
+    status="$(auth_post "$base" sign-in/email "$jar" "$body")"
+    if [ "$status" = 401 ]; then
+      body="$(node -e 'console.log(JSON.stringify({email:process.argv[1],name:"Agent",password:process.argv[2]}))' "$AGENT_EMAIL" "$AGENT_PASSWORD")"
+      status="$(auth_post "$base" sign-up/email "$jar" "$body")"
+    fi
   else
     slug="verify-$(date +%s)-$RANDOM"
     jar="$COOKIES/$slug.txt"
     # The password is a throwaway: the cookie jar is the sign-in.
-    curl -sf -o /dev/null -c "$jar" -H 'content-type: application/json' -H "origin: $base" \
-      --data "$(node -e 'console.log(JSON.stringify({email:`${process.argv[1]}@example.test`,name:process.argv[2],password:require("crypto").randomBytes(18).toString("base64url")}))' "$slug" "$name")" \
-      "$base/api/auth/sign-up/email"
+    body="$(node -e 'console.log(JSON.stringify({email:`${process.argv[1]}@example.test`,name:process.argv[2],password:require("crypto").randomBytes(18).toString("base64url")}))' "$slug" "$name")"
+    status="$(auth_post "$base" sign-up/email "$jar" "$body")"
   fi
+  [ "$status" = 200 ] || { echo "sign-in returned HTTP $status; see $LOGS/vite.log" >&2; exit 1; }
   local session
   session="$(curl -sf -b "$jar" "$base/api/auth/get-session")"
   local user_id
