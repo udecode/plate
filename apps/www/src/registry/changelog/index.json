@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-25-field-name-conflicts",
+      "href": "/registry/changelog/2026-11-25-field-name-conflicts.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Warn on fields of one name that differ in settings or in answers",
+      "change": {
+        "type": "source",
+        "date": "2026-11-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["field"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-24-field-static-answers",
       "href": "/registry/changelog/2026-11-24-field-static-answers.json",
       "status": "draft",

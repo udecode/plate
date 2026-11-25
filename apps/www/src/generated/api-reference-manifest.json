@@ -13234,12 +13234,12 @@
         },
         "platejs/field:FieldProblem": {
           "aliases": [],
-          "documentation": "What a read finds wrong with a field. `missing-target`: no field holds the\nid its condition names. `unsupported-test`: the target's kind does not take\nthe condition's test. `invalid-value`: its value, default or options do not\nfit its kind, or its condition's value does not fit its test or the\ntarget's kind. `condition-loop`: its condition names a field whose chain of\nconditions leads back to it.",
+          "documentation": "What a read finds wrong with a field. `missing-target`: no field holds the\nid its condition names. `unsupported-test`: the target's kind does not take\nthe condition's test. `invalid-value`: its value, default or options do not\nfit its kind, or its condition's value does not fit its test or the\ntarget's kind. `condition-loop`: its condition names a field whose chain of\nconditions leads back to it. `name-conflict`: the fields of its role that\nshare its `name` differ in kind, in their options' values, or in condition,\nor their conditions match only through a name that has this problem or\nleads back to theirs. `answer-conflict`: the fields of its role that share\nits `name` hold different stored values, so an empty text and no value\ndiffer.",
           "entrypoint": "platejs/field",
           "kind": "type",
           "name": "FieldProblem",
           "runtime": false,
-          "signature": "type FieldProblem = 'condition-loop' | 'invalid-value' | 'missing-target' | 'unsupported-test';",
+          "signature": "type FieldProblem = 'answer-conflict' | 'condition-loop' | 'invalid-value' | 'missing-target' | 'name-conflict' | 'unsupported-test';",
           "source": null,
           "typeParameters": []
         },

@@ -17,8 +17,10 @@ import {
 import {
   claimsHistoryReplay,
   EditorRefusalError,
+  type ElementPropertyWrite,
   getActiveEditorUpdateId,
   getActiveEditorUpdateTags,
+  getEditorRuntimeOwner,
   getSnapshotVersion,
   readElementPropertyWrites,
   readRootEntries,
@@ -27,17 +29,23 @@ import {
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
+  carryFieldNames,
   conditionProblem,
+  dropFieldNames,
   FIELD_KINDS,
   fieldLinks,
   fieldProblems,
   fitsField,
+  holdsFieldNames,
+  indexFieldNames,
   isFieldCondition,
   isFieldKind,
   isFieldName,
   isFieldOptions,
   isFieldValue,
+  nameProblems,
   sharedFieldLinks,
+  sharedFieldNames,
   unfitSettings,
 } from './fieldRules.internal';
 
@@ -77,12 +85,19 @@ export type FieldCondition = Readonly<{
  * the condition's test. `invalid-value`: its value, default or options do not
  * fit its kind, or its condition's value does not fit its test or the
  * target's kind. `condition-loop`: its condition names a field whose chain of
- * conditions leads back to it.
+ * conditions leads back to it. `name-conflict`: the fields of its role that
+ * share its `name` differ in kind, in their options' values, or in condition,
+ * or their conditions match only through a name that has this problem or
+ * leads back to theirs. `answer-conflict`: the fields of its role that share
+ * its `name` hold different stored values, so an empty text and no value
+ * differ.
  */
 export type FieldProblem =
+  | 'answer-conflict'
   | 'condition-loop'
   | 'invalid-value'
   | 'missing-target'
+  | 'name-conflict'
   | 'unsupported-test';
 
 const fieldText = ({
@@ -356,6 +371,14 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
   ({ editor, schema: { properties, type }, store }) => {
     const isField = (node: Node): node is FieldElement =>
       ElementApi.isElement(node) && node.type === type;
+    const writesOnlyFieldValues = (
+      writes: readonly ElementPropertyWrite[] | null
+    ) =>
+      writes !== null &&
+      writes.every(
+        ({ element, modifications }) =>
+          isField(element) && modifications.every(({ key }) => key === 'value')
+      );
     let topStep: {
       mode: string | null | typeof UNKNOWN_FILL_MODE;
       version: number;
@@ -423,8 +446,25 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                     topStep = { mode, version: commit.version };
                   }
                 : undefined;
+              const from = getSnapshotVersion(editor);
+              const writesOnlyValues = holdsFieldNames(editor)
+                ? writesOnlyFieldValues(
+                    readElementPropertyWrites(editor, { before, commit })
+                  )
+                : undefined;
+              const settle =
+                writesOnlyValues === undefined
+                  ? publish
+                  : () => {
+                      publish?.();
+                      if (writesOnlyValues) {
+                        carryFieldNames(editor, from, commit.version);
+                      } else {
+                        dropFieldNames(editor, from);
+                      }
+                    };
 
-              if (role === null || collaboration) return publish;
+              if (role === null || collaboration) return settle;
               if (replaces) {
                 throw refuse(
                   `A fill as ${JSON.stringify(role)} cannot replace the document.`
@@ -454,7 +494,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                     )
                 )
               ) {
-                return publish;
+                return settle;
               }
 
               throw refuse(
@@ -510,13 +550,31 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
 
             return ElementApi.isElement(node) ? fieldsIn(node.children) : [];
           });
-        const listed = () => {
-          const roots = getActiveEditorUpdateId(reader)
+        const roots = () =>
+          getActiveEditorUpdateId(reader)
             ? readRootEntries(reader)
             : reader.read.roots();
+        const page = () => readViewPage(state) ?? state.children();
+        const drafted = () => {
+          if (!getActiveEditorUpdateId(reader)) return false;
+
+          const committed = getEditorRuntimeOwner(reader).read;
+          const drafts = roots();
+
+          return (
+            page() !== committed.children() ||
+            drafts.length !== committed.roots().length ||
+            drafts.some(({ root }) => state.root(root) !== committed.root(root))
+          );
+        };
+        const names = (nodes: () => readonly FieldElement[]) =>
+          drafted()
+            ? indexFieldNames(nodes())
+            : sharedFieldNames(reader, nodes);
+        const listed = () => {
           const nodes = [
-            readViewPage(state) ?? state.children(),
-            ...roots.map(({ root }) => state.root(root)),
+            page(),
+            ...roots().map(({ root }) => state.root(root)),
           ].flatMap(fieldsIn);
           const byId = new Map<string, FieldElement>();
           const repeated = new Set<string>();
@@ -550,13 +608,25 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
               applies: link.applies,
               fieldId,
               node,
-              problems: fieldProblems(node, link),
+              problems: [
+                ...fieldProblems(node, link),
+                ...(node.name === undefined
+                  ? []
+                  : nameProblems(
+                      node,
+                      names(() => listed().nodes),
+                      held
+                    )),
+              ],
             };
           },
           /** Every field of the document, in reading order. */
           fields: (): FieldRead[] => {
             const { lookup, nodes } = listed();
             const links = fieldLinks();
+            const index = nodes.some(({ name }) => name !== undefined)
+              ? names(() => nodes)
+              : undefined;
 
             return nodes.map((node) => {
               const link =
@@ -568,7 +638,10 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
                 applies: link.applies,
                 fieldId: node.fieldId,
                 node,
-                problems: fieldProblems(node, link),
+                problems: [
+                  ...fieldProblems(node, link),
+                  ...(index ? nameProblems(node, index, lookup) : []),
+                ],
               };
             });
           },

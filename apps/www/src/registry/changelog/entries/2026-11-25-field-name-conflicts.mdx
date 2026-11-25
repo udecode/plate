@@ -1,0 +1,14 @@
+---
+id: 2026-11-25-field-name-conflicts
+date: 2026-11-25
+status: draft
+kind: behavior
+summary: 'Warn on fields of one name that differ in settings or in answers'
+change: { 'type': 'source', 'date': '2026-11-25', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-25-field-name-conflicts","kind":"behavior","migrationNotes":["Update the copied `field` component, because `FieldProblem` gains `name-conflict` and `answer-conflict` and a `Record<FieldProblem, string>` needs both keys."]} -->
+
+- **`field`**: Show a warning on each chip of a name whose fields differ in kind, options or condition, and on each chip of a name whose fields hold different answers.

@@ -57,9 +57,12 @@ const TEST_LABELS: Record<FieldTest, string> = {
   'not-equals': 'is not',
 };
 const PROBLEMS: Record<FieldProblem, string> = {
+  'answer-conflict': 'The fields of its name hold different answers.',
   'condition-loop': 'Its condition leads back to this field.',
   'invalid-value': 'A value does not fit this kind of field.',
   'missing-target': 'The field its condition names is gone.',
+  'name-conflict':
+    'The fields of its name differ in kind, options or condition.',
   'unsupported-test': 'Its condition does not fit the field it names.',
 };
 

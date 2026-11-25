@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-25-field-name-conflicts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-25-field-name-conflicts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Warn on fields of one name that differ in settings or in answers",
+  "targets": [
+    {
+      "name": "field",
+      "files": ["apps/www/src/registry/components/editor/field.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-25-field-name-conflicts",
+      "kind": "behavior",
+      "summary": "Show a warning on each chip of a name whose fields differ in kind, options or condition, and on each chip of a name whose fields hold different answers.",
+      "details": [],
+      "migrationNotes": [
+        "Update the copied `field` component, because `FieldProblem` gains `name-conflict` and `answer-conflict` and a `Record<FieldProblem, string>` needs both keys."
+      ],
+      "targets": ["field"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-25",
+          "entry": "2026-11-25-field-name-conflicts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

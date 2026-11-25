@@ -374,3 +374,148 @@ export const sharedFieldLinks = (editor: RuntimeAnyEditor) => {
 
   return linksOf(owner, getSnapshotVersion(owner));
 };
+
+export const fieldNameWork = { walks: 0 };
+
+type NameIndex = Readonly<{
+  byRole: ReadonlyMap<string, ReadonlyMap<string, readonly string[]>>;
+  settingConflicts: Map<string, boolean>;
+}>;
+
+export const indexFieldNames = (fields: readonly FieldElement[]): NameIndex => {
+  fieldNameWork.walks += 1;
+
+  const byRole = new Map<string, Map<string, string[]>>();
+
+  for (const { fieldId, name, role } of fields) {
+    if (name === undefined) continue;
+
+    const names = byRole.get(role) ?? new Map<string, string[]>();
+    const ids = names.get(name);
+
+    byRole.set(role, names);
+    if (ids) ids.push(fieldId);
+    else names.set(name, [fieldId]);
+  }
+
+  return { byRole, settingConflicts: new Map() };
+};
+
+const nameIndexes = new WeakMap<
+  object,
+  Readonly<{ index: NameIndex; version?: number }>
+>();
+
+export const sharedFieldNames = (
+  editor: RuntimeAnyEditor,
+  fields: () => readonly FieldElement[]
+) => {
+  const shown = readShownDocument(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const key = shown ?? owner;
+  const version = shown ? undefined : getSnapshotVersion(owner);
+  const kept = nameIndexes.get(key);
+
+  if (kept && kept.version === version) return kept.index;
+
+  const index = indexFieldNames(fields());
+
+  nameIndexes.set(key, { index, version });
+
+  return index;
+};
+
+export const holdsFieldNames = (editor: RuntimeAnyEditor) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return nameIndexes.get(owner)?.version === getSnapshotVersion(owner);
+};
+
+export const carryFieldNames = (
+  editor: RuntimeAnyEditor,
+  from: number,
+  to: number
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const kept = nameIndexes.get(owner);
+
+  if (kept?.version === from) {
+    nameIndexes.set(owner, { index: kept.index, version: to });
+  }
+};
+
+export const dropFieldNames = (editor: RuntimeAnyEditor, from: number) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (nameIndexes.get(owner)?.version === from) nameIndexes.delete(owner);
+};
+
+const optionValues = ({ options = [] }: FieldElement) =>
+  new Set(options.map((option) => option.value));
+
+export const nameProblems = (
+  field: FieldElement,
+  index: NameIndex,
+  held: Held
+): FieldProblem[] => {
+  if (field.name === undefined) return [];
+
+  const members = (role: string, name: string) =>
+    (index.byRole.get(role)?.get(name) ?? []).flatMap((id) => held(id) ?? []);
+  const onConditionPath = new Set<string>();
+  const conflicts = (role: string, name: string): boolean => {
+    const key = JSON.stringify([role, name]);
+    const known = index.settingConflicts.get(key);
+
+    if (known !== undefined) return known;
+    if (onConditionPath.has(key)) return true;
+
+    onConditionPath.add(key);
+
+    const [first, ...rest] = members(role, name);
+    const conflict = rest.some((other) => !sameQuestion(first, other));
+
+    onConditionPath.delete(key);
+    index.settingConflicts.set(key, conflict);
+
+    return conflict;
+  };
+  const sameCondition = (
+    left: FieldCondition | undefined,
+    right: FieldCondition | undefined
+  ) => {
+    if (!left || !right) return left === right;
+    if (left.test !== right.test || !Object.is(left.value, right.value)) {
+      return false;
+    }
+    if (left.ref === right.ref) return true;
+
+    const [a, b] = [held(left.ref), held(right.ref)];
+
+    return (
+      a?.name !== undefined &&
+      a.name === b?.name &&
+      a.role === b.role &&
+      !conflicts(a.role, a.name)
+    );
+  };
+  const sameQuestion = (left: FieldElement, right: FieldElement) => {
+    const [a, b] = [optionValues(left), optionValues(right)];
+
+    return (
+      left.kind === right.kind &&
+      a.size === b.size &&
+      [...a].every((value) => b.has(value)) &&
+      sameCondition(left.condition, right.condition)
+    );
+  };
+  const own = members(field.role, field.name);
+  const problems: FieldProblem[] = [];
+
+  if (conflicts(field.role, field.name)) problems.push('name-conflict');
+  if (own.some(({ value }) => !Object.is(value, own[0].value))) {
+    problems.push('answer-conflict');
+  }
+
+  return problems;
+};
