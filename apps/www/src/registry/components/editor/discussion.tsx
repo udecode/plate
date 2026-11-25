@@ -129,10 +129,10 @@ const NO_GROUPS: readonly AuthoredChangeGroup[] = Object.freeze([]);
 const NO_THREADS: ReadonlyMap<string, readonly string[]> = new Map();
 
 const sameGroups = (
-  left: readonly AuthoredChangeGroup[] | null,
+  left: readonly AuthoredChangeGroup[],
   right: readonly AuthoredChangeGroup[]
 ) =>
-  left?.length === right.length &&
+  left.length === right.length &&
   left.every(
     (group, index) =>
       group.id === right[index]?.id && group.revision === right[index].revision
