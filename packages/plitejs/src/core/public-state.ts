@@ -264,6 +264,7 @@ import {
   admitEditorDocument,
   DOCUMENT_SETTLED_TAG,
   documentAdmissionPoint,
+  editorDocumentAdmission,
   onlyDocumentAdmission,
   withoutRepairOrphans,
 } from './document-admission';
@@ -317,7 +318,7 @@ import {
   getInternalEditorSchemaFromApi,
   type InternalEditorSchemaApi,
 } from './editor-schema';
-import { keepElementIds } from './element-id';
+import { keepElementIds, loadElementIds } from './element-id';
 import { getContentSlice } from './get-content-slice';
 import { getFragment } from './get-fragment';
 import {
@@ -15494,15 +15495,22 @@ export const initializeEditorSchemaSnapshot = (
       ? {}
       : { roots: snapshotInput.roots as Record<RootKey, Value> }),
   };
-  const fitted = representationSelection
-    ? getEditorSchema(editor).fitDocumentWithSelection(inputDocument, {
-        root: selectedRoot,
-        selection: representationSelection,
-      })
-    : {
-        document: getEditorSchema(editor).fitDocument(inputDocument),
-        selection: undefined,
-      };
+  const ids = loadElementIds(
+    getCompiledEditorSchema(editor),
+    inputDocument,
+    editorDocumentAdmission(editor)
+  );
+  const fit = () =>
+    representationSelection
+      ? getEditorSchema(editor).fitDocumentWithSelection(inputDocument, {
+          root: selectedRoot,
+          selection: representationSelection,
+        })
+      : {
+          document: getEditorSchema(editor).fitDocument(inputDocument),
+          selection: undefined,
+        };
+  const fitted = ids ? ids.withStandInIds(fit) : fit();
   const meta = deserializeSnapshotMeta(editor, fitted.document.meta);
   const document = withValueRecords(
     {
@@ -15518,7 +15526,7 @@ export const initializeEditorSchemaSnapshot = (
     )
   );
 
-  const admitted = admitEditorDocument(editor, document);
+  const admitted = admitEditorDocument(editor, document, ids);
 
   initializeEditorSchemaDocument(
     editor,

@@ -7,6 +7,8 @@ import type {
 import { getDefined } from '../internal/get-defined';
 import { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
+import type { JsonNode } from './change/tokens';
+import type { LoadElementIds } from './element-id';
 import { definePluginPoint } from './plugin-point';
 import {
   getCompiledEditorSchema,
@@ -63,6 +65,13 @@ export type DocumentAdmission = Readonly<{
     schema: CompiledEditorSchema,
     commit: DocumentSettleCommit | null
   ) => DocumentChange | null;
+  spareLines?: (
+    document: EditorDocumentValue,
+    schema: CompiledEditorSchema
+  ) => Readonly<{
+    lines: ReadonlyArray<Readonly<{ built: boolean; node: JsonNode }>>;
+    write: (nodes: readonly JsonNode[]) => Repaired;
+  }> | null;
 }>;
 
 /**
@@ -105,6 +114,10 @@ export type AdmittedDocument = EditorDocumentValue & {
 /** @internal */
 export const documentAdmissionPoint: PluginPoint<DocumentAdmission> =
   definePluginPoint('document.admission');
+
+/** @internal */
+export const editorDocumentAdmission = (editor: Editor) =>
+  onlyDocumentAdmission(getPluginContributions(editor, documentAdmissionPoint));
 
 /** @internal */
 export const onlyDocumentAdmission = (
@@ -174,9 +187,11 @@ type Repaired = Readonly<{
 export const repairLoadedDocument = (
   admission: DocumentAdmission | null,
   document: EditorDocumentValue,
-  schema: CompiledEditorSchema
+  schema: CompiledEditorSchema,
+  ids: LoadElementIds | null = null
 ) => {
   const writers: Array<(value: EditorDocumentValue) => Repaired | null> = [
+    ...(ids ? [ids.fill] : []),
     (value) => admission?.load(value, schema) ?? null,
     (value) => repairLoadedUniqueValues(value, schema),
     (value) => {
@@ -190,7 +205,8 @@ export const repairLoadedDocument = (
 
   for (let at = 0, quiet = 0; quiet < writers.length; at += 1) {
     const value: EditorDocumentValue = repaired?.value ?? document;
-    const next = getDefined(writers[at % writers.length])(value);
+    const writer = getDefined(writers[at % writers.length]);
+    const next = ids ? ids.withStandInIds(() => writer(value)) : writer(value);
 
     quiet += 1;
     if (!next) continue;
@@ -210,9 +226,10 @@ export const repairLoadedDocument = (
 export const admitDocument = (
   admission: DocumentAdmission | null,
   document: EditorDocumentValue,
-  schema: CompiledEditorSchema
+  schema: CompiledEditorSchema,
+  ids: LoadElementIds | null = null
 ): Readonly<{ change: DocumentChange; document: AdmittedDocument }> => {
-  const repaired = repairLoadedDocument(admission, document, schema);
+  const repaired = repairLoadedDocument(admission, document, schema, ids);
 
   if (!repaired) {
     return {
@@ -237,12 +254,12 @@ export const admitDocument = (
 /** @internal */
 export const admitEditorDocument = (
   editor: Editor,
-  document: EditorDocumentValue
+  document: EditorDocumentValue,
+  ids: LoadElementIds | null = null
 ) =>
   admitDocument(
-    onlyDocumentAdmission(
-      getPluginContributions(editor, documentAdmissionPoint)
-    ),
+    editorDocumentAdmission(editor),
     document,
-    getCompiledEditorSchema(editor)
+    getCompiledEditorSchema(editor),
+    ids
   );

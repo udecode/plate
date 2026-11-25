@@ -29,12 +29,12 @@ export const documentRootsOf = (document: EditorDocumentValue) => [
     .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)),
 ];
 
-const rootChildrenOf = (document: EditorDocumentValue, root: string) =>
+export const rootChildrenOf = (document: EditorDocumentValue, root: string) =>
   (root === MAIN
     ? document.children
     : (document.roots?.[root] ?? [])) as readonly JsonNode[];
 
-const visitElements = (
+export const visitElements = (
   nodes: readonly JsonNode[],
   visit: (node: JsonNode, path: readonly number[]) => void,
   prefix: readonly number[] = []

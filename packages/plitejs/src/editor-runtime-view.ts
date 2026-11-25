@@ -19,6 +19,7 @@ import { ContentSlice } from './core/content-slice';
 import {
   type AdmittedDocument,
   admitEditorDocument,
+  editorDocumentAdmission,
 } from './core/document-admission';
 import {
   EDITOR_DOCUMENT_FIELDS,
@@ -49,6 +50,7 @@ import {
   type ViewPolicyTarget,
   setEditorRuntime,
 } from './core/editor-runtime';
+import { loadElementIds } from './core/element-id';
 import { getSourcesForChange } from './core/listener-state';
 import { createEditorViewPluginApis, extendEditor } from './core/plugin';
 import {
@@ -1662,10 +1664,17 @@ export const createEditorViewRuntime = <
   >;
   const sourceRuntime = viewRuntimeOf(sourceEditor);
   const sourceView = sourceRuntime && VIEW_STATES.get(sourceRuntime);
-  const document = options.document
+  const viewInput =
+    options.document && readViewDocument(sourceEditor, options.document);
+  const document = viewInput
     ? admitEditorDocument(
         getEditorRuntimeOwner(sourceEditor),
-        readViewDocument(sourceEditor, options.document)
+        viewInput,
+        loadElementIds(
+          getCompiledEditorSchema(sourceEditor),
+          viewInput,
+          editorDocumentAdmission(getEditorRuntimeOwner(sourceEditor))
+        )
       ).document
     : sourceView?.document;
 

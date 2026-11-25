@@ -59,6 +59,7 @@ import {
   createEditorSchema,
   type InternalEditorSchemaApi,
 } from './editor-schema';
+import { loadElementIds } from './element-id';
 import {
   reportEditorLifecycleError,
   runEditorObserver,
@@ -2345,12 +2346,15 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
     if (loadsInitialValue(options)) {
       loadOpenedRecords(editor, mergedCandidate.schemaContributions.compiled);
       const loaded = getEditorDocumentValue(editor);
+      const { compiled } = mergedCandidate.schemaContributions;
+      const admission = onlyDocumentAdmission(
+        getRegistryContributions(mergedCandidate, documentAdmissionPoint)
+      );
       const repair = repairLoadedDocument(
-        onlyDocumentAdmission(
-          getRegistryContributions(mergedCandidate, documentAdmissionPoint)
-        ),
+        admission,
         loaded,
-        mergedCandidate.schemaContributions.compiled
+        compiled,
+        loadElementIds(compiled, loaded, admission)
       );
 
       return Object.freeze({
@@ -2398,6 +2402,20 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
             };
           })()
         : currentDocument;
+      const { compiled } = mergedCandidate.schemaContributions;
+      const admission = onlyDocumentAdmission(
+        getRegistryContributions(mergedCandidate, documentAdmissionPoint)
+      );
+      const ids = options.initializeDocument
+        ? loadElementIds(compiled, inputDocument, admission)
+        : null;
+      const fit = () =>
+        fitCandidatePublicationDocument(
+          editor,
+          schema,
+          currentDocument,
+          inputDocument
+        );
       const fitted = options.migrate
         ? classifyCandidatePublicationDocument(
             editor,
@@ -2405,12 +2423,9 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
             currentDocument,
             inputDocument
           )
-        : fitCandidatePublicationDocument(
-            editor,
-            schema,
-            currentDocument,
-            inputDocument
-          );
+        : ids
+          ? ids.withStandInIds(fit)
+          : fit();
 
       if (
         !options.initializeDocument &&
@@ -2425,11 +2440,10 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
       // A new schema can make the document's pending changes need what a
       // load repairs, such as spare blocks, even when its bytes still fit.
       const repair = repairLoadedDocument(
-        onlyDocumentAdmission(
-          getRegistryContributions(mergedCandidate, documentAdmissionPoint)
-        ),
+        admission,
         fitted.document,
-        mergedCandidate.schemaContributions.compiled
+        compiled,
+        ids
       );
 
       documentChange = repair

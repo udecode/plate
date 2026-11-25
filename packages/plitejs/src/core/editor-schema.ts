@@ -221,6 +221,27 @@ export const withoutGenerationOf = <T>(
   read: () => T
 ): T => (properties.size === 0 ? read() : withMask(properties, read));
 
+let draws: Readonly<{
+  descriptor: PropertyValueDescriptor;
+  draw: () => string;
+}> | null = null;
+
+/** @internal */
+export const withPropertyDraws = <T>(
+  descriptor: PropertyValueDescriptor,
+  draw: () => string,
+  read: () => T
+): T => {
+  const outer = draws;
+
+  draws = { descriptor, draw };
+  try {
+    return read();
+  } finally {
+    draws = outer;
+  }
+};
+
 /**
  * A `MissingPropertyError` from a generator's own schema build, such as
  * `schema.create`, fails the outer build instead of refusing it.
@@ -237,6 +258,7 @@ const generatePropertyValue = (
       'An export cannot generate a property value.'
     );
   }
+  if (draws?.descriptor === property.descriptor) return draws.draw();
 
   try {
     return property.descriptor.generate?.();

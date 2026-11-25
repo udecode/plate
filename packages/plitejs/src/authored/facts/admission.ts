@@ -67,6 +67,7 @@ import {
   claimSitesOf,
   NO_SPARE_WRITES,
   sparesFor,
+  spareLinesOf,
   storesSpares,
   withReadableStorage,
   withSpareWrites,
@@ -786,6 +787,7 @@ export const authoredAdmission: DocumentAdmission = {
       ledger ? ledger.shown : null
     );
   },
+  spareLines: spareLinesOf,
 };
 
 const NO_DECIDED: readonly string[] = [];

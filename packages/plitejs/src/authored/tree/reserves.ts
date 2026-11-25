@@ -1,6 +1,6 @@
 import {
   createInternalDocumentChange,
-  type DocumentChange,
+  DocumentChange,
   getInternalDocumentRootChange,
   valueRootIndex,
 } from '../../core/change/document-change';
@@ -10,7 +10,7 @@ import {
   RootChange,
   type RootChangeSection,
 } from '../../core/change/root-change';
-import type { JsonEditorValue } from '../../core/change/tokens';
+import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import type { ConstructionSlot } from '../../core/content-completion';
 import {
   createDetachedEditorSchema,
@@ -35,6 +35,11 @@ import {
   toCompiledTargetContext,
 } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
+import {
+  documentRootsOf,
+  rootChildrenOf,
+  visitElements,
+} from '../../core/unique-values';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Element } from '../../interfaces/element';
 import type { Path } from '../../interfaces/path';
@@ -48,11 +53,17 @@ import {
   standingClaimsOf,
   undecided,
 } from '../facts/facts';
-import { type ReserveRecord, RESERVES, reserveIdOf } from '../facts/records';
+import {
+  parseReserve,
+  type ReserveRecord,
+  RESERVES,
+  reserveIdOf,
+} from '../facts/records';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
   type AuthoredMember,
+  isAuthoredSetValued,
   type MarkBase,
   type ReserveMember,
   readAuthoredMarks,
@@ -815,6 +826,89 @@ function* removedElementHostsOf(
     if (host?.from === start && host.kind === 'element') yield host.path;
   }
 }
+
+export const spareLinesOf = (
+  document: EditorDocumentValue,
+  schema: CompiledEditorSchema
+) => {
+  if (!storesSpares(schema)) return null;
+
+  const sites: Array<SpareSite & { members: readonly ReserveMember[] }> = [];
+
+  for (const root of documentRootsOf(document)) {
+    visitElements(rootChildrenOf(document, root), (node, path) => {
+      const members = sparesIn(node);
+
+      if (members.length > 0) sites.push({ members, path, root });
+    });
+  }
+
+  const records = [
+    ...getRecordEntries(getValueRecords(document), RESERVES),
+  ].flatMap(([id, json]) => {
+    const record = parseReserve(id, json);
+
+    return record ? [{ id, record }] : [];
+  });
+  const spares = [
+    ...sites.flatMap(({ members }) => members),
+    ...records.map(({ record }) => record),
+  ];
+
+  if (spares.length === 0) return null;
+
+  return {
+    lines: spares.map(({ built, node }) => ({
+      built: built === true,
+      node: node as unknown as JsonNode,
+    })),
+    write: (nodes: readonly JsonNode[]) => {
+      const next = nodes.values();
+      const nodeOf = () => next.next().value as unknown as Element;
+      const containers = sites.flatMap(({ members, path, root }) => {
+        const filled = members.flatMap((member) => {
+          const node = nodeOf();
+
+          return node === member.node ? [] : [{ member, node }];
+        });
+
+        return filled.length === 0
+          ? []
+          : [
+              {
+                added: filled.map(({ member, node }) => ({ ...member, node })),
+                path,
+                replaced: filled.map(({ member }) => member),
+                root,
+              },
+            ];
+      });
+      const ops = new Map<string, string | null>();
+
+      for (const { id, record } of records) {
+        const node = nodeOf();
+
+        if (node === record.node) continue;
+        const filled = { ...record, node };
+
+        ops.set(id, null);
+        ops.set(reserveIdOf(filled), canonicalRecordJson(filled));
+      }
+
+      const value = withSpareWrites(document, {
+        containers,
+        records: ops.size === 0 ? NO_RECORD_OPS : new Map([[RESERVES, ops]]),
+      });
+
+      return {
+        change: DocumentChange.between(document, value, {
+          isSetValued: isAuthoredSetValued,
+        }),
+        value,
+      };
+    },
+  };
+};
 
 /**
  * The containers a recorded `change` touched, read in `indexes`, the

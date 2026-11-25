@@ -1,8 +1,22 @@
-import type { Editor } from '../interfaces/editor';
+import type { Editor, EditorDocumentValue } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
+import { valueRootIndex } from './change/document-change';
 import type { JsonRecord } from './change/json';
 import { isElementNode, type JsonNode } from './change/tokens';
+import type { DocumentAdmission } from './document-admission';
+import { withPropertyDraws } from './editor-schema';
 import { getCompiledEditorSchema } from './plugin-registry';
 import { canonicalRecordJson } from './record-store';
+import {
+  type CompiledEditorSchema,
+  uniquePropertiesOf,
+} from './schema-compiler';
+import {
+  documentRootsOf,
+  renameChange,
+  rootChildrenOf,
+  visitElements,
+} from './unique-values';
 
 export const storedElementIdOf = (node: JsonNode): string | undefined => {
   const id = isElementNode(node) ? node.id : undefined;
@@ -18,6 +32,146 @@ export const withoutStoredElementId = (
 
   return rest;
 };
+
+const visitRootElements = (
+  document: EditorDocumentValue,
+  visit: (node: JsonNode, root: string, path: readonly number[]) => void
+) => {
+  for (const root of documentRootsOf(document)) {
+    visitElements(rootChildrenOf(document, root), (node, path) =>
+      visit(node, root, path)
+    );
+  }
+};
+
+const withIdAt = (
+  node: JsonNode,
+  path: readonly number[],
+  id: string
+): JsonNode => {
+  const [at, ...rest] = path;
+
+  if (at === undefined || !isElementNode(node)) return { ...node, id };
+
+  const children = [...node.children];
+
+  children[at] = withIdAt(getDefined(children[at]), rest, id);
+
+  return { ...node, children };
+};
+
+export const loadElementIds = (
+  schema: CompiledEditorSchema,
+  incoming: EditorDocumentValue,
+  admission: DocumentAdmission | null
+) => {
+  if (!schema.everyElementHasId) return null;
+
+  const { descriptor } = getDefined(uniquePropertiesOf(schema).get('id'));
+  const reserved = new Set<string>();
+  const standIns = new Set<string>();
+  const sparesOf = (document: EditorDocumentValue) =>
+    admission?.spareLines?.(document, schema) ?? null;
+  let next = 0;
+  const reserve = (node: JsonNode) => {
+    const id = storedElementIdOf(node);
+
+    if (id !== undefined) reserved.add(id);
+  };
+  const drawStandIn = () => {
+    let standIn = `\u0000${standIns.size}`;
+
+    while (reserved.has(standIn)) standIn += '\u0000';
+    standIns.add(standIn);
+
+    return standIn;
+  };
+
+  visitRootElements(incoming, reserve);
+  for (const { node } of sparesOf(incoming)?.lines ?? []) {
+    visitElements([node], reserve);
+  }
+
+  return {
+    fill: (document: EditorDocumentValue) => {
+      const held = new Set<string>();
+      const lacks = (node: JsonNode, countsAsHolder: boolean) => {
+        const { id } = node;
+
+        if (
+          typeof id === 'string' &&
+          !standIns.has(id) &&
+          !(countsAsHolder && held.has(id))
+        ) {
+          if (countsAsHolder) held.add(id);
+          reserved.add(id);
+
+          return false;
+        }
+
+        return id === undefined || typeof id === 'string';
+      };
+      const fillId = () => {
+        while (reserved.has(`fill.${next}`)) next += 1;
+        const value = `fill.${next}`;
+
+        reserved.add(value);
+
+        return value;
+      };
+      const lacking: Array<{ path: readonly number[]; root: string }> = [];
+      const spares = sparesOf(document);
+      const hidden: Array<{ line: number; path: readonly number[] }> = [];
+
+      visitRootElements(document, (node, root, path) => {
+        if (lacks(node, true)) lacking.push({ path, root });
+      });
+      spares?.lines.forEach(({ built, node }, line) =>
+        visitElements([node], (element, path) => {
+          if (lacks(element, !built)) hidden.push({ line, path });
+        })
+      );
+
+      const renames = lacking.map((place) => ({ ...place, value: fillId() }));
+      const lines = spares?.lines.map(({ node }) => node) ?? [];
+
+      for (const { line, path } of hidden) {
+        lines[line] = withIdAt(
+          getDefined(lines[line]),
+          path.slice(1),
+          fillId()
+        );
+      }
+
+      let repaired = hidden.length > 0 ? getDefined(spares).write(lines) : null;
+
+      if (renames.length > 0) {
+        const spared = repaired?.value ?? document;
+        const indexOf = (root: string) => valueRootIndex(spared, root);
+        const change = renameChange(
+          renames.map(({ path, root, value }) => ({
+            from: indexOf(root).nodeRange(path).from,
+            key: 'id',
+            root,
+            value,
+          })),
+          indexOf
+        );
+
+        repaired = {
+          change: repaired ? repaired.change.compose(change) : change,
+          value: change.apply(spared),
+        };
+      }
+
+      return repaired;
+    },
+    withStandInIds: <T>(read: () => T) =>
+      withPropertyDraws(descriptor, drawStandIn, read),
+  };
+};
+
+export type LoadElementIds = NonNullable<ReturnType<typeof loadElementIds>>;
 
 type Pairs = Array<readonly [old: number, incoming: number]>;
 
