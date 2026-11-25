@@ -65,6 +65,7 @@ import {
   withoutGeneration,
 } from '../core/editor-schema';
 import { notifyObservers } from '../core/lifecycle-error';
+import { textLineRefusal } from '../core/mixed-lines';
 import { definePlugin } from '../core/plugin';
 import {
   getCompiledEditorSchema,
@@ -1538,6 +1539,7 @@ export const createAuthoredPlugin = (
         spareBlock,
         spareRoot,
       }),
+      textLineRefusal.of(true),
     ],
     api: ({ editor }) => ({
       setView: (view: AuthoredView) => {

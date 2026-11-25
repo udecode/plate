@@ -317,7 +317,11 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     createAt: (
       type: string,
       properties: Readonly<Record<string, unknown>> | undefined,
-      site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
+      site: Readonly<{
+        ancestors: readonly Element[];
+        children?: readonly Descendant[];
+        root: RootKey;
+      }>
     ) => Element;
     /**
      * `createDefaultChild`, except that a default with a required property
@@ -902,7 +906,8 @@ const toSchemaValidationLocation = (
   };
 };
 
-const canonicalizePropertyValue = (
+/** @internal */
+export const canonicalizePropertyValue = (
   owner: string,
   descriptor: PropertyValueDescriptor,
   value: unknown
@@ -2217,7 +2222,8 @@ export const createEditorSchema = <V extends Value = Value>(
     type: string,
     properties?: Readonly<Record<string, unknown>>,
     creating: ReadonlySet<string> = new Set(),
-    options: RuntimeTargetOptions = {}
+    options: RuntimeTargetOptions = {},
+    filled?: readonly Descendant[]
   ): Element => {
     const compiled = schema.elements.byType.get(type);
 
@@ -2335,7 +2341,9 @@ export const createEditorSchema = <V extends Value = Value>(
       root: options.root,
     };
 
-    if (compiled.content) {
+    if (filled) {
+      children.push(...filled);
+    } else if (compiled.content) {
       children.push(
         ...completeContent({
           children: [],
@@ -2424,7 +2432,8 @@ export const createEditorSchema = <V extends Value = Value>(
       type,
       properties,
       new Set(),
-      site
+      site,
+      site.children
     );
   };
 

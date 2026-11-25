@@ -73,6 +73,7 @@ import {
 import { toPublicRoot } from './public-root';
 import {
   getActiveDocumentChangeBuilder,
+  getCurrentSelection,
   getEditorUpdateRoot,
   getSetSite,
   peekImplicitTarget,
@@ -113,11 +114,14 @@ const resolveCommandRange = (
 const readCommandTarget = <TTarget extends NodeTarget>(
   state: CommandStateView,
   at: TTarget | undefined
-): TTarget | EditorSelection | null =>
-  at ??
-  (state.selection() === null
-    ? null
-    : peekImplicitTarget(getActiveCommandEditor()));
+): TTarget | EditorSelection | null => {
+  if (at !== undefined) return at;
+  if (state.selection() === null) return null;
+
+  const editor = getActiveCommandEditor();
+
+  return peekImplicitTarget(editor) ?? getCurrentSelection(editor);
+};
 
 const readLandingRange = (
   state: CommandStateView,

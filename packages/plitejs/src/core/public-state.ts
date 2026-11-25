@@ -1397,6 +1397,12 @@ export const getTransactionSnapshot = (editor: Editor) =>
 export const getUpdateStartSnapshot = (editor: Editor) =>
   TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(0)?.snapshot;
 
+/** @internal */
+export const isPluginReconfigurationStagedInUpdate = (editor: Editor) =>
+  TRANSACTION_SPEC_CONTEXTS.get(getEditorRuntimeOwner(editor))?.some(
+    ({ snapshot }) => snapshot.pluginReconfigurations.size > 0
+  ) ?? false;
+
 /**
  * Final semantic tags visible to the active command layer.
  *
@@ -12309,7 +12315,40 @@ export const peekImplicitTarget = (editor: Editor): Selection => {
     return cloneValue(snapshot.implicitTarget);
   }
 
-  return moveImplicitTarget(owner)?.target ?? getCurrentSelection(owner);
+  const moved = askImplicitTargetOnce(owner);
+
+  return moved ? cloneValue(moved.target) : getCurrentSelection(owner);
+};
+
+const TARGET_ANSWERS = new WeakMap<
+  object,
+  Readonly<{
+    moved: Readonly<{ target: Selection }> | null;
+    selection: Selection;
+    value: unknown;
+  }>
+>();
+
+const askImplicitTargetOnce = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const snapshot = getTransactionSnapshot(owner);
+  const selection = readCurrentSelection(owner);
+  const value = snapshot?.builder.value;
+  const answered = snapshot && TARGET_ANSWERS.get(snapshot);
+
+  if (
+    answered &&
+    answered.selection === selection &&
+    answered.value === value
+  ) {
+    return answered.moved;
+  }
+
+  const moved = moveImplicitTarget(owner);
+
+  if (snapshot) TARGET_ANSWERS.set(snapshot, { moved, selection, value });
+
+  return moved;
 };
 
 export const setActiveImplicitTarget = (editor: Editor, target: Selection) => {
@@ -12378,9 +12417,9 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
         }
 
         const target = profileCoreDuration('resolve-implicit-target', () => {
-          const moved = moveImplicitTarget(editor);
+          const moved = askImplicitTargetOnce(editor);
 
-          if (moved) setCurrentSelection(editor, moved.target);
+          if (moved) setCurrentSelection(editor, cloneValue(moved.target));
 
           return getCurrentSelection(editor);
         });

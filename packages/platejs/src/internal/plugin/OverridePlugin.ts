@@ -195,11 +195,17 @@ export const OverridePlugin = definePlugin('override', {}).extend(
             !state.selection.isAcrossBlocks()
           ) {
             const isAtStart = state.selection.isAtBlockStart();
+            const following = state.nodes.get(PathApi.next(blockPath))?.[0];
             const result = next();
 
             if (result === false) return false;
 
             return state.transaction.extend(result, (tx) => {
+              const splitInside =
+                tx.nodes.get(PathApi.next(blockPath))?.[0] === following;
+
+              if (splitInside) return;
+
               tx.blocks.reset({
                 at: isAtStart ? blockPath : PathApi.next(blockPath),
               });
