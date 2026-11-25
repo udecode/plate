@@ -1,6 +1,7 @@
 import type { NodeKey } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { profileCoreDuration } from '../profiling';
+import { alike } from '../stored-element-id';
 import { assertEditorJsonValue } from '../value-codec';
 import { countCoreWork } from '../work';
 import {
@@ -923,7 +924,7 @@ const sharedPlaceEdits = (
     ])
   );
   const blocks: SharedEdit[] = [];
-  const alike: SharedEdit[] = [];
+  const equalEdits: SharedEdit[] = [];
   let sameBlocks = false;
   let removes: boolean | undefined;
 
@@ -941,7 +942,7 @@ const sharedPlaceEdits = (
         sameSlice(insert, other.insert) &&
         netDepth(insert.tokens) === netDepth(document.slice(from, to).tokens)
       ) {
-        alike.push({ from, kind: 'same', merged: insert, to });
+        equalEdits.push({ from, kind: 'same', merged: insert, to });
       }
       continue;
     }
@@ -978,7 +979,7 @@ const sharedPlaceEdits = (
   if (blocks.length === 0) return null;
 
   const edits = new Map(
-    [...blocks, ...(sameBlocks ? alike : [])].map((edit) => [
+    [...blocks, ...(sameBlocks ? equalEdits : [])].map((edit) => [
       editKey(edit.from, edit.to),
       edit,
     ])
@@ -1894,11 +1895,11 @@ export const createStructurallyAlignedChanges = (
   const continuityScore = (source: JsonNode, target: JsonNode) => {
     if (isTextNode(source) !== isTextNode(target)) return 0;
     if (Object.is(source, target)) return 2_000_000_000;
-    if (jsonEqual(source, target)) return 1_000_000_000;
+    if (alike(source, target)) return 1_000_000_000;
 
     const sourceProperties = getProperties(source);
     const targetProperties = getProperties(target);
-    const propertiesEqual = jsonEqual(sourceProperties, targetProperties);
+    const propertiesEqual = alike(sourceProperties, targetProperties);
     const sourceType = sourceProperties.type;
     const targetType = targetProperties.type;
 
@@ -2010,7 +2011,7 @@ export const createStructurallyAlignedChanges = (
     // change, though it keeps its type.
     if (
       getProperties(source).type === getProperties(target).type &&
-      !jsonEqual(getProperties(source), getProperties(target)) &&
+      !alike(getProperties(source), getProperties(target)) &&
       !jsonEqual(source.children, target.children)
     ) {
       flatDiffRekeys = true;
@@ -2851,7 +2852,7 @@ const mergeStructuralRunByPosition = (
 
       while (
         length < limit &&
-        jsonEqual(beforeNodes[length], structuralNodes[length])
+        alike(beforeNodes[length], structuralNodes[length])
       ) {
         length += 1;
       }
@@ -2863,7 +2864,7 @@ const mergeStructuralRunByPosition = (
 
       while (
         length < limit &&
-        jsonEqual(beforeNodes.at(-1 - length), structuralNodes.at(-1 - length))
+        alike(beforeNodes.at(-1 - length), structuralNodes.at(-1 - length))
       ) {
         length += 1;
       }
@@ -2938,7 +2939,7 @@ const mergeStructuralRunByPosition = (
     for (let at = structuralNodes.length - 1; at >= lowest; at--) {
       tailMatches[at] =
         tailMatches[at + 1] &&
-        jsonEqual(beforeNodes[at + shift], structuralNodes[at]);
+        alike(beforeNodes[at + shift], structuralNodes[at]);
     }
 
     const candidates: number[] = [];
@@ -3063,7 +3064,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
   while (
     from < before.value.length &&
     from < afterStructural.value.length &&
-    jsonEqual(before.value[from], afterStructural.value[from])
+    alike(before.value[from], afterStructural.value[from])
   ) {
     from += 1;
   }
@@ -3073,10 +3074,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
   while (
     suffix < before.value.length - from &&
     suffix < afterStructural.value.length - from &&
-    jsonEqual(
-      before.value.at(-1 - suffix),
-      afterStructural.value.at(-1 - suffix)
-    )
+    alike(before.value.at(-1 - suffix), afterStructural.value.at(-1 - suffix))
   ) {
     suffix += 1;
   }
@@ -3100,7 +3098,7 @@ const mergeStructuralChangeAtStableSiblingRange = (
   ) {
     if (
       source.every((node, offset) =>
-        jsonEqual(node, afterConcurrent.value[index + offset])
+        alike(node, afterConcurrent.value[index + offset])
       )
     ) {
       if (match !== -1) return null;
@@ -3191,7 +3189,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     }
 
     const targets = afterNodes.filter(({ node }) =>
-      jsonEqual(node, candidate.node)
+      alike(node, candidate.node)
     );
 
     if (targets.length !== 1) continue;
@@ -3227,7 +3225,7 @@ const mergeNestedChangeThroughStructuralRelocation = (
     if (edited.length === 0 || (at !== end && index < siblings.length)) {
       continue;
     }
-    if (edited.some((node) => jsonEqual(node, candidate.node))) continue;
+    if (edited.some((node) => alike(node, candidate.node))) continue;
 
     const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);

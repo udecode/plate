@@ -1,7 +1,6 @@
 import type { Editor, EditorDocumentValue } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import { valueRootIndex } from './change/document-change';
-import type { JsonRecord } from './change/json';
 import { isElementNode, type JsonNode } from './change/tokens';
 import type { DocumentAdmission } from './document-admission';
 import { withPropertyDraws } from './editor-schema';
@@ -11,6 +10,7 @@ import {
   type CompiledEditorSchema,
   uniquePropertiesOf,
 } from './schema-compiler';
+import { storedElementIdOf } from './stored-element-id';
 import {
   documentRootsOf,
   renameChange,
@@ -18,21 +18,6 @@ import {
   visitElements,
 } from './unique-values';
 import { countCoreWork } from './work';
-
-export const storedElementIdOf = (node: JsonNode): string | undefined => {
-  const id = isElementNode(node) ? node.id : undefined;
-
-  return typeof id === 'string' ? id : undefined;
-};
-
-export const withoutStoredElementId = (
-  props: Readonly<JsonRecord>
-): Readonly<JsonRecord> => {
-  if (typeof props.id !== 'string') return props;
-  const { id: _id, ...rest } = props;
-
-  return rest;
-};
 
 const visitRootElements = (
   document: EditorDocumentValue,

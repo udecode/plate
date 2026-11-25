@@ -1,11 +1,11 @@
 import type { EditorDocumentRecords } from '../../interfaces/editor';
-import { withoutStoredElementId } from '../element-id';
 import {
   canonicalRecordJson,
   getValueRecords,
   type RecordOps,
   recordStoreToJson,
 } from '../record-store';
+import { withoutStoredElementId } from '../stored-element-id';
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
