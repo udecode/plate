@@ -47,6 +47,7 @@ import {
   valueRootIndex,
   withoutRetainedRecordSets,
 } from '../core/change/document-change';
+import { copyRoot } from '../core/change/lazy-root';
 import {
   type ChangeFacts,
   composeFacts,
@@ -513,10 +514,15 @@ const runHistoricUpdate = <V extends Value>(
 
 const toChangeValue = <V extends Value>(
   value: EditorDocumentValue<V>
-): { children: V; roots?: Record<string, V> } => ({
-  children: value.children,
-  ...(value.roots ? { roots: value.roots } : {}),
-});
+): { children: V; roots?: Record<string, V> } => {
+  const changeValue: Record<string, unknown> = value.roots
+    ? { roots: value.roots }
+    : {};
+
+  copyRoot(changeValue, 'children', value, 'children');
+
+  return changeValue as { children: V; roots?: Record<string, V> };
+};
 
 const consumeHistoryBatch = <V extends Value>(
   editor: Editor<V>,
