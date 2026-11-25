@@ -318,6 +318,31 @@ const recordRestore = (serial: string, patch: Partial<DeviceRestoreState>) => {
 
 /** The only input the lane can send: real touches through the device's input service. */
 export const createDeviceTouch = (serial: string) => ({
+  drag: async (
+    from: [number, number],
+    to: [number, number],
+    { holdMs = 0, moves = 10 } = {}
+  ) => {
+    const event = (action: string, [x, y]: [number, number]) =>
+      shell(
+        serial,
+        'input',
+        'motionevent',
+        action,
+        String(Math.round(x)),
+        String(Math.round(y))
+      );
+
+    event('DOWN', from);
+    await sleep(holdMs);
+    for (let move = 1; move <= moves; move += 1) {
+      event('MOVE', [
+        from[0] + ((to[0] - from[0]) * move) / moves,
+        from[1] + ((to[1] - from[1]) * move) / moves,
+      ]);
+    }
+    event('UP', to);
+  },
   move: (from: [number, number], to: [number, number], ms = 300) => {
     shell(
       serial,
@@ -367,8 +392,11 @@ export const waitForDevTools = async (port: number) => {
 
 // --no-rebind refuses a device port that another reverse already holds.
 export const reversePort = (serial: string, port: number) => {
-  adb(serial, ['reverse', '--no-rebind', `tcp:${port}`, `tcp:${port}`]);
-  recordRestore(serial, { reverses: [`tcp:${port}`] });
+  const reverse = `tcp:${port}`;
+
+  adb(serial, ['reverse', '--no-rebind', reverse, reverse]);
+  recordRestore(serial, { reverses: [reverse] });
+  return reverse;
 };
 
 export const recordOwnedTarget = (serial: string, targetId: string) => {
@@ -406,10 +434,10 @@ const removePorts = (
   }
 };
 
-/** Remove one run's forwards, reverses and targets while setup's state stays recorded. */
+/** Remove one run's forwards, reverses and closed targets while setup's state stays recorded. */
 export const releaseRunResources = (
   serial: string,
-  owned: { forwards: string[]; reverses: string[]; targets: string[] }
+  owned: { closedTargets: string[]; forwards: string[]; reverses: string[] }
 ) => {
   removePorts(serial, owned.forwards, owned.reverses);
 
@@ -422,7 +450,7 @@ export const releaseRunResources = (
       (value) => !owned.forwards.includes(value)
     ),
     ownedTargets: current.ownedTargets.filter(
-      (value) => !owned.targets.includes(value)
+      (value) => !owned.closedTargets.includes(value)
     ),
     reverses: current.reverses.filter(
       (value) => !owned.reverses.includes(value)
@@ -1123,9 +1151,9 @@ export const calibrateKeyboard = async (
     server.closeAllConnections();
     server.close();
     releaseRunResources(serial, {
+      closedTargets: [],
       forwards: [],
       reverses: reversed ? [`tcp:${port}`] : [],
-      targets: [],
     });
     releaseSerialLock(serial);
   }
