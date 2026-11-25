@@ -22,6 +22,7 @@ implicit; extra roots are stored on each point with `root`.
 - [Static methods](range#static-methods)
   - [Retrieval methods](range#retrieval-methods)
   - [Check methods](range#check-methods)
+- [Editor reads](range#editor-reads)
 
 ## Static methods
 
@@ -87,3 +88,19 @@ Check if a `range` is forward. This is the opposite of `RangeApi.isBackward` and
 #### `RangeApi.isRange(value: unknown) => value is Range`
 
 Check if a `value` implements the `Range` interface.
+
+## Editor reads
+
+`editor.read.ranges` reads ranges against the editor's document. It also holds
+`edges`, `fromEntries`, `get`, `project` and `unhang`.
+
+#### `editor.read.ranges.isEmpty(range: Range) => boolean`
+
+Check whether a `range` covers nothing a reader sees: no letter, and no void
+element, such as a mention, wholly inside it. A collapsed range is empty, and
+so is one that crosses only the edges of text leaves or containers. It reads
+only the range's own nodes.
+
+```typescript
+const covers = !editor.read.ranges.isEmpty(range);
+```
