@@ -602,6 +602,10 @@ export const createDeviceLane = ({
         const height = view?.height ?? innerHeight;
         const left = view?.offsetLeft ?? 0;
         const width = view?.width ?? innerWidth;
+        const widestLine =
+          Array.from(element.getClientRects()).toSorted(
+            (a, b) => b.width - a.width
+          )[0] ?? rect;
 
         return {
           visible:
@@ -609,8 +613,8 @@ export const createDeviceLane = ({
             rect.bottom <= top + height &&
             rect.left >= left &&
             rect.right <= left + width,
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2,
+          x: widestLine.left + widestLine.width / 2,
+          y: widestLine.top + widestLine.height / 2,
         };
       };
 
@@ -827,9 +831,11 @@ export const createDeviceLane = ({
           }
 
           const symbols = currentKeyMap(state.serial, language, 'symbols');
-          const symbol = SYMBOL_KEYS[character] ?? character;
+          const symbol = [SYMBOL_KEYS[character], character].find(
+            (name) => name && symbols.keys[name]
+          );
 
-          if (!symbols.keys[symbol]) {
+          if (!symbol) {
             throw new Error(
               `Gboard ${language} has no key for "${character}".`
             );

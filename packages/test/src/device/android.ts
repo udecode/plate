@@ -351,6 +351,20 @@ export const forwardDevTools = (serial: string) => {
   return port;
 };
 
+const devToolsAnswers = (port: number) =>
+  fetch(`http://127.0.0.1:${port}/json/version`).then(
+    (response) => response.ok,
+    () => false
+  );
+
+export const waitForDevTools = async (port: number) => {
+  for (let tries = 0; tries < 30; tries += 1) {
+    if (await devToolsAnswers(port)) return;
+    await sleep(1000);
+  }
+  throw new Error('Chrome did not open its DevTools socket within 30 s.');
+};
+
 // --no-rebind refuses a device port that another reverse already holds.
 export const reversePort = (serial: string, port: number) => {
   adb(serial, ['reverse', '--no-rebind', `tcp:${port}`, `tcp:${port}`]);
