@@ -246,8 +246,8 @@ const checkout = (sha) => {
 const runId = (sha, suffix) =>
   `${new Date().toISOString().slice(0, 16).replace(':', '')}-${sha.slice(0, 10)}${suffix ? `-${suffix}` : ''}`;
 
-// Runs check.mjs in the Local CI worktree through proof.mjs, so the hour's
-// limit and the core pool apply, and reads back which steps failed.
+const REPORT_EVERY_FAILURE = { PLITE_BROWSER_KEEP_GOING: '1' };
+
 const check = (logs, name, args, { full = false } = {}) => {
   const result = node(
     worktree,
@@ -265,6 +265,7 @@ const check = (logs, name, args, { full = false } = {}) => {
       ...args,
     ],
     {
+      ...REPORT_EVERY_FAILURE,
       PLATE_CHECK_RUN: name,
       ...(full ? { FAST_CHECK_SEED: 'random', TURBO_FORCE: 'true' } : {}),
     }
@@ -313,21 +314,25 @@ const commitInfo = (sha) => {
 };
 
 const shell = (logs, name, line) => {
-  const result = node(worktree, [
-    '.agents/pstack/proof.mjs',
-    '--dir',
-    logs,
-    '--name',
-    name,
-    '--cores',
-    '8',
-    '--',
-    'bash',
-    '-o',
-    'pipefail',
-    '-c',
-    line,
-  ]);
+  const result = node(
+    worktree,
+    [
+      '.agents/pstack/proof.mjs',
+      '--dir',
+      logs,
+      '--name',
+      name,
+      '--cores',
+      '8',
+      '--',
+      'bash',
+      '-o',
+      'pipefail',
+      '-c',
+      line,
+    ],
+    REPORT_EVERY_FAILURE
+  );
   return {
     log:
       /^log: (.+) exit=/mu.exec(result.stdout)?.[1] ??
