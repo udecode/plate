@@ -347,6 +347,53 @@ fails only at run time. After any edit to the device config, global setup or
 lane fixtures, run one case once before a full run:
 `PLATE_DEVICE_REPEAT=1 pnpm --filter plite exec playwright test --config playwright.device.config.ts bypass`.
 
+To try a page by hand on the emulator, an agent starts a drive session. The
+session holds the emulator's lock, so a device run started while it runs fails
+at once. Boot the emulator and start a www server of this checkout first, as
+above. Request the page once with `curl` before the drive, because a docs
+page's first compile can take over two minutes. Pages load from that server
+through `adb reverse`, because the emulator's network stays off. `--dir` takes
+the main checkout's run folder by absolute path, because a worktree's copy goes
+away with the worktree.
+
+```bash
+node tooling/device/device.mjs drive android start --www 3297 --dir <main checkout>/docs/plans/artifacts/<slug>/drive
+node tooling/device/device.mjs drive android open /docs/basic-blocks
+node tooling/device/device.mjs drive android record start
+node tooling/device/device.mjs drive android tap-at 0,0 9
+node tooling/device/device.mjs drive android use en
+node tooling/device/device.mjs drive android type hello
+node tooling/device/device.mjs drive android read
+node tooling/device/device.mjs drive android drag 540 1300 540 600
+node tooling/device/device.mjs drive android record stop
+node tooling/device/device.mjs drive android stop
+```
+
+`node tooling/device/device.mjs watch android` shows the emulator live. It
+takes no lock and runs until stopped, so start it in the background. Open the
+local address it prints in Claude's side browser. The view shows REC while a
+recording runs, and the last action with who sent it, the agent or the person
+at the view. A click there taps the emulator and a drag drags it. Keys typed
+there go through adb and skip Gboard, so they never count as proof.
+
+Each `drive` action prints its result as JSON and exits 1 when it fails:
+
+- `open <path>` opens a www page; `tap <text>` taps visible text.
+- `tap-at <path> <offset>` taps a text position, such as `0,0 9` for offset 9
+  of the first block's first text; `press-at <path> <offset> [ms]`
+  long-presses one.
+- `drag <x1> <y1> <x2> <y2> [holdMs]` drags in device pixels. While Gboard is
+  up it covers the screen below about y=1500, and a drag there glide-types.
+- `use <en|ja|ko|zh>` switches Gboard's language; `type <text>` types through
+  Gboard's keys; `key <backspace|enter|space|label>` taps one key.
+- `read` returns the editor's DOM text, model text and selection and whether
+  the keyboard shows; `shot` saves a screenshot only.
+- `record start` and `record stop` save an MP4 of the screen.
+
+Each action saves a screenshot and a line in `steps.jsonl` in the `--dir`
+folder. `stop`, or 30 minutes with no action, closes the session's tab and
+releases the lock.
+
 ## Base worktree for a HEAD comparison
 
 Run `node tooling/scripts/proof-worktree.mjs <path> <sha>`. When a long gate,
