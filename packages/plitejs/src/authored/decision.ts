@@ -23,8 +23,10 @@ import {
   getValueRecords,
   recordOpsBetween,
 } from '../core/record-store';
+import { partOf } from '../core/representation';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
 import { EditorSchemaValidationError } from '../core/schema-validation';
+import { countCoreWork } from '../core/work';
 import type { EditorDocumentValue } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
@@ -51,6 +53,7 @@ import {
   completedJoinKeys,
   resolveAuthoredValue,
   resolveAuthoredWindows,
+  windowPart,
 } from './tree/resolve';
 
 export type DecisionRequest = Readonly<{
@@ -131,14 +134,17 @@ export const spareGuardOver = (
 ): SpareGuard | null =>
   storesSpares(compiled)
     ? {
-        builds: (type, root) =>
+        stored: reserveNodesIn(getValueRecords(value)).length > 0,
+        typeBuildsGenerated: (type) =>
+          completionBuilds(compiled, schema.getElementContent(type)),
+        windowBuildsGenerated: (window) =>
           completionBuilds(
             compiled,
-            type === null
-              ? schema.getRootContent(root, value as EditorDocumentValue)
-              : schema.getElementContent(type)
+            partOf(
+              schema.getRootContent(window.root, value as EditorDocumentValue),
+              windowPart(window)
+            ) ?? null
           ),
-        stored: reserveNodesIn(getValueRecords(value)).length > 0,
       }
     : null;
 
@@ -502,6 +508,9 @@ export const decide = (
   let whole: ReturnType<typeof resolveAuthoredValue> | null = null;
 
   try {
+    for (const { from, to } of windows ?? []) {
+      countCoreWork('decisionBlocks', to - from);
+    }
     windowed =
       windows &&
       resolveAuthoredWindows(
@@ -512,10 +521,13 @@ export const decide = (
         resolveOptions
       );
     if (!windowed) {
-      coverStoredValues(resolveSchema.ownership, [
+      const blocks = [
         ...value.children,
         ...Object.values(value.roots ?? {}).flat(),
-      ]);
+      ];
+
+      countCoreWork('decisionBlocks', blocks.length);
+      coverStoredValues(resolveSchema.ownership, blocks);
       whole = resolveAuthoredValue(
         value,
         outcome,

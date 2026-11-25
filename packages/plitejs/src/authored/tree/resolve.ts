@@ -4016,6 +4016,11 @@ export type AuthoredWindow = Readonly<{
   to: number;
 }>;
 
+export const windowPart = ({ from }: AuthoredWindow): ListPart => ({
+  head: from === 0,
+  min: 0,
+});
+
 export const resolveAuthoredWindows = (
   value: JsonEditorValue,
   windows: readonly AuthoredWindow[],
@@ -4070,7 +4075,7 @@ export const resolveAuthoredWindows = (
               cutIndex,
               dependencies,
               facts,
-              part: { head: window.from === 0, min: 0 },
+              part: windowPart(window),
             }
           ),
         };

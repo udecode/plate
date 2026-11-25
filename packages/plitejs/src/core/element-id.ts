@@ -17,6 +17,7 @@ import {
   rootChildrenOf,
   visitElements,
 } from './unique-values';
+import { countCoreWork } from './work';
 
 export const storedElementIdOf = (node: JsonNode): string | undefined => {
   const id = isElementNode(node) ? node.id : undefined;
@@ -241,6 +242,7 @@ export const keepElementIds = <N extends JsonNode>(
     let key = keys.get(node);
 
     if (key === undefined) {
+      countCoreWork('pairingContentKeys');
       key = isElementNode(node)
         ? `${canonicalRecordJson(
             Object.fromEntries(
@@ -266,6 +268,7 @@ export const keepElementIds = <N extends JsonNode>(
       storedElementIdOf(node) === undefined ? [at] : []
     );
 
+    if (unpaired.length === 0) return [];
     old.forEach((node, at) => {
       const key = contentOf(node);
       const list = oldAt.get(key);

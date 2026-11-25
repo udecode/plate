@@ -68,6 +68,7 @@ export type CoreWork = {
   contenderVisits: number;
   /** Reads waiting on an incarnation a commit decided, which settlement reached. */
   decidedReads: number;
+  decisionBlocks: number;
   /** Values, waiting holders and links a settlement's group search visited. */
   groupHolderVisits: number;
   /** Owners a settlement tested for a pending mark to judge whether their root waits. */
@@ -137,6 +138,7 @@ export type CoreWork = {
   snapshotIndexes: number;
   identityClaimsExamined: number;
   identityPagesExamined: number;
+  pairingContentKeys: number;
   identityLocationsRepaired: number;
   identityDirectoryNodesCopied: number;
   identityMembershipsTouched: number;
@@ -270,6 +272,7 @@ export const coreWork: CoreWork = {
   heldBlocks: 0,
   contenderVisits: 0,
   decidedReads: 0,
+  decisionBlocks: 0,
   groupHolderVisits: 0,
   ownerChecks: 0,
   rootJudgments: 0,
@@ -304,6 +307,7 @@ export const coreWork: CoreWork = {
   snapshotIndexes: 0,
   identityClaimsExamined: 0,
   identityPagesExamined: 0,
+  pairingContentKeys: 0,
   identityLocationsRepaired: 0,
   identityDirectoryNodesCopied: 0,
   identityMembershipsTouched: 0,

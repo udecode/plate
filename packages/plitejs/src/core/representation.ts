@@ -281,7 +281,8 @@ export const completeChildrenAt = (
   };
 };
 
-const partOf = (
+/** @internal */
+export const partOf = (
   content: CompiledSchemaContentProgram | null | undefined,
   part: ListPart | undefined
 ) => {
