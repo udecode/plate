@@ -24,3 +24,11 @@ const [start, end] = RangeApi.edges(range);
 判断是否完整包含另一个范围。
 
 精确节点选择不是单一范围；读取[选区 API](/docs/api/selection)中的节点与范围集合。
+
+## 编辑器读取
+
+`editor.read.ranges.isEmpty(range)` 判断范围是否不覆盖读者可见的内容：其中没有字母，也没有完整位于其中的 void 元素，例如提及。折叠的范围为空，只跨过文本叶子或容器边缘的范围也为空。它只读取范围自身的节点。
+
+```ts
+const covers = !editor.read.ranges.isEmpty(range);
+```

@@ -29,6 +29,21 @@ const target = editor.anchor(selection, {
 - `"nearest"` resolves to the nearest valid location. Saved undo and redo
   restore the exact value recorded on each side of the history batch.
 
+A `"nearest"` range whose text is deleted still spans the place where the text
+was. [`editor.read.ranges.isEmpty`](/docs/api/range#editor-reads)
+tells whether it still covers anything, and undo brings the text back inside it.
+
+When a drag, or a paste that directly follows its cut, moves all of a
+`"nearest"` range's text within one root, the range moves with the text, and
+undo and redo move it back and forth. When the gesture moves part of the text,
+the range keeps the part that stays, and letters the gesture brings from
+outside the range never join it. A drop that rebuilds the block holding that
+part maps the range by position instead. A move recorded in a view that
+proposes changes keeps the range on the struck original until the move is
+decided. A copy, a second paste, a paste without formatting, a paste after
+another edit or into another editor or root, and an editor bound to Yjs map
+the range by position.
+
 Paths and points accept `"backward"` or `"forward"` association. Ranges also
 accept `"inward"` and `"outward"`. Ranges default to `"inward"`, so text inserted at either edge stays outside the anchored span; paths and points default to `"forward"`. Pass `root` for a rootless value that belongs
 to a named document root.
