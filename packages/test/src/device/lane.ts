@@ -517,66 +517,92 @@ export const createDeviceLane = ({
           ),
         ].find(renderedHere);
 
-        if (!host) return null;
+        const block = host?.closest('[data-editor-node="element"]');
 
-        const view = window.visualViewport;
-        const box = host.getBoundingClientRect();
-        const top = view?.offsetTop ?? 0;
+        if (!host || !block) return null;
 
-        if (box.top < top || box.bottom > top + (view?.height ?? innerHeight)) {
+        const measure = () => {
+          if (textTarget === 'past-end') {
+            const contents = document.createRange();
+
+            contents.selectNodeContents(host);
+
+            const line = [...contents.getClientRects()].at(-1);
+
+            if (!line) return null;
+
+            const { right } = block.getBoundingClientRect();
+
+            if (right - line.right < 16) {
+              throw new Error(
+                `The text at ${textPath.join(',')} fills its line.`
+              );
+            }
+            return {
+              x: (line.right + right) / 2,
+              y: line.top + line.height / 2,
+            };
+          }
+
+          const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+          let remaining = textTarget;
+          let node = walker.nextNode() as Text | null;
+
+          while (node && remaining > node.data.length) {
+            remaining -= node.data.length;
+            node = walker.nextNode() as Text | null;
+          }
+
+          if (!node || node.data.length === 0) {
+            const rect = host.getBoundingClientRect();
+            return { x: rect.left + 2, y: rect.top + rect.height / 2 };
+          }
+
+          const range = document.createRange();
+
+          if (remaining === 0) {
+            range.setStart(node, 0);
+            range.setEnd(node, 1);
+            const rect = range.getBoundingClientRect();
+            return { x: rect.left + 1, y: rect.top + rect.height / 2 };
+          }
+
+          range.setStart(node, remaining - 1);
+          range.setEnd(node, remaining);
+          const rect = range.getBoundingClientRect();
+          return { x: rect.right - 1, y: rect.top + rect.height / 2 };
+        };
+        const coveredBy = (point: { x: number; y: number }) => {
+          const view = window.visualViewport;
+          const top = view?.offsetTop ?? 0;
+
+          if (point.y < top || point.y > top + (view?.height ?? innerHeight)) {
+            return 'the edge of the visual viewport';
+          }
+
+          const hit = document.elementFromPoint(point.x, point.y);
+
+          if (block.contains(hit)) return null;
+          return hit ? hit.outerHTML.slice(0, 120) : 'nothing';
+        };
+        let point = measure();
+
+        if (point && coveredBy(point)) {
           host.scrollIntoView({ block: 'center' });
           await new Promise((resolveScroll) => {
             setTimeout(resolveScroll, 400);
           });
+          point = measure();
         }
 
-        if (textTarget === 'past-end') {
-          const contents = document.createRange();
+        const covered = point && coveredBy(point);
 
-          contents.selectNodeContents(host);
-
-          const line = [...contents.getClientRects()].at(-1);
-          const block = host.closest('[data-editor-node="element"]');
-
-          if (!line || !block) return null;
-
-          const { right } = block.getBoundingClientRect();
-
-          if (right - line.right < 16) {
-            throw new Error(
-              `The text at ${textPath.join(',')} fills its line.`
-            );
-          }
-          return { x: (line.right + right) / 2, y: line.top + line.height / 2 };
+        if (covered) {
+          throw new Error(
+            `The text at ${textPath.join(',')} is under ${covered}.`
+          );
         }
-
-        const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
-        let remaining = textTarget;
-        let node = walker.nextNode() as Text | null;
-
-        while (node && remaining > node.data.length) {
-          remaining -= node.data.length;
-          node = walker.nextNode() as Text | null;
-        }
-
-        if (!node || node.data.length === 0) {
-          const rect = host.getBoundingClientRect();
-          return { x: rect.left + 2, y: rect.top + rect.height / 2 };
-        }
-
-        const range = document.createRange();
-
-        if (remaining === 0) {
-          range.setStart(node, 0);
-          range.setEnd(node, 1);
-          const rect = range.getBoundingClientRect();
-          return { x: rect.left + 1, y: rect.top + rect.height / 2 };
-        }
-
-        range.setStart(node, remaining - 1);
-        range.setEnd(node, remaining);
-        const rect = range.getBoundingClientRect();
-        return { x: rect.right - 1, y: rect.top + rect.height / 2 };
+        return point;
       },
       { path, target }
     );
@@ -606,19 +632,22 @@ export const createDeviceLane = ({
           Array.from(element.getClientRects()).toSorted(
             (a, b) => b.width - a.width
           )[0] ?? rect;
+        const x = widestLine.left + widestLine.width / 2;
+        const y = widestLine.top + widestLine.height / 2;
 
         return {
-          visible:
+          reachable:
             rect.top >= top &&
             rect.bottom <= top + height &&
             rect.left >= left &&
-            rect.right <= left + width,
-          x: widestLine.left + widestLine.width / 2,
-          y: widestLine.top + widestLine.height / 2,
+            rect.right <= left + width &&
+            element.contains(document.elementFromPoint(x, y)),
+          x,
+          y,
         };
       };
 
-      if (!measure().visible) {
+      if (!measure().reachable) {
         element.scrollIntoView({ block: 'center', inline: 'nearest' });
         await new Promise((resolveScroll) => {
           setTimeout(resolveScroll, 400);
@@ -628,7 +657,7 @@ export const createDeviceLane = ({
       return measure();
     });
 
-    if (!center.visible) throw new Error(`Nothing visible to ${label}.`);
+    if (!center.reachable) throw new Error(`No touch reaches ${label}.`);
     await contentTouch(label, center, (screen) =>
       touch.tap(screen.x, screen.y)
     );
