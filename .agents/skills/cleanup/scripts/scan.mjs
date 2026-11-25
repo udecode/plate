@@ -1145,7 +1145,8 @@ function main(argv) {
     return at === -1 ? undefined : argv[at + 1];
   };
   if (argv.includes('--landed')) {
-    const [verdict, reason] = landed({ worktree: resolve(value('--landed')) });
+    const target = value('--landed');
+    const [verdict, reason] = landed({ worktree: resolve(target && !target.startsWith('--') ? target : process.cwd()) });
     console.log(`${verdict.toUpperCase()}  ${reason}`);
     return verdict === 'safe' ? 0 : 1;
   }

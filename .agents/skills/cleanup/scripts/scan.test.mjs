@@ -421,6 +421,7 @@ test('a server holding a cache deep inside a worktree keeps it', async (t) => {
 test('--landed passes for a worktree whose changes the checkout holds and fails for one with a unique ignored file', () => {
   const f = fixture();
   assert.equal(spawnSync(process.execPath, [SCAN, '--landed', f.landed]).status, 0);
+  assert.equal(spawnSync(process.execPath, [SCAN, '--landed'], { cwd: f.landed }).status, 0);
   writeFileSync(join(f.landed, '.env.local'), 'ONLY_HERE=1\n');
   assert.equal(spawnSync(process.execPath, [SCAN, '--landed', f.landed]).status, 1);
 });
