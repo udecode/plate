@@ -2,10 +2,10 @@
 // Installed by the sync-pstack skill.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { createHash, randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { constants, homedir, tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
@@ -28,6 +28,9 @@ const VALUE_FLAGS = new Map([
   ['--chrome-profile', 'chromeProfile'],
   ['--prompt-file', 'promptFile'],
   ['--prompt', 'prompt'],
+  ['--colead', 'colead'],
+  ['--conversation', 'conversation'],
+  ['--stream', 'stream'],
 ]);
 
 // Each child runs in its own process group, which outlives this process, so
@@ -170,6 +173,47 @@ const agyAnswer = (stdout) => {
   }
   return '';
 };
+const agyConversation = (stdout) => {
+  for (const line of stdout.split('\n')) {
+    try {
+      const event = JSON.parse(line);
+      if (event.event === 'init') return event.conversation_id ?? null;
+    } catch {}
+  }
+  return null;
+};
+
+const COLEAD_TIMEOUT_SECONDS = 3300;
+const coleadBrief = (worktree, prompt) =>
+  `You are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a base control the brief asks for. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours.\n\n${prompt}\n\nPut your whole answer in your final message, and name each file you changed.`;
+const gitLines = (dir, args) => {
+  const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
+  return run.status === 0 ? run.stdout.trim().split('\n') : null;
+};
+const coleadRefusal = (worktree) => {
+  const [top, gitDir, common] = gitLines(worktree, ['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-dir', '--git-common-dir']) ?? [];
+  if (!top) return `${worktree} is not a git checkout`;
+  if (realPath(top) !== realPath(worktree)) return `give --colead the worktree's root, ${top}`;
+  if (gitDir === common) return `${worktree} is a main checkout, and a co-lead writes only a linked worktree`;
+  return null;
+};
+const checkoutState = (dir) => {
+  const hash = createHash('sha256');
+  for (const args of [['status', '--porcelain'], ['diff', 'HEAD', '--binary']]) hash.update(spawnSync('git', ['-C', dir, ...args], { maxBuffer: 1 << 30 }).stdout ?? '');
+  return hash.digest('hex');
+};
+const withoutPushOrGitHub = (env) => {
+  const guard = mkdtempSync(join(tmpdir(), 'pstack-colead-'));
+  mkdirSync(join(guard, 'gh'));
+  mkdirSync(join(guard, 'hooks'));
+  writeFileSync(join(guard, 'hooks/pre-push'), '#!/bin/sh\necho "a co-lead never pushes" >&2\nexit 1\n', { mode: 0o755 });
+  for (const name of ['GH_TOKEN', 'GITHUB_TOKEN', 'GH_ENTERPRISE_TOKEN', 'GITHUB_ENTERPRISE_TOKEN']) delete env[name];
+  const count = Number(env.GIT_CONFIG_COUNT ?? 0);
+  const config = [['core.hooksPath', join(guard, 'hooks')], ['url.pstack-colead-no-push:.pushInsteadOf', '']];
+  config.forEach(([key, value], i) => Object.assign(env, { [`GIT_CONFIG_KEY_${count + i}`]: key, [`GIT_CONFIG_VALUE_${count + i}`]: value }));
+  Object.assign(env, { GH_CONFIG_DIR: join(guard, 'gh'), GIT_CONFIG_COUNT: String(count + config.length) });
+  return guard;
+};
 
 export const onStop = (cleanup) => {
   cleanups.add(cleanup);
@@ -180,18 +224,17 @@ export const onStop = (cleanup) => {
 // as more prompt, so stdin is closed and the answer comes only from that file.
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
-// Every run but --bypass sets PSTACK_READ_ONLY=1, so setup.mjs skips its writes there; another
-// project hook, such as a Stop hook that stages files, would still write from a read-only run.
-export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
+export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout, idle = IDLE_SECONDS, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false, colead, conversation, stream } = {}) {
   const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
-  const scratch = reach || runtime === 'agy';
-  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : cwd;
+  if (colead) timeout ??= COLEAD_TIMEOUT_SECONDS;
+  const scratch = reach || (runtime === 'agy' && !colead);
+  const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : (colead ?? cwd);
   // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
   if (reach) prompt = scratchBrief(cwd, 'Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool.', prompt);
-  if (runtime === 'agy') prompt = scratchBrief(cwd, "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer. Never start or drive a browser, through Playwright, your browser tools or any other tool.", prompt);
+  if (runtime === 'agy') prompt = colead ? coleadBrief(colead, prompt) : scratchBrief(cwd, "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer. Never start or drive a browser, through Playwright, your browser tools or any other tool.", prompt);
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -207,7 +250,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     runtime === 'claude'
       ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), ...readDirs.flatMap((dir) => ['--add-dir', dir]), ...(offline ? ['--disallowed-tools', 'WebFetch,WebSearch', '--strict-mcp-config'] : []), '--permission-mode', 'plan', '--', prompt]]
       : runtime === 'agy'
-      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, '--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), '--sandbox', '--output-format', 'stream-json']]
+      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, ...(colead ? [...(conversation ? ['--conversation', conversation] : []), '--dangerously-skip-permissions'] : ['--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), '--sandbox']), '--output-format', 'stream-json']]
       : [
           'codex',
           [
@@ -227,8 +270,12 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         ];
   // A Codex Desktop parent exports its permission profile, which outranks --sandbox in a run that loads the user's config.
   const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, PSTACK_READ_ONLY: ___, ...env } = process.env;
-  if (!bypass) env.PSTACK_READ_ONLY = '1';
+  if (!bypass && !colead) env.PSTACK_READ_ONLY = '1';
   env[SEAT_MARK] = sessionId;
+  const guard = colead ? withoutPushOrGitHub(env) : null;
+  if (guard) folders.add(guard);
+  const mainCheckout = colead ? dirname(gitLines(colead, ['rev-parse', '--path-format=absolute', '--git-common-dir'])[0]) : null;
+  const mainBefore = mainCheckout && checkoutState(mainCheckout);
   // Codex resolves a relative CODEX_HOME against its own working directory.
   const codexHome = resolve(runCwd, env.CODEX_HOME || join(homedir(), '.codex'));
   return new Promise((resolve) => {
@@ -242,6 +289,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       for (const timer of timers) clearTimeout(timer);
       removeFolder(answerDir);
       if (scratch) removeFolder(runCwd);
+      if (guard) removeFolder(guard);
       resolve(answer);
     };
     const startedAt = new Date();
@@ -302,17 +350,20 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       }
       try {
         if (computerUse) writeFileSync(computerUse.events, stdout);
+        if (stream) writeFileSync(stream, stdout);
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : runtime === 'agy' ? agyAnswer(stdout) : stdout).trim();
         const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
-        const ok = code === 0 && text && !late && !filtered;
+        const touched = mainCheckout && checkoutState(mainCheckout) !== mainBefore;
+        const ok = code === 0 && text && !late && !filtered && !touched;
         const codex = runtime === 'codex' && !ok ? codexFailure(stdout, stderr, codexHome, startedAt) : null;
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
         const detail = codex?.message ?? (stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n');
-        const failure = `${late || (code === 0 ? 'no answer' : `exit ${code ?? signal}`)}: ${detail}`;
+        const failure = touched ? `the co-lead run changed the main checkout ${mainCheckout}; check it before using this answer:\n\n${text}` : `${late || (code === 0 ? 'no answer' : `exit ${code ?? signal}`)}: ${detail}`;
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
-        done(ok ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(codex?.kind === 'usage_limit_exceeded' && { limited: true }), ...(filtered && { refused: 'safety' }) });
+        const resumable = colead ? { conversation: agyConversation(stdout) ?? conversation } : {};
+        done(ok ? { runtime, ok: true, text, seat, ...resumable } : { runtime, ok: false, text: failure, seat, ...resumable, ...(codex?.kind === 'cyber_policy' && { refused: 'security' }), ...(codex?.kind === 'usage_limit_exceeded' && { limited: true }), ...(filtered && { refused: 'safety' }) });
       } catch (error) {
         done({ runtime, ok: false, text: error.message });
       }
@@ -344,11 +395,12 @@ async function main(argv) {
     else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
     else positional.push(arg);
   }
-  const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
+  const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile, conversation, stream } = values;
+  const colead = values.colead && realPath(resolve(values.colead));
   const sources = [...positional, values.prompt, promptFile].filter((source) => source !== undefined);
   let prompt = sources[0] ?? '';
   const timeout = values.timeout === undefined ? undefined : Number(values.timeout);
-  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude|agy] [--model <model>] [--effort <level>] [--timeout <seconds>] [--reach | --bypass | --computer-use <events file> --chrome-profile <name> | --to agy --colead <worktree> [--conversation <id>] [--stream <file>]] (--prompt-file <path> | --prompt <prompt> | <prompt>)';
   if (help) {
     console.info(usage);
     return 0;
@@ -374,6 +426,23 @@ async function main(argv) {
     console.error(`--ignore-user-config and --computer-use conflict\n${usage}`);
     return 2;
   }
+  if ((conversation || stream) && !colead) {
+    console.error(`--conversation and --stream go with --colead\n${usage}`);
+    return 2;
+  }
+  if (colead && (to !== 'agy' || bypass || reach || isolated || events)) {
+    console.error(`--colead runs only --to agy, without --bypass, --reach, --ignore-user-config or --computer-use\n${usage}`);
+    return 2;
+  }
+  if (conversation && !new RegExp(`^${UUID}$`, 'u').test(conversation)) {
+    console.error(`--conversation takes the id an earlier co-lead run printed\n${usage}`);
+    return 2;
+  }
+  const coleadRefused = colead && coleadRefusal(colead);
+  if (coleadRefused) {
+    console.error(`refusing the co-lead: ${coleadRefused}\n${usage}`);
+    return 2;
+  }
   if (sources.length > 1) {
     console.error(`give one prompt: a positional prompt, --prompt or --prompt-file\n${usage}`);
     return 2;
@@ -387,10 +456,11 @@ async function main(argv) {
     console.error(`--computer-use and --chrome-profile go together, and only --to codex\n${usage}`);
     return 2;
   }
-  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile } });
+  const answer = await ask(to, prompt, { timeout, model, effort, bypass, reach, computerUse: events && { events, chromeProfile }, colead, conversation, stream: stream && resolve(stream) });
   (answer.ok ? console.info : console.error)(answer.text);
   if (answer.refused) console.error(`refused: ${answer.refused}`);
   if (answer.seat) console.error(`seat: ${answer.seat}`);
+  if (answer.conversation) console.error(`conversation: ${answer.conversation}`);
   return answer.ok ? 0 : 1;
 }
 
