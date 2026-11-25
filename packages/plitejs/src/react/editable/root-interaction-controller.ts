@@ -26,9 +26,11 @@ import {
 } from '../../core/view-carets';
 import { isDOMNode } from '../../dom';
 import {
+  type DOMGeometryPoint,
   type DOMPhase,
   type DOMPhaseScheduler,
   type DOMPhaseTiming,
+  caretShowsPointOffTextFlowCharacters,
   getTextFlowPointAtCoordinates,
   resolveDOMTargetView,
 } from '../../dom/internal';
@@ -137,6 +139,11 @@ export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selectio
 type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
   '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"]';
+
+const isInlineElementTextFlowHost = (host: HTMLElement) =>
+  host
+    .closest('[data-editor-node="element"]')
+    ?.matches('[data-editor-inline="true"]') === true;
 
 export type RootInteractionEditor = ReactRuntimeEditor &
   PliteFocusableEditor & {
@@ -904,10 +911,12 @@ const resolveCoordinatePlacementTarget = ({
   editor,
   event,
   placement,
+  textFlowPressPoint,
 }: {
   editor: RootInteractionEditor;
   event: MouseEvent<HTMLElement>;
   placement: NonNullable<PliteStringCoordinatePlacement>;
+  textFlowPressPoint?: DOMGeometryPoint | null;
 }) => {
   const textFlowHost =
     placement.offset == null
@@ -915,13 +924,15 @@ const resolveCoordinatePlacementTarget = ({
           '[data-editor-text-flow-host="true"]'
         )
       : null;
-  const textFlowPoint = textFlowHost
-    ? getTextFlowPointAtCoordinates({
-        host: textFlowHost,
-        x: event.clientX,
-        y: event.clientY,
-      })
-    : null;
+  const textFlowPoint =
+    textFlowPressPoint ??
+    (textFlowHost
+      ? getTextFlowPointAtCoordinates({
+          host: textFlowHost,
+          x: event.clientX,
+          y: event.clientY,
+        })
+      : null);
   const textFlowCaret = textFlowPoint
     ? editor.api.dom.resolvePoint([textFlowPoint[0], textFlowPoint[1]], {
         exactMatch: false,
@@ -2063,7 +2074,34 @@ export const useRootInteractionController = ({
             : undefined,
           target,
         });
+        const textFlowPressHost =
+          !viewLines &&
+          target.kind === 'native-editable' &&
+          event.button === 0 &&
+          event.detail <= 1 &&
+          !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) &&
+          !target.target.closest('[data-editor-zero-width]') &&
+          !isTapOnTextBlock(event, target.target)
+            ? target.target.closest<HTMLElement>(
+                '[data-editor-text-flow-host="true"]'
+              )
+            : null;
+        const textFlowPressPoint =
+          textFlowPressHost &&
+          !isInlineElementTextFlowHost(textFlowPressHost) &&
+          caretShowsPointOffTextFlowCharacters({
+            host: textFlowPressHost,
+            x: event.clientX,
+            y: event.clientY,
+          })
+            ? getTextFlowPointAtCoordinates({
+                host: textFlowPressHost,
+                x: event.clientX,
+                y: event.clientY,
+              })
+            : null;
         const nativeEditableTextHit =
+          !textFlowPressPoint &&
           target.kind === 'native-editable' &&
           (isTapOnTextBlock(event, target.target) ||
             target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) !== null);
@@ -2115,18 +2153,25 @@ export const useRootInteractionController = ({
             target.kind === 'editable-root' ||
             target.kind === 'native-editable' ||
             target.kind === 'root-chrome');
-        const rootChromeCoordinatePlacement =
-          shouldResolveRootChromeFromCoordinates
-            ? profilePliteReactDuration(
-                'root-mousedown.resolve-coordinate-placement',
-                () =>
-                  getEditableRootChromeCoordinatePlacement({
-                    editor,
-                    event,
-                    includeInsideString: target.kind === 'native-editable',
-                  })
-              )
-            : null;
+        const rootChromeCoordinatePlacement: PliteStringCoordinatePlacement =
+          textFlowPressHost && textFlowPressPoint
+            ? {
+                edge: 'start',
+                rect: textFlowPressHost.getBoundingClientRect(),
+                source: 'string-edge',
+                string: textFlowPressHost,
+              }
+            : shouldResolveRootChromeFromCoordinates
+              ? profilePliteReactDuration(
+                  'root-mousedown.resolve-coordinate-placement',
+                  () =>
+                    getEditableRootChromeCoordinatePlacement({
+                      editor,
+                      event,
+                      includeInsideString: target.kind === 'native-editable',
+                    })
+                )
+              : null;
         const rootEdgeCoordinatePlacement =
           rootChromeCoordinatePlacement?.source === 'root-edge';
         const placeRootChromeFromCoordinates =
@@ -2202,6 +2247,7 @@ export const useRootInteractionController = ({
                   editor: focusEditor,
                   event,
                   placement: rootChromeCoordinatePlacement,
+                  textFlowPressPoint,
                 })
             )
           : null;

@@ -40,6 +40,7 @@ export {
   subscribeEditorDOMScope,
 } from '../plugin/dom-editor';
 export {
+  caretShowsPointOffTextFlowCharacters,
   createDOMGeometryKernel,
   getPliteStringCoordinatePlacement,
   getPliteStringDocumentOffset,

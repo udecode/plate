@@ -1,4 +1,5 @@
 import { failInvariant } from '../../internal/fail-invariant';
+import { isDOMText } from '../utils/dom';
 import { resolveDOMTextFlowStringOffset } from './dom-text-flow-index';
 
 const CSS_BREAK_WHITESPACE_PATTERN = /^[\t\n\f\r ]+$/;
@@ -1066,6 +1067,66 @@ const getOwnedPliteStrings = ({
   });
 };
 
+export const caretShowsPointOffTextFlowCharacters = ({
+  host,
+  x,
+  y,
+}: {
+  host: HTMLElement;
+  x: number;
+  y: number;
+}) => {
+  const point = getNativeDOMPointAtCoordinates(host.ownerDocument, x, y);
+
+  if (!point) return false;
+
+  const [node, offset] = point;
+
+  if (!isPointInside(point, host) || !isDOMText(node)) return true;
+
+  // A caret at a text node edge can belong to either node, and it can sit past
+  // or inside a cluster or pair, so the check reads every box near the caret
+  // instead of one code point.
+  const range = host.ownerDocument.createRange();
+
+  range.setStart(...moveTextPoint(host, node, offset, -TEXT_FLOW_CARET_REACH));
+  range.setEnd(...moveTextPoint(host, node, offset, TEXT_FLOW_CARET_REACH));
+
+  return !getUsableRangeRects(range).some(
+    (rect) =>
+      x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+  );
+};
+
+const TEXT_FLOW_CARET_REACH = 16;
+
+const moveTextPoint = (
+  host: HTMLElement,
+  node: Text,
+  offset: number,
+  units: number
+): [Text, number] => {
+  const walker = host.ownerDocument.createTreeWalker(
+    host,
+    host.ownerDocument.defaultView?.NodeFilter.SHOW_TEXT ?? 4
+  );
+  let current = node;
+  let at = offset + units;
+
+  walker.currentNode = node;
+  while (at < 0 || at > current.data.length) {
+    const next = (
+      at < 0 ? walker.previousNode() : walker.nextNode()
+    ) as Text | null;
+
+    if (!next) return [current, at < 0 ? 0 : current.data.length];
+    at = at < 0 ? at + next.data.length : at - current.data.length;
+    current = next;
+  }
+
+  return [current, at];
+};
+
 const getRootEdgeCoordinatePlacement = ({
   root,
   strings,
@@ -1326,6 +1387,56 @@ const getElementTextNodes = (element: Element) => {
 
 const TEXT_FLOW_LINE_BREAKS = /\r\n|[\n\r]/g;
 const TEXT_FLOW_UNPAINTED = /^(?:\r\n|[\n\r\uFEFF])$/;
+const GRAPHEME_CHUNK_LENGTH = 32;
+
+const codePointLengthAt = (data: string, offset: number) =>
+  (data.codePointAt(offset) ?? 0) > 0xff_ff ? 2 : 1;
+
+const isTextFlowBreak = (unit: string) =>
+  unit === '\n' || unit === '\r' || unit === '\r\n';
+
+const isOnVisualRow = (rect: DOMGeometryRect, row: DOMGeometryRect) =>
+  getRectOverlap(rect, row) > Math.min(rect.height, row.height) / 2;
+
+function* getGraphemeRangesFrom(
+  data: string,
+  from: number
+): Generator<readonly [number, number]> {
+  let start = from;
+  let length = GRAPHEME_CHUNK_LENGTH;
+
+  while (start < data.length) {
+    let chunkEnd = Math.min(start + length, data.length);
+
+    if (chunkEnd < data.length && /[\uD800-\uDBFF]/.test(data[chunkEnd - 1])) {
+      chunkEnd += 1;
+    }
+
+    const chunk = data.slice(start, chunkEnd);
+    let next = chunkEnd;
+
+    if (graphemeSegmenter) {
+      for (const { index, segment } of graphemeSegmenter.segment(chunk)) {
+        const end = start + index + segment.length;
+
+        if (end === chunkEnd && chunkEnd < data.length) {
+          next = start + index;
+          break;
+        }
+        yield [start + index, end];
+      }
+    } else {
+      let offset = start;
+
+      for (const character of chunk) {
+        yield [offset, offset + character.length];
+        offset += character.length;
+      }
+    }
+    if (next === start) length *= 2;
+    start = next;
+  }
+}
 
 // The browser's caret for a point beside a line can land on another line.
 export const getTextFlowPointAtCoordinates = ({
@@ -1346,6 +1457,8 @@ export const getTextFlowPointAtCoordinates = ({
     text += node.data;
   }
 
+  if (nodes.length === 0) return null;
+
   const range = host.ownerDocument.createRange();
   const nodeIndexAt = (index: number) => {
     let low = 0;
@@ -1360,26 +1473,44 @@ export const getTextFlowPointAtCoordinates = ({
 
     return low;
   };
-  const pointAt = (index: number): DOMGeometryPoint => {
-    const nodeIndex = nodeIndexAt(index);
+  const pointAt = (index: number, from = index): DOMGeometryPoint => {
+    const nodeIndex = nodeIndexAt(from);
 
     return [nodes[nodeIndex], index - starts[nodeIndex]];
+  };
+  const probes = new Map<number, DOMRect | null>();
+  const unitRectAt = (index: number) => {
+    if (!probes.has(index)) {
+      const end = index + codePointLengthAt(text, index);
+
+      range.setStart(...pointAt(index));
+      range.setEnd(...pointAt(end, end - 1));
+      probes.set(index, getUsableRangeRects(range)[0] ?? null);
+    }
+
+    return probes.get(index) ?? null;
   };
   const paintedUnitAt = (from: number, step: -1 | 1) => {
     for (let index = from; index >= 0 && index < text.length; index += step) {
       if (TEXT_FLOW_UNPAINTED.test(text[index])) continue;
 
-      const [node, offset] = pointAt(index);
-
-      range.setStart(node, offset);
-      range.setEnd(node, offset + 1);
-
-      const rect = getUsableRangeRects(range)[0];
+      const rect = unitRectAt(index);
 
       if (rect) return { index, rect };
     }
 
     return null;
+  };
+  const probesInSourceOrder = () => {
+    let maxTop = Number.NEGATIVE_INFINITY;
+
+    for (const [, rect] of [...probes].sort(([a], [b]) => a - b)) {
+      if (!rect) continue;
+      if (rect.bottom < maxTop) return false;
+      maxTop = Math.max(maxTop, rect.top);
+    }
+
+    return true;
   };
 
   const firstIndexEndingBelowY = () => {
@@ -1408,7 +1539,27 @@ export const getTextFlowPointAtCoordinates = ({
       ? below
       : above;
 
-  if (!nearest) return null;
+  if (!nearest) {
+    const rowStarts = [...text.matchAll(TEXT_FLOW_LINE_BREAKS)].map(
+      (match) => match.index + match[0].length
+    );
+
+    let low = 0;
+    let high = rowStarts.length;
+
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      const rect = unitRectAt(rowStarts[middle] - 1);
+
+      if (!rect) return null;
+      if (rect.bottom <= y) low = middle + 1;
+      else high = middle;
+    }
+
+    return (rowStarts.length > 0 || unitRectAt(0)) && probesInSourceOrder()
+      ? pointAt(low === 0 ? 0 : rowStarts[low - 1])
+      : null;
+  }
 
   if (!below || below.rect.top > y) {
     const from = above ? above.index + 1 : 0;
@@ -1442,76 +1593,110 @@ export const getTextFlowPointAtCoordinates = ({
     }
   }
 
-  const lineStart =
-    Math.max(
-      text.lastIndexOf('\n', nearest.index),
-      text.lastIndexOf('\r', nearest.index)
-    ) + 1;
-  const lineEnd = Math.min(
-    ...['\n', '\r'].map((lineBreak) => {
-      const index = text.indexOf(lineBreak, nearest.index);
+  const row = nearest.rect;
 
-      return index === -1 ? text.length : index;
-    })
-  );
-  let best: { distance: number; point: DOMGeometryPoint } | null = null;
-  let onLine = false;
+  let low = 0;
+  let high = nearest.index;
 
-  for (
-    let nodeIndex = nodeIndexAt(lineStart);
-    nodeIndex < nodes.length && starts[nodeIndex] < lineEnd;
-    nodeIndex++
-  ) {
-    const node = nodes[nodeIndex];
-    const from = Math.max(lineStart - starts[nodeIndex], 0);
-    const to = Math.min(lineEnd - starts[nodeIndex], node.data.length);
-    const direction = getElementDirection(node.parentElement);
-    const offsets = getGraphemeBoundaryOffsets(node.data.slice(from, to));
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    const unit = paintedUnitAt(middle, 1);
 
-    for (let index = 0; index < offsets.length - 1; index++) {
-      const start = from + offsets[index];
-      const end = from + offsets[index + 1];
-
-      if (TEXT_FLOW_UNPAINTED.test(node.data.slice(start, end))) continue;
-
-      range.setStart(node, start);
-      range.setEnd(node, end);
-
-      const rects = getUsableRangeRects(range);
-      const rect = rects.find(
-        (candidate) =>
-          getRectOverlap(candidate, nearest.rect) > VISUAL_LINE_TOLERANCE
-      );
-
-      if (!rect) {
-        const pastWrappedLine = onLine && rects.length > 0;
-
-        if (pastWrappedLine) return best?.point ?? null;
-        continue;
-      }
-
-      onLine = true;
-
-      if (x >= rect.left && x <= rect.right) {
-        const midpoint = rect.left + rect.width / 2;
-        const beforeMidpoint =
-          direction === 'rtl' ? x > midpoint : x <= midpoint;
-
-        return [node, beforeMidpoint ? start : end];
-      }
-
-      for (const [offset, edgeX] of [
-        [start, direction === 'rtl' ? rect.right : rect.left],
-        [end, direction === 'rtl' ? rect.left : rect.right],
-      ] as const) {
-        const distance = Math.abs(edgeX - x);
-
-        if (!best || distance < best.distance) {
-          best = { distance, point: [node, offset] };
-        }
-      }
+    if (
+      unit &&
+      unit.index < nearest.index &&
+      unit.rect.top < row.top &&
+      !isOnVisualRow(unit.rect, row)
+    ) {
+      low = unit.index + 1;
+    } else {
+      high = middle;
     }
   }
+
+  if (!probesInSourceOrder()) return null;
+
+  const rowStart = paintedUnitAt(low, 1)?.index ?? nearest.index;
+  let best: { distance: number; point: DOMGeometryPoint } | null = null;
+  let hit: DOMGeometryPoint | null = null;
+  let left = Number.POSITIVE_INFINITY;
+  let right = Number.NEGATIVE_INFINITY;
+  let last: {
+    rect: DOMRect;
+    space: boolean;
+    start: DOMGeometryPoint;
+  } | null = null;
+  let end: DOMGeometryPoint = pointAt(rowStart);
+  let reachedNearest = false;
+  let wrapped = false;
+
+  for (const [start, stop] of getGraphemeRangesFrom(text, rowStart)) {
+    const unit = text.slice(start, stop);
+
+    if (isTextFlowBreak(unit)) break;
+    if (unit === '\uFEFF') continue;
+
+    const from = pointAt(start);
+    const to = pointAt(stop, stop - 1);
+
+    const direction = getElementDirection(from[0].parentElement);
+
+    range.setStart(...from);
+    range.setEnd(...to);
+
+    const rects = getUsableRangeRects(range);
+
+    if (rects.length === 0) continue;
+
+    const rect = rects.find((candidate) => isOnVisualRow(candidate, row));
+    const startsNextRow =
+      rect &&
+      last &&
+      (rect.top >= last.rect.bottom ||
+        (rect.top > last.rect.top + last.rect.height / 2 &&
+          (direction === 'rtl' ? rect.right >= right : rect.left <= left)));
+
+    if (!rect || startsNextRow) {
+      wrapped = true;
+      break;
+    }
+
+    reachedNearest ||= stop > nearest.index;
+    left = Math.min(left, rect.left);
+    right = Math.max(right, rect.right);
+    last = {
+      rect,
+      space: unit.length === 1 && CSS_BREAK_WHITESPACE_PATTERN.test(unit),
+      start: from,
+    };
+    end = to;
+
+    if (!hit && x >= rect.left && x <= rect.right) {
+      const midpoint = rect.left + rect.width / 2;
+      const beforeMidpoint = direction === 'rtl' ? x > midpoint : x <= midpoint;
+
+      hit = beforeMidpoint ? from : to;
+    }
+
+    for (const [point, edgeX] of [
+      [from, direction === 'rtl' ? rect.right : rect.left],
+      [to, direction === 'rtl' ? rect.left : rect.right],
+    ] as const) {
+      const distance = Math.abs(edgeX - x);
+
+      if (!best || distance < best.distance) best = { distance, point };
+    }
+  }
+
+  if (!reachedNearest) return null;
+  if (hit) return hit;
+
+  const logicalStart = pointAt(rowStart);
+  const logicalEnd = wrapped && last?.space ? last.start : end;
+  const rtl = getElementDirection(host) === 'rtl';
+
+  if (x > right) return rtl ? logicalStart : logicalEnd;
+  if (x < left) return rtl ? logicalEnd : logicalStart;
 
   return best?.point ?? null;
 };
