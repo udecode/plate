@@ -291,6 +291,7 @@ import {
 import {
   type DraftSpan,
   type DraftTrack,
+  mapSpans,
   moveDraftTracks,
   settleDraftTrack,
   trackDraftSpans,
@@ -1047,6 +1048,7 @@ export type TransactionSpecContext = {
   exitAnchorScope: () => void;
   id: object;
   kind: 'spec' | 'update';
+  lastSpecLanding?: DraftTrack;
   mutationVersion: number;
   parentId?: object;
   /** Who a selection write in this draft credits, unless a scope says. */
@@ -1512,6 +1514,10 @@ const TRANSACTION_SPEC_CARETS = new WeakMap<TransactionSpec, CarriedCarets>();
 export const getAppliedSpecLanding = (spec: TransactionSpec) =>
   APPLIED_SPEC_LANDINGS.get(spec);
 
+/** @internal */
+export const getTransactionLanding = (editor: Editor) =>
+  getTransactionSpecContext(editor)?.lastSpecLanding;
+
 const trackLandedRange = (editor: Editor, range: Range) => {
   const snapshot = getDefined(getTransactionSnapshot(editor));
   const root = range.anchor.root ?? MAIN_ROOT_KEY;
@@ -1910,6 +1916,7 @@ export const commitRecordedDraft = (
   selectionRoot: string,
   {
     carried,
+    writtenLanding,
     letters,
     plain,
     plainSteps,
@@ -1918,6 +1925,10 @@ export const commitRecordedDraft = (
   }: Readonly<{
     /** The draft's placements, with its bookmarks in recorded coordinates. */
     carried?: CarriedCarets | null;
+    writtenLanding?: Readonly<{
+      root: string;
+      spans: readonly DraftSpan[];
+    }> | null;
     /** A frame draft's new letters, in its written document. */
     letters?: NewLetters;
     plain?: PlainDraft;
@@ -2035,6 +2046,19 @@ export const commitRecordedDraft = (
   else applyRecorded();
   snapshot.builder.beginSpan();
   moveDraftTracks(snapshot, plainBuilder, snapshot.builder, plainToRecorded);
+  const landedSpans =
+    writtenLanding &&
+    mapPosition &&
+    mapSpans(writtenLanding.root, writtenLanding.spans, mapPosition);
+
+  if (writtenLanding && landedSpans) {
+    context.lastSpecLanding = trackDraftSpans(
+      snapshot,
+      snapshot.builder,
+      writtenLanding.root,
+      landedSpans
+    );
+  }
   context.caret = {
     ...context.caret,
     ...carryCaret(getSetSite(editor), context.caret, {
@@ -6121,7 +6145,8 @@ const replaceBlocksAtSite = (
   editor: Editor,
   transaction: EditorTransactionSpecBuilder,
   place: Extract<SliceFitPlace, { kind: 'blocks' }>,
-  slice: import('../interfaces/editor').ContentSlice
+  slice: import('../interfaces/editor').ContentSlice,
+  landed?: (track: DraftTrack) => void
 ) => {
   const state = getStateView(editor);
 
@@ -6154,6 +6179,22 @@ const replaceBlocksAtSite = (
 
   if (!replacement) return false;
   replaceSelectedBlocks(transaction, replacement);
+  if (landed) {
+    const snapshot = getDefined(getTransactionSnapshot(editor));
+    const index = snapshot.builder.getIndex(place.root);
+    const { parentPath } = replacement;
+    const first = replacement.index;
+    const last = first + replacement.replacements.length - 1;
+
+    landed(
+      trackDraftSpans(snapshot, snapshot.builder, place.root, [
+        {
+          from: index.nodeRange([...parentPath, first]).from,
+          to: index.nodeRange([...parentPath, last]).to,
+        },
+      ])
+    );
+  }
 
   return true;
 };
@@ -6176,7 +6217,13 @@ const landSlice = (
     content: import('../interfaces/editor').ContentSlice
   ) => {
     if (target.kind === 'blocks') {
-      return replaceBlocksAtSite(editor, transaction, target, content);
+      return replaceBlocksAtSite(
+        editor,
+        transaction,
+        target,
+        content,
+        options.landed
+      );
     }
     if (!writeSliceAtRange(editor, target, content, { ...options, paste })) {
       return false;
@@ -10442,6 +10489,7 @@ const finalizeTransactionSpecContext = (
 
   if (carried) TRANSACTION_SPEC_CARETS.set(spec, carried);
   keepSpecTypedMarks(context, spec);
+  recordSpecLanding(spec, context.lastSpecLanding);
 
   return spec;
 };
@@ -10536,13 +10584,16 @@ const applyTransactionSpecContents = <V extends Value>(
       ? {
           beforeListeners: () => {
             const snapshot = getDefined(getTransactionSnapshot(editor));
-
-            APPLIED_SPEC_LANDINGS.set(
-              spec,
-              trackDraftSpans(snapshot, snapshot.builder, landing.root, [
-                landing.span,
-              ])
+            const track = trackDraftSpans(
+              snapshot,
+              snapshot.builder,
+              landing.root,
+              [landing.span]
             );
+            const context = getTransactionSpecContext(editor);
+
+            APPLIED_SPEC_LANDINGS.set(spec, track);
+            if (context) context.lastSpecLanding = track;
           },
         }
       : {}),

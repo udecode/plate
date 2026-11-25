@@ -7,6 +7,8 @@ import {
   type Range,
   type Value,
 } from '..';
+import { getAnchorRuntimeId } from '../core/anchor';
+import { getMovedAnchorIds } from '../core/anchor-state';
 import { readAuthoredView } from '../core/authored-runtime';
 import { notifyObservers } from '../core/lifecycle-error';
 import { subscribeEditorViewState } from '../core/public-state';
@@ -346,6 +348,44 @@ const createPliteAnnotationStoreInternal = <TData>(
       refreshCandidates(null, true, 'editor');
     }
   };
+  let anchorIds: Readonly<{
+    annotations: ReadonlyArray<Annotation<TData>>;
+    byRuntimeId: ReadonlyMap<number, readonly string[]>;
+    unidentified: readonly string[];
+  }> | null = null;
+  const idsOfMovedAnchors = (moved: ReadonlySet<number> | undefined) => {
+    if (!moved || !currentAnnotations) return [];
+    if (anchorIds?.annotations !== currentAnnotations) {
+      const byRuntimeId = new Map<number, string[]>();
+      const unidentified: string[] = [];
+
+      for (const { anchor, id } of currentAnnotations) {
+        const runtimeId = getAnchorRuntimeId(anchor);
+
+        if (runtimeId === null) {
+          unidentified.push(id);
+          continue;
+        }
+
+        const ids = byRuntimeId.get(runtimeId);
+
+        if (ids) ids.push(id);
+        else byRuntimeId.set(runtimeId, [id]);
+      }
+      anchorIds = {
+        annotations: currentAnnotations,
+        byRuntimeId,
+        unidentified,
+      };
+    }
+
+    const { byRuntimeId, unidentified } = anchorIds;
+
+    return [
+      ...unidentified,
+      ...[...moved].flatMap((runtimeId) => byRuntimeId.get(runtimeId) ?? []),
+    ];
+  };
   const subscribeToEditor = () => {
     const unsubscribeCommit = editor.subscribeCommit((change) => {
       if (destroyed) return;
@@ -353,7 +393,9 @@ const createPliteAnnotationStoreInternal = <TData>(
         refreshCandidates(null, true, 'editor');
         return;
       }
-      if (!shouldRefreshForEditorChange(change)) return;
+      const moved = change ? idsOfMovedAnchors(getMovedAnchorIds(change)) : [];
+
+      if (!shouldRefreshForEditorChange(change) && moved.length === 0) return;
       if (authoredPreview(editor) !== lastProjection) {
         refreshCandidates(null, true, 'editor');
         return;
@@ -365,6 +407,7 @@ const createPliteAnnotationStoreInternal = <TData>(
               ...mappedSource.getIdsForOutputKeys(
                 change.changed.nodeKeysAll('decoration')
               ),
+              ...moved,
               ...(change.changed.hasAny('document')
                 ? mappedSource.getIdsWithoutOutputs()
                 : []),

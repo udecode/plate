@@ -60,6 +60,7 @@ import {
   type PositionMap,
   runEditorDraftGuards,
 } from './document-recorder';
+import { type DraftSpan, settleDraftTrack } from './draft-track';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
 import { topologyHolding } from './identity-owner';
 import { MAIN_ROOT_KEY } from './public-root';
@@ -1392,6 +1393,10 @@ export const runInEditorCommandFrame = (
     let storedToWritten: PositionMap | undefined;
     let letters: NewLetters | undefined;
     let steps: readonly DraftStep[] = [];
+    let landing: Readonly<{
+      root: string;
+      spans: readonly DraftSpan[];
+    }> | null = null;
 
     COMMAND_FRAMES.add(editor);
     try {
@@ -1512,6 +1517,10 @@ export const runInEditorCommandFrame = (
           },
         };
       }
+      const track = frame.lastSpecLanding;
+      const spans = track && recorded && settleDraftTrack(track);
+
+      if (track && spans?.length) landing = { root: track.root, spans };
       // Effects name places in the frame's document, so they map to the
       // document the update commits. The state they reduced, like any state the
       // frame wrote, carries over as written.
@@ -1570,6 +1579,7 @@ export const runInEditorCommandFrame = (
     }
     commitRecordedDraft(editor, outer, recorded, frame.caret.root, {
       carried,
+      writtenLanding: landing,
       letters,
       plainSteps: { steps, toStored: projected.map.toStored },
       storedToWritten,

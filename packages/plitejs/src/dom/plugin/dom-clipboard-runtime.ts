@@ -23,6 +23,7 @@ import {
 } from '../../core/command-registry';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { importContentSlice } from '../../core/import-content-slice';
+import { dispatchPaste, landPaste } from '../../core/moved-anchors';
 import { getInstalledPlugin } from '../../core/plugin';
 import { getSetSite } from '../../core/public-state';
 import { captureSliceLanding } from '../../core/slice-landing';
@@ -37,6 +38,7 @@ import {
   type DOMNode,
   type DOMRange,
   getPlainText,
+  readClipboardCut,
   readClipboardFragmentPayload,
   isDOMElement,
   isDOMText,
@@ -911,7 +913,15 @@ export const writeDOMRangeData = <V extends Value>(
 export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
-): boolean | undefined => dispatchCommand(editor, domCommands.insertData, data);
+): boolean | undefined =>
+  dispatchPaste(
+    editor,
+    () => readClipboardCut(data),
+    () =>
+      landPaste(editor, () =>
+        dispatchCommand(editor, domCommands.insertData, data)
+      )
+  );
 
 export const createDOMDataTransactionSpec = <V extends Value>(
   editor: Editor<V, any>,
@@ -1017,13 +1027,16 @@ export const insertDOMFragmentData = <V extends Value>(
 ): boolean | undefined => {
   const slice = readDOMFragmentData(editor, data);
 
-  if (slice) {
-    return dispatchCommand(editor, editorCommands.replaceSlice, {
-      slice,
-    });
-  }
-
-  return false;
+  return dispatchPaste(
+    editor,
+    () => readClipboardCut(data),
+    () =>
+      slice
+        ? landPaste(editor, () =>
+            dispatchCommand(editor, editorCommands.replaceSlice, { slice })
+          )
+        : false
+  );
 };
 
 export const insertDOMTextData = <V extends Value>(

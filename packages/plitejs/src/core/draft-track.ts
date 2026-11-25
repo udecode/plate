@@ -14,7 +14,7 @@ export type DraftTrack = {
 
 const TRACKS = new WeakMap<object, Set<DraftTrack>>();
 
-const mapSpans = (
+export const mapSpans = (
   root: string,
   spans: readonly DraftSpan[],
   map: PositionMap

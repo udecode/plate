@@ -1,7 +1,9 @@
 import type { ClipboardEvent, DragEvent } from 'react';
 
 import {
+  type EditorUpdateTransaction,
   type TransferOutcome,
+  type NodeSelection,
   NodeApi,
   PathApi,
   type Range,
@@ -9,7 +11,14 @@ import {
   SelectionApi,
   TextApi,
 } from '../..';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { resolveFragmentDeletedRange } from '../../core/fragment-deleted-range';
+import {
+  armCutSession,
+  collectMovedAnchors,
+  endCutSession,
+} from '../../core/moved-anchors';
+import { toInternalRoot } from '../../core/public-root';
 import {
   getDefaultView,
   isDOMElement,
@@ -42,6 +51,7 @@ import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
 } from '../../dom/plugin/dom-event-range-targets';
+import { writeClipboardCut } from '../../dom/utils/dom';
 import {
   beginDragSession,
   clearDragSession,
@@ -390,6 +400,38 @@ const readCutDeletedRange = (editor: AnyEditor, selection: Range) => {
     : null;
 };
 
+const cutWithAnchors = <T>(
+  editor: ReactRuntimeEditor,
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  source: NodeSelection | Range,
+  cut: (tx: EditorUpdateTransaction) => T
+): T | undefined => {
+  const owner = getEditorRuntimeOwner(editor);
+  const version = editor.read((state) => state.lastCommit()?.version);
+  const root = toInternalRoot(
+    SelectionApi.isNode(source) ? source.root : source.anchor.root
+  );
+  const done = editor.update((tx) => {
+    const moved = collectMovedAnchors(owner, root, source, { cut: true });
+
+    return { moved, result: cut(tx) };
+  });
+  const commit = editor.read((state) => state.lastCommit());
+
+  if (done?.moved && commit && commit.version !== version) {
+    // randomUUID exists only on secure origins; getRandomValues everywhere.
+    const id = Array.from(crypto.getRandomValues(new Uint32Array(4)), (part) =>
+      part.toString(36)
+    ).join('');
+
+    if (armCutSession(owner, id, done.moved, commit.changes)) {
+      writeClipboardCut(data, id);
+    }
+  }
+
+  return done?.result;
+};
+
 export const applyEditableCut = ({
   editor,
   event,
@@ -457,7 +499,9 @@ export const applyEditableCut = ({
           kind: 'delete',
         };
 
-        applyEditableCommand({ command, editor });
+        cutWithAnchors(editor, clipboardData, selection, () =>
+          applyEditableCommand({ command, editor })
+        );
 
         return clipboardResult({
           command,
@@ -490,7 +534,31 @@ export const applyEditableCut = ({
           deletion: 'nearest',
         });
         const version = editor.read((state) => state.lastCommit()?.version);
-        applyEditableCommand({ command, editor });
+        const removedInline = cutWithAnchors(
+          editor,
+          clipboardData,
+          readCutDeletedRange(editor, selection) ?? selection,
+          (tx) => {
+            applyEditableCommand({ command, editor });
+            const inlineNode = inlinePath && tx.nodes.get(inlinePath)?.[0];
+
+            if (
+              !inlinePath ||
+              !inlineBeforePoint ||
+              !inlineNode ||
+              !NodeApi.isElement(inlineNode) ||
+              !editorIsInline(editor, inlineNode) ||
+              NodeApi.string(inlineNode) !== ''
+            ) {
+              return null;
+            }
+            tx.command(editorCommands.removeNodes, {
+              options: { at: inlinePath, voids: true },
+            });
+
+            return inlineBeforePoint;
+          }
+        );
         writePliteViewSelection(editor, null);
         const startPoint = startAnchor.release();
         const deleteRefused =
@@ -500,33 +568,13 @@ export const applyEditableCut = ({
           return clipboardResult({ command });
         }
 
-        const shouldRemoveEmptyInline =
-          inlinePath &&
-          (() => {
-            const inlineNode = editor.read(
-              (state) => state.nodes.get(inlinePath)?.[0]
-            );
-
-            return (
-              inlineNode &&
-              NodeApi.isElement(inlineNode) &&
-              editorIsInline(editor, inlineNode) &&
-              NodeApi.string(inlineNode) === ''
-            );
-          })();
-
-        if (shouldRemoveEmptyInline && inlinePath && inlineBeforePoint) {
-          editor.update((tx) => {
-            tx.command(editorCommands.removeNodes, {
-              options: { at: inlinePath, voids: true },
-            });
-          });
+        if (removedInline) {
           applyEditableCommand({
             command: {
               kind: 'select',
               selection: {
-                anchor: inlineBeforePoint,
-                focus: inlineBeforePoint,
+                anchor: removedInline,
+                focus: removedInline,
               },
             },
             editor,
@@ -585,19 +633,29 @@ export const applyEditableCut = ({
             ? null
             : editorPoint(editor, PathApi.previous(voidPath), { edge: 'end' });
 
-        editor.update((tx) => {
-          tx.command(editorCommands.removeNodes, {
-            options: { at: voidPath, voids: true },
-          });
-          if (previousPoint) {
-            tx.command(editorCommands.select, {
-              target: {
-                anchor: previousPoint,
-                focus: previousPoint,
-              },
+        const { root } = selection.anchor;
+
+        cutWithAnchors(
+          editor,
+          clipboardData,
+          SelectionApi.nodes([voidPath], {
+            mode: 'object',
+            ...(root ? { root } : {}),
+          }),
+          (tx) => {
+            tx.command(editorCommands.removeNodes, {
+              options: { at: voidPath, voids: true },
             });
+            if (previousPoint) {
+              tx.command(editorCommands.select, {
+                target: {
+                  anchor: previousPoint,
+                  focus: previousPoint,
+                },
+              });
+            }
           }
-        });
+        );
 
         return clipboardResult({
           command,
@@ -1074,9 +1132,11 @@ export const applyEditablePaste = ({
     return clipboardResult({ command: null });
   }
 
+  const editable = ReactEditor.hasEditableTarget(editor, event.target);
   const canHandlePaste =
-    ReactEditor.hasEditableTarget(editor, event.target) &&
-    !isClipboardEventHandled({ event, handler: onPaste });
+    editable && !isClipboardEventHandled({ event, handler: onPaste });
+
+  if (editable && !canHandlePaste) endCutSession(editor);
 
   if (
     canHandlePaste &&

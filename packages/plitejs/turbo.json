@@ -1094,6 +1094,8 @@
         "$TURBO_ROOT$/tsconfig.json",
         "test/support/authored.ts",
         "test/support/schema.ts",
+        "test/support/sync-client.ts",
+        "test/support/sync-host.ts",
         "test/yjs/support/collaboration.ts",
         "test/yjs/support/provider.ts",
         "vitest.config.mjs",

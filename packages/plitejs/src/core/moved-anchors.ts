@@ -5,24 +5,49 @@ import type {
 import type { Element } from '../interfaces/element';
 import type { Descendant } from '../interfaces/node';
 import { type Range, RangeApi } from '../interfaces/range';
+import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
   type AnchorPlace,
   type AnchorStateListener,
   getMovableAnchors,
+  getPublishedAnchorValue,
   placeAnchorsOnCommit,
 } from './anchor-state';
-import { mapInternalDocumentChangePosition } from './change/document-change';
+import {
+  type DocumentChange,
+  getInternalDocumentChangeRanges,
+  mapInternalDocumentChangePosition,
+} from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import { coversContent } from './change/range-content';
 import { isEditorDraftView } from './document-recorder';
 import { type DraftTrack, settleDraftTrack } from './draft-track';
-import { getEditorRuntime, getEditorSchema } from './editor-runtime';
-import { getTransactionSnapshot, withEditorRootChildren } from './public-state';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  getEditorSchema,
+} from './editor-runtime';
+import { getCompiledEditorSchema } from './plugin-registry';
+import {
+  getTransactionLanding,
+  getTransactionSnapshot,
+  isInTransaction,
+  withEditorRootChildren,
+} from './public-state';
+import { withTrackedPastes } from './slice-landing';
+import { areEditorJsonValuesEqual } from './value-codec';
 
 type TokenKind = 'text' | `${'block' | 'void'}-${'open' | 'close'}`;
-type Token = readonly [at: number, kind: TokenKind, letter?: string];
+type Properties = Readonly<Record<string, unknown>>;
+type Token = readonly [
+  at: number,
+  kind: TokenKind,
+  letter?: string,
+  properties?: Properties,
+];
 type Unit = readonly [from: number, to: number, isVoid: boolean];
+type Piece = readonly [from: number, to: number, inner: boolean];
 type Remainder = Readonly<{
   content: readonly [from: number, to: number];
   listener: AnchorStateListener;
@@ -81,8 +106,10 @@ const edgeTokens = (units: readonly Unit[]): readonly Token[] | null => {
 
 export type MovedAnchors = Readonly<{
   anchors: ReadonlyArray<readonly [AnchorStateListener, number, number]>;
+  cut: boolean;
   from: number;
   remainders: readonly Remainder[];
+  removes: readonly Unit[];
   root: string;
   struck: boolean;
   to: number;
@@ -106,33 +133,60 @@ export const suspendMovePlacement = (editor: object) => {
   };
 };
 
+const uncarriedKeys = (editor: Editor) =>
+  new Set(
+    [...getCompiledEditorSchema(editor).properties.byId.values()].flatMap(
+      ({ key, lifecycle }) =>
+        typeof key === 'string' &&
+        (lifecycle.unique || lifecycle.copy === 'drop')
+          ? [key]
+          : []
+    )
+  );
+
+const propertiesOf = (
+  node: Descendant,
+  uncarried: ReadonlySet<string>
+): Properties =>
+  Object.fromEntries(
+    Object.entries(node).filter(
+      ([key]) => key !== 'children' && key !== 'text' && !uncarried.has(key)
+    )
+  );
+
 const contentOf = (
   editor: Editor,
   index: DocumentIndex,
   from: number,
-  to: number
+  to: number,
+  uncarried?: ReadonlySet<string>
 ) => {
   const tokens: Token[] = [];
   const { isVoid } = getEditorSchema(editor);
 
   for (const entry of index.nodeRangesTouching(from, to)) {
     if (entry.kind === 'text') {
-      const { text } = index.node(entry.path) as { text: string };
+      const node = index.node(entry.path) as Descendant & { text: string };
+      const marks = uncarried && propertiesOf(node, uncarried);
       const end = Math.min(to, entry.contentTo);
 
       for (let at = Math.max(from, entry.contentFrom); at < end; at++) {
-        tokens.push([at, 'text', text[at - entry.contentFrom]]);
+        const letter = node.text[at - entry.contentFrom];
+
+        tokens.push(marks ? [at, 'text', letter, marks] : [at, 'text', letter]);
       }
     } else {
       const node = index.node(entry.path) as Element;
       const kind = isVoid(node) ? 'void' : 'block';
 
       if (entry.from >= from && entry.from < to) {
-        tokens.push([
-          entry.from,
-          `${kind}-open`,
-          kind === 'void' ? node.type : undefined,
-        ]);
+        const type = kind === 'void' ? node.type : undefined;
+
+        tokens.push(
+          uncarried
+            ? [entry.from, `${kind}-open`, type, propertiesOf(node, uncarried)]
+            : [entry.from, `${kind}-open`, type]
+        );
       }
       if (entry.to > from && entry.to <= to) {
         tokens.push([entry.to - 1, `${kind}-close`]);
@@ -143,10 +197,72 @@ const contentOf = (
   return tokens.sort((left, right) => left[0] - right[0]);
 };
 
+const piecesOf = (
+  editor: Editor,
+  index: DocumentIndex,
+  source: NodeSelection | Range
+): readonly Piece[] => {
+  if (!SelectionApi.isNode(source)) {
+    const [from, to] = RangeApi.edges(source).map((point) =>
+      index.positionAt(point)
+    );
+
+    return [[from, to, true]];
+  }
+
+  const { isVoid } = getEditorSchema(editor);
+
+  return source.paths.map((path) => {
+    const { from, to } = index.nodeRange(path);
+
+    return isVoid(index.node(path) as Element)
+      ? [from, to, false]
+      : [from + 1, to - 1, true];
+  });
+};
+
+const joinTokens = (
+  editor: Editor,
+  index: DocumentIndex,
+  [, beforeTo, beforeInner]: Piece,
+  [from, , inner]: Piece,
+  uncarried?: ReadonlySet<string>
+) => [
+  ...(beforeInner
+    ? contentOf(editor, index, beforeTo, beforeTo + 1, uncarried)
+    : []),
+  ...(inner ? contentOf(editor, index, from - 1, from, uncarried) : []),
+];
+
+const piecesContent = (
+  editor: Editor,
+  index: DocumentIndex,
+  pieces: readonly Piece[],
+  uncarried?: ReadonlySet<string>
+) =>
+  pieces.flatMap((piece, at) => [
+    ...(at > 0
+      ? joinTokens(editor, index, pieces[at - 1], piece, uncarried)
+      : []),
+    ...contentOf(editor, index, piece[0], piece[1], uncarried),
+  ]);
+
+const spansSkippedPiece = (
+  pieces: readonly Piece[],
+  heldFrom: number,
+  heldTo: number,
+  covers: (start: number, end: number) => boolean
+) =>
+  pieces.some(
+    ([start], at) =>
+      start > heldFrom && start <= heldTo && covers(pieces[at - 1][1], start)
+  );
+
 export const collectMovedAnchors = (
   editor: Editor,
   root: string,
-  source: Range
+  source: NodeSelection | Range,
+  options: Readonly<{ cut?: true }> = {}
 ): MovedAnchors | null => {
   const { builder } = getDefined(getTransactionSnapshot(editor));
 
@@ -154,9 +270,9 @@ export const collectMovedAnchors = (
 
   const index = builder.getIndex(root);
   const schema = getEditorSchema(editor);
-  const [from, to] = RangeApi.edges(source).map((point) =>
-    index.positionAt(point)
-  );
+  const pieces = piecesOf(editor, index, source);
+  const from = pieces[0][0];
+  const to = getDefined(pieces.at(-1))[1];
   const tokenHoldsContent = (at: number) =>
     index
       .nodeRangesTouching(at, at + 1)
@@ -176,10 +292,14 @@ export const collectMovedAnchors = (
       .nodeRangesTouching(Math.max(0, low - 1), Math.min(index.length, to + 1))
       .flatMap(({ path }) => getEditorRuntime(editor).getNodeKey(path) ?? [])
   );
-  const struck = isEditorDraftView(editor);
+  const struck = !options.cut && isEditorDraftView(editor);
   const kept: Array<readonly [AnchorStateListener, readonly number[]]> = [];
   const remainders: Remainder[] = [];
   let carried: readonly Unit[] | undefined;
+  const moving = () =>
+    (carried ??= pieces.flatMap(([start, end]) =>
+      contentUnits(editor, index, start, end)
+    ));
 
   for (const listener of getMovableAnchors(editor, keys)) {
     const span =
@@ -193,29 +313,37 @@ export const collectMovedAnchors = (
 
     const first = Math.min(...span);
     const last = Math.max(...span);
-    const leftOut = coversContent(index, first, from, schema);
-    const rightOut = coversContent(index, to, last, schema);
+    const covers = (start: number, end: number) =>
+      coversContent(index, Math.max(first, start), Math.min(last, end), schema);
+    const held = pieces.filter(([start, end]) => covers(start, end));
 
-    if (
-      !coversContent(index, Math.max(first, from), Math.min(last, to), schema)
-    ) {
-      continue;
-    }
+    if (held.length === 0) continue;
+
+    const heldFrom = held[0][0];
+    const heldTo = getDefined(held.at(-1))[1];
+
+    if (spansSkippedPiece(pieces, heldFrom, heldTo, covers)) continue;
+
+    const leftOut = coversContent(index, first, heldFrom, schema);
+    const rightOut = coversContent(index, heldTo, last, schema);
+
     if (!leftOut && !rightOut) kept.push([listener, span]);
-    else if (leftOut !== rightOut && (leftOut ? last < to : from < first)) {
+    else if (
+      leftOut !== rightOut &&
+      (leftOut ? last < heldTo : heldFrom < first)
+    ) {
       const [restFrom, restTo] = struck
         ? [first, last]
         : leftOut
-          ? [first, from]
-          : [to, last];
+          ? [first, heldFrom]
+          : [heldTo, last];
       const content = edgeTokens(contentUnits(editor, index, restFrom, restTo));
 
-      carried ??= contentUnits(editor, index, from, to);
       if (content) {
         remainders.push({
           content: [content[0][0], content[1][0] + 1],
           listener,
-          reorders: !carried.some(
+          reorders: !moving().some(
             ([start, end]) => start < first || end > last
           ),
           span,
@@ -225,7 +353,15 @@ export const collectMovedAnchors = (
   }
   if (kept.length === 0 && remainders.length === 0) return null;
 
-  const tokens = kept.length > 0 ? contentOf(editor, index, from, to) : [];
+  const tokens =
+    kept.length > 0 || options.cut
+      ? piecesContent(
+          editor,
+          index,
+          pieces,
+          options.cut ? uncarriedKeys(editor) : undefined
+        )
+      : [];
   const tokensBefore = (position: number) => {
     let below = 0;
     let above = tokens.length;
@@ -245,8 +381,10 @@ export const collectMovedAnchors = (
       ([listener, span]) =>
         [listener, tokensBefore(span[0]), tokensBefore(span[1])] as const
     ),
+    cut: !!options.cut,
     from,
     remainders,
+    removes: options.cut ? moving() : [],
     root,
     struck,
     to,
@@ -323,6 +461,42 @@ export const placeMovedAnchors = (
         )
       );
 
+    const [struckFrom = null, struckTo = null] = moved.struck
+      ? mapEdges([moved.from, moved.to])
+      : [];
+    const uncarried = moved.cut ? uncarriedKeys(editor) : undefined;
+    const struckSource =
+      struckFrom !== null && struckTo !== null
+        ? [
+            [struckFrom, Math.min(struckTo, landFrom)],
+            [Math.max(struckFrom, landTo), struckTo],
+          ]
+            .filter(([start, end]) => start < end)
+            .flatMap(([start, end]) =>
+              contentOf(editor, after, start, end, uncarried)
+            )
+        : [];
+    const matchingMoved = (tokens: Token[]) => {
+      const kept = trimWrapperBlocks(tokens, moved.tokens);
+
+      return kept.length === moved.tokens.length &&
+        kept.every(
+          ([, kind, letter, properties], at) =>
+            kind === moved.tokens[at][1] &&
+            letter === moved.tokens[at][2] &&
+            areEditorJsonValuesEqual(properties, moved.tokens[at][3])
+        )
+        ? kept
+        : undefined;
+    };
+    const landed = matchingMoved(
+      struckSource.some(([, kind]) => !kind.startsWith('block'))
+        ? struckSource
+        : contentOf(editor, after, landFrom, landTo, uncarried)
+    );
+
+    if (!landed && moved.cut) return;
+
     for (const { content, listener, reorders, span } of moved.remainders) {
       const edges = [Math.min(...span), Math.max(...span)];
       let [from, to] = mapEdges(content);
@@ -355,41 +529,6 @@ export const placeMovedAnchors = (
 
       place(listener, first, second);
     }
-    if (moved.anchors.length === 0) return;
-
-    const [from, to] = [moved.from, moved.to].map((position, end) =>
-      mapInternalDocumentChangePosition(
-        context.change,
-        moved.root,
-        position,
-        end ? -1 : 1
-      )
-    );
-    const struckSource =
-      moved.struck && from !== null && to !== null
-        ? [
-            [from, Math.min(to, landFrom)],
-            [Math.max(from, landTo), to],
-          ]
-            .filter(([start, end]) => start < end)
-            .flatMap(([start, end]) => contentOf(editor, after, start, end))
-        : [];
-    const matchingMoved = (tokens: Token[]) => {
-      const kept = trimWrapperBlocks(tokens, moved.tokens);
-
-      return kept.length === moved.tokens.length &&
-        kept.every(
-          ([, kind, letter], at) =>
-            kind === moved.tokens[at][1] && letter === moved.tokens[at][2]
-        )
-        ? kept
-        : undefined;
-    };
-    const landed = matchingMoved(
-      struckSource.some(([, kind]) => !kind.startsWith('block'))
-        ? struckSource
-        : contentOf(editor, after, landFrom, landTo)
-    );
 
     if (!landed) return;
 
@@ -409,3 +548,135 @@ export const placeMovedAnchors = (
       place(listener, endPlace(first), endPlace(second));
     }
   });
+
+type CutSession = Readonly<{
+  id: string;
+  moved: MovedAnchors;
+  value: EditorDocumentValue;
+}>;
+
+const CUT_SESSIONS = new WeakMap<object, CutSession>();
+const PASTES = new WeakMap<object, { moved: MovedAnchors | null }>();
+
+const removesAll = (
+  change: DocumentChange,
+  root: string,
+  units: readonly Unit[]
+) => {
+  const changed = getInternalDocumentChangeRanges(change, root);
+
+  return units.every(([from, to]) =>
+    changed.some(([start, end]) => start <= from && to <= end)
+  );
+};
+
+export const armCutSession = (
+  editor: Editor,
+  id: string,
+  moved: MovedAnchors,
+  change: DocumentChange
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const value = getPublishedAnchorValue(owner);
+
+  CUT_SESSIONS.delete(owner);
+  if (!value || !removesAll(change, moved.root, moved.removes)) return false;
+  CUT_SESSIONS.set(owner, { id, moved, value });
+
+  return true;
+};
+
+export const endCutSession = (editor: Editor) => {
+  CUT_SESSIONS.delete(getEditorRuntimeOwner(editor));
+};
+
+export const dispatchPaste = <T>(
+  editor: Editor,
+  readCutId: () => string | null,
+  run: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (PASTES.has(owner)) return run();
+
+  const session = CUT_SESSIONS.get(owner);
+  const moved =
+    session &&
+    session.value === getPublishedAnchorValue(owner) &&
+    session.id === readCutId()
+      ? session.moved
+      : null;
+
+  CUT_SESSIONS.delete(owner);
+  PASTES.set(owner, { moved });
+  try {
+    return moved ? withTrackedPastes(owner, run) : run();
+  } finally {
+    PASTES.delete(owner);
+  }
+};
+
+const remaindersAt = (
+  editor: Editor,
+  index: DocumentIndex,
+  value: EditorDocumentValue,
+  remainders: readonly Remainder[]
+): Remainder[] =>
+  remainders.flatMap((remainder) => {
+    const span = remainder.listener.move?.span(index, value);
+    const content =
+      span &&
+      edgeTokens(
+        contentUnits(editor, index, Math.min(...span), Math.max(...span))
+      );
+
+    return span && content
+      ? [
+          {
+            ...remainder,
+            content: [content[0][0], content[1][0] + 1] as const,
+            span,
+          },
+        ]
+      : [];
+  });
+
+const placePasted = <T>(
+  editor: Editor,
+  moved: MovedAnchors,
+  apply: () => T
+) => {
+  const { builder } = getDefined(getTransactionSnapshot(editor));
+
+  if (builder.draftSteps.length > 0) return apply();
+
+  const remainders = remaindersAt(
+    editor,
+    builder.getIndex(moved.root),
+    builder.value as EditorDocumentValue,
+    moved.remainders
+  );
+  const before = getTransactionLanding(editor);
+  const result = apply();
+  const track = getTransactionLanding(editor);
+
+  if (track && track !== before && track.root === moved.root) {
+    placeMovedAnchors(editor, { ...moved, remainders }, track);
+  }
+
+  return result;
+};
+
+export const landPaste = <T>(editor: Editor, apply: () => T) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const paste = PASTES.get(owner);
+  const moved = paste?.moved;
+
+  if (!paste || !moved) return apply();
+
+  paste.moved = null;
+
+  const place = () => placePasted(owner, moved, apply);
+
+  return isInTransaction(owner) ? place() : editor.update(place);
+};

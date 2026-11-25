@@ -12,6 +12,7 @@ import {
 } from '../..';
 import { withAuthoredUpdateView } from '../../core/authored-runtime';
 import { withCompositionStamp } from '../../core/composition-stamp';
+import { dispatchPaste, landPaste } from '../../core/moved-anchors';
 import {
   type NativeGroupingInput,
   nativeGroupingInput,
@@ -26,6 +27,7 @@ import {
 import { capturePlacement, holdsCaretAt } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
+import { readClipboardCut } from '../../dom/utils/dom';
 import type { DOMSelectionPoints } from '../../dom/utils/selection-writes';
 import { getViewPresentation } from '../../editor-runtime-view';
 import { getDefined } from '../../internal/get-defined';
@@ -422,7 +424,7 @@ const applyProjectedViewSelectionDataCommand = ({
         projectedHistoryRange,
         viewSelection
       );
-      applyTransactionSpec(runtimeEditor, pasted);
+      landPaste(editor, () => applyTransactionSpec(runtimeEditor, pasted));
 
       return true;
     }
@@ -730,24 +732,30 @@ export const applyEditableCommand = ({
     }
 
     case 'insert-data': {
-      const projected = applyProjectedViewSelectionDataCommand({
-        data: command.data,
+      return dispatchPaste(
         editor,
-      });
+        () => readClipboardCut(command.data),
+        () => {
+          const projected = applyProjectedViewSelectionDataCommand({
+            data: command.data,
+            editor,
+          });
 
-      if (projected !== false) return projected;
+          if (projected !== false) return projected;
 
-      const selection = readRuntimeSelection(editor);
+          const selection = readRuntimeSelection(editor);
 
-      return editor.update((tx) => {
-        if (SelectionApi.isNode(selection)) {
-          tx.selection.set(selection);
+          return editor.update((tx) => {
+            if (SelectionApi.isNode(selection)) {
+              tx.selection.set(selection);
+            }
+
+            return toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
+              command.data
+            );
+          });
         }
-
-        return toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
-          command.data
-        );
-      });
+      );
     }
 
     case 'insert-text': {

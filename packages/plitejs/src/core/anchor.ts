@@ -103,10 +103,10 @@ const SAVED_RANGES = new WeakMap<
   }
 >();
 const RELEASED_RANGES = new WeakSet<Anchor<Range>>();
-const ANCHOR_RUNTIME_IDS = new WeakMap<Anchor<AnchorValue>, number>();
+const ANCHOR_RUNTIME_IDS = new WeakMap<object, number>();
 
 /** The runtime ID that history's anchor records name this anchor by. */
-export const getAnchorRuntimeId = (anchor: Anchor<AnchorValue>) =>
+export const getAnchorRuntimeId = (anchor: object) =>
   ANCHOR_RUNTIME_IDS.get(anchor) ?? null;
 
 /**
@@ -1315,15 +1315,7 @@ export function createAnchor<TValue extends AnchorValue>(
       const currentNode = next.node(runtimePath);
 
       if (isTextNode(sourceNode) && isTextNode(currentNode)) {
-        const tracked = change.mapPosition(source.positionAt(state.point), {
-          association: endpointAssociation === -1 ? 'backward' : 'forward',
-          track: 'around',
-          ...(root === 'main' ? {} : { root }),
-        });
-
-        if (tracked !== null && canonicalMapping?.runtimeStable) {
-          return canonicalMapping;
-        }
+        if (canonicalMapping?.runtimeStable) return canonicalMapping;
 
         if (
           preserveSamePathOffset &&

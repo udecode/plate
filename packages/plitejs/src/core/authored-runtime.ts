@@ -135,14 +135,24 @@ export const withAuthoredUpdateView = <T>(
 export const getAuthoredUpdateView = (editor: Editor) =>
   UPDATE_VIEWS.get(getEditorRuntimeOwner(editor)) ?? editor;
 
+const VIEW_COMMIT_SOURCES = new WeakMap<EditorCommit, EditorCommit>();
+
+export const getViewCommitSource = (commit: EditorCommit) =>
+  VIEW_COMMIT_SOURCES.get(commit) ?? commit;
+
 export const getAuthoredViewCommit = <V extends Value>(
   view: Editor,
   commit: EditorCommit<V>
-): EditorCommit<V> =>
-  (AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.viewCommit(
+): EditorCommit<V> => {
+  const shown = (AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.viewCommit(
     view,
     commit
   ) ?? commit) as EditorCommit<V>;
+
+  if (shown !== commit) VIEW_COMMIT_SOURCES.set(shown, commit);
+
+  return shown;
+};
 
 export const registerAuthoredRuntime = (
   editor: Editor,

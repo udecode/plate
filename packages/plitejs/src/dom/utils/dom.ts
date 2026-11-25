@@ -340,6 +340,48 @@ export const markPlainTextPaste = (data: DataTransfer) => {
 
 export const isPlainTextPaste = (data: object) => plainTextPastes.has(data);
 
+const CUT_MIME_TYPE = 'application/x-editor-cut';
+const catchTagName = /^<[A-Za-z][^\s/>]*/;
+const catchLeadingEditorCut = /^<[A-Za-z][^\s/>]*\s+data-editor-cut="([^"]*)"/;
+
+export const readClipboardCut = (
+  data: Pick<DataTransfer, 'getData'>
+): string | null => {
+  if (isPlainTextPaste(data)) return null;
+
+  const id = data.getData(CUT_MIME_TYPE);
+
+  if (id) return id;
+
+  for (const [tag] of data.getData('text/html').matchAll(catchOpeningHtmlTag)) {
+    if (catchEditorFragment.test(tag)) {
+      return tag.match(catchLeadingEditorCut)?.[1] ?? null;
+    }
+  }
+
+  return null;
+};
+
+export const writeClipboardCut = (
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  id: string
+) => {
+  const html = data.getData('text/html');
+  let tagged = false;
+
+  data.setData(CUT_MIME_TYPE, id);
+  if (!html) return;
+  data.setData(
+    'text/html',
+    html.replace(catchOpeningHtmlTag, (tag) => {
+      if (tagged || !catchEditorFragment.test(tag)) return tag;
+      tagged = true;
+
+      return tag.replace(catchTagName, `$& data-editor-cut="${id}"`);
+    })
+  );
+};
+
 export const readClipboardFragmentPayload = (
   data: Pick<DataTransfer, 'getData'> & Partial<Pick<DataTransfer, 'types'>>,
   clipboardFormatKey: string

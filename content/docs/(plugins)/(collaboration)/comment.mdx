@@ -111,7 +111,7 @@ Click “overlapping” to open both conversations. Edit the highlighted text, t
 
 <ComponentPreview name="comment-overlap-demo" height="360px" />
 
-Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside. An intentional atomic replacement carries the target to its replacement text. Deleting the target and typing later is a separate edit, so the later text does not inherit the comment. Content that lands between a deleted range's ends can still join it, such as text typed into a paragraph the range emptied, a block moved into that spot, or same-style text the delete joins to the range's first letters. When no range can be shown, `attachment(id)` reports `unavailable`; **All comments** keeps the thread and its original excerpt reachable without a stale block badge. Undo and redo in the live session restore mapped coverage, including backward direction and overlaps.
+Inserting text inside a range expands it; deleting text contracts it. Text inserted at either boundary stays outside. An intentional atomic replacement carries the target to its replacement text. Deleting the target and typing later is a separate edit, so the later text does not inherit the comment. Content that lands between a deleted range's ends can still join it, such as text typed into a paragraph the range emptied, a block moved into that spot, or a letter in a new style typed where a deleted range crossed a style change. When no range can be shown, `attachment(id)` reports `unavailable`; **All comments** keeps the thread and its original excerpt reachable without a stale block badge. Undo and redo in the live session restore mapped coverage, including backward direction and overlaps.
 
 ### Save, reload, and retry
 

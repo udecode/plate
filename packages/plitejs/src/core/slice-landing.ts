@@ -131,13 +131,30 @@ export const planPaste = (
   };
 };
 
+const TRACKED_PASTES = new WeakSet<object>();
+
+export const withTrackedPastes = <T>(editor: Editor, run: () => T): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  TRACKED_PASTES.add(owner);
+  try {
+    return run();
+  } finally {
+    TRACKED_PASTES.delete(owner);
+  }
+};
+
 export const writePaste = (
   editor: Editor,
   plan: PastePlan,
-  options: Readonly<{ landing?: true }> = {}
+  requested: Readonly<{ landing?: true }> = {}
 ):
   | Readonly<{ lossy: boolean; spec: TransactionSpec; written: ContentSlice }>
   | false => {
+  const options = TRACKED_PASTES.has(getEditorRuntimeOwner(editor))
+    ? { landing: true as const }
+    : requested;
+
   if (plan.emptyBlockReplacement) {
     const fit = fitSliceAtSite(editor, plan.site, plan.emptyBlockReplacement, {
       ...options,

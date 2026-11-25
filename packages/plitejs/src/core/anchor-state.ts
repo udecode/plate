@@ -5,6 +5,7 @@ import type {
   NodeKey,
 } from '../interfaces/editor';
 import { PointApi } from '../interfaces/point';
+import { getViewCommitSource } from './authored-runtime';
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
@@ -199,6 +200,7 @@ const COHERENT_ANCHOR_WORK = new WeakMap<Editor, AnchorStateWork[]>();
 const ANCHOR_RUNTIME_ID = new WeakMap<Editor, number>();
 const ANCHOR_TRANSACTION_CEILING = new WeakMap<Editor, number>();
 const COMMIT_ANCHOR_HISTORY = new WeakMap<EditorCommit, AnchorHistoryCapture>();
+const COMMIT_MOVED_ANCHORS = new WeakMap<EditorCommit, ReadonlySet<number>>();
 const STAGED_ANCHOR_PLACEMENTS = new WeakMap<object, AnchorPlacement>();
 const STAGED_ANCHOR_HISTORY = new WeakMap<
   Editor,
@@ -444,6 +446,12 @@ export const hasActiveAnchors = (editor: object) =>
 
 export const getAnchorStateValue = (editor: Editor) =>
   getActiveAnchorState(editor)?.value;
+
+export const getPublishedAnchorValue = (editor: Editor) =>
+  ACTIVE_ANCHORS.get(editor)?.value;
+
+export const getMovedAnchorIds = (commit: EditorCommit) =>
+  COMMIT_MOVED_ANCHORS.get(getViewCommitSource(commit));
 
 const indexRoot = (
   value: EditorDocumentValue,
@@ -1295,6 +1303,7 @@ export const notifyAnchorChanges = (
     if (
       listener.move?.place(context.afterRoot(listener.root), after, ...ends)
     ) {
+      PREPARING_ANCHOR_STATES.get(state)?.moved.add(listener);
       indexAnchorListener(state, listener);
     }
   });
@@ -1384,6 +1393,7 @@ export const commitAnchorTransaction = (
           deferredMemoize,
           true
         );
+        preparing?.moved.add(listener);
         recoveredAnchors += 1;
         continue;
       }
@@ -1419,6 +1429,7 @@ export const commitAnchorTransaction = (
           false
         )
       ) {
+        PREPARING_ANCHOR_STATES.get(state)?.moved.add(listener);
         indexAnchorListener(state, listener);
       }
       commitPreparedAnchorListener(state, listener, value, commit);
@@ -1573,6 +1584,7 @@ type PreparedAnchorWork = {
     AnchorStateListener,
     { fallback: boolean; nodeKeys: readonly NodeKey[] }
   >;
+  moved: Set<AnchorStateListener>;
   pending: Set<AnchorStateListener>;
   publications: Array<() => void>;
 };
@@ -1622,6 +1634,7 @@ export const prepareAnchorPublication = (
   const preparing: PreparedAnchorWork = {
     before: before?.value as EditorDocumentValue,
     indexes: new Map(),
+    moved: new Set(),
     pending: new Set(),
     publications: [],
   };
@@ -1683,6 +1696,16 @@ export const prepareAnchorPublication = (
           state.value = next.value;
           state.indexes = next.indexes;
           for (const publish of preparing.publications) publish();
+          if (preparing.indexes.size > 0 || preparing.moved.size > 0) {
+            COMMIT_MOVED_ANCHORS.set(
+              commit,
+              new Set(
+                [...preparing.indexes.keys(), ...preparing.moved].flatMap(
+                  (listener) => state.runtimeIds.get(listener) ?? []
+                )
+              )
+            );
+          }
           for (const [listener, patch] of preparing.indexes) {
             applyPreparedAnchorIndex(
               state,
