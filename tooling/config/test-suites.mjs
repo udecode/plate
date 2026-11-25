@@ -2,6 +2,7 @@
 // the selected suite on Bun so reporter, watch, and bail behavior stays intact.
 export const TEST_NODE_FILE_PATTERNS = [
   '.agents/rules/**/*.test.mjs',
+  'tooling/device/**/*.test.mjs',
   'tooling/scripts/**/*.test.mjs',
   // oxlint's RuleTester refuses to run under Bun.
   'tooling/oxlint/plate-plugin.test.mjs',
@@ -20,6 +21,7 @@ export const TEST_FILE_PATTERNS = [
   'benchmarks/editor/benchmarks/*.test.ts',
   'benchmarks/editor/benchmarks/{external-text,markdown-streaming}-measurement.test.mjs',
   'packages/**/*.spec.{ts,tsx}',
+  'tooling/device/**/*.test.mjs',
   'tooling/scripts/**/*.test.mjs',
   'tooling/oxlint/**/*.test.mjs',
 ];
