@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 
 import {
   isArrayTypeNode,
@@ -659,7 +659,8 @@ export class NativeTypeScriptSession {
   readonly #api: API;
   readonly #cwd: string;
   readonly #helperPathByEntry = new Map<string, string>();
-  #helperSources = new Map<string, string>();
+  readonly #virtualConfigPathByConfig = new Map<string, string>();
+  #virtualFiles = new Map<string, string>();
   #snapshot: Snapshot | undefined;
 
   constructor(cwd: string) {
@@ -667,32 +668,9 @@ export class NativeTypeScriptSession {
     this.#api = new API({
       cwd: this.#cwd,
       fs: {
-        getAccessibleEntries: (directoryName) => {
-          const directory = resolve(directoryName);
-          const virtualFiles = [...this.#helperSources.keys()].filter(
-            (path) => dirname(path) === directory
-          );
-
-          if (virtualFiles.length === 0) return undefined;
-          const entries = readdirSync(directory, { withFileTypes: true });
-
-          return {
-            directories: entries
-              .filter((entry) => entry.isDirectory())
-              .map(({ name }) => name),
-            files: [
-              ...new Set([
-                ...entries
-                  .filter((entry) => entry.isFile())
-                  .map(({ name }) => name),
-                ...virtualFiles.map((path) => basename(path)),
-              ]),
-            ],
-          };
-        },
         fileExists: (path) =>
-          this.#helperSources.has(resolve(path)) ? true : undefined,
-        readFile: (path) => this.#helperSources.get(resolve(path)),
+          this.#virtualFiles.has(resolve(path)) ? true : undefined,
+        readFile: (path) => this.#virtualFiles.get(resolve(path)),
       },
     });
   }
@@ -701,8 +679,22 @@ export class NativeTypeScriptSession {
     paths.forEach((path) => {
       const resolvedPath = resolve(path);
 
-      this.#helperSources.delete(resolvedPath);
+      this.#virtualFiles.delete(resolvedPath);
     });
+  }
+
+  #virtualConfigPath(configPath: string) {
+    const existing = this.#virtualConfigPathByConfig.get(configPath);
+
+    if (existing) return existing;
+    const path = join(
+      dirname(configPath),
+      `__editor_schema_${process.pid}_${randomUUID()}.tsconfig.json`
+    );
+
+    this.#virtualConfigPathByConfig.set(configPath, path);
+
+    return path;
   }
 
   helperPath(entryPath: string) {
@@ -724,51 +716,81 @@ export class NativeTypeScriptSession {
     helpers: readonly NativeTypeHelper[]
   ): Promise<readonly NativeTypeMaterialization[]> {
     const configs = helpers.map(({ path }) => findEditorConfig(path));
-    const helperSources = new Map(
-      helpers.map(({ path, source }) => [resolve(path), source])
+    const helperPathsByConfig = new Map<string, string[]>();
+
+    helpers.forEach(({ path }, index) => {
+      const configPath = configs[index];
+
+      if (!configPath) return;
+      helperPathsByConfig.set(configPath, [
+        ...(helperPathsByConfig.get(configPath) ?? []),
+        resolve(path),
+      ]);
+    });
+    const virtualConfigs = await Promise.all(
+      [...helperPathsByConfig].map(async ([configPath, helperPaths]) => {
+        const { fileNames } = await this.#api.parseConfigFile(configPath);
+
+        return [
+          this.#virtualConfigPath(configPath),
+          JSON.stringify({
+            extends: configPath,
+            files: [
+              ...new Set([
+                ...fileNames.map((fileName) => resolve(fileName)),
+                ...helperPaths,
+              ]),
+            ],
+            include: [],
+          }),
+        ] as const;
+      })
     );
-    const createdHelpers = [...helperSources.keys()].filter(
-      (path) => !this.#helperSources.has(path)
+    const virtualFiles = new Map([
+      ...helpers.map(({ path, source }) => [resolve(path), source] as const),
+      ...virtualConfigs,
+    ]);
+    const createdFiles = [...virtualFiles.keys()].filter(
+      (path) => !this.#virtualFiles.has(path)
     );
-    const deletedHelpers = [...this.#helperSources.keys()].filter(
-      (path) => !helperSources.has(path)
+    const deletedFiles = [...this.#virtualFiles.keys()].filter(
+      (path) => !virtualFiles.has(path)
     );
-    const changedHelpers = [...helperSources].flatMap(([path, source]) =>
-      this.#helperSources.get(path) !== source && this.#helperSources.has(path)
+    const changedFiles = [...virtualFiles].flatMap(([path, source]) =>
+      this.#virtualFiles.get(path) !== source && this.#virtualFiles.has(path)
         ? [path]
         : []
     );
+    const looseHelpers = helpers.flatMap(({ path }, index) =>
+      configs[index] ? [] : [path]
+    );
     const previousSnapshot = this.#snapshot;
-    const previousHelperSources = this.#helperSources;
+    const previousVirtualFiles = this.#virtualFiles;
     let nextSnapshot: Snapshot;
 
-    this.#helperSources = helperSources;
+    this.#virtualFiles = virtualFiles;
     try {
       nextSnapshot = await this.#api.updateSnapshot({
-        ...(changedHelpers.length > 0 ||
-        createdHelpers.length > 0 ||
-        deletedHelpers.length > 0
+        ...(changedFiles.length > 0 ||
+        createdFiles.length > 0 ||
+        deletedFiles.length > 0
           ? {
               fileChanges: {
-                ...(changedHelpers.length > 0
-                  ? { changed: changedHelpers }
-                  : {}),
-                ...(createdHelpers.length > 0
-                  ? { created: createdHelpers }
-                  : {}),
-                ...(deletedHelpers.length > 0
-                  ? { deleted: deletedHelpers }
-                  : {}),
+                ...(changedFiles.length > 0 ? { changed: changedFiles } : {}),
+                ...(createdFiles.length > 0 ? { created: createdFiles } : {}),
+                ...(deletedFiles.length > 0 ? { deleted: deletedFiles } : {}),
               },
             }
           : {}),
-        openFiles: helpers.map(({ path }) => path),
-        openProjects: [
-          ...new Set(configs.filter((path): path is string => Boolean(path))),
-        ],
+        // Opening a helper through openFiles runs tsgo's default-project
+        // search, which climbs ancestor tsconfigs until one contains the file,
+        // so a repo-root config with include **/* loads the whole workspace.
+        // https://github.com/microsoft/typescript-go/blob/main/internal/project/projectcollectionbuilder.go (findOrCreateDefaultConfiguredProjectWorker)
+        ...(looseHelpers.length > 0 ? { openFiles: looseHelpers } : {}),
+        openProjects: virtualConfigs.map(([path]) => path),
       });
     } catch (error) {
-      this.#helperSources = previousHelperSources;
+      this.#virtualFiles = previousVirtualFiles;
 
       throw error;
     }
@@ -792,7 +814,11 @@ export class NativeTypeScriptSession {
       let project = projects.get(projectKey);
 
       if (!projects.has(projectKey)) {
-        project = await projectForHelper(nextSnapshot, helper.path, configPath);
+        project = await projectForHelper(
+          nextSnapshot,
+          helper.path,
+          configPath && this.#virtualConfigPath(configPath)
+        );
         projects.set(projectKey, project);
       }
 
@@ -828,7 +854,7 @@ export class NativeTypeScriptSession {
 
         if (diagnostics.length > 0) {
           throw new Error(
-            formatDiagnostics(diagnostics, this.#cwd, helperSources)
+            formatDiagnostics(diagnostics, this.#cwd, virtualFiles)
           );
         }
         const propertyEntries = await Promise.all(
@@ -842,7 +868,7 @@ export class NativeTypeScriptSession {
             }
             if (type.isErrorType()) {
               throw new Error(
-                `Cannot resolve generated type helper "${alias.name}" in ${project.configFileName}: ${await project.checker.typeToString(type)}`
+                `Cannot resolve generated type helper "${alias.name}" in ${projectKey}: ${await project.checker.typeToString(type)}`
               );
             }
 
@@ -881,7 +907,8 @@ export class NativeTypeScriptSession {
       this.#snapshot = undefined;
       try {
         this.#helperPathByEntry.clear();
-        this.#helperSources.clear();
+        this.#virtualConfigPathByConfig.clear();
+        this.#virtualFiles.clear();
       } finally {
         await this.#api.close();
       }
