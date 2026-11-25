@@ -68,13 +68,14 @@ or changing a `*-app` file.
 | --- | --- | --- | --- |
 | `src/registry/components/editor/floating-discussion.tsx` | own | The comment and suggestion column that stays beside the body on wide screens, falling back to Plate's popover on narrow ones. Plate keeps the popover design | 2026-11-17 |
 | `src/registry/components/editor/discussion.tsx` | changed | Only adds `export` to `SuggestionDiscussionCard` for the column to reuse. A sync keeps the export and merges Plate's fixes as usual | 2026-11-17 |
-| `src/registry/components/editor/database-static.tsx` | own | The database block's schema, which stores only the database page's `databaseId`, the type `useDatabase` returns, and the static version for export and the AI server, which writes only a link to the database page | 2026-11-19 |
-| `src/registry/components/editor/database.tsx` | own | The database block: draws the table or board for its view and switches between them. Data and edit functions come from `useDatabase` in plugin state, with no backend | 2026-11-19 |
+| `src/registry/components/editor/database-static.tsx` | own | The database block's schema, which stores only the database page's `databaseId`, the type `useDatabase` returns, the `database.write` history effect whose replay Potion injects through the plugin's `replayWrite` state, and the static version for export and the AI server, which writes only a link to the database page | 2026-11-19 |
+| `src/registry/components/editor/database.tsx` | own | The database block: draws the table or board for its view and switches between them, sends Cmd+Z and Cmd+Shift+Z inside it to the editor's history, and shows "Saving…" while a write is in flight. Data and edit functions come from `useDatabase` in plugin state, with no backend | 2026-11-19 |
 | `src/registry/components/editor/database-table.tsx` | own | The database table: one column per property, cell editing by type, adding, renaming, retyping and deleting columns and options, and "Show more" after 50 rows | 2026-11-19 |
 | `src/registry/components/editor/database-board.tsx` | own | The database board: one column per select option, "Show more" after 25 cards a column, dragging a card to change its value, and new cards in a column | 2026-11-19 |
 | `src/registry/lib/database.ts` and its test `database.test.ts` | own | The database data model: property, cell and view types with zod schemas, and pure functions to change properties, read and write cells and group the board. The server and the block share it | 2026-11-19 |
 | `src/registry/lib/database-grid.ts` and its test `database-grid.test.ts` | own | The table's keyboard cursor model: cursor state by row and column id, a key-to-action table, edge clamping, "Show more", and repair after rows or columns change. Pure functions, no DOM | 2026-11-19 |
 | `src/registry/components/editor/database-cell.tsx` | own | The table cell editor: mounted only while editing, saves on Enter, Tab, Escape and an outside click, and edits text, number, date, select and checkbox by type | 2026-11-19 |
+| `src/registry/lib/database-clipboard.ts` and its test `database-clipboard.test.ts` | own | The table's clipboard: writes a range as tab-separated text, an HTML table and a Potion type, and reads a paste from the Potion type, an HTML table or tab-separated text into the writes, new rows and new select options a paste makes. Pure functions, no DOM beyond `DOMParser` | 2026-11-23 |
 
 ## App files
 
@@ -109,7 +110,8 @@ Ordinary Potion files that connect Plate, not `-app` files:
 | `src/components/editor/editor-kit.tsx` | Composes Plate's EditorKit: adds and removes plugins and swaps in Potion's versions |
 | `src/components/editor/upload-kit.ts` | Gives `UploadPlugin` a `createFilesClient` and the gateway download URL per document id; cover uploads use it too |
 | `src/server/files.ts` | Connects the registry's `createFilesGateway`: `resolveAccess` checks the session and document access, and `FILES_STORAGE` picks the storage adapter |
-| `src/components/editor/database-kit.tsx` | Gives `DatabasePlugin` its `useDatabase`, which reads a snapshot through tRPC's `database.get` and gives the owner edit functions that update the cache first and send requests in order, and adds a "Database" slash item per document id that creates through `database.create` |
+| `src/components/editor/database-kit.tsx` | Gives `DatabasePlugin` its `useDatabase`, which reads a snapshot through tRPC's `database.get` and gives the owner edit functions that update the cache first, send requests in order and record each write as an undo step, and adds a "Database" slash item per document id that creates through `database.create` |
+| `src/components/editor/database-history.ts` | Replays a database undo or redo step through `database.write`: waits for the step's own save, sends the values it expects, and skips with a toast when the cells changed since |
 | `src/components/editor/editor-static-kit.ts` | Composes Plate's `BaseEditorKit` with the database block's static version, for export and the AI server |
 
 ## Waiting on Plate injection points
