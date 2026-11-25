@@ -476,11 +476,31 @@ export const decidedChangesIn = (
 // Rejecting an own change that still holds a claim in the result would
 // delete its other letters too, so a withdrawal rejects only the ones the
 // batch removes whole.
+const changesHeldIn = (document: JsonEditorValue) => {
+  const members = contentMembersOf(document);
+  const liveContexts = new Set(
+    members.flatMap((member) => ('ctx' in member ? [member.ctx] : []))
+  );
+  const store = getValueRecords(document);
+
+  return new Set([
+    ...members.flatMap((member) => ('author' in member ? [member.change] : [])),
+    ...[...getRecordEntries(store, CONTEXTS)].flatMap(([ctx, json]) =>
+      liveContexts.has(ctx)
+        ? (parseContext(ctx, json)?.member.change ?? [])
+        : []
+    ),
+    ...[...getRecordEntries(store, RESERVES)].flatMap(
+      ([id, json]) => parseReserve(id, json)?.change ?? []
+    ),
+  ]);
+};
+
 const ownChangesRemovedBy = (
   { after, before }: AuthoredStep,
   { actor }: SyncGrant
 ) => {
-  const kept = new Set(changeClaimsIn(after).map(({ change }) => change));
+  const kept = changesHeldIn(after);
 
   return [
     ...new Set(

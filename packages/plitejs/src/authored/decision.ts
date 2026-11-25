@@ -483,7 +483,10 @@ export const decide = (
 ): Decided => {
   const ids = [...actions.keys()];
   const outcome = (change: string) => actions.get(change) ?? 'keep';
-  const resolveOptions = { stores: true, withdraws };
+  const decidingAuthors = new Set(
+    ids.flatMap((id) => book.occurrences(id).map(({ mark }) => mark.author))
+  );
+  const resolveOptions = { decidingAuthors, stores: true, withdraws };
   const windows = decisionWindowsOf(
     value,
     ids,
@@ -614,6 +617,9 @@ export const decide = (
     .filter(
       (id) =>
         !actions.has(id) &&
+        book
+          .occurrences(id)
+          .some(({ mark }) => decidingAuthors.has(mark.author)) &&
         (inDroppedRoots.has(id) ||
           (!remains(id) && book.occurrences(id).some(losesText)))
     );

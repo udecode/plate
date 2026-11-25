@@ -624,6 +624,7 @@ export type AuthoredResolveOptions = Readonly<{
   /** The containers the children sit in, nearest first; none at a root. */
   site?: readonly JsonNode[];
   cutIndex?: CutIndex;
+  decidingAuthors?: ReadonlySet<string> | 'every';
 }>;
 
 type LeftFragment = Readonly<{ block: TextBlock; node: Node; root: string }>;
@@ -1112,6 +1113,7 @@ export const resolveAuthoredChildren = (
  * left half the deciding run found. It stops once it has the verdict.
  */
 type Probe = {
+  othersPending: ReadonlySet<string>;
   key: string | Node;
   left: Node;
   /** The keys the deciding run's join takes from the right half. */
@@ -1389,6 +1391,38 @@ const resolveIn = (
       if (decisionOf(mark) === 'keep') waits.add(mark.change);
     }
   };
+  let { decidingAuthors } = options;
+  const decidingAuthorsIn = (nodes: readonly Node[], into: Set<string>) => {
+    for (const node of nodes) {
+      for (const mark of readAuthoredMarks(node)) {
+        if (outcomeOf(mark.change) !== 'keep') into.add(mark.author);
+      }
+      decidingAuthorsIn(node.children ?? [], into);
+    }
+
+    return into;
+  };
+  const deciders = () =>
+    (decidingAuthors ??=
+      typeof outcome === 'string'
+        ? 'every'
+        : decidingAuthorsIn(children, new Set()));
+  const byAnotherAuthor = (mark: AuthoredMark) => {
+    const authors = deciders();
+
+    return (
+      !isEditingChange(mark.change) &&
+      authors !== 'every' &&
+      !authors.has(mark.author)
+    );
+  };
+  const waitOnOwn = (marks: readonly AuthoredMark[]) => {
+    for (const mark of marks) {
+      if (decisionOf(mark) === 'keep' && !byAnotherAuthor(mark)) {
+        waits.add(mark.change);
+      }
+    }
+  };
   const waitOnPlaceChanges = (at: readonly Node[]) => {
     for (const node of at) wait(pending(node).filter(isPlaceChange));
   };
@@ -1492,6 +1526,7 @@ const resolveIn = (
     outcome: (tag) =>
       isRejected(facts, tag) ? 'reject' : outcomeOf(tag.change),
     output: elementSplitOutput(schema?.ownership ?? null),
+    byAnotherAuthor,
   };
   const decidedPropsOf = (node: Node) =>
     decideFormats(propsOf(node), pending(node), reading)?.props ??
@@ -1512,9 +1547,14 @@ const resolveIn = (
   const halfOf = (
     node: Node,
     claims: readonly AuthoredMark[],
-    place: Place
+    place: Place,
+    othersStayJoined: (tag: FormatTag) => boolean = () => false
   ): Half => {
-    const formats = decideFormats(propsOf(node), claims, reading);
+    const formats = decideFormats(propsOf(node), claims, {
+      ...reading,
+      outcome: (tag) =>
+        othersStayJoined(tag) ? 'reject' : reading.outcome(tag),
+    });
     const values = formats?.props ?? propsOf(node);
 
     return {
@@ -1557,23 +1597,36 @@ const resolveIn = (
     assignment: Assignment,
     key: string | Node,
     left: Node,
-    rightKeys: ReadonlySet<string>
+    rightKeys: ReadonlySet<string>,
+    othersPending: ReadonlySet<string>
   ) => {
-    const id = [...assignment]
-      .map(([change, action]) => `${action}:${change}`)
-      .join(' ');
+    const id = [
+      ...[...assignment].map(([change, action]) => `${action}:${change}`),
+      ...[...othersPending].map((change) => `others:${change}`),
+    ].join(' ');
     const known = probed.get(key)?.get(id);
 
     if (known) return known;
 
-    const run: Probe = { key, left, rightKeys, settled: undefined };
+    const run: Probe = {
+      othersPending,
+      key,
+      left,
+      rightKeys,
+      settled: undefined,
+    };
 
     resolveIn(
       given,
       (change) => assignment.get(change) ?? outcomeOf(change),
       schema,
       root,
-      { ...options, dependencies: createDependencies(facts), facts },
+      {
+        ...options,
+        decidingAuthors: deciders(),
+        dependencies: createDependencies(facts),
+        facts,
+      },
       run
     );
     const found = getDefined(run.settled);
@@ -1640,30 +1693,57 @@ const resolveIn = (
     stays?: (mark: AuthoredMark) => boolean
   ): Verdict | 'wait' => {
     let rightKeys: ReadonlySet<string> | undefined;
-    const undecided = (mark: AuthoredMark) =>
-      !decidedWholeByGridPart(mark, around.place) && !stays?.(mark);
-    const unheld = (half: Half) => ({
-      ...half,
-      pending: half.pending.filter(undecided),
-    });
-    const result = verdictOf(
-      schema?.ownership ?? null,
-      { ...halves, left: unheld(halves.left), right: unheld(halves.right) },
-      around,
-      {
-        pendingOf: pendingOf && ((node) => pendingOf(node).filter(undecided)),
-        probe: probe
-          ? null
-          : (assignment) =>
-              probeUnder(
-                assignment,
-                key,
-                storedLeft,
-                (rightKeys ??= rightKeysOf(halves))
-              ),
-        survives,
+    const others = new Set<string>();
+    const settleWithOthersPending = (othersPending: ReadonlySet<string>) => {
+      const undecided = (mark: AuthoredMark) => {
+        if (byAnotherAuthor(mark)) others.add(mark.change);
+
+        return (
+          !decidedWholeByGridPart(mark, around.place) &&
+          !stays?.(mark) &&
+          !othersPending.has(mark.change)
+        );
+      };
+      const unheld = (half: Half) => ({
+        ...half,
+        pending: half.pending.filter(undecided),
+      });
+
+      return verdictOf(
+        schema?.ownership ?? null,
+        { ...halves, left: unheld(halves.left), right: unheld(halves.right) },
+        around,
+        {
+          pendingOf: pendingOf && ((node) => pendingOf(node).filter(undecided)),
+          probe: probe
+            ? null
+            : (assignment) =>
+                probeUnder(
+                  assignment,
+                  key,
+                  storedLeft,
+                  (rightKeys ??= rightKeysOf(halves)),
+                  othersPending
+                ),
+          survives,
+        }
+      );
+    };
+    let othersPending = probe?.othersPending ?? new Set<string>();
+    let result = settleWithOthersPending(othersPending);
+
+    if (probe?.key !== key) {
+      while (
+        'waits' in result &&
+        result.waits.length > 0 &&
+        result.waits.every(
+          (change) => others.has(change) && !othersPending.has(change)
+        )
+      ) {
+        othersPending = new Set([...othersPending, ...result.waits]);
+        result = settleWithOthersPending(othersPending);
       }
-    );
+    }
 
     if (probe?.key === key) {
       probe.settled =
@@ -1835,7 +1915,10 @@ const resolveIn = (
   ): Half | null => {
     const chain: readonly Node[] = [...[...ancestors].reverse(), ...site];
     const place = placeUnder(chain);
-    const left = halfOf(into, target, place);
+    const uncopied = (tag: FormatTag) =>
+      byAnotherAuthor(tag) &&
+      !own.some((mark) => mark.kind === 'format' && mark.id === tag.id);
+    const left = halfOf(into, target, place, uncopied);
     // A save from before the recorder tagged the continuation's type shows
     // only the type Editing's split would have forced there.
     const typed = own.some(
@@ -1885,7 +1968,9 @@ const resolveIn = (
       ? []
       : (into.children ?? []).flatMap(contentMarksIn);
 
-    return !rejoins || keepsContent(into, joinOf(node))
+    const reshapedByAnother = () =>
+      pending(into).filter(isStructureChange).some(byAnotherAuthor);
+    return !rejoins || keepsContent(into, joinOf(node)) || reshapedByAnother()
       ? { merges: true, reads }
       : { merges: false, reads: [...reads, ...subtreeMarks(into)] };
   };
@@ -2034,19 +2119,11 @@ const resolveIn = (
     const { editingJoin, join } = structureOf(node);
 
     if (!join) return;
-    let deciders: Set<string> | undefined;
-    const othersPendingOnText = (mark: AuthoredMark) => {
-      if (editingJoin || (mark.kind !== 'insert' && mark.kind !== 'delete')) {
-        return false;
-      }
-      deciders ??= new Set(
-        pending(node).flatMap((own) =>
-          mergesUp(own, resultOf(own)) ? [own.author] : []
-        )
-      );
-
-      return !deciders.has(mark.author) && marksNonEmptyText(mark);
-    };
+    const othersPendingOnText = (mark: AuthoredMark) =>
+      !editingJoin &&
+      (mark.kind === 'insert' || mark.kind === 'delete') &&
+      byAnotherAuthor(mark) &&
+      marksNonEmptyText(mark);
     let target: Node | null = null;
     const waited =
       editingJoin || (node.children ?? []).some(keptContent)
@@ -2076,7 +2153,7 @@ const resolveIn = (
         retainedJoins.add(node);
         return;
       }
-      wait(waiting);
+      waitOnOwn(waiting);
       effect?.();
     };
 
@@ -2342,7 +2419,7 @@ const resolveIn = (
         mergedInto.has(previous) ||
         emptiedTargets.has(previous))
     ) {
-      wait(joins);
+      waitOnOwn(joins);
     }
   });
 
@@ -2391,6 +2468,17 @@ const resolveIn = (
       : cutIndex?.leftOf?.(cut);
   };
 
+  const leftOfOneInBlockCut = (node: Node) => {
+    const [cut, ...more] = cutsOf(node);
+    const sides = cut && cutSides.get(cut.cut);
+
+    return (
+      more.length === 0 &&
+      cut?.side === 'end' &&
+      sides?.start !== undefined &&
+      sides.start === sides.end
+    );
+  };
   const standsWhenCutDecides = ({ block, node }: LeftFragment) =>
     survives(node) || (ownMarkRemoves(node) && survives(block.node));
   const predecessorsOf = (
@@ -2774,6 +2862,7 @@ const resolveIn = (
       if (ownMarkRemoves(node) && !survives(node)) {
         // Its pending cuts would have nothing to join, so they decide with it.
         if (whole) takenWhole.add(original);
+        else if (leftOfOneInBlockCut(node)) waitOnOwn(cutsOf(node));
         else wait(cutsOf(node));
         // Corrections derive values from elements, not from text runs.
         if (isText(node)) changed = true;
@@ -2967,10 +3056,10 @@ const resolveIn = (
         ) {
           unplaceable = true;
         }
-        wait(pending({ [AUTHORED_MARKS_KEY]: formatted.kept }));
+        waitOnOwn(pending({ [AUTHORED_MARKS_KEY]: formatted.kept }));
         // Unwrapping moves the join boundary of the block's first child and
         // of the block after it.
-        wait(
+        waitOnOwn(
           [resolved[0], nodes[index + 1]].flatMap((item) =>
             pending(item).filter(
               (mark) => mark.kind === 'join' || mark.kind === 'split'
@@ -3001,7 +3090,7 @@ const resolveIn = (
       }
       landFormats();
       if (emptied) {
-        wait(
+        waitOnOwn(
           pending({ [AUTHORED_MARKS_KEY]: formatted.kept }).filter(
             (mark) => !decidedWholeByGridPart(mark, above)
           )
@@ -3042,8 +3131,13 @@ const resolveIn = (
   // Whether a claim still pending after this decision could change what
   // completing `container` builds, as the write rule that stored its spares
   // reads it, so the container keeps them.
-  const stillBuilds = (container: Node | null, inside: readonly Node[]) => {
+  const stillBuilds = (
+    container: Node | null,
+    inside: readonly Node[],
+    resolvedLevel?: readonly Node[]
+  ) => {
     const keeps = (mark: AuthoredMark) => decisionOf(mark) === 'keep';
+    const joins = new Set<AuthoredMark>();
     const standing = (level: readonly Node[]): readonly Node[] =>
       level.flatMap((child) =>
         ownMarkRemoves(child) && !survives(child)
@@ -3053,21 +3147,42 @@ const resolveIn = (
             : [child]
       );
 
-    return (
-      buildClaimsOf(
-        container,
-        standing(inside),
-        pending,
-        keeps,
-        (link, child) => {
-          const join = links.sourceOf(
-            [link],
-            getDefined(followerOrders.get(child))
-          )?.mark;
+    const claims = buildClaimsOf(
+      container,
+      standing(inside),
+      pending,
+      keeps,
+      (link, child) => {
+        const join = links.sourceOf(
+          [link],
+          getDefined(followerOrders.get(child))
+        )?.mark;
 
-          return join && keeps(join) ? join : null;
+        if (!join || !keeps(join)) return null;
+        joins.add(join);
+
+        return join;
+      }
+    );
+
+    if (!resolvedLevel || claims.length === 0) return claims.length > 0;
+
+    const standingChanges = new Set<string>();
+    const collect = (level: readonly Node[]) => {
+      for (const node of level) {
+        const marks = readAuthoredMarks(node);
+
+        for (const mark of marks) standingChanges.add(mark.change);
+        if (marks.some((mark) => mark.kind === 'unwrap')) {
+          collect(node.children ?? []);
         }
-      ).length > 0
+      }
+    };
+
+    collect(resolvedLevel);
+
+    return claims.some(
+      (mark) => joins.has(mark) || standingChanges.has(mark.change)
     );
   };
   // The slots each element's completion built from its spares, and the root's.
@@ -3080,16 +3195,16 @@ const resolveIn = (
     const [parent, ...ancestors] = at;
 
     // The element's type picks the content its completion builds for.
-    wait(
+    waitOnOwn(
       pending(parent).filter(
         (mark) => isPlaceChange(mark) || mark.kind === 'delete'
       )
     );
     for (const child of level) {
-      wait(pending(child).filter(isStructureChange));
+      waitOnOwn(pending(child).filter(isStructureChange));
     }
     for (const ancestor of ancestors) {
-      wait(pending(ancestor).filter(isStructureChange));
+      waitOnOwn(pending(ancestor).filter(isStructureChange));
     }
   };
   const waitOnPrefix = (
@@ -3112,15 +3227,18 @@ const resolveIn = (
       )
     );
   };
-  // An element built inside pending insertions is part of them, as the
-  // recorder's fills are, so rejecting any of them removes it.
-  const underInsertions = (
+  // An element built inside a pending insertion or deletion is part of it, as
+  // the recorder's fills are, so the decision that removes the content around
+  // it removes it too.
+  const underPendingContent = (
     completion: Completion<Node>,
     at: readonly Node[]
   ): Completion<Node> => {
     const marks = at.flatMap((node) =>
       pending(node).filter(
-        (mark) => mark.kind === 'insert' && decisionOf(mark) === 'keep'
+        (mark) =>
+          (mark.kind === 'insert' || mark.kind === 'delete') &&
+          decisionOf(mark) === 'keep'
       )
     );
 
@@ -3307,7 +3425,7 @@ const resolveIn = (
       else for (const key of keys) rootBuilt.add(key);
     }
 
-    const completion = underInsertions(completed, at);
+    const completion = underPendingContent(completed, at);
 
     if (completion.built.length > 0) {
       for (const item of completion.built) addUnstored(item.node);
@@ -3444,7 +3562,12 @@ const resolveIn = (
   const spares = new Map<string, string | null>();
 
   if (stores && rootSpares.length > 0) {
-    putRootSpares(rootSpares, stillBuilds(null, given), rootBuilt, spares);
+    putRootSpares(
+      rootSpares,
+      stillBuilds(null, given, resolvedChildren),
+      rootBuilt,
+      spares
+    );
   }
 
   return {
@@ -3728,7 +3851,11 @@ const mergeTextsWithEqualProps = (nodes: readonly Node[]): Node[] => {
   return out;
 };
 
-type ValueResolveOptions = Readonly<{ stores?: boolean; withdraws?: boolean }>;
+type ValueResolveOptions = Readonly<{
+  decidingAuthors?: ReadonlySet<string>;
+  stores?: boolean;
+  withdraws?: boolean;
+}>;
 
 const spareOpsOf = (resolutions: readonly AuthoredResolution[]) => {
   const ops = new Map(resolutions.flatMap(({ spares }) => [...spares]));

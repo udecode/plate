@@ -64,7 +64,11 @@ export type IsSplitOutput = (key: string, value: LayerValue) => boolean;
 
 export type ValueReading = Standing & Readonly<{ output: IsSplitOutput }>;
 
-export type KeyReading = ValueReading & Readonly<{ outcome: LayerOutcome }>;
+export type KeyReading = ValueReading &
+  Readonly<{
+    outcome: LayerOutcome;
+    byAnotherAuthor?: (tag: FormatTag) => boolean;
+  }>;
 
 export type KeyDecision = Readonly<{
   readsCopies: boolean;
@@ -476,7 +480,9 @@ export const decideKey = (
     if (statuses[index] !== 'keep' || free[index]) return;
     if ((firstReject !== -1 && index > firstReject) || index < lastAccept) {
       for (const tag of step.tags) {
-        if (of(tag) === 'keep') waits.add(tag.change);
+        if (of(tag) === 'keep' && !reading.byAnotherAuthor?.(tag)) {
+          waits.add(tag.change);
+        }
       }
     }
   });

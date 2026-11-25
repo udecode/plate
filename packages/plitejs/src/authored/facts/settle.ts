@@ -585,21 +585,50 @@ const pendingOn = (
     (mark) => outcomeOf(facts, mark) === 'pending' && test(mark)
   );
 
+const acceptedAuthorsIn = (
+  nodes: readonly Node[],
+  facts: ReviewFacts,
+  into = new Set<string>()
+) => {
+  for (const node of nodes) {
+    for (const mark of readAuthoredMarks(node)) {
+      if (outcomeOf(facts, mark) === 'accept') into.add(mark.author);
+    }
+    acceptedAuthorsIn(node.children ?? [], facts, into);
+  }
+
+  return into;
+};
+
 const buildWaits = (
   chain: readonly Node[],
   left: readonly Node[],
+  removed: readonly Node[],
   facts: ReviewFacts
-) =>
-  chain.some((node, at) =>
-    pendingOn(
-      node,
-      facts,
-      (mark) =>
-        mark.kind === 'insert' ||
-        isStructureChange(mark) ||
-        (at === 0 && (isPlaceChange(mark) || mark.kind === 'delete'))
+) => {
+  const deciders = acceptedAuthorsIn(removed, facts);
+  const own = (mark: ReturnType<typeof claimsOf>[number]) =>
+    deciders.size === 0 ||
+    isEditingChange(mark.change) ||
+    deciders.has(mark.author);
+
+  return (
+    chain.some((node, at) =>
+      pendingOn(
+        node,
+        facts,
+        (mark) =>
+          own(mark) &&
+          (mark.kind === 'insert' ||
+            isStructureChange(mark) ||
+            (at === 0 && (isPlaceChange(mark) || mark.kind === 'delete')))
+      )
+    ) ||
+    left.some((node) =>
+      pendingOn(node, facts, (mark) => own(mark) && isStructureChange(mark))
     )
-  ) || left.some((node) => pendingOn(node, facts, isStructureChange));
+  );
+};
 
 const donationRetracts = (read: Node, built: Node, site: Site, pass: Pass) => {
   if (isText(read) || isText(built)) return false;
@@ -700,7 +729,13 @@ const replacementsOf = (
   const slots = content?.prefix ?? 0;
 
   if (
-    (completion.built.length > 0 && buildWaits(chain, left, pass.facts)) ||
+    (completion.built.length > 0 &&
+      buildWaits(
+        chain,
+        left,
+        removed.map((at) => readAt(at)),
+        pass.facts
+      )) ||
     (slots > 0 &&
       slotDecidingInsertions(
         left as readonly JsonNode[],
@@ -716,7 +751,19 @@ const replacementsOf = (
     return null;
   }
 
-  const children = completion.children as readonly Node[];
+  const enclosing = chain.flatMap((node) =>
+    standingClaimsOf(node, pass.facts, pass.facts).filter(
+      (mark) =>
+        (mark.kind === 'insert' || mark.kind === 'delete') &&
+        outcomeOf(pass.facts, mark) === 'pending'
+    )
+  );
+  const builtNodes = new Set<unknown>(completion.built.map(({ node }) => node));
+  const children = (completion.children as readonly Node[]).map((node) =>
+    enclosing.length > 0 && builtNodes.has(node)
+      ? (pass.dependencies.throughout(node as JsonNode, enclosing) as Node)
+      : node
+  );
   const into = new Map<number, Node[]>(removed.map((at) => [at, []]));
   let gap: number[] = [];
   let filled = 0;
