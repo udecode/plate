@@ -25,8 +25,6 @@ or changing a `*-app` file.
   It lists files Plate no longer ships and deletes none.
 - A component Potion restyled is not overwritten whole; the next section says
   how it merges.
-- `.plate-ui-sync/forks/*.json` records Potion's v53 changes, 277 of them on
-  2026-11-06. The sync drops them on purpose; that is not a regression.
 
 ## Restyles
 

@@ -13,13 +13,11 @@ Handle $ARGUMENTS.
 
 Potion's Plate packages and UI components follow Plate. Potion may restyle a component and change its interaction once the owner calls that component ready, and a sync keeps those changes and merges in only Plate's bug fixes. This skill runs one Potion command, then checks what it wrote.
 
-It does not use `sync-plate-ui`'s state: `.plate-ui-sync/status.json`, `forks/` and `runs/`.
-
 ## Paths
 
 - Potion's main checkout is `potion` beside Plate's main checkout, which is the parent of `git rev-parse --path-format=absolute --git-common-dir`. Read every Potion file named below by its absolute path there. When that folder does not exist, say so and stop.
 - Before any change, read the `potion` skill and its registry reference (`.agents/rules/potion/references/registry.md`) in full.
-- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: sync and commit in a Potion worktree of its own, merge it into Potion's current branch with `git merge --ff-only`, and never push.
+- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: sync and commit in a Potion worktree of its own, fast-forward the branch it was cut from, and never push.
 
 ## Before you run it
 
@@ -59,4 +57,4 @@ Arguments:
    - Delete a file Plate no longer ships once nothing imports it. Keep Potion's own files: its tools in hooks and lib, and the files in the registry reference's table of Potion-only registry components.
 3. Run `bun typecheck`, then drive the editor in a browser as `verify`'s Potion stack recipe (`.agents/rules/verify/references/potion/stack.md`) says.
 4. An error in `src/registry` or in a Plate package is Plate's problem. Never fix it or work around it in Potion; handle it as the `potion` skill's Plate problems section says. Fix an error in Potion's own code, such as `src/components` or `src/server`, as usual.
-5. Report the size of the change from `git diff --stat` and the Plate commit range. Then commit in the Potion worktree and merge it into Potion's current branch with `git merge --ff-only`, without pushing.
+5. Report the size of the change from `git diff --stat` and the Plate commit range. Then commit in the Potion worktree and fast-forward the branch it was cut from, without pushing.

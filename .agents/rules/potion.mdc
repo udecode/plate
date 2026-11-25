@@ -6,12 +6,13 @@ description: The rules that tie Potion (../potion), Plate's largest real app, to
 
 Potion is the largest real app built on Plate. It is moving to Plate v54 (`platejs@54`) to test v54's API on a real product before v2 ships.
 
-Every Potion task runs from a Plate session; nobody runs a session inside Potion. This skill holds only the rules that tie Potion to Plate. Potion's rules for its own stack, such as React, Next.js, its stores and its tests, stay in Potion's `.claude/rules/`; read the one that Potion's `AGENTS.md` routes the change to.
+Every Potion task runs from a Plate session; nobody runs a session inside Potion, and Potion keeps no agent setup of its own. This skill holds the rules that tie Potion to Plate. [The conventions reference](./references/conventions.md) holds Potion's own code conventions, such as its UI, modals, toasts, stores and tests; read it before changing Potion's own code.
 
 ## Paths and delivery
 
 - Potion's main checkout is `potion` beside Plate's main checkout, which is the parent of `git rev-parse --path-format=absolute --git-common-dir`. When that folder does not exist, say so and stop.
-- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: commit in a Potion worktree of its own, merge it into Potion's current branch with `git merge --ff-only`, and never push.
+- Deliver as Plate `AGENTS.md`'s **Potion delivery** rule says: commit in a Potion worktree of its own, fast-forward the branch it was cut from, and never push.
+- A reply names a Potion commit by its short sha, with no link, because no remote holds it.
 
 ## Plate first
 
@@ -30,10 +31,20 @@ A problem the port exposes is Plate's first. Potion never hacks around it and ne
 
 ## Backend
 
-Potion reuses its backend unless that architecture clearly blocks the port: better-auth for sign-in, Prisma, Postgres and tRPC for data, and the Yjs server that Hocuspocus runs for collaboration.
+Potion v54 runs on Cloudflare Workers, as Potion's `docs/plans/2026-11-24-potion-cloudflare.md` plans (owner's call, 2026-11-24). The target stack:
 
-- A change to `src/server`, `prisma` or the Yjs server needs its row in the backend table of Potion's `docs/plate-v54/backend-changes.md` first, naming the blocker it answers.
-- A blocker with no row is no reason to change the backend.
+- TanStack Start on `@cloudflare/vite-plugin`, configured in `wrangler.jsonc`.
+- better-auth for sign-in. The workers.dev deploy uses email sign-up until go-live.
+- Drizzle on D1 for data. Row locks become conditional writes on a `revision` column, and a multi-row write is one `db.batch`.
+- Server functions and server routes for the API, called through TanStack Query.
+- Plate's Files SDK on R2 for uploads, through the registry's `upload-r2` recipe.
+- Browser Rendering for PDF export, and Upstash for rate limits.
+- No collaboration until Plate's native sync runs on Durable Objects.
+
+Until that plan's steps land, Potion still holds parts of the old stack: Next.js, Hono, tRPC, Prisma and the Yjs server. Each step replaces one part. Build new server code on the target stack, never on a part a step removes.
+
+- A change to `src/server` or the database schema needs its row in the backend table of Potion's `docs/plate-v54/backend-changes.md` first, naming the plan step or blocker it answers.
+- TanStack's own skills load from the Potion worktree. `npx @tanstack/intent@latest list` lists them, and `npx @tanstack/intent@latest load <package>#<skill>` prints one. Load each skill a change touches, such as start-core's `server-functions`, before writing it. Skip `intent install`, which writes agent config into Potion.
 
 ## Registry
 
@@ -44,6 +55,8 @@ Potion's `src/registry` holds Plate's UI components, synced from Plate, and stay
 | Work | Owner |
 | --- | --- |
 | Sync Plate's packages and UI into Potion | `sync-potion` |
+| Potion's own UI, modals, toasts, stores, validation and tests | [the conventions reference](./references/conventions.md) |
+| TanStack Start, Router and Query APIs | TanStack's skills, as the Backend section says |
 | `src/registry`, restyles, Potion-only editor UI and `*-app` files | [the registry reference](./references/registry.md) |
 | Reproduce a bug reported in Potion, or prove a Plate fix there | `verify`'s [Potion proof lane](../verify/references/potion.md) |
 | Run Potion locally, sign in a test user and drive a feature | `verify`'s [Potion stack recipe](../verify/references/potion/stack.md) |
