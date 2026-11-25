@@ -45,7 +45,7 @@ Potion v54 runs on Cloudflare Workers, as Potion's `docs/plans/2026-11-24-potion
 - Browser Rendering for PDF export, and Upstash for rate limits.
 - No collaboration until Plate's native sync runs on Durable Objects.
 
-Until that plan's steps land, Potion still holds parts of the old stack: Next.js, Hono, tRPC, Prisma and the Yjs server. Each step replaces one part. Build new server code on the target stack, never on a part a step removes.
+Steps 2 to 4 of that plan replaced Next.js, Hono, tRPC, Prisma and the Yjs server. Uploads, PDF fonts, secrets and rate limits are its later steps. Build new server code on the target stack.
 
 - A change to `src/server` or the database schema needs its row in the backend table of Potion's `docs/plate-v54/backend-changes.md` first, naming the plan step or blocker it answers.
 - TanStack's own skills load from the Potion worktree. `npx @tanstack/intent@latest list` lists them, and `npx @tanstack/intent@latest load <package>#<skill>` prints one. Load each skill a change touches, such as start-core's `server-functions`, before writing it. Skip `intent install`, which writes agent config into Potion.

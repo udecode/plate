@@ -19,8 +19,8 @@ the top right of the sidebar to make a new one.
 
 ## Driving it with the built-in browser
 
-1. `"$STACK" login > tmp/verify/login.json`, run its `setCookieJs` on
-   `http://127.0.0.1:3100/login`, open any listed document id.
+1. Sign the browser in as [stack.md](../stack.md)'s Sign in section says,
+   then open any page from the sidebar.
 2. Click the pencil icon right of the workspace name (top of the sidebar, at
    about x=215, y=17 in a 1024-wide viewport). The URL changes to a new
    `/<id>` and an `Untitled` row appears at the top of `Private`.
@@ -28,12 +28,12 @@ the top right of the sidebar to make a new one.
 4. Wait about 4 s for the save debounce, then reload the same URL.
 5. Proof: `get_page_text` shows the body after reload, the sidebar row and
    navbar breadcrumb show the title, and
-   `select title, content from "Document" where id = '<id>'` holds both, with
-   the body as `[{"type":"p","children":[{"text":…}]}]`.
+   `"$STACK" sql "select title, content, revision from Document where id = '<id>'"`
+   holds both, with the body as plain text and `revision` above 0.
 
 ## Gotchas
 
-- With collaboration off, the body saves to `Document.content`; `yjsSnapshot`
-  stays null. With it on, check `yjsSnapshot` instead (see collaboration.md).
+- A save is one update guarded on `revision`. A second tab that saves from an
+  older revision shows "This page changed somewhere else" and writes nothing.
 - On `localhost` instead of `127.0.0.1` the page reads "This document does
   not exist" because the session cookie is shadowed; see [stack.md](../stack.md)'s Launch.

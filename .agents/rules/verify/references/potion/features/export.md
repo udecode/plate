@@ -1,14 +1,14 @@
 # Export and print
 
-Export a page to a file, Word included. Server-side exports render
-`/print/<documentId>` with puppeteer and pass the user's cookies so the
-better-auth session validates. The first run lists the formats the menu
+Export a page to a file, Word included. The PDF route renders
+`/print/<documentId>` through Browser Rendering, the Worker's `BROWSER`
+binding, and passes the user's cookies so the better-auth session validates. The first run lists the formats the menu
 actually offers.
 
 ## Sub-features
 
 - Print route `/print/<id>`.
-- Puppeteer-rendered exports.
+- PDF export through `/api/export/pdf`.
 - DOCX export.
 
 ## How to get to it (user POV)
@@ -25,5 +25,5 @@ Navbar `More actions` (the `…` button) on a page, then the export entry.
 
 - Not yet driven by this recipe. Downloads need the user's go-ahead in the
   browser; save them under the evidence directory.
-- Puppeteer must reach the app on `127.0.0.1:3100`; check `next.log` for its
-  requests when an export hangs.
+- Browser Rendering must reach the app on `127.0.0.1:3000`; check
+  `tmp/verify/logs/vite.log` for its requests when an export hangs.

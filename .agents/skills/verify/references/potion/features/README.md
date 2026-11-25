@@ -6,12 +6,12 @@ proves it. Status says whether a run of this recipe has driven it end to end.
 
 | Feature | File | Entry points | Status |
 | --- | --- | --- | --- |
-| Documents: create, title, body, persist | [documents.md](documents.md) | sidebar new-page button, `/<id>` | driven 2026-10-28 |
+| Documents: create, title, body, persist | [documents.md](documents.md) | sidebar new-page button, `/<id>` | driven 2026-11-25 on the D1 stack |
 | Editor playground (no sign-in) | [editor-playground.md](editor-playground.md) | `/editor`, sidebar `Editor` | not yet driven |
-| Collaboration (Yjs) | [collaboration.md](collaboration.md) | navbar `Collaborate`, two tabs on `/<id>` | not yet driven |
+| Collaboration | [collaboration.md](collaboration.md) | off until native sync | none |
 | Publish and preview | [publish-preview.md](publish-preview.md) | navbar share, `/preview/<id>` | not yet driven |
 | Export and print | [export.md](export.md) | navbar `More actions`, `/print/<id>` | not yet driven |
 
-Routes come from `src/app`: `(main)/(protected)/page.tsx` (home),
-`(protected)/[documentId]`, `(auth)/login`, `(public)/preview/[documentId]`,
-`(export)/print/[documentId]`, `editor`, `(dev)/chat`.
+Routes come from `src/routes`: `_main/index.tsx` (home), `_main/$documentId.tsx`,
+`login.tsx`, `preview.$documentId.tsx`, `print.$documentId.tsx`, `editor.tsx`
+and `chat.tsx`. The `_main` layout signs out to `/login`.

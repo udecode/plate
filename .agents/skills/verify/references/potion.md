@@ -1,7 +1,8 @@
 # Potion proof lane
 
 Potion, the `potion` checkout beside Plate's main checkout, runs Plate's
-packages and registry UI inside a real app with a server, a database and Yjs.
+packages and registry UI inside a real app with a Worker, a D1 database and
+server functions.
 This lane reproduces a bug reported in Potion and proves a Plate fix there. It
 runs locally. A detached Potion worktree takes the Plate checkout under test
 through `sync-potion`'s command, and [the Potion stack recipe](./potion/stack.md)
@@ -17,7 +18,7 @@ starts the app, signs in a test user and drives it. No deploy is involved.
 This lane proves the Potion symptom only. Once it is red here, the Bug fix
 playbook's loop runs on the smallest Plate page or test that shows the bug, such as
 a www route, a Plite example or a unit test, because each Potion round costs a
-package build, an install and a `next dev` compile. When no Plate page or test
+package build, an install and a `vite dev` compile. When no Plate page or test
 shows the bug, check first whether Potion changed the file. The sync keeps Potion's
 version of a file it changed and saves Plate's as
 `.plate-ui-sync/base/<path>.base`. A bug in Potion's own code is fixed in
@@ -32,7 +33,8 @@ Run from the Plate worktree under test. `$POTION` is Potion's main checkout,
    [feature recipe](./potion/features/README.md) for the path under test.
 2. Cut the proof worktree, detached at Potion's current commit:
    `git -C $POTION worktree add --detach $PW HEAD`.
-3. Copy `tmp/plate-local/*.tgz` and `.env.local` from `$POTION` into `$PW`.
+3. Copy `tmp/plate-local/*.tgz`, `.env.local` and `.dev.vars` from `$POTION`
+   into `$PW`, without printing them.
 4. When the change touches `apps/www/src/registry`, run
    `pnpm --filter www build:registry` in the Plate worktree. The sync reads the
    built `apps/www/public/r`, not the registry source.
@@ -45,8 +47,8 @@ Run from the Plate worktree under test. `$POTION` is Potion's main checkout,
    its `tmp/plate-sync/review/<plate commit>/<path>.diff` to `$PW` by hand,
    leave it uncommitted and say so in the evidence.
 7. Run `export VERIFY_POTION=$PW`, set `STACK=.agents/skills/verify/scripts/potion-stack.sh`,
-   then run `"$STACK" up`, `doctor` and `login`, with the port and container
-   overrides the stack recipe's Launch section gives when a port is taken.
+   then run `"$STACK" up`, `doctor` and `login`, with `VERIFY_APP_PORT` when
+   the stack recipe's Launch section says the port is taken.
 8. Drive the report's steps as the stack recipe says.
 9. Copy `$PW/tmp/verify/evidence/<run>/` into `$RUN/potion/`. Record the Plate
    commit from `$PW/.plate-ui-sync/last-sync.json` and the tarball names from
