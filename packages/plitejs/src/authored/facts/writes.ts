@@ -1116,6 +1116,22 @@ export const authoredWritesOf = ({
             });
           }
         }
+        if (head && content[0] === content[1]) {
+          for (const run of keptRuns(entry.from, entry.from + 1)) {
+            const headPath = head.index.nodeStartingAt(run.at)?.path;
+
+            if (!headPath) continue;
+
+            const claims = governingOf(head, headPath);
+            const was = head.index.node(headPath);
+
+            compare(
+              carrierAt(entry.from),
+              { claims, node: was },
+              { claims: new Map([...claims, ...now]), node: was }
+            );
+          }
+        }
       }
     }
 

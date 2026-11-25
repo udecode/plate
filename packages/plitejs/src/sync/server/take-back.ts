@@ -18,6 +18,7 @@ import {
 } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { sameDocument } from '../protocol';
+import type { SyncGrant, SyncWriteCheck } from './grant';
 import { type LaterEntry, walkWindow, windowsOf } from './window';
 
 export type { LaterEntry } from './window';
@@ -259,6 +260,8 @@ const couldRestore = (entry: PutEntry, { blocks, records }: Changed) => {
 export const ownTakeBack = (
   entries: readonly LaterEntry[],
   writer: string,
+  grant: SyncGrant,
+  covers: SyncWriteCheck,
   head: JsonEditorValue,
   after: JsonEditorValue,
   schema: CompiledEditorSchema
@@ -275,7 +278,13 @@ export const ownTakeBack = (
     const change = takeBack(entry, head, schema);
     const result = change && resultOf(change, head);
 
-    if (result && sameDocument(result, after)) return change;
+    if (
+      result &&
+      sameDocument(result, after) &&
+      covers(entry, grant, schema).kind === 'covered'
+    ) {
+      return change;
+    }
   }
 
   return null;

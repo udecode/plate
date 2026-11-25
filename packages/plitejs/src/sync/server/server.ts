@@ -567,6 +567,8 @@ export const createSyncServer = <
       ownTakeBack(
         entries,
         writer,
+        grant,
+        authored.covers,
         room.value,
         batch.after,
         getCompiledEditorSchema(room.editor)
@@ -744,8 +746,7 @@ export const createSyncServer = <
       judgedCover?.kind === 'takes-back'
         ? await takenBackStepOf(room, judgedCover, judged, member.grant, writer)
         : judgedCover?.kind === 'refused' &&
-            judgedCover.why.kind === 'uncovered' &&
-            member.grant.access === 'edit'
+            judgedCover.why.kind === 'uncovered'
           ? await ownTakenBackStepOf(room, judged, member.grant, writer)
           : await coveredStepOf(room, judged, member.grant, judgedCover, head);
 
