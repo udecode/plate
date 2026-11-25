@@ -2,6 +2,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { PLATE_FACADE_DIFFS } from './check-plite-release-artifacts.mjs';
+
 const compareStrings = (left, right) => {
   if (left < right) return -1;
   if (left > right) return 1;
@@ -14,7 +16,12 @@ const docsRoots = [join(repoRoot, 'content/docs')];
 const pliteDocsPrefix = 'content/docs/plite/';
 const wwwPublicRoot = join(repoRoot, 'apps/www/public');
 const markdownImagePattern = /!\[[^\]]*\]\(([^)\s]+)/g;
-const inlineCodePattern = /`[^`]*`/g;
+const inlineCodePattern = /`[^`\n]*`/g;
+const identifierPattern = /[A-Za-z_$][\w$]*/g;
+const migrationGuides = [
+  'content/docs/migration/plite-to-plate.mdx',
+  'content/docs/migration/plite-to-plate.cn.mdx',
+];
 const absoluteUrlPattern = /^[a-z][a-z\d+.-]*:/i;
 const comparisonDocs = new Set([
   'content/docs/(guides)/performance.mdx',
@@ -713,8 +720,41 @@ function auditSlateV2Docs() {
     });
   }
 
+  for (const guide of migrationGuides) {
+    const source = readFileSync(join(repoRoot, guide), 'utf-8');
+
+    for (const { change, entrypoint, name } of unlistedFacadeNames(source)) {
+      failures.push(
+        `${guide}: ${entrypoint} ${change} Plite's ${name}, so the guide must list it in inline code with its Plate replacement`
+      );
+    }
+  }
+
   return failures;
 }
+
+export const unlistedFacadeNames = (source, diffs = PLATE_FACADE_DIFFS) => {
+  const listed = new Set(
+    (source.match(inlineCodePattern) ?? []).flatMap(
+      (span) => span.match(identifierPattern) ?? []
+    )
+  );
+
+  return Object.entries(diffs)
+    .flatMap(([entrypoint, { dropped, rebound }]) => [
+      ...rebound.map((name) => ({
+        change: 'rebinds',
+        entrypoint,
+        name,
+      })),
+      ...dropped.map((name) => ({
+        change: 'does not export',
+        entrypoint,
+        name,
+      })),
+    ])
+    .filter(({ name }) => !listed.has(name));
+};
 
 function runAudit() {
   const failures = auditSlateV2Docs();

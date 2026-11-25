@@ -17,11 +17,23 @@ Use feature packages only for the nodes, marks, or behavior you add to the
 editor. Plate UI users should start with [Plate UI](/docs/installation/plate-ui)
 instead of rebuilding every component by hand.
 
+## Unchanged Imports
+
+Plate re-exports Plite's document model with the same bindings. Unless
+[Renamed And Dropped Names](#renamed-and-dropped-names) lists a value, change
+only its import path: `plitejs` becomes `platejs`, and `plitejs/<entrypoint>`
+becomes `platejs/<entrypoint>`. `editor.read`, `editor.update`, `tx`, `NodeApi`
+and the rest of the document API work as before. `platejs/diff`,
+`platejs/history`, `platejs/hyperscript`, `platejs/pagination`,
+`platejs/testing`, `platejs/yjs` and `platejs/yjs/react` re-export their Plite
+entrypoint whole.
+
 ## Migration Map
 
 | Plite surface | Plate surface |
 | --- | --- |
-| `useEditor()` from `plitejs/react` | `useCreateEditor({ ... })` in React components, or `createEditor({ ... })` in factories and tests. |
+| `useEditor(options)` from `plitejs/react`, which creates an editor | `useCreateEditor(options)` in React components, or `createEditor(options)` in factories and tests. Plate's `useEditor()` returns the editor from context. |
+| `useEditorContext()` | `useEditor()`. |
 | `<EditorRoot>` plus `<Editable>` | `<EditorRoot>` plus `<EditorContent>`. |
 | `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
 | Plite plugins | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and format mappings built by `defineFormats`. |
@@ -40,7 +52,7 @@ import { EditorRoot, EditorContent, useCreateEditor } from 'platejs/react';
 
 const initialValue = [
   {
-    children: [{ text: 'Hello EditorRoot.' }],
+    children: [{ text: 'Hello world.' }],
     type: 'paragraph',
   },
 ];
@@ -122,13 +134,13 @@ const editor = createEditor({
 Put a reusable document command under the plugin's `update` contribution. The
 command is available inside `editor.update(...)` under the plugin name.
 
-```tsx title="components/editor/limit-exclamation-plugin.tsx" showLineNumbers
+```tsx title="components/editor/signature-plugin.tsx" showLineNumbers
 import { definePlugin } from 'platejs/react';
 
 export const SignaturePlugin = definePlugin('signature', {
   update: ({ tx }) => ({
     insert() {
-      tx.text.insert(' - EditorRoot');
+      tx.text.insert(' - Signed');
     },
   }),
 });
@@ -243,6 +255,95 @@ export const editor = createEditor({
   ],
 });
 ```
+
+## Renamed And Dropped Names
+
+These tables list each Plite value that Plate drops, renames, or exports under
+the same name with a different contract, and the types an app imports with
+them. Every other value keeps its binding, as
+[Unchanged Imports](#unchanged-imports) says.
+
+### Editor And Plugins
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `useEditor(options, deps)` | `useCreateEditor(options, deps)` | Plate's `useEditor()` takes no arguments and returns the editor from context. |
+| `useEditorContext()` | `useEditor()` | |
+| `useOptionalEditorContext()` | `useOptionalEditor()` | |
+| `useCaretEditor()` | `useEditor()` outside `EditorContent` | Outside every editing area, `useEditor()` returns the editor of the root that holds the caret. |
+| `createEditor(options)` | `createEditor(options)` from `platejs`, or from `platejs/react` in React | The options are the same except `clipboardFormatKey`, which Plate refuses. |
+| `definePlugin(name, definition)` | `definePlugin(name, definition)` from `platejs`, or from `platejs/react` in React | The definition fields are the same. The result is a Plate plugin with `.configure()` and `.extend()`, and a `name` key inside the definition throws. |
+| `useCommand(command, options)` | `editor.update.command(command, input)`, with the editor from `useEditor()` | Plate has no `root` or `focus` option for a command. |
+
+### Rendering
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `Editable` | `EditorContent` | Move `renderElement`, `renderLeaf`, `renderText`, `renderPlaceholder` and `renderVoid` into plugin components. The other props carry over. |
+| `PagedEditable` from `plitejs/pagination/react` | `PagedEditorContent` from `platejs/pagination/react` | The render props move into plugin components, as with `EditorContent`. |
+| `VirtualizedEditable` from `plitejs/react/virtualized` | `VirtualizedEditorContent` from `platejs/react/virtualized` | The render props move into plugin components, as with `EditorContent`. |
+| `EditorPlaceholder` | `placeholder` on `EditorContent`, or `BlockPlaceholderPlugin` for empty blocks | Plate has no `renderPlaceholder`. |
+| `EditorRoot` | `EditorRoot` | `onValueChange` receives the whole document value, `{ children, ... }`, instead of the children array. Plate's `EditorRoot` has no `authorId`, `decorations`, `document` or `root` prop. Pass `userId` to `createEditor`, decorate through a plugin's `decorate`, and set `root` on `EditorContent`. To render another document, create an editor for it with `createEditor({ initialValue })`. |
+| `EditorElement`, `EditorLeaf`, `EditorText` | `EditorElement`, `EditorLeaf`, `EditorText` | Plate's take the props a plugin component receives, so spread them: `<EditorElement {...props}>`. Plite's read the node from context. |
+| `EditorReadOnlyProvider` | `readOnly` on `EditorRoot` or `EditorContent` | |
+| `useClaimEditableDOMCommit`, `setDOMTextSyncRendererCapability`, `setRetainedTextFlowRendererCapability` | None | Plate's renderers call them for every plugin component. |
+
+### Hooks
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `useEditorSelector(selector, options)` | `useEditorSelector(selector, options)` | The options are `equalityFn` and `shouldUpdate` only. The hook follows the editor of the root that holds the caret. |
+| `useEditorState(selector, options)` | `useEditorState(selector, options)` | There is no `deferred` option. |
+| `useEditorSelection`, `useEditorFocused`, `useEditorComposing`, `useEditorReadOnly` | The same names | The calls are the same. Plate reads the selected editing area. |
+| `useOptionalEditorReadOnly()` | `useEditorReadOnly()` | Plate always returns a boolean. |
+| `useEditorHistory(options)` | `useEditorHistory(options)` | The options are the same. |
+| `useElement<MyElement>()` | `useElement(MyPlugin)` | `useElement()` without arguments still returns the nearest element, and throws outside an element component. |
+| `useOptionalElement()` | None | Call `useElement()` inside an element plugin's component. |
+| `useNodeSelector(selector)` | `useElementSelector(selector)` inside an element component | The selector receives the element. Plate has no hook that selects a node by key. |
+| `useTextSelector(selector)` | None | A text plugin component receives its `text` in props. |
+| `useEditorEditableElement()` | `useEditableRef()` | The ref is `null` before mount and does not rerender when the element mounts. `useEditorMounted()` returns a boolean. |
+
+### Types
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `EditableProps` | `EditorContentProps` | Plate's `EditableProps` is an internal renderer type. |
+| `PagedEditableProps`, `VirtualizedEditableProps` | `PagedEditorContentProps`, `VirtualizedEditorContentProps` | |
+| `UseEditorOptions` | `CreateEditorOptions` | |
+| `EditorSelectorOptions`, `EditorStateSelectorOptions` | `UseEditorSelectorOptions`, `UseEditorStateOptions` | |
+| `EditorRootProps`, `ValueChangeContext` | The same names | `value` is the whole document value. |
+| `NodeProps` from `plitejs/react` | `NodeProps` from `platejs` | `NodeProps` from `platejs/react` types the props a plugin injects into its node. |
+| `Editor`, `Plugin` | The same names | Plate's take other type parameters, and `Plugin` is the type of a Plate plugin. |
+| `ReactPlugin` | `RuntimeReactPlugin` | |
+
+### DOM
+
+`platejs/dom` keeps `ariaKeyShortcuts`, `dataTransferFormats`, `domCommands`,
+`DOMResolutionError`, `isHotkey`, `usesAppleDOMHotkeys` and
+`writeDataTransferFragment`. The other `plitejs/dom` values map as follows.
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `DOMEditor.focus(editor)` and the other `DOMEditor` methods | `editor.api.dom.focus()` and the other `editor.api.dom` methods | Drop the editor argument. |
+| `getEditorDOMRoot(editor)` | `editor.api.dom.root()` | |
+| `dom` | None | `createEditor` from `platejs/react` installs Plate's DOM plugin. A headless editor adds `DOMPlugin` from `platejs`. |
+| `getDOMClipboardFormatKey`, `writeDOMFragmentData`, `writeDOMRangeData`, `cleanDOMClipboardContents` | `editor.api.dom.clipboard` and a plugin's `dataTransferFormats` | |
+| `Hotkeys` | `Hotkeys` from `platejs` | Plate's set has other members. |
+| `createCompiledHotkeyMatcher`, `Key` | `isHotkey`, or a plugin's `shortcuts` | |
+| `readDOMSelectionRange`, `writeDOMSelection` | None | `EditorContent` reads and writes the DOM selection. |
+| `isEditor`, `isElement`, `isLeaf`, `isNode`, `isString`, `isText`, `isVoid`, `getElements`, `getNodeDataAttributeKeys`, `keyToDataAttribute` | None | They read Plite's DOM data attributes. `isEditor` from `platejs` is a different function that checks an editor object. |
+| `getSelection`, `getActiveElement`, `getDefaultView`, `isDOMNode`, `isDOMElement`, `isDOMText`, `isDOMSelection`, `hasShadowRoot`, `closestShadowAware`, `containsShadowAware`, `isAfter`, `isBefore`, `normalizeDOMPoint`, `isPlainTextOnlyPaste`, `CAN_USE_DOM`, `isGeckoDOMHost`, `TRIPLE_CLICK` | None | Use the DOM API. |
+| `DOMCoverage`, `isTrackedMutation`, `applyStringDiff`, `mergeStringDiffs`, `normalizeStringDiff`, `normalizePoint`, `normalizeRange`, `targetRange`, `verifyDiffState` | None | `EditorContent` owns DOM coverage, mutation tracking and Android input diffs. |
+
+### Review And Annotations
+
+| Plite | Plate | Notes |
+| --- | --- | --- |
+| `authored({ authorId })` from `plitejs/authored` | `AuthoredPlugin` from `platejs/authored` in `plugins` | The author is the editor's `userId`, or the `authorId` of a view from `createEditorView`. |
+| `authoredRecords` | None | `AuthoredPlugin` installs it. |
+| `createAuthoredPlugin` | None | It is Plite's test helper with fixed ids and clock. |
+| `AuthoredPlugin` type | `typeof AuthoredPlugin` | Plate's `AuthoredPlugin` is the plugin value. |
+| `createAnnotationStore` from `plitejs/annotations` | `useAnnotationStore(editor, annotations, options)` from `platejs/react` | Plate has no headless annotation store. The annotation types move to `platejs/react`. |
 
 ## Related
 
