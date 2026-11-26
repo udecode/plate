@@ -482,8 +482,25 @@ export const createIosDriver = ({
 
           return shown === true;
         },
-        strip: () => {
-          throw new Error('The iPhone lane cannot tap the suggestion bar yet.');
+        strip: async (candidate) => {
+          const { candidates = [] } = await send({ action: 'candidates' });
+          const label = candidates.find((word) =>
+            typeof candidate === 'string'
+              ? word === candidate
+              : candidate.test(word)
+          );
+
+          if (label === undefined) {
+            throw new Error(
+              `The suggestion strip shows ${candidates.join(', ') || 'nothing'}, not ${candidate}.`
+            );
+          }
+
+          await gesture({ kind: 'strip', label }, async () => {
+            await send({ action: 'candidate', label });
+          });
+
+          return label;
         },
         tap: async (label) => {
           const named = Object.values(NAMED_KEYS).find(

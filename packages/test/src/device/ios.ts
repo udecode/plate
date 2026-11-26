@@ -15,6 +15,8 @@ const readRunnerFailure = (log: string): string | undefined =>
 
 export type RunnerCommand =
   | { action: 'activate' }
+  | { action: 'candidate'; label: string }
+  | { action: 'candidates' }
   | { action: 'doubleTap'; x: number; y: number }
   | {
       action: 'drag';
@@ -34,6 +36,7 @@ export type RunnerCommand =
   | { action: 'tap'; x: number; y: number };
 
 export type RunnerReply = {
+  candidates?: string[];
   deleteLabel?: string;
   error?: string;
   keys?: string[];
