@@ -164,6 +164,12 @@ import {
   subscribeDOMReach,
 } from './dom-root-runtime';
 import {
+  isUsableScrollRect,
+  scrollDOMRangeIntoViewIfNeeded,
+  scrollRectIntoViewIfNeeded,
+  toScrollRect,
+} from './dom-scroll-into-view';
+import {
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowOffset,
   resolveDOMTextFlowPoint,
@@ -2269,6 +2275,16 @@ const DOMEditorImpl: DOMEditorInterface = {
     null,
 
   scrollIntoView: (editor, target, options = { scrollMode: 'if-needed' }) => {
+    const usesDefaultReveal =
+      typeof options === 'object' &&
+      options !== null &&
+      (options.scrollMode === undefined ||
+        options.scrollMode === 'if-needed') &&
+      options.block === undefined &&
+      options.inline === undefined &&
+      options.behavior === undefined &&
+      options.boundary === undefined &&
+      options.skipOverflowHiddenElements === undefined;
     const requestedScrollMarginTop = PathApi.isPath(target)
       ? (() => {
           const node = editor.read((state) => state.nodes.get(target)?.[0]);
@@ -2314,6 +2330,15 @@ const DOMEditorImpl: DOMEditorInterface = {
                 scrollRect.top -
                 requestedScrollMarginTop,
             });
+          } else if (usesDefaultReveal) {
+            const rect = element.getBoundingClientRect();
+
+            if (isUsableScrollRect(rect)) {
+              scrollRectIntoViewIfNeeded({
+                rect: toScrollRect(rect),
+                startElement: element,
+              });
+            }
           } else {
             scrollIntoViewIfNeeded(element, options);
           }
@@ -2344,12 +2369,32 @@ const DOMEditorImpl: DOMEditorInterface = {
         revealInEditableRoot(leafElement, RangeApi.start(target).path);
       }
 
+      if (usesDefaultReveal) {
+        const range = RangeApi.isRange(target)
+          ? target
+          : PointApi.isPoint(target)
+            ? null
+            : editor.read((state) => state.selection());
+
+        scrollDOMRangeIntoViewIfNeeded(
+          domRange,
+          Boolean(range && RangeApi.isBackward(range))
+        );
+
+        return;
+      }
+
       const hadOwnRect = Object.hasOwn(leafElement, 'getBoundingClientRect');
       // oxlint-disable-next-line typescript/unbound-method -- [P0 behavior-boundary] The original own method is restored on the same element after the temporary range-backed call; rebinding would change its identity.
       const originalGetBoundingClientRect = leafElement.getBoundingClientRect;
 
-      leafElement.getBoundingClientRect =
-        domRange.getBoundingClientRect.bind(domRange);
+      leafElement.getBoundingClientRect = () => {
+        const rangeRect = domRange.getBoundingClientRect();
+
+        return isUsableScrollRect(rangeRect)
+          ? rangeRect
+          : originalGetBoundingClientRect.call(leafElement);
+      };
 
       try {
         scrollIntoViewIfNeeded(leafElement, options);

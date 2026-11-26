@@ -82,6 +82,12 @@ export {
   resolveDOMTargetView,
 } from '../plugin/dom-root-runtime';
 export {
+  isUsableScrollRect,
+  scrollDOMRangeIntoViewIfNeeded,
+  scrollRectIntoViewIfNeeded,
+  toScrollRect,
+} from '../plugin/dom-scroll-into-view';
+export {
   getDOMHostLanguage,
   hasDOMHostQuirk,
   isAndroidDOMHost,
