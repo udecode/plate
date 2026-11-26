@@ -111,22 +111,6 @@ export const useVisibleCommentThreadIds = () => {
   );
 };
 
-export const useDraftCommentThreadIds = () => {
-  const portal = useEditor().plugin(CommentsPlugin);
-  const comments = portal.installed ? portal.api : null;
-  const subscribe = React.useCallback(
-    (listener: () => void) =>
-      comments?.subscribeDraftThreadIds(listener) ?? (() => {}),
-    [comments]
-  );
-
-  return React.useSyncExternalStore(
-    subscribe,
-    () => comments?.getSnapshot().draftThreadIds ?? EMPTY_COMMENT_IDS,
-    () => comments?.getSnapshot().draftThreadIds ?? EMPTY_COMMENT_IDS
-  );
-};
-
 export function CommentComposer(props: {
   ariaLabel: string;
   onSubmit: (body: Value) => Promise<CommentMutationResult<string | undefined>>;

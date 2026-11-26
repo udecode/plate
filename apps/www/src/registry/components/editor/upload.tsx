@@ -212,7 +212,7 @@ export function UploadElement(props: EditorElementProps<typeof UploadPlugin>) {
   );
 }
 
-export function ImageProgress({
+function ImageProgress({
   className,
   file,
   progress = 0,

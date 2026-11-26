@@ -28,7 +28,7 @@ const initialValue: Value = [
   },
 ];
 
-export function VersionDiff({
+function VersionDiff({
   after,
   before,
   schema,

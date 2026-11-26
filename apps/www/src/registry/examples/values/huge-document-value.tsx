@@ -50,7 +50,7 @@ const toEditorValue = (blocks: HugeDocumentBlock[]): Value =>
     type,
   }));
 
-export const getHugeDocumentBlocks = (
+const getHugeDocumentBlocks = (
   blocks = DEFAULT_HUGE_DOCUMENT_BLOCKS
 ): HugeDocumentBlock[] => {
   if (cachedHugeDocumentBlocks.length >= blocks) {

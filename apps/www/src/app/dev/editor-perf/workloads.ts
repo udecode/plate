@@ -149,7 +149,7 @@ const DENSE_TEXT_SEGMENTS = [
   'Zeta segment.',
 ];
 
-export const EDITOR_PERF_WORKLOADS: WorkloadDefinition[] = [
+const EDITOR_PERF_WORKLOADS: WorkloadDefinition[] = [
   {
     description:
       'The original huge document mix: headings every hundred blocks, paragraphs everywhere else.',

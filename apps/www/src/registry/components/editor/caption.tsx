@@ -54,7 +54,7 @@ export const getMediaTextAlign = (element: object) => {
   }
 };
 
-export function useCaptionFocused(path: Path) {
+function useCaptionFocused(path: Path) {
   return useEditorSelector((editor) => {
     // A media NodeSelection also reads as a caret at the caption start.
     if (editor.read.selection.nodes().length > 0) return false;
