@@ -747,6 +747,24 @@ export class Level {
     this.shownNode = null;
   }
 
+  protected bindLevels() {
+    let at = 0;
+
+    this.slots.forEach(0, this.slots.size, (slot) => {
+      if (isLevelRun(slot.run)) {
+        slot.run.level.showAt(this.projected, at);
+
+        const children = this.projected.childrenAt(at);
+
+        if (children) {
+          slot.run.level.projected = children;
+          slot.run.level.bindLevels();
+        }
+      }
+      at += getDefined(slot.measures[OUTPUT_BLOCKS]);
+    });
+  }
+
   protected pend(
     ranges: readonly ChangedRange[],
     stored: DocumentIndex,

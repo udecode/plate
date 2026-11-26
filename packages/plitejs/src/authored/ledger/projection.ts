@@ -116,6 +116,118 @@ const assertShowsWritten = (
   }
 };
 
+type ChangedSpan = Readonly<{
+  fromA: number;
+  fromB: number;
+  toA: number;
+  toB: number;
+}>;
+
+const keepUnchanged = (
+  from: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange
+): DocumentIndex => {
+  if (change.empty) return from;
+
+  const ranges: ChangedSpan[] = [];
+
+  change.iterChangedRanges((fromA, toA, fromB, toB) => {
+    ranges.push({ fromA, fromB, toA, toB });
+  });
+
+  if (ranges.length === 0) return from;
+
+  const firstRangeAt = (nodeFrom: number) => {
+    let low = 0;
+    let high = ranges.length;
+
+    while (low < high) {
+      const mid = (low + high) >> 1;
+      const range = getDefined(ranges[mid]);
+
+      if (range.toB <= nodeFrom) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+
+    return low;
+  };
+
+  const reconcile = (
+    node: JsonNode,
+    path: readonly number[],
+    nodeFrom: number,
+    nodeTo: number
+  ): JsonNode => {
+    const start = firstRangeAt(nodeFrom);
+    let touched = false;
+
+    for (let index = start; index < ranges.length; index += 1) {
+      const range = getDefined(ranges[index]);
+
+      if (range.fromB > nodeTo) break;
+      if (range.fromB === range.toB) {
+        if (range.fromB <= nodeFrom || range.fromB >= nodeTo) continue;
+        touched = true;
+        break;
+      }
+      if (range.fromB >= nodeTo) break;
+      if (range.fromB <= nodeFrom && nodeTo <= range.toB) return node;
+      touched = true;
+    }
+
+    if (!touched) {
+      const previous = start > 0 ? getDefined(ranges[start - 1]) : null;
+      const shift = previous ? previous.toA - previous.toB : 0;
+      const beforeFrom = nodeFrom + shift;
+      const entry = from.nodeStartingAt(beforeFrom);
+
+      if (entry && entry.from === beforeFrom && entry.to === nodeTo + shift) {
+        return from.node(entry.path);
+      }
+
+      return node;
+    }
+
+    if (typeof node.text === 'string' || !node.children?.length) return node;
+
+    let changedChild = false;
+    const children = node.children.map((child, childIndex) => {
+      const childPath = [...path, childIndex];
+      const range = after.nodeRange(childPath);
+      const kept = reconcile(child, childPath, range.from, range.to);
+
+      if (kept !== child) changedChild = true;
+
+      return kept;
+    });
+
+    return changedChild
+      ? Object.freeze({
+          ...node,
+          children: Object.freeze(children),
+        })
+      : node;
+  };
+
+  let changedRoot = false;
+  const nodes: JsonNode[] = [];
+
+  for (let index = 0; index < after.size; index += 1) {
+    const node = getDefined(after.child(index));
+    const range = after.nodeRange([index]);
+    const kept = reconcile(node, [index], range.from, range.to);
+
+    if (kept !== node) changedRoot = true;
+    nodes.push(kept);
+  }
+
+  return changedRoot ? DocumentIndex.fromIndexedNodes(nodes) : after;
+};
+
 const sharesNothing = (
   ranges: readonly ChangedRange[],
   before: DocumentIndex,
@@ -207,9 +319,22 @@ export class RootProjection extends Level {
       this.schema = context.schema;
       this.cache = new WeakMap();
       this.build(stored, context);
-      change = RootChange.betweenChangedBlocks(from, this.projected);
+      change = this.diffFrom(from, context);
     }
     return this.publish(from, change);
+  }
+
+  private diffFrom(from: DocumentIndex, context: RunContext): RootChange {
+    const change = RootChange.betweenChangedBlocks(from, this.projected, {
+      isSetValued: context.isSetValued,
+    });
+
+    if (this.changed) {
+      this.projected = keepUnchanged(from, this.projected, change);
+      this.bindLevels();
+    }
+
+    return change;
   }
 
   private publish(from: DocumentIndex | null, change: RootChange | null) {
@@ -254,7 +379,7 @@ export class RootProjection extends Level {
         }
       }
 
-      return RootChange.betweenChangedBlocks(from, this.projected);
+      return this.diffFrom(from, context);
     }
 
     const pended = this.pend(ranges, stored, context);
