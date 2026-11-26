@@ -31,19 +31,30 @@ const randomElementIdScope = (): string => {
   return scope;
 };
 
+// The scope is drawn on first use because every editor compiles a schema,
+// including in a Next.js `cacheComponents` prerender, which fails on
+// `crypto.getRandomValues`, and in runtimes without Web Crypto; an editor that
+// mints no id must need neither.
 export const createElementIdMint = (): ElementIdMint => {
-  const scope = randomElementIdScope();
+  let scope: string | undefined;
   let counter = 0;
+  const scopeOf = () => {
+    scope ??= randomElementIdScope();
+
+    return scope;
+  };
 
   return Object.freeze({
     next: () => {
-      const value = `${scope}.${counter}`;
+      const value = `${scopeOf()}.${counter}`;
 
       counter += 1;
 
       return value;
     },
-    scope,
+    get scope() {
+      return scopeOf();
+    },
   });
 };
 
