@@ -109,6 +109,7 @@ import {
   uniqueTopologyOf,
 } from './snapshot-index';
 import { mapEffect } from './transaction-values';
+import { applyEditorUpdateTag, HISTORY_BOUNDARY_TAG } from './update-policy';
 import {
   type CarriedCarets,
   carryCarets,
@@ -338,6 +339,17 @@ const OPTION_PLACES = new WeakMap<
   EditorCommandPlace,
   (options: Readonly<Record<string, unknown>>) => Record<string, unknown> | null
 >();
+
+const REMOVALS = new WeakMap<EditorCommandPlace, (at: unknown) => void>();
+
+/**
+ * Tells a frame that its command removes `at`, or the selection without one,
+ * so a removal of content the frame hides still reaches the recorder.
+ *
+ * @internal
+ */
+export const removesAtPlace = (place: EditorCommandPlace, at: unknown) =>
+  REMOVALS.get(place)?.(at);
 
 /** @internal */
 export const placeElementIdIn = (place: EditorCommandPlace, id: string) =>
@@ -622,6 +634,7 @@ const createFramePlace = (
 ) => {
   let heldRefusal: FrameRefusalReason | null = null;
   let located = false;
+  let removal: Readonly<{ at: unknown }> | null = null;
   const compositionRoot = stamp && (stamp.place.root ?? selectionRoot);
   const compositionElement =
     stamp && compositionRoot !== null
@@ -1190,6 +1203,9 @@ const createFramePlace = (
   TEXT_STARTS.set(place, startsInStruckText);
   ELEMENT_ID_PLACES.set(place, placeElementId);
   OPTION_PLACES.set(place, placeOptions);
+  REMOVALS.set(place, (at) => {
+    removal = { at };
+  });
   const placeSelection = (
     selection: Selection,
     root: string,
@@ -1222,6 +1238,7 @@ const createFramePlace = (
         heldRefusal ??= reason;
       }),
     located: () => located,
+    removal: () => removal,
     place,
     /**
      * Refuses a body that placed no location, which acts at the selection,
@@ -1530,7 +1547,28 @@ export const runInEditorCommandFrame = (
       }
 
       steps = snapshot.builder.draftSteps;
-      if (!wrote.empty || frame.selectionWritten) {
+      // The stored range a removal names, or the held selection it removes.
+      // A removal of content the frame hides writes nothing, yet the
+      // recorder may still record it on the stored document.
+      const removed = placed.removal();
+      const removedRange =
+        removed &&
+        (removed.at === undefined ? outer.caret.selection : removed.at);
+      const removal =
+        removed &&
+        RangeApi.isRange(removedRange) &&
+        RangeApi.isExpanded(removedRange)
+          ? {
+              root:
+                removed.at === undefined
+                  ? outer.caret.root
+                  : (removedRange.anchor.root ?? getEditorUpdateRoot(editor)),
+              selection: removedRange,
+            }
+          : null;
+      const hidden = wrote.empty && !frame.selectionWritten && removal !== null;
+
+      if (!wrote.empty || frame.selectionWritten || hidden) {
         // A root the projection dropped is one the frame cannot write, so its
         // bookmarks keep their stored places.
         const inFrame = (root: string) => Object.hasOwn(snapshot.roots, root);
@@ -1548,11 +1586,12 @@ export const runInEditorCommandFrame = (
           moved: changed.moved.filter(({ root }) => inFrame(root)),
         };
 
-        recorded = recorder({
+        const recording = recorder({
           after: snapshot.builder.value as EditorDocumentValue,
           before: stored,
           bookmarks: recorderBookmarks(framed),
           change: wrote,
+          ...(removal ? { removal } : {}),
           projection: projected,
           selection: frame.caret.selection,
           selectionBefore: outer.caret.selection,
@@ -1563,34 +1602,38 @@ export const runInEditorCommandFrame = (
           tags: getActiveEditorUpdateTags(editor),
           update: outer.id,
         });
-        if (!recorded) {
+
+        recorded = hidden && recording?.change.empty ? null : recording;
+        if (!recorded && !hidden) {
           throw new Error('A command frame needs a recorder that records it.');
         }
-        carryDraftNodeKeys(
-          editor,
-          snapshot,
-          recorded,
-          { before: projected.value, change: wrote },
-          keysReadIn(snapshot)
-        );
-        letters = snapshot.builder.newLetters;
+        if (recorded) {
+          carryDraftNodeKeys(
+            editor,
+            snapshot,
+            recorded,
+            { before: projected.value, change: wrote },
+            keysReadIn(snapshot)
+          );
+          letters = snapshot.builder.newLetters;
 
-        const converted = recordedCarets(framed, recorded);
+          const converted = recordedCarets(framed, recorded);
 
-        carried = converted && {
-          ...converted,
-          moved: [
-            ...converted.moved,
-            ...(changed?.moved.filter(({ root }) => !inFrame(root)) ?? []),
-          ],
-        };
-        written = {
-          change: wrote,
-          frame: {
-            selection: frame.caret.selection,
-            value: snapshot.builder.value as EditorDocumentValue,
-          },
-        };
+          carried = converted && {
+            ...converted,
+            moved: [
+              ...converted.moved,
+              ...(changed?.moved.filter(({ root }) => !inFrame(root)) ?? []),
+            ],
+          };
+          written = {
+            change: wrote,
+            frame: {
+              selection: frame.caret.selection,
+              value: snapshot.builder.value as EditorDocumentValue,
+            },
+          };
+        }
       }
       const track = frame.lastSpecLanding;
       const spans = track && recorded && settleDraftTrack(track);
@@ -1661,6 +1704,9 @@ export const runInEditorCommandFrame = (
       storedToWritten,
       typed: typedAfter,
     });
+    if (recorded.historyBoundary) {
+      applyEditorUpdateTag(outer.snapshot.tags, HISTORY_BOUNDARY_TAG);
+    }
     outer.changed = true;
     if (written) {
       document.recorded?.({

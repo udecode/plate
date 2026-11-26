@@ -46,7 +46,11 @@ import { countLedgerWork } from './ledger/work';
 import { detachedResolveSchemaOf } from './resolve-schema';
 import { decidedContentChange, tokenLength } from './tree/alignment';
 import { coverStoredValues } from './tree/holds';
-import { type AuthoredMark, AuthoredMarkError } from './tree/marks';
+import {
+  type AuthoredMark,
+  AuthoredMarkError,
+  readAuthoredMarks,
+} from './tree/marks';
 import { completionBuilds, storesSpares } from './tree/reserves';
 import {
   type AuthoredResolveSchema,
@@ -543,6 +547,91 @@ const takenWithoutVerdict = (
           )
         : taken;
     });
+};
+
+const contentRangeOf = (index: DocumentIndex, path: readonly number[]) => {
+  const { from, to } = index.nodeRange(path);
+  const letters = index
+    .nodeRangesTouching(from, to)
+    .filter(
+      (entry) =>
+        entry.kind === 'text' &&
+        entry.contentTo > entry.contentFrom &&
+        path.every((step, depth) => entry.path[depth] === step)
+    );
+
+  return letters.length === 0
+    ? ([from, to] as const)
+    : ([
+        getDefined(letters[0]).contentFrom,
+        getDefined(letters.at(-1)).contentTo,
+      ] as const);
+};
+
+/**
+ * The pending deletions of authors other than `writer` that the stored range
+ * `from` to `to` of `root` covers whole, or `null` when it touches one only in
+ * part. The cover counts content positions, so a range holding a struck
+ * line's letters covers it wherever the line's own tokens sit. A deletion's
+ * line break is covered when the range crosses it, and its insertions when
+ * the range holds their letters. A node a write over it `keeps`, such as a
+ * table row, is never covered.
+ */
+export const coveredDeletionsOf = (
+  book: Pick<BookView, 'change' | 'occurrences'>,
+  index: DocumentIndex,
+  {
+    from,
+    keeps,
+    root,
+    to,
+    writer,
+  }: Readonly<{
+    from: number;
+    keeps: (node: object) => boolean;
+    root: string;
+    to: number;
+    writer: string;
+  }>
+): readonly string[] | null => {
+  const touched = new Set<string>();
+
+  for (const entry of index.nodeRangesTouching(from, to)) {
+    for (const mark of readAuthoredMarks(index.node(entry.path))) {
+      if (
+        mark.kind !== 'delete' ||
+        mark.author === writer ||
+        touched.has(mark.change) ||
+        !book.change(mark.change)
+      ) {
+        continue;
+      }
+
+      const [low, high] = contentRangeOf(index, entry.path);
+
+      if (low < to && from < high) touched.add(mark.change);
+    }
+  }
+
+  const covers = ({ mark, node, path, root: at }: Occurrence) => {
+    if (at !== root || keeps(node)) return false;
+    if (mark.kind === 'join') {
+      const start = index.nodeRange(path).from;
+
+      return from < start && start < to;
+    }
+    if (mark.kind !== 'delete' && mark.kind !== 'insert') return false;
+
+    const [low, high] = contentRangeOf(index, path);
+
+    return from <= low && high <= to;
+  };
+
+  for (const id of touched) {
+    if (!book.occurrences(id).every(covers)) return null;
+  }
+
+  return [...touched];
 };
 
 export const decide = (

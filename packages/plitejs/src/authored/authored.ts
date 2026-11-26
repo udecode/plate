@@ -6,6 +6,7 @@ import {
 import { authoredVeto } from '../core/authored-veto';
 import { type DraftStep, UNSCOPED_ORIGINS } from '../core/change/builder';
 import {
+  applyDocumentChangeValue,
   createInternalDocumentChange,
   DocumentChange,
   filterDocumentChangeRoots,
@@ -31,11 +32,16 @@ import {
   visitRootNames,
   setLazyRoot,
 } from '../core/change/lazy-root';
-import type { RootChange } from '../core/change/root-change';
+import {
+  isRootChangeRangeReplaced,
+  type RootChange,
+} from '../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import {
+  type CommandProjection,
   type CommandProjectionMap,
   type EditorFrameRecording,
+  projectionMapOf,
   registerEditorCommandDocument,
 } from '../core/command-document';
 import { prepareCommandFrame } from '../core/command-frame';
@@ -46,6 +52,7 @@ import {
   documentAdmissionPoint,
 } from '../core/document-admission';
 import {
+  type EditorDocumentRecorder,
   registerEditorDocumentRecorder,
   registerEditorDraftGuard,
   registerEditorDraftView,
@@ -85,10 +92,12 @@ import {
   withEditorDocumentProjection,
 } from '../core/public-state';
 import {
+  applyRecordOps,
   composeRecordOps,
   deriveValue,
   getValueRecords,
   NO_RECORD_OPS,
+  type RecordStore,
   withValueRecords,
 } from '../core/record-store';
 import {
@@ -108,6 +117,7 @@ import {
   tracksPlaces,
   uniquePropertiesOf,
 } from '../core/schema-compiler';
+import { isBoundToSharedRoom } from '../core/shared-room';
 import { gridHoldersOf, gridRolesOf } from '../core/survival';
 import {
   type TxDeclaredMethod,
@@ -148,7 +158,13 @@ import {
   readAuthoredDetails,
   readAuthoredGroupDetails,
 } from './changes';
-import { claimOf, decide, isRefusal, spareGuardOver } from './decision';
+import {
+  claimOf,
+  coveredDeletionsOf,
+  decide,
+  isRefusal,
+  spareGuardOver,
+} from './decision';
 import {
   authoredAdmission,
   createDocumentMarksValidator,
@@ -184,6 +200,7 @@ import type { BookSink, BookView } from './ledger/book';
 import {
   createReviewLedger,
   getReviewLedger,
+  ReviewLedger,
   type ViewPlaces,
 } from './ledger/ledger';
 import { contentRootsOf, rootOf } from './ledger/roots';
@@ -1456,6 +1473,7 @@ export const createAuthoredPlugin = (
         result: AuthoredResult;
         /** Whether the change's text settles the decision, apart from its records. */
         settles: boolean;
+        value: JsonEditorValue;
       }> => {
     const book = changesOf(editor, value);
     const actions = new Map<string, 'accept' | 'reject'>();
@@ -1552,6 +1570,7 @@ export const createAuthoredPlugin = (
         (id) => book.occurrences(id),
         withdraws
       ),
+      value: decidedValue,
     };
   };
   const decideOn = (
@@ -2172,6 +2191,112 @@ export const createAuthoredPlugin = (
       onCleanup(registerEditorFitsByLook(editor, holdsMembers));
       // Every frame of one update records under the same change.
       const minted = new WeakMap<object, { at: number; changeId: string }>();
+      // An Editing command that replaces a range holding another author's
+      // whole pending deletion accepts that deletion and writes on the
+      // decided document. Nothing may share the decision: a room, a decision
+      // or recording earlier in the update, or a decided document whose
+      // projection differs from the one the commands wrote on each keep
+      // today's result.
+      const coverOf = (
+        input: Parameters<EditorDocumentRecorder>[0],
+        writer: string
+      ) => {
+        const { projection } = input;
+        const target =
+          input.removal ??
+          (input.selectionBefore?.kind === 'text' &&
+          !RangeApi.isCollapsed(input.selectionBefore)
+            ? {
+                root: input.selectionBeforeRoot,
+                selection: input.selectionBefore,
+              }
+            : null);
+
+        if (
+          !projection ||
+          !target ||
+          input.composition ||
+          minted.has(input.update) ||
+          isBoundToSharedRoom(editor)
+        ) {
+          return null;
+        }
+
+        const before = input.before as JsonEditorValue;
+        const { root } = target;
+        const stored = rootOf(before, root);
+        const [start, end] = RangeApi.edges(target.selection);
+        const from = stored.positionAt(start);
+        const to = stored.positionAt(end);
+
+        if (
+          !(input.change.empty
+            ? input.removal
+            : replacesRange(input, projection, root, from, to))
+        ) {
+          return null;
+        }
+
+        const book = changesOf(editor, before);
+        const ids = coveredDeletionsOf(book, stored, {
+          from,
+          keeps: gridRolesOf(getCompiledEditorSchema(editor)).isPart,
+          root,
+          to,
+          writer,
+        });
+
+        if (!ids || ids.length === 0) return null;
+
+        const decided = decisionOn(
+          editor,
+          before,
+          {
+            action: 'accept',
+            changes: ids.map((id) => getDefined(book.change(id))),
+          },
+          false
+        );
+
+        if (!('change' in decided)) return null;
+
+        const relink = relinkCuts(decided.change, before, decided.value, (at) =>
+          rootOf(decided.value, at)
+        );
+        const value = relink
+          ? applyDocumentChangeValue(
+              relink.change,
+              decided.value,
+              relink.indexes
+            )
+          : decided.value;
+        const decidedProjection = new ReviewLedger(
+          owner,
+          () => authoredResolveSchemaOf(editor),
+          state.marks
+        ).frame(value) ?? {
+          indexes: new Map(),
+          map: projectionMapOf(createInternalDocumentChange(new Map())),
+          value: value as EditorDocumentValue,
+        };
+
+        return jsonEqual(
+          decidedProjection.value.children,
+          projection.value.children
+        ) &&
+          jsonEqual(
+            decidedProjection.value.roots ?? null,
+            projection.value.roots ?? null
+          )
+          ? {
+              change: relink
+                ? decided.change.compose(relink.change)
+                : decided.change,
+              projection: decidedProjection,
+              value,
+            }
+          : null;
+      };
       onCleanup(
         registerEditorDocumentRecorder(editor, (input) => {
           if (isReplay(input.tags)) return null;
@@ -2207,7 +2332,6 @@ export const createAuthoredPlugin = (
 
           settleWaitingView(viewEditor);
           const updateView = viewOf(viewEditor);
-          const before = input.before as JsonEditorValue;
           const after = input.after as JsonEditorValue;
           const contentChange = contentChangeOf(input.change);
           const steps = input.steps.map((step) => {
@@ -2217,7 +2341,6 @@ export const createAuthoredPlugin = (
           });
           const contentSteps = steps.filter((step) => step.origin !== 'root');
           const ownRecords = getInternalDocumentChangeRecords(input.change);
-          const known = factsOf(withStore(before, getValueRecords(after)));
 
           if ('preview' in updateView) {
             throw new Error('A preview view does not take this write.');
@@ -2226,7 +2349,7 @@ export const createAuthoredPlugin = (
             const written = writtenNamedRoots(contentSteps);
 
             if (written.size > 0) {
-              const dropped = ledger.dropped(before);
+              const dropped = ledger.dropped(input.before);
 
               if ([...written].some((root) => dropped.has(root))) {
                 throw unplaced();
@@ -2242,593 +2365,720 @@ export const createAuthoredPlugin = (
           if (writer === null) {
             throw new Error('An author ID is required for authored writes.');
           }
-          const byName =
-            contentChange.deleteRoots.size > 0
-              ? new Set(
-                  rootsDeletedByName(
-                    getCompiledEditorSchema(editor),
-                    input.projection?.value ?? before,
-                    after,
-                    changedRootsOf(contentChange),
-                    contentChange.deleteRoots
+          const covered = editing ? coverOf(input, writer) : null;
+          const recordOn = (
+            before: JsonEditorValue,
+            projection: CommandProjection | undefined,
+            storedRecords: RecordStore
+          ): NonNullable<ReturnType<EditorDocumentRecorder>> & {
+            indexedAfter: ReadonlyMap<string, DocumentIndex>;
+          } => {
+            const known = factsOf(withStore(before, storedRecords));
+            const byName =
+              contentChange.deleteRoots.size > 0
+                ? new Set(
+                    rootsDeletedByName(
+                      getCompiledEditorSchema(editor),
+                      projection?.value ?? before,
+                      after,
+                      changedRootsOf(contentChange),
+                      contentChange.deleteRoots
+                    )
                   )
-                )
-              : NO_ROOTS;
+                : NO_ROOTS;
 
-          if (!editing && byName.size > 0) {
-            throw unrepresentable(
-              'Suggesting cannot delete a named root; suggest deleting its content.'
+            if (!editing && byName.size > 0) {
+              throw unrepresentable(
+                'Suggesting cannot delete a named root; suggest deleting its content.'
+              );
+            }
+            const followed: ReadonlySet<string> =
+              byName.size === 0
+                ? contentChange.deleteRoots
+                : new Set(
+                    [...contentChange.deleteRoots].filter(
+                      (root) => !byName.has(root)
+                    )
+                  );
+            // Neither net set names these roots, yet the recorder can keep their
+            // owner, such as a struck paragraph whose pending retype makes it the
+            // pasted card, so each records as created and follows its owner.
+            const createdThenDeleted = new Set(
+              steps.flatMap((step) =>
+                [...step.change.createRoots].filter(
+                  (root) =>
+                    !contentChange.createRoots.has(root) &&
+                    !before.roots?.[root]
+                )
+              )
+            );
+            const createRoots =
+              createdThenDeleted.size === 0
+                ? contentChange.createRoots
+                : new Set([
+                    ...contentChange.createRoots,
+                    ...createdThenDeleted,
+                  ]);
+            const withdrawable =
+              createdThenDeleted.size === 0
+                ? followed
+                : new Set([...followed, ...createdThenDeleted]);
+
+            if (!editing) {
+              // Vetoes keep a person's Suggesting out of blocks review marks
+              // cannot hold yet; a proposal forced from Editing, such as an AI
+              // preview, records as before.
+              const vetoes =
+                options.vetoes === false || updateView.intent !== 'propose'
+                  ? []
+                  : getPluginContributions(editor, authoredVeto);
+              const refusal =
+                (update && state.refused.get(update)) ??
+                (!storesGeneratedValues(getCompiledEditorSchema(editor))
+                  ? GENERATED_VALUES_REFUSAL
+                  : vetoes.length > 0
+                    ? proposalRefusal(contentSteps, vetoes)
+                    : null);
+
+              if (refusal) {
+                if (update) state.refused.set(update, refusal);
+                throw new EditorRefusalError(refusal, refusal.message);
+              }
+            }
+
+            const { composition } = input;
+            const focusBefore =
+              input.selectionBefore?.kind !== 'text'
+                ? null
+                : PointApi.equals(
+                      input.selectionBefore.anchor,
+                      input.selectionBefore.focus
+                    )
+                  ? input.selectionBefore.focus
+                  : composition
+                    ? RangeApi.start(input.selectionBefore)
+                    : null;
+            const compositionRoot = composition
+              ? (composition.place.root ?? input.selectionBeforeRoot)
+              : null;
+            const selectionPosition = focusBefore
+              ? positionOf(before, input.selectionBeforeRoot, focusBefore)
+              : null;
+            const minting = minted.get(input.update) ?? {
+              at: forced?.at ?? now(),
+              changeId: editing ? editingChangeOf(writer) : createChangeId(),
+            };
+
+            minted.set(input.update, minting);
+            const { at, changeId } = minting;
+            const dependencies = createDependencies(known, carriedIn(after));
+            let commitWrite: string | undefined;
+            const commitWriteId = () => (commitWrite ??= createTagId());
+            // An Editing commit's own write lands with it.
+            const landedHere = (write: string) =>
+              (editing && write === commitWrite) || known.landed(write);
+            const standing: Standing = {
+              accepted: (member) => isAccepted(known, member),
+              landed: landedHere,
+            };
+            const compiled = getCompiledEditorSchema(editor);
+            const oneText = (type: string) =>
+              holdsOneText(getEditorSchema(editor), type);
+            const recorded = recordAuthoredSteps({
+              before,
+              changeId,
+              composition:
+                composition && compositionRoot !== null
+                  ? {
+                      element: composition.place.path.slice(0, -1),
+                      position: positionOf(
+                        before,
+                        compositionRoot,
+                        composition.place
+                      ),
+                      root: compositionRoot,
+                    }
+                  : null,
+              createRoots,
+              createTagId,
+              crossesUnique: (from, to) =>
+                crossesUniqueTarget(compiled, from, to),
+              holdsUnique: (type, key) => holdsUniqueKey(compiled, type, key),
+              deleteRoots: byName,
+              dependencies,
+              fill: (site, root) =>
+                completeChildrenAt(editor, site.map(elementOf), [], root)
+                  .children,
+              followed,
+              forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
+              projection,
+              inc: forced?.inc ?? null,
+              gridRoles: gridRolesOf(compiled),
+              isInline: (props) =>
+                getEditorSchema(editor).isInline(elementOf(props)),
+              emptyTextKeeps: (key, value, parents, root) => {
+                const [parent, ...ancestors] = parents.map(elementOf);
+
+                return !getEditorSchema(editor).emptyTextDrops({
+                  ancestors,
+                  parent,
+                  root,
+                })?.(key, value);
+              },
+              keepsOnSplit: (
+                { continuation, path, reviewDraft, source },
+                root
+              ) =>
+                getEditorSchema(editor).elementSplitKeepsAt(
+                  elementOf(source),
+                  elementOf(continuation),
+                  {
+                    children: reviewDraft as readonly Descendant[],
+                    path: [...path],
+                    root,
+                  }
+                ),
+              slotted: (type, root) =>
+                (authoredResolveSchemaOf(editor).content(type, root)?.prefix ??
+                  0) > 0,
+              declaredIn: (element, ancestors, root) =>
+                getEditorSchema(editor).elementDeclaredPropertiesIn(
+                  elementOf(element),
+                  { ancestors: ancestors.map(elementOf), root }
+                ),
+              splitKeepsIn: (source, continuation, place, root) =>
+                getEditorSchema(editor).elementSplitKeepsIn(
+                  elementOf(source),
+                  elementOf(continuation),
+                  {
+                    continuationAncestors:
+                      place.continuationAncestors.map(elementOf),
+                    continuationIndex: place.continuationIndex,
+                    root,
+                    sourceAncestors: place.sourceAncestors.map(elementOf),
+                  }
+                ),
+              joinCompares: (key) =>
+                joinCompares(getCompiledEditorSchema(editor), key),
+              maxChildren: (type, root) =>
+                authoredResolveSchemaOf(editor).content(type, root)?.max ??
+                null,
+              now: at,
+              oneText,
+              ownedRoots: (props) => {
+                const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+                return schema
+                  .getElementOwnedRoots(props as Element)
+                  .map(({ ownership, root }) => ({
+                    exclusive: ownership === 'exclusive',
+                    root,
+                  }));
+              },
+              selectionBefore:
+                selectionPosition === null
+                  ? null
+                  : {
+                      position: selectionPosition,
+                      root: input.selectionBeforeRoot,
+                    },
+              schema: tracksPlaces(compiled) ? compiled : null,
+              unique: uniquePropertiesOf(compiled),
+              standing,
+              steps,
+              commitWriteId,
+              writer,
+            });
+            // Map only through the recorded change: the recorder slot's finalize
+            // then applies the canonical pass and maps the selection through it.
+            const map = {
+              after,
+              indexes: recorded.indexedAfter,
+              map: recorded.mapPosition,
+            };
+
+            const kept = [
+              ...new Set([
+                ...visitRootNames(before.roots),
+                ...recorded.indexedAfter.keys(),
+              ]),
+            ].filter((root) => root !== 'main' && !byName.has(root));
+            const beforeRecords = getValueRecords(before);
+            const valueWith = (
+              roots: readonly string[],
+              indexes: ReadonlyMap<string, DocumentIndex>
+            ) => {
+              const next = copyFields({}, before, ['records', 'roots']);
+
+              setLazyRoot(
+                next,
+                'children',
+                indexes.get('main') ?? rootIndexOf(before, 'children')
+              );
+              if (roots.length > 0) {
+                const named: Record<string, unknown> = {};
+
+                for (const root of roots) {
+                  const index =
+                    indexes.get(root) ?? lazyRootOf(before.roots, root);
+
+                  if (index) setLazyRoot(named, root, index);
+                  else named[root] = valueRoot(before, root);
+                }
+                next.roots = named;
+              }
+
+              return withValueRecords(next, beforeRecords) as typeof before;
+            };
+            const withdrawn =
+              withdrawable.size > 0
+                ? orphanedValueRoots(
+                    getCompiledEditorSchema(editor),
+                    before,
+                    valueWith(kept, recorded.indexedAfter),
+                    changedRootsOf(recorded.change),
+                    createdThenDeleted
+                  ).filter((root) => withdrawable.has(root))
+                : [];
+            const roots =
+              withdrawn.length > 0
+                ? kept.filter((root) => !withdrawn.includes(root))
+                : kept;
+            const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
+              valueWith(roots, indexes);
+            const unborn = withdrawn.filter((root) =>
+              createdThenDeleted.has(root)
+            );
+            const deleted = withdrawn.filter(
+              (root) => !createdThenDeleted.has(root)
+            );
+            const born =
+              unborn.length > 0
+                ? filterDocumentChangeRoots(
+                    recorded.change,
+                    (root) => !unborn.includes(root)
+                  )
+                : recorded.change;
+            const recordedChange =
+              deleted.length > 0
+                ? born.compose(
+                    createInternalDocumentChange(new Map(), {
+                      deleteRoots: deleted,
+                    }),
+                    before
+                  )
+                : born;
+            const written = valueOf(recorded.indexedAfter);
+            const relink = relinkCuts(
+              recordedChange,
+              before,
+              written,
+              (root) =>
+                recorded.indexedAfter.get(root) ??
+                DocumentIndex.fromValue(valueRoot(written, root))
+            );
+            const change = relink
+              ? recordedChange.compose(relink.change, before)
+              : recordedChange;
+            const indexes = relink
+              ? new Map([...recorded.indexedAfter, ...relink.indexes])
+              : recorded.indexedAfter;
+            const writtenPlain = editing && recorded.writtenPlain;
+            const mark = {
+              at,
+              author: writer,
+              change: forced?.changeId ?? changeId,
+              ...(forced?.inc === undefined ? {} : { inc: forced.inc }),
+            };
+            const filled = writtenPlain
+              ? null
+              : completeProposed({
+                  after: valueOf(indexes),
+                  before,
+                  change,
+                  dependencies,
+                  editor,
+                  indexes,
+                  mark,
+                  standing,
+                  commitWriteId,
+                });
+            const content = filled
+              ? change.compose(filled.change, before)
+              : change;
+            const writtenIndexes = filled?.indexes ?? indexes;
+            const accepted =
+              editing && !writtenPlain
+                ? acceptOwn(content, writtenIndexes, dependencies, {
+                    ...known,
+                    landed: landedHere,
+                  })
+                : null;
+            // Accepting removes fragments outright, whose cuts move to the
+            // fragments that stay.
+            const relinkedOwn =
+              accepted &&
+              relinkCuts(
+                accepted.change,
+                valueOf(writtenIndexes),
+                valueOf(accepted.indexes),
+                (root) =>
+                  accepted.indexes.get(root) ??
+                  DocumentIndex.fromValue(
+                    valueRoot(valueOf(accepted.indexes), root)
+                  ),
+                (root) =>
+                  writtenIndexes.get(root) ??
+                  DocumentIndex.fromValue(valueRoot(before, root))
+              );
+            const owned =
+              accepted && relinkedOwn
+                ? {
+                    change: accepted.change.compose(relinkedOwn.change),
+                    indexes: new Map([
+                      ...accepted.indexes,
+                      ...relinkedOwn.indexes,
+                    ]),
+                    landed: accepted.landed,
+                  }
+                : accepted;
+            const through =
+              (changes: ReadonlyArray<DocumentChange | undefined>) =>
+              (root: string, position: number, assoc: -1 | 1) =>
+                changes.reduce(
+                  (mapped, later) =>
+                    (later &&
+                      getInternalDocumentRootChange(later, root)?.mapPos(
+                        mapped,
+                        assoc
+                      )) ??
+                    mapped,
+                  position
+                );
+            const mapPosition = (
+              root: string,
+              position: number,
+              assoc: -1 | 1
+            ) =>
+              through([relink?.change, filled?.change, owned?.change])(
+                root,
+                recorded.mapPosition(root, position, assoc, false),
+                assoc
+              );
+            // A caret where accepting removes the writer's struck run stays on
+            // the line after it, as in the frame.
+            const staysAfter = 1;
+            const record = (draftSelection: Selection, root: string) => {
+              const selection = mapSelection(draftSelection, { ...map, root });
+              const filledSelection = filled
+                ? mapSelection(selection, {
+                    after: valueOf(indexes),
+                    indexes: filled.indexes,
+                    map: through([filled.change]),
+                    root,
+                  })
+                : selection;
+
+              return owned
+                ? mapSelection(
+                    filledSelection,
+                    {
+                      after: valueOf(writtenIndexes),
+                      indexes: owned.indexes,
+                      map: through([owned.change]),
+                      root,
+                    },
+                    staysAfter
+                  )
+                : filledSelection;
+            };
+
+            const recordedLater = owned
+              ? content.compose(owned.change, before)
+              : content;
+            const recordedIndexes = owned?.indexes ?? writtenIndexes;
+            // The context records the writes rest on go with them, so no
+            // node ever points at a record its document lacks. An Editing
+            // format write over pending tags lands with its commit, so a tag
+            // over it reads it after it leaves the key, until an undo takes
+            // both back.
+            const recordedRecords = [
+              putContexts(
+                restedOn(dependencies.minted(), recordedLater, recordedIndexes)
+              ),
+              putLanded([
+                ...(editing && commitWrite !== undefined
+                  ? [landedOf({ at, change: changeId, id: commitWrite })]
+                  : []),
+                ...(owned?.landed ?? []),
+              ]),
+            ].reduce(composeRecordOps, ownRecords);
+            // A fill deferred at its container's maximum stays deferred where
+            // accepting the writer's own claims keeps its container.
+            const deferred = (filled?.deferred ?? []).flatMap((build) => {
+              if (!owned || build.path.length === 0) return [build];
+
+              const { from } = getDefined(
+                writtenIndexes.get(build.root)
+              ).nodeRange(build.path);
+              const rootChange = getInternalDocumentRootChange(
+                owned.change,
+                build.root
+              );
+              const start = rootChange
+                ? rootChange.mapPos(from, 1, 'after')
+                : from;
+              const host =
+                start === null
+                  ? null
+                  : recordedIndexes.get(build.root)?.nodeStartingAt(start);
+
+              return host && host.from === start && host.kind === 'element'
+                ? [{ ...build, path: host.path }]
+                : [];
+            });
+            // Each container the write touched stores the spares its pending
+            // claims can need, and a fill its maximum deferred stores the
+            // frame's own element as its slot's spare.
+            const recordedValue = deriveValue(
+              valueOf(recordedIndexes),
+              {},
+              recordedRecords
+            );
+            const writes = storesSpares(compiled)
+              ? sparesFor(
+                  recordedValue as EditorDocumentValue,
+                  compiled,
+                  changedSitesOf(recordedLater, recordedIndexes, before),
+                  deferred.map(({ index, ...build }) => ({
+                    ...build,
+                    node:
+                      framedChild(
+                        valueRootIndex(after, build.root),
+                        build.path.length === 0
+                          ? null
+                          : getDefined(
+                              recordedIndexes.get(build.root)
+                            ).nodeRange(build.path).from,
+                        index,
+                        String(build.node.type),
+                        (position, assoc) =>
+                          mapPosition(build.root, position, assoc)
+                      ) ?? build.node,
+                    writer: owned ? null : mark,
+                  })),
+                  spareBlocksOf(recordedValue),
+                  writer
+                )
+              : NO_SPARE_WRITES;
+            const spares =
+              writes.containers.length > 0
+                ? spareWritesChange(writes, recordedIndexes)
+                : null;
+            const spared = spares
+              ? recordedLater.compose(spares.change, before)
+              : recordedLater;
+            const sparedIndexes = spares?.indexes ?? recordedIndexes;
+            const records = composeRecordOps(recordedRecords, writes.records);
+            // Accepting everything shows the generated values the command's
+            // frame shows.
+            const shown = storesSpares(compiled)
+              ? closeCommandValues({
+                  before,
+                  change: spared,
+                  compiled,
+                  editing,
+                  frame: after,
+                  framed: !!projection,
+                  holders,
+                  indexes: sparedIndexes,
+                  peek: (values, read) => ledger.peek(values, read),
+                  standing,
+                  storedOf: (edited) =>
+                    deriveValue(valueOf(edited), {}, records),
+                  writer: {
+                    ...mark,
+                    commitWriteId,
+                    isOwn: (tag) => tag.change === mark.change,
+                  },
+                })
+              : null;
+            const later = shown ? spared.compose(shown.change, before) : spared;
+            const indexedAfter = shown?.indexes ?? sparedIndexes;
+            const split = splitOneTextRefusal(later, indexedAfter, oneText);
+
+            if (split) throw split;
+
+            const selection = record(input.selection, input.selectionRoot);
+            const strike =
+              !editing &&
+              !composition &&
+              recorded.textStrike &&
+              !relink &&
+              !filled &&
+              !owned &&
+              !spares &&
+              !shown &&
+              [...records.values()].every((set) => set.size === 0) &&
+              selection?.kind === 'text' &&
+              PointApi.equals(selection.anchor, selection.focus) &&
+              (selection.anchor.root ?? input.selectionRoot) ===
+                recorded.textStrike.root
+                ? recorded.textStrike
+                : null;
+            const onlySetsProperties = (
+              pass: Readonly<{ change: DocumentChange }> | null | undefined
+            ) =>
+              !pass ||
+              [...getInternalDocumentChangeEntries(pass.change)].every(
+                ([, root]) => changesOnlyProperties(root)
+              );
+            const facts = [relink, filled, owned, spares, shown].every(
+              onlySetsProperties
+            )
+              ? recorded.facts
+              : undefined;
+
+            return {
+              anchorChange: (plainAfter) =>
+                [
+                  filled?.change,
+                  owned?.change,
+                  spares?.change,
+                  shown?.change,
+                ].reduce(
+                  (anchor: DocumentChange, next) =>
+                    next ? anchor.compose(next) : anchor,
+                  recorded.anchorChange(plainAfter)
+                ),
+              bookmarks: input.bookmarks.map(({ root, selection: bookmark }) =>
+                record(bookmark, root)
+              ),
+              change: withDocumentChangeRecords(later, records),
+              ...(strike
+                ? {
+                    deleteGrouping: Object.freeze({
+                      blockPath: strike.blockPath,
+                      direction: strike.direction,
+                      group: `${strike.author}\0${strike.change}`,
+                      root: strike.root,
+                    }),
+                  }
+                : {}),
+              ...(facts ? { facts } : {}),
+              indexedAfter,
+              mapPosition,
+              selection,
+            };
+          };
+
+          if (!covered) {
+            return recordOn(
+              input.before,
+              input.projection,
+              getValueRecords(after)
             );
           }
-          const followed: ReadonlySet<string> =
-            byName.size === 0
-              ? contentChange.deleteRoots
-              : new Set(
-                  [...contentChange.deleteRoots].filter(
-                    (root) => !byName.has(root)
-                  )
-                );
-          // Neither net set names these roots, yet the recorder can keep their
-          // owner, such as a struck paragraph whose pending retype makes it the
-          // pasted card, so each records as created and follows its owner.
-          const createdThenDeleted = new Set(
-            steps.flatMap((step) =>
-              [...step.change.createRoots].filter(
-                (root) =>
-                  !contentChange.createRoots.has(root) && !before.roots?.[root]
-              )
+
+          const { facts: _facts, ...recorded } = recordOn(
+            covered.value,
+            covered.projection,
+            applyRecordOps(
+              getValueRecords(after),
+              getInternalDocumentChangeRecords(covered.change)
             )
           );
-          const createRoots =
-            createdThenDeleted.size === 0
-              ? contentChange.createRoots
-              : new Set([...contentChange.createRoots, ...createdThenDeleted]);
-          const withdrawable =
-            createdThenDeleted.size === 0
-              ? followed
-              : new Set([...followed, ...createdThenDeleted]);
-
-          if (!editing) {
-            // Vetoes keep a person's Suggesting out of blocks review marks
-            // cannot hold yet; a proposal forced from Editing, such as an AI
-            // preview, records as before.
-            const vetoes =
-              options.vetoes === false || updateView.intent !== 'propose'
-                ? []
-                : getPluginContributions(editor, authoredVeto);
-            const refusal =
-              (update && state.refused.get(update)) ??
-              (!storesGeneratedValues(getCompiledEditorSchema(editor))
-                ? GENERATED_VALUES_REFUSAL
-                : vetoes.length > 0
-                  ? proposalRefusal(contentSteps, vetoes)
-                  : null);
-
-            if (refusal) {
-              if (update) state.refused.set(update, refusal);
-              throw new EditorRefusalError(refusal, refusal.message);
-            }
-          }
-
-          const { composition } = input;
-          const focusBefore =
-            input.selectionBefore?.kind !== 'text'
-              ? null
-              : PointApi.equals(
-                    input.selectionBefore.anchor,
-                    input.selectionBefore.focus
-                  )
-                ? input.selectionBefore.focus
-                : composition
-                  ? RangeApi.start(input.selectionBefore)
-                  : null;
-          const compositionRoot = composition
-            ? (composition.place.root ?? input.selectionBeforeRoot)
-            : null;
-          const selectionPosition = focusBefore
-            ? positionOf(before, input.selectionBeforeRoot, focusBefore)
-            : null;
-          const minting = minted.get(input.update) ?? {
-            at: forced?.at ?? now(),
-            changeId: editing ? editingChangeOf(writer) : createChangeId(),
-          };
-
-          minted.set(input.update, minting);
-          const { at, changeId } = minting;
-          const dependencies = createDependencies(known, carriedIn(after));
-          let commitWrite: string | undefined;
-          const commitWriteId = () => (commitWrite ??= createTagId());
-          // An Editing commit's own write lands with it.
-          const landedHere = (write: string) =>
-            (editing && write === commitWrite) || known.landed(write);
-          const standing: Standing = {
-            accepted: (member) => isAccepted(known, member),
-            landed: landedHere,
-          };
-          const compiled = getCompiledEditorSchema(editor);
-          const oneText = (type: string) =>
-            holdsOneText(getEditorSchema(editor), type);
-          const recorded = recordAuthoredSteps({
-            before,
-            changeId,
-            composition:
-              composition && compositionRoot !== null
-                ? {
-                    element: composition.place.path.slice(0, -1),
-                    position: positionOf(
-                      before,
-                      compositionRoot,
-                      composition.place
-                    ),
-                    root: compositionRoot,
-                  }
-                : null,
-            createRoots,
-            createTagId,
-            crossesUnique: (from, to) =>
-              crossesUniqueTarget(compiled, from, to),
-            holdsUnique: (type, key) => holdsUniqueKey(compiled, type, key),
-            deleteRoots: byName,
-            dependencies,
-            fill: (site, root) =>
-              completeChildrenAt(editor, site.map(elementOf), [], root)
-                .children,
-            followed,
-            forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
-            projection: input.projection,
-            inc: forced?.inc ?? null,
-            gridRoles: gridRolesOf(compiled),
-            isInline: (props) =>
-              getEditorSchema(editor).isInline(elementOf(props)),
-            emptyTextKeeps: (key, value, parents, root) => {
-              const [parent, ...ancestors] = parents.map(elementOf);
-
-              return !getEditorSchema(editor).emptyTextDrops({
-                ancestors,
-                parent,
-                root,
-              })?.(key, value);
-            },
-            keepsOnSplit: ({ continuation, path, reviewDraft, source }, root) =>
-              getEditorSchema(editor).elementSplitKeepsAt(
-                elementOf(source),
-                elementOf(continuation),
-                {
-                  children: reviewDraft as readonly Descendant[],
-                  path: [...path],
-                  root,
-                }
-              ),
-            slotted: (type, root) =>
-              (authoredResolveSchemaOf(editor).content(type, root)?.prefix ??
-                0) > 0,
-            declaredIn: (element, ancestors, root) =>
-              getEditorSchema(editor).elementDeclaredPropertiesIn(
-                elementOf(element),
-                { ancestors: ancestors.map(elementOf), root }
-              ),
-            splitKeepsIn: (source, continuation, place, root) =>
-              getEditorSchema(editor).elementSplitKeepsIn(
-                elementOf(source),
-                elementOf(continuation),
-                {
-                  continuationAncestors:
-                    place.continuationAncestors.map(elementOf),
-                  continuationIndex: place.continuationIndex,
-                  root,
-                  sourceAncestors: place.sourceAncestors.map(elementOf),
-                }
-              ),
-            joinCompares: (key) =>
-              joinCompares(getCompiledEditorSchema(editor), key),
-            maxChildren: (type, root) =>
-              authoredResolveSchemaOf(editor).content(type, root)?.max ?? null,
-            now: at,
-            oneText,
-            ownedRoots: (props) => {
-              const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-
-              return schema
-                .getElementOwnedRoots(props as Element)
-                .map(({ ownership, root }) => ({
-                  exclusive: ownership === 'exclusive',
-                  root,
-                }));
-            },
-            selectionBefore:
-              selectionPosition === null
-                ? null
-                : {
-                    position: selectionPosition,
-                    root: input.selectionBeforeRoot,
-                  },
-            schema: tracksPlaces(compiled) ? compiled : null,
-            unique: uniquePropertiesOf(compiled),
-            standing,
-            steps,
-            commitWriteId,
-            writer,
-          });
-          // Map only through the recorded change: the recorder slot's finalize
-          // then applies the canonical pass and maps the selection through it.
-          const map = {
-            after,
-            indexes: recorded.indexedAfter,
-            map: recorded.mapPosition,
-          };
-
-          const kept = [
-            ...new Set([
-              ...visitRootNames(before.roots),
-              ...recorded.indexedAfter.keys(),
-            ]),
-          ].filter((root) => root !== 'main' && !byName.has(root));
-          const beforeRecords = getValueRecords(before);
-          const valueWith = (
-            roots: readonly string[],
-            indexes: ReadonlyMap<string, DocumentIndex>
-          ) => {
-            const next = copyFields({}, before, ['records', 'roots']);
-
-            setLazyRoot(
-              next,
-              'children',
-              indexes.get('main') ?? rootIndexOf(before, 'children')
-            );
-            if (roots.length > 0) {
-              const named: Record<string, unknown> = {};
-
-              for (const root of roots) {
-                const index =
-                  indexes.get(root) ?? lazyRootOf(before.roots, root);
-
-                if (index) setLazyRoot(named, root, index);
-                else named[root] = valueRoot(before, root);
-              }
-              next.roots = named;
-            }
-
-            return withValueRecords(next, beforeRecords) as typeof before;
-          };
-          const withdrawn =
-            withdrawable.size > 0
-              ? orphanedValueRoots(
-                  getCompiledEditorSchema(editor),
-                  before,
-                  valueWith(kept, recorded.indexedAfter),
-                  changedRootsOf(recorded.change),
-                  createdThenDeleted
-                ).filter((root) => withdrawable.has(root))
-              : [];
-          const roots =
-            withdrawn.length > 0
-              ? kept.filter((root) => !withdrawn.includes(root))
-              : kept;
-          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
-            valueWith(roots, indexes);
-          const unborn = withdrawn.filter((root) =>
-            createdThenDeleted.has(root)
+          const decidedRoots = [
+            ...getInternalDocumentChangeEntries(covered.change),
+          ].flatMap(([root]) =>
+            recorded.indexedAfter.has(root)
+              ? []
+              : [[root, rootOf(covered.value, root)] as const]
           );
-          const deleted = withdrawn.filter(
-            (root) => !createdThenDeleted.has(root)
-          );
-          const born =
-            unborn.length > 0
-              ? filterDocumentChangeRoots(
-                  recorded.change,
-                  (root) => !unborn.includes(root)
-                )
-              : recorded.change;
-          const recordedChange =
-            deleted.length > 0
-              ? born.compose(
-                  createInternalDocumentChange(new Map(), {
-                    deleteRoots: deleted,
-                  }),
-                  before
-                )
-              : born;
-          const written = valueOf(recorded.indexedAfter);
-          const relink = relinkCuts(
-            recordedChange,
-            before,
-            written,
-            (root) =>
-              recorded.indexedAfter.get(root) ??
-              DocumentIndex.fromValue(valueRoot(written, root))
-          );
-          const change = relink
-            ? recordedChange.compose(relink.change, before)
-            : recordedChange;
-          const indexes = relink
-            ? new Map([...recorded.indexedAfter, ...relink.indexes])
-            : recorded.indexedAfter;
-          const writtenPlain = editing && recorded.writtenPlain;
-          const mark = {
-            at,
-            author: writer,
-            change: forced?.changeId ?? changeId,
-            ...(forced?.inc === undefined ? {} : { inc: forced.inc }),
-          };
-          const filled = writtenPlain
-            ? null
-            : completeProposed({
-                after: valueOf(indexes),
-                before,
-                change,
-                dependencies,
-                editor,
-                indexes,
-                mark,
-                standing,
-                commitWriteId,
-              });
-          const content = filled
-            ? change.compose(filled.change, before)
-            : change;
-          const writtenIndexes = filled?.indexes ?? indexes;
-          const accepted =
-            editing && !writtenPlain
-              ? acceptOwn(content, writtenIndexes, dependencies, {
-                  ...known,
-                  landed: landedHere,
-                })
-              : null;
-          // Accepting removes fragments outright, whose cuts move to the
-          // fragments that stay.
-          const relinkedOwn =
-            accepted &&
-            relinkCuts(
-              accepted.change,
-              valueOf(writtenIndexes),
-              valueOf(accepted.indexes),
-              (root) =>
-                accepted.indexes.get(root) ??
-                DocumentIndex.fromValue(
-                  valueRoot(valueOf(accepted.indexes), root)
-                ),
-              (root) =>
-                writtenIndexes.get(root) ??
-                DocumentIndex.fromValue(valueRoot(before, root))
-            );
-          const owned =
-            accepted && relinkedOwn
-              ? {
-                  change: accepted.change.compose(relinkedOwn.change),
-                  indexes: new Map([
-                    ...accepted.indexes,
-                    ...relinkedOwn.indexes,
-                  ]),
-                  landed: accepted.landed,
-                }
-              : accepted;
-          const through =
-            (changes: ReadonlyArray<DocumentChange | undefined>) =>
-            (root: string, position: number, assoc: -1 | 1) =>
-              changes.reduce(
-                (mapped, later) =>
-                  (later &&
-                    getInternalDocumentRootChange(later, root)?.mapPos(
-                      mapped,
-                      assoc
-                    )) ??
-                  mapped,
-                position
-              );
-          const mapPosition = (root: string, position: number, assoc: -1 | 1) =>
-            through([relink?.change, filled?.change, owned?.change])(
-              root,
-              recorded.mapPosition(root, position, assoc, false),
-              assoc
-            );
-          // A caret where accepting removes the writer's struck run stays on
-          // the line after it, as in the frame.
-          const staysAfter = 1;
-          const record = (draftSelection: Selection, root: string) => {
-            const selection = mapSelection(draftSelection, { ...map, root });
-            const filledSelection = filled
-              ? mapSelection(selection, {
-                  after: valueOf(indexes),
-                  indexes: filled.indexes,
-                  map: through([filled.change]),
-                  root,
-                })
-              : selection;
-
-            return owned
-              ? mapSelection(
-                  filledSelection,
-                  {
-                    after: valueOf(writtenIndexes),
-                    indexes: owned.indexes,
-                    map: through([owned.change]),
-                    root,
-                  },
-                  staysAfter
-                )
-              : filledSelection;
-          };
-
-          const recordedLater = owned
-            ? content.compose(owned.change, before)
-            : content;
-          const recordedIndexes = owned?.indexes ?? writtenIndexes;
-          // The context records the writes rest on go with them, so no
-          // node ever points at a record its document lacks. An Editing
-          // format write over pending tags lands with its commit, so a tag
-          // over it reads it after it leaves the key, until an undo takes
-          // both back.
-          const recordedRecords = [
-            putContexts(
-              restedOn(dependencies.minted(), recordedLater, recordedIndexes)
-            ),
-            putLanded([
-              ...(editing && commitWrite !== undefined
-                ? [landedOf({ at, change: changeId, id: commitWrite })]
-                : []),
-              ...(owned?.landed ?? []),
-            ]),
-          ].reduce(composeRecordOps, ownRecords);
-          // A fill deferred at its container's maximum stays deferred where
-          // accepting the writer's own claims keeps its container.
-          const deferred = (filled?.deferred ?? []).flatMap((build) => {
-            if (!owned || build.path.length === 0) return [build];
-
-            const { from } = getDefined(
-              writtenIndexes.get(build.root)
-            ).nodeRange(build.path);
-            const rootChange = getInternalDocumentRootChange(
-              owned.change,
-              build.root
-            );
-            const start = rootChange
-              ? rootChange.mapPos(from, 1, 'after')
-              : from;
-            const host =
-              start === null
-                ? null
-                : recordedIndexes.get(build.root)?.nodeStartingAt(start);
-
-            return host && host.from === start && host.kind === 'element'
-              ? [{ ...build, path: host.path }]
-              : [];
-          });
-          // Each container the write touched stores the spares its pending
-          // claims can need, and a fill its maximum deferred stores the
-          // frame's own element as its slot's spare.
-          const recordedValue = deriveValue(
-            valueOf(recordedIndexes),
-            {},
-            recordedRecords
-          );
-          const writes = storesSpares(compiled)
-            ? sparesFor(
-                recordedValue as EditorDocumentValue,
-                compiled,
-                changedSitesOf(recordedLater, recordedIndexes, before),
-                deferred.map(({ index, ...build }) => ({
-                  ...build,
-                  node:
-                    framedChild(
-                      valueRootIndex(after, build.root),
-                      build.path.length === 0
-                        ? null
-                        : getDefined(recordedIndexes.get(build.root)).nodeRange(
-                            build.path
-                          ).from,
-                      index,
-                      String(build.node.type),
-                      (position, assoc) =>
-                        mapPosition(build.root, position, assoc)
-                    ) ?? build.node,
-                  writer: owned ? null : mark,
-                })),
-                spareBlocksOf(recordedValue),
-                writer
-              )
-            : NO_SPARE_WRITES;
-          const spares =
-            writes.containers.length > 0
-              ? spareWritesChange(writes, recordedIndexes)
-              : null;
-          const spared = spares
-            ? recordedLater.compose(spares.change, before)
-            : recordedLater;
-          const sparedIndexes = spares?.indexes ?? recordedIndexes;
-          const records = composeRecordOps(recordedRecords, writes.records);
-          // Accepting everything shows the generated values the command's
-          // frame shows.
-          const shown = storesSpares(compiled)
-            ? closeCommandValues({
-                before,
-                change: spared,
-                compiled,
-                editing,
-                frame: after,
-                framed: !!input.projection,
-                holders,
-                indexes: sparedIndexes,
-                peek: (values, read) => ledger.peek(values, read),
-                standing,
-                storedOf: (edited) => deriveValue(valueOf(edited), {}, records),
-                writer: {
-                  ...mark,
-                  commitWriteId,
-                  isOwn: (tag) => tag.change === mark.change,
-                },
-              })
-            : null;
-          const later = shown ? spared.compose(shown.change, before) : spared;
-          const indexedAfter = shown?.indexes ?? sparedIndexes;
-          const split = splitOneTextRefusal(later, indexedAfter, oneText);
-
-          if (split) throw split;
-
-          const selection = record(input.selection, input.selectionRoot);
-          const strike =
-            !editing &&
-            !composition &&
-            recorded.textStrike &&
-            !relink &&
-            !filled &&
-            !owned &&
-            !spares &&
-            !shown &&
-            [...records.values()].every((set) => set.size === 0) &&
-            selection?.kind === 'text' &&
-            PointApi.equals(selection.anchor, selection.focus) &&
-            (selection.anchor.root ?? input.selectionRoot) ===
-              recorded.textStrike.root
-              ? recorded.textStrike
-              : null;
-          const onlySetsProperties = (
-            pass: Readonly<{ change: DocumentChange }> | null | undefined
-          ) =>
-            !pass ||
-            [...getInternalDocumentChangeEntries(pass.change)].every(
-              ([, root]) => changesOnlyProperties(root)
-            );
-          const facts = [relink, filled, owned, spares, shown].every(
-            onlySetsProperties
-          )
-            ? recorded.facts
-            : undefined;
 
           return {
-            anchorChange: (plainAfter) =>
-              [
-                filled?.change,
-                owned?.change,
-                spares?.change,
-                shown?.change,
-              ].reduce(
-                (anchor: DocumentChange, next) =>
-                  next ? anchor.compose(next) : anchor,
-                recorded.anchorChange(plainAfter)
-              ),
-            bookmarks: input.bookmarks.map(({ root, selection: bookmark }) =>
-              record(bookmark, root)
-            ),
-            change: withDocumentChangeRecords(later, records),
-            ...(strike
-              ? {
-                  deleteGrouping: Object.freeze({
-                    blockPath: strike.blockPath,
-                    direction: strike.direction,
-                    group: `${strike.author}\0${strike.change}`,
-                    root: strike.root,
-                  }),
-                }
-              : {}),
-            ...(facts ? { facts } : {}),
-            indexedAfter,
-            mapPosition,
-            selection,
+            ...recorded,
+            change: covered.change.compose(recorded.change, input.before),
+            historyBoundary: true,
+            indexedAfter:
+              decidedRoots.length === 0
+                ? recorded.indexedAfter
+                : new Map([...decidedRoots, ...recorded.indexedAfter]),
           };
         })
       );
     },
   });
+};
+
+const CONTENT_ORIGINS: ReadonlySet<DraftStep['origin']> = new Set([
+  'change',
+  'insert-node',
+  'merge',
+  'remove-node',
+  'replace',
+  'slice',
+  'split',
+  'text',
+]);
+
+const replacesRange = (
+  input: Parameters<EditorDocumentRecorder>[0],
+  projection: CommandProjection,
+  root: string,
+  from: number,
+  to: number
+) => {
+  const rootChange = getInternalDocumentRootChange(input.change, root);
+  const start = projection.map.toProjected(root, from, 'forward');
+  const end = projection.map.toProjected(root, to, 'backward');
+
+  if (
+    !rootChange ||
+    start === null ||
+    end === null ||
+    input.change.createRoots.size > 0 ||
+    input.change.deleteRoots.size > 0 ||
+    getInternalDocumentChangeRootKeys(input.change).some((at) => at !== root) ||
+    !input.steps.some((step) => CONTENT_ORIGINS.has(step.origin))
+  ) {
+    return false;
+  }
+
+  const low = Math.min(start, end);
+  const high = Math.max(start, end);
+  const shown = projection.indexes.get(root) ?? rootOf(input.before, root);
+  const letters = (at: number, until: number) =>
+    shown.nodeRangesTouching(at, until).flatMap((entry) => {
+      const first = Math.max(entry.contentFrom, at);
+      const last = Math.min(entry.contentTo, until);
+
+      return entry.kind === 'text' && first < last ? [[first, last]] : [];
+    });
+  // A node holding an edge of the range, such as the line a whole-document
+  // delete keeps and retypes, may change with it.
+  const holdsEdge = (at: number, until: number) =>
+    shown
+      .nodeRangesTouching(at, until)
+      .every(
+        (entry) =>
+          (entry.from < low && low < entry.to) ||
+          (entry.from < high && high < entry.to)
+      );
+  let away = false;
+
+  rootChange.iterChangedRanges((fromA, toA) => {
+    away ||=
+      ((fromA > high || toA < low) && !holdsEdge(fromA, toA)) ||
+      letters(fromA, toA).some(([first, last]) => first < low || last > high);
+  });
+
+  return (
+    !away &&
+    letters(low, high).every(([first, last]) =>
+      isRootChangeRangeReplaced(rootChange, first, last)
+    )
+  );
 };
 
 /** Suggestions recorded as review marks in the document. */

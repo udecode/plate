@@ -51,7 +51,7 @@ import {
 } from '../transforms-text/insert-text';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
-import { refusesTextStartInStruck } from './command-frame';
+import { refusesTextStartInStruck, removesAtPlace } from './command-frame';
 import { getActiveCommandEditor } from './command-registry';
 import {
   recordLocatedDestination,
@@ -971,6 +971,7 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   deleteFragment: defineCommand<DeleteFragmentCommand>('fragment.delete', {
     locate: (input, place) => {
+      removesAtPlace(place, input.at);
       if (input.at === undefined) return input;
 
       const at = place.location(input.at);

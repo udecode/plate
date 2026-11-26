@@ -14,6 +14,12 @@ const HISTORY_TAGS = [
 
 const HISTORY_TAG_SET = new Set<EditorUpdateTag>(HISTORY_TAGS);
 
+/**
+ * An update whose commit starts its own undo step, which no later commit
+ * joins, such as a write that decides another author's change with it.
+ */
+export const HISTORY_BOUNDARY_TAG: EditorUpdateTag = 'history-boundary';
+
 const historyPolicyTags = {
   merge: 'history-merge',
   'new-batch': 'history-push',

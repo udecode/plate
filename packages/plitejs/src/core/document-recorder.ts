@@ -4,6 +4,7 @@ import type {
   EditorUpdateTag,
   Selection,
 } from '../interfaces/editor';
+import type { Range } from '../interfaces/range';
 import { carriedRunsOf, type DraftStep } from './change/builder';
 import type { CarriedRun } from './change/carried-run';
 import type { DocumentChange } from './change/document-change';
@@ -36,6 +37,12 @@ export type EditorDocumentRecorder = (
     /** The composition commit a command frame carries. */
     composition?: CompositionStamp | null;
     /**
+     * The stored range a removal names, or the expanded selection it
+     * removes. When the command frame shows none of it, the frame writes
+     * nothing and a recorder may return `null`.
+     */
+    removal?: Readonly<{ root: string; selection: Range }>;
+    /**
      * The projection of `before` a command frame's commands wrote the steps
      * on, which hides content they never saw.
      */
@@ -60,6 +67,8 @@ export type EditorDocumentRecorder = (
   change: DocumentChange;
   deleteGrouping?: RecordedDeleteGroupingInput | null;
   facts?: ChangeFacts;
+  /** The commit starts an undo step that no later commit joins. */
+  historyBoundary?: true;
   indexedAfter?: ReadonlyMap<string, DocumentIndex>;
   /**
    * Maps a position in the draft commands wrote to the committed draft, as a

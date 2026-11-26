@@ -4665,7 +4665,10 @@ class RootRecorder {
 
           this.ops.push({ at: position, kind: 'props', props: struckProps });
           openLeaf = struckProps;
-          reopen = props;
+          // Letters left after the range keep the leaf's own marks. Text
+          // written after a leaf the range takes whole lands in the leaf the
+          // range starts in, as the frame wrote it, never in the leaf taken.
+          reopen = context.contentTo > to ? props : leafOf(startContext);
           continue;
         }
 

@@ -96,9 +96,10 @@ import {
   EditorSchemaValidationError,
 } from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
-import type {
-  InternalEditorUpdateOptions,
-  SpeculativeUpdate,
+import {
+  HISTORY_BOUNDARY_TAG,
+  type InternalEditorUpdateOptions,
+  type SpeculativeUpdate,
 } from '../core/update-policy';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
 import { countCoreWork } from '../core/work';
@@ -1147,8 +1148,12 @@ const createHistoryPlugin = <
       getEditorCommitRest(commit) !== null;
     // A step that carries a run stands alone too, so the runs stay in the
     // coordinates of the one change they describe.
+    const boundary = commit.tags.includes(HISTORY_BOUNDARY_TAG);
     const explicitPush =
-      commit.tags.includes('history-push') || settles || carried !== null;
+      commit.tags.includes('history-push') ||
+      settles ||
+      boundary ||
+      carried !== null;
     const textInput =
       commit.tags.includes('native-text-input') ||
       commit.tags.includes('dom-text-input');
@@ -1309,8 +1314,12 @@ const createHistoryPlugin = <
         anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
         carets,
         clearRedos: true,
-        group:
-          settles && prepared.group
+        group: boundary
+          ? Object.freeze({
+              ...(prepared.group ?? { kind: 'document', roots: [] }),
+              closed: true,
+            })
+          : settles && prepared.group
             ? Object.freeze({ ...prepared.group, closed: true })
             : prepared.group,
         recovery: anchorCapture?.recovery ?? null,
