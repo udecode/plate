@@ -138,12 +138,14 @@ const buildWorkspaceDevAliases = () => ({
 });
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: Object.values(os.networkInterfaces()).flatMap(
-    (addresses) =>
+  allowedDevOrigins: [
+    '127.0.0.1',
+    ...Object.values(os.networkInterfaces()).flatMap((addresses) =>
       (addresses ?? []).flatMap(({ address, family, internal }) =>
         family === 'IPv4' && !internal ? [address] : []
       )
-  ),
+    ),
+  ],
   distDir: '.next',
   experimental: {
     externalDir: true,

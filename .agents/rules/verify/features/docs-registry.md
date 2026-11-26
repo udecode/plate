@@ -18,9 +18,9 @@ English and Chinese docs routes, live editor previews, API reference manifests, 
 Preconditions: `www-drive` (port 3519) is running from this checkout or `--base <url>` is reachable.
 
 - **List routes:** `node tooling/scripts/page-health.mjs --list` prints canonical docs, component, and example routes with reference twins.
-- **Render check:** open `http://127.0.0.1:3519/docs/<slug>`, wait past `Loading...` for embedded previews to mount, verify zero console/page errors, and inspect a screenshot.
+- **Render check:** open `http://localhost:3519/docs/<slug>`, wait past `Loading...` for embedded previews to mount, verify zero console/page errors, and inspect a screenshot.
 - **Registry build:** run `pnpm --filter www build:registry && pnpm check www` after editing `apps/www/src/registry/`.
-- **Route health:** run `node tooling/scripts/page-health.mjs --base http://127.0.0.1:3519` and confirm zero errors or Not Found routes.
+- **Route health:** run `node tooling/scripts/page-health.mjs --base http://localhost:3519` and confirm zero errors or Not Found routes.
 
 ## Gotchas
 

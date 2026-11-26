@@ -20,7 +20,7 @@ Preconditions: `node apps/plite/scripts/inspect-plite-browser.mjs doctor` passes
 
 - **Discover:** `node apps/plite/scripts/inspect-plite-browser.mjs journeys plaintext` returns route, spec, and runner argv.
 - **Focused suite:** `pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/plaintext.test.ts` exits 0; copy any `apps/plite/test-results/` before rerunning.
-- **Interactive:** open `http://127.0.0.1:3298/examples/plite/plaintext`, focus `[data-editor="true"]`, type key by key, and read DOM text + `__EDITOR_BROWSER_HANDLE__.getValue()`.
+- **Interactive:** open `http://localhost:3298/examples/plite/plaintext`, focus `[data-editor="true"]`, type key by key, and read DOM text + `__EDITOR_BROWSER_HANDLE__.getValue()`.
 - **Yjs peers:** start `PLITE_YJS_STORAGE_DIR=<run-dir>/yjs-data bun tooling/plite/donor/yjs/hocuspocus-server.ts`, open `peer=a` and `peer=b` with `?connection=manual&room=r1`, click `Online`, edit in A, verify B.
 - **Matrix:** run `pnpm check:plite:browser-matrix` for WebKit/mobile closure.
 

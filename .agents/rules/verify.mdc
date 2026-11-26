@@ -52,7 +52,7 @@ Run read-only checks before driving and after unexpected failures:
 
 1. `node apps/plite/scripts/inspect-plite-browser.mjs doctor` (read both `fresh` fields).
 2. `lsof -nP -iTCP:<port> -sTCP:LISTEN` and `lsof -a -p <pid> -d cwd -Fn` (confirm port belongs to this checkout).
-3. `curl --fail --silent --show-error http://127.0.0.1:<port>/api/plite/ready` (verify `devSource`, `dynamicDocs`, and `plite` when needed), then inspect the route in-browser.
+3. `curl --fail --silent --show-error http://localhost:<port>/api/plite/ready` (verify `devSource`, `dynamicDocs`, and `plite` when needed), then inspect the route in-browser.
 4. For CLI: `node <abs>/packages/cli/dist/bin.js --version` matches `packages/cli/package.json`.
 5. For install corruption (`Invalid hook call`, mixed `.bun`/`.pnpm` React, null `resolveDispatcher()`), run `pnpm run reinstall` once and retest.
 
