@@ -32,10 +32,10 @@ import {
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   carryFieldNames,
+  conditionGraph,
   conditionProblem,
   dropFieldNames,
   FIELD_KINDS,
-  fieldLinks,
   fieldProblems,
   fitsField,
   holdsFieldNames,
@@ -430,8 +430,11 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           else byId.set(node.fieldId, node);
         }
 
-        const lookup = (id: string) =>
-          repeated.has(id) ? held(id) : byId.get(id);
+        const lookup = (id: string) => {
+          if (typeof id !== 'string') return undefined;
+
+          return repeated.has(id) ? held(id) : (byId.get(id) ?? held(id));
+        };
 
         return { lookup, nodes };
       };
@@ -655,7 +658,7 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
           /** Every field of the document, in reading order. */
           fields: (): FieldRead[] => {
             const { lookup, nodes } = listed();
-            const links = fieldLinks();
+            const links = sharedFieldLinks(reader);
             const index = nodes.some(({ name }) => name !== undefined)
               ? names(() => nodes)
               : undefined;
@@ -801,9 +804,9 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
 
               if (
                 patch.condition.ref !== field.condition?.ref &&
-                fieldLinks().link(next, (id) =>
+                conditionGraph((id) =>
                   id === fieldId ? next : held(id)[0]
-                ).loop
+                ).loop(next)
               ) {
                 throw refusal('its condition closes a loop');
               }

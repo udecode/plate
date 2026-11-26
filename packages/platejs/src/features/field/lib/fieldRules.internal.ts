@@ -1,6 +1,8 @@
 import {
+  getActiveEditorTransaction,
   getActiveEditorUpdateId,
   getEditorRuntimeOwner,
+  getMutationVersion,
   getSnapshotVersion,
   readShownDocument,
   type RuntimeAnyEditor,
@@ -214,7 +216,7 @@ export const unfitSettings = (field: FieldShape) =>
 
 export const fieldProblems = (
   field: FieldElement,
-  link: FieldLink
+  link: Chain
 ): FieldProblem[] => {
   const own: FieldProblem[] =
     unfitSettings(field).length === 0 ? [] : ['invalid-value'];
@@ -227,17 +229,19 @@ export const fieldProblems = (
 };
 
 type Held = (fieldId: string) => FieldElement | undefined;
+type AnswerOf = (field: FieldElement) => FieldValue | undefined;
 
 const judge = (
   condition: FieldCondition,
   target: FieldElement,
   reached: Verdict,
-  settled: boolean
+  settled: boolean,
+  answer: FieldValue | undefined
 ): Verdict => {
   if (reached.applies === null) return reached;
   if (!reached.applies) return verdictOf(holds(condition, target, undefined));
-  if (fitsField(target, target.value)) {
-    return verdictOf(holds(condition, target, target.value));
+  if (fitsField(target, answer)) {
+    return verdictOf(holds(condition, target, answer));
   }
   if (!settled) return { applies: null, waitsOn: target.role };
 
@@ -246,105 +250,288 @@ const judge = (
   );
 };
 
-const linksWith = (settles: (role: string, readingRole: string) => boolean) => {
-  const chains = new Map<string, Chain>();
-  const byReadingRole = new Map<string, Map<string, Verdict>>();
-  const chainOf = (field: FieldElement, held: Held): Chain => {
-    const path: FieldElement[] = [];
-    const places = new Map<string, number>();
-    let next: FieldElement | undefined = field;
+export const fieldLinkWork = { judgments: 0, lookups: 0, loopVisits: 0 };
 
-    while (next && !chains.has(next.fieldId) && !places.has(next.fieldId)) {
-      places.set(next.fieldId, path.length);
-      path.push(next);
-      next = next.condition && held(next.condition.ref);
+const conditionEdges = (condition: FieldCondition | undefined, held: Held) => {
+  if (!condition) return [];
+
+  fieldLinkWork.lookups += 1;
+
+  return [{ target: held(condition.ref), test: condition }];
+};
+
+type ConditionEdge = ReturnType<typeof conditionEdges>[number];
+
+export const conditionGraph = (held: Held) => {
+  const edgesById = new Map<string, readonly ConditionEdge[]>();
+  const loopById = new Map<string, boolean>();
+  const loopKnown = (target: FieldElement) => loopById.has(target.fieldId);
+
+  const edges = (field: FieldElement) => {
+    const known = edgesById.get(field.fieldId);
+
+    if (known) return known;
+
+    const resolved = conditionEdges(field.condition, held);
+
+    edgesById.set(field.fieldId, resolved);
+
+    return resolved;
+  };
+
+  const loop = (start: FieldElement): boolean => {
+    const known = loopById.get(start.fieldId);
+
+    if (known !== undefined) return known;
+    if (edges(start).every(({ target }) => !target || loopKnown(target))) {
+      fieldLinkWork.loopVisits += 1;
+      loopById.set(start.fieldId, false);
+
+      return false;
     }
 
-    const loopStart = next ? places.get(next.fieldId) : undefined;
+    const orders = new Map<string, { index: number; low: number }>();
+    const sccStack: string[] = [];
+    const selfLoop = new Set<string>();
+    const frames: Array<{
+      edges: readonly ConditionEdge[];
+      field: FieldElement;
+      nextEdge: number;
+      order: { index: number; low: number };
+    }> = [];
 
-    for (let index = path.length - 1; index >= 0; index--) {
-      chains.set(path[index].fieldId, {
-        loop: loopStart !== undefined && index >= loopStart,
-        target: path[index + 1] ?? next,
-      });
+    const visit = (field: FieldElement) => {
+      fieldLinkWork.loopVisits += 1;
+      const order = { index: orders.size, low: orders.size };
+
+      orders.set(field.fieldId, order);
+      sccStack.push(field.fieldId);
+      frames.push({ edges: edges(field), field, nextEdge: 0, order });
+    };
+
+    visit(start);
+
+    for (let frame = frames.at(-1); frame; frame = frames.at(-1)) {
+      const id = frame.field.fieldId;
+
+      if (frame.nextEdge < frame.edges.length) {
+        const { target } = frame.edges[frame.nextEdge];
+
+        frame.nextEdge += 1;
+        if (!target || loopKnown(target)) continue;
+        if (target.fieldId === id) {
+          selfLoop.add(id);
+          continue;
+        }
+
+        const reached = orders.get(target.fieldId);
+
+        if (!reached) visit(target);
+        else frame.order.low = Math.min(frame.order.low, reached.index);
+        continue;
+      }
+
+      frames.pop();
+
+      if (frame.order.low === frame.order.index) {
+        const single = sccStack.at(-1) === id;
+
+        for (
+          let member = sccStack.pop();
+          member !== undefined;
+          member = sccStack.pop()
+        ) {
+          loopById.set(member, single ? selfLoop.has(id) : true);
+          if (member === id) break;
+        }
+      }
+
+      const parent = frames.at(-1);
+
+      if (parent) {
+        parent.order.low = Math.min(parent.order.low, frame.order.low);
+      }
     }
 
     return (
-      chains.get(field.fieldId) ??
+      loopById.get(start.fieldId) ??
       failInvariant('A field was read before its link.')
     );
   };
-  const appliesOf = (
-    field: FieldElement,
-    held: Held,
-    readingRole = field.role
-  ) => {
-    const known = byReadingRole.get(readingRole) ?? new Map<string, Verdict>();
-
-    byReadingRole.set(readingRole, known);
-
-    const waiting: Array<readonly [FieldElement, FieldCondition]> = [];
-    let at = field;
-    let reached = known.get(at.fieldId);
-
-    while (reached === undefined) {
-      const { loop, target } = chainOf(at, held);
-
-      if (
-        loop ||
-        !at.condition ||
-        !target ||
-        conditionProblem(at.condition, target)
-      ) {
-        reached = APPLIES;
-        known.set(at.fieldId, reached);
-        break;
-      }
-
-      waiting.push([at, at.condition]);
-      at = target;
-      reached = known.get(at.fieldId);
-    }
-
-    for (let index = waiting.length - 1; index >= 0; index--) {
-      const [next, condition] = waiting[index];
-
-      reached = judge(condition, at, reached, settles(at.role, readingRole));
-      known.set(next.fieldId, reached);
-      at = next;
-    }
-
-    return reached;
-  };
 
   return {
-    link: (field: FieldElement, held: Held): FieldLink => ({
-      ...chainOf(field, held),
-      ...appliesOf(field, held),
+    edges,
+    link: (field: FieldElement): Chain => ({
+      loop: loop(field),
+      target: edges(field)[0]?.target,
     }),
-    linkCopy: (field: FieldElement, held: Held): FieldLink => {
-      const { condition } = field;
-      const target = condition && held(condition.ref);
-      const verdict =
-        !condition || !target || conditionProblem(condition, target)
-          ? APPLIES
-          : judge(
-              condition,
-              target,
-              appliesOf(target, held, field.role),
-              settles(target.role, field.role)
-            );
-
-      return { ...verdict, loop: false, target };
-    },
+    loop,
   };
 };
 
-export const fieldLinks = () =>
-  linksWith((role, readingRole) => role === readingRole);
+type ConditionGraph = ReturnType<typeof conditionGraph>;
 
-export const submittedFieldLinks = (roles: ReadonlySet<string>) =>
-  linksWith((role) => roles.has(role));
+const judgmentsOver = (
+  graph: ConditionGraph,
+  settled: (role: string) => boolean,
+  answerOf: AnswerOf = ({ value }) => value,
+  decided = new Map<string, Verdict>()
+) => {
+  const waiting = new Map<string, Verdict>();
+  const read = (id: string) => decided.get(id) ?? waiting.get(id);
+  const remember = (id: string, result: Verdict) => {
+    (result.applies === null ? waiting : decided).set(id, result);
+  };
+
+  return (start: FieldElement): Verdict => {
+    const cached = read(start.fieldId);
+
+    if (cached) return cached;
+
+    const frames: Array<{
+      edges: readonly ConditionEdge[];
+      field: FieldElement;
+      nextEdge: number;
+    }> = [];
+    const push = (field: FieldElement) => {
+      const raw = graph.loop(field) ? [] : graph.edges(field);
+
+      if (
+        raw.length === 0 ||
+        raw.some(
+          ({ target, test }) => !target || conditionProblem(test, target)
+        )
+      ) {
+        fieldLinkWork.judgments += 1;
+        remember(field.fieldId, APPLIES);
+
+        return;
+      }
+
+      frames.push({ edges: raw, field, nextEdge: 0 });
+    };
+
+    push(start);
+
+    for (let frame = frames.at(-1); frame; frame = frames.at(-1)) {
+      if (frame.nextEdge < frame.edges.length) {
+        const { target } = frame.edges[frame.nextEdge];
+
+        frame.nextEdge += 1;
+        if (target && !read(target.fieldId)) push(target);
+        continue;
+      }
+
+      frames.pop();
+      const [edge] = frame.edges;
+
+      if (!edge?.target) {
+        failInvariant('A field was judged with no condition edge.');
+      }
+
+      const { target, test } = edge;
+
+      fieldLinkWork.judgments += 1;
+      remember(
+        frame.field.fieldId,
+        judge(
+          test,
+          target,
+          read(target.fieldId) ??
+            failInvariant('A field was judged before its condition target.'),
+          settled(target.role),
+          answerOf(target)
+        )
+      );
+    }
+
+    return (
+      read(start.fieldId) ??
+      failInvariant('A field was read before its judgment.')
+    );
+  };
+};
+
+export const fieldVerdicts = (graph: ConditionGraph) => {
+  const decided = new Map<string, Verdict>();
+
+  return (roles: ReadonlySet<string>, answerOf?: AnswerOf) => {
+    const copy = new Set(roles);
+
+    return judgmentsOver(graph, (role) => copy.has(role), answerOf, decided);
+  };
+};
+
+export const fieldLinks = () => {
+  let resolve: Held = () => undefined;
+  const graph = conditionGraph((id) => resolve(id));
+  const byRole = new Map<
+    string,
+    Readonly<{
+      copies: WeakMap<FieldElement, FieldLink>;
+      verdict: ReturnType<typeof judgmentsOver>;
+    }>
+  >();
+  const roleOf = (role: string) => {
+    let kept = byRole.get(role);
+
+    if (!kept) {
+      kept = {
+        copies: new WeakMap(),
+        verdict: judgmentsOver(graph, (r) => r === role),
+      };
+      byRole.set(role, kept);
+    }
+
+    return kept;
+  };
+  const withHeld = <T>(held: Held, read: () => T) => {
+    const previous = resolve;
+
+    resolve = held;
+    try {
+      return read();
+    } finally {
+      resolve = previous;
+    }
+  };
+
+  return {
+    link: (field: FieldElement, held: Held): FieldLink =>
+      withHeld(held, () => ({
+        ...graph.link(field),
+        ...roleOf(field.role).verdict(field),
+      })),
+    linkCopy: (field: FieldElement, held: Held): FieldLink =>
+      withHeld(held, () => {
+        const { copies, verdict } = roleOf(field.role);
+        const known = copies.get(field);
+
+        if (known) return known;
+
+        const { condition } = field;
+        const target = conditionEdges(condition, held)[0]?.target;
+        const result =
+          !condition || !target || conditionProblem(condition, target)
+            ? APPLIES
+            : judge(
+                condition,
+                target,
+                verdict(target),
+                target.role === field.role,
+                target.value
+              );
+
+        fieldLinkWork.judgments += 1;
+
+        const link: FieldLink = { ...result, loop: false, target };
+
+        copies.set(field, link);
+
+        return link;
+      }),
+  };
+};
 
 const shared = new WeakMap<
   object,
@@ -364,13 +551,15 @@ const linksOf = (key: object, version?: number) => {
 };
 
 export const sharedFieldLinks = (editor: RuntimeAnyEditor) => {
-  if (getActiveEditorUpdateId(editor)) return fieldLinks();
-
   const shown = readShownDocument(editor);
 
   if (shown) return linksOf(shown);
 
+  const active = getActiveEditorTransaction(editor);
   const owner = getEditorRuntimeOwner(editor);
+
+  if (active) return linksOf(active, getMutationVersion(owner));
+  if (getActiveEditorUpdateId(editor)) return fieldLinks();
 
   return linksOf(owner, getSnapshotVersion(owner));
 };

@@ -7,7 +7,9 @@ import type {
   FieldValue,
 } from './BaseFieldPlugin';
 import {
+  conditionGraph,
   fieldProblems,
+  fieldVerdicts,
   fillsField,
   fitsField,
   indexFieldNames,
@@ -17,7 +19,6 @@ import {
   isFieldOptions,
   isFieldValue,
   nameProblems,
-  submittedFieldLinks,
 } from './fieldRules.internal';
 
 /**
@@ -328,9 +329,10 @@ const replaySubmissions = (
   );
 
   const lookup = (fieldId: string) => held.get(fieldId);
+  const valueOf = (field: FieldElement) => held.get(field.fieldId)?.value;
   const fields = [...held.values()];
   const names = indexFieldNames(fields);
-  const templateLinks = submittedFieldLinks(new Set());
+  const graph = conditionGraph(lookup);
   const [templateRefusal, ...templateRefusals] = places.flatMap(
     (place): FieldRefusal[] => {
       const { node, path, root } = place;
@@ -358,8 +360,8 @@ const replaySubmissions = (
 
       return [
         ...answered,
-        ...fieldProblems(node, templateLinks.link(node, lookup)).map(
-          (problem) => invalid(problem)
+        ...fieldProblems(node, graph.link(node)).map((problem) =>
+          invalid(problem)
         ),
         ...nameProblems(node, names, lookup)
           .filter((problem) => problem === 'name-conflict')
@@ -372,6 +374,7 @@ const replaySubmissions = (
 
   const roles = [...new Set(fields.map(({ role }) => role))];
   const settled = new Set<string>();
+  const verdicts = fieldVerdicts(graph);
 
   for (const [index, submission] of submissions.entries()) {
     const header = checkSubmissionHeader(submission, index, roles, settled);
@@ -390,13 +393,12 @@ const replaySubmissions = (
     }
 
     settled.add(role);
-
-    const links = submittedFieldLinks(settled);
+    const judgeField = verdicts(settled, valueOf);
 
     for (const field of fields) {
       if (field.role !== role) continue;
 
-      const verdict = links.link(field, lookup);
+      const verdict = judgeField(field);
       const { fieldId } = field;
 
       if (verdict.applies === null) {
@@ -444,13 +446,13 @@ const replaySubmissions = (
     if (refusal) return refused([refusal, ...rest]);
   }
 
-  const links = submittedFieldLinks(settled);
+  const judgePending = verdicts(settled, valueOf);
   const pending = new Set<string>();
 
   for (const field of fields) {
     if (settled.has(field.role) || !field.required) continue;
 
-    const verdict = links.link(field, lookup);
+    const verdict = judgePending(field);
 
     if (verdict.applies === false) continue;
 
@@ -470,6 +472,7 @@ const replaySubmissions = (
     roots,
     settled,
     type,
+    verdicts,
   };
 };
 
@@ -586,6 +589,7 @@ export function startFieldValues<D extends EditorDocumentValue | Value>(
     roots,
     settled,
     type,
+    verdicts,
   } = replayed;
   const header = checkSubmissionHeader(
     start,
@@ -630,16 +634,17 @@ export function startFieldValues<D extends EditorDocumentValue | Value>(
 
   if (refusal) return { ok: false, refusals: [refusal, ...rest] };
 
-  const stagedLookup = (fieldId: string) =>
-    mirrored.get(fieldId) ?? held.get(fieldId);
-  const startLinks = submittedFieldLinks(new Set([...settled, role]));
+  const judgeStart = verdicts(
+    new Set([...settled, role]),
+    (field) => (mirrored.get(field.fieldId) ?? held.get(field.fieldId))?.value
+  );
 
   for (const field of fields) {
     if (field.role !== role) continue;
 
     const started = mirrored.get(field.fieldId);
 
-    if (started && startLinks.link(started, stagedLookup).applies === true) {
+    if (started && judgeStart(started).applies === true) {
       held.set(field.fieldId, started);
     }
   }
