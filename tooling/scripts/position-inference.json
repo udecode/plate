@@ -25,6 +25,7 @@
     "packages/plitejs/src/sync/server/window.ts"
   ],
   "uncounted": {
-    "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap."
+    "packages/plitejs/src/core/change/range-content.ts": "It reads whether a range covers a letter or a whole void. It works out no move, split, join or wrap.",
+    "packages/plitejs/src/core/change/text-leaf-boundary.ts": "It checks whether a change retained a token span verbatim and aligns a deletion across an adjacent empty text leaf of equal properties. It works out no move, split, join or wrap."
   }
 }

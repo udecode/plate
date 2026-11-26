@@ -31,6 +31,10 @@ import {
 } from './json';
 import { markReadBack, type ReadBack } from './read-back';
 import {
+  isRetainedFromOtherRange,
+  shiftMergedEmptyTextPair,
+} from './text-leaf-boundary';
+import {
   claimPreparedNodeSlice,
   closeToken,
   commonPrefixLength,
@@ -3180,6 +3184,18 @@ const mergeNestedChangeThroughStructuralRelocation = (
 
     if (targets.length !== 1) continue;
 
+    const targetPath = targets[0].path;
+
+    if (
+      isRetainedFromOtherRange(
+        structural.sections,
+        afterStructural.nodeRange(targetPath),
+        range
+      )
+    ) {
+      continue;
+    }
+
     const end = range.to + nested.newLength - nested.length;
     const parentPath = candidate.path.slice(0, -1);
     const edited: JsonNode[] = [];
@@ -3216,7 +3232,6 @@ const mergeNestedChangeThroughStructuralRelocation = (
       continue;
     }
 
-    const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);
 
     if (targetIndex === undefined) continue;
@@ -4602,6 +4617,27 @@ export class RootChange {
       return inMovedLine;
     }
 
+    const shifted = shiftMergedEmptyTextPair(
+      {
+        hasProperties: a.propertyChanges().length > 0,
+        replacements: a.replacements(),
+      },
+      {
+        hasProperties: b.propertyChanges().length > 0,
+        replacements: b.replacements(),
+      },
+      document
+    );
+
+    if (shifted) {
+      return RootChange.transformInDocument(
+        shifted.a ? RootChange.create(document, shifted.a) : a,
+        shifted.b ? RootChange.create(document, shifted.b) : b,
+        document,
+        settings
+      );
+    }
+
     const joined = rebaseOverJoins(a, b, document, replayBase, readBack);
 
     if (joined) return joined;
@@ -4640,21 +4676,16 @@ export class RootChange {
       };
     };
 
-    if (
-      readBack &&
-      wrapsInsideReplacement(aReplacements, bReplacements, document)
-    ) {
-      const { kept, other } = wrapGoesWithReplaced(a, b);
+    if (readBack) {
+      for (const [first, second, firstReps, secondReps, flip] of [
+        [a, b, aReplacements, bReplacements, false],
+        [b, a, bReplacements, aReplacements, true],
+      ] as const) {
+        if (!wrapsInsideReplacement(firstReps, secondReps, document)) continue;
+        const { kept, other } = wrapGoesWithReplaced(first, second);
 
-      return { a: kept, b: other };
-    }
-    if (
-      readBack &&
-      wrapsInsideReplacement(bReplacements, aReplacements, document)
-    ) {
-      const { kept, other } = wrapGoesWithReplaced(b, a);
-
-      return { a: other, b: kept };
+        return flip ? { a: other, b: kept } : { a: kept, b: other };
+      }
     }
 
     const absorbed = transformByPositionOverAbsorbedWraps(
@@ -4671,26 +4702,17 @@ export class RootChange {
 
     // The value repairs below would read a re-take of an unwrapped wrap,
     // which leaves the same value, as no edit at all.
-    const bPutBack = putBackOver(aReplacements, bReplacements, document);
+    for (const [first, second, firstReps, secondReps, flip] of [
+      [a, b, aReplacements, bReplacements, false],
+      [b, a, bReplacements, aReplacements, true],
+    ] as const) {
+      const putBack = putBackOver(firstReps, secondReps, document);
 
-    if (bPutBack) {
-      const afterB = b.apply(document);
+      if (!putBack) continue;
+      const empty = RootChange.empty(second.apply(document).length);
+      const created = RootChange.create(first.apply(document), putBack);
 
-      return {
-        a: RootChange.empty(afterB.length),
-        b: RootChange.create(a.apply(document), bPutBack),
-      };
-    }
-
-    const aPutBack = putBackOver(bReplacements, aReplacements, document);
-
-    if (aPutBack) {
-      const afterA = a.apply(document);
-
-      return {
-        a: RootChange.create(b.apply(document), aPutBack),
-        b: RootChange.empty(afterA.length),
-      };
+      return flip ? { a: created, b: empty } : { a: empty, b: created };
     }
 
     const aPropertyChanges = a.propertyChanges();
@@ -4798,16 +4820,18 @@ export class RootChange {
     ): move is SiblingRunMove =>
       !!move && (move.count === 1 ? other?.count !== 1 : !other);
 
-    if (carriesOver(bRunMove, aRunMove)) {
-      const carried = carryThroughMove(a, b, bRunMove);
+    for (const [edit, moveChange, move, other, flip] of [
+      [a, b, bRunMove, aRunMove, false],
+      [b, a, aRunMove, bRunMove, true],
+    ] as const) {
+      if (!carriesOver(move, other)) continue;
+      const carried = carryThroughMove(edit, moveChange, move);
 
-      if (carried) return { a: carried.edit, b: carried.move };
-    }
-
-    if (carriesOver(aRunMove, bRunMove)) {
-      const carried = carryThroughMove(b, a, aRunMove);
-
-      if (carried) return { a: carried.move, b: carried.edit };
+      if (carried) {
+        return flip
+          ? { a: carried.move, b: carried.edit }
+          : { a: carried.edit, b: carried.move };
+      }
     }
 
     const afterA = a.apply(document);
@@ -4818,17 +4842,19 @@ export class RootChange {
     // A side whose every edit the other's result already holds, such as a
     // letter the other typed another way, adds nothing. A rebase over the
     // shared lines would type that letter twice.
-    if (shared && keptIn(b, afterB, afterA)) {
-      return {
-        a: RootChange.betweenWhole(afterB, afterA),
-        b: RootChange.empty(afterA.length),
-      };
-    }
-    if (shared && keptIn(a, afterA, afterB)) {
-      return {
-        a: RootChange.empty(afterB.length),
-        b: RootChange.betweenWhole(afterA, afterB),
-      };
+    if (shared) {
+      if (keptIn(b, afterB, afterA)) {
+        return {
+          a: RootChange.betweenWhole(afterB, afterA),
+          b: RootChange.empty(afterA.length),
+        };
+      }
+      if (keptIn(a, afterA, afterB)) {
+        return {
+          a: RootChange.empty(afterB.length),
+          b: RootChange.betweenWhole(afterA, afterB),
+        };
+      }
     }
     const rebaseAfterShared = (edits: ReadonlyMap<string, SharedEdit>) => {
       const rest = RootChange.transformInDocument(
@@ -5021,101 +5047,91 @@ export class RootChange {
       return transformed;
     }
 
-    const bThroughStableA = bChangesStructure
-      ? (mergeStructuralRunByPosition(
-          b,
-          a,
-          aReplacements,
-          document,
-          afterB,
-          afterA
-        ) ??
-        mergeStructuralChangeAtStableSiblingRange(document, afterB, afterA))
-      : null;
+    const sideA = {
+      after: afterA,
+      change: a,
+      move: aMove,
+      props: aPropertyChanges,
+      rep: aReplacement,
+      reps: aReplacements,
+      structural: aChangesStructure,
+    };
+    const sideB = {
+      after: afterB,
+      change: b,
+      move: bMove,
+      props: bPropertyChanges,
+      rep: bReplacement,
+      reps: bReplacements,
+      structural: bChangesStructure,
+    };
+    const pairs = [
+      [sideB, sideA, false],
+      [sideA, sideB, true],
+    ] as const;
 
-    if (bThroughStableA !== null) {
-      return {
-        a: bThroughStableA.other,
-        b: bThroughStableA.rebased,
-      };
+    for (const [primary, other, flip] of pairs) {
+      if (!primary.structural) continue;
+      const throughStable =
+        mergeStructuralRunByPosition(
+          primary.change,
+          other.change,
+          other.reps,
+          document,
+          primary.after,
+          other.after
+        ) ??
+        mergeStructuralChangeAtStableSiblingRange(
+          document,
+          primary.after,
+          other.after
+        );
+
+      if (throughStable !== null) {
+        return flip
+          ? { a: throughStable.rebased, b: throughStable.other }
+          : { a: throughStable.other, b: throughStable.rebased };
+      }
     }
 
-    const aThroughStableB = aChangesStructure
-      ? (mergeStructuralRunByPosition(
-          a,
-          b,
-          bReplacements,
-          document,
-          afterA,
-          afterB
-        ) ??
-        mergeStructuralChangeAtStableSiblingRange(document, afterA, afterB))
-      : null;
+    for (const [primary, other] of pairs) {
+      if (!primary.structural) continue;
+      const relocated = mergeNestedChangeThroughStructuralRelocation(
+        other.change,
+        primary.change,
+        document,
+        other.after,
+        primary.after
+      );
 
-    if (aThroughStableB !== null) {
-      return {
-        a: aThroughStableB.rebased,
-        b: aThroughStableB.other,
-      };
-    }
-
-    const relocated =
-      (bChangesStructure
-        ? mergeNestedChangeThroughStructuralRelocation(
-            a,
-            b,
-            document,
-            afterA,
-            afterB
-          )
-        : null) ??
-      (aChangesStructure
-        ? mergeNestedChangeThroughStructuralRelocation(
-            b,
-            a,
-            document,
-            afterB,
-            afterA
-          )
-        : null);
-
-    if (relocated !== null) {
-      return {
-        a: RootChange.betweenWhole(afterB, relocated),
-        b: RootChange.betweenWhole(afterA, relocated),
-      };
+      if (relocated !== null) {
+        return {
+          a: RootChange.betweenWhole(afterB, relocated),
+          b: RootChange.betweenWhole(afterA, relocated),
+        };
+      }
     }
 
     if (convergesOn(transformed, afterA, afterB)) return transformed;
 
-    if (
-      bMove &&
-      aReplacements.length === 1 &&
-      bMove.from <= aReplacement.from &&
-      aReplacement.to < bMove.to
-    ) {
-      const moveAfterA = moveNodeChange(afterA, bMove.path, bMove.targetPath);
-      const merged = moveAfterA.apply(afterA);
+    for (const [primary, other, flip] of pairs) {
+      const { move } = primary;
 
-      return {
-        a: RootChange.betweenWhole(afterB, merged),
-        b: moveAfterA,
-      };
-    }
+      if (
+        !move ||
+        other.reps.length !== 1 ||
+        move.from > other.rep.from ||
+        other.rep.to >= move.to
+      ) {
+        continue;
+      }
+      const moved = moveNodeChange(other.after, move.path, move.targetPath);
+      const rebased = RootChange.betweenWhole(
+        primary.after,
+        moved.apply(other.after)
+      );
 
-    if (
-      aMove &&
-      bReplacements.length === 1 &&
-      aMove.from <= bReplacement.from &&
-      bReplacement.to < aMove.to
-    ) {
-      const moveAfterB = moveNodeChange(afterB, aMove.path, aMove.targetPath);
-      const merged = moveAfterB.apply(afterB);
-
-      return {
-        a: moveAfterB,
-        b: RootChange.betweenWhole(afterA, merged),
-      };
+      return flip ? { a: moved, b: rebased } : { a: rebased, b: moved };
     }
 
     const keepOutsideDeletion = (
@@ -5144,50 +5160,30 @@ export class RootChange {
 
       return RootChange.fromSections(sections, data).apply(afterDeletion);
     };
-    const deletion =
-      bReplacements.length === 1 &&
-      deletesWholeSiblings(document, bReplacement) &&
-      containsAll(bReplacement, aReplacements)
-        ? {
-            edit: a,
-            kept: aPropertyChanges,
-            replacement: bReplacement,
-            side: 'b' as const,
-          }
-        : aReplacements.length === 1 &&
-            deletesWholeSiblings(document, aReplacement) &&
-            containsAll(aReplacement, bReplacements)
-          ? {
-              edit: b,
-              kept: bPropertyChanges,
-              replacement: aReplacement,
-              side: 'a' as const,
-            }
-          : null;
 
-    if (deletion) {
-      const [afterEdit, afterDeletion] =
-        deletion.side === 'b' ? [afterA, afterB] : [afterB, afterA];
+    for (const [primary, other, flip] of pairs) {
+      if (
+        primary.reps.length !== 1 ||
+        !deletesWholeSiblings(document, primary.rep) ||
+        !containsAll(primary.rep, other.reps)
+      ) {
+        continue;
+      }
       const merged = keepOutsideDeletion(
-        deletion.replacement,
-        afterDeletion,
-        deletion.kept
+        primary.rep,
+        primary.after,
+        other.props
       );
-      const deletionAfterEdit = RootChange.create(afterEdit, {
-        from: deletion.replacement.from,
-        to:
-          deletion.replacement.to +
-          deletion.edit.newLength -
-          deletion.edit.length,
+      const deletionAfterEdit = RootChange.create(other.after, {
+        from: primary.rep.from,
+        to: primary.rep.to + other.change.newLength - other.change.length,
       });
       const deleted = deletionAfterEdit.compose(
-        RootChange.betweenWhole(deletionAfterEdit.apply(afterEdit), merged)
+        RootChange.betweenWhole(deletionAfterEdit.apply(other.after), merged)
       );
-      const edited = RootChange.betweenWhole(afterDeletion, merged);
+      const edited = RootChange.betweenWhole(primary.after, merged);
 
-      return deletion.side === 'b'
-        ? { a: edited, b: deleted }
-        : { a: deleted, b: edited };
+      return flip ? { a: deleted, b: edited } : { a: edited, b: deleted };
     }
 
     const overRemoval = transformMixedEditOverSiblingRemoval(
