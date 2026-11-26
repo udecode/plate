@@ -585,9 +585,10 @@ export const createAndroidDriver = ({
     page: {
       find: (query) => locate(page, query),
       open: async (url) => {
-        await page.goto(url, { waitUntil: 'load' });
-        // Touches land on whichever tab Chrome shows, so the owned tab goes first.
+        // Touches land on whichever tab Chrome shows, and foregrounding first
+        // keeps Chrome from throttling the owned tab during a dev-server load.
         await page.bringToFront();
+        await page.goto(url, { timeout: 60_000, waitUntil: 'load' });
       },
     },
     screen: {

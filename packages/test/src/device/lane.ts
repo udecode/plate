@@ -107,6 +107,7 @@ export type DeviceDriver = {
 };
 
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
+const WWW_READY_TIMEOUT_MS = 60_000;
 
 const TRACED_EVENTS = [
   'keydown',
@@ -514,23 +515,26 @@ export const createDeviceLane = ({
     };
   };
 
-  const openEditor = async (url: string) => {
+  const openEditor = async (url: string, timeout = READY_TIMEOUT_MS) => {
     await leavePage();
     await driver.page.open(url);
 
     const query = { css: EDITOR_ROOT };
+    const body = driver.page.find({ css: 'body' });
     const editorRoot = driver.page.find(query);
 
     await expect
       .poll(
         async () =>
-          (await editorRoot.evaluate(
-            (element) => element.getClientRects().length > 0,
-            undefined
+          (await body.evaluate(
+            (element, selector) =>
+              (element.querySelector(selector)?.getClientRects().length ?? 0) >
+              0,
+            EDITOR_ROOT
           )) && (await hasSelectionHandle(editorRoot)),
         {
           message: 'The editor never showed with its browser handle installed.',
-          timeout: READY_TIMEOUT_MS,
+          timeout,
         }
       )
       .toBe(true);
@@ -585,7 +589,7 @@ export const createDeviceLane = ({
       if (!state.wwwURL) {
         throw new Error('Set PLATE_DEVICE_WWW_PORT to run www cases.');
       }
-      return openEditor(`${state.wwwURL}${path}`);
+      return openEditor(`${state.wwwURL}${path}`, WWW_READY_TIMEOUT_MS);
     },
     knownFailure: async ({ desired, issue, name, observed, read }) => {
       const same = (left: unknown, right: unknown) =>
