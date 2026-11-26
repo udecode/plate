@@ -44,7 +44,7 @@ import { type BookView, ChangeBook } from './ledger/book';
 import { rootOf } from './ledger/roots';
 import { countLedgerWork } from './ledger/work';
 import { detachedResolveSchemaOf } from './resolve-schema';
-import { decidedContentChange } from './tree/alignment';
+import { decidedContentChange, tokenLength } from './tree/alignment';
 import { coverStoredValues } from './tree/holds';
 import { type AuthoredMark, AuthoredMarkError } from './tree/marks';
 import { completionBuilds, storesSpares } from './tree/reserves';
@@ -75,10 +75,16 @@ export type WindowedDecision = Readonly<{
   value: JsonEditorValue;
 }>;
 
+export type BuiltSpans = ReadonlyMap<
+  string,
+  ReadonlyArray<readonly [number, number]>
+>;
+
 export type Decided =
   | Readonly<{ status: 'blocked'; with: readonly string[] }>
   | Readonly<{ status: 'invalid' }>
   | Readonly<{
+      built: BuiltSpans;
       /** From `value` to the decided value, records included. */
       change: DocumentChange;
       decided: readonly string[];
@@ -87,6 +93,63 @@ export type Decided =
       verdicts: readonly VerdictRecord[];
       windowed: WindowedDecision | null;
     }>;
+
+const NO_BUILT_SPANS: BuiltSpans = new Map();
+
+const collectBuiltSpans = (
+  nodes: readonly JsonNode[],
+  built: ReadonlySet<JsonNode>,
+  start: number,
+  spans: Array<readonly [number, number]>
+) => {
+  let offset = start;
+
+  for (const node of nodes) {
+    const length = tokenLength(node);
+
+    if (built.has(node)) {
+      spans.push([offset, offset + length]);
+    } else if (typeof node.text !== 'string') {
+      collectBuiltSpans(node.children ?? [], built, offset + 1, spans);
+    }
+    offset += length;
+  }
+};
+
+const builtSpansOf = (
+  value: JsonEditorValue,
+  decided: WindowedDecision | null,
+  windowed: ReturnType<typeof resolveAuthoredWindows>,
+  whole: ReturnType<typeof resolveAuthoredValue> | null
+): BuiltSpans => {
+  const unstored = windowed ? windowed.unstored : whole?.unstored;
+
+  if (!unstored || unstored.size === 0) return NO_BUILT_SPANS;
+
+  const byRoot = new Map<string, Array<readonly [number, number]>>();
+  const add = (root: string, nodes: readonly JsonNode[], start: number) => {
+    const spans = byRoot.get(root) ?? [];
+
+    collectBuiltSpans(nodes, unstored, start, spans);
+    if (spans.length > 0) byRoot.set(root, spans);
+  };
+
+  if (windowed && decided) {
+    for (const { after, from, root } of windowed.windows) {
+      const index =
+        decided.indexedAfter.get(root) ?? valueRootIndex(value, root);
+
+      add(root, after, index.childPosition([], from));
+    }
+  } else if (whole) {
+    add(MAIN_ROOT_KEY, whole.value.children, 0);
+    for (const [root, children] of Object.entries(whole.value.roots ?? {})) {
+      add(root, children, 0);
+    }
+  }
+
+  return byRoot;
+};
 
 export const isRefusal = (error: unknown) =>
   error instanceof EditorSchemaValidationError ||
@@ -651,6 +714,7 @@ export const decide = (
   );
 
   return {
+    built: builtSpansOf(value, decided, windowed, whole),
     change: withDocumentChangeRecords(
       decided
         ? decided.change

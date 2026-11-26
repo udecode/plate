@@ -1,14 +1,33 @@
 import {
+  createInternalDocumentChange,
   type DocumentChange,
+  getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
   mapInternalDocumentChangePosition,
+  valueRootIndex,
   withDocumentChangeRecords,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
-import type { RootChangeJson } from '../../core/change/root-change';
-import type { JsonEditorValue } from '../../core/change/tokens';
-import { canonicalJsonKey } from '../../core/change/transform';
+import {
+  addSection,
+  applyPropertyModifications,
+  RootChange,
+  type RootChangeJson,
+  type SectionData,
+  SectionIterator,
+} from '../../core/change/root-change';
+import {
+  type JsonEditorValue,
+  type JsonToken,
+  openToken,
+  PreparedTokenSlice,
+  tokenLength,
+} from '../../core/change/tokens';
+import {
+  canonicalJsonKey,
+  type PropertyModification,
+} from '../../core/change/transform';
 import {
   getRecordIds,
   getValueRecords,
@@ -22,8 +41,10 @@ import {
   visitElements,
 } from '../../core/unique-values';
 import type { EditorDocumentValue } from '../../interfaces/editor';
+import type { SyncJudgeView } from '../../sync/server/grant';
 import { decisionReadOf, isStructureMark, type Occurrence } from '../changes';
 import {
+  type BuiltSpans,
   type Decided,
   type DecisionRequest,
   type DecisionSite,
@@ -32,6 +53,7 @@ import {
 } from '../decision';
 import {
   AUTHORED_MARKS_KEY,
+  type AuthoredMember,
   type ReserveMember,
   readMembers,
 } from '../tree/marks';
@@ -148,6 +170,39 @@ export const verdictBatchOf = (
   return tokens.size === 1 ? { actions, token } : 'unreadable';
 };
 
+const mappedBuiltSpans = (
+  built: BuiltSpans,
+  settled: DocumentChange
+): BuiltSpans =>
+  built.size === 0
+    ? built
+    : new Map(
+        [...built].flatMap(([root, spans]) => {
+          const next = spans.flatMap(([from, to]) => {
+            const start = mapInternalDocumentChangePosition(
+              settled,
+              root,
+              from,
+              1,
+              'after'
+            );
+            const end = mapInternalDocumentChangePosition(
+              settled,
+              root,
+              to,
+              -1,
+              'after'
+            );
+
+            return start !== null && end !== null && start < end
+              ? [[start, end] as const]
+              : [];
+          });
+
+          return next.length > 0 ? [[root, next] as const] : [];
+        })
+      );
+
 const decides = (
   value: JsonEditorValue,
   request: DecisionRequest,
@@ -167,6 +222,7 @@ const decides = (
   return settled
     ? {
         ...decided,
+        built: mappedBuiltSpans(decided.built, settled),
         change: decided.change.compose(settled),
         value: settled.apply(decided.value),
       }
@@ -341,3 +397,157 @@ export const keepingGapSpares = (
         head
       );
 };
+
+const isReserveMember = (member: AuthoredMember) => member.kind === 'reserve';
+
+const withoutSpareMods = (
+  modifications: readonly PropertyModification[],
+  beforeIndex: DocumentIndex,
+  beforePos: number
+): readonly PropertyModification[] => {
+  const first = modifications.findIndex(
+    (mod) => mod.key === AUTHORED_MARKS_KEY
+  );
+
+  if (first === -1) return modifications;
+
+  const entry = beforeIndex.nodeStartingAt(beforePos);
+
+  if (!entry || entry.from !== beforePos || entry.kind !== 'element') {
+    return modifications;
+  }
+
+  const was = readMembers(beforeIndex.node(entry.path));
+  const authoredMods = modifications.filter(
+    (mod) => mod.key === AUTHORED_MARKS_KEY
+  );
+  const now = readMembers(
+    applyPropertyModifications(
+      was.length > 0 ? { [AUTHORED_MARKS_KEY]: was } : {},
+      authoredMods
+    )
+  );
+
+  if (jsonEqual(was.filter(isReserveMember), now.filter(isReserveMember))) {
+    return modifications;
+  }
+
+  const keptWas = was.filter((member) => !isReserveMember(member));
+  const keptNow = now.filter((member) => !isReserveMember(member));
+  const removed = keptWas.filter(
+    (member) => !keptNow.some((kept) => jsonEqual(member, kept))
+  );
+  const added = keptNow.filter(
+    (member) => !keptWas.some((prior) => jsonEqual(prior, member))
+  );
+  const others = modifications.filter((mod) => mod.key !== AUTHORED_MARKS_KEY);
+
+  return [
+    ...others.slice(0, first),
+    ...(removed.length > 0
+      ? [{ key: AUTHORED_MARKS_KEY, type: 'remove' as const, values: removed }]
+      : []),
+    ...(added.length > 0
+      ? [{ key: AUTHORED_MARKS_KEY, type: 'add' as const, values: added }]
+      : []),
+    ...others.slice(first),
+  ];
+};
+
+const withoutBuiltMarks = (
+  slice: PreparedTokenSlice,
+  afterPos: number,
+  spans: ReadonlyArray<readonly [number, number]> | undefined
+): PreparedTokenSlice => {
+  if (!spans?.length || slice.tokens.length === 0) return slice;
+
+  let changed = false;
+  let offset = afterPos;
+  const tokens = slice.tokens.map((token: JsonToken): JsonToken => {
+    const at = offset;
+
+    offset += tokenLength(token);
+    if (
+      token.kind !== 'open' ||
+      !(AUTHORED_MARKS_KEY in token.props) ||
+      !spans.some(([from, to]) => at >= from && at < to)
+    ) {
+      return token;
+    }
+    changed = true;
+
+    const { [AUTHORED_MARKS_KEY]: _authored, ...rest } = token.props;
+
+    return openToken(token.nodeKind, rest);
+  });
+
+  return changed ? PreparedTokenSlice.fromTokens(tokens) : slice;
+};
+
+export const withoutDecisionBookkeeping = (
+  change: DocumentChange,
+  before: JsonEditorValue,
+  built: BuiltSpans
+): DocumentChange => {
+  const entries = new Map<string, RootChange>();
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+    const beforeIndex = valueRootIndex(before, root);
+    const spans = built.get(root);
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+    let beforePos = 0;
+    let afterPos = 0;
+    const it = new SectionIterator(rootChange.sections, rootChange.data);
+
+    while (!it.done) {
+      if (it.modifications) {
+        const next = withoutSpareMods(it.modifications, beforeIndex, beforePos);
+
+        addSection(
+          sections,
+          data,
+          it.length,
+          next.length === 0 ? -1 : -2,
+          next.length === 0 ? null : next
+        );
+      } else if (it.keep) {
+        addSection(sections, data, it.length, -1, null);
+      } else {
+        const slice = withoutBuiltMarks(it.slice, afterPos, spans);
+
+        addSection(sections, data, it.length, slice.length, slice);
+      }
+      beforePos += it.length;
+      afterPos += it.outputLength;
+      it.next();
+    }
+
+    const rebuilt = RootChange.fromSections(sections, data);
+
+    if (!rebuilt.empty) entries.set(root, rebuilt);
+  }
+
+  const records = getInternalDocumentChangeRecords(change);
+
+  return withDocumentChangeRecords(
+    createInternalDocumentChange(entries, {
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
+    }),
+    records.has(RESERVES)
+      ? new Map([...records].filter(([set]) => set !== RESERVES))
+      : records
+  );
+};
+
+export const decisionJudgeView = (
+  step: AuthoredStep,
+  ownBuilt: BuiltSpans,
+  head: JsonEditorValue,
+  merged: DocumentChange,
+  mergedBuilt: BuiltSpans
+): SyncJudgeView => ({
+  merged: withoutDecisionBookkeeping(merged, head, mergedBuilt),
+  own: withoutDecisionBookkeeping(step.change, step.before, ownBuilt),
+});

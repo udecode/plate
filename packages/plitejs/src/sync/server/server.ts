@@ -42,6 +42,7 @@ import {
   type SyncAuthored,
   type SyncCover,
   type SyncGrant,
+  type SyncJudgeView,
   type SyncStep,
   type SyncTakeBack,
 } from './grant';
@@ -171,6 +172,7 @@ declare const coveredByGrant: unique symbol;
 type CoveredStep = SyncStep &
   Readonly<{
     [coveredByGrant]: true;
+    judge?: SyncJudgeView;
     owners: readonly ChangeOwner[];
     structure: boolean;
   }>;
@@ -445,7 +447,12 @@ export const createSyncServer = <
     const owners = ownersToBind(cover.claims, bound, grant.actor);
 
     return owners
-      ? ({ ...own, owners, structure: cover.structure === true } as CoveredStep)
+      ? ({
+          ...own,
+          ...(cover.judge ? { judge: cover.judge } : {}),
+          owners,
+          structure: cover.structure === true,
+        } as CoveredStep)
       : 'grant';
   };
 
@@ -775,8 +782,8 @@ export const createSyncServer = <
         base: baseValue,
         head: room.head,
         isSetValued: room.isSetValued,
-        merged: [viewOfChange(logged)],
-        own: [viewOfChange(change)],
+        merged: [viewOfChange(covered.judge?.merged ?? logged)],
+        own: [viewOfChange(covered.judge?.own ?? change)],
       }).kind;
 
     if (logged.empty) {

@@ -14,6 +14,7 @@ import type {
   SyncAtHead,
   SyncGrant,
   SyncHead,
+  SyncJudgeView,
   SyncTakeBack,
 } from '../../sync/server/grant';
 import {
@@ -44,6 +45,7 @@ import {
 import {
   decideAtHead,
   decidesStructure,
+  decisionJudgeView,
   keepingGapSpares,
   replayAt,
   replaysWithdrawal,
@@ -77,6 +79,7 @@ export type Cover =
   | Readonly<{
       claims: readonly ChangeClaim[];
       change?: DocumentChange;
+      judge?: SyncJudgeView;
       kind: 'covered';
       structure?: true;
     }>
@@ -609,21 +612,35 @@ const decisionCover = (
 
   if (!replay) return { kind: 'refused', why: { kind: 'unreplayed' } };
 
-  const decided =
-    head === undefined
-      ? replay.decided
-      : decideAtHead(replay, head.value, schema);
+  const covered = {
+    claims: [],
+    kind: 'covered' as const,
+    ...(decidesStructure(replay) ? { structure: true as const } : {}),
+  };
+
+  if (head === undefined) return { ...covered, change: replay.decided.change };
+
+  const decided = decideAtHead(replay, head.value, schema);
 
   if (!decided) return { kind: 'stale' };
 
+  const change = keepingGapSpares(
+    decided.change,
+    step.before,
+    head.gap,
+    head.value
+  );
+
   return {
-    claims: [],
-    change:
-      head === undefined
-        ? decided.change
-        : keepingGapSpares(decided.change, step.before, head.gap, head.value),
-    kind: 'covered',
-    ...(decidesStructure(replay) ? { structure: true as const } : {}),
+    ...covered,
+    change,
+    judge: decisionJudgeView(
+      step,
+      replay.decided.built,
+      head.value,
+      change,
+      decided.built
+    ),
   };
 };
 

@@ -1582,7 +1582,7 @@ const resolveIn = (
         )
     );
   const gridHolder = schema ? gridHoldersOf(schema.ownership) : () => false;
-  const { survives } = survivalUnder(ownMarkRemoves, gridPart);
+  const { liveContent, survives } = survivalUnder(ownMarkRemoves, gridPart);
   const reading: KeyReading = {
     accepted: (member) => isAccepted(facts, member),
     landed: facts.landed,
@@ -1925,6 +1925,29 @@ const resolveIn = (
         (block.children ?? []).some(liveAt)
       )
     );
+  };
+  const emptiedByJoin = (target: Node, join: JoinMoment, editing: boolean) => {
+    const ownRemoved = (child: Node) =>
+      pending(child).some(
+        (mark) =>
+          mark.kind === 'delete' &&
+          resultOf(mark) === 'accept' &&
+          join.own.has(incarnationOf(mark))
+      );
+    const { liveContent: liveNow } = survivalUnder<Node>(() => false, gridPart);
+    const { liveContent: liveAfter } = survivalUnder<Node>(
+      ownRemoved,
+      gridPart
+    );
+    const pieces = [target, ...(mergedBlocks.get(target) ?? [])];
+    const hasLiveNow = pieces.some((block) =>
+      (block.children ?? []).some(liveNow)
+    );
+    const hasLiveAfter = pieces.some((block) =>
+      (block.children ?? []).some(liveAfter)
+    );
+
+    return editing ? !hasLiveNow : hasLiveNow && !hasLiveAfter;
   };
   const { liveContent: keptContent } = survivalUnder<Node>(
     (node) =>
@@ -2349,6 +2372,29 @@ const resolveIn = (
     }
     land(() => {
       if (left) rejoined.set(node, left);
+      if (
+        !cut &&
+        handover.keys.size > 0 &&
+        typeOf(decidedPropsOf(into)) === typeOf(decidedPropsOf(node)) &&
+        emptiedByJoin(into, joinOf(node), editingJoin) &&
+        (ancestors.length > 0 ||
+          site.length > 0 ||
+          blocks.some(
+            (block) =>
+              block.node !== into && block.node !== node && survives(block.node)
+          ) ||
+          (node.children ?? []).some(
+            (child) =>
+              liveContent(child) &&
+              !pending(child).some(
+                (mark) =>
+                  mark.kind === 'insert' &&
+                  joinOf(node).own.has(incarnationOf(mark))
+              )
+          ))
+      ) {
+        handover.pass(node, into);
+      }
       mergedInto.set(node, into);
       mergedBlocks.set(into, [...(mergedBlocks.get(into) ?? []), node]);
     });
@@ -4043,6 +4089,7 @@ const resolveValueIn = (
       all.flatMap((resolution) => [...resolution.takenWhole])
     ),
     unplaceable: live.some((resolution) => resolution.unplaceable),
+    unstored: new Set(live.flatMap((resolution) => [...resolution.unstored])),
     value: deriveValue(
       base,
       {
@@ -4179,6 +4226,9 @@ export const resolveAuthoredWindows = (
           all.flatMap((resolution) => [...resolution.takenWhole])
         ),
         unplaceable: all.some((resolution) => resolution.unplaceable),
+        unstored: new Set(
+          all.flatMap((resolution) => [...resolution.unstored])
+        ),
         windows: resolved.map(({ before, resolution, ...window }) => ({
           ...window,
           after: resolution.children,

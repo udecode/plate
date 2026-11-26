@@ -24,6 +24,11 @@ export type SyncHead = Readonly<{
 /** The batch writes no verdict record, so the room asks again at its head. */
 export type SyncAtHead = Readonly<{ kind: 'at-head' }>;
 
+export type SyncJudgeView = Readonly<{
+  merged: DocumentChange;
+  own: DocumentChange;
+}>;
+
 export type SyncCover =
   | Readonly<{
       claims: readonly ChangeClaim[];
@@ -32,6 +37,7 @@ export type SyncCover =
        * set, the room logs it in place of the batch's bytes.
        */
       change?: DocumentChange;
+      judge?: SyncJudgeView;
       kind: 'covered';
       /**
        * Set for a decision on a split, join, wrap or unwrap. When it crossed
