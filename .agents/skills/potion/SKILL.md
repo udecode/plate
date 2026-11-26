@@ -31,7 +31,7 @@ A problem the port exposes is Plate's first. Potion never hacks around it and ne
 1. File a `udecode/plate-private` issue through `maintainer`'s issue-draft mode, whether Plate has a defect or lacks an API Potion needs.
 2. Add a row to Potion's `docs/plate-v54/friction-log.md`. When users can see the problem, also add a row to `docs/plate-v54/regressions.md` that names the issue.
 3. Stop the blocked part and report it to the owner with the issue.
-4. Once the fix lands on Plate's `next`, sync Potion with the `sync-potion` skill and prove the fix in Potion with [the Potion stack recipe](./references/stack.md).
+4. Once the owner releases a beta that holds the fix, sync Potion with the `sync-potion` skill and prove the fix in Potion with [the Potion stack recipe](./references/stack.md).
 
 ## Backend
 

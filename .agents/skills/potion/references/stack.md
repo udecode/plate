@@ -6,7 +6,7 @@ the evidence. The primary surface is the web UI at
 under `/_serverFn/` and the server routes under `/api/` are internals, not
 proof.
 
-To reproduce a Potion-reported Plate bug and prove its fix locally: cut a detached Potion worktree (`git -C $POTION worktree add --detach $PW HEAD`), copy `tmp/plate-local/*.tgz`, `.env.local`, and `.dev.vars`, rebuild `pnpm --filter www build:registry` if registry files changed, sync with `cd $PW && bun run sync:plate-local <plate-worktree> --no-pull`, then run `"$STACK" up`, `doctor`, `login`, drive red before the fix and green after, copy evidence to `$RUN/potion/`, run `"$STACK" down`, and remove `$PW`.
+To reproduce a Potion-reported Plate bug and prove its fix locally: cut a detached Potion worktree (`git -C $POTION worktree add --detach $PW HEAD`), copy `.env.local` and `.dev.vars`, rebuild `pnpm --filter www build:registry` if registry files changed, sync with `cd $PW && bun run sync:plate --local <plate-worktree>`, then run `"$STACK" up`, `doctor`, `login`, drive red before the fix and green after, copy evidence to `$RUN/potion/`, run `"$STACK" down`, and remove `$PW`.
 
 Potion runs as a TanStack Start app on the Cloudflare Vite plugin. `vite dev`
 runs the Worker in workerd, and its D1 binding `DB` (database `potion`) keeps

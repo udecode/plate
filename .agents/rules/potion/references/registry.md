@@ -10,9 +10,9 @@ or changing a `*-app` file.
 
 - Every sync takes all of Plate's registry UI and all of its packages at once,
   never one component at a time.
-- `bun run sync:plate-local` in Potion does it, as the `sync-potion` skill
-  says. It builds and packs `platejs` and `plitejs`, then writes every Plate
-  registry file into `src/registry`.
+- `bun run sync:plate` in Potion does it, as the `sync-potion` skill says. It
+  pins `platejs` and `plitejs` to one published beta, then writes every Plate
+  registry file at that beta's tag into `src/registry`.
 - A registry file in Potion is one that comes from Plate's
   `apps/www/src/registry`. The command reads Plate's built registry
   (`apps/www/public/r`) with the `radix-nova` style overlay, which is what a
