@@ -116,6 +116,19 @@ export const writeDOMSelection = (
   changeDOMSelection(tree, points);
 };
 
+/**
+ * Write `points` as `tree`'s selection on the user's behalf and keep no
+ * record, so the selection claim reads them as the user's own selection, as
+ * it reads a native Shift-click.
+ */
+export const writeUserDOMSelection = (
+  tree: Document | ShadowRoot,
+  points: DOMSelectionPoints
+) => {
+  changeDOMSelection(tree, points);
+  forgetDOMSelectionRecord(tree);
+};
+
 export const changeDOMSelection = (
   tree: Document | ShadowRoot,
   points: DOMSelectionPoints | null,

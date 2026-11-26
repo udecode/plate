@@ -47,10 +47,10 @@ import {
   usesAppleDOMHotkeys,
 } from '../../dom/utils/environment';
 import {
-  forgetDOMSelectionRecord,
   readDOMSelectionPoints,
   sameDOMSelectionPoints,
   writeDOMSelection,
+  writeUserDOMSelection,
 } from '../../dom/utils/selection-writes';
 import { PliteContentRootOwnerContext } from '../context';
 import {
@@ -2684,13 +2684,10 @@ export const useRootInteractionController = ({
                 nativeShiftWrite.editable.focus({ preventScroll: true });
               }
               if (!domMatches) {
-                forgetDOMSelectionRecord(selectionTree);
-                domSelection.setBaseAndExtent(
-                  nativeShiftWrite.pivot[0],
-                  nativeShiftWrite.pivot[1],
-                  nativeShiftWrite.focus[0],
-                  nativeShiftWrite.focus[1]
-                );
+                writeUserDOMSelection(selectionTree, {
+                  anchor: nativeShiftWrite.pivot,
+                  focus: nativeShiftWrite.focus,
+                });
               }
 
               const mountedRuntime = findMountedEditableDOMRuntime(
