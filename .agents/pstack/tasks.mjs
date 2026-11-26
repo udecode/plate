@@ -660,6 +660,7 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
     if (!takes.includes(key)) found.push(`${where}: ${article(move)} ${move} row does not take ${key}:, so it would be ignored; ${takes.length ? `it takes ${takes.map((each) => `${each}:`).join(', ')}` : 'it takes none'}`);
   }
   if (move === 'offered' && !before.has(id)) {
+    if (!NEW_ID.test(id)) found.push(`${where}: a new offer's decision is "<task id> <title>", and "${id}" is no task id; put the id that "node .agents/pstack/decisions-check.mjs chips id" prints, such as ${newId()}, before the title`);
     if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) only for a design question or a bug whose cause nobody has located; chips works out when a task can start, so no title says Now: or After:, chips brief adds its priority as [P1], and fast: yes adds (fast) for it`);
     if (!given.topic) found.push(`${where}: a new offer names its owner question as "topic: <word>"; run chips to see the open topics and reuse one when the finding answers its question`);
     if (!given.priority && !given.owns?.length) found.push(`${where}: a new offer names its priority as "priority: P0", P1, P2 or P3, as chips.md's Priority says; a task that owns a check failing on the base branch is P0 without one`);
@@ -1626,6 +1627,7 @@ function brief(task, ledger, max, tasks, codex, state) {
 
 export const newId = () => `t_${randomBytes(4).toString('hex')}`;
 export const TASK_ID = /\bt_[0-9a-f]{8}\b/gu;
+const NEW_ID = /^t_[0-9a-f]{8}$/u;
 
 const realOrSelf = (path) => (existsSync(path) ? realpathSync.native(path) : resolve(path));
 

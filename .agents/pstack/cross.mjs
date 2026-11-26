@@ -3,9 +3,10 @@
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, mkdtempSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { constants, homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { StringDecoder } from 'node:string_decoder';
 import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
@@ -68,6 +69,16 @@ function markedProcesses(seat) {
     .filter((line) => line.split(' ').includes(mark))
     .map((line) => Number.parseInt(line, 10));
 }
+export const signalProcesses = (group, seat, signal) => {
+  let alive = false;
+  for (const pid of [-group, ...markedProcesses(seat)]) {
+    try {
+      process.kill(pid, signal);
+      alive = true;
+    } catch {}
+  }
+  return alive;
+};
 let stopsOnSignals = false;
 let stopping = false;
 const removeFolder = (folder) => {
@@ -137,6 +148,8 @@ function loggedError(sessions, id, startedAt) {
   return null;
 }
 
+const AGY_SANDBOXED = "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer.";
+const AGY_UNBOXED = "Your shell runs outside agy's sandbox and reaches the network, so read a page with curl and clone a repository into the scratch folder to check a claim. Write only the scratch folder, and never push, post, comment or open a PR, because a review changes nothing outside it.";
 const scratchBrief = (project, browser, prompt) =>
   `Your working directory is a scratch folder you may write. The project is ${project}: read it by absolute path and never write it. ${browser} For each probe that needs a browser, put its full script and commands in your answer so the lead can run it.\n\n${prompt}\n\nPut your whole answer in your final message. Nobody reads the files you write in the scratch folder, and it is deleted when you finish, so for each file you wrote there that your answer cites or runs, paste its full source and the commands that create any fixture it reads.`;
 
@@ -185,7 +198,7 @@ const agyConversation = (stdout) => {
   return null;
 };
 
-const COLEAD_TIMEOUT_SECONDS = 3300;
+const COLEAD_TIMEOUT_SECONDS = 6 * 60 * 60;
 const stopTime = (seconds) => new Date(Date.now() + seconds * 1000).toISOString().replace(/\.\d{3}Z$/u, 'Z');
 const coleadBrief = (worktree, prompt, step, timeout) =>
   `${prompt}\n\n${step ? `This worktree's change since ${step.base} builds a plan step and counts ${step.product} of the step budget's ${step.budget} product lines. Tests, fixtures, docs and plans do not count. Stop before the budget, and say where the step would split. ` : ''}You are the co-lead of this run. Your working directory ${worktree} is the lead's worktree: write only there, in the run directory the brief names and in a detached worktree you add for a probe or for a base control the brief asks for. A probe that edits a tracked file for a moment, such as to add a trace, makes that edit in a detached worktree it adds, never here, because a stopped call leaves the edit in place and two probes that edit one file restore each other's edits. Never commit, push, open a PR, post anywhere or change another checkout's tracked files, because the lead reviews and lands your work. The project's rules on code, tests and proof bind you. Its rules on plans, reviews, writing passes, landing, messages and missing pstack skills are the lead's duties, not yours. This call returns only once every background task you started has ended. So start a dev server or any other process that never exits on its own with its output in a file, poll it until it is ready, and never wait for its task to end. ${timeout ? `The helper stops this call at ${stopTime(timeout)} and keeps only what you said by then. Wait on a proof only while it can end with time left to answer. Otherwise kill its task and name its command and log in your answer, so the lead runs it. ` : ''}Before your final message, kill every task you started and remove each file and worktree you added only for a probe or a control. Leave a booted emulator or simulator running, because other runs share it. Put your whole answer in your final message, and name each file you changed.`;
@@ -210,6 +223,11 @@ const coleadRefusal = (worktree) => {
   if (realPath(top) !== realPath(worktree)) return `give --colead the worktree's root, ${top}`;
   if (gitDir === common) return `${worktree} is a main checkout, and a co-lead writes only a linked worktree`;
   return null;
+};
+const linkedMainCheckout = (dir) => {
+  const [top, common] = gitLines(dir, ['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-common-dir']) ?? [];
+  const main = common && dirname(common);
+  return top && main !== top ? main : null;
 };
 const checkoutState = (dir) => {
   const hash = createHash('sha256');
@@ -248,7 +266,8 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   const runCwd = computerUse ? mkdtempSync(join(tmpdir(), 'pstack-browser-')) : scratch ? mkdtempSync(join(tmpdir(), 'pstack-reach-')) : (colead ?? cwd);
   // A Firefox or WebKit crash in the sandbox puts a crash dialog on the owner's screen.
   if (reach) prompt = scratchBrief(cwd, 'Your sandbox cannot run a browser, because Chromium, Firefox and WebKit die there as they start, so never start or drive one, through Playwright or any other tool.', prompt);
-  if (runtime === 'agy') prompt = colead ? coleadBrief(colead, prompt, coleadBudget(colead), timeout) : scratchBrief(cwd, "Every shell command you run stays in agy's sandbox. Never ask to run one outside it, even when the sandbox blocks the network, and never write outside the scratch folder, because either request ends your run with no answer. Never start or drive a browser, through Playwright, your browser tools or any other tool.", prompt);
+  const unboxed = runtime === 'agy' && !colead && !offline;
+  if (runtime === 'agy') prompt = colead ? coleadBrief(colead, prompt, coleadBudget(colead), timeout) : scratchBrief(cwd, `${unboxed ? AGY_UNBOXED : AGY_SANDBOXED} Never start or drive a browser, through Playwright, your browser tools or any other tool.`, prompt);
   let launch = { args: bypass ? [] : reach ? [...NO_EXEC_RULES, '--skip-git-repo-check', '-c', 'web_search="live"'] : userConfig ? NO_EXEC_RULES : ISOLATED_CODEX_ARGS };
   if (computerUse) {
     launch = await browserLaunch({ cwd: runCwd, chromeProfile: computerUse.chromeProfile });
@@ -264,7 +283,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     runtime === 'claude'
       ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), ...readDirs.flatMap((dir) => ['--add-dir', dir]), ...(offline ? ['--disallowed-tools', 'WebFetch,WebSearch', '--strict-mcp-config'] : []), '--permission-mode', 'plan', '--', prompt]]
       : runtime === 'agy'
-      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, ...(colead ? [...(conversation ? ['--conversation', conversation] : []), '--dangerously-skip-permissions'] : ['--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), '--sandbox']), '--output-format', 'stream-json']]
+      ? ['agy', ['-p', prompt, '--model', effort ? `${model}-${effort}` : model, ...(colead ? [...(conversation ? ['--conversation', conversation] : []), '--dangerously-skip-permissions'] : ['--settings', JSON.stringify(agySettings(runCwd, [cwd, ...readDirs], offline)), unboxed ? '--dangerously-skip-permissions' : '--sandbox']), '--output-format', 'stream-json']]
       : [
           'codex',
           [
@@ -286,19 +305,21 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
   const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, PSTACK_READ_ONLY: ___, ...env } = process.env;
   if (!bypass && !colead) env.PSTACK_READ_ONLY = '1';
   env[SEAT_MARK] = sessionId;
-  const guard = colead ? withoutPushOrGitHub(env) : null;
+  const guard = colead || unboxed ? withoutPushOrGitHub(env) : null;
   if (guard) folders.add(guard);
-  const mainCheckout = colead ? dirname(gitLines(colead, ['rev-parse', '--path-format=absolute', '--git-common-dir'])[0]) : null;
+  const mainCheckout = colead || unboxed ? linkedMainCheckout(colead ?? cwd) : null;
   const mainBefore = mainCheckout && checkoutState(mainCheckout);
   // Codex resolves a relative CODEX_HOME against its own working directory.
   const codexHome = resolve(runCwd, env.CODEX_HOME || join(homedir(), '.codex'));
   return new Promise((resolve) => {
     let settled = false;
     let late = null;
+    let watcher = null;
     const timers = [];
     const done = (answer) => {
       if (settled || stopping) return;
       settled = true;
+      watcher?.kill();
       running.delete(signalSeat);
       for (const timer of timers) clearTimeout(timer);
       removeFolder(answerDir);
@@ -307,17 +328,17 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       resolve(answer);
     };
     const startedAt = new Date();
-    const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
-    const signalSeat = (signal) => {
-      let alive = false;
-      for (const pid of [-child.pid, ...markedProcesses(sessionId)]) {
-        try {
-          process.kill(pid, signal);
-          alive = true;
-        } catch {}
-      }
-      return alive;
-    };
+    // The child writes the stream file itself, so what it says after this helper dies still lands there.
+    const out = stream ? openSync(stream, 'w') : 'pipe';
+    const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', out, 'pipe'], detached: true });
+    if (stream) closeSync(out);
+    const signalSeat = (signal) => signalProcesses(child.pid, sessionId, signal);
+    // A session restart can kill this helper outright, which no signal handler sees, and the child's process group outlives it.
+    if (child.pid) {
+      const runFolders = [answerDir, ...(scratch ? [runCwd] : []), ...(guard ? [guard] : [])];
+      watcher = spawn(process.execPath, [join(dirname(fileURLToPath(import.meta.url)), 'seat-watch.mjs'), String(process.pid), String(child.pid), sessionId, ...runFolders], { env: envOutlivingSeat(process.env), stdio: 'ignore', detached: true });
+      watcher.unref();
+    }
     running.add(signalSeat);
     const stop = (reason) => {
       if (late !== null) return;
@@ -331,17 +352,23 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
     let stdout = '';
     let stderr = '';
     let workedAt = Date.now();
-    if (stream) writeFileSync(stream, '');
     let announced = null;
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk;
+    const decoder = new StringDecoder('utf8');
+    const onStdout = (text) => {
+      stdout += text;
       workedAt = Date.now();
-      if (stream) appendFileSync(stream, chunk);
       if (colead && !announced) {
         announced = agyConversation(stdout);
         if (announced) onConversation?.(announced);
       }
-    });
+    };
+    const tail = stream ? openSync(stream, 'r') : null;
+    const drain = () => {
+      const buffer = Buffer.alloc(1 << 16);
+      for (let read; (read = readSync(tail, buffer)) > 0; ) onStdout(decoder.write(buffer.subarray(0, read)));
+    };
+    if (stream) timers.push(setInterval(drain, 500));
+    else child.stdout.on('data', (chunk) => onStdout(decoder.write(chunk)));
     child.stderr.on('data', (chunk) => {
       stderr += chunk;
       workedAt = Date.now();
@@ -366,6 +393,11 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
       );
     child.on('error', (error) => done({ runtime, ok: false, text: error.message }));
     child.on('close', async (code, signal) => {
+      if (stream) {
+        drain();
+        closeSync(tail);
+      }
+      onStdout(decoder.end());
       if (signalSeat('SIGTERM')) {
         await waitGone([signalSeat]);
         signalSeat('SIGKILL');
@@ -376,7 +408,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
         const filtered = runtime === 'agy' && (GEMINI_FILTERED.test(text) || GEMINI_FILTERED.test(stdout.trim()));
         const touched = mainCheckout && checkoutState(mainCheckout) !== mainBefore;
         const step = colead && coleadBudget(colead);
-        const warnings = [touched && `the co-lead run changed the main checkout ${mainCheckout}; check it before using this answer.`, step?.product > step?.budget && `this worktree's change since ${step.base} ${overBudget(step.product, step.budget)}`].filter(Boolean);
+        const warnings = [touched && `the ${colead ? 'co-lead run' : 'seat'} changed the main checkout ${mainCheckout}; check it before using this answer.`, step?.product > step?.budget && `this worktree's change since ${step.base} ${overBudget(step.product, step.budget)}`].filter(Boolean);
         const ok = code === 0 && text && !late && !filtered && !warnings.length;
         const codex = runtime === 'codex' && !ok ? codexFailure(stdout, stderr, codexHome, startedAt) : null;
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
