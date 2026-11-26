@@ -11,14 +11,14 @@ Plate's driver skill for proof selection, launch, health checks, driving, eviden
 
 State reported setup, input, expected result, and follow-up first. Pick the smallest boundary that observes each required result: model tests or synthetic events cannot certify native input, focus, paint, or a reporter-named route. Never weaken assertions, drop requirements, or trust a cached pass (rerun Turbo with `TURBO_FORCE=true` and watch for `No tests matched`).
 
-For flaky, native, focus, selection, drag-and-drop, compositor, lifecycle, or device risk, run the final proof 5 times warm with zero retries (`PLAYWRIGHT_RETRIES=0`); one failure keeps the case open. Prove any pre-existing failure at `HEAD` in a detached worktree via `node tooling/scripts/proof-worktree.mjs`.
+For flaky, native, focus, selection, drag-and-drop, compositor, lifecycle, or device risk, run the final proof 5 times warm with zero retries (`--retries=0`, plus `PLITE_BROWSER_FORCE_PROOF=1` for managed Plite runs so cached passes are not reused); one failure keeps the case open. Prove any pre-existing failure at `HEAD` in a detached worktree via `node tooling/scripts/proof-worktree.mjs`.
 
 ## Canonical inventory
 
 Discover Plite browser journeys without launching an app:
 
 ```bash
-node apps/plite/scripts/inspect-plite-browser.mjs journeys [example] [--case '<name>']
+node apps/plite/scripts/inspect-plite-browser.mjs journeys [<example> [--case '<name>']]
 ```
 
 Maintained user-facing feature map: [features/README.md](./features/README.md) (audited by `/pstack:maintain-verification-skill`).
@@ -38,11 +38,11 @@ Maintained user-facing feature map: [features/README.md](./features/README.md) (
 
 Run from the current checkout on owned ports; never reuse another checkout's listener. Keep PIDs/handles for cleanup.
 
-- **Plate app (read-only tree / hand drive):** start `www-drive` (port 3519, `PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive PLATE_WWW_DEV_SOURCE=1 PLATE_WWW_DYNAMIC_DOCS=1 NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1`). Avoid `pnpm --filter www dev` during proofs because it rewrites registry files via `build:registry`.
-- **www browser specs:** start `www-plite-drive` (adds `PLATE_WWW_PLITE=1`, port 3653) or let `test:www-browser:chromium` start `pnpm dev:plite`. Warm slow docs routes once with `curl`.
-- **Plite examples:** `pnpm --filter plite exec next dev --port 3298` (interactive) or `pnpm --filter plite test:plite-browser:chromium <file-or--grep>` (managed, serial).
+- **Plate app (read-only tree / hand drive):** start `www-drive` from `.claude/launch.json` (port 3519, `PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive PLATE_WWW_DEV_SOURCE=1 PLATE_WWW_DYNAMIC_DOCS=1 NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1`). Outside Claude Preview, build `.source-dev` once in a fresh worktree (`PLATE_WWW_DYNAMIC_DOCS=1 pnpm --filter www build:source:dev`) and run `env -C apps/www <env> node node_modules/next/dist/bin/next dev --port 3519`. Avoid `pnpm --filter www dev` and `pnpm --filter www dev:plite` during clean-tree proofs because both run `build:registry`.
+- **www browser specs:** start `www-plite-drive` from `.claude/launch.json` (adds `PLATE_WWW_PLITE=1`, port 3653; add `PLATE_WWW_SYNC_DEMO=1` for `tests/browser/sync-demo.spec.ts`), or let `test:www-browser:chromium` auto-start `pnpm dev:plite` when registry writes are acceptable. Warm slow docs routes once with `curl`.
+- **Plite examples:** `pnpm --filter plite exec next dev --port 3298` (interactive) or `pnpm --filter plite test:plite-browser:chromium <file-or--grep>` (managed; acquires a cross-run lock and serves `apps/plite/out` on `http://127.0.0.1:3102`, override with `PLITE_BROWSER_PORT=<free port>`).
 - **Yjs Hocuspocus:** `PLITE_YJS_STORAGE_DIR=<run-dir>/yjs-data bun tooling/plite/donor/yjs/hocuspocus-server.ts` (waits for `Hocuspocus listening` on port 4444).
-- **Schema CLI:** `pnpm --filter @platejs/cli build`, then run `node <abs>/packages/cli/dist/bin.js` from a disposable consumer dir.
+- **Schema CLI:** `pnpm turbo run build --filter=@platejs/cli` (builds workspace dependencies first), then run `node <abs>/packages/cli/dist/bin.js` from a disposable consumer dir.
 
 Ready means both the server ready line and the exact route returning HTTP 200 without an error overlay.
 
@@ -50,9 +50,9 @@ Ready means both the server ready line and the exact route returning HTTP 200 wi
 
 Run read-only checks before driving and after unexpected failures:
 
-1. `node apps/plite/scripts/inspect-plite-browser.mjs doctor` (read both `fresh` fields).
+1. `node apps/plite/scripts/inspect-plite-browser.mjs doctor` (exits 0; read both `fresh` fields).
 2. `lsof -nP -iTCP:<port> -sTCP:LISTEN` and `lsof -a -p <pid> -d cwd -Fn` (confirm port belongs to this checkout).
-3. `curl --fail --silent --show-error http://localhost:<port>/api/plite/ready` (verify `devSource`, `dynamicDocs`, and `plite` when needed), then inspect the route in-browser.
+3. For `apps/www`: `curl --fail --silent --show-error http://localhost:<port>/api/plite/ready` (verify `root` matches this checkout, plus `devSource`, `dynamicDocs`, and `plite` when needed). For `apps/plite`, check HTTP 200 on the target route (`apps/plite` uses `output: 'export'` and has no `/api/plite/ready` route). Then inspect the route in-browser.
 4. For CLI: `node <abs>/packages/cli/dist/bin.js --version` matches `packages/cli/package.json`.
 5. For install corruption (`Invalid hook call`, mixed `.bun`/`.pnpm` React, null `resolveDispatcher()`), run `pnpm run reinstall` once and retest.
 
@@ -62,17 +62,17 @@ Use the host's built-in browser (`preview_*` in T3 Code, Claude browser in Claud
 
 - **Specs first:** run Playwright specs via their package runner (`pnpm --filter plite test:plite-browser:chromium ...` or `PLAYWRIGHT_BASE_URL=http://localhost:3653 pnpm --filter www test:www-browser:chromium ...`). Never build ad hoc Puppeteer/CDP drivers.
 - **Read dumps before rerunning:** inspect `error-context.md`, failure screenshot, and `editor-state.json` in `test-results/` first. Use `--trace retain-on-failure` (www) or `PLITE_BROWSER_TRACE=1` (Plite) only when timing remains unclear.
-- **React Compiler:** Bun specs run uncompiled; prove copied-UI values from editor/plugin state in the www browser without `PLATE_WWW_WEBPACK`.
+- **React Compiler:** Bun specs run uncompiled; prove copied-UI values from editor/plugin state in the www browser without `PLATE_WWW_WEBPACK` (keeping Turbopack's Rust React Compiler active).
 - **Native clipboard:** only `'native'` transport (Chromium/Firefox) proves native clipboard; WebKit/emulated mobile use `'event'`.
-- **Runners:** run `platejs`/`plitejs` folders via partitions (`pnpm --filter platejs run test:partition:<name>` or `node tooling/scripts/package-tests.mjs`), never raw `bun test <folder>` (`mock.module` leaks). Run `apps/www` Bun specs from root via `pnpm test apps/www/<path>`. Android emulator / iOS Simulator drives reproduce within emulator limits, through the [phone drive](./references/phone-drive.md); real device or OS IME claims still need a person's recheck.
+- **Runners:** run `plitejs`/`platejs`/`@platejs/test` folders via partitions (`pnpm --filter <pkg> run test:partition:<name>`) or exact repo-relative files via `node tooling/scripts/package-tests.mjs <file...>` (no folder args), never raw `bun test <folder>` (`mock.module` leaks and Vitest-only suites). Run `apps/www` Bun specs from root via `pnpm test apps/www/<path>`. Android emulator / iOS Simulator drives reproduce within emulator limits, through the [phone drive](./references/phone-drive.md); real device or OS IME claims still need a person's recheck.
 
 ## Hand drive
 
 Every browser-visible change gets one hand drive before close:
 
 1. `node tooling/scripts/hand-drive.mjs scope <file...>` (map unmapped files with `route <file> <page...>` or `route <file> --none "<reason>"`).
-2. Run `pnpm lint:task`, wait >=5 s after the last edit, drive each cell on `www-drive` at 1280x900 light (plus 375 px / dark when affected), and inspect screenshots.
-3. `node tooling/scripts/hand-drive.mjs check <file...>` verifies fresh error-free visits (enforced by Stop hook).
+2. Run `pnpm lint:task <file...>`, wait >=5 s after the last edit, drive each cell on `www-drive` (`PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive`) in a non-webdriver browser at 1280x900 light (plus 375 px / dark when affected), and inspect screenshots.
+3. `node tooling/scripts/hand-drive.mjs check <file...>` verifies fresh error-free visits (enforced by Stop hook; empty args vacuously exit 0).
 
 ## Playtest and sweep
 
@@ -102,7 +102,7 @@ Stop only processes/servers you started by PID/handle (never kill by process nam
 - `node tooling/scripts/proof-worktree.mjs <path> <sha> [--install] [--with <file>] [--dir <dir> --name <name> --expect-fail <text> -- <cmd>]`
 - `node tooling/scripts/hand-drive.mjs <scope|route|check> ...`
 - `node tooling/scripts/playtest.mjs <scope|specs> ...`
-- `node tooling/scripts/page-health.mjs [--list]`
+- `node tooling/scripts/page-health.mjs [--list] [--base <url>] [--engines <list>] [--only <prefix>]`
 - `node tooling/scripts/sweep-pass.mjs <rows|plan|collect> ...`
-- `node tooling/scripts/dev-servers.mjs list`
+- `node tooling/scripts/dev-servers.mjs list` (Claude Desktop Preview servers only)
 - `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`
