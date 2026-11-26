@@ -31,7 +31,6 @@ import {
   mapInternalDocumentChangePosition,
 } from '../change/document-change';
 import { decodeNodes, DocumentIndex } from '../change/document-index';
-import { jsonEqual } from '../change/json';
 import type { Relocation } from '../change/lineage';
 import { historyFollowsAllFacts } from '../change/record';
 import {
@@ -46,7 +45,6 @@ import {
   commonSuffixLength,
   encodeNodes,
   getPreparedDocumentSlice,
-  openToken,
   type JsonEditorValue,
   type JsonNode,
 } from '../change/tokens';
@@ -87,7 +85,11 @@ import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
 import { withoutStoredElementId } from '../stored-element-id';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
-import { applyPasteEdgePlan, planPasteEdges } from './edge-plan';
+import {
+  applyPasteEdgePlan,
+  applyTailEdgePlan,
+  planPasteEdges,
+} from './edge-plan';
 import {
   type EditorSchemaFitReport,
   EditorSchemaFitRepairCollector,
@@ -113,7 +115,6 @@ import {
   type FitSection,
   type FitSource,
   fitSections,
-  markFit,
   sliceOrigins,
 } from './origin';
 import {
@@ -2757,13 +2758,22 @@ export const compileSliceFitter = <V extends Value>(
             at,
             callerBounds: options.target.exactBounds,
             collapsed,
+            contentAllowsAt,
             declarative: getDeclarativeSchema(),
+            elementPropertiesForSplitUnder: (node, ancestors, targetRoot) =>
+              api.elementPropertiesForSplitUnder(node, ancestors, targetRoot),
             emptyPath: emptyCaretBlockPath,
+            exactTo,
+            getCompiledElement,
+            getElementAncestors,
             getElementBehavior,
             getElementType,
             inputSlice,
             isMove: isFittingMove(),
             replaceEmpty: Boolean(options.target.replaceEmptyBlock),
+            root,
+            rootChildren,
+            targetRootProgram,
           })
         : null;
     const sameTextPath =
@@ -2941,25 +2951,6 @@ export const compileSliceFitter = <V extends Value>(
       .some(
         (node) => ElementApi.isElement(node) && getElementBehavior(node).inline
       );
-    const getTailSplitProperties = (node: Element, path: readonly number[]) => {
-      if (isFittingMove() || getElementBehavior(node).inline) return null;
-      const ancestors = getElementAncestors(rootChildren, path);
-      const declared = getDeclarativeSchema();
-      const content = ancestors[0]
-        ? getCompiledElement(ancestors[0])?.content
-        : targetRootProgram;
-      const admitsCopyAfter =
-        !declared ||
-        !content ||
-        contentAllowsAt(declared, content, node, getDefined(path.at(-1)) + 1, {
-          ancestors,
-          root,
-        });
-
-      return admitsCopyAfter
-        ? api.elementPropertiesForSplitUnder(node, ancestors, root)
-        : null;
-    };
     const createLocalTextCandidate = (
       variant: ContentSlice,
       cost: number,
@@ -3054,7 +3045,10 @@ export const compileSliceFitter = <V extends Value>(
         ) {
           return null;
         }
-        const tailProperties = getTailSplitProperties(targetBlock, targetPath);
+        const tailLevel =
+          edgePlan?.tail.kind === 'split' ? edgePlan.tail.levels[0] : null;
+        const tailProperties =
+          tailLevel?.kind === 'element' ? tailLevel.splitProps : null;
         const tailProps =
           tailProperties && hasElementIds
             ? withoutStoredElementId(tailProperties)
@@ -3079,7 +3073,8 @@ export const compileSliceFitter = <V extends Value>(
         const lastSourceBlock = sourceBlocks.at(-1);
         const tailWithoutId =
           hasElementIds &&
-          suffix.length > 0 &&
+          tailLevel?.kind === 'element' &&
+          tailLevel.dropsIdentity &&
           tailProperties !== null &&
           sourceBlocks.length > 1 &&
           lastSourceBlock
@@ -3991,88 +3986,6 @@ export const compileSliceFitter = <V extends Value>(
       document
         .openContextAt(position)
         .filter((entry) => entry.from < position && position < entry.to);
-    const withTailSplit = (candidate: SliceFitCandidate): SliceFitCandidate => {
-      if (!('insert' in candidate) || options.target.kind === 'root') {
-        return candidate;
-      }
-      const { from, insert, origins, to } = candidate;
-      const destination = getStructuralContext(exactTo);
-      const closedFirst = document.tokens
-        .slice(
-          exactTo,
-          Math.min(document.length, exactTo + destination.length + 1)
-        )
-        .tokens.findIndex((token) => token.kind !== 'close');
-      const receiving =
-        closedFirst === -1 ? 0 : destination.length - closedFirst;
-
-      if (receiving === 0) return candidate;
-      let tailAt = to === exactTo ? insert.length : null;
-      let runAt = 0;
-
-      for (const { length, source } of origins.runs) {
-        if (tailAt !== null) break;
-        if (
-          source.kind === 'document' &&
-          source.at <= exactTo &&
-          exactTo < source.at + length
-        ) {
-          tailAt = runAt + exactTo - source.at;
-        }
-        runAt += length;
-      }
-      if (tailAt === null) return candidate;
-      const stack: Array<Readonly<{ at: number; index: number }> | null> =
-        getStructuralContext(from).map(() => null);
-      let position = 0;
-
-      for (const [index, token] of insert.tokens.entries()) {
-        if (position >= tailAt) break;
-        if (token.kind === 'open') stack.push({ at: position, index });
-        else if (token.kind === 'close') stack.pop();
-        position += tokenLength(token);
-      }
-      if (stack.length !== destination.length) return candidate;
-      const replaced = new Map<number, FitToken>();
-      const replacedAt: number[] = [];
-
-      for (let depth = stack.length - 1; depth >= 0; depth--) {
-        const written = stack[depth];
-
-        if (!written) break;
-        if (depth >= receiving) continue;
-        const token = insert.tokens[written.index];
-        const { path } = destination[depth];
-        const node = document.node(path) as Descendant;
-
-        if (NodeApi.isText(node)) {
-          if (token.kind !== 'open' || token.nodeKind !== 'text') break;
-          continue;
-        }
-        if (
-          token.kind !== 'open' ||
-          token.nodeKind !== 'element' ||
-          getElementType(token.props) !== getElementType(node)
-        ) {
-          break;
-        }
-        const props = getTailSplitProperties(node, path);
-
-        if (!props || jsonEqual(props, token.props)) continue;
-        replaced.set(written.index, openToken('element', props));
-        replacedAt.push(written.at);
-      }
-      if (replaced.size === 0) return candidate;
-      const rewritten = PreparedTokenSlice.fromTokens(
-        insert.tokens.map((token, index) => replaced.get(index) ?? token)
-      );
-
-      return Object.freeze({
-        ...candidate,
-        insert: rewritten,
-        origins: markFit(origins, replacedAt, rewritten),
-      });
-    };
     // A grid cell that holds its text directly never closes to fit more
     // blocks, so a candidate that replaces past the innermost one, or whose
     // tokens close it, is refused.
@@ -4624,7 +4537,10 @@ export const compileSliceFitter = <V extends Value>(
     if (!selectedCandidate) return false;
     const fittedCandidate = profileCoreDuration(
       'slice-fit-candidate-materialize',
-      () => materializeCandidate(withTailSplit(selectedCandidate))
+      () =>
+        materializeCandidate(
+          applyTailEdgePlan(document, edgePlan, selectedCandidate, exactTo)
+        )
     );
     const allowKeptHead =
       Boolean(edgePlan) &&

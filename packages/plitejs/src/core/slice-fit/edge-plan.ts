@@ -4,26 +4,33 @@ import {
   type EditorElementBehavior,
   type Element,
   ElementApi,
+  NodeApi,
   type Range,
   RangeApi,
+  type RootKey,
 } from '../../interfaces';
+import { getDefined } from '../../internal/get-defined';
 import type { DocumentIndex } from '../change/document-index';
-import type { JsonRecord } from '../change/json';
+import { type JsonRecord, jsonEqual } from '../change/json';
 import {
   type RootChangeSection,
   propertyDeltaFromModifications,
   semanticPropertyModifications,
 } from '../change/root-change';
 import {
-  type PreparedTokenSlice,
+  PreparedTokenSlice,
   getDocumentSliceNodeKeys,
+  openToken,
 } from '../change/tokens';
 import {
   type CompiledEditorSchema,
+  type CompiledSchemaContentProgram,
+  type CompiledSchemaElement,
   uniquePropertiesOf,
 } from '../schema-compiler';
 import { countCoreWork } from '../work';
-import type { FitSection } from './origin';
+import type { SliceFitCandidate } from './frontier';
+import { type FitSection, markFit } from './origin';
 import { getTextEdge, pointsEqual } from './provenance';
 
 declare const nonIdentityBlockPropertiesBrand: unique symbol;
@@ -34,6 +41,27 @@ export type KeptBlockPropertyWrite = Readonly<{
   readonly properties: ReturnType<typeof propertyDeltaFromModifications>;
 }>;
 
+export type TailLevelPlan =
+  | Readonly<{ kind: 'text' }>
+  | Readonly<{
+      dropsIdentity: boolean;
+      kind: 'element';
+      path: readonly number[];
+      splitProps: Readonly<JsonRecord> | null;
+      type: string | null | undefined;
+    }>;
+
+export type TailEdgePlan =
+  | Readonly<{
+      destination: ReadonlyArray<
+        Readonly<{ from: number; path: readonly number[]; to: number }>
+      >;
+      kind: 'split';
+      levels: readonly TailLevelPlan[];
+      receiving: number;
+    }>
+  | Readonly<{ kind: 'pasted'; receiving: number }>;
+
 export type HeadEdgePlan =
   | Readonly<{
       blockPath: readonly number[];
@@ -43,7 +71,21 @@ export type HeadEdgePlan =
     }>
   | Readonly<{ kind: 'replace' }>;
 
-export type PasteEdgePlan = Readonly<{ head: HeadEdgePlan }>;
+export type PasteEdgePlan = Readonly<{
+  head: HeadEdgePlan;
+  receiving: number;
+  tail: TailEdgePlan;
+}>;
+
+type FitToken = DocumentIndex['tokens']['tokens'][number];
+
+const tokenLength = (token: FitToken) =>
+  token.kind === 'text' ? token.text.length : 1;
+
+const openContextAt = (document: DocumentIndex, position: number) =>
+  document
+    .openContextAt(position)
+    .filter((entry) => entry.from < position && position < entry.to);
 
 const propsOf = ({ children: _c, ...props }: Element) =>
   props as Readonly<JsonRecord>;
@@ -90,17 +132,114 @@ export const planPasteEdges = (
     at: Range;
     callerBounds: Readonly<{ from: number; to: number }> | undefined;
     collapsed: boolean;
+    contentAllowsAt: (
+      declarative: CompiledEditorSchema,
+      content: CompiledSchemaContentProgram,
+      node: Element,
+      index: number,
+      options: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
+    ) => boolean;
     declarative: CompiledEditorSchema | null;
+    elementPropertiesForSplitUnder: (
+      node: Element,
+      ancestors: readonly Element[],
+      root: RootKey
+    ) => Readonly<JsonRecord>;
     emptyPath: readonly number[] | null;
+    exactTo: number;
+    getCompiledElement: (
+      node: Element
+    ) => CompiledSchemaElement | null | undefined;
+    getElementAncestors: (
+      rootChildren: readonly Descendant[],
+      path: readonly number[]
+    ) => readonly Element[];
     getElementBehavior: (node: Element) => EditorElementBehavior;
     getElementType: (node: Element) => string | null | undefined;
     inputSlice: ContentSlice;
     isMove: boolean;
     replaceEmpty: boolean;
+    root: RootKey;
+    rootChildren: readonly Descendant[];
+    targetRootProgram: CompiledSchemaContentProgram | null;
   }>
 ): PasteEdgePlan => {
-  const replace: PasteEdgePlan = { head: { kind: 'replace' } };
-  const { emptyPath, getElementBehavior, inputSlice, isMove } = input;
+  const {
+    declarative,
+    emptyPath,
+    exactTo,
+    getElementBehavior,
+    inputSlice,
+    isMove,
+    root,
+    rootChildren,
+  } = input;
+  const destination = openContextAt(document, exactTo);
+  let closed = 0;
+
+  while (
+    closed < destination.length &&
+    destination[destination.length - 1 - closed].to - 1 === exactTo + closed
+  ) {
+    closed += 1;
+  }
+
+  const receiving = destination.length - closed;
+  const hasIdentity = (identityKeysOf(declarative)?.size ?? 0) > 0;
+  const tail: TailEdgePlan =
+    receiving === 0 || isMove || input.callerBounds
+      ? { kind: 'pasted', receiving }
+      : {
+          destination,
+          kind: 'split',
+          levels: destination.map((entry, depth): TailLevelPlan => {
+            const node = document.node(entry.path) as Descendant;
+
+            if (NodeApi.isText(node)) return { kind: 'text' };
+            if (depth >= receiving || getElementBehavior(node).inline) {
+              return {
+                dropsIdentity: hasIdentity,
+                kind: 'element',
+                path: entry.path,
+                splitProps: null,
+                type: input.getElementType(node),
+              };
+            }
+            const ancestors = input.getElementAncestors(
+              rootChildren,
+              entry.path
+            );
+            const content = ancestors[0]
+              ? input.getCompiledElement(ancestors[0])?.content
+              : input.targetRootProgram;
+            const admitsCopyAfter =
+              !declarative ||
+              !content ||
+              input.contentAllowsAt(
+                declarative,
+                content,
+                node,
+                getDefined(entry.path.at(-1)) + 1,
+                { ancestors, root }
+              );
+
+            return {
+              dropsIdentity: hasIdentity,
+              kind: 'element',
+              path: entry.path,
+              splitProps: admitsCopyAfter
+                ? input.elementPropertiesForSplitUnder(node, ancestors, root)
+                : null,
+              type: input.getElementType(node),
+            };
+          }),
+          receiving,
+        };
+  const replace: PasteEdgePlan = {
+    head: { kind: 'replace' },
+    receiving,
+    tail,
+  };
   let blockPath: readonly number[];
   let dest: Descendant | null;
   let rewrite: Element | null = null;
@@ -153,10 +292,89 @@ export const planPasteEdges = (
         blockRange.from,
         propsOf(dest as Element),
         propsOf(rewrite),
-        input.declarative
+        declarative
       )
     : null;
-  return { head: { blockPath, blockRange, kind: 'keep', propertyWrite } };
+  return {
+    head: { blockPath, blockRange, kind: 'keep', propertyWrite },
+    receiving,
+    tail,
+  };
+};
+
+export const applyTailEdgePlan = (
+  document: DocumentIndex,
+  edgePlan: PasteEdgePlan | null,
+  candidate: SliceFitCandidate,
+  exactTo: number
+): SliceFitCandidate => {
+  if (!('insert' in candidate) || !edgePlan || edgePlan.tail.kind !== 'split') {
+    return candidate;
+  }
+  const { from, insert, origins, to } = candidate;
+  const { destination, levels, receiving } = edgePlan.tail;
+  let tailAt = to === exactTo ? insert.length : null;
+  let runAt = 0;
+
+  for (const { length, source } of origins.runs) {
+    if (tailAt !== null) break;
+    if (
+      source.kind === 'document' &&
+      source.at <= exactTo &&
+      exactTo < source.at + length
+    ) {
+      tailAt = runAt + exactTo - source.at;
+    }
+    runAt += length;
+  }
+  if (tailAt === null) return candidate;
+  const stack: Array<Readonly<{ at: number; index: number }> | null> =
+    openContextAt(document, from).map(() => null);
+  let position = 0;
+
+  for (const [index, token] of insert.tokens.entries()) {
+    if (position >= tailAt) break;
+    if (token.kind === 'open') stack.push({ at: position, index });
+    else if (token.kind === 'close') stack.pop();
+    position += tokenLength(token);
+  }
+  if (stack.length !== destination.length) return candidate;
+  const replaced = new Map<number, FitToken>();
+  const replacedAt: number[] = [];
+
+  for (let depth = stack.length - 1; depth >= 0; depth -= 1) {
+    const written = stack[depth];
+
+    if (!written) break;
+    if (depth >= receiving) continue;
+    const token = insert.tokens[written.index];
+    const level = levels[depth];
+
+    if (level.kind === 'text') {
+      if (token.kind !== 'open' || token.nodeKind !== 'text') break;
+      continue;
+    }
+    if (
+      token.kind !== 'open' ||
+      token.nodeKind !== 'element' ||
+      token.props.type !== level.type
+    ) {
+      break;
+    }
+    if (!level.splitProps || jsonEqual(level.splitProps, token.props)) continue;
+    replaced.set(written.index, openToken('element', level.splitProps));
+    replacedAt.push(written.at);
+  }
+  if (replaced.size === 0) return candidate;
+  const rewritten = PreparedTokenSlice.fromTokens(
+    insert.tokens.map((token, index) => replaced.get(index) ?? token)
+  );
+
+  return Object.freeze({
+    ...candidate,
+    insert: rewritten,
+    origins: markFit(origins, replacedAt, rewritten),
+  });
 };
 
 export const applyPasteEdgePlan = (
