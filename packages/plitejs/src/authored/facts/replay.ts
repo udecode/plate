@@ -7,6 +7,7 @@ import type { RootChangeJson } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getValueRecords, recordStoreToJson } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import type { EditorDocumentValue } from '../../interfaces/editor';
 import {
   changeOf,
   isStructureMark,
@@ -21,6 +22,7 @@ import {
   storedDecisionSiteOf,
 } from '../decision';
 import { AUTHORED_MARKS_KEY, readMembers } from '../tree/marks';
+import { settleAuthoredValue } from './admission';
 import { isEditingChange } from './editing';
 import {
   CONTEXTS,
@@ -134,20 +136,36 @@ export const verdictBatchOf = (
 const decides = (
   value: JsonEditorValue,
   request: DecisionRequest,
-  site: DecisionSite
+  site: DecisionSite,
+  schema: CompiledEditorSchema
 ): DecidedValue | null => {
   const decided = decide(value, request, site);
 
-  return decided.status === 'decided' ? decided : null;
+  if (decided.status !== 'decided') return null;
+
+  const settled = settleAuthoredValue(
+    decided.value as EditorDocumentValue,
+    schema,
+    null
+  );
+
+  return settled
+    ? {
+        ...decided,
+        change: decided.change.compose(settled),
+        value: settled.apply(decided.value),
+      }
+    : decided;
 };
 
 export const replayAt = (
   { after, before }: AuthoredStep,
   requests: readonly DecisionRequest[],
-  site: DecisionSite
+  site: DecisionSite,
+  schema: CompiledEditorSchema
 ): Replay | null => {
   for (const request of requests) {
-    const decided = decides(before, request, site);
+    const decided = decides(before, request, site, schema);
 
     if (decided && sameDocument(decided.value, after)) {
       return { decided, request, site };
@@ -182,7 +200,7 @@ export const decideAtHead = (
   return [...request.actions.keys()].every((id) =>
     readsAlike(id, site.book.occurrences(id), at.book.occurrences(id))
   )
-    ? decides(head, request, at)
+    ? decides(head, request, at, schema)
     : null;
 };
 
@@ -205,7 +223,8 @@ export const replaysWithdrawal = (
         withdraws: true,
       },
     ],
-    storedDecisionSiteOf(schema, step.before)
+    storedDecisionSiteOf(schema, step.before),
+    schema
   );
 
   return replay && replay.decided.verdicts.length === 0 ? replay.decided : null;

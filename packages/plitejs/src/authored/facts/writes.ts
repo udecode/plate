@@ -19,6 +19,7 @@ import { heldGift } from '../tree/halves';
 import type { FormatTag, LayerValue } from '../tree/layers';
 import {
   AUTHORED_MARKS_KEY,
+  type AsMember,
   type AuthoredMark,
   type AuthoredMember,
   AuthoredMarkError,
@@ -28,6 +29,7 @@ import {
   readMembers,
   type ReserveMember,
 } from '../tree/marks';
+import type { WrittenSpare } from '../tree/reserves';
 import { claimsOf, factsOf, holdsBase, type ReviewFacts } from './facts';
 import {
   CONTEXTS,
@@ -132,6 +134,7 @@ export type AuthoredWrite =
       kind: 'reserve';
       op: 'drop' | 'put';
       site: ReserveSite;
+      spare: WrittenSpare;
       stands: boolean;
     }>
   | (RecordWrite<'context', ContextRecord> &
@@ -268,14 +271,23 @@ const lettersIn = (
     .join('');
 };
 
-const propsOf = (node: unknown) => {
+const ownPropsOf = (node: unknown) => {
   const {
     [AUTHORED_MARKS_KEY]: _members,
     children: _children,
     text: _text,
     ...props
   } = node as Record<string, unknown>;
-  const shown = membersIn(node).find((member) => member.kind === 'as');
+
+  return props;
+};
+
+const shownOf = (node: unknown) =>
+  membersIn(node).find((member): member is AsMember => member.kind === 'as');
+
+const propsOf = (node: unknown) => {
+  const props = ownPropsOf(node);
+  const shown = shownOf(node);
 
   return shown ? { ...props, [`${AUTHORED_MARKS_KEY}:as`]: shown } : props;
 };
@@ -321,8 +333,13 @@ const textOf = (node: unknown): string => {
     : childrenOf(node).map(textOf).join('');
 };
 
+const shownPropsOf = (node: unknown) => ({
+  ...ownPropsOf(node),
+  ...shownOf(node)?.values,
+});
+
 const contentKeyOf = (node: unknown) =>
-  canonicalJsonKey([propsOf(node), textOf(node)]);
+  canonicalJsonKey([shownPropsOf(node), textOf(node)]);
 
 const nodesWithin = (node: unknown): readonly unknown[] => [
   node,
@@ -639,7 +656,9 @@ export const authoredWritesOf = ({
         const value = keyValueOf(head.node, result.node, claim.key);
 
         once(
-          `released ${carrier.node} ${key} ${canonicalJsonKey(value)} ${underKey(was)} ${underKey(now)}`,
+          `released ${carrier.node} ${key} ${canonicalJsonKey(
+            value
+          )} ${underKey(was)} ${underKey(now)}`,
           {
             carrier,
             claim,
@@ -665,7 +684,9 @@ export const authoredWritesOf = ({
   ) => {
     if (keys.length === 0) return;
     once(
-      `set ${carrier.node} ${canonicalJsonKey(keys)} ${underKey(was)} ${underKey(now)}`,
+      `set ${carrier.node} ${canonicalJsonKey(keys)} ${underKey(
+        was
+      )} ${underKey(now)}`,
       {
         added: [...now].flatMap(([key, claim]) =>
           was.has(key) ? [] : [claim]
@@ -708,6 +729,7 @@ export const authoredWritesOf = ({
         kind: 'reserve',
         op,
         site,
+        spare: member,
         stands:
           resultSite !== undefined &&
           holdsBase([resultSite, ...childrenOf(resultSite)], base, resultFacts),
@@ -1277,6 +1299,7 @@ export const authoredWritesOf = ({
       kind: 'reserve',
       op: spare.op,
       site: { kind: 'root', root: shape.root },
+      spare: { ...shape, type: null },
       stands: !!nodes && holdsBase(nodes.slice(), shape, resultFacts),
     });
   }

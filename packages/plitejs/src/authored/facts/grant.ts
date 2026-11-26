@@ -28,6 +28,7 @@ import {
   type MarkBase,
   readMembers,
 } from '../tree/marks';
+import { isSpareEveryEditorBuilds } from '../tree/reserves';
 import { editingChangeOf, isEditingChange } from './editing';
 import { claimsOf, contentRootsOf, factsOf, type ReviewFacts } from './facts';
 import {
@@ -93,6 +94,7 @@ type TakenGridParts = Readonly<{
 }>;
 
 type Judge = Readonly<{
+  spareEveryEditorBuilds: (write: WriteOf<'reserve'>) => boolean;
   cutHalves: () => ReadonlySet<string>;
   grant: SyncGrant;
   head: ReviewFacts;
@@ -352,10 +354,13 @@ const RULES: { [K in OrdinaryKind]: Rule<K> } = {
   reserve: {
     editing: (write, judge) =>
       write.op === 'put' &&
-      isOwnEditingReserve(write.base, judge) &&
+      (isOwnEditingReserve(write.base, judge) ||
+        judge.spareEveryEditorBuilds(write)) &&
       reserveStands(write),
     own: (write, judge) =>
-      (write.op === 'drop' || isOwnPending(write.base, judge)) &&
+      (write.op === 'drop' ||
+        isOwnPending(write.base, judge) ||
+        judge.spareEveryEditorBuilds(write)) &&
       reserveStands(write),
   },
   set: {
@@ -476,6 +481,9 @@ export const decidedChangesIn = (
 // Rejecting an own change that still holds a claim in the result would
 // delete its other letters too, so a withdrawal rejects only the ones the
 // batch removes whole.
+const changeHeldBy = (member: AuthoredMember) =>
+  'author' in member && member.kind !== 'reserve' ? [member.change] : [];
+
 const changesHeldIn = (document: JsonEditorValue) => {
   const members = contentMembersOf(document);
   const liveContexts = new Set(
@@ -484,14 +492,11 @@ const changesHeldIn = (document: JsonEditorValue) => {
   const store = getValueRecords(document);
 
   return new Set([
-    ...members.flatMap((member) => ('author' in member ? [member.change] : [])),
+    ...members.flatMap(changeHeldBy),
     ...[...getRecordEntries(store, CONTEXTS)].flatMap(([ctx, json]) =>
       liveContexts.has(ctx)
         ? (parseContext(ctx, json)?.member.change ?? [])
         : []
-    ),
-    ...[...getRecordEntries(store, RESERVES)].flatMap(
-      ([id, json]) => parseReserve(id, json)?.change ?? []
     ),
   ]);
 };
@@ -555,7 +560,7 @@ const decisionReplayOf = (
 ) => {
   const site = storedDecisionSiteOf(schema, step.before);
 
-  return replayAt(step, requestsOf(batch, grant, step, site), site);
+  return replayAt(step, requestsOf(batch, grant, step, site), site, schema);
 };
 
 /** What `step` decides, or null when it puts no verdict the tab can replay. */
@@ -709,6 +714,13 @@ const ordinaryCover = (
   let headCutHalves: ReadonlySet<string> | undefined;
   let takenGridParts: TakenGridParts | undefined;
   const judge: Judge = {
+    spareEveryEditorBuilds: ({ site, spare }) =>
+      isSpareEveryEditorBuilds(
+        step.after,
+        schema,
+        site.kind === 'root' ? { path: [], root: site.root } : site,
+        spare
+      ),
     cutHalves: () => {
       cutHalves ??= cutHalvesIn(step.after);
 

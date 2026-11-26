@@ -558,6 +558,26 @@ const settleDecidedApart = <V extends JsonEditorValue>(
   };
 };
 
+export const settleAuthoredValue = (
+  value: EditorDocumentValue,
+  schema: CompiledEditorSchema,
+  commit: DocumentSettleCommit | null
+) => {
+  if (!storesSpares(schema) || (commit && quietCommit(value, commit))) {
+    return null;
+  }
+
+  const ledger =
+    commit && getReviewLedger(getEditorRuntimeOwner(commit.editor));
+
+  return settleShownValues(
+    value,
+    schema,
+    ledger ? commit : null,
+    ledger ? ledger.shown : null
+  );
+};
+
 export const authoredAdmission: DocumentAdmission = {
   commit: ({ after, before, change, editor, indexOf, loads }) => {
     const records = getInternalDocumentChangeRecords(change);
@@ -772,21 +792,7 @@ export const authoredAdmission: DocumentAdmission = {
       value: spared,
     };
   },
-  settle: (value, schema, commit) => {
-    if (!storesSpares(schema) || (commit && quietCommit(value, commit))) {
-      return null;
-    }
-
-    const ledger =
-      commit && getReviewLedger(getEditorRuntimeOwner(commit.editor));
-
-    return settleShownValues(
-      value,
-      schema,
-      ledger ? commit : null,
-      ledger ? ledger.shown : null
-    );
-  },
+  settle: settleAuthoredValue,
   spareLines: spareLinesOf,
 };
 

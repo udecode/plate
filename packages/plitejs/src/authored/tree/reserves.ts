@@ -11,6 +11,7 @@ import {
   type RootChangeSection,
 } from '../../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
+import { canonicalJsonKey } from '../../core/change/transform';
 import type { ConstructionSlot } from '../../core/content-completion';
 import {
   createDetachedEditorSchema,
@@ -85,6 +86,9 @@ export type SpareBlocks = Readonly<{
 
 /** A container: the element at `path` of `root`, or the root itself at `[]`. */
 export type SpareSite = Readonly<{ path: Path; root: string }>;
+
+export type WrittenSpare = Pick<ReserveMember, 'node' | 'slot'> &
+  Readonly<{ type: string | null }>;
 
 /**
  * A fill the recorder defers at a container's maximum: the command frame's
@@ -607,6 +611,56 @@ export const sparesFor = (
         records:
           records.size === 0 ? NO_RECORD_OPS : new Map([[RESERVES, records]]),
       };
+};
+
+const withoutValuesOf = (keys: ReadonlySet<string>, node: Node): Node =>
+  typeof node.text === 'string'
+    ? node
+    : {
+        ...Object.fromEntries(
+          Object.entries(node).filter(([key]) => !keys.has(key))
+        ),
+        children: (node.children ?? []).map((child) =>
+          withoutValuesOf(keys, child)
+        ),
+      };
+
+export const isSpareEveryEditorBuilds = (
+  document: JsonEditorValue,
+  schema: CompiledEditorSchema,
+  { path, root }: SpareSite,
+  { node, slot, type }: WrittenSpare
+) => {
+  const children = rootChildren(document, root);
+  const found = children && nodeAt(children, path);
+
+  if (!found || (found.node === null) !== (type === null)) return false;
+
+  const site = found.node
+    ? ([
+        { ...withMembers(found.node, []), children: [], type },
+        ...found.ancestors.slice(1),
+      ] as unknown as Element[])
+    : [];
+  const keys = new Set(
+    [...sparePropertiesOf(schema)].flatMap(({ key }) =>
+      typeof key === 'string' ? [key] : []
+    )
+  );
+  const want = canonicalJsonKey(withoutValuesOf(keys, node));
+
+  return completeChildrenAt(
+    getRepresentationEditorFromApi(
+      createDetachedEditorSchema(schema, document as EditorDocumentValue)
+    ),
+    site,
+    [],
+    root
+  ).built.some(
+    (built) =>
+      slotKeyOf(built.slot) === slotKeyOf(slot) &&
+      canonicalJsonKey(withoutValuesOf(keys, built.node)) === want
+  );
 };
 
 /**
