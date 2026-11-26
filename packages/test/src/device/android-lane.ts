@@ -194,21 +194,24 @@ export const createAndroidDriver = ({
   state: AndroidRunState;
 }): DeviceDriver => {
   const touch = createDeviceTouch(state.serial);
-  let offset: { x: number; y: number } | null = null;
+  let offset: { innerHeight: number; x: number; y: number } | null = null;
 
   const toScreen = async (css: { x: number; y: number }) => {
     if (!offset) throw new Error('Open a page before touching its content.');
 
     const view = await page.evaluate(() => ({
       dpr: devicePixelRatio,
+      innerHeight,
       offsetLeft: visualViewport?.offsetLeft ?? 0,
       offsetTop: visualViewport?.offsetTop ?? 0,
       scale: visualViewport?.scale ?? 1,
     }));
+    // Chrome's offline and back-online line and its hiding toolbar move the page's top while its bottom stays put.
+    const top = offset.y + (offset.innerHeight - view.innerHeight) * view.dpr;
 
     return {
       x: offset.x + (css.x - view.offsetLeft) * view.dpr * view.scale,
-      y: offset.y + (css.y - view.offsetTop) * view.dpr * view.scale,
+      y: top + (css.y - view.offsetTop) * view.dpr * view.scale,
     };
   };
 
@@ -343,6 +346,7 @@ export const createAndroidDriver = ({
         throw new Error('The calibration touch never reached the page.');
       }
       offset = {
+        innerHeight: await page.evaluate(() => innerHeight),
         x: guess.x - (seen.x - seen.offsetLeft) * seen.dpr * seen.scale,
         y: guess.y - (seen.y - seen.offsetTop) * seen.dpr * seen.scale,
       };

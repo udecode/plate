@@ -163,7 +163,8 @@ export type DeviceDriver = {
   };
 };
 
-const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
+const ANY_EDITOR_ROOT = '[data-editor="true"]';
+const EDITOR_ROOT = `${ANY_EDITOR_ROOT}[contenteditable="true"]`;
 const WWW_READY_TIMEOUT_MS = 60_000;
 
 const TRACED_EVENTS = [
@@ -875,13 +876,13 @@ export const createDeviceLane = ({
       };
     },
     editorAt: (index) =>
-      editorFor({ css: EDITOR_ROOT, index }, `editor ${index + 1} `),
+      editorFor({ css: ANY_EDITOR_ROOT, index }, `editor ${index + 1} `),
     editorCount: () =>
       driver.page
         .find({ css: 'body' })
         .evaluate(
           (element, selector) => element.querySelectorAll(selector).length,
-          EDITOR_ROOT
+          ANY_EDITOR_ROOT
         ),
     openExample: (example) =>
       openEditor(`${state.appURL}/examples/plite/${example}`),
@@ -1020,7 +1021,9 @@ export const createDeviceLane = ({
             active = active.shadowRoot.activeElement;
           }
 
-          const menuOpen = [...document.querySelectorAll('[role="menu"]')].some(
+          const menuOpen = [
+            ...document.querySelectorAll('[role="menu"],[role="listbox"]'),
+          ].some(
             (menu) =>
               !menu.hasAttribute('hidden') &&
               menu.getAttribute('data-state') !== 'closed' &&

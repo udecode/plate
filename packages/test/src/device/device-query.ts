@@ -6,8 +6,7 @@ export type PageItem = {
 };
 
 export const listPageItems = ({ ios }: { ios: boolean }): PageItem[] => {
-  const editorRoots =
-    '[data-editor="true"][contenteditable="true"],[data-slate-editor="true"]';
+  const editorRoots = '[data-editor="true"],[data-slate-editor="true"]';
   const controls =
     'a[href],button,input:not([type="hidden"]),select,summary,textarea,[role="button"],[role="checkbox"],[role="combobox"],[role="link"],[role="menuitem"],[role="menuitemcheckbox"],[role="menuitemradio"],[role="option"],[role="radio"],[role="switch"],[role="tab"]';
   const view = window.visualViewport;
@@ -131,4 +130,27 @@ export const scrollPage = ({
   }
   window.scrollBy({ behavior: 'instant', top: dy });
   return { page: true, top: window.scrollY };
+};
+
+export const watchKeys = () => {
+  const store = window as unknown as Record<symbol, string[] | undefined>;
+  const keys = Symbol.for('plate-drive-keys');
+
+  if (!store[keys]) {
+    const seen: string[] = [];
+
+    store[keys] = seen;
+    window.addEventListener('keydown', (event) => seen.push(event.key), true);
+  }
+  store[keys].length = 0;
+  return true;
+};
+
+export const takeKeys = () => {
+  const seen =
+    (window as unknown as Record<symbol, string[] | undefined>)[
+      Symbol.for('plate-drive-keys')
+    ] ?? [];
+
+  return seen.splice(0);
 };
