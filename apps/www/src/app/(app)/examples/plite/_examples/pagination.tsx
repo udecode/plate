@@ -1,7 +1,6 @@
 import {
   parseAsBoolean,
   parseAsStringLiteral,
-  type SetValues,
   useQueryStates,
   type Values,
 } from 'nuqs';
@@ -145,7 +144,10 @@ const paginationControlUrlKeys = {
 };
 
 type PaginationControls = Values<typeof paginationControlParsers>;
-type SetPaginationControls = SetValues<typeof paginationControlParsers>;
+type PaginationControlsUpdate =
+  | Partial<PaginationControls>
+  | ((state: PaginationControls) => Partial<PaginationControls>);
+type SetPaginationControls = (update: PaginationControlsUpdate) => void;
 
 const paginationMarkHotkeys: Array<[string, CustomTextKey]> = [
   ['mod+b', 'bold'],
@@ -288,7 +290,7 @@ const PaginationControlsToolbar = ({
           className="w-24"
           id="pagination-preset"
           onChange={(event) =>
-            void setControls({
+            setControls({
               preset: event.currentTarget.value as PaginationControls['preset'],
             })
           }
@@ -307,7 +309,7 @@ const PaginationControlsToolbar = ({
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const value = Number.parseInt(event.currentTarget.value, 10);
             if (Number.isFinite(value)) {
-              void setControls({ margins: clampNumber(value, 48, 240) });
+              setControls({ margins: clampNumber(value, 48, 240) });
             }
           }}
           step={12}
@@ -321,7 +323,7 @@ const PaginationControlsToolbar = ({
           className="w-32"
           id="pagination-rendering"
           onChange={(event) =>
-            void setControls({
+            setControls({
               renderingMode: event.currentTarget.value as RenderingMode,
             })
           }
@@ -343,7 +345,7 @@ const PaginationControlsToolbar = ({
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const value = Number.parseInt(event.currentTarget.value, 10);
             if (Number.isFinite(value)) {
-              void setControls({
+              setControls({
                 tableRows: clampNumber(value, 8, MAX_TABLE_ROWS),
               });
             }
@@ -362,7 +364,7 @@ const PaginationControlsToolbar = ({
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const value = Number.parseInt(event.currentTarget.value, 10);
             if (Number.isFinite(value)) {
-              void setControls({
+              setControls({
                 tableRowHeight: clampNumber(value, 28, MAX_TABLE_ROW_HEIGHT),
               });
             }
@@ -382,7 +384,7 @@ const PaginationControlsToolbar = ({
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const value = Number.parseInt(event.currentTarget.value, 10);
             if (Number.isFinite(value)) {
-              void setControls({
+              setControls({
                 mediaHeight: clampNumber(value, 120, MAX_MEDIA_HEIGHT),
               });
             }
@@ -403,7 +405,7 @@ const PaginationControlsToolbar = ({
             onChange={(event: ChangeEvent<HTMLInputElement>) => {
               const value = Number.parseInt(event.currentTarget.value, 10);
               if (Number.isFinite(value)) {
-                void setControls({
+                setControls({
                   virtualizedStressPages: clampNumber(
                     value,
                     0,
@@ -427,7 +429,7 @@ const PaginationControlsToolbar = ({
           aria-label="Facing"
           checked={controls.pageLayoutMode === 'spread'}
           onCheckedChange={() =>
-            void setControls((state) => ({
+            setControls((state) => ({
               pageLayoutMode:
                 state.pageLayoutMode === 'spread' ? 'single' : 'spread',
             }))
@@ -441,7 +443,7 @@ const PaginationControlsToolbar = ({
           aria-label="Debug"
           checked={controls.debugFrames}
           onCheckedChange={(checked) =>
-            void setControls({ debugFrames: Boolean(checked) })
+            setControls({ debugFrames: Boolean(checked) })
           }
         />
       </span>
@@ -1124,10 +1126,27 @@ const PaginationEditor = ({
 };
 
 const PaginationExample = () => {
-  const [controls, setControls] = useQueryStates(paginationControlParsers, {
-    ...replaceQueryOptions,
-    urlKeys: paginationControlUrlKeys,
-  });
+  const [queryControls, setQueryControls] = useQueryStates(
+    paginationControlParsers,
+    {
+      ...replaceQueryOptions,
+      urlKeys: paginationControlUrlKeys,
+    }
+  );
+  const [controls, setLocalControls] = useState(queryControls);
+  const controlsRef = useRef(controls);
+  const setControls = useCallback<SetPaginationControls>(
+    (update) => {
+      const patch =
+        typeof update === 'function' ? update(controlsRef.current) : update;
+      const next = { ...controlsRef.current, ...patch };
+
+      controlsRef.current = next;
+      setLocalControls(next);
+      void setQueryControls(next);
+    },
+    [setQueryControls]
+  );
 
   return <PaginationEditor controls={controls} setControls={setControls} />;
 };

@@ -621,7 +621,13 @@ export const isSelectionHeldForNativeMove = (
   );
 };
 
-export const isSelectionHeldForFocus = (
+/**
+ * While a native move or a non-echo DOM selection change inside the editor
+ * waits for its import, late settles and caret repairs leave the browser's
+ * selection alone. An echo of our own last write passes so WebKit settles can
+ * still rewrite a caret placed before its text had a layout box.
+ */
+export const isSelectionHeldForPendingImport = (
   inputController: EditableInputController,
   editor: AnyEditor,
   editorElement: HTMLElement | null | undefined

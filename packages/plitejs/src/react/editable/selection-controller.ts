@@ -89,6 +89,7 @@ import {
   exportEditableDOMSelection,
   isEditableOutsideFocusBoundarySettling,
   isSelectionHeldForNativeMove,
+  isSelectionHeldForPendingImport,
 } from './input-state';
 import {
   findNestedEditable,
@@ -1696,11 +1697,17 @@ export const syncEditableDOMSelectionToEditor = ({
   if (runtime.shouldDeferCompositionSelectionExport()) return;
   if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
   if (
-    isSelectionHeldForNativeMove(
-      runtime.inputController,
-      editor,
-      explicitEditorElement ?? runtime.rootElement
-    )
+    options?.forceModelExport
+      ? isSelectionHeldForNativeMove(
+          runtime.inputController,
+          editor,
+          explicitEditorElement ?? runtime.rootElement
+        )
+      : isSelectionHeldForPendingImport(
+          runtime.inputController,
+          editor,
+          explicitEditorElement ?? runtime.rootElement
+        )
   ) {
     return;
   }
@@ -1840,6 +1847,15 @@ export const syncEditableDOMSelectionToEditor = ({
       const clearNativeSelection = () => {
         if (!claimPageSelection()) return;
         if (isSuperseded()) return;
+        if (
+          isSelectionHeldForPendingImport(
+            runtime.inputController,
+            editor,
+            editorElement
+          )
+        ) {
+          return;
+        }
         const current = readPliteViewSelection(editor);
         if (current && canUseNativeViewSelection(editor, current)) return;
         if (

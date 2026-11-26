@@ -106,7 +106,7 @@ import {
   endSelectionImport,
   type EditableInputController,
   exportEditableDOMSelection,
-  isSelectionHeldForFocus,
+  isSelectionHeldForPendingImport,
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
@@ -678,7 +678,7 @@ export class EditableDOMRuntime {
       focusSelection: (root) => focusSelectionTarget(this.editorValue, root),
       isComposing: () => this.state.isComposing,
       isSelectionHeld: () =>
-        isSelectionHeldForFocus(
+        isSelectionHeldForPendingImport(
           this.inputController,
           this.editorValue,
           this.rootRef.current

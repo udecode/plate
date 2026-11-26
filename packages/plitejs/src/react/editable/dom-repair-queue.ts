@@ -48,6 +48,7 @@ import {
   type EditableInputController,
   getEditableNativeGroupingInput,
   isSelectionHeldForNativeMove,
+  isSelectionHeldForPendingImport,
 } from './input-state';
 import { getUserTextLanding } from './mutation-controller';
 import { readRuntimeText } from './runtime-live-state';
@@ -1095,8 +1096,20 @@ export const createDOMRepairQueue = ({
 
           return true;
         }
+        // Native text input's own selectionchange leaves pendingDOMSelectionImport
+        // set until its handler's finally block runs after repair-caret-after-text-insert.
         if (
-          isSelectionHeldForNativeMove(inputController, editor, rootRef.current)
+          kind === 'repair-caret'
+            ? isSelectionHeldForPendingImport(
+                inputController,
+                editor,
+                rootRef.current
+              )
+            : isSelectionHeldForNativeMove(
+                inputController,
+                editor,
+                rootRef.current
+              )
         ) {
           return false;
         }

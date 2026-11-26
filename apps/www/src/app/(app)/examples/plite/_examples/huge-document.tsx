@@ -40,7 +40,11 @@ import {
 } from '@/components/ui/native-select';
 import { Switch } from '@/components/ui/switch';
 
-import { parseAsBoundedInteger, replaceQueryOptions } from './query-controls';
+import {
+  clampNumber,
+  parseAsBoundedInteger,
+  replaceQueryOptions,
+} from './query-controls';
 
 const SUPPORTS_EVENT_TIMING =
   typeof window !== 'undefined' && 'PerformanceEventTiming' in window;
@@ -233,10 +237,15 @@ const useSurfaceStatistics = (
 };
 
 const HugeDocumentExample = () => {
-  const [config, setQueryConfig] = useQueryStates(hugeDocumentQueryParsers, {
-    ...replaceQueryOptions,
-    urlKeys: hugeDocumentUrlKeys,
-  });
+  const [queryConfig, setQueryConfig] = useQueryStates(
+    hugeDocumentQueryParsers,
+    {
+      ...replaceQueryOptions,
+      urlKeys: hugeDocumentUrlKeys,
+    }
+  );
+  const [config, setLocalConfig] = useState(queryConfig);
+  const configRef = useRef(config);
   const [isRendering, setIsRendering] = useState(false);
   const [editor, setEditor] = useState(() =>
     createEditor(
@@ -259,8 +268,10 @@ const HugeDocumentExample = () => {
 
   const setConfig = useCallback(
     (partialConfig: Partial<Config>) => {
-      const newConfig = { ...config, ...partialConfig };
+      const newConfig = { ...configRef.current, ...partialConfig };
 
+      configRef.current = newConfig;
+      setLocalConfig(newConfig);
       setIsRendering(true);
       editorInitialValueKeyRef.current = `${newConfig.documentSeed}:${newConfig.blocks}`;
       void setQueryConfig(newConfig);
@@ -276,7 +287,7 @@ const HugeDocumentExample = () => {
         setEditorVersion((n) => n + 1);
       }, 0);
     },
-    [config, setQueryConfig]
+    [setQueryConfig]
   );
 
   useEffect(() => {
@@ -615,12 +626,13 @@ const PerformanceControls = ({
                 id="huge-document-overscan"
                 min={0}
                 onChange={(event) => {
-                  setConfig({
-                    virtualizedOverscan: Number.parseInt(
-                      event.target.value,
-                      10
-                    ),
-                  });
+                  const value = Number.parseInt(event.target.value, 10);
+
+                  if (Number.isFinite(value)) {
+                    setConfig({
+                      virtualizedOverscan: clampNumber(value, 0, 1000),
+                    });
+                  }
                 }}
                 type="number"
                 value={config.virtualizedOverscan}
@@ -637,12 +649,17 @@ const PerformanceControls = ({
                 id="huge-document-estimated-block-size"
                 min={1}
                 onChange={(event) => {
-                  setConfig({
-                    virtualizedEstimatedBlockSize: Number.parseInt(
-                      event.target.value,
-                      10
-                    ),
-                  });
+                  const value = Number.parseInt(event.target.value, 10);
+
+                  if (Number.isFinite(value)) {
+                    setConfig({
+                      virtualizedEstimatedBlockSize: clampNumber(
+                        value,
+                        1,
+                        1000
+                      ),
+                    });
+                  }
                 }}
                 type="number"
                 value={config.virtualizedEstimatedBlockSize}
@@ -656,9 +673,13 @@ const PerformanceControls = ({
               id="huge-document-editor-height"
               min={120}
               onChange={(event) => {
-                setConfig({
-                  editorHeight: Number.parseInt(event.target.value, 10),
-                });
+                const value = Number.parseInt(event.target.value, 10);
+
+                if (Number.isFinite(value)) {
+                  setConfig({
+                    editorHeight: clampNumber(value, 120, 2000),
+                  });
+                }
               }}
               type="number"
               value={config.editorHeight}
