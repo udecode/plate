@@ -472,7 +472,8 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
     };
 
     return {
-      activate({ onCleanup }) {
+      activate({ afterPublish, onCleanup }) {
+        afterPublish(readCountAtCommit);
         onCleanup(owner.subscribeCommit(readCountAtCommit));
         topStep = {
           mode: store.get('fillRole') ?? null,
@@ -843,6 +844,8 @@ export const BaseFieldPlugin = fieldSchemaPlugin.extend(
               for (const id of index.byRole
                 .get(written.role)
                 ?.get(written.name) ?? []) {
+                if (id === fieldId) continue;
+
                 const [, at] = held(id);
 
                 if (at) tx.nodes.set({ value: written.value }, { at });

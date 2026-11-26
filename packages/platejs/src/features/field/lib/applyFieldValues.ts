@@ -336,6 +336,7 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
           role,
           waitsOn: verdict.waitsOn,
         });
+        refusedIds.add(fieldId);
         continue;
       }
       if (refusedIds.has(fieldId)) continue;
@@ -344,6 +345,7 @@ export function applyFieldValues<D extends EditorDocumentValue | Value>(
 
       if (!verdict.applies && filled) {
         refusals.push({ code: 'skipped', fieldId, ...nameOf(field), role });
+        refusedIds.add(fieldId);
       } else if (verdict.applies && field.required && !filled) {
         refusals.push({
           code: 'missing-required',
