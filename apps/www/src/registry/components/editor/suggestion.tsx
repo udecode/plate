@@ -91,11 +91,13 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   const { activeId } = useActiveSuggestion();
   // The active change's card, read again after each review commit, so the
   // active rule follows the card through a merge or a new oldest change.
-  const activeCard = useEditorSelector((editor) =>
-    activeId
-      ? (editor.plugin(AuthoredPlugin).read.groupOf(activeId)?.id ?? null)
-      : null
-  );
+  const activeCard = useEditorSelector((editor) => {
+    const card = activeId
+      ? editor.plugin(AuthoredPlugin).read.groupOf(activeId)
+      : null;
+
+    return card ? { authorId: card.authorId, id: card.id } : null;
+  });
 
   React.useLayoutEffect(() => {
     const root = editableRef.current;
@@ -112,7 +114,7 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
 
   const scope = `[data-editor-suggestion-scope="${escapeCssString(scopeId)}"]`;
   // The active rule follows the color rules, so it wins on a highlight that
-  // also paints another card, and it shows the active card's own colors.
+  // also paints another author's change, and it shows its author's colors.
   const rules = SUGGESTION_COLORS.map(
     (color, slot) =>
       `${scope} [data-editor-authored-color="${slot}"]{${colorDeclarations(color)}}`
@@ -121,12 +123,12 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   if (activeCard) {
     const color =
       SUGGESTION_COLORS[
-        suggestionColorOf(activeCard, SUGGESTION_COLORS.length)
+        suggestionColorOf(activeCard.authorId, SUGGESTION_COLORS.length)
       ];
 
     rules.push(
       `${scope} [data-editor-authored-groups~="${escapeCssString(
-        activeCard
+        activeCard.id
       )}"]{${colorDeclarations(color)}--suggestion-bg:${color.hover};--suggestion-fg:${color.active};}`
     );
   }

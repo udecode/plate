@@ -74,6 +74,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-26-suggestion-author-colors",
+      "href": "/registry/changelog/2026-11-26-suggestion-author-colors.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Suggestions paint each author in one color",
+      "change": {
+        "type": "source",
+        "date": "2026-11-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-25-field-demo-answer-conflict",
       "href": "/registry/changelog/2026-11-25-field-demo-answer-conflict.json",
       "status": "draft",

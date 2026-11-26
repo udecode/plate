@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-26-suggestion-author-colors",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-26-suggestion-author-colors.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Suggestions paint each author in one color",
+  "targets": [
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-26-suggestion-author-colors",
+      "kind": "behavior",
+      "summary": "Paint every change one person suggests in that person's color, whatever card holds it, and give another person another color. The active card still lights up in its author's color.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-26",
+          "entry": "2026-11-26-suggestion-author-colors",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

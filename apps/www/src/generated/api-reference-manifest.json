@@ -29703,12 +29703,12 @@
         },
         "platejs/suggestion:suggestionColorOf": {
           "aliases": [],
-          "documentation": "The palette slot of a review card: a hash of its id, so every peer and\nevery reload paints one card alike. Two cards share a slot once in `count`.",
+          "documentation": "The palette slot of a suggestion author: a hash of their id, so every peer\nand every reload paints one author's changes alike, whatever card holds\nthem. Two authors share a slot once in `count`.",
           "entrypoint": "platejs/suggestion",
           "kind": "const",
           "name": "suggestionColorOf",
           "runtime": true,
-          "signature": "suggestionColorOf: (cardId: string, count?: number) => number",
+          "signature": "suggestionColorOf: (authorId: string, count?: number) => number",
           "source": null,
           "typeParameters": []
         },

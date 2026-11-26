@@ -313,7 +313,7 @@ const editor = createEditor({
 editor.plugin(AuthoredPlugin).api.setView({ intent: 'propose' });
 ```
 
-Marked text and elements expose `data-editor-authored-change`, `data-editor-authored-kind`, `data-editor-authored-author`, `data-editor-authored-groups`, and `data-editor-authored-color`. Each holds a space-separated list, except `color`, which holds the palette slot, 0 to 6, of the card the element paints. A pending deletion has `delete` in its `kind`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
+Marked text and elements expose `data-editor-authored-change`, `data-editor-authored-kind`, `data-editor-authored-author`, `data-editor-authored-groups`, and `data-editor-authored-color`. Each holds a space-separated list, except `color`, which holds the palette slot, 0 to 6, of the author whose change the element paints, so each author paints one color whatever card holds the change. A pending deletion has `delete` in its `kind`. Add application styles against these attributes through the plugin's `render.contentAttributes`. Static presets can configure `BaseSuggestionPlugin` with a server-safe attribute object; `SuggestionKit` supplies the live default styles.
 
 ## Discussion review
 

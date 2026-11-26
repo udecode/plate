@@ -310,7 +310,7 @@ const editor = createEditor({
 editor.plugin(AuthoredPlugin).api.setView({ intent: 'propose' });
 ```
 
-带标记的文本和元素提供 `data-editor-authored-change`、`data-editor-authored-kind`、`data-editor-authored-author`、`data-editor-authored-groups` 和 `data-editor-authored-color`。除 `color` 外，每个属性都是以空格分隔的列表；`color` 是该元素所绘制卡片的调色板槽位，取值 0 到 6。待处理删除的 `kind` 包含 `delete`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `BaseSuggestionPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
+带标记的文本和元素提供 `data-editor-authored-change`、`data-editor-authored-kind`、`data-editor-authored-author`、`data-editor-authored-groups` 和 `data-editor-authored-color`。除 `color` 外，每个属性都是以空格分隔的列表；`color` 是该元素所绘制修改的作者的调色板槽位，因此每位作者无论修改在哪张卡片上都只用一种颜色，取值 0 到 6。待处理删除的 `kind` 包含 `delete`。通过 plugin 的 `render.contentAttributes` 为这些属性配置样式。静态 preset 可以为 `BaseSuggestionPlugin` 配置服务端安全的属性对象；`SuggestionKit` 提供交互编辑器的默认样式。
 
 ## Discussion 审阅
 
