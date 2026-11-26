@@ -216,7 +216,11 @@ import {
   readAuthoredMarks,
   readMembers,
 } from './tree/marks';
-import { emptiedStruckLine, recordAuthoredSteps } from './tree/record';
+import {
+  changesOnlyProperties,
+  emptiedStruckLine,
+  recordAuthoredSteps,
+} from './tree/record';
 import { completeProposed, framedChild } from './tree/record-completion';
 import {
   changedSitesOf,
@@ -2777,6 +2781,18 @@ export const createAuthoredPlugin = (
               recorded.textStrike.root
               ? recorded.textStrike
               : null;
+          const onlySetsProperties = (
+            pass: Readonly<{ change: DocumentChange }> | null | undefined
+          ) =>
+            !pass ||
+            [...getInternalDocumentChangeEntries(pass.change)].every(
+              ([, root]) => changesOnlyProperties(root)
+            );
+          const facts = [relink, filled, owned, spares, shown].every(
+            onlySetsProperties
+          )
+            ? recorded.facts
+            : undefined;
 
           return {
             anchorChange: (plainAfter) =>
@@ -2804,6 +2820,7 @@ export const createAuthoredPlugin = (
                   }),
                 }
               : {}),
+            ...(facts ? { facts } : {}),
             indexedAfter,
             mapPosition,
             selection,

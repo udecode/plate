@@ -1574,6 +1574,7 @@ export const runInEditorCommandFrame = (
       disposeTransactionSpecContext(editor, frame);
     }
     if (!recorded) {
+      if (steps.length > 0) outer.snapshot.publishesUnknownFacts = true;
       setTypedMarks(editor, typedAfter);
       return true;
     }

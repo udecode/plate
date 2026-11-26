@@ -8,6 +8,7 @@ import { carriedRunsOf, type DraftStep } from './change/builder';
 import type { CarriedRun } from './change/carried-run';
 import type { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
+import type { ChangeFacts } from './change/record';
 import type { CommandProjection } from './command-document';
 import type { CompositionStamp } from './composition-stamp';
 import { getEditorRuntimeOwner } from './editor-runtime';
@@ -58,6 +59,7 @@ export type EditorDocumentRecorder = (
   bookmarks?: readonly Selection[];
   change: DocumentChange;
   deleteGrouping?: RecordedDeleteGroupingInput | null;
+  facts?: ChangeFacts;
   indexedAfter?: ReadonlyMap<string, DocumentIndex>;
   /**
    * Maps a position in the draft commands wrote to the committed draft, as a

@@ -215,6 +215,17 @@ const restingChanges = (
   };
 };
 
+const elementsEnclosing = (index: DocumentIndex, at: number) => {
+  const position = Math.min(at, index.length);
+
+  return index
+    .openContextAt(position)
+    .filter(
+      (range) =>
+        range.kind !== 'text' && range.from < position && position < range.to
+    );
+};
+
 /**
  * Each element whose proposed children the change touched, once, as its path
  * after the change and before it, with the elements whose pending unwraps
@@ -242,12 +253,8 @@ const changedHosts = (
       [fromA, fromB],
       [toA, toB],
     ] as const) {
-      const opened = after
-        .openContextAt(Math.min(positionB, after.length))
-        .filter((range) => range.kind !== 'text');
-      const openedBefore = before
-        .openContextAt(Math.min(positionA, before.length))
-        .filter((range) => range.kind !== 'text');
+      const opened = elementsEnclosing(after, positionB);
+      const openedBefore = elementsEnclosing(before, positionA);
 
       opened.forEach((range, depth) => {
         const path = proposedHost(afterChildren, range.path, schema);

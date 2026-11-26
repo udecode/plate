@@ -230,7 +230,11 @@ import {
   type NewLetters,
 } from './change/new-letters';
 import { coversContent } from './change/range-content';
-import { type ChangeFacts, historyFollowsAllFacts } from './change/record';
+import {
+  type ChangeFacts,
+  historyFollowsAllFacts,
+  UNKNOWN_FACTS,
+} from './change/record';
 import type { RootChange } from './change/root-change';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
 import type { PropertyModification } from './change/transform';
@@ -637,6 +641,7 @@ type TransactionSnapshot = {
   previousSnapshot: EditorSnapshot | null;
   previousVersion: number;
   protectedInlineSpacerPaths: Map<string, Path[]>;
+  publishesUnknownFacts?: true;
   reason: 'replace' | null;
   /** The records the transaction started from. */
   records: RecordStore;
@@ -2022,6 +2027,9 @@ export const commitRecordedDraft = (
   };
   const checkpoint = frontier?.checkpoint;
   const resumes = checkpoint !== undefined && checkpoint.steps.length > 0;
+  if (plainSteps && plainSteps.steps.length > 0 && !recorded.facts) {
+    snapshot.publishesUnknownFacts = true;
+  }
   const applyRecorded = () => {
     const resumed = resumes ? snapshot.builder.resume(checkpoint) : null;
 
@@ -2034,6 +2042,7 @@ export const commitRecordedDraft = (
     applyTransactionSpecDocumentChangeStep(
       editor,
       snapshot.builder.apply(change, {
+        ...(recorded.facts ? { facts: recorded.facts } : {}),
         ...(recorded.indexedAfter
           ? { indexedAfter: recorded.indexedAfter }
           : {}),
@@ -2137,7 +2146,11 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
 
   const recorder = getEditorDocumentRecorder(editor);
 
-  if (!recorder || snapshot.activeChange.change.empty) return;
+  if (!recorder) return;
+  if (snapshot.activeChange.change.empty) {
+    if (steps.length > 0) snapshot.publishesUnknownFacts = true;
+    return;
+  }
 
   const selectionRoot = context.caret.root;
   const carried = carryCarets(editor, context.baseCaret, context.caret);
@@ -14680,7 +14693,9 @@ export const runEditorTransaction = <R>(
                       ? snapshot.builder.carriedRuns()
                       : [],
                   changes: canonicalChanges,
-                  facts: snapshot.builder.factsFor(canonicalChanges),
+                  facts: snapshot.publishesUnknownFacts
+                    ? UNKNOWN_FACTS
+                    : snapshot.builder.factsFor(canonicalChanges),
                   completedTextDeletion,
                   dirtyStateKeys: [...snapshot.dirtyStateKeys],
                   effects: [...snapshot.effects],

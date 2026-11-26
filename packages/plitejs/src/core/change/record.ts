@@ -159,7 +159,8 @@ const byFirst = (left: readonly number[], right: readonly number[]) =>
 const continues = (last: Carry | undefined, [at, from]: Carry): last is Carry =>
   last !== undefined && last[0] + last[2] === at && last[1] + last[2] === from;
 
-const sortedRootFacts = ({
+/** @internal */
+export const sortedRootFacts = ({
   carries,
   cuts = [],
   heirs,
@@ -188,7 +189,8 @@ const sortedRootFacts = ({
 };
 
 // Roots sort by key, so equal facts write equal JSON.
-const recorded = (
+/** @internal */
+export const recorded = (
   entries: Iterable<readonly [string, RootFacts]>
 ): RecordedFacts => {
   const roots = [...entries]
@@ -381,12 +383,15 @@ const targetsOf = (change: RootChange, facts: RootFacts) =>
     })),
   ]);
 
-const composeRoot = (
+/** @internal */
+export const composeRoot = (
   a: RootChange,
   aFacts: RootFacts,
   b: RootChange,
   bFacts: RootFacts
 ) => {
+  if (isEmptyRoot(aFacts) && isEmptyRoot(bFacts)) return NO_ROOT_FACTS;
+
   const sources = sourcesOf(a, aFacts);
   const targets = targetsOf(b, bFacts);
   const carries: Carry[] = [];
