@@ -16,6 +16,7 @@ export {
 } from './lane';
 export {
   type DeviceWitnessGesture,
+  type DeviceWitnessPlatform,
   type DeviceWitnessRule,
   type DeviceWitnessStep,
   type DeviceWitnessViolation,

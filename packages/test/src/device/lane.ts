@@ -351,7 +351,7 @@ export const createDeviceLane = ({
     await driver.screen.settle();
 
     return editorRoot.evaluate(
-      async (element, { path: textPath, target: textTarget }) => {
+      async (element, { ios, path: textPath, target: textTarget }) => {
         const renderedHere = (text: Element) =>
           text.closest('[data-editor="true"]') === element;
         const host = [
@@ -417,7 +417,8 @@ export const createDeviceLane = ({
         };
         const coveredBy = (point: { x: number; y: number }) => {
           const view = window.visualViewport;
-          const top = view?.offsetTop ?? 0;
+          // Safari's client rects already follow the keyboard's scroll.
+          const top = ios ? 0 : (view?.offsetTop ?? 0);
 
           if (point.y < top || point.y > top + (view?.height ?? innerHeight)) {
             return 'the edge of the visual viewport';
@@ -447,7 +448,7 @@ export const createDeviceLane = ({
         }
         return point;
       },
-      { path, target }
+      { ios: state.platform === 'ios', path, target }
     );
   };
 
@@ -918,7 +919,9 @@ export const createDeviceLane = ({
 
       return {
         pages: all,
-        violations: all.flatMap((judged) => judgeDeviceWitness(judged)),
+        violations: all.flatMap((judged) =>
+          judgeDeviceWitness({ ...judged, platform: state.platform })
+        ),
       };
     },
   };

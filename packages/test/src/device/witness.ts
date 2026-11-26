@@ -3,6 +3,8 @@ import type { BrowserNativeEventTraceEntry } from '../playwright/types';
 /** The `keydown` key a soft-keyboard tap produces, or null for none. */
 export type DeviceWitnessKey = string | null;
 
+export type DeviceWitnessPlatform = 'android' | 'ios';
+
 /** One lane gesture, before the lane measures its trace range. */
 export type DeviceWitnessGesture =
   | { kind: 'back'; label: string }
@@ -60,9 +62,15 @@ type WitnessEvent = Pick<
   | 'type'
 >;
 
-const expectedKey = (step: DeviceWitnessStep): DeviceWitnessKey => {
+const HANGUL = /[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF]/;
+
+const expectedKey = (
+  step: DeviceWitnessStep,
+  platform: DeviceWitnessPlatform
+): DeviceWitnessKey => {
   if (step.kind === 'key') return step.key;
-  return step.kind === 'strip' ? 'Unidentified' : null;
+  if (step.kind === 'strip') return platform === 'ios' ? null : 'Unidentified';
+  return null;
 };
 
 /**
@@ -73,20 +81,25 @@ const expectedKey = (step: DeviceWitnessStep): DeviceWitnessKey => {
  * produces, be an IME companion of a trusted Enter/13 in that same step, or
  * repeat and close the composition already active before that Enter step.
  * Every `beforeinput` needs its own preceding `keydown`, except a
- * composition commit carried by a content touch and an autocorrect
- * replacement that shares its key's `keydown`, and every `input` needs its
- * own preceding `beforeinput` of the same input type. A key or strip step
- * that expects a key must show one. Content touches must deliver a
- * `pointerdown` near their target. An insertion that copies all of this from
- * inside a real tap window is indistinguishable here; the guarded DevTools
- * connection is what blocks it.
+ * composition commit carried by a content touch, an autocorrect replacement
+ * that shares its key's `keydown`, and on iOS a commit by a candidate-bar tap
+ * or by Return, a Korean syllable join that pairs `deleteContentBackward`
+ * with Hangul `insertText` on one `keydown`, and a repeated composition draft
+ * in one keyed step. Every `input` needs its own preceding `beforeinput` of
+ * the same input type. A key or strip step that expects a key must show one,
+ * except an iOS Return that commits the open composition. Content touches
+ * must deliver a `pointerdown` near their target. An insertion that copies
+ * all of this from inside a real tap window is indistinguishable here; the
+ * guarded DevTools connection is what blocks it.
  */
 export const judgeDeviceWitness = ({
   events,
+  platform = 'android',
   steps,
   tolerancePx = 4,
 }: {
   events: readonly WitnessEvent[];
+  platform?: DeviceWitnessPlatform;
   steps: readonly DeviceWitnessStep[];
   tolerancePx?: number;
 }): DeviceWitnessViolation[] => {
@@ -98,7 +111,7 @@ export const judgeDeviceWitness = ({
   const enterSteps = new Set(
     ordered.filter(
       (step) =>
-        expectedKey(step) === 'Enter' &&
+        expectedKey(step, platform) === 'Enter' &&
         traced.some(
           (event) =>
             event.seq >= step.seqStart &&
@@ -127,11 +140,13 @@ export const judgeDeviceWitness = ({
   let compositionOpen = false;
   let compositionData: string | null = null;
   let stepCompositionData: string | null = null;
+  let stepCompositionInputData: string | null = null;
   let pendingKeydowns = 0;
   // A canceled beforeinput sends no input, so unmatched ones stay pending.
   let pendingBeforeInputs: Array<string | null> = [];
   let currentStep: DeviceWitnessStep | null = null;
   const backEscapes = new Set<DeviceWitnessStep>();
+  const iosEnterCommitSteps = new Set<DeviceWitnessStep>();
   const pointerSteps = new Set<DeviceWitnessStep>();
   const keyedSteps = new Set<DeviceWitnessStep>();
 
@@ -145,6 +160,7 @@ export const judgeDeviceWitness = ({
 
     if (step !== currentStep) {
       stepCompositionData = compositionOpen ? compositionData : null;
+      stepCompositionInputData = null;
       currentStep = step;
       pendingKeydowns = 0;
       pendingBeforeInputs = [];
@@ -187,7 +203,7 @@ export const judgeDeviceWitness = ({
         continue;
       }
 
-      const key = expectedKey(step);
+      const key = expectedKey(step, platform);
       const [update, before, input, end] = traced.slice(index + 1, index + 5);
       const compositionCommit =
         key === 'Enter' &&
@@ -235,15 +251,70 @@ export const judgeDeviceWitness = ({
         compositionOpen &&
         event.inputType === 'insertCompositionText';
 
+      // On iOS Safari, tapping a word in the candidate bar or confirming an
+      // active composition with Return commits the open composition with no
+      // keydown.
+      const iosCompositionCommit =
+        platform === 'ios' &&
+        compositionOpen &&
+        (step.kind === 'strip' ||
+          (step.kind === 'key' &&
+            step.key === 'Enter' &&
+            stepCompositionData !== null)) &&
+        (event.inputType === 'insertCompositionText' ||
+          event.inputType === 'deleteCompositionText' ||
+          event.inputType === 'insertFromComposition');
+
       // The iPhone keyboard's autocorrect replaces the word before the key's
       // own text, so the replacement shares that key's keydown.
       const autocorrect =
         step.kind === 'key' && event.inputType === 'insertReplacementText';
 
+      // On iOS Safari, a Korean jamo that joins the preceding syllable emits
+      // deleteContentBackward followed by Hangul insertText for one keydown.
+      const nextBeforeInput = traced
+        .slice(index + 1)
+        .find((candidate) => candidate.type === 'beforeinput');
+      const iosKoreanJoinDelete =
+        platform === 'ios' &&
+        step.kind === 'key' &&
+        !compositionOpen &&
+        event.inputType === 'deleteContentBackward' &&
+        nextBeforeInput !== undefined &&
+        nextBeforeInput.seq < step.seqEnd &&
+        nextBeforeInput.isTrusted &&
+        nextBeforeInput.inputType === 'insertText' &&
+        typeof nextBeforeInput.data === 'string' &&
+        HANGUL.test(nextBeforeInput.data);
+
+      // On iOS Safari, resuming Pinyin composition after replacing an expanded
+      // selection can repeat the same composition draft twice in one step.
+      const iosDuplicateCompositionUpdate =
+        platform === 'ios' &&
+        step.kind === 'key' &&
+        keyedSteps.has(step) &&
+        compositionOpen &&
+        event.isTrusted &&
+        event.isComposing === true &&
+        event.inputType === 'insertCompositionText' &&
+        event.data !== null &&
+        event.data === stepCompositionInputData &&
+        event.data === compositionData;
+
       pendingBeforeInputs.push(event.inputType ?? null);
       if (pendingKeydowns > 0) {
-        if (!autocorrect) pendingKeydowns -= 1;
-      } else if (!touchCommit) {
+        if (
+          event.inputType === 'insertCompositionText' &&
+          event.isComposing === true
+        ) {
+          stepCompositionInputData = event.data;
+        }
+        if (!autocorrect && !iosKoreanJoinDelete) pendingKeydowns -= 1;
+      } else if (
+        !touchCommit &&
+        !iosCompositionCommit &&
+        !iosDuplicateCompositionUpdate
+      ) {
         violations.push({
           ...at,
           detail: `${event.inputType} without its own keydown`,
@@ -267,6 +338,17 @@ export const judgeDeviceWitness = ({
     } else if (event.type === 'compositionupdate') {
       if (event.isTrusted) compositionData = event.data;
     } else if (event.type === 'compositionend') {
+      if (
+        platform === 'ios' &&
+        step.kind === 'key' &&
+        step.key === 'Enter' &&
+        compositionOpen &&
+        stepCompositionData !== null &&
+        event.isTrusted &&
+        event.data === stepCompositionData
+      ) {
+        iosEnterCommitSteps.add(step);
+      }
       compositionOpen = false;
       compositionData = null;
     } else if (event.type === 'pointerdown') {
@@ -294,7 +376,11 @@ export const judgeDeviceWitness = ({
   }
 
   for (const step of ordered) {
-    if (expectedKey(step) !== null && !keyedSteps.has(step)) {
+    if (
+      expectedKey(step, platform) !== null &&
+      !keyedSteps.has(step) &&
+      !iosEnterCommitSteps.has(step)
+    ) {
       violations.push({
         detail: `the ${step.label} tap produced no keydown`,
         rule: 'missing-key',
