@@ -1,5 +1,5 @@
 {
-  "tag": "v0.9.145",
+  "tag": "v0.9.158",
   "branch": "next",
   "protected": "main",
   "delivery": "trunk",
@@ -335,7 +335,7 @@
   ],
   "synced": {
     "source": "d149b4098f3c44369bf940d36e828ffdf69a6753",
-    "config": "725ee0e0087f04ce"
+    "config": "aa10ecec38d5f440"
   },
   "pageTopic": {
     "field": "review_scopes",

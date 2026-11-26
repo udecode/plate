@@ -10,10 +10,10 @@
     },
     "cleanup": {
       "source": "udecode/ustack",
-      "commit": "d149b4098f3c44369bf940d36e828ffdf69a6753",
+      "commit": "c10d06f463907410f9ba5c035fad61d322806704",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "0140b8b896d293c562fd36ad351d39f610d4a0f05eaffd8bd7bf21e676e16606"
+      "computedHash": "02902595d24cf4f97917c6f74fc7ebaec114888fcf38470e403013d93c3c6575"
     },
     "clip": {
       "source": "udecode/ustack",

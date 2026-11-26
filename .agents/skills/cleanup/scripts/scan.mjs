@@ -15,6 +15,7 @@
 // a worktree, and the worktree of an archived session does not wait the day.
 // A Codex rollout under $CODEX_HOME/sessions/ written in the last day keeps the
 // worktree its chat works in, and one the scan cannot read keeps them all.
+// Worktrees under ~/.t3/worktrees/ stay kept as managed by T3 Cleanup.
 // A write to the worktree is one git records or one to a file it has not
 // committed, other than an ignored file an install or build recreates or, in a
 // pstack project, one outside <plans>/artifacts/. Holding uncommitted changes
@@ -190,6 +191,7 @@ function held(files) {
 function usageVerdict(facts) {
   if (facts.locked !== null) return ['keep', `locked: ${facts.locked || 'no reason given'}`];
   if (facts.missing) return ['safe', "its folder is gone, so only git's record of it goes"];
+  if (facts.t3Managed) return ['keep', 'managed by T3 Cleanup'];
   if (facts.invoking) return ['keep', 'this scan runs in it'];
   if (facts.processes === null) return ['keep', 'lsof could not list the processes working in it'];
   if (facts.processes > 0) return ['keep', `${facts.processes} running processes work in it`];
@@ -510,6 +512,8 @@ function codexCwds(now) {
 const agentRoots = (main) =>
   [join(main, '.claude', 'worktrees'), join(main, 'docs', 'plans', 'artifacts'), tmpdir(), '/tmp', '/private/tmp'].map(real);
 
+const t3WorktreesRoot = () => real(join(homedir(), '.t3', 'worktrees'));
+
 const nestedIn = (path, worktrees) => worktrees.find((other) => other.path !== path && within(other.path, path))?.path ?? null;
 
 function usageFacts(main, entry, context) {
@@ -520,6 +524,7 @@ function usageFacts(main, entry, context) {
   return {
     locked: 'locked' in entry ? entry.locked : null,
     missing,
+    t3Managed: within(path, t3WorktreesRoot()),
     unlinked: unlinked(entry),
     empty: unlinked(entry) && !holdsFiles(path),
     invoking: context.here.some((dir) => within(dir, path)),

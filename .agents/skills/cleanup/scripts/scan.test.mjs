@@ -673,3 +673,26 @@ test('transcripts (Claude scratch/project, Codex plain/zstd/corrupt) keep active
     else process.env.CLAUDE_CONFIG_DIR = saved;
   }
 });
+
+test('scan keeps ~/.t3/worktrees worktrees as managed by T3 Cleanup', () => {
+  const f = fixture();
+  const home = realpathSync(mkdtempSync(join(tmpdir(), 'cleanup-home-')));
+  const t3Branch = join(home, '.t3', 'worktrees', 'repo', 't3-branch');
+  const t3Detached = join(home, '.t3', 'worktrees', 'repo', 't3-detached');
+  mkdirSync(dirname(t3Branch), { recursive: true });
+  git(f.main, 'worktree', 'add', '-q', '-b', 't3/feat', t3Branch);
+  git(f.main, 'worktree', 'add', '-q', '--detach', t3Detached);
+  for (const p of [t3Branch, t3Detached]) quietGit(p, 3);
+  const elsewhere = realpathSync(mkdtempSync(join(f.root, 'tmp-')));
+  const run = spawnSync(process.execPath, [SCAN, '--repo', f.main, '--no-sizes', '--json'], {
+    encoding: 'utf8',
+    env: { ...process.env, HOME: home, TMPDIR: elsewhere },
+  });
+  assert.equal(run.status, 0, run.stderr);
+  const { items } = JSON.parse(run.stdout);
+  for (const p of [t3Branch, t3Detached]) {
+    const item = items.find((each) => each.path === p);
+    assert.deepEqual([item?.verdict, item?.reason], ['keep', 'managed by T3 Cleanup']);
+  }
+  assert.equal(landedOf(t3Branch), 'safe');
+});
